@@ -1,0 +1,316 @@
+{
+  "schema": "audio430-pasit-original-public-inputs-v1",
+  "superproject": {
+    "name": "platform/superproject",
+    "ref": "refs/heads/android-17.0.0_r1",
+    "commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039"
+  },
+  "old_projects": 425,
+  "new_projects": 430,
+  "old_projects_exact_prefix_preserved": true,
+  "old_source_lock_sha256": "1dd0671551fb3c07cac4bb9b587346421321a6e4809494299f7b6daa4c49371c",
+  "new_source_lock": {
+    "bytes": 237862,
+    "sha256": "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a"
+  },
+  "added_projects": [
+    {
+      "path": "tools/test/desktop/mobly",
+      "name": "platform/tools/test/desktop/mobly",
+      "commit": "b77d8987bdd1d44645a015042130c8b7cba05b4b",
+      "purpose": "Original PASIT provider and complete transitive inputs for the retained DesktopTestLibTestsMobly consumer",
+      "sparse_paths": [
+        "lib/pasit",
+        "lib/utils",
+        "tests/pasit/Android.bp"
+      ]
+    },
+    {
+      "path": "external/grpc-grpc",
+      "name": "platform/external/grpc-grpc",
+      "commit": "a7112f326a9df61597d1bfdbdad7ad9ef3f764b7",
+      "purpose": "Original PASIT provider and complete transitive inputs for the retained DesktopTestLibTestsMobly consumer",
+      "sparse_paths": [
+        "etc",
+        "examples",
+        "include",
+        "src",
+        "third_party",
+        "tools",
+        "test/core/address_utils",
+        "test/core/event_engine",
+        "test/core/test_util",
+        "test/cpp/common",
+        "test/cpp/util"
+      ]
+    },
+    {
+      "path": "external/chromiumos-config",
+      "name": "platform/external/chromiumos-config",
+      "commit": "0f9ee62b2480d7ffa81c1584407813e7a6d930ca",
+      "purpose": "Original PASIT provider and complete transitive inputs for the retained DesktopTestLibTestsMobly consumer",
+      "sparse_paths": [
+        "proto",
+        "python"
+      ]
+    },
+    {
+      "path": "external/python/snippet-uiautomator",
+      "name": "platform/external/python/snippet-uiautomator",
+      "commit": "5dbbc2e9f543b88b6353b6d66f23dcb071f565a7",
+      "purpose": "Original PASIT provider and complete transitive inputs for the retained DesktopTestLibTestsMobly consumer",
+      "sparse_paths": [
+        "snippet_uiautomator"
+      ]
+    },
+    {
+      "path": "external/mobly-snippet-lib",
+      "name": "platform/external/mobly-snippet-lib",
+      "commit": "fcbe611cef61ea47d55107c6d70ac1b4706a6217",
+      "purpose": "Original Android snippet library required by the retained PASIT uiautomator provider"
+    }
+  ],
+  "original_gitlinks": [
+    {
+      "path": "tools/test/desktop/mobly",
+      "commit": "b77d8987bdd1d44645a015042130c8b7cba05b4b",
+      "original_gitlink": {
+        "id": "b77d8987bdd1d44645a015042130c8b7cba05b4b",
+        "mode": 57344,
+        "name": "mobly",
+        "type": "commit"
+      },
+      "original_tree_id": "1c835b007c3db7bbd36d934d1d1a78a1ee0a2476",
+      "url": "https://android.googlesource.com/platform/superproject/+/28f0bbddc24d56c8ec5a8df5342ac7a292184039/tools/test/desktop/?format=JSON",
+      "original_tree_response": {
+        "bytes": 215,
+        "sha256": "f8686fdb8e32e9cf003f36cd1c66fb08f19fd81fcd4e7b56453466f80be6e54c"
+      }
+    },
+    {
+      "path": "external/grpc-grpc",
+      "commit": "a7112f326a9df61597d1bfdbdad7ad9ef3f764b7",
+      "original_gitlink": {
+        "id": "a7112f326a9df61597d1bfdbdad7ad9ef3f764b7",
+        "mode": 57344,
+        "name": "grpc-grpc",
+        "type": "commit"
+      },
+      "original_tree_id": "104ecc141583e6488f72874375a082024fa25fd5",
+      "url": "https://android.googlesource.com/platform/superproject/+/28f0bbddc24d56c8ec5a8df5342ac7a292184039/external/?format=JSON",
+      "original_tree_response": {
+        "bytes": 67330,
+        "sha256": "a23433c4219a29abeb1cf643a225e3edc7c5f5370a16d2750eb4a77582fb5b03"
+      }
+    },
+    {
+      "path": "external/chromiumos-config",
+      "commit": "0f9ee62b2480d7ffa81c1584407813e7a6d930ca",
+      "original_gitlink": {
+        "id": "0f9ee62b2480d7ffa81c1584407813e7a6d930ca",
+        "mode": 57344,
+        "name": "chromiumos-config",
+        "type": "commit"
+      },
+      "original_tree_id": "104ecc141583e6488f72874375a082024fa25fd5",
+      "url": "https://android.googlesource.com/platform/superproject/+/28f0bbddc24d56c8ec5a8df5342ac7a292184039/external/?format=JSON",
+      "original_tree_response": {
+        "bytes": 67330,
+        "sha256": "a23433c4219a29abeb1cf643a225e3edc7c5f5370a16d2750eb4a77582fb5b03"
+      }
+    },
+    {
+      "path": "external/python/snippet-uiautomator",
+      "commit": "5dbbc2e9f543b88b6353b6d66f23dcb071f565a7",
+      "original_gitlink": {
+        "id": "5dbbc2e9f543b88b6353b6d66f23dcb071f565a7",
+        "mode": 57344,
+        "name": "snippet-uiautomator",
+        "type": "commit"
+      },
+      "original_tree_id": "707aac19439f3b533199e34a067d3531e6c7ba47",
+      "url": "https://android.googlesource.com/platform/superproject/+/28f0bbddc24d56c8ec5a8df5342ac7a292184039/external/python/?format=JSON",
+      "original_tree_response": {
+        "bytes": 5556,
+        "sha256": "a1c2a67983a3618bdf02934e7a589f79b8261a5a56b546f50096bfd0b353df21"
+      }
+    },
+    {
+      "path": "external/mobly-snippet-lib",
+      "commit": "fcbe611cef61ea47d55107c6d70ac1b4706a6217",
+      "original_gitlink": {
+        "id": "fcbe611cef61ea47d55107c6d70ac1b4706a6217",
+        "mode": 57344,
+        "name": "mobly-snippet-lib",
+        "type": "commit"
+      },
+      "original_tree_id": "104ecc141583e6488f72874375a082024fa25fd5",
+      "url": "https://android.googlesource.com/platform/superproject/+/28f0bbddc24d56c8ec5a8df5342ac7a292184039/external/?format=JSON",
+      "original_tree_response": {
+        "bytes": 67330,
+        "sha256": "a23433c4219a29abeb1cf643a225e3edc7c5f5370a16d2750eb4a77582fb5b03"
+      }
+    }
+  ],
+  "providers": [
+    {
+      "project": "tools/test/desktop/mobly",
+      "commit": "b77d8987bdd1d44645a015042130c8b7cba05b4b",
+      "relative": "tools/test/desktop/mobly/lib/pasit/Android.bp",
+      "git_blob": "70a52fbc54f2d57fab54453313753234a4015683",
+      "bytes": 9623,
+      "sha256": "71cb178dbf79d5ce2974350a93f35fb82f3093b6ee46fca0d12d24ea6cc7c4fc",
+      "fixture": "fixtures/tools__test__desktop__mobly__lib__pasit__Android.bp"
+    },
+    {
+      "project": "tools/test/desktop/mobly",
+      "commit": "b77d8987bdd1d44645a015042130c8b7cba05b4b",
+      "relative": "tools/test/desktop/mobly/lib/pasit/passport/Android.bp",
+      "git_blob": "076a89059e65339d4e657404bebfe1f062880f63",
+      "bytes": 1172,
+      "sha256": "6c46367958ae1a9a320c8925ad0f4a4ba5b1748ad3571a7344a5fb5ab3cb47d8",
+      "fixture": "fixtures/tools__test__desktop__mobly__lib__pasit__passport__Android.bp"
+    },
+    {
+      "project": "tools/test/desktop/mobly",
+      "commit": "b77d8987bdd1d44645a015042130c8b7cba05b4b",
+      "relative": "tools/test/desktop/mobly/lib/pasit/snippets/hid/Android.bp",
+      "git_blob": "b51db0e58a4bdf356c6021e81f34b4418dcbedec",
+      "bytes": 1163,
+      "sha256": "f4425a2efa943566afeaf2aad3ad1754c8bd26053cf60429982b54ba7bd0e6f2",
+      "fixture": "fixtures/tools__test__desktop__mobly__lib__pasit__snippets__hid__Android.bp"
+    },
+    {
+      "project": "tools/test/desktop/mobly",
+      "commit": "b77d8987bdd1d44645a015042130c8b7cba05b4b",
+      "relative": "tools/test/desktop/mobly/lib/utils/Android.bp",
+      "git_blob": "362b320d031a485bf84416ad505e0e35ca138f24",
+      "bytes": 2030,
+      "sha256": "95063ab7533dd67a4204cbb807323313675a340864321bb42642ba5c080f8d62",
+      "fixture": "fixtures/tools__test__desktop__mobly__lib__utils__Android.bp"
+    },
+    {
+      "project": "tools/test/desktop/mobly",
+      "commit": "b77d8987bdd1d44645a015042130c8b7cba05b4b",
+      "relative": "tools/test/desktop/mobly/tests/pasit/Android.bp",
+      "git_blob": "5fe6e37402a3d4fbd1df2c9ff65987595a1f0864",
+      "bytes": 1107,
+      "sha256": "01b4a9495646aa94358153832915925f15c3b35752013e9810c7b2bed4d045e2",
+      "fixture": "fixtures/tools__test__desktop__mobly__tests__pasit__Android.bp"
+    },
+    {
+      "project": "external/grpc-grpc",
+      "commit": "a7112f326a9df61597d1bfdbdad7ad9ef3f764b7",
+      "relative": "external/grpc-grpc/Android.bp",
+      "git_blob": "72ee8250e06c7f5bd1e647f9f63f69ccdc1e4bd9",
+      "bytes": 43866,
+      "sha256": "bf2fe1aa1e59fca322faed17fbeb0b9138d744fc51141674202a4060fcc3300f",
+      "fixture": "fixtures/external__grpc-grpc__Android.bp"
+    },
+    {
+      "project": "external/grpc-grpc",
+      "commit": "a7112f326a9df61597d1bfdbdad7ad9ef3f764b7",
+      "relative": "external/grpc-grpc/src/python/grpcio/Android.bp",
+      "git_blob": "d260108deda749453c353ae791dca4e6df509267",
+      "bytes": 2162,
+      "sha256": "ca1565e658d47d0e0b65306fe30bcfdcb0d25b9df06ca1757e8e00953ec48c60",
+      "fixture": "fixtures/external__grpc-grpc__src__python__grpcio__Android.bp"
+    },
+    {
+      "project": "external/grpc-grpc",
+      "commit": "a7112f326a9df61597d1bfdbdad7ad9ef3f764b7",
+      "relative": "external/grpc-grpc/third_party/address_sorting/Android.bp",
+      "git_blob": "796e79016c16d65da7beff7f7c42ca1ed3b31751",
+      "bytes": 858,
+      "sha256": "6ad38a10c02683141584baf81774fbcb57aa60d5203bf9fbace6562d3592afce",
+      "fixture": "fixtures/external__grpc-grpc__third_party__address_sorting__Android.bp"
+    },
+    {
+      "project": "external/grpc-grpc",
+      "commit": "a7112f326a9df61597d1bfdbdad7ad9ef3f764b7",
+      "relative": "external/grpc-grpc/third_party/upb/Android.bp",
+      "git_blob": "d2440bc86180cc359a5b69f156f543b4175354bb",
+      "bytes": 3225,
+      "sha256": "0848aa90ea027cb92124d031f6567bba6488a675f7e88722e0a67b41a576b631",
+      "fixture": "fixtures/external__grpc-grpc__third_party__upb__Android.bp"
+    },
+    {
+      "project": "external/grpc-grpc",
+      "commit": "a7112f326a9df61597d1bfdbdad7ad9ef3f764b7",
+      "relative": "external/grpc-grpc/third_party/utf8_range/Android.bp",
+      "git_blob": "bbff7dba11a6432c5b9542b739ee9a4c6384255b",
+      "bytes": 729,
+      "sha256": "319e6b70c575b5b24713d3584b71393d23ff78ccf768ced8f5cb9e2d7c1bfd4a",
+      "fixture": "fixtures/external__grpc-grpc__third_party__utf8_range__Android.bp"
+    },
+    {
+      "project": "external/grpc-grpc",
+      "commit": "a7112f326a9df61597d1bfdbdad7ad9ef3f764b7",
+      "relative": "external/grpc-grpc/third_party/xxhash/Android.bp",
+      "git_blob": "848bbe559fc4487d5b20a5185e9a9a2f431fc54d",
+      "bytes": 601,
+      "sha256": "bdc907cccd9e933a3539e122bf087eda7f46f578a8eeff14da27fb5bcf5d588b",
+      "fixture": "fixtures/external__grpc-grpc__third_party__xxhash__Android.bp"
+    },
+    {
+      "project": "external/chromiumos-config",
+      "commit": "0f9ee62b2480d7ffa81c1584407813e7a6d930ca",
+      "relative": "external/chromiumos-config/Android.bp",
+      "git_blob": "d20b157429698b2f01527968bd3e2d4f9d9f4c8e",
+      "bytes": 3859,
+      "sha256": "5e3abe55cb6d81eb65cd78acb0f75c5386687b491159a919c71abb7e6ce67402",
+      "fixture": "fixtures/external__chromiumos-config__Android.bp"
+    },
+    {
+      "project": "external/chromiumos-config",
+      "commit": "0f9ee62b2480d7ffa81c1584407813e7a6d930ca",
+      "relative": "external/chromiumos-config/python/Android.bp",
+      "git_blob": "83a5975877ec6b5f6cf9fa08f6512e1115df3e0f",
+      "bytes": 1460,
+      "sha256": "922664a63c44e569c6a2656590f243bccf95fbb1971348164ff1ca57433be85b",
+      "fixture": "fixtures/external__chromiumos-config__python__Android.bp"
+    },
+    {
+      "project": "external/python/snippet-uiautomator",
+      "commit": "5dbbc2e9f543b88b6353b6d66f23dcb071f565a7",
+      "relative": "external/python/snippet-uiautomator/Android.bp",
+      "git_blob": "94feae443c3b5d0d3c4db0640330912ce4c2b147",
+      "bytes": 936,
+      "sha256": "069ba8f528d4c1312043e964cdcf7e7aaae7bb13a0e82a7df3679c8c95afa125",
+      "fixture": "fixtures/external__python__snippet-uiautomator__Android.bp"
+    },
+    {
+      "project": "external/python/snippet-uiautomator",
+      "commit": "5dbbc2e9f543b88b6353b6d66f23dcb071f565a7",
+      "relative": "external/python/snippet-uiautomator/snippet_uiautomator/Android.bp",
+      "git_blob": "4c345b14232cb93efc56687781df6f15d133ec95",
+      "bytes": 1429,
+      "sha256": "b4de85cd296a35c2ad4f0569b9cc6f0c05a240627f75c463b64aa1157b78a0b1",
+      "fixture": "fixtures/external__python__snippet-uiautomator__snippet_uiautomator__Android.bp"
+    },
+    {
+      "project": "external/mobly-snippet-lib",
+      "commit": "fcbe611cef61ea47d55107c6d70ac1b4706a6217",
+      "relative": "external/mobly-snippet-lib/Android.bp",
+      "git_blob": "7ffced24bbf34d4e11c6a8577cdf60a8ccf3e1bd",
+      "bytes": 972,
+      "sha256": "dd6f572562993de221a3efa2c874d5a080c47795dec3b3c8ac0fd9c6c5771ca6",
+      "fixture": "fixtures/external__mobly-snippet-lib__Android.bp"
+    }
+  ],
+  "consumer": {
+    "relative": "platform_testing/libraries/desktop-test-lib/tests/mobly/Android.bp",
+    "bytes": 1257,
+    "sha256": "bf1647bf57fab65f5ff2fa7a82b434bb909880f1e258edebf163f8dea48672f0",
+    "fixture": "fixtures/desktop-test-lib-mobly-consumer.bp"
+  },
+  "source_capacity": {
+    "max_lock_bytes": 1048576,
+    "maximum_sparse_paths": 355,
+    "project_bound": 432,
+    "projects": 430,
+    "sparse_path_bound": 368
+  },
+  "source_capacity_limits_unchanged": true,
+  "normal_original_provider_guard_before_projection": true
+}

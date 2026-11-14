@@ -1,0 +1,803 @@
+{
+  "file_count": 21,
+  "files": [
+    {
+      "bytes": 2957,
+      "git_blob": "790f8b53b9dba4be0f727e9f6408c9d15c9cccfb",
+      "mode": "100644",
+      "relative": "Android.bp",
+      "sha256": "525bfe8fc38ae1e7ca71a56421546c877f98f6c22ac98d7c24b8036de5cf5800",
+      "source_path": "system/libueventd-rs/Android.bp"
+    },
+    {
+      "bytes": 83,
+      "git_blob": "ea3c6110140072e6e1eecff3bd1adf5802d63c26",
+      "mode": "100644",
+      "relative": "OWNERS",
+      "sha256": "40c5fbc4900110eeafdc9c7df3b0bc490e7487b799daa51e901d92d8d74b9f26",
+      "source_path": "system/libueventd-rs/OWNERS"
+    },
+    {
+      "bytes": 388,
+      "git_blob": "121a83edce6d3e4917ca687a4c1d4490bfbb1aa9",
+      "mode": "100644",
+      "relative": "README.md",
+      "sha256": "d4068911b2a0debc81e874bff8cc59e12333b3dec4fed9128aa451bb7f0c0c2b",
+      "source_path": "system/libueventd-rs/README.md"
+    },
+    {
+      "bytes": 1948,
+      "git_blob": "415fcceb681cc3d5258dbfb4b8ce1cde0b1424bc",
+      "mode": "100644",
+      "relative": "examples/devlist.rs",
+      "sha256": "795f628a6ae604e6ce51b0d6ada82eaa9f39d1d0505838affb04f68ae92aca74",
+      "source_path": "system/libueventd-rs/examples/devlist.rs"
+    },
+    {
+      "bytes": 1816,
+      "git_blob": "332a81a09e06c57408feefba58ff3d89774089d9",
+      "mode": "100644",
+      "relative": "examples/iflist.rs",
+      "sha256": "d9b251b2c9cbc3741cda44db39aa048006301fff57ac97b87db8f472254426d2",
+      "source_path": "system/libueventd-rs/examples/iflist.rs"
+    },
+    {
+      "bytes": 2271,
+      "git_blob": "b440b0e8deef7f20253841a8dce4dbd8c4480b7e",
+      "mode": "100644",
+      "relative": "examples/ifmonitor.rs",
+      "sha256": "a94f0b3f0ea0af9bdee89f884bbd296ba44a7caf16a660637a4aed7d1dcd9d2a",
+      "source_path": "system/libueventd-rs/examples/ifmonitor.rs"
+    },
+    {
+      "bytes": 1826,
+      "git_blob": "f1c0a538d3e43824226611d7287f7ea96b972194",
+      "mode": "100644",
+      "relative": "examples/kuevent_monitor.rs",
+      "sha256": "01d6211dce924e3e7f5266f2666926f426d0751a3191fdbf93eb7557f94a78f0",
+      "source_path": "system/libueventd-rs/examples/kuevent_monitor.rs"
+    },
+    {
+      "bytes": 1567,
+      "git_blob": "9330d2a074fdc5f88ee11356f0e85ba85f112ffd",
+      "mode": "100644",
+      "relative": "examples/sysfs_monitor.rs",
+      "sha256": "d7149ec812049d017f260a1092e4bd6c797ecd614e11061a6aac41cf0daf748f",
+      "source_path": "system/libueventd-rs/examples/sysfs_monitor.rs"
+    },
+    {
+      "bytes": 93,
+      "git_blob": "cefaa42a3f64a49cc5586c611f65d8996657fc72",
+      "mode": "100644",
+      "relative": "rustfmt.toml",
+      "sha256": "f0fe9298a38b9e5c2ce09aef43e1931f6ae4067b676674ac948d64c6a17e3381",
+      "source_path": "system/libueventd-rs/rustfmt.toml"
+    },
+    {
+      "bytes": 21695,
+      "git_blob": "3c224b6cb8628d02d162ef36374bbd0983b507ef",
+      "mode": "100644",
+      "relative": "src/device.rs",
+      "sha256": "5f920ef356f2267e9e9500ab29628b0d21c47ec78a62641ba3cd8ab945aa844d",
+      "source_path": "system/libueventd-rs/src/device.rs"
+    },
+    {
+      "bytes": 855,
+      "git_blob": "ef9481b5f980b0411f1f5c50908cf2d60ad41480",
+      "mode": "100644",
+      "relative": "src/device_node.rs",
+      "sha256": "4f0c33acbd2c5f284e4e898fa845720113700fb6d73e8ed9abe584f90d904621",
+      "source_path": "system/libueventd-rs/src/device_node.rs"
+    },
+    {
+      "bytes": 5775,
+      "git_blob": "ff9e819be199c85f9c96a55757c1e04cfab1bab8",
+      "mode": "100644",
+      "relative": "src/device_node/enumerator.rs",
+      "sha256": "db2c3cb41f89ebcb90987f205c46ff6b8a9a69e931827029b232f6971f80dfea",
+      "source_path": "system/libueventd-rs/src/device_node/enumerator.rs"
+    },
+    {
+      "bytes": 8318,
+      "git_blob": "8977b9ed5de8d6f3315cc91b6cdea6803eda3f96",
+      "mode": "100644",
+      "relative": "src/device_node/watcher.rs",
+      "sha256": "b5e483da675d231e5d35d897212a36ac093d4c46ace62089fcc3ddb040cbc792",
+      "source_path": "system/libueventd-rs/src/device_node/watcher.rs"
+    },
+    {
+      "bytes": 1842,
+      "git_blob": "2d2f42e8fd84db5317b75e43af5442135054f9ed",
+      "mode": "100644",
+      "relative": "src/errors.rs",
+      "sha256": "4154ff8d1e677cdd4df51524efa4ab89513e0b5d492d5b2e9506e18a46e90dca",
+      "source_path": "system/libueventd-rs/src/errors.rs"
+    },
+    {
+      "bytes": 2551,
+      "git_blob": "efea06255bbdaae781c95cd307f3b339b90ea216",
+      "mode": "100644",
+      "relative": "src/event.rs",
+      "sha256": "69b35f28d447466a1cfe8660b83da7b2e2bcba030fc7e7369d25675960d5bbdb",
+      "source_path": "system/libueventd-rs/src/event.rs"
+    },
+    {
+      "bytes": 2055,
+      "git_blob": "7a6e6958e3663c03ebcebb6562331d6082c1b3ba",
+      "mode": "100644",
+      "relative": "src/kuevent_wrappers.rs",
+      "sha256": "8bd455dc5cc41356de6a86a602ec7fadbdeb351d8970fc4c7755a033c62ffc4b",
+      "source_path": "system/libueventd-rs/src/kuevent_wrappers.rs"
+    },
+    {
+      "bytes": 2008,
+      "git_blob": "a9ada85aa91958b3aff17b4cc5503abd5c88ebca",
+      "mode": "100644",
+      "relative": "src/lib.rs",
+      "sha256": "aa424cd8504e7963ecd26a5912b538aec7b81b6e3eb7d7d810899f4ef35146a8",
+      "source_path": "system/libueventd-rs/src/lib.rs"
+    },
+    {
+      "bytes": 1098,
+      "git_blob": "25499ccea22682b0fdae955fb5d2af6bdda45721",
+      "mode": "100644",
+      "relative": "src/libc_wrappers.rs",
+      "sha256": "dd2da9445d52062e079a6799aa4e06fbc7b804dc26665b86bef62aebbf549d27",
+      "source_path": "system/libueventd-rs/src/libc_wrappers.rs"
+    },
+    {
+      "bytes": 2217,
+      "git_blob": "53e823c97e8369fe1622c86917628e5b2a6d0446",
+      "mode": "100644",
+      "relative": "src/mock_sysfs.rs",
+      "sha256": "5c5ea1931bdafc8cbe667187a6ec29721571bfc0a1fb376bdddfe693503ec18b",
+      "source_path": "system/libueventd-rs/src/mock_sysfs.rs"
+    },
+    {
+      "bytes": 10740,
+      "git_blob": "0f4bac0c095f6c6eb0e8be99b013207a677e69a8",
+      "mode": "100644",
+      "relative": "src/net_interface.rs",
+      "sha256": "6d7ddd8dbaf8adde8b24834d8e387abc9940fc28dddb24284d2b0ad855f57c2f",
+      "source_path": "system/libueventd-rs/src/net_interface.rs"
+    },
+    {
+      "bytes": 12888,
+      "git_blob": "7e9379925793810a210b1f473b11c815d7b20cd5",
+      "mode": "100644",
+      "relative": "src/sysfs_watcher.rs",
+      "sha256": "4927adc3fd6feced0c3cde0fab10fb64e7a97f73fde8c85d8658066f851215c8",
+      "source_path": "system/libueventd-rs/src/sysfs_watcher.rs"
+    }
+  ],
+  "full_builds_started": 0,
+  "objects": {
+    "0f4bac0c095f6c6eb0e8be99b013207a677e69a8": {
+      "bytes": 10740,
+      "identity": [
+        2067,
+        3823762,
+        33024,
+        1000,
+        1000,
+        1,
+        10740,
+        1794610132526293740,
+        1794610132526293740
+      ],
+      "oid": "0f4bac0c095f6c6eb0e8be99b013207a677e69a8",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/0f4bac0c095f6c6eb0e8be99b013207a677e69a8",
+      "sha256": "6d7ddd8dbaf8adde8b24834d8e387abc9940fc28dddb24284d2b0ad855f57c2f",
+      "type": "blob"
+    },
+    "121a83edce6d3e4917ca687a4c1d4490bfbb1aa9": {
+      "bytes": 388,
+      "identity": [
+        2067,
+        3823702,
+        33024,
+        1000,
+        1000,
+        1,
+        388,
+        1794610132333299593,
+        1794610132333299593
+      ],
+      "oid": "121a83edce6d3e4917ca687a4c1d4490bfbb1aa9",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/121a83edce6d3e4917ca687a4c1d4490bfbb1aa9",
+      "sha256": "d4068911b2a0debc81e874bff8cc59e12333b3dec4fed9128aa451bb7f0c0c2b",
+      "type": "blob"
+    },
+    "154704397575713076a0e837699d5117838811d7": {
+      "bytes": 444,
+      "identity": [
+        2067,
+        3823726,
+        33024,
+        1000,
+        1000,
+        1,
+        444,
+        1794610132414297136,
+        1794610132414297136
+      ],
+      "oid": "154704397575713076a0e837699d5117838811d7",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/154704397575713076a0e837699d5117838811d7",
+      "sha256": "3b4b215440bebb424b6103623cba68ea754261b0789ceae563a8850e78dafc41",
+      "type": "tree"
+    },
+    "1ae43ca49f9b99defa68e1f6e1d3a46ae0dd11e2": {
+      "bytes": 1106,
+      "identity": [
+        2067,
+        3823684,
+        33024,
+        1000,
+        1000,
+        1,
+        1106,
+        1794610132275301352,
+        1794610132275301352
+      ],
+      "oid": "1ae43ca49f9b99defa68e1f6e1d3a46ae0dd11e2",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/1ae43ca49f9b99defa68e1f6e1d3a46ae0dd11e2",
+      "sha256": "3cf3af0e114191f50b411abfe8b6b957408f533d8d2d04789d0f144422afe9e6",
+      "type": "tree"
+    },
+    "1fec40ffe9c0e0cf0eb0879e232dadd0f8209ed0": {
+      "bytes": 79,
+      "identity": [
+        2067,
+        3823735,
+        33024,
+        1000,
+        1000,
+        1,
+        79,
+        1794610132439296378,
+        1794610132439296378
+      ],
+      "oid": "1fec40ffe9c0e0cf0eb0879e232dadd0f8209ed0",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/1fec40ffe9c0e0cf0eb0879e232dadd0f8209ed0",
+      "sha256": "061a60a39e8fea5cf858c1490d43abd660dbe8dd3cc805c18993c7c787fe4094",
+      "type": "tree"
+    },
+    "25499ccea22682b0fdae955fb5d2af6bdda45721": {
+      "bytes": 1098,
+      "identity": [
+        2067,
+        3823756,
+        33024,
+        1000,
+        1000,
+        1,
+        1098,
+        1794610132510294225,
+        1794610132510294225
+      ],
+      "oid": "25499ccea22682b0fdae955fb5d2af6bdda45721",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/25499ccea22682b0fdae955fb5d2af6bdda45721",
+      "sha256": "dd2da9445d52062e079a6799aa4e06fbc7b804dc26665b86bef62aebbf549d27",
+      "type": "blob"
+    },
+    "28f0bbddc24d56c8ec5a8df5342ac7a292184039": {
+      "bytes": 232,
+      "identity": [
+        2067,
+        3823681,
+        33024,
+        1000,
+        1000,
+        1,
+        232,
+        1794610132266301625,
+        1794610132266301625
+      ],
+      "oid": "28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+      "sha256": "f304ff20d2cb5b04082788e08e0639ee9675f6ad18008ed52b7854e942353af7",
+      "type": "commit"
+    },
+    "2d2f42e8fd84db5317b75e43af5442135054f9ed": {
+      "bytes": 1842,
+      "identity": [
+        2067,
+        3823744,
+        33024,
+        1000,
+        1000,
+        1,
+        1842,
+        1794610132465864258,
+        1794610132465864258
+      ],
+      "oid": "2d2f42e8fd84db5317b75e43af5442135054f9ed",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/2d2f42e8fd84db5317b75e43af5442135054f9ed",
+      "sha256": "4154ff8d1e677cdd4df51524efa4ab89513e0b5d492d5b2e9506e18a46e90dca",
+      "type": "blob"
+    },
+    "332a81a09e06c57408feefba58ff3d89774089d9": {
+      "bytes": 1816,
+      "identity": [
+        2067,
+        3823711,
+        33024,
+        1000,
+        1000,
+        1,
+        1816,
+        1794610132361298744,
+        1794610132361298744
+      ],
+      "oid": "332a81a09e06c57408feefba58ff3d89774089d9",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/332a81a09e06c57408feefba58ff3d89774089d9",
+      "sha256": "d9b251b2c9cbc3741cda44db39aa048006301fff57ac97b87db8f472254426d2",
+      "type": "blob"
+    },
+    "3c224b6cb8628d02d162ef36374bbd0983b507ef": {
+      "bytes": 21695,
+      "identity": [
+        2067,
+        3823729,
+        33024,
+        1000,
+        1000,
+        1,
+        21695,
+        1794610132422296894,
+        1794610132422296894
+      ],
+      "oid": "3c224b6cb8628d02d162ef36374bbd0983b507ef",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/3c224b6cb8628d02d162ef36374bbd0983b507ef",
+      "sha256": "5f920ef356f2267e9e9500ab29628b0d21c47ec78a62641ba3cd8ab945aa844d",
+      "type": "blob"
+    },
+    "415fcceb681cc3d5258dbfb4b8ce1cde0b1424bc": {
+      "bytes": 1948,
+      "identity": [
+        2067,
+        3823708,
+        33024,
+        1000,
+        1000,
+        1,
+        1948,
+        1794610132353298986,
+        1794610132353298986
+      ],
+      "oid": "415fcceb681cc3d5258dbfb4b8ce1cde0b1424bc",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/415fcceb681cc3d5258dbfb4b8ce1cde0b1424bc",
+      "sha256": "795f628a6ae604e6ce51b0d6ada82eaa9f39d1d0505838affb04f68ae92aca74",
+      "type": "blob"
+    },
+    "43f41cd5506656e937d332d60cd725764dfca716": {
+      "bytes": 482,
+      "identity": [
+        2067,
+        3823690,
+        33024,
+        1000,
+        1000,
+        1,
+        482,
+        1794610132295300745,
+        1794610132295300745
+      ],
+      "oid": "43f41cd5506656e937d332d60cd725764dfca716",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/43f41cd5506656e937d332d60cd725764dfca716",
+      "sha256": "336ed00f596571911b4bc972f2badc1b53fee48af8f7c6d7640be23638d112d9",
+      "type": "commit"
+    },
+    "53e823c97e8369fe1622c86917628e5b2a6d0446": {
+      "bytes": 2217,
+      "identity": [
+        2067,
+        3823759,
+        33024,
+        1000,
+        1000,
+        1,
+        2217,
+        1794610132518293982,
+        1794610132518293982
+      ],
+      "oid": "53e823c97e8369fe1622c86917628e5b2a6d0446",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/53e823c97e8369fe1622c86917628e5b2a6d0446",
+      "sha256": "5c5ea1931bdafc8cbe667187a6ec29721571bfc0a1fb376bdddfe693503ec18b",
+      "type": "blob"
+    },
+    "6c05434bb5a1a22895a212eb604e09401fe0f188": {
+      "bytes": 2162,
+      "identity": [
+        2067,
+        3823687,
+        33024,
+        1000,
+        1000,
+        1,
+        2162,
+        1794610132287300988,
+        1794610132287300988
+      ],
+      "oid": "6c05434bb5a1a22895a212eb604e09401fe0f188",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/6c05434bb5a1a22895a212eb604e09401fe0f188",
+      "sha256": "329043e43aa105f1a7802a22f374fc3a07d4b1590037416da79ce42f131e7b86",
+      "type": "tree"
+    },
+    "790f8b53b9dba4be0f727e9f6408c9d15c9cccfb": {
+      "bytes": 2957,
+      "identity": [
+        2067,
+        3823696,
+        33024,
+        1000,
+        1000,
+        1,
+        2957,
+        1794610132313300199,
+        1794610132313300199
+      ],
+      "oid": "790f8b53b9dba4be0f727e9f6408c9d15c9cccfb",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/790f8b53b9dba4be0f727e9f6408c9d15c9cccfb",
+      "sha256": "525bfe8fc38ae1e7ca71a56421546c877f98f6c22ac98d7c24b8036de5cf5800",
+      "type": "blob"
+    },
+    "7a6e6958e3663c03ebcebb6562331d6082c1b3ba": {
+      "bytes": 2055,
+      "identity": [
+        2067,
+        3823750,
+        33024,
+        1000,
+        1000,
+        1,
+        2055,
+        1794610132489294862,
+        1794610132489294862
+      ],
+      "oid": "7a6e6958e3663c03ebcebb6562331d6082c1b3ba",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/7a6e6958e3663c03ebcebb6562331d6082c1b3ba",
+      "sha256": "8bd455dc5cc41356de6a86a602ec7fadbdeb351d8970fc4c7755a033c62ffc4b",
+      "type": "blob"
+    },
+    "7e9379925793810a210b1f473b11c815d7b20cd5": {
+      "bytes": 12888,
+      "identity": [
+        2067,
+        3823765,
+        33024,
+        1000,
+        1000,
+        1,
+        12888,
+        1794610132534293497,
+        1794610132534293497
+      ],
+      "oid": "7e9379925793810a210b1f473b11c815d7b20cd5",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/7e9379925793810a210b1f473b11c815d7b20cd5",
+      "sha256": "4927adc3fd6feced0c3cde0fab10fb64e7a97f73fde8c85d8658066f851215c8",
+      "type": "blob"
+    },
+    "8977b9ed5de8d6f3315cc91b6cdea6803eda3f96": {
+      "bytes": 8318,
+      "identity": [
+        2067,
+        3823741,
+        33024,
+        1000,
+        1000,
+        1,
+        8318,
+        1794610132456295863,
+        1794610132456295863
+      ],
+      "oid": "8977b9ed5de8d6f3315cc91b6cdea6803eda3f96",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/8977b9ed5de8d6f3315cc91b6cdea6803eda3f96",
+      "sha256": "b5e483da675d231e5d35d897212a36ac093d4c46ace62089fcc3ddb040cbc792",
+      "type": "blob"
+    },
+    "9330d2a074fdc5f88ee11356f0e85ba85f112ffd": {
+      "bytes": 1567,
+      "identity": [
+        2067,
+        3823720,
+        33024,
+        1000,
+        1000,
+        1,
+        1567,
+        1794610132392297804,
+        1794610132392297804
+      ],
+      "oid": "9330d2a074fdc5f88ee11356f0e85ba85f112ffd",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/9330d2a074fdc5f88ee11356f0e85ba85f112ffd",
+      "sha256": "d7149ec812049d017f260a1092e4bd6c797ecd614e11061a6aac41cf0daf748f",
+      "type": "blob"
+    },
+    "a9ada85aa91958b3aff17b4cc5503abd5c88ebca": {
+      "bytes": 2008,
+      "identity": [
+        2067,
+        3823753,
+        33024,
+        1000,
+        1000,
+        1,
+        2008,
+        1794610132501294498,
+        1794610132501294498
+      ],
+      "oid": "a9ada85aa91958b3aff17b4cc5503abd5c88ebca",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/a9ada85aa91958b3aff17b4cc5503abd5c88ebca",
+      "sha256": "aa424cd8504e7963ecd26a5912b538aec7b81b6e3eb7d7d810899f4ef35146a8",
+      "type": "blob"
+    },
+    "b0f3707ae77686bb7d363320fabe0175a4f13599": {
+      "bytes": 214,
+      "identity": [
+        2067,
+        3823693,
+        33024,
+        1000,
+        1000,
+        1,
+        214,
+        1794610132304300472,
+        1794610132304300472
+      ],
+      "oid": "b0f3707ae77686bb7d363320fabe0175a4f13599",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/b0f3707ae77686bb7d363320fabe0175a4f13599",
+      "sha256": "828c64a5b39597af8d2c301db50f5e4fdaeea4f8fba39fc7e94386dcde887adb",
+      "type": "tree"
+    },
+    "b440b0e8deef7f20253841a8dce4dbd8c4480b7e": {
+      "bytes": 2271,
+      "identity": [
+        2067,
+        3823714,
+        33024,
+        1000,
+        1000,
+        1,
+        2271,
+        1794610132370808075,
+        1794610132370808075
+      ],
+      "oid": "b440b0e8deef7f20253841a8dce4dbd8c4480b7e",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/b440b0e8deef7f20253841a8dce4dbd8c4480b7e",
+      "sha256": "a94f0b3f0ea0af9bdee89f884bbd296ba44a7caf16a660637a4aed7d1dcd9d2a",
+      "type": "blob"
+    },
+    "c4e23c5829e2a49887199af53b1528513a8f7889": {
+      "bytes": 205,
+      "identity": [
+        2067,
+        3823705,
+        33024,
+        1000,
+        1000,
+        1,
+        205,
+        1794610132344299259,
+        1794610132344299259
+      ],
+      "oid": "c4e23c5829e2a49887199af53b1528513a8f7889",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/c4e23c5829e2a49887199af53b1528513a8f7889",
+      "sha256": "b0293b33807d8b0243fad7c5ea56d691ef4d0f2a118733e501876a1ae902d551",
+      "type": "tree"
+    },
+    "cefaa42a3f64a49cc5586c611f65d8996657fc72": {
+      "bytes": 93,
+      "identity": [
+        2067,
+        3823723,
+        33024,
+        1000,
+        1000,
+        1,
+        93,
+        1794610132404297440,
+        1794610132404297440
+      ],
+      "oid": "cefaa42a3f64a49cc5586c611f65d8996657fc72",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/cefaa42a3f64a49cc5586c611f65d8996657fc72",
+      "sha256": "f0fe9298a38b9e5c2ce09aef43e1931f6ae4067b676674ac948d64c6a17e3381",
+      "type": "blob"
+    },
+    "ea3c6110140072e6e1eecff3bd1adf5802d63c26": {
+      "bytes": 83,
+      "identity": [
+        2067,
+        3823699,
+        33024,
+        1000,
+        1000,
+        1,
+        83,
+        1794610132323299896,
+        1794610132323299896
+      ],
+      "oid": "ea3c6110140072e6e1eecff3bd1adf5802d63c26",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/ea3c6110140072e6e1eecff3bd1adf5802d63c26",
+      "sha256": "40c5fbc4900110eeafdc9c7df3b0bc490e7487b799daa51e901d92d8d74b9f26",
+      "type": "blob"
+    },
+    "ef9481b5f980b0411f1f5c50908cf2d60ad41480": {
+      "bytes": 855,
+      "identity": [
+        2067,
+        3823732,
+        33024,
+        1000,
+        1000,
+        1,
+        855,
+        1794610132431296621,
+        1794610132431296621
+      ],
+      "oid": "ef9481b5f980b0411f1f5c50908cf2d60ad41480",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/ef9481b5f980b0411f1f5c50908cf2d60ad41480",
+      "sha256": "4f0c33acbd2c5f284e4e898fa845720113700fb6d73e8ed9abe584f90d904621",
+      "type": "blob"
+    },
+    "efea06255bbdaae781c95cd307f3b339b90ea216": {
+      "bytes": 2551,
+      "identity": [
+        2067,
+        3823747,
+        33024,
+        1000,
+        1000,
+        1,
+        2551,
+        1794610132476295256,
+        1794610132476295256
+      ],
+      "oid": "efea06255bbdaae781c95cd307f3b339b90ea216",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/efea06255bbdaae781c95cd307f3b339b90ea216",
+      "sha256": "69b35f28d447466a1cfe8660b83da7b2e2bcba030fc7e7369d25675960d5bbdb",
+      "type": "blob"
+    },
+    "f1c0a538d3e43824226611d7287f7ea96b972194": {
+      "bytes": 1826,
+      "identity": [
+        2067,
+        3823717,
+        33024,
+        1000,
+        1000,
+        1,
+        1826,
+        1794610132380298168,
+        1794610132380298168
+      ],
+      "oid": "f1c0a538d3e43824226611d7287f7ea96b972194",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/f1c0a538d3e43824226611d7287f7ea96b972194",
+      "sha256": "01d6211dce924e3e7f5266f2666926f426d0751a3191fdbf93eb7557f94a78f0",
+      "type": "blob"
+    },
+    "ff9e819be199c85f9c96a55757c1e04cfab1bab8": {
+      "bytes": 5775,
+      "identity": [
+        2067,
+        3823738,
+        33024,
+        1000,
+        1000,
+        1,
+        5775,
+        1794610132447296135,
+        1794610132447296135
+      ],
+      "oid": "ff9e819be199c85f9c96a55757c1e04cfab1bab8",
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/objects/ff9e819be199c85f9c96a55757c1e04cfab1bab8",
+      "sha256": "db2c3cb41f89ebcb90987f205c46ff6b8a9a69e931827029b232f6971f80dfea",
+      "type": "blob"
+    }
+  },
+  "original_business_error_stdout": {
+    "bytes": 11396,
+    "identity": [
+      2067,
+      3719742,
+      33188,
+      1000,
+      1000,
+      1,
+      11396,
+      1794609795650564160,
+      1794609795650564160
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/vendor-policy537-libexif-bundle-20261113-e2a3-r2/commands/normal-full-vendor-policy.stdout",
+    "sha256": "02cbef41b147b31b8092b8f06227d8237bd2b653c20850ce0abd60a326028406"
+  },
+  "original_consumer": {
+    "bytes": 3512,
+    "identity": [
+      2067,
+      4742983,
+      33152,
+      1000,
+      1000,
+      1,
+      3512,
+      1793913416542039947,
+      1794163397347567402
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/frameworks/native/services/usbauthservice/Android.bp",
+    "sha256": "c78d5e5f965cc36493a028e460d57468a77ec054b14bfb1d29a750e9882c434b"
+  },
+  "original_failed_normal9db": {
+    "bytes": 3555,
+    "identity": [
+      2067,
+      3719842,
+      33024,
+      1000,
+      1000,
+      1,
+      3555,
+      1794609796046552009,
+      1794609796046552009
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/vendor-policy537-libexif-bundle-20261113-e2a3-r2/commands/normal-full-vendor-policy.json",
+    "sha256": "d3d632547da8103719382e9a5568bc882ac1809d31364a4669be41bf54fbbd1c"
+  },
+  "original_gitlink": {
+    "mode": "160000",
+    "name": "libueventd-rs",
+    "oid": "43f41cd5506656e937d332d60cd725764dfca716"
+  },
+  "preserved_consumer": {
+    "bytes": 3512,
+    "identity": [
+      2067,
+      3823766,
+      33024,
+      1000,
+      1000,
+      1,
+      3512,
+      1794610132536293436,
+      1794610132536293436
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/audio538-libueventd-originals-20261113-e2a3-r1/original-usbauthservice.Android.bp",
+    "sha256": "c78d5e5f965cc36493a028e460d57468a77ec054b14bfb1d29a750e9882c434b"
+  },
+  "project": {
+    "commit": "43f41cd5506656e937d332d60cd725764dfca716",
+    "name": "platform/system/libueventd-rs",
+    "path": "system/libueventd-rs",
+    "sparse_paths": [
+      "examples",
+      "src"
+    ]
+  },
+  "project_root_tree": "b0f3707ae77686bb7d363320fabe0175a4f13599",
+  "runtime_qualified": false,
+  "schema": "audio538-original-libueventd-complete-same-SP-provider-v1",
+  "selected_original_bytes": 84991,
+  "selected_trees": [
+    {
+      "oid": "b0f3707ae77686bb7d363320fabe0175a4f13599",
+      "path": ""
+    },
+    {
+      "oid": "c4e23c5829e2a49887199af53b1528513a8f7889",
+      "path": "examples"
+    },
+    {
+      "oid": "154704397575713076a0e837699d5117838811d7",
+      "path": "src"
+    },
+    {
+      "oid": "1fec40ffe9c0e0cf0eb0879e232dadd0f8209ed0",
+      "path": "src/device_node"
+    }
+  ],
+  "shared_source_writes": 0,
+  "source_writers_started": 0,
+  "superproject": "28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+  "superproject_root_tree": "1ae43ca49f9b99defa68e1f6e1d3a46ae0dd11e2",
+  "superproject_system_tree": "6c05434bb5a1a22895a212eb604e09401fe0f188"
+}

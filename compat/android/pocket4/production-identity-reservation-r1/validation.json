@@ -1,0 +1,153 @@
+{
+  "Android_runtime_qualified": false,
+  "base_commit": "fcb5afd7347b13f32c96daa073a63a048e95ecb2",
+  "changed_source_files": [
+    {
+      "bytes": 51845,
+      "path": "Cargo.lock",
+      "sha256": "ca5300907a8e609ac0340d016ecfe7b4292bf45fe5ab3cbe8dd0c013f12a2285"
+    },
+    {
+      "bytes": 6178,
+      "path": "docs/threat-model-v1.md",
+      "sha256": "02f9aa4531344f2d39c59a939b5a469be599e05b3140a95efde3e0524d46016f"
+    },
+    {
+      "bytes": 866,
+      "path": "runtime/droidloom-supervisor/Cargo.toml",
+      "sha256": "f2784bd67f725f21e3e3029d1f1b34114f533a82a81ab8dc448b8e59d50c003f"
+    },
+    {
+      "bytes": 35813,
+      "path": "runtime/droidloom-supervisor/src/lib.rs",
+      "sha256": "2ffbdfabad12878deb12f069f509fdd654058ad7deeac60eae77926dee18c5a4"
+    },
+    {
+      "bytes": 3837,
+      "path": "runtime/droidloom-supervisor/src/main.rs",
+      "sha256": "9767d6cdacb7fe673c6e95048c7e680995151dc39dad8aaee403114108bf7981"
+    },
+    {
+      "bytes": 48291,
+      "path": "runtime/droidloom-supervisor/src/production_identity.rs",
+      "sha256": "2e9e21cc0c7d4aa60c7c43d310761006642876e33e93d14ec6eb3afad303aabb"
+    }
+  ],
+  "configured_authority_only": true,
+  "full_effective_NSS_inventory_qualified": false,
+  "host_account_or_grant_mutations": 0,
+  "host_installed": false,
+  "host_readonly_rejection": {
+    "account_and_subordinate_grant_inputs_unchanged": true,
+    "actual_cli_binary_root_sealed_from_exact_normal_output": true,
+    "actual_pidfd_exited": true,
+    "child_exit_code": 1,
+    "child_uid_gid": [
+      1000,
+      1000
+    ],
+    "normal_cargo_two_link_output_fully_enumerated": true,
+    "normal_cli": "identity-inspect --spec <exact-current-cell-spec>",
+    "original_user_data_body_reads": 0,
+    "original_user_data_metadata_unchanged": true,
+    "prior_singleton_observer_rejection_retained": true,
+    "reason": "missing dedicated service account",
+    "registry_absent_before_and_after": true,
+    "result": {
+      "bytes": 5104,
+      "sha256": "4b01ed36bce8c549acffb6cdae5804c76299f8c5f7fc739ba8cfbc084a2b4ae5"
+    }
+  },
+  "live_namespace_ownership_audit_integrated": false,
+  "namespace_mapping_authorized": false,
+  "normal_qualification": {
+    "all_normal_child_exit_codes_zero": true,
+    "all_observed_pidfds_exited": true,
+    "binary": {
+      "bytes": 28067088,
+      "sha256": "ab547537fd62aee89795ccbc3fa866fed4570ff2f64830b4a8b32c1a86510a9b"
+    },
+    "cargo_build_command": "cargo build --locked --offline -j 1 -p droidloom-supervisor --bin droidloom-supervisor",
+    "cargo_test_command": "cargo test --locked --offline -j 1 -p droidloom-supervisor production_identity::tests -- --test-threads=1",
+    "commands": 10,
+    "filtered_test_counts_in_each_binary": [
+      143,
+      0,
+      0,
+      0,
+      2,
+      1,
+      2,
+      4,
+      7
+    ],
+    "profile": "debug",
+    "remaining_session_members": 0,
+    "result": {
+      "bytes": 10971,
+      "sha256": "1a94cfea6c5761a2c8a623fa4ffcbd41029e2055ab97fa937ddc83b7e8630b8d"
+    },
+    "test_names": [
+      "authority_aliases_and_writable_files_are_rejected",
+      "dedicated_group_with_an_explicit_member_is_rejected",
+      "dedicated_primary_group_shared_by_another_account_is_rejected",
+      "duplicate_dedicated_group_name_is_rejected",
+      "exact_name_and_numeric_grants_are_valid_but_never_runtime_authority",
+      "inactive_other_cell_reservation_still_blocks_overlapping_ids",
+      "interrupted_record_is_preserved_and_cannot_be_reclaimed",
+      "lease_symlink_cannot_touch_an_external_file",
+      "live_lease_blocks_reentry_and_drop_preserves_the_reservation",
+      "local_accounts_and_groups_inside_the_range_are_rejected",
+      "malformed_overflow_and_reserved_ids_are_rejected",
+      "missing_dedicated_account_is_not_replaced_by_desktop_authority",
+      "old_reservation_is_never_overwritten_for_an_upgrade",
+      "overlapping_or_duplicate_grants_rejected",
+      "persisted_sentinel_owner_records_are_rejected_and_preserved",
+      "registry_symlink_does_not_redirect_reservation_writes",
+      "sentinel_host_and_service_ids_are_not_configured_authority",
+      "short_grant_rejected_without_creating_a_registry",
+      "stale_authority_fails_before_any_registry_write"
+    ],
+    "tests_failed": 0,
+    "tests_ignored": 0,
+    "tests_passed": 19
+  },
+  "pending": [
+    "Complete effective NSS and live namespace ownership admission",
+    "Owned namespace child and pidfd/proc/ns-bound UID/GID mapping with setgroups preserved",
+    "Initial-user-namespace block/APEX mount broker and data ownership mapping",
+    "Derived graphics, camera and other IPC peer identities",
+    "Seccomp policy and production daemon integration",
+    "Actual Android and application runtime acceptance"
+  ],
+  "production_backend_integrated": false,
+  "production_ready": false,
+  "recovery": {
+    "fresh_public_capsule_from_exact_remote_source_and_receipts": true,
+    "unavailable_unpublished_scratch_manifest_claimed_recovered": false
+  },
+  "review_correction": {
+    "NSS_selected_group_members_checked": true,
+    "preserve_and_reject_reserved_sentinel_reservation_records": true,
+    "reject_duplicate_service_group_names": true,
+    "reject_explicit_service_group_members": true,
+    "reject_shared_service_primary_group": true,
+    "reject_zero_and_reserved_sentinel_host_and_service_owners": true
+  },
+  "runtime_acceptance_added": 0,
+  "schema": "production-identity-prerequisite-sanitized-validation-v1",
+  "source_commit": "b4dc3b49ce29e706efca0ba5a7c775864d9b54b8",
+  "source_commit_qualification": {
+    "isolated_worktree_clean_after": true,
+    "normal_commit": true,
+    "normal_git_commands": 13,
+    "normal_reverse_patch_check": true,
+    "original_source_unchanged": true,
+    "result": {
+      "bytes": 12619,
+      "sha256": "c4a4e71383525d94c796fdd18d5c2a5f71f45bdf3f879f93c16f1deecb5632fa"
+    },
+    "upstream_pushes": 0
+  },
+  "source_tree": "9e4bdba177ba081789f45a97163a8f113b5c712b"
+}

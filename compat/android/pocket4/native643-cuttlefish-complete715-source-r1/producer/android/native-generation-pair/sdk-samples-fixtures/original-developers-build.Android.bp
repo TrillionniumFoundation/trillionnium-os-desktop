@@ -1,0 +1,286 @@
+//
+// Copyright (C) 2025 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+genrule {
+    name: "sdk_repo_sample_new_zip",
+    tools: [
+        "sdk_clean",
+        "soong_zip",
+    ],
+    out: ["sdk_repo_sample_new.zip"],
+    srcs: [
+        "prebuilts/gradle/BasicAndroidKeyStore/**/*",
+        "prebuilts/gradle/BasicSyncAdapter/**/*",
+        "prebuilts/gradle/NetworkConnect/**/*",
+        "prebuilts/gradle/BasicNetworking/**/*",
+        "prebuilts/gradle/BluetoothLeGatt/**/*",
+        "prebuilts/gradle/AppRestrictions/**/*",
+        "prebuilts/gradle/BasicContactables/**/*",
+        "prebuilts/gradle/StorageClient/**/*",
+        "prebuilts/gradle/StorageProvider/**/*",
+        "prebuilts/gradle/BasicGestureDetect/**/*",
+        "prebuilts/gradle/BasicMultitouch/**/*",
+        "prebuilts/gradle/ActivityInstrumentation/**/*",
+        "prebuilts/gradle/MediaRecorder/**/*",
+        "prebuilts/gradle/BasicMediaRouter/**/*",
+        "prebuilts/gradle/BasicMediaDecoder/**/*",
+        "prebuilts/gradle/BorderlessButtons/**/*",
+        "prebuilts/gradle/BasicAccessibility/**/*",
+        "prebuilts/gradle/CustomChoiceList/**/*",
+        "prebuilts/gradle/TextSwitcher/**/*",
+        "prebuilts/gradle/HorizontalPaging/**/*",
+        "prebuilts/gradle/ActionBarCompat-Styled/**/*",
+        "prebuilts/gradle/ActionBarCompat-ListPopupMenu/**/*",
+        "prebuilts/gradle/ShareActionProvider/**/*",
+        "prebuilts/gradle/ActionBarCompat-Basic/**/*",
+        "prebuilts/gradle/BasicNotifications/**/*",
+        "prebuilts/gradle/CustomNotifications/**/*",
+        "prebuilts/gradle/DoneBar/**/*",
+        "prebuilts/gradle/BasicImmersiveMode/**/*",
+        "prebuilts/gradle/AdvancedImmersiveMode/**/*",
+        "prebuilts/gradle/ImmersiveMode/**/*",
+        "prebuilts/gradle/RepeatingAlarm/**/*",
+        "prebuilts/gradle/TextLinkify/**/*",
+        "prebuilts/gradle/RenderScriptIntrinsic/**/*",
+        "prebuilts/gradle/SlidingTabsBasic/**/*",
+        "prebuilts/gradle/SlidingTabsColors/**/*",
+        "prebuilts/gradle/CardEmulation/**/*",
+        "prebuilts/gradle/CardReader/**/*",
+        "prebuilts/gradle/BatchStepSensor/**/*",
+        "prebuilts/gradle/DisplayingBitmaps/**/*",
+        "prebuilts/gradle/BasicTransition/**/*",
+        "prebuilts/gradle/CustomTransition/**/*",
+        "prebuilts/gradle/SwipeRefreshLayoutBasic/**/*",
+        "prebuilts/gradle/SwipeRefreshListFragment/**/*",
+        "prebuilts/gradle/SwipeRefreshMultipleViews/**/*",
+        "prebuilts/gradle/MediaRouter/**/*",
+        "prebuilts/gradle/BluetoothChat/**/*",
+        "prebuilts/gradle/MediaEffects/**/*",
+        "prebuilts/gradle/BasicManagedProfile/**/*",
+        "prebuilts/gradle/Camera2Basic/**/*",
+        "prebuilts/gradle/Camera2Video/**/*",
+        "prebuilts/gradle/ActivitySceneTransitionBasic/**/*",
+        "prebuilts/gradle/NavigationDrawer/**/*",
+        "prebuilts/gradle/ElevationBasic/**/*",
+        "prebuilts/gradle/ElevationDrag/**/*",
+        "prebuilts/gradle/ClippingBasic/**/*",
+        "prebuilts/gradle/JobScheduler/**/*",
+        "prebuilts/gradle/DocumentCentricApps/**/*",
+        "prebuilts/gradle/DocumentCentricRelinquishIdentity/**/*",
+        "prebuilts/gradle/AppRestrictionEnforcer/**/*",
+        "prebuilts/gradle/AppRestrictionSchema/**/*",
+        "prebuilts/gradle/RecyclerView/**/*",
+        "prebuilts/gradle/CardView/**/*",
+        "prebuilts/gradle/LNotifications/**/*",
+        "prebuilts/gradle/DrawableTinting/**/*",
+        "prebuilts/gradle/Interpolator/**/*",
+        "prebuilts/gradle/PdfRendererBasic/**/*",
+        "prebuilts/gradle/FloatingActionButtonBasic/**/*",
+        "prebuilts/gradle/RevealEffectBasic/**/*",
+        "prebuilts/gradle/PermissionRequest/**/*",
+        "prebuilts/gradle/DirectorySelection/**/*",
+        "prebuilts/gradle/AppUsageStatistics/**/*",
+        "prebuilts/gradle/ScreenCapture/**/*",
+        "prebuilts/gradle/NfcProvisioning/**/*",
+        "prebuilts/gradle/DeviceOwner/**/*",
+        "prebuilts/gradle/ConfirmCredential/**/*",
+        "prebuilts/gradle/FingerprintDialog/**/*",
+        "prebuilts/gradle/RuntimePermissions/**/*",
+        "prebuilts/gradle/RuntimePermissionsBasic/**/*",
+        "prebuilts/gradle/ActiveNotifications/**/*",
+        "prebuilts/gradle/Camera2Raw/**/*",
+        "prebuilts/gradle/AutoBackupForApps/**/*",
+        "prebuilts/gradle/DirectShare/**/*",
+        "prebuilts/gradle/MidiScope/**/*",
+        "prebuilts/gradle/MidiSynth/**/*",
+        "prebuilts/gradle/AsymmetricFingerprintDialog/**/*",
+        "prebuilts/gradle/AppShortcuts/**/*",
+        "prebuilts/gradle/CommitContentSampleApp/**/*",
+        "prebuilts/gradle/CommitContentSampleIME/**/*",
+        // androidtv
+        "prebuilts/androidtv/**/*",
+        // wearable
+        "prebuilts/gradle/AgendaData/**/*",
+        "prebuilts/gradle/DataLayer/**/*",
+        "prebuilts/gradle/DelayedConfirmation/**/*",
+        "prebuilts/gradle/ElizaChat/**/*",
+        "prebuilts/gradle/FindMyPhone/**/*",
+        "prebuilts/gradle/Flashlight/**/*",
+        "prebuilts/gradle/Geofencing/**/*",
+        "prebuilts/gradle/GridViewPager/**/*",
+        "prebuilts/gradle/JumpingJack/**/*",
+        "prebuilts/gradle/Notifications/**/*",
+        "prebuilts/gradle/Quiz/**/*",
+        "prebuilts/gradle/RecipeAssistant/**/*",
+        "prebuilts/gradle/RuntimePermissionsWear/**/*",
+        "prebuilts/gradle/SkeletonWearableApp/**/*",
+        "prebuilts/gradle/SpeedTracker/**/*",
+        "prebuilts/gradle/SynchronizedNotifications/**/*",
+        "prebuilts/gradle/Timer/**/*",
+        "prebuilts/gradle/WatchFace/**/*",
+        "prebuilts/gradle/WatchViewStub/**/*",
+        "prebuilts/gradle/WearNotifications/**/*",
+        "prebuilts/gradle/WearSpeakerSample/**/*",
+        "prebuilts/gradle/XYZTouristAttractions/**/*",
+    ],
+    cmd: "mkdir -p $(genDir)/out/admin/ && " +
+        "cp -r developers/build/prebuilts/gradle/AppRestrictionEnforcer                     $(genDir)/out/admin/ && " +
+        "cp -r developers/build/prebuilts/gradle/AppRestrictionSchema                       $(genDir)/out/admin/ && " +
+        "cp -r developers/build/prebuilts/gradle/BasicManagedProfile                        $(genDir)/out/admin/ && " +
+        "cp -r developers/build/prebuilts/gradle/DeviceOwner                                $(genDir)/out/admin/ && " +
+        "mkdir -p $(genDir)/out/background/ && " +
+        "cp -r developers/build/prebuilts/gradle/RepeatingAlarm/                            $(genDir)/out/background/ && " +
+        "cp -r developers/build/prebuilts/gradle/JobScheduler                               $(genDir)/out/background/ && " +
+        "mkdir -p $(genDir)/out/connectivity/ && " +
+        "cp -r developers/build/prebuilts/gradle/BasicSyncAdapter/                          $(genDir)/out/connectivity/ && " +
+        "cp -r developers/build/prebuilts/gradle/NetworkConnect/                            $(genDir)/out/connectivity/ && " +
+        "cp -r developers/build/prebuilts/gradle/BasicNetworking/                           $(genDir)/out/connectivity/ && " +
+        "cp -r developers/build/prebuilts/gradle/BluetoothLeGatt/                           $(genDir)/out/connectivity/ && " +
+        "cp -r developers/build/prebuilts/gradle/CardEmulation                              $(genDir)/out/connectivity/ && " +
+        "cp -r developers/build/prebuilts/gradle/CardReader                                 $(genDir)/out/connectivity/ && " +
+        "mkdir -p $(genDir)/out/connectivity/bluetooth/ && " +
+        "cp -r developers/build/prebuilts/gradle/BluetoothChat                              $(genDir)/out/connectivity/bluetooth/ && " +
+        "mkdir -p $(genDir)/out/content/ && " +
+        "cp -r developers/build/prebuilts/gradle/AppRestrictions/                           $(genDir)/out/content/ && " +
+        "cp -r developers/build/prebuilts/gradle/BasicContactables/                         $(genDir)/out/content/ && " +
+        "cp -r developers/build/prebuilts/gradle/StorageClient/                             $(genDir)/out/content/ && " +
+        "cp -r developers/build/prebuilts/gradle/StorageProvider/                           $(genDir)/out/content/ && " +
+        "cp -r developers/build/prebuilts/gradle/AutoBackupForApps                          $(genDir)/out/content/ && " +
+        "cp -r developers/build/prebuilts/gradle/DirectShare                                $(genDir)/out/content/ && " +
+        "mkdir -p $(genDir)/out/content/documentsUi/ && " +
+        "cp -r developers/build/prebuilts/gradle/DirectorySelection                         $(genDir)/out/content/documentsUi/ && " +
+        "mkdir -p $(genDir)/out/content/webview/ && " +
+        "cp -r developers/build/prebuilts/gradle/PermissionRequest                          $(genDir)/out/content/webview/ && " +
+        "mkdir -p $(genDir)/out/input/ && " +
+        "cp -r developers/build/prebuilts/gradle/BasicGestureDetect/                        $(genDir)/out/input/ && " +
+        "cp -r developers/build/prebuilts/gradle/BasicMultitouch/                           $(genDir)/out/input/ && " +
+        "mkdir -p $(genDir)/out/input/keyboard/ && " +
+        "cp -r developers/build/prebuilts/gradle/CommitContentSampleApp                     $(genDir)/out/input/keyboard/ && " +
+        "cp -r developers/build/prebuilts/gradle/CommitContentSampleIME                     $(genDir)/out/input/keyboard/ && " +
+        "mkdir -p $(genDir)/out/media/ && " +
+        "cp -r developers/build/prebuilts/gradle/MediaRecorder/                             $(genDir)/out/media/ && " +
+        "cp -r developers/build/prebuilts/gradle/BasicMediaRouter/                          $(genDir)/out/media/ && " +
+        "cp -r developers/build/prebuilts/gradle/BasicMediaDecoder/                         $(genDir)/out/media/ && " +
+        "cp -r developers/build/prebuilts/gradle/MediaRouter                                $(genDir)/out/media/ && " +
+        "cp -r developers/build/prebuilts/gradle/MediaEffects                               $(genDir)/out/media/ && " +
+        "cp -r developers/build/prebuilts/gradle/Camera2Basic                               $(genDir)/out/media/ && " +
+        "cp -r developers/build/prebuilts/gradle/Camera2Video                               $(genDir)/out/media/ && " +
+        "cp -r developers/build/prebuilts/gradle/ScreenCapture                              $(genDir)/out/media/ && " +
+        "cp -r developers/build/prebuilts/gradle/Camera2Raw                                 $(genDir)/out/media/ && " +
+        "cp -r developers/build/prebuilts/gradle/MidiScope                                  $(genDir)/out/media/ && " +
+        "cp -r developers/build/prebuilts/gradle/MidiSynth                                  $(genDir)/out/media/ && " +
+        "mkdir -p $(genDir)/out/nfc/ && " +
+        "cp -r developers/build/prebuilts/gradle/NfcProvisioning                            $(genDir)/out/nfc/ && " +
+        "mkdir -p $(genDir)/out/notification/ && " +
+        "cp -r developers/build/prebuilts/gradle/ActiveNotifications                        $(genDir)/out/notification/ && " +
+        "mkdir -p $(genDir)/out/renderscript/ && " +
+        "cp -r developers/build/prebuilts/gradle/RenderScriptIntrinsic                      $(genDir)/out/renderscript/ && " +
+        "mkdir -p $(genDir)/out/security/ && " +
+        "cp -r developers/build/prebuilts/gradle/ConfirmCredential                          $(genDir)/out/security/ && " +
+        "cp -r developers/build/prebuilts/gradle/FingerprintDialog                          $(genDir)/out/security/ && " +
+        "cp -r developers/build/prebuilts/gradle/AsymmetricFingerprintDialog                $(genDir)/out/security/ && " +
+        "cp -r developers/build/prebuilts/gradle/BasicAndroidKeyStore/                      $(genDir)/out/security/ && " +
+        "mkdir -p $(genDir)/out/sensors/ && " +
+        "cp -r developers/build/prebuilts/gradle/BatchStepSensor                            $(genDir)/out/sensors/ && " +
+        "mkdir -p $(genDir)/out/system/ && " +
+        "cp -r developers/build/prebuilts/gradle/AppUsageStatistics                         $(genDir)/out/system/ && " +
+        "cp -r developers/build/prebuilts/gradle/RuntimePermissions                         $(genDir)/out/system/ && " +
+        "cp -r developers/build/prebuilts/gradle/RuntimePermissionsBasic                    $(genDir)/out/system/ && " +
+        "cp -r developers/build/prebuilts/gradle/AppShortcuts                               $(genDir)/out/system/ && " +
+        "mkdir -p $(genDir)/out/testing/ && " +
+        "cp -r developers/build/prebuilts/gradle/ActivityInstrumentation/                   $(genDir)/out/testing/ && " +
+        "mkdir -p $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/BorderlessButtons/                         $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/BasicAccessibility/                        $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/CustomChoiceList/                          $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/TextSwitcher/                              $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/HorizontalPaging/                          $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/ActionBarCompat-Styled/                    $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/ActionBarCompat-ListPopupMenu/             $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/ShareActionProvider/                       $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/ActionBarCompat-Basic/                     $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/BasicNotifications/                        $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/CustomNotifications/                       $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/DoneBar/                                   $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/BasicImmersiveMode/                        $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/AdvancedImmersiveMode/                     $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/ImmersiveMode/                             $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/TextLinkify/                               $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/SlidingTabsBasic                           $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/SlidingTabsColors                          $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/DisplayingBitmaps                          $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/BasicTransition                            $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/CustomTransition                           $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/SwipeRefreshLayoutBasic                    $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/SwipeRefreshListFragment                   $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/SwipeRefreshMultipleViews                  $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/DrawableTinting                            $(genDir)/out/ui/ && " +
+        "cp -r developers/build/prebuilts/gradle/Interpolator                               $(genDir)/out/ui/ && " +
+        "mkdir -p $(genDir)/out/ui/activityscenetransition/ && " +
+        "cp -r developers/build/prebuilts/gradle/ActivitySceneTransitionBasic               $(genDir)/out/ui/activityscenetransition/ && " +
+        "mkdir -p $(genDir)/out/ui/activitytasks/ && " +
+        "cp -r developers/build/prebuilts/gradle/DocumentCentricApps                        $(genDir)/out/ui/activitytasks/ && " +
+        "cp -r developers/build/prebuilts/gradle/DocumentCentricRelinquishIdentity          $(genDir)/out/ui/activitytasks/ && " +
+        "mkdir -p $(genDir)/out/ui/graphics/ && " +
+        "cp -r developers/build/prebuilts/gradle/PdfRendererBasic                           $(genDir)/out/ui/graphics/ && " +
+        "mkdir -p $(genDir)/out/ui/notifications/ && " +
+        "cp -r developers/build/prebuilts/gradle/LNotifications                             $(genDir)/out/ui/notifications/ && " +
+        "mkdir -p $(genDir)/out/ui/views/ && " +
+        "cp -r developers/build/prebuilts/gradle/NavigationDrawer                           $(genDir)/out/ui/views/ && " +
+        "cp -r developers/build/prebuilts/gradle/RecyclerView                               $(genDir)/out/ui/views/ && " +
+        "cp -r developers/build/prebuilts/gradle/CardView                                   $(genDir)/out/ui/views/ && " +
+        "mkdir -p $(genDir)/out/ui/views/Clipping/ && " +
+        "cp -r developers/build/prebuilts/gradle/ClippingBasic                              $(genDir)/out/ui/views/Clipping/ && " +
+        "mkdir -p $(genDir)/out/ui/views/Elevation/ && " +
+        "cp -r developers/build/prebuilts/gradle/ElevationBasic                             $(genDir)/out/ui/views/Elevation/ && " +
+        "cp -r developers/build/prebuilts/gradle/ElevationDrag                              $(genDir)/out/ui/views/Elevation/ && " +
+        "mkdir -p $(genDir)/out/ui/views/FloatingActionButton/ && " +
+        "cp -r developers/build/prebuilts/gradle/FloatingActionButtonBasic                  $(genDir)/out/ui/views/FloatingActionButton/ && " +
+        "mkdir -p $(genDir)/out/ui/views/RevealEffect/ && " +
+        "cp -r developers/build/prebuilts/gradle/RevealEffectBasic                          $(genDir)/out/ui/views/RevealEffect/ && " +
+        // androidtv
+        "mkdir -p $(genDir)/out/androidtv/ && " +
+        "cp -r developers/build/prebuilts/androidtv                           $(genDir)/out/ && " +
+        // wearable
+        "mkdir -p $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/AgendaData                    $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/DataLayer                     $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/DelayedConfirmation           $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/ElizaChat                     $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/FindMyPhone                   $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/Flashlight                    $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/Geofencing                    $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/GridViewPager                 $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/JumpingJack                   $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/Notifications                 $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/Quiz                          $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/RecipeAssistant               $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/RuntimePermissionsWear        $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/SkeletonWearableApp           $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/SpeedTracker                  $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/SynchronizedNotifications     $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/Timer                         $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/WatchFace                     $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/WatchViewStub                 $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/WearNotifications             $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/WearSpeakerSample             $(genDir)/out/wearable/ && " +
+        "cp -r developers/build/prebuilts/gradle/XYZTouristAttractions         $(genDir)/out/wearable/ && " +
+        "$(location sdk_clean) $(genDir)/out/ && " +
+        "$(location soong_zip) -o $(out) -C $(genDir)/out -D $(genDir)/out",
+}

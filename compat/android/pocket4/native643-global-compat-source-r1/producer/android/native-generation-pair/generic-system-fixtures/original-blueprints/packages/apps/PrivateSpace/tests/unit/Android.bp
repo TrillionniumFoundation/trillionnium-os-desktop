@@ -1,0 +1,44 @@
+package {
+    // See: http://go/android-license-faq
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+android_test {
+    name: "PrivateSpaceTests",
+    certificate: "platform",
+    sdk_version: "test_current",
+    srcs: [
+        "src/**/*.kt",
+    ],
+    defaults: [
+        // For ExtendedMockito dependencies.
+        "modules-utils-extended-mockito-rule-defaults",
+    ],
+    static_libs: [
+        "android.multiuser.flags-aconfig-java",
+        "androidx.compose.ui_ui-test-junit4",
+        "androidx.compose.ui_ui-test-manifest",
+        "androidx.compose.runtime_runtime",
+        "androidx.test.core",
+        "androidx.test.espresso.intents",
+        "androidx.test.ext.junit",
+        "androidx.test.ext.truth",
+        "androidx.test.rules",
+        "androidx.test.runner",
+        "bedstead",
+        "flag-junit",
+        "kotlin-test",
+        "kotlinx_coroutines_test",
+        "mockito-target-extended-minus-junit4",
+        "mockito-kotlin2",
+        "platform-test-annotations",
+        "PrivateSpaceLibrary",
+        "StatsdTestUtils",
+    ],
+    associates: [
+        "PrivateSpaceLibrary",
+    ],
+    test_suites: [
+        "general-tests",
+    ],
+}

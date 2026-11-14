@@ -1,0 +1,125 @@
+{
+  "acceptance_pending": [
+    "actual eight controls passed with not_run empty",
+    "exact source and packet binding",
+    "final ECHILD, descriptor set and original subreaper state",
+    "same-cgroup final peak/event and limit validation",
+    "actual manager readback and own-unit gone",
+    "complete durable launch/terminal evidence"
+  ],
+  "accepted_actual_host_qualification": false,
+  "actual_host_controls_run": null,
+  "exact_scope": {
+    "cgroup": "/system.slice/p4-camera-r4-decoder-host-347ef2-20261108-r1.service",
+    "root": "/home/alex/work/pocket4-camera-r4-decoder-host-347ef2-20261108-r1",
+    "unit": "p4-camera-r4-decoder-host-347ef2-20261108-r1.service"
+  },
+  "live_H_status_as_reported_by_parent": {
+    "job_id": "1a1bb5e84bf-13c47-224",
+    "launch_state": "launch_unknown",
+    "new_launch_or_cleanup_authorized_to_reviewer": false,
+    "provenance": "parent message only; this reviewer did not access H or independently observe launch/terminal",
+    "reconcile_owner": "/root",
+    "same_key_retry": "reused status_unavailable"
+  },
+  "observed_utc": "2026-11-08T13:42:48.672279+00:00",
+  "previous_review": {
+    "bytes": 5395,
+    "path": "/workspace/scratch/347ef2dfe9ad/camera-decoder-host-controller-peer-review/review.json",
+    "sha256": "0e56af4a19c241dcb620935082735b265a9350f194a274625409589f7bd4ceb0"
+  },
+  "readback_review": {
+    "duration_parser": "nonempty finite integer tokens using us/ms/s/min/h; exact summed microseconds 90000000/10000000/10000000 required",
+    "failure_policy": "missing, repeated, malformed or mismatching property cannot grant manager_ok; raw bytes remain retained",
+    "method": "fixed read-only systemctl show of this exact unit in ExecStartPre, before the decoder controller main",
+    "other_values": {
+      "ControlGroup": "exact own cgroup",
+      "InvocationID": "exactly 32 lowercase hexadecimal characters",
+      "KillMode": "control-group",
+      "NoNewPrivileges": "yes"
+    },
+    "previous_readback_gap": "resolved in the final source; actual observed manager values for the live action are still unknown to this reviewer",
+    "raw_evidence": "systemd-run.stdout and systemd-run.stderr are retained before strict property parsing",
+    "unique_fields": [
+      "RuntimeMaxUSec",
+      "TimeoutStartUSec",
+      "TimeoutStopUSec",
+      "KillMode",
+      "NoNewPrivileges",
+      "InvocationID",
+      "ControlGroup"
+    ]
+  },
+  "retirement_and_result_rules": [
+    {
+      "classification": "outer launch may be complete; actual eight-control receipt and final idle/resource gates must still match the exact sources; no runtime/whole-app qualification",
+      "condition": "client returncode 0 AND exact unit gone AND manager_ok"
+    },
+    {
+      "classification": "known failed host action with observed own-unit retirement; not success",
+      "condition": "client returncode nonzero AND own unit gone confirmed"
+    },
+    {
+      "classification": "execution failure observed, retirement remains unknown; do not infer retirement or retry",
+      "condition": "client nonzero AND own unit not confirmed gone"
+    },
+    {
+      "classification": "UNKNOWN_UNIT_RETIREMENT_RECONCILE_WITHOUT_RESTART",
+      "condition": "client returncode 0 but unit gone not confirmed"
+    },
+    {
+      "classification": "HOST_UNIT_CONSTRAINT_READBACK_NOT_QUALIFIED; nonzero outer result",
+      "condition": "client returncode 0 and unit gone confirmed but manager properties fail"
+    },
+    {
+      "classification": "partial raw preserved; UNKNOWN_CLIENT_TIMEOUT_RECONCILE_THIS_UNIT_DO_NOT_RESTART; None returncode cannot grant success",
+      "condition": "systemd client TimeoutExpired"
+    },
+    {
+      "classification": "execution status unknown; source review, elapsed time and reused request are not success or known retirement",
+      "condition": "H launch_unknown/status_unavailable with no independently reconciled terminal"
+    }
+  ],
+  "reviewed_stager": {
+    "bytes": 10896,
+    "path": "/workspace/scratch/347ef2dfe9ad/stage_run_camera_r4_host.py",
+    "sha256": "d30514804dea4f084c4911e553ca2c25c35137017dd5dc2bdfdabf70c572a505"
+  },
+  "reviewer_actions": {
+    "H_calls": 0,
+    "Main_or_Android_accesses": 0,
+    "controller_scripts_executed": 0,
+    "deletions": 0,
+    "remote_jobs_started": 0,
+    "root_tests_executed": 0,
+    "source_modifications": 0
+  },
+  "reviewer_scope": "local frozen-source read-only review; no H, script execution, root qualification, cleanup, cgroup or systemctl operations",
+  "runtime_qualified": false,
+  "schema": "independent-camera-host-final-stager-delta-review-v1",
+  "source_decision": "No additional source execution blocker identified in the final readback delta. Source approval is not actual launch or host qualification.",
+  "time_boundary": {
+    "controller_cooperative_seconds": 65,
+    "interpretation": "Each stage is finite; client or H timeout is not proof that the owned service or its processes retired. Own-unit terminal evidence remains mandatory.",
+    "outer_H_seconds": {
+      "provenance": "parent-reported launch envelope, not independently queried",
+      "value": 200
+    },
+    "post_unit_query_seconds": 15,
+    "systemd_client_wait_seconds": 125,
+    "systemd_runtime_seconds": 90,
+    "systemd_start_seconds": 10,
+    "systemd_stop_seconds": 10
+  },
+  "unchanged_packet": {
+    "bytes": 2355,
+    "path": "/workspace/scratch/347ef2dfe9ad/audio-runtime-independent-audit/camera-r4-decoder-host-qualification-r1/source-packet.json",
+    "sha256": "21bf3adee748faad01e41b5f6eef47cd602391041658da77bf7cce7b722f2893"
+  },
+  "unchanged_runner": {
+    "bytes": 43675,
+    "path": "/workspace/scratch/347ef2dfe9ad/audio-runtime-independent-audit/camera-r4-decoder-host-qualification-r1/qualify_decoder_host.py",
+    "sha256": "94a12172fccf7026f69a86788b60bb02ce0dc58703ad35dcf4c9c0bd674a46af"
+  },
+  "whole_app_business_accepted": false
+}

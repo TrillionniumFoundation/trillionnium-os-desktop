@@ -1,0 +1,90 @@
+diff --git a/runtime/droidloom-supervisor/src/control.rs b/runtime/droidloom-supervisor/src/control.rs
+--- a/runtime/droidloom-supervisor/src/control.rs
++++ b/runtime/droidloom-supervisor/src/control.rs
+@@ -608,11 +608,11 @@
+         page: application_settings::SettingsPage,
+     ) -> Result<ControlResponse, ControlError> {
+         validate_android_user(expected.user)?;
+-        let active = self.require_active_cell(peer_uid, None)?;
+-        let mut probe = LiveApplicationProbe::new(active)?;
+-        let deadline = probe.deadline;
+-        let observed = application_settings::observe(&mut probe, expected, page, deadline)
+-            .map_err(ControlError::Invalid)?;
++        self.require_active_cell(peer_uid, None)?;
++        // Host authorization only: constructing LiveApplicationProbe would
++        // already query Android properties before the missing-authority gate.
++        let observed =
++            application_settings::observe(expected, page).map_err(ControlError::Invalid)?;
+         let mut response = self.success("Settings creation authority unavailable; candidate observations cannot authorize launch, cleanup or release gates");
+         response.ok = observed.completed_partial();
+         if let Some(error) = &observed.failure {
+diff --git a/runtime/droidloom-supervisor/src/application_settings.rs b/runtime/droidloom-supervisor/src/application_settings.rs
+--- a/runtime/droidloom-supervisor/src/application_settings.rs
++++ b/runtime/droidloom-supervisor/src/application_settings.rs
+@@ -212,10 +212,8 @@
+ }
+ 
+ pub(super) fn observe(
+-    _probe: &mut impl SettingsProbe,
+     _expected: &ApplicationInspection,
+     _page: SettingsPage,
+-    _deadline: Instant,
+ ) -> Result<SettingsObservation, String> {
+     // This is an unconditional code gate, not a config, JSON boolean, ACK, or
+     // task-difference assertion. A future provider must carry real framework
+diff --git a/runtime/droidloom-supervisor/src/application_settings_tests.rs b/runtime/droidloom-supervisor/src/application_settings_tests.rs
+--- a/runtime/droidloom-supervisor/src/application_settings_tests.rs
++++ b/runtime/droidloom-supervisor/src/application_settings_tests.rs
+@@ -586,15 +586,10 @@
+ }
+ 
+ #[test]
+-fn production_settings_entry_blocks_before_any_command_or_action_scope() {
+-    let (mut fake, expected) = fixture(10237);
+-    let error = observe(
+-        &mut fake,
+-        &expected,
+-        SettingsPage::System,
+-        Instant::now() + Duration::from_secs(90),
+-    )
+-    .unwrap_err();
++fn production_settings_admission_cannot_accept_a_declared_identity() {
++    let (_, expected) = fixture(10237);
++    // The production daemon calls this admission before constructing a probe;
++    // a JSON identity cannot grant Android observation or task-creation power.
++    let error = observe(&expected, SettingsPage::System).unwrap_err();
+     assert_eq!(error, FRAMEWORK_AUTHORITY_BLOCKER);
+-    assert!(fake.calls.is_empty());
+-}
++}
+diff --git a/runtime/droidloom-applications/src/runtime_plan.rs b/runtime/droidloom-applications/src/runtime_plan.rs
+--- a/runtime/droidloom-applications/src/runtime_plan.rs
++++ b/runtime/droidloom-applications/src/runtime_plan.rs
+@@ -602,13 +602,10 @@
+                         "Settings page remains blocked; pending scope retained={retained}: {}",
+                         error.unwrap_or_else(|| "incomplete task/window/cleanup evidence".into())
+                     );
+-                    // A retained global scope also forbids later mutating browser
+-                    // entries. Treat this as a sticky selection-level failure.
+-                    if retained {
+-                        fence.transport_failed(&row.reason);
+-                    } else {
+-                        fence.recheck(client.observe_runtime());
+-                    }
++                    // A false retained flag cannot manufacture a settled
++                    // action. Every unsuccessful Settings response stops all
++                    // later mutations; no read-only epoch can reauthorize it.
++                    fence.transport_failed(&row.reason);
+                     return;
+                 }
+             }
+@@ -1000,6 +997,9 @@
+         client.settings_results.push_back(Ok(receipt));
+         let report = dispatch(&plan, &registry, &mut client);
+         assert_eq!(client.settings_calls, [SettingsPage::System]);
++        assert_eq!(client.opens, 0);
++        assert_eq!(client.runtime_calls, 1);
++        assert_eq!(report.blocked_applications, 42);
+         assert_eq!(report.partial_settings_observations, 0);
+         assert_eq!(report.applications[0].status, "blocked");
+         assert_eq!(report.applications[0].settings_observations.len(), 1);

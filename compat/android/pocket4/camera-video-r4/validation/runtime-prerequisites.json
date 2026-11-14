@@ -1,0 +1,34 @@
+{
+  "schema": "camera-r4-seven-source-local-runtime-prerequisites-v1",
+  "python_version": "3.12.3 (main, Jul 15 2026, 23:46:41) [GCC 13.3.0]",
+  "python": "/usr/bin/python3",
+  "python_resolved": "/usr/bin/python3.12",
+  "required_fcntl_constants": {
+    "F_ADD_SEALS": 1033,
+    "F_GET_SEALS": 1034,
+    "F_SEAL_WRITE": 8,
+    "F_SEAL_GROW": 4,
+    "F_SEAL_SHRINK": 2,
+    "F_SEAL_SEAL": 1
+  },
+  "memfd_create": true,
+  "tools": [
+    {
+      "path": "/usr/bin/python3.12",
+      "bytes": 8025024,
+      "sha256": "a92f0f95e883390c7256b2e441484aac06b1002dbe1d924141a77c8d82f96223"
+    },
+    {
+      "path": "/usr/bin/ffmpeg",
+      "bytes": 342488,
+      "sha256": "ed16af623947494a72e284b6eb8ff225f2da22b38b5d5069c2fd4b4ba3384e41"
+    },
+    {
+      "path": "/usr/bin/ffprobe",
+      "bytes": 191888,
+      "sha256": "272f6ebc634a63d9c8b4ca68e964119d980f25154e5aa2c35e5487da48e9a58f"
+    }
+  ],
+  "no_constants_mocked": true,
+  "tests_unmodified_except_exact_host_source_pin_port": true
+}

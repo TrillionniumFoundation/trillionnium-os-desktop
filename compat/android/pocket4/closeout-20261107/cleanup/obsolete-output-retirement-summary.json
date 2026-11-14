@@ -1,0 +1,92 @@
+{
+  "schema": "pocket4-obsolete-output-retirement-summary-v1",
+  "original_inventory": {
+    "planned_roots": 807,
+    "previously_removed_roots": 723,
+    "previously_retained_roots": 84,
+    "newly_removed_roots": 6,
+    "remaining_roots_from_original_inventory": 78
+  },
+  "gallery_outputs": {
+    "job_id": "1a1bb32cc59-13c47-113",
+    "state": "completed",
+    "exit_code": 0,
+    "deleted_roots": 5,
+    "deleted_members": 476,
+    "allocated_bytes_deleted": 2809856,
+    "plan_sha256": "f34716e06ba94d6716ecb3610906bc5e874c6d17f752a662aae859a9821f08a4",
+    "executor_sha256": "45983d7655c0c71a333bffd77cbf05d8c45c6a5b393342c0f2c40b5d034cd672",
+    "receipt": {
+      "path": "/home/alex/work/pocket4-android-final/cleanup/legacy-output-retirement-20261108-c1/apply-result.json",
+      "bytes": 15972,
+      "sha256": "217b3584462a849fbde2d6cdbc993178e4d95de3ca4b2b66f39b63e28a6cab85"
+    },
+    "compact_provenance_sha256": "e3ff24c5426cc6e7ca17b942cfd1405eeab77796a95c4adcc437a1c2bbc391fb",
+    "all_original_and_isolated_paths_absent": true,
+    "protected_unchanged": true,
+    "blocking_references_before_and_after": 0,
+    "initial_launch_failure": {
+      "job_id": "1a1bb242a0a-13c47-cb",
+      "exit_code": 127,
+      "reason": "Worker could not chdir into the root-only directory before sudo; script never ran.",
+      "deletion_performed": false,
+      "correction": "Used accessible /home/alex/work as cwd; permissions and exact plan were unchanged."
+    }
+  },
+  "clock_output": {
+    "job_id": "1a1bb427543-13c47-17f",
+    "state": "completed",
+    "exit_code": 0,
+    "deleted_roots": 1,
+    "deleted_members": 42,
+    "allocated_bytes_deleted": 417792,
+    "plan_sha256": "672a7ff4a6e68a9a4f048091290ef26015e7e46c2ccb6ced550c09e39ca02d04",
+    "executor_sha256": "5ea96566afa03d996012304e454e0ea3b438fe29cfb633a24d7a300d649e19ca",
+    "receipt": {
+      "path": "/home/alex/work/pocket4-android-final/cleanup/legacy-clock-retirement-20261108-c1/apply-result.json",
+      "bytes": 14244,
+      "sha256": "79482777ad5fc761c9a2a09dcb570d9b1a2ada17659b1193b64fa72079dff79b"
+    },
+    "retained_original_source_payloads": 10,
+    "current_canonical_source_pins": 27,
+    "all_original_and_isolated_paths_absent": true,
+    "protected_unchanged": true,
+    "blocking_references_before_and_after": 0
+  },
+  "separately_completed_transport_files": {
+    "deleted_files": 8,
+    "allocated_bytes_deleted": 516096,
+    "receipt_sha256": "bde31d30544d78252e51634e7066e27549d7e6cb9f5e85be421ebe86c7380b17",
+    "part_of_original_807_roots": false
+  },
+  "total_new_allocated_bytes_deleted": 379023360,
+  "excluded_signing_material": "Amazon old build-02 contains private-signing/owned.p12 and password.txt and was excluded. No key or password contents were opened for this classification.",
+  "private_filename_guard": "The five Gallery targets had zero additional PKCS#12/PFX/JKS/keystore/private-signing/password filename matches. An empty filename check is not a general no-secret proof.",
+  "final_cleanup_complete": false,
+  "independent_audio_validation_clone": {
+    "job_id": "1a1bb5b7a10-13c47-211",
+    "state": "completed",
+    "exit_code": 0,
+    "deleted_roots": 1,
+    "deleted_members": 2065,
+    "allocated_unique_inode_bytes_deleted": 375279616,
+    "part_of_original_807_roots": false,
+    "plan_sha256": "3ae0dd287cbce4530687ba2e4c72dfee8fb7898e900bfe83a560be17a5467482",
+    "executor_sha256": "21d930617b726a58eae56339ff5898602c61e0151a2cb18b8dd9de6923039388",
+    "receipt": {
+      "path": "/home/alex/work/pocket4-android-final/cleanup/audio-clone-retirement-review-20261108-c1/apply-result.json",
+      "bytes": 14426,
+      "sha256": "52326e4ec5f2ebaeca78a6d8427822d2554073f769b8fde33c0a496df86d5a14"
+    },
+    "actual_absence_readback": {
+      "bytes": 11847,
+      "sha256": "45e0e64e4d704ed3c379711d9ebe5f778aaea720395f2cfd24b96948fbe91b0f"
+    },
+    "all_original_and_isolated_paths_absent": true,
+    "retained_tracked_source_files": 436,
+    "retained_git_and_current_source_unchanged": true,
+    "protected_unchanged": true,
+    "blocking_or_unattributed_references_before_and_after": 0,
+    "internal_hardlink_groups_closed": 14
+  }
+}

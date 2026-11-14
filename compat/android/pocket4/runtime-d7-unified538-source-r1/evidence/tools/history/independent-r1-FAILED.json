@@ -1,0 +1,28 @@
+{
+  "Android_builds": 0,
+  "Cargo_or_tests_repeated": false,
+  "boot_id": "14f92beb-43c6-4786-839e-b57307ae8048",
+  "errors": [
+    {
+      "message": "",
+      "traceback": "Traceback (most recent call last):\n  File \"/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools334-independent-retirement-r1.py\", line 150, in <module>\n    pinned(row['artifact']['path'],row['artifact'],links=row['artifact']['identity'][5])\n  File \"/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools334-independent-retirement-r1.py\", line 58, in pinned\n    assert stat.S_ISREG(st.st_mode) and st.st_uid==st.st_gid==1000 and st.st_size<=32*1024**2\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+      "type": "AssertionError"
+    }
+  ],
+  "finished_ns": 1794614173527611694,
+  "fixture_published_with_producer": false,
+  "head": "273d1a2b554923b7b53e645560ddbe5999cbde9b",
+  "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+  "memory_peak_bytes": 74088448,
+  "production_ready": false,
+  "reader_cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d75718a0-392-a53.service",
+  "reader_pid": 3749323,
+  "release_binaries_rebuilt": 0,
+  "runtime289_tests_repeated": 0,
+  "runtime_qualified": false,
+  "schema": "runtime-d7-exact1595-tools334-independent-retirement-v1",
+  "shared_AOSP_reads_or_writes": 0,
+  "started_ns": 1794614173245101255,
+  "state": "FAILED",
+  "tree": "cde7467f68d2de89f688431cafd494fed147e247"
+}

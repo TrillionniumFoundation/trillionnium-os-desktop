@@ -1,0 +1,8 @@
+Running as unit: p4-c11-binder-combined-normal-20261109-2840-r1.service; invocation ID: 82fde32fcfb947249e48c7b23cf1e556
+{"name": "deadline-module", "argv": ["/home/alex/.cargo/bin/cargo", "test", "--locked", "--offline", "-j", "1", "-p", "droidloom-supervisor", "--lib", "production_namespace::child::private_binder_ipc::tests", "--", "--test-threads=1"], "exit_code": 0, "expected_summary_found": true}
+{"name": "original-binder-group", "argv": ["/home/alex/.cargo/bin/cargo", "test", "--locked", "--offline", "-j", "1", "-p", "droidloom-supervisor", "--lib", "binder", "--", "--test-threads=1", "--skip", "completed_work_and_owned_retirement_keep_distinct_budgets", "--skip", "late_success_is_rejected_without_repeating_the_completed_operation"], "exit_code": 0, "expected_summary_found": true}
+          Finished with result: success
+Main processes terminated with: code=exited, status=0/SUCCESS
+               Service runtime: 26.310s
+             CPU time consumed: 26.221s
+                   Memory peak: 849M (swap: 0B)

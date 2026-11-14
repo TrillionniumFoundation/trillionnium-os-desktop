@@ -1,0 +1,356 @@
+{
+  "Android_starts": 0,
+  "CVE": "CVE-2026-58876",
+  "actual_binary_verdict": {
+    "bytes": 23880,
+    "host": "pocket4",
+    "path": "/home/alex/work/p4-asb-aac-current-e2a3-r1/SEMANTIC-VERDICT-r1.json",
+    "sha256": "237867cf21bbe4bc6eb40764553676c315e6bf6834143618c20a65137dfe6f29"
+  },
+  "actual_repair_blocker": true,
+  "bug": "A-503543341",
+  "commit": "6b8c6cbab2b747ffc0c39721ca18651cddc8a373",
+  "commit_raw": {
+    "bytes": 2517,
+    "git_blob_sha1": "30a6ab11297e760fabf803a0accb83dbe81188f6",
+    "identity": [
+      16777233,
+      603776463,
+      33152,
+      501,
+      20,
+      1,
+      2517,
+      1794603911033600306,
+      1794603911033600306
+    ],
+    "path": "/Users/qianqi/work/p4-asb-aac-source-e2a3-r1/fix-commit.json",
+    "sha256": "4af34b2f74dd4f5172bcbb381d7aa93e65fa0ce21a8ce2102a3de11b9b60084b"
+  },
+  "created_ns": 1794604827300064000,
+  "exact_four_file_patch": [
+    {
+      "fixed": {
+        "bytes": 2113,
+        "git_blob_sha1": "a217a1c2e8bbaac3960e1aef638a279b49c12012",
+        "identity": [
+          16777233,
+          603781590,
+          33152,
+          501,
+          20,
+          1,
+          2113,
+          1794604733366587864,
+          1794604733366587864
+        ],
+        "path": "/Users/qianqi/work/p4-asb-aac-source-e2a3-r1/module-inputs-r1/fixed-cpp-Android.bp",
+        "sha256": "9d820e211a87fee61bb9449d346b2be0a464b3ba5a723f824e5c02fd37d2bcc9"
+      },
+      "new_git_blob": "a217a1c2e8bbaac3960e1aef638a279b49c12012",
+      "new_mode": 33188,
+      "old_git_blob": "5b0558eff7b665d6fb65f161a286ee09752ed456",
+      "old_mode": 33188,
+      "original": {
+        "bytes": 1636,
+        "git_blob_sha1": "5b0558eff7b665d6fb65f161a286ee09752ed456",
+        "identity": [
+          16777233,
+          603781585,
+          33152,
+          501,
+          20,
+          1,
+          1636,
+          1794604732131276424,
+          1794604732131276424
+        ],
+        "path": "/Users/qianqi/work/p4-asb-aac-source-e2a3-r1/module-inputs-r1/original-cpp-Android.bp",
+        "sha256": "3cdd1f65bb8de19ee91b131aac2e7a290528bcc601d283678f7e7215310bfbbe"
+      },
+      "source_relative_path": "cpp/Android.bp"
+    },
+    {
+      "fixed": {
+        "bytes": 27498,
+        "git_blob_sha1": "155eaeba9ab8248e7e4060ae03f6a98589f62b60",
+        "identity": [
+          16777233,
+          603736293,
+          33152,
+          501,
+          20,
+          1,
+          27498,
+          1794602680008415390,
+          1794602680008415390
+        ],
+        "path": "/Users/qianqi/work/p4-asb-aac-source-e2a3-r1/fixed-psdec.cpp",
+        "sha256": "63d58b903db01bde2c0bf281abb8fbf6d352a2ded8d9893ad9edd7a3cc12dab6"
+      },
+      "new_git_blob": "155eaeba9ab8248e7e4060ae03f6a98589f62b60",
+      "new_mode": 33188,
+      "old_git_blob": "13a21bfbfccbe739312b1d24270c4e60294de7cb",
+      "old_mode": 33188,
+      "original": {
+        "bytes": 27371,
+        "git_blob_sha1": "13a21bfbfccbe739312b1d24270c4e60294de7cb",
+        "identity": [
+          16777233,
+          603736297,
+          33152,
+          501,
+          20,
+          1,
+          27371,
+          1794602681652786703,
+          1794602681652786703
+        ],
+        "path": "/Users/qianqi/work/p4-asb-aac-source-e2a3-r1/original-psdec.cpp",
+        "sha256": "a38554afdf0d02c0388c934be163e56066410a6ce55f512d8c2191588610e987"
+      },
+      "source_relative_path": "cpp/libSBRdec/src/psdec.cpp"
+    },
+    {
+      "fixed": {
+        "bytes": 66018,
+        "git_blob_sha1": "495e412784d08fe2ad56b4fbefe488a66d710af6",
+        "identity": [
+          16777233,
+          603736309,
+          33152,
+          501,
+          20,
+          1,
+          66018,
+          1794602683724672149,
+          1794602683724672149
+        ],
+        "path": "/Users/qianqi/work/p4-asb-aac-source-e2a3-r1/fixed-sbrdecoder.cpp",
+        "sha256": "af68a4e9e589618e59957947d964afaa3f3173244aee03614d9f524e11f4a665"
+      },
+      "new_git_blob": "495e412784d08fe2ad56b4fbefe488a66d710af6",
+      "new_mode": 33188,
+      "old_git_blob": "7718695a86ce16360787ec99c7b749bbcfc821cc",
+      "old_mode": 33188,
+      "original": {
+        "bytes": 65966,
+        "git_blob_sha1": "7718695a86ce16360787ec99c7b749bbcfc821cc",
+        "identity": [
+          16777233,
+          603736314,
+          33152,
+          501,
+          20,
+          1,
+          65966,
+          1794602685713434461,
+          1794602685713434461
+        ],
+        "path": "/Users/qianqi/work/p4-asb-aac-source-e2a3-r1/original-sbrdecoder.cpp",
+        "sha256": "6a0f806599be04f3e658953484f6f2cc7e06c9941cb7b9235d036db8435fb7df"
+      },
+      "source_relative_path": "cpp/libSBRdec/src/sbrdecoder.cpp"
+    },
+    {
+      "fixed": {
+        "bytes": 2170,
+        "git_blob_sha1": "f30da931f7a5f8272c399ecba7efdf1b864cc51d",
+        "identity": [
+          16777233,
+          603781593,
+          33152,
+          501,
+          20,
+          1,
+          2170,
+          1794604733388632676,
+          1794604733388632676
+        ],
+        "path": "/Users/qianqi/work/p4-asb-aac-source-e2a3-r1/module-inputs-r1/fixed-libSBRdec_test.cpp",
+        "sha256": "67c67bdfffe4215f860ac798d6bffd25bdec493597958c49b395de2696c98078"
+      },
+      "new_git_blob": "f30da931f7a5f8272c399ecba7efdf1b864cc51d",
+      "new_mode": 33188,
+      "old_git_blob": "0000000000000000000000000000000000000000",
+      "old_mode": 0,
+      "original": null,
+      "source_relative_path": "cpp/libSBRdec/tests/libSBRdec_test.cpp"
+    }
+  ],
+  "full_patch": {
+    "bytes": 4443,
+    "git_blob_sha1": "8a25f2fdf6bec5add663d663bb5fc77084d0000d",
+    "identity": [
+      16777233,
+      603781595,
+      33152,
+      501,
+      20,
+      1,
+      4443,
+      1794604733406446095,
+      1794604733406446095
+    ],
+    "path": "/Users/qianqi/work/p4-asb-aac-source-e2a3-r1/module-inputs-r1/official-full.diff",
+    "sha256": "ab9f6ad9fc6bc32825ef2c3ae4e88e6aea7e5a1e3c43a379fb9b50665ac3eb7d"
+  },
+  "integration_owner": "root; isolated security producer only; original swcodec and frozen sources unchanged",
+  "limits": [
+    "This packet prepares exact source inputs; it is not a built or installed fix.",
+    "apex_available com.android.bt establishes a permitted build consumer, not proof that this product embeds the same vulnerable code there; all other copies need separate applicability checks.",
+    "Preserve both production changes together; running official host regression does not replace device/APEX/runtime qualification."
+  ],
+  "minimum_original_module_entries": {
+    "consumers": {
+      "actual_original_both_DT_NEEDED_proved": true,
+      "defaults": [
+        "libcodec2_soft-defaults",
+        "libcodec2_soft_sanitize_all-defaults"
+      ],
+      "definition": "frameworks/av/media/codec2/components/aac/Android.bp",
+      "input": {
+        "bytes": 969,
+        "git_blob_sha1": "03b03a9465704c2d1d483ed386c8015e8b87fdfb",
+        "identity": [
+          16777233,
+          603781604,
+          33152,
+          501,
+          20,
+          1,
+          969,
+          1794604734594867121,
+          1794604734594867121
+        ],
+        "path": "/Users/qianqi/work/p4-asb-aac-source-e2a3-r1/module-inputs-r1/original-codec2-aac-Android.bp",
+        "sha256": "5d99d86724d140e617400a6ac6f0b534ad8f16928876ee588bac91b5d6b7c145"
+      },
+      "modules": [
+        "libcodec2_soft_aacdec",
+        "libcodec2_soft_aacenc"
+      ],
+      "original_project_pin": "475269ec44acec82792be6b01fb8e16357d4d2c8",
+      "shared_libs": [
+        "libFraunhoferAAC"
+      ]
+    },
+    "library": {
+      "apex_available": [
+        "//apex_available:platform",
+        "com.android.bt",
+        "com.android.media.swcodec"
+      ],
+      "darwin_enabled": false,
+      "definition": "external/aac/cpp/Android.bp",
+      "host_supported": true,
+      "input": {
+        "bytes": 1636,
+        "git_blob_sha1": "5b0558eff7b665d6fb65f161a286ee09752ed456",
+        "identity": [
+          16777233,
+          603781585,
+          33152,
+          501,
+          20,
+          1,
+          1636,
+          1794604732131276424,
+          1794604732131276424
+        ],
+        "path": "/Users/qianqi/work/p4-asb-aac-source-e2a3-r1/module-inputs-r1/original-cpp-Android.bp",
+        "sha256": "3cdd1f65bb8de19ee91b131aac2e7a290528bcc601d283678f7e7215310bfbbe"
+      },
+      "min_sdk_version": "29",
+      "module": "libFraunhoferAAC",
+      "production_glob": "libSBRdec/src/*.cpp",
+      "sanitize": [
+        "cfi",
+        "unsigned-integer-overflow",
+        "signed-integer-overflow",
+        "bounds"
+      ],
+      "shared_libs": [
+        "liblog"
+      ]
+    },
+    "official_regression": {
+      "CFI": true,
+      "definition": "external/aac/cpp/Android.bp",
+      "include": "libSBRdec/src",
+      "module": "libSBRdec_test",
+      "shared_libs": [
+        "liblog"
+      ],
+      "source": "cpp/libSBRdec/tests/libSBRdec_test.cpp",
+      "static_libs": [
+        "libFraunhoferAAC"
+      ],
+      "test_was_not_run_by_reader": true,
+      "upstream_test_command": "atest libSBRdec_test --host"
+    }
+  },
+  "module_inputs_receipt": {
+    "bytes": 13566,
+    "git_blob_sha1": "4830c16b228200d637e1e7f1a3d7731e9c47f4c9",
+    "identity": [
+      16777233,
+      603781605,
+      33152,
+      501,
+      20,
+      1,
+      13566,
+      1794604734597059610,
+      1794604734597059610
+    ],
+    "path": "/Users/qianqi/work/p4-asb-aac-source-e2a3-r1/module-inputs-r1/RESULT.json",
+    "sha256": "94683ee9e3bb512c08a67ecdc5bbbbba8441e5dfb216a270789bd353dd4cb0cd"
+  },
+  "official_url": "https://android.googlesource.com/platform/external/aac/+/6b8c6cbab2b747ffc0c39721ca18651cddc8a373",
+  "original_APEX_writes": 0,
+  "parent": "41f344ffc0bacea87cac5bb1756bd40761265d1e",
+  "parent_raw": {
+    "bytes": 749,
+    "git_blob_sha1": "3983fed2d4b337d6fc3e64b587deee3e4601d6d8",
+    "identity": [
+      16777233,
+      603781588,
+      33152,
+      501,
+      20,
+      1,
+      749,
+      1794604732175042835,
+      1794604732175042835
+    ],
+    "path": "/Users/qianqi/work/p4-asb-aac-source-e2a3-r1/module-inputs-r1/parent-commit.json",
+    "sha256": "74a368dd80f78a6e9e46ca7d0fabad2e6bd791099651bfbf61c1d31d9093cf3d"
+  },
+  "parent_tree": "37ecf94256501f534d5f055310950263ebe5eeca",
+  "production_ready": false,
+  "raw_patch_gitiles_base64": {
+    "bytes": 5924,
+    "git_blob_sha1": "0a6dcfcb478d2782e9430a403b7c7e67e571186a",
+    "identity": [
+      16777233,
+      603781594,
+      33152,
+      501,
+      20,
+      1,
+      5924,
+      1794604733405948421,
+      1794604733405948421
+    ],
+    "path": "/Users/qianqi/work/p4-asb-aac-source-e2a3-r1/module-inputs-r1/official-full.diff.gitiles-base64",
+    "sha256": "d471f2fda93b32ab0ce3b39b3fe2a554335df2ab17e720f281dfdeed2914e1ee"
+  },
+  "runtime_qualified": false,
+  "schema": "p4-aac-exact-official-security-build-input-packet-v1",
+  "source_frozen_pin": "41f344ffc0bacea87cac5bb1756bd40761265d1e",
+  "source_tree_writes": 0,
+  "state": "EXACT_OFFICIAL_PATCH_AND_STATIC_BINARY_MISSING_READY_FOR_PRIVATE_PRODUCER",
+  "tree": "97d5982c91bf29aef17045093f1796e80af09d20",
+  "whole_CVE_qualified": false
+}

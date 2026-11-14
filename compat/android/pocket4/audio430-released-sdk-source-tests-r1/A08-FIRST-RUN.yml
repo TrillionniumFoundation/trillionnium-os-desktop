@@ -1,0 +1,30 @@
+# Insert after the existing A08 Rust 1.93.0 toolchain step.
+# Root must register/pin this capsule in the ordinary source-integrity inventory.
+- name: Execute all 26 Audio source-library regressions
+  timeout-minutes: 5
+  shell: bash
+  run: |
+    set -euo pipefail
+    export PYTHONDONTWRITEBYTECODE=1 CARGO_TERM_COLOR=never
+    export GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_TERMINAL_PROMPT=0
+    capsule=compat/android/pocket4/audio430-released-sdk-source-tests-r1
+    work="$RUNNER_TEMP/a08-audio-source-sdk-tests-r1"
+    evidence="$RUNNER_TEMP/a08/audio-source-sdk-tests-r1"
+    mkdir "$evidence"
+    python3 -I -B "$capsule/verify_ci.py" prepare --mode bootstrap \
+      --work "$work" --report "$evidence/preparation.json"
+    rustup run 1.93.0 rustc --version > "$evidence/rustc-version.txt"
+    rustup run 1.93.0 cargo --version > "$evidence/cargo-version.txt"
+    git --version > "$evidence/git-version.txt"
+    CARGO_TARGET_DIR="$work/target" rustup run 1.93.0 cargo generate-lockfile \
+      --manifest-path "$work/Cargo.toml" \
+      2>&1 | tee "$evidence/generate-lockfile.log"
+    cp "$work/Cargo.lock" "$evidence/Cargo.lock"
+    CARGO_TARGET_DIR="$work/target" rustup run 1.93.0 cargo test --locked \
+      --manifest-path "$work/Cargo.toml" --lib -j 1 -- --test-threads=1 \
+      2>&1 | tee "$evidence/tests.log"
+    cmp "$work/Cargo.lock" "$evidence/Cargo.lock"
+    python3 -I -B "$capsule/verify_ci.py" result \
+      --work "$work" --log "$evidence/tests.log" \
+      --resolved-lock "$evidence/Cargo.lock" \
+      --rustc-version "$evidence/rustc-version.txt" --report "$evidence/result.json"

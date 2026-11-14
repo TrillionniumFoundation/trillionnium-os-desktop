@@ -1,0 +1,44 @@
+package: "com.android.server.telecom.flags"
+container: "system"
+
+### Add 26Q2 flags here that are part of the platform code (i.e. not updatable). Module code should
+### be put in packages/modules/Telephony/telecom/flags
+
+# OWNER=pmadapurmath TARGET=26Q2
+flag {
+  name: "support_display_name_call_log"
+  is_exported: true
+  namespace: "telecom"
+  description: "Adds support to handle storing the cnap name to be displayed in the call log"
+  bug: "429015736"
+}
+
+# OWNER=arunvoddu TARGET=26Q2
+flag {
+  name: "hd_plus_call"
+  is_exported: true
+  namespace: "telecom"
+  description: "Add call HD+ call indicator"
+  bug: "428115434"
+  metadata {
+      purpose: PURPOSE_FEATURE
+  }
+}
+
+flag {
+    name: "telecom_mainline_blocked_numbers_manager"
+    namespace: "telecom"
+    description: "Fixed read only flag used for setting up BlockedNumbersManager to be retrieved via context"
+    bug: "325049252"
+    is_fixed_read_only: true
+    is_exported: true
+}
+
+# OWNER=pmadapurmath TARGET=26Q2
+flag {
+  name: "filter_voip_call_logs"
+  namespace: "telecom"
+  description: "Add key to filter out voip call logs for dialer apps that don't support integrated call logs"
+  bug: "434747530"
+  is_exported: true
+}

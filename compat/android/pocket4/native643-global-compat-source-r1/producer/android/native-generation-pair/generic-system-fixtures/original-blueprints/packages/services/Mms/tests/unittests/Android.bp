@@ -1,0 +1,32 @@
+package {
+    default_team: "trendy_team_fwk_telecom",
+    // See: http://go/android-license-faq
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+android_test {
+    name: "MmsServiceTests",
+    static_libs: [
+        "mms-protos-lite",
+        "mms-statsd",
+        "androidx.annotation_annotation",
+        "mockito-target",
+        "compatibility-device-util-axt",
+        "androidx.test.rules",
+        "truth",
+    ],
+    libs: [
+        "android.test.runner.stubs.system",
+        "android.test.base.stubs.system",
+        "android.test.mock.stubs.system",
+        "telephony-common",
+    ],
+    srcs: [
+        "src/**/*.java",
+        ":mms-service-srcs",
+    ],
+    platform_apis: true,
+    test_suites: ["device-tests"],
+    certificate: "platform",
+    instrumentation_for: "MmsService",
+}

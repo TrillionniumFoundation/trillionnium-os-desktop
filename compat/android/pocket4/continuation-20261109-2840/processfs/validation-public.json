@@ -1,0 +1,59 @@
+{
+  "schema": "pocket4-proc-namespace-directory-access-candidate-v1",
+  "recorded_utc": "2026-11-09T14:55:19.147419+00:00",
+  "status": "ORDINARY_SOURCE_AND_KERNEL_REGRESSION_PASSED_PRIVATE_RETEST_PENDING",
+  "patch_sha256": "b1152a12c100036d7eb12c22f2e6b93c4e72c16c79e6340607b7e271e1031467",
+  "source_preimage_sha256": "a1a66b327254cc0971c1cfd87ba3650aec6db931c458d2d74bbd2b5bce8e983c",
+  "source_postimage_sha256": "542bfe9f3a232de9fee588bc3d9e21f2865074d8c5896923e7ea8ebf35e28c39",
+  "original_actual_failure": {
+    "host": "pocket4",
+    "kernel": "7.0.14-p4cred1",
+    "result_path": "/home/alex/work/pocket4-android-final/qualification/production-private-process-filesystems-controls-20261109-8b88-r4/result.json",
+    "result_sha256": "3c10d1b70b69adfbd6d485278740bf3ed76e934b45f5eb6fbd56738148bf2c6f",
+    "result_bytes": 15362,
+    "returncode": 101,
+    "passed": false,
+    "stderr_sha256": "b6a0c7521579209fdfcafcca667680f9549406e43c78016913e33b1e9cbe58ba",
+    "diagnostic": "actual owned PIDFD reap code=1 status=127; authenticated queued Failed: stage=1 source-line=137 errno=13",
+    "specific_openat_path_reported": false
+  },
+  "reasoning": {
+    "classification": "source-supported cause candidate, independently reproduced on the actual kernel with ordinary UID; exact private-stage retest remains necessary",
+    "change": "Use O_PATH|O_DIRECTORY rather than O_RDONLY|O_DIRECTORY only for fixed /proc/1/ns traversal. Keep O_NOFOLLOW, NS_GET_NSTYPE and parent PIDFD-held namespace identity verification.",
+    "kernel_checkout": "ai395:/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/source-parent/linux-source-7.0.0",
+    "kernel_source_commit": "f53b359683af7918c5436499948763cb726d5082",
+    "primary_code": [
+      "fs/proc/base.c task_dump_owner uses mm->user_ns root for nondumpable entries; tgid_base_stuff gives ns mode0511",
+      "fs/proc/namespaces.c proc_ns_get_link preserves ptrace access checking",
+      "kernel/ptrace.c __ptrace_may_access permits same-thread-group introspection"
+    ],
+    "authority_changed": false,
+    "dumpability_policy_changed": false,
+    "directories_enumerated_by_fixed_ns_fd": false
+  },
+  "normal_source": {
+    "actual_passed": 21,
+    "actual_failed": 0,
+    "privileged_deferred": 5,
+    "normal_binary_build_returncode": 0,
+    "result": "normal-source-result.json"
+  },
+  "ordinary_uid_probe": {
+    "result": "ordinary-uid-result.json",
+    "actual_euid": 1000,
+    "effective_capabilities": 0,
+    "old_mode_errno": 13,
+    "path_only_open_passed": true,
+    "namespace_type_and_identity_matched": true,
+    "dumpability_restored": true,
+    "new_namespace_created": false
+  },
+  "owner_shared_source_modified": false,
+  "canonical_CURRENT_modified": false,
+  "private_controls_executed_by_candidate": 0,
+  "Android_starts": 0,
+  "applications_accepted": 0,
+  "production_ready": false,
+  "runtime_qualified": false,
+  "all_blockers_closed": false
+}

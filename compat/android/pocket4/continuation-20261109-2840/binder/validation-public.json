@@ -1,0 +1,79 @@
+{
+  "abi_self_check_passed": true,
+  "actual_elapsed_ms": 30,
+  "android_runtime_qualified": false,
+  "cleanup": {
+    "all_children_reaped": true,
+    "cgroup_absent": true,
+    "host_mount_namespace_unchanged": true,
+    "normal_unmount": true,
+    "private_runtime_directory_removed": true,
+    "temporary_binary_removed": true,
+    "unit_absent": true,
+    "worker_namespace_has_no_remaining_process_holders": true,
+    "worker_process_group_absent": true
+  },
+  "compile": {
+    "edition": "2024",
+    "exit_code": 0,
+    "optimization": 1,
+    "rustc": "1.93.0",
+    "warnings": "deny"
+  },
+  "compiled_binary": {
+    "bytes": 4092744,
+    "retired_after_run": true,
+    "sha256": "4735c00c4bf0e2512901820b2e02d2680e503f54ee1ce7c3132cb5079b0259e9"
+  },
+  "hashes": {
+    "binary_retirement": "ca3d7a894a391434c9b5e5a527227cc814f99a95120894c8a456a303b2ed7d61",
+    "independent_readback": "eeb98b0d89f155aa52e057c460193e10b680990c05fd05a9966eee2b4f8e26a3",
+    "raw_result": "6eabb1bc844b89b91011e7d3421ecaa0b2a9f574d69e809f418bd9a5999ae5e0"
+  },
+  "host_binder_ipc_qualified": true,
+  "host_cases": [
+    {
+      "context_requested": false,
+      "extended_error": 0,
+      "failed_reply": false,
+      "opened_credential": "unconfined",
+      "passed": true,
+      "received_context": null,
+      "reply_valid": true,
+      "system_errno": 0,
+      "transaction_received": 1
+    },
+    {
+      "context_requested": true,
+      "extended_error": 0,
+      "failed_reply": false,
+      "opened_credential": "unconfined",
+      "passed": true,
+      "received_context": "unconfined",
+      "reply_valid": true,
+      "system_errno": 0,
+      "transaction_received": 1
+    }
+  ],
+  "kernel": "7.0.14-p4cred1",
+  "limits": {
+    "cpu_affinity_count": 1,
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 268435456,
+    "runtime_max_seconds": 60,
+    "swap_max_bytes": 0
+  },
+  "observed_memory_peak_bytes": 2097152,
+  "oom_events_zero": true,
+  "preexisting_VM_only_probe_unchanged": true,
+  "production_ready": false,
+  "qualification_scope": "Running Linux host Binder IPC only",
+  "schema": "host-binder-opening-credential-validation-v1",
+  "source": {
+    "bytes": 29496,
+    "language": "Rust",
+    "sha256": "142abdc5cbe73cfc2a6944fb2c163a38d3931e09832ce2fc9b54677711c94c7c",
+    "standard_library_only": true
+  },
+  "unprivileged_launch_refused_before_mount": true
+}

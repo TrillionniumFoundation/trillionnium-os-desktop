@@ -1,0 +1,142 @@
+{
+  "AOSP_sources_included": false,
+  "Cargo_registry_dependencies_included": false,
+  "application_order_paths_relative_to": "compat/android/pocket4/closeout-20261107/build-source-repair-20261108",
+  "audio_final": {
+    "application_order": [
+      "source-prerequisites/base-source.patch",
+      "source-prerequisites/audio-prerequisite.patch",
+      "integrated-builder/audio-final.patch"
+    ],
+    "changed_files_since_fc90": 17,
+    "exact_project_count": 308,
+    "locally_observed_commit": "6eb50f3e0a2184cb822d0704c6f53f261ebd2de4",
+    "locally_observed_tree": "8df6ddcdea8bad1ee4b964ac472930e009e04443",
+    "patch": {
+      "bytes": 231428,
+      "sha256": "376e574d1a463a3d7548f73cd3aeb0db08afd4ebecf8b9b051ea06f5ec045d70"
+    },
+    "source_files": 409,
+    "source_lock_sha256": "bf5db84637fe0508be889aa7c7343e4478ed8a4a537099babc87bfba456ce94b",
+    "source_manifest": {
+      "bytes": 76828,
+      "path": "audio-final-source-files.json",
+      "sha256": "b0004c7e0db781a473a059af05c30a403469576e170dd68b403e943cacb21743"
+    }
+  },
+  "audio_junit309": {
+    "application_order": [
+      "source-prerequisites/base-source.patch",
+      "source-prerequisites/audio-prerequisite.patch",
+      "integrated-builder/audio-final.patch",
+      "integrated-builder/audio-junit309.patch"
+    ],
+    "exact_project_count": 309,
+    "full_audio_apex_build_pass": false,
+    "locally_observed_commit": "7775926d69db45b4fb4989d2fd81db5fda4c3b4d",
+    "locally_observed_tree": "fd5593f43118c010b52232f29ed326c3de2e2f4c",
+    "parent_commit": "6eb50f3e0a2184cb822d0704c6f53f261ebd2de4",
+    "patch": {
+      "bytes": 6796,
+      "sha256": "d69e1d1220e402c4c35edafc67d2bfeba90c7a89ac400dc403d241d8dacd4d7d"
+    },
+    "source_files": 409,
+    "source_lock_sha256": "5ee79f187a0c308e76160831867552f0328babb54682bc92ddc82ca74785e24c",
+    "source_manifest": {
+      "bytes": 76828,
+      "path": "audio-junit309-source-files.json",
+      "sha256": "37ec4cf810b1d1012e80902be502e3955a2e7e47e189d62ea8a7fec8053494a5"
+    },
+    "target_subset_tree": "74ac3f46c712db6d4867bfa9cf0d77a53606b0d1"
+  },
+  "base_package": "compat/android/pocket4/closeout-20261107/build-source-repair-20261108",
+  "combined_builder": {
+    "actual_native_and_audio_locks_preserved": true,
+    "application_order": [
+      "source-prerequisites/base-source.patch",
+      "source-prerequisites/native-prerequisite.patch",
+      "native-sparse-capacity/source.patch",
+      "integrated-builder/combined-builder.patch"
+    ],
+    "base_subset_tree": "1baab6a0babc8f027da3ca7b9c0ef649d7878245",
+    "capacity_derivation": "ceil(max(597, 308) / 16) * 16",
+    "changed_files": 44,
+    "maximum_projects": 608,
+    "maximum_sparse_paths": 288,
+    "new_upstream_commit_claimed": false,
+    "patch": {
+      "bytes": 1577190,
+      "sha256": "96dbb72bc4b104897418409baef464addb3f93aec47517c33fec7477f8dfe4f9"
+    },
+    "separate_from_frozen_full_build_inputs": true,
+    "source_files": 476,
+    "source_manifest": {
+      "bytes": 90838,
+      "path": "combined-builder-source-files.json",
+      "sha256": "9963322e0cb43f1f89c9da7189e6f65e5c266bd77616e67a334c6de9e3428547"
+    },
+    "target_subset_tree": "d86fa6e84f2ce1df6f4ddc4174c6ad8cf663d486"
+  },
+  "deployed": false,
+  "exclusions_unchanged_from_public_base": [
+    "AGENTS.md",
+    "m831-provenance.json",
+    "assets/screenshots/whatsapp.png",
+    ".github/FUNDING.yml",
+    ".github/workflows/ship.yml",
+    ".git metadata",
+    "zero-byte transient tool sidecar"
+  ],
+  "full_audio_apex_build_pass": false,
+  "full_native_art_build_pass": false,
+  "native_frozen_597": {
+    "application_order": [
+      "source-prerequisites/base-source.patch",
+      "source-prerequisites/native-prerequisite.patch",
+      "native-sparse-capacity/source.patch",
+      "integrated-builder/native-frozen-597.patch"
+    ],
+    "base_subset_tree": "1baab6a0babc8f027da3ca7b9c0ef649d7878245",
+    "changed_files": 9,
+    "exact_project_count": 597,
+    "original_snapshot_manifest_sha256": "73d23be7f7f4bd416f1837ef0d595d9a09e61f690d75f4d45aec83976131141a",
+    "patch": {
+      "bytes": 776422,
+      "sha256": "d29d8c02fdcc1ed8a3c56dda266f47b3bee88f7b7df30fd9f6879d7f5c48dbdd"
+    },
+    "source_files": 450,
+    "source_lock_sha256": "2b699174977614e080cf99a991f3e648774b24581c4ecdc29f1bd53b7b01ef23",
+    "source_manifest": {
+      "bytes": 85486,
+      "path": "native-frozen-597-source-files.json",
+      "sha256": "f3687bc9d40e279d431b0813f326b7751001b0d36b350a37ddba183034784d24"
+    },
+    "target_subset_tree": "144db4382ee5b5d4fe3c44c38294269caf3f4869"
+  },
+  "published_base_pr_head": "555b2710dcf3a393b65efb2caf5e469ca4d98e1b",
+  "runtime_qualified": false,
+  "schema": "pocket4-final-builder-source-chains-v1",
+  "source_replays": {
+    "audio-final": {
+      "all_source_bytes_and_modes_equal": true,
+      "source_files": 409,
+      "subset_tree": "660de60cfd4b57fd3b823dff7757e0a4f098df49"
+    },
+    "audio-junit309": {
+      "all_source_bytes_and_modes_equal": true,
+      "source_files": 409,
+      "subset_tree": "74ac3f46c712db6d4867bfa9cf0d77a53606b0d1"
+    },
+    "combined-builder": {
+      "all_source_bytes_and_modes_equal": true,
+      "source_files": 476,
+      "subset_tree": "d86fa6e84f2ce1df6f4ddc4174c6ad8cf663d486"
+    },
+    "native-frozen-597": {
+      "all_source_bytes_and_modes_equal": true,
+      "source_files": 450,
+      "subset_tree": "144db4382ee5b5d4fe3c44c38294269caf3f4869"
+    }
+  },
+  "state": "FROZEN_BRANCHES_RECONSTRUCTED_AND_MERGED_BUILDER_CONTROLS_PASSED_NOT_DEPLOYED"
+}

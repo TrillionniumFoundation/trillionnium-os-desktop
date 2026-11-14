@@ -1,0 +1,15 @@
+--- a/ui/build/soong.go
++++ b/ui/build/soong.go
+@@ -215,6 +215,12 @@
+ 
+ 	commonArgs = append(commonArgs, "-l", filepath.Join(pb.config.FileListDir(), "Android.bp.list"))
+ 	invocationEnv := make(map[string]string)
++	// The isolated audio build reserves two actual CPUs and a bounded cgroup.
++	// env -i must carry the Go budget; these knobs do not change module semantics.
++	invocationEnv["GOMEMLIMIT"] = "5GiB"
++	invocationEnv["GOMAXPROCS"] = "2"
++	invocationEnv["GOGC"] = "50"
++	invocationEnv["GODEBUG"] = "gctrace=1"
+ 	if pb.debugPort != "" {
+ 		//debug mode
+ 		commonArgs = append(commonArgs, "--delve_listen", pb.debugPort,

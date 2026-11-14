@@ -1,0 +1,165 @@
+--- a/runtime/droidloom-supervisor/src/production_readiness.rs
++++ b/runtime/droidloom-supervisor/src/production_readiness.rs
+@@ -190,6 +190,18 @@
+     Ok(u32::from_le_bytes(bytes))
+ }
+ 
++fn property_file_identity(metadata: &std::fs::Metadata) -> (u64, u64, u32, u32, u32, u64, u64) {
++    (
++        metadata.dev(),
++        metadata.ino(),
++        metadata.mode(),
++        metadata.uid(),
++        metadata.gid(),
++        metadata.nlink(),
++        metadata.len(),
++    )
++}
++
+ /// The file is obtained only by the ExecutedTreeWitness caller through its
+ /// held private DEV/property directory. The numeric owner pair is a comparison
+ /// against that witness, never permission to adopt an external PID or file.
+@@ -197,6 +209,17 @@
+     file: &File,
+     expected_uid: u32,
+     expected_gid: u32,
++) -> Result<BootProperty> {
++    read_boot_complete_with_snapshot(file, expected_uid, expected_gid, |file, bytes| {
++        file.read_exact_at(bytes, 0)
++    })
++}
++
++fn read_boot_complete_with_snapshot(
++    file: &File,
++    expected_uid: u32,
++    expected_gid: u32,
++    mut read_snapshot: impl FnMut(&File, &mut [u8]) -> io::Result<()>,
+ ) -> Result<BootProperty> {
+     let before = file.metadata()?;
+     if !before.is_file()
+@@ -212,8 +235,26 @@
+     }
+     let first_serial = read_u32(file, 4)?;
+     let mut bytes = vec![0; before.len() as usize];
+-    file.read_exact_at(&mut bytes, 0)?;
+-    let parsed = parse(&bytes)?;
++    read_snapshot(file, &mut bytes)?;
++    let parsed = match parse(&bytes) {
++        Ok(parsed) => parsed,
++        Err(error) => {
++            // A bounded pread is not an atomic view of MAP_SHARED storage.
++            // Allocation/publication may leave this copy with an old used-size
++            // and a new trie offset, so parsing can fail before serial checks.
++            // Confirm the rejected bytes once; a change only requests another
++            // poll. Never promote the second snapshot directly to Complete.
++            let mut repeated = vec![0; bytes.len()];
++            read_snapshot(file, &mut repeated)?;
++            let after = file.metadata()?;
++            if property_file_identity(&before) != property_file_identity(&after)
++                || repeated != bytes
++            {
++                return Err(ReadinessError::Changed);
++            }
++            return Err(error);
++        }
++    };
+     if first_serial != parsed.area_serial || read_u32(file, 4)? != first_serial {
+         return Err(ReadinessError::Changed);
+     }
+@@ -225,23 +266,7 @@
+     let after = file.metadata()?;
+     // Property updates happen through MAP_SHARED: times are not an immutable
+     // input seal. The actual Bionic serials and fixed inode/size/owner are used.
+-    if (
+-        before.dev(),
+-        before.ino(),
+-        before.mode(),
+-        before.uid(),
+-        before.gid(),
+-        before.nlink(),
+-        before.len(),
+-    ) != (
+-        after.dev(),
+-        after.ino(),
+-        after.mode(),
+-        after.uid(),
+-        after.gid(),
+-        after.nlink(),
+-        after.len(),
+-    ) {
++    if property_file_identity(&before) != property_file_identity(&after) {
+         return Err(ReadinessError::Changed);
+     }
+     Ok(parsed.value)
+@@ -326,4 +351,70 @@
+         named.as_file().set_len(4 * 1024 * 1024).unwrap();
+         assert!(read_boot_complete(named.as_file(), m.uid(), m.gid()).is_err());
+     }
+-}
++
++    #[test]
++    fn production_readiness_torn_property_publication_is_retryable() {
++        let published = area();
++        let mut initial = published.clone();
++        // The name nodes already exist; the property leaf is not published.
++        // Bionic allocates the new leaf before publishing its offset.
++        set(&mut initial, 0, 172);
++        set(&mut initial, HEADER + 136 + 4, 0);
++        initial[HEADER + 172..].fill(0);
++        assert_eq!(parse(&initial).unwrap().value, BootProperty::Absent);
++        assert_eq!(parse(&published).unwrap().value, BootProperty::Complete);
++
++        let mut named = tempfile::NamedTempFile::new().unwrap();
++        named.write_all(&initial).unwrap();
++        let writer = named.as_file().try_clone().unwrap();
++        let metadata = named.as_file().metadata().unwrap();
++        let mut reads = 0;
++        let observed = read_boot_complete_with_snapshot(
++            named.as_file(),
++            metadata.uid(),
++            metadata.gid(),
++            |file, bytes| {
++                reads += 1;
++                if reads == 1 {
++                    // A read of shared property storage is not an atomic copy:
++                    // the old used-size can precede a newly published pointer.
++                    file.read_exact_at(&mut bytes[..HEADER], 0)?;
++                    writer.write_all_at(&published, 0)?;
++                    file.read_exact_at(&mut bytes[HEADER..], HEADER as u64)
++                } else {
++                    file.read_exact_at(bytes, 0)
++                }
++            },
++        );
++        assert!(
++            matches!(observed, Err(ReadinessError::Changed)),
++            "a concurrent valid publication must be retried, never admitted or rejected: {observed:?}"
++        );
++        assert_eq!(reads, 2, "a rejection permits only one bounded reread");
++        assert_eq!(
++            read_boot_complete(named.as_file(), metadata.uid(), metadata.gid()).unwrap(),
++            BootProperty::Complete
++        );
++    }
++
++    #[test]
++    fn production_readiness_stable_malformed_snapshot_stays_rejected() {
++        let mut invalid = area();
++        set(&mut invalid, HEADER + 16, u32::MAX);
++        let mut named = tempfile::NamedTempFile::new().unwrap();
++        named.write_all(&invalid).unwrap();
++        let metadata = named.as_file().metadata().unwrap();
++        let mut reads = 0;
++        let observed = read_boot_complete_with_snapshot(
++            named.as_file(),
++            metadata.uid(),
++            metadata.gid(),
++            |file, bytes| {
++                reads += 1;
++                file.read_exact_at(bytes, 0)
++            },
++        );
++        assert!(matches!(observed, Err(ReadinessError::Rejected(_))));
++        assert!((1..=2).contains(&reads), "malformed reads stay bounded");
++    }
++}

@@ -1,0 +1,14 @@
+--- a/amdgpu.c
++++ b/amdgpu.c
+@@ -575,7 +575,10 @@
+ 		 *    requirement hopefully does not matter
+ 		 */
+ 		bool double_align = format == DRM_FORMAT_YVU420_ANDROID;
+-		if (double_align && priv->dev_info.family >= AMDGPU_FAMILY_NV &&
++		/* The native linear GEM fallback must preserve Android YV12's
++		 * half-luma chroma stride. Only the legacy DRI path may use its
++		 * separate non-Android plane layout. */
++		if (double_align && priv->dri && priv->dev_info.family >= AMDGPU_FAMILY_NV &&
+ 		    (use_flags & BO_USE_GPU_HW) && ((stride / stride_align) & 1)) {
+ 			drv_loge("allocating %dx%d YV12 bo (usage 0x%" PRIx64 ") with bad strides",
+ 				 width, height, use_flags);

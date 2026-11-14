@@ -1,0 +1,249 @@
+--- original/fixture_context.py
++++ candidate/fixture_context.py
+@@ -9,6 +9,8 @@
+ import os
+ from pathlib import Path
+ import resource
++import selectors
++import signal
+ import stat
+ import subprocess
+ import time
+@@ -61,43 +63,205 @@
+ 
+ 
+ def command_with_bound(context, argv, options):
+-    """Preserve actual Flow.command lifecycle; constrain its private output files.
+-    The lower soft file-size limit is inherited by the new helper process. The
+-    current worker limit is restored on every path before the caller proceeds.
+-    This is a new fixture seam and is not yet a qualified runtime control.
++    """Record one held command with independently bounded stdout/stderr pipes.
++
++    The original command, environment, seven authorities, session ownership,
++    durable evidence ordering and BoundArun post-guard protocol are retained.
++    The subject inherits the caller's RLIMIT_FSIZE unchanged. Output budgets
++    apply only to bytes read from each pipe, never to subject file writes.
+     """
+     need(options['close_fds'] is True and options['stdout']==subprocess.PIPE and
+-         options['stderr']==subprocess.PIPE,'EXACT_SHARED_RUNNER_PROTOCOL_REQUIRED')
+-    prior=resource.getrlimit(resource.RLIMIT_FSIZE)
+-    need(all(v==resource.RLIM_INFINITY or v>=OUTPUT_LIMIT for v in prior),
++         options['stderr']==subprocess.PIPE and len(options['pass_fds'])==7,
++         'EXACT_SHARED_RUNNER_PROTOCOL_REQUIRED')
++    need(OUTPUT_LIMIT==262144 and type(options['timeout']) in (int,float) and
++         options['timeout']>0,'FIXED_COMMAND_OUTPUT_AND_TIMEOUT_REQUIRED')
++    # The direct child stays unreaped until both capture channels finish or an
++    # error requires stopping its newly owned session. Its PID cannot be reused
++    # between the failed capture and killpg. No handler may reap it behind us.
++    need(signal.getsignal(signal.SIGCHLD)==signal.SIG_DFL,
++         'SYNCHRONOUS_COMMAND_CHILD_OWNERSHIP_REQUIRED')
++    before_limit=resource.getrlimit(resource.RLIMIT_FSIZE)
++    need(all(v==resource.RLIM_INFINITY or v>=OUTPUT_LIMIT for v in before_limit),
+          'CURRENT_FILE_SIZE_LIMIT_TOO_SMALL')
+-    first=None
+-    changed=False
++    context.guard()
++    context.command_index+=1
++    stem=context.step/('command-%03d'%context.command_index)
++    execution=list(argv)
++    mutation=context._android_mutation
++    recorder=context.recorder
++    recorder.write_new(str(stem)+'.intent.json',{
++        'argv':list(argv),'timeout_seconds':options['timeout'],
++        'execution_argv':execution,'authority_fds_passed':list(options['pass_fds']),
++        'mutation':mutation,'label':'Android command','started_utc':recorder.now(),
++        'automatic_retry':False,'capture_policy':'independent-bounded-pipes-v1',
++        'output_limit_per_stream':OUTPUT_LIMIT,
++        'subject_RLIMIT_FSIZE':list(before_limit),'subject_file_limit_changed':False})
++    started=time.monotonic()
++    deadline=started+options['timeout']
++    timed_out=spawned=False
++    joined=True
++    rc=process=selector=None
++    errors=[]
++    streams={}
++    pipes={}
++    output={'stdout':bytearray(),'stderr':bytearray()}
++    eof={'stdout':False,'stderr':False}
++    overflow=[]
++    stopped=False
++
++    def remember(phase,exc):
++        errors.append({'phase':phase,'exception_type':type(exc).__name__,
++                       'errno':getattr(exc,'errno',None),'code':str(exc)[:160]})
++
++    def stop_and_join():
++        nonlocal rc,joined,stopped
++        if process is None or joined:
++            return
++        # returncode is None while this function still owns the unreaped child.
++        # Do not poll first: a zombie leader pins the original process-group ID
++        # while a descendant can still hold a capture pipe open.
++        if process.returncode is None:
++            try:
++                os.killpg(process.pid,signal.SIGKILL)
++                stopped=True
++            except ProcessLookupError:
++                pass
++            except BaseException as exc:
++                remember('owned_command_group_stop',exc)
++        try:
++            rc=process.wait(timeout=5)
++            joined=True
++        except BaseException as exc:
++            remember('owned_command_join',exc)
++
+     try:
+-        resource.setrlimit(resource.RLIMIT_FSIZE,(OUTPUT_LIMIT,prior[1]))
+-        changed=True
+-        need(resource.getrlimit(resource.RLIMIT_FSIZE)==(OUTPUT_LIMIT,prior[1]),
+-             'COMMAND_OUTPUT_LIMIT_NOT_APPLIED')
+-        result=context.recorder.Flow.command(context,argv,options['timeout'],
+-            mutation=context._android_mutation,label='Android command',
+-            pass_fds=options['pass_fds'],check=False,host_env=options['env'])
+-        need(type(result.stdout) is bytes and type(result.stderr) is bytes and
+-             len(result.stdout)<=OUTPUT_LIMIT and len(result.stderr)<=OUTPUT_LIMIT,
+-             'COMMAND_OUTPUT_BOUND')
+-        return result
+-    except BaseException as error:
+-        first=error
+-        raise
++        try:
++            for name in ('stdout','stderr'):
++                fd=os.open(str(stem)+'.'+name,
++                    os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW|os.O_CLOEXEC,0o600)
++                try:
++                    streams[name]=os.fdopen(fd,'wb')
++                except BaseException:
++                    os.close(fd)
++                    raise
++        except BaseException as exc:
++            remember('command_output_open',exc)
++        if not errors:
++            try:
++                process=subprocess.Popen(execution,stdout=subprocess.PIPE,
++                    stderr=subprocess.PIPE,env=options['env'],
++                    start_new_session=True,pass_fds=tuple(options['pass_fds']),
++                    close_fds=True,bufsize=0)
++                spawned=True
++                joined=False
++                context.action_attempted|=mutation
++                pipes={'stdout':process.stdout,'stderr':process.stderr}
++                selector=selectors.DefaultSelector()
++                for name,pipe in pipes.items():
++                    os.set_blocking(pipe.fileno(),False)
++                    selector.register(pipe,selectors.EVENT_READ,name)
++                while selector.get_map():
++                    remaining=deadline-time.monotonic()
++                    if remaining<=0:
++                        raise subprocess.TimeoutExpired(execution,options['timeout'])
++                    for key,_ in selector.select(min(remaining,0.2)):
++                        name=key.data
++                        # One extra byte detects overflow; only the remaining
++                        # allowed bytes can enter the buffer or private log.
++                        room=OUTPUT_LIMIT-len(output[name])
++                        try:
++                            chunk=os.read(key.fd,min(65536,room+1))
++                        except BlockingIOError:
++                            continue
++                        if not chunk:
++                            selector.unregister(key.fileobj)
++                            eof[name]=True
++                            continue
++                        retained=chunk[:room]
++                        if retained:
++                            count=streams[name].write(retained)
++                            need(count==len(retained),'COMMAND_OUTPUT_WRITE_INCOMPLETE')
++                            output[name].extend(retained)
++                        if len(chunk)>room:
++                            overflow.append(name)
++                            raise RuntimeError('COMMAND_OUTPUT_BOUND:'+name)
++                remaining=deadline-time.monotonic()
++                if remaining<=0:
++                    raise subprocess.TimeoutExpired(execution,options['timeout'])
++                rc=process.wait(timeout=remaining)
++                joined=True
++            except BaseException as exc:
++                timed_out=isinstance(exc,subprocess.TimeoutExpired)
++                remember('command_capture_or_wait' if spawned else 'command_spawn',exc)
++            finally:
++                stop_and_join()
+     finally:
+-        if changed:
+-            try:
+-                resource.setrlimit(resource.RLIMIT_FSIZE,prior)
+-                need(resource.getrlimit(resource.RLIMIT_FSIZE)==prior,
+-                     'COMMAND_OUTPUT_LIMIT_RESTORE_FAILED')
+-            except BaseException as close_error:
+-                if first is None:
+-                    raise
+-                first.add_note('COMMAND_OUTPUT_LIMIT_RESTORE_FAILED:'+type(close_error).__name__)
++        # This also covers partial selector/pipe setup and interruption. Capture
++        # descriptors are closed only after the owned child has been joined.
++        stop_and_join()
++        if selector is not None:
++            try:
++                selector.close()
++            except BaseException as exc:
++                remember('command_selector_close',exc)
++        for pipe in pipes.values():
++            try:
++                pipe.close()
++            except BaseException as exc:
++                remember('command_pipe_close',exc)
++        for name,stream in streams.items():
++            try:
++                stream.flush()
++                os.fsync(stream.fileno())
++                info=os.fstat(stream.fileno())
++                named=os.stat(str(stem)+'.'+name,follow_symlinks=False)
++                need(stat.S_ISREG(info.st_mode) and info.st_nlink==1 and
++                     info.st_size==len(output[name])<=OUTPUT_LIMIT and
++                     (info.st_dev,info.st_ino,info.st_size)==
++                     (named.st_dev,named.st_ino,named.st_size),
++                     'COMMAND_CAPTURE_FILE_IDENTITY_OR_LENGTH_CHANGED')
++            except BaseException as exc:
++                remember('command_output_sync',exc)
++            try:
++                stream.close()
++            except BaseException as exc:
++                remember('command_output_close',exc)
++    if not joined and context.binding is not None:
++        context.binding.target.poison_unjoined_command()
++    after_limit=resource.getrlimit(resource.RLIMIT_FSIZE)
++    if after_limit!=before_limit:
++        remember('subject_file_limit_observation',RuntimeError('CALLER_FILE_LIMIT_CHANGED'))
++    out,err=bytes(output['stdout']),bytes(output['stderr'])
++    receipt={
++        'ended_utc':recorder.now(),'seconds':time.monotonic()-started,'returncode':rc,
++        'timed_out':timed_out,'spawned':spawned,'error':errors[0] if errors else None,
++        'errors':list(errors),'owned_command_joined':joined,
++        'stdout_sha256':sha(out),'stderr_sha256':sha(err),
++        'action_attempted':spawned and mutation,'automatic_retry':False,
++        'capture':{
++            'policy':'independent-bounded-pipes-v1','limit_per_stream':OUTPUT_LIMIT,
++            'retained_bytes':{'stdout':len(out),'stderr':len(err)},
++            'pipe_eof':eof,'overflow_streams':overflow,
++            'complete':all(eof.values()) and not overflow and not errors,
++            'selector_closed':selector is None or not selector.get_map(),
++            'pipes_closed':all(pipe.closed for pipe in pipes.values()),
++            'files_closed':all(stream.closed for stream in streams.values()),
++            'owned_group_stopped':stopped,
++            'subject_file_limit_changed':False,
++            'RLIMIT_FSIZE_before':list(before_limit),'RLIMIT_FSIZE_after':list(after_limit),
++            'returncode_observation':'direct_helper_only; inner_wait_status_unavailable'}}
++    try:
++        # BoundArun will record the result before lease release and post guard.
++        recorder.write_new(str(stem)+'.result.json',receipt)
++    except BaseException as exc:
++        remember('command_result_record',exc)
++    captured=subprocess.CompletedProcess(execution,rc,out,err)
++    captured.host_timed_out=timed_out
++    captured.recorder_errors=errors
++    captured.recorder_spawned=spawned
++    captured.recorder_joined=joined
++    captured.capture_receipt=receipt
++    return captured
+ 
+ 
+ class Context:

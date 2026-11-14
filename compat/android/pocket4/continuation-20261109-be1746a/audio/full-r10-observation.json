@@ -1,0 +1,1334 @@
+{
+  "schema": "pocket4-audio430-r10-successor-readonly-frozen-observation-v1",
+  "observation_scope": "Read-only current origin files and existing processes; no shared-source mutation, CURRENT update, owner lock acquisition, build launch, package installation or cleanup.",
+  "latest_process_and_log_sample_utc": "2026-11-09T09:57:19.828850+00:00",
+  "ordinary_tools_sample_utc": "2026-11-09T09:56:55.711944+00:00",
+  "systemd_cgroup_sample_utc": "2026-11-09T09:54:03.545326+00:00",
+  "initial_origin_inventory_sample_utc": "2026-11-09T09:52:25.349217+00:00",
+  "source_root": {
+    "host": "desktop",
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1",
+    "current_project_count": 430,
+    "path_name_is_historical": "source316 does not mean project_count is still 316"
+  },
+  "ordinary_tools": {
+    "host": "pocket4",
+    "job_id": "1a1bf8f7929-5e21-5bb",
+    "authoritative_status": {
+      "at_unix_ms": 1794215253505,
+      "audit_recorded": true,
+      "automatic_retry": false,
+      "cancelled": false,
+      "exit_code": 0,
+      "job_id": "1a1bf8f7929-5e21-5bb",
+      "launch_nonce": "c85a864e20d947b55a445caafeada665",
+      "log_bytes": {
+        "stderr": {
+          "seen": 347,
+          "stored": 347
+        },
+        "stdout": {
+          "seen": 1400,
+          "stored": 1400
+        }
+      },
+      "log_errors": {
+        "stderr": null,
+        "stdout": null
+      },
+      "log_synced": {
+        "stderr": true,
+        "stdout": true
+      },
+      "log_truncated": {
+        "stderr": false,
+        "stdout": false
+      },
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal_publication_confirmed": true,
+      "terminal_publication_protocol": 1,
+      "timed_out": false
+    },
+    "inner_result": {
+      "path": "/home/alex/work/pocket4-audio430-pasit-original-provider-20261109-8b88-r2/qualification/RESULT.json",
+      "bytes": 351711,
+      "sha256": "252aa4e6d7f83561f0d069d3a6c07268763d8be37f167a1d17bd2700696a3c1a",
+      "scalar_fields": {
+        "AOSP_sources_modified": false,
+        "all_command_children_reaped": true,
+        "boot_id": "97d9600f-e081-465c-9e6e-62651e09806b",
+        "build_host": "pocket4",
+        "finished_ns": 1794215252593331700,
+        "full_builds_started": 0,
+        "normal_tools_compiled": true,
+        "old_recipe_modified": false,
+        "recipe_commit": "a0e5114a1728e5ac5a96cdffbf68a84958218765",
+        "recipe_parent": "1017dd42a2adb3ef206082d4eeb80e762038eb01",
+        "recipe_tree": "fdfa6ed29a2af507ea948daeb0ec9f7adb706ed9",
+        "schema": "audio430-pasit-original-provider-normal-tool-build-v2",
+        "started_ns": 1794215223300745700,
+        "state": "NORMAL_TOOLS_BUILT_TESTED_PENDING_SOURCE_RECONCILIATION"
+      },
+      "arrays": {
+        "commands": {
+          "length": 24,
+          "first_keys": [
+            "adopted_normal_exit",
+            "argv",
+            "driver",
+            "errors",
+            "finished_ns",
+            "lifecycle",
+            "name",
+            "observed_before_reap",
+            "owned_retirement_complete",
+            "reaper",
+            "started_ns",
+            "stderr",
+            "stdout"
+          ]
+        },
+        "errors": {
+          "length": 0,
+          "first_keys": null
+        },
+        "normal_tools": {
+          "length": 2,
+          "first_keys": [
+            "bytes",
+            "identity",
+            "path",
+            "sha256"
+          ]
+        }
+      },
+      "maps": {
+        "budget_after": [
+          "affinity",
+          "cpu.max",
+          "memory.current",
+          "memory.events",
+          "memory.max",
+          "memory.peak",
+          "memory.stat",
+          "memory.swap.current",
+          "memory.swap.max"
+        ],
+        "budget_before": [
+          "affinity",
+          "cpu.max",
+          "memory.current",
+          "memory.events",
+          "memory.max",
+          "memory.peak",
+          "memory.stat",
+          "memory.swap.current",
+          "memory.swap.max"
+        ],
+        "compiler": [
+          "cargo",
+          "rustc"
+        ],
+        "compiler_budget": [
+          "cargo_jobs",
+          "cpu_affinity",
+          "cpu_quota_percent",
+          "host_reserve_bytes",
+          "memory_max_bytes",
+          "swap_max_bytes"
+        ],
+        "control_source_manifest": [
+          "bytes",
+          "identity",
+          "path",
+          "sha256"
+        ],
+        "failed_normal_tool_attempt": [
+          "H",
+          "inner",
+          "outer",
+          "terminal"
+        ],
+        "normal_source_lock": [
+          "bytes",
+          "identity",
+          "path",
+          "sha256"
+        ],
+        "patch": [
+          "bytes",
+          "identity",
+          "path",
+          "sha256"
+        ],
+        "recipe_files": [
+          ".gitattributes",
+          ".github/FUNDING.yml",
+          ".github/workflows/ship.yml",
+          ".gitignore",
+          "AGENTS.md",
+          "Android.bp",
+          "Cargo.lock",
+          "Cargo.toml",
+          "LICENSE",
+          "LICENSES/Apache-2.0.txt",
+          "LICENSES/GPL-3.0-or-later.txt",
+          "LICENSES/MIT.txt",
+          "README.md",
+          "THIRD_PARTY.md",
+          "android/README.md",
+          "android/aosp-patches/0001-netbpfload-tolerate-shared-kernel-bpf-ids.patch",
+          "android/aosp-patches/0002-audio-default-only-service.patch",
+          "android/aosp-patches/0003-connectivity-offline-rcu.patch",
+          "android/aosp-patches/0004-libmeminfo-offline-gpu-accounting.patch",
+          "android/aosp-patches/0005-frameworks-base-vendor-only-ext.patch",
+          "android/aosp-patches/0006-netd-cell-kernel-policy.patch",
+          "android/aosp-patches/0007-minigbm-amdgpu-platform.patch",
+          "android/aosp-patches/0008-vold-preserve-shared-storage-submounts.patch",
+          "android/aosp-patches/0009-netd-bpf-pid-namespace.patch",
+          "android/aosp-patches/0010-minigbm-dma-heap-images.patch",
+          "android/aosp-patches/0011-mesa-zink-kgsl.patch",
+          "android/aosp-patches/0012-mesa-adreno722.patch",
+          "android/aosp-patches/0013-mesa-texture-upload-span.patch",
+          "android/aosp-patches/0014-mesa-background-cpu-placement.patch",
+          "android/aosp-patches/0015-droidloom-pcm-output.patch",
+          "android/aosp-patches/0016-droidloom-pcm-cancellation-lifecycle.patch",
+          "android/aosp-patches/0017-droidloom-real-pcm-input.patch",
+          "android/aosp-patches/0017-minigbm-native-amd-yv12-strides.patch",
+          "android/aosp-patches/0017-soong-prebuilt-missing-source-metadata.patch",
+          "android/apex-compat/0001-droidloom-classpath-projection.patch"
+        ],
+        "source_delta": [
+          "bytes",
+          "identity",
+          "path",
+          "sha256"
+        ]
+      },
+      "commands": [
+        {
+          "errors": [],
+          "name": "old-head",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "old-tree",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "old-clean",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "clone-owned-recipe",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "checkout-exact-parent",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "set-public-origin",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "disable-local-hooks",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "patch-check",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "patch-normal-sources",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "exact-source-delta",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "commit-normal-source",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "new-head",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "new-tree",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "new-parent",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "rustc-version",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "cargo-version",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "normal-source-tests",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "normal-audio-tests",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "compile-normal-tools",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "droidloom-source-help",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "droidloom-update-help",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "normal-lock-verify",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "new-clean-after",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "recipe-files",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        }
+      ]
+    },
+    "outer_result": {
+      "path": "/home/alex/work/pocket4-audio430-pasit-original-provider-20261109-8b88-r2/control/outer-terminal.json",
+      "bytes": 6519,
+      "sha256": "d0d9a38d078f6e6254903d77521afc9da93d1a61759d13b8d35fbd52cfe73ccb",
+      "scalar_fields": {
+        "H_job_id": "1a1bf8f7929-5e21-5bb",
+        "description": "Pocket4 Audio430 exact original PASIT provider normal tools 1a1bf8f7929-5e21-5bb c85a864e20d947b55a445caafeada665",
+        "failed_attempt_qualification_not_inherited": true,
+        "finished_ns": 1794215253450289000,
+        "full_builds_started": 0,
+        "inner_state": "NORMAL_TOOLS_BUILT_TESTED_PENDING_SOURCE_RECONCILIATION",
+        "launcher_child_reaped": true,
+        "launcher_sha256": "6e36fe213d540d8e077f78cfae65dee8e564bc9d3db2b526cf42e7b08b692e09",
+        "normal_tools_compiled": true,
+        "old_source_modified": false,
+        "owned_invocation_id": "2ebabd2a4b9a4c53848d2fc25b1c2490",
+        "owned_unit_retired": true,
+        "recipe_commit": "a0e5114a1728e5ac5a96cdffbf68a84958218765",
+        "recipe_tree": "fdfa6ed29a2af507ea948daeb0ec9f7adb706ed9",
+        "schema": "audio430-pasit-original-provider-normal-tool-outer-v2",
+        "source_and_full_qualification_not_inherited": true,
+        "started_ns": 1794215223231238700,
+        "state": "NORMAL_TOOLS_COMPILED_AND_RETIRED",
+        "systemd_run_returncode": 0
+      },
+      "arrays": {
+        "actual_argv": {
+          "length": 36,
+          "first_keys": null
+        },
+        "errors": {
+          "length": 0,
+          "first_keys": null
+        },
+        "normal_tools": {
+          "length": 2,
+          "first_keys": [
+            "bytes",
+            "identity",
+            "path",
+            "sha256"
+          ]
+        }
+      },
+      "maps": {
+        "H_request": [
+          "bytes",
+          "identity",
+          "path",
+          "sha256"
+        ],
+        "H_started": [
+          "bytes",
+          "identity",
+          "path",
+          "sha256"
+        ],
+        "admission": [
+          "disk_free_bytes",
+          "memavailable_bytes"
+        ],
+        "control_source_manifest": [
+          "bytes",
+          "path",
+          "sha256"
+        ],
+        "failed_normal_tool_attempt": [
+          "H",
+          "inner",
+          "outer",
+          "terminal"
+        ],
+        "inner_result": [
+          "bytes",
+          "identity",
+          "path",
+          "sha256"
+        ],
+        "successful_normal_tool_parent": [
+          "bytes",
+          "identity",
+          "path",
+          "sha256"
+        ],
+        "unit_after": [
+          "ActiveState",
+          "ControlGroup",
+          "Description",
+          "ExecMainPID",
+          "InvocationID",
+          "LoadState",
+          "Result",
+          "SubState"
+        ]
+      },
+      "commands": []
+    },
+    "command_count": 24,
+    "all_commands_exit_zero": true,
+    "all_commands_retired": true,
+    "recipe_commit": "a0e5114a1728e5ac5a96cdffbf68a84958218765",
+    "recipe_tree": "fdfa6ed29a2af507ea948daeb0ec9f7adb706ed9",
+    "current_desktop_imported_tools": [
+      {
+        "bytes": 19272984,
+        "identity": [
+          2067,
+          7886281,
+          33088,
+          1000,
+          1000,
+          1,
+          19272984,
+          1794215727056052000,
+          1794215727109050400
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/pasit-original-r1/droidloom-source",
+        "sha256": "bda5acbf709492ae533905229d09a782552ebb8fd22fec0c7b5ac307c1edacf4"
+      },
+      {
+        "bytes": 32320232,
+        "identity": [
+          2067,
+          7886285,
+          33088,
+          1000,
+          1000,
+          1,
+          32320232,
+          1794215727308043800,
+          1794215727385041200
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/pasit-original-r1/droidloom-update",
+        "sha256": "1d69a6f4532a919337066b2abb45a1352a86273d5cd18ff71bc2882ccdd7a843"
+      }
+    ],
+    "note": "Prepared request READY booleans predate actual execution. Tool compilation and its 24 owned commands passed; this is not source, full-build, artifact or runtime qualification by inheritance."
+  },
+  "source_continuation": {
+    "host": "desktop",
+    "job_id": "1a1bf949d6f-5e21-5e2",
+    "authoritative_status": {
+      "at_unix_ms": 1794216232305,
+      "audit_recorded": true,
+      "automatic_retry": false,
+      "cancelled": false,
+      "exit_code": 0,
+      "job_id": "1a1bf949d6f-5e21-5e2",
+      "launch_nonce": "9ef0cbff3159c44ffa10b8daa1741369",
+      "log_bytes": {
+        "stderr": {
+          "seen": 309,
+          "stored": 309
+        },
+        "stdout": {
+          "seen": 1750,
+          "stored": 1750
+        }
+      },
+      "log_errors": {
+        "stderr": null,
+        "stdout": null
+      },
+      "log_synced": {
+        "stderr": true,
+        "stdout": true
+      },
+      "log_truncated": {
+        "stderr": false,
+        "stdout": false
+      },
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal_publication_confirmed": true,
+      "terminal_publication_protocol": 1,
+      "timed_out": false
+    },
+    "inner_result": {
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/source-pasit-continuation-r1/RESULT.json",
+      "bytes": 847085,
+      "sha256": "775a01513110d3a0018366040627393dcecce57ce1be0a9b7249345e875a6701",
+      "scalar_fields": {
+        "all_430_projects_without_external_alternates": true,
+        "all_command_children_reaped": true,
+        "build_host": "desktop",
+        "builds_started": 0,
+        "finished_ns": 1794216231092320300,
+        "fresh_disk_after_bytes": 124423614464,
+        "full_admission_granted": false,
+        "host_generation_inherited": false,
+        "normal_tools_path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/pasit-original-r1",
+        "previous_425_commits_and_purposes_unchanged": true,
+        "prior_project_count": 425,
+        "recipe_commit": "a0e5114a1728e5ac5a96cdffbf68a84958218765",
+        "recipe_path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/recipe-pasit-original-r1",
+        "recipe_tree": "fdfa6ed29a2af507ea948daeb0ec9f7adb706ed9",
+        "runtime_qualified": false,
+        "schema": "pocket4-audio-desktop-source-continuation-v1",
+        "shared_serial_lock_held_through_reconcile": true,
+        "source_materialization_verified_on_new_host": true,
+        "source_origin_host": "pocket4",
+        "source_plan_expansion_exact": true,
+        "source_plan_unchanged": false,
+        "source_project_count": 430,
+        "source_projection_absent_after": true,
+        "started_ns": 1794215559552436700,
+        "state": "SOURCE_RECONCILED_AND_NORMAL_VERIFIED_ON_NEW_HOST"
+      },
+      "arrays": {
+        "commands": {
+          "length": 17,
+          "first_keys": [
+            "adopted_normal_exit",
+            "argv",
+            "driver",
+            "errors",
+            "finished_ns",
+            "lifecycle",
+            "name",
+            "observed_before_reap",
+            "owned_retirement_complete",
+            "reaper",
+            "started_ns",
+            "stderr",
+            "stdout"
+          ]
+        },
+        "current_source_added_projects": {
+          "length": 5,
+          "first_keys": [
+            "commit",
+            "name",
+            "path",
+            "purpose",
+            "sparse_paths"
+          ]
+        },
+        "errors": {
+          "length": 0,
+          "first_keys": null
+        },
+        "new_original_provider_files": {
+          "length": 1535,
+          "first_keys": [
+            "bytes",
+            "identity",
+            "path",
+            "sha256"
+          ]
+        },
+        "normal_tools": {
+          "length": 2,
+          "first_keys": [
+            "bytes",
+            "identity",
+            "path",
+            "sha256"
+          ]
+        },
+        "tool_imports": {
+          "length": 63,
+          "first_keys": [
+            "copy",
+            "original"
+          ]
+        },
+        "work_locks_after": {
+          "length": 2,
+          "first_keys": [
+            "content",
+            "identity",
+            "observed_free",
+            "path"
+          ]
+        },
+        "work_locks_before": {
+          "length": 2,
+          "first_keys": [
+            "content",
+            "identity",
+            "observed_free",
+            "path"
+          ]
+        }
+      },
+      "maps": {
+        "budget_after": [
+          "affinity",
+          "cpu.max",
+          "memory.current",
+          "memory.events",
+          "memory.max",
+          "memory.peak",
+          "memory.stat",
+          "memory.swap.current",
+          "memory.swap.max"
+        ],
+        "budget_before": [
+          "affinity",
+          "cpu.max",
+          "memory.current",
+          "memory.events",
+          "memory.max",
+          "memory.peak",
+          "memory.stat",
+          "memory.swap.current",
+          "memory.swap.max"
+        ],
+        "configuration": [
+          "bytes",
+          "identity",
+          "path",
+          "sha256"
+        ],
+        "controller_source_manifest": [
+          "bytes",
+          "identity",
+          "path",
+          "sha256"
+        ],
+        "current_source_added_cones": [],
+        "failed_full_inner": [
+          "bytes",
+          "identity",
+          "path",
+          "sha256"
+        ],
+        "failed_full_outer": [
+          "bytes",
+          "identity",
+          "path",
+          "sha256"
+        ],
+        "materialized_manifest": [
+          "bytes",
+          "identity",
+          "path",
+          "sha256"
+        ],
+        "materialized_manifest_before": [
+          "bytes",
+          "identity",
+          "path",
+          "sha256"
+        ],
+        "normal_reconcile": [
+          "adopted_normal_exit",
+          "argv",
+          "driver",
+          "errors",
+          "finished_ns",
+          "lifecycle",
+          "name",
+          "observed_before_reap",
+          "owned_retirement_complete",
+          "reaper",
+          "started_ns",
+          "stderr",
+          "stdout"
+        ],
+        "normal_reconcile_environment": [
+          "GIT_NO_LAZY_FETCH",
+          "after_verify_GIT_NO_LAZY_FETCH",
+          "public_exact_project_origins_verified_by_normal_cli"
+        ],
+        "normal_serialized_plan_expansion": [
+          "added_project_paths",
+          "exact_expansion",
+          "omitted_empty_sparse_paths",
+          "previous_project_count",
+          "project_count"
+        ],
+        "original_pasit_provider_delta": [
+          "bytes",
+          "identity",
+          "path",
+          "sha256"
+        ],
+        "original_project_origin_chain": [
+          "finite_original_gitlink_and_blueprint_delta",
+          "foreign_source_or_build_qualification_inherited",
+          "new_project_count",
+          "old_projects_exact_prefix_unchanged",
+          "original_closure",
+          "parent_source_qualification"
+        ],
+        "previous_qualified_source": [
+          "H",
+          "H_job_id",
+          "inner",
+          "new_generation_qualification_not_inherited",
+          "original_project_origins",
+          "outer"
+        ],
+        "shared_serial_lock": [
+          "held_exclusive",
+          "identity",
+          "path"
+        ],
+        "source_allocation_after": [
+          "adopted_normal_exit",
+          "argv",
+          "driver",
+          "errors",
+          "finished_ns",
+          "lifecycle",
+          "name",
+          "observed_before_reap",
+          "owned_retirement_complete",
+          "reaper",
+          "started_ns",
+          "stderr",
+          "stdout"
+        ],
+        "source_allocation_before": [
+          "adopted_normal_exit",
+          "argv",
+          "driver",
+          "errors",
+          "finished_ns",
+          "lifecycle",
+          "name",
+          "observed_before_reap",
+          "owned_retirement_complete",
+          "reaper",
+          "started_ns",
+          "stderr",
+          "stdout"
+        ],
+        "source_closure_plan": [
+          "bytes",
+          "identity",
+          "path",
+          "sha256"
+        ],
+        "source_lock": [
+          "bytes",
+          "identity",
+          "path",
+          "sha256"
+        ],
+        "source_sync_reserve": [
+          "last_free_bytes",
+          "minimum_observed_free_bytes",
+          "required_free_bytes",
+          "samples"
+        ],
+        "source_transfer_origin": [
+          "bytes",
+          "path",
+          "sha256"
+        ],
+        "tool_compilation_origin": [
+          "H",
+          "build_authority_transferred",
+          "build_host",
+          "original_outer",
+          "original_result"
+        ]
+      },
+      "commands": [
+        {
+          "errors": [],
+          "name": "source-allocation-before",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "old-normal-materialized-before",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "import-normal-tool-proof",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "import-normal-tool-binaries-and-logs",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "import-normal-tool-control-source",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "clone-new-recipe",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "checkout-new-recipe",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "set-new-public-origin",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "disable-new-recipe-hooks",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "new-recipe-tree",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "droidloom-source-desktop-loader-help",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "droidloom-update-desktop-loader-help",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "new-normal-lock-verify",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "normal-source-reconcile",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "normal-materialized-after",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "new-recipe-clean-after",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        },
+        {
+          "errors": [],
+          "name": "source-allocation-after",
+          "owned_retirement_complete": true,
+          "lifecycle_returncode": 0
+        }
+      ]
+    },
+    "outer_result": {
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/source-pasit-continuation-r1/outer-terminal.json",
+      "bytes": 5053,
+      "sha256": "794f5cb27576756121f57cdaf20d2f3a8886f06dd19842e8b98e9f614cd49d0c"
+    },
+    "state": "SOURCE_RECONCILED_AND_RETIRED",
+    "source_materialization_verified_on_new_host": true,
+    "command_count": 17,
+    "all_commands_exit_zero": true,
+    "all_commands_retired": true,
+    "source_lock_sha256": "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a",
+    "materialized_manifest": {
+      "bytes": 263945,
+      "identity": [
+        2067,
+        1883469,
+        33152,
+        1000,
+        1000,
+        1,
+        263945,
+        1794216084721356300,
+        1794216084725356300
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/.droidloom-source-manifest.json",
+      "sha256": "a7add5b00da39e4e18587399a3b26ecbaf3983f6cad93aea47061c3117ac805a"
+    },
+    "previous_project_count": 425,
+    "project_count": 430,
+    "new_original_provider_files": 1535,
+    "actual_full_and_runtime_qualification_inherited": false
+  },
+  "old_r10_request": {
+    "must_not_execute": true,
+    "state": "PREPARED_NO_EXECUTION_OBSERVED_SUPERSEDED_BY_R10_R2",
+    "request": {
+      "bytes": 17071,
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/full-desktop-r10/start-full.json",
+      "sha256": "49a7377e673e5969c5f65f77778901bc91a5727db66254513572e113f062e46d"
+    },
+    "disposition": {
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/full-desktop-r10-r2/previous-unlaunched-request-disposition.json",
+      "bytes": 8416,
+      "sha256": "6dbfe84f018e96bef0190244f5a14c842c53ba331dee0fb0b05a83120f3e6f8f"
+    },
+    "old_actual_runtime_binding_violations": [
+      {
+        "line": 135,
+        "path": "recipe-connectivity-projection-r1"
+      },
+      {
+        "line": 214,
+        "path": "recipe-connectivity-projection-r1"
+      },
+      {
+        "line": 212,
+        "path": "tools/connectivity-projection-r1/droidloom-update"
+      },
+      {
+        "line": 213,
+        "path": "recipe-connectivity-projection-r1"
+      }
+    ],
+    "original_r9_failed_output_retirement": {
+      "bytes": 2589,
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/full-desktop-r10/failed-output-retirement.json",
+      "sha256": "f8609a1147816018d0141c6a02e5ead4c86243706797fb91cf6e82d3e73010e8"
+    },
+    "correction": "Before any old r10 full execution, four launcher working-directory/fallback references to the connectivity recipe/tool generation were replaced with the PASIT recipe/tool generation. Existing owner produced 7 passing controls including 4 rejected negative mutations."
+  },
+  "current_r10_r2": {
+    "must_not_duplicate_or_replay": true,
+    "host": "desktop",
+    "job_id": "1a1bfb491a7-5e21-67c",
+    "idempotency_key": "pocket4-audio430-pasit-desktop-normal-full-high22g-max24g-cpu8-work36g-20261109-8b88-r10-r2",
+    "unit": "p4-audio-source430-pasit-full-desktop-20261109-8b88-r10-r2.service",
+    "authoritative_job_status": {
+      "audit_recorded": true,
+      "backend": "systemd",
+      "job_id": "1a1bfb491a7-5e21-67c",
+      "state": "running",
+      "systemd": {
+        "ActiveState": "active",
+        "Description": "Hepta Runtime job 1a1bfb491a7-5e21-67c 9a365664df0d76666c47bb2b4c58bd6c",
+        "ExecMainCode": "0",
+        "ExecMainPID": "183182",
+        "ExecMainStatus": "0",
+        "InvocationID": "ed25ada8db634c0a8a7e1cad6c25364a",
+        "LoadState": "loaded",
+        "Result": "success",
+        "SubState": "running"
+      }
+    },
+    "started_utc": "2026-11-09T09:47:35.708Z",
+    "controller_pid": 183198,
+    "driver_pid": 230277,
+    "driver_start_ticks": 129548898,
+    "live_affinity_last_sample": {
+      "183198": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "230277": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    },
+    "state": "RUNNING_UNQUALIFIED",
+    "normal_target": "com.android.hardware.audio.droidloom",
+    "argv": [
+      "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/pasit-original-r1/droidloom-update",
+      "--source",
+      "/data/pocket4-audio-source316-offload-20261108-8b88-r1/recipe-pasit-original-r1",
+      "-j6",
+      "audio-apex-build",
+      "--work",
+      "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work"
+    ],
+    "request": {
+      "bytes": 17056,
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/full-desktop-r10-r2/start-full.json",
+      "sha256": "69599c6da0b87c9e2449efff251df035109a2f939f58dcd722f3871f2da37efc"
+    },
+    "ready": {
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/full-desktop-r10-r2/READY.json",
+      "bytes": 8856,
+      "sha256": "49f4ec13f735e2a97cb4bc3b46e3564af502df83026714b1e53ef512293df7de"
+    },
+    "ready_is_prelaunch_snapshot_not_current_process_state": true,
+    "outer_execution": {
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/full-desktop-r10-r2/outer-execution.json",
+      "bytes": 5429,
+      "sha256": "a73ea2337f37a601275139dcacc31a1dd149e93daf2dc4b72a64d92638698847"
+    },
+    "running_receipt": {
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r10-r2/running.json",
+      "bytes": 29959,
+      "sha256": "67a73e058afa17fd144a6e1426001c15667d69836181b59c296c8960840eb52c"
+    },
+    "admission": {
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r10-r2/admission.json",
+      "bytes": 29323,
+      "sha256": "042d08c531efc86aef8cefdf3f07f50ba1e4fa392b29c3047cc548807686c5f0"
+    },
+    "runtime_binding_controls": {
+      "file": {
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/full-desktop-r10-r2/runtime-recipe-bindings-controls.json",
+        "bytes": 2829,
+        "sha256": "043d1a2594a16c29b171592eb45831b7d262609a96db2d45522bbbd05ff4968e"
+      },
+      "result": {
+        "actual_new_controller": {
+          "bytes": 34672,
+          "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/full-desktop-r10-r2/desktop_audio_controller.py",
+          "sha256": "1df63c4311ace2e35ecfc634880cfb27d71b38cf08a3ad6ac984600ed2c6bf44"
+        },
+        "actual_new_launcher_template": {
+          "bytes": 16297,
+          "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/full-desktop-r10-r2/desktop_audio_launcher.template.py",
+          "sha256": "7711946241913943c9dcf30fd80148e13b7f65d7505f71510553e223ac17cfa4"
+        },
+        "actual_old_launcher": {
+          "bytes": 16318,
+          "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/full-desktop-r10/desktop_audio_launcher.template.py",
+          "sha256": "fef78cd2542a2f5576608d72146bd73afa8ddbb53e05680b4550198e9b6fe794"
+        },
+        "current_controller_bindings": [
+          {
+            "line": 22,
+            "path": "recipe-pasit-original-r1"
+          },
+          {
+            "line": 23,
+            "path": "tools/pasit-original-r1"
+          }
+        ],
+        "current_launcher_bindings": [
+          {
+            "line": 135,
+            "path": "recipe-pasit-original-r1"
+          },
+          {
+            "line": 214,
+            "path": "recipe-pasit-original-r1"
+          },
+          {
+            "line": 212,
+            "path": "tools/pasit-original-r1/droidloom-update"
+          },
+          {
+            "line": 213,
+            "path": "recipe-pasit-original-r1"
+          }
+        ],
+        "failed_control_count": 0,
+        "full_execution_not_simulated": true,
+        "isolated_negative_controls": [
+          {
+            "name": "outer-working-directory",
+            "rejected": true,
+            "violations": [
+              {
+                "line": 135,
+                "path": "recipe-connectivity-projection-r1"
+              }
+            ]
+          },
+          {
+            "name": "fallback-tool",
+            "rejected": true,
+            "violations": [
+              {
+                "line": 212,
+                "path": "tools/connectivity-projection-r1/droidloom-update"
+              }
+            ]
+          },
+          {
+            "name": "fallback-source-argument",
+            "rejected": true,
+            "violations": [
+              {
+                "line": 213,
+                "path": "recipe-connectivity-projection-r1"
+              }
+            ]
+          },
+          {
+            "name": "fallback-working-directory",
+            "rejected": true,
+            "violations": [
+              {
+                "line": 214,
+                "path": "recipe-connectivity-projection-r1"
+              }
+            ]
+          }
+        ],
+        "normal_recipe": "recipe-pasit-original-r1",
+        "normal_tools": "tools/pasit-original-r1",
+        "old_actual_violations": [
+          {
+            "line": 135,
+            "path": "recipe-connectivity-projection-r1"
+          },
+          {
+            "line": 214,
+            "path": "recipe-connectivity-projection-r1"
+          },
+          {
+            "line": 212,
+            "path": "tools/connectivity-projection-r1/droidloom-update"
+          },
+          {
+            "line": 213,
+            "path": "recipe-connectivity-projection-r1"
+          }
+        ],
+        "passed_control_count": 7,
+        "schema": "audio-normal-recovery-recipe-bindings-controls-v1"
+      }
+    },
+    "resource_profile": {
+      "build_memory_high_bytes": 23622320128,
+      "build_memory_max_bytes": 25769803776,
+      "cpu_affinity": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "cpu_quota_percent": 800,
+      "fresh_disk_minimum_bytes": 55834574848,
+      "fresh_memavailable_minimum_bytes": 31138512896,
+      "go_gc_percent": 50,
+      "go_max_procs": 2,
+      "go_memory_limit_bytes": 5368709120,
+      "host_reserve_bytes": 5368709120,
+      "initial_build_work_budget_bytes": 38654705664,
+      "inner_runtime_max_seconds": 22800,
+      "memory_swap_max_bytes": 0,
+      "name": "desktop-audio-source430-pasit-high22g-max24g-cpu8-jobs6-go5g2-hostreserve5g-work36g-sharedreserve16g-v3",
+      "normal_build_timeout_seconds": 21600,
+      "normal_requested_jobs": 6,
+      "outer_cpu_quota_percent": 200,
+      "outer_memory_max_bytes": 2147483648,
+      "outer_timeout_seconds": 28800,
+      "shared_disk_reserve_bytes": 17179869184
+    },
+    "current_unit": {
+      "name": "p4-audio-source430-pasit-full-desktop-20261109-8b88-r10-r2.service",
+      "exit": 0,
+      "stdout": "MainPID=183198\nResult=success\nExecMainStatus=0\nControlGroup=/system.slice/p4-audio-source430-pasit-full-desktop-20261109-8b88-r10-r2.service\nMemoryCurrent=1112887296\nMemoryPeak=1142345728\nCPUUsageNSec=377857895000\nTasksCurrent=3\nMemoryHigh=23622320128\nMemoryMax=25769803776\nMemorySwapMax=0\nActiveState=active\nSubState=running\n",
+      "stderr": ""
+    },
+    "current_cgroup": {
+      "cpu.max": "800000 100000\n",
+      "cpuset.cpus.effective": "0-47\n",
+      "memory.current": "1112887296\n",
+      "memory.peak": "1142345728\n",
+      "memory.max": "25769803776\n",
+      "memory.high": "23622320128\n",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+      "memory.swap.current": "0\n",
+      "memory.swap.max": "0\n",
+      "cgroup.events": "populated 1\nfrozen 0\n"
+    },
+    "data_free_bytes_at_cgroup_sample": 126081490944,
+    "cpuset_note": "cgroup cpuset.cpus.effective shows the host's 0-47 allowed set; actual controller and build-driver sched affinity is verified 0-7, matching the runtime profile.",
+    "completed_prelaunch_commands": [
+      {
+        "name": "normal-lock-before",
+        "exit": 0,
+        "owned_retirement_complete": true,
+        "errors": []
+      },
+      {
+        "name": "normal-materialized-before",
+        "exit": 0,
+        "owned_retirement_complete": true,
+        "errors": []
+      },
+      {
+        "name": "recipe-head-before",
+        "exit": 0,
+        "owned_retirement_complete": true,
+        "errors": []
+      },
+      {
+        "name": "recipe-tree-before",
+        "exit": 0,
+        "owned_retirement_complete": true,
+        "errors": []
+      },
+      {
+        "name": "recipe-clean-before",
+        "exit": 0,
+        "owned_retirement_complete": true,
+        "errors": []
+      },
+      {
+        "name": "actual-eight-cpu-go-probe",
+        "exit": 0,
+        "owned_retirement_complete": true,
+        "errors": []
+      }
+    ],
+    "terminal_presence_at_latest_sample": {
+      "control/full-desktop-r10-r2/outer-terminal.json": false,
+      "qualification/full-desktop-r10-r2/terminal.json": false,
+      "qualification/full-desktop-r10-r2-fallback/result.json": false
+    },
+    "normal_full_log_observation": [
+      {
+        "name": "normal-full-audio-apex.stderr",
+        "bytes": 114,
+        "directory": false,
+        "mtime_ns": 1794217822997318400
+      },
+      {
+        "name": "normal-full-audio-apex.stdout",
+        "bytes": 0,
+        "directory": false,
+        "mtime_ns": 1794217822994318600
+      }
+    ],
+    "normal_full_stderr": {
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r10-r2/commands/normal-full-audio-apex.stderr",
+      "bytes": 114,
+      "tail_bytes": 114,
+      "tail_sha256": "deb5ec68c71c25b5c915f13e1edc63d8db81fa9256b44b605d3a6d53f2188d56",
+      "text": "Building the AIDL audio APEX target closure with PCM bridge patches; runtime audio verification remains separate.\n"
+    },
+    "observed_new_source_first_error": null,
+    "log_limit": "At 09:57:19Z stdout was empty and stderr held only the normal AIDL APEX build-start message. No source failure or successful artifact can be inferred from silence; the active driver's affinity and absent terminal files were observed.",
+    "build_success": false,
+    "complete_apex_qualified": false,
+    "artifact_qualified": false,
+    "runtime_qualified": false
+  },
+  "next_action": {
+    "owner": "existing foreground Audio owner",
+    "action": "Continue only the existing r10-r2 generation and inspect its exact inner/outer terminal when produced. Do not execute the old r10 or start-normal-tools requests.",
+    "next_bounded_observation": "Wait approximately 5-10 minutes from the latest sample, or inspect on a concrete abnormal signal; no high-frequency polling.",
+    "isolated_helper_change_now": "None justified by the latest observed source output. Existing owner already corrected and tested the stale launcher bindings.",
+    "if_new_source_failure": "Bind the actual r10-r2 first-error log to source-lock/recipe/manifest identities, inspect only named consumer/provider files, and propose an isolated helper regression before touching owner sources."
+  },
+  "qualifications": {
+    "tools_pass": true,
+    "source_materialization_pass": true,
+    "full_pass": false,
+    "artifact_pass": false,
+    "runtime_pass": false,
+    "production_ready": false
+  }
+}

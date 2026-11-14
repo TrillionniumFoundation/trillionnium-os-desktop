@@ -1,0 +1,838 @@
+{
+  "combined_cases": [
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "id=0 flags=0",
+        "error": 0,
+        "passed": true
+      },
+      "name": "provider_pristine_namespace",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 116,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "expected ESTALE",
+        "error": 116,
+        "passed": true
+      },
+      "name": "provider_stale_inode",
+      "previous": {
+        "error": 116,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 22,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "AppArmor ID is outside this original explicit ABI",
+        "error": 22,
+        "passed": true
+      },
+      "name": "provider_unknown_id",
+      "previous": {
+        "error": 22,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 22,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "zero is historical default, not a SET operation",
+        "error": 22,
+        "passed": true
+      },
+      "name": "provider_explicit_zero_rejected",
+      "previous": {
+        "error": 22,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 22,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "flags must be zero",
+        "error": 22,
+        "passed": true
+      },
+      "name": "provider_nonzero_flags",
+      "previous": {
+        "error": 22,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 1,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "initial network namespace remains immutable default",
+        "error": 1,
+        "passed": true
+      },
+      "name": "provider_initial_net_rejected",
+      "previous": {
+        "error": 1,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "SET errno=1",
+        "error": 0,
+        "passed": true
+      },
+      "name": "provider_child_userns_rejected",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "selected SELinux ID 101 on unused child-owned network namespace",
+        "error": 0,
+        "passed": true
+      },
+      "name": "provider_initial_set",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "id=101 flags=1",
+        "error": 0,
+        "passed": true
+      },
+      "name": "provider_fixed_state",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 16,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "first selection remains fixed",
+        "error": 16,
+        "passed": true
+      },
+      "name": "provider_repeat_rejected",
+      "previous": {
+        "error": 16,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 16,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "create_errno=0 id=0 flags=2 GET_errno=0",
+        "error": 16,
+        "passed": true
+      },
+      "name": "provider_closed_socket_still_used",
+      "previous": {
+        "error": 16,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 16,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "create_errno=93 id=0 flags=2 GET_errno=0",
+        "error": 16,
+        "passed": true
+      },
+      "name": "provider_failed_protocol_still_used",
+      "previous": {
+        "error": 16,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "SET after derivation errno=16",
+        "error": 0,
+        "passed": true
+      },
+      "name": "provider_derivation_fixes_default",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "id=101 flags=1",
+        "error": 0,
+        "passed": true
+      },
+      "name": "provider_child_inherits_fixed",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "proc_errno=22 binder_errno=22",
+        "error": 0,
+        "passed": true
+      },
+      "name": "mount_unknown_provider_rejected",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "default=unconfined selected=u:r:p4_diag_parent_t:s0 named_apparmor=unconfined",
+        "error": 0,
+        "passed": true
+      },
+      "name": "proc_explicit_provider_discriminates",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "no_option_errno=0 same_errno=0 different_errno=16 held=u:r:p4_diag_parent_t:s0 fresh=u:r:p4_diag_parent_t:s0",
+        "error": 0,
+        "passed": true
+      },
+      "name": "proc_remount_preserves_open_attr",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "both sentinel files readable by the setup domain; aa=0 selinux=0",
+        "error": 0,
+        "passed": true
+      },
+      "name": "combined_enforcement_parent_baseline",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "aa=p4-context-peer-a (enforce) selinux=u:r:p4_diag_parent_t:s0 aa_open_errno=13 selinux_open_errno=0 caps_zero=1",
+        "error": 0,
+        "passed": true
+      },
+      "name": "apparmor_distinct_denial",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "aa=unconfined selinux=u:r:p4_context_a_t:s0 aa_open_errno=0 selinux_open_errno=13 caps_zero=1",
+        "error": 0,
+        "passed": true
+      },
+      "name": "selinux_distinct_denial",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "aa=p4-context-peer-a (enforce) selinux=u:r:p4_context_a_t:s0 aa_open_errno=13 selinux_open_errno=13 caps_zero=1",
+        "error": 0,
+        "passed": true
+      },
+      "name": "combined_enforcement_zero_caps",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "received=1 ctx= expected=none requested=0; opened_aa=unconfined opened_selinux=u:r:p4_diag_parent_t:s0 opened_uid=0; active_aa=unconfined active_selinux=u:r:p4_diag_parent_t:s0 active_uid=0; caps_zero=0 deny_errno=0; held_fd_remount_errno=[0,0,16]; child_status=0 retired=1 timeout=0 reply=1 setup_error=0 failed_reply=0 extended_errno=0",
+        "error": 0,
+        "passed": true
+      },
+      "name": "binder_default_no_context",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "received=1 ctx=unconfined expected=unconfined requested=1; opened_aa=unconfined opened_selinux=u:r:p4_diag_parent_t:s0 opened_uid=0; active_aa=unconfined active_selinux=u:r:p4_diag_parent_t:s0 active_uid=0; caps_zero=0 deny_errno=0; held_fd_remount_errno=[0,0,16]; child_status=0 retired=1 timeout=0 reply=1 setup_error=0 failed_reply=0 extended_errno=0",
+        "error": 0,
+        "passed": true
+      },
+      "name": "binder_default_parent",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "received=1 ctx=p4-context-peer-a expected=p4-context-peer-a requested=1; opened_aa=p4-context-peer-a (enforce) opened_selinux=u:r:p4_context_a_t:s0 opened_uid=0; active_aa=p4-context-peer-b (enforce) active_selinux=u:r:p4_context_b_t:s0 active_uid=10001; caps_zero=1 deny_errno=13; held_fd_remount_errno=[0,0,16]; child_status=0 retired=1 timeout=0 reply=1 setup_error=0 failed_reply=0 extended_errno=0",
+        "error": 0,
+        "passed": true
+      },
+      "name": "binder_default_saved_opener_a_active_b",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "received=1 ctx=p4-context-peer-b expected=p4-context-peer-b requested=1; opened_aa=p4-context-peer-b (enforce) opened_selinux=u:r:p4_context_b_t:s0 opened_uid=10001; active_aa=p4-context-peer-b (enforce) active_selinux=u:r:p4_context_b_t:s0 active_uid=10001; caps_zero=1 deny_errno=13; held_fd_remount_errno=[0,0,16]; child_status=0 retired=1 timeout=0 reply=1 setup_error=0 failed_reply=0 extended_errno=0",
+        "error": 0,
+        "passed": true
+      },
+      "name": "binder_default_fresh_opener_b",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "received=0 ctx= expected=unconfined requested=1; opened_aa=p4-context-peer-b (enforce) opened_selinux=u:r:p4_context_b_t:s0 opened_uid=0; active_aa=p4-context-peer-a (enforce) active_selinux=u:r:p4_context_a_t:s0 active_uid=10001; caps_zero=1 deny_errno=13; held_fd_remount_errno=[0,0,16]; child_status=0 retired=1 timeout=0 reply=0 setup_error=0 failed_reply=1 extended_errno=-1",
+        "error": 0,
+        "passed": true
+      },
+      "name": "binder_default_impersonation_permission_denied",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "received=1 ctx= expected=none requested=0; opened_aa=unconfined opened_selinux=u:r:p4_diag_parent_t:s0 opened_uid=0; active_aa=unconfined active_selinux=u:r:p4_diag_parent_t:s0 active_uid=0; caps_zero=0 deny_errno=0; held_fd_remount_errno=[0,0,16]; child_status=0 retired=1 timeout=0 reply=1 setup_error=0 failed_reply=0 extended_errno=0",
+        "error": 0,
+        "passed": true
+      },
+      "name": "binder_selected_no_context",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "received=1 ctx=u:r:p4_diag_parent_t:s0 expected=u:r:p4_diag_parent_t:s0 requested=1; opened_aa=unconfined opened_selinux=u:r:p4_diag_parent_t:s0 opened_uid=0; active_aa=unconfined active_selinux=u:r:p4_diag_parent_t:s0 active_uid=0; caps_zero=0 deny_errno=0; held_fd_remount_errno=[0,0,16]; child_status=0 retired=1 timeout=0 reply=1 setup_error=0 failed_reply=0 extended_errno=0",
+        "error": 0,
+        "passed": true
+      },
+      "name": "binder_selected_parent",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "received=1 ctx=u:r:p4_context_a_t:s0 expected=u:r:p4_context_a_t:s0 requested=1; opened_aa=p4-context-peer-a (enforce) opened_selinux=u:r:p4_context_a_t:s0 opened_uid=0; active_aa=p4-context-peer-b (enforce) active_selinux=u:r:p4_context_b_t:s0 active_uid=10001; caps_zero=1 deny_errno=13; held_fd_remount_errno=[0,0,16]; child_status=0 retired=1 timeout=0 reply=1 setup_error=0 failed_reply=0 extended_errno=0",
+        "error": 0,
+        "passed": true
+      },
+      "name": "binder_selected_saved_opener_a_active_b",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "received=1 ctx=u:r:p4_context_b_t:s0 expected=u:r:p4_context_b_t:s0 requested=1; opened_aa=p4-context-peer-b (enforce) opened_selinux=u:r:p4_context_b_t:s0 opened_uid=10001; active_aa=p4-context-peer-b (enforce) active_selinux=u:r:p4_context_b_t:s0 active_uid=10001; caps_zero=1 deny_errno=13; held_fd_remount_errno=[0,0,16]; child_status=0 retired=1 timeout=0 reply=1 setup_error=0 failed_reply=0 extended_errno=0",
+        "error": 0,
+        "passed": true
+      },
+      "name": "binder_selected_fresh_opener_b",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "received=0 ctx= expected=u:r:p4_diag_parent_t:s0 requested=1; opened_aa=p4-context-peer-b (enforce) opened_selinux=u:r:p4_context_b_t:s0 opened_uid=0; active_aa=p4-context-peer-a (enforce) active_selinux=u:r:p4_context_a_t:s0 active_uid=10001; caps_zero=1 deny_errno=13; held_fd_remount_errno=[0,0,16]; child_status=0 retired=1 timeout=0 reply=0 setup_error=0 failed_reply=1 extended_errno=-1",
+        "error": 0,
+        "passed": true
+      },
+      "name": "binder_selected_impersonation_permission_denied",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "detail": "queue_before_accept=1; receive_after_SCM_RIGHTS_and_opposite_netns=1; sender=u:r:p4_context_a_t:s0 -> u:r:p4_context_b_t:s0; SCM=[,] counts=[0,0]; peer=u:r:p4_context_a_t:s0; small_peer_errno=34 length=22; sender_caps_zero=1 receiver_caps_zero=1",
+        "error": 0,
+        "passed": false
+      },
+      "candidate": {
+        "detail": "queue_before_accept=1; receive_after_SCM_RIGHTS_and_opposite_netns=1; sender=u:r:p4_context_a_t:s0 -> u:r:p4_context_b_t:s0; SCM=[u:r:p4_context_a_t:s0,u:r:p4_context_a_t:s0] counts=[1,1]; peer=u:r:p4_context_a_t:s0; small_peer_errno=34 length=22; sender_caps_zero=1 receiver_caps_zero=1",
+        "error": 0,
+        "passed": true
+      },
+      "name": "scm_selected_stream_queued_before_accept",
+      "previous": {
+        "detail": "queue_before_accept=1; receive_after_SCM_RIGHTS_and_opposite_netns=1; sender=u:r:p4_context_a_t:s0 -> u:r:p4_context_b_t:s0; SCM=[,] counts=[0,0]; peer=u:r:p4_context_a_t:s0; small_peer_errno=34 length=22; sender_caps_zero=1 receiver_caps_zero=1",
+        "error": 0,
+        "passed": false
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "queue_before_accept=1; receive_after_SCM_RIGHTS_and_opposite_netns=1; sender=u:r:p4_context_a_t:s0 -> u:r:p4_context_b_t:s0; SCM=[,] counts=[0,0]; peer=p4-context-peer-a (enforce); small_peer_errno=34 length=27; sender_caps_zero=1 receiver_caps_zero=1",
+        "error": 0,
+        "passed": true
+      },
+      "name": "scm_default_stream_no_fallback",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "detail": "queue_before_accept=0; receive_after_SCM_RIGHTS_and_opposite_netns=1; sender=u:r:p4_context_a_t:s0 -> u:r:p4_context_b_t:s0; SCM=[,] counts=[0,0]; peer=; small_peer_errno=0 length=0; sender_caps_zero=1 receiver_caps_zero=1",
+        "error": 0,
+        "passed": false
+      },
+      "candidate": {
+        "detail": "queue_before_accept=0; receive_after_SCM_RIGHTS_and_opposite_netns=1; sender=u:r:p4_context_a_t:s0 -> u:r:p4_context_b_t:s0; SCM=[u:r:p4_context_a_t:s0,u:r:p4_context_b_t:s0] counts=[1,1]; peer=; small_peer_errno=0 length=0; sender_caps_zero=1 receiver_caps_zero=1",
+        "error": 0,
+        "passed": true
+      },
+      "name": "scm_selected_dgram_queued_identity",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "queue_before_accept=0; receive_after_SCM_RIGHTS_and_opposite_netns=1; sender=u:r:p4_context_a_t:s0 -> u:r:p4_context_b_t:s0; SCM=[,] counts=[0,0]; peer=; small_peer_errno=0 length=0; sender_caps_zero=1 receiver_caps_zero=1",
+        "error": 0,
+        "passed": true
+      },
+      "name": "scm_default_dgram_no_fallback",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "IP_PASSSEC=1 empty_receive_errno=11; no interfaces enabled, no packets sent; positive IP ancillary path remains outside this finite control",
+        "error": 0,
+        "passed": true
+      },
+      "name": "ip_passsec_default_no_network_negative",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "IP_PASSSEC=1 empty_receive_errno=11; no interfaces enabled, no packets sent; positive IP ancillary path remains outside this finite control",
+        "error": 0,
+        "passed": true
+      },
+      "name": "ip_passsec_selected_no_network_negative",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "NetLabel v3 families=[27,26] owned DOI=8764 pass-through MLS0; exact domain=p4_context_a_t; no external NIC",
+        "error": 0,
+        "passed": true
+      },
+      "name": "ip_guest_only_cipso_setup",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "UDP 127.0.0.1 only; DOI=8764 source_CIPSO=1/12B sender_sent=28 sender_error=0 receive_CIPSO=1/12B payload=28 SCM= count=0 expected=none inode_preserved=1; sender=u:r:p4_context_a_t:s0 receiver=u:r:p4_context_b_t:s0 caps_zero=[1,1] loopback_restored=1",
+        "error": 0,
+        "passed": true
+      },
+      "name": "ip_passsec_default_cipso_no_fallback",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "detail": "UDP 127.0.0.1 only; DOI=8764 source_CIPSO=1/12B sender_sent=28 sender_error=0 receive_CIPSO=1/12B payload=28 SCM= count=0 expected=u:object_r:p4_packet_peer_t:s0 inode_preserved=1; sender=u:r:p4_context_a_t:s0 receiver=u:r:p4_context_b_t:s0 caps_zero=[1,1] loopback_restored=1",
+        "error": 0,
+        "passed": false
+      },
+      "candidate": {
+        "detail": "UDP 127.0.0.1 only; DOI=8764 source_CIPSO=1/12B sender_sent=28 sender_error=0 receive_CIPSO=1/12B payload=28 SCM=u:object_r:p4_packet_peer_t:s0 count=1 expected=u:object_r:p4_packet_peer_t:s0 inode_preserved=1; sender=u:r:p4_context_a_t:s0 receiver=u:r:p4_context_b_t:s0 caps_zero=[1,1] loopback_restored=1",
+        "error": 0,
+        "passed": true
+      },
+      "name": "ip_passsec_selected_cipso_after_fd_netns_transfer",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "only owned domain/DOI removed; DOI lookup original-ABI EINVAL=1; guest has no external network or disk",
+        "error": 0,
+        "passed": true
+      },
+      "name": "ip_guest_cipso_objects_retired",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "detail": "step=MSG_WAITALL PEEK then consume typed boundary source_inode_label=u:r:p4_context_a_t:s0 -> u:r:p4_context_b_t:s0 creator_caps_zero=1; queued_before_accept=1; peek/consume/next lengths=[4,4,0] labels=[,,] errors=[71,71,71]; credentials=[0,0,0] pidfds=[0,0,0] rights=[0,0,0] cloexec=[1,1,1]; same PID1 credentials across SKBs, only typed security label changes",
+        "error": 71,
+        "passed": false
+      },
+      "candidate": {
+        "detail": "step=MSG_WAITALL PEEK then consume typed boundary source_inode_label=u:r:p4_context_a_t:s0 -> u:r:p4_context_b_t:s0 creator_caps_zero=1; queued_before_accept=1; peek/consume/next lengths=[2,2,2] labels=[u:r:p4_context_a_t:s0,u:r:p4_context_a_t:s0,u:r:p4_context_b_t:s0] errors=[0,0,0]; credentials=[0,0,0] pidfds=[0,0,0] rights=[0,0,0] cloexec=[1,1,1]; same PID1 credentials across SKBs, only typed security label changes",
+        "error": 0,
+        "passed": true
+      },
+      "name": "stream_typed_boundary_without_credentials",
+      "previous": {
+        "detail": "step=MSG_WAITALL PEEK then consume typed boundary source_inode_label=u:r:p4_context_a_t:s0 -> u:r:p4_context_b_t:s0 creator_caps_zero=1; queued_before_accept=1; peek/consume/next lengths=[4,4,0] labels=[,,] errors=[71,71,71]; credentials=[0,0,0] pidfds=[0,0,0] rights=[0,0,0] cloexec=[1,1,1]; same PID1 credentials across SKBs, only typed security label changes",
+        "error": 71,
+        "passed": false
+      }
+    },
+    {
+      "baseline": {
+        "detail": "step=MSG_WAITALL PEEK then consume typed boundary source_inode_label=u:r:p4_context_a_t:s0 -> u:r:p4_context_b_t:s0 creator_caps_zero=1; queued_before_accept=1; peek/consume/next lengths=[4,4,0] labels=[,,] errors=[71,71,71]; credentials=[1,1,1] pidfds=[1,1,0] rights=[0,0,0] cloexec=[1,1,1]; same PID1 credentials across SKBs, only typed security label changes",
+        "error": 71,
+        "passed": false
+      },
+      "candidate": {
+        "detail": "step=MSG_WAITALL PEEK then consume typed boundary source_inode_label=u:r:p4_context_a_t:s0 -> u:r:p4_context_b_t:s0 creator_caps_zero=1; queued_before_accept=1; peek/consume/next lengths=[2,2,2] labels=[u:r:p4_context_a_t:s0,u:r:p4_context_a_t:s0,u:r:p4_context_b_t:s0] errors=[0,0,0]; credentials=[1,1,1] pidfds=[1,1,1] rights=[0,0,0] cloexec=[1,1,1]; same PID1 credentials across SKBs, only typed security label changes",
+        "error": 0,
+        "passed": true
+      },
+      "name": "stream_typed_boundary_credentials_pidfd",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "detail": "step=MSG_WAITALL PEEK then consume typed boundary source_inode_label=u:r:p4_context_a_t:s0 -> u:r:p4_context_b_t:s0 creator_caps_zero=1; queued_before_accept=1; peek/consume/next lengths=[2,2,2] labels=[,,] errors=[71,71,71]; credentials=[1,1,1] pidfds=[1,1,1] rights=[1,1,0] cloexec=[1,1,1]; same PID1 credentials across SKBs, only typed security label changes",
+        "error": 71,
+        "passed": false
+      },
+      "candidate": {
+        "detail": "step=MSG_WAITALL PEEK then consume typed boundary source_inode_label=u:r:p4_context_a_t:s0 -> u:r:p4_context_b_t:s0 creator_caps_zero=1; queued_before_accept=1; peek/consume/next lengths=[2,2,2] labels=[u:r:p4_context_a_t:s0,u:r:p4_context_a_t:s0,u:r:p4_context_b_t:s0] errors=[0,0,0]; credentials=[1,1,1] pidfds=[1,1,1] rights=[1,1,0] cloexec=[1,1,1]; same PID1 credentials across SKBs, only typed security label changes",
+        "error": 0,
+        "passed": true
+      },
+      "name": "stream_typed_boundary_credentials_pidfd_rights",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "duplicate initial parameters select final value before publication: u:r:p4_diag_parent_t:s0",
+        "error": 0,
+        "passed": true
+      },
+      "name": "proc_duplicate_initial_last_value",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "received=1 ctx=u:r:p4_diag_parent_t:s0 expected=u:r:p4_diag_parent_t:s0 requested=1; opened_aa=unconfined opened_selinux=u:r:p4_diag_parent_t:s0 opened_uid=0; active_aa=unconfined active_selinux=u:r:p4_diag_parent_t:s0 active_uid=0; caps_zero=0 deny_errno=0; held_fd_remount_errno=[0,0,16]; child_status=0 retired=1 timeout=0 reply=1 setup_error=0 failed_reply=0 extended_errno=0",
+        "error": 0,
+        "passed": true
+      },
+      "name": "binder_selected_duplicate_initial_option",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    },
+    {
+      "baseline": {
+        "error": 0,
+        "passed": true
+      },
+      "candidate": {
+        "detail": "kernel ring bytes=37919 stdout_label=u:object_r:p4_diag_rootfs_t:s0 tcdrain_errno=0",
+        "error": 0,
+        "passed": true
+      },
+      "name": "guest_kernel_log_capture",
+      "previous": {
+        "error": 0,
+        "passed": true
+      }
+    }
+  ],
+  "inactive_cases": [
+    {
+      "detail": "id=0 flags=0",
+      "error": 0,
+      "name": "provider_pristine_namespace",
+      "passed": true
+    },
+    {
+      "detail": "expected ESTALE",
+      "error": 116,
+      "name": "provider_stale_inode",
+      "passed": true
+    },
+    {
+      "detail": "AppArmor ID is outside this original explicit ABI",
+      "error": 22,
+      "name": "provider_unknown_id",
+      "passed": true
+    },
+    {
+      "detail": "zero is historical default, not a SET operation",
+      "error": 22,
+      "name": "provider_explicit_zero_rejected",
+      "passed": true
+    },
+    {
+      "detail": "flags must be zero",
+      "error": 22,
+      "name": "provider_nonzero_flags",
+      "passed": true
+    },
+    {
+      "detail": "initial network namespace remains immutable default",
+      "error": 1,
+      "name": "provider_initial_net_rejected",
+      "passed": true
+    },
+    {
+      "detail": "SET errno=1",
+      "error": 0,
+      "name": "provider_child_userns_rejected",
+      "passed": true
+    },
+    {
+      "detail": "no active SELinux provider; no fallback",
+      "error": 95,
+      "name": "provider_inactive_rejected",
+      "passed": true
+    },
+    {
+      "detail": "id=0 flags=0",
+      "error": 0,
+      "name": "provider_inactive_state_unchanged",
+      "passed": true
+    },
+    {
+      "detail": "proc_errno=22 binder_errno=22",
+      "error": 0,
+      "name": "mount_unknown_provider_rejected",
+      "passed": true
+    },
+    {
+      "detail": "proc_errno=95 binder_errno=95; no default fallback mount",
+      "error": 0,
+      "name": "mount_inactive_provider_rejected",
+      "passed": true
+    },
+    {
+      "detail": "kernel ring bytes=32483 stdout_label=ERROR:61 tcdrain_errno=0",
+      "error": 0,
+      "name": "guest_kernel_log_capture",
+      "passed": true
+    }
+  ]
+}

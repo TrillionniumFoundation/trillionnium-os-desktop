@@ -1,0 +1,352 @@
+{
+  "added_production_cones": {
+    "packages/modules/Nfc": [
+      "apex",
+      "libnfc-nci/conf"
+    ],
+    "packages/modules/NpuManager": [
+      "apex",
+      "service"
+    ],
+    "packages/modules/Profiling": [
+      "apex",
+      "service"
+    ],
+    "packages/modules/UprobeStats": [
+      "apex",
+      "bpfloader",
+      "bpf_progs"
+    ],
+    "packages/modules/WebApp": [
+      "apex",
+      "service",
+      "template"
+    ],
+    "system/memory/libdmabufheap": [
+      "rust"
+    ]
+  },
+  "base_lock_sha256": "d88549bc89076017baffcc28e39695431993cc12516238278e015f23325d9596",
+  "original_APEX_trees": {
+    "platform/packages/modules/Nfc": {
+      "apex_files": [
+        {
+          "git_object": "b57b7a92fb551cc5f10f3052d9f06a456622a85e",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/Android.bp"
+        },
+        {
+          "git_object": "1aa23b11dbedf25f5f3afe451fb0ea7fd32fdd92",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/boot-image-profile.txt"
+        },
+        {
+          "git_object": "ae5ad5b09da0bed803671bb84fe971d56bc4626a",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/com.android.nfcservices.avbpubkey"
+        },
+        {
+          "git_object": "38924d797ef96da88a3fab0aa73e3cc42473b227",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/com.android.nfcservices.pem"
+        },
+        {
+          "git_object": "cc0269ce63e447855f455ee14e2f0b7c34dda100",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/com.android.nfcservices.pk8"
+        },
+        {
+          "git_object": "e8f1c5423de7f329319bb1c0cf65e0de060fe3e3",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/com.android.nfcservices.x509.pem"
+        },
+        {
+          "git_object": "ac8a2b627c09a4f5149d233c88b65539cbaa8101",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/hiddenapi/OWNERS"
+        },
+        {
+          "git_object": "1e7d141f0856963ae308faf28a5dc4317172b45b",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/hiddenapi/hiddenapi-max-target-o.txt"
+        },
+        {
+          "git_object": "f53aa1cf782153c530d33d4b186c69b4761f8f45",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/hiddenapi/hiddenapi-max-target-r-loprio.txt"
+        },
+        {
+          "git_object": "a2a461c3ba2c0a822bcfcc522badd73ff0a8b1ab",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/manifest.json"
+        }
+      ],
+      "apex_trees": [
+        {
+          "bytes": 396,
+          "git_tree": "a2515f435565f0b438009dd59384955106ea1151",
+          "path": "apex",
+          "raw_base64": "MTAwNjQ0IEFuZHJvaWQuYnAAtXt6kvtVHMXxDzBS2fBqRWYiqF4xMDA2NDQgYm9vdC1pbWFnZS1wcm9maWxlLnR4dAAaojsR2+3yX186/kUfsOp/0y/dkjEwMDY0NCBjb20uYW5kcm9pZC5uZmNzZXJ2aWNlcy5hdmJwdWJrZXkArlrVsJ2gvtgDZxu4T+lx1WvEYmoxMDA2NDQgY29tLmFuZHJvaWQubmZjc2VydmljZXMucGVtADiSTXl++W2oij+rCqc+PMQkc7InMTAwNjQ0IGNvbS5hbmRyb2lkLm5mY3NlcnZpY2VzLnBrOADMAmnOY+RHhV9FXuFOLwt8NN2hADEwMDY0NCBjb20uYW5kcm9pZC5uZmNzZXJ2aWNlcy54NTA5LnBlbQDo8cVCPefzKTGbscDPZeDeBg/j4zQwMDAwIGhpZGRlbmFwaQC1EIHUeUkqpIPr4yrGkMatBSZRhDEwMDY0NCBtYW5pZmVzdC5qc29uAKKkYcO6LAqCK8/MUiut1z/wqLGr"
+        },
+        {
+          "bytes": 149,
+          "git_tree": "b51081d479492aa483ebe32ac690c6ad05265184",
+          "path": "apex/hiddenapi",
+          "raw_base64": "MTAwNjQ0IE9XTkVSUwCsiitifAmk9RSdIzyItlU5y6qBATEwMDY0NCBoaWRkZW5hcGktbWF4LXRhcmdldC1vLnR4dAAefRQfCFaWOuMI+vKKXcQxcXK0WzEwMDY0NCBoaWRkZW5hcGktbWF4LXRhcmdldC1yLWxvcHJpby50eHQA9Tqhz3ghU8Uw0z1LGGxptHYfj0U="
+        }
+      ],
+      "commit": "940212c440f57032a19cf0f90c7faa8eca48d546"
+    },
+    "platform/packages/modules/NpuManager": {
+      "apex_files": [
+        {
+          "git_object": "b5f6ce7b18e69793fd0f473653472fdeabe04a79",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/Android.bp"
+        },
+        {
+          "git_object": "d0453e9097985ba58f2001fc9558864e8de8ea16",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/com.android.npumanager.avbpubkey"
+        },
+        {
+          "git_object": "cb8ea71511e647a8d9db08677ffea50bea7661f7",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/com.android.npumanager.pem"
+        },
+        {
+          "git_object": "d1b2b5c1e57706801d39f33a3271924bc55c2122",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/com.android.npumanager.pk8"
+        },
+        {
+          "git_object": "45de40b40826dd898ccf28410c492097e9c43220",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/com.android.npumanager.x509.pem"
+        },
+        {
+          "git_object": "44ccbb07786a99306dfadc7f80976dd2da9e3c66",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/manifest.json"
+        }
+      ],
+      "apex_trees": [
+        {
+          "bytes": 306,
+          "git_tree": "dc4bdad057fd3de8984809df6e3060586332acd5",
+          "path": "apex",
+          "raw_base64": "MTAwNjQ0IEFuZHJvaWQuYnAAtfbOexjml5P9D0c2U0cv3qvgSnkxMDA2NDQgY29tLmFuZHJvaWQubnB1bWFuYWdlci5hdmJwdWJrZXkA0EU+kJeYW6WPIAH8lViGTo3o6hYxMDA2NDQgY29tLmFuZHJvaWQubnB1bWFuYWdlci5wZW0Ay46nFRHmR6jZ2whnf/6lC+p2YfcxMDA2NDQgY29tLmFuZHJvaWQubnB1bWFuYWdlci5wazgA0bK1weV3BoAdOfM6MnGSS8VcISIxMDA2NDQgY29tLmFuZHJvaWQubnB1bWFuYWdlci54NTA5LnBlbQBF3kC0CCbdiYzPKEEMSSCX6cQyIDEwMDY0NCBtYW5pZmVzdC5qc29uAETMuwd4apkwbfrcf4CXbdLanjxm"
+        }
+      ],
+      "commit": "d194f8ada2cab31b8487fb3aaac6fd383fc7e07f"
+    },
+    "platform/packages/modules/Profiling": {
+      "apex_files": [
+        {
+          "git_object": "bfe0138256978f57e91879ab6553cac51f72f437",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/Android.bp"
+        },
+        {
+          "git_object": "aba0c244aea6c6384451035ce47a575d098c6410",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/com.android.profiling.avbpubkey"
+        },
+        {
+          "git_object": "4b51b05fbfc884b2f5bb6a696720a01150035bfe",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/com.android.profiling.pem"
+        },
+        {
+          "git_object": "9141193070ca5ff9fc9d4d091a6a4e84f28979d7",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/com.android.profiling.pk8"
+        },
+        {
+          "git_object": "6598ec93db25170af8ffdbe7dd98094f8f3ec0c4",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/com.android.profiling.x509.pem"
+        },
+        {
+          "git_object": "918d0aa84835626ebb9d6a01547c81aeb20ffaea",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/manifest.json"
+        }
+      ],
+      "apex_trees": [
+        {
+          "bytes": 302,
+          "git_tree": "f86df5bc4d6ae2928a8cca3d5e36ee97250287a8",
+          "path": "apex",
+          "raw_base64": "MTAwNjQ0IEFuZHJvaWQuYnAAv+ATglaXj1fpGHmrZVPKxR9y9DcxMDA2NDQgY29tLmFuZHJvaWQucHJvZmlsaW5nLmF2YnB1YmtleQCroMJErqbGOERRA1zkelddCYxkEDEwMDY0NCBjb20uYW5kcm9pZC5wcm9maWxpbmcucGVtAEtRsF+/yISy9btqaWcgoBFQA1v+MTAwNjQ0IGNvbS5hbmRyb2lkLnByb2ZpbGluZy5wazgAkUEZMHDKX/n8nU0JGmpOhPKJedcxMDA2NDQgY29tLmFuZHJvaWQucHJvZmlsaW5nLng1MDkucGVtAGWY7JPbJRcK+P/b592YCU+PPsDEMTAwNjQ0IG1hbmlmZXN0Lmpzb24AkY0KqEg1Ym67nWoBVHyBrrIP+uo="
+        }
+      ],
+      "commit": "8b3abe8eebc0e97890977d9658038f4966aa7df6"
+    },
+    "platform/packages/modules/UprobeStats": {
+      "apex_files": [
+        {
+          "git_object": "cc24bb612c49e61ebfa1e8e15034731752e2d7bd",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/Android.bp"
+        },
+        {
+          "git_object": "a30e2907a7a4d5649ac9009e6019073d5fd18e50",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/UprobeStats-mainline.rc"
+        },
+        {
+          "git_object": "04f8c51a2f1f96893db4aaf5b97212e9fb852432",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/UprobeStats-service-mainline.rc"
+        },
+        {
+          "git_object": "25257924b6ac6a9a4ad24e2382edf4049e0aae77",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/com.android.uprobestats.avbpubkey"
+        },
+        {
+          "git_object": "237b79a38eaee7e2670cc0d4f079498d8ce3122d",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/com.android.uprobestats.pem"
+        },
+        {
+          "git_object": "242ec34155b0674389c8c868f98421117cdedc8d",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/com.android.uprobestats.pk8"
+        },
+        {
+          "git_object": "23f5350fd765048bd9341ca269f8242a807a23f3",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/com.android.uprobestats.x509.pem"
+        },
+        {
+          "git_object": "c9ed8fc20c9c06473f0e0f29eff36ce16acf3289",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/manifest.json"
+        }
+      ],
+      "apex_trees": [
+        {
+          "bytes": 420,
+          "git_tree": "4fde0684efe073a07c40c7451348dc2aa18a2ccd",
+          "path": "apex",
+          "raw_base64": "MTAwNjQ0IEFuZHJvaWQuYnAAzCS7YSxJ5h6/oejhUDRzF1Li170xMDA2NDQgVXByb2JlU3RhdHMtbWFpbmxpbmUucmMAow4pB6ek1WSayQCeYBkHPV/RjlAxMDA2NDQgVXByb2JlU3RhdHMtc2VydmljZS1tYWlubGluZS5yYwAE+MUaLx+WiT20qvW5chLp+4UkMjEwMDY0NCBjb20uYW5kcm9pZC51cHJvYmVzdGF0cy5hdmJwdWJrZXkAJSV5JLasappK0k4jgu30BJ4KrncxMDA2NDQgY29tLmFuZHJvaWQudXByb2Jlc3RhdHMucGVtACN7eaOOrufiZwzA1PB5SY2M4xItMTAwNjQ0IGNvbS5hbmRyb2lkLnVwcm9iZXN0YXRzLnBrOAAkLsNBVbBnQ4nIyGj5hCERfN7cjTEwMDY0NCBjb20uYW5kcm9pZC51cHJvYmVzdGF0cy54NTA5LnBlbQAj9TUP12UEi9k0HKJp+CQqgHoj8zEwMDY0NCBtYW5pZmVzdC5qc29uAMntj8IMnAZHPw4PKe/zbOFqzzKJ"
+        }
+      ],
+      "commit": "7cffa93ccbe6c25182cf27a46eeba75f4f9f551f"
+    },
+    "platform/packages/modules/WebApp": {
+      "apex_files": [
+        {
+          "git_object": "b75a169439b637234145d645eead7df4b5eaefc4",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/Android.bp"
+        },
+        {
+          "git_object": "263da7e573aa79a6466a8c31a2d4bc4cb655270c",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/boot-image-profile.txt"
+        },
+        {
+          "git_object": "5fa8298df6c570c1765a1d848307f6b68a74f001",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/com.android.webapp.avbpubkey"
+        },
+        {
+          "git_object": "3671249c25afa52cb860eea49e1ed1e13699c327",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/com.android.webapp.pem"
+        },
+        {
+          "git_object": "d624a42c8f28d6119937124fb6cee6fda61bc7fb",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/com.android.webapp.pk8"
+        },
+        {
+          "git_object": "b9c5caa89063e2846b5fd36aa59297152ddd2116",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/com.android.webapp.x509.pem"
+        },
+        {
+          "git_object": "4e6716f956f4b11439483651ca667d68a65c2921",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/manifest.json"
+        },
+        {
+          "git_object": "67c605c33463a9bdabc66014861bee014d688d89",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/permissions/Android.bp"
+        },
+        {
+          "git_object": "95220605d248f302c7a3d3c6bd2042d268a9086b",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/permissions/OWNERS"
+        },
+        {
+          "git_object": "729685bed3894f761623f21f314eff75edb3bcfe",
+          "kind": "blob",
+          "mode": "100644",
+          "path": "apex/permissions/com.android.webapp.service.xml"
+        }
+      ],
+      "apex_trees": [
+        {
+          "bytes": 378,
+          "git_tree": "133d2b33fd257b352696c3d4e2b0887235dccf20",
+          "path": "apex",
+          "raw_base64": "MTAwNjQ0IEFuZHJvaWQuYnAAt1oWlDm2NyNBRdZF7q199LXq78QxMDA2NDQgYm9vdC1pbWFnZS1wcm9maWxlLnR4dAAmPaflc6p5pkZqjDGi1LxMtlUnDDEwMDY0NCBjb20uYW5kcm9pZC53ZWJhcHAuYXZicHVia2V5AF+oKY32xXDBdlodhIMH9raKdPABMTAwNjQ0IGNvbS5hbmRyb2lkLndlYmFwcC5wZW0ANnEknCWvpSy4YO6knh7R4TaZwycxMDA2NDQgY29tLmFuZHJvaWQud2ViYXBwLnBrOADWJKQsjyjWEZk3Ek+2zub9phvH+zEwMDY0NCBjb20uYW5kcm9pZC53ZWJhcHAueDUwOS5wZW0AucXKqJBj4oRrX9NqpZKXFS3dIRYxMDA2NDQgbWFuaWZlc3QuanNvbgBOZxb5VvSxFDlINlHKZn1oplwpITQwMDAwIHBlcm1pc3Npb25zAMvF7thKv5jxpUEhkz13enRTtPQY"
+        },
+        {
+          "bytes": 130,
+          "git_tree": "cbc5eed84abf98f1a54121933d777a7453b4f418",
+          "path": "apex/permissions",
+          "raw_base64": "MTAwNjQ0IEFuZHJvaWQuYnAAZ8YFwzRjqb2rxmAUhhvuAU1ojYkxMDA2NDQgT1dORVJTAJUiBgXSSPMCx6PTxr0gQtJoqQhrMTAwNjQ0IGNvbS5hbmRyb2lkLndlYmFwcC5zZXJ2aWNlLnhtbAByloW+04lPdhYj8h8xTv917bO8/g=="
+        }
+      ],
+      "commit": "551872e35de50df9fa39fa871129db512c18565b"
+    }
+  },
+  "schema": "native604-five-apex-original-tree-and-provisional-symbol-closure-r1",
+  "scope": "same original superproject cp2a/user; not Soong/full/runtime qualification",
+  "source_lock_sha256": "5e7d6e1a1bc8cb1151bf2312b1ca301f9b1f6070711474f464129b76dbf6eb61"
+}

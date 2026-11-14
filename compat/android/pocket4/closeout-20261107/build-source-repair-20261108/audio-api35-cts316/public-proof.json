@@ -1,0 +1,325 @@
+{
+  "actual_evidence_sha256": {
+    "H_terminal": "e9ca1a485cdd373dfc8aa92aed4433746cd8f430cb5c7d77a431fb4b040259e3",
+    "controls": "a873f6f60f0f6599167eade34bcb44dc9828309a96b5d14ce4c981c4c43ef3e5",
+    "outer_retirement": "2fc1be52fa00b2b75b24881217ab65b61a2355ed71f19b9257e22b6dbd15ea82"
+  },
+  "commands": [
+    {
+      "argv": [
+        "rustc",
+        "-V"
+      ],
+      "evidence_complete": true,
+      "exit_code": 0,
+      "name": "rustc-version",
+      "owned_command_retired": true,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 36,
+        "sha256": "a2d88be55921309c5e126c58ad4a9040d034419589b58684cb44dfd13e14f66e"
+      }
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-j1",
+        "-p",
+        "droidloom-source",
+        "--lib",
+        "audio_",
+        "--",
+        "--test-threads=1"
+      ],
+      "evidence_complete": true,
+      "exit_code": 0,
+      "name": "source-audio-controls",
+      "owned_command_retired": true,
+      "stderr": {
+        "bytes": 1745,
+        "sha256": "27e4ea5462b8788d9138e8f1b7747ae069243a501611102bbd6add3ef2378550"
+      },
+      "stdout": {
+        "bytes": 439,
+        "sha256": "ba15e980f2e9f1b4eec0c325bea5b1b7a2d6213996839bfcc2998e77553a906d"
+      }
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-j1",
+        "-p",
+        "droidloom-update",
+        "--bin",
+        "droidloom-update",
+        "audio_api35_cts_",
+        "--",
+        "--test-threads=1"
+      ],
+      "evidence_complete": true,
+      "exit_code": 0,
+      "name": "api35-cts-provider-regressions",
+      "owned_command_retired": true,
+      "stderr": {
+        "bytes": 1491,
+        "sha256": "bd23c4131a3d0577e7efe7149de7525aef3d3907670a84e5194196608013db88"
+      },
+      "stdout": {
+        "bytes": 299,
+        "sha256": "edb617c9225acdfd561241a7bf527762b64576258c1f21516c0414f583e90dde"
+      }
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-j1",
+        "-p",
+        "droidloom-update",
+        "--bin",
+        "droidloom-update",
+        "audio_junit_provider_",
+        "--",
+        "--test-threads=1"
+      ],
+      "evidence_complete": true,
+      "exit_code": 0,
+      "name": "junit-provider-regressions",
+      "owned_command_retired": true,
+      "stderr": {
+        "bytes": 838,
+        "sha256": "421d35860ac9d688ae64d6f38b58335e903202f82c0d625857417e8b0250d732"
+      },
+      "stdout": {
+        "bytes": 323,
+        "sha256": "9e4639073fbe3ed957e2b8a94bb60c6a76db3ec355ee06a51edcd9fcc4ec6a0f"
+      }
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-j1",
+        "-p",
+        "droidloom-update",
+        "--bin",
+        "droidloom-update",
+        "audio_build_source_lock_is_scoped_and_exact",
+        "--",
+        "--test-threads=1"
+      ],
+      "evidence_complete": true,
+      "exit_code": 0,
+      "name": "audio-exact-lock-regression",
+      "owned_command_retired": true,
+      "stderr": {
+        "bytes": 838,
+        "sha256": "a7b076de99bb1dc8f0b5c9d6302248cc722598d3620f71c3bd61599813022cfc"
+      },
+      "stdout": {
+        "bytes": 186,
+        "sha256": "28b00cb420928a7aa3cba152ae1572c5b60240eaff236e7d6ec45fbac7f4d451"
+      }
+    },
+    {
+      "argv": [
+        "cargo",
+        "build",
+        "--offline",
+        "--locked",
+        "-j1",
+        "--message-format=json",
+        "-p",
+        "droidloom-source",
+        "-p",
+        "droidloom-update",
+        "--bins"
+      ],
+      "evidence_complete": true,
+      "exit_code": 0,
+      "name": "normal-source-and-updater-build",
+      "owned_command_retired": true,
+      "stderr": {
+        "bytes": 358,
+        "sha256": "5f4d5141ac79dc72c720eeef024ae74e4a78e70cd2fe60bb58341cf1136b0d6d"
+      },
+      "stdout": {
+        "bytes": 56801,
+        "sha256": "68e40779a85dbbcee4573496663a1c84a3f8b3fc7e85d752c22ebb67622e8ef3"
+      }
+    },
+    {
+      "argv": [
+        "droidloom-source",
+        "verify-lock",
+        "--lock",
+        "<source>/android/manifest/audio-bridge-source-lock.json"
+      ],
+      "evidence_complete": true,
+      "exit_code": 0,
+      "name": "normal-candidate-lock-verification",
+      "owned_command_retired": true,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 107,
+        "sha256": "3c4088d1f230d9689d5ecb232ddb1494107543008c464db589ead4970218743d"
+      }
+    }
+  ],
+  "normal_tools": {
+    "artifacts": [
+      {
+        "fresh": false,
+        "profile": {
+          "debug_assertions": true,
+          "debuginfo": 2,
+          "opt_level": "0",
+          "overflow_checks": true,
+          "test": false
+        },
+        "target": "droidloom-update"
+      },
+      {
+        "fresh": false,
+        "profile": {
+          "debug_assertions": true,
+          "debuginfo": 2,
+          "opt_level": "0",
+          "overflow_checks": true,
+          "test": false
+        },
+        "target": "droidloom-source"
+      }
+    ],
+    "binary_bytes_included": false,
+    "normal_tools_built": 2,
+    "profile": "dev",
+    "qualified_binaries": {
+      "droidloom-source": {
+        "bytes": 19272984,
+        "sha256": "31c1526cd454620be7142b9294f3262439c11c2891d7931c2be87f59010b5bc1"
+      },
+      "droidloom-update": {
+        "bytes": 32204872,
+        "sha256": "c4b3487bdf6ce27705881071d8466add5a4d28a82eccab846c655b0751d35932"
+      }
+    },
+    "release_builds": 0
+  },
+  "resources": {
+    "cpu_quota_percent": 100,
+    "events_delta": {
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0
+    },
+    "memory_max_bytes": 1610612736,
+    "nice": 10,
+    "peak_memory_bytes": 789499904,
+    "swap_max_bytes": 0
+  },
+  "retirement": {
+    "exit_code": 0,
+    "output_complete": true,
+    "output_durable": true,
+    "owned_build_cgroup_absent": true,
+    "owned_commands_retired": true,
+    "state": "succeeded",
+    "terminal_publication_confirmed": true
+  },
+  "rustc_version": "rustc 1.93.0 (254b59607 2026-01-19)",
+  "schema": "audio316-actual-compiled-source-and-focused-controls-v1",
+  "scope": {
+    "candidate_deployed": false,
+    "compilation_run_for_publication": false,
+    "full_audio_apex_build_qualified": false,
+    "normal_source_first_attempt": "Refused at the first Native lock before any normal source command; no source migration or full build occurred.",
+    "runtime_qualified": false,
+    "source_reconcile_qualified": false,
+    "tests_rerun_for_publication": false
+  },
+  "source_lineage": {
+    "actual309_commit": "2884a01f853caa94f7b66c7e945b0e2818f8ca74",
+    "actual309_public_inventory": {
+      "bytes": 77237,
+      "file": "actual309-source-files.json",
+      "sha256": "98af93dfe405188b42f1d594f63038d9b43454997cd7d43fe7301bd50c432bcd"
+    },
+    "actual309_public_tree": "3865514b9e2377430c1e3276e229fc0193df331b",
+    "compiled316_commit": "3b4199c0af6e430a852131a71f87aa65aef8f813",
+    "compiled_full_file_count": 436,
+    "compiled_full_inventory_sha256": "3d271eda3df4f2b3ba662d32a66fff548a7759bba90b2e70f283c957cb38b34e",
+    "compiled_full_tree": "5ccefae63418a1efdd6bb716b63a77deb80601c0",
+    "compiled_public_file_count": 431,
+    "compiled_public_inventory": {
+      "bytes": 81554,
+      "file": "compiled-source-files.json",
+      "sha256": "ce3fb16398debf2bfdd553ad5477fcb034f47d4cfb10137a90a541000f0d6617"
+    },
+    "compiled_public_tree": "2c21ee1bbcbde46c8d07a26c6083e372d550c1c1",
+    "historical_prepared309_qualification_inherited": false,
+    "published308_commit": "6eb50f3e0a2184cb822d0704c6f53f261ebd2de4"
+  },
+  "source_lock": {
+    "bytes": 133990,
+    "project_count": 316,
+    "sha256": "c104640627a1beb35b25423656e751a4b56ac17287505c0ee2efeeb7d0419560"
+  },
+  "test_count": 9,
+  "tests": [
+    {
+      "command": "source-audio-controls",
+      "failed": 0,
+      "passed": 4,
+      "test_names": [
+        "tests::audio_api35_cts_extension_preserves_the_previous_materialized_plan",
+        "tests::audio_junit_extension_keeps_the_actual_previous_projects_unchanged",
+        "tests::audio_reconciliation_preserves_existing_gatekeeper_purpose",
+        "tests::audio_source_capacity_is_bound_to_the_exact_frozen_lock"
+      ]
+    },
+    {
+      "command": "api35-cts-provider-regressions",
+      "failed": 0,
+      "passed": 2,
+      "test_names": [
+        "android::tests::audio_api35_cts_keeps_real_consumers_and_original_provider_modules",
+        "android::tests::audio_api35_cts_rejects_the_observed_missing_original_inputs"
+      ]
+    },
+    {
+      "command": "junit-provider-regressions",
+      "failed": 0,
+      "passed": 2,
+      "test_names": [
+        "android::tests::audio_junit_provider_keeps_the_real_icu_consumer_and_all_original_dependencies",
+        "android::tests::audio_junit_provider_requires_complete_original_sources_and_prebuilt_jar"
+      ]
+    },
+    {
+      "command": "audio-exact-lock-regression",
+      "failed": 0,
+      "passed": 1,
+      "test_names": [
+        "android::tests::audio_build_source_lock_is_scoped_and_exact"
+      ]
+    }
+  ]
+}

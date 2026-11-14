@@ -1,0 +1,125 @@
+diff --git a/runtime/droidloom-supervisor/src/production_namespace_binder_ipc_child.rs b/runtime/droidloom-supervisor/src/production_namespace_binder_ipc_child.rs
+--- a/runtime/droidloom-supervisor/src/production_namespace_binder_ipc_child.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_binder_ipc_child.rs
+@@ -107,6 +107,18 @@
+         .saturating_add(time.tv_nsec)
+ }
+ 
++// Completion and retirement have separate deadlines. A successful kernel
++// return or already-exited child is still rejected if observed too late; this
++// check never retries the completed Binder command.
++fn completed_before_deadline<T>(value: T, deadline: i64) -> Result<T, i32> {
++    let observed = now_ns();
++    if observed < 0 || observed >= deadline {
++        Err(libc::ETIMEDOUT)
++    } else {
++        Ok(value)
++    }
++}
++
+ fn within(mapping: *mut libc::c_void, pointer: u64, bytes: usize) -> bool {
+     let begin = mapping as usize;
+     let p = pointer as usize;
+@@ -131,7 +143,7 @@
+             if data.write_consumed != write.len() as u64 || data.read_consumed > read.len() as u64 {
+                 return Err(libc::EPROTO);
+             }
+-            return Ok(data.read_consumed as usize);
++            return completed_before_deadline(data.read_consumed as usize, deadline);
+         }
+         let errno = unsafe { *libc::__errno_location() };
+         if errno != libc::EINTR {
+@@ -364,6 +376,7 @@
+                         if value != REPLY_VALUE {
+                             return Err(libc::EPROTO);
+                         }
++                        completed_before_deadline((), deadline)?;
+                         result.passed = 1;
+                         return Ok(());
+                     }
+@@ -386,6 +399,10 @@
+         unsafe {
+             libc::syscall(libc::SYS_close, fd);
+         }
++    }
++    if result.passed == 1 && completed_before_deadline((), deadline).is_err() {
++        result.passed = 0;
++        result.system_errno = libc::ETIMEDOUT;
+     }
+     let n = unsafe {
+         libc::syscall(
+@@ -472,7 +489,7 @@
+             {
+                 return Err(libc::ECHILD);
+             }
+-            return Ok(reaped);
++            return completed_before_deadline(reaped, deadline);
+         }
+         if now_ns() < 0 || now_ns() >= deadline {
+             return Err(libc::ETIMEDOUT);
+@@ -550,11 +567,9 @@
+     let mut failed = None;
+     let result = (|| -> Result<(), i32> {
+         loop {
++            completed_before_deadline((), deadline)?;
+             if unsafe { peek(pidfd)? }.is_some() {
+                 break;
+-            }
+-            if now_ns() < 0 || now_ns() >= deadline {
+-                return Err(libc::ETIMEDOUT);
+             }
+             let mut bytes = [0_u8; 4096];
+             let count = match unsafe { exchange(fd, &[], &mut bytes, deadline) } {
+@@ -624,7 +639,7 @@
+                 offset += size;
+             }
+         }
+-        Ok(())
++        completed_before_deadline((), deadline)
+     })();
+     if let Err(error) = result {
+         failed = Some(error);
+@@ -687,11 +702,43 @@
+             one_case(path, nonce, deadline);
+         }
+     }
++    // Work must finish inside the shared two seconds. The last already-owned
++    // client may still use its existing 250 ms cleanup budget; success cannot
++    // extend that total allowance merely because waitid found an exited child.
++    if completed_before_deadline((), deadline.saturating_add(250_000_000)).is_err() {
++        unsafe { protocol_failure(nonce) }
++    }
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++    #[test]
++    fn late_success_is_rejected_without_repeating_the_completed_operation() {
++        let mut calls = 0;
++        let completed_output = {
++            calls += 1;
++            17
++        };
++        let expired = now_ns().saturating_sub(1);
++        assert_eq!(
++            completed_before_deadline(completed_output, expired),
++            Err(libc::ETIMEDOUT)
++        );
++        assert_eq!(calls, 1);
++    }
++
++    #[test]
++    fn completed_work_and_owned_retirement_keep_distinct_budgets() {
++        let now = now_ns();
++        assert!(now > 0);
++        let work_deadline = now.saturating_sub(1);
++        let cleanup_deadline = now.saturating_add(250_000_000);
++        assert!(completed_before_deadline((), work_deadline).is_err());
++        assert_eq!(completed_before_deadline((), cleanup_deadline), Ok(()));
++        assert_eq!(completed_before_deadline((), -1), Err(libc::ETIMEDOUT));
++    }
++
+     #[test]
+     fn transaction_layout_matches_exact_x86_64_binder_uapi() {
+         assert_eq!(std::mem::offset_of!(Transaction, sender_pid), 24);

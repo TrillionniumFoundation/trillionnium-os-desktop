@@ -1,0 +1,251 @@
+{
+  "schema_version": 1,
+  "capsule": "audio430-original-ondeviceintelligence-system-server-api",
+  "candidate": {
+    "host": "desktop",
+    "source": "/home/qian-qi/work/pocket4-audio430-ondeviceintelligence-provider-20261109-appaudit-r1/source",
+    "base_commit": "a0e5114a1728e5ac5a96cdffbf68a84958218765",
+    "commit": "0342210a3bd82bf46067a1dbaf740e16f291a38a",
+    "tree": "131d5c9d4757dbc94a3b30453cf662e974fbfbba",
+    "worktree_clean": true
+  },
+  "source_lock": {
+    "before_sha256": "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a",
+    "after_sha256": "ddc03004f4c73f25c9682f19a829dac18312d4b8220e143266714aada61ee739",
+    "projects": 430,
+    "root_links": 8,
+    "superproject_commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+    "all_existing_project_commits_unchanged": true,
+    "added_sparse_paths": [
+      "prebuilts/sdk/36/system-server/api/service-ondeviceintelligence.txt",
+      "prebuilts/sdk/36/system-server/api/service-ondeviceintelligence-removed.txt"
+    ]
+  },
+  "qualification": {
+    "tests": [
+      {
+        "argv": [
+          "cargo",
+          "test",
+          "--locked",
+          "-j",
+          "1",
+          "-p",
+          "droidloom-source",
+          "audio_"
+        ],
+        "returncode": 0,
+        "passed": 11,
+        "log_sha256": "a35dc4e860ca2c911fca319de3c4dbd317bc01a7b1f0a492f514ebb4a61d406b"
+      },
+      {
+        "argv": [
+          "cargo",
+          "test",
+          "--locked",
+          "-j",
+          "1",
+          "-p",
+          "droidloom-update",
+          "audio_"
+        ],
+        "returncode": 0,
+        "passed": 52,
+        "log_sha256": "2bd34a4edc7f78cb561043e8b1c976bff1d04fb758aeffd5ee649c0f95ad3e84"
+      }
+    ],
+    "normal_tools_build": {
+      "argv": [
+        "cargo",
+        "build",
+        "--locked",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-source",
+        "-p",
+        "droidloom-update"
+      ],
+      "returncode": 0,
+      "log_sha256": "cf75642392324d577ac2ee1df0cbe94edaf88f01d8ae9843ea72360b835c8565"
+    },
+    "binaries": [
+      {
+        "path": "/home/qian-qi/work/pocket4-audio430-ondeviceintelligence-provider-20261109-appaudit-r1/target/debug/droidloom-source",
+        "bytes": 19273888,
+        "sha256": "08f238c8092cea80d6b8eff4a7da3deaddb5b6ccf47a1b2b7afd36286fb584a2"
+      },
+      {
+        "path": "/home/qian-qi/work/pocket4-audio430-ondeviceintelligence-provider-20261109-appaudit-r1/target/debug/droidloom-update",
+        "bytes": 32327536,
+        "sha256": "02b4681e9ae2d03be64be9c63a89475aeea6ec0b3fb99351cab9431250d65843"
+      }
+    ],
+    "normal_verify_lock": {
+      "schema_version": 1,
+      "host": "desktop",
+      "idempotency_key": "p4-audio430-verify-lock-capsule-export-20261109-appaudit-r1",
+      "commit": "0342210a3bd82bf46067a1dbaf740e16f291a38a",
+      "argv": [
+        "/home/qian-qi/work/pocket4-audio430-ondeviceintelligence-provider-20261109-appaudit-r1/target/debug/droidloom-source",
+        "verify-lock",
+        "--lock",
+        "/home/qian-qi/work/pocket4-audio430-ondeviceintelligence-provider-20261109-appaudit-r1/source/android/manifest/audio-bridge-source-lock.json"
+      ],
+      "returncode": 0,
+      "stdout": "verified 430 exact AOSP projects and 8 root links at superproject 28f0bbddc24d56c8ec5a8df5342ac7a292184039\n",
+      "stderr": "",
+      "elapsed_seconds": 0.025,
+      "binary_sha256": "08f238c8092cea80d6b8eff4a7da3deaddb5b6ccf47a1b2b7afd36286fb584a2",
+      "source_lock_sha256": "ddc03004f4c73f25c9682f19a829dac18312d4b8220e143266714aada61ee739"
+    },
+    "original_receipt": {
+      "path": "/home/qian-qi/work/pocket4-audio430-ondeviceintelligence-provider-20261109-appaudit-r1/qualification/verified-r2/result.json",
+      "sha256": "9877c7c44181b777e76707641723e9a9c2ad7c19df3a13f6429a25ac346c9a54"
+    },
+    "verify_lock_followup": {
+      "path": "/home/qian-qi/work/pocket4-audio430-ondeviceintelligence-provider-20261109-appaudit-r1/qualification/verify-lock-followup-r1.json",
+      "sha256": "f288112a873a3263be427eeb0cf9fc242adcfb9cb57c56f3e564cdede85a9e53"
+    }
+  },
+  "fixed_upstream_originals": {
+    "base_commit": "a0e5114a1728e5ac5a96cdffbf68a84958218765",
+    "files": [
+      {
+        "path": "prebuilts/sdk/Android.bp",
+        "bytes": 6333,
+        "sha256": "78d50e1dd41ad06e0c716faee8e8f3ddd823f3d482c3f484466e846953f735e0",
+        "git_blob": "849c7c268b3409656f462eb3af738c15e7b5ec06"
+      },
+      {
+        "path": "build/soong/java/prebuilt_apis.go",
+        "bytes": 16590,
+        "sha256": "ac992ca42c67498bd1b3f5e54627f541e6ffa71de95135bd7bac511a2427272c",
+        "git_blob": "c00f0bc0e560057da4b19d2edd00c58cd739299b"
+      },
+      {
+        "path": "packages/modules/NeuralNetworks/service/Android.bp",
+        "bytes": 2758,
+        "sha256": "50b264a5e8650135ce4893a47952a40f382ee129a93d6cfc96152dd350f87a18",
+        "git_blob": "6950d6f8d3c7df6443ab87622cae34a19d5fa247"
+      },
+      {
+        "path": "prebuilts/sdk/36/system-server/api/service-ondeviceintelligence.txt",
+        "bytes": 25,
+        "sha256": "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552",
+        "git_blob": "d802177e249b3f97128699222e65c35e57ba7540"
+      },
+      {
+        "path": "prebuilts/sdk/36/system-server/api/service-ondeviceintelligence-removed.txt",
+        "bytes": 25,
+        "sha256": "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552",
+        "git_blob": "d802177e249b3f97128699222e65c35e57ba7540"
+      }
+    ],
+    "api_tree_url": "https://android.googlesource.com/platform/prebuilts/sdk/+/0f07e8d60ab0aba46129e427101f96ba459a95c1/36/system-server/api/?format=JSON",
+    "projects": [
+      {
+        "path": "prebuilts/sdk",
+        "commit": "0f07e8d60ab0aba46129e427101f96ba459a95c1"
+      },
+      {
+        "path": "build/soong",
+        "commit": "6722dd8833db7482df1a2543ca3fcf67ddf0f7b1"
+      },
+      {
+        "path": "packages/modules/NeuralNetworks",
+        "commit": "a44a9032ab9a8438c0e13aca765d6ee4edebba2c"
+      }
+    ],
+    "description": "Unmodified original inputs: API-36 current and removed signature headers, complete SDK prebuilt_apis declaration, normal Soong generator and retained java_sdk_library consumer. The API files have the exact blob IDs recorded in the pinned official Gitiles tree."
+  },
+  "prior_full_build": {
+    "host": "desktop",
+    "generation": "full-desktop-r10-r2",
+    "job_id": "1a1bfb491a7-5e21-67c",
+    "observed_terminal_state": "failed",
+    "exit_code": 1,
+    "output_complete": true,
+    "output_durable": true,
+    "owned_unit_retired": true,
+    "source_projection_restored": true,
+    "source_projection_absent_after": true,
+    "owned_retirement_complete": true,
+    "strict_allow_missing_dependencies": false,
+    "outer_receipt": {
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/full-desktop-r10-r2/outer-terminal.json",
+      "sha256": "2287a6c3b77993a2b1898789035cc273dfc3df305eb006359adbf039651c22e3"
+    },
+    "inner_receipt": {
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r10-r2/terminal.json",
+      "sha256": "692fa87ffcc47f8bb00a8ecbb70c0a7940e7b9443078cacef80a6bc60e474564"
+    },
+    "reused_or_restarted": false
+  },
+  "scope": {
+    "source_recipe_qualified": true,
+    "normal_tools_build_passed": true,
+    "normal_verify_lock_passed": true,
+    "full_audio_apex_passed": false,
+    "full_android_image_passed": false,
+    "runtime_qualified": false,
+    "whole_app_qualified": false,
+    "production_ready_claim": false,
+    "shared_source_modified": false,
+    "shared_lock_inodes_modified": false,
+    "current_modified": false,
+    "pushed": false
+  },
+  "diff": {
+    "summary": "9 files changed, 1066 insertions(+), 7 deletions(-)",
+    "cargo_fmt_run": false,
+    "paths": [
+      {
+        "path": "android/manifest/audio-bridge-source-lock.json",
+        "insertions": 2,
+        "deletions": 0
+      },
+      {
+        "path": "tools/droidloom-source/src/lib.rs",
+        "insertions": 47,
+        "deletions": 4
+      },
+      {
+        "path": "tools/droidloom-update/src/android.rs",
+        "insertions": 181,
+        "deletions": 3
+      },
+      {
+        "path": "tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/build__soong__java__prebuilt_apis.go",
+        "insertions": 439,
+        "deletions": 0
+      },
+      {
+        "path": "tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/packages__modules__NeuralNetworks__service__Android.bp",
+        "insertions": 85,
+        "deletions": 0
+      },
+      {
+        "path": "tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__36__system-server__api__service-ondeviceintelligence-removed.txt",
+        "insertions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__36__system-server__api__service-ondeviceintelligence.txt",
+        "insertions": 1,
+        "deletions": 0
+      },
+      {
+        "path": "tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__Android.bp",
+        "insertions": 259,
+        "deletions": 0
+      },
+      {
+        "path": "tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/provenance.json",
+        "insertions": 51,
+        "deletions": 0
+      }
+    ],
+    "explanation": "Only three existing recipe/lock files changed (230 insertions, 7 deletions). Six added fixture/provenance files contain complete unmodified original SDK BP, Go generator, NeuralNetworks consumer, two 25-byte API headers and their provenance (836 insertions). No formatting sweep."
+  }
+}

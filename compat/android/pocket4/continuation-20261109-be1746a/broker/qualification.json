@@ -1,0 +1,749 @@
+{
+  "creator_controls_repeated_for_diagnosis": 2,
+  "creator_exit_observations": [
+    "creator-exit barrier rearm=false: readable_after_join=false; held_thread_exit=true",
+    "creator-exit barrier rearm=true: readable_after_join=false; held_thread_exit=true"
+  ],
+  "history": [
+    {
+      "commands": [
+        {
+          "argv": [
+            "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--version"
+          ],
+          "elapsed_seconds": 0.006665334999979677,
+          "exit_code": 0,
+          "name": "rustc-version",
+          "stderr": {
+            "bytes": 0,
+            "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r1/rustc-version.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "bytes": 36,
+            "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r1/rustc-version.stdout",
+            "sha256": "a2d88be55921309c5e126c58ad4a9040d034419589b58684cb44dfd13e14f66e"
+          },
+          "test_results": []
+        },
+        {
+          "argv": [
+            "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustfmt",
+            "--edition",
+            "2024",
+            "--config",
+            "skip_children=true",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/control.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/development.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/lib.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/linux_plan.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/main.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/production_identity.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/production_namespace.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/production_namespace_child.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/sealed_spec.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/tests/fixtures/sealed-entry-probe.rs"
+          ],
+          "elapsed_seconds": 0.07266742900014833,
+          "exit_code": 0,
+          "name": "rustfmt-merge",
+          "stderr": {
+            "bytes": 0,
+            "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r1/rustfmt-merge.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "bytes": 0,
+            "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r1/rustfmt-merge.stdout",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "test_results": []
+        },
+        {
+          "argv": [
+            "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--locked",
+            "--offline",
+            "-j",
+            "1",
+            "-p",
+            "droidloom-supervisor",
+            "--lib",
+            "--bins",
+            "--",
+            "--test-threads=1"
+          ],
+          "elapsed_seconds": 21.328658026000085,
+          "exit_code": 101,
+          "name": "supervisor-tests",
+          "stderr": {
+            "bytes": 4892,
+            "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r1/supervisor-tests.stderr",
+            "sha256": "e60204533bb206c54b51b68ab34e27a8e0b88b0b56366a3615059bd25ead7575"
+          },
+          "stdout": {
+            "bytes": 0,
+            "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r1/supervisor-tests.stdout",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "test_results": []
+        }
+      ],
+      "error": "supervisor-tests failed",
+      "label": "focused-r1",
+      "receipt": {
+        "bytes": 10282,
+        "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r1/result.json",
+        "sha256": "2c7c888a326e703952f5042ada897133a6bfa58d2d319ab4c0c4f494f334077c"
+      },
+      "source_integration_qualified": false
+    },
+    {
+      "commands": [
+        {
+          "argv": [
+            "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--version"
+          ],
+          "elapsed_seconds": 0.006749378999984401,
+          "exit_code": 0,
+          "name": "rustc-version",
+          "stderr": {
+            "bytes": 0,
+            "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r2/rustc-version.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "bytes": 36,
+            "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r2/rustc-version.stdout",
+            "sha256": "a2d88be55921309c5e126c58ad4a9040d034419589b58684cb44dfd13e14f66e"
+          },
+          "test_results": []
+        },
+        {
+          "argv": [
+            "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustfmt",
+            "--edition",
+            "2024",
+            "--config",
+            "skip_children=true",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/control.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/development.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/lib.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/linux_plan.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/main.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/production_identity.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/production_namespace.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/production_namespace_child.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/sealed_spec.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/tests/fixtures/sealed-entry-probe.rs"
+          ],
+          "elapsed_seconds": 0.06603479000000334,
+          "exit_code": 0,
+          "name": "rustfmt-merge",
+          "stderr": {
+            "bytes": 0,
+            "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r2/rustfmt-merge.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "bytes": 0,
+            "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r2/rustfmt-merge.stdout",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "test_results": []
+        },
+        {
+          "argv": [
+            "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--locked",
+            "--offline",
+            "-j",
+            "1",
+            "-p",
+            "droidloom-supervisor",
+            "--lib",
+            "--bins",
+            "--",
+            "--test-threads=1"
+          ],
+          "elapsed_seconds": 8.951861502999918,
+          "exit_code": 0,
+          "name": "supervisor-tests",
+          "stderr": {
+            "bytes": 2930,
+            "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r2/supervisor-tests.stderr",
+            "sha256": "a63f48965a969722b406327b14f4576fa9919be4ab4dbc30f8364eebf55515ff"
+          },
+          "stdout": {
+            "bytes": 19742,
+            "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r2/supervisor-tests.stdout",
+            "sha256": "106d6878e07593878e29dea0b6c5001709979a4bf588872d63a64814ac6eb9cc"
+          },
+          "test_results": [
+            "test result: ok. 173 passed; 0 failed; 23 ignored; 0 measured; 0 filtered out; finished in 2.80s",
+            "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+            "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+            "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+          ]
+        },
+        {
+          "argv": [
+            "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+            "build",
+            "--locked",
+            "--offline",
+            "-j",
+            "1",
+            "-p",
+            "droidloom-supervisor",
+            "--lib",
+            "--bins"
+          ],
+          "elapsed_seconds": 1.161088978999942,
+          "exit_code": 0,
+          "name": "supervisor-build",
+          "stderr": {
+            "bytes": 2197,
+            "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r2/supervisor-build.stderr",
+            "sha256": "73c43ef21b2d49d38d7a03dfe147ad9a989a44edd3d4d3f0d92fe3f3abe830e8"
+          },
+          "stdout": {
+            "bytes": 0,
+            "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r2/supervisor-build.stdout",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "test_results": []
+        }
+      ],
+      "error": null,
+      "label": "focused-r2",
+      "receipt": {
+        "bytes": 14044,
+        "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r2/result.json",
+        "sha256": "e67fb264096a572ef02d3043e8f7417f590c34f76db29ed87c67a2a4d639526d"
+      },
+      "source_integration_qualified": true
+    },
+    {
+      "commands": [
+        {
+          "argv": [
+            "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--version"
+          ],
+          "elapsed_seconds": 0.007050952000099642,
+          "exit_code": 0,
+          "name": "rustc-version",
+          "stderr": {
+            "bytes": 0,
+            "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r3/rustc-version.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "bytes": 36,
+            "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r3/rustc-version.stdout",
+            "sha256": "a2d88be55921309c5e126c58ad4a9040d034419589b58684cb44dfd13e14f66e"
+          },
+          "test_results": []
+        },
+        {
+          "argv": [
+            "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustfmt",
+            "--edition",
+            "2024",
+            "--config",
+            "skip_children=true",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/control.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/development.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/lib.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/linux_plan.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/main.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/production_identity.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/production_namespace.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/production_namespace_child.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/sealed_spec.rs",
+            "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/tests/fixtures/sealed-entry-probe.rs"
+          ],
+          "elapsed_seconds": 0.06919131999984529,
+          "exit_code": 0,
+          "name": "rustfmt-merge",
+          "stderr": {
+            "bytes": 0,
+            "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r3/rustfmt-merge.stderr",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "bytes": 0,
+            "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r3/rustfmt-merge.stdout",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "test_results": []
+        },
+        {
+          "argv": [
+            "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+            "test",
+            "--locked",
+            "--offline",
+            "-j",
+            "1",
+            "-p",
+            "droidloom-supervisor",
+            "--lib",
+            "--bins",
+            "--",
+            "--test-threads=1"
+          ],
+          "elapsed_seconds": 7.803994453000087,
+          "exit_code": 101,
+          "name": "supervisor-tests",
+          "stderr": {
+            "bytes": 2503,
+            "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r3/supervisor-tests.stderr",
+            "sha256": "09530d43d6eb2930c65026b0c623236c93e6e91b8d6b5db297f14913f9193c78"
+          },
+          "stdout": {
+            "bytes": 20684,
+            "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r3/supervisor-tests.stdout",
+            "sha256": "0069a1e9087a71cb25157675a6deedbc32459f338bc42cc50758cc49a0276bb3"
+          },
+          "test_results": [
+            "test result: FAILED. 176 passed; 2 failed; 24 ignored; 0 measured; 0 filtered out; finished in 2.82s"
+          ]
+        }
+      ],
+      "error": "supervisor-tests failed",
+      "label": "focused-r3",
+      "receipt": {
+        "bytes": 10572,
+        "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r3/result.json",
+        "sha256": "e1482d5c48cb424a5382a7565a7aaa875b9a543e1f3b0b07ad0896b034fd1bc2"
+      },
+      "source_integration_qualified": false
+    }
+  ],
+  "ordinary": {
+    "base_commit": "b4dc3b49ce29e706efca0ba5a7c775864d9b54b8",
+    "broker_canonical_manifest_sha256": "766c95f556a5d8eb28d9c551e852a12481b939e768553e7d056ed852560c4120",
+    "commands": [
+      {
+        "argv": [
+          "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "--version"
+        ],
+        "elapsed_seconds": 0.019225410999752057,
+        "exit_code": 0,
+        "name": "rustc-version",
+        "stderr": {
+          "bytes": 0,
+          "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r4/rustc-version.stderr",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 36,
+          "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r4/rustc-version.stdout",
+          "sha256": "a2d88be55921309c5e126c58ad4a9040d034419589b58684cb44dfd13e14f66e"
+        },
+        "test_results": []
+      },
+      {
+        "argv": [
+          "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustfmt",
+          "--edition",
+          "2024",
+          "--config",
+          "skip_children=true",
+          "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/control.rs",
+          "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/development.rs",
+          "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/lib.rs",
+          "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/linux_plan.rs",
+          "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/main.rs",
+          "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/production_identity.rs",
+          "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/production_namespace.rs",
+          "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/production_namespace_child.rs",
+          "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+          "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/src/sealed_spec.rs",
+          "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/source/runtime/droidloom-supervisor/tests/fixtures/sealed-entry-probe.rs"
+        ],
+        "elapsed_seconds": 0.14037359399981142,
+        "exit_code": 0,
+        "name": "rustfmt-merge",
+        "stderr": {
+          "bytes": 0,
+          "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r4/rustfmt-merge.stderr",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 0,
+          "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r4/rustfmt-merge.stdout",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "test_results": []
+      },
+      {
+        "argv": [
+          "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "test",
+          "--locked",
+          "--offline",
+          "-j",
+          "1",
+          "-p",
+          "droidloom-supervisor",
+          "--lib",
+          "creator_thread_death",
+          "--",
+          "--nocapture",
+          "--test-threads=1"
+        ],
+        "elapsed_seconds": 1.1703593679999358,
+        "exit_code": 0,
+        "name": "creator-thread-controls",
+        "stderr": {
+          "bytes": 1136,
+          "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r4/creator-thread-controls.stderr",
+          "sha256": "4cf127fd7677591bf805616cfb1ab3d58c70ef8e3d2b105280c7482814b18a15"
+        },
+        "stdout": {
+          "bytes": 317,
+          "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r4/creator-thread-controls.stdout",
+          "sha256": "186e3c7639dc8109bff152c878328eda679328cef0318c32f836ea18aa00a3a7"
+        },
+        "test_results": [
+          "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 200 filtered out; finished in 0.03s"
+        ]
+      },
+      {
+        "argv": [
+          "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "test",
+          "--locked",
+          "--offline",
+          "-j",
+          "1",
+          "-p",
+          "droidloom-supervisor",
+          "--lib",
+          "--bins",
+          "--",
+          "--test-threads=1"
+        ],
+        "elapsed_seconds": 2.8933034609999595,
+        "exit_code": 0,
+        "name": "supervisor-tests",
+        "stderr": {
+          "bytes": 2781,
+          "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r4/supervisor-tests.stderr",
+          "sha256": "684c2f0b615af4628ab7064e27939aa587a54205c057a4848abbdf95a5ea584d"
+        },
+        "stdout": {
+          "bytes": 20391,
+          "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r4/supervisor-tests.stdout",
+          "sha256": "f82c9dd4d6b83a0c80fc5a85051b246977481a612e63bb86da12bf32c8454dad"
+        },
+        "test_results": [
+          "test result: ok. 178 passed; 0 failed; 24 ignored; 0 measured; 0 filtered out; finished in 2.81s",
+          "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+          "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+          "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+        ]
+      },
+      {
+        "argv": [
+          "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "build",
+          "--locked",
+          "--offline",
+          "-j",
+          "1",
+          "-p",
+          "droidloom-supervisor",
+          "--lib",
+          "--bins"
+        ],
+        "elapsed_seconds": 0.9458547919998637,
+        "exit_code": 0,
+        "name": "supervisor-build",
+        "stderr": {
+          "bytes": 2197,
+          "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r4/supervisor-build.stderr",
+          "sha256": "fc8e1278296fd7db63c36108eb43cd894a133167f22d33021417420fffabd981"
+        },
+        "stdout": {
+          "bytes": 0,
+          "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r4/supervisor-build.stdout",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "test_results": []
+      }
+    ],
+    "creator_exit_barrier_test_fix": true,
+    "finished_utc": "2026-11-09T08:45:48.042839+00:00",
+    "includes_owner_host_admission_tree_increment": false,
+    "lifecycle_patch_sha256": "a40a62a907ec75177350310bdb96b78d6ea690b56b9123ba9c2516ed94c31267",
+    "lifecycle_public_commit": "9d45eba81752d1e10906b5dc6d7e9a3c1a6b42c2",
+    "ordinary_euid": 1000,
+    "privileged_controls_executed": false,
+    "production_ready": false,
+    "resources_after": {
+      "affinity": [
+        0
+      ],
+      "cpu.max": "100000 100000",
+      "memory.current": "211582976",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.max": "3221225472",
+      "nice": 19
+    },
+    "resources_before": {
+      "affinity": [
+        0
+      ],
+      "cpu.max": "100000 100000",
+      "memory.current": "19550208",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.max": "3221225472",
+      "nice": 19
+    },
+    "runtime_qualified": false,
+    "schema": "pocket4-sealed-broker-focused-qualification-v1",
+    "sealed_public_commit": "208d2dca4dccb622869916b9a7381decdddc0dce",
+    "source_after_format": [
+      {
+        "bytes": 17724,
+        "path": "docs/contracts/runtime-layout-v1.md",
+        "sha256": "7f871b73582b43740926e9f66ac068c39c595dcf4df4fc5f484d84a7be951c73"
+      },
+      {
+        "bytes": 6472,
+        "path": "docs/threat-model-v1.md",
+        "sha256": "f916b4783272a4573b2573040ead999fda07e31a74cf1bdd1c91fd06494e455b"
+      },
+      {
+        "bytes": 81360,
+        "path": "runtime/droidloom-supervisor/src/control.rs",
+        "sha256": "46279b7c0b382f64d03f73e576e774152f39725aeb240050669db7cea9b2e90f"
+      },
+      {
+        "bytes": 124640,
+        "path": "runtime/droidloom-supervisor/src/development.rs",
+        "sha256": "2ef2429a74fa8c66c0f78c11056503c3ed50ce254b0345a9f8a716d6bf136ce2"
+      },
+      {
+        "bytes": 41386,
+        "path": "runtime/droidloom-supervisor/src/lib.rs",
+        "sha256": "24ee3240d749797424e25fb0f98021fc721a16a5f699b9bde9bd58d8feac3847"
+      },
+      {
+        "bytes": 43363,
+        "path": "runtime/droidloom-supervisor/src/linux_plan.rs",
+        "sha256": "d8dc23214b6ac4d229d4f29577ffa0fe233ae06a7d8396e149b214a59990191b"
+      },
+      {
+        "bytes": 10449,
+        "path": "runtime/droidloom-supervisor/src/main.rs",
+        "sha256": "aae7d4d208da37eaa87a5f64c70c6dc510940c8f34543cee4ccfec9b525ecc0e"
+      },
+      {
+        "bytes": 56537,
+        "path": "runtime/droidloom-supervisor/src/production_identity.rs",
+        "sha256": "44822e3982ae7645c057e3622e8c2c68da64e6c820e569dfd62d5c30f3f07fb8"
+      },
+      {
+        "bytes": 43153,
+        "path": "runtime/droidloom-supervisor/src/production_namespace.rs",
+        "sha256": "32bc2e34986246afda38370795f1c56d567cc6c2646762ef38fd7a601733b6e3"
+      },
+      {
+        "bytes": 19781,
+        "path": "runtime/droidloom-supervisor/src/production_namespace_child.rs",
+        "sha256": "5c3d143be5a58f8986ea0dd4b2c8b4f0f586e8bc65da0069ababcbca2561a2aa"
+      },
+      {
+        "bytes": 25162,
+        "path": "runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+        "sha256": "d3372123a268adb14fef4d3ec29372a029676316f6f9e2b8888c550ffefa09e9"
+      },
+      {
+        "bytes": 26610,
+        "path": "runtime/droidloom-supervisor/src/sealed_spec.rs",
+        "sha256": "d3b95b594748488c1c3648e9fbae8f945003ca665e257cab86363c852aeaf842"
+      },
+      {
+        "bytes": 1759,
+        "path": "runtime/droidloom-supervisor/tests/fixtures/sealed-entry-probe.rs",
+        "sha256": "933569f16f7b871436ef57eb8134a335aeb12a0710eb1f4776345698859c879e"
+      }
+    ],
+    "source_after_tests": [
+      {
+        "bytes": 17724,
+        "path": "docs/contracts/runtime-layout-v1.md",
+        "sha256": "7f871b73582b43740926e9f66ac068c39c595dcf4df4fc5f484d84a7be951c73"
+      },
+      {
+        "bytes": 6472,
+        "path": "docs/threat-model-v1.md",
+        "sha256": "f916b4783272a4573b2573040ead999fda07e31a74cf1bdd1c91fd06494e455b"
+      },
+      {
+        "bytes": 81360,
+        "path": "runtime/droidloom-supervisor/src/control.rs",
+        "sha256": "46279b7c0b382f64d03f73e576e774152f39725aeb240050669db7cea9b2e90f"
+      },
+      {
+        "bytes": 124640,
+        "path": "runtime/droidloom-supervisor/src/development.rs",
+        "sha256": "2ef2429a74fa8c66c0f78c11056503c3ed50ce254b0345a9f8a716d6bf136ce2"
+      },
+      {
+        "bytes": 41386,
+        "path": "runtime/droidloom-supervisor/src/lib.rs",
+        "sha256": "24ee3240d749797424e25fb0f98021fc721a16a5f699b9bde9bd58d8feac3847"
+      },
+      {
+        "bytes": 43363,
+        "path": "runtime/droidloom-supervisor/src/linux_plan.rs",
+        "sha256": "d8dc23214b6ac4d229d4f29577ffa0fe233ae06a7d8396e149b214a59990191b"
+      },
+      {
+        "bytes": 10449,
+        "path": "runtime/droidloom-supervisor/src/main.rs",
+        "sha256": "aae7d4d208da37eaa87a5f64c70c6dc510940c8f34543cee4ccfec9b525ecc0e"
+      },
+      {
+        "bytes": 56537,
+        "path": "runtime/droidloom-supervisor/src/production_identity.rs",
+        "sha256": "44822e3982ae7645c057e3622e8c2c68da64e6c820e569dfd62d5c30f3f07fb8"
+      },
+      {
+        "bytes": 43153,
+        "path": "runtime/droidloom-supervisor/src/production_namespace.rs",
+        "sha256": "32bc2e34986246afda38370795f1c56d567cc6c2646762ef38fd7a601733b6e3"
+      },
+      {
+        "bytes": 19781,
+        "path": "runtime/droidloom-supervisor/src/production_namespace_child.rs",
+        "sha256": "5c3d143be5a58f8986ea0dd4b2c8b4f0f586e8bc65da0069ababcbca2561a2aa"
+      },
+      {
+        "bytes": 25162,
+        "path": "runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+        "sha256": "d3372123a268adb14fef4d3ec29372a029676316f6f9e2b8888c550ffefa09e9"
+      },
+      {
+        "bytes": 26610,
+        "path": "runtime/droidloom-supervisor/src/sealed_spec.rs",
+        "sha256": "d3b95b594748488c1c3648e9fbae8f945003ca665e257cab86363c852aeaf842"
+      },
+      {
+        "bytes": 1759,
+        "path": "runtime/droidloom-supervisor/tests/fixtures/sealed-entry-probe.rs",
+        "sha256": "933569f16f7b871436ef57eb8134a335aeb12a0710eb1f4776345698859c879e"
+      }
+    ],
+    "source_before_format": [
+      {
+        "bytes": 17724,
+        "path": "docs/contracts/runtime-layout-v1.md",
+        "sha256": "7f871b73582b43740926e9f66ac068c39c595dcf4df4fc5f484d84a7be951c73"
+      },
+      {
+        "bytes": 6472,
+        "path": "docs/threat-model-v1.md",
+        "sha256": "f916b4783272a4573b2573040ead999fda07e31a74cf1bdd1c91fd06494e455b"
+      },
+      {
+        "bytes": 81360,
+        "path": "runtime/droidloom-supervisor/src/control.rs",
+        "sha256": "46279b7c0b382f64d03f73e576e774152f39725aeb240050669db7cea9b2e90f"
+      },
+      {
+        "bytes": 124640,
+        "path": "runtime/droidloom-supervisor/src/development.rs",
+        "sha256": "2ef2429a74fa8c66c0f78c11056503c3ed50ce254b0345a9f8a716d6bf136ce2"
+      },
+      {
+        "bytes": 41386,
+        "path": "runtime/droidloom-supervisor/src/lib.rs",
+        "sha256": "24ee3240d749797424e25fb0f98021fc721a16a5f699b9bde9bd58d8feac3847"
+      },
+      {
+        "bytes": 43363,
+        "path": "runtime/droidloom-supervisor/src/linux_plan.rs",
+        "sha256": "d8dc23214b6ac4d229d4f29577ffa0fe233ae06a7d8396e149b214a59990191b"
+      },
+      {
+        "bytes": 10449,
+        "path": "runtime/droidloom-supervisor/src/main.rs",
+        "sha256": "aae7d4d208da37eaa87a5f64c70c6dc510940c8f34543cee4ccfec9b525ecc0e"
+      },
+      {
+        "bytes": 56537,
+        "path": "runtime/droidloom-supervisor/src/production_identity.rs",
+        "sha256": "44822e3982ae7645c057e3622e8c2c68da64e6c820e569dfd62d5c30f3f07fb8"
+      },
+      {
+        "bytes": 43153,
+        "path": "runtime/droidloom-supervisor/src/production_namespace.rs",
+        "sha256": "32bc2e34986246afda38370795f1c56d567cc6c2646762ef38fd7a601733b6e3"
+      },
+      {
+        "bytes": 19781,
+        "path": "runtime/droidloom-supervisor/src/production_namespace_child.rs",
+        "sha256": "5c3d143be5a58f8986ea0dd4b2c8b4f0f586e8bc65da0069ababcbca2561a2aa"
+      },
+      {
+        "bytes": 25170,
+        "path": "runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+        "sha256": "5ea5955adc3d73734b4c94d5cd9839812c75e23c2a40f2efc080b9301aa3a044"
+      },
+      {
+        "bytes": 26610,
+        "path": "runtime/droidloom-supervisor/src/sealed_spec.rs",
+        "sha256": "d3b95b594748488c1c3648e9fbae8f945003ca665e257cab86363c852aeaf842"
+      },
+      {
+        "bytes": 1759,
+        "path": "runtime/droidloom-supervisor/tests/fixtures/sealed-entry-probe.rs",
+        "sha256": "933569f16f7b871436ef57eb8134a335aeb12a0710eb1f4776345698859c879e"
+      }
+    ],
+    "source_integration_qualified": true,
+    "start_utc": "2026-11-09T08:45:42.870243+00:00"
+  },
+  "ordinary_ignored": 24,
+  "ordinary_receipt": {
+    "bytes": 15425,
+    "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/focused-r4/result.json",
+    "sha256": "c70f5da8d3629f122b9f9d9149d1208aa024a6e3c20b0e686fc96d157efa9e30"
+  },
+  "other_ignored_controls_not_claimed": true,
+  "private_control": {
+    "actual_private_control_passed": true,
+    "not_added_to_ordinary_count": true,
+    "original_receipt": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification/private-userns-r2/result.json",
+    "receipt": {
+      "bytes": 11173,
+      "path": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/inputs/private-control-receipts/private-userns-r2-result.json",
+      "sha256": "71f7621279ca7d54f014c544748de927eb816b05bf3992a5db0119223c42465d"
+    },
+    "tests_filtered_out": 201,
+    "tests_passed": 1
+  },
+  "private_test_staging_copies_retired": true,
+  "production_admission": false,
+  "production_ready": false,
+  "raw_logs_root": "/home/alex/work/pocket4-sealed-broker-integration-20261109-be1746a-r1/qualification",
+  "root_stage_retirement_receipt": "private-stage-retirement.json",
+  "runtime_qualified": false,
+  "schema": "pocket4-sealed-broker-integration-qualification-v1",
+  "unique_ordinary_passed": 184
+}

@@ -1,0 +1,29 @@
+# Independent Linux A08 job. Checkout, Rust and existing host build dependencies
+# precede these steps. AAC330_INVENTORY_SHA256 is supplied by the containing
+# workflow as a reviewed external pin; parent inventory pins are fixed below.
+- name: Reconstruct complete Audio537, Security537 and AAC330 producers
+  shell: bash
+  run: |
+    set -euo pipefail
+    : "${AAC330_INVENTORY_SHA256:?external AAC330 inventory pin required}"
+    audio="$GITHUB_WORKSPACE/compat/android/pocket4/audio537-libexif-vendor-bundle-source-r1"
+    security="$GITHUB_WORKSPACE/compat/android/pocket4/intentresolver-security-on-audio537-r1"
+    aac="$GITHUB_WORKSPACE/compat/android/pocket4/aac-security-on-security537-r1"
+    printf '%s  %s\n' "$AAC330_INVENTORY_SHA256" "$aac/FILES.sha256" | sha256sum --check --status
+    (cd "$aac" && sha256sum --quiet -c FILES.sha256)
+    printf '%s  %s\n' 'dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd' "$security/FILES.sha256" | sha256sum --check --status
+    (cd "$security" && sha256sum --quiet -c FILES.sha256)
+    printf '%s  %s\n' '486300e2a033679a87776c68bff4324eff11b53459de3c9712122788f2a76572' "$audio/FILES.sha256" | sha256sum --check --status
+    (cd "$audio" && sha256sum --quiet -c FILES.sha256)
+    python3 -I -B "$audio/replay_capsule.py" --capsule "$audio" --work "$RUNNER_TEMP/aac330-audio-base" --report "$RUNNER_TEMP/aac330-audio-replay.json"
+    python3 -I -B "$security/verify.py" --inventory-sha256 dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd --audio-source "$RUNNER_TEMP/aac330-audio-base" --output "$RUNNER_TEMP/aac330-security-base" --report "$RUNNER_TEMP/aac330-security-replay.json"
+    python3 -I -B "$aac/verify.py" --inventory-sha256 "$AAC330_INVENTORY_SHA256" --security-source "$RUNNER_TEMP/aac330-security-base" --output "$RUNNER_TEMP/aac330-producer" --report "$RUNNER_TEMP/aac330-replay.json"
+    python3 -I -B "$aac/test_verifier.py"
+- name: Run four fresh AAC Rust tests and build both release tools
+  timeout-minutes: 45
+  shell: bash
+  run: |
+    set -euo pipefail
+    aac="$GITHUB_WORKSPACE/compat/android/pocket4/aac-security-on-security537-r1"
+    python3 -I -B "$aac/run_ci.py" --inventory-sha256 "$AAC330_INVENTORY_SHA256" --producer "$RUNNER_TEMP/aac330-producer" --target "$RUNNER_TEMP/aac330-fresh-cargo-target" --report "$RUNNER_TEMP/aac330-ci.json" --jobs 2
+    python3 -I -B "$aac/verify.py" --inventory-sha256 "$AAC330_INVENTORY_SHA256" --producer "$RUNNER_TEMP/aac330-producer" --tests-log "$RUNNER_TEMP/aac330-ci-logs/security-four-tests.stdout" --report "$RUNNER_TEMP/aac330-complete-after.json"

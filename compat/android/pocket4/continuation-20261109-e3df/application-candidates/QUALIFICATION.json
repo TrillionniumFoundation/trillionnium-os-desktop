@@ -1,0 +1,654 @@
+{
+  "schema": "pocket4-application-candidate-reconciliation-qualification-v1",
+  "recorded_utc": "2026-11-09T20:33:58.993786+00:00",
+  "candidate_manifest": {
+    "relative_path": "CANDIDATE42.json",
+    "bytes": 283411,
+    "sha256": "3fd428793499f4811ff5a73c912c95ed23dfd2c82987f3a737a84624e79f5669",
+    "schema": "final-selected-42-production-application-candidates-v1"
+  },
+  "base_selector": {
+    "bytes": 134742,
+    "path": "/home/alex/work/pocket4-android-final/qualification/apps-content-bound-20261108-8b88-r1/update_inputs/final-selected42-production-candidates.json",
+    "sha256": "73b7578fe2376f700edd68184ed6e16182bf4b58d3b5c75554a5c597f5f3a603"
+  },
+  "scope": "Unadopted Pocket4 local Linux Droidloom application candidate proposal; external Razr excluded.",
+  "candidate_count": 42,
+  "required_packages": [
+    "com.Hyatt.hyt",
+    "com.MobileTicket",
+    "com.amazon.mShop.android.shopping",
+    "com.android.calendar",
+    "com.android.camera2",
+    "com.android.contacts",
+    "com.android.deskclock",
+    "com.android.dialer",
+    "com.android.documentsui",
+    "com.android.gallery3d",
+    "com.android.messaging",
+    "com.android.quicksearchbox",
+    "com.android.settings",
+    "com.bestbuy.android",
+    "com.ehi.national.mobile",
+    "com.enflick.android.TextNow",
+    "com.google.android.gms",
+    "com.hertz.android.digital",
+    "com.hilton.android.hhonors",
+    "com.ihg.apps.android",
+    "com.jingdong.app.mall",
+    "com.lianjia.beike",
+    "com.marriott.mrt",
+    "com.pinger.textfree",
+    "com.rytong.airchina",
+    "com.rytong.ceair",
+    "com.sankuai.meituan.takeoutnew",
+    "com.sdu.didi.psnger",
+    "com.ss.android.ugc.aweme",
+    "com.szzc",
+    "com.taobao.taobao",
+    "com.tencent.mm",
+    "com.ubercab",
+    "com.united.mobile.android",
+    "com.xunmeng.pinduoduo",
+    "com.zhubajie.client",
+    "com.zillow.android.streeteasy",
+    "ctrip.android.view",
+    "jp.co.ana.android.tabidachi",
+    "org.fcitx.fcitx5.android",
+    "org.mozilla.firefox",
+    "tv.danmaku.bili"
+  ],
+  "required_common_gates": [
+    "identity",
+    "lifecycle",
+    "stability",
+    "data_permissions",
+    "release_scope",
+    "ui_observation"
+  ],
+  "required_gate_rule": "For every candidate, require all six common_gate_ids and every key in its nonempty business_gate_definitions; these are requirements, not result claims.",
+  "complete_candidate_gate_contracts": 42,
+  "firefox_missing_contract_repaired": true,
+  "firefox_business_gates": [
+    "browser.audio_video",
+    "browser.content",
+    "browser.default_resolution",
+    "browser.external_https",
+    "browser.forms",
+    "browser.return"
+  ],
+  "canonical_pointer_repairs": [
+    {
+      "original_pointer": "/workspace/scratch/8b88e19ff7ab/apps_work/update_inputs/firefox_official/candidate.json",
+      "replacement": {
+        "bytes": 10646,
+        "path": "/home/alex/work/pocket4-android-final/qualification/apps-content-bound-20261108-8b88-r1/update_inputs/firefox_official/candidate.json",
+        "sha256": "54a737161cd552ca6e36a7687153aefbf1afc464ee5594d04d7ca513d45c7b54"
+      }
+    },
+    {
+      "original_pointer": "/workspace/scratch/8b88e19ff7ab/apps_work/update_inputs/qpr1-package-compatibility-gate.json",
+      "replacement": {
+        "bytes": 168931,
+        "path": "/home/alex/work/pocket4-android-final/qualification/apps-content-bound-20261108-8b88-r1/update_inputs/qpr1-package-compatibility-gate.json",
+        "sha256": "0bafa2ca7f5eb03835faac7325fa4b2287907fe5a3ce9dc83b9acbb33dc6a91b"
+      }
+    },
+    {
+      "original_pointer": "/workspace/scratch/8b88e19ff7ab/apps_work/cleanup_work/package-retirement-manifest.json",
+      "replacement": {
+        "bytes": 258366,
+        "path": "/home/alex/work/pocket4-android-final/qualification/apps-content-bound-20261108-8b88-r1/cleanup_work/package-retirement-manifest.json",
+        "sha256": "2483749febfc52592b94a4b0b5222068d336bf7987ee1001792a18f0ba8a53ef"
+      }
+    }
+  ],
+  "retired_staging_source_references_rebound_by_exact_size_and_sha256": 43,
+  "complete_signed_inputs_reconciled": 13,
+  "full_APK_bytes_read_back": 2265869445,
+  "host_verification_method": "Each retained APK and evidence file was opened as a bounded regular single-link canonical path, read in full, matched against its pinned SHA-256 and size, and checked for inode/metadata changes before and after the read.",
+  "new_signature_verifier_executions_in_this_revision": 0,
+  "signature_evidence_scope": "Retained successful aapt/apksigner executions and their source catalog were re-bound to current complete APK bytes; no Android test or new certificate trust was inferred.",
+  "input_qualifications": [
+    {
+      "package": "com.jingdong.app.mall",
+      "version_name": "16.1.50",
+      "version_code": 102918,
+      "artifact": {
+        "bytes": 85156480,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-20261109-9f5d-r2/jd-16.1.50-102918-official.apk",
+        "sha256": "6e184c1c224f5a7f0d7c02aa13d8cbabf750e28651ef56dfb6a3ddb4874bbbda"
+      },
+      "signer_certificate_sha256": [
+        "a5fdbfa8a769a9f2041c7f6706a52b8d981c0f12a6f10e989a9f583a43ed217d"
+      ],
+      "native_abis": [
+        "arm64-v8a"
+      ],
+      "source_catalog": {
+        "bytes": 86547,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-20261109-9f5d-r2/CANDIDATES.json",
+        "sha256": "0980d7fb93602f605d48fd5be30b7257138ca4f3df9f2ec94867755a634c806e"
+      },
+      "canonical_custody": true,
+      "same_signer_as_recorded_installed": true,
+      "signature_verified_in_retained_source": true,
+      "whole_APK_sha256_readback_passed": true,
+      "evidence_files_read_back": 51,
+      "retired_staging_references_rebound": 7,
+      "remaining_blockers": [
+        "actual_final_runtime_and_all_application_gates_pending"
+      ]
+    },
+    {
+      "package": "com.lianjia.beike",
+      "version_name": "3.06.71",
+      "version_code": 3067100,
+      "artifact": {
+        "bytes": 228991122,
+        "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.lianjia.beike/official-current.apk",
+        "sha256": "6984af4bbeda2818ad0a35183dd59af798eceebb9e441ef869b32dcc5095f728"
+      },
+      "signer_certificate_sha256": [
+        "0b66624117621bb9bc3e7d12a1fe5436794cf8999b0253d9ff9bec71e0932178"
+      ],
+      "native_abis": [
+        "arm64-v8a"
+      ],
+      "source_catalog": {
+        "bytes": 25453,
+        "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/RESULT.json",
+        "sha256": "1f0cbf58d1d2568b797e2f9e2c8c34a8abbd4ad5b785324a0292ac21502de37a"
+      },
+      "canonical_custody": false,
+      "same_signer_as_recorded_installed": true,
+      "signature_verified_in_retained_source": true,
+      "whole_APK_sha256_readback_passed": true,
+      "evidence_files_read_back": 8,
+      "retired_staging_references_rebound": 0,
+      "remaining_blockers": [
+        "current_owner_canonical_input_adoption_pending",
+        "actual_final_runtime_and_all_application_gates_pending"
+      ]
+    },
+    {
+      "package": "com.rytong.airchina",
+      "version_name": "7.53.3",
+      "version_code": 75303,
+      "artifact": {
+        "bytes": 207069802,
+        "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.rytong.airchina/official-current.apk",
+        "sha256": "f16f429b21c3402b362f5d3058476dfd97c29986f688e95e0d5294368d104fab"
+      },
+      "signer_certificate_sha256": [
+        "b48f75514e956be6bd7d56f1701136c8d76f19459bd724ac52390a572bc0ecbf"
+      ],
+      "native_abis": [
+        "arm64-v8a",
+        "armeabi-v7a"
+      ],
+      "source_catalog": {
+        "bytes": 25453,
+        "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/RESULT.json",
+        "sha256": "1f0cbf58d1d2568b797e2f9e2c8c34a8abbd4ad5b785324a0292ac21502de37a"
+      },
+      "canonical_custody": false,
+      "same_signer_as_recorded_installed": true,
+      "signature_verified_in_retained_source": true,
+      "whole_APK_sha256_readback_passed": true,
+      "evidence_files_read_back": 8,
+      "retired_staging_references_rebound": 0,
+      "remaining_blockers": [
+        "current_owner_canonical_input_adoption_pending",
+        "actual_final_runtime_and_all_application_gates_pending"
+      ]
+    },
+    {
+      "package": "com.rytong.ceair",
+      "version_name": "9.5.16",
+      "version_code": 239,
+      "artifact": {
+        "bytes": 220804847,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-20261109-9f5d-r2/ceair-9.5.16-239-official.apk",
+        "sha256": "a6da8d746f98cae884f6b0137b5c7e8412836adf75530b763dae1536c75522ce"
+      },
+      "signer_certificate_sha256": [
+        "b48f75514e956be6bd7d56f1701136c8d76f19459bd724ac52390a572bc0ecbf"
+      ],
+      "native_abis": [
+        "arm64-v8a"
+      ],
+      "source_catalog": {
+        "bytes": 86547,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-20261109-9f5d-r2/CANDIDATES.json",
+        "sha256": "0980d7fb93602f605d48fd5be30b7257138ca4f3df9f2ec94867755a634c806e"
+      },
+      "canonical_custody": true,
+      "same_signer_as_recorded_installed": true,
+      "signature_verified_in_retained_source": true,
+      "whole_APK_sha256_readback_passed": true,
+      "evidence_files_read_back": 17,
+      "retired_staging_references_rebound": 6,
+      "remaining_blockers": [
+        "actual_final_runtime_and_all_application_gates_pending"
+      ]
+    },
+    {
+      "package": "com.sankuai.meituan.takeoutnew",
+      "version_name": "8.84.2",
+      "version_code": 800840002,
+      "artifact": {
+        "bytes": 66055667,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-20261109-9f5d-r3/waimai-8.84.2-800840002-official-arm64.apk",
+        "sha256": "1fa4c8610d254a72cbd4f111f840d77466e3ed6c51a5f454cdb29bcc32eb6424"
+      },
+      "signer_certificate_sha256": [
+        "73a611c3a01dc6e11388873daeee1e556ad9e5768e5c222055f508a24c3a8215"
+      ],
+      "native_abis": [
+        "arm64-v8a"
+      ],
+      "source_catalog": {
+        "bytes": 57255,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-20261109-9f5d-r3/CANDIDATES.json",
+        "sha256": "e42a71cbd11aae0c006386c1cfd98585e793899094e6892eadf8b343a6a35097"
+      },
+      "canonical_custody": true,
+      "same_signer_as_recorded_installed": false,
+      "signature_verified_in_retained_source": true,
+      "whole_APK_sha256_readback_passed": true,
+      "evidence_files_read_back": 21,
+      "retired_staging_references_rebound": 6,
+      "remaining_blockers": [
+        "data_preserving_cross_signer_migration_not_qualified",
+        "actual_final_runtime_and_all_application_gates_pending"
+      ]
+    },
+    {
+      "package": "com.sdu.didi.psnger",
+      "version_name": "8.0.18",
+      "version_code": 1208001805,
+      "artifact": {
+        "bytes": 77639666,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-20261109-9f5d-r3/didi-8.0.18-1208001805-official-arm64.apk",
+        "sha256": "b9e0b87452e4286aed13883e16832f73c95205380e9cdced9cb8b283ac261214"
+      },
+      "signer_certificate_sha256": [
+        "613cc829902938fe4074bbc839f1fcdd332640df9217b95c602bd590e82a7551"
+      ],
+      "native_abis": [
+        "arm64-v8a"
+      ],
+      "source_catalog": {
+        "bytes": 57255,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-20261109-9f5d-r3/CANDIDATES.json",
+        "sha256": "e42a71cbd11aae0c006386c1cfd98585e793899094e6892eadf8b343a6a35097"
+      },
+      "canonical_custody": true,
+      "same_signer_as_recorded_installed": true,
+      "signature_verified_in_retained_source": true,
+      "whole_APK_sha256_readback_passed": true,
+      "evidence_files_read_back": 42,
+      "retired_staging_references_rebound": 6,
+      "remaining_blockers": [
+        "actual_final_runtime_and_all_application_gates_pending"
+      ]
+    },
+    {
+      "package": "com.ss.android.ugc.aweme",
+      "version_name": "41.0.0",
+      "version_code": 410001,
+      "artifact": {
+        "bytes": 364363658,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r2/douyin-41.0.0-410001-official.apk",
+        "sha256": "b1d8834c20e5dbd75e2d48b5b30dea67be88f6903dba78a78d736a80b7feff2f"
+      },
+      "signer_certificate_sha256": [
+        "5182ae3b1b85337bb182cf24882449f84447ded18e296a747a9f6a0a2622512e"
+      ],
+      "native_abis": [
+        "arm64-v8a"
+      ],
+      "source_catalog": {
+        "bytes": 22015,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r2/CANDIDATES.json",
+        "sha256": "90e9265a63aa83708c87160dcb3b27f5f40c66202fdec0360c7918e9774ce3d1"
+      },
+      "canonical_custody": true,
+      "same_signer_as_recorded_installed": true,
+      "signature_verified_in_retained_source": true,
+      "whole_APK_sha256_readback_passed": true,
+      "evidence_files_read_back": 7,
+      "retired_staging_references_rebound": 0,
+      "remaining_blockers": [
+        "actual_final_runtime_and_all_application_gates_pending"
+      ]
+    },
+    {
+      "package": "com.szzc",
+      "version_name": "9.6.2",
+      "version_code": 328,
+      "artifact": {
+        "bytes": 220267107,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r2/szzc-9.6.2-328-official.apk",
+        "sha256": "c8611c1828fec03b7363a10cdc4da97c8bca1f0cf5ec91dff0c3b1e66337360f"
+      },
+      "signer_certificate_sha256": [
+        "d85bed4d2a7c08e1b6b5f0097d6c66a79a5b12b58d97e794d3b5c5bff2aeaf44"
+      ],
+      "native_abis": [
+        "arm64-v8a",
+        "armeabi-v7a"
+      ],
+      "source_catalog": {
+        "bytes": 22015,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r2/CANDIDATES.json",
+        "sha256": "90e9265a63aa83708c87160dcb3b27f5f40c66202fdec0360c7918e9774ce3d1"
+      },
+      "canonical_custody": true,
+      "same_signer_as_recorded_installed": true,
+      "signature_verified_in_retained_source": true,
+      "whole_APK_sha256_readback_passed": true,
+      "evidence_files_read_back": 6,
+      "retired_staging_references_rebound": 0,
+      "remaining_blockers": [
+        "actual_final_runtime_and_all_application_gates_pending"
+      ]
+    },
+    {
+      "package": "com.taobao.taobao",
+      "version_name": "10.69.0",
+      "version_code": 866,
+      "artifact": {
+        "bytes": 95212303,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r2/taobao-10.69.0-866-official.apk",
+        "sha256": "75d76b60cbedf1a5fa1fe53184fca481d5bcef696c8a8134145925644b691808"
+      },
+      "signer_certificate_sha256": [
+        "c5e9bc4c5cc7a34482c627cb9a76b88e30b509d0da3ba54a66274200e19c2743"
+      ],
+      "native_abis": [
+        "arm64-v8a",
+        "armeabi-v7a"
+      ],
+      "source_catalog": {
+        "bytes": 22015,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r2/CANDIDATES.json",
+        "sha256": "90e9265a63aa83708c87160dcb3b27f5f40c66202fdec0360c7918e9774ce3d1"
+      },
+      "canonical_custody": true,
+      "same_signer_as_recorded_installed": true,
+      "signature_verified_in_retained_source": true,
+      "whole_APK_sha256_readback_passed": true,
+      "evidence_files_read_back": 6,
+      "retired_staging_references_rebound": 0,
+      "remaining_blockers": [
+        "actual_final_runtime_and_all_application_gates_pending"
+      ]
+    },
+    {
+      "package": "com.tencent.mm",
+      "version_name": "8.0.80",
+      "version_code": 3220,
+      "artifact": {
+        "bytes": 286319384,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-20261109-9f5d-r1/wechat-8.0.80-3220-official-arm64.apk",
+        "sha256": "9d9b6c516e8e07e437c81485fde21fe13ce4f61b37d19e793fff40c71be39c0e"
+      },
+      "signer_certificate_sha256": [
+        "0fe4ff85c215918396dadc7cd8ce6963339af33d37751a56e54c7206b63a3c7c"
+      ],
+      "native_abis": [
+        "arm64-v8a"
+      ],
+      "source_catalog": {
+        "bytes": 53316,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-20261109-9f5d-r1/CANDIDATES.json",
+        "sha256": "870f8aeaa7382af596902da974bc5c014eb402bd421b00bf687fe678ac7f6b57"
+      },
+      "canonical_custody": true,
+      "same_signer_as_recorded_installed": true,
+      "signature_verified_in_retained_source": true,
+      "whole_APK_sha256_readback_passed": true,
+      "evidence_files_read_back": 17,
+      "retired_staging_references_rebound": 6,
+      "remaining_blockers": [
+        "actual_final_runtime_and_all_application_gates_pending"
+      ]
+    },
+    {
+      "package": "com.xunmeng.pinduoduo",
+      "version_name": "8.30.0",
+      "version_code": 83000,
+      "artifact": {
+        "bytes": 32690199,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-20261109-9f5d-r1/pinduoduo-8.30.0-83000-official-arm64.apk",
+        "sha256": "3dbdcf5dcc94086dc0bc7d7f378fe1e328d9f32f30b82853fc8f440759d04ad4"
+      },
+      "signer_certificate_sha256": [
+        "dd3923e78df33f08b0fb4a533ab1e860425ca7f6777fbe14f85a6cf5687143d6"
+      ],
+      "native_abis": [
+        "arm64-v8a"
+      ],
+      "source_catalog": {
+        "bytes": 53316,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-20261109-9f5d-r1/CANDIDATES.json",
+        "sha256": "870f8aeaa7382af596902da974bc5c014eb402bd421b00bf687fe678ac7f6b57"
+      },
+      "canonical_custody": true,
+      "same_signer_as_recorded_installed": true,
+      "signature_verified_in_retained_source": true,
+      "whole_APK_sha256_readback_passed": true,
+      "evidence_files_read_back": 27,
+      "retired_staging_references_rebound": 6,
+      "remaining_blockers": [
+        "actual_final_runtime_and_all_application_gates_pending"
+      ]
+    },
+    {
+      "package": "tv.danmaku.bili",
+      "version_name": "9.18.0",
+      "version_code": 9180300,
+      "artifact": {
+        "bytes": 242067951,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-20261109-9f5d-r2/bilibili-9.18.0-9180300-official.apk",
+        "sha256": "33b302b285bdbb5ee1e3030c5d65a88b8229ff3d7bbf78df105600e968109bfc"
+      },
+      "signer_certificate_sha256": [
+        "93ba270f5521139ecafe4bb638ac5b1198bc548f62d9fd8f8580a079faf5910e"
+      ],
+      "native_abis": [
+        "arm64-v8a"
+      ],
+      "source_catalog": {
+        "bytes": 86547,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-20261109-9f5d-r2/CANDIDATES.json",
+        "sha256": "0980d7fb93602f605d48fd5be30b7257138ca4f3df9f2ec94867755a634c806e"
+      },
+      "canonical_custody": true,
+      "same_signer_as_recorded_installed": true,
+      "signature_verified_in_retained_source": true,
+      "whole_APK_sha256_readback_passed": true,
+      "evidence_files_read_back": 22,
+      "retired_staging_references_rebound": 6,
+      "remaining_blockers": [
+        "actual_final_runtime_and_all_application_gates_pending"
+      ]
+    },
+    {
+      "package": "org.mozilla.firefox",
+      "version_name": "159.0.1",
+      "version_code": 2016193998,
+      "artifact": {
+        "bytes": 139231259,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r1/firefox-159.0.1-x86_64.apk",
+        "sha256": "dc4310b6193a5cadf3b7eff119e677aea006071c8484fa7a35874c2613fd18e1"
+      },
+      "signer_certificate_sha256": [
+        "a78b62a5165b4494b2fead9e76a280d22d937fee6251aece599446b2ea319b04"
+      ],
+      "native_abis": [
+        "x86_64"
+      ],
+      "source_catalog": {
+        "bytes": 1785,
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r1/result.json",
+        "sha256": "c909e9d437c8687c075d9693de3c3da7d40fc3e6f302a6712bc63abef694887c"
+      },
+      "canonical_custody": true,
+      "same_signer_as_recorded_installed": null,
+      "signature_verified_in_retained_source": true,
+      "whole_APK_sha256_readback_passed": true,
+      "evidence_files_read_back": 0,
+      "retired_staging_references_rebound": 0,
+      "remaining_blockers": [
+        "actual_final_runtime_and_all_application_gates_pending"
+      ]
+    }
+  ],
+  "authenticated_official_store_delivery_unavailable": [
+    {
+      "package": "com.amazon.mShop.android.shopping",
+      "display_name": "Amazon",
+      "official_sources": [
+        "https://play.google.com/store/apps/details?id=com.amazon.mShop.android.shopping&hl=en_US"
+      ]
+    },
+    {
+      "package": "com.bestbuy.android",
+      "display_name": "Best Buy",
+      "official_sources": [
+        "https://play.google.com/store/apps/details?id=com.bestbuy.android&hl=en_US"
+      ]
+    },
+    {
+      "package": "com.ehi.national.mobile",
+      "display_name": "National",
+      "official_sources": [
+        "https://play.google.com/store/apps/details?id=com.ehi.national.mobile&hl=en_US"
+      ]
+    },
+    {
+      "package": "com.enflick.android.TextNow",
+      "display_name": "TextNow",
+      "official_sources": [
+        "https://play.google.com/store/apps/details?id=com.enflick.android.TextNow&hl=en_US"
+      ]
+    },
+    {
+      "package": "com.hertz.android.digital",
+      "display_name": "Hertz",
+      "official_sources": [
+        "https://play.google.com/store/apps/details?id=com.hertz.android.digital&hl=en_US"
+      ]
+    },
+    {
+      "package": "com.hilton.android.hhonors",
+      "display_name": "Hilton",
+      "official_sources": [
+        "https://play.google.com/store/apps/details?id=com.hilton.android.hhonors&hl=en_US"
+      ]
+    },
+    {
+      "package": "com.ihg.apps.android",
+      "display_name": "IHG",
+      "official_sources": [
+        "https://play.google.com/store/apps/details?id=com.ihg.apps.android&hl=en_US"
+      ]
+    },
+    {
+      "package": "com.marriott.mrt",
+      "display_name": "Marriott",
+      "official_sources": [
+        "https://play.google.com/store/apps/details?id=com.marriott.mrt&hl=en_US"
+      ]
+    },
+    {
+      "package": "com.pinger.textfree",
+      "display_name": "TextFree",
+      "official_sources": [
+        "https://play.google.com/store/apps/details?id=com.pinger.textfree&hl=en_US"
+      ]
+    },
+    {
+      "package": "com.united.mobile.android",
+      "display_name": "United",
+      "official_sources": [
+        "https://play.google.com/store/apps/details?id=com.united.mobile.android&hl=en_US"
+      ]
+    },
+    {
+      "package": "com.zillow.android.streeteasy",
+      "display_name": "StreetEasy",
+      "official_sources": [
+        "https://play.google.com/store/apps/details?id=com.zillow.android.streeteasy&hl=en_US"
+      ]
+    },
+    {
+      "package": "jp.co.ana.android.tabidachi",
+      "display_name": "ANA",
+      "official_sources": [
+        "https://play.google.com/store/apps/details?id=jp.co.ana.android.tabidachi&hl=en_US"
+      ]
+    }
+  ],
+  "additional_official_complete_binary_blockers": [
+    {
+      "package": "com.Hyatt.hyt",
+      "reason": "Matching listing versionName alone is insufficient; retained publisher page returned HTTP 403 and no complete current official APK/split set was obtained."
+    },
+    {
+      "package": "com.ubercab",
+      "reason": "The retained official Play listing did not establish exact current version/code/body; complete authenticated official delivery is still absent."
+    },
+    {
+      "package": "com.zhubajie.client",
+      "reason": "Publisher public download 9.5.00/code367 is older than installed9.5.20/code370. Do not downgrade; newer official channel and full signed bytes remain required."
+    },
+    {
+      "package": "ctrip.android.view",
+      "reason": "Publisher metadata advertised8.97.4, but full public APK was8.94.6/code2100, older than installed8.97.4/code2133. No current full matching official APK was obtained."
+    }
+  ],
+  "public_route_alternatives_with_no_complete_download": [
+    {
+      "package": "com.marriott.mrt",
+      "status": "Publisher delegated public route was found, but complete APK transfer failed; its page metadata is not an installer."
+    },
+    {
+      "package": "com.hilton.android.hhonors",
+      "status": "China publisher landing connection timed out; no complete alternative public APK was obtained."
+    }
+  ],
+  "canonical_custody_pending_packages": [
+    "com.lianjia.beike",
+    "com.rytong.airchina"
+  ],
+  "data_preserving_signer_migration_pending_packages": [
+    "com.sankuai.meituan.takeoutnew"
+  ],
+  "canonical_selector_modified": false,
+  "current_modified": false,
+  "active_owner_adoption_required": true,
+  "new_runtime_accepted_count": 0,
+  "production_ready": false,
+  "runtime_qualified": false,
+  "installs": 0,
+  "uninstalls": 0,
+  "Android_actions": 0,
+  "original_installed_identities_and_business_scope_preserved": true,
+  "release_checker_compatibility": {
+    "candidate_catalog_is_runtime_release_manifest": false,
+    "no_main_boot_uid_engine_or_runtime_result_invented": true,
+    "reason": "The existing release checker requires numeric schema 1, genuine Main/boot/framework/cohort, installed UID and engine mapping, all installed APK/split identities, and actual gate results. This candidate catalog cannot be submitted as that runtime manifest.",
+    "source": "/home/alex/work/pocket4-app-release-check-20261109-2840-r1/runtime/droidloom-applications/src/release.rs"
+  },
+  "retained_host_review": {
+    "host": "pocket4",
+    "path": "/home/alex/work/pocket4-app-candidate-reconciliation-20261109-e3df-r1/REVIEW.json",
+    "bytes": 90938,
+    "sha256": "645c8a7ddf17eb568d084d64197d6338af8caea6bb2d7cccf1d7d15b42b70e98"
+  },
+  "ci_meaning": "CI may validate this catalog's schema, exact package/gate coverage, hashes and false runtime flags. Pocket4 paths are retained host evidence references; a cloud runner must not claim to have opened those APKs merely by validating this JSON."
+}

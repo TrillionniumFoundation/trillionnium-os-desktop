@@ -1,0 +1,85 @@
+// Copyright (C) 2022 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+java_defaults {
+    name: "service-ondeviceintelligence-defaults",
+    srcs: [
+        ":service-ondeviceintelligence-sources",
+        "proto/*.proto",
+    ],
+    defaults: ["framework-system-server-module-defaults"],
+    sdk_version: "system_server_current",
+    apex_available: [
+        "com.android.neuralnetworks",
+        "//apex_available:platform",
+    ],
+    proto: {
+        type: "nano",
+    },
+    static_libs: [
+        "android.os.flags-aconfig-java-export",
+        "android.app.ondeviceintelligence-aconfig-java",
+        "modules-utils-backgroundthread",
+        "modules-utils-handlerexecutor",
+        "modules-utils-shell-command-handler",
+    ],
+    min_sdk_version: "36",
+    libs: [
+        "framework-configinfrastructure.stubs.module_lib",
+        "framework-ondeviceintelligence.impl",
+    ],
+    errorprone: {
+        extra_check_modules: [
+            "//external/nullaway:nullaway_plugin",
+        ],
+        javacflags: [
+            "-Xep:NullAway:ERROR",
+            "-XepExcludedPaths:.*/out/soong/.*",
+            "-XepOpt:NullAway:AnnotatedPackages=android.app.ondeviceintelligence",
+            "-XepOpt:NullAway:AnnotatedPackages=android.service.ondeviceintelligence",
+        ],
+    },
+    enabled: select(release_flag("RELEASE_ONDEVICE_INTELLIGENCE_MODULE"), {
+        true: true,
+        default: false,
+    }),
+}
+
+java_library {
+    name: "service-ondeviceintelligence-internal",
+    defaults: ["service-ondeviceintelligence-defaults"],
+    visibility: [
+        "//frameworks/base:__subpackages__",
+        "//packages/modules/NeuralNetworks:__subpackages__",
+    ],
+}
+
+java_sdk_library {
+    name: "service-ondeviceintelligence",
+    defaults: ["service-ondeviceintelligence-defaults"],
+    impl_library_visibility: [
+        "//frameworks/base:__subpackages__",
+        "//packages/modules/NeuralNetworks:__subpackages__",
+    ],
+    permitted_packages: [
+        "com.android.modules.utils",
+        "com.android.neuralnetworks",
+        "com.android.server.ondeviceintelligence",
+    ],
+    jarjar_rules: "jarjar-rules.txt",
+}

@@ -1,0 +1,2898 @@
+{
+  "actual_build_processes_seen": [
+    "ninja",
+    "soong_build",
+    "soong_ui"
+  ],
+  "actual_soong_process_generations": [
+    {
+      "affinity": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "argv": [
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/host/linux-x86/bin/soong_build",
+        "--top",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source",
+        "--soong_out",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/soong",
+        "--out",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out",
+        "--soong_variables",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/soong/soong.droidloom_x86_64.variables",
+        "-o",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/soong/build.droidloom_x86_64.ninja",
+        "--kati_suffix",
+        "-droidloom_x86_64",
+        "--kati_enabled",
+        "-l",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/.module_paths/Android.bp.list",
+        "--available_env",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/soong/soong.environment.available",
+        "--used_env",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/soong/soong.environment.used.droidloom_x86_64.build",
+        "Android.bp"
+      ],
+      "cgroup": "0::/system.slice/p4-audio-source430-original-sdk35-full-desktop-20261109-8b88-r12.service\n",
+      "environment": {
+        "ALLOW_MISSING_DEPENDENCIES": "",
+        "GOCACHE": "",
+        "GODEBUG": "gctrace=1",
+        "GOGC": "50",
+        "GOMAXPROCS": "2",
+        "GOMEMLIMIT": "5GiB",
+        "GOTMPDIR": "",
+        "NINJA_ARGS": "",
+        "TMPDIR": ""
+      },
+      "exe": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/host/linux-x86/bin/soong_build",
+      "pid": 1983561,
+      "start_ticks": 132073366
+    }
+  ],
+  "actual_source_qualification_profile": {
+    "after": {
+      "affinity": [
+        0,
+        1
+      ],
+      "cpu.max": "200000 100000",
+      "memory.current": "4294422528",
+      "memory.events": "low 0\nhigh 0\nmax 67209\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.max": "4294967296",
+      "memory.peak": "4295012352",
+      "memory.stat": "anon 21544960\nfile 4233998336\nkernel 38584320\nkernel_stack 0\npagetables 196608\nsec_pagetables 0\npercpu 1600\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 1347584\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 15134720\nactive_anon 6406144\ninactive_file 1947750400\nactive_file 2286137344\nunevictable 0\nslab_reclaimable 38323064\nslab_unreclaimable 53904\nslab 38376968\nworkingset_refault_anon 0\nworkingset_refault_file 18223921\nworkingset_activate_anon 0\nworkingset_activate_file 1308\nworkingset_restore_anon 0\nworkingset_restore_file 190\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 17452295\npgsteal 17450136\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 17452295\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 17450136\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 2838005\npgmajfault 110427\npgrefill 1017360\npgactivate 2670\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0",
+      "memory.swap.current": "0",
+      "memory.swap.max": "0"
+    },
+    "before": {
+      "affinity": [
+        0,
+        1
+      ],
+      "cpu.max": "200000 100000",
+      "memory.current": "11714560",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.max": "4294967296",
+      "memory.peak": "11714560",
+      "memory.stat": "anon 10862592\nfile 12288\nkernel 163840\nkernel_stack 0\npagetables 114688\nsec_pagetables 0\npercpu 800\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 8192\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 0\nshmem_thp 0\ninactive_anon 0\nactive_anon 10858496\ninactive_file 12288\nactive_file 0\nunevictable 0\nslab_reclaimable 5056\nslab_unreclaimable 28848\nslab 33904\nworkingset_refault_anon 0\nworkingset_refault_file 0\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 0\npgsteal 0\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 3058\npgmajfault 0\npgrefill 0\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0",
+      "memory.swap.current": "0",
+      "memory.swap.max": "0"
+    },
+    "source_profile_does_not_qualify_this_full_profile": true
+  },
+  "admission": {
+    "disk_free_bytes": 176694521856,
+    "memavailable_bytes": 92428816384,
+    "observed_ns": 1794242289593224366
+  },
+  "allocation_observations": [
+    {
+      "bytes": 2742,
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/allocation-observations/observation-00000/result.json",
+      "sha256": "f204d58eaf9e84cfa6d5223644fcf74ef37dd41b400703fec5f53090e2de1658"
+    },
+    {
+      "bytes": 2742,
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/allocation-observations/observation-00001/result.json",
+      "sha256": "e2832bbf593584b0aada494ce3780a44483c751034ee5e0d6fa221e0fc44280f"
+    },
+    {
+      "bytes": 2742,
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/allocation-observations/observation-00002/result.json",
+      "sha256": "eb4be120de9f99ecf5f504cfcbd897385a8ec65fa62d921f823f010a99cf907e"
+    },
+    {
+      "bytes": 2742,
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/allocation-observations/observation-00003/result.json",
+      "sha256": "2c3790e7c9354820efb81574d157099bf16796693e7e3d8d354c6abbebde64e6"
+    },
+    {
+      "bytes": 2742,
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/allocation-observations/observation-00004/result.json",
+      "sha256": "7718346cccfdb2e5e5368d9ae2be2d833a68c0fcd87ffb294f77c09d3908da46"
+    }
+  ],
+  "allocation_observer_controls": {
+    "H": {
+      "exit": {
+        "bytes": 497,
+        "path": "/home/qian-qi/.local/state/hepta-runtime-mac-worker/jobs/1a1be9ffbc8-5e21-1be/exit.json",
+        "sha256": "0ae4d8de71db1820e69f3c9a32c9c641355092f266f19ab83b0d30616cb99c57"
+      },
+      "request": {
+        "bytes": 8516,
+        "path": "/home/qian-qi/.local/state/hepta-runtime-mac-worker/jobs/1a1be9ffbc8-5e21-1be/request.json",
+        "sha256": "12207b30683e09f439edb4df705822f3044be8fd33411310fc050f35c726d1cd"
+      },
+      "started": {
+        "bytes": 331,
+        "path": "/home/qian-qi/.local/state/hepta-runtime-mac-worker/jobs/1a1be9ffbc8-5e21-1be/started.json",
+        "sha256": "537dc589c76809ad874bf4858f4b8b342bdec9c2bfa32e88465a0723e65304c5"
+      }
+    },
+    "result": {
+      "bytes": 7323,
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/allocation-observer-controls-r3/RESULT.json",
+      "sha256": "014f62f4515dab35a2dadf4d57eaf5ed23bbba615dff81a013b6b16f5618aebd"
+    }
+  },
+  "allocation_observer_retired": true,
+  "allocation_observer_source": {
+    "bytes": 15359,
+    "identity": [
+      2067,
+      3037809,
+      33024,
+      1000,
+      1000,
+      1,
+      15359,
+      1794241478579651748,
+      1794241478579651748
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/full-desktop-r12/owned_allocation.py",
+    "sha256": "07de7b697864f5d79d7d16f1eef1a32e46e99c60595c4036e51d8cc091365216"
+  },
+  "argv": [
+    "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/released-sdk35-r2/droidloom-update",
+    "--source",
+    "/data/pocket4-audio-source316-offload-20261108-8b88-r1/recipe-released-sdk35-r2",
+    "-j6",
+    "audio-apex-build",
+    "--work",
+    "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work"
+  ],
+  "boot_id": "14f92beb-43c6-4786-839e-b57307ae8048",
+  "budget_after": {
+    "affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "cpu.max": "800000 100000",
+    "file_size_rlimit": [
+      -1,
+      -1
+    ],
+    "memory.current": "23614947328",
+    "memory.events": "low 0\nhigh 9411\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.high": "23622320128",
+    "memory.max": "25769803776",
+    "memory.peak": "23624388608",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0",
+    "nice": 10
+  },
+  "budget_before": {
+    "affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "cpu.max": "800000 100000",
+    "file_size_rlimit": [
+      -1,
+      -1
+    ],
+    "memory.current": "12451840",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.high": "23622320128",
+    "memory.max": "25769803776",
+    "memory.peak": "12595200",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0",
+    "nice": 10
+  },
+  "build_host": "desktop",
+  "build_success": false,
+  "commands": [
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1319713.190761948,
+        "elapsed_seconds": 0.00024505704641342163,
+        "leader_pid": 1933767,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/released-sdk35-r2/droidloom-source",
+        "verify-lock",
+        "--lock",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/recipe-released-sdk35-r2/android/manifest/audio-bridge-source-lock.json"
+      ],
+      "driver": {
+        "argv": [],
+        "cgroup": "0::/system.slice/p4-audio-source430-original-sdk35-full-desktop-20261109-8b88-r12.service\n",
+        "exe": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/released-sdk35-r2/droidloom-source",
+        "pid": 1933767,
+        "start_ticks": 131970815
+      },
+      "errors": [],
+      "finished_ns": 1794242042203167618,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00020628399215638638,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 1933767,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "normal-lock-before",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 1933767,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 1933431,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794242042157271965,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3036819,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794242042156885764,
+          1794242042156885764
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/normal-lock-before.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 107,
+        "identity": [
+          2067,
+          3036818,
+          33188,
+          1000,
+          1000,
+          1,
+          107,
+          1794242042195884128,
+          1794242042195884128
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/normal-lock-before.stdout",
+        "sha256": "4f03f51ecad117e7ea1e8b5aeaa1552f13c1b91a698d8b961e4c4bf092690d57"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1319955.404603366,
+        "elapsed_seconds": 0.000415789894759655,
+        "leader_pid": 1933778,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/released-sdk35-r2/droidloom-source",
+        "verify-materialized",
+        "--lock",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/recipe-released-sdk35-r2/android/manifest/audio-bridge-source-lock.json",
+        "--output",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source"
+      ],
+      "driver": {
+        "argv": [
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/released-sdk35-r2/droidloom-source",
+          "verify-materialized",
+          "--lock",
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/recipe-released-sdk35-r2/android/manifest/audio-bridge-source-lock.json",
+          "--output",
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source"
+        ],
+        "cgroup": "0::/system.slice/p4-audio-source430-original-sdk35-full-desktop-20261109-8b88-r12.service\n",
+        "exe": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/released-sdk35-r2/droidloom-source",
+        "pid": 1933778,
+        "start_ticks": 131970819
+      },
+      "errors": [],
+      "finished_ns": 1794242284415074426,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.0003399350680410862,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 1933778,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "normal-materialized-before",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 1933778,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 1933431,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794242042206236330,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3037812,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794242042204883751,
+          1794242042204883751
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/normal-materialized-before.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 108,
+        "identity": [
+          2067,
+          3037811,
+          33188,
+          1000,
+          1000,
+          1,
+          108,
+          1794242284408736425,
+          1794242284408736425
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/normal-materialized-before.stdout",
+        "sha256": "692d91d64d57b8f7f25a1259ffafa52e5a9c285456ae94f1e751e8eb4ac33edc"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1319955.421470509,
+        "elapsed_seconds": 0.00027571595273911953,
+        "leader_pid": 1948366,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "rev-parse",
+          "HEAD"
+        ],
+        "cgroup": "0::/system.slice/p4-audio-source430-original-sdk35-full-desktop-20261109-8b88-r12.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 1948366,
+        "start_ticks": 131995041
+      },
+      "errors": [],
+      "finished_ns": 1794242284431429851,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.0002741948701441288,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 1948366,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "recipe-head-before",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 1948366,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 1933431,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794242284426165949,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3037815,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794242284425735714,
+          1794242284425735714
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/recipe-head-before.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          2067,
+          3037814,
+          33188,
+          1000,
+          1000,
+          1,
+          41,
+          1794242284427735630,
+          1794242284427735630
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/recipe-head-before.stdout",
+        "sha256": "284c5ff1611e53c8278438398ba56fe5302479db8cdcb85346f786c703fc8cbd"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1319955.430494655,
+        "elapsed_seconds": 0.0002783720847219229,
+        "leader_pid": 1948367,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "HEAD^{tree}"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "rev-parse",
+          "HEAD^{tree}"
+        ],
+        "cgroup": "0::/system.slice/p4-audio-source430-original-sdk35-full-desktop-20261109-8b88-r12.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 1948367,
+        "start_ticks": 131995042
+      },
+      "errors": [],
+      "finished_ns": 1794242284440470024,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00027739000506699085,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 1948367,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "recipe-tree-before",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 1948367,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 1933431,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794242284434149261,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3037818,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794242284432735421,
+          1794242284432735421
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/recipe-tree-before.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          2067,
+          3037817,
+          33188,
+          1000,
+          1000,
+          1,
+          41,
+          1794242284436735254,
+          1794242284436735254
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/recipe-tree-before.stdout",
+        "sha256": "28d70566b659e23b225f8ef0877048517cc80f76ab14c85ea284c32778cd8986"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1319955.464412931,
+        "elapsed_seconds": 0.0002937300596386194,
+        "leader_pid": 1948368,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "status",
+        "--porcelain=v1"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "status",
+          "--porcelain=v1"
+        ],
+        "cgroup": "0::/system.slice/p4-audio-source430-original-sdk35-full-desktop-20261109-8b88-r12.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 1948368,
+        "start_ticks": 131995043
+      },
+      "errors": [],
+      "finished_ns": 1794242284474237230,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00026118895038962364,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 1948368,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "recipe-clean-before",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 1948368,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 1933431,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794242284443193312,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3037821,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794242284442735003,
+          1794242284442735003
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/recipe-clean-before.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3037820,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794242284441735045,
+          1794242284441735045
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/recipe-clean-before.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1319955.803029379,
+        "elapsed_seconds": 0.0001606689766049385,
+        "leader_pid": 1948376,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/full-desktop-r12/go_resource_probe"
+      ],
+      "driver": {
+        "argv": [
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/full-desktop-r12/go_resource_probe"
+        ],
+        "cgroup": "0::/system.slice/p4-audio-source430-original-sdk35-full-desktop-20261109-8b88-r12.service\n",
+        "exe": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/full-desktop-r12/go_resource_probe",
+        "pid": 1948376,
+        "start_ticks": 131995079
+      },
+      "errors": [],
+      "finished_ns": 1794242284813908226,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00015262793749570847,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 1948376,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "actual-eight-cpu-go-probe",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 1948376,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 1933431,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794242284806457782,
+      "stderr": {
+        "bytes": 140,
+        "identity": [
+          2067,
+          3037824,
+          33188,
+          1000,
+          1000,
+          1,
+          140,
+          1794242284808719687,
+          1794242284808719687
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/actual-eight-cpu-go-probe.stderr",
+        "sha256": "a0b125bea86fe1d880b70ccada624ca597d404e25ba665e7e7cf1f1086b91132"
+      },
+      "stdout": {
+        "bytes": 1830,
+        "identity": [
+          2067,
+          3037823,
+          33188,
+          1000,
+          1000,
+          1,
+          1830,
+          1794242284808719687,
+          1794242284808719687
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/actual-eight-cpu-go-probe.stdout",
+        "sha256": "92706a898a73088b640fa54dbee2ac5f1fe8e3907880ca33eda2b2d7ae24e9e3"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [
+          {
+            "observed_code": 1,
+            "observed_status": 255,
+            "pid": 1978566,
+            "pidfd_closed": true,
+            "reaped": true,
+            "wait_status": 65280
+          }
+        ],
+        "complete": true,
+        "deadline": 1320794.624098934,
+        "elapsed_seconds": 0.0003288120497018099,
+        "leader_pid": 1948474,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/released-sdk35-r2/droidloom-update",
+        "--source",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/recipe-released-sdk35-r2",
+        "-j6",
+        "audio-apex-build",
+        "--work",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work"
+      ],
+      "driver": {
+        "argv": [],
+        "cgroup": "0::/system.slice/p4-audio-source430-original-sdk35-full-desktop-20261109-8b88-r12.service\n",
+        "exe": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/released-sdk35-r2/droidloom-update",
+        "pid": 1948474,
+        "start_ticks": 131995559
+      },
+      "errors": [
+        {
+          "message": "adopted child exited unsuccessfully",
+          "stage": "execution",
+          "type": "ChildProcessError"
+        }
+      ],
+      "finished_ns": 1794243123639068358,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.000208929181098938,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 1948474,
+          "status": 1
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 1
+      },
+      "name": "normal-full-audio-apex",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 1948474,
+        "status": 1
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 1933431,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794242289600959010,
+      "stderr": {
+        "bytes": 525506,
+        "identity": [
+          2067,
+          3037835,
+          33188,
+          1000,
+          1000,
+          1,
+          525506,
+          1794243123627686480,
+          1794243123627686480
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/normal-full-audio-apex.stderr",
+        "sha256": "ae7f3b431361f43b1481b5c32649110974f6f1e4d358ce10190099ff313dc093"
+      },
+      "stdout": {
+        "bytes": 68021,
+        "identity": [
+          2067,
+          3037834,
+          33188,
+          1000,
+          1000,
+          1,
+          68021,
+          1794243123591687982,
+          1794243123591687982
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/normal-full-audio-apex.stdout",
+        "sha256": "416301b3ddfe51200e7680008c425070f3d65bfcbbc8ada16a170c9c34d04d29"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1320797.509256964,
+        "elapsed_seconds": 0.0001416979357600212,
+        "leader_pid": 1985769,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/released-sdk35-r2/droidloom-source",
+        "verify-lock",
+        "--lock",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/recipe-released-sdk35-r2/android/manifest/audio-bridge-source-lock.json"
+      ],
+      "driver": {
+        "argv": [
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/released-sdk35-r2/droidloom-source",
+          "verify-lock",
+          "--lock",
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/recipe-released-sdk35-r2/android/manifest/audio-bridge-source-lock.json"
+        ],
+        "cgroup": "0::/system.slice/p4-audio-source430-original-sdk35-full-desktop-20261109-8b88-r12.service\n",
+        "exe": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/released-sdk35-r2/droidloom-source",
+        "pid": 1985769,
+        "start_ticks": 132079248
+      },
+      "errors": [],
+      "finished_ns": 1794243126531630657,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00015866803005337715,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 1985769,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "normal-lock-after",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 1985769,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 1933431,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794243126492096312,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3037871,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794243126491567012,
+          1794243126491567012
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/normal-lock-after.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 107,
+        "identity": [
+          2067,
+          3037870,
+          33188,
+          1000,
+          1000,
+          1,
+          107,
+          1794243126515566011,
+          1794243126515566011
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/normal-lock-after.stdout",
+        "sha256": "4f03f51ecad117e7ea1e8b5aeaa1552f13c1b91a698d8b961e4c4bf092690d57"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1321031.212646528,
+        "elapsed_seconds": 0.0003884420730173588,
+        "leader_pid": 1985770,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/released-sdk35-r2/droidloom-source",
+        "verify-materialized",
+        "--lock",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/recipe-released-sdk35-r2/android/manifest/audio-bridge-source-lock.json",
+        "--output",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source"
+      ],
+      "driver": {
+        "argv": [
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/released-sdk35-r2/droidloom-source",
+          "verify-materialized",
+          "--lock",
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/recipe-released-sdk35-r2/android/manifest/audio-bridge-source-lock.json",
+          "--output",
+          "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source"
+        ],
+        "cgroup": "0::/system.slice/p4-audio-source430-original-sdk35-full-desktop-20261109-8b88-r12.service\n",
+        "exe": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/released-sdk35-r2/droidloom-source",
+        "pid": 1985770,
+        "start_ticks": 132079252
+      },
+      "errors": [],
+      "finished_ns": 1794243360253017406,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00019013392738997936,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 1985770,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "normal-materialized-after",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 1985770,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 1933431,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794243126533861918,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3037874,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794243126533565260,
+          1794243126533565260
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/normal-materialized-after.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 108,
+        "identity": [
+          2067,
+          3037873,
+          33188,
+          1000,
+          1000,
+          1,
+          108,
+          1794243360217916857,
+          1794243360217916857
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/normal-materialized-after.stdout",
+        "sha256": "692d91d64d57b8f7f25a1259ffafa52e5a9c285456ae94f1e751e8eb4ac33edc"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1321031.293423836,
+        "elapsed_seconds": 0.00015700282528996468,
+        "leader_pid": 1995491,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "rev-parse",
+          "HEAD"
+        ],
+        "cgroup": "0::/system.slice/p4-audio-source430-original-sdk35-full-desktop-20261109-8b88-r12.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 1995491,
+        "start_ticks": 132102628
+      },
+      "errors": [],
+      "finished_ns": 1794243360319102174,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00015112804248929024,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 1995491,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "recipe-head-after",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 1995491,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 1933431,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794243360295321845,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3037877,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794243360294920794,
+          1794243360294920794
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/recipe-head-after.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          2067,
+          3037876,
+          33188,
+          1000,
+          1000,
+          1,
+          41,
+          1794243360298920998,
+          1794243360298920998
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/recipe-head-after.stdout",
+        "sha256": "284c5ff1611e53c8278438398ba56fe5302479db8cdcb85346f786c703fc8cbd"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1321031.352228706,
+        "elapsed_seconds": 0.00018645613454282284,
+        "leader_pid": 1995492,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "HEAD^{tree}"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "rev-parse",
+          "HEAD^{tree}"
+        ],
+        "cgroup": "0::/system.slice/p4-audio-source430-original-sdk35-full-desktop-20261109-8b88-r12.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 1995492,
+        "start_ticks": 132102634
+      },
+      "errors": [],
+      "finished_ns": 1794243360375588202,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00018411013297736645,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 1995492,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "recipe-tree-after",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 1995492,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 1933431,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794243360350287628,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3037880,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794243360349923606,
+          1794243360349923606
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/recipe-tree-after.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          2067,
+          3037879,
+          33188,
+          1000,
+          1000,
+          1,
+          41,
+          1794243360357924015,
+          1794243360357924015
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/recipe-tree-after.stdout",
+        "sha256": "28d70566b659e23b225f8ef0877048517cc80f76ab14c85ea284c32778cd8986"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1321031.409117931,
+        "elapsed_seconds": 0.00034144986420869827,
+        "leader_pid": 1995493,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "status",
+        "--porcelain=v1"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "status",
+          "--porcelain=v1"
+        ],
+        "cgroup": "0::/system.slice/p4-audio-source430-original-sdk35-full-desktop-20261109-8b88-r12.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 1995493,
+        "start_ticks": 132102639
+      },
+      "errors": [],
+      "finished_ns": 1794243360419176332,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00031517399474978447,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 1995493,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "recipe-clean-after",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 1995493,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 1933431,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794243360406621241,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3037883,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794243360405926470,
+          1794243360405926470
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/recipe-clean-after.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          3037882,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1794243360405926470,
+          1794243360405926470
+        ],
+        "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/commands/recipe-clean-after.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "complete_apex_qualified": false,
+  "configuration": {
+    "bytes": 403633,
+    "identity": [
+      2067,
+      3036807,
+      33024,
+      1000,
+      1000,
+      1,
+      403633,
+      1794241480051589212,
+      1794241480051589212
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/full-desktop-r12/build-inputs.json",
+    "sha256": "6d5e4d9b3a9e2a0eec25adbefeac530708ed8931522bfd02b0e5f65129aa23b6"
+  },
+  "driver": {
+    "argv": [],
+    "cgroup": "0::/system.slice/p4-audio-source430-original-sdk35-full-desktop-20261109-8b88-r12.service\n",
+    "exe": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/released-sdk35-r2/droidloom-update",
+    "pid": 1948474,
+    "start_ticks": 131995559
+  },
+  "effective_source_input_observation": {
+    "bytes": 14015,
+    "identity": [
+      2067,
+      3037851,
+      33024,
+      1000,
+      1000,
+      1,
+      14015,
+      1794242999102881629,
+      1794242999102881629
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/effective-inputs/result.json",
+    "sha256": "39659de040a34d7b7d5c819f398a78656a623a9e6c6f6a4ec05872ab0bc35de3"
+  },
+  "errors": [
+    {
+      "message": "owned command failed: normal-full-audio-apex",
+      "stage": "execution",
+      "type": "RuntimeError"
+    }
+  ],
+  "final_work_growth_bytes": 1326878720,
+  "finished_ns": 1794243364192776206,
+  "fresh_disk_after_bytes": 175128551424,
+  "go_probe": {
+    "GODEBUG": "gctrace=1",
+    "GOGC": 50,
+    "GOMAXPROCS": 2,
+    "GOMEMLIMIT": 5368709120,
+    "GoVersion": "go1.25.4",
+    "NumCPU": 8,
+    "proc_status": "Name:\tgo_resource_pro\nUmask:\t0022\nState:\tS (sleeping)\nTgid:\t1948376\nNgid:\t0\nPid:\t1948376\nPPid:\t1933431\nTracerPid:\t0\nUid:\t1000\t1000\t1000\t1000\nGid:\t1000\t1000\t1000\t1000\nFDSize:\t64\nGroups:\t4 24 27 30 46 100 114 125 129 984 993 1000 \nNStgid:\t1948376\nNSpid:\t1948376\nNSpgid:\t1948376\nNSsid:\t1948376\nKthread:\t0\nVmPeak:\t 1227412 kB\nVmSize:\t 1227412 kB\nVmLck:\t       0 kB\nVmPin:\t       0 kB\nVmHWM:\t    2512 kB\nVmRSS:\t    2512 kB\nRssAnon:\t     780 kB\nRssFile:\t    1732 kB\nRssShmem:\t       0 kB\nVmData:\t   40748 kB\nVmStk:\t     132 kB\nVmExe:\t     796 kB\nVmLib:\t       8 kB\nVmPTE:\t      92 kB\nVmSwap:\t       0 kB\nHugetlbPages:\t       0 kB\nCoreDumping:\t0\nTHP_enabled:\t1\nuntag_mask:\t0xffffffffffffffff\nThreads:\t4\nSigQ:\t0/476312\nSigPnd:\t0000000000000000\nShdPnd:\t0000000000000000\nSigBlk:\t0000000000000000\nSigIgn:\t0000000000000000\nSigCgt:\tfffffffd7fc1feff\nCapInh:\t0000000000000000\nCapPrm:\t0000000000000000\nCapEff:\t0000000000000000\nCapBnd:\t000001ffffffffff\nCapAmb:\t0000000000000000\nNoNewPrivs:\t0\nSeccomp:\t0\nSeccomp_filters:\t0\nSpeculation_Store_Bypass:\tthread vulnerable\nSpeculationIndirectBranch:\tconditional enabled\nCpus_allowed:\t0000,000000ff\nCpus_allowed_list:\t0-7\nMems_allowed:\t00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000001\nMems_allowed_list:\t0\nvoluntary_ctxt_switches:\t6\nnonvoluntary_ctxt_switches:\t0\nx86_Thread_features:\t\nx86_Thread_features_locked:\t\n"
+  },
+  "host_generation_inherited": false,
+  "input_after_qualified": true,
+  "materialized_manifest_after": {
+    "bytes": 265535,
+    "identity": [
+      2067,
+      1883582,
+      33152,
+      1000,
+      1000,
+      1,
+      265535,
+      1794242685010991846,
+      1794242685013991721
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/.droidloom-source-manifest.json",
+    "sha256": "d306ba9d7cb8c488da231b93b6a946bafb57c58ae789706ca036fecda16e03d0"
+  },
+  "materialized_manifest_before": {
+    "bytes": 265535,
+    "identity": [
+      2067,
+      1883469,
+      33152,
+      1000,
+      1000,
+      1,
+      265535,
+      1794240097409924693,
+      1794240097412924532
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/.droidloom-source-manifest.json",
+    "sha256": "d306ba9d7cb8c488da231b93b6a946bafb57c58ae789706ca036fecda16e03d0"
+  },
+  "normal_target": "com.android.hardware.audio.droidloom",
+  "observed_work_growth_peak_bytes": 1381167104,
+  "original_SDK_files": [
+    {
+      "bytes": 3241697,
+      "git_blob": "d4e2194e054d0c20059165d3af7ccce161476a21",
+      "identity": [
+        2067,
+        6818761,
+        33152,
+        1000,
+        1000,
+        1,
+        3241697,
+        1794237518490170332,
+        1794237518490170332
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/4/public/android.jar",
+      "relative": "4/public/android.jar",
+      "sha256": "f17962f86785af4ea6dce182fd93bb650a7ac55a12dec8656454e6e6dbce52af"
+    },
+    {
+      "bytes": 1405,
+      "git_blob": "10bd427b52c7d98555b105815ddb6a4a46ce9952",
+      "identity": [
+        2067,
+        6818762,
+        33152,
+        1000,
+        1000,
+        1,
+        1405,
+        1794237518490170332,
+        1794237518490170332
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/4/public/framework.aidl",
+      "relative": "4/public/framework.aidl",
+      "sha256": "76322d6d55a352bcaaf88ca1824c1254c73ef2c7f5fba9e7b8808c159d063984"
+    },
+    {
+      "bytes": 5176806,
+      "git_blob": "f30972d12533ec30dced5576a940716381b7a169",
+      "identity": [
+        2067,
+        6818765,
+        33152,
+        1000,
+        1000,
+        1,
+        5176806,
+        1794237518520169079,
+        1794237518520169079
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/7/public/android.jar",
+      "relative": "7/public/android.jar",
+      "sha256": "d2077126666dc9fa04056c2bacdfd1883885c24ef75ade6edbfd9b3401a01d47"
+    },
+    {
+      "bytes": 1612,
+      "git_blob": "b287c3919a4a1f8aa6d4033fe2f45054ef77716e",
+      "identity": [
+        2067,
+        6818766,
+        33152,
+        1000,
+        1000,
+        1,
+        1612,
+        1794237518520169079,
+        1794237518520169079
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/7/public/framework.aidl",
+      "relative": "7/public/framework.aidl",
+      "sha256": "839411b90f4b1c4940f2f189b59a008086ffd0315752fe48db9b628ce2ba4268"
+    },
+    {
+      "bytes": 5435268,
+      "git_blob": "4eca638f2c4443de729a3a81752123ad24c0c08a",
+      "identity": [
+        2067,
+        6840714,
+        33152,
+        1000,
+        1000,
+        1,
+        5435268,
+        1793928159440319523,
+        1794163777402008983
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/8/public/android.jar",
+      "relative": "8/public/android.jar",
+      "sha256": "327195c8647eb254bb74acc6648474955120cee561a3ca6c58c026454aa11f5e"
+    },
+    {
+      "bytes": 1697,
+      "git_blob": "0bdebdb6a72b4e93eefa52f112ea4f2b05ce1b21",
+      "identity": [
+        2067,
+        6840715,
+        33152,
+        1000,
+        1000,
+        1,
+        1697,
+        1793928159446319687,
+        1794163777402162402
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/8/public/framework.aidl",
+      "relative": "8/public/framework.aidl",
+      "sha256": "531c4f8028e5b75a0eb985248f8e53ec84726a97cafe3f2e922c7e20dd129707"
+    },
+    {
+      "bytes": 8407959,
+      "git_blob": "79c7ea454fa94384b9b4ff33ce39e1a7ad7d5dc5",
+      "identity": [
+        2067,
+        6840717,
+        33152,
+        1000,
+        1000,
+        1,
+        8407959,
+        1793928159475320479,
+        1794163777533367047
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/9/public/android.jar",
+      "relative": "9/public/android.jar",
+      "sha256": "ff6e68f77de8d0085dd0c1afe7995deb16904b72f8a31e5e86d3076c0d682fb8"
+    },
+    {
+      "bytes": 1828,
+      "git_blob": "8336d39ce90658b20f9ca5b09f69d9155099253b",
+      "identity": [
+        2067,
+        6840718,
+        33152,
+        1000,
+        1000,
+        1,
+        1828,
+        1793928159476320506,
+        1794163777533518017
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/9/public/framework.aidl",
+      "relative": "9/public/framework.aidl",
+      "sha256": "7f1af2e71b7fefe131cc9604c2a55400920cfc2371c7db717225158b26de678e"
+    },
+    {
+      "bytes": 17208604,
+      "git_blob": "549b76c239410f26b16c544c1c21dc52c84c9cab",
+      "identity": [
+        2067,
+        6818588,
+        33152,
+        1000,
+        1000,
+        1,
+        17208604,
+        1794237515975275398,
+        1794237515975275398
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/15/public/android.jar",
+      "relative": "15/public/android.jar",
+      "sha256": "797ff1fa75fa4f5c86ecaa7335f92b53424a2793e016472a74be15aaf13ff1d3"
+    },
+    {
+      "bytes": 2160,
+      "git_blob": "66bd25de22efae0bc17130f2213a490c60f3a165",
+      "identity": [
+        2067,
+        6818589,
+        33152,
+        1000,
+        1000,
+        1,
+        2160,
+        1794237515976275356,
+        1794237515976275356
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/15/public/framework.aidl",
+      "relative": "15/public/framework.aidl",
+      "sha256": "5dc90e4c15e98394b5bc1df2c554d194bfa77b0435c69227ffc313859e4e1feb"
+    },
+    {
+      "bytes": 18383520,
+      "git_blob": "7b08d1559b8b9381514af43459ff67848a297011",
+      "identity": [
+        2067,
+        6818592,
+        33152,
+        1000,
+        1000,
+        1,
+        18383520,
+        1794237516065271636,
+        1794237516065271636
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/16/public/android.jar",
+      "relative": "16/public/android.jar",
+      "sha256": "05300b97ba88700b4514c8d4f689fcb0bf225ae8680c618a7c75512cd6795580"
+    },
+    {
+      "bytes": 2160,
+      "git_blob": "66bd25de22efae0bc17130f2213a490c60f3a165",
+      "identity": [
+        2067,
+        6818593,
+        33152,
+        1000,
+        1000,
+        1,
+        2160,
+        1794237516067271553,
+        1794237516067271553
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/16/public/framework.aidl",
+      "relative": "16/public/framework.aidl",
+      "sha256": "5dc90e4c15e98394b5bc1df2c554d194bfa77b0435c69227ffc313859e4e1feb"
+    },
+    {
+      "bytes": 19358494,
+      "git_blob": "29bb4c6fef4814a6daec3bc2f0ee3084d495c2a9",
+      "identity": [
+        2067,
+        6826720,
+        33152,
+        1000,
+        1000,
+        1,
+        19358494,
+        1793955194598767561,
+        1794163758428134171
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/18/public/android.jar",
+      "relative": "18/public/android.jar",
+      "sha256": "81b6071e701c383c6cc886d2a1d7502752ccf9c7cd60beae76820df758ce0316"
+    },
+    {
+      "bytes": 2388,
+      "git_blob": "fdb392fb014bf2a1c72db2d553104cb9d3db1c9a",
+      "identity": [
+        2067,
+        6826721,
+        33152,
+        1000,
+        1000,
+        1,
+        2388,
+        1793955194605767794,
+        1794163758428281884
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/18/public/framework.aidl",
+      "relative": "18/public/framework.aidl",
+      "sha256": "d913e64df1bf774b006cc9effccb2881ba56fe56e6c8f07c1c8f504d79ff4f12"
+    },
+    {
+      "bytes": 21841425,
+      "git_blob": "ca5ceca75c48f7497d732ff46efe13df0ea1a194",
+      "identity": [
+        2067,
+        6818597,
+        33152,
+        1000,
+        1000,
+        1,
+        21841425,
+        1794237516242264239,
+        1794237516242264239
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/19/public/android.jar",
+      "relative": "19/public/android.jar",
+      "sha256": "4032a201eeb1d0430c7d9f1075151dd280427de5ca9e36f734f464ab605cb690"
+    },
+    {
+      "bytes": 2643,
+      "git_blob": "9bccbe1f9906202a95c5ce851c1ca5d440798c36",
+      "identity": [
+        2067,
+        6818598,
+        33152,
+        1000,
+        1000,
+        1,
+        2643,
+        1794237516244264156,
+        1794237516244264156
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/19/public/framework.aidl",
+      "relative": "19/public/framework.aidl",
+      "sha256": "d15b6d281e61663c7f5c81e58c3d1ff19366bfcc32cd6edbe072d99279645b6f"
+    },
+    {
+      "bytes": 25845286,
+      "git_blob": "71cf1985f5597723f5fbdc7a6b9c004b662777f2",
+      "identity": [
+        2067,
+        6818602,
+        33152,
+        1000,
+        1000,
+        1,
+        25845286,
+        1794237516279262693,
+        1794237516279262693
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/21/public/android.jar",
+      "relative": "21/public/android.jar",
+      "sha256": "91a151cc33ce2359019c23f075f99bee6857f81506ce302a4e019f00489f7105"
+    },
+    {
+      "bytes": 6788,
+      "git_blob": "2bb7ea922a27be2960dd73895416aef22a0d0699",
+      "identity": [
+        2067,
+        6818603,
+        33152,
+        1000,
+        1000,
+        1,
+        6788,
+        1794237516281262609,
+        1794237516281262609
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/21/public/framework.aidl",
+      "relative": "21/public/framework.aidl",
+      "sha256": "282dbcef1b2b24cc8344c4daba66e86f41845351bbbac323d017857f7b009336"
+    },
+    {
+      "bytes": 26024862,
+      "git_blob": "1dc21fd8288350dc244f3c294db6314731653750",
+      "identity": [
+        2067,
+        6818607,
+        33152,
+        1000,
+        1000,
+        1,
+        26024862,
+        1794237516405257427,
+        1794237516405257427
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/22/public/android.jar",
+      "relative": "22/public/android.jar",
+      "sha256": "4bfc0ed20707f6dea2f9591484c7b8a7edc1c2daf5ea0c35dbb58c1e3d9a1cca"
+    },
+    {
+      "bytes": 6921,
+      "git_blob": "db367eb2583393c1ca499af8852fac58d707b5a6",
+      "identity": [
+        2067,
+        6818608,
+        33152,
+        1000,
+        1000,
+        1,
+        6921,
+        1794237516407257344,
+        1794237516407257344
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/22/public/framework.aidl",
+      "relative": "22/public/framework.aidl",
+      "sha256": "ff33d7e884c4d565c6f6f86593aa4554e21de72e1d987b5a1d30249e5bc36a97"
+    },
+    {
+      "bytes": 23947250,
+      "git_blob": "3e2434de4cd451466a65998225b8d764d8d2e82e",
+      "identity": [
+        2067,
+        6818612,
+        33152,
+        1000,
+        1000,
+        1,
+        23947250,
+        1794237516480254293,
+        1794237516480254293
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/23/public/android.jar",
+      "relative": "23/public/android.jar",
+      "sha256": "9a05177e0de0ce13d6cbdb0d32225a5a9fd575aa21651e885f7d2fa9c39f6cc4"
+    },
+    {
+      "bytes": 7415,
+      "git_blob": "a7e4af8bc52536219d17161b042819d82e75965e",
+      "identity": [
+        2067,
+        6818613,
+        33152,
+        1000,
+        1000,
+        1,
+        7415,
+        1794237516480254293,
+        1794237516480254293
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/23/public/framework.aidl",
+      "relative": "23/public/framework.aidl",
+      "sha256": "ef8901bcfb645078ecc054a9e93a66d70ccbe03b70fc59d165af9c620513a0fd"
+    },
+    {
+      "bytes": 34266947,
+      "git_blob": "05855c960f9fcbd50ff092c62bafa5dc84fdeee9",
+      "identity": [
+        2067,
+        6818617,
+        33152,
+        1000,
+        1000,
+        1,
+        34266947,
+        1794237516708244764,
+        1794237516708244764
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/24/public/android.jar",
+      "relative": "24/public/android.jar",
+      "sha256": "4c438bf1b3d4e6104faccc62e1ffe95ef197b88055497b540a871349e93c8685"
+    },
+    {
+      "bytes": 8246,
+      "git_blob": "c07ac5a899e0a2a327b756d7d8d90efb283a2384",
+      "identity": [
+        2067,
+        6818618,
+        33152,
+        1000,
+        1000,
+        1,
+        8246,
+        1794237516710244681,
+        1794237516710244681
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/24/public/framework.aidl",
+      "relative": "24/public/framework.aidl",
+      "sha256": "51f493e73976da7d9881bf789474222bf9293da9cf6d16dc68f6dc72892787e3"
+    },
+    {
+      "bytes": 34622170,
+      "git_blob": "a35512caf41303c5844775905ce54ae7a1dea5e5",
+      "identity": [
+        2067,
+        6818622,
+        33152,
+        1000,
+        1000,
+        1,
+        34622170,
+        1794237516764242424,
+        1794237516764242424
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/25/public/android.jar",
+      "relative": "25/public/android.jar",
+      "sha256": "74edee3a14e30ceafae591bf1e45c22bec76ebe3b3e8c556203d4cbe0fa1863d"
+    },
+    {
+      "bytes": 8284,
+      "git_blob": "279de3e6f34a4db42170dc5974194b4e7e38a310",
+      "identity": [
+        2067,
+        6818623,
+        33152,
+        1000,
+        1000,
+        1,
+        8284,
+        1794237516766242341,
+        1794237516766242341
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/25/public/framework.aidl",
+      "relative": "25/public/framework.aidl",
+      "sha256": "63e5b64a4016f8aa512c494499db6db631a74db208752813e814dc377e400c19"
+    },
+    {
+      "bytes": 26467929,
+      "git_blob": "a0c3df3a5ee2e7e8c797f0779bda10cc69b81ac1",
+      "identity": [
+        2067,
+        6818627,
+        33152,
+        1000,
+        1000,
+        1,
+        26467929,
+        1794237516926235654,
+        1794237516926235654
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/26/public/android.jar",
+      "relative": "26/public/android.jar",
+      "sha256": "cdc1846376a14b0370cc63454a129606b4a52cc50ada75ef0d4cf956b1ad2daa"
+    },
+    {
+      "bytes": 9365,
+      "git_blob": "8e35b532b4bdf6c9f282a8f7256e7fe7c9959563",
+      "identity": [
+        2067,
+        6818628,
+        33152,
+        1000,
+        1000,
+        1,
+        9365,
+        1794237516928235571,
+        1794237516928235571
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/26/public/framework.aidl",
+      "relative": "26/public/framework.aidl",
+      "sha256": "743180650e1f5ffe67ca9df591b9d12f1d2692a90e7cc2b63e78e8701173ca9e"
+    },
+    {
+      "bytes": 29515251,
+      "git_blob": "bd1d4ee83377a7786876ae5375ad0238616fa951",
+      "identity": [
+        2067,
+        6818632,
+        33152,
+        1000,
+        1000,
+        1,
+        29515251,
+        1794237516972233732,
+        1794237516972233732
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/27/public/android.jar",
+      "relative": "27/public/android.jar",
+      "sha256": "c94be7c1b823cd9672636f92d3c995e85cecb3674b2cbd4e8614db731367dc7f"
+    },
+    {
+      "bytes": 10305,
+      "git_blob": "861cadb36a60fde75689e923e8c0286dc32f5e6d",
+      "identity": [
+        2067,
+        6818633,
+        33152,
+        1000,
+        1000,
+        1,
+        10305,
+        1794237516973233690,
+        1794237516973233690
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/27/public/framework.aidl",
+      "relative": "27/public/framework.aidl",
+      "sha256": "62a68f25a6947352e751d0cf6a617c7fe2cc1cda3358fbe5199ab146e85e9bce"
+    },
+    {
+      "bytes": 46784255,
+      "git_blob": "66e18e07728d725ddf04e85b2b971f1b60d8635a",
+      "identity": [
+        2067,
+        6826724,
+        33152,
+        1000,
+        1000,
+        1,
+        46784255,
+        1793928157088255282,
+        1794163759172658119
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/28/public/android.jar",
+      "relative": "28/public/android.jar",
+      "sha256": "d20853d289a5161d9cf1c1268d7923076487d4fa68c970b0733e2d5a0ccfc3c5"
+    },
+    {
+      "bytes": 24252,
+      "git_blob": "a65a2526935f97f1b9f16bf5453fac53e7683430",
+      "identity": [
+        2067,
+        6826728,
+        33152,
+        1000,
+        1000,
+        1,
+        24252,
+        1793928157103255692,
+        1794163759173559670
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/28/public/framework.aidl",
+      "relative": "28/public/framework.aidl",
+      "sha256": "f9a23b820dec0f28bce86baee15846a9407aeeb2d7538edc66224c49bb7eba58"
+    },
+    {
+      "bytes": 21171717,
+      "git_blob": "5efb46ee5045db92be1e532aaf101004826f7408",
+      "identity": [
+        2067,
+        6826756,
+        33152,
+        1000,
+        1000,
+        1,
+        21171717,
+        1793928157171257549,
+        1794163759577227016
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/29/public/android.jar",
+      "relative": "29/public/android.jar",
+      "sha256": "17ec5ec253c45463160c5a37e9bae5f41b35184010cbdd9240749c7d30e1afd7"
+    },
+    {
+      "bytes": 30605,
+      "git_blob": "2715051a26a36e306c7ad1c0335d7d3d02d08c2e",
+      "identity": [
+        2067,
+        6826766,
+        33152,
+        1000,
+        1000,
+        1,
+        30605,
+        1793928157186257959,
+        1794163759578500158
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/29/public/framework.aidl",
+      "relative": "29/public/framework.aidl",
+      "sha256": "88d0cf562e94b8a58a719e1eb74c6731ff16899386c40748d733207f95c4a111"
+    },
+    {
+      "bytes": 21495349,
+      "git_blob": "a2954f80ea908c3cb5ee080aec437fc2974978ec",
+      "identity": [
+        2067,
+        6826830,
+        33152,
+        1000,
+        1000,
+        1,
+        21495349,
+        1793928157492266316,
+        1794163761109096899
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/30/public/android.jar",
+      "relative": "30/public/android.jar",
+      "sha256": "2f0e6e4ec44e95beefe0c041541afcec4f55f8b964b33599a987efb6e972f990"
+    },
+    {
+      "bytes": 35548,
+      "git_blob": "21557c07d6b8a69d5665d0da9b59abf894e78131",
+      "identity": [
+        2067,
+        6826850,
+        33152,
+        1000,
+        1000,
+        1,
+        35548,
+        1793928157527267272,
+        1794163761122475568
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/30/public/framework.aidl",
+      "relative": "30/public/framework.aidl",
+      "sha256": "4c524b59c085e930b3160beb96d2afbeb32ee9b0d95f0099b78e4dfb40b97864"
+    },
+    {
+      "bytes": 1314610,
+      "git_blob": "62d1f25ab6c0cf362ac6ec495fb9b6a3746f57b8",
+      "identity": [
+        2067,
+        6826842,
+        33152,
+        1000,
+        1000,
+        1,
+        1314610,
+        1793928157526267245,
+        1794163761121178060
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/30/public/core-for-system-modules.jar",
+      "relative": "30/public/core-for-system-modules.jar",
+      "sha256": "1151f6b3188529b2be3001ffa9d9df15f0851d1d8d5920920088e3c883e712e5"
+    },
+    {
+      "bytes": 21998949,
+      "git_blob": "211b3bdf33c3231cdae0fe6b595f38c136e4db54",
+      "identity": [
+        2067,
+        6826914,
+        33152,
+        1000,
+        1000,
+        1,
+        21998949,
+        1793928157768273855,
+        1794163762470494469
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/31/public/android.jar",
+      "relative": "31/public/android.jar",
+      "sha256": "2e71327d66d43cb85a6ac11029376c19067ccc0f15e73c90f2f6777f3be70fb5"
+    },
+    {
+      "bytes": 43599,
+      "git_blob": "178c0b8d5569a242d2ec54d8d8ed8f715741da87",
+      "identity": [
+        2067,
+        6826941,
+        33152,
+        1000,
+        1000,
+        1,
+        43599,
+        1793928157818275220,
+        1794163762533134867
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/31/public/framework.aidl",
+      "relative": "31/public/framework.aidl",
+      "sha256": "5a8f00c842caf7bc7f0eec7b1856f631832ed7a548ab0808dec9cf921576d2ac"
+    },
+    {
+      "bytes": 1342312,
+      "git_blob": "8958111965d4c18e3a2adb6487844c95ac7e4321",
+      "identity": [
+        2067,
+        6826928,
+        33152,
+        1000,
+        1000,
+        1,
+        1342312,
+        1793928157806274893,
+        1794163762527568696
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/31/public/core-for-system-modules.jar",
+      "relative": "31/public/core-for-system-modules.jar",
+      "sha256": "52ec516d06906261b56cb1a42010093416abeb1d81c8625779a95032597808dc"
+    },
+    {
+      "bytes": 27138781,
+      "git_blob": "d3bcdb9b2a78957caef551de1cddacc67567833d",
+      "identity": [
+        2067,
+        6818667,
+        33152,
+        1000,
+        1000,
+        1,
+        27138781,
+        1794237517860196638,
+        1794237517860196638
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/33/public/android.jar",
+      "relative": "33/public/android.jar",
+      "sha256": "42fc5045cea7c0cbb8ae3aaf6bb64c75514d3608fed5c1049d936ee6a540b7dc"
+    },
+    {
+      "bytes": 51339,
+      "git_blob": "f3c312e8b6cb242303df0df201a551aa91aeb057",
+      "identity": [
+        2067,
+        6818701,
+        33152,
+        1000,
+        1000,
+        1,
+        51339,
+        1794237517900194967,
+        1794237517900194967
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/33/public/framework.aidl",
+      "relative": "33/public/framework.aidl",
+      "sha256": "78665516c04383477ce30c4aeedd002b37511729a847cc158ac610f80596e133"
+    },
+    {
+      "bytes": 1371744,
+      "git_blob": "f568f18b8e8dbcb73951ff6f64ef4300c3191b46",
+      "identity": [
+        2067,
+        6818681,
+        33152,
+        1000,
+        1000,
+        1,
+        1371744,
+        1794237517897195093,
+        1794237517897195093
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/33/public/core-for-system-modules.jar",
+      "relative": "33/public/core-for-system-modules.jar",
+      "sha256": "c161d5cc6f36bc1fb7740bfcc858227cea933e475833e58d73375697874a7d99"
+    },
+    {
+      "bytes": 26364684,
+      "git_blob": "63081055d9f6d17cd72cdda0be733bb190c68b14",
+      "identity": [
+        2067,
+        6827032,
+        33152,
+        1000,
+        1000,
+        1,
+        26364684,
+        1793928158029280983,
+        1794163763647118042
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/34/public/android.jar",
+      "relative": "34/public/android.jar",
+      "sha256": "802de40af3f2967e56c4d1e9b75a19963815bf4b6c73ce2bbd24ecd9f7561e10"
+    },
+    {
+      "bytes": 62871,
+      "git_blob": "a936c96564ae749d608f9c7d5b1929ef5b904f69",
+      "identity": [
+        2067,
+        6827532,
+        33152,
+        1000,
+        1000,
+        1,
+        62871,
+        1793928158083282458,
+        1794163763760075583
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/34/public/framework.aidl",
+      "relative": "34/public/framework.aidl",
+      "sha256": "fd727d4d048ace2f01618f000d600a0dc22e8ebeaf555bcc546bd704f2eec528"
+    },
+    {
+      "bytes": 1425695,
+      "git_blob": "4bcc95192c396127c07f95f23f053260cf782415",
+      "identity": [
+        2067,
+        6827509,
+        33152,
+        1000,
+        1000,
+        1,
+        1425695,
+        1793928158069282076,
+        1794163763754433496
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/34/public/core-for-system-modules.jar",
+      "relative": "34/public/core-for-system-modules.jar",
+      "sha256": "38bfc1ed9f2b4f454b07a97f29a0a20bc4bfe28c5d9d0740bcf3910da5333b75"
+    },
+    {
+      "bytes": 27100040,
+      "git_blob": "1c91b02611ddcf9aba606e01e28b0cdab9c57af1",
+      "identity": [
+        2067,
+        6829874,
+        33188,
+        1000,
+        1000,
+        1,
+        27100040,
+        1794143606797008223,
+        1794163766274051512
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/35/public/android.jar",
+      "relative": "35/public/android.jar",
+      "sha256": "ee568219aa3754977207a8fd849fdbf3a299658dd26dd0907d39ca830587f8aa"
+    },
+    {
+      "bytes": 70945,
+      "git_blob": "0774843f8fd89b166c12ce9189f036800171ac33",
+      "identity": [
+        2067,
+        6830082,
+        33188,
+        1000,
+        1000,
+        1,
+        70945,
+        1794143606811008713,
+        1794163766305251534
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/35/public/framework.aidl",
+      "relative": "35/public/framework.aidl",
+      "sha256": "ffbb6d347a1e9fb4dfb5799e5e9d12ac0fa49795903dd8735c034847726bdc26"
+    },
+    {
+      "bytes": 1458484,
+      "git_blob": "ddb981107a33914bfb56d7ae8e44ae882aad9c4e",
+      "identity": [
+        2067,
+        6830053,
+        33188,
+        1000,
+        1000,
+        1,
+        1458484,
+        1794143606808008608,
+        1794163766298083795
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/35/public/core-for-system-modules.jar",
+      "relative": "35/public/core-for-system-modules.jar",
+      "sha256": "9208cb66ef635f9808f6f3aae0ee5d65a0154950683a75ece30b692b48575289"
+    },
+    {
+      "bytes": 43044394,
+      "git_blob": "abdf93af936b13a3e7cd853587ed3b43d97cc1bb",
+      "identity": [
+        2067,
+        6836366,
+        33152,
+        1000,
+        1000,
+        1,
+        43044394,
+        1793928158847303326,
+        1794163773050114466
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/37.0/public/android.jar",
+      "relative": "37.0/public/android.jar",
+      "sha256": "90bf8b80697f086b6fd7cc3956b436a34e2a6cf7193f7fed1343b63625c97ef2"
+    },
+    {
+      "bytes": 136049,
+      "git_blob": "64d3f28b4e9476a4d3d9377cf5b674a582c12836",
+      "identity": [
+        2067,
+        6836927,
+        33152,
+        1000,
+        1000,
+        1,
+        136049,
+        1793928158917305238,
+        1794163773184785349
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/37.0/public/framework.aidl",
+      "relative": "37.0/public/framework.aidl",
+      "sha256": "67fe395a71d80321c1488a4c18c920c2283283c116be0bc7234763bd37544345"
+    },
+    {
+      "bytes": 1521707,
+      "git_blob": "7ebfd82d1ed27768a07f49639101c56900bb377d",
+      "identity": [
+        2067,
+        6836658,
+        33152,
+        1000,
+        1000,
+        1,
+        1521707,
+        1793928158912305101,
+        1794163773091575508
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/37.0/public/core-for-system-modules.jar",
+      "relative": "37.0/public/core-for-system-modules.jar",
+      "sha256": "b8f6e4cfad9219fe614f81623534e858eeb3aea3e08eefc47ced42b69bfad035"
+    },
+    {
+      "bytes": 49869773,
+      "git_blob": "890b043c55e3f8cd382a8ea66a06af9090c07f1d",
+      "identity": [
+        2067,
+        6826794,
+        33152,
+        1000,
+        1000,
+        1,
+        49869773,
+        1793928157350262438,
+        1794163760429613033
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/29/system/android.jar",
+      "relative": "29/system/android.jar",
+      "sha256": "d6163a3aff8f6ddb96f873a1ea29f4c838cac1c78b3f27f1f6598b541d25f74f"
+    },
+    {
+      "bytes": 55631843,
+      "git_blob": "f536eac7d106f20301c4e1d065afe58626cc14b4",
+      "identity": [
+        2067,
+        6818638,
+        33152,
+        1000,
+        1000,
+        1,
+        55631843,
+        1794237517451213723,
+        1794237517451213723
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/31/system/android.jar",
+      "relative": "31/system/android.jar",
+      "sha256": "4c06a09f7273d255148085404c29b0d6c13c3c56e949ff677b338596eb3184f4"
+    },
+    {
+      "bytes": 41698133,
+      "git_blob": "df76c73ebcfdd79d2070d8ef1261249802c6718b",
+      "identity": [
+        2067,
+        6818715,
+        33152,
+        1000,
+        1000,
+        1,
+        41698133,
+        1794237518423173129,
+        1794237518423173129
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/35/system/android.jar",
+      "relative": "35/system/android.jar",
+      "sha256": "ec648d55442d0a4b465c129ce124200a6ca7ce25351beacb96047739114058e4"
+    },
+    {
+      "bytes": 27768026,
+      "git_blob": "e560471790469782b41614eac5f290f5388d0d79",
+      "identity": [
+        2067,
+        6830223,
+        33152,
+        1000,
+        1000,
+        1,
+        27768026,
+        1794085477076685407,
+        1794163768653113967
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/36/public/android.jar",
+      "relative": "36/public/android.jar",
+      "sha256": "d9eb9da824d9e247a352f570f01e1169e725b2954bca9e283a71786c59b59f9a"
+    },
+    {
+      "bytes": 121424,
+      "git_blob": "e70156c6fc9f0b2d0540894a1c7e05ea3318f97f",
+      "identity": [
+        2067,
+        6830272,
+        33152,
+        1000,
+        1000,
+        1,
+        121424,
+        1794085477177687419,
+        1794163768685936043
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/36/public/framework.aidl",
+      "relative": "36/public/framework.aidl",
+      "sha256": "d45522596d198f64877be16fef2c8c3384b095e83eafec46976f5c5836619b20"
+    },
+    {
+      "bytes": 1464749,
+      "git_blob": "fcb3611bce01311d6be67ee08b5e946aa350a729",
+      "identity": [
+        2067,
+        6830237,
+        33152,
+        1000,
+        1000,
+        1,
+        1464749,
+        1794085477172687319,
+        1794163768677540188
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/36/public/core-for-system-modules.jar",
+      "relative": "36/public/core-for-system-modules.jar",
+      "sha256": "4afd3df39082ca1ca32a1effeaff7971d878e75bd01a68a4205c105deec4c559"
+    }
+  ],
+  "original_SDK_input_contract": {
+    "bytes": 8021,
+    "identity": [
+      2067,
+      3036907,
+      33024,
+      1000,
+      1000,
+      1,
+      8021,
+      1794239426155497614,
+      1794239426155497614
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/source-released-sdk35-continuation-r2/SDK-INPUTS.json",
+    "sha256": "91e98d2dafe78dcc4f934aa9067077ec034fded310482cf10fa2f8fad7010451"
+  },
+  "outer_admission": {
+    "bytes": 5424,
+    "identity": [
+      2067,
+      3036812,
+      33024,
+      1000,
+      1000,
+      1,
+      5424,
+      1794242038411042906,
+      1794242038411042906
+    ],
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/full-desktop-r12/outer-execution.json",
+    "sha256": "04dc73325f056f570c44d0b01383c6347d2c4ef76423e1a4ec7dc77c4a63fdd8"
+  },
+  "outer_job_id": "1a1c128c67f-e62c-16",
+  "owned_allocation_after_bytes": 49874169856,
+  "owned_allocation_after_observation": {
+    "bytes": 2742,
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/allocation-observations/observation-00004/result.json",
+    "sha256": "7718346cccfdb2e5e5368d9ae2be2d833a68c0fcd87ffb294f77c09d3908da46"
+  },
+  "owned_allocation_before_bytes": 48547291136,
+  "owned_allocation_before_observation": {
+    "bytes": 2742,
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/allocation-observations/observation-00000/result.json",
+    "sha256": "f204d58eaf9e84cfa6d5223644fcf74ef37dd41b400703fec5f53090e2de1658"
+  },
+  "owned_retirement_complete": true,
+  "owned_work_budget_passed": true,
+  "resource_events_delta": {
+    "high": 9411,
+    "low": 0,
+    "max": 0,
+    "oom": 0,
+    "oom_group_kill": 0,
+    "oom_kill": 0,
+    "sock_throttled": 0
+  },
+  "resource_gate_passed": true,
+  "resource_observations": [
+    {
+      "bytes": 1499,
+      "identity": [
+        2067,
+        3037852,
+        33024,
+        1000,
+        1000,
+        1,
+        1499,
+        1794242999105881504,
+        1794242999105881504
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/resource-0000.json",
+      "sha256": "76d0cc2807e99c48ecb9cbaee382b8d978bbd94d05a8107edc13aeeea9590837"
+    },
+    {
+      "bytes": 2971,
+      "identity": [
+        2067,
+        3037853,
+        33024,
+        1000,
+        1000,
+        1,
+        2971,
+        1794243028832641208,
+        1794243028832641208
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/resource-0001.json",
+      "sha256": "0c1f25e9c72403c152281ec13f9743e816219b4c7e929650d38ca5d6f52ad805"
+    },
+    {
+      "bytes": 2971,
+      "identity": [
+        2067,
+        3037860,
+        33024,
+        1000,
+        1000,
+        1,
+        2971,
+        1794243059355367771,
+        1794243059355367771
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/resource-0002.json",
+      "sha256": "aca19a02da04894c1ba9a71fa027ef726addaf336d90fb094f1ded22c5bdd5f1"
+    },
+    {
+      "bytes": 5051,
+      "identity": [
+        2067,
+        3037861,
+        33024,
+        1000,
+        1000,
+        1,
+        5051,
+        1794243089595106206,
+        1794243089595106206
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/resource-0003.json",
+      "sha256": "cadec84ed690a19829dacb1c1f6c2c6934652678948478332de283636ea27601"
+    },
+    {
+      "bytes": 5051,
+      "identity": [
+        2067,
+        3037868,
+        33024,
+        1000,
+        1000,
+        1,
+        5051,
+        1794243119889842407,
+        1794243119889842407
+      ],
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r12/resource-0004.json",
+      "sha256": "bd5bf1901aefc4026eb0106730915d3a4420012777b7de99df2c13c22b744bff"
+    }
+  ],
+  "resource_profile": {
+    "build_memory_high_bytes": 23622320128,
+    "build_memory_max_bytes": 25769803776,
+    "cpu_affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "cpu_quota_percent": 800,
+    "fresh_disk_minimum_bytes": 55834574848,
+    "fresh_memavailable_minimum_bytes": 31138512896,
+    "go_gc_percent": 50,
+    "go_max_procs": 2,
+    "go_memory_limit_bytes": 5368709120,
+    "host_reserve_bytes": 5368709120,
+    "initial_build_work_budget_bytes": 38654705664,
+    "inner_runtime_max_seconds": 22800,
+    "memory_swap_max_bytes": 0,
+    "name": "desktop-audio-source430-original-api-high22g-max24g-cpu8-jobs6-go5g2-hostreserve5g-work36g-sharedreserve16g-v4",
+    "normal_build_timeout_seconds": 21600,
+    "normal_requested_jobs": 6,
+    "outer_cpu_quota_percent": 200,
+    "outer_memory_max_bytes": 2147483648,
+    "outer_timeout_seconds": 28800,
+    "shared_disk_reserve_bytes": 17179869184
+  },
+  "runtime_qualified": false,
+  "schema": "pocket4-audio-desktop-normal-full-build-v1",
+  "shared_lock_held_through_restore": true,
+  "shared_serial_lock": {
+    "held_exclusive": true,
+    "identity": [
+      2067,
+      48352,
+      33152,
+      1000,
+      1000,
+      1,
+      0,
+      1794167144514000698,
+      1794167144514000698
+    ],
+    "path": "/data/pocket4-production-build-20261108-8b88.serial.lock"
+  },
+  "signals": [],
+  "source_origin_host": "pocket4",
+  "source_project_count": 430,
+  "source_projection_restored": true,
+  "source_qualification": {
+    "bytes": 917973,
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/source-released-sdk35-continuation-r2/RESULT.json",
+    "sha256": "ca309c277d3bcc962abbaadb1054b334ff2d0eb603bb091a991f60f4896e04ec"
+  },
+  "started_ns": 1794242038570363475,
+  "state": "FAILED",
+  "strict_allow_missing_dependencies": false,
+  "temporary_directories": [
+    {
+      "device_inode": [
+        2067,
+        2621457
+      ],
+      "mode": 448,
+      "owner_uid": 1000,
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/temporary-full-desktop-r12"
+    },
+    {
+      "device_inode": [
+        2067,
+        2621481
+      ],
+      "mode": 448,
+      "owner_uid": 1000,
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/temporary-full-desktop-r12/tmp"
+    },
+    {
+      "device_inode": [
+        2067,
+        2621530
+      ],
+      "mode": 448,
+      "owner_uid": 1000,
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/temporary-full-desktop-r12/go"
+    }
+  ],
+  "traceback": "Traceback (most recent call last):\n  File \"/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/full-desktop-r12/desktop_audio_controller.py\", line 392, in run_build\n    result['normal_build'] = commands.run('normal-full-audio-apex', result['argv'], 21600,\n                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/full-desktop-r12/desktop_build_support.py\", line 314, in run\n    need(row['owned_retirement_complete'] and not row['errors'], 'owned command failed: ' + name)\n  File \"/data/pocket4-audio-source316-offload-20261108-8b88-r1/control/full-desktop-r12/desktop_build_support.py\", line 49, in need\n    raise RuntimeError(message)\nRuntimeError: owned command failed: normal-full-audio-apex\n",
+  "work_locks_after": [
+    {
+      "content": "1948474\n",
+      "identity": [
+        2067,
+        1883370,
+        33152,
+        1000,
+        1000,
+        1,
+        8,
+        1794242289632517817,
+        1794242289632517817
+      ],
+      "observed_free": true,
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/package-build.lock"
+    },
+    {
+      "content": "1948474\n",
+      "identity": [
+        2067,
+        1883371,
+        33152,
+        1000,
+        1000,
+        1,
+        8,
+        1794242289632517817,
+        1794242289632517817
+      ],
+      "observed_free": true,
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source-update.lock"
+    }
+  ],
+  "work_locks_before": [
+    {
+      "content": "1297293\n",
+      "identity": [
+        2067,
+        1883370,
+        33152,
+        1000,
+        1000,
+        1,
+        8,
+        1794227527128900909,
+        1794227527128900909
+      ],
+      "observed_free": true,
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/package-build.lock"
+    },
+    {
+      "content": "1297293\n",
+      "identity": [
+        2067,
+        1883371,
+        33152,
+        1000,
+        1000,
+        1,
+        8,
+        1794227527128900909,
+        1794227527128900909
+      ],
+      "observed_free": true,
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source-update.lock"
+    }
+  ],
+  "work_locks_prelaunch": [
+    {
+      "content": "1297293\n",
+      "identity": [
+        2067,
+        1883370,
+        33152,
+        1000,
+        1000,
+        1,
+        8,
+        1794227527128900909,
+        1794227527128900909
+      ],
+      "observed_free": true,
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/package-build.lock"
+    },
+    {
+      "content": "1297293\n",
+      "identity": [
+        2067,
+        1883371,
+        33152,
+        1000,
+        1000,
+        1,
+        8,
+        1794227527128900909,
+        1794227527128900909
+      ],
+      "observed_free": true,
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source-update.lock"
+    }
+  ]
+}

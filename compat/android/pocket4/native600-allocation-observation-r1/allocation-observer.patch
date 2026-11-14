@@ -1,0 +1,193 @@
+--- a/ai395_native_controller.py
++++ b/ai395_native_controller.py
+@@ -7,9 +7,11 @@
+ import json
+ import os
+ from pathlib import Path
++import resource
+ import signal
+ import stat
+ import subprocess
++import tempfile
+ import time
+ import traceback
+ 
+@@ -54,6 +56,114 @@
+ 
+ def small_stdout(record):
+     return s.pinned(record['stdout'], 4 * 1024**2, contents=True)[1]
++
++
++def parse_owned_allocation(stdout, roots):
++    """Parse exactly the two requested NUL-terminated GNU du root totals."""
++    paths = {os.fsencode(root) for root in roots}
++    s.need(len(roots) == len(paths) == 2 and len(stdout) < 65536,
++           'allocation requires two distinct roots and bounded output')
++    records = stdout.split(b'\0')
++    s.need(len(records) == 3 and records[-1] == b'',
++           'allocation observer did not return exactly two terminated root records')
++    totals = {}
++    for raw in records[:-1]:
++        amount, separator, path = raw.partition(b'\t')
++        s.need(separator and amount.isdigit() and path in paths and path not in totals,
++               'allocation observer returned an invalid, unknown, or duplicate root record')
++        totals[path] = int(amount)
++    s.need(set(totals) == paths, 'allocation observer omitted a required root')
++    return sum(totals.values())
++
++
++def allocation_log_limit():
++    # Only the du child inherits this limit. Each of its two temporary log
++    # files is bounded by the kernel; the parent builder's limit is unchanged.
++    resource.setrlimit(resource.RLIMIT_FSIZE, (65536, 65536))
++
++
++def observe_owned_allocation(roots, record, check_admission):
++    """Require one complete du observation; retry rc=1 within one 30s budget.
++
++    Concurrent source projection can invalidate a traversal. No failed or
++    partial traversal is an allocation sample, and its diagnostics are retained.
++    This does not establish the errno of an older, unrecorded failure.
++    """
++    roots = tuple(Path(root) for root in roots)
++    s.need(len(roots) == 2 and len(set(roots)) == 2
++           and all(root.is_absolute() for root in roots)
++           and not any(left in right.parents for left in roots for right in roots),
++           'allocation requires two distinct non-overlapping absolute roots')
++
++    def root_identities():
++        identities = []
++        for root in roots:
++            info = root.lstat()
++            s.need(stat.S_ISDIR(info.st_mode), 'allocation root is not an original directory: ' + str(root))
++            identities.append((info.st_dev, info.st_ino, info.st_mode, info.st_uid, info.st_gid))
++        s.need(len({identity[:2] for identity in identities}) == len(roots), 'allocation roots alias one directory')
++        return identities
++
++    expected_roots = root_identities()
++    argv = ['/usr/bin/du', '-sx', '--block-size=1', '--null', '--'] + [str(root) for root in roots]
++    deadline = time.monotonic() + 30
++    for attempt in range(1, 4):
++        check_admission()
++        remaining = deadline - time.monotonic()
++        s.need(remaining > 0, 'owned output allocation observation exceeded its total 30s budget')
++        observation = {'schema': 'owned-allocation-attempt-v1', 'attempt': attempt,
++                       'argv': argv, 'started_ns': time.time_ns(), 'timeout_seconds': remaining,
++                       'returncode': None, 'timed_out': False, 'sample_complete': False}
++        stdout = b''; stderr = b''; retry = False; allocated = None
++        try:
++            with tempfile.TemporaryFile(dir=RESULT) as out, tempfile.TemporaryFile(dir=RESULT) as err:
++                try:
++                    run = subprocess.run(argv, stdin=subprocess.DEVNULL, stdout=out, stderr=err,
++                                         timeout=remaining, preexec_fn=allocation_log_limit)
++                finally:
++                    out.seek(0); err.seek(0)
++                    stdout = out.read(65537); stderr = err.read(65537)
++            observation['returncode'] = run.returncode
++            s.need(len(stdout) < 65536 and len(stderr) < 65536,
++                   'owned output allocation observer reached its 64 KiB per-stream log bound')
++            s.need(root_identities() == expected_roots, 'allocation root identity changed during observation')
++            if run.returncode == 1:
++                retry = True
++            else:
++                s.need(run.returncode == 0, 'owned output allocation observer exited unsuccessfully')
++                s.need(not stderr, 'successful allocation observer emitted diagnostics')
++                allocated = parse_owned_allocation(stdout, roots)
++                observation['allocated_bytes'] = allocated
++                observation['sample_complete'] = True
++                s.need(time.monotonic() < deadline,
++                       'owned output allocation success arrived after its shared 30s deadline')
++        except subprocess.TimeoutExpired as error:
++            observation['timed_out'] = True
++            observation['error'] = 'owned output allocation observation timed out within its total 30s budget'
++            raise RuntimeError(observation['error']) from error
++        except BaseException as error:
++            observation['error'] = str(error)
++            raise
++        finally:
++            observation['finished_ns'] = time.time_ns()
++            # Hex preserves every byte, including non-UTF-8 file diagnostics.
++            observation['stdout_hex'] = stdout.hex(); observation['stderr_hex'] = stderr.hex()
++            observation['stdout_bytes'] = len(stdout); observation['stderr_bytes'] = len(stderr)
++            observation['per_stream_log_limit_bytes'] = 65536
++            record(observation)
++        if allocated is not None:
++            # Persistence and the traversal can both take time. A complete
++            # recorded sample is not admission: recheck after recording, then
++            # after refreshing the shared reserves, before returning it.
++            s.need(time.monotonic() < deadline,
++                   'owned output allocation recording exceeded its shared 30s deadline')
++            check_admission()
++            s.need(time.monotonic() < deadline,
++                   'owned output allocation admission exceeded its shared 30s deadline')
++            return allocated
++        s.need(retry and attempt < 3 and time.monotonic() < deadline,
++               'owned output allocation observation failed after bounded resampling')
++    raise RuntimeError('owned output allocation observation did not produce a complete sample')
+ 
+ 
+ def source_qualification(commands, name, config, *, recovery=False):
+@@ -383,9 +493,9 @@
+         s.need(b'gc 1 @' in s.pinned(probe['stderr'], 1024**2, contents=True)[1], 'fresh Go GC diagnostic missing')
+         s.need(s.file_ref(config['go_probe']['path'])['sha256'] == config['go_probe']['sha256'], 'fresh probe binary changed')
+         result['work_locks_prelaunch'] = s.work_lock_probe(WORK, locks)
+-        allocation = commands.run('owned-work-allocation-before', ['/usr/bin/du', '-sx', '--block-size=1', str(ROOT), str(OUTPUT_ROOT)],
++        allocation = commands.run('owned-work-allocation-before', ['/usr/bin/du', '-sx', '--block-size=1', '--null', '--', str(ROOT), str(OUTPUT_ROOT)],
+                                   60, env=environment())
+-        result['owned_allocation_before_bytes'] = sum(int(line.split()[0]) for line in small_stdout(allocation).splitlines())
++        result['owned_allocation_before_bytes'] = parse_owned_allocation(small_stdout(allocation), (ROOT, OUTPUT_ROOT))
+         result['admission'] = s.admission(ROOT)
+         result['argv'] = [str(TOOLS / 'droidloom-update'), '--source', str(RECIPE), '--jobs', '6', 'native-generation-build', '--work', str(WORK), '--out', str(OUT)]
+         normal_executables = [ref for ref in config['normal_tools']
+@@ -396,7 +506,17 @@
+         result['strict_allow_missing_dependencies'] = False
+         result['state'] = 'RUNNING'; s.create(RESULT / 'admission.json', result)
+         observed = {'next_sample': 0, 'next_space_check': 0, 'next_usage_check': 0,
+-                    'source_input_observation': None, 'samples': [], 'seen': set(), 'work_growth_peak_bytes': 0, 'soong_generations': {}}
++                    'source_input_observation': None, 'samples': [], 'seen': set(), 'work_growth_peak_bytes': 0, 'soong_generations': {},
++                    'allocation_observations': []}
++
++        def record_allocation_attempt(observation):
++            refs = observed['allocation_observations']
++            refs.append(s.create(RESULT / ('allocation-observation-%04d.json' % len(refs)), observation))
++
++        def allocation_admission():
++            s.need(not s.CANCELLED, 'allocation observation cancelled; retiring only this build')
++            s.need(s.disk_free(ROOT) >= s.PROFILE['shared_disk_reserve_bytes'], 'shared disk reserve reached; retiring only this build')
++            s.need(s.memavailable() >= s.PROFILE['host_reserve_bytes'], 'shared host memory reserve reached; retiring only this build')
+ 
+         def monitor(row):
+             now = time.monotonic()
+@@ -446,10 +566,8 @@
+                 observed['samples'].append(s.create(RESULT / ('resource-%04d.json' % len(observed['samples'])), sample))
+             if now >= observed['next_usage_check'] and OUT.exists():
+                 observed['next_usage_check'] = now + 60
+-                run = subprocess.run(['/usr/bin/du', '-sx', '--block-size=1', str(ROOT), str(OUTPUT_ROOT)],
+-                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=30)
+-                s.need(run.returncode == 0, 'owned output allocation observation failed')
+-                allocated = sum(int(line.split()[0]) for line in run.stdout.splitlines()) - result['owned_allocation_before_bytes']
++                allocated = observe_owned_allocation((ROOT, OUTPUT_ROOT), record_allocation_attempt,
++                                                      allocation_admission) - result['owned_allocation_before_bytes']
+                 observed['work_growth_peak_bytes'] = max(observed['work_growth_peak_bytes'], allocated)
+                 s.need(allocated < s.PROFILE['initial_build_work_budget_bytes'], 'owned 96 GiB incremental work/output budget reached')
+ 
+@@ -462,6 +580,7 @@
+             result['resource_observations'] = observed['samples']
+             result['actual_build_processes_seen'] = sorted(observed['seen'])
+             result['observed_work_growth_peak_bytes'] = observed['work_growth_peak_bytes']
++            result['owned_allocation_observations'] = observed['allocation_observations']
+         s.need(result['effective_source_input_observation'] is not None and 'ninja' in observed['seen'],
+                'successful full build lacks its actual source/compile window')
+         metrics = s.load_module(CONTROL / 'go_runtime_budget.py')
+@@ -507,9 +626,9 @@
+         if commands is not None and result.get('owned_allocation_before_bytes') is not None:
+             try:
+                 allocation = commands.run('owned-work-allocation-after',
+-                    ['/usr/bin/du', '-sx', '--block-size=1', str(ROOT), str(OUTPUT_ROOT)],
++                    ['/usr/bin/du', '-sx', '--block-size=1', '--null', '--', str(ROOT), str(OUTPUT_ROOT)],
+                     60, env=environment(), recovery=True)
+-                allocated = sum(int(line.split()[0]) for line in small_stdout(allocation).splitlines())
++                allocated = parse_owned_allocation(small_stdout(allocation), (ROOT, OUTPUT_ROOT))
+                 growth = allocated - result['owned_allocation_before_bytes']
+                 result['owned_allocation_after_bytes'] = allocated
+                 result['owned_work_growth_after_bytes'] = growth

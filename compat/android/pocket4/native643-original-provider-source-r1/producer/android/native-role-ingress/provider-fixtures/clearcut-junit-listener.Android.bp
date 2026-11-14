@@ -1,0 +1,44 @@
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+    default_visibility: [
+        "//external/robolectric:__subpackages__",
+    ],
+}
+
+team {
+    name: "Android_Platform_Developer_Experience",
+    trendy_team_id: "5677977168281600",
+}
+
+java_library_host {
+    name: "ClearcutJunitListener",
+    srcs: ["src/main/java/**/*.java"],
+    static_libs: [
+        "asuite_proto_java_lite",
+        "libprotobuf-java-lite",
+        "auto_service_annotations",
+        "junit",
+    ],
+    plugins: ["auto_service_plugin"],
+    //limit to jdk 11 in case we ever make tradefed use this instead.
+    java_version: "11",
+}
+
+//#############################################
+// Compile Robolectric robolectric tests
+//#############################################
+java_test_host {
+    name: "TestClearcutJunitListener",
+    team: "Android_Platform_Developer_Experience",
+    srcs: ["src/test/java/**/*.java"],
+    java_resource_dirs: ["src/test/resources"],
+    static_libs: [
+        "ClearcutJunitListener",
+        "guava",
+        "jsr305",
+        "truth",
+    ],
+    //test_options: {
+    //    unit_test: false,
+    //},
+}

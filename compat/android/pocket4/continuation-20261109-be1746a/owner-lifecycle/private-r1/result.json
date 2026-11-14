@@ -1,0 +1,487 @@
+{
+  "schema": "pocket4-owner-lifecycle-r2-fixed-private-v1",
+  "started_utc": "2026-11-09T10:51:26.730145+00:00",
+  "test_binary": {
+    "path": "/var/lib/droidloom-owner-lifecycle-r2-private-20261109-be1746a-r1/test-binary",
+    "bytes": 42320208,
+    "sha256": "118f78a02234c9eca71f5c0f5aa20922c0b88b6b0f9dea2d657212b1ebcc3a9d"
+  },
+  "source_binary": {
+    "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/target/debug/deps/droidloom_supervisor-63ac7238d3bd685e",
+    "bytes": 42320208,
+    "sha256": "118f78a02234c9eca71f5c0f5aa20922c0b88b6b0f9dea2d657212b1ebcc3a9d"
+  },
+  "before": {
+    "data_metadata_only": [
+      {
+        "path": "/var/lib/droidloom/users/1000/data/data.img",
+        "identity": [
+          66306,
+          111810948,
+          33152,
+          0,
+          0,
+          1,
+          34359738368,
+          1794030280963569636,
+          1794030280963569636
+        ]
+      },
+      {
+        "path": "/var/lib/droidloom/users/1000/data/metadata.img",
+        "identity": [
+          66306,
+          111810949,
+          33152,
+          0,
+          0,
+          1,
+          134217728,
+          1794030281000570337,
+          1794030281000570337
+        ]
+      }
+    ],
+    "public_authority": [
+      {
+        "path": "/etc/passwd",
+        "identity": [
+          66306,
+          76548520,
+          33188,
+          0,
+          0,
+          1,
+          3359,
+          1793201792454007852,
+          1793201792454398315
+        ],
+        "sha256": "cb4ffc26ec43ba8248c7efdfd4a09d775a1fb27b646232509a61a937234f177f"
+      },
+      {
+        "path": "/etc/group",
+        "identity": [
+          66306,
+          76546903,
+          33188,
+          0,
+          0,
+          1,
+          1400,
+          1794112014145872118,
+          1794112014145872118
+        ],
+        "sha256": "3be5b8d57526e7cc48009f97bf54f4c56d400efa608ea7e879e58e4c285a38ed"
+      },
+      {
+        "path": "/etc/subuid",
+        "identity": [
+          66306,
+          76548833,
+          33188,
+          0,
+          0,
+          1,
+          18,
+          1785773770951134306,
+          1785773770951134306
+        ],
+        "sha256": "dc6b239ceac4d0d3f5739daa348847f11f729fb01db535ab05c2458f8e551464"
+      },
+      {
+        "path": "/etc/subgid",
+        "identity": [
+          66306,
+          76548834,
+          33188,
+          0,
+          0,
+          1,
+          18,
+          1785773770952532026,
+          1785773770952532026
+        ],
+        "sha256": "dc6b239ceac4d0d3f5739daa348847f11f729fb01db535ab05c2458f8e551464"
+      },
+      {
+        "path": "/etc/nsswitch.conf",
+        "identity": [
+          66306,
+          76546470,
+          33188,
+          0,
+          0,
+          1,
+          594,
+          1791083998457792315,
+          1791083998457792315
+        ],
+        "sha256": "f053e77f9d706a20cb52deecdf9602b1635ea64a3be77a4cb32205bfebb17d3e"
+      }
+    ],
+    "boot_id": "97d9600f-e081-465c-9e6e-62651e09806b",
+    "host_kernel": "7.0.14-p4cred1",
+    "parent_namespaces": {
+      "user": [
+        5,
+        4026531837
+      ],
+      "pid": [
+        5,
+        4026531836
+      ],
+      "mnt": [
+        5,
+        4026531832
+      ],
+      "ipc": [
+        5,
+        4026531839
+      ],
+      "net": [
+        5,
+        4026531833
+      ],
+      "cgroup": [
+        5,
+        4026531835
+      ],
+      "uts": [
+        5,
+        4026531838
+      ]
+    }
+  },
+  "controls": [
+    {
+      "name": "userns",
+      "test": "production_namespace::tests::privileged_private_userns_mapping_controls",
+      "argv": [
+        "/usr/bin/systemd-run",
+        "--quiet",
+        "--wait",
+        "--pipe",
+        "--unit",
+        "pocket4-owner-lifecycle-r2-userns-20261109-be1746a-r1.service",
+        "-p",
+        "User=root",
+        "-p",
+        "Group=root",
+        "-p",
+        "CPUQuota=100%",
+        "-p",
+        "CPUAffinity=0",
+        "-p",
+        "MemoryMax=4G",
+        "-p",
+        "MemorySwapMax=0",
+        "-p",
+        "TasksMax=64",
+        "-p",
+        "RuntimeMaxSec=35",
+        "-p",
+        "TimeoutStopSec=5",
+        "-p",
+        "KillMode=control-group",
+        "-p",
+        "PrivateTmp=yes",
+        "-p",
+        "PrivateDevices=yes",
+        "-p",
+        "PrivateNetwork=yes",
+        "-p",
+        "ProtectSystem=strict",
+        "-p",
+        "ProtectHome=read-only",
+        "-p",
+        "ProtectKernelTunables=yes",
+        "-p",
+        "ProtectKernelModules=yes",
+        "-p",
+        "ProtectControlGroups=yes",
+        "-p",
+        "NoNewPrivileges=yes",
+        "-p",
+        "AmbientCapabilities=CAP_SETUID",
+        "-p",
+        "RestrictAddressFamilies=AF_UNIX",
+        "-p",
+        "CapabilityBoundingSet=CAP_SYS_ADMIN CAP_SETUID CAP_SETGID CAP_SYS_PTRACE CAP_DAC_READ_SEARCH CAP_KILL",
+        "--setenv=LC_ALL=C",
+        "--",
+        "/var/lib/droidloom-owner-lifecycle-r2-private-20261109-be1746a-r1/test-binary",
+        "--exact",
+        "production_namespace::tests::privileged_private_userns_mapping_controls",
+        "--ignored",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.06780266399982793,
+      "stdout": {
+        "path": "/var/lib/droidloom-owner-lifecycle-r2-private-20261109-be1746a-r1/userns/normal.stdout",
+        "bytes": 593,
+        "sha256": "1bf4d2e117b5923edf44c64a8403f0347919fcf020d6572dcf906f440d60b08f"
+      },
+      "stderr": {
+        "path": "/var/lib/droidloom-owner-lifecycle-r2-private-20261109-be1746a-r1/userns/normal.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "unit": "pocket4-owner-lifecycle-r2-userns-20261109-be1746a-r1.service",
+      "unit_fields": {
+        "LoadState": "not-found",
+        "ActiveState": "inactive",
+        "SubState": "dead",
+        "InvocationID": "",
+        "MainPID": "0",
+        "Result": "success",
+        "ExecMainCode": "0",
+        "ExecMainStatus": "0",
+        "ControlGroup": ""
+      },
+      "owned_unit_terminal": true,
+      "owned_cgroup_absent": true,
+      "passed": true
+    },
+    {
+      "name": "pid1",
+      "test": "production_namespace::tree::tests::privileged_private_pid1_namespace_controls",
+      "argv": [
+        "/usr/bin/systemd-run",
+        "--quiet",
+        "--wait",
+        "--pipe",
+        "--unit",
+        "pocket4-owner-lifecycle-r2-pid1-20261109-be1746a-r1.service",
+        "-p",
+        "User=root",
+        "-p",
+        "Group=root",
+        "-p",
+        "CPUQuota=100%",
+        "-p",
+        "CPUAffinity=0",
+        "-p",
+        "MemoryMax=4G",
+        "-p",
+        "MemorySwapMax=0",
+        "-p",
+        "TasksMax=64",
+        "-p",
+        "RuntimeMaxSec=35",
+        "-p",
+        "TimeoutStopSec=5",
+        "-p",
+        "KillMode=control-group",
+        "-p",
+        "PrivateTmp=yes",
+        "-p",
+        "PrivateDevices=yes",
+        "-p",
+        "PrivateNetwork=yes",
+        "-p",
+        "ProtectSystem=strict",
+        "-p",
+        "ProtectHome=read-only",
+        "-p",
+        "ProtectKernelTunables=yes",
+        "-p",
+        "ProtectKernelModules=yes",
+        "-p",
+        "ProtectControlGroups=yes",
+        "-p",
+        "NoNewPrivileges=yes",
+        "-p",
+        "AmbientCapabilities=CAP_SETUID",
+        "-p",
+        "RestrictAddressFamilies=AF_UNIX",
+        "-p",
+        "CapabilityBoundingSet=CAP_SYS_ADMIN CAP_SETUID CAP_SETGID CAP_SYS_PTRACE CAP_DAC_READ_SEARCH CAP_KILL",
+        "--setenv=LC_ALL=C",
+        "--",
+        "/var/lib/droidloom-owner-lifecycle-r2-private-20261109-be1746a-r1/test-binary",
+        "--exact",
+        "production_namespace::tree::tests::privileged_private_pid1_namespace_controls",
+        "--ignored",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.10089124200021615,
+      "stdout": {
+        "path": "/var/lib/droidloom-owner-lifecycle-r2-private-20261109-be1746a-r1/pid1/normal.stdout",
+        "bytes": 636,
+        "sha256": "517536babbc727d4da2abc27a0faebf53671ebcc7646ceb1f43eab00cdbdb74e"
+      },
+      "stderr": {
+        "path": "/var/lib/droidloom-owner-lifecycle-r2-private-20261109-be1746a-r1/pid1/normal.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "unit": "pocket4-owner-lifecycle-r2-pid1-20261109-be1746a-r1.service",
+      "unit_fields": {
+        "LoadState": "not-found",
+        "ActiveState": "inactive",
+        "SubState": "dead",
+        "InvocationID": "",
+        "MainPID": "0",
+        "Result": "success",
+        "ExecMainCode": "0",
+        "ExecMainStatus": "0",
+        "ControlGroup": ""
+      },
+      "owned_unit_terminal": true,
+      "owned_cgroup_absent": true,
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "production_admission": false,
+  "Android_starts": 0,
+  "original_data_body_opened": false,
+  "host_accounts_or_grants_changed": false,
+  "after": {
+    "data_metadata_only": [
+      {
+        "path": "/var/lib/droidloom/users/1000/data/data.img",
+        "identity": [
+          66306,
+          111810948,
+          33152,
+          0,
+          0,
+          1,
+          34359738368,
+          1794030280963569636,
+          1794030280963569636
+        ]
+      },
+      {
+        "path": "/var/lib/droidloom/users/1000/data/metadata.img",
+        "identity": [
+          66306,
+          111810949,
+          33152,
+          0,
+          0,
+          1,
+          134217728,
+          1794030281000570337,
+          1794030281000570337
+        ]
+      }
+    ],
+    "public_authority": [
+      {
+        "path": "/etc/passwd",
+        "identity": [
+          66306,
+          76548520,
+          33188,
+          0,
+          0,
+          1,
+          3359,
+          1793201792454007852,
+          1793201792454398315
+        ],
+        "sha256": "cb4ffc26ec43ba8248c7efdfd4a09d775a1fb27b646232509a61a937234f177f"
+      },
+      {
+        "path": "/etc/group",
+        "identity": [
+          66306,
+          76546903,
+          33188,
+          0,
+          0,
+          1,
+          1400,
+          1794112014145872118,
+          1794112014145872118
+        ],
+        "sha256": "3be5b8d57526e7cc48009f97bf54f4c56d400efa608ea7e879e58e4c285a38ed"
+      },
+      {
+        "path": "/etc/subuid",
+        "identity": [
+          66306,
+          76548833,
+          33188,
+          0,
+          0,
+          1,
+          18,
+          1785773770951134306,
+          1785773770951134306
+        ],
+        "sha256": "dc6b239ceac4d0d3f5739daa348847f11f729fb01db535ab05c2458f8e551464"
+      },
+      {
+        "path": "/etc/subgid",
+        "identity": [
+          66306,
+          76548834,
+          33188,
+          0,
+          0,
+          1,
+          18,
+          1785773770952532026,
+          1785773770952532026
+        ],
+        "sha256": "dc6b239ceac4d0d3f5739daa348847f11f729fb01db535ab05c2458f8e551464"
+      },
+      {
+        "path": "/etc/nsswitch.conf",
+        "identity": [
+          66306,
+          76546470,
+          33188,
+          0,
+          0,
+          1,
+          594,
+          1791083998457792315,
+          1791083998457792315
+        ],
+        "sha256": "f053e77f9d706a20cb52deecdf9602b1635ea64a3be77a4cb32205bfebb17d3e"
+      }
+    ],
+    "boot_id": "97d9600f-e081-465c-9e6e-62651e09806b",
+    "host_kernel": "7.0.14-p4cred1",
+    "parent_namespaces": {
+      "user": [
+        5,
+        4026531837
+      ],
+      "pid": [
+        5,
+        4026531836
+      ],
+      "mnt": [
+        5,
+        4026531832
+      ],
+      "ipc": [
+        5,
+        4026531839
+      ],
+      "net": [
+        5,
+        4026531833
+      ],
+      "cgroup": [
+        5,
+        4026531835
+      ],
+      "uts": [
+        5,
+        4026531838
+      ]
+    }
+  },
+  "protected_unchanged": true,
+  "finished_utc": "2026-11-09T10:51:27.080475+00:00"
+}

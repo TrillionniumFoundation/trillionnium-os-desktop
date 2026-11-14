@@ -1,0 +1,907 @@
+{
+  "schema": "pocket4-native600-tradefed-provider-plan-v1",
+  "host": "ai395",
+  "observed_materialized_manifest_sha256": "3f875c5587b6f7838d2ac40eae3bf072e9a0b68f007d471b34cfabba2ed9bb2c",
+  "source_lock_sha256": "fb05fce28e2541cc1c791350ede62d36579ac459922b6f394680930cba9f6d9d",
+  "source_lock_bytes": 354272,
+  "source_lock_original_host_path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/recipe-signature-team-r1/android/native-generation-pair/source-lock.json",
+  "delta_sparse_paths": {
+    "cts": [
+      "tools/cts-tradefed/etc",
+      "tools/cts-tradefed/tests",
+      "tools/cts-v-host/etc",
+      "tools/cts-v-host/tests"
+    ],
+    "external/deqp": [
+      "android/cts/Android.bp",
+      "android/cts/AndroidTest.xml",
+      "android/cts/runner"
+    ],
+    "system/chre": [
+      "java/test/chdts"
+    ],
+    "test/vts": [
+      "tools/vts-core-tradefed"
+    ]
+  },
+  "source_file_inventory": [
+    {
+      "project": "cts",
+      "commit": "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd",
+      "path": "tools/cts-tradefed/etc/cts-tradefed",
+      "git_blob": "b3307182f2b7c2edfd7bc1ade650d8d56c109827",
+      "mode": "100755",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "cts",
+      "commit": "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd",
+      "path": "tools/cts-tradefed/tests/.classpath",
+      "git_blob": "bd4f75950fdc34517f34efbfbb77ff6a51076c33",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "cts",
+      "commit": "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd",
+      "path": "tools/cts-tradefed/tests/Android.bp",
+      "git_blob": "5e1789fdba5bf28f9257787130d6442b7d3653f1",
+      "mode": "100644",
+      "bytes": 1210,
+      "materialized": false,
+      "sha256": "92e642bf11db9546fa18dbb1399a55eb501ea394ad1ab7c37d04e6abc19d3adf",
+      "content_source": "original_pinned_git_object"
+    },
+    {
+      "project": "cts",
+      "commit": "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd",
+      "path": "tools/cts-tradefed/tests/run_cts_tests.sh",
+      "git_blob": "4aa35ba65f3ee4bbf5a9cc2145b6299448eb8833",
+      "mode": "100755",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "cts",
+      "commit": "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd",
+      "path": "tools/cts-tradefed/tests/src/com/android/compatibility/common/tradefed/loading/CommonConfigLoadingTest.java",
+      "git_blob": "8efb3effc10de4d3dc88ea81a70c71374a9d8d60",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "cts",
+      "commit": "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd",
+      "path": "tools/cts-tradefed/tests/src/com/android/compatibility/common/tradefed/loading/CtsConfigLoadingTest.java",
+      "git_blob": "4d33a6a805b33b55b1a8b61ce1e2aa71d74bf7c8",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "cts",
+      "commit": "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd",
+      "path": "tools/cts-tradefed/tests/src/com/android/compatibility/common/tradefed/presubmit/ApkPackageNameCheck.java",
+      "git_blob": "f5448eb93eb2204ddab702c6196fe6c4a8e749b7",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "cts",
+      "commit": "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd",
+      "path": "tools/cts-tradefed/tests/src/com/android/compatibility/common/tradefed/presubmit/PresubmitSetupValidation.java",
+      "git_blob": "4eb48fc0a17fe10e2ec4ee5a09bf85aa243ce069",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "cts",
+      "commit": "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd",
+      "path": "tools/cts-tradefed/tests/src/com/android/compatibility/common/tradefed/presubmit/ValidateTestsAbi.java",
+      "git_blob": "2e57b252abd090a5f5e83aafa2711f3bcb581bed",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "cts",
+      "commit": "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd",
+      "path": "tools/cts-tradefed/tests/src/com/android/compatibility/tradefed/CtsTradefedTest.java",
+      "git_blob": "8bab842c1636f6f1dffd83a64191cd26405c78db",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "cts",
+      "commit": "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd",
+      "path": "tools/cts-tradefed/tests/src/com/android/compatibility/tradefed/CtsUnitTests.java",
+      "git_blob": "3b8e59195434284c94173e2413bc5e7c30222f54",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "cts",
+      "commit": "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd",
+      "path": "tools/cts-v-host/etc/cts-v-host-tradefed",
+      "git_blob": "1bc24e8b336bb936e1761a45251022bf959fb327",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "cts",
+      "commit": "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd",
+      "path": "tools/cts-v-host/tests/Android.bp",
+      "git_blob": "568044d8a2c4e47128f4a76abc524bf93a7ee877",
+      "mode": "100644",
+      "bytes": 1474,
+      "materialized": false,
+      "sha256": "744511d6772746055ec8c0d9ff362fa7d13e025b30bb7359ed6944d82939ce4a",
+      "content_source": "original_pinned_git_object"
+    },
+    {
+      "project": "system/chre",
+      "commit": "17b4a35a8c2b9f27e7f1b382b7d714aced928ce4",
+      "path": "java/test/chdts/Android.bp",
+      "git_blob": "f8ba0726ece209d71b4972dbca84a64da00d1ed1",
+      "mode": "100644",
+      "bytes": 1349,
+      "materialized": true,
+      "sha256": "4487bfd5348658d76c6d0373f7e89b0aa90bc19d616959450c570054e65bbb49",
+      "content_source": "original_pinned_git_object"
+    },
+    {
+      "project": "system/chre",
+      "commit": "17b4a35a8c2b9f27e7f1b382b7d714aced928ce4",
+      "path": "java/test/chdts/README.md",
+      "git_blob": "29efd71063060dc2d584233e5deb0279fe9a25e6",
+      "mode": "100644",
+      "bytes": 3682,
+      "materialized": true,
+      "content_source": "pinned_git_ls_tree_size_only"
+    },
+    {
+      "project": "system/chre",
+      "commit": "17b4a35a8c2b9f27e7f1b382b7d714aced928ce4",
+      "path": "java/test/chdts/res/config/basic-reporters.xml",
+      "git_blob": "b44be98e911e6ddc0d4d4a6574a4526320ba2f5e",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "system/chre",
+      "commit": "17b4a35a8c2b9f27e7f1b382b7d714aced928ce4",
+      "path": "java/test/chdts/res/config/chdts.xml",
+      "git_blob": "1c22010989b0595297d8acbf83fa29aaec7ecc19",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "system/chre",
+      "commit": "17b4a35a8c2b9f27e7f1b382b7d714aced928ce4",
+      "path": "java/test/chdts/tests/Android.bp",
+      "git_blob": "6f0a8713853c8ba4f953df59049dd0fd6a1ab37c",
+      "mode": "100644",
+      "bytes": 1885,
+      "materialized": false,
+      "sha256": "100bb7df041430dbcaa0d87c1c72800d852798997783a471e93c184a7c3b68bf",
+      "content_source": "original_pinned_git_object"
+    },
+    {
+      "project": "system/chre",
+      "commit": "17b4a35a8c2b9f27e7f1b382b7d714aced928ce4",
+      "path": "java/test/chdts/tests/AndroidTest.xml",
+      "git_blob": "7a9caa6df4cd9ea09d902abbcc552c381b24fee8",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "system/chre",
+      "commit": "17b4a35a8c2b9f27e7f1b382b7d714aced928ce4",
+      "path": "java/test/chdts/tests/AndroidTest_Setup.xml",
+      "git_blob": "e1c5cd27df58f7bcb35e55170ad4656f88e54ba3",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "system/chre",
+      "commit": "17b4a35a8c2b9f27e7f1b382b7d714aced928ce4",
+      "path": "java/test/chdts/tests/AndroidTest_TestOnly.xml",
+      "git_blob": "ba27b062a5eb293dfe29f8a70e84fa727e61d1c5",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "system/chre",
+      "commit": "17b4a35a8c2b9f27e7f1b382b7d714aced928ce4",
+      "path": "java/test/chdts/tests/BaseConfig.xml",
+      "git_blob": "cbbb1e43c1b69c6dde5c13f3704fdbf7a826f565",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "system/chre",
+      "commit": "17b4a35a8c2b9f27e7f1b382b7d714aced928ce4",
+      "path": "java/test/chdts/tests/permissions/chre-priv-permissions.xml",
+      "git_blob": "97d81fdf5fd3a9855bc894b46fd026fbdc4f7643",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "system/chre",
+      "commit": "17b4a35a8c2b9f27e7f1b382b7d714aced928ce4",
+      "path": "java/test/chdts/tests/src/com/android/chre/chdts/ChdtsHostTestCases.java",
+      "git_blob": "6e954893a1e0163f29268f6d14fe53303c437569",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "system/chre",
+      "commit": "17b4a35a8c2b9f27e7f1b382b7d714aced928ce4",
+      "path": "java/test/chdts/tools/build/config.mk",
+      "git_blob": "207fbf5f296a8d261dd43c7cee1015a94996021a",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "system/chre",
+      "commit": "17b4a35a8c2b9f27e7f1b382b7d714aced928ce4",
+      "path": "java/test/chdts/tools/chdts-tradefed",
+      "git_blob": "0e4a35d3b7175f9c4a0f878631abbc7ffeb723ea",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/Android.bp",
+      "git_blob": "4824536db581e1457d2d06fc2ea9db9e033836a2",
+      "mode": "100644",
+      "bytes": 1443,
+      "materialized": false,
+      "sha256": "f81ca4258cb3e93d2c95d32e200bdd225974cc5914b04165393efa57e2556e88",
+      "content_source": "official_gitiles_https_original_git_blob_verified"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/README",
+      "git_blob": "0b950ac0ef8b4e40fc603d29a5d9f90cfb6e7dc2",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/build/config.mk",
+      "git_blob": "b397f7e75ed5cc57bd24985642a11aeca10aea3e",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/etc/vts-tradefed",
+      "git_blob": "e417c80adc3d9c186b640b7516d4146c1dc012c7",
+      "mode": "100755",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/basic-reporters.xml",
+      "git_blob": "22a59871451577233f7276081ebd2b513e464a0a",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/collect-tests-only.xml",
+      "git_blob": "4572c81ebe2125543ebe864edead84bb73c0485d",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/high-roi-vts-normal.xml",
+      "git_blob": "f74fd9f0c52d301ddb9e36487e67b32f0ee70fd2",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/high-roi-vts-sim_normal.xml",
+      "git_blob": "f5424fca294749372e09fed128de1ba17978eb37",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/vts-auto.xml",
+      "git_blob": "e1918c0c1a52167f08cd8337e9d25370d33e3ef7",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/vts-ccd.xml",
+      "git_blob": "6b94e11287e392ed42f69539233816b0b207c430",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/vts-common.xml",
+      "git_blob": "b5352e92a3a8e48a1aafba16d29bbd74a65f642a",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/vts-exclude.xml",
+      "git_blob": "10ba8735407f0367cff0c2d816657d70ca0b751f",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/vts-gki-4-19.xml",
+      "git_blob": "35dccff37140fb890a254bd227e41bfe5c6c4ee9",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/vts-hal-audio.xml",
+      "git_blob": "9496c407b054f5c42dbe4a84f92a0aae7c9381a1",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/vts-kernel.xml",
+      "git_blob": "2494baf872d8696573dfac52ebef6112f383d75f",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/vts-presubmit-exclude.xml",
+      "git_blob": "3bde28ee9ab97f13f38420b1c86447decb0693be",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/vts-presubmit-kernel.xml",
+      "git_blob": "b0ae0fbddebc84a4570ff42d5093a0b18767995a",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/vts-presubmit.xml",
+      "git_blob": "6920f49a491276d5713acb7f8d0195e70516084a",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/vts-security.xml",
+      "git_blob": "8dc11a2dc7e265c3c1717b08b002773cb0e5a9a3",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/vts-sim-include.xml",
+      "git_blob": "d6fb3efe3e8b372141c8572703951f004b37e584",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/vts-unit-tests.xml",
+      "git_blob": "a761c920d7210c14a4c2de97ab8f9c7af6b7408b",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/vts-validation-exclude.xml",
+      "git_blob": "68b073422c8079b4c2381b9c56bf6e78f2e37fc8",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/vts-validation.xml",
+      "git_blob": "92a87deb8f3f8b40b1f95277d94ecb2797fe4179",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/vts-virtual-device-rules.xml",
+      "git_blob": "02fb1ee8668f3b6618283c927879640e36562d4c",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/vts-virtual-device.xml",
+      "git_blob": "6c53e3f6bb84d14727b55a21a4c8263d75cacf47",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/res/config/vts.xml",
+      "git_blob": "d289a93a9af800e2ba72af17bff449a8a879320f",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/src/com/android/tradefed/targetprep/MultiSimPreparer.java",
+      "git_blob": "b9f4ffa434974cebb33c5f8f62e145ae42ef66bd",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/tests/Android.bp",
+      "git_blob": "9b30546ba34283c10662aaae2c5520f6cf224a46",
+      "mode": "100644",
+      "bytes": 998,
+      "materialized": false,
+      "sha256": "b9e23b8d1a5bc10ccdf4d9663c2d7f847af340390552ed65830a861a8adc9821",
+      "content_source": "official_gitiles_https_original_git_blob_verified"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/tests/res/config/vts-core-unit-tests.xml",
+      "git_blob": "cca1ad30707ef3328309e7928c62ebea3f645eb3",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/tests/run_vts_core_tests.sh",
+      "git_blob": "8920f616dd549756922ddd7c19edb632651fd194",
+      "mode": "100755",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/tests/src/com/android/compatibility/tradefed/VtsCoreTradefedTest.java",
+      "git_blob": "897ff9b4f6b9ed546d468db253f2e5c819dbfaab",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "test/vts",
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "path": "tools/vts-core-tradefed/tests/src/com/android/compatibility/tradefed/VtsUnitTests.java",
+      "git_blob": "77f71a8976304157b150d152d24f743b22206144",
+      "mode": "100644",
+      "bytes": null,
+      "materialized": false,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "external/deqp",
+      "commit": "eae519aaa6980b2a34ec07141bb19de3f6ddf69e",
+      "path": "android/cts/Android.bp",
+      "git_blob": "a85006dfd120e45cbdf50b7c7f1386d1a815d8ff",
+      "mode": "100644",
+      "bytes": 2634,
+      "sha256": "e3fa268b76d5859389513f650a1d23caf7e7b33e3ec7712d7a55d94821c170c9",
+      "content_source": "original_pinned_git_object"
+    },
+    {
+      "project": "external/deqp",
+      "commit": "eae519aaa6980b2a34ec07141bb19de3f6ddf69e",
+      "path": "android/cts/runner/src/com/drawelements/deqp/runner/BatchRunConfiguration.java",
+      "git_blob": "66ad895d096bb0ded74241bdc2c88304acfccf2f",
+      "mode": "100644",
+      "bytes": null,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "external/deqp",
+      "commit": "eae519aaa6980b2a34ec07141bb19de3f6ddf69e",
+      "path": "android/cts/runner/src/com/drawelements/deqp/runner/DeqpTestRunner.java",
+      "git_blob": "921fce73068053f0a5c6ea6d83f675bd9a7c3a25",
+      "mode": "100644",
+      "bytes": null,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "external/deqp",
+      "commit": "eae519aaa6980b2a34ec07141bb19de3f6ddf69e",
+      "path": "android/cts/runner/tests/Android.bp",
+      "git_blob": "6f98cc2ee0e671605abe629e7cdccf04341504fa",
+      "mode": "100644",
+      "bytes": 1239,
+      "sha256": "53e34061eaf71d2da1d036c16646a4327015a7c583f4df3d6397afb7e73a568c",
+      "content_source": "official_gitiles_https_original_git_blob_verified"
+    },
+    {
+      "project": "external/deqp",
+      "commit": "eae519aaa6980b2a34ec07141bb19de3f6ddf69e",
+      "path": "android/cts/runner/tests/run_tests.sh",
+      "git_blob": "bf06f7539f8c5b4cf31e561cad51db9ea6af3182",
+      "mode": "100755",
+      "bytes": null,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "external/deqp",
+      "commit": "eae519aaa6980b2a34ec07141bb19de3f6ddf69e",
+      "path": "android/cts/runner/tests/src/com/drawelements/deqp/runner/DeqpTestRunnerTest.java",
+      "git_blob": "45261c96621a305622115519cf6d8565ed8ce012",
+      "mode": "100644",
+      "bytes": null,
+      "content_source": "pinned_git_tree_oid_content_bytes_not_observed"
+    },
+    {
+      "project": "external/deqp",
+      "commit": "eae519aaa6980b2a34ec07141bb19de3f6ddf69e",
+      "path": "android/cts/AndroidTest.xml",
+      "git_blob": "c20b57d20e8926acded4a9da6ba0145e3175298a",
+      "mode": "100644",
+      "bytes": 25337,
+      "content_source": "pinned_git_ls_tree_size_only"
+    }
+  ],
+  "blueprint_dependency_projection": [
+    {
+      "project": "cts",
+      "path": "tools/cts-tradefed/tests/Android.bp",
+      "git_blob": "5e1789fdba5bf28f9257787130d6442b7d3653f1",
+      "modules": [
+        {
+          "name": "cts-tradefed-tests",
+          "type": "java_library_host",
+          "srcs": [
+            "src/**/*.java"
+          ],
+          "libs": [
+            "tradefed",
+            "cts-tradefed"
+          ],
+          "static_libs": [
+            "CtsDeqpRunnerTests"
+          ]
+        },
+        {
+          "name": "suite-loading-tests",
+          "type": "java_library_host",
+          "srcs": [
+            "src/com/android/compatibility/common/tradefed/loading/*.java"
+          ],
+          "libs": [
+            "tradefed",
+            "cts-tradefed"
+          ]
+        }
+      ]
+    },
+    {
+      "project": "cts",
+      "path": "tools/cts-v-host/tests/Android.bp",
+      "git_blob": "568044d8a2c4e47128f4a76abc524bf93a7ee877",
+      "modules": [
+        {
+          "name": "cts-v-host-tradefed-tests",
+          "type": "java_library_host",
+          "srcs": [
+            "src/**/*.java"
+          ],
+          "libs": [
+            "tradefed",
+            "cts-v-host-tradefed"
+          ],
+          "static_libs": [
+            "suite-loading-tests"
+          ]
+        }
+      ],
+      "upstream_local_src_glob_has_no_files": true
+    },
+    {
+      "project": "system/chre",
+      "path": "java/test/chdts/tests/Android.bp",
+      "git_blob": "6f0a8713853c8ba4f953df59049dd0fd6a1ab37c",
+      "modules": [
+        {
+          "name": "chdts-tradefed-tests",
+          "type": "java_test_host",
+          "srcs": [
+            "src/**/*.java"
+          ],
+          "libs": [
+            "tradefed",
+            "chdts-tradefed",
+            "compatibility-host-util"
+          ],
+          "device_common_data": [
+            ":ChdtsTestApp"
+          ],
+          "data": [
+            "permissions/**/*.xml",
+            "BaseConfig.xml"
+          ],
+          "test_config": "AndroidTest.xml"
+        },
+        {
+          "name": "chdts-setup",
+          "type": "java_test_host",
+          "test_config": "AndroidTest_Setup.xml"
+        },
+        {
+          "name": "chdts-test-only",
+          "type": "java_test_host",
+          "test_config": "AndroidTest_TestOnly.xml"
+        }
+      ]
+    },
+    {
+      "project": "test/vts",
+      "path": "tools/vts-core-tradefed/Android.bp",
+      "git_blob": "4824536db581e1457d2d06fc2ea9db9e033836a2",
+      "modules": [
+        {
+          "name": "vts-core-tradefed-harness",
+          "type": "java_library_host",
+          "srcs": [
+            "src/**/*.java"
+          ],
+          "java_resource_dirs": [
+            "res"
+          ],
+          "libs": [
+            "tradefed",
+            "compatibility-host-util"
+          ],
+          "static_libs": [
+            "compatibility-tradefed"
+          ]
+        },
+        {
+          "name": "vts-tradefed",
+          "type": "tradefed_binary_host",
+          "wrapper": "etc/vts-tradefed",
+          "version": "17_r1",
+          "static_libs": [
+            "vts-core-tradefed-harness",
+            "cts-tradefed-harness"
+          ],
+          "required": [
+            "compatibility-host-util"
+          ]
+        }
+      ]
+    },
+    {
+      "project": "test/vts",
+      "path": "tools/vts-core-tradefed/tests/Android.bp",
+      "git_blob": "9b30546ba34283c10662aaae2c5520f6cf224a46",
+      "modules": [
+        {
+          "name": "vts-tradefed-tests",
+          "type": "java_library_host",
+          "srcs": [
+            "src/**/*.java"
+          ],
+          "java_resource_dirs": [
+            "res"
+          ],
+          "libs": [
+            "tradefed",
+            "vts-core-tradefed-harness"
+          ],
+          "static_libs": [
+            "easymock",
+            "suite-loading-tests"
+          ]
+        }
+      ]
+    },
+    {
+      "project": "external/deqp",
+      "path": "android/cts/runner/tests/Android.bp",
+      "git_blob": "6f98cc2ee0e671605abe629e7cdccf04341504fa",
+      "modules": [
+        {
+          "name": "CtsDeqpRunnerTests",
+          "type": "java_test_host",
+          "srcs": [
+            "src/**/*.java"
+          ],
+          "libs": [
+            "cts-tradefed",
+            "compatibility-host-util",
+            "tradefed",
+            "CtsDeqpTestCases"
+          ],
+          "static_libs": [
+            "easymock"
+          ]
+        }
+      ]
+    },
+    {
+      "project": "external/deqp",
+      "path": "android/cts/Android.bp",
+      "git_blob": "a85006dfd120e45cbdf50b7c7f1386d1a815d8ff",
+      "modules": [
+        {
+          "name": "CtsDeqpTestCases",
+          "type": "java_test_host",
+          "srcs": [
+            "runner/src/**/*.java"
+          ],
+          "libs": [
+            "cts-tradefed",
+            "compatibility-host-util",
+            "tradefed"
+          ],
+          "data": [
+            ":deqp_binary_data",
+            ":deqp_binary_data_vulkancts",
+            ":deqp_binary_data_graphicsfuzz",
+            ":deqp_main_caselists",
+            ":deqp_angle_exclude_caselists",
+            ":llvm-strip-tools"
+          ],
+          "device_common_data": [
+            ":com.drawelements.deqp"
+          ],
+          "data_device_bins_both": [
+            "deqp-binary"
+          ]
+        }
+      ],
+      "upstream_parent_AndroidTest_xml": "android/cts/AndroidTest.xml"
+    }
+  ],
+  "claims": {
+    "owner_sources_modified": false,
+    "git_fetch_run": false,
+    "owner_source_materialization_run": false,
+    "full_builds_started": 0,
+    "full_graph_qualified": false,
+    "runtime_qualified": false,
+    "production_ready": false
+  },
+  "limitations": [
+    "The complete 65-file tree inventory is pinned to original Git blob IDs and modes. Byte counts are unknown for entries with null bytes; no byte total may treat null as zero.",
+    "The separate read-only blob-size observation has launch_unknown; its result has not been reused or inferred.",
+    "This is a sparse-source closure for four observed R7 missing providers and their newly discovered Deqp runner source dependency. The full Soong graph and runtime require normal qualification.",
+    "Original CTS-V local src glob and CHDTS parent harness src glob are empty in the pinned upstream tree; no source stubs are introduced."
+  ]
+}

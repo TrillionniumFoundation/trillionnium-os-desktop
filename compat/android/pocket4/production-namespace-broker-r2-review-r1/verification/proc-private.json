@@ -1,0 +1,160 @@
+{
+  "after": {
+    "boot_id": "97d9600f-e081-465c-9e6e-62651e09806b",
+    "gid": 0,
+    "groups": [
+      0
+    ],
+    "kernel": "7.0.14-p4cred1",
+    "namespaces": {
+      "cgroup": [
+        5,
+        4026531835
+      ],
+      "ipc": [
+        5,
+        4026531839
+      ],
+      "mnt": [
+        5,
+        4026531832
+      ],
+      "net": [
+        5,
+        4026531833
+      ],
+      "pid": [
+        5,
+        4026531836
+      ],
+      "user": [
+        5,
+        4026531837
+      ],
+      "uts": [
+        5,
+        4026531838
+      ]
+    },
+    "parent_mountinfo_sha256": "a93876a59824461d0ea7b7f678873137a9a6825d6c1ca70588a2ed335f9a32b2",
+    "uid": 0
+  },
+  "android": 0,
+  "argv": [
+    "/usr/bin/systemd-run",
+    "--wait",
+    "--collect",
+    "--pipe",
+    "--unit=pocket4-owner-broker-r2-proc-controls-493ac",
+    "--property=CPUQuota=100%",
+    "--property=MemoryMax=3221225472",
+    "--property=MemorySwapMax=0",
+    "--property=Nice=19",
+    "--property=UMask=0077",
+    "--property=TasksMax=96",
+    "--property=RuntimeMaxSec=45",
+    "--property=TimeoutStopSec=2",
+    "--property=KillMode=control-group",
+    "--property=NoNewPrivileges=yes",
+    "--property=CapabilityBoundingSet=CAP_SYS_ADMIN CAP_DAC_READ_SEARCH CAP_KILL",
+    "--working-directory=/home/alex/work/pocket4-identity-review-20261109-493ac-r1/qualification/owner-broker-r2-review-r1",
+    "--setenv=LC_ALL=C",
+    "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/qualification/owner-broker-r2-review-r1/target/release/deps/owner_broker_review-98d21bd88e3f798a",
+    "--exact",
+    "production_namespace::tests::privileged_proc_pid_namespace_view_controls",
+    "--ignored",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "before": {
+    "boot_id": "97d9600f-e081-465c-9e6e-62651e09806b",
+    "gid": 0,
+    "groups": [
+      0
+    ],
+    "kernel": "7.0.14-p4cred1",
+    "namespaces": {
+      "cgroup": [
+        5,
+        4026531835
+      ],
+      "ipc": [
+        5,
+        4026531839
+      ],
+      "mnt": [
+        5,
+        4026531832
+      ],
+      "net": [
+        5,
+        4026531833
+      ],
+      "pid": [
+        5,
+        4026531836
+      ],
+      "user": [
+        5,
+        4026531837
+      ],
+      "uts": [
+        5,
+        4026531838
+      ]
+    },
+    "parent_mountinfo_sha256": "a93876a59824461d0ea7b7f678873137a9a6825d6c1ca70588a2ed335f9a32b2",
+    "uid": 0
+  },
+  "binary": {
+    "bytes": 1747976,
+    "path": "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/qualification/owner-broker-r2-review-r1/target/release/deps/owner_broker_review-98d21bd88e3f798a",
+    "profile": {
+      "debug_assertions": false,
+      "debuginfo": 0,
+      "opt_level": "3",
+      "overflow_checks": false,
+      "test": true
+    },
+    "sha256": "78dfb2058909795cc4588c5cdde5cf8dd022be0a52a7c951df23573423a43187"
+  },
+  "elapsed_seconds": 0.04054292599994369,
+  "parent_unchanged": true,
+  "public_admission": false,
+  "returncode": 0,
+  "schema": 1,
+  "scope": "three own private PID/mount namespace proc-view controls; no user namespaces or ID-map writes",
+  "sourcepins": {
+    "Cargo.lock": {
+      "bytes": 12345,
+      "sha256": "ab7049db44479f692e994b795f6fc73efc92d0146b7fb5b6072c82b42d9c85da"
+    },
+    "Cargo.toml": {
+      "bytes": 567,
+      "sha256": "8c5591bc48959e3ab20faa5318bee9c17da92f76a3fe0e4f0e6b48131e886511"
+    },
+    "production_identity.rs": {
+      "bytes": 56537,
+      "sha256": "44822e3982ae7645c057e3622e8c2c68da64e6c820e569dfd62d5c30f3f07fb8"
+    },
+    "production_namespace.rs": {
+      "bytes": 43153,
+      "sha256": "32bc2e34986246afda38370795f1c56d567cc6c2646762ef38fd7a601733b6e3"
+    },
+    "production_namespace_child.rs": {
+      "bytes": 19781,
+      "sha256": "5c3d143be5a58f8986ea0dd4b2c8b4f0f586e8bc65da0069ababcbca2561a2aa"
+    },
+    "production_namespace_tests.rs": {
+      "bytes": 24305,
+      "sha256": "478a6f4e92b166fe6f29984278c3f3c0dfad9baed21d9c779928d5dfbc1c033f"
+    },
+    "review.rs": {
+      "bytes": 181,
+      "sha256": "73a0b94201a893e67c7a0c021649d911776f30283eb90a10cf38397f4e8cc2b5"
+    }
+  },
+  "stderr_sha256": "91268f63b1d1c214479fadea8fdc20c4b9b80980e91c88da6d04c0f51d106f0f",
+  "stdout_sha256": "2c7ed9498ba074d1e562c47bb3533e0121aadc45e45946383ac5fd47b48e9869",
+  "unit_status": "LoadState=not-found\nActiveState=inactive\nSubState=dead\nMainPID=0\nControlGroup=\n"
+}

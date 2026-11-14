@@ -1,0 +1,25 @@
+--- a/source/app_profiles.py
++++ b/source/app_profiles.py
+@@ -8,9 +8,9 @@
+ CLOCK_HELPER = {'package': 'local.pocket4.actions.v2', 'uid': 10125, 'version_code': None,
+     'component': None, 'apks': [{'sha256': 'a5368465d5f6faef3299bf1ba6d6bde268cc8b37c72401c6e668872b24725058'}],
+     'certificate_sha256': None, 'require_v3': False}
+-IHG = {'package': 'com.ihg.apps.android', 'uid': 10137, 'version_code': 50023219,
++IHG = {'package': 'com.ihg.apps.android', 'uid': 10137, 'version_code': 50023496,
+     'component': 'com.ihg.apps.android/.activity.MainActivity',
+-    'apks': [{'bytes': 44999052, 'sha256': 'c12bb3bae3514c94caaca0a4ef6e8f1ad4491cbce57fd2a15be48b83b4c85b90'}],
++    'apks': [{'bytes': 47668450, 'sha256': '1b2c410b16e9f8e69fcc53d97138d7e8c3e7a1e500abb5372f3700d2a950af4f'}],
+     'certificate_sha256': None, 'require_v3': False}
+ CLOCK_LIMITS = {'business_seconds': 350, 'lease_seconds': 360, 'cleanup_seconds': 35,
+     'maximum_UI_actions': 20, 'timer_duration_ms': 900000, 'maximum_native_launches': 2,
+--- a/source/ihg_artifacts.py
++++ b/source/ihg_artifacts.py
+@@ -10,7 +10,7 @@
+ PACKAGE = 'com.ihg.apps.android'
+ UID = 10137
+ USER = 0
+-VERSION = 50023219
++VERSION = 50023496
+ LIST = ['/system/bin/cmd','package','list','packages','-U','--show-versioncode','--user','0',PACKAGE]
+ PATHS = ['/system/bin/cmd','package','path','--user','0',PACKAGE]
+ RESOLVE = ['/system/bin/cmd','package','resolve-activity','--brief','--user','0','-a','android.intent.action.MAIN','-c','android.intent.category.LAUNCHER',PACKAGE]

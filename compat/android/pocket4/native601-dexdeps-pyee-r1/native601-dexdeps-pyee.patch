@@ -1,0 +1,302 @@
+From 579f8374655159869898c0c71203ba7e8a3146de Mon Sep 17 00:00:00 2001
+From: ChatGPT <chatgpt@local.invalid>
+Date: Mon, 9 Nov 2026 19:59:14 +0800
+Subject: [PATCH] Restore pinned dexdeps and pyee providers in native source
+ closure
+
+---
+ .../native-generation-pair/source-lock.json   |  14 +-
+ .../src/native_generation_pair_build.rs       | 156 ++++++++++++++++--
+ 2 files changed, 151 insertions(+), 19 deletions(-)
+
+diff --git a/android/native-generation-pair/source-lock.json b/android/native-generation-pair/source-lock.json
+index b094c70..cab03ad 100644
+--- a/android/native-generation-pair/source-lock.json
++++ b/android/native-generation-pair/source-lock.json
+@@ -5131,7 +5131,8 @@
+         "dx/Android.bp",
+         "dx/NOTICE",
+         "dx/etc",
+-        "dx/src"
++        "dx/src",
++        "tools/dexdeps"
+       ]
+     },
+     {
+@@ -10107,6 +10108,17 @@
+         "java",
+         "keystore-cts"
+       ]
++    },
++    {
++      "commit": "d67e4b09ff002069a025bfb232836eecab6dab52",
++      "name": "platform/external/python/pyee",
++      "path": "external/python/pyee",
++      "purpose": "Pinned original pyee host Python provider required by the retained Bumble module",
++      "sparse_paths": [
++        "Android.bp",
++        "LICENSE",
++        "pyee"
++      ]
+     }
+   ],
+   "remote_base": "https://android.googlesource.com/",
+diff --git a/tools/droidloom-update/src/native_generation_pair_build.rs b/tools/droidloom-update/src/native_generation_pair_build.rs
+index b16f6d5..f93d1d1 100644
+--- a/tools/droidloom-update/src/native_generation_pair_build.rs
++++ b/tools/droidloom-update/src/native_generation_pair_build.rs
+@@ -20,9 +20,9 @@ const ENGINE_BP_SHA: &str = "bfd8ee63943b331ff09c67879065f9794bae7c7b897ba049961
+ const ENGINE_BP_BYTES: usize = 25403;
+ const BASE_SOURCE_LOCK_SHA: &str = "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d";
+ const PAIR_SOURCE_LOCK: &str = "android/native-generation-pair/source-lock.json";
+-const SOURCE_LOCK_BYTES: usize = 354443;
+-const SOURCE_LOCK_SHA: &str = "86a215da1fed2945feccebe7878b95fe507114de6e3b8ee0fa673e830d9a7aba";
+-// Exact original additions from frozen manifest SHA-256 86a215da1fed2945feccebe7878b95fe507114de6e3b8ee0fa673e830d9a7aba.
++const SOURCE_LOCK_BYTES: usize = 354815;
++const SOURCE_LOCK_SHA: &str = "55316606071a02ff5cb4d2f3985edb048d1861e5c15aa7d901d542e69f8e9dd9";
++// Exact original additions from frozen manifest SHA-256 55316606071a02ff5cb4d2f3985edb048d1861e5c15aa7d901d542e69f8e9dd9.
+ // Closure qualification remains separate from this source attestation.
+ const PAIR_ADDITIONS_JSON: &str = r#"[
+   {
+@@ -748,7 +748,8 @@ const PAIR_ADDITIONS_JSON: &str = r#"[
+       "dx/Android.bp",
+       "dx/NOTICE",
+       "dx/etc",
+-      "dx/src"
++      "dx/src",
++      "tools/dexdeps"
+     ]
+   },
+   {
+@@ -5724,6 +5725,17 @@ const PAIR_ADDITIONS_JSON: &str = r#"[
+       "java",
+       "keystore-cts"
+     ]
++  },
++  {
++    "commit": "d67e4b09ff002069a025bfb232836eecab6dab52",
++    "name": "platform/external/python/pyee",
++    "path": "external/python/pyee",
++    "purpose": "Pinned original pyee host Python provider required by the retained Bumble module",
++    "sparse_paths": [
++      "Android.bp",
++      "LICENSE",
++      "pyee"
++    ]
+   }
+ ]"#;
+ 
+@@ -7501,7 +7513,7 @@ pub fn source_lock_path(repo: &Path) -> Result<PathBuf> {
+     validate_source_extension(&serde_json::from_slice(&base)?, &serde_json::from_slice(&extended)?)?;
+     let lock = droidloom_source::load_lock(&path)?;
+     let plan = droidloom_source::build_plan(&lock)?;
+-    if plan.projects.len() != 600 || plan.links.len() != 8 || plan.unrestricted_repo_sync {
++    if plan.projects.len() != 601 || plan.links.len() != 8 || plan.unrestricted_repo_sync {
+         return fail("ordinary pair source plan widened");
+     }
+     Ok(path)
+@@ -7821,7 +7833,7 @@ mod tests {
+         validate_source_extension(&base, &extended).unwrap();
+         let lock: droidloom_source::SparseSourceLock = serde_json::from_slice(raw).unwrap();
+         let plan = droidloom_source::build_plan(&lock).unwrap();
+-        assert_eq!((plan.projects.len(), plan.links.len(), plan.unrestricted_repo_sync), (600, 8, false));
++        assert_eq!((plan.projects.len(), plan.links.len(), plan.unrestricted_repo_sync), (601, 8, false));
+         assert_eq!(base["status"], extended["status"]);
+     }
+     #[test]
+@@ -7879,7 +7891,7 @@ mod tests {
+         let good: Value = serde_json::from_slice(include_bytes!(
+             "../../../android/native-generation-pair/source-lock.json")).unwrap();
+         validate_source_extension(&base, &good).unwrap();
+-        assert_eq!(good["projects"].as_array().unwrap().len(), 600);
++        assert_eq!(good["projects"].as_array().unwrap().len(), 601);
+         let mut actual_failed_r3 = good.clone();
+         remove_later_tradefed_cones(&mut actual_failed_r3);
+         // Reconstruct historical bytes before the later complete signature provider selection.
+@@ -8056,8 +8068,109 @@ mod tests {
+     }
+ 
+ 
+-    // Reconstruct the exact r8 input which reached Soong and failed on the
+-    // original SDK packaging dependency on bcc_compat.
++    // Reconstruct the exact r10 lock that reached Soong and lacked the real
++    // dexdeps and pyee providers. This removes only the later source extension.
++    fn remove_dexdeps_pyee_inputs(value: &mut Value) {
++        let projects = value["projects"].as_array_mut().unwrap();
++        let dalvik = projects.iter_mut().find(|p| p["path"] == "dalvik").unwrap();
++        let paths = dalvik["sparse_paths"].as_array_mut().unwrap();
++        assert_eq!(paths.iter().filter(|p| *p == "tools/dexdeps").count(), 1);
++        paths.retain(|p| p != "tools/dexdeps");
++        assert_eq!(projects.iter().filter(|p| p["path"] == "external/python/pyee").count(), 1);
++        projects.retain(|p| p["path"] != "external/python/pyee");
++    }
++
++    fn assert_generic_plan_valid_but_pair_rejected(base: &Value, incomplete: &Value) {
++        let generic: droidloom_source::SparseSourceLock =
++            serde_json::from_value(incomplete.clone()).unwrap();
++        assert!(droidloom_source::build_plan(&generic).is_ok());
++        assert!(validate_source_extension(base, incomplete).is_err());
++    }
++
++    #[test]
++    fn ordinary_pair_apex_bumble_providers_reject_actual_r10_omissions() {
++        let base: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
++        let good: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++        validate_source_extension(&base, &good).unwrap();
++        assert_eq!(good["projects"].as_array().unwrap().len(), 601);
++        let mut actual_failed_r10 = good.clone();
++        remove_dexdeps_pyee_inputs(&mut actual_failed_r10);
++        assert_eq!(actual_failed_r10["projects"].as_array().unwrap().len(), 600);
++        let failed_raw = format!("{}\n", serde_json::to_string_pretty(&actual_failed_r10).unwrap());
++        assert_eq!(digest(failed_raw.as_bytes()),
++            "86a215da1fed2945feccebe7878b95fe507114de6e3b8ee0fa673e830d9a7aba");
++        assert_generic_plan_valid_but_pair_rejected(&base, &actual_failed_r10);
++        assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
++    }
++
++    #[test]
++    fn ordinary_pair_dexdeps_requires_complete_original_source() {
++        let base: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
++        let good: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++        validate_source_extension(&base, &good).unwrap();
++        let index = good["projects"].as_array().unwrap().iter()
++            .position(|p| p["path"] == "dalvik").unwrap();
++        assert_eq!(good["projects"][index]["commit"],
++            "5013071e756f89aa2cea97b437af12aacb8d4485");
++        assert_eq!(good["projects"][index]["sparse_paths"],
++            json!(["dx/Android.bp", "dx/NOTICE", "dx/etc", "dx/src", "tools/dexdeps"]));
++        // Each negative control retains the complete pyee provider. The
++        // selected cone includes Java, wrapper and manifest together.
++        for replacement in [None, Some("tools/dexdeps/Android.bp"),
++                            Some("tools/dexdeps/src"), Some("tools/dexdeps/etc"), Some("tools")] {
++            let mut incomplete = good.clone();
++            let paths = incomplete["projects"][index]["sparse_paths"].as_array_mut().unwrap();
++            paths.retain(|p| p != "tools/dexdeps");
++            if let Some(path) = replacement { paths.push(json!(path)); }
++            assert_generic_plan_valid_but_pair_rejected(&base, &incomplete);
++        }
++        let mut wrong_commit = good;
++        wrong_commit["projects"][index]["commit"] =
++            json!("0000000000000000000000000000000000000000");
++        assert_generic_plan_valid_but_pair_rejected(&base, &wrong_commit);
++    }
++
++    #[test]
++    fn ordinary_pair_pyee_requires_pinned_source_and_typing_extensions() {
++        let base: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
++        let good: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++        validate_source_extension(&base, &good).unwrap();
++        let projects = good["projects"].as_array().unwrap();
++        let index = projects.iter().position(|p| p["path"] == "external/python/pyee").unwrap();
++        assert_eq!(projects[index]["commit"], "d67e4b09ff002069a025bfb232836eecab6dab52");
++        assert_eq!(projects[index]["name"], "platform/external/python/pyee");
++        assert_eq!(projects[index]["sparse_paths"], json!(["Android.bp", "LICENSE", "pyee"]));
++        let typing = projects.iter().find(|p| p["path"] == "external/python/typing_extensions").unwrap();
++        assert_eq!(typing["commit"], "8430d542d65e5607ece1e810e247b982384b32f9");
++        assert!(typing.get("sparse_paths").is_none(), "retain the complete existing dependency");
++        // Keep dexdeps intact in every pyee control. Metadata-only, partial
++        // Python input and a widened project are all unreviewed source plans.
++        for paths in [json!(["Android.bp", "LICENSE"]),
++                      json!(["Android.bp", "LICENSE", "pyee/__init__.py"]),
++                      json!(["Android.bp", "LICENSE", "pyee", "tests"]), json!([])] {
++            let mut incomplete = good.clone();
++            incomplete["projects"][index]["sparse_paths"] = paths;
++            assert_generic_plan_valid_but_pair_rejected(&base, &incomplete);
++        }
++        for path in ["external/python/pyee", "external/python/typing_extensions"] {
++            let mut missing = good.clone();
++            missing["projects"].as_array_mut().unwrap().retain(|p| p["path"] != path);
++            assert_generic_plan_valid_but_pair_rejected(&base, &missing);
++        }
++        let mut wrong_commit = good;
++        wrong_commit["projects"][index]["commit"] =
++            json!("0000000000000000000000000000000000000000");
++        assert_generic_plan_valid_but_pair_rejected(&base, &wrong_commit);
++    }
++
++    // Keep this helper specific to bcc_compat so its partial-provider controls
++    // retain the complete dexdeps and pyee inputs from the current lock.
+     fn remove_renderscript_tools_cone(value: &mut Value) {
+         let project = value["projects"].as_array_mut().unwrap().iter_mut()
+             .find(|p| p["path"] == "frameworks/compile/libbcc").unwrap();
+@@ -8074,6 +8187,7 @@ mod tests {
+             "../../../android/native-generation-pair/source-lock.json")).unwrap();
+         validate_source_extension(&base, &good).unwrap();
+         let mut actual_failed_r8 = good.clone();
++        remove_dexdeps_pyee_inputs(&mut actual_failed_r8);
+         remove_renderscript_tools_cone(&mut actual_failed_r8);
+         let failed_raw = format!("{}\n", serde_json::to_string_pretty(&actual_failed_r8).unwrap());
+         assert_eq!(digest(failed_raw.as_bytes()),
+@@ -8089,7 +8203,8 @@ mod tests {
+         // Keep the original implementation with its Blueprint; neither a
+         // lone metadata path nor a wider tools subtree is the selected cone.
+         for replacement in ["tools/bcc_compat/Android.bp", "tools/bcc_compat/Main.cpp", "tools"] {
+-            let mut partial = actual_failed_r8.clone();
++            let mut partial = good.clone();
++            remove_renderscript_tools_cone(&mut partial);
+             partial["projects"][index]["sparse_paths"].as_array_mut().unwrap()
+                 .push(json!(replacement));
+             assert!(validate_source_extension(&base, &partial).is_err());
+@@ -8101,9 +8216,10 @@ mod tests {
+         assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
+     }
+ 
+-    // Keep each earlier failed lock's bytes exact after the r7 Tradefed and
+-    // r8 RenderScript input extensions. Only historical test reconstruction.
++    // Keep earlier failed locks exact after the r7 Tradefed, r8 RenderScript
++    // and r10 dexdeps/pyee extensions. Only historical test reconstruction.
+     fn remove_later_tradefed_cones(value: &mut Value) {
++        remove_dexdeps_pyee_inputs(value);
+         remove_renderscript_tools_cone(value);
+         for (path, cone) in [
+             ("cts", "tools/cts-tradefed"),
+@@ -8127,7 +8243,7 @@ mod tests {
+         let good: Value = serde_json::from_slice(include_bytes!(
+             "../../../android/native-generation-pair/source-lock.json")).unwrap();
+         validate_source_extension(&base, &good).unwrap();
+-        assert_eq!(good["projects"].as_array().unwrap().len(), 600);
++        assert_eq!(good["projects"].as_array().unwrap().len(), 601);
+         let mut actual_failed_r7 = good.clone();
+         remove_later_tradefed_cones(&mut actual_failed_r7);
+         let failed_raw = format!("{}\n", serde_json::to_string_pretty(&actual_failed_r7).unwrap());
+@@ -8190,8 +8306,10 @@ mod tests {
+         assert!(droidloom_source::build_plan(&generic).is_ok());
+         assert!(validate_source_extension(&base, &actual_failed_r6).is_err());
+         for partial in ["tests/signature/lib/common/Android.bp", "tests/signature/lib/common/src"] {
+-            let mut candidate = actual_failed_r6.clone();
+-            candidate["projects"][index]["sparse_paths"].as_array_mut().unwrap().push(json!(partial));
++            let mut candidate = good.clone();
++            let paths = candidate["projects"][index]["sparse_paths"].as_array_mut().unwrap();
++            paths.retain(|p| p != "tests/signature/lib/common");
++            paths.push(json!(partial));
+             assert!(validate_source_extension(&base, &candidate).is_err());
+         }
+         let mut wrong_commit = good.clone();
+@@ -8210,7 +8328,7 @@ mod tests {
+         let good: Value = serde_json::from_slice(include_bytes!(
+             "../../../android/native-generation-pair/source-lock.json")).unwrap();
+         validate_source_extension(&base, &good).unwrap();
+-        assert_eq!(good["projects"].as_array().unwrap().len(), 600);
++        assert_eq!(good["projects"].as_array().unwrap().len(), 601);
+         let index = good["projects"].as_array().unwrap().iter()
+             .position(|p| p["path"] == "packages/modules/RemoteKeyProvisioning").unwrap();
+         assert_eq!(good["projects"][index]["commit"], "d88e2305f9186661fe75ee2f00c8b250a76fdabe");
+@@ -8232,8 +8350,10 @@ mod tests {
+         assert!(droidloom_source::build_plan(&generic).is_ok());
+         assert!(validate_source_extension(&base, &actual_failed_r5).is_err());
+         for replacement in ["apex/Android.bp", "apex/manifest.json"] {
+-            let mut partial = actual_failed_r5.clone();
+-            partial["projects"][index]["sparse_paths"].as_array_mut().unwrap().push(json!(replacement));
++            let mut partial = good.clone();
++            let paths = partial["projects"][index]["sparse_paths"].as_array_mut().unwrap();
++            paths.retain(|p| p != "apex");
++            paths.push(json!(replacement));
+             assert!(validate_source_extension(&base, &partial).is_err(),
+                 "the complete pinned APEX input must not collapse to a Blueprint or manifest: {replacement}");
+         }

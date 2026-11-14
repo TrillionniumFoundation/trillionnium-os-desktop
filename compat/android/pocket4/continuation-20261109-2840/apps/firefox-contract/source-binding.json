@@ -1,0 +1,22 @@
+{
+  "schema": "firefox-business-contract-proposal-binding-v1",
+  "package": "org.mozilla.firefox",
+  "source_matrix": {
+    "path": "/home/alex/work/pocket4-android-final/qualification/selected42-independent-readiness-20261109-appaudit-r1/apps42-matrix.json",
+    "sha256": "9b812661db9171bd3d12bd4068a5d3d54c52ea6a7557bc02798693657a61f21c",
+    "identity_basis": "Previously observed host matrix identity; full original JSON bytes and root schema are not available in this offline step.",
+    "full_preimage_rehashed_in_this_step": false
+  },
+  "observed_projection": "observed-business-contract.json",
+  "proposed_contract": "firefox-business-contract.json",
+  "integration_status": "NOT_INTEGRATED",
+  "integration_reason": "The complete original matrix root schema and exact row JSON pointer are not held. This proposal reuses the six observed business-contract field names and types, but no claim is made that a patch has been applied or validated against the original matrix.",
+  "required_integration_checks": [
+    "Read the actual matrix bytes and verify the pinned preimage SHA-256; if they differ, reconcile against the new matrix explicitly.",
+    "Use the actual matrix schema to identify the unique org.mozilla.firefox row, and compare its business-contract content with the observed projection; do not guess a JSON pointer.",
+    "Validate registration of the browser profile and the complete required gate set in the real harness; then replace only that application's missing contract under the active runtime owner's coordination.",
+    "Create fresh runtime evidence only after the final Main and installed identity are independently established. All current execution states remain pending."
+  ],
+  "production_ready": false,
+  "runtime_qualified": false
+}

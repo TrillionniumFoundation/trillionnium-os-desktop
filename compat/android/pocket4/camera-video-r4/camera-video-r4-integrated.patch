@@ -1,0 +1,445 @@
+--- a/source/app_common.py
++++ b/source/app_common.py
+@@ -20 +20 @@
+-SUPPORT = FINAL / 'qualification/business-support-frozen-resume-20261107-r9'
++SUPPORT = FINAL / 'qualification/business-support-host-20261108-r1'
+@@ -22,3 +22,3 @@
+-               'sha256': '656101c6576a7749a55311750342749660944f0e67d143665bd03cc6c1eeb167'}
+-CLOCK_SUPPORT_REF = {'path': str(FINAL / 'qualification/business-support-frozen-resume-20261107-r10/source-manifest.json'),
+-                     'bytes': 1002, 'sha256': '60d756127dba7e124b8acf39af80330c7d8fc9c6956363a58b631f00b0576612'}
++               'sha256': '8cfa9cb05bb7e7768350dbe04acd4cd6421b9f4e8493746aad49b64c37969e70'}
++CLOCK_SUPPORT_REF = {'path': str(FINAL / 'qualification/business-support-host-clock-20261108-r1/source-manifest.json'),
++                     'bytes': 1002, 'sha256': '0e1ea6f0d3b02c47f240b1aa26ccccf1b05f82bef7edee65331de421965a53ce'}
+--- a/source/camera_audio_binding.py
++++ b/source/camera_audio_binding.py
+@@ -89 +89,4 @@
+-    need(text.count(' ## BEGIN thread dump ') == 1 and text.count(' ## BEGIN setParameters dump ') == 1,
++    begin, end = '\n ## BEGIN thread dump \n', '\n ## BEGIN setParameters dump \n'
++    need(text.count(' ## BEGIN thread dump ') == text.count(begin) == 1
++        and text.count(' ## BEGIN setParameters dump ') == text.count(end) == 1
++        and text.index(begin) < text.index(end),
+@@ -91,4 +94,23 @@
+-    body = text.split(' ## BEGIN thread dump ', 1)[1].split(' ## BEGIN setParameters dump ', 1)[0]
+-    # ThreadLog is historical. It must never supply a current PID/UID row.
+-    body = body.split('Historical Thread Log ', 1)[0]
+-    headers = list(THREAD.finditer(body)); need(len(headers) <= 64, 'BOUNDED_AUDIO_THREADS')
++    body = text.split(begin, 1)[1].split(end, 1)[0]
++    # AudioFlinger::dump emits every current thread via ThreadBase::dump,
++    # before ThreadLog. Historical thread lines use the separate "- " prefix
++    # in AudioFlinger::dumpToThreadLog_l; they cannot supply current rows.
++    history = re.search(r'^Historical Thread Log ', body, re.M)
++    if 'Historical Thread Log ' in body:
++        need(history is not None and body.index('Historical Thread Log ') == history.start(),
++             'UNRECOGNIZED_HISTORICAL_AUDIO_THREAD_BOUNDARY')
++        need(not re.search(r'^(?:Input|Output) thread\b', body[history.start():], re.M),
++             'CURRENT_AUDIO_THREAD_AFTER_HISTORICAL_BOUNDARY')
++        body = body[:history.start()]
++    headers = list(THREAD.finditer(body))
++    # Zero matches are not evidence of idle audio. Every nonempty current
++    # top-level line must be a complete pinned ThreadBase header. Opaque HAL,
++    # effect or scheduler text at column zero is unsupported and is refused;
++    # no unknown thread grammar can be skipped as an empty track table.
++    need(1 <= len(headers) <= 64, 'COMPLETE_NONEMPTY_CURRENT_AUDIO_THREAD_SET')
++    need(not body[:headers[0].start()].strip()
++        and all(THREAD.fullmatch(line) for line in body.split('\n')
++                if line and not line[0].isspace())
++        and not re.search(r'^[ \t]+(?:Input|Output) thread\b', body, re.M),
++         'UNRECOGNIZED_CURRENT_AUDIO_THREAD_FRAMING')
++    need('  Orphan Effect Chains\n' not in body, 'UNQUALIFIED_ORPHAN_AUDIO_EFFECT_CHAINS')
+@@ -98,2 +120,3 @@
+-        need(segment.count('  Local log:') == 1, 'EXACT_CURRENT_THREAD_END')
+-        current = segment.split('  Local log:', 1)[0]
++        endings = list(re.finditer(r'^  Local log:\n', segment, re.M))
++        need(len(endings) == 1, 'EXACT_CURRENT_THREAD_END')
++        current = segment[:endings[0].start()]
+@@ -101,4 +124,7 @@
+-        # Mmap has a separate format and is explicitly not silently treated as
+-        # a regular track. Any owned UID there is refused, not ignored as idle.
+-        need(kind in ('MIXER', 'DIRECT', 'DUPLICATING', 'RECORD', 'DIRECT_RECORD',
+-                      'OFFLOAD', 'SPATIALIZER'), 'UNQUALIFIED_AUDIO_THREAD_TYPE:' + kind)
++        # Mmap has a separate table. Refuse it (and every other unsupported
++        # kind) for every UID, even when its own table reports zero tracks.
++        kinds = ('RECORD', 'DIRECT_RECORD') if direction == 'Input' else (
++            'MIXER', 'DIRECT', 'DUPLICATING', 'OFFLOAD', 'SPATIALIZER')
++        need(kind in kinds, 'UNQUALIFIED_AUDIO_THREAD_TYPE:' + kind)
++        need('The following tracks are in the active list but not in the track list' not in current,
++             'INCONSISTENT_CURRENT_ACTIVE_TRACK_LIST')
+@@ -127 +153,22 @@
+-        'framework_commit': FRAMEWORK_COMMIT, 'threads': result, 'runtime_qualified': False}
++        'framework_commit': FRAMEWORK_COMMIT, 'current_thread_headers': len(headers),
++        'historical_thread_log_excluded': history is not None,
++        'threads': result, 'runtime_qualified': False}
++
++
++def active_tracks(value):
++    need(value['framework_commit'] == FRAMEWORK_COMMIT
++        and 1 <= len(value['threads']) == value['current_thread_headers'] <= 64,
++         'PINNED_NONEMPTY_CURRENT_AUDIO_TABLES_REQUIRED')
++    return [(thread, track) for thread in value['threads']
++            for track in thread['tracks'] if track['active']]
++
++
++def quiescent(value):
++    need(not active_tracks(value), 'UNEXPECTED_ACTIVE_ANDROID_AUDIO_TRACK')
++    # This receipt is scoped to current Android track tables at one sample.
++    # It does not prove host PipeWire quiescence or exclusivity between samples.
++    return {'scope': 'android-audioflinger-current-track-tables-all-uids',
++        'framework_commit': FRAMEWORK_COMMIT, 'raw_sha256': value['raw_sha256'],
++        'observed_threads': value['current_thread_headers'], 'active_track_count': 0,
++        'host_audio_quiescence_qualified': False, 'continuous_exclusivity_qualified': False,
++        'runtime_qualified': False}
+@@ -133,3 +180,4 @@
+-    rows = [(thread, track) for thread in value['threads'] if thread['direction'] == direction
+-            for track in thread['tracks'] if track['active'] and track['uid'] == uid]
+-    need(len(rows) == 1 and rows[0][1]['pid'] == pid, 'ONE_CURRENT_APP_ATTRIBUTED_ACTIVE_AUDIO_TRACK')
++    rows = active_tracks(value)
++    need(len(rows) == 1 and rows[0][0]['direction'] == direction
++        and rows[0][1]['uid'] == uid and rows[0][1]['pid'] == pid,
++         'ONE_EXCLUSIVE_CURRENT_APP_ATTRIBUTED_ACTIVE_AUDIO_TRACK')
+--- a/source/camera_audio_runtime.py
++++ b/source/camera_audio_runtime.py
+@@ -166,0 +167 @@
++        self.failure_cleanup_attempted = self.failure_cleanup_unknown = False
+@@ -204,0 +206 @@
++        before_start = time.monotonic_ns()
+@@ -205,0 +208,3 @@
++        before_finish = time.monotonic_ns()
++        need(type(before_audio) is bytes and 0 < len(before_audio) <= 1048576, 'BOUNDED_ACTUAL_AUDIOFLINGER_DUMP')
++        before_audio_ref = s.tx.write_new(s.evidence_root / 'audio-flinger-before.txt', before_audio)
+@@ -207,3 +212 @@
+-        self.binding.absent(parsed_before, 10062, 'Input')
+-        self.binding.absent(parsed_before, 10064, 'Output')
+-        before_audio_ref = s.tx.write_new(s.evidence_root / 'audio-flinger-before.txt', before_audio)
++        quiet_before = self.binding.quiescent(parsed_before)
+@@ -213 +216,3 @@
+-            'no_preexisting_camera_or_gallery_audio_tracks': True, 'runtime_qualified': False,
++            'android_tracks_before': quiet_before,
++            'started_monotonic_ns': before_start, 'finished_monotonic_ns': before_finish,
++            'runtime_qualified': False,
+@@ -281 +286,4 @@
+-        finish = time.monotonic_ns(); dump = self.binding.flinger(raw)
++        finish = time.monotonic_ns()
++        need(type(raw) is bytes and 0 < len(raw) <= 1048576, 'BOUNDED_ACTUAL_AUDIOFLINGER_DUMP')
++        rawref = s.tx.write_new(s.evidence_root / (label + '-flinger.txt'), raw)
++        dump = self.binding.flinger(raw)
+@@ -287,0 +296 @@
++        track = self.binding.owned_track(dump, direction=direction, uid=uid, pid=guest)
+@@ -292,2 +300,0 @@
+-        track = self.binding.owned_track(dump, direction=direction, uid=uid, pid=guest)
+-        rawref = s.tx.write_new(s.evidence_root / (label + '-flinger.txt'), raw)
+@@ -295,0 +303,2 @@
++            'activity_scope': 'one-active-android-track-all-uids-at-this-sample',
++            'host_audio_quiescence_qualified': False, 'continuous_exclusivity_qualified': False,
+@@ -347,2 +356,6 @@
+-        raw = s.android(['/system/bin/dumpsys', 'media.audio_flinger'], 15); parsed = self.binding.flinger(raw)
+-        self.binding.absent(parsed, 10062, 'Input'); self.binding.absent(parsed, 10064, 'Output')
++        s.guard(); start = time.monotonic_ns()
++        raw = s.android(['/system/bin/dumpsys', 'media.audio_flinger'], 15)
++        finish = time.monotonic_ns()
++        need(type(raw) is bytes and 0 < len(raw) <= 1048576, 'BOUNDED_ACTUAL_AUDIOFLINGER_DUMP')
++        rawref = s.tx.write_new(s.evidence_root / 'audio-flinger-after.txt', raw)
++        parsed = self.binding.flinger(raw); quiet_after = self.binding.quiescent(parsed)
+@@ -351,0 +365 @@
++        s.guard()
+@@ -353 +367,3 @@
+-            'owned_app_tracks_absent': True, 'hardware_before': self.hardware_before, 'hardware_after': after,
++            'audio_after': rawref, 'android_tracks_after': quiet_after,
++            'started_monotonic_ns': start, 'finished_monotonic_ns': finish,
++            'hardware_before': self.hardware_before, 'hardware_after': after,
+@@ -354,0 +371,65 @@
++
++    def verify_failure_cleanup(self):
++        """One Android track sample after known task/host cleanup, never a window.
++
++        Incomplete admission, pending effects, host UNKNOWN and unfinished
++        acoustic actors admit no new query. Existing held transport/poison and
++        absolute cleanup deadline gates remain authoritative.
++        """
++        s = self.s; driver = s.driver
++        s.original_caller(['camera_video_driver.py'], {'finish'})
++        need(not self.closed and self.preflight_result is not None
++            and self.hardware_before is not None, 'COMPLETE_AUDIO_PREFLIGHT_BEFORE_FAILURE_QUIET')
++        need(s.phase_name == 'final_cleanup' and s.active_api is None
++            and s.ordinary_admission is None and s.ui_dispatch_admission is None,
++            'ONLY_CURRENT_FINAL_CLEANUP_AUDIO_SAMPLE')
++        need(driver is not None and driver.run_completed is False and driver.cleanup_verified is True
++            and driver.owned is driver.pending is driver.close_pending is None
++            and (driver.recording is None or driver.recording.pending is None)
++            and driver.host_unknown is False
++            and (driver.decoder is None or driver.decoder.unknown is False),
++            'KNOWN_TASK_AND_HOST_RETIREMENT_BEFORE_FAILURE_QUIET')
++        acoustic = s.acoustic; order = s.components['camera_audio_channel.py'].ORDER
++        need(not acoustic.closed and acoustic.pending is None
++            and tuple(acoustic.results) == order[:len(acoustic.results)]
++            and acoustic.sequence == len(acoustic.results) in (0, 3, 6),
++            'NO_PENDING_OR_UNFINISHED_ACOUSTIC_ACTOR_BEFORE_FAILURE_QUIET')
++        retired = {}
++        for role in ('emit', 'listen'):
++            if role + '_prepare' not in acoustic.results: continue
++            row = acoustic.results[role + '_finish']; ref = row['reference']
++            need(Path(ref['path']) == s.root / 'acoustic-supervisor' / (role + '-final.json'),
++                'ONLY_THIS_CASE_ACOUSTIC_RETIREMENT_RECORD')
++            need(s.c.parse(s.c.read_ref(ref)) == {k: v for k, v in row.items() if k != 'reference'}
++                and row['role'] == role and row['parent'] == acoustic.parent_ref
++                and row['phase'] == driver.result['actual_business_phase']
++                and row['leader_reaped'] is True and type(row['exit_code']) is int and row['exit_code'] == 0
++                and row['pipe_eof'] == {'stdout': True, 'stderr': True}
++                and all(v is True for v in row['pipe_eof'].values())
++                and row['closed']['stream_closed'] is True and row['closed']['nonce'] == s.active['audio_nonce']
++                and row['closed']['runtime_qualified'] is False and row['automatic_retry'] is False,
++                'ACTUAL_RETIRED_CURRENT_ACOUSTIC_ACTOR_BEFORE_FAILURE_QUIET')
++            retired[role] = ref
++        need(not self.failure_cleanup_attempted, 'ONCE_FAILURE_PATH_AUDIO_SAMPLE_NO_RETRY')
++        acoustic.verify(); s.guard()
++        need(time.monotonic() + 15 < s.deadline, 'ORIGINAL_CLEANUP_BUDGET_FOR_FAILURE_AUDIO_SAMPLE')
++        self.failure_cleanup_attempted = self.failure_cleanup_unknown = True
++        start = time.monotonic_ns()
++        raw = s.android(['/system/bin/dumpsys', 'media.audio_flinger'], 15)
++        finish = time.monotonic_ns(); self.failure_cleanup_unknown = False
++        need(type(raw) is bytes and 0 < len(raw) <= 1048576, 'BOUNDED_ACTUAL_AUDIOFLINGER_DUMP')
++        rawref = s.tx.write_new(s.evidence_root / 'audio-flinger-failure-cleanup.txt', raw)
++        parsed = self.binding.flinger(raw); quiet = self.binding.quiescent(parsed)
++        acoustic.verify(); s.guard()
++        return s.record('audio-failure-cleanup', {
++            'source_admission': self.preflight_result, 'phase': s.phase_ref,
++            'scope': s.flow.scope_ref, 'audio_after': rawref, 'android_tracks_after': quiet,
++            'started_monotonic_ns': start, 'finished_monotonic_ns': finish,
++            'owned_task_cleanup_verified': True, 'acoustic_retirement': retired,
++            'business_audio_windows_observed': dict(self.windows),
++            'failure_path_android_audio_quiet_verified': True,
++            'host_audio_quiescence_qualified': False, 'continuous_exclusivity_qualified': False,
++            'inactive_audio_session_preservation_qualified': False, 'audio_focus_preservation_qualified': False,
++            'actual_full_dumpsys_ABI_qualified': False,
++            'settings_writes': 0, 'application_processes_signalled': 0, 'automatic_retry': False,
++            'runtime_qualified': False, 'whole_app_business_accepted': False})
+--- a/source/camera_case.py
++++ b/source/camera_case.py
+@@ -30,0 +31,4 @@
++        'failure_path_android_audio_quiet_verified': False,
++        'failure_path_android_audio_quiet_attempted': False,
++        'failure_path_android_audio_quiet_outcome_unknown': False,
++        'failure_path_android_audio_quiet_evidence': None,
+@@ -58 +62,3 @@
+-            if isinstance(error, components['camera_decode.py'].DecodeOutcomeUnknown): driver.host_unknown = True
++            if (isinstance(error, components['camera_decode.py'].DecodeOutcomeUnknown)
++                    or driver.decoder is not None and driver.decoder.unknown):
++                driver.host_unknown = True
+@@ -99 +105,5 @@
+-                owned_task_cleanup_verified=driver.cleanup_verified)
++                owned_task_cleanup_verified=driver.cleanup_verified,
++                failure_path_android_audio_quiet_verified=driver.failure_audio_quiet_verified,
++                failure_path_android_audio_quiet_attempted=session.audio.failure_cleanup_attempted,
++                failure_path_android_audio_quiet_outcome_unknown=session.audio.failure_cleanup_unknown,
++                failure_path_android_audio_quiet_evidence=driver.failure_audio_quiet_ref)
+--- a/source/camera_decode.py
++++ b/source/camera_decode.py
+@@ -1 +1 @@
+-"""Full decoding of the one newly owned clip through two held read-only FDs.
++"""Full decoding of one owned clip through a sealed, identical private copy.
+@@ -4,2 +4,3 @@
+-Only the exact clip FD and the currently held fixed decoder executable are
+-inherited. Raw decoded microphone PCM stays in memory; it is never published.
++Only the read-only sealed clip FD and the held fixed decoder executable are
++inherited. The root-only evidence file retains its owner and mode. Raw decoded
++microphone PCM stays in memory; it is never published.
+@@ -22,0 +24,2 @@
++DECODER_UID = DECODER_GID = 1000
++INPUT_SEALS = fcntl.F_SEAL_WRITE | fcntl.F_SEAL_GROW | fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_SEAL
+@@ -56,0 +60,40 @@
++def sealed_clip(c, source_fd, expected, deadline):
++    """Copy exactly the held source into a sealed, decoder-readable memfd.
++
++    Inheriting a root:0400 FD permits reads on that FD, but ffmpeg reopens its
++    /proc/self/fd input and Linux checks the inode permissions again. A private
++    anonymous copy permits that reopen after dropping privileges without
++    granting access to the original evidence file or creating a readable path.
++    """
++    writer = reader = None
++    try:
++        writer = os.memfd_create('camera-owned-video', os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING)
++        total = 0; digest = hashlib.sha256()
++        while total < expected['bytes']:
++            c.need(time.monotonic() < deadline, 'NO_SEALED_CLIP_COPY_AFTER_PHASE_DEADLINE')
++            block = os.pread(source_fd, min(65536, expected['bytes'] - total), total)
++            c.need(block, 'HELD_OWNED_CLIP_SHORT_READ_DURING_SEAL')
++            digest.update(block); offset = 0
++            while offset < len(block):
++                c.need(time.monotonic() < deadline, 'NO_SEALED_CLIP_WRITE_AFTER_PHASE_DEADLINE')
++                written = os.write(writer, block[offset:])
++                c.need(written > 0, 'SEALED_CLIP_SHORT_WRITE'); offset += written
++            total += len(block)
++        c.need(os.pread(source_fd, 1, total) == b'' and digest.hexdigest() == expected['sha256']
++            and os.fstat(writer).st_size == expected['bytes'], 'SEALED_CLIP_MUST_MATCH_HELD_OWNED_BYTES')
++        os.fchown(writer, DECODER_UID, DECODER_GID); os.fchmod(writer, 0o400)
++        fcntl.fcntl(writer, fcntl.F_ADD_SEALS, INPUT_SEALS)
++        reader = os.open('/proc/self/fd/' + str(writer), os.O_RDONLY | os.O_CLOEXEC)
++        closing, writer = writer, None; close_fds([closing])
++        info = os.fstat(reader)
++        c.need(stat.S_ISREG(info.st_mode) and info.st_nlink == 0
++            and (info.st_uid, info.st_gid, stat.S_IMODE(info.st_mode)) == (DECODER_UID, DECODER_GID, 0o400)
++            and info.st_size == total and fcntl.fcntl(reader, fcntl.F_GET_SEALS) == INPUT_SEALS
++            and fcntl.fcntl(reader, fcntl.F_GETFL) & os.O_ACCMODE == os.O_RDONLY,
++            'EXACT_SEALED_READ_ONLY_DECODER_INPUT')
++        return reader, identity(info)
++    except BaseException as error:
++        try: close_fds([reader, writer])
++        except BaseException as cleanup: error.add_note('SEALED_CLIP_CLEANUP:' + str(cleanup))
++        raise
++
+@@ -61 +104 @@
+-        self.fd = self.decode_fd = None; self.closed = False; self.done = {}; self.unknown = False
++        self.fd = self.input_fd = None; self.closed = False; self.done = {}; self.unknown = False
+@@ -71,17 +114,7 @@
+-            # A dropped-UID decoder reopens its /proc/self/fd path. A root
+-            # private file does not become readable merely by inheriting its
+-            # descriptor. Keep that original FD unchanged and expose only a
+-            # sealed, descriptor-only copy, readable by this owned decoder.
+-            self.decode_fd = os.memfd_create('p4-owned-camera-decode', os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING)
+-            copied = 0; digest = hashlib.sha256()
+-            while copied < self.ref['bytes']:
+-                data = os.pread(self.fd, min(65536, self.ref['bytes'] - copied), copied)
+-                self.c.need(data, 'OWNED_VIDEO_COPY_SHORT_READ'); digest.update(data)
+-                offset = 0
+-                while offset < len(data):
+-                    count = os.write(self.decode_fd, data[offset:]); self.c.need(count > 0, 'OWNED_VIDEO_MEMFD_NO_PROGRESS')
+-                    offset += count
+-                copied += len(data)
+-            self.c.need(copied == self.ref['bytes'] and digest.hexdigest() == self.ref['sha256']
+-                and os.pread(self.fd, 1, copied) == b''
+-                and identity(os.fstat(self.fd)) == self.metadata == identity(self.path.lstat()),
++            self.input_fd, self.input_metadata = sealed_clip(self.c, self.fd, self.ref,
++                min(time.monotonic() + COMMAND_LIMIT, session.deadline))
++            self.input_ref = {'kind': 'sealed-memfd', 'source': self.ref,
++                'bytes': self.ref['bytes'], 'sha256': self.ref['sha256'],
++                'metadata': self.input_metadata, 'seals': INPUT_SEALS, 'read_only': True,
++                'original_owner_and_mode_unchanged': True, 'original_fd_inherited': False}
++            self.c.need(identity(os.fstat(self.fd)) == self.metadata == identity(self.path.lstat()),
+@@ -89,7 +121,0 @@
+-            os.fchmod(self.decode_fd, 0o444)
+-            self.seals = fcntl.F_SEAL_WRITE | fcntl.F_SEAL_GROW | fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_SEAL
+-            fcntl.fcntl(self.decode_fd, fcntl.F_ADD_SEALS, self.seals)
+-            self.decode_metadata = identity(os.fstat(self.decode_fd))
+-            self.c.need(os.fstat(self.decode_fd).st_size == copied
+-                and fcntl.fcntl(self.decode_fd, fcntl.F_GET_SEALS) == self.seals,
+-                'EXACT_IMMUTABLE_OWNED_VIDEO_DESCRIPTOR')
+@@ -104,3 +130 @@
+-        self.c.need(self.decode_fd is not None and identity(os.fstat(self.decode_fd)) == self.decode_metadata
+-            and fcntl.fcntl(self.decode_fd, fcntl.F_GET_SEALS) == self.seals
+-            and not os.get_inheritable(self.decode_fd), 'SAME_SEALED_VIDEO_DESCRIPTOR_FOR_ALL_DECODERS')
++        self.verify_input()
+@@ -107,0 +132,6 @@
++
++    def verify_input(self):
++        self.c.need(self.input_fd is not None and identity(os.fstat(self.input_fd)) == self.input_metadata
++            and fcntl.fcntl(self.input_fd, fcntl.F_GET_SEALS) == INPUT_SEALS
++            and fcntl.fcntl(self.input_fd, fcntl.F_GETFL) & os.O_ACCMODE == os.O_RDONLY
++            and not os.get_inheritable(self.input_fd), 'SAME_SEALED_READ_ONLY_INPUT_FOR_ALL_THREE_DECODES')
+@@ -114 +144 @@
+-        argv = self.media.decoder_argv(kind, '/proc/self/fd/' + str(self.decode_fd))
++        argv = self.media.decoder_argv(kind, '/proc/self/fd/' + str(self.input_fd))
+@@ -118 +148,2 @@
+-            'argv': argv, 'clip': self.ref, 'scope': s.flow.scope_ref, 'phase': s.phase_ref,
++            'argv': argv, 'clip': self.ref, 'sealed_input': self.input_ref,
++            'scope': s.flow.scope_ref, 'phase': s.phase_ref,
+@@ -134,3 +165,3 @@
+-                inherited_fds={'sealed_owned_clip': self.decode_fd, 'held_decoder': executable},
+-                original_held_clip_metadata=self.metadata, sealed_owned_clip_metadata=self.decode_metadata,
+-                sealed_owned_clip_seals=self.seals)
++                inherited_fds={'owned_clip': self.input_fd, 'held_decoder': executable},
++                original_held_clip_metadata=self.metadata, sealed_owned_clip_metadata=self.input_metadata,
++                sealed_owned_clip_seals=INPUT_SEALS)
+@@ -144,2 +174,0 @@
+-                    and identity(os.fstat(self.decode_fd)) == self.decode_metadata
+-                    and fcntl.fcntl(self.decode_fd, fcntl.F_GET_SEALS) == self.seals
+@@ -147,0 +177 @@
++                self.verify_input()
+@@ -154 +184 @@
+-                    pass_fds=(self.decode_fd, executable), start_new_session=True,
++                    pass_fds=(self.input_fd, executable), start_new_session=True,
+@@ -156 +186,4 @@
+-                    user=1000, group=1000, extra_groups=(), preexec_fn=child_limits)
++                    user=DECODER_UID, group=DECODER_GID, extra_groups=(), preexec_fn=child_limits)
++            # A dispatch may lose its reply. Keep that uncertainty before the
++            # actual boundary; a later evidence-write error cannot erase it.
++            self.unknown = True
+@@ -173,0 +207 @@
++        self.unknown = not retired or type(out) is not bytes or type(err) is not bytes
+@@ -177,9 +211,14 @@
+-        for name, raw in (('stdout', out), ('stderr', err)):
+-            if type(raw) is bytes:
+-                result[name] = {'bytes': len(raw), 'sha256': c.sha(raw), 'persisted': False}
+-                if kind != 'audio': result[name]['reference'] = c.write_new(s.evidence_root / ('decode-' + kind + '.' + name), raw)
+-        try: self.verify()
+-        except BaseException as error: remember('decode_post_guard', error)
+-        ref = s.record('decode-' + kind + '-result', result); self.done[kind] = {'result': result, 'reference': ref}
+-        if not retired or type(out) is not bytes or type(err) is not bytes:
+-            self.unknown = True
++        try:
++            for name, raw in (('stdout', out), ('stderr', err)):
++                if type(raw) is bytes:
++                    result[name] = {'bytes': len(raw), 'sha256': c.sha(raw), 'persisted': False}
++                    if kind != 'audio': result[name]['reference'] = c.write_new(s.evidence_root / ('decode-' + kind + '.' + name), raw)
++            try: self.verify()
++            except BaseException as error: remember('decode_post_guard', error)
++            ref = s.record('decode-' + kind + '-result', result); self.done[kind] = {'result': result, 'reference': ref}
++        except BaseException as error:
++            if first is not None and error is not first:
++                first.add_note('DECODER_EVIDENCE_FAILURE:' + repr(error))
++                raise first from error
++            raise
++        if self.unknown:
+@@ -215,2 +254,3 @@
+-        fds = [self.decode_fd, self.fd]; self.decode_fd = self.fd = None
+-        self.closed = True; close_fds(fds)
++        fd, self.fd = self.fd, None
++        input_fd, self.input_fd = self.input_fd, None
++        self.closed = True; close_fds([input_fd, fd])
+--- a/source/camera_entry.py
++++ b/source/camera_entry.py
+@@ -12 +12 @@
+-COMMON_PIN = (38269, '468e0fa093ec1c741547912b8fef41560e1ea9b1e124a76113ec97da7fe03420')
++COMMON_PIN = (38256, '6003e96be02cd0c6328340865bbb2962d39967f2b823656af258ed5a48f598d0')
+@@ -60 +60 @@
+-        raise RuntimeError('EXACT_CURRENT_R9_COMMON_LIBRARY')
++        raise RuntimeError('EXACT_CURRENT_HOST_COMMON_LIBRARY')
+@@ -102 +102 @@
+-            and c.parse(c.read_ref(request['qualification']))['source_manifest'] == c.SUPPORT_REF, 'EXACT_CURRENT_R9_MAIN_BASELINE')
++            and c.parse(c.read_ref(request['qualification']))['source_manifest'] == c.SUPPORT_REF, 'EXACT_CURRENT_HOST_MAIN_BASELINE')
+--- a/source/camera_video_driver.py
++++ b/source/camera_video_driver.py
+@@ -37,0 +38 @@
++        self.failure_audio_quiet_verified = False; self.failure_audio_quiet_ref = None
+@@ -601,0 +603,7 @@
++        if not self.run_completed:
++            try:
++                self.failure_audio_quiet_ref = self.s.audio.verify_failure_cleanup()
++                self.failure_audio_quiet_verified = True
++            except BaseException:
++                if self.s.audio.failure_cleanup_unknown: self.host_unknown = True
++                raise
+--- a/source/camera_video_media.py
++++ b/source/camera_video_media.py
+@@ -91 +91,9 @@
+-    result = json.loads(raw)
++    def pairs(values):
++        result = {}
++        for key, value in values:
++            need(key not in result, 'DUPLICATE_PROBE_JSON_FIELD')
++            result[key] = value
++        return result
++    def nonfinite(_):
++        raise RuntimeError('NONFINITE_PROBE_JSON_NUMBER')
++    result = json.loads(raw, object_pairs_hook=pairs, parse_constant=nonfinite)
+@@ -148 +156 @@
+-                '-of', 'json', '-protocol_whitelist', 'file,pipe', '-i', held_path]
++                '-of', 'json', '-protocol_whitelist', 'file,pipe', '-f', 'mov', '-i', held_path]
+@@ -150 +158 @@
+-              '-threads', '1', '-protocol_whitelist', 'file,pipe', '-i', held_path]
++              '-threads', '1', '-protocol_whitelist', 'file,pipe', '-f', 'mov', '-i', held_path]
+--- a/source/camera_video_state.py
++++ b/source/camera_video_state.py
+@@ -327 +327,3 @@
+-        restored = (self.state == 'PLAYBACK_VERIFIED' and
++        # Restoring Photo after verified playback moves the state to MODE_RESTORED.
++        # The audio/playback receipts below still gate success in either order.
++        restored = (self.state in ('PLAYBACK_VERIFIED', 'MODE_RESTORED') and

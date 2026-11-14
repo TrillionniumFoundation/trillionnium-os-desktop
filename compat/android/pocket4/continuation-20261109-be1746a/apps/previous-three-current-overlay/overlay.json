@@ -1,0 +1,403 @@
+{
+  "APK_body_files_created": 0,
+  "APK_bytes_explicitly_read": 1,
+  "APK_partial_files_created": 0,
+  "assembled_utc": "2026-11-09T10:55:39.283470+00:00",
+  "canonical_metadata_readback": {
+    "bytes": 18628,
+    "path": "evidence/canonical-metadata-readback.json",
+    "sha256": "ed10d629b789119ee8a440c1c20b289995e9e498affbd09676ae1138fbccd424"
+  },
+  "canonical_read_close_acknowledgement": {
+    "bytes": 413,
+    "path": "evidence/canonical-read-close-ack.json",
+    "separate_read_observed_exit_zero": true,
+    "sha256": "e9bea85b606ac4c2ecdc3b93d691dc5b0ef508e5e0b03c25ccde7c8bf98e9977",
+    "state": "already_exited",
+    "termination_confirmed_by_close_ack": false
+  },
+  "controlled_runtime_jobs": [
+    {
+      "bytes": 731,
+      "path": "evidence/header-job-terminal.json",
+      "sha256": "08312dc7a0e791a807063ba9fc4002f22ea6252322580daa94ca2a5ab97beba7"
+    },
+    {
+      "bytes": 731,
+      "path": "evidence/pdd-get-job-terminal.json",
+      "sha256": "692eb76f5677fba80dea9035efc3b03aec787ba3e8af5a6a385937e42cbbe257"
+    }
+  ],
+  "current_mutations": 0,
+  "fresh_device_installation_readback": false,
+  "fresh_page_receipt": {
+    "bytes": 3723,
+    "path": "evidence/fresh-publisher-page-projections.json",
+    "sha256": "b484776feaece49fa90147e1a4c3f036ed08917f40c7236d61414213ab72d244"
+  },
+  "fresh_request_receipts": [
+    {
+      "bytes": 4862,
+      "path": "evidence/three-known-sources-head-r1.json",
+      "sha256": "875225bf4bab936f0557ad8498306bfc9dd762a0706aea1714fffad738948dfb"
+    },
+    {
+      "bytes": 2057,
+      "path": "evidence/pinduoduo/get-redirect-metadata.json",
+      "sha256": "9bd055b10697d289735fd7bb5cae36d4bf4fb80d32ce1d3888ea6121c93ba4dd"
+    }
+  ],
+  "historical_mapping_sha256_unchanged": "3b95cfdbf6dee97e2bb3615cd998f73b66cf5a30db4783a48c4d8689ec4399a1",
+  "historical_selector_sha256_unchanged": "73b7578fe2376f700edd68184ed6e16182bf4b58d3b5c75554a5c597f5f3a603",
+  "metadata_only_overlay": true,
+  "new_full_APK_downloads": 0,
+  "new_installations": 0,
+  "new_runtime_acceptances": 0,
+  "one_byte_purpose": "Resolve Pinduoduo GET-only redirect behavior and observe the exact Content-Range total; the single byte is not a full-body identity check.",
+  "packages": [
+    {
+      "artifact_bytes": 228933721,
+      "artifact_sha256": "c7985ed41b91c782af8acb04b1868419cca8bc1fc52862bf6c89fa86b65c81fb",
+      "canonical_identity_readback_utc": "2026-11-09T10:48:12.953535+00:00",
+      "existing_artifact_url": {
+        "query_omitted": false,
+        "url": "https://file.ljcdn.com/app-packages/shell/channel/20f1e58d/Android_ke_m.apk"
+      },
+      "existing_full_hash_completed_utc": "2026-11-09T07:06:20.027719+00:00",
+      "existing_full_hash_method": "complete body SHA256 stream",
+      "existing_full_hash_record": {
+        "canonical_record_sha256": "75d55aa7a7a5e21da1c408e9d95fea67f562b5cfcfea32caff5dba9bb06e1246",
+        "input_record_key": "p4-resume-hash-read",
+        "log_record_end": 4287,
+        "log_record_start": 3225,
+        "raw_record_sha256": "a916ab8b7953fbec4d2d9e5b0b994d2c0a4a18a5e9c323c32f6c5ed8230f531c",
+        "stream": "stdout"
+      },
+      "fresh_delivery": {
+        "apk_body_bytes_explicitly_read": 0,
+        "apk_body_retained": false,
+        "effective_url": {
+          "query_omitted": false,
+          "url": "https://file.ljcdn.com/app-packages/shell/channel/20f1e58d/Android_ke_m.apk"
+        },
+        "elapsed_seconds": 10.244873319999897,
+        "finished_utc": "2026-11-09T10:52:14.651997+00:00",
+        "headers": {
+          "Accept-Ranges": "bytes",
+          "Content-Encoding": "UTF-8",
+          "Content-Length": "228933721",
+          "Content-Type": "application/octet-stream",
+          "Date": "Mon, 09 Nov 2026 10:52:14 GMT",
+          "ETag": "\"ecfd72e1bc8792677a3a197da2c9d0f7\"",
+          "Last-Modified": "Wed, 04 Nov 2026 07:17:01 GMT"
+        },
+        "method": "HEAD",
+        "name": "beike",
+        "new_hash_or_signature_validation": false,
+        "redirect_chain": [
+          {
+            "from": {
+              "query_omitted": false,
+              "url": "https://m.ke.com/download/lianjia?scheme=&direct=1"
+            },
+            "status": 302,
+            "to": {
+              "query_omitted": false,
+              "url": "https://file.ljcdn.com/app-packages/shell/channel/20f1e58d/Android_ke_m.apk"
+            }
+          }
+        ],
+        "requested_url": {
+          "query_omitted": false,
+          "url": "https://m.ke.com/download/lianjia?scheme=&direct=1"
+        },
+        "started_utc": "2026-11-09T10:52:04.407812+00:00",
+        "status": 200
+      },
+      "fresh_delivery_observed_utc": "2026-11-09T10:52:14.651997+00:00",
+      "fresh_full_body_hash_computed": false,
+      "fresh_metadata_comparison": {
+        "etag_equal_when_provided": true,
+        "full_artifact_length_equal": true,
+        "last_modified_equal": true,
+        "publisher_artifact_endpoint_path_equal": true
+      },
+      "fresh_publisher_page": {
+        "body_path": "/home/alex/work/pocket4-official-public-apps-20261109-be1746a-r3/beike-official-page.html",
+        "body_sha256_matches_a_previous_page_observation": false,
+        "bytes": 15888,
+        "effective_url": "https://m.ke.com/client/",
+        "name": "beike",
+        "requested_url": "https://m.ke.com/client/",
+        "selected_download_urls": [],
+        "selected_script_or_download_links": [
+          "//s1.ljcdn.com/mensa/static/m/images/client/download/v2/logo-old.png?_v=20261104173426604",
+          "//s2.ljcdn.com/mensa/static/m/asset/pages/client/download.css?_v=20261104173426604",
+          "//s2.ljcdn.com/mensa/static/m/images/client/download/v2/phone.png?_v=20261104173426604",
+          "//s3.ljcdn.com/mensa/static/m/asset/pages/client/download.js?_v=20261104173426604",
+          "/download/lianjia?scheme=&direct=1"
+        ],
+        "sha256": "c2f85cd5ce373f7799c663b4dcded12af2f31094fb36692d08293a3e3bdbfba2",
+        "source_route_observed_utc": "2026-11-09T10:46:01.503725+00:00",
+        "status": 200
+      },
+      "fresh_signature_verifier_executed": false,
+      "historical_canonical_manifest_identity_matches_published_source_result": true,
+      "latest_scope": "Current publisher page and delivery route observed in this session are consistent with the previously matched artifact. This does not certify all-region/store rollouts or reread the current installed state.",
+      "name": "Beike",
+      "native_abis": [
+        "arm64-v8a"
+      ],
+      "package": "com.lianjia.beike",
+      "package_version_signer_basis": "Previously content-bound canonical APK metadata; previously completed official full-body SHA256 matches the same exact bytes. The fresh request is a metadata observation, not another complete hash or signature parse.",
+      "production_ready": false,
+      "runtime_accepted": false,
+      "signer_certificate_sha256": [
+        "0b66624117621bb9bc3e7d12a1fe5436794cf8999b0253d9ff9bec71e0932178"
+      ],
+      "source_status": "EXISTING_FULL_OFFICIAL_BINARY_MATCH_WITH_FRESH_CONSISTENT_DELIVERY_METADATA",
+      "split_name": null,
+      "version_code": 3067100,
+      "version_name": "3.06.71"
+    },
+    {
+      "artifact_bytes": 32690199,
+      "artifact_sha256": "3dbdcf5dcc94086dc0bc7d7f378fe1e328d9f32f30b82853fc8f440759d04ad4",
+      "canonical_identity_readback_utc": "2026-11-09T10:48:12.953535+00:00",
+      "existing_artifact_url": {
+        "observed_url_sha256": "cb8758749aac6635771f82b648fc270a24465d3fb47114eb75e5fcb4559028b9",
+        "query_omitted": true,
+        "url": "https://sep.pddpic.com/volantis-open-ep/mobile-CI-tag/ep-path/2026-11-03/1479984c21f48ccaa8756af217ba8371.apk"
+      },
+      "existing_full_hash_completed_utc": "2026-11-09T07:23:08.268136+00:00",
+      "existing_full_hash_method": "ordered complete HTTP byte ranges",
+      "existing_full_hash_record": {
+        "canonical_record_sha256": "7a3f6066f1d677202c69f4236427b5ba63e0f70ff3709e29695684a1ec3c0663",
+        "input_record_key": "p4-source-latest-range-log",
+        "log_record_end": 1711,
+        "log_record_start": 456,
+        "raw_record_sha256": "48a4b1183ccd4862f42335c5bca278a8a72da3aeac324a0eef285450a2dc6edc",
+        "stream": "stdout"
+      },
+      "fresh_delivery": {
+        "apk_body_bytes_read": 1,
+        "apk_body_retained": false,
+        "effective_url": {
+          "observed_url_sha256": "9d42df0735f7795700b51e84579674119321544600ec621a25c418d420fd81cb",
+          "query_omitted": true,
+          "url": "https://sep.pddpic.com/volantis-open-ep/mobile-CI-tag/ep-path/2026-11-03/1479984c21f48ccaa8756af217ba8371.apk"
+        },
+        "finished_utc": "2026-11-09T10:53:53.059818+00:00",
+        "first_byte_sha256": "5c62e091b8c0565f1bafad0dad5934276143ae2ccef7a5381e8ada5b1a8d26d2",
+        "full_body_sha256_recomputed": false,
+        "headers": {
+          "Content-Length": "1",
+          "Content-Range": "bytes 0-0/32690199",
+          "Content-Type": "application/vnd.android.package-archive",
+          "Date": "Mon, 09 Nov 2026 10:53:52 GMT",
+          "Etag": "\"1479984c21f48ccaa8756af217ba8371\"",
+          "Last-Modified": "Tue, 03 Nov 2026 02:58:32 GMT"
+        },
+        "installs": 0,
+        "new_signature_verifier_execution": false,
+        "production_ready": false,
+        "redirect_chain": [
+          {
+            "from": {
+              "query_omitted": false,
+              "url": "https://home-api.pinduoduo.com/homesite/download-app-v2?rs=0&arch=arm64"
+            },
+            "status": 302,
+            "to": {
+              "query_omitted": false,
+              "url": "https://api.pinduoduo.com/api/app/channel/pinduoduoglobal_os_main_baidu_seo/arm64"
+            }
+          },
+          {
+            "from": {
+              "query_omitted": false,
+              "url": "https://api.pinduoduo.com/api/app/channel/pinduoduoglobal_os_main_baidu_seo/arm64"
+            },
+            "status": 302,
+            "to": {
+              "observed_url_sha256": "9d42df0735f7795700b51e84579674119321544600ec621a25c418d420fd81cb",
+              "query_omitted": true,
+              "url": "https://sep.pddpic.com/volantis-open-ep/mobile-CI-tag/ep-path/2026-11-03/1479984c21f48ccaa8756af217ba8371.apk"
+            }
+          }
+        ],
+        "requested_range": "bytes=0-0",
+        "requested_url": "https://home-api.pinduoduo.com/homesite/download-app-v2?rs=0&arch=arm64",
+        "runtime_accepted": false,
+        "schema": "pocket4-pdd-known-official-route-get-metadata-v1",
+        "selector_mutations": 0,
+        "started_utc": "2026-11-09T10:53:47.774651+00:00",
+        "status": 206
+      },
+      "fresh_delivery_observed_utc": "2026-11-09T10:53:53.059818+00:00",
+      "fresh_full_body_hash_computed": false,
+      "fresh_metadata_comparison": {
+        "etag_equal_when_provided": true,
+        "full_artifact_length_equal": true,
+        "last_modified_equal": true,
+        "publisher_artifact_endpoint_path_equal": true
+      },
+      "fresh_publisher_page": {
+        "body_path": "/home/alex/work/pocket4-official-public-apps-20261109-be1746a-r3/pinduoduo-official-page.html",
+        "body_sha256_matches_a_previous_page_observation": true,
+        "bytes": 17638,
+        "effective_url": "https://www.yangkeduo.com/home/download/",
+        "name": "pinduoduo",
+        "requested_url": "https://www.yangkeduo.com/home/download/",
+        "selected_download_urls": [
+          "https://home-api.pinduoduo.com/homesite/download-app-v2?lang_only=1"
+        ],
+        "selected_script_or_download_links": [
+          "//cdn.pinduoduo.com/home/_next/static/shwSaZy9FCe~Hy_zNtqKB/pages/download.js",
+          "//cdn.pinduoduo.com/upload/home/img/download/Android.png",
+          "//cdn.pinduoduo.com/upload/home/img/download/banner.jpg",
+          "//cdn.pinduoduo.com/upload/home/img/download/iPad.png",
+          "//cdn.pinduoduo.com/upload/home/img/download/iPhone.png",
+          "//cdn.pinduoduo.com/upload/home/img/download/pdd_download_close.png",
+          "//cdn.pinduoduo.com/upload/home/img/download/pdd_download_cursor.png"
+        ],
+        "sha256": "0946dd185ecb879dd8d846e9da59c77310292b78a9b614012d5373cce5000e09",
+        "source_route_observed_utc": "2026-11-09T10:46:01.503725+00:00",
+        "status": 200
+      },
+      "fresh_signature_verifier_executed": false,
+      "historical_canonical_manifest_identity_matches_published_source_result": true,
+      "latest_scope": "Current publisher page and delivery route observed in this session are consistent with the previously matched artifact. This does not certify all-region/store rollouts or reread the current installed state.",
+      "name": "Pinduoduo",
+      "native_abis": [
+        "arm64-v8a"
+      ],
+      "package": "com.xunmeng.pinduoduo",
+      "package_version_signer_basis": "Previously content-bound canonical APK metadata; previously completed official full-body SHA256 matches the same exact bytes. The fresh request is a metadata observation, not another complete hash or signature parse.",
+      "production_ready": false,
+      "runtime_accepted": false,
+      "signer_certificate_sha256": [
+        "dd3923e78df33f08b0fb4a533ab1e860425ca7f6777fbe14f85a6cf5687143d6"
+      ],
+      "source_status": "EXISTING_FULL_OFFICIAL_BINARY_MATCH_WITH_FRESH_CONSISTENT_DELIVERY_METADATA",
+      "split_name": null,
+      "version_code": 83000,
+      "version_name": "8.30.0"
+    },
+    {
+      "artifact_bytes": 286319384,
+      "artifact_sha256": "9d9b6c516e8e07e437c81485fde21fe13ce4f61b37d19e793fff40c71be39c0e",
+      "canonical_identity_readback_utc": "2026-11-09T10:48:12.953535+00:00",
+      "existing_artifact_url": {
+        "query_omitted": false,
+        "url": "https://dldir1v6.qq.com/weixin/android/weixin8080android3220_0x28005032_arm64.apk"
+      },
+      "existing_full_hash_completed_utc": "2026-11-09T07:48:34.132777+00:00",
+      "existing_full_hash_method": "ordered complete HTTP byte ranges",
+      "existing_full_hash_record": {
+        "canonical_record_sha256": "1e062dc58bfa81e6932f61e72a72b7f67be6ee5ced8ee25e0b041cab9a61ac9f",
+        "input_record_key": "p4-wechat-progress-second",
+        "log_record_end": 9355,
+        "log_record_start": 8247,
+        "raw_record_sha256": "e75932f84f0912bfff1f59bc2458731d42d155a45a59e2ae0e1cdf35041c4f60",
+        "stream": "pty"
+      },
+      "fresh_delivery": {
+        "apk_body_bytes_explicitly_read": 0,
+        "apk_body_retained": false,
+        "effective_url": {
+          "query_omitted": false,
+          "url": "https://dldir1v6.qq.com/weixin/android/weixin8080android3220_0x28005032_arm64.apk"
+        },
+        "elapsed_seconds": 1.4995607450000534,
+        "finished_utc": "2026-11-09T10:52:05.906368+00:00",
+        "headers": {
+          "Accept-Ranges": "bytes",
+          "Content-Length": "286319384",
+          "Content-Type": "application/octet-stream",
+          "Date": "Mon, 09 Nov 2026 10:52:05 GMT",
+          "Last-Modified": "Sun, 01 Nov 2026 01:57:03 GMT"
+        },
+        "method": "HEAD",
+        "name": "wechat",
+        "new_hash_or_signature_validation": false,
+        "redirect_chain": [],
+        "requested_url": {
+          "query_omitted": false,
+          "url": "https://dldir1v6.qq.com/weixin/android/weixin8080android3220_0x28005032_arm64.apk"
+        },
+        "started_utc": "2026-11-09T10:52:04.407475+00:00",
+        "status": 200
+      },
+      "fresh_delivery_observed_utc": "2026-11-09T10:52:05.906368+00:00",
+      "fresh_full_body_hash_computed": false,
+      "fresh_metadata_comparison": {
+        "etag_equal_when_provided": null,
+        "full_artifact_length_equal": true,
+        "last_modified_equal": true,
+        "publisher_artifact_endpoint_path_equal": true
+      },
+      "fresh_publisher_page": {
+        "body_path": "/home/alex/work/pocket4-official-public-apps-20261109-be1746a-r3/wechat-official-page.html",
+        "body_sha256_matches_a_previous_page_observation": false,
+        "bytes": 112640,
+        "effective_url": "https://weixin.qq.com/",
+        "name": "wechat",
+        "requested_url": "https://weixin.qq.com/",
+        "selected_download_urls": [
+          "http://wechat.design/standard/download/brand",
+          "https://dldir1v6.qq.com/weixin/android/weixin8034android2340_1.apk",
+          "https://dldir1v6.qq.com/weixin/android/weixin8034android2340_arm64_1.apk",
+          "https://dldir1v6.qq.com/weixin/android/weixin8042android2460.apk",
+          "https://dldir1v6.qq.com/weixin/android/weixin8080android3220_0x28005032_arm64.apk",
+          "https://z.weixin.qq.com/apk/download/64",
+          "https://z.weixin.qq.com/web/mac/download"
+        ],
+        "selected_script_or_download_links": [
+          "http://wechat.design/standard/download/brand"
+        ],
+        "sha256": "ff88d4f31fa903a3663e75dff10823b42c7637c46daf032fd5709ee6c672d577",
+        "source_route_observed_utc": "2026-11-09T10:46:01.503725+00:00",
+        "status": 200
+      },
+      "fresh_signature_verifier_executed": false,
+      "historical_canonical_manifest_identity_matches_published_source_result": true,
+      "latest_scope": "Current publisher page and delivery route observed in this session are consistent with the previously matched artifact. This does not certify all-region/store rollouts or reread the current installed state.",
+      "name": "WeChat",
+      "native_abis": [
+        "arm64-v8a"
+      ],
+      "package": "com.tencent.mm",
+      "package_version_signer_basis": "Previously content-bound canonical APK metadata; previously completed official full-body SHA256 matches the same exact bytes. The fresh request is a metadata observation, not another complete hash or signature parse.",
+      "production_ready": false,
+      "runtime_accepted": false,
+      "signer_certificate_sha256": [
+        "0fe4ff85c215918396dadc7cd8ce6963339af33d37751a56e54c7206b63a3c7c"
+      ],
+      "source_status": "EXISTING_FULL_OFFICIAL_BINARY_MATCH_WITH_FRESH_CONSISTENT_DELIVERY_METADATA",
+      "split_name": null,
+      "version_code": 3220,
+      "version_name": "8.0.80"
+    }
+  ],
+  "production_ready": false,
+  "publication": {
+    "capsule": "compat/android/pocket4/official-app-source-reconciliation-r1",
+    "commit": "9d45eba81752d1e10906b5dc6d7e9a3c1a6b42c2",
+    "evidence": {
+      "bytes": 35149,
+      "path": "evidence/published-evidence.json",
+      "sha256": "b0227ce473c8c18e64287a738db90d37cdddaa996189d2770bc0896efa2e7d21"
+    },
+    "readme": {
+      "bytes": 7236,
+      "path": "evidence/published-README.md",
+      "sha256": "6b1e011b353e67d83f13bd30c56606daa53b2f9d6e69cd42c7063ca4a645fc8d"
+    }
+  },
+  "redundant_full_download_bytes_avoided": 547943304,
+  "runtime_accepted": false,
+  "schema": "pocket4-three-existing-official-source-freshness-overlay-v1",
+  "selector_mutations": 0,
+  "state": "THREE_EXISTING_SOURCE_MATCHES_REBOUND_TO_CURRENT_PUBLISHER_ROUTES"
+}

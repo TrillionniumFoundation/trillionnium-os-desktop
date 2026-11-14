@@ -1,0 +1,692 @@
+diff --git a/runtime/droidloom-supervisor/src/production_namespace_child.rs b/runtime/droidloom-supervisor/src/production_namespace_child.rs
+index 0c6d9a2..8c2a2a0 100644
+--- a/runtime/droidloom-supervisor/src/production_namespace_child.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_child.rs
+@@ -6,11 +6,16 @@
+ 
+ use std::io;
+ use std::os::fd::{AsRawFd, FromRawFd, OwnedFd, RawFd};
++use std::os::unix::fs::OpenOptionsExt;
+ 
+ use super::{NamespaceError, Result};
+ 
+ const MAGIC: u64 = 0x444c_4e53_4252_4b31;
+ const CHILD_FD: RawFd = 3;
++const CREATOR_FD: RawFd = 4;
++const CREATOR_STAT_FD: RawFd = 5;
++// include/uapi/linux/pidfd.h: PIDFD_THREAD = O_EXCL (Linux >= 6.9).
++const PIDFD_THREAD: i32 = libc::O_EXCL;
+ 
+ #[path = "production_namespace_mount_child.rs"]
+ mod empty_root;
+@@ -38,6 +43,8 @@ pub(super) enum Phase {
+     #[cfg(test)]
+     PrivateDevChecked = 23,
+     #[cfg(test)]
++    TreeCreatedUnarmed = 24,
++    #[cfg(test)]
+     ProbeEmptyRoot = 18,
+     #[cfg(test)]
+     EmptyRootChecked = 19,
+@@ -74,6 +81,12 @@ pub(super) enum Mode {
+     EmptyRootControl = 7,
+     #[cfg(test)]
+     DeviceRootControl = 8,
++    #[cfg(test)]
++    CreatorGoneBeforeArm = 9,
++    #[cfg(test)]
++    CreatorGoneBeforeRearm = 10,
++    #[cfg(test)]
++    TreeCreatorGoneBeforeArm = 11,
+ }
+ 
+ #[derive(Clone, Copy)]
+@@ -133,6 +146,18 @@ struct CloneArgs {
+ 
+ type Spawned = (u32, OwnedFd, OwnedFd, u32, libc::pid_t, [u8; 16]);
+ 
++fn child_source(fd: OwnedFd) -> Result<OwnedFd> {
++    // The raw child remaps its control, thread pidfd and held stat to 3/4/5.
++    // Pin every source above those slots before cloning, so no dup3 can
++    // overwrite another source. Parent descriptors remain CLOEXEC.
++    let duplicated = unsafe { libc::fcntl(fd.as_raw_fd(), libc::F_DUPFD_CLOEXEC, 6) };
++    if duplicated < 0 {
++        return Err(io::Error::last_os_error().into());
++    }
++    // SAFETY: fcntl returned a new, exclusively owned descriptor.
++    Ok(unsafe { OwnedFd::from_raw_fd(duplicated) })
++}
++
+ pub(super) fn spawn(mode: Mode) -> Result<Spawned> {
+     // Do not permit inherited SIGCHLD auto-reaping: exit must be observed and
+     // reaped through the exact held pidfd, not inferred from missing proc paths.
+@@ -210,6 +235,36 @@ pub(super) fn spawn(mode: Mode) -> Result<Spawned> {
+             "namespace broker cannot be host PID 1",
+         ));
+     }
++    // This is the live calling thread, so opening its PIDFD_THREAD has no
++    // numeric-task reuse window. A TGID pidfd would miss a creator's exit
++    // while another thread in the same process remains alive.
++    let creator_raw = unsafe { libc::syscall(libc::SYS_pidfd_open, creator_tid, PIDFD_THREAD) };
++    if creator_raw < 0 {
++        return Err(io::Error::last_os_error().into());
++    }
++    let creator = child_source(unsafe { OwnedFd::from_raw_fd(creator_raw as RawFd) })?;
++    // PIDFD_THREAD poll deliberately delays a thread-group leader's exit until
++    // the whole group is gone. Bind this live caller's proc stat before clone,
++    // never reopen a saved TID, and observe its state/PF_EXITING after arming.
++    // Only the already-open read-only file enters the raw child; no proc root
++    // or directory authority crosses this boundary.
++    let creator_stat = std::fs::OpenOptions::new()
++        .read(true)
++        .custom_flags(libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK)
++        .open("/proc/thread-self/stat")?;
++    let mut statfs: libc::statfs = unsafe { std::mem::zeroed() };
++    if unsafe { libc::fstatfs(creator_stat.as_raw_fd(), &mut statfs) } != 0 {
++        return Err(io::Error::last_os_error().into());
++    }
++    if statfs.f_type != 0x9fa0
++        || !unsafe { creator_stat_live(creator_stat.as_raw_fd(), creator_tid as u32) }
++    {
++        return Err(NamespaceError::Rejected(
++            "creator stat is not this live thread",
++        ));
++    }
++    let creator_stat = child_source(creator_stat.into())?;
++    let child = child_source(child)?;
+     let mask = SignalMask::block()?;
+     let mut pidfd = -1_i32;
+     let args = CloneArgs {
+@@ -225,7 +280,15 @@ pub(super) fn spawn(mode: Mode) -> Result<Spawned> {
+     if pid == 0 {
+         // SAFETY: only the newly cloned child reaches this no-return function.
+         unsafe {
+-            child_main(child.as_raw_fd(), parent_pid as u32, nonce, mode);
++            child_main(
++                child.as_raw_fd(),
++                creator.as_raw_fd(),
++                creator_stat.as_raw_fd(),
++                parent_pid as u32,
++                creator_tid as u32,
++                nonce,
++                mode,
++            );
+         }
+     }
+     if pid < 0 {
+@@ -382,7 +445,110 @@ unsafe fn receive(nonce: [u8; 16], parent_pid: u32, wanted: Phase) {
+     }
+ }
+ 
+-unsafe fn parent_death(parent_pid: u32, nonce: [u8; 16], pid: u32) {
++fn decimal(bytes: &[u8]) -> Option<u64> {
++    if bytes.is_empty() {
++        return None;
++    }
++    let mut value = 0_u64;
++    for &byte in bytes {
++        if !byte.is_ascii_digit() {
++            return None;
++        }
++        value = value.checked_mul(10)?.checked_add(u64::from(byte - b'0'))?;
++    }
++    Some(value)
++}
++
++// Pure, bounded parsing only: comm can itself contain spaces, ')' and newlines.
++// These are proc stat fields 1, 3 and 9, not the similarly named status file.
++fn creator_stat_bytes_live(bytes: &[u8], creator_tid: u32) -> bool {
++    if bytes.last() != Some(&b'\n') {
++        return false;
++    }
++    let Some(space) = bytes.iter().position(|&byte| byte == b' ') else {
++        return false;
++    };
++    if decimal(&bytes[..space]) != Some(u64::from(creator_tid))
++        || bytes.get(space + 1) != Some(&b'(')
++    {
++        return false;
++    }
++    let Some(comm_end) = bytes.iter().rposition(|&byte| byte == b')') else {
++        return false;
++    };
++    if comm_end <= space + 1 {
++        return false;
++    }
++    let fields = &bytes[comm_end + 1..];
++    if fields.len() < 4 || fields[0] != b' ' || fields[2] != b' ' {
++        return false;
++    }
++    if !matches!(fields[1], b'R' | b'S' | b'D' | b'T' | b't' | b'P' | b'I') {
++        return false; // includes EXIT_ZOMBIE / EXIT_DEAD and unknown states
++    }
++    let mut fields = fields[3..].split(|&byte| byte == b' ');
++    for _ in 0..5 {
++        if !fields.next().is_some_and(|field| !field.is_empty()) {
++            return false;
++        }
++    }
++    let Some(flags) = fields.next().and_then(decimal) else {
++        return false;
++    };
++    flags & 0x0000_0004 == 0 // include/linux/sched.h: PF_EXITING
++}
++
++unsafe fn creator_stat_live(fd: RawFd, creator_tid: u32) -> bool {
++    let mut bytes = [0_u8; 4096];
++    let count = unsafe {
++        libc::syscall(
++            libc::SYS_pread64,
++            fd,
++            bytes.as_mut_ptr(),
++            bytes.len(),
++            0_i64,
++        )
++    };
++    count > 0
++        && count < bytes.len() as libc::c_long
++        && creator_stat_bytes_live(&bytes[..count as usize], creator_tid)
++}
++
++#[cfg(test)]
++mod creator_stat_tests {
++    use super::creator_stat_bytes_live;
++
++    #[test]
++    fn creator_stat_parses_comm_delimiters_and_live_flags() {
++        assert!(creator_stat_bytes_live(
++            b"42 (name with ) and\nline) S 1 2 3 0 -1 4194304 0 0\n",
++            42
++        ));
++        assert!(creator_stat_bytes_live(b"42 () R 1 2 3 0 -1 0 0 0\n", 42));
++    }
++
++    #[test]
++    fn creator_stat_rejects_exit_wrong_identity_and_malformed_fields() {
++        for bytes in [
++            b"42 (comm) Z 1 2 3 0 -1 0 0 0\n".as_slice(),
++            b"42 (comm) X 1 2 3 0 -1 0 0 0\n",
++            b"42 (comm) S 1 2 3 0 -1 4 0 0\n",
++            b"42 (comm) S 1 2 3 0 -1 4194308 0 0\n",
++            b"43 (comm) S 1 2 3 0 -1 0 0 0\n",
++            b"18446744073709551616 (comm) S 1 2 3 0 -1 0 0 0\n",
++            b"42 (comm) S 1 2 3 0 -1 18446744073709551616 0 0\n",
++            b"42 (comm) S 1 2 3 0 -1 -4 0 0\n",
++            b"42 (comm) S 1 2 3 0\n",
++            b"42 (comm) S 1 2 3 0 -1 0 0 0",
++            b"42 (comm) ? 1 2 3 0 -1 0 0 0\n",
++            b"42 comm) S 1 2 3 0 -1 0 0 0\n",
++        ] {
++            assert!(!creator_stat_bytes_live(bytes, 42));
++        }
++    }
++}
++
++unsafe fn parent_death(parent_pid: u32, creator_tid: u32, nonce: [u8; 16], pid: u32) {
+     if unsafe {
+         libc::syscall(
+             libc::SYS_prctl,
+@@ -398,24 +564,60 @@ unsafe fn parent_death(parent_pid: u32, nonce: [u8; 16], pid: u32) {
+             fail(nonce, pid);
+         }
+     }
+-    if unsafe { libc::syscall(libc::SYS_getppid) } != libc::c_long::from(parent_pid) {
++    // Arm before observing the exact creating thread. The held stat also sees
++    // a dying/zombie group leader while PIDFD_THREAD still waits for its group.
++    // PR_SET_PDEATHSIG and exit_notify serialize through tasklist_lock: a
++    // pre-arm exit is visible here; a later parent exit delivers SIGKILL.
++    let mut creator = libc::pollfd {
++        fd: CREATOR_FD,
++        events: libc::POLLIN,
++        revents: 0,
++    };
++    if unsafe { libc::syscall(libc::SYS_poll, &mut creator, 1, 0) } != 0
++        || creator.revents != 0
++        || !unsafe { creator_stat_live(CREATOR_STAT_FD, creator_tid) }
++        || unsafe { libc::syscall(libc::SYS_getppid) } != libc::c_long::from(parent_pid)
++    {
+         unsafe {
+             finish(125);
+         }
+     }
+ }
+ 
+-unsafe fn child_main(fd: RawFd, parent_pid: u32, nonce: [u8; 16], _mode: Mode) -> ! {
++unsafe fn child_main(
++    fd: RawFd,
++    creator_fd: RawFd,
++    creator_stat_fd: RawFd,
++    parent_pid: u32,
++    creator_tid: u32,
++    nonce: [u8; 16],
++    _mode: Mode,
++) -> ! {
+     unsafe {
+-        // Only the private control FD survives. Inherited reservation/data/
+-        // service descriptors cannot leak into the parked namespace child.
++        // Only the control, exact creator-thread pidfd and its held stat survive.
++        // Inherited reservation/data/service descriptors cannot leak into the
++        // parked namespace child; every source FD was pinned above 3/4/5.
+         if fd != CHILD_FD
+             && libc::syscall(libc::SYS_dup3, fd, CHILD_FD, libc::O_CLOEXEC)
+                 != libc::c_long::from(CHILD_FD)
+         {
+             finish(120);
+         }
+-        if libc::syscall(libc::SYS_close_range, 4_u32, u32::MAX, 0) != 0 {
++        if libc::syscall(libc::SYS_dup3, creator_fd, CREATOR_FD, libc::O_CLOEXEC)
++            != libc::c_long::from(CREATOR_FD)
++        {
++            finish(120);
++        }
++        if libc::syscall(
++            libc::SYS_dup3,
++            creator_stat_fd,
++            CREATOR_STAT_FD,
++            libc::O_CLOEXEC,
++        ) != libc::c_long::from(CREATOR_STAT_FD)
++        {
++            finish(120);
++        }
++        if libc::syscall(libc::SYS_close_range, 6_u32, u32::MAX, 0) != 0 {
+             finish(120);
+         }
+         libc::syscall(libc::SYS_close, 0);
+@@ -425,7 +627,16 @@ unsafe fn child_main(fd: RawFd, parent_pid: u32, nonce: [u8; 16], _mode: Mode) -
+             finish(120);
+         }
+         let pid = libc::syscall(libc::SYS_getpid) as u32;
+-        parent_death(parent_pid, nonce, pid);
++        #[cfg(test)]
++        if matches!(_mode, Mode::CreatorGoneBeforeArm) {
++            // The test releases the actual creator thread after this barrier.
++            // Its TGID stays alive, but the held thread pidfd becomes readable.
++            send(nonce, Phase::Created, 0, pid);
++            receive(nonce, parent_pid, Phase::Enter);
++            parent_death(parent_pid, creator_tid, nonce, pid);
++            finish(127); // surviving the dead-creator check is a test failure
++        }
++        parent_death(parent_pid, creator_tid, nonce, pid);
+         #[cfg(test)]
+         if matches!(_mode, Mode::ExitBeforeCreated) {
+             finish(42);
+@@ -441,6 +652,19 @@ unsafe fn child_main(fd: RawFd, parent_pid: u32, nonce: [u8; 16], _mode: Mode) -
+         send(nonce, Phase::Created, 0, pid);
+         receive(nonce, parent_pid, Phase::Enter);
+         #[cfg(test)]
++        if matches!(_mode, Mode::CreatorGoneBeforeRearm) {
++            // Reproduce the kernel's cleared-PDEATH state without requiring a
++            // map or privilege. The ordinary privileged mapping control still
++            // exercises the real setresgid/setresuid rearm path.
++            if libc::syscall(libc::SYS_prctl, libc::PR_SET_PDEATHSIG, 0, 0, 0, 0) != 0 {
++                fail(nonce, pid);
++            }
++            send(nonce, Phase::Parked, 0, pid);
++            receive(nonce, parent_pid, Phase::Go);
++            parent_death(parent_pid, creator_tid, nonce, pid);
++            finish(127);
++        }
++        #[cfg(test)]
+         if matches!(_mode, Mode::WithholdReady) {
+             loop {
+                 libc::syscall(libc::SYS_pause);
+@@ -448,6 +672,9 @@ unsafe fn child_main(fd: RawFd, parent_pid: u32, nonce: [u8; 16], _mode: Mode) -
+         }
+         #[cfg(test)]
+         if matches!(_mode, Mode::ParkOnly) {
++            if libc::syscall(libc::SYS_close, CREATOR_STAT_FD) != 0 {
++                finish(120);
++            }
+             send(nonce, Phase::Parked, 0, pid);
+             receive(nonce, parent_pid, Phase::Stop);
+             finish(0);
+@@ -475,7 +702,9 @@ unsafe fn child_main(fd: RawFd, parent_pid: u32, nonce: [u8; 16], _mode: Mode) -
+             fail(nonce, pid);
+         }
+         // Linux clears PDEATHSIG on credential changes; re-arm and re-check.
+-        parent_death(parent_pid, nonce, pid);
++        parent_death(parent_pid, creator_tid, nonce, pid);
++        // Retain the same read-only stat for the CLONE_PARENT child's initial
++        // arming window too. A group leader can exit while its TGID survives.
+         if libc::syscall(libc::SYS_prctl, libc::PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) != 0 {
+             fail(nonce, pid);
+         }
+@@ -509,7 +738,7 @@ unsafe fn child_main(fd: RawFd, parent_pid: u32, nonce: [u8; 16], _mode: Mode) -
+             send(nonce, Phase::GroupsCleared, 0, pid);
+         }
+         let parent_thread = receive_tree_request(nonce, parent_pid);
+-        create_isolated_child(parent_pid, nonce, pid, parent_thread, _mode);
++        create_isolated_child(parent_pid, creator_tid, nonce, pid, parent_thread, _mode);
+         finish(0);
+     }
+ }
+@@ -661,6 +890,7 @@ unsafe fn send_created_fds(nonce: [u8; 16], creator_pid: u32, pidfd: RawFd, cont
+ 
+ unsafe fn create_isolated_child(
+     parent_pid: u32,
++    creator_tid: u32,
+     nonce: [u8; 16],
+     creator_pid: u32,
+     parent_thread: RawFd,
+@@ -668,6 +898,9 @@ unsafe fn create_isolated_child(
+ ) {
+     unsafe {
+         check_parent_thread(parent_thread);
++        if !creator_stat_live(CREATOR_STAT_FD, creator_tid) {
++            finish(125);
++        }
+     }
+     let mut sockets = [-1_i32; 2];
+     if unsafe {
+@@ -720,7 +953,14 @@ unsafe fn create_isolated_child(
+     let pid = unsafe { libc::syscall(libc::SYS_clone3, &args, std::mem::size_of::<CloneArgs>()) };
+     if pid == 0 {
+         unsafe {
+-            isolated_child_main(sockets[1], parent_thread, parent_pid, nonce, mode);
++            isolated_child_main(
++                sockets[1],
++                parent_thread,
++                parent_pid,
++                creator_tid,
++                nonce,
++                mode,
++            );
+         }
+     }
+     if pid < 0 {
+@@ -739,6 +979,7 @@ unsafe fn create_isolated_child(
+         libc::syscall(libc::SYS_close, sockets[0]);
+         libc::syscall(libc::SYS_close, sockets[1]);
+         libc::syscall(libc::SYS_close, parent_thread);
++        libc::syscall(libc::SYS_close, CREATOR_STAT_FD);
+         // The creator keeps only FD 3 and can never create a second child.
+         receive(nonce, parent_pid, Phase::Stop);
+         finish(0);
+@@ -749,6 +990,7 @@ unsafe fn isolated_child_main(
+     control: RawFd,
+     parent_thread: RawFd,
+     parent_pid: u32,
++    creator_tid: u32,
+     nonce: [u8; 16],
+     _mode: Mode,
+ ) -> ! {
+@@ -759,9 +1001,12 @@ unsafe fn isolated_child_main(
+         {
+             finish(120);
+         }
+-        // The creator supplied only these two descriptors. No reservation,
+-        // host service, namespace-administration or data FD crosses this barrier.
+-        if parent_thread != 4 || libc::syscall(libc::SYS_close_range, 5_u32, u32::MAX, 0) != 0 {
++        // Only the control, parent-thread pidfd and the same held creator stat
++        // survive until arming. No reservation, service, directory or data FD
++        // crosses this barrier; the stat is closed before any mount operation.
++        if parent_thread != CREATOR_FD
++            || libc::syscall(libc::SYS_close_range, 6_u32, u32::MAX, 0) != 0
++        {
+             finish(120);
+         }
+         libc::syscall(libc::SYS_close, 0);
+@@ -770,9 +1015,14 @@ unsafe fn isolated_child_main(
+         if libc::syscall(libc::SYS_getpid) != 1 || libc::syscall(libc::SYS_getppid) != 0 {
+             finish(126);
+         }
++        #[cfg(test)]
++        if matches!(_mode, Mode::TreeCreatorGoneBeforeArm) {
++            send(nonce, Phase::TreeCreatedUnarmed, 0, 1);
++            receive(nonce, parent_pid, Phase::Enter);
++        }
+         // Its actual parent is the broker thread in the ancestor PID ns, so
+-        // getppid() is legitimately 0. The inherited, actual thread pidfd closes
+-        // the race after setting PDEATHSIG without inventing a numeric parent.
++        // getppid() is legitimately 0. The actual thread pidfd plus the bound
++        // stat close the race, including a leader whose TGID is still alive.
+         if libc::syscall(
+             libc::SYS_prctl,
+             libc::PR_SET_PDEATHSIG,
+@@ -785,7 +1035,15 @@ unsafe fn isolated_child_main(
+             fail(nonce, 1);
+         }
+         check_parent_thread(parent_thread);
++        if !creator_stat_live(CREATOR_STAT_FD, creator_tid) {
++            finish(125);
++        }
+         libc::syscall(libc::SYS_close, parent_thread);
++        libc::syscall(libc::SYS_close, CREATOR_STAT_FD);
++        #[cfg(test)]
++        if matches!(_mode, Mode::TreeCreatorGoneBeforeArm) {
++            finish(127); // surviving the dead-creator check is a test failure
++        }
+         if libc::syscall(libc::SYS_getuid) != 0
+             || libc::syscall(libc::SYS_geteuid) != 0
+             || libc::syscall(libc::SYS_getgid) != 0
+diff --git a/runtime/droidloom-supervisor/src/production_namespace_tests.rs b/runtime/droidloom-supervisor/src/production_namespace_tests.rs
+index ad46afa..7a8fa4b 100644
+--- a/runtime/droidloom-supervisor/src/production_namespace_tests.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_tests.rs
+@@ -60,17 +60,50 @@ fn actual_clone_pidfd_proc_binding_fd_scrub_and_lease_lifetime() {
+     let r = owner.held().unwrap();
+     assert_eq!(r.identity.unwrap().pid, r.pid);
+     assert_eq!(r.identity.unwrap().parent, std::process::id());
+-    let descriptors: Vec<_> = fs::read_dir(format!("/proc/{}/fd", r.pid))
++    let mut descriptors: Vec<_> = fs::read_dir(format!("/proc/{}/fd", r.pid))
+         .unwrap()
+         .map(|p| p.unwrap().file_name())
+         .collect();
+-    assert_eq!(descriptors, [std::ffi::OsString::from("3")]);
++    descriptors.sort();
++    assert_eq!(
++        descriptors,
++        [
++            std::ffi::OsString::from("3"),
++            std::ffi::OsString::from("4"),
++            std::ffi::OsString::from("5")
++        ]
++    );
++    let creator_info = fs::read(format!("/proc/{}/fdinfo/4", r.pid)).unwrap();
++    assert_eq!(
++        status_field(&creator_info, "Pid:")
++            .unwrap()
++            .trim()
++            .parse::<u32>()
++            .unwrap(),
++        r.creator_tid as u32
++    );
++    let held_stat = fs::metadata(format!("/proc/{}/fd/5", r.pid)).unwrap();
++    let self_stat = fs::metadata(format!("/proc/self/task/{}/stat", r.creator_tid)).unwrap();
++    assert_eq!(
++        (held_stat.dev(), held_stat.ino()),
++        (self_stat.dev(), self_stat.ino())
++    );
+     assert!(sentinel.metadata().is_ok());
+     owner.send(Phase::Enter).unwrap();
+     owner
+         .receive(Phase::Parked, None, PROTOCOL_TIMEOUT)
+         .unwrap();
+     owner.verify_owned().unwrap();
++    let mut parked_descriptors: Vec<_> =
++        fs::read_dir(format!("/proc/{}/fd", owner.held().unwrap().pid))
++            .unwrap()
++            .map(|p| p.unwrap().file_name())
++            .collect();
++    parked_descriptors.sort();
++    assert_eq!(
++        parked_descriptors,
++        [std::ffi::OsString::from("3"), std::ffi::OsString::from("4")]
++    );
+     assert!(owner.install_maps().is_err()); // a parked host child is never a new mapped namespace
+     let pid = owner.held().unwrap().pid;
+     let result = owner.retire().unwrap();
+@@ -330,11 +363,19 @@ fn privileged_private_userns_mapping_controls() {
+     let inode = Node::of(r.userns.as_ref().unwrap()).unwrap().inode;
+     let start = r.identity.unwrap().start_ticks;
+     assert!(!exclusive_available(&lock));
+-    let fd_names: Vec<_> = fs::read_dir(format!("/proc/{pid}/fd"))
++    let mut fd_names: Vec<_> = fs::read_dir(format!("/proc/{pid}/fd"))
+         .unwrap()
+         .map(|p| p.unwrap().file_name())
+         .collect();
+-    assert_eq!(fd_names, [std::ffi::OsString::from("3")]);
++    fd_names.sort();
++    assert_eq!(
++        fd_names,
++        [
++            std::ffi::OsString::from("3"),
++            std::ffi::OsString::from("4"),
++            std::ffi::OsString::from("5")
++        ]
++    );
+     let report = owner.retire().unwrap();
+     assert_eq!(
+         report,
+@@ -383,3 +424,151 @@ fn privileged_private_userns_mapping_controls() {
+         "changed selected authority rejected with no map; fixed owned child retired; root public entry remains blocked"
+     );
+ }
++
++// These controls never map IDs or invoke the production admission entry point.
++struct CreatorProbe {
++    pid: u32,
++    pidfd: OwnedFd,
++    control: OwnedFd,
++    parent_pid: u32,
++    nonce: [u8; 16],
++    reaped: bool,
++}
++
++impl CreatorProbe {
++    fn receive(&self, wanted: Phase) {
++        let deadline = Instant::now() + Duration::from_secs(3);
++        loop {
++            match receive_packet(self.control.as_raw_fd()) {
++                Ok((packet, credentials)) => {
++                    assert!(packet.matches(self.nonce, self.pid));
++                    assert_eq!(packet.phase, wanted as u32);
++                    assert_eq!(packet.errno, 0);
++                    assert_eq!(credentials.pid, self.pid as i32);
++                    return;
++                }
++                Err(NamespaceError::Io(ref error)) if error.kind() == io::ErrorKind::WouldBlock => {
++                    assert!(
++                        Instant::now() < deadline,
++                        "creator probe protocol timed out"
++                    );
++                    std::thread::sleep(Duration::from_millis(2));
++                }
++                Err(error) => panic!("creator probe protocol failed: {error}"),
++            }
++        }
++    }
++
++    fn send(&self, phase: Phase) {
++        send_packet(
++            self.control.as_raw_fd(),
++            &Packet::new(self.nonce, phase, 0, self.parent_pid),
++        )
++        .unwrap();
++    }
++
++    fn reap(&mut self) -> Result<ChildExit> {
++        if self.reaped {
++            return Err(NamespaceError::Rejected("probe already reaped"));
++        }
++        if !wait_exited(&self.pidfd, Duration::from_secs(2))? {
++            signal_owned(&self.pidfd, libc::SIGKILL)?;
++            if !wait_exited(&self.pidfd, Duration::from_secs(2))? {
++                return Err(NamespaceError::RetirementUnproven);
++            }
++        }
++        let mut info: libc::siginfo_t = unsafe { std::mem::zeroed() };
++        if unsafe {
++            libc::waitid(
++                libc::P_PIDFD,
++                self.pidfd.as_raw_fd() as u32,
++                &mut info,
++                libc::WEXITED | libc::WNOHANG,
++            )
++        } != 0
++            || unsafe { info.si_pid() } != self.pid as i32
++        {
++            return Err(NamespaceError::RetirementUnproven);
++        }
++        self.reaped = true;
++        Ok(ChildExit {
++            pid: self.pid,
++            status: unsafe { info.si_status() },
++            reason: info.si_code,
++        })
++    }
++}
++
++impl Drop for CreatorProbe {
++    fn drop(&mut self) {
++        if !self.reaped {
++            let _ = signal_owned(&self.pidfd, libc::SIGKILL);
++            let _ = self.reap();
++        }
++    }
++}
++
++fn creator_death_case(mode: child::Mode, rearm: bool) {
++    let (created_tx, created_rx) = std::sync::mpsc::sync_channel(1);
++    let (release_tx, release_rx) = std::sync::mpsc::sync_channel(1);
++    let creator = std::thread::spawn(move || {
++        let spawned = child::spawn(mode);
++        if created_tx.send(spawned).is_ok() {
++            // This is the actual cloning thread. Keep it alive through the
++            // child's clear-PDEATH barrier in the rearm control.
++            let _ = release_rx.recv_timeout(Duration::from_secs(6));
++        }
++    });
++    let (pid, pidfd, control, parent_pid, creator_tid, nonce) = created_rx
++        .recv_timeout(Duration::from_secs(3))
++        .unwrap()
++        .unwrap();
++    let mut probe = CreatorProbe {
++        pid,
++        pidfd,
++        control,
++        parent_pid,
++        nonce,
++        reaped: false,
++    };
++    assert_ne!(creator_tid, unsafe { libc::syscall(libc::SYS_gettid) }
++        as i32);
++    assert_eq!(parent_pid, std::process::id());
++    // The creator is still alive and blocked on release_rx. Bind this exact
++    // kernel thread before releasing it, without a TID-reuse window.
++    let creator_raw = unsafe { libc::syscall(libc::SYS_pidfd_open, creator_tid, libc::O_EXCL) };
++    assert!(creator_raw >= 0, "opening live creator PIDFD_THREAD failed");
++    let creator_pidfd = unsafe { OwnedFd::from_raw_fd(creator_raw as i32) };
++    probe.receive(Phase::Created);
++    if rearm {
++        probe.send(Phase::Enter);
++        probe.receive(Phase::Parked);
++    }
++    release_tx.send(()).unwrap();
++    creator.join().unwrap();
++    // pthread join can wake before exit_notify publishes PIDFD_THREAD exit.
++    // Establish the kernel-dead-before-arm premise with the held descriptor.
++    let readable_after_join = pidfd_exited(&creator_pidfd).unwrap();
++    assert!(
++        wait_exited(&creator_pidfd, Duration::from_secs(2)).unwrap(),
++        "creator kernel task did not exit within the bounded wait"
++    );
++    eprintln!(
++        "creator-exit barrier rearm={rearm}: readable_after_join={readable_after_join}; held_thread_exit=true"
++    );
++    assert_eq!(std::process::id(), parent_pid);
++    probe.send(if rearm { Phase::Go } else { Phase::Enter });
++    let exit = probe.reap().unwrap();
++    assert_eq!(exit.reason, libc::CLD_EXITED);
++    assert_eq!(exit.status, 125); // held creator pidfd rejected; not sentinel 127
++}
++
++#[test]
++fn creator_thread_death_before_initial_arm_is_rejected_and_reaped() {
++    creator_death_case(child::Mode::CreatorGoneBeforeArm, false);
++}
++
++#[test]
++fn creator_thread_death_before_rearm_is_rejected_and_reaped() {
++    creator_death_case(child::Mode::CreatorGoneBeforeRearm, true);
++}

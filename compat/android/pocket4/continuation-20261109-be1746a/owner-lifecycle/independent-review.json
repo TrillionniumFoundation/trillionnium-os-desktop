@@ -1,0 +1,499 @@
+{
+  "actual_r2_qualification": {
+    "execution_identities": {
+      "normal": {
+        "at_unix_ms": 1794221403671,
+        "audit_recorded": true,
+        "automatic_retry": false,
+        "cancelled": false,
+        "exit_code": 0,
+        "job_id": "1a1bfed6576-5e21-7de",
+        "launch_nonce": "55420815e2e02e2a97af78f6fba6d425",
+        "log_bytes": {
+          "stderr": {
+            "seen": 0,
+            "stored": 0
+          },
+          "stdout": {
+            "seen": 1527,
+            "stored": 1527
+          }
+        },
+        "log_errors": {
+          "stderr": null,
+          "stdout": null
+        },
+        "log_synced": {
+          "stderr": true,
+          "stdout": true
+        },
+        "log_truncated": {
+          "stderr": false,
+          "stdout": false
+        },
+        "output_complete": true,
+        "output_durable": true,
+        "state": "succeeded",
+        "terminal_publication_confirmed": true,
+        "terminal_publication_protocol": 1,
+        "timed_out": false
+      },
+      "private_controls": {
+        "boot": "97d9600f-e081-465c-9e6e-62651e09806b",
+        "bytes_seen": 2145,
+        "bytes_stored": 2145,
+        "capture_error": null,
+        "closed": false,
+        "created_unix_ms": 1794221486643,
+        "exit_code": 0,
+        "output_complete": true,
+        "owner_pid": 397365,
+        "pid": 397366,
+        "session_id": "dpty-18e65aef64ef5f30-5e21-159",
+        "state": "exited"
+      },
+      "private_retirement": {
+        "exit_code": 0,
+        "session_id": "dpty-18e65b17bf3de790-5e21-15c",
+        "state": "exited"
+      },
+      "source_replay": {
+        "at_unix_ms": 1794221577691,
+        "audit_recorded": true,
+        "automatic_retry": false,
+        "cancelled": false,
+        "exit_code": 0,
+        "job_id": "1a1bff091ad-5e21-7ee",
+        "launch_nonce": "6399dbd64bb3819744fb1844b192e2fa",
+        "log_bytes": {
+          "stderr": {
+            "seen": 0,
+            "stored": 0
+          },
+          "stdout": {
+            "seen": 985,
+            "stored": 985
+          }
+        },
+        "log_errors": {
+          "stderr": null,
+          "stdout": null
+        },
+        "log_synced": {
+          "stderr": true,
+          "stdout": true
+        },
+        "log_truncated": {
+          "stderr": false,
+          "stdout": false
+        },
+        "output_complete": true,
+        "output_durable": true,
+        "state": "succeeded",
+        "terminal_publication_confirmed": true,
+        "terminal_publication_protocol": 1,
+        "timed_out": false
+      }
+    },
+    "normal_binaries": [
+      {
+        "bytes": 35382056,
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/target/debug/droidloom-supervisor",
+        "sha256": "0398fcd14add1f635e130f04617afe36a3f73cd8f94a7aad7a35693ac5012946"
+      },
+      {
+        "bytes": 34906768,
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/target/debug/droidloomd",
+        "sha256": "dcb52d25b7ce13d8afa8af11201b1246bef7d8a590f518f7a413d4e179b70231"
+      }
+    ],
+    "normal_summary": "test result: ok. 92 passed; 0 failed; 0 ignored; 0 measured; 151 filtered out; finished in 2.12s",
+    "ordinary_failed": 0,
+    "ordinary_filtered_out": 151,
+    "ordinary_passed": 92,
+    "ordinary_reported_ignored": 0,
+    "private_controls": [
+      {
+        "cgroup_absent": true,
+        "name": "userns",
+        "summary": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 242 filtered out; finished in 0.01s",
+        "test": "production_namespace::tests::privileged_private_userns_mapping_controls",
+        "unit": "pocket4-owner-lifecycle-r2-userns-20261109-be1746a-r1.service",
+        "unit_terminal": true
+      },
+      {
+        "cgroup_absent": true,
+        "name": "pid1",
+        "summary": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 242 filtered out; finished in 0.04s",
+        "test": "production_namespace::tree::tests::privileged_private_pid1_namespace_controls",
+        "unit": "pocket4-owner-lifecycle-r2-pid1-20261109-be1746a-r1.service",
+        "unit_terminal": true
+      }
+    ],
+    "private_fixed_passed": 2,
+    "private_stage_retired": true,
+    "private_test_binary": {
+      "bytes": 42320208,
+      "path": "/var/lib/droidloom-owner-lifecycle-r2-private-20261109-be1746a-r1/test-binary",
+      "sha256": "118f78a02234c9eca71f5c0f5aa20922c0b88b6b0f9dea2d657212b1ebcc3a9d"
+    },
+    "protected_unchanged": true,
+    "raw_streams_verified": [
+      {
+        "bytes": 36,
+        "path": "normal/cargo-version.stdout",
+        "sha256": "49f46ff5ffe434e6c1c66388a9230ac33bbe3dbd9175314e9ffc9aa7c418d329"
+      },
+      {
+        "bytes": 0,
+        "path": "normal/cargo-version.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "bytes": 45,
+        "path": "normal/rustfmt-version.stdout",
+        "sha256": "18c27b2edb9dc4f4b4c1bf459fe870386f3b6788b0d609e0a590ab4ce3c1d1e6"
+      },
+      {
+        "bytes": 0,
+        "path": "normal/rustfmt-version.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "bytes": 0,
+        "path": "normal/rustfmt.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "bytes": 0,
+        "path": "normal/rustfmt.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "bytes": 9629,
+        "path": "normal/production-normal-tests.stdout",
+        "sha256": "f3a78f916215773fce60acff686ca80db0aa392e90055f876bd4e1fb3b3a7c50"
+      },
+      {
+        "bytes": 8628,
+        "path": "normal/production-normal-tests.stderr",
+        "sha256": "58804b27cf5706958dc30e8064fceef44126123d8f2d635d3c79537622404b37"
+      },
+      {
+        "bytes": 0,
+        "path": "normal/normal-both-binaries.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "bytes": 38866,
+        "path": "normal/normal-both-binaries.stderr",
+        "sha256": "945d65986c1411458b7735d5183ecd1c647ec757aa62bc01a43fd0d48cb94de8"
+      },
+      {
+        "bytes": 36,
+        "path": "source-replay/rustc-version.stdout",
+        "sha256": "a2d88be55921309c5e126c58ad4a9040d034419589b58684cb44dfd13e14f66e"
+      },
+      {
+        "bytes": 0,
+        "path": "source-replay/rustc-version.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "bytes": 0,
+        "path": "source-replay/compile-verifier.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "bytes": 0,
+        "path": "source-replay/compile-verifier.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "bytes": 185,
+        "path": "source-replay/check-before.stdout",
+        "sha256": "b2f90d135dc05c9d6e5be1f8a75e56f2c377bc3c3b6f7fb7121f3c03b4e86ea7"
+      },
+      {
+        "bytes": 0,
+        "path": "source-replay/check-before.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "bytes": 179,
+        "path": "source-replay/replay.stdout",
+        "sha256": "7d909dae692893542b76fb2e82441f947cfd9d40fec59714ac186e77fe3d95da"
+      },
+      {
+        "bytes": 0,
+        "path": "source-replay/replay.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "bytes": 184,
+        "path": "source-replay/check-after.stdout",
+        "sha256": "ca9ddd72ca8bfc0db4a8d6ea56bd89f49b5393cba92605fdf49899002f20d39f"
+      },
+      {
+        "bytes": 0,
+        "path": "source-replay/check-after.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "bytes": 593,
+        "path": "private-r1/userns/normal.stdout",
+        "sha256": "1bf4d2e117b5923edf44c64a8403f0347919fcf020d6572dcf906f440d60b08f"
+      },
+      {
+        "bytes": 0,
+        "path": "private-r1/userns/normal.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "bytes": 636,
+        "path": "private-r1/pid1/normal.stdout",
+        "sha256": "517536babbc727d4da2abc27a0faebf53671ebcc7646ceb1f43eab00cdbdb74e"
+      },
+      {
+        "bytes": 0,
+        "path": "private-r1/pid1/normal.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "reviewer_tests_or_builds_started": 0,
+    "source_before_after_final_pins_equal": true,
+    "source_replay_commands": [
+      {
+        "name": "rustc-version",
+        "returncode": 0
+      },
+      {
+        "name": "compile-verifier",
+        "returncode": 0
+      },
+      {
+        "name": "check-before",
+        "returncode": 0
+      },
+      {
+        "name": "replay",
+        "returncode": 0
+      },
+      {
+        "name": "check-after",
+        "returncode": 0
+      }
+    ],
+    "source_replay_passed": true
+  },
+  "adoption": "Apply only against the declared exact r2 owner preimages. Keep the sealed r1 capsule unchanged and use this r2 qualification for the new owner device-source generation.",
+  "apply_basis": "Exact independently frozen owner normal-production-private-dev-r1 generation; never bare b4dc and never the sealed r1 capsule preimages.",
+  "capsule": "/workspace/scratch/be1746a9586f/owner-lifecycle-helper-r2",
+  "checks": [
+    {
+      "finding": "All three exact r2 preimages and reconstructed postimages match the frozen pins. The supplied patch changes only these three files. The full freeze records 408 files; 405 are outside this patch. No r1 execution result is reused as r2 evidence.",
+      "id": "exact_frozen_owner_generation",
+      "result": "PASS"
+    },
+    {
+      "finding": "The entire r1-to-r2 owner delta consists of exact insertions: DeviceResource(String), private_dev module, phases 20 through 23 and DeviceRootControl=8. Every insertion is retained byte-for-byte. Removing only these inserted bytes and restoring lifecycle test enum numbers produces the previously reviewed r1 postimages exactly for all three files. Owner tree, empty-base, SSSD/live-admission and retirement interfaces therefore retain the same reviewed bytes; unrelated private-dev source remains outside this patch.",
+      "id": "owner_device_and_interface_preservation",
+      "qualification_limit": "The other 405 source files were not independently reread in this review; their preservation is supported by the full freeze and normal changed_source_paths.",
+      "result": "PASS"
+    },
+    {
+      "finding": "The live caller gettid is opened with pidfd_open(PIDFD_THREAD); errors return without TGID or numeric-adoption fallback. Original !Send/!Sync marker and held() exact creator-TID gate remain unchanged. Parent proc binding now follows kernel thread-self, requires unique exact single NStgid/NSpid and equal active/future-child PID namespaces. The saved kernel mask is restored on both clone success and clone failure; clone errno is saved before restore. Successful-clone restore errors travel together with the acquired pidfd/control handles. Owner installs authority and lifecycle resources before returning SignalMaskRestore; existing pidfd-only retire and quarantine Drop path therefore retains custody. The injected bad-size restore is test-only and is followed by the real saved-mask restoration.",
+      "id": "creator_thread_pidfd_and_signal_restore",
+      "result": "PASS"
+    },
+    {
+      "finding": "Both raw-child sources are duplicated with F_DUPFD_CLOEXEC at a minimum of 5 before clone; mapping to 3 and 4 cannot overwrite the other source. The child scrubs descriptors >=5 and closes 0/1/2. Parked keeper expectations change exactly from [3] to sorted [3,4], retaining the original sentinel/lease/retirement assertions. The complete existing tree suffix is byte-identical. receive_tree_request retains exact nonce/phase/packet/truncation checks and exactly one SCM_RIGHTS pidfs descriptor, replacing slot 4 only through that private socket. The nested child requires parent_thread==4, preserves fixed CLONE_PARENT/PIDFD and namespace flags, checks PID1/PPID0, arms SIGKILL parent-death protection, polls the held thread pidfd, then closes 4 before continuing. Its steady-state control descriptor remains only 3; existing empty-root dispatch and credentials/NNP/propagation checks are unchanged.",
+      "id": "descriptor_four_and_nested_pid1",
+      "result": "PASS"
+    },
+    {
+      "finding": "Existing modes 0 through 8 including TreeWrongReady=6, EmptyRootControl=7 and DeviceRootControl=8 remain unchanged. New cfg(test) lifecycle modes use 9, 10, 11 without collisions. Existing exact packet, nonce, one pidfs descriptor, same-thread, bare-reservation, map-order, live-admission, retirement and quarantine rejections retain their reviewed behavior; no required rejection was widened.",
+      "id": "test_modes_and_fail_closed_guards",
+      "result": "PASS"
+    },
+    {
+      "finding": "Verified all 24 raw stdout/stderr streams against the actual r2 receipts: 92 focused ordinary tests, two separately executed fixed private fixtures, both normal binaries, and Rust 1.93 check-before/replay/check-after succeeded. All three source hashes are unchanged before formatting, after formatting and after the normal commands. Reviewer started no tests or builds.",
+      "id": "fresh_r2_actual_qualification",
+      "result": "PASS"
+    },
+    {
+      "finding": "Normal and source replay H jobs are terminal success with complete output. Both fixed private units are collected/inactive with MainPID=0 and no owned cgroup; protected metadata/authority/namespaces are identical before and after. The exact root-staged test binary has a hash- and inode-bound retirement receipt while the original helper test binary and source evidence are retained.",
+      "id": "terminal_and_private_stage_retirement",
+      "result": "PASS"
+    }
+  ],
+  "files": [
+    {
+      "path": "runtime/droidloom-supervisor/src/production_namespace.rs",
+      "postimage": {
+        "bytes": 48287,
+        "sha256": "2e7266092d0ac52b21b57e1910c02a3840873fbe1c0370560bf98315d34867ea"
+      },
+      "preimage": {
+        "bytes": 45040,
+        "sha256": "5c3cc336fe7d35ce3be213e2494c2d2217b03c060ab1cd619aba54ea3d3bf782"
+      }
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/production_namespace_child.rs",
+      "postimage": {
+        "bytes": 30634,
+        "sha256": "af2f31a108a823f4701de18cfc2ac9079877c2c682ecab1a37c96006ca825d3b"
+      },
+      "preimage": {
+        "bytes": 25986,
+        "sha256": "7a4031347cf57fa6982c0643c21a98d4836df60a0051b8ba0f7670ce8a41f0f0"
+      }
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+      "postimage": {
+        "bytes": 25162,
+        "sha256": "d3372123a268adb14fef4d3ec29372a029676316f6f9e2b8888c550ffefa09e9"
+      },
+      "preimage": {
+        "bytes": 14458,
+        "sha256": "b279fc6e16ac685de6f9bb6635434b22e8ecc3d2f41bca0adb47266d1e705763"
+      }
+    }
+  ],
+  "findings": [],
+  "independent_reconstruction": {
+    "evidence": {
+      "bytes": 4473,
+      "path": "/workspace/scratch/be1746a9586f/owner-lifecycle-independent-review-r2/reconstruction-and-preservation.json",
+      "sha256": "ef13cfc13c34ebb07d61b972fe8f3489d5974dffb803639267c2bd037776a99c"
+    },
+    "git_apply_check_exit": 0,
+    "git_apply_exit": 0,
+    "pre_and_post_hashes_verified": true,
+    "review_fixture_only": true
+  },
+  "limits": {
+    "Android_starts": 0,
+    "CURRENT_writes": 0,
+    "full_AOSP_qualified": false,
+    "other_405_remote_files_independently_reread": false,
+    "private_device_mount_controls_executed": 0,
+    "private_empty_base_mount_controls_executed": 0,
+    "private_proc_pid_view_controls_executed": 0,
+    "production_admission": false,
+    "production_ready": false,
+    "runtime_qualified": false,
+    "shared_source_writes": 0,
+    "tests_rerun_by_reviewer": false
+  },
+  "owner_delta_preservation": [
+    {
+      "exact_owner_insertions_preserved": [
+        {
+          "bytes": 164,
+          "sha256": "bf62e0229dc9ec248556a7673f05ecb17dff7f260548cf8efb88e7c22dac062e",
+          "text": "    /// A private device resource failed preparation or explicit retirement.\n    #[error(\"owned private device operation failed: {0}\")]\n    DeviceResource(String),\n"
+        }
+      ],
+      "path": "runtime/droidloom-supervisor/src/production_namespace.rs",
+      "r2_postimage_after_removing_only_owner_insertions_and_reverting_test_enum_numbers_equals_reviewed_r1": true
+    },
+    {
+      "exact_owner_insertions_preserved": [
+        {
+          "bytes": 66,
+          "sha256": "a53741beb451c72ddefeba86c9ad16fd53c6b79c2bb259052395b991b81d61be",
+          "text": "#[path = \"production_namespace_device_child.rs\"]\nmod private_dev;\n"
+        },
+        {
+          "bytes": 140,
+          "sha256": "f273a48ae670cf95a40cf60a50009f6f7b57c2bf248f41229b5c41b4d8856e60",
+          "text": "    MountPrivateDev = 20,\n    PrivateDevReady = 21,\n    #[cfg(test)]\n    ProbePrivateDev = 22,\n    #[cfg(test)]\n    PrivateDevChecked = 23,\n"
+        },
+        {
+          "bytes": 44,
+          "sha256": "246b254be52566ddc2285edb015f954fcc76dbe94b279174473bba309cc871eb",
+          "text": "    #[cfg(test)]\n    DeviceRootControl = 8,\n"
+        }
+      ],
+      "path": "runtime/droidloom-supervisor/src/production_namespace_child.rs",
+      "r2_postimage_after_removing_only_owner_insertions_and_reverting_test_enum_numbers_equals_reviewed_r1": true
+    },
+    {
+      "exact_owner_insertions_preserved": [],
+      "path": "runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+      "r2_postimage_after_removing_only_owner_insertions_and_reverting_test_enum_numbers_equals_reviewed_r1": true
+    }
+  ],
+  "pins": {
+    "execution_identities": {
+      "bytes": 2149,
+      "path": "/workspace/scratch/be1746a9586f/owner-lifecycle-helper-r2/execution-identities.json",
+      "sha256": "9ea662739ce82f462d7a96f5c4f5243edf5636b4f83a0973c03377de67e46a60"
+    },
+    "freeze_manifest": {
+      "bytes": 92784,
+      "path": "/workspace/scratch/be1746a9586f/owner-lifecycle-helper-r2/freeze-manifest.json",
+      "sha256": "d1c3fdf3ffe47c8ca8a6e2920a7732714feb28bde74235c4df4e0ee18fd80eb0"
+    },
+    "minimal_patch": {
+      "bytes": 29385,
+      "path": "/workspace/scratch/be1746a9586f/owner-lifecycle-helper-r2/minimal.patch",
+      "sha256": "71ad18672693d396f4b5a0c394e20f482e658df5a1ea0c052e82eb6fa28faee6"
+    },
+    "normal_result": {
+      "bytes": 10247,
+      "path": "/workspace/scratch/be1746a9586f/owner-lifecycle-helper-r2/normal/result.json",
+      "sha256": "3d963f68edf0e489e6ccac08bb289a5249f41be881dbbb2acd5f96b55aa33556"
+    },
+    "private_result": {
+      "bytes": 11983,
+      "path": "/workspace/scratch/be1746a9586f/owner-lifecycle-helper-r2/private-r1/result.json",
+      "sha256": "2928ca765750202357622d3c0bf241cce83c7377d5a96cc7c14d2a7e8526591e"
+    },
+    "private_stage_retirement": {
+      "bytes": 1629,
+      "path": "/workspace/scratch/be1746a9586f/owner-lifecycle-helper-r2/private-stage-retirement.json",
+      "sha256": "409d22a6e3a95bcfc9e8b18157052ad97e49388b19e7d860b24e5ec35175e3dc"
+    },
+    "source_manifest_observed": {
+      "bytes": 4125,
+      "path": "/workspace/scratch/be1746a9586f/owner-lifecycle-helper-r2/source-manifest.json",
+      "sha256": "dbe96432c5efb726ac4d643a3e0e6a0407572bb61bb2bf1859a98ce155e3d66b"
+    },
+    "source_replay_result": {
+      "bytes": 5766,
+      "path": "/workspace/scratch/be1746a9586f/owner-lifecycle-helper-r2/source-replay/result.json",
+      "sha256": "3251c8436ea7c2208152d7ba58d53918305dda4b03b3bc6fa4b2ec0fb2dd49cb"
+    }
+  },
+  "prior_static_review": {
+    "pin": {
+      "bytes": 13323,
+      "path": "/workspace/scratch/be1746a9586f/owner-lifecycle-independent-review.json",
+      "sha256": "abddafdbb73ff3fc41a6c99f63fbc2ba87602cb1fcc9dbc7e94d5e5a4c81b9aa"
+    },
+    "scope": "Semantic reasoning only, not r2 execution qualification"
+  },
+  "result": "NO_BLOCKING_FINDINGS_WITHIN_FROZEN_THREE_FILE_SCOPE",
+  "review_scope": "Read-only exact-source semantic comparison and receipt verification of frozen r2 integration; no source changes, builds or semantic tests by this reviewer.",
+  "reviewed_utc": "2026-11-09T11:00:06.985460+00:00",
+  "reviewer": "android_state_audit",
+  "schema": "pocket4.owner-lifecycle-independent-review.r2.v1",
+  "test_mode_values": {
+    "CreatorGoneBeforeArm": "10",
+    "CreatorGoneBeforeRearm": "11",
+    "DeviceRootControl": "8",
+    "EmptyRootControl": "7",
+    "ExitBeforeCreated": "2",
+    "GroupControl": "5",
+    "ParkOnly": "1",
+    "SignalRestoreFailure": "9",
+    "TreeWrongReady": "6",
+    "UserNamespace": "0",
+    "WithholdReady": "4",
+    "WrongNonce": "3"
+  }
+}

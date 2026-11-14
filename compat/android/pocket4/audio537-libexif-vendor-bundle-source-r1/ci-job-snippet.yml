@@ -1,0 +1,11 @@
+# Independent A08 job, after normal checkout/Rust setup and rsync installation.
+- name: Replay Audio537 and compile its exact153 ordinary tests
+  timeout-minutes: 30
+  shell: bash
+  run: |
+    set -euo pipefail
+    capsule="$GITHUB_WORKSPACE/compat/android/pocket4/audio537-libexif-vendor-bundle-source-r1"
+    work="$RUNNER_TEMP/a08-audio537-producer"
+    (cd "$capsule" && sha256sum --quiet -c FILES.sha256)
+    python3 -I -B "$capsule/replay_capsule.py" --capsule "$capsule" --work "$work" --report "$RUNNER_TEMP/audio537-replay.json"
+    python3 -I -B "$capsule/run_ci_tests.py" --capsule "$capsule" --recipe "$work" --report "$RUNNER_TEMP/audio537-tests.json" --target "$RUNNER_TEMP/audio537-cargo-target" --jobs 2

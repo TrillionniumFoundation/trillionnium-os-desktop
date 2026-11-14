@@ -1,0 +1,55 @@
+9/280] cp /data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/host/linux-x86/bin/soong_build
+[100% 280/280] analyzing Android.bp files and generating ninja file at /data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/soong/build.droidloom_x86_64.ninja
+FAILED: /data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/soong/build.droidloom_x86_64.ninja
+cd "$(dirname "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/host/linux-x86/bin/soong_build")" && BUILDER="$PWD/$(basename "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/host/linux-x86/bin/soong_build")" && cd / && env -i GOMEMLIMIT=5GiB GOMAXPROCS=2 GOGC=50 GODEBUG=gctrace=1  "$BUILDER"     --top "$TOP"     --soong_out "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/soong"     --out "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out"     --soong_variables /data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/soong/soong.droidloom_x86_64.variables -o /data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/soong/build.droidloom_x86_64.ninja --kati_suffix -droidloom_x86_64 --kati_enabled -l /data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/.module_paths/Android.bp.list --available_env /data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/soong/soong.environment.available --used_env /data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/soong/soong.environment.used.droidloom_x86_64.build Android.bp
+gc 1 @0.013s 4%: 0.030+1.6+0.24 ms clock, 0.061+0.16/0.95/0.37+0.49 ms cpu, 1->2->0 MB, 2 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 2 @0.025s 5%: 0.021+2.0+0.18 ms clock, 0.043+0.27/0.94/0.83+0.37 ms cpu, 1->1->0 MB, 2 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 3 @0.033s 5%: 0.018+1.3+0.016 ms clock, 0.036+0.65/0.44/0.82+0.032 ms cpu, 1->2->0 MB, 2 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 4 @0.041s 6%: 0.025+2.2+0.037 ms clock, 0.050+0.57/0.57/1.4+0.074 ms cpu, 2->2->1 MB, 2 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 5 @0.048s 6%: 0.022+2.4+0.028 ms clock, 0.045+0/1.2/1.3+0.056 ms cpu, 2->2->1 MB, 2 MB goal, 0 MB stacks, 0 MB globals, 2 P
+DROIDLOOM_GO_BUDGET phase=enter pid=2270482 gomaxprocs=2 gomemlimit_bytes=5368709120 gogc_percent=50
+gc 6 @0.054s 7%: 0.034+1.5+0.10 ms clock, 0.069+1.3/0.19/1.1+0.21 ms cpu, 2->2->1 MB, 2 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 7 @0.056s 8%: 0.029+1.7+0.013 ms clock, 0.058+1.2/0.19/1.4+0.027 ms cpu, 3->3->2 MB, 3 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 8 @0.059s 9%: 0.027+2.1+0.016 ms clock, 0.054+1.0/0.93/1.3+0.032 ms cpu, 3->3->2 MB, 3 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 9 @0.065s 10%: 0.025+3.8+0.005 ms clock, 0.051+1.8/0.70/1.0+0.011 ms cpu, 3->3->3 MB, 3 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 10 @0.075s 11%: 0.030+3.4+0.018 ms clock, 0.060+2.4/0.71/0.89+0.036 ms cpu, 4->4->3 MB, 4 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 11 @0.089s 11%: 0.028+4.4+0.036 ms clock, 0.056+3.6/0.85/0+0.073 ms cpu, 5->6->5 MB, 5 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 12 @0.111s 12%: 0.031+9.9+0.033 ms clock, 0.063+3.7/4.1/0+0.066 ms cpu, 7->8->6 MB, 8 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 13 @0.127s 15%: 0.049+9.1+0.026 ms clock, 0.098+5.6/5.5/0+0.052 ms cpu, 8->9->7 MB, 9 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 14 @0.151s 17%: 0.093+9.9+0.051 ms clock, 0.18+8.7/5.1/0+0.10 ms cpu, 10->12->9 MB, 12 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 15 @0.180s 18%: 0.10+11+0.051 ms clock, 0.20+10/6.0/0+0.10 ms cpu, 13->14->12 MB, 14 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 16 @0.204s 20%: 0.028+13+0.016 ms clock, 0.056+10/5.7/0+0.033 ms cpu, 16->19->15 MB, 18 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 17 @0.222s 22%: 0.084+13+0.027 ms clock, 0.16+10/7.1/0+0.055 ms cpu, 20->23->17 MB, 23 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 18 @0.245s 24%: 0.074+15+0.009 ms clock, 0.14+13/8.2/0+0.018 ms cpu, 23->26->20 MB, 26 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 19 @0.266s 26%: 0.051+18+0.016 ms clock, 0.10+12/10/0+0.033 ms cpu, 27->30->22 MB, 30 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 20 @0.329s 26%: 0.072+24+0.010 ms clock, 0.14+19/14/0+0.021 ms cpu, 30->34->29 MB, 34 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 21 @0.380s 28%: 0.10+39+0.033 ms clock, 0.21+28/21/0+0.066 ms cpu, 40->44->33 MB, 44 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 22 @0.453s 29%: 0.072+52+0.022 ms clock, 0.14+30/27/0+0.044 ms cpu, 46->51->42 MB, 51 MB goal, 1 MB stacks, 0 MB globals, 2 P
+gc 23 @0.554s 29%: 0.079+70+0.022 ms clock, 0.15+41/36/0+0.044 ms cpu, 58->66->58 MB, 65 MB goal, 1 MB stacks, 0 MB globals, 2 P
+gc 24 @0.696s 31%: 0.050+143+0.057 ms clock, 0.10+82/77/0+0.11 ms cpu, 80->87->76 MB, 89 MB goal, 2 MB stacks, 0 MB globals, 2 P
+gc 25 @1.002s 30%: 0.078+200+0.017 ms clock, 0.15+95/107/0+0.034 ms cpu, 104->116->104 MB, 115 MB goal, 3 MB stacks, 0 MB globals, 2 P
+gc 26 @1.368s 30%: 0.056+173+0.023 ms clock, 0.11+120/96/0+0.047 ms cpu, 143->164->146 MB, 159 MB goal, 4 MB stacks, 0 MB globals, 2 P
+gc 27 @1.629s 32%: 0.086+182+0.015 ms clock, 0.17+131/91/0+0.030 ms cpu, 199->226->179 MB, 221 MB goal, 4 MB stacks, 0 MB globals, 2 P
+gc 28 @1.960s 33%: 0.051+262+0.036 ms clock, 0.10+160/140/0+0.072 ms cpu, 245->281->248 MB, 272 MB goal, 5 MB stacks, 0 MB globals, 2 P
+gc 29 @2.527s 30%: 0.27+353+0.035 ms clock, 0.54+81/187/93+0.070 ms cpu, 338->383->313 MB, 376 MB goal, 4 MB stacks, 0 MB globals, 2 P
+gc 30 @3.313s 27%: 0.19+470+0.022 ms clock, 0.39+85/243/111+0.045 ms cpu, 425->489->398 MB, 472 MB goal, 3 MB stacks, 0 MB globals, 2 P
+gc 31 @4.301s 24%: 0.22+619+0.026 ms clock, 0.45+43/316/228+0.053 ms cpu, 540->622->505 MB, 599 MB goal, 2 MB stacks, 0 MB globals, 2 P
+gc 32 @5.468s 23%: 0.40+679+0.022 ms clock, 0.81+37/351/359+0.045 ms cpu, 684->773->620 MB, 760 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 33 @7.003s 22%: 0.17+802+0.031 ms clock, 0.35+323/407/91+0.062 ms cpu, 838->953->758 MB, 930 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 34 @9.193s 20%: 0.19+1765+0.026 ms clock, 0.38+111/891/0+0.052 ms cpu, 1025->1156->894 MB, 1137 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 35 @15.071s 16%: 0.063+1402+0.016 ms clock, 0.12+282/703/212+0.032 ms cpu, 1209->1368->1064 MB, 1342 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 36 @17.419s 18%: 0.073+1704+0.024 ms clock, 0.14+842/861/0+0.048 ms cpu, 1439->1665->1482 MB, 1597 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 37 @21.175s 20%: 0.39+1937+0.026 ms clock, 0.78+1324/976/0+0.053 ms cpu, 2004->2311->2040 MB, 2224 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 38 @26.300s 20%: 0.074+3258+0.030 ms clock, 0.14+1154/1642/169+0.061 ms cpu, 2758->3158->2667 MB, 3061 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 39 @32.316s 20%: 0.11+5786+0.028 ms clock, 0.23+180/2904/531+0.056 ms cpu, 3606->4129->3319 MB, 4002 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 40 @41.164s 21%: 0.32+4565+0.028 ms clock, 0.64+2335/2283/250+0.057 ms cpu, 4217->4685->3997 MB, 4589 MB goal, 0 MB stacks, 0 MB globals, 2 P
+gc 41 @48.991s 23%: 0.10+5038+0.027 ms clock, 0.20+2381/2537/13+0.054 ms cpu, 4272->4371->3713 MB, 4187 MB goal, 5 MB stacks, 0 MB globals, 2 P
+DROIDLOOM_GO_BUDGET phase=leave pid=2270482 gomaxprocs=2 gomemlimit_bytes=5368709120 gogc_percent=50
+error: tools/lint_checks/utils/Android.bp:43:1: "enforce_permission_counter" depends on undefined module "soong_lint_fix".
+Or did you mean ["fs_config_dirs" "gen_intrinsics" "sign_virt_apex" "soong-libbpf"]?
+error: frameworks/base/tools/fonts/Android.bp:28:1: "fontchain_linter" depends on undefined module "fontTools".
+Or did you mean ["art-tools" "avbtool" "btool" "fastboot" "fastbootd" "fonts.xml" "obbtool" "ziptool"]?
+error: frameworks/base/tools/fonts/Android.bp:40:1: "update_font_metadata" depends on undefined module "fontTools".
+Or did you mean ["art-tools" "avbtool" "btool" "fastboot" "fastbootd" "fonts.xml" "obbtool" "ziptool"]?
+ninja: build stopped: subcommand failed.
+14:04:42 soong bootstrap failed with: exit status 1

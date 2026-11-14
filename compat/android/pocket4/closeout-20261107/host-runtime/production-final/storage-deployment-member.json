@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "kind": "pocket4-reviewed-storage-deployment-member",
+  "target": "/opt/pocket4-wifi-disabled-api-20261023-chat2-v2/payload/services-candidate.jar",
+  "candidate": "/home/alex/work/pocket4-storage-session-candidate-20261105-r12/alignment15/services-storage-single-removal.jar",
+  "guest_target": "/system/framework/services.jar",
+  "expected": {
+    "bytes": 34542267,
+    "ctime_ns": 1792775615719352105,
+    "device": 66306,
+    "gid": 0,
+    "inode": 52488519,
+    "mode": 33060,
+    "mtime_ns": 1792775615719352105,
+    "nlink": 1,
+    "sha256": "f33987e633e476f47ea043af3f7fb94907fd2431fa2b5b49df84cb586bce5c50",
+    "uid": 0
+  },
+  "install": {
+    "bytes": 34667535,
+    "sha256": "f1acb56e23cd9082a77ef686f2e840a736e7769dd8843830e53e56b1ac31566f",
+    "uid": 0,
+    "gid": 0,
+    "mode": 292
+  },
+  "candidate_identity": {
+    "bytes": 34667535,
+    "ctime_ns": 1793869949742009165,
+    "device": 66306,
+    "gid": 1000,
+    "inode": 36178214,
+    "mode": 33152,
+    "mtime_ns": 1793869949742009165,
+    "nlink": 1,
+    "sha256": "f1acb56e23cd9082a77ef686f2e840a736e7769dd8843830e53e56b1ac31566f",
+    "uid": 1000
+  },
+  "live_input_receipt": {
+    "host": "pocket4",
+    "job_id": "1a1b3a28c58-fc05-83fb",
+    "path": "/home/alex/work/pocket4-storage-closeout-20261107-r1/held-input-01/result.json",
+    "bytes": 4491,
+    "sha256": "4491a171914fed71d22518272718b14fccb8592b8d94116d1c6a558dace3a104"
+  },
+  "art_receipt": {
+    "path": "/home/alex/work/pocket4-storage-session-candidate-20261105-r12/art-candidate22/result.json",
+    "bytes": 20115,
+    "sha256": "89276b32a4a2d40dd27524f92a8ff9afb1b7997e5136b0333e2a79232d94697c"
+  },
+  "limits": {
+    "only_one_method_changed": true,
+    "other_64_zip_members_identical": true,
+    "installed": false,
+    "system_server_candidate_loaded": false,
+    "live_unmount_remount_qualified": false
+  },
+  "reviewed_transition": "Replace only after normal service stop and old Main exit; include in exact cohort atomic-file transaction with rollback. Create new Main baseline after full startup.",
+  "supersedes_invalid_derived_manifest": {
+    "sha256": "d42d570560dfe2349ddab51e4a0950ea025f983f0eaadbbd05c7dde9f563a9b1",
+    "reason": "JavaScript Number serialization rounded nanosecond timestamps; original raw evidence was unaffected; no installation occurred."
+  },
+  "integer_handling": "All POSIX metadata integers read from original UTF-8 JSON using Python exact integers."
+}

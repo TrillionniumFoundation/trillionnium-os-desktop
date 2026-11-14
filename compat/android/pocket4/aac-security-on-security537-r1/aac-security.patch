@@ -1,0 +1,3457 @@
+diff --git a/android/security/0002-aac-reset-ownership.patch b/android/security/0002-aac-reset-ownership.patch
+new file mode 100644
+index 0000000..8a25f2f
+--- /dev/null
++++ b/android/security/0002-aac-reset-ownership.patch
+@@ -0,0 +1,139 @@
++diff --git a/cpp/Android.bp b/cpp/Android.bp
++index 5b0558e..a217a1c 100644
++--- a/cpp/Android.bp
+++++ b/cpp/Android.bp
++@@ -66,3 +66,29 @@
++     ],
++     min_sdk_version: "29",
++ }
+++
+++cc_test {
+++    name: "libSBRdec_test",
+++    team: "trendy_team_android_media_audio_framework",
+++    host_supported: true,
+++    srcs: [
+++        "libSBRdec/tests/libSBRdec_test.cpp",
+++    ],
+++    static_libs: [
+++        "libFraunhoferAAC",
+++    ],
+++    shared_libs: [
+++        "liblog",
+++    ],
+++    local_include_dirs: [
+++        "libSBRdec/src",
+++    ],
+++    cflags: [
+++        "-Werror",
+++        "-Wall",
+++    ],
+++    sanitize: {
+++        cfi: true,
+++    },
+++    test_suites: ["device-tests"],
+++}
++diff --git a/cpp/libSBRdec/src/psdec.cpp b/cpp/libSBRdec/src/psdec.cpp
++index 13a21bf..155eaeb 100644
++--- a/cpp/libSBRdec/src/psdec.cpp
+++++ b/cpp/libSBRdec/src/psdec.cpp
++@@ -139,8 +139,9 @@
++ int CreatePsDec(HANDLE_PS_DEC *h_PS_DEC, /*!< pointer to the module state */
++                 int aacSamplesPerFrame) {
++   SBR_ERROR errorInfo = SBRDEC_OK;
++-  HANDLE_PS_DEC h_ps_d;
+++  HANDLE_PS_DEC h_ps_d = NULL;
++   int i;
+++  int h_ps_d_allocated = 0;
++ 
++   if (*h_PS_DEC == NULL) {
++     /* Get ps dec ram */
++@@ -148,6 +149,7 @@
++     if (h_ps_d == NULL) {
++       goto bail;
++     }
+++    h_ps_d_allocated = 1;
++   } else {
++     /* Reset an open instance */
++     h_ps_d = *h_PS_DEC;
++@@ -205,7 +207,8 @@
++   return 0;
++ 
++ bail:
++-  if (h_ps_d != NULL) {
+++  /* Only delete locally-allocated h_ps_d. */
+++  if (h_ps_d_allocated && h_ps_d != NULL) {
++     DeletePsDec(&h_ps_d);
++   }
++ 
++diff --git a/cpp/libSBRdec/src/sbrdecoder.cpp b/cpp/libSBRdec/src/sbrdecoder.cpp
++index 7718695..495e412 100644
++--- a/cpp/libSBRdec/src/sbrdecoder.cpp
+++++ b/cpp/libSBRdec/src/sbrdecoder.cpp
++@@ -401,6 +401,7 @@
++       case AOT_DRM_AAC:
++       case AOT_DRM_SURROUND:
++         if (CreatePsDec(&self->hParametricStereoDec, samplesPerFrame)) {
+++          DeletePsDec(&self->hParametricStereoDec);
++           sbrError = SBRDEC_CREATE_ERROR;
++           goto bail;
++         }
++diff --git a/cpp/libSBRdec/tests/libSBRdec_test.cpp b/cpp/libSBRdec/tests/libSBRdec_test.cpp
++new file mode 100644
++index 0000000..f30da93
++--- /dev/null
+++++ b/cpp/libSBRdec/tests/libSBRdec_test.cpp
++@@ -0,0 +1,54 @@
+++/*
+++ * Copyright (C) 2026 The Android Open Source Project
+++ *
+++ * Licensed under the Apache License, Version 2.0 (the "License");
+++ * you may not use this file except in compliance with the License.
+++ * You may obtain a copy of the License at
+++ *
+++ *      http://www.apache.org/licenses/LICENSE-2.0
+++ *
+++ * Unless required by applicable law or agreed to in writing, software
+++ * distributed under the License is distributed on an "AS IS" BASIS,
+++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+++ * See the License for the specific language governing permissions and
+++ * limitations under the License.
+++ */
+++
+++#include <gtest/gtest.h>
+++#include "psdec.h"
+++
+++// This test verifies the fix for a Use-After-Free (UAF) / Double Free vulnerability
+++// in CreatePsDec reset branch.
+++// The vulnerability occurs when CreatePsDec is called to reset an open instance
+++// (i.e., *h_PS_DEC is not NULL), and subsequently fails.
+++// Prior to the fix, CreatePsDec would delete the PS decoder handle but not nullify
+++// the caller's pointer, leading to a dangling pointer.
+++// This test calls CreatePsDec directly to bypass other SBR decoder checks.
+++TEST(LibSbrDecTest, CreatePsDecResetUAF) {
+++  HANDLE_PS_DEC handle = nullptr;
+++
+++  // 1. First call: Allocate and initialize PS dec successfully with 1024 samples.
+++  int err = CreatePsDec(&handle, 1024);
+++  ASSERT_EQ(err, 0);
+++  ASSERT_NE(handle, nullptr);
+++
+++  // 2. Second call: Reset with invalid samples (512) to force failure.
+++  // Since 'handle' is not null, this triggers the reset path.
+++  err = CreatePsDec(&handle, 512);
+++  EXPECT_NE(err, 0);
+++
+++  // If the patch is NOT applied:
+++  // - CreatePsDec already called DeletePsDec internally, freeing the memory.
+++  // - But 'handle' was not nullified, so it is dangling.
+++  // - The following DeletePsDec call will attempt to free it again (double free -> crash).
+++  //
+++  // If the patch IS applied:
+++  // - CreatePsDec did NOT free the memory because it was not locally allocated.
+++  // - 'handle' is still valid.
+++  // - The following DeletePsDec call will safely free it and set 'handle' to nullptr.
+++  if (handle != nullptr) {
+++    DeletePsDec(&handle);
+++  }
+++
+++  EXPECT_EQ(handle, nullptr);
+++}
+diff --git a/android/security/aac-fixtures/cpp/Android.bp b/android/security/aac-fixtures/cpp/Android.bp
+new file mode 100644
+index 0000000..5b0558e
+--- /dev/null
++++ b/android/security/aac-fixtures/cpp/Android.bp
+@@ -0,0 +1,68 @@
++cc_library {
++    name: "libFraunhoferAAC",
++    vendor_available: true,
++    host_supported: true,
++    srcs: [
++        "libAACdec/src/*.cpp",
++        "libAACenc/src/*.cpp",
++        "libPCMutils/src/*.cpp",
++        "libFDK/src/*.cpp",
++        "libSYS/src/*.cpp",
++        "libMpegTPDec/src/*.cpp",
++        "libMpegTPEnc/src/*.cpp",
++        "libSBRdec/src/*.cpp",
++        "libSBRenc/src/*.cpp",
++        "libArithCoding/src/*.cpp",
++        "libDRCdec/src/*.cpp",
++        "libSACdec/src/*.cpp",
++        "libSACenc/src/*.cpp",
++    ],
++    cflags: [
++        "-Werror",
++        "-Wno-unused-parameter",
++        "-Wno-#warnings",
++        "-Wuninitialized",
++        "-Wno-self-assign",
++        "-Wno-implicit-fallthrough",
++        "-DSUPPRESS_BUILD_DATE_INFO",
++    ],
++    sanitize: {
++        misc_undefined: [
++            "unsigned-integer-overflow",
++            "signed-integer-overflow",
++            "bounds",
++        ],
++        cfi: true,
++    },
++    shared_libs: [
++        "liblog",
++    ],
++    export_include_dirs: [
++        "libAACdec/include",
++        "libAACenc/include",
++        "libPCMutils/include",
++        "libFDK/include",
++        "libSYS/include",
++        "libMpegTPDec/include",
++        "libMpegTPEnc/include",
++        "libSBRdec/include",
++        "libSBRenc/include",
++        "libArithCoding/include",
++        "libDRCdec/include",
++        "libSACdec/include",
++        "libSACenc/include",
++    ],
++
++    target: {
++        darwin: {
++            enabled: false,
++        },
++    },
++
++    apex_available: [
++        "//apex_available:platform",
++        "com.android.bt",
++        "com.android.media.swcodec",
++    ],
++    min_sdk_version: "29",
++}
+diff --git a/android/security/aac-fixtures/cpp/libSBRdec/src/psdec.cpp b/android/security/aac-fixtures/cpp/libSBRdec/src/psdec.cpp
+new file mode 100644
+index 0000000..13a21bf
+--- /dev/null
++++ b/android/security/aac-fixtures/cpp/libSBRdec/src/psdec.cpp
+@@ -0,0 +1,714 @@
++/* -----------------------------------------------------------------------------
++Software License for The Fraunhofer FDK AAC Codec Library for Android
++
++© Copyright  1995 - 2018 Fraunhofer-Gesellschaft zur Förderung der angewandten
++Forschung e.V. All rights reserved.
++
++ 1.    INTRODUCTION
++The Fraunhofer FDK AAC Codec Library for Android ("FDK AAC Codec") is software
++that implements the MPEG Advanced Audio Coding ("AAC") encoding and decoding
++scheme for digital audio. This FDK AAC Codec software is intended to be used on
++a wide variety of Android devices.
++
++AAC's HE-AAC and HE-AAC v2 versions are regarded as today's most efficient
++general perceptual audio codecs. AAC-ELD is considered the best-performing
++full-bandwidth communications codec by independent studies and is widely
++deployed. AAC has been standardized by ISO and IEC as part of the MPEG
++specifications.
++
++Patent licenses for necessary patent claims for the FDK AAC Codec (including
++those of Fraunhofer) may be obtained through Via Licensing
++(www.vialicensing.com) or through the respective patent owners individually for
++the purpose of encoding or decoding bit streams in products that are compliant
++with the ISO/IEC MPEG audio standards. Please note that most manufacturers of
++Android devices already license these patent claims through Via Licensing or
++directly from the patent owners, and therefore FDK AAC Codec software may
++already be covered under those patent licenses when it is used for those
++licensed purposes only.
++
++Commercially-licensed AAC software libraries, including floating-point versions
++with enhanced sound quality, are also available from Fraunhofer. Users are
++encouraged to check the Fraunhofer website for additional applications
++information and documentation.
++
++2.    COPYRIGHT LICENSE
++
++Redistribution and use in source and binary forms, with or without modification,
++are permitted without payment of copyright license fees provided that you
++satisfy the following conditions:
++
++You must retain the complete text of this software license in redistributions of
++the FDK AAC Codec or your modifications thereto in source code form.
++
++You must retain the complete text of this software license in the documentation
++and/or other materials provided with redistributions of the FDK AAC Codec or
++your modifications thereto in binary form. You must make available free of
++charge copies of the complete source code of the FDK AAC Codec and your
++modifications thereto to recipients of copies in binary form.
++
++The name of Fraunhofer may not be used to endorse or promote products derived
++from this library without prior written permission.
++
++You may not charge copyright license fees for anyone to use, copy or distribute
++the FDK AAC Codec software or your modifications thereto.
++
++Your modified versions of the FDK AAC Codec must carry prominent notices stating
++that you changed the software and the date of any change. For modified versions
++of the FDK AAC Codec, the term "Fraunhofer FDK AAC Codec Library for Android"
++must be replaced by the term "Third-Party Modified Version of the Fraunhofer FDK
++AAC Codec Library for Android."
++
++3.    NO PATENT LICENSE
++
++NO EXPRESS OR IMPLIED LICENSES TO ANY PATENT CLAIMS, including without
++limitation the patents of Fraunhofer, ARE GRANTED BY THIS SOFTWARE LICENSE.
++Fraunhofer provides no warranty of patent non-infringement with respect to this
++software.
++
++You may use this FDK AAC Codec software or modifications thereto only for
++purposes that are authorized by appropriate patent licenses.
++
++4.    DISCLAIMER
++
++This FDK AAC Codec software is provided by Fraunhofer on behalf of the copyright
++holders and contributors "AS IS" and WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES,
++including but not limited to the implied warranties of merchantability and
++fitness for a particular purpose. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
++CONTRIBUTORS BE LIABLE for any direct, indirect, incidental, special, exemplary,
++or consequential damages, including but not limited to procurement of substitute
++goods or services; loss of use, data, or profits, or business interruption,
++however caused and on any theory of liability, whether in contract, strict
++liability, or tort (including negligence), arising in any way out of the use of
++this software, even if advised of the possibility of such damage.
++
++5.    CONTACT INFORMATION
++
++Fraunhofer Institute for Integrated Circuits IIS
++Attention: Audio and Multimedia Departments - FDK AAC LL
++Am Wolfsmantel 33
++91058 Erlangen, Germany
++
++www.iis.fraunhofer.de/amm
++amm-info@iis.fraunhofer.de
++----------------------------------------------------------------------------- */
++
++/**************************** SBR decoder library ******************************
++
++   Author(s):
++
++   Description:
++
++*******************************************************************************/
++
++/*!
++  \file
++  \brief  parametric stereo decoder
++*/
++
++#include "psdec.h"
++
++#include "FDK_bitbuffer.h"
++
++#include "sbr_rom.h"
++#include "sbr_ram.h"
++
++#include "FDK_tools_rom.h"
++
++#include "genericStds.h"
++
++#include "FDK_trigFcts.h"
++
++/********************************************************************/
++/*                       MLQUAL DEFINES                             */
++/********************************************************************/
++
++#define FRACT_ZERO FRACT_BITS - 1
++/********************************************************************/
++
++SBR_ERROR ResetPsDec(HANDLE_PS_DEC h_ps_d);
++
++/***** HELPERS *****/
++
++/***************************************************************************/
++/*!
++  \brief  Creates one instance of the PS_DEC struct
++
++  \return Error info
++
++****************************************************************************/
++int CreatePsDec(HANDLE_PS_DEC *h_PS_DEC, /*!< pointer to the module state */
++                int aacSamplesPerFrame) {
++  SBR_ERROR errorInfo = SBRDEC_OK;
++  HANDLE_PS_DEC h_ps_d;
++  int i;
++
++  if (*h_PS_DEC == NULL) {
++    /* Get ps dec ram */
++    h_ps_d = GetRam_ps_dec();
++    if (h_ps_d == NULL) {
++      goto bail;
++    }
++  } else {
++    /* Reset an open instance */
++    h_ps_d = *h_PS_DEC;
++  }
++
++  /*
++   * Create Analysis Hybrid filterbank.
++   */
++  FDKhybridAnalysisOpen(&h_ps_d->specificTo.mpeg.hybridAnalysis,
++                        h_ps_d->specificTo.mpeg.pHybridAnaStatesLFdmx,
++                        sizeof(h_ps_d->specificTo.mpeg.pHybridAnaStatesLFdmx),
++                        NULL, 0);
++
++  /* initialisation */
++  switch (aacSamplesPerFrame) {
++    case 960:
++      h_ps_d->noSubSamples = 30; /* col */
++      break;
++    case 1024:
++      h_ps_d->noSubSamples = 32; /* col */
++      break;
++    default:
++      h_ps_d->noSubSamples = -1;
++      break;
++  }
++
++  if (h_ps_d->noSubSamples > MAX_NUM_COL || h_ps_d->noSubSamples <= 0) {
++    goto bail;
++  }
++  h_ps_d->noChannels = NO_QMF_CHANNELS; /* row */
++
++  h_ps_d->psDecodedPrv = 0;
++  h_ps_d->procFrameBased = -1;
++  for (i = 0; i < (1) + 1; i++) {
++    h_ps_d->bPsDataAvail[i] = ppt_none;
++  }
++  {
++    int error;
++    error = FDKdecorrelateOpen(&(h_ps_d->specificTo.mpeg.apDecor),
++                               h_ps_d->specificTo.mpeg.decorrBufferCplx,
++                               (2 * ((825) + (373))));
++    if (error) goto bail;
++  }
++
++  for (i = 0; i < (1) + 1; i++) {
++    FDKmemclear(&h_ps_d->bsData[i].mpeg, sizeof(MPEG_PS_BS_DATA));
++  }
++
++  errorInfo = ResetPsDec(h_ps_d);
++
++  if (errorInfo != SBRDEC_OK) goto bail;
++
++  *h_PS_DEC = h_ps_d;
++
++  return 0;
++
++bail:
++  if (h_ps_d != NULL) {
++    DeletePsDec(&h_ps_d);
++  }
++
++  return -1;
++} /*END CreatePsDec */
++
++/***************************************************************************/
++/*!
++  \brief  Delete one instance of the PS_DEC struct
++
++  \return Error info
++
++****************************************************************************/
++int DeletePsDec(HANDLE_PS_DEC *h_PS_DEC) /*!< pointer to the module state */
++{
++  if (*h_PS_DEC == NULL) {
++    return -1;
++  }
++
++  {
++    HANDLE_PS_DEC h_ps_d = *h_PS_DEC;
++    FDKdecorrelateClose(&(h_ps_d->specificTo.mpeg.apDecor));
++  }
++
++  FreeRam_ps_dec(h_PS_DEC);
++
++  return 0;
++} /*END DeletePsDec */
++
++/***************************************************************************/
++/*!
++  \brief resets some values of the PS handle to default states
++
++  \return
++
++****************************************************************************/
++SBR_ERROR ResetPsDec(HANDLE_PS_DEC h_ps_d) /*!< pointer to the module state */
++{
++  SBR_ERROR errorInfo = SBRDEC_OK;
++  INT i;
++
++  /* explicitly init state variables to safe values (until first ps header
++   * arrives) */
++
++  h_ps_d->specificTo.mpeg.lastUsb = 0;
++
++  /*
++   * Initialize Analysis Hybrid filterbank.
++   */
++  FDKhybridAnalysisInit(&h_ps_d->specificTo.mpeg.hybridAnalysis, THREE_TO_TEN,
++                        NO_QMF_BANDS_HYBRID20, NO_QMF_BANDS_HYBRID20, 1);
++
++  /*
++   * Initialize Synthesis Hybrid filterbank.
++   */
++  for (i = 0; i < 2; i++) {
++    FDKhybridSynthesisInit(&h_ps_d->specificTo.mpeg.hybridSynthesis[i],
++                           THREE_TO_TEN, NO_QMF_CHANNELS, NO_QMF_CHANNELS);
++  }
++  {
++    INT error;
++    error = FDKdecorrelateInit(&h_ps_d->specificTo.mpeg.apDecor, 71, DECORR_PS,
++                               DUCKER_AUTOMATIC, 0, 0, 0, 0, 1, /* isLegacyPS */
++                               1);
++    if (error) return SBRDEC_NOT_INITIALIZED;
++  }
++
++  for (i = 0; i < NO_IID_GROUPS; i++) {
++    h_ps_d->specificTo.mpeg.h11rPrev[i] = FL2FXCONST_DBL(0.5f);
++    h_ps_d->specificTo.mpeg.h12rPrev[i] = FL2FXCONST_DBL(0.5f);
++  }
++
++  FDKmemclear(h_ps_d->specificTo.mpeg.h21rPrev,
++              sizeof(h_ps_d->specificTo.mpeg.h21rPrev));
++  FDKmemclear(h_ps_d->specificTo.mpeg.h22rPrev,
++              sizeof(h_ps_d->specificTo.mpeg.h22rPrev));
++
++  return errorInfo;
++}
++
++/***************************************************************************/
++/*!
++  \brief  Feed delaylines when parametric stereo is switched on.
++  \return
++****************************************************************************/
++void PreparePsProcessing(HANDLE_PS_DEC h_ps_d,
++                         const FIXP_DBL *const *const rIntBufferLeft,
++                         const FIXP_DBL *const *const iIntBufferLeft,
++                         const int scaleFactorLowBand) {
++  if (h_ps_d->procFrameBased ==
++      1) /* If we have switched from frame to slot based processing  */
++  {      /* fill hybrid delay buffer.                                */
++    int i, j;
++
++    for (i = 0; i < HYBRID_FILTER_DELAY; i++) {
++      FIXP_DBL qmfInputData[2][NO_QMF_BANDS_HYBRID20];
++      FIXP_DBL hybridOutputData[2][NO_SUB_QMF_CHANNELS];
++
++      for (j = 0; j < NO_QMF_BANDS_HYBRID20; j++) {
++        qmfInputData[0][j] =
++            scaleValue(rIntBufferLeft[i][j], scaleFactorLowBand);
++        qmfInputData[1][j] =
++            scaleValue(iIntBufferLeft[i][j], scaleFactorLowBand);
++      }
++
++      FDKhybridAnalysisApply(&h_ps_d->specificTo.mpeg.hybridAnalysis,
++                             qmfInputData[0], qmfInputData[1],
++                             hybridOutputData[0], hybridOutputData[1]);
++    }
++    h_ps_d->procFrameBased = 0; /* switch to slot based processing. */
++
++  } /* procFrameBased==1 */
++}
++
++void initSlotBasedRotation(
++    HANDLE_PS_DEC h_ps_d, /*!< pointer to the module state */
++    int env, int usb) {
++  INT group = 0;
++  INT bin = 0;
++  INT noIidSteps;
++
++  FIXP_SGL invL;
++  FIXP_DBL ScaleL, ScaleR;
++  FIXP_DBL Alpha, Beta;
++  FIXP_DBL h11r, h12r, h21r, h22r;
++
++  const FIXP_DBL *PScaleFactors;
++
++  if (h_ps_d->bsData[h_ps_d->processSlot].mpeg.bFineIidQ) {
++    PScaleFactors = ScaleFactorsFine; /* values are shiftet right by one */
++    noIidSteps = NO_IID_STEPS_FINE;
++  } else {
++    PScaleFactors = ScaleFactors; /* values are shiftet right by one */
++    noIidSteps = NO_IID_STEPS;
++  }
++
++  /* dequantize and decode */
++  for (group = 0; group < NO_IID_GROUPS; group++) {
++    bin = bins2groupMap20[group];
++
++    /*!
++    <h3> type 'A' rotation </h3>
++    mixing procedure R_a, used in baseline version<br>
++
++     Scale-factor vectors c1 and c2 are precalculated in initPsTables () and
++    stored in scaleFactors[] and scaleFactorsFine[] = pScaleFactors []. From the
++    linearized IID parameters (intensity differences), two scale factors are
++     calculated. They are used to obtain the coefficients h11... h22.
++    */
++
++    /* ScaleR and ScaleL are scaled by 1 shift right */
++
++    ScaleR = PScaleFactors[noIidSteps + h_ps_d->specificTo.mpeg.pCoef
++                                            ->aaIidIndexMapped[env][bin]];
++    ScaleL = PScaleFactors[noIidSteps - h_ps_d->specificTo.mpeg.pCoef
++                                            ->aaIidIndexMapped[env][bin]];
++
++    Beta = fMult(
++        fMult(Alphas[h_ps_d->specificTo.mpeg.pCoef->aaIccIndexMapped[env][bin]],
++              (ScaleR - ScaleL)),
++        FIXP_SQRT05);
++    Alpha =
++        Alphas[h_ps_d->specificTo.mpeg.pCoef->aaIccIndexMapped[env][bin]] >> 1;
++
++    /* Alpha and Beta are now both scaled by 2 shifts right */
++
++    /* calculate the coefficients h11... h22 from scale-factors and ICC
++     * parameters */
++
++    /* h values are scaled by 1 shift right */
++    {
++      FIXP_DBL trigData[4];
++
++      inline_fixp_cos_sin(Beta + Alpha, Beta - Alpha, 2, trigData);
++      h11r = fMult(ScaleL, trigData[0]);
++      h12r = fMult(ScaleR, trigData[2]);
++      h21r = fMult(ScaleL, trigData[1]);
++      h22r = fMult(ScaleR, trigData[3]);
++    }
++    /*****************************************************************************************/
++    /* Interpolation of the matrices H11... H22: */
++    /*                                                                                       */
++    /* H11(k,n) = H11(k,n[e]) + (n-n[e]) * (H11(k,n[e+1] - H11(k,n[e])) /
++     * (n[e+1] - n[e])    */
++    /* ... */
++    /*****************************************************************************************/
++
++    /* invL = 1/(length of envelope) */
++    invL = FX_DBL2FX_SGL(GetInvInt(
++        h_ps_d->bsData[h_ps_d->processSlot].mpeg.aEnvStartStop[env + 1] -
++        h_ps_d->bsData[h_ps_d->processSlot].mpeg.aEnvStartStop[env]));
++
++    h_ps_d->specificTo.mpeg.pCoef->H11r[group] =
++        h_ps_d->specificTo.mpeg.h11rPrev[group];
++    h_ps_d->specificTo.mpeg.pCoef->H12r[group] =
++        h_ps_d->specificTo.mpeg.h12rPrev[group];
++    h_ps_d->specificTo.mpeg.pCoef->H21r[group] =
++        h_ps_d->specificTo.mpeg.h21rPrev[group];
++    h_ps_d->specificTo.mpeg.pCoef->H22r[group] =
++        h_ps_d->specificTo.mpeg.h22rPrev[group];
++
++    h_ps_d->specificTo.mpeg.pCoef->DeltaH11r[group] =
++        fMult(h11r - h_ps_d->specificTo.mpeg.pCoef->H11r[group], invL);
++    h_ps_d->specificTo.mpeg.pCoef->DeltaH12r[group] =
++        fMult(h12r - h_ps_d->specificTo.mpeg.pCoef->H12r[group], invL);
++    h_ps_d->specificTo.mpeg.pCoef->DeltaH21r[group] =
++        fMult(h21r - h_ps_d->specificTo.mpeg.pCoef->H21r[group], invL);
++    h_ps_d->specificTo.mpeg.pCoef->DeltaH22r[group] =
++        fMult(h22r - h_ps_d->specificTo.mpeg.pCoef->H22r[group], invL);
++
++    /* update prev coefficients for interpolation in next envelope */
++
++    h_ps_d->specificTo.mpeg.h11rPrev[group] = h11r;
++    h_ps_d->specificTo.mpeg.h12rPrev[group] = h12r;
++    h_ps_d->specificTo.mpeg.h21rPrev[group] = h21r;
++    h_ps_d->specificTo.mpeg.h22rPrev[group] = h22r;
++
++  } /* group loop */
++}
++
++static const UCHAR groupTable[NO_IID_GROUPS + 1] = {
++    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11,
++    12, 13, 14, 15, 16, 18, 21, 25, 30, 42, 71};
++
++static void applySlotBasedRotation(
++    HANDLE_PS_DEC h_ps_d, /*!< pointer to the module state */
++
++    FIXP_DBL *mHybridRealLeft, /*!< hybrid values real left  */
++    FIXP_DBL *mHybridImagLeft, /*!< hybrid values imag left  */
++
++    FIXP_DBL *mHybridRealRight, /*!< hybrid values real right  */
++    FIXP_DBL *mHybridImagRight  /*!< hybrid values imag right  */
++) {
++  INT group;
++  INT subband;
++
++  /**********************************************************************************************/
++  /*!
++  <h2> Mapping </h2>
++
++  The number of stereo bands that is actually used depends on the number of
++  availble parameters for IID and ICC: <pre> nr. of IID para.| nr. of ICC para.
++  | nr. of Stereo bands
++   ----------------|------------------|-------------------
++     10,20         |     10,20        |        20
++     10,20         |     34           |        34
++     34            |     10,20        |        34
++     34            |     34           |        34
++  </pre>
++  In the case the number of parameters for IIS and ICC differs from the number
++  of stereo bands, a mapping from the lower number to the higher number of
++  parameters is applied. Index mapping of IID and ICC parameters is already done
++  in psbitdec.cpp. Further mapping is not needed here in baseline version.
++  **********************************************************************************************/
++
++  /************************************************************************************************/
++  /*!
++  <h2> Mixing </h2>
++
++  To generate the QMF subband signals for the subband samples n = n[e]+1 ,,,
++  n_[e+1] the parameters at position n[e] and n[e+1] are required as well as the
++  subband domain signals s_k(n) and d_k(n) for n = n[e]+1... n_[e+1]. n[e]
++  represents the start position for envelope e. The border positions n[e] are
++  handled in DecodePS().
++
++  The stereo sub subband signals are constructed as:
++  <pre>
++  l_k(n) = H11(k,n) s_k(n) + H21(k,n) d_k(n)
++  r_k(n) = H21(k,n) s_k(n) + H22(k,n) d_k(n)
++  </pre>
++  In order to obtain the matrices H11(k,n)... H22 (k,n), the vectors h11(b)...
++  h22(b) need to be calculated first (b: parameter index). Depending on ICC mode
++  either mixing procedure R_a or R_b is used for that. For both procedures, the
++  parameters for parameter position n[e+1] is used.
++  ************************************************************************************************/
++
++  /************************************************************************************************/
++  /*!
++  <h2>Phase parameters </h2>
++  With disabled phase parameters (which is the case in baseline version), the
++  H-matrices are just calculated by:
++
++  <pre>
++  H11(k,n[e+1] = h11(b(k))
++  (...)
++  b(k): parameter index according to mapping table
++  </pre>
++
++  <h2>Processing of the samples in the sub subbands </h2>
++  this loop includes the interpolation of the coefficients Hxx
++  ************************************************************************************************/
++
++  /******************************************************/
++  /* construct stereo sub subband signals according to: */
++  /*                                                    */
++  /* l_k(n) = H11(k,n) s_k(n) + H21(k,n) d_k(n)         */
++  /* r_k(n) = H12(k,n) s_k(n) + H22(k,n) d_k(n)         */
++  /******************************************************/
++  PS_DEC_COEFFICIENTS *pCoef = h_ps_d->specificTo.mpeg.pCoef;
++
++  for (group = 0; group < NO_IID_GROUPS; group++) {
++    pCoef->H11r[group] += pCoef->DeltaH11r[group];
++    pCoef->H12r[group] += pCoef->DeltaH12r[group];
++    pCoef->H21r[group] += pCoef->DeltaH21r[group];
++    pCoef->H22r[group] += pCoef->DeltaH22r[group];
++
++    const int start = groupTable[group];
++    const int stop = groupTable[group + 1];
++    for (subband = start; subband < stop; subband++) {
++      FIXP_DBL tmpLeft =
++          fMultAdd(fMultDiv2(pCoef->H11r[group], mHybridRealLeft[subband]),
++                   pCoef->H21r[group], mHybridRealRight[subband]);
++      FIXP_DBL tmpRight =
++          fMultAdd(fMultDiv2(pCoef->H12r[group], mHybridRealLeft[subband]),
++                   pCoef->H22r[group], mHybridRealRight[subband]);
++      mHybridRealLeft[subband] = tmpLeft;
++      mHybridRealRight[subband] = tmpRight;
++
++      tmpLeft =
++          fMultAdd(fMultDiv2(pCoef->H11r[group], mHybridImagLeft[subband]),
++                   pCoef->H21r[group], mHybridImagRight[subband]);
++      tmpRight =
++          fMultAdd(fMultDiv2(pCoef->H12r[group], mHybridImagLeft[subband]),
++                   pCoef->H22r[group], mHybridImagRight[subband]);
++      mHybridImagLeft[subband] = tmpLeft;
++      mHybridImagRight[subband] = tmpRight;
++    } /* subband */
++  }
++}
++
++/***************************************************************************/
++/*!
++  \brief  Applies IID, ICC, IPD and OPD parameters to the current frame.
++
++  \return none
++
++****************************************************************************/
++void ApplyPsSlot(
++    HANDLE_PS_DEC h_ps_d,      /*!< handle PS_DEC*/
++    FIXP_DBL **rIntBufferLeft, /*!< real bands left qmf channel (38x64)  */
++    FIXP_DBL **iIntBufferLeft, /*!< imag bands left qmf channel (38x64)  */
++    FIXP_DBL *rIntBufferRight, /*!< real bands right qmf channel (38x64) */
++    FIXP_DBL *iIntBufferRight, /*!< imag bands right qmf channel (38x64) */
++    const int scaleFactorLowBand_no_ov, const int scaleFactorLowBand,
++    const int scaleFactorHighBand, const int lsb, const int usb) {
++/*!
++The 64-band QMF representation of the monaural signal generated by the SBR tool
++is used as input of the PS tool. After the PS processing, the outputs of the
++left and right hybrid synthesis filterbanks are used to generate the stereo
++output signal.
++
++<pre>
++
++           -------------            ----------            -------------
++          | Hybrid      | M_n[k,m] |          | L_n[k,m] | Hybrid      | l[n]
++ m[n] --->| analysis    |--------->|          |--------->| synthesis   |----->
++           -------------           | Stereo   |           -------------
++                 |                 | recon-   |
++                 |                 | stuction |
++                \|/                |          |
++           -------------           |          |
++          | De-         | D_n[k,m] |          |
++          | correlation |--------->|          |
++           -------------           |          |           -------------
++                                   |          | R_n[k,m] | Hybrid      | r[n]
++                                   |          |--------->| synthesis   |----->
++ IID, ICC ------------------------>|          |          | filter bank |
++(IPD, OPD)                          ----------            -------------
++
++m[n]:      QMF represantation of the mono input
++M_n[k,m]:  (sub-)sub-band domain signals of the mono input
++D_n[k,m]:  decorrelated (sub-)sub-band domain signals
++L_n[k,m]:  (sub-)sub-band domain signals of the left output
++R_n[k,m]:  (sub-)sub-band domain signals of the right output
++l[n],r[n]: left/right output signals
++
++</pre>
++*/
++#define NO_HYBRID_DATA_BANDS (71)
++
++  int i;
++  FIXP_DBL qmfInputData[2][NO_QMF_BANDS_HYBRID20];
++  FIXP_DBL *hybridData[2][2];
++  C_ALLOC_SCRATCH_START(pHybridData, FIXP_DBL, 4 * NO_HYBRID_DATA_BANDS);
++
++  hybridData[0][0] =
++      pHybridData + 0 * NO_HYBRID_DATA_BANDS; /* left real hybrid data */
++  hybridData[0][1] =
++      pHybridData + 1 * NO_HYBRID_DATA_BANDS; /* left imag hybrid data */
++  hybridData[1][0] =
++      pHybridData + 2 * NO_HYBRID_DATA_BANDS; /* right real hybrid data */
++  hybridData[1][1] =
++      pHybridData + 3 * NO_HYBRID_DATA_BANDS; /* right imag hybrid data */
++
++  /*!
++  Hybrid analysis filterbank:
++  The lower 3 (5) of the 64 QMF subbands are further split to provide better
++  frequency resolution. for PS processing. For the 10 and 20 stereo bands
++  configuration, the QMF band H_0(w) is split up into 8 (sub-) sub-bands and the
++  QMF bands H_1(w) and H_2(w) are spit into 2 (sub-) 4th. (See figures 8.20
++  and 8.22 of ISO/IEC 14496-3:2001/FDAM 2:2004(E) )
++  */
++
++  /*
++   * Hybrid analysis.
++   */
++
++  /* Get qmf input data and apply descaling */
++  for (i = 0; i < NO_QMF_BANDS_HYBRID20; i++) {
++    qmfInputData[0][i] = scaleValue(rIntBufferLeft[HYBRID_FILTER_DELAY][i],
++                                    scaleFactorLowBand_no_ov);
++    qmfInputData[1][i] = scaleValue(iIntBufferLeft[HYBRID_FILTER_DELAY][i],
++                                    scaleFactorLowBand_no_ov);
++  }
++
++  /* LF - part */
++  FDKhybridAnalysisApply(&h_ps_d->specificTo.mpeg.hybridAnalysis,
++                         qmfInputData[0], qmfInputData[1], hybridData[0][0],
++                         hybridData[0][1]);
++
++  /* HF - part */
++  /* bands up to lsb */
++  scaleValues(&hybridData[0][0][NO_SUB_QMF_CHANNELS - 2],
++              &rIntBufferLeft[0][NO_QMF_BANDS_HYBRID20],
++              lsb - NO_QMF_BANDS_HYBRID20, scaleFactorLowBand);
++  scaleValues(&hybridData[0][1][NO_SUB_QMF_CHANNELS - 2],
++              &iIntBufferLeft[0][NO_QMF_BANDS_HYBRID20],
++              lsb - NO_QMF_BANDS_HYBRID20, scaleFactorLowBand);
++
++  /* bands from lsb to usb */
++  scaleValues(&hybridData[0][0][lsb + (NO_SUB_QMF_CHANNELS - 2 -
++                                       NO_QMF_BANDS_HYBRID20)],
++              &rIntBufferLeft[0][lsb], usb - lsb, scaleFactorHighBand);
++  scaleValues(&hybridData[0][1][lsb + (NO_SUB_QMF_CHANNELS - 2 -
++                                       NO_QMF_BANDS_HYBRID20)],
++              &iIntBufferLeft[0][lsb], usb - lsb, scaleFactorHighBand);
++
++  /* bands from usb to NO_SUB_QMF_CHANNELS which should be zero for non-overlap
++     slots but can be non-zero for overlap slots */
++  FDKmemcpy(
++      &hybridData[0][0]
++                 [usb + (NO_SUB_QMF_CHANNELS - 2 - NO_QMF_BANDS_HYBRID20)],
++      &rIntBufferLeft[0][usb], sizeof(FIXP_DBL) * (NO_QMF_CHANNELS - usb));
++  FDKmemcpy(
++      &hybridData[0][1]
++                 [usb + (NO_SUB_QMF_CHANNELS - 2 - NO_QMF_BANDS_HYBRID20)],
++      &iIntBufferLeft[0][usb], sizeof(FIXP_DBL) * (NO_QMF_CHANNELS - usb));
++
++  /*!
++  Decorrelation:
++  By means of all-pass filtering and delaying, the (sub-)sub-band samples s_k(n)
++  are converted into de-correlated (sub-)sub-band samples d_k(n).
++  - k: frequency in hybrid spectrum
++  - n: time index
++  */
++
++  FDKdecorrelateApply(&h_ps_d->specificTo.mpeg.apDecor,
++                      &hybridData[0][0][0], /* left real hybrid data */
++                      &hybridData[0][1][0], /* left imag hybrid data */
++                      &hybridData[1][0][0], /* right real hybrid data */
++                      &hybridData[1][1][0], /* right imag hybrid data */
++                      0                     /* startHybBand */
++  );
++
++  /*!
++  Stereo Processing:
++  The sets of (sub-)sub-band samples s_k(n) and d_k(n) are processed according
++  to the stereo cues which are defined per stereo band.
++  */
++
++  applySlotBasedRotation(h_ps_d,
++                         &hybridData[0][0][0], /* left real hybrid data */
++                         &hybridData[0][1][0], /* left imag hybrid data */
++                         &hybridData[1][0][0], /* right real hybrid data */
++                         &hybridData[1][1][0]  /* right imag hybrid data */
++  );
++
++  /*!
++  Hybrid synthesis filterbank:
++  The stereo processed hybrid subband signals l_k(n) and r_k(n) are fed into the
++  hybrid synthesis filterbanks which are identical to the 64 complex synthesis
++  filterbank of the SBR tool. The input to the filterbank are slots of 64 QMF
++  samples. For each slot the filterbank outputs one block of 64 samples of one
++  reconstructed stereo channel. The hybrid synthesis filterbank is computed
++  seperatly for the left and right channel.
++  */
++
++  /*
++   * Hybrid synthesis.
++   */
++  for (i = 0; i < 2; i++) {
++    FDKhybridSynthesisApply(
++        &h_ps_d->specificTo.mpeg.hybridSynthesis[i],
++        hybridData[i][0], /* real hybrid data */
++        hybridData[i][1], /* imag hybrid data */
++        (i == 0) ? rIntBufferLeft[0]
++                 : rIntBufferRight, /* output real qmf buffer */
++        (i == 0) ? iIntBufferLeft[0]
++                 : iIntBufferRight /* output imag qmf buffer */
++    );
++  }
++
++  /* free temporary hybrid qmf values of one timeslot */
++  C_ALLOC_SCRATCH_END(pHybridData, FIXP_DBL, 4 * NO_HYBRID_DATA_BANDS);
++
++} /* END ApplyPsSlot */
+diff --git a/android/security/aac-fixtures/cpp/libSBRdec/src/sbrdecoder.cpp b/android/security/aac-fixtures/cpp/libSBRdec/src/sbrdecoder.cpp
+new file mode 100644
+index 0000000..7718695
+--- /dev/null
++++ b/android/security/aac-fixtures/cpp/libSBRdec/src/sbrdecoder.cpp
+@@ -0,0 +1,2015 @@
++/* -----------------------------------------------------------------------------
++Software License for The Fraunhofer FDK AAC Codec Library for Android
++
++© Copyright  1995 - 2021 Fraunhofer-Gesellschaft zur Förderung der angewandten
++Forschung e.V. All rights reserved.
++
++ 1.    INTRODUCTION
++The Fraunhofer FDK AAC Codec Library for Android ("FDK AAC Codec") is software
++that implements the MPEG Advanced Audio Coding ("AAC") encoding and decoding
++scheme for digital audio. This FDK AAC Codec software is intended to be used on
++a wide variety of Android devices.
++
++AAC's HE-AAC and HE-AAC v2 versions are regarded as today's most efficient
++general perceptual audio codecs. AAC-ELD is considered the best-performing
++full-bandwidth communications codec by independent studies and is widely
++deployed. AAC has been standardized by ISO and IEC as part of the MPEG
++specifications.
++
++Patent licenses for necessary patent claims for the FDK AAC Codec (including
++those of Fraunhofer) may be obtained through Via Licensing
++(www.vialicensing.com) or through the respective patent owners individually for
++the purpose of encoding or decoding bit streams in products that are compliant
++with the ISO/IEC MPEG audio standards. Please note that most manufacturers of
++Android devices already license these patent claims through Via Licensing or
++directly from the patent owners, and therefore FDK AAC Codec software may
++already be covered under those patent licenses when it is used for those
++licensed purposes only.
++
++Commercially-licensed AAC software libraries, including floating-point versions
++with enhanced sound quality, are also available from Fraunhofer. Users are
++encouraged to check the Fraunhofer website for additional applications
++information and documentation.
++
++2.    COPYRIGHT LICENSE
++
++Redistribution and use in source and binary forms, with or without modification,
++are permitted without payment of copyright license fees provided that you
++satisfy the following conditions:
++
++You must retain the complete text of this software license in redistributions of
++the FDK AAC Codec or your modifications thereto in source code form.
++
++You must retain the complete text of this software license in the documentation
++and/or other materials provided with redistributions of the FDK AAC Codec or
++your modifications thereto in binary form. You must make available free of
++charge copies of the complete source code of the FDK AAC Codec and your
++modifications thereto to recipients of copies in binary form.
++
++The name of Fraunhofer may not be used to endorse or promote products derived
++from this library without prior written permission.
++
++You may not charge copyright license fees for anyone to use, copy or distribute
++the FDK AAC Codec software or your modifications thereto.
++
++Your modified versions of the FDK AAC Codec must carry prominent notices stating
++that you changed the software and the date of any change. For modified versions
++of the FDK AAC Codec, the term "Fraunhofer FDK AAC Codec Library for Android"
++must be replaced by the term "Third-Party Modified Version of the Fraunhofer FDK
++AAC Codec Library for Android."
++
++3.    NO PATENT LICENSE
++
++NO EXPRESS OR IMPLIED LICENSES TO ANY PATENT CLAIMS, including without
++limitation the patents of Fraunhofer, ARE GRANTED BY THIS SOFTWARE LICENSE.
++Fraunhofer provides no warranty of patent non-infringement with respect to this
++software.
++
++You may use this FDK AAC Codec software or modifications thereto only for
++purposes that are authorized by appropriate patent licenses.
++
++4.    DISCLAIMER
++
++This FDK AAC Codec software is provided by Fraunhofer on behalf of the copyright
++holders and contributors "AS IS" and WITHOUT ANY EXPRESS OR IMPLIED WARRANTIES,
++including but not limited to the implied warranties of merchantability and
++fitness for a particular purpose. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
++CONTRIBUTORS BE LIABLE for any direct, indirect, incidental, special, exemplary,
++or consequential damages, including but not limited to procurement of substitute
++goods or services; loss of use, data, or profits, or business interruption,
++however caused and on any theory of liability, whether in contract, strict
++liability, or tort (including negligence), arising in any way out of the use of
++this software, even if advised of the possibility of such damage.
++
++5.    CONTACT INFORMATION
++
++Fraunhofer Institute for Integrated Circuits IIS
++Attention: Audio and Multimedia Departments - FDK AAC LL
++Am Wolfsmantel 33
++91058 Erlangen, Germany
++
++www.iis.fraunhofer.de/amm
++amm-info@iis.fraunhofer.de
++----------------------------------------------------------------------------- */
++
++/**************************** SBR decoder library ******************************
++
++   Author(s):
++
++   Description:
++
++*******************************************************************************/
++
++/*!
++  \file
++  \brief  SBR decoder frontend
++  This module provides a frontend to the SBR decoder. The function openSBR() is
++  called for initialization. The function sbrDecoder_Apply() is called for each
++  frame. sbr_Apply() will call the required functions to decode the raw SBR data
++  (provided by env_extr.cpp), to decode the envelope data and noise floor levels
++  [decodeSbrData()], and to finally apply SBR to the current frame [sbr_dec()].
++
++  \sa sbrDecoder_Apply(), \ref documentationOverview
++*/
++
++/*!
++  \page documentationOverview Overview of important information resources and
++  source code documentation
++
++  As part of this documentation you can find more extensive descriptions about
++  key concepts and algorithms at the following locations:
++
++  <h2>Programming</h2>
++
++  \li Buffer management: sbrDecoder_Apply() and sbr_dec()
++  \li Internal scale factors to maximize SNR on fixed point processors:
++  #QMF_SCALE_FACTOR \li Special mantissa-exponent format: Created in
++  requantizeEnvelopeData() and used in calculateSbrEnvelope()
++
++  <h2>Algorithmic details</h2>
++  \li About the SBR data format: \ref SBR_HEADER_ELEMENT and \ref
++  SBR_STANDARD_ELEMENT \li Details about the bitstream decoder: env_extr.cpp \li
++  Details about the QMF filterbank and the provided polyphase implementation:
++  qmf_dec.cpp \li Details about the transposer: lpp_tran.cpp \li Details about
++  the envelope adjuster: env_calc.cpp
++
++*/
++
++#include "sbrdecoder.h"
++
++#include "FDK_bitstream.h"
++
++#include "sbrdec_freq_sca.h"
++#include "env_extr.h"
++#include "sbr_dec.h"
++#include "env_dec.h"
++#include "FDK_crc.h"
++#include "sbr_ram.h"
++#include "sbr_rom.h"
++#include "lpp_tran.h"
++#include "transcendent.h"
++
++#include "sbrdec_drc.h"
++
++#include "psbitdec.h"
++
++/* Decoder library info */
++#define SBRDECODER_LIB_VL0 3
++#define SBRDECODER_LIB_VL1 1
++#define SBRDECODER_LIB_VL2 0
++#define SBRDECODER_LIB_TITLE "SBR Decoder"
++#ifdef SUPPRESS_BUILD_DATE_INFO
++#define SBRDECODER_LIB_BUILD_DATE ""
++#define SBRDECODER_LIB_BUILD_TIME ""
++#else
++#define SBRDECODER_LIB_BUILD_DATE __DATE__
++#define SBRDECODER_LIB_BUILD_TIME __TIME__
++#endif
++
++static void setFrameErrorFlag(SBR_DECODER_ELEMENT *pSbrElement, UCHAR value) {
++  if (pSbrElement != NULL) {
++    switch (value) {
++      case FRAME_ERROR_ALLSLOTS:
++        FDKmemset(pSbrElement->frameErrorFlag, FRAME_ERROR,
++                  sizeof(pSbrElement->frameErrorFlag));
++        break;
++      default:
++        pSbrElement->frameErrorFlag[pSbrElement->useFrameSlot] = value;
++    }
++  }
++}
++
++static UCHAR getHeaderSlot(UCHAR currentSlot, UCHAR hdrSlotUsage[(1) + 1]) {
++  UINT occupied = 0;
++  int s;
++  UCHAR slot = hdrSlotUsage[currentSlot];
++
++  FDK_ASSERT((1) + 1 < 32);
++
++  for (s = 0; s < (1) + 1; s++) {
++    if ((hdrSlotUsage[s] == slot) && (s != slot)) {
++      occupied = 1;
++      break;
++    }
++  }
++
++  if (occupied) {
++    occupied = 0;
++
++    for (s = 0; s < (1) + 1; s++) {
++      occupied |= 1 << hdrSlotUsage[s];
++    }
++    for (s = 0; s < (1) + 1; s++) {
++      if (!(occupied & 0x1)) {
++        slot = s;
++        break;
++      }
++      occupied >>= 1;
++    }
++  }
++
++  return slot;
++}
++
++static void copySbrHeader(HANDLE_SBR_HEADER_DATA hDst,
++                          const HANDLE_SBR_HEADER_DATA hSrc) {
++  /* copy the whole header memory (including pointers) */
++  FDKmemcpy(hDst, hSrc, sizeof(SBR_HEADER_DATA));
++
++  /* update pointers */
++  hDst->freqBandData.freqBandTable[0] = hDst->freqBandData.freqBandTableLo;
++  hDst->freqBandData.freqBandTable[1] = hDst->freqBandData.freqBandTableHi;
++}
++
++static int compareSbrHeader(const HANDLE_SBR_HEADER_DATA hHdr1,
++                            const HANDLE_SBR_HEADER_DATA hHdr2) {
++  int result = 0;
++
++  /* compare basic data */
++  result |= (hHdr1->syncState != hHdr2->syncState) ? 1 : 0;
++  result |= (hHdr1->status != hHdr2->status) ? 1 : 0;
++  result |= (hHdr1->frameErrorFlag != hHdr2->frameErrorFlag) ? 1 : 0;
++  result |= (hHdr1->numberTimeSlots != hHdr2->numberTimeSlots) ? 1 : 0;
++  result |=
++      (hHdr1->numberOfAnalysisBands != hHdr2->numberOfAnalysisBands) ? 1 : 0;
++  result |= (hHdr1->timeStep != hHdr2->timeStep) ? 1 : 0;
++  result |= (hHdr1->sbrProcSmplRate != hHdr2->sbrProcSmplRate) ? 1 : 0;
++
++  /* compare bitstream data */
++  result |=
++      FDKmemcmp(&hHdr1->bs_data, &hHdr2->bs_data, sizeof(SBR_HEADER_DATA_BS));
++  result |=
++      FDKmemcmp(&hHdr1->bs_dflt, &hHdr2->bs_dflt, sizeof(SBR_HEADER_DATA_BS));
++  result |= FDKmemcmp(&hHdr1->bs_info, &hHdr2->bs_info,
++                      sizeof(SBR_HEADER_DATA_BS_INFO));
++
++  /* compare frequency band data */
++  result |= FDKmemcmp(&hHdr1->freqBandData, &hHdr2->freqBandData,
++                      (8 + MAX_NUM_LIMITERS + 1) * sizeof(UCHAR));
++  result |= FDKmemcmp(hHdr1->freqBandData.freqBandTableLo,
++                      hHdr2->freqBandData.freqBandTableLo,
++                      (MAX_FREQ_COEFFS / 2 + 1) * sizeof(UCHAR));
++  result |= FDKmemcmp(hHdr1->freqBandData.freqBandTableHi,
++                      hHdr2->freqBandData.freqBandTableHi,
++                      (MAX_FREQ_COEFFS + 1) * sizeof(UCHAR));
++  result |= FDKmemcmp(hHdr1->freqBandData.freqBandTableNoise,
++                      hHdr2->freqBandData.freqBandTableNoise,
++                      (MAX_NOISE_COEFFS + 1) * sizeof(UCHAR));
++  result |=
++      FDKmemcmp(hHdr1->freqBandData.v_k_master, hHdr2->freqBandData.v_k_master,
++                (MAX_FREQ_COEFFS + 1) * sizeof(UCHAR));
++
++  return result;
++}
++
++/*!
++  \brief Reset SBR decoder.
++
++  Reset should only be called if SBR has been sucessfully detected by
++  an appropriate checkForPayload() function.
++
++  \return Error code.
++*/
++static SBR_ERROR sbrDecoder_ResetElement(HANDLE_SBRDECODER self,
++                                         int sampleRateIn, int sampleRateOut,
++                                         int samplesPerFrame,
++                                         const MP4_ELEMENT_ID elementID,
++                                         const int elementIndex,
++                                         const int overlap) {
++  SBR_ERROR sbrError = SBRDEC_OK;
++  HANDLE_SBR_HEADER_DATA hSbrHeader;
++  UINT qmfFlags = 0;
++
++  int i, synDownsampleFac;
++
++  /* USAC: assuming theoretical case 8 kHz output sample rate with 4:1 SBR */
++  const int sbr_min_sample_rate_in = IS_USAC(self->coreCodec) ? 2000 : 6400;
++
++  /* Check in/out samplerates */
++  if (sampleRateIn < sbr_min_sample_rate_in || sampleRateIn > (96000)) {
++    sbrError = SBRDEC_UNSUPPORTED_CONFIG;
++    goto bail;
++  }
++
++  if (sampleRateOut > (96000)) {
++    sbrError = SBRDEC_UNSUPPORTED_CONFIG;
++    goto bail;
++  }
++
++  /* Set QMF mode flags */
++  if (self->flags & SBRDEC_LOW_POWER) qmfFlags |= QMF_FLAG_LP;
++
++  if (self->coreCodec == AOT_ER_AAC_ELD) {
++    if (self->flags & SBRDEC_LD_MPS_QMF) {
++      qmfFlags |= QMF_FLAG_MPSLDFB;
++    } else {
++      qmfFlags |= QMF_FLAG_CLDFB;
++    }
++  }
++
++  /* Set downsampling factor for synthesis filter bank */
++  if (sampleRateOut == 0) {
++    /* no single rate mode */
++    sampleRateOut =
++        sampleRateIn
++        << 1; /* In case of implicit signalling, assume dual rate SBR */
++  }
++
++  if (sampleRateIn == sampleRateOut) {
++    synDownsampleFac = 2;
++    self->flags |= SBRDEC_DOWNSAMPLE;
++  } else {
++    synDownsampleFac = 1;
++    self->flags &= ~SBRDEC_DOWNSAMPLE;
++  }
++
++  self->synDownsampleFac = synDownsampleFac;
++  self->sampleRateOut = sampleRateOut;
++
++  {
++    for (i = 0; i < (1) + 1; i++) {
++      int setDflt;
++      hSbrHeader = &(self->sbrHeader[elementIndex][i]);
++      setDflt = ((hSbrHeader->syncState == SBR_NOT_INITIALIZED) ||
++                 (self->flags & SBRDEC_FORCE_RESET))
++                    ? 1
++                    : 0;
++
++      /* init a default header such that we can at least do upsampling later */
++      sbrError = initHeaderData(hSbrHeader, sampleRateIn, sampleRateOut,
++                                self->downscaleFactor, samplesPerFrame,
++                                self->flags, setDflt);
++
++      /* Set synchState to UPSAMPLING in case it already is initialized */
++      hSbrHeader->syncState = hSbrHeader->syncState > UPSAMPLING
++                                  ? UPSAMPLING
++                                  : hSbrHeader->syncState;
++    }
++  }
++
++  if (sbrError != SBRDEC_OK) {
++    goto bail;
++  }
++
++  if (!self->pQmfDomain->globalConf.qmfDomainExplicitConfig) {
++    self->pQmfDomain->globalConf.flags_requested |= qmfFlags;
++    self->pQmfDomain->globalConf.nBandsAnalysis_requested =
++        self->sbrHeader[elementIndex][0].numberOfAnalysisBands;
++    self->pQmfDomain->globalConf.nBandsSynthesis_requested =
++        (synDownsampleFac == 1) ? 64 : 32; /* may be overwritten by MPS */
++    self->pQmfDomain->globalConf.nBandsSynthesis_requested /=
++        self->downscaleFactor;
++    self->pQmfDomain->globalConf.nQmfTimeSlots_requested =
++        self->sbrHeader[elementIndex][0].numberTimeSlots *
++        self->sbrHeader[elementIndex][0].timeStep;
++    self->pQmfDomain->globalConf.nQmfOvTimeSlots_requested = overlap;
++    self->pQmfDomain->globalConf.nQmfProcBands_requested = 64; /* always 64 */
++    self->pQmfDomain->globalConf.nQmfProcChannels_requested =
++        1; /* may be overwritten by MPS */
++  }
++
++  /* Init SBR channels going to be assigned to a SBR element */
++  {
++    int ch;
++    for (ch = 0; ch < self->pSbrElement[elementIndex]->nChannels; ch++) {
++      int headerIndex =
++          getHeaderSlot(self->pSbrElement[elementIndex]->useFrameSlot,
++                        self->pSbrElement[elementIndex]->useHeaderSlot);
++
++      /* and create sbrDec */
++      sbrError =
++          createSbrDec(self->pSbrElement[elementIndex]->pSbrChannel[ch],
++                       &self->sbrHeader[elementIndex][headerIndex],
++                       &self->pSbrElement[elementIndex]->transposerSettings,
++                       synDownsampleFac, qmfFlags, self->flags, overlap, ch,
++                       self->codecFrameSize);
++
++      if (sbrError != SBRDEC_OK) {
++        goto bail;
++      }
++    }
++  }
++
++  // FDKmemclear(sbr_OverlapBuffer, sizeof(sbr_OverlapBuffer));
++
++  if (self->numSbrElements == 1) {
++    switch (self->coreCodec) {
++      case AOT_AAC_LC:
++      case AOT_SBR:
++      case AOT_PS:
++      case AOT_ER_AAC_SCAL:
++      case AOT_DRM_AAC:
++      case AOT_DRM_SURROUND:
++        if (CreatePsDec(&self->hParametricStereoDec, samplesPerFrame)) {
++          sbrError = SBRDEC_CREATE_ERROR;
++          goto bail;
++        }
++        break;
++      default:
++        break;
++    }
++  }
++
++  /* Init frame delay slot handling */
++  self->pSbrElement[elementIndex]->useFrameSlot = 0;
++  for (i = 0; i < ((1) + 1); i++) {
++    self->pSbrElement[elementIndex]->useHeaderSlot[i] = i;
++  }
++
++bail:
++
++  return sbrError;
++}
++
++/*!
++  \brief Assign QMF domain provided QMF channels to SBR channels.
++
++  \return void
++*/
++static void sbrDecoder_AssignQmfChannels2SbrChannels(HANDLE_SBRDECODER self) {
++  int ch, el, absCh_offset = 0;
++  for (el = 0; el < self->numSbrElements; el++) {
++    if (self->pSbrElement[el] != NULL) {
++      for (ch = 0; ch < self->pSbrElement[el]->nChannels; ch++) {
++        FDK_ASSERT(((absCh_offset + ch) < ((8) + (1))) &&
++                   ((absCh_offset + ch) < ((8) + (1))));
++        self->pSbrElement[el]->pSbrChannel[ch]->SbrDec.qmfDomainInCh =
++            &self->pQmfDomain->QmfDomainIn[absCh_offset + ch];
++        self->pSbrElement[el]->pSbrChannel[ch]->SbrDec.qmfDomainOutCh =
++            &self->pQmfDomain->QmfDomainOut[absCh_offset + ch];
++      }
++      absCh_offset += self->pSbrElement[el]->nChannels;
++    }
++  }
++}
++
++SBR_ERROR sbrDecoder_Open(HANDLE_SBRDECODER *pSelf,
++                          HANDLE_FDK_QMF_DOMAIN pQmfDomain) {
++  HANDLE_SBRDECODER self = NULL;
++  SBR_ERROR sbrError = SBRDEC_OK;
++  int elIdx;
++
++  if ((pSelf == NULL) || (pQmfDomain == NULL)) {
++    return SBRDEC_INVALID_ARGUMENT;
++  }
++
++  /* Get memory for this instance */
++  self = GetRam_SbrDecoder();
++  if (self == NULL) {
++    sbrError = SBRDEC_MEM_ALLOC_FAILED;
++    goto bail;
++  }
++
++  self->pQmfDomain = pQmfDomain;
++
++  /*
++  Already zero because of calloc
++  self->numSbrElements = 0;
++  self->numSbrChannels = 0;
++  self->codecFrameSize = 0;
++  */
++
++  self->numDelayFrames = (1); /* set to the max value by default */
++
++  /* Initialize header sync state */
++  for (elIdx = 0; elIdx < (8); elIdx += 1) {
++    int i;
++    for (i = 0; i < (1) + 1; i += 1) {
++      self->sbrHeader[elIdx][i].syncState = SBR_NOT_INITIALIZED;
++    }
++  }
++
++  *pSelf = self;
++
++bail:
++  return sbrError;
++}
++
++/**
++ * \brief determine if the given core codec AOT can be processed or not.
++ * \param coreCodec core codec audio object type.
++ * \return 1 if SBR can be processed, 0 if SBR cannot be processed/applied.
++ */
++static int sbrDecoder_isCoreCodecValid(AUDIO_OBJECT_TYPE coreCodec) {
++  switch (coreCodec) {
++    case AOT_AAC_LC:
++    case AOT_SBR:
++    case AOT_PS:
++    case AOT_ER_AAC_SCAL:
++    case AOT_ER_AAC_ELD:
++    case AOT_DRM_AAC:
++    case AOT_DRM_SURROUND:
++    case AOT_USAC:
++      return 1;
++    default:
++      return 0;
++  }
++}
++
++static void sbrDecoder_DestroyElement(HANDLE_SBRDECODER self,
++                                      const int elementIndex) {
++  if (self->pSbrElement[elementIndex] != NULL) {
++    int ch;
++
++    for (ch = 0; ch < SBRDEC_MAX_CH_PER_ELEMENT; ch++) {
++      if (self->pSbrElement[elementIndex]->pSbrChannel[ch] != NULL) {
++        deleteSbrDec(self->pSbrElement[elementIndex]->pSbrChannel[ch]);
++        FreeRam_SbrDecChannel(
++            &self->pSbrElement[elementIndex]->pSbrChannel[ch]);
++        self->numSbrChannels -= 1;
++      }
++    }
++    FreeRam_SbrDecElement(&self->pSbrElement[elementIndex]);
++    self->numSbrElements -= 1;
++  }
++}
++
++SBR_ERROR sbrDecoder_InitElement(
++    HANDLE_SBRDECODER self, const int sampleRateIn, const int sampleRateOut,
++    const int samplesPerFrame, const AUDIO_OBJECT_TYPE coreCodec,
++    const MP4_ELEMENT_ID elementID, const int elementIndex,
++    const UCHAR harmonicSBR, const UCHAR stereoConfigIndex,
++    const UCHAR configMode, UCHAR *configChanged, const INT downscaleFactor) {
++  SBR_ERROR sbrError = SBRDEC_OK;
++  int chCnt = 0;
++  int nSbrElementsStart;
++  int nSbrChannelsStart;
++  if (self == NULL) {
++    return SBRDEC_INVALID_ARGUMENT;
++  }
++
++  nSbrElementsStart = self->numSbrElements;
++  nSbrChannelsStart = self->numSbrChannels;
++
++  /* Check core codec AOT */
++  if (!sbrDecoder_isCoreCodecValid(coreCodec) || elementIndex >= (8)) {
++    sbrError = SBRDEC_UNSUPPORTED_CONFIG;
++    goto bail;
++  }
++
++  if (elementID != ID_SCE && elementID != ID_CPE && elementID != ID_LFE) {
++    sbrError = SBRDEC_UNSUPPORTED_CONFIG;
++    goto bail;
++  }
++
++  if (self->sampleRateIn == sampleRateIn &&
++      self->codecFrameSize == samplesPerFrame && self->coreCodec == coreCodec &&
++      self->pSbrElement[elementIndex] != NULL &&
++      self->pSbrElement[elementIndex]->elementID == elementID &&
++      !(self->flags & SBRDEC_FORCE_RESET) &&
++      ((sampleRateOut == 0) ? 1 : (self->sampleRateOut == sampleRateOut)) &&
++      ((harmonicSBR == 2) ? 1
++                          : (self->harmonicSBR ==
++                             harmonicSBR)) /* The value 2 signalizes that
++                                              harmonicSBR shall be ignored in
++                                              the config change detection */
++  ) {
++    /* Nothing to do */
++    return SBRDEC_OK;
++  } else {
++    if (configMode & AC_CM_DET_CFG_CHANGE) {
++      *configChanged = 1;
++    }
++  }
++
++  /* reaching this point the SBR-decoder gets (re-)configured */
++
++  /* The flags field is used for all elements! */
++  self->flags &=
++      (SBRDEC_FORCE_RESET | SBRDEC_FLUSH); /* Keep the global flags. They will
++                                              be reset after decoding. */
++  self->flags |= (downscaleFactor > 1) ? SBRDEC_ELD_DOWNSCALE : 0;
++  self->flags |= (coreCodec == AOT_ER_AAC_ELD) ? SBRDEC_ELD_GRID : 0;
++  self->flags |= (coreCodec == AOT_ER_AAC_SCAL) ? SBRDEC_SYNTAX_SCAL : 0;
++  self->flags |=
++      (coreCodec == AOT_DRM_AAC) ? SBRDEC_SYNTAX_SCAL | SBRDEC_SYNTAX_DRM : 0;
++  self->flags |= (coreCodec == AOT_DRM_SURROUND)
++                     ? SBRDEC_SYNTAX_SCAL | SBRDEC_SYNTAX_DRM
++                     : 0;
++  self->flags |= (coreCodec == AOT_USAC) ? SBRDEC_SYNTAX_USAC : 0;
++  /* Robustness: Take integer division rounding into consideration. E.g. 22050
++   * Hz with 4:1 SBR => 5512 Hz core sampling rate. */
++  self->flags |= (sampleRateIn == sampleRateOut / 4) ? SBRDEC_QUAD_RATE : 0;
++  self->flags |= (harmonicSBR == 1) ? SBRDEC_USAC_HARMONICSBR : 0;
++
++  if (configMode & AC_CM_DET_CFG_CHANGE) {
++    return SBRDEC_OK;
++  }
++
++  self->sampleRateIn = sampleRateIn;
++  self->codecFrameSize = samplesPerFrame;
++  self->coreCodec = coreCodec;
++  self->harmonicSBR = harmonicSBR;
++  self->downscaleFactor = downscaleFactor;
++
++  /* Init SBR elements */
++  {
++    int elChannels, ch;
++
++    if (self->pSbrElement[elementIndex] == NULL) {
++      self->pSbrElement[elementIndex] = GetRam_SbrDecElement(elementIndex);
++      if (self->pSbrElement[elementIndex] == NULL) {
++        sbrError = SBRDEC_MEM_ALLOC_FAILED;
++        goto bail;
++      }
++      self->numSbrElements++;
++    } else {
++      self->numSbrChannels -= self->pSbrElement[elementIndex]->nChannels;
++    }
++
++    /* Determine amount of channels for this element */
++    switch (elementID) {
++      case ID_NONE:
++      case ID_CPE:
++        elChannels = 2;
++        break;
++      case ID_LFE:
++      case ID_SCE:
++        elChannels = 1;
++        break;
++      default:
++        elChannels = 0;
++        break;
++    }
++
++    /* Handle case of Parametric Stereo */
++    if (elementIndex == 0 && elementID == ID_SCE) {
++      switch (coreCodec) {
++        case AOT_AAC_LC:
++        case AOT_SBR:
++        case AOT_PS:
++        case AOT_ER_AAC_SCAL:
++        case AOT_DRM_AAC:
++        case AOT_DRM_SURROUND:
++          elChannels = 2;
++          break;
++        default:
++          break;
++      }
++    }
++
++    /* Sanity check to avoid memory leaks */
++    if (elChannels < self->pSbrElement[elementIndex]->nChannels ||
++        (self->numSbrChannels + elChannels) > (8) + (1)) {
++      self->numSbrChannels += self->pSbrElement[elementIndex]->nChannels;
++      sbrError = SBRDEC_PARSE_ERROR;
++      goto bail;
++    }
++
++    /* Save element ID for sanity checks and to have a fallback for concealment.
++     */
++    self->pSbrElement[elementIndex]->elementID = elementID;
++    self->pSbrElement[elementIndex]->nChannels = elChannels;
++
++    for (ch = 0; ch < elChannels; ch++) {
++      if (self->pSbrElement[elementIndex]->pSbrChannel[ch] == NULL) {
++        self->pSbrElement[elementIndex]->pSbrChannel[ch] =
++            GetRam_SbrDecChannel(chCnt);
++        if (self->pSbrElement[elementIndex]->pSbrChannel[ch] == NULL) {
++          sbrError = SBRDEC_MEM_ALLOC_FAILED;
++          goto bail;
++        }
++      }
++      self->numSbrChannels++;
++
++      sbrDecoder_drcInitChannel(&self->pSbrElement[elementIndex]
++                                     ->pSbrChannel[ch]
++                                     ->SbrDec.sbrDrcChannel);
++
++      chCnt++;
++    }
++  }
++
++  if (!self->pQmfDomain->globalConf.qmfDomainExplicitConfig) {
++    self->pQmfDomain->globalConf.nInputChannels_requested =
++        self->numSbrChannels;
++    self->pQmfDomain->globalConf.nOutputChannels_requested =
++        fMax((INT)self->numSbrChannels,
++             (INT)self->pQmfDomain->globalConf.nOutputChannels_requested);
++  }
++
++  /* Make sure each SBR channel has one QMF channel assigned even if
++   * numSbrChannels or element set-up has changed. */
++  sbrDecoder_AssignQmfChannels2SbrChannels(self);
++
++  /* clear error flags for all delay slots */
++  FDKmemclear(self->pSbrElement[elementIndex]->frameErrorFlag,
++              ((1) + 1) * sizeof(UCHAR));
++
++  {
++    int overlap;
++
++    if (coreCodec == AOT_ER_AAC_ELD) {
++      overlap = 0;
++    } else if (self->flags & SBRDEC_QUAD_RATE) {
++      overlap = (3 * 4);
++    } else {
++      overlap = (3 * 2);
++    }
++    /* Initialize this instance */
++    sbrError = sbrDecoder_ResetElement(self, sampleRateIn, sampleRateOut,
++                                       samplesPerFrame, elementID, elementIndex,
++                                       overlap);
++  }
++
++bail:
++  if (sbrError != SBRDEC_OK) {
++    if ((nSbrElementsStart < self->numSbrElements) ||
++        (nSbrChannelsStart < self->numSbrChannels)) {
++      /* Free the memory allocated for this element */
++      sbrDecoder_DestroyElement(self, elementIndex);
++    } else if ((elementIndex < (8)) &&
++               (self->pSbrElement[elementIndex] !=
++                NULL)) { /* Set error flag to trigger concealment */
++      setFrameErrorFlag(self->pSbrElement[elementIndex], FRAME_ERROR);
++    }
++  }
++
++  return sbrError;
++}
++
++/**
++ * \brief Free config dependent SBR memory.
++ * \param self SBR decoder instance handle
++ */
++SBR_ERROR sbrDecoder_FreeMem(HANDLE_SBRDECODER *self) {
++  int i;
++  int elIdx;
++
++  if (self != NULL && *self != NULL) {
++    for (i = 0; i < (8); i++) {
++      sbrDecoder_DestroyElement(*self, i);
++    }
++
++    for (elIdx = 0; elIdx < (8); elIdx += 1) {
++      for (i = 0; i < (1) + 1; i += 1) {
++        (*self)->sbrHeader[elIdx][i].syncState = SBR_NOT_INITIALIZED;
++      }
++    }
++  }
++
++  return SBRDEC_OK;
++}
++
++/**
++ * \brief Apply decoded SBR header for one element.
++ * \param self SBR decoder instance handle
++ * \param hSbrHeader SBR header handle to be processed.
++ * \param hSbrChannel pointer array to the SBR element channels corresponding to
++ * the SBR header.
++ * \param headerStatus header status value returned from SBR header parser.
++ * \param numElementChannels amount of channels for the SBR element whos header
++ * is to be processed.
++ */
++static SBR_ERROR sbrDecoder_HeaderUpdate(HANDLE_SBRDECODER self,
++                                         HANDLE_SBR_HEADER_DATA hSbrHeader,
++                                         SBR_HEADER_STATUS headerStatus,
++                                         HANDLE_SBR_CHANNEL hSbrChannel[],
++                                         const int numElementChannels) {
++  SBR_ERROR errorStatus = SBRDEC_OK;
++
++  /*
++    change of control data, reset decoder
++  */
++  errorStatus = resetFreqBandTables(hSbrHeader, self->flags);
++
++  if (errorStatus == SBRDEC_OK) {
++    if (hSbrHeader->syncState == UPSAMPLING && headerStatus != HEADER_RESET) {
++#if (SBRDEC_MAX_HB_FADE_FRAMES > 0)
++      int ch;
++      for (ch = 0; ch < numElementChannels; ch += 1) {
++        hSbrChannel[ch]->SbrDec.highBandFadeCnt = SBRDEC_MAX_HB_FADE_FRAMES;
++      }
++
++#endif
++      /* As the default header would limit the frequency range,
++         lowSubband and highSubband must be patched. */
++      hSbrHeader->freqBandData.lowSubband = hSbrHeader->numberOfAnalysisBands;
++      hSbrHeader->freqBandData.highSubband = hSbrHeader->numberOfAnalysisBands;
++    }
++
++    /* Trigger a reset before processing this slot */
++    hSbrHeader->status |= SBRDEC_HDR_STAT_RESET;
++  }
++
++  return errorStatus;
++}
++
++INT sbrDecoder_Header(HANDLE_SBRDECODER self, HANDLE_FDK_BITSTREAM hBs,
++                      const INT sampleRateIn, const INT sampleRateOut,
++                      const INT samplesPerFrame,
++                      const AUDIO_OBJECT_TYPE coreCodec,
++                      const MP4_ELEMENT_ID elementID, const INT elementIndex,
++                      const UCHAR harmonicSBR, const UCHAR stereoConfigIndex,
++                      const UCHAR configMode, UCHAR *configChanged,
++                      const INT downscaleFactor) {
++  SBR_HEADER_STATUS headerStatus;
++  HANDLE_SBR_HEADER_DATA hSbrHeader;
++  SBR_ERROR sbrError = SBRDEC_OK;
++  int headerIndex;
++  UINT flagsSaved =
++      0; /* flags should not be changed in AC_CM_DET_CFG_CHANGE - mode after
++            parsing */
++
++  if (self == NULL || elementIndex >= (8)) {
++    return SBRDEC_UNSUPPORTED_CONFIG;
++  }
++
++  if (!sbrDecoder_isCoreCodecValid(coreCodec)) {
++    return SBRDEC_UNSUPPORTED_CONFIG;
++  }
++
++  if (configMode & AC_CM_DET_CFG_CHANGE) {
++    flagsSaved = self->flags; /* store */
++  }
++
++  sbrError = sbrDecoder_InitElement(
++      self, sampleRateIn, sampleRateOut, samplesPerFrame, coreCodec, elementID,
++      elementIndex, harmonicSBR, stereoConfigIndex, configMode, configChanged,
++      downscaleFactor);
++
++  if ((sbrError != SBRDEC_OK) || (elementID == ID_LFE)) {
++    goto bail;
++  }
++
++  if (configMode & AC_CM_DET_CFG_CHANGE) {
++    hSbrHeader = NULL;
++  } else {
++    headerIndex = getHeaderSlot(self->pSbrElement[elementIndex]->useFrameSlot,
++                                self->pSbrElement[elementIndex]->useHeaderSlot);
++
++    hSbrHeader = &(self->sbrHeader[elementIndex][headerIndex]);
++  }
++
++  headerStatus = sbrGetHeaderData(hSbrHeader, hBs, self->flags, 0, configMode);
++
++  if (coreCodec == AOT_USAC) {
++    if (configMode & AC_CM_DET_CFG_CHANGE) {
++      self->flags = flagsSaved; /* restore */
++    }
++    return sbrError;
++  }
++
++  if (configMode & AC_CM_ALLOC_MEM) {
++    SBR_DECODER_ELEMENT *pSbrElement;
++
++    pSbrElement = self->pSbrElement[elementIndex];
++
++    /* Sanity check */
++    if (pSbrElement != NULL) {
++      if ((elementID == ID_CPE && pSbrElement->nChannels != 2) ||
++          (elementID != ID_CPE && pSbrElement->nChannels != 1)) {
++        return SBRDEC_UNSUPPORTED_CONFIG;
++      }
++      if (headerStatus == HEADER_RESET) {
++        sbrError = sbrDecoder_HeaderUpdate(self, hSbrHeader, headerStatus,
++                                           pSbrElement->pSbrChannel,
++                                           pSbrElement->nChannels);
++
++        if (sbrError == SBRDEC_OK) {
++          hSbrHeader->syncState = SBR_HEADER;
++          hSbrHeader->status |= SBRDEC_HDR_STAT_UPDATE;
++        } else {
++          hSbrHeader->syncState = SBR_NOT_INITIALIZED;
++          hSbrHeader->status = HEADER_ERROR;
++        }
++      }
++    }
++  }
++bail:
++  if (configMode & AC_CM_DET_CFG_CHANGE) {
++    self->flags = flagsSaved; /* restore */
++  }
++  return sbrError;
++}
++
++SBR_ERROR sbrDecoder_SetParam(HANDLE_SBRDECODER self, const SBRDEC_PARAM param,
++                              const INT value) {
++  SBR_ERROR errorStatus = SBRDEC_OK;
++
++  /* configure the subsystems */
++  switch (param) {
++    case SBR_SYSTEM_BITSTREAM_DELAY:
++      if (value < 0 || value > (1)) {
++        errorStatus = SBRDEC_SET_PARAM_FAIL;
++        break;
++      }
++      if (self == NULL) {
++        errorStatus = SBRDEC_NOT_INITIALIZED;
++      } else {
++        self->numDelayFrames = (UCHAR)value;
++      }
++      break;
++    case SBR_QMF_MODE:
++      if (self == NULL) {
++        errorStatus = SBRDEC_NOT_INITIALIZED;
++      } else {
++        if (value == 1) {
++          self->flags |= SBRDEC_LOW_POWER;
++        } else {
++          self->flags &= ~SBRDEC_LOW_POWER;
++        }
++      }
++      break;
++    case SBR_LD_QMF_TIME_ALIGN:
++      if (self == NULL) {
++        errorStatus = SBRDEC_NOT_INITIALIZED;
++      } else {
++        if (value == 1) {
++          self->flags |= SBRDEC_LD_MPS_QMF;
++        } else {
++          self->flags &= ~SBRDEC_LD_MPS_QMF;
++        }
++      }
++      break;
++    case SBR_FLUSH_DATA:
++      if (value != 0) {
++        if (self == NULL) {
++          errorStatus = SBRDEC_NOT_INITIALIZED;
++        } else {
++          self->flags |= SBRDEC_FLUSH;
++        }
++      }
++      break;
++    case SBR_CLEAR_HISTORY:
++      if (value != 0) {
++        if (self == NULL) {
++          errorStatus = SBRDEC_NOT_INITIALIZED;
++        } else {
++          self->flags |= SBRDEC_FORCE_RESET;
++        }
++      }
++      break;
++    case SBR_BS_INTERRUPTION: {
++      int elementIndex;
++
++      if (self == NULL) {
++        errorStatus = SBRDEC_NOT_INITIALIZED;
++        break;
++      }
++
++      /* Loop over SBR elements */
++      for (elementIndex = 0; elementIndex < self->numSbrElements;
++           elementIndex++) {
++        if (self->pSbrElement[elementIndex] != NULL) {
++          HANDLE_SBR_HEADER_DATA hSbrHeader;
++          int headerIndex =
++              getHeaderSlot(self->pSbrElement[elementIndex]->useFrameSlot,
++                            self->pSbrElement[elementIndex]->useHeaderSlot);
++
++          hSbrHeader = &(self->sbrHeader[elementIndex][headerIndex]);
++
++          /* Set sync state UPSAMPLING for the corresponding slot.
++             This switches off bitstream parsing until a new header arrives. */
++          if (hSbrHeader->syncState != SBR_NOT_INITIALIZED) {
++            hSbrHeader->syncState = UPSAMPLING;
++            hSbrHeader->status |= SBRDEC_HDR_STAT_UPDATE;
++          }
++        }
++      }
++    } break;
++
++    case SBR_SKIP_QMF:
++      if (self == NULL) {
++        errorStatus = SBRDEC_NOT_INITIALIZED;
++      } else {
++        if (value == 1) {
++          self->flags |= SBRDEC_SKIP_QMF_ANA;
++        } else {
++          self->flags &= ~SBRDEC_SKIP_QMF_ANA;
++        }
++        if (value == 2) {
++          self->flags |= SBRDEC_SKIP_QMF_SYN;
++        } else {
++          self->flags &= ~SBRDEC_SKIP_QMF_SYN;
++        }
++      }
++      break;
++    default:
++      errorStatus = SBRDEC_SET_PARAM_FAIL;
++      break;
++  } /* switch(param) */
++
++  return (errorStatus);
++}
++
++static SBRDEC_DRC_CHANNEL *sbrDecoder_drcGetChannel(
++    const HANDLE_SBRDECODER self, const INT channel) {
++  SBRDEC_DRC_CHANNEL *pSbrDrcChannelData = NULL;
++  int elementIndex, elChanIdx = 0, numCh = 0;
++
++  for (elementIndex = 0; (elementIndex < (8)) && (numCh <= channel);
++       elementIndex++) {
++    SBR_DECODER_ELEMENT *pSbrElement = self->pSbrElement[elementIndex];
++    int c, elChannels;
++
++    elChanIdx = 0;
++    if (pSbrElement == NULL) break;
++
++    /* Determine amount of channels for this element */
++    switch (pSbrElement->elementID) {
++      case ID_CPE:
++        elChannels = 2;
++        break;
++      case ID_LFE:
++      case ID_SCE:
++        elChannels = 1;
++        break;
++      case ID_NONE:
++      default:
++        elChannels = 0;
++        break;
++    }
++
++    /* Limit with actual allocated element channels */
++    elChannels = fMin(elChannels, pSbrElement->nChannels);
++
++    for (c = 0; (c < elChannels) && (numCh <= channel); c++) {
++      if (pSbrElement->pSbrChannel[elChanIdx] != NULL) {
++        numCh++;
++        elChanIdx++;
++      }
++    }
++  }
++  elementIndex -= 1;
++  elChanIdx -= 1;
++
++  if (elChanIdx < 0 || elementIndex < 0) {
++    return NULL;
++  }
++
++  if (self->pSbrElement[elementIndex] != NULL) {
++    if (self->pSbrElement[elementIndex]->pSbrChannel[elChanIdx] != NULL) {
++      pSbrDrcChannelData = &self->pSbrElement[elementIndex]
++                                ->pSbrChannel[elChanIdx]
++                                ->SbrDec.sbrDrcChannel;
++    }
++  }
++
++  return (pSbrDrcChannelData);
++}
++
++SBR_ERROR sbrDecoder_drcFeedChannel(HANDLE_SBRDECODER self, INT ch,
++                                    UINT numBands, FIXP_DBL *pNextFact_mag,
++                                    INT nextFact_exp,
++                                    SHORT drcInterpolationScheme,
++                                    UCHAR winSequence, USHORT *pBandTop) {
++  SBRDEC_DRC_CHANNEL *pSbrDrcChannelData = NULL;
++  int band, isValidData = 0;
++
++  if (self == NULL) {
++    return SBRDEC_NOT_INITIALIZED;
++  }
++  if (ch > (8) || pNextFact_mag == NULL) {
++    return SBRDEC_SET_PARAM_FAIL;
++  }
++
++  /* Search for gain values different to 1.0f */
++  for (band = 0; band < (int)numBands; band += 1) {
++    if (!((pNextFact_mag[band] == FL2FXCONST_DBL(0.5)) &&
++          (nextFact_exp == 1)) &&
++        !((pNextFact_mag[band] == (FIXP_DBL)MAXVAL_DBL) &&
++          (nextFact_exp == 0))) {
++      isValidData = 1;
++      break;
++    }
++  }
++
++  /* Find the right SBR channel */
++  pSbrDrcChannelData = sbrDecoder_drcGetChannel(self, ch);
++
++  if (pSbrDrcChannelData != NULL) {
++    if (pSbrDrcChannelData->enable ||
++        isValidData) { /* Activate processing only with real and valid data */
++      int i;
++
++      pSbrDrcChannelData->enable = 1;
++      pSbrDrcChannelData->numBandsNext = numBands;
++
++      pSbrDrcChannelData->winSequenceNext = winSequence;
++      pSbrDrcChannelData->drcInterpolationSchemeNext = drcInterpolationScheme;
++      pSbrDrcChannelData->nextFact_exp = nextFact_exp;
++
++      for (i = 0; i < (int)numBands; i++) {
++        pSbrDrcChannelData->bandTopNext[i] = pBandTop[i];
++        pSbrDrcChannelData->nextFact_mag[i] = pNextFact_mag[i];
++      }
++    }
++  }
++
++  return SBRDEC_OK;
++}
++
++void sbrDecoder_drcDisable(HANDLE_SBRDECODER self, INT ch) {
++  SBRDEC_DRC_CHANNEL *pSbrDrcChannelData = NULL;
++
++  if ((self == NULL) || (ch > (8)) || (self->numSbrElements == 0) ||
++      (self->numSbrChannels == 0)) {
++    return;
++  }
++
++  /* Find the right SBR channel */
++  pSbrDrcChannelData = sbrDecoder_drcGetChannel(self, ch);
++
++  if (pSbrDrcChannelData != NULL) {
++    sbrDecoder_drcInitChannel(pSbrDrcChannelData);
++  }
++}
++
++SBR_ERROR sbrDecoder_Parse(HANDLE_SBRDECODER self, HANDLE_FDK_BITSTREAM hBs,
++                           UCHAR *pDrmBsBuffer, USHORT drmBsBufferSize,
++                           int *count, int bsPayLen, int crcFlag,
++                           MP4_ELEMENT_ID prevElement, int elementIndex,
++                           UINT acFlags, UINT acElFlags[]) {
++  SBR_DECODER_ELEMENT *hSbrElement = NULL;
++  HANDLE_SBR_HEADER_DATA hSbrHeader = NULL;
++  HANDLE_SBR_CHANNEL *pSbrChannel;
++
++  SBR_FRAME_DATA *hFrameDataLeft = NULL;
++  SBR_FRAME_DATA *hFrameDataRight = NULL;
++  SBR_FRAME_DATA frameDataLeftCopy;
++  SBR_FRAME_DATA frameDataRightCopy;
++
++  SBR_ERROR errorStatus = SBRDEC_OK;
++  SBR_HEADER_STATUS headerStatus = HEADER_NOT_PRESENT;
++
++  INT startPos = FDKgetValidBits(hBs);
++  FDK_CRCINFO crcInfo;
++  INT crcReg = 0;
++  USHORT sbrCrc = 0;
++  UINT crcPoly;
++  UINT crcStartValue = 0;
++  UINT crcLen;
++
++  HANDLE_FDK_BITSTREAM hBsOriginal = hBs;
++  FDK_BITSTREAM bsBwd;
++
++  const int fGlobalIndependencyFlag = acFlags & AC_INDEP;
++  const int bs_pvc = acElFlags[elementIndex] & AC_EL_USAC_PVC;
++  const int bs_interTes = acElFlags[elementIndex] & AC_EL_USAC_ITES;
++  int stereo;
++  int fDoDecodeSbrData = 1;
++  int alignBits = 0;
++
++  int lastSlot, lastHdrSlot = 0, thisHdrSlot = 0;
++
++  if (*count <= 0) {
++    setFrameErrorFlag(self->pSbrElement[elementIndex], FRAME_ERROR);
++    return SBRDEC_OK;
++  }
++
++  /* SBR sanity checks */
++  if (self == NULL) {
++    errorStatus = SBRDEC_NOT_INITIALIZED;
++    goto bail;
++  }
++
++  /* Reverse bits of DRM SBR payload */
++  if ((self->flags & SBRDEC_SYNTAX_DRM) && *count > 0) {
++    int dataBytes, dataBits;
++
++    FDK_ASSERT(drmBsBufferSize >= (512));
++    dataBits = *count;
++
++    if (dataBits > ((512) * 8)) {
++      /* do not flip more data than needed */
++      dataBits = (512) * 8;
++    }
++
++    dataBytes = (dataBits + 7) >> 3;
++
++    int j;
++
++    if ((j = (int)FDKgetValidBits(hBs)) != 8) {
++      FDKpushBiDirectional(hBs, (j - 8));
++    }
++
++    j = 0;
++    for (; dataBytes > 0; dataBytes--) {
++      int i;
++      UCHAR tmpByte;
++      UCHAR buffer = 0x00;
++
++      tmpByte = (UCHAR)FDKreadBits(hBs, 8);
++      for (i = 0; i < 4; i++) {
++        int shift = 2 * i + 1;
++        buffer |= (tmpByte & (0x08 >> i)) << shift;
++        buffer |= (tmpByte & (0x10 << i)) >> shift;
++      }
++      pDrmBsBuffer[j++] = buffer;
++      FDKpushBack(hBs, 16);
++    }
++
++    FDKinitBitStream(&bsBwd, pDrmBsBuffer, (512), dataBits, BS_READER);
++
++    /* Use reversed data */
++    hBs = &bsBwd;
++    bsPayLen = *count;
++  }
++
++  /* Remember start position of  SBR element */
++  startPos = FDKgetValidBits(hBs);
++
++  /* SBR sanity checks */
++  if (self->pSbrElement[elementIndex] == NULL) {
++    errorStatus = SBRDEC_NOT_INITIALIZED;
++    goto bail;
++  }
++  hSbrElement = self->pSbrElement[elementIndex];
++
++  lastSlot = (hSbrElement->useFrameSlot > 0) ? hSbrElement->useFrameSlot - 1
++                                             : self->numDelayFrames;
++  lastHdrSlot = hSbrElement->useHeaderSlot[lastSlot];
++  thisHdrSlot = getHeaderSlot(
++      hSbrElement->useFrameSlot,
++      hSbrElement->useHeaderSlot); /* Get a free header slot not used by
++                                      frames not processed yet. */
++
++  /* Assign the free slot to store a new header if there is one. */
++  hSbrHeader = &self->sbrHeader[elementIndex][thisHdrSlot];
++
++  pSbrChannel = hSbrElement->pSbrChannel;
++  stereo = (hSbrElement->elementID == ID_CPE) ? 1 : 0;
++
++  hFrameDataLeft = &self->pSbrElement[elementIndex]
++                        ->pSbrChannel[0]
++                        ->frameData[hSbrElement->useFrameSlot];
++  if (stereo) {
++    hFrameDataRight = &self->pSbrElement[elementIndex]
++                           ->pSbrChannel[1]
++                           ->frameData[hSbrElement->useFrameSlot];
++  }
++
++  /* store frameData; new parsed frameData possibly corrupted */
++  FDKmemcpy(&frameDataLeftCopy, hFrameDataLeft, sizeof(SBR_FRAME_DATA));
++  if (stereo) {
++    FDKmemcpy(&frameDataRightCopy, hFrameDataRight, sizeof(SBR_FRAME_DATA));
++  }
++
++  /* reset PS flag; will be set after PS was found */
++  self->flags &= ~SBRDEC_PS_DECODED;
++
++  if (hSbrHeader->status & SBRDEC_HDR_STAT_UPDATE) {
++    /* Got a new header from extern (e.g. from an ASC) */
++    headerStatus = HEADER_OK;
++    hSbrHeader->status &= ~SBRDEC_HDR_STAT_UPDATE;
++  } else if (thisHdrSlot != lastHdrSlot) {
++    /* Copy the last header into this slot otherwise the
++       header compare will trigger more HEADER_RESETs than needed. */
++    copySbrHeader(hSbrHeader, &self->sbrHeader[elementIndex][lastHdrSlot]);
++  }
++
++  /*
++     Check if bit stream data is valid and matches the element context
++  */
++  if (((prevElement != ID_SCE) && (prevElement != ID_CPE)) ||
++      prevElement != hSbrElement->elementID) {
++    /* In case of LFE we also land here, since there is no LFE SBR element (do
++     * upsampling only) */
++    fDoDecodeSbrData = 0;
++  }
++
++  if (fDoDecodeSbrData) {
++    if ((INT)FDKgetValidBits(hBs) <= 0) {
++      fDoDecodeSbrData = 0;
++    }
++  }
++
++  /*
++     SBR CRC-check
++  */
++  if (fDoDecodeSbrData) {
++    if (crcFlag) {
++      switch (self->coreCodec) {
++        case AOT_DRM_AAC:
++        case AOT_DRM_SURROUND:
++          crcPoly = 0x001d;
++          crcLen = 8;
++          crcStartValue = 0x000000ff;
++          break;
++        default:
++          crcPoly = 0x0633;
++          crcLen = 10;
++          crcStartValue = 0x00000000;
++          break;
++      }
++      sbrCrc = (USHORT)FDKreadBits(hBs, crcLen);
++      /* Setup CRC decoder */
++      FDKcrcInit(&crcInfo, crcPoly, crcStartValue, crcLen);
++      /* Start CRC region */
++      crcReg = FDKcrcStartReg(&crcInfo, hBs, 0);
++    }
++  } /* if (fDoDecodeSbrData) */
++
++  /*
++     Read in the header data and issue a reset if change occured
++  */
++  if (fDoDecodeSbrData) {
++    int sbrHeaderPresent;
++
++    if (self->flags & (SBRDEC_SYNTAX_RSVD50 | SBRDEC_SYNTAX_USAC)) {
++      SBR_HEADER_DATA_BS_INFO newSbrInfo;
++      int sbrInfoPresent;
++
++      if (bs_interTes) {
++        self->flags |= SBRDEC_USAC_ITES;
++      } else {
++        self->flags &= ~SBRDEC_USAC_ITES;
++      }
++
++      if (fGlobalIndependencyFlag) {
++        self->flags |= SBRDEC_USAC_INDEP;
++        sbrInfoPresent = 1;
++        sbrHeaderPresent = 1;
++      } else {
++        self->flags &= ~SBRDEC_USAC_INDEP;
++        sbrInfoPresent = FDKreadBit(hBs);
++        if (sbrInfoPresent) {
++          sbrHeaderPresent = FDKreadBit(hBs);
++        } else {
++          sbrHeaderPresent = 0;
++        }
++      }
++
++      if (sbrInfoPresent) {
++        newSbrInfo.ampResolution = FDKreadBit(hBs);
++        newSbrInfo.xover_band = FDKreadBits(hBs, 4);
++        newSbrInfo.sbr_preprocessing = FDKreadBit(hBs);
++        if (bs_pvc) {
++          newSbrInfo.pvc_mode = FDKreadBits(hBs, 2);
++          /* bs_pvc_mode: 0 -> no PVC, 1 -> PVC mode 1, 2 -> PVC mode 2, 3 ->
++           * reserved */
++          if (newSbrInfo.pvc_mode > 2) {
++            headerStatus = HEADER_ERROR;
++          }
++          if (stereo && newSbrInfo.pvc_mode > 0) {
++            /* bs_pvc is always transmitted but pvc_mode is set to zero in case
++             * of stereo SBR. The config might be wrong but we cannot tell for
++             * sure. */
++            newSbrInfo.pvc_mode = 0;
++          }
++        } else {
++          newSbrInfo.pvc_mode = 0;
++        }
++        if (headerStatus != HEADER_ERROR) {
++          if (FDKmemcmp(&hSbrHeader->bs_info, &newSbrInfo,
++                        sizeof(SBR_HEADER_DATA_BS_INFO))) {
++            /* in case of ampResolution and preprocessing change no full reset
++             * required    */
++            /* HEADER reset would trigger HBE transposer reset which breaks
++             * eSbr_3_Eaa.mp4 */
++            if ((hSbrHeader->bs_info.pvc_mode != newSbrInfo.pvc_mode) ||
++                (hSbrHeader->bs_info.xover_band != newSbrInfo.xover_band)) {
++              headerStatus = HEADER_RESET;
++            } else {
++              headerStatus = HEADER_OK;
++            }
++
++            hSbrHeader->bs_info = newSbrInfo;
++          } else {
++            headerStatus = HEADER_OK;
++          }
++        }
++      }
++      if (headerStatus == HEADER_ERROR) {
++        /* Corrupt SBR info data, do not decode and switch to UPSAMPLING */
++        hSbrHeader->syncState = hSbrHeader->syncState > UPSAMPLING
++                                    ? UPSAMPLING
++                                    : hSbrHeader->syncState;
++        fDoDecodeSbrData = 0;
++        sbrHeaderPresent = 0;
++      }
++
++      if (sbrHeaderPresent && fDoDecodeSbrData) {
++        int useDfltHeader;
++
++        useDfltHeader = FDKreadBit(hBs);
++
++        if (useDfltHeader) {
++          sbrHeaderPresent = 0;
++          if (FDKmemcmp(&hSbrHeader->bs_data, &hSbrHeader->bs_dflt,
++                        sizeof(SBR_HEADER_DATA_BS)) ||
++              hSbrHeader->syncState != SBR_ACTIVE) {
++            hSbrHeader->bs_data = hSbrHeader->bs_dflt;
++            headerStatus = HEADER_RESET;
++          }
++        }
++      }
++    } else {
++      sbrHeaderPresent = FDKreadBit(hBs);
++    }
++
++    if (sbrHeaderPresent) {
++      headerStatus = sbrGetHeaderData(hSbrHeader, hBs, self->flags, 1, 0);
++    }
++
++    if (headerStatus == HEADER_RESET) {
++      errorStatus = sbrDecoder_HeaderUpdate(
++          self, hSbrHeader, headerStatus, pSbrChannel, hSbrElement->nChannels);
++
++      if (errorStatus == SBRDEC_OK) {
++        hSbrHeader->syncState = SBR_HEADER;
++      } else {
++        hSbrHeader->syncState = SBR_NOT_INITIALIZED;
++        headerStatus = HEADER_ERROR;
++      }
++    }
++
++    if (errorStatus != SBRDEC_OK) {
++      fDoDecodeSbrData = 0;
++    }
++  } /* if (fDoDecodeSbrData) */
++
++  /*
++    Print debugging output only if state has changed
++  */
++
++  /* read frame data */
++  if ((hSbrHeader->syncState >= SBR_HEADER) && fDoDecodeSbrData) {
++    int sbrFrameOk;
++    /* read the SBR element data */
++    if (!stereo && (self->hParametricStereoDec != NULL)) {
++      /* update slot index for PS bitstream parsing */
++      self->hParametricStereoDec->bsLastSlot =
++          self->hParametricStereoDec->bsReadSlot;
++      self->hParametricStereoDec->bsReadSlot = hSbrElement->useFrameSlot;
++    }
++    sbrFrameOk = sbrGetChannelElement(
++        hSbrHeader, hFrameDataLeft, (stereo) ? hFrameDataRight : NULL,
++        &pSbrChannel[0]->prevFrameData,
++        pSbrChannel[0]->SbrDec.PvcStaticData.pvc_mode_last, hBs,
++        (stereo) ? NULL : self->hParametricStereoDec, self->flags,
++        self->pSbrElement[elementIndex]->transposerSettings.overlap);
++
++    if (!sbrFrameOk) {
++      fDoDecodeSbrData = 0;
++    } else {
++      INT valBits;
++
++      if (bsPayLen > 0) {
++        valBits = bsPayLen - ((INT)startPos - (INT)FDKgetValidBits(hBs));
++      } else {
++        valBits = (INT)FDKgetValidBits(hBs);
++      }
++
++      /* sanity check of remaining bits */
++      if (valBits < 0) {
++        fDoDecodeSbrData = 0;
++      } else {
++        switch (self->coreCodec) {
++          case AOT_SBR:
++          case AOT_PS:
++          case AOT_AAC_LC: {
++            /* This sanity check is only meaningful with General Audio
++             * bitstreams */
++            alignBits = valBits & 0x7;
++
++            if (valBits > alignBits) {
++              fDoDecodeSbrData = 0;
++            }
++          } break;
++          default:
++            /* No sanity check available */
++            break;
++        }
++      }
++    }
++  } else {
++    /* The returned bit count will not be the actual payload size since we did
++       not parse the frame data. Return an error so that the caller can react
++       respectively. */
++    errorStatus = SBRDEC_PARSE_ERROR;
++  }
++
++  if (crcFlag && (hSbrHeader->syncState >= SBR_HEADER) && fDoDecodeSbrData) {
++    FDKpushFor(hBs, alignBits);
++    FDKcrcEndReg(&crcInfo, hBs, crcReg); /* End CRC region */
++    FDKpushBack(hBs, alignBits);
++    /* Check CRC */
++    if ((FDKcrcGetCRC(&crcInfo) ^ crcStartValue) != sbrCrc) {
++      fDoDecodeSbrData = 0;
++      if (headerStatus != HEADER_NOT_PRESENT) {
++        headerStatus = HEADER_ERROR;
++        hSbrHeader->syncState = SBR_NOT_INITIALIZED;
++      }
++    }
++  }
++
++  if (!fDoDecodeSbrData) {
++    /* Set error flag for this slot to trigger concealment */
++    setFrameErrorFlag(self->pSbrElement[elementIndex], FRAME_ERROR);
++    /* restore old frameData for concealment */
++    FDKmemcpy(hFrameDataLeft, &frameDataLeftCopy, sizeof(SBR_FRAME_DATA));
++    if (stereo) {
++      FDKmemcpy(hFrameDataRight, &frameDataRightCopy, sizeof(SBR_FRAME_DATA));
++    }
++    errorStatus = SBRDEC_PARSE_ERROR;
++  } else {
++    /* Everything seems to be ok so clear the error flag */
++    setFrameErrorFlag(self->pSbrElement[elementIndex], FRAME_OK);
++  }
++
++  if (!stereo) {
++    /* Turn coupling off explicitely to avoid access to absent right frame data
++       that might occur with corrupt bitstreams. */
++    hFrameDataLeft->coupling = COUPLING_OFF;
++  }
++
++bail:
++
++  if (self != NULL) {
++    if (self->flags & SBRDEC_SYNTAX_DRM) {
++      hBs = hBsOriginal;
++    }
++
++    if (errorStatus != SBRDEC_NOT_INITIALIZED) {
++      int useOldHdr =
++          ((headerStatus == HEADER_NOT_PRESENT) ||
++           (headerStatus == HEADER_ERROR) ||
++           (headerStatus == HEADER_RESET && errorStatus == SBRDEC_PARSE_ERROR))
++              ? 1
++              : 0;
++
++      if (!useOldHdr && (thisHdrSlot != lastHdrSlot) && (hSbrHeader != NULL)) {
++        useOldHdr |=
++            (compareSbrHeader(hSbrHeader,
++                              &self->sbrHeader[elementIndex][lastHdrSlot]) == 0)
++                ? 1
++                : 0;
++      }
++
++      if (hSbrElement != NULL) {
++        if (useOldHdr != 0) {
++          /* Use the old header for this frame */
++          hSbrElement->useHeaderSlot[hSbrElement->useFrameSlot] = lastHdrSlot;
++        } else {
++          /* Use the new header for this frame */
++          hSbrElement->useHeaderSlot[hSbrElement->useFrameSlot] = thisHdrSlot;
++        }
++
++        /* Move frame pointer to the next slot which is up to be decoded/applied
++         * next */
++        hSbrElement->useFrameSlot =
++            (hSbrElement->useFrameSlot + 1) % (self->numDelayFrames + 1);
++      }
++    }
++  }
++
++  *count -= startPos - (INT)FDKgetValidBits(hBs);
++
++  return errorStatus;
++}
++
++/**
++ * \brief Render one SBR element into time domain signal.
++ * \param self SBR decoder handle
++ * \param timeData pointer to output buffer
++ * \param channelMapping pointer to UCHAR array where next 2 channel offsets are
++ * stored.
++ * \param elementIndex enumerating index of the SBR element to render.
++ * \param numInChannels number of channels from core coder.
++ * \param numOutChannels pointer to a location to return number of output
++ * channels.
++ * \param psPossible flag indicating if PS is possible or not.
++ * \return SBRDEC_OK if successfull, else error code
++ */
++static SBR_ERROR sbrDecoder_DecodeElement(
++    HANDLE_SBRDECODER self, LONG *input, LONG *timeData, const int timeDataSize,
++    const FDK_channelMapDescr *const mapDescr, const int mapIdx,
++    int channelIndex, const int elementIndex, const int numInChannels,
++    int *numOutChannels, const int psPossible) {
++  SBR_DECODER_ELEMENT *hSbrElement = self->pSbrElement[elementIndex];
++  HANDLE_SBR_CHANNEL *pSbrChannel =
++      self->pSbrElement[elementIndex]->pSbrChannel;
++  HANDLE_SBR_HEADER_DATA hSbrHeader =
++      &self->sbrHeader[elementIndex]
++                      [hSbrElement->useHeaderSlot[hSbrElement->useFrameSlot]];
++  HANDLE_PS_DEC h_ps_d = self->hParametricStereoDec;
++
++  /* get memory for frame data from scratch */
++  SBR_FRAME_DATA *hFrameDataLeft = NULL;
++  SBR_FRAME_DATA *hFrameDataRight = NULL;
++
++  SBR_ERROR errorStatus = SBRDEC_OK;
++
++  INT strideOut, offset0 = 255, offset0_block = 0, offset1 = 255,
++                 offset1_block = 0;
++  INT codecFrameSize = self->codecFrameSize;
++
++  int stereo = (hSbrElement->elementID == ID_CPE) ? 1 : 0;
++  int numElementChannels =
++      hSbrElement
++          ->nChannels; /* Number of channels of the current SBR element */
++
++  hFrameDataLeft =
++      &hSbrElement->pSbrChannel[0]->frameData[hSbrElement->useFrameSlot];
++  if (stereo) {
++    hFrameDataRight =
++        &hSbrElement->pSbrChannel[1]->frameData[hSbrElement->useFrameSlot];
++  }
++
++  if (self->flags & SBRDEC_FLUSH) {
++    if (self->numFlushedFrames > self->numDelayFrames) {
++      int hdrIdx;
++      /* No valid SBR payload available, hence switch to upsampling (in all
++       * headers) */
++      for (hdrIdx = 0; hdrIdx < ((1) + 1); hdrIdx += 1) {
++        if (self->sbrHeader[elementIndex][hdrIdx].syncState > UPSAMPLING) {
++          self->sbrHeader[elementIndex][hdrIdx].syncState = UPSAMPLING;
++        }
++      }
++    } else {
++      /* Move frame pointer to the next slot which is up to be decoded/applied
++       * next */
++      hSbrElement->useFrameSlot =
++          (hSbrElement->useFrameSlot + 1) % (self->numDelayFrames + 1);
++      /* Update header and frame data pointer because they have already been set
++       */
++      hSbrHeader =
++          &self->sbrHeader[elementIndex]
++                          [hSbrElement
++                               ->useHeaderSlot[hSbrElement->useFrameSlot]];
++      hFrameDataLeft =
++          &hSbrElement->pSbrChannel[0]->frameData[hSbrElement->useFrameSlot];
++      if (stereo) {
++        hFrameDataRight =
++            &hSbrElement->pSbrChannel[1]->frameData[hSbrElement->useFrameSlot];
++      }
++    }
++  }
++
++  /* Update the header error flag */
++  hSbrHeader->frameErrorFlag =
++      hSbrElement->frameErrorFlag[hSbrElement->useFrameSlot];
++
++  /*
++     Prepare filterbank for upsampling if no valid bit stream data is available.
++   */
++  if (hSbrHeader->syncState == SBR_NOT_INITIALIZED) {
++    errorStatus =
++        initHeaderData(hSbrHeader, self->sampleRateIn, self->sampleRateOut,
++                       self->downscaleFactor, codecFrameSize, self->flags,
++                       1 /* SET_DEFAULT_HDR */
++        );
++
++    if (errorStatus != SBRDEC_OK) {
++      return errorStatus;
++    }
++
++    hSbrHeader->syncState = UPSAMPLING;
++
++    errorStatus = sbrDecoder_HeaderUpdate(self, hSbrHeader, HEADER_NOT_PRESENT,
++                                          pSbrChannel, hSbrElement->nChannels);
++
++    if (errorStatus != SBRDEC_OK) {
++      hSbrHeader->syncState = SBR_NOT_INITIALIZED;
++      return errorStatus;
++    }
++  }
++
++  /* reset */
++  if (hSbrHeader->status & SBRDEC_HDR_STAT_RESET) {
++    int ch;
++    int applySbrProc = (hSbrHeader->syncState == SBR_ACTIVE ||
++                        (hSbrHeader->frameErrorFlag == 0 &&
++                         hSbrHeader->syncState == SBR_HEADER));
++    for (ch = 0; ch < numElementChannels; ch++) {
++      SBR_ERROR errorStatusTmp = SBRDEC_OK;
++
++      errorStatusTmp = resetSbrDec(
++          &pSbrChannel[ch]->SbrDec, hSbrHeader, &pSbrChannel[ch]->prevFrameData,
++          self->synDownsampleFac, self->flags, pSbrChannel[ch]->frameData);
++
++      if (errorStatusTmp != SBRDEC_OK) {
++        hSbrHeader->syncState = UPSAMPLING;
++      }
++    }
++    if (applySbrProc) {
++      hSbrHeader->status &= ~SBRDEC_HDR_STAT_RESET;
++    }
++  }
++
++  /* decoding */
++  if ((hSbrHeader->syncState == SBR_ACTIVE) ||
++      ((hSbrHeader->syncState == SBR_HEADER) &&
++       (hSbrHeader->frameErrorFlag == 0))) {
++    errorStatus = SBRDEC_OK;
++
++    decodeSbrData(hSbrHeader, hFrameDataLeft, &pSbrChannel[0]->prevFrameData,
++                  (stereo) ? hFrameDataRight : NULL,
++                  (stereo) ? &pSbrChannel[1]->prevFrameData : NULL);
++
++    /* Now we have a full parameter set and can do parameter
++       based concealment instead of plain upsampling. */
++    hSbrHeader->syncState = SBR_ACTIVE;
++  }
++
++  if (timeDataSize <
++      hSbrHeader->numberTimeSlots * hSbrHeader->timeStep *
++          self->pQmfDomain->globalConf.nBandsSynthesis *
++          (psPossible ? fMax(2, numInChannels) : numInChannels)) {
++    return SBRDEC_OUTPUT_BUFFER_TOO_SMALL;
++  }
++
++  {
++    self->flags &= ~SBRDEC_PS_DECODED;
++    C_ALLOC_SCRATCH_START(pPsScratch, struct PS_DEC_COEFFICIENTS, 1)
++
++    /* decode PS data if available */
++    if (h_ps_d != NULL && psPossible && (hSbrHeader->syncState == SBR_ACTIVE)) {
++      int applyPs = 1;
++
++      /* define which frame delay line slot to process */
++      h_ps_d->processSlot = hSbrElement->useFrameSlot;
++
++      applyPs = DecodePs(h_ps_d, hSbrHeader->frameErrorFlag, pPsScratch);
++      self->flags |= (applyPs) ? SBRDEC_PS_DECODED : 0;
++    }
++
++    offset0 = FDK_chMapDescr_getMapValue(mapDescr, channelIndex, mapIdx);
++    offset0_block = offset0 * codecFrameSize;
++    if (stereo || psPossible) {
++      /* the value of offset1 only matters if the condition is true, however if
++      it is not true channelIndex+1 may exceed the channel map resutling in an
++      error, though the value of offset1 is actually meaningless. This is
++      prevented here. */
++      offset1 = FDK_chMapDescr_getMapValue(mapDescr, channelIndex + 1, mapIdx);
++      offset1_block = offset1 * codecFrameSize;
++    }
++    /* Set strides for reading and writing */
++    if (psPossible)
++      strideOut = (numInChannels < 2) ? 2 : numInChannels;
++    else
++      strideOut = numInChannels;
++
++    /* use same buffers for left and right channel and apply PS per timeslot */
++    /* Process left channel */
++    sbr_dec(&pSbrChannel[0]->SbrDec, input + offset0_block, timeData + offset0,
++            (self->flags & SBRDEC_PS_DECODED) ? &pSbrChannel[1]->SbrDec : NULL,
++            timeData + offset1, strideOut, hSbrHeader, hFrameDataLeft,
++            &pSbrChannel[0]->prevFrameData,
++            (hSbrHeader->syncState == SBR_ACTIVE), h_ps_d, self->flags,
++            codecFrameSize, self->sbrInDataHeadroom);
++
++    if (stereo) {
++      /* Process right channel */
++      sbr_dec(&pSbrChannel[1]->SbrDec, input + offset1_block,
++              timeData + offset1, NULL, NULL, strideOut, hSbrHeader,
++              hFrameDataRight, &pSbrChannel[1]->prevFrameData,
++              (hSbrHeader->syncState == SBR_ACTIVE), NULL, self->flags,
++              codecFrameSize, self->sbrInDataHeadroom);
++    }
++
++    C_ALLOC_SCRATCH_END(pPsScratch, struct PS_DEC_COEFFICIENTS, 1)
++  }
++
++  if (h_ps_d != NULL) {
++    /* save PS status for next run */
++    h_ps_d->psDecodedPrv = (self->flags & SBRDEC_PS_DECODED) ? 1 : 0;
++  }
++
++  if (psPossible && !(self->flags & SBRDEC_SKIP_QMF_SYN)) {
++    FDK_ASSERT(strideOut > 1);
++    if (!(self->flags & SBRDEC_PS_DECODED)) {
++      /* A decoder which is able to decode PS has to produce a stereo output
++       * even if no PS data is available. */
++      /* So copy left channel to right channel. */
++      int copyFrameSize =
++          codecFrameSize * self->pQmfDomain->QmfDomainOut->fb.no_channels;
++      copyFrameSize /= self->pQmfDomain->QmfDomainIn->fb.no_channels;
++      LONG *ptr;
++      INT i;
++      FDK_ASSERT(strideOut == 2);
++
++      ptr = timeData;
++      for (i = copyFrameSize >> 1; i--;) {
++        LONG tmp; /* This temporal variable is required because some compilers
++                     can't do *ptr++ = *ptr++ correctly. */
++        tmp = *ptr++;
++        *ptr++ = tmp;
++        tmp = *ptr++;
++        *ptr++ = tmp;
++      }
++    }
++    *numOutChannels = 2; /* Output minimum two channels when PS is enabled. */
++  }
++
++  return errorStatus;
++}
++
++SBR_ERROR sbrDecoder_Apply(HANDLE_SBRDECODER self, LONG *input, LONG *timeData,
++                           const int timeDataSize, int *numChannels,
++                           int *sampleRate,
++                           const FDK_channelMapDescr *const mapDescr,
++                           const int mapIdx, const int coreDecodedOk,
++                           UCHAR *psDecoded, const INT inDataHeadroom,
++                           INT *outDataHeadroom) {
++  SBR_ERROR errorStatus = SBRDEC_OK;
++
++  int psPossible;
++  int sbrElementNum;
++  int numCoreChannels;
++  int numSbrChannels = 0;
++
++  if ((self == NULL) || (timeData == NULL) || (numChannels == NULL) ||
++      (sampleRate == NULL) || (psDecoded == NULL) ||
++      !FDK_chMapDescr_isValid(mapDescr)) {
++    return SBRDEC_INVALID_ARGUMENT;
++  }
++
++  psPossible = *psDecoded;
++  numCoreChannels = *numChannels;
++  if (numCoreChannels <= 0) {
++    return SBRDEC_INVALID_ARGUMENT;
++  }
++
++  if (self->numSbrElements < 1) {
++    /* exit immediately to avoid access violations */
++    return SBRDEC_NOT_INITIALIZED;
++  }
++
++  /* Sanity check of allocated SBR elements. */
++  for (sbrElementNum = 0; sbrElementNum < self->numSbrElements;
++       sbrElementNum++) {
++    if (self->pSbrElement[sbrElementNum] == NULL) {
++      return SBRDEC_NOT_INITIALIZED;
++    }
++  }
++
++  if (self->numSbrElements != 1 || self->pSbrElement[0]->elementID != ID_SCE) {
++    psPossible = 0;
++  }
++
++  self->sbrInDataHeadroom = inDataHeadroom;
++  *outDataHeadroom = (INT)(8);
++
++  /* Make sure that even if no SBR data was found/parsed *psDecoded is returned
++   * 1 if psPossible was 0. */
++  if (psPossible == 0) {
++    self->flags &= ~SBRDEC_PS_DECODED;
++  }
++
++  /* replaces channel based reset inside sbr_dec() */
++  if (((self->flags & SBRDEC_LOW_POWER) ? 1 : 0) !=
++      ((self->pQmfDomain->globalConf.flags & QMF_FLAG_LP) ? 1 : 0)) {
++    if (self->flags & SBRDEC_LOW_POWER) {
++      self->pQmfDomain->globalConf.flags |= QMF_FLAG_LP;
++      self->pQmfDomain->globalConf.flags_requested |= QMF_FLAG_LP;
++    } else {
++      self->pQmfDomain->globalConf.flags &= ~QMF_FLAG_LP;
++      self->pQmfDomain->globalConf.flags_requested &= ~QMF_FLAG_LP;
++    }
++    if (FDK_QmfDomain_InitFilterBank(self->pQmfDomain, QMF_FLAG_KEEP_STATES)) {
++      return SBRDEC_UNSUPPORTED_CONFIG;
++    }
++  }
++  if (self->numSbrChannels > self->pQmfDomain->globalConf.nInputChannels) {
++    return SBRDEC_UNSUPPORTED_CONFIG;
++  }
++
++  if (self->flags & SBRDEC_FLUSH) {
++    /* flushing is signalized, hence increment the flush frame counter */
++    self->numFlushedFrames++;
++  } else {
++    /* no flushing is signalized, hence reset the flush frame counter */
++    self->numFlushedFrames = 0;
++  }
++
++  /* Loop over SBR elements */
++  for (sbrElementNum = 0; sbrElementNum < self->numSbrElements;
++       sbrElementNum++) {
++    int numElementChan;
++
++    if (psPossible &&
++        self->pSbrElement[sbrElementNum]->pSbrChannel[1] == NULL) {
++      /* Disable PS and try decoding SBR mono. */
++      psPossible = 0;
++    }
++
++    numElementChan =
++        (self->pSbrElement[sbrElementNum]->elementID == ID_CPE) ? 2 : 1;
++
++    /* If core signal is bad then force upsampling */
++    if (!coreDecodedOk) {
++      setFrameErrorFlag(self->pSbrElement[sbrElementNum], FRAME_ERROR_ALLSLOTS);
++    }
++
++    errorStatus = sbrDecoder_DecodeElement(
++        self, input, timeData, timeDataSize, mapDescr, mapIdx, numSbrChannels,
++        sbrElementNum,
++        numCoreChannels, /* is correct even for USC SCI==2 case */
++        &numElementChan, psPossible);
++
++    if (errorStatus != SBRDEC_OK) {
++      goto bail;
++    }
++
++    numSbrChannels += numElementChan;
++
++    if (numSbrChannels >= numCoreChannels) {
++      break;
++    }
++  }
++
++  /* Update numChannels and samplerate */
++  /* Do not mess with output channels in case of USAC. numSbrChannels !=
++   * numChannels for stereoConfigIndex == 2 */
++  if (!(self->flags & SBRDEC_SYNTAX_USAC)) {
++    *numChannels = numSbrChannels;
++  }
++  *sampleRate = self->sampleRateOut;
++  *psDecoded = (self->flags & SBRDEC_PS_DECODED) ? 1 : 0;
++
++  /* Clear reset and flush flag because everything seems to be done
++   * successfully. */
++  self->flags &= ~SBRDEC_FORCE_RESET;
++  self->flags &= ~SBRDEC_FLUSH;
++
++bail:
++
++  return errorStatus;
++}
++
++SBR_ERROR sbrDecoder_Close(HANDLE_SBRDECODER *pSelf) {
++  HANDLE_SBRDECODER self = *pSelf;
++  int i;
++
++  if (self != NULL) {
++    if (self->hParametricStereoDec != NULL) {
++      DeletePsDec(&self->hParametricStereoDec);
++    }
++
++    for (i = 0; i < (8); i++) {
++      sbrDecoder_DestroyElement(self, i);
++    }
++
++    FreeRam_SbrDecoder(pSelf);
++  }
++
++  return SBRDEC_OK;
++}
++
++INT sbrDecoder_GetLibInfo(LIB_INFO *info) {
++  int i;
++
++  if (info == NULL) {
++    return -1;
++  }
++
++  /* search for next free tab */
++  for (i = 0; i < FDK_MODULE_LAST; i++) {
++    if (info[i].module_id == FDK_NONE) break;
++  }
++  if (i == FDK_MODULE_LAST) return -1;
++  info += i;
++
++  info->module_id = FDK_SBRDEC;
++  info->version =
++      LIB_VERSION(SBRDECODER_LIB_VL0, SBRDECODER_LIB_VL1, SBRDECODER_LIB_VL2);
++  LIB_VERSION_STRING(info);
++  info->build_date = SBRDECODER_LIB_BUILD_DATE;
++  info->build_time = SBRDECODER_LIB_BUILD_TIME;
++  info->title = SBRDECODER_LIB_TITLE;
++
++  /* Set flags */
++  info->flags = 0 | CAPF_SBR_HQ | CAPF_SBR_LP | CAPF_SBR_PS_MPEG |
++                CAPF_SBR_DRM_BS | CAPF_SBR_CONCEALMENT | CAPF_SBR_DRC |
++                CAPF_SBR_ELD_DOWNSCALE | CAPF_SBR_HBEHQ;
++  /* End of flags */
++
++  return 0;
++}
++
++UINT sbrDecoder_GetDelay(const HANDLE_SBRDECODER self) {
++  UINT outputDelay = 0;
++
++  if (self != NULL) {
++    UINT flags = self->flags;
++
++    /* See chapter 1.6.7.2 of ISO/IEC 14496-3 for the GA-SBR figures below. */
++
++    /* Are we initialized? */
++    if ((self->numSbrChannels > 0) && (self->numSbrElements > 0)) {
++      /* Add QMF synthesis delay */
++      if ((flags & SBRDEC_ELD_GRID) && IS_LOWDELAY(self->coreCodec)) {
++        /* Low delay SBR: */
++        if (!(flags & SBRDEC_SKIP_QMF_SYN)) {
++          outputDelay +=
++              (flags & SBRDEC_DOWNSAMPLE) ? 32 : 64; /* QMF synthesis */
++          if (flags & SBRDEC_LD_MPS_QMF) {
++            outputDelay += 32;
++          }
++        }
++      } else if (!IS_USAC(self->coreCodec)) {
++        /* By the method of elimination this is the GA (AAC-LC, HE-AAC, ...)
++         * branch: */
++        outputDelay += (flags & SBRDEC_DOWNSAMPLE) ? 481 : 962;
++        if (flags & SBRDEC_SKIP_QMF_SYN) {
++          outputDelay -= 257; /* QMF synthesis */
++        }
++      }
++    }
++  }
++
++  return (outputDelay);
++}
+diff --git a/android/security/aac-origin.json b/android/security/aac-origin.json
+new file mode 100644
+index 0000000..0d3ec2d
+--- /dev/null
++++ b/android/security/aac-origin.json
+@@ -0,0 +1,20 @@
++{
++  "Android_builds": 0,
++  "CVE": "CVE-2026-58876",
++  "bug": "A-503543341",
++  "commit": "6b8c6cbab2b747ffc0c39721ca18651cddc8a373",
++  "official_patch_sha256": "ab9f6ad9fc6bc32825ef2c3ae4e88e6aea7e5a1e3c43a379fb9b50665ac3eb7d",
++  "official_regression": "LibSbrDecTest.CreatePsDecResetUAF",
++  "official_url": "https://android.googlesource.com/platform/external/aac/+/6b8c6cbab2b747ffc0c39721ca18651cddc8a373",
++  "original_apex": "com.android.media.swcodec",
++  "original_module": "libFraunhoferAAC",
++  "original_source_commit": "41f344ffc0bacea87cac5bb1756bd40761265d1e",
++  "original_source_lock_unchanged": true,
++  "parent": "41f344ffc0bacea87cac5bb1756bd40761265d1e",
++  "parent_tree": "37ecf94256501f534d5f055310950263ebe5eeca",
++  "production_ready": false,
++  "runtime_qualified": false,
++  "schema": "droidloom-aac-official-security-origin-v1",
++  "tree": "97d5982c91bf29aef17045093f1796e80af09d20",
++  "upstream_test_command": "atest libSBRdec_test --host"
++}
+diff --git a/tools/droidloom-update/src/aac_security.rs b/tools/droidloom-update/src/aac_security.rs
+new file mode 100644
+index 0000000..80a8e26
+--- /dev/null
++++ b/tools/droidloom-update/src/aac_security.rs
+@@ -0,0 +1,233 @@
++//! Apply the complete upstream AAC reset-ownership correction through the normal journal.
++//! The selected source stays at its original pin; the four upstream files are a
++//! temporary, recoverable build projection. No APEX installation occurs here.
++use super::*;
++use std::os::unix::fs::MetadataExt;
++
++pub(super) const TARGETS: &[&str] = &["com.android.media.swcodec", "libSBRdec_test"];
++const PROJECT: &str = "external/aac";
++const PATCH: &str = "android/security/0002-aac-reset-ownership.patch";
++const PATCH_SHA: &str = "ab9f6ad9fc6bc32825ef2c3ae4e88e6aea7e5a1e3c43a379fb9b50665ac3eb7d";
++const COMMIT: &str = "6b8c6cbab2b747ffc0c39721ca18651cddc8a373";
++const PARENT: &str = "41f344ffc0bacea87cac5bb1756bd40761265d1e";
++const TEST: &str = "cpp/libSBRdec/tests/libSBRdec_test.cpp";
++const ORIGINALS: &[(&str, u64, &str)] = &[
++    ("cpp/Android.bp", 1636, "3cdd1f65bb8de19ee91b131aac2e7a290528bcc601d283678f7e7215310bfbbe"),
++    ("cpp/libSBRdec/src/psdec.cpp", 27371, "a38554afdf0d02c0388c934be163e56066410a6ce55f512d8c2191588610e987"),
++    ("cpp/libSBRdec/src/sbrdecoder.cpp", 65966, "6a0f806599be04f3e658953484f6f2cc7e06c9941cb7b9235d036db8435fb7df"),
++];
++const FIXED: &[(&str, u64, &str)] = &[
++    ("cpp/Android.bp", 2113, "9d820e211a87fee61bb9449d346b2be0a464b3ba5a723f824e5c02fd37d2bcc9"),
++    ("cpp/libSBRdec/src/psdec.cpp", 27498, "63d58b903db01bde2c0bf281abb8fbf6d352a2ded8d9893ad9edd7a3cc12dab6"),
++    ("cpp/libSBRdec/src/sbrdecoder.cpp", 66018, "af68a4e9e589618e59957947d964afaa3f3173244aee03614d9f524e11f4a665"),
++    (TEST, 2170, "67c67bdfffe4215f860ac798d6bffd25bdec493597958c49b395de2696c98078"),
++];
++
++fn original_path(root: &Path, relative: &str) -> Result<PathBuf> {
++    if !root.is_absolute() || root.canonicalize()? != root {
++        return fail("AAC source and recipe roots must be canonical absolute directories");
++    }
++    let mut path = root.to_path_buf();
++    for component in Path::new(relative).components() {
++        if !matches!(component, std::path::Component::Normal(_)) {
++            return fail("AAC input path must have only original relative components");
++        }
++        path.push(component.as_os_str());
++        match fs::symlink_metadata(&path) {
++            Ok(meta) if meta.file_type().is_symlink() => return fail("AAC input parent or file is an alias"),
++            Ok(_) => (),
++            Err(error) if error.kind() == std::io::ErrorKind::NotFound => (),
++            Err(error) => return Err(error.into()),
++        }
++    }
++    Ok(path)
++}
++
++fn exact(root: &Path, relative: &str, bytes: u64, expected: &str) -> Result<PathBuf> {
++    let path = original_path(root, relative)?;
++    let before = fs::symlink_metadata(&path)?;
++    if !before.is_file() || before.nlink() != 1 || before.len() != bytes || hash(&path)? != expected {
++        return fail(format!("AAC original or official fixed input differs: {relative}"));
++    }
++    let after = fs::symlink_metadata(&path)?;
++    let identity = |m: &fs::Metadata| (m.dev(), m.ino(), m.mode(), m.uid(), m.gid(), m.nlink(),
++        m.len(), (m.mtime(), m.mtime_nsec()), (m.ctime(), m.ctime_nsec()));
++    if identity(&before) != identity(&after) {
++        return fail("AAC input changed during complete verification");
++    }
++    Ok(path)
++}
++
++pub(super) fn validate_original(repo: &Path, source: &Path) -> Result<()> {
++    for (relative, bytes, expected) in ORIGINALS {
++        exact(source, &format!("{PROJECT}/{relative}"), *bytes, expected)?;
++    }
++    exact(repo, PATCH, 4443, PATCH_SHA)?;
++    let added = original_path(source, &format!("{PROJECT}/{TEST}"))?;
++    match fs::symlink_metadata(added) {
++        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
++        Err(error) => Err(error.into()),
++        Ok(_) => fail("AAC official new test already exists in the original source"),
++    }
++}
++
++pub(super) fn project(projection: &mut Projection, repo: &Path, source: &Path) -> Result<()> {
++    validate_original(repo, source)?;
++    projection.patch(source, PROJECT, &repo.join(PATCH))?;
++    for (relative, bytes, expected) in FIXED {
++        exact(source, &format!("{PROJECT}/{relative}"), *bytes, expected)?;
++    }
++    Ok(())
++}
++
++pub(super) fn input_receipt(
++    repo: &Path, source: &Path, lock: &Path, out: &Path, product: &str, projection: &Projection,
++) -> Result<PathBuf> {
++    let mut inputs = FixedProductionRequest::AacSecurityOnAudioSource.description(product)?;
++    let mut effective = Vec::new();
++    for (relative, bytes, expected) in FIXED {
++        let path = exact(source, &format!("{PROJECT}/{relative}"), *bytes, expected)?;
++        effective.push(serde_json::json!({"path": path, "bytes": bytes, "sha256": expected}));
++    }
++    inputs["schema"] = "droidloom-aac-security-inputs-v1".into();
++    inputs["CVE"] = "CVE-2026-58876".into();
++    inputs["source_lock"] = serde_json::json!({"path": lock, "sha256": hash(lock)?});
++    inputs["official_patch"] = serde_json::json!({"path": repo.join(PATCH), "sha256": PATCH_SHA,
++        "commit": COMMIT, "parent": PARENT, "original_project_pin": PARENT});
++    inputs["effective_upstream_files"] = effective.into();
++    inputs["effective_projection"] = projection.effective_inventory(repo, source)?;
++    inputs["strict_allow_missing_dependencies"] = "false".into();
++    inputs["selinux_ignore_neverallows"] = "false".into();
++    inputs["official_regression_executed"] = false.into();
++    inputs["production_signing_qualified"] = false.into();
++    inputs["whole_security_bulletin_qualified"] = false.into();
++    let path = out.join("droidloom-aac-security-inputs.json");
++    write(&path, serde_json::to_vec_pretty(&inputs)?)?;
++    Ok(path)
++}
++
++pub(super) fn normal_result(repo: &Path, source: &Path, out: &Path, product: &str) -> Result<()> {
++    validate_original(repo, source)?;
++    let input = out.join("droidloom-aac-security-inputs.json");
++    write(&out.join("droidloom-aac-security-normal-result.json"),
++        serde_json::to_vec_pretty(&serde_json::json!({
++            "schema": "droidloom-aac-security-normal-result-v1", "CVE": "CVE-2026-58876",
++            "inputs": {"path": input, "sha256": hash(&input)?}, "requested_targets": TARGETS,
++            "product": product, "normal_command_returned_success": true,
++            "original_source_files_restored": true, "source_release": PRODUCTION_TARGET_RELEASE,
++            "build_variant": PRODUCTION_BUILD_VARIANT, "QPR1_source_identity_claim": false,
++            "artifact_identity_qualified": false, "official_regression_executed": false,
++            "binary_semantic_fix_qualified": false, "production_signing_qualified": false,
++            "whole_security_bulletin_qualified": false, "runtime_qualified": false,
++            "production_ready": false,
++        }))?)?;
++    Ok(())
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use std::os::unix::fs::PermissionsExt;
++
++    fn fixture(root: &Path) -> (PathBuf, PathBuf) {
++        let repo = root.join("recipe");
++        let source = root.join("source");
++        for (name, bytes) in [
++            ("cpp/Android.bp", include_bytes!("../../../android/security/aac-fixtures/cpp/Android.bp").as_slice()),
++            ("cpp/libSBRdec/src/psdec.cpp", include_bytes!("../../../android/security/aac-fixtures/cpp/libSBRdec/src/psdec.cpp").as_slice()),
++            ("cpp/libSBRdec/src/sbrdecoder.cpp", include_bytes!("../../../android/security/aac-fixtures/cpp/libSBRdec/src/sbrdecoder.cpp").as_slice()),
++        ] {
++            write(&source.join(PROJECT).join(name), bytes).unwrap();
++        }
++        write(&repo.join(PATCH), include_bytes!("../../../android/security/0002-aac-reset-ownership.patch")).unwrap();
++        (repo, source)
++    }
++
++    #[test]
++    fn aac_official_four_file_patch_recovers_originals_after_interruption() {
++        for interrupted in [false, true] {
++            let d = tempfile::tempdir().unwrap();
++            let (repo, source) = fixture(d.path());
++            let mut before = Vec::new();
++            for (relative, _, _) in ORIGINALS {
++                let path = source.join(PROJECT).join(relative);
++                fs::set_permissions(&path, fs::Permissions::from_mode(0o640)).unwrap();
++                let meta = fs::metadata(&path).unwrap();
++                before.push((path, meta.permissions().mode(), meta.modified().unwrap()));
++            }
++            let journal = d.path().join("source-projection.json");
++            let mut projection = Projection::new(journal.clone()).unwrap();
++            project(&mut projection, &repo, &source).unwrap();
++            assert_eq!(projection.originals.len(), 4);
++            if interrupted {
++                std::mem::forget(projection);
++                recover(&journal, &source).unwrap();
++            } else {
++                projection.restore().unwrap();
++            }
++            validate_original(&repo, &source).unwrap();
++            for (path, mode, modified) in before {
++                let after = fs::metadata(&path).unwrap();
++                assert_eq!(after.permissions().mode(), mode);
++                assert_eq!(after.modified().unwrap(), modified);
++            }
++            assert!(!journal.exists());
++            assert!(!source.join(PROJECT).join(TEST).exists());
++        }
++    }
++
++    #[test]
++    fn aac_changed_original_patch_alias_or_preexisting_test_is_rejected() {
++        for which in 0..6 {
++            let d = tempfile::tempdir().unwrap();
++            let (repo, source) = fixture(d.path());
++            validate_original(&repo, &source).unwrap();
++            let path = if which < 3 { source.join(PROJECT).join(ORIGINALS[which].0) }
++                else if which == 3 { repo.join(PATCH) } else { source.join(PROJECT).join(TEST) };
++            if which < 4 {
++                let mut changed = fs::read(&path).unwrap();
++                changed.push(b'\n');
++                fs::write(&path, changed).unwrap();
++            } else {
++                fs::create_dir_all(path.parent().unwrap()).unwrap();
++                if which == 4 { fs::write(&path, b"foreign test").unwrap(); }
++                else { std::os::unix::fs::symlink(repo.join(PATCH), &path).unwrap(); }
++            }
++            let journal = d.path().join("source-projection.json");
++            let mut projection = Projection::new(journal.clone()).unwrap();
++            assert!(project(&mut projection, &repo, &source).is_err());
++            assert!(!journal.exists());
++            assert!(projection.originals.is_empty());
++        }
++    }
++
++    #[test]
++    fn aac_fixed_request_keeps_strict_user_source_and_official_targets() {
++        const PROBE: &str = "DROIDLOOM_TEST_AAC_SECURITY_ENV_CHILD";
++        if std::env::var_os(PROBE).is_none() {
++            let child = Command::new(std::env::current_exe().unwrap())
++                .args(["--exact", "android::aac_security::tests::aac_fixed_request_keeps_strict_user_source_and_official_targets", "--test-threads=1"])
++                .env(PROBE, "1").env("TARGET_BUILD_VARIANT", "eng").env("TARGET_RELEASE", "cp3a")
++                .env("ALLOW_MISSING_DEPENDENCIES", "true").env("SELINUX_IGNORE_NEVERALLOWS", "true")
++                .output().unwrap();
++            assert!(child.status.success(), "{}", String::from_utf8_lossy(&child.stderr));
++            assert!(String::from_utf8_lossy(&child.stdout).contains("1 passed; 0 failed"));
++            return;
++        }
++        let request = FixedProductionRequest::AacSecurityOnAudioSource;
++        assert_eq!(request.source_mode(), SoongDependencyMode::AudioApexTargetClosure);
++        assert_eq!(request.projection_targets(), ["com.android.hardware.audio.droidloom"]);
++        assert_eq!(request.requested_targets(), TARGETS);
++        assert!(request.validate("droidloom_arm64").is_err());
++        let d = tempfile::tempdir().unwrap();
++        let executable = d.path().join("soong_ui");
++        fs::write(&executable, b"#!/bin/sh\nset -eu\nprintf '%s\\n' \"$TARGET_BUILD_VARIANT\" \"$TARGET_RELEASE\" \"$ALLOW_MISSING_DEPENDENCIES\" \"$SELINUX_IGNORE_NEVERALLOWS\" \"$@\"\n").unwrap();
++        fs::set_permissions(&executable, fs::Permissions::from_mode(0o700)).unwrap();
++        let targets = request.soong_targets(d.path(), "droidloom_x86_64").unwrap();
++        let mut command = production_soong_command(d.path(), d.path(), d.path(), "droidloom_x86_64", 2, &targets).unwrap();
++        request.configure_dependencies(&mut command, "droidloom_x86_64").unwrap();
++        let output = command.output().unwrap();
++        assert!(output.status.success());
++        assert_eq!(output.stdout, b"user\ncp2a\nfalse\nfalse\n--make-mode\n-j2\ncom.android.media.swcodec\nlibSBRdec_test\n");
++    }
++}
+diff --git a/tools/droidloom-update/src/android.rs b/tools/droidloom-update/src/android.rs
+index 2aa37d9..89541dd 100644
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -2217,6 +2217,9 @@ fn enforce_strict_soong_dependencies(command: &mut Command) {
+     command.env("ALLOW_MISSING_DEPENDENCIES", "false");
+ }
+ 
++#[path = "aac_security.rs"]
++mod aac_security;
++
+ #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ enum SoongDependencyMode {
+     Strict,
+@@ -2235,19 +2238,20 @@ enum FixedProductionRequest<'a> {
+     VendorPolicyOnAudioSource,
+     VendorPolicyBundleOnAudioSource,
+     IntentResolverSecurityOnAudioSource,
++    AacSecurityOnAudioSource,
+ }
+ 
+ impl FixedProductionRequest<'_> {
+     fn source_mode(&self) -> SoongDependencyMode {
+         match self {
+             Self::Existing(mode, _) => *mode,
+-            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource => SoongDependencyMode::AudioApexTargetClosure,
++            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource | Self::AacSecurityOnAudioSource => SoongDependencyMode::AudioApexTargetClosure,
+         }
+     }
+     fn projection_targets(&self) -> &[&str] {
+         match self {
+             Self::Existing(_, targets) => targets,
+-            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource => &["com.android.hardware.audio.droidloom"],
++            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource | Self::AacSecurityOnAudioSource => &["com.android.hardware.audio.droidloom"],
+         }
+     }
+     fn requested_targets(&self) -> &[&str] {
+@@ -2256,14 +2260,16 @@ impl FixedProductionRequest<'_> {
+             Self::VendorPolicyOnAudioSource => &["vendor_sepolicy.cil"],
+             Self::VendorPolicyBundleOnAudioSource => VENDOR_POLICY_BUNDLE_TARGETS,
+             Self::IntentResolverSecurityOnAudioSource => &["IntentResolver"],
++            Self::AacSecurityOnAudioSource => aac_security::TARGETS,
+         }
+     }
+     fn validate(&self, product: &str) -> Result<()> {
+         match self {
+             Self::Existing(mode, targets) => validate_soong_dependency_mode(*mode, targets),
+-            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource if product == "droidloom_x86_64" => Ok(()),
++            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource | Self::AacSecurityOnAudioSource if product == "droidloom_x86_64" => Ok(()),
+             Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource => fail("fixed Audio-source vendor policy requires droidloom_x86_64"),
+             Self::IntentResolverSecurityOnAudioSource => fail("fixed IntentResolver security target requires droidloom_x86_64"),
++            Self::AacSecurityOnAudioSource => fail("fixed AAC security targets require droidloom_x86_64"),
+         }
+     }
+     fn soong_targets(&self, out: &Path, product: &str) -> Result<Vec<PathBuf>> {
+@@ -2273,13 +2279,14 @@ impl FixedProductionRequest<'_> {
+             Self::VendorPolicyOnAudioSource => Ok(vec![PathBuf::from("vendor_sepolicy.cil")]),
+             Self::VendorPolicyBundleOnAudioSource => Ok(VENDOR_POLICY_BUNDLE_TARGETS.iter().map(|target|PathBuf::from(*target)).collect()),
+             Self::IntentResolverSecurityOnAudioSource => Ok(vec![PathBuf::from("IntentResolver")]),
++            Self::AacSecurityOnAudioSource => Ok(aac_security::TARGETS.iter().map(|target| PathBuf::from(*target)).collect()),
+         }
+     }
+     fn configure_dependencies(&self, command: &mut Command, product: &str) -> Result<()> {
+         self.validate(product)?;
+         match self {
+             Self::Existing(mode, targets) => configure_soong_dependencies(command, *mode, targets),
+-            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource => {
++            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource | Self::AacSecurityOnAudioSource => {
+                 enforce_strict_soong_dependencies(command);
+                 command.env("SELINUX_IGNORE_NEVERALLOWS", "false");
+                 Ok(())
+@@ -2290,7 +2297,7 @@ impl FixedProductionRequest<'_> {
+         match self {
+             Self::VendorPolicyOnAudioSource => Some(("droidloom-vendor-policy-build-inputs.json", "droidloom-fixed-user-vendor-policy-inputs-v1", "droidloom-vendor-policy-normal-result.json", "droidloom-fixed-user-vendor-policy-normal-result-v1")),
+             Self::VendorPolicyBundleOnAudioSource => Some(("droidloom-vendor-policy-bundle-build-inputs.json", "droidloom-fixed-user-vendor-policy-bundle-inputs-v1", "droidloom-vendor-policy-bundle-normal-result.json", "droidloom-fixed-user-vendor-policy-bundle-normal-result-v1")),
+-            Self::Existing(_, _) | Self::IntentResolverSecurityOnAudioSource => None,
++            Self::Existing(_, _) | Self::IntentResolverSecurityOnAudioSource | Self::AacSecurityOnAudioSource => None,
+         }
+     }
+     fn description(&self, product: &str) -> Result<serde_json::Value> {
+@@ -2302,6 +2309,7 @@ impl FixedProductionRequest<'_> {
+                 Self::VendorPolicyOnAudioSource => "exact-audio537-original-libexif-source-policy-target",
+                 Self::VendorPolicyBundleOnAudioSource => "exact-audio537-libexif-source-vendor-policy-bundle",
+                 Self::IntentResolverSecurityOnAudioSource => "exact-audio-source-intentresolver-security-target",
++                Self::AacSecurityOnAudioSource => "exact-audio537-source-aac-official-security-targets",
+                 Self::Existing(_, _) => "existing-normal-entry",
+             },
+             "product": product,
+@@ -2389,6 +2397,16 @@ pub fn build_intentresolver_security_on_audio_source(
+         FixedProductionRequest::IntentResolverSecurityOnAudioSource)
+ }
+ 
++/// Build the original swcodec APEX and upstream host/device AAC regression.
++/// Actual artifacts, official regression execution, signing and runtime remain
++/// separately verified; this command does not install or execute an APEX.
++pub fn build_aac_security_on_audio_source(
++    repo: &Path, source: &Path, out: &Path, work: &Path, product: &str, jobs: usize,
++) -> Result<()> {
++    build_targets_with_fixed_request(repo, source, out, work, product, jobs,
++        FixedProductionRequest::AacSecurityOnAudioSource)
++}
++
+ fn validate_vendor_policy_original(source: &Path) -> Result<()> {
+     if hash(&source.join("system/sepolicy/Android.bp"))?
+         != "037ba970d4bae28865245366b4f4f9a0e828197c43843f7950a9e18e754aa42b" {
+@@ -5022,6 +5040,7 @@ fn build_targets_with_fixed_request(
+         FixedProductionRequest::VendorPolicyOnAudioSource => validate_vendor_policy_original(source)?,
+         FixedProductionRequest::VendorPolicyBundleOnAudioSource => validate_vendor_policy_bundle_originals(source)?,
+         FixedProductionRequest::IntentResolverSecurityOnAudioSource => validate_intentresolver_security_original(repo, source)?,
++        FixedProductionRequest::AacSecurityOnAudioSource => aac_security::validate_original(repo, source)?,
+         FixedProductionRequest::Existing(_, _) => (),
+     }
+     validate_audio_pasit_original_providers(source, dependency_mode)?;
+@@ -5065,6 +5084,9 @@ fn build_targets_with_fixed_request(
+     if matches!(request, FixedProductionRequest::IntentResolverSecurityOnAudioSource) {
+         project_intentresolver_security(&mut p, repo, source)?;
+     }
++    if matches!(request, FixedProductionRequest::AacSecurityOnAudioSource) {
++        aac_security::project(&mut p, repo, source)?;
++    }
+     for (cwd, patch) in PATCHES {
+         p.patch(source, cwd, &repo.join(patch))?;
+     }
+@@ -5468,6 +5490,9 @@ fn build_targets_with_fixed_request(
+         inputs["whole_security_bulletin_qualified"] = false.into();
+         write(&security_input_path, serde_json::to_vec_pretty(&inputs)?)?;
+     }
++    if matches!(request, FixedProductionRequest::AacSecurityOnAudioSource) {
++        aac_security::input_receipt(repo, source, &lock, out, product, &p)?;
++    }
+     let engine_inputs = if dependency_mode == SoongDependencyMode::NativeEngineTargetClosure {
+         Some(crate::native_engine::engine_build_inputs(
+             repo, source, &vendor, work, out, &native_bridge_source,
+@@ -5530,6 +5555,9 @@ fn build_targets_with_fixed_request(
+                 "production_ready": false,
+             }))?)?;
+     }
++    if matches!(request, FixedProductionRequest::AacSecurityOnAudioSource) {
++        aac_security::normal_result(repo, source, out, product)?;
++    }
+     if let Some(inputs) = engine_inputs {
+         crate::native_engine::write_engine_build_receipt(source, out, product, inputs)?;
+     }
+diff --git a/tools/droidloom-update/src/main.rs b/tools/droidloom-update/src/main.rs
+index 2c9a710..3ab6414 100644
+--- a/tools/droidloom-update/src/main.rs
++++ b/tools/droidloom-update/src/main.rs
+@@ -107,6 +107,13 @@ enum Action {
+         #[arg(long)]
+         work: PathBuf,
+     },
++    /// Build swcodec and the original AAC regression with the complete official security fix.
++    /// Does not install the APEX or qualify runtime and signing.
++    #[command(name = "aac-security-build")]
++    AacSecurityBuild {
++        #[arg(long)]
++        work: PathBuf,
++    },
+     /// Restore an interrupted source projection under the normal two workspace locks.
+     /// Does not compile, install, bootstrap dependencies, or start services.
+     RecoverSource {
+@@ -184,10 +191,11 @@ fn repository(explicit: Option<PathBuf>) -> Result<PathBuf> {
+     Ok(path)
+ }
+ fn selected_build_out(command: Option<&Action>, work: &std::path::Path) -> Result<PathBuf> {
+-    if matches!(command, Some(Action::VendorPolicyBuild { .. } | Action::VendorPolicyBundleBuild { .. } | Action::IntentResolverSecurityBuild { .. })) {
++    if matches!(command, Some(Action::VendorPolicyBuild { .. } | Action::VendorPolicyBundleBuild { .. } | Action::IntentResolverSecurityBuild { .. } | Action::AacSecurityBuild { .. })) {
+         let out = work.join(match command {
+             Some(Action::VendorPolicyBundleBuild { .. }) => "android-user-vendor-policy-bundle-out",
+             Some(Action::IntentResolverSecurityBuild { .. }) => "android-user-intentresolver-security-out",
++            Some(Action::AacSecurityBuild { .. }) => "android-user-aac-security-out",
+             _ => "android-user-vendor-policy-out",
+         });
+         if !work.is_absolute() {
+@@ -250,7 +258,7 @@ fn recover_source_workspace(work: &std::path::Path) -> Result<()> {
+ }
+ 
+ fn execute(args: Args) -> Result<()> {
+-    if matches!(&args.command, Some(Action::VendorPolicyBuild { .. } | Action::VendorPolicyBundleBuild { .. } | Action::IntentResolverSecurityBuild { .. }))
++    if matches!(&args.command, Some(Action::VendorPolicyBuild { .. } | Action::VendorPolicyBundleBuild { .. } | Action::IntentResolverSecurityBuild { .. } | Action::AacSecurityBuild { .. }))
+         && (args.clean || args.build_only || args.bootstrapped) {
+         return fail("fixed vendor policy does not accept cleanup, bundle or bootstrap options");
+     }
+@@ -332,6 +340,7 @@ fn execute(args: Args) -> Result<()> {
+         | Some(Action::VendorPolicyBuild { work })
+         | Some(Action::VendorPolicyBundleBuild { work })
+         | Some(Action::IntentResolverSecurityBuild { work })
++        | Some(Action::AacSecurityBuild { work })
+         | Some(Action::NativeEngineBuild { work, .. })
+         | Some(Action::MinigbmBuild { work }) => Some(work.canonicalize()?),
+         _ => None,
+@@ -401,6 +410,11 @@ fn execute(args: Args) -> Result<()> {
+             &repo, &source, &out, &work, product, jobs,
+         );
+     }
++    if matches!(args.command, Some(Action::AacSecurityBuild { .. })) {
++        return android::build_aac_security_on_audio_source(
++            &repo, &source, &out, &work, product, jobs,
++        );
++    }
+     if matches!(args.command, Some(Action::VendorPolicyBuild { .. })) {
+         eprintln!("Building the original final vendor_sepolicy.cil with the exact Audio source profile; APEX, selected-cohort policy compatibility and runtime remain separate.");
+         return android::build_vendor_policy_on_audio_source(
+@@ -570,6 +584,28 @@ mod tests {
+         assert!(selected_build_out(args.command.as_ref(),work).is_err());
+     }
+ 
++    #[test]
++    fn aac_security_cli_rejects_widening_and_output_aliases() {
++        let d = tempfile::tempdir().unwrap();
++        let work = d.path();
++        let valid = ["droidloom-update", "aac-security-build", "--work", work.to_str().unwrap()];
++        let args = Args::try_parse_from(valid).unwrap();
++        assert!(matches!(args.command, Some(Action::AacSecurityBuild { .. })));
++        let out = work.join("android-user-aac-security-out");
++        assert_eq!(selected_build_out(args.command.as_ref(), work).unwrap(), out);
++        for extra in [&["services"][..], &["--out", "/another"][..], &["--variant", "eng"][..], &["--source-lock", "/other"][..]] {
++            let mut argv = valid.to_vec();
++            argv.extend_from_slice(extra);
++            assert!(Args::try_parse_from(argv).is_err());
++        }
++        for option in ["--clean", "--build-only", "--bootstrapped"] {
++            let args = Args::try_parse_from(["droidloom-update", option, "aac-security-build", "--work", work.to_str().unwrap()]).unwrap();
++            assert!(execute(args).unwrap_err().to_string().contains("does not accept cleanup"));
++        }
++        std::os::unix::fs::symlink(work, out).unwrap();
++        assert!(selected_build_out(args.command.as_ref(), work).is_err());
++    }
++
+     #[test]
+     fn vendor_policy_cli_is_fixed_and_has_no_cleanup_or_target_override() {
+         let valid = ["droidloom-update", "vendor-policy-build", "--work", "/not-executed"];

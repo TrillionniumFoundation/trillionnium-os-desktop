@@ -1,0 +1,86 @@
+package {
+    default_applicable_licenses: ["external_grpc-grpc_license"],
+}
+
+genrule {
+    name: "py-grpcio-roots-pem",
+    srcs: [":grpc_roots_pem"],
+    out: ["_credentials/roots.pem"],
+    cmd: "mkdir -p $(genDir)/_credentials && cp -f $(location :grpc_roots_pem) $(genDir)/_credentials/roots.pem",
+}
+
+python_library_host {
+    name: "py-grpcio",
+    srcs: [
+        "grpc/**/*.py",
+    ],
+    libs: [
+        "py-grpcio-cygrpc",
+    ],
+}
+
+python_library_host {
+    name: "py-grpcio-cygrpc",
+    shared_libs: [
+        "cygrpc",
+    ],
+    data: [":py-grpcio-roots-pem"],
+    pkg_path: "grpc/_cython",
+    visibility: ["//visibility:private"],
+}
+
+cc_library_host_shared {
+    name: "cygrpc",
+    srcs: [
+        "grpc/_cython/cygrpc.cpp",
+    ],
+    compile_multilib: "64",
+    shared_libs: [
+        "libgrpc++",
+    ],
+    static_libs: [
+        "absl_algorithm_container",
+        "absl_base",
+        "absl_base_config",
+        "absl_base_core_headers",
+        "absl_base_no_destructor",
+        "absl_cleanup",
+        "absl_container_flat_hash_map",
+        "absl_container_flat_hash_set",
+        "absl_container_inlined_vector",
+        "absl_debugging_failure_signal_handler",
+        "absl_flags_flag",
+        "absl_flags_marshalling",
+        "absl_functional_any_invocable",
+        "absl_functional_bind_front",
+        "absl_functional_function_ref",
+        "absl_hash",
+        "absl_log",
+        "absl_log_absl_check",
+        "absl_log_absl_log",
+        "absl_log_check",
+        "absl_memory",
+        "absl_meta_type_traits",
+        "absl_numeric_int128",
+        "absl_random",
+        "absl_random_bit_gen_ref",
+        "absl_random_distributions",
+        "absl_status",
+        "absl_status_statusor",
+        "absl_strings",
+        "absl_strings_cord",
+        "absl_strings_str_format",
+        "absl_synchronization",
+        "absl_time",
+        "absl_types_optional",
+        "absl_types_span",
+        "absl_types_variant",
+        "absl_utility",
+    ],
+    allow_undefined_symbols: true,
+    header_libs: [
+        "libgrpc++_internal_headers",
+        "py3-headers",
+    ],
+    visibility: ["//visibility:private"],
+}

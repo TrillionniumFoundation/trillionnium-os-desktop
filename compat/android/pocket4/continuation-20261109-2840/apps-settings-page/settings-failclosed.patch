@@ -1,0 +1,3772 @@
+diff --git a/runtime/droidloom-supervisor/src/control.rs b/runtime/droidloom-supervisor/src/control.rs
+--- a/runtime/droidloom-supervisor/src/control.rs
++++ b/runtime/droidloom-supervisor/src/control.rs
+@@ -41,6 +41,9 @@
+ 
+ #[path = "application_command.rs"]
+ mod application_command;
++
++#[path = "application_settings.rs"]
++pub mod application_settings;
+ 
+ /// Default root-owned lifecycle socket.
+ pub const DEFAULT_CONTROL_SOCKET: &str = "/run/droidloom/control.sock";
+@@ -143,6 +146,13 @@
+         /// Reviewed public HTTPS fixture URL.
+         url: String,
+     },
++    /// Request one fixed Settings page; blocked until framework creation authority exists.
++    ObserveSettingsPage {
++        /// Exact current installed Settings bytes and physical framework generation.
++        expected: application_probe::ApplicationInspection,
++        /// Fixed page only; no permission grant or setting mutation is accepted.
++        page: application_settings::SettingsPage,
++    },
+     /// List enabled Android MAIN/LAUNCHER activities.
+     ListApplications {
+         /// Android user identifier.
+@@ -221,6 +231,9 @@
+     /// Read-only physical runtime/lifecycle observation, never production admission.
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+     pub runtime_observation: Option<application_probe::RuntimeObservation>,
++    /// Partial task/window/native-tree observation, never Settings acceptance.
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub settings_observation: Option<application_settings::SettingsObservation>,
+ }
+ 
+ /// Daemon filesystem and executable configuration.
+@@ -301,6 +314,39 @@
+         request: ControlRequest,
+         file: Option<fs::File>,
+     ) -> ControlResponse {
++        self.handle_with_pending(
++            peer_uid,
++            request,
++            file,
++            application_settings::require_clear_pending,
++        )
++    }
++
++    fn handle_with_pending(
++        &mut self,
++        peer_uid: u32,
++        request: ControlRequest,
++        file: Option<fs::File>,
++        check_pending: impl FnOnce() -> Result<(), String>,
++    ) -> ControlResponse {
++        // Do not acquire flock again: the original UI consumer may already
++        // hold it while calling this socket. Pending admission is independent
++        // and persists across daemon death. Future requests default to mutation.
++        if !matches!(
++            &request,
++            ControlRequest::Status
++                | ControlRequest::Readiness
++                | ControlRequest::WaitReady
++                | ControlRequest::Diagnostics { .. }
++                | ControlRequest::ObserveRuntime
++                | ControlRequest::InspectApplication { .. }
++                | ControlRequest::ListApplications { .. }
++                | ControlRequest::ApplicationIcon { .. }
++        ) {
++            if let Err(error) = check_pending() {
++                return self.failure(error);
++            }
++        }
+         if let Err(error) = self.poll() {
+             return self.failure(error.to_string());
+         }
+@@ -347,6 +393,9 @@
+             ControlRequest::OpenBrowser { expected, url } => {
+                 self.open_browser(peer_uid, &expected, &url)
+             }
++            ControlRequest::ObserveSettingsPage { expected, page } => {
++                self.observe_settings_page(peer_uid, &expected, page)
++            }
+             ControlRequest::ListApplications { user } => self.list_applications(peer_uid, user),
+             ControlRequest::ApplicationIcon {
+                 component,
+@@ -392,6 +441,7 @@
+             diagnostics: None,
+             inspection: None,
+             runtime_observation: None,
++            settings_observation: None,
+         })
+     }
+ 
+@@ -496,6 +546,7 @@
+             diagnostics: None,
+             inspection: None,
+             runtime_observation: None,
++            settings_observation: None,
+         })
+     }
+ 
+@@ -547,6 +598,28 @@
+         let mut response = self.success("Implicit Firefox HTTPS activity opened; content, media and whole-app acceptance remain pending");
+         response.inspection = Some(observed);
+         response.launch = Some(output);
++        Ok(response)
++    }
++
++    fn observe_settings_page(
++        &self,
++        peer_uid: u32,
++        expected: &application_probe::ApplicationInspection,
++        page: application_settings::SettingsPage,
++    ) -> Result<ControlResponse, ControlError> {
++        validate_android_user(expected.user)?;
++        self.require_active_cell(peer_uid, None)?;
++        // Host authorization only: constructing LiveApplicationProbe would
++        // already query Android properties before the missing-authority gate.
++        let observed =
++            application_settings::observe(expected, page).map_err(ControlError::Invalid)?;
++        let mut response = self.success("Settings creation authority unavailable; candidate observations cannot authorize launch, cleanup or release gates");
++        response.ok = observed.completed_partial();
++        if let Some(error) = &observed.failure {
++            response.message = format!("Settings observation blocked; no automatic retry: {error}");
++        }
++        response.inspection = Some(observed.inspection.clone());
++        response.settings_observation = Some(observed);
+         Ok(response)
+     }
+ 
+@@ -580,6 +653,7 @@
+             diagnostics: None,
+             inspection: None,
+             runtime_observation: None,
++            settings_observation: None,
+         })
+     }
+ 
+@@ -680,6 +754,7 @@
+             diagnostics: None,
+             inspection: None,
+             runtime_observation: None,
++            settings_observation: None,
+         })
+     }
+ 
+@@ -710,6 +785,7 @@
+             diagnostics: None,
+             inspection: None,
+             runtime_observation: None,
++            settings_observation: None,
+         })
+     }
+ 
+@@ -800,6 +876,7 @@
+             diagnostics: None,
+             inspection: None,
+             runtime_observation: None,
++            settings_observation: None,
+         }
+     }
+ 
+@@ -1380,10 +1457,22 @@
+     }
+ 
+     fn command(&mut self, args: &[String]) -> Result<String, String> {
+-        self.epoch()?;
+-        let command_deadline = self.deadline.min(Instant::now() + Duration::from_secs(20));
++        let deadline = self.deadline;
++        application_settings::SettingsProbe::command_until(self, args, deadline)
++    }
++}
++
++impl application_settings::SettingsProbe for LiveApplicationProbe<'_> {
++    fn command_until(&mut self, args: &[String], deadline: Instant) -> Result<String, String> {
++        application_probe::AndroidProbe::epoch(self)?;
++        let command_deadline = deadline
++            .min(self.deadline)
++            .min(Instant::now() + Duration::from_secs(20));
+         let output = self.target.execute(args, command_deadline)?;
+-        self.epoch()?;
++        application_probe::AndroidProbe::epoch(self)?;
++        if Instant::now() >= command_deadline {
++            return Err("Application command deadline exceeded during final epoch check".into());
++        }
+         if !output.status.success() {
+             return Err(format!(
+                 "Application command failed ({}): {}",
+@@ -1798,6 +1887,7 @@
+                         diagnostics: None,
+                         inspection: None,
+                         runtime_observation: None,
++                        settings_observation: None,
+                     },
+                 )
+                 .unwrap();
+@@ -1862,6 +1952,7 @@
+                         diagnostics: None,
+                         inspection: None,
+                         runtime_observation: None,
++                        settings_observation: None,
+                     },
+                 )
+                 .unwrap();
+@@ -2150,6 +2241,33 @@
+         let status = request(&socket, &ControlRequest::Status).unwrap();
+         assert!(status.ok);
+         assert_eq!(status.state, CellState::Stopped);
++        let page_request = ControlRequest::ObserveSettingsPage {
++            expected: application_probe::ApplicationInspection {
++                package: "com.android.settings".into(),
++                user: 0,
++                uid: 1000,
++                version_code: 1,
++                epoch: application_probe::RuntimeEpoch {
++                    boot_id: "unit-test-cold-daemon".into(),
++                    cell_host_pid: 10,
++                    framework_host_pid: 20,
++                    framework_start_ticks: 30,
++                },
++                apks: Vec::new(),
++            },
++            page: application_settings::SettingsPage::System,
++        };
++        let encoded = serde_json::to_vec(&page_request).unwrap();
++        assert_eq!(
++            serde_json::from_slice::<ControlRequest>(&encoded).unwrap(),
++            page_request
++        );
++        let blocked = request(&socket, &page_request).unwrap();
++        assert!(!blocked.ok);
++        assert_eq!(blocked.state, CellState::Stopped);
++        assert!(blocked.message.contains("not running"));
++        assert!(blocked.settings_observation.is_none());
++        println!("settings_cold_socket_precondition_observed: no cell start or UI invocation");
+         let apk_path = directory.path().join("app.apk");
+         fs::write(&apk_path, b"PK\x03\x04test payload").unwrap();
+         let install = install_apk(&socket, &apk_path, 0).unwrap();
+@@ -2182,6 +2300,102 @@
+         thread.join().unwrap().unwrap();
+         assert!(!socket.exists());
+     }
++
++    #[test]
++    fn application_settings_pending_blocks_every_daemon_mutation_without_relocking() {
++        let directory = tempfile::tempdir().unwrap();
++        let marker = directory
++            .path()
++            .join("droidloom-settings-observation.pending.json");
++        fs::write(&marker, b"{\"fixture_only\":true}").unwrap();
++        let owner = fs::metadata(directory.path()).unwrap().uid();
++        let mut daemon = Daemon::new(DaemonConfig {
++            socket: directory.path().join("unused.sock"),
++            supervisor: directory.path().join("must-not-run"),
++            spec_directory: directory.path().join("missing-specs"),
++        });
++        let expected = application_probe::ApplicationInspection {
++            package: "com.android.settings".into(),
++            user: 0,
++            uid: 1000,
++            version_code: 1,
++            epoch: application_probe::RuntimeEpoch {
++                boot_id: "unit-fixture".into(),
++                cell_host_pid: 10,
++                framework_host_pid: 20,
++                framework_start_ticks: 30,
++            },
++            apks: Vec::new(),
++        };
++        let spec = directory.path().join("must-not-read.json");
++        let requests = vec![
++            ControlRequest::Install { user: 0 },
++            ControlRequest::InstallMultiple {
++                user: 0,
++                lengths: vec![1],
++            },
++            ControlRequest::Start { spec: spec.clone() },
++            ControlRequest::Stop,
++            ControlRequest::Restart { spec: spec.clone() },
++            ControlRequest::Launch {
++                spec: spec.clone(),
++                package: "com.android.settings".into(),
++                component: None,
++                resolution: None,
++                user: 0,
++            },
++            ControlRequest::OpenBrowser {
++                expected: expected.clone(),
++                url: "https://example.com/".into(),
++            },
++            ControlRequest::ObserveSettingsPage {
++                expected,
++                page: application_settings::SettingsPage::System,
++            },
++            ControlRequest::SetDpi { spec, dpi: 175 },
++        ];
++        for request in requests {
++            let mut called = false;
++            let reply = daemon.handle_with_pending(0, request, None, || {
++                called = true;
++                application_settings::pending_guard_at(directory.path(), owner)
++            });
++            assert!(called);
++            assert!(!reply.ok);
++            assert!(reply.message.contains("pending"));
++            assert_eq!(reply.state, CellState::Stopped);
++            assert!(daemon.active.is_none());
++        }
++        for request in [
++            ControlRequest::Status,
++            ControlRequest::Readiness,
++            ControlRequest::WaitReady,
++            ControlRequest::ObserveRuntime,
++            ControlRequest::Diagnostics {
++                package: None,
++                user: 0,
++                lines: 10,
++                crashes: false,
++            },
++            ControlRequest::InspectApplication {
++                package: "com.android.settings".into(),
++                user: 0,
++            },
++            ControlRequest::ListApplications { user: 0 },
++            ControlRequest::ApplicationIcon {
++                component: "com.android.settings/.Settings".into(),
++                user: 0,
++                size: 64,
++            },
++        ] {
++            let reply = daemon.handle_with_pending(0, request, None, || {
++                panic!("read-only request must not enter mutation admission")
++            });
++            assert!(!reply.message.contains("pending"));
++            assert!(daemon.active.is_none());
++        }
++        assert_eq!(fs::read(&marker).unwrap(), b"{\"fixture_only\":true}");
++    }
+ }
+ 
+ // Linux x86_64 is the explicitly qualified host for the process-creation gate.
+diff --git a/runtime/droidloom-supervisor/src/application_settings.rs b/runtime/droidloom-supervisor/src/application_settings.rs
+new file mode 100644
+--- /dev/null
++++ b/runtime/droidloom-supervisor/src/application_settings.rs
+@@ -0,0 +1,488 @@
++//! Fail-closed Settings page admission. The selected runtime has no verified
++//! framework-created-task authority, so the production entry sends no Android
++//! command. Differential task/window/cleanup preparation is compiled only in
++//! tests; a snapshot, successful start or JSON declaration cannot authorize it.
++use serde::{Deserialize, Serialize};
++#[cfg(test)]
++use sha2::{Digest, Sha256};
++#[cfg(test)]
++use std::time::Duration;
++use std::time::Instant;
++
++#[cfg(test)]
++use super::application_probe::{self, RuntimeEpoch};
++use super::application_probe::{AndroidProbe, ApplicationInspection};
++#[path = "application_action_scope.rs"]
++mod action_scope;
++#[path = "application_settings_protocol.rs"]
++mod protocol;
++#[cfg(test)]
++use action_scope::ActionScope;
++pub use protocol::{Bounds, Focus, TaskCandidate, WindowObservation};
++#[cfg(test)]
++use protocol::{SETTINGS, Tasks};
++
++#[cfg(test)]
++const LAUNCHER: &str = "/vendor/bin/droidloom-task-launcher";
++#[cfg(test)]
++const HELPER: &str = "local.pocket4.actions.v2";
++#[cfg(test)]
++const HELPER_SHA: &str = "a5368465d5f6faef3299bf1ba6d6bde268cc8b37c72401c6e668872b24725058";
++#[cfg(test)]
++const HELPER_BYTES: u64 = 20847;
++#[cfg(test)]
++const CLEANUP_RESERVE: Duration = Duration::from_secs(25);
++// Exact source-observed ActionRunner v2 request, not caller-provided instructions:
++// {"op":"dump","expected_package":"com.android.settings","display":0,"accessibility_mode":"none"}
++#[cfg(test)]
++const DUMP_REQUEST: &str = "eyJvcCI6ImR1bXAiLCJleHBlY3RlZF9wYWNrYWdlIjoiY29tLmFuZHJvaWQuc2V0dGluZ3MiLCJkaXNwbGF5IjowLCJhY2Nlc3NpYmlsaXR5X21vZGUiOiJub25lIn0=";
++
++/// Fixed page requests. Execution remains blocked until actual framework task
++/// creation authority is implemented and qualified for the selected runtime.
++#[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq, Ord, PartialOrd)]
++#[serde(rename_all = "snake_case")]
++pub enum SettingsPage {
++    /// Main system Settings page.
++    System,
++    /// Network settings page; no network state is changed.
++    Network,
++    /// Display settings page; no display setting is changed.
++    Display,
++    /// Internal storage settings page; no file or app data is touched.
++    Storage,
++    /// Application settings list; no grant, install or uninstall is requested.
++    Applications,
++}
++
++#[cfg(test)]
++impl SettingsPage {
++    fn action(self) -> &'static str {
++        match self {
++            Self::System => "android.settings.SETTINGS",
++            Self::Network => "android.settings.WIRELESS_SETTINGS",
++            Self::Display => "android.settings.DISPLAY_SETTINGS",
++            Self::Storage => "android.settings.INTERNAL_STORAGE_SETTINGS",
++            Self::Applications => "android.settings.APPLICATION_SETTINGS",
++        }
++    }
++}
++
++/// Structured observations, including uncertain cleanup; never an app approval.
++#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
++#[serde(deny_unknown_fields)]
++pub struct SettingsObservation {
++    /// Requested fixed page.
++    pub page: SettingsPage,
++    /// Actual Settings PM/APK identity rechecked for this invocation.
++    pub inspection: ApplicationInspection,
++    /// Actual helper PM identity; its UID is queried rather than hardcoded.
++    pub helper_inspection: ApplicationInspection,
++    /// Actual PackageManager resolution for the fixed page action.
++    pub resolved_component: String,
++    /// Actual single-launch ACK, if obtained.
++    pub launch_output: Option<String>,
++    /// Fresh task snapshot before launch.
++    pub tasks_before: String,
++    /// Fresh task snapshot after launch, if obtained.
++    pub tasks_after_launch: Option<String>,
++    /// Differential candidate only; not a framework-created-task authority.
++    pub task_candidate: Option<TaskCandidate>,
++    /// WindowManager and complete native node observation, if obtained.
++    pub window: Option<WindowObservation>,
++    /// Readback before the only permitted removal command.
++    pub tasks_before_cleanup: Option<String>,
++    /// Every bounded removal-completion readback, including failures.
++    pub cleanup_readbacks: Vec<String>,
++    /// True only after the task disappeared and other task topology was restored.
++    pub cleanup_confirmed: bool,
++    /// Failure detail; a failed page is never automatically rerun.
++    pub failure: Option<String>,
++    /// Unknown work keeps the shared flock and durable pending intent.
++    pub action_scope_retained: bool,
++    /// Always false. Caller must inspect an uncertain result explicitly.
++    pub automatic_retry: bool,
++    /// Always zero; all Settings and common gates remain pending.
++    pub accepted_gates: u32,
++    /// Always false; this partial page entry is not runtime qualification.
++    pub runtime_qualified: bool,
++    /// Always false; no ProductionCell admission is provided here.
++    pub production_ready: bool,
++}
++
++impl SettingsObservation {
++    /// No JSON receipt can manufacture the absent framework creation authority.
++    /// Even a complete synthetic fixture therefore grants no executable success.
++    pub fn completed_partial(&self) -> bool {
++        false
++    }
++}
++
++/// Only the lifecycle daemon implements the deadline-aware held-FD transport.
++pub(super) trait SettingsProbe: AndroidProbe {
++    fn command_until(&mut self, args: &[String], deadline: Instant) -> Result<String, String>;
++}
++
++#[cfg(test)]
++struct Bounded<'a, P> {
++    inner: &'a mut P,
++    deadline: Instant,
++}
++#[cfg(test)]
++impl<P: SettingsProbe> AndroidProbe for Bounded<'_, P> {
++    fn epoch(&mut self) -> Result<RuntimeEpoch, String> {
++        within(self.deadline)?;
++        let value = self.inner.epoch()?;
++        within(self.deadline)?;
++        Ok(value)
++    }
++    fn command(&mut self, args: &[String]) -> Result<String, String> {
++        within(self.deadline)?;
++        let output = self.inner.command_until(args, self.deadline)?;
++        within(self.deadline)?;
++        Ok(output)
++    }
++}
++
++#[cfg(test)]
++fn within(deadline: Instant) -> Result<(), String> {
++    if Instant::now() >= deadline {
++        Err("Settings observation absolute lease expired".into())
++    } else {
++        Ok(())
++    }
++}
++#[cfg(test)]
++fn args(values: &[&str]) -> Vec<String> {
++    values.iter().map(|s| (*s).to_owned()).collect()
++}
++#[cfg(test)]
++fn run(probe: &mut impl AndroidProbe, values: &[&str]) -> Result<String, String> {
++    probe.command(&args(values))
++}
++#[cfg(test)]
++fn snapshot(probe: &mut impl AndroidProbe) -> Result<String, String> {
++    run(probe, &["/system/bin/cmd", "activity", "stack", "list"])
++}
++#[cfg(test)]
++fn same_epoch(
++    probe: &mut impl AndroidProbe,
++    expected: &ApplicationInspection,
++) -> Result<(), String> {
++    if probe.epoch()? != expected.epoch {
++        return Err("Settings framework generation changed".into());
++    }
++    Ok(())
++}
++#[cfg(test)]
++fn same_installed(
++    probe: &mut impl AndroidProbe,
++    expected: &ApplicationInspection,
++) -> Result<(), String> {
++    if application_probe::inspect(probe, &expected.package, expected.user)? != *expected {
++        return Err("Settings invocation installed identity changed".into());
++    }
++    Ok(())
++}
++#[cfg(test)]
++fn pinned_helper(helper: &ApplicationInspection) -> Result<(), String> {
++    let [apk] = helper.apks.as_slice() else {
++        return Err("native UI helper APK set differs from the reviewed artifact".into());
++    };
++    if helper.package != HELPER
++        || helper.user != 0
++        || helper.version_code != 2
++        || apk.name != "base.apk"
++        || apk.bytes != HELPER_BYTES
++        || apk.sha256 != HELPER_SHA
++    {
++        return Err("native UI helper is absent or differs from its reviewed v2 APK bytes".into());
++    }
++    Ok(())
++}
++
++pub(super) const FRAMEWORK_AUTHORITY_BLOCKER: &str = "Settings page execution blocked: selected framework created-task authority is unavailable; no launch, registration or cleanup authorized";
++
++pub(super) fn require_clear_pending() -> Result<(), String> {
++    action_scope::ensure_no_pending().map_err(|e| e.to_string())
++}
++
++#[cfg(test)]
++pub(super) fn pending_guard_at(path: &std::path::Path, owner: u32) -> Result<(), String> {
++    action_scope::ensure_no_pending_in(path, owner).map_err(|e| e.to_string())
++}
++
++pub(super) fn observe(
++    _expected: &ApplicationInspection,
++    _page: SettingsPage,
++) -> Result<SettingsObservation, String> {
++    // This is an unconditional code gate, not a config, JSON boolean, ACK, or
++    // task-difference assertion. A future provider must carry real framework
++    // creation semantics before this production entry can call any UI path.
++    Err(FRAMEWORK_AUTHORITY_BLOCKER.into())
++}
++
++#[cfg(test)]
++fn observe_with_scope(
++    probe: &mut impl SettingsProbe,
++    expected: &ApplicationInspection,
++    page: SettingsPage,
++    deadline: Instant,
++    mut scope: ActionScope<'_>,
++) -> Result<SettingsObservation, String> {
++    if expected.package != SETTINGS || expected.user != 0 {
++        return Err("only the selected user-0 Settings package supports this page entry".into());
++    }
++    let deadline = deadline.min(Instant::now() + Duration::from_secs(90));
++    let business_deadline = deadline
++        .checked_sub(CLEANUP_RESERVE)
++        .ok_or("Settings cleanup reserve unavailable")?;
++    let mut business = Bounded {
++        inner: probe,
++        deadline: business_deadline,
++    };
++    within(business_deadline)?;
++    same_installed(&mut business, expected)?;
++    let helper = application_probe::inspect(&mut business, HELPER, 0)?;
++    pinned_helper(&helper)?;
++    if helper.epoch != expected.epoch {
++        return Err("helper belongs to another framework generation".into());
++    }
++    let protocol = run(
++        &mut business,
++        &[LAUNCHER, "--settings-observation-protocol"],
++    )?;
++    if protocol != "droidloom-settings-observation-v1" {
++        return Err("installed vendor launcher has no exact Settings observation protocol; rebuild/deploy required".into());
++    }
++    let resolved = protocol::resolved_component(&run(
++        &mut business,
++        &[
++            "/system/bin/cmd",
++            "package",
++            "resolve-activity",
++            "--brief",
++            "--user",
++            "0",
++            "-a",
++            page.action(),
++        ],
++    )?)?;
++    let before_raw = snapshot(&mut business)?;
++    let before = Tasks::parse(&before_raw)?;
++    if before.has_settings() {
++        return Err("preexisting Settings tasks are preserved; observation not started".into());
++    }
++    same_epoch(&mut business, expected)?;
++    let intent = serde_json::to_vec(&serde_json::json!({
++        "schema":"droidloom-settings-observation-intent-v1","page":page,
++        "expected":expected,"helper":helper,"resolved_component":resolved,
++        "tasks_before_sha256":format!("{:x}",Sha256::digest(before_raw.as_bytes())),
++        "automatic_retry":false,"production_ready":false,"runtime_qualified":false,
++    }))
++    .map_err(|e| e.to_string())?;
++    scope.before_start(&intent).map_err(|e| e.to_string())?;
++    let mut report = SettingsObservation {
++        page,
++        inspection: expected.clone(),
++        helper_inspection: helper.clone(),
++        resolved_component: resolved.clone(),
++        launch_output: None,
++        tasks_before: before_raw,
++        tasks_after_launch: None,
++        task_candidate: None,
++        window: None,
++        tasks_before_cleanup: None,
++        cleanup_readbacks: Vec::new(),
++        cleanup_confirmed: false,
++        failure: None,
++        action_scope_retained: true,
++        automatic_retry: false,
++        accepted_gates: 0,
++        runtime_qualified: false,
++        production_ready: false,
++    };
++    let mut helper_settled = true;
++    let observation = (|| -> Result<(), String> {
++        let launch = run(
++            &mut business,
++            &[
++                LAUNCHER,
++                "--observe-settings-page",
++                page.action(),
++                "--user",
++                "0",
++                "--component",
++                &resolved,
++                SETTINGS,
++            ],
++        )?;
++        report.launch_output = Some(launch.clone());
++        let id = protocol::launch_task(&launch)?;
++        let after_raw = snapshot(&mut business)?;
++        report.tasks_after_launch = Some(after_raw.clone());
++        let owned = Tasks::parse(&after_raw)?.candidate_after(&before, id)?;
++        report.task_candidate = Some(owned.clone());
++        if owned.component != resolved {
++            return Err("created task base differs from the page's PM resolution".into());
++        }
++        // The helper's APK identity is rechecked immediately before asking it
++        // to connect UIAutomation. No caller-supplied instrumentation is allowed.
++        same_installed(&mut business, &helper)?;
++        let front = protocol::focus(
++            &run(
++                &mut business,
++                &["/system/bin/dumpsys", "window", "displays"],
++            )?,
++            &owned,
++        )?;
++        helper_settled = false;
++        let native = run(
++            &mut business,
++            &[
++                "/system/bin/am",
++                "instrument",
++                "-w",
++                "-r",
++                "-e",
++                "request",
++                DUMP_REQUEST,
++                "local.pocket4.actions.v2/.ActionRunner",
++            ],
++        )?;
++        let (dump, json) = protocol::native_dump(&native)?;
++        if !dump.accessibility_mode_restoration_verified {
++            return Err(
++                "native helper did not prove accessibility-state restoration; scope retained"
++                    .into(),
++            );
++        }
++        helper_settled = true;
++        if !dump.ok {
++            return Err("native helper returned a settled observation failure".into());
++        }
++        let window = protocol::validate_dump(json, &owned, front.clone())?;
++        let after_focus = protocol::focus(
++            &run(
++                &mut business,
++                &["/system/bin/dumpsys", "window", "displays"],
++            )?,
++            &owned,
++        )?;
++        if after_focus != front {
++            return Err("Settings focus token changed during native collection".into());
++        }
++        let still = Tasks::parse(&snapshot(&mut business)?)?.candidate_after(&before, id)?;
++        if still != owned {
++            return Err("owned Settings task changed during native collection".into());
++        }
++        same_installed(&mut business, expected)?;
++        same_installed(&mut business, &helper)?;
++        same_epoch(&mut business, expected)?;
++        report.window = Some(window);
++        Ok(())
++    })();
++    if let Err(error) = observation {
++        report.failure = Some(error);
++    }
++    drop(business);
++
++    // A native helper timeout or malformed/restoration-unknown response can
++    // outlive the host am process. Never confuse cgroup retirement with that
++    // Android instrumentation's completion or release its action scope.
++    if helper_settled {
++        if let Some(owned) = report.task_candidate.clone() {
++            match cleanup_task(probe, expected, &before, &owned, deadline, &mut report) {
++                Ok(()) => match scope.finish_after_verified_cleanup() {
++                    Ok(()) => {
++                        report.cleanup_confirmed = true;
++                    }
++                    Err(e) => append_failure(
++                        &mut report,
++                        format!("task removed but pending intent retirement failed: {e}"),
++                    ),
++                },
++                Err(e) => {
++                    append_failure(&mut report, format!("owned task cleanup unconfirmed: {e}"))
++                }
++            }
++        }
++    }
++    if let Err(e) = within(deadline) {
++        append_failure(&mut report, e);
++    }
++    report.action_scope_retained = scope.pending();
++    if report.failure.is_none() && (!report.cleanup_confirmed || report.window.is_none()) {
++        append_failure(
++            &mut report,
++            "Settings page observation is incomplete".into(),
++        );
++    }
++    Ok(report)
++}
++
++#[cfg(test)]
++fn append_failure(report: &mut SettingsObservation, error: String) {
++    let error: String = error.chars().take(1024).collect();
++    report.failure = Some(match report.failure.take() {
++        Some(old) => format!("{old}; {error}"),
++        None => error,
++    });
++}
++
++#[cfg(test)]
++fn cleanup_task(
++    probe: &mut impl SettingsProbe,
++    expected: &ApplicationInspection,
++    before: &Tasks,
++    owned: &TaskCandidate,
++    deadline: Instant,
++    report: &mut SettingsObservation,
++) -> Result<(), String> {
++    let mut probe = Bounded {
++        inner: probe,
++        deadline,
++    };
++    same_epoch(&mut probe, expected)?;
++    let raw = snapshot(&mut probe)?;
++    report.tasks_before_cleanup = Some(raw.clone());
++    if Tasks::parse(&raw)?.candidate_after(before, owned.id)? != *owned {
++        return Err("current task differs from the exact causal claim; removal not sent".into());
++    }
++    within(deadline)?;
++    // Exactly one normal task removal. No force-stop, package data deletion,
++    // cell retirement, or removal retry exists in this entry.
++    run(
++        &mut probe,
++        &[
++            "/system/bin/cmd",
++            "activity",
++            "stack",
++            "remove",
++            &owned.id.to_string(),
++        ],
++    )?;
++    let completion = deadline.min(Instant::now() + Duration::from_secs(8));
++    probe.deadline = completion;
++    for _ in 0..32 {
++        within(completion)?;
++        let raw = snapshot(&mut probe)?;
++        report.cleanup_readbacks.push(raw.clone());
++        let current = Tasks::parse(&raw)?;
++        within(completion)?;
++        if current.removed_to(before, owned.id) {
++            same_epoch(&mut probe, expected)?;
++            return Ok(());
++        }
++        current.removal_pending(before, owned)?;
++        let remaining = completion.saturating_duration_since(Instant::now());
++        if remaining.is_zero() {
++            return Err("Settings removal completion lease expired".into());
++        }
++        std::thread::sleep(remaining.min(Duration::from_millis(250)));
++    }
++    Err("Settings task removal remains unconfirmed after bounded readbacks".into())
++}
++
++#[cfg(test)]
++#[path = "application_settings_tests.rs"]
++mod tests;
+diff --git a/runtime/droidloom-supervisor/src/application_settings_protocol.rs b/runtime/droidloom-supervisor/src/application_settings_protocol.rs
+new file mode 100644
+--- /dev/null
++++ b/runtime/droidloom-supervisor/src/application_settings_protocol.rs
+@@ -0,0 +1,702 @@
++//! Exact parsers for the already-deployed task-list and ActionRunner v2 formats.
++//! No parser result authorizes input, adopts an old task, or grants UI acceptance.
++use serde::{Deserialize, Serialize};
++#[cfg(test)]
++use std::collections::{BTreeMap, BTreeSet};
++
++#[cfg(test)]
++pub(super) const SETTINGS: &str = "com.android.settings";
++#[cfg(test)]
++const LIMIT: usize = 64 * 1024;
++
++#[cfg(test)]
++fn bounded(raw: &str) -> Result<(), String> {
++    if raw.is_empty() || raw.len() > LIMIT || raw.contains('\0') {
++        return Err("Settings observation input is empty, oversized or contains NUL".into());
++    }
++    Ok(())
++}
++
++#[cfg(test)]
++fn field<'a>(raw: &'a str, name: &str) -> Result<&'a str, String> {
++    let values: Vec<_> = raw
++        .split_whitespace()
++        .filter_map(|s| s.strip_prefix(name))
++        .collect();
++    match values.as_slice() {
++        [value] => Ok(value),
++        _ => Err(format!("missing or repeated task field {name}")),
++    }
++}
++
++#[cfg(test)]
++fn number(raw: &str) -> Result<u32, String> {
++    if raw.is_empty() || !raw.bytes().all(|b| b.is_ascii_digit()) {
++        return Err("invalid unsigned task field".into());
++    }
++    let value: u32 = raw.parse().map_err(|_| "task field overflow")?;
++    if value > i32::MAX as u32 {
++        return Err("task field exceeds Android signed interface".into());
++    }
++    Ok(value)
++}
++
++#[cfg(test)]
++pub(super) fn component(raw: &str) -> Result<String, String> {
++    if raw.len() > 512 {
++        return Err("component exceeds bound".into());
++    }
++    let (package, activity) = raw.split_once('/').ok_or("component lacks activity")?;
++    if package.is_empty()
++        || activity.is_empty()
++        || !package.contains('.')
++        || !package
++            .bytes()
++            .all(|b| b.is_ascii_alphanumeric() || b"._".contains(&b))
++        || !activity
++            .bytes()
++            .all(|b| b.is_ascii_alphanumeric() || b"._$".contains(&b))
++    {
++        return Err("invalid component characters".into());
++    }
++    Ok(if activity.starts_with('.') {
++        format!("{package}/{package}{activity}")
++    } else {
++        raw.into()
++    })
++}
++
++#[cfg(test)]
++pub(super) fn resolved_component(raw: &str) -> Result<String, String> {
++    bounded(raw)?;
++    let lines: Vec<_> = raw.lines().filter(|s| !s.trim().is_empty()).collect();
++    if lines.len() != 1 {
++        return Err("Settings page resolver is ambiguous".into());
++    }
++    let value = component(lines[0].trim())?;
++    if value.split_once('/').map(|p| p.0) != Some(SETTINGS) {
++        return Err("Settings page resolves outside Settings".into());
++    }
++    Ok(value)
++}
++
++/// A bounded rectangle reported by Android, never inferred screen geometry.
++#[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq)]
++pub struct Bounds(pub [i32; 4]);
++
++#[cfg(test)]
++impl Bounds {
++    fn valid(self) -> bool {
++        let [l, t, r, b] = self.0;
++        l >= 0
++            && t >= 0
++            && r > l
++            && b > t
++            && r <= 8192
++            && b <= 8192
++            && i64::from(r - l) * i64::from(b - t) <= 32 * 1024 * 1024
++    }
++    fn contains(self, other: Self) -> bool {
++        let [l, t, r, b] = self.0;
++        let [ol, ot, or, ob] = other.0;
++        self.valid() && other.valid() && l <= ol && t <= ot && r >= or && b >= ob
++    }
++    fn parse(raw: &str) -> Result<Self, String> {
++        let raw = raw
++            .strip_prefix('[')
++            .and_then(|s| s.strip_suffix(']'))
++            .ok_or("task rectangle syntax differs")?;
++        let (a, b) = raw
++            .split_once("][")
++            .ok_or("task rectangle lacks second corner")?;
++        let (l, t) = a
++            .split_once(',')
++            .ok_or("task rectangle lacks first corner")?;
++        let (r, b) = b
++            .split_once(',')
++            .ok_or("task rectangle lacks second corner")?;
++        let parse = |s: &str| {
++            s.parse::<i32>()
++                .map_err(|_| "invalid task rectangle integer".to_owned())
++        };
++        let parsed = Self([parse(l)?, parse(t)?, parse(r)?, parse(b)?]);
++        if parsed.0.iter().any(|n| !(-16384..=16384).contains(n)) {
++            return Err("task rectangle exceeds bounds".into());
++        }
++        Ok(parsed)
++    }
++}
++
++#[derive(Clone, Debug, Eq, PartialEq)]
++#[cfg(test)]
++pub(super) struct Task {
++    pub id: u32,
++    pub component: String,
++    pub user: u32,
++    pub top: Option<String>,
++    pub visible: bool,
++}
++
++#[derive(Clone, Debug, Eq, PartialEq)]
++#[cfg(test)]
++pub(super) struct Root {
++    pub display: u32,
++    pub user: u32,
++    pub bounds: Bounds,
++    pub freeform: bool,
++    pub tasks: Vec<Task>,
++}
++
++#[derive(Clone, Debug, Eq, PartialEq)]
++#[cfg(test)]
++pub(super) struct Tasks(pub BTreeMap<u32, Root>);
++
++#[cfg(test)]
++impl Tasks {
++    pub fn parse(raw: &str) -> Result<Self, String> {
++        bounded(raw)?;
++        let mut roots = BTreeMap::new();
++        let mut ids = BTreeSet::new();
++        let mut current = None;
++        for line in raw.lines() {
++            let trimmed = line.trim();
++            if line.starts_with("RootTask id=") {
++                let id = number(field(line, "id=")?)?;
++                let root = Root {
++                    display: number(field(line, "displayId=")?)?,
++                    user: number(field(line, "userId=")?)?,
++                    bounds: Bounds::parse(field(line, "bounds=")?)?,
++                    freeform: false,
++                    tasks: Vec::new(),
++                };
++                if id == 0 || roots.insert(id, root).is_some() {
++                    return Err("duplicate or zero task root".into());
++                }
++                current = Some(id);
++            } else if trimmed.starts_with("RootTask") {
++                return Err("unparsed task root".into());
++            } else if let Some(rest) = trimmed.strip_prefix("taskId=") {
++                let root = roots
++                    .get_mut(&current.ok_or("task precedes root")?)
++                    .ok_or("missing root")?;
++                let (id, fields) = rest.split_once(':').ok_or("unparsed task record")?;
++                let id = number(id)?;
++                if id == 0 || !ids.insert(id) {
++                    return Err("duplicate or zero task id".into());
++                }
++                let name = component(
++                    fields
++                        .split_whitespace()
++                        .next()
++                        .ok_or("missing task component")?,
++                )?;
++                let top_fields: Vec<_> = fields
++                    .split_whitespace()
++                    .filter_map(|s| s.strip_prefix("topActivity="))
++                    .collect();
++                let top = match top_fields.as_slice() {
++                    [] => None,
++                    [s] => Some(component(
++                        s.strip_prefix("ComponentInfo{")
++                            .and_then(|s| s.strip_suffix('}'))
++                            .ok_or("malformed task top activity")?,
++                    )?),
++                    _ => return Err("repeated top activity".into()),
++                };
++                let visible = match field(fields, "visible=")? {
++                    "true" => true,
++                    "false" => false,
++                    _ => return Err("invalid task visibility".into()),
++                };
++                root.tasks.push(Task {
++                    id,
++                    component: name,
++                    user: number(field(fields, "userId=")?)?,
++                    top,
++                    visible,
++                });
++            } else if trimmed.starts_with("taskId") {
++                return Err("unparsed task line".into());
++            }
++            if line
++                .split(|c: char| c.is_whitespace() || "{},".contains(c))
++                .any(|s| s == "mWindowingMode=freeform")
++            {
++                roots
++                    .get_mut(&current.ok_or("configuration precedes root")?)
++                    .ok_or("missing root")?
++                    .freeform = true;
++            }
++        }
++        if roots.is_empty() || ids.is_empty() || roots.len() > 1024 || ids.len() > 2048 {
++            return Err("unrecognized or oversized task snapshot".into());
++        }
++        Ok(Self(roots))
++    }
++
++    pub fn has_settings(&self) -> bool {
++        self.0.values().flat_map(|r| &r.tasks).any(|t| {
++            t.component.split_once('/').map(|p| p.0) == Some(SETTINGS)
++                || t.top
++                    .as_deref()
++                    .and_then(|s| s.split_once('/'))
++                    .map(|p| p.0)
++                    == Some(SETTINGS)
++        })
++    }
++
++    fn topology(
++        &self,
++    ) -> BTreeMap<u32, (u32, u32, Bounds, Vec<(u32, String, u32, Option<String>)>)> {
++        self.0
++            .iter()
++            .map(|(id, r)| {
++                (
++                    *id,
++                    (
++                        r.display,
++                        r.user,
++                        r.bounds,
++                        r.tasks
++                            .iter()
++                            .map(|t| (t.id, t.component.clone(), t.user, t.top.clone()))
++                            .collect(),
++                    ),
++                )
++            })
++            .collect()
++    }
++
++    pub fn candidate_after(&self, before: &Self, id: u32) -> Result<TaskCandidate, String> {
++        if before.has_settings()
++            || before.0.contains_key(&id)
++            || before.0.values().flat_map(|r| &r.tasks).any(|t| t.id == id)
++        {
++            return Err("Settings task was not absent before this launch".into());
++        }
++        let owned = self.candidate(id)?;
++        let mut remaining = self.clone();
++        remaining.0.remove(&id);
++        if remaining.topology() != before.topology() || remaining.has_settings() {
++            return Err("other task topology changed during Settings launch".into());
++        }
++        Ok(owned)
++    }
++
++    pub fn candidate(&self, id: u32) -> Result<TaskCandidate, String> {
++        let root = self.0.get(&id).ok_or("owned root absent")?;
++        let [task] = root.tasks.as_slice() else {
++            return Err("owned root is not one leaf".into());
++        };
++        let top = task.top.clone().ok_or("owned task top activity absent")?;
++        if root.display != 0
++            || root.user != 0
++            || !root.freeform
++            || !root.bounds.valid()
++            || task.id != id
++            || task.user != 0
++            || !task.visible
++            || task.component.split_once('/').map(|p| p.0) != Some(SETTINGS)
++            || top.split_once('/').map(|p| p.0) != Some(SETTINGS)
++        {
++            return Err("Settings task is not an exact visible freeform leaf".into());
++        }
++        Ok(TaskCandidate {
++            id,
++            component: task.component.clone(),
++            top_activity: top,
++            bounds: root.bounds,
++        })
++    }
++
++    pub fn removed_to(&self, before: &Self, id: u32) -> bool {
++        !self.0.contains_key(&id)
++            && !self.0.values().flat_map(|r| &r.tasks).any(|t| t.id == id)
++            && self.topology() == before.topology()
++    }
++
++    pub fn removal_pending(&self, before: &Self, owned: &TaskCandidate) -> Result<(), String> {
++        let root = self
++            .0
++            .get(&owned.id)
++            .ok_or("removed root still has an unowned child task")?;
++        let mut others = self.clone();
++        others.0.remove(&owned.id);
++        if others.topology() != before.topology()
++            || root.display != 0
++            || root.user != 0
++            || !root.freeform
++            || root.bounds != owned.bounds
++        {
++            return Err("other task topology or owned root changed during removal".into());
++        }
++        if root.tasks.is_empty() {
++            return Ok(());
++        }
++        let [task] = root.tasks.as_slice() else {
++            return Err("removal target acquired foreign children".into());
++        };
++        if task.id != owned.id
++            || task.user != 0
++            || task.component != owned.component
++            || task.top.as_deref() != Some(owned.top_activity.as_str())
++        {
++            return Err("removal target identity changed".into());
++        }
++        Ok(()) // Closing visibility may change; only readbacks follow this state.
++    }
++}
++
++/// Structural task candidate only. Snapshot differences do not prove its creator
++/// and never authorize cleanup of a real Android task.
++#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
++#[serde(deny_unknown_fields)]
++pub struct TaskCandidate {
++    /// New root and child task ID (the exact same leaf).
++    pub id: u32,
++    /// Base activity recorded by ActivityTaskManager.
++    pub component: String,
++    /// Actual completed top activity, allowing framework-resolved aliases.
++    pub top_activity: String,
++    /// Snapshot-reported bounds; no task creation or cleanup authority.
++    pub bounds: Bounds,
++}
++
++#[cfg(test)]
++pub(super) fn launch_task(raw: &str) -> Result<u32, String> {
++    bounded(raw)?;
++    if raw.split_whitespace().count() != 4 || raw.lines().count() != 1 {
++        return Err("Settings native ACK differs".into());
++    }
++    for name in ["object=", "composer_display="] {
++        field(raw, name)?
++            .parse::<u64>()
++            .map_err(|_| "invalid native ACK identity")?;
++    }
++    let task = number(field(raw, "task=")?)?;
++    if number(field(raw, "android_display=")?)? != 0 || task == 0 {
++        return Err("Settings native ACK task/display differs".into());
++    }
++    Ok(task)
++}
++
++/// One fresh WindowManager focus identity.
++#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
++#[serde(deny_unknown_fields)]
++pub struct Focus {
++    /// Opaque WindowManager token; not an accessibility connection ID.
++    pub token: String,
++    /// Focused activity in the observed Settings task candidate.
++    pub component: String,
++}
++
++#[cfg(test)]
++pub(super) fn focus(raw: &str, owned: &TaskCandidate) -> Result<Focus, String> {
++    bounded(raw)?;
++    let lines: Vec<_> = raw
++        .lines()
++        .filter(|s| s.contains("mCurrentFocus="))
++        .collect();
++    let [line] = lines.as_slice() else {
++        return Err("ambiguous WindowManager current focus".into());
++    };
++    let value = line
++        .trim()
++        .strip_prefix("mCurrentFocus=Window{")
++        .and_then(|s| s.strip_suffix('}'))
++        .ok_or("unrecognized focused window")?;
++    let fields: Vec<_> = value.split_whitespace().collect();
++    let [token, user, activity] = fields.as_slice() else {
++        return Err("focused window fields differ".into());
++    };
++    if token.is_empty()
++        || token.len() > 32
++        || !token.bytes().all(|b| b.is_ascii_hexdigit())
++        || *user != "u0"
++        || component(activity)? != owned.top_activity
++    {
++        return Err("focus is not the claimed Settings task activity".into());
++    }
++    Ok(Focus {
++        token: token.to_ascii_lowercase(),
++        component: component(activity)?,
++    })
++}
++
++#[derive(Deserialize)]
++#[cfg(test)]
++struct RootMeta {
++    present: bool,
++    package: String,
++    window_id: i32,
++    bounds: Bounds,
++    visible: bool,
++}
++#[derive(Deserialize)]
++#[cfg(test)]
++struct NativeWindow {
++    display_id: u32,
++    focused: bool,
++    #[serde(rename = "type")]
++    kind: u32,
++    window_id: i32,
++    bounds: Bounds,
++    root: RootMeta,
++}
++#[derive(Deserialize)]
++#[cfg(test)]
++struct WindowContext {
++    selected_window: NativeWindow,
++    root: RootMeta,
++    snapshot_complete: bool,
++    semantic_controls_available: bool,
++    truncated: bool,
++    null_child_count: u32,
++    visited_count: u32,
++    visible_count: u32,
++    tree_status: String,
++}
++#[derive(Deserialize)]
++#[cfg(test)]
++struct Node {
++    package: String,
++    window_id: i32,
++    visible: bool,
++    source: String,
++    bounds_array: Bounds,
++}
++
++#[derive(Deserialize)]
++#[cfg(test)]
++struct NativeDump {
++    ok: bool,
++    accessibility_mode_restoration_verified: bool,
++    window_context: Option<WindowContext>,
++    nodes: Option<Vec<Node>>,
++}
++
++/// Window and complete visible native-tree observations; no pixel claim.
++#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
++#[serde(deny_unknown_fields)]
++pub struct WindowObservation {
++    /// Stable WindowManager focus observed on both sides of native collection.
++    pub focus: Focus,
++    /// This one instrumentation connection's ID, never reused for later input.
++    pub accessibility_window_id: i32,
++    /// The exact observed application window rectangle.
++    pub bounds: Bounds,
++    /// Number of visible, window-bound native nodes actually returned.
++    pub visible_nodes: usize,
++    /// Raw helper JSON, retained for audit; no synthesized rendering evidence.
++    pub native_json: String,
++    /// A text/tree observation has not checked screen pixels or image crop.
++    pub pixel_observation_verified: bool,
++}
++
++#[cfg(test)]
++impl NativeDump {
++    fn validate(
++        self,
++        owned: &TaskCandidate,
++        focus: Focus,
++        raw: String,
++    ) -> Result<WindowObservation, String> {
++        let meta = self.window_context.ok_or("native window context absent")?;
++        let window = meta.selected_window;
++        let nodes = self.nodes.ok_or("native nodes absent")?;
++        if !self.ok
++            || !self.accessibility_mode_restoration_verified
++            || !meta.snapshot_complete
++            || !meta.semantic_controls_available
++            || meta.truncated
++            || meta.null_child_count != 0
++            || meta.tree_status != "available"
++            || meta.visible_count == 0
++            || meta.visited_count < meta.visible_count
++            || nodes.len() != meta.visible_count as usize
++            || nodes.len() > 2048
++            || window.display_id != 0
++            || !window.focused
++            || window.kind != 1
++            || window.window_id < 0
++            || !owned.bounds.contains(window.bounds)
++        {
++            return Err(
++                "native Settings observation is incomplete or outside the owned task".into(),
++            );
++        }
++        for root in [window.root, meta.root] {
++            if !root.present
++                || !root.visible
++                || root.package != SETTINGS
++                || root.window_id != window.window_id
++                || !window.bounds.contains(root.bounds)
++            {
++                return Err("native root is outside the owned Settings window".into());
++            }
++        }
++        if nodes.iter().any(|n| {
++            !n.visible
++                || n.package != SETTINGS
++                || n.window_id != window.window_id
++                || n.source != "native_accessibility"
++                || !window.bounds.contains(n.bounds_array)
++        }) {
++            return Err("native node is outside the one observed Settings window".into());
++        }
++        Ok(WindowObservation {
++            focus,
++            accessibility_window_id: window.window_id,
++            bounds: window.bounds,
++            visible_nodes: nodes.len(),
++            native_json: raw,
++            pixel_observation_verified: false,
++        })
++    }
++}
++
++#[derive(Deserialize)]
++#[cfg(test)]
++pub(super) struct NativeOutcome {
++    pub ok: bool,
++    pub accessibility_mode_restoration_verified: bool,
++}
++
++#[cfg(test)]
++pub(super) fn validate_dump(
++    raw: String,
++    owned: &TaskCandidate,
++    focus: Focus,
++) -> Result<WindowObservation, String> {
++    let dump: NativeDump =
++        serde_json::from_str(&raw).map_err(|e| format!("invalid native tree: {e}"))?;
++    dump.validate(owned, focus, raw)
++}
++
++#[cfg(test)]
++pub(super) fn native_dump(raw: &str) -> Result<(NativeOutcome, String), String> {
++    bounded(raw)?;
++    const PREFIX: &str = "INSTRUMENTATION_RESULT: sidecar_result_base64=";
++    let values: Vec<_> = raw.lines().filter_map(|s| s.strip_prefix(PREFIX)).collect();
++    let [value] = values.as_slice() else {
++        return Err("native instrumentation result absent or repeated".into());
++    };
++    let decoded = decode_base64(value)?;
++    let text = String::from_utf8(decoded).map_err(|_| "native JSON is not UTF-8")?;
++    let value = serde_json::from_str(&text).map_err(|e| format!("invalid native JSON: {e}"))?;
++    Ok((value, text))
++}
++
++// Strict padded RFC4648 alphabet and canonical low bits; no whitespace fallback.
++#[cfg(test)]
++fn decode_base64(raw: &str) -> Result<Vec<u8>, String> {
++    if raw.is_empty() || raw.len() > LIMIT || raw.len() % 4 != 0 {
++        return Err("invalid bounded base64 length".into());
++    }
++    fn digit(b: u8) -> Option<u8> {
++        match b {
++            b'A'..=b'Z' => Some(b - b'A'),
++            b'a'..=b'z' => Some(b - b'a' + 26),
++            b'0'..=b'9' => Some(b - b'0' + 52),
++            b'+' => Some(62),
++            b'/' => Some(63),
++            _ => None,
++        }
++    }
++    let mut out = Vec::with_capacity(raw.len() / 4 * 3);
++    for (i, c) in raw.as_bytes().chunks_exact(4).enumerate() {
++        let a = digit(c[0]).ok_or("invalid base64 digit")?;
++        let b = digit(c[1]).ok_or("invalid base64 digit")?;
++        let last = (i + 1) * 4 == raw.len();
++        out.push((a << 2) | (b >> 4));
++        if c[2] == b'=' {
++            if !last || c[3] != b'=' || b & 15 != 0 {
++                return Err("noncanonical base64 padding".into());
++            }
++            continue;
++        }
++        let d = digit(c[2]).ok_or("invalid base64 digit")?;
++        out.push((b << 4) | (d >> 2));
++        if c[3] == b'=' {
++            if !last || d & 3 != 0 {
++                return Err("noncanonical base64 padding".into());
++            }
++        } else {
++            out.push((d << 6) | digit(c[3]).ok_or("invalid base64 digit")?);
++        }
++    }
++    Ok(out)
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn strict_base64_accepts_canonical_vectors_and_rejects_aliases() {
++        for (raw, expected) in [
++            ("Zg==", "f"),
++            ("Zm8=", "fo"),
++            ("Zm9v", "foo"),
++            ("Zm9vYg==", "foob"),
++            ("Zm9vYmE=", "fooba"),
++            ("Zm9vYmFy", "foobar"),
++        ] {
++            assert_eq!(decode_base64(raw).unwrap(), expected.as_bytes());
++        }
++        for raw in [
++            "", "Zg", "Zh==", "Zm9=", "Zg==AAAA", "Zg=\n", "Zg-_", "====", "Zm=v",
++        ] {
++            assert!(decode_base64(raw).is_err(), "{raw:?}");
++        }
++        assert!(decode_base64(&"A".repeat(LIMIT + 4)).is_err());
++    }
++    #[test]
++    fn malformed_or_repeated_native_ack_never_yields_a_task_id() {
++        for raw in [
++            "object=1 composer_display=2 android_display=0 task=42\nobject=1 composer_display=2 android_display=0 task=42",
++            "object=1 composer_display=2 android_display=1 task=42",
++            "object=1 composer_display=2 android_display=0 task=0",
++            "object=1 composer_display=2 android_display=0 task=2147483648",
++            "object=1 object=2 android_display=0 task=42",
++        ] {
++            assert!(launch_task(raw).is_err());
++        }
++        assert_eq!(
++            launch_task("object=1 composer_display=2 android_display=0 task=42").unwrap(),
++            42
++        );
++    }
++    #[test]
++    fn task_parser_rejects_duplicated_unparsed_and_ambiguous_roots() {
++        let raw = "RootTask id=1 bounds=[0,0][800,600] displayId=0 userId=0\n configuration={mWindowingMode=fullscreen}\n taskId=1: com.example/.Main userId=0 visible=true topActivity=ComponentInfo{com.example/.Main}\n";
++        assert!(Tasks::parse(raw).is_ok());
++        for wrong in [
++            format!("{raw}{raw}"),
++            raw.replace("taskId=1:", "taskId=?"),
++            raw.replace("userId=0 visible", "userId=0 userId=0 visible"),
++            raw.replace("bounds=[0,0]", "bounds=[text,0]"),
++            raw.replace("RootTask id=1", "RootTask id=?"),
++        ] {
++            assert!(Tasks::parse(&wrong).is_err(), "{wrong}");
++        }
++    }
++    #[test]
++    fn focus_cannot_be_a_foreign_user_component_or_ambiguous_window() {
++        let owned = TaskCandidate {
++            id: 42,
++            component: "com.android.settings/com.android.settings.Settings".into(),
++            top_activity: "com.android.settings/com.android.settings.Settings".into(),
++            bounds: Bounds([0, 0, 800, 600]),
++        };
++        let raw = "mCurrentFocus=Window{ab12 u0 com.android.settings/.Settings}";
++        assert!(focus(raw, &owned).is_ok());
++        for bad in [
++            raw.replace("u0", "u10"),
++            raw.replace("/.Settings", "/.Other"),
++            format!("{raw}\n{raw}"),
++            raw.replace("ab12", "../../bad"),
++        ] {
++            assert!(focus(&bad, &owned).is_err());
++        }
++    }
++}
+diff --git a/runtime/droidloom-supervisor/src/application_action_scope.rs b/runtime/droidloom-supervisor/src/application_action_scope.rs
+new file mode 100644
+--- /dev/null
++++ b/runtime/droidloom-supervisor/src/application_action_scope.rs
+@@ -0,0 +1,292 @@
++//! Persistent pending-state admission, shared with daemon mutations and the UI
++//! consumer. No lock re-acquisition is needed by a caller already holding flock.
++//! The preparatory writer/retention lifecycle is test-only until real framework
++//! task-creation authority exists; production never clears a pending intent.
++use std::ffi::CStr;
++use std::fs::{File, OpenOptions};
++use std::io;
++#[cfg(test)]
++use std::io::Write;
++use std::os::fd::{AsRawFd, FromRawFd};
++use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
++use std::path::Path;
++#[cfg(test)]
++use std::sync::Mutex;
++
++#[cfg(test)]
++const LOCK: &CStr = c"android-digitalis-actions.lock";
++const MARKER: &CStr = c"droidloom-settings-observation.pending.json";
++
++pub(super) fn ensure_no_pending() -> io::Result<()> {
++    ensure_no_pending_in(Path::new("/run/lock"), 0)
++}
++
++pub(super) fn ensure_no_pending_in(path: &Path, expected_owner: u32) -> io::Result<()> {
++    let directory = OpenOptions::new()
++        .read(true)
++        .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
++        .open(path)?;
++    if directory.metadata()?.uid() != expected_owner {
++        return Err(fail(
++            "pending action directory owner differs; mutation blocked",
++        ));
++    }
++    match open(&directory, MARKER, libc::O_PATH) {
++        Ok(_) => Err(fail(
++            "unreconciled Settings action pending; mutation blocked without retry",
++        )),
++        Err(e) if e.kind() == io::ErrorKind::NotFound => Ok(()),
++        Err(e) => Err(e),
++    }
++}
++
++fn fail(message: &str) -> io::Error {
++    io::Error::new(io::ErrorKind::InvalidData, message)
++}
++
++fn open(directory: &File, name: &CStr, flags: i32) -> io::Result<File> {
++    // SAFETY: held directory and NUL-terminated fixed basename; only new FD is owned.
++    let fd = unsafe {
++        libc::openat(
++            directory.as_raw_fd(),
++            name.as_ptr(),
++            flags | libc::O_CLOEXEC | libc::O_NOFOLLOW,
++            0o600,
++        )
++    };
++    if fd < 0 {
++        return Err(io::Error::last_os_error());
++    }
++    // SAFETY: successful openat allocated this owned FD.
++    Ok(unsafe { File::from_raw_fd(fd) })
++}
++
++#[cfg(test)]
++fn private_regular(file: &File) -> io::Result<()> {
++    let m = file.metadata()?;
++    // SAFETY: geteuid has no pointer or ownership preconditions.
++    let uid = unsafe { libc::geteuid() };
++    if !m.is_file() || m.uid() != uid || m.nlink() != 1 || m.mode() & 0o7777 != 0o600 {
++        return Err(fail(
++            "action scope file is not an owned private regular inode",
++        ));
++    }
++    Ok(())
++}
++
++#[cfg(test)]
++pub(super) struct ActionScope<'a> {
++    directory: File,
++    lock: Option<File>,
++    marker: Option<File>,
++    retained: &'a Mutex<Option<File>>,
++}
++
++#[cfg(test)]
++impl<'a> ActionScope<'a> {
++    pub(super) fn acquire_in(path: &Path, retained: &'a Mutex<Option<File>>) -> io::Result<Self> {
++        if retained
++            .lock()
++            .map_err(|_| fail("action custody mutex is poisoned"))?
++            .is_some()
++        {
++            return Err(fail(
++                "an unresolved Settings action still holds the shared action lock",
++            ));
++        }
++        let directory = OpenOptions::new()
++            .read(true)
++            .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
++            .open(path)?;
++        let metadata = directory.metadata()?;
++        // SAFETY: geteuid has no pointer or ownership preconditions.
++        if metadata.uid() != unsafe { libc::geteuid() } {
++            return Err(fail("action lock directory owner differs"));
++        }
++        let lock = open(
++            &directory,
++            LOCK,
++            libc::O_CREAT | libc::O_RDWR | libc::O_NONBLOCK,
++        )?;
++        private_regular(&lock)?;
++        // SAFETY: this is a live owned FD; LOCK_NB prevents an unbounded wait.
++        if unsafe { libc::flock(lock.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } != 0 {
++            return Err(io::Error::last_os_error());
++        }
++        match open(&directory, MARKER, libc::O_PATH) {
++            Ok(_) => {
++                return Err(fail(
++                    "unreconciled Settings intent exists; no automatic retry or adoption",
++                ));
++            }
++            Err(e) if e.kind() == io::ErrorKind::NotFound => {}
++            Err(e) => return Err(e),
++        }
++        Ok(Self {
++            directory,
++            lock: Some(lock),
++            marker: None,
++            retained,
++        })
++    }
++
++    pub fn before_start(&mut self, intent: &[u8]) -> io::Result<()> {
++        if intent.is_empty() || intent.len() > 8192 || self.marker.is_some() {
++            return Err(fail("invalid or repeated Settings intent"));
++        }
++        let marker = open(
++            &self.directory,
++            MARKER,
++            libc::O_CREAT | libc::O_EXCL | libc::O_WRONLY,
++        )?;
++        // From this point a write/fsync error also preserves custody. No start
++        // can be sent until both the marker and its directory are durable.
++        self.marker = Some(marker);
++        let file = self.marker.as_mut().expect("inserted above");
++        private_regular(file)?;
++        file.write_all(intent)?;
++        file.sync_all()?;
++        self.directory.sync_all()?;
++        Ok(())
++    }
++
++    pub fn finish_after_verified_cleanup(&mut self) -> io::Result<()> {
++        let marker = self
++            .marker
++            .as_ref()
++            .ok_or_else(|| fail("Settings intent missing"))?;
++        private_regular(marker)?;
++        let current = open(&self.directory, MARKER, libc::O_RDONLY | libc::O_NONBLOCK)?;
++        private_regular(&current)?;
++        let a = marker.metadata()?;
++        let b = current.metadata()?;
++        if a.dev() != b.dev() || a.ino() != b.ino() {
++            return Err(fail("Settings intent pathname changed; custody retained"));
++        }
++        // SAFETY: the directory is held; the exact private inode was checked
++        // above while holding the shared action flock. No foreign path is used.
++        if unsafe { libc::unlinkat(self.directory.as_raw_fd(), MARKER.as_ptr(), 0) } != 0 {
++            return Err(io::Error::last_os_error());
++        }
++        self.directory.sync_all()?;
++        self.marker = None;
++        Ok(())
++    }
++
++    pub fn pending(&self) -> bool {
++        self.marker.is_some()
++    }
++}
++
++#[cfg(test)]
++impl Drop for ActionScope<'_> {
++    fn drop(&mut self) {
++        if self.marker.is_none() {
++            return;
++        }
++        if let Some(file) = self.lock.take() {
++            match self.retained.lock() {
++                Ok(mut retained) if retained.is_none() => *retained = Some(file),
++                // Poisoning or an impossible second retained scope must not
++                // silently release an unresolved global action flock.
++                _ => std::mem::forget(file),
++            }
++        }
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn pending_reader_survives_writer_exit_and_rejects_unknown_path_states() {
++        let d = tempfile::tempdir().unwrap();
++        let uid = d.path().metadata().unwrap().uid();
++        ensure_no_pending_in(d.path(), uid).unwrap();
++        let marker = d.path().join(MARKER.to_str().unwrap());
++        std::os::unix::fs::symlink(d.path().join("absent-target"), &marker).unwrap();
++        assert!(ensure_no_pending_in(d.path(), uid).is_err());
++        assert!(marker.symlink_metadata().unwrap().file_type().is_symlink());
++        std::fs::remove_file(&marker).unwrap();
++        std::fs::write(&marker, b"unresolved").unwrap();
++        assert!(
++            ensure_no_pending_in(d.path(), uid)
++                .unwrap_err()
++                .to_string()
++                .contains("pending")
++        );
++        assert!(ensure_no_pending_in(d.path(), uid.wrapping_add(1)).is_err());
++        assert!(ensure_no_pending_in(&d.path().join("missing"), uid).is_err());
++        assert_eq!(std::fs::read(marker).unwrap(), b"unresolved");
++    }
++    #[test]
++    fn shared_flock_excludes_a_separate_open_file_description() {
++        let d = tempfile::tempdir().unwrap();
++        let r = Mutex::new(None);
++        let scope = ActionScope::acquire_in(d.path(), &r).unwrap();
++        let other = OpenOptions::new()
++            .read(true)
++            .write(true)
++            .open(d.path().join(LOCK.to_str().unwrap()))
++            .unwrap();
++        // SAFETY: valid separately opened FD; no blocking lock requested.
++        assert_ne!(
++            unsafe { libc::flock(other.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) },
++            0
++        );
++        drop(scope);
++        // SAFETY: same valid FD, now no competing open description remains.
++        assert_eq!(
++            unsafe { libc::flock(other.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) },
++            0
++        );
++    }
++    #[test]
++    fn uncertain_intent_survives_lock_release_and_blocks_daemon_restart() {
++        let d = tempfile::tempdir().unwrap();
++        let r = Mutex::new(None);
++        let mut scope = ActionScope::acquire_in(d.path(), &r).unwrap();
++        scope.before_start(b"{\"fixture_only\":true}").unwrap();
++        drop(scope);
++        assert!(r.lock().unwrap().is_some());
++        assert!(ActionScope::acquire_in(d.path(), &r).is_err());
++        r.lock().unwrap().take(); // model daemon death, not a production recovery API
++        assert!(
++            ActionScope::acquire_in(d.path(), &r)
++                .err()
++                .unwrap()
++                .to_string()
++                .contains("unreconciled")
++        );
++    }
++    #[test]
++    fn verified_cleanup_removes_only_its_held_marker_and_releases_flock() {
++        let d = tempfile::tempdir().unwrap();
++        let r = Mutex::new(None);
++        let mut scope = ActionScope::acquire_in(d.path(), &r).unwrap();
++        scope.before_start(b"{}").unwrap();
++        scope.finish_after_verified_cleanup().unwrap();
++        drop(scope);
++        assert!(!d.path().join(MARKER.to_str().unwrap()).exists());
++        assert!(ActionScope::acquire_in(d.path(), &r).is_ok());
++    }
++    #[test]
++    fn replaced_marker_or_lock_symlink_is_not_followed_or_deleted() {
++        let d = tempfile::tempdir().unwrap();
++        let r = Mutex::new(None);
++        let outside = d.path().join("outside");
++        std::fs::write(&outside, b"keep").unwrap();
++        std::os::unix::fs::symlink(&outside, d.path().join(LOCK.to_str().unwrap())).unwrap();
++        assert!(ActionScope::acquire_in(d.path(), &r).is_err());
++        std::fs::remove_file(d.path().join(LOCK.to_str().unwrap())).unwrap();
++        let mut scope = ActionScope::acquire_in(d.path(), &r).unwrap();
++        scope.before_start(b"{}").unwrap();
++        let marker = d.path().join(MARKER.to_str().unwrap());
++        std::fs::remove_file(&marker).unwrap();
++        std::os::unix::fs::symlink(&outside, &marker).unwrap();
++        assert!(scope.finish_after_verified_cleanup().is_err());
++        drop(scope);
++        assert_eq!(std::fs::read(&outside).unwrap(), b"keep");
++        assert!(r.lock().unwrap().is_some());
++    }
++}
+diff --git a/runtime/droidloom-supervisor/src/application_settings_tests.rs b/runtime/droidloom-supervisor/src/application_settings_tests.rs
+new file mode 100644
+--- /dev/null
++++ b/runtime/droidloom-supervisor/src/application_settings_tests.rs
+@@ -0,0 +1,595 @@
++//! Synthetic protocol controls only. No test below launches or qualifies Android.
++use super::*;
++use application_probe::InstalledApk;
++use std::collections::VecDeque;
++use std::sync::Mutex;
++
++const BEFORE: &str = "RootTask id=1 bounds=[0,0][800,600] displayId=0 userId=0\n configuration={mWindowingMode=fullscreen}\n taskId=1: com.android.launcher3/.Launcher userId=0 visible=true topActivity=ComponentInfo{com.android.launcher3/.Launcher}\n";
++const NEW: &str = "RootTask id=42 bounds=[10,20][610,520] displayId=0 userId=0\n configuration={mWindowingMode=freeform}\n taskId=42: com.android.settings/.Settings userId=0 visible=true topActivity=ComponentInfo{com.android.settings/.homepage.SettingsHomepageActivity}\n";
++const FOCUS: &str =
++    "mCurrentFocus=Window{ab12 u0 com.android.settings/.homepage.SettingsHomepageActivity}";
++
++struct Step {
++    args: Vec<String>,
++    result: Result<String, String>,
++}
++struct Fake {
++    epoch: RuntimeEpoch,
++    steps: VecDeque<Step>,
++    calls: Vec<Vec<String>>,
++}
++impl AndroidProbe for Fake {
++    fn epoch(&mut self) -> Result<RuntimeEpoch, String> {
++        Ok(self.epoch.clone())
++    }
++    fn command(&mut self, argv: &[String]) -> Result<String, String> {
++        self.calls.push(argv.to_vec());
++        let step = self
++            .steps
++            .pop_front()
++            .expect("unexpected extra command or retry");
++        assert_eq!(argv, step.args, "command routing differs");
++        step.result
++    }
++}
++impl SettingsProbe for Fake {
++    fn command_until(&mut self, argv: &[String], deadline: Instant) -> Result<String, String> {
++        within(deadline)?;
++        self.command(argv)
++    }
++}
++fn push(steps: &mut VecDeque<Step>, argv: &[&str], result: impl Into<String>) {
++    steps.push_back(Step {
++        args: args(argv),
++        result: Ok(result.into()),
++    });
++}
++fn inspection(
++    package: &str,
++    uid: u32,
++    helper: bool,
++    epoch: &RuntimeEpoch,
++) -> ApplicationInspection {
++    ApplicationInspection {
++        package: package.into(),
++        user: 0,
++        uid,
++        version_code: if helper { 2 } else { 35 },
++        epoch: epoch.clone(),
++        apks: vec![InstalledApk {
++            name: "base.apk".into(),
++            path: if helper {
++                "/data/app/unit-helper/base.apk"
++            } else {
++                "/system/priv-app/Settings/Settings.apk"
++            }
++            .into(),
++            bytes: if helper { HELPER_BYTES } else { 3000 },
++            sha256: if helper {
++                HELPER_SHA.into()
++            } else {
++                "a".repeat(64)
++            },
++        }],
++    }
++}
++fn push_inspection(steps: &mut VecDeque<Step>, identity: &ApplicationInspection) {
++    let package = format!(
++        "package:{} versionCode:{} uid:{}",
++        identity.package, identity.version_code, identity.uid
++    );
++    let paths = format!("package:{}", identity.apks[0].path);
++    let apk = &identity.apks[0];
++    let metadata = format!("1:2:{}:unit-time:unit-ctime", apk.bytes);
++    let p = &identity.package;
++    let path = &apk.path;
++    push(
++        steps,
++        &[
++            "/system/bin/cmd",
++            "package",
++            "list",
++            "packages",
++            "--user",
++            "0",
++            "-U",
++            "--show-versioncode",
++            p,
++        ],
++        &package,
++    );
++    push(
++        steps,
++        &["/system/bin/cmd", "package", "path", "--user", "0", p],
++        &paths,
++    );
++    push(
++        steps,
++        &["/system/bin/toybox", "stat", "-c", "%d:%i:%s:%y:%z", path],
++        &metadata,
++    );
++    push(
++        steps,
++        &["/system/bin/toybox", "sha256sum", path],
++        format!("{}  {path}", apk.sha256),
++    );
++    push(
++        steps,
++        &["/system/bin/toybox", "stat", "-c", "%d:%i:%s:%y:%z", path],
++        &metadata,
++    );
++    push(
++        steps,
++        &[
++            "/system/bin/cmd",
++            "package",
++            "list",
++            "packages",
++            "--user",
++            "0",
++            "-U",
++            "--show-versioncode",
++            p,
++        ],
++        &package,
++    );
++    push(
++        steps,
++        &["/system/bin/cmd", "package", "path", "--user", "0", p],
++        &paths,
++    );
++}
++fn encode(raw: &[u8]) -> String {
++    const ALPHABET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
++    let mut out = String::new();
++    let mut bits = 0u32;
++    let mut n = 0;
++    for byte in raw {
++        bits = (bits << 8) | u32::from(*byte);
++        n += 8;
++        while n >= 6 {
++            n -= 6;
++            out.push(char::from(ALPHABET[((bits >> n) & 63) as usize]));
++        }
++    }
++    if n > 0 {
++        out.push(char::from(ALPHABET[((bits << (6 - n)) & 63) as usize]));
++    }
++    while out.len() % 4 != 0 {
++        out.push('=');
++    }
++    out
++}
++fn tree() -> serde_json::Value {
++    let root = serde_json::json!({"present":true,"package":SETTINGS,"window_id":7,"bounds":[10,20,610,520],"visible":true});
++    serde_json::json!({"ok":true,"accessibility_mode_restoration_verified":true,
++        "window_context":{"selected_window":{"display_id":0,"focused":true,"type":1,"window_id":7,
++            "bounds":[10,20,610,520],"root":root},"root":root,
++            "snapshot_complete":true,"semantic_controls_available":true,"truncated":false,
++            "null_child_count":0,"visited_count":1,"visible_count":1,"tree_status":"available"},
++        "nodes":[{"package":SETTINGS,"window_id":7,"visible":true,"source":"native_accessibility","bounds_array":[10,20,610,520]}]})
++}
++fn instrument(value: &serde_json::Value) -> String {
++    format!(
++        "INSTRUMENTATION_RESULT: sidecar_result_base64={}\nINSTRUMENTATION_CODE: -1",
++        encode(&serde_json::to_vec(value).unwrap())
++    )
++}
++fn after() -> String {
++    format!("{BEFORE}{NEW}")
++}
++fn cleanup(steps: &mut VecDeque<Step>) {
++    push(
++        steps,
++        &["/system/bin/cmd", "activity", "stack", "list"],
++        after(),
++    );
++    push(
++        steps,
++        &["/system/bin/cmd", "activity", "stack", "remove", "42"],
++        "",
++    );
++    push(
++        steps,
++        &["/system/bin/cmd", "activity", "stack", "list"],
++        BEFORE,
++    );
++}
++fn fixture(helper_uid: u32) -> (Fake, ApplicationInspection) {
++    let epoch = RuntimeEpoch {
++        boot_id: "unit-test-only".into(),
++        cell_host_pid: 10,
++        framework_host_pid: 20,
++        framework_start_ticks: 30,
++    };
++    let settings = inspection(SETTINGS, 1000, false, &epoch);
++    let helper = inspection(HELPER, helper_uid, true, &epoch);
++    let mut q = VecDeque::new();
++    push_inspection(&mut q, &settings);
++    push_inspection(&mut q, &helper);
++    push(
++        &mut q,
++        &[LAUNCHER, "--settings-observation-protocol"],
++        "droidloom-settings-observation-v1",
++    );
++    push(
++        &mut q,
++        &[
++            "/system/bin/cmd",
++            "package",
++            "resolve-activity",
++            "--brief",
++            "--user",
++            "0",
++            "-a",
++            "android.settings.SETTINGS",
++        ],
++        "com.android.settings/.Settings",
++    );
++    push(
++        &mut q,
++        &["/system/bin/cmd", "activity", "stack", "list"],
++        BEFORE,
++    );
++    push(
++        &mut q,
++        &[
++            LAUNCHER,
++            "--observe-settings-page",
++            "android.settings.SETTINGS",
++            "--user",
++            "0",
++            "--component",
++            "com.android.settings/com.android.settings.Settings",
++            SETTINGS,
++        ],
++        "object=50 composer_display=60 android_display=0 task=42",
++    );
++    push(
++        &mut q,
++        &["/system/bin/cmd", "activity", "stack", "list"],
++        after(),
++    );
++    push_inspection(&mut q, &helper);
++    push(
++        &mut q,
++        &["/system/bin/dumpsys", "window", "displays"],
++        FOCUS,
++    );
++    push(
++        &mut q,
++        &[
++            "/system/bin/am",
++            "instrument",
++            "-w",
++            "-r",
++            "-e",
++            "request",
++            DUMP_REQUEST,
++            "local.pocket4.actions.v2/.ActionRunner",
++        ],
++        instrument(&tree()),
++    );
++    push(
++        &mut q,
++        &["/system/bin/dumpsys", "window", "displays"],
++        FOCUS,
++    );
++    push(
++        &mut q,
++        &["/system/bin/cmd", "activity", "stack", "list"],
++        after(),
++    );
++    push_inspection(&mut q, &settings);
++    push_inspection(&mut q, &helper);
++    cleanup(&mut q);
++    (
++        Fake {
++            epoch,
++            steps: q,
++            calls: Vec::new(),
++        },
++        settings,
++    )
++}
++fn launch_index(fake: &Fake) -> usize {
++    fake.steps
++        .iter()
++        .position(|s| {
++            s.args
++                .get(1)
++                .is_some_and(|s| s == "--observe-settings-page")
++        })
++        .unwrap()
++}
++fn native_index(fake: &Fake) -> usize {
++    fake.steps
++        .iter()
++        .position(|s| s.args.first().is_some_and(|s| s == "/system/bin/am"))
++        .unwrap()
++}
++fn count_launches(fake: &Fake) -> usize {
++    fake.calls
++        .iter()
++        .filter(|a| a.get(1).is_some_and(|s| s == "--observe-settings-page"))
++        .count()
++}
++fn count_removes(fake: &Fake) -> usize {
++    fake.calls
++        .iter()
++        .filter(|a| a.get(3).is_some_and(|s| s == "remove"))
++        .count()
++}
++fn perform(fake: &mut Fake, expected: &ApplicationInspection) -> (SettingsObservation, bool) {
++    let directory = tempfile::tempdir().unwrap();
++    let retained = Mutex::new(None);
++    let scope = ActionScope::acquire_in(directory.path(), &retained).unwrap();
++    let report = observe_with_scope(
++        fake,
++        expected,
++        SettingsPage::System,
++        Instant::now() + Duration::from_secs(90),
++        scope,
++    )
++    .unwrap();
++    let held = retained.lock().unwrap().is_some();
++    assert_eq!(report.action_scope_retained, held);
++    (report, held)
++}
++
++#[test]
++fn synthetic_page_candidate_fixture_never_grants_framework_creation_authority() {
++    for helper_uid in [10125, 10987] {
++        let (mut fake, expected) = fixture(helper_uid);
++        let (report, held) = perform(&mut fake, &expected);
++        assert!(!report.completed_partial());
++        assert!(!held);
++        assert!(fake.steps.is_empty());
++        assert_eq!(count_launches(&fake), 1);
++        assert_eq!(count_removes(&fake), 1);
++        assert_eq!(report.helper_inspection.uid, helper_uid);
++        assert_eq!(report.task_candidate.unwrap().id, 42);
++        let window = report.window.unwrap();
++        assert_eq!(window.focus.token, "ab12");
++        assert_eq!(window.visible_nodes, 1);
++        assert!(
++            !window.pixel_observation_verified
++                && !report.production_ready
++                && !report.runtime_qualified
++        );
++        assert_eq!(report.accepted_gates, 0);
++    }
++}
++
++#[test]
++fn old_vendor_or_preexisting_settings_fails_before_start_and_leaves_no_intent() {
++    for old_vendor in [true, false] {
++        let (mut fake, expected) = fixture(10237);
++        let i = launch_index(&fake);
++        if old_vendor {
++            fake.steps[14].result = Err("unknown option".into());
++        } else {
++            fake.steps[i - 1].result = Ok(after());
++        }
++        let directory = tempfile::tempdir().unwrap();
++        let retained = Mutex::new(None);
++        let scope = ActionScope::acquire_in(directory.path(), &retained).unwrap();
++        assert!(
++            observe_with_scope(
++                &mut fake,
++                &expected,
++                SettingsPage::System,
++                Instant::now() + Duration::from_secs(90),
++                scope
++            )
++            .is_err()
++        );
++        assert_eq!(count_launches(&fake), 0);
++        assert!(retained.lock().unwrap().is_none());
++        assert!(ActionScope::acquire_in(directory.path(), &retained).is_ok());
++    }
++}
++
++#[test]
++fn wrong_native_helper_bytes_never_execute_instrumentation_or_start_a_page() {
++    let (mut fake, expected) = fixture(10237);
++    fake.steps[10].result = Ok(format!(
++        "{}  /data/app/unit-helper/base.apk",
++        "b".repeat(64)
++    ));
++    let d = tempfile::tempdir().unwrap();
++    let r = Mutex::new(None);
++    let scope = ActionScope::acquire_in(d.path(), &r).unwrap();
++    assert!(
++        observe_with_scope(
++            &mut fake,
++            &expected,
++            SettingsPage::System,
++            Instant::now() + Duration::from_secs(90),
++            scope
++        )
++        .is_err()
++    );
++    assert_eq!(count_launches(&fake), 0);
++    assert_eq!(fake.calls.len(), 14);
++    assert!(r.lock().unwrap().is_none());
++}
++
++#[test]
++fn uncertain_single_launch_retains_scope_and_sends_no_followup_or_removal() {
++    let (mut fake, expected) = fixture(10237);
++    let i = launch_index(&fake);
++    fake.steps[i].result = Err("fixture transport deadline: outcome unknown".into());
++    let (report, held) = perform(&mut fake, &expected);
++    assert!(held);
++    assert!(report.failure.unwrap().contains("outcome unknown"));
++    assert_eq!(fake.calls.len(), i + 1);
++    assert_eq!(count_launches(&fake), 1);
++    assert_eq!(count_removes(&fake), 0);
++}
++
++#[test]
++fn ack_cannot_authorize_an_old_task_or_a_task_missing_from_the_actual_snapshot() {
++    for id in [1, 43] {
++        let (mut fake, expected) = fixture(10237);
++        let i = launch_index(&fake);
++        fake.steps[i].result = Ok(format!(
++            "object=50 composer_display=60 android_display=0 task={id}"
++        ));
++        let (report, held) = perform(&mut fake, &expected);
++        assert!(held);
++        assert!(report.task_candidate.is_none());
++        assert_eq!(count_removes(&fake), 0);
++        assert_eq!(fake.calls.len(), i + 2);
++    }
++}
++
++#[test]
++fn a_settled_foreign_native_node_is_rejected_and_only_the_owned_leaf_is_cleaned() {
++    let (mut fake, expected) = fixture(10237);
++    let i = native_index(&fake);
++    let mut value = tree();
++    value["nodes"][0]["package"] = "org.example.foreign".into();
++    fake.steps[i].result = Ok(instrument(&value));
++    fake.steps.truncate(i + 1);
++    cleanup(&mut fake.steps);
++    let (report, held) = perform(&mut fake, &expected);
++    assert!(!held);
++    assert!(report.cleanup_confirmed);
++    assert!(report.failure.unwrap().contains("outside"));
++    assert!(report.window.is_none());
++    assert_eq!(count_removes(&fake), 1);
++    assert!(fake.steps.is_empty());
++}
++
++#[test]
++fn missing_restoration_or_unknown_instrumentation_keeps_the_action_scope() {
++    for timeout in [true, false] {
++        let (mut fake, expected) = fixture(10237);
++        let i = native_index(&fake);
++        let mut value = tree();
++        value["accessibility_mode_restoration_verified"] = false.into();
++        fake.steps[i].result = if timeout {
++            Err("native invocation timeout".into())
++        } else {
++            Ok(instrument(&value))
++        };
++        let (report, held) = perform(&mut fake, &expected);
++        assert!(held);
++        assert!(!report.cleanup_confirmed);
++        assert_eq!(fake.calls.len(), i + 1);
++        assert_eq!(count_removes(&fake), 0);
++    }
++}
++
++#[test]
++fn duplicate_restoration_claim_is_not_accepted_as_a_settled_result() {
++    let (mut fake, expected) = fixture(10237);
++    let i = native_index(&fake);
++    let json = "{\"ok\":true,\"accessibility_mode_restoration_verified\":false,\"accessibility_mode_restoration_verified\":true}";
++    fake.steps[i].result = Ok(format!(
++        "INSTRUMENTATION_RESULT: sidecar_result_base64={}",
++        encode(json.as_bytes())
++    ));
++    let (report, held) = perform(&mut fake, &expected);
++    assert!(held);
++    assert!(report.failure.is_some());
++    assert_eq!(count_removes(&fake), 0);
++    assert_eq!(fake.calls.len(), i + 1);
++}
++
++#[test]
++fn window_token_change_invalidates_observation_but_does_not_adopt_another_task() {
++    let (mut fake, expected) = fixture(10237);
++    let i = native_index(&fake);
++    fake.steps[i + 1].result = Ok(FOCUS.replace("ab12", "ab13"));
++    fake.steps.truncate(i + 2);
++    cleanup(&mut fake.steps);
++    let (report, held) = perform(&mut fake, &expected);
++    assert!(!held);
++    assert!(report.cleanup_confirmed);
++    assert!(report.failure.unwrap().contains("focus token"));
++    assert!(report.window.is_none());
++    assert_eq!(count_removes(&fake), 1);
++}
++
++#[test]
++fn changed_task_topology_before_cleanup_prevents_the_removal_command() {
++    let (mut fake, expected) = fixture(10237);
++    let i = fake.steps.len() - 3;
++    fake.steps[i].result = Ok(after().replace("taskId=1:", "taskId=99:"));
++    let (report, held) = perform(&mut fake, &expected);
++    assert!(held);
++    assert!(!report.cleanup_confirmed);
++    assert_eq!(count_removes(&fake), 0);
++    assert_eq!(fake.calls.len(), i + 1);
++}
++
++#[test]
++fn an_uncertain_removal_is_sent_exactly_once_and_never_retried() {
++    let (mut fake, expected) = fixture(10237);
++    let i = fake.steps.len() - 2;
++    fake.steps[i].result = Err("remove outcome unknown".into());
++    let (report, held) = perform(&mut fake, &expected);
++    assert!(held);
++    assert!(!report.cleanup_confirmed);
++    assert_eq!(count_removes(&fake), 1);
++    assert_eq!(fake.calls.len(), i + 1);
++}
++
++#[test]
++fn expired_lease_sends_no_commands_and_creates_no_pending_intent() {
++    let (mut fake, expected) = fixture(10237);
++    let d = tempfile::tempdir().unwrap();
++    let r = Mutex::new(None);
++    let scope = ActionScope::acquire_in(d.path(), &r).unwrap();
++    assert!(
++        observe_with_scope(
++            &mut fake,
++            &expected,
++            SettingsPage::System,
++            Instant::now(),
++            scope
++        )
++        .is_err()
++    );
++    assert!(fake.calls.is_empty());
++    assert!(r.lock().unwrap().is_none());
++    assert!(ActionScope::acquire_in(d.path(), &r).is_ok());
++}
++
++#[test]
++fn native_nodes_require_complete_same_window_visible_in_bounds_original_source() {
++    let tasks = Tasks::parse(&after()).unwrap();
++    let owned = tasks
++        .candidate_after(&Tasks::parse(BEFORE).unwrap(), 42)
++        .unwrap();
++    let focus = protocol::focus(FOCUS, &owned).unwrap();
++    for change in 0..7 {
++        let mut value = tree();
++        match change {
++            0 => value["nodes"][0]["window_id"] = 8.into(),
++            1 => value["nodes"][0]["bounds_array"] = serde_json::json!([0, 0, 800, 600]),
++            2 => value["nodes"][0]["source"] = "synthetic".into(),
++            3 => value["window_context"]["snapshot_complete"] = false.into(),
++            4 => value["window_context"]["selected_window"]["focused"] = false.into(),
++            5 => value["window_context"]["root"]["window_id"] = 8.into(),
++            _ => value["window_context"]["visible_count"] = 2.into(),
++        }
++        assert!(
++            protocol::validate_dump(value.to_string(), &owned, focus.clone()).is_err(),
++            "mutation {change}"
++        );
++    }
++    let (_, raw) = protocol::native_dump(&instrument(&tree())).unwrap();
++    assert!(protocol::validate_dump(raw, &owned, focus).is_ok());
++}
++
++#[test]
++fn production_settings_admission_cannot_accept_a_declared_identity() {
++    let (_, expected) = fixture(10237);
++    // The production daemon calls this admission before constructing a probe;
++    // a JSON identity cannot grant Android observation or task-creation power.
++    let error = observe(&expected, SettingsPage::System).unwrap_err();
++    assert_eq!(error, FRAMEWORK_AUTHORITY_BLOCKER);
++}
+diff --git a/android/framework/droidloom-task-launcher/src/lib.rs b/android/framework/droidloom-task-launcher/src/lib.rs
+--- a/android/framework/droidloom-task-launcher/src/lib.rs
++++ b/android/framework/droidloom-task-launcher/src/lib.rs
+@@ -131,6 +131,228 @@
+         Path::new(DEFAULT_ANDROID_COMMAND),
+         Some(Path::new("/dev/droidloom-launcher-policy")),
+     )
++}
++
++/// Read-only feature negotiation for the fixed Settings observation entry.
++pub const SETTINGS_OBSERVATION_PROTOCOL: &str =
++    "droidloom-settings-observation-v2:blocked-no-framework-created-task-authority";
++
++/// Reject Settings observation until a verified framework-created-task provider exists.
++/// Neither a successful shell start nor task-list differences prove creation by
++/// this request. No production launch, registration or cleanup is authorized.
++///
++/// # Errors
++/// Always returns an explicit missing-authority precondition after validating
++/// the fixed request shape. No Android command or task-control connection runs.
++pub fn launch_settings_observation(
++    request: &LaunchRequest,
++    action: &str,
++) -> Result<TaskBinding, LaunchError> {
++    validate_settings_observation(request, action)?;
++    Err(LaunchError::InvalidRequest("Settings framework created-task authority unavailable; no launch or registration authorized".into()))
++}
++
++// Candidate protocol preparation only. The production entry above cannot call
++// this function; pure differences/ACKs are not a task-creation authority.
++#[cfg(test)]
++fn launch_settings_observation_with_paths(
++    request: &LaunchRequest,
++    action: &str,
++    control_socket: &Path,
++    command: &Path,
++) -> Result<TaskBinding, LaunchError> {
++    validate_settings_observation(request, action)?;
++    let resolution = command_as_android_shell(command)
++        .args([
++            "package",
++            "resolve-activity",
++            "--brief",
++            "--user",
++            "0",
++            "-a",
++            action,
++        ])
++        .output()?;
++    let resolution = checked_activity_output(&resolution, "resolve fixed Settings page")?;
++    if resolution
++        .lines()
++        .filter(|line| !line.trim().is_empty())
++        .count()
++        != 1
++        || normalized_component(resolution.trim())
++            != request.component.as_deref().and_then(normalized_component)
++    {
++        return Err(LaunchError::InvalidRequest(
++            "Settings component differs from this fixed page's current PM resolution".into(),
++        ));
++    }
++    let mut control = TaskControlClient::connect(control_socket)?;
++    let before = command_as_android_shell(command)
++        .args(["activity", "stack", "list"])
++        .output()?;
++    let before = checked_activity_output(&before, "Settings task precondition")?;
++    let before_ids = observation_task_ids(&before)?;
++    if !matching_tasks_with(&before, 0, &request.package, Some(0), |_| true)?.is_empty() {
++        return Err(LaunchError::Discovery(
++            "Settings observation cannot adopt a preexisting task".into(),
++        ));
++    }
++    let completed = start_settings_activity_once(request, action, command)?;
++    let alias = resolve_launch_alias(request, command, &completed)?;
++    for _ in 0..ACTIVITY_DISCOVERY_ATTEMPTS {
++        let output = command_as_android_shell(command)
++            .args(["activity", "stack", "list"])
++            .output()?;
++        let listing = checked_activity_output(&output, "Settings task discovery")?;
++        // Only reads may repeat. There is exactly one activity-start call above.
++        let candidates =
++            matching_launch_tasks(&listing, 0, request, &completed, alias.as_deref(), None)?;
++        match candidates.as_slice() {
++            [task] if !before_ids.contains(task) => {
++                return control.register_direct(&request.package, *task, 0);
++            }
++            [_] => {
++                return Err(LaunchError::Discovery(
++                    "Settings observation cannot bind a preexisting root or task ID".into(),
++                ));
++            }
++            [] => thread::sleep(DISCOVERY_INTERVAL),
++            _ => {
++                return Err(LaunchError::Discovery(
++                    "Settings observation created ambiguous tasks".into(),
++                ));
++            }
++        }
++    }
++    Err(LaunchError::Discovery(
++        "Settings observation has no completed new task; outcome unknown".into(),
++    ))
++}
++
++#[cfg(test)]
++fn observation_task_ids(listing: &str) -> Result<BTreeSet<u64>, LaunchError> {
++    let mut roots = BTreeSet::new();
++    let mut tasks = BTreeSet::new();
++    for line in listing.lines() {
++        let line = line.trim();
++        let (identity, set) = if let Some(rest) = line.strip_prefix("RootTask id=") {
++            (rest.split_whitespace().next().unwrap_or(""), &mut roots)
++        } else if let Some(rest) = line.strip_prefix("taskId=") {
++            (rest.split_once(':').map(|s| s.0).unwrap_or(""), &mut tasks)
++        } else if line.starts_with("RootTask") || line.starts_with("taskId") {
++            return Err(LaunchError::Discovery(
++                "unparsed Settings prelaunch task identity".into(),
++            ));
++        } else {
++            continue;
++        };
++        let value = identity
++            .parse::<u64>()
++            .map_err(|_| LaunchError::Discovery("invalid prelaunch task ID".into()))?;
++        if value == 0 || !set.insert(value) {
++            return Err(LaunchError::Discovery(
++                "duplicate or zero prelaunch task ID".into(),
++            ));
++        }
++    }
++    if roots.is_empty() || tasks.is_empty() {
++        return Err(LaunchError::Discovery(
++            "empty prelaunch task identity snapshot".into(),
++        ));
++    }
++    roots.extend(tasks);
++    Ok(roots)
++}
++
++fn validate_settings_observation(request: &LaunchRequest, action: &str) -> Result<(), LaunchError> {
++    validate_request(request)?;
++    if request.package != "com.android.settings"
++        || request.user != 0
++        || request.component.is_none()
++        || request.resolution.is_some()
++        || !matches!(
++            action,
++            "android.settings.SETTINGS"
++                | "android.settings.WIRELESS_SETTINGS"
++                | "android.settings.DISPLAY_SETTINGS"
++                | "android.settings.INTERNAL_STORAGE_SETTINGS"
++                | "android.settings.APPLICATION_SETTINGS"
++        )
++    {
++        return Err(LaunchError::InvalidRequest(
++            "Settings observation requires one fixed page, explicit Settings component, user 0, and no resolution".into(),
++        ));
++    }
++    Ok(())
++}
++
++#[cfg(test)]
++fn start_settings_activity_once(
++    request: &LaunchRequest,
++    action: &str,
++    command: &Path,
++) -> Result<String, LaunchError> {
++    validate_settings_observation(request, action)?;
++    let output = command_as_android_shell(command)
++        .args([
++            "activity",
++            "start-activity",
++            "-W",
++            "--display",
++            "0",
++            "--windowingMode",
++            "5",
++            "--user",
++            "0",
++            "-a",
++            action,
++            "-n",
++            request.component.as_deref().expect("validated"),
++        ])
++        .output()?;
++    for bytes in [&output.stdout, &output.stderr] {
++        let text = std::str::from_utf8(bytes).map_err(|_| {
++            LaunchError::Activity(
++                "non-UTF-8 Settings start acknowledgement; outcome unknown".into(),
++            )
++        })?;
++        let lowered = text.to_ascii_lowercase();
++        if [
++            "warning:",
++            "activity not started",
++            "brought to",
++            "delivered to",
++            "reused",
++            "reusing",
++            "cancelled",
++            "canceled",
++            "start_task_to_front",
++            "start_delivered_to_top",
++        ]
++        .iter()
++        .any(|token| lowered.contains(token))
++        {
++            return Err(LaunchError::Activity(
++                "Settings start warning/reuse/cancellation; no task registration authorized, outcome unknown".into()));
++        }
++    }
++    let output = checked_activity_output(&output, "single Settings activity start")?;
++    if output
++        .lines()
++        .filter(|line| line.trim().starts_with("Status:"))
++        .count()
++        != 1
++        || output
++            .lines()
++            .filter(|line| line.trim().starts_with("Activity:"))
++            .count()
++            != 1
++    {
++        return Err(LaunchError::Activity(
++            "ambiguous Settings start acknowledgement".into(),
++        ));
++    }
++    completed_launch_activity(&output, &request.package, None)
+ }
+ 
+ /// Bind a task already resolved by the privileged Android task observer.
+@@ -648,7 +870,8 @@
+ // task ownership, user, display, visibility and ambiguity checks still apply.
+ fn is_play_store_sign_in(package: &str, component: &str) -> bool {
+     package == "com.android.vending"
+-        && component == "com.google.android.gms/com.google.android.gms.auth.uiflows.minutemaid.MinuteMaidActivity"
++        && component
++            == "com.google.android.gms/com.google.android.gms.auth.uiflows.minutemaid.MinuteMaidActivity"
+ }
+ 
+ fn is_pending_display_error(error: &LaunchError, android_display: u64) -> bool {
+@@ -679,7 +902,9 @@
+ fn validate_request(request: &LaunchRequest) -> Result<(), LaunchError> {
+     if let Some((width, height)) = request.resolution {
+         if !(1..=16_384).contains(&width) || !(1..=16_384).contains(&height) {
+-            return Err(LaunchError::InvalidRequest("resolution dimensions must be in 1..=16384".into()));
++            return Err(LaunchError::InvalidRequest(
++                "resolution dimensions must be in 1..=16384".into(),
++            ));
+         }
+     }
+     if request.package.is_empty()
+@@ -801,10 +1026,13 @@
+             &request.package,
+             Some(request.user),
+             true,
+-            |top| top.is_some_and(|top| {
+-                is_play_store_sign_in(&request.package, top)
+-                    || top.split_once('/').map(|(owner, _)| owner) == Some(request.package.as_str())
+-            }),
++            |top| {
++                top.is_some_and(|top| {
++                    is_play_store_sign_in(&request.package, top)
++                        || top.split_once('/').map(|(owner, _)| owner)
++                            == Some(request.package.as_str())
++                })
++            },
+         );
+     }
+     matching_tasks_with(
+@@ -1058,6 +1286,293 @@
+     use super::*;
+ 
+     #[test]
++    fn settings_public_entry_cannot_acquire_authority_from_a_component_or_ack() {
++        let error = launch_settings_observation(
++            &settings_observation_request(),
++            "android.settings.SETTINGS",
++        )
++        .unwrap_err();
++        assert!(
++            error
++                .to_string()
++                .contains("framework created-task authority unavailable")
++        );
++        assert!(
++            SETTINGS_OBSERVATION_PROTOCOL.contains("blocked-no-framework-created-task-authority")
++        );
++    }
++
++    fn settings_observation_request() -> LaunchRequest {
++        LaunchRequest {
++            package: "com.android.settings".into(),
++            component: Some("com.android.settings/.Settings".into()),
++            resolution: None,
++            user: 0,
++        }
++    }
++
++    #[test]
++    fn settings_observation_requires_fixed_pages_and_an_explicit_non_restarting_request() {
++        let request = settings_observation_request();
++        for action in [
++            "android.settings.SETTINGS",
++            "android.settings.WIRELESS_SETTINGS",
++            "android.settings.DISPLAY_SETTINGS",
++            "android.settings.INTERNAL_STORAGE_SETTINGS",
++            "android.settings.APPLICATION_SETTINGS",
++        ] {
++            validate_settings_observation(&request, action).unwrap();
++        }
++        for changed in [
++            LaunchRequest {
++                component: None,
++                ..request.clone()
++            },
++            LaunchRequest {
++                user: 10,
++                ..request.clone()
++            },
++            LaunchRequest {
++                resolution: Some((800, 600)),
++                ..request.clone()
++            },
++            LaunchRequest {
++                package: "org.example.foreign".into(),
++                ..request.clone()
++            },
++        ] {
++            assert!(validate_settings_observation(&changed, "android.settings.SETTINGS").is_err());
++        }
++        assert!(
++            validate_settings_observation(
++                &request,
++                "android.settings.MANAGE_APPLICATIONS_SETTINGS"
++            )
++            .is_err()
++        );
++    }
++
++    #[test]
++    fn settings_start_is_one_real_process_even_for_the_ordinary_retryable_display_error() {
++        use std::os::unix::fs::PermissionsExt;
++        let d = tempfile::tempdir().unwrap();
++        let command = d.path().join("cmd");
++        let log = d.path().join("argv");
++        for success in [false, true] {
++            let result = if success {
++                "printf 'Status: ok\\nActivity: com.android.settings/.Settings\\n'"
++            } else {
++                "printf 'Permission Denial: launchDisplayId=0\\n' >&2; exit 1"
++            };
++            std::fs::write(
++                &command,
++                format!(
++                    "#!/bin/sh\nprintf '%s\\n' \"$@\" >> '{}'\n{result}\n",
++                    log.display()
++                ),
++            )
++            .unwrap();
++            std::fs::set_permissions(&command, std::fs::Permissions::from_mode(0o755)).unwrap();
++            let observed = start_settings_activity_once(
++                &settings_observation_request(),
++                "android.settings.SETTINGS",
++                &command,
++            );
++            assert_eq!(observed.is_ok(), success);
++            let recorded = std::fs::read_to_string(&log).unwrap();
++            assert_eq!(
++                recorded.lines().collect::<Vec<_>>(),
++                vec![
++                    "activity",
++                    "start-activity",
++                    "-W",
++                    "--display",
++                    "0",
++                    "--windowingMode",
++                    "5",
++                    "--user",
++                    "0",
++                    "-a",
++                    "android.settings.SETTINGS",
++                    "-n",
++                    "com.android.settings/.Settings"
++                ]
++            );
++            std::fs::remove_file(&log).unwrap();
++        }
++    }
++
++    #[test]
++    fn observation_preimage_keeps_all_root_and_child_ids_and_rejects_ambiguous_records() {
++        let before = "RootTask id=1 bounds=[0,0][800,600] displayId=0 userId=0\n taskId=5: com.example/.Main userId=0 visible=true\n";
++        assert_eq!(
++            observation_task_ids(before).unwrap(),
++            BTreeSet::from([1, 5])
++        );
++        for wrong in [
++            format!("{before}{before}"),
++            before.replace("taskId=5:", "taskId=bad:"),
++            "".into(),
++        ] {
++            assert!(observation_task_ids(&wrong).is_err());
++        }
++    }
++
++    #[test]
++    fn settings_candidate_protocol_uses_one_start_no_policy_and_actual_seqpacket_ack_binding() {
++        use droidloom_denial_ipc::SeqPacketListener;
++        use droidloom_task_control::{decode_request, encode_response};
++        use std::os::unix::fs::PermissionsExt;
++        // Actual ordinary host processes + AF_UNIX records. Android outputs are
++        // deliberate local fixtures and confer no runtime/production credit.
++        for mode in 0..5 {
++            let d = tempfile::tempdir().unwrap();
++            let command = d.path().join("cmd");
++            let log = d.path().join("commands");
++            let state = d.path().join("snapshot-taken");
++            let before = d.path().join("before");
++            let after = d.path().join("after");
++            let socket = d.path().join("control.sock");
++            let old = if mode == 2 { 42 } else { 1 };
++            std::fs::write(&before,format!("RootTask id={old} bounds=[0,0][800,600] displayId=0 userId=0\n taskId={old}: org.example.foreign/.Main userId=0 visible=true topActivity=ComponentInfo{{org.example.foreign/.Main}}\n")).unwrap();
++            let previous = if mode == 2 {
++                String::new()
++            } else {
++                std::fs::read_to_string(&before).unwrap()
++            };
++            std::fs::write(&after,format!("{previous}RootTask id=42 bounds=[0,0][800,600] displayId=0 userId=0\n taskId=42: com.android.settings/.Settings userId=0 visible=true topActivity=ComponentInfo{{com.android.settings/.Settings}}\n")).unwrap();
++            std::fs::write(
++                &command,
++                format!(
++                    r#"#!/bin/sh
++printf '%s\n' "$*" >> '{}'
++case "$1 $2" in
++'package resolve-activity') printf 'com.android.settings/.Settings\n' ;;
++'activity stack')
++  [ "$3" = list ] || exit 17
++  if [ -e '{}' ]; then cat '{}'; else : > '{}'; cat '{}'; fi ;;
++'activity start-activity') {}printf 'Status: ok\nActivity: com.android.settings/.Settings\n' ;;
++*) exit 17 ;;
++esac
++"#,
++                    log.display(),
++                    state.display(),
++                    after.display(),
++                    state.display(),
++                    before.display(),
++                    if mode==3 {"printf 'Warning: Activity not started, its current task has been brought to the front\\n'; "}
++                    else if mode==4 {"printf 'Warning: Activity not started, intent has been delivered to currently running top-most instance\\n' >&2; "}
++                    else {""}
++                ),
++            )
++            .unwrap();
++            std::fs::set_permissions(&command, std::fs::Permissions::from_mode(0o755)).unwrap();
++            let listener = SeqPacketListener::bind(&socket).unwrap();
++            listener.set_nonblocking(true).unwrap();
++            let server = thread::spawn(move || {
++                let deadline = Instant::now() + Duration::from_secs(5);
++                let peer = loop {
++                    match listener.accept() {
++                        Ok(peer) => break peer,
++                        Err(IpcError::Io(e)) if e.kind() == std::io::ErrorKind::WouldBlock => {}
++                        Err(e) => panic!("fixture accept failed: {e}"),
++                    }
++                    assert!(Instant::now() < deadline, "fixture accept deadline");
++                    thread::sleep(Duration::from_millis(2));
++                };
++                peer.set_nonblocking(true).unwrap();
++                let receive = || loop {
++                    match peer.receive_record() {
++                        Ok(record) => break Some(record),
++                        Err(IpcError::PeerClosed) => break None,
++                        Err(IpcError::Io(e)) if e.kind() == std::io::ErrorKind::WouldBlock => {}
++                        Err(e) => panic!("fixture receive failed: {e}"),
++                    }
++                    assert!(Instant::now() < deadline, "fixture receive deadline");
++                    thread::sleep(Duration::from_millis(2));
++                };
++                let hello = receive().unwrap();
++                assert!(hello.descriptors.is_empty());
++                assert_eq!(
++                    decode_request(&hello.bytes).unwrap(),
++                    ControlRequest::Hello {
++                        min_major: PROTOCOL_MAJOR,
++                        max_major: PROTOCOL_MAJOR
++                    }
++                );
++                peer.send_record(
++                    &encode_response(&ControlResponse::ServerHello {
++                        major: PROTOCOL_MAJOR,
++                        minor: 0,
++                    })
++                    .unwrap(),
++                    &[],
++                )
++                .unwrap();
++                if mode >= 2 {
++                    assert!(
++                        receive().is_none(),
++                        "old or reused task must not be registered"
++                    );
++                    return;
++                }
++                let record = receive().unwrap();
++                assert!(record.descriptors.is_empty());
++                assert_eq!(
++                    decode_request(&record.bytes).unwrap(),
++                    ControlRequest::RegisterDirect {
++                        request_id: 1,
++                        package: "com.android.settings".into(),
++                        task: 42,
++                        android_display: 0
++                    }
++                );
++                peer.send_record(
++                    &encode_response(&ControlResponse::Bound {
++                        request_id: 1,
++                        object: 50,
++                        task: if mode == 1 { 43 } else { 42 },
++                        display: 60,
++                        android_display: 0,
++                    })
++                    .unwrap(),
++                    &[],
++                )
++                .unwrap();
++            });
++            let result = launch_settings_observation_with_paths(
++                &settings_observation_request(),
++                "android.settings.SETTINGS",
++                &socket,
++                &command,
++            );
++            server.join().unwrap();
++            assert_eq!(result.is_ok(), mode == 0);
++            if let Ok(binding) = result {
++                assert_eq!(
++                    binding,
++                    TaskBinding {
++                        object: 50,
++                        composer_display: 60,
++                        android_display: 0,
++                        task: 42
++                    }
++                );
++            }
++            let log = std::fs::read_to_string(&log).unwrap();
++            let mut expected = vec![
++                "package resolve-activity --brief --user 0 -a android.settings.SETTINGS",
++                "activity stack list",
++                "activity start-activity -W --display 0 --windowingMode 5 --user 0 -a android.settings.SETTINGS -n com.android.settings/.Settings",
++            ];
++            if mode < 3 {
++                expected.push("activity stack list");
++            }
++            assert_eq!(log.lines().collect::<Vec<_>>(), expected);
++        }
++    }
++
++    #[test]
+     fn resolution_restarts_only_explicitly_sized_launches_before_activity_start() {
+         use std::os::unix::fs::PermissionsExt;
+         let directory = tempfile::tempdir().unwrap();
+@@ -1070,7 +1585,11 @@
+         std::fs::set_permissions(&command, std::fs::Permissions::from_mode(0o755)).unwrap();
+         let mut request = contacts_request();
+         start_activity(&request, &command, 0, None).unwrap();
+-        assert!(!std::fs::read_to_string(&log).unwrap().contains("--droidloom-resolution"));
++        assert!(
++            !std::fs::read_to_string(&log)
++                .unwrap()
++                .contains("--droidloom-resolution")
++        );
+         request.resolution = Some((2560, 1440));
+         start_activity(&request, &command, 0, None).unwrap();
+         let arguments = std::fs::read_to_string(&log).unwrap();
+@@ -1292,24 +1811,50 @@
+     fn play_store_sign_in_stays_in_its_visible_owned_task() {
+         let store = "com.android.vending/com.android.vending.AssetBrowserActivity";
+         let auth = "com.google.android.gms/com.google.android.gms.auth.uiflows.minutemaid.MinuteMaidActivity";
+-        let request = LaunchRequest { package: "com.android.vending".into(), component: None, resolution: None, user: 0 };
+-        let task = |id, owner, top, visible, display, user| format!(
+-            "RootTask id={id} displayId={display} userId={user}\n  taskId={id}: {owner}/.Main userId={user} visible={visible} topActivity=ComponentInfo{{{top}}}\n"
+-        );
+-        let discover = |listing: &str, completed: &str| discover_launch_candidates(
+-            listing, 0, &request, completed, None, None, &BTreeSet::from([9])
+-        ).unwrap();
++        let request = LaunchRequest {
++            package: "com.android.vending".into(),
++            component: None,
++            resolution: None,
++            user: 0,
++        };
++        let task = |id, owner, top, visible, display, user| {
++            format!(
++                "RootTask id={id} displayId={display} userId={user}\n  taskId={id}: {owner}/.Main userId={user} visible={visible} topActivity=ComponentInfo{{{top}}}\n"
++            )
++        };
++        let discover = |listing: &str, completed: &str| {
++            discover_launch_candidates(
++                listing,
++                0,
++                &request,
++                completed,
++                None,
++                None,
++                &BTreeSet::from([9]),
++            )
++            .unwrap()
++        };
+         let own = task(9, "com.android.vending", auth, true, 0, 0);
+         assert_eq!(discover(&own, store), vec![9]);
+         assert_eq!(discover(&own, auth), vec![9]);
+-        assert_eq!(discover(&task(9, "com.android.vending", store, true, 0, 0), auth), vec![9]);
++        assert_eq!(
++            discover(&task(9, "com.android.vending", store, true, 0, 0), auth),
++            vec![9]
++        );
+         for listing in [
+             task(9, "com.google.android.gms", auth, true, 0, 0),
+             task(9, "com.android.vending.extra", auth, true, 0, 0),
+             task(9, "com.android.vending", auth, false, 0, 0),
+             task(9, "com.android.vending", auth, true, 1, 0),
+             task(9, "com.android.vending", auth, true, 0, 10),
+-            task(9, "com.android.vending", "com.google.android.gms/.OtherActivity", true, 0, 0),
++            task(
++                9,
++                "com.android.vending",
++                "com.google.android.gms/.OtherActivity",
++                true,
++                0,
++                0,
++            ),
+             own.replace("userId=0", ""),
+         ] {
+             assert!(discover(&listing, store).is_empty(), "{listing}");
+@@ -1319,7 +1864,10 @@
+             + &task(11, "com.android.vending", auth, true, 0, 0);
+         assert_eq!(discover(&ambiguous, store), vec![10, 11]);
+         let output = format!("Status: ok\nActivity: {auth}\nComplete\n");
+-        assert_eq!(completed_launch_activity(&output, "com.android.vending", None).unwrap(), auth);
++        assert_eq!(
++            completed_launch_activity(&output, "com.android.vending", None).unwrap(),
++            auth
++        );
+         assert!(completed_launch_activity(&output, "org.example.other", None).is_err());
+     }
+ 
+diff --git a/android/framework/droidloom-task-launcher/src/main.rs b/android/framework/droidloom-task-launcher/src/main.rs
+--- a/android/framework/droidloom-task-launcher/src/main.rs
++++ b/android/framework/droidloom-task-launcher/src/main.rs
+@@ -4,11 +4,19 @@
+ 
+ use std::env;
+ 
+-use droidloom_task_launcher::{LaunchRequest, bind_existing_task, launch, set_display_density};
++use droidloom_task_launcher::{
++    LaunchRequest, SETTINGS_OBSERVATION_PROTOCOL, bind_existing_task, launch,
++    launch_settings_observation, set_display_density,
++};
+ 
+ #[derive(Debug, Eq, PartialEq)]
+ enum Operation {
+     Launch(LaunchRequest),
++    SettingsObservation {
++        request: LaunchRequest,
++        action: String,
++    },
++    SettingsObservationProtocol,
+     SetDensity(u32),
+     BindTask {
+         package: String,
+@@ -19,6 +27,20 @@
+ 
+ fn main() {
+     let result = arguments().and_then(|operation| match operation {
++        Operation::SettingsObservationProtocol => Ok(SETTINGS_OBSERVATION_PROTOCOL.into()),
++        Operation::SettingsObservation { request, action } => {
++            launch_settings_observation(&request, &action)
++                .map(|binding| {
++                    format!(
++                        "object={} composer_display={} android_display={} task={}",
++                        binding.object,
++                        binding.composer_display,
++                        binding.android_display,
++                        binding.task
++                    )
++                })
++                .map_err(|error| error.to_string())
++        }
+         Operation::Launch(request) => launch(&request)
+             .map(|binding| {
+                 format!(
+@@ -57,11 +79,37 @@
+     let mut resolution = None;
+     let mut user = 0;
+     let mut task = None;
++    let mut observation = None;
+     let mut arguments = arguments.into_iter();
+     while let Some(argument) = arguments.next() {
+         match argument.as_str() {
++            "--settings-observation-protocol"
++                if package.is_none()
++                    && component.is_none()
++                    && resolution.is_none()
++                    && user == 0
++                    && task.is_none()
++                    && observation.is_none() =>
++            {
++                if arguments.next().is_some() {
++                    return Err("Settings protocol query takes no other arguments".into());
++                }
++                return Ok(Operation::SettingsObservationProtocol);
++            }
++            "--observe-settings-page" if observation.is_none() => {
++                observation = Some(
++                    arguments
++                        .next()
++                        .ok_or("--observe-settings-page requires a fixed Settings action")?,
++                );
++            }
+             "--set-density"
+-                if package.is_none() && component.is_none() && resolution.is_none() && user == 0 && task.is_none() =>
++                if package.is_none()
++                    && component.is_none()
++                    && resolution.is_none()
++                    && user == 0
++                    && task.is_none()
++                    && observation.is_none() =>
+             {
+                 let dpi = arguments
+                     .next()
+@@ -81,14 +129,25 @@
+                 );
+             }
+             "--resolution" if resolution.is_none() => {
+-                let value = arguments.next().ok_or("--resolution requires WIDTHxHEIGHT")?;
+-                let (width, height) = value.split_once('x').ok_or("resolution must be WIDTHxHEIGHT")?;
++                let value = arguments
++                    .next()
++                    .ok_or("--resolution requires WIDTHxHEIGHT")?;
++                let (width, height) = value
++                    .split_once('x')
++                    .ok_or("resolution must be WIDTHxHEIGHT")?;
+                 let dimension = |value: &str| -> Result<u32, String> {
+-                    if value.is_empty() || value.len() > 5 || !value.bytes().all(|byte| byte.is_ascii_digit()) {
++                    if value.is_empty()
++                        || value.len() > 5
++                        || !value.bytes().all(|byte| byte.is_ascii_digit())
++                    {
+                         return Err("resolution dimensions must be integers".into());
+                     }
+-                    let size = value.parse::<u32>().map_err(|_| "invalid resolution dimension")?;
+-                    if !(1..=16_384).contains(&size) { return Err("resolution dimensions must be in 1..=16384".into()); }
++                    let size = value
++                        .parse::<u32>()
++                        .map_err(|_| "invalid resolution dimension")?;
++                    if !(1..=16_384).contains(&size) {
++                        return Err("resolution dimensions must be in 1..=16384".into());
++                    }
+                     Ok(size)
+                 };
+                 resolution = Some((dimension(width)?, dimension(height)?));
+@@ -120,6 +179,25 @@
+             "usage: droidloom-task-launcher [--user ID] [--component PACKAGE/ACTIVITY | --bind-task ID] PACKAGE | --set-density DPI"
+                 .to_owned()
+         })?;
++    if let Some(action) = observation {
++        if task.is_some()
++            || resolution.is_some()
++            || component.is_none()
++            || user != 0
++            || package != "com.android.settings"
++        {
++            return Err("Settings observation needs an explicit Settings component and cannot bind or restart a task".into());
++        }
++        return Ok(Operation::SettingsObservation {
++            request: LaunchRequest {
++                package,
++                component,
++                resolution,
++                user,
++            },
++            action,
++        });
++    }
+     if let Some(task) = task {
+         if component.is_some() || resolution.is_some() {
+             return Err("--bind-task cannot start a component or set a resolution".into());
+@@ -142,6 +220,52 @@
+ mod tests {
+     use super::*;
+ 
++    #[test]
++    fn settings_observation_protocol_and_operation_cannot_bind_or_resize() {
++        assert_eq!(
++            arguments(&["--settings-observation-protocol"]),
++            Ok(Operation::SettingsObservationProtocol)
++        );
++        assert!(arguments(&["--settings-observation-protocol", "com.android.settings"]).is_err());
++        let base = [
++            "--observe-settings-page",
++            "android.settings.SETTINGS",
++            "--component",
++            "com.android.settings/.Settings",
++            "com.android.settings",
++        ];
++        assert!(matches!(
++            arguments(&base).unwrap(),
++            Operation::SettingsObservation { .. }
++        ));
++        for extra in [
++            vec!["--bind-task", "42"],
++            vec!["--resolution", "800x600"],
++            vec!["--user", "10"],
++        ] {
++            let mut request = base.to_vec();
++            request.extend(extra);
++            assert!(arguments(&request).is_err());
++        }
++        assert!(
++            arguments(&[
++                "--observe-settings-page",
++                "android.settings.SETTINGS",
++                "com.android.settings"
++            ])
++            .is_err()
++        );
++        assert!(
++            arguments(&[
++                "--observe-settings-page",
++                "android.settings.SETTINGS",
++                "--set-density",
++                "175"
++            ])
++            .is_err()
++        );
++    }
++
+     fn arguments(values: &[&str]) -> Result<Operation, String> {
+         arguments_from(values.iter().map(|value| (*value).to_owned()))
+     }
+@@ -149,11 +273,34 @@
+     #[test]
+     fn resolution_is_bounded_and_cannot_be_used_for_binding() {
+         let parsed = arguments(&["--resolution", "2560x1440", "org.example.game"]).unwrap();
+-        assert!(matches!(parsed, Operation::Launch(LaunchRequest { resolution: Some((2560, 1440)), .. })));
+-        for size in ["0x1440", "2560", "-1x1440", "2560x1440x2", "16385x1080", "1x+2", "1x2;id"] {
++        assert!(matches!(
++            parsed,
++            Operation::Launch(LaunchRequest {
++                resolution: Some((2560, 1440)),
++                ..
++            })
++        ));
++        for size in [
++            "0x1440",
++            "2560",
++            "-1x1440",
++            "2560x1440x2",
++            "16385x1080",
++            "1x+2",
++            "1x2;id",
++        ] {
+             assert!(arguments(&["--resolution", size, "org.example.game"]).is_err());
+         }
+-        assert!(arguments(&["--resolution", "2560x1440", "--bind-task", "1", "org.example.game"]).is_err());
++        assert!(
++            arguments(&[
++                "--resolution",
++                "2560x1440",
++                "--bind-task",
++                "1",
++                "org.example.game"
++            ])
++            .is_err()
++        );
+     }
+ 
+     #[test]
+diff --git a/runtime/droidloom-applications/src/runtime_plan.rs b/runtime/droidloom-applications/src/runtime_plan.rs
+--- a/runtime/droidloom-applications/src/runtime_plan.rs
++++ b/runtime/droidloom-applications/src/runtime_plan.rs
+@@ -9,6 +9,7 @@
+ use droidloom_supervisor::control::application_probe::{
+     ApplicationInspection, RuntimeEpoch, RuntimeObservation, validate_https_url,
+ };
++use droidloom_supervisor::control::application_settings::{SettingsObservation, SettingsPage};
+ use droidloom_supervisor::control::{self, ControlRequest};
+ use serde::{Deserialize, Serialize};
+ use sha2::{Digest, Sha256};
+@@ -72,6 +73,9 @@
+     applications: Vec<ApplicationPlan>,
+     execute_public_browser: bool,
+     browser_fixture: Option<BrowserFixture>,
++    /// Empty by default. Each fixed page must be explicitly present in this pinned plan.
++    #[serde(default, skip_serializing_if = "Vec::is_empty")]
++    settings_pages: Vec<SettingsPage>,
+ }
+ 
+ #[derive(Clone, Debug, Deserialize, Serialize)]
+@@ -106,6 +110,7 @@
+     reason: String,
+     inspection: Option<ApplicationInspection>,
+     invocation_output: Option<String>,
++    settings_observations: Vec<SettingsObservation>,
+     pending_gates: Vec<String>,
+     accepted_gates: usize,
+     runtime_qualified: bool,
+@@ -120,6 +125,7 @@
+     blocked_applications: usize,
+     unsupported_business_flows: usize,
+     partial_browser_invocations: usize,
++    partial_settings_observations: usize,
+     accepted_applications: usize,
+     runtime_qualified: bool,
+     production_ready: bool,
+@@ -164,6 +170,11 @@
+         expected: &ApplicationInspection,
+         url: &str,
+     ) -> Result<(ApplicationInspection, String), RuntimeFailure>;
++    fn settings(
++        &mut self,
++        expected: &ApplicationInspection,
++        page: SettingsPage,
++    ) -> Result<SettingsObservation, RuntimeFailure>;
+ }
+ 
+ struct SocketClient<'a> {
+@@ -229,6 +240,30 @@
+             })?,
+         ))
+     }
++    fn settings(
++        &mut self,
++        expected: &ApplicationInspection,
++        page: SettingsPage,
++    ) -> Result<SettingsObservation, RuntimeFailure> {
++        let reply = control::request(
++            self.socket,
++            &ControlRequest::ObserveSettingsPage {
++                expected: expected.clone(),
++                page,
++            },
++        )
++        .map_err(|e| RuntimeFailure::transport(e.to_string()))?;
++        match reply.settings_observation {
++            Some(observed) if reply.ok == observed.completed_partial() => Ok(observed),
++            Some(_) => Err(RuntimeFailure::transport(
++                "Settings reply contradicts its partial observation status",
++            )),
++            None if !reply.ok => Err(RuntimeFailure::application(reply.message)),
++            None => Err(RuntimeFailure::transport(
++                "Settings response lacks actual task/window observations; update both binaries",
++            )),
++        }
++    }
+ }
+ 
+ fn pinned(reference: &FilePin) -> Result<Vec<u8>, String> {
+@@ -300,6 +335,18 @@
+                 "Firefox browser profile does not contain the complete reviewed five-gate contract"
+                     .into(),
+             );
++        }
++        if app.package == "com.android.settings"
++            && (package.profile != "settings"
++                || ![
++                    "settings.pages",
++                    "settings.permissions",
++                    "settings.roundtrip",
++                ]
++                .iter()
++                .all(|id| profile.checks.contains_key(*id)))
++        {
++            return Err("Settings profile omits a required existing business gate".into());
+         }
+         if let Some(input) = &app.expected_input {
+             let mut names = BTreeSet::new();
+@@ -319,6 +366,16 @@
+                 return Err("source input omits the normalized base APK".into());
+             }
+         }
++    }
++    let pages: BTreeSet<_> = plan.settings_pages.iter().collect();
++    if pages.len() != plan.settings_pages.len()
++        || pages.len() > 5
++        || (!pages.is_empty()
++            && (plan.android_user != 0 || !seen.contains(&"com.android.settings".to_string())))
++    {
++        return Err(
++            "Settings page execution must be explicit, unique, and selected for user 0".into(),
++        );
+     }
+     if plan.execute_public_browser {
+         let fixture = plan
+@@ -374,6 +431,7 @@
+             reason: String::new(),
+             inspection: None,
+             invocation_output: None,
++            settings_observations: Vec::new(),
+             pending_gates: pending,
+             accepted_gates: 0,
+             runtime_qualified: false,
+@@ -410,6 +468,12 @@
+                     app.expected_input.as_ref().expect("checked above"),
+                 ) {
+                     row.reason = "installed version or complete APK byte identities differ from the reviewed official input".into();
++                } else if app.package == "com.android.settings" {
++                    if plan.settings_pages.is_empty() {
++                        row.reason = "Settings identity observed; no fixed page invocation was explicitly requested in the pinned plan".into();
++                    } else {
++                        observe_settings_pages(plan, &actual, client, &mut fence, &mut row);
++                    }
+                 } else if app.package != "org.mozilla.firefox" {
+                     row.status = "unsupported";
+                     row.reason = "identity observed; this entry has no executable whole-business flow for this registered profile; use its separately qualified existing leaf or implement the missing flow".into();
+@@ -474,8 +538,13 @@
+             .count(),
+         partial_browser_invocations: applications
+             .iter()
+-            .filter(|r| r.status == "partial_observation")
++            .filter(|r| r.status == "partial_observation" && r.package == "org.mozilla.firefox")
+             .count(),
++        partial_settings_observations: applications
++            .iter()
++            .filter(|r| r.status == "partial_observation" && r.package == "com.android.settings")
++            .map(|r| r.settings_observations.len())
++            .sum(),
+         accepted_applications: 0,
+         runtime_qualified: false,
+         production_ready: false,
+@@ -487,6 +556,65 @@
+         meaning: "Live Package Manager/APK observations and actual bounded entry invocation only. All required gates remain pending; neither Main qualification nor whole-application production readiness is granted.",
+         applications,
+     }
++}
++
++fn observe_settings_pages(
++    plan: &RuntimePlan,
++    actual: &ApplicationInspection,
++    client: &mut impl RuntimeClient,
++    fence: &mut RuntimeFence,
++    row: &mut AppDispatch,
++) {
++    for page in &plan.settings_pages {
++        match client.settings(actual, *page) {
++            Err(error) => {
++                row.reason = format!(
++                    "Settings page entry failed; no automatic retry: {}",
++                    error.message
++                );
++                // Even a top-level daemon error may follow a pending-intent
++                // write or an uncertain Android start. A read-only epoch
++                // cannot establish that this UI action scope is settled.
++                fence.transport_failed(&row.reason);
++                return;
++            }
++            Ok(observed) => {
++                let consistent = observed.page == *page
++                    && observed.inspection == *actual
++                    && observed.helper_inspection.epoch == actual.epoch;
++                let completed = observed.completed_partial();
++                let retained = observed.action_scope_retained;
++                let error = observed.failure.clone();
++                let epoch_matches = fence.check_epoch(&observed.inspection.epoch)
++                    && fence.check_epoch(&observed.helper_inspection.epoch);
++                row.settings_observations.push(observed);
++                if !epoch_matches || !consistent {
++                    row.reason = "Settings response identity/page differs; remaining page invocations stopped".into();
++                    if epoch_matches {
++                        // A contradictory mutation response cannot authorize another
++                        // invocation, even if a later read-only epoch would match.
++                        fence.transport_failed(&row.reason);
++                    }
++                    return;
++                }
++                if !completed {
++                    row.reason = format!(
++                        "Settings page remains blocked; pending scope retained={retained}: {}",
++                        error.unwrap_or_else(|| "incomplete task/window/cleanup evidence".into())
++                    );
++                    // A false retained flag cannot manufacture a settled
++                    // action. Every unsuccessful Settings response stops all
++                    // later mutations; no read-only epoch can reauthorize it.
++                    fence.transport_failed(&row.reason);
++                    return;
++                }
++            }
++        }
++    }
++    // This version has no framework-created-task provider. Never turn JSON
++    // observations into UI progress, even if the loop is changed later.
++    row.status = "blocked";
++    row.reason = "Settings framework task-creation authority remains unavailable; all page and release gates are pending".into();
+ }
+ 
+ fn recheck_after_failure(
+@@ -554,6 +682,8 @@
+         runtime_calls: usize,
+         inspections: usize,
+         transport_failure_at: Option<usize>,
++        settings_calls: Vec<SettingsPage>,
++        settings_results: std::collections::VecDeque<Result<SettingsObservation, RuntimeFailure>>,
+     }
+     impl RuntimeClient for Fake {
+         fn observe_runtime(&mut self) -> Result<RuntimeObservation, String> {
+@@ -585,6 +715,16 @@
+                 x.clone(),
+                 "Status: ok\nActivity: org.mozilla.firefox/.HomeActivity".into(),
+             ))
++        }
++        fn settings(
++            &mut self,
++            _: &ApplicationInspection,
++            page: SettingsPage,
++        ) -> Result<SettingsObservation, RuntimeFailure> {
++            self.settings_calls.push(page);
++            self.settings_results.pop_front().unwrap_or_else(|| {
++                Err(RuntimeFailure::application("fixture has no Settings entry"))
++            })
+         }
+     }
+     fn fixture() -> (RuntimePlan, GateRegistry, Fake) {
+@@ -644,6 +784,8 @@
+             runtime_calls: 0,
+             inspections: 0,
+             transport_failure_at: None,
++            settings_calls: Vec::new(),
++            settings_results: std::collections::VecDeque::new(),
+         };
+         let mut applications = Vec::new();
+         for n in 0..42 {
+@@ -699,10 +841,196 @@
+                     url: "https://example.com/".into(),
+                     input_scope: "public_owned_https".into(),
+                 }),
++                settings_pages: Vec::new(),
+             },
+             gates,
+             client,
+         )
++    }
++
++    fn settings_fixture() -> (RuntimePlan, GateRegistry, Fake) {
++        let (mut plan, mut registry, mut client) = fixture();
++        let previous = plan.applications[1].package.clone();
++        let package = "com.android.settings".to_string();
++        let mut identity = client.identities.remove(&previous).unwrap();
++        identity.package = package.clone();
++        client.identities.insert(package.clone(), identity);
++        let mut profile = registry.packages.remove(&previous).unwrap();
++        profile.app = "Settings".into();
++        profile.kind = "system".into();
++        profile.profile = "settings".into();
++        registry.packages.insert(package.clone(), profile);
++        registry.profiles.insert(
++            "settings".into(),
++            GateProfile {
++                checks: [
++                    "settings.pages",
++                    "settings.permissions",
++                    "settings.roundtrip",
++                ]
++                .into_iter()
++                .map(|key| (key.into(), "fixture".into()))
++                .collect(),
++            },
++        );
++        plan.applications[1].package = package;
++        // A Settings uncertainty must stop the later browser mutation too.
++        plan.applications.swap(0, 1);
++        (plan, registry, client)
++    }
++
++    fn synthetic_settings_receipt(actual: &ApplicationInspection) -> SettingsObservation {
++        // Deliberately complete-looking untrusted JSON. These values are not
++        // a held framework-created-task capability and cannot grant progress.
++        serde_json::from_value(serde_json::json!({
++            "page": "system", "inspection": actual, "helper_inspection": actual,
++            "resolved_component": "com.android.settings/.Settings",
++            "launch_output": "Status: ok", "tasks_before": "fixture-before",
++            "tasks_after_launch": "fixture-after",
++            "task_candidate": {"id":42, "component":"com.android.settings/.Settings",
++                "top_activity":"com.android.settings/.Settings", "bounds":[0,0,800,600]},
++            "window": {"focus":{"token":"fixture-token","component":"com.android.settings/.Settings"},
++                "accessibility_window_id":7, "bounds":[0,0,800,600], "visible_nodes":1,
++                "native_json":"{}", "pixel_observation_verified":true},
++            "tasks_before_cleanup":"fixture-before-cleanup", "cleanup_readbacks":["fixture-clean"],
++            "cleanup_confirmed":true, "failure":null, "action_scope_retained":false,
++            "automatic_retry":false, "accepted_gates":9,
++            "runtime_qualified":true, "production_ready":true
++        })).unwrap()
++    }
++
++    #[test]
++    fn omitted_settings_opt_in_preserves_42_rows_and_never_calls_the_page_entry() {
++        let (plan, registry, mut client) = settings_fixture();
++        let json = serde_json::to_value(&plan).unwrap();
++        assert!(json.get("settings_pages").is_none());
++        let decoded: RuntimePlan = serde_json::from_value(json).unwrap();
++        validate(&decoded, &registry, 42).unwrap();
++        let report = dispatch(&decoded, &registry, &mut client);
++        assert_eq!(report.selected_applications, 42);
++        assert_eq!(report.blocked_applications, 1);
++        assert_eq!(report.unsupported_business_flows, 40);
++        assert_eq!(report.partial_browser_invocations, 1);
++        assert_eq!(report.partial_settings_observations, 0);
++        assert!(client.settings_calls.is_empty());
++        assert_eq!(report.accepted_applications, 0);
++    }
++
++    #[test]
++    fn settings_opt_in_requires_selected_user_zero_and_existing_complete_profile() {
++        let (mut plan, mut registry, _) = settings_fixture();
++        plan.settings_pages = vec![SettingsPage::System, SettingsPage::Network];
++        validate(&plan, &registry, 42).unwrap();
++        plan.settings_pages.push(SettingsPage::System);
++        assert!(validate(&plan, &registry, 42).is_err());
++        plan.settings_pages.pop();
++        plan.android_user = 1;
++        assert!(validate(&plan, &registry, 42).is_err());
++        plan.android_user = 0;
++        registry
++            .profiles
++            .get_mut("settings")
++            .unwrap()
++            .checks
++            .remove("settings.roundtrip");
++        assert!(validate(&plan, &registry, 42).is_err());
++        let (mut no_settings, registry, _) = fixture();
++        no_settings.settings_pages.push(SettingsPage::System);
++        assert!(validate(&no_settings, &registry, 42).is_err());
++    }
++
++    #[test]
++    fn settings_entry_needs_runtime_and_matching_complete_installed_source() {
++        for failure in 0..3 {
++            let (mut plan, registry, mut client) = settings_fixture();
++            plan.settings_pages.push(SettingsPage::System);
++            match failure {
++                0 => client.runtime = Err("Android not running".into()),
++                1 => plan.applications[0].expected_input = None,
++                _ => {
++                    client
++                        .identities
++                        .get_mut("com.android.settings")
++                        .unwrap()
++                        .apks[0]
++                        .sha256 = "b".repeat(64)
++                }
++            }
++            let report = dispatch(&plan, &registry, &mut client);
++            assert_eq!(report.selected_applications, 42);
++            assert!(client.settings_calls.is_empty());
++            assert_eq!(report.partial_settings_observations, 0);
++            assert_eq!(report.accepted_applications, 0);
++            if failure == 0 {
++                assert_eq!(report.blocked_applications, 42);
++                assert_eq!(client.inspections, 0);
++                assert_eq!(client.opens, 0);
++            }
++        }
++    }
++
++    #[test]
++    fn settings_entry_error_stops_all_later_mutations_without_read_only_reauthorization() {
++        let (mut plan, registry, mut client) = settings_fixture();
++        plan.settings_pages = vec![SettingsPage::System, SettingsPage::Network];
++        client
++            .settings_results
++            .push_back(Err(RuntimeFailure::application(
++                "created-task authority unavailable",
++            )));
++        let report = dispatch(&plan, &registry, &mut client);
++        assert_eq!(report.blocked_applications, 42);
++        assert_eq!(client.settings_calls, [SettingsPage::System]);
++        assert_eq!(client.inspections, 1);
++        assert_eq!(client.runtime_calls, 1);
++        assert_eq!(client.opens, 0);
++        assert_eq!(report.accepted_applications, 0);
++        assert!(!report.automatic_retry && !report.runtime_qualified && !report.production_ready);
++    }
++
++    #[test]
++    fn complete_looking_settings_json_cannot_grant_partial_or_release_gates() {
++        let (mut plan, registry, mut client) = settings_fixture();
++        plan.settings_pages = vec![SettingsPage::System, SettingsPage::Network];
++        let receipt = synthetic_settings_receipt(&client.identities["com.android.settings"]);
++        assert!(!receipt.completed_partial());
++        client.settings_results.push_back(Ok(receipt));
++        let report = dispatch(&plan, &registry, &mut client);
++        assert_eq!(client.settings_calls, [SettingsPage::System]);
++        assert_eq!(client.opens, 0);
++        assert_eq!(client.runtime_calls, 1);
++        assert_eq!(report.blocked_applications, 42);
++        assert_eq!(report.partial_settings_observations, 0);
++        assert_eq!(report.applications[0].status, "blocked");
++        assert_eq!(report.applications[0].settings_observations.len(), 1);
++        assert_eq!(report.applications[0].accepted_gates, 0);
++        assert_eq!(report.applications[0].pending_gates.len(), 9);
++        assert_eq!(report.accepted_applications, 0);
++        assert!(!report.runtime_qualified && !report.production_ready);
++    }
++
++    #[test]
++    fn retained_or_contradictory_settings_receipts_stop_remaining_mutations() {
++        for mismatch in 0..3 {
++            let (mut plan, registry, mut client) = settings_fixture();
++            plan.settings_pages = vec![SettingsPage::System, SettingsPage::Network];
++            let mut receipt =
++                synthetic_settings_receipt(&client.identities["com.android.settings"]);
++            match mismatch {
++                0 => receipt.action_scope_retained = true,
++                1 => receipt.page = SettingsPage::Display,
++                _ => receipt.helper_inspection.epoch.framework_start_ticks += 1,
++            }
++            client.settings_results.push_back(Ok(receipt));
++            let report = dispatch(&plan, &registry, &mut client);
++            assert_eq!(client.settings_calls, [SettingsPage::System]);
++            assert_eq!(client.opens, 0);
++            assert_eq!(client.runtime_calls, 1);
++            assert_eq!(client.inspections, 1);
++            assert_eq!(report.blocked_applications, 42);
++            assert_eq!(report.partial_settings_observations, 0);
++            assert_eq!(report.accepted_applications, 0);
++        }
+     }
+     #[test]
+     fn all_42_rows_survive_missing_runtime_without_any_invocation() {

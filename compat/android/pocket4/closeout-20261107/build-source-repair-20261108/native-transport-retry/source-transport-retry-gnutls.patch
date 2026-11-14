@@ -1,0 +1,128 @@
+--- a/tools/droidloom-source/src/git_retry.rs
++++ b/tools/droidloom-source/src/git_retry.rs
+@@ -368,9 +368,12 @@
+     if denied.iter().any(|pattern| text.contains(pattern)) {
+         return false;
+     }
+-    text.contains("curl 56 ")
++    let curl_recv = text.contains("curl 56 ")
+         && (text.contains("recv failure: connection timed out")
+-            || text.contains("recv failure: connection reset by peer"))
++            || text.contains("recv failure: connection reset by peer"));
++    let gnutls_recv =
++        text.contains("gnutls recv error (-110): the tls connection was non-properly terminated.");
++    curl_recv || gnutls_recv
+ }
+ 
+ fn unix_ms() -> u128 {
+@@ -473,6 +476,7 @@
+     use std::rc::Rc;
+ 
+     const TRANSIENT: &str = "error: RPC failed; curl 56 Recv failure: Connection timed out\nerror: 9746 bytes of body are still expected\nfetch-pack: unexpected disconnect while reading sideband packet\nfatal: early EOF\nfatal: index-pack failed\nfatal: could not fetch 3a64e7ba5c593b3e17a90700021c82ac26475668 from promisor remote\n";
++    const TRANSIENT_GNUTLS: &str = "fatal: unable to access 'https://android.googlesource.com/platform/packages/services/CrossDeviceSync/': GnuTLS recv error (-110): The TLS connection was non-properly terminated.\n";
+     fn output(code: i32, stderr: &str) -> Output {
+         Output {
+             status: ExitStatus::from_raw(code << 8),
+@@ -484,6 +488,25 @@
+     fn transport_classifier_parameterized() {
+         let cases = [
+             (output(128, TRANSIENT), true),
++            (output(128, TRANSIENT_GNUTLS), true),
++            (output(1, TRANSIENT_GNUTLS), false),
++            (output(0, TRANSIENT_GNUTLS), false),
++            (
++                output(128, &TRANSIENT_GNUTLS.replace("(-110)", "(-54)")),
++                false,
++            ),
++            (output(128, "GnuTLS recv error (-110)"), false),
++            (
++                output(128, "The TLS connection was non-properly terminated."),
++                false,
++            ),
++            (
++                Output {
++                    status: ExitStatus::from_raw(15),
++                    ..output(128, TRANSIENT_GNUTLS)
++                },
++                false,
++            ),
+             (
+                 output(
+                     128,
+@@ -530,8 +553,10 @@
+             "SSL certificate problem",
+             "detected dubious ownership",
+         ] {
+-            let full = format!("{TRANSIENT}{}fatal: {denial}\n", "x".repeat(5000));
+-            assert!(!transient_transport(&output(128, &full)), "{denial}");
++            for diagnostic in [TRANSIENT, TRANSIENT_GNUTLS] {
++                let full = format!("{diagnostic}{}fatal: {denial}\n", "x".repeat(5000));
++                assert!(!transient_transport(&output(128, &full)), "{denial}");
++            }
+         }
+     }
+ 
+@@ -572,11 +597,63 @@
+         assert!(GitTransportRetry::default().journal.is_none());
+         let success = || output(0, "complete success output");
+         let transient = || output(128, TRANSIENT);
++        let gnutls = || output(128, TRANSIENT_GNUTLS);
++        let denied_gnutls = |denial: &str| {
++            output(
++                128,
++                &format!("{TRANSIENT_GNUTLS}{}fatal: {denial}\n", "x".repeat(5000)),
++            )
++        };
+         let signal = || Output {
+             status: ExitStatus::from_raw(15),
+             ..transient()
+         };
+         let scenarios = [
++            (
++                "success_after_gnutls",
++                3,
++                vec![gnutls(), success()],
++                None,
++                2,
++                true,
++                vec![1000],
++            ),
++            (
++                "gnutls_exhausted",
++                3,
++                vec![gnutls(), gnutls(), gnutls()],
++                None,
++                3,
++                false,
++                vec![1000, 3000],
++            ),
++            (
++                "gnutls_with_auth_denial",
++                3,
++                vec![denied_gnutls("Authentication failed")],
++                None,
++                1,
++                false,
++                vec![],
++            ),
++            (
++                "gnutls_with_certificate_denial",
++                3,
++                vec![denied_gnutls("SSL certificate problem")],
++                None,
++                1,
++                false,
++                vec![],
++            ),
++            (
++                "gnutls_with_missing_ref",
++                3,
++                vec![denied_gnutls("couldn't find remote ref pinned")],
++                None,
++                1,
++                false,
++                vec![],
++            ),
+             (
+                 "success_after_transient",
+                 3,

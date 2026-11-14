@@ -40,17 +40,82 @@ jobs:
           mkdir -p "$RUNNER_TEMP/a08"
           python3 support/android/verify_source_integrity.py \
             --out "$RUNNER_TEMP/a08/source-integrity.json"
-      - name: Install actual Java and JNI host build tools
+      - name: Verify current IHG app acceptance source identity
         shell: bash
         run: |
           set -euo pipefail
-          sudo apt-get update
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
-            build-essential openjdk-17-jdk-headless
-          test -x /usr/lib/jvm/java-17-openjdk-amd64/bin/javac
-          test -f /usr/lib/jvm/java-17-openjdk-amd64/include/jni.h
-          printf '%s\n' /usr/lib/jvm/java-17-openjdk-amd64/bin >> "$GITHUB_PATH"
-          printf 'JAVA_HOME=%s\n' /usr/lib/jvm/java-17-openjdk-amd64 >> "$GITHUB_ENV"
+          python3 -I -B compat/android/pocket4/current-app-acceptance/business/test_source.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/current-app-business.log"
+      - name: Install Java, JNI and media host test tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          a08_jdk="${JAVA_HOME_17_X64:-/usr/lib/jvm/java-17-openjdk-amd64}"
+          a08_packages=()
+          a08_jdk_usable() {
+            test -x "$1/bin/javac" && test -x "$1/bin/java" \
+              && test -f "$1/include/jni.h" && test -f "$1/include/linux/jni_md.h" \
+              && [[ "$("$1/bin/javac" -version 2>&1)" == "javac 17."* ]]
+          }
+          if ! a08_jdk_usable "$a08_jdk"; then
+            a08_jdk=/usr/lib/jvm/java-17-openjdk-amd64
+            if ! a08_jdk_usable "$a08_jdk"; then
+              a08_packages+=(openjdk-17-jdk-headless)
+            fi
+          fi
+          if ! command -v cc >/dev/null || ! command -v c++ >/dev/null \
+              || ! command -v make >/dev/null; then
+            a08_packages+=(build-essential)
+          fi
+          if ! test -x /usr/bin/ffmpeg || ! test -x /usr/bin/ffprobe; then
+            a08_packages+=(ffmpeg)
+          fi
+          if (( ${#a08_packages[@]} )); then
+            sudo apt-get update
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+              "${a08_packages[@]}"
+          fi
+          a08_jdk_usable "$a08_jdk"
+          "$a08_jdk/bin/javac" -version
+          "$a08_jdk/bin/java" -version
+          test -x /usr/bin/ffmpeg
+          test -x /usr/bin/ffprobe
+          printf '%s\n' "$a08_jdk/bin" >> "$GITHUB_PATH"
+          printf 'JAVA_HOME=%s\n' "$a08_jdk" >> "$GITHUB_ENV"
+      - name: Verify p4ctx3 capsule sources and compile probe (no fresh VM)
+        shell: bash
+        run: |
+          set -euo pipefail
+          p4ctx3_capsule="$GITHUB_WORKSPACE/compat/android/pocket4/kernel-context-provider-p4ctx3-r1"
+          python3 -I -B - "$p4ctx3_capsule" <<'P4CTX3PIN'
+          import hashlib
+          from pathlib import Path
+          import stat
+          import subprocess
+          import sys
+          inventory = Path(sys.argv[1]) / 'inventory.json'
+          metadata = inventory.lstat()
+          if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
+              raise SystemExit('p4ctx3 inventory must be a single-link regular file')
+          data = inventory.read_bytes()
+          if len(data) != 8570 or hashlib.sha256(data).hexdigest() != 'c6ea1f1cf820deb09ccc1958e7dc74cd4b7e58e0a3c4ddbc652920178bd8b96a':
+              raise SystemExit('p4ctx3 fixed inventory differs')
+          patch = subprocess.run(['patch', '--version'], check=True, capture_output=True, text=True, timeout=10)
+          if not patch.stdout.startswith('GNU patch '):
+              raise SystemExit('p4ctx3 Linux source replay requires GNU patch')
+          print(patch.stdout.splitlines()[0])
+          P4CTX3PIN
+          python3 -I -B "$p4ctx3_capsule/verify.py" --compile-probe \
+            | tee "$RUNNER_TEMP/a08/kernel-context-provider-p4ctx3.json"
+          python3 -I -B - "$RUNNER_TEMP/a08/kernel-context-provider-p4ctx3.json" <<'P4CTX3SCOPE'
+          import json
+          from pathlib import Path
+          import sys
+          result = json.loads(Path(sys.argv[1]).read_bytes())
+          if result.get('passed') is not True or result.get('fresh_VM_runs') != 0 or result.get('production_acceptance') is not False or result.get('Android_started') is not False:
+              raise SystemExit('p4ctx3 CI source replay scope differs')
+          print('p4ctx3 CI: source replay and normal probe compilation; fresh_VM_runs=0; production_acceptance=false')
+          P4CTX3SCOPE
       - name: Run complete host gate and optimized regression
         shell: bash
         run: |
@@ -65,6 +130,1068 @@ jobs:
           python3 -O -m unittest discover \
             -s tests/workloads/android -p 'test_*.py' -v \
             2>&1 | tee "$RUNNER_TEMP/a08/unittest-optimized.log"
+      - name: Verify Native full build memory and host reserve contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/native-full-profile-8gib/tests/test_resource_profile.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/native-full-profile-controls.log"
+      - name: Verify completed Native release and Audio continuation contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/native-stage-release/tests/test_native_release.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/native-stage-release-controls.log"
+          python3 -B -m unittest discover -s compat/android/pocket4/audio-continuation-r1/tests -v \
+            2>&1 | tee "$RUNNER_TEMP/a08/audio-continuation-controls.log"
+      - name: Verify exact source transfers and Linux build ownership
+        shell: bash
+        run: |
+          set -euo pipefail
+          (cd compat/android/pocket4/source-transfer-batches-r1 && python3 -B -m unittest discover -s tests -v) \
+            2>&1 | tee "$RUNNER_TEMP/a08/source-transfer-batches.log"
+          python3 -B compat/android/pocket4/git-transfer-layout-r1/test_git_transfer_layout.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/git-transfer-layout.log"
+          python3 -B - <<'PYOWNED' 2>&1 | tee "$RUNNER_TEMP/a08/linux-build-ownership.log"
+          import importlib.util
+          from pathlib import Path
+          import unittest
+          path = Path('compat/android/pocket4/linux-build-lifecycle-r1/test_linux_build_support.py')
+          spec = importlib.util.spec_from_file_location('owned_build_controls', path)
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromModule(module))
+          if result.testsRun != 9 or result.skipped or not result.wasSuccessful():
+              raise SystemExit('All nine Linux ownership controls must actually execute')
+          PYOWNED
+          python3 -B - <<'PYCOMMAND' 2>&1 | tee "$RUNNER_TEMP/a08/process-command-witness.log"
+          import importlib.util
+          from pathlib import Path
+          import sys
+          import unittest
+          directory = Path('compat/android/pocket4/process-command-witness-r1').resolve()
+          sys.path.insert(0, str(directory))
+          spec = importlib.util.spec_from_file_location('process_command_controls', directory / 'test_process_command_witness.py')
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromModule(module))
+          if result.testsRun != 10 or result.skipped or not result.wasSuccessful():
+              raise SystemExit('All ten process command witness controls must actually execute on Linux')
+          PYCOMMAND
+      - name: Verify Linux host runtime source capsules
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PYHOST' 2>&1 | tee "$RUNNER_TEMP/a08/host-runtime-capsules.log"
+          import hashlib
+          import json
+          from pathlib import Path
+          for name in ('host-gsi-layout', 'host-namespace-ownership'):
+              directory = Path('compat/android/pocket4') / name
+              manifest = json.loads((directory / 'FILES.json').read_bytes())
+              for leaf, expected in manifest['files'].items():
+                  path = directory / leaf
+                  if path.is_symlink() or path.resolve().parent != directory.resolve():
+                      raise SystemExit('Host capsule path is not a direct regular input')
+                  raw = path.read_bytes()
+                  if {'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest()} != expected:
+                      raise SystemExit('Host capsule source pin differs: ' + str(path))
+              print(name + ': exact source capsule pins verified; Android runtime not executed by this step')
+          PYHOST
+      - name: Verify current source and admission corrections
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PYCLOSURE' 2>&1 | tee "$RUNNER_TEMP/a08/current-source-corrections.log"
+          import hashlib
+          import importlib.util
+          import json
+          from pathlib import Path
+          import sys
+          import unittest
+          capsules = ['audio-cts-compilation-budget-r1', 'process-start-observation-r1', 'qpr1-modern-vendor-admission', 'host-guest-directory-umask-r1', 'audio-errorprone-provider-r1']
+          for name in capsules:
+              directory = Path('compat/android/pocket4') / name
+              manifest = json.loads((directory / 'FILES.json').read_bytes())
+              for leaf, expected in manifest.get('files', manifest).items():
+                  path = directory / leaf
+                  if path.is_symlink() or path.resolve().parent != directory.resolve():
+                      raise SystemExit('Source capsule path is not a direct regular file')
+                  raw = path.read_bytes()
+                  if {'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest()} != expected:
+                      raise SystemExit('Source capsule pin differs: ' + str(path))
+          suites = [('audio-cts-compilation-budget-r1', 'test_go_runtime_budget.py', 8),
+                    ('process-start-observation-r1', 'test_start_observation.py', 4),
+                    ('qpr1-modern-vendor-admission', 'test_modern_vendor_guard.py', 9)]
+          for index, (name, leaf, expected) in enumerate(suites):
+              directory = (Path('compat/android/pocket4') / name).resolve()
+              sys.path.insert(0, str(directory))
+              spec = importlib.util.spec_from_file_location('closure_controls_' + str(index), directory / leaf)
+              module = importlib.util.module_from_spec(spec)
+              spec.loader.exec_module(module)
+              result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromModule(module))
+              if result.testsRun != expected or result.skipped or not result.wasSuccessful():
+                  raise SystemExit('All exact source correction controls must execute: ' + name)
+              sys.path.pop(0)
+          print('21 source/admission controls passed; Android runtime is a separate gate')
+          PYCLOSURE
+      - name: Verify Native normal Go budget source and controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PYNATIVE' 2>&1 | tee "$RUNNER_TEMP/a08/native-go-budget-controls.log"
+          import hashlib
+          import importlib.util
+          import json
+          from pathlib import Path, PurePosixPath
+          import stat
+          import unittest
+          directory = Path('compat/android/pocket4/native597-explicit-go-budget-r1').resolve()
+          manifest = json.loads((directory / 'FILES.json').read_bytes())
+          for name, expected in manifest.items():
+              relative = PurePosixPath(name)
+              if relative.is_absolute() or '..' in relative.parts or str(relative) != name:
+                  raise SystemExit('Native source path is not canonical')
+              path = directory / name
+              if path.is_symlink() or not path.resolve().is_relative_to(directory):
+                  raise SystemExit('Native source path escaped its capsule')
+              if not stat.S_ISREG(path.lstat().st_mode) or path.lstat().st_nlink != 1:
+                  raise SystemExit('Native source file type differs')
+              raw = path.read_bytes()
+              if {'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest()} != expected:
+                  raise SystemExit('Native source capsule hash differs: ' + name)
+          spec = importlib.util.spec_from_file_location('native_budget_controls', directory / 'tests/test_go_runtime_budget.py')
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromModule(module))
+          if result.testsRun != 8 or result.skipped or not result.wasSuccessful():
+              raise SystemExit('All eight actual Native metric-consumer controls must execute')
+          print('8 Native metric-consumer controls passed; Android pair and runtime remain separate gates')
+          PYNATIVE
+      - name: Verify Audio recursive source closure and serialized plans
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PYAUDIOSOURCE' 2>&1 | tee "$RUNNER_TEMP/a08/audio-source-plan-controls.log"
+          import hashlib
+          import importlib.util
+          import json
+          from pathlib import Path
+          import stat
+          import sys
+          import unittest
+          capsules = {
+              'audio-cts-sts-recursive-closure-r1': ('ae98fdd2886bdd486341720377483b2a568641fb98b8f2d34dd615e18ba4a8e1', 8),
+              'audio-source-plan-serialization-r1': ('987afa7a4457082e8d0a295f36dd5a7ba35bac19fe9a9dffb1a4842b818945ac', 4),
+          }
+          for name, (digest, count) in capsules.items():
+              directory = Path('compat/android/pocket4', name).resolve()
+              raw = (directory / 'FILES.json').read_bytes()
+              if hashlib.sha256(raw).hexdigest() != digest:
+                  raise SystemExit('Frozen Audio source manifest differs: ' + name)
+              manifest = json.loads(raw)
+              if type(manifest) is not dict or len(manifest) != count:
+                  raise SystemExit('Exact Audio source inventory required: ' + name)
+              for leaf, expected in manifest.items():
+                  path = directory / leaf
+                  if Path(leaf).name != leaf or path.is_symlink() or path.resolve().parent != directory:
+                      raise SystemExit('Audio capsule member escaped: ' + leaf)
+                  info = path.lstat()
+                  if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+                      raise SystemExit('Audio capsule member type differs: ' + leaf)
+                  raw = path.read_bytes()
+                  if {'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest()} != expected:
+                      raise SystemExit('Audio source capsule pin differs: ' + leaf)
+          directory = Path('compat/android/pocket4/audio-source-plan-serialization-r1').resolve()
+          sys.path.insert(0, str(directory))
+          spec = importlib.util.spec_from_file_location('audio_source_plan_controls', directory / 'test_source_plan_guard.py')
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromModule(module))
+          if result.testsRun != 12 or result.skipped or not result.wasSuccessful():
+              raise SystemExit('All twelve source-plan serialization controls must execute')
+          print('12 Audio source-plan controls passed; complete APEX and runtime remain separate gates')
+          PYAUDIOSOURCE
+      - name: Verify retained Binder credentials, Native source and Audio custody
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PYCURRENTCAPSULES' 2>&1 | tee "$RUNNER_TEMP/a08/current-source-capsules.log"
+          import hashlib
+          import importlib.util
+          import json
+          from pathlib import Path, PurePosixPath
+          import stat
+          import sys
+          import unittest
+          capsules = {'native597-original-llvm-plugin-cones-r1': ('75bde519a097f50940576b13b8c5bafb4fe4c1fb54d44cf1f168dd730ab5da7c', 12), 'audio-canonical-custody-r1': ('42ead27bc89d5d866eddfd951e0dbfb91af1ff1c4e2843946fe4eee34925f1d5', 3), 'apparmor-binder-retained-credential-r1': ('243e3355ecfa6f96af8839ffa10854c796a3b22e03a5d924c778fb47aa83f4b9', 6), 'production-identity-reservation-r1': ('eee9cec9ecbd9b71cdda9df13bb0446124001a5826932709561126896881ffea', 3), 'native600-original-provider-closure-r1': ('d40f8629af9741d8bc4dc09bb89389fe2b1c7348e3ea02d72b01dca1908c6cc6', 18), 'audio425-original-provider-closure-r1': ('257bc3f071fd09c6b908ef80fdf0fe50617259c33b9083b0d66da6e270a6a450', 23), 'native600-rkpd-apex-r1': ('f33f622023fb328ea88c79a2fb29f7f7a9c1c3427af0a31b53bbdfc8c9fc4889', 9), 'native600-bcc-compat-r1': ('aadd86a9ec1528cdae294926ca86946d3337096ac1e27e476fda95e9cf1afc19', 4), 'audio430-ondeviceintelligence-api-r1': ('a61d8835adbf08d2d63847a428a8f928c0481f8ee1458d0a488308111153ae37', 5), 'namespace-lifetime-r5-review-r1': ('f4e068208cf7e2f99e19beca10b54fd1bef466c5b2e2949dbbd7a67857ccd4bd', 8), 'native601-dexdeps-pyee-r1': ('35c3d845f07e56a1149e761cc44ee205827c32141d081570ae0f3b71caff36f4', 5), 'audio425-connectivity-projection-preimage-r1': ('3cbd3fa6665daec40aae21b6c225ae99df8aa5f02450bf656a795fec03f72397', 9), 'audio430-pasit-original-provider-closure-r1': ('147bbe6cb367a1272b8c1528a64fc1b675c313a7d38d5b4060bb42befe2a7297', 25), 'audio430-original-released-api-inputs-r1': ('f8c6a07d08c56d2793b8ed2a6c220dbcfbf03c48b3670a20fd4b81fb3307e8e1', 11), 'native601-original-provider-chain-r1': ('2650d520dec6680b88ab406d3f21b19d2b908ce66de076640e0bd1c01ca539a7', 23), 'continuation-20261109-2840': ('0b462d7f0ba3af9e02f82dde2fe2a8f5f1e97df9c52a880ca8627ac9c062fbee', 733), 'audio430-released-sdk-source-tests-r1': ('5eecc25bf858a9bb7c9edcfa96b649939613d328164fe293ebfeaa1e51143808', 23), 'production-cell-foundations-r1': ('a802fc59cf19128b128042cc5d428262a18144b8b596b8e1bf317ec60ce500b5', 13), 'continuation-20261109-e3df': ('23e4013aba6870a4826ca9c4beb498051123ffbcb02d43a68bfc88795f75b73a', 75)}
+          for name, (digest, count) in capsules.items():
+              directory = Path('compat/android/pocket4', name).resolve(strict=True)
+              raw = (directory / 'FILES.json').read_bytes()
+              if hashlib.sha256(raw).hexdigest() != digest:
+                  raise SystemExit('Frozen source manifest differs: ' + name)
+              manifest = json.loads(raw)
+              members = manifest.get('files', manifest)
+              if type(members) is not dict or len(members) != count:
+                  raise SystemExit('Exact source inventory required: ' + name)
+              actual = set()
+              for path in directory.rglob('*'):
+                  info = path.lstat()
+                  if stat.S_ISLNK(info.st_mode):
+                      raise SystemExit('Symlink in source capsule: ' + str(path))
+                  if stat.S_ISDIR(info.st_mode):
+                      continue
+                  if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+                      raise SystemExit('Source member type differs: ' + str(path))
+                  actual.add(path.relative_to(directory).as_posix())
+              if actual != set(members) | {'FILES.json'}:
+                  raise SystemExit('Unexpected source capsule member: ' + name)
+              for relative, expected in members.items():
+                  rel = PurePosixPath(relative)
+                  path = directory / relative
+                  if rel.is_absolute() or '..' in rel.parts or str(rel) != relative or not path.resolve(strict=True).is_relative_to(directory):
+                      raise SystemExit('Source member escaped: ' + relative)
+                  data = path.read_bytes()
+                  if {'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()} != expected:
+                      raise SystemExit('Source member pin differs: ' + relative)
+          directory = Path('compat/android/pocket4/audio-canonical-custody-r1').resolve()
+          sys.path.insert(0, str(directory))
+          spec = importlib.util.spec_from_file_location('audio_canonical_custody_controls', directory / 'test_canonical_audio_import.py')
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromModule(module))
+          if result.testsRun != 19 or result.skipped or not result.wasSuccessful():
+              raise SystemExit('All nineteen canonical Audio custody controls must execute')
+          print(str(len(capsules)) + ' exact source capsules and 19 custody controls passed; Android runtime remains a separate gate')
+          PYCURRENTCAPSULES
+      - name: Verify supervisor inputs, Native observations and cleanup visibility
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PYREVIEW' 2>&1 | tee "$RUNNER_TEMP/a08/independent-review-controls.log"
+          import hashlib
+          import importlib.util
+          import json
+          from pathlib import Path, PurePosixPath
+          import stat
+          import subprocess
+          import sys
+          capsules = [('production-identity-input-validation-r1', 'FILES.json', '473a68243cb0641c1c96d4b34de2f6a29936826f12a29890bbc6a903ef366853', 8), ('native600-allocation-observation-r1', 'manifest.json', 'e0b80c1c3baa9726e1f8739fc46f85cf944dff7a458b1e5c9703b4707b2a9118', 14), ('cleanup-current-inputs-r1', 'FILES.json', 'ee1edc476746ae9b42b723b942358fc123ca670b28485e8200cfb864b508d297', 19), ('production-userns-audit-r1', 'FILES.json', 'a1deacfd0bb40fec96a22b24391abb29b7eb97dc2a76799a181c679b27e55720', 8), ('private-control-driver-guards-r1', 'FILES.json', '1cc941b09d767383099f4a3aaedf0ad7351d8d28adf9447b445acae6ad7ecf88', 6), ('official-app-source-reconciliation-r1', 'FILES.json', 'd4614c991e32f299f09343e45964e4f5b2d2ab516e448fcadad5143b34bf4d02', 2), ('native600-tradefed-provider-closure-r1', 'FILES.json', 'deb7afe31bbdddd7bc0f48ec6b89750b230ea9845a0e143389e45dc20d12487f', 7), ('production-namespace-broker-r2-review-r1', 'manifest.json', 'db582edf37491bf5b64284339c3e2b2bb3ec3418f69af59259008967ccd4f4eb', 22)]
+          for name, manifest_leaf, expected_sha, expected_count in capsules:
+              directory = Path('compat/android/pocket4', name).resolve(strict=True)
+              raw = (directory / manifest_leaf).read_bytes()
+              if hashlib.sha256(raw).hexdigest() != expected_sha:
+                  raise SystemExit('Frozen review manifest differs: ' + name)
+              manifest = json.loads(raw)
+              rows = manifest['files']
+              members = ({row['path']: {'bytes': row['bytes'], 'sha256': row['sha256']} for row in rows}
+                         if type(rows) is list else rows)
+              if type(members) is not dict or len(rows) != len(members) or len(members) != expected_count:
+                  raise SystemExit('Exact review source inventory required: ' + name)
+              actual = set()
+              for path in directory.rglob('*'):
+                  info = path.lstat()
+                  if stat.S_ISDIR(info.st_mode):
+                      continue
+                  if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+                      raise SystemExit('Invalid review member type: ' + str(path))
+                  actual.add(path.relative_to(directory).as_posix())
+              if actual != set(members) | {manifest_leaf}:
+                  raise SystemExit('Unexpected review source member: ' + name)
+              for leaf, expected in members.items():
+                  relative = PurePosixPath(leaf)
+                  path = directory / leaf
+                  if relative.is_absolute() or '..' in relative.parts or str(relative) != leaf or not path.resolve(strict=True).is_relative_to(directory):
+                      raise SystemExit('Review source escaped its capsule: ' + leaf)
+                  data = path.read_bytes()
+                  if {'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()} != expected:
+                      raise SystemExit('Review source pin differs: ' + leaf)
+              print(name + ': exact source capsule verified', flush=True)
+
+          def run(arguments, *, input=None):
+              subprocess.run(arguments, input=input, text=True, check=True, timeout=120)
+
+          base = Path('compat/android/pocket4').resolve()
+          run([sys.executable, '-I', '-B', str(base / 'production-identity-input-validation-r1/verify_source_chain.py'), '--repo-root', '.'])
+          run([sys.executable, '-I', '-B', str(base / 'cleanup-current-inputs-r1/verify_reference_patch.py')])
+          run([sys.executable, '-I', '-B', '-O', str(base / 'cleanup-current-inputs-r1/verify_reference_patch.py')])
+          for optimization in ([], ['-O']):
+              run([sys.executable, '-I', '-B', *optimization, str(base / 'native600-allocation-observation-r1/verify.py')])
+              run([sys.executable, '-I', '-B', *optimization, str(base / 'native600-tradefed-provider-closure-r1/verify_source_delta.py'), '--repo-root', '.'])
+
+          controls = """
+          import importlib.util
+          import json
+          from pathlib import Path
+          import sys
+          import unittest
+          directory = Path(sys.argv[1]).resolve()
+          names = json.loads(sys.argv[2])
+          expected = int(sys.argv[3])
+          sys.path.insert(0, str(directory))
+          suite = unittest.TestSuite()
+          for index, name in enumerate(names):
+              spec = importlib.util.spec_from_file_location('review_control_' + str(index), directory / name)
+              module = importlib.util.module_from_spec(spec)
+              sys.modules[spec.name] = module
+              spec.loader.exec_module(module)
+              suite.addTests(unittest.defaultTestLoader.loadTestsFromModule(module))
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          if result.testsRun != expected or result.skipped or not result.wasSuccessful():
+              raise SystemExit('Every exact review control must execute successfully')
+          """
+          for optimization in ([], ['-O']):
+              run([sys.executable, '-I', '-B', *optimization, '-', str(base / 'cleanup-current-inputs-r1'),
+                   json.dumps(['test_verify_current_inputs.py', 'test_reference_observer.py', 'test_empty_task_views.py']), '83'], input=controls)
+          run([sys.executable, '-I', '-B', '-O', '-', str(base / 'native600-allocation-observation-r1'),
+               json.dumps(['test_verifier_smoke.py']), '2'], input=controls)
+          print('Source replay and isolated controls passed; this step does not run Rust, Android, or application acceptance')
+          PYREVIEW
+      - name: Verify latest Native and Audio producer source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/native601-original-provider-chain-r1/verify_patch_series.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/native601-source-replay.log"
+          python3 -I -B - <<'PYLATESTSOURCE' 2>&1 | tee "$RUNNER_TEMP/a08/latest-audio-source-controls.log"
+          from pathlib import Path
+          import subprocess
+          import sys
+          controls = """
+          import importlib.util
+          from pathlib import Path
+          import sys
+          import unittest
+          directory = Path(sys.argv[1]).resolve(strict=True)
+          sys.path.insert(0, str(directory))
+          spec = importlib.util.spec_from_file_location('latest_audio_source_controls', directory / sys.argv[2])
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromModule(module))
+          if result.testsRun != 7 or result.skipped or not result.wasSuccessful():
+              raise SystemExit('All seven source controls must execute without skips')
+          """
+          for capsule, leaf in (
+              ('audio430-pasit-original-provider-closure-r1', 'test_recipe_epoch_bindings.py'),
+              ('audio430-original-released-api-inputs-r1', 'test_source_role_pin.py'),
+          ):
+              directory = Path('compat/android/pocket4', capsule).resolve(strict=True)
+              subprocess.run([sys.executable, '-I', '-B', '-', str(directory), leaf],
+                             input=controls, text=True, check=True, timeout=60)
+          print('14 Audio source controls passed; full artifacts and Android runtime remain separate gates')
+          PYLATESTSOURCE
+      - name: Verify Native600 RKPD source consumer
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PYRKPD600' 2>&1 | tee "$RUNNER_TEMP/a08/native600-rkpd-controls.log"
+          from pathlib import Path
+          import sys
+          import unittest
+          directory = Path('compat/android/pocket4/native600-rkpd-apex-r1/controls').resolve()
+          sys.path.insert(0, str(directory))
+          suite = unittest.defaultTestLoader.discover(str(directory), pattern='test_*.py')
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          if result.testsRun != 12 or result.skipped or not result.wasSuccessful():
+              raise SystemExit('All twelve current RKPD source controls must execute')
+          print('12 RKPD source controls passed; complete artifacts and runtime remain unqualified')
+          PYRKPD600
+      - name: Verify Native600 complete build ownership controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PYNATIVE600' 2>&1 | tee "$RUNNER_TEMP/a08/native600-controls.log"
+          from pathlib import Path
+          import sys
+          import unittest
+          directory = Path('compat/android/pocket4/native600-original-provider-closure-r1/controls').resolve()
+          sys.path.insert(0, str(directory))
+          suite = unittest.defaultTestLoader.discover(str(directory), pattern='test_*.py')
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          if result.testsRun != 67 or result.skipped or not result.wasSuccessful():
+              raise SystemExit('All 67 Native600 Linux controls must execute')
+          print('67 Native600 source controls passed; complete artifacts and runtime remain unqualified')
+          PYNATIVE600
+      - name: Verify Audio425 complete allocation controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/audio425-original-provider-closure-r1/allocation-observer/run_portable_tests.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/audio425-allocation-controls.log"
+          python3 -I -B - "$RUNNER_TEMP/a08/audio425-allocation-controls.log" <<'PYAUDIO425'
+          import json
+          from pathlib import Path
+          import sys
+          records = [json.loads(line) for line in Path(sys.argv[1]).read_text().splitlines() if line.startswith('{')]
+          if len(records) != 1:
+              raise SystemExit('One complete Audio allocation result is required')
+          report = records[0]
+          if not report.get('supported') or report.get('run') != 17 or report.get('passed') != 17 or report.get('skipped') != 0 or report.get('failures') != 0 or report.get('errors') != 0:
+              raise SystemExit('All 17 Audio425 Linux controls must execute')
+          print('17 Audio allocation controls passed; complete APEX and runtime remain unqualified')
+          PYAUDIO425
+      - name: Verify actual cleanup references in private Linux namespaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          fixture_base="$RUNNER_TEMP/a08/cleanup-alias-fixtures"
+          mkdir "$fixture_base"
+          sudo -n env NAMESPACE_FIXTURE_DIR="$fixture_base" /usr/bin/python3 -I -B \
+            compat/android/pocket4/cleanup-current-inputs-r1/verify_isolated_alias_views.py \
+            compat/android/pocket4/cleanup-current-inputs-r1/reference_observer.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/cleanup-alias-normal.json"
+          sudo -n env NAMESPACE_FIXTURE_DIR="$fixture_base" /usr/bin/python3 -I -B -O \
+            compat/android/pocket4/cleanup-current-inputs-r1/verify_isolated_alias_views.py \
+            compat/android/pocket4/cleanup-current-inputs-r1/reference_observer.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/cleanup-alias-optimized.json"
+          python3 -I -B - "$RUNNER_TEMP/a08" <<'PYALIASES'
+          import hashlib
+          import json
+          from pathlib import Path
+          import sys
+          source = Path('compat/android/pocket4/cleanup-current-inputs-r1/reference_observer.py').read_bytes()
+          for mode, optimized in (('normal', 0), ('optimized', 1)):
+              report = json.loads((Path(sys.argv[1]) / ('cleanup-alias-' + mode + '.json')).read_bytes())
+              expected = {'schema': 'pocket4-isolated-alias-controls-v1', 'status': 'PASS',
+                          'controls': 20, 'optimized': optimized, 'outer_exit_code': 0,
+                          'outer_reaped': True, 'pid1_exit_code': 0, 'pid1_reaped_by_outer': True,
+                          'host_namespace_unchanged': True, 'host_mountinfo_unchanged': True,
+                          'private_pid_namespace': True, 'private_mount_propagation': True,
+                          'all_fixture_paths_retired_after_namespace_exit': True,
+                          'deletion_authorized': False, 'source_sha256': hashlib.sha256(source).hexdigest()}
+              for key, value in expected.items():
+                  if type(report.get(key)) is not type(value) or report[key] != value:
+                      raise SystemExit('Actual private namespace control failed: ' + mode + ':' + key)
+              if type(report.get('rows')) is not list or len(report['rows']) != 20:
+                  raise SystemExit('Exact private namespace control inventory required')
+          print('20 private namespace controls passed in both modes; no host cleanup or Android acceptance granted')
+          PYALIASES
+          rmdir "$fixture_base"
+      - name: Verify existing namespace audit without production admission
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal
+          CARGO_TARGET_DIR="$RUNNER_TEMP/a08-userns-audit-target" cargo +1.93.0 test \
+            --manifest-path compat/android/pocket4/production-userns-audit-r1/Cargo.toml \
+            --locked -j 1 -- --test-threads=1 \
+            2>&1 | tee "$RUNNER_TEMP/a08/userns-audit-controls.log"
+          python3 -I -B - "$RUNNER_TEMP/a08/userns-audit-controls.log" <<'PYAUDITGUARD'
+          from pathlib import Path
+          import sys
+          text = Path(sys.argv[1]).read_text()
+          marker = 'test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out;'
+          if text.count(marker) != 1:
+              raise SystemExit('All 11 namespace audit controls must execute successfully')
+          print('11 namespace audit controls passed; inactive coverage and production admission remain separate')
+          PYAUDITGUARD
+      - name: Verify private control qualification in both Python modes
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo -n /usr/bin/python3 -I -B \
+            compat/android/pocket4/private-control-driver-guards-r1/test_private_control_driver_guards.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/private-driver-normal.log"
+          sudo -n /usr/bin/python3 -I -B -O \
+            compat/android/pocket4/private-control-driver-guards-r1/test_private_control_driver_guards.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/private-driver-optimized.log"
+          python3 -I -B - "$RUNNER_TEMP/a08" <<'PYDRIVERGUARD'
+          import json
+          from pathlib import Path
+          import sys
+          for mode, optimization in (('normal', 0), ('optimized', 1)):
+              text = (Path(sys.argv[1]) / ('private-driver-' + mode + '.log')).read_text()
+              rows = [json.loads(line) for line in text.splitlines() if line.startswith('{')]
+              if len(rows) != 1:
+                  raise SystemExit('One complete private driver fixture report required')
+              expected = {'tests_run': 33, 'failures': 0, 'errors': 0, 'optimization': optimization,
+                          'fixture_only': True, 'privileged_control_executed': False,
+                          'production_admission': False, 'android_actions': 0,
+                          'nonroot_stat_is_synthetic': True,
+                          'original_optimized_false_qualification_fixtures': 5}
+              for key, value in expected.items():
+                  if type(rows[0].get(key)) is not type(value) or rows[0][key] != value:
+                      raise SystemExit('Private driver fixture result differs: ' + mode + ':' + key)
+          print('33 offline verifier controls passed in each mode; no actual private syscall control was executed')
+          PYDRIVERGUARD
+      - name: Verify Audio compiler and Ninja evidence guards
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PYAUDIO' 2>&1 | tee "$RUNNER_TEMP/a08/audio-ninja-evidence.log"
+          import hashlib
+          import importlib.util
+          import json
+          from pathlib import Path
+          import sys
+          import unittest
+          directory = Path('compat/android/pocket4/audio-ninja-evidence-r1').resolve()
+          manifest = json.loads((directory / 'FILES.json').read_bytes())
+          for name, expected in manifest['files'].items():
+              raw = (directory / name).read_bytes()
+              if {'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest()} != expected:
+                  raise SystemExit('Audio evidence source pin differs: ' + name)
+          sys.path.insert(0, str(directory))
+          spec = importlib.util.spec_from_file_location('audio_ninja_controls', directory / 'test_ninja_audio_proof.py')
+          module = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(module)
+          result = unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromModule(module))
+          if result.testsRun != 12 or result.skipped or not result.wasSuccessful():
+              raise SystemExit('All twelve Audio compiler evidence controls must execute')
+          PYAUDIO
+      - name: Preserve the qualified Sensor candidate during composition
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/stage-existing-sensor/tests/test_existing_sensor.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/existing-sensor-controls.log"
+      - name: Exercise owned Camera media through actual Linux descriptors
+        shell: bash
+        run: |
+          set -euo pipefail
+          /usr/bin/python3 -I -B compat/android/pocket4/camera-video-media/tests/test_camera_video_decode.py \
+            --report "$RUNNER_TEMP/a08/camera-video-controls.json"
+      - name: Exercise current Camera r4 decoder through actual Linux descriptors
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e "$RUNNER_TEMP/a08/camera-r4-decoder-controls.json"
+          /usr/bin/python3 -I -B compat/android/pocket4/camera-video-r4/tests/test_camera_r4_decode.py \
+            --report "$RUNNER_TEMP/a08/camera-r4-decoder-controls.json"
+          /usr/bin/python3 -I -B - "$RUNNER_TEMP/a08/camera-r4-decoder-controls.json" <<'PYGATE'
+          import json
+          import sys
+          from pathlib import Path
+          report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+          if report.get("schema") != "pocket4-camera-r4-decoder-component-controls-v1":
+              raise SystemExit("Unexpected Camera r4 decoder report schema")
+          for key, expected in (("tests_run", 11), ("failures", 0), ("errors", 0), ("skipped", 0)):
+              if type(report.get(key)) is not int or report[key] != expected:
+                  raise SystemExit("Camera r4 decoder report count mismatch: " + key)
+          if report.get("passed") is not True or report.get("failed_tests") != []:
+              raise SystemExit("Camera r4 decoder controls did not all pass")
+          print(json.dumps({"Camera_r4_decoder_tests": 11, "failures": 0, "errors": 0, "skipped": 0,
+                            "runtime_qualified": False}, sort_keys=True))
+          PYGATE
+      - name: Exercise the single current Camera preparation and state sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e "$RUNNER_TEMP/a08/camera-current-source-controls.json"
+          sudo -n /usr/bin/python3 -I -B compat/android/pocket4/closeout-20261107/continuation/camera_video_current/tests/run_current_source_controls.py \
+            --report "$RUNNER_TEMP/a08/camera-current-source-controls.json"
+          /usr/bin/python3 -I -B - "$RUNNER_TEMP/a08/camera-current-source-controls.json" <<'PYCURRENT'
+          import json
+          import sys
+          from pathlib import Path
+          report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+          if report.get("schema") != "pocket4-camera-current-source-controls-v1":
+              raise SystemExit("Unexpected current Camera source report schema")
+          if report.get("inventory_sha256") != "12c7591d2491d346cda679cd1f314cba375f54e6bab7809e6ab7352c4ec18181":
+              raise SystemExit("Current Camera source inventory changed")
+          for key, expected in (("tests_run", 59), ("expected_tests", 59), ("uid", 0), ("euid", 0)):
+              if type(report.get(key)) is not int or report[key] != expected:
+                  raise SystemExit("Current Camera source count or construction identity mismatch: " + key)
+          expected_suites = [("preparation", 11), ("display_contract", 18), ("state_public_api", 9), ("guest_credentials", 21)]
+          suites = report.get("suites")
+          if type(suites) is not list or len(suites) != len(expected_suites):
+              raise SystemExit("Current Camera source suite inventory changed")
+          for row, (family, count) in zip(suites, expected_suites):
+              if type(row) is not dict or row.get("family") != family:
+                  raise SystemExit("Current Camera source suite order changed")
+              for key, expected in (("expected", count), ("tests_run", count), ("failures", 0), ("errors", 0), ("skipped", 0)):
+                  if type(row.get(key)) is not int or row[key] != expected:
+                      raise SystemExit("Current Camera source suite did not all pass: " + family + ":" + key)
+          if report.get("passed") is not True or report.get("source_bytes_unchanged") is not True:
+              raise SystemExit("Current Camera source controls did not preserve their inputs")
+          before = report.get("source_and_control_inputs_before")
+          if type(before) is not list or len(before) != 42 or before != report.get("source_and_control_inputs_after"):
+              raise SystemExit("Current Camera source input inventory changed")
+          for key in ("prior_host_qualification_transferred", "real_UID_1000_decoder_qualified", "real_display_lease_qualified", "runtime_qualified", "whole_app_business_accepted"):
+              if report.get(key) is not False:
+                  raise SystemExit("Source controls cannot grant host or device qualification: " + key)
+          for key in ("Main_actions", "Android_UI_actions", "physical_audio_stream_actions"):
+              if type(report.get(key)) is not int or report[key] != 0:
+                  raise SystemExit("Unexpected device or Main action: " + key)
+          print(json.dumps({"Camera_current_source_tests": 59, "passed": True,
+                            "runtime_qualified": False, "historical_host_qualification_transferred": False}, sort_keys=True))
+          PYCURRENT
+      - name: Verify continuation inputs and literal defaults regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule=compat/android/pocket4/continuation-20261109-be1746a
+          python3 -I -B - "$capsule" <<'PYCONTINUATIONPINS'
+          import hashlib
+          import json
+          from pathlib import Path, PurePosixPath
+          import sys
+          root = Path(sys.argv[1])
+          raw = (root / 'FILES.json').read_bytes()
+          if hashlib.sha256(raw).hexdigest() != '822fe55bae324b1649bb9e1f87d32f8ec6fd55d51d92e1b37a650c80a22c3a7c':
+              raise SystemExit('Continuation inventory pin differs')
+          manifest = json.loads(raw)
+          for row in manifest['files']:
+              relative = PurePosixPath(row['path'])
+              if relative.is_absolute() or '..' in relative.parts:
+                  raise SystemExit('Invalid inventory path')
+              data = (root / row['path']).read_bytes()
+              if len(data) != row['bytes'] or hashlib.sha256(data).hexdigest() != row['sha256']:
+                  raise SystemExit('Continuation member differs: ' + row['path'])
+          PYCONTINUATIONPINS
+          python3 -I -B "$capsule/verify.py" --out "$RUNNER_TEMP/a08/continuation-inputs.json"
+          work="$RUNNER_TEMP/a08-continuation-controls"
+          mkdir "$work"
+          trap 'rm -f "$work/defaults-tests" "$work/defaults-cli" "$work/owner-lifecycle-verify"' EXIT
+          rustup run 1.93.0 rustc --edition=2024 --test -C codegen-units=1 \
+            "$capsule/audio/src/bin/droidloom-blueprint-defaults.rs" -o "$work/defaults-tests"
+          "$work/defaults-tests" --test-threads=1 2>&1 | tee "$RUNNER_TEMP/a08/continuation-audio-tests.log"
+          rustup run 1.93.0 rustc --edition=2024 -C codegen-units=1 \
+            "$capsule/audio/src/bin/droidloom-blueprint-defaults.rs" -o "$work/defaults-cli"
+          python3 -I -B - "$capsule" "$work" "$RUNNER_TEMP/a08" <<'PYCONTINUATIONCLI'
+          import json
+          from pathlib import Path
+          import subprocess
+          import sys
+          root, work, evidence = map(Path, sys.argv[1:])
+          marker = 'test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out;'
+          if (evidence / 'continuation-audio-tests.log').read_text().count(marker) != 1:
+              raise SystemExit('All seven literal defaults controls must execute')
+          fixture = root / 'audio/tests/fixtures/blueprint-defaults'
+          cases = [('missing', ['r9-pasit-consumer.bp'], 2, 1),
+                   ('present', ['r9-pasit-consumer.bp', 'r9-pasit-provider.bp'], 0, 0)]
+          reports = []
+          for name, inputs, expected_code, missing_count in cases:
+              listing = work / (name + '.list')
+              listing.write_text('\n'.join(inputs) + '\n')
+              result = subprocess.run([str(work / 'defaults-cli'), str(fixture), str(listing)],
+                                      text=True, capture_output=True, timeout=15, check=False)
+              if result.returncode != expected_code or result.stderr:
+                  raise SystemExit('Literal defaults CLI failed: ' + name)
+              report = json.loads(result.stdout)
+              missing = report.get('missing_default_candidates')
+              if report.get('graph_qualified') is not False or report.get('unsupported') != []:
+                  raise SystemExit('CLI overstated coverage or could not parse the exact fixtures')
+              if len(missing) != missing_count:
+                  raise SystemExit('Literal defaults candidate count differs: ' + name)
+              if missing_count and (missing[0]['module'], missing[0]['defaults']) != ('DesktopTestLibTestsMobly', 'PASIT-defaults'):
+                  raise SystemExit('The actual r9 missing edge was not recovered')
+              reports.append({'case': name, 'returncode': result.returncode, 'report': report})
+          (evidence / 'continuation-audio-cli.json').write_text(json.dumps(reports, indent=2) + '\n')
+          print('7 Rust controls and 2 real CLI cases passed; Soong graph, artifacts and runtime remain unqualified')
+          PYCONTINUATIONCLI
+          rustup run 1.93.0 rustc --edition=2024 -C codegen-units=1 \
+            "$capsule/owner-lifecycle/verify-source.rs" -o "$work/owner-lifecycle-verify"
+          "$work/owner-lifecycle-verify" "$capsule/owner-lifecycle" check-before \
+            "$capsule/owner-lifecycle/preimages" | tee "$RUNNER_TEMP/a08/owner-lifecycle-before.json"
+          "$work/owner-lifecycle-verify" "$capsule/owner-lifecycle" replay \
+            "$capsule/owner-lifecycle/preimages" "$work/owner-lifecycle-replay" \
+            | tee "$RUNNER_TEMP/a08/owner-lifecycle-replay.json"
+          "$work/owner-lifecycle-verify" "$capsule/owner-lifecycle" check-after \
+            "$work/owner-lifecycle-replay" | tee "$RUNNER_TEMP/a08/owner-lifecycle-after.json"
+          python3 -I -B "$capsule/audio/replay-api-inputs.py" \
+            --capsule "$capsule/audio/api-inputs" --output "$work/audio-api-replay" \
+            --report "$RUNNER_TEMP/a08/audio-api-replay.json"
+      - name: Verify NSS retries, proc access and application evidence coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule=compat/android/pocket4/continuation-20261109-2840
+          work="$RUNNER_TEMP/a08-2840-controls"
+          mkdir "$work"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/nss/verify-source.rs" -o "$work/nss-replay"
+          "$work/nss-replay" "$capsule/nss" replay \
+            "$capsule/nss/preimage" "$work/nss-source" \
+            | tee "$RUNNER_TEMP/a08/2840-nss-source-replay.json"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/processfs/verify-source.rs" -o "$work/proc-ns-replay"
+          "$work/proc-ns-replay" "$capsule/processfs" replay \
+            "$capsule/processfs/preimage" "$work/proc-ns-source" \
+            | tee "$RUNNER_TEMP/a08/2840-proc-ns-source-replay.json"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/processfs/proc_ns_access_probe.rs" -o "$work/proc-ns-access"
+          timeout --kill-after=2s 10s "$work/proc-ns-access" \
+            | tee "$RUNNER_TEMP/a08/2840-proc-ns-access.json"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/audio/normal-source-update/verify-source.rs" -o "$work/audio-recovery-replay"
+          "$work/audio-recovery-replay" "$capsule/audio/normal-source-update" replay \
+            "$capsule/audio/normal-source-update/preimage" "$work/audio-recovery-source" \
+            | tee "$RUNNER_TEMP/a08/2840-audio-recovery-source-replay.json"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/native/platform-tools/verify-source.rs" -o "$work/native-platform-replay"
+          "$work/native-platform-replay" "$capsule/native/platform-tools" replay \
+            "$capsule/native/platform-tools/preimage" "$work/native-platform-source" \
+            | tee "$RUNNER_TEMP/a08/2840-native-platform-source-replay.json"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/binder/host-smoke.rs" -o "$work/binder-self-check"
+          "$work/binder-self-check" --self-check \
+            | tee "$RUNNER_TEMP/a08/2840-binder-self-check.json"
+          git apply --numstat "$capsule/audio/fix.patch" \
+            | tee "$RUNNER_TEMP/a08/2840-audio-patch-files.txt"
+          CARGO_TARGET_DIR="$work/app-target" rustup run 1.93.0 cargo test --locked \
+            --manifest-path "$capsule/apps/harness/Cargo.toml" -j 1 -- --test-threads=1 \
+            2>&1 | tee "$RUNNER_TEMP/a08/2840-app-release-tests.log"
+          CARGO_TARGET_DIR="$work/app-runtime-target" rustup run 1.93.0 cargo test --locked \
+            --manifest-path "$capsule/apps-runtime-fence/harness/Cargo.toml" -j 1 --lib -- --test-threads=1 \
+            2>&1 | tee "$RUNNER_TEMP/a08/2840-app-runtime-tests.log"
+          python3 -I -B - "$RUNNER_TEMP/a08" <<'PY2840'
+          import json
+          import os
+          from pathlib import Path
+          import sys
+          evidence = Path(sys.argv[1])
+          expected = 'test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out;'
+          if (evidence / '2840-app-release-tests.log').read_text().count(expected) != 1:
+              raise SystemExit('All ten application evidence controls must execute')
+          expected_runtime = 'test result: ok. 29 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out;'
+          if (evidence / '2840-app-runtime-tests.log').read_text().count(expected_runtime) != 1:
+              raise SystemExit('All 29 same-source application generation controls must execute; two privileged controls stay explicit')
+          binder = json.loads((evidence / '2840-binder-self-check.json').read_text())
+          if binder != {'abi_checked': True, 'truncated_wire_rejected': True, 'device_actions': 0}:
+              raise SystemExit('Binder ABI self-check differs or performed device actions')
+          proc = json.loads((evidence / '2840-proc-ns-access.json').read_text())
+          wanted = {'passed': True, 'euid': os.geteuid(), 'effective_capabilities': 0,
+                    'initial_dumpable': 1, 'nondumpable_ns_owner': 0,
+                    'nondumpable_ns_mode': '0511', 'old_open_errno': 13,
+                    'path_only_open_passed': True, 'pid_namespace_type_and_identity_matched': True,
+                    'dumpable_restored': True, 'Android_starts': 0,
+                    'private_namespace_controls': 0, 'production_ready': False}
+          if os.geteuid() == 0 or proc != wanted:
+              raise SystemExit('Actual ordinary-UID proc access regression differs')
+          print('NSS/proc/Audio/Native source replay, ordinary-UID proc access, Binder ABI, ten evidence and 29 application generation module controls passed; Android runtime remains a separate gate')
+          PY2840
+      - name: Verify C11 Binder fixes and vendor-only Audio staging
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule=compat/android/pocket4/continuation-20261109-2840
+          work="$RUNNER_TEMP/a08-2840-candidate-controls"
+          mkdir "$work"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/binder/c11-verify-source.rs" -o "$work/binder-c11-replay"
+          "$work/binder-c11-replay" "$capsule/binder" replay \
+            "$capsule/binder/c11-review/preimage" "$work/binder-c11-source" \
+            | tee "$RUNNER_TEMP/a08/2840-binder-c11-source-replay.json"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/audio/vendor-candidate-verify-source.rs" -o "$work/audio-vendor-replay"
+          "$work/audio-vendor-replay" "$capsule/audio" replay \
+            "$capsule/audio/vendor-candidate/preimage" "$work/audio-vendor-source" \
+            | tee "$RUNNER_TEMP/a08/2840-audio-vendor-source-replay.json"
+          CARGO_TARGET_DIR="$work/audio-vendor-target" rustup run 1.93.0 cargo test --locked \
+            --manifest-path "$capsule/audio/vendor-candidate/harness/Cargo.toml" -j 1 -- --test-threads=1 \
+            2>&1 | tee "$RUNNER_TEMP/a08/2840-audio-vendor-tests.log"
+          python3 -I -B - "$RUNNER_TEMP/a08" <<'PY2840VENDOR'
+          import json
+          from pathlib import Path
+          import sys
+          evidence = Path(sys.argv[1])
+          for leaf, count, digest in [
+              ('2840-binder-c11-source-replay.json', 3, 'c45a3e749fdb91c4835cc91b5ae15c99cb09f890faf80287d7d74582dbb45c67'),
+              ('2840-audio-vendor-source-replay.json', 7, 'd0eaf319d488b8daaae33d813a6256b7896d6e9cefb8eca6c9f52f96ca767037')]:
+              result = json.loads((evidence / leaf).read_text())
+              expected = {'scope': str(count) + ' declared source files', 'mode': 'replay',
+                          'verified_files': count, 'patch_sha256': digest, 'runtime_qualified': False}
+              if result != expected:
+                  raise SystemExit('Exact candidate source replay differs: ' + leaf)
+          summary = 'test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out;'
+          if (evidence / '2840-audio-vendor-tests.log').read_text().count(summary) != 1:
+              raise SystemExit('All 21 exact-source Audio candidate controls must execute')
+          print('C11 and Audio candidate source replay and 21 Audio controls passed; signing, private Binder and Android runtime retain separate source-bound qualifications')
+          PY2840VENDOR
+      - name: Verify R12 original providers and Android Java environment
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule=compat/android/pocket4/continuation-20261109-2840
+          work="$RUNNER_TEMP/a08-2840-r12-controls"
+          mkdir "$work"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/audio/r12-provider-verify-source.rs" -o "$work/audio-r12-replay"
+          "$work/audio-r12-replay" "$capsule/audio/r12-provider-closure" replay \
+            "$capsule/audio/r12-provider-closure/preimage" "$work/audio-r12-source" \
+            | tee "$RUNNER_TEMP/a08/2840-audio-r12-source-replay.json"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/native/r12-flags-verify-source.rs" -o "$work/native-r12-replay"
+          "$work/native-r12-replay" "$capsule/native/r12-flags-provider" replay \
+            "$capsule/native/r12-flags-provider/preimage" "$work/native-r12-source" \
+            | tee "$RUNNER_TEMP/a08/2840-native-r12-source-replay.json"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/apps-java-environment-verify-source.rs" -o "$work/java-env-replay"
+          "$work/java-env-replay" "$capsule/apps-java-environment" replay \
+            "$capsule/apps-runtime-fence/source" "$work/java-env-source" \
+            | tee "$RUNNER_TEMP/a08/2840-java-env-source-replay.json"
+          CARGO_TARGET_DIR="$work/java-env-target" rustup run 1.93.0 cargo test --locked \
+            --manifest-path "$capsule/apps-java-environment/harness/Cargo.toml" --lib -j 1 -- --test-threads=1 \
+            2>&1 | tee "$RUNNER_TEMP/a08/2840-java-environment-tests.log"
+          python3 -I -B - "$RUNNER_TEMP/a08" <<'PY2840R12'
+          import json
+          from pathlib import Path
+          import sys
+          evidence = Path(sys.argv[1])
+          for leaf, digest in [
+              ('2840-audio-r12-source-replay.json', '424d7f0c70adc13d9059c727c25abf323d020234c8db20459e0617d11d3f4160'),
+              ('2840-native-r12-source-replay.json', 'bdbb559e1d8b94ed0a296f936d8a0e902fd9af9b2825c0c12eaa24a67da277e6'),
+              ('2840-java-env-source-replay.json', 'aaaf3a6d301551867a073b665301b1ec71fc0773ddb398539ba2c843a7afd60f')]:
+              result = json.loads((evidence / leaf).read_text())
+              expected = {'scope': '3 declared source files', 'mode': 'replay',
+                          'verified_files': 3, 'patch_sha256': digest, 'runtime_qualified': False}
+              if result != expected:
+                  raise SystemExit('Exact source replay differs: ' + leaf)
+          summary = 'test result: ok. 14 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out;'
+          if (evidence / '2840-java-environment-tests.log').read_text().count(summary) != 1:
+              raise SystemExit('All 14 Android Java environment controls must execute; privileged controls remain explicit')
+          print('Original provider and Java environment source replay plus 14 same-source controls passed; no Android application acceptance granted')
+          PY2840R12
+      - name: Execute all 27 current Audio source-library regressions
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PYTHONDONTWRITEBYTECODE=1 CARGO_TERM_COLOR=never
+          export GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_TERMINAL_PROMPT=0
+          capsule=compat/android/pocket4/continuation-20261109-2840/audio
+          legacy=compat/android/pocket4/audio430-released-sdk-source-tests-r1
+          work="$RUNNER_TEMP/a08-audio-source-r12-tests"
+          evidence="$RUNNER_TEMP/a08/audio-source-r12-tests"
+          mkdir "$evidence"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/r12-source-ci.rs" -o "$evidence/verify-current-source"
+          "$evidence/verify-current-source" prepare "$capsule/r12-provider-closure" "$legacy" "$work" \
+            | tee "$evidence/preparation.json"
+          rustup run 1.93.0 rustc --version > "$evidence/rustc-version.txt"
+          rustup run 1.93.0 cargo --version > "$evidence/cargo-version.txt"
+          git --version > "$evidence/git-version.txt"
+          cp "$work/Cargo.lock" "$evidence/Cargo.lock"
+          CARGO_TARGET_DIR="$work/target" rustup run 1.93.0 cargo test --locked \
+            --manifest-path "$work/Cargo.toml" --lib -j 1 -- --test-threads=1 \
+            2>&1 | tee "$evidence/tests.log"
+          cmp "$work/Cargo.lock" "$evidence/Cargo.lock"
+          "$evidence/verify-current-source" result "$capsule/r12-provider-closure" "$legacy" "$work" \
+            "$evidence/tests.log" "$evidence/rustc-version.txt" | tee "$evidence/result.json"
+
+      - name: Replay exact Audio444 vendor test tool source closure
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/audio444-vendor-test-tools-source-r1"
+          work="$RUNNER_TEMP/a08-audio444-source-replay"
+          printf '%s  %s\n' '2cb7fde1b20d611c6f4842dc91035992f5466ec70244401b54905b50117d55cd' "$capsule/FILES.sha256" | sha256sum --quiet -c -
+          (cd "$capsule" && sha256sum --quiet -c FILES.sha256)
+          mkdir "$work"
+          cp -R "$capsule/preimages/." "$work/"
+          (
+              cd "$work"
+              sha256sum --quiet -c "$capsule/preimages.sha256"
+              git -c core.hooksPath=/dev/null init --quiet --template=
+              git -c core.hooksPath=/dev/null apply --check "$capsule/source444.patch"
+              git -c core.hooksPath=/dev/null apply "$capsule/source444.patch"
+              sha256sum --quiet -c "$capsule/postimages.sha256"
+          )
+          python3 -I -B - "$capsule" "$work" "$RUNNER_TEMP/a08/audio444-source-replay.json" <<'PYAUDIO444'
+          import hashlib, json, pathlib, sys
+          capsule, work, report_path = map(pathlib.Path, sys.argv[1:])
+          manifest = json.loads((capsule / "manifest.json").read_bytes())
+          rows = manifest["files"]
+          if len(rows) != 43 or sum(row["pre"] is not None for row in rows) != 4:
+              raise SystemExit("Audio444 changed-source inventory differs")
+          def verify(data, expected, kind="blob"):
+              header = (kind + " " + str(len(data)) + "\0").encode()
+              if (len(data) != expected["bytes"] or
+                  hashlib.sha256(data).hexdigest() != expected["sha256"] or
+                  hashlib.sha1(header + data).hexdigest() != expected["git_blob"]):
+                  raise SystemExit("Audio444 source bytes or Git blob identity differ")
+          for row in rows:
+              path = pathlib.PurePosixPath(row["path"])
+              if path.is_absolute() or ".." in path.parts or row["mode"] != "100644":
+                  raise SystemExit("Audio444 source path or mode differs")
+              if row["pre"] is not None:
+                  verify((capsule / "preimages" / path).read_bytes(), row["pre"])
+              verify((work / path).read_bytes(), row["post"])
+          actual = {str(path.relative_to(work)) for path in work.rglob("*")
+                    if path.is_file() and ".git" not in path.relative_to(work).parts}
+          if actual != {row["path"] for row in rows}:
+              raise SystemExit("Audio444 replay changed the expected file set")
+          for key in ("base", "head"):
+              raw = manifest[key]["raw_commit"].encode()
+              digest = hashlib.sha1(("commit " + str(len(raw)) + "\0").encode() + raw).hexdigest()
+              if digest != manifest[key]["commit"]:
+                  raise SystemExit("Audio444 original commit identity differs")
+          profile = manifest["source_profile"]
+          if (profile["before_projects"], profile["after_projects"]) != (431, 444):
+              raise SystemExit("Audio444 source generation differs")
+          result = {"schema": "pocket4-audio444-current-CI-source-replay-v1",
+                    "state": "PASSED", "verified_preimages": 4, "verified_postimages": 43,
+                    "patch_sha256": manifest["patch"]["sha256"],
+                    "base": manifest["base"]["commit"], "head": manifest["head"]["commit"],
+                    "full_repository_root_tree_reconstructed": False,
+                    "historical_Rust_tests_rerun": False, "Android_starts": 0,
+                    "runtime_qualified": False}
+          report_path.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
+          print(json.dumps(result, sort_keys=True))
+          PYAUDIO444
+
+      - name: Verify Settings admission and pending consumer boundaries
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PYTHONDONTWRITEBYTECODE=1 CARGO_TERM_COLOR=never
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/continuation-20261109-2840/apps-settings-page"
+          work="$RUNNER_TEMP/a08-2840-settings-page"
+          evidence="$RUNNER_TEMP/a08/settings-page"
+          mkdir "$work" "$evidence"
+          rustup run 1.93.0 rustc --edition=2024 -D warnings -C codegen-units=1 \
+            "$capsule/../apps-settings-page-verify-source.rs" -o "$work/source-replay"
+          "$work/source-replay" "$capsule" replay "$capsule/preimage" "$work/source" \
+            | tee "$evidence/source-replay.json"
+          "$work/source-replay" "$capsule" check-after "$capsule/source" \
+            | tee "$evidence/delivered-source.json"
+          mkdir -p "$work/consumer/consumers"
+          for leaf in android-app android-digitalis-observe-helper; do
+            cp "$capsule/consumer/preimage/$leaf" "$work/consumer/consumers/$leaf"
+          done
+          git -C "$work/consumer" apply --check "$capsule/consumer/pending-marker.patch"
+          git -C "$work/consumer" apply "$capsule/consumer/pending-marker.patch"
+          for leaf in android-app android-digitalis-observe-helper; do
+            cmp "$work/consumer/consumers/$leaf" "$capsule/consumer/source/$leaf"
+          done
+          python3 -I -B - "$capsule" <<'PY2840SETTINGSINPUT'
+          import hashlib, json, sys, tomllib
+          from pathlib import Path
+          capsule = Path(sys.argv[1])
+          proof = json.loads((capsule / 'evidence/r3/HARNESS.json').read_bytes())
+          for item in proof['source_files']:
+              path = capsule / item['path']
+              raw = path.read_bytes()
+              if len(raw) != item['bytes'] or hashlib.sha256(raw).hexdigest() != item['sha256']:
+                  raise SystemExit('Same-source harness input differs: ' + item['path'])
+          raw = (capsule / 'harness/Cargo.lock').read_bytes()
+          if len(raw) != 8456 or hashlib.sha256(raw).hexdigest() != '09b1618ccdaff1511d938536ce54fb119df215be57663aa45cc28e9acdbc9fe6':
+              raise SystemExit('Settings lock differs')
+          source = (capsule / 'reference/source-workspace-Cargo.lock').read_bytes()
+          if hashlib.sha256(source).hexdigest() != 'ca5300907a8e609ac0340d016ecfe7b4292bf45fe5ab3cbe8dd0c013f12a2285':
+              raise SystemExit('Original workspace dependency source differs')
+          def external(data):
+              return {(p['name'], p['version'], p['source'], p['checksum'])
+                      for p in tomllib.loads(data.decode())['package'] if 'source' in p}
+          selected, original = external(raw), external(source)
+          if len(selected) != 34 or not selected.issubset(original):
+              raise SystemExit('Every external package must match the original complete lock')
+          print('All 34 external package tuples and 12 compiled harness source inputs match')
+          PY2840SETTINGSINPUT
+          cp "$capsule/harness/Cargo.lock" "$evidence/Cargo.lock.before"
+          CARGO_TARGET_DIR="$work/target" rustup run 1.93.0 cargo test --locked -j 1 \
+            --manifest-path "$capsule/harness/Cargo.toml" -p pocket4-settings-admission-tests \
+            --lib application_settings -- --test-threads=1 \
+            2>&1 | tee "$evidence/settings-tests.log"
+          CARGO_TARGET_DIR="$work/target" rustup run 1.93.0 cargo test --locked -j 1 \
+            --manifest-path "$capsule/harness/Cargo.toml" -p droidloom-task-launcher \
+            -- --test-threads=1 2>&1 | tee "$evidence/launcher-tests.log"
+          python3 -I -B "$capsule/consumer/test_pending_marker.py" \
+            2>&1 | tee "$evidence/consumer-tests.log"
+          cmp "$capsule/harness/Cargo.lock" "$evidence/Cargo.lock.before"
+          python3 -I -B - "$capsule" "$evidence" <<'PY2840SETTINGSRESULT'
+          import collections, json, re, sys
+          from pathlib import Path
+          capsule, evidence = map(Path, sys.argv[1:])
+          digest = '972500d13d451ce5d07a23fbfbd8cd9e113726029e59b81fd715ad64b4353d0c'
+          for leaf, mode in [('source-replay.json', 'replay'), ('delivered-source.json', 'check-after')]:
+              expected = {'scope': '8 declared source files', 'mode': mode,
+                          'verified_files': 8, 'patch_sha256': digest, 'runtime_qualified': False}
+              if json.loads((evidence / leaf).read_bytes()) != expected:
+                  raise SystemExit('Exact Settings source replay differs: ' + leaf)
+          for observed, original, count, summaries in [
+              ('settings-tests.log', 'samefile-settings-controls.txt', 23,
+               ['test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out;']),
+              ('launcher-tests.log', 'samefile-launcher-controls.txt', 35,
+               ['test result: ok. 30 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out;',
+                'test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out;'])]:
+              text = (evidence / observed).read_text()
+              reference = (capsule / 'evidence/r3' / original).read_text()
+              names = lambda value: collections.Counter(re.findall(r'^test (\S+) \.\.\. ok$', value, re.M))
+              if names(text) != names(reference) or sum(names(text).values()) != count:
+                  raise SystemExit('Exact original test names must execute: ' + observed)
+              if any(text.count(summary) != 1 for summary in summaries):
+                  raise SystemExit('No failed, ignored or omitted control accepted: ' + observed)
+          consumer = (evidence / 'consumer-tests.log').read_text()
+          original_consumer = (capsule / 'evidence/r2/consumer-pending-admission.txt').read_text()
+          consumer_names = lambda value: collections.Counter(re.findall(r'^(test_\S+) .* \.\.\. ok$', value, re.M))
+          if consumer_names(consumer) != consumer_names(original_consumer) \
+                  or sum(consumer_names(consumer).values()) != 6 \
+                  or not re.search(r'^Ran 6 tests in ', consumer, re.M) \
+                  or not re.search(r'^OK$', consumer, re.M):
+              raise SystemExit('All six original consumer controls must pass')
+          print('Eight-file Settings and two-consumer patches replayed; exact 23+35+6 source controls passed; actual Settings authority and Android runtime remain blocked')
+          PY2840SETTINGSRESULT
+
+
+      - name: Replay exact production cell foundation source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/production-cell-foundations-r1/verify_source_replay.py \
+            --out "$RUNNER_TEMP/a08/cell-foundation-source-replay.json"
+
+      - name: Replay and execute current Pocket4 source corrections
+        timeout-minutes: 5
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CARGO_TERM_COLOR=never
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/continuation-20261109-e3df"
+          work="$RUNNER_TEMP/a08-e3df"
+          evidence="$RUNNER_TEMP/a08/e3df"
+          mkdir -p "$work" "$evidence"
+          export CARGO_TARGET_DIR="$work/target"
+          rustup run 1.93.0 rustc --version | tee "$evidence/rustc-version.txt"
+          python3 -I -B - "$capsule" "$GITHUB_WORKSPACE" <<'PYE3DFLOCKS'
+          import hashlib, json, sys, tomllib
+          from pathlib import Path
+          capsule, repo = map(Path, sys.argv[1:])
+          reference = repo / 'compat/android/pocket4/continuation-20261109-2840/apps-settings-page/reference/source-workspace-Cargo.lock'
+          source = reference.read_bytes()
+          if len(source) != 51845 or hashlib.sha256(source).hexdigest() != 'ca5300907a8e609ac0340d016ecfe7b4292bf45fe5ab3cbe8dd0c013f12a2285':
+              raise SystemExit('Original workspace lock differs')
+          def external(raw):
+              return {(p['name'], p['version'], p['source'], p['checksum'])
+                      for p in tomllib.loads(raw.decode())['package'] if 'source' in p}
+          original = external(source)
+          records = []
+          for name, count, sha in [
+              ('Cargo.lock', 34, 'c90d04adf019e7b7842fb368de9ad230a197447f406a8fdf1ea14dc5963d225e'),
+              ('control-deadline/Cargo.lock', 51, '3e91a62c8d75684c9def026a2ac25f923f405e33aff84469ab3b098a7e23c32a')]:
+              raw = (capsule / name).read_bytes()
+              selected = external(raw)
+              if hashlib.sha256(raw).hexdigest() != sha or len(selected) != count or not selected.issubset(original):
+                  raise SystemExit('Every compiled external package must match the original lock: ' + name)
+              records.append({'lock': name, 'original_external_package_tuples': count, 'sha256': sha})
+          print(json.dumps({'schema': 'pocket4-e3df-locked-dependencies-v1', 'locks': records, 'runtime_qualified': False}, sort_keys=True))
+          PYE3DFLOCKS
+          cp "$capsule/Cargo.lock" "$evidence/shared-Cargo.lock.before"
+          cp "$capsule/control-deadline/Cargo.lock" "$evidence/control-Cargo.lock.before"
+          rustup run 1.93.0 cargo build --locked -j 1 \
+            --manifest-path "$capsule/Cargo.toml" -p pocket4-continuation-qualification
+          qualify="$CARGO_TARGET_DIR/debug/pocket4-continuation-qualification"
+          "$qualify" replay "$GITHUB_WORKSPACE" "$capsule" "$work/replayed" \
+            | tee "$evidence/source-replay.json"
+          "$qualify" applications "$capsule" | tee "$evidence/application-contracts.json"
+          rustup run 1.93.0 cargo test --locked -j 1 \
+            --manifest-path "$capsule/Cargo.toml" -p pocket4-readiness-regressions --lib \
+            -- --test-threads=1 --color never 2>&1 | tee "$evidence/readiness-tests.log"
+          rustup run 1.93.0 cargo test --locked -j 1 \
+            --manifest-path "$capsule/control-deadline/Cargo.toml" -p droidloom-supervisor \
+            --lib control::request_deadline_tests -- --test-threads=1 --color never \
+            2>&1 | tee "$evidence/control-deadline-tests.log"
+          "$qualify" tests "$capsule" "$evidence/readiness-tests.log" "$evidence/control-deadline-tests.log" \
+            | tee "$evidence/executed-source-tests.json"
+          cmp "$capsule/Cargo.lock" "$evidence/shared-Cargo.lock.before"
+          cmp "$capsule/control-deadline/Cargo.lock" "$evidence/control-Cargo.lock.before"
+          "$qualify" inventory "$capsule" | tee "$evidence/retained-inputs-after.json"
+
       - name: Preserve host evidence without implying Android guest success
         if: always()
         uses: actions/upload-artifact@v4
@@ -72,3 +1199,479 @@ jobs:
           name: a08-source-and-host-evidence
           if-no-files-found: warn
           path: ${{ runner.temp }}/a08/
+
+  native643-current-producer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUSTUP_TOOLCHAIN: '1.93.0'
+      CARGO_TERM_COLOR: never
+      GIT_CONFIG_NOSYSTEM: '1'
+      GIT_CONFIG_GLOBAL: /dev/null
+      GIT_TERMINAL_PROMPT: '0'
+      NATIVE715_INVENTORY_SHA256: 02a6dda5e0ce714dcc8ad70ec363d999118eb00ca06cc680633d02c064240ab1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Prepare exact Rust toolchain and real rsync
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal
+          if ! command -v rsync >/dev/null; then
+            sudo apt-get update
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends rsync
+          fi
+          rsync --version
+          rustc --version
+      - name: Verify all 715 Native source files and replay both complete roots
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/native643-cuttlefish-complete715-source-r1"
+          work="$RUNNER_TEMP/a08-native715-complete"
+          mkdir "$work"
+          printf '%s  %s\n' "$NATIVE715_INVENTORY_SHA256" "$capsule/FILES.sha256" | sha256sum --check --status
+          (cd "$capsule" && sha256sum --quiet -c FILES.sha256)
+          python3 -I -B "$capsule/test_verifier.py"
+          python3 -I -B "$capsule/verify.py" --inventory-sha256 "$NATIVE715_INVENTORY_SHA256" --output "$work/producer" --report "$work/source-replay.json"
+      - name: Compile current Native tools and execute 92 controls with 98 executions
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/native643-cuttlefish-complete715-source-r1"
+          work="$RUNNER_TEMP/a08-native715-complete"
+          cargo fetch --locked --manifest-path "$work/producer/Cargo.toml"
+          python3 -I -B "$capsule/run-normal-controls.py" --workspace "$work/producer" --output "$work/normal" --offline --inventory-sha256 "$NATIVE715_INVENTORY_SHA256"
+          python3 -I -B "$capsule/verify.py" --inventory-sha256 "$NATIVE715_INVENTORY_SHA256" --producer "$work/producer" --report "$work/source-after.json"
+      - name: Preserve complete Native source and actual current build evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a08-native643-current-producer-evidence
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/a08-native715-complete/source-replay.json
+            ${{ runner.temp }}/a08-native715-complete/source-after.json
+            ${{ runner.temp }}/a08-native715-complete/normal/*.json
+            ${{ runner.temp }}/a08-native715-complete/normal/*.stdout
+            ${{ runner.temp }}/a08-native715-complete/normal/*.stderr
+
+  audio537-current-producer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUSTUP_TOOLCHAIN: '1.93.0'
+      CARGO_TERM_COLOR: never
+      GIT_CONFIG_NOSYSTEM: '1'
+      GIT_CONFIG_GLOBAL: /dev/null
+      GIT_TERMINAL_PROMPT: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Prepare exact Rust toolchain and original rsync
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal
+          if ! command -v rsync >/dev/null; then
+            sudo apt-get update
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends rsync
+          fi
+          rsync --version
+          rustc --version
+      - name: Verify externally pinned complete Audio537 inventory and parser controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/audio537-libexif-vendor-bundle-source-r1"
+          cd "$capsule"
+          printf '%s  %s\n' 486300e2a033679a87776c68bff4324eff11b53459de3c9712122788f2a76572 FILES.sha256 | sha256sum --check --status
+          sha256sum --quiet -c FILES.sha256
+          python3 -I -B "$capsule/test_verifiers.py"
+      - name: Reconstruct the exact complete current Audio537 producer
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/audio537-libexif-vendor-bundle-source-r1"
+          python3 -I -B "$capsule/replay_capsule.py" --capsule "$capsule" --work "$RUNNER_TEMP/a08-audio537-producer" --report "$RUNNER_TEMP/audio537-replay.json"
+      - name: Compile current source and execute all 153 selected ordinary tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/audio537-libexif-vendor-bundle-source-r1"
+          python3 -I -B "$capsule/run_ci_tests.py" --capsule "$capsule" --recipe "$RUNNER_TEMP/a08-audio537-producer" --report "$RUNNER_TEMP/audio537-tests.json" --target "$RUNNER_TEMP/audio537-cargo-target" --jobs 2
+      - name: Preserve current Audio source and actual ordinary test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a08-audio537-current-producer-evidence
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/audio537-replay.json
+            ${{ runner.temp }}/audio537-tests.json
+            ${{ runner.temp }}/audio537-tests-logs/*.stdout
+            ${{ runner.temp }}/audio537-tests-logs/*.stderr
+
+  intentresolver-security537-current-producer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUSTUP_TOOLCHAIN: '1.93.0'
+      CARGO_TERM_COLOR: never
+      GIT_CONFIG_NOSYSTEM: '1'
+      GIT_CONFIG_GLOBAL: /dev/null
+      GIT_TERMINAL_PROMPT: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Prepare exact Rust toolchain and original rsync
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal
+          if ! command -v rsync >/dev/null; then
+            sudo apt-get update
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends rsync
+          fi
+          rsync --version
+          rustc --version
+      - name: Verify externally pinned Audio and security inventories and controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          audio="$GITHUB_WORKSPACE/compat/android/pocket4/audio537-libexif-vendor-bundle-source-r1"
+          security="$GITHUB_WORKSPACE/compat/android/pocket4/intentresolver-security-on-audio537-r1"
+          cd "$audio"
+          printf '%s  %s\n' 486300e2a033679a87776c68bff4324eff11b53459de3c9712122788f2a76572 FILES.sha256 | sha256sum --check --status
+          sha256sum --quiet -c FILES.sha256
+          cd "$security"
+          printf '%s  %s\n' dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd FILES.sha256 | sha256sum --check --status
+          sha256sum --quiet -c FILES.sha256
+          python3 -I -B "$security/test_verifier.py"
+          python3 -I -B "$security/verify.py" --inventory-sha256 dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd
+      - name: Reconstruct the complete Audio537 baseline and security1511 producer
+        shell: bash
+        run: |
+          set -euo pipefail
+          audio="$GITHUB_WORKSPACE/compat/android/pocket4/audio537-libexif-vendor-bundle-source-r1"
+          security="$GITHUB_WORKSPACE/compat/android/pocket4/intentresolver-security-on-audio537-r1"
+          python3 -I -B "$audio/replay_capsule.py" --capsule "$audio" --work "$RUNNER_TEMP/security537-audio-base" --report "$RUNNER_TEMP/security537-audio-replay.json"
+          python3 -I -B "$security/verify.py" --inventory-sha256 dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd --audio-source "$RUNNER_TEMP/security537-audio-base" --output "$RUNNER_TEMP/security537-producer" --report "$RUNNER_TEMP/security537-source-replay.json"
+      - name: Compile four actual security tests and both fresh release tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          security="$GITHUB_WORKSPACE/compat/android/pocket4/intentresolver-security-on-audio537-r1"
+          python3 -I -B "$security/run_ci.py" --inventory-sha256 dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd --producer "$RUNNER_TEMP/security537-producer" --target "$RUNNER_TEMP/security537-cargo-target" --report "$RUNNER_TEMP/security537-tests.json" --jobs 2
+          python3 -I -B "$security/verify.py" --inventory-sha256 dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd --producer "$RUNNER_TEMP/security537-producer" --tests-log "$RUNNER_TEMP/security537-tests-logs/security-four-tests.stdout" --report "$RUNNER_TEMP/security537-source-after.json"
+      - name: Preserve complete source and actual security build evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a08-intentresolver-security537-evidence
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/security537-audio-replay.json
+            ${{ runner.temp }}/security537-source-replay.json
+            ${{ runner.temp }}/security537-tests.json
+            ${{ runner.temp }}/security537-source-after.json
+            ${{ runner.temp }}/security537-tests-logs/*.stdout
+            ${{ runner.temp }}/security537-tests-logs/*.stderr
+
+  aac-security330-current-producer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUSTUP_TOOLCHAIN: '1.93.0'
+      CARGO_TERM_COLOR: never
+      GIT_CONFIG_NOSYSTEM: '1'
+      GIT_CONFIG_GLOBAL: /dev/null
+      GIT_TERMINAL_PROMPT: '0'
+      AAC330_INVENTORY_SHA256: b8877b88a3968b5407852844260e163d4859be275207ea4f8cc44b8f256e6bff
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Prepare exact Rust toolchain and original rsync
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal
+          if ! command -v rsync >/dev/null; then
+            sudo apt-get update
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends rsync
+          fi
+          rsync --version
+          rustc --version
+      # Independent Linux A08 job. Checkout, Rust and existing host build dependencies
+      # precede these steps. AAC330_INVENTORY_SHA256 is supplied by the containing
+      # workflow as a reviewed external pin; parent inventory pins are fixed below.
+      - name: Reconstruct complete Audio537, Security537 and AAC330 producers
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${AAC330_INVENTORY_SHA256:?external AAC330 inventory pin required}"
+          audio="$GITHUB_WORKSPACE/compat/android/pocket4/audio537-libexif-vendor-bundle-source-r1"
+          security="$GITHUB_WORKSPACE/compat/android/pocket4/intentresolver-security-on-audio537-r1"
+          aac="$GITHUB_WORKSPACE/compat/android/pocket4/aac-security-on-security537-r1"
+          printf '%s  %s\n' "$AAC330_INVENTORY_SHA256" "$aac/FILES.sha256" | sha256sum --check --status
+          (cd "$aac" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' 'dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd' "$security/FILES.sha256" | sha256sum --check --status
+          (cd "$security" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' '486300e2a033679a87776c68bff4324eff11b53459de3c9712122788f2a76572' "$audio/FILES.sha256" | sha256sum --check --status
+          (cd "$audio" && sha256sum --quiet -c FILES.sha256)
+          python3 -I -B "$audio/replay_capsule.py" --capsule "$audio" --work "$RUNNER_TEMP/aac330-audio-base" --report "$RUNNER_TEMP/aac330-audio-replay.json"
+          python3 -I -B "$security/verify.py" --inventory-sha256 dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd --audio-source "$RUNNER_TEMP/aac330-audio-base" --output "$RUNNER_TEMP/aac330-security-base" --report "$RUNNER_TEMP/aac330-security-replay.json"
+          python3 -I -B "$aac/verify.py" --inventory-sha256 "$AAC330_INVENTORY_SHA256" --security-source "$RUNNER_TEMP/aac330-security-base" --output "$RUNNER_TEMP/aac330-producer" --report "$RUNNER_TEMP/aac330-replay.json"
+          python3 -I -B "$aac/test_verifier.py"
+      - name: Run four fresh AAC Rust tests and build both release tools
+        timeout-minutes: 45
+        shell: bash
+        run: |
+          set -euo pipefail
+          aac="$GITHUB_WORKSPACE/compat/android/pocket4/aac-security-on-security537-r1"
+          python3 -I -B "$aac/run_ci.py" --inventory-sha256 "$AAC330_INVENTORY_SHA256" --producer "$RUNNER_TEMP/aac330-producer" --target "$RUNNER_TEMP/aac330-fresh-cargo-target" --report "$RUNNER_TEMP/aac330-ci.json" --jobs 2
+          python3 -I -B "$aac/verify.py" --inventory-sha256 "$AAC330_INVENTORY_SHA256" --producer "$RUNNER_TEMP/aac330-producer" --tests-log "$RUNNER_TEMP/aac330-ci-logs/security-four-tests.stdout" --report "$RUNNER_TEMP/aac330-complete-after.json"
+      - name: Preserve complete AAC source and fresh build evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a08-aac-security330-evidence
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/aac330-audio-replay.json
+            ${{ runner.temp }}/aac330-security-replay.json
+            ${{ runner.temp }}/aac330-replay.json
+            ${{ runner.temp }}/aac330-ci.json
+            ${{ runner.temp }}/aac330-complete-after.json
+            ${{ runner.temp }}/aac330-ci-logs/*.stdout
+            ${{ runner.temp }}/aac330-ci-logs/*.stderr
+
+  audio538-current-producer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUSTUP_TOOLCHAIN: '1.93.0'
+      CARGO_TERM_COLOR: never
+      GIT_CONFIG_NOSYSTEM: '1'
+      GIT_CONFIG_GLOBAL: /dev/null
+      GIT_TERMINAL_PROMPT: '0'
+      AUDIO538_INVENTORY_SHA256: 41c50621d1d8359be7f18594247f8ccdee4d44b92f3e9b8398b8b67efca5b4d8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Prepare exact Rust toolchain and original rsync
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal
+          if ! command -v rsync >/dev/null; then
+            sudo apt-get update
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends rsync
+          fi
+          rsync --version
+          rustc --version
+      # Independent current Android-tool A08 job. Checkout, Rust and the same host
+      # build dependencies precede these steps. AUDIO538_INVENTORY_SHA256 is the
+      # reviewed containing-workflow pin; every ancestor capsule has a fixed pin.
+      - name: Reconstruct complete Audio537, Security537, AAC330 and unified Audio538
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${AUDIO538_INVENTORY_SHA256:?external Audio538 inventory pin required}"
+          audio="$GITHUB_WORKSPACE/compat/android/pocket4/audio537-libexif-vendor-bundle-source-r1"
+          security="$GITHUB_WORKSPACE/compat/android/pocket4/intentresolver-security-on-audio537-r1"
+          aac="$GITHUB_WORKSPACE/compat/android/pocket4/aac-security-on-security537-r1"
+          current="$GITHUB_WORKSPACE/compat/android/pocket4/audio538-unified-security-source-r1"
+          printf '%s  %s\n' "$AUDIO538_INVENTORY_SHA256" "$current/FILES.sha256" | sha256sum --check --status
+          (cd "$current" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' 'b8877b88a3968b5407852844260e163d4859be275207ea4f8cc44b8f256e6bff' "$aac/FILES.sha256" | sha256sum --check --status
+          (cd "$aac" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' 'dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd' "$security/FILES.sha256" | sha256sum --check --status
+          (cd "$security" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' '486300e2a033679a87776c68bff4324eff11b53459de3c9712122788f2a76572' "$audio/FILES.sha256" | sha256sum --check --status
+          (cd "$audio" && sha256sum --quiet -c FILES.sha256)
+          python3 -I -B "$audio/replay_capsule.py" --capsule "$audio" --work "$RUNNER_TEMP/audio538-audio-base" --report "$RUNNER_TEMP/audio538-audio-replay.json"
+          python3 -I -B "$security/verify.py" --inventory-sha256 dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd --audio-source "$RUNNER_TEMP/audio538-audio-base" --output "$RUNNER_TEMP/audio538-security-base" --report "$RUNNER_TEMP/audio538-security-replay.json"
+          python3 -I -B "$aac/verify.py" --inventory-sha256 b8877b88a3968b5407852844260e163d4859be275207ea4f8cc44b8f256e6bff --security-source "$RUNNER_TEMP/audio538-security-base" --output "$RUNNER_TEMP/audio538-aac-base" --report "$RUNNER_TEMP/audio538-aac-replay.json"
+          python3 -I -B "$current/verify.py" --inventory-sha256 "$AUDIO538_INVENTORY_SHA256" --parent-source "$RUNNER_TEMP/audio538-aac-base" --output "$RUNNER_TEMP/audio538-producer" --report "$RUNNER_TEMP/audio538-replay.json"
+          python3 -I -B "$current/test_verifier.py"
+      - name: Run one source and three updater tests and build both current release tools
+        timeout-minutes: 45
+        shell: bash
+        run: |
+          set -euo pipefail
+          current="$GITHUB_WORKSPACE/compat/android/pocket4/audio538-unified-security-source-r1"
+          python3 -I -B "$current/run_ci.py" --inventory-sha256 "$AUDIO538_INVENTORY_SHA256" --producer "$RUNNER_TEMP/audio538-producer" --target "$RUNNER_TEMP/audio538-fresh-cargo-target" --report "$RUNNER_TEMP/audio538-ci.json" --jobs 2
+          python3 -I -B "$current/verify.py" --inventory-sha256 "$AUDIO538_INVENTORY_SHA256" --producer "$RUNNER_TEMP/audio538-producer" --report "$RUNNER_TEMP/audio538-complete-after.json"
+      - name: Preserve complete Audio538 source and fresh build evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a08-audio538-evidence
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/audio538-audio-replay.json
+            ${{ runner.temp }}/audio538-security-replay.json
+            ${{ runner.temp }}/audio538-aac-replay.json
+            ${{ runner.temp }}/audio538-replay.json
+            ${{ runner.temp }}/audio538-ci.json
+            ${{ runner.temp }}/audio538-complete-after.json
+            ${{ runner.temp }}/audio538-ci-logs/*.stdout
+            ${{ runner.temp }}/audio538-ci-logs/*.stderr
+
+  runtime-d6-init-security-metadata:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUSTUP_TOOLCHAIN: '1.93.0'
+      CARGO_TERM_COLOR: never
+      GIT_CONFIG_NOSYSTEM: '1'
+      GIT_CONFIG_GLOBAL: /dev/null
+      GIT_TERMINAL_PROMPT: '0'
+      RUNTIME_D6_INVENTORY_SHA256: 52f3362f9c5099538bf71e71256f9c7207882dff8cd4703f61dc6ebcdbaa0888
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Prepare exact Rust toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal
+          rustc --version
+      # Independent Linux job; configure Rust and the existing host dependencies first.
+      # Pin RUNTIME_D6_INVENTORY_SHA256 in the containing workflow, outside this capsule.
+      - name: Authenticate and replay complete D6 component
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${RUNTIME_D6_INVENTORY_SHA256:?external D6 inventory pin required}"
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-d6-init-security-metadata-source-r1"
+          printf '%s  %s\n' "$RUNTIME_D6_INVENTORY_SHA256" "$capsule/FILES.sha256" | sha256sum --check --status
+          (cd "$capsule" && sha256sum --quiet -c FILES.sha256)
+          python3 -I -B "$capsule/verify.py" --inventory-sha256 "$RUNTIME_D6_INVENTORY_SHA256" --output "$RUNNER_TEMP/runtime-d6-producer" --report "$RUNNER_TEMP/runtime-d6-replay.json"
+          python3 -I -B "$capsule/test_verifier.py"
+      - name: Compile nine D6 controls and both normal release tools
+        timeout-minutes: 45
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-d6-init-security-metadata-source-r1"
+          python3 -I -B "$capsule/run_ci.py" --inventory-sha256 "$RUNTIME_D6_INVENTORY_SHA256" --producer "$RUNNER_TEMP/runtime-d6-producer" --target "$RUNNER_TEMP/runtime-d6-fresh-cargo-target" --report "$RUNNER_TEMP/runtime-d6-ci.json" --jobs 2
+          python3 -I -B "$capsule/verify.py" --inventory-sha256 "$RUNTIME_D6_INVENTORY_SHA256" --producer "$RUNNER_TEMP/runtime-d6-producer" --tests-log "$RUNNER_TEMP/runtime-d6-ci-logs/nine-runtime-input-controls.stdout" --report "$RUNNER_TEMP/runtime-d6-complete-after.json"
+      - name: Preserve complete D6 source and fresh runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a08-runtime-d6-evidence
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/runtime-d6-replay.json
+            ${{ runner.temp }}/runtime-d6-ci.json
+            ${{ runner.temp }}/runtime-d6-complete-after.json
+            ${{ runner.temp }}/runtime-d6-ci-logs/*.stdout
+            ${{ runner.temp }}/runtime-d6-ci-logs/*.stderr
+
+  runtime-d7-unified-current-producer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUSTUP_TOOLCHAIN: '1.93.0'
+      CARGO_TERM_COLOR: never
+      GIT_CONFIG_NOSYSTEM: '1'
+      GIT_CONFIG_GLOBAL: /dev/null
+      GIT_TERMINAL_PROMPT: '0'
+      D7_INVENTORY_SHA256: fea79fa2ed2e3f3cc008a8584f14b868ccf8827248afca914489f12478591403
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Prepare exact Rust toolchain and original rsync
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal
+          if ! command -v rsync >/dev/null; then
+            sudo apt-get update
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends rsync
+          fi
+          rsync --version
+          rustc --version
+      # Independent complete D7 job. The containing workflow supplies checkout,
+      # pinned Rust, normal Linux build dependencies and the reviewed D7 inventory
+      # hash. Every source ancestor has its own external fixed inventory pin.
+      - name: Reconstruct both complete D7 source parents and the unified 1595 files
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${D7_INVENTORY_SHA256:?external D7 inventory pin required}"
+          audio="$GITHUB_WORKSPACE/compat/android/pocket4/audio537-libexif-vendor-bundle-source-r1"
+          security="$GITHUB_WORKSPACE/compat/android/pocket4/intentresolver-security-on-audio537-r1"
+          aac="$GITHUB_WORKSPACE/compat/android/pocket4/aac-security-on-security537-r1"
+          tools="$GITHUB_WORKSPACE/compat/android/pocket4/audio538-unified-security-source-r1"
+          runtime="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-d6-init-security-metadata-source-r1"
+          current="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-d7-unified538-source-r1"
+          printf '%s  %s\n' "$D7_INVENTORY_SHA256" "$current/FILES.sha256" | sha256sum --check --status
+          (cd "$current" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' '41c50621d1d8359be7f18594247f8ccdee4d44b92f3e9b8398b8b67efca5b4d8' "$tools/FILES.sha256" | sha256sum --check --status
+          (cd "$tools" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' '52f3362f9c5099538bf71e71256f9c7207882dff8cd4703f61dc6ebcdbaa0888' "$runtime/FILES.sha256" | sha256sum --check --status
+          (cd "$runtime" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' 'b8877b88a3968b5407852844260e163d4859be275207ea4f8cc44b8f256e6bff' "$aac/FILES.sha256" | sha256sum --check --status
+          (cd "$aac" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' 'dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd' "$security/FILES.sha256" | sha256sum --check --status
+          (cd "$security" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' '486300e2a033679a87776c68bff4324eff11b53459de3c9712122788f2a76572' "$audio/FILES.sha256" | sha256sum --check --status
+          (cd "$audio" && sha256sum --quiet -c FILES.sha256)
+          python3 -I -B "$audio/replay_capsule.py" --capsule "$audio" --work "$RUNNER_TEMP/d7-audio537-parent" --report "$RUNNER_TEMP/d7-audio537-replay.json"
+          python3 -I -B "$security/verify.py" --inventory-sha256 dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd --audio-source "$RUNNER_TEMP/d7-audio537-parent" --output "$RUNNER_TEMP/d7-security537-parent" --report "$RUNNER_TEMP/d7-security537-replay.json"
+          python3 -I -B "$aac/verify.py" --inventory-sha256 b8877b88a3968b5407852844260e163d4859be275207ea4f8cc44b8f256e6bff --security-source "$RUNNER_TEMP/d7-security537-parent" --output "$RUNNER_TEMP/d7-aac330-parent" --report "$RUNNER_TEMP/d7-aac330-replay.json"
+          python3 -I -B "$tools/verify.py" --inventory-sha256 41c50621d1d8359be7f18594247f8ccdee4d44b92f3e9b8398b8b67efca5b4d8 --parent-source "$RUNNER_TEMP/d7-aac330-parent" --output "$RUNNER_TEMP/d7-audio538-parent" --report "$RUNNER_TEMP/d7-audio538-replay.json"
+          python3 -I -B "$runtime/verify.py" --inventory-sha256 52f3362f9c5099538bf71e71256f9c7207882dff8cd4703f61dc6ebcdbaa0888 --output "$RUNNER_TEMP/d7-runtime-d6-parent" --report "$RUNNER_TEMP/d7-runtime-d6-replay.json"
+          python3 -I -B "$current/verify.py" --inventory-sha256 "$D7_INVENTORY_SHA256" --audio-source "$RUNNER_TEMP/d7-audio538-parent" --runtime-source "$RUNNER_TEMP/d7-runtime-d6-parent" --output "$RUNNER_TEMP/d7-unified-producer" --report "$RUNNER_TEMP/d7-full-replay.json"
+          python3 -I -B "$current/test_verifier.py"
+      - name: Test runtime 289 and current tools 4 and build four fresh unified releases
+        timeout-minutes: 60
+        shell: bash
+        run: |
+          set -euo pipefail
+          current="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-d7-unified538-source-r1"
+          python3 -I -B "$current/run_ci.py" --inventory-sha256 "$D7_INVENTORY_SHA256" --producer "$RUNNER_TEMP/d7-unified-producer" --target "$RUNNER_TEMP/d7-fresh-cargo-target" --report "$RUNNER_TEMP/d7-ci.json" --jobs 2
+          python3 -I -B "$current/verify.py" --inventory-sha256 "$D7_INVENTORY_SHA256" --producer "$RUNNER_TEMP/d7-unified-producer" --report "$RUNNER_TEMP/d7-complete-after.json"
+      - name: Preserve complete D7 source and fresh unified build evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a08-runtime-d7-evidence
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/d7-audio537-replay.json
+            ${{ runner.temp }}/d7-security537-replay.json
+            ${{ runner.temp }}/d7-aac330-replay.json
+            ${{ runner.temp }}/d7-audio538-replay.json
+            ${{ runner.temp }}/d7-runtime-d6-replay.json
+            ${{ runner.temp }}/d7-full-replay.json
+            ${{ runner.temp }}/d7-ci.json
+            ${{ runner.temp }}/d7-complete-after.json
+            ${{ runner.temp }}/d7-ci-logs/*.stdout
+            ${{ runner.temp }}/d7-ci-logs/*.stderr

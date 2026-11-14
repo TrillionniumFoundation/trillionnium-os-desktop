@@ -1,0 +1,198 @@
+{
+  "affinity": [
+    8,
+    9
+  ],
+  "android_full_builds_started": 0,
+  "cell_actions": 0,
+  "commands": [
+    {
+      "argv": [
+        "/home/qian-qi/.cargo/bin/rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/source/tools/droidloom-update/src/audio_vendor_candidate.rs",
+        "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/source/tools/droidloom-update/src/audio_vendor_candidate/tests.rs",
+        "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/source/tools/droidloom-update/src/audio_vendor_zip.rs"
+      ],
+      "elapsed_seconds": 0.345,
+      "expected_returncode": 0,
+      "log": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/validation-r2/format-new-modules.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "name": "format-new-modules",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/home/qian-qi/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j2",
+        "-p",
+        "droidloom-update",
+        "audio_vendor",
+        "--",
+        "--test-threads=2"
+      ],
+      "elapsed_seconds": 32.36,
+      "expected_returncode": 0,
+      "log": {
+        "bytes": 5436,
+        "path": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/validation-r2/targeted-normal-tests.log",
+        "sha256": "6443e7561a4300828aa3ba0d9697397c3265fcd8c15c32e18326cd336f5c2882"
+      },
+      "name": "targeted-normal-tests",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/home/qian-qi/.cargo/bin/cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-j2",
+        "-p",
+        "droidloom-update"
+      ],
+      "elapsed_seconds": 0.186,
+      "expected_returncode": 0,
+      "log": {
+        "bytes": 72,
+        "path": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/validation-r2/normal-update-build.log",
+        "sha256": "a41051563a4cb5fc1b1bcdd9aa0ba28ca80f7736d629d90cc138218756e8e3a9"
+      },
+      "name": "normal-update-build",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/target/debug/droidloom-update",
+        "audio-apex-stage-candidate",
+        "--help"
+      ],
+      "elapsed_seconds": 0.003,
+      "expected_returncode": 0,
+      "log": {
+        "bytes": 588,
+        "path": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/validation-r2/actual-cli-help.log",
+        "sha256": "a5477bfffd7350ee3ec832eccdce1a5ed7a6aa09a18e162143d92b42f3ac1681"
+      },
+      "name": "actual-cli-help",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/target/debug/droidloom-update",
+        "audio-apex-stage-candidate",
+        "--terminal",
+        "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/source-released-sdk35-continuation-r2/RESULT.json",
+        "--terminal-sha256",
+        "ca309c277d3bcc962abbaadb1054b334ff2d0eb603bb091a991f60f4896e04ec",
+        "--destination",
+        "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/validation-r2/rejected-source-only-candidate"
+      ],
+      "elapsed_seconds": 0.12,
+      "expected_returncode": 1,
+      "log": {
+        "bytes": 84,
+        "path": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/validation-r2/actual-source58-terminal-is-not-full-build.log",
+        "sha256": "d959067fa68152ddcbb88b66c3ad9b5442631eef925d887e736791caa68e5351"
+      },
+      "name": "actual-source58-terminal-is-not-full-build",
+      "returncode": 1
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "diff",
+        "--check"
+      ],
+      "elapsed_seconds": 0.01,
+      "expected_returncode": 0,
+      "log": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/validation-r2/git-diff-check.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "name": "git-diff-check",
+      "returncode": 0
+    }
+  ],
+  "deployments": 0,
+  "disk_free_before": 177156788224,
+  "finished_utc": "2026-11-09T16:34:06Z",
+  "images_written": 0,
+  "locked_crates": {
+    "bytes": 1225,
+    "path": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/locked-crates-r1/RESULT.json",
+    "sha256": "a39acfe6055e630e57daac667e801e0a2db40908ddd84840abdd526242fb2d52"
+  },
+  "mem_available_before": 92334407680,
+  "normal_tool": {
+    "bytes": 34060336,
+    "path": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/target/debug/droidloom-update",
+    "sha256": "6d4dc6aec00cff91e6b63d011dc975e36c2bcf295a270ca59ade46631b714b06"
+  },
+  "owner_source_modified": false,
+  "parent": "4caa694f25b3da022651a1078600a0eb1a5334fc",
+  "prior_attempt": {
+    "bytes": 2646,
+    "path": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/validation-r1/RESULT.json",
+    "sha256": "169cb973c85caa6989f71673432b53e9c2a7b145cd3703808531eeb68a083add"
+  },
+  "production_ready": false,
+  "source": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/source",
+  "source_files": {
+    "Cargo.lock": {
+      "bytes": 51847,
+      "path": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/source/Cargo.lock",
+      "sha256": "7df0988eb8ae64cb090874bdf945a7f7117f08443993aeba6ca4e4b3c7883c72"
+    },
+    "tools/droidloom-update/Cargo.toml": {
+      "bytes": 467,
+      "path": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/source/tools/droidloom-update/Cargo.toml",
+      "sha256": "8814846623fef6370b8176132f67b27bf4e85e0c4d12636db6bfc5d275598042"
+    },
+    "tools/droidloom-update/README.md": {
+      "bytes": 8586,
+      "path": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/source/tools/droidloom-update/README.md",
+      "sha256": "5cd2ba5e51b3573e0b6454020c03503fd6d4584257eebc0eccf13dc2c333bd59"
+    },
+    "tools/droidloom-update/src/audio_vendor_candidate.rs": {
+      "bytes": 21606,
+      "path": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/source/tools/droidloom-update/src/audio_vendor_candidate.rs",
+      "sha256": "8f8d7187ab4c7d2c78e3ef82065ab51f134c69721ed6feee595c18089857d28f"
+    },
+    "tools/droidloom-update/src/audio_vendor_candidate/tests.rs": {
+      "bytes": 14249,
+      "path": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/source/tools/droidloom-update/src/audio_vendor_candidate/tests.rs",
+      "sha256": "7edb605354afa0ccfcd0724fb52542f2d4cc9b212f870862f1944554f3f854f1"
+    },
+    "tools/droidloom-update/src/audio_vendor_zip.rs": {
+      "bytes": 15151,
+      "path": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/source/tools/droidloom-update/src/audio_vendor_zip.rs",
+      "sha256": "100ed8d36409e5a332f77d5aab1e697a7a01e9aa7f1f51ae5947d327053f4c3e"
+    },
+    "tools/droidloom-update/src/main.rs": {
+      "bytes": 22178,
+      "path": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/source/tools/droidloom-update/src/main.rs",
+      "sha256": "a7907a94510e91ec00f5a19d6df9999133e5c1de2827ecbb0dab7555043aa855"
+    }
+  },
+  "source_only_negative": {
+    "output_absent": true,
+    "terminal": {
+      "bytes": 917973,
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/source-released-sdk35-continuation-r2/RESULT.json",
+      "sha256": "ca309c277d3bcc962abbaadb1054b334ff2d0eb603bb091a991f60f4896e04ec"
+    }
+  },
+  "started_utc": "2026-11-09T16:33:33Z",
+  "state": "RUST_VENDOR_CANDIDATE_21_CONTROLS_NORMAL_BUILD_AND_REAL_SOURCE_NEGATIVE_PASSED"
+}

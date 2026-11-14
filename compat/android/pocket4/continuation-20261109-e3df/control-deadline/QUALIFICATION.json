@@ -1,0 +1,197 @@
+{
+  "accepted_applications": 0,
+  "android_invocations": 0,
+  "initial_unpinned_trial": {
+    "rustc": "rustc 1.95.0",
+    "six_tests_passed": true,
+    "superseded_by_pinned_rust_1_93_0": true,
+    "used_as_authoritative_toolchain_qualification": false
+  },
+  "installed_or_deployed": false,
+  "native_host": {
+    "architecture": "x86_64",
+    "cargo_build_jobs": 1,
+    "effective_uid": 1000,
+    "os": "Linux",
+    "rustc": "rustc 1.93.0 (254b59607 2026-01-19)",
+    "test_threads": 1
+  },
+  "production_ready": false,
+  "public_settings_rebase": {
+    "deadline_tests": {
+      "command": [
+        "cargo",
+        "+1.93.0",
+        "test",
+        "--locked",
+        "-j",
+        "1",
+        "--manifest-path",
+        "Cargo.toml",
+        "-p",
+        "droidloom-supervisor",
+        "--lib",
+        "control::request_deadline_tests",
+        "--",
+        "--test-threads=1"
+      ],
+      "evidence": {
+        "public-deadline.stderr": {
+          "bytes": 2182,
+          "sha256": "cec2c8037e82967c3b74f5ce4b887828abad41fc424fdbfd38b4c31126d42344"
+        },
+        "public-deadline.stdout": {
+          "bytes": 751,
+          "sha256": "b035b7597f04715a68fb2d342f310c2cfe60cda17b8082f3e18bcfbe1d35bbc9"
+        }
+      },
+      "exact_names": [
+        "control::request_deadline_tests::control_deadline_rejects_a_drip_fed_request_with_no_idle_timeout",
+        "control::request_deadline_tests::control_deadline_includes_descriptor_arrival_before_the_json_body",
+        "control::request_deadline_tests::control_deadline_preserves_peer_and_plain_json_requests",
+        "control::request_deadline_tests::control_deadline_preserves_progress_and_exact_scm_descriptor",
+        "control::request_deadline_tests::control_deadline_preserves_the_exact_message_size_boundary",
+        "control::request_deadline_tests::control_deadline_still_rejects_scm_on_non_install_requests"
+      ],
+      "exit_code": 0,
+      "failed": 0,
+      "filtered": 210,
+      "ignored": 0,
+      "local_additional_flag": "--offline",
+      "native_result": {
+        "bytes": 2457,
+        "sha256": "a7dea842ec8d3e0ed780664ce2d6d41c13da92a7a945494998cfed44b32b048b"
+      },
+      "native_result_path": "/home/alex/work/pocket4-control-20261109-e3df-r1/cleanup/public-deadline-result.json",
+      "observed_summary": "ok. 6 passed; 0 failed; 0 ignored; 0 measured; 210 filtered out; finished in 4.51s",
+      "passed": 6
+    },
+    "exact_patch_replay": true,
+    "external_dependency_count": 51,
+    "external_dependency_tuples_exact_original": true,
+    "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+    "patch": {
+      "bytes": 9253,
+      "path": "control-deadline.patch",
+      "sha256": "1f8d2db84e76054580c3aa64a54843058477105c30c4164702e340b7865b09ca"
+    },
+    "postimage": {
+      "bytes": 97375,
+      "path": "source/runtime/droidloom-supervisor/src/control.rs",
+      "sha256": "2bbb579650214ee9bd8d9be794569f20e7d7f6628822dbd4b928332ee79159ac"
+    },
+    "preimage": {
+      "bytes": 89609,
+      "path": "preimage/runtime/droidloom-supervisor/src/control.rs",
+      "sha256": "22cfe98ff60bb9ef5cf977cecf5867bdfc955ef39d86030a0d358d5a06820700"
+    },
+    "unchanged_original_dependency_files": 47,
+    "whole_control_group": {
+      "evidence": {
+        "public-full-control.stderr": {
+          "bytes": 318,
+          "sha256": "7cdfa20fa924d131e6f279ff3ece09de3920565e0f76e2f22cd271e96796f15c"
+        },
+        "public-full-control.stdout": {
+          "bytes": 11930,
+          "sha256": "13f69a12fafdbbbaefb97b715174be9e1cd11fb9a7787e809ca4200cef8734bf"
+        }
+      },
+      "exit_code": 0,
+      "failed": 0,
+      "filtered": 103,
+      "ignored": 3,
+      "ignored_tests": [
+        {
+          "name": "control::application_command::tests::real_fd_namespace_entry_and_dead_pidfd_preexec_rejection",
+          "reason": "requires explicit root test in a writable cgroup v2; enters only an owned host fixture"
+        },
+        {
+          "name": "control::application_command::tests::real_owned_group_retires_success_failure_overflow_and_escaped_pipe_holders",
+          "reason": "requires explicit root test in a writable cgroup v2; creates only owned host fixtures"
+        },
+        {
+          "name": "control::status_lifecycle_tests::owned_lifecycle_process_fixture",
+          "reason": "private subprocess entry used only by RunningFixture"
+        }
+      ],
+      "native_result": {
+        "bytes": 2445,
+        "sha256": "17264db76a09ee3febb8ec1b35114e38720cb498c2b4ae62f26ab3ed538e3057"
+      },
+      "native_result_path": "/home/alex/work/pocket4-control-20261109-e3df-r1/cleanup/public-full-control-result.json",
+      "observed_summary": "ok. 110 passed; 0 failed; 3 ignored; 0 measured; 103 filtered out; finished in 5.16s",
+      "passed": 110
+    }
+  },
+  "remaining_scope": "ProductionCell integration, selected Android runtime qualification and all selected applications remain the foreground owner responsibility. These source tests do not close those gates.",
+  "runtime_qualified": false,
+  "schema": "pocket4-control-deadline-qualification-v1",
+  "scope": "source-only absolute lifecycle request deadline; no deployment or Android/application acceptance",
+  "separate_production_base_qualification": {
+    "base_source": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/normal-production-cell-daemon-r1/source",
+    "baseline": {
+      "delayed_scm_and_body_accepted_after_seconds": 2.400876181,
+      "expected_failure_exit_code": 101,
+      "failed_new_regressions": 2,
+      "native_result": {
+        "bytes": 509,
+        "sha256": "3726c9d7fb2ba4f8aee6c0d87313e3c57c0cd738129d104a315ed51a134c7694"
+      },
+      "native_result_path": "/home/alex/work/pocket4-control-20261109-e3df-r1/cleanup/baseline-result.json",
+      "plain_json_drip_accepted_after_seconds": 3.003970046
+    },
+    "fixed_control_group": {
+      "exit_code": 0,
+      "failed": 0,
+      "filtered": 240,
+      "ignored": 1,
+      "native_result": {
+        "bytes": 1567,
+        "sha256": "3745875a3ee2b71ef074b3fc616535bd96f5f751ba61cd0adce3c89c3b842e57"
+      },
+      "native_result_path": "/home/alex/work/pocket4-control-20261109-e3df-r1/cleanup/final-result.json",
+      "only_control_source_modified": true,
+      "passed": 66,
+      "raw_evidence": {
+        "baseline-result.json": {
+          "bytes": 509,
+          "sha256": "3726c9d7fb2ba4f8aee6c0d87313e3c57c0cd738129d104a315ed51a134c7694"
+        },
+        "baseline.stderr": {
+          "bytes": 9589,
+          "sha256": "445e5fcfb280e9251a07770e0ddafb813f8c2ca71ce43d9d54c16862a0f26662"
+        },
+        "baseline.stdout": {
+          "bytes": 575,
+          "sha256": "c29e4a4a8e2f0e6063d1ac34b008bc85b58a159960a12740b8a9c9960d7695e6"
+        },
+        "control-deadline.patch": {
+          "bytes": 9249,
+          "sha256": "9f86ad453fc4d6c713462823e08156154d1a65c8f343c4547f7c909084081a1d"
+        },
+        "final.stderr": {
+          "bytes": 7269,
+          "sha256": "e261cb7a5b084877512a9c6563c07b86affcdb09cb83ef3494f98751e916abda"
+        },
+        "final.stdout": {
+          "bytes": 6312,
+          "sha256": "aa5233e8c092296515dabb54396502518961de8e5f109640a35eb1a36ffe753e"
+        },
+        "source-diff-verification.json": {
+          "bytes": 1085,
+          "sha256": "d686a30ffe1635935623b2a87030e2c613453959ccf697e86c4d226c180f8c2e"
+        }
+      },
+      "source_file_count": 430
+    },
+    "patch": {
+      "bytes": 9249,
+      "path": "provenance/production-base-control-deadline.patch",
+      "sha256": "9f86ad453fc4d6c713462823e08156154d1a65c8f343c4547f7c909084081a1d"
+    },
+    "source_postimage_sha256": "b553f07f3d77b1d20970ed0619912b7d3cb69866b7c1b8071d62f4cae5968ea3",
+    "source_preimage_sha256": "373dfcf01d8266c77d549e0028b0e17a939dbdbcfde9f2d3fc6a42cf68d3de64"
+  },
+  "source_binding": "SOURCE_BINDING.json"
+}

@@ -1,0 +1,69 @@
+{
+  "schema": "native600-rkpd-original-apex-inputs-v1",
+  "project": {
+    "name": "platform/packages/modules/RemoteKeyProvisioning",
+    "path": "packages/modules/RemoteKeyProvisioning",
+    "commit": "d88e2305f9186661fe75ee2f00c8b250a76fdabe",
+    "url": "https://android.googlesource.com/platform/packages/modules/RemoteKeyProvisioning"
+  },
+  "only_added_sparse_path": "apex",
+  "project_count_before": 600,
+  "project_count_after": 600,
+  "all_project_commits_unchanged": true,
+  "all_existing_sparse_paths_preserved": true,
+  "files": [
+    {
+      "path": "apex/Android.bp",
+      "mode": "100644",
+      "git_blob": "1feb01c0139e9ef75cd57e075ad76e7ade070442",
+      "bytes": 1421,
+      "sha256": "684c033d9ee70db48c8b2a7d0ee11eb156aa56abca0c0826271d9176696784b1"
+    },
+    {
+      "path": "apex/com.android.rkpd.avbpubkey",
+      "mode": "100644",
+      "git_blob": "94d4e7090f4c1f73c355992eee4820f21e750a8d",
+      "bytes": 1032,
+      "sha256": "12338c2704a6446aa8d9247a2e08a7296d32f6940e79ff85f967f1e82cfdbb04"
+    },
+    {
+      "path": "apex/com.android.rkpd.pem",
+      "mode": "100644",
+      "git_blob": "7579432ec4267bfa921dcbb1beec8d6663d6c605",
+      "bytes": 3272,
+      "sha256": "bddc87e8efd42253dc0ecac060c93a1c499c755a9c16933ecdd658e57fa2f800"
+    },
+    {
+      "path": "apex/com.android.rkpd.pk8",
+      "mode": "100644",
+      "git_blob": "b8241223416a75b8cbf5f89c65aeabd5a345a87c",
+      "bytes": 2374,
+      "sha256": "313ade19d279c5c1aa5c73a0ff6cd1dc4ed101b68ab84dcd97667b8046156352"
+    },
+    {
+      "path": "apex/com.android.rkpd.x509.pem",
+      "mode": "100644",
+      "git_blob": "edea43bb5c6e23a30846fb6f13113118be0eaa13",
+      "bytes": 2029,
+      "sha256": "2e1f12068b4865fc25f505f85b081083733e9f161a6d5ca24d4b20875e70a1ba"
+    },
+    {
+      "path": "apex/manifest.json",
+      "mode": "100644",
+      "git_blob": "54e9e3419dc5495e449c1686bbf3adb2e36d1adb",
+      "bytes": 49,
+      "sha256": "d7624b79a2c4cc5241f536131c5c55517a29c25bc6531760a4816bf3a910c125"
+    }
+  ],
+  "official_build_test_key_bodies_included": false,
+  "consumer": "rkpd-sdk",
+  "provider": "com.android.rkpd",
+  "provider_dependencies": [
+    "com.android.rkpd.key",
+    "com.android.rkpd.certificate",
+    "com.android.rkpd-systemserverclasspath-fragment",
+    "com.android.rkpd-file_contexts",
+    "rkpdapp"
+  ],
+  "full_build_qualified": false
+}

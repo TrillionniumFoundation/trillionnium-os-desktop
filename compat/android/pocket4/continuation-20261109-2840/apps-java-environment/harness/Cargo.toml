@@ -1,0 +1,23 @@
+[package]
+name = "pocket4-application-java-environment-tests"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+publish = false
+
+[workspace]
+members = ["cpu-placement", "process-fd"]
+resolver = "3"
+
+[dependencies]
+droidloom-cpu-placement = { path = "cpu-placement" }
+pocket4-process-fd = { path = "process-fd" }
+hex = "=0.4.3"
+libc = "=0.2.188"
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "=1.0.151"
+sha2 = "=0.10.9"
+tempfile = "=3.27.0"
+
+[lints.rust]
+unsafe_op_in_unsafe_fn = "deny"

@@ -1,0 +1,33 @@
+diff --git a/runtime/droidloom-supervisor/src/production_namespace_tests.rs b/runtime/droidloom-supervisor/src/production_namespace_tests.rs
+--- a/runtime/droidloom-supervisor/src/production_namespace_tests.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_tests.rs
+@@ -502,13 +502,28 @@
+     assert_ne!(creator_tid, unsafe { libc::syscall(libc::SYS_gettid) }
+         as i32);
+     assert_eq!(parent_pid, std::process::id());
++    // The creator is still alive and blocked on release_rx. Bind this exact
++    // kernel thread before releasing it, without a TID-reuse window.
++    let creator_raw = unsafe { libc::syscall(libc::SYS_pidfd_open, creator_tid, libc::O_EXCL) };
++    assert!(creator_raw >= 0, "opening live creator PIDFD_THREAD failed");
++    let creator_pidfd = unsafe { OwnedFd::from_raw_fd(creator_raw as i32) };
+     probe.receive(Phase::Created);
+     if rearm {
+         probe.send(Phase::Enter);
+         probe.receive(Phase::Parked);
+     }
+     release_tx.send(()).unwrap();
+-    creator.join().unwrap(); // creator dead; the same parent TGID is still alive
++    creator.join().unwrap();
++    // pthread join can wake before exit_notify publishes PIDFD_THREAD exit.
++    // Establish the kernel-dead-before-arm premise with the held descriptor.
++    let readable_after_join = pidfd_exited(&creator_pidfd).unwrap();
++    assert!(
++        wait_exited(&creator_pidfd, Duration::from_secs(2)).unwrap(),
++        "creator kernel task did not exit within the bounded wait"
++    );
++    eprintln!(
++        "creator-exit barrier rearm={rearm}: readable_after_join={readable_after_join}; held_thread_exit=true"
++    );
+     assert_eq!(std::process::id(), parent_pid);
+     probe.send(if rearm { Phase::Go } else { Phase::Enter });
+     let exit = probe.reap().unwrap();

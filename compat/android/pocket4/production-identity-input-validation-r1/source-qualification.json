@@ -1,0 +1,920 @@
+{
+  "schema": "pocket4-identity-review-qualification-v2",
+  "base_commit": "b4dc3b49ce29e706efca0ba5a7c775864d9b54b8",
+  "toolchain_version": "rustc 1.93.0 (254b59607 2026-01-19)",
+  "cargo_version": "cargo 1.93.0 (083ac5135 2025-12-15)",
+  "rustfmt_version": "rustfmt 1.8.0-stable (254b59607d 2026-01-19)",
+  "source_files": [
+    {
+      "path": "runtime/droidloom-supervisor/src/lib.rs",
+      "bytes": 41328,
+      "sha256": "10b0220e22b7f26731e72cbabb0f491b71794b5ca99b9435499c49253d4f5184"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/main.rs",
+      "bytes": 10449,
+      "sha256": "aae7d4d208da37eaa87a5f64c70c6dc510940c8f34543cee4ccfec9b525ecc0e"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/production_identity.rs",
+      "bytes": 50542,
+      "sha256": "11f8529b42bc7fd300e6eccdb87299f06e39b54da11a6daa325cf100a3995c67"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/control.rs",
+      "bytes": 81360,
+      "sha256": "46279b7c0b382f64d03f73e576e774152f39725aeb240050669db7cea9b2e90f"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/development.rs",
+      "bytes": 124640,
+      "sha256": "2ef2429a74fa8c66c0f78c11056503c3ed50ce254b0345a9f8a716d6bf136ce2"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/sealed_spec.rs",
+      "bytes": 26610,
+      "sha256": "d3b95b594748488c1c3648e9fbae8f945003ca665e257cab86363c852aeaf842"
+    },
+    {
+      "path": "docs/contracts/runtime-layout-v1.md",
+      "bytes": 16243,
+      "sha256": "50c5472d1efe3f309d426ea01fdb6937cafdb59be18522ef032a8e14ab725c5d"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/tests/fixtures/sealed-entry-probe.rs",
+      "bytes": 1759,
+      "sha256": "933569f16f7b871436ef57eb8134a335aeb12a0710eb1f4776345698859c879e"
+    }
+  ],
+  "normal": [
+    {
+      "name": "supervisor-lib",
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-supervisor",
+        "--lib",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 9.185805916786194,
+      "test_results": [
+        "test result: ok. 159 passed; 0 failed; 22 ignored; 0 measured; 0 filtered out; finished in 0.77s"
+      ],
+      "stdout": {
+        "bytes": 17530,
+        "sha256": "4152d0e39a6a46156d228f2148eab551e0169c557ca6b7d4930e727e32a5bad9"
+      },
+      "stderr": {
+        "bytes": 376,
+        "sha256": "bcb0e856c3a07eda5d4245e952948f3fdfd1ae365380b08fb8b4ea11ca82bdff"
+      }
+    },
+    {
+      "name": "supervisor-bin",
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-supervisor",
+        "--bin",
+        "droidloom-supervisor",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 7.323074114974588,
+      "test_results": [
+        "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s"
+      ],
+      "stdout": {
+        "bytes": 486,
+        "sha256": "1913df858f00f89d28caf41e2b70818472dd4021decc1c3bf9c9b08a3f3ded43"
+      },
+      "stderr": {
+        "bytes": 377,
+        "sha256": "8902cb578c5d39428f63e6c88811b84887632a026418ab5004f3ec24bcd92b3e"
+      }
+    },
+    {
+      "name": "supervisor-build",
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-supervisor",
+        "--lib",
+        "--bin",
+        "droidloom-supervisor"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.931295899907127,
+      "test_results": [],
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 209,
+        "sha256": "0ab62f1608c38bf3fb93e4d52c9de14bcdce9e9f24a3515b778e384259898ad1"
+      }
+    },
+    {
+      "name": "sealed-wrapper-probe-compile",
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition",
+        "2024",
+        "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/source/runtime/droidloom-supervisor/tests/fixtures/sealed-entry-probe.rs",
+        "--extern",
+        "droidloom_supervisor=/home/alex/work/pocket4-identity-review-20261109-493ac-r1/target-spec-handoff-r2/debug/libdroidloom_supervisor.rlib",
+        "-L",
+        "dependency=/home/alex/work/pocket4-identity-review-20261109-493ac-r1/target-spec-handoff-r2/debug/deps",
+        "-o",
+        "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/qualification/spec-handoff-r2/sealed-entry-probe"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.21500511397607625,
+      "test_results": [],
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "rustfmt-check",
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "--check",
+        "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/source/runtime/droidloom-supervisor/src/lib.rs",
+        "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/source/runtime/droidloom-supervisor/src/main.rs",
+        "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/source/runtime/droidloom-supervisor/src/production_identity.rs",
+        "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/source/runtime/droidloom-supervisor/src/control.rs",
+        "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/source/runtime/droidloom-supervisor/src/development.rs",
+        "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/source/runtime/droidloom-supervisor/src/sealed_spec.rs",
+        "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/source/runtime/droidloom-supervisor/tests/fixtures/sealed-entry-probe.rs"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.22418403904885054,
+      "test_results": [],
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "ordinary_effective_uid": 1000,
+  "ignored_library_entries": [
+    "test control::status_lifecycle_tests::owned_lifecycle_process_fixture ... ignored, private subprocess entry used only by RunningFixture",
+    "test control::tests::daemon_root_custody_preserves_directory_aliases_and_rejects_untrusted_inputs ... ignored, requires actual root-owned fixtures; no Android activation",
+    "test control::tests::daemon_root_custody_reads_authorized_inode_after_parent_replacement ... ignored, requires actual root-owned fixtures; no Android activation",
+    "test development::android_overrides::tests::private_projection_preserves_metadata_and_enforces_read_only_mounts ... ignored, requires root in a dedicated mount namespace; run the owned Pocket4 mount fixture",
+    "test development::guest_dirs::tests::actual_restrictive_umask_namespace_directory_access ... ignored, requires root and actual private Linux namespaces; no Android inputs",
+    "test development::guest_dirs::tests::android_second_stage_umask_fixture ... ignored, private post-exec PID1 entry for the explicitly selected namespace control",
+    "test development::guest_dirs::tests::private_namespace_fixture ... ignored, private PID1 entry for the explicitly selected namespace control",
+    "test development::guest_dirs::tests::unprivileged_socket_fixture ... ignored, private UID1000 entry for the explicitly selected namespace control",
+    "test development::owned_process::tests::actual_daemon_death_after_fork_before_android_enter ... ignored, requires root and actual private Linux namespaces; no Android inputs",
+    "test development::owned_process::tests::actual_daemon_death_before_unshare_exec_and_fork ... ignored, requires root for the actual namespace command; no Android inputs",
+    "test development::owned_process::tests::actual_namespace_term_and_force_retire_owned_processes ... ignored, requires root and actual private Linux namespaces; no Android inputs",
+    "test development::owned_process::tests::namespace_init_fixture ... ignored, private entry for the explicitly selected namespace controls",
+    "test development::owned_process::tests::namespace_launcher_fixture ... ignored, private entry for the explicitly selected namespace controls",
+    "test development::owned_process::tests::namespace_preexec_fixture ... ignored, private entry for the explicitly selected namespace controls",
+    "test development::tests::gsi_image_layout_mounts_official_image_and_private_alias_overrides ... ignored, requires verified GSI/vendor images, root, and an owned private mount namespace",
+    "test development::tests::sealed_root_real_namespace_wrapper_chain_consumes_and_retires ... ignored, requires root and owned private namespaces; consumes input without Android",
+    "test development::tests::sealed_wrapper_namespace_fixture ... ignored, private PID1 entry for the sealed wrapper compatibility control",
+    "test sealed_spec::tests::inherited_child_probe ... ignored, private exec child; invoked only by the bounded parent controls",
+    "test sealed_spec::tests::sealed_root_abnormal_child_exit_keeps_parent_descriptor_private ... ignored, requires actual root; reaps its owned abnormal child",
+    "test sealed_spec::tests::sealed_root_creator_death_kills_and_reaps_inherited_child ... ignored, requires actual root; checks actual creator death and reaps its child",
+    "test sealed_spec::tests::sealed_root_exec_uses_immutable_bytes_and_closes_child_fd ... ignored, requires actual root; only owned memfd and ordinary child processes",
+    "test sealed_spec::tests::sealed_root_rejects_wrong_binding_unsealed_and_non_root_owned_files ... ignored, requires actual root; rejects only test-owned descriptors"
+  ],
+  "ignored_entry_scope": "13 pre-existing environment/private helpers were not invoked; seven new privileged parent controls were invoked separately; two new private helpers were exercised through their parent controls. Nested helper result lines are not extra independent acceptance controls.",
+  "privileged": {
+    "effective_uid": 0,
+    "selected_parent_controls": 7,
+    "commands": [
+      {
+        "name": "control::tests::daemon_root_custody_reads_authorized_inode_after_parent_replacement",
+        "exit_code": 0,
+        "elapsed_seconds": 0.00833617802709341,
+        "test_results": [
+          "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 180 filtered out; finished in 0.00s"
+        ],
+        "stdout": {
+          "bytes": 210,
+          "sha256": "f166b7a9a21638d2ff21ab3db4efb14f2351d82f248a06b5f95eba54757cef31"
+        },
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "control::tests::daemon_root_custody_preserves_directory_aliases_and_rejects_untrusted_inputs",
+        "exit_code": 0,
+        "elapsed_seconds": 0.0052323308773338795,
+        "test_results": [
+          "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 180 filtered out; finished in 0.00s"
+        ],
+        "stdout": {
+          "bytes": 219,
+          "sha256": "79445bfef9ff76babc28cca6c0a1c4cb99570aada43700a2ffbdeca470bcc0a6"
+        },
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "sealed_spec::tests::sealed_root_exec_uses_immutable_bytes_and_closes_child_fd",
+        "exit_code": 0,
+        "elapsed_seconds": 0.016230856999754906,
+        "test_results": [
+          "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 180 filtered out; finished in 0.01s"
+        ],
+        "stdout": {
+          "bytes": 204,
+          "sha256": "515ff0e247cf994d5c9efe00a23ee0707444a5067d9550e7db7caa5ed604d23c"
+        },
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "sealed_spec::tests::sealed_root_rejects_wrong_binding_unsealed_and_non_root_owned_files",
+        "exit_code": 0,
+        "elapsed_seconds": 0.06507457792758942,
+        "test_results": [
+          "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 180 filtered out; finished in 0.04s"
+        ],
+        "stdout": {
+          "bytes": 214,
+          "sha256": "53705401f063810685364087c768084081312fc9a3f8e57905783f6da44bccf2"
+        },
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "sealed_spec::tests::sealed_root_abnormal_child_exit_keeps_parent_descriptor_private",
+        "exit_code": 0,
+        "elapsed_seconds": 0.01621419400908053,
+        "test_results": [
+          "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 180 filtered out; finished in 0.01s"
+        ],
+        "stdout": {
+          "bytes": 210,
+          "sha256": "ba1608a8cb97ca834741f04b35d3815ed3578bcbace6d2d70689c68a2b50782b"
+        },
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "sealed_spec::tests::sealed_root_creator_death_kills_and_reaps_inherited_child",
+        "exit_code": 0,
+        "elapsed_seconds": 0.01655909395776689,
+        "test_results": [
+          "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 180 filtered out; finished in 0.01s"
+        ],
+        "stdout": {
+          "bytes": 204,
+          "sha256": "5ea020154c5aaaccc17d477323b0680f10f0a854867103a51cafb3212f37b495"
+        },
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "name": "development::tests::sealed_root_real_namespace_wrapper_chain_consumes_and_retires",
+        "exit_code": 0,
+        "elapsed_seconds": 0.034888377180323005,
+        "test_results": [
+          "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 180 filtered out; finished in 0.02s",
+          "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 180 filtered out; finished in 0.03s"
+        ],
+        "stdout": {
+          "bytes": 565,
+          "sha256": "c39be1fbab2337688abf542487ebd150c5b389f1373347ba10c167f436bcae5f"
+        },
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    ],
+    "binaries": {
+      "test_binary": {
+        "path": "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/target-spec-handoff-r2/debug/deps/droidloom_supervisor-114e00ef8375ff4f",
+        "bytes": 30610248,
+        "sha256": "95ab0116c3f8efe58946b10a5d3ec2edabeeeb4c07fe2d48723fe3e955f171b1"
+      },
+      "wrapper_probe": {
+        "path": "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/qualification/spec-handoff-r2/sealed-entry-probe",
+        "bytes": 17145064,
+        "sha256": "0788b2a4bb976d94c60eba934d872ba6fad4fc804f064dc607c06e64f25bcff0"
+      }
+    },
+    "wrapper_lifecycle": "Actual production command constructor ip -> unshare -> pinned sealed probe; two owned owners reaped and both init pidfds exited; private named netns removed; parent namespace identities unchanged; Android entry never called."
+  },
+  "negative": [
+    {
+      "name": "shared-reader-fifo-blocking",
+      "argv": [
+        "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/target-spec-negative-r2/debug/deps/droidloom_supervisor-114e00ef8375ff4f",
+        "--exact",
+        "control::tests::daemon_loader_fifo_does_not_wait_for_a_writer",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit_code": 101,
+      "elapsed_seconds": 1.0273114040028304,
+      "test_results": [
+        "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 180 filtered out; finished in 1.01s"
+      ],
+      "stdout": {
+        "bytes": 284,
+        "sha256": "7b8a65d8ad5751cdaca3e7feb3c3fd347dddd264f1ba63e1e01194d73f047f7b"
+      },
+      "stderr": {
+        "bytes": 275,
+        "sha256": "fbaf39d44d4867bf21ae44ceda8e1f24ec21ab65d6ee4eedff0176aac458fd5d"
+      },
+      "mutation_file": "runtime/droidloom-supervisor/src/lib.rs",
+      "mutation_sha256": "927da3a794d8e0f680bc5a98f3951ef30bef41ba6fff0538251af9bdddd5888e",
+      "actual_root_required": false,
+      "compile_exit_code": 0,
+      "compile_stdout": {
+        "bytes": 61981,
+        "sha256": "c0e8965a3ade37137b006147a476319bf6982faca553faba8028470d680babcd"
+      },
+      "compile_stderr": {
+        "bytes": 2066,
+        "sha256": "c099146cd9a3923bd651a815e9889d26337b59b7ad03003e3b3d05748adf8d06"
+      }
+    },
+    {
+      "name": "shared-reader-without-byte-cap",
+      "argv": [
+        "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/target-spec-negative-r2/debug/deps/droidloom_supervisor-8e3848da8fdca3f4",
+        "--exact",
+        "tests::spec_reader_bounds_unending_input",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit_code": 101,
+      "elapsed_seconds": 0.0057615721598267555,
+      "test_results": [
+        "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s"
+      ],
+      "stdout": {
+        "bytes": 240,
+        "sha256": "fffbf10a67d394ce6c8a2d87d8ff7ea9531625be9706bda122c264f6b612b11b"
+      },
+      "stderr": {
+        "bytes": 277,
+        "sha256": "f0e09fb828dda524ee814d79bb6038f7429b60aa43a2f1cf646d8e9234336dde"
+      },
+      "mutation_file": "runtime/droidloom-supervisor/src/lib.rs",
+      "mutation_sha256": "7d59a846e71c2a312636a2113c9b3bb19c8573e4d0a79c7cc7c2f0824318322d",
+      "actual_root_required": false,
+      "compile_exit_code": 0,
+      "compile_stdout": {
+        "bytes": 64463,
+        "sha256": "d8da87da8c4b6740a9cc5336c2ce9943f80c7a25efea0c4e773734805aaaaf94"
+      },
+      "compile_stderr": {
+        "bytes": 227,
+        "sha256": "4790e00f9913f59af6d5e70e9ea1dbc590e912b7142a1f365184c561617c24fc"
+      }
+    },
+    {
+      "name": "daemon-reopens-replaced-path",
+      "argv": [
+        "/usr/bin/sudo",
+        "-n",
+        "/usr/bin/env",
+        "TMPDIR=/home/alex/work/pocket4-identity-review-20261109-493ac-r1/tmp",
+        "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/target-spec-negative-r2/debug/deps/droidloom_supervisor-114e00ef8375ff4f",
+        "--exact",
+        "control::tests::daemon_root_custody_reads_authorized_inode_after_parent_replacement",
+        "--nocapture",
+        "--test-threads=1",
+        "--ignored"
+      ],
+      "exit_code": 101,
+      "elapsed_seconds": 0.032322640996426344,
+      "test_results": [
+        "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 180 filtered out; finished in 0.00s"
+      ],
+      "stdout": {
+        "bytes": 328,
+        "sha256": "b51712e958729bd9246eaf6176be5e9f8963ff5bcb6a04140778a8485855cb35"
+      },
+      "stderr": {
+        "bytes": 1520,
+        "sha256": "bff5d378f7206e9934b091e2a5abd0e98b0c30890e21e82414afbf0558831176"
+      },
+      "mutation_file": "runtime/droidloom-supervisor/src/control.rs",
+      "mutation_sha256": "e90efe9aeb5391199de1c0742775776fdf90841f0928805c684cc75abc353f29",
+      "actual_root_required": true,
+      "compile_exit_code": 0,
+      "compile_stdout": {
+        "bytes": 61922,
+        "sha256": "cd2c59aa371d7a1ee7538918ae136bad1a1a58ab6a17dee02178a54d90362b4f"
+      },
+      "compile_stderr": {
+        "bytes": 227,
+        "sha256": "6268c9c32cc77f6eb872d56dd5c8f866175c6395b101f4ebf1a9b4b9db496da6"
+      }
+    },
+    {
+      "name": "memfd-without-write-seal",
+      "argv": [
+        "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/target-spec-negative-r2/debug/deps/droidloom_supervisor-114e00ef8375ff4f",
+        "--exact",
+        "sealed_spec::tests::actual_memfd_has_write_seals_and_parent_cloexec",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit_code": 101,
+      "elapsed_seconds": 0.003762182081118226,
+      "test_results": [
+        "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 180 filtered out; finished in 0.00s"
+      ],
+      "stdout": {
+        "bytes": 296,
+        "sha256": "8f477b7df0910a58a56e6a1430edfd520407f990d691601a87573921c4b3dd6f"
+      },
+      "stderr": {
+        "bytes": 283,
+        "sha256": "65a714a080d315fcc209cb9a196b288c6c9ca404f420bea6a5b2e457ada6e9cd"
+      },
+      "mutation_file": "runtime/droidloom-supervisor/src/sealed_spec.rs",
+      "mutation_sha256": "9b611237f46484f2a7027caca4e697ad120285e632ca947e20de6773c69037c4",
+      "actual_root_required": false,
+      "compile_exit_code": 0,
+      "compile_stdout": {
+        "bytes": 61922,
+        "sha256": "dc96956dcdebfd7b3a46a7eef048240b9d5a036493272b2112169f4e0a51e2ad"
+      },
+      "compile_stderr": {
+        "bytes": 227,
+        "sha256": "0766cdf13e8b1e975f3a15a6e35e9546c6b176a282e87acf9632047df53374ba"
+      }
+    },
+    {
+      "name": "child-inheritance-not-armed",
+      "argv": [
+        "/usr/bin/sudo",
+        "-n",
+        "/usr/bin/env",
+        "TMPDIR=/home/alex/work/pocket4-identity-review-20261109-493ac-r1/tmp",
+        "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/target-spec-negative-r2/debug/deps/droidloom_supervisor-114e00ef8375ff4f",
+        "--exact",
+        "sealed_spec::tests::sealed_root_exec_uses_immutable_bytes_and_closes_child_fd",
+        "--nocapture",
+        "--test-threads=1",
+        "--ignored"
+      ],
+      "exit_code": 101,
+      "elapsed_seconds": 0.01705188606865704,
+      "test_results": [
+        "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 180 filtered out; finished in 0.00s"
+      ],
+      "stdout": {
+        "bytes": 316,
+        "sha256": "ec6aae345f06cc5ef2193f5cbb00cd27ea1b2f34b5d774cedf31eb52c1ad0824"
+      },
+      "stderr": {
+        "bytes": 353,
+        "sha256": "2b7bea63a9b6667c4a4c6599a1c4d0859d459243032279f1671a5aededd9c398"
+      },
+      "mutation_file": "runtime/droidloom-supervisor/src/sealed_spec.rs",
+      "mutation_sha256": "6147d48a60b95069a9ebaaee3ac28a4c8d597a013f3b2ceb32fecba71d7af63b",
+      "actual_root_required": true,
+      "compile_exit_code": 0,
+      "compile_stdout": {
+        "bytes": 61922,
+        "sha256": "3e33241585540da341d4f81f162021723e9053e0939ab0db55beda25750e9c93"
+      },
+      "compile_stderr": {
+        "bytes": 227,
+        "sha256": "eb3725455a7c01f8a4ddc2d04a8fb2eaec22fa769a96e118d27d8e6cf89dec72"
+      }
+    },
+    {
+      "name": "receiver-leaks-original-fd",
+      "argv": [
+        "/usr/bin/sudo",
+        "-n",
+        "/usr/bin/env",
+        "TMPDIR=/home/alex/work/pocket4-identity-review-20261109-493ac-r1/tmp",
+        "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/target-spec-negative-r2/debug/deps/droidloom_supervisor-114e00ef8375ff4f",
+        "--exact",
+        "sealed_spec::tests::sealed_root_exec_uses_immutable_bytes_and_closes_child_fd",
+        "--nocapture",
+        "--test-threads=1",
+        "--ignored"
+      ],
+      "exit_code": 101,
+      "elapsed_seconds": 0.03251828299835324,
+      "test_results": [
+        "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 180 filtered out; finished in 0.01s"
+      ],
+      "stdout": {
+        "bytes": 316,
+        "sha256": "f93a9807ec56afeea3f581182c8a8441b67d56fd2bbae31d76353517fdec93cc"
+      },
+      "stderr": {
+        "bytes": 837,
+        "sha256": "7663bdc11885e924712dd74155fd35b32b96ae7e7c428ca3636d6ccc79af72a3"
+      },
+      "mutation_file": "runtime/droidloom-supervisor/src/sealed_spec.rs",
+      "mutation_sha256": "fd05273dc516d8b9ba7adfc2f9e79a44e4275296084e94c672b55290264292e1",
+      "actual_root_required": true,
+      "compile_exit_code": 0,
+      "compile_stdout": {
+        "bytes": 61922,
+        "sha256": "0b3eed3d5418e2d9443360d3a02aeeb350a241ec1a905a9ec4090f50fae446ce"
+      },
+      "compile_stderr": {
+        "bytes": 227,
+        "sha256": "f08983eb2f89fdbba62582a751dc8fed3d3b590d0cd433ee914766a0aa6e369a"
+      }
+    }
+  ],
+  "resource_samples": {
+    "normal_after": {
+      "cpu.max": "100000 100000",
+      "memory.max": "3221225472",
+      "memory.current": "255467520",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    },
+    "privileged_after": {
+      "cpu.max": "100000 100000",
+      "memory.max": "3221225472",
+      "memory.current": "38211584",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    },
+    "negative_resume_after": {
+      "cpu.max": "100000 100000",
+      "memory.max": "3221225472",
+      "memory.current": "189292544",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    },
+    "scope": "Snapshots for focused source qualification only; no claim about Android full-build or runtime resources."
+  },
+  "cpu_quota_percent": 100,
+  "cpu_affinity": [
+    0
+  ],
+  "memory_max_bytes": 3221225472,
+  "nice": 19,
+  "runtime_qualified": false,
+  "production_ready": false,
+  "live_source_writes": 0,
+  "host_account_mutations": 0,
+  "subordinate_grant_changes": 0,
+  "preparation_failures": [
+    {
+      "job_id": "1a1bf020c85-5e21-369",
+      "stage": "source payload parse",
+      "exit_code": 1,
+      "reason": "JavaScript replacement-string expansion corrupted a quoted Python input literal; Python rejected parsing before any statement or source write. Literal interpolation corrected in the next exact owned-source installer."
+    },
+    {
+      "job_id": "1a1bf1368cf-5e21-3b6",
+      "stage": "negative controls preparation",
+      "exit_code": 1,
+      "reason": "First FIFO mutation compiled and failed its expected assertion; the second mutation anchor did not match rustfmt line breaks. The driver refused and finally restored its isolated source. Remaining five controls ran successfully with the exact formatted anchor."
+    }
+  ],
+  "execution_identities": {
+    "host": "pocket4",
+    "toolchain_inspection": {
+      "job_id": "1a1bef6b2f3-5e21-338",
+      "state": "succeeded",
+      "exit_code": 0,
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false,
+      "launch_nonce": "1c9532bb25a2b58756741a9075bdb8d5",
+      "cancelled": false,
+      "terminal_publication_confirmed": true
+    },
+    "source_install_parse_rejection": {
+      "job_id": "1a1bf020c85-5e21-369",
+      "state": "failed",
+      "exit_code": 1,
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false,
+      "launch_nonce": "6c5561f344fa0505c46a5ed067cf3cd4",
+      "cancelled": false,
+      "terminal_publication_confirmed": true
+    },
+    "source_install": {
+      "job_id": "1a1bf0354ae-5e21-36f",
+      "state": "succeeded",
+      "exit_code": 0,
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false,
+      "launch_nonce": "d59e02c4ff6043df9f6900551a20552c",
+      "cancelled": false,
+      "terminal_publication_confirmed": true
+    },
+    "initial_normal": {
+      "job_id": "1a1bf04df5a-5e21-37a",
+      "state": "succeeded",
+      "exit_code": 0,
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false,
+      "launch_nonce": "20d4972dd0cf1f9685dcaf3ea9b3d607",
+      "cancelled": false,
+      "terminal_publication_confirmed": true
+    },
+    "wrapper_source_install": {
+      "job_id": "1a1bf0d4ae1-5e21-39c",
+      "state": "succeeded",
+      "exit_code": 0,
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false,
+      "launch_nonce": "3859982f117c94f90a6deed6ebbaffbe",
+      "cancelled": false,
+      "terminal_publication_confirmed": true
+    },
+    "normal": {
+      "job_id": "1a1bf0ea29b-5e21-3a4",
+      "state": "succeeded",
+      "exit_code": 0,
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false,
+      "launch_nonce": "c2968ee9cfac5c380cb55586c9b32cc8",
+      "cancelled": false,
+      "terminal_publication_confirmed": true
+    },
+    "privileged": {
+      "job_id": "1a1bf1127b9-5e21-3ac",
+      "state": "succeeded",
+      "exit_code": 0,
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false,
+      "launch_nonce": "473c4f6f3abdcc452869c4b2f6a24313",
+      "cancelled": false,
+      "terminal_publication_confirmed": true
+    },
+    "negative_initial": {
+      "job_id": "1a1bf1368cf-5e21-3b6",
+      "state": "failed",
+      "exit_code": 1,
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false,
+      "launch_nonce": "abd772c92ee423c1a352fdaed386faa3",
+      "cancelled": false,
+      "terminal_publication_confirmed": true
+    },
+    "negative_resume": {
+      "job_id": "1a1bf167f28-5e21-3c4",
+      "state": "succeeded",
+      "exit_code": 0,
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false,
+      "launch_nonce": "057dee09132aedae19f0edb6e42e6ea7",
+      "cancelled": false,
+      "terminal_publication_confirmed": true
+    },
+    "source_bundle": {
+      "job_id": "1a1bf14f7a5-5e21-3be",
+      "state": "succeeded",
+      "exit_code": 0,
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false,
+      "launch_nonce": "a70d86fc27839c29ceb58361972521f9",
+      "cancelled": false,
+      "terminal_publication_confirmed": true
+    }
+  },
+  "historical_098a58c_qualification": {
+    "schema": "pocket4-identity-review-qualification-v1",
+    "base_commit": "098a58c107977c0be24e4b8311c77af1d786c9ad",
+    "toolchain_version": "rustc 1.95.0 (59807616e 2026-04-14)",
+    "normal": [
+      {
+        "name": "normal-identity-tests",
+        "exit_code": 0,
+        "test_results": [
+          "test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 145 filtered out; finished in 0.03s"
+        ],
+        "stdout_sha256": "848fb07f8b9048ebc9e6d2c17a752ca9c16d450dc284d8f2cab5b960073501f2",
+        "stderr_sha256": "6ded98f3fefa1c337ae9601a658a00bb84c412235b8843f8a2a0c4243216332d"
+      },
+      {
+        "name": "normal-shared-boundary-tests",
+        "exit_code": 0,
+        "test_results": [
+          "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 157 filtered out; finished in 0.00s"
+        ],
+        "stdout_sha256": "a7e3281e401caad65a7776a5fa8eda5bf44140a5c2bd03d4af9c562485592976",
+        "stderr_sha256": "40319c74f10d88cad9db2c9d3a623dbb97c921d74843def6893eea67c981bdf3"
+      },
+      {
+        "name": "normal-bin-input-tests",
+        "exit_code": 0,
+        "test_results": [
+          "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s"
+        ],
+        "stdout_sha256": "cfcc6b121704fddcf249e1f4535405f978af84a32044a75ed12cb16d9b358fed",
+        "stderr_sha256": "f392dd47fb60d94369e19f1c505382bdef287b9124a12d865f6c61a1057469e4"
+      },
+      {
+        "name": "normal-supervisor-build",
+        "exit_code": 0,
+        "test_results": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "24bc2ffa7f8343de641aa93aeed34954f95bcc74ecd4f78166bfea7bc2cc4365"
+      }
+    ],
+    "all_lib": {
+      "name": "all-supervisor-lib",
+      "exit_code": 0,
+      "test_results": [
+        "test result: ok. 150 passed; 0 failed; 13 ignored; 0 measured; 0 filtered out; finished in 0.84s"
+      ],
+      "stdout_sha256": "2842c9b2c4b6444f3b966be3931f340aa3823ed4009529f67f59b773a8aeed08",
+      "stderr_sha256": "1997732b1c0431f38867eadbf76fd5d8b0a8ad53e3fc59c7c37aa6ab8bc24e5b"
+    },
+    "ignored": [
+      "test control::status_lifecycle_tests::owned_lifecycle_process_fixture ... ignored, private subprocess entry used only by RunningFixture",
+      "test development::android_overrides::tests::private_projection_preserves_metadata_and_enforces_read_only_mounts ... ignored, requires root in a dedicated mount namespace; run the owned Pocket4 mount fixture",
+      "test development::guest_dirs::tests::actual_restrictive_umask_namespace_directory_access ... ignored, requires root and actual private Linux namespaces; no Android inputs",
+      "test development::guest_dirs::tests::android_second_stage_umask_fixture ... ignored, private post-exec PID1 entry for the explicitly selected namespace control",
+      "test development::guest_dirs::tests::private_namespace_fixture ... ignored, private PID1 entry for the explicitly selected namespace control",
+      "test development::guest_dirs::tests::unprivileged_socket_fixture ... ignored, private UID1000 entry for the explicitly selected namespace control",
+      "test development::owned_process::tests::actual_daemon_death_after_fork_before_android_enter ... ignored, requires root and actual private Linux namespaces; no Android inputs",
+      "test development::owned_process::tests::actual_daemon_death_before_unshare_exec_and_fork ... ignored, requires root for the actual namespace command; no Android inputs",
+      "test development::owned_process::tests::actual_namespace_term_and_force_retire_owned_processes ... ignored, requires root and actual private Linux namespaces; no Android inputs",
+      "test development::owned_process::tests::namespace_init_fixture ... ignored, private entry for the explicitly selected namespace controls",
+      "test development::owned_process::tests::namespace_launcher_fixture ... ignored, private entry for the explicitly selected namespace controls",
+      "test development::owned_process::tests::namespace_preexec_fixture ... ignored, private entry for the explicitly selected namespace controls",
+      "test development::tests::gsi_image_layout_mounts_official_image_and_private_alias_overrides ... ignored, requires verified GSI/vendor images, root, and an owned private mount namespace"
+    ],
+    "negative": [
+      {
+        "name": "negative-shared-id-boundary",
+        "exit_code": 101,
+        "test_results": [
+          "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 162 filtered out; finished in 0.00s"
+        ],
+        "stdout_sha256": "c5c1aa83ad7da3dee489d65ebeb005c31d60b21a6267445f89ccf042c5ed8a3c",
+        "stderr_sha256": "6212fd1cbec4431670c16cf825d912d29b65138e1d28b773e787a1ca5308fe76"
+      },
+      {
+        "name": "negative-authority-fifo",
+        "exit_code": 101,
+        "test_results": [
+          "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 162 filtered out; finished in 1.00s"
+        ],
+        "stdout_sha256": "413e85fd05786b89342bcb9602c13e5c0b98987a001f090a4bfa0acaba809e74",
+        "stderr_sha256": "5f63bf6289b2daa8f7cd86201aa278d0632dfd7fc959083d83ce648b76c0420f"
+      },
+      {
+        "name": "negative-spec-fifo",
+        "exit_code": 101,
+        "test_results": [
+          "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 1.00s"
+        ],
+        "stdout_sha256": "67982d304d4b6a48cf8bdaabed7f517e16e68d279dd1731322ea798385bbed0e",
+        "stderr_sha256": "fe31184f2ea6a2cc2c272608e8b7560df4c9bb1e703737e6dfd530a0d66ea1a4"
+      },
+      {
+        "name": "negative-spec-unending-input",
+        "exit_code": 101,
+        "test_results": [
+          "test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s"
+        ],
+        "stdout_sha256": "73e697bbcd1ee05d109c016a9378f6c5709af7082dbdfa2d6d146c6968de30dd",
+        "stderr_sha256": "c9eb4c667e9efb0ba590c4fe408ecb6f25b138c1b5faed6bb8b43f455ad77ef4"
+      }
+    ],
+    "resource_cargo_start_snapshot": {
+      "cpu.max": "100000 100000",
+      "memory.max": "3221225472",
+      "memory.current": "3220291584",
+      "memory.events": "low 0\nhigh 0\nmax 26413\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    },
+    "resource_scope": "sample after cache preparation, before tests; not full-build resource qualification",
+    "cpu_quota_percent": 100,
+    "cpu_affinity": [
+      0
+    ],
+    "memory_max_bytes": 3221225472,
+    "nice": 19,
+    "runtime_qualified": false,
+    "production_ready": false,
+    "copied_git_cache_removed": true,
+    "format_commands": [
+      {
+        "name": "rustfmt-initial-check",
+        "exit_code": 1
+      },
+      {
+        "name": "rustfmt-new-input-files",
+        "exit_code": 0
+      },
+      {
+        "name": "rustfmt-new-input-files-check",
+        "exit_code": 0
+      },
+      {
+        "name": "rustfmt-baseline-lib-check",
+        "exit_code": 1
+      },
+      {
+        "name": "rustfmt-candidate-lib-check",
+        "exit_code": 1
+      }
+    ],
+    "execution_identities": {
+      "host": "pocket4",
+      "setup": {
+        "job_id": "1a1be85ead7-5e21-14b",
+        "state": "succeeded",
+        "exit_code": 0,
+        "output_complete": true,
+        "timed_out": false,
+        "launch_nonce": "7977f1a90091a1708e06eb88bba111dc",
+        "cancelled": false,
+        "terminal_publication_confirmed": true
+      },
+      "normal": {
+        "job_id": "1a1be8898e0-5e21-157",
+        "state": "succeeded",
+        "exit_code": 0,
+        "output_complete": true,
+        "timed_out": false,
+        "launch_nonce": "c35a1c0cdc624bd7749d18d67793d688",
+        "cancelled": false,
+        "terminal_publication_confirmed": true
+      },
+      "negative": {
+        "job_id": "1a1be8ff825-5e21-174",
+        "state": "succeeded",
+        "exit_code": 0,
+        "output_complete": true,
+        "timed_out": false,
+        "launch_nonce": "ea33c4cc7a2da118bce39cb4c8e73e2b",
+        "cancelled": false,
+        "terminal_publication_confirmed": true
+      },
+      "all_lib": {
+        "job_id": "1a1be94e471-5e21-18b",
+        "state": "succeeded",
+        "exit_code": 0,
+        "output_complete": true,
+        "timed_out": false,
+        "launch_nonce": "9d6940367ffa2b0cb75d4b71aaac4fb2",
+        "cancelled": false,
+        "terminal_publication_confirmed": true
+      }
+    }
+  }
+}

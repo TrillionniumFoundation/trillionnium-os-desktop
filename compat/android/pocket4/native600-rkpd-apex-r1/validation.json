@@ -1,0 +1,97 @@
+{
+  "schema": "native600-rkpd-apex-validation-v1",
+  "snapshot_utc": "2026-11-09T05:53:04Z",
+  "normal_tools": {
+    "state": "PASSED",
+    "normal_commands": 23,
+    "all_exit_zero": true,
+    "all_owned_children_retired": true,
+    "old_recipe_all458_unchanged": true,
+    "normal_test_filters": [
+      "droidloom-source",
+      "ordinary_native_pair",
+      "native_generation_pair_build"
+    ],
+    "counts_are_not_summed_across_overlapping_filters": true
+  },
+  "new_host_import": {
+    "state": "PASSED",
+    "normal_commands": 15,
+    "all_exit_zero": true,
+    "all_owned_children_retired": true,
+    "independent_recipe_objects": true,
+    "normal_source_loader_executed": true,
+    "normal_updater_loader_executed": true,
+    "source_writes": 0
+  },
+  "source_extension": {
+    "state": "PASSED",
+    "source_projects": 600,
+    "normal_commands": 8,
+    "all_exit_zero": true,
+    "normal_verify_before": true,
+    "normal_reconcile": true,
+    "normal_verify_after": true,
+    "all_six_original_apex_git_blobs_verified": true,
+    "all_native_owner_locks_released": true,
+    "all_owned_children_retired": true,
+    "source_projection_absent": true
+  },
+  "pair_consumer": {
+    "state": "PASSED_ON_LINUX",
+    "tests_run": 12,
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0,
+    "source_delta": "only LOCK_SHA changes to the normal new600 lock",
+    "actual_prior600_lock_rejected": true,
+    "macos_execution_in_this_receipt": false
+  },
+  "prior_attempt_r5": {
+    "state": "FAILED_RETIRED",
+    "actual_error": "rkpd-sdk depends on undefined module com.android.rkpd",
+    "source_restored": true,
+    "resource_gate_passed": true,
+    "allocation_observer_passed": true,
+    "build_success": false
+  },
+  "full_r6": {
+    "state_at_snapshot": "RUNNING_NORMAL_SOURCE_BEFORE",
+    "actual_inner_started": true,
+    "normal_lock_before_exit_zero": true,
+    "soong_seen_at_snapshot": false,
+    "resource_profile": {
+      "memory_high_bytes": 23622320128,
+      "memory_max_bytes": 25769803776,
+      "memory_swap_max_bytes": 0,
+      "cpu_quota_percent": 800,
+      "cpu_affinity": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "go_max_procs": 2,
+      "go_memory_limit_bytes": 5368709120,
+      "normal_jobs": 6,
+      "owned_work_limit_bytes": 103079215104,
+      "shared_disk_reserve_bytes": 34359738368,
+      "fresh_combined_memavailable_bytes": 62277025792
+    },
+    "strict_targets": [
+      "libberberis_arm64",
+      "com.android.art"
+    ],
+    "allow_missing_dependencies": false,
+    "complete_build_verified": false
+  },
+  "complete_engine_ART_pair_qualified": false,
+  "signature_and_payload_qualified": false,
+  "QPR1_runtime_qualified": false,
+  "production_ready": false,
+  "installation_performed": false
+}

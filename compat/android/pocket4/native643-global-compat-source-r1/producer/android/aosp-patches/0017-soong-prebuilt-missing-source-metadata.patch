@@ -1,0 +1,85 @@
+--- a/android/compliance_metadata.go
++++ b/android/compliance_metadata.go
+@@ -239,6 +239,16 @@
+ func (c *ComplianceMetadataInfo) SetPrebuiltSrc(ctx ModuleContext, src string) {
+ 	if module, tag := SrcIsModuleWithTag(src); module != "" {
+ 		m := GetModuleProxyFromPathDep(ctx, module, tag)
++		if m.IsNil() {
++			// Path expansion already records missing source modules. Leave that
++			// dependency intact so Build emits its failing Ninja ErrorRule; there
++			// is no source module whose compliance provider can be queried here.
++			if ctx.Config().AllowMissingDependencies() && slices.Contains(ctx.GetMissingDependencies(), module) {
++				return
++			}
++			ctx.ModuleErrorf("prebuilt source %q references unavailable module %q", src, module)
++			return
++		}
+ 		baseModuleType := OtherModuleProviderOrDefault(ctx, m, CommonModuleInfoProvider).BaseModuleType
+ 		if ctx.OtherModuleType(m) == "cipd_package" || baseModuleType == "cipd_package" ||
+ 			ctx.OtherModuleType(m) == "filegroup" || baseModuleType == "filegroup" {
+--- a/etc/prebuilt_etc_test.go
++++ b/etc/prebuilt_etc_test.go
+@@ -18,6 +18,7 @@
+ 	"os"
+ 	"path/filepath"
+ 	"slices"
++	"strings"
+ 	"testing"
+ 
+ 	"github.com/google/blueprint/proptools"
+@@ -347,6 +348,55 @@
+ 
+ 	android.AssertStringEquals(t, "expected error rule", "android/soong/android.Error",
+ 		result.ModuleForTests(t, "foo.conf", "android_arm64_armv8-a").Output("foo.conf").Rule.String())
++}
++
++// A missing module-valued src must produce a failing build rule, including
++// when another module consumes the prebuilt's output. Metadata collection must
++// not panic or turn the missing source into a successful producer.
++func TestPrebuiltEtcAllowMissingSourceModule(t *testing.T) {
++	result := android.GroupFixturePreparers(
++		prepareForPrebuiltEtcTest,
++		android.PrepareForTestDisallowNonExistentPaths,
++		android.PrepareForTestWithAllowMissingDependencies,
++	).RunTestWithBp(t, `
++		prebuilt_etc {
++			name: "missing-source.conf",
++			src: ":missing_source",
++			filename: "missing-source.conf",
++		}
++		prebuilt_etc {
++			name: "consumer.conf",
++			src: ":missing-source.conf",
++			filename: "consumer.conf",
++		}
++	`)
++
++	missing := result.ModuleForTests(t, "missing-source.conf", "android_arm64_armv8-a").Output("missing-source.conf")
++	android.AssertStringEquals(t, "missing source must retain its failing rule", "android/soong/android.Error", missing.Rule.String())
++	if got := missing.Args["error"]; !strings.Contains(got, "missing_source") {
++		t.Errorf("error rule must name missing_source, got %q", got)
++	}
++
++	consumer := result.ModuleForTests(t, "consumer.conf", "android_arm64_armv8-a").Output("consumer.conf")
++	android.AssertStringEquals(t, "consumer must retain the normal copy rule", android.CpRule.String(), consumer.Rule.String())
++	android.AssertStringEquals(t, "consumer must depend on the failing producer", missing.Output.String(), consumer.Input.String())
++}
++
++func TestPrebuiltEtcStrictMissingSourceModule(t *testing.T) {
++	android.GroupFixturePreparers(
++		prepareForPrebuiltEtcTest,
++		android.FixtureModifyConfig(
++			func(config android.Config) {
++				config.TestProductVariables.Allow_missing_dependencies = proptools.BoolPtr(false)
++			}),
++	).ExtendWithErrorHandler(android.FixtureExpectsAtLeastOneErrorMatchingPattern(`depends on undefined module "missing_source"`)).
++		RunTestWithBp(t, `
++			prebuilt_etc {
++				name: "missing-source.conf",
++				src: ":missing_source",
++				filename: "missing-source.conf",
++			}
++		`)
+ }
+ 
+ func TestPrebuiltRootInstallDirPath(t *testing.T) {

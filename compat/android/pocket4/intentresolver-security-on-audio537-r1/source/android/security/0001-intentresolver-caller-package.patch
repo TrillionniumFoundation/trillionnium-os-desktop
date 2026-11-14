@@ -1,0 +1,14 @@
+diff --git a/java/src/com/android/intentresolver/domain/UriCallerReadAccessValidator.kt b/java/src/com/android/intentresolver/domain/UriCallerReadAccessValidator.kt
+index 28a50f6..9a4a6bb 100644
+--- a/java/src/com/android/intentresolver/domain/UriCallerReadAccessValidator.kt
++++ b/java/src/com/android/intentresolver/domain/UriCallerReadAccessValidator.kt
+@@ -71,7 +71,8 @@
+ object CallerUriReadAccessValidatorModule {
+     @Provides
+     @PackageName
+-    fun packageName(@ApplicationContext context: Context): String = context.packageName
++    fun packageName(activityModelRepository: ActivityModelRepository): String =
++        activityModelRepository.value.launchedFromPackage
+ 
+     @Provides
+     @LaunchedFromUid

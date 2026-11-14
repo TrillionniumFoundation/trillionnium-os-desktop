@@ -1,0 +1,495 @@
+--- a/Documentation/userspace-api/p4-lsm-context.rst
++++ b/Documentation/userspace-api/p4-lsm-context.rst
+@@ -66,9 +66,29 @@
+ kernel accept paths inherit their listener. dup, fork, SCM_RIGHTS, and
+ setns cannot reinterpret an existing socket wrapper.
+ 
+-SCM_SECURITY and IP_PASSSEC remain outside this selector's ABI. Their
+-existing untyped secid paths require a separate consumer and provenance
+-audit; a successful SO_PEERSEC check is not evidence for them.
++UNIX SCM_SECURITY uses the recipient wrapper selection. The internal
++UNIX endpoint captures that choice before publication, including an
++accepted endpoint which can receive data before accept creates its
++wrapper. Capture records both the secid and the full 64-bit supplying
++LSM ID. Queued messages retain both; receive converts only with that
++provider and rejects untyped or mismatched identities. Conversion
++also validates the returned full LSM ID and context length. An
++invalid result is released only by its supplying hook and rejected.
++The source
++socket supplies the label, never a userspace-supplied context string.
++
++IPv4 IP_PASSSEC captures and converts with the receiving wrapper
++selection and the supplying ID in one call path. An orphan without a
++wrapper retains the historical default. A failed selected capture or
++conversion never falls through to another provider. In particular,
++the existing AppArmor datagram hook remains unsupported. None of
++these conversions removes or reorders MAC permission hooks. A
++successful SO_PEERSEC check does not qualify either ancillary path;
++they require their own runtime and consumer evidence. Selected stream
++SO_PASSSEC copies queued provenance even without SO_PASSCRED or
++SO_PASSPIDFD and does not merge different typed security identities.
++The receive call snapshots SO_PASSSEC before copying any bytes; a
++concurrent opt-in cannot attach a partial identity to earlier bytes.
+ 
+ Required qualification
+ ----------------------
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -573,6 +573,7 @@
+ int security_setprocattr(int lsmid, const char *name, void *value, size_t size);
+ int security_ismaclabel(const char *name);
+ int security_secid_to_secctx(u32 secid, struct lsm_context *cp);
++int security_secid_to_secctx_lsm(u32 secid, u64 lsmid, struct lsm_context *cp);
+ int security_lsmprop_to_secctx(struct lsm_prop *prop, struct lsm_context *cp,
+ 			       int lsmid);
+ int security_secctx_to_secid(const char *secdata, u32 seclen, u32 *secid);
+@@ -1569,6 +1570,12 @@
+ }
+ 
+ static inline int security_secid_to_secctx(u32 secid, struct lsm_context *cp)
++{
++	return -EOPNOTSUPP;
++}
++
++static inline int security_secid_to_secctx_lsm(u32 secid, u64 lsmid,
++					     struct lsm_context *cp)
+ {
+ 	return -EOPNOTSUPP;
+ }
+@@ -1684,6 +1691,8 @@
+ int security_socket_getpeersec_stream(struct socket *sock, sockptr_t optval,
+ 				      sockptr_t optlen, unsigned int len);
+ int security_socket_getpeersec_dgram(struct socket *sock, struct sk_buff *skb, u32 *secid);
++int security_socket_getpeersec_dgram_lsm(struct socket *sock, struct sk_buff *skb,
++				       u64 requested_lsm, u32 *secid, u64 *lsmid);
+ int security_sk_alloc(struct sock *sk, int family, gfp_t priority);
+ void security_sk_free(struct sock *sk);
+ void security_sk_clone(const struct sock *sk, struct sock *newsk);
+@@ -1838,6 +1847,16 @@
+ 	return -ENOPROTOOPT;
+ }
+ 
++static inline int security_socket_getpeersec_dgram_lsm(struct socket *sock,
++						    struct sk_buff *skb,
++						    u64 requested_lsm,
++						    u32 *secid, u64 *lsmid)
++{
++	*secid = 0;
++	*lsmid = 0;
++	return -ENOPROTOOPT;
++}
++
+ static inline int security_sk_alloc(struct sock *sk, int family, gfp_t priority)
+ {
+ 	return 0;
+--- a/include/net/af_unix.h
++++ b/include/net/af_unix.h
+@@ -41,6 +41,9 @@
+ 	struct mutex		iolock, bindlock;
+ 	struct sock		*peer;
+ 	struct sock		*listener;
++#ifdef CONFIG_SECURITY_NETWORK
++	u32			scm_context_lsm; /* Immutable recipient provider. */
++#endif
+ 	struct unix_vertex	*vertex;
+ 	spinlock_t		lock;
+ 	struct socket_wq	peer_wq;
+--- a/include/net/scm.h
++++ b/include/net/scm.h
+@@ -47,6 +47,7 @@
+ 	struct scm_creds	creds;		/* Skb credentials	*/
+ #ifdef CONFIG_SECURITY_NETWORK
+ 	u32			secid;		/* Passed security ID 	*/
++	u64			secid_lsm;	/* ID of supplying LSM	*/
+ #endif
+ };
+ 
+@@ -59,7 +60,8 @@
+ #ifdef CONFIG_SECURITY_NETWORK
+ static __inline__ void unix_get_peersec_dgram(struct socket *sock, struct scm_cookie *scm)
+ {
+-	security_socket_getpeersec_dgram(sock, NULL, &scm->secid);
++	security_socket_getpeersec_dgram_lsm(sock, NULL, 0, &scm->secid,
++					  &scm->secid_lsm);
+ }
+ #else
+ static __inline__ void unix_get_peersec_dgram(struct socket *sock, struct scm_cookie *scm)
+--- a/net/core/scm.c
++++ b/net/core/scm.c
+@@ -426,13 +426,17 @@
+ EXPORT_SYMBOL(scm_fp_dup);
+ 
+ #ifdef CONFIG_SECURITY_NETWORK
+-static void scm_passec(struct sock *sk, struct msghdr *msg, struct scm_cookie *scm)
++static void scm_passec(struct socket *sock, struct msghdr *msg, struct scm_cookie *scm)
+ {
+ 	struct lsm_context ctx;
+ 	int err;
+ 
+-	if (sk->sk_scm_security) {
+-		err = security_secid_to_secctx(scm->secid, &ctx);
++	if (sock->sk->sk_scm_security) {
++		/* A bare or differently selected packet cannot be reinterpreted. */
++		if (!scm->secid_lsm ||
++		    (sock->context_lsm && sock->context_lsm != scm->secid_lsm))
++			return;
++		err = security_secid_to_secctx_lsm(scm->secid, scm->secid_lsm, &ctx);
+ 
+ 		if (err >= 0) {
+ 			put_cmsg(msg, SOL_SOCKET, SCM_SECURITY, ctx.len,
+@@ -448,7 +452,7 @@
+ 	return sk->sk_scm_security;
+ }
+ #else
+-static void scm_passec(struct sock *sk, struct msghdr *msg, struct scm_cookie *scm)
++static void scm_passec(struct socket *sock, struct msghdr *msg, struct scm_cookie *scm)
+ {
+ }
+ 
+@@ -494,9 +498,11 @@
+ 		fd_install(pidfd, pidfd_file);
+ }
+ 
+-static bool __scm_recv_common(struct sock *sk, struct msghdr *msg,
++static bool __scm_recv_common(struct socket *sock, struct msghdr *msg,
+ 			      struct scm_cookie *scm, int flags)
+ {
++	struct sock *sk = sock->sk;
++
+ 	if (!msg->msg_control) {
+ 		if (sk->sk_scm_credentials || sk->sk_scm_pidfd ||
+ 		    scm->fp || scm_has_secdata(sk))
+@@ -517,7 +523,7 @@
+ 		put_cmsg(msg, SOL_SOCKET, SCM_CREDENTIALS, sizeof(ucreds), &ucreds);
+ 	}
+ 
+-	scm_passec(sk, msg, scm);
++	scm_passec(sock, msg, scm);
+ 
+ 	if (scm->fp)
+ 		scm_detach_fds(msg, scm);
+@@ -528,7 +534,7 @@
+ void scm_recv(struct socket *sock, struct msghdr *msg,
+ 	      struct scm_cookie *scm, int flags)
+ {
+-	if (!__scm_recv_common(sock->sk, msg, scm, flags))
++	if (!__scm_recv_common(sock, msg, scm, flags))
+ 		return;
+ 
+ 	scm_destroy_cred(scm);
+@@ -538,7 +544,7 @@
+ void scm_recv_unix(struct socket *sock, struct msghdr *msg,
+ 		   struct scm_cookie *scm, int flags)
+ {
+-	if (!__scm_recv_common(sock->sk, msg, scm, flags))
++	if (!__scm_recv_common(sock, msg, scm, flags))
+ 		return;
+ 
+ 	if (sock->sk->sk_scm_pidfd)
+--- a/net/ipv4/ip_sockglue.c
++++ b/net/ipv4/ip_sockglue.c
+@@ -126,17 +126,26 @@
+ 	put_cmsg(msg, SOL_IP, IP_CHECKSUM, sizeof(__wsum), &csum);
+ }
+ 
+-static void ip_cmsg_recv_security(struct msghdr *msg, struct sk_buff *skb)
++static void ip_cmsg_recv_security(struct sock *sk, struct msghdr *msg,
++				  struct sk_buff *skb)
+ {
+ 	struct lsm_context ctx;
+ 	u32 secid;
++	u64 lsmid;
++	u32 requested_lsm;
+ 	int err;
+ 
+-	err = security_socket_getpeersec_dgram(NULL, skb, &secid);
++	/* sock_orphan() clears the wrapper under this same callback lock. */
++	read_lock_bh(&sk->sk_callback_lock);
++	requested_lsm = sk->sk_socket ? sk->sk_socket->context_lsm : 0;
++	read_unlock_bh(&sk->sk_callback_lock);
++
++	err = security_socket_getpeersec_dgram_lsm(NULL, skb, requested_lsm,
++						&secid, &lsmid);
+ 	if (err)
+ 		return;
+ 
+-	err = security_secid_to_secctx(secid, &ctx);
++	err = security_secid_to_secctx_lsm(secid, lsmid, &ctx);
+ 	if (err < 0)
+ 		return;
+ 
+@@ -216,7 +225,7 @@
+ 	}
+ 
+ 	if (flags & IP_CMSG_PASSSEC) {
+-		ip_cmsg_recv_security(msg, skb);
++		ip_cmsg_recv_security(sk, msg, skb);
+ 
+ 		flags &= ~IP_CMSG_PASSSEC;
+ 		if (!flags)
+--- a/net/unix/af_unix.c
++++ b/net/unix/af_unix.c
+@@ -256,16 +256,31 @@
+ static void unix_get_secdata(struct scm_cookie *scm, struct sk_buff *skb)
+ {
+ 	UNIXCB(skb).secid = scm->secid;
++	UNIXCB(skb).secid_lsm_lo = lower_32_bits(scm->secid_lsm);
++	UNIXCB(skb).secid_lsm_hi = upper_32_bits(scm->secid_lsm);
+ }
+ 
+ static inline void unix_set_secdata(struct scm_cookie *scm, struct sk_buff *skb)
+ {
+ 	scm->secid = UNIXCB(skb).secid;
++	scm->secid_lsm = (u64)UNIXCB(skb).secid_lsm_hi << 32 |
++			 UNIXCB(skb).secid_lsm_lo;
+ }
+ 
+ static inline bool unix_secdata_eq(struct scm_cookie *scm, struct sk_buff *skb)
+ {
+-	return (scm->secid == UNIXCB(skb).secid);
++	return scm->secid == UNIXCB(skb).secid &&
++	       lower_32_bits(scm->secid_lsm) == UNIXCB(skb).secid_lsm_lo &&
++	       upper_32_bits(scm->secid_lsm) == UNIXCB(skb).secid_lsm_hi;
++}
++
++static void unix_get_recipient_secdata(struct socket *sock, struct sock *other,
++				       struct scm_cookie *scm)
++{
++	/* Keep the legacy first-provider capture when no provider was selected. */
++	if (unix_sk(other)->scm_context_lsm)
++		security_socket_getpeersec_dgram_lsm(sock, NULL,
++			unix_sk(other)->scm_context_lsm, &scm->secid, &scm->secid_lsm);
+ }
+ #else
+ static inline void unix_get_secdata(struct scm_cookie *scm, struct sk_buff *skb)
+@@ -278,6 +293,11 @@
+ {
+ 	return true;
+ }
++
++static inline void unix_get_recipient_secdata(struct socket *sock,
++					    struct sock *other,
++					    struct scm_cookie *scm)
++{ }
+ #endif /* CONFIG_SECURITY_NETWORK */
+ 
+ static inline int unix_may_send(struct sock *sk, struct sock *osk)
+@@ -1113,6 +1133,9 @@
+ 	lock_set_cmp_fn(&sk->sk_receive_queue.lock, unix_recvq_lock_cmp_fn, NULL);
+ 
+ 	u = unix_sk(sk);
++#ifdef CONFIG_SECURITY_NETWORK
++	u->scm_context_lsm = sock ? sock->context_lsm : 0;
++#endif
+ 	u->listener = NULL;
+ 	u->vertex = NULL;
+ 	u->path.dentry = NULL;
+@@ -1738,6 +1761,10 @@
+ 	newsk->sk_state = TCP_ESTABLISHED;
+ 	newsk->sk_type = sk->sk_type;
+ 	newsk->sk_scm_recv_flags = other->sk_scm_recv_flags;
++#ifdef CONFIG_SECURITY_NETWORK
++	/* The accepted endpoint belongs to the listener, even across netns. */
++	unix_sk(newsk)->scm_context_lsm = unix_sk(other)->scm_context_lsm;
++#endif
+ 	init_peercred(newsk, &peercred);
+ 
+ 	newu = unix_sk(newsk);
+@@ -2288,6 +2315,9 @@
+ 	if (sock_flag(other, SOCK_RCVTSTAMP))
+ 		__net_timestamp(skb);
+ 
++	/* Capture using the actual recipient after any destination lookup retry. */
++	unix_get_recipient_secdata(sock, other, &scm);
++	unix_get_secdata(&scm, skb);
+ 	scm_stat_add(other, skb);
+ 	skb_queue_tail(&other->sk_receive_queue, skb);
+ 	unix_state_unlock(other);
+@@ -2413,6 +2443,8 @@
+ 
+ 	otheru = unix_sk(other);
+ 
++	unix_get_recipient_secdata(sock, other, &scm);
++
+ 	if (READ_ONCE(sk->sk_shutdown) & SEND_SHUTDOWN)
+ 		goto out_pipe;
+ 
+@@ -2919,6 +2951,9 @@
+ 	size_t size = state->size;
+ 	int flags = state->flags;
+ 	bool check_creds = false;
++#ifdef CONFIG_SECURITY_NETWORK
++	bool check_secdata = false, pass_secdata;
++#endif
+ 	struct scm_cookie scm;
+ 	struct unix_sock *u;
+ 	int copied = 0;
+@@ -2946,6 +2981,9 @@
+ 	memset(&scm, 0, sizeof(scm));
+ 
+ 	u = unix_sk(sk);
++#ifdef CONFIG_SECURITY_NETWORK
++	pass_secdata = u->scm_context_lsm && sk->sk_scm_security;
++#endif
+ 
+ redo:
+ 	/* Lock the socket to prevent queue disordering
+@@ -3022,6 +3060,19 @@
+ 
+ 		unix_state_unlock(sk);
+ 
++#ifdef CONFIG_SECURITY_NETWORK
++		/* Compare before the credential path can overwrite scm. */
++		if (pass_secdata) {
++			if (check_secdata) {
++				if (!unix_secdata_eq(&scm, skb))
++					break;
++			} else {
++				unix_set_secdata(&scm, skb);
++				check_secdata = true;
++			}
++		}
++#endif
++
+ 		if (check_creds) {
+ 			/* Never glue messages from different writers */
+ 			if (!unix_skb_scm_eq(skb, &scm))
+@@ -3102,6 +3153,14 @@
+ 	mutex_unlock(&u->iolock);
+ 	if (msg) {
+ 		bool do_cmsg = READ_ONCE(u->recvmsg_inq);
++
++#ifdef CONFIG_SECURITY_NETWORK
++		/* A concurrent opt-in cannot label bytes already copied untracked. */
++		if (u->scm_context_lsm && !pass_secdata) {
++			scm.secid = 0;
++			scm.secid_lsm = 0;
++		}
++#endif
+ 
+ 		scm_recv_unix(sock, msg, &scm, flags);
+ 
+--- a/net/unix/af_unix.h
++++ b/net/unix/af_unix.h
+@@ -17,6 +17,9 @@
+ 	struct scm_fp_list	*fp;		/* Passed files		*/
+ #ifdef CONFIG_SECURITY_NETWORK
+ 	u32			secid;		/* Security ID		*/
++	/* Keep the full ID without 8-byte padding in randomized skb layouts. */
++	u32			secid_lsm_lo;
++	u32			secid_lsm_hi;
+ #endif
+ 	u32			consumed;
+ } __randomize_layout;
+--- a/security/security.c
++++ b/security/security.c
+@@ -3951,6 +3951,52 @@
+ EXPORT_SYMBOL(security_secid_to_secctx);
+ 
+ /**
++ * security_secid_to_secctx_lsm() - Convert a secid with its captured provider
++ * @secid: security ID returned by the supplying LSM
++ * @lsmid: full ID of the LSM which supplied @secid
++ * @cp: the resulting LSM context
++ *
++ * A bare or unknown security ID must not be interpreted by another provider.
++ * Unlike the legacy untyped interface, an undefined @lsmid is rejected.
++ *
++ * Return: Nonnegative on success, a negative error on failure.
++ */
++int security_secid_to_secctx_lsm(u32 secid, u64 lsmid, struct lsm_context *cp)
++{
++	struct lsm_static_call *scall, *release;
++	int rc;
++
++	if (cp)
++		memset(cp, 0, sizeof(*cp));
++	if (lsmid == LSM_ID_UNDEF)
++		return -EOPNOTSUPP;
++	lsm_for_each_hook(scall, secid_to_secctx) {
++		if (lsmid != scall->hl->lsmid->id)
++			continue;
++		rc = scall->hl->hook.secid_to_secctx(secid, cp);
++		if (!cp)
++			return rc;
++		if (rc > 0 && cp->id == lsmid && cp->context && cp->len == rc)
++			return rc;
++
++		/* Only the supplying hook owns this allocation, even on mismatch. */
++		if (cp->context) {
++			cp->id = lsmid;
++			lsm_for_each_hook(release, release_secctx) {
++				if (release->hl->lsmid->id != lsmid)
++					continue;
++				release->hl->hook.release_secctx(cp);
++				break;
++			}
++		}
++		memset(cp, 0, sizeof(*cp));
++		return rc < 0 ? rc : -EOPNOTSUPP;
++	}
++	return -EOPNOTSUPP;
++}
++EXPORT_SYMBOL(security_secid_to_secctx_lsm);
++
++/**
+  * security_lsmprop_to_secctx() - Convert a lsm_prop to a secctx
+  * @prop: lsm specific information
+  * @cp: the LSM context
+@@ -4490,15 +4536,53 @@
+ int security_socket_getpeersec_dgram(struct socket *sock,
+ 				     struct sk_buff *skb, u32 *secid)
+ {
++	u64 lsmid;
++
++	return security_socket_getpeersec_dgram_lsm(sock, skb, LSM_ID_UNDEF,
++						   secid, &lsmid);
++}
++EXPORT_SYMBOL(security_socket_getpeersec_dgram);
++
++/**
++ * security_socket_getpeersec_dgram_lsm() - Capture a peer ID and its provider
++ * @sock: source socket, or NULL for a network packet
++ * @skb: packet, or NULL for a UNIX socket
++ * @requested_lsm: recipient's fixed context provider, or LSM_ID_UNDEF
++ * @secid: returned peer security ID
++ * @lsmid: full ID of the LSM which supplied @secid
++ *
++ * Undefined selection preserves the first-provider rule. An explicit selection
++ * never falls through to another LSM, including when its hook is unsupported.
++ * Failed capture leaves both output fields zero, so it cannot be reinterpreted
++ * as a typed security ID by SCM consumers.
++ *
++ * Return: Zero on success, a negative error on failure.
++ */
++int security_socket_getpeersec_dgram_lsm(struct socket *sock, struct sk_buff *skb,
++				       u64 requested_lsm, u32 *secid, u64 *lsmid)
++{
+ 	struct lsm_static_call *scall;
++	u32 peer_secid = 0;
++	int error;
++
++	*secid = 0;
++	*lsmid = LSM_ID_UNDEF;
+ 
+ 	lsm_for_each_hook(scall, socket_getpeersec_dgram) {
+-		return scall->hl->hook.socket_getpeersec_dgram(sock, skb,
+-							     secid);
++		if (requested_lsm != LSM_ID_UNDEF &&
++		    requested_lsm != scall->hl->lsmid->id)
++			continue;
++		error = scall->hl->hook.socket_getpeersec_dgram(sock, skb,
++							      &peer_secid);
++		if (!error) {
++			*secid = peer_secid;
++			*lsmid = scall->hl->lsmid->id;
++		}
++		return error;
+ 	}
+ 	return LSM_RET_DEFAULT(socket_getpeersec_dgram);
+ }
+-EXPORT_SYMBOL(security_socket_getpeersec_dgram);
++EXPORT_SYMBOL(security_socket_getpeersec_dgram_lsm);
+ 
+ /**
+  * lsm_sock_alloc - allocate a composite sock blob

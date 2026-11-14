@@ -1,0 +1,14 @@
+--- a/runtime/droidloom-supervisor/src/production_namespace_processfs_child.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_processfs_child.rs
+@@ -544,7 +544,10 @@
+     // Follow only a fixed procfs-generated namespace link. The parent then
+     // matches this inode to its independently PIDFD-held exact PID namespace.
+     let one = unsafe { opened(proc, c"1", libc::O_RDONLY | libc::O_DIRECTORY, nonce) };
+-    let ns = unsafe { opened(one, c"ns", libc::O_RDONLY | libc::O_DIRECTORY, nonce) };
++    // A nondumpable child can have a namespace directory owned by the root
++    // of mm->user_ns, with mode 0511. Only traverse the fixed pid link here;
++    // obtaining directory read authority is unnecessary and can fail EACCES.
++    let ns = unsafe { opened(one, c"ns", libc::O_PATH | libc::O_DIRECTORY, nonce) };
+     let pid = unsafe {
+         libc::syscall(
+             libc::SYS_openat,

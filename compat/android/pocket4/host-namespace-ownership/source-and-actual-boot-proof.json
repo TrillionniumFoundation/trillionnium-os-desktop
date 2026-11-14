@@ -1,0 +1,192 @@
+{
+  "actual_QPR1_probe": {
+    "Android_boot_completed": false,
+    "actual_child_private_namespaces": {
+      "cgroup": true,
+      "ipc": true,
+      "mnt": true,
+      "net": true,
+      "pid": true,
+      "uts": true
+    },
+    "actual_property_command_exit": 0,
+    "all_observed_owned_processes_retired": true,
+    "first_trigger": "official init.vndk-nodef.rc early-init requests reboot,bootloader because vendor VNDK property is undefined",
+    "generation": "r3",
+    "image_loops_retired": true,
+    "init_second_stage_observed": true,
+    "normal_daemon_stop_succeeded": true,
+    "normal_stop_succeeded": true,
+    "only_disposable_probe_data_changed": true,
+    "outer_cgroup_wrapper_used": false,
+    "properties": {
+      "ro.build.id": "CP3A.260905.010",
+      "ro.build.version.incremental": "16176746",
+      "ro.build.version.sdk": "37",
+      "ro.build.version.sdk_full": "37.1",
+      "ro.build.version.security_patch": "2026-09-05",
+      "ro.dalvik.vm.native.bridge": "0"
+    },
+    "protected_original_user_data_unchanged": true,
+    "real_daemon_and_client_used": true,
+    "runtime_and_socket_directories_absent": true,
+    "runtime_qualified": false,
+    "servicemanager_ready_property_write_failed_in_kernel_window": true,
+    "state": "BOOT_ATTEMPT_DID_NOT_COMPLETE",
+    "subsequent_shutdown_wait": "vdc volume abort_fuse waits for service-manager readiness"
+  },
+  "actual_root_controls": {
+    "actual_cases": [
+      {
+        "android_started": false,
+        "control": "daemon-death-after-fork-before-enter",
+        "descendant_exited": true,
+        "init_exited": true,
+        "launcher_reaped": true,
+        "owner_exited": true
+      },
+      {
+        "android_started": false,
+        "control": "daemon-death-before-exec-and-fork",
+        "launcher_reaped": true,
+        "namespace_init_created": false,
+        "preexec_child_exited": true,
+        "unshare_exec_observed": false
+      },
+      {
+        "android_started": false,
+        "control": "term",
+        "descendant_exited": true,
+        "init_exited": true,
+        "outer_reaped": true,
+        "private_namespaces": [
+          "mnt",
+          "pid",
+          "cgroup",
+          "ipc",
+          "uts"
+        ],
+        "seconds": 0.066193066
+      },
+      {
+        "android_started": false,
+        "control": "force",
+        "descendant_exited": true,
+        "init_exited": true,
+        "outer_reaped": true,
+        "private_namespaces": [
+          "mnt",
+          "pid",
+          "cgroup",
+          "ipc",
+          "uts"
+        ],
+        "seconds": 10.038538552
+      }
+    ],
+    "direct_namespace_owner_waited_and_reaped": true,
+    "does_not_claim_to_reap_namespace_init_from_pidfd_poll": true,
+    "failed": 0,
+    "ignored": 0,
+    "passed": 3,
+    "stdout": {
+      "bytes": 1205,
+      "sha256": "c7de1ac70b0f74874899c9f75d18ffb9383b227fe2e29ffdb48c353029c6cea4"
+    }
+  },
+  "all_blockers_closed": false,
+  "application_runtime_accepted": false,
+  "final_candidate_deployed": false,
+  "normal_source_controls": {
+    "effective_uid": 1000,
+    "failed": 0,
+    "ignored": 9,
+    "ignored_scope": "three existing environment tests, three explicit root controls, three private fixture entrypoints",
+    "jobs": 1,
+    "locked": true,
+    "normal_release_build_succeeded": true,
+    "offline": true,
+    "passed": 127,
+    "stdout": {
+      "bytes": 12594,
+      "sha256": "271cf318355f43e22cea6f6c90f1be252991c158b38203b758de87a850109d0a"
+    }
+  },
+  "production_UID_map_implemented": false,
+  "production_seccomp_implemented": false,
+  "raw_receipt_pins": {
+    "actual_QPR1_probe": {
+      "bytes": 352229,
+      "sha256": "03ffb8cbcb9b258a301fa434518f4240ca185b08669a71a99e8a987634a4d1ff"
+    },
+    "actual_control_result": {
+      "bytes": 875,
+      "sha256": "ba988e53b7eb5c166b6da74cb1f4cd485636d8e2d15f3dc1bcd78900a590030b"
+    },
+    "prior_failed_fixture_preserved": {
+      "bytes": 1148,
+      "sha256": "b20219e20309f77b88b9a229f3f1a0c1fa4b0923b5a87fcb68c0ce0ff5734512"
+    },
+    "source_commit": {
+      "bytes": 4752,
+      "sha256": "0e6b2e5c48c1358aaa5ef45afb5d9ca4052b10f52a2e33d9349fa88dc0afcae3"
+    },
+    "startup_kernel_window": {
+      "bytes": 80834,
+      "sha256": "764cbbee0f65fc534279292729dc5848cc2b7ed8275154ad72e6de334881046a"
+    }
+  },
+  "release_binaries": [
+    {
+      "bytes": 2077616,
+      "name": "droidloom-supervisor",
+      "sha256": "1edbd7dbfeb3541e47c0de015ad3b9ade193cc9cde0ce758c72f1deb3bb69bab"
+    },
+    {
+      "bytes": 2012472,
+      "name": "droidloomd",
+      "sha256": "052d96eceeb0dde71577e48c3ed782decca68ebb00cc7b89049f79f620021a60"
+    },
+    {
+      "bytes": 1748648,
+      "name": "droidloomctl",
+      "sha256": "8655347f51a03c584dd54924b13c37d7a12f3a8df3b7f099f01ad1c0ef9c98f7"
+    },
+    {
+      "bytes": 1578200,
+      "name": "droidloom-applications",
+      "sha256": "bfd32eee2d982b6fee2448721988e255ecb4bfd736209b9283fdb5903d164de5"
+    }
+  ],
+  "runtime_qualified": false,
+  "schema": "pocket4-host-namespace-ownership-and-actual-qpr1-boot-v1",
+  "scope": "ACTUAL_DEVELOPMENT_NAMESPACE_OWNERSHIP_AND_EARLY_ANDROID_BOOT_ONLY",
+  "source": {
+    "base_commit": "ce2150070260a660a4f634d5bb43085fd6df541b",
+    "base_unchanged": true,
+    "commit": "ecf986b7afe7a2c24e537e765ee600c0256b2096",
+    "files": [
+      {
+        "bytes": 114373,
+        "path": "runtime/droidloom-supervisor/src/development.rs",
+        "sha256": "aefc1b4e1d0345de5b55160e72551f65fbe0eed1441635c88aac23a05cedddf6"
+      },
+      {
+        "bytes": 7443,
+        "path": "runtime/droidloom-supervisor/src/development_process.rs",
+        "sha256": "b1751c31bdff198cf3ecaec390c396b4a68c6fc5df36b30a888066dbc63b14d4"
+      },
+      {
+        "bytes": 14633,
+        "path": "runtime/droidloom-supervisor/src/development_process_tests.rs",
+        "sha256": "11e8030dbb8f4b9846c252d4d9c0a2c16eee9eadb58bb1b7142bc8f0824199b8"
+      }
+    ],
+    "patch": {
+      "bytes": 34078,
+      "sha256": "ade46683b080cde555c018e596f6a6e2b02db30beb40285a66bf2c2ecd8e3bc5"
+    },
+    "source_clean": true,
+    "tree": "e053f6eb09d4ce0edab1a54691f61a623c8352de"
+  }
+}

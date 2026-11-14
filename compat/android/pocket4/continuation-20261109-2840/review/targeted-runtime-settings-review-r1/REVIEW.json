@@ -1,0 +1,78 @@
+{
+  "schema": "pocket4-targeted-runtime-settings-readonly-review-v1",
+  "status": "FIRST_REVIEW_FROZEN_SUCCESSOR_FIX_REVIEW_PENDING",
+  "reviewer": "parallel-continuation-2840a678aeda/audio_closeout",
+  "read_only": true,
+  "tests_executed": 0,
+  "Android_UI_invocations": 0,
+  "installed_or_deployed": false,
+  "source_pins": "sources/settings-first-source-integrity.json",
+  "first_owner_controls_receipt": "sources/settings-first-controls-receipt.json",
+  "findings": [
+    {
+      "id": "SETTINGS-CAUSAL-TASK-AUTHORITY",
+      "severity": "high",
+      "state": "awaiting_exact_successor_review",
+      "initial_locations": [
+        "android/framework/droidloom-task-launcher/src/lib.rs:162-234,292-331,803-829,932-952",
+        "runtime/droidloom-supervisor/src/application_settings_protocol.rs:257-270",
+        "runtime/droidloom-supervisor/src/application_settings.rs:279-299,404-454"
+      ],
+      "cause": "Neither Status: ok nor an ID absent from before-snapshots proves that this invocation created the discovered task. The pre/post interval admits noncooperating Android launches.",
+      "triggering_sequence": [
+        "Before snapshots contain no Settings task.",
+        "Another Android actor creates Settings task T after those snapshots.",
+        "The observation start reuses or adds an Activity to T.",
+        "A successful ACK plus T absent-before permits registration and claim.",
+        "Current cleanup removes T although task creation was not proved to belong to this invocation."
+      ],
+      "confirmed_reuse_warning_gap": true,
+      "warning_rejection_alone_sufficient": false,
+      "fixed_flags_alone_sufficient": false,
+      "required_boundary": "Do not start an automatic-cleanup observation without actual selected-framework new-task authority. Do not promote a snapshot candidate, caller JSON, generic ACK, or host flock into task ownership.",
+      "reported_fix_plan_not_yet_reviewed": "Owner plans unconditional public daemon/native rejection until selected-framework new-task authority exists; retain candidate/cleanup prototype only under cfg(test)."
+    },
+    {
+      "id": "SETTINGS-PENDING-CROSS-ENTRY",
+      "severity": "high",
+      "state": "awaiting_exact_successor_review",
+      "initial_locations": [
+        "runtime/droidloom-supervisor/src/application_action_scope.rs:56-111,113-174",
+        "runtime/droidloom-supervisor/src/control.rs:320-373,469-517,554-568",
+        "external android-digitalis-observe-helper:462-466"
+      ],
+      "cause": "The durable pending marker was checked only by Settings acquisition. Other daemon mutations bypassed it, and the existing external helper took only the shared flock.",
+      "triggering_sequence": [
+        "Settings start or instrumentation outcome remains unknown and creates pending state.",
+        "A subsequent non-Settings daemon mutation is submitted, or the daemon exits and its flock is released.",
+        "An entry that does not check pending can perform another Android action while prior Android work is unresolved."
+      ],
+      "required_boundary": "Every applicable daemon mutation must deny durable pending, including after restart. Cooperating external consumers must check the same marker while holding their existing shared flock. Reacquiring a separate flock inside a daemon entry invoked by a lock-holding helper is not a compatible substitute.",
+      "reported_fix_plan_not_yet_reviewed": "Owner plans all-daemon-mutation pending admission and a separate narrow consumer patch; no installed helper change yet."
+    }
+  ],
+  "reviewed_controls_without_new_defect": [
+    "unknown start or ACK retains scope and does not remove a task",
+    "instrumentation timeout, malformed result or unproved restoration keeps helper unsettled",
+    "host command cgroup retirement does not settle Android instrumentation",
+    "pending file and directory are synced before start",
+    "unresolved Drop retains the open-file-description flock and pending marker",
+    "business deadline reserves 25 seconds from the same absolute lease",
+    "command deadline is min(business, original lease, now+20s)",
+    "cleanup uses original lease; final readbacks are bounded by min(original, now+8s)",
+    "retirement can spend up to two additional seconds but expired output is rejected",
+    "removal is sent once; ambiguous removal is not retried"
+  ],
+  "production_modules": "sources/production-seccomp-readiness-pins.json",
+  "official_semantics": "sources/official-source-observations.json",
+  "limits": [
+    "No new ordinary tests were run by the reviewer.",
+    "The owner's reported 78 ordinary controls are not Android/UI qualification.",
+    "The 117-test production foundations do not transfer qualification to later source generations.",
+    "No production caller or Running promotion was proved for the reviewed seccomp/readiness modules.",
+    "A source gate can eliminate the unsafe entry while leaving the real Settings capability blocked; it does not complete application qualification."
+  ],
+  "accepted_application_gates": 0,
+  "runtime_qualified": false,
+  "production_ready": false
+}

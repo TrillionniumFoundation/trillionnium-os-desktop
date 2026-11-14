@@ -1,0 +1,201 @@
+{
+  "schema": "audio425-connectivity-projection-source-origins-v1",
+  "publication_baseline_commit": "e123939aae9ffeec4e6a2bb928b28cadd44e7f1e",
+  "patch": {
+    "bytes": 133720,
+    "sha256": "377e92daa360510e856194ca38f0056eba0a3195745f51eeb302913c80eb285d"
+  },
+  "recipe_before": {
+    "commit": "47e1f50438cb3ec0debee674965d310e25ab7569",
+    "tree": "9f636724fd9485d9507e2873ff3035ab19ecc7e6"
+  },
+  "recipe_after": {
+    "commit": "1017dd42a2adb3ef206082d4eeb80e762038eb01",
+    "tree": "651e54cb5ad1989c3bd1944155cfc449d5020de2",
+    "tracked_files": 469
+  },
+  "original_files": {
+    "tools/droidloom-update/src/android.rs": {
+      "bytes": 390137,
+      "sha256": "68dcc77042fba930fc9c98309059e5ce6895cb51eac1dc59a445aa0ef10e3a7c"
+    }
+  },
+  "updated_files": {
+    "tools/droidloom-update/src/android.rs": {
+      "bytes": 401364,
+      "sha256": "4e223bbf459443138dab5b957e8661075e7cccf884b0a3e7fd867a217de45c40"
+    },
+    "tools/droidloom-update/tests/fixtures/audio-providers/connectivity-bpf-loader-original.bp": {
+      "bytes": 3094,
+      "sha256": "f1a04495e7d762d93f05b4fa3b46df960cce237ea2570dc0b55526fc8fc8e1e6"
+    },
+    "tools/droidloom-update/tests/fixtures/audio-providers/connectivity-bpfjni-original.cpp": {
+      "bytes": 8152,
+      "sha256": "474c9e412e15f24745f25d14ef011eeb1f63dcda6389b49fc0e7289827d749e0"
+    },
+    "tools/droidloom-update/tests/fixtures/audio-providers/connectivity-bpfutils-original.h": {
+      "bytes": 8760,
+      "sha256": "b4238050b865463cf194fcb8ae6fe606e2c1c5808dd53786f4d27e4e36c3ed80"
+    },
+    "tools/droidloom-update/tests/fixtures/audio-providers/connectivity-clatcoordinator-original.cpp": {
+      "bytes": 22437,
+      "sha256": "04ebfc6d205b4e3413ed10a6cec5657404d82c6c9fc60d86d0c8bdbc42f20647"
+    },
+    "tools/droidloom-update/tests/fixtures/audio-providers/connectivity-localnetevent-original.cpp": {
+      "bytes": 2774,
+      "sha256": "baef6ccb2ff1cc47ad82de5bb082d730115bd9df1363224ba6706e51ad156dfd"
+    },
+    "tools/droidloom-update/tests/fixtures/audio-providers/connectivity-netbpfload-original.cpp": {
+      "bytes": 72064,
+      "sha256": "3438d20ed7c0510e3ee1f11777c7d134e6571129269556964a5fe6dfeb107055"
+    }
+  },
+  "source_lock": {
+    "bytes": 235879,
+    "sha256": "1dd0671551fb3c07cac4bb9b587346421321a6e4809494299f7b6daa4c49371c"
+  },
+  "source_lock_unchanged": true,
+  "project_count": 425,
+  "original_blueprint_count": 1519,
+  "upstream": {
+    "project": "packages/modules/Connectivity",
+    "commit": "347fbd34b368d19f0d87e908ea101eed3601a731",
+    "superproject_commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039"
+  },
+  "original_git_files": [
+    {
+      "relative": "packages/modules/Connectivity/bpf/headers/include/bpf/BpfUtils.h",
+      "commit": "347fbd34b368d19f0d87e908ea101eed3601a731",
+      "git_blob": "5ca52c6c62591e72a70cefc939ce42a0876130b5",
+      "bytes": 8760,
+      "sha256": "b4238050b865463cf194fcb8ae6fe606e2c1c5808dd53786f4d27e4e36c3ed80"
+    },
+    {
+      "relative": "packages/modules/Connectivity/bpf/loader/Android.bp",
+      "commit": "347fbd34b368d19f0d87e908ea101eed3601a731",
+      "git_blob": "bee2681b4cea5633d7bf343c1d10359950ef3afb",
+      "bytes": 3094,
+      "sha256": "f1a04495e7d762d93f05b4fa3b46df960cce237ea2570dc0b55526fc8fc8e1e6"
+    },
+    {
+      "relative": "packages/modules/Connectivity/bpf/loader/NetBpfLoad.cpp",
+      "commit": "347fbd34b368d19f0d87e908ea101eed3601a731",
+      "git_blob": "7ba3247dcc6f31ab9b612d410202067c821ab58a",
+      "bytes": 72064,
+      "sha256": "3438d20ed7c0510e3ee1f11777c7d134e6571129269556964a5fe6dfeb107055"
+    },
+    {
+      "relative": "packages/modules/Connectivity/service/Android.bp",
+      "commit": "347fbd34b368d19f0d87e908ea101eed3601a731",
+      "git_blob": "3bd14718d57e5ce82b25acc4966ed42abbb15ca9",
+      "bytes": 16884,
+      "sha256": "f118cc0ac04460b290d84248c511539ec245999be73901fd6d59df1b3eae888f"
+    },
+    {
+      "relative": "packages/modules/Connectivity/service/jni/com_android_server_connectivity_ClatCoordinator.cpp",
+      "commit": "347fbd34b368d19f0d87e908ea101eed3601a731",
+      "git_blob": "70991ebad37d4f196850d4d777b960a604f2c7b8",
+      "bytes": 22437,
+      "sha256": "04ebfc6d205b4e3413ed10a6cec5657404d82c6c9fc60d86d0c8bdbc42f20647"
+    },
+    {
+      "relative": "packages/modules/Connectivity/service/jni/com_android_server_connectivity_LocalNetEventListener.cpp",
+      "commit": "347fbd34b368d19f0d87e908ea101eed3601a731",
+      "git_blob": "9e1c027b074de2471b082f57fbefe856a21dc4f6",
+      "bytes": 2774,
+      "sha256": "baef6ccb2ff1cc47ad82de5bb082d730115bd9df1363224ba6706e51ad156dfd"
+    },
+    {
+      "relative": "packages/modules/Connectivity/staticlibs/native/bpfmapjni/com_android_net_module_util_Bpf.cpp",
+      "commit": "347fbd34b368d19f0d87e908ea101eed3601a731",
+      "git_blob": "055caa25b8129ddd264d4f5cab437febe6c7175b",
+      "bytes": 8152,
+      "sha256": "474c9e412e15f24745f25d14ef011eeb1f63dcda6389b49fc0e7289827d749e0"
+    }
+  ],
+  "normal_patch_sequence": [
+    {
+      "file": "original-patches/0001-netbpfload-tolerate-shared-kernel-bpf-ids.patch",
+      "bytes": 7264,
+      "sha256": "eae002e9858dc976f494f9d29783b42f8cad8ed0fd3326a26d28d7906b7a9b78"
+    },
+    {
+      "file": "original-patches/0003-connectivity-offline-rcu.patch",
+      "bytes": 2879,
+      "sha256": "3a09e7169467b08774495e36ba1775f76bbada5ddc1c2771ec8736cc75bc588b"
+    }
+  ],
+  "expected_complete_postimage": {
+    "bytes": 17018,
+    "sha256": "e5b482317718cea8ce2a8dbe5c339daaf7837e92b1fa58c735dd4f3f48c58c44"
+  },
+  "original_provider": {
+    "bytes": 16884,
+    "sha256": "f118cc0ac04460b290d84248c511539ec245999be73901fd6d59df1b3eae888f"
+  },
+  "retained_provider_names": [
+    "connectivity_native_aidl_interface",
+    "connectivity_native_aidl_interface-lateststable-ndk",
+    "connectivity_native_aidl_interface-lateststable-java",
+    "libandroid_net_connectivity_com_android_net_module_util_jni",
+    "libandroid_net_connectivity_com_android_net_module_util_jni_CommonConnectivityJni",
+    "libservice-connectivity",
+    "service-connectivity-pre-jarjar",
+    "service-connectivity-protos",
+    "service-connectivity-defaults",
+    "service-connectivity-for-tests",
+    "service-connectivity",
+    "service-connectivity-stats-protos",
+    "connectivity-jarjar-rules",
+    "traffic-controller-utils",
+    "service-connectivity-jarjar-gen",
+    "service-nearby-jarjar-gen",
+    "service-remoteauth-jarjar-gen",
+    "service-thread-jarjar-gen",
+    "service-networksecurity-jarjar-gen",
+    "statslog-connectivity-java-gen",
+    "libstatslog_connectivity_sdk30",
+    "statslog_connectivity_sdk30.h",
+    "statslog_connectivity_sdk30.cpp"
+  ],
+  "ordered_public_source_repairs": [
+    {
+      "order": 1,
+      "capsule": "audio425-original-provider-closure-r1",
+      "file": "audio-original-provider-closure.patch",
+      "sha256": "c497e425a3c4f2cfb23f71fad5d24f224b36c331d3a2b68354dab9865a34aa31",
+      "source_lock_after": "5bacc225ebb2cf9f793b5c439205a4d27ec43144c04cae8e16e5197b300e57b7",
+      "already_in_publication_baseline": true
+    },
+    {
+      "order": 2,
+      "capsule": "audio425-original-provider-closure-r1",
+      "file": "audio-rkpd-apex-source.patch",
+      "sha256": "8dcd4804442b4663b943e9927ba537a610f4e7f3f0269b792bde492955fecf61",
+      "source_lock_after": "1dd0671551fb3c07cac4bb9b587346421321a6e4809494299f7b6daa4c49371c",
+      "already_in_publication_baseline": true
+    },
+    {
+      "order": 3,
+      "capsule": "audio425-connectivity-projection-preimage-r1",
+      "file": "audio425-connectivity-projection-preimage.patch",
+      "sha256": "377e92daa360510e856194ca38f0056eba0a3195745f51eeb302913c80eb285d",
+      "source_lock_after": "1dd0671551fb3c07cac4bb9b587346421321a6e4809494299f7b6daa4c49371c"
+    },
+    {
+      "order": 4,
+      "capsule": "audio430-pasit-original-provider-closure-r1",
+      "file": "audio430-pasit-original-provider-inputs.patch",
+      "sha256": "1361d4f13ebc8f433403fd962be297db09509814899dfa9c7824d5d086850517",
+      "source_lock_after": "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a"
+    },
+    {
+      "order": 5,
+      "capsule": "audio430-original-released-api-inputs-r1",
+      "file": "audio430-ondeviceintelligence-original-api-inputs.patch",
+      "sha256": "b68a8bbe9bc48e8cc6e85f4c225efc4ad279909a9084896d9c7e4336c0762934",
+      "source_lock_after": "45496b24c055fca9aa1f3fae7bd5c7c3c99cb46721150690645bf5d059159de2"
+    }
+  ],
+  "normal_source_and_projection_hashes_are_distinct": true
+}

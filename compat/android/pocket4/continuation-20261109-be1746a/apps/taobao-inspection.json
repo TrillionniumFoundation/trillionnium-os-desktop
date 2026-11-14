@@ -1,0 +1,103 @@
+{
+  "receipt": {
+    "path": "/home/alex/work/pocket4-official-four-apps-20261109-be1746a-r1/taobao/candidate.json",
+    "bytes": 11684,
+    "sha256": "27c3077547a67cc936ade989c5f4e3a8821826e8f35b10c76191f1de956c085b"
+  },
+  "result": {
+    "schema": "pocket4-official-app-delivery-inspection-v1",
+    "package_expected": "com.taobao.taobao",
+    "started_utc": "2026-11-09T09:12:17.331723+00:00",
+    "source_url": "https://download.alicdn.com/wireless/taobao4android/latest/taobao4android_703304.apk",
+    "source_link_evidence": {
+      "path": "/home/alex/work/pocket4-official-four-apps-20261109-be1746a-r1/sources-r7/taobao-slk-current-js.html",
+      "bytes": 98208,
+      "sha256": "06a58ccb33534ccbb04a18f72259e8eec668a34778447e506b3dce0890dbb317"
+    },
+    "authentication_used": false,
+    "installs": 0,
+    "source_mutations": 0,
+    "runtime_accepted": false,
+    "production_ready": false,
+    "status": 200,
+    "effective_url": "https://download.alicdn.com/wireless/taobao4android/latest/taobao4android_703304.apk",
+    "content_type": "application/vnd.android.package-archive",
+    "content_length": "95212303",
+    "redirects": [],
+    "download_bytes": 95212303,
+    "download_sha256": "75d76b60cbedf1a5fa1fe53184fca481d5bcef696c8a8134145925644b691808",
+    "artifact_path": "/home/alex/work/pocket4-official-four-apps-20261109-be1746a-r1/taobao/official.apk",
+    "commands": [
+      {
+        "label": "badging",
+        "argv": [
+          "/usr/bin/aapt",
+          "dump",
+          "badging",
+          "/home/alex/work/pocket4-official-four-apps-20261109-be1746a-r1/taobao/official.apk"
+        ],
+        "exit": 0,
+        "stdout_sha256": "2a349ec86553bce60e86991bdf463079e69654389927244691e02154173c094a",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_bytes": 9013,
+        "stderr_bytes": 0
+      },
+      {
+        "label": "signature",
+        "argv": [
+          "/usr/bin/apksigner",
+          "verify",
+          "--verbose",
+          "--print-certs",
+          "/home/alex/work/pocket4-official-four-apps-20261109-be1746a-r1/taobao/official.apk"
+        ],
+        "exit": 0,
+        "stdout_sha256": "79889ef4f27a95dad9f4779e44f25331b4dbc35d76659bbfca9dba0184f40621",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_bytes": 8096,
+        "stderr_bytes": 0
+      }
+    ],
+    "badging_package_line": "package: name='com.taobao.taobao' versionCode='866' versionName='10.69.0' platformBuildVersionName='14' platformBuildVersionCode='34' compileSdkVersion='34' compileSdkVersionCodename='14'",
+    "package_fields": {
+      "name": "com.taobao.taobao",
+      "versionCode": "866",
+      "versionName": "10.69.0",
+      "platformBuildVersionName": "14",
+      "platformBuildVersionCode": "34",
+      "compileSdkVersion": "34",
+      "compileSdkVersionCodename": "14"
+    },
+    "sdk_lines": [
+      "sdkVersion:'21'",
+      "targetSdkVersion:'33'",
+      "native-code: 'arm64-v8a' 'armeabi-v7a'"
+    ],
+    "signature_stdout": "Verifies\nVerified using v1 scheme (JAR signing): true\nVerified using v2 scheme (APK Signature Scheme v2): true\nVerified using v3 scheme (APK Signature Scheme v3): false\nVerified using v3.1 scheme (APK Signature Scheme v3.1): false\nVerified using v4 scheme (APK Signature Scheme v4): false\nVerified for SourceStamp: false\nNumber of signers: 1\nSigner #1 certificate DN: CN=taobao, OU=taobao, O=taobao, L=hangzhou, ST=zhejiang, C=CN\nSigner #1 certificate SHA-256 digest: c5e9bc4c5cc7a34482c627cb9a76b88e30b509d0da3ba54a66274200e19c2743\nSigner #1 certificate SHA-1 digest: 4d843144ed577e0a2fd7b7cc13dfccc382df497a\nSigner #1 certificate MD5 digest: 506d2c604963d3a9b2794ba64801024e\nSigner #1 key algorithm: RSA\nSigner #1 key size (bits): 1024\nSigner #1 public key SHA-256 digest: 2c1bcaf03ef7b65ad4d76d098dc0cd96ae7f1d0a921c83d87f317f3ddff3e091\nSigner #1 public key SHA-1 digest: 17545b838b6524d0e18c0273b68ca4df98f91113\nSigner #1 public key MD5 digest: 82ad8433f65bd140df5b11fc2775759c\nWARNING: META-INF/activity-compose_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/activity_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/collection.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/com/android/build/gradle/app-metadata.properties not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/common_utils_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/core-ktx_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/customview-poolingcontainer_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/fragment-ktx_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/lifecycle-common.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/lifecycle-livedata-core_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/lifecycle-livedata_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/lifecycle-runtime-compose_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/lifecycle-runtime_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/lifecycle-viewmodel-compose_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/lifecycle-viewmodel-savedstate_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/lifecycle-viewmodel_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/message_basic_card_pkg_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/message_chat_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/message_chat_v2_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/message_comfrm_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/message_datasdk_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/message_kit_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/message_launcher_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/message_official_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/message_page_kit_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/message_sp_chat_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/message_sp_framework_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/message_ui_kit_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/message_x_decoration_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/savedstate-ktx_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/savedstate_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/tb.lzh not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/tb.pu4 not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/triver_kit_pub_debug.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/ui_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/umipublish_extends_release.kotlin_module not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\n",
+    "signature_stderr": "",
+    "signer_certificate_sha256": [
+      "c5e9bc4c5cc7a34482c627cb9a76b88e30b509d0da3ba54a66274200e19c2743"
+    ],
+    "signature_verified": true,
+    "native_abis": [
+      "arm64-v8a",
+      "armeabi-v7a"
+    ],
+    "native_library_counts": {
+      "arm64-v8a": 63,
+      "armeabi-v7a": 62
+    },
+    "package_matches_expected": true,
+    "installed_comparison": {
+      "prior_base_sha256": "5cc547a213b27c5fd38ab39dda8aa46dd45abf4fe8f58829b3c5f82c98aa2cd3",
+      "prior_version_name": "10.69.0",
+      "prior_version_code": 866,
+      "prior_signer_sha256": "c5e9bc4c5cc7a34482c627cb9a76b88e30b509d0da3ba54a66274200e19c2743",
+      "binary_exact_match": false,
+      "signer_exact_match": true
+    },
+    "state": "OFFICIAL_LINK_APK_INSPECTED",
+    "elapsed_seconds": 118.852,
+    "finished_utc": "2026-11-09T09:14:16.184053+00:00"
+  }
+}

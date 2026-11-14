@@ -1,0 +1,33 @@
+
+ ## BEGIN thread dump 
+
+Output thread 0x1000, name AudioOut_1, tid 101, type 0 (MIXER):
+  I/O handle: 1
+  Standby: yes
+  Sample rate: 48000 Hz
+  HAL frame count: 1024
+  Pending config events: none
+  Audio source: 5 (AUDIO_SOURCE_CAMCORDER)
+  Master mute: off
+  Frames written: 8192
+  Normal mixer raw underrun counters: partial=0 empty=0
+  1 Tracks of which 0 are active
+             31      no    3002/  10998      42      52  A 0x000 00000001 00000003  48000  3   1  0     0     0     0     0            0      false 00001000   1024     256 A         0        0      false        false
+  0 Effect Chains
+  Local log:
+
+Input thread 0x2000, name AudioIn_2, tid 102, type 3 (RECORD):
+  I/O handle: 2
+  Standby: yes
+  Sample rate: 48000 Hz
+  HAL frame count: 1024
+  Pending config events: none
+  Audio source: 5 (AUDIO_SOURCE_CAMCORDER)
+  Frames read: 8192
+  Hw silenced: no
+  1 Tracks of which 0 are active
+        no     21    3001/  10999      41      51   A 0x000 00000001 00000010  48000      5 00001000   1024    256   n
+  0 Effect Chains
+  Local log:
+
+ ## BEGIN setParameters dump 

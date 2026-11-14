@@ -1,0 +1,160 @@
+{
+  "receipt": {
+    "path": "/data/pocket4-official-four-apps-20261109-be1746a-r1/douyin64-r2/inspection.json",
+    "bytes": 13732,
+    "sha256": "bfbb89ae0a461701e047e34c188bfe3bb91d4424627b4783a951ad1c04ccbf7c"
+  },
+  "result": {
+    "schema": "pocket4-douyin-complete-official-body-inspection-v1",
+    "observed_utc": "2026-11-09T09:17:47.371918+00:00",
+    "apk_path": "/data/pocket4-official-four-apps-20261109-be1746a-r1/douyin64-r2/official.apk",
+    "bytes": 364363658,
+    "sha256": "b1d8834c20e5dbd75e2d48b5b30dea67be88f6903dba78a78d736a80b7feff2f",
+    "tools": {
+      "apksigner": "/opt/android-sdk/build-tools/35.0.1/apksigner",
+      "aapt": "/opt/android-sdk/build-tools/35.0.1/aapt",
+      "aapt2": "/opt/android-sdk/build-tools/35.0.1/aapt2",
+      "java": "/usr/bin/java"
+    },
+    "installs": 0,
+    "runtime_accepted": false,
+    "production_ready": false,
+    "sdk_candidates": [
+      "/usr/lib/android-sdk/build-tools/29.0.3/apksigner",
+      "/usr/lib/android-sdk/build-tools/debian/apksigner",
+      "/usr/lib/android-sdk/build-tools/29.0.3/aapt",
+      "/usr/lib/android-sdk/build-tools/debian/aapt",
+      "/usr/lib/android-sdk/build-tools/29.0.3/aapt2",
+      "/usr/lib/android-sdk/build-tools/debian/aapt2",
+      "/opt/android-sdk/build-tools/34.0.0/apksigner",
+      "/opt/android-sdk/build-tools/35.0.1/apksigner",
+      "/opt/android-sdk/build-tools/36.1.0/apksigner",
+      "/opt/android-sdk/build-tools/34.0.0/aapt",
+      "/opt/android-sdk/build-tools/35.0.1/aapt",
+      "/opt/android-sdk/build-tools/36.1.0/aapt",
+      "/opt/android-sdk/build-tools/34.0.0/aapt2",
+      "/opt/android-sdk/build-tools/35.0.1/aapt2",
+      "/opt/android-sdk/build-tools/36.1.0/aapt2",
+      {
+        "path": "/home/qq/Android/Sdk",
+        "error": "FileNotFoundError"
+      },
+      {
+        "path": "/home/alex/Android/Sdk",
+        "error": "FileNotFoundError"
+      },
+      {
+        "path": "/home/linuxbrew/.linuxbrew/share/android-commandlinetools",
+        "error": "FileNotFoundError"
+      }
+    ],
+    "owner_root_top_level": [
+      {
+        "name": "control",
+        "dir": true
+      },
+      {
+        "name": "recipe-pasit-original-r1",
+        "dir": true
+      },
+      {
+        "name": "work",
+        "dir": true
+      },
+      {
+        "name": "PREPARATION.json",
+        "dir": false
+      },
+      {
+        "name": "inputs",
+        "dir": true
+      },
+      {
+        "name": "provenance",
+        "dir": true
+      },
+      {
+        "name": "tools",
+        "dir": true
+      },
+      {
+        "name": "recipe-rkpd-apex-r1",
+        "dir": true
+      },
+      {
+        "name": "recipe-connectivity-projection-r1",
+        "dir": true
+      },
+      {
+        "name": "recipe-cts-compilation-r1",
+        "dir": true
+      },
+      {
+        "name": "recipe-cts-sts-r1",
+        "dir": true
+      },
+      {
+        "name": "recipe",
+        "dir": true
+      },
+      {
+        "name": "qualification-tools",
+        "dir": true
+      },
+      {
+        "name": "qualification",
+        "dir": true
+      },
+      {
+        "name": "recipe-errorprone-r1",
+        "dir": true
+      },
+      {
+        "name": "recipe-allgraph-r1",
+        "dir": true
+      }
+    ],
+    "native_abis": [
+      "arm64-v8a"
+    ],
+    "commands": [
+      {
+        "label": "badging",
+        "argv": [
+          "/opt/android-sdk/build-tools/35.0.1/aapt",
+          "dump",
+          "badging",
+          "/data/pocket4-official-four-apps-20261109-be1746a-r1/douyin64-r2/official.apk"
+        ],
+        "exit": 0,
+        "stdout_sha256": "c63deb72e84db7493efad5d7caac0ff762c778b4b1248bb6ad04ac22965b8b9a",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "label": "signature",
+        "argv": [
+          "/opt/android-sdk/build-tools/35.0.1/apksigner",
+          "verify",
+          "--verbose",
+          "--print-certs",
+          "/data/pocket4-official-four-apps-20261109-be1746a-r1/douyin64-r2/official.apk"
+        ],
+        "exit": 0,
+        "stdout_sha256": "54ff814f4578f0f3921aed3a9396570d680545e0b37bd6acb866f3bb37b45aab",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "badging_lines": [
+      "package: name='com.ss.android.ugc.aweme' versionCode='410001' versionName='41.0.0' platformBuildVersionName='15' platformBuildVersionCode='35' compileSdkVersion='35' compileSdkVersionCodename='15'",
+      "sdkVersion:'23'",
+      "targetSdkVersion:'34'",
+      "native-code: 'arm64-v8a'"
+    ],
+    "signature_stdout": "Verifies\nVerified using v1 scheme (JAR signing): true\nVerified using v2 scheme (APK Signature Scheme v2): true\nVerified using v3 scheme (APK Signature Scheme v3): true\nVerified using v3.1 scheme (APK Signature Scheme v3.1): false\nVerified using v4 scheme (APK Signature Scheme v4): false\nVerified for SourceStamp: false\nNumber of signers: 1\nSigner #1 certificate DN: CN=Aweme Douyin, OU=ByteDance, O=ByteDance, L=Beijing, ST=Beijing, C=CN\nSigner #1 certificate SHA-256 digest: 5182ae3b1b85337bb182cf24882449f84447ded18e296a747a9f6a0a2622512e\nSigner #1 certificate SHA-1 digest: 87a577816f6231b3bc21fb6a5ef7a4f2e682513e\nSigner #1 certificate MD5 digest: cd32e88626cfadf13857e91a91a25507\nSigner #1 key algorithm: RSA\nSigner #1 key size (bits): 2048\nSigner #1 public key SHA-256 digest: c0e2e490b4f5fe559783f2c22a1050865e9b1a0ab5d868ae747744dbc3616a31\nSigner #1 public key SHA-1 digest: cadc037919a2146b15e3c5d3a95f1db89fcff484\nSigner #1 public key MD5 digest: 5594c7be2b3d3ee53a105482b73ab239\nWARNING: META-INF/android.support.design_material.version not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/androidx/annotation/annotation/LICENSE.txt not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/androidx/collection/collection-ktx/LICENSE.txt not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/androidx/collection/collection/LICENSE.txt not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/androidx/lifecycle/lifecycle-common-java8/LICENSE.txt not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/androidx/lifecycle/lifecycle-common/LICENSE.txt not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/com.google.android.material_material.version not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/com.google.dagger_dagger-android-support.version not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/com.google.dagger_dagger-android.version not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/com.google.dagger_dagger-lint-aar.version not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/com.google.dagger_dagger.version not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/com/android/build/gradle/app-metadata.properties not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/io/github/alexzhirkevich/compottie/verification.properties not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/kotlinx_coroutines_android.version not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/kotlinx_coroutines_core.version not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/kotlinx_coroutines_jdk8.version not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/messages.properties not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/org.jetbrains.androidx.core_core-bundle.version not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/rxjava.properties not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/rxkotlin.properties not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/abc.b not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/coil3.util.FetcherServiceLoaderTarget not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/com.android.ttcjpaysdk.base.h5.cjjsb.annotation.ICJJsbIndex not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/com.android.ttcjpaysdk.base.h5.cjjsb.annotation.ICJXBridgeIndex not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/com.aweme.account.thirdservicemanger.BundleActivator not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/com.byted.cast.common.api.spi.IBytecastPluginEntry not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/com.bytedance.android.ec.common.api.IECCommonService not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/com.bytedance.geckox.settings.IGeckoRegister not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/com.bytedance.ies.stark.plugin.Plugin not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/com.lynx.animax.service.IAutoRegisterAnimaXService not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/com.lynx.tasm.service.IServiceProvider not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/com.lynx.tasm.service.security.ILynxSecurityService not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/io.opentelemetry.context.ContextStorageProvider not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/java.security.Provider not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/javax.ws.rs.ext.MessageBodyReader not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/javax.ws.rs.ext.MessageBodyWriter not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/javax.ws.rs.ext.Providers not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/kotlinx.coroutines.CoroutineExceptionHandler not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/kotlinx.coroutines.internal.MainDispatcherFactory not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/services/org.glassfish.jersey.internal.spi.AutoDiscoverable not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\nWARNING: META-INF/versions/9/OSGI-INF/MANIFEST.MF not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.\n",
+    "signature_stderr": "",
+    "signer_certificate_sha256": [
+      "5182ae3b1b85337bb182cf24882449f84447ded18e296a747a9f6a0a2622512e"
+    ],
+    "signature_verified": true
+  }
+}

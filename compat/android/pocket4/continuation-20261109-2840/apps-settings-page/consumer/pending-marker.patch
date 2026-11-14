@@ -1,0 +1,108 @@
+--- a/consumers/android-digitalis-observe-helper
++++ b/consumers/android-digitalis-observe-helper
+@@ -102,6 +102,7 @@
+     return init,env,status
+ 
+ def arun(args,timeout=30):
++    require_no_pending_settings()
+     init,env,_=discover()
+     envargs=[]
+     for k in sorted(env): envargs.append(k+'='+env[k])
+@@ -128,6 +129,27 @@
+ def require(condition,code,**details):
+     if not condition: raise ControlError(code,**details)
+ 
++def _check_pending_settings_at(path,expected_owner):
++    # Hold the directory; any marker inode, including a dangling symlink,
++    # blocks admission. Only ENOENT is clear. Never read, clear or retry it.
++    details={'action_taken':False,'outcome_unknown':True,'automatic_retry':False}
++    directory=None
++    try:
++        directory=os.open(path,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC)
++        require(os.fstat(directory).st_uid==expected_owner,'SETTINGS_PENDING_DIRECTORY_UNTRUSTED',**details)
++        try:os.stat('droidloom-settings-observation.pending.json',dir_fd=directory,follow_symlinks=False)
++        except FileNotFoundError:return
++        raise ControlError('SETTINGS_ACTION_PENDING_NO_ACTION_TAKEN',**details)
++    except OSError:
++        raise ControlError('SETTINGS_PENDING_STATE_UNAVAILABLE',**details) from None
++    finally:
++        if directory is not None:os.close(directory)
++
++def require_no_pending_settings():
++    # The CLI helper already holds the shared flock while calling droidloomctl.
++    # Re-locking here would deadlock; the durable marker check is independent.
++    _check_pending_settings_at('/run/lock',0)
++
+ def package_name(value):
+     require(isinstance(value,str) and bool(re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+',value)),'INVALID_PACKAGE')
+     return value
+@@ -137,6 +159,7 @@
+     return value
+ 
+ def ui(r):
++    require_no_pending_settings()
+     mutation=r['op'] in ('click','set-text','type-text','scroll-forward','scroll-backward')
+     protocol_details={'outcome_unknown':mutation,'automatic_retry':False}
+     selector=r.get('selector',{})
+@@ -386,6 +409,7 @@
+             'foreground_verified':True,'outcome_unknown':False}
+ 
+ def dispatch(r):
++    require_no_pending_settings()
+     allowed={'op','coords','duration','package','selector','index','value','display','window_id','window_token','crop','with_png',
+              'frame_sha256','scope_sha256','context_token','text','min_confidence','include_invisible','accessibility_mode','accessibilityMode','method','input_source'}
+     require(not set(r)-allowed,'UNKNOWN_ARGUMENT');op=r.get('op')
+--- a/consumers/android-app
++++ b/consumers/android-app
+@@ -102,6 +102,7 @@
+     return init,env,status
+ 
+ def arun(args,timeout=30):
++    require_no_pending_settings()
+     init,env,_=discover()
+     envargs=[]
+     for k in sorted(env): envargs.append(k+'='+env[k])
+@@ -128,6 +129,27 @@
+ def require(condition,code,**details):
+     if not condition: raise ControlError(code,**details)
+ 
++def _check_pending_settings_at(path,expected_owner):
++    # Hold the directory; any marker inode, including a dangling symlink,
++    # blocks admission. Only ENOENT is clear. Never read, clear or retry it.
++    details={'action_taken':False,'outcome_unknown':True,'automatic_retry':False}
++    directory=None
++    try:
++        directory=os.open(path,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC)
++        require(os.fstat(directory).st_uid==expected_owner,'SETTINGS_PENDING_DIRECTORY_UNTRUSTED',**details)
++        try:os.stat('droidloom-settings-observation.pending.json',dir_fd=directory,follow_symlinks=False)
++        except FileNotFoundError:return
++        raise ControlError('SETTINGS_ACTION_PENDING_NO_ACTION_TAKEN',**details)
++    except OSError:
++        raise ControlError('SETTINGS_PENDING_STATE_UNAVAILABLE',**details) from None
++    finally:
++        if directory is not None:os.close(directory)
++
++def require_no_pending_settings():
++    # The CLI helper already holds the shared flock while calling droidloomctl.
++    # Re-locking here would deadlock; the durable marker check is independent.
++    _check_pending_settings_at('/run/lock',0)
++
+ def package_name(value):
+     require(isinstance(value,str) and bool(re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+',value)),'INVALID_PACKAGE')
+     return value
+@@ -137,6 +159,7 @@
+     return value
+ 
+ def ui(r):
++    require_no_pending_settings()
+     mutation=r['op'] in ('click','set-text','type-text','scroll-forward','scroll-backward')
+     protocol_details={'outcome_unknown':mutation,'automatic_retry':False}
+     selector=r.get('selector',{})
+@@ -386,6 +409,7 @@
+             'foreground_verified':True,'outcome_unknown':False}
+ 
+ def dispatch(r):
++    require_no_pending_settings()
+     allowed={'op','coords','duration','package','selector','index','value','display','window_id','window_token','crop','with_png',
+              'frame_sha256','scope_sha256','context_token','text','min_confidence','include_invisible','accessibility_mode','accessibilityMode','method','input_source'}
+     require(not set(r)-allowed,'UNKNOWN_ARGUMENT');op=r.get('op')

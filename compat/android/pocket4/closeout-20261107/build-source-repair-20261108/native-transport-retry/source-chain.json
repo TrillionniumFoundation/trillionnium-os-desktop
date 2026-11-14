@@ -1,0 +1,67 @@
+{
+  "AOSP_sources_included": false,
+  "Cargo_registry_dependencies_included": false,
+  "application_order": [
+    "source-prerequisites/base-source.patch",
+    "source-prerequisites/native-prerequisite.patch",
+    "native-sparse-capacity/source.patch",
+    "integrated-builder/native-frozen-597.patch",
+    "native-transport-retry/source-transport-retry.patch",
+    "native-transport-retry/source-transport-retry-gnutls.patch"
+  ],
+  "application_order_paths_relative_to": "compat/android/pocket4/closeout-20261107/build-source-repair-20261108",
+  "base_git_tree": "144db4382ee5b5d4fe3c44c38294269caf3f4869",
+  "binary_included": false,
+  "exclusions": [
+    "AGENTS.md",
+    "m831-provenance.json",
+    "assets/screenshots/whatsapp.png",
+    ".github/FUNDING.yml",
+    ".github/workflows/ship.yml",
+    ".git metadata",
+    "zero-byte .hepta-lock-* tool sidecars only"
+  ],
+  "frozen_full_builder_unchanged": true,
+  "frozen_native597_lock_sha256": "2b699174977614e080cf99a991f3e648774b24581c4ecdc29f1bd53b7b01ef23",
+  "inputs": [
+    {
+      "bytes": 3814733,
+      "path": "source-prerequisites/base-source.patch",
+      "sha256": "40ad41624358deb27ce67ea61d557e5ae5f672c19e2b0e805679caa71cf0c2aa"
+    },
+    {
+      "bytes": 1521824,
+      "path": "source-prerequisites/native-prerequisite.patch",
+      "sha256": "dc982097ea61682c6e586f3c6fc6e853ec4a10b5cb33ed6b8f1350e39624371a"
+    },
+    {
+      "bytes": 44658,
+      "path": "native-sparse-capacity/source.patch",
+      "sha256": "290eb43af731f9753759898d58bd648f44d2aea48ee08f64df7c0daf15da1a16"
+    },
+    {
+      "bytes": 776422,
+      "path": "integrated-builder/native-frozen-597.patch",
+      "sha256": "d29d8c02fdcc1ed8a3c56dda266f47b3bee88f7b7df30fd9f6879d7f5c48dbdd"
+    },
+    {
+      "bytes": 37070,
+      "path": "native-transport-retry/source-transport-retry.patch",
+      "sha256": "7ee9709916c57d0eb4bc26208a40d27bca3276905d525666774693a8731f5ab7"
+    },
+    {
+      "bytes": 4776,
+      "path": "native-transport-retry/source-transport-retry-gnutls.patch",
+      "sha256": "da92ba4b896c1daf5af3f24d2ef6fef500039f3b899521d58a168228a44194be"
+    }
+  ],
+  "result_git_tree": "31d9c2d58cab931a5e914cb18df7b139a76e3f0b",
+  "runtime_qualified": false,
+  "schema": "pocket4-native-transport-source-chain-v1",
+  "source_files": 451,
+  "source_manifest": {
+    "bytes": 85665,
+    "path": "compiled-source-files.json",
+    "sha256": "a33a5e3fe7e93f6d9cfbd8669ced7ead1de4de17adb3a71d8339ab3c1fe846ef"
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "schema": "pocket4-c11-binder-mapped-ownership-normal-v1",
+  "argv": [
+    "/usr/bin/systemd-run",
+    "--user",
+    "--unit=p4-c11-binder-ownership-normal-20261109-2840-r1",
+    "--wait",
+    "--pipe",
+    "--collect",
+    "--property=CPUQuota=100%",
+    "--property=AllowedCPUs=2",
+    "--property=MemoryMax=4G",
+    "--property=MemorySwapMax=0",
+    "--property=TasksMax=128",
+    "--property=RuntimeMaxSec=300",
+    "--working-directory=/home/alex/work/pocket4-production-binder-stage-20261109-2840-r1/c11-ownership-review-r1/source",
+    "--setenv=CARGO_TARGET_DIR=/home/alex/work/pocket4-production-binder-stage-20261109-2840-r1/c11-ownership-review-r1/target",
+    "/home/alex/.cargo/bin/cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "-j",
+    "1",
+    "-p",
+    "droidloom-supervisor",
+    "--lib",
+    "binder",
+    "--",
+    "--test-threads=1"
+  ],
+  "exit_code": 0,
+  "expected_test_summary_found": true,
+  "normal_tests_passed": 9,
+  "source": {
+    "production_namespace_binder_child.rs": {
+      "bytes": 23165,
+      "sha256": "963907d9c0d0351d2d786ec86863f67483b17475b9cc1d6132d308a31f0bd3bc",
+      "copied_sha256": "61e239e17deeb9fbfff346055510cc8ece7181d0c0ec36065c890d5a34df08b1"
+    },
+    "production_namespace_binder_parent.rs": {
+      "bytes": 21779,
+      "sha256": "ad7b9aa3b7a2ba81c35dd0a4cd66ca80e3e4a4f202a0b5584f9eb6b7607aef71",
+      "copied_sha256": "dff11205d6d6752a4b8f08d947745dcefa74d42d54cc64645a5de5ea206d047a"
+    },
+    "production_namespace_binder_ipc_child.rs": {
+      "bytes": 24411,
+      "sha256": "abfcd730ff90b070f3db936daf29bfa901cdcd2fc8ed766e4e6e8b7be31152d3",
+      "copied_sha256": "b2e91a38012c533da580e0506ae7fd088c8eeca8552308df4e159ca0bb1ecf99"
+    }
+  },
+  "log_bytes": 10599,
+  "log_sha256": "2eed6fd9ed198a314ce46f6ad1522ded049d5ce02fe1d2207c7931cb5eb175b8",
+  "private_controls_run": 0,
+  "android_actions": 0,
+  "runtime_qualified": false,
+  "production_ready": false
+}

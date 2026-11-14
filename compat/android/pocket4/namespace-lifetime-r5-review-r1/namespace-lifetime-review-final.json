@@ -1,0 +1,164 @@
+{
+  "schema_version": 1,
+  "review": "namespace-creating-thread-lifetime-independent-read-only-review",
+  "decision": "SOURCE_REVIEW_ACCEPTABLE_PRIVATE_QUALIFICATION_INCOMPLETE",
+  "reviewer": "apps_acceptance_audit",
+  "reviewed_base_commit": "8db9faa6bc337844e5bc0093a237824cf2e0b782",
+  "candidate": {
+    "host": "pocket4",
+    "source": "/home/alex/work/pocket4-namespace-lifetime-buildclosure-20261109-r1/source",
+    "final_candidate_commit": "not asserted by this review"
+  },
+  "reviewed_files": [
+    {
+      "path": "runtime/droidloom-supervisor/src/production_namespace_child.rs",
+      "bytes": 35627,
+      "sha256": "2d1e0d9ca59cb652e0fe749d302dd14c0937a262683267d73ab09a505c63b687"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+      "bytes": 20995,
+      "sha256": "42008cb5ec2cc4e5ac3a28413db0dd63090d80a6fbcc472d6ff92dc0df5fa50b"
+    }
+  ],
+  "reviewed_control_sources": [
+    {
+      "path": "qualification/creator_leader_control.rs",
+      "bytes": 17240,
+      "sha256": "c4b1731ab18ad491b31a5f5f1560ced17184c0772b514a490a2fd74221bc5765"
+    },
+    {
+      "path": "private_controls.rs",
+      "bytes": 16423,
+      "sha256": "92be43304683e949236fbb5df17445a4ebb97075f2de82c231f5e35beee9ec37",
+      "execution": "not compiled or executed; source review only"
+    }
+  ],
+  "kernel_evidence": {
+    "path": "/workspace/scratch/9f5dfd11d434/namespace-lifetime-kernel-review.json",
+    "sha256": "edf9d9f142828c015366ae606dbb503942146b7e0893d74716e92ad6cd9cdc58",
+    "running_kernel": "7.0.14-p4cred1"
+  },
+  "findings": [
+    {
+      "id": "keeper_leader_pidfd_blind_spot",
+      "original_severity": "blocking",
+      "status": "resolved_in_reviewed_source_and_normal_leader_controls",
+      "detail": "Actual 7.0.14 pidfd_poll delays an exited thread-group leader while siblings survive. Retaining PIDFD_THREAD alone was insufficient. The reviewed source also opens the live creator's read-only /proc/thread-self/stat before clone, verifies procfs/TID, and reads that same held FD after both initial PDEATHSIG arming and credential rearming."
+    },
+    {
+      "id": "nested_pid1_leader_window",
+      "original_severity": "blocking",
+      "status": "source_fix_reviewed_actual_privileged_control_pending",
+      "detail": "Closing the held stat before MAPPED left CLONE_PARENT PID1 arming with the same pidfd-only blind spot. The reviewed source retains stat FD 5 through MAPPED and clone; nested arming checks the same stat and PIDFD, then closes 4/5 before mount/TreeReady. Keeper closes 4/5 after handoff. Actual nested leader and PID1/empty-base qualification has not run."
+    },
+    {
+      "id": "leader_test_panic_false_pass",
+      "original_severity": "test_gate_blocking",
+      "status": "source_fix_reviewed_normal_controls_passed",
+      "detail": "A helper panic after main-leader SYS_exit(0) could otherwise leave a successful process status. Helper bodies now use catch_unwind and explicit nonzero process exit on failure; the outer initial/rearm runner also requires exactly one true exit125/reaped record."
+    }
+  ],
+  "code_review": {
+    "remaining_blocking_code_findings": [],
+    "fd_mapping": "All three sources duplicated with F_DUPFD_CLOEXEC minimum 6 before clone; child has private FD table and remaps to 3/4/5 before close_range(6..).",
+    "identity": "The held proc inode retains the exact struct pid; raw children never reopen numeric TID paths. Kernel pread offset zero refreshes seq_file rather than reusing prevalidation output.",
+    "parser": "Fixed 4096-byte pread, count>0 and count<4096, final newline, exact TID, final comm closing parenthesis, known live task state, field9 flags with checked decimal parsing; Z/X/PF_EXITING, missing/malformed/truncated data or read failure reject.",
+    "fd_lifecycle": "CREATED and MAPPED retain only 3/4/5. ParkOnly after Enter retains 3/4. Nested init and keeper after tree handoff retain only 3.",
+    "scope": "Normal public admission and frozen r5 private-dev implementation are not widened by this two-file change."
+  },
+  "independently_observed_executions": {
+    "pidfd_only_keeper_negative": {
+      "host": "pocket4",
+      "job_id": "1a1bff1da69-5e21-7f8",
+      "initial": {
+        "creator_tid": 401631,
+        "child_pid": 401632,
+        "child_exit": 127,
+        "child_reaped": true,
+        "outer_exit": 1
+      },
+      "rearm": {
+        "creator_tid": 401634,
+        "child_pid": 401635,
+        "child_exit": 127,
+        "child_reaped": true,
+        "outer_exit": 1
+      },
+      "common": {
+        "leader_state": "Z",
+        "leader_flags": 4227084,
+        "creator_pidfd_readable": false,
+        "same_tgid_alive": true
+      }
+    },
+    "new_r5_normal": {
+      "host": "pocket4",
+      "job_id": "1a1bffdc26b-5e21-847",
+      "state": "succeeded",
+      "exit_code": 0,
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false,
+      "tests": {
+        "passed": 17,
+        "failed": 0,
+        "ignored": 4
+      },
+      "initial_leader": {
+        "creator_tid": 427851,
+        "child_pid": 427852,
+        "child_waitid_reason": 1,
+        "child_exit": 125,
+        "child_reaped": true,
+        "outer_exit": 0
+      },
+      "rearm_leader": {
+        "creator_tid": 427854,
+        "child_pid": 427855,
+        "child_waitid_reason": 1,
+        "child_exit": 125,
+        "child_reaped": true,
+        "outer_exit": 0
+      },
+      "common": {
+        "leader_state": "Z",
+        "leader_flags": 4227084,
+        "creator_pidfd_readable": false,
+        "same_tgid_alive": true
+      },
+      "normal_non_test_build": {
+        "independently_observed": true,
+        "profile": "dev",
+        "log_line": "Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.73s",
+        "job_exit_code": 0
+      }
+    }
+  },
+  "uncompleted_validation": {
+    "privileged_private_userns_mapping_controls": "not run on the reviewed new source",
+    "privileged_private_pid1_namespace_controls": "not run on the reviewed new source",
+    "privileged_private_empty_base_mount_controls": "not run on the reviewed new source",
+    "privileged_private_device_mount_controls": "not rerun on the reviewed new source; normal test run explicitly ignored it",
+    "nested_leader_control": "source authored, not executed",
+    "nested_pidfd_only_negative_control": "source authored, not compiled or executed",
+    "reason": "Parent reported platform safety-check interruption and instructed read-only closeout, no retries or alternate execution/privilege entry points. Build owner explicitly confirmed no root private runner execution."
+  },
+  "claims": {
+    "source_review_complete": true,
+    "normal_and_keeper_leader_controls_passed": true,
+    "privileged_namespace_qualification_complete": false,
+    "nested_lifetime_qualification_complete": false,
+    "full_namespace_lifetime_closed": false,
+    "android_runtime_qualified": false,
+    "production_ready": false
+  },
+  "reviewer_actions": {
+    "candidate_files_modified": false,
+    "shared_source_modified": false,
+    "compiled_or_executed_private_controls": false,
+    "ran_duplicate_compilation": false,
+    "changed_current": false,
+    "pushed": false
+  }
+}

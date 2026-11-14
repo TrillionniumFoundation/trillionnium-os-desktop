@@ -1,0 +1,400 @@
+{
+  "schema": "pocket4-native601-dexdeps-pyee-source-qualification-v1",
+  "scope": "Source-only correction of the fixed dexdeps and pyee providers with ordinary UID Rust regression tests and normal source-lock validation. No full Android or runtime qualification.",
+  "generated_utc": "2026-11-09T12:02:43.178765+00:00",
+  "baseline": {
+    "commit": "68a334c93b4b42846cd2fe2ef23e46c7021149c0",
+    "tree": "4903434ccc65abcf26b569e155e643e538338b51"
+  },
+  "candidate": {
+    "host": "ai395",
+    "path": "/home/qq/work/pocket4-native601-dexdeps-pyee-buildclosure-20261109-r1/source",
+    "commit": "579f8374655159869898c0c71203ba7e8a3146de",
+    "tree": "2aaa2d2dbd44063cd4aa1366ddf847b24a6bca77",
+    "working_tree_clean": true,
+    "commit_job_id": "1a1c02d42be-5e21-945",
+    "commit_terminal_state": "succeeded",
+    "commit_exit_code": 0
+  },
+  "patch": {
+    "filename": "native601-dexdeps-pyee.patch",
+    "bytes": 16502,
+    "sha256": "582e81f0dca666a4c4410f3e10dc05ab8ef4a3762cee243c201ae42ed8fc7b27",
+    "apply_check_against_exact_preimages": true
+  },
+  "source_files": [
+    {
+      "path": "android/native-generation-pair/source-lock.json",
+      "before_bytes": 354443,
+      "before_sha256": "86a215da1fed2945feccebe7878b95fe507114de6e3b8ee0fa673e830d9a7aba",
+      "after_bytes": 354815,
+      "after_sha256": "55316606071a02ff5cb4d2f3985edb048d1861e5c15aa7d901d542e69f8e9dd9"
+    },
+    {
+      "path": "tools/droidloom-update/src/native_generation_pair_build.rs",
+      "before_bytes": 426694,
+      "before_sha256": "30a67139ba814589bf2c671ecaf00d6314dac80b3d7ce9abf5969df41a0e4ace",
+      "after_bytes": 433546,
+      "after_sha256": "a5f88ee8ae9d5ae0eacf3f76a3fdb707c4a31377dab09f01395aa1c3adfb18fa"
+    }
+  ],
+  "change_summary": {
+    "existing_project_cone_addition": {
+      "path": "dalvik",
+      "commit": "5013071e756f89aa2cea97b437af12aacb8d4485",
+      "added_sparse_path": "tools/dexdeps"
+    },
+    "new_project": {
+      "commit": "d67e4b09ff002069a025bfb232836eecab6dab52",
+      "name": "platform/external/python/pyee",
+      "path": "external/python/pyee",
+      "purpose": "Pinned original pyee host Python provider required by the retained Bumble module",
+      "sparse_paths": [
+        "Android.bp",
+        "LICENSE",
+        "pyee"
+      ]
+    },
+    "existing_typing_extensions": {
+      "commit": "8430d542d65e5607ece1e810e247b982384b32f9",
+      "name": "platform/external/python/typing_extensions",
+      "path": "external/python/typing_extensions",
+      "purpose": "Original Android17 typing_extensions python library module"
+    },
+    "provider_provenance_file": "provider-provenance.json",
+    "replacement_blueprints_or_stubs_added": false
+  },
+  "preserved_contract": {
+    "previous_projects": 600,
+    "new_projects": 601,
+    "links": 8,
+    "existing_project_revisions_changed": 0,
+    "other_existing_project_entries_changed": 0,
+    "all_other_top_level_lock_fields_unchanged": true,
+    "unrestricted_repo_sync": false,
+    "targets": [
+      "libberberis_arm64",
+      "com.android.art"
+    ],
+    "allow_missing_dependencies": false,
+    "status_field": "seed_not_yet_build_proven",
+    "superproject": {
+      "commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+      "name": "platform/superproject",
+      "ref": "refs/heads/android-17.0.0_r1"
+    }
+  },
+  "validation": {
+    "focused_tests": {
+      "job_id": "1a1c028da7b-5e21-936",
+      "state": "succeeded",
+      "exit_code": 0,
+      "output_complete": true,
+      "output_durable": true,
+      "argv": [
+        "/home/qq/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "--target-dir",
+        "/home/qq/work/pocket4-native601-dexdeps-pyee-buildclosure-20261109-r1/cargo-target",
+        "-j",
+        "2",
+        "-p",
+        "droidloom-update",
+        "ordinary_pair",
+        "--",
+        "--test-threads=2"
+      ],
+      "env": {
+        "TMPDIR": "/home/qq/work/pocket4-native601-dexdeps-pyee-buildclosure-20261109-r1/tmp",
+        "CARGO_INCREMENTAL": "0"
+      },
+      "actual_result": "test result: ok. 31 passed; 0 failed; 0 ignored; 0 measured; 222 filtered out; finished in 6.28s",
+      "compile_result": "Finished `test` profile [unoptimized + debuginfo] target(s) in 15.87s",
+      "new_regressions": [
+        "ordinary_pair_apex_bumble_providers_reject_actual_r10_omissions",
+        "ordinary_pair_dexdeps_requires_complete_original_source",
+        "ordinary_pair_pyee_requires_pinned_source_and_typing_extensions"
+      ],
+      "historical_locks_reconstructed_exactly": {
+        "r3": "b1fb40b9de4e2ab35407022862706b9d0a7e580a59e607b27bc9d99ec0a67fbb",
+        "r5": "600dc00660af69b4b8eeb497fac8f2a83f0d8b24ad3d02c2774a4df96f5ec8cf",
+        "r6": "09a020b99c5f9f1876c69450d01ac99907cd6dda97cb4f69601f70151ea43d2b",
+        "r7": "fb05fce28e2541cc1c791350ede62d36579ac459922b6f394680930cba9f6d9d",
+        "r8": "02fd330466357ecf744d85f27d23b03fabde46f31fae3ef69a5f6634e66e8837",
+        "r10": "86a215da1fed2945feccebe7878b95fe507114de6e3b8ee0fa673e830d9a7aba"
+      },
+      "partial_provider_controls_keep_other_providers_complete": true,
+      "stdout": {
+        "bytes": 4533,
+        "sha256": "17b9f8f3ca7715f19b94ba824c31b14a7d6e5658eb874000fb67881afce714da"
+      },
+      "stderr": {
+        "bytes": 3087,
+        "sha256": "ab32128c85de7635f61a916b0b86c5ab76ee44d930024092ef91c88ab263bfd0"
+      },
+      "existing_warning": "private_ART_conscrypt_fuzzer_scope_preserves_other_modules is non_snake_case",
+      "receipt": {
+        "path": "/home/qq/work/pocket4-native601-dexdeps-pyee-buildclosure-20261109-r1/qualification/focused-tests.json",
+        "size": 1543,
+        "sha256": "d1c9bd158ba356c1da093346e15bb206989d11958ae24a190a3032846b2e1997"
+      }
+    },
+    "normal_tools": {
+      "job_id": "1a1c02a6cb1-5e21-93b",
+      "state": "succeeded",
+      "exit_code": 0,
+      "output_complete": true,
+      "output_durable": true,
+      "argv": [
+        "/home/qq/.cargo/bin/cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "--target-dir",
+        "/home/qq/work/pocket4-native601-dexdeps-pyee-buildclosure-20261109-r1/cargo-target",
+        "-j",
+        "2",
+        "-p",
+        "droidloom-update",
+        "-p",
+        "droidloom-source"
+      ],
+      "env": {
+        "TMPDIR": "/home/qq/work/pocket4-native601-dexdeps-pyee-buildclosure-20261109-r1/tmp",
+        "CARGO_INCREMENTAL": "0"
+      },
+      "actual_result": "Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.23s",
+      "binaries": [
+        {
+          "name": "droidloom-source",
+          "bytes": 19945688,
+          "sha256": "56864d17e8e26bef6d0d1e3e5fbcb48228a053414a8b1eeeeef5c9e699bab134"
+        },
+        {
+          "name": "droidloom-update",
+          "bytes": 34099000,
+          "sha256": "d0c18af19c6e20e171aab8c743e690c7330ed92f966a3f33a1ca17810ea55e94"
+        }
+      ],
+      "binaries_in_publication_bundle": false,
+      "verify_lock": {
+        "argv": [
+          "/home/qq/work/pocket4-native601-dexdeps-pyee-buildclosure-20261109-r1/cargo-target/debug/droidloom-source",
+          "verify-lock",
+          "--lock",
+          "/home/qq/work/pocket4-native601-dexdeps-pyee-buildclosure-20261109-r1/source/android/native-generation-pair/source-lock.json"
+        ],
+        "exit_code": 0,
+        "stdout": "verified 601 exact AOSP projects and 8 root links at superproject 28f0bbddc24d56c8ec5a8df5342ac7a292184039\n",
+        "stderr": ""
+      },
+      "stdout": {
+        "bytes": 1913,
+        "sha256": "ce9c606349fcba364496929f1c295f13db2ecad04d5018b9a4fb697bc0df7be2"
+      },
+      "stderr": {
+        "bytes": 211,
+        "sha256": "b197983b20e0e556513a1aaa9ff5653c3fc1c7605fb822d11e9ddef13cfabd87"
+      },
+      "receipt": {
+        "path": "/home/qq/work/pocket4-native601-dexdeps-pyee-buildclosure-20261109-r1/qualification/normal-tools.json",
+        "size": 1513,
+        "sha256": "f960b3b94202ce126516f41db48a42635db348e69f868fe0b6450714b3fdea2c"
+      }
+    },
+    "git_diff_check_passed": true,
+    "independent_source_review": {
+      "filename": "independent-source-review.json",
+      "bytes": 6687,
+      "sha256": "79a500da0afcb3eb90bd79371b7d2b993caa025c1e4a34ac6c3d549111fc1a6e",
+      "finding": "NO_BLOCKING_FINDINGS_WITHIN_REVIEWED_SOURCE_SCOPE",
+      "tests_not_repeated_by_reviewer": true
+    }
+  },
+  "resource_and_isolation": {
+    "uid": 1000,
+    "available_logical_cpus": 32,
+    "candidate_compiler_affinity": [
+      0,
+      1
+    ],
+    "cargo_jobs": 2,
+    "existing_compiler_processes_at_test_admission": 6,
+    "two_reserved_logical_cpus": [
+      30,
+      31
+    ],
+    "mem_available_bytes": 99600351232,
+    "free_bytes": 612381908992,
+    "fresh_target_and_tmp_under_candidate": true,
+    "incremental_compilation": false,
+    "shared_owner_source_written": false,
+    "CURRENT_or_original_lock_inodes_written": false,
+    "namespace_or_privileged_controls_performed": false
+  },
+  "prior_actual_failure": {
+    "failure": {
+      "host": "ai395",
+      "generation": "full-ai395-r10",
+      "outer_job_id": "1a1bffe0c63-5e21-848",
+      "state": "FAILED",
+      "build_success": false,
+      "full_command": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-bcc-r1/droidloom-update",
+        "--source",
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/recipe-bcc-r1",
+        "--jobs",
+        "6",
+        "native-generation-build",
+        "--work",
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work",
+        "--out",
+        "/home/qq/work/pocket4-native-build597-ai395-20261108-8b88-r1/out-r10"
+      ],
+      "normal_targets": [
+        "libberberis_arm64",
+        "com.android.art"
+      ],
+      "errors": [
+        {
+          "stdout_line": 361,
+          "source": "system/apex/apexer/testdata/Android.bp",
+          "source_line": 32,
+          "consumer": "com.android.example.apex",
+          "missing_provider": "dexdeps"
+        },
+        {
+          "stdout_line": 363,
+          "source": "system/apex/apexer/testdata/Android.bp",
+          "source_line": 54,
+          "consumer": "com.android.example-logging_parent.apex",
+          "missing_provider": "dexdeps"
+        },
+        {
+          "stdout_line": 365,
+          "source": "external/python/bumble/Android.bp",
+          "source_line": 18,
+          "consumer": "bumble",
+          "missing_provider": "pyee"
+        }
+      ],
+      "failure_stage": "Soong graph bootstrap; ninja generation build.droidloom_x86_64.ninja failed",
+      "bcc_missing_error_recurred": false,
+      "bcc_scope": "BCC no longer appears among observed Soong errors; this does not qualify its final compiled artifacts.",
+      "source_projection_restored": true,
+      "input_after_qualified": true,
+      "owned_retirement_complete": true,
+      "resource_events_delta": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0,
+        "sock_throttled": 0
+      },
+      "allow_missing_dependencies": false,
+      "complete_engine_ART_pair_qualified": false
+    },
+    "receipts": {
+      "stdout": {
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r10/commands/normal-full-native-engine-ART-pair.stdout",
+        "bytes": 62784,
+        "sha256": "3aa02b9300137148816b7a5d7b853f0b32b4022188cbec2b5bdbbe94f42b447b",
+        "independent_full_read_sha_match": true
+      },
+      "stderr": {
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r10/commands/normal-full-native-engine-ART-pair.stderr",
+        "bytes": 531342,
+        "sha256": "343178ded58f80809709212b131be8b75cfeb3c1c53fcd637732090b42e2aa79",
+        "sha_basis": "content-bound terminal receipt supplied by owner and independently read",
+        "read_scope": "h_view whole-file regex search for errors, failures, missing modules and OOM; only normal updater failure wrapper matched at line4154"
+      },
+      "terminal": {
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r10/terminal.json",
+        "bytes": 63465,
+        "sha256": "26cfafd2b388581445e2eaaa0b3ff75956cd2c84d476864dd3d66171520b4b29",
+        "independent_full_read_sha_match": true
+      }
+    },
+    "upgraded_to_pass": false
+  },
+  "prepublication_owner_observation": {
+    "host": "ai395",
+    "job_id": "1a1c02b756d-5e21-93d",
+    "terminal_state": "succeeded",
+    "exit_code": 0,
+    "observed_utc": "2026-11-09T11:57:25.106268+00:00",
+    "scope": "Listed recipe directories and matching control/qualification generations under the exact recorded owner root; not an inventory of all possible paths.",
+    "owner_root": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1",
+    "latest_recipe": {
+      "dalvik": [
+        {
+          "commit": "5013071e756f89aa2cea97b437af12aacb8d4485",
+          "name": "platform/dalvik",
+          "path": "dalvik",
+          "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+          "sparse_paths": [
+            "dx/Android.bp",
+            "dx/NOTICE",
+            "dx/etc",
+            "dx/src"
+          ]
+        }
+      ],
+      "git_head": {
+        "exit": 0,
+        "text": "47a625a3435fccf466982c8b043c1f8ea72d4891\n"
+      },
+      "lock_bytes": 354443,
+      "lock_sha256": "86a215da1fed2945feccebe7878b95fe507114de6e3b8ee0fa673e830d9a7aba",
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/recipe-bcc-r1",
+      "projects": 600,
+      "pyee": []
+    },
+    "latest_control": {
+      "is_symlink": false,
+      "mtime_ns": 1794223144965851611,
+      "name": "full-ai395-r10"
+    },
+    "shared_source_manifest": {
+      "bytes": 393178,
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/.droidloom-source-manifest.json",
+      "sha256": "f2778afa175731ed5490dceaa3c30e764838180526901f20dcbfbc828075d436"
+    },
+    "matches_prior_readonly_audit_manifest_sha": true,
+    "desktop_original_provider_review": {
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/native-pyee-original-provider-review-r1/RESULT.json",
+      "bytes": 5370,
+      "sha256": "f25ef3bac7d4e46cd12d91f0a5d5da5f5c5c446dcaa97c29247128502355d004",
+      "observed_utc": "2026-11-09T11:52:45Z",
+      "status": "ORIGINAL_GITLINK_AND_PROVIDER_VERIFIED",
+      "source_changes": 0,
+      "builds_started": 0,
+      "source_qualified": false,
+      "full_qualified": false
+    }
+  },
+  "transport_note": {
+    "earlier_read_only_request_key": "p4-native601-dexdeps-pyee-20261109-buildclosure-read01",
+    "identity": "unresolved",
+    "mutation_in_request": false,
+    "replayed": false,
+    "credited_as_success": false,
+    "subsequent_different_purpose_fixed_source_snapshot_job_id": "1a1c021ddb2-5e21-91c",
+    "subsequent_snapshot_state": "succeeded",
+    "subsequent_snapshot_exit_code": 0
+  },
+  "limits": {
+    "normal_source_materialization_performed": false,
+    "full_native_build_performed_by_this_candidate": false,
+    "compiled_android_artifacts_qualified": false,
+    "android_runtime_qualified": false,
+    "latest_apps_runtime_qualified": false,
+    "production_ready": false,
+    "all_blockers_closed": false,
+    "owner_adoption_and_new_generation_required": true
+  }
+}

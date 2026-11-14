@@ -1,0 +1,108 @@
+// Copyright (C) 2025 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+apex_key {
+    name: "com.android.npumanager.key",
+    public_key: "com.android.npumanager.avbpubkey",
+    private_key: "com.android.npumanager.pem",
+}
+
+android_app_certificate {
+    name: "com.android.npumanager.certificate",
+    certificate: "com.android.npumanager",
+}
+
+bootclasspath_fragment {
+    // This fragment will be enabled using RELEASE_NPUMANAGER_MODULE flag
+    enabled: select(release_flag("RELEASE_NPUMANAGER_MODULE"), {
+        true: true,
+        false: false,
+    }),
+
+    name: "com.android.npumanager-bootclasspath-fragment",
+    contents: ["framework-npumanager"],
+    apex_available: ["com.android.npumanager"],
+
+    // The bootclasspath_fragments that provide APIs on which this depends.
+    fragments: [
+        {
+            apex: "com.android.art",
+            module: "art-bootclasspath-fragment",
+        },
+    ],
+
+    // Additional stubs libraries that this fragment's contents use which are
+    // not provided by another bootclasspath_fragment.
+    additional_stubs: [
+        "android-non-updatable",
+    ],
+
+    hidden_api: {
+        split_packages: ["*"],
+    },
+}
+
+systemserverclasspath_fragment {
+    // This fragment will be enabled using RELEASE_NPUMANAGER_MODULE flag
+    enabled: select(release_flag("RELEASE_NPUMANAGER_MODULE"), {
+        true: true,
+        false: false,
+    }),
+
+    name: "com.android.npumanager-systemserverclasspath-fragment",
+    contents: ["service-npumanager"],
+    apex_available: ["com.android.npumanager"],
+}
+
+apex {
+    // This apex will be enabled using RELEASE_NPUMANAGER_MODULE flag
+    enabled: select(release_flag("RELEASE_NPUMANAGER_MODULE"), {
+        true: true,
+        false: false,
+    }),
+    prebuilts: ["current_sdkinfo"],
+    min_sdk_version: "36",
+    name: "com.android.npumanager",
+    manifest: "manifest.json",
+    file_contexts: ":com.android.npumanager-file_contexts",
+    key: "com.android.npumanager.key",
+    certificate: ":com.android.npumanager.certificate",
+    defaults: ["b-launched-apex-module"],
+    bootclasspath_fragments: ["com.android.npumanager-bootclasspath-fragment"],
+    systemserverclasspath_fragments: ["com.android.npumanager-systemserverclasspath-fragment"],
+    compile_multilib: "both",
+    native_shared_libs: [
+        "libcom.android.npumanager",
+    ],
+    jni_libs: [
+        "libnpumanager_service_jni",
+    ],
+}
+
+sdk {
+    enabled: select(release_flag("RELEASE_NPUMANAGER_MODULE"), {
+        true: true,
+        false: false,
+    }),
+    name: "npumanager-module-sdk",
+    apexes: [
+        // Adds exportable dependencies of the APEX to the sdk,
+        // e.g. *classpath_fragments.
+        "com.android.npumanager",
+    ],
+}

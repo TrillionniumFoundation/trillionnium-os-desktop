@@ -1,0 +1,22 @@
+{
+  "path": "ai395:/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/source-parent/linux-source-7.0.0/drivers/android/binderfs.c",
+  "bytes": 19577,
+  "sha256": "981f52a95c80cf2f163e4b8a8b637fc8c813c279a80451c7b3b91e195c02e388",
+  "excerpts": [
+    {
+      "start": 450,
+      "end": 466,
+      "text": "\t.lookup = simple_lookup,\n\t.rename = binderfs_rename,\n\t.unlink = binderfs_unlink,\n};\n\nstatic struct inode *binderfs_make_inode(struct super_block *sb, int mode)\n{\n\tstruct inode *ret;\n\n\tret = new_inode(sb);\n\tif (ret) {\n\t\tret->i_ino = iunique(sb, BINDERFS_MAX_MINOR + INODE_OFFSET);\n\t\tret->i_mode = mode;\n\t\tsimple_inode_init_ts(ret);\n\t}\n\treturn ret;\n}\n"
+    },
+    {
+      "start": 468,
+      "end": 523,
+      "text": "struct dentry *binderfs_create_file(struct dentry *parent, const char *name,\n\t\t\t\t    const struct file_operations *fops,\n\t\t\t\t    void *data)\n{\n\tstruct dentry *dentry;\n\tstruct inode *new_inode, *parent_inode;\n\tstruct super_block *sb;\n\n\tparent_inode = d_inode(parent);\n\n\tdentry = simple_start_creating(parent, name);\n\tif (IS_ERR(dentry))\n\t\treturn dentry;\n\n\tsb = parent_inode->i_sb;\n\tnew_inode = binderfs_make_inode(sb, S_IFREG | 0444);\n\tif (!new_inode) {\n\t\tsimple_done_creating(dentry);\n\t\treturn ERR_PTR(-ENOMEM);\n\t}\n\n\tnew_inode->i_fop = fops;\n\tnew_inode->i_private = data;\n\td_make_persistent(dentry, new_inode);\n\tfsnotify_create(parent_inode, dentry);\n\tsimple_done_creating(dentry);\n\treturn dentry; // borrowed\n}\n\nstatic struct dentry *binderfs_create_dir(struct dentry *parent,\n\t\t\t\t\t  const char *name)\n{\n\tstruct dentry *dentry;\n\tstruct inode *new_inode, *parent_inode;\n\tstruct super_block *sb;\n\n\tparent_inode = d_inode(parent);\n\n\tdentry = simple_start_creating(parent, name);\n\tif (IS_ERR(dentry))\n\t\treturn dentry;\n\n\tsb = parent_inode->i_sb;\n\tnew_inode = binderfs_make_inode(sb, S_IFDIR | 0755);\n\tif (!new_inode) {\n\t\tsimple_done_creating(dentry);\n\t\treturn ERR_PTR(-ENOMEM);\n\t}\n\n\tnew_inode->i_fop = &simple_dir_operations;\n\tnew_inode->i_op = &simple_dir_inode_operations;\n\n\tset_nlink(new_inode, 2);\n\td_make_persistent(dentry, new_inode);\n\tinc_nlink(parent_inode);\n\tfsnotify_mkdir(parent_inode, dentry);\n"
+    },
+    {
+      "start": 641,
+      "end": 673,
+      "text": "\tif (!sb->s_fs_info)\n\t\treturn -ENOMEM;\n\tinfo = sb->s_fs_info;\n\n\tinfo->ipc_ns = get_ipc_ns_exported(current->nsproxy->ipc_ns);\n\n\tinfo->root_gid = make_kgid(sb->s_user_ns, 0);\n\tif (!gid_valid(info->root_gid))\n\t\tinfo->root_gid = GLOBAL_ROOT_GID;\n\tinfo->root_uid = make_kuid(sb->s_user_ns, 0);\n\tif (!uid_valid(info->root_uid))\n\t\tinfo->root_uid = GLOBAL_ROOT_UID;\n\tinfo->mount_opts.max = ctx->max;\n\tinfo->mount_opts.stats_mode = ctx->stats_mode;\n\n\tinode = new_inode(sb);\n\tif (!inode)\n\t\treturn -ENOMEM;\n\n\tinode->i_ino = FIRST_INODE;\n\tinode->i_fop = &simple_dir_operations;\n\tinode->i_mode = S_IFDIR | 0755;\n\tsimple_inode_init_ts(inode);\n\tinode->i_op = &binderfs_dir_inode_operations;\n\tset_nlink(inode, 2);\n\n\tsb->s_root = d_make_root(inode);\n\tif (!sb->s_root)\n\t\treturn -ENOMEM;\n\n\tret = binderfs_binder_ctl_create(sb);\n\tif (ret)\n\t\treturn ret;\n"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "schema": "pocket4-continuation-observation-v1",
+  "observed_utc": "2026-11-09T08:35:56.992124+00:00",
+  "current_path": "/home/alex/work/pocket4-android-final/CONTINUATION_CURRENT.json",
+  "current_recorded_utc": "2026-11-09T08:21:04.867373+00:00",
+  "current_state": "NEW_KERNEL_BOOT_VERIFIED_NATIVE_R7_AUDIO_R9_FAILED_RETIRED_USERNS_CAPABILITY_FIX_PENDING",
+  "kernel": "7.0.14-p4cred1",
+  "boot_id": "97d9600f-e081-465c-9e6e-62651e09806b",
+  "active_owner": "foreground-root-8b88e19ff7ab",
+  "owner_lease_until": "2026-11-09T10:21:04.867373+00:00",
+  "root_current_mutations": 0,
+  "root_reboots": 0,
+  "all_blockers_closed": false,
+  "production_ready": false,
+  "runtime_qualified": false,
+  "final_candidate_deployed": false,
+  "private_r3_followup": {
+    "path": "/home/alex/work/pocket4-android-final/qualification/production-namespace-broker-private-controls-20261109-8b88-r3/result.json",
+    "returncode": 0,
+    "scope": "private fixed owned-child syscall control only; no HostAdmission token",
+    "production_admission": false,
+    "host_accounts_or_grants_changed": false,
+    "android_actions": 0
+  },
+  "limits": [
+    "The private r3 followup is newer than CURRENT24 and does not qualify production admission.",
+    "The kernel was rebooted by the existing owner; this continuation independently observed it.",
+    "Final 42 application runtime acceptance is still pending.",
+    "Old runtime inputs cannot be retired solely from these source and host results."
+  ]
+}

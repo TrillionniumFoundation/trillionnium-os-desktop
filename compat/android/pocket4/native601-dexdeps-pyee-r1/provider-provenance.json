@@ -1,0 +1,386 @@
+{
+  "schema": "native601-fixed-original-provider-provenance-v1",
+  "basis": {
+    "diagnosis_file": "native-r10-dexdeps-pyee-readonly-diagnosis.json",
+    "bytes": 27231,
+    "sha256": "c15a74655655a71649ae6677c887aac46c24fee7c5cbd95abfe6409543778302"
+  },
+  "provider_plan": {
+    "superproject": {
+      "commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+      "tree": "1ae43ca49f9b99defa68e1f6e1d3a46ae0dd11e2",
+      "public_ref_observed": "refs/heads/android-17.0.0_r1",
+      "public_ref_commit_matches_locked_commit": true,
+      "gitlink_source_url": "https://android.googlesource.com/platform/superproject/+/refs/heads/android-17.0.0_r1/"
+    },
+    "dexdeps": {
+      "project": "platform/dalvik",
+      "commit": "5013071e756f89aa2cea97b437af12aacb8d4485",
+      "classification": "existing_project_sparse_cone_omitted",
+      "current_sparse_paths": [
+        "dx/Android.bp",
+        "dx/NOTICE",
+        "dx/etc",
+        "dx/src"
+      ],
+      "required_added_cone": "tools/dexdeps",
+      "cone_tree": "8aa6e9704e47c46a1bf0619ea08295eca4436eaa",
+      "complete_cone_files": [
+        {
+          "path": "tools/dexdeps/Android.bp",
+          "mode": "100644",
+          "git_blob": "3d914bf7ec115432db1ab632d51e4906b6816702"
+        },
+        {
+          "path": "tools/dexdeps/README.txt",
+          "mode": "100644",
+          "git_blob": "22380cee3ed6f559821d9f99170791ed2acb3e96"
+        },
+        {
+          "path": "tools/dexdeps/etc/dexdeps",
+          "mode": "100644",
+          "git_blob": "dc628bd14a95bcce8dc3a55b5e353fd9f5ae6097"
+        },
+        {
+          "path": "tools/dexdeps/etc/manifest.txt",
+          "mode": "100644",
+          "git_blob": "760674402673f822d061a50075b073473d804efa"
+        },
+        {
+          "path": "tools/dexdeps/src/com/android/dexdeps/ClassRef.java",
+          "mode": "100644",
+          "git_blob": "7f6edc9b07cb21851dbc01da6b8edf153658f5dc"
+        },
+        {
+          "path": "tools/dexdeps/src/com/android/dexdeps/DexData.java",
+          "mode": "100644",
+          "git_blob": "e7f9a53a4d51246f21e6e3e00cce4398ea5bcd7c"
+        },
+        {
+          "path": "tools/dexdeps/src/com/android/dexdeps/DexDataException.java",
+          "mode": "100644",
+          "git_blob": "873db949f8a3d3c9d9c718fa0add7f1b97967bba"
+        },
+        {
+          "path": "tools/dexdeps/src/com/android/dexdeps/FieldRef.java",
+          "mode": "100644",
+          "git_blob": "93e87cba96f51789a42807dbfff48b1653160557"
+        },
+        {
+          "path": "tools/dexdeps/src/com/android/dexdeps/Main.java",
+          "mode": "100644",
+          "git_blob": "5e57ac12df5172b66304484a73da8f3274a13b3e"
+        },
+        {
+          "path": "tools/dexdeps/src/com/android/dexdeps/MethodRef.java",
+          "mode": "100644",
+          "git_blob": "67dce62ec875a730f4f7f52b03da4bc0d4244bcd"
+        },
+        {
+          "path": "tools/dexdeps/src/com/android/dexdeps/Output.java",
+          "mode": "100644",
+          "git_blob": "dbe3bc2daa60cd9400815c96786af9a5da886a6d"
+        },
+        {
+          "path": "tools/dexdeps/src/com/android/dexdeps/UsageException.java",
+          "mode": "100644",
+          "git_blob": "e695fc7c926b1757cef639427b98785ea0882675"
+        }
+      ],
+      "direct_named_library_dependencies": [],
+      "required_existing_root_metadata": [
+        "dalvik/Android.bp providing dalvik_license",
+        "dalvik/NOTICE"
+      ],
+      "why_bp_only_fails": "The original java_binary_host also requires etc/manifest.txt, etc/dexdeps and all eight src/**/*.java inputs."
+    },
+    "pyee": {
+      "project": "platform/external/python/pyee",
+      "commit": "d67e4b09ff002069a025bfb232836eecab6dab52",
+      "project_tree": "0863634e357756a9e5a0e4e937557f382a92b4f9",
+      "classification": "entire_project_missing_from_600_project_lock",
+      "fixed_gitlink_url": "https://android.googlesource.com/platform/superproject/+/refs/heads/android-17.0.0_r1/external/python/pyee",
+      "required_materialized_inputs": [
+        "Android.bp",
+        "LICENSE",
+        "pyee/"
+      ],
+      "recommended_minimal_explicit_sparse_selection": [
+        "Android.bp",
+        "LICENSE",
+        "pyee"
+      ],
+      "python_package_tree": "3db57c88b10dbd54318b524948d4a969010d6e59",
+      "python_package_files": [
+        {
+          "path": "pyee/__init__.py",
+          "mode": 33188,
+          "git_blob": "9a4dafbc423d2e2a917752600a26ea64e0987a86"
+        },
+        {
+          "path": "pyee/asyncio.py",
+          "mode": 33188,
+          "git_blob": "433001f1eef42e4ec20118ce4b4f2be29b6bf835"
+        },
+        {
+          "path": "pyee/base.py",
+          "mode": 33188,
+          "git_blob": "85a6cf9e2403270585787d912e6fd202376facb0"
+        },
+        {
+          "path": "pyee/cls.py",
+          "mode": 33188,
+          "git_blob": "21885b49a0c6bcb997fb2224a65d9922f1e017ee"
+        },
+        {
+          "path": "pyee/executor.py",
+          "mode": 33188,
+          "git_blob": "25df77455018e812b874f1b6b9e92b8600e6e262"
+        },
+        {
+          "path": "pyee/py.typed",
+          "mode": 33188,
+          "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+        },
+        {
+          "path": "pyee/trio.py",
+          "mode": 33188,
+          "git_blob": "e79d4572f950f40eaef4db198e2695142114c1a8"
+        },
+        {
+          "path": "pyee/twisted.py",
+          "mode": 33188,
+          "git_blob": "2b9d20bed14adaf4b2709f6dbbdd532abb3e9a70"
+        },
+        {
+          "path": "pyee/uplift.py",
+          "mode": 33188,
+          "git_blob": "aa5f55a2497336b4153d18aabf6076fb2994dcb2"
+        }
+      ],
+      "direct_named_library_dependencies": [
+        "typing_extensions"
+      ],
+      "root_metadata": "Preserve normal root metadata and license files; do not synthesize a provider BP."
+    },
+    "typing_extensions": {
+      "project": "platform/external/python/typing_extensions",
+      "fixed_superproject_gitlink": "8430d542d65e5607ece1e810e247b982384b32f9",
+      "provider_module_type": "python_library",
+      "host_supported": true,
+      "source_filegroup": "typing_extensions_srcs",
+      "source_path": "src/typing_extensions.py",
+      "license_path": "LICENSE",
+      "direct_named_library_dependencies": [],
+      "remaining_check": "Resolved for the candidate lock: the unchanged fixed project has no sparse_paths field and remains selected in full. New 601-project materialization remains unexecuted."
+    },
+    "consumer_chain": {
+      "apex_testdata_commit": "ce2bb9f710183c864040401d859874b5723e44d8",
+      "apex_testdata_blob": "bc399734a2d0e5ba92fc91aaca62d5a4e3d7c04b",
+      "apex_testdata_dexdeps_literal_present": false,
+      "soong_commit": "6722dd8833db7482df1a2543ca3fcf67ddf0f7b1",
+      "soong_source": "apex/builder.go",
+      "soong_blob": "7b261d885f75c4b8cfa022088275ffc9c564486a",
+      "soong_mechanism": "The Java API usage rule uses BuiltTool(\"gen_apex_symbols\"), Text(\"java_usedby\"), BuiltTool(\"dexdeps\"); the dependency is not a literal in the consumer APEX BP.",
+      "soong_source_url": "https://android.googlesource.com/platform/build/soong/+/refs/tags/android-17.0.0_r1/apex/builder.go",
+      "bumble_commit": "ee1fb44f96ef0c7907bc7c07ea753853c68e7cce",
+      "bumble_blob": "b470903cf2a01eee63cdf35cb2524ce0d448e76d",
+      "bumble_direct_dependencies": [
+        "libprotobuf-python",
+        "pyee"
+      ]
+    },
+    "expected_change_scope": [
+      "Add the existing dalvik tools/dexdeps cone at its unchanged fixed revision.",
+      "Add pyee as a new fixed original project at the same superproject gitlink, with complete provider/source/license inputs.",
+      "Verify the existing typing_extensions provider remains physically and declaratively selected.",
+      "Update Rust selection/guard project counts truthfully; if no additional project is needed, this is 601 projects and 8 root links.",
+      "Add isolated historical regressions for missing dexdeps, missing pyee, wrong revisions and incomplete BP/source/license selections; preserve historical r8/r10 lock bytes.",
+      "Use normal focused Cargo/tool/verify-lock qualifications on an independent candidate; a fresh owner-adopted full generation remains a separate later gate."
+    ],
+    "excluded_shortcuts": [
+      "No allow_missing_dependencies.",
+      "No stub or substituted dexdeps/pyee module.",
+      "No deleting retained APEX/Bumble consumers to hide missing original inputs.",
+      "No shared source, original locks or CURRENT edits.",
+      "No full build, Android start or namespace/private execution by this audit."
+    ]
+  },
+  "public_source_references": [
+    {
+      "ref": "turn21view0",
+      "meaning": "exact superproject commit and tree"
+    },
+    {
+      "ref": "turn23view1",
+      "meaning": "dalvik fixed gitlink"
+    },
+    {
+      "ref": "turn26view1",
+      "meaning": "pyee fixed gitlink"
+    },
+    {
+      "ref": "turn26view2",
+      "meaning": "typing_extensions fixed gitlink"
+    },
+    {
+      "ref": "turn31view1",
+      "meaning": "dexdeps provider BP"
+    },
+    {
+      "ref": "turn32view3",
+      "meaning": "complete eight-Java source blob list"
+    },
+    {
+      "ref": "turn29view0",
+      "meaning": "pyee BP and direct dependency"
+    },
+    {
+      "ref": "turn32view4",
+      "meaning": "pyee package blob list"
+    },
+    {
+      "ref": "turn35view1",
+      "meaning": "bumble consumer BP"
+    },
+    {
+      "ref": "turn35view2",
+      "meaning": "typing_extensions provider BP"
+    },
+    {
+      "ref": "turn37view0",
+      "meaning": "APEX testdata consumer BP"
+    },
+    {
+      "ref": "turn44view0",
+      "meaning": "fixed Soong BuiltTool dexdeps mechanism"
+    }
+  ],
+  "original_file_hashes": [
+    {
+      "file": "dexdeps-Android.bp",
+      "project": "platform/dalvik",
+      "commit": "5013071e756f89aa2cea97b437af12aacb8d4485",
+      "path": "tools/dexdeps/Android.bp",
+      "git_blob": "3d914bf7ec115432db1ab632d51e4906b6816702",
+      "fixed_commit_url": "https://android.googlesource.com/platform/dalvik/+/5013071e756f89aa2cea97b437af12aacb8d4485/tools/dexdeps/Android.bp",
+      "retrieved_raw_url": "https://android.googlesource.com/platform/dalvik/+/refs/tags/android-security-17.0.0_r1/tools/dexdeps/Android.bp?format=TEXT",
+      "tag_commit_identity_independently_checked": true,
+      "bytes": 1083,
+      "sha256": "cc8dce9ef5443652d09c3f11c459bd7b21b4eea2caa7855378cc814afd0900bf",
+      "git_blob_verified": true,
+      "independent_remote_git_bytes_equal": true
+    },
+    {
+      "file": "dexdeps-wrapper",
+      "project": "platform/dalvik",
+      "commit": "5013071e756f89aa2cea97b437af12aacb8d4485",
+      "path": "tools/dexdeps/etc/dexdeps",
+      "git_blob": "dc628bd14a95bcce8dc3a55b5e353fd9f5ae6097",
+      "fixed_commit_url": "https://android.googlesource.com/platform/dalvik/+/5013071e756f89aa2cea97b437af12aacb8d4485/tools/dexdeps/etc/dexdeps",
+      "retrieved_raw_url": "https://android.googlesource.com/platform/dalvik/+/refs/tags/android-security-17.0.0_r1/tools/dexdeps/etc/dexdeps?format=TEXT",
+      "tag_commit_identity_independently_checked": true,
+      "bytes": 1908,
+      "sha256": "f95c7989c475763fb8d9b5021d8ff52249253b0d2905a4b4dd87ef0b3d4940ed",
+      "git_blob_verified": true,
+      "independent_remote_git_bytes_equal": false
+    },
+    {
+      "file": "dexdeps-manifest.txt",
+      "project": "platform/dalvik",
+      "commit": "5013071e756f89aa2cea97b437af12aacb8d4485",
+      "path": "tools/dexdeps/etc/manifest.txt",
+      "git_blob": "760674402673f822d061a50075b073473d804efa",
+      "fixed_commit_url": "https://android.googlesource.com/platform/dalvik/+/5013071e756f89aa2cea97b437af12aacb8d4485/tools/dexdeps/etc/manifest.txt",
+      "retrieved_raw_url": "https://android.googlesource.com/platform/dalvik/+/refs/tags/android-security-17.0.0_r1/tools/dexdeps/etc/manifest.txt?format=TEXT",
+      "tag_commit_identity_independently_checked": true,
+      "bytes": 37,
+      "sha256": "c046af1d40114ef2529fd90acca47c5cf2aa4d712d330f4d9309752b80082c8b",
+      "git_blob_verified": true,
+      "independent_remote_git_bytes_equal": false
+    },
+    {
+      "file": "pyee-Android.bp",
+      "project": "platform/external/python/pyee",
+      "commit": "d67e4b09ff002069a025bfb232836eecab6dab52",
+      "path": "Android.bp",
+      "git_blob": "33439fa6d6cfa88c475f8ffde2aacec9433008f0",
+      "fixed_commit_url": "https://android.googlesource.com/platform/external/python/pyee/+/d67e4b09ff002069a025bfb232836eecab6dab52/Android.bp",
+      "retrieved_raw_url": "https://android.googlesource.com/platform/external/python/pyee/+/refs/tags/android-17.0.0_r1/Android.bp?format=TEXT",
+      "tag_commit_identity_independently_checked": true,
+      "bytes": 1033,
+      "sha256": "4a0f1b3e441663a58d5495aa913b11d140b013bd695ae629398d2607b1452340",
+      "git_blob_verified": true,
+      "independent_remote_git_bytes_equal": false
+    },
+    {
+      "file": "pyee-LICENSE",
+      "project": "platform/external/python/pyee",
+      "commit": "d67e4b09ff002069a025bfb232836eecab6dab52",
+      "path": "LICENSE",
+      "git_blob": "67dd1292e49cd7c11f57cb6295b99072b867d407",
+      "fixed_commit_url": "https://android.googlesource.com/platform/external/python/pyee/+/d67e4b09ff002069a025bfb232836eecab6dab52/LICENSE",
+      "retrieved_raw_url": "https://android.googlesource.com/platform/external/python/pyee/+/refs/tags/android-17.0.0_r1/LICENSE?format=TEXT",
+      "tag_commit_identity_independently_checked": true,
+      "bytes": 1080,
+      "sha256": "1ff556ca206b107f10e1c562ae454d3292e0296c3510eb90eb7f114caee32a66",
+      "git_blob_verified": true,
+      "independent_remote_git_bytes_equal": false
+    },
+    {
+      "file": "bumble-Android.bp",
+      "project": "platform/external/python/bumble",
+      "commit": "ee1fb44f96ef0c7907bc7c07ea753853c68e7cce",
+      "path": "Android.bp",
+      "git_blob": "b470903cf2a01eee63cdf35cb2524ce0d448e76d",
+      "fixed_commit_url": "https://android.googlesource.com/platform/external/python/bumble/+/ee1fb44f96ef0c7907bc7c07ea753853c68e7cce/Android.bp",
+      "retrieved_raw_url": "https://android.googlesource.com/platform/external/python/bumble/+/refs/tags/android-security-17.0.0_r1/Android.bp?format=TEXT",
+      "tag_commit_identity_independently_checked": true,
+      "bytes": 662,
+      "sha256": "e0933a0790817458a424e67bf140c453575d6f692614d30c312b24cdf9032691",
+      "git_blob_verified": true,
+      "independent_remote_git_bytes_equal": true
+    },
+    {
+      "file": "apex-testdata-Android.bp",
+      "project": "platform/system/apex",
+      "commit": "ce2bb9f710183c864040401d859874b5723e44d8",
+      "path": "apexer/testdata/Android.bp",
+      "git_blob": "bc399734a2d0e5ba92fc91aaca62d5a4e3d7c04b",
+      "fixed_commit_url": "https://android.googlesource.com/platform/system/apex/+/ce2bb9f710183c864040401d859874b5723e44d8/apexer/testdata/Android.bp",
+      "retrieved_raw_url": "https://android.googlesource.com/platform/system/apex/+/refs/tags/android-17.0.0_r1/apexer/testdata/Android.bp?format=TEXT",
+      "tag_commit_identity_independently_checked": true,
+      "bytes": 3362,
+      "sha256": "a8d034a8eb4b850e76a542b62e94608a5c090ef002e2028d5938958c0b7500ad",
+      "git_blob_verified": true,
+      "independent_remote_git_bytes_equal": true
+    },
+    {
+      "file": "typing_extensions-Android.bp",
+      "project": "platform/external/python/typing_extensions",
+      "commit": "8430d542d65e5607ece1e810e247b982384b32f9",
+      "path": "Android.bp",
+      "git_blob": "1616c7dbb44de13b1df4b136f8bb48639988849a",
+      "fixed_commit_url": "https://android.googlesource.com/platform/external/python/typing_extensions/+/8430d542d65e5607ece1e810e247b982384b32f9/Android.bp",
+      "retrieved_raw_url": "https://android.googlesource.com/platform/external/python/typing_extensions/+/refs/tags/android-security-17.0.0_r2/Android.bp?format=TEXT",
+      "tag_commit_identity_independently_checked": true,
+      "bytes": 1122,
+      "sha256": "289ad0807ca89df7d503c705e7a596cfbc96a653a45a260ba7ba0f31c85f211f",
+      "git_blob_verified": true,
+      "independent_remote_git_bytes_equal": false
+    }
+  ],
+  "candidate_follow_up": {
+    "typing_extensions_lock_entry": {
+      "commit": "8430d542d65e5607ece1e810e247b982384b32f9",
+      "name": "platform/external/python/typing_extensions",
+      "path": "external/python/typing_extensions",
+      "purpose": "Original Android17 typing_extensions python library module"
+    },
+    "complete_project_selected": true,
+    "source_entry_changed": false,
+    "candidate_lock_sha256": "55316606071a02ff5cb4d2f3985edb048d1861e5c15aa7d901d542e69f8e9dd9",
+    "normal_source_materialization_performed": false
+  },
+  "interpretation": "Pinned original Blueprint and source trees determine the minimal explicit selection. Exact selector guards reject unreviewed changes; Git cone mode may retain parent or sibling files, so alternative path spellings are not assumed to describe the final checkout byte set."
+}

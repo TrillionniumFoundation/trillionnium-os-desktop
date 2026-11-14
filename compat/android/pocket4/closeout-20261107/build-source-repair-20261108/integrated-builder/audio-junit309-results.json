@@ -1,0 +1,227 @@
+{
+  "Soong_invocations_in_candidate_controls": 0,
+  "all_blockers_closed": false,
+  "changed_sources": [
+    {
+      "bytes": 130355,
+      "path": "android/manifest/audio-bridge-source-lock.json",
+      "sha256": "5ee79f187a0c308e76160831867552f0328babb54682bc92ddc82ca74785e24c"
+    },
+    {
+      "bytes": 46948,
+      "path": "tools/droidloom-source/src/lib.rs",
+      "sha256": "301802c050c5fbc022b807715a49653dc1ff541b3fa1e41b16352378fd5a5295"
+    },
+    {
+      "bytes": 303995,
+      "path": "tools/droidloom-update/src/android.rs",
+      "sha256": "511cd5829745389fc748cd2b4a45502b6ae006535ce9f836b05aa7171c2767ad"
+    }
+  ],
+  "deployed": false,
+  "focused_controls": {
+    "budget": {
+      "CPUQuotaPercent": 100,
+      "MemoryMax": 1610612736,
+      "MemorySwapMax": 0,
+      "Nice": 10,
+      "affinity": [
+        18
+      ]
+    },
+    "commands": [
+      {
+        "child_reaped": true,
+        "command_child_retired": true,
+        "evidence_complete": true,
+        "name": "rustc-version",
+        "returncode": 0,
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 36,
+          "sha256": "a2d88be55921309c5e126c58ad4a9040d034419589b58684cb44dfd13e14f66e"
+        }
+      },
+      {
+        "child_reaped": true,
+        "command_child_retired": true,
+        "evidence_complete": true,
+        "name": "source-library-controls",
+        "returncode": 0,
+        "stderr": {
+          "bytes": 1725,
+          "sha256": "c20c202f779b5b0876e7e5dd4fed584f94047d81b80e301e0144c938507c2c21"
+        },
+        "stdout": {
+          "bytes": 1052,
+          "sha256": "5b51453d8446227b5a44c6e19aacbf5d746cdb45bceb1b159a44fecc5c667719"
+        }
+      },
+      {
+        "child_reaped": true,
+        "command_child_retired": true,
+        "evidence_complete": true,
+        "name": "junit-provider-regression",
+        "returncode": 0,
+        "stderr": {
+          "bytes": 1441,
+          "sha256": "270fd034ab18e6eb99372f662c4c258c54b934ff274c0dfc2be2aa36c188b75f"
+        },
+        "stdout": {
+          "bytes": 214,
+          "sha256": "680683adf376bbf54a22ea34d80835e08ed817a284ead50f2a3e214f5239f4e6"
+        }
+      },
+      {
+        "child_reaped": true,
+        "command_child_retired": true,
+        "evidence_complete": true,
+        "name": "audio-exact-lock-regression",
+        "returncode": 0,
+        "stderr": {
+          "bytes": 828,
+          "sha256": "a5149021e5f4a1ada646131e60e95a882ad7905e7b3dcce07a225dbf14d0485d"
+        },
+        "stdout": {
+          "bytes": 186,
+          "sha256": "ab1d470db9b01384601654a8bd2a7633250be76394c7dd9e8446a73a30bc704c"
+        }
+      },
+      {
+        "child_reaped": true,
+        "command_child_retired": true,
+        "evidence_complete": true,
+        "name": "normal-source-and-updater-build",
+        "returncode": 0,
+        "stderr": {
+          "bytes": 338,
+          "sha256": "7c0c4dee30b051c5850631055799f0b70f471a0ad1231617037c63c30fb90f73"
+        },
+        "stdout": {
+          "bytes": 55461,
+          "sha256": "5884c5cb0e9a22bdc949f1a61bfba25e54bd5be7eb45dca4879a7007dfd35dc0"
+        }
+      },
+      {
+        "child_reaped": true,
+        "command_child_retired": true,
+        "evidence_complete": true,
+        "name": "normal-candidate-lock-verification",
+        "returncode": 0,
+        "stderr": {
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 107,
+          "sha256": "4b47753e2a832d01c5649e311b9d67ff700c358812d6b3b987cf03cc272778fd"
+        }
+      }
+    ],
+    "normal_tools": {
+      "droidloom-source": {
+        "bytes": 19272976,
+        "sha256": "51522b6b1fd90cb67c8ea0b6ade39ea6f20371524b11a4564679221b68becf32"
+      },
+      "droidloom-update": {
+        "bytes": 32196624,
+        "sha256": "4b54fc5b29990e6b88da7276dd996416e4ac9bae88ec97b28eae270c20936f06"
+      }
+    },
+    "peak_memory_bytes": 976457728,
+    "resource_events_delta": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "result": {
+      "bytes": 10041,
+      "sha256": "09ef0105f55d7f3e0342664e5e2e36670f820ad392d06661ff7914bdfc610b36"
+    },
+    "rustc_version": "rustc 1.93.0 (254b59607 2026-01-19)",
+    "source_library_passed": 13,
+    "swap_bytes": 0,
+    "updater_regressions_passed": 2
+  },
+  "full_audio_apex_qualified": false,
+  "new_project": {
+    "commit": "1a5f3f8b0c829e257386c56cfda5e5a442377282",
+    "name": "platform/external/junit-params",
+    "path": "external/junit-params",
+    "purpose": "Same-superproject original JUnitParams source, tests and AssertJ jar required by retained icu4j-tests in the strict full Audio APEX graph",
+    "sparse_paths": [
+      "lib",
+      "src"
+    ]
+  },
+  "new_project_count": 309,
+  "original_failure": {
+    "complete_audio_apex_produced": false,
+    "consumer": "icu4j-tests",
+    "phase": "Soong bootstrap",
+    "terminal": {
+      "bytes": 73247,
+      "sha256": "98fb004471fe967795bd1e8c5a862757a114b4d29cf77fe16dfd614437f43fc1"
+    },
+    "undefined_provider": "junit-params"
+  },
+  "original_provider_android_bp": {
+    "bytes": 2483,
+    "sha256": "85348fe51555dfca2a488dcefa8911acd4e8773ac312bc51cd7407156f9597e8",
+    "upstream_url": "https://android.googlesource.com/platform/external/junit-params/+/1a5f3f8b0c829e257386c56cfda5e5a442377282/Android.bp?format=TEXT"
+  },
+  "parent_commit": "6eb50f3e0a2184cb822d0704c6f53f261ebd2de4",
+  "previous_project_count": 308,
+  "previous_source_lock_sha256": "bf5db84637fe0508be889aa7c7343e4478ed8a4a537099babc87bfba456ce94b",
+  "provider_modules": [
+    "junit-params",
+    "junit-params-host",
+    "junit-params-test",
+    "junit-params-assertj-core"
+  ],
+  "reconstruction": {
+    "all_308_previous_project_records_equal": true,
+    "all_source_bytes_and_modes_equal": true,
+    "base_subset_tree": "660de60cfd4b57fd3b823dff7757e0a4f098df49",
+    "changed_source_files": 3,
+    "independent_replay_host": "Mac",
+    "source_files": 409,
+    "source_inventory": "audio-junit309-source-files.json",
+    "target_subset_tree": "74ac3f46c712db6d4867bfa9cf0d77a53606b0d1",
+    "unchanged_source_files": 406
+  },
+  "recorded_utc": "2026-11-08T08:31:53.883158+00:00",
+  "runtime_qualified": false,
+  "same_superproject": {
+    "commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+    "name": "platform/superproject",
+    "ref": "refs/heads/android-17.0.0_r1"
+  },
+  "schema": "pocket4-audio-junit309-source-and-focused-results-v1",
+  "source_commit": "7775926d69db45b4fb4989d2fd81db5fda4c3b4d",
+  "source_lock": {
+    "bytes": 130355,
+    "path": "android/manifest/audio-bridge-source-lock.json",
+    "sha256": "5ee79f187a0c308e76160831867552f0328babb54682bc92ddc82ca74785e24c"
+  },
+  "source_patch": {
+    "bytes": 6796,
+    "path": "audio-junit309.patch",
+    "sha256": "d69e1d1220e402c4c35edafc67d2bfeba90c7a89ac400dc403d241d8dacd4d7d"
+  },
+  "source_reconcile_started": false,
+  "source_tree": "fd5593f43118c010b52232f29ed326c3de2e2f4c",
+  "state": "NORMAL_TOOLS_READY_SOURCE_RECONCILE_AND_FULL_APEX_PENDING",
+  "unchanged_previous_project_records": 308,
+  "whole_app_acceptance": {
+    "accepted": 0,
+    "required": 45
+  }
+}

@@ -1,0 +1,279 @@
+{
+  "APEX_built": false,
+  "APEX_installed": false,
+  "audio_base_capsule": {
+    "inventory_sha256": "486300e2a033679a87776c68bff4324eff11b53459de3c9712122788f2a76572",
+    "path": "compat/android/pocket4/audio537-libexif-vendor-bundle-source-r1",
+    "published_desktop_commit": "43371de"
+  },
+  "base": {
+    "commit": "1a5eb38dd809a31b18284839add632a049578f68",
+    "files": 1511,
+    "inventory": {
+      "bytes": 449028,
+      "git_blob": "ff8e8dd048307c2db349d5f6569c2b1157a0e676",
+      "path": "base-files.json",
+      "sha256": "f01ff8564ff0ff2de7ba7fa539842d05b4a4f45df18bf158523a5634457c3529"
+    },
+    "raw_commit": {
+      "bytes": 317,
+      "git_blob": "8f7e0eb87e8664afcbeab6b589c617510410a995",
+      "path": "git-objects/base.commit",
+      "sha256": "f863bbc3cb6f213082cff1becf15d238c037c63eb519e8955dad0befd0f80d24"
+    },
+    "tree": "c5add898f97018c61515441e689bb854efc793fe"
+  },
+  "binary_semantic_fix_qualified": false,
+  "build_variant": "user",
+  "ci_contract": {
+    "all1517_after_required": true,
+    "fresh_Cargo_target_required": true,
+    "fresh_release_tools": [
+      "droidloom-source",
+      "droidloom-update"
+    ],
+    "fresh_security_tests": 4,
+    "historical_proof_counts_as_fresh_CI": false
+  },
+  "evidence": {
+    "dma-retirement.json": {
+      "bytes": 327,
+      "git_blob": "577145926fe7afce9bb77d2e3f272acee0dc0128",
+      "path": "evidence/dma-retirement.json",
+      "sha256": "ce353f1d17ba3e7c896c7415225b9f8ad931224a8d401d23a08d1e9cde993505"
+    },
+    "independent-retirement.json": {
+      "bytes": 5222,
+      "git_blob": "6e348f8525cff9e7313c0c6426e79613336aff20",
+      "path": "evidence/independent-retirement.json",
+      "sha256": "e9681fa50104d4682c342510f9983959eba8b2e5e4e24520d0f95d4e866d6a90"
+    },
+    "normal-retirement.json": {
+      "bytes": 307,
+      "git_blob": "28790c17970e6104cacee31fb09c444927c4dedc",
+      "path": "evidence/normal-retirement.json",
+      "sha256": "4a2d09976e62fb4121788f4d1cb1de03d8e6776446bb8101c205c60e7a04bcdd"
+    },
+    "ordinary-329.json": {
+      "bytes": 72518,
+      "git_blob": "c37ea4d8a1db6bc73c523671beaa6c4c0900ea67",
+      "path": "evidence/ordinary-329.json",
+      "sha256": "56c1b8f5425af983ad26e5bdfcd4522cdb172a5a9ba862c412d6ef4e97d60769"
+    },
+    "ordinary-330.json": {
+      "bytes": 76121,
+      "git_blob": "e616e5edc12f74b98f82d6802636af6169d0ab5f",
+      "path": "evidence/ordinary-330.json",
+      "sha256": "137a7978aa3ef70e87fb05cf484bba5e8c365c4cadb251644c9c2d013ce1fe50"
+    },
+    "staging-retirement.json": {
+      "bytes": 329,
+      "git_blob": "beda5eec42d380ad3d32a8daa6262a20882a60d4",
+      "path": "evidence/staging-retirement.json",
+      "sha256": "f79559b9bea6b7512feb12b822171818a73abc95c511d114d8117574470eb75c"
+    },
+    "staging.json": {
+      "bytes": 14165,
+      "git_blob": "726065e44bb564af90b2ab9b43bfae0e682b5583",
+      "path": "evidence/staging.json",
+      "sha256": "b6032fc4caffac10f57f54f59210efa3183e9187e83ed8403abfc6e54b62928a"
+    }
+  },
+  "files": [
+    {
+      "mode": "100644",
+      "path": "android/security/0002-aac-reset-ownership.patch",
+      "post": {
+        "bytes": 4443,
+        "git_blob": "8a25f2fdf6bec5add663d663bb5fc77084d0000d",
+        "sha256": "ab9f6ad9fc6bc32825ef2c3ae4e88e6aea7e5a1e3c43a379fb9b50665ac3eb7d"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "android/security/aac-fixtures/cpp/Android.bp",
+      "post": {
+        "bytes": 1636,
+        "git_blob": "5b0558eff7b665d6fb65f161a286ee09752ed456",
+        "sha256": "3cdd1f65bb8de19ee91b131aac2e7a290528bcc601d283678f7e7215310bfbbe"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "android/security/aac-fixtures/cpp/libSBRdec/src/psdec.cpp",
+      "post": {
+        "bytes": 27371,
+        "git_blob": "13a21bfbfccbe739312b1d24270c4e60294de7cb",
+        "sha256": "a38554afdf0d02c0388c934be163e56066410a6ce55f512d8c2191588610e987"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "android/security/aac-fixtures/cpp/libSBRdec/src/sbrdecoder.cpp",
+      "post": {
+        "bytes": 65966,
+        "git_blob": "7718695a86ce16360787ec99c7b749bbcfc821cc",
+        "sha256": "6a0f806599be04f3e658953484f6f2cc7e06c9941cb7b9235d036db8435fb7df"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "android/security/aac-origin.json",
+      "post": {
+        "bytes": 957,
+        "git_blob": "0d3ec2d4b5b511991a53471d33f1ca37d148af5c",
+        "sha256": "a3e66906b0827899a551d63eb77ce4ea3b2782d175347d0048074b62a5407c1e"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/src/aac_security.rs",
+      "post": {
+        "bytes": 12507,
+        "git_blob": "80a8e26a7b82621df961b93f6228a7a01d17fec9",
+        "sha256": "a8ed32ab6a77c795db9844e9fa520e9cc23b0337bac2bd385caba249f838e798"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/src/android.rs",
+      "post": {
+        "bytes": 936676,
+        "git_blob": "89541dd2583cc5560a5e75f1df5224321f6ba23f",
+        "sha256": "33239cbf56f640684a031dd478445354c4049b3fa624e6b6847a7c1ddf6ae372"
+      },
+      "pre": {
+        "bytes": 934956,
+        "git_blob": "2aa37d964cd01b7a84605f18aa411ff2c98f88c2",
+        "sha256": "fdc6bdeb65f2189416633d36286c781075f9bffcedcc295fd0c08495130eb03e"
+      }
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/src/main.rs",
+      "post": {
+        "bytes": 32910,
+        "git_blob": "3ab64146723e54c506327153d291f7ecbb9d459b",
+        "sha256": "f93c35eb0e070304d522dfabd18d1c82c876ce3b65d8d2b56dff30b45a7ec851"
+      },
+      "pre": {
+        "bytes": 30951,
+        "git_blob": "2c9a710a1547794d9840d55dd945a85d3a8b0c2c",
+        "sha256": "5175fed115ac8a540a9a31ff42eb077474bfca5639afba9724ee277f43b88c5f"
+      }
+    }
+  ],
+  "head": {
+    "commit": "9785ba83d9d37509e02462a0aa7c84d1c991006c",
+    "files": 1517,
+    "inventory": {
+      "bytes": 450556,
+      "git_blob": "2858f89b68b05eec022fcd6181016e63a7cba0c2",
+      "path": "head-files.json",
+      "sha256": "6771c7197332ceb0b6ce444aabd79c249e423a3049756bddd64ef0be845316bd"
+    },
+    "raw_commit": {
+      "bytes": 309,
+      "git_blob": "5336abda714b06c75de87e3036047dad9261d159",
+      "path": "git-objects/head.commit",
+      "sha256": "2232431651cff5fc8e5e566f18016169d8e4e0a3257d998cb166e8a4cf922b6c"
+    },
+    "tree": "c9e0b5771b9e2a169ca4236c5c379446e9592760"
+  },
+  "historical_ordinary": {
+    "actual_distinct_tests": 330,
+    "original_PIDs_retired": 56,
+    "producer_tests_and_release_queue": 329,
+    "separate_original_DMA_layout_test": 1
+  },
+  "neverallow_checks_enabled": true,
+  "normal_targets": [
+    "com.android.media.swcodec",
+    "libSBRdec_test"
+  ],
+  "official_origin": {
+    "commit": "6b8c6cbab2b747ffc0c39721ca18651cddc8a373",
+    "official_Cpp_test": "LibSbrDecTest.CreatePsDecResetUAF",
+    "official_regression_executed": false,
+    "original_pin": "41f344ffc0bacea87cac5bb1756bd40761265d1e",
+    "packet": {
+      "bytes": 11130,
+      "git_blob": "1835d6585a66f233162a8f2e86aaf5f053da89c1",
+      "path": "official/packet.json",
+      "sha256": "45e94807d678b711b793d88c215fe71e1ab8352671bf3c7393894bab0e207735"
+    },
+    "production_and_regression_delta_files": 4
+  },
+  "official_regression_executed": false,
+  "original_audio_source_projects": 537,
+  "patch": {
+    "bytes": 131637,
+    "git_blob": "95f4cd092be1bb85981e5b2b6dc8f80a48d467e3",
+    "path": "aac-security.patch",
+    "sha256": "5903d9d3c6fb8b6c7d31beac998a7c8eb48fda72f3c8db9b30f5ab2077a9cef8"
+  },
+  "production_ready": false,
+  "production_signing_qualified": false,
+  "replay_contract": {
+    "Git_child_umask": "0022",
+    "changed_files": 8,
+    "complete_root_trees_required": true,
+    "independent_producer_required": true,
+    "input_F9_preserved": true,
+    "new_files": 6,
+    "skip_only_root_git": true,
+    "unchanged_base_files": 1509
+  },
+  "runtime_qualified": false,
+  "schema": "pocket4-aac-security-on-security537-source-v1",
+  "security_parent_capsule": {
+    "inventory_sha256": "dba0a789ef337de909dca00d7e0805f3053de67c36c48375c2608fa021577dbd",
+    "path": "compat/android/pocket4/intentresolver-security-on-audio537-r1"
+  },
+  "source_release": "cp2a",
+  "strict_missing_dependencies": true,
+  "unchanged_inputs": {
+    "Cargo.lock": {
+      "bytes": 51836,
+      "git_blob": "633e61fab77f12b1edbab687645d644acc1fc776",
+      "mode": "100644",
+      "path": "Cargo.lock",
+      "sha256": "c1dfa6f13f789cf40435d0d72973d029d0e264b27bd833eabb5a727492127f62"
+    },
+    "android/manifest/audio-bridge-source-lock.json": {
+      "bytes": 286171,
+      "git_blob": "1e0d652526373c566facff01744f8027587a0f12",
+      "mode": "100644",
+      "path": "android/manifest/audio-bridge-source-lock.json",
+      "sha256": "84bdef58aa934bcaa1926f9ea901186017c5f53118db1683fec1283489e0f31b"
+    },
+    "android/security/0001-intentresolver-caller-package.patch": {
+      "bytes": 721,
+      "git_blob": "d70323ae37bac67a1d3b13653057d08b11f69b80",
+      "mode": "100644",
+      "path": "android/security/0001-intentresolver-caller-package.patch",
+      "sha256": "0e66877febce78d36d50a71e7787a844593f4c728744cade66d8d7833b6ee752"
+    },
+    "tools/droidloom-source/src/lib.rs": {
+      "bytes": 144688,
+      "git_blob": "34d2217ddca78cf25c216d9ea7e6d5b7a91877a3",
+      "mode": "100644",
+      "path": "tools/droidloom-source/src/lib.rs",
+      "sha256": "3b7dd8205c828dfdf77c4013fda19a6c8c2cb74568f59bc61752b4fca8d25ed2"
+    },
+    "tools/droidloom-update/src/dependencies.rs": {
+      "bytes": 2977,
+      "git_blob": "374b32c3388982a31711c81f77328e3db32f8a9c",
+      "mode": "100644",
+      "path": "tools/droidloom-update/src/dependencies.rs",
+      "sha256": "0e46116777291585e5f6b6e9de172289f6ec61adefb31fcc05d9d77cae362f0a"
+    }
+  },
+  "whole_security_bulletin_qualified": false
+}

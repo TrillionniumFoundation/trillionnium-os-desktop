@@ -1,0 +1,16 @@
+   Compiling pocket4-process-fd v0.1.0 (/home/alex/work/pocket4-apps-java-environment-harness-20261109-2840-r1/harness/process-fd)
+   Compiling droidloom-cpu-placement v0.1.0 (/home/alex/work/pocket4-apps-java-environment-harness-20261109-2840-r1/harness/cpu-placement)
+   Compiling pocket4-application-java-environment-tests v0.1.0 (/home/alex/work/pocket4-apps-java-environment-harness-20261109-2840-r1/harness)
+warning: associated function `capture` is never used
+   --> src/../../source/runtime/droidloom-supervisor/src/application_command.rs:162:19
+    |
+161 | impl NamespaceTarget {
+    | -------------------- associated function in this implementation
+162 |     pub(super) fn capture(cell_pid: u32, framework_pid: u32, start_ticks: u64) -> io::Result<Self> {
+    |                   ^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `pocket4-application-java-environment-tests` (lib test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.14s
+     Running unittests src/lib.rs (/home/alex/work/pocket4-app-release-check-20261109-2840-r1/target/debug/deps/pocket4_application_java_environment_tests-b9832e3255c627ea)

@@ -1,0 +1,73 @@
+{
+  "controls": [
+    "normal_decoder_and_fresh_nonce",
+    "uid1000_and_exact_two_fds",
+    "all_seals_and_denied_write_metadata",
+    "malformed_mov_known_failure",
+    "actual_timeout_and_owned_retirement",
+    "actual_output_bound_and_retirement",
+    "actual_adopted_descendant_retirement",
+    "actual_finish_fault_keeps_unknown"
+  ],
+  "fixed_sources": {
+    "capture": {
+      "bytes": 14933,
+      "path": "/home/alex/work/pocket4-android-final/qualification/bounded_host_capture.py",
+      "sha256": "bb6d818cbe68b6976da57a996d17b6333cdf5dae03fa743fd0cb7f27f89c2bf3"
+    },
+    "commands": {
+      "bytes": 12813,
+      "path": "/home/alex/work/pocket4-android-final/qualification/business-support-host-20261108-r1/business_commands.py",
+      "sha256": "cfe92077ebb75db4f7f0fd577fcd7e6d664afd9338128a05435512549ceeb1f3"
+    },
+    "lifecycle": {
+      "bytes": 25312,
+      "path": "/home/alex/work/pocket4-android-final/framework/runtime_support/capture_lifecycle.py",
+      "sha256": "6a0ba9438b10740a593e2d90962420e04868465a0fb55c0ce2e03afdb835e877"
+    }
+  },
+  "maximum_resources": {
+    "control_seconds": 65,
+    "cpu_quota_percent": 100,
+    "memory_bytes": 536870912,
+    "swap_bytes": 0,
+    "tasks": 128
+  },
+  "operator_must_verify_hard_unit_deadline_and_kill_mode": true,
+  "production_sources": {
+    "camera_audio_challenge.py": {
+      "bytes": 6956,
+      "sha256": "30b8560cf4f43e77e051e4915492ed18fe3c78e8b2a67527f4e14c02643dcd4c"
+    },
+    "camera_decode.py": {
+      "bytes": 14597,
+      "sha256": "7a42785a9d5d16fbc4644d0db961acd965b42f79dc9a75b2f101d88ab51574a4"
+    },
+    "camera_video_media.py": {
+      "bytes": 9197,
+      "sha256": "58c5b6508fe23532fe4282c38446e75dfc25800ed6b063691da80bd431f74190"
+    }
+  },
+  "required_outer_unit_properties": {
+    "CPUAffinity": [
+      2
+    ],
+    "CPUQuota": "100%",
+    "KillMode": "control-group",
+    "MemoryMax": 536870912,
+    "MemorySwapMax": 0,
+    "NoNewPrivileges": true,
+    "RuntimeMaxSec": 90,
+    "TasksMax": 128,
+    "TimeoutStopSec": 10,
+    "UMask": "0077"
+  },
+  "runner": {
+    "bytes": 43675,
+    "path": "qualify_decoder_host.py",
+    "sha256": "94a12172fccf7026f69a86788b60bb02ce0dc58703ad35dcf4c9c0bd674a46af"
+  },
+  "runtime_qualified": false,
+  "schema": "pocket4-camera-r4-decoder-host-control-packet-v1",
+  "whole_app_business_accepted": false
+}

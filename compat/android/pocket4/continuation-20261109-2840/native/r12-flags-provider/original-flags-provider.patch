@@ -1,0 +1,168 @@
+--- a/android/native-generation-pair/source-lock.json
++++ b/android/native-generation-pair/source-lock.json
+@@ -3845,7 +3845,8 @@
+         "scripts",
+         "stable",
+         "testdata",
+-        "update_engine"
++        "update_engine",
++        "flags"
+       ]
+     },
+     {
+@@ -9440,7 +9441,8 @@
+         "res",
+         "shim",
+         "src",
+-        "tests"
++        "tests",
++        "flags"
+       ]
+     },
+     {
+--- a/tools/droidloom-source/src/lib.rs
++++ b/tools/droidloom-source/src/lib.rs
+@@ -25,8 +25,8 @@
+ 
+ const MAX_LOCK_BYTES: u64 = 1024 * 1024;
+ // The current ordinary pair authenticates 601 exact superproject projects.
+-// Frozen manifest SHA-256: 34aa4c635fd8700c641641c5dbdf4ded4cd6a94b0a3ad369232fe1f287b691f0
+-// All prior 600 revisions stay exact; the original pyee provider was added.
++// Frozen manifest SHA-256: 74372a62836ec16c30a6f24c6e13725831f90e13f2bbc4c9f9f56c74895b163d
++// All 601 revisions stay exact; the complete Telecom and update-engine flags cones were added.
+ // A different source plan still requires the route's complete lock validation.
+ const NATIVE_SOURCE_PROJECT_COUNT: usize = 601;
+ const MAX_PROJECTS: usize = NATIVE_SOURCE_PROJECT_COUNT.div_ceil(16) * 16;
+--- a/tools/droidloom-update/src/native_generation_pair_build.rs
++++ b/tools/droidloom-update/src/native_generation_pair_build.rs
+@@ -20,9 +20,9 @@
+ const ENGINE_BP_BYTES: usize = 25403;
+ const BASE_SOURCE_LOCK_SHA: &str = "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d";
+ const PAIR_SOURCE_LOCK: &str = "android/native-generation-pair/source-lock.json";
+-const SOURCE_LOCK_BYTES: usize = 354876;
+-const SOURCE_LOCK_SHA: &str = "34aa4c635fd8700c641641c5dbdf4ded4cd6a94b0a3ad369232fe1f287b691f0";
+-// Exact original additions from frozen manifest SHA-256 34aa4c635fd8700c641641c5dbdf4ded4cd6a94b0a3ad369232fe1f287b691f0.
++const SOURCE_LOCK_BYTES: usize = 354910;
++const SOURCE_LOCK_SHA: &str = "74372a62836ec16c30a6f24c6e13725831f90e13f2bbc4c9f9f56c74895b163d";
++// Exact original additions from frozen manifest SHA-256 74372a62836ec16c30a6f24c6e13725831f90e13f2bbc4c9f9f56c74895b163d.
+ // Closure qualification remains separate from this source attestation.
+ const PAIR_ADDITIONS_JSON: &str = r#"[
+   {
+@@ -5057,7 +5057,8 @@
+       "res",
+       "shim",
+       "src",
+-      "tests"
++      "tests",
++      "flags"
+     ]
+   },
+   {
+@@ -7152,6 +7153,7 @@
+         ("system/update_engine", "4591637f51644f5429f9e2fe589ab22b92f61842", "stable"),
+         ("system/update_engine", "4591637f51644f5429f9e2fe589ab22b92f61842", "testdata"),
+         ("system/update_engine", "4591637f51644f5429f9e2fe589ab22b92f61842", "update_engine"),
++        ("system/update_engine", "4591637f51644f5429f9e2fe589ab22b92f61842", "flags"),
+         ("system/vold", "6d20a0078c2bcaa2499dc5d032f337bfe1182d9e", "aconfig/flags.aconfig"),
+         ("system/vold", "6d20a0078c2bcaa2499dc5d032f337bfe1182d9e", "binder"),
+         ("system/vold", "6d20a0078c2bcaa2499dc5d032f337bfe1182d9e", "fs"),
+@@ -8071,9 +8073,99 @@
+ 
+ 
+ 
++    // Only historical fixtures remove these later original aconfig inputs.
++    // Production always requires the complete declaration/source cones.
++    fn remove_later_flags_inputs(value: &mut Value) {
++        for path in ["packages/services/Telecomm", "system/update_engine"] {
++            let project = value["projects"].as_array_mut().unwrap().iter_mut()
++                .find(|p| p["path"] == path).unwrap();
++            let paths = project["sparse_paths"].as_array_mut().unwrap();
++            assert_eq!(paths.iter().filter(|p| *p == "flags").count(), 1);
++            paths.retain(|p| p != "flags");
++        }
++    }
++
++    #[test]
++    fn ordinary_pair_flags_rejects_the_exact_failed_r12_lock() {
++        let base: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
++        let good: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++        validate_source_extension(&base, &good).unwrap();
++        let mut failed_r12 = good.clone();
++        remove_later_flags_inputs(&mut failed_r12);
++        let failed_raw = format!("{}\n", serde_json::to_string_pretty(&failed_r12).unwrap());
++        assert_eq!(failed_raw.len(), 354876);
++        assert_eq!(digest(failed_raw.as_bytes()), "34aa4c635fd8700c641641c5dbdf4ded4cd6a94b0a3ad369232fe1f287b691f0");
++        let generic: droidloom_source::SparseSourceLock =
++            serde_json::from_value(failed_r12.clone()).unwrap();
++        assert!(droidloom_source::build_plan(&generic).is_ok());
++        assert!(validate_source_extension(&base, &failed_r12).is_err());
++        assert_eq!(good["projects"].as_array().unwrap().len(), 601);
++        for (before, after) in failed_r12["projects"].as_array().unwrap().iter()
++            .zip(good["projects"].as_array().unwrap()) {
++            assert_eq!(before["path"], after["path"]);
++            assert_eq!(before["name"], after["name"]);
++            assert_eq!(before["commit"], after["commit"]);
++        }
++        assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
++    }
++
++    #[test]
++    fn ordinary_pair_flags_requires_complete_cones_and_original_fake_device_config() {
++        let base: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
++        let good: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++        validate_source_extension(&base, &good).unwrap();
++        for (path, revision, declaration) in [
++            ("packages/services/Telecomm", "2353977dc28ff88d3cdc1ec636fa9c3251d2ff86", "telecom_api_flags.aconfig"),
++            ("system/update_engine", "4591637f51644f5429f9e2fe589ab22b92f61842", "update_engine_flags.aconfig"),
++        ] {
++            let index = good["projects"].as_array().unwrap().iter()
++                .position(|p| p["path"] == path).unwrap();
++            assert_eq!(good["projects"][index]["commit"], revision);
++            assert_eq!(good["projects"][index]["sparse_paths"].as_array().unwrap()
++                .iter().filter(|p| *p == "flags").count(), 1);
++            // A blueprint without its declarations, one declaration alone, or
++            // an unrequested parent is not the complete original provider.
++            for replacement in [None, Some("flags/Android.bp".to_owned()),
++                                Some(format!("flags/{declaration}")), Some(".".to_owned())] {
++                let mut partial = good.clone();
++                let paths = partial["projects"][index]["sparse_paths"].as_array_mut().unwrap();
++                paths.retain(|p| p != "flags");
++                if let Some(value) = replacement { paths.push(json!(value)); }
++                assert!(validate_source_extension(&base, &partial).is_err());
++            }
++            let mut wrong_revision = good.clone();
++            wrong_revision["projects"][index]["commit"] = json!("0000000000000000000000000000000000000000");
++            assert!(validate_source_extension(&base, &wrong_revision).is_err());
++        }
++        // update_engine's original java_aconfig_library depends on the real
++        // fake_device_config module. Its BP and all seven Java sources are in
++        // the existing full build/make project; do not replace that project
++        // with a BP-only or another-revision synthetic provider selection.
++        let build_index = good["projects"].as_array().unwrap().iter()
++            .position(|p| p["path"] == "build/make").unwrap();
++        assert_eq!(good["projects"][build_index]["name"], "platform/build");
++        assert_eq!(good["projects"][build_index]["commit"], "5ce6f787337d0223710bf7d4a16dbe6d2a35f777");
++        assert!(good["projects"][build_index].get("sparse_paths").is_none());
++        for selection in ["tools/aconfig/fake_device_config/Android.bp",
++                          "tools/aconfig/fake_device_config/src", "tools/aconfig/fake_device_config"] {
++            let mut narrowed = good.clone();
++            narrowed["projects"][build_index]["sparse_paths"] = json!([selection]);
++            assert!(validate_source_extension(&base, &narrowed).is_err());
++        }
++        let mut wrong_build_revision = good.clone();
++        wrong_build_revision["projects"][build_index]["commit"] = json!("0000000000000000000000000000000000000000");
++        assert!(validate_source_extension(&base, &wrong_build_revision).is_err());
++        assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
++    }
++
+     // This removes only the later complete host-tool cones from historical
+     // failed-lock fixtures. Production always requires their full originals.
+     fn remove_later_platform_tools_cones(value: &mut Value) {
++        remove_later_flags_inputs(value);
+         for (path, selection) in [
+             ("development", "tools/etc1tool"),
+             ("dalvik", "tools/hprof-conv"),

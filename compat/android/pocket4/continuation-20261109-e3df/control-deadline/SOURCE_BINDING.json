@@ -1,0 +1,898 @@
+{
+  "control_postimage": {
+    "bytes": 97375,
+    "path": "source/runtime/droidloom-supervisor/src/control.rs",
+    "sha256": "2bbb579650214ee9bd8d9be794569f20e7d7f6628822dbd4b928332ee79159ac"
+  },
+  "external_dependency_tuples": [
+    {
+      "checksum": "824a212faf96e9acacdbd09febd34438f8f711fb84e09a8916013cd7815ca28d",
+      "name": "anstream",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.0.0"
+    },
+    {
+      "checksum": "940b3a0ca603d1eade50a4846a2afffd5ef57a9feac2c0e2ec2e14f9ead76000",
+      "name": "anstyle",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.0.14"
+    },
+    {
+      "checksum": "52ce7f38b242319f7cabaa6813055467063ecdc9d355bbb4ce0c68908cd8130e",
+      "name": "anstyle-parse",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.0.0"
+    },
+    {
+      "checksum": "40c48f72fd53cd289104fc64099abca73db4166ad86ea0b4341abe65af83dadc",
+      "name": "anstyle-query",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.1.5"
+    },
+    {
+      "checksum": "291e6a250ff86cd4a820112fb8898808a366d8f9f58ce16d1f538353ad55747d",
+      "name": "anstyle-wincon",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "3.0.11"
+    },
+    {
+      "checksum": "b588b76d00fde79687d7646a9b5bdf3cc0f655e0bbd080335a95d7e96f3587da",
+      "name": "bitflags",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "2.13.1"
+    },
+    {
+      "checksum": "3078c7629b62d3f0439517fa394996acacc5cbc91c5a20d8c658e77abd503a71",
+      "name": "block-buffer",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.10.4"
+    },
+    {
+      "checksum": "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801",
+      "name": "cfg-if",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.0.4"
+    },
+    {
+      "checksum": "1ddb117e43bbf7dacf0a4190fef4d345b9bad68dfc649cb349e7d17d28428e51",
+      "name": "clap",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "4.6.1"
+    },
+    {
+      "checksum": "714a53001bf66416adb0e2ef5ac857140e7dc3a0c48fb28b2f10762fc4b5069f",
+      "name": "clap_builder",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "4.6.0"
+    },
+    {
+      "checksum": "f2ce8604710f6733aa641a2b3731eaa1e8b3d9973d5e3565da11800813f997a9",
+      "name": "clap_derive",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "4.6.1"
+    },
+    {
+      "checksum": "c8d4a3bb8b1e0c1050499d1815f5ab16d04f0959b233085fb31653fbfc9d98f9",
+      "name": "clap_lex",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.1.0"
+    },
+    {
+      "checksum": "1d07550c9036bf2ae0c684c4297d503f838287c83c53686d05370d0e139ae570",
+      "name": "colorchoice",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.0.5"
+    },
+    {
+      "checksum": "59ed5838eebb26a2bb2e58f6d5b5316989ae9d08bab10e0e6d103e656d1b0280",
+      "name": "cpufeatures",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.2.17"
+    },
+    {
+      "checksum": "78c8292055d1c1df0cce5d180393dc8cce0abec0a7102adb6c7b1eef6016d60a",
+      "name": "crypto-common",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.1.7"
+    },
+    {
+      "checksum": "9ed9a281f7bc9b7576e61468ba615a66a5c8cfdff42420a70aa82701a3b1e292",
+      "name": "digest",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.10.7"
+    },
+    {
+      "checksum": "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb",
+      "name": "errno",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.3.14"
+    },
+    {
+      "checksum": "da7c62ceae207dd37ea5b845da6a0696c799f85e97da1ab5b7910be3c1c80223",
+      "name": "fastrand",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "2.5.0"
+    },
+    {
+      "checksum": "85649ca51fd72272d7821adaf274ad91c288277713d9c18820d8499a7ff69e9a",
+      "name": "generic-array",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.14.7"
+    },
+    {
+      "checksum": "300e883d756b2e4ec94e02791f39b04b522276138852cfc41d9fb7e904106099",
+      "name": "getrandom",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.4.3"
+    },
+    {
+      "checksum": "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea",
+      "name": "heck",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.5.0"
+    },
+    {
+      "checksum": "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70",
+      "name": "hex",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.4.3"
+    },
+    {
+      "checksum": "a6cb138bb79a146c1bd460005623e142ef0181e3d0219cb493e02f7d08a35695",
+      "name": "is_terminal_polyfill",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.70.2"
+    },
+    {
+      "checksum": "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682",
+      "name": "itoa",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.0.18"
+    },
+    {
+      "checksum": "22053b6a34f84abc97f9129e61334f40174659a1b9bd18c970b83db6a9a6348b",
+      "name": "libc",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.2.188"
+    },
+    {
+      "checksum": "32a66949e030da00e8c7d4434b251670a91556f4144941d37452769c25d58a53",
+      "name": "linux-raw-sys",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.12.1"
+    },
+    {
+      "checksum": "cf8baf1c55e62ffcace7a9f06f4bd9cd3f0c4beb022d3b367256b91b87513d98",
+      "name": "memchr",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "2.8.3"
+    },
+    {
+      "checksum": "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50",
+      "name": "once_cell",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.21.4"
+    },
+    {
+      "checksum": "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe",
+      "name": "once_cell_polyfill",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.70.2"
+    },
+    {
+      "checksum": "985e7ec9bb745e6ce6535b544d84d6cd6f7ad8bd711c398938ae983b91a766d9",
+      "name": "proc-macro2",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.0.107"
+    },
+    {
+      "checksum": "1fbf4db142a473a8d80c26bbf18454ed458bf8d26c8219c331daecfdbd079001",
+      "name": "quote",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.0.47"
+    },
+    {
+      "checksum": "f8dcc9c7d52a811697d2151c701e0d08956f92b0e24136cf4cf27b57a6a0d9bf",
+      "name": "r-efi",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "6.0.0"
+    },
+    {
+      "checksum": "b6fe4565b9518b83ef4f91bb47ce29620ca828bd32cb7e408f0062e9930ba190",
+      "name": "rustix",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.1.4"
+    },
+    {
+      "checksum": "4148590afebada386688f18773da617792bf2ef03ffc1e4cbd2b1d45b023e0ba",
+      "name": "serde",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.0.229"
+    },
+    {
+      "checksum": "67dca2c9c51e58a4791a4b1ed58308b39c64224d349a935ab5039aa360942a48",
+      "name": "serde_core",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.0.229"
+    },
+    {
+      "checksum": "e7a5d71263a5a7d47b41f6b3f06ba276f10cc18b0931f1799f710578e2309348",
+      "name": "serde_derive",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.0.229"
+    },
+    {
+      "checksum": "c841b55ecdae098c80dcae9cf767f6f8a0c2cdb3416bbef72181df4d0fe73f14",
+      "name": "serde_json",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.0.151"
+    },
+    {
+      "checksum": "a7507d819769d01a365ab707794a4084392c824f54a7a6a7862f8c3d0892b283",
+      "name": "sha2",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.10.9"
+    },
+    {
+      "checksum": "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f",
+      "name": "strsim",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.11.1"
+    },
+    {
+      "checksum": "872831b642d1a07999a962a351ed35b955ea2cfc8f3862091e2a240a84f17297",
+      "name": "syn",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "2.0.119"
+    },
+    {
+      "checksum": "a207d6d6a2b7fc470b80443726053f18a2481b7e1eee970597051596567987a3",
+      "name": "syn",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "3.0.2"
+    },
+    {
+      "checksum": "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd",
+      "name": "tempfile",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "3.27.0"
+    },
+    {
+      "checksum": "09a43598840e33d5b0331f38c5e30d13bb11c11210a4b58f0d9b18a5a5eefcd9",
+      "name": "thiserror",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "2.0.19"
+    },
+    {
+      "checksum": "43cbfe0cf76104d42a574802844187e84a305e531ed54455f11fbde0f10541cd",
+      "name": "thiserror-impl",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "2.0.19"
+    },
+    {
+      "checksum": "b6f5e870be6c3b371b77fe0ee0bafb859fa4964b4404c27de1d380043c4dda20",
+      "name": "typenum",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.20.1"
+    },
+    {
+      "checksum": "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75",
+      "name": "unicode-ident",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.0.24"
+    },
+    {
+      "checksum": "06abde3611657adf66d383f00b093d7faecc7fa57071cce2578660c9f1010821",
+      "name": "utf8parse",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.2.2"
+    },
+    {
+      "checksum": "0b928f33d975fc6ad9f86c8f283853ad26bdd5b10b7f1542aa2fa15e2289105a",
+      "name": "version_check",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.9.5"
+    },
+    {
+      "checksum": "f0805222e57f7521d6a62e36fa9163bc891acd422f971defe97d64e70d0a4fe5",
+      "name": "windows-link",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.2.1"
+    },
+    {
+      "checksum": "ae137229bcbd6cdf0f7b80a31df61766145077ddf49416a728b02cb3921ff3fc",
+      "name": "windows-sys",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "0.61.2"
+    },
+    {
+      "checksum": "29666d0abbfad1e3dc4dcf6144730dd3a3ab225bbbdac83319345b1b44ccfc1b",
+      "name": "zmij",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "version": "1.0.23"
+    }
+  ],
+  "files": [
+    {
+      "bytes": 454,
+      "modified": false,
+      "origin_blob": "8a6bf22469a83bab47bbde335976b6dba159a11b",
+      "origin_bytes": 454,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "8f48f9a7a95e34c8f801b6d0dc7a9525cbf2e28e5c7d54686d11a494c114ac3c",
+      "path": "source/runtime/droidloom-contracts/Cargo.toml",
+      "repository_path": "runtime/droidloom-contracts/Cargo.toml",
+      "sha256": "8f48f9a7a95e34c8f801b6d0dc7a9525cbf2e28e5c7d54686d11a494c114ac3c"
+    },
+    {
+      "bytes": 12689,
+      "modified": false,
+      "origin_blob": "fa15d4da916659af9e878edc5f043a01ffd98892",
+      "origin_bytes": 12689,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "f248c099d083c21402f013bca066571f68bd08e5c03faa253d6c7fca2ec10913",
+      "path": "source/runtime/droidloom-contracts/src/gapps.rs",
+      "repository_path": "runtime/droidloom-contracts/src/gapps.rs",
+      "sha256": "f248c099d083c21402f013bca066571f68bd08e5c03faa253d6c7fca2ec10913"
+    },
+    {
+      "bytes": 15048,
+      "modified": false,
+      "origin_blob": "9f5ea4bd0f938bab34ae4cf4be5f52376e11545e",
+      "origin_bytes": 15048,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "6f8fdc032c835aa29cae4962cee9d9db2f0b85429214d336e285f104c9f694e8",
+      "path": "source/runtime/droidloom-contracts/src/lib.rs",
+      "repository_path": "runtime/droidloom-contracts/src/lib.rs",
+      "sha256": "6f8fdc032c835aa29cae4962cee9d9db2f0b85429214d336e285f104c9f694e8"
+    },
+    {
+      "bytes": 17515,
+      "modified": false,
+      "origin_blob": "cb516926049b02b40f60fc24a5fc9c4076414f4e",
+      "origin_bytes": 17515,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "916ecb848e8ed328f27d0eb87a16a23c1235c0daf48b03db026a51f6e9ac8cee",
+      "path": "source/runtime/droidloom-contracts/tests/repository_contracts.rs",
+      "repository_path": "runtime/droidloom-contracts/tests/repository_contracts.rs",
+      "sha256": "916ecb848e8ed328f27d0eb87a16a23c1235c0daf48b03db026a51f6e9ac8cee"
+    },
+    {
+      "bytes": 287,
+      "modified": false,
+      "origin_blob": "7e5ce2065dfca14b434be77f89600c6212556fb2",
+      "origin_bytes": 287,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "7e7c7368d5e96ea1a1004cd35b149dbee191c4029d634fde79dc9c2783d34153",
+      "path": "source/runtime/droidloom-cpu-placement/Cargo.toml",
+      "repository_path": "runtime/droidloom-cpu-placement/Cargo.toml",
+      "sha256": "7e7c7368d5e96ea1a1004cd35b149dbee191c4029d634fde79dc9c2783d34153"
+    },
+    {
+      "bytes": 1956,
+      "modified": false,
+      "origin_blob": "f149c00c2bc765eeaf70bc0d64adeaa53279083d",
+      "origin_bytes": 1956,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "b711e37a7245dc0d817e69d6589263b864cfd7ea43f2428c6d590c7e47863ab0",
+      "path": "source/runtime/droidloom-cpu-placement/src/lib.rs",
+      "repository_path": "runtime/droidloom-cpu-placement/src/lib.rs",
+      "sha256": "b711e37a7245dc0d817e69d6589263b864cfd7ea43f2428c6d590c7e47863ab0"
+    },
+    {
+      "bytes": 11370,
+      "modified": false,
+      "origin_blob": "3e34a83d7b7fb1f203173c638c9011b4180de8d1",
+      "origin_bytes": 11370,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "addc956fcae5d493cdf9bf55bd82ea79119caffb58bd8bc1fee44e17069357f8",
+      "path": "source/runtime/droidloom-cpu-placement/src/linux.rs",
+      "repository_path": "runtime/droidloom-cpu-placement/src/linux.rs",
+      "sha256": "addc956fcae5d493cdf9bf55bd82ea79119caffb58bd8bc1fee44e17069357f8"
+    },
+    {
+      "bytes": 866,
+      "modified": false,
+      "origin_blob": "6ba5a2ec3a62bb67da1659aa5558a704f45c5429",
+      "origin_bytes": 866,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "f2784bd67f725f21e3e3029d1f1b34114f533a82a81ab8dc448b8e59d50c003f",
+      "path": "source/runtime/droidloom-supervisor/Cargo.toml",
+      "repository_path": "runtime/droidloom-supervisor/Cargo.toml",
+      "sha256": "f2784bd67f725f21e3e3029d1f1b34114f533a82a81ab8dc448b8e59d50c003f"
+    },
+    {
+      "bytes": 876,
+      "modified": false,
+      "origin_blob": "643148c02ea3791fa3ca404c2904293391b361ae",
+      "origin_bytes": 876,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "f03de3fc015e9fce4630ccdeb3db7f300d7c1d122f30a7fb54654a642690f3c7",
+      "path": "source/runtime/droidloom-supervisor/assets/development-cgroups.json",
+      "repository_path": "runtime/droidloom-supervisor/assets/development-cgroups.json",
+      "sha256": "f03de3fc015e9fce4630ccdeb3db7f300d7c1d122f30a7fb54654a642690f3c7"
+    },
+    {
+      "bytes": 5017,
+      "modified": false,
+      "origin_blob": "d12c93b624b8b38d5db2103b9dd60d3cd65f9d34",
+      "origin_bytes": 5017,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "8cacf7cce2b7bc54017d5a03f2b716dfd239cc816d1e9779b3f4eca190590f4d",
+      "path": "source/runtime/droidloom-supervisor/examples/cpu-placement-probe.rs",
+      "repository_path": "runtime/droidloom-supervisor/examples/cpu-placement-probe.rs",
+      "sha256": "8cacf7cce2b7bc54017d5a03f2b716dfd239cc816d1e9779b3f4eca190590f4d"
+    },
+    {
+      "bytes": 11695,
+      "modified": false,
+      "origin_blob": "ace98f4ebd04c595f5f160e399b0aeda0aa34220",
+      "origin_bytes": 11695,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "b515b306528884947f6ba0d3329c9c22cc35f7d4904db440f66f5a0c40c3c12f",
+      "path": "source/runtime/droidloom-supervisor/src/apk.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/apk.rs",
+      "sha256": "b515b306528884947f6ba0d3329c9c22cc35f7d4904db440f66f5a0c40c3c12f"
+    },
+    {
+      "bytes": 16047,
+      "modified": false,
+      "origin_blob": "0d7c14920adb3b7fee934f7d310696086e394ba9",
+      "origin_bytes": 16047,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "3e2409266ebe3c5cde34fcc7c4f7f493aa11a79e7eaf2f61498c7b60932fae02",
+      "path": "source/runtime/droidloom-supervisor/src/apk_set.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/apk_set.rs",
+      "sha256": "3e2409266ebe3c5cde34fcc7c4f7f493aa11a79e7eaf2f61498c7b60932fae02"
+    },
+    {
+      "bytes": 10964,
+      "modified": false,
+      "origin_blob": "7894f800d473de9514da16bcb4308b89c35de227",
+      "origin_bytes": 10964,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "4984cdebfc3dd0bdd3b1101ca40430bd6f9239b218a1d03680829f5fab5b0c0c",
+      "path": "source/runtime/droidloom-supervisor/src/application_action_scope.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/application_action_scope.rs",
+      "sha256": "4984cdebfc3dd0bdd3b1101ca40430bd6f9239b218a1d03680829f5fab5b0c0c"
+    },
+    {
+      "bytes": 22810,
+      "modified": false,
+      "origin_blob": "113c78730f33221a40c168cc27212dea2f4ae261",
+      "origin_bytes": 22810,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "576dd46107100edff7993f325fa148a024fa40fa5cf9a6baea8cbd8df07e2a0d",
+      "path": "source/runtime/droidloom-supervisor/src/application_command.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/application_command.rs",
+      "sha256": "576dd46107100edff7993f325fa148a024fa40fa5cf9a6baea8cbd8df07e2a0d"
+    },
+    {
+      "bytes": 11791,
+      "modified": false,
+      "origin_blob": "d3f15671d152dcdfaf680ca3546b40aa9f33ec53",
+      "origin_bytes": 11791,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "23b107886d555b2e653c8bb0ab18528a9891180cf848c46ef84340add28a83d8",
+      "path": "source/runtime/droidloom-supervisor/src/application_command_tests.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/application_command_tests.rs",
+      "sha256": "23b107886d555b2e653c8bb0ab18528a9891180cf848c46ef84340add28a83d8"
+    },
+    {
+      "bytes": 11119,
+      "modified": false,
+      "origin_blob": "d0135874165e235819e6f8d8ea59b19b3ae18a83",
+      "origin_bytes": 11119,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "97e46072652c545e3480e691508d567bc33089964f132181dfbdb1857a3f21f1",
+      "path": "source/runtime/droidloom-supervisor/src/application_environment.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/application_environment.rs",
+      "sha256": "97e46072652c545e3480e691508d567bc33089964f132181dfbdb1857a3f21f1"
+    },
+    {
+      "bytes": 17853,
+      "modified": false,
+      "origin_blob": "f4454fa46120d314ad624762c8434b199b321aea",
+      "origin_bytes": 17853,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "e97ca6b0856da1e394cbe227b42d21047a1c8a0a7cc66c1e3a9143988da60000",
+      "path": "source/runtime/droidloom-supervisor/src/application_probe.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/application_probe.rs",
+      "sha256": "e97ca6b0856da1e394cbe227b42d21047a1c8a0a7cc66c1e3a9143988da60000"
+    },
+    {
+      "bytes": 18069,
+      "modified": false,
+      "origin_blob": "a6c555fc00df4d306d13342d65e3943c74b092bf",
+      "origin_bytes": 18069,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "3381d1c6a635899d77b34794d838996d6eb18fffeeece71c57dbbe75b1a3be11",
+      "path": "source/runtime/droidloom-supervisor/src/application_settings.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/application_settings.rs",
+      "sha256": "3381d1c6a635899d77b34794d838996d6eb18fffeeece71c57dbbe75b1a3be11"
+    },
+    {
+      "bytes": 24454,
+      "modified": false,
+      "origin_blob": "df066be271c4b9df825eed5a5a3c8180f501927d",
+      "origin_bytes": 24454,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "d9462c9df927f0d4928276f4a4880aa8d39dbca60fb9f20fef8f808c0d25635d",
+      "path": "source/runtime/droidloom-supervisor/src/application_settings_protocol.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/application_settings_protocol.rs",
+      "sha256": "d9462c9df927f0d4928276f4a4880aa8d39dbca60fb9f20fef8f808c0d25635d"
+    },
+    {
+      "bytes": 19214,
+      "modified": false,
+      "origin_blob": "7d76187bab4a7b079bb3ebc1fe1e991d894d869a",
+      "origin_bytes": 19214,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "7153ca66acc6622fbe949495ff218aba396688a49a1438537fd52ad27ae29c39",
+      "path": "source/runtime/droidloom-supervisor/src/application_settings_tests.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/application_settings_tests.rs",
+      "sha256": "7153ca66acc6622fbe949495ff218aba396688a49a1438537fd52ad27ae29c39"
+    },
+    {
+      "bytes": 20606,
+      "modified": false,
+      "origin_blob": "35da379d049713f41356cafcac4be3143b778921",
+      "origin_bytes": 20606,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "3733dd7586ebf534aef3d4a5d176a76b8822dd0c6a6b8b39fb64adf8e70cd484",
+      "path": "source/runtime/droidloom-supervisor/src/bin/droidloomctl.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/bin/droidloomctl.rs",
+      "sha256": "3733dd7586ebf534aef3d4a5d176a76b8822dd0c6a6b8b39fb64adf8e70cd484"
+    },
+    {
+      "bytes": 1869,
+      "modified": false,
+      "origin_blob": "930f026ddf32e1a600413b9ebdf6ec0557381e9f",
+      "origin_bytes": 1869,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "85ba21c0d4bdb99218f95e3ea5c4242f01634e1266fff6b9b13ad84afeddb9b0",
+      "path": "source/runtime/droidloom-supervisor/src/bin/droidloomd.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/bin/droidloomd.rs",
+      "sha256": "85ba21c0d4bdb99218f95e3ea5c4242f01634e1266fff6b9b13ad84afeddb9b0"
+    },
+    {
+      "bytes": 97375,
+      "modified": true,
+      "origin_blob": "88cad0420375f9b5720dcf869fd5c2847b57bd31",
+      "origin_bytes": 89609,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "22cfe98ff60bb9ef5cf977cecf5867bdfc955ef39d86030a0d358d5a06820700",
+      "path": "source/runtime/droidloom-supervisor/src/control.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/control.rs",
+      "sha256": "2bbb579650214ee9bd8d9be794569f20e7d7f6628822dbd4b928332ee79159ac"
+    },
+    {
+      "bytes": 15046,
+      "modified": false,
+      "origin_blob": "bc1699fed4684178fe0b91f8f6d1fa0dd285bd4d",
+      "origin_bytes": 15046,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "3dcbc825033a9ea53991833deaf8440c320e105268962227a98a7a58b407eb76",
+      "path": "source/runtime/droidloom-supervisor/src/control_progress.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/control_progress.rs",
+      "sha256": "3dcbc825033a9ea53991833deaf8440c320e105268962227a98a7a58b407eb76"
+    },
+    {
+      "bytes": 11907,
+      "modified": false,
+      "origin_blob": "b711bdb08cc0794f76f68ba8dcb86cb74d9d8d57",
+      "origin_bytes": 11907,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "54810199ebc83f282495183a9b608fd2f8dc10691319739ea9c2f9ec6e765422",
+      "path": "source/runtime/droidloom-supervisor/src/control_status_tests.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/control_status_tests.rs",
+      "sha256": "54810199ebc83f282495183a9b608fd2f8dc10691319739ea9c2f9ec6e765422"
+    },
+    {
+      "bytes": 15291,
+      "modified": false,
+      "origin_blob": "657d9f3960a6b151dcd7f3b658d2b2fbc6bc475e",
+      "origin_bytes": 15291,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "e21d849f086e28b8e9e16cc29aa62bd163a200282bdc03ca0e48293fc85137a6",
+      "path": "source/runtime/droidloom-supervisor/src/cpu_placement.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/cpu_placement.rs",
+      "sha256": "e21d849f086e28b8e9e16cc29aa62bd163a200282bdc03ca0e48293fc85137a6"
+    },
+    {
+      "bytes": 115712,
+      "modified": false,
+      "origin_blob": "910cd6518cf6deb4df266505ab548c32261e3cba",
+      "origin_bytes": 115712,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "b9b874e2ecba44d02a96d1ed71af248fa8c36fd6d0a2452adcae9d103cd4ae21",
+      "path": "source/runtime/droidloom-supervisor/src/development.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/development.rs",
+      "sha256": "b9b874e2ecba44d02a96d1ed71af248fa8c36fd6d0a2452adcae9d103cd4ae21"
+    },
+    {
+      "bytes": 3760,
+      "modified": false,
+      "origin_blob": "bec85a34691bc6fc710d177d49991eb69f16634c",
+      "origin_bytes": 3760,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "9ad6cc48ed5900e4ae106ffd114066acaa166071b1f2710be4246dba54821b1a",
+      "path": "source/runtime/droidloom-supervisor/src/development_guest_dirs.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/development_guest_dirs.rs",
+      "sha256": "9ad6cc48ed5900e4ae106ffd114066acaa166071b1f2710be4246dba54821b1a"
+    },
+    {
+      "bytes": 17820,
+      "modified": false,
+      "origin_blob": "d986a1b0a3c6a66d0d7ba1baeac4a22a57bc46f8",
+      "origin_bytes": 17820,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "6df7c34c9e7cfc0cb5218423392a5590ea7889a280f7f76e79cc0b4e7342573a",
+      "path": "source/runtime/droidloom-supervisor/src/development_guest_dirs_tests.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/development_guest_dirs_tests.rs",
+      "sha256": "6df7c34c9e7cfc0cb5218423392a5590ea7889a280f7f76e79cc0b4e7342573a"
+    },
+    {
+      "bytes": 19718,
+      "modified": false,
+      "origin_blob": "8aed7cf0973eefaef4492d8104d6455350f469c4",
+      "origin_bytes": 19718,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "604941e541d50de976a5bcea1342257ca9b52762ba8e58a410467ff86bd6bb7d",
+      "path": "source/runtime/droidloom-supervisor/src/development_network.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/development_network.rs",
+      "sha256": "604941e541d50de976a5bcea1342257ca9b52762ba8e58a410467ff86bd6bb7d"
+    },
+    {
+      "bytes": 16509,
+      "modified": false,
+      "origin_blob": "680bbe37cac5be91750f8f75f3ade8bd236725cc",
+      "origin_bytes": 16509,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "67f548ca635ba47388e8368fb18ed7eea093e7ce389c55aa4a24e41d943ac214",
+      "path": "source/runtime/droidloom-supervisor/src/development_overrides.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/development_overrides.rs",
+      "sha256": "67f548ca635ba47388e8368fb18ed7eea093e7ce389c55aa4a24e41d943ac214"
+    },
+    {
+      "bytes": 7465,
+      "modified": false,
+      "origin_blob": "d0dad672798e64b35956cca627e4712754fd1394",
+      "origin_bytes": 7465,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "ed34622d083249875dea28ab9327a980da14e5ee81ddd49a76fb7d537ec68864",
+      "path": "source/runtime/droidloom-supervisor/src/development_process.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/development_process.rs",
+      "sha256": "ed34622d083249875dea28ab9327a980da14e5ee81ddd49a76fb7d537ec68864"
+    },
+    {
+      "bytes": 14633,
+      "modified": false,
+      "origin_blob": "f6662dcdd58e40e6557dbf7d69b77b2257dbeb5a",
+      "origin_bytes": 14633,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "11e8030dbb8f4b9846c252d4d9c0a2c16eee9eadb58bb1b7142bc8f0824199b8",
+      "path": "source/runtime/droidloom-supervisor/src/development_process_tests.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/development_process_tests.rs",
+      "sha256": "11e8030dbb8f4b9846c252d4d9c0a2c16eee9eadb58bb1b7142bc8f0824199b8"
+    },
+    {
+      "bytes": 25225,
+      "modified": false,
+      "origin_blob": "b264ad57cfe9818ce48ce142aed90117dc28ff31",
+      "origin_bytes": 25225,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "c71dd05076e5f5950673134aa5fc75efea251333374123743915b0a50c26009f",
+      "path": "source/runtime/droidloom-supervisor/src/diagnostics.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/diagnostics.rs",
+      "sha256": "c71dd05076e5f5950673134aa5fc75efea251333374123743915b0a50c26009f"
+    },
+    {
+      "bytes": 10345,
+      "modified": false,
+      "origin_blob": "04d7537ac625f71084fa1fd9ac7a62b77d11c523",
+      "origin_bytes": 10345,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "d1676bd56aff2b87c6b7a86fe762687e5bc5d1299564c4ab77d7368a8e888a34",
+      "path": "source/runtime/droidloom-supervisor/src/gapps.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/gapps.rs",
+      "sha256": "d1676bd56aff2b87c6b7a86fe762687e5bc5d1299564c4ab77d7368a8e888a34"
+    },
+    {
+      "bytes": 4624,
+      "modified": false,
+      "origin_blob": "f95b08b55ef060ed479f198374993e4fc7f6385b",
+      "origin_bytes": 4624,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "9374fb3261f7133a165ec5d075ffebc58cc7f3b2fd4301b3e068f48f215c89be",
+      "path": "source/runtime/droidloom-supervisor/src/image_layout.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/image_layout.rs",
+      "sha256": "9374fb3261f7133a165ec5d075ffebc58cc7f3b2fd4301b3e068f48f215c89be"
+    },
+    {
+      "bytes": 35813,
+      "modified": false,
+      "origin_blob": "6eff46500d437feb5be1a606c524736270cec61c",
+      "origin_bytes": 35813,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "2ffbdfabad12878deb12f069f509fdd654058ad7deeac60eae77926dee18c5a4",
+      "path": "source/runtime/droidloom-supervisor/src/lib.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/lib.rs",
+      "sha256": "2ffbdfabad12878deb12f069f509fdd654058ad7deeac60eae77926dee18c5a4"
+    },
+    {
+      "bytes": 41550,
+      "modified": false,
+      "origin_blob": "a5ecebc4b0c10a1d8bd2dc7e9f2fd905e5b5a5a4",
+      "origin_bytes": 41550,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "51638df0266e5a7e8abc148c08917c62b8de6467bde0dec097a70afd097de92f",
+      "path": "source/runtime/droidloom-supervisor/src/linux_plan.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/linux_plan.rs",
+      "sha256": "51638df0266e5a7e8abc148c08917c62b8de6467bde0dec097a70afd097de92f"
+    },
+    {
+      "bytes": 3837,
+      "modified": false,
+      "origin_blob": "b0d39b8515c435eb0779451be695161a86c8b255",
+      "origin_bytes": 3837,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "9767d6cdacb7fe673c6e95048c7e680995151dc39dad8aaee403114108bf7981",
+      "path": "source/runtime/droidloom-supervisor/src/main.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/main.rs",
+      "sha256": "9767d6cdacb7fe673c6e95048c7e680995151dc39dad8aaee403114108bf7981"
+    },
+    {
+      "bytes": 2690,
+      "modified": false,
+      "origin_blob": "e80b08d5b5dc5352b478ae7ad954c0f11b00e93b",
+      "origin_bytes": 2690,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "fd5803956af8704a569c9ceb82d4ace598b6db52823b51f0fcc1cb33cd787aec",
+      "path": "source/runtime/droidloom-supervisor/src/package_cache.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/package_cache.rs",
+      "sha256": "fd5803956af8704a569c9ceb82d4ace598b6db52823b51f0fcc1cb33cd787aec"
+    },
+    {
+      "bytes": 48291,
+      "modified": false,
+      "origin_blob": "ee631cbd5be698d0501f6a39c034846a3fa0f76c",
+      "origin_bytes": 48291,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "2e9e21cc0c7d4aa60c7c43d310761006642876e33e93d14ec6eb3afad303aabb",
+      "path": "source/runtime/droidloom-supervisor/src/production_identity.rs",
+      "repository_path": "runtime/droidloom-supervisor/src/production_identity.rs",
+      "sha256": "2e9e21cc0c7d4aa60c7c43d310761006642876e33e93d14ec6eb3afad303aabb"
+    },
+    {
+      "bytes": 2772,
+      "modified": false,
+      "origin_blob": "ab07a07277fea3d8bf2aca7988211ab9f125e29c",
+      "origin_bytes": 2772,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "7224422fa08769f30fc7c4fab711c0224d84ad5ed7811d2b2c9707fb29e32934",
+      "path": "source/runtime/droidloom-supervisor/tests/cli_diagnostics.rs",
+      "repository_path": "runtime/droidloom-supervisor/tests/cli_diagnostics.rs",
+      "sha256": "7224422fa08769f30fc7c4fab711c0224d84ad5ed7811d2b2c9707fb29e32934"
+    },
+    {
+      "bytes": 1172,
+      "modified": false,
+      "origin_blob": "6e9a2c2f1cb182f2b5b3e3b8ffcddc7e88953398",
+      "origin_bytes": 1172,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "748c2ad181f533dba32724b3095af9b9ffaf606f6096391d570cbca1bf973f64",
+      "path": "source/runtime/droidloom-supervisor/tests/cli_inspect.rs",
+      "repository_path": "runtime/droidloom-supervisor/tests/cli_inspect.rs",
+      "sha256": "748c2ad181f533dba32724b3095af9b9ffaf606f6096391d570cbca1bf973f64"
+    },
+    {
+      "bytes": 3305,
+      "modified": false,
+      "origin_blob": "7ab019ffce7281814ee9f64d5d48ca3212cff96a",
+      "origin_bytes": 3305,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "5ea16c69f3b6e38c98917318877a5e2150334a8260abedfcc6a416001544b6ce",
+      "path": "source/runtime/droidloom-supervisor/tests/cli_install.rs",
+      "repository_path": "runtime/droidloom-supervisor/tests/cli_install.rs",
+      "sha256": "5ea16c69f3b6e38c98917318877a5e2150334a8260abedfcc6a416001544b6ce"
+    },
+    {
+      "bytes": 5114,
+      "modified": false,
+      "origin_blob": "e5178bf87cd0f147e6bd806c5cb071acff6259ed",
+      "origin_bytes": 5114,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "67bd2fbb4047afe9410ea6edc6ca52616aa9cb439996a85d987161be9947db2c",
+      "path": "source/runtime/droidloom-supervisor/tests/cli_install_multiple.rs",
+      "repository_path": "runtime/droidloom-supervisor/tests/cli_install_multiple.rs",
+      "sha256": "67bd2fbb4047afe9410ea6edc6ca52616aa9cb439996a85d987161be9947db2c"
+    },
+    {
+      "bytes": 12081,
+      "modified": false,
+      "origin_blob": "aa7670ed72de8cfae63a7747960d763b3143345c",
+      "origin_bytes": 12081,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "e5d2b54a7f735ab6c18e8f6ca10fde347f8da832f4d8d7db720399caf0c8377c",
+      "path": "source/runtime/droidloom-supervisor/tests/cli_lifecycle.rs",
+      "repository_path": "runtime/droidloom-supervisor/tests/cli_lifecycle.rs",
+      "sha256": "e5d2b54a7f735ab6c18e8f6ca10fde347f8da832f4d8d7db720399caf0c8377c"
+    },
+    {
+      "bytes": 407,
+      "modified": false,
+      "origin_blob": "0255359c49161b20954b08e323f9ff5f06c6f135",
+      "origin_bytes": 407,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "e77f560fce926fd9f6dee999444fd3034fa5565866e18ee6a230fdc304c392bb",
+      "path": "source/runtime/droidloom-window-policy/Cargo.toml",
+      "repository_path": "runtime/droidloom-window-policy/Cargo.toml",
+      "sha256": "e77f560fce926fd9f6dee999444fd3034fa5565866e18ee6a230fdc304c392bb"
+    },
+    {
+      "bytes": 24252,
+      "modified": false,
+      "origin_blob": "31123b84a133f6f8410be21812119e0790556081",
+      "origin_bytes": 24252,
+      "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+      "origin_sha256": "afc406e9e2d592e86a08938406b0e4cb12f0da9e7e35dd844bbbca1ecab0ecf8",
+      "path": "source/runtime/droidloom-window-policy/src/lib.rs",
+      "repository_path": "runtime/droidloom-window-policy/src/lib.rs",
+      "sha256": "afc406e9e2d592e86a08938406b0e4cb12f0da9e7e35dd844bbbca1ecab0ecf8"
+    }
+  ],
+  "harness_workspace_lock": {
+    "all_external_name_version_source_checksum_tuples_exact_original": true,
+    "bytes": 12149,
+    "external_packages": 51,
+    "path": "Cargo.lock",
+    "sha256": "3e91a62c8d75684c9def026a2ac25f923f405e33aff84469ab3b098a7e23c32a"
+  },
+  "harness_workspace_manifest": {
+    "bytes": 1144,
+    "path": "Cargo.toml",
+    "sha256": "b60cc5140f488270d424b1f278d79b94369b9494c51e9eda949c3bb4f2658616"
+  },
+  "minimal_delta_proof": {
+    "appended_six_test_module_sha256": "c89d49e84eab81f3610c0335993ca94e418b1705cadc15a5abb45566132f535f",
+    "original_receive_request_identical_on_production_and_public_bases": true,
+    "original_receive_request_sha256": "5bf67facc02bbea9740c4163aacb3d6984b86a3c8c9d3c856640152741dcd2c9",
+    "production_candidate_source_sha256": "b553f07f3d77b1d20970ed0619912b7d3cb69866b7c1b8071d62f4cae5968ea3",
+    "production_preimage_source_sha256": "373dfcf01d8266c77d549e0028b0e17a939dbdbcfde9f2d3fc6a42cf68d3de64",
+    "public_bytes_outside_exact_receive_request_and_appended_tests_unchanged": true,
+    "replacement_helper_and_receive_request_sha256": "bb4d5a17a0ca5aa9d7f82f85cab935d6c0740614fcce570486509176b994475e"
+  },
+  "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+  "original_toolchain": {
+    "bytes": 86,
+    "origin_commit": "75492962a9b9afdd6b9f28fec979b9c40419ec0b",
+    "path": "rust-toolchain.toml",
+    "sha256": "8bc51ecab82415fddd8489604f2424e137d71856e7f65cbdcfaa48850d794b46"
+  },
+  "original_workspace_lock": {
+    "bytes": 51845,
+    "path": "provenance/original-workspace-Cargo.lock",
+    "sha256": "ca5300907a8e609ac0340d016ecfe7b4292bf45fe5ab3cbe8dd0c013f12a2285"
+  },
+  "original_workspace_manifest": {
+    "bytes": 1996,
+    "path": "provenance/original-workspace-Cargo.toml",
+    "sha256": "e33185d2fc5a65e0a4ed6df552e4f8f8f40c793ec07f7289ed27e3c0d5fa4e60"
+  },
+  "patch": {
+    "bytes": 9253,
+    "path": "control-deadline.patch",
+    "sha256": "1f8d2db84e76054580c3aa64a54843058477105c30c4164702e340b7865b09ca"
+  },
+  "production_ready": false,
+  "public_capsule": "compat/android/pocket4/continuation-20261109-2840/apps-settings-page",
+  "public_control_preimage": {
+    "bytes": 89609,
+    "path": "preimage/runtime/droidloom-supervisor/src/control.rs",
+    "sha256": "22cfe98ff60bb9ef5cf977cecf5867bdfc955ef39d86030a0d358d5a06820700"
+  },
+  "runtime_qualified": false,
+  "schema": "pocket4-control-deadline-source-binding-v1",
+  "workspace_adaptation": "Only workspace members are restricted and prefixed with source/; package manifests and all other inherited settings remain byte-identical. Cargo.lock is seeded from the original lock; external tuples must match after pruning."
+}

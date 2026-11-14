@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "reviewer": "apps_acceptance_audit",
+  "scope": "Independent read-only kernel-semantics review for namespace creating-thread lifetime; no compilation, kernel change, device change or production claim.",
+  "running_kernel": {
+    "host": "pocket4",
+    "release": "7.0.14-p4cred1",
+    "observation_job": "1a1bfe7ae35-5e21-7be"
+  },
+  "kernel_build": {
+    "host": "ai395",
+    "source": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/source-parent/linux-source-7.0.0",
+    "makefile_version": "7.0.14",
+    "out_kernel_release": "7.0.14-p4cred1",
+    "receipt": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/qualification/full-r7/result.json",
+    "receipt_sha256": "644b42e83bbd3d77e65e87508b623c15dac56e52748b403146deb2668d9d63e1"
+  },
+  "findings": [
+    {
+      "id": "leader_pidfd_poll_gap",
+      "severity": "blocking_for_pidfd_only_patch",
+      "evidence": "fs/pidfs.c pidfd_poll does not inspect PIDFD_THREAD; readiness requires task->exit_state && !delay_group_leader(task). delay_group_leader is thread_group_leader && !thread_group_empty. A dead leader with a living sibling can remain unreadable.",
+      "locations": [
+        "fs/pidfs.c:278",
+        "fs/pidfs.c:295",
+        "include/linux/sched/signal.h:734"
+      ]
+    },
+    {
+      "id": "get_info_does_not_close_leader_gap",
+      "evidence": "PIDFD_INFO_EXIT is returned only after PIDFS_ATTR_BIT_EXIT is published by pidfs_exit. pidfs_exit is called from release_task; delayed leader release occurs after the other group members exit.",
+      "locations": [
+        "fs/pidfs.c:336",
+        "fs/pidfs.c:365",
+        "fs/pidfs.c:690",
+        "kernel/exit.c:249",
+        "kernel/exit.c:262",
+        "kernel/exit.c:282"
+      ]
+    },
+    {
+      "id": "arm_ordering",
+      "evidence": "PR_SET_PDEATHSIG takes tasklist_lock for read. exit_notify takes it for write around forget_original_parent, setting EXIT_ZOMBIE and notifications. An after-arm fresh bound-task stat read can observe early death when the pidfd itself remains unreadable.",
+      "locations": [
+        "kernel/sys.c:2575",
+        "kernel/exit.c:752",
+        "kernel/exit.c:758",
+        "kernel/exit.c:783"
+      ]
+    },
+    {
+      "id": "early_exit_flag",
+      "evidence": "PF_EXITING is 0x00000004. do_exit calls exit_signals before exit_files and exit_notify; exit_signals sets the bit under sighand siglock.",
+      "locations": [
+        "include/linux/sched.h:1769",
+        "kernel/exit.c:928",
+        "kernel/exit.c:981",
+        "kernel/exit.c:998",
+        "kernel/signal.c:3214"
+      ]
+    },
+    {
+      "id": "bound_proc_stat",
+      "evidence": "The proc inode retains get_task_pid(task, PIDTYPE_PID); reads use that held struct pid via proc_single_show and get_pid_task rather than re-looking up a numeric TID. A missing task returns ESRCH. State and task->flags are not masked by the ptrace permission decision; flags is stat field 9.",
+      "locations": [
+        "fs/proc/base.c:1953",
+        "fs/proc/base.c:780",
+        "fs/proc/internal.h:142",
+        "fs/proc/inode.c:75",
+        "fs/proc/array.c:491",
+        "fs/proc/array.c:598"
+      ]
+    },
+    {
+      "id": "pread_zero_refresh",
+      "evidence": "seq_read_iter resets index/count for offset zero before re-running the show operation. pread64(offset=0) after parent-side validation does not reuse a stale alive snapshot.",
+      "locations": [
+        "fs/seq_file.c:172",
+        "fs/seq_file.c:189",
+        "fs/seq_file.c:231"
+      ]
+    }
+  ],
+  "source_sha256": {
+    "fs/pidfs.c": "de77871780f854c727da1ef141ae29f7576d09d03b75b0f9395558fafc18c14c",
+    "kernel/sys.c": "88ad0237fd7d10da31a888371d2eb6e9635997104aa3f14d151eaa88b716c4b0",
+    "kernel/exit.c": "22ea7f56e477252352a722c2d3bc2f46e33fbaa2564855c4aa7c6891464616f2",
+    "kernel/signal.c": "dbaccbbf20885c259bb828b0357b70c5629ac34b3ad371a245b6629ce79882b4",
+    "include/linux/sched.h": "863ce464c3c59badca83083384aadc3d64316e8f3a4d95dd756d4d62fb56dbb7",
+    "include/linux/sched/signal.h": "2e76be8873fb8a1e237828a7e4ea87d90a94ef6cec88754e3f42ba1862c03127",
+    "fs/proc/array.c": "ae448652e5cb08b7fd0abe5d05acbeff119e342c7d1a64030a21a77bbe265519",
+    "fs/proc/base.c": "f4d49dadcfff3d9bd934553a32ee19fea70919444d7fa0291db1822125654001",
+    "fs/proc/internal.h": "75d13bf193247c965840760d0f6269b3eb1bc917f2ea28867c7a02fcf74d361f",
+    "fs/proc/inode.c": "7b708175d0d1b6db759bdd682e7c9903cca44351ace2de019f260d11d01a50ba",
+    "fs/seq_file.c": "db28fa9bd5006c76035f5ac27d1d888024d31e37f553828c55451b94bcc8ac0d"
+  },
+  "read_jobs": [
+    "ai395/1a1bfecd25f-5e21-7d9",
+    "ai395/1a1bfee67b1-5e21-7e4",
+    "ai395/1a1bff06adf-5e21-7ed"
+  ],
+  "proposed_fix_review_requirements": [
+    "Keep the true thread pidfd and add a creation-time read-only held proc thread-stat FD; never reopen a numeric TID path in the raw child.",
+    "Pin all three source FDs above 5 before cloning; remap 3/4/5 without source clobber; close fd5 after its final credential rearm check.",
+    "Fresh raw pread64(offset0), fixed-size buffer, complete parsing with comm parentheses/whitespace and checked decimal parsing; reject Z/X/PF_EXITING, identity mismatch, read error or malformed/truncated data.",
+    "Actual leader and non-leader before-arm and before-rearm controls, plus fresh real credential mapping and nested-tree/empty-base controls; do not treat the non-leader-only tests as arbitrary-thread coverage."
+  ]
+}

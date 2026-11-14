@@ -1,0 +1,50 @@
+[
+  {
+    "op": "test",
+    "path": "/apps/41/package",
+    "value": "org.mozilla.firefox"
+  },
+  {
+    "op": "test",
+    "path": "/apps/41/business_contract",
+    "value": {
+      "purpose": "正式浏览器及外部网页链接入口",
+      "primary_flow": "从应用外部打开HTTPS链接 → 网页文字、输入框、图片与音视频 → 返回及重开 → 验证默认BROWSER解析稳定",
+      "profile": null,
+      "business_gate_definitions": null,
+      "prerequisites": null,
+      "common_gate_ids": null
+    }
+  },
+  {
+    "op": "replace",
+    "path": "/apps/41/business_contract",
+    "value": {
+      "purpose": "正式浏览器及外部网页链接入口",
+      "primary_flow": "从应用外部打开HTTPS链接 → 网页文字、输入框、图片与音视频 → 返回及重开 → 验证默认BROWSER解析稳定",
+      "profile": "browser",
+      "business_gate_definitions": {
+        "browser.external_https": "From an owned Android caller, open an implicit ACTION_VIEW HTTPS intent with the browsable category and no explicit Firefox component. Record the BROWSER/default-handler resolution and the actually opened activity; both must identify org.mozilla.firefox in the selected installed identity. The owned/public fixture must display the expected URL and document, and Back must return to the caller. Resolver output alone does not qualify the flow.",
+        "browser.document": "Load a predeclared HTTPS fixture containing exact reference text, one editable field, and one reference image. Verify visible text and layout, type and edit an owned Unicode value without submitting a form, and read back the exact result. Verify that the reference image decoded with the expected dimensions and matching visible content; a DOM record or successful HTTP response without the rendered UI is insufficient.",
+        "browser.media": "Play a predeclared owned/public audio-video clip with known reference frames and audio. Observe both advancing rendered video and actual output of the reference audio in the current run; require position to advance during playback, remain paused when paused, and move to the requested segment after a seek. Resume and finish or stop normally, then confirm output stops and no crash, self-exit, blank video, or stuck audio remains. A play-button action or decoder log alone is insufficient.",
+        "browser.return": "Using only owned normal tabs, navigate between two uniquely identified fixtures, then exercise Back and Forward and confirm the correct URL and document at each step. Leave and reopen Firefox normally and verify the owned tab/page state promised by the recorded current browser settings. Preserve pre-existing tabs, history, and preferences; close only the owned fixture tabs after evidence is captured.",
+        "browser.recovery": "For an owned fixture request, induce a scoped unavailable-network condition without disrupting the host network, observe the browser's failure UI, restore the fixture and retry successfully. On an owned fixture origin, deny one declared site-permission request and verify that denial is honored while the page and navigation remain usable; restore only that fixture origin's original permission state. Record unsupported capability as unsupported and unavailable prerequisites as blocked; neither can become passed."
+      },
+      "prerequisites": [
+        "Execution requires the runtime owner's fresh final Main qualification and exact current installed Firefox identity under the six common gates; this contract supplies no Main, boot, process, or acceptance evidence.",
+        "Use predeclared owned fixtures or public HTTPS resources with expected text, image and media identities. Use only owned test inputs and no account login, SMS, message recipient, purchase, booking or ride request.",
+        "Use valid HTTPS trust and the actual implicit browser routing; do not bypass certificate checks, force an explicit Firefox component to conceal resolver failure, alter unrelated user data, or disrupt the host network.",
+        "Capture the current relevant browser settings and owned-fixture baselines before testing. Restore only fixture-local state and remove only owned tabs/data; any unavailable required capability remains blocked or unsupported.",
+        "Pair visible observations with the current runtime's exact app/UID and compact byte-pinned receipts. Pending definitions, source tests, and prepared entrypoints confer no runtime acceptance."
+      ],
+      "common_gate_ids": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ]
+    }
+  }
+]

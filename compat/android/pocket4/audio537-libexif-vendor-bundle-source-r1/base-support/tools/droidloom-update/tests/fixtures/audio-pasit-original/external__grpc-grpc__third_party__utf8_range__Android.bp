@@ -1,0 +1,33 @@
+package {
+    default_applicable_licenses: ["external_grpc-grpc_third_party_utf8_range_license"],
+}
+
+license {
+    name: "external_grpc-grpc_third_party_utf8_range_license",
+    visibility: [":__subpackages__"],
+    license_kinds: [
+        "SPDX-license-identifier-MIT",
+    ],
+    license_text: [
+        "LICENSE",
+    ],
+}
+
+cc_library_static {
+    name: "libgrpc_third_party_utf8_range",
+    defaults: ["grpc_deps_defaults"],
+    srcs: [
+        "naive.c",
+        "range2-neon.c",
+        "range2-sse.c",
+        "utf8_range.c",
+    ],
+    export_include_dirs: [
+        ".",
+    ],
+    apex_available: [
+        "//apex_available:anyapex",
+        "//apex_available:platform",
+    ],
+    min_sdk_version: "apex_inherit",
+}

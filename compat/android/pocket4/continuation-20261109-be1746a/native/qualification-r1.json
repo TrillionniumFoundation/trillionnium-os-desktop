@@ -1,0 +1,83 @@
+{
+  "base_commit": "fb55abd62b661b4c028f5a8fdf213f29b4f1ad8b",
+  "commands": [
+    {
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--locked",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-update",
+        "native_generation_pair_build::tests",
+        "--",
+        "--test-threads=1"
+      ],
+      "child_reaped": true,
+      "finished_ns": 1794212905411265299,
+      "phase": "normal-native-pair-tests",
+      "pid": 2570868,
+      "process_group_retired": true,
+      "returncode": 101,
+      "started_ns": 1794212897447663279,
+      "stderr": {
+        "bytes": 317,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/qualification/normal-native-pair-tests.stderr",
+        "sha256": "cfe0562de7543ddd52329c7136399c01b08349fde2b857f0aa4440befdd5a774"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/qualification/normal-native-pair-tests.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timeout_or_interruption": false
+    }
+  ],
+  "errors": [
+    {
+      "message": "phase failed normal-native-pair-tests",
+      "type": "RuntimeError"
+    }
+  ],
+  "finished_ns": 1794212905411604867,
+  "full_aosp_builds_started": 0,
+  "profile": "dev",
+  "resources_after": {
+    "affinity": [
+      10,
+      11
+    ],
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1bf6c1ed4-5e21-50b.service",
+    "cgroup.procs": "2570861\n2570863",
+    "cpu.max": "200000 100000",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "4294967296",
+    "memory.peak": "128950272",
+    "memory.swap.current": "0"
+  },
+  "resources_before": {
+    "affinity": [
+      10,
+      11
+    ],
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1bf6c1ed4-5e21-50b.service",
+    "cgroup.procs": "2570861\n2570863",
+    "cpu.max": "200000 100000",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "4294967296",
+    "memory.peak": "18550784",
+    "memory.swap.current": "0"
+  },
+  "runtime_qualified": false,
+  "schema": "native-tradefed-helper-normal-qualification-v1",
+  "setup": {
+    "bytes": 11862,
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/SETUP.json",
+    "sha256": "b3bfbb9371da5abe38d5f9d6e3ce79c3962ce1205a0e9766d9e46b7e6f4252e0"
+  },
+  "shared_aosp_mutated": false,
+  "source_reconcile_invocations": 0,
+  "started_ns": 1794212897443337913,
+  "state": "FAILED"
+}

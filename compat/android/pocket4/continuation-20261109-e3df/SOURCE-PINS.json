@@ -1,0 +1,43 @@
+{
+  "schema": "pocket4-e3df-exact-source-pins-v1",
+  "sources": [
+    {
+      "after": {
+        "bytes": 15668,
+        "path": "readiness-snapshot/source/production_readiness.rs",
+        "sha256": "61d5657960c7f06cf805bdfe389fb9498f5ac3433790a934d9352891a7fae545"
+      },
+      "before": {
+        "bytes": 11704,
+        "path": "compat/android/pocket4/production-cell-foundations-r1/source/runtime/droidloom-supervisor/src/production_readiness.rs",
+        "sha256": "5b7e4974229d74e1531bdba37282501e4859a26ba6faefe1bf5deb2092bf795b"
+      },
+      "name": "readiness-snapshot",
+      "patch": {
+        "bytes": 6240,
+        "path": "readiness-snapshot/readiness-snapshot.patch",
+        "sha256": "93183b20fe004234b8be71859d991a5d5b4b473778ab607016889a67ba504898"
+      },
+      "target": "runtime/droidloom-supervisor/src/production_readiness.rs"
+    },
+    {
+      "after": {
+        "bytes": 97375,
+        "path": "control-deadline/source/runtime/droidloom-supervisor/src/control.rs",
+        "sha256": "2bbb579650214ee9bd8d9be794569f20e7d7f6628822dbd4b928332ee79159ac"
+      },
+      "before": {
+        "bytes": 89609,
+        "path": "compat/android/pocket4/continuation-20261109-2840/apps-settings-page/source/runtime/droidloom-supervisor/src/control.rs",
+        "sha256": "22cfe98ff60bb9ef5cf977cecf5867bdfc955ef39d86030a0d358d5a06820700"
+      },
+      "name": "control-deadline",
+      "patch": {
+        "bytes": 9253,
+        "path": "control-deadline/control-deadline.patch",
+        "sha256": "1f8d2db84e76054580c3aa64a54843058477105c30c4164702e340b7865b09ca"
+      },
+      "target": "runtime/droidloom-supervisor/src/control.rs"
+    }
+  ]
+}

@@ -1,0 +1,148 @@
+1398:80|/*
+1399:e3| *	Umount options
+1400:25| */
+1401:c5|
+1402:01|#define MNT_FORCE	0x00000001	/* Attempt to forcibily umount */
+1403:ee|#define MNT_DETACH	0x00000002	/* Just detach from the tree */
+1404:9f|#define MNT_EXPIRE	0x00000004	/* Mark for expiry */
+1405:c2|#define UMOUNT_NOFOLLOW	0x00000008	/* Don't follow symlink on umount */
+1406:5c|#define UMOUNT_UNUSED	0x80000000	/* Flag guaranteed to be unused */
+1407:c5|
+1408:b7|static inline struct user_namespace *i_user_ns(const struct inode *inode)
+1409:ba|{
+1410:65|	return inode->i_sb->s_user_ns;
+1411:14|}
+1412:c5|
+1413:6f|/* Helper functions so that in most cases filesystems will
+1414:8e| * not need to deal directly with kuid_t and kgid_t and can
+1415:a8| * instead deal with the raw numeric values that are stored
+1416:22| * in the filesystem.
+1417:25| */
+1418:d8|static inline uid_t i_uid_read(const struct inode *inode)
+1419:ba|{
+1420:3f|	return from_kuid(i_user_ns(inode), inode->i_uid);
+1421:14|}
+1422:c5|
+1423:f8|static inline gid_t i_gid_read(const struct inode *inode)
+1424:ba|{
+1425:18|	return from_kgid(i_user_ns(inode), inode->i_gid);
+1426:14|}
+1427:c5|
+1428:cd|static inline void i_uid_write(struct inode *inode, uid_t uid)
+1429:ba|{
+1430:2c|	inode->i_uid = make_kuid(i_user_ns(inode), uid);
+1431:14|}
+1432:c5|
+1433:fe|static inline void i_gid_write(struct inode *inode, gid_t gid)
+1434:ba|{
+1435:c0|	inode->i_gid = make_kgid(i_user_ns(inode), gid);
+1436:14|}
+1437:c5|
+1438:f2|/**
+1439:b5| * i_uid_into_vfsuid - map an inode's i_uid down according to an idmapping
+1440:e3| * @idmap: idmap of the mount the inode was found from
+1441:83| * @inode: inode to map
+1442:0f| *
+1443:ac| * Return: whe inode's i_uid mapped down according to @idmap.
+1444:33| * If the inode's i_uid has no mapping INVALID_VFSUID is returned.
+1445:25| */
+1446:08|static inline vfsuid_t i_uid_into_vfsuid(struct mnt_idmap *idmap,
+1447:26|					 const struct inode *inode)
+1448:ba|{
+1449:42|	return make_vfsuid(idmap, i_user_ns(inode), inode->i_uid);
+1450:14|}
+1451:c5|
+1452:f2|/**
+1453:18| * i_uid_needs_update - check whether inode's i_uid needs to be updated
+1454:e3| * @idmap: idmap of the mount the inode was found from
+1455:22| * @attr: the new attributes of @inode
+1456:73| * @inode: the inode to update
+1457:0f| *
+1458:71| * Check whether the $inode's i_uid field needs to be updated taking idmapped
+1459:60| * mounts into account if the filesystem supports it.
+1476:73| * @inode: the inode to update
+1477:0f| *
+1478:8f| * Safely update @inode's i_uid field translating the vfsuid of any idmapped
+1479:6d| * mount into the filesystem kuid.
+1480:25| */
+1481:a2|static inline void i_uid_update(struct mnt_idmap *idmap,
+1482:08|				const struct iattr *attr,
+1483:1a|				struct inode *inode)
+1484:ba|{
+1485:8b|	if (attr->ia_valid & ATTR_UID)
+1486:d8|		inode->i_uid = from_vfsuid(idmap, i_user_ns(inode),
+1487:fd|					   attr->ia_vfsuid);
+1488:14|}
+1489:c5|
+1490:f2|/**
+1491:62| * i_gid_into_vfsgid - map an inode's i_gid down according to an idmapping
+1492:e3| * @idmap: idmap of the mount the inode was found from
+1493:83| * @inode: inode to map
+1494:0f| *
+1495:ca| * Return: the inode's i_gid mapped down according to @idmap.
+1496:8c| * If the inode's i_gid has no mapping INVALID_VFSGID is returned.
+1497:25| */
+1498:4e|static inline vfsgid_t i_gid_into_vfsgid(struct mnt_idmap *idmap,
+1499:26|					 const struct inode *inode)
+1500:ba|{
+1501:17|	return make_vfsgid(idmap, i_user_ns(inode), inode->i_gid);
+1502:14|}
+1503:c5|
+1504:f2|/**
+1505:f3| * i_gid_needs_update - check whether inode's i_gid needs to be updated
+1506:e3| * @idmap: idmap of the mount the inode was found from
+1507:22| * @attr: the new attributes of @inode
+1508:73| * @inode: the inode to update
+1509:0f| *
+1510:dd| * Check whether the $inode's i_gid field needs to be updated taking idmapped
+1511:60| * mounts into account if the filesystem supports it.
+1528:73| * @inode: the inode to update
+1529:0f| *
+1530:63| * Safely update @inode's i_gid field translating the vfsgid of any idmapped
+1531:40| * mount into the filesystem kgid.
+1532:25| */
+1533:f6|static inline void i_gid_update(struct mnt_idmap *idmap,
+1534:08|				const struct iattr *attr,
+1535:1a|				struct inode *inode)
+1536:ba|{
+1537:13|	if (attr->ia_valid & ATTR_GID)
+1538:2e|		inode->i_gid = from_vfsgid(idmap, i_user_ns(inode),
+1539:5a|					   attr->ia_vfsgid);
+1540:14|}
+1541:c5|
+1542:f2|/**
+1543:e8| * inode_fsuid_set - initialize inode's i_uid field with callers fsuid
+1544:c6| * @inode: inode to initialize
+1545:e3| * @idmap: idmap of the mount the inode was found from
+1546:0f| *
+1547:8b| * Initialize the i_uid field of @inode. If the inode was found/created via
+1548:83| * an idmapped mount map the caller's fsuid according to @idmap.
+1549:25| */
+1550:58|static inline void inode_fsuid_set(struct inode *inode,
+1551:69|				   struct mnt_idmap *idmap)
+1552:ba|{
+1553:d4|	inode->i_uid = mapped_fsuid(idmap, i_user_ns(inode));
+1554:14|}
+1555:c5|
+1556:f2|/**
+1557:e8| * inode_fsgid_set - initialize inode's i_gid field with callers fsgid
+1558:c6| * @inode: inode to initialize
+1559:e3| * @idmap: idmap of the mount the inode was found from
+1560:0f| *
+1561:ca| * Initialize the i_gid field of @inode. If the inode was found/created via
+1562:65| * an idmapped mount map the caller's fsgid according to @idmap.
+1563:25| */
+1564:b6|static inline void inode_fsgid_set(struct inode *inode,
+1565:69|				   struct mnt_idmap *idmap)
+1566:ba|{
+1567:57|	inode->i_gid = mapped_fsgid(idmap, i_user_ns(inode));
+1568:14|}
+1569:c5|
+1570:f2|/**
+1571:aa| * fsuidgid_has_mapping() - check whether caller's fsuid/fsgid is mapped
+1572:42| * @sb: the superblock we want a mapping in
+1573:f5| * @idmap: idmap of the relevant mount
+1574:0f| *
+1575:25| * Check whether the caller's fsuid and fsgid have a valid mapping in the
+1576:04| * s_user_ns of the superblock @sb. If the caller is on an idmapped mount map
+1577:76| * the caller's fsuid and fsgid according to the @idmap first.

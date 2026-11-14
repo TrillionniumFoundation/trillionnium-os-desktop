@@ -1,0 +1,469 @@
+diff --git a/android/manifest/audio-bridge-source-lock.json b/android/manifest/audio-bridge-source-lock.json
+index 03c6ce4f9407f18dd6ba389966e8d94edbfa70ed..b00eb69d6f2d66f7597ac16b327cd8fbc939d8a9 100644
+--- a/android/manifest/audio-bridge-source-lock.json
++++ b/android/manifest/audio-bridge-source-lock.json
+@@ -717,6 +717,16 @@
+         "src/main/java"
+       ]
+     },
++    {
++      "path": "external/junit-params",
++      "name": "platform/external/junit-params",
++      "commit": "1a5f3f8b0c829e257386c56cfda5e5a442377282",
++      "purpose": "Original JUnitParams provider, test sources and AssertJ jar required by retained ICU4J consumers in the strict full Audio APEX graph",
++      "sparse_paths": [
++        "lib",
++        "src"
++      ]
++    },
+     {
+       "path": "external/kotlin.metadata",
+       "name": "platform/external/kotlin.metadata",
+diff --git a/tools/droidloom-source/src/lib.rs b/tools/droidloom-source/src/lib.rs
+index 343176b588966f293973f7e047850a4ce9c36927..ec46205b47e1aa7ef2fd09e3f2e4b1e55c17db37 100644
+--- a/tools/droidloom-source/src/lib.rs
++++ b/tools/droidloom-source/src/lib.rs
+@@ -23,7 +23,7 @@ use thiserror::Error;
+ const MAX_LOCK_BYTES: u64 = 1024 * 1024;
+ // This independent audio builder consumes the exact pinned audio lock below.
+ // Keep the smallest finite 16-project boundary; URL/commit/path checks remain.
+-const AUDIO_SOURCE_PROJECT_COUNT: usize = 308;
++const AUDIO_SOURCE_PROJECT_COUNT: usize = 309;
+ const MAX_PROJECTS: usize = AUDIO_SOURCE_PROJECT_COUNT.div_ceil(16) * 16;
+ const MAX_LINKS: usize = 64;
+ // Android17 hardware/interfaces requires 133 exact paths in the pinned lock.
+@@ -946,7 +946,7 @@ mod tests {
+     fn audio_source_capacity_is_bound_to_the_exact_frozen_lock() {
+         let raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
+         assert_eq!(format!("{:x}", Sha256::digest(raw.as_bytes())),
+-            "bf5db84637fe0508be889aa7c7343e4478ed8a4a537099babc87bfba456ce94b");
++            "ac2f7fa3d7e53be1b0e69f486876f8ad229dcc64686af208251bd4aee2424ae4");
+         let lock: SparseSourceLock = serde_json::from_str(raw).unwrap();
+         assert_eq!(lock.projects.len(), AUDIO_SOURCE_PROJECT_COUNT);
+         assert_eq!(MAX_PROJECTS, 320);
+@@ -985,6 +985,23 @@ mod tests {
+         ]);
+     }
+ 
++    #[test]
++    fn audio_junit_extension_keeps_the_actual_previous_projects_unchanged() {
++        let lock: SparseSourceLock = serde_json::from_str(include_str!(
++            "../../../android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let current = build_plan(&lock).unwrap();
++        let mut previous = current.clone();
++        previous.projects.retain(|project| project.path != Path::new("external/junit-params"));
++        assert_eq!(previous.projects.len(), 308);
++        assert_eq!(current.projects.len(), 309);
++        validate_plan_extension(&previous, &current).unwrap();
++        let provider = current.projects.iter()
++            .find(|project| project.path == Path::new("external/junit-params")).unwrap();
++        assert_eq!(provider.url, "https://android.googlesource.com/platform/external/junit-params");
++        assert_eq!(provider.commit, "1a5f3f8b0c829e257386c56cfda5e5a442377282");
++        assert_eq!(provider.sparse_paths, vec![PathBuf::from("lib"), PathBuf::from("src")]);
++    }
++
+     #[test]
+     fn project_bound_admits_superproject_gitlink_extensions_but_not_unbounded_sync() {
+         let mut lock = valid_lock();
+diff --git a/tools/droidloom-update/src/android.rs b/tools/droidloom-update/src/android.rs
+index 8f7a8bf7a72d148910e8d4242794f1a5eb0f0d60..f08dabc838f0ee08d0667967d4b873f3e4c4209f 100644
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -516,6 +516,8 @@ fn validate_audio_provider_source_paths(
+         return Ok(());
+     }
+     for (relative, commit, required) in [
++        ("external/junit-params", "1a5f3f8b0c829e257386c56cfda5e5a442377282", "lib"),
++        ("external/junit-params", "1a5f3f8b0c829e257386c56cfda5e5a442377282", "src"),
+         ("system/gatekeeper", "5b5e75b5bda9fccbc3132e9624cb25286babdaac", "include"),
+         ("system/gatekeeper", "5b5e75b5bda9fccbc3132e9624cb25286babdaac", "rust"),
+         ("system/security", "cbb2ef1617a94d6cdf2dc2ccb7a545575dbb20cb", "hals/Android.bp"),
+@@ -819,12 +821,12 @@ fn audio_apex_pcm_patches(mode: SoongDependencyMode) -> &'static [(&'static str,
+     }
+ }
+ 
+-const AUDIO_SOURCE_LOCK_SHA256: &str = "bf5db84637fe0508be889aa7c7343e4478ed8a4a537099babc87bfba456ce94b";
++const AUDIO_SOURCE_LOCK_SHA256: &str = "ac2f7fa3d7e53be1b0e69f486876f8ad229dcc64686af208251bd4aee2424ae4";
+ fn selected_source_lock(repo: &Path, mode: SoongDependencyMode) -> Result<PathBuf> {
+     if mode == SoongDependencyMode::AudioApexTargetClosure {
+         let lock = repo.join("android/manifest/audio-bridge-source-lock.json");
+         if hash(&lock)? != AUDIO_SOURCE_LOCK_SHA256 {
+-            return fail("audio build requires its exact independent 308-project source lock");
++            return fail("audio build requires its exact independent 309-project source lock");
+         }
+         Ok(lock)
+     } else {
+@@ -3163,12 +3165,79 @@ mod tests {
+         }
+     }
+ 
++    #[test]
++    fn audio_junit_provider_keeps_the_real_icu_consumer_and_all_original_dependencies() {
++        use sha2::{Digest, Sha256};
++        let consumer = include_str!("../tests/fixtures/audio-providers/icu4j.bp");
++        let provider = include_str!("../tests/fixtures/audio-providers/junit-params.bp");
++        for (text, expected) in [
++            (consumer, "e5a8137f19dbb133bdfa451c42493dbb481b1745a390817876b4636028a6014b"),
++            (provider, "85348fe51555dfca2a488dcefa8911acd4e8773ac312bc51cd7407156f9597e8"),
++        ] {
++            assert_eq!(format!("{:x}", Sha256::digest(text.as_bytes())), expected);
++        }
++        assert!(consumer.contains("name: \"icu4j-tests\""));
++        assert!(consumer.contains("\"junit-params\""));
++        for dependency in ["gson", "icu4j", "icu4j-testdata"] {
++            assert!(consumer.contains(&format!("\"{dependency}\"")));
++        }
++        for name in ["junit-params", "junit-params-host", "junit-params-test", "junit-params-assertj-core"] {
++            assert!(provider.contains(&format!("name: \"{name}\"")));
++        }
++        for input in ["src/main/java/**/*.java", "src/test/java/**/*.java",
++                      "src/test/resources", "lib/assertj-core-1.7.1.jar", "LICENSE.txt"] {
++            assert!(provider.contains(input));
++        }
++        assert!(provider.contains("static_libs: [\"junit\"]"));
++        for (relative, original) in [
++            ("external/icu/icu4j/Android.bp", consumer),
++            ("external/junit-params/Android.bp", provider),
++        ] {
++            assert!(audio_original_shared_provider(relative, original,
++                SoongDependencyMode::AudioApexTargetClosure).unwrap().is_none());
++            assert!(audio_new_source_root_scope(relative, original,
++                SoongDependencyMode::AudioApexTargetClosure).unwrap().is_none());
++        }
++    }
++
++    #[test]
++    fn audio_junit_provider_requires_complete_original_sources_and_prebuilt_jar() {
++        let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
++        let lock = droidloom_source::load_lock(
++            &repo.join("android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let audio = SoongDependencyMode::AudioApexTargetClosure;
++        validate_audio_provider_source_paths(&lock, audio).unwrap();
++        let mut old = lock.clone();
++        old.projects.retain(|project| project.path != Path::new("external/junit-params"));
++        assert_eq!(old.projects.len(), 308);
++        assert!(validate_audio_provider_source_paths(&old, audio).is_err());
++        for mode in [SoongDependencyMode::Strict, SoongDependencyMode::NativeBridgeTargetClosure,
++                     SoongDependencyMode::NativeEngineTargetClosure, SoongDependencyMode::MinigbmTargetClosure] {
++            validate_audio_provider_source_paths(&old, mode).unwrap();
++        }
++        for missing in ["lib", "src"] {
++            let mut incomplete = lock.clone();
++            let provider = incomplete.projects.iter_mut()
++                .find(|project| project.path == Path::new("external/junit-params")).unwrap();
++            provider.sparse_paths.retain(|path| path != Path::new(missing));
++            if missing == "src" {
++                // Keeping only production Java hides source still required by the original sibling test.
++                provider.sparse_paths.push(PathBuf::from("src/main/java"));
++            }
++            assert!(validate_audio_provider_source_paths(&incomplete, audio).is_err());
++        }
++        let mut substituted = lock;
++        substituted.projects.iter_mut().find(|project| project.path == Path::new("external/junit-params"))
++            .unwrap().commit = "0000000000000000000000000000000000000000".into();
++        assert!(validate_audio_provider_source_paths(&substituted, audio).is_err());
++    }
++
+     #[test]
+     fn audio_build_source_lock_is_scoped_and_exact() {
+         let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
+         let lock = selected_source_lock(repo, SoongDependencyMode::AudioApexTargetClosure).unwrap();
+         let parsed = droidloom_source::load_lock(&lock).unwrap();
+-        assert_eq!(parsed.projects.len(), 308);
++        assert_eq!(parsed.projects.len(), 309);
+         assert!(droidloom_source::build_plan(&parsed).is_ok());
+         for mode in [SoongDependencyMode::Strict, SoongDependencyMode::NativeBridgeTargetClosure,
+                      SoongDependencyMode::NativeEngineTargetClosure, SoongDependencyMode::MinigbmTargetClosure] {
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/icu4j.bp b/tools/droidloom-update/tests/fixtures/audio-providers/icu4j.bp
+new file mode 100644
+index 0000000000000000000000000000000000000000..4acc1fc54f9c08b3d127b505c321e8f379d13b3b
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/icu4j.bp
+@@ -0,0 +1,190 @@
++//
++// Copyright (C) 2014 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++
++package {
++    default_team: "trendy_team_java_core_libraries",
++    default_visibility: ["//visibility:private"],
++    // See: http://go/android-license-faq
++    // A large-scale-change added 'default_applicable_licenses' to import
++    // all of the 'license_kinds' from "external_icu_license"
++    // to get the below license kinds:
++    //   SPDX-license-identifier-Apache-2.0
++    //   SPDX-license-identifier-BSD
++    //   SPDX-license-identifier-ICU
++    //   SPDX-license-identifier-MIT
++    //   SPDX-license-identifier-Unicode-DFS
++    //   legacy_unencumbered
++    default_applicable_licenses: ["external_icu_license"],
++}
++
++java_defaults {
++    name: "icu4j-defaults",
++    host_supported: true,
++    hostdex: true,
++
++    // Use the same Java language version in the Android build configuration as used
++    // in main/shared/build/common.properties for the ICU4J build configuration.
++    java_version: "11",
++    lint: {
++        warning_checks: ["SuspiciousIndentation"],
++    },
++    errorprone: {
++        javacflags: [
++            "-Xep:EmptyTopLevelDeclaration:WARN",
++            "-Xep:BoxedPrimitiveEquality:WARN",
++            "-Xep:EqualsHashCode:WARN",
++            "-Xep:ComparableType:WARN",
++            "-Xep:SelfAssignment:WARN",
++            "-Xep:ReturnValueIgnored:WARN",
++            "-Xep:SelfComparison:WARN",
++            "-Xep:SelfEquals:WARN",
++            "-Xep:MisusedDayOfYear:WARN",
++            "-Xep:MisusedWeekYear:WARN",
++            "-Xep:IdentityBinaryExpression:WARN",
++        ],
++    },
++    sdk_version: "current",
++}
++
++java_library {
++    name: "icu4j",
++    visibility: [
++        "//bootable/recovery/tools/image_generator",
++        "//external/icu/tools/srcgen",
++        "//external/jimfs/jimfs",
++        "//external/robolectric-shadows/robolectric",
++        "//external/robolectric-shadows/shadows/framework",
++        "//external/robolectric/robolectric",
++        "//external/robolectric/shadows/framework",
++        "//frameworks/base/ravenwood:__subpackages__",
++        "//system/timezone/input_tools/android/telephonylookup_generator",
++        "//system/timezone/input_tools/android/tzlookup_generator",
++    ],
++    defaults: ["icu4j-defaults"],
++    libs: [
++        // Need the following shared libraries for @FlaggedApi. These libraries are only needed
++        // compile-time, not runtime, and it shouldn't need to be statically linked.
++        // framework-api-annotations are not static libs to avoid exposing the definition of
++        // framework's annotations from ICU (wrong place) instead of framework (correct place).
++        "framework-annotations-lib",
++        "icu_aconfig_flags_lib",
++    ],
++
++    srcs: ["main/*/src/main/java/**/*.java"],
++    java_resource_dirs: ["main/*/src/main/resources"],
++
++    // User-supplied locale service providers (using the java.text.spi or
++    // java.util.spi mechanisms) are not supported in Android:
++    //
++    // http://developer.android.com/reference/java/util/Locale.html
++    exclude_srcs: ["main/localespi/src/main/java/**/*.java"],
++    exclude_java_resource_dirs: [
++        "main/localespi/src/main/resources",
++        // The actual resource files are included by linking icu4j-icudata and icu4j-icutzdata
++        // statically.
++        "main/*/src/main/resources/com/ibm/icu/impl/data/icudt*",
++    ],
++
++    static_libs: [
++        "icu4j-icudata",
++        "icu4j-icutzdata",
++    ],
++}
++
++java_test {
++    name: "icu4j-tests",
++    defaults: ["icu4j-defaults"],
++
++    srcs: [
++        "main/*/src/test/**/*.java",
++    ],
++    java_resource_dirs: ["main/*/src/test/resources"],
++
++    exclude_srcs: ["main/localespi/src/test/**/*.java"],
++    exclude_java_resource_dirs: ["main/localespi/src/test"],
++
++    static_libs: [
++        "gson",
++        "icu4j",
++        "icu4j-testdata",
++        "junit-params",
++    ],
++
++    errorprone: {
++        javacflags: [
++            "-Xep:EqualsNull:WARN",
++            "-Xep:ArrayToString:WARN",
++        ],
++    },
++
++    test_options: {
++        unit_test: false,
++    },
++}
++
++java_import {
++    name: "icu4j-icudata",
++    host_supported: true,
++    jars: ["main/shared/data/icudata.jar"],
++}
++
++java_import {
++    name: "icu4j-icutzdata",
++    host_supported: true,
++    jars: ["main/shared/data/icutzdata.jar"],
++}
++
++java_import {
++    name: "icu4j-testdata",
++    host_supported: true,
++    jars: ["main/shared/data/testdata.jar"],
++}
++
++// LayoutLib (frameworks/layoutlib), ravewnwood and robolectric need
++// JarJar'd versions of the icudata and icutzdata, so add rules for it.
++java_library {
++    name: "icu4j-icudata-jarjar",
++    visibility: [
++        "//external/robolectric-shadows",
++        "//external/robolectric",
++        "//frameworks/base/ravenwood:__subpackages__",
++        "//frameworks/layoutlib",
++    ],
++    defaults: ["icu4j-defaults"],
++    static_libs: ["icu4j-icudata"],
++    jarjar_rules: "liblayout-jarjar-rules.txt",
++}
++
++java_library {
++    name: "icu4j-icutzdata-jarjar",
++    visibility: [
++        "//external/robolectric-shadows",
++        "//external/robolectric",
++        "//frameworks/base/ravenwood:__subpackages__",
++        "//frameworks/layoutlib",
++    ],
++    defaults: ["icu4j-defaults"],
++    static_libs: ["icu4j-icutzdata"],
++    jarjar_rules: "liblayout-jarjar-rules.txt",
++}
++
++java_library_host {
++    name: "icu4j-host",
++    static_libs: ["icu4j"],
++    visibility: [
++        "//vendor:__subpackages__",
++    ],
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/junit-params.bp b/tools/droidloom-update/tests/fixtures/audio-providers/junit-params.bp
+new file mode 100644
+index 0000000000000000000000000000000000000000..dc2d598fb7a4cac34b6d8187b87efa04a7cf6d9a
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/junit-params.bp
+@@ -0,0 +1,91 @@
++// Copyright (C) 2016 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++//
++
++//-------------------------------
++// build a target jar
++
++package {
++    default_applicable_licenses: ["external_junit-params_license"],
++}
++
++// Added automatically by a large-scale-change
++// See: http://go/android-license-faq
++license {
++    name: "external_junit-params_license",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "SPDX-license-identifier-Apache-2.0",
++    ],
++    license_text: [
++        "LICENSE.txt",
++    ],
++}
++
++java_library {
++    name: "junit-params",
++    host_supported: true,
++    hostdex: true,
++    srcs: ["src/main/java/**/*.java"],
++    sdk_version: "core_current",
++    static_libs: ["junit"],
++    // b/267831518: Pin tradefed and dependencies to Java 11.
++    java_version: "11",
++}
++
++// compatibility host library with old name
++java_library_host {
++    name: "junit-params-host",
++    static_libs: ["junit-params"],
++}
++
++//-------------------------------
++// build test jars
++//
++// Run the target test jar as follows:
++//   vogar --classpath \
++//     ${ANDROID_PRODUCT_OUT}/obj/JAVA_LIBRARIES/junit-params-test_intermediates/javalib.jar \
++//     junitparams
++
++java_test {
++    name: "junit-params-test",
++    host_supported: true,
++    // Don't consider those unit tests, they would be hard to maintain since they are
++    // from external, and have dependencies on the junit version.
++    test_options: {
++        unit_test: false,
++    },
++    srcs: ["src/test/java/**/*.java"],
++    java_resource_dirs: ["src/test/resources"],
++    sdk_version: "core_current",
++    static_libs: [
++        "junit-params",
++        "junit-params-assertj-core",
++    ],
++    errorprone: {
++        javacflags: [
++            "-Xep:JUnitParameterMethodNotFound:WARN",
++        ],
++    },
++}
++
++//-------------------------------
++// prebuilt dependencies
++
++java_import {
++    name: "junit-params-assertj-core",
++    jars: ["lib/assertj-core-1.7.1.jar"],
++    host_supported: true,
++}

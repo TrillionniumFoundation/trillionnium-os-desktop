@@ -1,0 +1,55 @@
+{
+  "schema": "settings-official-semantics-provenance-v1",
+  "observed_utc_date": "2026-11-09",
+  "initial_branch": "refs/heads/main",
+  "resolved_commit": "1cdfff555f4a21f71ccc978290e2e212e2f8b168",
+  "resolved_commit_author_date": "2025-03-26T20:38:51-07:00",
+  "resolved_commit_committer_date": "2025-03-26T20:38:51-07:00",
+  "commit_url": "https://android.googlesource.com/platform/frameworks/base/+/1cdfff555f4a21f71ccc978290e2e212e2f8b168",
+  "accepted_fixed_commit_read": "evidence/official-fixed-commit-read-r2.json",
+  "files": [
+    {
+      "bytes": 206039,
+      "expected_git_blob": "9a63546bf5a7e5f72551d6b781e5b2ca16ee16d8",
+      "final_url": "https://android.googlesource.com/platform/frameworks/base/+/1cdfff555f4a21f71ccc978290e2e212e2f8b168/services/core/java/com/android/server/am/ActivityManagerShellCommand.java?format=TEXT",
+      "git_blob": "9a63546bf5a7e5f72551d6b781e5b2ca16ee16d8",
+      "matches_previously_read_branch_blob": true,
+      "path": "services/core/java/com/android/server/am/ActivityManagerShellCommand.java",
+      "sha256": "ff203862cfe51ba29613b709f09983e1152bb779eb6c2222d66970b2ebf82bd0",
+      "url": "https://android.googlesource.com/platform/frameworks/base/+/1cdfff555f4a21f71ccc978290e2e212e2f8b168/services/core/java/com/android/server/am/ActivityManagerShellCommand.java?format=TEXT",
+      "source_view_url": "https://android.googlesource.com/platform/frameworks/base/+/1cdfff555f4a21f71ccc978290e2e212e2f8b168/services/core/java/com/android/server/am/ActivityManagerShellCommand.java",
+      "relevant_symbols": [
+        "runStartActivity",
+        "START_DELIVERED_TO_TOP",
+        "START_TASK_TO_FRONT",
+        "FLAG_ACTIVITY_NEW_TASK"
+      ],
+      "supports": "An activity reuse outcome can emit Warning, Status: ok and Activity then exit zero; the shell adds NEW_TASK."
+    },
+    {
+      "bytes": 178687,
+      "expected_git_blob": "2781592c6b4f5a6d0ab5c205158e5186453e31b4",
+      "final_url": "https://android.googlesource.com/platform/frameworks/base/+/1cdfff555f4a21f71ccc978290e2e212e2f8b168/services/core/java/com/android/server/wm/ActivityStarter.java?format=TEXT",
+      "git_blob": "2781592c6b4f5a6d0ab5c205158e5186453e31b4",
+      "matches_previously_read_branch_blob": true,
+      "path": "services/core/java/com/android/server/wm/ActivityStarter.java",
+      "sha256": "57bd1cb1778b63b471b4ac5fcdd5c898b10b4a05539e23450b539f178a298dd3",
+      "url": "https://android.googlesource.com/platform/frameworks/base/+/1cdfff555f4a21f71ccc978290e2e212e2f8b168/services/core/java/com/android/server/wm/ActivityStarter.java?format=TEXT",
+      "source_view_url": "https://android.googlesource.com/platform/frameworks/base/+/1cdfff555f4a21f71ccc978290e2e212e2f8b168/services/core/java/com/android/server/wm/ActivityStarter.java",
+      "relevant_symbols": [
+        "resolveReusableTask",
+        "recycleTask",
+        "complyActivityFlags",
+        "mAddingToTask"
+      ],
+      "supports": "An existing task can accept a new Activity with START_SUCCESS; NEW_TASK allows task reuse, and singleTask/singleInstance can override the no-reuse effect of MULTIPLE_TASK."
+    }
+  ],
+  "version_boundary": {
+    "selected_runtime": "CP3A.260905.010 / build 16176746 / QPR1",
+    "selected_runtime_exact_framework_source_or_DEX_compared": false,
+    "claim": "These fixed official sources are semantic counterexamples to treating generic start success or flags as task-creation authority. They are not a claim about selected QPR1 byte identity, newest release status, compatibility, actual task execution or test completion."
+  },
+  "runtime_qualified": false,
+  "production_ready": false
+}

@@ -1,0 +1,92 @@
+{
+  "scope": "metadata only; no app data, APK, binary media, or real qualification fixture included",
+  "support": [
+    {
+      "manifest": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/business-support-host-20261108-r1/source-manifest.json",
+        "bytes": 1002,
+        "sha256": "8cfa9cb05bb7e7768350dbe04acd4cd6421b9f4e8493746aad49b64c37969e70"
+      },
+      "files": {
+        "business_baseline.py": {
+          "bytes": 53280,
+          "sha256": "0d26c720f2d349b97c192a2f18d7db9d62f5421944a50ae31d6499188e5bdcff"
+        },
+        "business_commands.py": {
+          "bytes": 12813,
+          "sha256": "cfe92077ebb75db4f7f0fd577fcd7e6d664afd9338128a05435512549ceeb1f3"
+        },
+        "business_data.py": {
+          "bytes": 16866,
+          "sha256": "2f86b90b1ca0a3993387163ce2169d17b67841a6c3e65f5a59dd9c8557a7a25a"
+        },
+        "business_image_capture.py": {
+          "bytes": 14933,
+          "sha256": "5cae43fc39b12f25517af9aabac12a766137363c395e3b1a56e279acec7ea1a8"
+        },
+        "business_scope.py": {
+          "bytes": 34964,
+          "sha256": "e2a9b509102806483c64c181034e59aded211f42e5f05fcfd85057cc25c9fb7a"
+        },
+        "business_ui_entry.py": {
+          "bytes": 26456,
+          "sha256": "c33e86290d835bdd6ed82f5994572025807846addf141e1253c0665398db48f6"
+        }
+      },
+      "dependency_kind": "external exact host support source; omitted from this patch capsule"
+    },
+    {
+      "manifest": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/business-support-host-clock-20261108-r1/source-manifest.json",
+        "bytes": 1002,
+        "sha256": "0e1ea6f0d3b02c47f240b1aa26ccccf1b05f82bef7edee65331de421965a53ce"
+      },
+      "files": {
+        "business_baseline.py": {
+          "bytes": 53280,
+          "sha256": "0d26c720f2d349b97c192a2f18d7db9d62f5421944a50ae31d6499188e5bdcff"
+        },
+        "business_commands.py": {
+          "bytes": 12813,
+          "sha256": "cfe92077ebb75db4f7f0fd577fcd7e6d664afd9338128a05435512549ceeb1f3"
+        },
+        "business_data.py": {
+          "bytes": 16866,
+          "sha256": "2f86b90b1ca0a3993387163ce2169d17b67841a6c3e65f5a59dd9c8557a7a25a"
+        },
+        "business_image_capture.py": {
+          "bytes": 14933,
+          "sha256": "5cae43fc39b12f25517af9aabac12a766137363c395e3b1a56e279acec7ea1a8"
+        },
+        "business_scope.py": {
+          "bytes": 34964,
+          "sha256": "e2a9b509102806483c64c181034e59aded211f42e5f05fcfd85057cc25c9fb7a"
+        },
+        "business_ui_entry.py": {
+          "bytes": 33276,
+          "sha256": "7d3af0bd33cea196063f7ecd8ccc4d3a4581475b73afc05b80063b594f91a741"
+        }
+      },
+      "dependency_kind": "external exact host support source; omitted from this patch capsule"
+    }
+  ],
+  "original_preparation_origins": "source-manifest.json bundles[].external_origin_references are retained provenance and must remain exact during resealing; old r9 origin is not an active runtime support binding",
+  "webview_inline_text_assets": [
+    "source/webview/webview_assets10.py",
+    "source/webview/webview_assets11.py"
+  ],
+  "non_python_production_text_assets": [],
+  "external_video": {
+    "path": "/home/alex/work/pocket4-webview-media11-bear-20261106-r12.webm",
+    "bytes": 58199,
+    "sha256": "7148402273737217b6906704ac430fcfd77268e9f0dbfe19d5f334a496a58d69",
+    "included": false
+  },
+  "fresh_device_execution_requirements": [
+    "new source-bound preparation and external preparation digest after sealing at the selected Pocket4 destination",
+    "exact current host support and host-clock source closures",
+    "unchanged original source and gate provenance referenced by each preparation",
+    "new actual Main-bound baseline, qualification, held data/resources, action lease and lock, installed APK/UID/signer metadata, distinct owned task scopes",
+    "original media only where the original WebView media11 gate requires it"
+  ]
+}

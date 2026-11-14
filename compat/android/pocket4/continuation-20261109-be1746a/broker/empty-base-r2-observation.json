@@ -1,0 +1,110 @@
+{
+  "schema": "pocket4-production-empty-base-r2-observation-v1",
+  "observed_utc": "2026-11-09T10:03:09.523839+00:00",
+  "supersedes_current_failure_only": "normal-production-empty-base-r1 E0609 compilation failure; retain r1 historical evidence",
+  "source_owner": "foreground-root-8b88e19ff7ab",
+  "scope": "Read existing source and receipts only; no reruns, source mutation, Android start, grants, user data access or package install.",
+  "normal_result": {
+    "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/normal-production-empty-base-r2/result.json",
+    "bytes": 29077,
+    "sha256": "50cb46705332540600ee25c373874e0ecc2e838c27ec570a5b1161893e50ee3e"
+  },
+  "outer_result": {
+    "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/production-empty-base-normal-launch-r2/result.json",
+    "bytes": 3827,
+    "sha256": "fe660f39ef7b089419dfd69c26b191d76a7054edb32248b7a9677a9846f793d2"
+  },
+  "normal_tests_stdout": {
+    "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/normal-production-empty-base-r2/production-normal-tests.stdout",
+    "bytes": 9499,
+    "sha256": "d0b5577fab68066530f88afec7dbb90858de73ed61b100693bc189536b99d5b3"
+  },
+  "normal_tests_stderr": {
+    "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/normal-production-empty-base-r2/production-normal-tests.stderr",
+    "bytes": 29469,
+    "sha256": "549f93b3113a934e69ebf415e38c9c01dbd4402d0d3ed31d09110ba7f9af01bc"
+  },
+  "actual_qualification": {
+    "passed": true,
+    "normal_tests_passed": 81,
+    "normal_tests_failed": 0,
+    "reported_ignored": 0,
+    "tests_filtered_out": 149,
+    "normal_binaries_built": 2,
+    "negative_cli_controls_passed": 8,
+    "private_controls_executed": 0,
+    "Android_starts": 0,
+    "production_ready": false,
+    "owned_unit_retired": true
+  },
+  "mount_child_source": {
+    "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_namespace_mount_child.rs",
+    "bytes": 24083,
+    "sha256": "0428c4dbc29ed294d58a719d6c396f111125157f9ba3f424e9b73d3dcbe7c8c9",
+    "mtime_utc": "2026-11-09T10:00:28.713216+00:00"
+  },
+  "statfs_fix": {
+    "implementation": "Linux LP64 public SYS_fstatfs UAPI structure with compile-time size, alignment and offsets asserted; retains same-FD filesystem type and readonly/nosuid/nodev validation.",
+    "actual_normal_regression": "raw_statfs_layout_matches_same_fd_standard_observation passed; compares raw fstatfs with libc::fstatfs and same-FD libc::fstatvfs flags.",
+    "limits": "This pass is for the exact current LP64 host. No actual privileged empty-root mount fixture or negative flag fixture has been observed in this result. It does not qualify Android runtime."
+  },
+  "source_after_format": [
+    {
+      "bytes": 58995,
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_identity.rs",
+      "relative": "runtime/droidloom-supervisor/src/production_identity.rs",
+      "sha256": "953b5b896cf0f697082eb34c67057414f2874bb1a07a9d78e3355636c59f7e64"
+    },
+    {
+      "bytes": 44876,
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_namespace.rs",
+      "relative": "runtime/droidloom-supervisor/src/production_namespace.rs",
+      "sha256": "a661095fd3f8861d4467b0988e9c0989c6d2313e5aa0addb5c14c4b95e8722c6"
+    },
+    {
+      "bytes": 25736,
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_namespace_child.rs",
+      "relative": "runtime/droidloom-supervisor/src/production_namespace_child.rs",
+      "sha256": "c5ed0a70773fb6969c1dc068b069ce3cb06d5349134980ba63358c8e5bbbb218"
+    },
+    {
+      "bytes": 14458,
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+      "relative": "runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+      "sha256": "b279fc6e16ac685de6f9bb6635434b22e8ecc3d2f41bca0adb47266d1e705763"
+    },
+    {
+      "bytes": 58509,
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_namespace_tree.rs",
+      "relative": "runtime/droidloom-supervisor/src/production_namespace_tree.rs",
+      "sha256": "048bc5887195aca7062b90e196b1d805ed23b8c6da46e55f91216dc09b178b43"
+    },
+    {
+      "bytes": 161856,
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_host_admission.rs",
+      "relative": "runtime/droidloom-supervisor/src/production_host_admission.rs",
+      "sha256": "4e1b01ee58cdd3a431cd5860ffe768423ff709204e665f1b82641e2a00babbb1"
+    },
+    {
+      "bytes": 59100,
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_mounts.rs",
+      "relative": "runtime/droidloom-supervisor/src/production_mounts.rs",
+      "sha256": "bbc9274949764d21522ba6c1ed9b7a9613a1668555623194d216eeaebd8ff06e"
+    },
+    {
+      "bytes": 24083,
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_namespace_mount_child.rs",
+      "relative": "runtime/droidloom-supervisor/src/production_namespace_mount_child.rs",
+      "sha256": "0428c4dbc29ed294d58a719d6c396f111125157f9ba3f424e9b73d3dcbe7c8c9"
+    }
+  ],
+  "first_keeper_still_unintegrated": {
+    "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_namespace_child.rs",
+    "bytes": 25736,
+    "sha256": "c5ed0a70773fb6969c1dc068b069ce3cb06d5349134980ba63358c8e5bbbb218",
+    "PIDFD_THREAD_occurrences": 0
+  },
+  "runtime_qualified": false,
+  "all_blockers_closed": false,
+  "no_automatic_qualification_transfer_to_later_source_edits": true
+}

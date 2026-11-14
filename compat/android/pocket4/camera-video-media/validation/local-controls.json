@@ -1,0 +1,241 @@
+{
+  "AST_parses_passed": 5,
+  "Android_actions": 0,
+  "Main_actions": 0,
+  "actual_local_memfd_experiment": {
+    "actual_local_execution": true,
+    "initial": {
+      "seals": 15,
+      "sha256": "b4167617b8a8c2239de97ad1185f4b8d979eebf6a286ed6b03deb4ddc76388ac",
+      "st_ctime_ns": 1794138228516985156,
+      "st_dev": 1,
+      "st_gid": 0,
+      "st_ino": 2048,
+      "st_mode": 33279,
+      "st_mtime_ns": 1794138228516985156,
+      "st_nlink": 0,
+      "st_size": 1088,
+      "st_uid": 0
+    },
+    "interpreter": "/usr/bin/python3 -B",
+    "method": "memfd_create(MFD_CLOEXEC|MFD_ALLOW_SEALING); write 1088 bytes; F_ADD_SEALS WRITE|GROW|SHRINK|SEAL; fstat+whole pread SHA before/after each denied operation; 3ms between each before-snapshot and operation; final close",
+    "operations": [
+      {
+        "after": {
+          "seals": 15,
+          "sha256": "b4167617b8a8c2239de97ad1185f4b8d979eebf6a286ed6b03deb4ddc76388ac",
+          "st_ctime_ns": 1794138228516985156,
+          "st_dev": 1,
+          "st_gid": 0,
+          "st_ino": 2048,
+          "st_mode": 33279,
+          "st_mtime_ns": 1794138228516985156,
+          "st_nlink": 0,
+          "st_size": 1088,
+          "st_uid": 0
+        },
+        "all_seals_preserved": true,
+        "before": {
+          "seals": 15,
+          "sha256": "b4167617b8a8c2239de97ad1185f4b8d979eebf6a286ed6b03deb4ddc76388ac",
+          "st_ctime_ns": 1794138228516985156,
+          "st_dev": 1,
+          "st_gid": 0,
+          "st_ino": 2048,
+          "st_mode": 33279,
+          "st_mtime_ns": 1794138228516985156,
+          "st_nlink": 0,
+          "st_size": 1088,
+          "st_uid": 0
+        },
+        "changed_fields": [],
+        "content_and_size_preserved": true,
+        "errno": 1,
+        "errno_name": "EPERM",
+        "operation": "shrink"
+      },
+      {
+        "after": {
+          "seals": 15,
+          "sha256": "b4167617b8a8c2239de97ad1185f4b8d979eebf6a286ed6b03deb4ddc76388ac",
+          "st_ctime_ns": 1794138228516985156,
+          "st_dev": 1,
+          "st_gid": 0,
+          "st_ino": 2048,
+          "st_mode": 33279,
+          "st_mtime_ns": 1794138228516985156,
+          "st_nlink": 0,
+          "st_size": 1088,
+          "st_uid": 0
+        },
+        "all_seals_preserved": true,
+        "before": {
+          "seals": 15,
+          "sha256": "b4167617b8a8c2239de97ad1185f4b8d979eebf6a286ed6b03deb4ddc76388ac",
+          "st_ctime_ns": 1794138228516985156,
+          "st_dev": 1,
+          "st_gid": 0,
+          "st_ino": 2048,
+          "st_mode": 33279,
+          "st_mtime_ns": 1794138228516985156,
+          "st_nlink": 0,
+          "st_size": 1088,
+          "st_uid": 0
+        },
+        "changed_fields": [],
+        "content_and_size_preserved": true,
+        "errno": 1,
+        "errno_name": "EPERM",
+        "operation": "grow"
+      },
+      {
+        "after": {
+          "seals": 15,
+          "sha256": "b4167617b8a8c2239de97ad1185f4b8d979eebf6a286ed6b03deb4ddc76388ac",
+          "st_ctime_ns": 1794138228524985369,
+          "st_dev": 1,
+          "st_gid": 0,
+          "st_ino": 2048,
+          "st_mode": 33279,
+          "st_mtime_ns": 1794138228524985369,
+          "st_nlink": 0,
+          "st_size": 1088,
+          "st_uid": 0
+        },
+        "all_seals_preserved": true,
+        "before": {
+          "seals": 15,
+          "sha256": "b4167617b8a8c2239de97ad1185f4b8d979eebf6a286ed6b03deb4ddc76388ac",
+          "st_ctime_ns": 1794138228516985156,
+          "st_dev": 1,
+          "st_gid": 0,
+          "st_ino": 2048,
+          "st_mode": 33279,
+          "st_mtime_ns": 1794138228516985156,
+          "st_nlink": 0,
+          "st_size": 1088,
+          "st_uid": 0
+        },
+        "changed_fields": [
+          "st_ctime_ns",
+          "st_mtime_ns"
+        ],
+        "content_and_size_preserved": true,
+        "errno": 1,
+        "errno_name": "EPERM",
+        "operation": "write_at_eof"
+      },
+      {
+        "after": {
+          "seals": 15,
+          "sha256": "b4167617b8a8c2239de97ad1185f4b8d979eebf6a286ed6b03deb4ddc76388ac",
+          "st_ctime_ns": 1794138228528985476,
+          "st_dev": 1,
+          "st_gid": 0,
+          "st_ino": 2048,
+          "st_mode": 33279,
+          "st_mtime_ns": 1794138228528985476,
+          "st_nlink": 0,
+          "st_size": 1088,
+          "st_uid": 0
+        },
+        "all_seals_preserved": true,
+        "before": {
+          "seals": 15,
+          "sha256": "b4167617b8a8c2239de97ad1185f4b8d979eebf6a286ed6b03deb4ddc76388ac",
+          "st_ctime_ns": 1794138228524985369,
+          "st_dev": 1,
+          "st_gid": 0,
+          "st_ino": 2048,
+          "st_mode": 33279,
+          "st_mtime_ns": 1794138228524985369,
+          "st_nlink": 0,
+          "st_size": 1088,
+          "st_uid": 0
+        },
+        "changed_fields": [
+          "st_ctime_ns",
+          "st_mtime_ns"
+        ],
+        "content_and_size_preserved": true,
+        "errno": 1,
+        "errno_name": "EPERM",
+        "operation": "pwrite_at_zero"
+      }
+    ],
+    "pid": 5,
+    "production_decoder_or_Session_executed": false,
+    "schema": "pocket4-memfd-denied-metadata-experiment-v1",
+    "uses_proc": false
+  },
+  "camera_video_verified": false,
+  "code_entrypoints_complete": false,
+  "expected_linux_test_count": 15,
+  "overall_passed": false,
+  "prior_actual_Ubuntu_CI": {
+    "actual_delayed_child_UNKNOWN_control_passed": true,
+    "commit": "5c5ea2665df03ab992ce62cc923eba9846a8d6ae",
+    "complete_real_decode_and_nonce_control_passed": true,
+    "exception": "RuntimeError: SAME_READONLY_SEALED_VIDEO_AND_HELD_ORIGINAL",
+    "failed": 1,
+    "failing_test": "test_all_seals_and_readonly_view_reject_writes_and_resizes",
+    "failure_point": "test line 158, final clip.verify()",
+    "job_id": 128718754655,
+    "observation_source": "root agent actual Ubuntu CI observation",
+    "passed": 14,
+    "run_id": 42476447626,
+    "skipped": 0,
+    "tests_run": 15
+  },
+  "prior_cloud_validation": {
+    "earlier_full_attempt": {
+      "errors": 11,
+      "failures": 0,
+      "observed_failure": "FileNotFoundError opening /proc/2/fd/<fd>; Python getpid had no matching proc directory",
+      "passed": false,
+      "skipped": 0,
+      "tests_run": 13
+    },
+    "pure_negative_controls_passed": 4,
+    "record": {
+      "bytes": 5483,
+      "path": "/workspace/scratch/347ef2dfe9ad/audio-runtime-independent-audit/camera-video-media-candidate/validation/local-controls.json",
+      "sha256": "110cd7b46b4f9eac6bc82e1f128f2cf8f4a812b1e7fc766fd1f4ac7b9ca4e45f"
+    },
+    "required_exact_getpid_proc_fd_directory_missing": true
+  },
+  "production_Session_instances": 0,
+  "production_sources_identical_to_r1": true,
+  "r2_full_Linux_controls_run_locally": 0,
+  "real_audio_calls": 0,
+  "runtime_qualified": false,
+  "schema": "pocket4-camera-video-component-local-validation-v2",
+  "sources_and_controls": [
+    {
+      "bytes": 6956,
+      "path": "source/camera_audio_challenge.py",
+      "sha256": "30b8560cf4f43e77e051e4915492ed18fe3c78e8b2a67527f4e14c02643dcd4c"
+    },
+    {
+      "bytes": 19407,
+      "path": "source/camera_video_decode.py",
+      "sha256": "e32afb4b8b81865adecde1e12ae03590ab93d907cd9b06dbfe213c89e54c45a1"
+    },
+    {
+      "bytes": 9300,
+      "path": "source/camera_video_media.py",
+      "sha256": "5ca96df91541c7a52f35cff5c36594d15e6a8c039dc4e66143a8cb3512b8063c"
+    },
+    {
+      "bytes": 21878,
+      "path": "source/camera_video_state.py",
+      "sha256": "8433cf30cb94c6a393757f80a2e5a4d3799338fc348fbda9d5084e960d967192"
+    },
+    {
+      "bytes": 22786,
+      "path": "tests/test_camera_video_decode.py",
+      "sha256": "530043ed8f00da2ea4dbd25649e007cc3a5abbaa1fc1f780fe8377389bfcd25c"
+    }
+  ],
+  "status": "r2_source_frozen_Ubuntu_CI_rerun_required"
+}

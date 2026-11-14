@@ -1,0 +1,734 @@
+{
+  "$defs": {
+    "completed_observation": {
+      "additionalProperties": false,
+      "properties": {
+        "authoritative_host_job_exit_code": {
+          "const": 0
+        },
+        "client_wait_timed_out": {
+          "const": false
+        },
+        "final_fd_set_unchanged": {
+          "const": true
+        },
+        "final_host_idle_checked": {
+          "const": true
+        },
+        "final_kernel_ECHILD": {
+          "const": true
+        },
+        "fixed_helper_uid1000_two_fd_attestation": {
+          "const": true
+        },
+        "hard_unit_constraints_read_back": {
+          "const": true
+        },
+        "host_job_output_complete": {
+          "const": true
+        },
+        "host_job_output_durable": {
+          "const": true
+        },
+        "host_job_terminal_publication_confirmed": {
+          "const": true
+        },
+        "host_tools": {
+          "additionalProperties": false,
+          "properties": {
+            "ffmpeg": {
+              "$ref": "#/$defs/receipt"
+            },
+            "ffprobe": {
+              "$ref": "#/$defs/receipt"
+            },
+            "python3": {
+              "$ref": "#/$defs/receipt"
+            }
+          },
+          "required": [
+            "ffmpeg",
+            "ffprobe",
+            "python3"
+          ],
+          "type": "object"
+        },
+        "original_unknown_outcome_preserved": {
+          "const": true
+        },
+        "owned_unit_gone_observed": {
+          "const": true
+        },
+        "per_decoder_in_process_uid_fd_attestation": {
+          "const": false
+        },
+        "private_receipts": {
+          "additionalProperties": false,
+          "properties": {
+            "host_job_request": {
+              "$ref": "#/$defs/receipt"
+            },
+            "host_job_terminal": {
+              "$ref": "#/$defs/receipt"
+            },
+            "launch_terminal": {
+              "$ref": "#/$defs/receipt"
+            },
+            "qualification": {
+              "$ref": "#/$defs/receipt"
+            },
+            "systemd_stderr": {
+              "$ref": "#/$defs/receipt"
+            },
+            "systemd_stdout": {
+              "$ref": "#/$defs/receipt"
+            }
+          },
+          "required": [
+            "qualification",
+            "launch_terminal",
+            "systemd_stdout",
+            "systemd_stderr",
+            "host_job_request",
+            "host_job_terminal"
+          ],
+          "type": "object"
+        },
+        "resources": {
+          "additionalProperties": false,
+          "properties": {
+            "affinity_cpu_count": {
+              "const": 1
+            },
+            "cpu_max_cores": {
+              "exclusiveMinimum": 0,
+              "maximum": 1,
+              "type": "number"
+            },
+            "kill_mode": {
+              "const": "control-group"
+            },
+            "memory_events_total": {
+              "const": 0
+            },
+            "memory_limit_bytes": {
+              "maximum": 536870912,
+              "minimum": 67108864,
+              "type": "integer"
+            },
+            "memory_peak_bytes": {
+              "maximum": 536870912,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "no_new_privileges": {
+              "const": true
+            },
+            "runtime_max_seconds": {
+              "const": 90
+            },
+            "same_cgroup_and_limits_throughout": {
+              "const": true
+            },
+            "start_timeout_seconds": {
+              "const": 10
+            },
+            "stop_timeout_seconds": {
+              "const": 10
+            },
+            "swap_current_bytes": {
+              "const": 0
+            },
+            "swap_events_total": {
+              "const": 0
+            },
+            "swap_limit_bytes": {
+              "const": 0
+            },
+            "swap_peak_bytes": {
+              "enum": [
+                null,
+                0
+              ]
+            },
+            "tasks_limit": {
+              "maximum": 128,
+              "minimum": 8,
+              "type": "integer"
+            },
+            "tasks_limit_events_total": {
+              "const": 0
+            },
+            "tasks_peak": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "maximum": 128,
+                  "minimum": 1,
+                  "type": "integer"
+                }
+              ]
+            }
+          },
+          "required": [
+            "cpu_max_cores",
+            "affinity_cpu_count",
+            "memory_limit_bytes",
+            "memory_peak_bytes",
+            "memory_events_total",
+            "swap_limit_bytes",
+            "swap_current_bytes",
+            "swap_peak_bytes",
+            "swap_events_total",
+            "tasks_limit",
+            "tasks_peak",
+            "tasks_limit_events_total",
+            "same_cgroup_and_limits_throughout",
+            "runtime_max_seconds",
+            "start_timeout_seconds",
+            "stop_timeout_seconds",
+            "kill_mode",
+            "no_new_privileges"
+          ],
+          "type": "object"
+        },
+        "runner_exit_code": {
+          "const": 0
+        },
+        "self_subreaper_restored": {
+          "const": true
+        },
+        "source_inputs_unchanged": {
+          "const": true
+        },
+        "stager_exit_code": {
+          "const": 0
+        },
+        "synthetic_input_files_removed": {
+          "const": true
+        },
+        "unchanged_production_decoder_calls": {
+          "const": 3
+        }
+      },
+      "required": [
+        "runner_exit_code",
+        "stager_exit_code",
+        "authoritative_host_job_exit_code",
+        "host_job_output_complete",
+        "host_job_output_durable",
+        "host_job_terminal_publication_confirmed",
+        "client_wait_timed_out",
+        "hard_unit_constraints_read_back",
+        "owned_unit_gone_observed",
+        "final_host_idle_checked",
+        "final_kernel_ECHILD",
+        "final_fd_set_unchanged",
+        "self_subreaper_restored",
+        "synthetic_input_files_removed",
+        "original_unknown_outcome_preserved",
+        "source_inputs_unchanged",
+        "unchanged_production_decoder_calls",
+        "fixed_helper_uid1000_two_fd_attestation",
+        "per_decoder_in_process_uid_fd_attestation",
+        "resources",
+        "host_tools",
+        "private_receipts"
+      ],
+      "type": "object"
+    },
+    "control_names": {
+      "const": [
+        "normal_decoder_and_fresh_nonce",
+        "uid1000_and_exact_two_fds",
+        "all_seals_and_denied_write_metadata",
+        "malformed_mov_known_failure",
+        "actual_timeout_and_owned_retirement",
+        "actual_output_bound_and_retirement",
+        "actual_adopted_descendant_retirement",
+        "actual_finish_fault_keeps_unknown"
+      ]
+    },
+    "receipt": {
+      "additionalProperties": false,
+      "properties": {
+        "bytes": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "bytes",
+        "sha256"
+      ],
+      "type": "object"
+    },
+    "unknown_observation": {
+      "additionalProperties": false,
+      "properties": {
+        "absence_proves_cancellation": {
+          "const": false
+        },
+        "formal_cancel": {
+          "additionalProperties": false,
+          "properties": {
+            "automatic_retry": {
+              "const": false
+            },
+            "outcome": {
+              "const": "unknown"
+            },
+            "receipt": {
+              "$ref": "#/$defs/receipt"
+            },
+            "result": {
+              "const": "cancel_unknown"
+            },
+            "status_authoritative": {
+              "const": false
+            },
+            "termination_confirmed": {
+              "const": false
+            }
+          },
+          "required": [
+            "result",
+            "outcome",
+            "status_authoritative",
+            "termination_confirmed",
+            "automatic_retry",
+            "receipt"
+          ],
+          "type": "object"
+        },
+        "late_launch_ruled_out": {
+          "const": false
+        },
+        "launch": {
+          "additionalProperties": false,
+          "properties": {
+            "automatic_retry": {
+              "const": false
+            },
+            "outcome": {
+              "const": "unknown"
+            },
+            "receipt": {
+              "$ref": "#/$defs/receipt"
+            },
+            "state": {
+              "const": "launch_unknown"
+            },
+            "status_authoritative": {
+              "const": false
+            }
+          },
+          "required": [
+            "state",
+            "outcome",
+            "status_authoritative",
+            "automatic_retry",
+            "receipt"
+          ],
+          "type": "object"
+        },
+        "new_key_relaunch_performed": {
+          "const": false
+        },
+        "original_job_terminal_proved": {
+          "const": false
+        },
+        "readonly_reconcile": {
+          "additionalProperties": false,
+          "properties": {
+            "mutations": {
+              "const": 0
+            },
+            "qualification_result_observed": {
+              "const": false
+            },
+            "qualifier_source_inspection_observed": {
+              "const": false
+            },
+            "receipt": {
+              "$ref": "#/$defs/receipt"
+            },
+            "root_exists": {
+              "const": false
+            },
+            "root_is_symlink": {
+              "const": false
+            },
+            "unit_active_state": {
+              "const": "inactive"
+            },
+            "unit_has_cgroup": {
+              "const": false
+            },
+            "unit_has_main_process": {
+              "const": false
+            },
+            "unit_load_state": {
+              "const": "not-found"
+            },
+            "unit_query_exit_code": {
+              "const": 0
+            },
+            "unit_sub_state": {
+              "const": "dead"
+            }
+          },
+          "required": [
+            "root_exists",
+            "root_is_symlink",
+            "unit_load_state",
+            "unit_active_state",
+            "unit_sub_state",
+            "unit_has_main_process",
+            "unit_has_cgroup",
+            "qualification_result_observed",
+            "mutations",
+            "unit_query_exit_code",
+            "receipt",
+            "qualifier_source_inspection_observed"
+          ],
+          "type": "object"
+        },
+        "same_key_reuse": {
+          "additionalProperties": false,
+          "properties": {
+            "automatic_retry": {
+              "const": false
+            },
+            "outcome": {
+              "const": "unknown"
+            },
+            "receipt": {
+              "$ref": "#/$defs/receipt"
+            },
+            "retried_launch": {
+              "const": false
+            },
+            "reused": {
+              "const": true
+            },
+            "state": {
+              "const": "status_unavailable"
+            },
+            "status_authoritative": {
+              "const": false
+            }
+          },
+          "required": [
+            "state",
+            "outcome",
+            "status_authoritative",
+            "automatic_retry",
+            "reused",
+            "retried_launch",
+            "receipt"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "launch",
+        "same_key_reuse",
+        "formal_cancel",
+        "readonly_reconcile",
+        "original_job_terminal_proved",
+        "absence_proves_cancellation",
+        "late_launch_ruled_out",
+        "new_key_relaunch_performed"
+      ],
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Shape and privacy allowlist only. Passing this schema does not prove execution; original private receipts must be checked before a qualified record is produced. An unknown observation is point-in-time and cannot prove cancellation or exclude a late launch.",
+  "oneOf": [
+    {
+      "properties": {
+        "actual_reaper_qualified": {
+          "const": false
+        },
+        "controls": {
+          "properties": {
+            "not_run": {
+              "$ref": "#/$defs/control_names"
+            },
+            "passed": {
+              "const": []
+            },
+            "passed_count": {
+              "const": 0
+            }
+          }
+        },
+        "execution_observation": {
+          "$ref": "#/$defs/unknown_observation"
+        },
+        "host_component_qualified": {
+          "const": false
+        },
+        "state": {
+          "const": "observed_launch_unknown_not_run"
+        }
+      }
+    },
+    {
+      "properties": {
+        "actual_reaper_qualified": {
+          "const": true
+        },
+        "controls": {
+          "properties": {
+            "not_run": {
+              "const": []
+            },
+            "passed": {
+              "$ref": "#/$defs/control_names"
+            },
+            "passed_count": {
+              "const": 8
+            }
+          }
+        },
+        "execution_observation": {
+          "$ref": "#/$defs/completed_observation"
+        },
+        "host_component_qualified": {
+          "const": true
+        },
+        "state": {
+          "const": "observed_completed_host_qualification"
+        }
+      }
+    }
+  ],
+  "properties": {
+    "Android_actions": {
+      "const": 0
+    },
+    "Main_actions": {
+      "const": 0
+    },
+    "actual_reaper_qualified": {
+      "type": "boolean"
+    },
+    "controls": {
+      "additionalProperties": false,
+      "properties": {
+        "expected": {
+          "$ref": "#/$defs/control_names"
+        },
+        "expected_count": {
+          "const": 8
+        },
+        "failed": {
+          "const": []
+        },
+        "not_run": {
+          "type": "array"
+        },
+        "passed": {
+          "type": "array"
+        },
+        "passed_count": {
+          "enum": [
+            0,
+            8
+          ]
+        },
+        "skipped": {
+          "const": []
+        }
+      },
+      "required": [
+        "expected_count",
+        "passed_count",
+        "expected",
+        "passed",
+        "failed",
+        "skipped",
+        "not_run"
+      ],
+      "type": "object"
+    },
+    "execution_observation": {
+      "type": "object"
+    },
+    "host_component_qualified": {
+      "type": "boolean"
+    },
+    "live_Session_admission_qualified": {
+      "const": false
+    },
+    "local_inspection": {
+      "additionalProperties": false,
+      "properties": {
+        "actual_host_controls_run": {
+          "const": 0
+        },
+        "fallback_used": {
+          "const": false
+        },
+        "inert_cleanup_controls_passed": {
+          "const": 4
+        },
+        "local_kernel_admission_passed": {
+          "const": false
+        },
+        "local_kernel_admission_refusal": {
+          "const": "ACTUAL_SELF_PID_AND_SINGLE_THREAD_PROC"
+        },
+        "receipt": {
+          "$ref": "#/$defs/receipt"
+        },
+        "source_inspection_exit_code": {
+          "const": 0
+        },
+        "source_inspection_passed": {
+          "const": true
+        }
+      },
+      "required": [
+        "source_inspection_passed",
+        "source_inspection_exit_code",
+        "actual_host_controls_run",
+        "inert_cleanup_controls_passed",
+        "local_kernel_admission_passed",
+        "local_kernel_admission_refusal",
+        "fallback_used",
+        "receipt"
+      ],
+      "type": "object"
+    },
+    "physical_audio_actions": {
+      "const": 0
+    },
+    "runtime_qualified": {
+      "const": false
+    },
+    "schema": {
+      "const": "pocket4-camera-r4-decoder-host-public-proof-v1"
+    },
+    "scope": {
+      "const": "synthetic_linux_owned_child_decoder_components"
+    },
+    "source_inputs": {
+      "additionalProperties": false,
+      "properties": {
+        "camera_audio_challenge.py": {
+          "const": {
+            "bytes": 6956,
+            "sha256": "30b8560cf4f43e77e051e4915492ed18fe3c78e8b2a67527f4e14c02643dcd4c"
+          }
+        },
+        "camera_decode.py": {
+          "const": {
+            "bytes": 14597,
+            "sha256": "7a42785a9d5d16fbc4644d0db961acd965b42f79dc9a75b2f101d88ab51574a4"
+          }
+        },
+        "camera_video_media.py": {
+          "const": {
+            "bytes": 9197,
+            "sha256": "58c5b6508fe23532fe4282c38446e75dfc25800ed6b063691da80bd431f74190"
+          }
+        },
+        "capture": {
+          "const": {
+            "bytes": 14933,
+            "sha256": "bb6d818cbe68b6976da57a996d17b6333cdf5dae03fa743fd0cb7f27f89c2bf3"
+          }
+        },
+        "commands": {
+          "const": {
+            "bytes": 12813,
+            "sha256": "cfe92077ebb75db4f7f0fd577fcd7e6d664afd9338128a05435512549ceeb1f3"
+          }
+        },
+        "control_packet": {
+          "const": {
+            "bytes": 2355,
+            "sha256": "21bf3adee748faad01e41b5f6eef47cd602391041658da77bf7cce7b722f2893"
+          }
+        },
+        "lifecycle": {
+          "const": {
+            "bytes": 25312,
+            "sha256": "6a0ba9438b10740a593e2d90962420e04868465a0fb55c0ce2e03afdb835e877"
+          }
+        },
+        "qualifier": {
+          "const": {
+            "bytes": 43675,
+            "sha256": "94a12172fccf7026f69a86788b60bb02ce0dc58703ad35dcf4c9c0bd674a46af"
+          }
+        },
+        "stager": {
+          "const": {
+            "bytes": 10896,
+            "sha256": "d30514804dea4f084c4911e553ca2c25c35137017dd5dc2bdfdabf70c572a505"
+          }
+        }
+      },
+      "required": [
+        "qualifier",
+        "control_packet",
+        "stager",
+        "camera_audio_challenge.py",
+        "camera_decode.py",
+        "camera_video_media.py",
+        "capture",
+        "commands",
+        "lifecycle"
+      ],
+      "type": "object"
+    },
+    "source_only_Session_fixture": {
+      "const": true
+    },
+    "state": {
+      "enum": [
+        "observed_launch_unknown_not_run",
+        "observed_completed_host_qualification"
+      ]
+    },
+    "synthetic_media_only": {
+      "const": true
+    },
+    "whole_app_business_accepted": {
+      "const": false
+    }
+  },
+  "required": [
+    "schema",
+    "scope",
+    "source_only_Session_fixture",
+    "synthetic_media_only",
+    "Main_actions",
+    "Android_actions",
+    "physical_audio_actions",
+    "live_Session_admission_qualified",
+    "runtime_qualified",
+    "whole_app_business_accepted",
+    "state",
+    "host_component_qualified",
+    "actual_reaper_qualified",
+    "source_inputs",
+    "local_inspection",
+    "controls",
+    "execution_observation"
+  ],
+  "title": "Pocket4 Camera r4 exact host component public evidence projection",
+  "type": "object"
+}

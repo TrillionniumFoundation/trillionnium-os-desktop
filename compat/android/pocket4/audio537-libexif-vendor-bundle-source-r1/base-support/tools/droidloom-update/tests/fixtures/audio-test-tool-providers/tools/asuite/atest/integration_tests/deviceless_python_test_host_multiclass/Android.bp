@@ -1,0 +1,12 @@
+python_test_host {
+    name: "deviceless_python_test_host_multiclass",
+    main: "python_unittest_with_multiple_classes.py",
+    srcs: [
+        "python_unittest_with_multiple_classes.py",
+    ],
+    test_config: "python_unittest_config_example.xml",
+    test_suites: ["general-tests"],
+    test_options: {
+        unit_test: false,
+    },
+}

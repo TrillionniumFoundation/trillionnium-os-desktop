@@ -1,0 +1,69 @@
+{
+  "Android_build_run": false,
+  "Rust_tests_rerun": false,
+  "all_source_bytes_and_modes_equal": true,
+  "application_order": [
+    "source-prerequisites/base-source.patch",
+    "source-prerequisites/native-prerequisite.patch",
+    "native-sparse-capacity/source.patch",
+    "integrated-builder/native-frozen-597.patch",
+    "native-transport-retry/source-transport-retry.patch",
+    "native-transport-retry/source-transport-retry-gnutls.patch"
+  ],
+  "base_git_tree": "e3a894768cbc93ed8bbec3e84c25528db3271781",
+  "execution_environment": "Independent Mac native Git replay",
+  "first_five_patches_not_repeated": true,
+  "inputs": [
+    {
+      "bytes": 3814733,
+      "path": "source-prerequisites/base-source.patch",
+      "sha256": "40ad41624358deb27ce67ea61d557e5ae5f672c19e2b0e805679caa71cf0c2aa"
+    },
+    {
+      "bytes": 1521824,
+      "path": "source-prerequisites/native-prerequisite.patch",
+      "sha256": "dc982097ea61682c6e586f3c6fc6e853ec4a10b5cb33ed6b8f1350e39624371a"
+    },
+    {
+      "bytes": 44658,
+      "path": "native-sparse-capacity/source.patch",
+      "sha256": "290eb43af731f9753759898d58bd648f44d2aea48ee08f64df7c0daf15da1a16"
+    },
+    {
+      "bytes": 776422,
+      "path": "integrated-builder/native-frozen-597.patch",
+      "sha256": "d29d8c02fdcc1ed8a3c56dda266f47b3bee88f7b7df30fd9f6879d7f5c48dbdd"
+    },
+    {
+      "bytes": 37070,
+      "path": "native-transport-retry/source-transport-retry.patch",
+      "sha256": "7ee9709916c57d0eb4bc26208a40d27bca3276905d525666774693a8731f5ab7"
+    },
+    {
+      "bytes": 4776,
+      "path": "native-transport-retry/source-transport-retry-gnutls.patch",
+      "sha256": "da92ba4b896c1daf5af3f24d2ef6fef500039f3b899521d58a168228a44194be"
+    }
+  ],
+  "previous_replay": {
+    "bytes": 1875,
+    "path": "compat/android/pocket4/closeout-20261107/build-source-repair-20261108/native-transport-retry/mac-replay-proof.json",
+    "repository_commit": "65f90697f3e10baf3464b00b1ef84f7063f9bcbc",
+    "result_git_tree": "e3a894768cbc93ed8bbec3e84c25528db3271781",
+    "sha256": "c15d1cb04a1428d81080d0ac66f243db8af67a8d7bae6b1d99d55eb63ffb1bd2",
+    "verified_current_replay_bytes_and_modes": true
+  },
+  "recorded_utc": "2026-11-08T13:14:16.501080+00:00",
+  "replayed_in_this_execution": [
+    "native-transport-retry/source-transport-retry-gnutls.patch"
+  ],
+  "result_files": 451,
+  "result_git_tree": "31d9c2d58cab931a5e914cb18df7b139a76e3f0b",
+  "runtime_qualified": false,
+  "schema": "pocket4-native-transport-independent-source-replay-v2",
+  "source_inventory": {
+    "bytes": 85665,
+    "sha256": "a33a5e3fe7e93f6d9cfbd8669ced7ead1de4de17adb3a71d8339ab3c1fe846ef"
+  },
+  "state": "ALL_PUBLIC_SOURCE_BYTES_AND_MODES_EQUAL"
+}

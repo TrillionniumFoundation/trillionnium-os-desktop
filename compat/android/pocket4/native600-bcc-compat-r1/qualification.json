@@ -1,0 +1,177 @@
+{
+  "schema": "pocket4-native600-bcc-source-qualification-v1",
+  "scope": "Source-only correction of the original bcc_compat provider selection",
+  "baseline": {
+    "commit": "fa3fa7496d9dd79a02bcd1445b1c49888aa493c4",
+    "tree": "95b5934af46dc560be0559d0b5b9edccc6133867"
+  },
+  "candidate": {
+    "host": "ai395",
+    "path": "/home/qq/work/pocket4-native600-renderscript-buildclosure-20261109-r1/source",
+    "commit": "68a334c93b4b42846cd2fe2ef23e46c7021149c0",
+    "tree": "4903434ccc65abcf26b569e155e643e538338b51",
+    "working_tree_clean": true
+  },
+  "patch": {
+    "filename": "native600-bcc-compat.patch",
+    "bytes": 5653,
+    "sha256": "41494b6a04b7c7da0e1e4d8046a18b6a01d6c2a50c15f9d08c3ae6ea4cfdc854"
+  },
+  "source_files": [
+    {
+      "path": "android/native-generation-pair/source-lock.json",
+      "before_bytes": 354415,
+      "before_sha256": "02fd330466357ecf744d85f27d23b03fabde46f31fae3ef69a5f6634e66e8837",
+      "after_bytes": 354443,
+      "after_sha256": "86a215da1fed2945feccebe7878b95fe507114de6e3b8ee0fa673e830d9a7aba"
+    },
+    {
+      "path": "tools/droidloom-update/src/native_generation_pair_build.rs",
+      "before_bytes": 423930,
+      "before_sha256": "52d7dabf9b34b9625f92fc7ecdf36cdc3dd575690a8990f778712995c4067cab",
+      "after_bytes": 426694,
+      "after_sha256": "30a67139ba814589bf2c671ecaf00d6314dac80b3d7ce9abf5969df41a0e4ace"
+    }
+  ],
+  "provider": {
+    "project": "platform/frameworks/compile/libbcc",
+    "path": "frameworks/compile/libbcc",
+    "commit": "943016fade3dbbb725c363d0dc60a6e962bd88e5",
+    "added_sparse_path": "tools/bcc_compat",
+    "source_url": "https://android.googlesource.com/platform/frameworks/compile/libbcc/+/943016fade3dbbb725c363d0dc60a6e962bd88e5/",
+    "original_blobs": [
+      {
+        "path": "tools/Android.bp",
+        "git_blob": "47614533e40c2374a7b578f30519392fcf90c37d",
+        "sha256": "c01fb11463a73c3a123c5df71bd731206d1743379e75946b4524731004f2a47a"
+      },
+      {
+        "path": "tools/bcc_compat/Android.bp",
+        "git_blob": "192d5760b3b48c6c9621c7ec5b88c6f45f690859",
+        "sha256": "ea4c4f94e63227e29e886ed6d7df7a51ca94b9a3e8c743f8d569d1db8f40086a"
+      },
+      {
+        "path": "tools/bcc_compat/Main.cpp",
+        "git_blob": "bc42a44d8f4bd7ae6c04bca924006af2cfed5fb6"
+      }
+    ],
+    "git_hash_object_matches_original_tree": true,
+    "replacement_stubs_added": false
+  },
+  "preserved_contract": {
+    "projects": 600,
+    "links": 8,
+    "unrestricted_repo_sync": false,
+    "targets": [
+      "libberberis_arm64",
+      "com.android.art"
+    ],
+    "allow_missing_dependencies": false,
+    "project_revisions_changed": 0,
+    "old_failed_lock_bytes_reconstructed_exactly": true
+  },
+  "validation": {
+    "focused_tests": {
+      "host": "ai395",
+      "job_id": "1a1bfca44f2-5e21-713",
+      "command": "TMPDIR=/home/qq/work/pocket4-native600-renderscript-buildclosure-20261109-r1/tmp /home/qq/.cargo/bin/cargo test --locked --offline --target-dir /home/qq/work/pocket4-native600-renderscript-buildclosure-20261109-r1/cargo-target -j 2 -p droidloom-update ordinary_pair",
+      "state": "succeeded",
+      "exit_code": 0,
+      "terminal_at_unix_ms": 1794219081163,
+      "output_complete": true,
+      "output_durable": true,
+      "stdout_bytes": 3340,
+      "stderr_bytes": 3087,
+      "actual_result": "test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 222 filtered out; finished in 2.97s",
+      "new_regression": "ordinary_pair_renderscript_provider_rejects_actual_r8_omission",
+      "existing_warning": "private_ART_conscrypt_fuzzer_scope_preserves_other_modules has a non_snake_case name"
+    },
+    "normal_tools": {
+      "job_id": "1a1bfcc301e-5e21-71e",
+      "command": "TMPDIR=<candidate>/tmp cargo build --locked --offline --target-dir <candidate>/cargo-target -j 2 -p droidloom-update -p droidloom-source",
+      "actual_result": "Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s",
+      "build_succeeded": true,
+      "enclosing_job_note": "The subsequent git commit in this job failed due to absent author identity; it does not invalidate the completed build and verify-lock phases. A later commit job supplied command-local ChatGPT identity and succeeded.",
+      "binaries": [
+        {
+          "name": "droidloom-source",
+          "sha256": "36ffee1f1462a020934abe3ac3a928fcb5060bc6bb2de8e35394219239ee404a"
+        },
+        {
+          "name": "droidloom-update",
+          "sha256": "4f459cf9fd21926872b00ac1c86d63f1987d263046678a6e3bc607de5d2319d7"
+        }
+      ]
+    },
+    "normal_verify_lock": {
+      "job_id": "1a1bfcc301e-5e21-71e",
+      "command": "<candidate>/cargo-target/debug/droidloom-source verify-lock --lock <candidate>/source/android/native-generation-pair/source-lock.json",
+      "actual_stdout": "verified 600 exact AOSP projects and 8 root links at superproject 28f0bbddc24d56c8ec5a8df5342ac7a292184039\n",
+      "succeeded": true
+    },
+    "git_diff_check_passed": true,
+    "commit_job_id": "1a1bfce1acf-5e21-726",
+    "identity_readback_job_id": "1a1bfd3b720-5e21-742"
+  },
+  "environment_recovery": [
+    {
+      "job_id": "1a1bfc7afc8-5e21-703",
+      "stage": "initial_offline_test",
+      "result": "Failed before tests: crates.io index did not contain drm-fourcc; project-pinned Rust 1.93.0 was installed by rustup."
+    },
+    {
+      "job_id": "1a1bfc8ec1e-5e21-707",
+      "stage": "locked_normal_dependency_fetch_and_test",
+      "result": "Locked dependencies were obtained; rustc then failed to create a directory in /tmp with ENOSPC (os error 28)."
+    },
+    {
+      "job_id": "1a1bfca44f2-5e21-713",
+      "stage": "candidate_owned_tmpdir",
+      "result": "Used candidate-owned tmp/ on the available source volume. No unrelated /tmp files were removed. All 28 focused tests passed."
+    }
+  ],
+  "prior_actual_failure": {
+    "host": "ai395",
+    "outer_job_id": "1a1bfa96ee5-5e21-63d",
+    "message": "development/build/Android.bp:119:1: \"deprecated-renderscript-tools\" depends on undefined module \"bcc_compat\".",
+    "inner_receipt": {
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r8/terminal.json",
+      "bytes": 62230,
+      "sha256": "95bad93f7a148ed8bed4fb6be83f5e4ad3892a893a589f6bd8d6d9c30ba40a68"
+    },
+    "outer_receipt": {
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/full-ai395-r8/outer-terminal.json",
+      "bytes": 13306,
+      "sha256": "3cd5e5ef39bb9289c7d7943625a27ed8cb0ca524f74eb1eda2522b2dd12e4158"
+    },
+    "state": "FAILED",
+    "owned_retirement_complete": true,
+    "source_projection_restored": true,
+    "input_after_qualified": true,
+    "upgraded_to_pass": false
+  },
+  "shared_source_observation": {
+    "host": "ai395",
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/.droidloom-source-manifest.json",
+    "bytes": 393148,
+    "sha256": "4ee249792aeb69aa4597611bb389e7c7978fe7665a4dd0f586653d5d3f96ffa0",
+    "unchanged": true,
+    "original_lock_inodes_modified": false
+  },
+  "limits": {
+    "normal_source_reconciliation_performed": false,
+    "full_native_build_performed": false,
+    "compiled_artifacts_qualified": false,
+    "android_runtime_qualified": false,
+    "production_ready": false,
+    "all_blockers_closed": false,
+    "requires_current_owner_adoption_before_shared_source_reconciliation": true
+  },
+  "adjacent_audio_issue": {
+    "native_sdk_commit": "0f07e8d60ab0aba46129e427101f96ba459a95c1",
+    "native_neuralnetworks_service_selected": true,
+    "native_sdk_includes_complete_36_cone": true,
+    "native_duplicate_api_path_change_not_required": true,
+    "explanation": "Native600 already selects the full SDK36 cone, including the two published system-server ondeviceintelligence API files missing from the separate Audio430 sparse selection."
+  }
+}

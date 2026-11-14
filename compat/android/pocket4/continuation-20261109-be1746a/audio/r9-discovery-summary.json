@@ -1,0 +1,62 @@
+{
+  "schema": "pocket4-r9-discovery-literal-defaults-observation-v1",
+  "started_at": "2026-11-09T08:30:58.843542+00:00",
+  "scope": "restored original Blueprints restricted to preserved r9 discovery list; not the live projected Soong graph",
+  "shared_source_writes": 0,
+  "full_builds": 0,
+  "graph_qualified": false,
+  "source_manifest_before": "62d52bea3c5230d8add2484d9e72ffcff8c279f8ac256eeb63320609630b75ad",
+  "discovery_sha256": "ed3590368c9dbe2cf79bb7f0456678b9965383e302166bc3249e71ba97ba7a2b",
+  "input_count": 8584,
+  "input_manifest_sha256": "7c564d6106b67bf3170db4df8acf701cab9f59a7df9dc0165e5936274de086d8",
+  "cpu_affinity": [
+    47
+  ],
+  "command": {
+    "argv": [
+      "/data/pocket4-audio-defaults-preflight-20261109-be1746a-r1/droidloom-blueprint-defaults",
+      "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source",
+      "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/.module_paths/Android.bp.list"
+    ],
+    "returncode": 2,
+    "child_reaped": true,
+    "stdout_sha256": "314cc1a3029c048d767b42f638c0e033bdbc7dd9caa130dbfcc0a4514963a8de",
+    "stderr": ""
+  },
+  "source_manifest_after": "62d52bea3c5230d8add2484d9e72ffcff8c279f8ac256eeb63320609630b75ad",
+  "source_projection_absent_after": true,
+  "changed_inputs": [],
+  "all_input_hashes_unchanged": true,
+  "manifest_unchanged": true,
+  "discovery_unchanged": true,
+  "summary": {
+    "schema": "droidloom-blueprint-literal-defaults-audit-v1",
+    "graph_qualified": false,
+    "coverage": "all listed modules; literal direct defaults only; no Soong namespace, variant or load-hook resolution",
+    "files": 8584,
+    "modules": 38043,
+    "literal_defaults_edges": 12053,
+    "duplicate_literal_names": 89
+  },
+  "unsupported_count": 4,
+  "consumer_source_commit": "6abefd291d50dee240ed2b22572d273175f070da",
+  "finished_at": "2026-11-09T08:31:05.323155+00:00",
+  "missing_default_candidate_count": 767,
+  "pasit_candidates": [
+    {
+      "file": "platform_testing/libraries/desktop-test-lib/tests/mobly/Android.bp",
+      "module": "DesktopTestLibTestsMobly",
+      "defaults": "PASIT-defaults",
+      "line": 21
+    }
+  ],
+  "consumer_binding": [
+    {
+      "path": "platform_testing/libraries/desktop-test-lib/tests/mobly/Android.bp",
+      "bytes": 1257,
+      "sha256": "bf1647bf57fab65f5ff2fa7a82b434bb909880f1e258edebf163f8dea48672f0"
+    }
+  ],
+  "unqualified_note": "Missing names are candidates, not established build failures: inputs are restored originals; namespace/variants/load hooks/includes outside the explicit list are not modeled.",
+  "full_receipt_sha256": "ea3aa585ee044c475f31e9d2d7f78138c6009845ec94b90d5f09d57c29de103b"
+}

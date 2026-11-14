@@ -1,0 +1,94 @@
+--- a/android/native-generation-pair/source-lock.json
++++ b/android/native-generation-pair/source-lock.json
+@@ -8433,7 +8433,8 @@
+         "bcinfo/include",
+         "bcinfo/libbcinfo.map",
+         "include",
+-        "lib"
++        "lib",
++        "tools/bcc_compat"
+       ]
+     },
+     {
+--- a/tools/droidloom-update/src/native_generation_pair_build.rs
++++ b/tools/droidloom-update/src/native_generation_pair_build.rs
+@@ -20,8 +20,8 @@
+ const ENGINE_BP_BYTES: usize = 25403;
+ const BASE_SOURCE_LOCK_SHA: &str = "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d";
+ const PAIR_SOURCE_LOCK: &str = "android/native-generation-pair/source-lock.json";
+-const SOURCE_LOCK_BYTES: usize = 354415;
+-const SOURCE_LOCK_SHA: &str = "02fd330466357ecf744d85f27d23b03fabde46f31fae3ef69a5f6634e66e8837";
++const SOURCE_LOCK_BYTES: usize = 354443;
++const SOURCE_LOCK_SHA: &str = "86a215da1fed2945feccebe7878b95fe507114de6e3b8ee0fa673e830d9a7aba";
+ // Exact original additions from frozen manifest SHA-256 02fd330466357ecf744d85f27d23b03fabde46f31fae3ef69a5f6634e66e8837.
+ // Closure qualification remains separate from this source attestation.
+ const PAIR_ADDITIONS_JSON: &str = r#"[
+@@ -4050,7 +4050,8 @@
+       "bcinfo/include",
+       "bcinfo/libbcinfo.map",
+       "include",
+-      "lib"
++      "lib",
++      "tools/bcc_compat"
+     ]
+   },
+   {
+@@ -8055,9 +8056,58 @@
+     }
+ 
+ 
++    // Reconstruct the actual r8 failed lock before adding the complete original
++    // bcc_compat implementation. This helper changes test data only.
++    fn remove_later_bcc_cone(value: &mut Value) {
++        let project = value["projects"].as_array_mut().unwrap().iter_mut()
++            .find(|p| p["path"] == "frameworks/compile/libbcc").unwrap();
++        let paths = project["sparse_paths"].as_array_mut().unwrap();
++        assert_eq!(paths.iter().filter(|p| *p == "tools/bcc_compat").count(), 1);
++        paths.retain(|p| p != "tools/bcc_compat");
++    }
++
++    #[test]
++    fn ordinary_pair_renderscript_bcc_requires_complete_original_input() {
++        let base: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
++        let good: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++        validate_source_extension(&base, &good).unwrap();
++        assert_eq!(good["projects"].as_array().unwrap().len(), 600);
++        let index = good["projects"].as_array().unwrap().iter()
++            .position(|p| p["path"] == "frameworks/compile/libbcc").unwrap();
++        assert_eq!(good["projects"][index]["commit"], "943016fade3dbbb725c363d0dc60a6e962bd88e5");
++        let mut actual_failed_r8 = good.clone();
++        remove_later_bcc_cone(&mut actual_failed_r8);
++        let failed_raw = format!("{}\n", serde_json::to_string_pretty(&actual_failed_r8).unwrap());
++        assert_eq!(failed_raw.len(), 354415);
++        assert_eq!(digest(failed_raw.as_bytes()), "02fd330466357ecf744d85f27d23b03fabde46f31fae3ef69a5f6634e66e8837");
++        let generic: droidloom_source::SparseSourceLock =
++            serde_json::from_value(actual_failed_r8.clone()).unwrap();
++        assert!(droidloom_source::build_plan(&generic).is_ok());
++        assert!(validate_source_extension(&base, &actual_failed_r8).is_err());
++        // Neither a Blueprint alone nor Main.cpp alone supplies the complete
++        // original provider and implementation selected by the real SDK host.
++        for suffix in ["Android.bp", "Main.cpp"] {
++            let mut partial = good.clone();
++            let paths = partial["projects"][index]["sparse_paths"].as_array_mut().unwrap();
++            paths.retain(|p| p != "tools/bcc_compat");
++            paths.push(json!(format!("tools/bcc_compat/{suffix}")));
++            assert!(validate_source_extension(&base, &partial).is_err());
++        }
++        let mut wrong_commit = good.clone();
++        wrong_commit["projects"][index]["commit"] = json!("0000000000000000000000000000000000000000");
++        assert!(validate_source_extension(&base, &wrong_commit).is_err());
++        let mut widened = good;
++        widened["projects"][index]["sparse_paths"].as_array_mut().unwrap().push(json!("tools"));
++        assert!(validate_source_extension(&base, &widened).is_err());
++        assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
++    }
++
+     // Keep each earlier failed lock's bytes exact after the r7 finite Tradefed
+     // input extension. This helper is only historical test reconstruction.
+     fn remove_later_tradefed_cones(value: &mut Value) {
++        remove_later_bcc_cone(value);
+         for (path, cone) in [
+             ("cts", "tools/cts-tradefed"),
+             ("cts", "tools/cts-v-host"),

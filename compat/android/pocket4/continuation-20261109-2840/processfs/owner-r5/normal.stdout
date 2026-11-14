@@ -1,0 +1,11 @@
+
+running 1 test
+test production_namespace::tree::tests::privileged_private_process_filesystem_controls ... private proc/devpts control: exact owned PID namespace with only PID1; read-only proc hidepid=invisible and mapped readproc GID; new devpts bounded1024 with mapped tty GID; relative private ptmx; exact-master TIOCGPTPEER and slave-to-master bytes; no host proc/pts bind; fd3 only; actual PID1 reap, live namespace close, DEV and loops retire, keeper reap; Android=0 production admission=false
+private proc/devpts negative: wrong_nonce; no-extra-FD fixed receiver rejected before ready; owned PID1, mounts, loops and keeper actually retired
+private proc/devpts negative: extra_fd; no-extra-FD fixed receiver rejected before ready; owned PID1, mounts, loops and keeper actually retired
+private proc/devpts negative: wrong_phase; no-extra-FD fixed receiver rejected before ready; owned PID1, mounts, loops and keeper actually retired
+private proc broker negative: wrong_context_fd; authenticated owned PID1 private DEV descriptor rejected before fsmount; context and mount custody closed after actual PID1 reap; DEV, loops and keeper actually retired
+ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 247 filtered out; finished in 30.20s
+

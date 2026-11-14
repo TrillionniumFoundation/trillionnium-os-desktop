@@ -1,0 +1,47 @@
+--- a/source-lock.json
++++ b/source-lock.json
+@@ -405,7 +405,11 @@
+         "tests/tests/telecom2",
+         "tests/tests/telecom3",
+         "tools/cts-dynamic-config",
+-        "tests/signature/lib/common"
++        "tests/signature/lib/common",
++        "tools/cts-tradefed/etc",
++        "tools/cts-tradefed/tests",
++        "tools/cts-v-host/etc",
++        "tools/cts-v-host/tests"
+       ]
+     },
+     {
+@@ -5028,7 +5032,8 @@
+         "java/test/settings",
+         "java/test/stress",
+         "java/test/utils",
+-        "java/utils/pigweed"
++        "java/utils/pigweed",
++        "java/test/chdts"
+       ]
+     },
+     {
+@@ -5803,7 +5808,10 @@
+         "executor",
+         "external",
+         "framework",
+-        "modules"
++        "modules",
++        "android/cts/Android.bp",
++        "android/cts/AndroidTest.xml",
++        "android/cts/runner"
+       ]
+     },
+     {
+@@ -9666,7 +9674,8 @@
+       "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+       "sparse_paths": [
+         "libvtswidevine",
+-        "vts_hal_hidl_target"
++        "vts_hal_hidl_target",
++        "tools/vts-core-tradefed"
+       ]
+     },
+     {

@@ -1,0 +1,195 @@
+{
+  "allocation_linux_controls_14": {
+    "errors": 0,
+    "failures": 0,
+    "result": {
+      "bytes": 9201,
+      "sha256": "c8fa128beeb45055f18f7bf15b659ac6c8dc8ebe7a7d47b684aea9b0c82492fe"
+    },
+    "skipped": 0,
+    "tests_run": 14
+  },
+  "capsule_generation": "public-capsule-recovery-r3",
+  "fresh_public_linux_replay": {
+    "all_owned_children_retired": true,
+    "errors": 0,
+    "failures": 0,
+    "result": {
+      "bytes": 114,
+      "sha256": "3e3bf8ff820663ec62e4ffda2e5feddbf82db9013d43719c28701cadfefe7542"
+    },
+    "skip_details": [],
+    "skipped": 0,
+    "successful": true,
+    "tests_run": 67
+  },
+  "full_r5": {
+    "actual_build_processes_seen": [
+      "ninja",
+      "soong_build",
+      "soong_ui"
+    ],
+    "all_owned_children_retired": true,
+    "allocation_observer_passed": true,
+    "allow_missing_dependencies": false,
+    "budget_after": {
+      "memory.events": "low 0\nhigh 349\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.high": "23622320128",
+      "memory.max": "25769803776",
+      "memory.peak": "23624699904",
+      "memory.swap.current": "0",
+      "memory.swap.max": "0"
+    },
+    "effective_inputs": {
+      "bytes": 23755,
+      "sha256": "023bdce771835ed57519f7b58140d0aa3051636b9ff54757b20952b75fec2f5d"
+    },
+    "first_actual_error": "error: packages/modules/RemoteKeyProvisioning/app/Android.bp:54:1: \"rkpd-sdk\" depends on undefined module \"com.android.rkpd\".",
+    "inner": {
+      "bytes": 62694,
+      "sha256": "fb968dc22834404f6243d5891d2e92bc386ac3d3694945bfa4ff108a5a5798fa"
+    },
+    "normal_stderr": {
+      "bytes": 527711,
+      "sha256": "7f0faacdd388ac9835fa6ce8f2cf6fa316259c20f135945e6a9374840ce7168a"
+    },
+    "normal_stdout": {
+      "bytes": 62371,
+      "sha256": "28d975514c626ff4b235286a518793bb64f2d54f7603fef555365693bc5739f4"
+    },
+    "normal_strict_graph_started": true,
+    "outer": {
+      "bytes": 13301,
+      "sha256": "78593abdf502e093c3b08b8737cf3c9ba607bf392956d760cfe36bb49d45ae42"
+    },
+    "owned_unit_retired": true,
+    "resource_gate_passed": true,
+    "source_after_qualified": true,
+    "source_projection_restored": true,
+    "state": "FAILED_RETIRED",
+    "strict_targets": [
+      "libberberis_arm64",
+      "com.android.art"
+    ]
+  },
+  "normal_recipe_commit": "a538dae77820882a534ee79e0eb6d2984508a712",
+  "normal_recipe_tree": "4c844ae9333731821c95fdf8f305f4a2d9150586",
+  "normal_source": {
+    "commands": 6,
+    "locks_released": true,
+    "original_blueprints": 297,
+    "project_count": 600,
+    "result": {
+      "bytes": 176535,
+      "sha256": "7b9becf66886ff7919ebce0ac59c76c3dab1068fec7ba8ac2f43f7245730d269"
+    },
+    "source_after_qualified": true
+  },
+  "normal_tools": {
+    "all_commands_retired": true,
+    "command_count": 23,
+    "normal_test_filters_overlap": true,
+    "normal_test_runs": {
+      "normal-ordinary-pair-tests": {
+        "failed": 0,
+        "ignored": 0,
+        "passed": 22
+      },
+      "normal-pair-producer-tests": {
+        "failed": 0,
+        "ignored": 0,
+        "passed": 14
+      },
+      "normal-source-tool-tests": {
+        "failed": 0,
+        "ignored": 0,
+        "passed": 26
+      }
+    },
+    "result": {
+      "bytes": 182905,
+      "sha256": "0d9c61028378ebc82806fcca981e5571382715824b335d39a00209b5519600d4"
+    }
+  },
+  "original_linux_controls_53": {
+    "errors": 0,
+    "failures": 0,
+    "result": {
+      "bytes": 10205,
+      "sha256": "3cd1f7fde2003cdf84c5ef8cb7483a9ea6a7ab18d41cb2481489a40cf81c77a2"
+    },
+    "skipped": 0,
+    "tests_run": 53
+  },
+  "portable_environment_limits": {
+    "additional_non_linux_allocation_skips": [
+      "test_owned_allocation.CompleteAllocationTests.test_real_du_two_complete_roots_hardlinks_and_no_external_symlink_walk",
+      "test_owned_allocation.CompleteAllocationTests.test_exact_real_gnu_disappearance_diagnostic_only_allows_retry",
+      "test_owned_allocation.CompleteAllocationTests.test_actual_failed_leaf_retains_stderr_argv_and_reap_evidence",
+      "test_owned_allocation.CompleteAllocationTests.test_disappearance_retry_still_requires_actual_complete_success",
+      "test_owned_allocation.CompleteAllocationTests.test_repeated_real_missing_paths_fail_after_exact_attempt_bound",
+      "test_owned_allocation.CompleteAllocationTests.test_real_timeout_kills_and_reaps_only_owned_leaf_and_records_timeout",
+      "test_owned_allocation.CompleteAllocationTests.test_real_checkpoint_failure_during_scan_retires_child_and_preserves_failure",
+      "test_owned_allocation.CompleteAllocationTests.test_nontransient_nonzero_error_is_not_retried_or_accepted",
+      "test_owned_allocation.CompleteAllocationTests.test_reaped_log_cannot_escape_the_final_byte_bound"
+    ],
+    "cloud_workspace_prior_skips": [
+      [
+        "test_ai395_build_support.AI395Controls.test_actual_failed_child_is_retired_without_success",
+        "requires actual Linux pidfd and own-children interfaces"
+      ],
+      [
+        "test_ai395_build_support.AI395Controls.test_actual_successful_child_is_observed_before_reap_and_retired",
+        "requires actual Linux pidfd and own-children interfaces"
+      ],
+      [
+        "test_ai395_build_support.AI395Controls.test_timeout_retires_actual_owned_process_group",
+        "requires actual Linux pidfd and own-children interfaces"
+      ],
+      [
+        "test_process_command_witness.CommandWitnessTests.test_actual_running_executable_requires_two_boundaries_and_matches_pin",
+        "readable Linux numeric procfs executable required"
+      ]
+    ],
+    "mac_execution_observed": false,
+    "mac_expected_skips": 13,
+    "skips_are_not_passes": true
+  },
+  "previous_full_r4": {
+    "artifact_qualified": false,
+    "inner": {
+      "bytes": 67469,
+      "sha256": "cd10c2072487441293aa6c3a39b9603d4bc3a7a208ea0283eb3919c0d19e0b9d"
+    },
+    "reason": "allocation observer failed; the historical observer did not preserve du stderr, so errno is unknown",
+    "state": "FAILED_RETIRED"
+  },
+  "qualification": {
+    "QPR1_compatibility": false,
+    "engine_ART_artifacts": false,
+    "normal_tools": true,
+    "production_runtime": false,
+    "source_inputs": true
+  },
+  "recovery": {
+    "AOSP_full_builds_started": 0,
+    "AOSP_sources_modified": false,
+    "fresh_from_exact_remote_receipts_and_git": true,
+    "old_unpublished_scratch_snapshot_recovered": false,
+    "original_git_transfer": {
+      "compressed": {
+        "bytes": 131349,
+        "sha256": "f6f490cdd970fcca40ef0e64d7966231dd80f1b4bbeebb977572c0a94c1563cd"
+      },
+      "normal_origin_receipt": {
+        "bytes": 6749,
+        "sha256": "22ddc6e500c5d92210906ae37c6732feba2e4e2ae8c4b4386e195be12e0dddfc"
+      },
+      "uncompressed": {
+        "bytes": 868985,
+        "sha256": "69b8e5d71b6ec8ac29dd625075d4858f3882091be17c2ab9a48eb006fd863189"
+      }
+    }
+  },
+  "schema": "native600-original-provider-validation-v2"
+}

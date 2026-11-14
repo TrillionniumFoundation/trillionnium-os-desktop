@@ -1,0 +1,1634 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 633e61f..03518da 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -710,6 +710,7 @@ dependencies = [
+  "droidloom-image",
+  "droidloom-mesa",
+  "droidloom-source",
++ "flate2",
+  "hex",
+  "libc",
+  "serde",
+diff --git a/tools/droidloom-update/Cargo.toml b/tools/droidloom-update/Cargo.toml
+index 9ce922f..31674b9 100644
+--- a/tools/droidloom-update/Cargo.toml
++++ b/tools/droidloom-update/Cargo.toml
+@@ -10,6 +10,7 @@ serde.workspace = true
+ serde_json.workspace = true
+ sha2.workspace = true
+ hex.workspace = true
++flate2.workspace = true
+ tempfile.workspace = true
+ libc.workspace = true
+ droidloom-source = { path = "../droidloom-source" }
+diff --git a/tools/droidloom-update/README.md b/tools/droidloom-update/README.md
+index 8d552b3..44f26f5 100644
+--- a/tools/droidloom-update/README.md
++++ b/tools/droidloom-update/README.md
+@@ -106,3 +106,65 @@ They exercise mixed ABI rejection, missing components, acceptance of compatible
+ byte changes and additional files,
+ architecture mismatch, source restoration and recovery, inherited build locks,
+ and filesystem rollback of both legacy and versioned installations.
++
++## Stage a vendor Audio APEX candidate
++
++The scoped staging command consumes a SHA256-pinned successful normal Audio
++full-build terminal. It copies only the exact complete
++`com.android.hardware.audio.droidloom.apex` under
++`payload/vendor/apex/` in a new caller-owned staging directory. It emits
++`CANDIDATE.json` with state `UNQUALIFIED_VENDOR_AUDIO_CANDIDATE`; it never
++calls the system image assembler or updates a running installation.
++
++```console
++droidloom-update audio-apex-stage-candidate \
++  --terminal /absolute/full-build/RESULT.json \
++  --terminal-sha256 <exact-terminal-sha256> \
++  --destination /absolute/trusted-parent/new-candidate
++```
++
++The destination parent must be a real caller-owned directory without group or
++other write access. Every ancestor is opened without following symlinks;
++retained directory descriptors anchor exclusive creation and are checked again
++before and after publication. An existing destination is never reused. Failed
++staging can leave a partial private directory, including a manifest written
++before a final synchronization or identity check failed. Consume a candidate
++only after the command exits successfully; inspect a failed attempt before
++choosing another new destination.
++
++The staged files are synchronized again after their final permissions are set.
++New directories are synchronized from deepest child through the stage root,
++then the existing parent. Final descriptor and pathname identity checks precede
++successful return.
++
++Inputs require the complete 430-project normal full-build terminal, exact
++success and retirement fields, the recorded normal command, and the output
++artifact's original path, file identity, byte length and SHA256. Source-only
++reconcile receipts cannot stand in for a full build. The file is copied and
++read back through the same held descriptor. The terminal's recorded input
++references remain attached to the candidate; this command does not contact the
++durable job service to independently authenticate its terminal.
++
++ZIP metadata inspection is bounded: a container is at most 256 MiB with 4–256
++members and a central directory at most 256 KiB; only stored and DEFLATE entries
++are accepted. Required metadata is at most 64 KiB per member. Duplicate or
++noncanonical names, inconsistent headers, overlapping members, incomplete or
++oversized DEFLATE streams and an unexpected package identity reject staging.
++The APEX payload must be stored, and compressed APEX containers are out of scope.
++The existing workspace `flate2` dependency and lock are reused.
++
++The declared target is the selected official QPR1 CP3A.260905.010 / 16176746
++system image. It is not copied or reverified by this command. No CP2A
++`system`, `system_ext`, `product`, ART, bionic, framework or Connectivity
++overrides are projected. A successful candidate does **not** qualify APEX
++container signing, payload AVB, the payload filesystem, compiled ELF imports,
++linker namespaces, VINTF matching, Audio HAL behavior, runtime audio or
++production readiness. All qualification and readiness fields remain false,
++even when a supplied terminal claims otherwise. These gates must run against
++the actual full artifact and the selected official base before activation.
++
++Focused staging controls can be run without Android compilation:
++
++```console
++cargo test --locked -j2 -p droidloom-update audio_vendor -- --test-threads=2
++```
+diff --git a/tools/droidloom-update/src/audio_vendor_candidate.rs b/tools/droidloom-update/src/audio_vendor_candidate.rs
+new file mode 100644
+index 0000000..d97f158
+--- /dev/null
++++ b/tools/droidloom-update/src/audio_vendor_candidate.rs
+@@ -0,0 +1,598 @@
++//! Stage one unqualified vendor Audio APEX without projecting old system files.
++use crate::util::Result;
++use serde::de::{self, MapAccess, SeqAccess, Visitor};
++use serde::{Deserialize, Deserializer};
++use serde_json::{Map, Number, Value, json};
++use sha2::{Digest, Sha256};
++use std::{
++    ffi::{CString, OsStr},
++    fmt,
++    fs::{self, File, Metadata, OpenOptions, Permissions},
++    io::{self, Read, Seek, SeekFrom, Write},
++    mem::MaybeUninit,
++    os::fd::{AsRawFd, FromRawFd, RawFd},
++    os::unix::{
++        ffi::OsStrExt,
++        fs::{MetadataExt, OpenOptionsExt, PermissionsExt},
++    },
++    path::{Component, Path},
++};
++
++const PACKAGE: &str = "com.android.hardware.audio.droidloom";
++const VENDOR_PATH: &str = "vendor/apex/com.android.hardware.audio.droidloom.apex";
++const MAX_TERMINAL: u64 = 4 * 1024 * 1024;
++const MAX_APEX: u64 = 256 * 1024 * 1024;
++
++fn need(condition: bool, message: &str) -> Result<()> {
++    if condition {
++        Ok(())
++    } else {
++        Err(message.into())
++    }
++}
++
++fn nanos(seconds: i64, fraction: i64) -> Result<i64> {
++    seconds
++        .checked_mul(1_000_000_000)
++        .and_then(|v| v.checked_add(fraction))
++        .ok_or_else(|| "file timestamp outside supported range".into())
++}
++
++fn file_identity(meta: &Metadata) -> Result<Value> {
++    Ok(json!([
++        meta.dev(),
++        meta.ino(),
++        meta.mode(),
++        meta.uid(),
++        meta.gid(),
++        meta.nlink(),
++        meta.len(),
++        nanos(meta.mtime(), meta.mtime_nsec())?,
++        nanos(meta.ctime(), meta.ctime_nsec())?
++    ]))
++}
++
++fn named_identity(st: &libc::stat) -> Result<Value> {
++    Ok(json!([
++        st.st_dev,
++        st.st_ino,
++        st.st_mode,
++        st.st_uid,
++        st.st_gid,
++        st.st_nlink,
++        st.st_size,
++        nanos(st.st_mtime, st.st_mtime_nsec)?,
++        nanos(st.st_ctime, st.st_ctime_nsec)?
++    ]))
++}
++
++fn c_name(name: &OsStr) -> Result<CString> {
++    Ok(CString::new(name.as_bytes())?)
++}
++
++fn open_at(parent: RawFd, name: &OsStr, flags: i32, mode: libc::mode_t) -> Result<File> {
++    let name = c_name(name)?;
++    // SAFETY: the CString is terminated and parent is retained by an owned File.
++    let fd = unsafe {
++        libc::openat(
++            parent,
++            name.as_ptr(),
++            flags | libc::O_CLOEXEC | libc::O_NOFOLLOW,
++            mode,
++        )
++    };
++    if fd < 0 {
++        return Err(io::Error::last_os_error().into());
++    }
++    // SAFETY: openat returned a new descriptor exclusively owned by this File.
++    Ok(unsafe { File::from_raw_fd(fd) })
++}
++
++fn stat_at(parent: RawFd, name: &OsStr) -> Result<libc::stat> {
++    let name = c_name(name)?;
++    let mut value = MaybeUninit::<libc::stat>::uninit();
++    // SAFETY: output storage is valid; the owned parent descriptor stays live.
++    let rc = unsafe {
++        libc::fstatat(
++            parent,
++            name.as_ptr(),
++            value.as_mut_ptr(),
++            libc::AT_SYMLINK_NOFOLLOW,
++        )
++    };
++    if rc != 0 {
++        return Err(io::Error::last_os_error().into());
++    }
++    // SAFETY: successful fstatat initialized the stat structure.
++    Ok(unsafe { value.assume_init() })
++}
++
++#[derive(Clone, Debug, PartialEq, Eq)]
++struct DirectoryIdentity(u64, u64, u32, u32, u32);
++impl DirectoryIdentity {
++    fn from_meta(meta: &Metadata) -> Self {
++        Self(meta.dev(), meta.ino(), meta.mode(), meta.uid(), meta.gid())
++    }
++    fn from_stat(st: &libc::stat) -> Self {
++        Self(st.st_dev, st.st_ino, st.st_mode, st.st_uid, st.st_gid)
++    }
++}
++
++struct HeldDirectory {
++    file: File,
++    parent: Option<usize>,
++    name: CString,
++    identity: DirectoryIdentity,
++}
++
++struct DirectoryChain(Vec<HeldDirectory>);
++impl DirectoryChain {
++    fn parent(destination: &Path) -> Result<Self> {
++        let root = OpenOptions::new()
++            .read(true)
++            .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW)
++            .open("/")?;
++        let root_meta = root.metadata()?;
++        let mut chain = Self(vec![HeldDirectory {
++            file: root,
++            parent: None,
++            name: CString::new("/")?,
++            identity: DirectoryIdentity::from_meta(&root_meta),
++        }]);
++        let parent = destination
++            .parent()
++            .ok_or("staging destination has no parent")?;
++        for component in parent.components() {
++            match component {
++                Component::RootDir => {}
++                Component::Normal(name) => {
++                    chain.retain(name, chain.0.len() - 1)?;
++                }
++                _ => return Err("noncanonical staging parent".into()),
++            }
++        }
++        let meta = chain.0.last().unwrap().file.metadata()?;
++        // SAFETY: geteuid has no memory or descriptor preconditions.
++        let uid = unsafe { libc::geteuid() };
++        need(
++            meta.uid() == uid && meta.mode() & 0o022 == 0,
++            "staging parent must be caller-owned and not group/other writable",
++        )?;
++        chain.verify()?;
++        Ok(chain)
++    }
++
++    fn retain(&mut self, name: &OsStr, parent: usize) -> Result<usize> {
++        let file = open_at(self.fd(parent), name, libc::O_RDONLY | libc::O_DIRECTORY, 0)?;
++        let meta = file.metadata()?;
++        need(meta.is_dir(), "not a directory")?;
++        self.0.push(HeldDirectory {
++            file,
++            parent: Some(parent),
++            name: c_name(name)?,
++            identity: DirectoryIdentity::from_meta(&meta),
++        });
++        Ok(self.0.len() - 1)
++    }
++
++    fn create(&mut self, name: &OsStr, parent: usize) -> Result<usize> {
++        let name_c = c_name(name)?;
++        // SAFETY: CString and retained parent are valid for the complete call.
++        if unsafe { libc::mkdirat(self.fd(parent), name_c.as_ptr(), 0o700) } != 0 {
++            return Err(io::Error::last_os_error().into());
++        }
++        let index = self.retain(name, parent)?;
++        let meta = self.0[index].file.metadata()?;
++        // SAFETY: geteuid has no memory or descriptor preconditions.
++        let uid = unsafe { libc::geteuid() };
++        need(
++            meta.uid() == uid && meta.mode() & 0o7777 == 0o700,
++            "new directory ownership or mode differs",
++        )?;
++        Ok(index)
++    }
++
++    fn fd(&self, index: usize) -> RawFd {
++        self.0[index].file.as_raw_fd()
++    }
++
++    fn verify(&self) -> Result<()> {
++        for held in &self.0 {
++            let actual = if let Some(parent) = held.parent {
++                DirectoryIdentity::from_stat(&stat_at(
++                    self.fd(parent),
++                    OsStr::from_bytes(held.name.as_bytes()),
++                )?)
++            } else {
++                DirectoryIdentity::from_meta(&fs::symlink_metadata("/")?)
++            };
++            need(
++                actual == held.identity
++                    && DirectoryIdentity::from_meta(&held.file.metadata()?) == held.identity,
++                "staging directory identity changed",
++            )?;
++        }
++        Ok(())
++    }
++}
++
++struct UniqueJson(Value);
++impl<'de> Deserialize<'de> for UniqueJson {
++    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> std::result::Result<Self, D::Error> {
++        struct UniqueVisitor;
++        impl<'de> Visitor<'de> for UniqueVisitor {
++            type Value = UniqueJson;
++            fn expecting(&self, out: &mut fmt::Formatter) -> fmt::Result {
++                out.write_str("JSON without duplicate object keys")
++            }
++            fn visit_bool<E: de::Error>(self, value: bool) -> std::result::Result<Self::Value, E> {
++                Ok(UniqueJson(json!(value)))
++            }
++            fn visit_i64<E: de::Error>(self, value: i64) -> std::result::Result<Self::Value, E> {
++                Ok(UniqueJson(json!(value)))
++            }
++            fn visit_u64<E: de::Error>(self, value: u64) -> std::result::Result<Self::Value, E> {
++                Ok(UniqueJson(json!(value)))
++            }
++            fn visit_f64<E: de::Error>(self, value: f64) -> std::result::Result<Self::Value, E> {
++                Number::from_f64(value)
++                    .map(|v| UniqueJson(Value::Number(v)))
++                    .ok_or_else(|| E::custom("nonfinite JSON number"))
++            }
++            fn visit_str<E: de::Error>(self, value: &str) -> std::result::Result<Self::Value, E> {
++                Ok(UniqueJson(json!(value)))
++            }
++            fn visit_string<E: de::Error>(
++                self,
++                value: String,
++            ) -> std::result::Result<Self::Value, E> {
++                Ok(UniqueJson(json!(value)))
++            }
++            fn visit_unit<E: de::Error>(self) -> std::result::Result<Self::Value, E> {
++                Ok(UniqueJson(Value::Null))
++            }
++            fn visit_none<E: de::Error>(self) -> std::result::Result<Self::Value, E> {
++                Ok(UniqueJson(Value::Null))
++            }
++            fn visit_seq<A: SeqAccess<'de>>(
++                self,
++                mut access: A,
++            ) -> std::result::Result<Self::Value, A::Error> {
++                let mut array = Vec::new();
++                while let Some(UniqueJson(value)) = access.next_element()? {
++                    array.push(value);
++                }
++                Ok(UniqueJson(Value::Array(array)))
++            }
++            fn visit_map<A: MapAccess<'de>>(
++                self,
++                mut access: A,
++            ) -> std::result::Result<Self::Value, A::Error> {
++                let mut object = Map::new();
++                while let Some(key) = access.next_key::<String>()? {
++                    if object.contains_key(&key) {
++                        return Err(de::Error::custom(format!("duplicate JSON key: {key}")));
++                    }
++                    let UniqueJson(value) = access.next_value()?;
++                    object.insert(key, value);
++                }
++                Ok(UniqueJson(Value::Object(object)))
++            }
++        }
++        deserializer.deserialize_any(UniqueVisitor)
++    }
++}
++
++fn sha_valid(value: &str) -> bool {
++    value.len() == 64
++        && value
++            .bytes()
++            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
++}
++
++fn read_terminal(path: &Path, expected: &str) -> Result<(Value, Value)> {
++    need(sha_valid(expected), "expected terminal digest required")?;
++    let mut file = OpenOptions::new()
++        .read(true)
++        .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
++        .open(path)?;
++    let before = file.metadata()?;
++    need(
++        before.is_file() && before.nlink() == 1 && before.len() > 0 && before.len() <= MAX_TERMINAL,
++        "invalid or oversized terminal file",
++    )?;
++    let identity = file_identity(&before)?;
++    let mut raw = Vec::with_capacity(before.len() as usize);
++    Read::by_ref(&mut file)
++        .take(before.len() + 1)
++        .read_to_end(&mut raw)?;
++    need(
++        raw.len() as u64 == before.len()
++            && file_identity(&file.metadata()?)? == identity
++            && file_identity(&fs::symlink_metadata(path)?)? == identity,
++        "terminal changed during read",
++    )?;
++    let hash = hex::encode(Sha256::digest(&raw));
++    need(hash == expected, "terminal SHA256 mismatch")?;
++    let UniqueJson(terminal) = serde_json::from_slice(&raw)?;
++    need(
++        terminal.is_object()
++            && terminal["schema"] == "pocket4-audio-desktop-normal-full-build-v1"
++            && terminal["state"] == "BUILT_PENDING_PAYLOAD_AND_COMPILED_QUALIFICATION",
++        "only the successful normal full-build terminal is accepted",
++    )?;
++    for key in [
++        "build_success",
++        "owned_retirement_complete",
++        "input_after_qualified",
++        "source_projection_restored",
++        "resource_gate_passed",
++        "owned_work_budget_passed",
++    ] {
++        need(
++            terminal[key].as_bool() == Some(true),
++            &format!("full terminal is missing exact true: {key}"),
++        )?;
++    }
++    need(
++        terminal["errors"] == json!([])
++            && terminal["signals"] == json!([])
++            && (terminal.get("pending_signals_at_commit").is_none()
++                || terminal["pending_signals_at_commit"] == json!([])),
++        "full terminal has errors or pending signals",
++    )?;
++    need(
++        terminal["source_project_count"].as_u64() == Some(430),
++        "unexpected source project closure",
++    )?;
++    let normal = &terminal["normal_build"];
++    need(
++        normal.is_object()
++            && normal["name"] == "normal-full-audio-apex"
++            && normal["owned_retirement_complete"].as_bool() == Some(true)
++            && normal["errors"] == json!([])
++            && normal["lifecycle"]["returncode"].as_i64() == Some(0),
++        "normal full command did not succeed",
++    )?;
++    let argv = terminal["argv"]
++        .as_array()
++        .ok_or("unexpected full build command")?;
++    need(
++        normal["argv"] == terminal["argv"],
++        "normal command and terminal argv differ",
++    )?;
++    need(
++        argv.len() == 7
++            && argv[1] == "--source"
++            && argv[3] == "-j6"
++            && argv[4] == "audio-apex-build"
++            && argv[5] == "--work",
++        "unexpected full build command",
++    )?;
++    need(
++        Path::new(argv[0].as_str().ok_or("missing update executable")?).file_name()
++            == Some(OsStr::new("droidloom-update")),
++        "unexpected full build executable",
++    )?;
++    let work = Path::new(argv[6].as_str().ok_or("missing build workspace")?);
++    let artifact = &terminal["whole_apex"];
++    let artifact_path = Path::new(
++        artifact["path"]
++            .as_str()
++            .ok_or("whole APEX reference absent")?,
++    );
++    need(
++        work.is_absolute()
++            && !work
++                .components()
++                .any(|v| matches!(v, Component::ParentDir | Component::CurDir))
++            && artifact_path
++                == work
++                    .join("android-audio-closure-out/target/product/droidloom_x86_64")
++                    .join(VENDOR_PATH),
++        "whole APEX is not the selected normal build output",
++    )?;
++    need(
++        artifact["bytes"]
++            .as_u64()
++            .is_some_and(|n| n > 0 && n <= MAX_APEX)
++            && artifact["sha256"].as_str().is_some_and(sha_valid)
++            && artifact["identity"]
++                .as_array()
++                .is_some_and(|v| v.len() == 9),
++        "invalid whole APEX frozen reference",
++    )?;
++    for name in [
++        "configuration",
++        "source_qualification",
++        "materialized_manifest_before",
++        "materialized_manifest_after",
++    ] {
++        let reference = &terminal[name];
++        let path = reference["path"]
++            .as_str()
++            .ok_or("full input reference is absent")?;
++        need(
++            Path::new(path).is_absolute()
++                && !Path::new(path)
++                    .components()
++                    .any(|v| matches!(v, Component::ParentDir | Component::CurDir))
++                && reference["bytes"].as_u64().is_some_and(|n| n > 0)
++                && reference["sha256"].as_str().is_some_and(sha_valid),
++            "invalid full input frozen reference",
++        )?;
++    }
++    let terminal_ref =
++        json!({"path": path, "bytes": raw.len(), "sha256": hash, "identity": identity});
++    Ok((terminal, terminal_ref))
++}
++
++/// Copy one normal-build artifact into a new, unqualified vendor-only candidate.
++pub fn stage(terminal: &Path, expected_sha256: &str, destination: &Path) -> Result<Value> {
++    stage_inner(terminal, expected_sha256, destination, |_| Ok(()))
++}
++
++fn stage_inner(
++    terminal_path: &Path,
++    expected_sha256: &str,
++    destination: &Path,
++    before_publish: impl FnOnce(&Path) -> Result<()>,
++) -> Result<Value> {
++    need(
++        destination.is_absolute()
++            && !destination
++                .components()
++                .any(|v| matches!(v, Component::ParentDir | Component::CurDir)),
++        "absolute canonical new staging path required",
++    )?;
++    match fs::symlink_metadata(destination) {
++        Ok(_) => return Err("staging destination already exists".into()),
++        Err(error) if error.kind() == io::ErrorKind::NotFound => {}
++        Err(error) => return Err(error.into()),
++    }
++    let (terminal, terminal_ref) = read_terminal(terminal_path, expected_sha256)?;
++    let artifact = &terminal["whole_apex"];
++    let source = Path::new(artifact["path"].as_str().unwrap());
++    let bytes = artifact["bytes"].as_u64().unwrap();
++    let expected_hash = artifact["sha256"].as_str().unwrap();
++    let mut chain = DirectoryChain::parent(destination)?;
++    let parent = chain.0.len() - 1;
++    let mut input = OpenOptions::new()
++        .read(true)
++        .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
++        .open(source)?;
++    let before = input.metadata()?;
++    need(
++        before.is_file()
++            && before.nlink() == 1
++            && before.len() == bytes
++            && file_identity(&before)? == artifact["identity"],
++        "source APEX identity changed",
++    )?;
++    let stage_dir = chain.create(
++        destination.file_name().ok_or("staging name missing")?,
++        parent,
++    )?;
++    let mut artifact_dir = stage_dir;
++    for name in ["payload", "vendor", "apex"] {
++        artifact_dir = chain.create(OsStr::new(name), artifact_dir)?;
++    }
++    let target_name = format!("{PACKAGE}.apex");
++    let mut output = open_at(
++        chain.fd(artifact_dir),
++        OsStr::new(&target_name),
++        libc::O_RDWR | libc::O_CREAT | libc::O_EXCL,
++        0o600,
++    )?;
++    let mut digest = Sha256::new();
++    let mut total = 0u64;
++    let mut buffer = vec![0u8; 1024 * 1024];
++    loop {
++        let limit = buffer.len().min((bytes - total + 1) as usize);
++        let read = input.read(&mut buffer[..limit])?;
++        if read == 0 {
++            break;
++        }
++        total += read as u64;
++        need(total <= bytes, "source APEX grew during copy")?;
++        digest.update(&buffer[..read]);
++        output.write_all(&buffer[..read])?;
++    }
++    output.sync_all()?;
++    let digest = hex::encode(digest.finalize());
++    need(
++        total == bytes && digest == expected_hash,
++        "source APEX content mismatch",
++    )?;
++    need(
++        file_identity(&input.metadata()?)? == artifact["identity"]
++            && file_identity(&fs::symlink_metadata(source)?)? == artifact["identity"],
++        "source APEX changed during copy",
++    )?;
++    output.set_permissions(Permissions::from_mode(0o400))?;
++    output.sync_all()?;
++    let target_identity = file_identity(&output.metadata()?)?;
++    output.seek(SeekFrom::Start(0))?;
++    let mut readback = Sha256::new();
++    let mut readback_bytes = 0u64;
++    loop {
++        let read = output.read(&mut buffer)?;
++        if read == 0 {
++            break;
++        }
++        readback_bytes += read as u64;
++        need(readback_bytes <= bytes, "staged APEX grew during readback")?;
++        readback.update(&buffer[..read]);
++    }
++    need(
++        readback_bytes == bytes && hex::encode(readback.finalize()) == digest,
++        "staged APEX byte readback differs",
++    )?;
++    let apex = crate::audio_vendor_zip::inspect(&mut output)?;
++    before_publish(destination)?;
++    chain.verify()?;
++    need(
++        file_identity(&output.metadata()?)? == target_identity
++            && named_identity(&stat_at(chain.fd(artifact_dir), OsStr::new(&target_name))?)?
++                == target_identity,
++        "staged APEX pathname or identity changed",
++    )?;
++    let report = json!({
++        "schema": "pocket4-qpr1-audio-vendor-candidate-v1", "state": "UNQUALIFIED_VENDOR_AUDIO_CANDIDATE",
++        "selected_official_base": {"build_id": "CP3A.260905.010", "build_number": "16176746",
++            "system_img_bytes": 2294853632u64,
++            "system_img_sha256": "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4"},
++        "base_image_reverified_by_this_tool": false, "normal_full_terminal": terminal_ref,
++        "normal_full_H_terminal_reverified_by_this_tool": false, "source_apex": artifact,
++        "recorded_normal_full_inputs": {
++            "argv": terminal["argv"], "configuration": terminal["configuration"],
++            "source_qualification": terminal["source_qualification"],
++            "materialized_manifest_before": terminal["materialized_manifest_before"],
++            "materialized_manifest_after": terminal["materialized_manifest_after"],
++            "referenced_input_files_reverified_by_this_tool": false,
++        },
++        "files": [{"path": VENDOR_PATH, "bytes": total, "sha256": digest, "staging_mode": "0400",
++            "intended_install_mode": "0644", "intended_install_uid": 0, "intended_install_gid": 0}],
++        "apex": apex, "system_overrides": [], "system_ext_overrides": [], "product_overrides": [],
++        "images_written": 0, "deployments": 0, "cell_actions": 0,
++        "complete_apex_qualified": false, "compiled_elf_qualified": false, "apex_signatures_qualified": false,
++        "vintf_qualified": false, "runtime_qualified": false, "production_ready": false,
++    });
++    let mut manifest = open_at(
++        chain.fd(stage_dir),
++        OsStr::new("CANDIDATE.json"),
++        libc::O_WRONLY | libc::O_CREAT | libc::O_EXCL,
++        0o600,
++    )?;
++    serde_json::to_writer_pretty(&mut manifest, &report)?;
++    manifest.write_all(b"\n")?;
++    manifest.sync_all()?;
++    manifest.set_permissions(Permissions::from_mode(0o400))?;
++    manifest.sync_all()?;
++    let manifest_identity = file_identity(&manifest.metadata()?)?;
++    chain.verify()?;
++    need(
++        named_identity(&stat_at(chain.fd(stage_dir), OsStr::new("CANDIDATE.json"))?)?
++            == manifest_identity,
++        "candidate manifest pathname replaced",
++    )?;
++    // Persist each newly created directory entry before its containing entry.
++    for held in chain.0[stage_dir..].iter().rev() {
++        held.file.sync_all()?;
++    }
++    chain.0[parent].file.sync_all()?;
++    chain.verify()?;
++    need(
++        file_identity(&output.metadata()?)? == target_identity
++            && named_identity(&stat_at(chain.fd(artifact_dir), OsStr::new(&target_name))?)?
++                == target_identity
++            && file_identity(&manifest.metadata()?)? == manifest_identity
++            && named_identity(&stat_at(chain.fd(stage_dir), OsStr::new("CANDIDATE.json"))?)?
++                == manifest_identity,
++        "staged files changed during durable publication",
++    )?;
++    Ok(report)
++}
++
++#[cfg(test)]
++mod tests;
+diff --git a/tools/droidloom-update/src/audio_vendor_candidate/tests.rs b/tools/droidloom-update/src/audio_vendor_candidate/tests.rs
+new file mode 100644
+index 0000000..226cb3e
+--- /dev/null
++++ b/tools/droidloom-update/src/audio_vendor_candidate/tests.rs
+@@ -0,0 +1,432 @@
++use super::*;
++use flate2::{Compression, write::DeflateEncoder};
++use std::os::unix::fs::symlink;
++use tempfile::TempDir;
++
++// Synthetic containers exercise packaging boundaries only. Their dummy payload
++// bytes must never acquire signature, filesystem, ABI or runtime qualification.
++struct Fixture {
++    root: TempDir,
++    apex: std::path::PathBuf,
++    terminal: std::path::PathBuf,
++    destination: std::path::PathBuf,
++    work: std::path::PathBuf,
++}
++
++fn crc(bytes: &[u8]) -> u32 {
++    let mut value = !0u32;
++    for &byte in bytes {
++        value ^= u32::from(byte);
++        for _ in 0..8 {
++            value = (value >> 1) ^ (0xedb88320 & 0u32.wrapping_sub(value & 1));
++        }
++    }
++    !value
++}
++
++fn short(raw: &mut Vec<u8>, value: u16) {
++    raw.extend_from_slice(&value.to_le_bytes());
++}
++fn word(raw: &mut Vec<u8>, value: u32) {
++    raw.extend_from_slice(&value.to_le_bytes());
++}
++
++fn archive(entries: &[(String, Vec<u8>, u16)]) -> Vec<u8> {
++    let mut raw = Vec::new();
++    let mut central = Vec::new();
++    for (name, data, method) in entries {
++        let compressed = if *method == 8 {
++            let mut encoder = DeflateEncoder::new(Vec::new(), Compression::default());
++            encoder.write_all(data).unwrap();
++            encoder.finish().unwrap()
++        } else {
++            data.clone()
++        };
++        let offset = raw.len() as u32;
++        word(&mut raw, 0x04034b50);
++        short(&mut raw, 20);
++        short(&mut raw, 0);
++        short(&mut raw, *method);
++        word(&mut raw, 0);
++        word(&mut raw, crc(data));
++        word(&mut raw, compressed.len() as u32);
++        word(&mut raw, data.len() as u32);
++        short(&mut raw, name.len() as u16);
++        short(&mut raw, 0);
++        raw.extend_from_slice(name.as_bytes());
++        raw.extend_from_slice(&compressed);
++        word(&mut central, 0x02014b50);
++        short(&mut central, 20);
++        short(&mut central, 20);
++        short(&mut central, 0);
++        short(&mut central, *method);
++        word(&mut central, 0);
++        word(&mut central, crc(data));
++        word(&mut central, compressed.len() as u32);
++        word(&mut central, data.len() as u32);
++        short(&mut central, name.len() as u16);
++        short(&mut central, 0);
++        short(&mut central, 0);
++        short(&mut central, 0);
++        short(&mut central, 0);
++        word(&mut central, 0);
++        word(&mut central, offset);
++        central.extend_from_slice(name.as_bytes());
++    }
++    let offset = raw.len() as u32;
++    let size = central.len() as u32;
++    raw.extend_from_slice(&central);
++    word(&mut raw, 0x06054b50);
++    short(&mut raw, 0);
++    short(&mut raw, 0);
++    short(&mut raw, entries.len() as u16);
++    short(&mut raw, entries.len() as u16);
++    word(&mut raw, size);
++    word(&mut raw, offset);
++    short(&mut raw, 0);
++    raw
++}
++
++fn entries(package: &str) -> Vec<(String, Vec<u8>, u16)> {
++    let mut protobuf = vec![10, package.len() as u8];
++    protobuf.extend_from_slice(package.as_bytes());
++    protobuf.extend_from_slice(&[16, 1]);
++    vec![
++        ("apex_manifest.pb".into(), protobuf, 0),
++        (
++            "apex_pubkey".into(),
++            b"synthetic-test-public-key".to_vec(),
++            0,
++        ),
++        (
++            "AndroidManifest.xml".into(),
++            b"synthetic-binary-xml".to_vec(),
++            0,
++        ),
++        (
++            "apex_payload.img".into(),
++            b"synthetic-unqualified-payload".to_vec(),
++            0,
++        ),
++    ]
++}
++
++impl Fixture {
++    fn new() -> Self {
++        let root = tempfile::tempdir().unwrap();
++        let work = root.path().join("work");
++        let apex = work
++            .join("android-audio-closure-out/target/product/droidloom_x86_64")
++            .join(VENDOR_PATH);
++        fs::create_dir_all(apex.parent().unwrap()).unwrap();
++        fs::write(&apex, archive(&entries(PACKAGE))).unwrap();
++        let terminal = root.path().join("terminal.json");
++        let destination = root.path().join("candidate");
++        Self {
++            root,
++            apex,
++            terminal,
++            destination,
++            work,
++        }
++    }
++
++    fn record(&self) -> Value {
++        let raw = fs::read(&self.apex).unwrap();
++        let argv = json!([
++            "/qualified/tools/droidloom-update",
++            "--source",
++            "/qualified/recipe",
++            "-j6",
++            "audio-apex-build",
++            "--work",
++            self.work
++        ]);
++        let input_ref = json!({"path": "/synthetic/non-authoritative/input.json", "bytes": 1,
++                              "sha256": "1".repeat(64)});
++        json!({"schema": "pocket4-audio-desktop-normal-full-build-v1",
++            "state": "BUILT_PENDING_PAYLOAD_AND_COMPILED_QUALIFICATION",
++            "build_success": true, "owned_retirement_complete": true, "input_after_qualified": true,
++            "source_projection_restored": true, "resource_gate_passed": true, "owned_work_budget_passed": true,
++            "errors": [], "signals": [], "source_project_count": 430,
++            "argv": argv,
++            "configuration": input_ref, "source_qualification": input_ref,
++            "materialized_manifest_before": input_ref, "materialized_manifest_after": input_ref,
++            "normal_build": {"name": "normal-full-audio-apex", "owned_retirement_complete": true,
++                "errors": [], "lifecycle": {"returncode": 0}, "argv": argv},
++            "whole_apex": {"path": self.apex, "bytes": raw.len(), "sha256": hex::encode(Sha256::digest(&raw)),
++                "identity": file_identity(&fs::metadata(&self.apex).unwrap()).unwrap()},
++            "complete_apex_qualified": true, "runtime_qualified": true, "production_ready": true})
++    }
++
++    fn freeze(&self, record: Value) -> String {
++        let raw = serde_json::to_vec(&record).unwrap();
++        fs::write(&self.terminal, &raw).unwrap();
++        hex::encode(Sha256::digest(&raw))
++    }
++
++    fn stage(&self) -> Result<Value> {
++        stage(
++            &self.terminal,
++            &self.freeze(self.record()),
++            &self.destination,
++        )
++    }
++    fn no_receipt(&self) {
++        assert!(!self.destination.join("CANDIDATE.json").exists());
++    }
++}
++
++#[test]
++fn stages_only_vendor_path_and_never_inherits_readiness_claims() {
++    let f = Fixture::new();
++    let result = f.stage().unwrap();
++    assert_eq!(
++        fs::read(f.destination.join("payload").join(VENDOR_PATH)).unwrap(),
++        fs::read(&f.apex).unwrap()
++    );
++    assert_eq!(fs::read_dir(&f.destination).unwrap().count(), 2);
++    assert_eq!(
++        fs::read_dir(f.destination.join("payload")).unwrap().count(),
++        1
++    );
++    assert_eq!(
++        fs::read_dir(f.destination.join("payload/vendor/apex"))
++            .unwrap()
++            .count(),
++        1
++    );
++    assert_eq!(result["state"], "UNQUALIFIED_VENDOR_AUDIO_CANDIDATE");
++    for key in [
++        "complete_apex_qualified",
++        "compiled_elf_qualified",
++        "apex_signatures_qualified",
++        "vintf_qualified",
++        "runtime_qualified",
++        "production_ready",
++    ] {
++        assert_eq!(result[key], false, "{key}");
++    }
++    for key in [
++        "system_overrides",
++        "system_ext_overrides",
++        "product_overrides",
++    ] {
++        assert_eq!(result[key], json!([]));
++    }
++    assert_eq!(
++        result["recorded_normal_full_inputs"]["configuration"],
++        f.record()["configuration"]
++    );
++    assert_eq!(
++        result["recorded_normal_full_inputs"]["referenced_input_files_reverified_by_this_tool"],
++        false
++    );
++}
++
++#[test]
++fn source_only_terminal_cannot_be_promoted_to_full_build() {
++    let f = Fixture::new();
++    let source = json!({"schema": "audio-original-sdk-normal-reconcile-v1",
++        "state": "SOURCE_RECONCILED_AND_NORMAL_VERIFIED", "source_materialization_verified": true,
++        "source_commit": "557bff5c84eef7eea9af4533ac7391e3ae676d0f", "builds_started": 0});
++    assert!(stage(&f.terminal, &f.freeze(source), &f.destination).is_err());
++    assert!(!f.destination.exists());
++}
++
++#[test]
++fn incorrect_terminal_digest_fails_before_creating_output() {
++    let f = Fixture::new();
++    f.freeze(f.record());
++    assert!(stage(&f.terminal, &"0".repeat(64), &f.destination).is_err());
++    assert!(!f.destination.exists());
++}
++
++#[test]
++fn rejects_invalid_success_exit_signal_command_and_input_references() {
++    for mode in 0..6 {
++        let f = Fixture::new();
++        let mut record = f.record();
++        match mode {
++            0 => record["build_success"] = json!(1),
++            1 => record["normal_build"]["lifecycle"]["returncode"] = json!(1),
++            2 => record["normal_build"]["lifecycle"]["returncode"] = json!(false),
++            3 => record["pending_signals_at_commit"] = json!([15]),
++            4 => record["normal_build"]["argv"][4] = json!("plan"),
++            _ => record["configuration"]["sha256"] = json!("not-a-frozen-input"),
++        }
++        assert!(stage(&f.terminal, &f.freeze(record), &f.destination).is_err());
++        assert!(!f.destination.exists());
++    }
++}
++
++#[test]
++fn rejects_system_projection_as_artifact_reference() {
++    let f = Fixture::new();
++    let mut record = f.record();
++    record["whole_apex"]["path"] = json!(f.root.path().join("system/apex/com.android.art.apex"));
++    assert!(stage(&f.terminal, &f.freeze(record), &f.destination).is_err());
++    assert!(!f.destination.exists());
++}
++
++#[test]
++fn source_inode_or_bytes_drift_fails_before_output_creation() {
++    let f = Fixture::new();
++    let digest = f.freeze(f.record());
++    OpenOptions::new()
++        .append(true)
++        .open(&f.apex)
++        .unwrap()
++        .write_all(b"changed")
++        .unwrap();
++    assert!(stage(&f.terminal, &digest, &f.destination).is_err());
++    assert!(!f.destination.exists());
++}
++
++#[test]
++fn rejects_source_hardlink_and_symlink() {
++    let f = Fixture::new();
++    let second = f.root.path().join("hardlink.apex");
++    fs::hard_link(&f.apex, &second).unwrap();
++    assert!(f.stage().is_err());
++    assert!(!f.destination.exists());
++    fs::remove_file(second).unwrap();
++    let digest = f.freeze(f.record());
++    let real = f.apex.with_extension("real");
++    fs::rename(&f.apex, &real).unwrap();
++    symlink(&real, &f.apex).unwrap();
++    assert!(stage(&f.terminal, &digest, &f.destination).is_err());
++    assert!(!f.destination.exists());
++}
++
++#[test]
++fn duplicate_terminal_json_keys_are_rejected() {
++    let f = Fixture::new();
++    f.freeze(f.record());
++    let raw = fs::read_to_string(&f.terminal).unwrap();
++    let replaced = format!("{{\"build_success\":false,{}", &raw[1..]);
++    fs::write(&f.terminal, &replaced).unwrap();
++    assert!(
++        stage(
++            &f.terminal,
++            &hex::encode(Sha256::digest(replaced.as_bytes())),
++            &f.destination
++        )
++        .is_err()
++    );
++    assert!(!f.destination.exists());
++}
++
++#[test]
++fn availability_alias_is_not_installed_package_identity() {
++    let f = Fixture::new();
++    fs::write(&f.apex, archive(&entries("com.android.hardware.audio"))).unwrap();
++    assert!(f.stage().is_err());
++    f.no_receipt();
++}
++
++#[test]
++fn duplicate_zip_members_do_not_publish_candidate() {
++    let f = Fixture::new();
++    let mut data = entries(PACKAGE);
++    data.push(data[0].clone());
++    fs::write(&f.apex, archive(&data)).unwrap();
++    assert!(f.stage().is_err());
++    f.no_receipt();
++}
++
++#[test]
++fn zip_traversal_never_writes_system_paths() {
++    let f = Fixture::new();
++    let mut data = entries(PACKAGE);
++    data.push(("../system/lib64/libbinder.so".into(), vec![1], 0));
++    fs::write(&f.apex, archive(&data)).unwrap();
++    assert!(f.stage().is_err());
++    f.no_receipt();
++    assert!(!f.destination.join("system").exists());
++}
++
++#[test]
++fn compressed_payload_is_not_accepted_as_the_apex_payload_format() {
++    let f = Fixture::new();
++    let mut data = entries(PACKAGE);
++    data[3].2 = 8;
++    fs::write(&f.apex, archive(&data)).unwrap();
++    assert!(f.stage().is_err());
++    f.no_receipt();
++}
++
++#[test]
++fn rejects_excessive_zip_directory_before_any_metadata_read() {
++    let f = Fixture::new();
++    let mut raw = fs::read(&f.apex).unwrap();
++    let end = raw.len() - 22;
++    raw[end + 8..end + 10].copy_from_slice(&5000u16.to_le_bytes());
++    raw[end + 10..end + 12].copy_from_slice(&5000u16.to_le_bytes());
++    fs::write(&f.apex, raw).unwrap();
++    assert!(f.stage().is_err());
++    f.no_receipt();
++}
++
++#[test]
++fn existing_destination_is_preserved() {
++    let f = Fixture::new();
++    fs::create_dir(&f.destination).unwrap();
++    let marker = f.destination.join("existing");
++    fs::write(&marker, b"keep").unwrap();
++    assert!(f.stage().is_err());
++    assert_eq!(fs::read(marker).unwrap(), b"keep");
++}
++
++#[test]
++fn ancestor_symlink_cannot_redirect_new_files() {
++    let f = Fixture::new();
++    let outside = f.root.path().join("outside");
++    fs::create_dir(&outside).unwrap();
++    let alias = f.root.path().join("alias");
++    symlink(&outside, &alias).unwrap();
++    assert!(stage(&f.terminal, &f.freeze(f.record()), &alias.join("candidate")).is_err());
++    assert_eq!(fs::read_dir(outside).unwrap().count(), 0);
++}
++
++#[test]
++fn writable_parent_is_not_a_trusted_staging_boundary() {
++    let f = Fixture::new();
++    let parent = f.root.path().join("unsafe");
++    fs::create_dir(&parent).unwrap();
++    fs::set_permissions(&parent, Permissions::from_mode(0o777)).unwrap();
++    assert!(
++        stage(
++            &f.terminal,
++            &f.freeze(f.record()),
++            &parent.join("candidate")
++        )
++        .is_err()
++    );
++    assert_eq!(fs::read_dir(parent).unwrap().count(), 0);
++}
++
++#[test]
++fn directory_replacement_is_detected_before_manifest_publication() {
++    let f = Fixture::new();
++    let moved = f.root.path().join("moved");
++    let result = stage_inner(&f.terminal, &f.freeze(f.record()), &f.destination, |path| {
++        fs::rename(path, &moved)?;
++        fs::create_dir(path)?;
++        Ok(())
++    });
++    assert!(result.is_err());
++    f.no_receipt();
++    assert!(!moved.join("CANDIDATE.json").exists());
++    assert_eq!(fs::read_dir(&f.destination).unwrap().count(), 0);
++}
++
++#[test]
++fn lzma_metadata_is_refused_without_creating_a_decoder() {
++    let f = Fixture::new();
++    let mut data = entries(PACKAGE);
++    data[0].2 = 14;
++    fs::write(&f.apex, archive(&data)).unwrap();
++    assert!(f.stage().is_err());
++    f.no_receipt();
++}
+diff --git a/tools/droidloom-update/src/audio_vendor_zip.rs b/tools/droidloom-update/src/audio_vendor_zip.rs
+new file mode 100644
+index 0000000..7eae95f
+--- /dev/null
++++ b/tools/droidloom-update/src/audio_vendor_zip.rs
+@@ -0,0 +1,443 @@
++//! Bounded read-only ZIP/APEX metadata inspection; no signature qualification.
++use crate::util::Result;
++use flate2::{Decompress, FlushDecompress, Status};
++use serde_json::{Map, Value, json};
++use sha2::{Digest, Sha256};
++use std::{
++    collections::BTreeSet,
++    fs::File,
++    io::{Read, Seek, SeekFrom},
++};
++
++const MAX_APEX: u64 = 256 * 1024 * 1024;
++const MAX_DIRECTORY: usize = 256 * 1024;
++const MAX_METADATA: usize = 64 * 1024;
++const PACKAGE: &str = "com.android.hardware.audio.droidloom";
++
++fn need(value: bool, message: &str) -> Result<()> {
++    if value { Ok(()) } else { Err(message.into()) }
++}
++fn u16_at(raw: &[u8], offset: usize) -> Result<u16> {
++    Ok(u16::from_le_bytes(
++        raw.get(offset..offset + 2)
++            .ok_or("truncated ZIP field")?
++            .try_into()?,
++    ))
++}
++fn u32_at(raw: &[u8], offset: usize) -> Result<u32> {
++    Ok(u32::from_le_bytes(
++        raw.get(offset..offset + 4)
++            .ok_or("truncated ZIP field")?
++            .try_into()?,
++    ))
++}
++fn read_at(file: &mut File, offset: u64, length: usize, file_bytes: u64) -> Result<Vec<u8>> {
++    need(
++        length <= MAX_DIRECTORY
++            && offset
++                .checked_add(length as u64)
++                .is_some_and(|n| n <= file_bytes),
++        "bounded ZIP read is outside the container",
++    )?;
++    let mut raw = vec![0u8; length];
++    file.seek(SeekFrom::Start(offset))?;
++    file.read_exact(&mut raw)?;
++    Ok(raw)
++}
++fn crc32(raw: &[u8]) -> u32 {
++    let mut crc = !0u32;
++    for &byte in raw {
++        crc ^= u32::from(byte);
++        for _ in 0..8 {
++            crc = (crc >> 1) ^ (0xedb88320 & 0u32.wrapping_sub(crc & 1));
++        }
++    }
++    !crc
++}
++
++#[derive(Debug)]
++struct Entry {
++    name: String,
++    flags: u16,
++    method: u16,
++    crc: u32,
++    compressed: u32,
++    bytes: u32,
++    local: u32,
++    data_offset: u64,
++}
++
++fn directory(file: &mut File) -> Result<Vec<Entry>> {
++    let bytes = file.metadata()?.len();
++    need(
++        (22..=MAX_APEX).contains(&bytes),
++        "APEX container size is outside the bounded format",
++    )?;
++    let tail_size = bytes.min(65557) as usize;
++    let tail = read_at(file, bytes - tail_size as u64, tail_size, bytes)?;
++    let end = tail
++        .windows(4)
++        .rposition(|v| v == b"PK\x05\x06")
++        .ok_or("APEX ZIP end record absent")?;
++    need(end + 22 <= tail.len(), "truncated ZIP end record")?;
++    let row = &tail[end..];
++    let count = u16_at(row, 10)? as usize;
++    let directory_bytes = u32_at(row, 12)? as usize;
++    let directory_offset = u32_at(row, 16)? as u64;
++    let end_offset = bytes - tail_size as u64 + end as u64;
++    need(
++        end + 22 + u16_at(row, 20)? as usize == tail.len()
++            && u16_at(row, 4)? == 0
++            && u16_at(row, 6)? == 0
++            && u16_at(row, 8)? as usize == count
++            && (4..=256).contains(&count)
++            && directory_bytes <= MAX_DIRECTORY
++            && directory_offset + directory_bytes as u64 == end_offset,
++        "unbounded or unsupported APEX ZIP directory",
++    )?;
++    let central = read_at(file, directory_offset, directory_bytes, bytes)?;
++    let mut offset = 0usize;
++    let mut names = BTreeSet::new();
++    let mut entries = Vec::with_capacity(count);
++    for _ in 0..count {
++        let header = central
++            .get(offset..offset + 46)
++            .ok_or("truncated central ZIP header")?;
++        need(
++            u32_at(header, 0)? == 0x02014b50,
++            "central ZIP signature differs",
++        )?;
++        let name_bytes = u16_at(header, 28)? as usize;
++        let extra = u16_at(header, 30)? as usize;
++        let comment = u16_at(header, 32)? as usize;
++        let next = offset
++            .checked_add(46 + name_bytes + extra + comment)
++            .ok_or("central ZIP length overflow")?;
++        need(
++            next <= central.len(),
++            "central ZIP record exceeds directory",
++        )?;
++        let name = std::str::from_utf8(&central[offset + 46..offset + 46 + name_bytes])?.to_owned();
++        need(
++            !name.is_empty()
++                && !name.starts_with('/')
++                && !name.contains('\\')
++                && !name.contains('\0')
++                && name
++                    .split('/')
++                    .all(|v| !v.is_empty() && v != "." && v != ".."),
++            "noncanonical APEX ZIP entry",
++        )?;
++        need(names.insert(name.clone()), "duplicate APEX ZIP entry")?;
++        let flags = u16_at(header, 8)?;
++        let method = u16_at(header, 10)?;
++        let kind = (u32_at(header, 38)? >> 16) & 0o170000;
++        need(
++            flags & !0x080e == 0 && u16_at(header, 34)? == 0 && (kind == 0 || kind == 0o100000),
++            "encrypted, nonregular or unsupported APEX ZIP entry",
++        )?;
++        need(
++            method == 0 || method == 8,
++            "unsupported APEX compression method",
++        )?;
++        let entry = Entry {
++            name,
++            flags,
++            method,
++            crc: u32_at(header, 16)?,
++            compressed: u32_at(header, 20)?,
++            bytes: u32_at(header, 24)?,
++            local: u32_at(header, 42)?,
++            data_offset: 0,
++        };
++        need(
++            u64::from(entry.compressed) <= MAX_APEX
++                && u64::from(entry.bytes) <= MAX_APEX
++                && u64::from(entry.local) < directory_offset,
++            "oversized or ZIP64 APEX entry",
++        )?;
++        if entry.method == 0 {
++            need(
++                entry.compressed == entry.bytes,
++                "stored ZIP entry size mismatch",
++            )?;
++        }
++        entries.push(entry);
++        offset = next;
++    }
++    need(
++        offset == central.len(),
++        "unparsed central ZIP directory bytes",
++    )?;
++    let mut intervals = Vec::with_capacity(entries.len());
++    for entry in &mut entries {
++        let header = read_at(file, u64::from(entry.local), 30, directory_offset)?;
++        need(
++            u32_at(&header, 0)? == 0x04034b50
++                && u16_at(&header, 6)? == entry.flags
++                && u16_at(&header, 8)? == entry.method,
++            "local and central ZIP header differ",
++        )?;
++        let name_bytes = u16_at(&header, 26)? as usize;
++        let extra = u16_at(&header, 28)? as usize;
++        let name = read_at(
++            file,
++            u64::from(entry.local) + 30,
++            name_bytes,
++            directory_offset,
++        )?;
++        need(
++            name == entry.name.as_bytes(),
++            "local and central ZIP name differ",
++        )?;
++        entry.data_offset = u64::from(entry.local) + 30 + name_bytes as u64 + extra as u64;
++        let mut data_end = entry.data_offset + u64::from(entry.compressed);
++        need(
++            data_end <= directory_offset,
++            "ZIP payload overlaps central directory",
++        )?;
++        for (index, expected) in [(14, entry.crc), (18, entry.compressed), (22, entry.bytes)] {
++            let local = u32_at(&header, index)?;
++            need(
++                local == expected || (entry.flags & 8 != 0 && local == 0),
++                "local ZIP size or CRC differs",
++            )?;
++        }
++        if entry.flags & 8 != 0 {
++            let descriptor = read_at(
++                file,
++                data_end,
++                (directory_offset - data_end).min(16) as usize,
++                directory_offset,
++            )?;
++            let start = if u32_at(&descriptor, 0)? == 0x08074b50 {
++                4
++            } else {
++                0
++            };
++            need(
++                u32_at(&descriptor, start)? == entry.crc
++                    && u32_at(&descriptor, start + 4)? == entry.compressed
++                    && u32_at(&descriptor, start + 8)? == entry.bytes,
++                "ZIP data descriptor differs",
++            )?;
++            data_end += (start + 12) as u64;
++        }
++        intervals.push((u64::from(entry.local), data_end));
++    }
++    intervals.sort_unstable();
++    for pair in intervals.windows(2) {
++        need(pair[0].1 <= pair[1].0, "overlapping ZIP entries")?;
++    }
++    Ok(entries)
++}
++
++fn decode_metadata(file: &mut File, entry: &Entry) -> Result<Vec<u8>> {
++    need(
++        entry.bytes > 0
++            && entry.bytes as usize <= MAX_METADATA
++            && entry.compressed as usize <= 2 * MAX_METADATA,
++        "invalid APEX metadata size",
++    )?;
++    let packed = read_at(
++        file,
++        entry.data_offset,
++        entry.compressed as usize,
++        file.metadata()?.len(),
++    )?;
++    let raw = if entry.method == 0 {
++        packed
++    } else {
++        let mut decoder = Decompress::new(false);
++        let mut output = vec![0; entry.bytes as usize + 1];
++        let status = decoder.decompress(&packed, &mut output, FlushDecompress::Finish)?;
++        need(
++            status == Status::StreamEnd
++                && decoder.total_in() == packed.len() as u64
++                && decoder.total_out() == u64::from(entry.bytes),
++            "incomplete or oversized DEFLATE metadata",
++        )?;
++        output.truncate(entry.bytes as usize);
++        output
++    };
++    need(
++        raw.len() == entry.bytes as usize && crc32(&raw) == entry.crc,
++        "APEX metadata CRC or length differs",
++    )?;
++    Ok(raw)
++}
++
++fn varint(raw: &[u8], offset: &mut usize) -> Result<u64> {
++    let mut result = 0u64;
++    for shift in (0..70).step_by(7) {
++        let byte = *raw.get(*offset).ok_or("truncated manifest varint")?;
++        *offset += 1;
++        need(shift < 63 || byte <= 1, "oversized manifest varint")?;
++        result |= u64::from(byte & 127) << shift;
++        if byte & 128 == 0 {
++            return Ok(result);
++        }
++    }
++    Err("oversized manifest varint".into())
++}
++
++fn apex_identity(raw: &[u8]) -> Result<Value> {
++    let mut offset = 0usize;
++    let mut name = None;
++    let mut version = None;
++    while offset < raw.len() {
++        let key = varint(raw, &mut offset)?;
++        let number = key >> 3;
++        let wire = key & 7;
++        need(
++            number > 0 && number < (1 << 29),
++            "invalid manifest field number",
++        )?;
++        let mut integer = None;
++        let mut data = None;
++        if wire == 0 {
++            integer = Some(varint(raw, &mut offset)?);
++        } else {
++            let bytes = match wire {
++                1 => 8usize,
++                5 => 4,
++                2 => usize::try_from(varint(raw, &mut offset)?)?,
++                _ => return Err("unsupported manifest wire type".into()),
++            };
++            let end = offset.checked_add(bytes).ok_or("manifest size overflow")?;
++            data = Some(raw.get(offset..end).ok_or("truncated manifest bytes")?);
++            offset = end;
++        }
++        match number {
++            1 => {
++                need(
++                    name.is_none() && wire == 2,
++                    "duplicate or invalid APEX name",
++                )?;
++                name = data;
++            }
++            2 => {
++                need(
++                    version.is_none() && wire == 0,
++                    "duplicate or invalid APEX version",
++                )?;
++                version = integer;
++            }
++            3 | 4 => need(
++                wire == 2 && data == Some(&[][..]),
++                "unexpected Audio APEX install hook",
++            )?,
++            _ => {}
++        }
++    }
++    need(
++        name == Some(PACKAGE.as_bytes()),
++        "APEX package identity differs",
++    )?;
++    let version = version.ok_or("APEX version absent")?;
++    need(
++        version > 0 && version <= i64::MAX as u64,
++        "invalid APEX version",
++    )?;
++    Ok(json!({"name": PACKAGE, "version": version}))
++}
++
++pub(super) fn inspect(file: &mut File) -> Result<Value> {
++    let entries = directory(file)?;
++    need(
++        !entries.iter().any(|v| v.name == "original_apex"),
++        "compressed APEX is outside the vendor staging contract",
++    )?;
++    let payload = entries
++        .iter()
++        .find(|v| v.name == "apex_payload.img")
++        .ok_or("APEX payload absent")?;
++    need(
++        payload.method == 0 && payload.bytes > 0,
++        "invalid APEX payload storage",
++    )?;
++    let mut metadata = Map::new();
++    let mut identity = None;
++    for name in ["apex_manifest.pb", "apex_pubkey", "AndroidManifest.xml"] {
++        let entry = entries
++            .iter()
++            .find(|v| v.name == name)
++            .ok_or("APEX metadata absent")?;
++        let raw = decode_metadata(file, entry)?;
++        metadata.insert(
++            name.to_owned(),
++            json!({"bytes": raw.len(), "sha256": hex::encode(Sha256::digest(&raw))}),
++        );
++        if name == "apex_manifest.pb" {
++            identity = Some(apex_identity(&raw)?);
++        }
++    }
++    Ok(
++        json!({"identity": identity.ok_or("APEX identity absent")?, "metadata": metadata,
++        "payload_declared_bytes": payload.bytes, "container_signature_verified": false,
++        "payload_avb_signature_verified": false, "payload_filesystem_verified": false}),
++    )
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use flate2::{Compression, write::DeflateEncoder};
++    use std::io::Write;
++
++    #[test]
++    fn crc32_known_reference_values() {
++        assert_eq!(crc32(b"123456789"), 0xcbf43926);
++        assert_eq!(crc32(b""), 0);
++    }
++
++    #[test]
++    fn bounded_deflate_requires_complete_single_stream_and_exact_length() {
++        let plain = b"real DEFLATE framing control";
++        let mut encoder = DeflateEncoder::new(Vec::new(), Compression::default());
++        encoder.write_all(plain).unwrap();
++        let packed = encoder.finish().unwrap();
++        let mut file = tempfile::tempfile().unwrap();
++        file.write_all(&packed).unwrap();
++        let entry = Entry {
++            name: "metadata".into(),
++            flags: 0,
++            method: 8,
++            crc: crc32(plain),
++            compressed: packed.len() as u32,
++            bytes: plain.len() as u32,
++            local: 0,
++            data_offset: 0,
++        };
++        assert_eq!(decode_metadata(&mut file, &entry).unwrap(), plain);
++        let mut bad = entry;
++        bad.bytes -= 1;
++        assert!(decode_metadata(&mut file, &bad).is_err());
++        bad.bytes += 1;
++        bad.compressed -= 1;
++        assert!(decode_metadata(&mut file, &bad).is_err());
++        bad.compressed += 2;
++        file.seek(SeekFrom::End(0)).unwrap();
++        file.write_all(&[0]).unwrap();
++        assert!(decode_metadata(&mut file, &bad).is_err());
++    }
++
++    #[test]
++    fn manifest_identity_rejects_duplicates_hooks_and_overflow() {
++        let mut plain = vec![10, PACKAGE.len() as u8];
++        plain.extend_from_slice(PACKAGE.as_bytes());
++        plain.extend_from_slice(&[16, 1]);
++        assert!(apex_identity(&plain).is_ok());
++        let mut duplicate = plain.clone();
++        duplicate.extend_from_slice(&[16, 2]);
++        assert!(apex_identity(&duplicate).is_err());
++        let mut hook = plain.clone();
++        hook.extend_from_slice(&[26, 1, b'x']);
++        assert!(apex_identity(&hook).is_err());
++        let mut overflow = vec![10, PACKAGE.len() as u8];
++        overflow.extend_from_slice(PACKAGE.as_bytes());
++        overflow.push(16);
++        overflow.extend_from_slice(&[255; 10]);
++        assert!(apex_identity(&overflow).is_err());
++    }
++}
+diff --git a/tools/droidloom-update/src/main.rs b/tools/droidloom-update/src/main.rs
+index df346dc..1757e9c 100644
+--- a/tools/droidloom-update/src/main.rs
++++ b/tools/droidloom-update/src/main.rs
+@@ -1,6 +1,8 @@
+ //! One complete, verified Droidloom build and activation transaction.
+ mod android;
+ mod assemble;
++mod audio_vendor_candidate;
++mod audio_vendor_zip;
+ mod bundle;
+ mod dependencies;
+ mod image_policy;
+@@ -89,6 +91,16 @@ enum Action {
+         #[arg(long)]
+         work: PathBuf,
+     },
++    /// Stage one unqualified vendor Audio APEX from a frozen successful full-build terminal.
++    /// Does not assemble system partitions, install artifacts, or start services.
++    AudioApexStageCandidate {
++        #[arg(long)]
++        terminal: PathBuf,
++        #[arg(long)]
++        terminal_sha256: String,
++        #[arg(long)]
++        destination: PathBuf,
++    },
+     /// Restore an interrupted source projection under the normal two workspace locks.
+     /// Does not compile, install, bootstrap dependencies, or start services.
+     RecoverSource {
+@@ -213,6 +225,18 @@ fn recover_source_workspace(work: &std::path::Path) -> Result<()> {
+ 
+ fn execute(args: Args) -> Result<()> {
+     match &args.command {
++        Some(Action::AudioApexStageCandidate {
++            terminal,
++            terminal_sha256,
++            destination,
++        }) => {
++            if args.source.is_some() || args.clean || args.build_only || args.bootstrapped || args.jobs.is_some() {
++                return fail("audio-apex-stage-candidate does not accept source, build, bootstrap or cleanup options");
++            }
++            let report = audio_vendor_candidate::stage(terminal, terminal_sha256, destination)?;
++            println!("{}", serde_json::to_string_pretty(&report)?);
++            return Ok(());
++        }
+         Some(Action::RecoverSource { work }) => {
+             if args.clean || args.build_only || args.jobs.is_some() {
+                 return fail("recover-source does not accept build or cleanup options");

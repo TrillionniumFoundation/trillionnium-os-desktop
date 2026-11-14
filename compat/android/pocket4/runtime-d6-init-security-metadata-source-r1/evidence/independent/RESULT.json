@@ -1,0 +1,265 @@
+{
+  "Android_starts": 0,
+  "Cargo_or_tests_repeated": false,
+  "ExecutionAdmission_constructible": false,
+  "actual_SELinux_transition_qualified": false,
+  "actual_commands": 26,
+  "actual_distinct_tests_passed": 9,
+  "actual_test_names": [
+    "production_mounts::runtime_assets::tests::held_init_rejects_foreign_architecture_and_overflowing_segments",
+    "production_mounts::runtime_assets::tests::runtime_init_capability_absence_rejects_present_empty_and_binary_values",
+    "production_mounts::runtime_assets::tests::runtime_init_metadata_cannot_be_supplied_by_user_attributes",
+    "production_mounts::runtime_assets::tests::runtime_init_xattr_follows_held_descriptor_after_path_replacement",
+    "production_mounts::runtime_assets::tests::runtime_init_xattr_read_errors_do_not_establish_absence",
+    "production_mounts::runtime_assets::tests::runtime_init_xattr_requires_complete_exact_bytes",
+    "production_mounts::runtime_assets::tests::runtime_inputs_reject_other_base_or_original_system",
+    "production_mounts::runtime_assets::tests::runtime_manifest_rejects_paths_aliases_and_lineage_substitution",
+    "production_mounts::runtime_assets::tests::runtime_schema_rejects_boolean_integer_and_unknown_authority_fields"
+  ],
+  "all430_F9_Gitblobs_modes_unchanged": true,
+  "all52_command_log_F9_and_whole_SHA256_verified": true,
+  "base": "b08cdd2c70c05463c3b4c892012f7426691c502b",
+  "boot_id": "14f92beb-43c6-4786-839e-b57307ae8048",
+  "cgroups_absent": [
+    "/sys/fs/cgroup/system.slice/hepta-runtime-job-1a1d722f93f-392-a00.service",
+    "/sys/fs/cgroup/system.slice/hepta-runtime-job-1a1d72a3008-392-a0b.service",
+    "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d722f93f-392-a00.service",
+    "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d72a3008-392-a0b.service",
+    "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-runtime-d6-init-metadata-completion-e2a3-r1.service",
+    "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-runtime-d6-init-metadata-normal-e2a3-r2.service"
+  ],
+  "completion_result": {
+    "bytes": 12219,
+    "identity": [
+      2067,
+      29236118,
+      33152,
+      1000,
+      1000,
+      1,
+      12219,
+      1794611232185515958,
+      1794611232185515958
+    ],
+    "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/completion-r1/RESULT.json",
+    "sha256": "da7c0274f376273d06c0767e42e924e4cc8b210d1cd856f692ca331793603082"
+  },
+  "durable_H_envelopes": {
+    "completion": {
+      "exit": {
+        "bytes": 502,
+        "identity": [
+          2050,
+          20057871,
+          33152,
+          1000,
+          1000,
+          1,
+          502,
+          1794611232307648846,
+          1794611232311188246
+        ],
+        "path": "/home/qian-qi/.local/state/hepta-runtime-mac-worker/jobs/1a1d72a3008-392-a0b/exit.json",
+        "sha256": "a7343be50145c99c9ec651a7303304c7e90c850e7ea0aac469a4d576b78c22ec"
+      },
+      "request": {
+        "bytes": 908,
+        "identity": [
+          2050,
+          20057862,
+          33152,
+          1000,
+          1000,
+          1,
+          908,
+          1794611229739499892,
+          1794611229739499892
+        ],
+        "path": "/home/qian-qi/.local/state/hepta-runtime-mac-worker/jobs/1a1d72a3008-392-a0b/request.json",
+        "sha256": "a7cfd7b108c7b1ce7034601f04647c9126be492b990ad56547ae1590b76b6d1e"
+      },
+      "started": {
+        "bytes": 330,
+        "identity": [
+          2050,
+          20057867,
+          33152,
+          1000,
+          1000,
+          1,
+          330,
+          1794611230066456756,
+          1794611230066456756
+        ],
+        "path": "/home/qian-qi/.local/state/hepta-runtime-mac-worker/jobs/1a1d72a3008-392-a0b/started.json",
+        "sha256": "7b0f8a911c0c6ad3127e767981e4a092b5cbd236a1c6c15db5054717aada7195"
+      }
+    },
+    "normal": {
+      "exit": {
+        "bytes": 502,
+        "identity": [
+          2050,
+          20057798,
+          33152,
+          1000,
+          1000,
+          1,
+          502,
+          1794610868759466912,
+          1794610868767097918
+        ],
+        "path": "/home/qian-qi/.local/state/hepta-runtime-mac-worker/jobs/1a1d722f93f-392-a00/exit.json",
+        "sha256": "f6b586772c32fd2d566343358d062eb074674cfc427bd57d7533483b60ce549a"
+      },
+      "request": {
+        "bytes": 905,
+        "identity": [
+          2050,
+          20057776,
+          33152,
+          1000,
+          1000,
+          1,
+          905,
+          1794610756704595016,
+          1794610756704595016
+        ],
+        "path": "/home/qian-qi/.local/state/hepta-runtime-mac-worker/jobs/1a1d722f93f-392-a00/request.json",
+        "sha256": "c56748ca3eb1c4b85d0c0f084111780f41dfede4c1595665cb93541fc2b10c89"
+      },
+      "started": {
+        "bytes": 330,
+        "identity": [
+          2050,
+          20057781,
+          33152,
+          1000,
+          1000,
+          1,
+          330,
+          1794610756864609097,
+          1794610756864609097
+        ],
+        "path": "/home/qian-qi/.local/state/hepta-runtime-mac-worker/jobs/1a1d722f93f-392-a00/started.json",
+        "sha256": "9aa9d0359886fee8bd743ef54345b001775e5f62691750dcebd47b67e834131b"
+      }
+    }
+  },
+  "errors": [],
+  "finished_ns": 1794611922381061557,
+  "fresh_single_link_0555_release_binaries": {
+    "droidloom-supervisor": {
+      "bytes": 2586680,
+      "identity": [
+        2067,
+        29236113,
+        33133,
+        1000,
+        1000,
+        1,
+        2586680,
+        1794611231640349462,
+        1794611231647208158
+      ],
+      "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/bin/droidloom-supervisor",
+      "sha256": "cb4d4ca5ff658cf2ca24e17ec100a45a889580751bbb0a0f0d4e1d2a2eea0dd1"
+    },
+    "droidloomd": {
+      "bytes": 2186224,
+      "identity": [
+        2067,
+        29236112,
+        33133,
+        1000,
+        1000,
+        1,
+        2186224,
+        1794611231599254224,
+        1794611231605209418
+      ],
+      "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/bin/droidloomd",
+      "sha256": "80bdbfa0fd25c14151e8499d7e2434da372e5a4448d3c01f486bff6ffb602b52"
+    }
+  },
+  "head": "7d86a66b8d95477781519cec99e53fd0e76b6f36",
+  "host_policy_writes": 0,
+  "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+  "memory_peak_bytes": 49917952,
+  "original_PIDs_fresh_ESRCH": [
+    3576377,
+    3576398,
+    3576400,
+    3576437,
+    3576460,
+    3576464,
+    3576465,
+    3576466,
+    3576467,
+    3576468,
+    3576469,
+    3576470,
+    3576471,
+    3576472,
+    3576473,
+    3576475,
+    3576477,
+    3576647,
+    3576666,
+    3576732,
+    3576773,
+    3580154,
+    3580155,
+    3580165,
+    3601801,
+    3601880,
+    3601884,
+    3601941,
+    3601942,
+    3601944,
+    3601950,
+    3601969
+  ],
+  "original_data_body_reads": 0,
+  "original_failed_normal_result_preserved": {
+    "bytes": 32860,
+    "identity": [
+      2067,
+      29236100,
+      33152,
+      1000,
+      1000,
+      1,
+      32860,
+      1794610868589293357,
+      1794610868589293357
+    ],
+    "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/qualification-normal-r1/RESULT.json",
+    "sha256": "4e1d303664c757bd2b06cc847e0da4b408d59640e6e55c23e9ba95853640700e"
+  },
+  "production_ready": false,
+  "public_packet_member_count_before_report": 101,
+  "reader_cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d734bd81-392-a1d.service",
+  "reader_pid": 3637258,
+  "runtime_qualified": false,
+  "schema": "runtime-d6-independent-composite-retirement-v1",
+  "source_after": {
+    "bytes": 195101,
+    "identity": [
+      2067,
+      29236122,
+      33152,
+      1000,
+      1000,
+      1,
+      195101,
+      1794611922165659323,
+      1794611922165659323
+    ],
+    "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/independent-retirement-r1/SOURCE-AFTER.json",
+    "sha256": "3ddfd052987b3799384955dc965a088b9616b1db96f524e435b06e8f3e4d3688"
+  },
+  "started_ns": 1794611921651605531,
+  "state": "NINE_ACTUAL_TESTS_TWO_FRESH_RELEASES_AND_430_SOURCE_FILES_INDEPENDENTLY_RETIRED",
+  "tree": "224fdc48b1083044cdce30a09ee4ec995a48c12d"
+}

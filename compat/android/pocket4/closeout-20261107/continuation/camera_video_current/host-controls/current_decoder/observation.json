@@ -1,0 +1,283 @@
+{
+  "H": {
+    "exit_code": 0,
+    "job_id": "1a1bc6f5208-138b0-274",
+    "launch_nonce": "95dae344823ac1364e56a583221117da",
+    "output_complete": true,
+    "output_durable": true,
+    "state": "succeeded",
+    "terminal_publication_confirmed": true,
+    "timed_out": false
+  },
+  "actual_Android_actions": 0,
+  "actual_Main_actions": 0,
+  "actual_audio_device_actions": 0,
+  "actual_display_qualified": false,
+  "canonical_host_root": "/home/alex/work/pocket4-android-final/qualification/camera-video-current-merged-20261108-8b88-r2",
+  "canonical_source_controls": {
+    "overlapping_state_controls_not_added_to_capsule_count": true,
+    "passed": true,
+    "python_version": "3.14.4",
+    "source_bytes_unchanged": true,
+    "tests_run": 38
+  },
+  "control_packet_sha256": "8e922c5d4ed20a9de41d4830837ab56229cffd22318d0726f8ac6500be61f3d9",
+  "controls": [
+    {
+      "elapsed_seconds": 0.5424726791679859,
+      "name": "normal_decoder_and_fresh_nonce",
+      "passed": true
+    },
+    {
+      "elapsed_seconds": 0.06249175895936787,
+      "name": "uid1000_and_exact_two_fds",
+      "passed": true
+    },
+    {
+      "elapsed_seconds": 0.061626873910427094,
+      "name": "all_seals_and_denied_write_metadata",
+      "passed": true
+    },
+    {
+      "elapsed_seconds": 0.07785258698277175,
+      "name": "malformed_mov_known_failure",
+      "passed": true
+    },
+    {
+      "elapsed_seconds": 0.2736525619402528,
+      "name": "actual_timeout_and_owned_retirement",
+      "passed": true
+    },
+    {
+      "elapsed_seconds": 0.05385907390154898,
+      "name": "actual_output_bound_and_retirement",
+      "passed": true
+    },
+    {
+      "elapsed_seconds": 0.3751912829466164,
+      "name": "actual_adopted_descendant_retirement",
+      "passed": true
+    },
+    {
+      "elapsed_seconds": 0.10343266208656132,
+      "name": "actual_finish_fault_keeps_unknown",
+      "passed": true
+    }
+  ],
+  "earlier_current_source_attempts": [
+    {
+      "attempt": "isolated r1",
+      "state": "failed before controls on unit-name admission; retired"
+    },
+    {
+      "attempt": "isolated r2",
+      "job_id": "1a1bc5c3157-138b0-1f4",
+      "qualification_sha256": "59e49e433000a2e15822914df77e5d7c15b7f4360fb51d6394d2e88c4bd7b78f",
+      "same_logical_eight_controls_not_additional_coverage": true,
+      "state": "eight passed; retired"
+    },
+    {
+      "attempt": "canonical r1",
+      "state": "29 source tests passed; state setup failed Python 3.14 ast.dump representation; no host unit started"
+    }
+  ],
+  "final_fd_set_unchanged": true,
+  "final_host_idle_checked": true,
+  "final_kernel_ECHILD": true,
+  "formal_preparation_created_and_source_inspected": true,
+  "host_component_qualified": true,
+  "live_Session_admission_qualified": false,
+  "no_memory_swap_or_pids_limit_events": true,
+  "owned_decoder_unit_after": {
+    "ActiveState": "inactive",
+    "ControlGroup": "",
+    "LoadState": "not-found",
+    "MainPID": "0",
+    "SubState": "dead"
+  },
+  "owned_decoder_unit_complete": true,
+  "owned_display_controls": {
+    "FD_set_unchanged": true,
+    "actual_UID1000_holder_credentials_checked": true,
+    "actual_display_qualified": false,
+    "actual_request_source_packet_and_owned_child_checked": true,
+    "cases": [
+      {
+        "actual_owned_actors": 3,
+        "case": "missing-terminal",
+        "outer_returncode": 4,
+        "passed": true
+      },
+      {
+        "actual_owned_actors": 3,
+        "case": "worker-exit-seven",
+        "outer_returncode": 4,
+        "passed": true
+      },
+      {
+        "actual_owned_actors": 3,
+        "case": "holder-lost",
+        "outer_returncode": 4,
+        "passed": true
+      },
+      {
+        "actual_owned_actors": 1,
+        "case": "wrong-physical-ready",
+        "outer_returncode": 4,
+        "passed": true
+      }
+    ],
+    "explicit_fixture_boundaries": [
+      "display protocol backend",
+      "independent display observation",
+      "source-only business child"
+    ],
+    "limits": {
+      "cpu.max": "50000 100000",
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "pids.max": "64"
+    },
+    "owned_unit_after": {
+      "ActiveState": "inactive",
+      "ControlGroup": "",
+      "LoadState": "not-found",
+      "MainPID": "0",
+      "SubState": "dead"
+    },
+    "passed": true,
+    "remaining_children": [],
+    "resource_after": {
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.peak": "35446784",
+      "memory.swap.current": "0"
+    }
+  },
+  "previous_host_qualification_transferred": false,
+  "prior_unknown_legacy_host_job": "Still lacks an authoritative terminal. This independent current-source execution does not relabel the old attempt.",
+  "production_source_changes": 0,
+  "raw_evidence": {
+    "decoder_qualification": {
+      "bytes": 18264,
+      "sha256": "16787707174712310782752387105a1f3de323b9df7b296fa7ce22271d83b5ac"
+    },
+    "decoder_terminal": {
+      "bytes": 1069,
+      "sha256": "2324cfabb56e199157e5c8215d8d01ebb4f52873060d4b3fba3139e0644aeda3"
+    },
+    "display_controls": {
+      "bytes": 55240,
+      "sha256": "150d07b1cb87200dd43bda2932d6349fcb79fb44da92a7fecd861de52cfaf6e5"
+    },
+    "display_terminal": {
+      "bytes": 1074,
+      "sha256": "832be4e31966e33ae49563c5b63a0c28fad4c3dd60a76e049bb7c5f7fc39d8b1"
+    },
+    "preparation": {
+      "bytes": 9271,
+      "sha256": "a6c00462565e55035339457f40b6209d696b3879307c27c7f4d2e669688bb40c"
+    },
+    "source_controls": {
+      "bytes": 15044,
+      "sha256": "db66db0f095a6f47a67196b13a54ba5ee437e6dea54df3dcf568523927f4296f"
+    },
+    "source_inspection": {
+      "bytes": 5141,
+      "sha256": "3af4fa155fdd352aa24dc8892b175aec1cd1ed90069ddfae818488d19961b268"
+    }
+  },
+  "raw_qualification": {
+    "bytes": 18264,
+    "sha256": "16787707174712310782752387105a1f3de323b9df7b296fa7ce22271d83b5ac"
+  },
+  "raw_result": {
+    "bytes": 2336,
+    "sha256": "c199c6f24502f5fffb2d2619b715d1744af38975fb185d0b0b86f562430e4da1"
+  },
+  "raw_terminal": {
+    "bytes": 1069,
+    "sha256": "2324cfabb56e199157e5c8215d8d01ebb4f52873060d4b3fba3139e0644aeda3"
+  },
+  "resource_final": {
+    "cgroup": "/system.slice/p4-camera-r4-decoder-host-canonical-8b88-20261108-r2.service",
+    "cpu_affinity": [
+      2
+    ],
+    "cpu_max": [
+      "100000",
+      "100000"
+    ],
+    "directory_identity": {
+      "device": 30,
+      "inode": 42729979
+    },
+    "finished_monotonic_ns": 1188499927739175,
+    "memory_current": 37330944,
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_max": 536870912,
+    "memory_peak": 51662848,
+    "started_monotonic_ns": 1188499927489285,
+    "swap_current": 0,
+    "swap_events": {
+      "fail": 0,
+      "high": 0,
+      "max": 0
+    },
+    "swap_max": 0,
+    "swap_peak": 0,
+    "tasks_current": 1,
+    "tasks_events": {
+      "max": 0
+    },
+    "tasks_max": 128,
+    "tasks_peak": 11
+  },
+  "runtime_qualified": false,
+  "schema": "pocket4-current-camera-canonical-host-observation-v2",
+  "source_files_unchanged": true,
+  "source_generation": "merged-current-20261108-8b88-r1",
+  "source_inputs": [
+    {
+      "bytes": 6956,
+      "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-current-merged-20261108-8b88-r2/source-bundle/source/camera_audio_challenge.py",
+      "sha256": "30b8560cf4f43e77e051e4915492ed18fe3c78e8b2a67527f4e14c02643dcd4c"
+    },
+    {
+      "bytes": 16169,
+      "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-current-merged-20261108-8b88-r2/source-bundle/source/camera_decode.py",
+      "sha256": "7421cdd38bd45eff8c0697ce11b1372958a4a5f749c8097e3c0203ed5758056b"
+    },
+    {
+      "bytes": 9197,
+      "path": "/home/alex/work/pocket4-android-final/qualification/camera-video-current-merged-20261108-8b88-r2/source-bundle/source/camera_video_media.py",
+      "sha256": "58c5b6508fe23532fe4282c38446e75dfc25800ed6b063691da80bd431f74190"
+    },
+    {
+      "bytes": 14933,
+      "path": "/home/alex/work/pocket4-android-final/qualification/bounded_host_capture.py",
+      "sha256": "bb6d818cbe68b6976da57a996d17b6333cdf5dae03fa743fd0cb7f27f89c2bf3"
+    },
+    {
+      "bytes": 12813,
+      "path": "/home/alex/work/pocket4-android-final/qualification/business-support-host-20261108-r1/business_commands.py",
+      "sha256": "cfe92077ebb75db4f7f0fd577fcd7e6d664afd9338128a05435512549ceeb1f3"
+    },
+    {
+      "bytes": 25312,
+      "path": "/home/alex/work/pocket4-android-final/framework/runtime_support/capture_lifecycle.py",
+      "sha256": "6a0ba9438b10740a593e2d90962420e04868465a0fb55c0ce2e03afdb835e877"
+    }
+  ],
+  "source_inventory_sha256": "28e61371c50638a3ac33d4e28b0466754bc2b81c9f5d015f262d43e60243dd00",
+  "state": "CURRENT_SOURCE38_DECODER8_DISPLAY4_AND_FORMAL_PREPARATION_PASSED",
+  "synthetic_input_files_removed": true,
+  "whole_app_business_accepted": false
+}

@@ -1,0 +1,20 @@
+# Insert into the independent Native job only. Set the external fixed inventory pin in the maintained workflow.
+- name: Verify complete715 Native source capsule and replay both full roots
+  shell: bash
+  run: |
+    set -euo pipefail
+    test -n "$NATIVE715_INVENTORY_SHA256"
+    test "$(sha256sum "$CAPSULE/FILES.sha256" | cut -d ' ' -f 1)" = "$NATIVE715_INVENTORY_SHA256"
+    (cd "$CAPSULE" && sha256sum --check FILES.sha256)
+    python3 -I -B "$CAPSULE/test_verifier.py"
+    python3 -I -B "$CAPSULE/verify.py" --inventory-sha256 "$NATIVE715_INVENTORY_SHA256" --output "$FRESH_ROOT/producer" --report "$FRESH_ROOT/replay.json"
+- name: Execute fresh92 Native controls and compile both current normal CLIs
+  shell: bash
+  run: |
+    set -euo pipefail
+    python3 -I -B "$CAPSULE/run-normal-controls.py" --inventory-sha256 "$NATIVE715_INVENTORY_SHA256" --workspace "$FRESH_ROOT/producer" --output "$FRESH_ROOT/normal"
+- name: Verify complete715 source after the current CI execution
+  shell: bash
+  run: |
+    set -euo pipefail
+    python3 -I -B "$CAPSULE/verify.py" --inventory-sha256 "$NATIVE715_INVENTORY_SHA256" --producer "$FRESH_ROOT/producer" --report "$FRESH_ROOT/source-after.json"

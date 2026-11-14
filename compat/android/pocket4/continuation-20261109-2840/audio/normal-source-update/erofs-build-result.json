@@ -1,0 +1,83 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "/bin/sh",
+        "/data/pocket4-audio-sdk-closure-20261109-2840-r1/test-erofs-1.9.4-r1/source/autogen.sh"
+      ],
+      "log": {
+        "bytes": 1042,
+        "path": "/data/pocket4-audio-sdk-closure-20261109-2840-r1/test-erofs-1.9.4-r1/build-r1/autogen.log",
+        "sha256": "5ebee6bbda9f8d872b6e9fdb0f4ad6be925c2d0b9cc476dd912ddbf3cfbf350d"
+      },
+      "name": "autogen",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/bin/sh",
+        "/data/pocket4-audio-sdk-closure-20261109-2840-r1/test-erofs-1.9.4-r1/source/configure",
+        "--prefix=/data/pocket4-audio-sdk-closure-20261109-2840-r1/test-erofs-1.9.4-r1/install",
+        "--enable-lz4",
+        "--enable-multithreading",
+        "--disable-fuse"
+      ],
+      "log": {
+        "bytes": 8500,
+        "path": "/data/pocket4-audio-sdk-closure-20261109-2840-r1/test-erofs-1.9.4-r1/build-r1/configure.log",
+        "sha256": "7e137e62af5b8cc28210b9a811f8934450f7ccc8a057cd9bc337ca638b093cb1"
+      },
+      "name": "configure",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/usr/bin/make",
+        "-j2"
+      ],
+      "log": {
+        "bytes": 73555,
+        "path": "/data/pocket4-audio-sdk-closure-20261109-2840-r1/test-erofs-1.9.4-r1/build-r1/build.log",
+        "sha256": "19b6edd8f21fa81cf18e59e1bc9639aec69ae245a3daf39e763f91f23d076277"
+      },
+      "name": "build",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/usr/bin/make",
+        "install"
+      ],
+      "log": {
+        "bytes": 6329,
+        "path": "/data/pocket4-audio-sdk-closure-20261109-2840-r1/test-erofs-1.9.4-r1/build-r1/install.log",
+        "sha256": "387f2844b0c396cb6c1645c2057067f16727970d15c76f37fb8b824435225ea2"
+      },
+      "name": "install",
+      "returncode": 0
+    }
+  ],
+  "finished_utc": "2026-11-09T14:58:00Z",
+  "inputs": {
+    "bytes": 988,
+    "path": "/data/pocket4-audio-sdk-closure-20261109-2840-r1/test-erofs-1.9.4-r1/INPUTS.json",
+    "sha256": "fbe5ccc68fa5d0cf18e12aa3e752e41516224355f8c3b8e3762974205a74986c"
+  },
+  "source_commit": "f36cadb5c563995ab3aa8572a60ed6b721b9557d",
+  "source_tree": "463eb9202deaf0468ddc13d77671b91c01aab9b9",
+  "started_utc": "2026-11-09T14:57:33Z",
+  "state": "OFFICIAL_EROFS_TOOLS_BUILT_AND_FEATURE_CHECKED",
+  "system_packages_modified": false,
+  "tools": {
+    "fsck.erofs": {
+      "bytes": 1010176,
+      "path": "/data/pocket4-audio-sdk-closure-20261109-2840-r1/test-erofs-1.9.4-r1/install/bin/fsck.erofs",
+      "sha256": "99ba6ea2ebb6ff6daab298f01a428dd63f5a34d4e4adf53c29b029e19d01bfac"
+    },
+    "mkfs.erofs": {
+      "bytes": 1136512,
+      "path": "/data/pocket4-audio-sdk-closure-20261109-2840-r1/test-erofs-1.9.4-r1/install/bin/mkfs.erofs",
+      "sha256": "8b7b98cde4aa5a4a1d6872f4bf086a6c1a20dceeb5398c95cd5bc5220f6e79ed"
+    }
+  }
+}

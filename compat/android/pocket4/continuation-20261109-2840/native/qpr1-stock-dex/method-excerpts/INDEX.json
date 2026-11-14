@@ -1,0 +1,1152 @@
+{
+  "input_hashes_all_equal": true,
+  "input_pins_rechecked": [
+    {
+      "bytes": 49754098,
+      "path": "inputs/framework.jar",
+      "sha256": "bc8a175a95dcb50b5ae62a03a0ec2ba0fdea34169f83b2aab3c8bf2790707587"
+    },
+    {
+      "bytes": 25716529,
+      "path": "inputs/services.jar",
+      "sha256": "bc5d11f4f09ec079c5804a01008e8317a0854231502550acaff89aa9f1083a86"
+    },
+    {
+      "bytes": 5609,
+      "path": "inputs/system-build.prop",
+      "sha256": "810fc1db84f7ae7574598a02496610e0b808c9f495fed61fe4b180662f549fac"
+    },
+    {
+      "bytes": 735560,
+      "path": "inputs/boot-framework.vdex",
+      "sha256": "bd2f35b4a6d315b17e407c9f48e8034c2968e5a155e0a90e5fa7e115c3b9fcd4"
+    },
+    {
+      "bytes": 9786660,
+      "path": "dex/framework/classes.dex",
+      "sha256": "9a9c825acf649a9958443a261c6be290b8fd14a06144e516507f9262423dc4d5"
+    },
+    {
+      "bytes": 9045764,
+      "path": "dex/framework/classes2.dex",
+      "sha256": "4837d598edfd574676dfc96535ff4bdb9130576944e5cc0a5e013729aeed408d"
+    },
+    {
+      "bytes": 9652048,
+      "path": "dex/framework/classes3.dex",
+      "sha256": "2b1e322c1d052262cd72cb0ebf9c8d9f5b856f119b97b1359f0fe3d0c2c87205"
+    },
+    {
+      "bytes": 9445860,
+      "path": "dex/framework/classes4.dex",
+      "sha256": "f975ce7c7d93afd92c9f301771ae3d2d4e9205828970ec15e9881209f6022378"
+    },
+    {
+      "bytes": 9253492,
+      "path": "dex/framework/classes5.dex",
+      "sha256": "2a296168f82e799bc36a9273f09b19e9a3597a159f5db47026ec7d929216ca41"
+    },
+    {
+      "bytes": 2525592,
+      "path": "dex/framework/classes6.dex",
+      "sha256": "cd4f248c31827f9e4d51f2cf121c66ac88f811c2f03a33a4468d7efe253c6339"
+    },
+    {
+      "bytes": 9560420,
+      "path": "dex/services/classes.dex",
+      "sha256": "242185b43c8d7d4cebc3488b6deb628ee5a971f94cde7816d1d896704c118658"
+    },
+    {
+      "bytes": 9505488,
+      "path": "dex/services/classes2.dex",
+      "sha256": "4f4c674fd5cde3f716414854bb150d997584017ab1fb922c52ea7d9f1741ad31"
+    },
+    {
+      "bytes": 6619848,
+      "path": "dex/services/classes3.dex",
+      "sha256": "32d8d19ff3fada471027adf0f8bb3f84cca85640dbaac15b67334033d905cb47"
+    }
+  ],
+  "methods": [
+    {
+      "bytes": 6358,
+      "chunks": [
+        {
+          "bytes": 6358,
+          "path": "ActivityTaskManager_RootTaskInfo--toString--1.part01.smali",
+          "sha256": "93f736acf2644db1336ea3a16bb7aecaf7cd6744bee94521c5562b61d4701ad6"
+        }
+      ],
+      "class": "ActivityTaskManager$RootTaskInfo",
+      "method": "toString",
+      "sha256": "93f736acf2644db1336ea3a16bb7aecaf7cd6744bee94521c5562b61d4701ad6",
+      "signature": ".method public whitelist test-api toString()Ljava/lang/String;",
+      "source": {
+        "bytes": 13629,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/app/ActivityTaskManager$RootTaskInfo.smali",
+        "sha256": "924b731ede5a05df536a094649d633d7a323343496d98175631c6de6544d1a66"
+      },
+      "source_end_line": 495,
+      "source_start_line": 247
+    },
+    {
+      "bytes": 13651,
+      "chunks": [
+        {
+          "bytes": 13651,
+          "path": "TaskInfo--readTaskFromParcel--1.part01.smali",
+          "sha256": "19969e8cb2aad4711ba492bb8f169123f66541287dec74dd45b03bebe6a409bf"
+        }
+      ],
+      "class": "TaskInfo",
+      "method": "readTaskFromParcel",
+      "sha256": "19969e8cb2aad4711ba492bb8f169123f66541287dec74dd45b03bebe6a409bf",
+      "signature": ".method blacklist readTaskFromParcel(Landroid/os/Parcel;)V",
+      "source": {
+        "bytes": 90413,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/app/TaskInfo.smali",
+        "sha256": "4193a4e62b59f694016bd691b134928138a059cd0431e1ab785333504d27495e"
+      },
+      "source_end_line": 2580,
+      "source_start_line": 1977
+    },
+    {
+      "bytes": 22821,
+      "chunks": [
+        {
+          "bytes": 22821,
+          "path": "TaskInfo--toString--2.part01.smali",
+          "sha256": "35a8ab0b8540b845356a27cab1a4a792204fe7ee4a191e5e5ac4fd45b1eb6086"
+        }
+      ],
+      "class": "TaskInfo",
+      "method": "toString",
+      "sha256": "35a8ab0b8540b845356a27cab1a4a792204fe7ee4a191e5e5ac4fd45b1eb6086",
+      "signature": ".method public whitelist test-api toString()Ljava/lang/String;",
+      "source": {
+        "bytes": 90413,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/app/TaskInfo.smali",
+        "sha256": "4193a4e62b59f694016bd691b134928138a059cd0431e1ab785333504d27495e"
+      },
+      "source_end_line": 3538,
+      "source_start_line": 2593
+    },
+    {
+      "bytes": 10178,
+      "chunks": [
+        {
+          "bytes": 10178,
+          "path": "TaskInfo--writeTaskToParcel--3.part01.smali",
+          "sha256": "e2344c3ed71e9d22a7d75ba1c09a5d28dfcfc545bf6baccf471018a8e17af873"
+        }
+      ],
+      "class": "TaskInfo",
+      "method": "writeTaskToParcel",
+      "sha256": "e2344c3ed71e9d22a7d75ba1c09a5d28dfcfc545bf6baccf471018a8e17af873",
+      "signature": ".method public blacklist writeTaskToParcel(Landroid/os/Parcel;I)V",
+      "source": {
+        "bytes": 90413,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/app/TaskInfo.smali",
+        "sha256": "4193a4e62b59f694016bd691b134928138a059cd0431e1ab785333504d27495e"
+      },
+      "source_end_line": 3922,
+      "source_start_line": 3540
+    },
+    {
+      "bytes": 195,
+      "chunks": [
+        {
+          "bytes": 195,
+          "path": "WaitResult--init--1.part01.smali",
+          "sha256": "6251b42e2a0cce3322ac322f9fd598afe84f6c5fdf51d87ee6447bb5e75d29b2"
+        }
+      ],
+      "class": "WaitResult",
+      "method": "<init>",
+      "sha256": "6251b42e2a0cce3322ac322f9fd598afe84f6c5fdf51d87ee6447bb5e75d29b2",
+      "signature": ".method public constructor greylist-max-o <init>()V",
+      "source": {
+        "bytes": 11835,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/app/WaitResult.smali",
+        "sha256": "36aff408342bdb0d3cacd7f431132a20e63d5614339763da870b8e33a4abb86d"
+      },
+      "source_end_line": 81,
+      "source_start_line": 71
+    },
+    {
+      "bytes": 1404,
+      "chunks": [
+        {
+          "bytes": 1404,
+          "path": "WaitResult--init--2.part01.smali",
+          "sha256": "4a11fc1a0d9162acbc6b7e3532c501676be90d2df721cbdeb2bacf58028b7e09"
+        }
+      ],
+      "class": "WaitResult",
+      "method": "<init>",
+      "sha256": "4a11fc1a0d9162acbc6b7e3532c501676be90d2df721cbdeb2bacf58028b7e09",
+      "signature": ".method private constructor greylist-max-o <init>(Landroid/os/Parcel;)V",
+      "source": {
+        "bytes": 11835,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/app/WaitResult.smali",
+        "sha256": "36aff408342bdb0d3cacd7f431132a20e63d5614339763da870b8e33a4abb86d"
+      },
+      "source_end_line": 158,
+      "source_start_line": 83
+    },
+    {
+      "bytes": 242,
+      "chunks": [
+        {
+          "bytes": 242,
+          "path": "WaitResult--init--3.part01.smali",
+          "sha256": "bff4347ecaf9634ad667a133fe0d11737d05112026dd35addb3b735b6b2c4ae2"
+        }
+      ],
+      "class": "WaitResult",
+      "method": "<init>",
+      "sha256": "bff4347ecaf9634ad667a133fe0d11737d05112026dd35addb3b735b6b2c4ae2",
+      "signature": ".method synthetic constructor blacklist <init>(Landroid/os/Parcel;Landroid/app/WaitResult-IA;)V",
+      "source": {
+        "bytes": 11835,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/app/WaitResult.smali",
+        "sha256": "36aff408342bdb0d3cacd7f431132a20e63d5614339763da870b8e33a4abb86d"
+      },
+      "source_end_line": 168,
+      "source_start_line": 160
+    },
+    {
+      "bytes": 1068,
+      "chunks": [
+        {
+          "bytes": 1068,
+          "path": "WaitResult--writeToParcel--4.part01.smali",
+          "sha256": "a5f854895a3d9bdacaaacc8fb6425874bcf017a65067f599e3b399b7d43c4655"
+        }
+      ],
+      "class": "WaitResult",
+      "method": "writeToParcel",
+      "sha256": "a5f854895a3d9bdacaaacc8fb6425874bcf017a65067f599e3b399b7d43c4655",
+      "signature": ".method public whitelist writeToParcel(Landroid/os/Parcel;I)V",
+      "source": {
+        "bytes": 11835,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/app/WaitResult.smali",
+        "sha256": "36aff408342bdb0d3cacd7f431132a20e63d5614339763da870b8e33a4abb86d"
+      },
+      "source_end_line": 560,
+      "source_start_line": 517
+    },
+    {
+      "bytes": 310,
+      "chunks": [
+        {
+          "bytes": 310,
+          "path": "Intent--init--1.part01.smali",
+          "sha256": "4737525d7abf3f3ff9eecb556aeeef12c14f30acda6f3ee49c259bfc4ef56fe9"
+        }
+      ],
+      "class": "Intent",
+      "method": "<init>",
+      "sha256": "4737525d7abf3f3ff9eecb556aeeef12c14f30acda6f3ee49c259bfc4ef56fe9",
+      "signature": ".method public constructor whitelist <init>()V",
+      "source": {
+        "bytes": 590970,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/content/Intent.smali",
+        "sha256": "0e4d55c1242c1874ff553e65750c3e1b2b7532842fff751cd1d07b5d2780b6d9"
+      },
+      "source_end_line": 1798,
+      "source_start_line": 1781
+    },
+    {
+      "bytes": 995,
+      "chunks": [
+        {
+          "bytes": 995,
+          "path": "Intent--init--2.part01.smali",
+          "sha256": "fd7c161b8624041d6b51d069b2d245914c7c85a9aead51727d9df75e27decf7c"
+        }
+      ],
+      "class": "Intent",
+      "method": "<init>",
+      "sha256": "fd7c161b8624041d6b51d069b2d245914c7c85a9aead51727d9df75e27decf7c",
+      "signature": ".method public constructor whitelist <init>(Landroid/content/Context;Ljava/lang/Class;)V",
+      "source": {
+        "bytes": 590970,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/content/Intent.smali",
+        "sha256": "0e4d55c1242c1874ff553e65750c3e1b2b7532842fff751cd1d07b5d2780b6d9"
+      },
+      "source_end_line": 1837,
+      "source_start_line": 1800
+    },
+    {
+      "bytes": 335,
+      "chunks": [
+        {
+          "bytes": 335,
+          "path": "Intent--init--3.part01.smali",
+          "sha256": "d88e24304c0c046ad87e285f9cd04058a27bc464cbdcafcf7434e29f97033377"
+        }
+      ],
+      "class": "Intent",
+      "method": "<init>",
+      "sha256": "d88e24304c0c046ad87e285f9cd04058a27bc464cbdcafcf7434e29f97033377",
+      "signature": ".method public constructor whitelist <init>(Landroid/content/Intent;)V",
+      "source": {
+        "bytes": 590970,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/content/Intent.smali",
+        "sha256": "0e4d55c1242c1874ff553e65750c3e1b2b7532842fff751cd1d07b5d2780b6d9"
+      },
+      "source_end_line": 1853,
+      "source_start_line": 1839
+    },
+    {
+      "bytes": 6369,
+      "chunks": [
+        {
+          "bytes": 6369,
+          "path": "Intent--init--4.part01.smali",
+          "sha256": "b56d966f6b44ef69058a69bf7b28fde291c8f8acb58cf043dea2c38832a7c574"
+        }
+      ],
+      "class": "Intent",
+      "method": "<init>",
+      "sha256": "b56d966f6b44ef69058a69bf7b28fde291c8f8acb58cf043dea2c38832a7c574",
+      "signature": ".method private constructor greylist-max-o <init>(Landroid/content/Intent;I)V",
+      "source": {
+        "bytes": 590970,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/content/Intent.smali",
+        "sha256": "0e4d55c1242c1874ff553e65750c3e1b2b7532842fff751cd1d07b5d2780b6d9"
+      },
+      "source_end_line": 2125,
+      "source_start_line": 1855
+    },
+    {
+      "bytes": 612,
+      "chunks": [
+        {
+          "bytes": 612,
+          "path": "Intent--init--5.part01.smali",
+          "sha256": "4df60d34ba54e77ec86af513c9b37688770c84fae65bc478d5de6a19c6e83056"
+        }
+      ],
+      "class": "Intent",
+      "method": "<init>",
+      "sha256": "4df60d34ba54e77ec86af513c9b37688770c84fae65bc478d5de6a19c6e83056",
+      "signature": ".method protected constructor greylist-max-o <init>(Landroid/os/Parcel;)V",
+      "source": {
+        "bytes": 590970,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/content/Intent.smali",
+        "sha256": "0e4d55c1242c1874ff553e65750c3e1b2b7532842fff751cd1d07b5d2780b6d9"
+      },
+      "source_end_line": 2156,
+      "source_start_line": 2127
+    },
+    {
+      "bytes": 509,
+      "chunks": [
+        {
+          "bytes": 509,
+          "path": "Intent--init--6.part01.smali",
+          "sha256": "351891272586188bd74abfbd8436e9879de00210e0082fcd0f77a5dbd698ae70"
+        }
+      ],
+      "class": "Intent",
+      "method": "<init>",
+      "sha256": "351891272586188bd74abfbd8436e9879de00210e0082fcd0f77a5dbd698ae70",
+      "signature": ".method public constructor whitelist <init>(Ljava/lang/String;)V",
+      "source": {
+        "bytes": 590970,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/content/Intent.smali",
+        "sha256": "0e4d55c1242c1874ff553e65750c3e1b2b7532842fff751cd1d07b5d2780b6d9"
+      },
+      "source_end_line": 2180,
+      "source_start_line": 2158
+    },
+    {
+      "bytes": 668,
+      "chunks": [
+        {
+          "bytes": 668,
+          "path": "Intent--init--7.part01.smali",
+          "sha256": "724ef5c66fcaaa3a651aeb2e6410cca3ed67260d96e049b46ceecf0e31c7e7b8"
+        }
+      ],
+      "class": "Intent",
+      "method": "<init>",
+      "sha256": "724ef5c66fcaaa3a651aeb2e6410cca3ed67260d96e049b46ceecf0e31c7e7b8",
+      "signature": ".method public constructor whitelist <init>(Ljava/lang/String;Landroid/net/Uri;)V",
+      "source": {
+        "bytes": 590970,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/content/Intent.smali",
+        "sha256": "0e4d55c1242c1874ff553e65750c3e1b2b7532842fff751cd1d07b5d2780b6d9"
+      },
+      "source_end_line": 2209,
+      "source_start_line": 2182
+    },
+    {
+      "bytes": 1422,
+      "chunks": [
+        {
+          "bytes": 1422,
+          "path": "Intent--init--8.part01.smali",
+          "sha256": "b13d1b809e6ba1156a36b4874c715187f0c900d0078e81225651b5e6bc903a65"
+        }
+      ],
+      "class": "Intent",
+      "method": "<init>",
+      "sha256": "b13d1b809e6ba1156a36b4874c715187f0c900d0078e81225651b5e6bc903a65",
+      "signature": ".method public constructor whitelist <init>(Ljava/lang/String;Landroid/net/Uri;Landroid/content/Context;Ljava/lang/Class;)V",
+      "source": {
+        "bytes": 590970,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/content/Intent.smali",
+        "sha256": "0e4d55c1242c1874ff553e65750c3e1b2b7532842fff751cd1d07b5d2780b6d9"
+      },
+      "source_end_line": 2260,
+      "source_start_line": 2211
+    },
+    {
+      "bytes": 77190,
+      "chunks": [
+        {
+          "bytes": 60000,
+          "path": "Intent--parseCommandArgs--9.part01.smali",
+          "sha256": "82844ddef7bcdc7061c6769f9a2ee5594d1adb5daf1299b27cda76b537e4b8de"
+        },
+        {
+          "bytes": 17190,
+          "path": "Intent--parseCommandArgs--9.part02.smali",
+          "sha256": "dd0adc1c65bb4a798e0abf8a2079a7396b9e255508579ea72e92a1ea014929bd"
+        }
+      ],
+      "class": "Intent",
+      "method": "parseCommandArgs",
+      "sha256": "732c87fb63fc3b3a706cf8062905e3fc70e4df47eaadcf53f7bc19f396783810",
+      "signature": ".method public static greylist-max-r parseCommandArgs(Landroid/os/ShellCommand;Landroid/content/Intent$CommandOptionHandler;)Landroid/content/Intent;",
+      "source": {
+        "bytes": 590970,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/content/Intent.smali",
+        "sha256": "0e4d55c1242c1874ff553e65750c3e1b2b7532842fff751cd1d07b5d2780b6d9"
+      },
+      "source_end_line": 10909,
+      "source_start_line": 6974
+    },
+    {
+      "bytes": 323,
+      "chunks": [
+        {
+          "bytes": 323,
+          "path": "Intent--cloneFilter--10.part01.smali",
+          "sha256": "a1aa51cd00a16de69fd43bd7e2c09a419040799a7dcf0a341daf5fa05765ac62"
+        }
+      ],
+      "class": "Intent",
+      "method": "cloneFilter",
+      "sha256": "a1aa51cd00a16de69fd43bd7e2c09a419040799a7dcf0a341daf5fa05765ac62",
+      "signature": ".method public whitelist cloneFilter()Landroid/content/Intent;",
+      "source": {
+        "bytes": 590970,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/content/Intent.smali",
+        "sha256": "0e4d55c1242c1874ff553e65750c3e1b2b7532842fff751cd1d07b5d2780b6d9"
+      },
+      "source_end_line": 14828,
+      "source_start_line": 14813
+    },
+    {
+      "bytes": 3151,
+      "chunks": [
+        {
+          "bytes": 3151,
+          "path": "Intent--filterEquals--11.part01.smali",
+          "sha256": "a8e9b4937ea851864ec2ea78bc154dbbbced2e59c9902b1afc5ed9cfda851221"
+        }
+      ],
+      "class": "Intent",
+      "method": "filterEquals",
+      "sha256": "a8e9b4937ea851864ec2ea78bc154dbbbced2e59c9902b1afc5ed9cfda851221",
+      "signature": ".method public whitelist filterEquals(Landroid/content/Intent;)Z",
+      "source": {
+        "bytes": 590970,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/content/Intent.smali",
+        "sha256": "0e4d55c1242c1874ff553e65750c3e1b2b7532842fff751cd1d07b5d2780b6d9"
+      },
+      "source_end_line": 15823,
+      "source_start_line": 15661
+    },
+    {
+      "bytes": 223,
+      "chunks": [
+        {
+          "bytes": 223,
+          "path": "Intent--getIdentifier--12.part01.smali",
+          "sha256": "57d7728ee6a2e2a8ff7da50d95850685761e5d9474a9f44883dfd0b148b19b83"
+        }
+      ],
+      "class": "Intent",
+      "method": "getIdentifier",
+      "sha256": "57d7728ee6a2e2a8ff7da50d95850685761e5d9474a9f44883dfd0b148b19b83",
+      "signature": ".method public whitelist getIdentifier()Ljava/lang/String;",
+      "source": {
+        "bytes": 590970,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/content/Intent.smali",
+        "sha256": "0e4d55c1242c1874ff553e65750c3e1b2b7532842fff751cd1d07b5d2780b6d9"
+      },
+      "source_end_line": 17109,
+      "source_start_line": 17100
+    },
+    {
+      "bytes": 8948,
+      "chunks": [
+        {
+          "bytes": 8948,
+          "path": "Intent--readFromParcel--13.part01.smali",
+          "sha256": "50493b4aa35947c56af3612bca7062cf16365bce1d0315169c2c93442f853355"
+        }
+      ],
+      "class": "Intent",
+      "method": "readFromParcel",
+      "sha256": "50493b4aa35947c56af3612bca7062cf16365bce1d0315169c2c93442f853355",
+      "signature": ".method public whitelist readFromParcel(Landroid/os/Parcel;)V",
+      "source": {
+        "bytes": 590970,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/content/Intent.smali",
+        "sha256": "0e4d55c1242c1874ff553e65750c3e1b2b7532842fff751cd1d07b5d2780b6d9"
+      },
+      "source_end_line": 22401,
+      "source_start_line": 21995
+    },
+    {
+      "bytes": 316,
+      "chunks": [
+        {
+          "bytes": 316,
+          "path": "Intent--setIdentifier--14.part01.smali",
+          "sha256": "7666aded9069fc72f19fad787f34bb4daa7c330f3ef26e13b8879ebe9303910a"
+        }
+      ],
+      "class": "Intent",
+      "method": "setIdentifier",
+      "sha256": "7666aded9069fc72f19fad787f34bb4daa7c330f3ef26e13b8879ebe9303910a",
+      "signature": ".method public whitelist setIdentifier(Ljava/lang/String;)Landroid/content/Intent;",
+      "source": {
+        "bytes": 590970,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/content/Intent.smali",
+        "sha256": "0e4d55c1242c1874ff553e65750c3e1b2b7532842fff751cd1d07b5d2780b6d9"
+      },
+      "source_end_line": 23756,
+      "source_start_line": 23745
+    },
+    {
+      "bytes": 1151,
+      "chunks": [
+        {
+          "bytes": 1151,
+          "path": "Intent--toShortString--15.part01.smali",
+          "sha256": "b79647c1abeefb1f7effd848f6df8a3237709f469dc2714d601d9163fb5d6cfc"
+        }
+      ],
+      "class": "Intent",
+      "method": "toShortString",
+      "sha256": "b79647c1abeefb1f7effd848f6df8a3237709f469dc2714d601d9163fb5d6cfc",
+      "signature": ".method public final greylist-max-o toShortString(ZZZZ)Ljava/lang/String;",
+      "source": {
+        "bytes": 590970,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/content/Intent.smali",
+        "sha256": "0e4d55c1242c1874ff553e65750c3e1b2b7532842fff751cd1d07b5d2780b6d9"
+      },
+      "source_end_line": 24080,
+      "source_start_line": 24023
+    },
+    {
+      "bytes": 16243,
+      "chunks": [
+        {
+          "bytes": 16243,
+          "path": "Intent--toShortString--16.part01.smali",
+          "sha256": "206c2efdb1142a6e242409e1a6d879930278591baa10a2e5044c4ab6376a9769"
+        }
+      ],
+      "class": "Intent",
+      "method": "toShortString",
+      "sha256": "206c2efdb1142a6e242409e1a6d879930278591baa10a2e5044c4ab6376a9769",
+      "signature": ".method public greylist-max-o toShortString(Ljava/lang/StringBuilder;ZZZZ)V",
+      "source": {
+        "bytes": 590970,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/content/Intent.smali",
+        "sha256": "0e4d55c1242c1874ff553e65750c3e1b2b7532842fff751cd1d07b5d2780b6d9"
+      },
+      "source_end_line": 24860,
+      "source_start_line": 24082
+    },
+    {
+      "bytes": 9775,
+      "chunks": [
+        {
+          "bytes": 9775,
+          "path": "Intent--writeToParcel--17.part01.smali",
+          "sha256": "fe74eacf28a60dae1eae9a858f986dc43d4b175b56b21f8885426d4f33fdb541"
+        }
+      ],
+      "class": "Intent",
+      "method": "writeToParcel",
+      "sha256": "fe74eacf28a60dae1eae9a858f986dc43d4b175b56b21f8885426d4f33fdb541",
+      "signature": ".method public whitelist writeToParcel(Landroid/os/Parcel;I)V",
+      "source": {
+        "bytes": 590970,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/content/Intent.smali",
+        "sha256": "0e4d55c1242c1874ff553e65750c3e1b2b7532842fff751cd1d07b5d2780b6d9"
+      },
+      "source_end_line": 25925,
+      "source_start_line": 25509
+    },
+    {
+      "bytes": 3805,
+      "chunks": [
+        {
+          "bytes": 3805,
+          "path": "WrapperInit--execApplication--1.part01.smali",
+          "sha256": "f82e09c5a50171088121d34b8a82a9a4a2aab6b22f89aa1237ba861b1d440e09"
+        }
+      ],
+      "class": "WrapperInit",
+      "method": "execApplication",
+      "sha256": "f82e09c5a50171088121d34b8a82a9a4a2aab6b22f89aa1237ba861b1d440e09",
+      "signature": ".method public static blacklist execApplication(Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/io/FileDescriptor;[Ljava/lang/String;)V",
+      "source": {
+        "bytes": 16455,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes5.dex/com/android/internal/os/WrapperInit.smali",
+        "sha256": "a94c718abdb4bc8c6cd62e652a246c86b28c00d640f38a41f7c2b8bfa7a9309e"
+      },
+      "source_end_line": 175,
+      "source_start_line": 23
+    },
+    {
+      "bytes": 3960,
+      "chunks": [
+        {
+          "bytes": 3960,
+          "path": "WrapperInit--main--2.part01.smali",
+          "sha256": "bc133f2506765e4decd49cbc8be946d0ae2f834e09d3bd3502b4da145754081c"
+        }
+      ],
+      "class": "WrapperInit",
+      "method": "main",
+      "sha256": "bc133f2506765e4decd49cbc8be946d0ae2f834e09d3bd3502b4da145754081c",
+      "signature": ".method public static blacklist main([Ljava/lang/String;)V",
+      "source": {
+        "bytes": 16455,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes5.dex/com/android/internal/os/WrapperInit.smali",
+        "sha256": "a94c718abdb4bc8c6cd62e652a246c86b28c00d640f38a41f7c2b8bfa7a9309e"
+      },
+      "source_end_line": 368,
+      "source_start_line": 177
+    },
+    {
+      "bytes": 2095,
+      "chunks": [
+        {
+          "bytes": 2095,
+          "path": "WrapperInit--wrapperInit--3.part01.smali",
+          "sha256": "3e4ad7d6be6062e4160268dd473ef068275df4c72951789c3bffed811af5f374"
+        }
+      ],
+      "class": "WrapperInit",
+      "method": "wrapperInit",
+      "sha256": "3e4ad7d6be6062e4160268dd473ef068275df4c72951789c3bffed811af5f374",
+      "signature": ".method private static blacklist wrapperInit(I[Ljava/lang/String;)Ljava/lang/Runnable;",
+      "source": {
+        "bytes": 16455,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes5.dex/com/android/internal/os/WrapperInit.smali",
+        "sha256": "a94c718abdb4bc8c6cd62e652a246c86b28c00d640f38a41f7c2b8bfa7a9309e"
+      },
+      "source_end_line": 786,
+      "source_start_line": 679
+    },
+    {
+      "bytes": 1430,
+      "chunks": [
+        {
+          "bytes": 1430,
+          "path": "Zygote--applyInvokeWithSecurityPolicy--1.part01.smali",
+          "sha256": "0bf227aec85e0f11151f159b0a9afeda0ec1d188ba6b6586678e1f3f8522d99d"
+        }
+      ],
+      "class": "Zygote",
+      "method": "applyInvokeWithSecurityPolicy",
+      "sha256": "0bf227aec85e0f11151f159b0a9afeda0ec1d188ba6b6586678e1f3f8522d99d",
+      "signature": ".method static blacklist applyInvokeWithSecurityPolicy(Lcom/android/internal/os/ZygoteArguments;Landroid/net/Credentials;)V",
+      "source": {
+        "bytes": 91805,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes5.dex/com/android/internal/os/Zygote.smali",
+        "sha256": "84c7107c0917803cfeb952c95476b4acdc4db7298d4d68433f864e780b9b77fd"
+      },
+      "source_end_line": 528,
+      "source_start_line": 466
+    },
+    {
+      "bytes": 786,
+      "chunks": [
+        {
+          "bytes": 786,
+          "path": "Zygote--applyInvokeWithSystemProperty--2.part01.smali",
+          "sha256": "3972f6e1b1204302f0b526c184fe94ef44e95390b8bcac116b23c00080155d7c"
+        }
+      ],
+      "class": "Zygote",
+      "method": "applyInvokeWithSystemProperty",
+      "sha256": "3972f6e1b1204302f0b526c184fe94ef44e95390b8bcac116b23c00080155d7c",
+      "signature": ".method static blacklist applyInvokeWithSystemProperty(Lcom/android/internal/os/ZygoteArguments;)V",
+      "source": {
+        "bytes": 91805,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes5.dex/com/android/internal/os/Zygote.smali",
+        "sha256": "84c7107c0917803cfeb952c95476b4acdc4db7298d4d68433f864e780b9b77fd"
+      },
+      "source_end_line": 558,
+      "source_start_line": 530
+    },
+    {
+      "bytes": 3540,
+      "chunks": [
+        {
+          "bytes": 3540,
+          "path": "Zygote--forkAndSpecialize--3.part01.smali",
+          "sha256": "de48e534e4657e13d9f3368e19922513e56c0a460b39d137eaaf184f0b73a88f"
+        }
+      ],
+      "class": "Zygote",
+      "method": "forkAndSpecialize",
+      "sha256": "de48e534e4657e13d9f3368e19922513e56c0a460b39d137eaaf184f0b73a88f",
+      "signature": ".method static blacklist forkAndSpecialize(II[II[[IILjava/lang/String;Ljava/lang/String;[I[IZLjava/lang/String;Ljava/lang/String;Z[Ljava/lang/String;[Ljava/lang/String;ZZZ)I",
+      "source": {
+        "bytes": 91805,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes5.dex/com/android/internal/os/Zygote.smali",
+        "sha256": "84c7107c0917803cfeb952c95476b4acdc4db7298d4d68433f864e780b9b77fd"
+      },
+      "source_end_line": 2423,
+      "source_start_line": 2246
+    },
+    {
+      "bytes": 3214,
+      "chunks": [
+        {
+          "bytes": 3214,
+          "path": "ZygoteConnection--handleChildProc--1.part01.smali",
+          "sha256": "9db12ad0c4a4db47fbd0513e84a5626d5dd9a17816e5145c9b9fdcf495af44bf"
+        }
+      ],
+      "class": "ZygoteConnection",
+      "method": "handleChildProc",
+      "sha256": "9db12ad0c4a4db47fbd0513e84a5626d5dd9a17816e5145c9b9fdcf495af44bf",
+      "signature": ".method private blacklist handleChildProc(Lcom/android/internal/os/ZygoteArguments;Ljava/io/FileDescriptor;Z)Ljava/lang/Runnable;",
+      "source": {
+        "bytes": 71727,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes5.dex/com/android/internal/os/ZygoteConnection.smali",
+        "sha256": "cc7c3d5e23183e346ce82711c62278db527d171127f2437492c2701dd5f09d0d"
+      },
+      "source_end_line": 402,
+      "source_start_line": 286
+    },
+    {
+      "bytes": 34111,
+      "chunks": [
+        {
+          "bytes": 34111,
+          "path": "ZygoteConnection--processCommand--2.part01.smali",
+          "sha256": "6e6eabe78e51d87a3a88421e42b932de95882f5b4f067d178772a918903de5c8"
+        }
+      ],
+      "class": "ZygoteConnection",
+      "method": "processCommand",
+      "sha256": "6e6eabe78e51d87a3a88421e42b932de95882f5b4f067d178772a918903de5c8",
+      "signature": ".method blacklist processCommand(Lcom/android/internal/os/ZygoteServer;Z)Ljava/lang/Runnable;",
+      "source": {
+        "bytes": 71727,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes5.dex/com/android/internal/os/ZygoteConnection.smali",
+        "sha256": "cc7c3d5e23183e346ce82711c62278db527d171127f2437492c2701dd5f09d0d"
+      },
+      "source_end_line": 3087,
+      "source_start_line": 1693
+    },
+    {
+      "bytes": 344,
+      "chunks": [
+        {
+          "bytes": 344,
+          "path": "ActivityTaskManagerService--getTasks--1.part01.smali",
+          "sha256": "9a21448cf4bbe81b767330a1a419767cc66c74d8317c13b5b05de6eaef18ab4c"
+        }
+      ],
+      "class": "ActivityTaskManagerService",
+      "method": "getTasks",
+      "sha256": "9a21448cf4bbe81b767330a1a419767cc66c74d8317c13b5b05de6eaef18ab4c",
+      "signature": ".method public getTasks(I)Ljava/util/List;",
+      "source": {
+        "bytes": 877223,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/services/classes3.dex/com/android/server/wm/ActivityTaskManagerService.smali",
+        "sha256": "0434b450b1d142a18878ab0f0a881d03607388b642cc8c26dcb049688c85fee7"
+      },
+      "source_end_line": 11770,
+      "source_start_line": 11752
+    },
+    {
+      "bytes": 4108,
+      "chunks": [
+        {
+          "bytes": 4108,
+          "path": "ActivityTaskManagerService--getTasks--2.part01.smali",
+          "sha256": "f46cc1a8c964383060e7ccb9a15bbe299d5d97a3d39472cf376f0f68d2d803dd"
+        }
+      ],
+      "class": "ActivityTaskManagerService",
+      "method": "getTasks",
+      "sha256": "f46cc1a8c964383060e7ccb9a15bbe299d5d97a3d39472cf376f0f68d2d803dd",
+      "signature": ".method public getTasks(IZZI)Ljava/util/List;",
+      "source": {
+        "bytes": 877223,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/services/classes3.dex/com/android/server/wm/ActivityTaskManagerService.smali",
+        "sha256": "0434b450b1d142a18878ab0f0a881d03607388b642cc8c26dcb049688c85fee7"
+      },
+      "source_end_line": 11988,
+      "source_start_line": 11772
+    },
+    {
+      "bytes": 834,
+      "chunks": [
+        {
+          "bytes": 834,
+          "path": "ActivityTaskManagerService--removeTask--3.part01.smali",
+          "sha256": "e269a3ba89a688cffe360b01b25d573c80cc1fa99da4405099a8c3177eaf504a"
+        }
+      ],
+      "class": "ActivityTaskManagerService",
+      "method": "removeTask",
+      "sha256": "e269a3ba89a688cffe360b01b25d573c80cc1fa99da4405099a8c3177eaf504a",
+      "signature": ".method public removeTask(Lcom/android/server/wm/Task;Ljava/lang/String;)V",
+      "source": {
+        "bytes": 877223,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/services/classes3.dex/com/android/server/wm/ActivityTaskManagerService.smali",
+        "sha256": "0434b450b1d142a18878ab0f0a881d03607388b642cc8c26dcb049688c85fee7"
+      },
+      "source_end_line": 21020,
+      "source_start_line": 20986
+    },
+    {
+      "bytes": 3112,
+      "chunks": [
+        {
+          "bytes": 3112,
+          "path": "ActivityTaskManagerService--removeTask--4.part01.smali",
+          "sha256": "9eeefccba6edd87c8507c4f1cf98ef0b155b7eb7f3bb60181ff1a6a84986bc1f"
+        }
+      ],
+      "class": "ActivityTaskManagerService",
+      "method": "removeTask",
+      "sha256": "9eeefccba6edd87c8507c4f1cf98ef0b155b7eb7f3bb60181ff1a6a84986bc1f",
+      "signature": ".method public removeTask(I)Z",
+      "source": {
+        "bytes": 877223,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/services/classes3.dex/com/android/server/wm/ActivityTaskManagerService.smali",
+        "sha256": "0434b450b1d142a18878ab0f0a881d03607388b642cc8c26dcb049688c85fee7"
+      },
+      "source_end_line": 21154,
+      "source_start_line": 21022
+    },
+    {
+      "bytes": 1344,
+      "chunks": [
+        {
+          "bytes": 1344,
+          "path": "ActivityTaskManagerService--removeTask--5.part01.smali",
+          "sha256": "fddabc41d6b6f59be7cc231cdb5d5af0550ab259356957c7f55366ee3364de3e"
+        }
+      ],
+      "class": "ActivityTaskManagerService",
+      "method": "removeTask",
+      "sha256": "fddabc41d6b6f59be7cc231cdb5d5af0550ab259356957c7f55366ee3364de3e",
+      "signature": ".method public removeTask(ILjava/lang/String;)Z",
+      "source": {
+        "bytes": 877223,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/services/classes3.dex/com/android/server/wm/ActivityTaskManagerService.smali",
+        "sha256": "0434b450b1d142a18878ab0f0a881d03607388b642cc8c26dcb049688c85fee7"
+      },
+      "source_end_line": 21213,
+      "source_start_line": 21156
+    },
+    {
+      "bytes": 4301,
+      "chunks": [
+        {
+          "bytes": 4301,
+          "path": "ActivityTaskManagerService--startActivityAndWait--6.part01.smali",
+          "sha256": "cd38f0332d2a15c2385ed482b82adb8fac51fe2b46bae776d0f0a7bb2522db71"
+        }
+      ],
+      "class": "ActivityTaskManagerService",
+      "method": "startActivityAndWait",
+      "sha256": "cd38f0332d2a15c2385ed482b82adb8fac51fe2b46bae776d0f0a7bb2522db71",
+      "signature": ".method public final startActivityAndWait(Landroid/app/IApplicationThread;Ljava/lang/String;Ljava/lang/String;Landroid/content/Intent;Ljava/lang/String;Landroid/os/IBinder;Ljava/lang/String;IILandroid/app/ProfilerInfo;Landroid/os/Bundle;I)Landroid/app/WaitResult;",
+      "source": {
+        "bytes": 877223,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/services/classes3.dex/com/android/server/wm/ActivityTaskManagerService.smali",
+        "sha256": "0434b450b1d142a18878ab0f0a881d03607388b642cc8c26dcb049688c85fee7"
+      },
+      "source_end_line": 28119,
+      "source_start_line": 27968
+    },
+    {
+      "bytes": 262,
+      "chunks": [
+        {
+          "bytes": 262,
+          "path": "Task--fillTaskInfo--1.part01.smali",
+          "sha256": "a2d438feb441b98046c1e6e5260543a49d3e267918d8a3ec97a21f6fe3b5dc55"
+        }
+      ],
+      "class": "Task",
+      "method": "fillTaskInfo",
+      "sha256": "a2d438feb441b98046c1e6e5260543a49d3e267918d8a3ec97a21f6fe3b5dc55",
+      "signature": ".method public fillTaskInfo(Landroid/app/TaskInfo;)V",
+      "source": {
+        "bytes": 680044,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/services/classes3.dex/com/android/server/wm/Task.smali",
+        "sha256": "6617cb05856046bedcac4152f6a370dfb4ff873afdf7fbe0b7543581b4345702"
+      },
+      "source_end_line": 11168,
+      "source_start_line": 11156
+    },
+    {
+      "bytes": 440,
+      "chunks": [
+        {
+          "bytes": 440,
+          "path": "Task--fillTaskInfo--2.part01.smali",
+          "sha256": "5ab09692ec6fd23d991e2c207052023e558e74d296d64e0231bacee2d1d33444"
+        }
+      ],
+      "class": "Task",
+      "method": "fillTaskInfo",
+      "sha256": "5ab09692ec6fd23d991e2c207052023e558e74d296d64e0231bacee2d1d33444",
+      "signature": ".method public fillTaskInfo(Landroid/app/TaskInfo;Z)V",
+      "source": {
+        "bytes": 680044,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/services/classes3.dex/com/android/server/wm/Task.smali",
+        "sha256": "6617cb05856046bedcac4152f6a370dfb4ff873afdf7fbe0b7543581b4345702"
+      },
+      "source_end_line": 11185,
+      "source_start_line": 11170
+    },
+    {
+      "bytes": 19008,
+      "chunks": [
+        {
+          "bytes": 19008,
+          "path": "Task--fillTaskInfo--3.part01.smali",
+          "sha256": "17de088bf0e7edc19ed6010c8a180eae2d0dc02dbe7ac2db1f992d2e2a256d18"
+        }
+      ],
+      "class": "Task",
+      "method": "fillTaskInfo",
+      "sha256": "17de088bf0e7edc19ed6010c8a180eae2d0dc02dbe7ac2db1f992d2e2a256d18",
+      "signature": ".method public fillTaskInfo(Landroid/app/TaskInfo;ZLcom/android/server/wm/TaskDisplayArea;)V",
+      "source": {
+        "bytes": 680044,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/services/classes3.dex/com/android/server/wm/Task.smali",
+        "sha256": "6617cb05856046bedcac4152f6a370dfb4ff873afdf7fbe0b7543581b4345702"
+      },
+      "source_end_line": 12055,
+      "source_start_line": 11187
+    },
+    {
+      "bytes": 961,
+      "chunks": [
+        {
+          "bytes": 961,
+          "path": "Task--getBaseIntent--4.part01.smali",
+          "sha256": "1694f322774e008e523c305887fdaac9c5251609bb311a958fdd02647f885e76"
+        }
+      ],
+      "class": "Task",
+      "method": "getBaseIntent",
+      "sha256": "1694f322774e008e523c305887fdaac9c5251609bb311a958fdd02647f885e76",
+      "signature": ".method public getBaseIntent()Landroid/content/Intent;",
+      "source": {
+        "bytes": 680044,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/services/classes3.dex/com/android/server/wm/Task.smali",
+        "sha256": "6617cb05856046bedcac4152f6a370dfb4ff873afdf7fbe0b7543581b4345702"
+      },
+      "source_end_line": 13015,
+      "source_start_line": 12961
+    },
+    {
+      "bytes": 435,
+      "chunks": [
+        {
+          "bytes": 435,
+          "path": "Task--getTaskInfo--5.part01.smali",
+          "sha256": "e5d71433670d703fad8a2d64a74db41a62501bbf21a0dd70aacd5842a0d2d6cd"
+        }
+      ],
+      "class": "Task",
+      "method": "getTaskInfo",
+      "sha256": "e5d71433670d703fad8a2d64a74db41a62501bbf21a0dd70aacd5842a0d2d6cd",
+      "signature": ".method public getTaskInfo()Landroid/app/ActivityManager$RunningTaskInfo;",
+      "source": {
+        "bytes": 680044,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/services/classes3.dex/com/android/server/wm/Task.smali",
+        "sha256": "6617cb05856046bedcac4152f6a370dfb4ff873afdf7fbe0b7543581b4345702"
+      },
+      "source_end_line": 14282,
+      "source_start_line": 14266
+    },
+    {
+      "bytes": 13826,
+      "chunks": [
+        {
+          "bytes": 13826,
+          "path": "Task--setIntent--6.part01.smali",
+          "sha256": "516b7ffe12984b9b09fc0df80bae9a9ed9f5d0d98faeda7859d20e25d7005880"
+        }
+      ],
+      "class": "Task",
+      "method": "setIntent",
+      "sha256": "516b7ffe12984b9b09fc0df80bae9a9ed9f5d0d98faeda7859d20e25d7005880",
+      "signature": ".method public final setIntent(Landroid/content/Intent;Landroid/content/pm/ActivityInfo;)V",
+      "source": {
+        "bytes": 680044,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/services/classes3.dex/com/android/server/wm/Task.smali",
+        "sha256": "6617cb05856046bedcac4152f6a370dfb4ff873afdf7fbe0b7543581b4345702"
+      },
+      "source_end_line": 26431,
+      "source_start_line": 25809
+    },
+    {
+      "bytes": 348,
+      "chunks": [
+        {
+          "bytes": 348,
+          "path": "Task--setIntent--7.part01.smali",
+          "sha256": "245841979e2c2276b62d602b8f1f9450459c9ec9cc887b0cbd42714ad535c35d"
+        }
+      ],
+      "class": "Task",
+      "method": "setIntent",
+      "sha256": "245841979e2c2276b62d602b8f1f9450459c9ec9cc887b0cbd42714ad535c35d",
+      "signature": ".method public setIntent(Lcom/android/server/wm/ActivityRecord;)V",
+      "source": {
+        "bytes": 680044,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/services/classes3.dex/com/android/server/wm/Task.smali",
+        "sha256": "6617cb05856046bedcac4152f6a370dfb4ff873afdf7fbe0b7543581b4345702"
+      },
+      "source_end_line": 26445,
+      "source_start_line": 26433
+    },
+    {
+      "bytes": 2908,
+      "chunks": [
+        {
+          "bytes": 2908,
+          "path": "Task--setIntent--8.part01.smali",
+          "sha256": "3c511c40381f300919b449a10a3ac4fc1652ea93fab3b474895a804d45c32556"
+        }
+      ],
+      "class": "Task",
+      "method": "setIntent",
+      "sha256": "3c511c40381f300919b449a10a3ac4fc1652ea93fab3b474895a804d45c32556",
+      "signature": ".method public setIntent(Lcom/android/server/wm/ActivityRecord;Landroid/content/Intent;Landroid/content/pm/ActivityInfo;)V",
+      "source": {
+        "bytes": 680044,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/services/classes3.dex/com/android/server/wm/Task.smali",
+        "sha256": "6617cb05856046bedcac4152f6a370dfb4ff873afdf7fbe0b7543581b4345702"
+      },
+      "source_end_line": 26589,
+      "source_start_line": 26447
+    },
+    {
+      "bytes": 3018,
+      "chunks": [
+        {
+          "bytes": 3018,
+          "path": "ActivityManagerShellCommand--makeIntent--1.part01.smali",
+          "sha256": "78de50d58f451f24329c7172bba13608ed9735c1a8d416d35c5293578673ac37"
+        }
+      ],
+      "class": "ActivityManagerShellCommand",
+      "method": "makeIntent",
+      "sha256": "78de50d58f451f24329c7172bba13608ed9735c1a8d416d35c5293578673ac37",
+      "signature": ".method public final makeIntent(I)Landroid/content/Intent;",
+      "source": {
+        "bytes": 618014,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-shell-r1/classes.dex/com/android/server/am/ActivityManagerShellCommand.smali",
+        "sha256": "c3f55a77ce9671bb8cf47a1e75df23d6915c30380b78865249f21631c343d5ff"
+      },
+      "source_end_line": 5598,
+      "source_start_line": 5488
+    },
+    {
+      "bytes": 3910,
+      "chunks": [
+        {
+          "bytes": 3910,
+          "path": "ActivityManagerShellCommand--runStack--2.part01.smali",
+          "sha256": "edb42fd3683a44190dd49f6b458e16ea580bde15c464a004d7a06033ec587500"
+        }
+      ],
+      "class": "ActivityManagerShellCommand",
+      "method": "runStack",
+      "sha256": "edb42fd3683a44190dd49f6b458e16ea580bde15c464a004d7a06033ec587500",
+      "signature": ".method public runStack(Ljava/io/PrintWriter;)I",
+      "source": {
+        "bytes": 618014,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-shell-r1/classes.dex/com/android/server/am/ActivityManagerShellCommand.smali",
+        "sha256": "c3f55a77ce9671bb8cf47a1e75df23d6915c30380b78865249f21631c343d5ff"
+      },
+      "source_end_line": 22285,
+      "source_start_line": 22061
+    },
+    {
+      "bytes": 1050,
+      "chunks": [
+        {
+          "bytes": 1050,
+          "path": "ActivityManagerShellCommand--runStackList--3.part01.smali",
+          "sha256": "18a8e42d29256a536f1b8a059503d103d3347d9d1e1c3a4399dc9d634e201489"
+        }
+      ],
+      "class": "ActivityManagerShellCommand",
+      "method": "runStackList",
+      "sha256": "18a8e42d29256a536f1b8a059503d103d3347d9d1e1c3a4399dc9d634e201489",
+      "signature": ".method public runStackList(Ljava/io/PrintWriter;)I",
+      "source": {
+        "bytes": 618014,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-shell-r1/classes.dex/com/android/server/am/ActivityManagerShellCommand.smali",
+        "sha256": "c3f55a77ce9671bb8cf47a1e75df23d6915c30380b78865249f21631c343d5ff"
+      },
+      "source_end_line": 22339,
+      "source_start_line": 22287
+    },
+    {
+      "bytes": 32803,
+      "chunks": [
+        {
+          "bytes": 32803,
+          "path": "ActivityManagerShellCommand--runStartActivity--4.part01.smali",
+          "sha256": "6f9cbde2f9061552804679be982592713ca661f915a432f591cd6700a71c893b"
+        }
+      ],
+      "class": "ActivityManagerShellCommand",
+      "method": "runStartActivity",
+      "sha256": "6f9cbde2f9061552804679be982592713ca661f915a432f591cd6700a71c893b",
+      "signature": ".method public runStartActivity(Ljava/io/PrintWriter;)I",
+      "source": {
+        "bytes": 618014,
+        "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-shell-r1/classes.dex/com/android/server/am/ActivityManagerShellCommand.smali",
+        "sha256": "c3f55a77ce9671bb8cf47a1e75df23d6915c30380b78865249f21631c343d5ff"
+      },
+      "source_end_line": 23990,
+      "source_start_line": 22465
+    }
+  ],
+  "origin_image_sha256": "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4",
+  "production_ready": false,
+  "runtime_qualified": false,
+  "schema": "pocket4-selected-cp3a-dex-method-excerpts-v1"
+}

@@ -1,0 +1,20 @@
+cc_library_shared {
+    name: "libdroidloom_selinux_compat",
+    vendor: true,
+    srcs: ["selinux_compat.c"],
+    include_dirs: ["external/selinux/libselinux/include"],
+    stl: "none",
+    cflags: [
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+    ],
+    version_script: "exported.map.txt",
+    arch: {
+        x86_64: {
+            // The /newroot procfs alias belongs to the ARM64 phone runtime.
+            // Desktop applications must resolve readlink to ordinary bionic.
+            version_script: "exported.x86_64.map.txt",
+        },
+    },
+}
