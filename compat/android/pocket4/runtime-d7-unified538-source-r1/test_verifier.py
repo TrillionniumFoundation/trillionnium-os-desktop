@@ -1,4 +1,5 @@
 import importlib.util
+import copy
 import json
 from pathlib import Path
 import tempfile
@@ -35,6 +36,32 @@ class Controls(unittest.TestCase):
                     json.dumps({'reason':'compiler-message','message':{'level':'error'}}).encode()+b'\n'+good,
                     good+b'{"reason":"compiler-artifact"}\n']:
             with self.subTest(raw=bad),self.assertRaises(RuntimeError):v.successful_cargo_stream(bad)
+
+    def test_release_receipts_reject_extra_missing_duplicate_cached_and_non_bin(self):
+        names=['droidloom-supervisor','droidloomd','droidloom-source','droidloom-update']
+        rows=[{'reason':'compiler-artifact','executable':'/fresh/release/'+name,
+               'profile':{'test':False},'fresh':False,'target':{'name':name,'kind':['bin']}} for name in names]
+        self.assertEqual(ci.select_release_artifacts(rows),rows)
+        extra=copy.deepcopy(rows[0]);extra['target']['name']='droidloomctl'
+        cached=copy.deepcopy(rows);cached[0]['fresh']=True
+        library=copy.deepcopy(rows);library[0]['target']['kind']=['lib']
+        for bad in [rows+[extra],rows[:-1],rows[:-1]+[rows[0]],cached,library]:
+            with self.subTest(rows=bad),self.assertRaises(RuntimeError):ci.select_release_artifacts(bad)
+
+    def test_directory_F9_detects_removed_fixture_and_external_working_directory_preserves_source(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base=Path(directory);source=base/'source';source.mkdir()
+            path=source/'input';path.write_bytes(b'original');path.chmod(0o644)
+            rows=[{'path':'input','mode':'100644','git_blob':v.object_id('blob',b'original'),**v.digest(b'original')}]
+            tree=v.tree_id(rows);before=v.source_snapshot(source,rows,tree)
+            with tempfile.TemporaryDirectory(dir=source):pass
+            after=v.source_snapshot(source,rows,tree)
+            self.assertEqual(before['files'],after['files'])
+            self.assertNotEqual(before['directories'],after['directories'])
+            private=ci.destinations(source,base/'target',base/'report.json')[3]
+            private.mkdir(mode=0o700)
+            with tempfile.TemporaryDirectory(dir=private):pass
+            self.assertEqual(v.source_snapshot(source,rows,tree),after)
 
     def test_duplicate_json_and_relative_names(self):
         with self.assertRaises(RuntimeError):v.decode(b'{"same":1,"same":2}')

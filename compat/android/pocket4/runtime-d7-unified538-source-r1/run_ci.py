@@ -46,6 +46,16 @@ def release_binary(path):
         os.close(fd)
 
 
+def select_release_artifacts(messages):
+    wanted = {'droidloom-supervisor', 'droidloomd', 'droidloom-source', 'droidloom-update'}
+    artifacts = [row for row in messages if row.get('reason') == 'compiler-artifact'
+                 and row.get('executable') and row.get('profile', {}).get('test') is False]
+    VERIFY.need(len(artifacts) == 4 and {row['target']['name'] for row in artifacts} == wanted
+                and all(row['fresh'] is False and row['target']['kind'] == ['bin'] for row in artifacts),
+                'four source-bound fresh release artifacts required')
+    return artifacts
+
+
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--inventory-sha256',required=True)
     parser.add_argument('--producer',required=True,type=Path);parser.add_argument('--target',required=True,type=Path)
@@ -56,20 +66,23 @@ def main():
     rows=VERIFY.catalog(manifest,'head');tc=VERIFY.test_catalog(manifest)
     before=VERIFY.source_snapshot(recipe,rows,VERIFY.HEAD_TREE)
     logdir.parent.mkdir(parents=True,exist_ok=True);logdir.mkdir(mode=0o700);target.mkdir(mode=0o700)
+    runtime_cwd = VERIFY.fresh_destination(logdir / 'runtime-working-directory', [VERIFY.HERE, recipe, target])
+    runtime_cwd.mkdir(mode=0o700)
     env=dict(os.environ,CARGO_BUILD_JOBS=str(args.jobs),CARGO_TARGET_DIR=str(target),CARGO_INCREMENTAL='0',CARGO_TERM_COLOR='never',GIT_OPTIONAL_LOCKS='0')
     result={'schema':'d7-fresh-CI-runtime289-tool4-and-four-release-products-v1','state':'RUNNING',
         'source_commit':VERIFY.HEAD_COMMIT,'source_tree':VERIFY.HEAD_TREE,'source_files':1595,
         'actual_fresh_runtime_ordinary_tests':0,'actual_fresh_current_tool_tests':0,'historical_tests_counted_as_fresh':0,
-        'historical_ELFs_reused':False,'fresh_Cargo_target':str(target),'commands':[],'errors':[],
+        'historical_ELFs_reused':False,'fresh_Cargo_target':str(target),'runtime_test_cwd':str(runtime_cwd),'commands':[],'errors':[],
         'explicitly_unqualified_privileged_tests':tc['runtime_privileged_ignored'],
         'Android_builds':0,'Android_starts':0,'runtime_qualified':False,'production_ready':False,
         'ExecutionAdmission_constructible':False,'actual_SELinux_transition_qualified':False,
         'host334_counted_as_fresh_CI':False,'private_DMA_fixture_materialized':False,'started_ns':time.time_ns()}
 
-    def run(name,argv,timeout=1800):
+    def run(name,argv,timeout=1800,cwd=None):
+        command_cwd = recipe if cwd is None else cwd
         outp,errp=logdir/(name+'.stdout'),logdir/(name+'.stderr');timed_out=False;began=time.time_ns()
         with outp.open('xb') as out,errp.open('xb') as err:
-            child=subprocess.Popen(argv,cwd=recipe,env=env,stdin=subprocess.DEVNULL,stdout=out,stderr=err,start_new_session=True)
+            child=subprocess.Popen(argv,cwd=command_cwd,env=env,stdin=subprocess.DEVNULL,stdout=out,stderr=err,start_new_session=True)
             try:code=child.wait(timeout=timeout)
             except BaseException:
                 timed_out=True
@@ -78,7 +91,7 @@ def main():
                 try:code=child.wait(timeout=10)
                 except subprocess.TimeoutExpired:os.killpg(child.pid,signal.SIGKILL);code=child.wait(timeout=10)
         stdout,stderr=VERIFY.regular(outp),VERIFY.regular(errp)
-        row={'name':name,'argv':argv,'pid':child.pid,'exit_code':code,'actual_child_reaped':True,'timed_out':timed_out,
+        row={'name':name,'argv':argv,'cwd':str(command_cwd),'pid':child.pid,'exit_code':code,'actual_child_reaped':True,'timed_out':timed_out,
              'started_ns':began,'finished_ns':time.time_ns(),'stdout':{'path':str(outp),**VERIFY.digest(stdout)},'stderr':{'path':str(errp),**VERIFY.digest(stderr)}}
         result['commands'].append(row)
         VERIFY.need(not timed_out and code==0,'actual fresh CI command failed: '+name)
@@ -92,15 +105,15 @@ def main():
                     'one actual freshly compiled current runtime harness required')
         binary=Path(artifacts[0]['executable'])
         VERIFY.need(binary.parent==target/'debug/deps' and Path(artifacts[0]['target']['src_path']).is_relative_to(recipe),'runtime harness must come from this complete source and fresh target')
-        _,stdout,_=run('runtime-full-catalog',[str(binary),'--list','--format=terse'],60)
+        _,stdout,_=run('runtime-full-catalog',[str(binary),'--list','--format=terse'],60,cwd=runtime_cwd)
         names=[line[:-6] for line in stdout.decode().splitlines() if line.endswith(': test')]
         VERIFY.need(len(names)==len(stdout.decode().splitlines())==310 and len(set(names))==310 and set(names)==set(tc['runtime_registered']),
                     'complete actual310 runtime catalog required')
-        _,stdout,_=run('runtime-privileged-ignored-catalog',[str(binary),'--ignored','--list','--format=terse'],60)
+        _,stdout,_=run('runtime-privileged-ignored-catalog',[str(binary),'--ignored','--list','--format=terse'],60,cwd=runtime_cwd)
         names=[line[:-6] for line in stdout.decode().splitlines() if line.endswith(': test')]
         VERIFY.need(len(names)==len(stdout.decode().splitlines())==21 and len(set(names))==21 and set(names)==set(tc['runtime_privileged_ignored']),
                     'all21 privileged ignored cases must remain explicit')
-        command,stdout,_=run('runtime289-ordinary',[str(binary),'--test-threads=1','--color','never'],1200)
+        command,stdout,_=run('runtime289-ordinary',[str(binary),'--test-threads=1','--color','never'],1200,cwd=runtime_cwd)
         command['actual_tests']=VERIFY.test_terminal(stdout.decode(),tc['runtime_ordinary'],tc['runtime_privileged_ignored'],0)
         result['actual_fresh_runtime_ordinary_tests']=len(command['actual_tests']['passed'])
         for name,package,selection,expected,filtered in [
@@ -111,12 +124,11 @@ def main():
             result['actual_fresh_current_tool_tests']+=len(command['actual_tests']['passed'])
         VERIFY.need(result['actual_fresh_runtime_ordinary_tests']==289 and result['actual_fresh_current_tool_tests']==4,'all293 fresh ordinary/current tests required')
         release,stdout,_=run('four-fresh-release-binaries',['cargo','build','--release','--locked','-j',str(args.jobs),
-            '-p','droidloom-supervisor','-p','droidloom-source','-p','droidloom-update','--bins','--message-format=json'])
+            '-p','droidloom-supervisor','-p','droidloom-source','-p','droidloom-update',
+            '--bin','droidloom-supervisor','--bin','droidloomd','--bin','droidloom-source','--bin','droidloom-update','--message-format=json'])
         messages=VERIFY.successful_cargo_stream(stdout)
         wanted={'droidloom-supervisor','droidloomd','droidloom-source','droidloom-update'}
-        artifacts=[x for x in messages if x.get('reason')=='compiler-artifact' and x.get('executable') and x.get('profile',{}).get('test') is False]
-        VERIFY.need(len(artifacts)==4 and {x['target']['name'] for x in artifacts}==wanted and all(x['fresh'] is False for x in artifacts),
-                    'four source-bound fresh release artifacts required')
+        artifacts=select_release_artifacts(messages)
         fresh=logdir/'fresh-release';fresh.mkdir(mode=0o700);bins={};originals={}
         for item in artifacts:
             name=item['target']['name'];path=Path(item['executable'])
