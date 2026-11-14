@@ -2303,6 +2303,8 @@ fn enforce_strict_soong_dependencies(command: &mut Command) {
 
 #[path = "aac_security.rs"]
 mod aac_security;
+#[path = "wm_security.rs"]
+mod wm_security;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum SoongDependencyMode {
@@ -2513,6 +2515,14 @@ pub fn build_aac_security_on_audio_source(
 ) -> Result<()> {
     build_targets_with_fixed_request(repo, source, out, work, product, jobs,
         FixedProductionRequest::AacSecurityOnAudioSource)
+}
+
+/// Build services and the existing upstream WmTests through the normal strict producer.
+/// This shares the same official WM projection as the default full services build.
+pub fn build_wm_security(
+    repo: &Path, source: &Path, out: &Path, work: &Path, product: &str, jobs: usize,
+) -> Result<()> {
+    build_targets(repo, source, out, work, product, jobs, wm_security::TARGETS)
 }
 
 fn validate_vendor_policy_original(source: &Path) -> Result<()> {
@@ -5285,6 +5295,10 @@ fn build_targets_with_fixed_request(
     // existing profile targets below control projection only, never final argv.
     request.validate(product)?;
     let dependency_mode = request.source_mode();
+    let wm_security_requested = wm_security::required_for_targets(request.requested_targets());
+    if wm_security_requested {
+        wm_security::validate_request(request, product)?;
+    }
     let targets = request.projection_targets();
     let ordinary_pair = matches!(request, FixedProductionRequest::NativePair);
     let typed_ingress = matches!(request, FixedProductionRequest::NativeRoleIngress(_));
@@ -5363,6 +5377,9 @@ fn build_targets_with_fixed_request(
         FixedProductionRequest::Existing(_, _) | FixedProductionRequest::NativePair
         | FixedProductionRequest::NativeArt(_) | FixedProductionRequest::NativeRoleIngress(_) => (),
     }
+    if wm_security_requested {
+        wm_security::validate_original(repo, source)?;
+    }
     validate_audio_pasit_original_providers(source, dependency_mode)?;
     validate_audio_zygote_original_providers(source, dependency_mode)?;
     validate_audio_lint_fonttools_original_providers(source, dependency_mode)?;
@@ -5414,6 +5431,9 @@ fn build_targets_with_fixed_request(
     }
     if matches!(request, FixedProductionRequest::AacSecurityOnAudioSource) {
         aac_security::project(&mut p, repo, source)?;
+    }
+    if wm_security_requested {
+        wm_security::project(&mut p, repo, source)?;
     }
     for (cwd, patch) in PATCHES {
         p.patch(source, cwd, &repo.join(patch))?;
@@ -5858,6 +5878,9 @@ fn build_targets_with_fixed_request(
     if matches!(request, FixedProductionRequest::AacSecurityOnAudioSource) {
         aac_security::input_receipt(repo, source, &lock, out, product, &p)?;
     }
+    if wm_security_requested {
+        wm_security::input_receipt(repo, source, &lock, out, product, request, &p)?;
+    }
     let engine_inputs = if dependency_mode == SoongDependencyMode::NativeEngineTargetClosure {
         Some(crate::native_engine::engine_build_inputs(
             repo, source, &vendor, work, out, &native_bridge_source,
@@ -5876,6 +5899,9 @@ fn build_targets_with_fixed_request(
     )?;
     let mut cmd = production_soong_command(source, out, work, product, jobs, &selected_targets)?;
     request.configure_dependencies(&mut cmd, product)?;
+    if wm_security_requested {
+        wm_security::configure_command(request, product, &mut cmd)?;
+    }
     native_projection::configure_ordinary_pair_graph_observation(&mut cmd, ordinary_pair);
     let result = run_build(&mut cmd);
     p.restore()?;
@@ -5931,6 +5957,9 @@ fn build_targets_with_fixed_request(
     }
     if matches!(request, FixedProductionRequest::AacSecurityOnAudioSource) {
         aac_security::normal_result(repo, source, out, product)?;
+    }
+    if wm_security_requested {
+        wm_security::normal_result(repo, source, out, product, request)?;
     }
     if let Some(inputs) = engine_inputs {
         crate::native_engine::write_engine_build_receipt(source, out, product, inputs)?;
