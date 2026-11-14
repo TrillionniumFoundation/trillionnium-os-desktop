@@ -3502,7 +3502,10 @@ mod exact_jca_provider_closure {
             OsStr::new("commit"), OsStr::new("--quiet"), OsStr::new("-m"),
             OsStr::new("original complete provider fixture")]).unwrap();
         let head = run_git_output(&origin, &[OsStr::new("rev-parse"), OsStr::new("HEAD")]).unwrap();
-        let mut old = build_plan(&valid_lock()).unwrap();
+        let fixture: SparseSourceLock = serde_json::from_str(include_str!(
+            "../../../android/manifest/audio-bridge-source-lock.json")).unwrap();
+        let mut old = build_plan(&fixture).unwrap();
+        old.projects.truncate(1);
         old.links.clear();
         old.projects[0].url = origin.to_string_lossy().into_owned();
         old.projects[0].commit = String::from_utf8(head.stdout).unwrap().trim().to_owned();
