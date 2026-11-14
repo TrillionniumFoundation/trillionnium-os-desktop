@@ -397,11 +397,19 @@ cargo run --locked -j 1 -p droidloom-package -- build --component droidloom-supe
 ```
 
 This compiles the selected Cargo package and its Rust dependencies. Selecting
-`droidloom-supervisor` updates `droidloomctl`, `droidloomd` and the supervisor
-together. Other supported components are `droidloom-wayland`,
+`droidloom-supervisor` updates `droidloomctl`, `droidloomd`, the supervisor and
+`droidloom-host-mac` together, including the fixed executable copies under
+`/usr/lib/droidloom/production/current`. Other supported components are `droidloom-wayland`,
 `droidloom-applications`, `droidloom-doctor`, and `droidloom-package-support`.
 Repeat `--component` to select more than one. Without it, the command builds
 the complete runtime and Android components as before.
+
+Full builds also stage the matching production unit templates under
+`/usr/share/droidloom/production`. These are package data: staging does not install
+them into `/etc/systemd/system`, enable a service, write a production selection,
+load host policy or qualify Android. The production installer must still bind
+the selected image/runtime cohort and complete the actual kernel and runtime
+qualification before activation.
 
 A component build reuses unchanged files from the newest completed older package
 pair with the same version and architecture in `dist/arch`. It produces a new
@@ -411,8 +419,8 @@ extracting and repackaging the image still takes some time.
 
 Use a full build for Android changes, changes spanning the host/Android protocol,
 or changes to dependencies and package integration. Component builds reject
-changed Cargo lockfiles, pinned Android inputs, runtime contracts and packaging
-recipes. They also reject `--clean` and `--source-cache`. A completed full build
+changed Cargo lockfiles, pinned Android inputs, runtime contracts, production
+unit templates and packaging recipes. They also reject `--clean` and `--source-cache`. A completed full build
 provides the baseline; builds made before component support need a full rebuild
 to record their inputs. Keep that baseline's archives, summary and
 `component-inputs.json` together. Unselected source edits are not included.

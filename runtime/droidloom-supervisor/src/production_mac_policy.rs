@@ -32,6 +32,31 @@ fn initial_credentials(proc: &File) -> Result<()> {
     Ok(())
 }
 
+// The fixed policy labels the kernel nsfs superblock, never generic unlabeled
+// objects. Observe the actual held inode SID in addition to both kernel ioctls.
+fn fixed_namespace_label(file: &File) -> Result<()> {
+    let before = Node::of(file)?;
+    let mut context = [0_u8; 128];
+    let count = unsafe {
+        libc::fgetxattr(
+            file.as_raw_fd(),
+            c"security.selinux".as_ptr(),
+            context.as_mut_ptr().cast(),
+            context.len(),
+        )
+    };
+    if count < 0 {
+        return Err(io::Error::last_os_error().into());
+    }
+    require(
+        count > 0
+            && count as usize <= context.len()
+            && context_matches(&context[..count as usize], "u:object_r:droidloom_nsfs:s0")
+            && Node::of(file)? == before,
+        "actual held namespace inode must keep its fixed nsfs label",
+    )
+}
+
 fn initial_namespaces(proc: &File) -> Result<[File; 2]> {
     let directory = open_at(proc.as_raw_fd(), c"ns", libc::O_PATH | libc::O_DIRECTORY)?;
     require(
@@ -55,6 +80,7 @@ fn initial_namespaces(proc: &File) -> Result<[File; 2]> {
             return Err(io::Error::last_os_error().into());
         }
         let file = unsafe { File::from_raw_fd(fd) };
+        fixed_namespace_label(&file)?;
         let actual_kind = unsafe { libc::ioctl(fd, NS_GET_NSTYPE, 0 as libc::c_ulong) };
         if actual_kind < 0 {
             return Err(io::Error::last_os_error().into());

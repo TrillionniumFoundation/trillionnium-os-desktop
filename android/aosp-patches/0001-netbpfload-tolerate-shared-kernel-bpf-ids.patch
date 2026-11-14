@@ -77,48 +77,6 @@ index 7ba3247..80fb95b 100644
          uint32_t mapId = 0;
          while (true) {
              errno = 0;
-diff --git a/service/jni/com_android_server_connectivity_ClatCoordinator.cpp b/service/jni/com_android_server_connectivity_ClatCoordinator.cpp
-index 70991eb..7b2a1fc 100644
---- a/service/jni/com_android_server_connectivity_ClatCoordinator.cpp
-+++ b/service/jni/com_android_server_connectivity_ClatCoordinator.cpp
-@@ -26,6 +26,7 @@
- #include <nativehelper/JNIHelp.h>
- #include <net/if.h>
- #include <spawn.h>
-+#include <stdlib.h>
- #include <sys/stat.h>
- #include <sys/types.h>
- #include <sys/wait.h>
-@@ -53,6 +54,10 @@ namespace android {
- 
- static bool fatal = false;
- 
-+static bool isDroidloomCell() {
-+    return getenv("DROIDLOOM_CELL") != nullptr;
-+}
-+
- #define ALOGF(s ...) do { ALOGE(s); fatal = true; } while(0)
- 
- enum verify { VERIFY_DIR, VERIFY_BIN, VERIFY_PROG, VERIFY_MAP_RO, VERIFY_MAP_RW };
-@@ -70,8 +75,16 @@ static void verifyPerms(const char * const path,
- 
-     char b[255] = {};
-     int v = lgetxattr(path, "security.selinux", &b, sizeof(b));
--    if (v < 0) ALOGF("lgetxattr '%s' errno=%d", path, errno);
--    if (strncmp(ctxt, b, sizeof(b))) ALOGF("context of '%s' is '%s' != '%s'", path, b, ctxt);
-+    if (v < 0) {
-+        if ((errno == EOPNOTSUPP || errno == ENODATA) && isDroidloomCell()) {
-+            ALOGI("Droidloom cell: SELinux xattr absent or unavailable for '%s'; preserving other checks",
-+                  path);
-+        } else {
-+            ALOGF("lgetxattr '%s' errno=%d", path, errno);
-+        }
-+    } else if (strncmp(ctxt, b, sizeof(b))) {
-+        ALOGF("context of '%s' is '%s' != '%s'", path, b, ctxt);
-+    }
- 
-     int fd = -1;
- 
 diff --git a/service/Android.bp b/service/Android.bp
 index 3bd1471..a61a5ce 100644
 --- a/service/Android.bp

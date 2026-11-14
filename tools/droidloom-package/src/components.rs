@@ -41,6 +41,22 @@ impl Component {
                 ("droidloom-supervisor", "usr/bin/droidloom-supervisor"),
                 ("droidloomctl", "usr/bin/droidloomctl"),
                 ("droidloomd", "usr/bin/droidloomd"),
+                (
+                    "droidloom-supervisor",
+                    "usr/lib/droidloom/production/current/droidloom-supervisor",
+                ),
+                (
+                    "droidloomctl",
+                    "usr/lib/droidloom/production/current/droidloomctl",
+                ),
+                (
+                    "droidloomd",
+                    "usr/lib/droidloom/production/current/droidloomd",
+                ),
+                (
+                    "droidloom-host-mac",
+                    "usr/lib/droidloom/production/current/droidloom-host-mac",
+                ),
             ],
             Self::Wayland => &[("droidloom-wayland", "usr/bin/droidloom-wayland")],
             Self::Applications => &[("droidloom-applications", "usr/bin/droidloom-applications")],
@@ -57,7 +73,13 @@ impl Component {
 // after changing pinned inputs, dependency resolution or the packaging recipe.
 fn inputs(source: &Path) -> Result<BTreeMap<String, Vec<u8>>> {
     let mut result = BTreeMap::new();
-    for path in ["Cargo.toml", "Cargo.lock", "rust-toolchain.toml"] {
+    for path in [
+        "Cargo.toml",
+        "Cargo.lock",
+        "rust-toolchain.toml",
+        "runtime/droidloom-supervisor/src/droidloom-production.service",
+        "runtime/droidloom-supervisor/src/droidloom-manager-label.service",
+    ] {
         result.insert(path.into(), fs::read(source.join(path))?);
     }
     fn visit(source: &Path, relative: &Path, result: &mut BTreeMap<String, Vec<u8>>) -> Result<()> {
@@ -239,6 +261,7 @@ mod tests {
             "android/manifest",
             "protocol",
             "runtime/droidloom-contracts/src",
+            "runtime/droidloom-supervisor/src",
             "tools/droidloom-update/src",
         ] {
             fs::create_dir_all(root.join(directory)).unwrap();
@@ -248,6 +271,8 @@ mod tests {
             "Cargo.lock",
             "rust-toolchain.toml",
             "packaging/arch/PKGBUILD.in",
+            "runtime/droidloom-supervisor/src/droidloom-production.service",
+            "runtime/droidloom-supervisor/src/droidloom-manager-label.service",
         ] {
             fs::write(root.join(path), b"fixture").unwrap();
         }
@@ -306,11 +331,44 @@ mod tests {
         );
     }
     #[test]
-    fn supervisor_rebuild_updates_both_protocol_peers() {
+    fn supervisor_rebuild_updates_both_protocol_peers_and_fixed_production_paths() {
         let binaries = Component::Supervisor.binaries();
         assert!(binaries.contains(&("droidloomctl", "usr/bin/droidloomctl")));
         assert!(binaries.contains(&("droidloomd", "usr/bin/droidloomd")));
-        assert_eq!(binaries.len(), 3);
+        for binary in [
+            "droidloom-supervisor",
+            "droidloomctl",
+            "droidloomd",
+            "droidloom-host-mac",
+        ] {
+            let destination = format!("usr/lib/droidloom/production/current/{binary}");
+            assert!(binaries.contains(&(binary, destination.as_str())));
+        }
+        assert_eq!(binaries.len(), 7);
+    }
+
+    #[test]
+    fn changed_production_unit_requires_a_full_package_build() {
+        let directory = tempfile::tempdir().unwrap();
+        let root = directory.path();
+        let current = Version {
+            version: "0.1.0".into(),
+            release: 2,
+            architecture: "x86_64".into(),
+        };
+        fixture(root, 1);
+        assert!(baseline(root, &current).is_ok());
+        fs::write(
+            root.join("runtime/droidloom-supervisor/src/droidloom-manager-label.service"),
+            b"changed fixed helper unit",
+        )
+        .unwrap();
+        assert!(
+            baseline(root, &current)
+                .unwrap_err()
+                .to_string()
+                .contains("full build")
+        );
     }
 
     #[test]

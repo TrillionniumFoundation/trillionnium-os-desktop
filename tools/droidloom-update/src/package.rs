@@ -158,6 +158,7 @@ fn package_layout(repo: &Path, host: &Path, stage: &Path) -> Result<()> {
         &runtime.join("usr/lib/droidloom/droidloom-package-helper"),
         0o755,
     )?;
+    production_host_payload(repo, host, &runtime)?;
     let mut template: Value = serde_json::from_slice(&fs::read(
         repo.join("packaging/cell-spec-x86_64-u1000.json"),
     )?)?;
@@ -194,6 +195,41 @@ fn package_layout(repo: &Path, host: &Path, stage: &Path) -> Result<()> {
         ("README.md", "usr/share/doc/droidloom/README.md"),
     ] {
         copy(&repo.join("packaging/arch").join(from), &runtime.join(to))?;
+    }
+    Ok(())
+}
+
+fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<()> {
+    // The fixed production executable paths are ordinary package files. Keep
+    // them in the same build as the desktop protocol peers; the unit templates
+    // remain data until a separately qualified installation selects the cell.
+    for binary in [
+        "droidloom-supervisor",
+        "droidloomctl",
+        "droidloomd",
+        "droidloom-host-mac",
+    ] {
+        let source = host.join(binary);
+        if !fs::symlink_metadata(&source)?.is_file() {
+            return fail("production package binaries must be regular build outputs");
+        }
+        let target = runtime
+            .join("usr/lib/droidloom/production/current")
+            .join(binary);
+        copy(&source, &target)?;
+        mode(&target, 0o755)?;
+    }
+    for unit in [
+        "droidloom-production.service",
+        "droidloom-manager-label.service",
+    ] {
+        let source = repo.join("runtime/droidloom-supervisor/src").join(unit);
+        if !fs::symlink_metadata(&source)?.is_file() {
+            return fail("production unit templates must be regular source files");
+        }
+        let target = runtime.join("usr/share/droidloom/production").join(unit);
+        copy(&source, &target)?;
+        mode(&target, 0o644)?;
     }
     Ok(())
 }
@@ -242,6 +278,78 @@ fn package_notices(repo: &Path, work: &Path, stage: &Path) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::os::unix::fs::{MetadataExt, PermissionsExt};
+
+    #[test]
+    fn production_unit_commands_resolve_to_complete_staged_host_payload() {
+        let directory = tempfile::tempdir().unwrap();
+        let repo = directory.path().join("source");
+        let host = directory.path().join("release");
+        let runtime = directory.path().join("runtime");
+        let templates = repo.join("runtime/droidloom-supervisor/src");
+        fs::create_dir_all(&templates).unwrap();
+        fs::create_dir(&host).unwrap();
+        for (name, body) in [
+            (
+                "droidloom-production.service",
+                include_str!(
+                    "../../../runtime/droidloom-supervisor/src/droidloom-production.service"
+                ),
+            ),
+            (
+                "droidloom-manager-label.service",
+                include_str!(
+                    "../../../runtime/droidloom-supervisor/src/droidloom-manager-label.service"
+                ),
+            ),
+        ] {
+            fs::write(templates.join(name), body).unwrap();
+        }
+        for binary in ["droidloom-supervisor", "droidloomctl", "droidloomd"] {
+            fs::write(host.join(binary), format!("package-copy fixture: {binary}")).unwrap();
+        }
+        // A three-binary legacy build must not produce a complete new payload.
+        assert!(production_host_payload(&repo, &host, &runtime).is_err());
+        fs::write(
+            host.join("droidloom-host-mac"),
+            b"package-copy fixture: host-mac",
+        )
+        .unwrap();
+        production_host_payload(&repo, &host, &runtime).unwrap();
+        for unit in fs::read_dir(runtime.join("usr/share/droidloom/production")).unwrap() {
+            let unit = unit.unwrap().path();
+            let body = fs::read_to_string(&unit).unwrap();
+            assert_eq!(
+                body,
+                fs::read_to_string(templates.join(unit.file_name().unwrap())).unwrap()
+            );
+            assert_eq!(
+                fs::metadata(&unit).unwrap().permissions().mode() & 0o777,
+                0o644
+            );
+            let command = body
+                .lines()
+                .find_map(|line| line.strip_prefix("ExecStart="))
+                .unwrap();
+            let executable = command.split_whitespace().next().unwrap();
+            let target = runtime.join(executable.strip_prefix('/').unwrap());
+            let original = host.join(target.file_name().unwrap());
+            let metadata = fs::symlink_metadata(&target).unwrap();
+            assert!(metadata.is_file());
+            assert_eq!(metadata.permissions().mode() & 0o777, 0o755);
+            assert_eq!(metadata.nlink(), 1);
+            assert_ne!(metadata.ino(), fs::metadata(&original).unwrap().ino());
+            assert_eq!(fs::read(&target).unwrap(), fs::read(original).unwrap());
+        }
+        // Staging the public files cannot install a unit or select a cell.
+        assert!(!runtime.join("etc").exists());
+        assert!(
+            !runtime
+                .join("usr/lib/systemd/system/droidloom-production.service")
+                .exists()
+        );
+    }
+
     #[test]
     fn portable_recipe_has_no_builder_identity_or_local_storage() {
         let mut template: Value = serde_json::from_str(include_str!(

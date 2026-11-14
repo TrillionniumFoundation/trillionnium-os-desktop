@@ -63,6 +63,8 @@ pub fn apex_output(name: &str) -> Option<&'static str> {
         _ => None,
     }
 }
+// Missing kernel or MAC support remains an execution error. Build adapters
+// must not manufacture networking success or replace real Binder SIDs.
 const PATCHES: &[(&str, &str)] = &[
     (
         "frameworks/native",
@@ -85,28 +87,12 @@ const PATCHES: &[(&str, &str)] = &[
         "android/aosp-patches/0003-connectivity-offline-rcu.patch",
     ),
     (
-        "system/netd",
-        "android/aosp-patches/0006-netd-cell-kernel-policy.patch",
-    ),
-    (
         "hardware/interfaces",
         "android/aosp-patches/0002-audio-default-only-service.patch",
     ),
     (
         "system/memory/libmeminfo",
         "android/aosp-patches/0004-libmeminfo-offline-gpu-accounting.patch",
-    ),
-    (
-        "",
-        "android/binder-compat/0001-droidloom-context-manager-without-kernel-sid.patch",
-    ),
-    (
-        "",
-        "android/binder-compat/0002-droidloom-servicemanager-pid-context-fallback.patch",
-    ),
-    (
-        "",
-        "android/binder-compat/0003-droidloom-cell-caller-context-fallback.patch",
     ),
     (
         "frameworks/native",
@@ -541,7 +527,7 @@ fn audio_original_graph_provider(
 const AUDIO_CONNECTIVITY_BP: &str = "packages/modules/Connectivity/service/Android.bp";
 const AUDIO_CONNECTIVITY_PATCHES: &[(&str, &str)] = &[
     ("android/aosp-patches/0001-netbpfload-tolerate-shared-kernel-bpf-ids.patch",
-     "eae002e9858dc976f494f9d29783b42f8cad8ed0fd3326a26d28d7906b7a9b78"),
+     "d77a6f55d4533ab74cd90f71307e9076da9e05e5906524098887a23ce55a6dbc"),
     ("android/aosp-patches/0003-connectivity-offline-rcu.patch",
      "3a09e7169467b08774495e36ba1775f76bbada5ddc1c2771ec8736cc75bc588b"),
 ];
@@ -9638,6 +9624,9 @@ mod tests {
             let provider = source.join(AUDIO_CONNECTIVITY_BP);
             let original = fs::read(&provider).unwrap();
             let before_time = fs::metadata(&provider).unwrap().modified().unwrap();
+            let clat = source.join("packages/modules/Connectivity/service/jni/com_android_server_connectivity_ClatCoordinator.cpp");
+            let clat_original = fs::read(&clat).unwrap();
+            let clat_modified = fs::metadata(&clat).unwrap().modified().unwrap();
             let unselected = source.join("packages/modules/Connectivity/tests/unselected.bp");
             write(&unselected, b"unchanged sibling\n").unwrap();
             assert!(audio_original_graph_provider(AUDIO_CONNECTIVITY_BP,
@@ -9645,6 +9634,10 @@ mod tests {
             let journal = temp.path().join("projection.json");
             let mut p = Projection::new(journal.clone()).unwrap();
             audio_connectivity_apply_original_patches(&mut p, &repo, &source);
+            // The real selected projection must leave upstream label checks intact.
+            assert_eq!(fs::read(&clat).unwrap(), clat_original);
+            assert_eq!(fs::metadata(&clat).unwrap().modified().unwrap(), clat_modified);
+            assert!(!p.originals.iter().any(|original| original.path == clat));
             let projected = fs::read_to_string(&provider).unwrap();
             // This reproduces the actual r8 failure after the genuine patches.
             assert!(audio_original_graph_provider(AUDIO_CONNECTIVITY_BP, &projected, mode).is_err());
@@ -9657,7 +9650,7 @@ mod tests {
             }
             let expected: Vec<_> = p.originals.iter().map(|o|
                 (o.path.clone(), o.bytes.clone().unwrap(), o.modified)).collect();
-            assert_eq!(expected.len(), 7);
+            assert_eq!(expected.len(), 6);
             let inventory = p.effective_inventory(&repo, &source).unwrap();
             assert_eq!(inventory["files"][AUDIO_CONNECTIVITY_BP],
                 "e5b482317718cea8ce2a8dbe5c339daaf7837e92b1fa58c735dd4f3f48c58c44");
@@ -9674,6 +9667,8 @@ mod tests {
             }
             assert_eq!(fs::read(&provider).unwrap(), original);
             assert_eq!(fs::metadata(&provider).unwrap().modified().unwrap(), before_time);
+            assert_eq!(fs::read(&clat).unwrap(), clat_original);
+            assert_eq!(fs::metadata(&clat).unwrap().modified().unwrap(), clat_modified);
             assert_eq!(fs::read(&unselected).unwrap(), b"unchanged sibling\n");
             assert!(!journal.exists());
         }
@@ -10283,6 +10278,16 @@ mod tests {
 
     #[test]
     fn native_engine_patch_routing_keeps_full_product_and_make_bridge_semantics() {
+        // These historical development patches remain archived but have no
+        // authority in the actual shared producer selection.
+        for excluded in [
+            "android/aosp-patches/0006-netd-cell-kernel-policy.patch",
+            "android/binder-compat/0001-droidloom-context-manager-without-kernel-sid.patch",
+            "android/binder-compat/0002-droidloom-servicemanager-pid-context-fallback.patch",
+            "android/binder-compat/0003-droidloom-cell-caller-context-fallback.patch",
+        ] {
+            assert!(!PATCHES.iter().any(|(_, selected)| *selected == excluded));
+        }
         let engine = SoongDependencyMode::NativeEngineTargetClosure;
         assert!(qualified_defaults_mode(engine));
         assert!(leaf_go_memory_mode(engine));
