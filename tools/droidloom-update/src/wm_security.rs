@@ -362,40 +362,36 @@ mod tests {
     }
 
     #[test]
-    fn wm_focused_selects_the_complete_native645_lock_and_original_providers() {
+    fn wm_focused_selects_complete_production651_lock_and_original_providers() {
         let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
             .join("../..")
             .canonicalize()
             .unwrap();
-        let request = FixedProductionRequest::WmSecurityOnNativeSource;
+        let request = FixedProductionRequest::WmSecurityOnProductionSource;
         let selected = request.source_lock(&repo).unwrap();
-        let complete_pair = FixedProductionRequest::NativePair
-            .source_lock(&repo)
-            .unwrap();
-        assert_eq!(selected, complete_pair);
-        assert_eq!(
+        assert_eq!(selected, repo.join(production_source::LOCK_PATH));
+        assert_ne!(
             selected,
-            repo.join("android/native-generation-pair/source-lock.json")
+            FixedProductionRequest::NativePair
+                .source_lock(&repo)
+                .unwrap()
         );
-        let lock = droidloom_source::native_pair::load_lock(&selected).unwrap();
-        let plan = droidloom_source::native_pair::build_plan(&lock).unwrap();
-        assert_eq!(plan.projects.len(), 645);
+        let lock = droidloom_source::production_full::load_lock(&selected).unwrap();
+        let plan = droidloom_source::production_full::build_plan(&lock).unwrap();
+        assert_eq!(plan.projects.len(), 651);
         assert_eq!(plan.links.len(), 8);
         assert!(!plan.unrestricted_repo_sync);
         assert_eq!(request.projection_targets(), TARGETS);
         assert_eq!(request.requested_targets(), TARGETS);
         assert_eq!(request.source_mode(), SoongDependencyMode::Strict);
-        assert_eq!(
-            hash(&selected).unwrap(),
-            "e07f2fac7e7a22c331cffc9a37d57706d64a4550165823afb2ef65c12b0d4a40"
-        );
+        assert_eq!(hash(&selected).unwrap(), production_source::LOCK_SHA);
     }
 
     #[test]
     fn wm_default_full_and_focused_services_commands_use_strict_user_source() {
         for request in [
             FixedProductionRequest::Existing(SoongDependencyMode::Strict, crate::android::TARGETS),
-            FixedProductionRequest::WmSecurityOnNativeSource,
+            FixedProductionRequest::WmSecurityOnProductionSource,
         ] {
             assert!(required_for_targets(request.requested_targets()));
             validate_request(request, "droidloom_x86_64").unwrap();

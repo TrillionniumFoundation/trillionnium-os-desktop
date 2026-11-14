@@ -23,11 +23,14 @@ use thiserror::Error;
 mod resume;
 /// Explicit original-pair source scope. Audio callers keep the default API.
 pub mod native_pair;
+/// Explicit complete Audio/Native production union; original profiles stay separate.
+pub mod production_full;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum SourceProfile {
     Audio541,
     NativePair656,
+    Production651,
 }
 
 impl SourceProfile {
@@ -35,18 +38,21 @@ impl SourceProfile {
         match self {
             Self::Audio541 => MAX_PROJECTS,
             Self::NativePair656 => native_pair::MAX_PROJECTS,
+            Self::Production651 => production_full::MAX_PROJECTS,
         }
     }
     fn maximum_sparse_paths(self) -> usize {
         match self {
             Self::Audio541 => MAX_SPARSE_PATHS,
             Self::NativePair656 => native_pair::MAX_SPARSE_PATHS,
+            Self::Production651 => production_full::MAX_SPARSE_PATHS,
         }
     }
     fn accepts_project_name(self, name: &str) -> bool {
         match self {
             Self::Audio541 => is_project_name(name),
             Self::NativePair656 => native_pair::is_project_name(name),
+            Self::Production651 => native_pair::is_project_name(name),
         }
     }
 }
@@ -634,11 +640,10 @@ fn validate_plan_extension(
         });
         let compatible = replacement.is_some_and(|candidate| {
             candidate.sparse_paths == project.sparse_paths
-                || project.sparse_paths.is_empty()
-                || project
-                    .sparse_paths
-                    .iter()
-                    .all(|path| candidate.sparse_paths.contains(path))
+                || candidate.sparse_paths.is_empty()
+                || (!project.sparse_paths.is_empty()
+                    && project.sparse_paths.iter()
+                        .all(|path| candidate.sparse_paths.contains(path)))
         });
         if !compatible {
             problems.push(format!(
@@ -835,6 +840,14 @@ fn materialize_project(root: &Path, project: &PlannedProject) -> Result<(), Sour
 
 fn apply_sparse_checkout(checkout: &Path, project: &PlannedProject) -> Result<(), SourceError> {
     if project.sparse_paths.is_empty() {
+        // An empty plan means the complete original project. Reconciliation
+        // must actually restore previously omitted files, not only its manifest.
+        let configured = run_git_output(checkout, &[OsStr::new("config"),
+            OsStr::new("--type=bool"), OsStr::new("--default=false"),
+            OsStr::new("--get"), OsStr::new("core.sparseCheckout")])?;
+        if String::from_utf8_lossy(&configured.stdout).trim() == "true" {
+            run_git(checkout, &[OsStr::new("sparse-checkout"), OsStr::new("disable")])?;
+        }
         return Ok(());
     }
     run_git(
@@ -3465,4 +3478,57 @@ mod exact_jca_provider_closure {
         assert_eq!(origin["Android_build_qualified"], false);
         assert_eq!(origin["runtime_qualified"], false);
     }
+    #[test]
+    fn complete_checkout_expansion_restores_all_original_files_and_rejects_contraction() {
+        let d = tempfile::tempdir().unwrap();
+        let origin = d.path().join("origin");
+        fs::create_dir(&origin).unwrap();
+        run_git(&origin, &[OsStr::new("init"), OsStr::new("--quiet"),
+            OsStr::new("--initial-branch=main")]).unwrap();
+        for (name, bytes) in [
+            ("Android.bp", b"// original root provider\n".as_slice()),
+            ("one/Android.bp", b"// original one provider\n".as_slice()),
+            ("one/source.txt", b"first original source\n".as_slice()),
+            ("two/Android.bp", b"// original second provider\n".as_slice()),
+            ("two/source.txt", b"second original source\n".as_slice()),
+        ] {
+            let path = origin.join(name);
+            fs::create_dir_all(path.parent().unwrap()).unwrap();
+            fs::write(path, bytes).unwrap();
+        }
+        run_git(&origin, &[OsStr::new("add"), OsStr::new(".")]).unwrap();
+        run_git(&origin, &[OsStr::new("-c"), OsStr::new("user.name=Droidloom Test"),
+            OsStr::new("-c"), OsStr::new("user.email=test@droidloom.invalid"),
+            OsStr::new("commit"), OsStr::new("--quiet"), OsStr::new("-m"),
+            OsStr::new("original complete provider fixture")]).unwrap();
+        let head = run_git_output(&origin, &[OsStr::new("rev-parse"), OsStr::new("HEAD")]).unwrap();
+        let mut old = build_plan(&valid_lock()).unwrap();
+        old.links.clear();
+        old.projects[0].url = origin.to_string_lossy().into_owned();
+        old.projects[0].commit = String::from_utf8(head.stdout).unwrap().trim().to_owned();
+        old.projects[0].sparse_paths = vec!["one".into()];
+        let root = d.path().join("checkout");
+        fs::create_dir(&root).unwrap();
+        materialize_project(&root, &old.projects[0]).unwrap();
+        let checkout = root.join(&old.projects[0].path);
+        assert!(!checkout.join("two/source.txt").exists());
+        let mut complete = old.clone();
+        complete.projects[0].sparse_paths.clear();
+        validate_plan_extension(&old, &complete).unwrap();
+        verify_project(&checkout, &complete.projects[0]).unwrap();
+        apply_sparse_checkout(&checkout, &complete.projects[0]).unwrap();
+        verify_project(&checkout, &complete.projects[0]).unwrap();
+        for name in ["Android.bp", "one/Android.bp", "one/source.txt", "two/Android.bp", "two/source.txt"] {
+            assert_eq!(fs::read(checkout.join(name)).unwrap(), fs::read(origin.join(name)).unwrap());
+        }
+        assert!(validate_plan_extension(&complete, &old).is_err());
+        assert!(checkout.join("two/source.txt").is_file());
+        // A new complete checkout also works before HEAD exists.
+        let fresh = d.path().join("fresh");
+        fs::create_dir(&fresh).unwrap();
+        materialize_project(&fresh, &complete.projects[0]).unwrap();
+        assert_eq!(fs::read(fresh.join(&complete.projects[0].path).join("two/source.txt")).unwrap(),
+                   fs::read(origin.join("two/source.txt")).unwrap());
+    }
+
 }

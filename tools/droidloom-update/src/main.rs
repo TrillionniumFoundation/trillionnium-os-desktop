@@ -166,7 +166,7 @@ enum Action {
         #[arg(long)]
         work: PathBuf,
     },
-    /// Build services and upstream WmTests on the complete exact Native source profile.
+    /// Build services and upstream WmTests on the complete fixed Audio/Native source union.
     /// Does not install framework artifacts or execute device tests.
     #[command(name = "wm-security-build")]
     WmSecurityBuild {
@@ -175,7 +175,7 @@ enum Action {
         #[arg(long)]
         out: PathBuf,
     },
-    /// Build the actual fixed user vendor image on the complete Native source profile.
+    /// Build the actual user vendor image and host secilc on the complete Audio/Native source union.
     /// Does not install an image, alter MAC policy or qualify production signing.
     #[command(name = "vendor-image-build")]
     VendorImageBuild {
@@ -679,7 +679,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
     #[test]
-    fn vendor_image_cli_keeps_one_target_and_explicit_output() {
+    fn vendor_image_cli_keeps_fixed_targets_and_explicit_output() {
         let d = tempfile::tempdir().unwrap();
         let work = d.path().join("work"); fs::create_dir(&work).unwrap();
         let out = d.path().join("vendor-out");

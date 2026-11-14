@@ -22,6 +22,7 @@ struct Cli {
 enum Profile {
     Audio,
     NativePair,
+    ProductionFull,
 }
 
 #[derive(Debug, Subcommand)]
@@ -79,11 +80,13 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     let build_plan: fn(&SparseSourceLock) -> Result<MaterializationPlan, SourceError> = match cli.profile {
         Profile::Audio => droidloom_source::build_plan,
         Profile::NativePair => droidloom_source::native_pair::build_plan,
+        Profile::ProductionFull => droidloom_source::production_full::build_plan,
     };
     type SourceOperation = fn(&Path, &SparseSourceLock, &Path) -> Result<MaterializedManifest, SourceError>;
     let (materialize, reconcile, verify_materialized): (SourceOperation, SourceOperation, SourceOperation) = match cli.profile {
         Profile::Audio => (droidloom_source::materialize, droidloom_source::reconcile, droidloom_source::verify_materialized),
         Profile::NativePair => (droidloom_source::native_pair::materialize, droidloom_source::native_pair::reconcile, droidloom_source::native_pair::verify_materialized),
+        Profile::ProductionFull => (droidloom_source::production_full::materialize, droidloom_source::production_full::reconcile, droidloom_source::production_full::verify_materialized),
     };
     match cli.command {
         Command::VerifyLock { lock } => {
@@ -146,6 +149,8 @@ mod tests {
             let native = Cli::try_parse_from(argv).unwrap();
             assert!(matches!(native.profile, Profile::NativePair));
         }
+        let full = Cli::try_parse_from(["droidloom-source", "--profile", "production-full", "verify-lock"]).unwrap();
+        assert!(matches!(full.profile, Profile::ProductionFull));
         for value in ["native", "unbounded", "656", "539", ""] {
             assert!(Cli::try_parse_from(["droidloom-source", "--profile", value, "verify-lock"]).is_err());
         }

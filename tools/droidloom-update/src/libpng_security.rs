@@ -477,36 +477,38 @@ mod tests {
     }
 
     #[test]
-    fn vendor_image_selects_complete_native_profile_and_default_full_rejects_legacy214() {
+    fn vendor_image_and_default_full_select_the_complete_production651_profile() {
         let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
             .join("../..")
             .canonicalize()
             .unwrap();
-        let request = FixedProductionRequest::VendorImageOnNativeSource;
-        assert!(request.uses_complete_native_source());
+        let request = FixedProductionRequest::VendorImageOnProductionSource;
+        assert!(request.uses_production_full_source());
         assert_eq!(
+            request.source_lock(&repo).unwrap(),
+            repo.join(production_source::LOCK_PATH)
+        );
+        assert_ne!(
             request.source_lock(&repo).unwrap(),
             FixedProductionRequest::NativePair
                 .source_lock(&repo)
                 .unwrap()
         );
         assert_eq!(request.projection_targets(), crate::android::TARGETS);
-        assert_eq!(request.requested_targets(), ["vendorimage"]);
+        assert_eq!(request.requested_targets(), ["vendorimage", "secilc"]);
         assert_eq!(request.source_mode(), SoongDependencyMode::Strict);
         assert_eq!(
             request
                 .soong_targets(Path::new("/not-executed"), "droidloom_x86_64")
                 .unwrap(),
-            [PathBuf::from("vendorimage")]
+            [PathBuf::from("vendorimage"), PathBuf::from("secilc")]
         );
         assert!(request.validate("another_product").is_err());
         let full =
             FixedProductionRequest::Existing(SoongDependencyMode::Strict, crate::android::TARGETS);
-        assert!(
-            full.source_lock(&repo)
-                .unwrap_err()
-                .to_string()
-                .contains("651-project")
+        assert_eq!(
+            full.source_lock(&repo).unwrap(),
+            request.source_lock(&repo).unwrap()
         );
         let d = tempfile::tempdir().unwrap();
         let selected = request.soong_targets(d.path(), "droidloom_x86_64").unwrap();

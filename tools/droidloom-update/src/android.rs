@@ -187,8 +187,8 @@ const TARGET_CLOSURE_SOONG_PATCHES: &[(&str, &str)] = &[
     ),
 ];
 
-// Experimental PCM bridge patches are applied only by the explicit audio APEX
-// entry point. Preserve the common product and NativeBridge patch inventory.
+// The explicit Audio APEX and complete product both package this PCM bridge.
+// NativePair and native-only requests keep their separate patch authority.
 const AUDIO_APEX_PCM_PATCHES: &[(&str, &str)] = &[
     ("", "android/aosp-patches/0015-droidloom-pcm-output.patch"),
     (
@@ -2040,7 +2040,15 @@ fn project_blueprints_with_native(
     p: &mut Projection, source: &Path, mode: SoongDependencyMode,
     native: Option<(bool, bool)>,
 ) -> Result<()> {
-    let (typed_ingress, ordinary_pair) = native.unwrap_or((false, false));
+    project_blueprints_with_provider_policy(p, source, mode, native, false)
+}
+
+fn project_blueprints_with_provider_policy(
+    p: &mut Projection, source: &Path, mode: SoongDependencyMode,
+    native: Option<(bool, bool)>, complete_providers: bool,
+) -> Result<()> {
+    let (typed_ingress, _ordinary_pair) = native.unwrap_or((false, false));
+    let ordinary_pair = native.is_some_and(|(_, pair)| pair);
     if native.is_some() && mode != SoongDependencyMode::Strict {
         return fail("Native generation provider visibility requires strict dependencies");
     }
@@ -2073,31 +2081,7 @@ fn project_blueprints_with_native(
         1,
     );
     p.put(&connectivity_sdk, pinned_prebuilt)?;
-    for rel in [
-        "frameworks/base/libs/WindowManager/Shell/Android.bp",
-        "frameworks/base/packages/SystemUI/Android.bp",
-        "packages/apps/Launcher3/Android.bp",
-        "packages/apps/Settings/Android.bp",
-        "frameworks/native/services/serialservice/Android.bp",
-        "packages/modules/ConfigInfrastructure/aconfigd/Android.bp",
-        // Keep the real Permission framework java_sdk_library visible to
-        // system-server bootclasspath; only trim unrelated test fixtures.
-    ] {
-        let path = source.join(rel);
-        let original = fs::read_to_string(&path)?;
-        let projected = if native.is_some() {
-            match native_projection::ordinary_pair_provider_blueprint(rel, &original, ordinary_pair)? {
-                Some(original) => original,
-                None => native_projection::shared_root_blueprint(rel, &original, typed_ingress)?,
-            }
-        } else {
-            match audio_original_shared_provider(rel, &original, mode)? {
-                Some(original) => original,
-                None => metadata_only(&original)?,
-            }
-        };
-        p.put(&path, projected)?;
-    }
+    project_shared_root_blueprints(p, source, mode, native, complete_providers)?;
     if mode == SoongDependencyMode::AudioApexTargetClosure {
         for relative in ["packages/apps/Launcher3/tests/Android.bp",
                          "packages/services/CrossDeviceSync/Android.bp",
@@ -2234,6 +2218,43 @@ fn project_blueprints_with_native(
     }
     p.put(&sdk, text)
 }
+const SHARED_PRODUCT_BLUEPRINTS: &[&str] = &[
+    "frameworks/base/libs/WindowManager/Shell/Android.bp",
+    "frameworks/base/packages/SystemUI/Android.bp",
+    "packages/apps/Launcher3/Android.bp",
+    "packages/apps/Settings/Android.bp",
+    "frameworks/native/services/serialservice/Android.bp",
+    "packages/modules/ConfigInfrastructure/aconfigd/Android.bp",
+];
+fn project_shared_root_blueprints(
+    p: &mut Projection, source: &Path, mode: SoongDependencyMode,
+    native: Option<(bool, bool)>, complete_providers: bool,
+) -> Result<()> {
+    if complete_providers && mode != SoongDependencyMode::Strict {
+        return fail("complete production providers require strict dependencies");
+    }
+    let (typed_ingress, ordinary_pair) = native.unwrap_or((false, false));
+    for rel in SHARED_PRODUCT_BLUEPRINTS {
+        let path = source.join(rel);
+        let original = fs::read_to_string(&path)?;
+        let projected = if complete_providers {
+            original
+        } else if native.is_some() {
+            match native_projection::ordinary_pair_provider_blueprint(rel, &original, ordinary_pair)? {
+                Some(original) => original,
+                None => native_projection::shared_root_blueprint(rel, &original, typed_ingress)?,
+            }
+        } else {
+            match audio_original_shared_provider(rel, &original, mode)? {
+                Some(original) => original,
+                None => metadata_only(&original)?,
+            }
+        };
+        p.put(&path, projected)?;
+    }
+    Ok(())
+}
+
 fn bootstrap(source: &Path, out: &Path) -> Result<()> {
     let goroot = source.join("prebuilts/go/linux-x86");
     let generated = out.join("microfactory-main.go");
@@ -2307,6 +2328,8 @@ mod aac_security;
 mod libpng_security;
 #[path = "wm_security.rs"]
 mod wm_security;
+#[path = "production_source.rs"]
+mod production_source;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum SoongDependencyMode {
@@ -2328,32 +2351,37 @@ enum FixedProductionRequest<'a> {
     IntentResolverSecurityOnAudioSource,
     AacSecurityOnAudioSource,
     LibpngSecurityOnAudioSource,
-    WmSecurityOnNativeSource,
-    VendorImageOnNativeSource,
+    WmSecurityOnProductionSource,
+    VendorImageOnProductionSource,
     NativePair,
     NativeArt(crate::native_generation_art::Flavor),
     NativeRoleIngress(Option<&'a Path>),
 }
 
 impl FixedProductionRequest<'_> {
-    fn uses_complete_native_source(&self) -> bool {
-        matches!(self, Self::NativePair | Self::WmSecurityOnNativeSource | Self::VendorImageOnNativeSource)
+    fn uses_production_full_source(&self) -> bool {
+        matches!(self, Self::Existing(SoongDependencyMode::Strict, _)
+            | Self::WmSecurityOnProductionSource | Self::VendorImageOnProductionSource)
     }
     fn source_lock(&self, repo: &Path) -> Result<PathBuf> {
+        if self.uses_production_full_source() {
+            return production_source::source_lock_path(repo);
+        }
         match self {
-            Self::NativePair | Self::WmSecurityOnNativeSource | Self::VendorImageOnNativeSource =>
-                crate::native_generation_pair_build::source_lock_path(repo),
-            Self::Existing(SoongDependencyMode::Strict, targets) if *targets == TARGETS =>
-                fail("full product requires the independently qualified 651-project Audio/Native source union; the historical 214-project lock cannot produce a complete bundle"),
+            Self::NativePair => crate::native_generation_pair_build::source_lock_path(repo),
             Self::NativeRoleIngress(_) => crate::native_role_ingress::source_lock_path(repo),
             Self::NativeArt(_) => Ok(repo.join("android/manifest/m2-sparse-source-lock.json")),
             _ => selected_source_lock(repo, self.source_mode()),
         }
     }
+    fn audio_pcm_patches(&self) -> &'static [(&'static str, &'static str)] {
+        if self.uses_production_full_source() { AUDIO_APEX_PCM_PATCHES }
+        else { audio_apex_pcm_patches(self.source_mode()) }
+    }
     fn source_mode(&self) -> SoongDependencyMode {
         match self {
             Self::Existing(mode, _) => *mode,
-            Self::NativePair | Self::NativeArt(_) | Self::NativeRoleIngress(_) | Self::WmSecurityOnNativeSource | Self::VendorImageOnNativeSource => SoongDependencyMode::Strict,
+            Self::NativePair | Self::NativeArt(_) | Self::NativeRoleIngress(_) | Self::WmSecurityOnProductionSource | Self::VendorImageOnProductionSource => SoongDependencyMode::Strict,
             Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource | Self::AacSecurityOnAudioSource | Self::LibpngSecurityOnAudioSource => SoongDependencyMode::AudioApexTargetClosure,
         }
     }
@@ -2361,8 +2389,8 @@ impl FixedProductionRequest<'_> {
         match self {
             Self::Existing(_, targets) => targets,
             Self::NativePair => crate::native_generation_pair_build::TARGETS,
-            Self::WmSecurityOnNativeSource => wm_security::TARGETS,
-            Self::VendorImageOnNativeSource => TARGETS,
+            Self::WmSecurityOnProductionSource => wm_security::TARGETS,
+            Self::VendorImageOnProductionSource => TARGETS,
             Self::NativeArt(_) => crate::native_generation_art::TARGETS,
             Self::NativeRoleIngress(_) => crate::native_role_ingress::TARGETS,
             Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource | Self::AacSecurityOnAudioSource | Self::LibpngSecurityOnAudioSource => &["com.android.hardware.audio.droidloom"],
@@ -2372,8 +2400,8 @@ impl FixedProductionRequest<'_> {
         match self {
             Self::Existing(_, targets) => targets,
             Self::NativePair => crate::native_generation_pair_build::TARGETS,
-            Self::WmSecurityOnNativeSource => wm_security::TARGETS,
-            Self::VendorImageOnNativeSource => &["vendorimage"],
+            Self::WmSecurityOnProductionSource => wm_security::TARGETS,
+            Self::VendorImageOnProductionSource => &["vendorimage", "secilc"],
             Self::NativeArt(_) => crate::native_generation_art::TARGETS,
             Self::NativeRoleIngress(_) => crate::native_role_ingress::TARGETS,
             Self::VendorPolicyOnAudioSource => &["vendor_sepolicy.cil"],
@@ -2384,9 +2412,12 @@ impl FixedProductionRequest<'_> {
         }
     }
     fn validate(&self, product: &str) -> Result<()> {
+        if self.uses_production_full_source() && product != "droidloom_x86_64" {
+            return fail("fixed complete production source requires droidloom_x86_64");
+        }
         match self {
             Self::Existing(mode, targets) => validate_soong_dependency_mode(*mode, targets),
-            Self::NativePair | Self::NativeArt(_) | Self::NativeRoleIngress(_) | Self::WmSecurityOnNativeSource | Self::VendorImageOnNativeSource => {
+            Self::NativePair | Self::NativeArt(_) | Self::NativeRoleIngress(_) | Self::WmSecurityOnProductionSource | Self::VendorImageOnProductionSource => {
                 if product != "droidloom_x86_64" {
                     return fail("fixed Native generation source requires droidloom_x86_64");
                 }
@@ -2403,7 +2434,7 @@ impl FixedProductionRequest<'_> {
         self.validate(product)?;
         match self {
             Self::Existing(mode, targets) => selected_soong_targets(*mode, targets, out, product),
-            Self::NativePair | Self::NativeArt(_) | Self::NativeRoleIngress(_) | Self::WmSecurityOnNativeSource | Self::VendorImageOnNativeSource =>
+            Self::NativePair | Self::NativeArt(_) | Self::NativeRoleIngress(_) | Self::WmSecurityOnProductionSource | Self::VendorImageOnProductionSource =>
                 selected_soong_targets(SoongDependencyMode::Strict, self.requested_targets(), out, product),
             Self::VendorPolicyOnAudioSource => Ok(vec![PathBuf::from("vendor_sepolicy.cil")]),
             Self::VendorPolicyBundleOnAudioSource => Ok(VENDOR_POLICY_BUNDLE_TARGETS.iter().map(|target|PathBuf::from(*target)).collect()),
@@ -2414,9 +2445,10 @@ impl FixedProductionRequest<'_> {
     }
     fn configure_dependencies(&self, command: &mut Command, product: &str) -> Result<()> {
         self.validate(product)?;
+        if self.uses_production_full_source() { command.env("SELINUX_IGNORE_NEVERALLOWS", "false"); }
         match self {
             Self::Existing(mode, targets) => configure_soong_dependencies(command, *mode, targets),
-            Self::NativePair | Self::NativeArt(_) | Self::NativeRoleIngress(_) | Self::WmSecurityOnNativeSource | Self::VendorImageOnNativeSource =>
+            Self::NativePair | Self::NativeArt(_) | Self::NativeRoleIngress(_) | Self::WmSecurityOnProductionSource | Self::VendorImageOnProductionSource =>
                 configure_soong_dependencies(command, SoongDependencyMode::Strict, self.requested_targets()),
             Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource | Self::AacSecurityOnAudioSource | Self::LibpngSecurityOnAudioSource => {
                 enforce_strict_soong_dependencies(command);
@@ -2431,7 +2463,7 @@ impl FixedProductionRequest<'_> {
             Self::VendorPolicyBundleOnAudioSource => Some(("droidloom-vendor-policy-bundle-build-inputs.json", "droidloom-fixed-user-vendor-policy-bundle-inputs-v1", "droidloom-vendor-policy-bundle-normal-result.json", "droidloom-fixed-user-vendor-policy-bundle-normal-result-v1")),
             Self::Existing(_, _) | Self::IntentResolverSecurityOnAudioSource | Self::AacSecurityOnAudioSource
             | Self::NativePair | Self::NativeArt(_) | Self::NativeRoleIngress(_)
-            | Self::LibpngSecurityOnAudioSource | Self::WmSecurityOnNativeSource | Self::VendorImageOnNativeSource => None,
+            | Self::LibpngSecurityOnAudioSource | Self::WmSecurityOnProductionSource | Self::VendorImageOnProductionSource => None,
         }
     }
     fn description(&self, product: &str) -> Result<serde_json::Value> {
@@ -2445,8 +2477,9 @@ impl FixedProductionRequest<'_> {
                 Self::IntentResolverSecurityOnAudioSource => "exact-audio-source-intentresolver-security-target",
                 Self::AacSecurityOnAudioSource => "exact-audio541-source-aac-official-security-targets",
                 Self::LibpngSecurityOnAudioSource => "exact-audio541-source-libpng-official-security-targets",
-                Self::WmSecurityOnNativeSource => "exact-native645-source-wm-official-security-targets",
-                Self::VendorImageOnNativeSource => "exact-native645-source-user-vendor-image",
+                Self::WmSecurityOnProductionSource => "exact-production651-source-wm-official-security-targets",
+                Self::VendorImageOnProductionSource => "exact-production651-source-user-vendor-image",
+                Self::Existing(SoongDependencyMode::Strict, _) => "exact-production651-complete-product-source",
                 Self::Existing(_, _) => "existing-normal-entry",
                 Self::NativePair => "exact-native645-pair-source",
                 Self::NativeArt(_) => "exact-native-art-source",
@@ -2556,13 +2589,13 @@ pub fn build_libpng_security_on_audio_source(
         FixedProductionRequest::LibpngSecurityOnAudioSource)
 }
 
-/// Build the actual user vendor image with the complete explicit Native profile.
+/// Build the actual user vendor image and host secilc with the exact full source union.
 /// Preserve the normal product projection; no native-only provider pruning applies.
 pub fn build_vendor_image(
     repo: &Path, source: &Path, out: &Path, work: &Path, product: &str, jobs: usize,
 ) -> Result<()> {
     build_targets_with_fixed_request(repo, source, out, work, product, jobs,
-        FixedProductionRequest::VendorImageOnNativeSource)
+        FixedProductionRequest::VendorImageOnProductionSource)
 }
 
 /// Build services and the existing upstream WmTests through the normal strict producer.
@@ -2571,7 +2604,7 @@ pub fn build_wm_security(
     repo: &Path, source: &Path, out: &Path, work: &Path, product: &str, jobs: usize,
 ) -> Result<()> {
     build_targets_with_fixed_request(repo, source, out, work, product, jobs,
-        FixedProductionRequest::WmSecurityOnNativeSource)
+        FixedProductionRequest::WmSecurityOnProductionSource)
 }
 
 fn validate_vendor_policy_original(source: &Path) -> Result<()> {
@@ -5336,6 +5369,32 @@ pub fn build_native_role_ingress(
     build_targets_with_fixed_request(repo, source, out, work, product, jobs, FixedProductionRequest::NativeRoleIngress(resume_source_staging))
 }
 
+fn project_build_fixture_discovery(
+    p: &mut Projection, source: &Path, ordinary_pair: bool, native_source: bool,
+    production_full: bool, mode: SoongDependencyMode,
+) -> Result<()> {
+    if production_full {
+        if mode != SoongDependencyMode::Strict { return fail("full provider discovery requires strict dependencies"); }
+        for relative in SOONG_EXCLUDED_TEST_FIXTURES {
+            let marker = source.join(relative).join(".find-ignore");
+            match fs::symlink_metadata(&marker) {
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => (),
+                Err(error) => return Err(error.into()),
+                Ok(_) => return fail(format!("complete production provider is hidden: {}", marker.display())),
+            }
+        }
+        return Ok(());
+    }
+    if native_source {
+        native_projection::project_test_fixture_exclusions(p, source, ordinary_pair, mode)?;
+    } else {
+        for relative in SOONG_EXCLUDED_TEST_FIXTURES {
+            project_discovery_exclusion(p, source, relative, mode)?;
+        }
+    }
+    Ok(())
+}
+
 fn build_targets_with_fixed_request(
     repo: &Path, source: &Path, out: &Path, work: &Path, product: &str, jobs: usize,
     request: FixedProductionRequest<'_>,
@@ -5356,7 +5415,8 @@ fn build_targets_with_fixed_request(
     let ordinary_pair = matches!(request, FixedProductionRequest::NativePair);
     let typed_ingress = matches!(request, FixedProductionRequest::NativeRoleIngress(_));
     let native_projection_scope = matches!(request, FixedProductionRequest::NativePair | FixedProductionRequest::NativeArt(_) | FixedProductionRequest::NativeRoleIngress(_));
-    let native_source = request.uses_complete_native_source() || native_projection_scope;
+    let production_full = request.uses_production_full_source();
+    let native_source = production_full || native_projection_scope;
     let art_flavor = match request {
         FixedProductionRequest::NativePair => Some(crate::native_generation_art::Flavor::EnabledBuildOnly),
         FixedProductionRequest::NativeArt(flavor) => Some(flavor),
@@ -5382,7 +5442,9 @@ fn build_targets_with_fixed_request(
     }
     let lock = request.source_lock(repo)?;
     let source_lock = droidloom_source::load_lock(&lock)?;
-    if request.uses_complete_native_source() {
+    if production_full {
+        production_source::verify_source_workspace(&lock, &source_lock, source)?;
+    } else if ordinary_pair {
         crate::native_generation_pair_build::verify_source_workspace(&lock, &source_lock, source)?;
     } else if typed_ingress {
         crate::native_role_ingress::verify_source_workspace(&lock, &source_lock, source)?;
@@ -5396,7 +5458,12 @@ fn build_targets_with_fixed_request(
     if nativebridge_discovery_scope(targets) {
         validate_nativebridge_scope_source_paths(&source_lock)?;
     }
-    if native_source {
+    if production_full {
+        if !source.exists() {
+            droidloom_source::production_full::materialize(&lock, &source_lock, source)?;
+        }
+        droidloom_source::production_full::verify_materialized(&lock, &source_lock, source)?;
+    } else if native_source {
         if typed_ingress && !source.exists() {
             droidloom_source::native_pair::materialize_resuming(
                 &lock, &source_lock, source, resume_source_staging,
@@ -5425,7 +5492,7 @@ fn build_targets_with_fixed_request(
         FixedProductionRequest::AacSecurityOnAudioSource => aac_security::validate_original(repo, source)?,
         FixedProductionRequest::Existing(_, _) | FixedProductionRequest::NativePair
         | FixedProductionRequest::NativeArt(_) | FixedProductionRequest::NativeRoleIngress(_)
-        | FixedProductionRequest::LibpngSecurityOnAudioSource | FixedProductionRequest::WmSecurityOnNativeSource | FixedProductionRequest::VendorImageOnNativeSource => (),
+        | FixedProductionRequest::LibpngSecurityOnAudioSource | FixedProductionRequest::WmSecurityOnProductionSource | FixedProductionRequest::VendorImageOnProductionSource => (),
     }
     if libpng_security_requested {
         libpng_security::validate_original(repo, source)?;
@@ -5515,9 +5582,9 @@ fn build_targets_with_fixed_request(
         p.patch(source, "build/blueprint", &repo.join(
             "android/apex-compat/0009-blueprint-stream-uncached-module-actions.patch"))?;
     }
-    native_projection::project_ordinary_pair_graph_resources(repo, source, &mut p, ordinary_pair, dependency_mode)?;
+    native_projection::project_ordinary_pair_graph_resources(repo, source, &mut p, ordinary_pair || production_full, dependency_mode)?;
     project_audio_resources(&mut p, repo, source, dependency_mode)?;
-    for (cwd, patch) in audio_apex_pcm_patches(dependency_mode) {
+    for (cwd, patch) in request.audio_pcm_patches() {
         p.patch(source, cwd, &repo.join(patch))?;
     }
     project_native_leaf_discovery_scope(&mut p, source, dependency_mode)?;
@@ -5534,7 +5601,9 @@ fn build_targets_with_fixed_request(
         p.put(&apex, private_without_named_java_module(
             &original, "apex", "com.android.tethering")?)?;
     }
-    if native_projection_scope {
+    if production_full {
+        project_blueprints_with_provider_policy(&mut p, source, dependency_mode, Some((false, false)), true)?;
+    } else if native_projection_scope {
         native_projection::project_blueprints(&mut p, source, typed_ingress || ordinary_pair, ordinary_pair, dependency_mode)?;
     } else {
         project_blueprints(&mut p, source, dependency_mode)?;
@@ -5745,13 +5814,7 @@ fn build_targets_with_fixed_request(
     for relative in private_nativebridge_unrelated_paths(targets) {
         p.put(&source.join(relative).join(".find-ignore"), b"")?;
     }
-    if native_source {
-        native_projection::project_test_fixture_exclusions(&mut p, source, ordinary_pair, dependency_mode)?;
-    } else {
-        for relative in SOONG_EXCLUDED_TEST_FIXTURES {
-            project_discovery_exclusion(&mut p, source, relative, dependency_mode)?;
-        }
-    }
+    project_build_fixture_discovery(&mut p, source, ordinary_pair, native_source, production_full, dependency_mode)?;
     // The MTE-upgrade host Tradefed fixture is not part of either NativeBridge
     // output. It requires test-only host utilities absent from the pinned
     // translation-only sparse source closure. Do not disable it for real
@@ -5940,6 +6003,9 @@ fn build_targets_with_fixed_request(
     if wm_security_requested {
         wm_security::input_receipt(repo, source, &lock, out, product, request, &p)?;
     }
+    if production_full {
+        production_source::input_receipt(repo, source, out, product, request, &p)?;
+    }
     let engine_inputs = if dependency_mode == SoongDependencyMode::NativeEngineTargetClosure {
         Some(crate::native_engine::engine_build_inputs(
             repo, source, &vendor, work, out, &native_bridge_source,
@@ -5964,7 +6030,7 @@ fn build_targets_with_fixed_request(
     if wm_security_requested {
         wm_security::configure_command(request, product, &mut cmd)?;
     }
-    native_projection::configure_ordinary_pair_graph_observation(&mut cmd, ordinary_pair);
+    native_projection::configure_ordinary_pair_graph_observation(&mut cmd, ordinary_pair || production_full);
     let result = run_build(&mut cmd);
     p.restore()?;
     result?;
@@ -6025,6 +6091,9 @@ fn build_targets_with_fixed_request(
     }
     if wm_security_requested {
         wm_security::normal_result(repo, source, out, product, request)?;
+    }
+    if production_full && request.requested_targets().contains(&"vendorimage") {
+        production_source::vendor_result(out, product, request)?;
     }
     if let Some(inputs) = engine_inputs {
         crate::native_engine::write_engine_build_receipt(source, out, product, inputs)?;

@@ -1785,4 +1785,44 @@ license {
         assert!(project_fallback_sdk_import("framework-sdkextensions", "system-server", present));
         assert_eq!(fs::read_to_string(&path).unwrap(), REAL_SDKEXTENSIONS_BLUEPRINT);
     }
+    #[test]
+    fn full_projection_preserves_original_shared_providers_and_test_trees() {
+        use std::os::unix::fs::PermissionsExt;
+        let d=tempfile::tempdir().unwrap();let source=d.path().join("source");
+        let journal=d.path().join("projection.json");
+        let mut fixtures:Vec<_>=ordinary_pair_provider_fixtures().into_iter()
+            .filter(|(path,_)|super::super::SHARED_PRODUCT_BLUEPRINTS.contains(path)).collect();
+        fixtures.push(("frameworks/native/services/serialservice/Android.bp",REAL_SERIALSERVICE_BLUEPRINT));
+        assert_eq!(fixtures.len(),super::super::SHARED_PRODUCT_BLUEPRINTS.len());
+        let modified=std::time::UNIX_EPOCH+std::time::Duration::from_secs(1_600_000_000);
+        for(name,body)in &fixtures {
+            let path=source.join(name);write(&path,body.as_bytes()).unwrap();
+            fs::set_permissions(&path,fs::Permissions::from_mode(0o640)).unwrap();
+            fs::File::open(&path).unwrap().set_modified(modified).unwrap();
+        }
+        for recovery in [false,true] {
+            let mut projection=Projection::new(journal.clone()).unwrap();
+            super::super::project_shared_root_blueprints(&mut projection,&source,
+                SoongDependencyMode::Strict,Some((false,false)),true).unwrap();
+            super::super::project_build_fixture_discovery(&mut projection,&source,
+                false,false,true,SoongDependencyMode::Strict).unwrap();
+            for(name,body)in &fixtures {
+                assert_eq!(fs::read(source.join(name)).unwrap(),body.as_bytes());
+            }
+            for path in SOONG_EXCLUDED_TEST_FIXTURES {
+                assert!(!source.join(path).join(".find-ignore").exists());
+            }
+            assert_eq!(projection.originals.len(),fixtures.len());
+            if recovery {std::mem::forget(projection);super::super::recover(&journal,&source).unwrap();}
+            else {projection.restore().unwrap();}
+            for(name,body)in &fixtures {
+                let path=source.join(name);assert_eq!(fs::read(&path).unwrap(),body.as_bytes());
+                let metadata=fs::metadata(&path).unwrap();
+                assert_eq!(metadata.permissions().mode()&0o777,0o640);
+                assert_eq!(metadata.modified().unwrap(),modified);
+            }
+            assert!(!journal.exists());
+        }
+    }
+
 }
