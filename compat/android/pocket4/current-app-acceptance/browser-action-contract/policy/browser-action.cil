@@ -1,0 +1,66 @@
+; Independent browser-action control-plane role, composed with qualified R10.
+; This source is not loaded or selected by the production runtime.
+; ELF/interpreter/library custody, the finite native adapter and actual dual-LSM
+; exec/retirement qualification remain mandatory before production admission.
+(type droidloom_browser_action)
+(roletype r droidloom_browser_action)
+(roletype object_r droidloom_browser_action)
+(type droidloom_browser_action_exec)
+(roletype object_r droidloom_browser_action_exec)
+(typeattributeset droidloom_android_domains (droidloom_browser_action))
+
+; Preserve the original manager's retirement authority and the existing Android
+; boundary neverallows through droidloom_android_domains. No automatic domain
+; transition is declared: only the original broker may arm the reviewed SID.
+(allow droidloom_broker droidloom_browser_action (dir (getattr search read open)))
+(allow droidloom_broker droidloom_browser_action (file (getattr read open)))
+(allow droidloom_broker droidloom_browser_action (lnk_file (getattr read)))
+(allow droidloom_broker droidloom_browser_action (process (getattr transition ptrace sigkill)))
+(allow droidloom_broker droidloom_browser_action (process2 (nnp_transition nosuid_transition)))
+
+; New private cmd copy only. Originals are never relabelled. The existing
+; broker's tmpfs construction rights remain bounded by the native provider.
+(allow droidloom_broker droidloom_browser_action_exec (dir (relabelto getattr search read open setattr)))
+(allow droidloom_broker droidloom_browser_action_exec (file (relabelto getattr read open map setattr execute)))
+(allow droidloom_browser_action_exec tmpfs (filesystem (associate)))
+(allow droidloom_browser_action droidloom_browser_action_exec (dir (getattr search)))
+(allow droidloom_browser_action droidloom_browser_action_exec (file (getattr read open map execute entrypoint)))
+
+; Exactly the two service handles required by the finite resolver/start plans.
+; SELinux cannot constrain shellCommand argv: the separate typed worker must.
+(allow droidloom_browser_action self (process (fork)))
+(allow droidloom_browser_action binder_device (chr_file (open read write getattr ioctl map)))
+(allow droidloom_browser_action servicemanager (binder (call)))
+(allow servicemanager droidloom_browser_action (binder (transfer)))
+(allow droidloom_browser_action package_service (service_manager (find)))
+(allow droidloom_browser_action activity_service (service_manager (find)))
+(allow droidloom_browser_action system_server (binder (call transfer)))
+(allow system_server droidloom_browser_action (binder (call)))
+(allow droidloom_browser_action droidloom_broker (fd (use)))
+(allow droidloom_browser_action droidloom_broker (fifo_file (write getattr)))
+(allow droidloom_browser_action null_device (chr_file (read)))
+
+; A new role must never turn read-only package inspection into launch authority.
+(neverallow droidloom_query activity_service (service_manager (find)))
+(neverallow droidloom_query droidloom_browser_action_exec (file (execute execute_no_trans entrypoint)))
+(neverallow droidloom_browser_action droidloom_query_exec (file (execute execute_no_trans entrypoint)))
+
+; Keep future unrelated service additions from silently expanding this role.
+(typeattribute droidloom_browser_all_types)
+(typeattributeset droidloom_browser_all_types (all))
+(typeattribute droidloom_browser_other_services)
+(typeattributeset droidloom_browser_other_services (not (package_service activity_service)))
+(neverallow droidloom_browser_action droidloom_browser_all_types (service_manager (add list)))
+(neverallow droidloom_browser_action droidloom_browser_other_services (service_manager (find)))
+
+(neverallow droidloom_browser_action kernel (security (load_policy setenforce setbool setsecparam setcheckreqprot)))
+(neverallow droidloom_browser_action droidloom_broker (process (transition dyntransition ptrace signal sigkill)))
+(neverallow droidloom_browser_action self (process (setexec setfscreate setsockcreate setcurrent dyntransition)))
+(neverallow droidloom_browser_action droidloom_browser_action_exec (file (write append create relabelfrom relabelto execute_no_trans)))
+(neverallow droidloom_browser_action droidloom_browser_action_exec (dir (write add_name remove_name create relabelfrom relabelto)))
+(neverallow droidloom_browser_action self (capability (sys_admin sys_ptrace setuid setgid dac_override dac_read_search net_admin net_raw sys_module)))
+(neverallow droidloom_browser_action droidloom_nsfs (file (read open ioctl)))
+(neverallow droidloom_browser_action self (tcp_socket (create connect)))
+(neverallow droidloom_browser_action self (udp_socket (create connect)))
+(neverallow droidloom_browser_action self (rawip_socket (create)))
+(neverallow droidloom_browser_action self (packet_socket (create)))

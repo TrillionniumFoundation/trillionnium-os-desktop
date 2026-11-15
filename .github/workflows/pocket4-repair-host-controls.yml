@@ -1,0 +1,56 @@
+name: Pocket4 repair source controls
+
+on:
+  pull_request:
+    paths:
+      - 'compat/android/pocket4/current-app-acceptance/**'
+      - 'compat/android/pocket4/current-full-build-carrier/**'
+      - 'compat/android/pocket4/current-cold-observation/**'
+      - '.github/workflows/pocket4-repair-host-controls.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'compat/android/pocket4/current-app-acceptance/**'
+      - 'compat/android/pocket4/current-full-build-carrier/**'
+      - 'compat/android/pocket4/current-cold-observation/**'
+      - '.github/workflows/pocket4-repair-host-controls.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  repair-source-controls:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      CARGO_BUILD_JOBS: '1'
+      CARGO_TARGET_DIR: ${{ runner.temp }}/pocket4-repair-target
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Report actual host tools
+        run: |
+          python3 --version
+          cc --version
+          rustc -Vv
+          cargo -Vv
+      - name: Full carrier source and public core regressions
+        run: python3 -I -B compat/android/pocket4/current-full-build-carrier/tests/run_core.py
+      - name: Cold-controller observation regressions
+        run: python3 -I -B compat/android/pocket4/current-cold-observation/test_observation.py
+      - name: Firefox resolved-component regression controls
+        run: cargo test --locked --manifest-path compat/android/pocket4/current-app-acceptance/firefox-component/Cargo.toml -- --test-threads=1
+      - name: Browser action contract formatting
+        run: cargo fmt --manifest-path compat/android/pocket4/current-app-acceptance/browser-action-contract/Cargo.toml -- --check
+      - name: Browser action contract controls
+        run: cargo test --locked --offline --manifest-path compat/android/pocket4/current-app-acceptance/browser-action-contract/Cargo.toml -- --test-threads=1
+      - name: Verify controls left maintained source unchanged
+        run: |
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - name: State the verified scope
+        run: |
+          echo 'Host source controls only. No Android build, VM, policy load or application acceptance.'
+          echo 'The external R10/AOSP policy qualification is not executed by this workflow.'

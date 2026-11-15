@@ -1,0 +1,77 @@
+{
+  "base_controller": {
+    "bytes": 98797,
+    "sha256": "93f70fe04854339fad0740f64d2aa6bc3546e7eb64286edc4a20cef28a0953e5"
+  },
+  "execution_admission": {
+    "fresh_controller_carrier_bundle_hash_binding_required": true,
+    "new_generation_required": true,
+    "original_R8_bundle_must_not_be_reused": true,
+    "original_lock_and_create_only_namespace_guards_preserved": true,
+    "original_sealed_bundle_guards_preserved": true,
+    "owner_admission_required": true
+  },
+  "files": {
+    "README.md": {
+      "bytes": 6745,
+      "sha256": "e095f000309a02a67d79aa3807a022e971746b8b0fab3a7bdc179d58a64ac36b"
+    },
+    "controller.py": {
+      "bytes": 103287,
+      "sha256": "e0e7646a150ca5e274cb401f60cf2af720f4d526149ed8f340b717d3e110de8e"
+    },
+    "test_observation.py": {
+      "bytes": 13657,
+      "sha256": "44cb4b02588ef85c87491b8d3251897d739bf042486a6c3102c0a22c9c0e454f"
+    },
+    "verification_baseline.json": {
+      "bytes": 23512,
+      "sha256": "75e3e2051ba90c4b5a622a73faf1c5abd865ee74d2b29bc36c32cb526a01692f"
+    }
+  },
+  "local_verification": {
+    "FIFO_child_outer_timeout_seconds": 2,
+    "VMs_started": 0,
+    "actual_exit_code": 0,
+    "command": "python3 -I -B compat/android/pocket4/current-cold-observation/test_observation.py",
+    "passed": 17,
+    "tests": 17
+  },
+  "original_frozen_R8_paths_in_source_are_provenance_not_deployment_targets": true,
+  "original_pin_reproduction": {
+    "base_sha256": "93f70fe04854339fad0740f64d2aa6bc3546e7eb64286edc4a20cef28a0953e5",
+    "child_entered_pin_then_exceeded_outer_two_second_timeout": true,
+    "fixed_pin_regression_completed_within_two_second_outer_timeout": true,
+    "owned_child_terminated_and_reaped": true,
+    "real_FIFO_without_writer": true
+  },
+  "qualification": {
+    "KVM_exit_cause_proven": false,
+    "critical_console_blocker_closed": false,
+    "original_R8_failure_preserved": true,
+    "production_ready": false,
+    "runtime_qualified": false
+  },
+  "regular_input_and_log_opens": {
+    "all_storage_IO_nonblocking_claim": false,
+    "existing_outer_KillMode": "control-group",
+    "existing_outer_RuntimeMaxSec": 600,
+    "existing_outer_TimeoutStopSec": 120,
+    "fsync_failure_always_closes_descriptor": true,
+    "nonregular_descriptor_rejected_before_fsync": true,
+    "pin_readonly_open_adds_O_NONBLOCK": true,
+    "three_final_log_sync_call_sites_use_regular_descriptor_helper": true,
+    "whole_existing_need_guards_preserved": true
+  },
+  "repository_path": "compat/android/pocket4/current-cold-observation",
+  "schema": "p4-cold-observation-public-source-v2",
+  "source_changes": [
+    "same-generation held serial output metadata before and after existing CPU samples",
+    "explicit proc stat CPU accounting fields and SC_CLK_TCK",
+    "dual-clock boundaries around unchanged owned QMP helper call",
+    "nonblocking new serial metadata opens with FIFO regression",
+    "nonblocking existing pin read-only open, preserving complete regular-file and identity checks",
+    "three existing log sync opens use regular-type check before fsync and unconditional finally close"
+  ],
+  "state": "SOURCE_FIFO_FIX_AND_DIAGNOSTIC_CANDIDATE_ONLY"
+}

@@ -1,0 +1,98 @@
+{
+  "schema": "pocket4-finite-browser-action-source-v1",
+  "state": "OFFLINE_CONTRACT_AND_ACTION_POLICY_BOUNDARY_QUALIFIED_NOT_ENABLED",
+  "source_files": [
+    {
+      "path": "Cargo.toml",
+      "bytes": 144,
+      "sha256": "f3559a5083a9cc54f90dcfe9ed97cbaf58f57c02d5a240d351b5985486a7dd2f"
+    },
+    {
+      "path": "Cargo.lock",
+      "bytes": 177,
+      "sha256": "f707460422ca96254d3e05aab785603eb57734173420f3a0785e269a9130cd94"
+    },
+    {
+      "path": "src/lib.rs",
+      "bytes": 16915,
+      "sha256": "34dba35f48ba66e93d2558b1c9fb5748c53bf3fa0f7af7c16be918b717177c3a"
+    },
+    {
+      "path": "policy/browser-action.cil",
+      "bytes": 4797,
+      "sha256": "8a4554e1211aa6ca56576c4f119e4a684fd10212b1576c813e8cd2221199edad"
+    },
+    {
+      "path": "policy/policy-query.c",
+      "bytes": 36752,
+      "sha256": "941d740079d706945b280c50d7722f5635ca90889cc3d5b00a22b19b0d758814"
+    },
+    {
+      "path": "policy/cases.json",
+      "bytes": 410,
+      "sha256": "33a2c4ae6350f663830fab7a8888ad25a15fa3a6addbc656afe53c06f8d0a05f"
+    },
+    {
+      "path": "README.md",
+      "bytes": 7171,
+      "sha256": "8d9f96fdd6c46bcd73bbadcaf5a9661b81d1999ee9cdaaf6eb15c5bfad185249"
+    }
+  ],
+  "native_source_observation": {
+    "commit": "9ecce4f94dec80500c05322106907e48a0668b05",
+    "tree": "12fe22ce02be9759963835faa4e7a7d0a762ddc2",
+    "application_probe_sha256": "8df245c3dfc6324d18587d694c442f8148b8360ed2e5e4d551a152b682b5847a",
+    "PR303_adopted_in_observed_native_source": false
+  },
+  "policy_base": {
+    "component_sha256": "451e0ebb708f37350eec03255cc1ea14ffbc7afa0cfd8161df3d0c694f4a88d2",
+    "binary_policy_sha256": "794f0839e5249818231d3759ba96f371842b3036099e146031adfec061abdca2",
+    "checker_sha256": "89f4d53a3d79a38d60576ccfe2448ad2ad39b16ad8fe2b1352b4156be9bf6db1"
+  },
+  "validation": {
+    "rustfmt": true,
+    "Rust_tests_passed": 9,
+    "Rust_tests_failed": 0,
+    "original_policy_checks": 211,
+    "original_policy_complete_decision_records_equal": true,
+    "new_browser_policy_checks": 58,
+    "combined_offline_policy_checks": 269,
+    "missing_role_negative_baseline": true,
+    "query_escalation_strict_compile_negative": true,
+    "unrelated_service_strict_compile_negative": true,
+    "secilc_neverallow_disabled": false,
+    "actual_result_sha256": "d393d0d58af488873b14476cd3c259f5f956d06e78a9bc947c888dd5cb12d2fd",
+    "actual_decisions_stdout_sha256": "802c05472b6c73bfaa23b1870ca90969c22a1bdc85ad5674c8af20b28625c6b4",
+    "actual_Rust_stdout_sha256": "35da80587c43fbfd55f3a255e9fba44d47c4e68f15304b25272dc8c96690e63e",
+    "durable_job": "1a1dd3cea7f-392-1fbe",
+    "H_state": "succeeded",
+    "H_exit_code": 0,
+    "H_output_complete": true,
+    "H_output_durable": true,
+    "repository_CI_scope": {
+      "Rust_tests": 9,
+      "policy_qualification_in_CI": false
+    },
+    "external_policy_qualification": {
+      "complete_R10_baseline_in_source_packet": false,
+      "same_pinned_original_secilc_and_libsepol_required": true,
+      "original_211_and_new_58_controls_are_external_offline_evidence": true
+    }
+  },
+  "production_ready": false,
+  "runtime_qualified": false,
+  "production_action_adapter_enabled": false,
+  "existing_read_worker_FD_protocol_changed": false,
+  "read_only_query_authority_expanded": false,
+  "Android_starts": 0,
+  "app_acceptances": 0,
+  "kernel_policy_loads": 0,
+  "remaining": [
+    "Actual native owner/Ready/framework/package bindings",
+    "Sealed action executable and full ELF/interpreter/library provider",
+    "Explicit new action role transfer and worker integration",
+    "Selected MAC provider and actual dual-LSM exec-stop/retirement qualification",
+    "Production controller integration",
+    "Application UI/content/lifecycle/permissions/stability/release acceptance"
+  ]
+}
