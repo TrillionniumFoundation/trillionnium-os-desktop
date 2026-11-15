@@ -18,7 +18,7 @@ const MESSAGE_LIMIT: usize = 8192;
 pub(super) enum Message {
     Request {
         nonce: [u8; 16],
-        query: ApplicationRead,
+        query: ApplicationOperation,
         deadline_ns: u64,
     },
     Spawned {

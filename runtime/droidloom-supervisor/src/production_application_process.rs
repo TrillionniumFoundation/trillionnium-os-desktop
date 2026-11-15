@@ -305,14 +305,23 @@ fn start_worker(
 
 pub(super) fn run(
     authority: &ApplicationAuthority<'_>,
-    request: &ApplicationRead,
-) -> Result<ApplicationReadResult> {
+    request: &ApplicationOperation,
+    workflow_deadline: Instant,
+) -> Result<OperationResult> {
+    let started = Instant::now();
+    let deadline = (started + QUERY_LIMIT).min(workflow_deadline);
+    require(Instant::now() < deadline, "application workflow deadline")?;
+    request.validate()?;
     authority.revalidate().map_err(external)?;
     let mut files = authority.descriptors(request.binary()).map_err(external)?;
-    let started = Instant::now();
-    let deadline = started + QUERY_LIMIT;
-    let deadline_ns = protocol::monotonic_ns()?
-        .checked_add(QUERY_LIMIT.as_nanos() as u64)
+    require(Instant::now() < deadline, "application workflow deadline")?;
+    // Read CLOCK_MONOTONIC before deriving remaining Instant duration, so
+    // the worker's absolute deadline cannot extend this broker's deadline.
+    let anchor_ns = protocol::monotonic_ns()?;
+    let remaining = deadline.saturating_duration_since(Instant::now());
+    require(!remaining.is_zero(), "application workflow deadline")?;
+    let deadline_ns = anchor_ns
+        .checked_add(remaining.as_nanos() as u64)
         .ok_or_else(|| reject("query deadline overflow"))?;
     let (root_uid, root_gid) = authority.mapped_root().map_err(external)?;
     let executable_binding = exec_stop::ExecutableBinding::from_held_role(
@@ -444,8 +453,13 @@ pub(super) fn run(
                 && armed.peer.gid == shell_gid,
             "application exec phase or shell credentials differ",
         )?;
-        let exec =
-            trace.verify_and_continue(&executable_binding, shell_uid, shell_gid, deadline)?;
+        let exec = trace.verify_and_continue(
+            &executable_binding,
+            shell_uid,
+            shell_gid,
+            request.domain(),
+            deadline,
+        )?;
         let output = collect(
             children.query.as_mut().unwrap(),
             &mut output,
@@ -496,7 +510,11 @@ pub(super) fn run(
     };
     let output =
         String::from_utf8(bytes).map_err(|_| reject("Android query returned non-UTF8 output"))?;
-    Ok(ApplicationReadResult { output, receipt })
+    require(
+        Instant::now() < deadline,
+        "application operation completed after its deadline",
+    )?;
+    Ok(OperationResult { output, receipt })
 }
 
 fn poll_once(fds: &[RawFd], deadline: Instant) -> Result<()> {

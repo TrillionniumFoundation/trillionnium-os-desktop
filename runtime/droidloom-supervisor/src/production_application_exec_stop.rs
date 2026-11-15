@@ -8,7 +8,6 @@ use super::*;
 use std::ffi::c_void;
 use std::os::unix::fs::FileExt;
 
-const QUERY: &[u8] = b"u:r:droidloom_query:s0";
 const QUERY_EXEC: &[u8] = b"u:object_r:droidloom_query_exec:s0";
 const AA_STACK: &[u8] = b"droidloom-production-android//&droidloom-production-broker (enforce)\n";
 const EXEC_EVENT: i32 = libc::SIGTRAP | (libc::PTRACE_EVENT_EXEC << 8);
@@ -475,6 +474,7 @@ impl<'a> ExecTrace<'a> {
         binding: &ExecutableBinding,
         shell_uid: u32,
         shell_gid: u32,
+        domain: OperationDomain,
         deadline: Instant,
     ) -> Result<ExecReceipt> {
         let previous_tid = self.actual_exec_stop(deadline)?;
@@ -493,7 +493,10 @@ impl<'a> ExecTrace<'a> {
         let actual = unsafe { File::from_raw_fd(raw) };
         binding.verify(&actual, deadline)?;
         require(
-            label_matches(&current_label(&self.proc, ProcLabel::Selinux)?, QUERY),
+            label_matches(
+                &current_label(&self.proc, ProcLabel::Selinux)?,
+                domain.context().as_bytes(),
+            ),
             "actual stopped query SELinux domain differs",
         )?;
         require(
@@ -540,7 +543,7 @@ impl<'a> ExecTrace<'a> {
                 .map(|byte| format!("{byte:02x}"))
                 .collect(),
             executable_selinux: "u:object_r:droidloom_query_exec:s0",
-            process_selinux: "u:r:droidloom_query:s0",
+            process_selinux: domain.context(),
             process_apparmor: "droidloom-production-android//&droidloom-production-broker (enforce)",
             uid: shell_uid,
             gid: shell_gid,

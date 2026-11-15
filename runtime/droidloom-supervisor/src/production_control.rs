@@ -646,6 +646,39 @@ impl ProductionDaemon {
         Ok(response)
     }
 
+    fn open_browser(
+        &mut self,
+        peer_uid: u32,
+        expected: &application_probe::ApplicationInspection,
+        url: &str,
+    ) -> Result<ControlResponse, ControlError> {
+        validate_android_user(expected.user)?;
+        application_probe::validate_https_url(url).map_err(ControlError::Invalid)?;
+        self.authorize_active(peer_uid)?;
+        if self.state != CellState::Running {
+            return Err(ControlError::Invalid(
+                "production browser requires current Android readiness".into(),
+            ));
+        }
+        let opened = self
+            .active
+            .as_mut()
+            .expect("authorized active owner")
+            .open_browser(expected, url)
+            .map_err(|error| ControlError::Invalid(error.to_string()));
+        self.poll();
+        let (inspection, output) = opened?;
+        if self.state != CellState::Running {
+            return Err(ControlError::Invalid(
+                "production tree changed after browser operation".into(),
+            ));
+        }
+        let mut response = self.success("Implicit Firefox HTTPS activity opened in the owned production tree; rendered content, media and whole-app acceptance remain pending");
+        response.inspection = Some(inspection);
+        response.launch = Some(output);
+        Ok(response)
+    }
+
     fn handle(
         &mut self,
         peer_uid: u32,
@@ -662,6 +695,9 @@ impl ProductionDaemon {
             ControlRequest::WaitReady => self.wait_ready(peer_uid, shutdown),
             ControlRequest::InspectApplication { package, user } => {
                 self.inspect_application(peer_uid, &package, user)
+            }
+            ControlRequest::OpenBrowser { expected, url } => {
+                self.open_browser(peer_uid, &expected, &url)
             }
             _ => {
                 // Additional app/business actions need dedicated owned-tree

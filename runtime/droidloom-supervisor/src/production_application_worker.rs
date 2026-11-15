@@ -240,7 +240,7 @@ fn node(file: &File) -> Result<(u64, u64)> {
 fn validate_descriptors(
     files: &[File],
     parent: libc::pid_t,
-    query: &ApplicationRead,
+    query: &ApplicationOperation,
     deadline: Instant,
 ) -> Result<()> {
     require(
@@ -379,7 +379,7 @@ pub(super) fn entry() -> Result<()> {
 fn prepare_query(
     parent: libc::pid_t,
     files: &[File],
-    query: &ApplicationRead,
+    query: &ApplicationOperation,
     nonce: [u8; 16],
     deadline_ns: u64,
     deadline: Instant,
@@ -388,6 +388,7 @@ fn prepare_query(
     query.validate()?;
     validate_descriptors(files, parent, query, deadline)?;
     let arguments = query.arguments()?;
+    let domain = query.domain();
     let mut argv: Vec<_> = arguments.iter().map(|arg| arg.as_ptr()).collect();
     argv.push(std::ptr::null());
     let envp = [
@@ -457,6 +458,7 @@ fn prepare_query(
                 &go,
                 &armed,
                 deadline_ns,
+                domain,
                 argv.as_ptr(),
                 envp.as_ptr(),
                 &program,
@@ -484,6 +486,7 @@ unsafe fn query_child(
     expected_go: &[u8],
     armed: &[u8],
     deadline_ns: u64,
+    domain: OperationDomain,
     argv: *const *const libc::c_char,
     envp: *const *const libc::c_char,
     filter: &libc::sock_fprog,
@@ -578,7 +581,10 @@ unsafe fn query_child(
         // A pending label is not accepted as evidence of a completed exec.
         if mac_child::guest_stdin(files[2].as_raw_fd(), deadline_ns) != 0
             || libc::prctl(libc::PR_SET_DUMPABLE, 0, 0, 0, 0) != 0
-            || mac_child::arm_query_mac(deadline_ns) != 0
+            || match domain {
+                OperationDomain::Query => mac_child::arm_query_mac(deadline_ns),
+                OperationDomain::Browser => mac_child::arm_browser_mac(deadline_ns),
+            } != 0
         {
             libc::_exit(125);
         }

@@ -67,10 +67,11 @@ impl ProductionCell {
         selection: ProductionSelection,
         report: impl Fn(&str),
     ) -> std::result::Result<Self, StartFailure> {
-        let preparation = PreparationAdmission::acquire(&selection).map_err(|error| StartFailure {
-            error: rejected(error),
-            retirement_requires_review: false,
-        })?;
+        let preparation =
+            PreparationAdmission::acquire(&selection).map_err(|error| StartFailure {
+                error: rejected(error),
+                retirement_requires_review: false,
+            })?;
         preparation
             .revalidate(&selection)
             .map_err(|error| StartFailure {
@@ -83,10 +84,12 @@ impl ProductionCell {
                 error: rejected(error),
                 retirement_requires_review: false,
             })?;
-        preparation.revalidate(&selection).map_err(|error| StartFailure {
-            error: rejected(error),
-            retirement_requires_review: false,
-        })?;
+        preparation
+            .revalidate(&selection)
+            .map_err(|error| StartFailure {
+                error: rejected(error),
+                retirement_requires_review: false,
+            })?;
         // Reserve only after actual live MAC preflight. This is bounded
         // preparation, not completed Android activation or application Ready.
         let lease = authority
@@ -145,7 +148,9 @@ impl ProductionCell {
             .map_err(rejected)?;
             let tree = tree.attach_runtime(runtime).map_err(rejected)?;
             step("Checking the final Android execution boundary...")?;
-            let mut tree = tree.execute_runtime(&selection, &prepared).map_err(rejected)?;
+            let mut tree = tree
+                .execute_runtime(&selection, &prepared)
+                .map_err(rejected)?;
             step("Observing original init and complete Android activation...")?;
             let execution = {
                 let init = tree.init_witness(&selection, &prepared).map_err(rejected)?;
@@ -225,5 +230,23 @@ impl ProductionCell {
                 rejected("production application inspection requires actual current readiness")
             })?;
         crate::production_application::inspect(ready, package, user).map_err(rejected)
+    }
+    pub(crate) fn open_browser(
+        &mut self,
+        expected: &crate::control::application_probe::ApplicationInspection,
+        url: &str,
+    ) -> Result<(
+        crate::control::application_probe::ApplicationInspection,
+        String,
+    )> {
+        let tree = self
+            .tree
+            .as_mut()
+            .ok_or_else(|| rejected("production owner was retired"))?;
+        let ready = tree
+            .ready_witness(&self.selection, &self.execution)
+            .map_err(rejected)?
+            .ok_or_else(|| rejected("production browser requires actual current readiness"))?;
+        crate::production_application::open_browser(ready, expected, url).map_err(rejected)
     }
 }

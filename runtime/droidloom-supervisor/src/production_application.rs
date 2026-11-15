@@ -1,8 +1,9 @@
-//! Fixed read-only package inspection in the actually owned production tree.
+//! Fixed package inspection and a separate owned Firefox business adapter.
 //!
 //! The public worker entry has no command-line parameters. The normal broker
 //! lends a ReadyTreeWitness; neither a saved receipt nor a process number can
-//! select an execution target. Business/UI actions require separate adapters.
+//! select an execution target. Only the explicit Firefox adapter adds two
+//! closed business commands; the original four-read API remains unchanged.
 use std::ffi::{CStr, CString};
 use std::fs::File;
 use std::io;
@@ -12,6 +13,13 @@ use crate::control::application_probe::{AndroidProbe, ApplicationInspection, Run
 use crate::production_namespace::{ApplicationAuthority, FrameworkObservation, ReadyTreeWitness};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+
+#[path = "production_application_business.rs"]
+mod business;
+#[path = "production_application_operation.rs"]
+mod operation;
+use operation::ApplicationOperation;
+pub(crate) use operation::{BrowserCommand, OperationDomain};
 
 #[path = "production_application_process.rs"]
 mod process;
@@ -210,6 +218,14 @@ pub(crate) struct ApplicationReadResult {
     output: String,
     receipt: ReadReceipt,
 }
+pub(crate) struct BrowserCommandResult {
+    output: String,
+    receipt: ReadReceipt,
+}
+struct OperationResult {
+    output: String,
+    receipt: ReadReceipt,
+}
 #[derive(Debug, Serialize)]
 pub(crate) struct ReadReceipt {
     worker_pid: u32,
@@ -243,8 +259,53 @@ pub(crate) fn run(
     authority: &ApplicationAuthority<'_>,
     query: &ApplicationRead,
 ) -> Result<ApplicationReadResult> {
+    run_read_before(authority, query, std::time::Instant::now() + QUERY_LIMIT)
+}
+
+pub(crate) fn run_read_before(
+    authority: &ApplicationAuthority<'_>,
+    query: &ApplicationRead,
+    deadline: std::time::Instant,
+) -> Result<ApplicationReadResult> {
     query.validate()?;
-    process::run(authority, query)
+    let result = process::run(
+        authority,
+        &ApplicationOperation::Read {
+            value: query.clone(),
+        },
+        deadline,
+    )?;
+    Ok(ApplicationReadResult {
+        output: result.output,
+        receipt: result.receipt,
+    })
+}
+
+pub(crate) fn run_browser_command(
+    authority: &ApplicationAuthority<'_>,
+    command: &BrowserCommand,
+    deadline: std::time::Instant,
+) -> Result<BrowserCommandResult> {
+    command.validate()?;
+    let result = process::run(
+        authority,
+        &ApplicationOperation::Browser {
+            value: command.clone(),
+        },
+        deadline,
+    )?;
+    Ok(BrowserCommandResult {
+        output: result.output,
+        receipt: result.receipt,
+    })
+}
+
+pub(crate) fn open_browser(
+    ready: ReadyTreeWitness<'_>,
+    expected: &ApplicationInspection,
+    url: &str,
+) -> Result<(ApplicationInspection, String)> {
+    business::open(ready, expected, url)
 }
 
 struct ProductionProbe<'a> {

@@ -5,12 +5,11 @@
 //! the real TRACEEXEC stop and verify both actual labels before CONT.
 //! AppArmor's label-changing exec clears PDEATHSIG; no postexec lifetime
 //! guarantee is inferred from that preexec signal.
+use crate::production_application::OperationDomain;
 use std::ffi::CStr;
 use std::os::fd::RawFd;
 
 const BROKER: &[u8] = b"u:r:droidloom_broker:s0";
-const QUERY: &[u8] = b"u:r:droidloom_query:s0";
-const QUERY_NUL: &[u8] = b"u:r:droidloom_query:s0\0";
 const AA_BROKER: &[u8] = b"droidloom-production-broker (enforce)\n";
 const AA_PENDING: &[u8] = b"droidloom-production-android (enforce)\n";
 const AA_STACK: &[u8] = b"stack droidloom-production-android";
@@ -284,9 +283,19 @@ unsafe fn write_once(directory: RawFd, value: &[u8], deadline: u64) -> Result<()
     unsafe { before(deadline) }
 }
 
-/// Raw-child, allocation-free, fixed current-task operation. The only input
-/// is the already selected query's absolute deadline, never a path or label.
+/// The original four reads and package resolver retain the query role.
 pub(super) unsafe fn arm_query_mac(deadline: u64) -> i32 {
+    unsafe { arm_operation_mac(deadline, OperationDomain::Query) }
+}
+
+/// Only the finite implicit browser Start operation requests this role.
+/// No fallback to query, shell, or broker is permitted if policy rejects it.
+pub(super) unsafe fn arm_browser_mac(deadline: u64) -> i32 {
+    unsafe { arm_operation_mac(deadline, OperationDomain::Browser) }
+}
+
+/// Raw-child, allocation-free operation, with no caller label/path input.
+unsafe fn arm_operation_mac(deadline: u64, domain: OperationDomain) -> i32 {
     if let Err(error) = unsafe { credentials().and_then(|_| before(deadline)) } {
         return error;
     }
@@ -354,13 +363,23 @@ pub(super) unsafe fn arm_query_mac(deadline: u64) -> i32 {
             label(held[2], c"exec", Expected::Empty, deadline)?;
             label(held[3], c"current", Expected::Exact(AA_BROKER), deadline)?;
             label(held[3], c"exec", Expected::AppArmorUnarmed, deadline)?;
-            write_once(held[2], QUERY_NUL, deadline)?;
-            label(held[2], c"exec", Expected::Selinux(QUERY), deadline)?;
+            write_once(held[2], domain.terminated(), deadline)?;
+            label(
+                held[2],
+                c"exec",
+                Expected::Selinux(domain.context().as_bytes()),
+                deadline,
+            )?;
             write_once(held[3], AA_STACK, deadline)?;
             label(held[3], c"exec", Expected::Exact(AA_PENDING), deadline)?;
             label(held[2], c"current", Expected::Selinux(BROKER), deadline)?;
             label(held[3], c"current", Expected::Exact(AA_BROKER), deadline)?;
-            label(held[2], c"exec", Expected::Selinux(QUERY), deadline)?;
+            label(
+                held[2],
+                c"exec",
+                Expected::Selinux(domain.context().as_bytes()),
+                deadline,
+            )?;
             credentials()?;
             before(deadline)
         }
@@ -390,6 +409,21 @@ mod tests {
         let nnp = unsafe { libc::prctl(libc::PR_GET_NO_NEW_PRIVS, 0, 0, 0, 0) };
         let dumpable = unsafe { libc::prctl(libc::PR_GET_DUMPABLE, 0, 0, 0, 0) };
         assert_eq!(unsafe { arm_query_mac(u64::MAX) }, libc::EPERM);
+        assert_eq!(
+            unsafe { libc::prctl(libc::PR_GET_NO_NEW_PRIVS, 0, 0, 0, 0) },
+            nnp
+        );
+        assert_eq!(
+            unsafe { libc::prctl(libc::PR_GET_DUMPABLE, 0, 0, 0, 0) },
+            dumpable
+        );
+    }
+    #[test]
+    fn browser_mac_action_rejects_ordinary_host_before_any_attribute_write() {
+        assert!(unsafe { libc::getpid() } == 1 || unsafe { libc::getppid() } != 0);
+        let nnp = unsafe { libc::prctl(libc::PR_GET_NO_NEW_PRIVS, 0, 0, 0, 0) };
+        let dumpable = unsafe { libc::prctl(libc::PR_GET_DUMPABLE, 0, 0, 0, 0) };
+        assert_eq!(unsafe { arm_browser_mac(u64::MAX) }, libc::EPERM);
         assert_eq!(
             unsafe { libc::prctl(libc::PR_GET_NO_NEW_PRIVS, 0, 0, 0, 0) },
             nnp

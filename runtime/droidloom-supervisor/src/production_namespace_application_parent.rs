@@ -3,7 +3,9 @@
 //! command namespace, a signal target, or an application execution root.
 use super::*;
 use crate::control::application_probe::RuntimeEpoch;
-use crate::production_application::{ApplicationRead, ApplicationReadResult};
+use crate::production_application::{
+    ApplicationRead, ApplicationReadResult, BrowserCommand, BrowserCommandResult,
+};
 use crate::production_cgroup::ApplicationLeaf;
 
 pub(crate) struct ApplicationAuthority<'a> {
@@ -35,6 +37,50 @@ impl ReadyTreeWitness<'_> {
         let after = self.revalidate_application();
         let value = result?;
         after?;
+        Ok(value)
+    }
+
+    pub(crate) fn run_application_read_before(
+        &mut self,
+        request: &ApplicationRead,
+        deadline: std::time::Instant,
+    ) -> Result<ApplicationReadResult> {
+        self.revalidate_application()?;
+        let result = crate::production_application::run_read_before(
+            &self.application_authority(),
+            request,
+            deadline,
+        )
+        .map_err(|error| NamespaceError::RuntimeResource(error.to_string()));
+        let after = self.revalidate_application();
+        let value = result?;
+        after?;
+        if std::time::Instant::now() >= deadline {
+            return Err(NamespaceError::Rejected(
+                "application read workflow deadline",
+            ));
+        }
+        Ok(value)
+    }
+
+    pub(crate) fn run_application_browser(
+        &mut self,
+        request: &BrowserCommand,
+        deadline: std::time::Instant,
+    ) -> Result<BrowserCommandResult> {
+        self.revalidate_application()?;
+        let result = crate::production_application::run_browser_command(
+            &self.application_authority(),
+            request,
+            deadline,
+        )
+        .map_err(|error| NamespaceError::RuntimeResource(error.to_string()));
+        let after = self.revalidate_application();
+        let value = result?;
+        after?;
+        if std::time::Instant::now() >= deadline {
+            return Err(NamespaceError::Rejected("browser workflow deadline"));
+        }
         Ok(value)
     }
 

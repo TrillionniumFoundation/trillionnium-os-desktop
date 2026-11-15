@@ -150,7 +150,7 @@ fn complete_hash(file: &File, expected: Node, deadline: Instant) -> Result<[u8; 
 
 pub(super) fn verify(
     files: &[File],
-    query: &ApplicationRead,
+    query: &ApplicationOperation,
     root_uid: u32,
     root_gid: u32,
     deadline: Instant,
