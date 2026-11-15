@@ -4,13 +4,25 @@ This packet adds the finite browser input provider to the complete native Droidl
 
 The native source base is distinct from the GitHub compatibility packet's base. Applying this patch requires the complete native source identified above. The files in this compatibility directory are not a replacement supervisor crate, and compiling a standalone substitute would not qualify this change.
 
-This packet does not contain that complete native base and cannot by itself provide a reproducible GitHub CI build. The owner must first publish or otherwise supply the exact complete native source generation before connecting such CI. The private complete-crate qualification described below is not a claim that the native commit can be checked out from this GitHub branch.
+The complete original native base is now published in the same repository on branch [`source/pocket4-native-browser-base-20261115-4fb541`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/tree/source/pocket4-native-browser-base-20261115-4fb541). Its exact commit is [`9ecce4f94dec80500c05322106907e48a0668b05`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/9ecce4f94dec80500c05322106907e48a0668b05), with tree `12fe22ce02be9759963835faa4e7a7d0a762ddc2` and all 2,118 tracked files. The CI workflow checks out that immutable commit separately from the compatibility wrapper. The branch preserves access to the source; it is not a floating build input.
 
 ## Exact source inputs
 
 `BASE.json` identifies the native commit, tree, tracked membership and the eight existing files changed by the patch. `CANDIDATE.json` identifies all 17 final source inputs: nine native/Cargo files supplied by the patch, plus eight unchanged files from the adjacent `browser-action-contract` packet. The patch includes the complete new `production_runtime_browser_assets.rs` module.
 
 The contract dependency must exist at `compat/android/pocket4/current-app-acceptance/browser-action-contract/` in the native candidate. Preserve its eight exact files from the published contract packet, including its independent workspace declaration. Do not replace it with a stub, omit it because the patch applies, or copy a different contract revision. The candidate manifest records its complete file hashes. The native workspace explicitly excludes that independent workspace and depends on its actual crate by path; the native lockfile includes that dependency.
+
+## Reproducible GitHub CI
+
+`.github/workflows/pocket4-native-browser-provider.yml` checks out the actual pull request head (or the exact push commit) as the wrapper and the complete native commit above as a separate checkout. It authenticates the native commit, tree, 2,118 entries and the SHA256 of `git ls-files -s -z`, then verifies the eight original files in `BASE.json`. The manifests and patch also have fixed complete-byte SHA256 pins in the workflow.
+
+The workflow copies precisely the eight contract files from that wrapper, checks `git apply --check`, applies the patch, and verifies all 17 candidate files. The complete set of changed and untracked native paths must equal those 17 paths. Before and after compilation, the candidate files must retain their declared bytes, sizes and regular-file modes, and the original tracked index must remain unchanged. This includes both lockfiles; no lockfile regeneration is accepted.
+
+Rust `1.93.0` is fixed, including its expected rustc commit. Cargo first fetches the declared dependencies with `--locked`, then runs the six focused groups and `cargo check --all-targets` with `--locked --offline`. The group counts are exactly 8, 10, 1, 1, 1 and 1, and the workflow requires 22 distinct successful test names. The second group's explicit exclusion of `browser_provider` avoids counting the first group's eight tests again. Zero, ignored, failed, duplicate or incomplete selected tests fail the job.
+
+Compilation and tests use one Cargo job, one test thread and one CPU selected from the runner's original affinity. A runner with fewer than three available logical CPUs is rejected, so at least two logical CPUs remain outside the compiler affinity. The Cargo cache, target directory and evidence are allocated under the runner's temporary directory. Only source checks and test logs are retained as CI artifacts; build outputs are not published.
+
+These workflow commands are direct Git, Cargo, jq and coreutils interfaces. They add no alternate supervisor implementation, dependency stub, deployment tool or runtime admission path. The earlier private qualification below remains historical evidence; a GitHub CI result belongs to its reported exact wrapper head. A successful job establishes complete-crate source qualification only. It does not establish a production browser action, loaded-policy acceptance, Android readiness or a safe runtime selection.
 
 ## Manifest and descriptor roles
 
