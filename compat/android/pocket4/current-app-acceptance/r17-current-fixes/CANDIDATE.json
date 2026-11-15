@@ -1,0 +1,101 @@
+{
+  "base_commit": "6b4ff636e42f6e016f40e9941b09adfd1553c852",
+  "base_tree": "0357f56f3f54303216535bd75d3e7e91749e5fdd",
+  "files": [
+    {
+      "bytes": 29248,
+      "packet_file": "runtime_plan.rs",
+      "path": "runtime/droidloom-applications/src/runtime_plan.rs",
+      "sha256": "cf4a1c8da95fe6fd998eb425c0e2dcf73a13acc9a00357b22d528e7b9066ed59"
+    },
+    {
+      "bytes": 29374,
+      "packet_file": "application_probe.rs",
+      "path": "runtime/droidloom-supervisor/src/application_probe.rs",
+      "sha256": "874938c194045b597616ee4482228309083f63f4f1ce65b124adb0a236872d4b"
+    },
+    {
+      "bytes": 17658,
+      "packet_file": "production_application_business.rs",
+      "path": "runtime/droidloom-supervisor/src/production_application_business.rs",
+      "sha256": "ad76228e9be0364387107dc6a52022178adf5d9d72dd1adeebc0a175f8dbd4a3"
+    },
+    {
+      "bytes": 15511,
+      "packet_file": "production_application_operation.rs",
+      "path": "runtime/droidloom-supervisor/src/production_application_operation.rs",
+      "sha256": "875e64a321e8db27de5d7102ac1355a62af76ed74ff700c2ba187a65c9adc82c"
+    }
+  ],
+  "patch": {
+    "bytes": 39758,
+    "file": "source.patch",
+    "sha256": "863acbdd01e4efc1f53fbc52db6bec6a04a118fdad37af0beb436764d08aa0f0"
+  },
+  "qualification": {
+    "android_or_vm_actions": 0,
+    "cargo": "1.93.0 (083ac5135 2025-12-15)",
+    "cargo_jobs": 1,
+    "changed_files": 4,
+    "complete_source_before_after_exact": true,
+    "component_baseline": {
+      "compile_succeeded": true,
+      "exit_code": 101,
+      "failed": 2,
+      "ignored": 0,
+      "input": "original6b4ff implementation plus identical two component regression tests",
+      "passed": 0
+    },
+    "cpu_quota_percent": 100,
+    "date_utc": "2026-11-15",
+    "earlier_failed_stage_originals_unchanged": true,
+    "final_stage": {
+      "all_targets_crates": [
+        "droidloom-supervisor",
+        "droidloom-applications"
+      ],
+      "all_targets_exit_code": 0,
+      "application_tests": 25,
+      "applications_runtime_plan_tests": 14,
+      "failed": 0,
+      "ignored": 0,
+      "job_exit_code": 0,
+      "original_task_cgroup_absent": true,
+      "output_complete": true,
+      "output_durable": true,
+      "probe_tests": 16,
+      "recorded_generations_absent": 10,
+      "rustfmt_check_exit_code": 0,
+      "unique_tests": 55
+    },
+    "intermediate_url_stage": {
+      "all_targets_check_ran": false,
+      "job_exit_code": 1,
+      "original_record_preserved": true,
+      "qualified": false,
+      "reason": "verifier expected7 runtime_plan tests but the filter ran14 passing tests including leaf_routes"
+    },
+    "kind": "complete native source regression and compilation only",
+    "memory_max_bytes": 2147483648,
+    "offline": true,
+    "original_native_unchanged": true,
+    "prior_input_source_cache_target_unchanged": true,
+    "production_ready": false,
+    "public_uri_authorization": false,
+    "runtime_acceptance": false,
+    "rustc": "1.93.0 (254b59607 2026-01-19)",
+    "source_files": 2120,
+    "test_threads": 1,
+    "unchanged_files": 2116,
+    "url_baseline": {
+      "compile_succeeded": true,
+      "exit_code": 101,
+      "failed": 2,
+      "ignored": 0,
+      "input": "previous154c probe plus identical two URL authority regression tests",
+      "malformed_inputs_observed_accepted": 28,
+      "passed": 0
+    }
+  },
+  "schema": "pocket4_r17_browser_four_source_candidate_v1"
+}

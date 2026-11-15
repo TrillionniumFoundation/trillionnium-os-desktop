@@ -1,0 +1,191 @@
+{
+  "VM_launches": 0,
+  "changed_files": [
+    "controller.py",
+    "p4-systemd-observe.service",
+    "src/systemd_cold.rs"
+  ],
+  "controller_fragments": {
+    "cold-controller-base.py": {
+      "exact_function_slices": {
+        "need": {
+          "bytes": 80,
+          "sha256": "ae151b9b3d1df6ca8a5b3e41cd28a3b36c826318e998307be07e9c4c0ff2edd2"
+        },
+        "parse_component_serial": {
+          "bytes": 11122,
+          "sha256": "e29c3ece86d0fcdbdc18c423728eb30e5dba30ba6201455d78eedd279744015e"
+        },
+        "unique_json": {
+          "bytes": 361,
+          "sha256": "2507842bfa0f822d08cd53ce54b08921a2025bdc909f8be0e41d8fd0480f7487"
+        }
+      },
+      "origin": "base/controller.py",
+      "origin_file": {
+        "bytes": 103888,
+        "sha256": "391a79ea44ad68071949175d67884d05f3bc69244d726fb147d6897d6e03a287"
+      },
+      "standalone_controller": false
+    },
+    "cold-controller-fragment.py": {
+      "exact_function_slices": {
+        "need": {
+          "bytes": 80,
+          "sha256": "ae151b9b3d1df6ca8a5b3e41cd28a3b36c826318e998307be07e9c4c0ff2edd2"
+        },
+        "parse_component_serial": {
+          "bytes": 10401,
+          "sha256": "2ddf514c64b9bce2a3c9cf2b8ab59f9ba320dcd622aad1a4542a3c14bf1e7a78"
+        },
+        "unique_json": {
+          "bytes": 361,
+          "sha256": "2507842bfa0f822d08cd53ce54b08921a2025bdc909f8be0e41d8fd0480f7487"
+        },
+        "validate_fixed_nsfs_records": {
+          "bytes": 1588,
+          "sha256": "b8f4d9ca1fdc9190c1a8bbcd3f3369324cfa5aca41a6322d4537c63cfddd7f12"
+        },
+        "validate_original_server_metadata": {
+          "bytes": 771,
+          "sha256": "e415e7db68724566bd527c66567ef4093ce869b77c2d96e6ed7b22766839c889"
+        }
+      },
+      "origin": "candidate/controller.py",
+      "origin_file": {
+        "bytes": 105530,
+        "sha256": "7d05eb4df2af432231470482cba8e49461a85c08cf08c4d01da80006aa159596"
+      },
+      "standalone_controller": false
+    }
+  },
+  "full_candidate_fixture_files": {
+    "Cargo.lock": {
+      "bytes": 4885,
+      "sha256": "f075b6c47042464d650728c85b583a53369c355fb9998de5491317e24a74b6a3"
+    },
+    "Cargo.toml": {
+      "bytes": 228,
+      "sha256": "b90b1d5b521ca80adc05ece673c5fab61337cebae19779f523895d689982eaee"
+    },
+    "apparmor-fixture.profile": {
+      "bytes": 1130,
+      "sha256": "a2c45c1676c97ef67ea744254cbb97d77537cf1468611d0c9faa1926fc545e8c"
+    },
+    "controller.py": {
+      "bytes": 105530,
+      "sha256": "7d05eb4df2af432231470482cba8e49461a85c08cf08c4d01da80006aa159596"
+    },
+    "p4-systemd-observe.service": {
+      "bytes": 518,
+      "sha256": "1a2e0fd4f1aa0ef481b2514606450bf52dbf5205ac8399b7483a2b3a2f5f0eac"
+    },
+    "p4-systemd-observe.target": {
+      "bytes": 158,
+      "sha256": "b5ef3614ac46e71cd0edd321b5c506aec76e370f94545987fa5ecfe869babc55"
+    },
+    "rust-toolchain.toml": {
+      "bytes": 31,
+      "sha256": "92b454c1ccf330de9b94242f73bc3214370fb420d5152baeec12dc82ceef9dcc"
+    },
+    "src/main.rs": {
+      "bytes": 37833,
+      "sha256": "2385c9897da12c1e8315ff097b11f1e4d03baec40c93d9b4e4335e0abb41308f"
+    },
+    "src/systemd_api.rs": {
+      "bytes": 38997,
+      "sha256": "6cf56182f95982aabd6e22b7e6bc011f423c0de78df38a92814512f5551a901f"
+    },
+    "src/systemd_cold.rs": {
+      "bytes": 34196,
+      "sha256": "babeb825d65d22d5f25da30a915506d11681a396a6e437109f0d71117abf8760"
+    },
+    "systemd-inputs.json": {
+      "bytes": 7214,
+      "sha256": "2102e116ca510fc2c65be96f3ab20fbb5e1fb631f7601d90af6122bbe6cb9662"
+    }
+  },
+  "live_QMP_calls": 0,
+  "owner_source_writes": 0,
+  "production_ready": false,
+  "public_files": {
+    "cold-BASE.json": {
+      "bytes": 3795,
+      "sha256": "5c4a256d8b7aa063086eb05eb571869ab1bf617a8492db071dd16f0b37c10d34"
+    },
+    "cold-README.md": {
+      "bytes": 7560,
+      "sha256": "b946c0ee24cc749f9333381721d3147d33c297f0559182f75dbe80d58723ae92"
+    },
+    "cold-base-observe.service": {
+      "bytes": 429,
+      "sha256": "ea2d72a95643d94b3f9f59abce4627d2d5e9792b6f9536ba0ca1c3e3689ae4f2"
+    },
+    "cold-controller-base.py": {
+      "bytes": 11763,
+      "sha256": "7a18fdf34477359783a30e7651b58325dd8839a451ba0d5c50f38dc8d7e002d2"
+    },
+    "cold-controller-fragment.py": {
+      "bytes": 13405,
+      "sha256": "73a92131c9d571573ca3c14f57e78b385435b74b0e972a1c1ee65d0fe5f9c3f6"
+    },
+    "cold-source.patch": {
+      "bytes": 10520,
+      "sha256": "61ca5c3d50e50272006bc47d90549d8cc9e851e3819961c24b9a5c0c27da8805"
+    },
+    "p4-systemd-observe.service": {
+      "bytes": 518,
+      "sha256": "1a2e0fd4f1aa0ef481b2514606450bf52dbf5205ac8399b7483a2b3a2f5f0eac"
+    },
+    "systemd_cold.rs": {
+      "bytes": 34196,
+      "sha256": "babeb825d65d22d5f25da30a915506d11681a396a6e437109f0d71117abf8760"
+    },
+    "test_cold_source_fixes.py": {
+      "bytes": 14554,
+      "sha256": "506d6e32bc5c69ef58facb2f373199903ed6fdc9fae9efec1cfbdc76c6ebf860"
+    }
+  },
+  "public_tests": {
+    "command": "python3 -I -B test_cold_source_fixes.py",
+    "expected_tests": 15,
+    "scope": "synthetic data and exact source constraints only"
+  },
+  "runtime_qualified": false,
+  "schema": "p4-r9-source-candidate-v1",
+  "separate_private_native_validation": {
+    "build_inputs": {
+      "bytes": 346356,
+      "sha256": "916f808284354da20ae2d90ac88e0c395b7b37182c5b41ae97a9e9562dae1e5b"
+    },
+    "dependencies": {
+      "bytes": 8559,
+      "sha256": "39818934d432214aa0417f9af16e22574bec5b5fed090b4cdbb0b1140e6b7538"
+    },
+    "ignored_rust_tests": 0,
+    "locked_dependency_archives": 21,
+    "original_R9_failure_preserved": true,
+    "original_R9_raw_included": true,
+    "original_R9_socket_mode_observed": false,
+    "outer_retirement": {
+      "bytes": 3813,
+      "sha256": "b8958346c10ae457be331af1f79069ddf92d4aac332b456062f64605250895e1"
+    },
+    "passed": true,
+    "production_ready": false,
+    "python_result": {
+      "bytes": 2204,
+      "sha256": "e76120797a1a30f03ed125a5b8ae71f0429a4ce1ddd1c40e5dc0fd765d724bb6"
+    },
+    "python_tests": 17,
+    "real_caller_owned_AF_UNIX_bind": true,
+    "result": {
+      "bytes": 36447,
+      "sha256": "0f396deea674e7134c7d40bf8f08e3e3a3502425550b04e51251be167987497c"
+    },
+    "runtime_qualified": false,
+    "rust_tests": 11,
+    "source_inputs": 1081
+  },
+  "source_fix_candidate_only": true
+}

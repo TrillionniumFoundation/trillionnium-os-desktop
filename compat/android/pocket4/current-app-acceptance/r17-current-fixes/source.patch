@@ -1,0 +1,985 @@
+diff --git a/runtime/droidloom-applications/src/runtime_plan.rs b/runtime/droidloom-applications/src/runtime_plan.rs
+--- a/runtime/droidloom-applications/src/runtime_plan.rs
++++ b/runtime/droidloom-applications/src/runtime_plan.rs
+@@ -429,7 +429,7 @@
+                         Err(error) => row.reason = format!("browser flow invocation failed; inspect retained observations before any explicit retry: {error}"),
+                         Ok((after, output)) if after == actual => {
+                             row.status = "partial_observation";
+-                            row.reason = "actual implicit HTTPS activity invocation observed; rendered document/input/image, media, return/reopen, recovery and all common release gates remain pending".into();
++                            row.reason = "actual implicit HTTPS resolution and bound explicit activity invocation observed; rendered document/input/image, media, return/reopen, recovery and all common release gates remain pending".into();
+                             row.invocation_output = Some(output);
+                         }
+                         Ok(_) => row.reason = "browser invocation returned a different installed identity or Main generation".into(),
+diff --git a/runtime/droidloom-supervisor/src/application_probe.rs b/runtime/droidloom-supervisor/src/application_probe.rs
+--- a/runtime/droidloom-supervisor/src/application_probe.rs
++++ b/runtime/droidloom-supervisor/src/application_probe.rs
+@@ -90,6 +90,42 @@
+             .all(|b| b.is_ascii_alphanumeric() || b".-:[]".contains(&b))
+     {
+         return Err("browser fixture URL has an invalid or credential-bearing authority".into());
++    }
++
++    // Check the existing ASCII authority without rewriting any URL bytes.
++    // This is structure validation, not DNS resolution or permission to open it.
++    let port = if let Some(literal_and_tail) = authority.strip_prefix('[') {
++        let (literal, tail) = literal_and_tail
++            .split_once(']')
++            .ok_or("browser fixture URL has an unclosed IPv6 literal")?;
++        if literal.parse::<std::net::Ipv6Addr>().is_err() {
++            return Err("browser fixture URL has an invalid IPv6 literal".into());
++        }
++        if tail.is_empty() {
++            None
++        } else {
++            Some(
++                tail.strip_prefix(':')
++                    .ok_or("browser fixture URL has trailing IPv6 authority data")?,
++            )
++        }
++    } else {
++        if authority.contains(['[', ']']) {
++            return Err("browser fixture URL has misplaced host brackets".into());
++        }
++        match authority.split_once(':') {
++            Some((host, port)) if !host.is_empty() => Some(port),
++            Some(_) => return Err("browser fixture URL has an empty host".into()),
++            None => None,
++        }
++    };
++    if let Some(port) = port {
++        // Empty ports, zero, and leading zeroes retain their existing meaning.
++        if !port.bytes().all(|byte| byte.is_ascii_digit())
++            || (!port.is_empty() && port.parse::<u16>().is_err())
++        {
++            return Err("browser fixture URL has an invalid port".into());
++        }
+     }
+     Ok(())
+ }
+@@ -276,8 +312,24 @@
+     })
+ }
+ 
+-/// Open one reviewed public HTTPS fixture through actual implicit Android routing.
++fn resolved_component_valid(component: &str, package: &str) -> bool {
++    let Some((owner, activity)) = component.split_once('/') else {
++        return false;
++    };
++    let class = activity.strip_prefix('.').unwrap_or(activity);
++    owner == package
++        && !class.is_empty()
++        && class.split('.').all(|part| {
++            !part.is_empty()
++                && part
++                    .bytes()
++                    .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$'))
++        })
++}
++
++/// Resolve the current implicit HTTPS handler, then start that exact component.
+ ///
++/// A later default-handler change must not redirect this already checked request.
+ /// This never reports that content, media, persistence or permissions passed.
+ pub fn open_firefox(
+     probe: &mut impl AndroidProbe,
+@@ -307,12 +359,14 @@
+         url,
+     ]))?;
+     let components: Vec<_> = resolve.lines().filter(|line| line.contains('/')).collect();
+-    if components.len() != 1
+-        || components[0]
+-            .split_once('/')
+-            .is_none_or(|(owner, activity)| owner != expected.package || activity.is_empty())
+-    {
+-        return Err("implicit HTTPS resolver does not select the pinned Firefox package".into());
++    let valid_component = match components.as_slice() {
++        [component] => resolved_component_valid(component, &expected.package),
++        _ => false,
++    };
++    if !valid_component {
++        return Err(
++            "implicit HTTPS resolver does not select one valid pinned Firefox component".into(),
++        );
+     }
+     fence(probe, &expected.epoch)?;
+     let output = probe.command(&argv(&[
+@@ -322,6 +376,8 @@
+         "-W",
+         "--user",
+         &user,
++        "-n",
++        components[0],
+         "-a",
+         "android.intent.action.VIEW",
+         "-c",
+@@ -464,4 +520,296 @@
+         ]);
+         assert!(open_firefox(&mut m, &expected, "https://example.com/").is_err());
+     }
+-}
++
++    #[test]
++    fn default_handler_change_cannot_redirect_the_resolved_request() {
++        struct ChangingDefault {
++            inner: Mock,
++            started: Vec<Vec<String>>,
++        }
++        impl AndroidProbe for ChangingDefault {
++            fn epoch(&mut self) -> Result<RuntimeEpoch, String> {
++                self.inner.epoch()
++            }
++            fn command(&mut self, args: &[String]) -> Result<String, String> {
++                if args.get(2).is_some_and(|value| value == "start-activity") {
++                    self.started.push(args.to_vec());
++                    // The default changes after resolve-activity. An implicit
++                    // second resolution would now dispatch to another package.
++                    let target = args
++                        .windows(2)
++                        .find(|pair| pair[0] == "-n")
++                        .map_or("org.example.browser/.Main", |pair| pair[1].as_str());
++                    return Ok(format!("Status: ok\nActivity: {target}"));
++                }
++                self.inner.command(args)
++            }
++        }
++        let expected = inspect(&mut fixture(10021), "org.mozilla.firefox", 0).unwrap();
++        let mut inner = fixture(10021);
++        inner
++            .output
++            .push_back("org.mozilla.firefox/.HomeActivity".into());
++        inner.output.extend(fixture(10021).output);
++        let mut probe = ChangingDefault {
++            inner,
++            started: Vec::new(),
++        };
++        let url = "https://example.com/fixture?q=one#section";
++        assert!(open_firefox(&mut probe, &expected, url).is_ok());
++        assert_eq!(probe.started.len(), 1);
++        let sent = &probe.started[0];
++        for pair in [
++            ["-n", "org.mozilla.firefox/.HomeActivity"],
++            ["--user", "0"],
++            ["-a", "android.intent.action.VIEW"],
++            ["-c", "android.intent.category.BROWSABLE"],
++            ["-d", url],
++        ] {
++            assert!(
++                sent.windows(2)
++                    .any(|actual| actual[0] == pair[0] && actual[1] == pair[1])
++            );
++        }
++        assert!(probe.inner.output.is_empty()); // Includes the post-launch identity recheck.
++    }
++
++    #[test]
++    fn malformed_resolved_components_fail_before_dispatch() {
++        let expected = inspect(&mut fixture(10021), "org.mozilla.firefox", 0).unwrap();
++        for component in [
++            "org.mozilla.firefox/",
++            "org.mozilla.firefox/.",
++            "org.mozilla.firefox/..HomeActivity",
++            "org.mozilla.firefox/.Home/Activity",
++            "org.mozilla.firefox/.Home Activity",
++            "org.mozilla.firefox/.HomeActivity\t",
++            "org.mozilla.firefox/.HomeActivity\norg.mozilla.firefox/.OtherActivity",
++        ] {
++            let mut probe = fixture(10021);
++            probe.output.push_back(component.into());
++            assert!(open_firefox(&mut probe, &expected, "https://example.com/").is_err());
++            assert_eq!(probe.mutations, 0, "unexpected dispatch for {component:?}");
++        }
++    }
++
++    #[test]
++    fn flattened_names_and_same_package_alias_output_remain_supported() {
++        let expected = inspect(&mut fixture(10021), "org.mozilla.firefox", 0).unwrap();
++        for (resolved, started) in [
++            (
++                "org.mozilla.firefox/.HomeActivity",
++                "org.mozilla.firefox/org.mozilla.firefox.HomeActivity",
++            ),
++            (
++                "org.mozilla.firefox/org.mozilla.firefox.HomeActivity",
++                "org.mozilla.firefox/.HomeActivity",
++            ),
++            (
++                "org.mozilla.firefox/.LauncherAlias",
++                "org.mozilla.firefox/.HomeActivity",
++            ),
++        ] {
++            let mut probe = fixture(10021);
++            probe
++                .output
++                .extend([resolved.into(), format!("Status: ok\nActivity: {started}")]);
++            probe.output.extend(fixture(10021).output);
++            assert!(open_firefox(&mut probe, &expected, "https://example.com/").is_ok());
++            assert_eq!(probe.mutations, 1);
++        }
++    }
++
++    #[test]
++    fn r17_url_authority_preserves_plain_hosts_and_valid_port_boundaries() {
++        for url in [
++            "https://example.org",
++            "https://example.org/",
++            "https://example.org:",
++            "https://example.org:/",
++            "https://example.org:0/",
++            "https://example.org:65535/",
++            "https://example.org:00000/",
++            "https://example.org:00065535/",
++            "https://EXAMPLE.org:00443/a%2Fb?q=1#part",
++            "https://sub-domain.example.org./",
++            "https://localhost/",
++            "https://127.0.0.1/",
++        ] {
++            assert!(
++                validate_https_url(url).is_ok(),
++                "rejected existing syntax: {url}"
++            );
++        }
++    }
++
++    #[test]
++    fn r17_url_authority_accepts_complete_ipv6_literals_and_ports() {
++        for url in [
++            "https://[::]/",
++            "https://[::1]/",
++            "https://[::1]:/",
++            "https://[::1]:0/",
++            "https://[::1]:65535/",
++            "https://[::1]:00000/",
++            "https://[::1]:00065535/",
++            "https://[2001:db8::1]:443/",
++            "https://[2001:0DB8:0000:0000:0000:0000:0000:0001]/",
++            "https://[::ffff:192.0.2.128]:00443/",
++        ] {
++            assert!(
++                validate_https_url(url).is_ok(),
++                "rejected IPv6 syntax: {url}"
++            );
++        }
++    }
++
++    #[test]
++    fn r17_url_authority_retains_original_input_gates_and_length_bound() {
++        for url in [
++            "http://example.org/",
++            "HTTPS://example.org/",
++            "https:///empty",
++            "https://user:password@example.org/",
++            "https://example.org\\other/",
++            "https://example.org/has space",
++            "https://example.org/\n",
++            "https://example.org/\0",
++            "https://example.org/\u{7f}",
++            "https://example.org/é",
++        ] {
++            assert!(
++                validate_https_url(url).is_err(),
++                "old input gate changed: {url:?}"
++            );
++        }
++        let prefix = "https://example.org/";
++        let at_limit = format!("{prefix}{}", "x".repeat(4096 - prefix.len()));
++        assert_eq!(at_limit.len(), 4096);
++        assert!(validate_https_url(&at_limit).is_ok());
++        assert!(validate_https_url(&(at_limit + "x")).is_err());
++
++        // Port range is numeric; leading zeroes do not change the value or
++        // consume an invented digit-count allowance below the whole-URL bound.
++        let prefix = "https://[::1]:";
++        let suffix = "65535/";
++        let long_port = format!(
++            "{prefix}{}{suffix}",
++            "0".repeat(4096 - prefix.len() - suffix.len())
++        );
++        assert_eq!(long_port.len(), 4096);
++        assert!(validate_https_url(&long_port).is_ok());
++    }
++
++    #[test]
++    fn r17_url_authority_preserves_literal_url_in_resolve_and_explicit_start() {
++        // This reuses the finite package fixture. It issues no Ready authority
++        // and makes no Android, DNS or website request.
++        struct RecordingProbe {
++            inner: Mock,
++            browser_commands: Vec<Vec<String>>,
++        }
++        impl AndroidProbe for RecordingProbe {
++            fn epoch(&mut self) -> Result<RuntimeEpoch, String> {
++                self.inner.epoch()
++            }
++            fn command(&mut self, args: &[String]) -> Result<String, String> {
++                if args
++                    .get(2)
++                    .is_some_and(|s| s == "resolve-activity" || s == "start-activity")
++                {
++                    self.browser_commands.push(args.to_vec());
++                }
++                self.inner.command(args)
++            }
++        }
++        let expected = inspect(&mut fixture(10021), "org.mozilla.firefox", 0).unwrap();
++        for url in [
++            "https://EXAMPLE.org:00443/a%2Fb?[::1]=@value#part:009",
++            "https://[2001:0DB8::1]:000443/a%3Fb?q=%23#frag",
++            "https://example.org:/path[not-an-ip]:bad?x=1#y",
++            "https://[::1]:0/",
++            "https://[::1]:/abc",
++            "https://example.org:65535/",
++        ] {
++            let mut inner = fixture(10021);
++            inner.output.extend([
++                "org.mozilla.firefox/.LauncherAlias".into(),
++                "Status: ok\nActivity: org.mozilla.firefox/.HomeActivity".into(),
++            ]);
++            inner.output.extend(fixture(10021).output);
++            let mut probe = RecordingProbe {
++                inner,
++                browser_commands: Vec::new(),
++            };
++            assert!(open_firefox(&mut probe, &expected, url).is_ok());
++            assert_eq!(probe.inner.mutations, 1);
++            assert!(probe.inner.output.is_empty());
++            assert_eq!(probe.browser_commands.len(), 2);
++            for command in &probe.browser_commands {
++                let data: Vec<_> = command.windows(2).filter(|pair| pair[0] == "-d").collect();
++                assert_eq!(data.len(), 1);
++                assert_eq!(data[0][1].as_bytes(), url.as_bytes());
++            }
++        }
++    }
++}
++
++#[cfg(test)]
++mod r17_url_authority_regressions {
++    use super::validate_https_url;
++
++    fn assert_rejected(urls: &[&str]) {
++        // Evaluate every case before the assertion so the original failing run
++        // records all actual acceptances, without making a network request.
++        let accepted: Vec<_> = urls
++            .iter()
++            .copied()
++            .filter(|url| validate_https_url(url).is_ok())
++            .collect();
++        assert!(
++            accepted.is_empty(),
++            "malformed authorities still accepted: {accepted:?}"
++        );
++    }
++
++    #[test]
++    fn r17_url_authority_rejects_invalid_brackets_and_ipv6_literals() {
++        assert_rejected(&[
++            "https://[broken/",
++            "https://[::1/",
++            "https://[::1/path]",
++            "https://[::1?close=]",
++            "https://example.org]/",
++            "https://ex[ample.org/",
++            "https://[::1]extra/",
++            "https://[::1][::2]/",
++            "https://[]/",
++            "https://[not-ip]/",
++            "https://[127.0.0.1]/",
++            "https://[1:2:3:4:5:6:7:8:9]/",
++            "https://[1::2::3]/",
++            "https://[::gggg]/",
++        ]);
++    }
++
++    #[test]
++    fn r17_url_authority_rejects_empty_hosts_and_invalid_ports() {
++        assert_rejected(&[
++            "https://:0/",
++            "https://:65535/",
++            "https://:/",
++            "https://::1/",
++            "https://2001:db8::1/",
++            "https://1:2:3:4:5:6:7:8/",
++            "https://example.org:bad/",
++            "https://example.org:-1/",
++            "https://example.org:65536/",
++            "https://example.org:99999999999999999999999999/",
++            "https://example.org:443:0/",
++            "https://[::1]:bad/",
++            "https://[::1]:65536/",
++            "https://[::1]:443:0/",
++        ]);
++    }
++}
+diff --git a/runtime/droidloom-supervisor/src/production_application_business.rs b/runtime/droidloom-supervisor/src/production_application_business.rs
+--- a/runtime/droidloom-supervisor/src/production_application_business.rs
++++ b/runtime/droidloom-supervisor/src/production_application_business.rs
+@@ -1,4 +1,4 @@
+-//! One actual production business adapter: implicit public Firefox HTTPS open.
++//! One actual production business adapter: resolve and pin a Firefox HTTPS open.
+ //!
+ //! The same original Ready owner is borrowed for all package reads, resolver,
+ //! activity invocation and post-invocation reads. This does not qualify rendered
+@@ -21,6 +21,7 @@
+     url: String,
+     paths: Vec<String>,
+     stage: Stage,
++    resolved_component: Option<String>,
+ }
+ impl Binding {
+     fn new(expected: &ApplicationInspection, url: &str) -> Result<Self> {
+@@ -47,6 +48,7 @@
+             url: url.into(),
+             paths,
+             stage: Stage::BeforeResolve,
++            resolved_component: None,
+         })
+     }
+ 
+@@ -75,27 +77,45 @@
+             ),
+             "browser command is repeated or out of order",
+         )?;
++        if let BrowserCommand::Start { component, .. } = &command {
++            require(
++                self.resolved_component.as_deref() == Some(component.as_str()),
++                "browser start component differs from the actual completed resolver",
++            )?;
++        }
+         Ok(command)
+     }
+ 
+-    fn complete(&mut self, command: &BrowserCommand) -> Result<()> {
+-        self.stage = match (self.stage, command) {
++    fn complete(&mut self, command: &BrowserCommand, output: &str) -> Result<()> {
++        match (self.stage, command) {
+             (Stage::BeforeResolve, BrowserCommand::Resolve { user, url })
+                 if *user == self.user && *url == self.url =>
+             {
+-                Stage::Resolved
+-            }
+-            (Stage::Resolved, BrowserCommand::Start { user, url })
+-                if *user == self.user && *url == self.url =>
++                // Parse before advancing the stage. This caller has already
++                // checked the actual successful exit and complete retirement.
++                let component = operation::resolved_firefox_component(output)?;
++                self.resolved_component = Some(component);
++                self.stage = Stage::Resolved;
++            }
++            (
++                Stage::Resolved,
++                BrowserCommand::Start {
++                    user,
++                    url,
++                    component,
++                },
++            ) if *user == self.user
++                && *url == self.url
++                && self.resolved_component.as_deref() == Some(component.as_str()) =>
+             {
+-                Stage::Started
++                self.stage = Stage::Started;
+             }
+             _ => {
+                 return Err(reject(
+                     "browser completion does not match the bound operation",
+                 ));
+             }
+-        };
++        }
+         Ok(())
+     }
+ }
+@@ -161,7 +181,7 @@
+             )?;
+             self.receipts.push(result.receipt);
+             require(Instant::now() < self.deadline, "browser workflow deadline")?;
+-            self.binding.complete(&command)?;
++            self.binding.complete(&command, &result.output)?;
+             self.completed_browser_commands += 1;
+             Ok(result.output)
+         })();
+@@ -188,7 +208,8 @@
+     };
+     // This existing workflow checks complete before/after APK bytes+version+UID
+     // and physical epoch, the actual default resolver, actual Status/Activity
+-    // output and unchanged post-start identity. No explicit-package fallback.
++    // output and unchanged post-start identity. The start is explicitly bound
++    // to that completed resolver, without an implicit re-resolution window.
+     let result = crate::control::application_probe::open_firefox(&mut probe, expected, url)
+         .map_err(external)?;
+     require(
+@@ -252,17 +273,24 @@
+         let start = BrowserCommand::Start {
+             user: 10,
+             url: url.into(),
++            component: "org.mozilla.firefox/.LauncherAlias".into(),
+         };
+         assert!(binding.browser(&strings(&start)).is_err());
+-        assert!(binding.complete(&start).is_err());
++        assert!(binding.complete(&start, "Status: ok").is_err());
+         assert_eq!(binding.stage, Stage::BeforeResolve);
+         assert!(binding.browser(&strings(&resolve)).is_ok());
+-        binding.complete(&resolve).unwrap();
++        binding
++            .complete(&resolve, "org.mozilla.firefox/.LauncherAlias\n")
++            .unwrap();
+         assert!(binding.browser(&strings(&resolve)).is_err());
+         assert!(binding.browser(&strings(&start)).is_ok());
+-        binding.complete(&start).unwrap();
++        binding.complete(&start, "Status: ok").unwrap();
+         assert!(binding.browser(&strings(&start)).is_err());
+-        assert!(binding.complete(&resolve).is_err());
++        assert!(
++            binding
++                .complete(&resolve, "org.mozilla.firefox/.LauncherAlias\n")
++                .is_err()
++        );
+         assert_eq!(binding.stage, Stage::Started);
+     }
+ 
+@@ -311,4 +339,129 @@
+         other.package = "org.other.app".into();
+         assert!(Binding::new(&other, "https://example.org/fixture").is_err());
+     }
+-}
++
++    #[test]
++    fn production_browser_binding_pins_actual_resolver_component_and_rejects_substitution() {
++        let url = "https://example.org/fixture";
++        let mut binding = Binding::new(&expected(), url).unwrap();
++        let resolve = BrowserCommand::Resolve {
++            user: 10,
++            url: url.into(),
++        };
++        binding
++            .complete(&resolve, "priority=0\norg.mozilla.firefox/.LauncherAlias\n")
++            .unwrap();
++        let different = BrowserCommand::Start {
++            user: 10,
++            url: url.into(),
++            component: "org.mozilla.firefox/.DifferentAlias".into(),
++        };
++        assert!(binding.browser(&strings(&different)).is_err());
++        assert!(binding.complete(&different, "Status: ok").is_err());
++        assert_eq!(binding.stage, Stage::Resolved);
++        assert_eq!(
++            binding.resolved_component.as_deref(),
++            Some("org.mozilla.firefox/.LauncherAlias")
++        );
++        let start = BrowserCommand::Start {
++            user: 10,
++            url: url.into(),
++            component: "org.mozilla.firefox/.LauncherAlias".into(),
++        };
++        assert!(binding.browser(&strings(&start)).is_ok());
++        // Android may report a concrete same-package activity for an alias.
++        // The existing probe checks that result; this state binds sent -n data.
++        binding
++            .complete(
++                &start,
++                "Status: ok\nActivity: org.mozilla.firefox/org.mozilla.fenix.HomeActivity\n",
++            )
++            .unwrap();
++        assert_eq!(binding.stage, Stage::Started);
++        assert!(binding.browser(&strings(&start)).is_err());
++    }
++
++    #[test]
++    fn production_browser_binding_invalid_resolver_does_not_advance_or_store_component() {
++        let url = "https://example.org/fixture";
++        let resolve = BrowserCommand::Resolve {
++            user: 10,
++            url: url.into(),
++        };
++        for output in [
++            "No activity found",
++            "org.other.browser/.Main",
++            "org.mozilla.firefox/.A\norg.mozilla.firefox/.B",
++            "org.mozilla.firefox/.A\0",
++        ] {
++            let mut binding = Binding::new(&expected(), url).unwrap();
++            assert!(binding.complete(&resolve, output).is_err());
++            assert_eq!(binding.stage, Stage::BeforeResolve);
++            assert!(binding.resolved_component.is_none());
++        }
++    }
++
++    #[test]
++    fn production_browser_probe_uses_actual_binding_and_parser_for_the_published_explicit_plan() {
++        // Ordinary grammar/workflow fixture only. It cannot construct Ready,
++        // ExecutionAdmission or a retirement receipt, and executes no process.
++        struct Fixture {
++            expected: ApplicationInspection,
++            binding: Binding,
++            starts: Vec<Vec<String>>,
++        }
++        impl AndroidProbe for Fixture {
++            fn epoch(&mut self) -> std::result::Result<RuntimeEpoch, String> {
++                Ok(self.expected.epoch.clone())
++            }
++            fn command(&mut self, args: &[String]) -> std::result::Result<String, String> {
++                if let Ok(read) = ApplicationRead::from_command(args) {
++                    self.binding.read(&read).map_err(|e| e.to_string())?;
++                    return Ok(match read {
++                        ApplicationRead::PackageIdentity { .. } => {
++                            "package:org.mozilla.firefox versionCode:1 uid:1010123".into()
++                        }
++                        ApplicationRead::PackagePaths { .. } => {
++                            "package:/data/app/firefox/base.apk".into()
++                        }
++                        ApplicationRead::ApkStat { .. } => "1:2:64:time:ctime".into(),
++                        ApplicationRead::ApkSha256 { .. } => {
++                            format!("{}  /data/app/firefox/base.apk", "a".repeat(64))
++                        }
++                    });
++                }
++                let command = self.binding.browser(args).map_err(|e| e.to_string())?;
++                let output = match &command {
++                    BrowserCommand::Resolve { .. } => {
++                        "priority=0\norg.mozilla.firefox/.LauncherAlias\n".to_owned()
++                    }
++                    BrowserCommand::Start { .. } => {
++                        self.starts.push(args.to_vec());
++                        "Status: ok\nActivity: org.mozilla.firefox/org.mozilla.fenix.HomeActivity\n"
++                            .into()
++                    }
++                };
++                self.binding
++                    .complete(&command, &output)
++                    .map_err(|e| e.to_string())?;
++                Ok(output)
++            }
++        }
++        let expected = expected();
++        let url = "https://example.org/fixture";
++        let mut probe = Fixture {
++            expected: expected.clone(),
++            binding: Binding::new(&expected, url).unwrap(),
++            starts: Vec::new(),
++        };
++        let (after, _) =
++            crate::control::application_probe::open_firefox(&mut probe, &expected, url).unwrap();
++        assert_eq!(after, expected);
++        assert_eq!(probe.binding.stage, Stage::Started);
++        assert_eq!(probe.starts.len(), 1);
++        assert_eq!(
++            &probe.starts[0][6..8],
++            ["-n", "org.mozilla.firefox/.LauncherAlias"]
++        );
++    }
++}
+diff --git a/runtime/droidloom-supervisor/src/production_application_operation.rs b/runtime/droidloom-supervisor/src/production_application_operation.rs
+--- a/runtime/droidloom-supervisor/src/production_application_operation.rs
++++ b/runtime/droidloom-supervisor/src/production_application_operation.rs
+@@ -29,17 +29,65 @@
+ #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+ #[serde(tag = "browser", deny_unknown_fields)]
+ pub(crate) enum BrowserCommand {
+-    Resolve { user: u32, url: String },
+-    Start { user: u32, url: String },
++    Resolve {
++        user: u32,
++        url: String,
++    },
++    Start {
++        user: u32,
++        url: String,
++        component: String,
++    },
++}
++
++fn firefox_component_valid(component: &str) -> bool {
++    let Some((owner, activity)) = component.split_once('/') else {
++        return false;
++    };
++    let class = activity.strip_prefix('.').unwrap_or(activity);
++    owner == "org.mozilla.firefox"
++        && !class.is_empty()
++        && class.split('.').all(|part| {
++            !part.is_empty()
++                && part
++                    .bytes()
++                    .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$'))
++        })
++}
++
++/// Parse only the actual completed resolver's bounded stdout. The business
++/// owner stores this value after successful command retirement; no serialized
++/// resolution field or caller-supplied success record can advance its stage.
++pub(super) fn resolved_firefox_component(output: &str) -> Result<String> {
++    require(
++        output.len() <= OUTPUT_LIMIT,
++        "browser resolver output bound",
++    )?;
++    let mut components = output.lines().filter(|line| line.contains('/'));
++    let component = components
++        .next()
++        .ok_or_else(|| reject("browser resolver returned no component"))?;
++    require(
++        components.next().is_none() && firefox_component_valid(component),
++        "browser resolver did not select one valid Firefox component",
++    )?;
++    Ok(component.into())
+ }
+ 
+ impl BrowserCommand {
+     pub(super) fn validate(&self) -> Result<()> {
+         let (user, url) = match self {
+-            Self::Resolve { user, url } | Self::Start { user, url } => (*user, url),
++            Self::Resolve { user, url } | Self::Start { user, url, .. } => (*user, url),
+         };
+         require(user <= 21_474, "invalid browser Android user")?;
+-        crate::control::application_probe::validate_https_url(url).map_err(external)
++        crate::control::application_probe::validate_https_url(url).map_err(external)?;
++        if let Self::Start { component, .. } = self {
++            require(
++                firefox_component_valid(component),
++                "invalid Firefox start component",
++            )?;
++        }
++        Ok(())
+     }
+ 
+     pub(super) fn from_command(args: &[String], user: u32, url: &str) -> Result<Self> {
+@@ -75,6 +123,8 @@
+                 "-W",
+                 "--user",
+                 observed_user,
++                "-n",
++                component,
+                 "-a",
+                 "android.intent.action.VIEW",
+                 "-c",
+@@ -89,9 +139,10 @@
+                 Self::Start {
+                     user,
+                     url: url.into(),
++                    component: (*component).into(),
+                 }
+             }
+-            _ => return Err(reject("command is outside the fixed implicit browser flow")),
++            _ => return Err(reject("command is outside the fixed resolved browser flow")),
+         };
+         value.validate()?;
+         Ok(value)
+@@ -101,26 +152,25 @@
+         self.validate()?;
+         let (user, url, service, action, option) = match self {
+             Self::Resolve { user, url } => (*user, url, "package", "resolve-activity", "--brief"),
+-            Self::Start { user, url } => (*user, url, "activity", "start-activity", "-W"),
++            Self::Start { user, url, .. } => (*user, url, "activity", "start-activity", "-W"),
+         };
+         let user = user.to_string();
+-        [
+-            "/system/bin/cmd",
+-            service,
+-            action,
+-            option,
+-            "--user",
+-            &user,
++        let mut arguments = vec!["/system/bin/cmd", service, action, option, "--user", &user];
++        if let Self::Start { component, .. } = self {
++            arguments.extend(["-n", component.as_str()]);
++        }
++        arguments.extend([
+             "-a",
+             "android.intent.action.VIEW",
+             "-c",
+             "android.intent.category.BROWSABLE",
+             "-d",
+             url,
+-        ]
+-        .into_iter()
+-        .map(|value| CString::new(value).map_err(|_| reject("NUL in fixed browser input")))
+-        .collect()
++        ]);
++        arguments
++            .into_iter()
++            .map(|value| CString::new(value).map_err(|_| reject("NUL in fixed browser input")))
++            .collect()
+     }
+ 
+     pub(super) fn domain(&self) -> OperationDomain {
+@@ -194,6 +244,7 @@
+             BrowserCommand::Start {
+                 user: 0,
+                 url: url.into(),
++                component: "org.mozilla.firefox/.LauncherAlias".into(),
+             },
+         ] {
+             let argv = strings(&command);
+@@ -221,7 +272,8 @@
+         assert_eq!(
+             BrowserCommand::Start {
+                 user: 0,
+-                url: url.into()
++                url: url.into(),
++                component: "org.mozilla.firefox/.LauncherAlias".into(),
+             }
+             .domain(),
+             OperationDomain::Browser
+@@ -241,18 +293,22 @@
+     }
+ 
+     #[test]
+-    fn production_browser_operation_rejects_cross_user_url_explicit_component_and_injected_role() {
++    fn production_browser_operation_rejects_cross_user_url_implicit_start_and_injected_role() {
+         let url = "https://example.org/fixture";
+         let start = BrowserCommand::Start {
+             user: 10,
+             url: url.into(),
++            component: "org.mozilla.firefox/.LauncherAlias".into(),
+         };
+         let argv = strings(&start);
+         assert!(BrowserCommand::from_command(&argv, 0, url).is_err());
+         assert!(BrowserCommand::from_command(&argv, 10, "https://example.org/other").is_err());
+-        let mut explicit = argv.clone();
+-        explicit.extend(["-n".into(), "org.mozilla.firefox/.App".into()]);
+-        assert!(BrowserCommand::from_command(&explicit, 10, url).is_err());
++        let mut implicit = argv.clone();
++        implicit.drain(6..8);
++        assert!(BrowserCommand::from_command(&implicit, 10, url).is_err());
++        let mut repeated = argv.clone();
++        repeated.extend(["-n".into(), "org.mozilla.firefox/.App".into()]);
++        assert!(BrowserCommand::from_command(&repeated, 10, url).is_err());
+         for invalid in [
+             "file:///data/user/0/a",
+             "https://example.org/\nsecret",
+@@ -261,18 +317,133 @@
+             assert!(
+                 BrowserCommand::Start {
+                     user: 10,
+-                    url: invalid.into()
++                    url: invalid.into(),
++                    component: "org.mozilla.firefox/.LauncherAlias".into(),
+                 }
+                 .arguments()
+                 .is_err()
+             );
+         }
+         for message in [
+-            r#"{"operation":"Browser","value":{"browser":"Start","user":0,"url":"https://example.org/","domain":"u:r:shell:s0"}}"#,
+-            r#"{"operation":"Browser","value":{"browser":"Start","user":0,"url":"https://example.org/"},"pid":123}"#,
++            r#"{"operation":"Browser","value":{"browser":"Start","user":0,"url":"https://example.org/","component":"org.mozilla.firefox/.LauncherAlias","domain":"u:r:shell:s0"}}"#,
++            r#"{"operation":"Browser","value":{"browser":"Start","user":0,"url":"https://example.org/","component":"org.mozilla.firefox/.LauncherAlias"},"pid":123}"#,
+             r#"{"operation":"Command","argv":["/system/bin/sh","-c","true"]}"#,
+         ] {
+             assert!(serde_json::from_str::<ApplicationOperation>(message).is_err());
+         }
+     }
+-}
++
++    #[test]
++    fn production_browser_operation_requires_one_strict_resolved_firefox_component() {
++        for component in [
++            "org.mozilla.firefox/.LauncherAlias",
++            "org.mozilla.firefox/org.mozilla.fenix.IntentReceiverActivity",
++            "org.mozilla.firefox/.Outer$Inner",
++        ] {
++            let output = format!("priority=0 match=0x208000\n{component}\n");
++            assert_eq!(resolved_firefox_component(&output).unwrap(), component);
++            let start = BrowserCommand::Start {
++                user: 10,
++                url: "https://example.org/fixture".into(),
++                component: component.into(),
++            };
++            assert_eq!(strings(&start)[7], component);
++        }
++        for output in [
++            "No activity found",
++            "org.other.browser/.Main",
++            "org.mozilla.firefox/",
++            "org.mozilla.firefox/.A\norg.mozilla.firefox/.B",
++            "org.mozilla.firefox/.A\0",
++            "org.mozilla.firefox/.A --user 0",
++            "org.mozilla.firefox/../A",
++        ] {
++            assert!(resolved_firefox_component(output).is_err());
++        }
++    }
++
++    #[test]
++    fn production_browser_operation_wire_cannot_supply_a_resolution_witness() {
++        let valid = serde_json::json!({
++            "operation":"Browser",
++            "value":{"browser":"Start","user":10,"url":"https://example.org/fixture",
++                "component":"org.mozilla.firefox/.LauncherAlias"}
++        });
++        let decoded: ApplicationOperation = serde_json::from_value(valid.clone()).unwrap();
++        decoded.validate().unwrap();
++        let mut missing = valid.clone();
++        missing["value"]
++            .as_object_mut()
++            .unwrap()
++            .remove("component");
++        assert!(serde_json::from_value::<ApplicationOperation>(missing).is_err());
++        let mut claimed = valid.clone();
++        claimed["value"]["resolved"] = serde_json::json!(true);
++        assert!(serde_json::from_value::<ApplicationOperation>(claimed).is_err());
++        for component in [
++            "org.other.browser/.Main",
++            "org.mozilla.firefox/.A\n",
++            "org.mozilla.firefox/.A/extra",
++        ] {
++            let mut invalid = valid.clone();
++            invalid["value"]["component"] = serde_json::json!(component);
++            let decoded: ApplicationOperation = serde_json::from_value(invalid).unwrap();
++            assert!(decoded.validate().is_err());
++        }
++    }
++}
++
++#[cfg(test)]
++mod r17_component_regressions {
++    use super::*;
++
++    fn explicit_arguments() -> Vec<String> {
++        [
++            "/system/bin/cmd",
++            "activity",
++            "start-activity",
++            "-W",
++            "--user",
++            "10",
++            "-n",
++            "org.mozilla.firefox/.LauncherAlias",
++            "-a",
++            "android.intent.action.VIEW",
++            "-c",
++            "android.intent.category.BROWSABLE",
++            "-d",
++            "https://example.org/fixture",
++        ]
++        .into_iter()
++        .map(str::to_owned)
++        .collect()
++    }
++
++    #[test]
++    fn r17_component_regression_explicit_start_roundtrips_exact_argv() {
++        let argv = explicit_arguments();
++        let result = BrowserCommand::from_command(&argv, 10, "https://example.org/fixture");
++        assert!(
++            result.is_ok(),
++            "resolved explicit command was rejected: {result:?}"
++        );
++        let actual = result
++            .unwrap()
++            .arguments()
++            .unwrap()
++            .into_iter()
++            .map(|value| value.into_string().unwrap())
++            .collect::<Vec<_>>();
++        assert_eq!(actual, argv);
++    }
++
++    #[test]
++    fn r17_component_regression_implicit_start_is_rejected() {
++        let mut argv = explicit_arguments();
++        argv.drain(6..8);
++        assert!(
++            BrowserCommand::from_command(&argv, 10, "https://example.org/fixture").is_err(),
++            "implicit second resolution remains executable"
++        );
++    }
++}

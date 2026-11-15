@@ -1,0 +1,106 @@
+{
+  "R17_current_selected_policy_sha256": "e30a63f7c4665a3a2a72495de18693cbcc4eca0c0e8c41e1ed1d0da244debf8b",
+  "R9_actual_guest_policy_sha256": "794f0839e5249818231d3759ba96f371842b3036099e146031adfec061abdca2",
+  "R9_actual_socket_mode_recorded": false,
+  "complete_fixture_files": {
+    "Cargo.lock": {
+      "bytes": 4885,
+      "sha256": "f075b6c47042464d650728c85b583a53369c355fb9998de5491317e24a74b6a3"
+    },
+    "Cargo.toml": {
+      "bytes": 228,
+      "sha256": "b90b1d5b521ca80adc05ece673c5fab61337cebae19779f523895d689982eaee"
+    },
+    "apparmor-fixture.profile": {
+      "bytes": 1130,
+      "sha256": "a2c45c1676c97ef67ea744254cbb97d77537cf1468611d0c9faa1926fc545e8c"
+    },
+    "controller.py": {
+      "bytes": 103888,
+      "sha256": "391a79ea44ad68071949175d67884d05f3bc69244d726fb147d6897d6e03a287"
+    },
+    "p4-systemd-observe.service": {
+      "bytes": 429,
+      "sha256": "ea2d72a95643d94b3f9f59abce4627d2d5e9792b6f9536ba0ca1c3e3689ae4f2"
+    },
+    "p4-systemd-observe.target": {
+      "bytes": 158,
+      "sha256": "b5ef3614ac46e71cd0edd321b5c506aec76e370f94545987fa5ecfe869babc55"
+    },
+    "rust-toolchain.toml": {
+      "bytes": 31,
+      "sha256": "92b454c1ccf330de9b94242f73bc3214370fb420d5152baeec12dc82ceef9dcc"
+    },
+    "src/main.rs": {
+      "bytes": 37833,
+      "sha256": "2385c9897da12c1e8315ff097b11f1e4d03baec40c93d9b4e4335e0abb41308f"
+    },
+    "src/systemd_api.rs": {
+      "bytes": 38997,
+      "sha256": "6cf56182f95982aabd6e22b7e6bc011f423c0de78df38a92814512f5551a901f"
+    },
+    "src/systemd_cold.rs": {
+      "bytes": 31408,
+      "sha256": "c18f99841cffab82e84111cddc0aa85477fb01425326bfc6915cc08d728b0330"
+    },
+    "systemd-inputs.json": {
+      "bytes": 7214,
+      "sha256": "2102e116ca510fc2c65be96f3ab20fbb5e1fb631f7601d90af6122bbe6cb9662"
+    }
+  },
+  "kernel_release": "7.0.14-p4ctx3",
+  "original_R9_raw": {
+    "bytes": 38795,
+    "sha256": "b1f279db695afb57033d506a0d848a4493f1b5dafadda3e01398843190877dc8"
+  },
+  "original_R9_result": {
+    "bytes": 407196,
+    "passed": false,
+    "sha256": "b97e0e9423a30850616fda31834cddf8d4d84a83ec325aa3ceb0a211a276d7ac"
+  },
+  "original_R9_review_archive": {
+    "bytes": 3584352,
+    "sha256": "64cfe55ea21f4ea180c6389dcf1be9f32c0d12c48dc71513e8204b28ae233fc8"
+  },
+  "policy_qualification_inherited": false,
+  "primary_source_bindings": {
+    "kernel/bzImage": {
+      "bytes": 17138176,
+      "sha256": "a91670a793380d629aaf82edffcdff11799e52cf26ff43db70030afe04d64d12"
+    },
+    "kernel/config": {
+      "bytes": 308714,
+      "sha256": "85658dc84bd493671a4c533b2bc33e6a66d7032616c13ed57ebd28eade863e58"
+    },
+    "kernel/net/socket.c": {
+      "bytes": 93431,
+      "sha256": "ed85a30ee3f52eef5d82fc4156795ed6924e048a2101bc0a4b250d9cf833d8c1"
+    },
+    "kernel/net/unix/af_unix.c": {
+      "bytes": 95599,
+      "sha256": "31502ed3824af5eaab245797576cefe3e49f51da9f42a41aaf51de7e4edee9b7"
+    },
+    "systemd/src/basic/terminal-util.c": {
+      "bytes": 96897,
+      "sha256": "29d7fcb01a7dfcd1cb03b69772a4bedd98021881f1d3e46378f0abb4529767d1"
+    },
+    "systemd/src/core/dbus.c": {
+      "bytes": 45465,
+      "sha256": "91d2d9c1fe1b7f7b2d400be8b7ff2b1380bb7c29951d3d4516e0b85bbc5efb15"
+    },
+    "systemd/src/core/exec-invoke.c": {
+      "bytes": 276788,
+      "sha256": "24eda88ee0914d0c43d30ebfb13f0f3aadd00391b5820fb6d6509278f0925dfe"
+    },
+    "systemd/src/core/execute.h": {
+      "bytes": 25855,
+      "sha256": "ed2f451076685ec0ce043cb619a985bcd9c066436d583887b9de3e6a494c04cc"
+    },
+    "systemd_259.9.orig.tar.gz": {
+      "bytes": 17618264,
+      "sha256": "6ac77a1baf0539b835193eec46cdb1c73abb42d7f87aa977009150e9d8375757"
+    }
+  },
+  "schema": "p4-r9-source-base-v1",
+  "scope": "Exact complete 11-file original cold-observer fixture; relative names only"
+}
