@@ -1,0 +1,1724 @@
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -469,6 +469,10 @@
+  "droidloom-transport",
+  "thiserror",
+ ]
++
++[[package]]
++name = "droidloom-browser-action-contract"
++version = "0.1.0"
+ 
+ [[package]]
+ name = "droidloom-contracts"
+@@ -639,6 +643,7 @@
+ name = "droidloom-supervisor"
+ version = "0.1.0"
+ dependencies = [
++ "droidloom-browser-action-contract",
+  "clap",
+  "droidloom-contracts",
+  "droidloom-cpu-placement",
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -1,4 +1,5 @@
+ [workspace]
++exclude = ["compat/android/pocket4/current-app-acceptance/browser-action-contract"]
+ members = [
+     "android/framework/droidloom-task-launcher",
+     "android/runtime/droidloom-classpath-wrapper",
+--- a/runtime/droidloom-supervisor/Cargo.toml
++++ b/runtime/droidloom-supervisor/Cargo.toml
+@@ -8,6 +8,7 @@
+ repository.workspace = true
+ 
+ [dependencies]
++droidloom-browser-action-contract = { path = "../../compat/android/pocket4/current-app-acceptance/browser-action-contract" }
+ droidloom-cpu-placement = { path = "../droidloom-cpu-placement" }
+ clap.workspace = true
+ droidloom-contracts = { path = "../droidloom-contracts" }
+--- a/runtime/droidloom-supervisor/src/production_namespace_application_parent.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_application_parent.rs
+@@ -137,6 +137,20 @@
+             (userns.dev(), userns.ino()),
+             (child.uids.start, child.gids.start),
+         ))
++    }
++
++    /// Fixed held-tree observations for the separate browser input provider.
++    /// This opens no worker protocol, creates no process and grants no action.
++    pub(crate) fn browser_original_and_projection(&self) -> Result<(File, File)> {
++        self.revalidate()?;
++        let root = held_child_root(self.child()?)?;
++        let system = fixed_at(&root, c"system", true, false)?;
++        let bin = fixed_at(&system, c"bin", true, false)?;
++        let original = fixed_at(&bin, c"cmd", false, true)?;
++        let private = fixed_at(&root, c".droidloom-browser", true, false)?;
++        let target = fixed_at(&private, c"cmd", false, true)?;
++        self.revalidate()?;
++        Ok((original, target))
+     }
+ 
+     pub(crate) fn descriptors(&self, binary: &CStr) -> Result<Vec<File>> {
+--- a/runtime/droidloom-supervisor/src/production_namespace_runtime_child.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_runtime_child.rs
+@@ -66,7 +66,15 @@
+     }
+ }
+ 
+-unsafe fn receive_runtime(nonce: [u8; 16], parent_pid: u32) -> [RawFd; 3] {
++// Only these three complete SCM_RIGHTS shapes exist. Four always means
++// runtime/init/query/browser; a browser-only three-FD packet is not a role.
++fn runtime_fd_count(length: usize) -> Option<usize> {
++    [2, 3, 4].into_iter().find(|count| {
++        length == unsafe { libc::CMSG_LEN((*count * std::mem::size_of::<RawFd>()) as u32) } as usize
++    })
++}
++
++unsafe fn receive_runtime(nonce: [u8; 16], parent_pid: u32) -> [RawFd; 4] {
+     let mut packet = Packet::zeroed();
+     let mut iov = libc::iovec {
+         iov_base: (&mut packet as *mut Packet).cast(),
+@@ -109,22 +117,17 @@
+     let h = unsafe { &*header };
+     if h.cmsg_level != libc::SOL_SOCKET
+         || h.cmsg_type != libc::SCM_RIGHTS
+-        || ![
+-            unsafe { libc::CMSG_LEN(8) } as usize,
+-            unsafe { libc::CMSG_LEN(12) } as usize,
+-        ]
+-        .contains(&h.cmsg_len)
++        || runtime_fd_count(h.cmsg_len).is_none()
+         || !unsafe { libc::CMSG_NXTHDR(&msg, header) }.is_null()
+     {
+         unsafe { rejected(nonce) }
+     }
+-    let count = if h.cmsg_len == unsafe { libc::CMSG_LEN(12) } as usize {
+-        3
+-    } else {
+-        2
++    let count = match runtime_fd_count(h.cmsg_len) {
++        Some(count) => count,
++        None => unsafe { rejected(nonce) },
+     };
+     let p = unsafe { libc::CMSG_DATA(header).cast::<i32>() };
+-    let mut raw = [-1; 3];
++    let mut raw = [-1; 4];
+     for i in 0..count {
+         raw[i] = unsafe { std::ptr::read_unaligned(p.add(i)) };
+         if raw[i] < 0 || raw[i] == CHILD_FD || raw[..i].contains(&raw[i]) {
+@@ -132,8 +135,8 @@
+         }
+     }
+     // Stdio was closed before TreeReady. Received FDs may therefore be 0/1.
+-    // Duplicate both before closing either, never overwrite a live peer FD.
+-    let mut held = [-1; 3];
++    // Duplicate every role before closing any, never overwrite a live peer FD.
++    let mut held = [-1; 4];
+     for i in 0..count {
+         let fd = unsafe { libc::syscall(libc::SYS_fcntl, raw[i], libc::F_DUPFD_CLOEXEC, 4) };
+         if fd < 4 || fd > i32::MAX as libc::c_long {
+@@ -302,6 +305,76 @@
+         }
+     }
+ }
++unsafe fn browser_label(fd: RawFd, nonce: [u8; 16]) {
++    const LABEL: &[u8; 44] = b"u:object_r:droidloom_browser_action_exec:s0\0";
++    let mut bytes = [0_u8; 44];
++    let n = unsafe {
++        libc::syscall(
++            libc::SYS_fgetxattr,
++            fd,
++            c"security.selinux".as_ptr(),
++            bytes.as_mut_ptr(),
++            bytes.len(),
++        )
++    };
++    if n != LABEL.len() as libc::c_long || &bytes != LABEL {
++        unsafe { rejected(nonce) }
++    }
++    let n = unsafe {
++        libc::syscall(
++            libc::SYS_fgetxattr,
++            fd,
++            c"security.capability".as_ptr(),
++            std::ptr::null_mut::<u8>(),
++            0_usize,
++        )
++    };
++    if n != -1 || unsafe { *libc::__errno_location() } != libc::ENODATA {
++        unsafe { rejected(nonce) }
++    }
++}
++
++unsafe fn require_browser_root(fd: RawFd, nonce: [u8; 16]) {
++    let node = unsafe { meta(fd, nonce) };
++    let filesystem = unsafe { fs(fd, nonce) };
++    if filesystem.f_type != TMPFS_MAGIC
++        || filesystem.f_flags as u64 & RO_IMAGE != RO_IMAGE
++        || filesystem.f_flags as u64 & NOEXEC != 0
++        || node.st_mode != libc::S_IFDIR | 0o555
++        || node.st_uid != 0
++        || node.st_gid != 0
++    {
++        unsafe { rejected(nonce) }
++    }
++    unsafe {
++        exact_names(fd, &[b"cmd"], nonce);
++    }
++    let root = unsafe { opened(fd, c".", libc::O_RDONLY | libc::O_DIRECTORY, nonce) };
++    unsafe {
++        browser_label(root, nonce);
++        close(root);
++    }
++    for name in [c"cmd"] {
++        let file = unsafe { opened(fd, name, libc::O_RDONLY, nonce) };
++        let node = unsafe { meta(file, nonce) };
++        let filesystem = unsafe { fs(file, nonce) };
++        if node.st_mode != libc::S_IFREG | 0o555
++            || node.st_nlink != 1
++            || node.st_uid != 0
++            || node.st_gid != 0
++            || !(64..=128 * 1024 * 1024).contains(&node.st_size)
++            || filesystem.f_type != TMPFS_MAGIC
++            || filesystem.f_flags as u64 & RO_IMAGE != RO_IMAGE
++            || filesystem.f_flags as u64 & NOEXEC != 0
++        {
++            unsafe { rejected(nonce) }
++        }
++        unsafe {
++            browser_label(file, nonce);
++            close(file);
++        }
++    }
++}
+ unsafe fn exact_names(dir: RawFd, expected: &[&[u8]], nonce: [u8; 16]) {
+     if expected.len() > 63 {
+         unsafe { rejected(nonce) }
+@@ -552,8 +625,8 @@
+             rejected(nonce)
+         }
+         if inputs[2] >= 0 {
+-            // The only optional input is the one selected, already sealed
+-            // private query filesystem. No mount is added after readiness.
++            // The original third role remains the sealed query filesystem.
++            // No runtime mount is added after readiness.
+             require_query_root(inputs[2], nonce);
+             let original = meta(inputs[2], nonce);
+             if libc::syscall(
+@@ -573,6 +646,33 @@
+                 rejected(nonce)
+             }
+             require_query_root(target, nonce);
++            close(target);
++        }
++        if inputs[3] >= 0 {
++            // Four descriptors were validated in the fixed order. Browser
++            // requires the prior query role and its own exact private label.
++            if inputs[2] < 0 {
++                rejected(nonce)
++            }
++            require_browser_root(inputs[3], nonce);
++            let original = meta(inputs[3], nonce);
++            if libc::syscall(
++                libc::SYS_mkdirat,
++                root,
++                c".droidloom-browser".as_ptr(),
++                0o700_u32,
++            ) != 0
++            {
++                failed(nonce, line!())
++            }
++            let target = directory(root, c".droidloom-browser", nonce);
++            attach(inputs[3], target, nonce);
++            close(target);
++            let target = directory(root, c".droidloom-browser", nonce);
++            if !same_inode(&original, &meta(target, nonce)) {
++                rejected(nonce)
++            }
++            require_browser_root(target, nonce);
+             close(target);
+         }
+         if libc::syscall(
+@@ -723,3 +823,25 @@
+         }
+     }
+ }
++
++#[cfg(test)]
++mod browser_provider_tests {
++    use super::*;
++
++    #[test]
++    fn browser_provider_runtime_rights_lengths_are_exhaustive() {
++        for length in 0..256 {
++            let expected = if length == unsafe { libc::CMSG_LEN(8) } as usize {
++                Some(2)
++            } else if length == unsafe { libc::CMSG_LEN(12) } as usize {
++                Some(3)
++            } else if length == unsafe { libc::CMSG_LEN(16) } as usize {
++                Some(4)
++            } else {
++                None
++            };
++            assert_eq!(runtime_fd_count(length), expected);
++        }
++        assert_eq!(runtime_fd_count(usize::MAX), None);
++    }
++}
+--- a/runtime/droidloom-supervisor/src/production_namespace_runtime_parent.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_runtime_parent.rs
+@@ -8,6 +8,7 @@
+ const RO_IMAGE: u64 = 1 | 2 | 4;
+ const NOEXEC: u64 = 8;
+ const QUERY_TARGET: &str = "/.droidloom-query";
++const BROWSER_TARGET: &str = "/.droidloom-browser";
+ const ROLES: [(&str, &[&CStr], bool); 8] = [
+     ("/.droidloom-runtime", &[], false),
+     ("/apex", &[c"apex"], false),
+@@ -69,6 +70,7 @@
+     after: Option<writable_proc::MountInventory>,
+     private_root: Node,
+     query: Option<QueryProjection>,
++    browser: Option<BrowserProjection>,
+ }
+ 
+ struct QueryProjection {
+@@ -144,6 +146,141 @@
+     }
+ }
+ 
++struct BrowserProjection {
++    file: File,
++    node: ImmutableNode,
++}
++
++fn browser_flags(file: &File) -> Result<()> {
++    if filesystem_kind(file)? != 0x0102_1994 {
++        return Err(NamespaceError::Rejected(
++            "browser role is not its owned private tmpfs",
++        ));
++    }
++    verify_process_statfs(file, 0x0102_1994, RO_IMAGE, NOEXEC)
++}
++
++fn browser_label(file: &File) -> Result<()> {
++    const LABEL: &[u8] = b"u:object_r:droidloom_browser_action_exec:s0\0";
++    let mut bytes = [0_u8; 64];
++    let count = unsafe {
++        libc::fgetxattr(
++            file.as_raw_fd(),
++            c"security.selinux".as_ptr(),
++            bytes.as_mut_ptr().cast(),
++            bytes.len(),
++        )
++    };
++    if count != LABEL.len() as isize || &bytes[..LABEL.len()] != LABEL {
++        return Err(NamespaceError::Rejected("browser role label differs"));
++    }
++    let count = unsafe {
++        libc::fgetxattr(
++            file.as_raw_fd(),
++            c"security.capability".as_ptr(),
++            std::ptr::null_mut(),
++            0,
++        )
++    };
++    if count != -1 || io::Error::last_os_error().raw_os_error() != Some(libc::ENODATA) {
++        return Err(NamespaceError::Rejected(
++            "browser role has file capabilities or unreadable metadata",
++        ));
++    }
++    Ok(())
++}
++
++// source_path returns O_PATH. Reopen only a fixed held child and compare the
++// complete inode identity before performing xattr reads on the ordinary FD.
++fn browser_open(root: &File, name: &CStr, directory: bool) -> Result<File> {
++    let held = opened(root, name, directory)?;
++    let identity = ImmutableNode::of(&held)?;
++    if identity.mode & libc::S_IFMT
++        != if directory {
++            libc::S_IFDIR
++        } else {
++            libc::S_IFREG
++        }
++    {
++        return Err(NamespaceError::Rejected("browser fixed role type differs"));
++    }
++    let raw = unsafe {
++        libc::openat(
++            root.as_raw_fd(),
++            name.as_ptr(),
++            libc::O_RDONLY
++                | libc::O_NOFOLLOW
++                | libc::O_CLOEXEC
++                | libc::O_NONBLOCK
++                | if directory { libc::O_DIRECTORY } else { 0 },
++        )
++    };
++    if raw < 0 {
++        return Err(io::Error::last_os_error().into());
++    }
++    let file = unsafe { File::from_raw_fd(raw) };
++    if ImmutableNode::of(&file)? != identity || ImmutableNode::of(&held)? != identity {
++        return Err(NamespaceError::Rejected(
++            "browser fixed role changed while reopening",
++        ));
++    }
++    Ok(file)
++}
++
++impl BrowserProjection {
++    fn before(root: &File, child: &TreeChild) -> Result<Self> {
++        browser_flags(root)?;
++        if names(root)? != BTreeSet::from(["cmd".into()])
++            || root.metadata()?.mode() != libc::S_IFDIR | 0o555
++        {
++            return Err(NamespaceError::Rejected(
++                "browser filesystem has undeclared leaves or writable root",
++            ));
++        }
++        let readable_root = browser_open(root, c".", true)?;
++        browser_label(&readable_root)?;
++        let file = browser_open(root, c"cmd", false)?;
++        let node = role_node(&file, child.uids.start, child.gids.start, false)?;
++        if node.mode != libc::S_IFREG | 0o555 || !(64..=128 * 1024 * 1024).contains(&node.bytes) {
++            return Err(NamespaceError::Rejected(
++                "browser executable metadata differs",
++            ));
++        }
++        browser_flags(&file)?;
++        browser_label(&file)?;
++        let result = Self { file, node };
++        result.verify(root)?;
++        Ok(result)
++    }
++
++    fn verify(&self, root: &File) -> Result<()> {
++        browser_flags(root)?;
++        if names(root)? != BTreeSet::from(["cmd".into()]) {
++            return Err(NamespaceError::Rejected(
++                "browser filesystem leaves changed",
++            ));
++        }
++        let readable_root = browser_open(root, c".", true)?;
++        browser_label(&readable_root)?;
++        let target = browser_open(root, c"cmd", false)?;
++        let mount = writable_proc::held_mount_id(root)?;
++        browser_flags(&self.file)?;
++        browser_flags(&target)?;
++        browser_label(&self.file)?;
++        browser_label(&target)?;
++        if ImmutableNode::of(&self.file)? != self.node
++            || ImmutableNode::of(&target)? != self.node
++            || writable_proc::held_mount_id(&target)? != mount
++            || writable_proc::held_mount_id(&self.file)? != mount
++        {
++            return Err(NamespaceError::Rejected(
++                "browser role changed after original-owner projection",
++            ));
++        }
++        Ok(())
++    }
++}
++
+ fn opened(parent: &File, name: &CStr, directory: bool) -> Result<File> {
+     let flags = libc::O_PATH
+         | libc::O_CLOEXEC
+@@ -224,7 +361,11 @@
+     before: &writable_proc::MountInventory,
+     after: &writable_proc::MountInventory,
+     has_query: bool,
++    has_browser: bool,
+ ) -> Result<()> {
++    if has_browser && !has_query {
++        return Err(NamespaceError::Rejected("browser mount has no query role"));
++    }
+     for (id, row) in &before.records {
+         if after.records.get(id) != Some(row) {
+             return Err(NamespaceError::Rejected(
+@@ -242,7 +383,10 @@
+     if has_query {
+         wanted.insert(QUERY_TARGET);
+     }
+-    if added.len() != ROLES.len() + usize::from(has_query)
++    if has_browser {
++        wanted.insert(BROWSER_TARGET);
++    }
++    if added.len() != ROLES.len() + usize::from(has_query) + usize::from(has_browser)
+         || added
+             .iter()
+             .map(|r| r.target.as_str())
+@@ -256,8 +400,9 @@
+     let mut expected_visible = before.visible.clone();
+     for row in added {
+         if after.visible.get(&row.target) != Some(&row.id)
+-            || if row.target == QUERY_TARGET {
+-                !has_query
++            || if [QUERY_TARGET, BROWSER_TARGET].contains(&row.target.as_str()) {
++                (row.target == QUERY_TARGET && !has_query)
++                    || (row.target == BROWSER_TARGET && !has_browser)
+                     || row.filesystem != "tmpfs"
+                     || row.root != "/"
+                     || !row.options.split(',').any(|option| option == "ro")
+@@ -274,7 +419,7 @@
+                 "runtime mount is not its fixed visible readonly role",
+             ));
+         }
+-        let noexec = if row.target == QUERY_TARGET {
++        let noexec = if [QUERY_TARGET, BROWSER_TARGET].contains(&row.target.as_str()) {
+             false
+         } else {
+             ROLES.iter().find(|r| r.0 == row.target).unwrap().2
+@@ -314,7 +459,7 @@
+ 
+     fn before(child: &TreeChild, fds: &[BorrowedFd<'_>]) -> Result<Self> {
+         child.verify()?;
+-        if ![2, 3].contains(&fds.len()) {
++        if ![2, 3, 4].contains(&fds.len()) {
+             return Err(NamespaceError::Rejected(
+                 "runtime descriptor role count differs",
+             ));
+@@ -367,7 +512,7 @@
+                 noexec,
+             });
+         }
+-        let query = if fds.len() == 3 {
++        let query = if fds.len() >= 3 {
+             let source = File::from(fds[2].try_clone_to_owned()?);
+             let node = role_node(&source, child.uids.start, child.gids.start, true)?;
+             let query = QueryProjection::before(&source, child)?;
+@@ -381,6 +526,32 @@
+         } else {
+             None
+         };
++        let browser = if fds.len() == 4 {
++            let source = File::from(fds[3].try_clone_to_owned()?);
++            let node = role_node(&source, child.uids.start, child.gids.start, true)?;
++            let browser = BrowserProjection::before(&source, child)?;
++            let query = query
++                .as_ref()
++                .ok_or(NamespaceError::Rejected("browser lacks query projection"))?;
++            if query
++                .nodes
++                .iter()
++                .any(|other| (other.dev, other.ino) == (browser.node.dev, browser.node.ino))
++                || writable_proc::held_mount_id(&query.files[0])?
++                    == writable_proc::held_mount_id(&source)?
++            {
++                return Err(NamespaceError::Rejected("browser and query roles alias"));
++            }
++            roles.push(Role {
++                target: BROWSER_TARGET,
++                source,
++                node,
++                noexec: false,
++            });
++            Some(browser)
++        } else {
++            None
++        };
+         let before = writable_proc::MountInventory::observe(child, "before-runtime-transfer")?;
+         let private_root = Node::of(&held_child_root(child)?)?;
+         child.verify()?;
+@@ -390,13 +561,19 @@
+             after: None,
+             private_root,
+             query,
++            browser,
+         })
+     }
+ 
+     pub(super) fn verify(&mut self, child: &TreeChild) -> Result<()> {
+         child.verify()?;
+         let now = writable_proc::MountInventory::observe(child, "after-runtime-ready")?;
+-        verify_transition(&self.before, &now, self.query.is_some())?;
++        verify_transition(
++            &self.before,
++            &now,
++            self.query.is_some(),
++            self.browser.is_some(),
++        )?;
+         if self.after.as_ref().is_some_and(|old| old != &now) {
+             return Err(NamespaceError::Rejected(
+                 "prepared runtime mount inventory changed",
+@@ -426,6 +603,11 @@
+                 self.query
+                     .as_ref()
+                     .ok_or(NamespaceError::Rejected("query role lost owner custody"))?
++                    .verify(&target)?;
++            } else if role.target == BROWSER_TARGET {
++                self.browser
++                    .as_ref()
++                    .ok_or(NamespaceError::Rejected("browser role lost owner custody"))?
+                     .verify(&target)?;
+             } else {
+                 image_flags(&target, role.noexec)?;
+@@ -470,6 +652,9 @@
+                 }
+                 RuntimeTransfer::WithQuery(files) => {
+                     send_query_runtime_fds(child.control.as_raw_fd(), &packet, files)?
++                }
++                RuntimeTransfer::WithQueryAndBrowser(files) => {
++                    send_browser_runtime_fds(child.control.as_raw_fd(), &packet, files)?
+                 }
+             }
+             Ok(observation)
+@@ -533,6 +718,50 @@
+     Ok(())
+ }
+ 
++fn send_browser_runtime_fds(
++    socket: RawFd,
++    packet: &Packet,
++    files: [BorrowedFd<'_>; 4],
++) -> Result<()> {
++    // The original two/three-FD senders remain unchanged. The only new shape
++    // is runtime/init/query/browser, selected by actual PreparedRuntime custody.
++    let mut iov = libc::iovec {
++        iov_base: (packet as *const Packet).cast_mut().cast(),
++        iov_len: std::mem::size_of::<Packet>(),
++    };
++    let mut control = [0_usize; 8];
++    let mut message: libc::msghdr = unsafe { std::mem::zeroed() };
++    message.msg_iov = &mut iov;
++    message.msg_iovlen = 1;
++    message.msg_control = control.as_mut_ptr().cast();
++    message.msg_controllen = unsafe { libc::CMSG_SPACE(16) } as usize;
++    let header = unsafe { libc::CMSG_FIRSTHDR(&message) };
++    if header.is_null() {
++        return Err(NamespaceError::Rejected(
++            "browser runtime ancillary header absent",
++        ));
++    }
++    unsafe {
++        (*header).cmsg_level = libc::SOL_SOCKET;
++        (*header).cmsg_type = libc::SCM_RIGHTS;
++        (*header).cmsg_len = libc::CMSG_LEN(16) as usize;
++        let data = libc::CMSG_DATA(header).cast::<i32>();
++        for (i, file) in files.iter().enumerate() {
++            std::ptr::write_unaligned(data.add(i), file.as_raw_fd());
++        }
++    }
++    let sent = unsafe { libc::sendmsg(socket, &message, libc::MSG_NOSIGNAL | libc::MSG_DONTWAIT) };
++    if sent < 0 {
++        return Err(io::Error::last_os_error().into());
++    }
++    if sent as usize != std::mem::size_of::<Packet>() {
++        return Err(NamespaceError::Rejected(
++            "incomplete fixed browser-runtime descriptor transfer",
++        ));
++    }
++    Ok(())
++}
++
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+@@ -566,30 +795,30 @@
+     fn production_runtime_roles_reject_extra_targets_and_mutated_existing_ids() {
+         let before = writable_proc::MountInventory::default();
+         let after = base_roles();
+-        verify_transition(&before, &after, false).unwrap();
++        verify_transition(&before, &after, false, false).unwrap();
+         let mut bad = after.clone();
+         bad.records.get_mut(&1).unwrap().target = "/arbitrary".into();
+-        assert!(verify_transition(&before, &bad, false).is_err());
++        assert!(verify_transition(&before, &bad, false, false).is_err());
+         let mut bad = after.clone();
+         bad.visible.insert("/apex".into(), 99);
+-        assert!(verify_transition(&before, &bad, false).is_err());
++        assert!(verify_transition(&before, &bad, false, false).is_err());
+         let mut bad = after.clone();
+         bad.records
+             .get_mut(&8)
+             .unwrap()
+             .flags
+             .insert("noexec".into());
+-        assert!(verify_transition(&before, &bad, false).is_err());
++        assert!(verify_transition(&before, &bad, false, false).is_err());
+         let mut existing = before;
+         existing.records.insert(99, after.records[&1].clone());
+-        assert!(verify_transition(&existing, &after, false).is_err());
++        assert!(verify_transition(&existing, &after, false, false).is_err());
+     }
+     #[test]
+     fn production_runtime_query_mount_requires_selected_fixed_readonly_tmpfs() {
+         let before = writable_proc::MountInventory::default();
+         let mut after = base_roles();
+         // Declaring query roles cannot silently accept a base-only mount set.
+-        assert!(verify_transition(&before, &after, true).is_err());
++        assert!(verify_transition(&before, &after, true, false).is_err());
+         after.visible.insert(QUERY_TARGET.into(), 9);
+         after.records.insert(
+             9,
+@@ -605,12 +834,12 @@
+                 options: "ro".into(),
+             },
+         );
+-        verify_transition(&before, &after, true).unwrap();
+-        assert!(verify_transition(&before, &after, false).is_err());
++        verify_transition(&before, &after, true, false).unwrap();
++        assert!(verify_transition(&before, &after, false, false).is_err());
+         for flag in ["ro", "nosuid", "nodev"] {
+             let mut bad = after.clone();
+             bad.records.get_mut(&9).unwrap().flags.remove(flag);
+-            assert!(verify_transition(&before, &bad, true).is_err());
++            assert!(verify_transition(&before, &bad, true, false).is_err());
+         }
+         let mut bad = after.clone();
+         bad.records
+@@ -618,22 +847,22 @@
+             .unwrap()
+             .flags
+             .insert("noexec".into());
+-        assert!(verify_transition(&before, &bad, true).is_err());
++        assert!(verify_transition(&before, &bad, true, false).is_err());
+         let mut bad = after.clone();
+         bad.records.get_mut(&9).unwrap().filesystem = "ext4".into();
+-        assert!(verify_transition(&before, &bad, true).is_err());
++        assert!(verify_transition(&before, &bad, true, false).is_err());
+         let mut bad = after.clone();
+         bad.records.get_mut(&9).unwrap().options = "rw,size=1048576".into();
+-        assert!(verify_transition(&before, &bad, true).is_err());
++        assert!(verify_transition(&before, &bad, true, false).is_err());
+         let mut bad = after.clone();
+         bad.records.get_mut(&9).unwrap().root = "/subtree".into();
+-        assert!(verify_transition(&before, &bad, true).is_err());
++        assert!(verify_transition(&before, &bad, true, false).is_err());
+         let mut bad = after.clone();
+         bad.records.get_mut(&9).unwrap().target = "/system/bin".into();
+-        assert!(verify_transition(&before, &bad, true).is_err());
++        assert!(verify_transition(&before, &bad, true, false).is_err());
+         let mut bad = after;
+         bad.visible.insert("/undeclared-query".into(), 9);
+-        assert!(verify_transition(&before, &bad, true).is_err());
++        assert!(verify_transition(&before, &bad, true, false).is_err());
+     }
+     #[test]
+     fn production_runtime_fixed_component_walk_rejects_actual_symlinks() {
+@@ -647,4 +876,171 @@
+         assert!(source_path(&root, &[c"rc", c"alias"], false).is_err());
+         assert!(source_path(&root, &[c"rc", c"init.rc"], true).is_err());
+     }
+-}
++
++    #[test]
++    fn browser_provider_mount_transition_requires_separate_exact_roles() {
++        let before = writable_proc::MountInventory::default();
++        let mut after = base_roles();
++        for (id, target) in [(9, QUERY_TARGET), (10, BROWSER_TARGET)] {
++            after.visible.insert(target.into(), id);
++            after.records.insert(
++                id,
++                writable_proc::MountRecord {
++                    id,
++                    parent: 1,
++                    device: id,
++                    root: "/".into(),
++                    target: target.into(),
++                    flags: BTreeSet::from(["ro".into(), "nosuid".into(), "nodev".into()]),
++                    filesystem: "tmpfs".into(),
++                    source: "owned".into(),
++                    options: "ro".into(),
++                },
++            );
++        }
++        verify_transition(&before, &after, true, true).unwrap();
++        for (query, browser) in [(false, false), (true, false), (false, true)] {
++            assert!(verify_transition(&before, &after, query, browser).is_err());
++        }
++        for field in ["ro", "nosuid", "nodev"] {
++            let mut bad = after.clone();
++            bad.records.get_mut(&10).unwrap().flags.remove(field);
++            assert!(verify_transition(&before, &bad, true, true).is_err());
++        }
++        let mut bad = after.clone();
++        bad.records
++            .get_mut(&10)
++            .unwrap()
++            .flags
++            .insert("noexec".into());
++        assert!(verify_transition(&before, &bad, true, true).is_err());
++        let mut bad = after.clone();
++        bad.records.get_mut(&10).unwrap().options = "rw".into();
++        assert!(verify_transition(&before, &bad, true, true).is_err());
++        let mut bad = after.clone();
++        bad.records.get_mut(&10).unwrap().root = "/subtree".into();
++        assert!(verify_transition(&before, &bad, true, true).is_err());
++        let mut bad = after.clone();
++        bad.records.get_mut(&10).unwrap().filesystem = "ext4".into();
++        assert!(verify_transition(&before, &bad, true, true).is_err());
++        let mut bad = after.clone();
++        bad.records.get_mut(&10).unwrap().target = QUERY_TARGET.into();
++        assert!(verify_transition(&before, &bad, true, true).is_err());
++        let mut bad = after.clone();
++        bad.visible.insert("/browser-alias".into(), 10);
++        assert!(verify_transition(&before, &bad, true, true).is_err());
++        let mut bad = after;
++        bad.records.remove(&9);
++        bad.visible.remove(QUERY_TARGET);
++        assert!(verify_transition(&before, &bad, true, true).is_err());
++        assert!(verify_transition(&before, &bad, false, true).is_err());
++    }
++
++    #[test]
++    fn browser_provider_fixed_reopen_rejects_actual_symlink_fifo_and_unlabelled_file() {
++        let directory = tempfile::tempdir().unwrap();
++        std::fs::write(directory.path().join("cmd"), vec![0_u8; 64]).unwrap();
++        std::os::unix::fs::symlink("cmd", directory.path().join("alias")).unwrap();
++        let root = File::open(directory.path()).unwrap();
++        assert_eq!(
++            unsafe { libc::mkfifoat(root.as_raw_fd(), c"fifo".as_ptr(), 0o600) },
++            0
++        );
++        let file = browser_open(&root, c"cmd", false).unwrap();
++        assert_eq!(file.metadata().unwrap().len(), 64);
++        assert!(browser_open(&root, c"alias", false).is_err());
++        assert!(browser_open(&root, c"fifo", false).is_err());
++        assert!(browser_open(&root, c"cmd", true).is_err());
++        // An ordinary same-sized file is not a browser entrypoint. This does
++        // not simulate successful labels or a selected MAC policy.
++        assert!(browser_label(&file).is_err());
++        assert!(browser_flags(&file).is_err());
++    }
++
++    #[test]
++    fn browser_provider_real_scm_rights_preserves_old_shapes_and_four_role_order() {
++        use std::os::unix::net::UnixDatagram;
++        let files = [
++            tempfile::tempfile().unwrap(),
++            tempfile::tempfile().unwrap(),
++            tempfile::tempfile().unwrap(),
++            tempfile::tempfile().unwrap(),
++        ];
++        let packet = Packet::new([7; 16], Phase::MountRuntime, 0, 123);
++        for count in [2, 3, 4] {
++            let (sender, receiver) = UnixDatagram::pair().unwrap();
++            match count {
++                2 => send_base_fds(
++                    sender.as_raw_fd(),
++                    &packet,
++                    [files[0].as_fd(), files[1].as_fd()],
++                )
++                .unwrap(),
++                3 => send_query_runtime_fds(
++                    sender.as_raw_fd(),
++                    &packet,
++                    [files[0].as_fd(), files[1].as_fd(), files[2].as_fd()],
++                )
++                .unwrap(),
++                4 => send_browser_runtime_fds(
++                    sender.as_raw_fd(),
++                    &packet,
++                    [
++                        files[0].as_fd(),
++                        files[1].as_fd(),
++                        files[2].as_fd(),
++                        files[3].as_fd(),
++                    ],
++                )
++                .unwrap(),
++                _ => unreachable!(),
++            }
++            let mut received = Packet::zeroed();
++            let mut iov = libc::iovec {
++                iov_base: (&mut received as *mut Packet).cast(),
++                iov_len: std::mem::size_of::<Packet>(),
++            };
++            let mut control = [0_usize; 16];
++            let mut message: libc::msghdr = unsafe { std::mem::zeroed() };
++            message.msg_iov = &mut iov;
++            message.msg_iovlen = 1;
++            message.msg_control = control.as_mut_ptr().cast();
++            message.msg_controllen = std::mem::size_of_val(&control);
++            assert_eq!(
++                unsafe {
++                    libc::recvmsg(
++                        receiver.as_raw_fd(),
++                        &mut message,
++                        libc::MSG_CMSG_CLOEXEC | libc::MSG_DONTWAIT,
++                    )
++                },
++                std::mem::size_of::<Packet>() as isize
++            );
++            assert_eq!(message.msg_flags & (libc::MSG_TRUNC | libc::MSG_CTRUNC), 0);
++            assert!(received.matches([7; 16], 123));
++            assert_eq!(received.phase, Phase::MountRuntime as u32);
++            let header = unsafe { libc::CMSG_FIRSTHDR(&message) };
++            assert!(!header.is_null());
++            let header_ref = unsafe { &*header };
++            assert_eq!(header_ref.cmsg_level, libc::SOL_SOCKET);
++            assert_eq!(header_ref.cmsg_type, libc::SCM_RIGHTS);
++            assert_eq!(
++                header_ref.cmsg_len,
++                unsafe { libc::CMSG_LEN((count * 4) as u32) } as usize
++            );
++            assert!(unsafe { libc::CMSG_NXTHDR(&message, header) }.is_null());
++            let data = unsafe { libc::CMSG_DATA(header).cast::<i32>() };
++            for (i, original) in files.iter().enumerate().take(count) {
++                let file = unsafe { File::from_raw_fd(std::ptr::read_unaligned(data.add(i))) };
++                assert_eq!(
++                    ImmutableNode::of(&file).unwrap(),
++                    ImmutableNode::of(original).unwrap()
++                );
++                assert_eq!(
++                    unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GETFD) },
++                    libc::FD_CLOEXEC
++                );
++            }
++        }
++    }
++}
+--- a/runtime/droidloom-supervisor/src/production_runtime_assets.rs
++++ b/runtime/droidloom-supervisor/src/production_runtime_assets.rs
+@@ -25,6 +25,10 @@
+ };
+ pub(crate) use query::RuntimeQueryExecutable;
+ use query::{QueryDeclaration, QueryResources};
++#[path = "production_runtime_browser_assets.rs"]
++mod browser;
++pub(crate) use browser::RuntimeBrowserExecutable;
++use browser::{BrowserDeclaration, BrowserResources};
+ 
+ const RUNTIME_MANIFEST_ROOT: &str = "/etc/droidloom/runtime-cohorts";
+ const RUNTIME_IMAGE_ROOT: &str = "/var/lib/droidloom/runtime-cohorts";
+@@ -72,6 +76,8 @@
+     activation: Option<ActivationDeclaration>,
+     #[serde(default)]
+     query: Option<QueryDeclaration>,
++    #[serde(default)]
++    browser: Option<BrowserDeclaration>,
+ }
+ 
+ fn safe_module_name(name: &str) -> bool {
+@@ -173,6 +179,9 @@
+         }
+         if let Some(query) = &self.query {
+             query.validate(self)?;
++        }
++        if let Some(browser) = &self.browser {
++            browser.validate(self)?;
+         }
+         Ok(())
+     }
+@@ -403,6 +412,7 @@
+     runtime_manifest_sha256: String,
+     activation: Option<ActivationResources>,
+     query: Option<QueryResources>,
++    browser: Option<BrowserResources>,
+     // This duplicate shares the actual flock description, not a JSON claim.
+     _reservation_retention: File,
+ }
+@@ -431,11 +441,19 @@
+         if let Some(query) = &self.query {
+             query.revalidate(self.uids, self.gids)?;
+         }
++        if let Some(browser) = &self.browser {
++            require(
++                self.query.is_some(),
++                "browser custody requires the fixed query role",
++            )?;
++            browser.revalidate(self.uids, self.gids)?;
++        }
+         Ok(())
+     }
+     fn cleanup(&mut self) -> Result<Vec<u64>> {
+         drop(self.activation.take());
+         drop(self.query.take());
++        drop(self.browser.take());
+         drop(self.mount.take());
+         drop(self.init_mount.take());
+         let mut released = Vec::new();
+@@ -461,12 +479,16 @@
+ pub(crate) enum RuntimeTransfer<'a> {
+     Base([BorrowedFd<'a>; 2]),
+     WithQuery([BorrowedFd<'a>; 3]),
++    // Exact order: runtime, original init, query tmpfs, browser tmpfs.
++    // There is deliberately no browser-only three-descriptor alternative.
++    WithQueryAndBrowser([BorrowedFd<'a>; 4]),
+ }
+ impl RuntimeTransfer<'_> {
+     pub(crate) fn as_slice(&self) -> &[BorrowedFd<'_>] {
+         match self {
+             Self::Base(files) => files,
+             Self::WithQuery(files) => files,
++            Self::WithQueryAndBrowser(files) => files,
+         }
+     }
+ }
+@@ -479,6 +501,8 @@
+     activation_executable_mounts_closed: usize,
+     query_executable_files_closed: usize,
+     query_private_filesystem_closed: bool,
++    browser_executable_files_closed: usize,
++    browser_private_filesystem_closed: bool,
+     owned_loop_devices_observed_unbound: Vec<u64>,
+     after_owned_tree_exit: bool,
+ }
+@@ -578,6 +602,7 @@
+                 runtime_manifest_sha256: runtime_manifest_sha256.to_owned(),
+                 activation: None,
+                 query: None,
++                browser: None,
+                 mount: None,
+                 init_mount: None,
+                 binding: None,
+@@ -627,6 +652,16 @@
+                 gids,
+             )?);
+         }
++        if let Some(browser) = &declaration.browser {
++            resources.browser = Some(BrowserResources::prepare(
++                browser,
++                &parent,
++                witness,
++                &resources.userns,
++                uids,
++                gids,
++            )?);
++        }
+         resources.matches_witness(witness)?;
+         Ok(result)
+     }
+@@ -673,12 +708,23 @@
+             resources.init_mount_id,
+         )?;
+         self.exported = true;
+-        Ok(match resources.query.as_ref() {
+-            Some(query) => {
+-                RuntimeTransfer::WithQuery([mount.as_fd(), init_mount.as_fd(), query.mount()])
+-            }
+-            None => RuntimeTransfer::Base([mount.as_fd(), init_mount.as_fd()]),
+-        })
++        Ok(
++            match (resources.query.as_ref(), resources.browser.as_ref()) {
++                (Some(query), Some(browser)) => RuntimeTransfer::WithQueryAndBrowser([
++                    mount.as_fd(),
++                    init_mount.as_fd(),
++                    query.mount(),
++                    browser.mount(),
++                ]),
++                (Some(query), None) => {
++                    RuntimeTransfer::WithQuery([mount.as_fd(), init_mount.as_fd(), query.mount()])
++                }
++                (None, None) => RuntimeTransfer::Base([mount.as_fd(), init_mount.as_fd()]),
++                (None, Some(_)) => {
++                    return Err(MountError::Rejected("browser transfer lacks query custody"));
++                }
++            },
++        )
+     }
+ 
+     pub(crate) fn retire_untransferred(mut self) -> Result<RuntimeRetirement> {
+@@ -714,6 +760,8 @@
+             if resources.activation.is_some() { 2 } else { 0 };
+         let query_executable_files_closed = if resources.query.is_some() { 2 } else { 0 };
+         let query_private_filesystem_closed = resources.query.is_some();
++        let browser_executable_files_closed = usize::from(resources.browser.is_some());
++        let browser_private_filesystem_closed = resources.browser.is_some();
+         let released = resources.cleanup()?;
+         drop(self.resources.take());
+         Ok(RuntimeRetirement {
+@@ -723,6 +771,8 @@
+             activation_executable_mounts_closed,
+             query_executable_files_closed,
+             query_private_filesystem_closed,
++            browser_executable_files_closed,
++            browser_private_filesystem_closed,
+             owned_loop_devices_observed_unbound: released,
+             after_owned_tree_exit,
+         })
+@@ -993,4 +1043,87 @@
+         assert!(inspect(&bytes).is_err());
+         assert!(inspect(&elf()[..80]).is_err());
+     }
+-}
++
++    fn browser_declaration() -> serde_json::Value {
++        let mut value = declaration();
++        value["query"] = serde_json::json!({
++            "scope":"fixed_application_query_v1", "source_system_sha256":"a".repeat(64),
++            "cmd":{"original":{"file":"cmd-original","bytes":4096,"sha256":"5".repeat(64)},
++                "source_path":"/system/bin/cmd","interpreter":"/system/bin/linker64"},
++            "toybox":{"original":{"file":"toybox-original","bytes":8192,"sha256":"6".repeat(64)},
++                "source_path":"/system/bin/toybox","interpreter":null}
++        });
++        value["browser"] = serde_json::json!({
++            "scope":"fixed_browser_action_v1", "source_system_sha256":"a".repeat(64),
++            "source_path":"/system/bin/cmd", "cmd_bytes":4096,
++            "cmd_sha256":"5".repeat(64), "interpreter":"/system/bin/linker64"
++        });
++        value
++    }
++
++    #[test]
++    fn browser_provider_manifest_requires_query_and_identical_original_cmd() {
++        let value = browser_declaration();
++        assert!(accepted(value.clone()));
++        let mut no_query = value.clone();
++        no_query.as_object_mut().unwrap().remove("query");
++        assert!(!accepted(no_query));
++        for (field, replacement) in [
++            ("cmd_sha256", serde_json::json!("7".repeat(64))),
++            ("cmd_bytes", serde_json::json!(8192)),
++            (
++                "interpreter",
++                serde_json::json!("/apex/com.android.runtime/bin/linker64"),
++            ),
++            ("source_system_sha256", serde_json::json!("9".repeat(64))),
++        ] {
++            let mut changed = value.clone();
++            changed["browser"][field] = replacement;
++            assert!(!accepted(changed), "mismatched original cmd field {field}");
++        }
++        let mut apex = value;
++        apex["browser"]["interpreter"] =
++            serde_json::json!("/apex/com.android.runtime/bin/linker64");
++        apex["query"]["cmd"]["interpreter"] = apex["browser"]["interpreter"].clone();
++        assert!(accepted(apex));
++    }
++
++    #[test]
++    fn browser_provider_manifest_cannot_configure_paths_labels_or_authority() {
++        let value = browser_declaration();
++        for (field, replacement) in [
++            ("scope", serde_json::json!("fixed_application_query_v1")),
++            ("source_path", serde_json::json!("/system/bin/sh")),
++            ("cmd_bytes", serde_json::json!(0)),
++            ("cmd_bytes", serde_json::json!(63)),
++            ("cmd_bytes", serde_json::json!(128 * 1024 * 1024 + 1_u64)),
++            ("cmd_bytes", serde_json::json!(true)),
++            ("cmd_sha256", serde_json::json!("A".repeat(64))),
++            ("interpreter", serde_json::json!(null)),
++            (
++                "interpreter",
++                serde_json::json!("/system/bin/bootstrap/linker64"),
++            ),
++            (
++                "label",
++                serde_json::json!("u:object_r:droidloom_query_exec:s0"),
++            ),
++            ("private_path", serde_json::json!("/.droidloom-query/cmd")),
++            ("source_file", serde_json::json!("/tmp/cmd-original")),
++            ("ready", serde_json::json!(true)),
++            ("namespace_pid", serde_json::json!(1)),
++        ] {
++            let mut changed = value.clone();
++            changed["browser"][field] = replacement;
++            assert!(!accepted(changed), "untrusted browser field {field}");
++        }
++        // Old query-only manifests still support the prior interpreter rules.
++        let mut query_only = value;
++        query_only.as_object_mut().unwrap().remove("browser");
++        query_only["query"]["cmd"]["interpreter"] = serde_json::json!(null);
++        assert!(accepted(query_only.clone()));
++        query_only["query"]["cmd"]["interpreter"] =
++            serde_json::json!("/system/bin/bootstrap/linker64");
++        assert!(accepted(query_only));
++    }
++}
+--- /dev/null
++++ b/runtime/droidloom-supervisor/src/production_runtime_browser_assets.rs
+@@ -0,0 +1,579 @@
++//! One private browser executable derived from this selected original system.
++//!
++//! The original input inodes and their xattrs are never changed. New tmpfs
++//! inodes receive the one dedicated browser entrypoint label, then the owned
++//! superblock and idmapped mount are made read-only before any transfer.
++//! PreparedRuntime retains all source, mount and reservation custody until
++//! actual original-tree retirement. These inputs do not issue Android Ready.
++use super::*;
++use crate::production_namespace::ApplicationAuthority;
++
++const MAX_BROWSER: u64 = 128 * 1024 * 1024;
++const BROWSER_EXEC: &[u8; 44] = b"u:object_r:droidloom_browser_action_exec:s0\0";
++const CMD_ORIGINAL: &[u8; 26] = b"u:object_r:system_file:s0\0";
++const TMPFS_MAGIC: libc::c_long = 0x0102_1994;
++const INITIAL_TMPFS: &[u8; 20] = b"u:object_r:tmpfs:s0\0";
++const FSCONFIG_CMD_RECONFIGURE: u32 = 7;
++const FSPICK_CLOEXEC: u32 = 1;
++const FSPICK_EMPTY_PATH: u32 = 8;
++
++#[derive(Debug, Deserialize)]
++#[serde(deny_unknown_fields)]
++pub(super) struct BrowserDeclaration {
++    scope: String,
++    source_system_sha256: String,
++    source_path: String,
++    cmd_sha256: String,
++    cmd_bytes: u64,
++    interpreter: String,
++}
++
++impl BrowserDeclaration {
++    fn contract(&self) -> droidloom_browser_action_contract::RoleDeclaration<'_> {
++        droidloom_browser_action_contract::RoleDeclaration {
++            scope: &self.scope,
++            source_system_sha256: &self.source_system_sha256,
++            source_path: &self.source_path,
++            cmd_sha256: &self.cmd_sha256,
++            cmd_bytes: self.cmd_bytes,
++            interpreter: &self.interpreter,
++        }
++    }
++    pub(super) fn validate(&self, runtime: &RuntimeDeclaration) -> Result<()> {
++        let role = self.contract();
++        require(
++            role.validate(&runtime.source_system.sha256).is_ok()
++                && (64..=MAX_BROWSER).contains(&self.cmd_bytes),
++            "browser role must bind the fixed complete selected system cmd",
++        )?;
++        require(
++            runtime
++                .query
++                .as_ref()
++                .is_some_and(|query| query.matches_browser(&role)),
++            "browser requires the existing query role for the same original cmd",
++        )
++    }
++}
++
++fn original_security(file: &File) -> Result<()> {
++    require_exact_xattr(file, c"security.selinux", CMD_ORIGINAL)?;
++    require_absent_xattr(file, c"security.capability")
++}
++
++fn full_digest(file: &File, identity: FileIdentity) -> Result<String> {
++    require(
++        FileIdentity::of(&file.metadata()?) == identity && identity.bytes <= MAX_BROWSER,
++        "browser body changed before hashing",
++    )?;
++    let mut hash = Sha256::new();
++    let mut at = 0_u64;
++    let mut buffer = [0_u8; 32 * 1024];
++    while at < identity.bytes {
++        let size = (identity.bytes - at).min(buffer.len() as u64) as usize;
++        let count = match file.read_at(&mut buffer[..size], at) {
++            Err(error) if error.kind() == io::ErrorKind::Interrupted => continue,
++            result => result?,
++        };
++        require(
++            count != 0,
++            "browser source ended before its declared length",
++        )?;
++        hash.update(&buffer[..count]);
++        at += count as u64;
++    }
++    require(
++        file.read_at(&mut buffer[..1], at)? == 0 && FileIdentity::of(&file.metadata()?) == identity,
++        "browser body changed during complete hashing",
++    )?;
++    Ok(format!("{:x}", hash.finalize()))
++}
++
++fn label_new_inode(file: &File) -> Result<()> {
++    // This function is called only for our freshly created tmpfs inode. It
++    // never receives a source input or a bind alias of an original inode.
++    // The selected component's actual compute_create for broker/tmpfs dir
++    // and file yields this label. Recheck the real fresh inode rather than
++    // relying on that offline decision or changing a task-wide fscreate SID.
++    require_exact_xattr(file, c"security.selinux", INITIAL_TMPFS)?;
++    zero_rc(unsafe {
++        libc::fsetxattr(
++            file.as_raw_fd(),
++            c"security.selinux".as_ptr(),
++            BROWSER_EXEC.as_ptr().cast(),
++            BROWSER_EXEC.len(),
++            0,
++        )
++    })?;
++    require_exact_xattr(file, c"security.selinux", BROWSER_EXEC)?;
++    require_absent_xattr(file, c"security.capability")
++}
++
++fn readonly_mount_node(file: &File, expected: FileIdentity, id: u64) -> Result<()> {
++    require(
++        FileIdentity::of(&file.metadata()?) == expected
++            && fs_type(file)? == TMPFS_MAGIC
++            && mount_id(file)? == id,
++        "private browser inode, filesystem or owned mount changed",
++    )?;
++    let mut value: libc::statvfs = unsafe { std::mem::zeroed() };
++    zero_rc(unsafe { libc::fstatvfs(file.as_raw_fd(), &mut value) })?;
++    require(
++        value.f_flag as u64 & READONLY_FLAGS == READONLY_FLAGS
++            && value.f_flag as u64 & MOUNT_ATTR_NOEXEC == 0,
++        "private browser mount must be readonly nosuid nodev and executable",
++    )?;
++    Ok(())
++}
++fn readonly_private(file: &File, expected: FileIdentity, id: u64) -> Result<()> {
++    readonly_mount_node(file, expected, id)?;
++    require_exact_xattr(file, c"security.selinux", BROWSER_EXEC)?;
++    require_absent_xattr(file, c"security.capability")
++}
++
++#[derive(Debug)]
++struct BrowserExecutable {
++    source: SealedFile,
++    copy: File,
++    identity: FileIdentity,
++    digest: String,
++    interpreter: Option<String>,
++}
++#[derive(Debug)]
++pub(super) struct BrowserResources {
++    mount: File,
++    root: File,
++    root_identity: FileIdentity,
++    mount_id: u64,
++    executable: BrowserExecutable,
++    // This true state has no external/deserializable constructor. Both the
++    // initial-root-owned superblock and its only mount were made read-only.
++    superblock_readonly: bool,
++}
++
++struct Copied {
++    source: SealedFile,
++    identity: FileIdentity,
++    digest: String,
++    interpreter: Option<String>,
++}
++fn copy_original(
++    declared: &BrowserDeclaration,
++    parent: &Path,
++    root: &File,
++    witness: &OwnedNamespaceWitness<'_>,
++) -> Result<Copied> {
++    let lease = witness.identity_lease()?;
++    let source = SealedFile::open_guarded(parent, "cmd-original", 0, MAX_BROWSER, |file| {
++        lease.broker_reject_backing_body(file)?;
++        Ok(())
++    })?;
++    require(
++        source.identity.mode == libc::S_IFREG | 0o555,
++        "original browser input must be root-sealed 0555",
++    )?;
++    source.verify_digest(declared.cmd_bytes, &declared.cmd_sha256)?;
++    original_security(&source.file)?;
++    require(
++        original_init_elf(&source.file, declared.cmd_bytes)?.as_deref()
++            == Some(declared.interpreter.as_str()),
++        "actual original browser interpreter differs",
++    )?;
++    let copy = syscall_fd(unsafe {
++        libc::openat(
++            root.as_raw_fd(),
++            c"cmd".as_ptr(),
++            libc::O_RDWR | libc::O_CREAT | libc::O_EXCL | O_SAFE,
++            0o600_u32,
++        )
++    } as _)?;
++    let initial = FileIdentity::of(&copy.metadata()?);
++    require(
++        initial.mode == libc::S_IFREG | 0o600
++            && initial.uid == 0
++            && initial.gid == 0
++            && initial.links == 1
++            && initial.bytes == 0
++            && fs_type(&copy)? == TMPFS_MAGIC
++            && (initial.dev, initial.ino) != (source.identity.dev, source.identity.ino),
++        "browser copy is not a new singleton owned tmpfs inode",
++    )?;
++    require_exact_xattr(&copy, c"security.selinux", INITIAL_TMPFS)?;
++    let mut buffer = [0_u8; 32 * 1024];
++    let mut at = 0_u64;
++    while at < declared.cmd_bytes {
++        let size = (declared.cmd_bytes - at).min(buffer.len() as u64) as usize;
++        source.file.read_exact_at(&mut buffer[..size], at)?;
++        copy.write_all_at(&buffer[..size], at)?;
++        at += size as u64;
++    }
++    copy.sync_all()?;
++    // Never label through an original bind mount: this is the new inode
++    // created above on our unique, still detached private tmpfs superblock.
++    label_new_inode(&copy)?;
++    zero_rc(unsafe { libc::fchmod(copy.as_raw_fd(), 0o555) })?;
++    let identity = FileIdentity::of(&copy.metadata()?);
++    require(
++        identity.bytes == declared.cmd_bytes
++            && full_digest(&copy, identity)? == declared.cmd_sha256,
++        "private browser copy is not byte-for-byte its complete original",
++    )?;
++    source.verify_digest(declared.cmd_bytes, &declared.cmd_sha256)?;
++    original_security(&source.file)?;
++    drop(copy); // No writable executable FD survives the sealing boundary.
++    Ok(Copied {
++        source,
++        identity,
++        digest: declared.cmd_sha256.clone(),
++        interpreter: Some(declared.interpreter.clone()),
++    })
++}
++
++impl BrowserResources {
++    pub(super) fn prepare(
++        declared: &BrowserDeclaration,
++        parent: &Path,
++        witness: &OwnedNamespaceWitness<'_>,
++        userns: &File,
++        uids: IdRange,
++        gids: IdRange,
++    ) -> Result<Self> {
++        witness.revalidate_live_admission()?;
++        let actual_userns = witness.user_namespace().metadata()?;
++        let selected_userns = userns.metadata()?;
++        require(
++            (actual_userns.dev(), actual_userns.ino())
++                == (selected_userns.dev(), selected_userns.ino())
++                && witness.identity_lease()?.broker_ranges() == (uids, gids),
++            "private browser assets require the actual same owned user namespace",
++        )?;
++        let size = declared
++            .cmd_bytes
++            .checked_add(1024 * 1024)
++            .ok_or(MountError::Rejected("browser tmpfs size overflow"))?;
++        require(
++            size <= MAX_BROWSER + 1024 * 1024,
++            "private browser tmpfs bound",
++        )?;
++        let context = syscall_fd(unsafe {
++            libc::syscall(libc::SYS_fsopen, c"tmpfs".as_ptr(), FSOPEN_CLOEXEC)
++        })?;
++        configure(
++            &context,
++            FSCONFIG_SET_STRING,
++            c"size",
++            Some(&text_name(&size.to_string())?),
++        )?;
++        configure(&context, FSCONFIG_SET_STRING, c"nr_inodes", Some(c"8"))?;
++        configure(&context, FSCONFIG_SET_STRING, c"mode", Some(c"0755"))?;
++        configure(&context, FSCONFIG_SET_STRING, c"uid", Some(c"0"))?;
++        configure(&context, FSCONFIG_SET_STRING, c"gid", Some(c"0"))?;
++        zero_rc(unsafe {
++            libc::syscall(
++                libc::SYS_fsconfig,
++                context.as_raw_fd(),
++                FSCONFIG_CMD_CREATE,
++                std::ptr::null::<libc::c_char>(),
++                std::ptr::null::<libc::c_char>(),
++                0,
++            )
++        } as i32)?;
++        let mount = syscall_fd(unsafe {
++            libc::syscall(
++                libc::SYS_fsmount,
++                context.as_raw_fd(),
++                FSMOUNT_CLOEXEC,
++                (MOUNT_ATTR_NOSUID | MOUNT_ATTR_NODEV) as u32,
++            )
++        })?;
++        drop(context); // No filesystem configuration FD is ever exported.
++        require_detached(&mount)?;
++        let root = open_leaf(&mount, c".", libc::O_RDONLY | libc::O_DIRECTORY)?;
++        require(
++            fs_type(&root)? == TMPFS_MAGIC
++                && root.metadata()?.uid() == 0
++                && root.metadata()?.gid() == 0,
++            "initial-root-owned private browser tmpfs",
++        )?;
++        require_exact_xattr(&root, c"security.selinux", INITIAL_TMPFS)?;
++        let cmd = copy_original(declared, parent, &root, witness)?;
++        label_new_inode(&root)?;
++        zero_rc(unsafe { libc::fchmod(root.as_raw_fd(), 0o555) })?;
++        let mut root_identity = FileIdentity::of(&root.metadata()?);
++        drop(root);
++        // A per-mount readonly bit alone is insufficient against mapped init.
++        // Seal the initial-root-owned superblock too. Target fsopen.c requires
++        // CAP_SYS_ADMIN in sb->s_user_ns before any later reconfiguration;
++        // mapped Android root does not possess that initial-userns authority.
++        let reconfigure = syscall_fd(unsafe {
++            libc::syscall(
++                libc::SYS_fspick,
++                mount.as_raw_fd(),
++                c"".as_ptr(),
++                FSPICK_CLOEXEC | FSPICK_EMPTY_PATH,
++            )
++        })?;
++        configure(&reconfigure, FSCONFIG_SET_FLAG, c"ro", None)?;
++        zero_rc(unsafe {
++            libc::syscall(
++                libc::SYS_fsconfig,
++                reconfigure.as_raw_fd(),
++                FSCONFIG_CMD_RECONFIGURE,
++                std::ptr::null::<libc::c_char>(),
++                std::ptr::null::<libc::c_char>(),
++                0,
++            )
++        } as i32)?;
++        drop(reconfigure);
++        let attributes = MountAttr {
++            attr_set: READONLY_FLAGS | MOUNT_ATTR_IDMAP,
++            attr_clr: 0,
++            propagation: 0,
++            userns_fd: u64::try_from(userns.as_raw_fd())
++                .map_err(|_| MountError::Rejected("browser user namespace descriptor"))?,
++        };
++        zero_rc(unsafe {
++            libc::syscall(
++                libc::SYS_mount_setattr,
++                mount.as_raw_fd(),
++                c"".as_ptr(),
++                AT_EMPTY_PATH,
++                &attributes,
++                std::mem::size_of::<MountAttr>(),
++            )
++        } as i32)?;
++        let mount_id = require_detached(&mount)?;
++        root_identity.uid = uids.start;
++        root_identity.gid = gids.start;
++        let root = open_leaf(&mount, c".", libc::O_RDONLY | libc::O_DIRECTORY)?;
++        let reopen = |copied: Copied| -> Result<BrowserExecutable> {
++            let copy = open_leaf(&root, c"cmd", libc::O_RDONLY)?;
++            let mut identity = copied.identity;
++            identity.uid = uids.start;
++            identity.gid = gids.start;
++            readonly_private(&copy, identity, mount_id)?;
++            Ok(BrowserExecutable {
++                source: copied.source,
++                copy,
++                identity,
++                digest: copied.digest,
++                interpreter: copied.interpreter,
++            })
++        };
++        let executable = reopen(cmd)?;
++        let result = Self {
++            mount,
++            root,
++            root_identity,
++            mount_id,
++            executable,
++            superblock_readonly: true,
++        };
++        result.revalidate(uids, gids)?;
++        witness.revalidate_live_admission()?;
++        Ok(result)
++    }
++
++    pub(super) fn revalidate(&self, uids: IdRange, gids: IdRange) -> Result<()> {
++        require(
++            self.superblock_readonly
++                && self.root_identity.uid == uids.start
++                && self.root_identity.gid == gids.start
++                && self.root_identity.mode == libc::S_IFDIR | 0o555,
++            "private browser superblock or mapped-root custody differs",
++        )?;
++        readonly_mount_node(&self.mount, self.root_identity, self.mount_id)?;
++        readonly_private(&self.root, self.root_identity, self.mount_id)?;
++        require_detached(&self.mount)?;
++        let names = std::fs::read_dir(format!("/proc/self/fd/{}", self.root.as_raw_fd()))?
++            .take(2)
++            .map(|row| row.map(|r| r.file_name()))
++            .collect::<io::Result<BTreeSet<_>>>()?;
++        require(
++            names == BTreeSet::from([std::ffi::OsString::from("cmd")]),
++            "private browser filesystem has undeclared leaves",
++        )?;
++        {
++            let executable = &self.executable;
++            executable
++                .source
++                .verify_digest(executable.identity.bytes, &executable.digest)?;
++            original_security(&executable.source.file)?;
++            let actual = open_leaf(&self.root, c"cmd", libc::O_RDONLY)?;
++            readonly_private(&executable.copy, executable.identity, self.mount_id)?;
++            readonly_private(&actual, executable.identity, self.mount_id)?;
++            require(
++                full_digest(&actual, executable.identity)? == executable.digest,
++                "private browser complete digest changed",
++            )?;
++        }
++        Ok(())
++    }
++
++    pub(super) fn mount(&self) -> BorrowedFd<'_> {
++        self.mount.as_fd()
++    }
++}
++
++/// A borrowed same-owner role. It cannot be deserialized, cloned, built from
++/// a pathname/digest or used to export a new mount after runtime readiness.
++pub(crate) struct RuntimeBrowserExecutable<'a> {
++    runtime: &'a PreparedRuntime,
++    resources: &'a BrowserResources,
++    executable: &'a BrowserExecutable,
++}
++
++fn selected<'a>(
++    runtime: &'a PreparedRuntime,
++    authority: &ApplicationAuthority<'_>,
++) -> Result<&'a BrowserResources> {
++    authority.revalidate()?;
++    require(
++        std::ptr::eq(runtime, authority.runtime_owner()?),
++        "browser inputs must belong to this actual original runtime owner",
++    )?;
++    let resources = runtime
++        .resources
++        .as_ref()
++        .ok_or(MountError::Rejected("browser runtime has retired"))?;
++    let (cohort, manifest, host_uid, userns, mapped) = authority.query_runtime_binding()?;
++    require(
++        runtime.exported
++            && resources.cohort == cohort
++            && resources.runtime_manifest_sha256 == manifest
++            && resources.host_uid == host_uid
++            && resources.userns_identity == userns
++            && (resources.uids.start, resources.gids.start) == mapped,
++        "browser runtime selection, namespace or reservation differs",
++    )?;
++    for input in [
++        &resources.base_manifest,
++        &resources.manifest,
++        &resources.image,
++        &resources.init,
++    ] {
++        input.revalidate()?;
++    }
++    let browser = resources.browser.as_ref().ok_or(MountError::Rejected(
++        "selected runtime has no fixed browser inputs",
++    ))?;
++    browser.revalidate(resources.uids, resources.gids)?;
++    authority.revalidate()?;
++    Ok(browser)
++}
++
++impl PreparedRuntime {
++    pub(crate) fn browser_executable<'a>(
++        &'a self,
++        authority: &ApplicationAuthority<'_>,
++    ) -> Result<RuntimeBrowserExecutable<'a>> {
++        let resources = selected(self, authority)?;
++        let result = RuntimeBrowserExecutable {
++            runtime: self,
++            resources,
++            executable: &resources.executable,
++        };
++        result.verify_owned_projection(authority)?;
++        Ok(result)
++    }
++}
++
++impl RuntimeBrowserExecutable<'_> {
++    pub(crate) fn revalidate(&self, authority: &ApplicationAuthority<'_>) -> Result<()> {
++        require(
++            std::ptr::eq(self.resources, selected(self.runtime, authority)?),
++            "borrowed private browser resource custody changed",
++        )?;
++        self.verify_owned_projection(authority)
++    }
++
++    fn verify_owned_projection(&self, authority: &ApplicationAuthority<'_>) -> Result<()> {
++        let (original, target) = authority.browser_original_and_projection()?;
++        let (uid, gid) = authority.mapped_root()?;
++        self.verify_original(&original, uid, gid)?;
++        self.verify_projection(&target)?;
++        authority.revalidate()?;
++        Ok(())
++    }
++
++    pub(crate) fn file(&self) -> &File {
++        &self.executable.copy
++    }
++    pub(crate) fn verify_original(
++        &self,
++        original: &File,
++        root_uid: u32,
++        root_gid: u32,
++    ) -> Result<()> {
++        let node = FileIdentity::of(&original.metadata()?);
++        require(
++            node.mode & libc::S_IFMT == libc::S_IFREG
++                && node.mode & 0o6022 == 0
++                && node.mode & 0o111 != 0
++                && node.uid == root_uid
++                && node.gid == root_gid
++                && node.bytes == self.executable.identity.bytes
++                && (node.dev, node.ino)
++                    != (self.executable.identity.dev, self.executable.identity.ino)
++                && [0xef53, 0xe0f5_e1e2_u32 as libc::c_long].contains(&fs_type(original)?),
++            "guest original browser role does not match its selected image metadata",
++        )?;
++        let mut flags: libc::statvfs = unsafe { std::mem::zeroed() };
++        zero_rc(unsafe { libc::fstatvfs(original.as_raw_fd(), &mut flags) })?;
++        require(
++            flags.f_flag as u64 & READONLY_FLAGS == READONLY_FLAGS,
++            "guest original browser executable is not on its readonly system image",
++        )?;
++        original_security(original)?;
++        require(
++            full_digest(original, node)? == self.executable.digest
++                && original_init_elf(original, node.bytes)? == self.executable.interpreter,
++            "guest original browser bytes differ from the complete selected source role",
++        )
++    }
++    pub(crate) fn verify_projection(&self, target: &File) -> Result<()> {
++        readonly_private(target, self.executable.identity, self.resources.mount_id)?;
++        require(
++            full_digest(target, self.executable.identity)? == self.executable.digest,
++            "attached private browser role has different bytes",
++        )
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    #[test]
++    fn browser_provider_label_matches_frozen_contract_with_exact_nul() {
++        let mut label = droidloom_browser_action_contract::EXECUTABLE_CONTEXT
++            .as_bytes()
++            .to_vec();
++        label.push(0);
++        assert_eq!(BROWSER_EXEC.as_slice(), label.as_slice());
++        assert_ne!(
++            BROWSER_EXEC.as_slice(),
++            b"u:object_r:droidloom_query_exec:s0\0".as_slice()
++        );
++    }
++
++    #[test]
++    fn browser_provider_complete_digest_rejects_replaced_identity_and_short_body() {
++        let file = tempfile::tempfile().unwrap();
++        file.write_all_at(&[42; 128], 0).unwrap();
++        let identity = FileIdentity::of(&file.metadata().unwrap());
++        let original = full_digest(&file, identity).unwrap();
++        file.write_all_at(&[43; 128], 0).unwrap();
++        // Even if the host clock resolution preserves metadata, full bytes
++        // differ; the saved digest is checked independently by the caller.
++        match full_digest(&file, identity) {
++            Ok(changed) => assert_ne!(changed, original),
++            Err(_) => {}
++        }
++        file.set_len(1).unwrap();
++        assert!(full_digest(&file, identity).is_err());
++        let other = tempfile::tempfile().unwrap();
++        other.write_all_at(&[42; 128], 0).unwrap();
++        assert!(full_digest(&other, identity).is_err());
++    }
++}
+--- a/runtime/droidloom-supervisor/src/production_runtime_query_assets.rs
++++ b/runtime/droidloom-supervisor/src/production_runtime_query_assets.rs
+@@ -77,6 +77,18 @@
+ }
+ 
+ impl QueryDeclaration {
++    // Manifest consistency only; never an authority or proof of image membership.
++    pub(super) fn matches_browser(
++        &self,
++        browser: &droidloom_browser_action_contract::RoleDeclaration<'_>,
++    ) -> bool {
++        self.source_system_sha256 == browser.source_system_sha256
++            && self.cmd.source_path == browser.source_path
++            && self.cmd.original.bytes == browser.cmd_bytes
++            && self.cmd.original.sha256 == browser.cmd_sha256
++            && self.cmd.interpreter.as_deref() == Some(browser.interpreter)
++    }
++
+     pub(super) fn validate(&self, runtime: &RuntimeDeclaration) -> Result<()> {
+         require(
+             self.scope == "fixed_application_query_v1"
