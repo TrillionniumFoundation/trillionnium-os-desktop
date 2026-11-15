@@ -1,0 +1,41 @@
+diff --git a/services/core/java/com/android/server/media/quality/MediaQualityService.java b/services/core/java/com/android/server/media/quality/MediaQualityService.java
+index efc6bd80..2ab065a 100644
+--- a/services/core/java/com/android/server/media/quality/MediaQualityService.java
++++ b/services/core/java/com/android/server/media/quality/MediaQualityService.java
+@@ -1039,17 +1039,28 @@
+         @GuardedBy("mPictureProfileLock")
+         @Override
+         public void notifyPictureProfileHandleSelection(long handle, int userId) {
+-            if (DEBUG) {
+-                Slog.d(TAG, "notifyPictureProfileHandleSelection with handle " + handle);
++            int callingUid = Binder.getCallingUid();
++            int callingPid = Binder.getCallingPid();
++            if (!hasGlobalPictureQualityServicePermission(callingUid, callingPid)) {
++                mMqManagerNotifier.notifyOnPictureProfileError(
++                        null, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
++                Slog.e(TAG, "notifyPictureProfileHandleSelection: no permission");
++                return;
+             }
+-            PictureProfile profile = mMqDatabaseUtils.getPictureProfile(handle, true);
+-            if (profile != null) {
++
++            synchronized (mPictureProfileLock) {
+                 if (DEBUG) {
+-                    Slog.d(TAG, "the picture profile got from this handle is "
+-                            + profile.getName());
++                    Slog.d(TAG, "notifyPictureProfileHandleSelection with handle " + handle);
+                 }
+-                mPictureProfileForHal.add(handle);
+-                mHalNotifier.notifyHalOnPictureProfileChange(handle, profile.getParameters());
++                PictureProfile profile = mMqDatabaseUtils.getPictureProfile(handle, true);
++                if (profile != null) {
++                    if (DEBUG) {
++                        Slog.d(TAG, "the picture profile got from this handle is "
++                                + profile.getName());
++                    }
++                    mPictureProfileForHal.add(handle);
++                    mHalNotifier.notifyHalOnPictureProfileChange(handle, profile.getParameters());
++                }
+             }
+         }
+ 

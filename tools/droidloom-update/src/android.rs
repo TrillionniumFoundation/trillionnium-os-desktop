@@ -425,7 +425,9 @@ impl Projection {
                     Ok(m) if m.file_type().is_file() => fs::remove_file(&o.path)?,
                     Err(e) if e.kind() == std::io::ErrorKind::NotFound => (),
                     Ok(_) => {
-                        return fail("projection absence restore refuses a non-regular destination");
+                        return fail(
+                            "projection absence restore refuses a non-regular destination",
+                        );
                     }
                     Err(e) => return Err(e.into()),
                 }
@@ -4844,6 +4846,8 @@ fn enforce_strict_soong_dependencies(command: &mut Command) {
 
 #[path = "aac_security.rs"]
 mod aac_security;
+#[path = "avb_security.rs"]
+mod avb_security;
 #[path = "framework_asb_security.rs"]
 mod framework_asb_security;
 #[path = "libpng_security.rs"]
@@ -12658,6 +12662,10 @@ fn build_targets_with_fixed_request(
     // existing profile targets below control projection only, never final argv.
     request.validate(product)?;
     let dependency_mode = request.source_mode();
+    let avb_security_requested = request.uses_production_full_source();
+    if avb_security_requested {
+        avb_security::validate_request(request, product)?;
+    }
     let libpng_security_requested =
         libpng_security::required_for_targets(request.requested_targets());
     if libpng_security_requested {
@@ -12783,6 +12791,10 @@ fn build_targets_with_fixed_request(
         | FixedProductionRequest::FrameworkAsbOnProductionSource
         | FixedProductionRequest::VendorImageOnProductionSource => (),
     }
+    if avb_security_requested {
+        avb_security::validate_source_lock(repo, &lock)?;
+        avb_security::validate_original(repo, source)?;
+    }
     if libpng_security_requested {
         libpng_security::validate_original(repo, source)?;
     }
@@ -12851,6 +12863,9 @@ fn build_targets_with_fixed_request(
     }
     if matches!(request, FixedProductionRequest::AacSecurityOnAudioSource) {
         aac_security::project(&mut p, repo, source)?;
+    }
+    if avb_security_requested {
+        avb_security::project(&mut p, repo, source)?;
     }
     if libpng_security_requested {
         libpng_security::project(&mut p, repo, source)?;
@@ -13472,6 +13487,9 @@ fn build_targets_with_fixed_request(
     if matches!(request, FixedProductionRequest::AacSecurityOnAudioSource) {
         aac_security::input_receipt(repo, source, &lock, out, product, &p)?;
     }
+    if avb_security_requested {
+        avb_security::input_receipt(repo, source, &lock, out, product, request, &p)?;
+    }
     if libpng_security_requested {
         libpng_security::input_receipt(repo, source, &lock, out, product, request, &p)?;
     }
@@ -13509,6 +13527,9 @@ fn build_targets_with_fixed_request(
     )?;
     let mut cmd = production_soong_command(source, out, work, product, jobs, &selected_targets)?;
     request.configure_dependencies(&mut cmd, product)?;
+    if avb_security_requested {
+        avb_security::configure_command(request, product, &mut cmd)?;
+    }
     if libpng_security_requested {
         libpng_security::configure_command(request, product, &mut cmd)?;
     }
@@ -13589,6 +13610,9 @@ fn build_targets_with_fixed_request(
     }
     if matches!(request, FixedProductionRequest::AacSecurityOnAudioSource) {
         aac_security::normal_result(repo, source, out, product)?;
+    }
+    if avb_security_requested {
+        avb_security::normal_result(repo, source, out, product, request)?;
     }
     if libpng_security_requested {
         libpng_security::normal_result(repo, source, out, product, request)?;

@@ -1,4 +1,4 @@
-//! Apply nine framework class families through eleven complete official patches in the normal services producer.
+//! Apply eleven framework class families through fourteen complete official patches in the normal services producer.
 //! These are source and build records; device tests, DEX semantics and whole-CVE
 //! acceptance remain separate from a successful ordinary build.
 use super::*;
@@ -25,6 +25,9 @@ const CVES: &[&str] = &[
     "CVE-2026-58934",
     "CVE-2026-59006",
     "CVE-2026-58957",
+    "CVE-2026-58979",
+    "CVE-2026-58969",
+    "CVE-2026-58986",
 ];
 const PATCHES: &[(&str, u64, &str, &str)] = &[
     (
@@ -93,6 +96,24 @@ const PATCHES: &[(&str, u64, &str, &str)] = &[
         "c6750d57c95e040344859f95cdfb3a379a58f3a36d207b9d75529dbfbe2ed26d",
         "c6dfa8f425a6a6ebb68cabd63a5bf02276912375",
     ),
+    (
+        "android/security/framework-asb/ca5297bdc95722cd294a1b0fc656dc5475fdf388.patch",
+        11192,
+        "7b0f4a06fb939de6b6bb427f68e78af14be2ed23d684ad2e8ff57fd4cf17b179",
+        "ca5297bdc95722cd294a1b0fc656dc5475fdf388",
+    ),
+    (
+        "android/security/framework-asb/97984663fccfaea9bce3098edd0ebdc53a893ab4.patch",
+        6671,
+        "cd6df728484a1238cbe983c7f9bdd6638843ae9d68dccb36d68899a9b06e094a",
+        "97984663fccfaea9bce3098edd0ebdc53a893ab4",
+    ),
+    (
+        "android/security/framework-asb/ed7053111ca5140539af6617ff86641fea267965.patch",
+        2258,
+        "cc5d91d12281f99c7e90ee578d54c397b4d300c4e3a4821e4fe112c0141fb1bf",
+        "ed7053111ca5140539af6617ff86641fea267965",
+    ),
 ];
 const ALIASES_NOT_REPLAYED: &[(&str, &str)] = &[
     (
@@ -138,6 +159,10 @@ const ALIASES_NOT_REPLAYED: &[(&str, &str)] = &[
     (
         "c6dfa8f425a6a6ebb68cabd63a5bf02276912375",
         "7c921ec9ebb02fa0a57bba1103051aef7ec3eaa0",
+    ),
+    (
+        "ed7053111ca5140539af6617ff86641fea267965",
+        "4d9170e117b17f37d69ba19f7b808a647c6d3a3f",
     ),
 ];
 const ORIGINALS: &[(&str, u64, &str)] = &[
@@ -251,6 +276,21 @@ const ORIGINALS: &[(&str, u64, &str)] = &[
         112874,
         "4635ec0dcf18c60e82f2b4ba9524aa4c89cbd232c31528f667cbec2a91c1fd67",
     ),
+    (
+        "services/core/java/com/android/server/media/quality/MediaQualityService.java",
+        163123,
+        "b1bc78b50bad3c45c02ae3887c071ebd26fd0a09e0d85c1a65610f8b3d2a9270",
+    ),
+    (
+        "services/core/java/com/android/server/wm/PresentationController.java",
+        12081,
+        "4d12192ced169038a183cf0e556a8e2b13f64132f5e0c4d8f56ffb0722a785f7",
+    ),
+    (
+        "services/tests/wmtests/src/com/android/server/wm/PresentationControllerTests.java",
+        24472,
+        "a7e21bc65a2c7e564623513db3cda3ffc8908aa5fb35be1622075895a307b553",
+    ),
 ];
 const FIXED: &[(&str, u64, &str)] = &[
     (
@@ -332,6 +372,21 @@ const FIXED: &[(&str, u64, &str)] = &[
         "services/tests/wmtests/src/com/android/server/wm/WindowStateTests.java",
         113746,
         "186e288812f1fda3d93f787a81e54df51cd1bcba378e3c67741bcbd1da613728",
+    ),
+    (
+        "services/core/java/com/android/server/media/quality/MediaQualityService.java",
+        167461,
+        "48fa353b6dc2a4848bdf4341fd003c04feeb7a3b645c727bc6d3b0cfbd27373d",
+    ),
+    (
+        "services/core/java/com/android/server/wm/PresentationController.java",
+        12027,
+        "b71e9a6c32c45049beac8a893e4add0a4bd7c1ca99aa9a689ec14d628022c963",
+    ),
+    (
+        "services/tests/wmtests/src/com/android/server/wm/PresentationControllerTests.java",
+        26726,
+        "8908ea9f341c2b8471f496c1a54391aa5689fe4068cdb7ef4ee4934e0ce6d1af",
     ),
 ];
 const PROVIDERS: &[(&str, u64, &str)] = &[
@@ -732,6 +787,9 @@ mod tests {
             ("services/tests/wmtests/Android.bp", include_bytes!("../../../android/security/framework-asb/fixtures/services/tests/wmtests/Android.bp").as_slice()),
             ("services/tests/wmtests/src/com/android/server/wm/ActivityStarterTests.java", include_bytes!("../../../android/security/framework-asb/fixtures/services/tests/wmtests/src/com/android/server/wm/ActivityStarterTests.java").as_slice()),
             ("services/tests/wmtests/src/com/android/server/wm/WindowStateTests.java", include_bytes!("../../../android/security/framework-asb/fixtures/services/tests/wmtests/src/com/android/server/wm/WindowStateTests.java").as_slice()),
+            ("services/core/java/com/android/server/media/quality/MediaQualityService.java", include_bytes!("../../../android/security/framework-asb/fixtures/services/core/java/com/android/server/media/quality/MediaQualityService.java").as_slice()),
+            ("services/core/java/com/android/server/wm/PresentationController.java", include_bytes!("../../../android/security/framework-asb/fixtures/services/core/java/com/android/server/wm/PresentationController.java").as_slice()),
+            ("services/tests/wmtests/src/com/android/server/wm/PresentationControllerTests.java", include_bytes!("../../../android/security/framework-asb/fixtures/services/tests/wmtests/src/com/android/server/wm/PresentationControllerTests.java").as_slice()),
         ] { write(&source.join(PROJECT).join(name), bytes).unwrap(); }
         for (name, bytes) in [
             ("android/security/framework-asb/9444f519c4e55123c11a7ce92a960bb38486dbab.patch", include_bytes!("../../../android/security/framework-asb/9444f519c4e55123c11a7ce92a960bb38486dbab.patch").as_slice()),
@@ -745,6 +803,9 @@ mod tests {
             ("android/security/framework-asb/dfc1b5219ffbc682c0d328b27e026c549770c208.patch", include_bytes!("../../../android/security/framework-asb/dfc1b5219ffbc682c0d328b27e026c549770c208.patch").as_slice()),
             ("android/security/framework-asb/3b5efd2d2a846c7d319e03dd2dcb70e8fe773031.patch", include_bytes!("../../../android/security/framework-asb/3b5efd2d2a846c7d319e03dd2dcb70e8fe773031.patch").as_slice()),
             ("android/security/framework-asb/c6dfa8f425a6a6ebb68cabd63a5bf02276912375.patch", include_bytes!("../../../android/security/framework-asb/c6dfa8f425a6a6ebb68cabd63a5bf02276912375.patch").as_slice()),
+            ("android/security/framework-asb/ca5297bdc95722cd294a1b0fc656dc5475fdf388.patch", include_bytes!("../../../android/security/framework-asb/ca5297bdc95722cd294a1b0fc656dc5475fdf388.patch").as_slice()),
+            ("android/security/framework-asb/97984663fccfaea9bce3098edd0ebdc53a893ab4.patch", include_bytes!("../../../android/security/framework-asb/97984663fccfaea9bce3098edd0ebdc53a893ab4.patch").as_slice()),
+            ("android/security/framework-asb/ed7053111ca5140539af6617ff86641fea267965.patch", include_bytes!("../../../android/security/framework-asb/ed7053111ca5140539af6617ff86641fea267965.patch").as_slice()),
         ] { write(&repo.join(name), bytes).unwrap(); }
         (repo, source)
     }
@@ -763,7 +824,7 @@ mod tests {
             let journal = d.path().join("source-projection.json");
             let mut projection = Projection::new(journal.clone()).unwrap();
             project(&mut projection, &repo, &source).unwrap();
-            assert_eq!(projection.originals.len(), 15);
+            assert_eq!(projection.originals.len(), 18);
             validate_fixed(&source).unwrap();
             if interrupted {
                 std::mem::forget(projection);
@@ -844,15 +905,15 @@ mod tests {
                     exact(&source, &format!("{PROJECT}/{relative}"), *bytes, expected).unwrap();
                 }
                 // Both Locale files are final, but the complete producer
-                // still requires its three official WM patches.
+                // still requires the later WM, presentation and media patches.
                 assert!(validate_fixed(&source).is_err());
                 for (relative, _, _, _) in &PATCHES[8..] {
                     projection
                         .patch(&source, PROJECT, &repo.join(relative))
                         .unwrap();
                 }
-                assert_eq!(projection.originals.len(), 15);
-                assert_eq!(projection.applied_patches.len(), 11);
+                assert_eq!(projection.originals.len(), 18);
+                assert_eq!(projection.applied_patches.len(), 14);
                 validate_fixed(&source).unwrap();
             }
             std::mem::forget(projection);
@@ -948,10 +1009,17 @@ mod tests {
                     pins.iter().find(|(name, _, _)| *name == relative).unwrap();
                 exact(&source, &format!("{PROJECT}/{relative}"), *bytes, expected).unwrap();
             }
+            // The complete WM sequence precedes the presentation/media fixes.
+            assert!(validate_fixed(&source).is_err());
             if last_patch == 10 {
-                validate_fixed(&source).unwrap();
-            } else {
-                assert!(validate_fixed(&source).is_err());
+                // Preserve the original 15-file WM recovery boundary. Check
+                // every original WM9 final pin and unchanged provider, then
+                // recover before applying any presentation or media patch.
+                for (relative, bytes, expected) in FIXED[..16].iter().chain(PROVIDERS) {
+                    exact(&source, &format!("{PROJECT}/{relative}"), *bytes, expected).unwrap();
+                }
+                assert_eq!(projection.originals.len(), 15);
+                assert_eq!(projection.applied_patches.len(), 11);
             }
             std::mem::forget(projection);
             recover(&journal, &source).unwrap();
@@ -960,6 +1028,98 @@ mod tests {
                 let actual = fs::metadata(path).unwrap();
                 assert_eq!(actual.permissions().mode(), permissions);
                 assert_eq!(actual.modified().unwrap(), modified);
+            }
+            assert!(!journal.exists());
+        }
+    }
+
+    #[test]
+    fn framework_presentation_media_stages_restore_one_original_per_file() {
+        // Apply complete official source patches and test journal recovery at
+        // each new boundary. This executes no Java, DEX or device input.
+        for (last_patch, journaled) in [(11_usize, 17_usize), (12, 18), (13, 18)] {
+            let directory = tempfile::tempdir().unwrap();
+            let (repo, source) = fixture(directory.path());
+            let mut original_metadata = Vec::new();
+            for (relative, _, _) in ORIGINALS {
+                let path = source.join(PROJECT).join(relative);
+                fs::set_permissions(&path, fs::Permissions::from_mode(0o640)).unwrap();
+                let metadata = fs::metadata(&path).unwrap();
+                original_metadata.push((
+                    path,
+                    metadata.permissions().mode(),
+                    metadata.modified().unwrap(),
+                ));
+            }
+            validate_original(&repo, &source).unwrap();
+            let media_relative =
+                "services/core/java/com/android/server/media/quality/MediaQualityService.java";
+            let media_path = source.join(PROJECT).join(media_relative);
+            let media_original = fs::read(&media_path).unwrap();
+            let journal = directory.path().join("presentation-media-projection.json");
+            let mut projection = Projection::new(journal.clone()).unwrap();
+            for (relative, _, _, _) in &PATCHES[..=last_patch] {
+                projection
+                    .patch(&source, PROJECT, &repo.join(relative))
+                    .unwrap();
+            }
+            assert_eq!(projection.originals.len(), journaled);
+            assert_eq!(projection.applied_patches.len(), last_patch + 1);
+            for relative in [
+                "services/core/java/com/android/server/wm/PresentationController.java",
+                "services/tests/wmtests/src/com/android/server/wm/PresentationControllerTests.java",
+            ] {
+                let (_, bytes, expected) =
+                    FIXED.iter().find(|(name, _, _)| *name == relative).unwrap();
+                exact(&source, &format!("{PROJECT}/{relative}"), *bytes, expected).unwrap();
+            }
+            let (bytes, expected) = match last_patch {
+                11 => (
+                    163123,
+                    "b1bc78b50bad3c45c02ae3887c071ebd26fd0a09e0d85c1a65610f8b3d2a9270",
+                ),
+                12 => (
+                    166882,
+                    "d412de5c1e3d4533108e09f98262029d586f5ff7d83d73113941399b50ce38f2",
+                ),
+                13 => (
+                    167461,
+                    "48fa353b6dc2a4848bdf4341fd003c04feeb7a3b645c727bc6d3b0cfbd27373d",
+                ),
+                _ => unreachable!(),
+            };
+            exact(
+                &source,
+                &format!("{PROJECT}/{media_relative}"),
+                bytes,
+                expected,
+            )
+            .unwrap();
+            let saved_media: Vec<_> = projection
+                .originals
+                .iter()
+                .filter(|item| item.path == media_path)
+                .collect();
+            assert_eq!(saved_media.len(), usize::from(last_patch >= 12));
+            if last_patch >= 12 {
+                assert_eq!(
+                    saved_media[0].bytes.as_deref(),
+                    Some(media_original.as_slice())
+                );
+            }
+            drop(saved_media);
+            if last_patch == 13 {
+                validate_fixed(&source).unwrap();
+            } else {
+                assert!(validate_fixed(&source).is_err());
+            }
+            std::mem::forget(projection);
+            recover(&journal, &source).unwrap();
+            validate_original(&repo, &source).unwrap();
+            for (path, permissions, modified) in original_metadata {
+                let metadata = fs::metadata(path).unwrap();
+                assert_eq!(metadata.permissions().mode(), permissions);
+                assert_eq!(metadata.modified().unwrap(), modified);
             }
             assert!(!journal.exists());
         }
@@ -988,8 +1148,11 @@ mod tests {
         assert_eq!(request.projection_targets(), TARGETS);
         assert_eq!(request.requested_targets(), TARGETS);
         assert_eq!(TARGETS.last(), Some(&"module-info"));
-        assert_eq!(CVES.len(), 10);
-        assert_eq!(PATCHES.len(), 11);
+        assert_eq!(CVES.len(), 13);
+        assert_eq!(PATCHES.len(), 14);
+        assert_eq!(ORIGINALS.len(), 25);
+        assert_eq!(FIXED.len(), 19);
+        assert_eq!(PROVIDERS.len(), 6);
         assert!(TARGETS.contains(&"AudioServiceTests"));
         assert!(TARGETS.contains(&"WmTests"));
         assert!(PROVIDERS.contains(&(
