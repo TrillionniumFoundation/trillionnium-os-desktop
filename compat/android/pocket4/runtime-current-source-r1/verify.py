@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Verify and reconstruct the complete current source capsule for CI."""
 import argparse
+import base64
 import io
 import tarfile
 import hashlib
 import json
+import lzma
 import os
 from pathlib import Path
 import re
@@ -13,8 +15,12 @@ import stat
 import subprocess
 
 HERE = Path(__file__).resolve().parent
-HEAD_COMMIT = '61a38baa745483fbfb757466a1cf352febc20552'
-HEAD_TREE = 'db6249e80209abeda8000eeced6d045a1d57e0a2'
+PARENT_COMMIT = '61a38baa745483fbfb757466a1cf352febc20552'
+PARENT_TREE = 'db6249e80209abeda8000eeced6d045a1d57e0a2'
+HEAD_COMMIT = None
+HEAD_TREE = '17b5ead6e800ee80697ade52eb496e44323fe2ec'
+SOURCE_FILES = 2231
+SOURCE_BYTES = 40685530
 
 
 def need(value, message):
@@ -297,6 +303,76 @@ def archive_entries(raw):
     return entries
 
 
+OVERLAY = {'bytes': 162544, 'sha256': '5d49b2bbb8040c00cdabb2c6538f06b10ab94b2784769f561f349c964647d927'}
+OVERLAY_EXPANSION_MAX = 4 * 1024 * 1024
+
+
+def overlay_packet(raw):
+    need(isinstance(raw, bytes) and 0 < len(raw) <= OVERLAY['bytes'],
+         'bounded complete overlay frame required')
+    decoder = lzma.LZMADecompressor(format=lzma.FORMAT_XZ, memlimit=64 * 1024 * 1024)
+    body = decoder.decompress(raw, max_length=OVERLAY_EXPANSION_MAX + 1)
+    need(decoder.eof and not decoder.unused_data and len(body) <= OVERLAY_EXPANSION_MAX,
+         'one complete bounded XZ overlay without trailing frames required')
+    return decode(body)
+
+
+def apply_overlay(parent, parent_rows, parent_entries, packet):
+    need(set(packet) == {'manifest', 'files_base64'}, 'exact overlay envelope required')
+    manifest = packet['manifest']
+    need(isinstance(manifest, dict) and set(manifest) == {
+        'candidate_bytes', 'candidate_file_count', 'candidate_tree_from_manifest',
+        'compiled', 'format_qualified', 'parent_file_count', 'parent_head',
+        'parent_tree', 'paths', 'production_ready', 'runtime_qualified', 'schema'},
+        'exact noncommitted overlay manifest required')
+    need(parent['head'] == manifest['parent_head'] == PARENT_COMMIT
+         and parent['tree'] == manifest['parent_tree'] == PARENT_TREE
+         and parent['file_count'] == manifest['parent_file_count'] == 2222
+         and manifest['candidate_file_count'] == SOURCE_FILES
+         and manifest['candidate_bytes'] == SOURCE_BYTES
+         and manifest['candidate_tree_from_manifest'] == HEAD_TREE
+         and manifest['schema'] == 'p4-launch-combined-formatted-overlay-v1'
+         and manifest['format_qualified'] is True and manifest['compiled'] is False
+         and manifest['runtime_qualified'] is False and manifest['production_ready'] is False,
+         'fixed qualified parent and exact formatted successor tree required')
+    old_rows = validate_rows(parent_rows, 2222)
+    need(tree_id(parent_rows) == PARENT_TREE and set(old_rows) == set(parent['files']),
+         'complete exact parent inventory required before overlay')
+    changes, encoded_files = manifest['paths'], packet['files_base64']
+    need(isinstance(changes, dict) and isinstance(encoded_files, dict)
+         and len(changes) == 25 and set(changes) == set(encoded_files),
+         'all and only 25 declared overlay bodies required')
+    current = dict(parent['files'])
+    entries = dict(parent_entries)
+    for name, change in sorted(changes.items()):
+        safe(name)
+        need(isinstance(change, dict) and set(change) == {'before', 'after'}
+             and change['before'] == parent['files'].get(name),
+             'overlay before-row must match the original parent: ' + name)
+        after = change['after']
+        need(isinstance(after, dict) and set(after) == {'bytes', 'sha256', 'git_blob', 'git_mode'},
+             'complete successor file row required')
+        row = {'path': name, 'bytes': after['bytes'], 'sha256': after['sha256'],
+               'git_blob': after['git_blob'], 'mode': after['git_mode']}
+        validate_rows([row], 1)
+        need(isinstance(encoded_files[name], str), 'exact base64 overlay text required')
+        body = base64.b64decode(encoded_files[name], validate=True)
+        need(digest(body) == {key: after[key] for key in ('bytes', 'sha256')}
+             and object_id('blob', body) == after['git_blob'],
+             'whole overlay body and Git blob must match: ' + name)
+        current[name] = dict(after)
+        entries['source/' + name] = (int(after['git_mode'], 8) & 0o777, body)
+    rows = [{'path': name, 'bytes': row['bytes'], 'sha256': row['sha256'],
+             'git_blob': row['git_blob'], 'mode': row['git_mode']}
+            for name, row in sorted(current.items())]
+    validate_rows(rows, SOURCE_FILES)
+    need(sum(row['bytes'] for row in rows) == SOURCE_BYTES and tree_id(rows) == HEAD_TREE
+         and set(entries) == {'source/' + name for name in current}
+             | {'SOURCE-MANIFEST.json', 'SOURCE-COMMIT.txt'},
+         'every successor byte and exact member must contribute to the fixed complete Git tree')
+    return rows, entries, manifest
+
+
 def verify_capsule(expected_inventory_sha):
     need(re.fullmatch('[0-9a-f]{64}', expected_inventory_sha), 'external inventory SHA required')
     index = regular(HERE / 'FILES.sha256', 65536)
@@ -317,14 +393,14 @@ def verify_capsule(expected_inventory_sha):
          'source manifest and exact commit object required')
     manifest_body = entries['SOURCE-MANIFEST.json'][1]; commit_body = entries['SOURCE-COMMIT.txt'][1]
     need(digest(manifest_body) == MANIFEST and digest(commit_body) == COMMIT
-         and object_id('commit', commit_body) == HEAD_COMMIT, 'original manifest and commit object must match')
+         and object_id('commit', commit_body) == PARENT_COMMIT, 'original manifest and commit object must match')
     manifest = decode(manifest_body)
     need(manifest['schema'] == 'p4-portable-qualified-source-manifest-v2'
-         and manifest['head'] == HEAD_COMMIT and manifest['tree'] == HEAD_TREE
+         and manifest['head'] == PARENT_COMMIT and manifest['tree'] == PARENT_TREE
          and manifest['file_count'] == 2222 and manifest['file_bytes'] == 40552166
          and manifest['commit'] == COMMIT and len(manifest['files']) == 2222,
          'exact complete current source generation required')
-    need(commit_body.startswith(('tree ' + HEAD_TREE + '\n').encode()), 'original commit tree differs')
+    need(commit_body.startswith(('tree ' + PARENT_TREE + '\n').encode()), 'original commit tree differs')
     rows = [{'path': name, 'bytes': row['bytes'], 'sha256': row['sha256'],
              'git_blob': row['git_blob'], 'mode': row['git_mode']}
             for name, row in sorted(manifest['files'].items())]
@@ -336,9 +412,12 @@ def verify_capsule(expected_inventory_sha):
         need(mode == (int(row['mode'], 8) & 0o777)
              and digest(body) == {key: row[key] for key in ('bytes', 'sha256')}
              and object_id('blob', body) == row['git_blob'], 'source body, mode or Git blob differs: ' + name)
-    need(tree_id(rows) == HEAD_TREE and sum(row['bytes'] for row in rows) == 40552166,
+    need(tree_id(rows) == PARENT_TREE and sum(row['bytes'] for row in rows) == 40552166,
          'every source byte must contribute to the complete Git tree')
-    return {'manifest': manifest, 'rows': rows, 'entries': entries, 'inventory_sha256': expected_inventory_sha}
+    packet = overlay_packet(check(HERE / 'SOURCE-OVERLAY.json.xz', OVERLAY))
+    rows, entries, overlay = apply_overlay(manifest, rows, entries, packet)
+    return {'parent_manifest': manifest, 'overlay_manifest': overlay, 'rows': rows,
+            'entries': entries, 'inventory_sha256': expected_inventory_sha}
 
 
 def replay(capsule, destination):
@@ -375,7 +454,9 @@ def main():
     parser.add_argument('--report', type=Path); args = parser.parse_args()
     capsule = verify_capsule(args.inventory_sha256)
     result = {'schema': 'p4-current-complete-source-verification-v1', 'source_commit': HEAD_COMMIT,
-              'source_tree': HEAD_TREE, 'source_files': 2222, 'source_bytes': 40552166,
+              'source_parent_commit': PARENT_COMMIT, 'source_parent_tree': PARENT_TREE,
+              'source_tree': HEAD_TREE, 'source_files': SOURCE_FILES, 'source_bytes': SOURCE_BYTES,
+              'source_overlay_sha256': OVERLAY['sha256'], 'full_source_overlay_verified': True,
               'full_source_archive_verified': True, 'historical_tests_counted_as_fresh': 0,
               'Android_builds': 0, 'Android_starts': 0, 'runtime_qualified': False, 'production_ready': False}
     protected = [HERE]

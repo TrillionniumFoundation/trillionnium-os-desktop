@@ -216,5 +216,77 @@ class Controls(unittest.TestCase):
             v.test_terminal(wrap(ACTUAL_TOOL_OUTPUT.replace(name, 'unknown::test')), ['unknown::test'], [], 464)
 
 
+class OverlayControls(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.entries = v.archive_entries(v.check(v.HERE / 'SOURCE-CAPSULE.tar.xz', v.CAPSULE))
+        cls.parent = v.decode(cls.entries['SOURCE-MANIFEST.json'][1])
+        cls.rows = [{'path': name, 'bytes': row['bytes'], 'sha256': row['sha256'],
+                     'git_blob': row['git_blob'], 'mode': row['git_mode']}
+                    for name, row in sorted(cls.parent['files'].items())]
+        cls.compressed = v.check(v.HERE / 'SOURCE-OVERLAY.json.xz', v.OVERLAY)
+        cls.packet = v.overlay_packet(cls.compressed)
+
+    def clone(self):
+        return v.decode(json.dumps(self.packet))
+
+    def apply(self, packet):
+        return v.apply_overlay(self.parent, self.rows, self.entries, packet)
+
+    def test_overlay_complete_parent_and_successor_have_distinct_identities(self):
+        inventory_sha = v.digest(v.regular(v.HERE / 'FILES.sha256'))['sha256']
+        capsule = v.verify_capsule(inventory_sha)
+        self.assertIsNone(v.HEAD_COMMIT)
+        self.assertEqual(capsule['parent_manifest']['head'], v.PARENT_COMMIT)
+        self.assertEqual(len(capsule['rows']), 2231)
+        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 40685530)
+        self.assertEqual(v.tree_id(capsule['rows']), '17b5ead6e800ee80697ade52eb496e44323fe2ec')
+        self.assertEqual(len(capsule['overlay_manifest']['paths']), 25)
+        self.assertNotEqual(v.HEAD_TREE, v.PARENT_TREE)
+
+    def test_overlay_rejects_wrong_base_omitted_extra_or_unsafe_member(self):
+        name = 'Cargo.lock'
+        mutations = []
+        packet = self.clone(); packet['manifest']['paths'][name]['before']['sha256'] = '0' * 64
+        mutations.append(packet)
+        packet = self.clone(); del packet['files_base64'][name]; mutations.append(packet)
+        packet = self.clone(); packet['files_base64']['extra'] = ''; mutations.append(packet)
+        packet = self.clone()
+        packet['manifest']['paths']['../escape'] = packet['manifest']['paths'].pop(name)
+        packet['files_base64']['../escape'] = packet['files_base64'].pop(name)
+        mutations.append(packet)
+        packet = self.clone(); packet['manifest']['parent_head'] = '0' * 40; mutations.append(packet)
+        packet = self.clone(); packet['manifest']['parent_tree'] = '0' * 40; mutations.append(packet)
+        packet = self.clone(); packet['manifest']['source_commit'] = '0' * 40; mutations.append(packet)
+        packet = self.clone(); packet['manifest']['runtime_qualified'] = True; mutations.append(packet)
+        for packet in mutations:
+            with self.subTest(packet=packet['manifest'].get('parent_head')), self.assertRaises(RuntimeError):
+                self.apply(packet)
+
+    def test_overlay_rejects_wrong_body_mode_size_blob_tree_and_count(self):
+        name = 'Cargo.lock'
+        changes = [('bytes', 1), ('sha256', '0' * 64),
+                   ('git_blob', '0' * 40), ('git_mode', '100755')]
+        for key, value in changes:
+            packet = self.clone(); packet['manifest']['paths'][name]['after'][key] = value
+            with self.subTest(field=key), self.assertRaises(RuntimeError):
+                self.apply(packet)
+        packet = self.clone(); packet['files_base64'][name] = v.base64.b64encode(b'wrong body').decode()
+        with self.assertRaises(RuntimeError): self.apply(packet)
+        for key, value in [('candidate_tree_from_manifest', '0' * 40),
+                           ('candidate_file_count', 2230), ('candidate_bytes', 40685529)]:
+            packet = self.clone(); packet['manifest'][key] = value
+            with self.subTest(field=key), self.assertRaises(RuntimeError):
+                self.apply(packet)
+
+    def test_overlay_decoder_rejects_truncation_trailing_frames_and_expansion(self):
+        tiny = v.lzma.compress(b'{}')
+        too_large = v.lzma.compress(b'a' * (v.OVERLAY_EXPANSION_MAX + 1))
+        for raw in [self.compressed[:-1], tiny + tiny, tiny + b'trailing', too_large]:
+            with self.subTest(size=len(raw)), self.assertRaises(RuntimeError):
+                v.overlay_packet(raw)
+
+
+
 if __name__ == '__main__':
     unittest.main()

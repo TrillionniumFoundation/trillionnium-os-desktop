@@ -1,26 +1,31 @@
 # Complete current source and ordinary CI
 
-This capsule reconstructs the complete 2,222-file producer source and runs its ordinary Linux tests and normal release builds in a new CI work directory. It contains source and verification code; it does not require earlier source capsules, private caches, old ELF files, APK collections or a production Android image.
+This capsule reconstructs the complete 2,231-file producer source from its verified committed parent and exact formatted Launch overlay and runs its ordinary Linux tests and normal release builds in a new CI work directory. It contains source and verification code; it does not require earlier source capsules, private caches, old ELF files, APK collections or a production Android image.
 
 | Identity | Value |
 | --- | --- |
-| Source commit recorded inside the capsule | `61a38baa745483fbfb757466a1cf352febc20552` |
-| Complete source Git tree | `db6249e80209abeda8000eeced6d045a1d57e0a2` |
-| Source files / bytes | 2,222 / 40,552,166 |
-| Archive members | 2,224: the source files, portable manifest and original commit body |
-| Source archive SHA256 | `7ab244365184ef670c244b6a0ed75857c6f942897f3fc59c00e6375e76f51816` |
+| Parent source commit recorded inside the baseline capsule | `61a38baa745483fbfb757466a1cf352febc20552` |
+| Parent Git tree | `db6249e80209abeda8000eeced6d045a1d57e0a2` |
+| Complete current source Git tree | `17b5ead6e800ee80697ade52eb496e44323fe2ec` |
+| Current source files / bytes | 2,231 / 40,685,530 |
+| Baseline archive members | 2,224: parent source files, portable manifest and original commit body |
+| Baseline archive SHA256 | `7ab244365184ef670c244b6a0ed75857c6f942897f3fc59c00e6375e76f51816` |
+| Formatted Launch overlay | 25 complete path bodies / 162,544 compressed bytes |
+| Overlay SHA256 | `5d49b2bbb8040c00cdabb2c6538f06b10ab94b2784769f561f349c964647d927` |
 
-The Git commit containing this public wrapper is a different identity from the source commit above. `verify.py` checks every archived body, mode and Git blob, reconstructs the Git tree, checks the original commit body, and extracts a self-contained source directory. It does not reconstruct an entire historical Git repository or copy old runtime evidence into a fresh CI result.
+The Git commit containing this public wrapper is a different identity from the parent source commit above. `verify.py` first checks all 2,222 parent bodies, modes, Git blobs, the parent tree and original commit object. It then verifies the complete pinned overlay, requires all 25 before-rows to match that parent, verifies every replacement or added body and mode, and reconstructs the exact 2,231-file current Git tree. The output is a self-contained source directory. The source report records `source_parent_commit` and leaves `source_commit` null because this overlay has no newly created producer commit. It does not copy old runtime evidence into a fresh CI result.
+
+The XZ overlay must be one complete frame with no trailing data and expands to at most 4 MiB under a 64 MiB decoder memory limit. Undeclared members, missing bodies, unsafe paths, changed parent rows, wrong modes, sizes, digests, Git objects or complete tree identities are rejected. The repository source-integrity check verifies both compressed binary inputs by full size and SHA256.
 
 ## Fresh CI scope
 
-The checked-in metadata and catalogs define 28 workspace packages, 49 test harnesses, 1,287 listed cases and 19 normal binary targets. A successful new CI run must execute **1,257 ordinary cases**, preserve **30 existing ignored cases**, and build **19 normal release binaries** from the freshly reconstructed source. No historical test or ELF receives fresh credit.
+The checked-in metadata and catalogs define 28 workspace packages, 49 test harnesses, 1,302 listed cases and 19 normal binary targets. A successful new CI run must execute **1,272 ordinary cases**, preserve **30 existing ignored cases**, and build **19 normal release binaries** from the freshly reconstructed source. The catalog retains all parent identities and adds seven launcher-library cases and eight supervisor-library cases; its 30 ignored cases are unchanged. No historical test or ELF receives fresh credit.
 
 | Execution group | Fresh ordinary cases | Ignored cases | Command bound |
 | --- | ---: | ---: | --- |
 | Updater cases in `UPDATER-EXACT64.json` | 64 | 0 | Each complete name, `--exact`, 60 seconds |
 | Remaining updater catalog | 400 | 1 | One 300-second harness run; filtered catalog must first match the exact difference |
-| Other 48 harnesses | 793 | 29 | 300 seconds per harness, including zero-test harnesses |
+| Other 48 harnesses | 808 | 29 | 300 seconds per harness, including zero-test harnesses |
 | Normal release builds | 19 binary artifacts | — | 900 seconds per package batch |
 
 The updater package and the other 27 packages form two disjoint build batches. Test compilation and normal release compilation each use that partition, with a complete artifact-to-metadata join for each batch and an exact union check afterward. A fresh Cargo target directory is mandatory. The runner verifies the CLI executable paths embedded in integration harnesses and accounts for Cargo's original hardlink aliases. All ordinary harnesses use one test thread; Cargo uses one build job. The overall runner deadline is 5,400 seconds, including final artifact and source checks.
@@ -79,6 +84,6 @@ python3 -I -B "$capsule/run_ci.py" \
 
 All destination paths must be new. Do not reuse failed work directories or modify the frozen source to make a run pass. `-I -B` prevents ambient Python imports and generated bytecode from changing capsule membership. The workflow wraps verification and Python controls in additional finite timeouts and preserves evidence with an `always()` upload step.
 
-`test_runner.py` checks catalog, artifact and hardlink rejection and uses actual short child processes for timeout, PIDFD-acquisition-failure and proc-stat-failure cleanup. It does not replace these operations with simulated process reports. These Python controls are separate from the 1,257 Rust ordinary cases.
+`test_runner.py` checks catalog, artifact and hardlink rejection and uses actual short child processes for timeout, PIDFD-acquisition-failure and proc-stat-failure cleanup. It does not replace these operations with simulated process reports. The 12 verifier controls include four new overlay rejection/control methods; all eight previous verifier methods are retained. The nine runner controls and their child-retirement behavior are unchanged. These Python controls are separate from the 1,272 Rust ordinary cases.
 
 The CI artifact contains replay/runner/dependency reports, command stdout/stderr and EROFS configure evidence. It excludes Cargo caches, compiled target directories, private operator journals and APKs. The complete source bookend must still match after testing. An individual test pass cannot override a failed controller, expired deadline, changed source or unretired child.

@@ -47,8 +47,8 @@ def configuration():
         registered[key] = row
     VERIFY.need(set(registered) == set(result[0]) and len({k[0] for k in result[0]}) == 28,
                 'all28 packages and49 test targets')
-    VERIFY.need(sum(len(r['all']) for r in registered.values()) == 1287
-                and sum(len(r['ignored']) for r in registered.values()) == 30, 'complete1287/30 catalog')
+    VERIFY.need(sum(len(r['all']) for r in registered.values()) == 1302
+                and sum(len(r['ignored']) for r in registered.values()) == 30, 'complete1302/30 catalog')
     VERIFY.need(len(exact) == len(set(exact)) == 64
                 and set(exact) <= set(registered[UPDATER]['all']) - set(registered[UPDATER]['ignored']),
                 '64 disjoint ordinary updater names')
@@ -362,7 +362,9 @@ def main():
                 'DROIDLOOM_TEST_DRM_NODE','DBUS_SESSION_BUS_ADDRESS','WAYLAND_DISPLAY','DISPLAY','RUST_MIN_STACK','CARGO_NET_OFFLINE'):
         env.pop(key, None)
     result = {'schema':'p4-current-fresh-ordinary-and-release-ci-v1','state':'RUNNING',
-        'source_commit':VERIFY.HEAD_COMMIT,'source_tree':VERIFY.HEAD_TREE,'source_files':2222,
+        'source_commit':VERIFY.HEAD_COMMIT,'source_parent_commit':VERIFY.PARENT_COMMIT,
+        'source_tree':VERIFY.HEAD_TREE,'source_files':VERIFY.SOURCE_FILES,
+        'source_bytes':VERIFY.SOURCE_BYTES,'source_overlay_sha256':VERIFY.OVERLAY['sha256'],
         'started_ns':time.time_ns(),'commands':[],'errors':[],'fresh_ordinary_passed':0,
         'fresh_test_targets':0,'fresh_release_binaries':{},'ignored_not_executed':[],
         'historical_tests_counted_as_fresh':0,'historical_ELFs_reused':False,'jobs':1,'test_threads':1,
@@ -450,8 +452,8 @@ def main():
                 row['actual_tests'] = VERIFY.test_terminal(raw.decode(),passed,cat['ignored'],0)
                 result['fresh_ordinary_passed'] += len(passed)
             VERIFY.need(elf(item['path']) == frozen[key], 'harness changed after execution')
-        VERIFY.need(result['fresh_ordinary_passed'] == 1257 and len(result['ignored_not_executed']) == 30,
-                    'complete fresh1257 ordinary and30 unchanged ignored cases required')
+        VERIFY.need(result['fresh_ordinary_passed'] == 1272 and len(result['ignored_not_executed']) == 30,
+                    'complete fresh1272 ordinary and30 unchanged ignored cases required')
         for key,ref in debug_frozen.items():
             VERIFY.need(elf(debug[key]['path']) == ref, 'normal debug binary changed during ordinary tests')
         released, release_by_target = {}, {}
@@ -476,7 +478,7 @@ def main():
         result['all_source_bookends_equal'] = VERIFY.source_snapshot(producer,capsule['rows'],VERIFY.HEAD_TREE) == before
         VERIFY.need(result['all_source_bookends_equal'] and not owned_children(), 'source changed or command descendants remain')
         VERIFY.need(time.monotonic() < deadline, 'whole CI deadline expired during final artifact/source readback')
-        result['state'] = 'ALL1257_ORDINARY_AND19_NORMAL_RELEASE_BUILDS_PASSED'
+        result['state'] = 'ALL1272_ORDINARY_AND19_NORMAL_RELEASE_BUILDS_PASSED'
     except BaseException as error:
         result['state'] = 'FAILED'
         result['errors'].append({'type':type(error).__name__,'message':str(error),'traceback':traceback.format_exc()})
@@ -498,7 +500,7 @@ def main():
     VERIFY.write_report(report,result,[HERE,producer,work])
     print(json.dumps({'state':result['state'],'fresh_ordinary_passed':result['fresh_ordinary_passed'],
         'fresh_normal_release_count':len(result['fresh_release_binaries']),'report':str(report),'production_ready':False},sort_keys=True))
-    return 0 if result['state'] == 'ALL1257_ORDINARY_AND19_NORMAL_RELEASE_BUILDS_PASSED' else 1
+    return 0 if result['state'] == 'ALL1272_ORDINARY_AND19_NORMAL_RELEASE_BUILDS_PASSED' else 1
 
 
 if __name__ == '__main__':
