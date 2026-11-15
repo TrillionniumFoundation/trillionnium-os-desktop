@@ -1,0 +1,15 @@
+[package]
+name = "pocket4-firefox-component"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+publish = false
+license = "GPL-3.0-or-later"
+
+[lib]
+path = "application_probe.rs"
+
+[dependencies]
+serde = { version = "=1.0.229", features = ["derive"] }
+
+[workspace]
