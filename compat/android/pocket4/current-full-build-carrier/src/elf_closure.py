@@ -14,6 +14,17 @@ _descriptor = importlib.util.spec_from_file_location('p4_elf_checks', Path(__fil
 c = importlib.util.module_from_spec(_descriptor); _descriptor.loader.exec_module(c)
 need = c.need
 
+# These tags cause the loader to select objects outside DT_NEEDED. Until their
+# ordering and lookup rules have a reviewed resolver, a NEEDED-only traversal
+# must reject them rather than report a complete preserved dependency closure.
+# Numeric values are the ELF ABI constants, also exposed by <elf.h>.
+UNSUPPORTED_LOAD_TAGS = {
+    0x6ffffefb: 'DT_DEPAUDIT',
+    0x6ffffefc: 'DT_AUDIT',
+    0x7ffffffd: 'DT_AUXILIARY',
+    0x7fffffff: 'DT_FILTER',
+}
+
 
 def parse_elf(raw):
     need(len(raw) >= 64 and raw[:7] == b'\x7fELF\x02\x01\x01', 'ELF64 little-endian version 1 required')
@@ -55,6 +66,9 @@ def parse_elf(raw):
         tag, value = struct.unpack_from('<qQ', raw, at)
         if tag == 0:
             ended = True; break
+        need(tag not in UNSUPPORTED_LOAD_TAGS,
+             'unsupported ELF load directive ' + UNSUPPORTED_LOAD_TAGS.get(tag, '') +
+             ' requires a separately reviewed dependency resolver')
         if tag == 1:
             needed.append(value)
         elif tag in (5, 10, 14, 15, 29):
