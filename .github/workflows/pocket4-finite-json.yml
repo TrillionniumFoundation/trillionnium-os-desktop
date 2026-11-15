@@ -1,0 +1,50 @@
+name: Pocket4 finite JSON source controls
+
+on:
+  pull_request:
+    paths:
+      - 'compat/android/pocket4/current-app-acceptance/r17-current-fixes/**'
+      - '.github/workflows/pocket4-finite-json.yml'
+  push:
+    branches: ['fix/pocket4-finite-json-*']
+    paths:
+      - 'compat/android/pocket4/current-app-acceptance/r17-current-fixes/**'
+      - '.github/workflows/pocket4-finite-json.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  finite-json-source-controls:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Run serial pure source controls with two CPUs reserved
+        run: |
+          /usr/bin/python3.12 -I -B - <<'PY'
+          import os
+          from pathlib import Path
+          import subprocess
+          import sys
+          available = sorted(os.sched_getaffinity(0))
+          if len(available) < 3:
+              raise SystemExit('At least three available logical CPUs are required')
+          os.sched_setaffinity(0, {available[0]})
+          print({'available_CPUs': len(available), 'used_CPU': available[0],
+                 'reserved_CPUs': len(available) - 1}, flush=True)
+          root = Path('compat/android/pocket4/current-app-acceptance/r17-current-fixes')
+          for name in ('test_cold_json.py', 'test_cold_source_fixes.py'):
+              subprocess.run([sys.executable, '-I', '-B', str(root / name)], check=True)
+          PY
+      - name: Verify maintained source stayed unchanged
+        run: |
+          test -z "$(git status --porcelain --untracked-files=all)"
+      - name: Record scope
+        run: |
+          echo 'Pure JSON and existing synthetic source controls only.'
+          echo 'No original UART replay, guest build, VM, live socket, policy change or runtime acceptance.'

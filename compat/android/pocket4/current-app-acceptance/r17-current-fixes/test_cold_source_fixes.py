@@ -189,11 +189,11 @@ class ColdSourceControls(unittest.TestCase):
                 self.candidate["parse_component_serial"](value, {}, {})
         self.assertNotIn("original_systemd_cold_observation_passed", self.candidate["REPORT"])
 
-    def test_raw_parser_loop_and_existing_helpers_are_unchanged(self):
+    def test_raw_parser_loop_and_non_json_helpers_are_unchanged(self):
         a = {n.name: n for n in ast.parse(BASE.read_text()).body if isinstance(n, ast.FunctionDef)}
         b = {n.name: n for n in ast.parse(CANDIDATE.read_text()).body if isinstance(n, ast.FunctionDef)}
         self.assertEqual(set(b) - set(a), {"validate_fixed_nsfs_records", "validate_original_server_metadata"})
-        for name in ("need", "unique_json"):
+        for name in ("need",):
             self.assertEqual(ast.dump(a[name]), ast.dump(b[name]))
         for pick in (lambda f: f.body[0], lambda f: next(n for n in f.body if isinstance(n, ast.For))):
             self.assertEqual(ast.dump(pick(a["parse_component_serial"])), ast.dump(pick(b["parse_component_serial"])))

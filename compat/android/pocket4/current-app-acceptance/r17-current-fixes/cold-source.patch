@@ -1,6 +1,27 @@
 --- a/controller.py
 +++ b/controller.py
-@@ -585,9 +585,40 @@
+@@ -141,13 +141,19 @@
+ 
+ 
+ def unique_json(raw):
++    def finite_float(token):
++        value = float(token)
++        if not float('-inf') < value < float('inf'):
++            raise ValueError('nonfinite JSON')
++        return value
++
+     def pairs(items):
+         value = {}
+         for key, item in items:
+             need(key not in value, 'duplicate JSON field')
+             value[key] = item
+         return value
+-    return json.loads(raw, object_pairs_hook=pairs,
++    return json.loads(raw, object_pairs_hook=pairs, parse_float=finite_float,
+                       parse_constant=lambda value: (_ for _ in ()).throw(ValueError('nonfinite JSON')))
+ 
+ def validate_bundle(bundle):
+@@ -585,9 +591,40 @@
           'same actual held API mount generations before load, before original exec and through real manager observation')
  
  
@@ -42,7 +63,7 @@
              'P4_SYSTEMD_GUEST_FINAL', 'P4_SYSTEMD_HANDOFF_ERROR', 'P4_SYSTEMD_OBSERVER_ERROR')
      rows = {tag: [] for tag in tags}; original = []; cold_order = []; cold_started = False
      first_policy_rows = []; nsfs_rows = []; full_order = []; cold_observation_order = []; api_preparation_rows = []
-@@ -647,23 +678,17 @@
+@@ -647,23 +684,17 @@
      need(len(nsfs_rows) == 4 and cold_observation_order == [
           'P4_NSFS_FIXED_QUERY', 'P4_NSFS_FIXED_QUERY', 'P4_SYSTEMD_BEFORE_EXEC',
           'P4_SYSTEMD_OBSERVER_STARTED', 'P4_NSFS_FIXED_QUERY', 'P4_NSFS_FIXED_QUERY',

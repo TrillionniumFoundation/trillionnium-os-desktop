@@ -8,13 +8,19 @@ def need(value, message):
 
 
 def unique_json(raw):
+    def finite_float(token):
+        value = float(token)
+        if not float('-inf') < value < float('inf'):
+            raise ValueError('nonfinite JSON')
+        return value
+
     def pairs(items):
         value = {}
         for key, item in items:
             need(key not in value, 'duplicate JSON field')
             value[key] = item
         return value
-    return json.loads(raw, object_pairs_hook=pairs,
+    return json.loads(raw, object_pairs_hook=pairs, parse_float=finite_float,
                       parse_constant=lambda value: (_ for _ in ()).throw(ValueError('nonfinite JSON')))
 
 
