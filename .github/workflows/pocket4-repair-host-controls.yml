@@ -25,7 +25,6 @@ jobs:
     timeout-minutes: 15
     env:
       CARGO_BUILD_JOBS: '1'
-      CARGO_TARGET_DIR: ${{ runner.temp }}/pocket4-repair-target
       PYTHONDONTWRITEBYTECODE: '1'
     steps:
       - uses: actions/checkout@v4
@@ -33,14 +32,15 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Report actual host tools
         run: |
-          python3 --version
+          echo "CARGO_TARGET_DIR=$RUNNER_TEMP/pocket4-repair-target" >> "$GITHUB_ENV"
+          /usr/bin/python3.12 --version
           cc --version
           rustc -Vv
           cargo -Vv
       - name: Full carrier source and public core regressions
-        run: python3 -I -B compat/android/pocket4/current-full-build-carrier/tests/run_core.py
+        run: /usr/bin/python3.12 -I -B compat/android/pocket4/current-full-build-carrier/tests/run_core.py
       - name: Cold-controller observation regressions
-        run: python3 -I -B compat/android/pocket4/current-cold-observation/test_observation.py
+        run: /usr/bin/python3.12 -I -B compat/android/pocket4/current-cold-observation/test_observation.py
       - name: Firefox resolved-component regression controls
         run: cargo test --locked --manifest-path compat/android/pocket4/current-app-acceptance/firefox-component/Cargo.toml -- --test-threads=1
       - name: Browser action contract formatting
