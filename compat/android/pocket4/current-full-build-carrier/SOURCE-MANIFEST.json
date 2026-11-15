@@ -1,4 +1,6 @@
 {
+  "base_frozen_candidate_manifest_sha256": "0f176f3dff8c62f6d4dff893dcca047461de7804ff4d72165a0c73bfe5bfbe7c",
+  "base_private_regression_test_cases": 57,
   "execution_authorized": false,
   "files": {
     "src/PRODUCER-SPEC.json": {
@@ -26,8 +28,8 @@
       "sha256": "4468782235aa5a1c0f096640e8e01d1cf72dbd8d6db40da3124b1c9222900a1b"
     },
     "src/elf_closure.py": {
-      "bytes": 11255,
-      "sha256": "5989f0f1e9f03422e918b0ce629d17e97bd0b1ab992407099c42fc1a3e01d061"
+      "bytes": 11910,
+      "sha256": "2109efc824d84a70cd36316438112cb7dbd06879c8c86452875842fc7dfea0a2"
     },
     "src/full_controller.py": {
       "bytes": 32118,
@@ -94,12 +96,12 @@
       "sha256": "9f240a12f77a7cb4d1c14f77ba9a4b1177c157535234b8723562b8f7f6e540ec"
     }
   },
-  "frozen_candidate_manifest_sha256": "0f176f3dff8c62f6d4dff893dcca047461de7804ff4d72165a0c73bfe5bfbe7c",
-  "private_regression_test_cases": 57,
   "production_ready": false,
-  "public_core_test_cases": 44,
+  "public_core_test_cases": 48,
+  "review_rationale": "Reject DT_FILTER, DT_AUXILIARY, DT_AUDIT and DT_DEPAUDIT before claiming a complete static dependency closure; preserve source-only execution gate and producer pins.",
   "runtime_qualified": false,
   "schema": "p4-full-carrier-public-source-v1",
   "source_only": true,
+  "source_revision": "reject-unmodeled-ELF-load-directives-v1",
   "upstream_producer_commit": "9ecce4f94dec80500c05322106907e48a0668b05"
 }

@@ -9,7 +9,7 @@ import sys
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-EXPECTED_CASES = 44
+EXPECTED_CASES = 48
 
 
 def main():

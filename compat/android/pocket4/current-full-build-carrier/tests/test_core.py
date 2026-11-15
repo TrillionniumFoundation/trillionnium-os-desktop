@@ -276,6 +276,40 @@ class ElfDependencies(unittest.TestCase):
         (self.out / 'host/linux-x86/lib64/libleaf.so').unlink()
         with self.assertRaisesRegex(RuntimeError, 'unresolved actual DT_NEEDED'): self.capture()
 
+    def reject_unmodeled_loader_directive(self, option, tag_name):
+        # An actual linker emits a load directive in a transitive leaf with no
+        # DT_NEEDED entries. The absent object is invisible to NEEDED traversal.
+        # Do not execute this fixture or use ldd: parser/capture rejection is the
+        # boundary under test, independently of this host's loader behavior.
+        leaf = self.out / 'host/linux-x86/lib64/libleaf.so'
+        missing = leaf.parent / 'libunretained.so'
+        self.assertFalse(missing.exists())
+        args = [shutil.which('cc'), '-fPIC', '-shared', '-nostdlib',
+                '-Wl,-soname,libleaf.so', '-Wl,--' + option + ',libunretained.so',
+                str(self.root / 'leaf.c'), '-o', str(leaf)]
+        subprocess.run(args, check=True, capture_output=True, timeout=15)
+        message = 'unsupported ELF load directive ' + tag_name
+        with self.assertRaisesRegex(RuntimeError, message):
+            elf.parse_elf(leaf.read_bytes())
+        with self.assertRaisesRegex(RuntimeError, message):
+            self.capture()
+        OBSERVATIONS.append({'kind': 'real_linker_unmodeled_load_directive',
+                             'option': option, 'dynamic_tag': tag_name,
+                             'argv': args, 'library_missing': not missing.exists(),
+                             'output_ELFs_executed': False})
+
+    def test_transitive_filter_directive_is_rejected(self):
+        self.reject_unmodeled_loader_directive('filter', 'DT_FILTER')
+
+    def test_transitive_auxiliary_directive_is_rejected(self):
+        self.reject_unmodeled_loader_directive('auxiliary', 'DT_AUXILIARY')
+
+    def test_transitive_audit_directive_is_rejected(self):
+        self.reject_unmodeled_loader_directive('audit', 'DT_AUDIT')
+
+    def test_transitive_depaudit_directive_is_rejected(self):
+        self.reject_unmodeled_loader_directive('depaudit', 'DT_DEPAUDIT')
+
     def test_missing_interpreter_binding_is_failure(self):
         with self.assertRaisesRegex(RuntimeError, 'interpreter'): elf.capture(self.ref, self.out)
 
