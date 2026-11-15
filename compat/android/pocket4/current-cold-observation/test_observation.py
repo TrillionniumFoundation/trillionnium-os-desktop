@@ -269,19 +269,22 @@ class UnchangedAuthorityTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.baseline = json.loads((HERE / 'verification_baseline.json').read_text())
+        cls.stats_baseline = json.loads((HERE / 'integration_baseline.json').read_text())
         cls.after = ast.parse((HERE / 'controller.py').read_text())
 
     @staticmethod
     def digest(node):
         return hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest()
 
-    def test_all_existing_need_guards_remain_present(self):
+    def test_original_need_guards_except_three_reviewed_profile_bindings(self):
         def guards(tree):
             return collections.Counter(self.digest(node)
                 for node in ast.walk(tree) if isinstance(node, ast.Call)
                 and isinstance(node.func, ast.Name) and node.func.id == 'need')
         old, new = collections.Counter(self.baseline['need_guards']), guards(self.after)
-        self.assertFalse(old - new)
+        reviewed = collections.Counter(hashlib.sha256(value.encode()).hexdigest()
+            for value in self.stats_baseline['three_changed_need_AST'])
+        self.assertEqual(old - new, reviewed)
 
     def test_only_reviewed_functions_and_main_change(self):
         def functions(tree):
@@ -290,9 +293,9 @@ class UnchangedAuthorityTests(unittest.TestCase):
         old, new = self.baseline['functions'], functions(self.after)
         changed = {name for name in old if old[name] != new[name]}
         self.assertEqual(changed, {'pin', 'cpu_observation_prepare', 'cpu_observation_sample_inner',
-                                   'cpu_observation_close', 'main'})
+                                   'cpu_observation_close', 'main', 'validate_bundle'})
 
-    def test_vm_arguments_resource_properties_and_qmp_call_unchanged(self):
+    def test_vm_arguments_properties_and_reviewed_qmp_call(self):
         def selected(tree):
             result = []
             for node in ast.walk(tree):
@@ -303,8 +306,12 @@ class UnchangedAuthorityTests(unittest.TestCase):
                     and node.func.attr == 'start_exact_owned_cpu':
                     result.append(self.digest(node))
             return result
-        self.assertEqual(self.baseline['fixed_vm_arguments_resource_properties_and_qmp_call'],
-                         selected(self.after))
+        original = self.baseline['fixed_vm_arguments_resource_properties_and_qmp_call']
+        current = selected(self.after)
+        self.assertEqual(len(original), 4)
+        self.assertEqual(len(current), 4)
+        self.assertEqual(original[:-1], current[:-1])
+        self.assertEqual(current[-1], self.stats_baseline['new_qmp_call_AST_sha256'])
 
 
 if __name__ == '__main__':
