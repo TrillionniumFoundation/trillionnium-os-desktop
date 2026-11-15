@@ -1,0 +1,235 @@
+name: Pocket4 native browser provider
+
+on:
+  pull_request:
+    paths:
+      - .github/workflows/pocket4-native-browser-provider.yml
+      - compat/android/pocket4/current-app-acceptance/browser-runtime-provider/**
+      - compat/android/pocket4/current-app-acceptance/browser-action-contract/**
+  push:
+    paths:
+      - .github/workflows/pocket4-native-browser-provider.yml
+      - compat/android/pocket4/current-app-acceptance/browser-runtime-provider/**
+      - compat/android/pocket4/current-app-acceptance/browser-action-contract/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pocket4-native-browser-provider-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  complete-native-source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      LC_ALL: C
+      CARGO_BUILD_JOBS: '1'
+      CARGO_INCREMENTAL: '0'
+      CARGO_PROFILE_DEV_DEBUG: '0'
+      CARGO_PROFILE_TEST_DEBUG: '0'
+      CARGO_TERM_COLOR: never
+      RUST_TEST_THREADS: '1'
+      WRAPPER_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      NATIVE_SHA: 9ecce4f94dec80500c05322106907e48a0668b05
+      NATIVE_TREE: 12fe22ce02be9759963835faa4e7a7d0a762ddc2
+    steps:
+      - name: Check out the exact wrapper head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: wrapper
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Check out the complete original native source
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          ref: 9ecce4f94dec80500c05322106907e48a0668b05
+          path: native
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Allocate one CPU and isolated build storage
+        id: resources
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C wrapper rev-parse HEAD)" = "$WRAPPER_SHA"
+          available=$(nproc)
+          test "$available" -ge 3
+          affinity=$(taskset -pc $$)
+          affinity=${affinity##*: }
+          cpu=${affinity%%[-,]*}
+          [[ "$cpu" =~ ^[0-9]+$ ]]
+          state=$(mktemp -d "$RUNNER_TEMP/p4-native-browser.XXXXXX")
+          mkdir "$state/evidence" "$state/cargo-home" "$state/target"
+          {
+            printf 'P4_STATE=%s\n' "$state"
+            printf 'P4_CPU=%s\n' "$cpu"
+            printf 'P4_PACKET=%s/wrapper/compat/android/pocket4/current-app-acceptance/browser-runtime-provider\n' "$GITHUB_WORKSPACE"
+            printf 'CARGO_HOME=%s/cargo-home\n' "$state"
+            printf 'CARGO_TARGET_DIR=%s/target\n' "$state"
+          } >> "$GITHUB_ENV"
+          printf 'evidence=%s/evidence\n' "$state" >> "$GITHUB_OUTPUT"
+          jq -n --argjson available "$available" --arg cpu "$cpu" --arg affinity "$affinity" \
+            '{logical_cpus_available:$available,compiler_cpu:$cpu,original_affinity:$affinity,cargo_jobs:1,minimum_other_logical_cpus:2}' \
+            > "$state/evidence/resources.json"
+
+      - name: Authenticate the base and assemble the exact candidate
+        shell: bash
+        working-directory: native
+        run: |
+          set -euo pipefail
+          logs="$P4_STATE/evidence"
+          printf '%s  %s\n' \
+            43b34431753ebd61027ff5a2c6991c3378c423a9bb56b08f2588b0743dad9bab "$P4_PACKET/BASE.json" \
+            74bef77cdc91295b51f7a94ccbcf287acc349c15af157183082b77a6c98b3a18 "$P4_PACKET/CANDIDATE.json" \
+            cd1bf3e8f57b46d3081039e908d95d2fcccb2ed2127a5d37cb1fe51f8b2a6f82 "$P4_PACKET/native-browser-provider.patch" \
+            | sha256sum --check --strict
+          jq -e --arg head "$NATIVE_SHA" --arg tree "$NATIVE_TREE" \
+            '.head == $head and .tree == $tree and .tracked_files == 2118 and (.native_files | length) == 8' \
+            "$P4_PACKET/BASE.json"
+          jq -e --arg head "$NATIVE_SHA" --arg tree "$NATIVE_TREE" \
+            '.base_head == $head and .base_tree == $tree and (.native_patch_files | length) == 9 and (.unchanged_contract_inputs | length) == 8' \
+            "$P4_PACKET/CANDIDATE.json"
+          test "$(git rev-parse HEAD)" = "$NATIVE_SHA"
+          test "$(git rev-parse 'HEAD^{tree}')" = "$NATIVE_TREE"
+          git ls-files -s -z > "$logs/base-membership.bin"
+          printf '%s  %s\n' "$(jq -r .tracked_membership_sha256 "$P4_PACKET/BASE.json")" "$logs/base-membership.bin" \
+            | sha256sum --check --strict
+          test "$(git ls-files | wc -l)" -eq 2118
+          git status --porcelain=v1 --untracked-files=all > "$logs/base-status.txt"
+          test ! -s "$logs/base-status.txt"
+          git ls-files --others > "$logs/base-untracked.txt"
+          test ! -s "$logs/base-untracked.txt"
+          jq -r '.native_files[] | [.path, (.bytes|tostring)] | @tsv' "$P4_PACKET/BASE.json" > "$logs/base-files.tsv"
+          while IFS=$'\t' read -r path bytes; do
+            test -f "$path" && test ! -L "$path"
+            test "$(stat -c %s "$path")" -eq "$bytes"
+          done < "$logs/base-files.tsv"
+          jq -r '.native_files[] | .sha256 + "  " + .path' "$P4_PACKET/BASE.json" | sha256sum --check --strict
+          jq -r '.unchanged_contract_inputs[] | .sha256 + "  " + .path' "$P4_PACKET/CANDIDATE.json" \
+            > "$logs/contract.sha256"
+          (cd "$GITHUB_WORKSPACE/wrapper" && sha256sum --check --strict "$logs/contract.sha256")
+          jq -r '.unchanged_contract_inputs[].path' "$P4_PACKET/CANDIDATE.json" > "$logs/contract-paths.txt"
+          while IFS= read -r path; do
+            test -f "$GITHUB_WORKSPACE/wrapper/$path" && test ! -L "$GITHUB_WORKSPACE/wrapper/$path"
+            test ! -e "$path" && test ! -L "$path"
+            install -D -m 644 "$GITHUB_WORKSPACE/wrapper/$path" "$path"
+          done < "$logs/contract-paths.txt"
+          git apply --check "$P4_PACKET/native-browser-provider.patch"
+          git apply "$P4_PACKET/native-browser-provider.patch"
+          jq -r '.native_patch_files[], .unchanged_contract_inputs[] | .sha256 + "  " + .path' \
+            "$P4_PACKET/CANDIDATE.json" > "$logs/candidate.sha256"
+          jq -r '.native_patch_files[], .unchanged_contract_inputs[] | [.path, (.bytes|tostring)] | @tsv' \
+            "$P4_PACKET/CANDIDATE.json" > "$logs/candidate-files.tsv"
+          jq -r '.native_patch_files[].path, .unchanged_contract_inputs[].path' "$P4_PACKET/CANDIDATE.json" \
+            | sort > "$logs/expected-changes.txt"
+          test "$(wc -l < "$logs/expected-changes.txt")" -eq 17
+          test "$(sort -u "$logs/expected-changes.txt" | wc -l)" -eq 17
+          sha256sum --check --strict "$logs/candidate.sha256"
+          while IFS=$'\t' read -r path bytes; do
+            test -f "$path" && test ! -L "$path"
+            test "$(stat -c %s "$path")" -eq "$bytes"
+            test "$(stat -c %a "$path")" = 644
+          done < "$logs/candidate-files.tsv"
+          { git -c core.filemode=true diff --name-only HEAD --; git ls-files --others; } | sort > "$logs/actual-changes-before.txt"
+          cmp "$logs/expected-changes.txt" "$logs/actual-changes-before.txt"
+          git ls-files -s -z > "$logs/candidate-index-before.bin"
+          cmp "$logs/base-membership.bin" "$logs/candidate-index-before.bin"
+          git diff --binary HEAD -- > "$logs/applied-native.diff"
+
+      - name: Install the fixed Rust toolchain and fetch locked dependencies
+        shell: bash
+        working-directory: native
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.93.0 --profile minimal
+          taskset -c "$P4_CPU" rustc +1.93.0 --version --verbose | tee "$P4_STATE/evidence/rustc-version.txt"
+          taskset -c "$P4_CPU" cargo +1.93.0 --version | tee "$P4_STATE/evidence/cargo-version.txt"
+          grep -Fx 'release: 1.93.0' "$P4_STATE/evidence/rustc-version.txt"
+          grep -Fx 'commit-hash: 254b59607d4417e9dffbc307138ae5c86280fe4c' "$P4_STATE/evidence/rustc-version.txt"
+          taskset -c "$P4_CPU" cargo +1.93.0 fetch --locked 2>&1 | tee "$P4_STATE/evidence/fetch.log"
+          sha256sum --check --strict "$P4_STATE/evidence/candidate.sha256"
+
+      - name: Run all 22 focused tests and check every supervisor target
+        shell: bash
+        working-directory: native
+        run: |
+          set -euo pipefail
+          logs="$P4_STATE/evidence"
+          run_group() {
+            label=$1 expected=$2 filter=$3
+            shift 3
+            taskset -c "$P4_CPU" cargo +1.93.0 test --locked --offline -j 1 -p droidloom-supervisor \
+              --lib "$filter" -- --test-threads=1 --format pretty --color never "$@" 2>&1 | tee "$logs/$label.log"
+            jq -Rse --arg label "$label" --argjson expected "$expected" '
+              split("\n") as $lines
+              | [$lines[] | select(startswith("test result:"))] as $summaries
+              | if ($summaries | length) != 1 then error("one completed test summary required") else . end
+              | ($summaries[0] | capture("^test result: (?<result>ok)\\. (?<passed>[0-9]+) passed; (?<failed>[0-9]+) failed; (?<ignored>[0-9]+) ignored; (?<measured>[0-9]+) measured; (?<filtered>[0-9]+) filtered out; finished in (?<seconds>[0-9.]+)s$")) as $summary
+              | [$lines[] | capture("^test (?<name>[A-Za-z0-9_:]+) \\.\\.\\. (?<status>.*)$")?] as $cases
+              | if ($summary.passed | tonumber) == $expected
+                  and $summary.failed == "0" and $summary.ignored == "0" and $summary.measured == "0"
+                  and ($cases | length) == $expected and all($cases[]; .status == "ok")
+                  and ([$cases[].name] | unique | length) == $expected
+                then {group:$label,passed:$expected,failed:0,ignored:0,names:[$cases[].name]}
+                else error("focused test count, identity or completion mismatch") end
+            ' "$logs/$label.log" > "$logs/$label.json"
+          }
+          run_group provider 8 browser_provider
+          run_group runtime-assets 10 production_mounts::runtime_assets::tests:: --skip browser_provider
+          run_group runtime-roles 1 production_runtime_roles_reject_extra_targets_and_mutated_existing_ids
+          run_group runtime-query 1 production_runtime_query_mount_requires_selected_fixed_readonly_tmpfs
+          run_group runtime-component 1 production_runtime_fixed_component_walk_rejects_actual_symlinks
+          run_group runtime-child 1 production_runtime_diagnostics_are_disjoint_from_previous_phases
+          jq -se '
+            [.[].names[]] as $names
+            | if length == 6 and ($names | length) == 22 and ($names | unique | length) == 22
+              then {distinct_focused_tests:22,groups:.}
+              else error("22 distinct completed focused tests required") end
+          ' "$logs/provider.json" "$logs/runtime-assets.json" "$logs/runtime-roles.json" \
+            "$logs/runtime-query.json" "$logs/runtime-component.json" "$logs/runtime-child.json" \
+            > "$logs/focused-tests.json"
+          taskset -c "$P4_CPU" cargo +1.93.0 check --locked --offline -j 1 -p droidloom-supervisor --all-targets \
+            2>&1 | tee "$logs/check-all-targets.log"
+
+      - name: Recheck all source identities and publish source-only qualification
+        shell: bash
+        working-directory: native
+        run: |
+          set -euo pipefail
+          logs="$P4_STATE/evidence"
+          test "$(git -C "$GITHUB_WORKSPACE/wrapper" rev-parse HEAD)" = "$WRAPPER_SHA"
+          test "$(git rev-parse HEAD)" = "$NATIVE_SHA"
+          test "$(git rev-parse 'HEAD^{tree}')" = "$NATIVE_TREE"
+          sha256sum --check --strict "$logs/candidate.sha256"
+          while IFS=$'\t' read -r path bytes; do
+            test -f "$path" && test ! -L "$path"
+            test "$(stat -c %s "$path")" -eq "$bytes"
+            test "$(stat -c %a "$path")" = 644
+          done < "$logs/candidate-files.tsv"
+          { git -c core.filemode=true diff --name-only HEAD --; git ls-files --others; } | sort > "$logs/actual-changes-after.txt"
+          cmp "$logs/expected-changes.txt" "$logs/actual-changes-after.txt"
+          git ls-files -s -z > "$logs/candidate-index-after.bin"
+          cmp "$logs/base-membership.bin" "$logs/candidate-index-after.bin"
+          jq -n --arg wrapper "$WRAPPER_SHA" --arg native "$NATIVE_SHA" --arg tree "$NATIVE_TREE" \
+            --slurpfile tests "$logs/focused-tests.json" \
+            '{schema:"p4-native-browser-provider-ci-v1",wrapper_head:$wrapper,native_head:$native,native_tree:$tree,
+              native_tracked_files:2118,verified_candidate_files:17,focused_tests:$tests[0],cargo_check_all_targets:true,
+              source_unchanged_after_build:true,source_only:true,production_ready:false,Android_starts:0,VM_launches:0}' \
+            > "$logs/qualification.json"
+          cat "$logs/qualification.json"
+
+      - name: Retain source checks and test logs
+        if: always() && steps.resources.outputs.evidence != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-browser-provider-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ steps.resources.outputs.evidence }}
+          retention-days: 7
+          if-no-files-found: error
