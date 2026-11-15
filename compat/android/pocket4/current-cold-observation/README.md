@@ -1,47 +1,133 @@
-# Cold VM observation candidate
+# Pocket4 cold-boot observation source
 
-This directory adds read-only diagnostics and rejects FIFO replacements without blocking in the reviewed R8 cold VM controller's regular-input and log opens. It is a source candidate for a newly admitted generation. The R8 soft lockup and long clocksource interval remain failed acceptance gates; this change has not run a VM or qualified Android, applications, or production readiness.
+The R8 guest reported a real 26-second soft lockup and a 37.8-second clocksource
+readout interval. These remain open runtime failures. Its existing evidence has
+no per-vCPU KVM I/O-exit counters. The candidate in this directory connects a
+finite two-counter observation to the existing cold controller so a newly
+admitted owner generation can measure that gap.
 
-## Required generation binding
+This is source with host regressions, not an admitted VM bundle. The paths and
+input identities still present in `controller.py` identify the original R8
+baseline and must not be reused as a new deployment namespace. No actual host
+KVM profile, distribution-source qualification, fresh storage/VM admission,
+Android boot or app acceptance is supplied here.
 
-The complete controller deliberately retains the original sealed bundle digest checks, original control lock, create-only paths, resource limits, and R8 generation constants. Do not execute it with the existing R8 bundle or reuse the R8 output namespace.
+## Behavior
 
-The current execution owner must incorporate the reviewed changes into a fresh generation, rebind the controller, native carrier and sealed input identities together, and complete the existing owner admission and create-only sealing workflow. The existing workflow supplies the fresh nonce. This source snapshot does not grant a new execution admission or bypass the original control lock.
+The original owned QMP connection authenticates the fixed private socket,
+kernel peer PID/UID/GID, original QEMU PIDFD and the controller's existing
+custody checks. It reads the original two-CPU inventory and binds each mapped
+TID to a held proc-directory identity and birth time. These bindings are checked
+again at request boundaries.
 
-An expected kernel export must match its exact reviewed compiler input and target kernel. A newly changed policy, including a browser policy change, needs its own complete export qualification. This diagnostic candidate does not select an expected export.
+Before the one original `cont`, the helper compares the complete returned KVM
+schema with an independently frozen profile, then records one counter baseline.
+Only `exits` and `io_exits` are requested, only for those two authenticated QOM
+paths. The profile must identify both as dimensionless, unscaled cumulative
+counters. Missing counters are errors. Values must be scalar unsigned 64-bit
+integers; booleans, replacement identities, duplicate entries and counter
+rollback are rejected.
 
-## Observations added
+The connection stays open through the original lifetime. Runtime queries join
+existing CPU/serial observation slots. A slot that would violate the rate limit
+is recorded as skipped, never filled with zero. Raw requests, replies and
+lifecycle events retain host wall/monotonic receipt boundaries. These boundaries
+do not synchronize the guest clock with the host clock.
 
-Each existing CPU sample now brackets its work with metadata observations of three held output files: the kernel console, QEMU stderr, and the COM2 component log. File descriptors are opened read-only with `O_NONBLOCK`, `O_NOFOLLOW`, and `O_CLOEXEC`. Each must identify the original regular, single-link inode. Samples retain the inode and ownership fields, size, mtime, ctime, and monotonic and wall-clock boundaries. Inode replacement, new hard links, truncation after an observed extent, and an extent above the existing serial limit fail the observer. A FIFO replacement is rejected without waiting for a writer or reading its content.
+The only added QMP commands are `query-stats-schemas` with `provider=kvm` and
+`query-stats` with the fixed vCPU paths and two names. There is no command to
+stop, restart, retry `cont`, mutate QOM, pass FDs or run arbitrary monitor text.
 
-The existing one-second minimum CPU sampling interval, 160-sample limit, and 64-task limit are unchanged. The observer reads metadata during execution; the existing final full-file collection and validation remain in place. No extra QMP command, transport change, output throttling, watchdog change, or scheduling/resource change is introduced.
+## Bounds and failure handling
 
-Task samples also expose the already captured `/proc/<tid>/stat` counters as `utime_ticks`, `stime_ticks`, and `guest_time_ticks`, with the actual host `SC_CLK_TCK`. Guest time is included in `utime`; adding it to `utime + stime` would double count. Adjusted task counters and guest accounting may temporarily differ, so raw values are preserved without clamping. Short-interval derived differences should be treated as accounting estimates, not precise execution traces.
+- The original 16,384-byte frame and 16-frame response limits remain.
+- All raw outgoing/incoming transcript bytes share a 524,288-byte ceiling.
+- Runtime requests use one absolute 250 ms monotonic deadline, clipped by the
+  existing owner deadline. Each socket operation uses its remaining time; frames
+  do not refresh the deadline. Host scheduling and callback work can add elapsed
+  time before an overrun is detected. The measured timeout regressions took
+  about 252.4 and 252.2 ms; this is not a hard real-time 250 ms guarantee.
+- At most one request is outstanding. The existing 160 observation-slot bound
+  and one-per-second rate limit remain; the VM and outer deadlines do not grow.
+- Every error ends the probe. The original owner retains teardown authority.
+  Cleanup attempts every owned descriptor even when one close reports an error.
 
-The controller records monotonic/wall-clock pairs around its existing QMP start call. The qualified QMP helper, its peer/owned-process checks, and its single `cont` operation are unchanged. These controller boundaries can be joined to the existing QMP `RESUME` event; they are not guest clock synchronization measurements.
+A legitimate `SHUTDOWN` notification can arrive while the QEMU process is
+still alive. It stops new counter requests but does not grant success. The
+helper keeps the original connection and waits for the controller's original
+PIDFD exit before collecting the remaining stream and requiring complete EOF.
+The controller still requires the original unit's successful exit and all
+complete guest results. A later `RESUME`, `STOP`, malformed event or incomplete
+stream is rejected. The source review found this ordering defect in the first
+candidate, and a real Unix-socket regression reproduced the failure before the
+fix.
 
-## Interpretation limits
+## Profile and owner integration
 
-Output extents can bracket when complete final log records first became observable. Cross-file metadata reads are not atomic, and sizes do not prove that a file's earlier bytes were unchanged between samples. Metadata does not replace the existing final complete-log hashes or any acceptance check. A sample remains bound to the original process and invocation; it is not authority over a newly discovered process.
+The new sealed input schema is
+`p4-systemd-cold-component-native-input-stats-v2`. It adds
+`qmp_stats_profile` and `qmp_stats_profile_sha256`; the latter is the SHA-256 of
+the profile's canonical JSON (`sort_keys=True`, compact separators,
+`ensure_ascii=True`, no NaN). The complete helper source has its own exact hash
+in `validate_bundle`.
 
-The additions do not capture KVM exit reasons or UART port counters. A correlation between COM2 growth and host CPU time is diagnostic evidence, not proof that UART I/O caused the kernel soft lockup. The original byte equality, security decisions, namespace, original systemd, lifecycle, resource, and critical-console gates remain unchanged. No runtime or production qualification follows from the local tests.
+The profile schema is `p4-kvm-two-counter-profile-v1` with these exact fields:
 
-## Regular-input and final-log failure handling
+| Field | Required binding |
+| --- | --- |
+| `qemu` | Complete installed binary `bytes` and `sha256`, plus exact greeting `package` |
+| `host` | Actual host `release`, `version` and `boot_id` |
+| `source_evidence` | SHA-256 pins for the reviewed QEMU distribution source, distribution patch set and host KVM counter definitions |
+| `expected_schema` | Complete exact `query-stats-schemas(provider=kvm)` return, independently reviewed before this run |
 
-The original `pin()` was reproduced blocking on a real FIFO with no writer. The independent reproduction child entered `pin()`, exceeded its outer two-second timeout, and was terminated and reaped. The updated read-only open adds `O_NONBLOCK`; the original regular-file, size, link, complete-byte, identity, and hash checks remain in place.
+The controller checks the actual installed QEMU bytes and host kernel/boot
+against the profile. The helper checks the greeting and returned schema. Hash
+syntax checks do not establish that a source audit happened: the owner must
+retain the identified source and review evidence. The fixture profile in the
+tests is explicitly synthetic and is not a profile for Pocket4.
 
-The three final-log synchronization call sites use a small `sync_regular_log()` helper. It opens read-only with `O_NONBLOCK`, `O_NOFOLLOW`, and `O_CLOEXEC`, checks the actual opened descriptor is a regular file before calling `fsync`, and always closes it in `finally`, including when `fsync` raises. The existing complete log and identity checks still follow the synchronization. A nonregular file or a synchronization error propagates as failure; it cannot qualify the observation.
+The profile must fit the original frame limit. If the actual same-generation
+schema cannot fit, this proposal must fail and be redesigned; it must not widen
+the original frame/resource gates automatically. Upstream QEMU v10.2.1 QAPI is
+a development reference, not proof of Ubuntu distribution patch identity.
 
-The reviewed native outer carrier still sets `RuntimeMaxSec=600`, `TimeoutStopSec=120`, and `KillMode=control-group`. These service-level limits do not make a blocking operation obey the controller's 15-second or 150-second Python deadlines. `O_NONBLOCK` prevents the demonstrated FIFO-open wait; it does not guarantee that regular-file storage I/O or `fsync` will never block. This directory does not claim that every existing I/O operation is nonblocking.
+Before use, the current owner must bind a fresh namespace, controller, helper,
+full input bundle, exact QEMU/host source profile, current source generation,
+original locks and unchanged resource admission. The original compiler policy
+A remains the load input. The separately verified export B may only be selected
+under its exact A-plus-kernel binding; this observer does not change that gate.
 
-## Verification
+## Source preservation and tests
 
-Run the self-contained local suite from the repository root:
+The PR303 public controller contains 272 `need` calls. This revision preserves
+269 of those ASTs exactly. The other three explicitly change the input key set,
+input schema version and exact helper-source hash. It adds three new controller
+checks for the host profile, installed QEMU bytes and metadata count. All 37
+other original functions remain identical. QEMU arguments, resource properties,
+owned retirement, guest policy parsing and critical-console rejection remain
+identical. This does not claim automatic inheritance of the older 262-call
+baseline's full qualification.
+
+Run with Python 3.12 on Linux:
 
 ```sh
-python3 -I -B compat/android/pocket4/current-cold-observation/test_observation.py
+python3 -I -B test_observation.py
+python3 -I -B test_integration.py
+python3 -I -B test_qmp_stats.py
 ```
 
-The 17 tests import the controller without calling its execution entry point. They exercise real temporary regular files, inode replacement, hard links, symlinks, truncation, output limits, and descriptor cleanup. The serial observer, `pin()`, and final-log helper each have a real FIFO-without-writer regression in an independent child process with an outer two-second timeout. Additional tests check complete regular-file contents and identity, rejection before any FIFO read or `fsync`, and actual descriptor closure after an injected `fsync` error. Accounting tests cover field positions, complex process names, and preservation of unadjusted counters. AST baseline checks verify preservation of all original `need()` guards, the fixed VM argument/resource settings, and the existing QMP start call.
+The socket tests must run as UID/GID 1000 because the production helper keeps
+that fixed identity requirement. CI explicitly runs just that suite under those
+numeric IDs. Tests use real Unix sockets, PIDFDs and proc descriptors with a
+fake QMP server. They never launch QEMU or execute a policy load. The final local
+evidence is 17 observation tests, 4 integration tests and 16 QMP test methods
+(including distinct hostile-frame cases). The first candidate's successful
+12-method run did not cover early shutdown; the subsequent failing reproduction
+is retained with the corrected regression.
 
-The minimal AST baseline was derived from the exact 98,797-byte original controller with SHA-256 `93f70fe04854339fad0740f64d2aa6bc3546e7eb64286edc4a20cef28a0953e5`. It permits the tests to run without shipping an old controller or private runtime evidence. `manifest.json` pins the complete current source, tests, baseline, and this document. The manifest itself is identified by the containing repository commit.
+Primary QAPI reference:
+<https://github.com/qemu/qemu/blob/v10.2.1/qapi/stats.json>.
+
+The next useful result is a real admitted generation's per-vCPU counter deltas
+correlated with COM2 growth and CPU accounting. Correlation alone will not prove
+UART IRQ starvation. Any actual soft lockup remains a hard failure.

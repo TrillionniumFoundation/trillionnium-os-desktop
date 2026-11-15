@@ -159,8 +159,8 @@ def unique_json(raw):
                       parse_constant=lambda value: (_ for _ in ()).throw(ValueError('nonfinite JSON')))
 
 def validate_bundle(bundle):
-    need(set(bundle) == {'schema', 'sealed', 'controller', 'native_nonce', 'admission', 'payloads', 'qmp_source'}, 'exact component bundle schema')
-    need(bundle['schema'] == 'p4-systemd-cold-component-native-input-v1' and bundle['sealed'] is True,
+    need(set(bundle) == {'schema', 'sealed', 'controller', 'native_nonce', 'admission', 'payloads', 'qmp_source', 'qmp_stats_profile', 'qmp_stats_profile_sha256'}, 'exact component bundle schema with independently frozen KVM profile')
+    need(bundle['schema'] == 'p4-systemd-cold-component-native-input-stats-v2' and bundle['sealed'] is True,
          'review-only template cannot dispatch; final input sealing required')
     need(re.fullmatch('[0-9a-f]{64}', bundle['native_nonce']), 'fixed native generation nonce')
     need(set(bundle['payloads']) == {'guest_init', 'policy', 'policy_export', 'apparmor', 'features', 'contract', 'systemd_public', 'systemd_manifest', 'observer_unit', 'observer_target', 'selinux_config', 'selinux_file_contexts'}, 'exact twelve public component input roles')
@@ -183,7 +183,10 @@ def validate_bundle(bundle):
              'exact original default-backend qualified two-file configuration: ' + role)
     need(set(bundle['controller']) == {'bytes', 'sha256'}, 'exact reviewed controller pin')
     need(hashlib.sha256(bundle['qmp_source'].encode()).hexdigest() ==
-         '9e76eff8b8f3f818985eb2dfa6a2357b56505d6e2bf2de3dfe0b5fa24ea4c676', 'reviewed original-custody QMP gate plus fixed read-only CPU mapping')
+         '821476d1d0af05097e3212e23d0ed04ab120f5be42bd2b2094497bdfdd31ecdd', 'reviewed original-custody QMP gate and bounded two-counter observation')
+    stats_module = type(sys)('_p4_validate_stats_profile')
+    exec(compile(bundle['qmp_source'], 'authenticated_owned_qmp_gate.py', 'exec'), stats_module.__dict__)
+    stats_module.validate_profile(bundle['qmp_stats_profile'], bundle['qmp_stats_profile_sha256'])
     admission = bundle['admission']
     need(set(admission) == {'boot_id', 'kernel', 'canonical_bytes', 'canonical_sha256'}, 'explicit current host admission')
     need(type(admission['canonical_bytes']) is int and admission['canonical_bytes'] > 0 and
@@ -1178,13 +1181,16 @@ def main():
               'native_nonce': bundle['native_nonce'], 'started_ns': time.time_ns(),
               'original_kernel_control_lock': {'path': str(lockpath), 'identity': lockid}}
     originals = []; REPORT['public_inputs_before'] = originals
-    before = None; disk = None; disk_ref = None; outer = None
+    before = None; disk = None; disk_ref = None; outer = None; stats_session = None
     try:
         before = host_snapshot(); REPORT['host_before'] = before
         admission = bundle['admission']
         need(before['canonical']['bytes'] == admission['canonical_bytes'] and
              before['canonical']['sha256'] == admission['canonical_sha256'], 'exact reviewed fresh CURRENT snapshot')
         need(before['boot_id'] == admission['boot_id'] and before['kernel'] == admission['kernel'], 'same selected Pocket4 host boot and kernel')
+        stats_profile = bundle['qmp_stats_profile']
+        need(stats_profile['host'] == {'release': os.uname().release, 'version': os.uname().version, 'boot_id': before['boot_id']},
+             'same explicitly reviewed KVM host kernel build and boot')
         need('selinux' not in before['active_lsm'].split(','), 'host SELinux remains inactive; only the new guest loads policy')
         REPORT['resources_before_preparation'] = resources()
         originals += [bundle_ref, controller_ref]
@@ -1233,6 +1239,8 @@ def main():
             need(ref['identity'][3] == 0, 'original installed public tool owner')
             originals.append(ref); tools[tool] = ref
         REPORT['host_tools'] = tools
+        need({k: tools['/usr/bin/qemu-system-x86_64'][k] for k in ('bytes', 'sha256')} ==
+             {k: stats_profile['qemu'][k] for k in ('bytes', 'sha256')}, 'same independently reviewed installed QEMU executable bytes')
         row = run('fixture-static-ELF-program-headers', ['/usr/bin/readelf', '-W', '-l', str(root / 'sbin/init')])
         programs = Path(row['stdout']['path']).read_text()
         row = run('fixture-static-ELF-dynamic', ['/usr/bin/readelf', '-W', '-d', str(root / 'sbin/init')])
@@ -1310,7 +1318,16 @@ def main():
         REPORT['QMP_controller_call_boundaries'] = {'before': {
             'monotonic_start_ns': time.monotonic_ns(), 'wall_time_ns': time.time_ns(),
             'monotonic_end_ns': time.monotonic_ns()}}
-        REPORT['QMP_CPU_start_gate'] = module.start_exact_owned_cpu(qmpdir / 'qmp.sock', BOUND_PID, PIDFD, live_original, lambda value: create(D / ('QMP-' + value['state'] + '.json'), value), cpu_observation_bind_qmp)
+        REPORT['QMP_stats_observation'] = {'profile_sha256': bundle['qmp_stats_profile_sha256'], 'records': [], 'runtime_qualified': False}
+        def stats_record(value):
+            records = REPORT['QMP_stats_observation']['records']
+            need(len(records) < 4096, 'bounded QMP observation metadata count')
+            records.append(value)
+            if value['state'] in ('QMP_PAUSED_CPU_QUERY_OBSERVED', 'QMP_CONT_REQUEST_COMMITTED_ONCE', 'QMP_CONT_ACKNOWLEDGED_ONCE'):
+                create(D / ('QMP-' + value['state'] + '.json'), value)
+        stats_session = module.start_exact_owned_cpu(qmpdir / 'qmp.sock', BOUND_PID, PIDFD, live_original,
+            stats_record, cpu_observation_bind_qmp, stats_profile, bundle['qmp_stats_profile_sha256'])
+        REPORT['QMP_CPU_start_gate'] = stats_session.start_result
         REPORT['QMP_controller_call_boundaries']['after'] = {
             'monotonic_start_ns': time.monotonic_ns(), 'wall_time_ns': time.time_ns(),
             'monotonic_end_ns': time.monotonic_ns()}
@@ -1327,11 +1344,24 @@ def main():
                 if POLL.poll(0): break
                 raise
             try:
+                stats_session.drain_events(deadline)
+                previous_samples = len(REPORT['actual_QEMU_cpu_samples'])
                 cpu_observation_sample('running')
+                if len(REPORT['actual_QEMU_cpu_samples']) != previous_samples:
+                    row = REPORT['actual_QEMU_cpu_samples'][-1]
+                    if stats_session.terminal_announced:
+                        stats_record({'state': 'QMP_STATS_SLOT_AFTER_SHUTDOWN', 'sample_index': previous_samples,
+                                      'original_PIDFD_exit_still_required': True})
+                    elif stats_session.last_sample_end_ns is None or time.monotonic_ns() - stats_session.last_sample_end_ns >= 1000000000:
+                        stats_session.sample({'sample_index': previous_samples, 'sample': row}, deadline)
+                    else:
+                        stats_record({'state': 'QMP_STATS_SLOT_SKIPPED_RATE_LIMIT', 'sample_index': previous_samples,
+                                      'missing_is_not_zero': True})
             except CpuObservationOriginalExited:
                 break
             need((D / 'qemu.stdout').stat().st_size + (D / 'qemu.stderr').stat().st_size + COMPONENT_LOG.stat().st_size <= SERIAL_LIMIT, 'bounded full component VM serial including public policy readback')
         REPORT['actual_QEMU_PIDFD_exit'] = True; unit = show_unit()
+        REPORT['QMP_stats_observation']['coverage'] = stats_session.finish()
         deadline = time.monotonic() + 5
         while unit.get('MainPID') != '0' and time.monotonic() < deadline: unit = show_unit()
         need(unit['InvocationID'] == INVOCATION and unit['MainPID'] == '0' and unit['Result'] == 'success' and unit['ExecMainCode'] == '1' and unit['ExecMainStatus'] == '0', 'actual owned QEMU exited0')
@@ -1350,6 +1380,9 @@ def main():
     except BaseException as error:
         REPORT['state'] = 'FAILED_NOT_QUALIFIED'; REPORT['errors'].append({'type': type(error).__name__, 'message': str(error), 'traceback': traceback.format_exc()})
     finally:
+        if stats_session is not None:
+            try: stats_session.close()
+            except BaseException as error: REPORT['errors'].append({'stage': 'QMP_stats_FD_close', 'message': repr(error)})
         try: stop_owned()
         except BaseException as error: REPORT['errors'].append({'stage': 'owned_VM_retirement', 'message': repr(error)})
         try: cpu_observation_close()

@@ -1,0 +1,35 @@
+name: Pocket4 cold KVM observation
+
+on:
+  push:
+    paths:
+      - compat/android/pocket4/current-cold-observation/**
+      - .github/workflows/pocket4-cold-kvm-observation.yml
+  pull_request:
+    paths:
+      - compat/android/pocket4/current-cold-observation/**
+      - .github/workflows/pocket4-cold-kvm-observation.yml
+
+permissions:
+  contents: read
+
+jobs:
+  cold-kvm-observation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify preserved controller gates
+        run: |
+          python -I -B compat/android/pocket4/current-cold-observation/test_integration.py
+          python -I -B compat/android/pocket4/current-cold-observation/test_observation.py
+      - name: Exercise actual Unix socket and PIDFD failures
+        run: |
+          p4_test_root="$(mktemp -d)"
+          trap 'rm -rf -- "$p4_test_root"' EXIT
+          chmod 0755 "$p4_test_root"
+          install -m 0644 compat/android/pocket4/current-cold-observation/owned_qmp_gate.py compat/android/pocket4/current-cold-observation/test_qmp_stats.py "$p4_test_root/"
+          sudo -u '#1000' -g '#1000' -- "$(command -v python)" -I -B "$p4_test_root/test_qmp_stats.py"

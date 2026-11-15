@@ -1,77 +1,104 @@
 {
-  "base_controller": {
-    "bytes": 98797,
-    "sha256": "93f70fe04854339fad0740f64d2aa6bc3546e7eb64286edc4a20cef28a0953e5"
-  },
-  "execution_admission": {
-    "fresh_controller_carrier_bundle_hash_binding_required": true,
-    "new_generation_required": true,
-    "original_R8_bundle_must_not_be_reused": true,
-    "original_lock_and_create_only_namespace_guards_preserved": true,
-    "original_sealed_bundle_guards_preserved": true,
-    "owner_admission_required": true
+  "base_public_controller_sha256": "e0e7646a150ca5e274cb401f60cf2af720f4d526149ed8f340b717d3e110de8e",
+  "controller_preservation": {
+    "QEMU_arguments_resource_properties_critical_regex_unchanged": true,
+    "candidate_need_calls": 275,
+    "changed_binding_guards": [
+      "sealed bundle key set",
+      "input schema version",
+      "exact QMP helper SHA"
+    ],
+    "old_guest_policy_and_retirement_functions_unchanged": true,
+    "old_need_calls": 272,
+    "unchanged_need_AST": 269,
+    "unchanged_original_functions": 37
   },
   "files": {
     "README.md": {
-      "bytes": 6745,
-      "sha256": "e095f000309a02a67d79aa3807a022e971746b8b0fab3a7bdc179d58a64ac36b"
+      "bytes": 7365,
+      "sha256": "c32f42b530f054ca5445120d2bff13f93c213a6e4b3c72857b4f573ae1335829"
     },
     "controller.py": {
-      "bytes": 103287,
-      "sha256": "e0e7646a150ca5e274cb401f60cf2af720f4d526149ed8f340b717d3e110de8e"
+      "bytes": 106024,
+      "sha256": "73723b3f139d12ade0b98f013aee7b1f8119e1d630729506c048f7c6192bc1bf"
+    },
+    "integration_baseline.json": {
+      "bytes": 193096,
+      "sha256": "457ee4b59b7e3fd2e3bff8ad5785858064c217b0976e899f9f0c67e8b2df2d1f"
+    },
+    "owned_qmp_gate.py": {
+      "bytes": 28398,
+      "sha256": "821476d1d0af05097e3212e23d0ed04ab120f5be42bd2b2094497bdfdd31ecdd"
+    },
+    "test_integration.py": {
+      "bytes": 2362,
+      "sha256": "f4c2b4a214562dbb4fff5324596d4979d4b3a1577f7615eb82be9fd2fe2af100"
     },
     "test_observation.py": {
-      "bytes": 13657,
-      "sha256": "44cb4b02588ef85c87491b8d3251897d739bf042486a6c3102c0a22c9c0e454f"
+      "bytes": 14150,
+      "sha256": "ebec7737644dce104d3dfc1076355bdd9c21f412759da0c13019c74cfbaa63b0"
+    },
+    "test_qmp_stats.py": {
+      "bytes": 17342,
+      "sha256": "4ad6545d75ce377ad224a466529357f2e6536d5f3069a9c42f06019ffe3a72e2"
     },
     "verification_baseline.json": {
       "bytes": 23512,
       "sha256": "75e3e2051ba90c4b5a622a73faf1c5abd865ee74d2b29bc36c32cb526a01692f"
     }
   },
-  "local_verification": {
-    "FIFO_child_outer_timeout_seconds": 2,
-    "VMs_started": 0,
-    "actual_exit_code": 0,
-    "command": "python3 -I -B compat/android/pocket4/current-cold-observation/test_observation.py",
-    "passed": 17,
-    "tests": 17
+  "host_validation": {
+    "actual_QEMU_VM_launches": 0,
+    "latest_timeout_elapsed_ns": [
+      252378101,
+      252230201
+    ],
+    "observation_tests": 17,
+    "prior_shutdown_race_failed_reproduction_retained_privately": true,
+    "real_unix_socket_pidfd_test_methods": 16,
+    "source_integration_tests": 4,
+    "test_server_is_fake_QMP": true
   },
-  "original_frozen_R8_paths_in_source_are_provenance_not_deployment_targets": true,
-  "original_pin_reproduction": {
-    "base_sha256": "93f70fe04854339fad0740f64d2aa6bc3546e7eb64286edc4a20cef28a0953e5",
-    "child_entered_pin_then_exceeded_outer_two_second_timeout": true,
-    "fixed_pin_regression_completed_within_two_second_outer_timeout": true,
-    "owned_child_terminated_and_reaped": true,
-    "real_FIFO_without_writer": true
+  "observation": {
+    "counter_names": [
+      "exits",
+      "io_exits"
+    ],
+    "deadline_is_not_a_hard_realtime_scheduler_guarantee": true,
+    "frame_bytes": 16384,
+    "frames_per_request": 16,
+    "maximum_runtime_samples": 160,
+    "new_commands": [
+      "query-stats-schemas",
+      "query-stats"
+    ],
+    "new_cont_retries": 0,
+    "provider": "kvm",
+    "runtime_query_absolute_deadline_ns": 250000000,
+    "same_authenticated_connection_held_until_original_exit": true,
+    "target": "vcpu",
+    "total_raw_transcript_bytes": 524288,
+    "vcpus": 2
   },
+  "owner_requirements": [
+    "independently reviewed same-generation QEMU distribution source/patchset and host KVM counter definitions",
+    "complete frozen actual schema/profile within original frame budget",
+    "actual binary and host-kernel/boot identity",
+    "fresh source/carrier/bundle/namespace binding and original locks/resource admission",
+    "complete guest/runtime qualification without changing any critical-console failure"
+  ],
   "qualification": {
-    "KVM_exit_cause_proven": false,
+    "Android_starts": 0,
+    "accepted_apps": 0,
+    "actual_profile_available": false,
     "critical_console_blocker_closed": false,
-    "original_R8_failure_preserved": true,
+    "new_VM_starts": 0,
     "production_ready": false,
-    "runtime_qualified": false
-  },
-  "regular_input_and_log_opens": {
-    "all_storage_IO_nonblocking_claim": false,
-    "existing_outer_KillMode": "control-group",
-    "existing_outer_RuntimeMaxSec": 600,
-    "existing_outer_TimeoutStopSec": 120,
-    "fsync_failure_always_closes_descriptor": true,
-    "nonregular_descriptor_rejected_before_fsync": true,
-    "pin_readonly_open_adds_O_NONBLOCK": true,
-    "three_final_log_sync_call_sites_use_regular_descriptor_helper": true,
-    "whole_existing_need_guards_preserved": true
+    "required_apps": 42,
+    "runtime_qualified": false,
+    "softlockup_cause_proven": false
   },
   "repository_path": "compat/android/pocket4/current-cold-observation",
-  "schema": "p4-cold-observation-public-source-v2",
-  "source_changes": [
-    "same-generation held serial output metadata before and after existing CPU samples",
-    "explicit proc stat CPU accounting fields and SC_CLK_TCK",
-    "dual-clock boundaries around unchanged owned QMP helper call",
-    "nonblocking new serial metadata opens with FIFO regression",
-    "nonblocking existing pin read-only open, preserving complete regular-file and identity checks",
-    "three existing log sync opens use regular-type check before fsync and unconditional finally close"
-  ],
-  "state": "SOURCE_FIFO_FIX_AND_DIAGNOSTIC_CANDIDATE_ONLY"
+  "schema": "p4-cold-kvm-observation-public-source-v3",
+  "state": "SOURCE_INTEGRATION_WITH_HOST_REGRESSIONS_NOT_RUNTIME_ADMITTED"
 }
