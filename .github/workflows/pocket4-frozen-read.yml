@@ -27,10 +27,10 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           path: packet-source
-      - name: Check out the complete original native source
+      - name: Check out the complete current native source
         uses: actions/checkout@v4
         with:
-          ref: 9ecce4f94dec80500c05322106907e48a0668b05
+          ref: b2a0e4eb9eea33fec219049975b413877fed3f59
           path: native-source
       - name: Install the fixed Rust toolchain
         run: rustup toolchain install 1.93.0 --profile minimal
@@ -49,37 +49,61 @@ jobs:
               stream.write('CARGO_TARGET_DIR=' + os.environ['RUNNER_TEMP'] + '/p4-frozen-native-target\n')
           print({'allowed_cpus': allowed, 'compiler_cpus': compiler_cpus})
           PY
-      - name: Verify complete source identity and apply the three-file patch
+      - name: Verify all current Git blobs and apply the three-file patch
         run: |
-          python3 -B packet-source/compat/android/pocket4/current-app-acceptance/frozen-read/host-regression/apply_native_patch.py --native-root native-source
-      - name: Compile the complete application crate and require ten native release tests
+          python3 -B packet-source/compat/android/pocket4/current-app-acceptance/frozen-read/host-regression/apply_native_patch.py \
+            --native-root native-source --output "$RUNNER_TEMP/p4-native-before-tests.json"
+      - name: Run the fourteen native release tests
         run: |
           set -o pipefail
-          taskset --cpu-list "$P4_COMPILER_CPUS" cargo +1.93.0 test --locked --manifest-path native-source/Cargo.toml -p droidloom-applications --lib release::tests:: -- --test-threads=1 2>&1 | tee "$RUNNER_TEMP/p4-native-release-tests.log"
+          taskset --cpu-list "$P4_COMPILER_CPUS" cargo +1.93.0 test --locked \
+            --manifest-path native-source/Cargo.toml -p droidloom-applications --lib \
+            release::tests:: -- --test-threads=1 2>&1 | tee "$RUNNER_TEMP/p4-native-release-tests.log"
           python3 - <<'PY'
-          import os
+          import hashlib, json, os, re
           from pathlib import Path
-          text = (Path(os.environ['RUNNER_TEMP']) / 'p4-native-release-tests.log').read_text()
-          if 'test result: ok. 10 passed; 0 failed; 0 ignored' not in text:
-              raise RuntimeError('exactly ten native release tests must pass; zero tests cannot qualify')
+          packet = Path('packet-source/compat/android/pocket4/current-app-acceptance/frozen-read')
+          manifest = json.loads((packet / 'source-manifest.json').read_text())
+          log = Path(os.environ['RUNNER_TEMP']) / 'p4-native-release-tests.log'
+          text = log.read_text()
+          observed = re.findall(r'^test (release::tests::\S+) \.\.\. ok$', text, re.M)
+          expected = manifest['test_contract']['native_release_tests']
+          if len(observed) != 14 or len(set(observed)) != 14 or set(observed) != set(expected):
+              raise RuntimeError('the fourteen named native release tests must all pass exactly once')
+          if len(re.findall(r'^test result: ok\. 14 passed; 0 failed; 0 ignored;', text, re.M)) != 1:
+              raise RuntimeError('exact native release summary missing')
+          result = {'passed': observed, 'count': len(observed), 'ignored': 0,
+                    'log_sha256': hashlib.sha256(log.read_bytes()).hexdigest(),
+                    'compiled_actual_native_crate': True,
+                    'executed_test_filter': 'release::tests::', 'Android_actions': 0,
+                    'runtime_qualified': False, 'production_ready': False}
+          (Path(os.environ['RUNNER_TEMP']) / 'p4-native-release-tests.json').write_text(json.dumps(result, indent=2) + '\n')
+          print(json.dumps(result))
           PY
-      - name: Require the original FIFO failure and candidate rejection
+      - name: Check all targets of the actual application crate
         run: |
-          packet=packet-source/compat/android/pocket4/current-app-acceptance/frozen-read
-          python3 -B "$packet/host-regression/run_regression.py" \
-            --original "$packet/fixtures/release-before.rs" \
-            --candidate "$packet/candidate-release.rs" \
-            --output "$RUNNER_TEMP/p4-frozen-read-result.json" \
-            --allow-registry-fetch
-      - name: Preserve regression evidence
+          set -o pipefail
+          taskset --cpu-list "$P4_COMPILER_CPUS" cargo +1.93.0 check --locked --offline \
+            --manifest-path native-source/Cargo.toml -p droidloom-applications --all-targets \
+            2>&1 | tee "$RUNNER_TEMP/p4-native-all-targets.log"
+      - name: Verify source and lockfile after the native commands
+        run: |
+          python3 -B packet-source/compat/android/pocket4/current-app-acceptance/frozen-read/host-regression/apply_native_patch.py \
+            --native-root native-source --verify-applied --output "$RUNNER_TEMP/p4-native-after-tests.json"
+      - name: Preserve ordinary source verification evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pocket4-frozen-input-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
+            ${{ runner.temp }}/p4-native-before-tests.json
+            ${{ runner.temp }}/p4-native-after-tests.json
+            ${{ runner.temp }}/p4-native-release-tests.json
             ${{ runner.temp }}/p4-native-release-tests.log
-            ${{ runner.temp }}/p4-frozen-read-result.json
+            ${{ runner.temp }}/p4-native-all-targets.log
           if-no-files-found: warn
       - name: Remove this job's native build outputs
         if: always()
-        run: rm -rf -- "$RUNNER_TEMP/p4-frozen-native-target"
+        run: |
+          rm -rf -- "$RUNNER_TEMP/p4-frozen-native-target"
+          test ! -e "$RUNNER_TEMP/p4-frozen-native-target"

@@ -1,0 +1,194 @@
+--- a/controller.py
++++ b/controller.py
+@@ -585,9 +585,40 @@
+          'same actual held API mount generations before load, before original exec and through real manager observation')
+ 
+ 
++def validate_fixed_nsfs_records(nsfs_rows):
++    need(type(nsfs_rows) is list and len(nsfs_rows) == 4, 'four complete fixed namespace records')
++    expected_ns = [('/proc/self/ns/user', 0x10000000, 3), ('/proc/self/ns/pid', 0x20000000, 4)] * 2
++    negative = [{'command':c, 'return':-1, 'errno':errno.EACCES} for c in (0xb701, 0xb702, 0xb704, 0xb603)]
++    for row, (path, kind, ident) in zip(nsfs_rows, expected_ns):
++        need(type(row) is dict and set(row) == {'path','context','inode','actual_type','actual_id','denied','production_ready'}
++             and row['path'] == path and row['actual_type'] == kind and row['actual_id'] == ident
++             and row['context'] in ('u:object_r:droidloom_nsfs:s0', 'u:object_r:droidloom_nsfs:s0\0')
++             and row['denied'] == negative and row['production_ready'] is False,
++             'actual fixed namespace label, positive type/ID and four exact EACCES controls')
++        inode = row['inode']
++        need(type(inode) is list and len(inode) == 9 and all(type(n) is int and 0 <= n <= 0xffffffffffffffff for n in inode)
++             and stat.S_ISREG(inode[2]), 'actual nine-field namespace inode identity')
++    # Pre-exec descriptors are CLOEXEC. Across exec, retain the full observations
++    # but compare the stable nsfs object identity, not freshly materialized inode
++    # timestamps. The exact fixed type/ID, labels and denied ioctls remain bound.
++    stable = [dict(row, inode=row['inode'][:7]) for row in nsfs_rows]
++    need(stable[:2] == stable[2:], 'same fixed initial namespace object identity across original manager exec')
++
++
++def validate_original_server_metadata(metadata):
++    need(type(metadata) is dict and set(metadata) == {'node', 'expected_mode', 'peer_authenticated', 'label_mutations'}
++         and type(metadata['expected_mode']) is int and metadata['expected_mode'] == 0o700
++         and metadata['peer_authenticated'] is False and type(metadata['label_mutations']) is int
++         and metadata['label_mutations'] == 0, 'bounded unauthenticated original server metadata only')
++    node = metadata['node']
++    need(type(node) is list and len(node) == 9 and all(type(n) is int and 0 <= n <= 0xffffffffffffffff for n in node)
++         and node[2] == (stat.S_IFSOCK | 0o700) and node[3:6] == [0, 0, 1],
++         'actual root0700 original server socket identity before peer authentication')
++
++
+ def parse_component_serial(console, contract, payloads):
+     need(console.endswith('\n') and '\r' not in console, 'complete raw original-systemd component serial')
+-    tags = ('P4_SYSTEMD_BEFORE_EXEC', 'P4_SYSTEMD_SERVER_INODE', 'P4_SYSTEMD_OBSERVER_STARTED',
++    tags = ('P4_SYSTEMD_BEFORE_EXEC', 'P4_SYSTEMD_SERVER_METADATA', 'P4_SYSTEMD_SERVER_INODE', 'P4_SYSTEMD_OBSERVER_STARTED',
+             'P4_SYSTEMD_GUEST_FINAL', 'P4_SYSTEMD_HANDOFF_ERROR', 'P4_SYSTEMD_OBSERVER_ERROR')
+     rows = {tag: [] for tag in tags}; original = []; cold_order = []; cold_started = False
+     first_policy_rows = []; nsfs_rows = []; full_order = []; cold_observation_order = []; api_preparation_rows = []
+@@ -647,23 +678,17 @@
+     need(len(nsfs_rows) == 4 and cold_observation_order == [
+          'P4_NSFS_FIXED_QUERY', 'P4_NSFS_FIXED_QUERY', 'P4_SYSTEMD_BEFORE_EXEC',
+          'P4_SYSTEMD_OBSERVER_STARTED', 'P4_NSFS_FIXED_QUERY', 'P4_NSFS_FIXED_QUERY',
+-         'P4_SYSTEMD_SERVER_INODE', 'P4_SYSTEMD_GUEST_FINAL'], 'four actual NSFS observations bracket original systemd exec')
+-    expected_ns = [('/proc/self/ns/user', 0x10000000, 3), ('/proc/self/ns/pid', 0x20000000, 4)] * 2
+-    negative = [{'command':c, 'return':-1, 'errno':errno.EACCES} for c in (0xb701, 0xb702, 0xb704, 0xb603)]
+-    for row, (path, kind, ident) in zip(nsfs_rows, expected_ns):
+-        need(set(row) == {'path','context','inode','actual_type','actual_id','denied','production_ready'}
+-             and row['path'] == path and row['actual_type'] == kind and row['actual_id'] == ident
+-             and row['context'] in ('u:object_r:droidloom_nsfs:s0', 'u:object_r:droidloom_nsfs:s0\0')
+-             and row['denied'] == negative and row['production_ready'] is False,
+-             'actual fixed namespace label, positive type/ID and four exact EACCES controls')
+-        inode = row['inode']
+-        need(type(inode) is list and len(inode) == 9 and all(type(n) is int and 0 <= n <= 0xffffffffffffffff for n in inode)
+-             and stat.S_ISREG(inode[2]), 'actual nine-field namespace inode identity')
+-    need(nsfs_rows[:2] == nsfs_rows[2:], 'same held initial namespaces across original manager exec')
+-    need(cold_order == ['P4_SYSTEMD_BEFORE_EXEC', 'P4_SYSTEMD_OBSERVER_STARTED', 'P4_SYSTEMD_SERVER_INODE', 'P4_SYSTEMD_GUEST_FINAL'],
++         'P4_SYSTEMD_SERVER_METADATA', 'P4_SYSTEMD_SERVER_INODE', 'P4_SYSTEMD_GUEST_FINAL'],
++         'four actual NSFS observations bracket original systemd exec')
++    validate_fixed_nsfs_records(nsfs_rows)
++    need(cold_order == ['P4_SYSTEMD_BEFORE_EXEC', 'P4_SYSTEMD_OBSERVER_STARTED', 'P4_SYSTEMD_SERVER_METADATA',
++         'P4_SYSTEMD_SERVER_INODE', 'P4_SYSTEMD_GUEST_FINAL'],
+          'one complete actual original-systemd cold lifecycle; partial boot is not success')
+     before = rows['P4_SYSTEMD_BEFORE_EXEC'][0]; started = rows['P4_SYSTEMD_OBSERVER_STARTED'][0]
+     inode = rows['P4_SYSTEMD_SERVER_INODE'][0]; final = rows['P4_SYSTEMD_GUEST_FINAL'][0]
++    metadata = rows['P4_SYSTEMD_SERVER_METADATA'][0]
++    validate_original_server_metadata(metadata)
++    need(metadata['node'] == inode['node'], 'same recorded original socket node before validation and peer authentication')
+     need(before['actual_initial_namespaces'] == [row['inode'] for row in nsfs_rows[:2]],
+          'original handoff binds the actual pre-exec namespace records')
+     need(before['original_PID1'] == 1 and before['natural_NNP'] == 0 and before['production_ready'] is False and
+--- a/p4-systemd-observe.service
++++ b/p4-systemd-observe.service
+@@ -14,9 +14,7 @@
+ UMask=0077
+ NoNewPrivileges=yes
+ StandardInput=null
+-StandardOutput=tty
+-StandardError=tty
+-TTYPath=/dev/ttyS1
+-TTYReset=no
+-TTYVHangup=no
+-TTYVTDisallocate=no
++# The authenticated observer opens and validates COM2 itself. The manager
++# must not treat that raw record channel as a terminal or query its terminfo.
++StandardOutput=null
++StandardError=null
+--- a/src/systemd_cold.rs
++++ b/src/systemd_cold.rs
+@@ -613,6 +613,24 @@
+     }
+     Ok(())
+ }
++fn server_metadata(server_node: &[u64; 9]) -> Value {
++    // Observation only: retain the actual mode even when the next gate refuses it.
++    json!({"node":server_node,"expected_mode":0o700,
++        "peer_authenticated":false,"label_mutations":0})
++}
++fn validate_original_server_node(server_node: &[u64; 9]) -> R<()> {
++    // systemd 259.9 bus_init_private binds under WITH_UMASK(0077); the fixed
++    // Linux AF_UNIX implementation creates S_IFSOCK | (0777 & ~umask).
++    // R9 did not emit its actual mode. This is the source-derived expectation,
++    // not a retrospective claim about that failed guest or permission repair.
++    need(
++        server_node[2] == (libc::S_IFSOCK as u64 | 0o700)
++            && server_node[3] == 0
++            && server_node[4] == 0
++            && server_node[5] == 1,
++        "actual root0700 original server sock_file",
++    )
++}
+ fn observe_inner() -> R<Value> {
+     let until = Instant::now() + Duration::from_secs(7);
+     let before_policy = loaded()?;
+@@ -644,15 +662,8 @@
+     }
+     let server = open_at(directories.last().unwrap(), c"private", libc::O_PATH, false)?;
+     let server_node = node(&server)?;
+-    let m = io(server.metadata())?;
+-    need(
+-        m.file_type().is_socket()
+-            && m.uid() == 0
+-            && m.gid() == 0
+-            && m.nlink() == 1
+-            && m.mode() & 0o7777 == 0o600,
+-        "actual root0600 original server sock_file",
+-    )?;
++    emit("P4_SYSTEMD_SERVER_METADATA", server_metadata(&server_node));
++    validate_original_server_node(&server_node)?;
+     let mut fs: libc::statfs = unsafe { std::mem::zeroed() };
+     check(
+         unsafe { libc::fstatfs(server.as_raw_fd(), &mut fs) },
+@@ -852,3 +863,56 @@
+         std::io::Error::last_os_error()
+     ))
+ }
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    // These are metadata-only controls. They do not authenticate a live manager
++    // or construct a cold-boot, namespace, policy, or production witness.
++    fn socket_node() -> [u64; 9] {
++        [5, 23, libc::S_IFSOCK as u64 | 0o700, 0, 0, 1, 0, 100, 100]
++    }
++
++    #[test]
++    fn original_server_requires_exact_source_derived_private_mode() {
++        let original = socket_node();
++        assert!(validate_original_server_node(&original).is_ok());
++        for mode in [
++            0o600, 0o000, 0o500, 0o710, 0o701, 0o770, 0o777, 0o4700, 0o2700, 0o1700,
++        ] {
++            let mut changed = original;
++            changed[2] = libc::S_IFSOCK as u64 | mode;
++            assert!(validate_original_server_node(&changed).is_err());
++        }
++    }
++
++    #[test]
++    fn original_server_rejects_wrong_owner_kind_or_link_count() {
++        for (index, value) in [(3, 1000), (4, 1000), (5, 0), (5, 2)] {
++            let mut changed = socket_node();
++            changed[index] = value;
++            assert!(validate_original_server_node(&changed).is_err());
++        }
++        for kind in [libc::S_IFREG, libc::S_IFDIR, libc::S_IFLNK, libc::S_IFIFO] {
++            let mut changed = socket_node();
++            changed[2] = kind as u64 | 0o700;
++            assert!(validate_original_server_node(&changed).is_err());
++        }
++    }
++
++    #[test]
++    fn refused_server_metadata_retains_actual_node_without_authentication() {
++        let mut actual = socket_node();
++        actual[2] = libc::S_IFSOCK as u64 | 0o777;
++        actual[3] = 1000;
++        let observation = server_metadata(&actual);
++        assert_eq!(observation["node"], json!(actual));
++        assert_eq!(observation["expected_mode"], json!(0o700));
++        assert_eq!(observation["peer_authenticated"], json!(false));
++        assert_eq!(observation["label_mutations"], json!(0));
++        assert_eq!(observation.as_object().unwrap().len(), 4);
++        assert!(observation.to_string().len() < 512);
++        assert!(validate_original_server_node(&actual).is_err());
++    }
++}
