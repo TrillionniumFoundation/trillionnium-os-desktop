@@ -423,6 +423,17 @@ REQUIRED_FILES = (
     "compat/android/pocket4/current-app-acceptance/business/source/ihg_staging.py",
     "compat/android/pocket4/current-app-acceptance/business/source/timer_flow.py",
     "compat/android/pocket4/current-app-acceptance/business/test_source.py",
+    'compat/android/pocket4/runtime-current-source-r1/verify.py',
+    'compat/android/pocket4/runtime-current-source-r1/run_ci.py',
+    'compat/android/pocket4/runtime-current-source-r1/test_verifier.py',
+    'compat/android/pocket4/runtime-current-source-r1/test_runner.py',
+    'compat/android/pocket4/runtime-current-source-r1/prepare_ci.sh',
+    'compat/android/pocket4/runtime-current-source-r1/README.md',
+    'compat/android/pocket4/runtime-current-source-r1/FILES.sha256',
+    'compat/android/pocket4/runtime-current-source-r1/EXPECTED-TARGETS.json',
+    'compat/android/pocket4/runtime-current-source-r1/EXPECTED-CATALOG.json',
+    'compat/android/pocket4/runtime-current-source-r1/EXPECTED-BINS.json',
+    'compat/android/pocket4/runtime-current-source-r1/UPDATER-EXACT64.json',
 )
 EXECUTABLE_FILES = (
     "support/android/build_asterinas_abi.sh",
@@ -514,4 +525,5 @@ def main(argv=None) -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+
 
