@@ -183,33 +183,97 @@ def successful_cargo_stream(raw):
 
 
 def test_terminal(text, passed, ignored=(), filtered=None):
-    passed,ignored=set(passed),set(ignored)
-    need(not passed.intersection(ignored),'passed and ignored identities must be distinct')
-    records=[];running=[];summaries=[]
+    passed, ignored = set(passed), set(ignored)
+    need(not passed.intersection(ignored), 'passed and ignored identities must be distinct')
+    total = len(passed) + len(ignored)
+    # These two frozen updater tests run the same 465-case ELF inside fakeroot.
+    # Their child records are evidence of the parent's work, never extra credit.
+    image_case = 'image_policy::tests::repack_preserves_android_metadata_and_adbd'
+    staging_case = 'native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata'
+    tool_case = 'native_generation::tests::real_erofs_bundle_verifies_its_embedded_pair'
+    nested_cases = {image_case, staging_case}
+    tool_line = re.compile(
+        r'(?:mkfs\.erofs 1\.9\.4|Processing [^\r\n]+ \.\.\.|Build completed\.|------|'
+        r'Filesystem UUID: [0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}|'
+        r'Filesystem total blocks: [0-9]+ \(of [0-9]+-byte blocks\)|'
+        r'Filesystem total (?:inodes|metadata blocks): [0-9]+|'
+        r'Filesystem total deduplicated bytes \(of source files\): [0-9]+)')
+
+    def summary(line, expected_passed, expected_ignored, expected_filtered):
+        match = re.fullmatch(
+            r'test result: ok\. (\d+) passed; 0 failed; (\d+) ignored; 0 measured; '
+            r'(\d+) filtered out; finished in [0-9]+(?:\.[0-9]+)?s', line)
+        need(match is not None and int(match[1]) == expected_passed
+             and int(match[2]) == expected_ignored, 'successful Rust summary must equal every actual record')
+        need(expected_filtered is None or int(match[3]) == expected_filtered, 'unexpected Rust filter count')
+        return int(match[3])
+
+    records = {}
+
+    def record(name, status):
+        need(name not in records and ((status == 'ok' and name in passed)
+             or (status == 'ignored' and name in ignored)), 'unique exact Rust identity/status required')
+        records[name] = status
+
+    started = finished = False
+    pending = phase = outer_filtered = None
     for line in text.splitlines():
-        if line.startswith('test result:'):
-            summaries.append(line)
+        if not line:
+            continue
+        need(not finished, 'unexpected output after the complete parent Rust harness')
+        if line.startswith('running '):
+            if not started:
+                need(line == f'running {total} ' + ('test' if total == 1 else 'tests'),
+                     'exact parent Rust running count required')
+                started = True
+            else:
+                need(pending in nested_cases and phase == 'child-header' and line == 'running 1 test',
+                     'unknown, extra or misplaced nested Rust harness')
+                phase = 'child-record'
+        elif line.startswith('test result:'):
+            need(started, 'Rust summary before parent header')
+            if pending is not None:
+                need(pending in nested_cases and phase == 'child-summary', 'unclosed or extra nested Rust summary')
+                summary(line, 1, 0, 464)
+                phase = 'parent-status'
+            else:
+                outer_filtered = summary(line, len(passed), len(ignored), filtered)
+                need(set(records) == passed | ignored, 'parent summary precedes complete exact Rust records')
+                finished = True
         elif line.startswith('test '):
-            match=re.fullmatch(r'test (\S+) \.\.\. (ok|FAILED|ignored)(?:, (.+))?',line)
-            need(match is not None,'malformed Rust test record')
-            name,status,reason=match.groups()
-            need(reason is None or status=='ignored','unexpected test reason')
-            records.append((name,status))
-        elif line.startswith('running '):
-            need(re.fullmatch(r'running \d+ tests?',line),'malformed Rust running count')
-            running.append(line)
-    total=len(passed)+len(ignored)
-    need(len(records)==total and len({name for name,status in records})==total and
-         {name for name,status in records if status=='ok'}==passed and
-         {name for name,status in records if status=='ignored'}==ignored and
-         all(status in ('ok','ignored') for name,status in records),'complete exact Rust identities/statuses required')
-    need(running==[f'running {total} '+('test' if total==1 else 'tests')] and len(summaries)==1,
-         'exactly one complete Rust harness required')
-    match=re.fullmatch(r'test result: ok\. (\d+) passed; 0 failed; (\d+) ignored; 0 measured; (\d+) filtered out; finished in [0-9]+(?:\.[0-9]+)?s',summaries[0])
-    need(match is not None and int(match[1])==len(passed) and int(match[2])==len(ignored),
-         'successful Rust summary must equal every actual record')
-    need(filtered is None or int(match[3])==filtered,'unexpected Rust filter count')
-    return {'passed':sorted(passed),'ignored':sorted(ignored),'filtered':int(match[3])}
+            need(started, 'Rust record before parent header')
+            match = re.fullmatch(r'test (\S+) \.\.\. (.*)', line)
+            need(match is not None, 'malformed Rust test record')
+            name, tail = match.groups()
+            if pending is not None:
+                need(phase == 'child-record' and pending in nested_cases and name == pending and tail == 'ok',
+                     'nested Rust record must be exactly one successful same-name child')
+                phase = 'child-summary'
+                continue
+            status = re.fullmatch(r'(ok|FAILED|ignored)(?:, (.+))?', tail)
+            if status is not None:
+                need(status[2] is None or status[1] == 'ignored', 'unexpected test reason')
+                record(name, status[1])
+            else:
+                need(name in passed and name not in records, 'unknown or duplicate open parent Rust test')
+                if name in nested_cases and tail == '':
+                    need(type(filtered) is int and total + filtered == 465,
+                         'nested child must belong to the complete pinned updater catalog')
+                    pending, phase = name, 'child-header'
+                else:
+                    need(name == tool_case and tail == 'mkfs.erofs 1.9.4', 'unknown split Rust test record')
+                    pending, phase = name, 'tool-output'
+        elif line == 'ok':
+            need(pending is not None and phase in ('parent-status', 'tool-output'),
+                 'standalone status without a completed known parent operation')
+            record(pending, 'ok')
+            pending = phase = None
+        else:
+            need((phase == 'tool-output' or (pending == image_case and phase == 'child-record'))
+                 and tool_line.fullmatch(line) is not None, 'unexpected Rust or tool output')
+    need(started and finished and pending is None and set(records) == passed | ignored,
+         'exactly one complete parent Rust harness and all known children required')
+    return {'passed': sorted(passed), 'ignored': sorted(ignored), 'filtered': outer_filtered}
 
 
 CAPSULE = {'bytes': 7696708, 'sha256': '7ab244365184ef670c244b6a0ed75857c6f942897f3fc59c00e6375e76f51816'}
