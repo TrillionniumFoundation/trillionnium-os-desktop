@@ -1,0 +1,61 @@
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -450,6 +450,7 @@
+  "droidloom-cpu-placement",
+  "droidloom-supervisor",
+  "hex",
++ "libc",
+  "serde",
+  "serde_json",
+  "sha2",
+--- a/runtime/droidloom-applications/Cargo.toml
++++ b/runtime/droidloom-applications/Cargo.toml
+@@ -12,6 +12,7 @@
+ clap.workspace = true
+ droidloom-supervisor = { path = "../droidloom-supervisor" }
+ hex.workspace = true
++libc.workspace = true
+ serde.workspace = true
+ serde_json.workspace = true
+ sha2.workspace = true
+--- a/runtime/droidloom-applications/src/release.rs
++++ b/runtime/droidloom-applications/src/release.rs
+@@ -3,9 +3,9 @@
+ //! This checks declared evidence and its byte identity. It neither runs Android
+ //! tests nor authenticates the author or meaning of the supplied evidence.
+ use std::collections::{BTreeMap, BTreeSet};
+-use std::fs::{self, File};
++use std::fs::{self, OpenOptions};
+ use std::io::{self, Read};
+-use std::os::unix::fs::MetadataExt;
++use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+ use std::path::{Path, PathBuf};
+ 
+ use serde::{Deserialize, Serialize};
+@@ -178,8 +178,17 @@
+     if !named.file_type().is_file() || named.len() > limit {
+         return Err(invalid("input is not a bounded regular file"));
+     }
+-    let mut file = File::open(path)?;
++    // A pathname can change after metadata admission. Never let a replacement
++    // FIFO block open, and never follow a replacement final-component symlink.
++    // Validate the opened descriptor before issuing any read.
++    let mut file = OpenOptions::new()
++        .read(true)
++        .custom_flags(libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK)
++        .open(path)?;
+     let before = file.metadata()?;
++    if !before.file_type().is_file() || before.len() > limit {
++        return Err(invalid("input is not a bounded regular file"));
++    }
+     if !stable(&named, &before) {
+         return Err(invalid("input changed before opening"));
+     }
+@@ -446,6 +455,7 @@
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++    use std::fs::File;
+     use tempfile::TempDir;
+ 
+     fn fixture(count: usize) -> (TempDir, Manifest, Results) {

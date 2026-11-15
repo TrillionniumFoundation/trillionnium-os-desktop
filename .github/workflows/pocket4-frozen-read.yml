@@ -1,0 +1,85 @@
+name: Pocket4 frozen application input regression
+
+on:
+  pull_request:
+    paths:
+      - 'compat/android/pocket4/current-app-acceptance/frozen-read/**'
+      - '.github/workflows/pocket4-frozen-read.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'compat/android/pocket4/current-app-acceptance/frozen-read/**'
+      - '.github/workflows/pocket4-frozen-read.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  frozen-application-input:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Check out the reviewed packet
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: packet-source
+      - name: Check out the complete original native source
+        uses: actions/checkout@v4
+        with:
+          ref: 9ecce4f94dec80500c05322106907e48a0668b05
+          path: native-source
+      - name: Install the fixed Rust toolchain
+        run: rustup toolchain install 1.93.0 --profile minimal
+      - name: Reserve two logical CPUs and isolate build outputs
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          allowed = sorted(os.sched_getaffinity(0))
+          if len(allowed) <= 2:
+              raise RuntimeError('two logical CPUs must remain free')
+          compiler_cpus = allowed[:min(2, len(allowed) - 2)]
+          with Path(os.environ['GITHUB_ENV']).open('a') as stream:
+              stream.write('P4_COMPILER_CPUS=' + ','.join(map(str, compiler_cpus)) + '\n')
+              stream.write('CARGO_BUILD_JOBS=' + str(len(compiler_cpus)) + '\n')
+              stream.write('CARGO_TARGET_DIR=' + os.environ['RUNNER_TEMP'] + '/p4-frozen-native-target\n')
+          print({'allowed_cpus': allowed, 'compiler_cpus': compiler_cpus})
+          PY
+      - name: Verify complete source identity and apply the three-file patch
+        run: |
+          python3 -B packet-source/compat/android/pocket4/current-app-acceptance/frozen-read/host-regression/apply_native_patch.py --native-root native-source
+      - name: Compile the complete application crate and require ten native release tests
+        run: |
+          set -o pipefail
+          taskset --cpu-list "$P4_COMPILER_CPUS" cargo +1.93.0 test --locked --manifest-path native-source/Cargo.toml -p droidloom-applications --lib release::tests:: -- --test-threads=1 2>&1 | tee "$RUNNER_TEMP/p4-native-release-tests.log"
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          text = (Path(os.environ['RUNNER_TEMP']) / 'p4-native-release-tests.log').read_text()
+          if 'test result: ok. 10 passed; 0 failed; 0 ignored' not in text:
+              raise RuntimeError('exactly ten native release tests must pass; zero tests cannot qualify')
+          PY
+      - name: Require the original FIFO failure and candidate rejection
+        run: |
+          packet=packet-source/compat/android/pocket4/current-app-acceptance/frozen-read
+          python3 -B "$packet/host-regression/run_regression.py" \
+            --original "$packet/fixtures/release-before.rs" \
+            --candidate "$packet/candidate-release.rs" \
+            --output "$RUNNER_TEMP/p4-frozen-read-result.json" \
+            --allow-registry-fetch
+      - name: Preserve regression evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pocket4-frozen-input-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            ${{ runner.temp }}/p4-native-release-tests.log
+            ${{ runner.temp }}/p4-frozen-read-result.json
+          if-no-files-found: warn
+      - name: Remove this job's native build outputs
+        if: always()
+        run: rm -rf -- "$RUNNER_TEMP/p4-frozen-native-target"

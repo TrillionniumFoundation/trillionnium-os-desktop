@@ -1,0 +1,114 @@
+{
+  "Android_actions": 0,
+  "application_Cargo_manifest_candidate_sha256": "4efc66264648692d222c4d0aee3f4c020f532a24972d103cd1b0f8c9e5eddb5a",
+  "application_Cargo_manifest_original_sha256": "a16f5016a22a5e94b2ae46007ebfac27bee9ea2d0164e28c61b06e2b8d48c747",
+  "business_routes_closed": 0,
+  "ci_workflow": {
+    "bytes": 3842,
+    "relative": ".github/workflows/pocket4-frozen-read.yml",
+    "sha256": "ea9364e1c79b71d20101acf1c73e67a9eb2c3a69aec192c6fbd5f5e6fe875d49"
+  },
+  "files": {
+    "README.md": {
+      "bytes": 4066,
+      "sha256": "50c11c28926cbaa0ea2c7b025296dcd8205c0017c6b450f86af1dfb40deb4f16"
+    },
+    "candidate-release.rs": {
+      "bytes": 25154,
+      "sha256": "786383bce459c120cd7bf978d6ad313743ef8a66b6ca002e422cbb234d2b55f9"
+    },
+    "fixtures/release-before.rs": {
+      "bytes": 24628,
+      "sha256": "df7eeb8d4b8e808a5273847eb61d28d986d02787c61755d5b674e5305192aa2b"
+    },
+    "host-regression/Cargo.lock": {
+      "bytes": 7554,
+      "sha256": "70f9e24fa3214a9acdd8944b9ab13939391a598353276671c11a026e7def0883"
+    },
+    "host-regression/Cargo.toml": {
+      "bytes": 373,
+      "sha256": "a6cb940a25d18de2b692b2d804277a36f928bdd4547596f0a17a4e42d6b9015f"
+    },
+    "host-regression/apply_native_patch.py": {
+      "bytes": 3256,
+      "sha256": "04032dcac4519ccdf3290445e119aea58e7e0b4141e51388c1d0b17681744709"
+    },
+    "host-regression/open_gate.c": {
+      "bytes": 1735,
+      "sha256": "475fff262b01f1a05c68b444a5b31bd369d6af0d26b963e6a7b61cb464fc9a91"
+    },
+    "host-regression/run_race.py": {
+      "bytes": 4371,
+      "sha256": "2291a289824c54a7ae4217bcc1b35dac96e94767efd58dcbada1bc335bd930d3"
+    },
+    "host-regression/run_regression.py": {
+      "bytes": 8572,
+      "sha256": "983d581961a8714f1510b881e32553cf996bf44a169059047aaaf83e93aaa8de"
+    },
+    "native-frozen-read.patch": {
+      "bytes": 2112,
+      "sha256": "8cef43de18dc4f6c767b62c720e7aecb6de06522854ddcc520bdd16c8f9945bc"
+    }
+  },
+  "native_base_commit": "9ecce4f94dec80500c05322106907e48a0668b05",
+  "native_base_tree": "12fe22ce02be9759963835faa4e7a7d0a762ddc2",
+  "native_files": {
+    "Cargo.lock": {
+      "after": {
+        "bytes": 51854,
+        "sha256": "a90afd8598978e6876dd20eed645c14505997ffe543668a9701a0882c410bb17"
+      },
+      "before": {
+        "bytes": 51845,
+        "sha256": "ca5300907a8e609ac0340d016ecfe7b4292bf45fe5ab3cbe8dd0c013f12a2285"
+      }
+    },
+    "runtime/droidloom-applications/Cargo.toml": {
+      "after": {
+        "bytes": 662,
+        "sha256": "4efc66264648692d222c4d0aee3f4c020f532a24972d103cd1b0f8c9e5eddb5a"
+      },
+      "before": {
+        "bytes": 640,
+        "sha256": "a16f5016a22a5e94b2ae46007ebfac27bee9ea2d0164e28c61b06e2b8d48c747"
+      }
+    },
+    "runtime/droidloom-applications/src/release.rs": {
+      "after": {
+        "bytes": 25154,
+        "sha256": "786383bce459c120cd7bf978d6ad313743ef8a66b6ca002e422cbb234d2b55f9"
+      },
+      "before": {
+        "bytes": 24628,
+        "sha256": "df7eeb8d4b8e808a5273847eb61d28d986d02787c61755d5b674e5305192aa2b"
+      }
+    }
+  },
+  "native_source_candidate": {
+    "bytes": 25154,
+    "relative": "runtime/droidloom-applications/src/release.rs",
+    "sha256": "786383bce459c120cd7bf978d6ad313743ef8a66b6ca002e422cbb234d2b55f9"
+  },
+  "native_source_original": {
+    "bytes": 24628,
+    "relative": "runtime/droidloom-applications/src/release.rs",
+    "sha256": "df7eeb8d4b8e808a5273847eb61d28d986d02787c61755d5b674e5305192aa2b"
+  },
+  "production_ready": false,
+  "publication_base_commit": "fb38a7da5b94e2cc1e82c9a690df2fd1031da125",
+  "publication_base_tree": "7e8133f83e53ec78496c6d6dac844da94720b8e0",
+  "runtime_qualified": false,
+  "schema": "p4-native-app-frozen-read-source-v1",
+  "scope": "Source and Linux host regression only",
+  "test_contract": {
+    "candidate_fifo_must_reject": true,
+    "candidate_symlink_must_reject": true,
+    "compiler_max_logical_cpus": 2,
+    "logical_cpus_reserved": 2,
+    "native_base_tracked_files": 2118,
+    "native_cargo_locked": true,
+    "native_release_test_count": 10,
+    "original_fifo_must_block": true,
+    "rust_toolchain": "1.93.0"
+  }
+}
