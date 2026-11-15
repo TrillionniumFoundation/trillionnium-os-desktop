@@ -244,7 +244,7 @@ fn validate_descriptors(
     deadline: Instant,
 ) -> Result<()> {
     require(
-        files.len() == protocol::INPUT_FDS,
+        files.len() == query.descriptor_count(),
         "application descriptor count differs",
     )?;
     let init = pidfd_info(&files[0])?;
@@ -391,17 +391,9 @@ fn prepare_query(
     let domain = query.domain();
     let mut argv: Vec<_> = arguments.iter().map(|arg| arg.as_ptr()).collect();
     argv.push(std::ptr::null());
-    let envp = [
-        c"PATH=/system/bin:/system/xbin".as_ptr(),
-        c"LC_ALL=C".as_ptr(),
-        c"ANDROID_ROOT=/system".as_ptr(),
-        c"ANDROID_DATA=/data".as_ptr(),
-        c"ANDROID_ART_ROOT=/apex/com.android.art".as_ptr(),
-        c"ANDROID_RUNTIME_ROOT=/apex/com.android.runtime".as_ptr(),
-        c"ANDROID_I18N_ROOT=/apex/com.android.i18n".as_ptr(),
-        c"ANDROID_TZDATA_ROOT=/apex/com.android.tzdata".as_ptr(),
-        std::ptr::null(),
-    ];
+    let environment = query.environment();
+    let mut envp: Vec<_> = environment.iter().map(|entry| entry.as_ptr()).collect();
+    envp.push(std::ptr::null());
     let go = protocol::encoded(&Message::Go { nonce })?;
     let armed = protocol::encoded(&Message::Armed { nonce })?;
     let mut filter = query_filter();
@@ -584,6 +576,7 @@ unsafe fn query_child(
             || match domain {
                 OperationDomain::Query => mac_child::arm_query_mac(deadline_ns),
                 OperationDomain::Browser => mac_child::arm_browser_mac(deadline_ns),
+                OperationDomain::ContactsRead => mac_child::arm_contacts_read_mac(deadline_ns),
             } != 0
         {
             libc::_exit(125);

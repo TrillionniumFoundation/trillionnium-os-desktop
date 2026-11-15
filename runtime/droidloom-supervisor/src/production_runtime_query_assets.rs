@@ -1,7 +1,9 @@
-//! Two private query executables derived from this selected original system.
+//! Fixed private command roles derived from this selected original system.
+//! Optional Contacts inputs add a dedicated app_process entry and nonexecutable
+//! content JAR; neither role broadens cmd/toybox executable-label permissions.
 //!
 //! The original input inodes and their xattrs are never changed. New tmpfs
-//! inodes receive the one dedicated query entrypoint label, then the owned
+//! inodes receive their fixed role labels, then the owned
 //! superblock and idmapped mount are made read-only before any transfer.
 //! PreparedRuntime retains all source, mount and reservation custody until
 //! actual original-tree retirement. These inputs do not issue Android Ready.
@@ -12,6 +14,9 @@ const MAX_QUERY: u64 = 128 * 1024 * 1024;
 const QUERY_EXEC: &[u8; 35] = b"u:object_r:droidloom_query_exec:s0\0";
 const CMD_ORIGINAL: &[u8; 26] = b"u:object_r:system_file:s0\0";
 const TOYBOX_ORIGINAL: &[u8; 27] = b"u:object_r:toolbox_exec:s0\0";
+const APP_PROCESS_ORIGINAL: &[u8; 26] = b"u:object_r:zygote_exec:s0\0";
+const PROVIDER_EXEC: &[u8; 38] = b"u:object_r:droidloom_provider_exec:s0\0";
+const PROVIDER_JAR: &[u8; 37] = b"u:object_r:droidloom_provider_jar:s0\0";
 const TMPFS_MAGIC: libc::c_long = 0x0102_1994;
 const INITIAL_TMPFS: &[u8; 20] = b"u:object_r:tmpfs:s0\0";
 const FSCONFIG_CMD_RECONFIGURE: u32 = 7;
@@ -25,6 +30,14 @@ pub(super) struct QueryDeclaration {
     source_system_sha256: String,
     cmd: QuerySource,
     toybox: QuerySource,
+    contacts: Option<ContactsInputs>,
+}
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ContactsInputs {
+    scope: String,
+    app_process64: QuerySource,
+    content_jar: QuerySource,
 }
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -38,24 +51,32 @@ struct QuerySource {
 enum QueryRole {
     Cmd,
     Toybox,
+    AppProcess64,
+    ContentJar,
 }
 impl QueryRole {
     fn name(self) -> &'static CStr {
         match self {
             Self::Cmd => c"cmd",
             Self::Toybox => c"toybox",
+            Self::AppProcess64 => c"app_process64",
+            Self::ContentJar => c"content.jar",
         }
     }
     fn original_name(self) -> &'static str {
         match self {
             Self::Cmd => "cmd-original",
             Self::Toybox => "toybox-original",
+            Self::AppProcess64 => "contacts-app-process64-original",
+            Self::ContentJar => "contacts-content-jar-original",
         }
     }
     fn source_path(self) -> &'static str {
         match self {
             Self::Cmd => "/system/bin/cmd",
             Self::Toybox => "/system/bin/toybox",
+            Self::AppProcess64 => "/system/bin/app_process64",
+            Self::ContentJar => "/system/framework/content.jar",
         }
     }
     fn parse(name: &CStr) -> Result<Self> {
@@ -63,6 +84,8 @@ impl QueryRole {
             Ok(Self::Cmd)
         } else if name == c"toybox" {
             Ok(Self::Toybox)
+        } else if name == c"app_process64" {
+            Ok(Self::AppProcess64)
         } else {
             Err(MountError::Rejected("query executable role is not fixed"))
         }
@@ -71,12 +94,56 @@ impl QueryRole {
         match self {
             Self::Cmd => require_exact_xattr(file, c"security.selinux", CMD_ORIGINAL)?,
             Self::Toybox => require_exact_xattr(file, c"security.selinux", TOYBOX_ORIGINAL)?,
+            Self::AppProcess64 => {
+                require_exact_xattr(file, c"security.selinux", APP_PROCESS_ORIGINAL)?
+            }
+            Self::ContentJar => require_exact_xattr(file, c"security.selinux", CMD_ORIGINAL)?,
         }
         require_absent_xattr(file, c"security.capability")
+    }
+    fn mode(self) -> u32 {
+        if self == Self::ContentJar {
+            0o444
+        } else {
+            0o555
+        }
+    }
+    fn private_label(self) -> &'static [u8] {
+        match self {
+            Self::Cmd | Self::Toybox => QUERY_EXEC,
+            Self::AppProcess64 => PROVIDER_EXEC,
+            Self::ContentJar => PROVIDER_JAR,
+        }
+    }
+    fn verify_format(self, file: &File, bytes: u64, interpreter: &Option<String>) -> Result<()> {
+        if self == Self::ContentJar {
+            let mut magic = [0_u8; 4];
+            file.read_exact_at(&mut magic, 0)?;
+            require(
+                interpreter.is_none() && magic == *b"PK\x03\x04",
+                "Contacts classpath is not its bounded ZIP/JAR role",
+            )
+        } else {
+            require(
+                original_init_elf(file, bytes)? == *interpreter,
+                "actual original query interpreter differs",
+            )
+        }
     }
 }
 
 impl QueryDeclaration {
+    fn sources(&self) -> Vec<(QueryRole, &QuerySource)> {
+        let mut sources = vec![
+            (QueryRole::Cmd, &self.cmd),
+            (QueryRole::Toybox, &self.toybox),
+        ];
+        if let Some(contacts) = &self.contacts {
+            sources.push((QueryRole::AppProcess64, &contacts.app_process64));
+            sources.push((QueryRole::ContentJar, &contacts.content_jar));
+        }
+        sources
+    }
     pub(super) fn validate(&self, runtime: &RuntimeDeclaration) -> Result<()> {
         require(
             self.scope == "fixed_application_query_v1"
@@ -84,10 +151,17 @@ impl QueryDeclaration {
                 && self.source_system_sha256 == runtime.source_system.sha256,
             "query sources must bind the complete selected original system image",
         )?;
-        for (role, declared) in [
-            (QueryRole::Cmd, &self.cmd),
-            (QueryRole::Toybox, &self.toybox),
-        ] {
+        if let Some(contacts) = &self.contacts {
+            require(
+                contacts.scope == "fixed_contacts_content_query_v1",
+                "Contacts runtime input scope differs",
+            )?;
+            require(
+                contacts.content_jar.interpreter.is_none(),
+                "Contacts data role cannot declare an ELF interpreter",
+            )?;
+        }
+        for (role, declared) in self.sources() {
             require(
                 declared.original.file == role.original_name()
                     && declared.source_path == role.source_path()
@@ -137,7 +211,23 @@ fn full_digest(file: &File, identity: FileIdentity) -> Result<String> {
     Ok(format!("{:x}", hash.finalize()))
 }
 
-fn label_new_inode(file: &File) -> Result<()> {
+fn require_private_query_label(file: &File, label: &[u8]) -> Result<()> {
+    // Keep each read bounded by the exact fixed label, without turning the
+    // variable-length role into a caller-sized allocation or truncated read.
+    if label == QUERY_EXEC {
+        require_exact_xattr(file, c"security.selinux", QUERY_EXEC)
+    } else if label == PROVIDER_EXEC {
+        require_exact_xattr(file, c"security.selinux", PROVIDER_EXEC)
+    } else if label == PROVIDER_JAR {
+        require_exact_xattr(file, c"security.selinux", PROVIDER_JAR)
+    } else {
+        Err(MountError::Rejected(
+            "private query label is not a fixed role",
+        ))
+    }
+}
+
+fn label_new_inode(file: &File, label: &[u8]) -> Result<()> {
     // This function is called only for our freshly created tmpfs inode. It
     // never receives a source input or a bind alias of an original inode.
     // The selected component's actual compute_create for broker/tmpfs dir
@@ -148,12 +238,12 @@ fn label_new_inode(file: &File) -> Result<()> {
         libc::fsetxattr(
             file.as_raw_fd(),
             c"security.selinux".as_ptr(),
-            QUERY_EXEC.as_ptr().cast(),
-            QUERY_EXEC.len(),
+            label.as_ptr().cast(),
+            label.len(),
             0,
         )
     })?;
-    require_exact_xattr(file, c"security.selinux", QUERY_EXEC)?;
+    require_private_query_label(file, label)?;
     require_absent_xattr(file, c"security.capability")
 }
 
@@ -173,9 +263,9 @@ fn readonly_mount_node(file: &File, expected: FileIdentity, id: u64) -> Result<(
     )?;
     Ok(())
 }
-fn readonly_private(file: &File, expected: FileIdentity, id: u64) -> Result<()> {
+fn readonly_private(file: &File, expected: FileIdentity, id: u64, label: &[u8]) -> Result<()> {
     readonly_mount_node(file, expected, id)?;
-    require_exact_xattr(file, c"security.selinux", QUERY_EXEC)?;
+    require_private_query_label(file, label)?;
     require_absent_xattr(file, c"security.capability")
 }
 
@@ -194,7 +284,7 @@ pub(super) struct QueryResources {
     root: File,
     root_identity: FileIdentity,
     mount_id: u64,
-    executables: [QueryExecutable; 2],
+    executables: Vec<QueryExecutable>,
     // This true state has no external/deserializable constructor. Both the
     // initial-root-owned superblock and its only mount were made read-only.
     superblock_readonly: bool,
@@ -220,15 +310,12 @@ fn copy_original(
         Ok(())
     })?;
     require(
-        source.identity.mode == libc::S_IFREG | 0o555,
-        "original query input must be root-sealed 0555",
+        source.identity.mode == libc::S_IFREG | role.mode(),
+        "original input must be sealed with its exact executable or data mode",
     )?;
     source.verify_digest(declared.original.bytes, &declared.original.sha256)?;
     role.original_security(&source.file)?;
-    require(
-        original_init_elf(&source.file, declared.original.bytes)? == declared.interpreter,
-        "actual original query interpreter differs",
-    )?;
+    role.verify_format(&source.file, declared.original.bytes, &declared.interpreter)?;
     let copy = syscall_fd(unsafe {
         libc::openat(
             root.as_raw_fd(),
@@ -260,8 +347,8 @@ fn copy_original(
     copy.sync_all()?;
     // Never label through an original bind mount: this is the new inode
     // created above on our unique, still detached private tmpfs superblock.
-    label_new_inode(&copy)?;
-    zero_rc(unsafe { libc::fchmod(copy.as_raw_fd(), 0o555) })?;
+    label_new_inode(&copy, role.private_label())?;
+    zero_rc(unsafe { libc::fchmod(copy.as_raw_fd(), role.mode()) })?;
     let identity = FileIdentity::of(&copy.metadata()?);
     require(
         identity.bytes == declared.original.bytes
@@ -299,14 +386,15 @@ impl QueryResources {
             "private query assets require the actual same owned user namespace",
         )?;
         let size = declared
-            .cmd
-            .original
-            .bytes
-            .checked_add(declared.toybox.original.bytes)
-            .and_then(|v| v.checked_add(1024 * 1024))
-            .ok_or(MountError::Rejected("query tmpfs size overflow"))?;
+            .sources()
+            .iter()
+            .try_fold(1024_u64 * 1024, |total, (_, source)| {
+                total
+                    .checked_add(source.original.bytes)
+                    .ok_or(MountError::Rejected("query tmpfs size overflow"))
+            })?;
         require(
-            size <= 2 * MAX_QUERY + 1024 * 1024,
+            size <= 4 * MAX_QUERY + 1024 * 1024,
             "private query tmpfs bound",
         )?;
         let context = syscall_fd(unsafe {
@@ -350,9 +438,11 @@ impl QueryResources {
             "initial-root-owned private query tmpfs",
         )?;
         require_exact_xattr(&root, c"security.selinux", INITIAL_TMPFS)?;
-        let cmd = copy_original(QueryRole::Cmd, &declared.cmd, parent, &root, witness)?;
-        let toybox = copy_original(QueryRole::Toybox, &declared.toybox, parent, &root, witness)?;
-        label_new_inode(&root)?;
+        let mut copied = Vec::new();
+        for (role, source) in declared.sources() {
+            copied.push(copy_original(role, source, parent, &root, witness)?);
+        }
+        label_new_inode(&root, QUERY_EXEC)?;
         zero_rc(unsafe { libc::fchmod(root.as_raw_fd(), 0o555) })?;
         let mut root_identity = FileIdentity::of(&root.metadata()?);
         drop(root);
@@ -406,7 +496,7 @@ impl QueryResources {
             let mut identity = copied.identity;
             identity.uid = uids.start;
             identity.gid = gids.start;
-            readonly_private(&copy, identity, mount_id)?;
+            readonly_private(&copy, identity, mount_id, copied.role.private_label())?;
             Ok(QueryExecutable {
                 role: copied.role,
                 source: copied.source,
@@ -416,7 +506,7 @@ impl QueryResources {
                 interpreter: copied.interpreter,
             })
         };
-        let executables = [reopen(cmd)?, reopen(toybox)?];
+        let executables = copied.into_iter().map(reopen).collect::<Result<Vec<_>>>()?;
         let result = Self {
             mount,
             root,
@@ -439,18 +529,23 @@ impl QueryResources {
             "private query superblock or mapped-root custody differs",
         )?;
         readonly_mount_node(&self.mount, self.root_identity, self.mount_id)?;
-        readonly_private(&self.root, self.root_identity, self.mount_id)?;
+        readonly_private(&self.root, self.root_identity, self.mount_id, QUERY_EXEC)?;
         require_detached(&self.mount)?;
         let names = std::fs::read_dir(format!("/proc/self/fd/{}", self.root.as_raw_fd()))?
-            .take(3)
+            .take(self.executables.len() + 1)
             .map(|row| row.map(|r| r.file_name()))
             .collect::<io::Result<BTreeSet<_>>>()?;
         require(
             names
-                == BTreeSet::from([
-                    std::ffi::OsString::from("cmd"),
-                    std::ffi::OsString::from("toybox"),
-                ]),
+                == self
+                    .executables
+                    .iter()
+                    .map(|item| {
+                        std::ffi::OsString::from(
+                            item.role.name().to_str().expect("fixed ASCII role"),
+                        )
+                    })
+                    .collect::<BTreeSet<_>>(),
             "private query filesystem has undeclared leaves",
         )?;
         for executable in &self.executables {
@@ -459,14 +554,37 @@ impl QueryResources {
                 .verify_digest(executable.identity.bytes, &executable.digest)?;
             executable.role.original_security(&executable.source.file)?;
             let actual = open_leaf(&self.root, executable.role.name(), libc::O_RDONLY)?;
-            readonly_private(&executable.copy, executable.identity, self.mount_id)?;
-            readonly_private(&actual, executable.identity, self.mount_id)?;
+            readonly_private(
+                &executable.copy,
+                executable.identity,
+                self.mount_id,
+                executable.role.private_label(),
+            )?;
+            readonly_private(
+                &actual,
+                executable.identity,
+                self.mount_id,
+                executable.role.private_label(),
+            )?;
             require(
                 full_digest(&actual, executable.identity)? == executable.digest,
                 "private query complete digest changed",
             )?;
         }
         Ok(())
+    }
+
+    pub(super) fn executable_file_count(&self) -> usize {
+        self.executables
+            .iter()
+            .filter(|item| item.role != QueryRole::ContentJar)
+            .count()
+    }
+    pub(super) fn data_file_count(&self) -> usize {
+        self.executables
+            .iter()
+            .filter(|item| item.role == QueryRole::ContentJar)
+            .count()
     }
 
     pub(super) fn mount(&self) -> BorrowedFd<'_> {
@@ -522,6 +640,26 @@ fn selected<'a>(
 }
 
 impl PreparedRuntime {
+    /// The only data role accepted by the fixed Contacts Java query. It
+    /// cannot be parsed by query_executable or used as an executable binding.
+    pub(crate) fn contacts_content_jar<'a>(
+        &'a self,
+        authority: &ApplicationAuthority<'_>,
+    ) -> Result<RuntimeQueryData<'a>> {
+        let resources = selected(self, authority)?;
+        let executable = resources
+            .executables
+            .iter()
+            .find(|item| item.role == QueryRole::ContentJar)
+            .ok_or(MountError::Rejected("selected Contacts content JAR absent"))?;
+        Ok(RuntimeQueryData {
+            held: RuntimeQueryExecutable {
+                runtime: self,
+                resources,
+                executable,
+            },
+        })
+    }
     pub(crate) fn query_executable<'a>(
         &'a self,
         authority: &ApplicationAuthority<'_>,
@@ -562,7 +700,11 @@ impl RuntimeQueryExecutable<'_> {
         require(
             node.mode & libc::S_IFMT == libc::S_IFREG
                 && node.mode & 0o6022 == 0
-                && node.mode & 0o111 != 0
+                && (if self.executable.role == QueryRole::ContentJar {
+                    node.mode & 0o111 == 0
+                } else {
+                    node.mode & 0o111 != 0
+                })
                 && node.uid == root_uid
                 && node.gid == root_gid
                 && node.bytes == self.executable.identity.bytes
@@ -579,16 +721,87 @@ impl RuntimeQueryExecutable<'_> {
         )?;
         self.executable.role.original_security(original)?;
         require(
-            full_digest(original, node)? == self.executable.digest
-                && original_init_elf(original, node.bytes)? == self.executable.interpreter,
+            full_digest(original, node)? == self.executable.digest,
             "guest original query bytes differ from the complete selected source role",
-        )
+        )?;
+        self.executable
+            .role
+            .verify_format(original, node.bytes, &self.executable.interpreter)
     }
     pub(crate) fn verify_projection(&self, target: &File) -> Result<()> {
-        readonly_private(target, self.executable.identity, self.resources.mount_id)?;
+        readonly_private(
+            target,
+            self.executable.identity,
+            self.resources.mount_id,
+            self.executable.role.private_label(),
+        )?;
         require(
             full_digest(target, self.executable.identity)? == self.executable.digest,
             "attached private query role has different bytes",
         )
+    }
+}
+
+/// Opaque, same-owner classpath data. No path/FD/digest can construct it.
+pub(crate) struct RuntimeQueryData<'a> {
+    held: RuntimeQueryExecutable<'a>,
+}
+impl RuntimeQueryData<'_> {
+    pub(crate) fn file(&self) -> &File {
+        self.held.file()
+    }
+    pub(crate) fn revalidate(&self, authority: &ApplicationAuthority<'_>) -> Result<()> {
+        self.held.revalidate(authority)
+    }
+    pub(crate) fn verify_original(&self, file: &File, uid: u32, gid: u32) -> Result<()> {
+        self.held.verify_original(file, uid, gid)
+    }
+    pub(crate) fn verify_projection(&self, file: &File) -> Result<()> {
+        self.held.verify_projection(file)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn contacts_classpath_is_nonexecutable_and_its_separate_label_cannot_select_a_binary() {
+        assert!(QueryRole::parse(c"content.jar").is_err());
+        assert!(QueryRole::parse(c"app_process").is_err());
+        assert!(QueryRole::parse(c"/system/bin/app_process64").is_err());
+        assert_eq!(
+            QueryRole::parse(c"app_process64").unwrap(),
+            QueryRole::AppProcess64
+        );
+        assert_eq!(QueryRole::ContentJar.mode(), 0o444);
+        assert_ne!(
+            QueryRole::ContentJar.private_label(),
+            QueryRole::Cmd.private_label()
+        );
+        assert_ne!(
+            QueryRole::AppProcess64.private_label(),
+            QueryRole::Cmd.private_label()
+        );
+        let file = tempfile::tempfile().unwrap();
+        file.write_all_at(&[0_u8; 64], 0).unwrap();
+        assert!(
+            QueryRole::ContentJar
+                .verify_format(&file, 64, &None)
+                .is_err()
+        );
+        file.write_all_at(b"PK\x03\x04", 0).unwrap();
+        QueryRole::ContentJar
+            .verify_format(&file, 64, &None)
+            .unwrap();
+        assert!(
+            QueryRole::ContentJar
+                .verify_format(&file, 64, &Some("/system/bin/linker64".into()))
+                .is_err()
+        );
+        assert!(
+            QueryRole::AppProcess64
+                .verify_format(&file, 64, &None)
+                .is_err()
+        );
     }
 }

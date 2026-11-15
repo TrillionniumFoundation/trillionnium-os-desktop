@@ -1,9 +1,10 @@
-//! Fixed package inspection and a separate owned Firefox business adapter.
+//! Fixed package inspection, owned Firefox entry and fixed Contacts provider reads.
 //!
 //! The public worker entry has no command-line parameters. The normal broker
 //! lends a ReadyTreeWitness; neither a saved receipt nor a process number can
-//! select an execution target. Only the explicit Firefox adapter adds two
-//! closed business commands; the original four-read API remains unchanged.
+//! select an execution target. The explicit Firefox adapter adds two closed
+//! commands; Contacts has a separate read-only Java role and no UI acceptance.
+//! The original four-read API remains unchanged.
 use std::ffi::{CStr, CString};
 use std::fs::File;
 use std::io;
@@ -16,6 +17,9 @@ use thiserror::Error;
 
 #[path = "production_application_business.rs"]
 mod business;
+#[path = "production_application_contacts.rs"]
+mod contacts;
+pub(crate) use contacts::{ContactsBaselineObservation, ContactsQuery};
 #[path = "production_application_operation.rs"]
 mod operation;
 use operation::ApplicationOperation;
@@ -222,6 +226,10 @@ pub(crate) struct BrowserCommandResult {
     output: String,
     receipt: ReadReceipt,
 }
+pub(crate) struct ContactsReadResult {
+    output: String,
+    receipt: ReadReceipt,
+}
 struct OperationResult {
     output: String,
     receipt: ReadReceipt,
@@ -298,6 +306,33 @@ pub(crate) fn run_browser_command(
         output: result.output,
         receipt: result.receipt,
     })
+}
+
+pub(crate) fn run_contacts_read(
+    authority: &ApplicationAuthority<'_>,
+    query: &ContactsQuery,
+    deadline: std::time::Instant,
+) -> Result<ContactsReadResult> {
+    query.validate()?;
+    let result = process::run(
+        authority,
+        &ApplicationOperation::ContactsRead {
+            value: query.clone(),
+        },
+        deadline,
+    )?;
+    Ok(ContactsReadResult {
+        output: result.output,
+        receipt: result.receipt,
+    })
+}
+
+pub(crate) fn inspect_contacts_baseline(
+    ready: ReadyTreeWitness<'_>,
+    contacts: &ApplicationInspection,
+    provider: &ApplicationInspection,
+) -> Result<ContactsBaselineObservation> {
+    contacts::baseline(ready, contacts, provider)
 }
 
 pub(crate) fn open_browser(

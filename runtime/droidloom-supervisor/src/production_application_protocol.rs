@@ -5,7 +5,9 @@ use std::mem;
 use std::os::fd::{AsRawFd, FromRawFd, OwnedFd, RawFd};
 use std::time::Instant;
 
-pub(super) const INPUT_FDS: usize = 15;
+pub(super) const INPUT_FDS: usize = 17;
+pub(super) const CONTENT_JAR: usize = 15;
+pub(super) const ORIGINAL_CONTENT_JAR: usize = 16;
 pub(super) const EXECUTABLE: usize = 10;
 pub(super) const ORIGINAL_EXECUTABLE: usize = 11;
 pub(super) const STDOUT: usize = 12;

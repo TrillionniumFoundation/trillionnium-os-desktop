@@ -9,6 +9,7 @@ use std::ffi::c_void;
 use std::os::unix::fs::FileExt;
 
 const QUERY_EXEC: &[u8] = b"u:object_r:droidloom_query_exec:s0";
+const PROVIDER_EXEC: &[u8] = b"u:object_r:droidloom_provider_exec:s0";
 const AA_STACK: &[u8] = b"droidloom-production-android//&droidloom-production-broker (enforce)\n";
 const EXEC_EVENT: i32 = libc::SIGTRAP | (libc::PTRACE_EVENT_EXEC << 8);
 const MAX_EXECUTABLE: u64 = 128 * 1024 * 1024;
@@ -84,7 +85,7 @@ fn label_matches(actual: &[u8], expected: &[u8]) -> bool {
     actual == expected || actual.strip_suffix(b"\0") == Some(expected)
 }
 
-fn query_executable_security(file: &File) -> Result<()> {
+fn query_executable_security(file: &File, expected_label: &[u8]) -> Result<()> {
     require(
         kind(file)? == 0x0102_1994,
         "query executable is not the owned private tmpfs inode",
@@ -118,7 +119,7 @@ fn query_executable_security(file: &File) -> Result<()> {
         return Err(io::Error::last_os_error().into());
     }
     require(
-        label_matches(&label[..n as usize], QUERY_EXEC),
+        label_matches(&label[..n as usize], expected_label),
         "actual private query executable label differs",
     )?;
     let n = unsafe {
@@ -168,12 +169,30 @@ pub(super) struct ExecutableBinding {
     node: Node,
     mount_id: u64,
     sha256: [u8; 32],
+    label: &'static [u8],
 }
 impl ExecutableBinding {
     pub(super) fn from_held_role(
         file: &File,
         root_uid: u32,
         root_gid: u32,
+        deadline: Instant,
+    ) -> Result<Self> {
+        Self::from_role(file, root_uid, root_gid, QUERY_EXEC, deadline)
+    }
+    pub(super) fn from_contacts_role(
+        file: &File,
+        root_uid: u32,
+        root_gid: u32,
+        deadline: Instant,
+    ) -> Result<Self> {
+        Self::from_role(file, root_uid, root_gid, PROVIDER_EXEC, deadline)
+    }
+    fn from_role(
+        file: &File,
+        root_uid: u32,
+        root_gid: u32,
+        label: &'static [u8],
         deadline: Instant,
     ) -> Result<Self> {
         let node = Node::of(file)?;
@@ -185,13 +204,14 @@ impl ExecutableBinding {
                 && (64..=MAX_EXECUTABLE).contains(&node.bytes),
             "fixed private query executable custody differs",
         )?;
-        query_executable_security(file)?;
+        query_executable_security(file, label)?;
         let sha256 = digest(file, node, deadline)?;
         let value = Self {
             file: file.try_clone()?,
             node,
             mount_id: mount_id(file)?,
             sha256,
+            label,
         };
         value.verify(file, deadline)?;
         Ok(value)
@@ -204,8 +224,8 @@ impl ExecutableBinding {
                 && mount_id(file)? == self.mount_id,
             "actual stopped executable is not the original private query inode",
         )?;
-        query_executable_security(&self.file)?;
-        query_executable_security(file)?;
+        query_executable_security(&self.file, self.label)?;
+        query_executable_security(file, self.label)?;
         require(
             digest(file, self.node, deadline)? == self.sha256,
             "actual stopped executable bytes differ from the held query role",
@@ -477,6 +497,15 @@ impl<'a> ExecTrace<'a> {
         domain: OperationDomain,
         deadline: Instant,
     ) -> Result<ExecReceipt> {
+        require(
+            binding.label
+                == if domain == OperationDomain::ContactsRead {
+                    PROVIDER_EXEC
+                } else {
+                    QUERY_EXEC
+                },
+            "operation domain does not match its private executable role",
+        )?;
         let previous_tid = self.actual_exec_stop(deadline)?;
         // This is the held process's kernel exe link, not a task lookup or a
         // caller pathname. The already stopped original task cannot race exec.
@@ -542,7 +571,7 @@ impl<'a> ExecTrace<'a> {
                 .iter()
                 .map(|byte| format!("{byte:02x}"))
                 .collect(),
-            executable_selinux: "u:object_r:droidloom_query_exec:s0",
+            executable_selinux: std::str::from_utf8(binding.label).expect("fixed ASCII role"),
             process_selinux: domain.context(),
             process_apparmor: "droidloom-production-android//&droidloom-production-broker (enforce)",
             uid: shell_uid,

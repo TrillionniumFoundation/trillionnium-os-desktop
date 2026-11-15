@@ -4,7 +4,8 @@
 use super::*;
 use crate::control::application_probe::RuntimeEpoch;
 use crate::production_application::{
-    ApplicationRead, ApplicationReadResult, BrowserCommand, BrowserCommandResult,
+    ApplicationRead, ApplicationReadResult, BrowserCommand, BrowserCommandResult, ContactsQuery,
+    ContactsReadResult,
 };
 use crate::production_cgroup::ApplicationLeaf;
 
@@ -80,6 +81,27 @@ impl ReadyTreeWitness<'_> {
         after?;
         if std::time::Instant::now() >= deadline {
             return Err(NamespaceError::Rejected("browser workflow deadline"));
+        }
+        Ok(value)
+    }
+
+    pub(crate) fn run_application_contacts_read(
+        &mut self,
+        request: &ContactsQuery,
+        deadline: std::time::Instant,
+    ) -> Result<ContactsReadResult> {
+        self.revalidate_application()?;
+        let result = crate::production_application::run_contacts_read(
+            &self.application_authority(),
+            request,
+            deadline,
+        )
+        .map_err(|error| NamespaceError::RuntimeResource(error.to_string()));
+        let after = self.revalidate_application();
+        let value = result?;
+        after?;
+        if std::time::Instant::now() >= deadline {
+            return Err(NamespaceError::Rejected("Contacts read workflow deadline"));
         }
         Ok(value)
     }
@@ -187,7 +209,7 @@ impl ApplicationAuthority<'_> {
 
     pub(crate) fn descriptors(&self, binary: &CStr) -> Result<Vec<File>> {
         self.revalidate()?;
-        if binary != c"cmd" && binary != c"toybox" {
+        if binary != c"cmd" && binary != c"toybox" && binary != c"app_process64" {
             return Err(NamespaceError::Rejected(
                 "application binary is not a fixed read tool",
             ));
@@ -263,6 +285,38 @@ impl ApplicationAuthority<'_> {
             .map_err(|error| NamespaceError::RuntimeResource(error.to_string()))?;
         self.revalidate()?;
         Ok(files)
+    }
+
+    /// Additional descriptors are only this same owner's fixed readonly
+    /// content.jar copy and its actual selected system counterpart.
+    pub(crate) fn contacts_content_descriptors(&self) -> Result<[File; 2]> {
+        self.revalidate()?;
+        let child = self.child()?;
+        let root = held_child_root(child)?;
+        let system = fixed_at(&root, c"system", true, false)?;
+        let framework = fixed_at(&system, c"framework", true, false)?;
+        let original = fixed_at(&framework, c"content.jar", false, true)?;
+        let runtime = self.runtime_owner()?;
+        let role: crate::production_runtime_assets::RuntimeQueryData<'_> = runtime
+            .contacts_content_jar(self)
+            .map_err(|error| NamespaceError::RuntimeResource(error.to_string()))?;
+        role.verify_original(&original, child.uids.start, child.gids.start)
+            .map_err(|error| NamespaceError::RuntimeResource(error.to_string()))?;
+        let private = fixed_at(&root, c".droidloom-query", true, false)?;
+        let copy = fixed_at(&private, c"content.jar", false, true)?;
+        role.verify_projection(&copy)
+            .map_err(|error| NamespaceError::RuntimeResource(error.to_string()))?;
+        if (copy.metadata()?.dev(), copy.metadata()?.ino())
+            != (role.file().metadata()?.dev(), role.file().metadata()?.ino())
+        {
+            return Err(NamespaceError::Rejected(
+                "Contacts classpath differs from held runtime role",
+            ));
+        }
+        role.revalidate(self)
+            .map_err(|error| NamespaceError::RuntimeResource(error.to_string()))?;
+        self.revalidate()?;
+        Ok([copy, original])
     }
 
     pub(crate) fn bind_created_process(&self, pidfd: &OwnedFd, query: bool) -> Result<(File, u32)> {

@@ -314,6 +314,11 @@ pub(super) fn run(
     request.validate()?;
     authority.revalidate().map_err(external)?;
     let mut files = authority.descriptors(request.binary()).map_err(external)?;
+    let classpath = if request.needs_content_jar() {
+        Some(authority.contacts_content_descriptors().map_err(external)?)
+    } else {
+        None
+    };
     require(Instant::now() < deadline, "application workflow deadline")?;
     // Read CLOCK_MONOTONIC before deriving remaining Instant duration, so
     // the worker's absolute deadline cannot extend this broker's deadline.
@@ -324,12 +329,21 @@ pub(super) fn run(
         .checked_add(remaining.as_nanos() as u64)
         .ok_or_else(|| reject("query deadline overflow"))?;
     let (root_uid, root_gid) = authority.mapped_root().map_err(external)?;
-    let executable_binding = exec_stop::ExecutableBinding::from_held_role(
-        &files[protocol::EXECUTABLE],
-        root_uid,
-        root_gid,
-        deadline,
-    )?;
+    let executable_binding = if request.needs_content_jar() {
+        exec_stop::ExecutableBinding::from_contacts_role(
+            &files[protocol::EXECUTABLE],
+            root_uid,
+            root_gid,
+            deadline,
+        )?
+    } else {
+        exec_stop::ExecutableBinding::from_held_role(
+            &files[protocol::EXECUTABLE],
+            root_uid,
+            root_gid,
+            deadline,
+        )?
+    };
     let shell_uid = root_uid
         .checked_add(2000)
         .ok_or_else(|| reject("shell UID overflow"))?;
@@ -348,6 +362,13 @@ pub(super) fn run(
     let (mut output, output_write) = pipe()?;
     let (mut error, error_write) = pipe()?;
     files.extend([output_write, error_write, File::from(query_gate)]);
+    if let Some(classpath) = classpath {
+        files.extend(classpath);
+    }
+    require(
+        files.len() == request.descriptor_count(),
+        "fixed operation descriptor layout differs",
+    )?;
     // Finish fallible immutable-input/IPC preparation before allocating the
     // owned cgroup leaf. Every subsequent return passes actual retirement.
     let mut leaf = authority.leaf().map_err(external)?;

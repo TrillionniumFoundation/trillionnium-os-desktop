@@ -7,6 +7,8 @@ use sha2::{Digest, Sha256};
 use std::os::unix::fs::FileExt;
 
 const QUERY_LABEL: &[u8] = b"u:object_r:droidloom_query_exec:s0\0";
+const PROVIDER_LABEL: &[u8] = b"u:object_r:droidloom_provider_exec:s0\0";
+const JAR_LABEL: &[u8] = b"u:object_r:droidloom_provider_jar:s0\0";
 const MAXIMUM: u64 = 128 * 1024 * 1024;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -158,7 +160,13 @@ pub(super) fn verify(
     let original_label: &[u8] = match query.binary().to_bytes() {
         b"cmd" => b"u:object_r:system_file:s0\0",
         b"toybox" => b"u:object_r:toolbox_exec:s0\0",
+        b"app_process64" if query.needs_content_jar() => b"u:object_r:zygote_exec:s0\0",
         _ => return Err(reject("unknown fixed query executable role")),
+    };
+    let private_label = if query.needs_content_jar() {
+        PROVIDER_LABEL
+    } else {
+        QUERY_LABEL
     };
     let original = at(&files[2], &[c"system", c"bin", query.binary()])?;
     let private = at(&files[2], &[c".droidloom-query", query.binary()])?;
@@ -189,7 +197,7 @@ pub(super) fn verify(
     readonly(&files[protocol::ORIGINAL_EXECUTABLE], false)?;
     readonly(&files[protocol::EXECUTABLE], true)?;
     security(&original, original_label)?;
-    security(&private, QUERY_LABEL)?;
+    security(&private, private_label)?;
     require(
         complete_hash(&original, source, deadline)? == complete_hash(&private, copy, deadline)?,
         "private query executable is not byte-identical to the actual original system role",
@@ -199,5 +207,64 @@ pub(super) fn verify(
         "query executable generation changed during verification",
     )?;
     security(&original, original_label)?;
-    security(&private, QUERY_LABEL)
+    security(&private, private_label)?;
+    if query.needs_content_jar() {
+        verify_content_jar(files, root_uid, root_gid, deadline)?;
+    }
+    require(
+        Instant::now() < deadline,
+        "fixed input verification deadline",
+    )
+}
+
+fn verify_content_jar(files: &[File], uid: u32, gid: u32, deadline: Instant) -> Result<()> {
+    let original = at(&files[2], &[c"system", c"framework", c"content.jar"])?;
+    let private = at(&files[2], &[c".droidloom-query", c"content.jar"])?;
+    let source = identity(&original)?;
+    let copy = identity(&private)?;
+    require(
+        source == identity(&files[protocol::ORIGINAL_CONTENT_JAR])?
+            && copy == identity(&files[protocol::CONTENT_JAR])?
+            && (source.dev, source.ino) != (copy.dev, copy.ino)
+            && source.bytes == copy.bytes
+            && source.mode & libc::S_IFMT == libc::S_IFREG
+            && source.mode & 0o6133 == 0
+            && source.uid == uid
+            && source.gid == gid
+            && source.links > 0
+            && copy.mode == libc::S_IFREG | 0o444
+            && copy.uid == uid
+            && copy.gid == gid
+            && copy.links == 1,
+        "fixed Contacts classpath is not the original and distinct owned readonly copy",
+    )?;
+    for file in [&original, &files[protocol::ORIGINAL_CONTENT_JAR]] {
+        readonly(file, false)?;
+    }
+    for file in [&private, &files[protocol::CONTENT_JAR]] {
+        readonly(file, true)?;
+    }
+    let label = b"u:object_r:system_file:s0\0";
+    security(&original, label)?;
+    security(&private, JAR_LABEL)?;
+    let mut magic = [0_u8; 4];
+    private.read_exact_at(&mut magic, 0)?;
+    require(
+        magic == *b"PK\x03\x04",
+        "fixed Contacts classpath is not a ZIP/JAR",
+    )?;
+    require(
+        complete_hash(&original, source, deadline)? == complete_hash(&private, copy, deadline)?,
+        "Contacts classpath bytes differ from the complete selected original",
+    )?;
+    require(
+        identity(&original)? == source && identity(&private)? == copy,
+        "Contacts classpath changed during verification",
+    )?;
+    security(&original, label)?;
+    security(&private, JAR_LABEL)?;
+    require(
+        Instant::now() < deadline,
+        "Contacts classpath verification deadline",
+    )
 }

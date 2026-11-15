@@ -7,12 +7,14 @@ use super::*;
 pub(crate) enum OperationDomain {
     Query,
     Browser,
+    ContactsRead,
 }
 impl OperationDomain {
     pub(super) const fn context(self) -> &'static str {
         match self {
             Self::Query => "u:r:droidloom_query:s0",
             Self::Browser => "u:r:droidloom_browser:s0",
+            Self::ContactsRead => "u:r:droidloom_contacts_read:s0",
         }
     }
 
@@ -20,6 +22,7 @@ impl OperationDomain {
         match self {
             Self::Query => b"u:r:droidloom_query:s0\0",
             Self::Browser => b"u:r:droidloom_browser:s0\0",
+            Self::ContactsRead => b"u:r:droidloom_contacts_read:s0\0",
         }
     }
 }
@@ -138,6 +141,7 @@ impl BrowserCommand {
 pub(super) enum ApplicationOperation {
     Read { value: ApplicationRead },
     Browser { value: BrowserCommand },
+    ContactsRead { value: ContactsQuery },
 }
 
 impl ApplicationOperation {
@@ -145,13 +149,40 @@ impl ApplicationOperation {
         match self {
             Self::Read { value } => value.validate(),
             Self::Browser { value } => value.validate(),
+            Self::ContactsRead { value } => value.validate(),
         }
+    }
+
+    pub(super) const fn needs_content_jar(&self) -> bool {
+        matches!(self, Self::ContactsRead { .. })
+    }
+
+    pub(super) const fn descriptor_count(&self) -> usize {
+        if self.needs_content_jar() { 17 } else { 15 }
+    }
+
+    pub(super) fn environment(&self) -> Vec<&'static CStr> {
+        let mut values = vec![
+            c"PATH=/system/bin:/system/xbin",
+            c"LC_ALL=C",
+            c"ANDROID_ROOT=/system",
+            c"ANDROID_DATA=/data",
+            c"ANDROID_ART_ROOT=/apex/com.android.art",
+            c"ANDROID_RUNTIME_ROOT=/apex/com.android.runtime",
+            c"ANDROID_I18N_ROOT=/apex/com.android.i18n",
+            c"ANDROID_TZDATA_ROOT=/apex/com.android.tzdata",
+        ];
+        if self.needs_content_jar() {
+            values.push(c"CLASSPATH=/.droidloom-query/content.jar");
+        }
+        values
     }
 
     pub(super) fn binary(&self) -> &'static CStr {
         match self {
             Self::Read { value } => value.binary(),
             Self::Browser { .. } => c"cmd",
+            Self::ContactsRead { .. } => c"app_process64",
         }
     }
 
@@ -159,6 +190,7 @@ impl ApplicationOperation {
         match self {
             Self::Read { value } => value.arguments(),
             Self::Browser { value } => value.arguments(),
+            Self::ContactsRead { value } => value.arguments(),
         }
     }
 
@@ -166,6 +198,7 @@ impl ApplicationOperation {
         match self {
             Self::Read { .. } => OperationDomain::Query,
             Self::Browser { value } => value.domain(),
+            Self::ContactsRead { .. } => OperationDomain::ContactsRead,
         }
     }
 }
@@ -174,6 +207,52 @@ impl ApplicationOperation {
 mod tests {
     use super::*;
 
+    #[test]
+    fn contacts_read_operation_keeps_classpath_and_domain_out_of_existing_read_and_browser_roles() {
+        let operation = ApplicationOperation::ContactsRead {
+            value: ContactsQuery::RawRows,
+        };
+        let environment = operation.environment();
+        assert_eq!(operation.domain(), OperationDomain::ContactsRead);
+        assert_eq!(operation.binary(), c"app_process64");
+        assert_eq!(operation.descriptor_count(), 17);
+        assert!(environment.contains(&c"CLASSPATH=/.droidloom-query/content.jar"));
+        assert_eq!(
+            OperationDomain::ContactsRead.terminated(),
+            b"u:r:droidloom_contacts_read:s0\0"
+        );
+        for other in [
+            ApplicationOperation::Read {
+                value: ApplicationRead::PackagePaths {
+                    package: "com.android.contacts".into(),
+                    user: 0,
+                },
+            },
+            ApplicationOperation::Browser {
+                value: BrowserCommand::Start {
+                    user: 0,
+                    url: "https://example.org/fixture".into(),
+                },
+            },
+        ] {
+            assert_eq!(other.descriptor_count(), 15);
+            assert!(!other.needs_content_jar());
+            assert!(
+                !other
+                    .environment()
+                    .iter()
+                    .any(|x| x.to_bytes().starts_with(b"CLASSPATH="))
+            );
+            assert_ne!(other.domain(), OperationDomain::ContactsRead);
+        }
+        for message in [
+            r#"{"operation":"ContactsRead","value":{"contacts_read":"RawRows"},"domain":"u:r:shell:s0"}"#,
+            r#"{"operation":"ContactsRead","value":{"contacts_read":"RawRows","classpath":"/data/other.jar"}}"#,
+            r#"{"operation":"ContactsRead","value":{"contacts_read":"Delete","raw_contact_id":"1"}}"#,
+        ] {
+            assert!(serde_json::from_str::<ApplicationOperation>(message).is_err());
+        }
+    }
     fn strings(command: &BrowserCommand) -> Vec<String> {
         command
             .arguments()

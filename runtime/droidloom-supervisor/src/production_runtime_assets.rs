@@ -6,7 +6,8 @@
 //! The two base roles are a detached read-only runtime filesystem and an
 //! idmapped mount of the held original Android init ELF. A manifest with
 //! fixed query inputs also exports one owned read-only tmpfs containing only
-//! the two byte-verified query executable copies. No guest-supplied path is
+//! the byte-verified cmd/toybox copies and any declared fixed Contacts ELF/JAR.
+//! The JAR has no execute mode and a separate role label. No guest-supplied path is
 //! opened here. The mapped child attaches only the fixed roles and reopens
 //! their same inodes; it cannot clone an arbitrary host file descriptor.
 //!
@@ -23,8 +24,8 @@ mod query;
 pub(crate) use activation::{
     RuntimeLinkerconfigInputs, RuntimeOriginalLinkerconfig, RuntimeTrampoline,
 };
-pub(crate) use query::RuntimeQueryExecutable;
 use query::{QueryDeclaration, QueryResources};
+pub(crate) use query::{RuntimeQueryData, RuntimeQueryExecutable};
 
 const RUNTIME_MANIFEST_ROOT: &str = "/etc/droidloom/runtime-cohorts";
 const RUNTIME_IMAGE_ROOT: &str = "/var/lib/droidloom/runtime-cohorts";
@@ -478,6 +479,7 @@ pub(crate) struct RuntimeRetirement {
     original_init_descriptor_closed: bool,
     activation_executable_mounts_closed: usize,
     query_executable_files_closed: usize,
+    query_data_files_closed: usize,
     query_private_filesystem_closed: bool,
     owned_loop_devices_observed_unbound: Vec<u64>,
     after_owned_tree_exit: bool,
@@ -712,7 +714,14 @@ impl PreparedRuntime {
             .ok_or(MountError::Rejected("runtime already retired"))?;
         let activation_executable_mounts_closed =
             if resources.activation.is_some() { 2 } else { 0 };
-        let query_executable_files_closed = if resources.query.is_some() { 2 } else { 0 };
+        let query_executable_files_closed = resources
+            .query
+            .as_ref()
+            .map_or(0, QueryResources::executable_file_count);
+        let query_data_files_closed = resources
+            .query
+            .as_ref()
+            .map_or(0, QueryResources::data_file_count);
         let query_private_filesystem_closed = resources.query.is_some();
         let released = resources.cleanup()?;
         drop(self.resources.take());
@@ -722,6 +731,7 @@ impl PreparedRuntime {
             original_init_descriptor_closed: true,
             activation_executable_mounts_closed,
             query_executable_files_closed,
+            query_data_files_closed,
             query_private_filesystem_closed,
             owned_loop_devices_observed_unbound: released,
             after_owned_tree_exit,
@@ -955,6 +965,75 @@ mod tests {
             changed["query"]["cmd"]["original"][field] = replacement;
             assert!(!accepted(changed));
         }
+    }
+    #[test]
+    fn contacts_runtime_inputs_require_complete_fixed_source_roles_and_nonexecutable_classpath() {
+        let mut value = declaration();
+        value["query"] = serde_json::json!({
+            "scope":"fixed_application_query_v1", "source_system_sha256":"a".repeat(64),
+            "cmd":{"original":{"file":"cmd-original","bytes":4096,"sha256":"5".repeat(64)},
+                "source_path":"/system/bin/cmd","interpreter":"/system/bin/linker64"},
+            "toybox":{"original":{"file":"toybox-original","bytes":8192,"sha256":"6".repeat(64)},
+                "source_path":"/system/bin/toybox","interpreter":null},
+            "contacts":{
+                "scope":"fixed_contacts_content_query_v1",
+                "app_process64":{
+                    "original":{"file":"contacts-app-process64-original","bytes":4096,"sha256":"7".repeat(64)},
+                    "source_path":"/system/bin/app_process64","interpreter":"/system/bin/linker64"},
+                "content_jar":{
+                    "original":{"file":"contacts-content-jar-original","bytes":8192,"sha256":"8".repeat(64)},
+                    "source_path":"/system/framework/content.jar","interpreter":null}
+            }
+        });
+        assert!(accepted(value.clone()));
+        for (role, field, replacement) in [
+            (
+                "app_process64",
+                "source_path",
+                serde_json::json!("/system/bin/sh"),
+            ),
+            (
+                "app_process64",
+                "interpreter",
+                serde_json::json!("/host/ld.so"),
+            ),
+            (
+                "content_jar",
+                "source_path",
+                serde_json::json!("/data/local/tmp/other.jar"),
+            ),
+            (
+                "content_jar",
+                "interpreter",
+                serde_json::json!("/system/bin/linker64"),
+            ),
+            ("content_jar", "preverified", serde_json::json!(true)),
+        ] {
+            let mut changed = value.clone();
+            changed["query"]["contacts"][role][field] = replacement;
+            assert!(!accepted(changed));
+        }
+        for role in ["app_process64", "content_jar"] {
+            let mut changed = value.clone();
+            changed["query"]["contacts"]
+                .as_object_mut()
+                .unwrap()
+                .remove(role);
+            assert!(!accepted(changed));
+            let mut changed = value.clone();
+            changed["query"]["contacts"][role]["original"]["bytes"] = serde_json::json!(0);
+            assert!(!accepted(changed));
+            let mut changed = value.clone();
+            changed["query"]["contacts"][role]["original"]["file"] =
+                serde_json::json!("../unbound");
+            assert!(!accepted(changed));
+        }
+        let mut changed = value.clone();
+        changed["query"]["contacts"]["scope"] = serde_json::json!("arbitrary_java_query");
+        assert!(!accepted(changed));
+        let mut changed = value;
+        changed["query"]["source_system_sha256"] = serde_json::json!("0".repeat(64));
+        assert!(!accepted(changed));
     }
     fn elf() -> Vec<u8> {
         let mut bytes = vec![0u8; 4096];

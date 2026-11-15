@@ -9,7 +9,7 @@ use std::time::Duration;
 
 use clap::Parser;
 use droidloom_applications::{CatalogPaths, ControlCatalog, reconcile, remove_managed};
-use droidloom_supervisor::control::DEFAULT_CONTROL_SOCKET;
+use droidloom_supervisor::control::{ControlRequest, DEFAULT_CONTROL_SOCKET, request};
 
 const DEFAULT_REFRESH_SECONDS: u64 = 30;
 
@@ -66,6 +66,25 @@ mod cli_tests {
     }
 
     #[test]
+    fn contacts_fixture_inspection_excludes_mutation_other_operations_and_user_override() {
+        assert!(
+            Cli::try_parse_from(["apps", "--inspect-contacts-fixture", "--socket", "/socket"])
+                .is_ok()
+        );
+        for extra in [
+            vec!["--once"],
+            vec!["--remove-managed"],
+            vec!["--user", "0"],
+            vec!["--inspect-package", "com.android.contacts"],
+            vec!["--release-results", "/results"],
+            vec!["--refresh-seconds", "30"],
+        ] {
+            let mut args = vec!["apps", "--inspect-contacts-fixture"];
+            args.extend(extra);
+            assert!(Cli::try_parse_from(args).is_err());
+        }
+    }
+    #[test]
     fn installed_identity_inspection_allows_only_its_own_socket_and_user() {
         assert!(
             Cli::try_parse_from([
@@ -119,6 +138,10 @@ struct Cli {
     /// Query actual PM identity and APK bytes; never launches or installs an app.
     #[arg(long, conflicts_with_all = ["runtime_plan", "release_check", "remove_managed", "once", "refresh_seconds"])]
     inspect_package: Option<String>,
+    /// Observe the fixed Contacts fixture's empty provider baseline in the current Ready tree.
+    /// This reads only; it does not qualify UI creation, edit, search, delete, or account topology.
+    #[arg(long, conflicts_with_all = ["inspect_package", "runtime_plan", "release_check", "remove_managed", "once", "refresh_seconds", "user"])]
+    inspect_contacts_fixture: bool,
     /// Execute explicit per-app runtime routing; unsupported and pending gates remain incomplete.
     #[arg(long, requires_all = ["expect_runtime_plan_sha256", "expect_app_count"], conflicts_with_all = ["inspect_package", "release_check", "remove_managed", "once", "refresh_seconds", "user"])]
     runtime_plan: Option<PathBuf>,
@@ -151,6 +174,42 @@ fn main() {
 
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
+    if cli.inspect_contacts_fixture {
+        let contacts = droidloom_applications::runtime_plan::inspect_package(
+            &cli.socket,
+            "com.android.contacts",
+            0,
+        )?;
+        let provider = droidloom_applications::runtime_plan::inspect_package(
+            &cli.socket,
+            "com.android.providers.contacts",
+            0,
+        )?;
+        let response = request(
+            &cli.socket,
+            &ControlRequest::InspectContactsFixture { contacts, provider },
+        )?;
+        if !response.ok {
+            return Err(response.message.into());
+        }
+        let observed: serde_json::Value = serde_json::from_str(
+            response
+                .diagnostics
+                .as_deref()
+                .ok_or("Contacts baseline response omitted the actual observation")?,
+        )?;
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&serde_json::json!({
+                "operation": "inspect_owned_contacts_fixture_baseline",
+                "observation": observed,
+                "production_ready": false, "runtime_qualified": false,
+                "whole_application_qualified": false, "app_launches": 0,
+                "contact_mutations": 0
+            }))?
+        );
+        return Ok(());
+    }
     if let Some(package) = &cli.inspect_package {
         let observed =
             droidloom_applications::runtime_plan::inspect_package(&cli.socket, package, cli.user)?;

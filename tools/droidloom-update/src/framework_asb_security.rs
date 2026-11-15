@@ -1,4 +1,4 @@
-//! Apply eleven framework class families through fourteen complete official patches in the normal services producer.
+//! Apply twelve framework class families through fifteen complete official patches in the normal services producer.
 //! These are source and build records; device tests, DEX semantics and whole-CVE
 //! acceptance remain separate from a successful ordinary build.
 use super::*;
@@ -10,6 +10,7 @@ pub(super) const TARGETS: &[&str] = &[
     "FrameworksServicesTests",
     "UsbTests",
     "AudioServiceTests",
+    "FrameworksUiServicesNotificationTests",
     "module-info",
 ];
 const PROJECT: &str = "frameworks/base";
@@ -28,6 +29,7 @@ const CVES: &[&str] = &[
     "CVE-2026-58979",
     "CVE-2026-58969",
     "CVE-2026-58986",
+    "CVE-2026-58955",
 ];
 const PATCHES: &[(&str, u64, &str, &str)] = &[
     (
@@ -114,6 +116,12 @@ const PATCHES: &[(&str, u64, &str, &str)] = &[
         "cc5d91d12281f99c7e90ee578d54c397b4d300c4e3a4821e4fe112c0141fb1bf",
         "ed7053111ca5140539af6617ff86641fea267965",
     ),
+    (
+        "android/security/framework-asb/d01eb65a9c333d158d932f081ef2298ca789ebeb.patch",
+        6872,
+        "b4f8f4e4fd83046457c31734f4d24f3f3a9027d4a589f42ac7ad756c015ccc99",
+        "d01eb65a9c333d158d932f081ef2298ca789ebeb",
+    ),
 ];
 const ALIASES_NOT_REPLAYED: &[(&str, &str)] = &[
     (
@@ -163,6 +171,10 @@ const ALIASES_NOT_REPLAYED: &[(&str, &str)] = &[
     (
         "ed7053111ca5140539af6617ff86641fea267965",
         "4d9170e117b17f37d69ba19f7b808a647c6d3a3f",
+    ),
+    (
+        "d01eb65a9c333d158d932f081ef2298ca789ebeb",
+        "9e7353b7d788125954eca6aaeb95f1dabb93eff2",
     ),
 ];
 const ORIGINALS: &[(&str, u64, &str)] = &[
@@ -291,6 +303,21 @@ const ORIGINALS: &[(&str, u64, &str)] = &[
         24472,
         "a7e21bc65a2c7e564623513db3cda3ffc8908aa5fb35be1622075895a307b553",
     ),
+    (
+        "services/core/java/com/android/server/notification/PreferencesHelper.java",
+        149224,
+        "9812c3b128b6ba0b64271d8de2cf439e651b00e4e10edab3962add2830626e5c",
+    ),
+    (
+        "services/tests/uiservicestests/src/com/android/server/notification/PreferencesHelperTest.java",
+        339433,
+        "3ee4a0ab9a7c73bee843f97f2e7a4b72522280b2b5a6ef4852fe3b015d817aa9",
+    ),
+    (
+        "services/tests/uiservicestests/Android.bp",
+        5000,
+        "5f6c17f31fa0408b4069d653b960ddf7dc2955bb2bcdbd6467afd3f7cde00c54",
+    ),
 ];
 const FIXED: &[(&str, u64, &str)] = &[
     (
@@ -388,6 +415,16 @@ const FIXED: &[(&str, u64, &str)] = &[
         26726,
         "8908ea9f341c2b8471f496c1a54391aa5689fe4068cdb7ef4ee4934e0ce6d1af",
     ),
+    (
+        "services/core/java/com/android/server/notification/PreferencesHelper.java",
+        149396,
+        "de3aa20ae94c890ec2ab372ac60b86c2d58c3e30a3569276ec54ad3ba7d9a642",
+    ),
+    (
+        "services/tests/uiservicestests/src/com/android/server/notification/PreferencesHelperTest.java",
+        344024,
+        "fb6562a46767d421585a34bee329c89fb936c028967ce4b06e177ec75277ddff",
+    ),
 ];
 const PROVIDERS: &[(&str, u64, &str)] = &[
     (
@@ -420,6 +457,11 @@ const PROVIDERS: &[(&str, u64, &str)] = &[
         51079,
         "23b4082ab5de81b25facce2629fcf65a34c01e057399fb385a13a825d269b87c",
     ),
+    (
+        "services/tests/uiservicestests/Android.bp",
+        5000,
+        "5f6c17f31fa0408b4069d653b960ddf7dc2955bb2bcdbd6467afd3f7cde00c54",
+    ),
 ];
 
 /// The ordinary full TARGETS set contains services. This is not confined to an
@@ -437,6 +479,7 @@ pub(super) fn required_for_targets(targets: &[&str]) -> bool {
                 | "FrameworksServicesTests"
                 | "UsbTests"
                 | "AudioServiceTests"
+                | "FrameworksUiServicesNotificationTests"
         )
     })
 }
@@ -576,7 +619,8 @@ pub(super) fn input_receipt(
         "FrameworksServicesTests",
         "UsbTests",
         "AudioServiceTests",
-        "WmTests"
+        "WmTests",
+        "FrameworksUiServicesNotificationTests"
     ]);
     inputs["effective_upstream_files_and_providers"] = effective.into();
     inputs["effective_projection"] = projection.effective_inventory(repo, source)?;
@@ -714,6 +758,10 @@ fn completed_artifacts(
             ),
             ("UsbTests", "frameworks/base/tests/UsbTests"),
             ("AudioServiceTests", "frameworks/base/services/tests/audio"),
+            (
+                "FrameworksUiServicesNotificationTests",
+                "frameworks/base/services/tests/uiservicestests",
+            ),
         ] {
             let row = info
                 .get(module)
@@ -790,6 +838,9 @@ mod tests {
             ("services/core/java/com/android/server/media/quality/MediaQualityService.java", include_bytes!("../../../android/security/framework-asb/fixtures/services/core/java/com/android/server/media/quality/MediaQualityService.java").as_slice()),
             ("services/core/java/com/android/server/wm/PresentationController.java", include_bytes!("../../../android/security/framework-asb/fixtures/services/core/java/com/android/server/wm/PresentationController.java").as_slice()),
             ("services/tests/wmtests/src/com/android/server/wm/PresentationControllerTests.java", include_bytes!("../../../android/security/framework-asb/fixtures/services/tests/wmtests/src/com/android/server/wm/PresentationControllerTests.java").as_slice()),
+            ("services/core/java/com/android/server/notification/PreferencesHelper.java", include_bytes!("../../../android/security/framework-asb/fixtures/services/core/java/com/android/server/notification/PreferencesHelper.java").as_slice()),
+            ("services/tests/uiservicestests/src/com/android/server/notification/PreferencesHelperTest.java", include_bytes!("../../../android/security/framework-asb/fixtures/services/tests/uiservicestests/src/com/android/server/notification/PreferencesHelperTest.java").as_slice()),
+            ("services/tests/uiservicestests/Android.bp", include_bytes!("../../../android/security/framework-asb/fixtures/services/tests/uiservicestests/Android.bp").as_slice()),
         ] { write(&source.join(PROJECT).join(name), bytes).unwrap(); }
         for (name, bytes) in [
             ("android/security/framework-asb/9444f519c4e55123c11a7ce92a960bb38486dbab.patch", include_bytes!("../../../android/security/framework-asb/9444f519c4e55123c11a7ce92a960bb38486dbab.patch").as_slice()),
@@ -806,6 +857,7 @@ mod tests {
             ("android/security/framework-asb/ca5297bdc95722cd294a1b0fc656dc5475fdf388.patch", include_bytes!("../../../android/security/framework-asb/ca5297bdc95722cd294a1b0fc656dc5475fdf388.patch").as_slice()),
             ("android/security/framework-asb/97984663fccfaea9bce3098edd0ebdc53a893ab4.patch", include_bytes!("../../../android/security/framework-asb/97984663fccfaea9bce3098edd0ebdc53a893ab4.patch").as_slice()),
             ("android/security/framework-asb/ed7053111ca5140539af6617ff86641fea267965.patch", include_bytes!("../../../android/security/framework-asb/ed7053111ca5140539af6617ff86641fea267965.patch").as_slice()),
+            ("android/security/framework-asb/d01eb65a9c333d158d932f081ef2298ca789ebeb.patch", include_bytes!("../../../android/security/framework-asb/d01eb65a9c333d158d932f081ef2298ca789ebeb.patch").as_slice()),
         ] { write(&repo.join(name), bytes).unwrap(); }
         (repo, source)
     }
@@ -824,7 +876,7 @@ mod tests {
             let journal = d.path().join("source-projection.json");
             let mut projection = Projection::new(journal.clone()).unwrap();
             project(&mut projection, &repo, &source).unwrap();
-            assert_eq!(projection.originals.len(), 18);
+            assert_eq!(projection.originals.len(), 20);
             validate_fixed(&source).unwrap();
             if interrupted {
                 std::mem::forget(projection);
@@ -905,15 +957,15 @@ mod tests {
                     exact(&source, &format!("{PROJECT}/{relative}"), *bytes, expected).unwrap();
                 }
                 // Both Locale files are final, but the complete producer
-                // still requires the later WM, presentation and media patches.
+                // still requires the later WM, presentation, media and notification patches.
                 assert!(validate_fixed(&source).is_err());
                 for (relative, _, _, _) in &PATCHES[8..] {
                     projection
                         .patch(&source, PROJECT, &repo.join(relative))
                         .unwrap();
                 }
-                assert_eq!(projection.originals.len(), 18);
-                assert_eq!(projection.applied_patches.len(), 14);
+                assert_eq!(projection.originals.len(), 20);
+                assert_eq!(projection.applied_patches.len(), 15);
                 validate_fixed(&source).unwrap();
             }
             std::mem::forget(projection);
@@ -1036,8 +1088,8 @@ mod tests {
     #[test]
     fn framework_presentation_media_stages_restore_one_original_per_file() {
         // Apply complete official source patches and test journal recovery at
-        // each new boundary. This executes no Java, DEX or device input.
-        for (last_patch, journaled) in [(11_usize, 17_usize), (12, 18), (13, 18)] {
+        // each media and notification boundary. This executes no Java, DEX or device input.
+        for (last_patch, journaled) in [(11_usize, 17_usize), (12, 18), (13, 18), (14, 20)] {
             let directory = tempfile::tempdir().unwrap();
             let (repo, source) = fixture(directory.path());
             let mut original_metadata = Vec::new();
@@ -1082,7 +1134,7 @@ mod tests {
                     166882,
                     "d412de5c1e3d4533108e09f98262029d586f5ff7d83d73113941399b50ce38f2",
                 ),
-                13 => (
+                13 | 14 => (
                     167461,
                     "48fa353b6dc2a4848bdf4341fd003c04feeb7a3b645c727bc6d3b0cfbd27373d",
                 ),
@@ -1108,7 +1160,16 @@ mod tests {
                 );
             }
             drop(saved_media);
-            if last_patch == 13 {
+            for relative in [
+                "services/core/java/com/android/server/notification/PreferencesHelper.java",
+                "services/tests/uiservicestests/src/com/android/server/notification/PreferencesHelperTest.java",
+            ] {
+                let pins = if last_patch == 14 { FIXED } else { ORIGINALS };
+                let (_, bytes, expected) =
+                    pins.iter().find(|(name, _, _)| *name == relative).unwrap();
+                exact(&source, &format!("{PROJECT}/{relative}"), *bytes, expected).unwrap();
+            }
+            if last_patch == 14 {
                 validate_fixed(&source).unwrap();
             } else {
                 assert!(validate_fixed(&source).is_err());
@@ -1148,13 +1209,19 @@ mod tests {
         assert_eq!(request.projection_targets(), TARGETS);
         assert_eq!(request.requested_targets(), TARGETS);
         assert_eq!(TARGETS.last(), Some(&"module-info"));
-        assert_eq!(CVES.len(), 13);
-        assert_eq!(PATCHES.len(), 14);
-        assert_eq!(ORIGINALS.len(), 25);
-        assert_eq!(FIXED.len(), 19);
-        assert_eq!(PROVIDERS.len(), 6);
+        assert_eq!(CVES.len(), 14);
+        assert_eq!(PATCHES.len(), 15);
+        assert_eq!(ORIGINALS.len(), 28);
+        assert_eq!(FIXED.len(), 21);
+        assert_eq!(PROVIDERS.len(), 7);
         assert!(TARGETS.contains(&"AudioServiceTests"));
         assert!(TARGETS.contains(&"WmTests"));
+        assert!(TARGETS.contains(&"FrameworksUiServicesNotificationTests"));
+        assert!(PROVIDERS.contains(&(
+            "services/tests/uiservicestests/Android.bp",
+            5000,
+            "5f6c17f31fa0408b4069d653b960ddf7dc2955bb2bcdbd6467afd3f7cde00c54",
+        )));
         assert!(PROVIDERS.contains(&(
             "services/tests/wmtests/Android.bp",
             51079,

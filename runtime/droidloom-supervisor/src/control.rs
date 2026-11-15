@@ -160,6 +160,14 @@ pub enum ControlRequest {
         /// Reviewed public HTTPS fixture URL.
         url: String,
     },
+    /// Read the original Contacts fixture's empty provider baseline only.
+    /// This cannot issue ContactsSearch acceptance or a mutation permit.
+    InspectContactsFixture {
+        /// Exact current Contacts package/APK/epoch observation.
+        contacts: application_probe::ApplicationInspection,
+        /// Exact ContactsProvider package/APK/epoch observation.
+        provider: application_probe::ApplicationInspection,
+    },
     /// List enabled Android MAIN/LAUNCHER activities.
     ListApplications {
         /// Android user identifier.
@@ -364,6 +372,9 @@ impl Daemon {
             ControlRequest::OpenBrowser { expected, url } => {
                 self.open_browser(peer_uid, &expected, &url)
             }
+            ControlRequest::InspectContactsFixture { .. } => Err(ControlError::Invalid(
+                "fixed Contacts provider reads require the production Ready owner".into(),
+            )),
             ControlRequest::ListApplications { user } => self.list_applications(peer_uid, user),
             ControlRequest::ApplicationIcon {
                 component,

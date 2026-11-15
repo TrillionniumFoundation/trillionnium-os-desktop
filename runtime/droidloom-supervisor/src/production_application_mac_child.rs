@@ -294,6 +294,11 @@ pub(super) unsafe fn arm_browser_mac(deadline: u64) -> i32 {
     unsafe { arm_operation_mac(deadline, OperationDomain::Browser) }
 }
 
+/// Read-only Contacts provider Java role; no fallback to query/shell.
+pub(super) unsafe fn arm_contacts_read_mac(deadline: u64) -> i32 {
+    unsafe { arm_operation_mac(deadline, OperationDomain::ContactsRead) }
+}
+
 /// Raw-child, allocation-free operation, with no caller label/path input.
 unsafe fn arm_operation_mac(deadline: u64, domain: OperationDomain) -> i32 {
     if let Err(error) = unsafe { credentials().and_then(|_| before(deadline)) } {

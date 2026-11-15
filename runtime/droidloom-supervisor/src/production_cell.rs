@@ -249,4 +249,20 @@ impl ProductionCell {
             .ok_or_else(|| rejected("production browser requires actual current readiness"))?;
         crate::production_application::open_browser(ready, expected, url).map_err(rejected)
     }
+    pub(crate) fn inspect_contacts_baseline(
+        &mut self,
+        contacts: &crate::control::application_probe::ApplicationInspection,
+        provider: &crate::control::application_probe::ApplicationInspection,
+    ) -> Result<crate::production_application::ContactsBaselineObservation> {
+        let tree = self
+            .tree
+            .as_mut()
+            .ok_or_else(|| rejected("production owner was retired"))?;
+        let ready = tree
+            .ready_witness(&self.selection, &self.execution)
+            .map_err(rejected)?
+            .ok_or_else(|| rejected("Contacts provider reads require actual current readiness"))?;
+        crate::production_application::inspect_contacts_baseline(ready, contacts, provider)
+            .map_err(rejected)
+    }
 }

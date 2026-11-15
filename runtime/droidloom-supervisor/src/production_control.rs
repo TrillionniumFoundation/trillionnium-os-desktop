@@ -679,6 +679,39 @@ impl ProductionDaemon {
         Ok(response)
     }
 
+    fn inspect_contacts_fixture(
+        &mut self,
+        peer_uid: u32,
+        contacts: &application_probe::ApplicationInspection,
+        provider: &application_probe::ApplicationInspection,
+    ) -> Result<ControlResponse, ControlError> {
+        self.authorize_active(peer_uid)?;
+        if self.state != CellState::Running {
+            return Err(ControlError::Invalid(
+                "Contacts provider reads require current Android readiness".into(),
+            ));
+        }
+        let result = self
+            .active
+            .as_mut()
+            .expect("authorized active owner")
+            .inspect_contacts_baseline(contacts, provider)
+            .map_err(|error| ControlError::Invalid(error.to_string()));
+        self.poll();
+        let observed = result?;
+        if self.state != CellState::Running {
+            return Err(ControlError::Invalid(
+                "production tree changed during Contacts provider reads".into(),
+            ));
+        }
+        let mut response = self.success(
+            "Contacts provider baseline observed in the original owned tree; account topology and create/edit/search/delete acceptance remain pending",
+        );
+        response.inspection = Some(contacts.clone());
+        response.diagnostics = Some(serde_json::to_string(&observed)?);
+        Ok(response)
+    }
+
     fn handle(
         &mut self,
         peer_uid: u32,
@@ -698,6 +731,9 @@ impl ProductionDaemon {
             }
             ControlRequest::OpenBrowser { expected, url } => {
                 self.open_browser(peer_uid, &expected, &url)
+            }
+            ControlRequest::InspectContactsFixture { contacts, provider } => {
+                self.inspect_contacts_fixture(peer_uid, &contacts, &provider)
             }
             _ => {
                 // Additional app/business actions need dedicated owned-tree

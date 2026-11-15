@@ -78,6 +78,24 @@ compiling Android again. Rollback restores
 programs/configuration; it does not undo writes Android made to application
 data while starting.
 
+The normal framework-services producer applies fifteen complete upstream security
+patches to the pinned `frameworks/base` originals and verifies the complete
+patched files and unchanged build providers. The notification-channel correction
+uses upstream commit `d01eb65a9c333d158d932f081ef2298ca789ebeb`, whose preimages
+match the selected `94b4c163b7dfe5ce3607f7bb8456f9573f7de57d` source. Its
+`9e7353b7d788125954eca6aaeb95f1dabb93eff2` branch equivalent is recorded as an
+alias and is not applied a second time.
+
+The focused framework-security build also requests the original `WmTests`,
+`FrameworksServicesTests`, `UsbTests`, `AudioServiceTests`, and
+`FrameworksUiServicesNotificationTests` modules. The last module owns the
+notification regression tests; `FrameworksUiServicesTests` excludes those
+sources. Successful-build records bind the actual services JAR and each
+requested test APK to the owned product output and its original module
+provider. Building these artifacts does not establish that the device tests
+ran, that the installed binaries contain every bulletin fix, or that runtime
+and production-signing checks passed.
+
 Build source projections are journaled and restored on success or failure.
 Interrupted projections are recovered on the next invocation. Unchanged projected
 content retains its modification time, so applying patches again does not
@@ -106,3 +124,16 @@ They exercise mixed ABI rejection, missing components, acceptance of compatible
 byte changes and additional files,
 architecture mismatch, source restoration and recovery, inherited build locks,
 and filesystem rollback of both legacy and versioned installations.
+
+## Runtime input image producer
+
+`droidloom-runtime-inputs` builds an uninstalled runtime input image from a pinned
+plan and fixed original bytes. A nonzero exit leaves any outputs unqualified;
+callers must require successful completion and the complete output proof before
+consuming them. This command does not install a selection or grant Android Ready.
+
+The current `original_cat` command captures at most 4 MiB of stdout. The selected
+CP3A init is 2,934,488 bytes and fits that bound. The declaration parser's larger
+size limit does not establish support for reading arbitrary 32 MiB inputs through
+this command. The ordinary image test uses a synthetic 32 MiB filesystem; that
+filesystem size is separate from the per-command stdout limit.
