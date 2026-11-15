@@ -1,0 +1,20 @@
+[Unit]
+Description=Disposable original systemd endpoint observation
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=/fixture/systemd-observer --systemd-observer
+TimeoutStartSec=20s
+TimeoutStopSec=5s
+KillMode=control-group
+SendSIGKILL=yes
+Restart=no
+RemainAfterExit=no
+UMask=0077
+NoNewPrivileges=yes
+StandardInput=null
+# The authenticated observer opens and validates COM2 itself. The manager
+# must not treat that raw record channel as a terminal or query its terminfo.
+StandardOutput=null
+StandardError=null
