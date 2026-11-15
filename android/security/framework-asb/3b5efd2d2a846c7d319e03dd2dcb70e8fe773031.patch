@@ -1,0 +1,65 @@
+diff --git a/services/core/java/com/android/server/wm/WindowState.java b/services/core/java/com/android/server/wm/WindowState.java
+index 90d1d6d..da4da6a 100644
+--- a/services/core/java/com/android/server/wm/WindowState.java
++++ b/services/core/java/com/android/server/wm/WindowState.java
+@@ -1252,12 +1252,22 @@
+         if (WindowManager.LayoutParams.isSystemAlertWindowType(mAttrs.type)) {
+             return TouchOcclusionMode.USE_OPACITY;
+         }
+-        if (isAnimating(PARENTS, ANIMATION_TYPE_ALL) || inTransition()) {
++        if (isAnimating(PARENTS, ANIMATION_TYPE_ALL) || inTransition() || inInsetsAnimation()) {
+             return TouchOcclusionMode.USE_OPACITY;
+         }
+         return TouchOcclusionMode.BLOCK_UNTRUSTED;
+     }
+ 
++    private boolean inInsetsAnimation() {
++        if (mControllableInsetProvider != null) {
++            @InsetsType
++            final int insetsType = mControllableInsetProvider.getSource().getType();
++            final InsetsControlTarget target = mControllableInsetProvider.getControlTarget();
++            return target != null && (target.getAnimatingTypes() & insetsType) != 0;
++        }
++        return false;
++    }
++
+     void updateGlobalScale() {
+         if (hasCompatScale()) {
+             mCompatScale = (mOverrideScale == 1f || mToken.hasSizeCompatBounds())
+diff --git a/services/tests/wmtests/src/com/android/server/wm/WindowStateTests.java b/services/tests/wmtests/src/com/android/server/wm/WindowStateTests.java
+index c9819e8..d41aece 100644
+--- a/services/tests/wmtests/src/com/android/server/wm/WindowStateTests.java
++++ b/services/tests/wmtests/src/com/android/server/wm/WindowStateTests.java
+@@ -101,6 +101,7 @@
+ import android.graphics.Point;
+ import android.graphics.Rect;
+ import android.graphics.Region;
++import android.gui.TouchOcclusionMode;
+ import android.os.Binder;
+ import android.os.Build;
+ import android.os.IBinder;
+@@ -1588,6 +1589,24 @@
+         assertFalse(overlay.getWindowFrames().hasInsetsChanged());
+     }
+ 
++    @SetupWindows(addWindows = { W_INPUT_METHOD })
++    @Test
++    public void testGetTouchOcclusionModeOfImeWindow() {
++        final var app = newWindowBuilder("app", TYPE_APPLICATION).build();
++        makeWindowVisibleAndDrawn(mImeWindow);
++
++        final InsetsStateController controller = mDisplayContent.getInsetsStateController();
++        final ImeInsetsSourceProvider imeProvider = controller.getImeSourceProvider();
++        imeProvider.setWindow(mImeWindow, null, null);
++        imeProvider.updateControlForTarget(app, false, null);
++
++        app.setAnimatingTypes(0, null);
++        assertEquals(TouchOcclusionMode.BLOCK_UNTRUSTED, mImeWindow.getTouchOcclusionMode());
++
++        app.setAnimatingTypes(WindowInsets.Type.ime(), null);
++        assertEquals(TouchOcclusionMode.USE_OPACITY, mImeWindow.getTouchOcclusionMode());
++    }
++
+     @SetupWindows(addWindows = { W_INPUT_METHOD, W_ACTIVITY })
+     @Test
+     public void testImeAlwaysReceivesVisibleNavigationBarInsets() {

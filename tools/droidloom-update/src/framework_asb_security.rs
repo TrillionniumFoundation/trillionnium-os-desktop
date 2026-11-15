@@ -1,4 +1,4 @@
-//! Apply seven framework correction families through eight complete official patches in the normal services producer.
+//! Apply nine framework class families through eleven complete official patches in the normal services producer.
 //! These are source and build records; device tests, DEX semantics and whole-CVE
 //! acceptance remain separate from a successful ordinary build.
 use super::*;
@@ -22,6 +22,9 @@ const CVES: &[&str] = &[
     "CVE-2026-58965",
     "CVE-2026-58970",
     "CVE-2026-49935",
+    "CVE-2026-58934",
+    "CVE-2026-59006",
+    "CVE-2026-58957",
 ];
 const PATCHES: &[(&str, u64, &str, &str)] = &[
     (
@@ -72,6 +75,24 @@ const PATCHES: &[(&str, u64, &str, &str)] = &[
         "d8368ebe335755e0e084e841ebcd87fcb894d04ff797421e220860f2c3c9a53f",
         "65d449f82c90589edf53546649a82ece1e8992b1",
     ),
+    (
+        "android/security/framework-asb/dfc1b5219ffbc682c0d328b27e026c549770c208.patch",
+        1152,
+        "3588298682736b58387f5602939f0161b4aede15efe16f517769ad6f555f31b2",
+        "dfc1b5219ffbc682c0d328b27e026c549770c208",
+    ),
+    (
+        "android/security/framework-asb/3b5efd2d2a846c7d319e03dd2dcb70e8fe773031.patch",
+        3003,
+        "0c23065f95d60a4fb0c9deab013b0e32de3f223e2ea26fe71ddd187f63aef5fc",
+        "3b5efd2d2a846c7d319e03dd2dcb70e8fe773031",
+    ),
+    (
+        "android/security/framework-asb/c6dfa8f425a6a6ebb68cabd63a5bf02276912375.patch",
+        12065,
+        "c6750d57c95e040344859f95cdfb3a379a58f3a36d207b9d75529dbfbe2ed26d",
+        "c6dfa8f425a6a6ebb68cabd63a5bf02276912375",
+    ),
 ];
 const ALIASES_NOT_REPLAYED: &[(&str, &str)] = &[
     (
@@ -105,6 +126,18 @@ const ALIASES_NOT_REPLAYED: &[(&str, &str)] = &[
     (
         "65d449f82c90589edf53546649a82ece1e8992b1",
         "1b9a78c1ed8dc1dfde7e1062e829890423d827aa",
+    ),
+    (
+        "dfc1b5219ffbc682c0d328b27e026c549770c208",
+        "e4cabe8de08637b0537067ad2101b759aa9a45f7",
+    ),
+    (
+        "3b5efd2d2a846c7d319e03dd2dcb70e8fe773031",
+        "dbab9c94338cd335363cb9665fe5346404fbc125",
+    ),
+    (
+        "c6dfa8f425a6a6ebb68cabd63a5bf02276912375",
+        "7c921ec9ebb02fa0a57bba1103051aef7ec3eaa0",
     ),
 ];
 const ORIGINALS: &[(&str, u64, &str)] = &[
@@ -193,6 +226,31 @@ const ORIGINALS: &[(&str, u64, &str)] = &[
         19313,
         "cca73e13e9bef811720213b3eeecc25c6f2f90ba59d10c456dcb46f8b18a3f64",
     ),
+    (
+        "services/core/java/com/android/server/wm/ActivityStarter.java",
+        193865,
+        "c1c1788181e60fead477ff7ad308b4cffe55fb7a38e162140f5cdeae231c8518",
+    ),
+    (
+        "services/core/java/com/android/server/wm/WindowState.java",
+        274963,
+        "d3c8b8345a985f1d67cff37819244bc19887a4b6195460ab2780e877daec0909",
+    ),
+    (
+        "services/tests/wmtests/Android.bp",
+        51079,
+        "23b4082ab5de81b25facce2629fcf65a34c01e057399fb385a13a825d269b87c",
+    ),
+    (
+        "services/tests/wmtests/src/com/android/server/wm/ActivityStarterTests.java",
+        103812,
+        "950d66b224845b3486367af0b1971068b3e3ec56aadeeb79ef4d2c9c880070f9",
+    ),
+    (
+        "services/tests/wmtests/src/com/android/server/wm/WindowStateTests.java",
+        112874,
+        "4635ec0dcf18c60e82f2b4ba9524aa4c89cbd232c31528f667cbec2a91c1fd67",
+    ),
 ];
 const FIXED: &[(&str, u64, &str)] = &[
     (
@@ -255,6 +313,26 @@ const FIXED: &[(&str, u64, &str)] = &[
         23612,
         "cecbc779a16dff9a5d04640643932e2850dbde2b13f371c289ceefb0eafe4889",
     ),
+    (
+        "services/core/java/com/android/server/wm/ActivityStarter.java",
+        194940,
+        "f31abc0df54fa307ef07b81cb87806dfb66d2b774f7cef86488902ad0a23c190",
+    ),
+    (
+        "services/core/java/com/android/server/wm/WindowState.java",
+        275562,
+        "d68d1620731b93685725e30a543b0e052c7157a32a93a9786e45387d9d7f869c",
+    ),
+    (
+        "services/tests/wmtests/src/com/android/server/wm/ActivityStarterTests.java",
+        111572,
+        "3e309ca78086a2295efb9b6685a294080627ce614d712b39f4e469e3154863f6",
+    ),
+    (
+        "services/tests/wmtests/src/com/android/server/wm/WindowStateTests.java",
+        113746,
+        "186e288812f1fda3d93f787a81e54df51cd1bcba378e3c67741bcbd1da613728",
+    ),
 ];
 const PROVIDERS: &[(&str, u64, &str)] = &[
     (
@@ -281,6 +359,11 @@ const PROVIDERS: &[(&str, u64, &str)] = &[
         "services/tests/audio/Android.bp",
         2359,
         "e0022a1fdfd254bdeb1321181d70dea354840a966f89193738ebbd4afd48de12",
+    ),
+    (
+        "services/tests/wmtests/Android.bp",
+        51079,
+        "23b4082ab5de81b25facce2629fcf65a34c01e057399fb385a13a825d269b87c",
     ),
 ];
 
@@ -434,8 +517,12 @@ pub(super) fn input_receipt(
     inputs["original_frameworks_base_pin"] = PROJECT_PIN.into();
     inputs["official_complete_patches"] = patches.into();
     inputs["same_fix_aliases_not_replayed"] = serde_json::json!(ALIASES_NOT_REPLAYED);
-    inputs["official_test_modules"] =
-        serde_json::json!(["FrameworksServicesTests", "UsbTests", "AudioServiceTests"]);
+    inputs["official_test_modules"] = serde_json::json!([
+        "FrameworksServicesTests",
+        "UsbTests",
+        "AudioServiceTests",
+        "WmTests"
+    ]);
     inputs["effective_upstream_files_and_providers"] = effective.into();
     inputs["effective_projection"] = projection.effective_inventory(repo, source)?;
     inputs["strict_allow_missing_dependencies"] = "false".into();
@@ -640,6 +727,11 @@ mod tests {
             ("services/tests/audio/Android.bp", include_bytes!("../../../android/security/framework-asb/fixtures/services/tests/audio/Android.bp").as_slice()),
             ("services/tests/audio/src/com/android/server/audio/MusicFxHelperTest.java", include_bytes!("../../../android/security/framework-asb/fixtures/services/tests/audio/src/com/android/server/audio/MusicFxHelperTest.java").as_slice()),
             ("services/tests/servicestests/src/com/android/server/locales/LocaleManagerServiceTest.java", include_bytes!("../../../android/security/framework-asb/fixtures/services/tests/servicestests/src/com/android/server/locales/LocaleManagerServiceTest.java").as_slice()),
+            ("services/core/java/com/android/server/wm/ActivityStarter.java", include_bytes!("../../../android/security/framework-asb/fixtures/services/core/java/com/android/server/wm/ActivityStarter.java").as_slice()),
+            ("services/core/java/com/android/server/wm/WindowState.java", include_bytes!("../../../android/security/framework-asb/fixtures/services/core/java/com/android/server/wm/WindowState.java").as_slice()),
+            ("services/tests/wmtests/Android.bp", include_bytes!("../../../android/security/framework-asb/fixtures/services/tests/wmtests/Android.bp").as_slice()),
+            ("services/tests/wmtests/src/com/android/server/wm/ActivityStarterTests.java", include_bytes!("../../../android/security/framework-asb/fixtures/services/tests/wmtests/src/com/android/server/wm/ActivityStarterTests.java").as_slice()),
+            ("services/tests/wmtests/src/com/android/server/wm/WindowStateTests.java", include_bytes!("../../../android/security/framework-asb/fixtures/services/tests/wmtests/src/com/android/server/wm/WindowStateTests.java").as_slice()),
         ] { write(&source.join(PROJECT).join(name), bytes).unwrap(); }
         for (name, bytes) in [
             ("android/security/framework-asb/9444f519c4e55123c11a7ce92a960bb38486dbab.patch", include_bytes!("../../../android/security/framework-asb/9444f519c4e55123c11a7ce92a960bb38486dbab.patch").as_slice()),
@@ -650,6 +742,9 @@ mod tests {
             ("android/security/framework-asb/a9f3330b0f82042931a896ed78ae588d049390eb.patch", include_bytes!("../../../android/security/framework-asb/a9f3330b0f82042931a896ed78ae588d049390eb.patch").as_slice()),
             ("android/security/framework-asb/45c98d34046991dd9d08fc6a32a47b2e8c2ceb98.patch", include_bytes!("../../../android/security/framework-asb/45c98d34046991dd9d08fc6a32a47b2e8c2ceb98.patch").as_slice()),
             ("android/security/framework-asb/65d449f82c90589edf53546649a82ece1e8992b1.patch", include_bytes!("../../../android/security/framework-asb/65d449f82c90589edf53546649a82ece1e8992b1.patch").as_slice()),
+            ("android/security/framework-asb/dfc1b5219ffbc682c0d328b27e026c549770c208.patch", include_bytes!("../../../android/security/framework-asb/dfc1b5219ffbc682c0d328b27e026c549770c208.patch").as_slice()),
+            ("android/security/framework-asb/3b5efd2d2a846c7d319e03dd2dcb70e8fe773031.patch", include_bytes!("../../../android/security/framework-asb/3b5efd2d2a846c7d319e03dd2dcb70e8fe773031.patch").as_slice()),
+            ("android/security/framework-asb/c6dfa8f425a6a6ebb68cabd63a5bf02276912375.patch", include_bytes!("../../../android/security/framework-asb/c6dfa8f425a6a6ebb68cabd63a5bf02276912375.patch").as_slice()),
         ] { write(&repo.join(name), bytes).unwrap(); }
         (repo, source)
     }
@@ -668,7 +763,7 @@ mod tests {
             let journal = d.path().join("source-projection.json");
             let mut projection = Projection::new(journal.clone()).unwrap();
             project(&mut projection, &repo, &source).unwrap();
-            assert_eq!(projection.originals.len(), 11);
+            assert_eq!(projection.originals.len(), 15);
             validate_fixed(&source).unwrap();
             if interrupted {
                 std::mem::forget(projection);
@@ -730,11 +825,133 @@ mod tests {
                         "c57c32981c90a7007ca9c428e893f6c2108d42e7982b67bb20c9caeb140760ef",
                     ),
                 ] {
-                    exact(&source, &format!("{PROJECT}/{relative}"), bytes, expected).unwrap();
+                    let path =
+                        exact(&source, &format!("{PROJECT}/{relative}"), bytes, expected).unwrap();
+                    let (_, _, final_expected) =
+                        FIXED.iter().find(|(name, _, _)| *name == relative).unwrap();
+                    // The independent Locale pin must reject stage one even
+                    // while the later WM projection has not yet been applied.
+                    assert_ne!(hash(&path).unwrap(), *final_expected);
                 }
                 assert!(validate_fixed(&source).is_err());
             } else {
+                for relative in [
+                    "services/core/java/com/android/server/locales/LocaleManagerService.java",
+                    "services/tests/servicestests/src/com/android/server/locales/LocaleManagerServiceTest.java",
+                ] {
+                    let (_, bytes, expected) =
+                        FIXED.iter().find(|(name, _, _)| *name == relative).unwrap();
+                    exact(&source, &format!("{PROJECT}/{relative}"), *bytes, expected).unwrap();
+                }
+                // Both Locale files are final, but the complete producer
+                // still requires its three official WM patches.
+                assert!(validate_fixed(&source).is_err());
+                for (relative, _, _, _) in &PATCHES[8..] {
+                    projection
+                        .patch(&source, PROJECT, &repo.join(relative))
+                        .unwrap();
+                }
+                assert_eq!(projection.originals.len(), 15);
+                assert_eq!(projection.applied_patches.len(), 11);
                 validate_fixed(&source).unwrap();
+            }
+            std::mem::forget(projection);
+            recover(&journal, &source).unwrap();
+            validate_original(&repo, &source).unwrap();
+            for (path, permissions, modified) in original_metadata {
+                let actual = fs::metadata(path).unwrap();
+                assert_eq!(actual.permissions().mode(), permissions);
+                assert_eq!(actual.modified().unwrap(), modified);
+            }
+            assert!(!journal.exists());
+        }
+    }
+
+    #[test]
+    fn framework_wm_staged_projection_recovers_originals_after_interruption() {
+        // Apply only complete public patches to original source fixtures.
+        // These ordinary journal checks execute no Java, DEX or device input.
+        for (last_patch, journaled) in [(8_usize, 12_usize), (9, 13), (10, 15)] {
+            let directory = tempfile::tempdir().unwrap();
+            let (repo, source) = fixture(directory.path());
+            let mut original_metadata = Vec::new();
+            for (relative, _, _) in ORIGINALS {
+                let path = source.join(PROJECT).join(relative);
+                fs::set_permissions(&path, fs::Permissions::from_mode(0o640)).unwrap();
+                let metadata = fs::metadata(&path).unwrap();
+                original_metadata.push((
+                    path,
+                    metadata.permissions().mode(),
+                    metadata.modified().unwrap(),
+                ));
+            }
+            validate_original(&repo, &source).unwrap();
+            let window_relative = "services/core/java/com/android/server/wm/WindowState.java";
+            let window = source.join(PROJECT).join(window_relative);
+            let original_window_bytes = fs::read(&window).unwrap();
+            let journal = directory.path().join("wm-stage-projection.json");
+            let mut projection = Projection::new(journal.clone()).unwrap();
+            for (relative, _, _, _) in &PATCHES[..=last_patch] {
+                projection
+                    .patch(&source, PROJECT, &repo.join(relative))
+                    .unwrap();
+            }
+            assert_eq!(projection.originals.len(), journaled);
+            assert_eq!(projection.applied_patches.len(), last_patch + 1);
+            // The two WindowState corrections must preserve the same first
+            // preimage, not replace it with the intermediate patched bytes.
+            let saved_windows: Vec<_> = projection
+                .originals
+                .iter()
+                .filter(|item| item.path == window)
+                .collect();
+            assert_eq!(saved_windows.len(), 1);
+            assert_eq!(
+                saved_windows[0].bytes.as_deref(),
+                Some(original_window_bytes.as_slice())
+            );
+            drop(saved_windows);
+            let (bytes, expected) = if last_patch == 8 {
+                (
+                    275120,
+                    "a4bf39fe8482ebd0e6b01d9d7c87b886bd50a31e63f918e715dfaa91a1617dae",
+                )
+            } else {
+                (
+                    275562,
+                    "d68d1620731b93685725e30a543b0e052c7157a32a93a9786e45387d9d7f869c",
+                )
+            };
+            exact(
+                &source,
+                &format!("{PROJECT}/{window_relative}"),
+                bytes,
+                expected,
+            )
+            .unwrap();
+            for (relative, is_fixed) in [
+                (
+                    "services/tests/wmtests/src/com/android/server/wm/WindowStateTests.java",
+                    last_patch >= 9,
+                ),
+                (
+                    "services/core/java/com/android/server/wm/ActivityStarter.java",
+                    last_patch == 10,
+                ),
+                (
+                    "services/tests/wmtests/src/com/android/server/wm/ActivityStarterTests.java",
+                    last_patch == 10,
+                ),
+            ] {
+                let pins = if is_fixed { FIXED } else { ORIGINALS };
+                let (_, bytes, expected) =
+                    pins.iter().find(|(name, _, _)| *name == relative).unwrap();
+                exact(&source, &format!("{PROJECT}/{relative}"), *bytes, expected).unwrap();
+            }
+            if last_patch == 10 {
+                validate_fixed(&source).unwrap();
+            } else {
+                assert!(validate_fixed(&source).is_err());
             }
             std::mem::forget(projection);
             recover(&journal, &source).unwrap();
@@ -771,9 +988,15 @@ mod tests {
         assert_eq!(request.projection_targets(), TARGETS);
         assert_eq!(request.requested_targets(), TARGETS);
         assert_eq!(TARGETS.last(), Some(&"module-info"));
-        assert_eq!(CVES.len(), 7);
-        assert_eq!(PATCHES.len(), 8);
+        assert_eq!(CVES.len(), 10);
+        assert_eq!(PATCHES.len(), 11);
         assert!(TARGETS.contains(&"AudioServiceTests"));
+        assert!(TARGETS.contains(&"WmTests"));
+        assert!(PROVIDERS.contains(&(
+            "services/tests/wmtests/Android.bp",
+            51079,
+            "23b4082ab5de81b25facce2629fcf65a34c01e057399fb385a13a825d269b87c",
+        )));
         assert!(
             PROVIDERS
                 .iter()
