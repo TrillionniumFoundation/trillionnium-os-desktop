@@ -1,35 +1,35 @@
 # Complete current source and ordinary CI
 
-This capsule reconstructs the complete 2,231-file producer source from its verified committed parent and exact formatted Launch and MAC overlay and runs its ordinary Linux tests and normal release builds in a new CI work directory. It contains source and verification code; it does not require earlier source capsules, private caches, old ELF files, APK collections or a production Android image.
+This capsule reconstructs the complete 2,233-file producer source from its verified committed parent and exact formatted Launch, MAC and task-control observation overlay and runs its ordinary Linux tests and normal release builds in a new CI work directory. It contains source and verification code; it does not require earlier source capsules, private caches, old ELF files, APK collections or a production Android image.
 
 | Identity | Value |
 | --- | --- |
 | Parent source commit recorded inside the baseline capsule | `61a38baa745483fbfb757466a1cf352febc20552` |
 | Parent Git tree | `db6249e80209abeda8000eeced6d045a1d57e0a2` |
-| Complete current source Git tree | `cbe7986c27605ea7d3167f1171a09f625dc22192` |
-| Current source files / bytes | 2,231 / 40,696,414 |
+| Complete current source Git tree | `511f87c67aaefe62167201ea01edb890acb135b3` |
+| Current source files / bytes | 2,233 / 40,712,295 |
 | Baseline archive members | 2,224: parent source files, portable manifest and original commit body |
 | Baseline archive SHA256 | `7ab244365184ef670c244b6a0ed75857c6f942897f3fc59c00e6375e76f51816` |
-| Formatted Launch and MAC overlay | 27 complete path bodies / 181,740 compressed bytes |
-| Overlay SHA256 | `1d7ad87172bba46e0ff1d5f24d791bde2040aa730480a91a75ee42808388dd91` |
+| Formatted Launch and MAC overlay | 29 complete path bodies / 185,544 compressed bytes |
+| Overlay SHA256 | `59156d70cf9136f08dbb0d6571603a425e2876de903de66c0b88193183bd7e82` |
 
-The Git commit containing this public wrapper is a different identity from the parent source commit above. `verify.py` first checks all 2,222 parent bodies, modes, Git blobs, the parent tree and original commit object. It then verifies the complete pinned overlay, requires all 27 before-rows to match that parent, verifies every replacement or added body and mode, and reconstructs the exact 2,231-file current Git tree. The output is a self-contained source directory. The source report records `source_parent_commit` and leaves `source_commit` null because this overlay has no newly created producer commit. It does not copy old runtime evidence into a fresh CI result.
+The Git commit containing this public wrapper is a different identity from the parent source commit above. `verify.py` first checks all 2,222 parent bodies, modes, Git blobs, the parent tree and original commit object. It then verifies the complete pinned overlay, requires all 29 before-rows to match that parent, verifies every replacement or added body and mode, and reconstructs the exact 2,233-file current Git tree. The output is a self-contained source directory. The source report records `source_parent_commit` and leaves `source_commit` null because this overlay has no newly created producer commit. It does not copy old runtime evidence into a fresh CI result.
 
 The XZ overlay must be one complete frame with no trailing data and expands to at most 4 MiB under a 64 MiB decoder memory limit. Undeclared members, missing bodies, unsafe paths, changed parent rows, wrong modes, sizes, digests, Git objects or complete tree identities are rejected. The repository source-integrity check verifies both compressed binary inputs by full size and SHA256.
 
-The combined overlay retains every original Launch path and adds the two formatted supervisor MAC files, `production_mac.rs` and `production_mac_systemd.rs`. Those files add the separate Launch read/start decision requirements and corresponding manager role checks. The other 2,229 source files match the preceding Launch source tree. No test function or expected catalog entry is added by this MAC update.
+The combined overlay preserves the preceding Launch and two-file MAC increment. The current five-path increment records three distinct observations: the held socket inode SELinux xattr, the connected socket peer security bytes returned by the active LSM, and the separately authenticated message sender process SELinux context. `SO_PEERSEC` success does not establish that its opaque bytes identify a SELinux domain. The 2,228 source files outside these five paths match the preceding accepted source tree.
 
-The new MAC source has a separate local result for 14 focused supervisor cases and two normal release binaries. Its offline policy component passed 315 decision checks, preserving the original 211 tuples and returned access vectors, with strict `neverallow` compilation. That offline component result is not executed or credited by this ordinary CI job. Policy loading, runtime label and executable closure, task-control transport and positive MainReady admission remain outside the result. A successful full run below must build and test this complete new source tree afresh.
+This source has a separate local qualification result for 13 focused supervisor cases (six new and seven affected cases) and two normal release binaries. The preceding MAC source had 14 focused cases and two binaries plus a separate 315-decision offline policy component, preserving all original 211 tuples and returned access vectors under strict `neverallow` compilation. These historical results receive no fresh credit in the complete CI run below. The selected provider and labels, socket creation rule, policy loading, positive MainReady and ExecutionAdmission remain open. This observation component grants no additional policy permission or runtime acceptance.
 
 ## Fresh CI scope
 
-The checked-in metadata and catalogs define 28 workspace packages, 49 test harnesses, 1,302 listed cases and 19 normal binary targets. A successful new CI run must execute **1,272 ordinary cases**, preserve **30 existing ignored cases**, and build **19 normal release binaries** from the freshly reconstructed source. The catalog retains all parent identities and adds seven launcher-library cases and eight supervisor-library cases; its 30 ignored cases are unchanged. No historical test or ELF receives fresh credit.
+The checked-in metadata and catalogs define 28 workspace packages, 49 test harnesses, 1,308 listed cases and 19 normal binary targets. A successful new CI run must execute **1,278 ordinary cases**, preserve **30 existing ignored cases**, and build **19 normal release binaries** from the freshly reconstructed source. The catalog retains all parent identities and adds seven launcher-library cases, eight prior supervisor-library cases and six task-control observation cases; its 30 ignored cases are unchanged. No historical test or ELF receives fresh credit.
 
 | Execution group | Fresh ordinary cases | Ignored cases | Command bound |
 | --- | ---: | ---: | --- |
 | Updater cases in `UPDATER-EXACT64.json` | 64 | 0 | Each complete name, `--exact`, 60 seconds |
 | Remaining updater catalog | 400 | 1 | One 300-second harness run; filtered catalog must first match the exact difference |
-| Other 48 harnesses | 808 | 29 | 300 seconds per harness, including zero-test harnesses |
+| Other 48 harnesses | 814 | 29 | 300 seconds per harness, including zero-test harnesses |
 | Normal release builds | 19 binary artifacts | — | 900 seconds per package batch |
 
 The updater package and the other 27 packages form two disjoint build batches. Test compilation and normal release compilation each use that partition, with a complete artifact-to-metadata join for each batch and an exact union check afterward. A fresh Cargo target directory is mandatory. The runner verifies the CLI executable paths embedded in integration harnesses and accounts for Cargo's original hardlink aliases. All ordinary harnesses use one test thread; Cargo uses one build job. The overall runner deadline is 5,400 seconds, including final artifact and source checks.
@@ -88,6 +88,6 @@ python3 -I -B "$capsule/run_ci.py" \
 
 All destination paths must be new. Do not reuse failed work directories or modify the frozen source to make a run pass. `-I -B` prevents ambient Python imports and generated bytecode from changing capsule membership. The workflow wraps verification and Python controls in additional finite timeouts and preserves evidence with an `always()` upload step.
 
-`test_runner.py` checks catalog, artifact and hardlink rejection and uses actual short child processes for timeout, PIDFD-acquisition-failure and proc-stat-failure cleanup. It does not replace these operations with simulated process reports. The 12 verifier controls include four overlay rejection/control methods, including rejection of either stale or omitted MAC body; all eight previous verifier methods are retained. The nine runner controls and their child-retirement behavior are unchanged. These Python controls are separate from the 1,272 Rust ordinary cases.
+`test_runner.py` checks catalog, artifact and hardlink rejection and uses actual short child processes for timeout, PIDFD-acquisition-failure and proc-stat-failure cleanup. It does not replace these operations with simulated process reports. The 12 verifier controls include four overlay rejection/control methods, including rejection of stale or omitted MAC bodies and omitted or changed task-control observation bodies; all eight previous verifier methods are retained. The nine runner controls and their child-retirement behavior are unchanged. These Python controls are separate from the 1,278 Rust ordinary cases.
 
 The CI artifact contains replay/runner/dependency reports, command stdout/stderr and EROFS configure evidence. It excludes Cargo caches, compiled target directories, private operator journals and APKs. The complete source bookend must still match after testing. An individual test pass cannot override a failed controller, expired deadline, changed source or unretired child.

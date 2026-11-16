@@ -238,10 +238,10 @@ class OverlayControls(unittest.TestCase):
         capsule = v.verify_capsule(inventory_sha)
         self.assertIsNone(v.HEAD_COMMIT)
         self.assertEqual(capsule['parent_manifest']['head'], v.PARENT_COMMIT)
-        self.assertEqual(len(capsule['rows']), 2231)
-        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 40696414)
-        self.assertEqual(v.tree_id(capsule['rows']), 'cbe7986c27605ea7d3167f1171a09f625dc22192')
-        self.assertEqual(len(capsule['overlay_manifest']['paths']), 27)
+        self.assertEqual(len(capsule['rows']), 2233)
+        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 40712295)
+        self.assertEqual(v.tree_id(capsule['rows']), '511f87c67aaefe62167201ea01edb890acb135b3')
+        self.assertEqual(len(capsule['overlay_manifest']['paths']), 29)
         self.assertNotEqual(v.HEAD_TREE, v.PARENT_TREE)
 
     def test_overlay_rejects_wrong_base_omitted_extra_or_unsafe_member(self):
@@ -287,8 +287,23 @@ class OverlayControls(unittest.TestCase):
             del packet['files_base64'][name]
             with self.subTest(omitted_mac_body=name), self.assertRaises(RuntimeError):
                 self.apply(packet)
+        # Both new M3 sources are absent in the baseline: complete removal
+        # and a self-consistent wrong body/row must fail the exact final tree.
+        for name in ('runtime/droidloom-supervisor/src/production_namespace_task_control_mac.rs',
+                     'runtime/droidloom-supervisor/src/production_namespace_task_control_mac_tests.rs'):
+            packet = self.clone()
+            del packet['manifest']['paths'][name]
+            del packet['files_base64'][name]
+            with self.subTest(omitted_m3_body=name), self.assertRaises(RuntimeError):
+                self.apply(packet)
+            packet = self.clone(); body = b'changed M3 source\n'
+            packet['manifest']['paths'][name]['after'] = {
+                **v.digest(body), 'git_blob': v.object_id('blob', body), 'git_mode': '100644'}
+            packet['files_base64'][name] = v.base64.b64encode(body).decode()
+            with self.subTest(changed_m3_body=name), self.assertRaises(RuntimeError):
+                self.apply(packet)
         for key, value in [('candidate_tree_from_manifest', '0' * 40),
-                           ('candidate_file_count', 2230), ('candidate_bytes', 40696413)]:
+                           ('candidate_file_count', 2232), ('candidate_bytes', 40712294)]:
             packet = self.clone(); packet['manifest'][key] = value
             with self.subTest(field=key), self.assertRaises(RuntimeError):
                 self.apply(packet)
