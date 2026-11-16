@@ -1,0 +1,111 @@
+{
+  "actual_tests": {
+    "droidloom_source_library": {
+      "failed": 0,
+      "ignored": 0,
+      "passed": 26
+    },
+    "native_generation_pair_build": {
+      "failed": 0,
+      "ignored": 0,
+      "passed": 16
+    }
+  },
+  "all_command_children_reaped": true,
+  "base_commit": "fb55abd62b661b4c028f5a8fdf213f29b4f1ad8b",
+  "base_recipe_after": {
+    "head": "fb55abd62b661b4c028f5a8fdf213f29b4f1ad8b",
+    "status": ""
+  },
+  "binaries": {
+    "droidloom-source": {
+      "bytes": 20410848,
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/target/debug/droidloom-source",
+      "sha256": "66bb3e75c698f2f852b904170afacb7ded3282dafdd0ff1414644e1ec0a3ac41"
+    },
+    "droidloom-update": {
+      "bytes": 35550808,
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/target/debug/droidloom-update",
+      "sha256": "312a08fa34968769cee84af6b3958ac532f3fc7c0a4f1795cfc72a944ac2ae53"
+    }
+  },
+  "commit": "ff910cc50d842b5308b860340295bda44c28cf5a",
+  "h_job": {
+    "exit_code": 0,
+    "job_id": "1a1bf6dcd4e-5e21-511",
+    "output_complete": true,
+    "output_durable": true,
+    "state": "succeeded"
+  },
+  "host": "ai395",
+  "limits": {
+    "full_aosp_builds_started": 0,
+    "new_aosp_source_materialized_qualified": false,
+    "production_ready": false,
+    "published_by_this_agent": false,
+    "runtime_qualified": false,
+    "shared_aosp_mutated": false,
+    "source_reconcile_invocations": 0
+  },
+  "next_owner_action": "Adopt the exact isolated commit and qualified ordinary tools through the current owner, run ordinary source reconcile/verify for the five locked cones, then serialized fresh full build; source/tool qualification alone gives no Android runtime credit.",
+  "normal_cli_verify_lock": {
+    "job_id": "1a1bf70fd8a-5e21-522",
+    "projects": 600,
+    "returncode": 0,
+    "root_links": 8,
+    "superproject_commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039"
+  },
+  "normal_tool_build": {
+    "count": 2,
+    "profile": "dev",
+    "returncode": 0
+  },
+  "patch": {
+    "bytes": 9397,
+    "path": "native-tradefed-source.patch",
+    "sha256": "3b1b498bd1b2f12623960efe6a9153e943fe17806b397f3dfa9ecdb00e4d4bed"
+  },
+  "preserved_first_failure": {
+    "cargo_returncode": 101,
+    "h_exit_code": 1,
+    "job_id": "1a1bf6c1ed4-5e21-50b",
+    "reason": "ai395 public /tmp ENOSPC before compiling proc-macro2",
+    "receipt": "qualification-r1.json",
+    "resolution": "TMPDIR/TMP/TEMP bound to owned tmp-r2; same source hashes and pinned Rust1.93; public /tmp untouched"
+  },
+  "qualification_receipt": {
+    "bytes": 12499,
+    "path": "r2/QUALIFICATION-r2.json",
+    "sha256": "2dcab7ec31e50c7d4dff4927275577d65303a5795e3d731aac2a4d82a0f61b3d"
+  },
+  "recorded_utc": "2026-11-09T08:39:09.441660+00:00",
+  "remote_root": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1",
+  "resource_result": {
+    "affinity": [
+      10,
+      11
+    ],
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1bf6dcd4e-5e21-511.service",
+    "cgroup.procs": "2574970\n2574972",
+    "cpu.max": "200000 100000",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "4294967296",
+    "memory.peak": "822362112",
+    "memory.swap.current": "0"
+  },
+  "schema": "pocket4-native-tradefed-helper-handoff-v1",
+  "source_files": {
+    "android/native-generation-pair/source-lock.json": {
+      "bytes": 354415,
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/source/android/native-generation-pair/source-lock.json",
+      "sha256": "02fd330466357ecf744d85f27d23b03fabde46f31fae3ef69a5f6634e66e8837"
+    },
+    "tools/droidloom-update/src/native_generation_pair_build.rs": {
+      "bytes": 423930,
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/source/tools/droidloom-update/src/native_generation_pair_build.rs",
+      "sha256": "52d7dabf9b34b9625f92fc7ecdf36cdc3dd575690a8990f778712995c4067cab"
+    }
+  },
+  "state": "NORMAL_RUST193_TESTS_AND_DEV_TOOLS_QUALIFIED_SOURCE600_RECONCILE_PENDING",
+  "tree": "95b5934af46dc560be0559d0b5b9edccc6133867"
+}

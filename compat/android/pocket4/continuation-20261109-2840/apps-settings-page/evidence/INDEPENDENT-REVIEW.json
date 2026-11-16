@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "reviewer": "/root/audio_closeout",
+  "review_type": "independent read-only source and exact-byte evidence review; no additional execution",
+  "final_round2_delta_sha256": "970f0b03bbd2b73a3346b97694af98877b79d77ad838e1dd0ffd66faa3048097",
+  "findings_closed": [
+    "daemon guard now precedes LiveApplicationProbe and every Android command",
+    "every incomplete structured Settings result is sticky and stops later mutations",
+    "source candidate task differences/ACKs do not grant production task creation or cleanup authority",
+    "all mutating daemon requests fail closed on pending marker",
+    "both staged consumers read same marker without flock reentry"
+  ],
+  "final_files": [
+    {
+      "path": "runtime/droidloom-supervisor/src/control.rs",
+      "bytes": 89609,
+      "sha256": "22cfe98ff60bb9ef5cf977cecf5867bdfc955ef39d86030a0d358d5a06820700"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/application_settings.rs",
+      "bytes": 18069,
+      "sha256": "3381d1c6a635899d77b34794d838996d6eb18fffeeece71c57dbbe75b1a3be11"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/application_settings_protocol.rs",
+      "bytes": 24454,
+      "sha256": "d9462c9df927f0d4928276f4a4880aa8d39dbca60fb9f20fef8f808c0d25635d"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/application_action_scope.rs",
+      "bytes": 10964,
+      "sha256": "4984cdebfc3dd0bdd3b1101ca40430bd6f9239b218a1d03680829f5fab5b0c0c"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/application_settings_tests.rs",
+      "bytes": 19214,
+      "sha256": "7153ca66acc6622fbe949495ff218aba396688a49a1438537fd52ad27ae29c39"
+    },
+    {
+      "path": "android/framework/droidloom-task-launcher/src/lib.rs",
+      "bytes": 76612,
+      "sha256": "5ba1b119f5898fb9d562f8ffdfc6092736d432b29a13a587d6a7b7616a4c3010"
+    },
+    {
+      "path": "android/framework/droidloom-task-launcher/src/main.rs",
+      "bytes": 12354,
+      "sha256": "d875eaf699c5716abb986912c66fc918df9adf60730afaeff3acf8ed99bb6325"
+    },
+    {
+      "path": "runtime/droidloom-applications/src/runtime_plan.rs",
+      "bytes": 47561,
+      "sha256": "8ceaa206dd0bd80fde538c6f483cf1565981354e6467394531298317dc8a6b8b"
+    }
+  ],
+  "changed_from_r2": [
+    "runtime/droidloom-supervisor/src/control.rs",
+    "runtime/droidloom-supervisor/src/application_settings.rs",
+    "runtime/droidloom-supervisor/src/application_settings_tests.rs",
+    "runtime/droidloom-applications/src/runtime_plan.rs"
+  ],
+  "runtime_qualified": false,
+  "production_ready": false,
+  "actual_settings_execution": "blocked: selected framework task-creation authority unavailable",
+  "review_limits": "Design and actual evidence readback only; no review claim of Android UI execution."
+}

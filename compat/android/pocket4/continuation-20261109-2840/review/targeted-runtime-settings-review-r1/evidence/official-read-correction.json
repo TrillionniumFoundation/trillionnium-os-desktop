@@ -1,0 +1,11 @@
+{
+  "schema": "settings-official-reader-correction-v1",
+  "previous_observation": "evidence/official-fixed-commit-read-r1.json",
+  "accepted_observation": "evidence/official-fixed-commit-read-r2.json",
+  "reason": "The r1 reader encoded the Git object separator as literal backslash and zero rather than one NUL byte. Its reported git_blob fields were invalid and were not accepted as a source mismatch or proof.",
+  "r2_separator": "bytes([0])",
+  "both_reads_same_exact_body_lengths_and_sha256": true,
+  "r2_matches_both_previously_observed_official_gitiles_blob_ids": true,
+  "selected_QPR1_equivalence_verified": false,
+  "tests_executed": 0
+}

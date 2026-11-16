@@ -1,0 +1,422 @@
+{
+  "Android_starts": 0,
+  "Cargo_or_tests_repeated": false,
+  "ExecutionAdmission_constructible": false,
+  "actual_SELinux_transition_qualified": false,
+  "actual_original_tests_passed": [
+    "production_mounts::runtime_assets::tests::held_init_rejects_foreign_architecture_and_overflowing_segments",
+    "production_mounts::runtime_assets::tests::runtime_init_capability_absence_rejects_present_empty_and_binary_values",
+    "production_mounts::runtime_assets::tests::runtime_init_metadata_cannot_be_supplied_by_user_attributes",
+    "production_mounts::runtime_assets::tests::runtime_init_xattr_follows_held_descriptor_after_path_replacement",
+    "production_mounts::runtime_assets::tests::runtime_init_xattr_read_errors_do_not_establish_absence",
+    "production_mounts::runtime_assets::tests::runtime_init_xattr_requires_complete_exact_bytes",
+    "production_mounts::runtime_assets::tests::runtime_inputs_reject_other_base_or_original_system",
+    "production_mounts::runtime_assets::tests::runtime_manifest_rejects_paths_aliases_and_lineage_substitution",
+    "production_mounts::runtime_assets::tests::runtime_schema_rejects_boolean_integer_and_unknown_authority_fields"
+  ],
+  "all430_source_F9_Gitblobs_modes_preserved": true,
+  "base": "b08cdd2c70c05463c3b4c892012f7426691c502b",
+  "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-runtime-d6-init-metadata-completion-e2a3-r1.service",
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "ended_ns": 1794611231539264607,
+      "exit_code": 0,
+      "name": "current-head",
+      "original_pidfd_retired": true,
+      "pid": 3601941,
+      "start_ticks": 168889752,
+      "started_ns": 1794611231534578817,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          29236106,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794611231533211577,
+          1794611231533211577
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/completion-r1/current-head.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          2067,
+          29236105,
+          33152,
+          1000,
+          1000,
+          1,
+          41,
+          1794611231537211457,
+          1794611231537211457
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/completion-r1/current-head.stdout",
+        "sha256": "d03dd5ff4ad4797a678e96a6affd691a1fa8428a40a1ec4ec8715f2599093794"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "HEAD^{tree}"
+      ],
+      "ended_ns": 1794611231543846086,
+      "exit_code": 0,
+      "name": "current-tree",
+      "original_pidfd_retired": true,
+      "pid": 3601942,
+      "start_ticks": 168889753,
+      "started_ns": 1794611231539718871,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          29236109,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794611231539211397,
+          1794611231539211397
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/completion-r1/current-tree.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          2067,
+          29236107,
+          33152,
+          1000,
+          1000,
+          1,
+          41,
+          1794611231541211337,
+          1794611231541211337
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/completion-r1/current-tree.stdout",
+        "sha256": "e434f73dce2e7a2873ca4419087111e46ca34266e847e9153cd7eaba224c4d75"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "status",
+        "--porcelain"
+      ],
+      "ended_ns": 1794611231560708852,
+      "exit_code": 0,
+      "name": "current-status",
+      "original_pidfd_retired": true,
+      "pid": 3601944,
+      "start_ticks": 168889753,
+      "started_ns": 1794611231544256230,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          29236111,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794611231543211277,
+          1794611231543211277
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/completion-r1/current-status.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          29236110,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794611231543211277,
+          1794611231543211277
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/completion-r1/current-status.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/bin/droidloom-supervisor",
+        "--help"
+      ],
+      "ended_ns": 1794611231674003211,
+      "exit_code": 0,
+      "name": "normal-supervisor-help",
+      "original_pidfd_retired": true,
+      "pid": 3601950,
+      "start_ticks": 168889766,
+      "started_ns": 1794611231669374923,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          29236115,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794611231668207529,
+          1794611231668207529
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/completion-r1/normal-supervisor-help.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 712,
+        "identity": [
+          2067,
+          29236114,
+          33152,
+          1000,
+          1000,
+          1,
+          712,
+          1794611231671207439,
+          1794611231671207439
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/completion-r1/normal-supervisor-help.stdout",
+        "sha256": "6131f0fb5900c2d0052b9dbd5c975cd2270f25352ef9bc0d6f837071460277ea"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "status",
+        "--porcelain"
+      ],
+      "ended_ns": 1794611231952957681,
+      "exit_code": 0,
+      "name": "final-status",
+      "original_pidfd_retired": true,
+      "pid": 3601969,
+      "start_ticks": 168889792,
+      "started_ns": 1794611231936175374,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          29236117,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794611231935199522,
+          1794611231935199522
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/completion-r1/final-status.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          29236116,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794611231935199522,
+          1794611231935199522
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/completion-r1/final-status.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    }
+  ],
+  "errors": [],
+  "finished_ns": 1794611232184857808,
+  "head": "7d86a66b8d95477781519cec99e53fd0e76b6f36",
+  "host_policy_writes": 0,
+  "invocation_id": "a97bf4ea8225413a985eded84e7a8045",
+  "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+  "memory_peak_bytes": 39104512,
+  "original21_commands_and_tree_retired": true,
+  "original_Cargo_aliases": {
+    "droidloom-supervisor": {
+      "all_links_inside_private_target": true,
+      "identity": [
+        2067,
+        29236108,
+        33216,
+        1000,
+        1000,
+        2,
+        2586680,
+        1794610868311111613,
+        1794610868330111043
+      ],
+      "paths": [
+        "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/target/release/droidloom-supervisor",
+        "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/target/release/deps/droidloom_supervisor-7b2458e2f9b70b98"
+      ],
+      "sha256": "cb4d4ca5ff658cf2ca24e17ec100a45a889580751bbb0a0f0d4e1d2a2eea0dd1"
+    },
+    "droidloomd": {
+      "all_links_inside_private_target": true,
+      "identity": [
+        2067,
+        29236098,
+        33216,
+        1000,
+        1000,
+        2,
+        2186224,
+        1794610864520225474,
+        1794610864535225024
+      ],
+      "paths": [
+        "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/target/release/droidloomd",
+        "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/target/release/deps/droidloomd-c3cba2a5215d67f7"
+      ],
+      "sha256": "80bdbfa0fd25c14151e8499d7e2434da372e5a4448d3c01f486bff6ffb602b52"
+    }
+  },
+  "original_PIDs_fresh_ESRCH": [
+    3576377,
+    3576398,
+    3576400,
+    3576437,
+    3576460,
+    3576464,
+    3576465,
+    3576466,
+    3576467,
+    3576468,
+    3576469,
+    3576470,
+    3576471,
+    3576472,
+    3576473,
+    3576475,
+    3576477,
+    3576647,
+    3576666,
+    3576732,
+    3576773,
+    3580154,
+    3580155,
+    3580165
+  ],
+  "original_data_body_reads": 0,
+  "original_failed_report_unchanged": true,
+  "original_failed_result": {
+    "bytes": 32860,
+    "identity": [
+      2067,
+      29236100,
+      33152,
+      1000,
+      1000,
+      1,
+      32860,
+      1794610868589293357,
+      1794610868589293357
+    ],
+    "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/qualification-normal-r1/RESULT.json",
+    "sha256": "4e1d303664c757bd2b06cc847e0da4b408d59640e6e55c23e9ba95853640700e"
+  },
+  "original_owned_unit_retirement": {
+    "bytes": 315,
+    "identity": [
+      2067,
+      29236101,
+      33152,
+      1000,
+      1000,
+      1,
+      315,
+      1794610868713383628,
+      1794610868713383628
+    ],
+    "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/NORMAL-r1-RETIREMENT.json",
+    "sha256": "ae770d948a07b34daa9e3f3f8719533af6a6d70607d02f3c5e0f6f62b14c417b"
+  },
+  "production_ready": false,
+  "reader_pid": 3601884,
+  "release_binaries": {
+    "droidloom-supervisor": {
+      "bytes": 2586680,
+      "identity": [
+        2067,
+        29236113,
+        33133,
+        1000,
+        1000,
+        1,
+        2586680,
+        1794611231640349462,
+        1794611231647208158
+      ],
+      "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/bin/droidloom-supervisor",
+      "sha256": "cb4d4ca5ff658cf2ca24e17ec100a45a889580751bbb0a0f0d4e1d2a2eea0dd1"
+    },
+    "droidloomd": {
+      "bytes": 2186224,
+      "identity": [
+        2067,
+        29236112,
+        33133,
+        1000,
+        1000,
+        1,
+        2186224,
+        1794611231599254224,
+        1794611231605209418
+      ],
+      "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/bin/droidloomd",
+      "sha256": "80bdbfa0fd25c14151e8499d7e2434da372e5a4448d3c01f486bff6ffb602b52"
+    }
+  },
+  "runtime_qualified": false,
+  "schema": "runtime-d6-existing-release-copy-completion-v1",
+  "source_before": {
+    "bytes": 195101,
+    "identity": [
+      2067,
+      29236104,
+      33152,
+      1000,
+      1000,
+      1,
+      195101,
+      1794611231529211697,
+      1794611231529211697
+    ],
+    "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r2/completion-r1/SOURCE-BEFORE.json",
+    "sha256": "3ddfd052987b3799384955dc965a088b9616b1db96f524e435b06e8f3e4d3688"
+  },
+  "source_before_and_after_unchanged": true,
+  "started_ns": 1794611230321048956,
+  "state": "COMPOSITE_NINE_ACTUAL_TESTS_AND_TWO_FRESH_RELEASE_BINARIES_QUALIFIED",
+  "tree": "224fdc48b1083044cdce30a09ee4ec995a48c12d"
+}

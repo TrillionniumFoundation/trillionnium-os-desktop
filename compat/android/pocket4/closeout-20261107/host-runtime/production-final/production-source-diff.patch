@@ -1,0 +1,2684 @@
+--- installed-production-source/runtime/droidloom-supervisor/Cargo.toml
++++ final-candidate/runtime/droidloom-supervisor/Cargo.toml
+@@ -16,8 +16,6 @@
+ serde.workspace = true
+ serde_json.workspace = true
+ thiserror.workspace = true
+-
+-[dev-dependencies]
+ tempfile.workspace = true
+ 
+ [lints.rust]
+--- installed-production-source/runtime/droidloom-supervisor/src/apk_set.rs
++++ final-candidate/runtime/droidloom-supervisor/src/apk_set.rs
+@@ -0,0 +1,449 @@
++//! Bounded, byte-preserving split APK transport and atomic Android sessions.
++//!
++//! Each original APK remains independently signed. This is an IPC payload, not
++//! a merged/repacked APK. `PackageManager` validates package/version/certificates.
++#![forbid(unsafe_code)]
++
++use super::{ControlError, apk, diagnostics, io_error};
++use std::fs::{File, OpenOptions};
++use std::io::{self, Read, Seek, SeekFrom};
++use std::os::unix::fs::{FileExt, OpenOptionsExt};
++use std::path::PathBuf;
++use std::process::{Command, Stdio};
++use std::time::{Duration, Instant};
++
++const MAX_SPLITS: usize = 32;
++const MAX_TOTAL_BYTES: u64 = 2 * 1024 * 1024 * 1024;
++const SESSION_BUDGET: Duration = Duration::from_secs(110);
++
++pub(super) fn prepare(paths: &[PathBuf]) -> Result<(File, Vec<u64>), ControlError> {
++    if !(2..=MAX_SPLITS).contains(&paths.len()) {
++        return Err(invalid("supply 2 through 32 original APK files"));
++    }
++    let mut inputs = Vec::with_capacity(paths.len());
++    let mut lengths = Vec::with_capacity(paths.len());
++    let mut total = 0_u64;
++    for path in paths {
++        let file = OpenOptions::new()
++            .read(true)
++            .custom_flags(libc::O_NONBLOCK)
++            .open(path)
++            .map_err(|e| io_error("open split APK with caller permissions", e))?;
++        let length = apk::validate(&file)?;
++        total = total
++            .checked_add(length)
++            .filter(|v| *v <= MAX_TOTAL_BYTES)
++            .ok_or_else(|| invalid("split APK set exceeds 2 GiB"))?;
++        lengths.push(length);
++        inputs.push(file);
++    }
++    // Unlinked, private disk-backed temporary file: no root-side pathname open,
++    // archive extraction, path traversal, or 2-GiB in-memory allocation.
++    let mut payload = tempfile::tempfile().map_err(|e| io_error("create split payload", e))?;
++    for (file, length) in inputs.iter_mut().zip(&lengths) {
++        let copied = io::copy(&mut (&mut *file).take(*length), &mut payload)
++            .map_err(|e| io_error("copy original split bytes", e))?;
++        if copied != *length
++            || file
++                .metadata()
++                .map_err(|e| io_error("recheck split length", e))?
++                .len()
++                != *length
++        {
++            return Err(invalid("split APK length changed during preparation"));
++        }
++    }
++    validate(&payload, &lengths)?;
++    payload
++        .rewind()
++        .map_err(|e| io_error("rewind split payload", e))?;
++    Ok((payload, lengths))
++}
++
++pub(super) fn validate(file: &File, lengths: &[u64]) -> Result<u64, ControlError> {
++    if !(2..=MAX_SPLITS).contains(&lengths.len()) {
++        return Err(invalid("split descriptor requires 2 through 32 lengths"));
++    }
++    let metadata = file
++        .metadata()
++        .map_err(|e| io_error("inspect split payload", e))?;
++    if !metadata.is_file() {
++        return Err(invalid("split payload must be a regular file"));
++    }
++    let mut total = 0_u64;
++    for &length in lengths {
++        if length < 4 {
++            return Err(invalid("each split must contain an APK ZIP header"));
++        }
++        total = total
++            .checked_add(length)
++            .filter(|v| *v <= MAX_TOTAL_BYTES)
++            .ok_or_else(|| invalid("split APK set exceeds 2 GiB"))?;
++    }
++    if metadata.len() != total {
++        return Err(invalid(
++            "split payload size does not match declared lengths",
++        ));
++    }
++    let mut offset = 0;
++    for &length in lengths {
++        let mut magic = [0; 4];
++        file.read_exact_at(&mut magic, offset)
++            .map_err(|e| io_error("read split header", e))?;
++        if magic != *b"PK\x03\x04" {
++            return Err(invalid("a split is not an APK ZIP archive"));
++        }
++        offset += length;
++    }
++    Ok(total)
++}
++
++pub(super) fn install(
++    pid: u32,
++    user: u32,
++    file: File,
++    lengths: &[u64],
++) -> Result<(), ControlError> {
++    transact(file, lengths, user, |args, input, seconds| {
++        let mut command = session_command(pid, args, seconds);
++        diagnostics::capture_with_stdin(&mut command, input.map_or_else(Stdio::null, Stdio::from))
++            .map_err(|e| invalid(&format!("Android split session command failed: {e}")))
++    })
++}
++
++fn session_command(pid: u32, args: &[String], seconds: u64) -> Command {
++    let mut command = droidloom_cpu_placement::command("/usr/bin/timeout");
++    command
++        .args([
++            "--kill-after=5s",
++            &format!("{seconds}s"),
++            "/usr/bin/nsenter",
++            "--target",
++        ])
++        .arg(pid.to_string())
++        .args([
++            "--mount",
++            "--uts",
++            "--ipc",
++            "--net",
++            "--pid",
++            "--cgroup",
++            "--root",
++            "--wd",
++            "--env",
++            "--",
++            "/system/bin/cmd",
++            "package",
++        ])
++        .args(args);
++    command
++}
++
++fn transact<F>(mut file: File, lengths: &[u64], user: u32, mut call: F) -> Result<(), ControlError>
++where
++    F: FnMut(&[String], Option<File>, u64) -> Result<String, ControlError>,
++{
++    let total = validate(&file, lengths)?;
++    let started = Instant::now();
++    let budget = || {
++        SESSION_BUDGET
++            .checked_sub(started.elapsed())
++            .filter(|d| !d.is_zero())
++            .map(|d| d.as_secs().max(1))
++            .ok_or_else(|| invalid("split session overall deadline expired"))
++    };
++    let create = vec![
++        "install-create".into(),
++        "-r".into(),
++        "--user".into(),
++        user.to_string(),
++        "-S".into(),
++        total.to_string(),
++    ];
++    let response = call(&create, None, budget()?)?;
++    let session = parse_session(&response)?;
++    let mut commit_attempted = false;
++    let outcome = (|| {
++        let mut offset = 0;
++        for (index, &length) in lengths.iter().enumerate() {
++            // Explicitly reset the shared open-file-description offset. Android
++            // receives exactly -S bytes from each unchanged APK segment.
++            file.seek(SeekFrom::Start(offset))
++                .map_err(|e| io_error("seek split payload", e))?;
++            let input = file
++                .try_clone()
++                .map_err(|e| io_error("duplicate split payload", e))?;
++            let args = vec![
++                "install-write".into(),
++                "-S".into(),
++                length.to_string(),
++                session.to_string(),
++                format!("split-{index:04}.apk"),
++            ];
++            let output = call(&args, Some(input), budget()?)?;
++            confirm(&output, &format!("Success: streamed {length} bytes"))?;
++            offset += length;
++        }
++        let args = vec!["install-commit".into(), session.to_string()];
++        let seconds = budget()?;
++        commit_attempted = true;
++        confirm(&call(&args, None, seconds)?, "Success")
++    })();
++    if let Err(error) = outcome {
++        let abandon = vec!["install-abandon".into(), session.to_string()];
++        let cleanup = call(&abandon, None, 5).and_then(|output| confirm(&output, "Success"));
++        return Err(invalid(&format!(
++            "{error}; session {session} abandonment: {}; {}",
++            match cleanup {
++                Ok(()) => "confirmed".into(),
++                Err(e) => format!("NOT confirmed ({e})"),
++            },
++            if commit_attempted {
++                "commit was NOT confirmed: inspect installed version before any retry"
++            } else {
++                "commit was not attempted; existing installed app was not uninstalled"
++            }
++        )));
++    }
++    Ok(())
++}
++
++fn parse_session(output: &str) -> Result<u32, ControlError> {
++    let sessions: Vec<_> = output
++        .lines()
++        .filter_map(|line| {
++            line.trim()
++                .strip_prefix("Success: created install session [")
++                .and_then(|s| s.strip_suffix(']'))
++                .filter(|s| !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit()))
++                .and_then(|s| s.parse::<u32>().ok())
++                .filter(|id| *id > 0 && i32::try_from(*id).is_ok())
++        })
++        .collect();
++    if sessions.len() != 1 || output.contains("Failure") || output.contains("Error:") {
++        return Err(invalid(
++            "Android did not identify exactly one created session; inspect outstanding sessions before retry",
++        ));
++    }
++    Ok(sessions[0])
++}
++
++fn confirm(output: &str, expected: &str) -> Result<(), ControlError> {
++    if output.lines().any(|line| line.trim() == expected)
++        && !output.contains("Failure")
++        && !output.contains("Error:")
++    {
++        Ok(())
++    } else {
++        Err(invalid(&format!(
++            "Android did not confirm {expected:?}: {}",
++            output.trim()
++        )))
++    }
++}
++
++fn invalid(message: &str) -> ControlError {
++    ControlError::Invalid(message.into())
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use std::io::Write;
++    fn payload() -> File {
++        let mut file = tempfile::tempfile().unwrap();
++        file.write_all(b"PK\x03\x04basePK\x03\x04split").unwrap();
++        file
++    }
++    #[test]
++    fn validates_original_segment_headers_and_exact_total() {
++        let file = payload();
++        assert_eq!(validate(&file, &[8, 9]).unwrap(), 17);
++        for sizes in [
++            vec![],
++            vec![17],
++            vec![8, 8],
++            vec![9, 8],
++            vec![3, 14],
++            vec![4; 33],
++            vec![u64::MAX, 8],
++        ] {
++            assert!(validate(&file, &sizes).is_err(), "{sizes:?}");
++        }
++        assert!(validate(&File::open("/dev/null").unwrap(), &[8, 9]).is_err());
++    }
++    #[test]
++    fn requires_unambiguous_bounded_positive_session_identity() {
++        assert_eq!(
++            parse_session("Success: created install session [12]\n").unwrap(),
++            12
++        );
++        for value in [
++            "Success",
++            "Success: created install session [-1]",
++            "Success: created install session [0]",
++            "Success: created install session [2147483648]",
++            "Success: created install session [1]\nFailure [bad]",
++            "Success: created install session [1]\nSuccess: created install session [2]",
++        ] {
++            assert!(parse_session(value).is_err(), "{value}");
++        }
++    }
++    #[test]
++    fn success_is_exact_and_failure_cannot_be_hidden() {
++        assert!(confirm("Success: streamed 8 bytes\n", "Success: streamed 8 bytes").is_ok());
++        for s in [
++            "Success",
++            "Success: streamed 9 bytes",
++            "Success: streamed 8 bytes\nFailure [bad]",
++            "Success: streamed 8 bytes\nError: bad",
++        ] {
++            assert!(confirm(s, "Success: streamed 8 bytes").is_err());
++        }
++    }
++    #[test]
++    fn preserves_bytes_then_commits_once_without_uninstall_or_downgrade() {
++        let mut seen = Vec::new();
++        let mut bodies = Vec::new();
++        transact(payload(), &[8, 9], 10, |args, input, seconds| {
++            assert!((1..=110).contains(&seconds));
++            seen.push(args.to_vec());
++            match args[0].as_str() {
++                "install-create" => Ok("Success: created install session [23]".into()),
++                "install-write" => {
++                    let length = args[2].parse::<u64>().unwrap();
++                    let mut body = Vec::new();
++                    input.unwrap().take(length).read_to_end(&mut body).unwrap();
++                    bodies.push(body);
++                    Ok(format!("Success: streamed {length} bytes"))
++                }
++                "install-commit" => Ok("Success".into()),
++                _ => panic!("unexpected operation"),
++            }
++        })
++        .unwrap();
++        assert_eq!(
++            bodies,
++            vec![b"PK\x03\x04base".to_vec(), b"PK\x03\x04split".to_vec()]
++        );
++        assert_eq!(seen.len(), 4);
++        assert_eq!(
++            seen[0],
++            vec!["install-create", "-r", "--user", "10", "-S", "17"]
++        );
++        assert_eq!(
++            seen[1],
++            vec!["install-write", "-S", "8", "23", "split-0000.apk"]
++        );
++        assert_eq!(seen[3], vec!["install-commit", "23"]);
++        assert!(
++            !seen
++                .iter()
++                .flatten()
++                .any(|s| s == "uninstall" || s == "-d" || s == "-g")
++        );
++    }
++    #[test]
++    fn failed_write_abandons_and_never_commits() {
++        let mut calls = Vec::new();
++        let error = transact(payload(), &[8, 9], 0, |args, _, _| {
++            calls.push(args[0].clone());
++            Ok(match args[0].as_str() {
++                "install-create" => "Success: created install session [7]",
++                "install-abandon" => "Success",
++                _ => "Failure [INSTALL_FAILED_INVALID_APK]",
++            }
++            .into())
++        })
++        .unwrap_err()
++        .to_string();
++        assert_eq!(
++            calls,
++            vec!["install-create", "install-write", "install-abandon"]
++        );
++        assert!(error.contains("abandonment: confirmed"));
++        assert!(error.contains("commit was not attempted"));
++    }
++    #[test]
++    fn failed_commit_and_failed_cleanup_are_not_reported_as_success() {
++        let mut calls = Vec::new();
++        let error = transact(payload(), &[8, 9], 0, |args, _, _| {
++            calls.push(args[0].clone());
++            match args[0].as_str() {
++                "install-create" => Ok("Success: created install session [4]".into()),
++                "install-write" => Ok(format!("Success: streamed {} bytes", args[2])),
++                _ => Err(invalid("timeout")),
++            }
++        })
++        .unwrap_err()
++        .to_string();
++        assert_eq!(
++            calls
++                .iter()
++                .filter(|v| v.as_str() == "install-commit")
++                .count(),
++            1
++        );
++        assert_eq!(calls.last().unwrap(), "install-abandon");
++        assert!(error.contains("NOT confirmed"));
++        assert!(error.contains("before any retry"));
++    }
++    #[test]
++    fn invalid_payload_never_creates_a_session() {
++        assert!(
++            transact(payload(), &[8, 8], 0, |_, _, _| panic!(
++                "must not contact Android"
++            ))
++            .is_err()
++        );
++    }
++    #[test]
++    fn invalid_create_response_never_guesses_session_to_abandon() {
++        let mut count = 0;
++        assert!(
++            transact(payload(), &[8, 9], 0, |_, _, _| {
++                count += 1;
++                Ok("Failure [bad]".into())
++            })
++            .is_err()
++        );
++        assert_eq!(count, 1);
++    }
++    #[test]
++    fn preparation_is_byte_identical_and_fails_before_any_socket() {
++        let dir = tempfile::tempdir().unwrap();
++        let a = dir.path().join("base with spaces.apk");
++        let b = dir.path().join("config.apk");
++        std::fs::write(&a, b"PK\x03\x04base").unwrap();
++        std::fs::write(&b, b"PK\x03\x04split").unwrap();
++        let (mut file, lengths) = prepare(&[a.clone(), b.clone()]).unwrap();
++        assert_eq!(lengths, vec![8, 9]);
++        let mut bytes = Vec::new();
++        file.read_to_end(&mut bytes).unwrap();
++        assert_eq!(bytes, b"PK\x03\x04basePK\x03\x04split");
++        assert!(prepare(std::slice::from_ref(&a)).is_err());
++        assert!(prepare(&[a.clone(), dir.path().join("absent.apk")]).is_err());
++        assert!(prepare(&[a.clone(), PathBuf::from("/dev/null")]).is_err());
++        assert!(prepare(&vec![a; 33]).is_err());
++    }
++    #[test]
++    fn namespace_command_has_fixed_argv_and_bounded_timeout() {
++        let command = session_command(1234, &["install-commit".into(), "23".into()], 17);
++        let args: Vec<_> = command.get_args().map(|a| a.to_str().unwrap()).collect();
++        assert_eq!(
++            &args[..5],
++            &[
++                "--kill-after=5s",
++                "17s",
++                "/usr/bin/nsenter",
++                "--target",
++                "1234"
++            ]
++        );
++        assert_eq!(
++            &args[args.len() - 4..],
++            &["/system/bin/cmd", "package", "install-commit", "23"]
++        );
++        assert!(!args.contains(&"sh"));
++    }
++}
+--- installed-production-source/runtime/droidloom-supervisor/src/bin/droidloomctl.rs
++++ final-candidate/runtime/droidloom-supervisor/src/bin/droidloomctl.rs
+@@ -45,6 +45,15 @@
+         #[arg(long, default_value_t = 0)]
+         user: u32,
+     },
++    /// Atomically install original base and split APKs, preserving their signatures.
++    InstallMultiple {
++        /// Base APK and all required original splits (2 through 32 files).
++        #[arg(required = true, num_args = 2..=32)]
++        apks: Vec<PathBuf>,
++        /// Android user identifier.
++        #[arg(long, default_value_t = 0)]
++        user: u32,
++    },
+     /// Update a source installation, or show pacman package-update instructions.
+     Update {
+         /// Discard updater-owned build outputs before rebuilding.
+@@ -80,8 +89,10 @@
+         #[arg(long, default_value = DEFAULT_CELL_SPEC)]
+         spec: PathBuf,
+     },
+-    /// Report whether the cell is running.
++    /// Report whether the cell is running, without checking Android readiness.
+     Status,
++    /// Check Android readiness once, without waiting for boot or restarting it.
++    Readiness,
+     /// Wait for Android boot, showing progress and a deadline without restarting it.
+     Wait,
+     /// Show recent Android logs, optionally filtered by an installed app's UID.
+@@ -216,9 +227,18 @@
+             *user,
+             &mut report,
+         )?
++    } else if let Command::InstallMultiple { apks, user } = &cli.command {
++        droidloom_supervisor::control::install_multiple_apks_with_progress(
++            &cli.socket,
++            apks,
++            *user,
++            &mut report,
++        )?
+     } else {
+         let control_request = match cli.command {
+-            Command::Install { .. } => unreachable!("handled with its APK file descriptor"),
++            Command::Install { .. } | Command::InstallMultiple { .. } => {
++                unreachable!("handled with its APK file descriptor")
++            }
+             Command::Update { clean, build_only } => {
+                 if PathBuf::from("/usr/share/droidloom/package.json").is_file() {
+                     return Err("Droidloom is managed by pacman. Install the new package pair with sudo pacman -U, or build it with cargo run --locked -j 1 -p droidloom-package -- build. Sudo is needed only to replace package-owned system files and update pacman's database.".into());
+@@ -240,6 +260,7 @@
+             Command::Stop => ControlRequest::Stop,
+             Command::Restart { spec, .. } => ControlRequest::Restart { spec },
+             Command::Status => ControlRequest::Status,
++            Command::Readiness => ControlRequest::Readiness,
+             Command::Wait => ControlRequest::WaitReady,
+             Command::Logs {
+                 package,
+--- installed-production-source/runtime/droidloom-supervisor/src/control.rs
++++ final-candidate/runtime/droidloom-supervisor/src/control.rs
+@@ -27,6 +27,9 @@
+ 
+ #[path = "apk.rs"]
+ mod apk;
++
++#[path = "apk_set.rs"]
++mod apk_set;
+ 
+ #[path = "control_progress.rs"]
+ mod progress;
+@@ -67,6 +70,13 @@
+         /// Android user identifier.
+         user: u32,
+     },
++    /// Atomically install original split APKs carried in one bounded descriptor.
++    InstallMultiple {
++        /// Android user identifier.
++        user: u32,
++        /// Exact byte length of each untouched original APK in descriptor order.
++        lengths: Vec<u64>,
++    },
+     /// Start the cell if it is not already running.
+     Start {
+         /// Cell specification to validate and activate.
+@@ -79,8 +89,10 @@
+         /// Cell specification to validate and activate.
+         spec: PathBuf,
+     },
+-    /// Report daemon and cell state.
++    /// Report daemon and owned-cell lifecycle; does not check Android readiness.
+     Status,
++    /// Take one fresh Android readiness snapshot without waiting for boot.
++    Readiness,
+     /// Wait for Android boot and Droidloom's input/task services to be ready.
+     WaitReady,
+     /// Read bounded Android logs or a crash report from the caller's cell.
+@@ -266,10 +278,14 @@
+         }
+         let result = match request {
+             ControlRequest::Install { user } => self.install(peer_uid, user, file),
++            ControlRequest::InstallMultiple { user, lengths } => {
++                self.install_multiple(peer_uid, user, &lengths, file)
++            }
+             ControlRequest::Start { spec } => self.start(peer_uid, &spec),
+             ControlRequest::Stop => self.stop(peer_uid),
+             ControlRequest::Restart { spec } => self.restart(peer_uid, &spec),
+             ControlRequest::Status => self.status(peer_uid),
++            ControlRequest::Readiness => self.readiness(peer_uid),
+             ControlRequest::WaitReady => {
+                 self.require_active_cell(peer_uid, None).and_then(|active| {
+                     wait_for_android_init(&active.spec, &self.progress)?;
+@@ -368,6 +384,19 @@
+     fn status(&self, peer_uid: u32) -> Result<ControlResponse, ControlError> {
+         if let Some(active) = &self.active {
+             authorize_uid(peer_uid, active.spec.host_uid)?;
++            Ok(self.success(format!(
++                "cell {} is running from {}; Android readiness has not been checked",
++                active.spec.id(),
++                active.spec_path.display()
++            )))
++        } else {
++            Ok(self.success(self.last_exit.as_deref().unwrap_or("cell is stopped")))
++        }
++    }
++
++    fn readiness(&self, peer_uid: u32) -> Result<ControlResponse, ControlError> {
++        if let Some(active) = &self.active {
++            authorize_uid(peer_uid, active.spec.host_uid)?;
+             let (_, phase) = android_boot_snapshot(&active.spec)?;
+             Ok(self.success(format!(
+                 "cell {} is running from {}; {}",
+@@ -486,6 +515,31 @@
+         ))
+     }
+ 
++    fn install_multiple(
++        &self,
++        peer_uid: u32,
++        user: u32,
++        lengths: &[u64],
++        file: Option<fs::File>,
++    ) -> Result<ControlResponse, ControlError> {
++        validate_android_user(user)?;
++        let active = self.require_active_cell(peer_uid, None)?;
++        let file = file.ok_or_else(|| {
++            ControlError::Invalid(
++                "install-multiple requires one original APK set descriptor".into(),
++            )
++        })?;
++        apk_set::validate(&file, lengths)?;
++        let pid = wait_for_android_init(&active.spec, &self.progress)?;
++        self.progress.report(
++            "Android is ready. Installing the complete split set atomically (up to 115 seconds)...",
++        );
++        apk_set::install(pid, user, file, lengths)?;
++        Ok(self.success(
++            "Complete original APK set installed; Android confirmed the atomic session commit",
++        ))
++    }
++
+     fn application_icon(
+         &self,
+         peer_uid: u32,
+@@ -807,6 +861,48 @@
+     )
+ }
+ 
++/// Install an original base APK and its required splits without repacking them.
++///
++/// # Errors
++/// Returns invalid-file, bounded transport, or protocol failures. Installation
++/// failures (including uncertain commits) remain failures in the response.
++pub fn install_multiple_apks(
++    socket: &Path,
++    paths: &[PathBuf],
++    user: u32,
++) -> Result<ControlResponse, ControlError> {
++    install_multiple_reporting(socket, paths, user, None)
++}
++
++/// Install original split APKs with progress and the existing bounded wait.
++///
++/// # Errors
++/// Returns invalid-file, transport, or protocol failures.
++pub fn install_multiple_apks_with_progress(
++    socket: &Path,
++    paths: &[PathBuf],
++    user: u32,
++    report: &mut dyn FnMut(&str),
++) -> Result<ControlResponse, ControlError> {
++    install_multiple_reporting(socket, paths, user, Some(report))
++}
++
++fn install_multiple_reporting(
++    socket: &Path,
++    paths: &[PathBuf],
++    user: u32,
++    report: Option<&mut dyn FnMut(&str)>,
++) -> Result<ControlResponse, ControlError> {
++    validate_android_user(user)?;
++    let (file, lengths) = apk_set::prepare(paths)?;
++    progress::request(
++        socket,
++        &ControlRequest::InstallMultiple { user, lengths },
++        Some(&file),
++        report,
++    )
++}
++
+ fn bind_listener(socket: &Path) -> Result<UnixListener, ControlError> {
+     let parent = socket.parent().ok_or_else(|| {
+         ControlError::Invalid("lifecycle socket must have a parent directory".into())
+@@ -871,9 +967,14 @@
+         progress::IncomingRequest::Progress(envelope) => (envelope.request, true),
+         progress::IncomingRequest::Legacy(request) => (request, false),
+     };
+-    if file.is_some() && !matches!(request, ControlRequest::Install { .. }) {
++    if file.is_some()
++        && !matches!(
++            request,
++            ControlRequest::Install { .. } | ControlRequest::InstallMultiple { .. }
++        )
++    {
+         return Err(ControlError::Invalid(
+-            "only install accepts a file descriptor".into(),
++            "only install or install_multiple accepts a file descriptor".into(),
+         ));
+     }
+     Ok((peer_uid, request, file, streaming))
+@@ -1511,6 +1612,77 @@
+     }
+ 
+     #[test]
++    fn split_transport_preserves_all_original_bytes_and_android_failure() {
++        for streaming in [false, true] {
++            let directory = tempfile::tempdir().unwrap();
++            let socket = directory.path().join("splits.sock");
++            let a = directory.path().join("base with spaces.apk");
++            let b = directory.path().join("config.apk");
++            fs::write(&a, b"PK\x03\x04base").unwrap();
++            fs::write(&b, b"PK\x03\x04split").unwrap();
++            let listener = UnixListener::bind(&socket).unwrap();
++            let server = thread::spawn(move || {
++                let (mut stream, _) = listener.accept().unwrap();
++                let (_, request, file, requested_streaming) = receive_request(&mut stream).unwrap();
++                assert_eq!(requested_streaming, streaming);
++                assert_eq!(
++                    request,
++                    ControlRequest::InstallMultiple {
++                        user: 10,
++                        lengths: vec![8, 9]
++                    }
++                );
++                let mut file = file.unwrap();
++                assert_eq!(apk_set::validate(&file, &[8, 9]).unwrap(), 17);
++                let mut bytes = Vec::new();
++                file.read_to_end(&mut bytes).unwrap();
++                assert_eq!(bytes, b"PK\x03\x04basePK\x03\x04split");
++                send_response(
++                    &mut stream,
++                    &ControlResponse {
++                        ok: false,
++                        state: CellState::Stopped,
++                        message: "Failure [INSTALL_FAILED_UPDATE_INCOMPATIBLE]".into(),
++                        host_pid: None,
++                        launch: None,
++                        applications: None,
++                        application_icon: None,
++                        diagnostics: None,
++                    },
++                )
++                .unwrap();
++            });
++            let result = if streaming {
++                install_multiple_apks_with_progress(&socket, &[a, b], 10, &mut |_| {})
++            } else {
++                install_multiple_apks(&socket, &[a, b], 10)
++            }
++            .unwrap();
++            assert!(!result.ok);
++            assert!(
++                result
++                    .message
++                    .contains("INSTALL_FAILED_UPDATE_INCOMPATIBLE")
++            );
++            server.join().unwrap();
++        }
++    }
++
++    #[test]
++    fn split_missing_file_fails_before_connecting() {
++        let directory = tempfile::tempdir().unwrap();
++        let a = directory.path().join("base.apk");
++        fs::write(&a, b"PK\x03\x04base").unwrap();
++        let error = install_multiple_apks(
++            &directory.path().join("absent.sock"),
++            &[a, directory.path().join("missing.apk")],
++            0,
++        )
++        .unwrap_err();
++        assert!(error.to_string().contains("open split APK"));
++    }
++
++    #[test]
+     fn install_missing_file_fails_before_connecting() {
+         let directory = tempfile::tempdir().unwrap();
+         let error = install_apk(
+@@ -1791,3 +1963,8 @@
+         assert!(!socket.exists());
+     }
+ }
++
++// Linux x86_64 is the explicitly qualified host for the process-creation gate.
++#[cfg(all(test, target_os = "linux", target_arch = "x86_64"))]
++#[path = "control_status_tests.rs"]
++mod status_lifecycle_tests;
+--- installed-production-source/runtime/droidloom-supervisor/src/control_status_tests.rs
++++ final-candidate/runtime/droidloom-supervisor/src/control_status_tests.rs
+@@ -0,0 +1,317 @@
++//! Owned host-only regressions for the real lifecycle dispatcher.
++//!
++//! These tests do not enter Android or contact the running service. One ordinary
++//! test process stands in for the owned cell process. The running dispatch test
++//! installs a thread-local seccomp filter before calling Daemon::handle, so an
++//! attempted fork/clone cannot be hidden by a later wait or a fast child exit.
++
++use super::*;
++use std::process::{Child, ChildStdin, Command, Stdio};
++
++const FIXTURE_ENV: &str = "DROIDLOOM_OWNED_STATUS_PROCESS_FIXTURE";
++const FIXTURE_TEST: &str =
++    "control::status_lifecycle_tests::owned_lifecycle_process_fixture";
++const FIXTURE_READY: &[u8] = b"OWNED_STATUS_FIXTURE_READY\n";
++const OWNER_UID: u32 = 2_000_000_000;
++
++struct ChildGuard(Option<Child>);
++
++impl Drop for ChildGuard {
++    fn drop(&mut self) {
++        if let Some(mut child) = self.0.take() {
++            let _ = child.kill();
++            let _ = child.wait();
++        }
++    }
++}
++
++struct RunningFixture {
++    daemon: Daemon,
++    input: Option<ChildStdin>,
++    directory: tempfile::TempDir,
++    owner_pid: u32,
++}
++
++impl RunningFixture {
++    fn new() -> Self {
++        let directory = tempfile::tempdir().unwrap();
++        let root = directory.path();
++        let spec = CellSpec {
++            host_uid: OWNER_UID,
++            subordinate_uids: crate::IdRange {
++                start: 200_000,
++                count: 100_000,
++            },
++            subordinate_gids: crate::IdRange {
++                start: 300_000,
++                count: 100_000,
++            },
++            image_dir: root.join("images"),
++            gapps_dir: None,
++            vendor_image: root.join("vendor.img"),
++            android_init: None,
++            android_file_overrides: Vec::new(),
++            android_runtime_directories: Vec::new(),
++            shared_storage_directories: Vec::new(),
++            data_dir: root.join("data"),
++            runtime_dir: root.join("runtime"),
++            render_node: "/dev/dri/renderD128".into(),
++            graphics_backend: crate::GraphicsBackend::default(),
++            denial_socket: root.join("denial.sock"),
++        };
++        spec.validate().unwrap();
++        let spec_path = root.join("cell.json");
++        fs::write(&spec_path, serde_json::to_vec(&spec).unwrap()).unwrap();
++
++        let child = Command::new(std::env::current_exe().unwrap())
++            .args(["--exact", FIXTURE_TEST, "--ignored", "--nocapture", "--test-threads=1"])
++            .env(FIXTURE_ENV, "1")
++            .stdin(Stdio::piped())
++            .stdout(Stdio::null())
++            .stderr(Stdio::piped())
++            .spawn()
++            .unwrap();
++        let mut child = ChildGuard(Some(child));
++        let process = child.0.as_mut().unwrap();
++        let input = process.stdin.take().unwrap();
++        let mut stderr = process.stderr.take().unwrap();
++        let mut poll = libc::pollfd {
++            fd: stderr.as_raw_fd(),
++            events: libc::POLLIN,
++            revents: 0,
++        };
++        // SAFETY: poll points to one live descriptor owned by this fixture.
++        let count = unsafe { libc::poll(&mut poll, 1, 3000) };
++        assert_eq!(count, 1, "owned fixture did not announce readiness");
++        assert_ne!(poll.revents & libc::POLLIN, 0);
++        let mut ready = vec![0_u8; FIXTURE_READY.len()];
++        stderr.read_exact(&mut ready).unwrap();
++        assert_eq!(ready, FIXTURE_READY);
++        drop(stderr);
++        assert!(process.try_wait().unwrap().is_none());
++        let owner_pid = process.id();
++        let cell = DevelopmentCell::owned_process_for_lifecycle_test(
++            spec.clone(),
++            child.0.take().unwrap(),
++        );
++        let mut daemon = Daemon::new(DaemonConfig {
++            socket: root.join("unused.sock"),
++            supervisor: root.join("unused-supervisor"),
++            spec_directory: root.to_owned(),
++        });
++        daemon.active = Some(ActiveCell {
++            spec_path,
++            spec,
++            cell,
++        });
++        Self {
++            daemon,
++            input: Some(input),
++            directory,
++            owner_pid,
++        }
++    }
++
++    fn finish(&mut self) {
++        drop(self.input.take());
++        let mut active = self.daemon.active.take().unwrap();
++        active.cell.stop().unwrap();
++        assert!(active.cell.try_wait().unwrap().is_some());
++    }
++}
++
++impl Drop for RunningFixture {
++    fn drop(&mut self) {
++        drop(self.input.take());
++        if let Some(mut active) = self.daemon.active.take() {
++            // The fallback owns only this fixture child. Successful tests also
++            // call finish(), which checks stop and joined exit explicitly.
++            let _ = active.cell.stop();
++        }
++    }
++}
++
++#[test]
++#[ignore = "private subprocess entry used only by RunningFixture"]
++fn owned_lifecycle_process_fixture() {
++    if std::env::var(FIXTURE_ENV).as_deref() != Ok("1") {
++        return;
++    }
++    std::io::stderr().write_all(FIXTURE_READY).unwrap();
++    let mut byte = [0_u8; 1];
++    let error = std::io::stdin().read_exact(&mut byte).unwrap_err();
++    assert_eq!(error.kind(), io::ErrorKind::UnexpectedEof);
++}
++
++fn current_thread_children() -> Vec<u32> {
++    // SAFETY: gettid has no pointer arguments or side effects.
++    let tid = unsafe { libc::syscall(libc::SYS_gettid) };
++    assert!(tid > 0);
++    let path = format!("/proc/self/task/{tid}/children");
++    let mut text = String::new();
++    fs::File::open(path)
++        .unwrap()
++        .take(8193)
++        .read_to_string(&mut text)
++        .unwrap();
++    assert!(text.len() <= 8192);
++    let mut children: Vec<u32> = text
++        .split_whitespace()
++        .map(|part| {
++            assert!(part.bytes().all(|b| b.is_ascii_digit()));
++            let pid: u32 = part.parse().unwrap();
++            assert!(pid > 0);
++            pid
++        })
++        .collect();
++    children.sort_unstable();
++    assert!(!children.windows(2).any(|pair| pair[0] == pair[1]));
++    children
++}
++
++fn forbid_process_creation_on_this_test_thread() {
++    const LD_W_ABS: u16 = 0x20;
++    const ALU_AND_K: u16 = 0x54;
++    const JMP_JEQ_K: u16 = 0x15;
++    const RET_K: u16 = 0x06;
++    const AUDIT_ARCH_X86_64: u32 = 0xc000_003e;
++    const SECCOMP_RET_KILL_PROCESS: u32 = 0x8000_0000;
++    const SECCOMP_RET_ERRNO: u32 = 0x0005_0000;
++    const SECCOMP_RET_ALLOW: u32 = 0x7fff_0000;
++
++    let stmt = |code, k| libc::sock_filter { code, jt: 0, jf: 0, k };
++    let jump = |k, jt, jf| libc::sock_filter { code: JMP_JEQ_K, jt, jf, k };
++    let mut filter = vec![
++        stmt(LD_W_ABS, 4), // seccomp_data.arch
++        jump(AUDIT_ARCH_X86_64, 1, 0),
++        stmt(RET_K, SECCOMP_RET_KILL_PROCESS),
++        stmt(LD_W_ABS, 0), // seccomp_data.nr
++        stmt(ALU_AND_K, !(1_u32 << 30)), // reject x32 aliases too
++    ];
++    for syscall in [libc::SYS_fork, libc::SYS_vfork, libc::SYS_clone, libc::SYS_clone3] {
++        filter.push(jump(syscall as u32, 0, 1));
++        filter.push(stmt(RET_K, SECCOMP_RET_ERRNO | libc::EPERM as u32));
++    }
++    filter.push(stmt(RET_K, SECCOMP_RET_ALLOW));
++    let program = libc::sock_fprog {
++        len: u16::try_from(filter.len()).unwrap(),
++        filter: filter.as_mut_ptr(),
++    };
++    // SAFETY: these prctl operations only restrict this test thread. program
++    // and its filter remain valid during the syscall; the kernel copies them.
++    assert_eq!(
++        unsafe { libc::prctl(libc::PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) },
++        0,
++        "{}",
++        io::Error::last_os_error()
++    );
++    assert_eq!(
++        unsafe { libc::prctl(libc::PR_SET_SECCOMP, 2, &program as *const libc::sock_fprog) },
++        0,
++        "{}",
++        io::Error::last_os_error()
++    );
++}
++
++#[test]
++fn status_and_readiness_are_distinct_explicit_wire_requests() {
++    for (request, expected) in [
++        (ControlRequest::Status, r#"{"command":"status"}"#),
++        (ControlRequest::Readiness, r#"{"command":"readiness"}"#),
++        (ControlRequest::WaitReady, r#"{"command":"wait_ready"}"#),
++    ] {
++        let wire = serde_json::to_string(&request).unwrap();
++        assert_eq!(wire, expected);
++        assert_eq!(serde_json::from_str::<ControlRequest>(&wire).unwrap(), request);
++    }
++}
++
++#[test]
++fn stopped_dispatch_does_not_claim_android_ready() {
++    let root = tempfile::tempdir().unwrap();
++    let mut daemon = Daemon::new(DaemonConfig {
++        socket: root.path().join("unused.sock"),
++        supervisor: root.path().join("unused-supervisor"),
++        spec_directory: root.path().to_owned(),
++    });
++    for request in [ControlRequest::Status, ControlRequest::Readiness] {
++        let response = daemon.handle(0, request, None);
++        assert!(response.ok);
++        assert_eq!(response.state, CellState::Stopped);
++        assert_eq!(response.host_pid, None);
++        assert!(!response.message.contains("Android is ready"));
++    }
++    let wait = daemon.handle(0, ControlRequest::WaitReady, None);
++    assert!(!wait.ok);
++    assert_eq!(wait.state, CellState::Stopped);
++    assert!(wait.message.contains("not running"));
++}
++
++#[test]
++fn running_status_dispatch_creates_no_child_and_cannot_replace_fresh_readiness() {
++    let mut fixture = RunningFixture::new();
++    let children = current_thread_children();
++    assert_eq!(children, vec![fixture.owner_pid]);
++    forbid_process_creation_on_this_test_thread();
++
++    // Verify that the kernel boundary is active before testing the dispatcher.
++    // A mistakenly permissive filter is a failure, not an untested green case.
++    match Command::new(std::env::current_exe().unwrap()).arg("--help").spawn() {
++        Err(error) => assert_eq!(error.raw_os_error(), Some(libc::EPERM)),
++        Ok(child) => {
++            drop(ChildGuard(Some(child)));
++            panic!("process-creation filter did not reject spawn");
++        }
++    }
++
++    for uid in [OWNER_UID, 0] {
++        let status = fixture.daemon.handle(uid, ControlRequest::Status, None);
++        assert!(status.ok, "{}", status.message);
++        assert_eq!(status.state, CellState::Running);
++        assert_eq!(status.host_pid, Some(fixture.owner_pid));
++        assert!(status.message.contains("Android readiness has not been checked"));
++        assert!(!status.message.contains("Android is ready"));
++        assert_eq!(current_thread_children(), children);
++    }
++    let denied = fixture.daemon.handle(OWNER_UID + 1, ControlRequest::Status, None);
++    assert!(!denied.ok);
++    assert!(denied.message.contains("not authorized"));
++
++    let spec_path = fixture.directory.path().join("cell.json");
++    for request in [
++        ControlRequest::Readiness,
++        ControlRequest::WaitReady,
++        ControlRequest::ListApplications { user: 0 },
++        ControlRequest::ApplicationIcon {
++            component: "org.example.statusfixture/.Main".into(),
++            user: 0,
++            size: 128,
++        },
++        ControlRequest::Launch {
++            spec: spec_path,
++            package: "org.example.statusfixture".into(),
++            component: Some("org.example.statusfixture/.Main".into()),
++            resolution: None,
++            user: 0,
++        },
++    ] {
++        let response = fixture.daemon.handle(0, request, None);
++        assert!(!response.ok, "a lifecycle observation bypassed fresh readiness");
++        assert_eq!(response.state, CellState::Running);
++        assert!(
++            response.message.contains("list exact cell namespace processes"),
++            "request failed before the original fresh probe: {}",
++            response.message
++        );
++        assert!(response.launch.is_none());
++        assert!(response.applications.is_none());
++        assert!(response.application_icon.is_none());
++        assert_eq!(current_thread_children(), children);
++    }
++
++    let again = fixture.daemon.handle(0, ControlRequest::Status, None);
++    assert!(again.ok);
++    assert!(!again.message.contains("Android is ready"));
++    fixture.finish();
++    assert!(current_thread_children().is_empty());
++}
+--- installed-production-source/runtime/droidloom-supervisor/src/development.rs
++++ final-candidate/runtime/droidloom-supervisor/src/development.rs
+@@ -16,7 +16,7 @@
+ use std::os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt, symlink};
+ use std::os::unix::process::CommandExt;
+ use std::path::{Path, PathBuf};
+-use std::process::{Child, ExitStatus};
++use std::process::{Child, Command, ExitStatus};
+ use std::thread;
+ use std::time::{Duration, Instant};
+ 
+@@ -100,17 +100,44 @@
+     for path in spec.graphics_backend.auxiliary_devices() {
+         auxiliary_graphics_device_numbers(Path::new(path))?;
+     }
+-    if effective_uid()? != 0 {
++    require_development_root(effective_uid()?)?;
++    inspect_development_metadata(spec)
++}
++
++/// Inspect development-cell inputs using only the caller's existing read access.
++///
++/// This creates no namespaces, files, mounts, network rules or Android processes.
++/// A successful inspection is not authorization or proof that the cell can boot.
++/// Validation and every executable entry retain their root requirement.
++///
++/// # Errors
++///
++/// Returns invalid input or ordinary I/O errors, including permission denied;
++/// inaccessible inputs are never skipped or reported as valid.
++pub fn inspect_development_inputs(spec: &CellSpec) -> Result<(), DevelopmentError> {
++    spec.validate()?;
++    for path in spec.graphics_backend.auxiliary_devices() {
++        auxiliary_graphics_device_numbers(Path::new(path))?;
++    }
++    inspect_development_metadata(spec)
++}
++
++fn require_development_root(uid: u32) -> Result<(), DevelopmentError> {
++    if uid != 0 {
+         return Err(DevelopmentError::InvalidInput(
+             "development boot must be run as root".into(),
+         ));
+     }
+-
++    Ok(())
++}
++
++fn inspect_development_metadata(spec: &CellSpec) -> Result<(), DevelopmentError> {
+     for name in ["system", "system_ext", "product"] {
+         let image = crate::gapps::partition_image(spec, name);
+         detect_read_only_filesystem(&image)?;
+     }
+-    crate::gapps::validate(spec).map_err(|error| DevelopmentError::InvalidInput(error.to_string()))?;
++    crate::gapps::validate(spec)
++        .map_err(|error| DevelopmentError::InvalidInput(error.to_string()))?;
+     if starts_with_magic(&spec.vendor_image, 0, &ANDROID_SPARSE_MAGIC)? {
+         return Err(DevelopmentError::InvalidInput(format!(
+             "{} is Android-sparse; convert it with simg2img before boot",
+@@ -277,6 +304,20 @@
+ }
+ 
+ impl DevelopmentCell {
++    /// Test-only ownership of an ordinary child, with no Android resources.
++    ///
++    /// The caller must stop and join this child. The fixture has created no
++    /// namespace, network, or runtime directory for cleanup to mutate.
++    #[cfg(test)]
++    pub(crate) fn owned_process_for_lifecycle_test(spec: CellSpec, child: Child) -> Self {
++        Self {
++            spec,
++            child,
++            network: None,
++            cleaned: true,
++        }
++    }
++
+     /// Host PID of the exact `unshare` namespace owner.
+     pub fn host_pid(&self) -> u32 {
+         self.child.id()
+@@ -341,9 +382,9 @@
+                 thread::sleep(Duration::from_millis(50));
+             }
+ 
+-            // `unshare --kill-child=TERM` binds Android PID 1 to this exact
+-            // outer process. Killing that owner cannot select an unrelated
+-            // process and still guarantees namespace teardown.
++            // `unshare --kill-child=TERM` forwards normal shutdown to
++            // the exact namespace child. The bounded fallback still kills
++            // only this owned outer process.
+             self.child
+                 .kill()
+                 .map_err(|source| io_error("kill unresponsive Android namespace owner", source))?;
+@@ -409,15 +450,37 @@
+             return Err(error);
+         }
+     };
+-    let parent_pid = unsafe { libc::getpid() };
++    let child_result =
++        development_namespace_command(network.namespace(), spec_path, entry_executable).spawn();
++    match child_result {
++        Ok(child) => Ok(DevelopmentCell {
++            spec: spec.clone(),
++            child,
++            network: Some(network),
++            cleaned: false,
++        }),
++        Err(source) => {
++            let network_result = network.teardown();
++            let runtime_result = cleanup_runtime_directory(spec);
++            network_result?;
++            runtime_result?;
++            Err(io_error("execute networked unshare", source))
++        }
++    }
++}
++
++fn development_namespace_command(
++    namespace: &str,
++    spec_path: &Path,
++    entry_executable: &Path,
++) -> Command {
+     let mut command = droidloom_cpu_placement::command("ip");
+     command
+-        .args(["netns", "exec", network.namespace(), "unshare"])
++        .args(["netns", "exec", namespace, "unshare"])
+         .args([
+             OsStr::new("--mount"),
+             OsStr::new("--pid"),
+-            // Host-side setup helpers also need /proc to describe this PID
+-            // namespace (not only the procfs later exposed inside Android).
++            // Host setup helpers must see this PID namespace through /proc.
+             OsStr::new("--mount-proc"),
+             OsStr::new("--ipc"),
+             OsStr::new("--uts"),
+@@ -430,10 +493,14 @@
+             OsStr::new("--spec"),
+             spec_path.as_os_str(),
+         ]);
+-    // If the lifecycle owner disappears even under SIGKILL or a crash,
+-    // terminate `unshare`; its own --kill-child contract then terminates
+-    // Android PID 1. Only deterministic network/path residue remains for the
+-    // next daemon start to recover.
++    arm_development_parent_death(&mut command);
++    command
++}
++
++fn arm_development_parent_death(command: &mut Command) {
++    let parent_pid = unsafe { libc::getpid() };
++    // Preserve the installed production TERM contract for the outer owner.
++    // Android init retains its separate, later parent-death protection.
+     unsafe {
+         command.pre_exec(move || {
+             if libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGTERM) != 0 {
+@@ -447,22 +514,6 @@
+             }
+             Ok(())
+         });
+-    }
+-    let child_result = command.spawn();
+-    match child_result {
+-        Ok(child) => Ok(DevelopmentCell {
+-            spec: spec.clone(),
+-            child,
+-            network: Some(network),
+-            cleaned: false,
+-        }),
+-        Err(source) => {
+-            let network_result = network.teardown();
+-            let runtime_result = cleanup_runtime_directory(spec);
+-            network_result?;
+-            runtime_result?;
+-            Err(io_error("execute networked unshare", source))
+-        }
+     }
+ }
+ 
+@@ -642,9 +693,12 @@
+     }
+     let cpu_policy = spec.runtime_dir.join("cpu-policy");
+     if cpu_policy.exists() {
+-        for entry in fs::read_dir(&cpu_policy).map_err(|e| io_error("read CPU policy directory", e))? {
++        for entry in
++            fs::read_dir(&cpu_policy).map_err(|e| io_error("read CPU policy directory", e))?
++        {
+             let entry = entry.map_err(|e| io_error("read CPU policy entry", e))?;
+-            fs::remove_file(entry.path()).map_err(|e| io_error("remove generated CPU policy", e))?;
++            fs::remove_file(entry.path())
++                .map_err(|e| io_error("remove generated CPU policy", e))?;
+         }
+         fs::remove_dir(cpu_policy).map_err(|e| io_error("remove CPU policy directory", e))?;
+     }
+@@ -819,7 +873,9 @@
+     let cpu_policy = crate::cpu_placement::prepare(&root, spec.id().as_str())
+         .map_err(|source| io_error("prepare private Android CPU placement hierarchy", source))?;
+     bind_development_cgroups(spec, &root, cpu_policy.is_some())?;
+-    if let Some(policy) = cpu_policy { bind_cpu_policy(spec, &root, &policy)?; }
++    if let Some(policy) = cpu_policy {
++        bind_cpu_policy(spec, &root, &policy)?;
++    }
+ 
+     // The reusable base is a system-as-root image, but Droidloom has already
+     // supplied the mounts that Android first-stage init normally constructs.
+@@ -837,8 +893,7 @@
+             .env("vendor.minigbm.allocator", "dma_heap_images");
+     }
+     let error = std::os::unix::process::CommandExt::exec(
+-        init
+-            .arg("second_stage")
++        init.arg("second_stage")
+             // Android's mount-namespace decision runs before ro.boot.*
+             // properties are guaranteed to exist. Give the package-owned
+             // init adaptation an unambiguous early-boot marker instead.
+@@ -1239,6 +1294,7 @@
+     // interfaces.
+     fs::create_dir_all(sys.join("fs/fuse/connections"))
+         .map_err(|source| io_error("create Android fusectl mount point", source))?;
++    project_cpu_sysfs(&sys)?;
+     project_loop_sysfs(&sys)?;
+     let render_metadata = read_render_node_sysfs_metadata(&spec.render_node)?;
+     publish_render_node_sysfs_metadata(&sys, &render_metadata)?;
+@@ -1285,6 +1341,90 @@
+         set_mode(&source, 0o600)?;
+     }
+     bind_mount(&net_core_source, &root.join("proc/sys/net/core"), false)?;
++    Ok(())
++}
++
++const CPU_LIST_FILES: [&str; 3] = ["online", "possible", "present"];
++const MAX_CPU_LIST_BYTES: u64 = 64 * 1024;
++
++fn validate_cpu_list(text: &str) -> Result<(), DevelopmentError> {
++    let body = text.strip_suffix('\n').unwrap_or(text);
++    if body.is_empty() || body.len() as u64 > MAX_CPU_LIST_BYTES {
++        return Err(DevelopmentError::InvalidInput(
++            "empty or oversized Linux CPU list".into(),
++        ));
++    }
++    let mut previous = None;
++    for group in body.split(',') {
++        let pair: Vec<_> = group.split('-').collect();
++        if pair.is_empty()
++            || pair.len() > 2
++            || pair
++                .iter()
++                .any(|p| p.is_empty() || !p.bytes().all(|c| c.is_ascii_digit()))
++        {
++            return Err(DevelopmentError::InvalidInput(
++                "malformed Linux CPU list".into(),
++            ));
++        }
++        let lo: u32 = pair[0]
++            .parse()
++            .map_err(|_| DevelopmentError::InvalidInput("CPU identifier overflow".into()))?;
++        let hi: u32 = pair[pair.len() - 1]
++            .parse()
++            .map_err(|_| DevelopmentError::InvalidInput("CPU identifier overflow".into()))?;
++        if lo > hi || previous.is_some_and(|end| lo <= end) {
++            return Err(DevelopmentError::InvalidInput(
++                "unordered or overlapping Linux CPU list".into(),
++            ));
++        }
++        previous = Some(hi);
++    }
++    Ok(())
++}
++
++fn project_cpu_sysfs(sys: &Path) -> Result<(), DevelopmentError> {
++    project_cpu_sysfs_with(Path::new("/sys/devices/system/cpu"), sys, bind_mount)
++}
++
++fn project_cpu_sysfs_with(
++    host: &Path,
++    sys: &Path,
++    mut bind: impl FnMut(&Path, &Path, bool) -> Result<(), DevelopmentError>,
++) -> Result<(), DevelopmentError> {
++    // Bionic reads these Linux inventory lists for sysconf CPU counts. Their
++    // absence is reported as one CPU, which is not the host's actual topology.
++    // Project ONLY these three read-only kernel files, never the CPU directory,
++    // hotplug controls, per-core uevents, or a caller-supplied/fixed CPU count.
++    // Real-time read-only bind mounts keep hotplug updates truthful. cgroup
++    // CPU quotas/affinity are separate controls and remain unchanged.
++    for name in CPU_LIST_FILES {
++        let source = host.join(name);
++        let metadata = fs::symlink_metadata(&source)
++            .map_err(|e| io_error("inspect Linux CPU inventory", e))?;
++        if !metadata.is_file() || metadata.file_type().is_symlink() {
++            return Err(DevelopmentError::InvalidInput(
++                "CPU inventory must be regular kernel files".into(),
++            ));
++        }
++        let file = File::open(&source).map_err(|e| io_error("open CPU inventory", e))?;
++        let mut text = String::new();
++        file.take(MAX_CPU_LIST_BYTES + 1)
++            .read_to_string(&mut text)
++            .map_err(|e| io_error("read CPU inventory", e))?;
++        validate_cpu_list(&text)?;
++    }
++    let directory = sys.join("devices/system/cpu");
++    fs::create_dir_all(&directory).map_err(|e| io_error("create CPU inventory projection", e))?;
++    for name in CPU_LIST_FILES {
++        let target = directory.join(name);
++        OpenOptions::new()
++            .write(true)
++            .create_new(true)
++            .open(&target)
++            .map_err(|e| io_error("create CPU inventory mount point", e))?;
++        bind(&host.join(name), &target, true)?;
++    }
+     Ok(())
+ }
+ 
+@@ -1684,8 +1824,12 @@
+     if text_socket.exists() {
+         if !fs::metadata(&text_socket)
+             .map_err(|source| io_error("stat text-input socket", source))?
+-            .file_type().is_socket() {
+-            return Err(DevelopmentError::InvalidInput("text-input endpoint is not a socket".into()));
++            .file_type()
++            .is_socket()
++        {
++            return Err(DevelopmentError::InvalidInput(
++                "text-input endpoint is not a socket".into(),
++            ));
+         }
+         let target = root.join("dev/socket/droidloom/text-input");
+         create_mount_target(&target)?;
+@@ -1716,20 +1860,29 @@
+         .map_err(|source| io_error("stat auxiliary graphics device", source))?;
+     if !metadata.file_type().is_char_device() {
+         return Err(DevelopmentError::InvalidInput(format!(
+-            "{} must be a character device, not a symlink", path.display()
++            "{} must be a character device, not a symlink",
++            path.display()
+         )));
+     }
+     let (major, minor) = linux_device_numbers(metadata.rdev());
+     let uevent = fs::read_to_string(format!("/sys/dev/char/{major}:{minor}/uevent"))
+         .map_err(|source| io_error("read auxiliary graphics device identity", source))?;
+-    let expected = format!("DEVNAME={}", path.strip_prefix("/dev").expect("fixed device path").display());
++    let expected = format!(
++        "DEVNAME={}",
++        path.strip_prefix("/dev")
++            .expect("fixed device path")
++            .display()
++    );
+     if !uevent.lines().any(|line| line == expected) {
+         return Err(DevelopmentError::InvalidInput(format!(
+-            "{} does not match its kernel device identity", path.display()
++            "{} does not match its kernel device identity",
++            path.display()
+         )));
+     }
+-    Ok((u32::try_from(major).expect("Linux device major"),
+-        u32::try_from(minor).expect("Linux device minor")))
++    Ok((
++        u32::try_from(major).expect("Linux device major"),
++        u32::try_from(minor).expect("Linux device minor"),
++    ))
+ }
+ 
+ fn bind_boot_parameters(spec: &CellSpec, root: &Path) -> Result<(), DevelopmentError> {
+@@ -1748,21 +1901,30 @@
+     bind_mount(&cmdline, &root.join("proc/cmdline"), true)
+ }
+ 
+-fn bind_development_cgroups(spec: &CellSpec, root: &Path, cpuset: bool) -> Result<(), DevelopmentError> {
++fn bind_development_cgroups(
++    spec: &CellSpec,
++    root: &Path,
++    cpuset: bool,
++) -> Result<(), DevelopmentError> {
+     // The target host is unified cgroup v2. Keep Android's legacy controller
+     // descriptors optional so their unavailable v1 mounts cannot prevent the
+     // private v2 hierarchy (and its /system subtree) from being created.
+     let source = spec.runtime_dir.join("android-cgroups.json");
+-    let mut config: serde_json::Value = serde_json::from_str(DEVELOPMENT_CGROUPS)
+-        .expect("embedded cgroup configuration is valid");
++    let mut config: serde_json::Value =
++        serde_json::from_str(DEVELOPMENT_CGROUPS).expect("embedded cgroup configuration is valid");
+     if cpuset {
+         // CPU placement uses cpuset. Do not advertise an unusable legacy CPU
+         // controller: get_sched_policy() must read the real cpuset hierarchy.
+-        config["Cgroups"].as_array_mut().expect("controller list")
++        config["Cgroups"]
++            .as_array_mut()
++            .expect("controller list")
+             .retain(|controller| controller["Controller"] != "cpu");
+     }
+-    fs::write(&source, serde_json::to_vec_pretty(&config).expect("JSON value serializes"))
+-        .map_err(|source| io_error("write Android development cgroup configuration", source))?;
++    fs::write(
++        &source,
++        serde_json::to_vec_pretty(&config).expect("JSON value serializes"),
++    )
++    .map_err(|source| io_error("write Android development cgroup configuration", source))?;
+     bind_mount(&source, &root.join(ANDROID_CGROUPS_TARGET), true)
+ }
+ 
+@@ -1773,14 +1935,16 @@
+     // shared-kernel adaptations. The appended on-init action follows AOSP's
+     // cpuset defaults and completes before services are started.
+     let target = root.join("system/etc/init/hw/init.rc");
+-    let mut init = fs::read_to_string(&target).map_err(|e| io_error("read Android init policy", e))?;
++    let mut init =
++        fs::read_to_string(&target).map_err(|e| io_error("read Android init policy", e))?;
+     init.push_str(policy);
+     let source = directory.join("init.rc");
+     fs::write(&source, init).map_err(|e| io_error("write Android CPU init policy", e))?;
+     bind_mount(&source, &target, true)?;
+ 
+     let target = root.join("system/etc/init/surfaceflinger.rc");
+-    let original = fs::read_to_string(&target).map_err(|e| io_error("read SurfaceFlinger service", e))?;
++    let original =
++        fs::read_to_string(&target).map_err(|e| io_error("read SurfaceFlinger service", e))?;
+     let service = crate::cpu_placement::graphics_service(&original)
+         .map_err(|e| io_error("set SurfaceFlinger graphics role", e))?;
+     let source = directory.join("surfaceflinger.rc");
+@@ -1788,23 +1952,35 @@
+     bind_mount(&source, &target, true)?;
+ 
+     let mut targets = vec![root.join("system/etc/task_profiles.json")];
+-    for relative in ["vendor/etc/task_profiles.json", "system_ext/etc/task_profiles.json"] {
++    for relative in [
++        "vendor/etc/task_profiles.json",
++        "system_ext/etc/task_profiles.json",
++    ] {
+         let target = root.join(relative);
+-        if target.exists() { targets.push(target); }
++        if target.exists() {
++            targets.push(target);
++        }
+     }
+     // API-specific profiles load between system and vendor; translate them
+     // too, so an older image cannot silently replace a working CPU backend.
+     let api_directory = root.join("system/etc/task_profiles");
+     if api_directory.is_dir() {
+-        for entry in fs::read_dir(api_directory).map_err(|e| io_error("read API task profiles", e))? {
++        for entry in
++            fs::read_dir(api_directory).map_err(|e| io_error("read API task profiles", e))?
++        {
+             let entry = entry.map_err(|e| io_error("read API task profile entry", e))?;
+-            if entry.file_name().to_str().is_some_and(|s| s.starts_with("task_profiles_") && s.ends_with(".json")) {
++            if entry
++                .file_name()
++                .to_str()
++                .is_some_and(|s| s.starts_with("task_profiles_") && s.ends_with(".json"))
++            {
+                 targets.push(entry.path());
+             }
+         }
+     }
+     for (index, target) in targets.iter().enumerate() {
+-        let original = fs::read_to_string(target).map_err(|e| io_error("read Android task profiles", e))?;
++        let original =
++            fs::read_to_string(target).map_err(|e| io_error("read Android task profiles", e))?;
+         let translated = crate::cpu_placement::task_profiles(&original)
+             .map_err(|e| io_error("translate Android CPU task profiles", e))?;
+         let source = directory.join(format!("profiles-{index}.json"));
+@@ -1929,7 +2105,8 @@
+ }
+ 
+ fn starts_with_magic(path: &Path, offset: u64, expected: &[u8]) -> Result<bool, DevelopmentError> {
+-    let mut file = File::open(path).map_err(|source| io_error("open image", source))?;
++    let mut file = File::open(path)
++        .map_err(|source| io_error(&format!("open image {}", path.display()), source))?;
+     file.seek(SeekFrom::Start(offset))
+         .map_err(|source| io_error("seek image magic", source))?;
+     let mut actual = vec![0; expected.len()];
+@@ -1989,6 +2166,145 @@
+     use super::*;
+     use std::io::Write;
+ 
++    fn inspect_fixture(root: &Path) -> (CellSpec, std::os::unix::net::UnixListener) {
++        let image_dir = root.join("base");
++        let images = image_dir.join("images");
++        let data_dir = root.join("data");
++        fs::create_dir_all(&images).unwrap();
++        fs::create_dir_all(&data_dir).unwrap();
++        let vendor_image = root.join("vendor.img");
++        let paths = [
++            images.join("system.img"),
++            images.join("system_ext.img"),
++            images.join("product.img"),
++            vendor_image.clone(),
++            data_dir.join(ANDROID_DATA_IMAGE),
++            data_dir.join(ANDROID_METADATA_IMAGE),
++        ];
++        for path in paths {
++            let mut image = File::create(path).unwrap();
++            image.seek(SeekFrom::Start(EXT4_MAGIC_OFFSET)).unwrap();
++            image.write_all(&EXT4_MAGIC).unwrap();
++        }
++        let denial_socket = root.join("denial.sock");
++        let listener = std::os::unix::net::UnixListener::bind(&denial_socket).unwrap();
++        let spec = CellSpec {
++            host_uid: 1000,
++            subordinate_uids: crate::IdRange {
++                start: 100000,
++                count: 100000,
++            },
++            subordinate_gids: crate::IdRange {
++                start: 100000,
++                count: 100000,
++            },
++            image_dir,
++            gapps_dir: None,
++            vendor_image,
++            android_init: None,
++            android_file_overrides: vec![],
++            android_runtime_directories: vec![],
++            shared_storage_directories: vec![],
++            data_dir,
++            runtime_dir: root.join("not-created-runtime"),
++            // Metadata tests use a portable real character device. Public spec
++            // validation separately enforces the canonical DRM pathname.
++            render_node: PathBuf::from("/dev/null"),
++            graphics_backend: crate::GraphicsBackend::Drm,
++            denial_socket,
++        };
++        (spec, listener)
++    }
++
++    #[test]
++    fn inspect_readable_metadata_preserves_inputs_and_does_not_prepare_runtime() {
++        let directory = tempfile::tempdir().unwrap();
++        let (spec, _listener) = inspect_fixture(directory.path());
++        let paths = [
++            spec.vendor_image.clone(),
++            spec.data_dir.join(ANDROID_DATA_IMAGE),
++            spec.data_dir.join(ANDROID_METADATA_IMAGE),
++        ];
++        let before: Vec<_> = paths
++            .iter()
++            .map(|path| (fs::read(path).unwrap(), fs::metadata(path).unwrap().mode()))
++            .collect();
++        let directory_mode = fs::metadata(&spec.data_dir).unwrap().mode();
++        inspect_development_metadata(&spec).unwrap();
++        for (path, (bytes, mode)) in paths.iter().zip(before) {
++            assert_eq!(fs::read(path).unwrap(), bytes);
++            assert_eq!(fs::metadata(path).unwrap().mode(), mode);
++        }
++        assert_eq!(fs::metadata(&spec.data_dir).unwrap().mode(), directory_mode);
++        assert!(!spec.runtime_dir.exists());
++    }
++
++    #[test]
++    fn inspect_missing_metadata_image_is_an_io_failure() {
++        let directory = tempfile::tempdir().unwrap();
++        let (spec, _listener) = inspect_fixture(directory.path());
++        fs::remove_file(spec.data_dir.join(ANDROID_METADATA_IMAGE)).unwrap();
++        let error = inspect_development_metadata(&spec).unwrap_err();
++        assert!(matches!(error, DevelopmentError::Io { source, .. }
++            if source.kind() == io::ErrorKind::NotFound));
++        assert!(!spec.runtime_dir.exists());
++    }
++
++    #[test]
++    fn inspect_unreadable_input_is_permission_denied_not_success() {
++        if effective_uid().unwrap() == 0 {
++            // DAC is bypassed by root; the actual unprivileged test run covers this.
++            return;
++        }
++        let directory = tempfile::tempdir().unwrap();
++        let (spec, _listener) = inspect_fixture(directory.path());
++        set_mode(&spec.vendor_image, 0).unwrap();
++        let result = inspect_development_metadata(&spec);
++        set_mode(&spec.vendor_image, 0o600).unwrap();
++        assert!(
++            matches!(result.unwrap_err(), DevelopmentError::Io { source, .. }
++            if source.kind() == io::ErrorKind::PermissionDenied)
++        );
++        assert!(!spec.runtime_dir.exists());
++    }
++
++    #[test]
++    fn inspect_does_not_remove_root_requirement_from_activation_entries() {
++        assert!(require_development_root(0).is_ok());
++        for uid in [1, 1000, u32::MAX] {
++            assert!(
++                require_development_root(uid)
++                    .unwrap_err()
++                    .to_string()
++                    .contains("development boot must be run as root")
++            );
++        }
++        if effective_uid().unwrap() == 0 {
++            return;
++        }
++        let directory = tempfile::tempdir().unwrap();
++        let (mut spec, _listener) = inspect_fixture(directory.path());
++        spec.render_node = PathBuf::from("/dev/dri/renderD999999");
++        let spec_path = directory.path().join("unused-spec.json");
++        for error in [
++            validate_development_inputs(&spec).unwrap_err(),
++            start_development_cell(&spec_path, &spec, Path::new("/nonexistent-supervisor"))
++                .err()
++                .expect("activation must fail"),
++            enter_development_cell(&spec).unwrap_err(),
++        ] {
++            assert!(
++                error
++                    .to_string()
++                    .contains("development boot must be run as root")
++            );
++        }
++        let inspect_error = inspect_development_inputs(&spec).unwrap_err();
++        assert!(!inspect_error.to_string().contains("must be run as root"));
++        assert!(inspect_error.to_string().contains("stat render node"));
++        assert!(!spec.runtime_dir.exists());
++    }
++
+     #[test]
+     fn native_media_heap_preflight_rejects_regular_files_and_symlinks() {
+         let directory = tempfile::tempdir().unwrap();
+@@ -2001,6 +2317,51 @@
+             assert!(matches!(error, DevelopmentError::InvalidInput(message)
+                 if message.contains("must be a character device, not a symlink")));
+         }
++    }
++
++    #[test]
++    fn namespace_owner_argv_preserves_the_production_term_contract() {
++        let command = development_namespace_command(
++            "droidloom-test-net",
++            Path::new("/owned-test/cell.json"),
++            Path::new("/owned-test/droidloom-supervisor"),
++        );
++        let prefix = droidloom_cpu_placement::command("ip");
++        assert_eq!(command.get_program(), prefix.get_program());
++        let mut expected: Vec<_> = prefix.get_args().map(OsStr::to_os_string).collect();
++        expected.extend([
++            "netns", "exec", "droidloom-test-net", "unshare",
++            "--mount", "--pid", "--mount-proc", "--ipc", "--uts", "--fork",
++            "--kill-child=TERM", "--forward-signals", "--propagation=private",
++            "/owned-test/droidloom-supervisor", "development-enter", "--spec",
++            "/owned-test/cell.json",
++        ].into_iter().map(std::ffi::OsString::from));
++        assert_eq!(command.get_args().map(OsStr::to_os_string).collect::<Vec<_>>(), expected);
++    }
++
++    #[test]
++    fn namespace_owner_parent_death_arms_real_kernel_sigterm() {
++        let mut child = Command::new(std::env::current_exe().unwrap());
++        child.arg("--list");
++        arm_development_parent_death(&mut child);
++        // Inspect the actual child in the same pre-exec thread that arms it.
++        // A libtest fixture runs on a different worker thread after exec.
++        unsafe {
++            child.pre_exec(|| {
++                let mut signal: libc::c_int = 0;
++                if libc::prctl(libc::PR_GET_PDEATHSIG, &mut signal as *mut libc::c_int) != 0 {
++                    return Err(io::Error::last_os_error());
++                }
++                if signal != libc::SIGTERM {
++                    return Err(io::Error::from_raw_os_error(libc::EINVAL));
++                }
++                Ok(())
++            });
++        }
++        let output = child.output().unwrap();
++        assert!(output.status.success(), "{}", String::from_utf8_lossy(&output.stderr));
++        assert!(String::from_utf8_lossy(&output.stdout)
++            .contains("development::tests::namespace_owner_argv_preserves_the_production_term_contract: test"));
+     }
+ 
+     #[test]
+@@ -2128,6 +2489,156 @@
+             linux_device_numbers(encoded),
+             (DRM_DEVICE_MAJOR, DRM_RENDER_MINOR_BASE)
+         );
++    }
++
++    fn cpu_source_fixture() -> tempfile::TempDir {
++        let source = tempfile::tempdir().unwrap();
++        for (name, value) in [
++            ("online", "0-3,8-11\n"),
++            ("possible", "0-15\n"),
++            ("present", "0-11\n"),
++        ] {
++            fs::write(source.path().join(name), value).unwrap();
++        }
++        source
++    }
++
++    #[test]
++    fn cpu_lists_accept_real_kernel_range_and_sparse_forms() {
++        for data in ["0", "0\n", "0-23\n", "0-3,8,10-12\n", "1,5,99"] {
++            validate_cpu_list(data).unwrap();
++        }
++    }
++
++    #[test]
++    fn cpu_lists_reject_empty_malformed_and_overlapping_input() {
++        for data in [
++            "",
++            "\n",
++            "0\n\n",
++            "0-",
++            "-1",
++            "1-0",
++            "0,,1",
++            "0,0",
++            "0-3,3-8",
++            "2,1",
++            "0;touch",
++            "0/1",
++            " 0",
++            "0 ",
++            "0-1-2",
++            "4294967296",
++        ] {
++            assert!(validate_cpu_list(data).is_err(), "{data:?}");
++        }
++        assert!(validate_cpu_list(&"1".repeat(65537)).is_err());
++    }
++
++    #[test]
++    fn only_three_inventory_files_are_projected_read_only() {
++        let source = cpu_source_fixture();
++        let root = tempfile::tempdir().unwrap();
++        fs::write(source.path().join("hotplug"), "DO NOT EXPOSE").unwrap();
++        let mut calls = Vec::new();
++        project_cpu_sysfs_with(source.path(), root.path(), |from, to, read_only| {
++            assert!(read_only);
++            calls.push((from.to_owned(), to.to_owned()));
++            Ok(())
++        })
++        .unwrap();
++        assert_eq!(calls.len(), 3);
++        for (index, (from, to)) in calls.iter().enumerate() {
++            assert_eq!(*from, source.path().join(CPU_LIST_FILES[index]));
++            assert_eq!(
++                *to,
++                root.path()
++                    .join("devices/system/cpu")
++                    .join(CPU_LIST_FILES[index])
++            );
++        }
++        assert_eq!(
++            fs::read_dir(root.path().join("devices/system/cpu"))
++                .unwrap()
++                .count(),
++            3
++        );
++        assert!(!root.path().join("devices/system/cpu/hotplug").exists());
++    }
++
++    #[test]
++    fn missing_cpu_inventory_fails_before_any_bind() {
++        let source = cpu_source_fixture();
++        let root = tempfile::tempdir().unwrap();
++        fs::remove_file(source.path().join("present")).unwrap();
++        assert!(
++            project_cpu_sysfs_with(source.path(), root.path(), |_, _, _| panic!(
++                "must fail first"
++            ))
++            .is_err()
++        );
++        assert!(!root.path().join("devices/system/cpu").exists());
++    }
++
++    #[test]
++    fn invalid_inventory_fails_before_any_bind() {
++        let source = cpu_source_fixture();
++        let root = tempfile::tempdir().unwrap();
++        fs::write(source.path().join("present"), "1-0\n").unwrap();
++        assert!(
++            project_cpu_sysfs_with(source.path(), root.path(), |_, _, _| panic!(
++                "must fail first"
++            ))
++            .is_err()
++        );
++    }
++
++    #[test]
++    fn cpu_projection_never_follows_input_symlinks() {
++        let source = cpu_source_fixture();
++        let root = tempfile::tempdir().unwrap();
++        fs::remove_file(source.path().join("online")).unwrap();
++        symlink(source.path().join("possible"), source.path().join("online")).unwrap();
++        assert!(
++            project_cpu_sysfs_with(source.path(), root.path(), |_, _, _| panic!(
++                "must fail first"
++            ))
++            .is_err()
++        );
++    }
++
++    #[test]
++    fn existing_target_is_not_replaced_or_followed() {
++        let source = cpu_source_fixture();
++        let root = tempfile::tempdir().unwrap();
++        let directory = root.path().join("devices/system/cpu");
++        fs::create_dir_all(&directory).unwrap();
++        let outside = root.path().join("keep");
++        fs::write(&outside, "retained").unwrap();
++        symlink(&outside, directory.join("online")).unwrap();
++        assert!(
++            project_cpu_sysfs_with(source.path(), root.path(), |_, _, _| panic!(
++                "must fail before bind"
++            ))
++            .is_err()
++        );
++        assert_eq!(fs::read_to_string(outside).unwrap(), "retained");
++    }
++
++    #[test]
++    fn read_only_bind_failure_is_not_ignored() {
++        let source = cpu_source_fixture();
++        let root = tempfile::tempdir().unwrap();
++        let mut calls = 0;
++        let error = project_cpu_sysfs_with(source.path(), root.path(), |_, _, _| {
++            calls += 1;
++            Err(DevelopmentError::InvalidInput(
++                "injected mount failure".into(),
++            ))
++        })
++        .unwrap_err();
++        assert_eq!(calls, 1);
++        assert!(error.to_string().contains("injected mount failure"));
+     }
+ 
+     #[test]
+--- installed-production-source/runtime/droidloom-supervisor/src/diagnostics.rs
++++ final-candidate/runtime/droidloom-supervisor/src/diagnostics.rs
+@@ -1,6 +1,7 @@
+ //! Read-only, bounded Android diagnostics. No caller-selected executable or shell.
+ 
+ use std::collections::VecDeque;
++use std::fmt::Write as _;
+ use std::io::{self, Read};
+ use std::process::{Command, Stdio};
+ use std::thread;
+@@ -50,12 +51,22 @@
+         "threadtime",
+         "-v",
+         "printable",
+-        "-t",
+     ]
+     .into_iter()
+     .map(str::to_owned)
+     .collect();
+-    args.push(lines.to_string());
++    if !(1..=2000).contains(&lines) {
++        return Err(ControlError::Invalid(
++            "diagnostic line limit must be between 1 and 2000".into(),
++        ));
++    }
++    // logcat applies a numeric -t at the logd reader, BEFORE client-side UID
++    // filtering. A noisy unrelated app must not hide retained target logs.
++    // Package requests therefore filter the complete retained snapshot first;
++    // capture still has its existing 10s deadline and 128-KiB bounded tail.
++    if crashes || package.is_none() {
++        args.extend(["-t".to_owned(), lines.to_string()]);
++    }
+     if !crashes && let Some(package) = package {
+         let listing = run(&[
+             "/system/bin/cmd".into(),
+@@ -77,6 +88,8 @@
+         return logs.map(|text| {
+             if text.trim().is_empty() {
+                 "No matching log entries in the retained Android buffers.\n".into()
++            } else if package.is_some() {
++                matched_tail(&text, lines as usize)
+             } else {
+                 text
+             }
+@@ -93,7 +106,12 @@
+     if let Some(package) = package {
+         exit_args.push(package.into());
+     }
+-    let exits = run(&exit_args);
++    let exits = run(&exit_args).and_then(checked_exit_history);
++    // System_server owns activity lifecycle events, so an app-UID logcat filter
++    // cannot see them. Sample the bounded global *events* ring separately and
++    // keep only exact process-package matches. This does NOT identify a SIGKILL
++    // sender; it describes the resulting ActivityManager actions.
++    let lifecycle = package.map(|name| collect_lifecycle_sample(name, &mut run));
+     if let (Err(log_error), Err(exit_error)) = (&logs, &exits) {
+         return Err(ControlError::Invalid(format!(
+             "crash buffer unavailable: {log_error}; exit history unavailable: {exit_error}"
+@@ -106,12 +124,178 @@
+         Ok(text) => text,
+         Err(error) => format!("Unavailable: {error}\n"),
+     };
+-    Ok(format!(
++    let mut output = format!(
+         "=== Recent crash buffer (all apps, including system crash reporters) ===\n{}\n=== Recorded process exits ({}) ===\n{}",
+         section(logs),
+         package.unwrap_or("all apps"),
+         section(exits)
+-    ))
++    );
++    if let (Some(name), Some(events)) = (package, lifecycle) {
++        write!(
++            &mut output,
++            "\n=== Sampled app lifecycle events ({name}; NOT a SIGKILL sender attribution) ===\n{}",
++            section(events)
++        )
++        .expect("formatting into a String cannot fail");
++    }
++    Ok(output)
++}
++
++fn collect_lifecycle_sample(
++    package: &str,
++    run: &mut impl FnMut(&[String]) -> Result<String, ControlError>,
++) -> Result<String, ControlError> {
++    let args: Vec<String> = [
++        "/system/bin/logcat",
++        "-d",
++        "-b",
++        "events",
++        "-v",
++        "threadtime",
++        "-v",
++        "printable",
++        "-t",
++        "2000",
++        "*:V",
++    ]
++    .into_iter()
++    .map(str::to_owned)
++    .collect();
++    run(&args).map(|raw| sampled_lifecycle_events(&raw, package))
++}
++
++/// Exact Android process name comparison, including :named app subprocesses.
++/// Prefix-neighbor applications are never part of the target's events.
++fn process_belongs_to_package(process: &str, package: &str) -> bool {
++    process == package
++        || process
++            .strip_prefix(package)
++            .is_some_and(|rest| rest.starts_with(':'))
++}
++
++/// Android event-log payloads are positional; use the process-name field rather
++/// than a broad substring search which could leak unrelated apps' lifecycle.
++/// Android event records identify a victim, not necessarily a signal sender.
++fn lifecycle_event_belongs_to_package(line: &str, package: &str) -> bool {
++    let Some((prefix, body)) = line.split_once(": [") else {
++        return false;
++    };
++    let Some(tag) = prefix.split_whitespace().last() else {
++        return false;
++    };
++    let values: Vec<_> = body.trim_end_matches(']').split(',').collect();
++    match tag {
++        "am_proc_start" => values
++            .get(3)
++            .is_some_and(|name| process_belongs_to_package(name.trim(), package)),
++        "am_proc_bound" | "am_proc_died" | "am_kill" | "am_crash" | "am_anr" => values
++            .get(2)
++            .is_some_and(|name| process_belongs_to_package(name.trim(), package)),
++        "am_schedule_service_restart" => values
++            .get(1)
++            .and_then(|service| service.trim().split_once('/'))
++            .is_some_and(|(owner, _)| owner == package),
++        _ => false,
++    }
++}
++
++/// Keep a bounded and explicitly incomplete recent event-log sample. Logcat's
++/// global '-t' and the transport's 128-KiB byte tail can omit earlier events.
++/// Consequently an empty sample is NOT proof that an app never exited.
++fn sampled_lifecycle_events(raw: &str, package: &str) -> String {
++    const MAX_MATCHED_LINES: usize = 48;
++    const MAX_LINE_CHARS: usize = 512;
++    let mut lines = VecDeque::with_capacity(MAX_MATCHED_LINES);
++    let mut omitted = false;
++    for line in raw.lines() {
++        if lifecycle_event_belongs_to_package(line, package) {
++            if lines.len() == MAX_MATCHED_LINES {
++                lines.pop_front();
++                omitted = true;
++            }
++            lines.push_back(line.chars().take(MAX_LINE_CHARS).collect::<String>());
++        }
++    }
++    let mut result =
++        "[Recent global logd event sample only; earlier events may be absent.]\n".to_owned();
++    if raw.starts_with("[Older output omitted:") {
++        result.push_str("[Global event snapshot was byte-truncated before package filtering.]\n");
++    }
++    if omitted {
++        result.push_str("[Older package-matched events omitted from bounded display.]\n");
++    }
++    if lines.is_empty() {
++        result.push_str(
++            "No matching app lifecycle events in this recent sample (not proof of no exits).\n",
++        );
++    } else {
++        for line in lines {
++            result.push_str(&line);
++            result.push('\n');
++        }
++    }
++    result
++}
++
++// Return the latest UID-matched rendered lines, preserving truncation notices.
++// This never parses text as a new command or broadens access to other UIDs.
++fn matched_tail(text: &str, limit: usize) -> String {
++    let (notice, body) = if text.starts_with("[Older output omitted:") {
++        text.split_once('\n')
++            .map_or(("", text), |(first, rest)| (first, rest))
++    } else {
++        ("", text)
++    };
++    let mut recent = VecDeque::with_capacity(limit);
++    let mut omitted = false;
++    for line in body.lines() {
++        if recent.len() == limit {
++            recent.pop_front();
++            omitted = true;
++        }
++        recent.push_back(line);
++    }
++    let mut output = String::new();
++    if !notice.is_empty() {
++        output.push_str(notice);
++        output.push('\n');
++    }
++    if omitted {
++        writeln!(
++            &mut output,
++            "[Older UID-matched lines omitted: showing the last {limit} rendered lines]"
++        )
++        .expect("formatting into a String cannot fail");
++    }
++    for line in recent {
++        output.push_str(line);
++        output.push('\n');
++    }
++    output
++}
++
++fn checked_exit_history(text: String) -> Result<String, ControlError> {
++    // dumpsys can return exit status zero while the service is missing or its
++    // Binder dump timed out. Do not label that as a successful empty history.
++    let first = text
++        .lines()
++        .map(str::trim)
++        .find(|line| !line.is_empty())
++        .unwrap_or("");
++    let unavailable = first.starts_with("Can't find service:")
++        || first.starts_with("Error dumping service info:")
++        || text.lines().any(|line| {
++            line.trim()
++                .starts_with("*** SERVICE 'activity' DUMP TIMEOUT")
++        });
++    if unavailable {
++        Err(ControlError::Invalid(format!(
++            "Android activity exit history unavailable: {}",
++            text.trim()
++        )))
++    } else {
++        Ok(text)
++    }
+ }
+ 
+ fn package_uid(listing: &str, package: &str) -> Result<u32, ControlError> {
+@@ -207,6 +391,122 @@
+     use super::*;
+ 
+     #[test]
++    fn package_log_filter_precedes_the_rendered_tail() {
++        let mut calls = Vec::new();
++        let result = collect_with(Some("com.example.app"), 0, 2, false, |args| {
++            calls.push(args.to_vec());
++            Ok(if args[0] == "/system/bin/cmd" {
++                "package:com.example.app uid:10001\n".into()
++            } else {
++                assert!(!args.iter().any(|arg| arg == "-t" || arg == "-T"));
++                assert!(args.iter().any(|arg| arg == "--uid=10001"));
++                "old matching line\nretained cause\nlast target line\n".into()
++            })
++        })
++        .unwrap();
++        assert!(result.contains("retained cause\nlast target line\n"));
++        assert!(!result.contains("old matching line"));
++        assert!(result.contains("last 2 rendered lines"));
++        assert_eq!(calls.len(), 2);
++    }
++
++    #[test]
++    fn unrelated_global_tail_cannot_make_package_logs_falsely_empty() {
++        let result = collect_with(Some("com.example.app"), 0, 1, false, |args| {
++            Ok(if args[0] == "/system/bin/cmd" {
++                "package:com.example.app uid:10001\n".into()
++            } else if args.iter().any(|arg| arg == "-t") {
++                String::new() // logd selected only newer unrelated records
++            } else {
++                "retained target failure\n".into()
++            })
++        })
++        .unwrap();
++        assert_eq!(result, "retained target failure\n");
++    }
++
++    #[test]
++    fn unfiltered_and_crash_log_reads_retain_the_global_limit() {
++        for crashes in [false, true] {
++            collect_with(None, 0, 7, crashes, |args| {
++                if args[0] == "/system/bin/logcat" {
++                    assert!(args.windows(2).any(|pair| pair == ["-t", "7"]));
++                    assert!(!args.iter().any(|arg| arg.starts_with("--uid=")));
++                }
++                Ok(String::new())
++            })
++            .unwrap();
++        }
++    }
++
++    #[test]
++    fn uid_tail_preserves_byte_truncation_notice_and_unicode() {
++        let result = matched_tail(
++            "[Older output omitted: showing the last 20 bytes]\n旧记录\n最新故障\n",
++            1,
++        );
++        assert!(result.starts_with("[Older output omitted:"));
++        assert!(result.ends_with("最新故障\n"));
++        assert!(!result.contains("旧记录"));
++    }
++
++    #[test]
++    fn missing_service_with_zero_status_is_marked_unavailable() {
++        let result = collect_with(Some("com.example.app"), 0, 10, true, |args| {
++            Ok(if args[0] == "/system/bin/logcat" {
++                "native backtrace\n".into()
++            } else {
++                "\nCan't find service: activity\n".into()
++            })
++        })
++        .unwrap();
++        assert!(result.contains("native backtrace"));
++        assert!(result.contains("Unavailable: Android activity exit history unavailable:"));
++        assert!(!result.contains("No retained entries."));
++    }
++
++    #[test]
++    fn two_unavailable_sections_do_not_report_success() {
++        let result = collect_with(None, 0, 10, true, |args| {
++            if args[0] == "/system/bin/logcat" {
++                Err(ControlError::Invalid("logd unavailable".into()))
++            } else {
++                Ok("Can't find service: activity\n".into())
++            }
++        });
++        assert!(result.is_err());
++    }
++
++    #[test]
++    fn binder_timeout_is_not_a_valid_exit_history() {
++        assert!(checked_exit_history("ACTIVITY MANAGER PROCESS EXIT INFO\n*** SERVICE 'activity' DUMP TIMEOUT (5000ms) EXPIRED ***\n".into()).is_err());
++        assert!(
++            checked_exit_history("Error dumping service info: (Failure calling service)\n".into())
++                .is_err()
++        );
++    }
++
++    #[test]
++    fn quoted_error_in_a_real_description_does_not_hide_history() {
++        let data =
++            "ACTIVITY MANAGER PROCESS EXIT INFO\n description=Can't find service: activity\n";
++        assert_eq!(checked_exit_history(data.into()).unwrap(), data);
++        assert_eq!(checked_exit_history(String::new()).unwrap(), "");
++    }
++
++    #[test]
++    fn invalid_line_bounds_do_not_contact_android() {
++        for lines in [0, 2001, u32::MAX] {
++            assert!(
++                collect_with(Some("com.example.app"), 0, lines, false, |_| panic!(
++                    "must reject first"
++                ))
++                .is_err()
++            );
++        }
++    }
++
++    #[test]
+     fn logs_use_installed_uid_even_when_the_process_is_dead() {
+         let mut calls = Vec::new();
+         let result = collect_with(Some("com.example.app"), 10, 200, false, |args| {
+@@ -252,6 +552,113 @@
+     }
+ 
+     #[test]
++    fn lifecycle_events_match_exact_packages_not_prefix_neighbors() {
++        let ok = [
++            "10-14 08:51:47.408 841 3300 I am_proc_died: [0,4348,tv.danmaku.bili,0,19]",
++            "10-14 08:51:47.409 841 3300 I am_kill : [0,2740,tv.danmaku.bili:download,905,depends on provider,463832]",
++            "10-14 08:51:54.063 841 874 I am_proc_start: [0,4551,10115,tv.danmaku.bili,content provider,{}]",
++            "10-14 08:51:54.207 841 3733 I am_proc_bound: [0,4551,tv.danmaku.bili]",
++            "10-14 08:51:54.949 841 874 I am_schedule_service_restart: [0,tv.danmaku.bili/com.bilibili.example.Service,40000]",
++        ];
++        for line in ok {
++            assert!(
++                lifecycle_event_belongs_to_package(line, "tv.danmaku.bili"),
++                "{line}"
++            );
++        }
++        for line in [
++            "10-14 08:51:47.408 841 3300 I am_proc_died: [0,4348,tv.danmaku.bili.evil,0,19]",
++            "10-14 08:51:47.408 841 3300 I am_proc_died: [0,4348,tv.danmaku.bilidownload,0,19]",
++            "10-14 08:51:47.408 841 3300 I am_proc_died: [0,4348,another.package,tv.danmaku.bili]",
++            "10-14 08:51:47.408 841 3300 I am_kill : [0,4348,another.package,reason contains tv.danmaku.bili]",
++            "10-14 08:51:47.408 841 3300 I am_wtf : [0,841,system_server,ActivityTaskManager,tv.danmaku.bili]",
++            "logcat: buffer unavailable",
++            "10-14 08:51:47.408 841 3300 I am_proc_died: malformed",
++        ] {
++            assert!(
++                !lifecycle_event_belongs_to_package(line, "tv.danmaku.bili"),
++                "{line}"
++            );
++        }
++    }
++
++    #[test]
++    fn sampled_lifecycle_events_are_bounded_and_explicitly_not_exhaustive() {
++        let mut raw = String::from("[Older output omitted: showing the last 131072 bytes]\n");
++        for idx in 0..55 {
++            writeln!(
++                &mut raw,
++                "10-14 08:51:47.408 841 3300 I am_proc_died: [0,{idx},tv.danmaku.bili,0,19]"
++            )
++            .unwrap();
++            raw.push_str(
++                "10-14 08:51:47.408 841 3300 I am_proc_died: [0,9,tv.danmaku.bili.extra,0,19]\n",
++            );
++        }
++        let display = sampled_lifecycle_events(&raw, "tv.danmaku.bili");
++        assert!(display.contains("byte-truncated"));
++        assert!(display.contains("Older package-matched events omitted"));
++        assert!(!display.contains("bili.extra"));
++        assert!(!display.contains("[0,0,tv.danmaku.bili,"));
++        assert!(display.contains("[0,54,tv.danmaku.bili,"));
++        assert_eq!(
++            display
++                .lines()
++                .filter(|line| line.contains("am_proc_died"))
++                .count(),
++            48
++        );
++        let empty = sampled_lifecycle_events("", "tv.danmaku.bili");
++        assert!(empty.contains("not proof of no exits"));
++    }
++
++    #[test]
++    fn crash_report_preserves_exits_when_event_buffer_unavailable() {
++        let mut calls = Vec::new();
++        let report = collect_with(Some("tv.danmaku.bili"), 0, 40, true, |args| {
++            calls.push(args.to_vec());
++            if args.first().map(String::as_str) == Some("/system/bin/logcat")
++                && args.windows(2).any(|a| a == ["-b", "events"])
++            {
++                Err(ControlError::Invalid("event logd unavailable".into()))
++            } else if args.first().map(String::as_str) == Some("/system/bin/logcat") {
++                Ok("crash buffer retained\n".into())
++            } else {
++                Ok("ACTIVITY MANAGER PROCESS EXIT INFO\n".into())
++            }
++        })
++        .unwrap();
++        assert!(report.contains("crash buffer retained"));
++        assert!(report.contains("ACTIVITY MANAGER PROCESS EXIT INFO"));
++        assert!(report.contains("Unavailable: event logd unavailable"));
++        assert_eq!(calls.len(), 3);
++        assert!(!calls[2].iter().any(|arg| arg.starts_with("--uid=")));
++    }
++
++    #[test]
++    fn sampled_events_do_not_claim_system_kill_sender_or_change_global_requests() {
++        let mut calls = 0;
++        let report=collect_with(Some("tv.danmaku.bili"),0,200,true,|args| {
++            calls+=1;
++            if args.windows(2).any(|w|w==["-b","events"]) {
++                Ok("10-14 08:51:47.409 841 3300 I am_kill : [0,2740,tv.danmaku.bili:download,905,depends on provider,463832]\\n".into())
++            } else if args[0]=="/system/bin/logcat" {
++                Ok("native backtrace\n".into())
++            } else { Ok("ACTIVITY MANAGER PROCESS EXIT INFO\n".into()) }
++        }).unwrap();
++        assert_eq!(calls, 3);
++        assert!(report.contains("am_kill"));
++        assert!(report.contains("NOT a SIGKILL sender attribution"));
++        let mut global_calls = 0;
++        collect_with(None, 0, 200, true, |_| {
++            global_calls += 1;
++            Ok(String::new())
++        })
++        .unwrap();
++        assert_eq!(global_calls, 2);
++    }
++
++    #[test]
+     fn timed_out_commands_report_failure() {
+         let mut command = droidloom_cpu_placement::command("/usr/bin/timeout");
+         command.args(["--kill-after=0.1s", "0.1s", "/usr/bin/sleep", "5"]);
+--- installed-production-source/runtime/droidloom-supervisor/src/main.rs
++++ final-candidate/runtime/droidloom-supervisor/src/main.rs
+@@ -8,7 +8,8 @@
+ use clap::{Parser, Subcommand};
+ use droidloom_supervisor::CellSpec;
+ use droidloom_supervisor::development::{
+-    enter_development_cell, run_development_cell, validate_development_inputs,
++    enter_development_cell, inspect_development_inputs, run_development_cell,
++    validate_development_inputs,
+ };
+ use droidloom_supervisor::linux_plan::build_linux_plan;
+ 
+@@ -29,7 +30,13 @@
+         #[arg(long)]
+         spec: PathBuf,
+     },
+-    /// Validate the inputs for the minimal first-boot cell.
++    /// Inspect readable boot inputs without root or any cell activation.
++    DevelopmentInspect {
++        /// Cell specification JSON; all referenced inputs must be readable.
++        #[arg(long)]
++        spec: PathBuf,
++    },
++    /// Validate the inputs for the minimal first-boot cell (requires root).
+     DevelopmentValidate {
+         /// Cell specification JSON.
+         #[arg(long)]
+@@ -64,6 +71,13 @@
+             let plan = build_linux_plan(&spec)?;
+             println!("{}", serde_json::to_string_pretty(&plan)?);
+         }
++        Command::DevelopmentInspect { spec } => {
++            let spec = load_spec(&spec)?;
++            inspect_development_inputs(&spec)?;
++            println!(
++                "development boot inputs are readable and valid; cell activation was not attempted"
++            );
++        }
+         Command::DevelopmentValidate { spec } => {
+             let spec = load_spec(&spec)?;
+             validate_development_inputs(&spec)?;
+--- installed-production-source/runtime/droidloom-supervisor/tests/cli_inspect.rs
++++ final-candidate/runtime/droidloom-supervisor/tests/cli_inspect.rs
+@@ -0,0 +1,25 @@
++//! The inspection CLI is read-only and never substitutes for root activation.
++use std::{fs, process::Command};
++
++#[test]
++fn inspection_cli_is_available_and_reports_missing_inputs_without_root() {
++    let directory = tempfile::tempdir().unwrap();
++    let spec_path = directory.path().join("cell.json");
++    let mut spec: serde_json::Value =
++        serde_json::from_str(include_str!("../../../docs/examples/cell-spec-u1000.json")).unwrap();
++    spec["image_dir"] = serde_json::json!(directory.path().join("missing-base"));
++    spec["gapps_dir"] = serde_json::Value::Null;
++    fs::write(&spec_path, serde_json::to_vec(&spec).unwrap()).unwrap();
++    let output = Command::new(env!("CARGO_BIN_EXE_droidloom-supervisor"))
++        .arg("development-inspect")
++        .arg("--spec")
++        .arg(&spec_path)
++        .output()
++        .unwrap();
++    assert!(!output.status.success());
++    assert!(output.stdout.is_empty());
++    let error = String::from_utf8(output.stderr).unwrap();
++    assert!(error.contains("missing-base/images/system.img"), "{error}");
++    assert!(!error.contains("must be run as root"), "{error}");
++    assert!(!directory.path().join("runtime").exists());
++}
+--- installed-production-source/runtime/droidloom-supervisor/tests/cli_install_multiple.rs
++++ final-candidate/runtime/droidloom-supervisor/tests/cli_install_multiple.rs
+@@ -0,0 +1,125 @@
++//! Exercise the real split-install CLI without host APK installation.
++use std::io::{Read, Write};
++use std::os::unix::net::UnixListener;
++use std::process::Command;
++
++#[test]
++fn original_split_cli_preserves_success_and_failure_in_text_and_json() {
++    for (ok, json) in [(true, false), (true, true), (false, false), (false, true)] {
++        let directory = tempfile::tempdir().unwrap();
++        let base = directory.path().join("base with spaces.apk");
++        let split = directory.path().join("config.x86_64.apk");
++        std::fs::write(&base, b"PK\x03\x04base").unwrap();
++        std::fs::write(&split, b"PK\x03\x04split").unwrap();
++        let socket = directory.path().join("control.sock");
++        let listener = UnixListener::bind(&socket).unwrap();
++        let server = std::thread::spawn(move || {
++            let (mut stream, _) = listener.accept().unwrap();
++            // Real descriptor ownership and original segment bytes are tested
++            // in control's socket tests. This mock checks CLI encoding/output.
++            let mut bytes = Vec::new();
++            stream.read_to_end(&mut bytes).unwrap();
++            let request: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
++            assert_eq!(
++                request,
++                serde_json::json!({"request": {
++                    "command": "install_multiple", "user": 10, "lengths": [8, 9]
++                }})
++            );
++            stream
++                .write_all(b"{\"progress\":\"Installing original split APKs\"}\n")
++                .unwrap();
++            stream
++                .write_all(
++                    &serde_json::to_vec(&serde_json::json!({
++                        "ok": ok, "state": "running",
++                        "message": if ok { "Complete original APK set installed" }
++                            else { "Failure [INSTALL_FAILED_UPDATE_INCOMPATIBLE]" }
++                    }))
++                    .unwrap(),
++                )
++                .unwrap();
++        });
++        let mut command = Command::new(env!("CARGO_BIN_EXE_droidloomctl"));
++        command
++            .arg("--socket")
++            .arg(socket)
++            .arg("install-multiple")
++            .arg(base)
++            .arg(split)
++            .args(["--user", "10"]);
++        if json {
++            command.arg("--json");
++        }
++        let output = command.output().unwrap();
++        server.join().unwrap();
++        assert_eq!(output.status.success(), ok, "{output:?}");
++        if json {
++            let response: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
++            assert_eq!(response["ok"], ok);
++            assert!(!String::from_utf8_lossy(&output.stdout).contains("progress"));
++        } else if ok {
++            assert!(String::from_utf8_lossy(&output.stdout).contains("original APK set installed"));
++        } else {
++            assert!(String::from_utf8_lossy(&output.stderr).contains("UPDATE_INCOMPATIBLE"));
++        }
++    }
++}
++
++#[test]
++fn split_cli_rejects_missing_or_non_apk_before_connecting() {
++    let directory = tempfile::tempdir().unwrap();
++    let base = directory.path().join("base.apk");
++    let split = directory.path().join("split.apk");
++    std::fs::write(&base, b"PK\x03\x04base").unwrap();
++    for content in [None, Some(b"not a signed APK".as_slice())] {
++        if let Some(content) = content {
++            std::fs::write(&split, content).unwrap();
++        }
++        let output = Command::new(env!("CARGO_BIN_EXE_droidloomctl"))
++            .arg("--socket")
++            .arg(directory.path().join("absent.sock"))
++            .arg("install-multiple")
++            .arg(&base)
++            .arg(&split)
++            .output()
++            .unwrap();
++        assert!(!output.status.success());
++        let error = String::from_utf8_lossy(&output.stderr);
++        assert!(error.contains("APK"), "{error}");
++        assert!(!error.contains("connect to droidloomd"), "{error}");
++    }
++}
++
++#[test]
++fn split_cli_rejects_one_and_thirty_three_paths_without_contacting_daemon() {
++    for count in [0, 1, 33] {
++        let output = Command::new(env!("CARGO_BIN_EXE_droidloomctl"))
++            .arg("--socket")
++            .arg("/nonexistent-m552.sock")
++            .arg("install-multiple")
++            .args(vec!["absent.apk"; count])
++            .output()
++            .unwrap();
++        assert!(!output.status.success(), "count={count}");
++        let error = String::from_utf8_lossy(&output.stderr);
++        assert!(!error.contains("connect to droidloomd"), "{error}");
++        assert!(
++            !error.contains("open split APK"),
++            "argument count must fail before file open: {error}"
++        );
++    }
++}
++
++#[test]
++fn split_cli_exposes_distinct_command_without_changing_single_apk_path() {
++    let output = Command::new(env!("CARGO_BIN_EXE_droidloomctl"))
++        .args(["install-multiple", "--help"])
++        .output()
++        .unwrap();
++    assert!(output.status.success());
++    let help = String::from_utf8_lossy(&output.stdout);
++    assert!(help.contains("preserving their signatures"));
++    assert!(help.contains("--user"));
++    assert!(help.contains("--socket"));
++}
+--- installed-production-source/runtime/droidloom-supervisor/tests/cli_lifecycle.rs
++++ final-candidate/runtime/droidloom-supervisor/tests/cli_lifecycle.rs
+@@ -1,5 +1,15 @@
+ //! Verify complete service orchestration and the internal recovery boundary.
+ use std::{fs, os::unix::fs::PermissionsExt, process::Command};
++
++// A build's TMPDIR can exceed sockaddr_un's pathname limit. These listeners
++// need only a short, exclusively owned directory; retain normal tempfile
++// creation (0700) and RAII cleanup without changing the build environment.
++fn socket_directory() -> tempfile::TempDir {
++    tempfile::Builder::new()
++        .prefix("droidloom-cli-")
++        .tempdir_in("/tmp")
++        .unwrap()
++}
+ 
+ #[test]
+ fn start_waits_for_boot_and_keeps_progress_out_of_json() {
+@@ -7,7 +17,7 @@
+     use std::os::unix::net::UnixListener;
+ 
+     for (json, ready) in [(false, true), (false, false), (true, true), (true, false)] {
+-        let directory = tempfile::tempdir().unwrap();
++        let directory = socket_directory();
+         let socket = directory.path().join("control.sock");
+         let listener = UnixListener::bind(&socket).unwrap();
+         let worker = std::thread::spawn(move || {
+@@ -227,3 +237,60 @@
+     );
+     assert!(!target.path().join("session.env").exists());
+ }
++
++
++#[test]
++fn status_and_readiness_use_distinct_single_requests_without_wait_fallback() {
++    use std::io::{Read, Write};
++    use std::os::unix::net::UnixListener;
++    use std::time::{Duration, Instant};
++
++    for (operation, message) in [
++        ("status", "cell u2000000000 is running; Android readiness has not been checked"),
++        ("readiness", "cell u2000000000 is running; waiting for Android to complete boot"),
++    ] {
++        let directory = socket_directory();
++        let socket = directory.path().join("control.sock");
++        let listener = UnixListener::bind(&socket).unwrap();
++        listener.set_nonblocking(true).unwrap();
++        let worker = std::thread::spawn(move || {
++            let deadline = Instant::now() + Duration::from_secs(3);
++            let mut stream = loop {
++                match listener.accept() {
++                    Ok((stream, _)) => break stream,
++                    Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
++                        assert!(Instant::now() < deadline, "CLI did not send its request");
++                        std::thread::sleep(Duration::from_millis(5));
++                    }
++                    Err(error) => panic!("accept failed: {error}"),
++                }
++            };
++            stream.set_read_timeout(Some(Duration::from_secs(3))).unwrap();
++            stream.set_write_timeout(Some(Duration::from_secs(3))).unwrap();
++            let mut bytes = Vec::new();
++            (&mut stream).take(4097).read_to_end(&mut bytes).unwrap();
++            assert!(bytes.len() <= 4096);
++            let request: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
++            assert_eq!(request["request"], serde_json::json!({"command": operation}));
++            let response = serde_json::json!({
++                "ok": true, "state": "running", "message": message, "host_pid": 2000000001u32
++            });
++            let mut wire = serde_json::to_vec(&response).unwrap();
++            wire.push(b'\n');
++            stream.write_all(&wire).unwrap();
++            // This one-reply listener then closes. The CLI must not reinterpret
++            // an observation as Start or silently make a WaitReady request.
++            response
++        });
++        let output = Command::new(env!("CARGO_BIN_EXE_droidloomctl"))
++            .args(["--socket"]).arg(&socket)
++            .args([operation, "--json"])
++            .output().unwrap();
++        let expected = worker.join().unwrap();
++        assert!(output.status.success(), "{output:?}");
++        assert!(output.stderr.is_empty());
++        let actual: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
++        assert_eq!(actual, expected);
++        assert!(!actual["message"].as_str().unwrap().contains("Android is ready"));
++    }
++}

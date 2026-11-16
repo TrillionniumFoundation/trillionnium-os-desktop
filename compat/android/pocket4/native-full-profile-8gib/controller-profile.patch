@@ -1,0 +1,123 @@
+--- reviewed-R11/framework_build.py
++++ native597-8gib-hostreserve5-20261108-r1/framework_build.py
+@@ -51,15 +51,15 @@
+ 
+ 
+ def memory_admission(memory, owned):
+-    require(MEMORY_MAX == 10 * 1024**3 and SWAP_MAX == 0 and
++    require(MEMORY_MAX == 8 * 1024**3 and SWAP_MAX == 0 and
+             MIN_AVAILABLE - MEMORY_MAX == 5 * 1024**3,
+-            "independent ten-GiB zero-swap profile or five-GiB admission difference changed")
++            "independent eight-GiB zero-swap profile or five-GiB admission difference changed")
+     require(owned["memory.max"] == str(MEMORY_MAX) and owned["cpu.max"] == "200000 100000",
+             "owned RAM or CPU limit differs before admission")
+     require(owned["memory.swap.max"] == "0", "owned swap limit is not zero")
+     require(owned["memory.swap.current"] == "0", "existing owned swap is not zero")
+     require(memory["MemAvailable"] >= MIN_AVAILABLE,
+-            "less than 15 GiB MemAvailable for independent zero-swap profile; no automatic retry")
++            "less than 13 GiB MemAvailable for independent zero-swap profile; no automatic retry")
+     # Global swap is recorded, never counted as this build's available budget.
+ 
+ 
+@@ -76,7 +76,7 @@
+     receipt = {
+         "schema": 1, "state": "OBSERVED_BEFORE_RESOURCE_ADMISSION",
+         "observed_utc": utc(), "observed_unix_ns_decimal": str(time.time_ns()),
+-        "profile": {"memory_max_bytes": MEMORY_MAX, "memory_swap_max_bytes": SWAP_MAX,
++        "profile": {"resource_profile_id": RESOURCE_PROFILE_ID, "memory_max_bytes": MEMORY_MAX, "memory_swap_max_bytes": SWAP_MAX,
+                     "minimum_fresh_MemAvailable_bytes": MIN_AVAILABLE,
+                     "admission_difference_bytes": MIN_AVAILABLE - MEMORY_MAX,
+                     "global_swap_is_owned_budget": False},
+@@ -85,7 +85,7 @@
+         "owned_cgroup": str(cgroup), "owned_observed": owned,
+         "decision_performed": False, "historical_sample_used_for_admission": False,
+         "Main_actions": 0, "Android_actions": 0, "production_ready": False}
+-    path = ROOT / "resource-admission-native597-20261108-r1.json"
++    path = ROOT / "resource-admission-native597-8gib-hostreserve5-20261108-r1.json"
+     save(path, receipt)
+     pin, _ = held_file(path, 65536)
+     print(json.dumps({"state": "FRESH_RESOURCE_ADMISSION_OBSERVED", "receipt": pin}), flush=True)
+@@ -94,7 +94,7 @@
+     memory_admission(memory, owned)
+     # The outer launcher measures its deadline before input verification. Recheck
+     # the same actual job after that work, immediately before builder setup.
+-    launch_root = ROOT / "attempts/full-build-native597-20261108-r1"
++    launch_root = ROOT / "attempts/full-build-native597-8gib-hostreserve5-20261108-r1"
+     launch_pin, launch_raw = held_file(launch_root / "outer-runtime-admission.json", 65536, True)
+     launch = json.loads(launch_raw)
+     unit = cgroup.name
+@@ -135,7 +135,7 @@
+         "remaining_margin_after_input_verification_seconds": margin,
+         "required_remaining_margin_seconds": 1200, "decision_performed": False,
+         "compiler_invocations_at_observation": 0, "Main_actions": 0, "Android_actions": 0}
+-    runtime_path = ROOT / "runtime-admission-native597-20261108-r1.json"
++    runtime_path = ROOT / "runtime-admission-native597-8gib-hostreserve5-20261108-r1.json"
+     save(runtime_path, runtime_receipt)
+     runtime_pin, _ = held_file(runtime_path, 65536)
+     print(json.dumps({"state": "POST_PREFLIGHT_RUNTIME_OBSERVED", "receipt": runtime_pin}), flush=True)
+@@ -231,8 +231,8 @@
+ ROOT = P('/home/alex/work/pocket4-android-final/native')
+ HERE = ROOT / 'control-source'
+ WORK = OWNER / 'typed-ingress-framework-work-01-20261105'
+-OUT = ROOT/'android-out-native597-20261108-r1'
+-ATTEMPT = ROOT/'attempt-native597-20261108-r1'
++OUT = ROOT/'android-out-native597-8gib-hostreserve5-20261108-r1'
++ATTEMPT = ROOT/'attempt-native597-8gib-hostreserve5-20261108-r1'
+ BUILD_PARENT = P('/home/alex/work/pocket4-builder473-recovery-20261107-r1')
+ BUILD_SOURCE = BUILD_PARENT / 'builder-source'
+ BUILDER = BUILD_PARENT / 'attempt01/cargo-target/debug/droidloom-update'
+@@ -254,9 +254,11 @@
+ ORIGINAL_LOCK_SHA = '4d8f2d047254268305f4802d9dd67bebdfd162d836664c733ecc07e2f9ced178'
+ GO_PATCH = 'android/apex-compat/0008-soong-leaf-go-memory-budget.patch'
+ GO_PATCH_SHA = '39211a784284ed319b6abbbe4b327a88896931d39c6bdb91fe727a9a7589325f'
+-MEMORY_MAX = 10 * 1024**3
++RESOURCE_PROFILE_ID = 'native597-8gib-hostreserve5-20261108-r1'
++HISTORICAL_MIN_AVAILABLE = 15 * 1024**3
++MEMORY_MAX = 8 * 1024**3
+ SWAP_MAX = 0
+-MIN_AVAILABLE = 15 * 1024**3
++MIN_AVAILABLE = 13 * 1024**3
+ TARGETS = ['framework-minus-apex', 'libandroid_runtime']
+ EXPECTED_TESTS = ["android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes","android::tests::restoration_preserves_original_and_removes_created_file","android::patch_tests::native_engine_effective_projection_records_final_bytes_and_applied_patch","android::patch_tests::patch_in_source_without_git_root_is_restored_inside_enclosing_checkout","android::patch_tests::interrupted_projection_recovers_before_next_build","tests::native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets","tests::native_engine_output_selector_keeps_default_or_exact_explicit_directory","native_role_ingress::tests::observed_lock_passes_normal_schema_and_exact_extension_gate","native_role_ingress::tests::structurally_valid_unobserved_root_is_rejected_before_source_actions","android::tests::typed_shared_provider_projection_keeps_exact_upstream_bodies_and_metadata","android::tests::typed_shared_provider_projection_rejects_changed_missing_or_duplicate_stanzas","android::tests::typed_shared_provider_projection_keeps_other_root_projection_unchanged","native_role_ingress::tests::provider_extension_rejects_unlisted_path_commit_metadata_or_project_change","native_role_ingress::tests::published_workspace_selects_only_exact_current_or_previous_typed_lock","native_role_ingress::tests::previous_typed_manifest_does_not_bypass_fresh_project_verification","android::tests::typed_hal_provider_projection_restores_real_sources_and_keeps_consumers","android::tests::typed_hal_provider_late_source_drift_restores_earlier_projections","native_role_ingress::tests::hal_provider_extension_preserves_all_prior_projects_and_rejects_unlisted_changes","android::tests::typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths","android::tests::typed_systemui_test_projection_rejects_wrong_source_before_journal_or_write","android::tests::typed_systemui_test_projection_recovers_complete_original_from_durable_journal","android::tests::typed_audiocontrol_example_projection_keeps_metadata_and_sibling_sources","android::tests::typed_audiocontrol_example_projection_rejects_source_drift_before_write","android::tests::typed_audiocontrol_example_projection_recovers_full_observed_original"]
+ EXPECTED_TEST_INDICES = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,200,201,202,203,204,205]
+@@ -366,7 +368,7 @@
+             recovered['new_controller'] == {
+                 'bytes': 87204, 'sha256': '2f4159d424a274ee8cd612db4c048e47bf01f0656af7667e3471831598b10633'} and
+             recovered['profile'] == {'RAM': 2147483648, 'CPUQuota': 100, 'jobs': 1, 'nice': 10, 'swap': 0} and
+-            recovered['Normal10_fresh_RAM_requirement'] == MIN_AVAILABLE and
++            recovered['Normal10_fresh_RAM_requirement'] == HISTORICAL_MIN_AVAILABLE and
+             recovered['Main_actions'] == recovered['Android_actions'] == 0 and
+             recovered['production_ready'] is False and recovered['automatic_retry'] is False,
+             'new builder473 recovery identity or historical scope differs')
+@@ -679,8 +681,8 @@
+             'prior Normal09 exact bounded meminfo differs')
+     resource_memory = parse_admission_meminfo(resource_raw)
+     require(resource_memory['MemAvailable'] == 14854873088 and
+-            resource_memory['MemAvailable'] < MIN_AVAILABLE and
+-            MIN_AVAILABLE - resource_memory['MemAvailable'] == 1251254272,
++            resource_memory['MemAvailable'] < HISTORICAL_MIN_AVAILABLE and
++            HISTORICAL_MIN_AVAILABLE - resource_memory['MemAvailable'] == 1251254272,
+             'prior Normal09 failed RAM threshold was changed')
+     published, row = json_pin(HERE / 'actual-current225-source-manifest.json',
+                              PUBLISHED_MANIFEST_SHA, PUBLISHED_MANIFEST_BYTES)
+@@ -2038,7 +2040,7 @@
+         'actual_outer_runtime_admission_required': True,
+         'post_preflight_runtime_admission_required': True,
+         'post_preflight_runtime_margin_seconds': 1200,
+-        'post_preflight_runtime_admission_receipt': str(ROOT/'runtime-admission-native597-20261108-r1.json'),
++        'post_preflight_runtime_admission_receipt': str(ROOT/'runtime-admission-native597-8gib-hostreserve5-20261108-r1.json'),
+         'preserved_prior_compile_job_failed': '1a1b420093f-fc05-8664',
+         'historical_validation_job': '1a1b4294c28-fc05-8688',
+         'argv': [str(BUILDER), '--source', str(BUILD_SOURCE), '--jobs', '2',
+@@ -2055,9 +2057,10 @@
+         'normal_package_and_source_locks': True, 'normal_projection_journal_and_recovery': True,
+         'normal_ART_preimages_required_restored': list(ART_PATHS),
+         'complete_engine_snapshot_files': 926, 'old_shared_AOSP_source_modified': False,
++        'resource_profile_id': RESOURCE_PROFILE_ID,
+         'memory_max_bytes': MEMORY_MAX, 'memory_swap_max_bytes': SWAP_MAX,
+         'fresh_MemAvailable_min_bytes': MIN_AVAILABLE, 'global_swap_free_recorded_only': True,
+-        'owned_swap_current_required_bytes': 0, 'resource_admission_receipt': str(ROOT/'resource-admission-native597-20261108-r1.json'),
++        'owned_swap_current_required_bytes': 0, 'resource_admission_receipt': str(ROOT/'resource-admission-native597-8gib-hostreserve5-20261108-r1.json'),
+         'admission_difference_bytes': MIN_AVAILABLE-MEMORY_MAX,
+         'cpu_quota_percent': 200, 'jobs': 2,
+         'inherited_actual_cpu_reservation': 'DROIDLOOM_COMPILER_CPUS_RESERVED=1', 'nice': 10, 'builder_wait_seconds': 21600,

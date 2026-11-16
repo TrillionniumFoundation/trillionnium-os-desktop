@@ -1,0 +1,676 @@
+{
+  "APEX_built": false,
+  "APEX_installed": false,
+  "base": {
+    "commit": "9785ba83d9d37509e02462a0aa7c84d1c991006c",
+    "files": 1517,
+    "inventory": {
+      "bytes": 450556,
+      "git_blob": "2858f89b68b05eec022fcd6181016e63a7cba0c2",
+      "path": "base-files.json",
+      "sha256": "6771c7197332ceb0b6ce444aabd79c249e423a3049756bddd64ef0be845316bd"
+    },
+    "raw_commit": {
+      "bytes": 309,
+      "git_blob": "5336abda714b06c75de87e3036047dad9261d159",
+      "path": "git-objects/base.commit",
+      "sha256": "2232431651cff5fc8e5e566f18016169d8e4e0a3257d998cb166e8a4cf922b6c"
+    },
+    "tree": "c9e0b5771b9e2a169ca4236c5c379446e9592760"
+  },
+  "binary_semantic_fix_qualified": false,
+  "build_variant": "user",
+  "ci_contract": {
+    "all1557_after_required": true,
+    "fresh_Cargo_target_required": true,
+    "fresh_release_tools": [
+      "droidloom-source",
+      "droidloom-update"
+    ],
+    "fresh_source_tests": 1,
+    "fresh_updater_tests": 3,
+    "historical_proof_counts_as_fresh_CI": false
+  },
+  "evidence": {
+    "dma-retirement.json": {
+      "bytes": 332,
+      "git_blob": "3621d0a9f9d1745b7c28e866d753993628431da2",
+      "path": "evidence/dma-retirement.json",
+      "sha256": "7a0b9f5352fb2efc65cc2f3fd94f7d34f69fd91708a91f9b529fe9a07ada1714"
+    },
+    "independent-retirement.json": {
+      "bytes": 11427,
+      "git_blob": "9f759d70c281a10f8956b9e6131f61322f6e7f53",
+      "path": "evidence/independent-retirement.json",
+      "sha256": "bdf3861c637304652de94e6ee1d1ab5dfcbbe702db16cd0e49073a7148821ec8"
+    },
+    "normal-retirement.json": {
+      "bytes": 312,
+      "git_blob": "9268e12cee1e60fe39e02ebd2560c6f087d6d6fa",
+      "path": "evidence/normal-retirement.json",
+      "sha256": "b947961543fc60ddb3af24ba04682e8796542d7936d1cdead0b90b7b8df7400e"
+    },
+    "ordinary-333.json": {
+      "bytes": 73529,
+      "git_blob": "49addcff6ea3a1b5895708ba01816466da7e677e",
+      "path": "evidence/ordinary-333.json",
+      "sha256": "acc240c0b99ad01db58ed43dcdf40551d774486482a7d04597460a20635bc5d3"
+    },
+    "ordinary-334.json": {
+      "bytes": 120324,
+      "git_blob": "8142600719fb5b6cda8a3882f16ac64b286f583c",
+      "path": "evidence/ordinary-334.json",
+      "sha256": "4e96ff260f32da94988791d09140467d6eaae10fcd07bea51c04bb1f558c731b"
+    },
+    "staging-retirement.json": {
+      "bytes": 343,
+      "git_blob": "c05dded8f18da9863d31c6d04aa32a8f237caacb",
+      "path": "evidence/staging-retirement.json",
+      "sha256": "63b86490b19dbd7de12dfb7585a41f22aaa65cb50a19efae423abe0f44a8379f"
+    },
+    "staging.json": {
+      "bytes": 14533,
+      "git_blob": "997ab6c0ce21adc2dcd54aef543fc0b44f4b7e70",
+      "path": "evidence/staging.json",
+      "sha256": "4670a69d5cb66a78673fac6fe0ce63dc57fc1d9fb3c4aa8cba6de48993980755"
+    }
+  },
+  "files": [
+    {
+      "mode": "100644",
+      "path": "android/audio-bridge/libueventd538-originals.json",
+      "post": {
+        "bytes": 17124,
+        "git_blob": "f860df47fd0795b6579a1d87db0d0529b0e9d2d2",
+        "sha256": "f0436d0496f02ed9fc34a3e43746ba0c427a6e67b267c109c266e4fbadb8f04d"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "android/manifest/audio-bridge-source-lock.json",
+      "post": {
+        "bytes": 286570,
+        "git_blob": "6b8e91a141ec0333e60abd6fe5f47c5e72eef248",
+        "sha256": "241f9d04c27dca9e001cb465f833af26ed6473cd3a6e705c4a66745805112a74"
+      },
+      "pre": {
+        "bytes": 286171,
+        "git_blob": "1e0d652526373c566facff01744f8027587a0f12",
+        "sha256": "84bdef58aa934bcaa1926f9ea901186017c5f53118db1683fec1283489e0f31b"
+      }
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-source/src/lib.rs",
+      "post": {
+        "bytes": 146848,
+        "git_blob": "b39d6807db0c700e34909323bcb1eec00b5234ca",
+        "sha256": "72dbb35a912aff31259dbd93665064da1889f62f249846e46690979a3469e9a5"
+      },
+      "pre": {
+        "bytes": 144688,
+        "git_blob": "34d2217ddca78cf25c216d9ea7e6d5b7a91877a3",
+        "sha256": "3b7dd8205c828dfdf77c4013fda19a6c8c2cb74568f59bc61752b4fca8d25ed2"
+      }
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-source/tests/fixtures/audio-source537-before-libueventd.json",
+      "post": {
+        "bytes": 286171,
+        "git_blob": "1e0d652526373c566facff01744f8027587a0f12",
+        "sha256": "84bdef58aa934bcaa1926f9ea901186017c5f53118db1683fec1283489e0f31b"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/src/android.rs",
+      "post": {
+        "bytes": 957552,
+        "git_blob": "97417bb743d0a8d66ab5ccaf1faa7f4e0c0d3413",
+        "sha256": "56fb71a19cc3a4072dacda0a816969fb770ec7241cf9af7d264cbb09b461c23e"
+      },
+      "pre": {
+        "bytes": 936676,
+        "git_blob": "89541dd2583cc5560a5e75f1df5224321f6ba23f",
+        "sha256": "33239cbf56f640684a031dd478445354c4049b3fa624e6b6847a7c1ddf6ae372"
+      }
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/external/rust/android-crates-io/crates/async-stream/Android.bp",
+      "post": {
+        "bytes": 2767,
+        "git_blob": "160883cd9306907d5e98a798a5bb43d5e3aafd61",
+        "sha256": "f246b1dde73f88de3ffcae3a37aa25c44d72964c7eb5ae947547c54171bbe215"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/external/rust/android-crates-io/crates/async-trait/Android.bp",
+      "post": {
+        "bytes": 1070,
+        "git_blob": "452c6e3e8545f85e83949e36ea89c719b547a66a",
+        "sha256": "af33277fd0a58f1cba85dc7bab1131d81917ce7ad9b7dc6ba260ecfbb14f88dc"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/external/rust/android-crates-io/crates/env_logger/Android.bp",
+      "post": {
+        "bytes": 2003,
+        "git_blob": "be66dc8121dabe2b7a0a1ebf48e331bd6d8da16a",
+        "sha256": "1dac892bad7b1aa0f3d2182f5f44838988bd86cd3258ce7553dd38ed837a4a3a"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/external/rust/android-crates-io/crates/futures-channel/Android.bp",
+      "post": {
+        "bytes": 4764,
+        "git_blob": "5024e289a7bff2f9937cef068c99b8dcf6fa294a",
+        "sha256": "24eabc3904d620979ee3831b8ff4bf4efc2facbfa42771a61c4cd6a7a0b440c2"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/external/rust/android-crates-io/crates/futures/Android.bp",
+      "post": {
+        "bytes": 1202,
+        "git_blob": "bdbf92f050a4470090dadb1cc2018bfac1f8bf91",
+        "sha256": "5c6465d4930b0a65d9e9835ddada618fe83e5ea4a77da08b73b0cd908a720840"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/external/rust/android-crates-io/crates/inotify/Android.bp",
+      "post": {
+        "bytes": 2421,
+        "git_blob": "07e4b43c054794fee6e772368cce4861aac64285",
+        "sha256": "256a5cda5d0564c5c8f0f63508e9b3a58e4339c6a7a942fca93a99be3bb2fe73"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/external/rust/android-crates-io/crates/kobject-uevent/Android.bp",
+      "post": {
+        "bytes": 892,
+        "git_blob": "d18bf2d99547f751d8688cdb6f2a63e79c8ca0f7",
+        "sha256": "f4d983c787508b5aa36ee7ad7400a04a78470a5154c332b047cf7d6f2f805ca5"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/external/rust/android-crates-io/crates/libc/Android.bp",
+      "post": {
+        "bytes": 2107,
+        "git_blob": "ef22d938d9acdb612c850a1d88da65da866c8ea3",
+        "sha256": "28297a53078cd7b52f3d1dedbec278a45a12398b23d51fde851e52625cc09108"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/external/rust/android-crates-io/crates/log/Android.bp",
+      "post": {
+        "bytes": 2436,
+        "git_blob": "b1a9bb78fc0f72e6fe488c150ee6f854eac6e36d",
+        "sha256": "f8b401190a4cec5481d28f10f811b69d87826f730eae206da43fcc8bb83205e6"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/external/rust/android-crates-io/crates/mockall/Android.bp",
+      "post": {
+        "bytes": 1170,
+        "git_blob": "146273b1af17acff7ad5a876ad1e4b4b8800212d",
+        "sha256": "283af2d3a757ecdc2167d7f05f68890111dd14e31c7e9fe5f7e8ab0060292a4b"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/external/rust/android-crates-io/crates/netlink-sys/Android.bp",
+      "post": {
+        "bytes": 1068,
+        "git_blob": "faad4462508ca7cd9af044581be2199371c49486",
+        "sha256": "9dafe27113d1b60dafb1e6e06957aa0333c2c6a80d96e16d5c14169cfc238552"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/external/rust/android-crates-io/crates/rtnetlink/Android.bp",
+      "post": {
+        "bytes": 1219,
+        "git_blob": "942b58e67b74611c1a0da068bcd32059dab83dc6",
+        "sha256": "01fa100f7607c646a03234c1537309f86dccf2895df48b98049793b63d7540d7"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/external/rust/android-crates-io/crates/tempfile/Android.bp",
+      "post": {
+        "bytes": 1022,
+        "git_blob": "9c74039aff153a5310a932b4e0cf1b8bc01e0286",
+        "sha256": "ef460aed299d41b07e165ae7e426e94fac776322912e661076f6faeb77639286"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/external/rust/android-crates-io/crates/thiserror/Android.bp",
+      "post": {
+        "bytes": 1310,
+        "git_blob": "eb8659eab25750c83649fe98f61601058c8c13c2",
+        "sha256": "ee35067316144ebc33c2b30daa546c54ec95423438674b84b223cdf632a0940e"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/external/rust/android-crates-io/crates/tokio-stream/Android.bp",
+      "post": {
+        "bytes": 1138,
+        "git_blob": "895fed1a7c60be3a9dd27045d60648e07dbb7967",
+        "sha256": "e3082a9278fe67515866c746c0b4f4032a74c4aca01b3d67cc2866ec62f47118"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/external/rust/android-crates-io/crates/tokio/Android.bp",
+      "post": {
+        "bytes": 16635,
+        "git_blob": "eb481de40b9a3f21246fab93d3e055526a81149d",
+        "sha256": "770ded5546e704601b40e042ce7375ea2aa727165d4725216786cd1b2e309003"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/frameworks/native/services/usbauthservice/Android.bp",
+      "post": {
+        "bytes": 3512,
+        "git_blob": "96a15a670f90e0e36c75d8b450e5dbe780800cae",
+        "sha256": "c78d5e5f965cc36493a028e460d57468a77ec054b14bfb1d29a750e9882c434b"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/system/libueventd-rs/Android.bp",
+      "post": {
+        "bytes": 2957,
+        "git_blob": "790f8b53b9dba4be0f727e9f6408c9d15c9cccfb",
+        "sha256": "525bfe8fc38ae1e7ca71a56421546c877f98f6c22ac98d7c24b8036de5cf5800"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/system/libueventd-rs/OWNERS",
+      "post": {
+        "bytes": 83,
+        "git_blob": "ea3c6110140072e6e1eecff3bd1adf5802d63c26",
+        "sha256": "40c5fbc4900110eeafdc9c7df3b0bc490e7487b799daa51e901d92d8d74b9f26"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/system/libueventd-rs/README.md",
+      "post": {
+        "bytes": 388,
+        "git_blob": "121a83edce6d3e4917ca687a4c1d4490bfbb1aa9",
+        "sha256": "d4068911b2a0debc81e874bff8cc59e12333b3dec4fed9128aa451bb7f0c0c2b"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/system/libueventd-rs/examples/devlist.rs",
+      "post": {
+        "bytes": 1948,
+        "git_blob": "415fcceb681cc3d5258dbfb4b8ce1cde0b1424bc",
+        "sha256": "795f628a6ae604e6ce51b0d6ada82eaa9f39d1d0505838affb04f68ae92aca74"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/system/libueventd-rs/examples/iflist.rs",
+      "post": {
+        "bytes": 1816,
+        "git_blob": "332a81a09e06c57408feefba58ff3d89774089d9",
+        "sha256": "d9b251b2c9cbc3741cda44db39aa048006301fff57ac97b87db8f472254426d2"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/system/libueventd-rs/examples/ifmonitor.rs",
+      "post": {
+        "bytes": 2271,
+        "git_blob": "b440b0e8deef7f20253841a8dce4dbd8c4480b7e",
+        "sha256": "a94f0b3f0ea0af9bdee89f884bbd296ba44a7caf16a660637a4aed7d1dcd9d2a"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/system/libueventd-rs/examples/kuevent_monitor.rs",
+      "post": {
+        "bytes": 1826,
+        "git_blob": "f1c0a538d3e43824226611d7287f7ea96b972194",
+        "sha256": "01d6211dce924e3e7f5266f2666926f426d0751a3191fdbf93eb7557f94a78f0"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/system/libueventd-rs/examples/sysfs_monitor.rs",
+      "post": {
+        "bytes": 1567,
+        "git_blob": "9330d2a074fdc5f88ee11356f0e85ba85f112ffd",
+        "sha256": "d7149ec812049d017f260a1092e4bd6c797ecd614e11061a6aac41cf0daf748f"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/system/libueventd-rs/rustfmt.toml",
+      "post": {
+        "bytes": 93,
+        "git_blob": "cefaa42a3f64a49cc5586c611f65d8996657fc72",
+        "sha256": "f0fe9298a38b9e5c2ce09aef43e1931f6ae4067b676674ac948d64c6a17e3381"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/system/libueventd-rs/src/device.rs",
+      "post": {
+        "bytes": 21695,
+        "git_blob": "3c224b6cb8628d02d162ef36374bbd0983b507ef",
+        "sha256": "5f920ef356f2267e9e9500ab29628b0d21c47ec78a62641ba3cd8ab945aa844d"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/system/libueventd-rs/src/device_node.rs",
+      "post": {
+        "bytes": 855,
+        "git_blob": "ef9481b5f980b0411f1f5c50908cf2d60ad41480",
+        "sha256": "4f0c33acbd2c5f284e4e898fa845720113700fb6d73e8ed9abe584f90d904621"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/system/libueventd-rs/src/device_node/enumerator.rs",
+      "post": {
+        "bytes": 5775,
+        "git_blob": "ff9e819be199c85f9c96a55757c1e04cfab1bab8",
+        "sha256": "db2c3cb41f89ebcb90987f205c46ff6b8a9a69e931827029b232f6971f80dfea"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/system/libueventd-rs/src/device_node/watcher.rs",
+      "post": {
+        "bytes": 8318,
+        "git_blob": "8977b9ed5de8d6f3315cc91b6cdea6803eda3f96",
+        "sha256": "b5e483da675d231e5d35d897212a36ac093d4c46ace62089fcc3ddb040cbc792"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/system/libueventd-rs/src/errors.rs",
+      "post": {
+        "bytes": 1842,
+        "git_blob": "2d2f42e8fd84db5317b75e43af5442135054f9ed",
+        "sha256": "4154ff8d1e677cdd4df51524efa4ab89513e0b5d492d5b2e9506e18a46e90dca"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/system/libueventd-rs/src/event.rs",
+      "post": {
+        "bytes": 2551,
+        "git_blob": "efea06255bbdaae781c95cd307f3b339b90ea216",
+        "sha256": "69b35f28d447466a1cfe8660b83da7b2e2bcba030fc7e7369d25675960d5bbdb"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/system/libueventd-rs/src/kuevent_wrappers.rs",
+      "post": {
+        "bytes": 2055,
+        "git_blob": "7a6e6958e3663c03ebcebb6562331d6082c1b3ba",
+        "sha256": "8bd455dc5cc41356de6a86a602ec7fadbdeb351d8970fc4c7755a033c62ffc4b"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/system/libueventd-rs/src/lib.rs",
+      "post": {
+        "bytes": 2008,
+        "git_blob": "a9ada85aa91958b3aff17b4cc5503abd5c88ebca",
+        "sha256": "aa424cd8504e7963ecd26a5912b538aec7b81b6e3eb7d7d810899f4ef35146a8"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/system/libueventd-rs/src/libc_wrappers.rs",
+      "post": {
+        "bytes": 1098,
+        "git_blob": "25499ccea22682b0fdae955fb5d2af6bdda45721",
+        "sha256": "dd2da9445d52062e079a6799aa4e06fbc7b804dc26665b86bef62aebbf549d27"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/system/libueventd-rs/src/mock_sysfs.rs",
+      "post": {
+        "bytes": 2217,
+        "git_blob": "53e823c97e8369fe1622c86917628e5b2a6d0446",
+        "sha256": "5c5ea1931bdafc8cbe667187a6ec29721571bfc0a1fb376bdddfe693503ec18b"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/system/libueventd-rs/src/net_interface.rs",
+      "post": {
+        "bytes": 10740,
+        "git_blob": "0f4bac0c095f6c6eb0e8be99b013207a677e69a8",
+        "sha256": "6d7ddd8dbaf8adde8b24834d8e387abc9940fc28dddb24284d2b0ad855f57c2f"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "tools/droidloom-update/tests/fixtures/audio-libueventd538-original/system/libueventd-rs/src/sysfs_watcher.rs",
+      "post": {
+        "bytes": 12888,
+        "git_blob": "7e9379925793810a210b1f473b11c815d7b20cd5",
+        "sha256": "4927adc3fd6feced0c3cde0fab10fb64e7a97f73fde8c85d8658066f851215c8"
+      },
+      "pre": null
+    }
+  ],
+  "head": {
+    "commit": "fbb235628023f5fb5d9e47064a6d2884d23534bc",
+    "files": 1557,
+    "inventory": {
+      "bytes": 463312,
+      "git_blob": "4e1b6081629adbe2d9045417251aad2c570c99b5",
+      "path": "head-files.json",
+      "sha256": "6120de065742c26f787e22cd40be91118234dfd96b307193e6121ba9c06a5ecd"
+    },
+    "raw_commit": {
+      "bytes": 308,
+      "git_blob": "735dd822c1c4ee52ff8994a7d7fcf074778ad6a8",
+      "path": "git-objects/head.commit",
+      "sha256": "850d6b05e0ea1b9d0a258d0ed879b244ad6ffaef6877bf6970143283808aeb93"
+    },
+    "tree": "23c1a126efd8975156d219af22a2d858a4dd3b2b"
+  },
+  "historical_ordinary": {
+    "actual_distinct_tests": 334,
+    "original_PIDs_retired": 58,
+    "producer_tests_and_release_queue": 333,
+    "separate_original_DMA_layout_test": 1
+  },
+  "neverallow_checks_enabled": true,
+  "normal_vendor_targets": [
+    "selinux_policy_vendor",
+    "vendor_manifest.xml",
+    "vendor_compatibility_matrix.xml",
+    "checkvintf"
+  ],
+  "official_origin": {
+    "existing_direct_Rust_provider_fixtures": 16,
+    "new_original_bytes": 84991,
+    "new_original_files": 21,
+    "packet": {
+      "bytes": 26753,
+      "git_blob": "867eac5e831fba3920931c80b92ca7619a1066ce",
+      "path": "official/packet.json",
+      "sha256": "1d5fb61f09ab69d12afe8916b27d77f5b69edd5422d78d36314b66b30c70f865"
+    },
+    "project_commit": "43f41cd5506656e937d332d60cd725764dfca716",
+    "superproject": "28f0bbddc24d56c8ec5a8df5342ac7a292184039"
+  },
+  "official_regression_executed": false,
+  "original_audio_source_projects": 538,
+  "patch": {
+    "bytes": 500952,
+    "git_blob": "96514949f08c18bb44d25f96714f75f12dec5b5a",
+    "path": "audio538.patch",
+    "sha256": "1886a4640beb338926a20f43ffe4289c3dd28448abdf44bb5197bc7fd5f82bfc"
+  },
+  "previous_failed_full": {
+    "normal": {
+      "bytes": 3555,
+      "git_blob": "d3fd057a311756287e7dd75d22a425ea669d732b",
+      "path": "history/full9db-normal.json",
+      "sha256": "d3d632547da8103719382e9a5568bc882ac1809d31364a4669be41bf54fbbd1c"
+    },
+    "retirement": {
+      "bytes": 235697,
+      "git_blob": "abd7031aab840cd52f6fc5be1372619d6501cf97",
+      "path": "history/full9db-retirement.json",
+      "sha256": "0e594d4f31e4e11f6f53c7dc4bd938a3ccabca1aa8526fdc0efbec30c92673b6"
+    },
+    "stdout": {
+      "bytes": 11396,
+      "git_blob": "9ccb184142a55749b6b8dc5a2d75205f1a5c1066",
+      "path": "history/full9db-normal.stdout",
+      "sha256": "02cbef41b147b31b8092b8f06227d8237bd2b653c20850ce0abd60a326028406"
+    }
+  },
+  "production_ready": false,
+  "production_signing_qualified": false,
+  "qualified_components": [
+    "droidloom-source",
+    "droidloom-update"
+  ],
+  "replay_contract": {
+    "Git_child_umask": "0022",
+    "changed_files": 43,
+    "complete_root_trees_required": true,
+    "independent_producer_required": true,
+    "input_F9_preserved": true,
+    "new_files": 40,
+    "skip_only_root_git": true,
+    "unchanged_base_files": 1514
+  },
+  "retained_security_targets": [
+    "IntentResolver",
+    "com.android.media.swcodec",
+    "libSBRdec_test"
+  ],
+  "runtime_integration_boundary": "Runtime D6 and its successor remain separate current components; this capsule does not build, bundle or deploy old recipe supervisor/droidloomd.",
+  "runtime_qualified": false,
+  "runtime_supervisor_or_droidloomd_qualified_or_deployed": false,
+  "schema": "pocket4-audio538-unified-security-source-v1",
+  "security_parent_capsule": {
+    "inventory_sha256": "b8877b88a3968b5407852844260e163d4859be275207ea4f8cc44b8f256e6bff",
+    "path": "compat/android/pocket4/aac-security-on-security537-r1"
+  },
+  "source_release": "cp2a",
+  "strict_missing_dependencies": true,
+  "unchanged_inputs": {
+    "Cargo.lock": {
+      "bytes": 51836,
+      "git_blob": "633e61fab77f12b1edbab687645d644acc1fc776",
+      "mode": "100644",
+      "path": "Cargo.lock",
+      "sha256": "c1dfa6f13f789cf40435d0d72973d029d0e264b27bd833eabb5a727492127f62"
+    },
+    "android/security/0001-intentresolver-caller-package.patch": {
+      "bytes": 721,
+      "git_blob": "d70323ae37bac67a1d3b13653057d08b11f69b80",
+      "mode": "100644",
+      "path": "android/security/0001-intentresolver-caller-package.patch",
+      "sha256": "0e66877febce78d36d50a71e7787a844593f4c728744cade66d8d7833b6ee752"
+    },
+    "android/security/0002-aac-reset-ownership.patch": {
+      "bytes": 4443,
+      "git_blob": "8a25f2fdf6bec5add663d663bb5fc77084d0000d",
+      "mode": "100644",
+      "path": "android/security/0002-aac-reset-ownership.patch",
+      "sha256": "ab9f6ad9fc6bc32825ef2c3ae4e88e6aea7e5a1e3c43a379fb9b50665ac3eb7d"
+    },
+    "android/security/aac-origin.json": {
+      "bytes": 957,
+      "git_blob": "0d3ec2d4b5b511991a53471d33f1ca37d148af5c",
+      "mode": "100644",
+      "path": "android/security/aac-origin.json",
+      "sha256": "a3e66906b0827899a551d63eb77ce4ea3b2782d175347d0048074b62a5407c1e"
+    },
+    "tools/droidloom-update/src/aac_security.rs": {
+      "bytes": 12507,
+      "git_blob": "80a8e26a7b82621df961b93f6228a7a01d17fec9",
+      "mode": "100644",
+      "path": "tools/droidloom-update/src/aac_security.rs",
+      "sha256": "a8ed32ab6a77c795db9844e9fa520e9cc23b0337bac2bd385caba249f838e798"
+    },
+    "tools/droidloom-update/src/dependencies.rs": {
+      "bytes": 2977,
+      "git_blob": "374b32c3388982a31711c81f77328e3db32f8a9c",
+      "mode": "100644",
+      "path": "tools/droidloom-update/src/dependencies.rs",
+      "sha256": "0e46116777291585e5f6b6e9de172289f6ec61adefb31fcc05d9d77cae362f0a"
+    },
+    "tools/droidloom-update/src/main.rs": {
+      "bytes": 32910,
+      "git_blob": "3ab64146723e54c506327153d291f7ecbb9d459b",
+      "mode": "100644",
+      "path": "tools/droidloom-update/src/main.rs",
+      "sha256": "f93c35eb0e070304d522dfabd18d1c82c876ce3b65d8d2b56dff30b45a7ec851"
+    }
+  },
+  "whole_security_bulletin_qualified": false
+}

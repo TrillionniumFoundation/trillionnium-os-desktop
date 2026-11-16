@@ -1,0 +1,422 @@
+--- a/hardware/interfaces/audio/aidl/default/include/core-impl/DriverStubImpl.h
++++ b/hardware/interfaces/audio/aidl/default/include/core-impl/DriverStubImpl.h
+@@ -16,6 +16,7 @@
+ 
+ #pragma once
+ 
++#include "core-impl/DroidloomPcmBridge.h"
+ #include "core-impl/Stream.h"
+ 
+ namespace aidl::android::hardware::audio::core {
+@@ -34,6 +35,7 @@
+     ::android::status_t start() override;
+     ::android::status_t transfer(void* buffer, size_t frameCount, size_t* actualFrameCount,
+                                  int32_t* latencyMs) override;
++    ::android::status_t refinePosition(StreamDescriptor::Position* position) override;
+     void shutdown() override;
+ 
+   protected:
+@@ -48,6 +50,10 @@
+     bool mIsStandby = true;       // Used for validating the state machine logic.
+     int64_t mStartTimeNs = 0;
+     long mFramesSinceStart = 0;
++    // Explicit candidate-only output. No environment setting means the existing
++    // stub behaviour; an enabled bridge never falls back silently on failure.
++    std::unique_ptr<DroidloomPcmBridge> mDroidloomOutput;
++    bool mDroidloomFormatSupported = false;
+ };
+ 
+ }  // namespace aidl::android::hardware::audio::core
+--- /dev/null
++++ b/hardware/interfaces/audio/aidl/default/include/core-impl/DroidloomPcmBridge.h
+@@ -0,0 +1,230 @@
++/*
++ * Copyright (C) 2026 Droidloom contributors
++ * SPDX-License-Identifier: Apache-2.0
++ */
++#pragma once
++
++#include <algorithm>
++#include <array>
++#include <cerrno>
++#include <chrono>
++#include <cstddef>
++#include <cstdint>
++#include <cstring>
++#include <fcntl.h>
++#include <limits>
++#include <linux/memfd.h>
++#include <poll.h>
++#include <string>
++#include <utility>
++#include <sys/mman.h>
++#include <sys/socket.h>
++#include <sys/syscall.h>
++#include <sys/un.h>
++#include <unistd.h>
++
++// A single output stream owns this object, and only its AIDL worker calls it.
++// One shared-memory block is in flight at a time: it is never overwritten before
++// an acknowledgement. ACK means accepted by the host audio stream, not played
++// by a physical speaker. The caller must not infer a presentation position.
++class DroidloomPcmBridge {
++  public:
++    static constexpr uint32_t kMagic = 0x31415544;  // "DUA1", little endian.
++    static constexpr uint32_t kCapacity = 65536;
++    static constexpr uint32_t kRate = 48000;
++    static constexpr uint32_t kChannels = 2;
++    static constexpr uint32_t kFormatS16Le = 1;
++    static constexpr size_t kFrameBytes = 4;
++    static constexpr uint32_t kLatencyUnknown = UINT32_MAX;
++    enum class Op : uint32_t { Hello = 1, Start = 2, Write = 3, Pause = 4,
++                              Flush = 5, Drain = 6, Standby = 7, Status = 8 };
++
++    explicit DroidloomPcmBridge(std::string socketPath) : mPath(std::move(socketPath)) {}
++    ~DroidloomPcmBridge() { closeDescriptors(); }
++    DroidloomPcmBridge(const DroidloomPcmBridge&) = delete;
++    DroidloomPcmBridge& operator=(const DroidloomPcmBridge&) = delete;
++
++    int start() {
++        int status = connectIfNeeded();
++        return status == 0 ? command(Op::Start) : status;
++    }
++    int pause() { return command(Op::Pause); }
++    int flush() { return command(Op::Flush); }
++    int drain() { return command(Op::Drain); }
++
++    int standby() {
++        if (mFailed) return -EPIPE;
++        if (mSocket < 0) return 0;
++        const int status = command(Op::Standby);
++        closeDescriptors();
++        return status;
++    }
++
++    int transfer(const void* source, size_t frames, size_t* accepted, int32_t* latencyMs) {
++        *accepted = 0;
++        *latencyMs = -1;
++        if (frames == 0) return mFailed ? -EPIPE : 0;
++        if (source == nullptr || frames > std::numeric_limits<size_t>::max() / kFrameBytes) {
++            return -EINVAL;
++        }
++        // AIDL permits pre-filling a stream before START. HELLO creates a corked
++        // host stream; only START uncorks it. Paused transfers may be partial.
++        int status = connectIfNeeded();
++        if (status != 0) return status;
++        const auto* bytes = static_cast<const uint8_t*>(source);
++        while (*accepted < frames) {
++            const uint32_t chunk = static_cast<uint32_t>(
++                    std::min(frames - *accepted, static_cast<size_t>(kCapacity / kFrameBytes)));
++            std::memcpy(mMemory, bytes + *accepted * kFrameBytes, chunk * kFrameBytes);
++            uint32_t consumed = 0;
++            status = exchange(Op::Write, chunk, -1, &consumed);
++            if (status != 0) return status;  // Never replay an unacknowledged chunk.
++            *accepted += consumed;
++            *latencyMs = mLatencyUs == kLatencyUnknown ? -1
++                                                     : static_cast<int32_t>((mLatencyUs + 999ULL) / 1000);
++            if (consumed < chunk) break;
++        }
++        return 0;
++    }
++
++    // Closing is a cancellation, not a drain. The host drops that stream's
++    // remaining queue, logs it, and cannot accept or replay more samples.
++    void shutdown() { closeDescriptors(); }
++
++  private:
++    using Clock = std::chrono::steady_clock;
++    using Packet = std::array<uint8_t, 32>;
++    static constexpr int kTimeoutMs = 1500;
++
++    static void put(Packet* packet, size_t word, uint32_t value) {
++        for (size_t i = 0; i < 4; ++i) (*packet)[word * 4 + i] = (value >> (i * 8)) & 255;
++    }
++    static uint32_t get(const Packet& packet, size_t word) {
++        uint32_t value = 0;
++        for (size_t i = 0; i < 4; ++i) value |= static_cast<uint32_t>(packet[word * 4 + i]) << (i * 8);
++        return value;
++    }
++
++    int waitFor(short events, Clock::time_point deadline) const {
++        for (;;) {
++            const auto remaining = std::chrono::duration_cast<std::chrono::milliseconds>(deadline - Clock::now());
++            if (remaining.count() <= 0) return -ETIMEDOUT;
++            pollfd descriptor{mSocket, events, 0};
++            const int result = poll(&descriptor, 1, static_cast<int>(remaining.count()));
++            if (result < 0 && errno == EINTR) continue;
++            if (result < 0) return -errno;
++            if (result == 0) return -ETIMEDOUT;
++            if (descriptor.revents & events) return 0;
++            if (descriptor.revents & (POLLERR | POLLHUP | POLLNVAL)) return -EPIPE;
++        }
++    }
++
++    int fail(int error) {
++        mFailed = true;
++        closeDescriptors();
++        return error;
++    }
++
++    void closeDescriptors() {
++        if (mMemory != MAP_FAILED) munmap(mMemory, kCapacity);
++        mMemory = MAP_FAILED;
++        if (mMemoryFd >= 0) close(mMemoryFd);
++        mMemoryFd = -1;
++        if (mSocket >= 0) close(mSocket);
++        mSocket = -1;
++        mLatencyUs = kLatencyUnknown;
++    }
++
++    int connectIfNeeded() {
++        if (mFailed) return -EPIPE;
++        if (mSocket >= 0) return 0;
++        sockaddr_un address{};
++        if (mPath.empty() || mPath[0] != '/' || mPath.size() >= sizeof(address.sun_path)) return fail(-EINVAL);
++        address.sun_family = AF_UNIX;
++        std::memcpy(address.sun_path, mPath.c_str(), mPath.size() + 1);
++        mSocket = socket(AF_UNIX, SOCK_SEQPACKET | SOCK_CLOEXEC | SOCK_NONBLOCK, 0);
++        if (mSocket < 0) return fail(-errno);
++        if (connect(mSocket, reinterpret_cast<const sockaddr*>(&address), sizeof(address)) != 0) {
++            if (errno != EINPROGRESS) return fail(-errno);
++            const int status = waitFor(POLLOUT, Clock::now() + std::chrono::milliseconds(kTimeoutMs));
++            if (status != 0) return fail(status);
++            int socketError = 0;
++            socklen_t size = sizeof(socketError);
++            if (getsockopt(mSocket, SOL_SOCKET, SO_ERROR, &socketError, &size) != 0) return fail(-errno);
++            if (socketError != 0) return fail(-socketError);
++        }
++        mMemoryFd = static_cast<int>(syscall(SYS_memfd_create, "droidloom-pcm-output", MFD_CLOEXEC | MFD_ALLOW_SEALING));
++        if (mMemoryFd < 0) return fail(-errno);
++        if (ftruncate(mMemoryFd, kCapacity) != 0) return fail(-errno);
++        if (fcntl(mMemoryFd, F_ADD_SEALS, F_SEAL_SHRINK | F_SEAL_GROW | F_SEAL_SEAL) != 0) return fail(-errno);
++        mMemory = mmap(nullptr, kCapacity, PROT_READ | PROT_WRITE, MAP_SHARED, mMemoryFd, 0);
++        if (mMemory == MAP_FAILED) return fail(-errno);
++        mSequence = 0;
++        return exchange(Op::Hello, 0, mMemoryFd, nullptr);
++    }
++
++    int command(Op op) {
++        if (mFailed || mSocket < 0) return -EPIPE;
++        return exchange(op, 0, -1, nullptr);
++    }
++
++    int exchange(Op op, uint32_t frames, int descriptor, uint32_t* consumed) {
++        if (mSequence == UINT32_MAX) return fail(-EOVERFLOW);
++        const uint32_t sequence = ++mSequence;
++        Packet request{};
++        put(&request, 0, kMagic); put(&request, 1, static_cast<uint32_t>(op));
++        put(&request, 2, sequence); put(&request, 3, frames);
++        put(&request, 4, kRate); put(&request, 5, kChannels);
++        put(&request, 6, kFormatS16Le); put(&request, 7, kCapacity);
++        iovec payload{request.data(), request.size()};
++        msghdr message{};
++        message.msg_iov = &payload; message.msg_iovlen = 1;
++        alignas(cmsghdr) std::array<uint8_t, CMSG_SPACE(sizeof(int))> control{};
++        if (descriptor >= 0) {
++            message.msg_control = control.data(); message.msg_controllen = control.size();
++            cmsghdr* cmsg = CMSG_FIRSTHDR(&message);
++            cmsg->cmsg_level = SOL_SOCKET; cmsg->cmsg_type = SCM_RIGHTS;
++            cmsg->cmsg_len = CMSG_LEN(sizeof(int));
++            std::memcpy(CMSG_DATA(cmsg), &descriptor, sizeof(descriptor));
++        }
++        const auto deadline = Clock::now() + std::chrono::milliseconds(kTimeoutMs);
++        for (;;) {
++            int status = waitFor(POLLOUT, deadline);
++            if (status != 0) return fail(status);
++            const ssize_t sent = sendmsg(mSocket, &message, MSG_NOSIGNAL);
++            if (sent < 0 && (errno == EINTR || errno == EAGAIN)) continue;
++            if (sent < 0) return fail(-errno);
++            if (sent != static_cast<ssize_t>(request.size())) return fail(-EPROTO);
++            break;
++        }
++        Packet reply{};
++        for (;;) {
++            const int status = waitFor(POLLIN, deadline);
++            if (status != 0) return fail(status);
++            const ssize_t received = recv(mSocket, reply.data(), reply.size(), MSG_TRUNC);
++            if (received < 0 && (errno == EINTR || errno == EAGAIN)) continue;
++            if (received < 0) return fail(-errno);
++            if (received == 0) return fail(-EPIPE);
++            if (received != static_cast<ssize_t>(reply.size())) return fail(-EPROTO);
++            break;
++        }
++        if (get(reply, 0) != kMagic || get(reply, 1) != static_cast<uint32_t>(op) ||
++            get(reply, 2) != sequence || get(reply, 7) != 0) return fail(-EPROTO);
++        const uint32_t error = get(reply, 3);
++        if (error != 0) return fail(error <= 4095 ? -static_cast<int>(error) : -EPROTO);
++        const uint32_t acknowledged = get(reply, 4);
++        if (acknowledged > frames || get(reply, 6) != 1) return fail(-EPROTO);
++        if (op != Op::Write && acknowledged != 0) return fail(-EPROTO);
++        if (consumed != nullptr) *consumed = acknowledged;
++        mLatencyUs = get(reply, 5);
++        return 0;
++    }
++
++    const std::string mPath;
++    int mSocket = -1;
++    int mMemoryFd = -1;
++    void* mMemory = MAP_FAILED;
++    uint32_t mSequence = 0;
++    uint32_t mLatencyUs = kLatencyUnknown;
++    bool mFailed = false;
++};
+--- a/hardware/interfaces/audio/aidl/default/stub/DriverStubImpl.cpp
++++ b/hardware/interfaces/audio/aidl/default/stub/DriverStubImpl.cpp
+@@ -19,6 +19,7 @@
+ 
+ #define LOG_TAG "AHAL_Stream"
+ #include <Log.h>
++#include <Utils.h>
+ #include <audio_utils/clock.h>
+ 
+ #include "core-impl/DriverStubImpl.h"
+@@ -32,7 +33,19 @@
+       mIsAsynchronous(!!context.getAsyncCallback()),
+       mIsInput(context.isInput()),
+       mMixPortHandle(context.getMixPortHandle()),
+-      mAsyncSleepTimeUs(asyncSleepTimeUs) {}
++      mAsyncSleepTimeUs(asyncSleepTimeUs) {
++    const char* socketPath = std::getenv("DROIDLOOM_AUDIO_SOCKET");
++    if (!mIsInput && socketPath != nullptr && socketPath[0] != '\0') {
++        mDroidloomOutput = std::make_unique<DroidloomPcmBridge>(socketPath);
++        using namespace ::aidl::android::media::audio::common;
++        const auto format = context.getFormat();
++        mDroidloomFormatSupported = !mIsAsynchronous && !context.isMmap() &&
++                !context.isOffload() && mSampleRate == 48000 && mFrameSizeBytes == 4 &&
++                format.type == AudioFormatType::PCM && format.pcm == PcmType::INT_16_BIT &&
++                ::aidl::android::hardware::audio::common::getChannelCount(
++                        context.getChannelLayout()) == 2;
++    }
++}
+ 
+ #define LOG_ENTRY()                                                                          \
+     LOG(DEBUG) << "[" << (mIsInput ? "in" : "out") << "|ioHandle:" << mMixPortHandle << "] " \
+@@ -40,6 +53,10 @@
+ 
+ ::android::status_t DriverStubImpl::init(DriverCallbackInterface* /*callback*/) {
+     LOG_ENTRY();
++    if (mDroidloomOutput && !mDroidloomFormatSupported) {
++        LOG(ERROR) << "Droidloom PCM output supports synchronous 48kHz stereo S16_LE only";
++        return ::android::BAD_VALUE;
++    }
+     mIsInitialized = true;
+     return ::android::OK;
+ }
+@@ -49,6 +66,7 @@
+     if (!mIsInitialized) {
+         LOG(FATAL) << __func__ << ": must not happen for an uninitialized driver";
+     }
++    if (mDroidloomOutput) return mDroidloomOutput->drain();
+     if (!mIsInput) {
+         if (!mIsAsynchronous) {
+             static constexpr float kMicrosPerSecond = MICROS_PER_SECOND;
+@@ -67,6 +85,7 @@
+     if (!mIsInitialized) {
+         LOG(FATAL) << __func__ << ": must not happen for an uninitialized driver";
+     }
++    if (mDroidloomOutput) return mDroidloomOutput->flush();
+     return ::android::OK;
+ }
+ 
+@@ -75,6 +94,7 @@
+     if (!mIsInitialized) {
+         LOG(FATAL) << __func__ << ": must not happen for an uninitialized driver";
+     }
++    if (mDroidloomOutput) return mDroidloomOutput->pause();
+     return ::android::OK;
+ }
+ 
+@@ -82,6 +102,11 @@
+     LOG_ENTRY();
+     if (!mIsInitialized) {
+         LOG(FATAL) << __func__ << ": must not happen for an uninitialized driver";
++    }
++    if (mDroidloomOutput) {
++        const auto status = mDroidloomOutput->standby();
++        if (status == ::android::OK) mIsStandby = true;
++        return status;
+     }
+     mIsStandby = true;
+     return ::android::OK;
+@@ -92,6 +117,11 @@
+     if (!mIsInitialized) {
+         LOG(FATAL) << __func__ << ": must not happen for an uninitialized driver";
+     }
++    if (mDroidloomOutput) {
++        const auto status = mDroidloomOutput->start();
++        if (status == ::android::OK) mIsStandby = false;
++        return status;
++    }
+     mIsStandby = false;
+     mStartTimeNs = ::android::uptimeNanos();
+     mFramesSinceStart = 0;
+@@ -99,10 +129,20 @@
+ }
+ 
+ ::android::status_t DriverStubImpl::transfer(void* buffer, size_t frameCount,
+-                                             size_t* actualFrameCount, int32_t*) {
++                                             size_t* actualFrameCount, int32_t* latencyMs) {
+     // No LOG_ENTRY as this is called very often.
+     if (!mIsInitialized) {
+         LOG(FATAL) << __func__ << ": must not happen for an uninitialized driver";
++    }
++    if (mDroidloomOutput) {
++        const auto status = mDroidloomOutput->transfer(buffer, frameCount, actualFrameCount,
++                                                       latencyMs);
++        if (status != ::android::OK) {
++            LOG(ERROR) << "Droidloom PCM delivery failed: status=" << status
++                       << " confirmedFrames=" << *actualFrameCount
++                       << "; unacknowledged samples will not be replayed";
++        }
++        return status;
+     }
+     if (mIsStandby) {
+         LOG(FATAL) << __func__ << ": must not happen while in standby";
+@@ -133,8 +173,16 @@
+     return ::android::OK;
+ }
+ 
++::android::status_t DriverStubImpl::refinePosition(StreamDescriptor::Position* /*position*/) {
++    // Host buffer acceptance is not a hardware presentation timestamp. The
++    // caller converts this failure to UNKNOWN instead of reporting queued
++    // frames as already played. The real host latency is returned by transfer.
++    return mDroidloomOutput ? ::android::INVALID_OPERATION : ::android::OK;
++}
++
+ void DriverStubImpl::shutdown() {
+     LOG_ENTRY();
++    if (mDroidloomOutput) mDroidloomOutput->shutdown();
+     mIsInitialized = false;
+ }
+ 
+--- a/hardware/interfaces/audio/aidl/default/primary/StreamPrimary.cpp
++++ b/hardware/interfaces/audio/aidl/default/primary/StreamPrimary.cpp
+@@ -130,7 +130,8 @@
+     return ::android::OK;
+ }
+ 
+-::android::status_t StreamPrimary::refinePosition(StreamDescriptor::Position*) {
++::android::status_t StreamPrimary::refinePosition(StreamDescriptor::Position* position) {
++    if (isStubStreamOnWorker()) return mStubDriver.refinePosition(position);
+     // Since not all data is actually sent to the HAL, use the position maintained by Stream class
+     // which accounts for all frames passed from / to the client.
+     return ::android::OK;
+--- a/hardware/interfaces/audio/aidl/default/Stream.cpp
++++ b/hardware/interfaces/audio/aidl/default/Stream.cpp
+@@ -702,6 +702,7 @@
+                     mState = StreamDescriptor::State::STANDBY;
+                 } else {
+                     LOG(ERROR) << __func__ << ": standby failed: " << status;
++                    reply.status = STATUS_INVALID_OPERATION;
+                     mState = StreamDescriptor::State::ERROR;
+                 }
+             } else {
+@@ -850,6 +851,7 @@
+         reply->fmqByteCount += actualByteCount;
+         mContext->advanceFrameCount(actualFrameCount);
+         populateReply(reply, isConnected);
++        if (fatal) reply->status = STATUS_INVALID_OPERATION;
+     } else {
+         LOG(WARNING) << __func__ << ": reading of " << readByteCount
+                      << " bytes of data from MQ failed";
+

@@ -1,0 +1,609 @@
+{
+  "schema": "pocket4.native.renderscript-provider-review.v1",
+  "state": "FIXED_RENDER_SCRIPT_GROUP_REVIEWED_ORIGINAL_TOOLS_CONE_VERIFIED_NOT_APPLIED",
+  "observed_utc_range": [
+    "2026-11-09T10:10:41.738113+00:00",
+    "2026-11-09T10:15:05.048255+00:00"
+  ],
+  "subject": "Native source600 full r8 first failure and exact original provider cone",
+  "owner_root": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1",
+  "source_recipe_preimage": {
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/recipe-tradefed-r1",
+    "qualified_commit": "fa3fa7496d9dd79a02bcd1445b1c49888aa493c4",
+    "qualified_tree": "95b5934af46dc560be0559d0b5b9edccc6133867",
+    "commit_observation": "owner normal tool/source qualification; not a new Git HEAD observation",
+    "source_lock": {
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/recipe-tradefed-r1/android/native-generation-pair/source-lock.json",
+      "bytes": 354415,
+      "sha256": "02fd330466357ecf744d85f27d23b03fabde46f31fae3ef69a5f6634e66e8837"
+    },
+    "project_count": 600
+  },
+  "actual_failure": {
+    "outer_h_job": "1a1bfa96ee5-5e21-63d",
+    "inner_unit": "p4-native-source600-full-ai395-20261109-8b88-r8.service",
+    "first_error": "development/build/Android.bp:119:1: \"deprecated-renderscript-tools\" depends on undefined module \"bcc_compat\".",
+    "observation_file": "native-r8-failure-observation.json",
+    "observation_sha256": "3c8969d37a4e6cc23475aad1df138a50ac506dbc5377f6071511992f8131a8d6",
+    "resource_failure": false
+  },
+  "consumer": {
+    "module_type": "android_sdk_repo_host",
+    "name": "deprecated-renderscript-tools",
+    "ref": {
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/development/build/Android.bp",
+      "bytes": 15422,
+      "sha256": "7ddfd0a4b3df0d09e6e57a69c659971ea243fcbaf6bf8e68732edf75699e3045"
+    },
+    "review_scope": "all nine distinct dependency/merge_zip symbols explicitly named by this original consumer, including platform branches; not a whole-graph closure claim"
+  },
+  "provider_matrix": [
+    {
+      "name": "build-tools_renderscript_includes",
+      "role": "merge_zips",
+      "file": "development/build/Android.bp",
+      "line": 194,
+      "source_inputs": "rs_script_api",
+      "status": "original definition present",
+      "provider_ref": {
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/development/build/Android.bp",
+        "bytes": 15422,
+        "sha256": "7ddfd0a4b3df0d09e6e57a69c659971ea243fcbaf6bf8e68732edf75699e3045"
+      }
+    },
+    {
+      "name": "renderscript-clang-include",
+      "role": "merge_zips",
+      "file": "external/clang/Android.bp",
+      "line": 291,
+      "source_inputs": "lib/Headers/**/* and LICENSE.TXT",
+      "status": "original definition present; 87 original header blobs physically present",
+      "provider_ref": {
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/clang/Android.bp",
+        "bytes": 8228,
+        "sha256": "8c92cce01efa8b245ba36bf77bfbbcd3cee9be1d318ce08fb1dc45cad700ea8e"
+      }
+    },
+    {
+      "name": "renderscript_sdk_prebuilts",
+      "role": "merge_zips",
+      "file": "prebuilts/sdk/renderscript/Android.bp",
+      "line": 109,
+      "source_inputs": "lib/**/*",
+      "status": "original definition present; 42 original blobs physically present",
+      "provider_ref": {
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/renderscript/Android.bp",
+        "bytes": 5943,
+        "sha256": "74878b7b9bc85b4b5d0e815197e04c56b1bbf5d32dc5d57c46a6510605dad3a3"
+      }
+    },
+    {
+      "name": "build-tools-lld-linux",
+      "role": "target.linux.merge_zips",
+      "file": "prebuilts/sdk/tools/Android.bp",
+      "line": 127,
+      "source_inputs": [
+        "tools/lld",
+        "tools/lld-dummy",
+        "tools/linux/lld-bin/lld",
+        "tools/linux/lib64/libc++.so.1"
+      ],
+      "status": "original definition and all explicit physical inputs present",
+      "provider_ref": {
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/tools/Android.bp",
+        "bytes": 7170,
+        "sha256": "5bc671eef30f53115e3c527e3cb99e4a275d1d5d454f417f4540412e46905822"
+      }
+    },
+    {
+      "name": "build-tools-lld-darwin",
+      "role": "target.darwin.merge_zips",
+      "file": "prebuilts/sdk/tools/Android.bp",
+      "line": 171,
+      "source_inputs": [
+        "tools/lld",
+        "tools/lld-dummy",
+        "tools/darwin/lld-bin/lld",
+        "tools/darwin/lib64/libc++.1.dylib",
+        "tools/darwin/lib64/libc++abi.1.dylib"
+      ],
+      "status": "original definition and all explicit physical inputs present; variant not built",
+      "provider_ref": {
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/tools/Android.bp",
+        "bytes": 7170,
+        "sha256": "5bc671eef30f53115e3c527e3cb99e4a275d1d5d454f417f4540412e46905822"
+      }
+    },
+    {
+      "name": "build-tools-lld-windows",
+      "role": "target.windows.merge_zips",
+      "file": "prebuilts/sdk/tools/Android.bp",
+      "line": 150,
+      "source_inputs": [
+        "tools/lld-dummy",
+        "tools/windows/lld-bin/lld.exe",
+        "tools/windows/lld-bin/libwinpthread-1.dll"
+      ],
+      "status": "original definition and all explicit physical inputs present; variant not built",
+      "provider_ref": {
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/tools/Android.bp",
+        "bytes": 7170,
+        "sha256": "5bc671eef30f53115e3c527e3cb99e4a275d1d5d454f417f4540412e46905822"
+      }
+    },
+    {
+      "name": "bcc_compat",
+      "role": "target.not_windows.deps and target.windows.multilib.lib32.deps",
+      "file": "frameworks/compile/libbcc/tools/bcc_compat/Android.bp",
+      "status": "actual r8 missing provider; original 3-file ancestor/provider/source fetched and verified, not yet selected or materialized in owner AOSP",
+      "source_inputs": "Main.cpp"
+    },
+    {
+      "name": "llvm-rs-cc",
+      "role": "target.not_windows.deps and target.windows.multilib.lib32.deps",
+      "file": "frameworks/compile/slang/Android.bp",
+      "line": 165,
+      "status": "original definition and all literal sources in root Blueprint present; generated-header input RSCCOptions.td present",
+      "provider_ref": {
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/compile/slang/Android.bp",
+        "bytes": 6132,
+        "sha256": "d35d89aff4360900e8d539bc5fd60c3fde59d3d9157f2f7c8c7fa556590822d2"
+      }
+    },
+    {
+      "name": "lld",
+      "role": "target.windows.multilib.lib32.deps",
+      "file": "frameworks/compile/slang/Android.bp",
+      "line": 216,
+      "status": "original definition and lld_main.cpp present; original only enables Windows variant",
+      "provider_ref": {
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/compile/slang/Android.bp",
+        "bytes": 6132,
+        "sha256": "d35d89aff4360900e8d539bc5fd60c3fde59d3d9157f2f7c8c7fa556590822d2"
+      }
+    }
+  ],
+  "support_provider": {
+    "name": "rs_script_api",
+    "ref": {
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/rs/script_api/Android.bp",
+      "bytes": 574,
+      "sha256": "0a3e7b164bda007044814acc812f059be52bdcd42fa5ea6677fd22d73b047604"
+    },
+    "source_glob": "include/*.rsh",
+    "original_cone_blobs": 17,
+    "physical_missing": 0
+  },
+  "full_libbcc_tools_original_cone": {
+    "project": "platform/frameworks/compile/libbcc",
+    "path": "frameworks/compile/libbcc",
+    "commit": "943016fade3dbbb725c363d0dc60a6e962bd88e5",
+    "existing_sparse_paths": [
+      "bcinfo/Android.bp",
+      "bcinfo/BitReader_2_7",
+      "bcinfo/BitReader_3_0",
+      "bcinfo/BitcodeTranslator.cpp",
+      "bcinfo/BitcodeWrapper.cpp",
+      "bcinfo/MetadataExtractor.cpp",
+      "bcinfo/Wrap",
+      "bcinfo/include",
+      "bcinfo/libbcinfo.map",
+      "include",
+      "lib"
+    ],
+    "currently_selected": false,
+    "complete_tree_entries": 7,
+    "original_bytes": 32570,
+    "files": [
+      {
+        "path": "tools/Android.bp",
+        "bytes": 424,
+        "sha256": "c01fb11463a73c3a123c5df71bd731206d1743379e75946b4524731004f2a47a",
+        "git_blob_oid": "47614533e40c2374a7b578f30519392fcf90c37d",
+        "source_url": "https://android.googlesource.com/platform/frameworks/compile/libbcc/+/943016fade3dbbb725c363d0dc60a6e962bd88e5/tools/Android.bp?format=TEXT",
+        "saved_remote_path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/renderscript-bcc-originals-r2/original/tools/Android.bp",
+        "custodian": "owner",
+        "local_original_path": "native-renderscript-review/original/tools/Android.bp"
+      },
+      {
+        "path": "tools/bcc_compat/Android.bp",
+        "bytes": 1523,
+        "sha256": "ea4c4f94e63227e29e886ed6d7df7a51ca94b9a3e8c743f8d569d1db8f40086a",
+        "git_blob_oid": "192d5760b3b48c6c9621c7ec5b88c6f45f690859",
+        "source_url": "https://android.googlesource.com/platform/frameworks/compile/libbcc/+/943016fade3dbbb725c363d0dc60a6e962bd88e5/tools/bcc_compat/Android.bp?format=TEXT",
+        "saved_remote_path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/renderscript-bcc-originals-r2/original/tools/bcc_compat/Android.bp",
+        "custodian": "owner",
+        "local_original_path": "native-renderscript-review/original/tools/bcc_compat/Android.bp"
+      },
+      {
+        "path": "tools/bcc_compat/Main.cpp",
+        "bytes": 9427,
+        "sha256": "d7b8aef5a94119dd93620baf3fff0f260f277092a6113e6c0f8fed67643f7bad",
+        "git_blob_oid": "bc42a44d8f4bd7ae6c04bca924006af2cfed5fb6",
+        "source_url": "https://android.googlesource.com/platform/frameworks/compile/libbcc/+/943016fade3dbbb725c363d0dc60a6e962bd88e5/tools/bcc_compat/Main.cpp?format=TEXT",
+        "saved_remote_path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/renderscript-bcc-originals-r2/original/tools/bcc_compat/Main.cpp",
+        "custodian": "owner",
+        "local_original_path": "native-renderscript-review/original/tools/bcc_compat/Main.cpp"
+      },
+      {
+        "path": "tools/bcc_strip_attr/Android.bp",
+        "bytes": 1217,
+        "sha256": "8b9a464c60833a7903df36aa428cfe1b1e378261c87e384ecf00273457cfe71a",
+        "git_blob_oid": "724377036218b7d04636939a63e7cd6a80dc8d83",
+        "source_url": "https://android.googlesource.com/platform/frameworks/compile/libbcc/+/943016fade3dbbb725c363d0dc60a6e962bd88e5/tools/bcc_strip_attr/Android.bp?format=TEXT",
+        "saved_remote_path": "/home/qq/work/pocket4-renderscript-originals-be1746a-r1/original/tools/bcc_strip_attr/Android.bp",
+        "custodian": "be1746a-independent-collector",
+        "local_original_path": "native-renderscript-review/original/tools/bcc_strip_attr/Android.bp"
+      },
+      {
+        "path": "tools/bcc_strip_attr/bcc_strip_attr.cpp",
+        "bytes": 4534,
+        "sha256": "17abadc0ae17e1fc52d98745cec8c9007e4bb08f11135130b7c2798f62766141",
+        "git_blob_oid": "d987635c4b110826d0a3d67e9f4d1271a5340210",
+        "source_url": "https://android.googlesource.com/platform/frameworks/compile/libbcc/+/943016fade3dbbb725c363d0dc60a6e962bd88e5/tools/bcc_strip_attr/bcc_strip_attr.cpp?format=TEXT",
+        "saved_remote_path": "/home/qq/work/pocket4-renderscript-originals-be1746a-r1/original/tools/bcc_strip_attr/bcc_strip_attr.cpp",
+        "custodian": "be1746a-independent-collector",
+        "local_original_path": "native-renderscript-review/original/tools/bcc_strip_attr/bcc_strip_attr.cpp"
+      },
+      {
+        "path": "tools/bcc/Android.bp",
+        "bytes": 1882,
+        "sha256": "791c784cb915158a6779646ae10e34a54571b2ea662d28c2c4112353c4933f83",
+        "git_blob_oid": "d2d36ad8c2f94c6548e085613b99d9fe16a7647e",
+        "source_url": "https://android.googlesource.com/platform/frameworks/compile/libbcc/+/943016fade3dbbb725c363d0dc60a6e962bd88e5/tools/bcc/Android.bp?format=TEXT",
+        "saved_remote_path": "/home/qq/work/pocket4-renderscript-originals-be1746a-r1/original/tools/bcc/Android.bp",
+        "custodian": "be1746a-independent-collector",
+        "local_original_path": "native-renderscript-review/original/tools/bcc/Android.bp"
+      },
+      {
+        "path": "tools/bcc/Main.cpp",
+        "bytes": 13563,
+        "sha256": "7636e614880b0928cfe7ec1dbd923ee0488e83c8203ecc9830e91572d224e24f",
+        "git_blob_oid": "e1d3096ff7b355b905d99c213eb3d723265f2516",
+        "source_url": "https://android.googlesource.com/platform/frameworks/compile/libbcc/+/943016fade3dbbb725c363d0dc60a6e962bd88e5/tools/bcc/Main.cpp?format=TEXT",
+        "saved_remote_path": "/home/qq/work/pocket4-renderscript-originals-be1746a-r1/original/tools/bcc/Main.cpp",
+        "custodian": "be1746a-independent-collector",
+        "local_original_path": "native-renderscript-review/original/tools/bcc/Main.cpp"
+      }
+    ],
+    "owner_three_file_verification": [
+      {
+        "path": "tools/Android.bp",
+        "saved": {
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/renderscript-bcc-originals-r2/original/tools/Android.bp",
+          "bytes": 424,
+          "sha256": "c01fb11463a73c3a123c5df71bd731206d1743379e75946b4524731004f2a47a"
+        },
+        "git_blob_oid": "47614533e40c2374a7b578f30519392fcf90c37d",
+        "git_oid_matches_owner": true,
+        "sha_matches_owner": true,
+        "bytes_matches_owner": true,
+        "body_matches_saved": true
+      },
+      {
+        "path": "tools/bcc_compat/Android.bp",
+        "saved": {
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/renderscript-bcc-originals-r2/original/tools/bcc_compat/Android.bp",
+          "bytes": 1523,
+          "sha256": "ea4c4f94e63227e29e886ed6d7df7a51ca94b9a3e8c743f8d569d1db8f40086a"
+        },
+        "git_blob_oid": "192d5760b3b48c6c9621c7ec5b88c6f45f690859",
+        "git_oid_matches_owner": true,
+        "sha_matches_owner": true,
+        "bytes_matches_owner": true,
+        "body_matches_saved": true
+      },
+      {
+        "path": "tools/bcc_compat/Main.cpp",
+        "saved": {
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/renderscript-bcc-originals-r2/original/tools/bcc_compat/Main.cpp",
+          "bytes": 9427,
+          "sha256": "d7b8aef5a94119dd93620baf3fff0f260f277092a6113e6c0f8fed67643f7bad"
+        },
+        "git_blob_oid": "bc42a44d8f4bd7ae6c04bca924006af2cfed5fb6",
+        "git_oid_matches_owner": true,
+        "sha_matches_owner": true,
+        "bytes_matches_owner": true,
+        "body_matches_saved": true
+      }
+    ],
+    "new_independent_four_file_result": {
+      "path": "/home/qq/work/pocket4-renderscript-originals-be1746a-r1/RESULT.json",
+      "bytes": 25629,
+      "sha256": "e6dd64baf0d802e9b16bc56059ad6a217ef1be47d6ae780e717ff45f75b59332",
+      "state": "EXACT_ORIGINAL_TOOLS_BLOBS_VERIFIED",
+      "errors": []
+    },
+    "modules_by_blueprint": {
+      "tools/bcc/Android.bp": [
+        "bcc",
+        "libbcc_binary"
+      ],
+      "tools/bcc_compat/Android.bp": [
+        "bcc_compat"
+      ],
+      "tools/bcc_strip_attr/Android.bp": [
+        "bcc_strip_attr"
+      ]
+    },
+    "direct_dependency_union": [
+      "libbcc-defaults",
+      "libbcc",
+      "libbcinfo",
+      "libLLVM_android",
+      "slang_headers",
+      "libbcc_binary",
+      "liblog",
+      "libvndksupport"
+    ],
+    "same_cone_provider": "libbcc_binary is defined by original tools/bcc/Android.bp",
+    "provider_boundaries": [
+      {
+        "name": "libbcc-defaults",
+        "kind": "defaults",
+        "file": "frameworks/compile/libbcc/Android.bp",
+        "coverage": "root original; inherited llvm-defaults, rs-version, libbcc-targets definitions also observed",
+        "provider_ref": {
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/compile/libbcc/Android.bp",
+          "bytes": 4058,
+          "sha256": "4ca16abde50edf9a354b07d4d5be2d777f0f5c4d3ea17c3aafb9d1c981403174"
+        }
+      },
+      {
+        "name": "libbcc",
+        "kind": "shared_libs",
+        "file": "frameworks/compile/libbcc/lib/Android.bp",
+        "coverage": "full lib cone selected; 21 literal C++ sources physically present",
+        "provider_ref": {
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/compile/libbcc/lib/Android.bp",
+          "bytes": 2708,
+          "sha256": "9c11eefede1e7a47e5d11ca416156687f490523e57480ad033f0638a6b95e0a8"
+        }
+      },
+      {
+        "name": "libbcinfo",
+        "kind": "shared_libs",
+        "file": "frameworks/compile/libbcc/bcinfo/Android.bp",
+        "coverage": "original Blueprint plus selected BitReader_2_7, BitReader_3_0, Wrap, include and three root sources; transitive symbol generation not requalified",
+        "provider_ref": {
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/compile/libbcc/bcinfo/Android.bp",
+          "bytes": 3254,
+          "sha256": "5de036d60938ea6fd8f5ec0ece88427a76a5e1539de6b8e13f6ad9c92577632d"
+        }
+      },
+      {
+        "name": "libLLVM_android",
+        "kind": "shared_libs",
+        "file": "external/llvm/Android.bp",
+        "coverage": "original provider present at fixed commit; component and Soong cones selected; recursive variant/link qualification remains unproved",
+        "provider_ref": {
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/llvm/Android.bp",
+          "bytes": 9862,
+          "sha256": "0bda6d7cb9cd6e6d315faaf38738fe2ec170eeb03412a89868b217f49145a1a0"
+        }
+      },
+      {
+        "name": "slang_headers",
+        "kind": "header_libs",
+        "file": "frameworks/compile/slang/Android.bp",
+        "coverage": "root original export_include_dirs '.'; original root headers materialized",
+        "provider_ref": {
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/compile/slang/Android.bp",
+          "bytes": 6132,
+          "sha256": "d35d89aff4360900e8d539bc5fd60c3fde59d3d9157f2f7c8c7fa556590822d2"
+        }
+      },
+      {
+        "name": "liblog",
+        "kind": "additional Android shared lib introduced by full tools/bcc cone",
+        "file": "system/logging/liblog/Android.bp",
+        "coverage": "full liblog cone selected; original provider physically present",
+        "provider_ref": {
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/system/logging/liblog/Android.bp",
+          "bytes": 6450,
+          "sha256": "6d338a6006e1b7aff334cca19930f45c6c5d7fcd67823591ad0636e29be7c1b4"
+        }
+      },
+      {
+        "name": "libvndksupport",
+        "kind": "additional Android shared lib introduced by full tools/bcc cone",
+        "file": "system/core/libvndksupport/Android.bp",
+        "coverage": "whole system/core project selected; original provider physically present",
+        "provider_ref": {
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/system/core/libvndksupport/Android.bp",
+          "bytes": 593,
+          "sha256": "fc72ba0b719beb5cb4b28ac11cbd3721679c43546fc80708b9b1017e08f4580e"
+        }
+      }
+    ]
+  },
+  "physical_controls": {
+    "explicit_inputs_checked": 66,
+    "missing": [],
+    "cones": [
+      {
+        "project": "frameworks/rs",
+        "path": "script_api/include",
+        "commit": "2efe31da05c6075dd280c9f1b1ea18108971798e",
+        "selected_by_parent": true,
+        "returncode": 0,
+        "stderr": "",
+        "original_blob_count": 17,
+        "physical_missing": [],
+        "source_rows_sha256": "a980a41c261d0705dac155740c5195e5e1023595068862b5e54e92ed0911785a",
+        "git_stdout_sha256": "705947b5f62ba24a8d24415bd54ba8dd15f0500d49ca678b7f840a4e9f972f03",
+        "git_stdout_bytes": 1501
+      },
+      {
+        "project": "external/clang",
+        "path": "lib/Headers",
+        "commit": "bdc4d062dc4550869e0825da19fe8fa720db860a",
+        "selected_by_parent": true,
+        "returncode": 0,
+        "stderr": "",
+        "original_blob_count": 87,
+        "physical_missing": [],
+        "source_rows_sha256": "e4971e08c9266c09c3c92c1d580b70df363c431f9ae73938bbb3b0785edb6a11",
+        "git_stdout_sha256": "e19898e1d87d0defafec7ddcf47c96e19e6301cd651d7ed983a69fe31969b372",
+        "git_stdout_bytes": 6894
+      },
+      {
+        "project": "prebuilts/sdk",
+        "path": "renderscript/lib",
+        "commit": "0f07e8d60ab0aba46129e427101f96ba459a95c1",
+        "selected_by_parent": true,
+        "returncode": 0,
+        "stderr": "",
+        "original_blob_count": 42,
+        "physical_missing": [],
+        "source_rows_sha256": "faa2c4e3e8635b445a23df3c46d79dee0a0ee6459b809be4e346c611bfcfb1e4",
+        "git_stdout_sha256": "52519c4eb9439cb365ff64f62857f7dc858037b91afc5113a0cc061966480a74",
+        "git_stdout_bytes": 3750
+      }
+    ],
+    "method": "fixed exact paths; exact-commit ls-tree without --long; selected-cone coverage plus physical existence; large existing binaries were not rehashed"
+  },
+  "candidate_source_delta": {
+    "status": "reviewed only; no recipe patch or source reconciliation performed",
+    "project": "frameworks/compile/libbcc",
+    "commit_unchanged": true,
+    "add_sparse_paths": [
+      "tools"
+    ],
+    "adds_projects": 0,
+    "preserves_consumer": true,
+    "generated_stubs": false,
+    "full_original_cone": true,
+    "reason": "all seven original tool-cone files are now byte/OID pinned and all newly named direct providers are either in this same cone or already selected original provider definitions"
+  },
+  "sdk_ondeviceintelligence_comparison": {
+    "project_commit": "0f07e8d60ab0aba46129e427101f96ba459a95c1",
+    "system_server_pair": [
+      {
+        "path": "36/system-server/api/service-ondeviceintelligence.txt",
+        "physical_exists": true,
+        "selected_explicitly_or_by_parent": true,
+        "physical_ref": {
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/36/system-server/api/service-ondeviceintelligence.txt",
+          "bytes": 25,
+          "sha256": "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552"
+        },
+        "original_tree": {
+          "returncode": 0,
+          "stdout": "100644 blob d802177e249b3f97128699222e65c35e57ba7540\t36/system-server/api/service-ondeviceintelligence.txt\n",
+          "stderr": ""
+        }
+      },
+      {
+        "path": "36/system-server/api/service-ondeviceintelligence-removed.txt",
+        "physical_exists": true,
+        "selected_explicitly_or_by_parent": true,
+        "physical_ref": {
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/36/system-server/api/service-ondeviceintelligence-removed.txt",
+          "bytes": 25,
+          "sha256": "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552"
+        },
+        "original_tree": {
+          "returncode": 0,
+          "stdout": "100644 blob d802177e249b3f97128699222e65c35e57ba7540\t36/system-server/api/service-ondeviceintelligence-removed.txt\n",
+          "stderr": ""
+        }
+      }
+    ],
+    "public_pair": {
+      "paths": [
+        "36/public/api/service-ondeviceintelligence.txt",
+        "36/public/api/service-ondeviceintelligence-removed.txt"
+      ],
+      "selected_parent_cone": "36",
+      "physical_hash_check_performed": false
+    },
+    "conclusion": "Native600 already selects entire SDK36 parent; the confirmed Audio430 omission of SDK36 system-server tracking files is not present in Native at this observation"
+  },
+  "collector_correction": {
+    "failed_owner_result": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/renderscript-provider-origin-r1/RESULT.json",
+    "failure": "int(b'BAD') from ls-tree --long while exact original blob unavailable in partial clone",
+    "owner_successor": {
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/renderscript-provider-origin-r2/RESULT.json",
+      "bytes": 136162,
+      "sha256": "45fd4cb2591d9739dc569d31490a578c1bc5dd5229c096bd3ae8929b4554fc38"
+    },
+    "distinguish": "tree/gitlink unavailable size '-' is separate from blob BAD; exact type/OID remain authoritative; absent blob must remain explicitly unmaterialized",
+    "independent_method": "four exact commit+path URLs fetched to a create-only independent directory, bounded response/timeouts, Git blob SHA1 and SHA256 verified before saving; no shared Git lazy fetch or cache write",
+    "source_lock_sha256_before": "02fd330466357ecf744d85f27d23b03fabde46f31fae3ef69a5f6634e66e8837",
+    "source_lock_sha256_after": "02fd330466357ecf744d85f27d23b03fabde46f31fae3ef69a5f6634e66e8837",
+    "source_manifest_unchanged": true
+  },
+  "execution": {
+    "host": "ai395",
+    "jobs": [
+      {
+        "job_id": "1a1bfc9b51d-5e21-70d",
+        "state": "succeeded",
+        "exit_code": 0,
+        "output_complete": true,
+        "output_durable": true,
+        "timed_out": false,
+        "cancelled": false
+      },
+      {
+        "job_id": "1a1bfcbad21-5e21-71b",
+        "state": "succeeded",
+        "exit_code": 0,
+        "output_complete": true,
+        "output_durable": true,
+        "timed_out": false,
+        "cancelled": false
+      },
+      {
+        "job_id": "1a1bfcc87fe-5e21-720",
+        "state": "succeeded",
+        "exit_code": 0,
+        "output_complete": true,
+        "output_durable": true,
+        "timed_out": false,
+        "cancelled": false
+      },
+      {
+        "job_id": "1a1bfcdd211-5e21-725",
+        "state": "succeeded",
+        "exit_code": 0,
+        "output_complete": true,
+        "output_durable": true,
+        "timed_out": false,
+        "cancelled": false
+      }
+    ],
+    "compiler_jobs_started": 0,
+    "full_builds_started": 0,
+    "current_writes": 0,
+    "owner_recipe_writes": 0,
+    "owner_aosp_writes": 0,
+    "owner_git_cache_writes": 0,
+    "original_collector_child_processes_started": 0
+  },
+  "qualification": {
+    "original_tool_blob_identity": true,
+    "fixed_consumer_direct_name_review": true,
+    "normal_source_qualified": false,
+    "normal_tool_qualified": false,
+    "full_build_qualified": false,
+    "runtime_qualified": false,
+    "production_ready": false
+  },
+  "remaining_boundaries": [
+    "Owner must apply its source-lock delta using ordinary source tooling and run the already-owned normal verification lifecycle before any full successor.",
+    "Soong namespace imports, enabled variants, multilib, load hooks, generated LLVM headers/components and downstream recursive dependencies remain normal-graph qualification boundaries.",
+    "soong_zip and zip2zip are retained under the whole selected build/soong project; this review did not independently rebuild or prove their variants.",
+    "This report does not certify the currently unmaterialized tools cone in shared AOSP or any post-r8 full build."
+  ],
+  "evidence_files": [
+    "native-renderscript-review/fixed-provider-observation.json",
+    "native-renderscript-review/direct-inputs-observation.json",
+    "native-renderscript-review/source-proofs.json",
+    "native-renderscript-review/owner-original-inventory.json",
+    "native-renderscript-review/remaining-originals-observation.json",
+    "native-renderscript-review/added-direct-libraries.json",
+    "native-renderscript-review/job-terminals.json"
+  ]
+}

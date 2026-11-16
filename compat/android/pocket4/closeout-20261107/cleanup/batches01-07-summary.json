@@ -1,0 +1,207 @@
+{
+  "schema": "pocket4-android-cleanup-verified-completed-batches-v1",
+  "host_alias": "pocket4",
+  "scope": "Authorized removal of retired Android experiment artifacts; source and original diagnostic evidence preserved in one audit root.",
+  "batches": [
+    {
+      "batch": "batch01",
+      "purpose": "abandoned staging tree",
+      "job_id": "1a1b3648e18-fc05-829c",
+      "status": "DELETED",
+      "completed_unix_ns_decimal": "1794011077864865013",
+      "completed_utc": "2026-11-07T00:24:37Z",
+      "whole_roots_deleted": 1,
+      "regular_files_deleted": 9,
+      "directories_deleted": 6,
+      "symlinks_deleted": 0,
+      "special_nodes_deleted": 0,
+      "allocated_bytes_removed": 1073885184,
+      "raw_receipt": {
+        "file": "batch01-stage/receipt.json",
+        "bytes": 750,
+        "sha256": "3ee8f9fe6b80a929c774f338063750d808a1b0f3d42a28172c53f15f9bca4ac0"
+      },
+      "observed_filesystem_net_free_delta_bytes": 1073618944,
+      "delete_manifest_sha256": "d1013f8f1117f17f9154239dc5f7a7d23e5dcbbffe78622bd80ddd8eb4856be0"
+    },
+    {
+      "batch": "batch02",
+      "purpose": "obsolete generated audio build intermediates",
+      "job_id": "1a1b3746a61-fc05-82fd",
+      "status": "DELETED_VERIFIED",
+      "completed_unix_ns_decimal": "1794012167340727602",
+      "completed_utc": "2026-11-07T00:42:47Z",
+      "whole_roots_deleted": 0,
+      "regular_files_deleted": 18695,
+      "directories_deleted": 0,
+      "symlinks_deleted": 0,
+      "special_nodes_deleted": 0,
+      "allocated_bytes_removed": 24243638272,
+      "raw_receipt": {
+        "file": "batch02-audio-cleanup/receipt.json",
+        "bytes": 3282,
+        "sha256": "d70730163176bc439218f2a431e4b1a440576beeaa65078274d2fdfa9e574f10"
+      },
+      "observed_filesystem_net_free_delta_bytes": 24186818560,
+      "delete_manifest_sha256": "21b4f487a41822b8dbf02316ff1c2b7281305244b29192db47d5626586603e8f",
+      "later_closed_holds": {
+        "original_hold_count": 3,
+        "closed_in_batch": "batch04",
+        "evidence": "All three object bytes match ordinary, non-thin archive members; retained archives unchanged."
+      }
+    },
+    {
+      "batch": "batch03",
+      "purpose": "retired experiment source/text roots",
+      "job_id": "1a1b38dc8c1-fc05-8399",
+      "status": "DELETED_VERIFIED",
+      "completed_unix_ns_decimal": "1794013826064783857",
+      "completed_utc": "2026-11-07T01:10:26Z",
+      "whole_roots_deleted": 314,
+      "regular_files_deleted": 1543,
+      "directories_deleted": 433,
+      "symlinks_deleted": 0,
+      "special_nodes_deleted": 0,
+      "allocated_bytes_removed": 44728320,
+      "raw_receipt": {
+        "file": "opt_receipt.raw.json",
+        "bytes": 92155,
+        "sha256": "f039551746919a62d2abe63051dbaac7010a28d9615971486f5044a8b1e05138"
+      },
+      "observed_filesystem_net_free_delta_including_archive_bytes": 35090432,
+      "observed_filesystem_net_free_delta_during_unlink_bytes": 44675072,
+      "preserved_original_source_and_evidence_archive": {
+        "sha256": "7bec9c59baf5dd0fc8beac1434d71308b97b086eed8bf3597cbea36630173b38",
+        "logical_bytes": 8686642,
+        "allocated_bytes": 8687616,
+        "members_readback_verified": 1976
+      }
+    },
+    {
+      "batch": "batch04",
+      "purpose": "three objects duplicated byte for byte inside retained ordinary archives",
+      "job_id": "1a1b3aa24cb-fc05-8433",
+      "status": "DELETED_VERIFIED",
+      "completed_unix_ns_decimal": "1794015636004393830",
+      "completed_utc": "2026-11-07T01:40:36Z",
+      "whole_roots_deleted": 0,
+      "regular_files_deleted": 3,
+      "directories_deleted": 0,
+      "symlinks_deleted": 0,
+      "special_nodes_deleted": 0,
+      "allocated_bytes_removed": 1376256,
+      "raw_receipt": {
+        "file": "batch04-receipt.raw.json",
+        "bytes": 1334,
+        "sha256": "f31500b680466718dba94bf79d2fc0b9c7400bbbe20ef9eefc45d49e51f1ce83"
+      },
+      "observed_filesystem_net_free_delta_bytes": 1376256
+    },
+    {
+      "batch": "batch05",
+      "purpose": "retired experiment tools and binaries",
+      "job_id": "1a1b3b54ed2-fc05-8465",
+      "status": "DELETED_VERIFIED",
+      "completed_unix_ns_decimal": "1794016411249076799",
+      "completed_utc": "2026-11-07T01:53:31Z",
+      "whole_roots_deleted": 46,
+      "regular_files_deleted": 705,
+      "directories_deleted": 133,
+      "symlinks_deleted": 0,
+      "special_nodes_deleted": 0,
+      "allocated_bytes_removed": 378142720,
+      "raw_receipt": {
+        "file": "batch05-receipt.raw.json",
+        "bytes": 15431,
+        "sha256": "fd944cc81b50ae6ab598cad307e6c8086a913cd72bd0ad2eae4d52cfeeb20b31"
+      },
+      "observed_filesystem_net_free_delta_including_archive_bytes": 374374400,
+      "observed_filesystem_net_free_delta_during_unlink_bytes": 377958400,
+      "preserved_original_source_and_evidence_archive": {
+        "sha256": "f531029eb6e88f10ad2889ea3f4675a5cd173a57968cf3c174fa066588d8ade8",
+        "logical_bytes": 3279694,
+        "allocated_bytes": 3280896,
+        "members_readback_verified": 669
+      }
+    },
+    {
+      "batch": "batch06",
+      "purpose": "retired OS image and QA package payloads",
+      "job_id": "1a1b3bb5ca1-fc05-8482",
+      "status": "DELETED_VERIFIED",
+      "completed_unix_ns_decimal": "1794016931288143656",
+      "completed_utc": "2026-11-07T02:02:11Z",
+      "whole_roots_deleted": 56,
+      "regular_files_deleted": 3019,
+      "directories_deleted": 2099,
+      "symlinks_deleted": 0,
+      "special_nodes_deleted": 0,
+      "allocated_bytes_removed": 51210334208,
+      "raw_receipt": {
+        "file": "batch06-receipt.raw.json",
+        "bytes": 18666,
+        "sha256": "3e98c74614aec3c8882f4636232b3730ab66c91680ff74cb9ad67976f466d1f0"
+      },
+      "observed_filesystem_net_free_delta_including_archive_bytes": 50417369088,
+      "observed_filesystem_net_free_delta_during_unlink_bytes": 51205459968,
+      "preserved_original_source_and_evidence_archive": {
+        "sha256": "b61f3bf174d412168ce0deea1f2e283e3e58813b60d38894a077acb04c2eae07",
+        "logical_bytes": 3847374,
+        "allocated_bytes": 3850240,
+        "members_readback_verified": 2986
+      }
+    },
+    {
+      "batch": "batch07",
+      "purpose": "retired chroot fixtures, JDK and compiler outputs",
+      "job_id": "1a1b3c39c68-fc05-84a3",
+      "status": "DELETED_VERIFIED",
+      "completed_unix_ns_decimal": "1794017375505754239",
+      "completed_utc": "2026-11-07T02:09:35Z",
+      "whole_roots_deleted": 39,
+      "regular_files_deleted": 1167,
+      "directories_deleted": 524,
+      "symlinks_deleted": 205,
+      "special_nodes_deleted": 23,
+      "allocated_bytes_removed": 3388985344,
+      "raw_receipt": {
+        "file": "batch07-receipt.raw.json",
+        "bytes": 14878,
+        "sha256": "546e5de04e57673dd7a4e8ac64943ae05bab145af64e390c0c0ffc3b1977dca2"
+      },
+      "observed_filesystem_net_free_delta_including_archive_bytes": 2586374144,
+      "observed_filesystem_net_free_delta_during_unlink_bytes": 3386019840,
+      "preserved_original_source_and_evidence_archive": {
+        "sha256": "d6020103ffd42ed88faa1eb82df247f34b3a12b56f613e95553352191fe16d7f",
+        "logical_bytes": 52326737,
+        "allocated_bytes": 52334592,
+        "members_readback_verified": 1220
+      }
+    }
+  ],
+  "totals": {
+    "whole_roots_deleted": 456,
+    "regular_files_deleted": 25141,
+    "directories_deleted": 3195,
+    "symlinks_deleted": 205,
+    "special_nodes_deleted": 23,
+    "allocated_bytes_removed": 80341090304
+  },
+  "original_evidence_archive_allocated_bytes_for_batches_03_05_06_07": 68153344,
+  "verification": [
+    "Raw receipt bytes were retained, SHA256 checked, and parsed with Python integers; nanosecond timestamps are decimal strings in this publish summary.",
+    "Every whole-root receipt was independently recomputed from its per-root records; deleted roots were unique and the receipt reports all absent.",
+    "Original source/text/binary diagnostic archives were read back member by member and checked against recorded size and SHA256 before unlink.",
+    "Live proc exe/cwd/root/maps/fd/inodes, mount namespaces, loop backing files, persistent entries and current candidate references were checked before retirement.",
+    "No installed Android package or commercial app data was changed by these host cleanup batches."
+  ],
+  "limitations_and_pending": [
+    "Allocated bytes removed are summed verified inode block counts, not a claim about continuously observed total free space.",
+    "Each filesystem free-space delta has its own observation window and includes concurrent build/runtime writes; those deltas must not be summed as one cumulative disk free increase.",
+    "The current 18 protected opt dependency roots and all active native/NDK/Status/R7 source and deployment cohorts remain protected.",
+    "Fourteen retired sparse framework state roots, one old CTS download cache and one old WeChat installer copy remained pending at this summary cut.",
+    "Legacy QA entrypoints and installed old helper r1 remain pending new Main/R7 validation and coordinated retirement.",
+    "Runtime readiness and native functional acceptance are separate from this cleanup receipt; this summary does not claim those blockers closed."
+  ],
+  "superseded_local_derivative": "opt_receipt.json is an earlier JSON reserialization with a rounded nanosecond timestamp. opt_receipt.raw.json is the original authoritative byte-for-byte receipt."
+}

@@ -1,0 +1,76 @@
+{
+  "all_indexed_members_verified": 83,
+  "android_commands_executed": 0,
+  "android_ui_invocations": 0,
+  "framework_created_task_authority_qualified": false,
+  "fully_read_method_excerpts": [
+    {
+      "bytes": 1050,
+      "path": "/workspace/scratch/2840a678aeda/native601_closeout/qpr1-stock-dex/method-excerpts/ActivityManagerShellCommand--runStackList--3.part01.smali",
+      "sha256": "18a8e42d29256a536f1b8a059503d103d3347d9d1e1c3a4399dc9d634e201489"
+    },
+    {
+      "bytes": 6358,
+      "path": "/workspace/scratch/2840a678aeda/native601_closeout/qpr1-stock-dex/method-excerpts/ActivityTaskManager_RootTaskInfo--toString--1.part01.smali",
+      "sha256": "93f736acf2644db1336ea3a16bb7aecaf7cd6744bee94521c5562b61d4701ad6"
+    },
+    {
+      "bytes": 1404,
+      "path": "/workspace/scratch/2840a678aeda/native601_closeout/qpr1-stock-dex/method-excerpts/WaitResult--init--2.part01.smali",
+      "sha256": "4a11fc1a0d9162acbc6b7e3532c501676be90d2df721cbdeb2bacf58028b7e09"
+    },
+    {
+      "bytes": 1068,
+      "path": "/workspace/scratch/2840a678aeda/native601_closeout/qpr1-stock-dex/method-excerpts/WaitResult--writeToParcel--4.part01.smali",
+      "sha256": "a5f854895a3d9bdacaaacc8fb6425874bcf017a65067f599e3b399b7d43c4655"
+    },
+    {
+      "bytes": 834,
+      "path": "/workspace/scratch/2840a678aeda/native601_closeout/qpr1-stock-dex/method-excerpts/ActivityTaskManagerService--removeTask--3.part01.smali",
+      "sha256": "e269a3ba89a688cffe360b01b25d573c80cc1fa99da4405099a8c3177eaf504a"
+    },
+    {
+      "bytes": 3112,
+      "path": "/workspace/scratch/2840a678aeda/native601_closeout/qpr1-stock-dex/method-excerpts/ActivityTaskManagerService--removeTask--4.part01.smali",
+      "sha256": "9eeefccba6edd87c8507c4f1cf98ef0b155b7eb7f3bb60181ff1a6a84986bc1f"
+    },
+    {
+      "bytes": 1344,
+      "path": "/workspace/scratch/2840a678aeda/native601_closeout/qpr1-stock-dex/method-excerpts/ActivityTaskManagerService--removeTask--5.part01.smali",
+      "sha256": "fddabc41d6b6f59be7cc231cdb5d5af0550ab259356957c7f55366ee3364de3e"
+    }
+  ],
+  "incremental": "16176746",
+  "index": {
+    "bytes": 1970,
+    "path": "/workspace/scratch/2840a678aeda/native601_closeout/qpr1-stock-dex/INDEX.json",
+    "sha256": "4767e9083da80c561e96ac21884ad10096bab9b29aec89ccccd59dca4b82702e"
+  },
+  "inference": "The existing separate launch/snapshot/numeric-ID removal protocol does not carry an atomic proof that this request created and still owns the task. The new Settings path should remain blocked pending a real framework-bound authority.",
+  "manifest": {
+    "bytes": 15282,
+    "path": "/workspace/scratch/2840a678aeda/native601_closeout/qpr1-stock-dex/FILES.json",
+    "sha256": "2b2f57bcddfbaa12ba30c2b18da1a9aefd4b8eec2e99eeb646fab2638c9fef56"
+  },
+  "observations": [
+    "runStackList calls getAllRootTaskInfos and prints each RootTaskInfo.",
+    "The complete RootTaskInfo.toString emits numeric IDs, bounds, display/user/configuration, child task names, visibility and top activity; it does not emit baseIntent or identifier.",
+    "WaitResult parcel writer and reader carry result, timeout, ComponentName, totalTime and launchState without a task ID.",
+    "removeTask(int) checks REMOVE_TASKS and executes under the framework lock, but it accepts only a numeric ID, not an expected nonce/identifier. Its next overload finds a current task for that ID and removes it."
+  ],
+  "observed_utc": "2026-11-09T18:43:02.469936+00:00",
+  "production_ready": false,
+  "report": {
+    "bytes": 10868,
+    "path": "/workspace/scratch/2840a678aeda/native601_closeout/qpr1-stock-dex/SELECTED-STOCK-BINARY-REVIEW.md",
+    "sha256": "e33dbc61801d5fb921069b02bb08457ee1e616b298e77d21a0794d6f21319048"
+  },
+  "runtime_qualified": false,
+  "schema": "settings-selected-stock-static-evidence-crosscheck-v1",
+  "scope": "Independent hash verification and full reading of selected frozen method excerpts; not an independent extraction or disassembly rerun.",
+  "selected_build": "CP3A.260905.010",
+  "selected_system_image_sha256": "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4",
+  "source_or_installed_files_modified": false,
+  "tests_executed": 0,
+  "version_boundary": "The separately pinned AOSP 1cdfff555f4a21f71ccc978290e2e212e2f8b168 source is a 2025 semantic counterexample, not authenticated CP3A source. This crosscheck uses selected binary-derived evidence without authenticating the complete CP3A source manifest."
+}

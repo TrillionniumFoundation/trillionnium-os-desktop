@@ -1,0 +1,310 @@
+{
+  "base_after": {
+    "head": "fb55abd62b661b4c028f5a8fdf213f29b4f1ad8b",
+    "status": ""
+  },
+  "base_commit": "fb55abd62b661b4c028f5a8fdf213f29b4f1ad8b",
+  "binaries": {
+    "droidloom-source": {
+      "bytes": 20410848,
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/target/debug/droidloom-source",
+      "sha256": "66bb3e75c698f2f852b904170afacb7ded3282dafdd0ff1414644e1ec0a3ac41"
+    },
+    "droidloom-update": {
+      "bytes": 35550808,
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/target/debug/droidloom-update",
+      "sha256": "312a08fa34968769cee84af6b3958ac532f3fc7c0a4f1795cfc72a944ac2ae53"
+    }
+  },
+  "candidate_clean": true,
+  "commands": [
+    {
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--locked",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-update",
+        "native_generation_pair_build::tests",
+        "--",
+        "--test-threads=1"
+      ],
+      "child_reaped": true,
+      "finished_ns": 1794213035752545484,
+      "phase": "normal-native-pair-tests",
+      "pid": 2574979,
+      "process_group_retired": true,
+      "returncode": 0,
+      "started_ns": 1794213007673573166,
+      "stderr": {
+        "bytes": 3251,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/qualification-r2/normal-native-pair-tests.stderr",
+        "sha256": "78a393d497882235d6e4e0e0c87e37a05e01616722b1106f149feba6d1a21ad2"
+      },
+      "stdout": {
+        "bytes": 2114,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/qualification-r2/normal-native-pair-tests.stdout",
+        "sha256": "f7b462a7380a163d988107bca81408d817d2985a85ab34c3572d343f76cba199"
+      },
+      "timeout_or_interruption": false
+    },
+    {
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-source",
+        "--lib",
+        "--",
+        "--test-threads=1"
+      ],
+      "child_reaped": true,
+      "finished_ns": 1794213037869579345,
+      "phase": "normal-source-tests",
+      "pid": 2579068,
+      "process_group_retired": true,
+      "returncode": 0,
+      "started_ns": 1794213035752669620,
+      "stderr": {
+        "bytes": 509,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/qualification-r2/normal-source-tests.stderr",
+        "sha256": "9edfdd24ebd4809370bec5b8df85634d9615e5e0b7d7db80d71f9de9b5c7cdba"
+      },
+      "stdout": {
+        "bytes": 2230,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/qualification-r2/normal-source-tests.stdout",
+        "sha256": "7f8dd3ea4ee996cefc5a6941e47d208044ebee4673976903700c0cdd58fbed20"
+      },
+      "timeout_or_interruption": false
+    },
+    {
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-update",
+        "-p",
+        "droidloom-source"
+      ],
+      "child_reaped": true,
+      "finished_ns": 1794213038184365718,
+      "phase": "normal-tools-build",
+      "pid": 2579687,
+      "process_group_retired": true,
+      "returncode": 0,
+      "started_ns": 1794213037869730070,
+      "stderr": {
+        "bytes": 237,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/qualification-r2/normal-tools-build.stderr",
+        "sha256": "3b642ae1939cb7625030ea2917d6be45f77327a69cafef25ad02ffc82e89e565"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/qualification-r2/normal-tools-build.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timeout_or_interruption": false
+    },
+    {
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/target/debug/droidloom-source",
+        "--help"
+      ],
+      "child_reaped": true,
+      "finished_ns": 1794213038188315267,
+      "phase": "droidloom-source-help",
+      "pid": 2579773,
+      "process_group_retired": true,
+      "returncode": 0,
+      "started_ns": 1794213038184591950,
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/qualification-r2/droidloom-source-help.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 699,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/qualification-r2/droidloom-source-help.stdout",
+        "sha256": "b10e5dd4d4db8d30fd6e8529a849b8be9ced9c9ad8cb9d3da0fb95880f993ab5"
+      },
+      "timeout_or_interruption": false
+    },
+    {
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/target/debug/droidloom-update",
+        "--help"
+      ],
+      "child_reaped": true,
+      "finished_ns": 1794213038191773005,
+      "phase": "droidloom-update-help",
+      "pid": 2579774,
+      "process_group_retired": true,
+      "returncode": 0,
+      "started_ns": 1794213038188377425,
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/qualification-r2/droidloom-update-help.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 2175,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/qualification-r2/droidloom-update-help.stdout",
+        "sha256": "1fc783526d4711bef1c3557944bf516875175310c82ff7606784187fd2e624b9"
+      },
+      "timeout_or_interruption": false
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "diff",
+        "--check"
+      ],
+      "child_reaped": true,
+      "finished_ns": 1794213038263509805,
+      "phase": "git-diff-check",
+      "pid": 2579775,
+      "process_group_retired": true,
+      "returncode": 0,
+      "started_ns": 1794213038231058668,
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/qualification-r2/git-diff-check.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/qualification-r2/git-diff-check.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timeout_or_interruption": false
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--",
+        "android/native-generation-pair/source-lock.json",
+        "tools/droidloom-update/src/native_generation_pair_build.rs"
+      ],
+      "child_reaped": true,
+      "finished_ns": 1794213038308944750,
+      "phase": "git-add",
+      "pid": 2579777,
+      "process_group_retired": true,
+      "returncode": 0,
+      "started_ns": 1794213038277275066,
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/qualification-r2/git-add.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/qualification-r2/git-add.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timeout_or_interruption": false
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "-c",
+        "user.name=Codex",
+        "-c",
+        "user.email=codex@openai.com",
+        "commit",
+        "-m",
+        "fix(android): retain original Tradefed test provider sources"
+      ],
+      "child_reaped": true,
+      "finished_ns": 1794213038316471493,
+      "phase": "git-commit",
+      "pid": 2579778,
+      "process_group_retired": true,
+      "returncode": 0,
+      "started_ns": 1794213038308992749,
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/qualification-r2/git-commit.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 137,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/qualification-r2/git-commit.stdout",
+        "sha256": "fc1d88f5a196432ad52393f204ceb9e68d3fdf2128eb6e345f9540f98adb0784"
+      },
+      "timeout_or_interruption": false
+    }
+  ],
+  "commit": "ff910cc50d842b5308b860340295bda44c28cf5a",
+  "errors": [],
+  "finished_ns": 1794213038322646953,
+  "full_aosp_builds_started": 0,
+  "previous_failure": {
+    "bytes": 2962,
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/QUALIFICATION.json",
+    "sha256": "39d05dee4d5bf8794750796b01b7e41930a2243cdf97f6f846b34e92490e50b8"
+  },
+  "profile": "dev",
+  "resources_after": {
+    "affinity": [
+      10,
+      11
+    ],
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1bf6dcd4e-5e21-511.service",
+    "cgroup.procs": "2574970\n2574972",
+    "cpu.max": "200000 100000",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "4294967296",
+    "memory.peak": "822362112",
+    "memory.swap.current": "0"
+  },
+  "resources_before": {
+    "affinity": [
+      10,
+      11
+    ],
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1bf6dcd4e-5e21-511.service",
+    "cgroup.procs": "2574970\n2574972",
+    "cpu.max": "200000 100000",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "4294967296",
+    "memory.peak": "18407424",
+    "memory.swap.current": "0"
+  },
+  "runtime_qualified": false,
+  "schema": "native-tradefed-helper-normal-qualification-r2-v1",
+  "setup": {
+    "bytes": 11862,
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/SETUP.json",
+    "sha256": "b3bfbb9371da5abe38d5f9d6e3ce79c3962ce1205a0e9766d9e46b7e6f4252e0"
+  },
+  "shared_aosp_mutated": false,
+  "source_files": {
+    "android/native-generation-pair/source-lock.json": {
+      "bytes": 354415,
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/source/android/native-generation-pair/source-lock.json",
+      "sha256": "02fd330466357ecf744d85f27d23b03fabde46f31fae3ef69a5f6634e66e8837"
+    },
+    "tools/droidloom-update/src/native_generation_pair_build.rs": {
+      "bytes": 423930,
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/source/tools/droidloom-update/src/native_generation_pair_build.rs",
+      "sha256": "52d7dabf9b34b9625f92fc7ecdf36cdc3dd575690a8990f778712995c4067cab"
+    }
+  },
+  "source_reconcile_invocations": 0,
+  "started_ns": 1794213007669625107,
+  "state": "NORMAL_RUST193_TESTS_AND_DEV_TOOLS_QUALIFIED_SOURCE600_RECONCILE_PENDING",
+  "temporary_directory": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-tradefed-helper-be1746a-r1/tmp-r2",
+  "tree": "95b5934af46dc560be0559d0b5b9edccc6133867"
+}

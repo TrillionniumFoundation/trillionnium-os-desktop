@@ -1,0 +1,869 @@
+diff --git a/runtime/droidloom-supervisor/src/development.rs b/runtime/droidloom-supervisor/src/development.rs
+index c3b1608..358be09 100644
+--- a/runtime/droidloom-supervisor/src/development.rs
++++ b/runtime/droidloom-supervisor/src/development.rs
+@@ -4,6 +4,8 @@
+ //! seccomp policy. It still creates private mount, PID, cgroup, IPC and UTS
+ //! namespaces. A bounded veth/NAT path gives the private Android network
+ //! namespace outbound connectivity without exposing host network control.
++//! The Rust owner relays normal TERM through an exact init pidfd. Both exec
++//! layers use parent-death KILL; util-linux is not assumed to forward signals.
+ 
+ #![deny(unsafe_op_in_unsafe_fn)]
+ 
+@@ -28,6 +30,15 @@ use crate::{AndroidFileOverride, AndroidImageLayout, CellSpec, SpecError};
+ #[path = "development_overrides.rs"]
+ mod android_overrides;
+ 
++#[path = "development_process.rs"]
++mod owned_process;
++use owned_process::OwnedNamespaceChild;
++
++const DEVELOPMENT_UNSHARE_ARGUMENTS: &[&str] = &[
++    "--mount", "--pid", "--mount-proc", "--ipc", "--uts", "--cgroup",
++    "--fork", "--kill-child=KILL", "--propagation=private",
++];
++
+ const EROFS_MAGIC_OFFSET: u64 = 1024;
+ const EROFS_MAGIC: [u8; 4] = 0xe0f5_e1e2_u32.to_le_bytes();
+ const EXT4_MAGIC_OFFSET: u64 = 1024 + 56;
+@@ -302,6 +313,7 @@ pub fn run_development_cell(spec_path: &Path, spec: &CellSpec) -> Result<(), Dev
+ pub struct DevelopmentCell {
+     spec: CellSpec,
+     child: Child,
++    namespace_child: Option<OwnedNamespaceChild>,
+     network: Option<DevelopmentNetwork>,
+     cleaned: bool,
+ }
+@@ -316,6 +328,7 @@ impl DevelopmentCell {
+         Self {
+             spec,
+             child,
++            namespace_child: None,
+             network: None,
+             cleaned: true,
+         }
+@@ -326,9 +339,10 @@ impl DevelopmentCell {
+         self.child.id()
+     }
+ 
+-    /// Return the child exit status without blocking.
++    /// Poll the directly owned namespace process.
+     ///
+-    /// Cleanup happens immediately once the child is observed to have exited.
++    /// Once it is reaped, verify init exit before cleaning host resources; an
++    /// abnormal owner exit may require a bounded two-second inner retirement.
+     ///
+     /// # Errors
+     ///
+@@ -339,7 +353,7 @@ impl DevelopmentCell {
+             .try_wait()
+             .map_err(|source| io_error("poll Android namespace process", source))?;
+         if status.is_some() {
+-            self.cleanup()?;
++            self.finish_cleanup()?;
+         }
+         Ok(status)
+     }
+@@ -354,12 +368,12 @@ impl DevelopmentCell {
+             .child
+             .wait()
+             .map_err(|source| io_error("wait for Android namespace process", source))?;
+-        self.cleanup()?;
++        self.finish_cleanup()?;
+         Ok(status)
+     }
+ 
+-    /// Terminate the exact namespace owner, wait for its child-kill contract,
+-    /// and release all host resources.
++    /// Send TERM through the bound init pidfd, reap the owned namespace process,
++    /// verify init exit, and only then release host resources.
+     ///
+     /// # Errors
+     ///
+@@ -371,7 +385,13 @@ impl DevelopmentCell {
+             .map_err(|source| io_error("poll Android namespace process before stopping", source))?
+             .is_none()
+         {
+-            signal_process(self.child.id(), libc::SIGTERM)?;
++            if let Some(init) = &self.namespace_child {
++                init.signal(libc::SIGTERM)
++                    .map_err(|source| io_error("signal bound Android init", source))?;
++            } else {
++                // Ordinary-child fixtures have no namespace init.
++                signal_process(self.child.id(), libc::SIGTERM)?;
++            }
+             let deadline = Instant::now() + Duration::from_secs(10);
+             while Instant::now() < deadline {
+                 if self
+@@ -380,14 +400,14 @@ impl DevelopmentCell {
+                     .map_err(|source| io_error("wait for Android shutdown", source))?
+                     .is_some()
+                 {
+-                    return self.cleanup();
++                    return self.finish_cleanup();
+                 }
+                 thread::sleep(Duration::from_millis(50));
+             }
+ 
+-            // `unshare --kill-child=TERM` forwards normal shutdown to
+-            // the exact namespace child. The bounded fallback still kills
+-            // only this owned outer process.
++            // util-linux 2.41 does not forward TERM. Normal delivery above
++            // uses the held init pidfd; KILL of this exact owned outer process
++            // activates --kill-child=KILL if graceful shutdown timed out.
+             self.child
+                 .kill()
+                 .map_err(|source| io_error("kill unresponsive Android namespace owner", source))?;
+@@ -395,6 +415,14 @@ impl DevelopmentCell {
+                 .wait()
+                 .map_err(|source| io_error("reap Android namespace owner", source))?;
+         }
++        self.finish_cleanup()
++    }
++
++    fn finish_cleanup(&mut self) -> Result<(), DevelopmentError> {
++        if let Some(init) = &self.namespace_child {
++            init.retire_after_owner_reaped()
++                .map_err(|source| io_error("retire bound Android init after owner reap", source))?;
++        }
+         self.cleanup()
+     }
+ 
+@@ -456,12 +484,29 @@ pub fn start_development_cell(
+     let child_result =
+         development_namespace_command(network.namespace(), spec_path, entry_executable).spawn();
+     match child_result {
+-        Ok(child) => Ok(DevelopmentCell {
+-            spec: spec.clone(),
+-            child,
+-            network: Some(network),
+-            cleaned: false,
+-        }),
++        Ok(mut child) => {
++            let init = match OwnedNamespaceChild::capture(&mut child, Duration::from_secs(5)) {
++                Ok(init) => init,
++                Err(source) => {
++                    // Never infer inner retirement from an unbound PID. Stop
++                    // and reap only our known outer child. Retain deterministic
++                    // host residue for explicit recovery after physical checks.
++                    let kill = child.kill();
++                    let reap = child.wait();
++                    return Err(io_error(
++                        &format!("bind namespace init failed; owned outer kill={kill:?}, reap={reap:?}; host residue retained for recovery"),
++                        source,
++                    ));
++                }
++            };
++            Ok(DevelopmentCell {
++                spec: spec.clone(),
++                child,
++                namespace_child: Some(init),
++                network: Some(network),
++                cleaned: false,
++            })
++        },
+         Err(source) => {
+             let network_result = network.teardown();
+             let runtime_result = cleanup_runtime_directory(spec);
+@@ -480,17 +525,8 @@ fn development_namespace_command(
+     let mut command = droidloom_cpu_placement::command("ip");
+     command
+         .args(["netns", "exec", namespace, "unshare"])
++        .args(DEVELOPMENT_UNSHARE_ARGUMENTS)
+         .args([
+-            OsStr::new("--mount"),
+-            OsStr::new("--pid"),
+-            // Host setup helpers must see this PID namespace through /proc.
+-            OsStr::new("--mount-proc"),
+-            OsStr::new("--ipc"),
+-            OsStr::new("--uts"),
+-            OsStr::new("--fork"),
+-            OsStr::new("--kill-child=TERM"),
+-            OsStr::new("--forward-signals"),
+-            OsStr::new("--propagation=private"),
+             entry_executable.as_os_str(),
+             OsStr::new("development-enter"),
+             OsStr::new("--spec"),
+@@ -502,11 +538,12 @@ fn development_namespace_command(
+ 
+ fn arm_development_parent_death(command: &mut Command) {
+     let parent_pid = unsafe { libc::getpid() };
+-    // Preserve the installed production TERM contract for the outer owner.
+-    // Android init retains its separate, later parent-death protection.
++    // Unexpected daemon death must not send a signal that unshare ignores.
++    // Normal stop uses the held init pidfd; this KILL guard is armed before
++    // exec/fork and paired with unshare --kill-child=KILL for the early window.
+     unsafe {
+         command.pre_exec(move || {
+-            if libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGTERM) != 0 {
++            if libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGKILL) != 0 {
+                 return Err(io::Error::last_os_error());
+             }
+             if libc::getppid() != parent_pid {
+@@ -2468,7 +2505,7 @@ mod tests {
+     }
+ 
+     #[test]
+-    fn namespace_owner_argv_preserves_the_production_term_contract() {
++    fn namespace_owner_argv_supports_installed_unshare_and_private_cgroup() {
+         let command = development_namespace_command(
+             "droidloom-test-net",
+             Path::new("/owned-test/cell.json"),
+@@ -2479,8 +2516,8 @@ mod tests {
+         let mut expected: Vec<_> = prefix.get_args().map(OsStr::to_os_string).collect();
+         expected.extend([
+             "netns", "exec", "droidloom-test-net", "unshare",
+-            "--mount", "--pid", "--mount-proc", "--ipc", "--uts", "--fork",
+-            "--kill-child=TERM", "--forward-signals", "--propagation=private",
++            "--mount", "--pid", "--mount-proc", "--ipc", "--uts", "--cgroup", "--fork",
++            "--kill-child=KILL", "--propagation=private",
+             "/owned-test/droidloom-supervisor", "development-enter", "--spec",
+             "/owned-test/cell.json",
+         ].into_iter().map(std::ffi::OsString::from));
+@@ -2488,7 +2525,7 @@ mod tests {
+     }
+ 
+     #[test]
+-    fn namespace_owner_parent_death_arms_real_kernel_sigterm() {
++    fn namespace_owner_parent_death_arms_real_kernel_sigkill() {
+         let mut child = Command::new(std::env::current_exe().unwrap());
+         child.arg("--list");
+         arm_development_parent_death(&mut child);
+@@ -2500,7 +2537,7 @@ mod tests {
+                 if libc::prctl(libc::PR_GET_PDEATHSIG, &mut signal as *mut libc::c_int) != 0 {
+                     return Err(io::Error::last_os_error());
+                 }
+-                if signal != libc::SIGTERM {
++                if signal != libc::SIGKILL {
+                     return Err(io::Error::from_raw_os_error(libc::EINVAL));
+                 }
+                 Ok(())
+@@ -2509,7 +2546,7 @@ mod tests {
+         let output = child.output().unwrap();
+         assert!(output.status.success(), "{}", String::from_utf8_lossy(&output.stderr));
+         assert!(String::from_utf8_lossy(&output.stdout)
+-            .contains("development::tests::namespace_owner_argv_preserves_the_production_term_contract: test"));
++            .contains("development::tests::namespace_owner_argv_supports_installed_unshare_and_private_cgroup: test"));
+     }
+ 
+     #[test]
+diff --git a/runtime/droidloom-supervisor/src/development_process.rs b/runtime/droidloom-supervisor/src/development_process.rs
+new file mode 100644
+index 0000000..8b8e3b7
+--- /dev/null
++++ b/runtime/droidloom-supervisor/src/development_process.rs
+@@ -0,0 +1,206 @@
++//! Exact child handles for util-linux namespace owners that do not relay TERM.
++//!
++//! The direct owner stays an unreaped `Child` while its only PID-namespace
++//! child is bound. Signals then use the held pidfd, never a later PID lookup.
++
++use std::fs;
++use std::io;
++use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};
++use std::process::Child;
++use std::thread;
++use std::time::{Duration, Instant};
++
++#[derive(Debug, PartialEq, Eq)]
++struct Identity {
++    parent: u32,
++    start_ticks: u64,
++}
++
++fn identity(pid: u32) -> io::Result<Identity> {
++    let value = fs::read_to_string(format!("/proc/{pid}/stat"))?;
++    let (_, fields) = value
++        .rsplit_once(") ")
++        .ok_or_else(|| invalid("malformed process stat"))?;
++    let fields: Vec<_> = fields.split_ascii_whitespace().collect();
++    Ok(Identity {
++        parent: fields
++            .get(1)
++            .ok_or_else(|| invalid("missing parent PID"))?
++            .parse()
++            .map_err(|_| invalid("invalid parent PID"))?,
++        start_ticks: fields
++            .get(19)
++            .ok_or_else(|| invalid("missing process start time"))?
++            .parse()
++            .map_err(|_| invalid("invalid process start time"))?,
++    })
++}
++
++fn invalid(message: &str) -> io::Error {
++    io::Error::new(io::ErrorKind::InvalidData, message)
++}
++
++/// A signal target bound while its original namespace owner is still unreaped.
++pub(super) struct OwnedNamespaceChild {
++    fd: OwnedFd,
++    #[cfg(test)]
++    pid: u32,
++}
++
++impl OwnedNamespaceChild {
++    /// Bind the one namespace init created by this owned `unshare --fork`.
++    pub(super) fn capture(owner: &mut Child, timeout: Duration) -> io::Result<Self> {
++        let deadline = Instant::now() + timeout;
++        loop {
++            // Reaping releases a numeric PID. Do not inspect /proc after that
++            // point or claim that an init whose identity was never bound died.
++            if let Some(status) = owner.try_wait()? {
++                return Err(io::Error::other(format!(
++                    "namespace owner exited before its init identity was bound ({status}); inner retirement is unobserved"
++                )));
++            }
++            match Self::capture_once(owner.id()) {
++                Ok(Some(child)) => return Ok(child),
++                Ok(None) => {}
++                Err(error) if error.kind() == io::ErrorKind::NotFound => {}
++                Err(error) => return Err(error),
++            }
++            if Instant::now() >= deadline {
++                return Err(io::Error::new(
++                    io::ErrorKind::TimedOut,
++                    "namespace init identity was not available before the deadline",
++                ));
++            }
++            thread::sleep(Duration::from_millis(5));
++        }
++    }
++
++    fn capture_once(owner: u32) -> io::Result<Option<Self>> {
++        let children = fs::read_to_string(format!("/proc/{owner}/task/{owner}/children"))?;
++        let children: Vec<u32> = children
++            .split_ascii_whitespace()
++            .map(|value| {
++                value
++                    .parse()
++                    .map_err(|_| invalid("invalid owned child PID"))
++            })
++            .collect::<io::Result<_>>()?;
++        let pid = match children.as_slice() {
++            [] => return Ok(None),
++            [pid] => *pid,
++            _ => return Err(invalid("namespace owner has more than one child")),
++        };
++        let before = identity(pid)?;
++        if before.parent != owner {
++            return Err(invalid("namespace init parent changed before binding"));
++        }
++        let fd = open_pidfd(pid)?;
++        let namespace = fs::read_link(format!("/proc/{pid}/ns/pid"))?;
++        if namespace != fs::read_link(format!("/proc/{owner}/ns/pid_for_children"))?
++            || namespace == fs::read_link("/proc/self/ns/pid")?
++        {
++            return Err(invalid(
++                "owned child is not in the owner's new PID namespace",
++            ));
++        }
++        let status = fs::read_to_string(format!("/proc/{pid}/status"))?;
++        let ids = status
++            .lines()
++            .find_map(|line| line.strip_prefix("NSpid:"))
++            .ok_or_else(|| invalid("namespace PID identity unavailable"))?
++            .split_ascii_whitespace()
++            .map(str::parse::<u32>)
++            .collect::<Result<Vec<_>, _>>()
++            .map_err(|_| invalid("invalid namespace PID identity"))?;
++        if ids.len() < 2 || ids.last() != Some(&1) || identity(pid)? != before {
++            return Err(invalid(
++                "namespace init identity changed while opening pidfd",
++            ));
++        }
++        Ok(Some(Self {
++            fd,
++            #[cfg(test)]
++            pid,
++        }))
++    }
++
++    pub(super) fn signal(&self, signal: libc::c_int) -> io::Result<()> {
++        // SAFETY: fd is a held kernel pidfd; no siginfo pointer is supplied.
++        let result = unsafe {
++            libc::syscall(
++                libc::SYS_pidfd_send_signal,
++                self.fd.as_raw_fd(),
++                signal,
++                std::ptr::null::<libc::siginfo_t>(),
++                0,
++            )
++        };
++        if result == 0 {
++            return Ok(());
++        }
++        let error = io::Error::last_os_error();
++        if error.raw_os_error() == Some(libc::ESRCH) {
++            Ok(())
++        } else {
++            Err(error)
++        }
++    }
++
++    pub(super) fn exited(&self) -> io::Result<bool> {
++        pidfd_exited(&self.fd)
++    }
++
++    /// Call only after the separately owned `unshare` Child has been reaped.
++    /// POLLIN proves init exited; it does not claim to have reaped that init.
++    pub(super) fn retire_after_owner_reaped(&self) -> io::Result<()> {
++        if self.exited()? {
++            return Ok(());
++        }
++        // The owner can die independently. Kill only the already-bound init;
++        // the kernel then kills all remaining tasks in that PID namespace.
++        self.signal(libc::SIGKILL)?;
++        let deadline = Instant::now() + Duration::from_secs(2);
++        while Instant::now() < deadline {
++            if self.exited()? {
++                return Ok(());
++            }
++            thread::sleep(Duration::from_millis(5));
++        }
++        Err(io::Error::new(
++            io::ErrorKind::TimedOut,
++            "bound namespace init did not exit after its owner was reaped",
++        ))
++    }
++}
++
++fn open_pidfd(pid: u32) -> io::Result<OwnedFd> {
++    let pid = i32::try_from(pid).map_err(|_| invalid("PID exceeds Linux pid_t"))?;
++    // SAFETY: this syscall returns a new descriptor or -1; flags are zero.
++    let fd = unsafe { libc::syscall(libc::SYS_pidfd_open, pid, 0) };
++    if fd < 0 {
++        return Err(io::Error::last_os_error());
++    }
++    // SAFETY: the successful syscall transferred this new descriptor to us.
++    Ok(unsafe { OwnedFd::from_raw_fd(fd as libc::c_int) })
++}
++
++fn pidfd_exited(fd: &OwnedFd) -> io::Result<bool> {
++    let mut event = libc::pollfd {
++        fd: fd.as_raw_fd(),
++        events: libc::POLLIN,
++        revents: 0,
++    };
++    // SAFETY: event is one initialized, writable pollfd and timeout is zero.
++    let result = unsafe { libc::poll(&mut event, 1, 0) };
++    if result < 0 {
++        return Err(io::Error::last_os_error());
++    }
++    if event.revents & (libc::POLLERR | libc::POLLNVAL) != 0 {
++        return Err(invalid("namespace pidfd poll failed"));
++    }
++    Ok(event.revents & (libc::POLLIN | libc::POLLHUP) != 0)
++}
++
++#[cfg(test)]
++#[path = "development_process_tests.rs"]
++mod tests;
+diff --git a/runtime/droidloom-supervisor/src/development_process_tests.rs b/runtime/droidloom-supervisor/src/development_process_tests.rs
+new file mode 100644
+index 0000000..f6662dc
+--- /dev/null
++++ b/runtime/droidloom-supervisor/src/development_process_tests.rs
+@@ -0,0 +1,401 @@
++use super::super::{DEVELOPMENT_UNSHARE_ARGUMENTS, DevelopmentCell, arm_development_parent_death};
++use super::*;
++use crate::CellSpec;
++use std::os::unix::process::{CommandExt, ExitStatusExt};
++use std::path::{Path, PathBuf};
++use std::process::{Command, Stdio};
++use std::sync::atomic::{AtomicBool, Ordering};
++
++const FIXTURE: &str = "development::owned_process::tests::namespace_init_fixture";
++const LAUNCHER: &str = "development::owned_process::tests::namespace_launcher_fixture";
++const EARLY: &str = "development::owned_process::tests::namespace_preexec_fixture";
++static TERM: AtomicBool = AtomicBool::new(false);
++
++extern "C" fn term_handler(_: libc::c_int) {
++    TERM.store(true, Ordering::SeqCst);
++}
++
++fn fixture_command(name: &str, directory: &Path, mode: &str) -> Command {
++    let mut command = Command::new(std::env::current_exe().unwrap());
++    command
++        .args([
++            "--exact",
++            name,
++            "--ignored",
++            "--nocapture",
++            "--test-threads=1",
++        ])
++        .env("DROIDLOOM_NAMESPACE_TEST_DIR", directory)
++        .env("DROIDLOOM_NAMESPACE_TEST_MODE", mode)
++        .stdin(Stdio::null())
++        .stdout(Stdio::null());
++    command
++}
++
++fn namespace_command(directory: &Path, mode: &str) -> Command {
++    let mut command = Command::new("/usr/bin/unshare");
++    command
++        .args(DEVELOPMENT_UNSHARE_ARGUMENTS)
++        .arg(std::env::current_exe().unwrap())
++        .args([
++            "--exact",
++            FIXTURE,
++            "--ignored",
++            "--nocapture",
++            "--test-threads=1",
++        ])
++        .env("DROIDLOOM_NAMESPACE_TEST_DIR", directory)
++        .env("DROIDLOOM_NAMESPACE_TEST_MODE", mode)
++        .stdin(Stdio::null())
++        .stdout(Stdio::null());
++    arm_development_parent_death(&mut command);
++    command
++}
++
++struct OwnedFixture {
++    child: Child,
++    init: Option<OwnedNamespaceChild>,
++}
++
++impl Drop for OwnedFixture {
++    fn drop(&mut self) {
++        let _ = self.child.kill();
++        let _ = self.child.wait();
++        if let Some(init) = &self.init {
++            let _ = init.retire_after_owner_reaped();
++        }
++    }
++}
++
++struct TestCell(DevelopmentCell);
++impl Drop for TestCell {
++    fn drop(&mut self) {
++        let _ = self.0.stop();
++    }
++}
++
++fn unused_spec(root: &Path) -> CellSpec {
++    CellSpec {
++        host_uid: 20001,
++        subordinate_uids: crate::IdRange {
++            start: 200_000,
++            count: 100_000,
++        },
++        subordinate_gids: crate::IdRange {
++            start: 300_000,
++            count: 100_000,
++        },
++        image_dir: root.join("unused-images"),
++        image_layout: crate::AndroidImageLayout::default(),
++        gapps_dir: None,
++        vendor_image: root.join("unused-vendor.img"),
++        android_init: None,
++        android_file_overrides: Vec::new(),
++        android_runtime_directories: Vec::new(),
++        shared_storage_directories: Vec::new(),
++        data_dir: root.join("unused-data"),
++        runtime_dir: root.join("unused-runtime"),
++        render_node: "/dev/dri/renderD128".into(),
++        graphics_backend: crate::GraphicsBackend::default(),
++        denial_socket: root.join("unused-denial.sock"),
++    }
++}
++
++fn require_root() {
++    assert_eq!(
++        unsafe { libc::geteuid() },
++        0,
++        "explicit isolated root control required"
++    );
++}
++
++fn ready(path: &Path, owner: &mut Child) {
++    let deadline = Instant::now() + Duration::from_secs(5);
++    while !path.exists() {
++        assert!(
++            owner.try_wait().unwrap().is_none(),
++            "fixture exited before readiness"
++        );
++        assert!(Instant::now() < deadline, "fixture readiness timed out");
++        thread::sleep(Duration::from_millis(5));
++    }
++}
++
++fn wait_exited(fd: &OwnedFd) {
++    let deadline = Instant::now() + Duration::from_secs(3);
++    while !pidfd_exited(fd).unwrap() {
++        assert!(
++            Instant::now() < deadline,
++            "exact held process is still alive"
++        );
++        thread::sleep(Duration::from_millis(5));
++    }
++}
++
++fn descendant_pidfd(init: u32) -> OwnedFd {
++    let mut descendants = Vec::new();
++    for entry in fs::read_dir(format!("/proc/{init}/task")).unwrap() {
++        let entry = entry.unwrap();
++        let value = fs::read_to_string(entry.path().join("children")).unwrap();
++        descendants.extend(
++            value
++                .split_ascii_whitespace()
++                .map(|p| p.parse::<u32>().unwrap()),
++        );
++    }
++    descendants.sort_unstable();
++    descendants.dedup();
++    assert_eq!(
++        descendants.len(),
++        1,
++        "fixture has exactly its owned sleep descendant"
++    );
++    let pid = descendants[0];
++    let before = identity(pid).unwrap();
++    assert_eq!(before.parent, init);
++    let fd = open_pidfd(pid).unwrap();
++    assert_eq!(identity(pid).unwrap(), before);
++    fd
++}
++
++#[test]
++#[ignore = "private entry for the explicitly selected namespace controls"]
++fn namespace_init_fixture() {
++    assert_eq!(unsafe { libc::getpid() }, 1);
++    let directory = PathBuf::from(std::env::var_os("DROIDLOOM_NAMESPACE_TEST_DIR").unwrap());
++    let mode = std::env::var("DROIDLOOM_NAMESPACE_TEST_MODE").unwrap();
++    // No Android entry function is called. The real parent-death control kills
++    // the unshare parent and observes this process and its descendant exit.
++    // libtest runs this function on a new thread: PR_GET_PDEATHSIG on that
++    // thread would not observe the guard armed on init's original main task.
++    let mut action: libc::sigaction = unsafe { std::mem::zeroed() };
++    action.sa_sigaction = if mode == "term" {
++        term_handler as *const () as usize
++    } else {
++        libc::SIG_IGN
++    };
++    assert_eq!(unsafe { libc::sigemptyset(&mut action.sa_mask) }, 0);
++    assert_eq!(
++        unsafe { libc::sigaction(libc::SIGTERM, &action, std::ptr::null_mut()) },
++        0
++    );
++    let _descendant = Command::new("/usr/bin/sleep").arg("60").spawn().unwrap();
++    fs::write(
++        directory.join("ready"),
++        b"PID1;pre-Android-enter;actual-parent-death-control\n",
++    )
++    .unwrap();
++    loop {
++        if TERM.load(Ordering::SeqCst) {
++            fs::write(directory.join("term-observed"), b"TERM\n").unwrap();
++            std::process::exit(0);
++        }
++        thread::sleep(Duration::from_millis(5));
++    }
++}
++
++#[test]
++#[ignore = "private entry for the explicitly selected namespace controls"]
++fn namespace_launcher_fixture() {
++    let directory = PathBuf::from(std::env::var_os("DROIDLOOM_NAMESPACE_TEST_DIR").unwrap());
++    let child = namespace_command(&directory, "park").spawn().unwrap();
++    let mut owned = OwnedFixture { child, init: None };
++    owned.init =
++        Some(OwnedNamespaceChild::capture(&mut owned.child, Duration::from_secs(5)).unwrap());
++    ready(&directory.join("ready"), &mut owned.child);
++    fs::write(
++        directory.join("owner-pids"),
++        format!(
++            "{} {}\n",
++            owned.child.id(),
++            owned.init.as_ref().unwrap().pid
++        ),
++    )
++    .unwrap();
++    loop {
++        thread::sleep(Duration::from_secs(1));
++    }
++}
++
++#[test]
++#[ignore = "private entry for the explicitly selected namespace controls"]
++fn namespace_preexec_fixture() {
++    let directory = PathBuf::from(std::env::var_os("DROIDLOOM_NAMESPACE_TEST_DIR").unwrap());
++    let ready_file = fs::OpenOptions::new()
++        .create_new(true)
++        .write(true)
++        .open(directory.join("preexec-pid"))
++        .unwrap();
++    let fd = ready_file.as_raw_fd();
++    let mut command = namespace_command(&directory, "park");
++    // The real arm_development_parent_death hook runs first. Stop before exec
++    // using only async-signal-safe syscalls, so unshare cannot yet have forked.
++    unsafe {
++        command.pre_exec(move || {
++            let pid = libc::getpid();
++            let written = libc::write(
++                fd,
++                (&pid as *const libc::pid_t).cast(),
++                std::mem::size_of::<libc::pid_t>(),
++            );
++            if written != std::mem::size_of::<libc::pid_t>() as isize {
++                return Err(io::Error::last_os_error());
++            }
++            loop {
++                libc::pause();
++            }
++        });
++    }
++    let _unexpected = command.spawn().unwrap();
++    panic!("pre-exec fixture must not complete spawn");
++}
++
++#[test]
++#[ignore = "requires root and actual private Linux namespaces; no Android inputs"]
++fn actual_namespace_term_and_force_retire_owned_processes() {
++    require_root();
++    let namespaces = ["mnt", "pid", "cgroup", "ipc", "uts"];
++    let before: Vec<_> = namespaces
++        .iter()
++        .map(|name| fs::read_link(format!("/proc/self/ns/{name}")).unwrap())
++        .collect();
++    for mode in ["term", "force"] {
++        let directory = tempfile::tempdir().unwrap();
++        let child = namespace_command(directory.path(), mode).spawn().unwrap();
++        let mut fixture = OwnedFixture { child, init: None };
++        fixture.init =
++            Some(OwnedNamespaceChild::capture(&mut fixture.child, Duration::from_secs(5)).unwrap());
++        ready(&directory.path().join("ready"), &mut fixture.child);
++        let init = fixture.init.as_ref().unwrap();
++        let init_pid = init.pid;
++        let init_fd = open_pidfd(init_pid).unwrap();
++        let descendant = descendant_pidfd(init_pid);
++        for (name, original) in namespaces.iter().zip(&before) {
++            assert_ne!(
++                fs::read_link(format!("/proc/{init_pid}/ns/{name}")).unwrap(),
++                *original,
++                "{name} must be private"
++            );
++        }
++        let outer_pid = fixture.child.id();
++        let dummy = Command::new("/usr/bin/true").spawn().unwrap();
++        let child = std::mem::replace(&mut fixture.child, dummy);
++        let mut guard = TestCell(DevelopmentCell::owned_process_for_lifecycle_test(
++            unused_spec(directory.path()),
++            child,
++        ));
++        let cell = &mut guard.0;
++        cell.namespace_child = fixture.init.take();
++        let started = Instant::now();
++        cell.stop().unwrap();
++        let elapsed = started.elapsed();
++        let status = cell.child.wait().unwrap();
++        assert!(
++            !Path::new(&format!("/proc/{outer_pid}")).exists(),
++            "direct owner must actually be reaped"
++        );
++        wait_exited(&init_fd);
++        wait_exited(&descendant);
++        assert!(
++            fs::read_link(format!("/proc/{init_pid}/ns/pid")).is_err(),
++            "init must no longer retain namespace membership"
++        );
++        if mode == "term" {
++            assert!(status.success());
++            assert!(directory.path().join("term-observed").exists());
++            assert!(elapsed < Duration::from_secs(5));
++        } else {
++            assert_eq!(status.signal(), Some(libc::SIGKILL));
++            assert!(!directory.path().join("term-observed").exists());
++            assert!(elapsed >= Duration::from_secs(10) && elapsed < Duration::from_secs(13));
++        }
++        println!(
++            "{}",
++            serde_json::json!({"control":mode,"outer_pid":outer_pid,"outer_reaped":true,"init_pid":init_pid,"init_exited":true,"descendant_exited":true,"private_namespaces":namespaces,"seconds":elapsed.as_secs_f64(),"android_started":false})
++        );
++    }
++    for (name, original) in namespaces.iter().zip(before) {
++        assert_eq!(
++            fs::read_link(format!("/proc/self/ns/{name}")).unwrap(),
++            original
++        );
++    }
++}
++
++#[test]
++#[ignore = "requires root and actual private Linux namespaces; no Android inputs"]
++fn actual_daemon_death_after_fork_before_android_enter() {
++    require_root();
++    let directory = tempfile::tempdir().unwrap();
++    let child = fixture_command(LAUNCHER, directory.path(), "park")
++        .spawn()
++        .unwrap();
++    let mut launcher = OwnedFixture { child, init: None };
++    ready(&directory.path().join("owner-pids"), &mut launcher.child);
++    let pids: Vec<u32> = fs::read_to_string(directory.path().join("owner-pids"))
++        .unwrap()
++        .split_ascii_whitespace()
++        .map(|p| p.parse().unwrap())
++        .collect();
++    assert_eq!(pids.len(), 2);
++    assert_eq!(identity(pids[0]).unwrap().parent, launcher.child.id());
++    let owner_fd = open_pidfd(pids[0]).unwrap();
++    let init_fd = open_pidfd(pids[1]).unwrap();
++    // On a test assertion failure, the guard still kills this exact bound init
++    // after reaping our launcher; it never selects any process by name.
++    launcher.init = Some(OwnedNamespaceChild {
++        fd: open_pidfd(pids[1]).unwrap(),
++        pid: pids[1],
++    });
++    let descendant = descendant_pidfd(pids[1]);
++    launcher.child.kill().unwrap();
++    launcher.child.wait().unwrap();
++    wait_exited(&owner_fd);
++    wait_exited(&init_fd);
++    wait_exited(&descendant);
++    assert!(fs::read_link(format!("/proc/{}/ns/pid", pids[1])).is_err());
++    println!(
++        "{}",
++        serde_json::json!({"control":"daemon-death-after-fork-before-enter","launcher_reaped":true,"owner_exited":true,"init_exited":true,"descendant_exited":true,"android_started":false})
++    );
++}
++
++#[test]
++#[ignore = "requires root for the actual namespace command; no Android inputs"]
++fn actual_daemon_death_before_unshare_exec_and_fork() {
++    require_root();
++    let directory = tempfile::tempdir().unwrap();
++    let child = fixture_command(EARLY, directory.path(), "park")
++        .spawn()
++        .unwrap();
++    let mut launcher = OwnedFixture { child, init: None };
++    let path = directory.path().join("preexec-pid");
++    let deadline = Instant::now() + Duration::from_secs(5);
++    while !fs::metadata(&path).is_ok_and(|s| s.len() == 4) {
++        assert!(launcher.child.try_wait().unwrap().is_none());
++        assert!(Instant::now() < deadline);
++        thread::sleep(Duration::from_millis(5));
++    }
++    let bytes: [u8; 4] = fs::read(&path).unwrap().try_into().unwrap();
++    let pid = u32::from_ne_bytes(bytes);
++    assert_eq!(identity(pid).unwrap().parent, launcher.child.id());
++    let fd = open_pidfd(pid).unwrap();
++    assert_eq!(
++        fs::read_link(format!("/proc/{pid}/exe")).unwrap(),
++        std::env::current_exe().unwrap()
++    );
++    assert_eq!(
++        fs::read_to_string(format!("/proc/{pid}/task/{pid}/children"))
++            .unwrap()
++            .trim(),
++        ""
++    );
++    launcher.child.kill().unwrap();
++    launcher.child.wait().unwrap();
++    wait_exited(&fd);
++    assert!(!directory.path().join("ready").exists());
++    println!(
++        "{}",
++        serde_json::json!({"control":"daemon-death-before-exec-and-fork","launcher_reaped":true,"preexec_child_exited":true,"unshare_exec_observed":false,"namespace_init_created":false,"android_started":false})
++    );
++}

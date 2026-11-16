@@ -1,0 +1,1107 @@
+   Compiling droidloom-supervisor v0.1.0 (/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/source/runtime/droidloom-supervisor)
+warning: unused import: `PathBuf`
+  --> runtime/droidloom-supervisor/src/production_host_admission.rs:21:34
+   |
+21 | use std::path::{Component, Path, PathBuf};
+   |                                  ^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `receive`
+ --> runtime/droidloom-supervisor/src/production_namespace_mount_child.rs:7:58
+  |
+7 | use super::{CHILD_FD, Mode, Packet, Phase, fail, finish, receive, send};
+  |                                                          ^^^^^^^
+
+warning: constant `TMPFS_MAGIC` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:19:7
+   |
+19 | const TMPFS_MAGIC: libc::c_long = 0x0102_1994;
+   |       ^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `NSFS_MAGIC` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:20:7
+   |
+20 | const NSFS_MAGIC: libc::c_long = 0x6e73_6673;
+   |       ^^^^^^^^^^
+
+warning: constant `NS_GET_NSTYPE` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:21:7
+   |
+21 | const NS_GET_NSTYPE: libc::c_ulong = 0xb703;
+   |       ^^^^^^^^^^^^^
+
+warning: constant `NS_GET_ID` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:22:7
+   |
+22 | const NS_GET_ID: libc::c_ulong = 0x8008_b70d;
+   |       ^^^^^^^^^
+
+warning: constant `INITIAL_USERNS_INODE` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:23:7
+   |
+23 | const INITIAL_USERNS_INODE: u64 = 0xefff_fffd;
+   |       ^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `INITIAL_USERNS_ID` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:24:7
+   |
+24 | const INITIAL_USERNS_ID: u64 = 3;
+   |       ^^^^^^^^^^^^^^^^^
+
+warning: constant `AT_EMPTY_PATH` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:25:7
+   |
+25 | const AT_EMPTY_PATH: u32 = 0x1000;
+   |       ^^^^^^^^^^^^^
+
+warning: constant `STATX_MNT_ID` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:26:7
+   |
+26 | const STATX_MNT_ID: u32 = 0x1000;
+   |       ^^^^^^^^^^^^
+
+warning: constant `MOUNT_ATTR_RDONLY` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:27:7
+   |
+27 | const MOUNT_ATTR_RDONLY: u64 = 1;
+   |       ^^^^^^^^^^^^^^^^^
+
+warning: constant `MOUNT_ATTR_NOSUID` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:28:7
+   |
+28 | const MOUNT_ATTR_NOSUID: u64 = 2;
+   |       ^^^^^^^^^^^^^^^^^
+
+warning: constant `MOUNT_ATTR_NODEV` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:29:7
+   |
+29 | const MOUNT_ATTR_NODEV: u64 = 4;
+   |       ^^^^^^^^^^^^^^^^
+
+warning: constant `MOUNT_ATTR_NOEXEC` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:30:7
+   |
+30 | const MOUNT_ATTR_NOEXEC: u64 = 8;
+   |       ^^^^^^^^^^^^^^^^^
+
+warning: constant `MOUNT_ATTR_IDMAP` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:31:7
+   |
+31 | const MOUNT_ATTR_IDMAP: u64 = 0x0010_0000;
+   |       ^^^^^^^^^^^^^^^^
+
+warning: constant `PRIVATE_DEV_FLAGS` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:32:7
+   |
+32 | const PRIVATE_DEV_FLAGS: u64 = MOUNT_ATTR_NOSUID | MOUNT_ATTR_NOEXEC;
+   |       ^^^^^^^^^^^^^^^^^
+
+warning: constant `TMPFS_MAX_BYTES` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:33:7
+   |
+33 | const TMPFS_MAX_BYTES: u64 = 64 * 1024 * 1024;
+   |       ^^^^^^^^^^^^^^^
+
+warning: constant `TMPFS_MAX_INODES` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:34:7
+   |
+34 | const TMPFS_MAX_INODES: u64 = 16_384;
+   |       ^^^^^^^^^^^^^^^^
+
+warning: constant `O_SAFE` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:35:7
+   |
+35 | const O_SAFE: i32 = libc::O_CLOEXEC | libc::O_NOFOLLOW;
+   |       ^^^^^^
+
+warning: constant `PROC_LIMIT` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:36:7
+   |
+36 | const PROC_LIMIT: u64 = 65_536;
+   |       ^^^^^^^^^^
+
+warning: constant `MOUNTINFO_LIMIT` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:37:7
+   |
+37 | const MOUNTINFO_LIMIT: u64 = 16 * 1024 * 1024;
+   |       ^^^^^^^^^^^^^^^
+
+warning: enum `DeviceError` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:40:17
+   |
+40 | pub(crate) enum DeviceError {
+   |                 ^^^^^^^^^^^
+
+warning: type alias `Result` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:50:6
+   |
+50 | type Result<T> = std::result::Result<T, DeviceError>;
+   |      ^^^^^^
+
+warning: function `need` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:52:4
+   |
+52 | fn need(ok: bool, why: &'static str) -> Result<()> {
+   |    ^^^^
+
+warning: function `fd_result` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:59:4
+   |
+59 | fn fd_result(value: libc::c_long) -> Result<File> {
+   |    ^^^^^^^^^
+
+warning: function `zero` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:67:4
+   |
+67 | fn zero(value: libc::c_long) -> Result<()> {
+   |    ^^^^
+
+warning: function `bounded` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:74:4
+   |
+74 | fn bounded(mut file: File, limit: u64) -> Result<Vec<u8>> {
+   |    ^^^^^^^
+
+warning: function `open_at` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:83:4
+   |
+83 | fn open_at(parent: &File, name: &CStr, flags: i32) -> Result<File> {
+   |    ^^^^^^^
+
+warning: function `node` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:87:4
+   |
+87 | fn node(file: &File) -> Result<(u64, u64)> {
+   |    ^^^^
+
+warning: function `fs_type` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:91:4
+   |
+91 | fn fs_type(file: &File) -> Result<libc::c_long> {
+   |    ^^^^^^^
+
+warning: function `namespace` is never used
+  --> runtime/droidloom-supervisor/src/production_devices.rs:96:4
+   |
+96 | fn namespace(file: &File, kind: i32) -> Result<(u64, u64)> {
+   |    ^^^^^^^^^
+
+warning: struct `CapHeader` is never constructed
+   --> runtime/droidloom-supervisor/src/production_devices.rs:105:8
+    |
+105 | struct CapHeader {
+    |        ^^^^^^^^^
+
+warning: struct `CapData` is never constructed
+   --> runtime/droidloom-supervisor/src/production_devices.rs:111:8
+    |
+111 | struct CapData {
+    |        ^^^^^^^
+
+warning: function `require_initial_broker` is never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:117:4
+    |
+117 | fn require_initial_broker() -> Result<()> {
+    |    ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `map_is_exact` is never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:160:4
+    |
+160 | fn map_is_exact(raw: &[u8], range: IdRange) -> Result<()> {
+    |    ^^^^^^^^^^^^
+
+warning: function `require_tree` is never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:186:4
+    |
+186 | fn require_tree(witness: &OwnedNamespaceWitness<'_>) -> Result<()> {
+    |    ^^^^^^^^^^^^
+
+warning: struct `DeviceSpec` is never constructed
+   --> runtime/droidloom-supervisor/src/production_devices.rs:217:8
+    |
+217 | struct DeviceSpec {
+    |        ^^^^^^^^^^
+
+warning: constant `DEVICES` is never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:222:7
+    |
+222 | const DEVICES: [DeviceSpec; 7] = [
+    |       ^^^^^^^
+
+warning: function `spec_for` is never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:259:4
+    |
+259 | fn spec_for(name: &[u8]) -> Result<DeviceSpec> {
+    |    ^^^^^^^^
+
+warning: struct `MountAttr` is never constructed
+   --> runtime/droidloom-supervisor/src/production_devices.rs:269:8
+    |
+269 | struct MountAttr {
+    |        ^^^^^^^^^
+
+warning: function `configure` is never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:275:4
+    |
+275 | fn configure(context: &File, key: &CStr, value: Option<&CStr>) -> Result<()> {
+    |    ^^^^^^^^^
+
+warning: function `mount_id` is never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:287:4
+    |
+287 | fn mount_id(file: &File) -> Result<u64> {
+    |    ^^^^^^^^
+
+warning: function `require_detached` is never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:305:4
+    |
+305 | fn require_detached(file: &File) -> Result<u64> {
+    |    ^^^^^^^^^^^^^^^^
+
+warning: function `fresh_tmpfs` is never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:326:4
+    |
+326 | fn fresh_tmpfs() -> Result<File> {
+    |    ^^^^^^^^^^^
+
+warning: function `verify_root` is never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:366:4
+    |
+366 | fn verify_root(mount: &File, uid: u32, gid: u32) -> Result<()> {
+    |    ^^^^^^^^^^^
+
+warning: struct `Directory` is never constructed
+   --> runtime/droidloom-supervisor/src/production_devices.rs:390:8
+    |
+390 | struct Directory(*mut libc::DIR);
+    |        ^^^^^^^^^
+
+warning: function `directory_names` is never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:398:4
+    |
+398 | fn directory_names(root: &File) -> Result<Vec<Vec<u8>>> {
+    |    ^^^^^^^^^^^^^^^
+
+warning: struct `DeviceIdentity` is never constructed
+   --> runtime/droidloom-supervisor/src/production_devices.rs:440:8
+    |
+440 | struct DeviceIdentity {
+    |        ^^^^^^^^^^^^^^
+
+warning: function `identity` is never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:449:4
+    |
+449 | fn identity(m: &std::fs::Metadata) -> DeviceIdentity {
+    |    ^^^^^^^^
+
+warning: function `verify_device` is never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:460:4
+    |
+460 | fn verify_device(
+    |    ^^^^^^^^^^^^^
+
+warning: function `create_devices` is never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:479:4
+    |
+479 | fn create_devices(root: &File) -> Result<Vec<DeviceIdentity>> {
+    |    ^^^^^^^^^^^^^^
+
+warning: function `verify_devices` is never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:522:4
+    |
+522 | fn verify_devices(root: &File, uid: u32, gid: u32, identities: &[DeviceIdentity]) -> Result<()> {
+    |    ^^^^^^^^^^^^^^
+
+warning: function `idmap_mount` is never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:543:4
+    |
+543 | fn idmap_mount(root: &File, userns: &File) -> Result<()> {
+    |    ^^^^^^^^^^^
+
+warning: struct `DeviceResources` is never constructed
+   --> runtime/droidloom-supervisor/src/production_devices.rs:563:8
+    |
+563 | struct DeviceResources {
+    |        ^^^^^^^^^^^^^^^
+
+warning: methods `matches`, `verify_for_transfer`, and `close_owned_mount` are never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:579:8
+    |
+578 | impl DeviceResources {
+    | -------------------- methods in this implementation
+579 |     fn matches(&self, witness: &OwnedNamespaceWitness<'_>) -> Result<()> {
+    |        ^^^^^^^
+...
+597 |     fn verify_for_transfer(&self) -> Result<()> {
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+609 |     fn close_owned_mount(&mut self) -> Result<()> {
+    |        ^^^^^^^^^^^^^^^^^
+
+warning: struct `PreparedDevices` is never constructed
+   --> runtime/droidloom-supervisor/src/production_devices.rs:632:19
+    |
+632 | pub(crate) struct PreparedDevices {
+    |                   ^^^^^^^^^^^^^^^
+
+warning: struct `DeviceRetirement` is never constructed
+   --> runtime/droidloom-supervisor/src/production_devices.rs:638:19
+    |
+638 | pub(crate) struct DeviceRetirement {
+    |                   ^^^^^^^^^^^^^^^^
+
+warning: multiple associated items are never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:644:19
+    |
+643 | impl PreparedDevices {
+    | -------------------- associated items in this implementation
+644 |     pub(crate) fn prepare(witness: &OwnedNamespaceWitness<'_>) -> Result<Self> {
+    |                   ^^^^^^^
+...
+651 |     fn prepare_bound(witness: &OwnedNamespaceWitness<'_>) -> Result<Self> {
+    |        ^^^^^^^^^^^^^
+...
+698 |     pub(crate) fn descriptor_for_transfer<'a>(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^
+...
+706 |     fn descriptor_after_admission<'a>(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+726 |     pub(crate) fn retire_untransferred(mut self) -> Result<DeviceRetirement> {
+    |                   ^^^^^^^^^^^^^^^^^^^^
+...
+733 |     pub(crate) fn retire_after_tree(
+    |                   ^^^^^^^^^^^^^^^^^
+...
+744 |     fn cleanup(&mut self, after_owned_tree_exit: bool) -> Result<DeviceRetirement> {
+    |        ^^^^^^^
+
+warning: methods `broker_cohort`, `broker_retain_reservation`, `broker_reject_backing_body`, and `broker_verify_backing` are never used
+   --> runtime/droidloom-supervisor/src/production_identity.rs:854:19
+    |
+839 | impl IdentityLease {
+    | ------------------ methods in this implementation
+...
+854 |     pub(crate) fn broker_cohort(&self) -> &str {
+    |                   ^^^^^^^^^^^^^
+...
+864 |     pub(crate) fn broker_retain_reservation(&self) -> Result<File> {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+876 |     pub(crate) fn broker_reject_backing_body(&self, file: &File) -> Result<()> {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+896 |     pub(crate) fn broker_verify_backing(&self, data: &File, metadata: &File) -> Result<()> {
+    |                   ^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `MANIFEST_ROOT` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:25:7
+   |
+25 | const MANIFEST_ROOT: &str = "/etc/droidloom/cohorts";
+   |       ^^^^^^^^^^^^^
+
+warning: constant `IMAGE_ROOT` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:26:7
+   |
+26 | const IMAGE_ROOT: &str = "/var/lib/droidloom/cohorts";
+   |       ^^^^^^^^^^
+
+warning: constant `MAX_MANIFEST` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:27:7
+   |
+27 | const MAX_MANIFEST: u64 = 16 * 1024;
+   |       ^^^^^^^^^^^^
+
+warning: constant `MAX_IMAGE` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:28:7
+   |
+28 | const MAX_IMAGE: u64 = 8 * 1024 * 1024 * 1024;
+   |       ^^^^^^^^^
+
+warning: constant `O_SAFE` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:29:7
+   |
+29 | const O_SAFE: i32 = libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK;
+   |       ^^^^^^
+
+warning: constant `LOOP_CTL_GET_FREE` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:30:7
+   |
+30 | const LOOP_CTL_GET_FREE: libc::c_ulong = 0x4c82;
+   |       ^^^^^^^^^^^^^^^^^
+
+warning: constant `LOOP_CONFIGURE` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:31:7
+   |
+31 | const LOOP_CONFIGURE: libc::c_ulong = 0x4c0a;
+   |       ^^^^^^^^^^^^^^
+
+warning: constant `LOOP_GET_STATUS64` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:32:7
+   |
+32 | const LOOP_GET_STATUS64: libc::c_ulong = 0x4c05;
+   |       ^^^^^^^^^^^^^^^^^
+
+warning: constant `LOOP_CLR_FD` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:33:7
+   |
+33 | const LOOP_CLR_FD: libc::c_ulong = 0x4c01;
+   |       ^^^^^^^^^^^
+
+warning: constant `LO_FLAGS_READ_ONLY` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:34:7
+   |
+34 | const LO_FLAGS_READ_ONLY: u32 = 1;
+   |       ^^^^^^^^^^^^^^^^^^
+
+warning: constant `LO_FLAGS_AUTOCLEAR` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:35:7
+   |
+35 | const LO_FLAGS_AUTOCLEAR: u32 = 4;
+   |       ^^^^^^^^^^^^^^^^^^
+
+warning: constant `FSOPEN_CLOEXEC` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:36:7
+   |
+36 | const FSOPEN_CLOEXEC: u32 = 1;
+   |       ^^^^^^^^^^^^^^
+
+warning: constant `FSCONFIG_SET_FLAG` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:37:7
+   |
+37 | const FSCONFIG_SET_FLAG: u32 = 0;
+   |       ^^^^^^^^^^^^^^^^^
+
+warning: constant `FSCONFIG_SET_STRING` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:38:7
+   |
+38 | const FSCONFIG_SET_STRING: u32 = 1;
+   |       ^^^^^^^^^^^^^^^^^^^
+
+warning: constant `FSCONFIG_CMD_CREATE` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:39:7
+   |
+39 | const FSCONFIG_CMD_CREATE: u32 = 6;
+   |       ^^^^^^^^^^^^^^^^^^^
+
+warning: constant `FSMOUNT_CLOEXEC` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:40:7
+   |
+40 | const FSMOUNT_CLOEXEC: u32 = 1;
+   |       ^^^^^^^^^^^^^^^
+
+warning: constant `MOUNT_ATTR_RDONLY` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:41:7
+   |
+41 | const MOUNT_ATTR_RDONLY: u64 = 1;
+   |       ^^^^^^^^^^^^^^^^^
+
+warning: constant `MOUNT_ATTR_NOSUID` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:42:7
+   |
+42 | const MOUNT_ATTR_NOSUID: u64 = 2;
+   |       ^^^^^^^^^^^^^^^^^
+
+warning: constant `MOUNT_ATTR_NODEV` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:43:7
+   |
+43 | const MOUNT_ATTR_NODEV: u64 = 4;
+   |       ^^^^^^^^^^^^^^^^
+
+warning: constant `MOUNT_ATTR_IDMAP` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:44:7
+   |
+44 | const MOUNT_ATTR_IDMAP: u64 = 0x0010_0000;
+   |       ^^^^^^^^^^^^^^^^
+
+warning: constant `READONLY_FLAGS` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:45:7
+   |
+45 | const READONLY_FLAGS: u64 = MOUNT_ATTR_RDONLY | MOUNT_ATTR_NOSUID | MOUNT_ATTR_NODEV;
+   |       ^^^^^^^^^^^^^^
+
+warning: constant `AT_EMPTY_PATH` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:46:7
+   |
+46 | const AT_EMPTY_PATH: u32 = 0x1000;
+   |       ^^^^^^^^^^^^^
+
+warning: constant `NS_GET_NSTYPE` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:47:7
+   |
+47 | const NS_GET_NSTYPE: libc::c_ulong = 0xb703;
+   |       ^^^^^^^^^^^^^
+
+warning: constant `NSFS_MAGIC` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:48:7
+   |
+48 | const NSFS_MAGIC: libc::c_long = 0x6e73_6673;
+   |       ^^^^^^^^^^
+
+warning: enum `MountError` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:51:17
+   |
+51 | pub(crate) enum MountError {
+   |                 ^^^^^^^^^^
+
+warning: type alias `Result` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:67:6
+   |
+67 | type Result<T> = std::result::Result<T, MountError>;
+   |      ^^^^^^
+
+warning: function `require` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:69:4
+   |
+69 | fn require(ok: bool, reason: &'static str) -> Result<()> {
+   |    ^^^^^^^
+
+warning: function `syscall_fd` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:76:4
+   |
+76 | fn syscall_fd(value: libc::c_long) -> Result<File> {
+   |    ^^^^^^^^^^
+
+warning: function `zero_rc` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:84:4
+   |
+84 | fn zero_rc(value: i32) -> Result<()> {
+   |    ^^^^^^^
+
+warning: function `text_name` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:91:4
+   |
+91 | fn text_name(value: &str) -> Result<CString> {
+   |    ^^^^^^^^^
+
+warning: function `is_digest` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:94:4
+   |
+94 | fn is_digest(value: &str) -> bool {
+   |    ^^^^^^^^^
+
+warning: struct `FileIdentity` is never constructed
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:102:8
+    |
+102 | struct FileIdentity {
+    |        ^^^^^^^^^^^^
+
+warning: associated items `of` and `same_directory` are never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:114:8
+    |
+113 | impl FileIdentity {
+    | ----------------- associated items in this implementation
+114 |     fn of(m: &Metadata) -> Self {
+    |        ^^
+...
+127 |     fn same_directory(self, other: Self) -> bool {
+    |        ^^^^^^^^^^^^^^
+
+warning: function `trusted_regular` is never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:132:4
+    |
+132 | fn trusted_regular(m: &Metadata, owner: u32, maximum: u64) -> Result<()> {
+    |    ^^^^^^^^^^^^^^^
+
+warning: function `trusted_directory` is never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:143:4
+    |
+143 | fn trusted_directory(path: &Path, owner: u32) -> Result<File> {
+    |    ^^^^^^^^^^^^^^^^^
+
+warning: function `open_leaf` is never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:183:4
+    |
+183 | fn open_leaf(parent: &File, name: &CStr, flags: i32) -> Result<File> {
+    |    ^^^^^^^^^
+
+warning: struct `SealedFile` is never constructed
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:191:8
+    |
+191 | struct SealedFile {
+    |        ^^^^^^^^^^
+
+warning: associated items `open_guarded`, `revalidate`, `bounded_bytes`, and `verify_digest` are never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:201:8
+    |
+200 | impl SealedFile {
+    | --------------- associated items in this implementation
+201 |     fn open_guarded(
+    |        ^^^^^^^^^^^^
+...
+239 |     fn revalidate(&self) -> Result<()> {
+    |        ^^^^^^^^^^
+...
+257 |     fn bounded_bytes(&self, limit: u64) -> Result<Vec<u8>> {
+    |        ^^^^^^^^^^^^^
+...
+268 |     fn verify_digest(&self, expected_bytes: u64, expected_sha: &str) -> Result<()> {
+    |        ^^^^^^^^^^^^^
+
+warning: struct `ImageDeclaration` is never constructed
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:294:8
+    |
+294 | struct ImageDeclaration {
+    |        ^^^^^^^^^^^^^^^^
+
+warning: struct `CohortDeclaration` is never constructed
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:301:8
+    |
+301 | struct CohortDeclaration {
+    |        ^^^^^^^^^^^^^^^^^
+
+warning: method `validate` is never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:309:8
+    |
+308 | impl CohortDeclaration {
+    | ---------------------- method in this implementation
+309 |     fn validate(&self) -> Result<()> {
+    |        ^^^^^^^^
+
+warning: enum `Filesystem` is never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:329:6
+    |
+329 | enum Filesystem {
+    |      ^^^^^^^^^^
+
+warning: associated items `detect`, `name`, and `magic` are never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:334:8
+    |
+333 | impl Filesystem {
+    | --------------- associated items in this implementation
+334 |     fn detect(file: &File) -> Result<Self> {
+    |        ^^^^^^
+...
+348 |     fn name(self) -> &'static CStr {
+    |        ^^^^
+...
+354 |     fn magic(self) -> libc::c_long {
+    |        ^^^^^
+
+warning: struct `VerifiedCohort` is never constructed
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:364:19
+    |
+364 | pub(crate) struct VerifiedCohort {
+    |                   ^^^^^^^^^^^^^^
+
+warning: associated items `load`, `revalidate`, and `layout` are never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:374:19
+    |
+373 | impl VerifiedCohort {
+    | ------------------- associated items in this implementation
+374 |     pub(crate) fn load(witness: &OwnedNamespaceWitness<'_>) -> Result<Self> {
+    |                   ^^^^
+...
+432 |     fn revalidate(&self, witness: &OwnedNamespaceWitness<'_>) -> Result<()> {
+    |        ^^^^^^^^^^
+...
+445 |     pub(crate) fn layout(&self) -> AndroidImageLayout {
+    |                   ^^^^^^
+
+warning: function `read_proc_field` is never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:450:4
+    |
+450 | fn read_proc_field(directory: &File, name: &CStr) -> Result<Vec<u8>> {
+    |    ^^^^^^^^^^^^^^^
+
+warning: function `verify_map` is never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:457:4
+    |
+457 | fn verify_map(raw: &[u8], range: IdRange) -> Result<()> {
+    |    ^^^^^^^^^^
+
+warning: function `require_complete_namespace` is never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:483:4
+    |
+483 | fn require_complete_namespace(witness: &OwnedNamespaceWitness<'_>) -> Result<()> {
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `loop_status` is never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:543:4
+    |
+543 | fn loop_status(file: &File) -> Result<Option<LoopInfo64>> {
+    |    ^^^^^^^^^^^
+
+warning: function `owned_loop_info` is never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:557:4
+    |
+557 | fn owned_loop_info(info: &LoopInfo64, source: FileIdentity, index: u32) -> Result<()> {
+    |    ^^^^^^^^^^^^^^^
+
+warning: function `same_block_node` is never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:571:4
+    |
+571 | fn same_block_node(expected: FileIdentity, current: &Metadata, device: u64) -> bool {
+    |    ^^^^^^^^^^^^^^^
+
+warning: struct `LoopBinding` is never constructed
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:583:8
+    |
+583 | struct LoopBinding {
+    |        ^^^^^^^^^^^
+
+warning: associated items `attach`, `file`, `verify`, and `retire` are never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:591:8
+    |
+590 | impl LoopBinding {
+    | ---------------- associated items in this implementation
+591 |     fn attach(source: &SealedFile) -> Result<Self> {
+    |        ^^^^^^
+...
+671 |     fn file(&self) -> Result<&File> {
+    |        ^^^^
+...
+676 |     fn verify(&self) -> Result<()> {
+    |        ^^^^^^
+...
+686 |     fn retire(&mut self) -> Result<u64> {
+    |        ^^^^^^
+
+warning: function `configure` is never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:718:4
+    |
+718 | fn configure(context: &File, command: u32, key: &CStr, value: Option<&CStr>) -> Result<()> {
+    |    ^^^^^^^^^
+
+warning: function `fs_type` is never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:736:4
+    |
+736 | fn fs_type(file: &File) -> Result<libc::c_long> {
+    |    ^^^^^^^
+
+warning: function `mount_id` is never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:741:4
+    |
+741 | fn mount_id(file: &File) -> Result<u64> {
+    |    ^^^^^^^^
+
+warning: function `require_detached` is never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:763:4
+    |
+763 | fn require_detached(file: &File) -> Result<u64> {
+    |    ^^^^^^^^^^^^^^^^
+
+warning: function `verify_readonly_mount` is never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:790:4
+    |
+790 | fn verify_readonly_mount(
+    |    ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `detached_mount` is never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:813:4
+    |
+813 | fn detached_mount(
+    |    ^^^^^^^^^^^^^^
+
+warning: struct `MountedImage` is never constructed
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:886:8
+    |
+886 | struct MountedImage {
+    |        ^^^^^^^^^^^^
+
+warning: struct `MountResources` is never constructed
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:894:8
+    |
+894 | struct MountResources {
+    |        ^^^^^^^^^^^^^^
+
+warning: methods `cleanup` and `matches_witness` are never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:904:8
+    |
+903 | impl MountResources {
+    | ------------------- methods in this implementation
+904 |     fn cleanup(&mut self) -> Result<Vec<u64>> {
+    |        ^^^^^^^
+...
+918 |     fn matches_witness(&self, witness: &OwnedNamespaceWitness<'_>) -> Result<()> {
+    |        ^^^^^^^^^^^^^^^
+
+warning: struct `PreparedMounts` is never constructed
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:936:19
+    |
+936 | pub(crate) struct PreparedMounts {
+    |                   ^^^^^^^^^^^^^^
+
+warning: struct `MountRetirement` is never constructed
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:941:19
+    |
+941 | pub(crate) struct MountRetirement {
+    |                   ^^^^^^^^^^^^^^^
+
+warning: associated items `prepare`, `descriptors_for_transfer`, `descriptors_after_authority_validation`, `retire_untransferred`, `retire_after_tree`, and `cleanup` are never used
+    --> runtime/droidloom-supervisor/src/production_mounts.rs:948:19
+     |
+ 947 | impl PreparedMounts {
+     | ------------------- associated items in this implementation
+ 948 |     pub(crate) fn prepare(
+     |                   ^^^^^^^
+...
+1016 |     pub(crate) fn descriptors_for_transfer<'a>(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1029 |     fn descriptors_after_authority_validation<'a>(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1078 |     pub(crate) fn retire_untransferred(mut self) -> Result<MountRetirement> {
+     |                   ^^^^^^^^^^^^^^^^^^^^
+...
+1085 |     pub(crate) fn retire_after_tree(
+     |                   ^^^^^^^^^^^^^^^^^
+...
+1100 |     fn cleanup(&mut self, after_owned_tree_exit: bool) -> Result<MountRetirement> {
+     |        ^^^^^^^
+
+warning: methods `pidfd`, `identity_lease`, and `revalidate_live_admission` are never used
+   --> runtime/droidloom-supervisor/src/production_namespace.rs:258:19
+    |
+257 | impl OwnedNamespaceWitness<'_> {
+    | ------------------------------ methods in this implementation
+258 |     pub(crate) fn pidfd(&self) -> std::os::fd::BorrowedFd<'_> {
+    |                   ^^^^^
+...
+292 |     pub(crate) fn identity_lease(&self) -> Result<&IdentityLease> {
+    |                   ^^^^^^^^^^^^^^
+...
+303 |     pub(crate) fn revalidate_live_admission(&self) -> Result<()> {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: enum `BaseMounts` is never used
+  --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:14:6
+   |
+14 | enum BaseMounts {
+   |      ^^^^^^^^^^
+
+warning: methods `descriptors` and `retire` are never used
+  --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:20:8
+   |
+19 | impl BaseMounts {
+   | --------------- methods in this implementation
+20 |     fn descriptors<'a>(
+   |        ^^^^^^^^^^^
+...
+31 |     fn retire(self, retired: &RetiredTreeWitness<'_>) -> Result<()> {
+   |        ^^^^^^
+
+warning: enum `DeviceMounts` is never used
+  --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:42:6
+   |
+42 | enum DeviceMounts {
+   |      ^^^^^^^^^^^^
+
+warning: methods `descriptor` and `retire` are never used
+  --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:48:8
+   |
+47 | impl DeviceMounts {
+   | ----------------- methods in this implementation
+48 |     fn descriptor<'a>(&'a mut self, witness: &OwnedNamespaceWitness<'_>) -> Result<BorrowedFd<'a>> {
+   |        ^^^^^^^^^^
+...
+56 |     fn retire(self, retired: &RetiredTreeWitness<'_>) -> Result<()> {
+   |        ^^^^^^
+
+warning: constant `PIDFD_THREAD` is never used
+  --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:68:7
+   |
+68 | const PIDFD_THREAD: u32 = libc::O_EXCL as u32;
+   |       ^^^^^^^^^^^^
+
+warning: associated items `bind` and `release_live_views_after_reap` are never used
+   --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:118:8
+    |
+117 | impl NamespaceSet {
+    | ----------------- associated items in this implementation
+118 |     fn bind(pidfd: &OwnedFd, userns: &File, parent_thread: &OwnedFd) -> Result<Self> {
+    |        ^^^^
+...
+163 |     fn release_live_views_after_reap(&mut self) {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `IsolatedNamespaces` is never constructed
+   --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:232:19
+    |
+232 | pub(crate) struct IsolatedNamespaces {
+    |                   ^^^^^^^^^^^^^^^^^^
+
+warning: struct `RetiredTreeWitness` is never constructed
+   --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:244:19
+    |
+244 | pub(crate) struct RetiredTreeWitness<'a> {
+    |                   ^^^^^^^^^^^^^^^^^^
+
+warning: method `verify_mount_retirement` is never used
+   --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:251:19
+    |
+248 | impl RetiredTreeWitness<'_> {
+    | --------------------------- method in this implementation
+...
+251 |     pub(crate) fn verify_mount_retirement(
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: fields `control` and `nonce` are never read
+   --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:317:5
+    |
+315 | pub(super) struct TreeChild {
+    |                   --------- fields in this struct
+316 |     pidfd: OwnedFd,
+317 |     control: OwnedFd,
+    |     ^^^^^^^
+...
+324 |     nonce: [u8; 16],
+    |     ^^^^^
+
+warning: struct `TreeExit` is never constructed
+   --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:331:19
+    |
+331 | pub(crate) struct TreeExit {
+    |                   ^^^^^^^^
+
+warning: multiple associated items are never used
+   --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:338:19
+    |
+336 | impl IsolatedNamespaces {
+    | ----------------------- associated items in this implementation
+337 |     /// Consume an actually mapped keeper; callers cannot provide PID/map values.
+338 |     pub(crate) fn from_mapped(keeper: MappedUserNamespace) -> Result<Self> {
+    |                   ^^^^^^^^^^^
+...
+421 |     pub(crate) fn attach_empty_base(self, bases: PreparedMounts) -> Result<Self> {
+    |                   ^^^^^^^^^^^^^^^^^
+...
+425 |     fn attach_base_inner(mut self, mut bases: BaseMounts) -> Result<Self> {
+    |        ^^^^^^^^^^^^^^^^^
+...
+463 |     pub(crate) fn attach_private_devices(self, devices: PreparedDevices) -> Result<Self> {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^
+...
+467 |     fn attach_device_inner(mut self, mut devices: DeviceMounts) -> Result<Self> {
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+502 |     pub(crate) fn witness(&self) -> Result<OwnedNamespaceWitness<'_>> {
+    |                   ^^^^^^^
+...
+518 |     fn verify_live_admission(&self) -> Result<()> {
+    |        ^^^^^^^^^^^^^^^^^^^^^
+...
+529 |     pub(crate) fn verify(&self) -> Result<()> {
+    |                   ^^^^^^
+...
+546 |     pub(crate) fn reap_init(&mut self) -> Result<RetiredTreeWitness<'_>> {
+    |                   ^^^^^^^^^
+...
+569 |     pub(crate) fn retire(mut self) -> Result<TreeExit> {
+    |                   ^^^^^^
+...
+577 |     fn retire_inner(&mut self) -> Result<TreeExit> {
+    |        ^^^^^^^^^^^^
+...
+617 |     fn quarantine(&mut self) {
+    |        ^^^^^^^^^^
+
+warning: function `self_thread_pidfd` is never used
+   --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:644:4
+    |
+644 | fn self_thread_pidfd(r: &Resources) -> Result<OwnedFd> {
+    |    ^^^^^^^^^^^^^^^^^
+
+warning: associated items `bind`, `wait_ready`, and `retire` are never used
+   --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:666:8
+    |
+665 | impl TreeChild {
+    | -------------- associated items in this implementation
+666 |     fn bind(
+    |        ^^^^
+...
+777 |     fn wait_ready(&mut self) -> Result<()> {
+    |        ^^^^^^^^^^
+...
+823 |     fn retire(&mut self) -> Result<ChildExit> {
+    |        ^^^^^^
+
+warning: function `require_control_socket` is never used
+   --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:877:4
+    |
+877 | fn require_control_socket(fd: &OwnedFd) -> Result<()> {
+    |    ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `wait_readable` is never used
+   --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:905:4
+    |
+905 | fn wait_readable(control: &OwnedFd, pidfd: &OwnedFd) -> Result<()> {
+    |    ^^^^^^^^^^^^^
+
+warning: function `send_one_fd` is never used
+   --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:952:4
+    |
+952 | fn send_one_fd(socket: RawFd, packet: &Packet, fd: BorrowedFd<'_>) -> Result<()> {
+    |    ^^^^^^^^^^^
+
+warning: function `descriptor_node` is never used
+   --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:980:4
+    |
+980 | fn descriptor_node(fd: BorrowedFd<'_>) -> Result<Node> {
+    |    ^^^^^^^^^^^^^^^
+
+warning: function `descriptor_device` is never used
+   --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:996:4
+    |
+996 | fn descriptor_device(fd: BorrowedFd<'_>) -> Result<u64> {
+    |    ^^^^^^^^^^^^^^^^^
+
+warning: function `send_base_fds` is never used
+    --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:1004:4
+     |
+1004 | fn send_base_fds(socket: RawFd, packet: &Packet, fds: [BorrowedFd<'_>; 2]) -> Result<()> {
+     |    ^^^^^^^^^^^^^
+
+warning: function `held_child_root` is never used
+    --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:1036:4
+     |
+1036 | fn held_child_root(child: &TreeChild) -> Result<File> {
+     |    ^^^^^^^^^^^^^^^
+
+warning: function `root_subdirectory` is never used
+    --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:1055:4
+     |
+1055 | fn root_subdirectory(root: &File, name: &std::ffi::CStr) -> Result<File> {
+     |    ^^^^^^^^^^^^^^^^^
+
+warning: function `filesystem_kind` is never used
+    --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:1073:4
+     |
+1073 | fn filesystem_kind(file: &File) -> Result<libc::c_long> {
+     |    ^^^^^^^^^^^^^^^
+
+warning: methods `receive_phase`, `wait_empty_root_ready`, `wait_private_devices_ready`, and `verify_empty_root_mounts` are never used
+    --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:1082:8
+     |
+1081 | impl TreeChild {
+     | -------------- methods in this implementation
+1082 |     fn receive_phase(&self, wanted: Phase) -> Result<()> {
+     |        ^^^^^^^^^^^^^
+...
+1103 |     fn wait_empty_root_ready(&mut self, devices: [u64; 2]) -> Result<()> {
+     |        ^^^^^^^^^^^^^^^^^^^^^
+...
+1108 |     fn wait_private_devices_ready(&mut self, bases: [u64; 2], devices: Node) -> Result<()> {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1117 |     fn verify_empty_root_mounts(&self, devices: [u64; 2], private_dev: Option<Node>) -> Result<()> {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `verify_attached_devices` is never used
+    --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:1220:4
+     |
+1220 | fn verify_attached_devices(root: &File, uid: u32, gid: u32, expected: Node) -> Result<()> {
+     |    ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `receive_created_fds` is never used
+    --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:1300:4
+     |
+1300 | fn receive_created_fds(keeper: &Owner, uid: u32, gid: u32) -> Result<(OwnedFd, OwnedFd)> {
+     |    ^^^^^^^^^^^^^^^^^^^
+
+warning: `droidloom-supervisor` (lib) generated 151 warnings (run `cargo fix --lib -p droidloom-supervisor` to apply 2 suggestions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.66s

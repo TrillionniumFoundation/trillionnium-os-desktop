@@ -1,0 +1,258 @@
+{
+  "state": "PASS",
+  "uid": 1000,
+  "gid": 1000,
+  "cap_eff": "0000000000000000",
+  "mount_ns": "mnt:[4026533783]",
+  "pid_ns": "pid:[4026534439]",
+  "marker_absent": true,
+  "helper_dev_null": true,
+  "private_run": true,
+  "long_tmpdir_bytes": 211,
+  "tests": [
+    {
+      "index": 1,
+      "name": "control::status_lifecycle_tests::status_and_readiness_are_distinct_explicit_wire_requests",
+      "argv": [
+        "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/droidloom_supervisor-11b9595017784e6e",
+        "--exact",
+        "control::status_lifecycle_tests::status_and_readiness_are_distinct_explicit_wire_requests",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test01.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test01.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 0.003,
+      "exactly_one_passed": true
+    },
+    {
+      "index": 2,
+      "name": "control::status_lifecycle_tests::stopped_dispatch_does_not_claim_android_ready",
+      "argv": [
+        "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/droidloom_supervisor-11b9595017784e6e",
+        "--exact",
+        "control::status_lifecycle_tests::stopped_dispatch_does_not_claim_android_ready",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test02.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test02.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 0.001,
+      "exactly_one_passed": true
+    },
+    {
+      "index": 3,
+      "name": "control::status_lifecycle_tests::running_status_dispatch_creates_no_child_and_cannot_replace_fresh_readiness",
+      "argv": [
+        "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/droidloom_supervisor-11b9595017784e6e",
+        "--exact",
+        "control::status_lifecycle_tests::running_status_dispatch_creates_no_child_and_cannot_replace_fresh_readiness",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test03.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test03.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 0.064,
+      "exactly_one_passed": true
+    },
+    {
+      "index": 4,
+      "name": "control::tests::boot_complete_does_not_hide_a_failed_input_service",
+      "argv": [
+        "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/droidloom_supervisor-11b9595017784e6e",
+        "--exact",
+        "control::tests::boot_complete_does_not_hide_a_failed_input_service",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test04.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test04.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 0.004,
+      "exactly_one_passed": true
+    },
+    {
+      "index": 5,
+      "name": "control::tests::boot_progress_uses_observed_services_and_checks_every_readiness_gate",
+      "argv": [
+        "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/droidloom_supervisor-11b9595017784e6e",
+        "--exact",
+        "control::tests::boot_progress_uses_observed_services_and_checks_every_readiness_gate",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test05.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test05.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 0.003,
+      "exactly_one_passed": true
+    },
+    {
+      "index": 6,
+      "name": "control::tests::boot_wait_reports_changes_and_a_stall_has_the_last_phase_and_log_commands",
+      "argv": [
+        "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/droidloom_supervisor-11b9595017784e6e",
+        "--exact",
+        "control::tests::boot_wait_reports_changes_and_a_stall_has_the_last_phase_and_log_commands",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test06.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test06.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 0.032,
+      "exactly_one_passed": true
+    },
+    {
+      "index": 7,
+      "name": "control::tests::only_missing_android_services_are_treated_as_boot_progress",
+      "argv": [
+        "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/droidloom_supervisor-11b9595017784e6e",
+        "--exact",
+        "control::tests::only_missing_android_services_are_treated_as_boot_progress",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test07.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test07.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 0.002,
+      "exactly_one_passed": true
+    },
+    {
+      "index": 8,
+      "name": "control::tests::only_root_or_the_exact_cell_owner_is_authorized",
+      "argv": [
+        "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/droidloom_supervisor-11b9595017784e6e",
+        "--exact",
+        "control::tests::only_root_or_the_exact_cell_owner_is_authorized",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test08.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test08.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 0.001,
+      "exactly_one_passed": true
+    },
+    {
+      "index": 9,
+      "name": "start_waits_for_boot_and_keeps_progress_out_of_json",
+      "argv": [
+        "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/cli_lifecycle-dd22c3c273958517",
+        "--exact",
+        "start_waits_for_boot_and_keeps_progress_out_of_json",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test09.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test09.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 0.008,
+      "exactly_one_passed": true
+    },
+    {
+      "index": 10,
+      "name": "lifecycle_controls_the_whole_user_service",
+      "argv": [
+        "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/cli_lifecycle-dd22c3c273958517",
+        "--exact",
+        "lifecycle_controls_the_whole_user_service",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test10.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test10.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 0.314,
+      "exactly_one_passed": true
+    },
+    {
+      "index": 11,
+      "name": "service_failure_is_reported",
+      "argv": [
+        "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/cli_lifecycle-dd22c3c273958517",
+        "--exact",
+        "service_failure_is_reported",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test11.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test11.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 0.114,
+      "exactly_one_passed": true
+    },
+    {
+      "index": 12,
+      "name": "internal_cell_operations_do_not_recurse_into_systemd",
+      "argv": [
+        "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/cli_lifecycle-dd22c3c273958517",
+        "--exact",
+        "internal_cell_operations_do_not_recurse_into_systemd",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test12.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test12.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 0.004,
+      "exactly_one_passed": true
+    },
+    {
+      "index": 13,
+      "name": "explicit_mode_reaches_service_and_restart_preserves_it",
+      "argv": [
+        "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/cli_lifecycle-dd22c3c273958517",
+        "--exact",
+        "explicit_mode_reaches_service_and_restart_preserves_it",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test13.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test13.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 0.314,
+      "exactly_one_passed": true
+    },
+    {
+      "index": 14,
+      "name": "lifecycle_rejects_a_symlink_runtime_directory",
+      "argv": [
+        "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/cli_lifecycle-dd22c3c273958517",
+        "--exact",
+        "lifecycle_rejects_a_symlink_runtime_directory",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test14.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test14.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 0.004,
+      "exactly_one_passed": true
+    },
+    {
+      "index": 15,
+      "name": "status_and_readiness_use_distinct_single_requests_without_wait_fallback",
+      "argv": [
+        "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/target-production/release/deps/cli_lifecycle-dd22c3c273958517",
+        "--exact",
+        "status_and_readiness_use_distinct_single_requests_without_wait_fallback",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test15.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt06-production/test15.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 0.016,
+      "exactly_one_passed": true
+    }
+  ],
+  "Main_actions": 0,
+  "passed": 15,
+  "production_plan_equivalent": true,
+  "actual_cell_config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc"
+}

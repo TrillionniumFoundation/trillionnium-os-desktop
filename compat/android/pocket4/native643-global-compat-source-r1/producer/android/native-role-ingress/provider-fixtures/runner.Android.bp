@@ -1,0 +1,76 @@
+// Copyright (C) 2022 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+java_defaults {
+    name: "platform-parametric-runner-lib_defaults",
+    manifest: "AndroidManifest.xml",
+    sdk_version: "34",
+    min_sdk_version: "33",
+    lint: {
+        test: true,
+    },
+    optimize: {
+        enabled: false,
+    },
+    srcs: [
+        "src/main/java/**/*.java",
+    ],
+    static_libs: [
+        "androidx.test.runner",
+        "guava",
+        "junit",
+    ],
+}
+
+// This version includes robolectric support, but it has a dependency to
+// "robolectric-all", so it's slower to build.
+// If your test doesn't use robolectric, consider using
+// "platform-parametric-runner-lib-no-robo" instead.
+android_library {
+    name: "platform-parametric-runner-lib",
+    defaults: ["platform-parametric-runner-lib_defaults"],
+    libs: [
+        "Robolectric_all-target",
+    ],
+}
+
+// See above comment.
+android_library {
+    name: "platform-parametric-runner-lib-no-robo",
+    defaults: ["platform-parametric-runner-lib_defaults"],
+    exclude_srcs: [
+        "src/main/java/platform/test/runner/parameterized/RobolectricParameterizedRunner.java",
+    ],
+}
+
+android_test {
+    name: "platform-parametric-runner-lib-test",
+    team: "trendy_team_test_infrastructure",
+    srcs: [
+        "src/test/java/**/*.java",
+        "src/test/java/**/*.kt",
+    ],
+    static_libs: [
+        "platform-parametric-runner-lib",
+    ],
+
+    sdk_version: "34",
+
+    test_suites: ["general-tests"],
+}

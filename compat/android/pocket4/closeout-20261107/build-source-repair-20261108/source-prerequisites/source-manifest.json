@@ -1,0 +1,124 @@
+{
+  "audio": {
+    "application_order": [
+      "base-source.patch",
+      "audio-prerequisite.patch"
+    ],
+    "bytes": 4028687,
+    "changed_files": 21,
+    "files": 395,
+    "final_repair_patch_state": "PENDING_ACTUAL_FINAL_PROVIDER_FIXES_AND_TESTS",
+    "locally_observed_source_commit": "fc90abf09eb0f09cc5f46bead149b4d324882722",
+    "locally_observed_source_tree": "1f28d43707ff707affde982e2e8b505dd728ebc0",
+    "parent_commit": "5957addac279b11110c6cdd406e32ef871a7c511",
+    "patch": {
+      "bytes": 463169,
+      "sha256": "af0e4e87db09b39407fb6689cff451fe7dbe3a6a91f3661148f38c76e1fe10d0"
+    },
+    "prerequisite_source_files_manifest": {
+      "bytes": 73881,
+      "path": "audio-source-files.json",
+      "sha256": "9c6a0b309bfe6ebac717fd900ff918bd8a4987d4e203376bfb169f766035a294"
+    },
+    "target_subset_tree": "0163435e751acd4d7b2c04a7fb3aee004cb08067"
+  },
+  "native": {
+    "application_order": [
+      "base-source.patch",
+      "native-prerequisite.patch",
+      "../native-sparse-capacity/source.patch"
+    ],
+    "bytes": 5050257,
+    "changed_files": 65,
+    "excluded_git_metadata_file_count": 59,
+    "files": 444,
+    "final_candidate_additional_excluded_nonbuild_file": {
+      "bytes": 0,
+      "reason": "Observed zero-byte transient editor lock; not a build input.",
+      "relative_path": "tools/droidloom-source/src/.hepta-lock-0544fc952eefa8d170bbd200"
+    },
+    "generated_pair_controls_are_separate_from_capacity_candidate": true,
+    "original_snapshot_file_count": 508,
+    "original_snapshot_manifest_sha256": "2ed0db4bbb7c999d03350120f1cc0686c962b3c1ab73fa00bfb4f09a09393d21",
+    "patch": {
+      "bytes": 1521824,
+      "sha256": "dc982097ea61682c6e586f3c6fc6e853ec4a10b5cb33ed6b8f1350e39624371a"
+    },
+    "prerequisite_source_files_manifest": {
+      "bytes": 84255,
+      "path": "native-source-files.json",
+      "sha256": "fab512032a078707d892f69dce02076e1e426398ec6d6475aa3861828ebfa039"
+    },
+    "repair_patch": {
+      "bytes": 44658,
+      "path": "../native-sparse-capacity/source.patch",
+      "sha256": "290eb43af731f9753759898d58bd648f44d2aea48ee08f64df7c0daf15da1a16"
+    },
+    "repaired_source_files_manifest": {
+      "bytes": 84658,
+      "path": "../native-sparse-capacity/source-files.json",
+      "sha256": "b761db7a848f4b6bb8d091c516e994ea2b21f53c47a55e44472fcf67661aade3"
+    },
+    "source_bytes_before_nonbuild_exclusions": 6840676,
+    "source_file_count_before_nonbuild_exclusions": 449,
+    "target_subset_tree": "c71ea385f45402ddeb3c0d2a2fcbcc05e049a763"
+  },
+  "replay_results": {
+    "audio": {
+      "base_replay_equal": true,
+      "matched_file_count": 395,
+      "prerequisite_replay_equal": true
+    },
+    "native": {
+      "base_replay_equal": true,
+      "matched_file_count": 444,
+      "prerequisite_replay_equal": true,
+      "repair_replay_equal": true,
+      "repaired_matched_file_count": 446,
+      "repaired_subset_tree": "1baab6a0babc8f027da3ca7b9c0ef649d7878245"
+    }
+  },
+  "schema": "pocket4-public-build-source-prerequisites-v1",
+  "scope": {
+    "aosp_source_requirement": "Resolve the exact pinned projects and revisions in the applicable source-lock file.",
+    "aosp_sources_included": false,
+    "deployed": false,
+    "full_audio_apex_build_pass": false,
+    "full_native_art_build_pass": false,
+    "private_operator_identity_or_git_metadata_included": false,
+    "runtime_qualified": false,
+    "rust_dependency_requirement": "Resolve the exact Cargo.lock with the declared Rust toolchain.",
+    "rust_registry_dependencies_included": false,
+    "source_bytes_and_git_executable_modes_reconstructed": true
+  },
+  "source_base": {
+    "availability_evidence": {
+      "method": "GitHub GraphQL repository.object",
+      "object_result": null,
+      "observed_utc_date": "2026-11-08",
+      "repository_is_private": false
+    },
+    "base_commit_available_from_upstream": false,
+    "excluded_non_build_inputs": {
+      ".github/FUNDING.yml": "Repository hosting metadata; not a build input.",
+      ".github/workflows/ship.yml": "CI workflow; not a build input.",
+      "AGENTS.md": "Operator/device instructions; not a build input.",
+      "assets/screenshots/whatsapp.png": "Documentation screenshot; not a build input.",
+      "m831-provenance.json": "Private machine provenance; not a build input."
+    },
+    "locally_observed_commit": "500dd3af851aaadb95537b68129b8bd889504951",
+    "locally_observed_tree": "4fa612edf0cd393384ede74874dd28274f77cde8",
+    "not_a_full_upstream_git_checkout": true,
+    "reconstruction_entrypoint": "base-source.patch applied to an empty directory",
+    "selected_subset_tree": "6de9a4a4720f0c88a1fa8991dc3d7c6b3773e13f",
+    "selected_text_bytes": 3603664,
+    "selected_text_files": 385,
+    "source_files_manifest": {
+      "bytes": 71894,
+      "path": "base-source-files.json",
+      "sha256": "d12d5253e6b20ee20b52dcca0ceea81bbb868881fc3d4a42c4b2d28773c50217"
+    },
+    "upstream_url_from_source_metadata": "https://github.com/denialwm/droidloom"
+  },
+  "state": "SOURCE_REPLAY_VERIFIED_AUDIO_REPAIR_PENDING"
+}

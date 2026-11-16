@@ -1,0 +1,45 @@
+--- a/source/camera_decode.py
++++ b/source/camera_decode.py
+@@ -119,0 +120,2 @@
++            self.c.need(identity(os.fstat(self.fd)) == self.metadata == identity(self.path.lstat()),
++                'OWNED_VIDEO_CHANGED_DURING_PRIVATE_COPY')
+@@ -134,2 +136,2 @@
+-            and fcntl.fcntl(self.input_fd, fcntl.F_GETFL) & os.O_ACCMODE == os.O_RDONLY,
+-            'SAME_SEALED_READ_ONLY_INPUT_FOR_ALL_THREE_DECODES')
++            and fcntl.fcntl(self.input_fd, fcntl.F_GETFL) & os.O_ACCMODE == os.O_RDONLY
++            and not os.get_inheritable(self.input_fd), 'SAME_SEALED_READ_ONLY_INPUT_FOR_ALL_THREE_DECODES')
+@@ -163 +165,3 @@
+-                inherited_fds={'owned_clip': self.input_fd, 'held_decoder': executable})
++                inherited_fds={'owned_clip': self.input_fd, 'held_decoder': executable},
++                original_held_clip_metadata=self.metadata, sealed_owned_clip_metadata=self.input_metadata,
++                sealed_owned_clip_seals=INPUT_SEALS)
+@@ -182,0 +187,3 @@
++            # A dispatch may lose its reply. Keep that uncertainty before the
++            # actual boundary; a later evidence-write error cannot erase it.
++            self.unknown = True
+@@ -199,0 +207 @@
++        self.unknown = not retired or type(out) is not bytes or type(err) is not bytes
+@@ -203,9 +211,14 @@
+-        for name, raw in (('stdout', out), ('stderr', err)):
+-            if type(raw) is bytes:
+-                result[name] = {'bytes': len(raw), 'sha256': c.sha(raw), 'persisted': False}
+-                if kind != 'audio': result[name]['reference'] = c.write_new(s.evidence_root / ('decode-' + kind + '.' + name), raw)
+-        try: self.verify()
+-        except BaseException as error: remember('decode_post_guard', error)
+-        ref = s.record('decode-' + kind + '-result', result); self.done[kind] = {'result': result, 'reference': ref}
+-        if not retired or type(out) is not bytes or type(err) is not bytes:
+-            self.unknown = True
++        try:
++            for name, raw in (('stdout', out), ('stderr', err)):
++                if type(raw) is bytes:
++                    result[name] = {'bytes': len(raw), 'sha256': c.sha(raw), 'persisted': False}
++                    if kind != 'audio': result[name]['reference'] = c.write_new(s.evidence_root / ('decode-' + kind + '.' + name), raw)
++            try: self.verify()
++            except BaseException as error: remember('decode_post_guard', error)
++            ref = s.record('decode-' + kind + '-result', result); self.done[kind] = {'result': result, 'reference': ref}
++        except BaseException as error:
++            if first is not None and error is not first:
++                first.add_note('DECODER_EVIDENCE_FAILURE:' + repr(error))
++                raise first from error
++            raise
++        if self.unknown:

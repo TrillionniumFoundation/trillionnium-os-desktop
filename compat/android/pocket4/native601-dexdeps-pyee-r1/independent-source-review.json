@@ -1,0 +1,148 @@
+{
+  "schema": "pocket4-native601-dexdeps-pyee-independent-source-review-v1",
+  "reviewer": "apps_acceptance_audit",
+  "conclusion": "NO_BLOCKING_FINDINGS_WITHIN_REVIEWED_SOURCE_SCOPE",
+  "source_candidate_may_be_sealed": true,
+  "scope": {
+    "remote_reads_performed_for_this_review": false,
+    "files_reviewed": [
+      "android/native-generation-pair/source-lock.json",
+      "tools/droidloom-update/src/native_generation_pair_build.rs"
+    ],
+    "base_commit": "68a334c93b4b42846cd2fe2ef23e46c7021149c0",
+    "local_root": "/workspace/scratch/9f5dfd11d434/native601_source_work",
+    "patch": {
+      "path": "/workspace/scratch/9f5dfd11d434/native601_source_work/native601-dexdeps-pyee.patch",
+      "bytes": 15703,
+      "sha256": "f3564a5f0721c4b764b695a411e29dea2b9c8512901a015c7f225d788b9b376c",
+      "files": 2,
+      "insertions": 151,
+      "deletions": 19
+    }
+  },
+  "file_identity_checks": [
+    {
+      "path": "android/native-generation-pair/source-lock.json",
+      "before_bytes": 354443,
+      "before_sha256": "86a215da1fed2945feccebe7878b95fe507114de6e3b8ee0fa673e830d9a7aba",
+      "after_bytes": 354815,
+      "after_sha256": "55316606071a02ff5cb4d2f3985edb048d1861e5c15aa7d901d542e69f8e9dd9"
+    },
+    {
+      "path": "tools/droidloom-update/src/native_generation_pair_build.rs",
+      "before_bytes": 426694,
+      "before_sha256": "30a67139ba814589bf2c671ecaf00d6314dac80b3d7ce9abf5969df41a0e4ace",
+      "after_bytes": 433546,
+      "after_sha256": "a5f88ee8ae9d5ae0eacf3f76a3fdb707c4a31377dab09f01395aa1c3adfb18fa"
+    }
+  ],
+  "original_provider_evidence": {
+    "local_diagnosis": "/workspace/scratch/9f5dfd11d434/native-r10-dexdeps-pyee-readonly-diagnosis.json",
+    "diagnosis_sha256": "c15a74655655a71649ae6677c887aac46c24fee7c5cbd95abfe6409543778302",
+    "superproject": "28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+    "dexdeps": {
+      "project": "platform/dalvik",
+      "commit": "5013071e756f89aa2cea97b437af12aacb8d4485",
+      "added_cone": "tools/dexdeps",
+      "original_cone_tree": "8aa6e9704e47c46a1bf0619ea08295eca4436eaa",
+      "blueprint_blob": "3d914bf7ec115432db1ab632d51e4906b6816702",
+      "complete_inputs": "Cone contains the original Blueprint, all Java implementations, etc/dexdeps wrapper and etc/manifest.txt. Original dalvik root license metadata and existing dx selections are retained.",
+      "consumer": "The original APEX Java-usedby Soong rule injects dexdeps; the consumer APEX Blueprint need not contain a literal dexdeps name."
+    },
+    "pyee": {
+      "project": "platform/external/python/pyee",
+      "commit": "d67e4b09ff002069a025bfb232836eecab6dab52",
+      "selection": [
+        "Android.bp",
+        "LICENSE",
+        "pyee"
+      ],
+      "blueprint_blob": "33439fa6d6cfa88c475f8ffde2aacec9433008f0",
+      "package_tree": "3db57c88b10dbd54318b524948d4a969010d6e59",
+      "direct_dependency": "typing_extensions"
+    },
+    "typing_extensions": {
+      "commit": "8430d542d65e5607ece1e810e247b982384b32f9",
+      "sparse_paths_field_present": false,
+      "full_original_project_retained": true,
+      "original_blueprint_selects": "src/typing_extensions.py",
+      "new_selection_needed": false
+    }
+  },
+  "independently_checked": {
+    "project_count_before": 600,
+    "project_count_after": 601,
+    "root_links": 8,
+    "added_projects": [
+      "external/python/pyee"
+    ],
+    "removed_projects": [],
+    "modified_existing_projects": [
+      "dalvik"
+    ],
+    "other_599_existing_projects_identical": true,
+    "all_existing_commits_unchanged": true,
+    "top_level_fields_other_than_projects_unchanged": true,
+    "embedded_pair_additions_exactly_match_new_lock_for_both_providers": true,
+    "fixed_lock_length_and_sha_match": true,
+    "r10_reconstruction_byte_identical_to_before": true,
+    "r10_reconstructed_sha256": "86a215da1fed2945feccebe7878b95fe507114de6e3b8ee0fa673e830d9a7aba"
+  },
+  "strict_guard_review": {
+    "unchanged_exact_base_projects": 225,
+    "expected_value_equality_required": true,
+    "fixed_file_sha_and_length_required": true,
+    "exact_plan_projects": 601,
+    "exact_plan_links": 8,
+    "unrestricted_repo_sync": false,
+    "duplicate_project_path_or_name_rejected": true,
+    "build_targets": [
+      "libberberis_arm64",
+      "com.android.art"
+    ],
+    "dependency_scope_remains_strict": true,
+    "missing_dependency_bypass_added": false,
+    "source_workspace_manifest_and_materialized_verification_preserved": true,
+    "namespace_or_private_code_changed": false
+  },
+  "negative_control_review": {
+    "new_r10_historical_case": "Removes exactly the new dexdeps cone and pyee project, then verifies the actual failed r10 lock SHA before checking rejection.",
+    "dexdeps_cases": "Each negative starts from complete good and retains pyee. Omission, Blueprint-only, src-only, etc-only, widened tools and wrong revision are rejected by the pair guard while remaining generic-plan-valid.",
+    "pyee_cases": "Each negative retains dexdeps. Metadata-only, one Python file, widened tests, empty selection, missing pyee, missing existing typing_extensions, and wrong pyee revision are checked.",
+    "existing_provider_independence": "BCC, signature-common and RKPD partial-provider controls now start from complete good and change only their own cone, preventing new dexdeps/pyee omissions from masking their assertion.",
+    "historical_compatibility": "r8/r7/r6/r5/r3 historical reconstructions first remove later dexdeps/pyee extension, then retain their prior exact-lock SHA assertions. Historical rejection cases are separate from individual-provider controls.",
+    "added_rust_regressions": 3
+  },
+  "owner_reported_validation": {
+    "provenance": "Reported by build_closure and parent; reviewer did not rerun Cargo or retrieve remote files.",
+    "focused": {
+      "h_job_id": "1a1c028da7b-5e21-936",
+      "passed": 31,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 222
+    },
+    "normal_tools_and_verify_lock": {
+      "h_job_id": "1a1c02a6cb1-5e21-93b",
+      "state": "succeeded",
+      "exit_code": 0,
+      "output_complete": true,
+      "output_durable": true,
+      "verified_projects": 601,
+      "verified_root_links": 8
+    }
+  },
+  "limitations": {
+    "source_review_only": true,
+    "materialization_performed_by_reviewer": false,
+    "full_build_performed_by_reviewer": false,
+    "full_build_qualification_granted": false,
+    "runtime_qualification_granted": false,
+    "private_controls_executed": false,
+    "tests_reexecuted_by_reviewer": false,
+    "source_files_modified_by_reviewer": false,
+    "shared_current_modified": false
+  },
+  "blocking_findings": [],
+  "additional_tests_requested": false
+}

@@ -1,0 +1,981 @@
+diff --git a/runtime/droidloom-supervisor/src/development.rs b/runtime/droidloom-supervisor/src/development.rs
+index 358be09..a54f21e 100644
+--- a/runtime/droidloom-supervisor/src/development.rs
++++ b/runtime/droidloom-supervisor/src/development.rs
+@@ -29,14 +29,23 @@ use crate::{AndroidFileOverride, AndroidImageLayout, CellSpec, SpecError};
+ 
+ #[path = "development_overrides.rs"]
+ mod android_overrides;
++#[path = "development_guest_dirs.rs"]
++mod guest_dirs;
+ 
+ #[path = "development_process.rs"]
+ mod owned_process;
+ use owned_process::OwnedNamespaceChild;
+ 
+ const DEVELOPMENT_UNSHARE_ARGUMENTS: &[&str] = &[
+-    "--mount", "--pid", "--mount-proc", "--ipc", "--uts", "--cgroup",
+-    "--fork", "--kill-child=KILL", "--propagation=private",
++    "--mount",
++    "--pid",
++    "--mount-proc",
++    "--ipc",
++    "--uts",
++    "--cgroup",
++    "--fork",
++    "--kill-child=KILL",
++    "--propagation=private",
+ ];
+ 
+ const EROFS_MAGIC_OFFSET: u64 = 1024;
+@@ -494,7 +503,9 @@ pub fn start_development_cell(
+                     let kill = child.kill();
+                     let reap = child.wait();
+                     return Err(io_error(
+-                        &format!("bind namespace init failed; owned outer kill={kill:?}, reap={reap:?}; host residue retained for recovery"),
++                        &format!(
++                            "bind namespace init failed; owned outer kill={kill:?}, reap={reap:?}; host residue retained for recovery"
++                        ),
+                         source,
+                     ));
+                 }
+@@ -506,7 +517,7 @@ pub fn start_development_cell(
+                 network: Some(network),
+                 cleaned: false,
+             })
+-        },
++        }
+         Err(source) => {
+             let network_result = network.teardown();
+             let runtime_result = cleanup_runtime_directory(spec);
+@@ -834,10 +845,14 @@ pub fn enter_development_cell(spec: &CellSpec) -> Result<(), DevelopmentError> {
+     mount_image("ext4", &spec.vendor_image, &root.join("vendor"), true)?;
+ 
+     // Prepare new leaf names before binding init or any other overlay.
+-    let file_overrides: Vec<_> = spec.android_file_overrides.iter().map(|item| AndroidFileOverride {
+-        source: item.source.clone(),
+-        target: spec.image_layout.partition_target(&item.target),
+-    }).collect();
++    let file_overrides: Vec<_> = spec
++        .android_file_overrides
++        .iter()
++        .map(|item| AndroidFileOverride {
++            source: item.source.clone(),
++            target: spec.image_layout.partition_target(&item.target),
++        })
++        .collect();
+     android_overrides::prepare_targets(&root, &file_overrides)?;
+ 
+     // Android init and its services require SELinux context operations even
+@@ -944,6 +959,7 @@ pub fn enter_development_cell(spec: &CellSpec) -> Result<(), DevelopmentError> {
+         init.env("MESA_LOADER_DRIVER_OVERRIDE", "zink")
+             .env("vendor.minigbm.allocator", "dma_heap_images");
+     }
++    arm_android_first_stage_umask(&mut init);
+     let error = std::os::unix::process::CommandExt::exec(
+         init.arg("second_stage")
+             // Android's mount-namespace decision runs before ro.boot.*
+@@ -961,6 +977,25 @@ pub fn enter_development_cell(spec: &CellSpec) -> Result<(), DevelopmentError> {
+     Err(io_error("exec Android init", error))
+ }
+ 
++fn arm_android_first_stage_umask(command: &mut Command) {
++    // AOSP FirstStageMain clears umask before creating Android runtime files.
++    // We enter second stage directly, so restore that contract only at the
++    // final exec in the private namespace's PID 1. Host preparation retains
++    // its original restrictive umask, including all control and state files.
++    unsafe {
++        command.pre_exec(|| {
++            if libc::getpid() != 1 {
++                return Err(io::Error::new(
++                    io::ErrorKind::InvalidInput,
++                    "Android guest umask requires the private namespace init",
++                ));
++            }
++            libc::umask(0);
++            Ok(())
++        });
++    }
++}
++
+ fn arm_android_init_parent_death() -> Result<(), DevelopmentError> {
+     // `unshare --kill-child` cannot run its exit handler after SIGKILL. Keep a
+     // kernel-enforced link from Android PID 1 to that exact namespace owner so
+@@ -1049,7 +1084,11 @@ fn make_mounts_private() -> Result<(), DevelopmentError> {
+ 
+ fn image_mount_options(filesystem: &str, read_only: bool) -> String {
+     let access = if read_only { "ro" } else { "rw" };
+-    let journal = if filesystem == "ext4" && read_only { ",noload" } else { "" };
++    let journal = if filesystem == "ext4" && read_only {
++        ",noload"
++    } else {
++        ""
++    };
+     format!("loop,{access},nodev,nosuid{journal}")
+ }
+ 
+@@ -1100,13 +1139,18 @@ fn validate_gsi_system_root(lower: &Path) -> Result<(), DevelopmentError> {
+     for name in ["product", "system_ext"] {
+         let link = fs::read_link(lower.join(name))
+             .map_err(|source| io_error("read required GSI partition alias", source))?;
+-        AndroidImageLayout::GsiSystemAsRoot.root_link(OsStr::new(name), &link)
++        AndroidImageLayout::GsiSystemAsRoot
++            .root_link(OsStr::new(name), &link)
+             .map_err(DevelopmentError::InvalidInput)?;
+     }
+     Ok(())
+ }
+ 
+-fn mount_synthetic_system_root(lower: &Path, target: &Path, layout: AndroidImageLayout) -> Result<(), DevelopmentError> {
++fn mount_synthetic_system_root(
++    lower: &Path,
++    target: &Path,
++    layout: AndroidImageLayout,
++) -> Result<(), DevelopmentError> {
+     // Keep the official system image immutable while giving the cell a
+     // writable root directory. Every official top-level entry is either
+     // recreated as its original symlink or exposed through a read-only
+@@ -1127,7 +1171,8 @@ fn mount_synthetic_system_root(lower: &Path, target: &Path, layout: AndroidImage
+         if file_type.is_symlink() {
+             let link = fs::read_link(&source)
+                 .map_err(|source| io_error("read development system root link", source))?;
+-            let link = layout.root_link(&entry.file_name(), &link)
++            let link = layout
++                .root_link(&entry.file_name(), &link)
+                 .map_err(DevelopmentError::InvalidInput)?;
+             symlink(link, destination)
+                 .map_err(|source| io_error("recreate development system root link", source))?;
+@@ -1360,20 +1405,12 @@ fn mount_proc_and_sys(spec: &CellSpec, root: &Path) -> Result<(), DevelopmentErr
+             sys.as_os_str().to_owned(),
+         ],
+     )?;
+-    fs::create_dir_all(sys.join("fs/cgroup"))
+-        .map_err(|source| io_error("create private cgroup mount point", source))?;
+-    // Android normally inherits this mount point from the real sysfs tree and
+-    // mounts bpffs onto it from init.rc. Droidloom exposes a synthetic sysfs,
+-    // so create only the otherwise-missing mount point and let stock Android
+-    // own the bpffs mount and BPF program loading sequence.
+-    fs::create_dir_all(sys.join("fs/bpf"))
+-        .map_err(|source| io_error("create Android BPF mount point", source))?;
+-    // vold mounts fusectl here before constructing Android's emulated-storage
+-    // FUSE view. The host sysfs normally supplies this directory, but the cell
+-    // intentionally receives a synthetic sysfs with only explicit kernel
+-    // interfaces.
+-    fs::create_dir_all(sys.join("fs/fuse/connections"))
+-        .map_err(|source| io_error("create Android fusectl mount point", source))?;
++    // Android normally gets cgroup, BPF and FUSE mount points from sysfs.
++    // Supply these missing directories on the private tree with explicit
++    // guest modes, independent of the host daemon's restrictive umask; stock
++    // Android still owns mounting and populating those kernel interfaces.
++    guest_dirs::sysfs_mount_points(&sys)
++        .map_err(|source| io_error("create private sysfs mount points", source))?;
+     project_cpu_sysfs(&sys)?;
+     project_loop_sysfs(&sys)?;
+     let render_metadata = read_render_node_sysfs_metadata(&spec.render_node)?;
+@@ -1494,8 +1531,8 @@ fn project_cpu_sysfs_with(
+             .map_err(|e| io_error("read CPU inventory", e))?;
+         validate_cpu_list(&text)?;
+     }
+-    let directory = sys.join("devices/system/cpu");
+-    fs::create_dir_all(&directory).map_err(|e| io_error("create CPU inventory projection", e))?;
++    let directory = guest_dirs::create_under(sys, Path::new("devices/system/cpu"))
++        .map_err(|e| io_error("create CPU inventory projection", e))?;
+     for name in CPU_LIST_FILES {
+         let target = directory.join(name);
+         OpenOptions::new()
+@@ -1520,8 +1557,7 @@ fn project_loop_sysfs(sys: &Path) -> Result<(), DevelopmentError> {
+     // absent, while the directory bind reflects loop devices allocated after
+     // the cell enters Android. Stable synthetic /sys/block links expose only
+     // the loop minors already admitted by the private /dev contract.
+-    let virtual_block = sys.join("devices/virtual/block");
+-    fs::create_dir_all(&virtual_block)
++    let virtual_block = guest_dirs::create_under(sys, Path::new("devices/virtual/block"))
+         .map_err(|source| io_error("create virtual block sysfs projection", source))?;
+     bind_mount(
+         Path::new("/sys/devices/virtual/block"),
+@@ -1529,8 +1565,7 @@ fn project_loop_sysfs(sys: &Path) -> Result<(), DevelopmentError> {
+         true,
+     )?;
+ 
+-    let block = sys.join("block");
+-    fs::create_dir(&block)
++    let block = guest_dirs::create_under(sys, Path::new("block"))
+         .map_err(|source| io_error("create synthetic block sysfs directory", source))?;
+     for minor in 0..DEVELOPMENT_LOOP_DEVICES {
+         symlink(
+@@ -1653,15 +1688,14 @@ fn publish_render_node_sysfs_metadata(
+     sys: &Path,
+     metadata: &RenderNodeSysfsMetadata,
+ ) -> Result<(), DevelopmentError> {
+-    let device = sys
+-        .join("dev/char")
++    let relative = Path::new("dev/char")
+         .join(format!("{}:{}", metadata.major, metadata.minor))
+         .join("device");
+-    fs::create_dir_all(&device)
++    let device = guest_dirs::create_under(sys, &relative)
+         .map_err(|source| io_error("create render-node sysfs projection", source))?;
+-    fs::create_dir_all(device.join("drm").join(&metadata.node_name))
++    guest_dirs::create_under(sys, &relative.join("drm").join(&metadata.node_name))
+         .map_err(|source| io_error("create selected DRM sysfs node", source))?;
+-    fs::create_dir_all(sys.join("bus").join(&metadata.subsystem))
++    guest_dirs::create_under(sys, &Path::new("bus").join(&metadata.subsystem))
+         .map_err(|source| io_error("create render-node sysfs bus", source))?;
+     symlink(
+         Path::new("/sys/bus").join(&metadata.subsystem),
+@@ -1705,7 +1739,7 @@ fn mount_first_stage_runtime_filesystems(root: &Path) -> Result<(), DevelopmentE
+         "mode=0755,uid=0,gid=1000,nosuid,nodev,noexec",
+     )?;
+     for directory in ["vendor", "product"] {
+-        fs::create_dir(root.join("mnt").join(directory))
++        guest_dirs::create_under(&root.join("mnt"), Path::new(directory))
+             .map_err(|source| io_error("create Android mount staging directory", source))?;
+     }
+     for directory in ["debug_ramdisk", "second_stage_resources"] {
+@@ -1761,10 +1795,8 @@ fn create_private_dev(spec: &CellSpec, root: &Path) -> Result<(), DevelopmentErr
+             dev.as_os_str().to_owned(),
+         ],
+     )?;
+-    for directory in ["pts", "binderfs", "block", "dri", "socket/droidloom"] {
+-        fs::create_dir_all(dev.join(directory))
+-            .map_err(|source| io_error("create private device directory", source))?;
+-    }
++    guest_dirs::device_directories(&dev)
++        .map_err(|source| io_error("create private device directory", source))?;
+     for (name, major, minor, mode) in [
+         ("null", 1, 3, "666"),
+         ("zero", 1, 5, "666"),
+@@ -1889,7 +1921,10 @@ fn create_private_dev(spec: &CellSpec, root: &Path) -> Result<(), DevelopmentErr
+         let path = Path::new(path);
+         let (major, minor) = auxiliary_graphics_device_numbers(path)?;
+         let target = root.join(path.strip_prefix("/").expect("fixed absolute device path"));
+-        fs::create_dir_all(target.parent().expect("device parent"))
++        let relative = path
++            .strip_prefix("/dev")
++            .expect("fixed private device path");
++        guest_dirs::create_under(&dev, relative.parent().expect("device parent"))
+             .map_err(|source| io_error("create private graphics device directory", source))?;
+         let mode = format!("{:o}", spec.graphics_backend.auxiliary_device_mode());
+         make_device_node(&target, "c", major, minor, &mode)?;
+@@ -2335,7 +2370,10 @@ mod tests {
+ 
+     #[test]
+     fn read_only_ext4_mounts_do_not_replay_journals() {
+-        assert_eq!(image_mount_options("ext4", true), "loop,ro,nodev,nosuid,noload");
++        assert_eq!(
++            image_mount_options("ext4", true),
++            "loop,ro,nodev,nosuid,noload"
++        );
+         assert_eq!(image_mount_options("erofs", true), "loop,ro,nodev,nosuid");
+         assert_eq!(image_mount_options("ext4", false), "loop,rw,nodev,nosuid");
+     }
+@@ -2344,18 +2382,27 @@ mod tests {
+     #[ignore = "requires verified GSI/vendor images, root, and an owned private mount namespace"]
+     fn gsi_image_layout_mounts_official_image_and_private_alias_overrides() {
+         assert_eq!(effective_uid().unwrap(), 0);
+-        let parent_ns = std::env::var("DROIDLOOM_GSI_PARENT_MNT_NS")
+-            .expect("parent mount namespace identity");
+-        assert_ne!(fs::read_link("/proc/self/ns/mnt").unwrap().to_string_lossy(), parent_ns);
+-        let fixture = PathBuf::from(std::env::var("DROIDLOOM_GSI_MOUNT_FIXTURE")
+-            .expect("owned empty fixture directory"));
++        let parent_ns =
++            std::env::var("DROIDLOOM_GSI_PARENT_MNT_NS").expect("parent mount namespace identity");
++        assert_ne!(
++            fs::read_link("/proc/self/ns/mnt")
++                .unwrap()
++                .to_string_lossy(),
++            parent_ns
++        );
++        let fixture = PathBuf::from(
++            std::env::var("DROIDLOOM_GSI_MOUNT_FIXTURE").expect("owned empty fixture directory"),
++        );
+         assert!(fixture.is_absolute());
+         assert_eq!(fs::canonicalize(&fixture).unwrap(), fixture);
+         assert!(fs::read_dir(&fixture).unwrap().next().is_none());
+-        let system = PathBuf::from(std::env::var("DROIDLOOM_GSI_SYSTEM_IMAGE")
+-            .expect("externally verified official GSI image"));
+-        let vendor = PathBuf::from(std::env::var("DROIDLOOM_GSI_VENDOR_IMAGE")
+-            .expect("externally verified vendor image"));
++        let system = PathBuf::from(
++            std::env::var("DROIDLOOM_GSI_SYSTEM_IMAGE")
++                .expect("externally verified official GSI image"),
++        );
++        let vendor = PathBuf::from(
++            std::env::var("DROIDLOOM_GSI_VENDOR_IMAGE").expect("externally verified vendor image"),
++        );
+         for image in [&system, &vendor] {
+             assert!(image.is_absolute() && fs::symlink_metadata(image).unwrap().is_file());
+         }
+@@ -2375,11 +2422,17 @@ mod tests {
+         for alias in ["product", "system_ext"] {
+             let actual = format!("system/{alias}");
+             assert_eq!(fs::read_link(root.join(alias)).unwrap(), Path::new(&actual));
+-            assert_eq!(fs::canonicalize(root.join(alias)).unwrap(), root.join(&actual));
++            assert_eq!(
++                fs::canonicalize(root.join(alias)).unwrap(),
++                root.join(&actual)
++            );
+             let original = format!("/{alias}/etc/droidloom-layout-probe.json");
+             let target = AndroidImageLayout::GsiSystemAsRoot.partition_target(Path::new(&original));
+             assert!(!lower.join(target.strip_prefix("/").unwrap()).exists());
+-            overrides.push(AndroidFileOverride { source: payload.clone(), target });
++            overrides.push(AndroidFileOverride {
++                source: payload.clone(),
++                target,
++            });
+         }
+         android_overrides::prepare_targets(&root, &overrides).unwrap();
+         for item in &overrides {
+@@ -2390,10 +2443,18 @@ mod tests {
+             assert_eq!(error.raw_os_error(), Some(libc::EROFS));
+             assert!(!lower.join(item.target.strip_prefix("/").unwrap()).exists());
+         }
+-        assert_eq!(fs::read(root.join("system/build.prop")).unwrap(), original_build);
+-        assert_eq!(fs::read(lower.join("system/build.prop")).unwrap(), original_build);
+-        let error = OpenOptions::new().write(true)
+-            .open(root.join("system/build.prop")).unwrap_err();
++        assert_eq!(
++            fs::read(root.join("system/build.prop")).unwrap(),
++            original_build
++        );
++        assert_eq!(
++            fs::read(lower.join("system/build.prop")).unwrap(),
++            original_build
++        );
++        let error = OpenOptions::new()
++            .write(true)
++            .open(root.join("system/build.prop"))
++            .unwrap_err();
+         assert_eq!(error.raw_os_error(), Some(libc::EROFS));
+         assert!(fs::read_dir(root.join("vendor")).unwrap().next().is_some());
+         // All image and projection mounts are owned by this test namespace.
+@@ -2514,14 +2575,36 @@ mod tests {
+         let prefix = droidloom_cpu_placement::command("ip");
+         assert_eq!(command.get_program(), prefix.get_program());
+         let mut expected: Vec<_> = prefix.get_args().map(OsStr::to_os_string).collect();
+-        expected.extend([
+-            "netns", "exec", "droidloom-test-net", "unshare",
+-            "--mount", "--pid", "--mount-proc", "--ipc", "--uts", "--cgroup", "--fork",
+-            "--kill-child=KILL", "--propagation=private",
+-            "/owned-test/droidloom-supervisor", "development-enter", "--spec",
+-            "/owned-test/cell.json",
+-        ].into_iter().map(std::ffi::OsString::from));
+-        assert_eq!(command.get_args().map(OsStr::to_os_string).collect::<Vec<_>>(), expected);
++        expected.extend(
++            [
++                "netns",
++                "exec",
++                "droidloom-test-net",
++                "unshare",
++                "--mount",
++                "--pid",
++                "--mount-proc",
++                "--ipc",
++                "--uts",
++                "--cgroup",
++                "--fork",
++                "--kill-child=KILL",
++                "--propagation=private",
++                "/owned-test/droidloom-supervisor",
++                "development-enter",
++                "--spec",
++                "/owned-test/cell.json",
++            ]
++            .into_iter()
++            .map(std::ffi::OsString::from),
++        );
++        assert_eq!(
++            command
++                .get_args()
++                .map(OsStr::to_os_string)
++                .collect::<Vec<_>>(),
++            expected
++        );
+     }
+ 
+     #[test]
+@@ -2544,7 +2627,11 @@ mod tests {
+             });
+         }
+         let output = child.output().unwrap();
+-        assert!(output.status.success(), "{}", String::from_utf8_lossy(&output.stderr));
++        assert!(
++            output.status.success(),
++            "{}",
++            String::from_utf8_lossy(&output.stderr)
++        );
+         assert!(String::from_utf8_lossy(&output.stdout)
+             .contains("development::tests::namespace_owner_argv_supports_installed_unshare_and_private_cgroup: test"));
+     }
+diff --git a/runtime/droidloom-supervisor/src/development_guest_dirs.rs b/runtime/droidloom-supervisor/src/development_guest_dirs.rs
+new file mode 100644
+index 0000000..bec85a3
+--- /dev/null
++++ b/runtime/droidloom-supervisor/src/development_guest_dirs.rs
+@@ -0,0 +1,98 @@
++//! Explicit modes for new directories on the cell's private tmpfs trees.
++//!
++//! The host daemon may use umask 0077. Android's non-root services still need
++//! to traverse the /dev and synthetic /sys directories normally provided by
++//! first-stage init. Never change the host umask or chmod an existing object.
++
++use std::ffi::CString;
++use std::fs::{File, OpenOptions};
++use std::io;
++use std::os::fd::{AsRawFd, FromRawFd};
++use std::os::unix::ffi::OsStrExt;
++use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
++use std::path::{Component, Path, PathBuf};
++
++/// Create only missing directories beneath a newly mounted, private tree.
++/// Existing directories retain their mode; symlinks and mounted filesystems
++/// are rejected before descending. All permission writes use a held new fd.
++pub(super) fn create_under(base: &Path, relative: &Path) -> io::Result<PathBuf> {
++    let names = relative
++        .components()
++        .map(|component| match component {
++            Component::Normal(name) => CString::new(name.as_bytes())
++                .map_err(|_| invalid("NUL in private guest directory name")),
++            _ => Err(invalid(
++                "private guest directory must be a relative normal path",
++            )),
++        })
++        .collect::<io::Result<Vec<_>>>()?;
++    let mut parent = OpenOptions::new()
++        .read(true)
++        .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
++        .open(base)?;
++    let device = parent.metadata()?.dev();
++    for name in names {
++        // SAFETY: parent is held, and name is a validated single C component.
++        let result = unsafe { libc::mkdirat(parent.as_raw_fd(), name.as_ptr(), 0o755) };
++        let created = if result == 0 {
++            true
++        } else {
++            let error = io::Error::last_os_error();
++            if error.raw_os_error() != Some(libc::EEXIST) {
++                return Err(error);
++            }
++            false
++        };
++        // SAFETY: openat returns a new fd or -1. No symlink is followed.
++        let fd = unsafe {
++            libc::openat(
++                parent.as_raw_fd(),
++                name.as_ptr(),
++                libc::O_RDONLY | libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC,
++            )
++        };
++        if fd < 0 {
++            return Err(io::Error::last_os_error());
++        }
++        // SAFETY: the successful openat transferred this new descriptor.
++        let directory = unsafe { File::from_raw_fd(fd) };
++        if directory.metadata()?.dev() != device {
++            return Err(io::Error::new(
++                io::ErrorKind::PermissionDenied,
++                "private guest directory would cross a mounted filesystem",
++            ));
++        }
++        if created {
++            // mkdir applies umask. Correct only the inode this call created;
++            // existing host bind targets and outer control paths are untouched.
++            // SAFETY: directory is a held, same-filesystem new directory fd.
++            if unsafe { libc::fchmod(directory.as_raw_fd(), 0o755) } != 0 {
++                return Err(io::Error::last_os_error());
++            }
++        }
++        parent = directory;
++    }
++    Ok(base.join(relative))
++}
++
++fn invalid(message: &str) -> io::Error {
++    io::Error::new(io::ErrorKind::InvalidInput, message)
++}
++
++pub(super) fn device_directories(dev: &Path) -> io::Result<()> {
++    for relative in ["pts", "binderfs", "block", "dri", "socket/droidloom"] {
++        create_under(dev, Path::new(relative))?;
++    }
++    Ok(())
++}
++
++pub(super) fn sysfs_mount_points(sys: &Path) -> io::Result<()> {
++    for relative in ["fs/cgroup", "fs/bpf", "fs/fuse/connections"] {
++        create_under(sys, Path::new(relative))?;
++    }
++    Ok(())
++}
++
++#[cfg(test)]
++#[path = "development_guest_dirs_tests.rs"]
++mod tests;
+diff --git a/runtime/droidloom-supervisor/src/development_guest_dirs_tests.rs b/runtime/droidloom-supervisor/src/development_guest_dirs_tests.rs
+new file mode 100644
+index 0000000..d986a1b
+--- /dev/null
++++ b/runtime/droidloom-supervisor/src/development_guest_dirs_tests.rs
+@@ -0,0 +1,462 @@
++use super::super::{
++    DEVELOPMENT_UNSHARE_ARGUMENTS, RenderNodeSysfsMetadata, arm_android_first_stage_umask,
++    arm_development_parent_death, bind_mount, mount_first_stage_runtime_filesystems, mount_tmpfs,
++    owned_process::OwnedNamespaceChild, project_cpu_sysfs_with, publish_render_node_sysfs_metadata,
++};
++use super::*;
++use std::fs;
++use std::os::unix::fs::{PermissionsExt, symlink};
++use std::os::unix::net::{UnixListener, UnixStream};
++use std::os::unix::process::CommandExt;
++use std::process::{Child, Command, ExitStatus, Stdio};
++use std::thread;
++use std::time::{Duration, Instant};
++
++const FIXTURE: &str = "development::guest_dirs::tests::private_namespace_fixture";
++const CLIENT: &str = "development::guest_dirs::tests::unprivileged_socket_fixture";
++const GUEST_EXEC: &str = "development::guest_dirs::tests::android_second_stage_umask_fixture";
++const ENV: &str = "DROIDLOOM_GUEST_DIRECTORY_TEST_ROOT";
++
++fn mode(path: &Path) -> u32 {
++    fs::metadata(path).unwrap().permissions().mode() & 0o7777
++}
++
++#[test]
++fn creates_explicit_modes_without_changing_existing_directories() {
++    let directory = tempfile::tempdir().unwrap();
++    fs::set_permissions(directory.path(), fs::Permissions::from_mode(0o700)).unwrap();
++    create_under(directory.path(), Path::new("socket/droidloom")).unwrap();
++    assert_eq!(mode(directory.path()), 0o700);
++    assert_eq!(mode(&directory.path().join("socket")), 0o755);
++    assert_eq!(mode(&directory.path().join("socket/droidloom")), 0o755);
++    fs::set_permissions(
++        directory.path().join("socket"),
++        fs::Permissions::from_mode(0o700),
++    )
++    .unwrap();
++    create_under(directory.path(), Path::new("socket/droidloom/new")).unwrap();
++    assert_eq!(mode(&directory.path().join("socket")), 0o700);
++    assert_eq!(mode(&directory.path().join("socket/droidloom/new")), 0o755);
++}
++
++#[test]
++fn rejects_escape_symlink_and_non_directory_without_changing_targets() {
++    let directory = tempfile::tempdir().unwrap();
++    let outside = tempfile::tempdir().unwrap();
++    fs::set_permissions(outside.path(), fs::Permissions::from_mode(0o700)).unwrap();
++    symlink(outside.path(), directory.path().join("link")).unwrap();
++    fs::write(directory.path().join("file"), b"unchanged").unwrap();
++    for relative in ["../outside", "/absolute", "link/new", "file/new"] {
++        assert!(create_under(directory.path(), Path::new(relative)).is_err());
++    }
++    assert_eq!(mode(outside.path()), 0o700);
++    assert!(!outside.path().join("new").exists());
++    assert_eq!(
++        fs::read(directory.path().join("file")).unwrap(),
++        b"unchanged"
++    );
++}
++
++struct OwnedChild(Child);
++
++impl Drop for OwnedChild {
++    fn drop(&mut self) {
++        let _ = self.0.kill();
++        let _ = self.0.wait();
++    }
++}
++
++fn wait_owned(child: &mut Child) -> ExitStatus {
++    let deadline = Instant::now() + Duration::from_secs(10);
++    loop {
++        if let Some(status) = child.try_wait().unwrap() {
++            return status;
++        }
++        assert!(Instant::now() < deadline, "owned fixture deadline exceeded");
++        thread::sleep(Duration::from_millis(5));
++    }
++}
++
++fn fixture_arguments(command: &mut Command, test: &str, directory: &Path) {
++    command
++        .args([
++            "--exact",
++            test,
++            "--ignored",
++            "--nocapture",
++            "--test-threads=1",
++        ])
++        .env(ENV, directory)
++        .stdin(Stdio::null());
++}
++
++fn run_client(directory: &Path, expected: &str) {
++    let mut command = Command::new(std::env::current_exe().unwrap());
++    fixture_arguments(&mut command, CLIENT, directory);
++    command.env("DROIDLOOM_GUEST_DIRECTORY_EXPECT", expected);
++    // Only this owned fixture loses groups and credentials. No host account
++    // or Android UID map is created or modified by the control.
++    unsafe {
++        command.pre_exec(|| {
++            if libc::setgroups(0, std::ptr::null()) != 0
++                || libc::setgid(1000) != 0
++                || libc::setuid(1000) != 0
++            {
++                return Err(io::Error::last_os_error());
++            }
++            Ok(())
++        });
++    }
++    let mut owned = OwnedChild(command.spawn().unwrap());
++    assert!(wait_owned(&mut owned.0).success());
++}
++
++#[test]
++#[ignore = "private UID1000 entry for the explicitly selected namespace control"]
++fn unprivileged_socket_fixture() {
++    assert_eq!(unsafe { libc::geteuid() }, 1000);
++    assert_eq!(unsafe { libc::getegid() }, 1000);
++    assert_eq!(unsafe { libc::getgroups(0, std::ptr::null_mut()) }, 0);
++    let directory = PathBuf::from(std::env::var_os(ENV).unwrap());
++    let expected = std::env::var("DROIDLOOM_GUEST_DIRECTORY_EXPECT").unwrap();
++    let guest = directory.join("guest");
++    if expected == "old-denied" {
++        let error = UnixStream::connect(guest.join("old/socket/property_service")).unwrap_err();
++        assert_eq!(error.raw_os_error(), Some(libc::EACCES));
++        assert_eq!(
++            fs::read(guest.join("old/__properties__/property_info"))
++                .unwrap_err()
++                .raw_os_error(),
++            Some(libc::EACCES)
++        );
++        return;
++    }
++    if expected == "guest-properties-accessible" {
++        assert_eq!(mode(&guest.join("dev/__properties__")), 0o711);
++        assert_eq!(mode(&guest.join("dev/__properties__/property_info")), 0o444);
++        assert_eq!(
++            fs::read(guest.join("dev/__properties__/property_info")).unwrap(),
++            b"property-info-fixture\n"
++        );
++        let _connection =
++            UnixStream::connect(guest.join("dev/socket/property_service_after_exec")).unwrap();
++        assert_eq!(
++            fs::read(directory.join("control/private"))
++                .unwrap_err()
++                .raw_os_error(),
++            Some(libc::EACCES)
++        );
++        return;
++    }
++    assert_eq!(expected, "new-accessible");
++    let _connection = UnixStream::connect(guest.join("dev/socket/property_service")).unwrap();
++    for relative in [
++        "dev/pts",
++        "dev/binderfs",
++        "dev/block",
++        "dev/dri",
++        "dev/dma_heap",
++        "dev/socket/droidloom",
++        "sys/fs/cgroup",
++        "sys/fs/bpf",
++        "sys/fs/fuse/connections",
++        "sys/dev/char/226:128/device/drm/renderD128",
++        "sys/bus/platform",
++        "mnt/vendor",
++        "mnt/product",
++    ] {
++        assert_eq!(mode(&guest.join(relative)), 0o755, "{relative}");
++        fs::read_dir(guest.join(relative)).unwrap();
++    }
++    for name in ["online", "possible", "present"] {
++        assert!(
++            !fs::read_to_string(guest.join("sys/devices/system/cpu").join(name))
++                .unwrap()
++                .trim()
++                .is_empty()
++        );
++    }
++    assert_eq!(
++        fs::read_to_string(guest.join("sys/dev/char/226:128/device/uevent")).unwrap(),
++        "DRIVER=directory-mode-fixture\n"
++    );
++    assert_eq!(
++        fs::read(directory.join("control/private"))
++            .unwrap_err()
++            .raw_os_error(),
++        Some(libc::EACCES)
++    );
++}
++
++#[test]
++#[ignore = "private PID1 entry for the explicitly selected namespace control"]
++fn private_namespace_fixture() {
++    assert_eq!(unsafe { libc::geteuid() }, 0);
++    assert_eq!(unsafe { libc::getpid() }, 1);
++    let directory = PathBuf::from(std::env::var_os(ENV).unwrap());
++    // This process is already in new private namespaces. Do not change the
++    // test runner's process-wide umask or mount anything in its namespace.
++    unsafe { libc::umask(0o077) };
++    let guest = directory.join("guest");
++    mount_tmpfs(&guest, "mode=0755,nosuid,nodev,size=8m").unwrap();
++    for name in [
++        "dev",
++        "sys",
++        "mnt",
++        "debug_ramdisk",
++        "second_stage_resources",
++    ] {
++        create_under(&guest, Path::new(name)).unwrap();
++    }
++    device_directories(&guest.join("dev")).unwrap();
++    create_under(&guest.join("dev"), Path::new("dma_heap")).unwrap();
++    sysfs_mount_points(&guest.join("sys")).unwrap();
++    project_cpu_sysfs_with(
++        Path::new("/sys/devices/system/cpu"),
++        &guest.join("sys"),
++        bind_mount,
++    )
++    .unwrap();
++    // Test the production metadata publisher with declared fixture data, not
++    // a claim about an actual graphics device or Android graphics readiness.
++    publish_render_node_sysfs_metadata(
++        &guest.join("sys"),
++        &RenderNodeSysfsMetadata {
++            major: 226,
++            minor: 128,
++            node_name: "renderD128".into(),
++            subsystem: "platform".into(),
++            uevent: "DRIVER=directory-mode-fixture\n".into(),
++            pci_identity: None,
++        },
++    )
++    .unwrap();
++    mount_first_stage_runtime_filesystems(&guest).unwrap();
++
++    fs::create_dir_all(guest.join("old/socket")).unwrap();
++    let _old = UnixListener::bind(guest.join("old/socket/property_service")).unwrap();
++    fs::set_permissions(
++        guest.join("old/socket/property_service"),
++        fs::Permissions::from_mode(0o666),
++    )
++    .unwrap();
++    assert_eq!(mode(&guest.join("old/socket")), 0o700);
++    let old_properties =
++        CString::new(guest.join("old/__properties__").as_os_str().as_bytes()).unwrap();
++    assert_eq!(unsafe { libc::mkdir(old_properties.as_ptr(), 0o711) }, 0);
++    fs::write(
++        guest.join("old/__properties__/property_info"),
++        b"property-info-fixture\n",
++    )
++    .unwrap();
++    fs::set_permissions(
++        guest.join("old/__properties__/property_info"),
++        fs::Permissions::from_mode(0o444),
++    )
++    .unwrap();
++    assert_eq!(mode(&guest.join("old/__properties__")), 0o700);
++    run_client(&directory, "old-denied");
++
++    let listener = UnixListener::bind(guest.join("dev/socket/property_service")).unwrap();
++    fs::set_permissions(
++        guest.join("dev/socket/property_service"),
++        fs::Permissions::from_mode(0o666),
++    )
++    .unwrap();
++    run_client(&directory, "new-accessible");
++    listener.set_nonblocking(true).unwrap();
++    let _accepted = listener.accept().unwrap();
++
++    // An existing host bind must not be chmodded or traversed into by the
++    // helper. The private tmpfs and original host filesystem differ here.
++    let bound = create_under(&guest, Path::new("host-bind")).unwrap();
++    bind_mount(&directory.join("host-source"), &bound, true).unwrap();
++    assert_eq!(
++        create_under(&guest, Path::new("host-bind/new"))
++            .unwrap_err()
++            .kind(),
++        io::ErrorKind::PermissionDenied
++    );
++    assert_eq!(mode(&directory.join("host-source")), 0o700);
++    assert!(!directory.join("host-source/new").exists());
++    assert_eq!(unsafe { libc::umask(0o077) }, 0o077);
++    fs::write(directory.join("control/after"), b"private\n").unwrap();
++    assert_eq!(mode(&directory.join("control/after")), 0o600);
++    fs::write(
++        directory.join("ready"),
++        b"old-EACCES;new-UID1000-connect;CPU-readable;host-bind-unchanged;umask-0077\n",
++    )
++    .unwrap();
++    let deadline = Instant::now() + Duration::from_secs(10);
++    while !directory.join("release").exists() {
++        assert!(
++            Instant::now() < deadline,
++            "parent did not release owned fixture"
++        );
++        thread::sleep(Duration::from_millis(5));
++    }
++    let mut init = Command::new(std::env::current_exe().unwrap());
++    fixture_arguments(&mut init, GUEST_EXEC, &directory);
++    arm_android_first_stage_umask(&mut init);
++    panic!("guest fixture exec failed: {}", init.exec());
++}
++
++#[test]
++fn guest_umask_hook_rejects_non_pid1_children() {
++    let before = fs::read_to_string("/proc/self/status").unwrap();
++    let before = before
++        .lines()
++        .find(|line| line.starts_with("Umask:"))
++        .unwrap();
++    let mut command = Command::new("/usr/bin/true");
++    arm_android_first_stage_umask(&mut command);
++    assert_eq!(
++        command.spawn().unwrap_err().kind(),
++        io::ErrorKind::InvalidInput
++    );
++    let after = fs::read_to_string("/proc/self/status").unwrap();
++    assert_eq!(
++        after
++            .lines()
++            .find(|line| line.starts_with("Umask:"))
++            .unwrap(),
++        before
++    );
++}
++
++#[test]
++#[ignore = "private post-exec PID1 entry for the explicitly selected namespace control"]
++fn android_second_stage_umask_fixture() {
++    assert_eq!(unsafe { libc::getpid() }, 1);
++    assert_eq!(
++        unsafe { libc::umask(0) },
++        0,
++        "actual exec must inherit Android first-stage umask"
++    );
++    let directory = PathBuf::from(std::env::var_os(ENV).unwrap());
++    let guest = directory.join("guest");
++    let properties = CString::new(guest.join("dev/__properties__").as_os_str().as_bytes()).unwrap();
++    // Same mkdir mode as bionic ContextsSerialized::Initialize. No chmod of
++    // the directory may conceal a failure to restore the actual guest umask.
++    assert_eq!(unsafe { libc::mkdir(properties.as_ptr(), 0o711) }, 0);
++    assert_eq!(mode(&guest.join("dev/__properties__")), 0o711);
++    fs::write(
++        guest.join("dev/__properties__/property_info"),
++        b"property-info-fixture\n",
++    )
++    .unwrap();
++    fs::set_permissions(
++        guest.join("dev/__properties__/property_info"),
++        fs::Permissions::from_mode(0o444),
++    )
++    .unwrap();
++    let listener =
++        UnixListener::bind(guest.join("dev/socket/property_service_after_exec")).unwrap();
++    fs::set_permissions(
++        guest.join("dev/socket/property_service_after_exec"),
++        fs::Permissions::from_mode(0o666),
++    )
++    .unwrap();
++    run_client(&directory, "guest-properties-accessible");
++    listener.set_nonblocking(true).unwrap();
++    let _accepted = listener.accept().unwrap();
++    println!(
++        "{{\"actual_pid1_exec\":true,\"guest_umask_0000\":true,\"bionic_property_directory_mode\":\"0711\",\"uid1000_property_info_read\":true,\"uid1000_post_exec_socket_connect\":true}}"
++    );
++}
++
++#[test]
++#[ignore = "requires root and actual private Linux namespaces; no Android inputs"]
++fn actual_restrictive_umask_namespace_directory_access() {
++    assert_eq!(unsafe { libc::geteuid() }, 0);
++    let host_status = fs::read_to_string("/proc/self/status").unwrap();
++    let host_umask = host_status
++        .lines()
++        .find(|line| line.starts_with("Umask:"))
++        .unwrap();
++    let names = ["mnt", "pid", "cgroup", "ipc", "uts"];
++    let before: Vec<_> = names
++        .iter()
++        .map(|name| fs::read_link(format!("/proc/self/ns/{name}")).unwrap())
++        .collect();
++    let directory = tempfile::tempdir().unwrap();
++    fs::set_permissions(directory.path(), fs::Permissions::from_mode(0o755)).unwrap();
++    fs::create_dir(directory.path().join("guest")).unwrap();
++    for name in ["control", "host-source"] {
++        fs::create_dir(directory.path().join(name)).unwrap();
++        fs::set_permissions(
++            directory.path().join(name),
++            fs::Permissions::from_mode(0o700),
++        )
++        .unwrap();
++    }
++    fs::write(directory.path().join("control/private"), b"private\n").unwrap();
++    fs::set_permissions(
++        directory.path().join("control/private"),
++        fs::Permissions::from_mode(0o600),
++    )
++    .unwrap();
++    let host_before = fs::metadata(directory.path().join("host-source")).unwrap();
++    let mut command = Command::new("/usr/bin/unshare");
++    command
++        .args(DEVELOPMENT_UNSHARE_ARGUMENTS)
++        .arg(std::env::current_exe().unwrap());
++    fixture_arguments(&mut command, FIXTURE, directory.path());
++    arm_development_parent_death(&mut command);
++    let mut owner = OwnedChild(command.spawn().unwrap());
++    let init = OwnedNamespaceChild::capture(&mut owner.0, Duration::from_secs(5)).unwrap();
++    let deadline = Instant::now() + Duration::from_secs(15);
++    while !directory.path().join("ready").exists() {
++        assert!(
++            owner.0.try_wait().unwrap().is_none(),
++            "namespace control failed"
++        );
++        assert!(Instant::now() < deadline, "namespace control timed out");
++        thread::sleep(Duration::from_millis(5));
++    }
++    let child_list =
++        fs::read_to_string(format!("/proc/{0}/task/{0}/children", owner.0.id())).unwrap();
++    let children: Vec<_> = child_list.split_ascii_whitespace().collect();
++    assert_eq!(children.len(), 1);
++    for (name, original) in names.iter().zip(&before) {
++        assert_ne!(
++            fs::read_link(format!("/proc/{}/ns/{name}", children[0])).unwrap(),
++            *original
++        );
++        assert_eq!(
++            fs::read_link(format!("/proc/self/ns/{name}")).unwrap(),
++            *original
++        );
++    }
++    let outer_pid = owner.0.id();
++    fs::write(directory.path().join("release"), b"release\n").unwrap();
++    assert!(wait_owned(&mut owner.0).success());
++    init.retire_after_owner_reaped().unwrap();
++    assert!(init.exited().unwrap());
++    assert!(!Path::new(&format!("/proc/{outer_pid}")).exists());
++    assert!(
++        fs::read_dir(directory.path().join("guest"))
++            .unwrap()
++            .next()
++            .is_none()
++    );
++    let host_after = fs::metadata(directory.path().join("host-source")).unwrap();
++    assert_eq!(
++        (host_before.dev(), host_before.ino(), host_before.mode()),
++        (host_after.dev(), host_after.ino(), host_after.mode())
++    );
++    assert!(!directory.path().join("host-source/new").exists());
++    assert_eq!(mode(&directory.path().join("control")), 0o700);
++    assert_eq!(mode(&directory.path().join("control/private")), 0o600);
++    let host_after = fs::read_to_string("/proc/self/status").unwrap();
++    assert_eq!(
++        host_after
++            .lines()
++            .find(|line| line.starts_with("Umask:"))
++            .unwrap(),
++        host_umask
++    );
++    println!(
++        "{{\"umask_0077\":true,\"old_parent_connect_errno\":13,\"uid1000_new_socket_connect\":true,\"cpu_files_readable\":3,\"host_control_private\":true,\"host_bind_unchanged\":true,\"private_namespaces\":5,\"owned_owner_reaped\":true,\"bound_init_exited\":true,\"android_inputs_used\":false}}"
++    );
++}

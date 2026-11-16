@@ -1,0 +1,296 @@
+--- a/android/manifest/audio-bridge-source-lock.json
++++ b/android/manifest/audio-bridge-source-lock.json
+@@ -5491,7 +5491,11 @@
+         "current/extras/constraint-layout-x",
+         "current/extras/material-design",
+         "renderscript",
+-        "opt/wear"
++        "opt/wear",
++        "36/public/api/service-ondeviceintelligence.txt",
++        "36/public/api/service-ondeviceintelligence-removed.txt",
++        "36/system-server/api/service-ondeviceintelligence.txt",
++        "36/system-server/api/service-ondeviceintelligence-removed.txt"
+       ]
+     },
+     {
+--- a/tools/droidloom-source/src/lib.rs
++++ b/tools/droidloom-source/src/lib.rs
+@@ -943,8 +943,60 @@
+         }
+     }
+ 
++    fn audio_before_ondeviceintelligence_lock() -> String {
++        let mut previous = include_str!("../../../android/manifest/audio-bridge-source-lock.json").to_owned();
++        for path in [
++            "36/public/api/service-ondeviceintelligence.txt",
++            "36/public/api/service-ondeviceintelligence-removed.txt",
++            "36/system-server/api/service-ondeviceintelligence.txt",
++            "36/system-server/api/service-ondeviceintelligence-removed.txt",
++        ] {
++            let added = format!(",\n        \"{path}\"");
++            assert_eq!(previous.matches(&added).count(), 1);
++            previous = previous.replacen(&added, "", 1);
++        }
++        assert_eq!(format!("{:x}", Sha256::digest(previous.as_bytes())),
++            "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a");
++        previous
++    }
++
++    #[test]
++    fn audio_ondeviceintelligence_extends_actual_430_by_four_original_api_inputs() {
++        let old_raw = audio_before_ondeviceintelligence_lock();
++        let new_raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
++        let old: SparseSourceLock = serde_json::from_str(&old_raw).unwrap();
++        let new: SparseSourceLock = serde_json::from_str(new_raw).unwrap();
++        let before = build_plan(&old).unwrap();
++        let after = build_plan(&new).unwrap();
++        assert_eq!(before.projects.len(), 430);
++        assert_eq!(after.projects.len(), 430);
++        validate_plan_extension(&before, &after).unwrap();
++        assert!(validate_plan_extension(&after, &before).is_err());
++        let old_value: serde_json::Value = serde_json::from_str(&old_raw).unwrap();
++        let new_value: serde_json::Value = serde_json::from_str(new_raw).unwrap();
++        for (before, after) in old_value["projects"].as_array().unwrap().iter()
++            .zip(new_value["projects"].as_array().unwrap()) {
++            if before["path"] == "prebuilts/sdk" {
++                for key in ["path", "name", "commit", "purpose"] {
++                    assert_eq!(before[key], after[key], "{key}");
++                }
++                let selected_before = before["sparse_paths"].as_array().unwrap();
++                let selected_after = after["sparse_paths"].as_array().unwrap();
++                assert_eq!(&selected_after[..selected_before.len()], selected_before.as_slice());
++                assert_eq!(selected_after.len(), selected_before.len() + 4);
++            } else {
++                assert_eq!(before, after);
++            }
++        }
++        assert_eq!(new.projects.iter().map(|p| p.sparse_paths.len()).max(), Some(355));
++        for key in ["superproject", "links", "policy", "remote_base", "schema_version", "selected_at", "status"] {
++            assert_eq!(old_value[key], new_value[key], "{key}");
++        }
++    }
++
+     fn audio_before_pasit_lock() -> String {
+-        let current = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
++        let current_owned = audio_before_ondeviceintelligence_lock();
++        let current = current_owned.as_str();
+         let (prefix, _) = current.split_once(",\n    {\n      \"path\": \"tools/test/desktop/mobly\",").unwrap();
+         let previous = format!("{prefix}\n  ]\n}}\n");
+         assert_eq!(format!("{:x}", Sha256::digest(previous.as_bytes())),
+@@ -955,8 +1007,7 @@
+     #[test]
+     fn audio_pasit_extends_the_actual_425_source_with_only_five_original_projects() {
+         let old: SparseSourceLock = serde_json::from_str(&audio_before_pasit_lock()).unwrap();
+-        let current: SparseSourceLock = serde_json::from_str(include_str!(
+-            "../../../android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let current: SparseSourceLock = serde_json::from_str(&audio_before_ondeviceintelligence_lock()).unwrap();
+         let before = build_plan(&old).unwrap();
+         let after = build_plan(&current).unwrap();
+         assert_eq!(before.projects.len(), 425);
+@@ -2126,7 +2177,7 @@
+     fn audio_source_capacity_is_bound_to_the_exact_frozen_lock() {
+         let raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
+         assert_eq!(format!("{:x}", Sha256::digest(raw.as_bytes())),
+-            "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a");
++            "45496b24c055fca9aa1f3fae7bd5c7c3c99cb46721150690645bf5d059159de2");
+         let lock: SparseSourceLock = serde_json::from_str(raw).unwrap();
+         assert_eq!(lock.projects.len(), AUDIO_SOURCE_PROJECT_COUNT);
+         assert_eq!(MAX_PROJECTS, 432);
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -626,6 +626,39 @@
+     metadata_only(original).map(Some)
+ }
+ 
++// The retained service-ondeviceintelligence SDK library needs original released
++// API inputs for both public and system-server scopes. Soong's prebuilt_apis
++// load hook creates latest/combined modules only for scopes with real API files.
++// Verify upstream bytes before projection; do not manufacture empty providers.
++const AUDIO_ONDEVICEINTELLIGENCE_API_INPUTS: &[(&str, u64, &str)] = &[
++    ("prebuilts/sdk/36/public/api/service-ondeviceintelligence.txt", 25,
++        "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552"),
++    ("prebuilts/sdk/36/public/api/service-ondeviceintelligence-removed.txt", 25,
++        "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552"),
++    ("prebuilts/sdk/36/system-server/api/service-ondeviceintelligence.txt", 25,
++        "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552"),
++    ("prebuilts/sdk/36/system-server/api/service-ondeviceintelligence-removed.txt", 25,
++        "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552"),
++];
++
++fn validate_audio_ondeviceintelligence_api_inputs(
++    source: &Path, mode: SoongDependencyMode,
++) -> Result<()> {
++    if mode != SoongDependencyMode::AudioApexTargetClosure {
++        return Ok(());
++    }
++    for (relative, bytes, expected) in AUDIO_ONDEVICEINTELLIGENCE_API_INPUTS {
++        let path = source.join(relative);
++        let metadata = fs::symlink_metadata(&path)?;
++        if !metadata.file_type().is_file() || metadata.len() != *bytes
++            || hash(&path)? != *expected
++        {
++            return fail(format!("audio SDK consumer requires its original API input: {relative}"));
++        }
++    }
++    Ok(())
++}
++
+ // The retained DesktopTestLibTestsMobly consumer needs PASIT-defaults and its
+ // original Python, protobuf, JNI and Android snippet providers. Check upstream
+ // bytes immediately after normal source verification, before any projection.
+@@ -688,6 +721,10 @@
+         return Ok(());
+     }
+     for (relative, commit, required) in [
++        ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "36/public/api/service-ondeviceintelligence.txt"),
++        ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "36/public/api/service-ondeviceintelligence-removed.txt"),
++        ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "36/system-server/api/service-ondeviceintelligence.txt"),
++        ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "36/system-server/api/service-ondeviceintelligence-removed.txt"),
+         ("tools/test/desktop/mobly", "b77d8987bdd1d44645a015042130c8b7cba05b4b", "lib/pasit"),
+         ("tools/test/desktop/mobly", "b77d8987bdd1d44645a015042130c8b7cba05b4b", "lib/utils"),
+         ("tools/test/desktop/mobly", "b77d8987bdd1d44645a015042130c8b7cba05b4b", "tests/pasit/Android.bp"),
+@@ -1302,7 +1339,7 @@
+     }
+ }
+ 
+-const AUDIO_SOURCE_LOCK_SHA256: &str = "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a";
++const AUDIO_SOURCE_LOCK_SHA256: &str = "45496b24c055fca9aa1f3fae7bd5c7c3c99cb46721150690645bf5d059159de2";
+ fn selected_source_lock(repo: &Path, mode: SoongDependencyMode) -> Result<PathBuf> {
+     if mode == SoongDependencyMode::AudioApexTargetClosure {
+         let lock = repo.join("android/manifest/audio-bridge-source-lock.json");
+@@ -2939,6 +2976,7 @@
+     }
+     droidloom_source::verify_materialized(&lock, &source_lock, source)?;
+     validate_audio_pasit_original_providers(source, dependency_mode)?;
++    validate_audio_ondeviceintelligence_api_inputs(source, dependency_mode)?;
+     let native_bridge_source = crate::native_bridge::prepare_source(repo, source)?;
+     for (aidl, adapter) in [
+         ("statusbar/IStatusBar.aidl", "EmptyStatusBar"),
+@@ -3386,11 +3424,109 @@
+ mod tests {
+     use super::*;
+ 
++    fn audio_before_ondeviceintelligence_lock() -> String {
++        use sha2::{Digest, Sha256};
++        let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
++        let mut previous = fs::read_to_string(
++            repo.join("android/manifest/audio-bridge-source-lock.json")).unwrap();
++        for path in [
++            "36/public/api/service-ondeviceintelligence.txt",
++            "36/public/api/service-ondeviceintelligence-removed.txt",
++            "36/system-server/api/service-ondeviceintelligence.txt",
++            "36/system-server/api/service-ondeviceintelligence-removed.txt",
++        ] {
++            let added = format!(",\n        \"{path}\"");
++            assert_eq!(previous.matches(&added).count(), 1);
++            previous = previous.replacen(&added, "", 1);
++        }
++        assert_eq!(format!("{:x}", Sha256::digest(previous.as_bytes())),
++            "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a");
++        previous
++    }
++
++    #[test]
++    fn audio_ondeviceintelligence_rejects_the_actual_r10_430_lock() {
++        let old = audio_before_ondeviceintelligence_lock();
++        let directory = tempfile::tempdir().unwrap();
++        let path = directory.path().join("android/manifest/audio-bridge-source-lock.json");
++        write(&path, old.as_bytes()).unwrap();
++        let old_lock = droidloom_source::load_lock(&path).unwrap();
++        assert_eq!(old_lock.projects.len(), 430);
++        let audio = SoongDependencyMode::AudioApexTargetClosure;
++        assert!(selected_source_lock(directory.path(), audio).is_err());
++        assert!(validate_audio_provider_source_paths(&old_lock, audio).is_err());
++    }
++
++    #[test]
++    fn audio_ondeviceintelligence_requires_both_original_scopes_at_same_commit() {
++        let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
++        let lock = droidloom_source::load_lock(
++            &repo.join("android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let audio = SoongDependencyMode::AudioApexTargetClosure;
++        validate_audio_provider_source_paths(&lock, audio).unwrap();
++        for missing in [
++            "36/public/api/service-ondeviceintelligence.txt",
++            "36/public/api/service-ondeviceintelligence-removed.txt",
++            "36/system-server/api/service-ondeviceintelligence.txt",
++            "36/system-server/api/service-ondeviceintelligence-removed.txt",
++        ] {
++            let mut incomplete = lock.clone();
++            incomplete.projects.iter_mut().find(|project| project.path == Path::new("prebuilts/sdk")).unwrap()
++                .sparse_paths.retain(|path| path != Path::new(missing));
++            assert!(validate_audio_provider_source_paths(&incomplete, audio).is_err(), "{missing}");
++        }
++        let mut wrong = lock.clone();
++        wrong.projects.iter_mut().find(|project| project.path == Path::new("prebuilts/sdk")).unwrap()
++            .commit = "0000000000000000000000000000000000000000".into();
++        assert!(validate_audio_provider_source_paths(&wrong, audio).is_err());
++        for mode in [SoongDependencyMode::Strict, SoongDependencyMode::NativeBridgeTargetClosure,
++            SoongDependencyMode::NativeEngineTargetClosure, SoongDependencyMode::MinigbmTargetClosure] {
++            validate_audio_provider_source_paths(&wrong, mode).unwrap();
++        }
++    }
++
++    #[test]
++    fn audio_ondeviceintelligence_original_api_guard_rejects_drift_missing_and_links() {
++        let directory = tempfile::tempdir().unwrap();
++        let audio = SoongDependencyMode::AudioApexTargetClosure;
++        for (relative, bytes) in [
++            ("prebuilts/sdk/36/public/api/service-ondeviceintelligence.txt", include_bytes!("../tests/fixtures/audio-ondeviceintelligence-api/36/public/api/service-ondeviceintelligence.txt") as &[u8]),
++            ("prebuilts/sdk/36/public/api/service-ondeviceintelligence-removed.txt", include_bytes!("../tests/fixtures/audio-ondeviceintelligence-api/36/public/api/service-ondeviceintelligence-removed.txt") as &[u8]),
++            ("prebuilts/sdk/36/system-server/api/service-ondeviceintelligence.txt", include_bytes!("../tests/fixtures/audio-ondeviceintelligence-api/36/system-server/api/service-ondeviceintelligence.txt") as &[u8]),
++            ("prebuilts/sdk/36/system-server/api/service-ondeviceintelligence-removed.txt", include_bytes!("../tests/fixtures/audio-ondeviceintelligence-api/36/system-server/api/service-ondeviceintelligence-removed.txt") as &[u8]),
++        ] {
++            write(&directory.path().join(relative), bytes).unwrap();
++        }
++        validate_audio_ondeviceintelligence_api_inputs(directory.path(), audio).unwrap();
++        for (relative, _, _) in AUDIO_ONDEVICEINTELLIGENCE_API_INPUTS {
++            let path = directory.path().join(relative);
++            let original = fs::read(&path).unwrap();
++            let mut changed = original.clone();
++            changed[0] ^= 1;
++            write(&path, &changed).unwrap();
++            assert!(validate_audio_ondeviceintelligence_api_inputs(directory.path(), audio).is_err(), "{relative}");
++            fs::remove_file(&path).unwrap();
++            assert!(validate_audio_ondeviceintelligence_api_inputs(directory.path(), audio).is_err(), "{relative}");
++            let referent = directory.path().join("original-api");
++            write(&referent, &original).unwrap();
++            std::os::unix::fs::symlink(&referent, &path).unwrap();
++            assert!(validate_audio_ondeviceintelligence_api_inputs(directory.path(), audio).is_err(), "{relative}");
++            fs::remove_file(&path).unwrap();
++            fs::remove_file(&referent).unwrap();
++            write(&path, &original).unwrap();
++        }
++        validate_audio_ondeviceintelligence_api_inputs(directory.path(), audio).unwrap();
++        let empty = tempfile::tempdir().unwrap();
++        for mode in [SoongDependencyMode::Strict, SoongDependencyMode::NativeBridgeTargetClosure,
++            SoongDependencyMode::NativeEngineTargetClosure, SoongDependencyMode::MinigbmTargetClosure] {
++            validate_audio_ondeviceintelligence_api_inputs(empty.path(), mode).unwrap();
++        }
++    }
++
+     #[test]
+     fn audio_pasit_old_425_lock_reproduces_missing_original_project() {
+         use sha2::{Digest, Sha256};
+-        let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
+-        let current = fs::read_to_string(repo.join("android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let current = audio_before_ondeviceintelligence_lock();
+         let (prefix, _) = current.split_once(",\n    {\n      \"path\": \"tools/test/desktop/mobly\",").unwrap();
+         let old = format!("{prefix}\n  ]\n}}\n");
+         assert_eq!(format!("{:x}", Sha256::digest(old.as_bytes())),
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-api/36/public/api/service-ondeviceintelligence-removed.txt
+@@ -0,0 +1 @@
++// Signature format: 2.0
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-api/36/public/api/service-ondeviceintelligence.txt
+@@ -0,0 +1 @@
++// Signature format: 2.0
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-api/36/system-server/api/service-ondeviceintelligence-removed.txt
+@@ -0,0 +1 @@
++// Signature format: 2.0
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-api/36/system-server/api/service-ondeviceintelligence.txt
+@@ -0,0 +1 @@
++// Signature format: 2.0

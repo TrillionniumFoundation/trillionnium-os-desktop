@@ -1,0 +1,15 @@
+Fail-closed Android cell lifecycle transaction
+
+Usage: droidloom-supervisor <COMMAND>
+
+Commands:
+  identity-inspect      Inspect actual dedicated identity grants without reserving or starting a cell
+  plan                  Render the complete construction and reverse teardown plan as JSON
+  development-inspect   Inspect readable boot inputs without root or any cell activation
+  development-validate  Validate the inputs for the minimal first-boot cell (requires root)
+  development-run       Start the minimal first-boot cell and attach to Android init logs
+  help                  Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help     Print help
+  -V, --version  Print version

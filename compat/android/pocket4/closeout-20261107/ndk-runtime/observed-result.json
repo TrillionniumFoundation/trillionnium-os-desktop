@@ -1,0 +1,114 @@
+{
+  "schema": 1,
+  "state": "FAIL",
+  "runtime_qualified": false,
+  "APK_sha256": "b3bf438dedbcdd5f3ac871733a273b3cece446db6be308df73f95b08cb46d164",
+  "installed_engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+  "run": {
+    "job_id": "1a1b39656f1-fc05-83b4",
+    "exit_code": 1,
+    "result_sha256": "d5bc3f58ec5f4b3aff14a7cc24428a372ffd318882d4742939b47c6b00399ae7",
+    "error": {
+      "code": "ONE_ORIGINAL_JAVA_TEST_MUST_COMPLETE_SUCCESSFULLY",
+      "errno": null,
+      "stage": "original_instrumentation",
+      "type": "RuntimeError"
+    },
+    "original_outcome_unknown": true,
+    "instrumentation_helper_returncode": 0,
+    "original_Java_test_failures": 1,
+    "original_Java_native_return_value": 1,
+    "stdout_capture_complete": true
+  },
+  "native_cases": {
+    "total": 12,
+    "passed": 9,
+    "failed": 3,
+    "errors": 0,
+    "cases": [
+      {
+        "suite": "ProcSelfMaps",
+        "name": "ExecutableFromMmap",
+        "state": "PASS"
+      },
+      {
+        "suite": "ProcSelfMaps",
+        "name": "ExecutableFromMprotect",
+        "state": "PASS"
+      },
+      {
+        "suite": "ProcSelfMaps",
+        "name": "ExecutableFromFileBackedMmap",
+        "state": "PASS"
+      },
+      {
+        "suite": "ProcSelfMaps",
+        "name": "ReadlinkHasCanonicalOwnerPath",
+        "state": "FAIL"
+      },
+      {
+        "suite": "ProcSelfMaps",
+        "name": "DuplicatedAliasesKeepOriginAfterOriginalClose",
+        "state": "FAIL"
+      },
+      {
+        "suite": "ProcSelfMaps",
+        "name": "Dup2ReplacementDoesNotKeepMapsAttribution",
+        "state": "PASS"
+      },
+      {
+        "suite": "ProcSelfMaps",
+        "name": "ReusedClosedNumberDoesNotKeepMapsAttribution",
+        "state": "PASS"
+      },
+      {
+        "suite": "ProcSelfMaps",
+        "name": "CloseRangeOfOnlyOwnedFdDoesNotKeepMapsAttribution",
+        "state": "PASS"
+      },
+      {
+        "suite": "ProcSelfMaps",
+        "name": "SealedLookalikeMemfdIsNotTrustedMaps",
+        "state": "PASS"
+      },
+      {
+        "suite": "ProcSelfMaps",
+        "name": "ReadlinkLengthAndNoTerminatorSemantics",
+        "state": "FAIL"
+      },
+      {
+        "suite": "ProcSelfMaps",
+        "name": "ClosedFdAndBadDirfdKeepKernelErrors",
+        "state": "PASS"
+      },
+      {
+        "suite": "ProcSelfMaps",
+        "name": "UnwritableBufferReturnsEfaultWithoutAProcessFault",
+        "state": "PASS"
+      }
+    ]
+  },
+  "failure_scope": "Three readlink origin-path cases expose the internal memfd label instead of the canonical proc maps source path.",
+  "XML_sha256": "091fc6acea37313338fd7124bfeb38005e532c7cba40b96158bdb1de5aea6801",
+  "XML_read_job": "1a1b3a439aa-fc05-8408",
+  "retirement": {
+    "job_id": "1a1b39f660c-fc05-83e4",
+    "exit_code": 0,
+    "result_sha256": "fa03e8aed2542f3193646c52591fbb0859adb6ab12b74ce6671344e35bcf18cc",
+    "exact_command_count": 8,
+    "force_stop_completed": true,
+    "two_complete_empty_own_UID_tables": true,
+    "task_set_restored": true,
+    "all_tracked_artifact_FDs_closed": true,
+    "held_binding_released": true,
+    "current_Main_after_qualified": true,
+    "independent_retirement_completed": true,
+    "outcome_unknown": false,
+    "package_uninstalled": false,
+    "runtime_qualified": false
+  },
+  "original_run01_return153_failure_preserved": true,
+  "original_failure_replayed": false,
+  "source_candidate_default_flags_changed": false,
+  "private_nonces_and_full_request_packets_published": false
+}

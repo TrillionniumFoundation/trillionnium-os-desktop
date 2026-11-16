@@ -1,0 +1,262 @@
+{
+  "schema_version": 1,
+  "state": "FROZEN_FOR_PARENT_PUBLICATION",
+  "producer": {
+    "schema_version": 1,
+    "state": "SOURCE_PATCH_NORMAL_TOOLS_VALIDATED_NOT_MATERIALIZED",
+    "commit": "b555f4538547a2dffa3349e914e489858ef3d3d0",
+    "tree": "4ba17e779ad4423aeebbd58ec09893c429f1acf5",
+    "parent": "4caa694f25b3da022651a1078600a0eb1a5334fc",
+    "producer_repository": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/recipe",
+    "upstream_commit_changes": false,
+    "project_count": 430,
+    "lock_sha256": "22ae84b8d0747e371096035f46e636a00990d2a7b4cae8c5727f56fa946d1ee3",
+    "patch": {
+      "path": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/r12-original-provider-closure.patch",
+      "bytes": 11778,
+      "sha256": "424d7f0c70adc13d9059c727c25abf323d020234c8db20459e0617d11d3f4160"
+    },
+    "normal_validation": {
+      "job_id": "1a1c1596541-e62c-78",
+      "terminal_unix_ms": 1794245263973,
+      "result_path": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/validation-r1/RESULT.json",
+      "result_sha256": "ba0d18c5e6ec586b5d159daa027614b4e367d66c1a92a37f832f28bbff867bc7",
+      "source_tests": 27,
+      "audio_updater_tests": 55,
+      "physical_unit_retired": true
+    },
+    "tools": {
+      "droidloom-source": {
+        "path": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/tools/droidloom-source",
+        "bytes": 19273856,
+        "sha256": "692d207108086c4b3b879c94c3681b99c154b40a4ad506d440fa873e6c8d96fd"
+      },
+      "droidloom-update": {
+        "path": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/tools/droidloom-update",
+        "bytes": 32338512,
+        "sha256": "3531a408109359d0b41357bf9d3eff258d88e78353594a8bcad176dbaea65e42"
+      }
+    },
+    "source_materialized": false,
+    "full_build_succeeded": false,
+    "runtime_qualified": false,
+    "frozen_at": "2026-11-09T17:32:23.097648+00:00"
+  },
+  "files": [
+    {
+      "path": "EDITED.json",
+      "bytes": 726,
+      "sha256": "b5b4b3d0b7019302e44e19b89599b6fd57486265f4384b7316e2f752aca04427"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2750,
+      "sha256": "b9834d31fd940e899da659ece38f0fd8addf20073f2a2807de6ccbd8a18d7fc9"
+    },
+    {
+      "path": "SOURCE_READY.json",
+      "bytes": 1746,
+      "sha256": "3f062e0cd2c2965aac26d514e7810ac00084465354f6432bd8254bd4d76de141"
+    },
+    {
+      "path": "audit/PREPARED.json",
+      "bytes": 11753,
+      "sha256": "4499f8b20f14d161403b132b7f31ecedf72eedd3032fce519ed27396c86383c0"
+    },
+    {
+      "path": "audit/actual-provider-sdk-readonly.json",
+      "bytes": 141459,
+      "sha256": "7fe4c0550ea2feca67f660423b5c30d92f4326aa6a7ce29652ca22f59d75c194"
+    },
+    {
+      "path": "audit/materialized/build/soong/android/sdk_version.go",
+      "bytes": 14292,
+      "sha256": "06581ab5e3f8bc22efd07a526e7d8a8bf13de0d77076c1dd6fd67bc97843c4d7"
+    },
+    {
+      "path": "audit/materialized/build/soong/java/prebuilt_apis.go",
+      "bytes": 16590,
+      "sha256": "ac992ca42c67498bd1b3f5e54627f541e6ffa71de95135bd7bac511a2427272c"
+    },
+    {
+      "path": "audit/materialized/build/soong/java/sdk.go",
+      "bytes": 14381,
+      "sha256": "bf1affe9dfd5369ec490d302ce08a171a75a0c1d7e331bb5a2f0db893f6283af"
+    },
+    {
+      "path": "audit/materialized/hardware/interfaces/uwb/aidl/Android.bp",
+      "bytes": 2219,
+      "sha256": "3506f9b37498b282d6b2b3ada08ae14a832359835a9349e57bb31fce0dc9cab1"
+    },
+    {
+      "path": "audit/materialized/system/zygote/Android.bp",
+      "bytes": 1217,
+      "sha256": "e78f1efca9aac5e660a6e5ff2e6389842e42755851380485719ed6be749e86ab"
+    },
+    {
+      "path": "audit/materialized/system/zygote/zygote-messages/Android.bp",
+      "bytes": 2914,
+      "sha256": "3ed0ba29c88080fa8b8a63802f9428bb1659660ce3d410ee1c2375331cd4af10"
+    },
+    {
+      "path": "audit/r12-pinned-input-closure.json",
+      "bytes": 10539,
+      "sha256": "d93128d29294344d69be07db63dfd9fe3b6661e7cad8e7b4f773e939a3e12588"
+    },
+    {
+      "path": "audit/upstream/system/zygote/Android.bp",
+      "bytes": 1217,
+      "sha256": "e78f1efca9aac5e660a6e5ff2e6389842e42755851380485719ed6be749e86ab"
+    },
+    {
+      "path": "audit/upstream/system/zygote/zygote-messages/Android.bp",
+      "bytes": 2914,
+      "sha256": "3ed0ba29c88080fa8b8a63802f9428bb1659660ce3d410ee1c2375331cd4af10"
+    },
+    {
+      "path": "audit/upstream/system/zygote/zygote-proc-macros/Android.bp",
+      "bytes": 1031,
+      "sha256": "2aeb034aeb2a268ce6712eb06dfc6c4f597c26a2d7c3df97c3a8f6419cc42194"
+    },
+    {
+      "path": "audit/upstream/system/zygote/zygote-sys/Android.bp",
+      "bytes": 1360,
+      "sha256": "a5ea31a5be9e34b80eb0cecd8575b165a3b10d3bf3b546d5311b70902afae6bd"
+    },
+    {
+      "path": "audit/zygote-direct-providers.txt",
+      "bytes": 1262,
+      "sha256": "a8d8e79902811aa0e3630134407a471de466dc0c3944ff1e35b89271d30feea3"
+    },
+    {
+      "path": "control/validate-r1.py",
+      "bytes": 3538,
+      "sha256": "94ca150605ea170db277f2d268078371b2e961ee14881808b1d1090b0f71bb70"
+    },
+    {
+      "path": "observed-r12/fallback-result.json",
+      "bytes": 17821,
+      "sha256": "f9499512cfbeacdc3efaee125a28a25957543964214242b06f59e9c4b21ef576"
+    },
+    {
+      "path": "observed-r12/normal-full-audio-apex.stderr",
+      "bytes": 525506,
+      "sha256": "ae7f3b431361f43b1481b5c32649110974f6f1e4d358ce10190099ff313dc093"
+    },
+    {
+      "path": "observed-r12/normal-full-audio-apex.stdout",
+      "bytes": 68021,
+      "sha256": "416301b3ddfe51200e7680008c425070f3d65bfcbbc8ada16a170c9c34d04d29"
+    },
+    {
+      "path": "observed-r12/outer-terminal.json",
+      "bytes": 9722,
+      "sha256": "46ff4eac710a418ca812d10c5d8b517749ffec0dab548f07e2ed6196aff67eb0"
+    },
+    {
+      "path": "observed-r12/terminal.json",
+      "bytes": 93948,
+      "sha256": "eef9e5abde14444387c2cdb1e6690e6e7162e0da0d532c22eae73e4bd118c675"
+    },
+    {
+      "path": "preimage/android/manifest/audio-bridge-source-lock.json",
+      "bytes": 239374,
+      "sha256": "db5187942e23ef535cfc53ebe47e98ef3e258a9f79d225a621f8fd20cded9a91"
+    },
+    {
+      "path": "preimage/tools/droidloom-source/src/lib.rs",
+      "bytes": 111760,
+      "sha256": "a7ed63338cf2d997df829e8f8a5f2fb0c322b4ff071a40c84caa880654ff0722"
+    },
+    {
+      "path": "preimage/tools/droidloom-update/src/android.rs",
+      "bytes": 431836,
+      "sha256": "25ede448bfe8bb622361f128ec9a57a264104abe5462e106934530e6c9c9bf35"
+    },
+    {
+      "path": "r12-original-provider-closure.patch",
+      "bytes": 11778,
+      "sha256": "424d7f0c70adc13d9059c727c25abf323d020234c8db20459e0617d11d3f4160"
+    },
+    {
+      "path": "source/android/manifest/audio-bridge-source-lock.json",
+      "bytes": 239516,
+      "sha256": "22ae84b8d0747e371096035f46e636a00990d2a7b4cae8c5727f56fa946d1ee3"
+    },
+    {
+      "path": "source/tools/droidloom-source/src/lib.rs",
+      "bytes": 114801,
+      "sha256": "3cef5ac4c844b1b2ba66d2cc3f4e536349b58d88e43a4365316734dadd560750"
+    },
+    {
+      "path": "source/tools/droidloom-update/src/android.rs",
+      "bytes": 435407,
+      "sha256": "4044c83e0ebe5d95ce23d57f0ee5f4cc99160c1155f2887eff10d4deca2d9b18"
+    },
+    {
+      "path": "validation-r1/H-status.json",
+      "bytes": 729,
+      "sha256": "4e8a09523b0b16a8cf0c0bab0f12ee03b35e5110b69841be3c07ca936db3a880"
+    },
+    {
+      "path": "validation-r1/RESULT.json",
+      "bytes": 7015,
+      "sha256": "ba0d18c5e6ec586b5d159daa027614b4e367d66c1a92a37f832f28bbff867bc7"
+    },
+    {
+      "path": "validation-r1/audio-updater-tests.stderr",
+      "bytes": 1692,
+      "sha256": "5d5f16bc584b20e46f674fed06bb8c07cad41cee17a5a6e0e7938608c3cf093e"
+    },
+    {
+      "path": "validation-r1/audio-updater-tests.stdout",
+      "bytes": 5543,
+      "sha256": "b90a4c3252bd9a56824cd7ae796473389bbf49f06bd41e2148fa59902636848f"
+    },
+    {
+      "path": "validation-r1/diff-check.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "validation-r1/diff-check.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "validation-r1/normal-tools-build.stderr",
+      "bytes": 197,
+      "sha256": "766d7bb9c5af438629bcfa7dc71ab89fb35e4a05ce74b16aa836f265ae11bc19"
+    },
+    {
+      "path": "validation-r1/normal-tools-build.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "validation-r1/normal-verify-lock.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "validation-r1/normal-verify-lock.stdout",
+      "bytes": 107,
+      "sha256": "4f03f51ecad117e7ea1e8b5aeaa1552f13c1b91a698d8b961e4c4bf092690d57"
+    },
+    {
+      "path": "validation-r1/physical-retirement.json",
+      "bytes": 1231,
+      "sha256": "da9a5e837b3524b42debaa4ea79082ea4f9905b4bd733a0d399ab63ea07c3c99"
+    },
+    {
+      "path": "validation-r1/source-tests.stderr",
+      "bytes": 1884,
+      "sha256": "31f627601d5717f43729c659d55216a76549d0735359448e143b3ba6f9503de1"
+    },
+    {
+      "path": "validation-r1/source-tests.stdout",
+      "bytes": 2471,
+      "sha256": "b44c792dcec41bebab7aec0f7e391c6483410c545555339ab9eed80c5d92ded9"
+    }
+  ]
+}

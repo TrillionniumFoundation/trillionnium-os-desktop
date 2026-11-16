@@ -1,0 +1,13 @@
+# Audio r12 original provider closure
+
+The unique desktop Audio r12 full build failed in strict Soong graph validation after bootstrap. The retained original android.hardware.uwb-V2-java consumer requires module_Tiramisu, and the retained libzygote_messages modules require libzygote_sys and libzygote_proc_macros. Resource gates passed; this capsule preserves the original full failure records.
+
+This producer patch extends the exact SDK58/r12 lock by four selectors at unchanged official project revisions: 33/module-lib/android.jar, 33/module-lib/core-for-system-modules.jar, zygote-sys, and zygote-proc-macros. All 430 project commits, purposes, consumers and pre-existing selectors remain unchanged. The pinned Soong systemModuleKind uses the module-lib system module jar for API 33; the existing public framework AIDL remains selected. No stub or missing-dependency bypass is introduced.
+
+The normal updater retains exact lock hashing and now requires both module-lib SDK inputs and both complete zygote provider cones. Tests reject the actual former lock, missing cones, Android.bp-only substitutes, and a changed zygote commit. Historical test helpers first reconstruct the exact former db5187942e23ef535cfc53ebe47e98ef3e258a9f79d225a621f8fd20cded9a91 lock, preserving all earlier recovery fixtures.
+
+Validation is 27 normal source crate tests, 55 normal Audio updater tests, the normal source/updater binary build, normal verify-lock and git diff --check. All passed. It does not claim source materialization, a successful Android full build, APEX compatibility, audio runtime behavior, or production readiness. The existing foreground owner must reconcile the same official source inputs and repeat the strict full build under the original shared locks.
+
+The static audit covers the materialized Android.bp literal sdk_version and system_modules references visible to the recorded rg traversal. It finds module_Tiramisu in UWB and OnDevicePersonalization; fixed system SDK inputs were already selected; no fixed test or system-server SDK literal was observed. It is not a replacement for Soong evaluation. All 16 direct zygote provider names referenced by the original Blueprint files were already present in the existing materialization. Missing Rust and SDK blobs are explicitly recorded as missing in the isolated object reader; no byte materialization credit is assigned.
+
+Source and preimage contain only the three changed producer files. The patch applies to parent 4caa694f25b3da022651a1078600a0eb1a5334fc. Producer Git objects remain private: only the parent publication owner should publish this capsule through the authorized repository channel. The validation controller is one-off qualification evidence, not an installed tool.

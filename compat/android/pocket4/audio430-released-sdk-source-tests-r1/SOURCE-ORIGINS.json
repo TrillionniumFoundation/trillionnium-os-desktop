@@ -1,0 +1,147 @@
+{
+  "dependency_seed": {
+    "bytes": 12345,
+    "git_blob": "0baf2b0a5ee676bbddf7ed4ec2d9dd5ef88d507b",
+    "path": "compat/android/pocket4/production-namespace-broker-r2-review-r1/harness/Cargo.lock",
+    "role": "Original public Cargo-resolved seed with thiserror and thiserror-impl 2.0.19. Not a resolved lock for the new harness. No registry checksum is invented or edited.",
+    "sha256": "ab7049db44479f692e994b795f6fc73efc92d0146b7fb5b6072c82b42d9c85da"
+  },
+  "historical_fixture": {
+    "bytes": 145316,
+    "origin_patch": "compat/android/pocket4/audio425-original-provider-closure-r1/audio-original-provider-closure.patch",
+    "origin_patch_git_blob": "ad95a7407f8dc3718f3d9bac90820eb720c013a1",
+    "original_added_file": "tools/droidloom-source/tests/fixtures/audio-source321-before-allgraph.json",
+    "recovery": "All 3966 added lines restored byte-for-byte; SHA256 also matches the actual normal recipe file inventory.",
+    "sha256": "2466de84fa9aeac43b4b5792efabbc27ea419652830e339844fa21fd67554bd9"
+  },
+  "lock_search": {
+    "normal_workspace_lock_bytes": 51836,
+    "normal_workspace_lock_raw_bytes_available": false,
+    "normal_workspace_lock_sha256": "c1dfa6f13f789cf40435d0d72973d029d0e264b27bd833eabb5a727492127f62",
+    "public_tree_complete": true,
+    "public_tree_entries": 10981,
+    "public_tree_truncated": false,
+    "raw_public_file_of_normal_lock_size_found": false,
+    "thiserror_records_match_public_broker_seed": true,
+    "upstream_current_lock": {
+      "bytes": 53891,
+      "sha256": "f31837204409c122fe32ec6c04c6fc906f4036b331766c5da56b2c1a392eb97a"
+    },
+    "upstream_current_lock_is_original_normal_lock": false
+  },
+  "normal_recipe_base_commit": "2cfafd4bf9a8c881ccb763629d7954a993e290f4",
+  "original_projects": {
+    "build/soong": {
+      "commit": "6722dd8833db7482df1a2543ca3fcf67ddf0f7b1",
+      "name": "platform/build/soong",
+      "path": "build/soong",
+      "purpose": "Android module build frontend"
+    },
+    "prebuilts/sdk": {
+      "commit": "0f07e8d60ab0aba46129e427101f96ba459a95c1",
+      "name": "platform/prebuilts/sdk",
+      "path": "prebuilts/sdk",
+      "purpose": "Pinned Android 17 released API tracking required by full vendor-image graph validation",
+      "sparse_paths": [
+        "28/public",
+        "29/public",
+        "29/system",
+        "30/public",
+        "31/public",
+        "34/public",
+        "34/system/android.jar",
+        "37.0/module-lib/api",
+        "37.0/public/api",
+        "37.0/system-server/api",
+        "37.0/system/api",
+        "37.0/test/api",
+        "8/public",
+        "9/public",
+        "Android.bp",
+        "current/androidx/Android.bp",
+        "current/androidx/m2repository/androidx/annotation/annotation-experimental/1.6.0",
+        "current/androidx/m2repository/androidx/annotation/annotation-jvm/1.10.0",
+        "current/androidx/m2repository/androidx/collection/collection-jvm/1.7.0-alpha01",
+        "current/androidx/m2repository/androidx/core/core-animation-testing/1.0.0",
+        "current/androidx/m2repository/androidx/core/core-animation/1.0.0",
+        "current/androidx/m2repository/androidx/core/core/1.20.0-alpha01",
+        "current/androidx/m2repository/androidx/leanback/leanback/1.3.0-alpha01",
+        "current/androidx/m2repository/androidx/transition/transition-ktx/1.7.0-rc01",
+        "current/androidx/m2repository/androidx/transition/transition/1.7.0-rc01",
+        "current/androidx/m2repository/androidx/webkit/webkit/1.12.0-alpha02",
+        "current/core",
+        "current/module-lib",
+        "current/public",
+        "current/system",
+        "current/system-server",
+        "extensions/19/module-lib",
+        "extensions/19/public",
+        "extensions/19/system",
+        "extensions/19/system-server",
+        "tools/Android.bp",
+        "tools/core-lambda-stubs.jar",
+        "update_prebuilts",
+        "current/androidx",
+        "18/public",
+        "current/multidex",
+        "current/test",
+        "current/support/v7/appcompat/res",
+        "current/support/manifests/android-support-v7-appcompat",
+        "current/extras/material-design-x",
+        "36/public/api/framework-ondeviceintelligence.txt",
+        "36/public/api/framework-ondeviceintelligence-removed.txt",
+        "36/system/api/framework-ondeviceintelligence.txt",
+        "36/system/api/framework-ondeviceintelligence-removed.txt",
+        "36/module-lib/api/framework-ondeviceintelligence.txt",
+        "36/module-lib/api/framework-ondeviceintelligence-removed.txt",
+        "current/androidx-legacy",
+        "current/extras/app-toolkit",
+        "35/public/android.jar",
+        "35/public/framework.aidl",
+        "35/public/core-for-system-modules.jar",
+        "tools/darwin/bin/aapt2",
+        "tools/linux/bin/aapt2",
+        "tools/windows/bin/aapt2.exe",
+        "current/aaos-libs",
+        "current/extras/constraint-layout-x",
+        "current/extras/material-design",
+        "renderscript",
+        "opt/wear",
+        "36/public/api/service-ondeviceintelligence.txt",
+        "36/public/api/service-ondeviceintelligence-removed.txt",
+        "36/system-server/api/service-ondeviceintelligence.txt",
+        "36/system-server/api/service-ondeviceintelligence-removed.txt"
+      ]
+    }
+  },
+  "preimage_provenance": "Complete actual normal recipe inputs retained before the published SDK extension; no compiler or source-materialization result is transferred to this harness.",
+  "preimages": {
+    "android/manifest/audio-bridge-source-lock.json": {
+      "bytes": 238124,
+      "sha256": "45496b24c055fca9aa1f3fae7bd5c7c3c99cb46721150690645bf5d059159de2"
+    },
+    "tools/droidloom-source/src/lib.rs": {
+      "bytes": 106324,
+      "sha256": "f724bc3b5ff85cdb3412a606e0bce12ae13466203c3cf869dc0796171f58e1e9"
+    }
+  },
+  "publication_ref": "7d97cdae8323491e8bb244de4a521482b73dd5d2",
+  "publication_repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "published_candidate_commit": "557bff5c84eef7eea9af4533ac7391e3ae676d0f",
+  "published_candidate_tree": "e01ff81d8206a3d5fa665f020ad24a7836cc11c9",
+  "published_sdk_patch": {
+    "bytes": 12779,
+    "git_blob": "a7b671a78023bad2d98d13317f65bc0fac3c9422",
+    "path": "compat/android/pocket4/continuation-20261109-2840/audio/fix.patch",
+    "sha256": "5b2d1127ecc999e3a3200dc43f668caabe615f5c126c06946e039103b0a5e100"
+  },
+  "qualification": {
+    "complete_apex_qualified": false,
+    "normal_recipe_tools_qualified": false,
+    "runtime_qualified": false,
+    "rust_or_cargo_executed_for_this_capsule": false,
+    "source_materialized": false,
+    "strict_soong_graph_qualified": false
+  },
+  "schema": "audio430-complete-source-library-ci-origins-v1"
+}

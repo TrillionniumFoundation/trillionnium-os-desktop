@@ -1,0 +1,334 @@
+--- a/android/native-generation-pair/source-lock.json
++++ b/android/native-generation-pair/source-lock.json
+@@ -404,7 +404,8 @@
+         "tests/tests/telecom-cuj",
+         "tests/tests/telecom2",
+         "tests/tests/telecom3",
+-        "tools/cts-dynamic-config"
++        "tools/cts-dynamic-config",
++        "tests/signature/lib/common"
+       ]
+     },
+     {
+--- a/tools/droidloom-update/src/native_generation_pair_build.rs
++++ b/tools/droidloom-update/src/native_generation_pair_build.rs
+@@ -20,9 +20,9 @@
+ const ENGINE_BP_BYTES: usize = 25403;
+ const BASE_SOURCE_LOCK_SHA: &str = "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d";
+ const PAIR_SOURCE_LOCK: &str = "android/native-generation-pair/source-lock.json";
+-const SOURCE_LOCK_BYTES: usize = 354234;
+-const SOURCE_LOCK_SHA: &str = "09a020b99c5f9f1876c69450d01ac99907cd6dda97cb4f69601f70151ea43d2b";
+-// Exact original additions from frozen manifest SHA-256 09a020b99c5f9f1876c69450d01ac99907cd6dda97cb4f69601f70151ea43d2b.
++const SOURCE_LOCK_BYTES: usize = 354272;
++const SOURCE_LOCK_SHA: &str = "fb05fce28e2541cc1c791350ede62d36579ac459922b6f394680930cba9f6d9d";
++// Exact original additions from frozen manifest SHA-256 fb05fce28e2541cc1c791350ede62d36579ac459922b6f394680930cba9f6d9d.
+ // Closure qualification remains separate from this source attestation.
+ const PAIR_ADDITIONS_JSON: &str = r#"[
+   {
+@@ -7442,6 +7442,7 @@
+         ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom2"),
+         ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom3"),
+         ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tools/cts-dynamic-config"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/signature/lib/common"),
+         ("packages/modules/Bluetooth", "c77db469de80f86660bc053bec4dee0c5d4b947c", "apex/permissions"),
+         ("packages/modules/Bluetooth", "c77db469de80f86660bc053bec4dee0c5d4b947c", "framework/tests/util"),
+         ("packages/modules/Bluetooth", "c77db469de80f86660bc053bec4dee0c5d4b947c", "tests/pandora/android_server"),
+@@ -7637,6 +7638,56 @@
+     Ok(())
+ }
+ 
++// The pinned public Cuttlefish package refers to an undefined maintenance team.
++// Only its exact 49-byte ownership field is removed. The complete C++ and Java
++// consumers, license, dependencies and strict target scope remain unchanged.
++// package.go validates this name; all_teams.go serializes optional ownership
++// metadata. Neither rule applies runtime policy or changes compiler flags.
++const VKMS_BLUEPRINT: &str = "device/google/cuttlefish/guest/commands/vkms_controller/Android.bp";
++const VKMS_ORIGINAL_BYTES: usize = 1522;
++const VKMS_ORIGINAL_SHA: &str = "fad92f331030a22d22d989e4df4f7b6fdd90f2d11b702f90fd1d26304783b45d";
++const VKMS_EFFECTIVE_BYTES: usize = 1473;
++const VKMS_EFFECTIVE_SHA: &str = "bd556a4385b92f6808a8d9df94f118a8b2f93e35a0598fef636fe0f91c075b7f";
++const VKMS_UNRESOLVED_TEAM: &str = "    default_team: \"trendy_team_desktop_display\",\n";
++
++fn vkms_maintenance_metadata(text: &str) -> Result<String> {
++    if text.len() != VKMS_ORIGINAL_BYTES || digest(text.as_bytes()) != VKMS_ORIGINAL_SHA
++        || text.matches(VKMS_UNRESOLVED_TEAM).count() != 1 {
++        return fail("exact pinned Cuttlefish ownership metadata required");
++    }
++    let updated = text.replacen(VKMS_UNRESOLVED_TEAM, "", 1);
++    if updated.len() != VKMS_EFFECTIVE_BYTES || digest(updated.as_bytes()) != VKMS_EFFECTIVE_SHA {
++        return fail("Cuttlefish maintenance metadata delta escaped the single ownership field");
++    }
++    Ok(updated)
++}
++
++pub(crate) fn project_vkms_maintenance_metadata(
++    source: &Path, projection: &mut crate::android::Projection,
++) -> Result<()> {
++    let path = source.join(VKMS_BLUEPRINT);
++    let original = fixed_file(&path, VKMS_ORIGINAL_BYTES, VKMS_ORIGINAL_SHA)?;
++    projection.put(&path, vkms_maintenance_metadata(std::str::from_utf8(&original)?)?)
++}
++
++pub(crate) fn vkms_maintenance_metadata_inputs(source: &Path, projection: &Value) -> Result<Value> {
++    fixed_file(&source.join(VKMS_BLUEPRINT), VKMS_EFFECTIVE_BYTES, VKMS_EFFECTIVE_SHA)?;
++    if projection["files"][VKMS_BLUEPRINT].as_str() != Some(VKMS_EFFECTIVE_SHA) {
++        return fail("Cuttlefish ownership metadata change must be in the normal recovery journal");
++    }
++    Ok(json!({
++        "path": VKMS_BLUEPRINT,
++        "original_commit": "283645aacf6cdb56cc31a9362f54d412dbc132a1",
++        "original_git_blob": "98b0aa455ee364e7c5fdf34a1408b315a6023b22",
++        "original": {"bytes": VKMS_ORIGINAL_BYTES, "sha256": VKMS_ORIGINAL_SHA},
++        "effective": {"bytes": VKMS_EFFECTIVE_BYTES, "sha256": VKMS_EFFECTIVE_SHA},
++        "only_unresolved_default_team_field_removed": true,
++        "complete_consumer_modules_preserved": ["vkms_controller", "CfVkmsControllerTest"],
++        "targets_or_compiler_flags_changed": false,
++        "runtime_security_policy_changed": false,
++    }))
++}
++
+ pub fn project_engine(repo: &Path, source: &Path, projection: &mut crate::android::Projection,
+                       snapshot: &Value) -> Result<()> {
+     let files = engine_files(repo)?;
+@@ -7648,6 +7699,7 @@
+     let blueprint = fixed_file(&repo.join(INPUTS).join("engine.Android.bp"),
+                                ENGINE_BP_BYTES, ENGINE_BP_SHA)?;
+     let enabled = enabled_blueprint(std::str::from_utf8(&blueprint)?)?;
++    project_vkms_maintenance_metadata(source, projection)?;
+     projection.put(&root.join("Android.bp"), enabled)
+ }
+ 
+@@ -7662,6 +7714,7 @@
+                                ENGINE_BP_BYTES, ENGINE_BP_SHA)?;
+     let observed = crate::native_bridge::source_inventory(&source.join(ENGINE))?;
+     validate_effective_engine(&original, &observed, &projection, std::str::from_utf8(&blueprint)?)?;
++    let ownership_metadata = vkms_maintenance_metadata_inputs(source, &projection)?;
+     record(&out.join("droidloom-native-generation-build-inputs.json"), json!({
+         "schema": 1, "scope": "ordinary-app-complete-engine-art-pair",
+         "targets": TARGETS, "selected_targets": selected, "dependency_mode": "Strict",
+@@ -7670,6 +7723,7 @@
+         "effective_engine_files": observed,
+         "frozen_ART_inputs": crate::native_generation_art::frozen_input_inventory()?,
+         "effective_source_projection": projection,
++        "maintenance_ownership_metadata": ownership_metadata,
+         "ninja_response_file_retention_inputs": frozen_ninja_retention_inputs(source)?,
+         "required_actual_compile_sources": ["art/runtime/runtime.cc",
+             "art/runtime/native_bridge_art_interface.cc", "art/libnativebridge/native_bridge.cc",
+@@ -7821,6 +7875,12 @@
+         validate_source_extension(&base, &good).unwrap();
+         assert_eq!(good["projects"].as_array().unwrap().len(), 600);
+         let mut actual_failed_r3 = good.clone();
++        // Reconstruct historical bytes before the later complete signature provider selection.
++        let cts = actual_failed_r3["projects"].as_array_mut().unwrap().iter_mut()
++            .find(|p| p["path"] == "cts").unwrap();
++        let cts_paths = cts["sparse_paths"].as_array_mut().unwrap();
++        assert_eq!(cts_paths.iter().filter(|p| p.as_str() == Some("tests/signature/lib/common")).count(), 1);
++        cts_paths.retain(|p| p != "tests/signature/lib/common");
+         // Keep the original r3 failed bytes exact after the later RKPD input addition.
+         let rkpd = actual_failed_r3["projects"].as_array_mut().unwrap().iter_mut()
+             .find(|p| p["path"] == "packages/modules/RemoteKeyProvisioning").unwrap();
+@@ -7989,6 +8049,40 @@
+     }
+ 
+     #[test]
++    fn ordinary_pair_signature_common_requires_complete_original_input() {
++        let base: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
++        let good: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++        validate_source_extension(&base, &good).unwrap();
++        let index = good["projects"].as_array().unwrap().iter()
++            .position(|p| p["path"] == "cts").unwrap();
++        assert_eq!(good["projects"][index]["commit"], "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd");
++        assert_eq!(good["projects"][index]["sparse_paths"].as_array().unwrap().iter()
++            .filter(|p| p.as_str() == Some("tests/signature/lib/common")).count(), 1);
++        let mut actual_failed_r6 = good.clone();
++        actual_failed_r6["projects"][index]["sparse_paths"].as_array_mut().unwrap()
++            .retain(|p| p != "tests/signature/lib/common");
++        let failed_raw = format!("{}\n", serde_json::to_string_pretty(&actual_failed_r6).unwrap());
++        assert_eq!(digest(failed_raw.as_bytes()), "09a020b99c5f9f1876c69450d01ac99907cd6dda97cb4f69601f70151ea43d2b");
++        let generic: droidloom_source::SparseSourceLock = serde_json::from_value(actual_failed_r6.clone()).unwrap();
++        assert!(droidloom_source::build_plan(&generic).is_ok());
++        assert!(validate_source_extension(&base, &actual_failed_r6).is_err());
++        for partial in ["tests/signature/lib/common/Android.bp", "tests/signature/lib/common/src"] {
++            let mut candidate = actual_failed_r6.clone();
++            candidate["projects"][index]["sparse_paths"].as_array_mut().unwrap().push(json!(partial));
++            assert!(validate_source_extension(&base, &candidate).is_err());
++        }
++        let mut wrong_commit = good.clone();
++        wrong_commit["projects"][index]["commit"] = json!("0000000000000000000000000000000000000000");
++        assert!(validate_source_extension(&base, &wrong_commit).is_err());
++        let mut wider = good;
++        wider["projects"][index]["sparse_paths"].as_array_mut().unwrap().push(json!("tests/signature/lib"));
++        assert!(validate_source_extension(&base, &wider).is_err());
++        assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
++    }
++
++    #[test]
+     fn ordinary_pair_rkpd_apex_requires_complete_original_input() {
+         let base: Value = serde_json::from_slice(include_bytes!(
+             "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
+@@ -8002,6 +8096,12 @@
+         assert_eq!(good["projects"][index]["sparse_paths"].as_array().unwrap().iter()
+             .filter(|p| p.as_str() == Some("apex")).count(), 1);
+         let mut actual_failed_r5 = good.clone();
++        // Reconstruct historical bytes before the later complete signature provider selection.
++        let cts = actual_failed_r5["projects"].as_array_mut().unwrap().iter_mut()
++            .find(|p| p["path"] == "cts").unwrap();
++        let cts_paths = cts["sparse_paths"].as_array_mut().unwrap();
++        assert_eq!(cts_paths.iter().filter(|p| p.as_str() == Some("tests/signature/lib/common")).count(), 1);
++        cts_paths.retain(|p| p != "tests/signature/lib/common");
+         actual_failed_r5["projects"][index]["sparse_paths"].as_array_mut().unwrap()
+             .retain(|p| p != "apex");
+         let failed_raw = format!("{}\n", serde_json::to_string_pretty(&actual_failed_r5).unwrap());
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -3254,6 +3254,83 @@
+     use super::*;
+ 
+     #[test]
++    fn ordinary_pair_vkms_maintenance_metadata_preserves_consumers_and_recovers() {
++        let original = include_bytes!("../../../android/native-generation-pair/original-vkms-controller.Android.bp");
++        assert_eq!(original.len(), 1522);
++        for interrupted in [false, true] {
++            let temp = tempfile::tempdir().unwrap();
++            let source = temp.path().join("source");
++            let path = source.join("device/google/cuttlefish/guest/commands/vkms_controller/Android.bp");
++            let unselected = source.join("device/google/cuttlefish/tests/graphics/display/Android.bp");
++            write(&path, original).unwrap();
++            write(&unselected, b"unselected sibling must remain unchanged\n").unwrap();
++            let before_time = fs::metadata(&path).unwrap().modified().unwrap();
++            assert_eq!(hash(&path).unwrap(), "fad92f331030a22d22d989e4df4f7b6fdd90f2d11b702f90fd1d26304783b45d");
++            let journal = temp.path().join("projection.json");
++            let mut projection = Projection::new(journal.clone()).unwrap();
++            crate::native_generation_pair_build::project_vkms_maintenance_metadata(
++                &source, &mut projection).unwrap();
++            let effective = fs::read_to_string(&path).unwrap();
++            let original_text = std::str::from_utf8(original).unwrap();
++            assert_eq!(effective.len(), 1473);
++            assert_eq!(hash(&path).unwrap(), "bd556a4385b92f6808a8d9df94f118a8b2f93e35a0598fef636fe0f91c075b7f");
++            let consumer_start = original_text.find("cc_binary {").unwrap();
++            assert!(effective.ends_with(&original_text[consumer_start..]));
++            assert_eq!(effective, original_text.replacen(
++                "    default_team: \"trendy_team_desktop_display\",\n", "", 1));
++            let inventory = projection.effective_inventory(temp.path(), &source).unwrap();
++            assert_eq!(inventory["files"].as_object().unwrap().len(), 1);
++            assert!(inventory["patches"].as_object().unwrap().is_empty());
++            let metadata = crate::native_generation_pair_build::vkms_maintenance_metadata_inputs(
++                &source, &inventory).unwrap();
++            assert_eq!(metadata["runtime_security_policy_changed"], false);
++            assert!(crate::native_generation_pair_build::vkms_maintenance_metadata_inputs(
++                &source, &serde_json::json!({"files": {}})).is_err());
++            if interrupted {
++                // Preserve a real interrupted journal for the normal recovery API.
++                std::mem::forget(projection);
++                recover(&journal, &source).unwrap();
++            } else {
++                projection.restore().unwrap();
++            }
++            assert_eq!(fs::read(&path).unwrap(), original);
++            assert_eq!(fs::metadata(&path).unwrap().modified().unwrap(), before_time);
++            assert_eq!(fs::read(&unselected).unwrap(), b"unselected sibling must remain unchanged\n");
++            assert!(!journal.exists());
++        }
++    }
++
++    #[test]
++    fn ordinary_pair_vkms_maintenance_metadata_rejects_untrusted_input_without_mutation() {
++        let original = include_bytes!("../../../android/native-generation-pair/original-vkms-controller.Android.bp");
++        let before = std::str::from_utf8(original).unwrap();
++        for variant in ["edited-source", "already-projected", "symlink", "hardlink"] {
++            let temp = tempfile::tempdir().unwrap();
++            let source = temp.path().join("source");
++            let path = source.join("device/google/cuttlefish/guest/commands/vkms_controller/Android.bp");
++            let target = temp.path().join("protected-original.bp");
++            write(&target, original).unwrap();
++            fs::create_dir_all(path.parent().unwrap()).unwrap();
++            match variant {
++                "edited-source" => write(&path, before.replace("main.cpp", "evil.cpp")).unwrap(),
++                "already-projected" => write(&path, before.replacen(
++                    "    default_team: \"trendy_team_desktop_display\",\n", "", 1)).unwrap(),
++                "symlink" => std::os::unix::fs::symlink(&target, &path).unwrap(),
++                "hardlink" => fs::hard_link(&target, &path).unwrap(),
++                _ => unreachable!(),
++            }
++            let snapshot = fs::read(&path).unwrap();
++            let journal = temp.path().join("projection.json");
++            let mut projection = Projection::new(journal.clone()).unwrap();
++            assert!(crate::native_generation_pair_build::project_vkms_maintenance_metadata(
++                &source, &mut projection).is_err(), "{variant}");
++            assert_eq!(fs::read(&path).unwrap(), snapshot);
++            assert_eq!(fs::read(&target).unwrap(), original);
++            assert!(!journal.exists());
++        }
++    }
++
++    #[test]
+     fn ordinary_pair_provider_bound_preserves_existing_writer_and_restores() {
+         let repo = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+         let original = include_bytes!("../tests/fixtures/native-pair-graph/context.original.go");
+--- /dev/null
++++ b/android/native-generation-pair/original-vkms-controller.Android.bp
+@@ -0,0 +1,62 @@
++// Copyright (C) 2026 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_applicable_licenses: ["Android-Apache-2.0"],
++    default_team: "trendy_team_desktop_display",
++}
++
++cc_binary {
++    name: "vkms_controller",
++    srcs: [
++        "main.cpp",
++        "vkms_tester.cpp",
++        "edid_helper.cpp",
++    ],
++    shared_libs: [
++        "libbase",
++        "libjsoncpp",
++        "liblog",
++        "libcutils",
++    ],
++    static_libs: [
++        "libcuttlefish_utils",
++        "libcuttlefish_fs",
++    ],
++    include_dirs: [
++        "device/google/cuttlefish",
++    ],
++    vendor: true,
++}
++
++java_test_host {
++    name: "CfVkmsControllerTest",
++    defaults: [
++        "cuttlefish_host_test_utils_defaults",
++    ],
++    srcs: [
++        "CfVkmsControllerTest.java",
++    ],
++    test_options: {
++        unit_test: false,
++    },
++    test_suites: [
++        "device-tests",
++    ],
++    libs: [
++        "compatibility-host-util",
++        "cts-tradefed",
++        "tradefed",
++    ],
++}

@@ -1,0 +1,11 @@
+package: "com.android.server.telecom.flags"
+container: "system"
+
+# OWNER=tgunn TARGET=24Q3
+flag {
+  name: "ensure_audio_mode_updates_on_foreground_call_change"
+  namespace: "telecom"
+  description: "Ensure that the audio mode is updated anytime the foreground call changes."
+  bug: "289861657"
+}
+

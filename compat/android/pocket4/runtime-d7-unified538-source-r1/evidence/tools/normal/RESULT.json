@@ -1,0 +1,1982 @@
+{
+  "APK_installs": 0,
+  "Android_builds": 0,
+  "actual_distinct_tests_passed": 333,
+  "actual_erofs_tool_qualification": {
+    "bytes": 2176,
+    "identity": [
+      2067,
+      28050893,
+      33152,
+      1000,
+      1000,
+      1,
+      2176,
+      1794594718345179911,
+      1794594718345179911
+    ],
+    "path": "/data/pocket4-erofs194-official-builder-20261113-e2a3-r1/qualification-r2/RESULT.json",
+    "sha256": "851cdfe08c053f37a7e86f89aa6f84f589dec09595e5a80afae9606c8e192cb8"
+  },
+  "all_1595_producer_files_preserved": true,
+  "all_four_original_release_F9_preserved": true,
+  "base_commit": "fbb235628023f5fb5d9e47064a6d2884d23534bc",
+  "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-runtime-d7-tools334-normal-e2a3-r1.service",
+  "commands": [
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "ended_ns": 1794613817022573018,
+      "exit_code": 0,
+      "name": "initial-head",
+      "original_pidfd_retired": true,
+      "pid": 3727753,
+      "started_ns": 1794613817013959818,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57946290,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613817012935956,
+          1794613817012935956
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/initial-head.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          2067,
+          57946289,
+          33152,
+          1000,
+          1000,
+          1,
+          41,
+          1794613817019935740,
+          1794613817019935740
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/initial-head.stdout",
+        "sha256": "31be8c98459697f408a6a28bb127b0d28ec2f16a838526c719c2655427d5b5de"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD^{tree}"
+      ],
+      "ended_ns": 1794613817031162991,
+      "exit_code": 0,
+      "name": "initial-tree",
+      "original_pidfd_retired": true,
+      "pid": 3727754,
+      "started_ns": 1794613817023086053,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57946292,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613817021935679,
+          1794613817021935679
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/initial-tree.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          2067,
+          57946291,
+          33152,
+          1000,
+          1000,
+          1,
+          41,
+          1794613817025935556,
+          1794613817025935556
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/initial-tree.stdout",
+        "sha256": "42d10865da8b6f6c0dee41c413bd35c9733e8f12d643e222906173ba72f5f3e3"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain"
+      ],
+      "ended_ns": 1794613817396950061,
+      "exit_code": 0,
+      "name": "initial-status",
+      "original_pidfd_retired": true,
+      "pid": 3727755,
+      "started_ns": 1794613817031687538,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57946294,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613817030935402,
+          1794613817030935402
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/initial-status.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57946293,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613817030935402,
+          1794613817030935402
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/initial-status.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "fbb235628023f5fb5d9e47064a6d2884d23534bc",
+        "HEAD",
+        "--check"
+      ],
+      "ended_ns": 1794613817512977512,
+      "exit_code": 0,
+      "name": "composite-diff-check",
+      "original_pidfd_retired": true,
+      "pid": 3727761,
+      "started_ns": 1794613817397725472,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57946296,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613817396924135,
+          1794613817396924135
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/composite-diff-check.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57946295,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613817396924135,
+          1794613817396924135
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/composite-diff-check.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "ls-tree",
+        "-rz",
+        "HEAD"
+      ],
+      "ended_ns": 1794613818330586562,
+      "exit_code": 0,
+      "name": "initial-source-tree",
+      "original_pidfd_retired": true,
+      "pid": 3727769,
+      "started_ns": 1794613817513732189,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57946298,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613817512920564,
+          1794613817512920564
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/initial-source-tree.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 229716,
+        "identity": [
+          2067,
+          57946297,
+          33152,
+          1000,
+          1000,
+          1,
+          229716,
+          1794613818291789597,
+          1794613818291789597
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/initial-source-tree.stdout",
+        "sha256": "50c49bdbead413f8e5d668588e99bbf671c697987ec7d0bba8201745362480c4"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "dpkg-deb",
+        "--extract",
+        "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/official-attr.deb",
+        "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/host-tools"
+      ],
+      "ended_ns": 1794613820930679162,
+      "exit_code": 0,
+      "name": "private-attr-extract",
+      "original_pidfd_retired": true,
+      "pid": 3727871,
+      "started_ns": 1794613820883446629,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57946302,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613820883315348,
+          1794613820883315348
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/private-attr-extract.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57946301,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613820883315348,
+          1794613820883315348
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/private-attr-extract.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/home/qian-qi/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "2",
+        "-p",
+        "droidloom-update",
+        "-p",
+        "droidloom-source",
+        "--no-run",
+        "--message-format=json"
+      ],
+      "ended_ns": 1794613839393537888,
+      "exit_code": 0,
+      "name": "compile-all-harnesses",
+      "original_pidfd_retired": true,
+      "pid": 3727875,
+      "started_ns": 1794613820952979013,
+      "stderr": {
+        "bytes": 556,
+        "identity": [
+          2067,
+          57946320,
+          33152,
+          1000,
+          1000,
+          1,
+          556,
+          1794613839218252706,
+          1794613839218252706
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/compile-all-harnesses.stderr",
+        "sha256": "61da5418f8a4fa70aaffd2e3aad0960e412f9c7b39bc08fcb8138728f689e111"
+      },
+      "stdout": {
+        "bytes": 65107,
+        "identity": [
+          2067,
+          57946319,
+          33152,
+          1000,
+          1000,
+          1,
+          65107,
+          1794613839218252706,
+          1794613839218252706
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/compile-all-harnesses.stdout",
+        "sha256": "cd78ff7ba39e71866675d06abf7c53b94a80ff0b908011510d3150b04036a9d4"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/target/debug/deps/droidloom_update-068867763a76d717",
+        "--list",
+        "--format=terse"
+      ],
+      "ended_ns": 1794613839852822558,
+      "exit_code": 0,
+      "name": "updater-catalog",
+      "original_pidfd_retired": true,
+      "pid": 3729659,
+      "started_ns": 1794613839848027778,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57947523,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613839847233362,
+          1794613839847233362
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/updater-catalog.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 25340,
+        "identity": [
+          2067,
+          57947522,
+          33152,
+          1000,
+          1000,
+          1,
+          25340,
+          1794613839851233239,
+          1794613839851233239
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/updater-catalog.stdout",
+        "sha256": "fd2624d2426cb403fa496a1c42626789849aaff7f6a7dfe3ac9bfb9bbab46c61"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/target/debug/deps/droidloom_source-43563c647c3a1744",
+        "--list",
+        "--format=terse"
+      ],
+      "ended_ns": 1794613839857532005,
+      "exit_code": 0,
+      "name": "source-catalog",
+      "original_pidfd_retired": true,
+      "pid": 3729660,
+      "started_ns": 1794613839853658237,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57947525,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613839853233178,
+          1794613839853233178
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/source-catalog.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 3314,
+        "identity": [
+          2067,
+          57947524,
+          33152,
+          1000,
+          1000,
+          1,
+          3314,
+          1794613839854233147,
+          1794613839854233147
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/source-catalog.stdout",
+        "sha256": "43516b71be6d8766336ec290ba1431b836b285b6f3754e76e1c2bf247be0f4d5"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/target/debug/deps/droidloom_source-40bdf4a1e24a979c",
+        "--list",
+        "--format=terse"
+      ],
+      "ended_ns": 1794613839859682995,
+      "exit_code": 0,
+      "name": "source-bin-catalog",
+      "original_pidfd_retired": true,
+      "pid": 3729661,
+      "started_ns": 1794613839857909370,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57947528,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613839857233054,
+          1794613839857233054
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/source-bin-catalog.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57947527,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613839857233054,
+          1794613839857233054
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/source-bin-catalog.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/target/debug/deps/release_queue-77a8e3c9aba527e9",
+        "--list",
+        "--format=terse"
+      ],
+      "ended_ns": 1794613839861741416,
+      "exit_code": 0,
+      "name": "release-queue-catalog",
+      "original_pidfd_retired": true,
+      "pid": 3729662,
+      "started_ns": 1794613839859987003,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57947530,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613839859232993,
+          1794613839859232993
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/release-queue-catalog.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 134,
+        "identity": [
+          2067,
+          57947529,
+          33152,
+          1000,
+          1000,
+          1,
+          134,
+          1794613839860232962,
+          1794613839860232962
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/release-queue-catalog.stdout",
+        "sha256": "7a3b017e51a7d17831e4e7dffa12a6be53ed42bbe3a27ae848266cac99880839"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/target/debug/deps/dma_heap_layout-73c83f62dc652d62",
+        "--list",
+        "--format=terse"
+      ],
+      "ended_ns": 1794613839863873781,
+      "exit_code": 0,
+      "name": "dma-heap-catalog",
+      "original_pidfd_retired": true,
+      "pid": 3729663,
+      "started_ns": 1794613839862048644,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57947532,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613839861232932,
+          1794613839861232932
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/dma-heap-catalog.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 60,
+        "identity": [
+          2067,
+          57947531,
+          33152,
+          1000,
+          1000,
+          1,
+          60,
+          1794613839862232901,
+          1794613839862232901
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/dma-heap-catalog.stdout",
+        "sha256": "e954aecf9c8e60f647572a76b5081f3d04aa09f67f52dee7b1d87d7bc2bb0256"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/target/debug/deps/droidloom_update-068867763a76d717",
+        "--list",
+        "--ignored",
+        "--format=terse"
+      ],
+      "ended_ns": 1794613839868039113,
+      "exit_code": 0,
+      "name": "updater-ignored-catalog",
+      "original_pidfd_retired": true,
+      "pid": 3729664,
+      "started_ns": 1794613839864209210,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57947534,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613839863232870,
+          1794613839863232870
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/updater-ignored-catalog.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 70,
+        "identity": [
+          2067,
+          57947533,
+          33152,
+          1000,
+          1000,
+          1,
+          70,
+          1794613839865232808,
+          1794613839865232808
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/updater-ignored-catalog.stdout",
+        "sha256": "8a1aa91f4fb622557d3751a298b872b0eb2f8f214d514385b3e35ab04691a03e"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/target/debug/deps/droidloom_update-068867763a76d717",
+        "--include-ignored",
+        "--skip",
+        "image_policy::tests::repack_preserves_android_metadata_and_adbd",
+        "--test-threads=1",
+        "--color",
+        "never"
+      ],
+      "ended_ns": 1794613867808312985,
+      "exit_code": 0,
+      "name": "updater-main-287-including-network",
+      "original_pidfd_retired": true,
+      "pid": 3729665,
+      "started_ns": 1794613839868393050,
+      "stderr": {
+        "bytes": 264,
+        "identity": [
+          2067,
+          57947536,
+          33152,
+          1000,
+          1000,
+          1,
+          264,
+          1794613867362454962,
+          1794613867362454962
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/updater-main-287-including-network.stderr",
+        "sha256": "4912e4a0f6be63972f1450914cf7fb0ed4183b360ad2f19164f50e577dcbb3b9"
+      },
+      "stdout": {
+        "bytes": 27110,
+        "identity": [
+          2067,
+          57947535,
+          33152,
+          1000,
+          1000,
+          1,
+          27110,
+          1794613867774374997,
+          1794613867774374997
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/updater-main-287-including-network.stdout",
+        "sha256": "bee604d62c2a03a320d17f118b7ec69988c9b1dd2fbbf87cfe82f09de8cf39e9"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "fakeroot",
+        "--",
+        "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/target/debug/deps/droidloom_update-068867763a76d717",
+        "--exact",
+        "image_policy::tests::repack_preserves_android_metadata_and_adbd",
+        "--test-threads=2",
+        "--color",
+        "never"
+      ],
+      "ended_ns": 1794613867928043612,
+      "exit_code": 0,
+      "name": "original-erofs-metadata-repack",
+      "original_pidfd_retired": true,
+      "pid": 3731305,
+      "started_ns": 1794613867812496934,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57947538,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613867812373830,
+          1794613867812373830
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/original-erofs-metadata-repack.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 1130,
+        "identity": [
+          2067,
+          57947537,
+          33152,
+          1000,
+          1000,
+          1,
+          1130,
+          1794613867882032201,
+          1794613867882032201
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/original-erofs-metadata-repack.stdout",
+        "sha256": "b88ce0e110f94d3e784a9651731a9944439da5c071e8005064c771dc85ff7cbe"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/target/debug/deps/droidloom_source-43563c647c3a1744",
+        "--test-threads=1",
+        "--color",
+        "never"
+      ],
+      "ended_ns": 1794613873408002236,
+      "exit_code": 0,
+      "name": "source-library-43",
+      "original_pidfd_retired": true,
+      "pid": 3731351,
+      "started_ns": 1794613867928614248,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57947540,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613867928370267,
+          1794613867928370267
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/source-library-43.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 3687,
+        "identity": [
+          2067,
+          57947539,
+          33152,
+          1000,
+          1000,
+          1,
+          3687,
+          1794613873356203553,
+          1794613873356203553
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/source-library-43.stdout",
+        "sha256": "b12738b0b4157df8c2e2dc5daeb5f9a6ded8b857bd3dc4c428ff5b20066db05b"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/target/debug/deps/droidloom_source-40bdf4a1e24a979c",
+        "--test-threads=1",
+        "--color",
+        "never"
+      ],
+      "ended_ns": 1794613873413056889,
+      "exit_code": 0,
+      "name": "source-bin-no-tests",
+      "original_pidfd_retired": true,
+      "pid": 3731640,
+      "started_ns": 1794613873408761495,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57947542,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613873408201956,
+          1794613873408201956
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/source-bin-no-tests.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 113,
+        "identity": [
+          2067,
+          57947541,
+          33152,
+          1000,
+          1000,
+          1,
+          113,
+          1794613873410201895,
+          1794613873410201895
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/source-bin-no-tests.stdout",
+        "sha256": "df166913f47ff1f04202cae9b31df67ed272d692d99a0023a8117dc3029100dd"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/target/debug/deps/release_queue-77a8e3c9aba527e9",
+        "--test-threads=2",
+        "--color",
+        "never"
+      ],
+      "ended_ns": 1794613876390772985,
+      "exit_code": 0,
+      "name": "release-queue-original-cpp-2",
+      "original_pidfd_retired": true,
+      "pid": 3731641,
+      "started_ns": 1794613873413776457,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57947544,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613873413201803,
+          1794613873413201803
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/release-queue-original-cpp-2.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 259,
+        "identity": [
+          2067,
+          57947543,
+          33152,
+          1000,
+          1000,
+          1,
+          259,
+          1794613876359111336,
+          1794613876359111336
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/release-queue-original-cpp-2.stdout",
+        "sha256": "b1dc0d95d14af722a3d323391aa042a3e2fd4a758b28be61795bb06dcabb9ced"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/home/qian-qi/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "2",
+        "-p",
+        "droidloom-source",
+        "--doc",
+        "--",
+        "--test-threads=1",
+        "--color",
+        "never"
+      ],
+      "ended_ns": 1794613880266881444,
+      "exit_code": 0,
+      "name": "source-doc-tests",
+      "original_pidfd_retired": true,
+      "pid": 3731843,
+      "started_ns": 1794613876391398276,
+      "stderr": {
+        "bytes": 312,
+        "identity": [
+          2067,
+          57947546,
+          33152,
+          1000,
+          1000,
+          1,
+          312,
+          1794613880073997269,
+          1794613880073997269
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/source-doc-tests.stderr",
+        "sha256": "135da26f8ddda3262d52441e13248af8f1fe8cd842809ce23b8848ea36d5c529"
+      },
+      "stdout": {
+        "bytes": 113,
+        "identity": [
+          2067,
+          57947545,
+          33152,
+          1000,
+          1000,
+          1,
+          113,
+          1794613880229992480,
+          1794613880229992480
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/source-doc-tests.stdout",
+        "sha256": "df166913f47ff1f04202cae9b31df67ed272d692d99a0023a8117dc3029100dd"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/bin/droidloom-update",
+        "intentresolver-security-build",
+        "--help"
+      ],
+      "ended_ns": 1794613880284160912,
+      "exit_code": 0,
+      "name": "security-entry-help",
+      "original_pidfd_retired": true,
+      "pid": 3732079,
+      "started_ns": 1794613880267450731,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57947718,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613880265991375,
+          1794613880265991375
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/security-entry-help.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 386,
+        "identity": [
+          2067,
+          57947717,
+          33152,
+          1000,
+          1000,
+          1,
+          386,
+          1794613880280990914,
+          1794613880280990914
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/security-entry-help.stdout",
+        "sha256": "26bd1a3c5b214d7c7338909292798f96a8acbbde9be59fc828b594ba747094a8"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/bin/droidloom-update",
+        "aac-security-build",
+        "--help"
+      ],
+      "ended_ns": 1794613880286197443,
+      "exit_code": 0,
+      "name": "aac-security-entry-help",
+      "original_pidfd_retired": true,
+      "pid": 3732080,
+      "started_ns": 1794613880284495271,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57947720,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613880282990853,
+          1794613880282990853
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/aac-security-entry-help.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 374,
+        "identity": [
+          2067,
+          57947719,
+          33152,
+          1000,
+          1000,
+          1,
+          374,
+          1794613880284990791,
+          1794613880284990791
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/aac-security-entry-help.stdout",
+        "sha256": "4ea22b8dbce40c70ffc67d0e14ce69d234a654ae60740209b98b996e7d6a2fe2"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/bin/droidloom-update",
+        "vendor-policy-bundle-build",
+        "--help"
+      ],
+      "ended_ns": 1794613880288552544,
+      "exit_code": 0,
+      "name": "vendor-bundle-entry-help",
+      "original_pidfd_retired": true,
+      "pid": 3732081,
+      "started_ns": 1794613880286767299,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57947722,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613880285990761,
+          1794613880285990761
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/vendor-bundle-entry-help.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 327,
+        "identity": [
+          2067,
+          57947721,
+          33152,
+          1000,
+          1000,
+          1,
+          327,
+          1794613880286990730,
+          1794613880286990730
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/vendor-bundle-entry-help.stdout",
+        "sha256": "87beab3684695dc6cd8fce97152d221e78c48cdaf50e24c1baac5715dcde29cd"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "ls-tree",
+        "-rz",
+        "HEAD"
+      ],
+      "ended_ns": 1794613880321052263,
+      "exit_code": 0,
+      "name": "final-source-tree",
+      "original_pidfd_retired": true,
+      "pid": 3732082,
+      "started_ns": 1794613880288872092,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57947724,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613880287990699,
+          1794613880287990699
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/final-source-tree.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 229716,
+        "identity": [
+          2067,
+          57947723,
+          33152,
+          1000,
+          1000,
+          1,
+          229716,
+          1794613880315218790,
+          1794613880315218790
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/final-source-tree.stdout",
+        "sha256": "50c49bdbead413f8e5d668588e99bbf671c697987ec7d0bba8201745362480c4"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "ended_ns": 1794613883053525597,
+      "exit_code": 0,
+      "name": "final-head",
+      "original_pidfd_retired": true,
+      "pid": 3732150,
+      "started_ns": 1794613883048959267,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57947726,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613883047905967,
+          1794613883047905967
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/final-head.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          2067,
+          57947725,
+          33152,
+          1000,
+          1000,
+          1,
+          41,
+          1794613883050905875,
+          1794613883050905875
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/final-head.stdout",
+        "sha256": "31be8c98459697f408a6a28bb127b0d28ec2f16a838526c719c2655427d5b5de"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain"
+      ],
+      "ended_ns": 1794613883087789922,
+      "exit_code": 0,
+      "name": "final-status",
+      "original_pidfd_retired": true,
+      "pid": 3732151,
+      "started_ns": 1794613883054096063,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57947728,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613883052905814,
+          1794613883052905814
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/final-status.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          57947727,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613883052905814,
+          1794613883052905814
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/final-status.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    }
+  ],
+  "compiled_harnesses": [
+    {
+      "artifact": {
+        "bytes": 6141952,
+        "identity": [
+          2067,
+          57946637,
+          33216,
+          1000,
+          1000,
+          1,
+          6141952,
+          1794613824355709948,
+          1794613824358709856
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/target/debug/deps/droidloom_source-40bdf4a1e24a979c",
+        "sha256": "70e009c2e117b9463353c971abfb9a9312d2c82fbb23ef7c9bc3e67e3ded6f6b"
+      },
+      "kind": [
+        "bin"
+      ],
+      "name": "droidloom-source"
+    },
+    {
+      "artifact": {
+        "bytes": 8003928,
+        "identity": [
+          2067,
+          57946828,
+          33216,
+          1000,
+          1000,
+          1,
+          8003928,
+          1794613825446676374,
+          1794613825450676251
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/target/debug/deps/release_queue-77a8e3c9aba527e9",
+        "sha256": "be8c14036842d9286bdc2e62123d3747b2e1092e514e6875f30284d2ef451005"
+      },
+      "kind": [
+        "test"
+      ],
+      "name": "release_queue"
+    },
+    {
+      "artifact": {
+        "bytes": 19644672,
+        "identity": [
+          2067,
+          57946991,
+          33216,
+          1000,
+          1000,
+          1,
+          19644672,
+          1794613827913600463,
+          1794613827923600155
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/target/debug/deps/droidloom_source-43563c647c3a1744",
+        "sha256": "40ac11a881664bdc83cae867462f4cc471475d675bde5ec8eec482ad1cd6e394"
+      },
+      "kind": [
+        "lib"
+      ],
+      "name": "droidloom_source"
+    },
+    {
+      "artifact": {
+        "bytes": 7834928,
+        "identity": [
+          2067,
+          57947264,
+          33216,
+          1000,
+          1000,
+          1,
+          7834928,
+          1794613833189438145,
+          1794613833194437991
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/target/debug/deps/dma_heap_layout-73c83f62dc652d62",
+        "sha256": "19ada856feab35bbe73d8c9de287a2c0d4878b551a488939e2508803b217da16"
+      },
+      "kind": [
+        "test"
+      ],
+      "name": "dma_heap_layout"
+    },
+    {
+      "artifact": {
+        "bytes": 53170608,
+        "identity": [
+          2067,
+          57947526,
+          33216,
+          1000,
+          1000,
+          1,
+          53170608,
+          1794613839102256273,
+          1794613839128255474
+        ],
+        "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/target/debug/deps/droidloom_update-068867763a76d717",
+        "sha256": "9a3e4f3229df578d0f3d8e5fe63f2f0c0a47bf66f4e1b82956ba3fc6ec0754b0"
+      },
+      "kind": [
+        "bin"
+      ],
+      "name": "droidloom-update"
+    }
+  ],
+  "errors": [],
+  "existing_private_public_registry_cache": {
+    "bytes": 245353,
+    "identity": [
+      2067,
+      57941227,
+      33152,
+      1000,
+      1000,
+      1,
+      245353,
+      1794612710910176311,
+      1794612710910176311
+    ],
+    "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/CACHE-COPY-RESULT.json",
+    "sha256": "b2c1a20154168bdfb5db4a991ad9978360b8aaef260b4fee37db21ad6808cb9c"
+  },
+  "finished_ns": 1794613883436765866,
+  "invocation_id": "974fcc65868149d6bee9ee949ffb5ee3",
+  "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+  "memory_peak_bytes": 997244928,
+  "official_erofs_tools": [
+    {
+      "bytes": 1012384,
+      "identity": [
+        2067,
+        28050877,
+        33261,
+        1000,
+        1000,
+        1,
+        1012384,
+        1794594537714770334,
+        1794594537714770334
+      ],
+      "path": "/data/pocket4-erofs194-official-builder-20261113-e2a3-r1/install/bin/dump.erofs",
+      "sha256": "ac53d9c00ce988ef196dd2438e8384cc3054a7df9e14e4429e9baf0275c98dd6"
+    },
+    {
+      "bytes": 1029200,
+      "identity": [
+        2067,
+        28050878,
+        33261,
+        1000,
+        1000,
+        1,
+        1029200,
+        1794594537787558219,
+        1794594537787558219
+      ],
+      "path": "/data/pocket4-erofs194-official-builder-20261113-e2a3-r1/install/bin/fsck.erofs",
+      "sha256": "f2ab4c8a4909570fcbb4b07fd470f3535d48117540ca6b097e2ea2991e114568"
+    },
+    {
+      "bytes": 1156824,
+      "identity": [
+        2067,
+        28050876,
+        33261,
+        1000,
+        1000,
+        1,
+        1156824,
+        1794594537640588356,
+        1794594537640588356
+      ],
+      "path": "/data/pocket4-erofs194-official-builder-20261113-e2a3-r1/install/bin/mkfs.erofs",
+      "sha256": "93e528457dcb4fe1361a250a2c268ea093245ae19b7b9ce6b7cffcbbd755ea75"
+    }
+  ],
+  "prior289_and_four_fresh_release_proof": {
+    "bytes": 7360,
+    "identity": [
+      2067,
+      57946273,
+      33152,
+      1000,
+      1000,
+      1,
+      7360,
+      1794612952468507388,
+      1794612952468507388
+    ],
+    "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/independent-retirement-r1/RESULT.json",
+    "sha256": "f64c29579d3c4b60a52201a8c8b6e9768119ce29f08e4b16cbdf9df24991ecdd"
+  },
+  "prior_runtime_normal": {
+    "bytes": 97958,
+    "identity": [
+      2067,
+      57946270,
+      33152,
+      1000,
+      1000,
+      1,
+      97958,
+      1794612833306523466,
+      1794612833306523466
+    ],
+    "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/qualification-normal-r1/RESULT.json",
+    "sha256": "b7a18e0f8b37d855f95885ee53cf78b0a8c02446cb2713187e459dfd2a1318c3"
+  },
+  "prior_source_baseline": {
+    "bytes": 849880,
+    "identity": [
+      2067,
+      57940786,
+      33152,
+      1000,
+      1000,
+      1,
+      849880,
+      1794612710301194483,
+      1794612710301194483
+    ],
+    "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/qualification-normal-r1/SOURCE-BEFORE.json",
+    "sha256": "a0d380265ff9bbb8892167524aa552184bbef93d6ebd914943893d87a276544d"
+  },
+  "production_ready": false,
+  "qualified_existing_release_source": {
+    "bytes": 1489480,
+    "identity": [
+      2067,
+      57946253,
+      33133,
+      1000,
+      1000,
+      1,
+      1489480,
+      1794612831107550042,
+      1794612831115588864
+    ],
+    "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/bin/droidloom-source",
+    "sha256": "3793afa31ca2dc47580980ce22cc39991fd43abeae36a66457132800a3393213"
+  },
+  "qualified_existing_release_updater": {
+    "bytes": 3382968,
+    "identity": [
+      2067,
+      57946251,
+      33133,
+      1000,
+      1000,
+      1,
+      3382968,
+      1794612830991946955,
+      1794612831004592177
+    ],
+    "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/bin/droidloom-update",
+    "sha256": "8809bdf26e9f96e4be2c3c4213d77fdc604d8edf79375392ec2114ef2fd642f9"
+  },
+  "reader_pid": 3727752,
+  "recipe_commit": "273d1a2b554923b7b53e645560ddbe5999cbde9b",
+  "recipe_tree": "cde7467f68d2de89f688431cafd494fed147e247",
+  "release_binaries_before": {
+    "droidloom-source": {
+      "bytes": 1489480,
+      "identity": [
+        2067,
+        57946253,
+        33133,
+        1000,
+        1000,
+        1,
+        1489480,
+        1794612831107550042,
+        1794612831115588864
+      ],
+      "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/bin/droidloom-source",
+      "sha256": "3793afa31ca2dc47580980ce22cc39991fd43abeae36a66457132800a3393213"
+    },
+    "droidloom-supervisor": {
+      "bytes": 2586640,
+      "identity": [
+        2067,
+        57946254,
+        33133,
+        1000,
+        1000,
+        1,
+        2586640,
+        1794612831142085087,
+        1794612831152587759
+      ],
+      "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/bin/droidloom-supervisor",
+      "sha256": "7ea99880b6fdd2081636cfb846e11bc67185361139fbdff9474dfb482398fdea"
+    },
+    "droidloom-update": {
+      "bytes": 3382968,
+      "identity": [
+        2067,
+        57946251,
+        33133,
+        1000,
+        1000,
+        1,
+        3382968,
+        1794612830991946955,
+        1794612831004592177
+      ],
+      "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/bin/droidloom-update",
+      "sha256": "8809bdf26e9f96e4be2c3c4213d77fdc604d8edf79375392ec2114ef2fd642f9"
+    },
+    "droidloomd": {
+      "bytes": 2186192,
+      "identity": [
+        2067,
+        57946252,
+        33133,
+        1000,
+        1000,
+        1,
+        2186192,
+        1794612831064663468,
+        1794612831073590117
+      ],
+      "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/bin/droidloomd",
+      "sha256": "52655f7b910139003d9ae0c5396347e26e7adbcf8d1c78d2c4968069bc94797d"
+    }
+  },
+  "release_binaries_rebuilt": 0,
+  "remaining_harness": {
+    "executed": false,
+    "name": "dma_heap_layout",
+    "reason": "Run separately with a complete original pinned minigbm checkout; never counted as passed or hidden as nested output.",
+    "registered": [
+      "dma_heap_video_planes_satisfy_gpu_and_android_layouts"
+    ]
+  },
+  "runtime_qualified": false,
+  "runtime_tests_repeated": 0,
+  "schema": "runtime-d7-exact1595-tools334-actual-harness-qualification-v1",
+  "shared_AOSP_writes": 0,
+  "source_before": {
+    "bytes": 1012570,
+    "identity": [
+      2067,
+      57946299,
+      33152,
+      1000,
+      1000,
+      1,
+      1012570,
+      1794613820558826805,
+      1794613820558826805
+    ],
+    "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools-normal334-r1/SOURCE-BEFORE.json",
+    "sha256": "9c63a196df1073f57540b9552191f91b697f84f58ddd3b23eff673d9baf4f309"
+  },
+  "started_ns": 1794613816930119567,
+  "state": "D7_333_ACTUAL_TOOL_TESTS_AND_EXISTING_FOUR_RELEASES_PRESERVED_DMA_PENDING",
+  "test_catalog": {
+    "bytes": 31149,
+    "identity": [
+      2067,
+      57946284,
+      33152,
+      1000,
+      1000,
+      1,
+      31149,
+      1794613797497646379,
+      1794613797501536876
+    ],
+    "path": "/data/pocket4-runtime-d7-unified538-20261113-e2a3-r1/tools334-catalog.json",
+    "sha256": "f0cef31c0597ddb9c1f0f42361b8b7014df76a4284412a744136e02e71e02abb"
+  },
+  "test_runs": {
+    "original_erofs_repack": {
+      "failed": 0,
+      "filtered": 287,
+      "ignored": 0,
+      "measured": 0,
+      "names": [
+        "image_policy::tests::repack_preserves_android_metadata_and_adbd"
+      ],
+      "passed": 1
+    },
+    "release_queue_2": {
+      "failed": 0,
+      "filtered": 0,
+      "ignored": 0,
+      "measured": 0,
+      "names": [
+        "host_fences_do_not_block_other_apps_or_commit_callbacks",
+        "layer_pipeline_uses_one_commit_reply_and_preserves_legacy_staging"
+      ],
+      "passed": 2
+    },
+    "source_43": {
+      "failed": 0,
+      "filtered": 0,
+      "ignored": 0,
+      "measured": 0,
+      "names": [
+        "exact_audio_depmod_source::depmod536_extends_actual535_only_with_the_exact_same_sp_kmod_four_cones",
+        "exact_audio_generic_source::exact_new_official_trusty_repositories_reject_other_names_and_traversal",
+        "exact_audio_generic_source::generic535_extends_actual458_preserving_all_original_project_pins_and_cones",
+        "exact_audio_libexif537_source::audio_libexif537_extends_actual536_only_with_one_same_sp_original_cone",
+        "exact_audio_libueventd538_source::audio_libueventd538_extends_actual537_only_with_one_same_sp_original_project",
+        "exact_audio_sdk14_source::audio_sdk14_extends_actual536_only_with_the_same_sp_public_cone",
+        "exact_trusty_names::exact_official_trusty_names_reject_unknown_projects_and_traversal",
+        "tests::actual_git_checkout_preserves_355_cones_and_hidden_blueprints",
+        "tests::audio_adb_webrtc_extends446_with_exact_original_provider_cones",
+        "tests::audio_allgraph_extends_the_actual_previous_source_without_changing_commits",
+        "tests::audio_api35_cts_extension_preserves_the_previous_materialized_plan",
+        "tests::audio_bcc_tools_extend444_without_repinning",
+        "tests::audio_chre_providers_extend444_without_repinning",
+        "tests::audio_cts_compilation_is_one_monotonic_same_commit_cone",
+        "tests::audio_cts_sts_recursive_closure_is_a_monotonic_pinned_extension",
+        "tests::audio_error_prone_jimfs_is_one_monotonic_pinned_project",
+        "tests::audio_host_tools_extends454_with_exact_original_provider_cones",
+        "tests::audio_junit_extension_keeps_the_actual_previous_projects_unchanged",
+        "tests::audio_lint_fonttools_extends_actual_r13_without_repinning",
+        "tests::audio_ondeviceintelligence_extends_actual_430_by_four_original_api_inputs",
+        "tests::audio_pasit_extends_the_actual_425_source_with_only_five_original_projects",
+        "tests::audio_reconciliation_preserves_existing_gatekeeper_purpose",
+        "tests::audio_released_sdks_extend_the_actual_r11_lock_without_repinning",
+        "tests::audio_rkpd_apex_extends_the_actual_425_source_by_one_original_cone",
+        "tests::audio_sdk33_zygote_extends_actual_r12_by_three_original_cones",
+        "tests::audio_source_capacity_is_bound_to_the_exact_frozen_lock",
+        "tests::audio_trusty_storage_extends455_with_complete_same_commit_parent_headers",
+        "tests::audio_vendor_test_tools_extend_failed431_without_repinning",
+        "tests::audio_vintf_vts_extends445_without_repinning",
+        "tests::audio_watchdog_extends453_without_repinning",
+        "tests::bounded_sparse_paths_reject_duplicates_and_escapes_at_the_new_boundary",
+        "tests::duplicate_projects_and_moving_refs_are_rejected",
+        "tests::exact_local_git_fetch_and_manifest_link_are_verified",
+        "tests::materialized_verification_rejects_dirty_projects",
+        "tests::plan_uses_only_exact_official_projects",
+        "tests::platform_compat_uses_its_official_tools_namespace",
+        "tests::project_bound_admits_superproject_gitlink_extensions_but_not_unbounded_sync",
+        "tests::reconciliation_accepts_bounded_sparse_path_expansion",
+        "tests::reconciliation_accepts_only_monotonic_plan_expansion",
+        "tests::root_links_are_relative_to_their_parent",
+        "tests::source_lock_preserves_exact_sparse_paths_through_the_368_bound",
+        "tests::source_lock_rejects_369_sparse_paths_without_truncating_them",
+        "tests::traversal_and_full_sync_policy_are_rejected_together"
+      ],
+      "passed": 43
+    },
+    "source_bin_zero": {
+      "failed": 0,
+      "filtered": 0,
+      "ignored": 0,
+      "measured": 0,
+      "names": [],
+      "passed": 0
+    },
+    "source_doc_zero": {
+      "failed": 0,
+      "filtered": 0,
+      "ignored": 0,
+      "measured": 0,
+      "names": [],
+      "passed": 0
+    },
+    "updater_main_287": {
+      "failed": 0,
+      "filtered": 1,
+      "ignored": 0,
+      "measured": 0,
+      "names": [
+        "android::aac_security::tests::aac_changed_original_patch_alias_or_preexisting_test_is_rejected",
+        "android::aac_security::tests::aac_fixed_request_keeps_strict_user_source_and_official_targets",
+        "android::aac_security::tests::aac_official_four_file_patch_recovers_originals_after_interruption",
+        "android::patch_tests::interrupted_projection_recovers_before_next_build",
+        "android::patch_tests::native_engine_effective_projection_records_final_bytes_and_applied_patch",
+        "android::patch_tests::patch_in_source_without_git_root_is_restored_inside_enclosing_checkout",
+        "android::tests::audio_actual_three_defaults_regression_preserves_original_consumers_and_providers",
+        "android::tests::audio_adb_webrtc_rejects_failed446_missing_repinned_and_narrow_sources",
+        "android::tests::audio_adb_webrtc_rejects_missing_modified_and_symlinked_original_inputs",
+        "android::tests::audio_allgraph_preserves_exact_original_provider_bytes_and_scopes",
+        "android::tests::audio_allgraph_reproduces_old_provider_removal",
+        "android::tests::audio_allgraph_required_discovery_preserves_sources_and_rejects_foreign_markers",
+        "android::tests::audio_apex_scope_excludes_only_the_explicit_target_list",
+        "android::tests::audio_apex_target_closure_is_explicit_and_preserves_native_dependencies",
+        "android::tests::audio_apex_target_closure_rejects_other_or_mixed_targets",
+        "android::tests::audio_api35_cts_keeps_real_consumers_and_original_provider_modules",
+        "android::tests::audio_api35_cts_rejects_the_observed_missing_original_inputs",
+        "android::tests::audio_bcc_rejects_failed444_and_missing_original_cone",
+        "android::tests::audio_bcc_rejects_missing_modified_and_symlinked_originals",
+        "android::tests::audio_build_source_lock_is_scoped_and_exact",
+        "android::tests::audio_chre_rejects_failed444_and_incomplete_or_repinned_providers",
+        "android::tests::audio_chre_rejects_missing_modified_and_symlinked_originals",
+        "android::tests::audio_connectivity_normal_patch_chain_preserves_providers_and_recovers",
+        "android::tests::audio_connectivity_projection_guard_keeps_other_modes_unchanged",
+        "android::tests::audio_connectivity_projection_guard_rejects_unapplied_and_partial_chain",
+        "android::tests::audio_connectivity_projection_guard_rejects_unbound_or_changed_inputs",
+        "android::tests::audio_cts_compilation_requires_original_defaults_without_deleting_consumers",
+        "android::tests::audio_cts_sts_keeps_original_provider_and_sibling_modules",
+        "android::tests::audio_cts_sts_recursive_closure_requires_all_original_source_cones",
+        "android::tests::audio_depmod536_requires_the_actual_same_sp_host_provider_and_exact_cones",
+        "android::tests::audio_depmod536_whole_original_factory_tools_and_package_reject_drift_missing_or_alias",
+        "android::tests::audio_error_prone_jimfs_requires_original_full_cone_and_commit",
+        "android::tests::audio_error_prone_projection_preserves_original_bytes_and_recovers_journal",
+        "android::tests::audio_error_prone_requires_pinned_complete_provider_and_keeps_other_scope",
+        "android::tests::audio_error_prone_restores_original_provider_and_retained_consumer_edge",
+        "android::tests::audio_gatekeeper_requires_the_complete_locked_rust_provider_cones",
+        "android::tests::audio_generic535_complete_original_blueprints_are_real_inputs_and_reject_drift_or_missing",
+        "android::tests::audio_generic535_exact_discovery_keeps_required_providers_and_rejects_foreign_markers",
+        "android::tests::audio_generic535_original_blueprints_reject_source_aliases",
+        "android::tests::audio_host_tools_rejects_failed454_missing_repinned_and_bp_only_cones",
+        "android::tests::audio_host_tools_rejects_missing_modified_and_symlinked_original_inputs",
+        "android::tests::audio_junit_provider_keeps_the_real_icu_consumer_and_all_original_dependencies",
+        "android::tests::audio_junit_provider_requires_complete_original_sources_and_prebuilt_jar",
+        "android::tests::audio_kms_scope_preserves_the_real_local_signing_chain",
+        "android::tests::audio_launcher_tapl_preserves_original_generator_chain_and_dependency_bodies",
+        "android::tests::audio_libexif537_exact_original_project_and_cone_reject_pin_or_scope_drift",
+        "android::tests::audio_libexif537_real_shared_provider_keeps_camera_and_all_direct_native_definitions",
+        "android::tests::audio_libexif537_whole_original_closure_rejects_changed_missing_aliased_or_wrong_mode_inputs",
+        "android::tests::audio_libueventd538_exact_original_project_and_cones_reject_pin_or_scope_drift",
+        "android::tests::audio_libueventd538_keeps_real_rust_provider_test_examples_and_all_direct_dependencies",
+        "android::tests::audio_libueventd538_whole_originals_reject_changed_missing_alias_link_or_exec_mode",
+        "android::tests::audio_lint_fonttools_original_provider_guard_rejects_missing_drift_and_links",
+        "android::tests::audio_lint_fonttools_rejects_the_actual_r13_lock",
+        "android::tests::audio_lint_fonttools_requires_complete_cones_and_original_commits",
+        "android::tests::audio_new_crossdevice_roots_preserve_license_and_independent_original_flags",
+        "android::tests::audio_new_launcher_ancestor_tests_keep_only_the_unselected_root_scope",
+        "android::tests::audio_npumanager_sdk_uses_exact_original_three_scopes",
+        "android::tests::audio_ondeviceintelligence_original_api_guard_rejects_drift_missing_and_links",
+        "android::tests::audio_ondeviceintelligence_rejects_the_actual_r10_430_lock",
+        "android::tests::audio_ondeviceintelligence_requires_both_original_scopes_at_same_commit",
+        "android::tests::audio_pasit_old_425_lock_reproduces_missing_original_project",
+        "android::tests::audio_pasit_original_provider_guard_rejects_drift_missing_and_links",
+        "android::tests::audio_pasit_requires_all_five_complete_same_commit_sources",
+        "android::tests::audio_pasit_retains_original_consumer_defaults_and_transitive_edges",
+        "android::tests::audio_pcm_patches_are_private_and_keep_lifecycle_order",
+        "android::tests::audio_platform_test_scope_preserves_metadata_and_real_library_provider",
+        "android::tests::audio_power_provider_requires_complete_original_cone_without_changing_other_routes",
+        "android::tests::audio_prebuilt_tradefed_selection_preserves_other_product_configuration",
+        "android::tests::audio_released_sdk_rejects_the_actual_r11_source_lock",
+        "android::tests::audio_released_sdk_requires_jar_aidl_and_system_module_inputs",
+        "android::tests::audio_required_settings_discovery_rejects_foreign_markers_without_removing_them",
+        "android::tests::audio_resource_projection_preserves_all_original_bytes_and_mtimes_on_restore",
+        "android::tests::audio_resource_projection_rejects_changed_inputs_and_does_not_touch_other_modes",
+        "android::tests::audio_rkpd_sdk_requires_the_complete_original_apex_provider",
+        "android::tests::audio_room_processor_keeps_original_transitive_dependencies",
+        "android::tests::audio_sdk14_source_paths_keep_fixed_provider_and_only_public_cone",
+        "android::tests::audio_sdk33_zygote_rejects_the_actual_r12_lock",
+        "android::tests::audio_sdk33_zygote_requires_full_original_cones_and_commits",
+        "android::tests::audio_sdk_fallback_preserves_original_scopes_and_other_modes",
+        "android::tests::audio_serialservice_metadata_preserves_license_without_inventing_a_team",
+        "android::tests::audio_shared_provider_visibility_is_exact_and_scoped",
+        "android::tests::audio_trusty_rejects_failed455_and_missing_wrong_or_bp_only_header_closure",
+        "android::tests::audio_trusty_rejects_missing_modified_or_linked_originals_and_retains_storageproxyd_edge",
+        "android::tests::audio_vendor_test_tools_reject_failed431_and_incomplete_cones",
+        "android::tests::audio_vendor_test_tools_reject_missing_modified_and_symlinked_originals",
+        "android::tests::audio_vintf_vts_rejects_failed445_and_incomplete_or_repinned_provider",
+        "android::tests::audio_vintf_vts_rejects_missing_modified_and_symlinked_originals",
+        "android::tests::audio_watchdog_rejects_failed453_missing_repinned_and_narrow_sources",
+        "android::tests::audio_watchdog_rejects_missing_modified_and_symlinked_original_inputs",
+        "android::tests::audio_zygote_original_provider_guard_rejects_missing_drift_and_links",
+        "android::tests::complete_target_set_contains_both_wire_peers_and_framework",
+        "android::tests::cts_multidevice_python_test_only_scope_keeps_runtime",
+        "android::tests::default_dependency_mode_still_overrides_inherited_allow_missing",
+        "android::tests::dependency_mapper_nativebridge_scope_keeps_soong_proto_provider",
+        "android::tests::explicit_target_closure_uses_upstream_missing_dependency_mode",
+        "android::tests::intentresolver_changed_provider_source_or_patch_is_rejected_before_projection",
+        "android::tests::intentresolver_fixed_request_keeps_audio_source_and_strict_user_command",
+        "android::tests::intentresolver_official_git_patch_and_interrupted_recovery_preserve_original",
+        "android::tests::m833_nativebridge_host_fixture_scope_is_exact_and_product_safe",
+        "android::tests::m834_avf_host_side_test_scoping_does_not_hide_product",
+        "android::tests::m835_avf_test_only_root_does_not_hide_runtime_or_full_product",
+        "android::tests::m837_preserve_stubs_provider_while_scoping_metalava_host_tools",
+        "android::tests::m838_meta_app_and_errorprone_testhelper_only",
+        "android::tests::m839_apksig_and_cts_scope_preserve_production_interfaces",
+        "android::tests::m840_nativebridge_keeps_real_errorprone_plugin_dependencies",
+        "android::tests::m841_private_translator_scopes_dice_sample_and_pvmfw_together",
+        "android::tests::m842_real_m2_jar_providers_are_not_omitted_from_soong",
+        "android::tests::m843_libcore_benchmarks_excluded_only_from_nativebridge_proof",
+        "android::tests::m844_scopes_libcore_tradefed_metrics_only_in_nativebridge",
+        "android::tests::m949_private_intdefs_only_keeps_primary_framework_modules",
+        "android::tests::m950_private_httpengine_full_original_consumer_chain",
+        "android::tests::m951_private_connectivity_jarjar_does_not_drop_native_bpf",
+        "android::tests::m953_private_audio_hal_session_scopes_only_unselected_modules",
+        "android::tests::m954_private_api_util_is_not_nativebridge_translation_dep",
+        "android::tests::minigbm_target_defers_missing_outputs_with_qualified_default_error_propagation",
+        "android::tests::missing_dependencies_are_rejected_even_if_caller_asks_to_allow_them",
+        "android::tests::native_engine_automotive_scope_is_exact_and_restored_for_all_modes",
+        "android::tests::native_engine_java_consumers_fail_closed_before_paired_producer_scope",
+        "android::tests::native_engine_mode_rejects_widening_before_command_mutation",
+        "android::tests::native_engine_mode_selects_only_android_engine_and_real_64_bit_test_install",
+        "android::tests::native_engine_paired_java_consumers_preserve_original_native_providers_and_modes",
+        "android::tests::native_engine_patch_routing_keeps_full_product_and_make_bridge_semantics",
+        "android::tests::native_engine_scope_metadata_is_covered_by_pinned_sparse_source",
+        "android::tests::native_engine_scope_metadata_matches_real_git_cone_parent_files",
+        "android::tests::nativebridge_aconfig_host_only_filter_preserves_full_product",
+        "android::tests::nativebridge_androidx_alpha_import_scoped_without_changing_full_product",
+        "android::tests::nativebridge_androidx_core_consumers_are_exactly_scoped",
+        "android::tests::nativebridge_docs_scope_accepts_only_known_docs_and_rejects_new_source_modules",
+        "android::tests::nativebridge_excludes_java_catalog_but_preserves_droidloom_cxx_native_targets",
+        "android::tests::nativebridge_host_tool_scope_preserves_original_full_product_modules",
+        "android::tests::nativebridge_java_aconfig_group_has_matched_private_scope",
+        "android::tests::nativebridge_java_feature_flag_scope_is_only_for_translator_proof",
+        "android::tests::nativebridge_java_host_boundary_preserves_real_kotlin_stdlib",
+        "android::tests::nativebridge_only_excludes_closed_unrelated_rust_tls_and_usb_group",
+        "android::tests::nativebridge_only_excludes_stats_vts_not_stats_aidl_service",
+        "android::tests::nativebridge_only_excludes_usb_gadget_vts_but_keeps_usb_gadget_service",
+        "android::tests::nativebridge_only_inputflinger_subgraph_is_not_full_product_scope",
+        "android::tests::nativebridge_only_java_stub_aggregations_do_not_hide_core_runtime",
+        "android::tests::nativebridge_only_java_test_scope_preserves_real_core_and_debian_aidl",
+        "android::tests::nativebridge_only_media_apex_packaging_scope_keeps_native_media",
+        "android::tests::nativebridge_only_scopes_java_truth_and_usb_aconfig_host_not_production",
+        "android::tests::nativebridge_only_scopes_rust_drm_and_host_allocator_without_hiding_cxx",
+        "android::tests::nativebridge_only_scopes_unrelated_rust_ffi_and_java_host_plugins",
+        "android::tests::nativebridge_original_androidx_annotation_is_retained_without_alpha_catalog",
+        "android::tests::nativebridge_private_ci_and_ota_scope_excludes_only_unselected_host_targets",
+        "android::tests::nativebridge_private_host_test_graph_is_only_scoped_for_cpp_target",
+        "android::tests::nativebridge_private_java_ojluni_test_scope_keeps_original_core_runtime",
+        "android::tests::nativebridge_private_media_sdk_merge_keeps_real_media_runtime",
+        "android::tests::nativebridge_private_only_statsd_java_sdk_and_historical_tests",
+        "android::tests::nativebridge_private_scope_excludes_flash_tool_and_vintf_tests",
+        "android::tests::nativebridge_private_scope_keeps_full_product_declarations",
+        "android::tests::nativebridge_private_statsd_apex_does_not_hide_native_statsd",
+        "android::tests::nativebridge_rust_gbm_scope_keeps_platform_gbm_and_full_product",
+        "android::tests::nativebridge_scopes_exact_eight_unselected_java_dependencies",
+        "android::tests::nativebridge_scopes_only_optional_cloud_kms_signing_modules",
+        "android::tests::nativebridge_statslog_header_stays_visible_while_unneeded_test_scopes_do_not",
+        "android::tests::nativebridge_statslog_retains_consumed_rust_header_and_bindgen",
+        "android::tests::nativebridge_strict_scope_keeps_product_camera_input_other_modules",
+        "android::tests::nativebridge_test_only_boundaries_never_touch_full_product",
+        "android::tests::nativebridge_unselected_release_tools_preserve_source_and_libraries",
+        "android::tests::nativebridge_xsdc_java_test_scope_keeps_cpp_tests",
+        "android::tests::original_connectivity_module_sdk_stubs_are_not_shadowed",
+        "android::tests::original_connectivity_staticlibs_native_preserved_with_private_ipsec_java_scope",
+        "android::tests::original_permission_sdk_stubs_are_not_shadowed",
+        "android::tests::original_vcn_provider_kept_when_tethering_bootclasspath_is_in_graph",
+        "android::tests::permission_systemserver_packaging_is_not_native_translator",
+        "android::tests::pinned_java_api_stub_file_is_rejected_if_source_changes",
+        "android::tests::private_ART_conscrypt_fuzzer_scope_preserves_other_modules",
+        "android::tests::private_aconfig_diff_tradefed_scope_keeps_real_flag_provider",
+        "android::tests::private_adb_root_keeps_three_exact_original_native_defaults_only",
+        "android::tests::private_androidx_webkit_wrapper_and_original_import_have_same_test_scope",
+        "android::tests::private_apex_testdata_and_unselected_ota_publication_modules_are_not_translator",
+        "android::tests::private_api_stub_scope_removes_only_four_doc_targets",
+        "android::tests::private_art_systemserverclasspath_fragment_keeps_native_art_runtime",
+        "android::tests::private_audio_preprocessing_benchmark_scope_is_not_product_scope",
+        "android::tests::private_audio_preprocessing_test_scope_preserves_production_modules",
+        "android::tests::private_conscrypt_apex_scope_does_not_remove_original_native_tls",
+        "android::tests::private_cronet_only_excludes_test_modules_not_apex_defaults",
+        "android::tests::private_framework_java_aggregate_scope_preserves_full_product",
+        "android::tests::private_fuzzer_scope_preserves_real_selinux_context_modules",
+        "android::tests::private_httpengine_framework_java_helpers_keep_android_native_target_set",
+        "android::tests::private_java_aconfig_scoper_preserves_native_declarations",
+        "android::tests::private_java_cli_cts_and_annotation_scopes_keep_product_libraries",
+        "android::tests::private_java_codegen_test_tools_have_exact_original_blueprint_module_types",
+        "android::tests::private_java_wifi_bluetooth_artservice_test_scope_keeps_product_native",
+        "android::tests::private_linux_statspull_retains_product_headers_without_windows_variant",
+        "android::tests::private_media_extractor_fuzzer_scope_preserves_original_media",
+        "android::tests::private_nativebridge_binder_ndk_tests_do_not_hide_runtime_binder",
+        "android::tests::private_nativebridge_cronet_stable_scope_keeps_real_product_root",
+        "android::tests::private_nativebridge_does_not_include_avf_apex_bootclasspath_packaging",
+        "android::tests::private_nativebridge_does_not_instantiate_global_api_or_cronet_java_impl",
+        "android::tests::private_nativebridge_does_not_mask_missing_declarations_in_full_build",
+        "android::tests::private_nativebridge_excludes_only_guest_linux_vm_manager_host_cli",
+        "android::tests::private_nativebridge_excludes_only_unselected_java_ui_and_coverage_trees",
+        "android::tests::private_nativebridge_exclusions_never_affect_full_product",
+        "android::tests::private_nativebridge_filters_only_original_libcore_java_test_aggregates",
+        "android::tests::private_nativebridge_java_scope_is_exact_and_reversible",
+        "android::tests::private_nativebridge_java_tethering_conscrypt_scope_is_not_product_scope",
+        "android::tests::private_nativebridge_omits_only_host_python_tool_tests",
+        "android::tests::private_nativebridge_only_exact_media_extractors_not_native_translation",
+        "android::tests::private_nativebridge_only_ignores_six_original_android_test_folders",
+        "android::tests::private_nativebridge_preserves_soong_plugin_when_scoping_test_suite",
+        "android::tests::private_nativebridge_scope_excludes_only_unrelated_express_and_avf_service_vm",
+        "android::tests::private_nativebridge_scopes_grpcio_ffi_and_host_flags_without_product_paths",
+        "android::tests::private_nativebridge_scopes_java_media_vcn_virtualization_without_dropping_native",
+        "android::tests::private_nativebridge_scopes_only_independent_rdroidtest_rust_harness",
+        "android::tests::private_nativebridge_scopes_only_unselected_skia_library",
+        "android::tests::private_nativebridge_skips_only_protobuf_media_graphics_java_apps",
+        "android::tests::private_network_java_auxiliary_modules_keep_full_native_service_graph",
+        "android::tests::private_networkstack_api_and_art_java_stubs_are_exact_module_scopes",
+        "android::tests::private_only_java_api_generated_and_conscrypt_tests_preserve_others",
+        "android::tests::private_service_manager_test_scope_does_not_hide_production_services",
+        "android::tests::private_storage_proxy_host_tool_only_keeps_vendor_storage_proxy",
+        "android::tests::private_tethering_apex_preserves_production_jar_defaults_in_native_scope",
+        "android::tests::private_translator_has_no_ota_or_apex_list_tool_graph",
+        "android::tests::private_translator_omits_unrelated_lint_and_sepolicy_snapshots_only",
+        "android::tests::private_translator_scopes_dsp_effects_but_keeps_other_media",
+        "android::tests::private_update_engine_retains_only_original_header_provider",
+        "android::tests::private_vintf_assembler_scope_keeps_real_libvintf",
+        "android::tests::production_soong_command_preserves_exact_targets_and_dependency_mode",
+        "android::tests::production_soong_commands_fix_user_for_every_normal_entry",
+        "android::tests::production_soong_inherited_environment_cannot_select_debug",
+        "android::tests::production_soong_lunch_choices_match_fixed_release_and_variant",
+        "android::tests::projection_v2_drop_after_business_error_restores_modes_and_original_absence",
+        "android::tests::projection_v2_failed_recovery_keeps_journal_and_retries_exact_original_mode",
+        "android::tests::projection_v2_pre_mirror_alias_is_rejected_before_any_journal_or_copy",
+        "android::tests::projection_v2_pre_mirror_capture_restores_after_actual_rsync_and_interruption",
+        "android::tests::projection_v2_refuses_symlink_original_without_reading_or_mutating_target",
+        "android::tests::projection_v2_rejects_legacy_or_incomplete_journals_before_source_mutation",
+        "android::tests::projection_v2_restores_deleted_recreated_exec_and_private_permissions_exactly",
+        "android::tests::real_pinned_hwbinder_original_provider_is_preserved_in_private_api_graph",
+        "android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes",
+        "android::tests::restoration_preserves_original_and_removes_created_file",
+        "android::tests::sensor_vts_certification_is_private_exclusion_not_sensor_library",
+        "android::tests::stats_codegen_java_host_test_scoped_without_hiding_generated_sources",
+        "android::tests::statsd_tradefed_host_test_is_not_product_nativebridge_dependency",
+        "android::tests::target_closure_rejects_widened_or_incomplete_target_lists",
+        "android::tests::target_closure_soong_patch_does_not_change_strict_builds",
+        "android::tests::upstream_art_test_defaults_are_not_filtered_out",
+        "android::tests::vendor_policy_bundle_original_producers_reject_drift_missing_and_aliases",
+        "android::tests::vendor_policy_bundle_real_command_overrides_inherited_debug_environment",
+        "android::tests::vendor_policy_bundle_typed_request_keeps_audio_scope_and_distinct_receipt",
+        "android::tests::vendor_policy_origin_guard_and_receipt_cannot_claim_apex_or_qpr1",
+        "android::tests::vendor_policy_real_command_overrides_inherited_debug_environment",
+        "android::tests::vendor_policy_scope_uses_normal_and_interrupted_projection_restore",
+        "android::tests::vendor_policy_typed_request_keeps_audio_lock_and_rejects_widening",
+        "assemble::tests::update_keeps_personal_state_but_replaces_runtime_mappings",
+        "bundle::artifact_tests::checks_required_components_without_requiring_identical_bytes",
+        "bundle::artifact_tests::refuses_bundle_without_minimal_system_apps",
+        "bundle::artifact_tests::refuses_mixed_native_java_bundle",
+        "bundle::artifact_tests::refuses_nonexecutable_input_launcher_even_when_recorded_that_way",
+        "bundle::artifact_tests::rejects_foreign_architecture_in_other_component",
+        "bundle::tests::inventory_detects_modes_and_files",
+        "bundle::tests::mismatched_metadata_is_not_guessed",
+        "image_policy::tests::rejects_legacy_vendor_and_other_products",
+        "install::staging_tests::all_shipped_host_programs_have_stable_entry_points",
+        "install::staging_tests::staged_component_does_not_share_mutable_inode",
+        "install::tests::failed_first_activation_restores_legacy_files_and_links",
+        "install::tests::failed_update_switches_complete_previous_release_back",
+        "licenses::tests::missing_dependency_notice_is_reported_instead_of_silently_omitted",
+        "licenses::tests::preserves_nested_notices_and_explicit_license_file_without_shipping_sources",
+        "licenses::tests::supplements_a_published_crate_that_omits_its_license_text",
+        "native_bridge::tests::archive_snapshot_reproduces_stale_ninja_test_object",
+        "native_bridge::tests::bridge_properties_replace_conflicts_and_preserve_system_identity",
+        "native_bridge::tests::development_source_requires_fork_ancestry_and_records_working_files",
+        "native_bridge::tests::local_snapshot_rebuilds_old_mtime_content_and_preserves_identical_import",
+        "native_bridge::tests::locked_source_rejects_dirty_wrong_origin_and_wrong_revision",
+        "native_bridge::tests::native_engine_snapshot_keeps_untracked_required_source_and_propagates_deletion",
+        "native_bridge::tests::published_source_pin_fetches_and_verifies",
+        "native_bridge::tests::source_lock_accepts_only_teto_and_valid_contract",
+        "native_engine::tests::native_engine_attempt_cannot_reuse_an_old_success_or_whole_bridge_manifest",
+        "native_engine::tests::native_engine_elf_metadata_preserves_real_imports_exports_and_versions",
+        "native_engine::tests::native_engine_receipt_refuses_a_different_output_before_reading_artifacts",
+        "native_engine::tests::native_engine_release_compiler_rejects_ambiguous_or_escaping_revision",
+        "package::tests::portable_recipe_has_no_builder_identity_or_local_storage",
+        "tests::aac_security_cli_rejects_widening_and_output_aliases",
+        "tests::intentresolver_security_cli_rejects_widening_and_output_aliases",
+        "tests::native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets",
+        "tests::native_engine_output_selector_keeps_default_or_exact_explicit_directory",
+        "tests::source_recovery_cli_is_explicit_and_has_no_build_path",
+        "tests::source_recovery_requires_both_normal_locks_and_only_restores_journal",
+        "tests::vendor_policy_bundle_cli_is_fixed_without_source_target_or_variant_overrides",
+        "tests::vendor_policy_bundle_output_rejects_directory_and_ancestor_aliases",
+        "tests::vendor_policy_cli_is_fixed_and_has_no_cleanup_or_target_override",
+        "tests::vendor_policy_output_rejects_aliases_and_uses_existing_two_lock_recovery",
+        "util::affinity_tests::compilation_child_leaves_two_available_cpus_outside_its_affinity",
+        "util::tests::child_holds_build_lock_after_parent_handle_is_dropped"
+      ],
+      "passed": 287
+    }
+  },
+  "whole1595_F9_preserved_including_failure_boundary": true
+}

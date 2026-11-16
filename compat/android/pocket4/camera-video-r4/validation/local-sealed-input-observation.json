@@ -1,0 +1,41 @@
+{
+  "Android_actions": 0,
+  "Main_actions": 0,
+  "Pocket4_uid1000_decoder_qualified": false,
+  "actual_uid1000_sealed_input_qualified": false,
+  "egid": 0,
+  "elapsed_seconds": 0.0016151290037669241,
+  "error": {
+    "errno": 22,
+    "message": "[Errno 22] Invalid argument",
+    "traceback": "Traceback (most recent call last):\n  File \"/workspace/scratch/347ef2dfe9ad/camera-r4-owner-merge-candidate/tools/observe_local_sealed_input.py\", line 77, in main\n    reader, metadata = decode.sealed_clip(types.SimpleNamespace(need=need), source_fd,\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/scratch/347ef2dfe9ad/camera-r4-owner-merge-candidate/source/camera_decode.py\", line 84, in sealed_clip\n    os.fchown(writer, DECODER_UID, DECODER_GID); os.fchmod(writer, 0o400)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nOSError: [Errno 22] Invalid argument\n",
+    "type": "OSError"
+  },
+  "euid": 0,
+  "gid": 0,
+  "gid_map": "         0          0          1\n",
+  "groups": [],
+  "helper_descriptors_all_closed": true,
+  "host_admission_pending": true,
+  "local_tests_pass_claim": false,
+  "observed_at_unix": 1794149035.2813456,
+  "original_bytes_unchanged": true,
+  "original_metadata_unchanged": true,
+  "original_mode": "0o400",
+  "original_uid_gid": [
+    0,
+    0
+  ],
+  "physical_audio_actions": 0,
+  "runtime_qualified": false,
+  "schema": "pocket4-camera-local-sealed-input-observation-v1",
+  "setgroups": "deny\n",
+  "source": {
+    "bytes": 16169,
+    "sha256": "7421cdd38bd45eff8c0697ce11b1372958a4a5f749c8097e3c0203ed5758056b"
+  },
+  "status": "LOCAL_HELPER_REFUSED",
+  "subprocess_actions": 0,
+  "uid": 0,
+  "uid_map": "         0          0          1\n"
+}

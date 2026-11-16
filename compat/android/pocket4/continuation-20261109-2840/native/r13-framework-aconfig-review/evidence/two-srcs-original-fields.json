@@ -1,0 +1,299 @@
+{
+  "scope": "exact original srcs metadata omitted by the owner's metadata-edge traversal; not a rejection of the planning-only closure",
+  "modules": [
+    {
+      "bytes": 82319,
+      "line": 555,
+      "name": "android.security.flags-aconfig",
+      "namespace": "",
+      "path": "frameworks/base/AconfigFlags.bp",
+      "properties": {
+        "container": "system",
+        "exportable": true,
+        "name": "android.security.flags-aconfig",
+        "package": "android.security",
+        "srcs": {
+          "syntax": "(@frameworks/base/AconfigFlags.bp:560:11-frameworks/base/AconfigFlags.bp:564:5[\"core/java/android/security/flags.aconfig\"@frameworks/base/AconfigFlags.bp:561:9, \"core/java/android/security/keychain_flags.aconfig\"@frameworks/base/AconfigFlags.bp:562:9, \"core/java/android/security/responsible_apis_flags.aconfig\"@frameworks/base/AconfigFlags.bp:563:9] + <select>)@frameworks/base/AconfigFlags.bp:564:7",
+          "unresolved_type": "*parser.Operator"
+        }
+      },
+      "sha256": "02f02f7de0500680d9e90ac662c652b71f096df22dc785e914798897eea5c7b6",
+      "type": "aconfig_declarations"
+    },
+    {
+      "bytes": 1934,
+      "line": 46,
+      "name": "telecom_flags",
+      "namespace": "",
+      "path": "packages/services/Telecomm/flags/Android.bp",
+      "properties": {
+        "container": "system",
+        "exportable": true,
+        "name": "telecom_flags",
+        "package": "com.android.server.telecom.flags",
+        "srcs": [
+          ":telecom_platform_flags_config_src"
+        ]
+      },
+      "sha256": "880e4c03b4117072de8d4adc4a434fa7b67c3288cc222da9bfb7a1d96abb0204",
+      "type": "aconfig_declarations"
+    }
+  ],
+  "blueprint_excerpts": [
+    {
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/base/AconfigFlags.bp",
+      "bytes": 82319,
+      "sha256": "02f02f7de0500680d9e90ac662c652b71f096df22dc785e914798897eea5c7b6",
+      "lines": [
+        {
+          "n": 554,
+          "text": "// Security"
+        },
+        {
+          "n": 555,
+          "text": "aconfig_declarations {"
+        },
+        {
+          "n": 556,
+          "text": "    name: \"android.security.flags-aconfig\","
+        },
+        {
+          "n": 557,
+          "text": "    package: \"android.security\","
+        },
+        {
+          "n": 558,
+          "text": "    exportable: true,"
+        },
+        {
+          "n": 559,
+          "text": "    container: \"system\","
+        },
+        {
+          "n": 560,
+          "text": "    srcs: ["
+        },
+        {
+          "n": 561,
+          "text": "        \"core/java/android/security/flags.aconfig\","
+        },
+        {
+          "n": 562,
+          "text": "        \"core/java/android/security/keychain_flags.aconfig\","
+        },
+        {
+          "n": 563,
+          "text": "        \"core/java/android/security/responsible_apis_flags.aconfig\","
+        },
+        {
+          "n": 564,
+          "text": "    ] + select(release_flag(\"RELEASE_CONSCRYPT_NSC\"), {"
+        },
+        {
+          "n": 565,
+          "text": "        true: ["
+        },
+        {
+          "n": 566,
+          "text": "            \"core/java/android/security/conscrypt_nsc_on.aconfig\","
+        },
+        {
+          "n": 567,
+          "text": "        ],"
+        },
+        {
+          "n": 568,
+          "text": "        default: ["
+        },
+        {
+          "n": 569,
+          "text": "            \"core/java/android/security/conscrypt_nsc_off.aconfig\","
+        },
+        {
+          "n": 570,
+          "text": "        ],"
+        },
+        {
+          "n": 571,
+          "text": "    }),"
+        },
+        {
+          "n": 572,
+          "text": "}"
+        }
+      ]
+    },
+    {
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/services/Telecomm/flags/Android.bp",
+      "bytes": 1934,
+      "sha256": "880e4c03b4117072de8d4adc4a434fa7b67c3288cc222da9bfb7a1d96abb0204",
+      "lines": [
+        {
+          "n": 16,
+          "text": ""
+        },
+        {
+          "n": 17,
+          "text": "package {"
+        },
+        {
+          "n": 18,
+          "text": "    default_applicable_licenses: [\"Android-Apache-2.0\"],"
+        },
+        {
+          "n": 19,
+          "text": "}"
+        },
+        {
+          "n": 20,
+          "text": ""
+        },
+        {
+          "n": 21,
+          "text": "// Only include 26Q2 flags in the system container while Telecom is not being"
+        },
+        {
+          "n": 22,
+          "text": "// compiled into telephonycore"
+        },
+        {
+          "n": 23,
+          "text": "filegroup {"
+        },
+        {
+          "n": 24,
+          "text": "    name: \"telecom_platform_flags_config_src\","
+        },
+        {
+          "n": 25,
+          "text": "    srcs: ["
+        },
+        {
+          "n": 26,
+          "text": "        \"telecom_ringer_flag_declarations.aconfig\","
+        },
+        {
+          "n": 27,
+          "text": "        \"telecom_api_flags.aconfig\","
+        },
+        {
+          "n": 28,
+          "text": "        \"telecom_call_filtering_flags.aconfig\","
+        },
+        {
+          "n": 29,
+          "text": "        \"telecom_incallservice_flags.aconfig\","
+        },
+        {
+          "n": 30,
+          "text": "        \"telecom_default_phone_account_flags.aconfig\","
+        },
+        {
+          "n": 31,
+          "text": "        \"telecom_callaudioroutestatemachine_flags.aconfig\","
+        },
+        {
+          "n": 32,
+          "text": "        \"telecom_call_flags.aconfig\","
+        },
+        {
+          "n": 33,
+          "text": "        \"telecom_calls_manager_flags.aconfig\","
+        },
+        {
+          "n": 34,
+          "text": "        \"telecom_anomaly_report_flags.aconfig\","
+        },
+        {
+          "n": 35,
+          "text": "        \"telecom_resolve_hidden_dependencies.aconfig\","
+        },
+        {
+          "n": 36,
+          "text": "        \"telecom_connection_service_wrapper_flags.aconfig\","
+        },
+        {
+          "n": 37,
+          "text": "        \"telecom_bluetoothdevicemanager_flags.aconfig\","
+        },
+        {
+          "n": 38,
+          "text": "        \"telecom_non_critical_security_flags.aconfig\","
+        },
+        {
+          "n": 39,
+          "text": "        \"telecom_headless_system_user_mode.aconfig\","
+        },
+        {
+          "n": 40,
+          "text": "        \"telecom_metrics_flags.aconfig\","
+        },
+        {
+          "n": 41,
+          "text": "        \"telecom_integrated_call_log.aconfig\","
+        },
+        {
+          "n": 42,
+          "text": "        \"telecom_platform_flags.aconfig\","
+        },
+        {
+          "n": 43,
+          "text": "    ],"
+        },
+        {
+          "n": 44,
+          "text": "}"
+        },
+        {
+          "n": 45,
+          "text": ""
+        },
+        {
+          "n": 46,
+          "text": "aconfig_declarations {"
+        },
+        {
+          "n": 47,
+          "text": "    name: \"telecom_flags\","
+        },
+        {
+          "n": 48,
+          "text": "    package: \"com.android.server.telecom.flags\","
+        },
+        {
+          "n": 49,
+          "text": "    exportable: true,"
+        },
+        {
+          "n": 50,
+          "text": "    container: \"system\","
+        },
+        {
+          "n": 51,
+          "text": "    srcs: ["
+        },
+        {
+          "n": 52,
+          "text": "        \":telecom_platform_flags_config_src\","
+        },
+        {
+          "n": 53,
+          "text": "    ],"
+        },
+        {
+          "n": 54,
+          "text": "}"
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "bytes": 393709,
+    "sha256": "eb7dd68de94ff82addda54fd98f93fe78075fd37770b1a10392cd39917679e51",
+    "keys": [
+      "schema_version",
+      "source_lock_sha256",
+      "plan"
+    ]
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "schema": "pocket4-c11-binder-combined-normal-v1",
+  "unit": "p4-c11-binder-combined-normal-20261109-2840-r1",
+  "exit_code": 0,
+  "source_binding": {
+    "origin": "/home/alex/work/pocket4-production-binder-stage-20261109-2840-r1/c11-ownership-review-r1/source",
+    "copied_before_after_equal": true,
+    "source_inventory_bytes": 66234,
+    "source_inventory_sha256": "95d7627c59b7ba8b5115e3e68e8bcffa13fc3db92e37dd00bb116eaf0f990d70",
+    "source_file_count": 411,
+    "source_total_bytes": 6193974,
+    "changed_files": {
+      "runtime/droidloom-supervisor/src/production_namespace_binder_child.rs": {
+        "bytes": 23165,
+        "sha256": "963907d9c0d0351d2d786ec86863f67483b17475b9cc1d6132d308a31f0bd3bc"
+      },
+      "runtime/droidloom-supervisor/src/production_namespace_binder_ipc_child.rs": {
+        "bytes": 26376,
+        "sha256": "b2e91a38012c533da580e0506ae7fd088c8eeca8552308df4e159ca0bb1ecf99"
+      },
+      "runtime/droidloom-supervisor/src/production_namespace_binder_parent.rs": {
+        "bytes": 21779,
+        "sha256": "ad7b9aa3b7a2ba81c35dd0a4cd66ca80e3e4a4f202a0b5584f9eb6b7607aef71"
+      }
+    }
+  },
+  "source_after_equal": true,
+  "fresh_supervisor_compilation": true,
+  "groups": [
+    {
+      "name": "deadline-module",
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-supervisor",
+        "--lib",
+        "production_namespace::child::private_binder_ipc::tests",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "expected_summary_found": true
+    },
+    {
+      "name": "original-binder-group",
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-supervisor",
+        "--lib",
+        "binder",
+        "--",
+        "--test-threads=1",
+        "--skip",
+        "completed_work_and_owned_retirement_keep_distinct_budgets",
+        "--skip",
+        "late_success_is_rejected_without_repeating_the_completed_operation"
+      ],
+      "exit_code": 0,
+      "expected_summary_found": true
+    }
+  ],
+  "logs": {
+    "deadline-module.log": {
+      "bytes": 9647,
+      "sha256": "e3f4e1a9f7a104315ac01ef79aa84ce05dc132c6593a5062e8a30039cdbffa0c"
+    },
+    "original-binder-group.log": {
+      "bytes": 8195,
+      "sha256": "18ca4beb076865589e4ac6a77ec37da60d3f16a2ef912396d6fe6db62d30981f"
+    }
+  },
+  "test_elf": {
+    "path": "/home/alex/work/pocket4-production-binder-stage-20261109-2840-r1/c11-combined-review-r1/target/debug/deps/droidloom_supervisor-63ac7238d3bd685e",
+    "bytes": 42959272,
+    "sha256": "86f22dda389b4dcf88e75b14ae347e9b92f3ab1646ffb0b8098291405c48a1e9"
+  },
+  "private_controls_run": 0,
+  "android_actions": 0,
+  "runtime_qualified": false,
+  "production_ready": false
+}

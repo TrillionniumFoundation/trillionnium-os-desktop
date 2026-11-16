@@ -1,0 +1,109 @@
+{
+  "schema": "pocket4-audio13-independent-single-read-v1",
+  "state": "NORMAL_FULL_COMMAND_FAILED_OUTER_TERMINAL_UNOBSERVED",
+  "remote_mutations": 0,
+  "shared_source_mutations": 0,
+  "full_builds_started": 0,
+  "full_stop_actions": 0,
+  "ordinary_controls_run": 0,
+  "production_ready": false,
+  "full_build_qualified": false,
+  "artifact_qualified": false,
+  "runtime_qualified": false,
+  "original_full_h": {
+    "host": "desktop",
+    "job_id": "1a1c1a26c66-e62c-e8",
+    "last_observed_state": "running",
+    "terminal_observed": false,
+    "independent_outer_retirement_observed": false
+  },
+  "actual_unit": {
+    "unit": "p4-audio-source430-original-sdk33-zygote-full-desktop-20261109-8b88-r13.service",
+    "returncode": 0,
+    "stdout": "MainPID=2206774\nResult=success\nExecMainPID=2206774\nExecMainStatus=0\nControlGroup=/system.slice/p4-audio-source430-original-sdk33-zygote-full-desktop-20261109-8b88-r13.service\nMemoryCurrent=23619059712\nMemoryPeak=23623012352\nCPUUsageNSec=1239465704000\nTasksCurrent=112\nMemoryHigh=23622320128\nMemoryMax=25769803776\nMemorySwapMax=0\nLoadState=loaded\nActiveState=active\nSubState=running\nInvocationID=15d6f3aa19a44167bd85810ba92474e7\n",
+    "stderr": "",
+    "observed_utc": "2026-11-09T19:04:27.947919+00:00"
+  },
+  "normal_command": {
+    "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r13/commands/normal-full-audio-apex.json",
+    "bytes": 3166,
+    "sha256": "efc3e471a33f2f2e52a7a3ac1f3421737c544daacbd84952e75bc00656a0280c",
+    "returncode": 1,
+    "owned_retirement_complete": true,
+    "started_ns": "1794250238746356443",
+    "finished_ns": "1794251082333187849",
+    "scope": "Only this normal child command's retirement; not outer unit/cgroup/locks"
+  },
+  "failures": [
+    {
+      "consumer": "tools/lint_checks/utils/Android.bp",
+      "line": 43,
+      "module": "enforce_permission_counter",
+      "undefined_provider": "soong_lint_fix"
+    },
+    {
+      "consumer": "frameworks/base/tools/fonts/Android.bp",
+      "line": 28,
+      "module": "fontchain_linter",
+      "undefined_provider": "fontTools"
+    },
+    {
+      "consumer": "frameworks/base/tools/fonts/Android.bp",
+      "line": 40,
+      "module": "update_font_metadata",
+      "undefined_provider": "fontTools"
+    }
+  ],
+  "actual_input": {
+    "recipe_commit": "656a52175b4e91073aaee0865e05ce2b3fc74b1f",
+    "recipe_tree": "faaee46cdde2fb3490edaaaae9f3c8fef3015844",
+    "lock": {
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/recipe-sdk33-zygote-r1/android/manifest/audio-bridge-source-lock.json",
+      "bytes": 239451,
+      "sha256": "9a68f55567b88f89face6dce6121a60ee27fae028285c3cc0cda4cbae1d43364",
+      "git_blob": "fc12df62e5785ae462b646159651affc21a3dc18"
+    },
+    "project_revisions": {
+      "count": 430,
+      "tuple_sha256": "c3bf812f91399620e069ada6f0fca323fae7de82c0fd5c2b05e900d1fce72d4a",
+      "same_all_430_as_b555": true
+    },
+    "sdk_original_inputs_in_controller": 151,
+    "zygote_original_inputs_in_controller": 10,
+    "independently_hashed_original_files": 10,
+    "all_10_full_sha256_and_git_blob_matches": true,
+    "materialized_manifest": {
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/.droidloom-source-manifest.json",
+      "bytes": 265618,
+      "sha256": "6298380690d6bb5253c40999c6d2331350b2a5137944b3110b75764eba894ffc",
+      "git_blob": "7880ea76cb1a11e32c813097266e02ca82520335"
+    }
+  },
+  "selector_interpretation": {
+    "actual_added_paths": {
+      "prebuilts/sdk": [
+        "33/module-lib"
+      ],
+      "system/zygote": [
+        "zygote-proc-macros",
+        "zygote-sys"
+      ]
+    },
+    "literal_two_jar_selector_test_in_initial_reader": false,
+    "reason": "Owner uses the complete directory selector 33/module-lib rather than our two literal file selectors. Actual required JARs exist and full bytes/hash/Gitblob match originals. The literal-membership false in the initial reader is not evidence of missing files.",
+    "exact_b555_recipe": false,
+    "same_430_project_revisions_as_b555": true
+  },
+  "boundary": {
+    "allow_missing_dependencies": false,
+    "target_release": "cp2a",
+    "no_qpr1_full_credit": true,
+    "ordinary_controls_are_not_runtime": true,
+    "outer_recovery_or_locks_not_reobserved": true
+  },
+  "read_times": {
+    "controller": "2026-11-09T19:04:27.947919+00:00",
+    "input_and_tails": "2026-11-09T19:06:56.726895+00:00",
+    "static_pins": "2026-11-09T19:13:16.800770+00:00"
+  }
+}

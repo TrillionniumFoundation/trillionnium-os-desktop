@@ -1,0 +1,67 @@
+
+running 24 tests
+test tests::actual_git_checkout_preserves_355_cones_and_hidden_blueprints ... ok
+test tests::audio_allgraph_extends_the_actual_previous_source_without_changing_commits ... FAILED
+test tests::audio_api35_cts_extension_preserves_the_previous_materialized_plan ... ok
+test tests::audio_cts_compilation_is_one_monotonic_same_commit_cone ... ok
+test tests::audio_cts_sts_recursive_closure_is_a_monotonic_pinned_extension ... ok
+test tests::audio_error_prone_jimfs_is_one_monotonic_pinned_project ... ok
+test tests::audio_junit_extension_keeps_the_actual_previous_projects_unchanged ... ok
+test tests::audio_pasit_extends_the_actual_425_source_with_only_five_original_projects ... FAILED
+test tests::audio_reconciliation_preserves_existing_gatekeeper_purpose ... ok
+test tests::audio_rkpd_apex_extends_the_actual_425_source_by_one_original_cone ... FAILED
+test tests::audio_source_capacity_is_bound_to_the_exact_frozen_lock ... FAILED
+test tests::bounded_sparse_paths_reject_duplicates_and_escapes_at_the_new_boundary ... ok
+test tests::duplicate_projects_and_moving_refs_are_rejected ... ok
+test tests::exact_local_git_fetch_and_manifest_link_are_verified ... ok
+test tests::materialized_verification_rejects_dirty_projects ... ok
+test tests::plan_uses_only_exact_official_projects ... ok
+test tests::platform_compat_uses_its_official_tools_namespace ... ok
+test tests::project_bound_admits_superproject_gitlink_extensions_but_not_unbounded_sync ... ok
+test tests::reconciliation_accepts_bounded_sparse_path_expansion ... ok
+test tests::reconciliation_accepts_only_monotonic_plan_expansion ... ok
+test tests::root_links_are_relative_to_their_parent ... ok
+test tests::source_lock_preserves_exact_sparse_paths_through_the_368_bound ... ok
+test tests::source_lock_rejects_369_sparse_paths_without_truncating_them ... ok
+test tests::traversal_and_full_sync_policy_are_rejected_together ... ok
+
+failures:
+
+---- tests::audio_allgraph_extends_the_actual_previous_source_without_changing_commits stdout ----
+
+thread 'tests::audio_allgraph_extends_the_actual_previous_source_without_changing_commits' (314201) panicked at tools/droidloom-source/src/lib.rs:950:9:
+assertion `left == right` failed
+  left: "14be7074e764744952f67379fc8aabc1186cccff0f2e85ffad4b5724172b32af"
+ right: "1dd0671551fb3c07cac4bb9b587346421321a6e4809494299f7b6daa4c49371c"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- tests::audio_pasit_extends_the_actual_425_source_with_only_five_original_projects stdout ----
+
+thread 'tests::audio_pasit_extends_the_actual_425_source_with_only_five_original_projects' (314207) panicked at tools/droidloom-source/src/lib.rs:950:9:
+assertion `left == right` failed
+  left: "14be7074e764744952f67379fc8aabc1186cccff0f2e85ffad4b5724172b32af"
+ right: "1dd0671551fb3c07cac4bb9b587346421321a6e4809494299f7b6daa4c49371c"
+
+---- tests::audio_rkpd_apex_extends_the_actual_425_source_by_one_original_cone stdout ----
+
+thread 'tests::audio_rkpd_apex_extends_the_actual_425_source_by_one_original_cone' (314209) panicked at tools/droidloom-source/src/lib.rs:950:9:
+assertion `left == right` failed
+  left: "14be7074e764744952f67379fc8aabc1186cccff0f2e85ffad4b5724172b32af"
+ right: "1dd0671551fb3c07cac4bb9b587346421321a6e4809494299f7b6daa4c49371c"
+
+---- tests::audio_source_capacity_is_bound_to_the_exact_frozen_lock stdout ----
+
+thread 'tests::audio_source_capacity_is_bound_to_the_exact_frozen_lock' (314210) panicked at tools/droidloom-source/src/lib.rs:2128:9:
+assertion `left == right` failed
+  left: "46084ee55d24ee0178d09fb886886e07e8897949ea6300a30860b99f0a89c84f"
+ right: "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a"
+
+
+failures:
+    tests::audio_allgraph_extends_the_actual_previous_source_without_changing_commits
+    tests::audio_pasit_extends_the_actual_425_source_with_only_five_original_projects
+    tests::audio_rkpd_apex_extends_the_actual_425_source_by_one_original_cone
+    tests::audio_source_capacity_is_bound_to_the_exact_frozen_lock
+
+test result: FAILED. 20 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
+

@@ -1,0 +1,88 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "/home/qian-qi/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j2",
+        "-p",
+        "droidloom-source",
+        "-p",
+        "droidloom-update",
+        "--",
+        "--test-threads=2"
+      ],
+      "elapsed_seconds": 8.862,
+      "log": {
+        "bytes": 28036,
+        "path": "/data/pocket4-audio-sdk-closure-20261109-2840-r1/source-history-tests-r3/combined-normal-tests.log",
+        "sha256": "22d76ebd416bf2e602208b435dd441f89df6a73a31aa1e64e07907681b2f1d23"
+      },
+      "name": "combined-normal-tests",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/home/qian-qi/.cargo/bin/cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-j2",
+        "-p",
+        "droidloom-source",
+        "-p",
+        "droidloom-update"
+      ],
+      "elapsed_seconds": 0.729,
+      "log": {
+        "bytes": 208,
+        "path": "/data/pocket4-audio-sdk-closure-20261109-2840-r1/source-history-tests-r3/normal-tools-build.log",
+        "sha256": "e4aa5f61970369c671dd69351790d374cd5898373acfa15527bc44c3aa02fcbf"
+      },
+      "name": "normal-tools-build",
+      "returncode": 0
+    }
+  ],
+  "finished_utc": "2026-11-09T15:01:18Z",
+  "foreground_history_patch": {
+    "bytes": 7037,
+    "path": "/data/pocket4-audio-sdk-closure-20261109-2840-r1/foreground-source-lib-history-followup.patch",
+    "sha256": "0c93ffaf1bd6fd9f53bbb8463351fadd32429e99d38169d3f13fe042beee25d0"
+  },
+  "private_attr_tools": {
+    "bytes": 767,
+    "path": "/data/pocket4-audio-sdk-closure-20261109-2840-r1/test-host-tools-r1/RESULT.json",
+    "sha256": "d0c78d5e7d0376ddc465b8c4c10635ced4b1b23741c301525457598a5166baf2"
+  },
+  "private_erofs_tools": {
+    "bytes": 2845,
+    "path": "/data/pocket4-audio-sdk-closure-20261109-2840-r1/test-erofs-1.9.4-r1/build-r1/RESULT.json",
+    "sha256": "13e2d12a5a69ef1fe8966969813e3f2d8e671119a4daa57fea8aaca9a770acbe"
+  },
+  "production_ready": false,
+  "recipe": "/data/pocket4-audio-sdk-closure-20261109-2840-r1/recipe-source-history-r1",
+  "source_parent": "557bff5c84eef7eea9af4533ac7391e3ae676d0f",
+  "source_patch": {
+    "bytes": 8514,
+    "path": "/data/pocket4-audio-sdk-closure-20261109-2840-r1/source-history-r3.patch",
+    "sha256": "3e7a254ca07cf0d80cf1f2fe96ec3d01cba3890f0a8d44ffc828cb0c6889c8ad"
+  },
+  "source_reconcile_job_unchanged": "1a1c0a83b12-11c5a-b",
+  "started_utc": "2026-11-09T15:01:08Z",
+  "state": "COMBINED_NORMAL_TESTS_AND_TOOLS_BUILD_PASSED",
+  "test_environment_path": "/data/pocket4-audio-sdk-closure-20261109-2840-r1/test-erofs-1.9.4-r1/install/bin:/data/pocket4-audio-sdk-closure-20261109-2840-r1/test-host-tools-r1/root/usr/bin:/home/qian-qi/.cargo/bin:/usr/local/bin:/usr/bin:/usr/sbin:/bin:/sbin",
+  "tools": {
+    "droidloom-source": {
+      "bytes": 19273872,
+      "path": "/data/pocket4-audio-sdk-closure-20261109-2840-r1/tools-source-history-r3/droidloom-source",
+      "sha256": "6224f4a0074eaf02b5f32ed4c1c7f5431b4f6737810059c6137dbe8fb5190ba6"
+    },
+    "droidloom-update": {
+      "bytes": 32337832,
+      "path": "/data/pocket4-audio-sdk-closure-20261109-2840-r1/tools-source-history-r3/droidloom-update",
+      "sha256": "31ed55027bf698bbb618f073a8da176d650841a5539fd4346262aa6d018a408f"
+    }
+  }
+}

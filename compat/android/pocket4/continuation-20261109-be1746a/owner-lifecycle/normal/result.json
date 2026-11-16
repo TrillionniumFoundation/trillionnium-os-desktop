@@ -1,0 +1,261 @@
+{
+  "schema": "pocket4-owner-lifecycle-r2-normal-v1",
+  "started_utc": "2026-11-09T10:49:30.141981+00:00",
+  "source": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/source",
+  "source_before_format": [
+    {
+      "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/source/runtime/droidloom-supervisor/src/production_namespace.rs",
+      "bytes": 48287,
+      "sha256": "2e7266092d0ac52b21b57e1910c02a3840873fbe1c0370560bf98315d34867ea"
+    },
+    {
+      "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/source/runtime/droidloom-supervisor/src/production_namespace_child.rs",
+      "bytes": 30634,
+      "sha256": "af2f31a108a823f4701de18cfc2ac9079877c2c682ecab1a37c96006ca825d3b"
+    },
+    {
+      "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/source/runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+      "bytes": 25162,
+      "sha256": "d3372123a268adb14fef4d3ec29372a029676316f6f9e2b8888c550ffefa09e9"
+    }
+  ],
+  "commands": [
+    {
+      "name": "cargo-version",
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "--version"
+      ],
+      "pid": 392408,
+      "returncode": 0,
+      "timed_out": false,
+      "owned_child_pidfd_exit_observed": true,
+      "elapsed_seconds": 0.014850434999971185,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/normal-r1/cargo-version.stdout",
+        "bytes": 36,
+        "sha256": "49f46ff5ffe434e6c1c66388a9230ac33bbe3dbd9175314e9ffc9aa7c418d329"
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/normal-r1/cargo-version.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "rustfmt-version",
+      "argv": [
+        "/home/alex/.cargo/bin/rustfmt",
+        "--version"
+      ],
+      "pid": 392410,
+      "returncode": 0,
+      "timed_out": false,
+      "owned_child_pidfd_exit_observed": true,
+      "elapsed_seconds": 0.01690751400019508,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/normal-r1/rustfmt-version.stdout",
+        "bytes": 45,
+        "sha256": "18c27b2edb9dc4f4b4c1bf459fe870386f3b6788b0d609e0a590ab4ce3c1d1e6"
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/normal-r1/rustfmt-version.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "rustfmt",
+      "argv": [
+        "/home/alex/.cargo/bin/rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "runtime/droidloom-supervisor/src/production_namespace.rs",
+        "runtime/droidloom-supervisor/src/production_namespace_child.rs",
+        "runtime/droidloom-supervisor/src/production_namespace_tests.rs"
+      ],
+      "pid": 392416,
+      "returncode": 0,
+      "timed_out": false,
+      "owned_child_pidfd_exit_observed": true,
+      "elapsed_seconds": 0.03393224899991765,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/normal-r1/rustfmt.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/normal-r1/rustfmt.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "production-normal-tests",
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-supervisor",
+        "--lib",
+        "production_",
+        "--",
+        "--test-threads=1",
+        "--nocapture",
+        "--skip",
+        "privileged_private_userns_mapping_controls",
+        "--skip",
+        "privileged_private_pid1_namespace_controls",
+        "--skip",
+        "privileged_private_empty_base_mount_controls",
+        "--skip",
+        "privileged_private_device_mount_controls",
+        "--skip",
+        "privileged_proc_pid_namespace_view_controls"
+      ],
+      "pid": 392418,
+      "returncode": 0,
+      "timed_out": false,
+      "owned_child_pidfd_exit_observed": true,
+      "elapsed_seconds": 27.674123595999845,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/normal-r1/production-normal-tests.stdout",
+        "bytes": 9629,
+        "sha256": "f3a78f916215773fce60acff686ca80db0aa392e90055f876bd4e1fb3b3a7c50"
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/normal-r1/production-normal-tests.stderr",
+        "bytes": 8628,
+        "sha256": "58804b27cf5706958dc30e8064fceef44126123d8f2d635d3c79537622404b37"
+      }
+    },
+    {
+      "name": "normal-both-binaries",
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-supervisor",
+        "--bin",
+        "droidloom-supervisor",
+        "--bin",
+        "droidloomd"
+      ],
+      "pid": 394794,
+      "returncode": 0,
+      "timed_out": false,
+      "owned_child_pidfd_exit_observed": true,
+      "elapsed_seconds": 5.681000836000749,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/normal-r1/normal-both-binaries.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/qualification/normal-r1/normal-both-binaries.stderr",
+        "bytes": 38866,
+        "sha256": "945d65986c1411458b7735d5183ecd1c647ec757aa62bc01a43fd0d48cb94de8"
+      }
+    }
+  ],
+  "resources_before": {
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1bfed6576-5e21-7de.service",
+    "affinity": [
+      0
+    ],
+    "cpu.max": "100000 100000",
+    "memory.max": "4294967296",
+    "memory.current": "19005440",
+    "memory.peak": "19009536",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "pids.max": "30047"
+  },
+  "Android_starts": 0,
+  "production_admission": false,
+  "runtime_qualified": false,
+  "production_ready": false,
+  "private_controls_executed": 0,
+  "shared_owner_mutations": 0,
+  "passed": true,
+  "source_after_format": [
+    {
+      "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/source/runtime/droidloom-supervisor/src/production_namespace.rs",
+      "bytes": 48287,
+      "sha256": "2e7266092d0ac52b21b57e1910c02a3840873fbe1c0370560bf98315d34867ea"
+    },
+    {
+      "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/source/runtime/droidloom-supervisor/src/production_namespace_child.rs",
+      "bytes": 30634,
+      "sha256": "af2f31a108a823f4701de18cfc2ac9079877c2c682ecab1a37c96006ca825d3b"
+    },
+    {
+      "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/source/runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+      "bytes": 25162,
+      "sha256": "d3372123a268adb14fef4d3ec29372a029676316f6f9e2b8888c550ffefa09e9"
+    }
+  ],
+  "test_result_lines": [
+    "test result: ok. 92 passed; 0 failed; 0 ignored; 0 measured; 151 filtered out; finished in 2.12s"
+  ],
+  "creator_barrier_lines": [
+    "creator-exit barrier rearm=false: readable_after_join=true; held_thread_exit=true",
+    "creator-exit barrier rearm=true: readable_after_join=false; held_thread_exit=true"
+  ],
+  "binaries": [
+    {
+      "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/target/debug/droidloom-supervisor",
+      "bytes": 35382056,
+      "sha256": "0398fcd14add1f635e130f04617afe36a3f73cd8f94a7aad7a35693ac5012946"
+    },
+    {
+      "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/target/debug/droidloomd",
+      "bytes": 34906768,
+      "sha256": "dcb52d25b7ce13d8afa8af11201b1246bef7d8a590f518f7a413d4e179b70231"
+    }
+  ],
+  "source_final": [
+    {
+      "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/source/runtime/droidloom-supervisor/src/production_namespace.rs",
+      "bytes": 48287,
+      "sha256": "2e7266092d0ac52b21b57e1910c02a3840873fbe1c0370560bf98315d34867ea"
+    },
+    {
+      "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/source/runtime/droidloom-supervisor/src/production_namespace_child.rs",
+      "bytes": 30634,
+      "sha256": "af2f31a108a823f4701de18cfc2ac9079877c2c682ecab1a37c96006ca825d3b"
+    },
+    {
+      "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/source/runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+      "bytes": 25162,
+      "sha256": "d3372123a268adb14fef4d3ec29372a029676316f6f9e2b8888c550ffefa09e9"
+    }
+  ],
+  "changed_source_paths": [
+    "runtime/droidloom-supervisor/src/production_namespace.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_child.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_tests.rs"
+  ],
+  "finished_utc": "2026-11-09T10:50:03.618255+00:00",
+  "resources_final": {
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1bfed6576-5e21-7de.service",
+    "affinity": [
+      0
+    ],
+    "cpu.max": "100000 100000",
+    "memory.max": "4294967296",
+    "memory.current": "657108992",
+    "memory.peak": "879058944",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "pids.max": "30047"
+  }
+}

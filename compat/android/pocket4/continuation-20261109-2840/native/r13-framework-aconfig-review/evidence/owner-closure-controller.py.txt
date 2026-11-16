@@ -1,0 +1,104 @@
+"""Finite metadata closure of one actual framework aconfig group, not a Soong run."""
+import hashlib,json,os,stat,sys,time,types
+from pathlib import Path,PurePosixPath
+from collections import defaultdict,deque
+
+R=Path('/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1')
+C=R/'control/full-ai395-r13'
+Q=R/'qualification/framework-aconfig-complete-group-closure-r1'
+INDEX_RESULT={'path':str(R/'qualification/framework-aconfig-complete-group-index-r2/RESULT.json'),'bytes':60769,'sha256':'72b5aeb964b758e81ab780db7251bd0a7ee717f47b865df510e1efdb592aa60b'}
+EYE_RESULT={'path':str(R/'qualification/eyedropper-original-provider-r1/RESULT.json'),'bytes':8739,'sha256':'5864954d51aaf69d25caa6802d9bc0fc7b2bf1543f10063a51275c31b65d9645'}
+
+def support():
+ p=C/'ai395_build_support.py';fd=os.open(p,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK|os.O_CLOEXEC)
+ try:
+  raw=os.read(fd,17570);assert len(raw)==17569 and hashlib.sha256(raw).hexdigest()=='23370cf3fba43a8d6bbd8be888a28a3a7add33125cafff3cd2803f5e09e27297'
+ finally:os.close(fd)
+ m=types.ModuleType('fixed_group_support');m.__file__=str(p);sys.modules[m.__name__]=m;exec(compile(raw,str(p),'exec'),m.__dict__);return m
+
+def main():
+ assert os.getuid()==os.geteuid()==1000
+ os.umask(0o077);os.sched_setaffinity(0,{10});s=support();s.install_signals();Q.mkdir(mode=0o700)
+ commands=s.OwnedCommands(Q/'commands',C)
+ out={'schema':'native602-fixed-framework-aconfig-group-planning-v1','state':'STARTED','errors':[],'source_qualified':False,'full_qualified':False,'aosp_writes':0,'started_ns':time.time_ns()}
+ out['controller']=s.create(Q/'controller.py',sys.orig_argv[sys.orig_argv.index('-c')+1].encode())
+ try:
+  ir=json.loads(s.pinned(INDEX_RESULT,contents=True)[1]);assert ir['state']=='PLANNING_ONLY_ORIGINAL_PARSER_INDEX_COMPLETE' and ir['errors']==[]
+  er=json.loads(s.pinned(EYE_RESULT,contents=True)[1]);assert er['state']=='PINNED_ORIGINAL_METADATA_ONLY' and er['errors']==[]
+  rows=[json.loads(x) for x in s.pinned(ir['planning_index'],32*1024**2,contents=True)[1].splitlines()]
+  inventory={x['path']:x for x in json.loads(s.pinned(ir['snapshot_inventory'],32*1024**2,contents=True)[1])}
+  extra=Q/'extra/packages/apps/EyeDropper';extra.mkdir(mode=0o700,parents=True)
+  bp=next(x for x in er['files'] if x['path']=='Android.bp');s.create(extra/'Android.bp',s.pinned(bp['reference'],contents=True)[1])
+  listed=s.create(Q/'extra-paths.txt',b'packages/apps/EyeDropper/Android.bp\n');s.pinned(ir['index_binary'])
+  row=commands.run('original-ey edropper-parser'.replace(' ',''),[ir['index_binary']['path'],str(Q/'extra'),listed['path']],30,env={'PATH':'/usr/bin:/bin'})
+  extra_rows=[json.loads(x) for x in s.pinned(row['stdout'],1024**2,contents=True)[1].splitlines()]
+  all_rows=rows+extra_rows
+  namespaces={'':[]}
+  for row in rows:
+   if row.get('type')=='soong_namespace':
+    path=str(PurePosixPath(row['path']).parent);path='' if path=='.' else path
+    imports=row['properties'].get('imports',[]);assert type(imports)is list and all(type(x)is str for x in imports)
+    assert path not in namespaces or path=='';namespaces[path]=imports
+  def ns_for_path(path):
+   p=PurePosixPath(path)
+   while True:
+    text='' if str(p)=='.' else str(p)
+    if text in namespaces:return text
+    if str(p)=='.':return ''
+    p=p.parent
+  providers=defaultdict(list)
+  for row in all_rows:
+   if row.get('name'):
+    row['namespace']=ns_for_path(PurePosixPath(row['path']).parent)
+    providers[(row['namespace'],row['name'])].append(row)
+  def resolve(name,consumer):
+   if name.startswith('//'):
+    loc,target=name[2:].split(':',1);scopes=[ns_for_path(loc)]
+   else:
+    target=name;own=consumer['namespace'];scopes=[own]+[ns_for_path(x) for x in namespaces[own]]+['']
+   for ns in dict.fromkeys(scopes):
+    found=providers.get((ns,target),[])
+    if found:return found
+   return []
+  roots=providers[('','framework-minus-apex-aconfig-declarations')];assert len(roots)==1
+  root=roots[0];assert root['path']=='frameworks/base/AconfigFlags.bp' and root['type']=='aconfig_declarations_group'
+  queue=deque([root]);seen=set();visited=[];edges=[];missing=[];ambiguous=[];unknown=[]
+  hard_fields={'aconfig_declarations_group':['aconfig_declarations_groups','java_aconfig_libraries','cc_aconfig_libraries','rust_aconfig_libraries','aconfig_declarations'],
+    'java_aconfig_library':['aconfig_declarations','defaults','libs','static_libs','plugins'],
+    'cc_aconfig_library':['aconfig_declarations','defaults'],
+    'rust_aconfig_library':['aconfig_declarations','defaults'],
+    'java_defaults':['defaults','libs','static_libs','plugins'],
+    'aconfig_declarations':['defaults'], 'filegroup':[]}
+  while queue:
+   item=queue.popleft();key=(item['namespace'],item['name'],item['path'])
+   if key in seen:continue
+   seen.add(key);assert len(seen)<=2048;visited.append(item)
+   props=item.get('properties',{})
+   for field in hard_fields.get(item['type'],[]):
+    names=props.get(field,[])
+    if type(names)is str:names=[names]
+    if type(names)is not list or any(type(x)is not str for x in names):unknown.append({'module':item['name'],'field':field,'value':names});continue
+    for name in names:
+     found=resolve(name,item);edge={'from':item['name'],'field':field,'target':name,'consumer_path':item['path']}
+     if not found:missing.append(edge)
+     elif len(found)!=1:ambiguous.append(dict(edge,candidates=[{'path':x['path'],'type':x['type']} for x in found]))
+     else:
+      edge.update(provider_path=found[0]['path'],provider_type=found[0]['type'],namespace=found[0]['namespace']);queue.append(found[0])
+     edges.append(edge)
+  names=root['properties'];out['root_direct_java_libraries']=names.get('java_aconfig_libraries',[]);out['root_direct_groups']=names.get('aconfig_declarations_groups',[])
+  out['root_current_file']=inventory[root['path']]
+  out['visited']=visited;out['edges']=edges;out['missing']=missing;out['ambiguous']=ambiguous;out['unknown']=unknown
+  out['selected_blueprints']={p:inventory[p] for p in sorted({x['path'] for x in visited}) if p in inventory}
+  out['new_eyedropper_original']=EYE_RESULT;out['index_result']=INDEX_RESULT
+  out['extra_parsed_modules']=extra_rows
+  out['state']='FINITE_METADATA_CLOSURE_RECORDED'
+ except BaseException as e:
+  import traceback
+  out['errors'].append({'type':type(e).__name__,'message':str(e),'traceback':traceback.format_exc()})
+ finally:
+  out['commands']=commands.records;out['children_retired']=all(x['owned_retirement_complete'] is True for x in commands.records);out['finished_ns']=time.time_ns()
+  if out['errors'] or not out['children_retired'] or s.CANCELLED:out['state']='FAILED'
+  ref=s.create(Q/'RESULT.json',out);print(json.dumps({'state':out['state'],'result':ref,'errors':out['errors'],'counts':{k:len(out.get(k,[])) for k in ('visited','edges','missing','ambiguous','unknown','root_direct_java_libraries','root_direct_groups')}}),flush=True)
+ return 0 if out['state']=='FINITE_METADATA_CLOSURE_RECORDED' else 1
+
+if __name__=='__main__':raise SystemExit(main())

@@ -1,0 +1,309 @@
+{
+  "actual_undefined_modules": [
+    "service-ondeviceintelligence.api.combined.system-server.latest",
+    "service-ondeviceintelligence-removed.api.combined.system-server.latest"
+  ],
+  "assembled_utc": "2026-11-09T10:46:03.442727+00:00",
+  "audio_base_commit": "a0e5114a1728e5ac5a96cdffbf68a84958218765",
+  "extension_api_query": {
+    "exit": 0,
+    "service_matching_paths_in_extensions": [],
+    "stdout_bytes": 318709,
+    "stdout_sha256": "7fc124bbfa0733c6f68580d6557c3334de0a5b688ecdfe874f2323ec2fad597b"
+  },
+  "finite_query": {
+    "exact_paths_queried": 720,
+    "ls_tree_exit": 0,
+    "ls_tree_stdout_bytes": 430,
+    "ls_tree_stdout_sha256": "ec1f30e0899b849092791f732d6b5164fe24051abbf47ea8382cfa5a2942c368",
+    "release_versions": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15",
+      "16",
+      "17",
+      "18",
+      "19",
+      "20",
+      "21",
+      "22",
+      "23",
+      "24",
+      "25",
+      "26",
+      "27",
+      "28",
+      "29",
+      "30",
+      "31",
+      "32",
+      "33",
+      "34",
+      "35",
+      "36",
+      "36.1",
+      "37.0",
+      "37-prefinalized",
+      "current"
+    ],
+    "scopes": [
+      "public",
+      "system",
+      "module-lib",
+      "system-server",
+      "test",
+      "core"
+    ],
+    "stderr": "",
+    "stems": [
+      "service-ondeviceintelligence",
+      "service-ondeviceintelligence-removed",
+      "service-ondeviceintelligence-incompatibilities"
+    ]
+  },
+  "full_qualified": false,
+  "generator_analysis": {
+    "combined_generation_lines": [
+      354,
+      377
+    ],
+    "conclusion": "The generator iterates the available latest map. A system-server entry creates its combined module; an extended public entry is appended only when that entry is present. The two system-server paths resolve the observed undefined-module cause. The additional public pair preserves the original lower-scope inputs in the independent four-path contract, but its absence is not a separately proven undefined-module blocker.",
+    "conditional_lower_scope_lines": [
+      365,
+      369
+    ],
+    "consumer": {
+      "bytes": 2758,
+      "path": "original/packages/modules/NeuralNetworks/service/Android.bp",
+      "sha256": "50b264a5e8650135ce4893a47952a40f382ee129a93d6cfc96152dd350f87a18"
+    },
+    "generator": {
+      "bytes": 16590,
+      "path": "original/build/soong/java/prebuilt_apis.go",
+      "sha256": "ac992ca42c67498bd1b3f5e54627f541e6ffa71de95135bd7bac511a2427272c"
+    },
+    "original_generator_comparisons": [
+      {
+        "actual_sha256": "78d50e1dd41ad06e0c716faee8e8f3ddd823f3d482c3f484466e846953f735e0",
+        "commit": "0f07e8d60ab0aba46129e427101f96ba459a95c1",
+        "equal": true,
+        "exit": 0,
+        "original_bytes": 6333,
+        "original_sha256": "78d50e1dd41ad06e0c716faee8e8f3ddd823f3d482c3f484466e846953f735e0",
+        "project": "prebuilts/sdk",
+        "relative": "Android.bp",
+        "stderr": ""
+      },
+      {
+        "actual_sha256": "ac992ca42c67498bd1b3f5e54627f541e6ffa71de95135bd7bac511a2427272c",
+        "commit": "6722dd8833db7482df1a2543ca3fcf67ddf0f7b1",
+        "equal": true,
+        "exit": 0,
+        "original_bytes": 16590,
+        "original_sha256": "ac992ca42c67498bd1b3f5e54627f541e6ffa71de95135bd7bac511a2427272c",
+        "project": "build/soong",
+        "relative": "java/prebuilt_apis.go",
+        "stderr": ""
+      },
+      {
+        "actual_sha256": "44fa04b8150e0135e5ea306ea529f0fc68dfe5fd7c3d5561f4af28e2187a02b4",
+        "commit": "6722dd8833db7482df1a2543ca3fcf67ddf0f7b1",
+        "equal": true,
+        "exit": 0,
+        "original_bytes": 104176,
+        "original_sha256": "44fa04b8150e0135e5ea306ea529f0fc68dfe5fd7c3d5561f4af28e2187a02b4",
+        "project": "build/soong",
+        "relative": "java/sdk_library.go",
+        "stderr": ""
+      },
+      {
+        "actual_sha256": "50b264a5e8650135ce4893a47952a40f382ee129a93d6cfc96152dd350f87a18",
+        "commit": "a44a9032ab9a8438c0e13aca765d6ee4edebba2c",
+        "equal": true,
+        "exit": 0,
+        "original_bytes": 2758,
+        "original_sha256": "50b264a5e8650135ce4893a47952a40f382ee129a93d6cfc96152dd350f87a18",
+        "project": "packages/modules/NeuralNetworks",
+        "relative": "service/Android.bp",
+        "stderr": ""
+      }
+    ],
+    "prebuilt_apis_declaration": {
+      "bytes": 6333,
+      "path": "original/prebuilts/sdk/Android.bp",
+      "sha256": "78d50e1dd41ad06e0c716faee8e8f3ddd823f3d482c3f484466e846953f735e0"
+    },
+    "system_server_scope_original": [
+      {
+        "line": 395,
+        "text": "\tapiScopeSystemServer = initApiScope(&apiScope{"
+      },
+      {
+        "line": 396,
+        "text": "\t\tname:    \"system-server\","
+      },
+      {
+        "line": 397,
+        "text": "\t\textends: apiScopePublic,"
+      },
+      {
+        "line": 398,
+        "text": ""
+      },
+      {
+        "line": 399,
+        "text": "\t\t// The system-server scope can access the module-lib scope."
+      },
+      {
+        "line": 400,
+        "text": "\t\t//"
+      },
+      {
+        "line": 401,
+        "text": "\t\t// A module that provides a system-server API is appended to the standard bootclasspath that is"
+      },
+      {
+        "line": 402,
+        "text": "\t\t// used by the system server. So, it should be able to access module-lib APIs provided by"
+      },
+      {
+        "line": 403,
+        "text": "\t\t// libraries on the bootclasspath."
+      },
+      {
+        "line": 404,
+        "text": "\t\tcanAccess: apiScopeModuleLib,"
+      },
+      {
+        "line": 405,
+        "text": ""
+      },
+      {
+        "line": 406,
+        "text": "\t\t// The system-server scope is disabled by default in legacy mode."
+      },
+      {
+        "line": 407,
+        "text": "\t\t//"
+      },
+      {
+        "line": 408,
+        "text": "\t\t// Enabling this would break existing usages."
+      },
+      {
+        "line": 409,
+        "text": "\t\tlegacyEnabledStatus: func(module *SdkLibrary) bool {"
+      },
+      {
+        "line": 410,
+        "text": "\t\t\treturn false"
+      },
+      {
+        "line": 411,
+        "text": "\t\t},"
+      },
+      {
+        "line": 412,
+        "text": "\t\tscopeSpecificProperties: func(module *SdkLibrary) *ApiScopeProperties {"
+      },
+      {
+        "line": 413,
+        "text": "\t\t\treturn &module.sdkLibraryProperties.System_server"
+      },
+      {
+        "line": 414,
+        "text": "\t\t},"
+      },
+      {
+        "line": 415,
+        "text": "\t\tapiFilePrefix: \"system-server-\","
+      },
+      {
+        "line": 416,
+        "text": "\t\tmoduleSuffix:  \".system_server\","
+      },
+      {
+        "line": 417,
+        "text": "\t\tsdkVersion:    \"system_server_current\","
+      },
+      {
+        "line": 418,
+        "text": "\t\tannotation:    \"android.annotation.SystemApi(client=android.annotation.SystemApi.Client.SYSTEM_SERVER)\","
+      },
+      {
+        "line": 419,
+        "text": "\t\textraArgs: []string{"
+      },
+      {
+        "line": 420,
+        "text": "\t\t\t// com.android.* classes are okay in this interface\""
+      },
+      {
+        "line": 421,
+        "text": "\t\t\t\"--hide\", \"InternalClasses\","
+      },
+      {
+        "line": 422,
+        "text": "\t\t},"
+      }
+    ]
+  },
+  "independent_helper_additional_original_input_fidelity": [
+    "36/public/api/service-ondeviceintelligence-removed.txt",
+    "36/public/api/service-ondeviceintelligence.txt"
+  ],
+  "necessary_missing_inputs_for_actual_error": [
+    "36/system-server/api/service-ondeviceintelligence-removed.txt",
+    "36/system-server/api/service-ondeviceintelligence.txt"
+  ],
+  "original_body_explanation": "The 25-byte signature header is the pinned official blob, not a fabricated replacement stub.",
+  "original_file_body": "// Signature format: 2.0\n",
+  "original_files": [
+    {
+      "bytes": 25,
+      "git_blob": "d802177e249b3f97128699222e65c35e57ba7540",
+      "path": "36/public/api/service-ondeviceintelligence-removed.txt",
+      "sha256": "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552",
+      "type": "blob"
+    },
+    {
+      "bytes": 25,
+      "git_blob": "d802177e249b3f97128699222e65c35e57ba7540",
+      "path": "36/public/api/service-ondeviceintelligence.txt",
+      "sha256": "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552",
+      "type": "blob"
+    },
+    {
+      "bytes": 25,
+      "git_blob": "d802177e249b3f97128699222e65c35e57ba7540",
+      "path": "36/system-server/api/service-ondeviceintelligence-removed.txt",
+      "sha256": "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552",
+      "type": "blob"
+    },
+    {
+      "bytes": 25,
+      "git_blob": "d802177e249b3f97128699222e65c35e57ba7540",
+      "path": "36/system-server/api/service-ondeviceintelligence.txt",
+      "sha256": "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552",
+      "type": "blob"
+    }
+  ],
+  "production_ready": false,
+  "runtime_qualified": false,
+  "schema": "audio-api36-original-provider-review-v1",
+  "scope": "Pinned original input and sparse-selection review, not a full Soong graph qualification.",
+  "sdk_commit": "0f07e8d60ab0aba46129e427101f96ba459a95c1",
+  "source_reconciliation_performed": false
+}

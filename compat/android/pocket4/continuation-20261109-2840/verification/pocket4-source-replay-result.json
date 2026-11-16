@@ -1,0 +1,80 @@
+{
+  "schema": "actual-published-source-replay-controls-v1",
+  "commit": "d6960d6e01b3d92175646894f828e56f1c2f45e0",
+  "effective_uid": 1000,
+  "started_utc": "2026-11-09T16:13:00.401772+00:00",
+  "commands": [
+    {
+      "name": "audio-compile",
+      "argv": [
+        "/home/alex/.cargo/bin/rustup",
+        "run",
+        "1.93.0",
+        "rustc",
+        "--edition=2024",
+        "-D",
+        "warnings",
+        "-C",
+        "codegen-units=1",
+        "/home/alex/work/pocket4-source-replay-controls-20261109-2840-r1/audio/normal-source-update/verify-source.rs",
+        "-o",
+        "/home/alex/work/pocket4-source-replay-controls-20261109-2840-r1/audio-verify-source"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "audio-replay",
+      "argv": [
+        "/home/alex/work/pocket4-source-replay-controls-20261109-2840-r1/audio-verify-source",
+        "/home/alex/work/pocket4-source-replay-controls-20261109-2840-r1/audio/normal-source-update",
+        "replay",
+        "/home/alex/work/pocket4-source-replay-controls-20261109-2840-r1/audio/normal-source-update/preimage",
+        "/home/alex/work/pocket4-source-replay-controls-20261109-2840-r1/audio-replay"
+      ],
+      "returncode": 0,
+      "stdout": "{\"scope\":\"1 declared source file\",\"mode\":\"replay\",\"verified_files\":1,\"patch_sha256\":\"868078f9fbc3b1e595d9e3d83bef03390d346926809678663ce2ae35d47d215b\",\"runtime_qualified\":false}\n",
+      "stderr": ""
+    },
+    {
+      "name": "native-compile",
+      "argv": [
+        "/home/alex/.cargo/bin/rustup",
+        "run",
+        "1.93.0",
+        "rustc",
+        "--edition=2024",
+        "-D",
+        "warnings",
+        "-C",
+        "codegen-units=1",
+        "/home/alex/work/pocket4-source-replay-controls-20261109-2840-r1/native/platform-tools/verify-source.rs",
+        "-o",
+        "/home/alex/work/pocket4-source-replay-controls-20261109-2840-r1/native-verify-source"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "name": "native-replay",
+      "argv": [
+        "/home/alex/work/pocket4-source-replay-controls-20261109-2840-r1/native-verify-source",
+        "/home/alex/work/pocket4-source-replay-controls-20261109-2840-r1/native/platform-tools",
+        "replay",
+        "/home/alex/work/pocket4-source-replay-controls-20261109-2840-r1/native/platform-tools/preimage",
+        "/home/alex/work/pocket4-source-replay-controls-20261109-2840-r1/native-replay"
+      ],
+      "returncode": 0,
+      "stdout": "{\"scope\":\"3 declared source files\",\"mode\":\"replay\",\"verified_files\":3,\"patch_sha256\":\"562fe342fe3dc53409ec891af27af2e6267ae8110679fdaa747b03aeab2e1dd1\",\"runtime_qualified\":false}\n",
+      "stderr": ""
+    }
+  ],
+  "Android_starts": 0,
+  "private_namespace_controls": 0,
+  "runtime_qualified": false,
+  "production_ready": false,
+  "passed": true,
+  "completed_utc": "2026-11-09T16:13:00.702604+00:00"
+}

@@ -1,0 +1,195 @@
+//
+// Copyright (C) 2025 The Android Open-Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+    default_team: "trendy_team_system_performance",
+}
+
+//
+// libzygote
+//
+
+rust_defaults {
+    name: "libzygote_defaults",
+    defaults: ["zygote_defaults"],
+    srcs: ["src/lib.rs"],
+    rustlibs: [
+        "libarrayvec",
+        "libcap_rust",
+        "libclap",
+        "libflatbuffers",
+        "libitertools",
+        "liblibc",
+        "liblibloading",
+        "liblog_rust",
+        "librustutils",
+        "libstatic_assertions",
+        "libthiserror",
+        "libtracing",
+        "libzerocopy",
+        "libzygote_core",
+        "libzygote_sys",
+    ],
+    target: {
+        android: {
+            features: [
+                "android-native",
+            ],
+            shared_libs: [
+                "libprocessgroup",
+                "libseccomp_policy",
+                "libselinux",
+            ],
+            rustlibs: [
+                "libnative_activity_thread",
+                "libprocessgroup_rust",
+                "libstatslog_native_zygote_rust",
+            ],
+        },
+        host: {
+            features: [
+                "libapp",
+            ],
+        },
+    },
+}
+
+rust_library {
+    name: "libzygote",
+    crate_name: "zygote",
+    defaults: ["libzygote_defaults"],
+    rustlibs: [
+        "libzygote_messages",
+    ],
+}
+
+rust_library {
+    name: "libzygote_test",
+    crate_name: "zygote",
+    defaults: ["libzygote_defaults"],
+    rustlibs: [
+        "libchrono",
+        "libzygote_messages_test",
+    ],
+    features: [
+        "mock",
+        "test",
+    ],
+}
+
+//
+// Executables
+//
+
+rust_defaults {
+    name: "zygote_executable_defaults",
+    defaults: ["zygote_defaults"],
+    host_supported: true,
+    rustlibs: [
+        "libanyhow",
+        "libclap",
+        "liblog_rust",
+        "libtracing",
+        "libzygote_core",
+    ],
+    // Enable ASYNC MTE in the zygote, in order to allow apps to use MTE. We use
+    // ASYNC because we don't expect the pre-fork zygote to have substantial
+    // memory corruption bugs, and we don't want to waste memory recording
+    // malloc/free stack traces (which happens in SYNC mode).
+    sanitize: {
+        memtag_heap: true,
+    },
+}
+
+rust_binary {
+    name: "zygote_next",
+    defaults: ["zygote_executable_defaults"],
+    srcs: [
+        "src/bin/zygote.rs",
+    ],
+    rustlibs: [
+        "libzygote",
+        "libzygote_sys",
+    ],
+    init_rc: [
+        "zygote_next.rc",
+    ],
+}
+
+rust_binary {
+    name: "zygote_cli",
+    defaults: ["zygote_executable_defaults"],
+    srcs: [
+        "src/bin/zygote_cli.rs",
+    ],
+    rustlibs: [
+        "libflatbuffers",
+        "liblibc",
+        "libzygote_messages",
+        "libzygote_sys",
+    ],
+}
+
+rust_binary {
+    name: "zygote_launch",
+    defaults: ["zygote_executable_defaults"],
+    srcs: [
+        "src/bin/zygote_launch.rs",
+    ],
+    rustlibs: [
+        "libarrayvec",
+        "libflatbuffers",
+        "liblibc",
+        "libzygote",
+        "libzygote_messages",
+    ],
+}
+
+//
+// Tests
+//
+
+rust_test_host {
+    name: "zygote_next_unit_tests",
+    defaults: ["libzygote_defaults"],
+    rustlibs: [
+        "libchrono",
+        "libzygote_messages_test",
+    ],
+    features: [
+        "mock",
+        "test",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+}
+
+rust_test_host {
+    name: "zygote_next_integration_test_fd_no_panic",
+    defaults: ["zygote_defaults"],
+    test_harness: false,
+    srcs: [
+        "tests/file_descriptors/calm.rs",
+    ],
+    rustlibs: [
+        "librustix",
+        "liblibc",
+        "liblibtest_mimic",
+        "libzygote_sys",
+        "libzygote_test",
+    ],
+}

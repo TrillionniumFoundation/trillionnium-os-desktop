@@ -1,0 +1,35 @@
+[Unit]
+Description=Droidloom production cell broker
+After=local-fs.target
+
+[Service]
+Type=exec
+User=root
+Group=root
+ExecStart=/usr/lib/droidloom/production/current/droidloomd --socket /run/droidloom/control.sock
+WorkingDirectory=/
+UMask=0077
+Restart=no
+KillMode=control-group
+TimeoutStopSec=30
+SendSIGKILL=yes
+Delegate=cpu cpuset memory pids
+DelegateSubgroup=broker
+CPUAccounting=yes
+MemoryAccounting=yes
+TasksAccounting=yes
+CPUQuota=600%
+CPUQuotaPeriodSec=100ms
+CPUAffinity=2-23
+AllowedCPUs=2-23
+MemoryHigh=6442450944
+MemoryMax=8589934592
+MemorySwapMax=0
+TasksMax=32768
+AppArmorProfile=droidloom-production-broker
+PrivateMounts=yes
+AmbientCapabilities=CAP_SETUID
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=multi-user.target

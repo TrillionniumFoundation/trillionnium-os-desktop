@@ -1,0 +1,36 @@
+{
+  "negative_controls": [
+    {
+      "capsule_mutations": 0,
+      "case": "parent-traversal",
+      "returncode": 1,
+      "stderr": "Parent traversal is forbidden in output paths\n"
+    },
+    {
+      "capsule_mutations": 0,
+      "case": "report-overwrite",
+      "returncode": 1,
+      "stderr": "Output requires a new path in an existing directory\n"
+    },
+    {
+      "capsule_mutations": 0,
+      "case": "report-inside-capsule",
+      "returncode": 1,
+      "stderr": "Report must be outside its capsule and replay tree\n"
+    }
+  ],
+  "observed_utc": "2026-11-09T11:02:08.354784+00:00",
+  "original_capsule_unchanged": true,
+  "positive_replay": {
+    "exact_replay_passed": true,
+    "postimages": 6,
+    "preimages": 3,
+    "production_ready": false,
+    "runtime_qualified": false,
+    "schema": "pocket4-audio-api-independent-replay-v1",
+    "selected_owner_successor": false
+  },
+  "production_ready": false,
+  "runtime_qualified": false,
+  "schema": "pocket4-audio-publication-replay-boundary-controls-v1"
+}

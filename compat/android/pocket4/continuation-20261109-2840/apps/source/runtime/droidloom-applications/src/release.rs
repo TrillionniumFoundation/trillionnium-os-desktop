@@ -1,0 +1,541 @@
+//! Read-only completeness checks for an externally pinned application release.
+//!
+//! This checks declared evidence and its byte identity. It neither runs Android
+//! tests nor authenticates the author or meaning of the supplied evidence.
+use std::collections::{BTreeMap, BTreeSet};
+use std::fs::{self, File};
+use std::io::{self, Read};
+use std::os::unix::fs::MetadataExt;
+use std::path::{Path, PathBuf};
+
+use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
+
+const INPUT_LIMIT: u64 = 8 * 1024 * 1024;
+const EVIDENCE_LIMIT: u64 = 64 * 1024 * 1024;
+const TOTAL_EVIDENCE_LIMIT: u64 = 256 * 1024 * 1024;
+const COMMON_GATES: [&str; 6] = [
+    "identity", "lifecycle", "stability", "data_permissions", "release_scope", "ui_observation",
+];
+
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+struct Main {
+    main_sha256: String,
+    boot_id: String,
+    framework_epoch_sha256: String,
+    cohort_sha256: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+struct Apk {
+    name: String,
+    bytes: u64,
+    sha256: String,
+    signer_sha256: Vec<String>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+struct Identity {
+    package: String,
+    android_user: u32,
+    uid: u32,
+    version_code: u64,
+    version_name: String,
+    engine_mapping_sha256: String,
+    apks: Vec<Apk>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct ExpectedApp {
+    identity: Identity,
+    required_gates: Vec<String>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct Manifest {
+    schema: u32,
+    main: Main,
+    apps: Vec<ExpectedApp>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct EvidenceRef {
+    path: PathBuf,
+    bytes: u64,
+    sha256: String,
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(rename_all = "snake_case")]
+enum Status {
+    Passed,
+    Failed,
+    Blocked,
+    Unsupported,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct Gate {
+    id: String,
+    status: Status,
+    reason: Option<String>,
+    evidence: Vec<EvidenceRef>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct AppResult {
+    identity: Identity,
+    main: Main,
+    gates: Vec<Gate>,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+struct Results {
+    schema: u32,
+    main: Main,
+    apps: Vec<AppResult>,
+}
+
+#[derive(Debug, Serialize)]
+struct AppAssessment {
+    package: String,
+    evidence_complete: bool,
+    passed_gates: usize,
+    failed_gates: usize,
+    blocked_gates: usize,
+    unsupported_gates: usize,
+    missing_gates: Vec<String>,
+    issues: Vec<String>,
+}
+
+/// Structural completeness and byte-integrity report, not a runtime attestation.
+#[derive(Debug, Serialize)]
+pub struct ReleaseReport {
+    schema: u32,
+    /// True only when every expected application and gate has matching evidence.
+    pub evidence_complete: bool,
+    expected_applications: usize,
+    complete_applications: usize,
+    manifest_sha256: String,
+    results_sha256: String,
+    main_sha256: String,
+    tests_executed_by_checker: usize,
+    production_ready: bool,
+    runtime_qualified: bool,
+    meaning: &'static str,
+    issues: Vec<String>,
+    applications: Vec<AppAssessment>,
+}
+
+fn invalid(message: impl Into<String>) -> io::Error {
+    io::Error::new(io::ErrorKind::InvalidData, message.into())
+}
+
+fn digest(raw: &[u8]) -> String {
+    hex::encode(Sha256::digest(raw))
+}
+
+fn valid_sha(value: &str) -> bool {
+    value.len() == 64 && value.bytes().all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c))
+}
+
+fn stable(a: &fs::Metadata, b: &fs::Metadata) -> bool {
+    a.dev() == b.dev() && a.ino() == b.ino() && a.mode() == b.mode()
+        && a.uid() == b.uid() && a.gid() == b.gid() && a.nlink() == b.nlink()
+        && a.len() == b.len() && a.mtime() == b.mtime() && a.mtime_nsec() == b.mtime_nsec()
+        && a.ctime() == b.ctime() && a.ctime_nsec() == b.ctime_nsec()
+}
+
+fn read_frozen(path: &Path, limit: u64) -> io::Result<Vec<u8>> {
+    if !path.is_absolute() || path.canonicalize()? != path {
+        return Err(invalid("evidence paths must be absolute and canonical"));
+    }
+    let named = fs::symlink_metadata(path)?;
+    if !named.file_type().is_file() || named.len() > limit {
+        return Err(invalid("input is not a bounded regular file"));
+    }
+    let mut file = File::open(path)?;
+    let before = file.metadata()?;
+    if !stable(&named, &before) {
+        return Err(invalid("input changed before opening"));
+    }
+    let mut raw = Vec::new();
+    Read::by_ref(&mut file).take(limit + 1).read_to_end(&mut raw)?;
+    if raw.len() as u64 != before.len()
+        || !stable(&before, &file.metadata()?)
+        || !stable(&before, &fs::symlink_metadata(path)?)
+    {
+        return Err(invalid("input changed while reading"));
+    }
+    Ok(raw)
+}
+
+fn normalized(mut identity: Identity) -> Identity {
+    for apk in &mut identity.apks {
+        apk.signer_sha256.sort();
+    }
+    identity.apks.sort_by(|a, b| a.name.cmp(&b.name));
+    identity
+}
+
+fn validate_manifest(value: &Manifest, count: usize, main_sha256: &str) -> io::Result<()> {
+    if value.schema != 1 || !(1..=1024).contains(&count) || value.apps.len() != count {
+        return Err(invalid("manifest schema or externally expected application count differs"));
+    }
+    let main = &value.main;
+    if !valid_sha(main_sha256) || main.main_sha256 != main_sha256
+        || !valid_sha(&main.framework_epoch_sha256) || !valid_sha(&main.cohort_sha256)
+        || main.boot_id.len() != 36
+        || !main.boot_id.bytes().enumerate().all(|(i, c)| {
+            if [8, 13, 18, 23].contains(&i) { c == b'-' }
+            else { c.is_ascii_digit() || (b'a'..=b'f').contains(&c) }
+        })
+    {
+        return Err(invalid("manifest does not bind the externally expected Main and boot"));
+    }
+    let mut packages = BTreeSet::new();
+    for app in &value.apps {
+        let id = &app.identity;
+        if id.package.is_empty() || id.package.len() > 255
+            || !id.package.split('.').all(|p| !p.is_empty() && p.bytes().all(|c| c.is_ascii_alphanumeric() || c == b'_'))
+            || !packages.insert(&id.package) || id.version_name.is_empty()
+            || id.version_name.len() > 256 || !valid_sha(&id.engine_mapping_sha256)
+            || id.apks.is_empty() || id.apks.len() > 256
+        {
+            return Err(invalid("invalid, duplicate, or incomplete expected application identity"));
+        }
+        let mut names = BTreeSet::new();
+        let mut common_signers = None;
+        for apk in &id.apks {
+            let signers: BTreeSet<_> = apk.signer_sha256.iter().collect();
+            if apk.name.is_empty() || apk.name.len() > 255 || !apk.name.ends_with(".apk")
+                || apk.name.contains(['/', '\\']) || !names.insert(&apk.name)
+                || apk.bytes == 0 || !valid_sha(&apk.sha256)
+                || signers.is_empty() || signers.len() > 16 || signers.len() != apk.signer_sha256.len()
+                || !signers.iter().all(|s| valid_sha(s))
+                || common_signers.as_ref().is_some_and(|expected| expected != &signers)
+            {
+                return Err(invalid("invalid APK identity, duplicate split, or split signer disagreement"));
+            }
+            common_signers = Some(signers);
+        }
+        if !names.contains(&String::from("base.apk")) {
+            return Err(invalid("each installed application must include its base.apk identity"));
+        }
+        let gates: BTreeSet<_> = app.required_gates.iter().map(String::as_str).collect();
+        if gates.len() != app.required_gates.len() || gates.len() > 128
+            || gates.iter().any(|g| g.is_empty() || g.len() > 128)
+            || !COMMON_GATES.iter().all(|g| gates.contains(g))
+            || !gates.iter().any(|g| !COMMON_GATES.contains(g))
+        {
+            return Err(invalid("each application requires all common gates and its business gates"));
+        }
+    }
+    Ok(())
+}
+
+fn check_gate_evidence(gate: &Gate, budget: &mut u64) -> io::Result<()> {
+    if gate.evidence.len() > 128 || (gate.status == Status::Passed && gate.evidence.iter().all(|r| r.bytes == 0)) {
+        return Err(invalid("passed gate requires bounded, nonempty evidence"));
+    }
+    if gate.status != Status::Passed && gate.reason.as_deref().is_none_or(|s| s.trim().is_empty()) {
+        return Err(invalid("failed, blocked, and unsupported gates require an explicit reason"));
+    }
+    for evidence in &gate.evidence {
+        if !valid_sha(&evidence.sha256) || evidence.bytes > EVIDENCE_LIMIT {
+            return Err(invalid("invalid evidence reference"));
+        }
+        *budget = budget.checked_add(evidence.bytes).ok_or_else(|| invalid("evidence budget overflow"))?;
+        if *budget > TOTAL_EVIDENCE_LIMIT {
+            return Err(invalid("total evidence read budget exceeded"));
+        }
+        let bytes = read_frozen(&evidence.path, evidence.bytes)?;
+        if bytes.len() as u64 != evidence.bytes || digest(&bytes) != evidence.sha256 {
+            return Err(invalid("evidence size or SHA-256 differs"));
+        }
+    }
+    Ok(())
+}
+
+/// Check a complete selected release against one pinned Main's declared results.
+///
+/// The caller independently supplies the trusted manifest digest, current Main
+/// receipt digest, and selected application count. No Android command is sent.
+pub fn check_release_files(
+    manifest_path: &Path,
+    results_path: &Path,
+    expected_manifest_sha256: &str,
+    expected_main_sha256: &str,
+    expected_applications: usize,
+) -> Result<ReleaseReport, Box<dyn std::error::Error>> {
+    let manifest_raw = read_frozen(manifest_path, INPUT_LIMIT)?;
+    if !valid_sha(expected_manifest_sha256) || digest(&manifest_raw) != expected_manifest_sha256 {
+        return Err(invalid("externally pinned release manifest SHA-256 differs").into());
+    }
+    let manifest: Manifest = serde_json::from_slice(&manifest_raw)?;
+    validate_manifest(&manifest, expected_applications, expected_main_sha256)?;
+    let results_raw = read_frozen(results_path, INPUT_LIMIT)?;
+    let results: Results = serde_json::from_slice(&results_raw)?;
+    let mut issues = Vec::new();
+    if results.schema != 1 || results.main != manifest.main {
+        issues.push("results schema or Main/boot/framework/cohort differs".into());
+    }
+    let expected: BTreeSet<_> = manifest.apps.iter().map(|app| app.identity.package.as_str()).collect();
+    let mut found = BTreeMap::new();
+    for app in &results.apps {
+        let package = app.identity.package.as_str();
+        if !expected.contains(package) {
+            issues.push(format!("unexpected application: {package}"));
+        }
+        if found.insert(package, app).is_some() {
+            issues.push(format!("duplicate application result: {package}"));
+        }
+    }
+    let mut budget = 0;
+    let mut applications = Vec::new();
+    for app in &manifest.apps {
+        let package = &app.identity.package;
+        let mut report = AppAssessment {
+            package: package.clone(), evidence_complete: false,
+            passed_gates: 0, failed_gates: 0, blocked_gates: 0, unsupported_gates: 0,
+            missing_gates: Vec::new(), issues: Vec::new(),
+        };
+        let Some(actual) = found.get(package.as_str()) else {
+            report.missing_gates = app.required_gates.clone();
+            report.issues.push("application has no result in this run".into());
+            applications.push(report);
+            continue;
+        };
+        if normalized(actual.identity.clone()) != normalized(app.identity.clone()) {
+            report.issues.push("version, package, UID/user, APK, signer, or engine mapping differs".into());
+        }
+        if actual.main != manifest.main || results.main != manifest.main {
+            report.issues.push("application is not bound to this Main/boot/framework/cohort".into());
+        }
+        let required: BTreeSet<_> = app.required_gates.iter().map(String::as_str).collect();
+        let mut seen = BTreeSet::new();
+        for gate in &actual.gates {
+            if !seen.insert(gate.id.as_str()) {
+                report.issues.push(format!("duplicate gate: {}", gate.id));
+                continue;
+            }
+            if !required.contains(gate.id.as_str()) {
+                report.issues.push(format!("unexpected gate: {}", gate.id));
+                continue;
+            }
+            match gate.status {
+                Status::Passed => report.passed_gates += 1,
+                Status::Failed => report.failed_gates += 1,
+                Status::Blocked => report.blocked_gates += 1,
+                Status::Unsupported => report.unsupported_gates += 1,
+            }
+            if let Err(error) = check_gate_evidence(gate, &mut budget) {
+                report.issues.push(format!("{}: {error}", gate.id));
+            }
+        }
+        report.missing_gates = required.difference(&seen).map(|s| (*s).to_owned()).collect();
+        report.evidence_complete = report.issues.is_empty() && report.missing_gates.is_empty()
+            && report.passed_gates == required.len();
+        applications.push(report);
+    }
+    let complete = applications.iter().filter(|app| app.evidence_complete).count();
+    Ok(ReleaseReport {
+        schema: 1, evidence_complete: issues.is_empty() && complete == expected_applications,
+        expected_applications, complete_applications: complete,
+        manifest_sha256: expected_manifest_sha256.into(), results_sha256: digest(&results_raw),
+        main_sha256: expected_main_sha256.into(), tests_executed_by_checker: 0,
+        production_ready: false, runtime_qualified: false,
+        meaning: "Declared evidence coverage and byte integrity only; this checker does not execute tests, authenticate evidence authors, establish live Main state, or grant production readiness.",
+        issues, applications,
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+
+    fn fixture(count: usize) -> (TempDir, Manifest, Results) {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("observed.json");
+        fs::write(&path, b"{\"observation\":\"fixture, not Android\"}\n").unwrap();
+        let bytes = fs::read(&path).unwrap();
+        let reference = EvidenceRef { path, bytes: bytes.len() as u64, sha256: digest(&bytes) };
+        let main = Main { main_sha256: "1".repeat(64),
+            boot_id: "97d9600f-e081-465c-9e6e-62651e09806b".into(),
+            framework_epoch_sha256: "2".repeat(64), cohort_sha256: "3".repeat(64) };
+        let mut apps = Vec::new();
+        let mut results = Vec::new();
+        for i in 0..count {
+            let identity = Identity {
+                package: format!("org.example.app{i}"), android_user: 0, uid: 10000 + u32::try_from(i).unwrap(),
+                version_code: 2, version_name: "2.0".into(), engine_mapping_sha256: "4".repeat(64),
+                apks: vec![Apk { name: "base.apk".into(), bytes: 3, sha256: "5".repeat(64),
+                    signer_sha256: vec!["6".repeat(64)] }],
+            };
+            let mut gates: Vec<String> = COMMON_GATES.iter().map(|s| (*s).into()).collect();
+            gates.push("example.query".into());
+            apps.push(ExpectedApp { identity: identity.clone(), required_gates: gates.clone() });
+            results.push(AppResult { identity, main: main.clone(),
+                gates: gates.into_iter().map(|id| Gate { id, status: Status::Passed,
+                    reason: None, evidence: vec![reference.clone()] }).collect() });
+        }
+        (root, Manifest { schema: 1, main: main.clone(), apps },
+            Results { schema: 1, main, apps: results })
+    }
+
+    fn check(root: &TempDir, manifest: &Manifest, results: &Results, count: usize) -> ReleaseReport {
+        let m = root.path().join("manifest.json");
+        let r = root.path().join("results.json");
+        let raw = serde_json::to_vec(manifest).unwrap();
+        fs::write(&m, &raw).unwrap();
+        fs::write(&r, serde_json::to_vec(results).unwrap()).unwrap();
+        check_release_files(&m, &r, &digest(&raw), &manifest.main.main_sha256, count).unwrap()
+    }
+
+    #[test]
+    fn complete_42_is_only_evidence_completeness_and_13_is_incomplete() {
+        let (root, manifest, mut results) = fixture(42);
+        let report = check(&root, &manifest, &results, 42);
+        assert!(report.evidence_complete);
+        assert_eq!(report.tests_executed_by_checker, 0);
+        assert!(!report.production_ready);
+        assert!(!report.runtime_qualified);
+        results.apps.truncate(13);
+        let report = check(&root, &manifest, &results, 42);
+        assert!(!report.evidence_complete);
+        assert_eq!(report.complete_applications, 13);
+        assert_eq!(report.applications.iter().filter(|a| !a.missing_gates.is_empty()).count(), 29);
+    }
+
+    #[test]
+    fn blocked_unsupported_failed_and_missing_are_never_passes() {
+        for status in [Status::Blocked, Status::Unsupported, Status::Failed] {
+            let (root, manifest, mut results) = fixture(1);
+            results.apps[0].gates[0].status = status;
+            results.apps[0].gates[0].reason = Some("required service unavailable".into());
+            assert!(!check(&root, &manifest, &results, 1).evidence_complete);
+        }
+        let (root, manifest, mut results) = fixture(1);
+        results.apps[0].gates.pop();
+        assert!(!check(&root, &manifest, &results, 1).evidence_complete);
+    }
+
+    #[test]
+    fn old_main_boot_epoch_and_cohort_cannot_transfer_acceptance() {
+        for field in 0..4 {
+            let (root, manifest, mut results) = fixture(1);
+            match field {
+                0 => results.apps[0].main.main_sha256 = "9".repeat(64),
+                1 => results.apps[0].main.boot_id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa".into(),
+                2 => results.apps[0].main.framework_epoch_sha256 = "9".repeat(64),
+                _ => results.apps[0].main.cohort_sha256 = "9".repeat(64),
+            }
+            assert!(!check(&root, &manifest, &results, 1).evidence_complete);
+        }
+    }
+
+    #[test]
+    fn exact_version_split_signer_uid_and_engine_are_required() {
+        for field in 0..7 {
+            let (root, manifest, mut results) = fixture(1);
+            let id = &mut results.apps[0].identity;
+            match field {
+                0 => id.version_code += 1,
+                1 => id.apks[0].signer_sha256[0] = "9".repeat(64),
+                2 => id.apks[0].sha256 = "9".repeat(64),
+                3 => id.apks[0].name = "split.apk".into(),
+                4 => id.uid += 1,
+                5 => id.android_user += 1,
+                _ => id.engine_mapping_sha256 = "9".repeat(64),
+            }
+            assert!(!check(&root, &manifest, &results, 1).evidence_complete);
+        }
+    }
+
+    #[test]
+    fn duplicates_and_extras_cannot_pad_coverage() {
+        let (root, manifest, mut results) = fixture(2);
+        results.apps[1] = results.apps[0].clone();
+        assert!(!check(&root, &manifest, &results, 2).evidence_complete);
+        let (root, manifest, mut results) = fixture(1);
+        let duplicate_gate = results.apps[0].gates[0].clone();
+        results.apps[0].gates.push(duplicate_gate);
+        assert!(!check(&root, &manifest, &results, 1).evidence_complete);
+        let (root, manifest, mut results) = fixture(1);
+        let mut extra = results.apps[0].clone();
+        extra.identity.package = "org.example.unselected".into();
+        results.apps.push(extra);
+        assert!(!check(&root, &manifest, &results, 1).evidence_complete);
+    }
+
+    #[test]
+    fn missing_corrupt_or_unpinned_evidence_is_incomplete() {
+        let (root, manifest, mut results) = fixture(1);
+        results.apps[0].gates[0].evidence.clear();
+        assert!(!check(&root, &manifest, &results, 1).evidence_complete);
+        let (root, manifest, results) = fixture(1);
+        fs::write(root.path().join("observed.json"), b"corrupt").unwrap();
+        assert!(!check(&root, &manifest, &results, 1).evidence_complete);
+    }
+
+    #[test]
+    fn empty_stderr_can_support_but_cannot_replace_a_runtime_receipt() {
+        let (root, manifest, mut results) = fixture(1);
+        let path = root.path().join("stderr.log");
+        fs::write(&path, b"").unwrap();
+        let empty = EvidenceRef { path, bytes: 0, sha256: digest(b"") };
+        results.apps[0].gates[0].evidence.push(empty.clone());
+        assert!(check(&root, &manifest, &results, 1).evidence_complete);
+        results.apps[0].gates[0].evidence = vec![empty];
+        assert!(!check(&root, &manifest, &results, 1).evidence_complete);
+    }
+
+    #[test]
+    fn understated_evidence_size_is_rejected_before_reading_payload() {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("large-evidence.log");
+        File::create(&path).unwrap().set_len(EVIDENCE_LIMIT).unwrap();
+        for declared in [0, 1] {
+            let gate = Gate {
+                id: "identity".into(), status: Status::Blocked,
+                reason: Some("deliberately understated fixture".into()),
+                evidence: vec![EvidenceRef {
+                    path: path.clone(), bytes: declared, sha256: "0".repeat(64),
+                }],
+            };
+            let mut budget = 0;
+            let error = check_gate_evidence(&gate, &mut budget).unwrap_err();
+            assert_eq!(error.to_string(), "input is not a bounded regular file");
+            assert_eq!(budget, declared);
+        }
+    }
+
+    #[test]
+    fn expected_manifest_count_current_main_and_common_gates_are_external_pins() {
+        let (_root, mut manifest, _results) = fixture(2);
+        assert!(validate_manifest(&manifest, 42, &"1".repeat(64)).is_err());
+        assert!(validate_manifest(&manifest, 2, &"9".repeat(64)).is_err());
+        manifest.apps[0].required_gates.retain(|g| g != "release_scope");
+        assert!(validate_manifest(&manifest, 2, &"1".repeat(64)).is_err());
+    }
+
+    #[test]
+    fn split_identity_order_does_not_change_meaning() {
+        let (root, mut manifest, mut results) = fixture(1);
+        let mut split = manifest.apps[0].identity.apks[0].clone();
+        split.name = "split_config.arm64_v8a.apk".into();
+        manifest.apps[0].identity.apks.push(split.clone());
+        results.apps[0].identity.apks.insert(0, split);
+        assert!(check(&root, &manifest, &results, 1).evidence_complete);
+    }
+}

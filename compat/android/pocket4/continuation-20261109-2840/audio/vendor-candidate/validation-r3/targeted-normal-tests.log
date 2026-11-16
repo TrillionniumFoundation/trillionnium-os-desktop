@@ -1,0 +1,50 @@
+   Compiling droidloom-update v0.1.0 (/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/source/tools/droidloom-update)
+warning: function `private_ART_conscrypt_fuzzer_scope_preserves_other_modules` should have a snake case name
+    --> tools/droidloom-update/src/android.rs:7271:8
+     |
+7271 |     fn private_ART_conscrypt_fuzzer_scope_preserves_other_modules() {
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: convert the identifier to snake case: `private_art_conscrypt_fuzzer_scope_preserves_other_modules`
+     |
+     = note: `#[warn(non_snake_case)]` (part of `#[warn(nonstandard_style)]`) on by default
+
+warning: `droidloom-update` (bin "droidloom-update" test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.24s
+     Running unittests src/main.rs (/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/target/debug/deps/droidloom_update-b7ec3051688493c8)
+
+running 21 tests
+test audio_vendor_candidate::tests::ancestor_symlink_cannot_redirect_new_files ... ok
+test audio_vendor_candidate::tests::compressed_payload_is_not_accepted_as_the_apex_payload_format ... ok
+test audio_vendor_candidate::tests::availability_alias_is_not_installed_package_identity ... ok
+test audio_vendor_candidate::tests::duplicate_terminal_json_keys_are_rejected ... ok
+test audio_vendor_candidate::tests::directory_replacement_is_detected_before_manifest_publication ... ok
+test audio_vendor_candidate::tests::existing_destination_is_preserved ... ok
+test audio_vendor_candidate::tests::duplicate_zip_members_do_not_publish_candidate ... ok
+test audio_vendor_candidate::tests::incorrect_terminal_digest_fails_before_creating_output ... ok
+test audio_vendor_candidate::tests::lzma_metadata_is_refused_without_creating_a_decoder ... ok
+test audio_vendor_candidate::tests::rejects_excessive_zip_directory_before_any_metadata_read ... ok
+test audio_vendor_candidate::tests::rejects_source_hardlink_and_symlink ... ok
+test audio_vendor_candidate::tests::rejects_system_projection_as_artifact_reference ... ok
+test audio_vendor_candidate::tests::rejects_invalid_success_exit_signal_command_and_input_references ... ok
+test audio_vendor_candidate::tests::source_inode_or_bytes_drift_fails_before_output_creation ... ok
+test audio_vendor_candidate::tests::source_only_terminal_cannot_be_promoted_to_full_build ... ok
+test audio_vendor_candidate::tests::writable_parent_is_not_a_trusted_staging_boundary ... ok
+test audio_vendor_candidate::tests::zip_traversal_never_writes_system_paths ... ok
+test audio_vendor_zip::tests::bounded_deflate_requires_complete_single_stream_and_exact_length ... ok
+test audio_vendor_zip::tests::crc32_known_reference_values ... ok
+test audio_vendor_zip::tests::manifest_identity_rejects_duplicates_hooks_and_overflow ... ok
+test audio_vendor_candidate::tests::stages_only_vendor_path_and_never_inherits_readiness_claims ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 224 filtered out; finished in 0.05s
+
+     Running tests/dma_heap_layout.rs (/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/target/debug/deps/dma_heap_layout-7690b73198713567)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+     Running tests/release_queue.rs (/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/target/debug/deps/release_queue-156041a006056539)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+

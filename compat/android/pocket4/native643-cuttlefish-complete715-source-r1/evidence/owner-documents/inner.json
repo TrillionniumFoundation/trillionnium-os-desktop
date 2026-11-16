@@ -1,0 +1,5366 @@
+{
+  "AOSP_full_builds_started": 0,
+  "AOSP_source_writes": 0,
+  "CP3A_source_equivalence_qualified": false,
+  "Full_starts": 0,
+  "Source_writes": 0,
+  "admission": {
+    "MemAvailable": 73729978368,
+    "disk_free_bytes": 264840351744
+  },
+  "all_command_children_retired": true,
+  "all_pair_controls": {
+    "actual": {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639033.085235396,
+        "elapsed_seconds": 4.712794907391071e-05,
+        "leader_pid": 2502556,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "native_generation_pair_build::",
+        "--nocapture"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+          "native_generation_pair_build::",
+          "--nocapture"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "pid": 2502556,
+        "start_ticks": 163900439
+      },
+      "errors": [],
+      "finished_ns": 1794613266432976537,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 9.783683344721794e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2502556,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-update-all53-pair-controls",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2502556,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613242741873161,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014053,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613242741162350,
+          1794613242741162350
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-all53-pair-controls.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 6625,
+        "identity": [
+          66306,
+          64014052,
+          33152,
+          1000,
+          1000,
+          1,
+          6625,
+          1794613266427364447,
+          1794613266427364447
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-all53-pair-controls.stdout",
+        "sha256": "f34314ddb9abd4de7dda4dda3607a522cb22edb97441edd2837c77c73f92a8ff"
+      }
+    },
+    "exact_test_names": [
+      "native_generation_pair_build::compose_car_provider_tests::compose_car_accepts_only_complete_same643_original_provider_plan",
+      "native_generation_pair_build::compose_car_provider_tests::compose_car_pins_complete_fifteen_car_files_and_real_compose_apk",
+      "native_generation_pair_build::compose_car_provider_tests::compose_car_rejects_missing_extra_reordered_or_revision_drifted_sources",
+      "native_generation_pair_build::compose_car_provider_tests::compose_car_uses_original_api_generator_for_both_missing_combined_names",
+      "native_generation_pair_build::cuttlefish_hotplug_provider_tests::cuttlefish_hotplug_accepts_only_complete_same643_original_plan",
+      "native_generation_pair_build::cuttlefish_hotplug_provider_tests::cuttlefish_hotplug_pins_complete_graphics57_and_real_dependency_providers",
+      "native_generation_pair_build::cuttlefish_hotplug_provider_tests::cuttlefish_hotplug_rejects_partial_source_extra_sibling_or_pin_drift",
+      "native_generation_pair_build::global_compat_provider_tests::global_compat_accepts_only_complete_same643_original_generator_plan",
+      "native_generation_pair_build::global_compat_provider_tests::global_compat_pins_real_blueprint_host_generator_tests_and_consumers",
+      "native_generation_pair_build::global_compat_provider_tests::global_compat_rejects_partial_generator_extra_or_revision_policy_drift",
+      "native_generation_pair_build::path_tag_provider_tests::exact_original_path_tag_providers_after_complete_sdk643",
+      "native_generation_pair_build::path_tag_provider_tests::original_path_tags_producer_bps_and_finite63_content_are_pinned",
+      "native_generation_pair_build::path_tag_provider_tests::reject_missing_expanded_reordered_or_unrelated_path_tag_source_scope",
+      "native_generation_pair_build::ranging_snippet_provider_tests::ranging_snippet_accepts_only_complete_same643_original_provider_plan",
+      "native_generation_pair_build::ranging_snippet_provider_tests::ranging_snippet_pins_real_blueprint_manifest_and_all_three_java_sources",
+      "native_generation_pair_build::ranging_snippet_provider_tests::ranging_snippet_rejects_partial_cone_extra_or_revision_policy_drift",
+      "native_generation_pair_build::source642_tests::generic642_all_new_primary_blueprints_are_exact_original_fixtures",
+      "native_generation_pair_build::source642_tests::generic642_rejects_each_missing_provider_cone_and_revision_or_scope_drift",
+      "native_generation_pair_build::source642_tests::generic642_requires_exact_monotone_original_provider_selection",
+      "native_generation_pair_build::source643_tests::sdk643_original_blueprint_and_complete_sample_cones_fixture_are_pinned",
+      "native_generation_pair_build::source643_tests::sdk643_rejects_missing_or_drifted_producer_cones_and_predecessor_scope",
+      "native_generation_pair_build::source643_tests::sdk643_requires_exact_original_producer_after_complete642",
+      "native_generation_pair_build::tests::ordinary_pair_accepts_only_complete_strict_scope",
+      "native_generation_pair_build::tests::ordinary_pair_boot_apex_blueprints_are_exact_upstream_inputs",
+      "native_generation_pair_build::tests::ordinary_pair_boot_apex_providers_require_full_original_production_cones",
+      "native_generation_pair_build::tests::ordinary_pair_browser_helper_blueprint_is_exact_original_input",
+      "native_generation_pair_build::tests::ordinary_pair_browser_helper_requires_complete_original_library",
+      "native_generation_pair_build::tests::ordinary_pair_cronet_shims_requires_complete_original_cone",
+      "native_generation_pair_build::tests::ordinary_pair_dexdeps_requires_original_java_wrapper_and_manifest_cone",
+      "native_generation_pair_build::tests::ordinary_pair_display_extension_rejects_previous_and_wider_subtrees",
+      "native_generation_pair_build::tests::ordinary_pair_effective_engine_rejects_untracked_or_unrelated_edits",
+      "native_generation_pair_build::tests::ordinary_pair_eyedropper_requires_original_declarations_and_retained_library",
+      "native_generation_pair_build::tests::ordinary_pair_flags_require_complete_original_declarations_and_inputs",
+      "native_generation_pair_build::tests::ordinary_pair_generator_provider_closure_rejects_partial_and_unrelated_inputs",
+      "native_generation_pair_build::tests::ordinary_pair_libfuzzer_mte_requires_complete_original_cone",
+      "native_generation_pair_build::tests::ordinary_pair_llvm_plugins_require_complete_original_cones",
+      "native_generation_pair_build::tests::ordinary_pair_microdroid_requires_exact_original_utilities",
+      "native_generation_pair_build::tests::ordinary_pair_nativehelper_ndk_requires_complete_original_cone",
+      "native_generation_pair_build::tests::ordinary_pair_permission_jni_requires_complete_original_cone",
+      "native_generation_pair_build::tests::ordinary_pair_platform_tools_require_complete_original_host_implementations",
+      "native_generation_pair_build::tests::ordinary_pair_projection_is_exact_and_only_x86_64_arm64",
+      "native_generation_pair_build::tests::ordinary_pair_provider_closure_rejects_unlisted_projects_and_prior_plan",
+      "native_generation_pair_build::tests::ordinary_pair_pyee_requires_exact_superproject_provider_and_existing_typing_dependency",
+      "native_generation_pair_build::tests::ordinary_pair_r3_confirmed_providers_require_complete_original_inputs",
+      "native_generation_pair_build::tests::ordinary_pair_records_are_create_only",
+      "native_generation_pair_build::tests::ordinary_pair_rejects_wrong_or_partial_engine_snapshot",
+      "native_generation_pair_build::tests::ordinary_pair_renderscript_bcc_requires_complete_original_input",
+      "native_generation_pair_build::tests::ordinary_pair_rkpd_apex_requires_complete_original_input",
+      "native_generation_pair_build::tests::ordinary_pair_signature_common_requires_complete_original_input",
+      "native_generation_pair_build::tests::ordinary_pair_source_extension_is_exact_and_monotonic",
+      "native_generation_pair_build::tests::ordinary_pair_source_extension_rejects_revision_policy_and_path_drift",
+      "native_generation_pair_build::tests::ordinary_pair_source_workspace_rejects_previous_plan_and_alias",
+      "native_generation_pair_build::tests::ordinary_pair_tradefed_providers_require_original_recursive_cones"
+    ],
+    "passed_count": 53
+  },
+  "all_source_crate_controls": {
+    "actual": {
+      "adopted_normal_exit": {
+        "children": [
+          {
+            "observed_code": 1,
+            "observed_status": 0,
+            "pid": 2503458,
+            "pidfd_closed": true,
+            "reaped": true,
+            "wait_status": 0
+          },
+          {
+            "observed_code": 1,
+            "observed_status": 0,
+            "pid": 2503472,
+            "pidfd_closed": true,
+            "reaped": true,
+            "wait_status": 0
+          },
+          {
+            "observed_code": 1,
+            "observed_status": 0,
+            "pid": 2503483,
+            "pidfd_closed": true,
+            "reaped": true,
+            "wait_status": 0
+          },
+          {
+            "observed_code": 1,
+            "observed_status": 0,
+            "pid": 2503496,
+            "pidfd_closed": true,
+            "reaped": true,
+            "wait_status": 0
+          },
+          {
+            "observed_code": 1,
+            "observed_status": 0,
+            "pid": 2503550,
+            "pidfd_closed": true,
+            "reaped": true,
+            "wait_status": 0
+          }
+        ],
+        "complete": true,
+        "deadline": 1639035.323884097,
+        "elapsed_seconds": 0.000187933212146163,
+        "leader_pid": 2503200,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_source-f11870d43916baca",
+        "--nocapture"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_source-f11870d43916baca",
+          "--nocapture"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_source-f11870d43916baca",
+        "pid": 2503200,
+        "start_ticks": 163903013
+      },
+      "errors": [],
+      "finished_ns": 1794613268670785636,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 8.298689499497414e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2503200,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-source-crate-all26-controls",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2503200,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613268482458014,
+      "stderr": {
+        "bytes": 16488,
+        "identity": [
+          66306,
+          64014265,
+          33152,
+          1000,
+          1000,
+          1,
+          16488,
+          1794613268562292425,
+          1794613268562292425
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-source-crate-all26-controls.stderr",
+        "sha256": "b3b2ce379818a2df0f695fabbad3b3a1f010f881cd00c9d701bba6c2078ef4cf"
+      },
+      "stdout": {
+        "bytes": 2230,
+        "identity": [
+          66306,
+          64014264,
+          33152,
+          1000,
+          1000,
+          1,
+          2230,
+          1794613268666288917,
+          1794613268666288917
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-source-crate-all26-controls.stdout",
+        "sha256": "1be27a859434a9832e8ba38ada51e1fa2daaf8fe8dd1a661b9ff443e55bfcddb"
+      }
+    },
+    "exact_original_test_names": [
+      "resume::tests::completed_project_reuse_has_no_fetch_or_checkout_and_publishes_only_after_verify",
+      "resume::tests::conflicting_untracked_partial_file_is_not_forced_or_removed",
+      "resume::tests::dirty_completed_project_keeps_original_bytes_and_never_gets_manifest",
+      "resume::tests::initial_checkout_reuses_cached_commit_and_preserves_interrupted_index_lock",
+      "resume::tests::mismatched_staging_manifest_is_preserved_and_not_published",
+      "resume::tests::nonempty_interrupted_index_lock_is_preserved_in_place_and_rejected",
+      "resume::tests::recovered_parent_symlink_cannot_create_a_project_outside_staging",
+      "resume::tests::sparse_parent_normalization_keeps_exact_locked_selection",
+      "resume::tests::wrong_origin_is_rejected_before_any_fetch_or_checkout",
+      "tests::actual_git_checkout_preserves_323_cones_and_hidden_blueprints",
+      "tests::bounded_native_source_plan_keeps_duplicate_and_escape_rejections",
+      "tests::bounded_sparse_paths_reject_duplicates_and_escapes_at_the_new_boundary",
+      "tests::duplicate_projects_and_moving_refs_are_rejected",
+      "tests::exact_frozen_device_and_trusty_names_keep_other_names_rejected",
+      "tests::exact_local_git_fetch_and_manifest_link_are_verified",
+      "tests::materialized_verification_rejects_dirty_projects",
+      "tests::original_cts_279_cones_are_preserved_as_an_unmaterialized_plan",
+      "tests::plan_uses_only_exact_official_projects",
+      "tests::platform_compat_uses_its_official_tools_namespace",
+      "tests::project_bound_admits_superproject_gitlink_extensions_but_not_unbounded_sync",
+      "tests::reconciliation_accepts_bounded_sparse_path_expansion",
+      "tests::reconciliation_accepts_only_monotonic_plan_expansion",
+      "tests::root_links_are_relative_to_their_parent",
+      "tests::source_lock_preserves_exact_sparse_paths_through_the_336_bound",
+      "tests::source_lock_rejects_337_sparse_paths_without_truncating_them",
+      "tests::traversal_and_full_sync_policy_are_rejected_together"
+    ],
+    "passed_count": 26
+  },
+  "budget_after": {
+    "affinity": [
+      8,
+      9
+    ],
+    "cpu.max": "200000 100000",
+    "memory.current": "856981504",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.high": "max",
+    "memory.max": "4294967296",
+    "memory.peak": "1056743424",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service"
+  },
+  "budget_before": {
+    "affinity": [
+      8,
+      9
+    ],
+    "cpu.max": "200000 100000",
+    "memory.current": "12578816",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.high": "max",
+    "memory.max": "4294967296",
+    "memory.peak": "12578816",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service"
+  },
+  "commands": [
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1638984.022641776,
+        "elapsed_seconds": 5.4067932069301605e-05,
+        "leader_pid": 2500015,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "--no-replace-objects",
+        "--no-optional-locks",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "gc.auto=0",
+        "-c",
+        "maintenance.auto=false",
+        "-C",
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe",
+        "rev-parse",
+        "HEAD"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "--no-replace-objects",
+          "--no-optional-locks",
+          "-c",
+          "core.hooksPath=/dev/null",
+          "-c",
+          "gc.auto=0",
+          "-c",
+          "maintenance.auto=false",
+          "-C",
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe",
+          "rev-parse",
+          "HEAD"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 2500015,
+        "start_ticks": 163897902
+      },
+      "errors": [],
+      "finished_ns": 1794613217404729029,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 7.2837108746171e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2500015,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "recipe-HEAD-before",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2500015,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613217365032183,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64012430,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613217365014748,
+          1794613217365014748
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/recipe-HEAD-before.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          66306,
+          64012429,
+          33152,
+          1000,
+          1000,
+          1,
+          41,
+          1794613217366014714,
+          1794613217366014714
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/recipe-HEAD-before.stdout",
+        "sha256": "808bf7ec1ad8ba241033762dd4e35941e53ff43574a0b97dc8c8e7a77dc9c561"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1638984.064738082,
+        "elapsed_seconds": 5.189795047044754e-05,
+        "leader_pid": 2500016,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "--no-replace-objects",
+        "--no-optional-locks",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "gc.auto=0",
+        "-c",
+        "maintenance.auto=false",
+        "-C",
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe",
+        "rev-parse",
+        "HEAD^{tree}"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "--no-replace-objects",
+          "--no-optional-locks",
+          "-c",
+          "core.hooksPath=/dev/null",
+          "-c",
+          "gc.auto=0",
+          "-c",
+          "maintenance.auto=false",
+          "-C",
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe",
+          "rev-parse",
+          "HEAD^{tree}"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 2500016,
+        "start_ticks": 163897906
+      },
+      "errors": [],
+      "finished_ns": 1794613217410372433,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 7.702712900936604e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2500016,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "recipe-tree-before",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2500016,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613217406527539,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64012433,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613217406013373,
+          1794613217406013373
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/recipe-tree-before.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          66306,
+          64012432,
+          33152,
+          1000,
+          1000,
+          1,
+          41,
+          1794613217408013306,
+          1794613217408013306
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/recipe-tree-before.stdout",
+        "sha256": "459409cf506c914bc531fd1dbcb52ad46b923107298f813222f8e23f1a31b99d"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1638984.091393616,
+        "elapsed_seconds": 8.083716966211796e-05,
+        "leader_pid": 2500017,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "--no-replace-objects",
+        "--no-optional-locks",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "gc.auto=0",
+        "-c",
+        "maintenance.auto=false",
+        "-C",
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "--no-replace-objects",
+          "--no-optional-locks",
+          "-c",
+          "core.hooksPath=/dev/null",
+          "-c",
+          "gc.auto=0",
+          "-c",
+          "maintenance.auto=false",
+          "-C",
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe",
+          "status",
+          "--porcelain=v1",
+          "--untracked-files=all"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 2500017,
+        "start_ticks": 163897906
+      },
+      "errors": [],
+      "finished_ns": 1794613217436868522,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 6.856792606413364e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2500017,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "recipe-clean-before",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2500017,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613217411535925,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64012436,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613217411013205,
+          1794613217411013205
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/recipe-clean-before.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64012435,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613217411013205,
+          1794613217411013205
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/recipe-clean-before.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639004.759438123,
+        "elapsed_seconds": 0.00014162505976855755,
+        "leader_pid": 2500018,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-update",
+        "--no-run",
+        "--message-format=json"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "test",
+          "--locked",
+          "--offline",
+          "-j",
+          "1",
+          "-p",
+          "droidloom-update",
+          "--no-run",
+          "--message-format=json"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "pid": 2500018,
+        "start_ticks": 163897918
+      },
+      "errors": [],
+      "finished_ns": 1794613238107256172,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00010898592881858349,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2500018,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "compile-new-update-test-harness",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2500018,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613217526202415,
+      "stderr": {
+        "bytes": 2146,
+        "identity": [
+          66306,
+          64012439,
+          33152,
+          1000,
+          1000,
+          1,
+          2146,
+          1794613238096318565,
+          1794613238096318565
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/compile-new-update-test-harness.stderr",
+        "sha256": "b136310550c0520261e7588b19ca7d9cd24b7622c831922e4482091af3a8a36f"
+      },
+      "stdout": {
+        "bytes": 67014,
+        "identity": [
+          66306,
+          64012438,
+          33152,
+          1000,
+          1000,
+          1,
+          67014,
+          1794613238096318565,
+          1794613238096318565
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/compile-new-update-test-harness.stdout",
+        "sha256": "7bc0cc057174ca45e655db2f251244ad859e6fd90eea4f06d8fe85ea527623eb"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639004.790815929,
+        "elapsed_seconds": 1.6928883269429207e-05,
+        "leader_pid": 2502375,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "--list"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+          "--list"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "pid": 2502375,
+        "start_ticks": 163899978
+      },
+      "errors": [],
+      "finished_ns": 1794613238136439450,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 4.037912003695965e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2502375,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-update-testbinary-list-only",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2502375,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613238133815767,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014032,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613238132317355,
+          1794613238132317355
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-testbinary-list-only.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 27507,
+        "identity": [
+          66306,
+          64014031,
+          33152,
+          1000,
+          1000,
+          1,
+          27507,
+          1794613238133317321,
+          1794613238133317321
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-testbinary-list-only.stdout",
+        "sha256": "eb79cc792c9c1468571f8eeb3092855719c584da2c9bec43b217afa3c2a520a7"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639004.887026258,
+        "elapsed_seconds": 5.921791307628155e-05,
+        "leader_pid": 2502376,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "native_generation_pair_build::tests::ordinary_pair_source_extension_is_exact_and_monotonic",
+        "--exact",
+        "--nocapture"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+          "native_generation_pair_build::tests::ordinary_pair_source_extension_is_exact_and_monotonic",
+          "--exact",
+          "--nocapture"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "pid": 2502376,
+        "start_ticks": 163899979
+      },
+      "errors": [],
+      "finished_ns": 1794613238232016880,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 4.681805148720741e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2502376,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-update-focused-ordinary_pair_source_extension_is_exact_and_monotonic",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2502376,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613238137418088,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014035,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613238136317220,
+          1794613238136317220
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-focused-ordinary_pair_source_extension_is_exact_and_monotonic.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 217,
+        "identity": [
+          66306,
+          64014034,
+          33152,
+          1000,
+          1000,
+          1,
+          217,
+          1794613238229314093,
+          1794613238229314093
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-focused-ordinary_pair_source_extension_is_exact_and_monotonic.stdout",
+        "sha256": "76df7d27331309265f82386b9269be85fe8660886bbd7e2ae7f652dbf072a1d8"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639005.756714005,
+        "elapsed_seconds": 5.4388074204325676e-05,
+        "leader_pid": 2502414,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "native_generation_pair_build::tests::ordinary_pair_nativehelper_ndk_requires_complete_original_cone",
+        "--exact",
+        "--nocapture"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+          "native_generation_pair_build::tests::ordinary_pair_nativehelper_ndk_requires_complete_original_cone",
+          "--exact",
+          "--nocapture"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "pid": 2502414,
+        "start_ticks": 163899988
+      },
+      "errors": [],
+      "finished_ns": 1794613239104514114,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 7.387716323137283e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2502414,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-update-focused-ordinary_pair_nativehelper_ndk_requires_complete_original_cone",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2502414,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613238232745726,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014038,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613238231314026,
+          1794613238231314026
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-focused-ordinary_pair_nativehelper_ndk_requires_complete_original_cone.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 226,
+        "identity": [
+          66306,
+          64014037,
+          33152,
+          1000,
+          1000,
+          1,
+          226,
+          1794613239099284841,
+          1794613239099284841
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-focused-ordinary_pair_nativehelper_ndk_requires_complete_original_cone.stdout",
+        "sha256": "24712002f6805406b2476ac7045a18201807a3dee7dff8a822c0cf3bc8f9b4e0"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639008.784752003,
+        "elapsed_seconds": 6.303703412413597e-05,
+        "leader_pid": 2502427,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "native_generation_pair_build::tests::ordinary_pair_boot_apex_providers_require_full_original_production_cones",
+        "--exact",
+        "--nocapture"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+          "native_generation_pair_build::tests::ordinary_pair_boot_apex_providers_require_full_original_production_cones",
+          "--exact",
+          "--nocapture"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "pid": 2502427,
+        "start_ticks": 163900076
+      },
+      "errors": [],
+      "finished_ns": 1794613242133114754,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 9.51569527387619e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2502427,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-update-focused-ordinary_pair_boot_apex_providers_require_full_original_production_cones",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2502427,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613239105434154,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014041,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613239104284673,
+          1794613239104284673
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-focused-ordinary_pair_boot_apex_providers_require_full_original_production_cones.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 236,
+        "identity": [
+          66306,
+          64014040,
+          33152,
+          1000,
+          1000,
+          1,
+          236,
+          1794613242128182971,
+          1794613242128182971
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-focused-ordinary_pair_boot_apex_providers_require_full_original_production_cones.stdout",
+        "sha256": "6ca761252a6407595fe89de8b57e95849a9fc77ea4b14224d19610dbba883872"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639008.791355005,
+        "elapsed_seconds": 2.810894511640072e-05,
+        "leader_pid": 2502550,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "native_generation_pair_build::tests::ordinary_pair_boot_apex_blueprints_are_exact_upstream_inputs",
+        "--exact",
+        "--nocapture"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+          "native_generation_pair_build::tests::ordinary_pair_boot_apex_blueprints_are_exact_upstream_inputs",
+          "--exact",
+          "--nocapture"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "pid": 2502550,
+        "start_ticks": 163900378
+      },
+      "errors": [],
+      "finished_ns": 1794613242136159203,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 3.48889734596014e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2502550,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-update-focused-ordinary_pair_boot_apex_blueprints_are_exact_upstream_inputs",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2502550,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613242133945776,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014044,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613242133182803,
+          1794613242133182803
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-focused-ordinary_pair_boot_apex_blueprints_are_exact_upstream_inputs.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 224,
+        "identity": [
+          66306,
+          64014043,
+          33152,
+          1000,
+          1000,
+          1,
+          224,
+          1794613242135182736,
+          1794613242135182736
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-focused-ordinary_pair_boot_apex_blueprints_are_exact_upstream_inputs.stdout",
+        "sha256": "c3426d59928523f0ef1bb418e058b2817a410241686da0996c179cca10b9443d"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639009.390343324,
+        "elapsed_seconds": 5.855807103216648e-05,
+        "leader_pid": 2502552,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "native_generation_pair_build::tests::ordinary_pair_browser_helper_requires_complete_original_library",
+        "--exact",
+        "--nocapture"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+          "native_generation_pair_build::tests::ordinary_pair_browser_helper_requires_complete_original_library",
+          "--exact",
+          "--nocapture"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "pid": 2502552,
+        "start_ticks": 163900379
+      },
+      "errors": [],
+      "finished_ns": 1794613242738354547,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 6.794789806008339e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2502552,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-update-focused-ordinary_pair_browser_helper_requires_complete_original_library",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2502552,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613242136887319,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014047,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613242136182702,
+          1794613242136182702
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-focused-ordinary_pair_browser_helper_requires_complete_original_library.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 227,
+        "identity": [
+          66306,
+          64014046,
+          33152,
+          1000,
+          1000,
+          1,
+          227,
+          1794613242734162586,
+          1794613242734162586
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-focused-ordinary_pair_browser_helper_requires_complete_original_library.stdout",
+        "sha256": "0c0b8d72ac151bc9979afed53160e0acd286cb2cf33f4698e7f468b828662dcf"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639009.39623514,
+        "elapsed_seconds": 3.797910176217556e-05,
+        "leader_pid": 2502554,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "native_generation_pair_build::tests::ordinary_pair_browser_helper_blueprint_is_exact_original_input",
+        "--exact",
+        "--nocapture"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+          "native_generation_pair_build::tests::ordinary_pair_browser_helper_blueprint_is_exact_original_input",
+          "--exact",
+          "--nocapture"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "pid": 2502554,
+        "start_ticks": 163900439
+      },
+      "errors": [],
+      "finished_ns": 1794613242741115186,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 3.49490437656641e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2502554,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-update-focused-ordinary_pair_browser_helper_blueprint_is_exact_original_input",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2502554,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613242739166990,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014050,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613242739162418,
+          1794613242739162418
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-focused-ordinary_pair_browser_helper_blueprint_is_exact_original_input.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 226,
+        "identity": [
+          66306,
+          64014049,
+          33152,
+          1000,
+          1000,
+          1,
+          226,
+          1794613242740162384,
+          1794613242740162384
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-focused-ordinary_pair_browser_helper_blueprint_is_exact_original_input.stdout",
+        "sha256": "ecbe3bc3a82233a483721101a450b1b80349cce536e441b12631d18de7fb869f"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639033.085235396,
+        "elapsed_seconds": 4.712794907391071e-05,
+        "leader_pid": 2502556,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "native_generation_pair_build::",
+        "--nocapture"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+          "native_generation_pair_build::",
+          "--nocapture"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "pid": 2502556,
+        "start_ticks": 163900439
+      },
+      "errors": [],
+      "finished_ns": 1794613266432976537,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 9.783683344721794e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2502556,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-update-all53-pair-controls",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2502556,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613242741873161,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014053,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613242741162350,
+          1794613242741162350
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-all53-pair-controls.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 6625,
+        "identity": [
+          66306,
+          64014052,
+          33152,
+          1000,
+          1000,
+          1,
+          6625,
+          1794613266427364447,
+          1794613266427364447
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-all53-pair-controls.stdout",
+        "sha256": "f34314ddb9abd4de7dda4dda3607a522cb22edb97441edd2837c77c73f92a8ff"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639033.260419834,
+        "elapsed_seconds": 0.00014911615289747715,
+        "leader_pid": 2502843,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "android::tests::projection_v2_",
+        "--nocapture"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+          "android::tests::projection_v2_",
+          "--nocapture"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "pid": 2502843,
+        "start_ticks": 163902809
+      },
+      "errors": [],
+      "finished_ns": 1794613266605910669,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 8.819694630801678e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2502843,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-update-seven-filesystem-mode-tests",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2502843,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613266438835503,
+      "stderr": {
+        "bytes": 224,
+        "identity": [
+          66306,
+          64014056,
+          33152,
+          1000,
+          1000,
+          1,
+          224,
+          1794613266442955057,
+          1794613266442955057
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-seven-filesystem-mode-tests.stderr",
+        "sha256": "08c979d7d5bf357c220528c9743849f934e9d060ae7a3005aac9a75d8bd82b2f"
+      },
+      "stdout": {
+        "bytes": 838,
+        "identity": [
+          66306,
+          64014055,
+          33152,
+          1000,
+          1000,
+          1,
+          838,
+          1794613266604111809,
+          1794613266604111809
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-seven-filesystem-mode-tests.stdout",
+        "sha256": "29bffe43589505d120f5473c786c81e629f74a737164265dc78065a3aa65a32f"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639033.264835248,
+        "elapsed_seconds": 4.06079925596714e-05,
+        "leader_pid": 2502860,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "android::patch_tests::interrupted_projection_recovers_before_next_build",
+        "--exact",
+        "--nocapture"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+          "android::patch_tests::interrupted_projection_recovers_before_next_build",
+          "--exact",
+          "--nocapture"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "pid": 2502860,
+        "start_ticks": 163902826
+      },
+      "errors": [],
+      "finished_ns": 1794613266609711784,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 3.554904833436012e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2502860,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-update-interrupted_projection_recovers_before_next_build",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2502860,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613266606817299,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014059,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613266605358443,
+          1794613266605358443
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-interrupted_projection_recovers_before_next_build.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 198,
+        "identity": [
+          66306,
+          64014058,
+          33152,
+          1000,
+          1000,
+          1,
+          198,
+          1794613266608923780,
+          1794613266608923780
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-interrupted_projection_recovers_before_next_build.stdout",
+        "sha256": "220a76311afde48117c888c56459b1edd4f2a9feb256e6159952b81491efc6c5"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639033.273924887,
+        "elapsed_seconds": 4.67388890683651e-05,
+        "leader_pid": 2502862,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes",
+        "--exact",
+        "--nocapture"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+          "android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes",
+          "--exact",
+          "--nocapture"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "pid": 2502862,
+        "start_ticks": 163902826
+      },
+      "errors": [],
+      "finished_ns": 1794613266618863131,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 4.388904199004173e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2502862,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-update-repeated_projection_keeps_ninja_outputs_until_content_changes",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2502862,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613266610383901,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014062,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613266609358309,
+          1794613266609358309
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-repeated_projection_keeps_ninja_outputs_until_content_changes.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 204,
+        "identity": [
+          66306,
+          64014061,
+          33152,
+          1000,
+          1000,
+          1,
+          204,
+          1794613266617931752,
+          1794613266617931752
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-repeated_projection_keeps_ninja_outputs_until_content_changes.stdout",
+        "sha256": "8f5115bdc52e11db7e0134141ff5d28321fe1102963b8f07122a295a472f322f"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639033.27806451,
+        "elapsed_seconds": 4.2008934542536736e-05,
+        "leader_pid": 2502871,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "android::tests::typed_audiocontrol_example_projection_keeps_metadata_and_sibling_sources",
+        "--exact",
+        "--nocapture"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+          "android::tests::typed_audiocontrol_example_projection_keeps_metadata_and_sibling_sources",
+          "--exact",
+          "--nocapture"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "pid": 2502871,
+        "start_ticks": 163902827
+      },
+      "errors": [],
+      "finished_ns": 1794613266622903687,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 3.56289092451334e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2502871,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-update-typed_audiocontrol_example_projection_keeps_metadata_and_sibling_sources",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2502871,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613266619524509,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014065,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613266618358005,
+          1794613266618358005
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-typed_audiocontrol_example_projection_keeps_metadata_and_sibling_sources.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 215,
+        "identity": [
+          66306,
+          64014064,
+          33152,
+          1000,
+          1000,
+          1,
+          215,
+          1794613266622107304,
+          1794613266622107304
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-typed_audiocontrol_example_projection_keeps_metadata_and_sibling_sources.stdout",
+        "sha256": "40569b5cd7aab506b674d61f140dd9ddc1b46dccfb7c11c21e53ca5a539f47cb"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639033.282447575,
+        "elapsed_seconds": 4.154909402132034e-05,
+        "leader_pid": 2502873,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "android::tests::typed_audiocontrol_example_projection_recovers_full_observed_original",
+        "--exact",
+        "--nocapture"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+          "android::tests::typed_audiocontrol_example_projection_recovers_full_observed_original",
+          "--exact",
+          "--nocapture"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "pid": 2502873,
+        "start_ticks": 163902827
+      },
+      "errors": [],
+      "finished_ns": 1794613266627324681,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 3.48889734596014e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2502873,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-update-typed_audiocontrol_example_projection_recovers_full_observed_original",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2502873,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613266623570015,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014068,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613266622357870,
+          1794613266622357870
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-typed_audiocontrol_example_projection_recovers_full_observed_original.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 212,
+        "identity": [
+          66306,
+          64014067,
+          33152,
+          1000,
+          1000,
+          1,
+          212,
+          1794613266626499109,
+          1794613266626499109
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-typed_audiocontrol_example_projection_recovers_full_observed_original.stdout",
+        "sha256": "e13562ff34122d2f0efb3629d7b01de7c62ec8f6a7b6f29540b9af41b226be63"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639033.308871682,
+        "elapsed_seconds": 4.4628046452999115e-05,
+        "leader_pid": 2502875,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "android::tests::typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths",
+        "--exact",
+        "--nocapture"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+          "android::tests::typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths",
+          "--exact",
+          "--nocapture"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "pid": 2502875,
+        "start_ticks": 163902828
+      },
+      "errors": [],
+      "finished_ns": 1794613266653844664,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 3.679911606013775e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2502875,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-update-typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2502875,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613266628016648,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014071,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613266626499109,
+          1794613266626499109
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 221,
+        "identity": [
+          66306,
+          64014070,
+          33152,
+          1000,
+          1000,
+          1,
+          221,
+          1794613266652314365,
+          1794613266652314365
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths.stdout",
+        "sha256": "bcd9eec3e03a21f7ffd9fdfe0eb998a27473631f8f83a30a8b691919ce34ead0"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639033.31465612,
+        "elapsed_seconds": 4.1718827560544014e-05,
+        "leader_pid": 2502877,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "android::tests::typed_systemui_test_projection_recovers_complete_original_from_durable_journal",
+        "--exact",
+        "--nocapture"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+          "android::tests::typed_systemui_test_projection_recovers_complete_original_from_durable_journal",
+          "--exact",
+          "--nocapture"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "pid": 2502877,
+        "start_ticks": 163902831
+      },
+      "errors": [],
+      "finished_ns": 1794613266659446819,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 3.543891943991184e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2502877,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-update-typed_systemui_test_projection_recovers_complete_original_from_durable_journal",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2502877,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613266654795693,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014074,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613266653356825,
+          1794613266653356825
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-typed_systemui_test_projection_recovers_complete_original_from_durable_journal.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 221,
+        "identity": [
+          66306,
+          64014073,
+          33152,
+          1000,
+          1000,
+          1,
+          221,
+          1794613266658714593,
+          1794613266658714593
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-typed_systemui_test_projection_recovers_complete_original_from_durable_journal.stdout",
+        "sha256": "2e451ec11fe4730c01d5ea9bc43d9910f42a051d3ec94c76046550ef87709f3d"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639035.127178602,
+        "elapsed_seconds": 0.00014694500714540482,
+        "leader_pid": 2502879,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-source",
+        "--lib",
+        "--no-run",
+        "--message-format=json"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "test",
+          "--locked",
+          "--offline",
+          "-j",
+          "1",
+          "-p",
+          "droidloom-source",
+          "--lib",
+          "--no-run",
+          "--message-format=json"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "pid": 2502879,
+        "start_ticks": 163902831
+      },
+      "errors": [],
+      "finished_ns": 1794613268473905527,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 8.925702422857285e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2502879,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "compile-new-source-crate-test-harness",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2502879,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613266660107687,
+      "stderr": {
+        "bytes": 338,
+        "identity": [
+          66306,
+          64014077,
+          33152,
+          1000,
+          1000,
+          1,
+          338,
+          1794613268464295732,
+          1794613268464295732
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/compile-new-source-crate-test-harness.stderr",
+        "sha256": "4efd8375e88b3c08decdd884fe1adaf94ac12c8a3551628b67281f6958b77dd0"
+      },
+      "stdout": {
+        "bytes": 57361,
+        "identity": [
+          66306,
+          64014076,
+          33152,
+          1000,
+          1000,
+          1,
+          57361,
+          1794613268464295732,
+          1794613268464295732
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/compile-new-source-crate-test-harness.stdout",
+        "sha256": "64832f5b27ba3c27b48af3089ef208156a2751e607cba57afa179d1212e6a262"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [
+          {
+            "observed_code": 1,
+            "observed_status": 0,
+            "pid": 2503458,
+            "pidfd_closed": true,
+            "reaped": true,
+            "wait_status": 0
+          },
+          {
+            "observed_code": 1,
+            "observed_status": 0,
+            "pid": 2503472,
+            "pidfd_closed": true,
+            "reaped": true,
+            "wait_status": 0
+          },
+          {
+            "observed_code": 1,
+            "observed_status": 0,
+            "pid": 2503483,
+            "pidfd_closed": true,
+            "reaped": true,
+            "wait_status": 0
+          },
+          {
+            "observed_code": 1,
+            "observed_status": 0,
+            "pid": 2503496,
+            "pidfd_closed": true,
+            "reaped": true,
+            "wait_status": 0
+          },
+          {
+            "observed_code": 1,
+            "observed_status": 0,
+            "pid": 2503550,
+            "pidfd_closed": true,
+            "reaped": true,
+            "wait_status": 0
+          }
+        ],
+        "complete": true,
+        "deadline": 1639035.323884097,
+        "elapsed_seconds": 0.000187933212146163,
+        "leader_pid": 2503200,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_source-f11870d43916baca",
+        "--nocapture"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_source-f11870d43916baca",
+          "--nocapture"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_source-f11870d43916baca",
+        "pid": 2503200,
+        "start_ticks": 163903013
+      },
+      "errors": [],
+      "finished_ns": 1794613268670785636,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 8.298689499497414e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2503200,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-source-crate-all26-controls",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2503200,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613268482458014,
+      "stderr": {
+        "bytes": 16488,
+        "identity": [
+          66306,
+          64014265,
+          33152,
+          1000,
+          1000,
+          1,
+          16488,
+          1794613268562292425,
+          1794613268562292425
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-source-crate-all26-controls.stderr",
+        "sha256": "b3b2ce379818a2df0f695fabbad3b3a1f010f881cd00c9d701bba6c2078ef4cf"
+      },
+      "stdout": {
+        "bytes": 2230,
+        "identity": [
+          66306,
+          64014264,
+          33152,
+          1000,
+          1000,
+          1,
+          2230,
+          1794613268666288917,
+          1794613268666288917
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-source-crate-all26-controls.stdout",
+        "sha256": "1be27a859434a9832e8ba38ada51e1fa2daaf8fe8dd1a661b9ff443e55bfcddb"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639035.594644902,
+        "elapsed_seconds": 0.00014530494809150696,
+        "leader_pid": 2503554,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-source",
+        "-p",
+        "droidloom-update",
+        "--message-format=json"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "build",
+          "--locked",
+          "--offline",
+          "-j",
+          "1",
+          "-p",
+          "droidloom-source",
+          "-p",
+          "droidloom-update",
+          "--message-format=json"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "pid": 2503554,
+        "start_ticks": 163903032
+      },
+      "errors": [],
+      "finished_ns": 1794613268943238985,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 8.974713273346424e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2503554,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "compile-both-fresh-normal-CLIs",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2503554,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613268671718905,
+      "stderr": {
+        "bytes": 250,
+        "identity": [
+          66306,
+          64014269,
+          33152,
+          1000,
+          1000,
+          1,
+          250,
+          1794613268932279942,
+          1794613268932279942
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/compile-both-fresh-normal-CLIs.stderr",
+        "sha256": "4373f5c43100b420788cb22cd87877019a7b3bb78cdb983e40b4a5f36bfa1706"
+      },
+      "stdout": {
+        "bytes": 61958,
+        "identity": [
+          66306,
+          64014268,
+          33152,
+          1000,
+          1000,
+          1,
+          61958,
+          1794613268932279942,
+          1794613268932279942
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/compile-both-fresh-normal-CLIs.stdout",
+        "sha256": "8d589477ff525348520003550fa260b718319095c7d5392e223c73332faa375d"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639035.716111335,
+        "elapsed_seconds": 2.0988984033465385e-05,
+        "leader_pid": 2503629,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/bin/droidloom-source",
+        "--help"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/bin/droidloom-source",
+          "--help"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/bin/droidloom-source",
+        "pid": 2503629,
+        "start_ticks": 163903071
+      },
+      "errors": [],
+      "finished_ns": 1794613269061758566,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 4.494888707995415e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2503629,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "droidloom-source-actual-help",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2503629,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613269058695417,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014338,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613269057275725,
+          1794613269057275725
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/droidloom-source-actual-help.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 699,
+        "identity": [
+          66306,
+          64014337,
+          33152,
+          1000,
+          1000,
+          1,
+          699,
+          1794613269059275657,
+          1794613269059275657
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/droidloom-source-actual-help.stdout",
+        "sha256": "b10e5dd4d4db8d30fd6e8529a849b8be9ced9c9ad8cb9d3da0fb95880f993ab5"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639035.719926439,
+        "elapsed_seconds": 1.9039027392864227e-05,
+        "leader_pid": 2503630,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/bin/droidloom-update",
+        "--help"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/bin/droidloom-update",
+          "--help"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/bin/droidloom-update",
+        "pid": 2503630,
+        "start_ticks": 163903071
+      },
+      "errors": [],
+      "finished_ns": 1794613269064760706,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 3.2989075407385826e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2503630,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "droidloom-update-actual-help",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2503630,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613269062615097,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014341,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613269061275590,
+          1794613269061275590
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/droidloom-update-actual-help.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 2175,
+        "identity": [
+          66306,
+          64014340,
+          33152,
+          1000,
+          1000,
+          1,
+          2175,
+          1794613269062275557,
+          1794613269062275557
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/droidloom-update-actual-help.stdout",
+        "sha256": "1fc783526d4711bef1c3557944bf516875175310c82ff7606784187fd2e624b9"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639035.731267884,
+        "elapsed_seconds": 2.1858839318156242e-05,
+        "leader_pid": 2503631,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/bin/droidloom-source",
+        "verify-lock",
+        "--lock",
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe/android/native-generation-pair/source-lock.json"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/bin/droidloom-source",
+          "verify-lock",
+          "--lock",
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe/android/native-generation-pair/source-lock.json"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/bin/droidloom-source",
+        "pid": 2503631,
+        "start_ticks": 163903072
+      },
+      "errors": [],
+      "finished_ns": 1794613269076094771,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 3.157882019877434e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2503631,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-normal-source-exact-lock",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2503631,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613269065369526,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014344,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613269064275489,
+          1794613269064275489
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-normal-source-exact-lock.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 107,
+        "identity": [
+          66306,
+          64014343,
+          33152,
+          1000,
+          1000,
+          1,
+          107,
+          1794613269073275185,
+          1794613269073275185
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-normal-source-exact-lock.stdout",
+        "sha256": "85f90da76871b9b9ba424ef3b7e89183242455dca355208017471b4d95ceb7d9"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639035.747895834,
+        "elapsed_seconds": 1.8328893929719925e-05,
+        "leader_pid": 2503632,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/bin/droidloom-source",
+        "plan",
+        "--lock",
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe/android/native-generation-pair/source-lock.json"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/bin/droidloom-source",
+          "plan",
+          "--lock",
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe/android/native-generation-pair/source-lock.json"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/bin/droidloom-source",
+        "pid": 2503632,
+        "start_ticks": 163903073
+      },
+      "errors": [],
+      "finished_ns": 1794613269093413278,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 3.231898881494999e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2503632,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-normal-source-exact-plan",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2503632,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613269076702471,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014347,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613269075275118,
+          1794613269075275118
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-normal-source-exact-plan.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 389024,
+        "identity": [
+          66306,
+          64014346,
+          33152,
+          1000,
+          1000,
+          1,
+          389024,
+          1794613269090274612,
+          1794613269090274612
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-normal-source-exact-plan.stdout",
+        "sha256": "b5ab2a2c5e5842b376262b2b988d095b613281fd19814186260affa65bcd9602"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639035.751985509,
+        "elapsed_seconds": 1.7049023881554604e-05,
+        "leader_pid": 2503633,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "--no-replace-objects",
+        "--no-optional-locks",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "gc.auto=0",
+        "-c",
+        "maintenance.auto=false",
+        "-C",
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe",
+        "rev-parse",
+        "HEAD"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "--no-replace-objects",
+          "--no-optional-locks",
+          "-c",
+          "core.hooksPath=/dev/null",
+          "-c",
+          "gc.auto=0",
+          "-c",
+          "maintenance.auto=false",
+          "-C",
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe",
+          "rev-parse",
+          "HEAD"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 2503633,
+        "start_ticks": 163903075
+      },
+      "errors": [],
+      "finished_ns": 1794613269096798397,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 3.274879418313503e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2503633,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "recipe-HEAD-after",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2503633,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613269095322215,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014350,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613269094274477,
+          1794613269094274477
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/recipe-HEAD-after.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          66306,
+          64014349,
+          33152,
+          1000,
+          1000,
+          1,
+          41,
+          1794613269096120979,
+          1794613269096120979
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/recipe-HEAD-after.stdout",
+        "sha256": "808bf7ec1ad8ba241033762dd4e35941e53ff43574a0b97dc8c8e7a77dc9c561"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639035.753917375,
+        "elapsed_seconds": 1.5969155356287956e-05,
+        "leader_pid": 2503634,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "--no-replace-objects",
+        "--no-optional-locks",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "gc.auto=0",
+        "-c",
+        "maintenance.auto=false",
+        "-C",
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe",
+        "rev-parse",
+        "HEAD^{tree}"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "--no-replace-objects",
+          "--no-optional-locks",
+          "-c",
+          "core.hooksPath=/dev/null",
+          "-c",
+          "gc.auto=0",
+          "-c",
+          "maintenance.auto=false",
+          "-C",
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe",
+          "rev-parse",
+          "HEAD^{tree}"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 2503634,
+        "start_ticks": 163903075
+      },
+      "errors": [],
+      "finished_ns": 1794613269098740452,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 2.7118949219584465e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2503634,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "recipe-tree-after",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2503634,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613269097435005,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014353,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613269096274409,
+          1794613269096274409
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/recipe-tree-after.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          66306,
+          64014352,
+          33152,
+          1000,
+          1000,
+          1,
+          41,
+          1794613269098058225,
+          1794613269098058225
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/recipe-tree-after.stdout",
+        "sha256": "459409cf506c914bc531fd1dbcb52ad46b923107298f813222f8e23f1a31b99d"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639035.781701286,
+        "elapsed_seconds": 2.1549174562096596e-05,
+        "leader_pid": 2503635,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/git",
+        "--no-replace-objects",
+        "--no-optional-locks",
+        "-c",
+        "core.hooksPath=/dev/null",
+        "-c",
+        "gc.auto=0",
+        "-c",
+        "maintenance.auto=false",
+        "-C",
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/git",
+          "--no-replace-objects",
+          "--no-optional-locks",
+          "-c",
+          "core.hooksPath=/dev/null",
+          "-c",
+          "gc.auto=0",
+          "-c",
+          "maintenance.auto=false",
+          "-C",
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe",
+          "status",
+          "--porcelain=v1",
+          "--untracked-files=all"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/usr/bin/git",
+        "pid": 2503635,
+        "start_ticks": 163903075
+      },
+      "errors": [],
+      "finished_ns": 1794613269126541423,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 3.1278934329748154e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2503635,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "recipe-clean-after",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2503635,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613269099362722,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014356,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613269098274342,
+          1794613269098274342
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/recipe-clean-after.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          64014355,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794613269098274342,
+          1794613269098274342
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/recipe-clean-after.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "complete_input_after": [
+    {
+      "bytes": 14084,
+      "identity": [
+        66306,
+        62964224,
+        33024,
+        1000,
+        1000,
+        1,
+        14084,
+        1794613148600468332,
+        1794613148600468332
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/audio_continuation_control.py",
+      "sha256": "cacdc371bca50e1b161831eab358cf0402c38fd731f3ddbf107f3203bbf8f6fd"
+    },
+    {
+      "bytes": 22534,
+      "identity": [
+        66306,
+        62964236,
+        33024,
+        1000,
+        1000,
+        1,
+        22534,
+        1794613148618467684,
+        1794613148618467684
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/build_normal_tools.py",
+      "sha256": "58f35b254623ab8b1def3bbf7aeace5b3388e723e1198a594f868f5143d1efd2"
+    },
+    {
+      "bytes": 911685,
+      "identity": [
+        66306,
+        62964221,
+        33024,
+        1000,
+        1000,
+        1,
+        911685,
+        1794613048819058139,
+        1794613048819058139
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/code-preparation.json",
+      "sha256": "e94b8f9df29f839b1a03d60563be1abc566f9753b020402d11a6192c8cfab5d1"
+    },
+    {
+      "bytes": 2417,
+      "identity": [
+        66306,
+        62964230,
+        33024,
+        1000,
+        1000,
+        1,
+        2417,
+        1794613148610467972,
+        1794613148610467972
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/current-resource-plan.json",
+      "sha256": "46c0af1143b8931b8d01c52236cb25eeb81210bbcbad4c8cd1212efc89cef3b2"
+    },
+    {
+      "bytes": 7980,
+      "identity": [
+        66306,
+        62964223,
+        33024,
+        1000,
+        1000,
+        1,
+        7980,
+        1794613048860056664,
+        1794613048860056664
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/cuttlefish_admission.py",
+      "sha256": "68daac77454a9787ded8726c817a8ce1a350babef1ce05fc246ceb0cd4bb354c"
+    },
+    {
+      "bytes": 5906,
+      "identity": [
+        66306,
+        62963801,
+        33024,
+        1000,
+        1000,
+        1,
+        5906,
+        1794613043632244710,
+        1794613043632244710
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/existing-provider-proof.json",
+      "sha256": "8c39433ee49e94e2e0e6455b8f651c924bc6cf1f7a164a6843c87cffbcfa991a"
+    },
+    {
+      "bytes": 22022,
+      "identity": [
+        66306,
+        62963804,
+        33024,
+        1000,
+        1000,
+        1,
+        22022,
+        1794613043633244674,
+        1794613043633244674
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/existing49-graphics-and-providers.json",
+      "sha256": "2acf5afda32a67eebab370040e0e9dec8be64f79b42b0f521916913f28ecc4d6"
+    },
+    {
+      "bytes": 633,
+      "identity": [
+        66306,
+        62964234,
+        33024,
+        1000,
+        1000,
+        1,
+        633,
+        1794613148613842621,
+        1794613148613842621
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/focused-control-test-names.json",
+      "sha256": "a38a7d9ff6e5a12f433e2deb15f0061c6a30b0e5b16aa4376dc0223c6a156a7b"
+    },
+    {
+      "bytes": 548,
+      "identity": [
+        66306,
+        62964231,
+        33024,
+        1000,
+        1000,
+        1,
+        548,
+        1794613148612157070,
+        1794613148612157070
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/journal-regression-test-names.json",
+      "sha256": "d401a531b21cdb053645eb1240de5767fad4448da0d6f9ddde63a290448973ab"
+    },
+    {
+      "bytes": 19077,
+      "identity": [
+        66306,
+        62963585,
+        33024,
+        1000,
+        1000,
+        1,
+        19077,
+        1794613043610245502,
+        1794613043610245502
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/legacy_source604_admission.py",
+      "sha256": "5a6e90848aa81c6a13b1df65e3eb54fc25669e128cb848c92ff4bc059537d361"
+    },
+    {
+      "bytes": 8737,
+      "identity": [
+        66306,
+        62964225,
+        33024,
+        1000,
+        1000,
+        1,
+        8737,
+        1794613148604468188,
+        1794613148604468188
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/native_owned_commands.py",
+      "sha256": "c567c2338d388baee880d61da3a10814f20abc6c25c24548c0671d3d805c97f3"
+    },
+    {
+      "bytes": 2868,
+      "identity": [
+        66306,
+        62964226,
+        33024,
+        1000,
+        1000,
+        1,
+        2868,
+        1794613148605468152,
+        1794613148605468152
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/owned_adoption.py",
+      "sha256": "5062e1f68d2815688286e3e691b81592bbda227477e224281462ee482107c080"
+    },
+    {
+      "bytes": 14201,
+      "identity": [
+        66306,
+        62964227,
+        33024,
+        1000,
+        1000,
+        1,
+        14201,
+        1794613148607468080,
+        1794613148607468080
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/owned_lifecycle.py",
+      "sha256": "94d18007becfbe14a7ca833d73389e45c39f76cb874de2f341a5d500edc4a4fd"
+    },
+    {
+      "bytes": 4423,
+      "identity": [
+        66306,
+        62964228,
+        33024,
+        1000,
+        1000,
+        1,
+        4423,
+        1794613148608468044,
+        1794613148608468044
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/owned_process.py",
+      "sha256": "c4f930ed05526a1f1ab8da438e2eeaa5136f45d9d47e33990c6cf3073f9ad3c1"
+    },
+    {
+      "bytes": 11492,
+      "identity": [
+        66306,
+        62964229,
+        33024,
+        1000,
+        1000,
+        1,
+        11492,
+        1794613148609468008,
+        1794613148609468008
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/owned_unit.py",
+      "sha256": "bd069f0e8db17b9f0430787ebc751bf2e742615ff8412a3c57588b917d704f2e"
+    },
+    {
+      "bytes": 6139,
+      "identity": [
+        66306,
+        62964235,
+        33024,
+        1000,
+        1000,
+        1,
+        6139,
+        1794613148614373672,
+        1794613148614373672
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/pair-control-test-names.json",
+      "sha256": "ec24f17065d1c6535873cfaae8db2195d6d8d15a824df50b9c5b60ffbafb6a33"
+    },
+    {
+      "bytes": 677,
+      "identity": [
+        66306,
+        62964232,
+        33024,
+        1000,
+        1000,
+        1,
+        677,
+        1794613148612693721,
+        1794613148612693721
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/permissions-control-test-names.json",
+      "sha256": "c8c4d30490ec563a54cf4335d97ad19eda84e44103f5105a222ebd8362510379"
+    },
+    {
+      "bytes": 105650,
+      "identity": [
+        66306,
+        62963797,
+        33024,
+        1000,
+        1000,
+        1,
+        105650,
+        1794613043620245142,
+        1794613043620245142
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/restored9fe-contract.json",
+      "sha256": "3154130bec8697a4f4e31c633933ca8fed1226d9e3252ac04a8197070f19f97d"
+    },
+    {
+      "bytes": 12333,
+      "identity": [
+        66306,
+        62963710,
+        33024,
+        1000,
+        1000,
+        1,
+        12333,
+        1794613043611245466,
+        1794613043611245466
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/restored9fe_admission.py",
+      "sha256": "de19130207ab83d71f1900938255b2b76fb444d46319cafd68226916891f35b2"
+    },
+    {
+      "bytes": 1936,
+      "identity": [
+        66306,
+        62964233,
+        33024,
+        1000,
+        1000,
+        1,
+        1936,
+        1794613148613292700,
+        1794613148613292700
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/source-control-test-names.json",
+      "sha256": "d0a8049f4ddd7001768aa3b658ebd7ac226b6b6bfde631f953356631e99fbb08"
+    }
+  ],
+  "complete_input_before": [
+    {
+      "bytes": 14084,
+      "identity": [
+        66306,
+        62964224,
+        33024,
+        1000,
+        1000,
+        1,
+        14084,
+        1794613148600468332,
+        1794613148600468332
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/audio_continuation_control.py",
+      "sha256": "cacdc371bca50e1b161831eab358cf0402c38fd731f3ddbf107f3203bbf8f6fd"
+    },
+    {
+      "bytes": 22534,
+      "identity": [
+        66306,
+        62964236,
+        33024,
+        1000,
+        1000,
+        1,
+        22534,
+        1794613148618467684,
+        1794613148618467684
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/build_normal_tools.py",
+      "sha256": "58f35b254623ab8b1def3bbf7aeace5b3388e723e1198a594f868f5143d1efd2"
+    },
+    {
+      "bytes": 911685,
+      "identity": [
+        66306,
+        62964221,
+        33024,
+        1000,
+        1000,
+        1,
+        911685,
+        1794613048819058139,
+        1794613048819058139
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/code-preparation.json",
+      "sha256": "e94b8f9df29f839b1a03d60563be1abc566f9753b020402d11a6192c8cfab5d1"
+    },
+    {
+      "bytes": 2417,
+      "identity": [
+        66306,
+        62964230,
+        33024,
+        1000,
+        1000,
+        1,
+        2417,
+        1794613148610467972,
+        1794613148610467972
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/current-resource-plan.json",
+      "sha256": "46c0af1143b8931b8d01c52236cb25eeb81210bbcbad4c8cd1212efc89cef3b2"
+    },
+    {
+      "bytes": 7980,
+      "identity": [
+        66306,
+        62964223,
+        33024,
+        1000,
+        1000,
+        1,
+        7980,
+        1794613048860056664,
+        1794613048860056664
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/cuttlefish_admission.py",
+      "sha256": "68daac77454a9787ded8726c817a8ce1a350babef1ce05fc246ceb0cd4bb354c"
+    },
+    {
+      "bytes": 5906,
+      "identity": [
+        66306,
+        62963801,
+        33024,
+        1000,
+        1000,
+        1,
+        5906,
+        1794613043632244710,
+        1794613043632244710
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/existing-provider-proof.json",
+      "sha256": "8c39433ee49e94e2e0e6455b8f651c924bc6cf1f7a164a6843c87cffbcfa991a"
+    },
+    {
+      "bytes": 22022,
+      "identity": [
+        66306,
+        62963804,
+        33024,
+        1000,
+        1000,
+        1,
+        22022,
+        1794613043633244674,
+        1794613043633244674
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/existing49-graphics-and-providers.json",
+      "sha256": "2acf5afda32a67eebab370040e0e9dec8be64f79b42b0f521916913f28ecc4d6"
+    },
+    {
+      "bytes": 633,
+      "identity": [
+        66306,
+        62964234,
+        33024,
+        1000,
+        1000,
+        1,
+        633,
+        1794613148613842621,
+        1794613148613842621
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/focused-control-test-names.json",
+      "sha256": "a38a7d9ff6e5a12f433e2deb15f0061c6a30b0e5b16aa4376dc0223c6a156a7b"
+    },
+    {
+      "bytes": 548,
+      "identity": [
+        66306,
+        62964231,
+        33024,
+        1000,
+        1000,
+        1,
+        548,
+        1794613148612157070,
+        1794613148612157070
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/journal-regression-test-names.json",
+      "sha256": "d401a531b21cdb053645eb1240de5767fad4448da0d6f9ddde63a290448973ab"
+    },
+    {
+      "bytes": 19077,
+      "identity": [
+        66306,
+        62963585,
+        33024,
+        1000,
+        1000,
+        1,
+        19077,
+        1794613043610245502,
+        1794613043610245502
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/legacy_source604_admission.py",
+      "sha256": "5a6e90848aa81c6a13b1df65e3eb54fc25669e128cb848c92ff4bc059537d361"
+    },
+    {
+      "bytes": 8737,
+      "identity": [
+        66306,
+        62964225,
+        33024,
+        1000,
+        1000,
+        1,
+        8737,
+        1794613148604468188,
+        1794613148604468188
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/native_owned_commands.py",
+      "sha256": "c567c2338d388baee880d61da3a10814f20abc6c25c24548c0671d3d805c97f3"
+    },
+    {
+      "bytes": 2868,
+      "identity": [
+        66306,
+        62964226,
+        33024,
+        1000,
+        1000,
+        1,
+        2868,
+        1794613148605468152,
+        1794613148605468152
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/owned_adoption.py",
+      "sha256": "5062e1f68d2815688286e3e691b81592bbda227477e224281462ee482107c080"
+    },
+    {
+      "bytes": 14201,
+      "identity": [
+        66306,
+        62964227,
+        33024,
+        1000,
+        1000,
+        1,
+        14201,
+        1794613148607468080,
+        1794613148607468080
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/owned_lifecycle.py",
+      "sha256": "94d18007becfbe14a7ca833d73389e45c39f76cb874de2f341a5d500edc4a4fd"
+    },
+    {
+      "bytes": 4423,
+      "identity": [
+        66306,
+        62964228,
+        33024,
+        1000,
+        1000,
+        1,
+        4423,
+        1794613148608468044,
+        1794613148608468044
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/owned_process.py",
+      "sha256": "c4f930ed05526a1f1ab8da438e2eeaa5136f45d9d47e33990c6cf3073f9ad3c1"
+    },
+    {
+      "bytes": 11492,
+      "identity": [
+        66306,
+        62964229,
+        33024,
+        1000,
+        1000,
+        1,
+        11492,
+        1794613148609468008,
+        1794613148609468008
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/owned_unit.py",
+      "sha256": "bd069f0e8db17b9f0430787ebc751bf2e742615ff8412a3c57588b917d704f2e"
+    },
+    {
+      "bytes": 6139,
+      "identity": [
+        66306,
+        62964235,
+        33024,
+        1000,
+        1000,
+        1,
+        6139,
+        1794613148614373672,
+        1794613148614373672
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/pair-control-test-names.json",
+      "sha256": "ec24f17065d1c6535873cfaae8db2195d6d8d15a824df50b9c5b60ffbafb6a33"
+    },
+    {
+      "bytes": 677,
+      "identity": [
+        66306,
+        62964232,
+        33024,
+        1000,
+        1000,
+        1,
+        677,
+        1794613148612693721,
+        1794613148612693721
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/permissions-control-test-names.json",
+      "sha256": "c8c4d30490ec563a54cf4335d97ad19eda84e44103f5105a222ebd8362510379"
+    },
+    {
+      "bytes": 105650,
+      "identity": [
+        66306,
+        62963797,
+        33024,
+        1000,
+        1000,
+        1,
+        105650,
+        1794613043620245142,
+        1794613043620245142
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/restored9fe-contract.json",
+      "sha256": "3154130bec8697a4f4e31c633933ca8fed1226d9e3252ac04a8197070f19f97d"
+    },
+    {
+      "bytes": 12333,
+      "identity": [
+        66306,
+        62963710,
+        33024,
+        1000,
+        1000,
+        1,
+        12333,
+        1794613043611245466,
+        1794613043611245466
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/restored9fe_admission.py",
+      "sha256": "de19130207ab83d71f1900938255b2b76fb444d46319cafd68226916891f35b2"
+    },
+    {
+      "bytes": 1936,
+      "identity": [
+        66306,
+        62964233,
+        33024,
+        1000,
+        1000,
+        1,
+        1936,
+        1794613148613292700,
+        1794613148613292700
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/source-control-test-names.json",
+      "sha256": "d0a8049f4ddd7001768aa3b658ebd7ac226b6b6bfde631f953356631e99fbb08"
+    }
+  ],
+  "current715_after": {
+    "all643_current_indexes_F9_unchanged": true,
+    "complete_original_normal974": {
+      "actual29_commands_retired": true,
+      "actual638_predecessor_F9_verified": true,
+      "actual647_frozen_recipe_F9_verified": true,
+      "actual_two_new_ELF_tools": [
+        {
+          "bytes": 20381008,
+          "identity": [
+            66306,
+            64668022,
+            33088,
+            1000,
+            1000,
+            1,
+            20381008,
+            1794602158911179509,
+            1794602158911179509
+          ],
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-global-compat643-20261113-takeover-r1/bin/droidloom-source",
+          "sha256": "e201964b83ff66b8a74a332f39d3bd6387379c5b61c3e770605f1fb776eae1b1"
+        },
+        {
+          "bytes": 38028136,
+          "identity": [
+            66306,
+            64668023,
+            33088,
+            1000,
+            1000,
+            1,
+            38028136,
+            1794602158960177752,
+            1794602158960177752
+          ],
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-global-compat643-20261113-takeover-r1/bin/droidloom-update",
+          "sha256": "3267e440b501e13880f26ed3df2c46ff784d9015f5188e84e2d36eaa85412663"
+        }
+      ],
+      "all_prior_failed_records_retained": true,
+      "different_tests": 89,
+      "executions": 95,
+      "full_starts": 0,
+      "normal_H": "1a1d69ef9c6-392-974",
+      "runtime_qualified": false,
+      "source_writes": 0
+    },
+    "current715_F9_unchanged": true,
+    "existing49_F9_unchanged": true,
+    "frozen624_unchanged": true,
+    "frozen630_unchanged": true,
+    "full_starts": 0,
+    "one_complete_original_hotplug_cone_three_files": true,
+    "original647_F9_unchanged": true,
+    "recipe_commit": "3450f2591faec153dbab06477d0a00e95120321f",
+    "recipe_tree": "af2c7788ca297e8cf499a4f18a0aa3d278d3b419",
+    "runtime_qualified": false,
+    "same643_project_and_commit_selection": true,
+    "source161_current_originals_F9_unchanged": true,
+    "source30952_F9_unchanged": true,
+    "source9fe_H": "1a1d7215e1b-392-9fe",
+    "source_physical_bytes": 503404771,
+    "source_writes": 0,
+    "unmaterialized14_still_absent": true
+  },
+  "current715_before": {
+    "all643_current_indexes_F9_unchanged": true,
+    "complete_original_normal974": {
+      "actual29_commands_retired": true,
+      "actual638_predecessor_F9_verified": true,
+      "actual647_frozen_recipe_F9_verified": true,
+      "actual_two_new_ELF_tools": [
+        {
+          "bytes": 20381008,
+          "identity": [
+            66306,
+            64668022,
+            33088,
+            1000,
+            1000,
+            1,
+            20381008,
+            1794602158911179509,
+            1794602158911179509
+          ],
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-global-compat643-20261113-takeover-r1/bin/droidloom-source",
+          "sha256": "e201964b83ff66b8a74a332f39d3bd6387379c5b61c3e770605f1fb776eae1b1"
+        },
+        {
+          "bytes": 38028136,
+          "identity": [
+            66306,
+            64668023,
+            33088,
+            1000,
+            1000,
+            1,
+            38028136,
+            1794602158960177752,
+            1794602158960177752
+          ],
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-global-compat643-20261113-takeover-r1/bin/droidloom-update",
+          "sha256": "3267e440b501e13880f26ed3df2c46ff784d9015f5188e84e2d36eaa85412663"
+        }
+      ],
+      "all_prior_failed_records_retained": true,
+      "different_tests": 89,
+      "executions": 95,
+      "full_starts": 0,
+      "normal_H": "1a1d69ef9c6-392-974",
+      "runtime_qualified": false,
+      "source_writes": 0
+    },
+    "current715_F9_unchanged": true,
+    "existing49_F9_unchanged": true,
+    "frozen624_unchanged": true,
+    "frozen630_unchanged": true,
+    "full_starts": 0,
+    "one_complete_original_hotplug_cone_three_files": true,
+    "original647_F9_unchanged": true,
+    "recipe_commit": "3450f2591faec153dbab06477d0a00e95120321f",
+    "recipe_tree": "af2c7788ca297e8cf499a4f18a0aa3d278d3b419",
+    "runtime_qualified": false,
+    "same643_project_and_commit_selection": true,
+    "source161_current_originals_F9_unchanged": true,
+    "source30952_F9_unchanged": true,
+    "source9fe_H": "1a1d7215e1b-392-9fe",
+    "source_physical_bytes": 503404771,
+    "source_writes": 0,
+    "unmaterialized14_still_absent": true
+  },
+  "errors": [],
+  "expected_normal_commands": 29,
+  "finished_ns": 1794613271665016473,
+  "focused_source_controls": [
+    {
+      "failed": 0,
+      "ignored": 0,
+      "passed": 1,
+      "test_id": "native_generation_pair_build::tests::ordinary_pair_source_extension_is_exact_and_monotonic"
+    },
+    {
+      "failed": 0,
+      "ignored": 0,
+      "passed": 1,
+      "test_id": "native_generation_pair_build::tests::ordinary_pair_nativehelper_ndk_requires_complete_original_cone"
+    },
+    {
+      "failed": 0,
+      "ignored": 0,
+      "passed": 1,
+      "test_id": "native_generation_pair_build::tests::ordinary_pair_boot_apex_providers_require_full_original_production_cones"
+    },
+    {
+      "failed": 0,
+      "ignored": 0,
+      "passed": 1,
+      "test_id": "native_generation_pair_build::tests::ordinary_pair_boot_apex_blueprints_are_exact_upstream_inputs"
+    },
+    {
+      "failed": 0,
+      "ignored": 0,
+      "passed": 1,
+      "test_id": "native_generation_pair_build::tests::ordinary_pair_browser_helper_requires_complete_original_library"
+    },
+    {
+      "failed": 0,
+      "ignored": 0,
+      "passed": 1,
+      "test_id": "native_generation_pair_build::tests::ordinary_pair_browser_helper_blueprint_is_exact_original_input"
+    }
+  ],
+  "frozen624_unchanged": true,
+  "frozen630_unchanged": true,
+  "frozen638_unchanged": true,
+  "frozen647_unchanged": true,
+  "frozen715_unchanged": true,
+  "full_Normal_qualified": true,
+  "inner_own_budget_after_business": {
+    "cpu.max": "200000 100000",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "4294967296",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0"
+  },
+  "inner_own_budget_before_business": {
+    "affinity": [
+      8,
+      9
+    ],
+    "budget_after_cap": {
+      "cpu.max": "200000 100000",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.max": "4294967296",
+      "memory.swap.current": "0",
+      "memory.swap.max": "0"
+    },
+    "budget_before_cap": {
+      "cpu.max": "200000 100000",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.max": "4294967296",
+      "memory.swap.current": "0",
+      "memory.swap.max": "0"
+    },
+    "controls_target_self_only": true,
+    "historical_outer_budget_upgraded": false,
+    "own_cap_control": {
+      "PIDFD_closed": true,
+      "PIDFD_exit_observed": true,
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "set-property",
+        "--runtime",
+        "p4-native643-cuttlefish-normal-20261113-takeover-r1.service",
+        "MemorySwapMax=0"
+      ],
+      "pid": 2500013,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "self_cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service",
+    "swap_zero_before_business": true
+  },
+  "new_CLI_Cargo_artifacts": [
+    {
+      "actual_Cargo_message": {
+        "executable": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/droidloom-source",
+        "features": [],
+        "filenames": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/droidloom-source"
+        ],
+        "fresh": false,
+        "manifest_path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe/tools/droidloom-source/Cargo.toml",
+        "package_id": "path+file:///home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe/tools/droidloom-source#0.1.0",
+        "profile": {
+          "debug_assertions": true,
+          "debuginfo": 2,
+          "opt_level": "0",
+          "overflow_checks": true,
+          "test": false
+        },
+        "reason": "compiler-artifact",
+        "target": {
+          "crate_types": [
+            "bin"
+          ],
+          "doc": true,
+          "doctest": false,
+          "edition": "2024",
+          "kind": [
+            "bin"
+          ],
+          "name": "droidloom-source",
+          "src_path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe/tools/droidloom-source/src/main.rs",
+          "test": true
+        }
+      },
+      "actual_ELF": {
+        "ELF": true,
+        "bounded_owned_aliases": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_source-6ed0067219648b74",
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/droidloom-source"
+        ],
+        "bytes": 20381000,
+        "identity": [
+          66306,
+          64014336,
+          33216,
+          1000,
+          1000,
+          2,
+          20381000,
+          1794613268920280347,
+          1794613268932279942
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/droidloom-source",
+        "sha256": "c472dca978cfdb796fb5bc1102d63e2b5402753396c7f8997416f8d036ccf226"
+      },
+      "compile_command": {
+        "adopted_normal_exit": {
+          "children": [],
+          "complete": true,
+          "deadline": 1639035.594644902,
+          "elapsed_seconds": 0.00014530494809150696,
+          "leader_pid": 2503554,
+          "leader_reaped_here": false,
+          "remaining_adopted_children": [],
+          "signals_sent": 0
+        },
+        "argv": [
+          "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "build",
+          "--locked",
+          "--offline",
+          "-j",
+          "1",
+          "-p",
+          "droidloom-source",
+          "-p",
+          "droidloom-update",
+          "--message-format=json"
+        ],
+        "driver": {
+          "argv": [
+            "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+            "build",
+            "--locked",
+            "--offline",
+            "-j",
+            "1",
+            "-p",
+            "droidloom-source",
+            "-p",
+            "droidloom-update",
+            "--message-format=json"
+          ],
+          "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+          "exe": "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "pid": 2503554,
+          "start_ticks": 163903032
+        },
+        "errors": [],
+        "finished_ns": 1794613268943238985,
+        "lifecycle": {
+          "child_reaped": true,
+          "cleanup_elapsed_seconds": 8.974713273346424e-05,
+          "descendants": [],
+          "group_signal_unneeded_exited_only_child": true,
+          "leader_alive_before_group_cleanup": false,
+          "leader_observed_before_reap": {
+            "code": 1,
+            "pid": 2503554,
+            "status": 0
+          },
+          "leader_unreaped_before_group_cleanup": true,
+          "owned_tree_cleanup_complete": true,
+          "pidfd_closed": true,
+          "remaining_owned_children": [],
+          "returncode": 0
+        },
+        "name": "compile-both-fresh-normal-CLIs",
+        "observed_before_reap": {
+          "code": 1,
+          "pid": 2503554,
+          "status": 0
+        },
+        "owned_retirement_complete": true,
+        "reaper": {
+          "begin_passed": true,
+          "cleanup_deadline_supplied_by_caller": true,
+          "final_children_empty": true,
+          "max_adopted_per_command": 128,
+          "original_subreaper_flag": 0,
+          "pid": 2500012,
+          "protected_pid_count": 0,
+          "restored": true,
+          "signals_only_to_kernel_proven_owned_children": true
+        },
+        "started_ns": 1794613268671718905,
+        "stderr": {
+          "bytes": 250,
+          "identity": [
+            66306,
+            64014269,
+            33152,
+            1000,
+            1000,
+            1,
+            250,
+            1794613268932279942,
+            1794613268932279942
+          ],
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/compile-both-fresh-normal-CLIs.stderr",
+          "sha256": "4373f5c43100b420788cb22cd87877019a7b3bb78cdb983e40b4a5f36bfa1706"
+        },
+        "stdout": {
+          "bytes": 61958,
+          "identity": [
+            66306,
+            64014268,
+            33152,
+            1000,
+            1000,
+            1,
+            61958,
+            1794613268932279942,
+            1794613268932279942
+          ],
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/compile-both-fresh-normal-CLIs.stdout",
+          "sha256": "8d589477ff525348520003550fa260b718319095c7d5392e223c73332faa375d"
+        }
+      }
+    },
+    {
+      "actual_Cargo_message": {
+        "executable": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/droidloom-update",
+        "features": [],
+        "filenames": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/droidloom-update"
+        ],
+        "fresh": true,
+        "manifest_path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe/tools/droidloom-update/Cargo.toml",
+        "package_id": "path+file:///home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe/tools/droidloom-update#0.1.0",
+        "profile": {
+          "debug_assertions": true,
+          "debuginfo": 2,
+          "opt_level": "0",
+          "overflow_checks": true,
+          "test": false
+        },
+        "reason": "compiler-artifact",
+        "target": {
+          "crate_types": [
+            "bin"
+          ],
+          "doc": true,
+          "doctest": false,
+          "edition": "2024",
+          "kind": [
+            "bin"
+          ],
+          "name": "droidloom-update",
+          "src_path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe/tools/droidloom-update/src/main.rs",
+          "test": true
+        }
+      },
+      "actual_ELF": {
+        "ELF": true,
+        "bounded_owned_aliases": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-8d7d6eeb9f0df611",
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/droidloom-update"
+        ],
+        "bytes": 38430768,
+        "identity": [
+          66306,
+          64013766,
+          33216,
+          1000,
+          1000,
+          2,
+          38430768,
+          1794613233728465386,
+          1794613233754464512
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/droidloom-update",
+        "sha256": "2bc55717e751075d8f75caaed2dc8509efac0f3d28d4324f99090f7edd157824"
+      },
+      "compile_command": {
+        "adopted_normal_exit": {
+          "children": [],
+          "complete": true,
+          "deadline": 1639035.594644902,
+          "elapsed_seconds": 0.00014530494809150696,
+          "leader_pid": 2503554,
+          "leader_reaped_here": false,
+          "remaining_adopted_children": [],
+          "signals_sent": 0
+        },
+        "argv": [
+          "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "build",
+          "--locked",
+          "--offline",
+          "-j",
+          "1",
+          "-p",
+          "droidloom-source",
+          "-p",
+          "droidloom-update",
+          "--message-format=json"
+        ],
+        "driver": {
+          "argv": [
+            "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+            "build",
+            "--locked",
+            "--offline",
+            "-j",
+            "1",
+            "-p",
+            "droidloom-source",
+            "-p",
+            "droidloom-update",
+            "--message-format=json"
+          ],
+          "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+          "exe": "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "pid": 2503554,
+          "start_ticks": 163903032
+        },
+        "errors": [],
+        "finished_ns": 1794613268943238985,
+        "lifecycle": {
+          "child_reaped": true,
+          "cleanup_elapsed_seconds": 8.974713273346424e-05,
+          "descendants": [],
+          "group_signal_unneeded_exited_only_child": true,
+          "leader_alive_before_group_cleanup": false,
+          "leader_observed_before_reap": {
+            "code": 1,
+            "pid": 2503554,
+            "status": 0
+          },
+          "leader_unreaped_before_group_cleanup": true,
+          "owned_tree_cleanup_complete": true,
+          "pidfd_closed": true,
+          "remaining_owned_children": [],
+          "returncode": 0
+        },
+        "name": "compile-both-fresh-normal-CLIs",
+        "observed_before_reap": {
+          "code": 1,
+          "pid": 2503554,
+          "status": 0
+        },
+        "owned_retirement_complete": true,
+        "reaper": {
+          "begin_passed": true,
+          "cleanup_deadline_supplied_by_caller": true,
+          "final_children_empty": true,
+          "max_adopted_per_command": 128,
+          "original_subreaper_flag": 0,
+          "pid": 2500012,
+          "protected_pid_count": 0,
+          "restored": true,
+          "signals_only_to_kernel_proven_owned_children": true
+        },
+        "started_ns": 1794613268671718905,
+        "stderr": {
+          "bytes": 250,
+          "identity": [
+            66306,
+            64014269,
+            33152,
+            1000,
+            1000,
+            1,
+            250,
+            1794613268932279942,
+            1794613268932279942
+          ],
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/compile-both-fresh-normal-CLIs.stderr",
+          "sha256": "4373f5c43100b420788cb22cd87877019a7b3bb78cdb983e40b4a5f36bfa1706"
+        },
+        "stdout": {
+          "bytes": 61958,
+          "identity": [
+            66306,
+            64014268,
+            33152,
+            1000,
+            1000,
+            1,
+            61958,
+            1794613268932279942,
+            1794613268932279942
+          ],
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/compile-both-fresh-normal-CLIs.stdout",
+          "sha256": "8d589477ff525348520003550fa260b718319095c7d5392e223c73332faa375d"
+        }
+      }
+    }
+  ],
+  "new_source_test_Cargo_artifact": {
+    "actual_Cargo_message": {
+      "executable": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_source-f11870d43916baca",
+      "features": [],
+      "filenames": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_source-f11870d43916baca"
+      ],
+      "fresh": false,
+      "manifest_path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe/tools/droidloom-source/Cargo.toml",
+      "package_id": "path+file:///home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe/tools/droidloom-source#0.1.0",
+      "profile": {
+        "debug_assertions": true,
+        "debuginfo": 2,
+        "opt_level": "0",
+        "overflow_checks": true,
+        "test": true
+      },
+      "reason": "compiler-artifact",
+      "target": {
+        "crate_types": [
+          "lib"
+        ],
+        "doc": true,
+        "doctest": true,
+        "edition": "2024",
+        "kind": [
+          "lib"
+        ],
+        "name": "droidloom_source",
+        "src_path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe/tools/droidloom-source/src/lib.rs",
+        "test": true
+      }
+    },
+    "actual_ELF": {
+      "ELF": true,
+      "bounded_owned_aliases": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_source-f11870d43916baca"
+      ],
+      "bytes": 15133360,
+      "identity": [
+        66306,
+        64014267,
+        33216,
+        1000,
+        1000,
+        1,
+        15133360,
+        1794613268449296238,
+        1794613268452296136
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_source-f11870d43916baca",
+      "sha256": "2c2bb5eb7838f0dd2390de4d385760b2d685bcd6d2ace03d93663e6bf00f124c"
+    },
+    "compile_command": {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639035.127178602,
+        "elapsed_seconds": 0.00014694500714540482,
+        "leader_pid": 2502879,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-source",
+        "--lib",
+        "--no-run",
+        "--message-format=json"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "test",
+          "--locked",
+          "--offline",
+          "-j",
+          "1",
+          "-p",
+          "droidloom-source",
+          "--lib",
+          "--no-run",
+          "--message-format=json"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "pid": 2502879,
+        "start_ticks": 163902831
+      },
+      "errors": [],
+      "finished_ns": 1794613268473905527,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 8.925702422857285e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2502879,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "compile-new-source-crate-test-harness",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2502879,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613266660107687,
+      "stderr": {
+        "bytes": 338,
+        "identity": [
+          66306,
+          64014077,
+          33152,
+          1000,
+          1000,
+          1,
+          338,
+          1794613268464295732,
+          1794613268464295732
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/compile-new-source-crate-test-harness.stderr",
+        "sha256": "4efd8375e88b3c08decdd884fe1adaf94ac12c8a3551628b67281f6958b77dd0"
+      },
+      "stdout": {
+        "bytes": 57361,
+        "identity": [
+          66306,
+          64014076,
+          33152,
+          1000,
+          1000,
+          1,
+          57361,
+          1794613268464295732,
+          1794613268464295732
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/compile-new-source-crate-test-harness.stdout",
+        "sha256": "64832f5b27ba3c27b48af3089ef208156a2751e607cba57afa179d1212e6a262"
+      }
+    }
+  },
+  "new_update_test_Cargo_artifact": {
+    "actual_Cargo_message": {
+      "executable": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+      "features": [],
+      "filenames": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717"
+      ],
+      "fresh": false,
+      "manifest_path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe/tools/droidloom-update/Cargo.toml",
+      "package_id": "path+file:///home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe/tools/droidloom-update#0.1.0",
+      "profile": {
+        "debug_assertions": true,
+        "debuginfo": 2,
+        "opt_level": "0",
+        "overflow_checks": true,
+        "test": true
+      },
+      "reason": "compiler-artifact",
+      "target": {
+        "crate_types": [
+          "bin"
+        ],
+        "doc": true,
+        "doctest": false,
+        "edition": "2024",
+        "kind": [
+          "bin"
+        ],
+        "name": "droidloom-update",
+        "src_path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe/tools/droidloom-update/src/main.rs",
+        "test": true
+      }
+    },
+    "actual_ELF": {
+      "ELF": true,
+      "bounded_owned_aliases": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717"
+      ],
+      "bytes": 52924736,
+      "identity": [
+        66306,
+        64014029,
+        33216,
+        1000,
+        1000,
+        1,
+        52924736,
+        1794613238062319708,
+        1794613238067319540
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+      "sha256": "05ec853c6f029a967194c1f4078edabe8da4d9889c40b0e07064e97bdd7f3fce"
+    },
+    "compile_command": {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639004.759438123,
+        "elapsed_seconds": 0.00014162505976855755,
+        "leader_pid": 2500018,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-update",
+        "--no-run",
+        "--message-format=json"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+          "test",
+          "--locked",
+          "--offline",
+          "-j",
+          "1",
+          "-p",
+          "droidloom-update",
+          "--no-run",
+          "--message-format=json"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "pid": 2500018,
+        "start_ticks": 163897918
+      },
+      "errors": [],
+      "finished_ns": 1794613238107256172,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 0.00010898592881858349,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2500018,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "compile-new-update-test-harness",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2500018,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613217526202415,
+      "stderr": {
+        "bytes": 2146,
+        "identity": [
+          66306,
+          64012439,
+          33152,
+          1000,
+          1000,
+          1,
+          2146,
+          1794613238096318565,
+          1794613238096318565
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/compile-new-update-test-harness.stderr",
+        "sha256": "b136310550c0520261e7588b19ca7d9cd24b7622c831922e4482091af3a8a36f"
+      },
+      "stdout": {
+        "bytes": 67014,
+        "identity": [
+          66306,
+          64012438,
+          33152,
+          1000,
+          1000,
+          1,
+          67014,
+          1794613238096318565,
+          1794613238096318565
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/compile-new-update-test-harness.stdout",
+        "sha256": "7bc0cc057174ca45e655db2f251244ad859e6fd90eea4f06d8fe85ea527623eb"
+      }
+    }
+  },
+  "normal_source_plan": {
+    "bytes": 389024,
+    "identity": [
+      66306,
+      64014346,
+      33152,
+      1000,
+      1000,
+      1,
+      389024,
+      1794613269090274612,
+      1794613269090274612
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-normal-source-exact-plan.stdout",
+    "sha256": "b5ab2a2c5e5842b376262b2b988d095b613281fd19814186260affa65bcd9602"
+  },
+  "normal_tools": [
+    {
+      "bytes": 20381000,
+      "identity": [
+        66306,
+        64130960,
+        33088,
+        1000,
+        1000,
+        1,
+        20381000,
+        1794613268959279031,
+        1794613268959279031
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/bin/droidloom-source",
+      "sha256": "c472dca978cfdb796fb5bc1102d63e2b5402753396c7f8997416f8d036ccf226"
+    },
+    {
+      "bytes": 38430768,
+      "identity": [
+        66306,
+        64130961,
+        33088,
+        1000,
+        1000,
+        1,
+        38430768,
+        1794613269008277378,
+        1794613269008277378
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/bin/droidloom-update",
+      "sha256": "2bc55717e751075d8f75caaed2dc8509efac0f3d28d4324f99090f7edd157824"
+    }
+  ],
+  "normal_tools_compiled": true,
+  "original769_and836_and873_and88f_failed_not_promoted": true,
+  "original769_stays_failed": true,
+  "original8f7_failed_not_promoted": true,
+  "original947_failed_not_promoted": true,
+  "original9fe_failed_not_promoted": true,
+  "original_three_shared_locks_released": true,
+  "owned_unit_started": {
+    "boot_id": "b1620269-aaef-43e7-bf47-bc6eb1c1a447",
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service",
+    "controller": {
+      "bytes": 22534,
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/build_normal_tools.py",
+      "sha256": "58f35b254623ab8b1def3bbf7aeace5b3388e723e1198a594f868f5143d1efd2"
+    },
+    "description": "native604-ndk-ordinary:175d0d5adfb67792207361cb4349bff4e4af3c7ec1bfac43b34a779d62a5fbcf:58f35b254623ab8b1def3bbf7aeace5b3388e723e1198a594f868f5143d1efd2",
+    "invocation_id": "6623bf53f2914acd8c93bc28e70fef2c",
+    "nonce": "175d0d5adfb67792207361cb4349bff4e4af3c7ec1bfac43b34a779d62a5fbcf",
+    "pid": 2500012,
+    "schema": "native604-ndk-owned-unit-started-r1",
+    "start_ticks": 163897644,
+    "unit": "p4-native643-cuttlefish-normal-20261113-takeover-r1.service"
+  },
+  "owned_unit_started_receipt": {
+    "bytes": 956,
+    "identity": [
+      66306,
+      63750678,
+      33024,
+      1000,
+      1000,
+      1,
+      956,
+      1794613214841099386,
+      1794613214841099386
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/owned-unit-started.json",
+    "sha256": "c214af701ccf8f57094b6bd8c708a292ec88bb614aa6c4f492f6cad2131b1e27"
+  },
+  "prior_journal_regression_controls": [
+    {
+      "failed": 0,
+      "ignored": 0,
+      "passed": 1,
+      "test_id": "android::patch_tests::interrupted_projection_recovers_before_next_build"
+    },
+    {
+      "failed": 0,
+      "ignored": 0,
+      "passed": 1,
+      "test_id": "android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes"
+    },
+    {
+      "failed": 0,
+      "ignored": 0,
+      "passed": 1,
+      "test_id": "android::tests::typed_audiocontrol_example_projection_keeps_metadata_and_sibling_sources"
+    },
+    {
+      "failed": 0,
+      "ignored": 0,
+      "passed": 1,
+      "test_id": "android::tests::typed_audiocontrol_example_projection_recovers_full_observed_original"
+    },
+    {
+      "failed": 0,
+      "ignored": 0,
+      "passed": 1,
+      "test_id": "android::tests::typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths"
+    },
+    {
+      "failed": 0,
+      "ignored": 0,
+      "passed": 1,
+      "test_id": "android::tests::typed_systemui_test_projection_recovers_complete_original_from_durable_journal"
+    }
+  ],
+  "production_variant": "user",
+  "projection_permissions_controls": {
+    "actual": {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1639033.260419834,
+        "elapsed_seconds": 0.00014911615289747715,
+        "leader_pid": 2502843,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "android::tests::projection_v2_",
+        "--nocapture"
+      ],
+      "driver": {
+        "argv": [
+          "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+          "android::tests::projection_v2_",
+          "--nocapture"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service\n",
+        "exe": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/cargo-target/debug/deps/droidloom_update-068867763a76d717",
+        "pid": 2502843,
+        "start_ticks": 163902809
+      },
+      "errors": [],
+      "finished_ns": 1794613266605910669,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 8.819694630801678e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 2502843,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "new-update-seven-filesystem-mode-tests",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 2502843,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 2500012,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794613266438835503,
+      "stderr": {
+        "bytes": 224,
+        "identity": [
+          66306,
+          64014056,
+          33152,
+          1000,
+          1000,
+          1,
+          224,
+          1794613266442955057,
+          1794613266442955057
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-seven-filesystem-mode-tests.stderr",
+        "sha256": "08c979d7d5bf357c220528c9743849f934e9d060ae7a3005aac9a75d8bd82b2f"
+      },
+      "stdout": {
+        "bytes": 838,
+        "identity": [
+          66306,
+          64014055,
+          33152,
+          1000,
+          1000,
+          1,
+          838,
+          1794613266604111809,
+          1794613266604111809
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/commands/new-update-seven-filesystem-mode-tests.stdout",
+        "sha256": "29bffe43589505d120f5473c786c81e629f74a737164265dc78065a3aa65a32f"
+      }
+    },
+    "exact_names": [
+      "android::tests::projection_v2_drop_after_business_error_restores_modes_and_original_absence",
+      "android::tests::projection_v2_failed_recovery_keeps_journal_and_retries_exact_original_mode",
+      "android::tests::projection_v2_pre_mirror_alias_is_rejected_before_any_journal_or_copy",
+      "android::tests::projection_v2_pre_mirror_capture_restores_after_actual_rsync_and_interruption",
+      "android::tests::projection_v2_refuses_symlink_original_without_reading_or_mutating_target",
+      "android::tests::projection_v2_rejects_legacy_or_incomplete_journals_before_source_mutation",
+      "android::tests::projection_v2_restores_deleted_recreated_exec_and_private_permissions_exactly"
+    ],
+    "passed_count": 7
+  },
+  "recipe_commit": "3450f2591faec153dbab06477d0a00e95120321f",
+  "recipe_path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe",
+  "recipe_tree": "af2c7788ca297e8cf499a4f18a0aa3d278d3b419",
+  "release_source_label": "cp2a",
+  "runtime_qualified": false,
+  "schema": "native643-cuttlefish-original-provider-normal-v1",
+  "source_lock": {
+    "bytes": 369279,
+    "identity": [
+      66306,
+      64011722,
+      33152,
+      1000,
+      1000,
+      1,
+      369279,
+      1794613046225151443,
+      1794613046225151443
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/recipe/android/native-generation-pair/source-lock.json",
+    "sha256": "e4bc640833bbdee16a1e84bd8314cc81c44351e4b03c03e6439bc31318d0a5bf"
+  },
+  "started_ns": 1794613214840250607,
+  "state": "NORMAL643_CUTTLEFISH_ORIGINAL_PROVIDER_QUALIFIED",
+  "toolchain": {
+    "cargo": {
+      "bytes": 40753664,
+      "identity": [
+        66306,
+        46048286,
+        33216,
+        1000,
+        1000,
+        1,
+        40753664,
+        1794218906208173476,
+        1794218906312169265
+      ],
+      "path": "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "sha256": "9548937d530bf439ff1ba47a3b2bd26eeb9c3aff1961c20c01798613de922578"
+    },
+    "rustc": {
+      "bytes": 656704,
+      "identity": [
+        66306,
+        56665075,
+        33216,
+        1000,
+        1000,
+        1,
+        656704,
+        1794218924258443061,
+        1794218927154452893
+      ],
+      "path": "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "sha256": "d32249a7c3bfcfc67b471460386e46323accae7125e344567a12d5664d99bb57"
+    },
+    "rustdoc": {
+      "bytes": 13173040,
+      "identity": [
+        66306,
+        56665074,
+        33216,
+        1000,
+        1000,
+        1,
+        13173040,
+        1794218924256443142,
+        1794218927154460282
+      ],
+      "path": "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustdoc",
+      "sha256": "ece7829b8e7448a9d59c88080e2b16253b885c560f792002837901c7f24b7695"
+    }
+  },
+  "toolchain_after": {
+    "cargo": {
+      "bytes": 40753664,
+      "identity": [
+        66306,
+        46048286,
+        33216,
+        1000,
+        1000,
+        1,
+        40753664,
+        1794218906208173476,
+        1794218906312169265
+      ],
+      "path": "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "sha256": "9548937d530bf439ff1ba47a3b2bd26eeb9c3aff1961c20c01798613de922578"
+    },
+    "rustc": {
+      "bytes": 656704,
+      "identity": [
+        66306,
+        56665075,
+        33216,
+        1000,
+        1000,
+        1,
+        656704,
+        1794218924258443061,
+        1794218927154452893
+      ],
+      "path": "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "sha256": "d32249a7c3bfcfc67b471460386e46323accae7125e344567a12d5664d99bb57"
+    },
+    "rustdoc": {
+      "bytes": 13173040,
+      "identity": [
+        66306,
+        56665074,
+        33216,
+        1000,
+        1000,
+        1,
+        13173040,
+        1794218924256443142,
+        1794218927154460282
+      ],
+      "path": "/home/qq/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustdoc",
+      "sha256": "ece7829b8e7448a9d59c88080e2b16253b885c560f792002837901c7f24b7695"
+    }
+  },
+  "unit_intent": {
+    "bytes": 2007,
+    "identity": [
+      66306,
+      62964244,
+      33152,
+      1000,
+      1000,
+      1,
+      2007,
+      1794613214780101431,
+      1794613214780101431
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/intent.json",
+    "sha256": "f8c4886f3c88754934260cde52eb0e4d9a1672845fd3cb564df79ae5558da8a3"
+  }
+}

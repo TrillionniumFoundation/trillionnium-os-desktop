@@ -1,0 +1,1891 @@
+{
+  "AOSP_full_builds_started": 0,
+  "AOSP_source_writes": 0,
+  "Android_starts": 0,
+  "added_files": [
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/dependencies.json",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/existing-providers/cts/Android.bp",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/existing-providers/cts/common/device-side/util-axt/Android.bp",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/existing-providers/device/google/cuttlefish/Android.bp",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/existing-providers/device/google/cuttlefish/tests/utils/Android.bp",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/existing-providers/prebuilts/misc/common/androidx-test/Android.bp",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/existing-providers/prebuilts/sdk/current/androidx/m2repository/androidx/appcompat/appcompat/1.8.0-alpha01/Android.bp",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/original643-global-compat-source-lock.json",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/Android.bp",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/Android.bp",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/CfVkmsConnectorsTest.java",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/CfVkmsCursorTest.java",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/CfVkmsDisplaysTest.java",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/CfWritebackTest.java",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/OWNERS",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/TEST_MAPPING",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/display_config_template.xml",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/utils/Android.bp",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/utils/CfVkmsEdidHelper.java",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/utils/CfVkmsTester.java",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/hotplug/Android.bp",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/hotplug/AndroidManifest.xml",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/hotplug/src/com/android/cuttlefish/DisplayHotplugHelperApp.java",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/src/com/android/cuttlefish/tests/CuttlefishDisplayHotplugTest.java",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/src/com/android/cuttlefish/tests/CuttlefishDisplayTests.java",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/src/com/android/cuttlefish/tests/CuttlefishGraphicsConfigurationTest.java",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/src/com/android/cuttlefish/tests/CuttlefishVulkanSnapshotTests.java",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/Android.bp",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/common.h",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/Android.bp",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/AndroidManifest.xml",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.cpp",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.frag",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.frag.inl",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.frag.spv",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.h",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.vert",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.vert.inl",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.vert.spv",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/Android.bp",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/AndroidManifest.xml",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.cpp",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.frag",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.frag.inl",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.frag.spv",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.h",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.vert",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.vert.inl",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.vert.spv",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/image.cpp",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/image.h",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/main.cpp",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/process_shaders.sh",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/sample_base.cpp",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/sample_base.h",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/Android.bp",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/AndroidManifest.xml",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.cpp",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.frag",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.frag.inl",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.frag.spv",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.h",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.vert",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.vert.inl",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.vert.spv",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/origins.json",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/raw-git-graph.json",
+    "android/native-generation-pair/cuttlefish-graphics-fixtures/selection-delta.json"
+  ],
+  "base": {
+    "commit": "2f91fe5f81886ca24c4c562ce9491f16e17261d5",
+    "files": 647,
+    "inventory": {
+      "bytes": 177977,
+      "path": "base-files.json",
+      "sha256": "56e5a6c2bd7fe39584cef3474acae7667114ef35768c5f2dd1b2b323f3ee4c11"
+    },
+    "raw_commit": {
+      "bytes": 323,
+      "path": "git-objects/base.commit",
+      "sha256": "ab739db5f59ecde7358691145ae5c4e05fe167b817a5d47ad6a301a905d4c584"
+    },
+    "tree": "d30800eda1b2be36ac636913171195551cfefd38"
+  },
+  "capture": {
+    "bytes": 554864,
+    "path": "CAPTURE.json",
+    "sha256": "e735990414af5c63b336bd4b9bfff3d7afd5c2bd6788d073caaa51aee7444ceb"
+  },
+  "changed_existing_files": [
+    "android/native-generation-pair/source-lock.json",
+    "tools/droidloom-source/src/lib.rs",
+    "tools/droidloom-update/src/native_generation_pair_build.rs"
+  ],
+  "evidence": {
+    "failed-export-a5f/commands/base-clean.json": {
+      "bytes": 2190,
+      "path": "evidence/failed-export-a5f/commands/base-clean.json",
+      "sha256": "835f4542f7c5dbaea6cec13ede2153b5b10a04e417eb1c186527538dc19ea565"
+    },
+    "failed-export-a5f/commands/base-clean.stderr": {
+      "bytes": 0,
+      "path": "evidence/failed-export-a5f/commands/base-clean.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "failed-export-a5f/commands/base-clean.stdout": {
+      "bytes": 0,
+      "path": "evidence/failed-export-a5f/commands/base-clean.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "failed-export-a5f/commands/base-complete-tree.json": {
+      "bytes": 2300,
+      "path": "evidence/failed-export-a5f/commands/base-complete-tree.json",
+      "sha256": "75a37d94fa2c04cd5bc5d80454112204cb1d9af59e3016a78338621c13ff4f8f"
+    },
+    "failed-export-a5f/commands/base-complete-tree.stderr": {
+      "bytes": 0,
+      "path": "evidence/failed-export-a5f/commands/base-complete-tree.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "failed-export-a5f/commands/base-complete-tree.stdout": {
+      "bytes": 79001,
+      "path": "evidence/failed-export-a5f/commands/base-complete-tree.stdout",
+      "sha256": "aa03248570d1f206ffb18fe37a78dfa7a5a67326e9b34e1bfdebf632ef6937a4"
+    },
+    "failed-export-a5f/commands/base-head.json": {
+      "bytes": 2116,
+      "path": "evidence/failed-export-a5f/commands/base-head.json",
+      "sha256": "b0b08c1d0770ac4954bc4924fae56d8a60c65e0b7f64fdd764cc0d9363f10f0e"
+    },
+    "failed-export-a5f/commands/base-head.stderr": {
+      "bytes": 0,
+      "path": "evidence/failed-export-a5f/commands/base-head.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "failed-export-a5f/commands/base-head.stdout": {
+      "bytes": 41,
+      "path": "evidence/failed-export-a5f/commands/base-head.stdout",
+      "sha256": "71a52c262c1a93c195260dd1e58b52d8dee0c1889e69e69f8c313087bd54976d"
+    },
+    "failed-export-a5f/commands/base-raw-commit.json": {
+      "bytes": 2236,
+      "path": "evidence/failed-export-a5f/commands/base-raw-commit.json",
+      "sha256": "ae5e029f15927edbcd99e89b16d11cc8fa4bf38d9e69452ea89ef763d9bf55a5"
+    },
+    "failed-export-a5f/commands/base-raw-commit.stderr": {
+      "bytes": 0,
+      "path": "evidence/failed-export-a5f/commands/base-raw-commit.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "failed-export-a5f/commands/base-raw-commit.stdout": {
+      "bytes": 323,
+      "path": "evidence/failed-export-a5f/commands/base-raw-commit.stdout",
+      "sha256": "ab739db5f59ecde7358691145ae5c4e05fe167b817a5d47ad6a301a905d4c584"
+    },
+    "failed-export-a5f/exit.json": {
+      "bytes": 496,
+      "path": "evidence/failed-export-a5f/exit.json",
+      "sha256": "cf6629fa03502d2b1ab2f2c6f0909609b60d63c850fd8ffd0f1cbc2107404ce4"
+    },
+    "failed-export-a5f/request.json": {
+      "bytes": 16399,
+      "path": "evidence/failed-export-a5f/request.json",
+      "sha256": "4f6ce9b8a684eba534a0fbb94326f623fe38016a99afb628b4e60fde4f27a988"
+    },
+    "failed-export-a5f/retirement.json": {
+      "bytes": 425,
+      "path": "evidence/failed-export-a5f/retirement.json",
+      "sha256": "031bbbba31c5f5fb445907d892e55f275031de51d50c07aa830576b13decae0d"
+    },
+    "failed-export-a5f/started.json": {
+      "bytes": 330,
+      "path": "evidence/failed-export-a5f/started.json",
+      "sha256": "019b2560fbeac1fded543e9c0178fcae89c7c4c76d01ca948a0932bf0f53cdcb"
+    },
+    "independent-a54/NORMALA46-RETIREMENT.json": {
+      "bytes": 9020,
+      "path": "evidence/independent-a54/NORMALA46-RETIREMENT.json",
+      "sha256": "8d41ced9a5a9a690c45e00e46da60e729f3609991fc44126e8e2e03615608156"
+    },
+    "independent-a54/durable-exit.json": {
+      "bytes": 498,
+      "path": "evidence/independent-a54/durable-exit.json",
+      "sha256": "69fdaf16e5e2c33f948ea01d36b3cc93730525c103763b8b6dbcb747572475a2"
+    },
+    "independent-a54/durable-request.json": {
+      "bytes": 24098,
+      "path": "evidence/independent-a54/durable-request.json",
+      "sha256": "2666911531a2dc74fdec7bef84e8686d3360ecf1f7e347be0152b6cc6c3c912e"
+    },
+    "independent-a54/durable-started.json": {
+      "bytes": 330,
+      "path": "evidence/independent-a54/durable-started.json",
+      "sha256": "d9ebfb8d5c4962f8c9fbda4a35571b570ad34de40090248a5a622a9b65105041"
+    },
+    "independent-a54/producer-inputs.json": {
+      "bytes": 239013,
+      "path": "evidence/independent-a54/producer-inputs.json",
+      "sha256": "1f50f3099bdbd32ea0ae774b95bc67dc26dd82dcdbabd34b7cbc3aeb871264e7"
+    },
+    "independent-a54/result.json": {
+      "bytes": 3231,
+      "path": "evidence/independent-a54/result.json",
+      "sha256": "ab4c29c743c5d38dd9547ffaa866dac25f22a7e1cc91e32ea3bd6d7763518f17"
+    },
+    "normal-command-records/compile-both-fresh-normal-CLIs.json": {
+      "bytes": 3126,
+      "path": "evidence/normal-command-records/compile-both-fresh-normal-CLIs.json",
+      "sha256": "f2e662b339b12d218267452de7da33067d150018bc20365f6ad8b0359e22e01a"
+    },
+    "normal-command-records/compile-new-source-crate-test-harness.json": {
+      "bytes": 3135,
+      "path": "evidence/normal-command-records/compile-new-source-crate-test-harness.json",
+      "sha256": "78e8de71fa8af332b4714503d90299d462319e168ba029d9fec1984e0ac2e6bd"
+    },
+    "normal-command-records/compile-new-update-test-harness.json": {
+      "bytes": 3092,
+      "path": "evidence/normal-command-records/compile-new-update-test-harness.json",
+      "sha256": "286ae62e0462a1d1fc1e6c697091304d153fed7b4047512ab4caea90d98253e3"
+    },
+    "normal-command-records/droidloom-source-actual-help.json": {
+      "bytes": 2978,
+      "path": "evidence/normal-command-records/droidloom-source-actual-help.json",
+      "sha256": "a016db1d035731a63bb09e2f2c12942d3ebd3abf25dd239f2aecb27ba0f6b952"
+    },
+    "normal-command-records/droidloom-update-actual-help.json": {
+      "bytes": 2981,
+      "path": "evidence/normal-command-records/droidloom-update-actual-help.json",
+      "sha256": "2da7a70198f52fe2527b882f4831ccf0452ccddb873ad86b4ae83408a1f49f28"
+    },
+    "normal-command-records/new-normal-source-exact-lock.json": {
+      "bytes": 3362,
+      "path": "evidence/normal-command-records/new-normal-source-exact-lock.json",
+      "sha256": "058f4649a5063bd31d4e6e0d9beffb375ba5f38b1b2d9b2345585650c3e972d2"
+    },
+    "normal-command-records/new-normal-source-exact-plan.json": {
+      "bytes": 3354,
+      "path": "evidence/normal-command-records/new-normal-source-exact-plan.json",
+      "sha256": "d38db6e09d01b6c479f654083e90f40cdc26f0f2acfd39c2a9b7aba26b72a7e6"
+    },
+    "normal-command-records/new-source-crate-all26-controls.json": {
+      "bytes": 4010,
+      "path": "evidence/normal-command-records/new-source-crate-all26-controls.json",
+      "sha256": "4b0c82d72979e6185b64229066389708cc9eb719baf8e3f17f65b0534964e417"
+    },
+    "normal-command-records/new-update-all53-pair-controls.json": {
+      "bytes": 3184,
+      "path": "evidence/normal-command-records/new-update-all53-pair-controls.json",
+      "sha256": "9edc56bd3c0ccc930d28ccc2c240e21d15c22fd251a145d311725e1f86524fd6"
+    },
+    "normal-command-records/new-update-focused-ordinary_pair_boot_apex_blueprints_are_exact_upstream_inputs.json": {
+      "bytes": 3494,
+      "path": "evidence/normal-command-records/new-update-focused-ordinary_pair_boot_apex_blueprints_are_exact_upstream_inputs.json",
+      "sha256": "a196ced52266fa8b55046ed0f7adccde20da64fb70441c2214bb0c2a20258692"
+    },
+    "normal-command-records/new-update-focused-ordinary_pair_boot_apex_providers_require_full_original_production_cones.json": {
+      "bytes": 3554,
+      "path": "evidence/normal-command-records/new-update-focused-ordinary_pair_boot_apex_providers_require_full_original_production_cones.json",
+      "sha256": "7602ac8c7b4e8b092720218bd27c7d8171bad8a9190a444fc5fdab95eea82317"
+    },
+    "normal-command-records/new-update-focused-ordinary_pair_browser_helper_blueprint_is_exact_original_input.json": {
+      "bytes": 3503,
+      "path": "evidence/normal-command-records/new-update-focused-ordinary_pair_browser_helper_blueprint_is_exact_original_input.json",
+      "sha256": "7633819bf9776aa9060ed8589ed2fdcdf6f3a03fb3c511287888750fc5b81cdc"
+    },
+    "normal-command-records/new-update-focused-ordinary_pair_browser_helper_requires_complete_original_library.json": {
+      "bytes": 3510,
+      "path": "evidence/normal-command-records/new-update-focused-ordinary_pair_browser_helper_requires_complete_original_library.json",
+      "sha256": "30b17d01b88b0f46ce304d242d8c0d046d9957de75330c13327bfff6f27ece0a"
+    },
+    "normal-command-records/new-update-focused-ordinary_pair_nativehelper_ndk_requires_complete_original_cone.json": {
+      "bytes": 3506,
+      "path": "evidence/normal-command-records/new-update-focused-ordinary_pair_nativehelper_ndk_requires_complete_original_cone.json",
+      "sha256": "47639ee78ec7ac8cb762f61293c1aa0f394661de3dd02c25f7013c9631d0b5ef"
+    },
+    "normal-command-records/new-update-focused-ordinary_pair_source_extension_is_exact_and_monotonic.json": {
+      "bytes": 3460,
+      "path": "evidence/normal-command-records/new-update-focused-ordinary_pair_source_extension_is_exact_and_monotonic.json",
+      "sha256": "2a70e054123f3bc726f352b6cb08457f7adc832f1661a2abfe0c73cdeda20d05"
+    },
+    "normal-command-records/new-update-interrupted_projection_recovers_before_next_build.json": {
+      "bytes": 3385,
+      "path": "evidence/normal-command-records/new-update-interrupted_projection_recovers_before_next_build.json",
+      "sha256": "e8ca92591c8aee01aeae2dcf8f158b87aebfc1ca3a9b64aba676cffdabfb6d1d"
+    },
+    "normal-command-records/new-update-repeated_projection_keeps_ninja_outputs_until_content_changes.json": {
+      "bytes": 3433,
+      "path": "evidence/normal-command-records/new-update-repeated_projection_keeps_ninja_outputs_until_content_changes.json",
+      "sha256": "27aea4cc2cab30c00997885249da6e81c755f072f7081e746b407374b40e0eba"
+    },
+    "normal-command-records/new-update-seven-filesystem-mode-tests.json": {
+      "bytes": 3211,
+      "path": "evidence/normal-command-records/new-update-seven-filesystem-mode-tests.json",
+      "sha256": "a9916b7d5c46578da94de5abfd3482aa2a79828cbb472743a795970c5c6fdc9f"
+    },
+    "normal-command-records/new-update-testbinary-list-only.json": {
+      "bytes": 3102,
+      "path": "evidence/normal-command-records/new-update-testbinary-list-only.json",
+      "sha256": "d8524b337f599e859ba2c119ab9e0b5fa23716049529acb7da5781911988f282"
+    },
+    "normal-command-records/new-update-typed_audiocontrol_example_projection_keeps_metadata_and_sibling_sources.json": {
+      "bytes": 3488,
+      "path": "evidence/normal-command-records/new-update-typed_audiocontrol_example_projection_keeps_metadata_and_sibling_sources.json",
+      "sha256": "fa6a482e4f1d4025f70057bcc371e0a61a3478d60a62273a15c1fe7b29fc352e"
+    },
+    "normal-command-records/new-update-typed_audiocontrol_example_projection_recovers_full_observed_original.json": {
+      "bytes": 3473,
+      "path": "evidence/normal-command-records/new-update-typed_audiocontrol_example_projection_recovers_full_observed_original.json",
+      "sha256": "f9ffdce3b5991085e983fb420677e5aca59a4fb60ca10859387afd1f4ca7e674"
+    },
+    "normal-command-records/new-update-typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths.json": {
+      "bytes": 3520,
+      "path": "evidence/normal-command-records/new-update-typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths.json",
+      "sha256": "1d2dd7b79749be7ea42b3463578e683ca97624bb539af3cad1dafb08dc3f68fe"
+    },
+    "normal-command-records/new-update-typed_systemui_test_projection_recovers_complete_original_from_durable_journal.json": {
+      "bytes": 3519,
+      "path": "evidence/normal-command-records/new-update-typed_systemui_test_projection_recovers_complete_original_from_durable_journal.json",
+      "sha256": "9b6820b60651e84e29d74fcd33df02cc782c0b3b4a265f5a28aff1c3d518dbc8"
+    },
+    "normal-command-records/recipe-HEAD-after.json": {
+      "bytes": 3238,
+      "path": "evidence/normal-command-records/recipe-HEAD-after.json",
+      "sha256": "63a7b4e3ae032f3686c31d89d693181f2229d58fd2b2b4fde8d402d8c1fc19d3"
+    },
+    "normal-command-records/recipe-HEAD-before.json": {
+      "bytes": 3239,
+      "path": "evidence/normal-command-records/recipe-HEAD-before.json",
+      "sha256": "fc378ff39df3316d9bd1be51cc4d4276417f64d96b80fbe5a04e0f8e71deeb22"
+    },
+    "normal-command-records/recipe-clean-after.json": {
+      "bytes": 3314,
+      "path": "evidence/normal-command-records/recipe-clean-after.json",
+      "sha256": "8e4af4af009acc2a28404eec176f0aa165a133398fe59efc4129a87ec5fc8d24"
+    },
+    "normal-command-records/recipe-clean-before.json": {
+      "bytes": 3315,
+      "path": "evidence/normal-command-records/recipe-clean-before.json",
+      "sha256": "8d13322e6014584120fa50d153b1411304351d87ca3c02facb970e61612fe9b3"
+    },
+    "normal-command-records/recipe-tree-after.json": {
+      "bytes": 3253,
+      "path": "evidence/normal-command-records/recipe-tree-after.json",
+      "sha256": "4f8ffe2057714f08195798ee904e324077f817b630b8a0039c07a61db5416c20"
+    },
+    "normal-command-records/recipe-tree-before.json": {
+      "bytes": 3254,
+      "path": "evidence/normal-command-records/recipe-tree-before.json",
+      "sha256": "b2d02aa675c2048b6b63e9e833b7501ecd9226f23bebbc7411b4cef847023042"
+    },
+    "normal-controls/audio_continuation_control.py": {
+      "bytes": 14084,
+      "path": "evidence/normal-controls/audio_continuation_control.py",
+      "sha256": "cacdc371bca50e1b161831eab358cf0402c38fd731f3ddbf107f3203bbf8f6fd"
+    },
+    "normal-controls/build_normal_tools.py": {
+      "bytes": 22534,
+      "path": "evidence/normal-controls/build_normal_tools.py",
+      "sha256": "58f35b254623ab8b1def3bbf7aeace5b3388e723e1198a594f868f5143d1efd2"
+    },
+    "normal-controls/code-preparation.json": {
+      "bytes": 911685,
+      "path": "evidence/normal-controls/code-preparation.json",
+      "sha256": "e94b8f9df29f839b1a03d60563be1abc566f9753b020402d11a6192c8cfab5d1"
+    },
+    "normal-controls/current-resource-plan.json": {
+      "bytes": 2417,
+      "path": "evidence/normal-controls/current-resource-plan.json",
+      "sha256": "46c0af1143b8931b8d01c52236cb25eeb81210bbcbad4c8cd1212efc89cef3b2"
+    },
+    "normal-controls/cuttlefish_admission.py": {
+      "bytes": 7980,
+      "path": "evidence/normal-controls/cuttlefish_admission.py",
+      "sha256": "68daac77454a9787ded8726c817a8ce1a350babef1ce05fc246ceb0cd4bb354c"
+    },
+    "normal-controls/existing-provider-proof.json": {
+      "bytes": 5906,
+      "path": "evidence/normal-controls/existing-provider-proof.json",
+      "sha256": "8c39433ee49e94e2e0e6455b8f651c924bc6cf1f7a164a6843c87cffbcfa991a"
+    },
+    "normal-controls/existing49-graphics-and-providers.json": {
+      "bytes": 22022,
+      "path": "evidence/normal-controls/existing49-graphics-and-providers.json",
+      "sha256": "2acf5afda32a67eebab370040e0e9dec8be64f79b42b0f521916913f28ecc4d6"
+    },
+    "normal-controls/focused-control-test-names.json": {
+      "bytes": 633,
+      "path": "evidence/normal-controls/focused-control-test-names.json",
+      "sha256": "a38a7d9ff6e5a12f433e2deb15f0061c6a30b0e5b16aa4376dc0223c6a156a7b"
+    },
+    "normal-controls/input.json": {
+      "bytes": 7067,
+      "path": "evidence/normal-controls/input.json",
+      "sha256": "91d621860c96b2c13ae257d22de251afb2cb735f67d6807c820732afa45cd8dd"
+    },
+    "normal-controls/journal-regression-test-names.json": {
+      "bytes": 548,
+      "path": "evidence/normal-controls/journal-regression-test-names.json",
+      "sha256": "d401a531b21cdb053645eb1240de5767fad4448da0d6f9ddde63a290448973ab"
+    },
+    "normal-controls/launcher.py": {
+      "bytes": 12491,
+      "path": "evidence/normal-controls/launcher.py",
+      "sha256": "05595327295bd5d85e9d64b25a9d83a20f034f9b1464ecae3018d320bccf7031"
+    },
+    "normal-controls/legacy_source604_admission.py": {
+      "bytes": 19077,
+      "path": "evidence/normal-controls/legacy_source604_admission.py",
+      "sha256": "5a6e90848aa81c6a13b1df65e3eb54fc25669e128cb848c92ff4bc059537d361"
+    },
+    "normal-controls/native_owned_commands.py": {
+      "bytes": 8737,
+      "path": "evidence/normal-controls/native_owned_commands.py",
+      "sha256": "c567c2338d388baee880d61da3a10814f20abc6c25c24548c0671d3d805c97f3"
+    },
+    "normal-controls/owned_adoption.py": {
+      "bytes": 2868,
+      "path": "evidence/normal-controls/owned_adoption.py",
+      "sha256": "5062e1f68d2815688286e3e691b81592bbda227477e224281462ee482107c080"
+    },
+    "normal-controls/owned_lifecycle.py": {
+      "bytes": 14201,
+      "path": "evidence/normal-controls/owned_lifecycle.py",
+      "sha256": "94d18007becfbe14a7ca833d73389e45c39f76cb874de2f341a5d500edc4a4fd"
+    },
+    "normal-controls/owned_process.py": {
+      "bytes": 4423,
+      "path": "evidence/normal-controls/owned_process.py",
+      "sha256": "c4f930ed05526a1f1ab8da438e2eeaa5136f45d9d47e33990c6cf3073f9ad3c1"
+    },
+    "normal-controls/owned_unit.py": {
+      "bytes": 11492,
+      "path": "evidence/normal-controls/owned_unit.py",
+      "sha256": "bd069f0e8db17b9f0430787ebc751bf2e742615ff8412a3c57588b917d704f2e"
+    },
+    "normal-controls/pair-control-test-names.json": {
+      "bytes": 6139,
+      "path": "evidence/normal-controls/pair-control-test-names.json",
+      "sha256": "ec24f17065d1c6535873cfaae8db2195d6d8d15a824df50b9c5b60ffbafb6a33"
+    },
+    "normal-controls/permissions-control-test-names.json": {
+      "bytes": 677,
+      "path": "evidence/normal-controls/permissions-control-test-names.json",
+      "sha256": "c8c4d30490ec563a54cf4335d97ad19eda84e44103f5105a222ebd8362510379"
+    },
+    "normal-controls/preparation.json": {
+      "bytes": 1089,
+      "path": "evidence/normal-controls/preparation.json",
+      "sha256": "744ad272c9df700d12a56358e85d920a88cf82b58803b3d83b8951e6990f747b"
+    },
+    "normal-controls/restored9fe-contract.json": {
+      "bytes": 105650,
+      "path": "evidence/normal-controls/restored9fe-contract.json",
+      "sha256": "3154130bec8697a4f4e31c633933ca8fed1226d9e3252ac04a8197070f19f97d"
+    },
+    "normal-controls/restored9fe_admission.py": {
+      "bytes": 12333,
+      "path": "evidence/normal-controls/restored9fe_admission.py",
+      "sha256": "de19130207ab83d71f1900938255b2b76fb444d46319cafd68226916891f35b2"
+    },
+    "normal-controls/source-control-test-names.json": {
+      "bytes": 1936,
+      "path": "evidence/normal-controls/source-control-test-names.json",
+      "sha256": "d0a8049f4ddd7001768aa3b658ebd7ac226b6b6bfde631f953356631e99fbb08"
+    },
+    "normal-logs/control/entry-show-00.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/control/entry-show-00.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/control/entry-show-00.stdout": {
+      "bytes": 280,
+      "path": "evidence/normal-logs/control/entry-show-00.stdout",
+      "sha256": "bdb3f82841b78d418b1201af4a3ddcd1991f59b261600bed9fb58075eafed25e"
+    },
+    "normal-logs/control/entry.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/control/entry.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/control/entry.stdout": {
+      "bytes": 588,
+      "path": "evidence/normal-logs/control/entry.stdout",
+      "sha256": "28dde371934a88385895bec61848848c66a4fb39ca2d7f399f188b9f82367048"
+    },
+    "normal-logs/control/launcher-show-00.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/control/launcher-show-00.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/control/launcher-show-00.stdout": {
+      "bytes": 280,
+      "path": "evidence/normal-logs/control/launcher-show-00.stdout",
+      "sha256": "bdb3f82841b78d418b1201af4a3ddcd1991f59b261600bed9fb58075eafed25e"
+    },
+    "normal-logs/control/normal.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/control/normal.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/control/normal.stdout": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/control/normal.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/compile-both-fresh-normal-CLIs.stderr": {
+      "bytes": 250,
+      "path": "evidence/normal-logs/qualification/commands/compile-both-fresh-normal-CLIs.stderr",
+      "sha256": "4373f5c43100b420788cb22cd87877019a7b3bb78cdb983e40b4a5f36bfa1706"
+    },
+    "normal-logs/qualification/commands/compile-both-fresh-normal-CLIs.stdout": {
+      "bytes": 61958,
+      "path": "evidence/normal-logs/qualification/commands/compile-both-fresh-normal-CLIs.stdout",
+      "sha256": "8d589477ff525348520003550fa260b718319095c7d5392e223c73332faa375d"
+    },
+    "normal-logs/qualification/commands/compile-new-source-crate-test-harness.stderr": {
+      "bytes": 338,
+      "path": "evidence/normal-logs/qualification/commands/compile-new-source-crate-test-harness.stderr",
+      "sha256": "4efd8375e88b3c08decdd884fe1adaf94ac12c8a3551628b67281f6958b77dd0"
+    },
+    "normal-logs/qualification/commands/compile-new-source-crate-test-harness.stdout": {
+      "bytes": 57361,
+      "path": "evidence/normal-logs/qualification/commands/compile-new-source-crate-test-harness.stdout",
+      "sha256": "64832f5b27ba3c27b48af3089ef208156a2751e607cba57afa179d1212e6a262"
+    },
+    "normal-logs/qualification/commands/compile-new-update-test-harness.stderr": {
+      "bytes": 2146,
+      "path": "evidence/normal-logs/qualification/commands/compile-new-update-test-harness.stderr",
+      "sha256": "b136310550c0520261e7588b19ca7d9cd24b7622c831922e4482091af3a8a36f"
+    },
+    "normal-logs/qualification/commands/compile-new-update-test-harness.stdout": {
+      "bytes": 67014,
+      "path": "evidence/normal-logs/qualification/commands/compile-new-update-test-harness.stdout",
+      "sha256": "7bc0cc057174ca45e655db2f251244ad859e6fd90eea4f06d8fe85ea527623eb"
+    },
+    "normal-logs/qualification/commands/droidloom-source-actual-help.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/droidloom-source-actual-help.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/droidloom-source-actual-help.stdout": {
+      "bytes": 699,
+      "path": "evidence/normal-logs/qualification/commands/droidloom-source-actual-help.stdout",
+      "sha256": "b10e5dd4d4db8d30fd6e8529a849b8be9ced9c9ad8cb9d3da0fb95880f993ab5"
+    },
+    "normal-logs/qualification/commands/droidloom-update-actual-help.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/droidloom-update-actual-help.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/droidloom-update-actual-help.stdout": {
+      "bytes": 2175,
+      "path": "evidence/normal-logs/qualification/commands/droidloom-update-actual-help.stdout",
+      "sha256": "1fc783526d4711bef1c3557944bf516875175310c82ff7606784187fd2e624b9"
+    },
+    "normal-logs/qualification/commands/new-normal-source-exact-lock.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/new-normal-source-exact-lock.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/new-normal-source-exact-lock.stdout": {
+      "bytes": 107,
+      "path": "evidence/normal-logs/qualification/commands/new-normal-source-exact-lock.stdout",
+      "sha256": "85f90da76871b9b9ba424ef3b7e89183242455dca355208017471b4d95ceb7d9"
+    },
+    "normal-logs/qualification/commands/new-normal-source-exact-plan.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/new-normal-source-exact-plan.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/new-normal-source-exact-plan.stdout": {
+      "bytes": 389024,
+      "path": "evidence/normal-logs/qualification/commands/new-normal-source-exact-plan.stdout",
+      "sha256": "b5ab2a2c5e5842b376262b2b988d095b613281fd19814186260affa65bcd9602"
+    },
+    "normal-logs/qualification/commands/new-source-crate-all26-controls.stderr": {
+      "bytes": 16488,
+      "path": "evidence/normal-logs/qualification/commands/new-source-crate-all26-controls.stderr",
+      "sha256": "b3b2ce379818a2df0f695fabbad3b3a1f010f881cd00c9d701bba6c2078ef4cf"
+    },
+    "normal-logs/qualification/commands/new-source-crate-all26-controls.stdout": {
+      "bytes": 2230,
+      "path": "evidence/normal-logs/qualification/commands/new-source-crate-all26-controls.stdout",
+      "sha256": "1be27a859434a9832e8ba38ada51e1fa2daaf8fe8dd1a661b9ff443e55bfcddb"
+    },
+    "normal-logs/qualification/commands/new-update-all53-pair-controls.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/new-update-all53-pair-controls.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/new-update-all53-pair-controls.stdout": {
+      "bytes": 6625,
+      "path": "evidence/normal-logs/qualification/commands/new-update-all53-pair-controls.stdout",
+      "sha256": "f34314ddb9abd4de7dda4dda3607a522cb22edb97441edd2837c77c73f92a8ff"
+    },
+    "normal-logs/qualification/commands/new-update-focused-ordinary_pair_boot_apex_blueprints_are_exact_upstream_inputs.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/new-update-focused-ordinary_pair_boot_apex_blueprints_are_exact_upstream_inputs.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/new-update-focused-ordinary_pair_boot_apex_blueprints_are_exact_upstream_inputs.stdout": {
+      "bytes": 224,
+      "path": "evidence/normal-logs/qualification/commands/new-update-focused-ordinary_pair_boot_apex_blueprints_are_exact_upstream_inputs.stdout",
+      "sha256": "c3426d59928523f0ef1bb418e058b2817a410241686da0996c179cca10b9443d"
+    },
+    "normal-logs/qualification/commands/new-update-focused-ordinary_pair_boot_apex_providers_require_full_original_production_cones.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/new-update-focused-ordinary_pair_boot_apex_providers_require_full_original_production_cones.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/new-update-focused-ordinary_pair_boot_apex_providers_require_full_original_production_cones.stdout": {
+      "bytes": 236,
+      "path": "evidence/normal-logs/qualification/commands/new-update-focused-ordinary_pair_boot_apex_providers_require_full_original_production_cones.stdout",
+      "sha256": "6ca761252a6407595fe89de8b57e95849a9fc77ea4b14224d19610dbba883872"
+    },
+    "normal-logs/qualification/commands/new-update-focused-ordinary_pair_browser_helper_blueprint_is_exact_original_input.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/new-update-focused-ordinary_pair_browser_helper_blueprint_is_exact_original_input.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/new-update-focused-ordinary_pair_browser_helper_blueprint_is_exact_original_input.stdout": {
+      "bytes": 226,
+      "path": "evidence/normal-logs/qualification/commands/new-update-focused-ordinary_pair_browser_helper_blueprint_is_exact_original_input.stdout",
+      "sha256": "ecbe3bc3a82233a483721101a450b1b80349cce536e441b12631d18de7fb869f"
+    },
+    "normal-logs/qualification/commands/new-update-focused-ordinary_pair_browser_helper_requires_complete_original_library.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/new-update-focused-ordinary_pair_browser_helper_requires_complete_original_library.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/new-update-focused-ordinary_pair_browser_helper_requires_complete_original_library.stdout": {
+      "bytes": 227,
+      "path": "evidence/normal-logs/qualification/commands/new-update-focused-ordinary_pair_browser_helper_requires_complete_original_library.stdout",
+      "sha256": "0c0b8d72ac151bc9979afed53160e0acd286cb2cf33f4698e7f468b828662dcf"
+    },
+    "normal-logs/qualification/commands/new-update-focused-ordinary_pair_nativehelper_ndk_requires_complete_original_cone.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/new-update-focused-ordinary_pair_nativehelper_ndk_requires_complete_original_cone.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/new-update-focused-ordinary_pair_nativehelper_ndk_requires_complete_original_cone.stdout": {
+      "bytes": 226,
+      "path": "evidence/normal-logs/qualification/commands/new-update-focused-ordinary_pair_nativehelper_ndk_requires_complete_original_cone.stdout",
+      "sha256": "24712002f6805406b2476ac7045a18201807a3dee7dff8a822c0cf3bc8f9b4e0"
+    },
+    "normal-logs/qualification/commands/new-update-focused-ordinary_pair_source_extension_is_exact_and_monotonic.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/new-update-focused-ordinary_pair_source_extension_is_exact_and_monotonic.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/new-update-focused-ordinary_pair_source_extension_is_exact_and_monotonic.stdout": {
+      "bytes": 217,
+      "path": "evidence/normal-logs/qualification/commands/new-update-focused-ordinary_pair_source_extension_is_exact_and_monotonic.stdout",
+      "sha256": "76df7d27331309265f82386b9269be85fe8660886bbd7e2ae7f652dbf072a1d8"
+    },
+    "normal-logs/qualification/commands/new-update-interrupted_projection_recovers_before_next_build.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/new-update-interrupted_projection_recovers_before_next_build.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/new-update-interrupted_projection_recovers_before_next_build.stdout": {
+      "bytes": 198,
+      "path": "evidence/normal-logs/qualification/commands/new-update-interrupted_projection_recovers_before_next_build.stdout",
+      "sha256": "220a76311afde48117c888c56459b1edd4f2a9feb256e6159952b81491efc6c5"
+    },
+    "normal-logs/qualification/commands/new-update-repeated_projection_keeps_ninja_outputs_until_content_changes.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/new-update-repeated_projection_keeps_ninja_outputs_until_content_changes.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/new-update-repeated_projection_keeps_ninja_outputs_until_content_changes.stdout": {
+      "bytes": 204,
+      "path": "evidence/normal-logs/qualification/commands/new-update-repeated_projection_keeps_ninja_outputs_until_content_changes.stdout",
+      "sha256": "8f5115bdc52e11db7e0134141ff5d28321fe1102963b8f07122a295a472f322f"
+    },
+    "normal-logs/qualification/commands/new-update-seven-filesystem-mode-tests.stderr": {
+      "bytes": 224,
+      "path": "evidence/normal-logs/qualification/commands/new-update-seven-filesystem-mode-tests.stderr",
+      "sha256": "08c979d7d5bf357c220528c9743849f934e9d060ae7a3005aac9a75d8bd82b2f"
+    },
+    "normal-logs/qualification/commands/new-update-seven-filesystem-mode-tests.stdout": {
+      "bytes": 838,
+      "path": "evidence/normal-logs/qualification/commands/new-update-seven-filesystem-mode-tests.stdout",
+      "sha256": "29bffe43589505d120f5473c786c81e629f74a737164265dc78065a3aa65a32f"
+    },
+    "normal-logs/qualification/commands/new-update-testbinary-list-only.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/new-update-testbinary-list-only.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/new-update-testbinary-list-only.stdout": {
+      "bytes": 27507,
+      "path": "evidence/normal-logs/qualification/commands/new-update-testbinary-list-only.stdout",
+      "sha256": "eb79cc792c9c1468571f8eeb3092855719c584da2c9bec43b217afa3c2a520a7"
+    },
+    "normal-logs/qualification/commands/new-update-typed_audiocontrol_example_projection_keeps_metadata_and_sibling_sources.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/new-update-typed_audiocontrol_example_projection_keeps_metadata_and_sibling_sources.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/new-update-typed_audiocontrol_example_projection_keeps_metadata_and_sibling_sources.stdout": {
+      "bytes": 215,
+      "path": "evidence/normal-logs/qualification/commands/new-update-typed_audiocontrol_example_projection_keeps_metadata_and_sibling_sources.stdout",
+      "sha256": "40569b5cd7aab506b674d61f140dd9ddc1b46dccfb7c11c21e53ca5a539f47cb"
+    },
+    "normal-logs/qualification/commands/new-update-typed_audiocontrol_example_projection_recovers_full_observed_original.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/new-update-typed_audiocontrol_example_projection_recovers_full_observed_original.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/new-update-typed_audiocontrol_example_projection_recovers_full_observed_original.stdout": {
+      "bytes": 212,
+      "path": "evidence/normal-logs/qualification/commands/new-update-typed_audiocontrol_example_projection_recovers_full_observed_original.stdout",
+      "sha256": "e13562ff34122d2f0efb3629d7b01de7c62ec8f6a7b6f29540b9af41b226be63"
+    },
+    "normal-logs/qualification/commands/new-update-typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/new-update-typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/new-update-typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths.stdout": {
+      "bytes": 221,
+      "path": "evidence/normal-logs/qualification/commands/new-update-typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths.stdout",
+      "sha256": "bcd9eec3e03a21f7ffd9fdfe0eb998a27473631f8f83a30a8b691919ce34ead0"
+    },
+    "normal-logs/qualification/commands/new-update-typed_systemui_test_projection_recovers_complete_original_from_durable_journal.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/new-update-typed_systemui_test_projection_recovers_complete_original_from_durable_journal.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/new-update-typed_systemui_test_projection_recovers_complete_original_from_durable_journal.stdout": {
+      "bytes": 221,
+      "path": "evidence/normal-logs/qualification/commands/new-update-typed_systemui_test_projection_recovers_complete_original_from_durable_journal.stdout",
+      "sha256": "2e451ec11fe4730c01d5ea9bc43d9910f42a051d3ec94c76046550ef87709f3d"
+    },
+    "normal-logs/qualification/commands/recipe-HEAD-after.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/recipe-HEAD-after.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/recipe-HEAD-after.stdout": {
+      "bytes": 41,
+      "path": "evidence/normal-logs/qualification/commands/recipe-HEAD-after.stdout",
+      "sha256": "808bf7ec1ad8ba241033762dd4e35941e53ff43574a0b97dc8c8e7a77dc9c561"
+    },
+    "normal-logs/qualification/commands/recipe-HEAD-before.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/recipe-HEAD-before.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/recipe-HEAD-before.stdout": {
+      "bytes": 41,
+      "path": "evidence/normal-logs/qualification/commands/recipe-HEAD-before.stdout",
+      "sha256": "808bf7ec1ad8ba241033762dd4e35941e53ff43574a0b97dc8c8e7a77dc9c561"
+    },
+    "normal-logs/qualification/commands/recipe-clean-after.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/recipe-clean-after.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/recipe-clean-after.stdout": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/recipe-clean-after.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/recipe-clean-before.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/recipe-clean-before.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/recipe-clean-before.stdout": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/recipe-clean-before.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/recipe-tree-after.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/recipe-tree-after.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/recipe-tree-after.stdout": {
+      "bytes": 41,
+      "path": "evidence/normal-logs/qualification/commands/recipe-tree-after.stdout",
+      "sha256": "459409cf506c914bc531fd1dbcb52ad46b923107298f813222f8e23f1a31b99d"
+    },
+    "normal-logs/qualification/commands/recipe-tree-before.stderr": {
+      "bytes": 0,
+      "path": "evidence/normal-logs/qualification/commands/recipe-tree-before.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "normal-logs/qualification/commands/recipe-tree-before.stdout": {
+      "bytes": 41,
+      "path": "evidence/normal-logs/qualification/commands/recipe-tree-before.stdout",
+      "sha256": "459409cf506c914bc531fd1dbcb52ad46b923107298f813222f8e23f1a31b99d"
+    },
+    "normal-owner.json": {
+      "bytes": 6611,
+      "path": "evidence/normal-owner.json",
+      "sha256": "223449e59652419b312a1d88cf32052d656ce9dabf0d6d96bc1fff8650067f46"
+    },
+    "owner-documents/approved_request.json": {
+      "bytes": 13877,
+      "path": "evidence/owner-documents/approved_request.json",
+      "sha256": "e1fce5e258019a9e07664e360d69076523b0dbcb10f532bda6a812735b90d794"
+    },
+    "owner-documents/code_preparation.json": {
+      "bytes": 911685,
+      "path": "evidence/owner-documents/code_preparation.json",
+      "sha256": "e94b8f9df29f839b1a03d60563be1abc566f9753b020402d11a6192c8cfab5d1"
+    },
+    "owner-documents/control_manifest.json": {
+      "bytes": 7310,
+      "path": "evidence/owner-documents/control_manifest.json",
+      "sha256": "2156bff23f8f740433a95b0ef5ccd424e9d2ce74a968d1512028f1706b5910f8"
+    },
+    "owner-documents/entry.json": {
+      "bytes": 34866,
+      "path": "evidence/owner-documents/entry.json",
+      "sha256": "dd8f33825b002147f7d0861e9fb01c65034e1f830a51e2abf10912947e63e2b0"
+    },
+    "owner-documents/exit.json": {
+      "bytes": 496,
+      "path": "evidence/owner-documents/exit.json",
+      "sha256": "2b1e8b7662daf741905e5fa8357073f99c6d4750a4647367c3eced4ce8fbd6cf"
+    },
+    "owner-documents/inner.json": {
+      "bytes": 190760,
+      "path": "evidence/owner-documents/inner.json",
+      "sha256": "528b8f64d91654097a87939b672abb799c363b42cc3dfeb5f30eb3c1752e950b"
+    },
+    "owner-documents/outer.json": {
+      "bytes": 13530,
+      "path": "evidence/owner-documents/outer.json",
+      "sha256": "4cf6d77480a361bad42b78caf8b45cbbeef36c011f0ddd243892d74c64733f7e"
+    },
+    "owner-documents/request.json": {
+      "bytes": 14309,
+      "path": "evidence/owner-documents/request.json",
+      "sha256": "49fcfdba55248c624053e0b04d66f81fe7bc8cab37337f7e6944cacc95b34470"
+    },
+    "owner-documents/started.json": {
+      "bytes": 330,
+      "path": "evidence/owner-documents/started.json",
+      "sha256": "da51aa5ab7b887029c572a279a6fe99e3de28f6d3d679ca18dc51a0800992dab"
+    },
+    "source-preparation-a57-exit.json": {
+      "bytes": 498,
+      "path": "evidence/source-preparation-a57-exit.json",
+      "sha256": "2ac0defd862cbace24de580857f6b103d99b83c2d5dc7bacac8a3e139fa2cdbc"
+    },
+    "source-preparation-a57-request.json": {
+      "bytes": 88303,
+      "path": "evidence/source-preparation-a57-request.json",
+      "sha256": "8575a359a5821e75c62ff40b7db0a73d05a3ed70d008ec63bc6b4dc47144040c"
+    },
+    "source-preparation-a57-started.json": {
+      "bytes": 330,
+      "path": "evidence/source-preparation-a57-started.json",
+      "sha256": "2e9941eb518e87c94fd79ced11766f509a67a450521c721d185f74bb3abd0552"
+    },
+    "source-preparation-a57.json": {
+      "bytes": 54939,
+      "path": "evidence/source-preparation-a57.json",
+      "sha256": "640ef12a027917d1fd859545c588fb2d4a55819fd90d46172632c819a3c41bc8"
+    }
+  },
+  "files": [
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/dependencies.json",
+      "post": {
+        "bytes": 3952,
+        "git_blob": "21974013e5fee1d6a942f447b7074aad35092323",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/dependencies.json",
+        "sha256": "15ba120c23f3b03c929e85163d4e3ccc75c3f348da4343dcdec840648ae0a5bb"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/existing-providers/cts/Android.bp",
+      "post": {
+        "bytes": 4835,
+        "git_blob": "81e226065e3661af021f32daea1589df09ec6d12",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/existing-providers/cts/Android.bp",
+        "sha256": "ca508162aaee017ef0bc52ca275e8bc93fd48ef10ee2b3ff46468535408397df"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/existing-providers/cts/common/device-side/util-axt/Android.bp",
+      "post": {
+        "bytes": 2458,
+        "git_blob": "00d742ad3389525391a5d16364ef8500e48c5b6d",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/existing-providers/cts/common/device-side/util-axt/Android.bp",
+        "sha256": "db2eb3ded3316f9157983155ed49b369fc43ef29e1331bd9b3f6c5317406dc8e"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/existing-providers/device/google/cuttlefish/Android.bp",
+      "post": {
+        "bytes": 5664,
+        "git_blob": "ae52babf03516e7afcfb57e7b065d2d5ffce9f0c",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/existing-providers/device/google/cuttlefish/Android.bp",
+        "sha256": "2580299ebf86ef24dbf06e497dae23ae91d8db61262fd9aea07721dee234143b"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/existing-providers/device/google/cuttlefish/tests/utils/Android.bp",
+      "post": {
+        "bytes": 1091,
+        "git_blob": "0d1f912a247a3db3213def49e95bf6d189071198",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/existing-providers/device/google/cuttlefish/tests/utils/Android.bp",
+        "sha256": "d1975a1a7dcd6657cb87f50ffcf93724bf255205cd3624f0f2e2008225be125c"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/existing-providers/prebuilts/misc/common/androidx-test/Android.bp",
+      "post": {
+        "bytes": 18643,
+        "git_blob": "74f4ebe1972fc10a1557b9afa6448b9b5fcfa5b2",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/existing-providers/prebuilts/misc/common/androidx-test/Android.bp",
+        "sha256": "1ca774316a87df2136bcb1a0a8cfc5720ccf18ac7e206de2ca78332b3eafad38"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/existing-providers/prebuilts/sdk/current/androidx/m2repository/androidx/appcompat/appcompat/1.8.0-alpha01/Android.bp",
+      "post": {
+        "bytes": 1759,
+        "git_blob": "8d484b925c07042424664ae7d27a6ba2af158a56",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/existing-providers/prebuilts/sdk/current/androidx/m2repository/androidx/appcompat/appcompat/1.8.0-alpha01/Android.bp",
+        "sha256": "245ab693b1938c9e7122ac26a19cc81d75820ccbdc10af8bb84671737ff45b74"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/original643-global-compat-source-lock.json",
+      "post": {
+        "bytes": 369245,
+        "git_blob": "cbf44b60094c03c1fa0dd793f2451d733713ac41",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/original643-global-compat-source-lock.json",
+        "sha256": "e8b359276e49d6f520344284cbf2876f403d03150018d286ab8b0df362817e71"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/Android.bp",
+      "post": {
+        "bytes": 2779,
+        "git_blob": "3b851dda38ad094f030fed3d1b34b7d9d60c87e4",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/Android.bp",
+        "sha256": "8420e5342d930d1b4b7fbd3011f2dc33246dc5805f66f9ba87b55f1850a46038"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/Android.bp",
+      "post": {
+        "bytes": 3067,
+        "git_blob": "8d873f7ce1938e32c43e408c68e3df98006d8cda",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/Android.bp",
+        "sha256": "48ffb3925817c7be477dfbe9d75b3f135505508b0a1a91f28e3dc20782c5c3d7"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/CfVkmsConnectorsTest.java",
+      "post": {
+        "bytes": 7762,
+        "git_blob": "69c0bc5171171ae551a26d500e5ca333783a4b84",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/CfVkmsConnectorsTest.java",
+        "sha256": "e8c5f1637d7e1e845fa99fbe5fba92b4759fee55380404c18d624b8154158a37"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/CfVkmsCursorTest.java",
+      "post": {
+        "bytes": 6001,
+        "git_blob": "912e3a2031a6d69e2360c98e8a45d5b3ffe2acb4",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/CfVkmsCursorTest.java",
+        "sha256": "6a5697f01a4f0fcf426478896241630ad072a8fc3b36a755140f5b9e608c3e06"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/CfVkmsDisplaysTest.java",
+      "post": {
+        "bytes": 27872,
+        "git_blob": "f2154b13772390784e0e53d43546eb61460e6399",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/CfVkmsDisplaysTest.java",
+        "sha256": "635c2753234c9f8c0c43578a18461bdf888cc76db1e42423d90a794af3f6bbf7"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/CfWritebackTest.java",
+      "post": {
+        "bytes": 5583,
+        "git_blob": "7f01a82e21d8f278582efc63977bcd264c21de9d",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/CfWritebackTest.java",
+        "sha256": "ad9a1962ada5e3b402c9e19763e820b5b9c857061c9ff59614028a3abeb4a4e3"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/OWNERS",
+      "post": {
+        "bytes": 44,
+        "git_blob": "5a03129ec49ff8ed11c01b0867baaa65aa89c56c",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/OWNERS",
+        "sha256": "8765b1884920ebd310c162f0982462271f5b9e3e49febdf9aa5a8d3b273940a3"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/TEST_MAPPING",
+      "post": {
+        "bytes": 141,
+        "git_blob": "483ccfbaa5e86ff7cc4b7923d61add34dd40a4d3",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/TEST_MAPPING",
+        "sha256": "9ad6dfcdcf2ee68e4755fe57f661f6be8f0dcd4ad9210d5b810f19a8f5783a11"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/display_config_template.xml",
+      "post": {
+        "bytes": 1915,
+        "git_blob": "4ba3e12357227df2f925bb6b475e2e613a9f24f7",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/display_config_template.xml",
+        "sha256": "d9bdfa53cd87a1e842a432625e321ef33bfc107d59c7b8bf1f1e4db0d7d85fc3"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/utils/Android.bp",
+      "post": {
+        "bytes": 855,
+        "git_blob": "524df74c308a5b3cb515d4187f79a0a8c373c188",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/utils/Android.bp",
+        "sha256": "8b4ce1e8f600f2378cfcc41e59295b097226db46beea329015a8c6eca8d23a39"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/utils/CfVkmsEdidHelper.java",
+      "post": {
+        "bytes": 9284,
+        "git_blob": "b0e5da45894bd261e6add6d920a27d8cda866431",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/utils/CfVkmsEdidHelper.java",
+        "sha256": "c9be1e0eafd9518665983ddcedd0c8b1251b076f3c0585c76a4ada979ec2150e"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/utils/CfVkmsTester.java",
+      "post": {
+        "bytes": 27608,
+        "git_blob": "19711e1319333aef4b5655b10cde031106c278bb",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/display/utils/CfVkmsTester.java",
+        "sha256": "b02d2bcade559d93ac6a310c16f445a16d1f1e8152a1f07cd23879c8442685bc"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/hotplug/Android.bp",
+      "post": {
+        "bytes": 1385,
+        "git_blob": "0d6c9e7b2de265f2c4650d34d0711445df704c56",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/hotplug/Android.bp",
+        "sha256": "9bc5b4fcd503d454d5900e9849db2751e6cc6463054a837d419383db2a04f8f9"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/hotplug/AndroidManifest.xml",
+      "post": {
+        "bytes": 1374,
+        "git_blob": "12c1436d4b1ba63b15bda8a3d84319382b154342",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/hotplug/AndroidManifest.xml",
+        "sha256": "18bdf6c6747eebf5dae9d1aaff891bda8e60e0f3c0c04dfa319794d7455c5572"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/hotplug/src/com/android/cuttlefish/DisplayHotplugHelperApp.java",
+      "post": {
+        "bytes": 3262,
+        "git_blob": "4e664f490cf30c10ed1c692e1b483f1a6a34a6ad",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/hotplug/src/com/android/cuttlefish/DisplayHotplugHelperApp.java",
+        "sha256": "ca13c3f7ed39c418786ff336341030aabb040c13a12008f51848a50b8edaf7cb"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/src/com/android/cuttlefish/tests/CuttlefishDisplayHotplugTest.java",
+      "post": {
+        "bytes": 18957,
+        "git_blob": "b4414c6523d7df3b96c49682d0cba3f23f7e8bba",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/src/com/android/cuttlefish/tests/CuttlefishDisplayHotplugTest.java",
+        "sha256": "4a15ec5bb9e8d309a2b5961e15545578686ba951cfb85026629a89d35e3825c4"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/src/com/android/cuttlefish/tests/CuttlefishDisplayTests.java",
+      "post": {
+        "bytes": 2956,
+        "git_blob": "a5d97f9159ad60e78257c2c27639dbc04875ff90",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/src/com/android/cuttlefish/tests/CuttlefishDisplayTests.java",
+        "sha256": "87bae4bf842c6f2de2a158f2d0534a885126bab62461d68f5d5f265ab2450a05"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/src/com/android/cuttlefish/tests/CuttlefishGraphicsConfigurationTest.java",
+      "post": {
+        "bytes": 2346,
+        "git_blob": "d9c7167a37f58e8cff3650889c4e678da780288e",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/src/com/android/cuttlefish/tests/CuttlefishGraphicsConfigurationTest.java",
+        "sha256": "90b696cf6bfe92d42957c35e191f5d9dcd8b5be77cedc79c469bd5e45fd20db9"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/src/com/android/cuttlefish/tests/CuttlefishVulkanSnapshotTests.java",
+      "post": {
+        "bytes": 6737,
+        "git_blob": "e648b6e8aefe8482d7949612ade3683f586ddaf3",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/src/com/android/cuttlefish/tests/CuttlefishVulkanSnapshotTests.java",
+        "sha256": "a0dea39118d865b95a22a2cc856d7ffc7b839dea948e79fb5b3e83687456e965"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/Android.bp",
+      "post": {
+        "bytes": 1630,
+        "git_blob": "4d4d42aa54ab992d066d26a2bbcc0a03db3f45a2",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/Android.bp",
+        "sha256": "0bc9f45f02fa0dd6a0d8eeb259ffdcbe167f8ca8ae697fed405d44fe61c5b650"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/common.h",
+      "post": {
+        "bytes": 716,
+        "git_blob": "1f34da46b2cf0eb6c078386ee4d6800e1c31a76d",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/common.h",
+        "sha256": "d554d7a0760d157796d13ad3eb78b2542ba0b8f195ecafaf0bba4665aa447b17"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/Android.bp",
+      "post": {
+        "bytes": 1028,
+        "git_blob": "5ad0fa6ad319147ea2474bc4c9a8688909e4aa32",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/Android.bp",
+        "sha256": "0a9580fc913002adfd5d24ead7cf0f412fb06f21a4a3def9411d025a0b3b1273"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/AndroidManifest.xml",
+      "post": {
+        "bytes": 1651,
+        "git_blob": "dfdeb6b0e78f17cabf077628b25b5e72b5afe665",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/AndroidManifest.xml",
+        "sha256": "526333064b32d74d5b1f1746be979e47972e6bf298fe9cdc0894d9763a0cb28b"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.cpp",
+      "post": {
+        "bytes": 12627,
+        "git_blob": "f2c9c863d030b501cca904049ebbe09e575d69cc",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.cpp",
+        "sha256": "e07a09bd0d3e926f9a94b2b1c50e819c1d235a8b07334ff927dae8f54ea17ecc"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.frag",
+      "post": {
+        "bytes": 108,
+        "git_blob": "dcaea274968e09cb484924083562224025ed01a1",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.frag",
+        "sha256": "354e1b71fd3a20c249af7cc5ceb6014c6b521ed7aeccc1a0865faef811e55238"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.frag.inl",
+      "post": {
+        "bytes": 2786,
+        "git_blob": "98b888ca62bf1df7ca7101e0d465b940c3dce726",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.frag.inl",
+        "sha256": "528e8a49cced2ee3325be6f73273941ad128dfef79d509e71f6d9b62ef82b493"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.frag.spv",
+      "post": {
+        "bytes": 420,
+        "git_blob": "e51084af896e542a4e30083e751fe664351ee4cf",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.frag.spv",
+        "sha256": "e998e2db9e47c9f54803dfa1db97cce06d53a14c2b9325d8bda029a3c820fea4"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.h",
+      "post": {
+        "bytes": 1524,
+        "git_blob": "94282995a32d3ece5eb989011340119a5371daa4",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.h",
+        "sha256": "1d5843ebf1427fc09b74338c78d7cdfdc92a923dd70b591cb1b557eec905c3eb"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.vert",
+      "post": {
+        "bytes": 212,
+        "git_blob": "6cc43e7b056333aaa85bf98c44b8bc694cb0155a",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.vert",
+        "sha256": "23100e368252a661c2f26b8809dfe89c4b535c38fb3783fdb617e5c2f69a492c"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.vert.inl",
+      "post": {
+        "bytes": 7511,
+        "git_blob": "c45e123e01461b7098c90d7f1fa7d8e1d71ca356",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.vert.inl",
+        "sha256": "4a60ee4b29d4cb8c6985f8ef0b02ed85fe35c4e1901957aeb1846a08449a40c2"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.vert.spv",
+      "post": {
+        "bytes": 1172,
+        "git_blob": "b7c2cd77eb336a5379c73416da72aa07c56c7f09",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_color/fullscreen_color.vert.spv",
+        "sha256": "04f8b6012f36eddc556a173ceb1b1264e546b5ac85df462be0f329b7266f35ea"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/Android.bp",
+      "post": {
+        "bytes": 1036,
+        "git_blob": "d945b01c49b7d242fa6bc530f6f1db28fac83d09",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/Android.bp",
+        "sha256": "2364f2c1b8ee61483b1363da20e016b9f5f54cd38ee121a87c693cbc2bff34ac"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/AndroidManifest.xml",
+      "post": {
+        "bytes": 1657,
+        "git_blob": "d10bf615118a277b35a5c92e068168644705f219",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/AndroidManifest.xml",
+        "sha256": "24dc014207ef215457a6691af1d65b286d606d9c451784f624b8e7d8fc335aa9"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.cpp",
+      "post": {
+        "bytes": 17857,
+        "git_blob": "9a7eb8c3418cc51634e7f8f4e379235236fee806",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.cpp",
+        "sha256": "d0f922e8532db08b47bc579c760debef54b917418ec119d233fd92499fb20bf7"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.frag",
+      "post": {
+        "bytes": 213,
+        "git_blob": "4e1af09dc11fdf2aa85f94b3d69867f76668afff",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.frag",
+        "sha256": "f2554fb100bc9c782abb750cf143f54e070c6e57e3c99faa19f1e6f7ff065ca0"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.frag.inl",
+      "post": {
+        "bytes": 4227,
+        "git_blob": "513036b6c6043954900c0ad4ea6df3245e82b777",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.frag.inl",
+        "sha256": "10102edf2fa9965917d13ab6548009da9c38ea7caaeb712a2bba23267c1c201b"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.frag.spv",
+      "post": {
+        "bytes": 636,
+        "git_blob": "8fdde8b017afe79a5e52d8a321fc55c756c08758",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.frag.spv",
+        "sha256": "50845f815841da6f9f12e3664c4be727bd002d0befbbb66ba50831356faae178"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.h",
+      "post": {
+        "bytes": 1751,
+        "git_blob": "5440aad0c964e67bf4875e621290fe19674a6676",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.h",
+        "sha256": "467d8a36a0a2ee8d73811903b00572a7d3c13ca050fe4b0c547a2bffb7ee9c66"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.vert",
+      "post": {
+        "bytes": 386,
+        "git_blob": "0df16d272b386899ca9e27de36bae2f3ade77ba0",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.vert",
+        "sha256": "35751e944e2e5be86805a3d6743cc8c3363133e78451a01f8a09779a2b8eb405"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.vert.inl",
+      "post": {
+        "bytes": 9310,
+        "git_blob": "2959065dca6f103b2612a23b5b36795f3571a865",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.vert.inl",
+        "sha256": "f5b9511fee169c78337467e3d4276052029fdc922bced5f4be2e01aee060a95a"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.vert.spv",
+      "post": {
+        "bytes": 1432,
+        "git_blob": "bacfb21a5a72303aa9da112a6aa98e73769e6c45",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/fullscreen_texture/fullscreen_texture.vert.spv",
+        "sha256": "82af35bc8839d8364f89e23f0deab2c6710173ed3becd1c8e77af6706a9102ca"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/image.cpp",
+      "post": {
+        "bytes": 1492,
+        "git_blob": "52bcfd750cc8a1f962b35639988c99999be7ffbd",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/image.cpp",
+        "sha256": "2b7441d7397c9ff3028b31592d80ab839f9b58b081fbbe2d383679a71e03f391"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/image.h",
+      "post": {
+        "bytes": 1495,
+        "git_blob": "edbc9da7e8d1e0ef5ae4855f9a4cee09fcf58275",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/image.h",
+        "sha256": "949f7a2cb11d62e870be6e0b627427dff0d53147c35cd6d8c0cb67ff214e6291"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/main.cpp",
+      "post": {
+        "bytes": 2657,
+        "git_blob": "6e21b3d40b86977002ceb56e95fa87b30c748822",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/main.cpp",
+        "sha256": "1ab967e1c723f26116a7134d4b90a384b82bc79c0306a6173d2692d1b68ce9ee"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/process_shaders.sh",
+      "post": {
+        "bytes": 796,
+        "git_blob": "c7a923124da9ff2bf86b9cdc36bd15b727f19351",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/process_shaders.sh",
+        "sha256": "29a008afc3678a2d5d7168417bd4ce5201dedd6ad45cb0c016a00ce60313fbcb"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/sample_base.cpp",
+      "post": {
+        "bytes": 52041,
+        "git_blob": "ad9adb0bd36b1ddae91f51a81235a68e918b014a",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/sample_base.cpp",
+        "sha256": "ab82e161de1b94477a8b7e4364bffce72e01cbaa0669ff79a816fb62f1ee5ec1"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/sample_base.h",
+      "post": {
+        "bytes": 9898,
+        "git_blob": "2d41d69353eccf5306d93db47f494ff91305555c",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/sample_base.h",
+        "sha256": "da842632a91d0747ceb65068768c5a2671362b58dafe9a117f37d85de7dce546"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/Android.bp",
+      "post": {
+        "bytes": 1059,
+        "git_blob": "48f6baa1725efe9354863b08e6d7305189e59254",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/Android.bp",
+        "sha256": "faab3131bd91476fc2edb691638c5ddc2dbe86a2227f6f7413b17cc287bab934"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/AndroidManifest.xml",
+      "post": {
+        "bytes": 1675,
+        "git_blob": "e11a562ab0e4da13644342fd0ec9013a909a3c89",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/AndroidManifest.xml",
+        "sha256": "18b65891680fcff39fa98eeb66ee9489eb9fe5fc4cd9794a048b3c5307339f01"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.cpp",
+      "post": {
+        "bytes": 14182,
+        "git_blob": "d42acaec650c78a929e836c3c1aedda7b95da672",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.cpp",
+        "sha256": "57e85692c97828cee3a2c49fb30bf99bd1f5583a5570299585f8d390ae44c523"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.frag",
+      "post": {
+        "bytes": 108,
+        "git_blob": "dcaea274968e09cb484924083562224025ed01a1",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.frag",
+        "sha256": "354e1b71fd3a20c249af7cc5ceb6014c6b521ed7aeccc1a0865faef811e55238"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.frag.inl",
+      "post": {
+        "bytes": 2793,
+        "git_blob": "83ff745978b41b4e0dbaa68c4016e26be4d1d32b",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.frag.inl",
+        "sha256": "adc7f4858b20ec78c17e999eb5fae7765dacb314a5a36c91c7c8ff59ce7d5f0f"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.frag.spv",
+      "post": {
+        "bytes": 420,
+        "git_blob": "e51084af896e542a4e30083e751fe664351ee4cf",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.frag.spv",
+        "sha256": "e998e2db9e47c9f54803dfa1db97cce06d53a14c2b9325d8bda029a3c820fea4"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.h",
+      "post": {
+        "bytes": 1644,
+        "git_blob": "6d68d2af457236d704dd709a1fe4e8630a93a2c7",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.h",
+        "sha256": "a9eab3aad4255cc7ab21d60fd049a3b9173651cd4d863e0b25bd401d1256586a"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.vert",
+      "post": {
+        "bytes": 212,
+        "git_blob": "6cc43e7b056333aaa85bf98c44b8bc694cb0155a",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.vert",
+        "sha256": "23100e368252a661c2f26b8809dfe89c4b535c38fb3783fdb617e5c2f69a492c"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.vert.inl",
+      "post": {
+        "bytes": 7518,
+        "git_blob": "fbce9412c7eb039b4b1f394e990c2930135f5876",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.vert.inl",
+        "sha256": "e8cf6ba07025a0334525f0fe4427f1ed6c98b46d8608735b32f80c5ba28c3b1c"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.vert.spv",
+      "post": {
+        "bytes": 1172,
+        "git_blob": "b7c2cd77eb336a5379c73416da72aa07c56c7f09",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/originals/tests/graphics/vulkan/secondary_command_buffer/secondary_command_buffer.vert.spv",
+        "sha256": "04f8b6012f36eddc556a173ceb1b1264e546b5ac85df462be0f329b7266f35ea"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/origins.json",
+      "post": {
+        "bytes": 33787,
+        "git_blob": "e21c98585ed589b342b81b58025408e51b72163d",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/origins.json",
+        "sha256": "16850c21c477e426f478ee0662dae188ce42d981e9677dc304c1d41d51a9e3d9"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/raw-git-graph.json",
+      "post": {
+        "bytes": 9229,
+        "git_blob": "5bacfd7189329da4db8953aa002cdbdeae273553",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/raw-git-graph.json",
+        "sha256": "dfb3690ea0d8f865963480fb3aad27587b2b154efe8689d2cc3468ac3fdabf4a"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/selection-delta.json",
+      "post": {
+        "bytes": 536,
+        "git_blob": "4b5ab7651060b01a97d791987413aab223b0ef09",
+        "mode": "100644",
+        "path": "android/native-generation-pair/cuttlefish-graphics-fixtures/selection-delta.json",
+        "sha256": "0e6e8f3d7510ed77f1c86cf2d15ee793abbc77e92ff9e110c8485c27be42e609"
+      },
+      "pre": null
+    },
+    {
+      "path": "android/native-generation-pair/source-lock.json",
+      "post": {
+        "bytes": 369279,
+        "git_blob": "529ae0e202110ea5792b6f9207efd7c3926031d8",
+        "mode": "100644",
+        "path": "android/native-generation-pair/source-lock.json",
+        "sha256": "e4bc640833bbdee16a1e84bd8314cc81c44351e4b03c03e6439bc31318d0a5bf"
+      },
+      "pre": {
+        "bytes": 369245,
+        "git_blob": "cbf44b60094c03c1fa0dd793f2451d733713ac41",
+        "mode": "100644",
+        "path": "android/native-generation-pair/source-lock.json",
+        "sha256": "e8b359276e49d6f520344284cbf2876f403d03150018d286ab8b0df362817e71"
+      }
+    },
+    {
+      "path": "tools/droidloom-source/src/lib.rs",
+      "post": {
+        "bytes": 53681,
+        "git_blob": "4ff618cee6a465d1266c8e5ed6bbb533cf07747a",
+        "mode": "100644",
+        "path": "tools/droidloom-source/src/lib.rs",
+        "sha256": "e06c69e7540d621a375d8c35b3cfcdc185abfa42afc1cf55c56192c6e31a75c7"
+      },
+      "pre": {
+        "bytes": 53681,
+        "git_blob": "829449124a15739aed89021df72645d37c0a6aa5",
+        "mode": "100644",
+        "path": "tools/droidloom-source/src/lib.rs",
+        "sha256": "6cdcbe5641b4e01d3146335416a1c20e6a4d8332e782802af70d2ed5887bc969"
+      }
+    },
+    {
+      "path": "tools/droidloom-update/src/native_generation_pair_build.rs",
+      "post": {
+        "bytes": 570845,
+        "git_blob": "0fb7671bc3316e926018eb19d9413599b58f7f4a",
+        "mode": "100644",
+        "path": "tools/droidloom-update/src/native_generation_pair_build.rs",
+        "sha256": "a1d83640f2c83defeae3c5f150fd9b1f490c7bcd495d63e37016f0fcfbc6120b"
+      },
+      "pre": {
+        "bytes": 541556,
+        "git_blob": "4efea23c2a8dbb9d9dbf5262e59c97eb7469df12",
+        "mode": "100644",
+        "path": "tools/droidloom-update/src/native_generation_pair_build.rs",
+        "sha256": "859c2ab1443877ec790de1851b0e2c4a5c9b434bf41286331a4c51a8c793cf42"
+      }
+    }
+  ],
+  "fresh_CI_tests_prequalified": false,
+  "head": {
+    "commit": "3450f2591faec153dbab06477d0a00e95120321f",
+    "files": 715,
+    "inventory": {
+      "bytes": 200410,
+      "path": "head-files.json",
+      "sha256": "2c6266f6bd4d82e66b4b3a87da7371464120dca356c143248701a1c294161d64"
+    },
+    "raw_commit": {
+      "bytes": 314,
+      "path": "git-objects/head.commit",
+      "sha256": "b24f2d25d216285df987333081efdd05b9143aee7717ab618e665b5b5ade4a8f"
+    },
+    "tree": "af2c7788ca297e8cf499a4f18a0aa3d278d3b419"
+  },
+  "historical_actual_normal": {
+    "actual29_commands_retired": true,
+    "actual647_predecessor_F9_verified": true,
+    "actual715_frozen_recipe_F9_verified": true,
+    "actual_retirement": {
+      "actual_log_count": 66,
+      "actual_original_cgroups_absent": [
+        "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service",
+        "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d7487a36-392-a46.service",
+        "/sys/fs/cgroup/system.slice/hepta-runtime-job-1a1d7487a36-392-a46.service"
+      ],
+      "every_actual_log_SHA_and_F9_verified": true,
+      "fresh_original_PIDFD_ESRCH": [
+        2500003,
+        2500008,
+        2500009,
+        2500010,
+        2500011,
+        2500012,
+        2500013,
+        2500015,
+        2500016,
+        2500017,
+        2500018,
+        2502375,
+        2502376,
+        2502414,
+        2502427,
+        2502550,
+        2502552,
+        2502554,
+        2502556,
+        2502843,
+        2502860,
+        2502862,
+        2502871,
+        2502873,
+        2502875,
+        2502877,
+        2502879,
+        2503200,
+        2503458,
+        2503472,
+        2503483,
+        2503496,
+        2503550,
+        2503554,
+        2503629,
+        2503630,
+        2503631,
+        2503632,
+        2503633,
+        2503634,
+        2503635,
+        2503791,
+        2503797
+      ]
+    },
+    "actual_two_new_ELF_tools": [
+      {
+        "bytes": 20381000,
+        "identity": [
+          66306,
+          64130960,
+          33088,
+          1000,
+          1000,
+          1,
+          20381000,
+          1794613268959279031,
+          1794613268959279031
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/bin/droidloom-source",
+        "sha256": "c472dca978cfdb796fb5bc1102d63e2b5402753396c7f8997416f8d036ccf226"
+      },
+      {
+        "bytes": 38430768,
+        "identity": [
+          66306,
+          64130961,
+          33088,
+          1000,
+          1000,
+          1,
+          38430768,
+          1794613269008277378,
+          1794613269008277378
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/bin/droidloom-update",
+        "sha256": "2bc55717e751075d8f75caaed2dc8509efac0f3d28d4324f99090f7edd157824"
+      }
+    ],
+    "all_prior_failed_records_retained": true,
+    "all_raw_test_terminals_verified": {
+      "actual_executions": 98,
+      "complete_original_Cargo_terminals": 3,
+      "distinct_tests": 92,
+      "test_commands": 15
+    },
+    "different_tests": 92,
+    "executions": 98,
+    "full_starts": 0,
+    "normal_H": "1a1d7487a36-392-a46",
+    "runtime_qualified": false,
+    "source_writes": 0
+  },
+  "historical_failures_preserved": true,
+  "native_full_build_complete": false,
+  "normal_test_names": {
+    "focused": {
+      "bytes": 633,
+      "path": "normal-test-names/focused.json",
+      "sha256": "a38a7d9ff6e5a12f433e2deb15f0061c6a30b0e5b16aa4376dc0223c6a156a7b"
+    },
+    "journal": {
+      "bytes": 548,
+      "path": "normal-test-names/journal.json",
+      "sha256": "d401a531b21cdb053645eb1240de5767fad4448da0d6f9ddde63a290448973ab"
+    },
+    "pair": {
+      "bytes": 6139,
+      "path": "normal-test-names/pair.json",
+      "sha256": "ec24f17065d1c6535873cfaae8db2195d6d8d15a824df50b9c5b60ffbafb6a33"
+    },
+    "permissions": {
+      "bytes": 677,
+      "path": "normal-test-names/permissions.json",
+      "sha256": "c8c4d30490ec563a54cf4335d97ad19eda84e44103f5105a222ebd8362510379"
+    },
+    "source": {
+      "bytes": 1936,
+      "path": "normal-test-names/source.json",
+      "sha256": "d0a8049f4ddd7001768aa3b658ebd7ac226b6b6bfde631f953356631e99fbb08"
+    }
+  },
+  "patch": {
+    "bytes": 834117,
+    "path": "source.patch",
+    "sha256": "c5469e1bf06c65a53c949e16617f7c1f799ad7a921ef40cc9f1e42d5041f1a11"
+  },
+  "producer": "producer",
+  "production_ready": false,
+  "runtime_qualified": false,
+  "schema": "pocket4-native643-cuttlefish-complete715-source-capsule-v1",
+  "source_profiles_independent": {
+    "Audio_producer_modified": false,
+    "Native_MAX_PROJECTS": 656,
+    "Native_MAX_SPARSE_PATHS": 336,
+    "Native_source_projects": 643
+  },
+  "source_scope": {
+    "added_sparse_paths": [
+      "tests/graphics/hotplug"
+    ],
+    "extended_projects": [
+      "device/google/cuttlefish"
+    ],
+    "full_graphics_tree_files": 57,
+    "original_new_bytes": 6021,
+    "original_new_files": 3,
+    "retained_graphics_and_provider_files": 49,
+    "unchanged_project_revisions": 643,
+    "unrelated_display_files_left_unselected": 11
+  },
+  "unchanged_files": 644,
+  "unchanged_inputs": {
+    "Cargo.lock": {
+      "bytes": 51836,
+      "git_blob": "633e61fab77f12b1edbab687645d644acc1fc776",
+      "mode": "100644",
+      "path": "Cargo.lock",
+      "sha256": "c1dfa6f13f789cf40435d0d72973d029d0e264b27bd833eabb5a727492127f62"
+    },
+    "Cargo.toml": {
+      "bytes": 1996,
+      "git_blob": "af55bc93ef30f0a8a4eac1e29dc364d0784b0dfc",
+      "mode": "100644",
+      "path": "Cargo.toml",
+      "sha256": "e33185d2fc5a65e0a4ed6df552e4f8f8f40c793ec07f7289ed27e3c0d5fa4e60"
+    },
+    "tools/droidloom-source/src/main.rs": {
+      "bytes": 3894,
+      "git_blob": "3a282ef93ac3ddd725ea28a10ec2638c3aff61d6",
+      "mode": "100644",
+      "path": "tools/droidloom-source/src/main.rs",
+      "sha256": "2de5ec3ffec3a1d6ec13127cf02cf1edcc9fbeace77b923aff6bee9504bb823b"
+    },
+    "tools/droidloom-update/src/android.rs": {
+      "bytes": 386462,
+      "git_blob": "ea5f0e54ed46accf3983943b9bbda3663fb34f8e",
+      "mode": "100644",
+      "path": "tools/droidloom-update/src/android.rs",
+      "sha256": "a2fa13966c5a4930ffc8b7ab60ebf8ef6d3d7c90541a0fbc1fa73ea6c1af9e38"
+    },
+    "tools/droidloom-update/src/main.rs": {
+      "bytes": 23759,
+      "git_blob": "32d019591fe5e5cf904607303511483adee013c5",
+      "mode": "100644",
+      "path": "tools/droidloom-update/src/main.rs",
+      "sha256": "fe31e0c1387e0ff4266b9a34d9f8e16e6684bddb42922169341ed8ab154799d8"
+    }
+  }
+}

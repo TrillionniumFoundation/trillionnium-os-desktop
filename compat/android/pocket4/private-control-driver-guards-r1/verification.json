@@ -1,0 +1,138 @@
+{
+  "schema": "pocket4-private-control-driver-qualification-v1",
+  "original_sha256": "8d02b64233755ffdbe3dc35c66f258b937af0d142a59972fe78b19f67b762759",
+  "candidate_sha256": "73528d54ddf1c46cad9848aeaeb9aee0a45a843c32385091cfb2ec16f99c52f6",
+  "runtime_asserts_replaced": 15,
+  "normal": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-B",
+      "/tmp/p4-owner-broker-driver-493ac/test_private_control_driver_guards.py"
+    ],
+    "exit_code": 0,
+    "started_unix": 1794211971.953452,
+    "elapsed_seconds": 0.3296947479248047,
+    "output_complete": true,
+    "fixture_only": true,
+    "streams": {
+      "stdout": {
+        "bytes": 267,
+        "sha256": "493329d2cd9db0969a7fbd3a97bb78e3bae0aadb78b0e81d49853668a7120f67"
+      },
+      "stderr": {
+        "bytes": 3508,
+        "sha256": "cfc194388fb774a93793728aa378b97b648acf891ed60607eb73745b0b4a8e70"
+      }
+    },
+    "summary": {
+      "android_actions": 0,
+      "errors": 0,
+      "failures": 0,
+      "fixture_only": true,
+      "nonroot_stat_is_synthetic": true,
+      "optimization": 0,
+      "original_optimized_false_qualification_fixtures": 5,
+      "privileged_control_executed": false,
+      "production_admission": false,
+      "tests_run": 33
+    },
+    "complete_test_log": "test_active_unit_refuses (__main__.GuardTests.test_active_unit_refuses) ... ok\ntest_authority_change_is_recorded_truthfully_and_refused (__main__.GuardTests.test_authority_change_is_recorded_truthfully_and_refused) ... ok\ntest_control_failure_is_preserved_and_refused (__main__.GuardTests.test_control_failure_is_preserved_and_refused) ... ok\ntest_duplicate_unit_property_refuses (__main__.GuardTests.test_duplicate_unit_property_refuses) ... ok\ntest_existing_output_refuses (__main__.GuardTests.test_existing_output_refuses) ... ok\ntest_failed_execution_refuses (__main__.GuardTests.test_failed_execution_refuses) ... ok\ntest_fifo_member_refuses_without_blocking (__main__.GuardTests.test_fifo_member_refuses_without_blocking) ... ok\ntest_group_writable_member_refuses (__main__.GuardTests.test_group_writable_member_refuses) ... ok\ntest_hardlink_member_refuses (__main__.GuardTests.test_hardlink_member_refuses) ... ok\ntest_invalid_utf8_unit_readback_is_preserved (__main__.GuardTests.test_invalid_utf8_unit_readback_is_preserved) ... ok\ntest_live_cgroup_refuses (__main__.GuardTests.test_live_cgroup_refuses) ... ok\ntest_missing_invocation_identity_refuses (__main__.GuardTests.test_missing_invocation_identity_refuses) ... ok\ntest_missing_supplementary_control_refuses (__main__.GuardTests.test_missing_supplementary_control_refuses) ... ok\ntest_missing_test_count_refuses (__main__.GuardTests.test_missing_test_count_refuses) ... ok\ntest_missing_unit_property_refuses (__main__.GuardTests.test_missing_unit_property_refuses) ... ok\ntest_non_dead_substate_refuses (__main__.GuardTests.test_non_dead_substate_refuses) ... ok\ntest_noncanonical_cgroup_refuses (__main__.GuardTests.test_noncanonical_cgroup_refuses) ... ok\ntest_nonroot_stat_fixture_refuses (__main__.GuardTests.test_nonroot_stat_fixture_refuses) ... ok\ntest_nonzero_main_pid_refuses (__main__.GuardTests.test_nonzero_main_pid_refuses) ... ok\ntest_original_optimized_driver_reproduces_five_false_qualifications (__main__.GuardTests.test_original_optimized_driver_reproduces_five_false_qualifications) ... ok\ntest_path_replacement_during_read_refuses (__main__.GuardTests.test_path_replacement_during_read_refuses) ... ok\ntest_positive_fixture_has_no_production_admission (__main__.GuardTests.test_positive_fixture_has_no_production_admission) ... ok\ntest_protected_data_metadata_change_refuses (__main__.GuardTests.test_protected_data_metadata_change_refuses) ... ok\ntest_read_limit_refuses (__main__.GuardTests.test_read_limit_refuses) ... ok\ntest_source_change_after_execution_refuses (__main__.GuardTests.test_source_change_after_execution_refuses) ... ok\ntest_symlink_member_refuses (__main__.GuardTests.test_symlink_member_refuses) ... ok\ntest_unit_readback_failure_refuses (__main__.GuardTests.test_unit_readback_failure_refuses) ... ok\ntest_unit_readback_stderr_refuses (__main__.GuardTests.test_unit_readback_stderr_refuses) ... ok\ntest_wrong_cli_refuses_before_any_command (__main__.GuardTests.test_wrong_cli_refuses_before_any_command) ... ok\ntest_wrong_effective_uid_refuses_before_any_command (__main__.GuardTests.test_wrong_effective_uid_refuses_before_any_command) ... ok\ntest_wrong_hash_refuses (__main__.GuardTests.test_wrong_hash_refuses) ... ok\ntest_wrong_length_refuses (__main__.GuardTests.test_wrong_length_refuses) ... ok\ntest_wrong_manifest_schema_refuses (__main__.GuardTests.test_wrong_manifest_schema_refuses) ... ok\n\n----------------------------------------------------------------------\nRan 33 tests in 0.273s\n\nOK\n"
+  },
+  "optimized": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-B",
+      "-O",
+      "/tmp/p4-owner-broker-driver-493ac/test_private_control_driver_guards.py"
+    ],
+    "exit_code": 0,
+    "started_unix": 1794211971.955443,
+    "elapsed_seconds": 0.5181770324707031,
+    "output_complete": true,
+    "fixture_only": true,
+    "streams": {
+      "stdout": {
+        "bytes": 267,
+        "sha256": "dfaa73cab9d196d8545d56137215af922eb4a0ed3c680cdd2defbce29e1dfbaa"
+      },
+      "stderr": {
+        "bytes": 3508,
+        "sha256": "9fbcf40244d6f9b38da475876b853f6943f8e8a6b49a10bda6866884e1ffcd0c"
+      }
+    },
+    "summary": {
+      "android_actions": 0,
+      "errors": 0,
+      "failures": 0,
+      "fixture_only": true,
+      "nonroot_stat_is_synthetic": true,
+      "optimization": 1,
+      "original_optimized_false_qualification_fixtures": 5,
+      "privileged_control_executed": false,
+      "production_admission": false,
+      "tests_run": 33
+    },
+    "complete_test_log": "test_active_unit_refuses (__main__.GuardTests.test_active_unit_refuses) ... ok\ntest_authority_change_is_recorded_truthfully_and_refused (__main__.GuardTests.test_authority_change_is_recorded_truthfully_and_refused) ... ok\ntest_control_failure_is_preserved_and_refused (__main__.GuardTests.test_control_failure_is_preserved_and_refused) ... ok\ntest_duplicate_unit_property_refuses (__main__.GuardTests.test_duplicate_unit_property_refuses) ... ok\ntest_existing_output_refuses (__main__.GuardTests.test_existing_output_refuses) ... ok\ntest_failed_execution_refuses (__main__.GuardTests.test_failed_execution_refuses) ... ok\ntest_fifo_member_refuses_without_blocking (__main__.GuardTests.test_fifo_member_refuses_without_blocking) ... ok\ntest_group_writable_member_refuses (__main__.GuardTests.test_group_writable_member_refuses) ... ok\ntest_hardlink_member_refuses (__main__.GuardTests.test_hardlink_member_refuses) ... ok\ntest_invalid_utf8_unit_readback_is_preserved (__main__.GuardTests.test_invalid_utf8_unit_readback_is_preserved) ... ok\ntest_live_cgroup_refuses (__main__.GuardTests.test_live_cgroup_refuses) ... ok\ntest_missing_invocation_identity_refuses (__main__.GuardTests.test_missing_invocation_identity_refuses) ... ok\ntest_missing_supplementary_control_refuses (__main__.GuardTests.test_missing_supplementary_control_refuses) ... ok\ntest_missing_test_count_refuses (__main__.GuardTests.test_missing_test_count_refuses) ... ok\ntest_missing_unit_property_refuses (__main__.GuardTests.test_missing_unit_property_refuses) ... ok\ntest_non_dead_substate_refuses (__main__.GuardTests.test_non_dead_substate_refuses) ... ok\ntest_noncanonical_cgroup_refuses (__main__.GuardTests.test_noncanonical_cgroup_refuses) ... ok\ntest_nonroot_stat_fixture_refuses (__main__.GuardTests.test_nonroot_stat_fixture_refuses) ... ok\ntest_nonzero_main_pid_refuses (__main__.GuardTests.test_nonzero_main_pid_refuses) ... ok\ntest_original_optimized_driver_reproduces_five_false_qualifications (__main__.GuardTests.test_original_optimized_driver_reproduces_five_false_qualifications) ... ok\ntest_path_replacement_during_read_refuses (__main__.GuardTests.test_path_replacement_during_read_refuses) ... ok\ntest_positive_fixture_has_no_production_admission (__main__.GuardTests.test_positive_fixture_has_no_production_admission) ... ok\ntest_protected_data_metadata_change_refuses (__main__.GuardTests.test_protected_data_metadata_change_refuses) ... ok\ntest_read_limit_refuses (__main__.GuardTests.test_read_limit_refuses) ... ok\ntest_source_change_after_execution_refuses (__main__.GuardTests.test_source_change_after_execution_refuses) ... ok\ntest_symlink_member_refuses (__main__.GuardTests.test_symlink_member_refuses) ... ok\ntest_unit_readback_failure_refuses (__main__.GuardTests.test_unit_readback_failure_refuses) ... ok\ntest_unit_readback_stderr_refuses (__main__.GuardTests.test_unit_readback_stderr_refuses) ... ok\ntest_wrong_cli_refuses_before_any_command (__main__.GuardTests.test_wrong_cli_refuses_before_any_command) ... ok\ntest_wrong_effective_uid_refuses_before_any_command (__main__.GuardTests.test_wrong_effective_uid_refuses_before_any_command) ... ok\ntest_wrong_hash_refuses (__main__.GuardTests.test_wrong_hash_refuses) ... ok\ntest_wrong_length_refuses (__main__.GuardTests.test_wrong_length_refuses) ... ok\ntest_wrong_manifest_schema_refuses (__main__.GuardTests.test_wrong_manifest_schema_refuses) ... ok\n\n----------------------------------------------------------------------\nRan 33 tests in 0.271s\n\nOK\n"
+  },
+  "earlier_attempts": [
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/tmp/p4-owner-broker-driver-493ac/test_private_control_driver_guards.py"
+      ],
+      "exit_code": 1,
+      "started_unix": 1794211935.4179587,
+      "elapsed_seconds": 0.3796107769012451,
+      "output_complete": true,
+      "fixture_only": true,
+      "streams": {
+        "stdout": {
+          "bytes": 232,
+          "sha256": "84e79fb7a2610f0d1c26bae59bc6a594485f1985e676dcf22a78dd02fde0714e"
+        },
+        "stderr": {
+          "bytes": 4029,
+          "sha256": "557166d1184785aebbd3f3f27a2f94789f28150e8d85a904bf54dbe882fc0fd2"
+        }
+      },
+      "summary": "{\"android_actions\": 0, \"errors\": 1, \"failures\": 0, \"fixture_only\": true, \"optimization\": 0, \"original_optimized_false_qualification_fixtures\": 5, \"privileged_control_executed\": false, \"production_admission\": false, \"tests_run\": 33}\n"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "-O",
+        "/tmp/p4-owner-broker-driver-493ac/test_private_control_driver_guards.py"
+      ],
+      "exit_code": 1,
+      "started_unix": 1794211935.417955,
+      "elapsed_seconds": 0.5950391292572021,
+      "output_complete": true,
+      "fixture_only": true,
+      "streams": {
+        "stdout": {
+          "bytes": 232,
+          "sha256": "53a2c618314d9ed6cd8375c3a7dff03385eb366a2d8ca1d3e0e52317e97da8c0"
+        },
+        "stderr": {
+          "bytes": 4029,
+          "sha256": "916f520eeee909252ef355e00a916db7a59de916595908e7f6f5da540d6bbd4d"
+        }
+      },
+      "summary": "{\"android_actions\": 0, \"errors\": 1, \"failures\": 0, \"fixture_only\": true, \"optimization\": 1, \"original_optimized_false_qualification_fixtures\": 5, \"privileged_control_executed\": false, \"production_admission\": false, \"tests_run\": 33}\n"
+    }
+  ],
+  "earlier_failure_explanation": "Cloud only maps UID zero; actual chown(1000) returned EINVAL. The final explicitly named nonroot stat fixture models that one field. Real file mode, hardlink, symlink, FIFO, length/hash, read-limit and replacement checks are unchanged.",
+  "fixture_only": true,
+  "privileged_control_executed": false,
+  "production_admission": false,
+  "android_actions": 0,
+  "live_owner_source_changed": false,
+  "patch_roundtrip_verified": true,
+  "limits": [
+    "Protected snapshots and unit terminal replies are synthetic verifier inputs, not actual privileged control evidence.",
+    "The historical source is a pinned regression fixture, not a supported runtime version.",
+    "The real systemd control command and output location remain owner r2 values and were never executed by these tests."
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "schema": "camera-r4-fixed-audioflinger-source-provenance-v1",
+  "repository": "platform/frameworks/av",
+  "commit": "475269ec44acec82792be6b01fb8e16357d4d2c8",
+  "capture_ref": {
+    "path": "/workspace/scratch/347ef2dfe9ad/audio-runtime-independent-audit/audioflinger-fixed-source-readonly/capture.json",
+    "bytes": 206415,
+    "sha256": "ac1183c967fd08fabd4458828516d993b3fc8da1ef38bf4f39eaf5b8fad91156"
+  },
+  "capture_state": "EXACT_AOSP_AUDIOFLINGER_SOURCE_OBJECTS_READONLY",
+  "git_worktree_writes": 0,
+  "files": [
+    {
+      "path": "services/audioflinger/Threads.cpp",
+      "bytes": 490438,
+      "sha256": "a5416ff05a3683712075ca1a383a73ebfb9331b18e88bfadfbc6aba2b62a13bc"
+    },
+    {
+      "path": "services/audioflinger/Tracks.cpp",
+      "bytes": 154428,
+      "sha256": "420040347f18e8708e2faeec1991c06238a467558190435788492b8e1648b6e2"
+    },
+    {
+      "path": "services/audioflinger/AudioFlinger.cpp",
+      "bytes": 209703,
+      "sha256": "4906b0655b008b9fdb5584bca19128ecbe0beee3ec1105a103f17b4ce06e1a76"
+    }
+  ],
+  "source_urls": {
+    "services/audioflinger/Threads.cpp": "https://android.googlesource.com/platform/frameworks/av/+/475269ec44acec82792be6b01fb8e16357d4d2c8/services/audioflinger/Threads.cpp",
+    "services/audioflinger/Tracks.cpp": "https://android.googlesource.com/platform/frameworks/av/+/475269ec44acec82792be6b01fb8e16357d4d2c8/services/audioflinger/Tracks.cpp",
+    "services/audioflinger/AudioFlinger.cpp": "https://android.googlesource.com/platform/frameworks/av/+/475269ec44acec82792be6b01fb8e16357d4d2c8/services/audioflinger/AudioFlinger.cpp"
+  },
+  "scope": "Pinned C++ writer basis, not a complete observed dumpsys stream or real device ABI qualification.",
+  "complete_actual_dumpsys_ABI_qualified": false,
+  "external_writer_gaps": [
+    "SimpleLog formatting",
+    "IAfTrack/IAfRecordTrack getLogHeader",
+    "HAL/FastCapture/effect/scheduler writers"
+  ],
+  "fixture_origin": "tests/fixtures/origin.json"
+}

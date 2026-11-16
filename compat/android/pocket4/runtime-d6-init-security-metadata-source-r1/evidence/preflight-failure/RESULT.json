@@ -1,0 +1,732 @@
+{
+  "Android_starts": 0,
+  "ExecutionAdmission_constructible": false,
+  "actual_SELinux_transition_qualified": false,
+  "all430_source_F9_Gitblobs_modes_preserved": true,
+  "archive": {
+    "bytes": 3065470,
+    "identity": [
+      2050,
+      50010858,
+      33152,
+      1000,
+      1000,
+      1,
+      3065470,
+      1794610172213090699,
+      1794610173892039829
+    ],
+    "path": "/home/qian-qi/work/p4-runtime-d6-source430-transfer-e2a3-r1.tar.gz",
+    "sha256": "8b1f7854284b61a96f3c196d48dbbb1cbfdfc651b09a1f9495ec255b40b356b0"
+  },
+  "base": "b08cdd2c70c05463c3b4c892012f7426691c502b",
+  "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-runtime-d6-init-metadata-normal-e2a3-r1.service",
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/git",
+        "init",
+        "--initial-branch=repair/runtime-d6-init-metadata"
+      ],
+      "ended_ns": 1794610396349374709,
+      "exit_code": 0,
+      "name": "git-init",
+      "original_pidfd_retired": true,
+      "pid": 3546860,
+      "start_ticks": 168806233,
+      "started_ns": 1794610396340581320,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          17957641,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794610396340314965,
+          1794610396340314965
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/git-init.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 105,
+        "identity": [
+          2067,
+          17957640,
+          33152,
+          1000,
+          1000,
+          1,
+          105,
+          1794610396345440970,
+          1794610396345440970
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/git-init.stdout",
+        "sha256": "045eff49c169db755eea1d49841677d1d1fd115d8223eda75a529ca6e5e79736"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "add",
+        "--force",
+        "--",
+        "."
+      ],
+      "ended_ns": 1794610396715120201,
+      "exit_code": 0,
+      "name": "git-add",
+      "original_pidfd_retired": true,
+      "pid": 3546868,
+      "start_ticks": 168806234,
+      "started_ns": 1794610396349837524,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          17957671,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794610396349314693,
+          1794610396349314693
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/git-add.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          17957670,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794610396349314693,
+          1794610396349314693
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/git-add.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "ended_ns": 1794610396781158927,
+      "exit_code": 0,
+      "name": "git-tree",
+      "original_pidfd_retired": true,
+      "pid": 3546881,
+      "start_ticks": 168806270,
+      "started_ns": 1794610396716015336,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          17958308,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794610396715303650,
+          1794610396715303650
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/git-tree.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          2067,
+          17958307,
+          33152,
+          1000,
+          1000,
+          1,
+          41,
+          1794610396771973822,
+          1794610396771973822
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/git-tree.stdout",
+        "sha256": "e434f73dce2e7a2873ca4419087111e46ca34266e847e9153cd7eaba224c4d75"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "hash-object",
+        "-w",
+        "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/preimages/docs/contracts/runtime-layout-v1.md"
+      ],
+      "ended_ns": 1794610396787266818,
+      "exit_code": 0,
+      "name": "original-blob-188",
+      "original_pidfd_retired": true,
+      "pid": 3546886,
+      "start_ticks": 168806277,
+      "started_ns": 1794610396782455617,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          17958524,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794610396781301659,
+          1794610396781301659
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/original-blob-188.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          2067,
+          17957672,
+          33152,
+          1000,
+          1000,
+          1,
+          41,
+          1794610396785301538,
+          1794610396785301538
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/original-blob-188.stdout",
+        "sha256": "49b3532c53f84da13bf352899da76899be07806f76279e2c629978e5d52ae071"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "hash-object",
+        "-w",
+        "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/preimages/runtime/droidloom-supervisor/src/production_runtime_assets.rs"
+      ],
+      "ended_ns": 1794610396792904447,
+      "exit_code": 0,
+      "name": "original-blob-360",
+      "original_pidfd_retired": true,
+      "pid": 3546887,
+      "start_ticks": 168806278,
+      "started_ns": 1794610396788381888,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          17958527,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794610396787301478,
+          1794610396787301478
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/original-blob-360.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          2067,
+          17958526,
+          33152,
+          1000,
+          1000,
+          1,
+          41,
+          1794610396790301387,
+          1794610396790301387
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/original-blob-360.stdout",
+        "sha256": "48f65003600d0013684de0d2c10d052207984d2fefe19a6a8891ccf193a68a24"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "read-tree",
+        "--empty"
+      ],
+      "ended_ns": 1794610396798327480,
+      "exit_code": 0,
+      "name": "base-empty-index",
+      "original_pidfd_retired": true,
+      "pid": 3546888,
+      "start_ticks": 168806278,
+      "started_ns": 1794610396793871278,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          17958530,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794610396793301297,
+          1794610396793301297
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/base-empty-index.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          17958529,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794610396793301297,
+          1794610396793301297
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/base-empty-index.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "update-index",
+        "--index-info"
+      ],
+      "ended_ns": 1794610396803903632,
+      "exit_code": 0,
+      "name": "base-index",
+      "original_pidfd_retired": true,
+      "pid": 3546889,
+      "start_ticks": 168806279,
+      "started_ns": 1794610396799119372,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          17958533,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794610396798301146,
+          1794610396798301146
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/base-index.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          17958532,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794610396798301146,
+          1794610396798301146
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/base-index.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "write-tree"
+      ],
+      "ended_ns": 1794610396813436343,
+      "exit_code": 0,
+      "name": "base-tree",
+      "original_pidfd_retired": true,
+      "pid": 3546890,
+      "start_ticks": 168806279,
+      "started_ns": 1794610396804630676,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          17958535,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794610396804300965,
+          1794610396804300965
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/base-tree.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          2067,
+          17958531,
+          33152,
+          1000,
+          1000,
+          1,
+          41,
+          1794610396811576774,
+          1794610396811576774
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/base-tree.stdout",
+        "sha256": "088bccb8cccc2d42cc426e44cb04ba75a7d0400b7a6d07e4b493225027717ead"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "hash-object",
+        "-w",
+        "-t",
+        "commit",
+        "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/IMPORT-COMMIT.raw"
+      ],
+      "ended_ns": 1794610396818751423,
+      "exit_code": 0,
+      "name": "base-commit-object",
+      "original_pidfd_retired": true,
+      "pid": 3546891,
+      "start_ticks": 168806280,
+      "started_ns": 1794610396814263720,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          17958543,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794610396813300693,
+          1794610396813300693
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/base-commit-object.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          2067,
+          17958534,
+          33152,
+          1000,
+          1000,
+          1,
+          41,
+          1794610396815300633,
+          1794610396815300633
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/base-commit-object.stdout",
+        "sha256": "b6e2d573393ec9cd549248d35a3525d9ee5194d796cf64023b85005e300daa0d"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "hash-object",
+        "-w",
+        "-t",
+        "commit",
+        "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/CANDIDATE-COMMIT.raw"
+      ],
+      "ended_ns": 1794610396824000436,
+      "exit_code": 0,
+      "name": "candidate-commit-object",
+      "original_pidfd_retired": true,
+      "pid": 3546892,
+      "start_ticks": 168806281,
+      "started_ns": 1794610396819520981,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          17958546,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794610396818300542,
+          1794610396818300542
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/candidate-commit-object.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          2067,
+          17958545,
+          33152,
+          1000,
+          1000,
+          1,
+          41,
+          1794610396821300452,
+          1794610396821300452
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/candidate-commit-object.stdout",
+        "sha256": "d03dd5ff4ad4797a678e96a6affd691a1fa8428a40a1ec4ec8715f2599093794"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "update-ref",
+        "refs/heads/repair/runtime-d6-init-metadata",
+        "7d86a66b8d95477781519cec99e53fd0e76b6f36"
+      ],
+      "ended_ns": 1794610396829228511,
+      "exit_code": 0,
+      "name": "set-branch",
+      "original_pidfd_retired": true,
+      "pid": 3546893,
+      "start_ticks": 168806281,
+      "started_ns": 1794610396824750443,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          17958549,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794610396824300361,
+          1794610396824300361
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/set-branch.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          17958548,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794610396824300361,
+          1794610396824300361
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/set-branch.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "HEAD^"
+      ],
+      "ended_ns": 1794610396834682588,
+      "exit_code": 0,
+      "name": "full-parent",
+      "original_pidfd_retired": true,
+      "pid": 3546894,
+      "start_ticks": 168806282,
+      "started_ns": 1794610396830007794,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          17958559,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794610396829300211,
+          1794610396829300211
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/full-parent.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "identity": [
+          2067,
+          17958552,
+          33152,
+          1000,
+          1000,
+          1,
+          41,
+          1794610396831300150,
+          1794610396831300150
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/full-parent.stdout",
+        "sha256": "b6e2d573393ec9cd549248d35a3525d9ee5194d796cf64023b85005e300daa0d"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "status",
+        "--porcelain"
+      ],
+      "ended_ns": 1794610396868293481,
+      "exit_code": 0,
+      "name": "initial-status",
+      "original_pidfd_retired": true,
+      "pid": 3546895,
+      "start_ticks": 168806282,
+      "started_ns": 1794610396835469338,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          17958561,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794610396834300060,
+          1794610396834300060
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/initial-status.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          17958560,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794610396834300060,
+          1794610396834300060
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/initial-status.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "diff",
+        "b08cdd2c70c05463c3b4c892012f7426691c502b",
+        "7d86a66b8d95477781519cec99e53fd0e76b6f36",
+        "--check"
+      ],
+      "ended_ns": 1794610396872963419,
+      "exit_code": 0,
+      "name": "diff-check",
+      "original_pidfd_retired": true,
+      "pid": 3546896,
+      "start_ticks": 168806286,
+      "started_ns": 1794610396868802761,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          17958563,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794610396868299034,
+          1794610396868299034
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/diff-check.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          2067,
+          17958562,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794610396868299034,
+          1794610396868299034
+        ],
+        "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/diff-check.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    }
+  ],
+  "errors": [
+    {
+      "message": "",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/qian-qi/work/p4-runtime-d6-normal-worker-e2a3-r1.py\", line 171, in <module>\n    assert relative.parts[0] == 'registry' and '..' not in relative.parts\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n",
+      "type": "AssertionError"
+    }
+  ],
+  "finished_ns": 1794610397829300222,
+  "head": "7d86a66b8d95477781519cec99e53fd0e76b6f36",
+  "host_policy_writes": 0,
+  "invocation_id": "dc8e210212d847bdbfa80cd58cebd90e",
+  "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+  "memory_peak_bytes": 85970944,
+  "original_data_body_reads": 0,
+  "production_ready": false,
+  "reader_pid": 3545946,
+  "runtime_qualified": false,
+  "schema": "runtime-d6-init-metadata-actual-normal-v1",
+  "source_before": {
+    "bytes": 195101,
+    "identity": [
+      2067,
+      17958564,
+      33152,
+      1000,
+      1000,
+      1,
+      195101,
+      1794610397139290857,
+      1794610397139290857
+    ],
+    "path": "/data/pocket4-runtime-d6-init-metadata-20261113-e2a3-r1/qualification-normal-r1/SOURCE-BEFORE.json",
+    "sha256": "0381bc42bb78412976c5fdd58554b87b1a2522bc29c7f809551f8ec04164b76c"
+  },
+  "started_ns": 1794610387953929039,
+  "state": "FAILED",
+  "tree": "224fdc48b1083044cdce30a09ee4ec995a48c12d"
+}

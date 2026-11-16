@@ -1,0 +1,590 @@
+{
+  "schema": "pocket4-namespace-lifetime-r5-source-review-v1",
+  "disposition": "SOURCE_AND_NORMAL_CONTROLS_REVIEWED_PRIVATE_QUALIFICATION_INCOMPLETE",
+  "production_admission": false,
+  "production_ready": false,
+  "runtime_qualified": false,
+  "all_namespace_lifetime_blockers_closed": false,
+  "Android_starts": 0,
+  "platform_interruption": {
+    "reported_by": "/root",
+    "reason": "Coordinator reported that platform safety checking interrupted the preceding turn and directed read-only closeout. No private or privileged control was retried or executed through an alternate route.",
+    "new_remote_processes_after_stop": 0,
+    "remote_mutations_after_stop": 0,
+    "private_namespace_loop_mount_unit_actions_after_stop": 0
+  },
+  "candidate": {
+    "host": "pocket4",
+    "root": "/home/alex/work/pocket4-namespace-lifetime-buildclosure-20261109-r1",
+    "source": "/home/alex/work/pocket4-namespace-lifetime-buildclosure-20261109-r1/source",
+    "upstream_baseline": "b4dc3b49ce29e706efca0ba5a7c775864d9b54b8",
+    "head": "8db9faa6bc337844e5bc0093a237824cf2e0b782",
+    "branch": "master",
+    "final_patch_committed": false,
+    "final_patch_published": false,
+    "working_tree": "Two source files modified and uncommitted. The final normal job's git diff --stat records exactly these two files; HEAD refs and both source hashes were re-read after the stop. No new git process was started during closeout.",
+    "frozen_source_capsule": "/home/alex/work/pocket4-android-final/qualification/production-namespace-broker-source-20261109-8b88-r5",
+    "frozen_manifest_bytes": 82624,
+    "frozen_manifest_sha256": "b5c2df96128fa79efde357dfa75352e6070aba5eeaccdcd74f0f157976cf6053",
+    "frozen_overlay_files": 16,
+    "frozen_source_inputs_with_lock": 17,
+    "preserved_negative_commit": "4656430d14cc488fb21cae404d8674970f0ca682",
+    "preserved_negative_ref": "refs/heads/evidence/pidfd-only-r4",
+    "shared_owner_source_writes": 0,
+    "source_or_build_lock_inodes_modified": 0,
+    "current_metadata_writes": 0
+  },
+  "patch": {
+    "path": "namespace-lifetime-r5.patch",
+    "bytes": 27245,
+    "sha256": "0a52726d1fe60cf51ed475e5ccf26b29a83a86b0eac75974617b9118caae856f",
+    "files": [
+      {
+        "path": "runtime/droidloom-supervisor/src/production_namespace_child.rs",
+        "before_bytes": 25986,
+        "before_sha256": "7a4031347cf57fa6982c0643c21a98d4836df60a0051b8ba0f7670ce8a41f0f0",
+        "after_bytes": 35627,
+        "after_sha256": "2d1e0d9ca59cb652e0fe749d302dd14c0937a262683267d73ab09a505c63b687"
+      },
+      {
+        "path": "runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+        "before_bytes": 14458,
+        "before_sha256": "b279fc6e16ac685de6f9bb6635434b22e8ecc3d2f41bca0adb47266d1e705763",
+        "after_bytes": 20995,
+        "after_sha256": "42008cb5ec2cc4e5ac3a28413db0dd63090d80a6fbcc472d6ff92dc0df5fa50b"
+      }
+    ],
+    "local_replay": {
+      "git_apply_check": "passed",
+      "git_apply": "passed",
+      "all_postimage_sha256_match": true
+    }
+  },
+  "source_changes": [
+    "Bind the actual live calling TID's PIDFD_THREAD and an already-open read-only proc stat before clone; verify procfs and the same TID.",
+    "Pin source descriptors above 5 before remapping to control FD3, creator PIDFD FD4, and creator stat FD5; raw children use bounded direct pread64 with no pathname reopen.",
+    "After initial PDEATHSIG arming and credential rearming, reject dead/exiting creators using both the PIDFD and same held stat. The stat check covers the real thread-group-leader PIDFD polling delay.",
+    "Retain FD5 through MAPPED and CLONE_PARENT; nested PID1 repeats the held-thread checks after arming, then closes FD4/5 before mount/READY. The keeper closes FD4/5 after descriptor handoff.",
+    "Keep all frozen r5 device implementation and tree source bytes; the product patch changes only child.rs and its focused tests.",
+    "Retain explicit private test-only fault barriers. Compiled nested leader control exists but was not invoked."
+  ],
+  "normal_validation": {
+    "host": "pocket4",
+    "kernel": "7.0.14-p4cred1",
+    "rust_toolchain": "1.93.0",
+    "job_id": "1a1bffdc26b-5e21-847",
+    "state": "succeeded",
+    "exit_code": 0,
+    "output_complete": true,
+    "output_durable": true,
+    "resources": {
+      "cpu_affinity": 6,
+      "cargo_jobs": 1,
+      "cpu_quota_percent": 100,
+      "memory_max_bytes": 4294967296,
+      "nice": 19,
+      "TMPDIR": "/home/alex/work/pocket4-namespace-lifetime-buildclosure-20261109-r1/tmp"
+    },
+    "commands": [
+      "git diff --check",
+      "taskset -c 6 /home/alex/.cargo/bin/cargo test --locked --offline --target-dir /home/alex/work/pocket4-namespace-lifetime-buildclosure-20261109-r1/target -j 1 -p droidloom-supervisor --lib production_namespace -- --test-threads=1 --nocapture",
+      "taskset -c 6 /home/alex/.cargo/bin/cargo build --locked --offline --target-dir /home/alex/work/pocket4-namespace-lifetime-buildclosure-20261109-r1/target -j 1 -p droidloom-supervisor --lib --bins",
+      "rustc --edition=2024 --cfg test --crate-name creator_leader_control --extern libc=<actual locked libc rlib> --extern tempfile=<actual locked tempfile rlib> -L dependency=/home/alex/work/pocket4-namespace-lifetime-buildclosure-20261109-r1/target/debug/deps /home/alex/work/pocket4-namespace-lifetime-buildclosure-20261109-r1/qualification/creator_leader_control.rs -o /home/alex/work/pocket4-namespace-lifetime-buildclosure-20261109-r1/qualification/creator_leader_control-r5",
+      "taskset -c 6 /home/alex/work/pocket4-namespace-lifetime-buildclosure-20261109-r1/qualification/creator_leader_control-r5"
+    ],
+    "library": {
+      "passed": 17,
+      "failed": 0,
+      "ignored": 4,
+      "filtered_out": 220,
+      "elapsed_seconds": 2.12,
+      "build_seconds": 8.1,
+      "raw_marker": "test result: ok. 17 passed; 0 failed; 4 ignored; 0 measured; 220 filtered out; finished in 2.12s",
+      "included_nonleader_death_controls": 2
+    },
+    "non_test_build": {
+      "scope": "supervisor library and both normal binaries",
+      "passed": true,
+      "raw_marker": "Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.73s"
+    },
+    "leader_controls": {
+      "source": "creator_leader_control.rs",
+      "source_bytes": 17240,
+      "source_sha256": "c4b1731ab18ad491b31a5f5f1560ced17184c0772b514a490a2fd74221bc5765",
+      "ordinary_uid": 1000,
+      "created_namespaces": false,
+      "wrote_id_maps": false,
+      "issued_admission": false,
+      "initial": {
+        "creator_tid_and_tgid": 427851,
+        "child_pid": 427852,
+        "waitid_reason": 1,
+        "child_exit": 125,
+        "actually_reaped": true,
+        "outer_exit": 0
+      },
+      "rearm": {
+        "creator_tid_and_tgid": 427854,
+        "child_pid": 427855,
+        "waitid_reason": 1,
+        "child_exit": 125,
+        "actually_reaped": true,
+        "outer_exit": 0
+      },
+      "both_cases": {
+        "creator_state": "Z",
+        "creator_flags": 4227084,
+        "creator_pidfd_readable": false,
+        "same_tgid_alive": true
+      },
+      "panic_false_pass_protection": "Helper catch_unwind maps failure to explicit process exit1; outer controls require one actual exit125/reaped record."
+    }
+  },
+  "actual_failure_evidence": {
+    "leader_kernel_observation": {
+      "job_id": "1a1bfecff97-5e21-7da",
+      "exit_code": 0,
+      "creator_tid_and_tgid": 391887,
+      "helper_tid": 391888,
+      "held_stat_state": "Z",
+      "held_stat_flags": 4227084,
+      "PF_EXITING": true,
+      "pidfd_poll_result": 0,
+      "pidfd_revents": 0,
+      "same_tgid_alive": true,
+      "source": "leader_fd_probe.rs"
+    },
+    "pidfd_only_keeper_negative": {
+      "job_id": "1a1bff1da69-5e21-7f8",
+      "state": "failed",
+      "exit_code": 1,
+      "source_commit": "4656430d14cc488fb21cae404d8674970f0ca682",
+      "child_source_sha256": "1a01983915ec98e56f9d8d893280566a3051a0208c88e2f164304f5f8be88a92",
+      "initial_child_exit": 127,
+      "rearm_child_exit": 127,
+      "expected_child_exit": 125,
+      "both_children_waitid_reaped": true,
+      "both_outer_processes_reaped": true,
+      "retained": true
+    }
+  },
+  "private_validation": {
+    "executed_on_final_r5_patch": false,
+    "library_ignored": [
+      "production_namespace::tests::privileged_private_userns_mapping_controls",
+      "production_namespace::tree::tests::privileged_private_pid1_namespace_controls",
+      "production_namespace::tree::tests::privileged_private_empty_base_mount_controls",
+      "production_namespace::tree::tests::privileged_private_device_mount_controls"
+    ],
+    "pending": [
+      "new-credential held-stat read and mapped FD custody",
+      "actual PID1 namespace tree and final FD3-only barrier",
+      "actual empty-base mount positive and negative controls with owned loop retirement",
+      "actual nested leader early-death window",
+      "actual nested PIDFD-only negative comparison",
+      "new-patch private-device qualification"
+    ],
+    "leader_control_nested_entry_compiled": true,
+    "leader_control_nested_entry_invoked": false,
+    "private_runner_source_authored": true,
+    "private_runner_compiled": false,
+    "private_runner_executed": false,
+    "nested_negative_source_authored": true,
+    "nested_negative_compiled": false,
+    "nested_negative_executed": false,
+    "private_root_stage_created": false,
+    "private_fixture_created": false,
+    "exact_private_units_read_only": [
+      {
+        "name": "pocket4-lifetime-r5-userns-buildclosure-20261109-r1.service",
+        "resolution": "not_found",
+        "system": {
+          "ActiveState": "inactive",
+          "Description": "pocket4-lifetime-r5-userns-buildclosure-20261109-r1.service",
+          "ExecMainStatus": "0",
+          "InvocationID": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "Result": "success",
+          "SubState": "dead",
+          "UnitFileState": ""
+        },
+        "user": {
+          "ActiveState": "inactive",
+          "Description": "pocket4-lifetime-r5-userns-buildclosure-20261109-r1.service",
+          "ExecMainStatus": "0",
+          "InvocationID": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "Result": "success",
+          "SubState": "dead",
+          "UnitFileState": ""
+        }
+      },
+      {
+        "name": "pocket4-lifetime-r5-pid1-buildclosure-20261109-r1.service",
+        "resolution": "not_found",
+        "system": {
+          "ActiveState": "inactive",
+          "Description": "pocket4-lifetime-r5-pid1-buildclosure-20261109-r1.service",
+          "ExecMainStatus": "0",
+          "InvocationID": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "Result": "success",
+          "SubState": "dead",
+          "UnitFileState": ""
+        },
+        "user": {
+          "ActiveState": "inactive",
+          "Description": "pocket4-lifetime-r5-pid1-buildclosure-20261109-r1.service",
+          "ExecMainStatus": "0",
+          "InvocationID": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "Result": "success",
+          "SubState": "dead",
+          "UnitFileState": ""
+        }
+      },
+      {
+        "name": "pocket4-lifetime-r5-empty-base-buildclosure-20261109-r1.service",
+        "resolution": "not_found",
+        "system": {
+          "ActiveState": "inactive",
+          "Description": "pocket4-lifetime-r5-empty-base-buildclosure-20261109-r1.service",
+          "ExecMainStatus": "0",
+          "InvocationID": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "Result": "success",
+          "SubState": "dead",
+          "UnitFileState": ""
+        },
+        "user": {
+          "ActiveState": "inactive",
+          "Description": "pocket4-lifetime-r5-empty-base-buildclosure-20261109-r1.service",
+          "ExecMainStatus": "0",
+          "InvocationID": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "Result": "success",
+          "SubState": "dead",
+          "UnitFileState": ""
+        }
+      },
+      {
+        "name": "pocket4-lifetime-r5-nested-buildclosure-20261109-r1.service",
+        "resolution": "not_found",
+        "system": {
+          "ActiveState": "inactive",
+          "Description": "pocket4-lifetime-r5-nested-buildclosure-20261109-r1.service",
+          "ExecMainStatus": "0",
+          "InvocationID": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "Result": "success",
+          "SubState": "dead",
+          "UnitFileState": ""
+        },
+        "user": {
+          "ActiveState": "inactive",
+          "Description": "pocket4-lifetime-r5-nested-buildclosure-20261109-r1.service",
+          "ExecMainStatus": "0",
+          "InvocationID": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "Result": "success",
+          "SubState": "dead",
+          "UnitFileState": ""
+        }
+      },
+      {
+        "name": "pocket4-lifetime-r5-nested-negative-buildclosure-20261109-r1.service",
+        "resolution": "not_found",
+        "system": {
+          "ActiveState": "inactive",
+          "Description": "pocket4-lifetime-r5-nested-negative-buildclosure-20261109-r1.service",
+          "ExecMainStatus": "0",
+          "InvocationID": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "Result": "success",
+          "SubState": "dead",
+          "UnitFileState": ""
+        },
+        "user": {
+          "ActiveState": "inactive",
+          "Description": "pocket4-lifetime-r5-nested-negative-buildclosure-20261109-r1.service",
+          "ExecMainStatus": "0",
+          "InvocationID": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "Result": "success",
+          "SubState": "dead",
+          "UnitFileState": ""
+        }
+      }
+    ],
+    "historical_81_or_184_or_r4_private_results_not_transferred_to_this_patch": true
+  },
+  "binaries_metadata_only_excluded_from_bundle": [
+    {
+      "path": "/home/alex/work/pocket4-namespace-lifetime-buildclosure-20261109-r1/target/debug/deps/droidloom_supervisor-63ac7238d3bd685e",
+      "bytes": 42248672,
+      "sha256": "35655cad3dab2537f5a88a9e8f4837d75470413559fa65576f2f52ae26760c26",
+      "uid": 1000,
+      "link_count": 1
+    },
+    {
+      "path": "/home/alex/work/pocket4-namespace-lifetime-buildclosure-20261109-r1/target/debug/droidloom-supervisor",
+      "bytes": 35388440,
+      "sha256": "99f16fa43cba6753f3dec2f885752543d358ca957fd38466f44a4be38bc02db1",
+      "uid": 1000,
+      "link_count": 2
+    },
+    {
+      "path": "/home/alex/work/pocket4-namespace-lifetime-buildclosure-20261109-r1/target/debug/droidloomd",
+      "bytes": 34913128,
+      "sha256": "e2c4d1f83be51850db3cff7ed3108aa5a2006c1fc65701a9b902d67cc3c4ca7e",
+      "uid": 1000,
+      "link_count": 2
+    },
+    {
+      "path": "/home/alex/work/pocket4-namespace-lifetime-buildclosure-20261109-r1/qualification/creator_leader_control-r5",
+      "bytes": 4405472,
+      "sha256": "7a04aaa47370dee6dd83ebeedf6eb6e0b5ab81ef04f3c1ee0ec17c13ebab59c2",
+      "uid": 1000,
+      "link_count": 1
+    }
+  ],
+  "independent_review": {
+    "path": "namespace-lifetime-review-final.json",
+    "sha256": "f92334ae3f5a69705d78d12b5e188ceb07a43de4c061b9bc007c129541a719a3",
+    "decision": "SOURCE_REVIEW_ACCEPTABLE_PRIVATE_QUALIFICATION_INCOMPLETE",
+    "remaining_blocking_code_findings": [],
+    "private_qualification_complete": false
+  },
+  "kernel_review": {
+    "path": "namespace-lifetime-kernel-review.json",
+    "sha256": "edf9d9f142828c015366ae606dbb503942146b7e0893d74716e92ad6cd9cdc58",
+    "actual_build_source": "ai395:/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/source-parent/linux-source-7.0.0",
+    "release": "7.0.14-p4cred1"
+  },
+  "jobs": [
+    {
+      "host": "pocket4",
+      "job_id": "1a1bfd5aa04-5e21-748",
+      "role": "read_only_source_audit",
+      "state": "succeeded",
+      "exit_code": 0,
+      "terminal_utc": "2026-11-09T10:23:41.525Z",
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false
+    },
+    {
+      "host": "pocket4",
+      "job_id": "1a1bfd6ea8f-5e21-754",
+      "role": "read_only_source_audit",
+      "state": "succeeded",
+      "exit_code": 0,
+      "terminal_utc": "2026-11-09T10:25:09.796Z",
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false
+    },
+    {
+      "host": "pocket4",
+      "job_id": "1a1bfd96313-5e21-764",
+      "role": "read_only_source_audit",
+      "state": "succeeded",
+      "exit_code": 0,
+      "terminal_utc": "2026-11-09T10:27:46.693Z",
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false
+    },
+    {
+      "host": "pocket4",
+      "job_id": "1a1bfda72e2-5e21-76b",
+      "role": "read_only_source_audit",
+      "state": "succeeded",
+      "exit_code": 0,
+      "terminal_utc": "2026-11-09T10:28:58.082Z",
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false
+    },
+    {
+      "host": "pocket4",
+      "job_id": "1a1bfdb99fe-5e21-773",
+      "role": "read_only_sealed_comparison",
+      "state": "succeeded",
+      "exit_code": 0,
+      "terminal_utc": "2026-11-09T10:30:09.563Z",
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false
+    },
+    {
+      "host": "pocket4",
+      "job_id": "1a1bfdd5fac-5e21-77c",
+      "role": "read_only_sealed_comparison",
+      "state": "succeeded",
+      "exit_code": 0,
+      "terminal_utc": "2026-11-09T10:32:00.902Z",
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false
+    },
+    {
+      "host": "pocket4",
+      "job_id": "1a1bfde9305-5e21-786",
+      "role": "isolated_r4_snapshot",
+      "state": "succeeded",
+      "exit_code": 0,
+      "terminal_utc": "2026-11-09T10:33:29.787Z",
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false
+    },
+    {
+      "host": "pocket4",
+      "job_id": "1a1bfe15229-5e21-799",
+      "role": "r4_rustfmt",
+      "state": "succeeded",
+      "exit_code": 0,
+      "terminal_utc": "2026-11-09T10:36:31.939Z",
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false
+    },
+    {
+      "host": "pocket4",
+      "job_id": "1a1bfe21571-5e21-7a0",
+      "role": "r4_normal_namespace_tests",
+      "state": "succeeded",
+      "exit_code": 0,
+      "terminal_utc": "2026-11-09T10:37:53.412Z",
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false
+    },
+    {
+      "host": "pocket4",
+      "job_id": "1a1bfe3c89d-5e21-7a8",
+      "role": "r4_normal_non_test_build",
+      "state": "succeeded",
+      "exit_code": 0,
+      "terminal_utc": "2026-11-09T10:39:09.236Z",
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false
+    },
+    {
+      "host": "pocket4",
+      "job_id": "1a1bfe46bab-5e21-7aa",
+      "role": "read_only_control_source_review",
+      "state": "succeeded",
+      "exit_code": 0,
+      "terminal_utc": "2026-11-09T10:39:45.820Z",
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false
+    },
+    {
+      "host": "pocket4",
+      "job_id": "1a1bfe6cff6-5e21-7b7",
+      "role": "read_only_resource_preflight",
+      "state": "succeeded",
+      "exit_code": 0,
+      "terminal_utc": "2026-11-09T10:42:31.931Z",
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false
+    },
+    {
+      "host": "pocket4",
+      "job_id": "1a1bfecff97-5e21-7da",
+      "role": "leader_kernel_observation",
+      "state": "succeeded",
+      "exit_code": 0,
+      "terminal_utc": "2026-11-09T10:49:16.704Z",
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false
+    },
+    {
+      "host": "pocket4",
+      "job_id": "1a1bff1da69-5e21-7f8",
+      "role": "pidfd_only_leader_negative",
+      "state": "failed",
+      "exit_code": 1,
+      "terminal_utc": "2026-11-09T10:54:21.984Z",
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false
+    },
+    {
+      "host": "pocket4",
+      "job_id": "1a1bff2d8eb-5e21-7fe",
+      "role": "read_only_r5_preimage",
+      "state": "succeeded",
+      "exit_code": 0,
+      "terminal_utc": "2026-11-09T10:55:45.828Z",
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false
+    },
+    {
+      "host": "pocket4",
+      "job_id": "1a1bff4be92-5e21-80e",
+      "role": "isolated_r5_snapshot",
+      "state": "succeeded",
+      "exit_code": 0,
+      "terminal_utc": "2026-11-09T10:57:42.853Z",
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false
+    },
+    {
+      "host": "pocket4",
+      "job_id": "1a1bffb7416-5e21-83b",
+      "role": "r5_rustfmt",
+      "state": "succeeded",
+      "exit_code": 0,
+      "terminal_utc": "2026-11-09T11:05:02.252Z",
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false
+    },
+    {
+      "host": "pocket4",
+      "job_id": "1a1bffdc26b-5e21-847",
+      "role": "r5_normal_tests_build_leader_controls",
+      "state": "succeeded",
+      "exit_code": 0,
+      "terminal_utc": "2026-11-09T11:07:38.339Z",
+      "output_complete": true,
+      "output_durable": true,
+      "timed_out": false
+    }
+  ],
+  "nonterminal_jobs": [],
+  "retained_paths": {
+    "candidate_root": "/home/alex/work/pocket4-namespace-lifetime-buildclosure-20261109-r1",
+    "normal_outputs_and_binaries": "/home/alex/work/pocket4-namespace-lifetime-buildclosure-20261109-r1/target",
+    "qualification_sources": "/home/alex/work/pocket4-namespace-lifetime-buildclosure-20261109-r1/qualification",
+    "not_deleted": true,
+    "private_root_stage": "/var/lib/pocket4-namespace-lifetime-buildclosure-20261109-r1 (not created by this agent)"
+  },
+  "latest_owner_preimage_observation": {
+    "job_id": "1a1bff2d8eb-5e21-7fe",
+    "mutable_child_bytes": 25986,
+    "mutable_child_sha256": "7a4031347cf57fa6982c0643c21a98d4836df60a0051b8ba0f7670ce8a41f0f0",
+    "equal_to_frozen_r5": true,
+    "subsequent_owner_changes_not_ruled_out": true,
+    "force_apply_authorized": false
+  }
+}

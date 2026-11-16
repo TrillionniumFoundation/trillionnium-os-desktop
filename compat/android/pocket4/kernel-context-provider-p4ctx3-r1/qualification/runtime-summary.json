@@ -1,0 +1,546 @@
+{
+  "arms": {
+    "baseline": {
+      "H": {
+        "at_unix_ms": 1794289401980,
+        "cancelled": false,
+        "exit_code": 0,
+        "job_id": "1a1c3fb7207-cf39-9e",
+        "launch_nonce": "226a42059b77fd557ea8c8e158a266bc",
+        "output_complete": true,
+        "output_durable": true,
+        "state": "succeeded",
+        "timed_out": false
+      },
+      "actual_process": {
+        "affinity": [
+          20,
+          21
+        ],
+        "exe": "/usr/bin/qemu-system-x86_64",
+        "invocation": "435dcb03e1a544de9a98ae60562e4d3c",
+        "pid": 2570411,
+        "starttime": "7789612"
+      },
+      "actual_qemu_exited": true,
+      "admission": {
+        "cpu_quota_percent": 200,
+        "cpus": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "guest_memory_mib": 768,
+        "memory_available_bytes": 19517366272,
+        "memory_max": 1610612736,
+        "qemu_affinity": [
+          20,
+          21
+        ]
+      },
+      "after_qemu": [],
+      "all_guest_cases_passed": false,
+      "boot": {
+        "apparmor_policy_bytes": 13650,
+        "arm": "combined",
+        "guest_disks": 0,
+        "guest_nics": 0,
+        "kernel": "7.0.14-p4ctx1",
+        "lsm": "lockdown,capability,landlock,yama,apparmor,selinux,bpf,ima,evm",
+        "selinux_enforcing": "1",
+        "selinux_policy_bytes": 18008
+      },
+      "cgroup_retired": true,
+      "controller_passed": true,
+      "expected_failure_comparison_only": true,
+      "failed_case_names": [
+        "scm_selected_stream_queued_before_accept",
+        "scm_selected_dgram_queued_identity",
+        "ip_passsec_selected_cipso_after_fd_netns_transfer",
+        "stream_typed_boundary_without_credentials",
+        "stream_typed_boundary_credentials_pidfd",
+        "stream_typed_boundary_credentials_pidfd_rights"
+      ],
+      "host_after": {
+        "active_lsm": "lockdown,capability,landlock,yama,apparmor,bpf,ima,evm",
+        "boot_id": "97d9600f-e081-465c-9e6e-62651e09806b",
+        "kernel": "7.0.14-p4cred1"
+      },
+      "host_before": {
+        "active_lsm": "lockdown,capability,landlock,yama,apparmor,bpf,ima,evm",
+        "boot_id": "97d9600f-e081-465c-9e6e-62651e09806b",
+        "kernel": "7.0.14-p4cred1"
+      },
+      "host_identity_unchanged": true,
+      "inputs_unchanged": true,
+      "kernel_qualified_by_this_arm": false,
+      "memory_events": [
+        {
+          "high": "0",
+          "low": "0",
+          "max": "0",
+          "oom": "0",
+          "oom_group_kill": "0",
+          "oom_kill": "0",
+          "sock_throttled": "0"
+        },
+        {
+          "high": "0",
+          "low": "0",
+          "max": "0",
+          "oom": "0",
+          "oom_group_kill": "0",
+          "oom_kill": "0",
+          "sock_throttled": "0"
+        },
+        {
+          "high": "0",
+          "low": "0",
+          "max": "0",
+          "oom": "0",
+          "oom_group_kill": "0",
+          "oom_kill": "0",
+          "sock_throttled": "0"
+        }
+      ],
+      "owned_unit_retired": true,
+      "production_acceptance": false,
+      "result": {
+        "bytes": 27254,
+        "host": "pocket4",
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/baseline-vm-r5/result.json",
+        "sha256": "f66494a0fa7c2338877e90db29e4dfb9c1cea51a60396d8a48fbed41e937cc50"
+      },
+      "summary": {
+        "Android_started": false,
+        "cases": 47,
+        "failed": 6,
+        "passed": 41,
+        "production_acceptance": false,
+        "setup_error": 0,
+        "setup_step": "duplicate initial mount options"
+      }
+    },
+    "candidate": {
+      "H": {
+        "at_unix_ms": 1794290088702,
+        "cancelled": false,
+        "exit_code": 0,
+        "job_id": "1a1c405d6da-cf39-c3",
+        "launch_nonce": "113a19d1d15cbb518fc433892632bef9",
+        "output_complete": true,
+        "output_durable": true,
+        "state": "succeeded",
+        "timed_out": false
+      },
+      "actual_process": {
+        "affinity": [
+          20,
+          21
+        ],
+        "exe": "/usr/bin/qemu-system-x86_64",
+        "invocation": "0dde093bc22b450daaf839510f081103",
+        "pid": 2586511,
+        "starttime": "7858285"
+      },
+      "actual_qemu_exited": true,
+      "admission": {
+        "cpu_quota_percent": 200,
+        "cpus": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "guest_memory_mib": 768,
+        "memory_available_bytes": 19642597376,
+        "memory_max": 1610612736,
+        "qemu_affinity": [
+          20,
+          21
+        ]
+      },
+      "after_qemu": [],
+      "all_guest_cases_passed": true,
+      "boot": {
+        "apparmor_policy_bytes": 13650,
+        "arm": "combined",
+        "guest_disks": 0,
+        "guest_nics": 0,
+        "kernel": "7.0.14-p4ctx3",
+        "lsm": "lockdown,capability,landlock,yama,apparmor,selinux,bpf,ima,evm",
+        "selinux_enforcing": "1",
+        "selinux_policy_bytes": 18008
+      },
+      "cgroup_retired": true,
+      "controller_passed": true,
+      "expected_failure_comparison_only": false,
+      "failed_case_names": [],
+      "host_after": {
+        "active_lsm": "lockdown,capability,landlock,yama,apparmor,bpf,ima,evm",
+        "boot_id": "97d9600f-e081-465c-9e6e-62651e09806b",
+        "kernel": "7.0.14-p4cred1"
+      },
+      "host_before": {
+        "active_lsm": "lockdown,capability,landlock,yama,apparmor,bpf,ima,evm",
+        "boot_id": "97d9600f-e081-465c-9e6e-62651e09806b",
+        "kernel": "7.0.14-p4cred1"
+      },
+      "host_identity_unchanged": true,
+      "inputs_unchanged": true,
+      "kernel_qualified_by_this_arm": true,
+      "memory_events": [
+        {
+          "high": "0",
+          "low": "0",
+          "max": "0",
+          "oom": "0",
+          "oom_group_kill": "0",
+          "oom_kill": "0",
+          "sock_throttled": "0"
+        },
+        {
+          "high": "0",
+          "low": "0",
+          "max": "0",
+          "oom": "0",
+          "oom_group_kill": "0",
+          "oom_kill": "0",
+          "sock_throttled": "0"
+        },
+        {
+          "high": "0",
+          "low": "0",
+          "max": "0",
+          "oom": "0",
+          "oom_group_kill": "0",
+          "oom_kill": "0",
+          "sock_throttled": "0"
+        }
+      ],
+      "owned_unit_retired": true,
+      "production_acceptance": false,
+      "result": {
+        "bytes": 29657,
+        "host": "pocket4",
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/candidate-vm-r5/result.json",
+        "sha256": "bd65f7335a6ee7685812a3efa199019a869cd5db13191295faed3af26893c616"
+      },
+      "summary": {
+        "Android_started": false,
+        "cases": 47,
+        "failed": 0,
+        "passed": 47,
+        "production_acceptance": false,
+        "setup_error": 0,
+        "setup_step": "duplicate initial mount options"
+      }
+    },
+    "inactive": {
+      "H": {
+        "at_unix_ms": 1794290163491,
+        "cancelled": false,
+        "exit_code": 0,
+        "job_id": "1a1c406f100-cf39-cc",
+        "launch_nonce": "a68adf42d604f4ebcbfab4761385c7a3",
+        "output_complete": true,
+        "output_durable": true,
+        "state": "succeeded",
+        "timed_out": false
+      },
+      "actual_process": {
+        "affinity": [
+          20,
+          21
+        ],
+        "exe": "/usr/bin/qemu-system-x86_64",
+        "invocation": "1f261d425fe54156a1400fff178f4f5a",
+        "pid": 2590510,
+        "starttime": "7865794"
+      },
+      "actual_qemu_exited": true,
+      "admission": {
+        "cpu_quota_percent": 200,
+        "cpus": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "guest_memory_mib": 768,
+        "memory_available_bytes": 18976669696,
+        "memory_max": 1610612736,
+        "qemu_affinity": [
+          20,
+          21
+        ]
+      },
+      "after_qemu": [],
+      "all_guest_cases_passed": true,
+      "boot": {
+        "apparmor_policy_bytes": 13650,
+        "arm": "inactive",
+        "guest_disks": 0,
+        "guest_nics": 0,
+        "kernel": "7.0.14-p4ctx3",
+        "lsm": "lockdown,capability,landlock,yama,apparmor,bpf,ima,evm",
+        "selinux_enforcing": "inactive",
+        "selinux_policy_bytes": 0
+      },
+      "cgroup_retired": true,
+      "controller_passed": true,
+      "expected_failure_comparison_only": false,
+      "failed_case_names": [],
+      "host_after": {
+        "active_lsm": "lockdown,capability,landlock,yama,apparmor,bpf,ima,evm",
+        "boot_id": "97d9600f-e081-465c-9e6e-62651e09806b",
+        "kernel": "7.0.14-p4cred1"
+      },
+      "host_before": {
+        "active_lsm": "lockdown,capability,landlock,yama,apparmor,bpf,ima,evm",
+        "boot_id": "97d9600f-e081-465c-9e6e-62651e09806b",
+        "kernel": "7.0.14-p4cred1"
+      },
+      "host_identity_unchanged": true,
+      "inputs_unchanged": true,
+      "kernel_qualified_by_this_arm": false,
+      "memory_events": [
+        {
+          "high": "0",
+          "low": "0",
+          "max": "0",
+          "oom": "0",
+          "oom_group_kill": "0",
+          "oom_kill": "0",
+          "sock_throttled": "0"
+        },
+        {
+          "high": "0",
+          "low": "0",
+          "max": "0",
+          "oom": "0",
+          "oom_group_kill": "0",
+          "oom_kill": "0",
+          "sock_throttled": "0"
+        }
+      ],
+      "owned_unit_retired": true,
+      "production_acceptance": false,
+      "result": {
+        "bytes": 15678,
+        "host": "pocket4",
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/inactive-vm-r5/result.json",
+        "sha256": "4159aa71cbed6b90a8f3cc06848cd12c11a20eaa5e2caaa0f1c899a826feafe8"
+      },
+      "summary": {
+        "Android_started": false,
+        "cases": 12,
+        "failed": 0,
+        "passed": 12,
+        "production_acceptance": false,
+        "setup_error": 0,
+        "setup_step": "provider device and initial namespace"
+      }
+    },
+    "previous": {
+      "H": {
+        "at_unix_ms": 1794289149195,
+        "cancelled": false,
+        "exit_code": 0,
+        "job_id": "1a1c3f79039-cf39-8c",
+        "launch_nonce": "4c76708c6aef90470bff8432887c9f95",
+        "output_complete": true,
+        "output_durable": true,
+        "state": "succeeded",
+        "timed_out": false
+      },
+      "actual_process": {
+        "affinity": [
+          20,
+          21
+        ],
+        "exe": "/usr/bin/qemu-system-x86_64",
+        "invocation": "02eeed03b3904e399f65c0b3f6e6793b",
+        "pid": 2564251,
+        "starttime": "7764384"
+      },
+      "actual_qemu_exited": true,
+      "admission": {
+        "cpu_quota_percent": 200,
+        "cpus": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23
+        ],
+        "guest_memory_mib": 768,
+        "memory_available_bytes": 19601707008,
+        "memory_max": 1610612736,
+        "qemu_affinity": [
+          20,
+          21
+        ]
+      },
+      "after_qemu": [],
+      "all_guest_cases_passed": false,
+      "boot": {
+        "apparmor_policy_bytes": 13650,
+        "arm": "combined",
+        "guest_disks": 0,
+        "guest_nics": 0,
+        "kernel": "7.0.14-p4ctx2",
+        "lsm": "lockdown,capability,landlock,yama,apparmor,selinux,bpf,ima,evm",
+        "selinux_enforcing": "1",
+        "selinux_policy_bytes": 18008
+      },
+      "cgroup_retired": true,
+      "controller_passed": true,
+      "expected_failure_comparison_only": true,
+      "failed_case_names": [
+        "scm_selected_stream_queued_before_accept",
+        "stream_typed_boundary_without_credentials"
+      ],
+      "host_after": {
+        "active_lsm": "lockdown,capability,landlock,yama,apparmor,bpf,ima,evm",
+        "boot_id": "97d9600f-e081-465c-9e6e-62651e09806b",
+        "kernel": "7.0.14-p4cred1"
+      },
+      "host_before": {
+        "active_lsm": "lockdown,capability,landlock,yama,apparmor,bpf,ima,evm",
+        "boot_id": "97d9600f-e081-465c-9e6e-62651e09806b",
+        "kernel": "7.0.14-p4cred1"
+      },
+      "host_identity_unchanged": true,
+      "inputs_unchanged": true,
+      "kernel_qualified_by_this_arm": false,
+      "memory_events": [
+        {
+          "high": "0",
+          "low": "0",
+          "max": "0",
+          "oom": "0",
+          "oom_group_kill": "0",
+          "oom_kill": "0",
+          "sock_throttled": "0"
+        },
+        {
+          "high": "0",
+          "low": "0",
+          "max": "0",
+          "oom": "0",
+          "oom_group_kill": "0",
+          "oom_kill": "0",
+          "sock_throttled": "0"
+        }
+      ],
+      "owned_unit_retired": true,
+      "production_acceptance": false,
+      "result": {
+        "bytes": 27423,
+        "host": "pocket4",
+        "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/previous-vm-r5/result.json",
+        "sha256": "e4c174ebfdf5c2430f42a4c2cca270d0af8e2c2040db733d7485252b7f78c76e"
+      },
+      "summary": {
+        "Android_started": false,
+        "cases": 47,
+        "failed": 2,
+        "passed": 45,
+        "production_acceptance": false,
+        "setup_error": 0,
+        "setup_step": "duplicate initial mount options"
+      }
+    }
+  },
+  "production_acceptance": false,
+  "same_finite_policy": {
+    "bytes": 30696,
+    "path": "context-diagnostic.cil",
+    "sha256": "148084d5e03e7aedc7be3d30b454c4f529295dcf8b41accc71a6ed1d21399b5b"
+  },
+  "same_probe_source_packet": {
+    "bytes": 158854,
+    "sha256": "5de24cacc89838d5bbf2446a7b2f6d1bbe3ad3039dbca452788cae14e4fb4d9d"
+  }
+}

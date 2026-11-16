@@ -1,0 +1,744 @@
+From ce2150070260a660a4f634d5bb43085fd6df541b Mon Sep 17 00:00:00 2001
+From: ChatGPT <chatgpt@openai.com>
+Date: Sun, 8 Nov 2026 11:52:36 -0800
+Subject: [PATCH] Support explicit GSI image layouts and preserve the selected
+ Android IME
+
+---
+ docs/contracts/runtime-layout-v1.md           |  25 +++
+ packaging/ime/setup                           |   8 +-
+ .../src/control_status_tests.rs               |   1 +
+ .../droidloom-supervisor/src/development.rs   | 174 ++++++++++++++++--
+ .../src/development_network.rs                |   1 +
+ runtime/droidloom-supervisor/src/gapps.rs     |   3 +
+ .../droidloom-supervisor/src/image_layout.rs  | 131 +++++++++++++
+ runtime/droidloom-supervisor/src/lib.rs       |  47 ++++-
+ .../droidloom-supervisor/src/linux_plan.rs    |  76 +++++---
+ 9 files changed, 426 insertions(+), 40 deletions(-)
+ create mode 100644 runtime/droidloom-supervisor/src/image_layout.rs
+
+diff --git a/docs/contracts/runtime-layout-v1.md b/docs/contracts/runtime-layout-v1.md
+index 6f448b31416429f90bcb8a3980731e75dce7581d..2f99741b833b5e4c21c21acdad7be9d679010557 100644
+--- a/docs/contracts/runtime-layout-v1.md
++++ b/docs/contracts/runtime-layout-v1.md
+@@ -206,3 +206,28 @@ These lists report Linux topology, not a fabricated mobile model or a fixed CPU
+ count; cgroup quotas and CPU affinity remain independent and unchanged. Missing
+ or invalid source lists and failed read-only mounts fail the boot transaction
+ instead of silently advertising one CPU.
++
++## Explicit system-as-root GSI layout
++
++The cell specification accepts `image_layout: "gsi_system_as_root"` for a
++verified GSI with `/system/product` and `/system/system_ext` inside the system
++image. Omitting this field retains `split_partitions`: separate system, product
++and system_ext images remain mandatory. There is no missing-file fallback.
++Both layouts keep `image_dir/images/system.img` and the explicit raw ext4
++`vendor_image`; a GSI cannot select the separate GApps image pair.
++
++Metadata inspection, the auditable Linux plan and the actual namespace executor
++consume the same explicit layout. Before exposing a GSI root, the executor
++requires real internal partition directories and the exact `/product` and
++`/system_ext` aliases. It creates equivalent relative aliases only in the
++private synthetic root, preventing host-side absolute-symlink resolution before
++chroot. File override targets below these aliases are mapped to their real
++`/system` paths; duplicate targets through two names are rejected. Other
++symlink-parent and read-only leaf-override restrictions remain in force.
++Read-only ext4 image mounts include `noload`, keeping journal replay disabled.
++
++This layout support does not qualify a new Android/framework/APEX/native bridge
++cohort or a user-data upgrade. The caller must verify the exact image hashes,
++platform/shared-UID signing compatibility and all selected overlays, then run
++fresh boot, runtime and application acceptance. No image is rewritten by this
++layout selection.
+diff --git a/packaging/ime/setup b/packaging/ime/setup
+index 5d5a0e32991cf15f0eef340509fbfaa8c12368b6..5a912b7bab7fe29735d031212795fdbdde9ec5ef 100644
+--- a/packaging/ime/setup
++++ b/packaging/ime/setup
+@@ -14,5 +14,11 @@ if [ -z "$installed" ] || [ "$previous" != "$digest" ]; then
+     printf '%s\n' "$digest" > "$marker"
+ fi
+ cmd input_method ime enable com.android.droidloom.ime/.HostInputMethod
+-cmd input_method ime set com.android.droidloom.ime/.HostInputMethod
++# Keep an already selected, enabled input method across Android boots.
++# Fresh installs or invalid selections still fall back to the host bridge.
++selected_ime="$(cmd settings get secure default_input_method 2>/dev/null || true)"
++if [ -z "$installed" ] || [ -z "$selected_ime" ] || [ "$selected_ime" = null ] ||
++   ! cmd input_method ime list -s | grep -Fx -q "$selected_ime"; then
++    cmd input_method ime set com.android.droidloom.ime/.HostInputMethod
++fi
+ cmd settings put secure show_ime_with_hard_keyboard 1
+diff --git a/runtime/droidloom-supervisor/src/control_status_tests.rs b/runtime/droidloom-supervisor/src/control_status_tests.rs
+index 0e8f92b7e91452ecbec6e1d2f8f7373e4c3f6ffc..b711bdb08cc0794f76f68ba8dcb86cb74d9d8d57 100644
+--- a/runtime/droidloom-supervisor/src/control_status_tests.rs
++++ b/runtime/droidloom-supervisor/src/control_status_tests.rs
+@@ -47,6 +47,7 @@ impl RunningFixture {
+                 count: 100_000,
+             },
+             image_dir: root.join("images"),
++            image_layout: crate::AndroidImageLayout::default(),
+             gapps_dir: None,
+             vendor_image: root.join("vendor.img"),
+             android_init: None,
+diff --git a/runtime/droidloom-supervisor/src/development.rs b/runtime/droidloom-supervisor/src/development.rs
+index baa9e488a4d071723c25cfa9bf7addc3f9dc4e44..c3b16088b964ffbc7bf06ce99624b9bd87ceca13 100644
+--- a/runtime/droidloom-supervisor/src/development.rs
++++ b/runtime/droidloom-supervisor/src/development.rs
+@@ -23,7 +23,7 @@ use std::time::{Duration, Instant};
+ use thiserror::Error;
+ 
+ use crate::development_network::DevelopmentNetwork;
+-use crate::{CellSpec, SpecError};
++use crate::{AndroidFileOverride, AndroidImageLayout, CellSpec, SpecError};
+ 
+ #[path = "development_overrides.rs"]
+ mod android_overrides;
+@@ -135,7 +135,7 @@ fn require_development_root(uid: u32) -> Result<(), DevelopmentError> {
+ }
+ 
+ fn inspect_development_metadata(spec: &CellSpec) -> Result<(), DevelopmentError> {
+-    for name in ["system", "system_ext", "product"] {
++    for name in spec.image_layout.image_roles() {
+         let image = crate::gapps::partition_image(spec, name);
+         detect_read_only_filesystem(&image)?;
+     }
+@@ -780,19 +780,28 @@ pub fn enter_development_cell(spec: &CellSpec) -> Result<(), DevelopmentError> {
+     let root = spec.runtime_dir.join("root");
+     let system_lower = spec.runtime_dir.join(DEVELOPMENT_SYSTEM_LOWER);
+     mount_read_only_image(&spec.image_dir.join("images/system.img"), &system_lower)?;
+-    mount_synthetic_system_root(&system_lower, &root)?;
+-    mount_read_only_image(
+-        &crate::gapps::partition_image(spec, "system_ext"),
+-        &root.join("system_ext"),
+-    )?;
+-    mount_read_only_image(
+-        &crate::gapps::partition_image(spec, "product"),
+-        &root.join("product"),
+-    )?;
++    if spec.image_layout == AndroidImageLayout::GsiSystemAsRoot {
++        validate_gsi_system_root(&system_lower)?;
++    }
++    mount_synthetic_system_root(&system_lower, &root, spec.image_layout)?;
++    if spec.image_layout.is_split() {
++        mount_read_only_image(
++            &crate::gapps::partition_image(spec, "system_ext"),
++            &root.join("system_ext"),
++        )?;
++        mount_read_only_image(
++            &crate::gapps::partition_image(spec, "product"),
++            &root.join("product"),
++        )?;
++    }
+     mount_image("ext4", &spec.vendor_image, &root.join("vendor"), true)?;
+ 
+     // Prepare new leaf names before binding init or any other overlay.
+-    android_overrides::prepare_targets(&root, &spec.android_file_overrides)?;
++    let file_overrides: Vec<_> = spec.android_file_overrides.iter().map(|item| AndroidFileOverride {
++        source: item.source.clone(),
++        target: spec.image_layout.partition_target(&item.target),
++    }).collect();
++    android_overrides::prepare_targets(&root, &file_overrides)?;
+ 
+     // Android init and its services require SELinux context operations even
+     // though the shared host kernel deliberately has no Android policy. Keep
+@@ -820,7 +829,7 @@ pub fn enter_development_cell(spec: &CellSpec) -> Result<(), DevelopmentError> {
+     } else {
+         bind_mount(&init, &init, false)?;
+     }
+-    for file_override in &spec.android_file_overrides {
++    for file_override in &file_overrides {
+         let relative_target = file_override.target.strip_prefix("/").map_err(|_| {
+             DevelopmentError::InvalidInput(format!(
+                 "{} is not an absolute Android override target",
+@@ -1001,20 +1010,25 @@ fn make_mounts_private() -> Result<(), DevelopmentError> {
+     run("mount", ["--make-rprivate", "/"])
+ }
+ 
++fn image_mount_options(filesystem: &str, read_only: bool) -> String {
++    let access = if read_only { "ro" } else { "rw" };
++    let journal = if filesystem == "ext4" && read_only { ",noload" } else { "" };
++    format!("loop,{access},nodev,nosuid{journal}")
++}
++
+ fn mount_image(
+     filesystem: &str,
+     image: &Path,
+     target: &Path,
+     read_only: bool,
+ ) -> Result<(), DevelopmentError> {
+-    let access = if read_only { "ro" } else { "rw" };
+     run_os(
+         "mount",
+         [
+             OsString::from("-t"),
+             OsString::from(filesystem),
+             OsString::from("-o"),
+-            OsString::from(format!("loop,{access},nodev,nosuid")),
++            OsString::from(image_mount_options(filesystem, read_only)),
+             image.as_os_str().to_owned(),
+             target.as_os_str().to_owned(),
+         ],
+@@ -1034,7 +1048,28 @@ fn mount_writable_ext4_image(image: &Path, target: &Path) -> Result<(), Developm
+     mount_image("ext4", image, target, false)
+ }
+ 
+-fn mount_synthetic_system_root(lower: &Path, target: &Path) -> Result<(), DevelopmentError> {
++fn validate_gsi_system_root(lower: &Path) -> Result<(), DevelopmentError> {
++    for relative in ["system", "system/product", "system/system_ext", "vendor"] {
++        let path = lower.join(relative);
++        if !fs::symlink_metadata(&path)
++            .map_err(|source| io_error("inspect GSI internal partition directory", source))?
++            .is_dir()
++        {
++            return Err(DevelopmentError::InvalidInput(format!(
++                "GSI internal partition must be a real directory: {relative}"
++            )));
++        }
++    }
++    for name in ["product", "system_ext"] {
++        let link = fs::read_link(lower.join(name))
++            .map_err(|source| io_error("read required GSI partition alias", source))?;
++        AndroidImageLayout::GsiSystemAsRoot.root_link(OsStr::new(name), &link)
++            .map_err(DevelopmentError::InvalidInput)?;
++    }
++    Ok(())
++}
++
++fn mount_synthetic_system_root(lower: &Path, target: &Path, layout: AndroidImageLayout) -> Result<(), DevelopmentError> {
+     // Keep the official system image immutable while giving the cell a
+     // writable root directory. Every official top-level entry is either
+     // recreated as its original symlink or exposed through a read-only
+@@ -1055,6 +1090,8 @@ fn mount_synthetic_system_root(lower: &Path, target: &Path) -> Result<(), Develo
+         if file_type.is_symlink() {
+             let link = fs::read_link(&source)
+                 .map_err(|source| io_error("read development system root link", source))?;
++            let link = layout.root_link(&entry.file_name(), &link)
++                .map_err(DevelopmentError::InvalidInput)?;
+             symlink(link, destination)
+                 .map_err(|source| io_error("recreate development system root link", source))?;
+         } else if file_type.is_dir() {
+@@ -2205,6 +2242,7 @@ mod tests {
+                 count: 100000,
+             },
+             image_dir,
++            image_layout: crate::AndroidImageLayout::default(),
+             gapps_dir: None,
+             vendor_image,
+             android_init: None,
+@@ -2222,6 +2260,110 @@ mod tests {
+         (spec, listener)
+     }
+ 
++    #[test]
++    fn gsi_image_layout_inspection_does_not_require_split_partition_files() {
++        let directory = tempfile::tempdir().unwrap();
++        let (mut spec, _listener) = inspect_fixture(directory.path());
++        for name in ["system_ext.img", "product.img"] {
++            fs::remove_file(spec.image_dir.join("images").join(name)).unwrap();
++        }
++        let system = spec.image_dir.join("images/system.img");
++        let before = fs::read(&system).unwrap();
++        assert!(inspect_development_metadata(&spec).is_err());
++        spec.image_layout = AndroidImageLayout::GsiSystemAsRoot;
++        inspect_development_metadata(&spec).unwrap();
++        assert_eq!(fs::read(system).unwrap(), before);
++        assert!(!spec.runtime_dir.exists());
++    }
++
++    #[test]
++    fn gsi_image_layout_requires_the_exact_internal_partition_aliases() {
++        let directory = tempfile::tempdir().unwrap();
++        let lower = directory.path();
++        fs::create_dir_all(lower.join("system/product")).unwrap();
++        fs::create_dir_all(lower.join("system/system_ext")).unwrap();
++        fs::create_dir(lower.join("vendor")).unwrap();
++        symlink("/system/product", lower.join("product")).unwrap();
++        symlink("/system/system_ext", lower.join("system_ext")).unwrap();
++        validate_gsi_system_root(lower).unwrap();
++        fs::remove_file(lower.join("product")).unwrap();
++        symlink("/host/outside", lower.join("product")).unwrap();
++        assert!(validate_gsi_system_root(lower).is_err());
++        fs::remove_file(lower.join("product")).unwrap();
++        symlink("/system/product", lower.join("product")).unwrap();
++        fs::remove_dir(lower.join("system/product")).unwrap();
++        symlink("/outside", lower.join("system/product")).unwrap();
++        assert!(validate_gsi_system_root(lower).is_err());
++    }
++
++    #[test]
++    fn read_only_ext4_mounts_do_not_replay_journals() {
++        assert_eq!(image_mount_options("ext4", true), "loop,ro,nodev,nosuid,noload");
++        assert_eq!(image_mount_options("erofs", true), "loop,ro,nodev,nosuid");
++        assert_eq!(image_mount_options("ext4", false), "loop,rw,nodev,nosuid");
++    }
++
++    #[test]
++    #[ignore = "requires verified GSI/vendor images, root, and an owned private mount namespace"]
++    fn gsi_image_layout_mounts_official_image_and_private_alias_overrides() {
++        assert_eq!(effective_uid().unwrap(), 0);
++        let parent_ns = std::env::var("DROIDLOOM_GSI_PARENT_MNT_NS")
++            .expect("parent mount namespace identity");
++        assert_ne!(fs::read_link("/proc/self/ns/mnt").unwrap().to_string_lossy(), parent_ns);
++        let fixture = PathBuf::from(std::env::var("DROIDLOOM_GSI_MOUNT_FIXTURE")
++            .expect("owned empty fixture directory"));
++        assert!(fixture.is_absolute());
++        assert_eq!(fs::canonicalize(&fixture).unwrap(), fixture);
++        assert!(fs::read_dir(&fixture).unwrap().next().is_none());
++        let system = PathBuf::from(std::env::var("DROIDLOOM_GSI_SYSTEM_IMAGE")
++            .expect("externally verified official GSI image"));
++        let vendor = PathBuf::from(std::env::var("DROIDLOOM_GSI_VENDOR_IMAGE")
++            .expect("externally verified vendor image"));
++        for image in [&system, &vendor] {
++            assert!(image.is_absolute() && fs::symlink_metadata(image).unwrap().is_file());
++        }
++        make_mounts_private().unwrap();
++        let lower = fixture.join("system-lower");
++        let root = fixture.join("root");
++        fs::create_dir(&lower).unwrap();
++        fs::create_dir(&root).unwrap();
++        mount_read_only_image(&system, &lower).unwrap();
++        validate_gsi_system_root(&lower).unwrap();
++        let original_build = fs::read(lower.join("system/build.prop")).unwrap();
++        mount_synthetic_system_root(&lower, &root, AndroidImageLayout::GsiSystemAsRoot).unwrap();
++        mount_image("ext4", &vendor, &root.join("vendor"), true).unwrap();
++        let payload = fixture.join("payload.json");
++        fs::write(&payload, b"{\"private_gsi_layout_probe\":true}\n").unwrap();
++        let mut overrides = Vec::new();
++        for alias in ["product", "system_ext"] {
++            let actual = format!("system/{alias}");
++            assert_eq!(fs::read_link(root.join(alias)).unwrap(), Path::new(&actual));
++            assert_eq!(fs::canonicalize(root.join(alias)).unwrap(), root.join(&actual));
++            let original = format!("/{alias}/etc/droidloom-layout-probe.json");
++            let target = AndroidImageLayout::GsiSystemAsRoot.partition_target(Path::new(&original));
++            assert!(!lower.join(target.strip_prefix("/").unwrap()).exists());
++            overrides.push(AndroidFileOverride { source: payload.clone(), target });
++        }
++        android_overrides::prepare_targets(&root, &overrides).unwrap();
++        for item in &overrides {
++            let target = root.join(item.target.strip_prefix("/").unwrap());
++            bind_mount_read_only_executable(&item.source, &target).unwrap();
++            assert_eq!(fs::read(&target).unwrap(), fs::read(&payload).unwrap());
++            let error = OpenOptions::new().write(true).open(&target).unwrap_err();
++            assert_eq!(error.raw_os_error(), Some(libc::EROFS));
++            assert!(!lower.join(item.target.strip_prefix("/").unwrap()).exists());
++        }
++        assert_eq!(fs::read(root.join("system/build.prop")).unwrap(), original_build);
++        assert_eq!(fs::read(lower.join("system/build.prop")).unwrap(), original_build);
++        let error = OpenOptions::new().write(true)
++            .open(root.join("system/build.prop")).unwrap_err();
++        assert_eq!(error.raw_os_error(), Some(libc::EROFS));
++        assert!(fs::read_dir(root.join("vendor")).unwrap().next().is_some());
++        // All image and projection mounts are owned by this test namespace.
++        // The external supervisor waits for its terminal state and verifies
++        // their retirement and original image hashes before admitting proof.
++    }
++
+     #[test]
+     fn inspect_readable_metadata_preserves_inputs_and_does_not_prepare_runtime() {
+         let directory = tempfile::tempdir().unwrap();
+diff --git a/runtime/droidloom-supervisor/src/development_network.rs b/runtime/droidloom-supervisor/src/development_network.rs
+index 1207531bf92104425f77e0090b9901c41b66596e..8aed7cf0973eefaef4492d8104d6455350f469c4 100644
+--- a/runtime/droidloom-supervisor/src/development_network.rs
++++ b/runtime/droidloom-supervisor/src/development_network.rs
+@@ -605,6 +605,7 @@ mod tests {
+                 count: 100_000,
+             },
+             image_dir: PathBuf::from("/images"),
++            image_layout: crate::AndroidImageLayout::default(),
+             gapps_dir: None,
+             vendor_image: PathBuf::from("/images/vendor.img"),
+             android_init: None,
+diff --git a/runtime/droidloom-supervisor/src/gapps.rs b/runtime/droidloom-supervisor/src/gapps.rs
+index ecb850a40ba3ff3b825d93fa64bac145aad726ce..04d7537ac625f71084fa1fd9ac7a62b77d11c523 100644
+--- a/runtime/droidloom-supervisor/src/gapps.rs
++++ b/runtime/droidloom-supervisor/src/gapps.rs
+@@ -54,6 +54,9 @@ pub fn validate(spec: &CellSpec) -> Result<()> {
+     let Some(directory) = &spec.gapps_dir else {
+         return Ok(());
+     };
++    if spec.image_layout == crate::AndroidImageLayout::GsiSystemAsRoot {
++        return Err("gsi_system_as_root cannot select a split GApps image pair".into());
++    }
+     trusted_file(&directory.join("manifest.json"))?;
+     for role in ADDON_ROLES {
+         trusted_file(&partition_image(spec, role))?;
+diff --git a/runtime/droidloom-supervisor/src/image_layout.rs b/runtime/droidloom-supervisor/src/image_layout.rs
+new file mode 100644
+index 0000000000000000000000000000000000000000..f95b08b55ef060ed479f198374993e4fc7f6385b
+--- /dev/null
++++ b/runtime/droidloom-supervisor/src/image_layout.rs
+@@ -0,0 +1,131 @@
++//! Explicit Android partition layout and bounded paths inside one cell.
++
++use std::ffi::OsStr;
++use std::path::{Path, PathBuf};
++
++use serde::{Deserialize, Serialize};
++
++/// Physical organization of the verified Android image set.
++#[derive(Clone, Copy, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
++#[serde(rename_all = "snake_case")]
++pub enum AndroidImageLayout {
++    /// Separate system, system_ext and product images, the existing default.
++    #[default]
++    SplitPartitions,
++    /// One system-as-root GSI containing product and system_ext below /system.
++    GsiSystemAsRoot,
++}
++
++impl AndroidImageLayout {
++    pub(crate) const fn is_split(&self) -> bool {
++        matches!(self, Self::SplitPartitions)
++    }
++
++    pub(crate) const fn image_roles(self) -> &'static [&'static str] {
++        match self {
++            Self::SplitPartitions => &["system", "system_ext", "product"],
++            Self::GsiSystemAsRoot => &["system"],
++        }
++    }
++
++    // Normalize only the two declared GSI aliases. Other image symlinks are
++    // still rejected by the existing real-directory override-parent checks.
++    pub(crate) fn partition_target(self, target: &Path) -> PathBuf {
++        if self == Self::GsiSystemAsRoot {
++            for (alias, actual) in [
++                ("/product", "/system/product"),
++                ("/system_ext", "/system/system_ext"),
++            ] {
++                if let Ok(suffix) = target.strip_prefix(alias) {
++                    return Path::new(actual).join(suffix);
++                }
++            }
++        }
++        target.to_path_buf()
++    }
++
++    pub(crate) fn root_link(self, name: &OsStr, original: &Path) -> Result<PathBuf, String> {
++        if self == Self::GsiSystemAsRoot {
++            let expected = if name == "product" {
++                Some("/system/product")
++            } else if name == "system_ext" {
++                Some("/system/system_ext")
++            } else {
++                None
++            };
++            if let Some(expected) = expected {
++                if original != Path::new(expected) {
++                    return Err(format!(
++                        "GSI root alias {} must point to {expected}",
++                        name.to_string_lossy()
++                    ));
++                }
++                // Before chroot, an absolute link would resolve in the host.
++                // A root-relative equivalent in private tmpfs has identical
++                // guest semantics and stays inside the cell during setup.
++                return Ok(PathBuf::from(expected.trim_start_matches('/')));
++            }
++        }
++        Ok(original.to_path_buf())
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    #[test]
++    fn gsi_partition_paths_use_only_declared_aliases() {
++        let layout = AndroidImageLayout::GsiSystemAsRoot;
++        assert_eq!(
++            layout.partition_target(Path::new("/product/app/Calendar/Calendar.apk")),
++            PathBuf::from("/system/product/app/Calendar/Calendar.apk")
++        );
++        assert_eq!(
++            layout.partition_target(Path::new("/system_ext/priv-app/SystemUI/SystemUI.apk")),
++            PathBuf::from("/system/system_ext/priv-app/SystemUI/SystemUI.apk")
++        );
++        for path in ["/system/bin/init", "/vendor/etc/fstab", "/production/file"] {
++            assert_eq!(layout.partition_target(Path::new(path)), Path::new(path));
++        }
++        assert_eq!(
++            AndroidImageLayout::SplitPartitions.partition_target(Path::new("/product/app/a.apk")),
++            Path::new("/product/app/a.apk")
++        );
++    }
++
++    #[test]
++    fn gsi_root_aliases_never_resolve_in_the_host() {
++        let layout = AndroidImageLayout::GsiSystemAsRoot;
++        assert_eq!(
++            layout
++                .root_link(OsStr::new("product"), Path::new("/system/product"))
++                .unwrap(),
++            Path::new("system/product")
++        );
++        assert_eq!(
++            layout
++                .root_link(OsStr::new("system_ext"), Path::new("/system/system_ext"))
++                .unwrap(),
++            Path::new("system/system_ext")
++        );
++        for wrong in [
++            "/etc",
++            "../../outside",
++            "/system/../product",
++            "system/product",
++        ] {
++            assert!(
++                layout
++                    .root_link(OsStr::new("product"), Path::new(wrong))
++                    .is_err()
++            );
++        }
++        assert_eq!(
++            AndroidImageLayout::SplitPartitions
++                .root_link(OsStr::new("product"), Path::new("/system/product"))
++                .unwrap(),
++            Path::new("/system/product")
++        );
++    }
++}
+diff --git a/runtime/droidloom-supervisor/src/lib.rs b/runtime/droidloom-supervisor/src/lib.rs
+index f111e1d56241b7e54de63b6f3ad96b2adfb3cb6d..e529e8e01dc701eaa9755d5485fcc05d90f816ff 100644
+--- a/runtime/droidloom-supervisor/src/lib.rs
++++ b/runtime/droidloom-supervisor/src/lib.rs
+@@ -11,9 +11,12 @@ pub mod development;
+ mod development_network;
+ mod cpu_placement;
+ pub mod gapps;
++mod image_layout;
+ pub mod linux_plan;
+ mod package_cache;
+ 
++pub use image_layout::AndroidImageLayout;
++
+ use std::collections::{BTreeMap, BTreeSet};
+ use std::fmt::{self, Display};
+ use std::path::{Component, Path, PathBuf};
+@@ -152,6 +155,9 @@ pub struct CellSpec {
+     pub subordinate_gids: IdRange,
+     /// Activated, verified image directory.
+     pub image_dir: PathBuf,
++    /// Explicit image layout. Omission retains the separate-partition contract.
++    #[serde(default, skip_serializing_if = "AndroidImageLayout::is_split")]
++    pub image_layout: AndroidImageLayout,
+     /// Explicit optional Google-app image pair. Omission uses the base images.
+     /// First activation requires fresh Android data; package installation alone
+     /// never enables Google services.
+@@ -244,6 +250,9 @@ impl CellSpec {
+         {
+             problems.push("gapps_dir must be a normalized absolute path".into());
+         }
++        if self.image_layout == AndroidImageLayout::GsiSystemAsRoot && self.gapps_dir.is_some() {
++            problems.push("gsi_system_as_root cannot select a split GApps image pair".into());
++        }
+ 
+         if self
+             .android_init
+@@ -270,7 +279,7 @@ impl CellSpec {
+                     "android_file_overrides[{index}].target must use android_init for /system/bin/init"
+                 ));
+             }
+-            if !override_targets.insert(file_override.target.clone()) {
++            if !override_targets.insert(self.image_layout.partition_target(&file_override.target)) {
+                 problems.push(format!(
+                     "android_file_overrides[{index}].target duplicates {}",
+                     file_override.target.display()
+@@ -691,6 +700,7 @@ mod tests {
+                 count: 100_000,
+             },
+             image_dir: "/var/lib/droidloom/images/current".into(),
++            image_layout: crate::AndroidImageLayout::default(),
+             gapps_dir: None,
+             vendor_image: "/var/lib/droidloom/images/current/images/vendor.raw.img".into(),
+             android_init: None,
+@@ -705,6 +715,41 @@ mod tests {
+         }
+     }
+ 
++    #[test]
++    fn image_layout_is_explicit_and_defaults_to_existing_split_partitions() {
++        let original = spec();
++        let mut json = serde_json::to_value(&original).unwrap();
++        assert!(json.get("image_layout").is_none());
++        let legacy: CellSpec = serde_json::from_value(json.clone()).unwrap();
++        assert_eq!(legacy.image_layout, AndroidImageLayout::SplitPartitions);
++        assert_eq!(legacy, original);
++        json["image_layout"] = serde_json::json!("gsi_system_as_root");
++        let gsi: CellSpec = serde_json::from_value(json.clone()).unwrap();
++        assert_eq!(gsi.image_layout, AndroidImageLayout::GsiSystemAsRoot);
++        assert!(gsi.validate().is_ok());
++        assert_eq!(serde_json::to_value(&gsi).unwrap()["image_layout"], "gsi_system_as_root");
++        for invalid in [serde_json::json!("auto"), serde_json::json!(true), serde_json::Value::Null] {
++            json["image_layout"] = invalid;
++            assert!(serde_json::from_value::<CellSpec>(json.clone()).is_err());
++        }
++    }
++
++    #[test]
++    fn gsi_image_layout_rejects_split_addons_and_alias_collisions() {
++        let mut cell = spec();
++        cell.image_layout = AndroidImageLayout::GsiSystemAsRoot;
++        cell.gapps_dir = Some("/usr/lib/droidloom/addons/gapps".into());
++        assert!(cell.validate().unwrap_err().to_string().contains("split GApps"));
++        cell.gapps_dir = None;
++        cell.android_file_overrides = vec![
++            AndroidFileOverride { source: "/usr/lib/droidloom/a.apk".into(), target: "/product/app/A/A.apk".into() },
++            AndroidFileOverride { source: "/usr/lib/droidloom/b.apk".into(), target: "/system/product/app/A/A.apk".into() },
++        ];
++        assert!(cell.validate().unwrap_err().to_string().contains("duplicates"));
++        cell.image_layout = AndroidImageLayout::SplitPartitions;
++        assert!(cell.validate().is_ok());
++    }
++
+     #[test]
+     fn graphics_backend_is_explicit_and_bounded() {
+         let original = spec();
+diff --git a/runtime/droidloom-supervisor/src/linux_plan.rs b/runtime/droidloom-supervisor/src/linux_plan.rs
+index 01d762650e540326d8254b3429ba8faaa65cb86d..a5ecebc4b0c10a1d8bd2dc7e9f2fd905e5b5a5a4 100644
+--- a/runtime/droidloom-supervisor/src/linux_plan.rs
++++ b/runtime/droidloom-supervisor/src/linux_plan.rs
+@@ -507,7 +507,7 @@ fn mount_operations(spec: &CellSpec) -> Vec<LinuxOperation> {
+         mount(
+             MountKind::FileBind,
+             Some(file_override.source.clone()),
+-            &file_override.target,
++            &spec.image_layout.partition_target(&file_override.target),
+             true,
+             true,
+             true,
+@@ -562,7 +562,7 @@ fn mount_operations(spec: &CellSpec) -> Vec<LinuxOperation> {
+ }
+ 
+ fn partition_mounts(spec: &CellSpec) -> Vec<LinuxOperation> {
+-    vec![
++    let mut operations = vec![
+         mount(
+             MountKind::ReadOnlyAndroidImage,
+             Some(spec.image_dir.join("images/system.img")),
+@@ -572,25 +572,19 @@ fn partition_mounts(spec: &CellSpec) -> Vec<LinuxOperation> {
+             true,
+             false,
+         ),
+-        mount(
+-            MountKind::ReadOnlyAndroidImage,
+-            Some(crate::gapps::partition_image(spec, "system_ext")),
+-            Path::new("/system_ext"),
+-            true,
+-            true,
+-            true,
+-            false,
+-        ),
+-        mount(
++    ];
++    for role in spec.image_layout.image_roles().iter().skip(1) {
++        operations.push(mount(
+             MountKind::ReadOnlyAndroidImage,
+-            Some(crate::gapps::partition_image(spec, "product")),
+-            Path::new("/product"),
++            Some(crate::gapps::partition_image(spec, role)),
++            &Path::new("/").join(role),
+             true,
+             true,
+             true,
+             false,
+-        ),
+-        mount(
++        ));
++    }
++    operations.push(mount(
+             MountKind::Ext4Image,
+             Some(spec.vendor_image.clone()),
+             Path::new("/vendor"),
+@@ -598,8 +592,8 @@ fn partition_mounts(spec: &CellSpec) -> Vec<LinuxOperation> {
+             true,
+             true,
+             false,
+-        ),
+-    ]
++    ));
++    operations
+ }
+ 
+ fn private_filesystem_mounts(spec: &CellSpec) -> Vec<LinuxOperation> {
+@@ -783,7 +777,7 @@ fn teardown_operations(spec: &CellSpec, step: LifecycleStep) -> Vec<LinuxOperati
+                 spec.android_file_overrides
+                     .iter()
+                     .rev()
+-                    .map(|file_override| file_override.target.clone()),
++                    .map(|file_override| spec.image_layout.partition_target(&file_override.target)),
+             );
+             if spec.android_init.is_some() {
+                 targets.push(PathBuf::from("/system/bin/init"));
+@@ -806,13 +800,15 @@ fn teardown_operations(spec: &CellSpec, step: LifecycleStep) -> Vec<LinuxOperati
+                     "/metadata",
+                     "/data",
+                     "/vendor",
+-                    "/product",
+-                    "/system_ext",
+-                    "/",
+                 ]
+                 .into_iter()
+                 .map(PathBuf::from),
+             );
++            targets.extend(
++                spec.image_layout.image_roles().iter().skip(1).rev()
++                    .map(|role| Path::new("/").join(role)),
++            );
++            targets.push(PathBuf::from("/"));
+             targets
+                 .into_iter()
+                 .map(|target| LinuxOperation::Unmount { target })
+@@ -863,6 +859,7 @@ mod tests {
+                 count: 100_000,
+             },
+             image_dir: "/var/lib/droidloom/images/current".into(),
++            image_layout: crate::AndroidImageLayout::default(),
+             gapps_dir: None,
+             vendor_image: "/var/lib/droidloom/images/current/images/vendor.raw.img".into(),
+             android_init: Some("/usr/lib/droidloom/android/init".into()),
+@@ -906,6 +903,41 @@ mod tests {
+         assert!(cell.validate().is_err());
+     }
+ 
++    #[test]
++    fn gsi_image_layout_preserves_only_system_and_vendor_mounts() {
++        let mut cell = spec();
++        let split = partition_mounts(&cell);
++        assert_eq!(split.len(), 4);
++        cell.image_layout = crate::AndroidImageLayout::GsiSystemAsRoot;
++        let gsi = partition_mounts(&cell);
++        assert_eq!(gsi, vec![split[0].clone(), split[3].clone()]);
++        let plan = build_linux_plan(&cell).unwrap();
++        assert!(!plan.invariants.android_writable_host_filesystems);
++        let teardown_targets: Vec<_> = plan.teardown.iter()
++            .flat_map(|step| &step.operations)
++            .filter_map(|operation| match operation {
++                LinuxOperation::Unmount { target } => Some(target.as_path()),
++                _ => None,
++            }).collect();
++        assert!(!teardown_targets.contains(&Path::new("/product")));
++        assert!(!teardown_targets.contains(&Path::new("/system_ext")));
++        cell.android_file_overrides.push(crate::AndroidFileOverride {
++            source: "/usr/lib/droidloom/android/feature.xml".into(),
++            target: "/product/etc/feature.xml".into(),
++        });
++        let plan = build_linux_plan(&cell).unwrap();
++        assert!(plan.construction.iter().flat_map(|step| &step.operations).any(|operation| {
++            matches!(operation, LinuxOperation::Mount { target, .. }
++                if target == Path::new("/system/product/etc/feature.xml"))
++        }));
++        assert!(plan.teardown.iter().flat_map(|step| &step.operations).any(|operation| {
++            matches!(operation, LinuxOperation::Unmount { target }
++                if target == Path::new("/system/product/etc/feature.xml"))
++        }));
++        cell.gapps_dir = Some("/usr/lib/droidloom/addons/gapps".into());
++        assert!(build_linux_plan(&cell).is_err());
++    }
++
+     #[test]
+     fn plan_uses_transaction_order_and_reverse_teardown() {
+         let plan = build_linux_plan(&spec()).unwrap();
+-- 
+2.53.0
+

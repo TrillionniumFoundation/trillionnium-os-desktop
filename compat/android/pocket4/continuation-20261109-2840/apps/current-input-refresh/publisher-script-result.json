@@ -1,0 +1,219 @@
+{
+  "schema": "pocket4-publisher-download-script-discovery-v1",
+  "observations": [
+    {
+      "parent_page": "/home/alex/work/pocket4-official-route-followup-20261109-2840-r1/pdd-page.body",
+      "parent_page_sha256": "95b9ea63bd414b1f52744b0418e6884ad754b05c15d4552331c0d9660bca7d85",
+      "url": "https://cdn.pinduoduo.com/home/_next/static/LR2PUsEFtab8qiLydh3Md/pages/download.js",
+      "observed_utc": "2026-11-09T16:55:10.054122+00:00",
+      "status": 200,
+      "effective_url": "https://cdn.pinduoduo.com/home/_next/static/LR2PUsEFtab8qiLydh3Md/pages/download.js",
+      "headers": {
+        "Etag": "\"65cf1420eba58d923ceb5ee6fc24c289\"",
+        "Content-Type": "application/javascript",
+        "Server": "Lego Server",
+        "Last-Modified": "Mon, 09 Nov 2026 14:53:24 GMT",
+        "Cache-Control": "max-age=31536000",
+        "Content-Length": "7391",
+        "Accept-Ranges": "bytes",
+        "X-NWS-LOG-UUID": "13742792312876324712",
+        "Connection": "close",
+        "E-Cache-Status": "Miss",
+        "Access-Control-Allow-Origin": "*",
+        "X-Cache-Status": "hit",
+        "Age": "0",
+        "Date": "Mon, 09 Nov 2026 16:55:12 GMT"
+      },
+      "artifact": {
+        "path": "/home/alex/work/pocket4-official-route-followup-20261109-2840-r1/script-followup/pdd-page.js",
+        "bytes": 7391,
+        "sha256": "26c696a3319817434ccb6fef7852b4847cc86606715c62986831edb6cc8584c7"
+      },
+      "urls": [
+        "https://home-api.pinduoduo.com/homesite/download-app-v2?rs=0",
+        "https://images.pinduoduo.com/upload_images/homesite/prod-arm32-v2.png.slim.png",
+        "https://images.pinduoduo.com/upload_images/homesite/prod-arm64-v2.png.slim.png",
+        "https://itunes.apple.com/cn/app/pin-duo-duo/id1044283059?l=en&mt=8",
+        "https://m.pinduoduo.com/"
+      ],
+      "contexts": [
+        {
+          "needle": "download-app",
+          "text": "unction(){e.setState({startAnimate:!1})}),h(p(e),\"download\",function(t){if(1==e.state.focus){var n=\"https://home-api.pinduoduo.com/homesite/download-app-v2?rs=0\";window.open(t?n+\"&arch=\"+t:n)}else window.open(\"https://itunes.apple.com/cn/app/pin-duo-duo/id1044283059?l=en&mt=8\")}),e}return t=d,(n=[{key:\"componentDidMount\",value:function(){Object(i.d)()&&(window.location.href=\"https://m.pinduoduo.com/\")}},{key:\"render\",value:function(){var e=this,t=this.state,n=t.visibl"
+        },
+        {
+          "needle": "arch",
+          "text": "),h(p(e),\"download\",function(t){if(1==e.state.focus){var n=\"https://home-api.pinduoduo.com/homesite/download-app-v2?rs=0\";window.open(t?n+\"&arch=\"+t:n)}else window.open(\"https://itunes.apple.com/cn/app/pin-duo-duo/id1044283059?l=en&mt=8\")}),e}return t=d,(n=[{key:\"componentDidMount\",value:function(){Object(i.d)()&&(window.location.href=\"https://m.pinduoduo.com/\")}},{key:\"render\",value:function(){var e=this,t=this.state,n=t.visible,a=t.focus,l=t.startAnimate;ret"
+        },
+        {
+          "needle": "arch",
+          "text": "teElement(\"div\",{className:l?\"wrapper android movein\":\"wrapper android\",onAnimationEnd:this.animateEnd},o.a.createElement(\"div\",{className:\"arch-btns\"},o.a.createElement(\"div\",{className:\"arch-btn arch-64\",onClick:function(){return e.download(\"arm64\")}},o.a.createElement(\"span\",{className:\"arch-icon\"},\"↓\"),o.a.createElement(\"span\",{className:\"arch-text\"},o.a.createElement(\"b\",null,\"下载64位安装包\"),o.a.createElement(\"em\",null,\"适合大部分手机设备\"))),o.a.createElement(\"div\",{"
+        },
+        {
+          "needle": "arch",
+          "text": "vein\":\"wrapper android\",onAnimationEnd:this.animateEnd},o.a.createElement(\"div\",{className:\"arch-btns\"},o.a.createElement(\"div\",{className:\"arch-btn arch-64\",onClick:function(){return e.download(\"arm64\")}},o.a.createElement(\"span\",{className:\"arch-icon\"},\"↓\"),o.a.createElement(\"span\",{className:\"arch-text\"},o.a.createElement(\"b\",null,\"下载64位安装包\"),o.a.createElement(\"em\",null,\"适合大部分手机设备\"))),o.a.createElement(\"div\",{className:\"arch-btn arch-32\",onClick:function(){"
+        },
+        {
+          "needle": "arch",
+          "text": "apper android\",onAnimationEnd:this.animateEnd},o.a.createElement(\"div\",{className:\"arch-btns\"},o.a.createElement(\"div\",{className:\"arch-btn arch-64\",onClick:function(){return e.download(\"arm64\")}},o.a.createElement(\"span\",{className:\"arch-icon\"},\"↓\"),o.a.createElement(\"span\",{className:\"arch-text\"},o.a.createElement(\"b\",null,\"下载64位安装包\"),o.a.createElement(\"em\",null,\"适合大部分手机设备\"))),o.a.createElement(\"div\",{className:\"arch-btn arch-32\",onClick:function(){return e."
+        },
+        {
+          "needle": "arch",
+          "text": ",o.a.createElement(\"div\",{className:\"arch-btn arch-64\",onClick:function(){return e.download(\"arm64\")}},o.a.createElement(\"span\",{className:\"arch-icon\"},\"↓\"),o.a.createElement(\"span\",{className:\"arch-text\"},o.a.createElement(\"b\",null,\"下载64位安装包\"),o.a.createElement(\"em\",null,\"适合大部分手机设备\"))),o.a.createElement(\"div\",{className:\"arch-btn arch-32\",onClick:function(){return e.download(\"arm32\")}},o.a.createElement(\"span\",{className:\"arch-icon\"},\"↓\"),o.a.createElement(\"s"
+        },
+        {
+          "needle": "arch",
+          "text": ",onClick:function(){return e.download(\"arm64\")}},o.a.createElement(\"span\",{className:\"arch-icon\"},\"↓\"),o.a.createElement(\"span\",{className:\"arch-text\"},o.a.createElement(\"b\",null,\"下载64位安装包\"),o.a.createElement(\"em\",null,\"适合大部分手机设备\"))),o.a.createElement(\"div\",{className:\"arch-btn arch-32\",onClick:function(){return e.download(\"arm32\")}},o.a.createElement(\"span\",{className:\"arch-icon\"},\"↓\"),o.a.createElement(\"span\",{className:\"arch-text\"},o.a.createElement(\"b\",nul"
+        },
+        {
+          "needle": "arch",
+          "text": "lassName:\"arch-text\"},o.a.createElement(\"b\",null,\"下载64位安装包\"),o.a.createElement(\"em\",null,\"适合大部分手机设备\"))),o.a.createElement(\"div\",{className:\"arch-btn arch-32\",onClick:function(){return e.download(\"arm32\")}},o.a.createElement(\"span\",{className:\"arch-icon\"},\"↓\"),o.a.createElement(\"span\",{className:\"arch-text\"},o.a.createElement(\"b\",null,\"下载32位安装包\"),o.a.createElement(\"em\",null,\"适合部分较早手机设备\")))),o.a.createElement(\"div\",{className:\"arch-qrcodes\"},o.a.createElement(\"d"
+        },
+        {
+          "needle": "arch",
+          "text": "\"arch-text\"},o.a.createElement(\"b\",null,\"下载64位安装包\"),o.a.createElement(\"em\",null,\"适合大部分手机设备\"))),o.a.createElement(\"div\",{className:\"arch-btn arch-32\",onClick:function(){return e.download(\"arm32\")}},o.a.createElement(\"span\",{className:\"arch-icon\"},\"↓\"),o.a.createElement(\"span\",{className:\"arch-text\"},o.a.createElement(\"b\",null,\"下载32位安装包\"),o.a.createElement(\"em\",null,\"适合部分较早手机设备\")))),o.a.createElement(\"div\",{className:\"arch-qrcodes\"},o.a.createElement(\"div\",{clas"
+        },
+        {
+          "needle": "arch",
+          "text": ",o.a.createElement(\"div\",{className:\"arch-btn arch-32\",onClick:function(){return e.download(\"arm32\")}},o.a.createElement(\"span\",{className:\"arch-icon\"},\"↓\"),o.a.createElement(\"span\",{className:\"arch-text\"},o.a.createElement(\"b\",null,\"下载32位安装包\"),o.a.createElement(\"em\",null,\"适合部分较早手机设备\")))),o.a.createElement(\"div\",{className:\"arch-qrcodes\"},o.a.createElement(\"div\",{className:\"qr-item\"},o.a.createElement(\"img\",{src:\"https://images.pinduoduo.com/upload_images/home"
+        },
+        {
+          "needle": "arch",
+          "text": ",onClick:function(){return e.download(\"arm32\")}},o.a.createElement(\"span\",{className:\"arch-icon\"},\"↓\"),o.a.createElement(\"span\",{className:\"arch-text\"},o.a.createElement(\"b\",null,\"下载32位安装包\"),o.a.createElement(\"em\",null,\"适合部分较早手机设备\")))),o.a.createElement(\"div\",{className:\"arch-qrcodes\"},o.a.createElement(\"div\",{className:\"qr-item\"},o.a.createElement(\"img\",{src:\"https://images.pinduoduo.com/upload_images/homesite/prod-arm64-v2.png.slim.png\",alt:\"64位安装包\"}),o.a.cr"
+        },
+        {
+          "needle": "arch",
+          "text": "ssName:\"arch-text\"},o.a.createElement(\"b\",null,\"下载32位安装包\"),o.a.createElement(\"em\",null,\"适合部分较早手机设备\")))),o.a.createElement(\"div\",{className:\"arch-qrcodes\"},o.a.createElement(\"div\",{className:\"qr-item\"},o.a.createElement(\"img\",{src:\"https://images.pinduoduo.com/upload_images/homesite/prod-arm64-v2.png.slim.png\",alt:\"64位安装包\"}),o.a.createElement(\"b\",null,\"64位安装包\"),o.a.createElement(\"em\",null,\"适合大部分手机设备\")),o.a.createElement(\"div\",{className:\"qr-item\"},o.a.createEle"
+        }
+      ]
+    },
+    {
+      "parent_page": "/home/alex/work/pocket4-official-route-followup-20261109-2840-r1/douyin-page.body",
+      "parent_page_sha256": "0f6b58b264195f1e27cfbf4e457a99b62e20b5022b58539bafd28d020a5b91ac",
+      "url": "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/async/routes-Downloadpage-pageInfo-route.86dddf14.js",
+      "observed_utc": "2026-11-09T16:55:12.391641+00:00",
+      "status": 200,
+      "effective_url": "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/async/routes-Downloadpage-pageInfo-route.86dddf14.js",
+      "headers": {
+        "Server": "Tengine",
+        "Content-Type": "application/javascript",
+        "Content-Length": "42611",
+        "Connection": "close",
+        "Vary": "Accept-Encoding",
+        "Date": "Mon, 09 Nov 2026 08:50:19 GMT",
+        "Accept-Ranges": "bytes",
+        "Cache-Control": "max-age=2592000",
+        "Content-Md5": "GQRaS44uuLWg1Roi89fYBA==",
+        "ETag": "\"19045a4b8e2eb8b5a0d51a22f3d7d804\"",
+        "Last-Modified": "Fri, 06 Nov 2026 04:23:24 GMT",
+        "X-Tos-Hash-Crc64ecma": "989546126223563043",
+        "X-Tos-Request-Id": "767834f1894b74596af1894b-fdbdgdc02g27g17gg49",
+        "X-Tos-Response-Time": "Mon, 09 Nov 2026 08:50:19 GMT",
+        "X-Tos-Storage-Class": "STANDARD",
+        "server-timing": "cdn-cache;desc=HIT,edge;dur=9",
+        "x-tt-trace-host": "016f7fa2b16676f6786dd01a0dbd3750b1de8000a1a30d4d51a92f6907cc9c8b331c7355ca8ce43bbbb676165a8e1d5dcd651d146c29ee8d2362fb7edf75935a3548846424f66df08396c1c820b1de35da662e1da977f5b61f6c0117271eeece96",
+        "x-tt-trace-tag": "id=03;cdn-cache=hit;type=static",
+        "x-tt-trace-id": "00-2611091650199C8219C1EEE1030F1FA8-68F3E7A27869DF01-00",
+        "X-TT-LOGID": "202611091650199C8219C1EEE1030F1FA8",
+        "Via": "ens-cache15.l2us5[1003,1003,200-0,M], ens-cache9.l2us5[1005,0], ens-cache4.us33[0,0,200-0,H], ens-cache21.us33[9,0]",
+        "Age": "29095",
+        "Ali-Swift-Global-Savetime": "1794214219",
+        "X-Cache": "HIT TCP_HIT dirn:12:700950777",
+        "X-Swift-SaveTime": "Mon, 09 Nov 2026 08:50:19 GMT",
+        "X-Swift-CacheTime": "2592000",
+        "x-response-cache": "edge_hit",
+        "x-response-cinfo": "89.187.170.165",
+        "x-tt-supplier-id": "0_1",
+        "Access-Control-Allow-Origin": "*",
+        "Timing-Allow-Origin": "*",
+        "EagleId": "a3b5f6a917942433141292452e"
+      },
+      "artifact": {
+        "path": "/home/alex/work/pocket4-official-route-followup-20261109-2840-r1/script-followup/douyin-page.js",
+        "bytes": 42611,
+        "sha256": "d8c48c8aa7f4a23b0134f683ff138088d5e6e2f8c225d3272aea738ee9435fdd"
+      },
+      "urls": [
+        "http://www.w3.org/2000/svg",
+        "https://apps.apple.com/cn/app/%E6%8A%96%E9%9F%B3%E7%9F%AD%E8%A7%86%E9%A2%91/id1142110895?l=zh&ls=1",
+        "https://p-pc-weboff.byteimg.com/tos-cn-i-9r5gewecjs/pwa/manifest.json",
+        "https://s.toutiao.com/UsMYE/",
+        "https://schema.org",
+        "https://ug-seo-demo",
+        "https://ugapk.com/mGFG",
+        "https://www.douyin.com",
+        "https://www.douyin.com/download/pc${t.pathname}`:e},[]);return(0,o.jsxs)(o.Fragment,{children:[(0,o.jsx)($,{selected:h.pc,path:",
+        "https://www.douyin.com/downloadpage/ai",
+        "https://www.douyin.com/downloadpage/app",
+        "https://www.douyin.com/downloadpage/chat",
+        "https://www.douyin.com/downloadpage/pc",
+        "https://www.douyin.com/downloadpage/tv"
+      ],
+      "contexts": [
+        {
+          "needle": "ugapk",
+          "text": ",e.keyDesc))]})};let ej={title:\"下载Android 版\",downloadInfo:[{keyDesc:\"下载64位安装包\",bit:\"64\",additionalDesc:\"适合大部分手机设备\",isKeyBtn:!0,url:\"https://ugapk.com/mGFG\"},{keyDesc:\"下载32位安装包\",bit:\"32\",additionalDesc:\"适合较早面世的手机设备\",isKeyBtn:!1,url:\"https://s.toutiao.com/UsMYE/\"}]};var e_=e=>{var t;let{style:n,className:i,downloadAppInfo:s,changeCanWheel:r}=e||{},[d,c]=(0,a.useState)(!1);(null==s?void 0:s.androidApk)&&(null===(t=(0,p.fV)())||void 0===t?void 0:t.os)===\"Mac\"&&(ej."
+        },
+        {
+          "needle": "mGFG",
+          "text": "))]})};let ej={title:\"下载Android 版\",downloadInfo:[{keyDesc:\"下载64位安装包\",bit:\"64\",additionalDesc:\"适合大部分手机设备\",isKeyBtn:!0,url:\"https://ugapk.com/mGFG\"},{keyDesc:\"下载32位安装包\",bit:\"32\",additionalDesc:\"适合较早面世的手机设备\",isKeyBtn:!1,url:\"https://s.toutiao.com/UsMYE/\"}]};var e_=e=>{var t;let{style:n,className:i,downloadAppInfo:s,changeCanWheel:r}=e||{},[d,c]=(0,a.useState)(!1);(null==s?void 0:s.androidApk)&&(null===(t=(0,p.fV)())||void 0===t?void 0:t.os)===\"Mac\"&&(ej.downloadI"
+        },
+        {
+          "needle": "arch",
+          "text": "});var o=n(258343),a=n(575562);n(870128),n(796939),n(924006);var i=n(566538),l=n(599090),s=n(560587);n(839197);var r=n(660503);let{COMMON_SEARCH_PARAMS:d}=i;function c(e){let{status_code:t,link_data:n=[],show_pos:o=0}=e;return{statusCode:t,data:n.map(e=>{let{link_type:t=0,count:n=0,link_list:o=[]}=e;return{type:t,count:n,links:o}}),showPos:null!=o?o:0}}async function u(){let e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:null,t=arguments.length>1?arg"
+        },
+        {
+          "needle": "apk",
+          "text": "android_download_click\",params:{enter_from:\"download\",type:\"\"}}}),L=n(\"292147\"),E=\"DQlzF_MZ\",T=\"hg57YYsT\",A=\"t2vI8ryF\",S=\"YJoEQHg3\",I=\"L6gEcapk\",M=\"JV7d_j2u\",B=\"t7pCBtgT\",P=e=>{let{onChange:t,style:n,className:a,selected:i}=e,s=[{title:\"电脑端\",desc:\"Windows、Mac、快捷方式\",id:h.pc,href:\"/downloadpage/pc\"},{title:\"移动端\",desc:\"iOS 、Android\",id:h.app,href:\"/downloadpage/app\"},{title:\"智能终端\",desc:\"音箱版、车载版\",id:h.ai,href:\"/downloadpage/ai\"},{title:\"更多产品\",desc:\"抖音聊天桌面端\",id:h."
+        },
+        {
+          "needle": "apk",
+          "text": "sTjHsf\"},et=e=>{let{style:t,className:n,downloadInfo:i,pwaInfo:s,osInfo:r}=e||{},[d,c]=(0,a.useState)(\"\"),[u,p]=(0,a.useState)(()=>{let e=i.apkDownloader,t=i.macApk;return\"Mac\"===r?{frontApk:t,frontDesc:\"下载Mac客户端\",limit:i.macLimit,time:i.macTime,version:i.macVersion,video:i.video,afterApk:e,afterDesc:\"下载Windows客户端\"}:{frontApk:e,frontDesc:\"下载Windows客户端\",limit:i.limit,time:i.time,version:i.version,video:i.video,afterApk:t,afterDesc:\"下载Mac客户端\"}});(0,a.useEffect)"
+        },
+        {
+          "needle": "apk",
+          "text": "tyle:t,className:n,downloadInfo:i,pwaInfo:s,osInfo:r}=e||{},[d,c]=(0,a.useState)(\"\"),[u,p]=(0,a.useState)(()=>{let e=i.apkDownloader,t=i.macApk;return\"Mac\"===r?{frontApk:t,frontDesc:\"下载Mac客户端\",limit:i.macLimit,time:i.macTime,version:i.macVersion,video:i.video,afterApk:e,afterDesc:\"下载Windows客户端\"}:{frontApk:e,frontDesc:\"下载Windows客户端\",limit:i.limit,time:i.time,version:i.version,video:i.video,afterApk:t,afterDesc:\"下载Mac客户端\"}});(0,a.useEffect)(()=>{let e=async()=>"
+        },
+        {
+          "needle": "apk",
+          "text": "dInfo:i,pwaInfo:s,osInfo:r}=e||{},[d,c]=(0,a.useState)(\"\"),[u,p]=(0,a.useState)(()=>{let e=i.apkDownloader,t=i.macApk;return\"Mac\"===r?{frontApk:t,frontDesc:\"下载Mac客户端\",limit:i.macLimit,time:i.macTime,version:i.macVersion,video:i.video,afterApk:e,afterDesc:\"下载Windows客户端\"}:{frontApk:e,frontDesc:\"下载Windows客户端\",limit:i.limit,time:i.time,version:i.version,video:i.video,afterApk:t,afterDesc:\"下载Mac客户端\"}});(0,a.useEffect)(()=>{let e=async()=>{let e=z.Le.getConfig(z.gI"
+        },
+        {
+          "needle": "apk",
+          "text": "nloader,t=i.macApk;return\"Mac\"===r?{frontApk:t,frontDesc:\"下载Mac客户端\",limit:i.macLimit,time:i.macTime,version:i.macVersion,video:i.video,afterApk:e,afterDesc:\"下载Windows客户端\"}:{frontApk:e,frontDesc:\"下载Windows客户端\",limit:i.limit,time:i.time,version:i.version,video:i.video,afterApk:t,afterDesc:\"下载Mac客户端\"}});(0,a.useEffect)(()=>{let e=async()=>{let e=z.Le.getConfig(z.gI.WebUgChannelId);if(e){let t=await (0,Y.A)({key:\"channel_id\",value:e});if(!1===t)return;\"Mac\"===r?p"
+        },
+        {
+          "needle": "apk",
+          "text": "ontApk:t,frontDesc:\"下载Mac客户端\",limit:i.macLimit,time:i.macTime,version:i.macVersion,video:i.video,afterApk:e,afterDesc:\"下载Windows客户端\"}:{frontApk:e,frontDesc:\"下载Windows客户端\",limit:i.limit,time:i.time,version:i.version,video:i.video,afterApk:t,afterDesc:\"下载Mac客户端\"}});(0,a.useEffect)(()=>{let e=async()=>{let e=z.Le.getConfig(z.gI.WebUgChannelId);if(e){let t=await (0,Y.A)({key:\"channel_id\",value:e});if(!1===t)return;\"Mac\"===r?p((0,V._)((0,H._)({},u),{frontApk:t.mac"
+        },
+        {
+          "needle": "apk",
+          "text": "eo,afterApk:e,afterDesc:\"下载Windows客户端\"}:{frontApk:e,frontDesc:\"下载Windows客户端\",limit:i.limit,time:i.time,version:i.version,video:i.video,afterApk:t,afterDesc:\"下载Mac客户端\"}});(0,a.useEffect)(()=>{let e=async()=>{let e=z.Le.getConfig(z.gI.WebUgChannelId);if(e){let t=await (0,Y.A)({key:\"channel_id\",value:e});if(!1===t)return;\"Mac\"===r?p((0,V._)((0,H._)({},u),{frontApk:t.mac_url,afterApk:t.win_url})):p((0,V._)((0,H._)({},u),{frontApk:t.win_url,afterApk:t.mac_url}))}}"
+        },
+        {
+          "needle": "apk",
+          "text": "tConfig(z.gI.WebUgChannelId);if(e){let t=await (0,Y.A)({key:\"channel_id\",value:e});if(!1===t)return;\"Mac\"===r?p((0,V._)((0,H._)({},u),{frontApk:t.mac_url,afterApk:t.win_url})):p((0,V._)((0,H._)({},u),{frontApk:t.win_url,afterApk:t.mac_url}))}};e();let t=X.listen(X.EVENT.SetWebUgSource,()=>{e()});return()=>{t()}},[]),(0,a.useEffect)(()=>{var e;let t=(null===(e=(0,G.Es)())||void 0===e?void 0:e.user_unique_id)||\"\";c((0,Q.N)(t,62))},[]);let m=(0,q.x)(()=>{D.sendL"
+        },
+        {
+          "needle": "apk",
+          "text": "hannelId);if(e){let t=await (0,Y.A)({key:\"channel_id\",value:e});if(!1===t)return;\"Mac\"===r?p((0,V._)((0,H._)({},u),{frontApk:t.mac_url,afterApk:t.win_url})):p((0,V._)((0,H._)({},u),{frontApk:t.win_url,afterApk:t.mac_url}))}};e();let t=X.listen(X.EVENT.SetWebUgSource,()=>{e()});return()=>{t()}},[]),(0,a.useEffect)(()=>{var e;let t=(null===(e=(0,G.Es)())||void 0===e?void 0:e.user_unique_id)||\"\";c((0,Q.N)(t,62))},[]);let m=(0,q.x)(()=>{D.sendLog(\"addToDesktopSho"
+        },
+        {
+          "needle": "apk",
+          "text": "el_id\",value:e});if(!1===t)return;\"Mac\"===r?p((0,V._)((0,H._)({},u),{frontApk:t.mac_url,afterApk:t.win_url})):p((0,V._)((0,H._)({},u),{frontApk:t.win_url,afterApk:t.mac_url}))}};e();let t=X.listen(X.EVENT.SetWebUgSource,()=>{e()});return()=>{t()}},[]),(0,a.useEffect)(()=>{var e;let t=(null===(e=(0,G.Es)())||void 0===e?void 0:e.user_unique_id)||\"\";c((0,Q.N)(t,62))},[]);let m=(0,q.x)(()=>{D.sendLog(\"addToDesktopShow\",{platform:\"pwa\"})}),f=(0,a.useRef)(null);(0,"
+        },
+        {
+          "needle": "apk",
+          "text": "(!1===t)return;\"Mac\"===r?p((0,V._)((0,H._)({},u),{frontApk:t.mac_url,afterApk:t.win_url})):p((0,V._)((0,H._)({},u),{frontApk:t.win_url,afterApk:t.mac_url}))}};e();let t=X.listen(X.EVENT.SetWebUgSource,()=>{e()});return()=>{t()}},[]),(0,a.useEffect)(()=>{var e;let t=(null===(e=(0,G.Es)())||void 0===e?void 0:e.user_unique_id)||\"\";c((0,Q.N)(t,62))},[]);let m=(0,q.x)(()=>{D.sendLog(\"addToDesktopShow\",{platform:\"pwa\"})}),f=(0,a.useRef)(null);(0,a.useEffect)(()=>{i"
+        },
+        {
+          "needle": "apk",
+          "text": "ick:()=>{D.sendLog(\"addToDesktopClick\",{platform:\"client_downloader\",ug_channel_id:z.Le.getConfig(z.gI.WebUgChannelId)||\"\"})},href:w(u.frontApk),download:v(u.frontApk),className:l()(ee.btnLink),children:(0,o.jsx)(J.Button,{theme:\"solid\",className:l()(ee.btn),children:(0,o.jsx)(\"span\",{ref:f,children:u.frontDesc})})}),(0,o.jsx)(L.a,{onClick:()=>{D.sendLog(\"addToDesktopClick\",{platform:\"client_downloader\",ug_channel_id:z.Le.getConfig(z.gI.WebUgChannelId)||\"\"})}"
+        }
+      ]
+    }
+  ],
+  "full_APK_verified": false,
+  "runtime_qualified": false,
+  "production_ready": false
+}

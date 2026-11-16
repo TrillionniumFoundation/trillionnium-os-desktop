@@ -1,0 +1,269 @@
+{
+  "schema": "pocket4-status-readiness-source-v2",
+  "source_base_commit": "500dd3af851aaadb95537b68129b8bd889504951",
+  "source_commit": "17ca3fa46e8b249df89ad4f12e338a524c54e640",
+  "source_tree": "380d6995a4e53e32ebe6526a20a57440bbe3560b",
+  "source_path": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/source",
+  "source_patch_sha256": "e7b2a7a0864da75924bb337b23d2037c53f46440ad130325c18ab1f2ed747643",
+  "production_source_head": "43c1cfc087361e9a4e5599500da1f2b8249bf38f",
+  "production_media_source_sha256": {
+    "lib.rs": "b539588d8d353a9b5b658600687f532bd03a9b7c37a5c063c25b6612a58b0370",
+    "linux_plan.rs": "e7204473b982b1d26fbf13e59d67efbad2d24f04beaa9db0b664081e27bfbaaf",
+    "development.rs": "a66cc37191a5bc8d6aac7b55cdc6aba715e4ba8269ed13bc019608fe6c3f7869"
+  },
+  "installed_production_artifact_anchor": {
+    "droidloomd": "4c57f3e9e92a39f2aef700d77b56c108a88d9ba3ba3cfe82b2613b363514ef30",
+    "droidloom-supervisor": "1f11ba9107ffe1fc4107d41368fbc609d067af2d7f47c2dace8fa70626ceda0d"
+  },
+  "build_input_closure": [
+    {
+      "path": "Cargo.lock",
+      "bytes": 51836,
+      "sha256": "c1dfa6f13f789cf40435d0d72973d029d0e264b27bd833eabb5a727492127f62",
+      "git_blob": "633e61fab77f12b1edbab687645d644acc1fc776"
+    },
+    {
+      "path": "Cargo.toml",
+      "bytes": 1996,
+      "sha256": "e33185d2fc5a65e0a4ed6df552e4f8f8f40c793ec07f7289ed27e3c0d5fa4e60",
+      "git_blob": "af55bc93ef30f0a8a4eac1e29dc364d0784b0dfc"
+    },
+    {
+      "path": "runtime/droidloom-applications/Cargo.toml",
+      "bytes": 640,
+      "sha256": "a16f5016a22a5e94b2ae46007ebfac27bee9ea2d0164e28c61b06e2b8d48c747",
+      "git_blob": "0c20e342e76e6cba9d358112e33a215f968a5689"
+    },
+    {
+      "path": "runtime/droidloom-applications/src/lib.rs",
+      "bytes": 34447,
+      "sha256": "e219a1dbeeda5c58f7efa4828b39f3e9f3e90777821e44e0a0aa3684353ec023",
+      "git_blob": "96c2e01b9d3a7d57df7f3f06a620bd9b9e8f5f2c"
+    },
+    {
+      "path": "runtime/droidloom-applications/src/main.rs",
+      "bytes": 2893,
+      "sha256": "a75f608367ea58989eaac0882a2eed62bd2015f5fe0188c90e0e39a9142bd409",
+      "git_blob": "fdf92a5238b19d723d27e25d440e3c0defe2c026"
+    },
+    {
+      "path": "runtime/droidloom-contracts/Cargo.toml",
+      "bytes": 454,
+      "sha256": "8f48f9a7a95e34c8f801b6d0dc7a9525cbf2e28e5c7d54686d11a494c114ac3c",
+      "git_blob": "8a6bf22469a83bab47bbde335976b6dba159a11b"
+    },
+    {
+      "path": "runtime/droidloom-contracts/src/gapps.rs",
+      "bytes": 12689,
+      "sha256": "f248c099d083c21402f013bca066571f68bd08e5c03faa253d6c7fca2ec10913",
+      "git_blob": "fa15d4da916659af9e878edc5f043a01ffd98892"
+    },
+    {
+      "path": "runtime/droidloom-contracts/src/lib.rs",
+      "bytes": 15048,
+      "sha256": "6f8fdc032c835aa29cae4962cee9d9db2f0b85429214d336e285f104c9f694e8",
+      "git_blob": "9f5ea4bd0f938bab34ae4cf4be5f52376e11545e"
+    },
+    {
+      "path": "runtime/droidloom-contracts/tests/repository_contracts.rs",
+      "bytes": 17515,
+      "sha256": "916ecb848e8ed328f27d0eb87a16a23c1235c0daf48b03db026a51f6e9ac8cee",
+      "git_blob": "cb516926049b02b40f60fc24a5fc9c4076414f4e"
+    },
+    {
+      "path": "runtime/droidloom-cpu-placement/Cargo.toml",
+      "bytes": 287,
+      "sha256": "7e7c7368d5e96ea1a1004cd35b149dbee191c4029d634fde79dc9c2783d34153",
+      "git_blob": "7e5ce2065dfca14b434be77f89600c6212556fb2"
+    },
+    {
+      "path": "runtime/droidloom-cpu-placement/src/lib.rs",
+      "bytes": 1956,
+      "sha256": "b711e37a7245dc0d817e69d6589263b864cfd7ea43f2428c6d590c7e47863ab0",
+      "git_blob": "f149c00c2bc765eeaf70bc0d64adeaa53279083d"
+    },
+    {
+      "path": "runtime/droidloom-cpu-placement/src/linux.rs",
+      "bytes": 11370,
+      "sha256": "addc956fcae5d493cdf9bf55bd82ea79119caffb58bd8bc1fee44e17069357f8",
+      "git_blob": "3e34a83d7b7fb1f203173c638c9011b4180de8d1"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/Cargo.toml",
+      "bytes": 844,
+      "sha256": "8a5c31742965d5226baadfae8f9ab3370cb1973b2761f4ab7395689c6425f20f",
+      "git_blob": "564d16388d4215b552a4c816b16b24cb5436c4b0"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/assets/development-cgroups.json",
+      "bytes": 876,
+      "sha256": "f03de3fc015e9fce4630ccdeb3db7f300d7c1d122f30a7fb54654a642690f3c7",
+      "git_blob": "643148c02ea3791fa3ca404c2904293391b361ae"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/examples/cpu-placement-probe.rs",
+      "bytes": 5017,
+      "sha256": "8cacf7cce2b7bc54017d5a03f2b716dfd239cc816d1e9779b3f4eca190590f4d",
+      "git_blob": "d12c93b624b8b38d5db2103b9dd60d3cd65f9d34"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/apk.rs",
+      "bytes": 11695,
+      "sha256": "b515b306528884947f6ba0d3329c9c22cc35f7d4904db440f66f5a0c40c3c12f",
+      "git_blob": "ace98f4ebd04c595f5f160e399b0aeda0aa34220"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/apk_set.rs",
+      "bytes": 16047,
+      "sha256": "3e2409266ebe3c5cde34fcc7c4f7f493aa11a79e7eaf2f61498c7b60932fae02",
+      "git_blob": "0d7c14920adb3b7fee934f7d310696086e394ba9"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/bin/droidloomctl.rs",
+      "bytes": 20606,
+      "sha256": "3733dd7586ebf534aef3d4a5d176a76b8822dd0c6a6b8b39fb64adf8e70cd484",
+      "git_blob": "35da379d049713f41356cafcac4be3143b778921"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/bin/droidloomd.rs",
+      "bytes": 1869,
+      "sha256": "85ba21c0d4bdb99218f95e3ea5c4242f01634e1266fff6b9b13ad84afeddb9b0",
+      "git_blob": "930f026ddf32e1a600413b9ebdf6ec0557381e9f"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/control.rs",
+      "bytes": 71588,
+      "sha256": "50d7bc3abd94f83233ef7d461f93cb714f843cacb3fd5c0e929d06671a95f89b",
+      "git_blob": "7dff5640d00c8a578bc7f126e0105d35a6cdf80a"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/control_progress.rs",
+      "bytes": 15046,
+      "sha256": "3dcbc825033a9ea53991833deaf8440c320e105268962227a98a7a58b407eb76",
+      "git_blob": "bc1699fed4684178fe0b91f8f6d1fa0dd285bd4d"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/control_status_tests.rs",
+      "bytes": 11843,
+      "sha256": "0bafad33112df280c73ceedf675305236275bb043d0909fc4a71f6366c0a6727",
+      "git_blob": "0e8f92b7e91452ecbec6e1d2f8f7373e4c3f6ffc"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/cpu_placement.rs",
+      "bytes": 15291,
+      "sha256": "e21d849f086e28b8e9e16cc29aa62bd163a200282bdc03ca0e48293fc85137a6",
+      "git_blob": "657d9f3960a6b151dcd7f3b658d2b2fbc6bc475e"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/development.rs",
+      "bytes": 104593,
+      "sha256": "522b2a6b42d115984647d8fc80cdea5f602d4cca755d61e1cb969472517ff1a8",
+      "git_blob": "02d3621d76edbbd3d19180555437269124a16ba1"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/development_network.rs",
+      "bytes": 19654,
+      "sha256": "19918ce2f6bbc6a6ffccf416ab1b2f91527a9c7ffbda785a72a4e01016627576",
+      "git_blob": "1207531bf92104425f77e0090b9901c41b66596e"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/diagnostics.rs",
+      "bytes": 25225,
+      "sha256": "c71dd05076e5f5950673134aa5fc75efea251333374123743915b0a50c26009f",
+      "git_blob": "b264ad57cfe9818ce48ce142aed90117dc28ff31"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/gapps.rs",
+      "bytes": 10178,
+      "sha256": "5aae77729f0389ebdd80c41c55ba7dab980ab6caf38f427b0e7cbfab6d2f1978",
+      "git_blob": "ecb850a40ba3ff3b825d93fa64bac145aad726ce"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/lib.rs",
+      "bytes": 33306,
+      "sha256": "b539588d8d353a9b5b658600687f532bd03a9b7c37a5c063c25b6612a58b0370",
+      "git_blob": "f111e1d56241b7e54de63b6f3ad96b2adfb3cb6d"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/linux_plan.rs",
+      "bytes": 39598,
+      "sha256": "e7204473b982b1d26fbf13e59d67efbad2d24f04beaa9db0b664081e27bfbaaf",
+      "git_blob": "01d762650e540326d8254b3429ba8faaa65cb86d"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/main.rs",
+      "bytes": 3223,
+      "sha256": "feff8417443e1b8cbe02fb84ee7c253fe136dee205f316d2184ec4a94345c862",
+      "git_blob": "8fbde423eea48d57aa5d5de42b2e885edb2eaab5"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/package_cache.rs",
+      "bytes": 2690,
+      "sha256": "fd5803956af8704a569c9ceb82d4ace598b6db52823b51f0fcc1cb33cd787aec",
+      "git_blob": "e80b08d5b5dc5352b478ae7ad954c0f11b00e93b"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/tests/cli_diagnostics.rs",
+      "bytes": 2772,
+      "sha256": "7224422fa08769f30fc7c4fab711c0224d84ad5ed7811d2b2c9707fb29e32934",
+      "git_blob": "ab07a07277fea3d8bf2aca7988211ab9f125e29c"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/tests/cli_inspect.rs",
+      "bytes": 1172,
+      "sha256": "748c2ad181f533dba32724b3095af9b9ffaf606f6096391d570cbca1bf973f64",
+      "git_blob": "6e9a2c2f1cb182f2b5b3e3b8ffcddc7e88953398"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/tests/cli_install.rs",
+      "bytes": 3305,
+      "sha256": "5ea16c69f3b6e38c98917318877a5e2150334a8260abedfcc6a416001544b6ce",
+      "git_blob": "7ab019ffce7281814ee9f64d5d48ca3212cff96a"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/tests/cli_install_multiple.rs",
+      "bytes": 5114,
+      "sha256": "67bd2fbb4047afe9410ea6edc6ca52616aa9cb439996a85d987161be9947db2c",
+      "git_blob": "e5178bf87cd0f147e6bd806c5cb071acff6259ed"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/tests/cli_lifecycle.rs",
+      "bytes": 12081,
+      "sha256": "e5d2b54a7f735ab6c18e8f6ca10fde347f8da832f4d8d7db720399caf0c8377c",
+      "git_blob": "aa7670ed72de8cfae63a7747960d763b3143345c"
+    },
+    {
+      "path": "runtime/droidloom-window-policy/Cargo.toml",
+      "bytes": 407,
+      "sha256": "e77f560fce926fd9f6dee999444fd3034fa5565866e18ee6a230fdc304c392bb",
+      "git_blob": "0255359c49161b20954b08e323f9ff5f06c6f135"
+    },
+    {
+      "path": "runtime/droidloom-window-policy/src/lib.rs",
+      "bytes": 24252,
+      "sha256": "afc406e9e2d592e86a08938406b0e4cb12f0da9e7e35dd844bbbca1ecab0ecf8",
+      "git_blob": "31123b84a133f6f8410be21812119e0790556081"
+    },
+    {
+      "path": "rust-toolchain.toml",
+      "bytes": 86,
+      "sha256": "8bc51ecab82415fddd8489604f2424e137d71856e7f65cbdcfaa48850d794b46",
+      "git_blob": "9e8885762b27460577faf9c19708eabb42cc14b8"
+    }
+  ],
+  "build_result_sha256": "9e0e11dfd42c6816424ab874e1619da76d9f71072776e424f02cd89162dafcc5",
+  "source_matches_installed_daemon": false,
+  "source_identity_scope": "New committed build with explicit production-feature preservation; not a claim that new source equals old installed source.",
+  "production_media_and_term_preserved": true,
+  "actual_current_config_plan_equivalent": true,
+  "runtime_qualified": false,
+  "full_production_source_comparison_sha256": "bc30aaeb167aff05ab0139b0d5669408d21671e67ba8ab37203afe76f9471f76",
+  "source_comparison_patch_sha256": "463ac2c5153926e1852a20566c230e1f72e4fce520a6f4a808d8d41031cebf8b",
+  "retained_failures": [
+    "original SUN_LEN fail 95e5075d\u2026",
+    "attempt03 controller porcelain parser",
+    "attempt04 missing Command import",
+    "attempt05 worker-thread PDEATHSIG fixture"
+  ],
+  "initial_candidate_deployable": false
+}

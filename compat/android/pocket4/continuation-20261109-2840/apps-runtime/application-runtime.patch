@@ -1,0 +1,3260 @@
+diff --git a/runtime/droidloom-applications/src/lib.rs b/runtime/droidloom-applications/src/lib.rs
+index 96c2e01..841773d 100644
+--- a/runtime/droidloom-applications/src/lib.rs
++++ b/runtime/droidloom-applications/src/lib.rs
+@@ -6,6 +6,9 @@
+ 
+ #![forbid(unsafe_code)]
+ 
++pub mod release;
++pub mod runtime_plan;
++
+ use std::collections::{BTreeMap, BTreeSet};
+ use std::ffi::OsString;
+ use std::fs;
+diff --git a/runtime/droidloom-applications/src/main.rs b/runtime/droidloom-applications/src/main.rs
+index fdf92a5..ebe87b6 100644
+--- a/runtime/droidloom-applications/src/main.rs
++++ b/runtime/droidloom-applications/src/main.rs
+@@ -1,4 +1,4 @@
+-//! User-session Android application catalog and XDG launcher reconciler.
++//! User-session Android application catalog, XDG reconciliation and release evidence checks.
+ 
+ #![forbid(unsafe_code)]
+ 
+@@ -13,9 +13,118 @@ use droidloom_supervisor::control::DEFAULT_CONTROL_SOCKET;
+ 
+ const DEFAULT_REFRESH_SECONDS: u64 = 30;
+ 
++#[cfg(test)]
++mod cli_tests {
++    use super::*;
++
++    #[test]
++    fn release_check_requires_external_pins_and_excludes_catalog_mutation() {
++        assert!(Cli::try_parse_from(["apps", "--release-check", "/manifest"]).is_err());
++        let args = [
++            "apps",
++            "--release-check",
++            "/manifest",
++            "--release-results",
++            "/results",
++            "--expect-release-sha256",
++            "manifest-pin",
++            "--expect-main-sha256",
++            "main-pin",
++            "--expect-app-count",
++            "42",
++        ];
++        assert!(Cli::try_parse_from(args).is_ok());
++        let mut conflicting = args.to_vec();
++        conflicting.push("--remove-managed");
++        assert!(Cli::try_parse_from(conflicting).is_err());
++        assert!(Cli::try_parse_from(["apps", "--once"]).is_ok());
++    }
++    #[test]
++    fn runtime_plan_requires_complete_pins_and_excludes_other_actions() {
++        assert!(Cli::try_parse_from(["apps", "--runtime-plan", "/plan"]).is_err());
++        let args = [
++            "apps",
++            "--runtime-plan",
++            "/plan",
++            "--expect-runtime-plan-sha256",
++            "plan-pin",
++            "--expect-app-count",
++            "42",
++        ];
++        assert!(Cli::try_parse_from(args).is_ok());
++        for extra in [
++            vec!["--once"],
++            vec!["--remove-managed"],
++            vec!["--user", "0"],
++            vec!["--inspect-package", "org.mozilla.firefox"],
++        ] {
++            let mut conflicting = args.to_vec();
++            conflicting.extend(extra);
++            assert!(Cli::try_parse_from(conflicting).is_err());
++        }
++        assert!(Cli::try_parse_from(["apps", "--expect-app-count", "42"]).is_err());
++    }
++
++    #[test]
++    fn installed_identity_inspection_allows_only_its_own_socket_and_user() {
++        assert!(
++            Cli::try_parse_from([
++                "apps",
++                "--inspect-package",
++                "org.mozilla.firefox",
++                "--socket",
++                "/socket",
++                "--user",
++                "1"
++            ])
++            .is_ok()
++        );
++        assert!(
++            Cli::try_parse_from(["apps", "--inspect-package", "org.mozilla.firefox", "--once"])
++                .is_err()
++        );
++        assert!(
++            Cli::try_parse_from([
++                "apps",
++                "--inspect-package",
++                "org.mozilla.firefox",
++                "--release-results",
++                "/results"
++            ])
++            .is_err()
++        );
++    }
++}
++
+ #[derive(Debug, Parser)]
+ #[command(name = "droidloom-applications", version, about)]
++#[command(group(clap::ArgGroup::new("release_action").args(["release_check", "runtime_plan"])))]
+ struct Cli {
++    /// Check complete declared release evidence without contacting Android or changing the catalog.
++    #[arg(long, value_name = "MANIFEST", requires_all = ["release_results", "expect_release_sha256", "expect_main_sha256", "expect_app_count"],
++        conflicts_with_all = ["runtime_plan", "inspect_package", "remove_managed", "socket", "user", "once", "refresh_seconds"])]
++    release_check: Option<PathBuf>,
++    /// Results for every selected application and gate.
++    #[arg(long, value_name = "RESULTS", requires = "release_check")]
++    release_results: Option<PathBuf>,
++    /// Independently frozen manifest SHA-256; prevents a reduced application selection.
++    #[arg(long, requires = "release_check")]
++    expect_release_sha256: Option<String>,
++    /// Independently established current Main qualification receipt SHA-256.
++    #[arg(long, requires = "release_check")]
++    expect_main_sha256: Option<String>,
++    /// Complete selected application count, including blocked and unsupported applications.
++    #[arg(long, requires = "release_action")]
++    expect_app_count: Option<usize>,
++    /// Query actual PM identity and APK bytes; never launches or installs an app.
++    #[arg(long, conflicts_with_all = ["runtime_plan", "release_check", "remove_managed", "once", "refresh_seconds"])]
++    inspect_package: Option<String>,
++    /// Execute explicit per-app runtime routing; unsupported and pending gates remain incomplete.
++    #[arg(long, requires_all = ["expect_runtime_plan_sha256", "expect_app_count"], conflicts_with_all = ["inspect_package", "release_check", "remove_managed", "once", "refresh_seconds", "user"])]
++    runtime_plan: Option<PathBuf>,
++    /// Independently reviewed complete runtime plan hash.
++    #[arg(long, requires = "runtime_plan")]
++    expect_runtime_plan_sha256: Option<String>,
+     /// Remove only entries recorded in Droidloom's catalog; Android need not be running.
+     #[arg(long)]
+     remove_managed: bool,
+@@ -42,6 +151,48 @@ fn main() {
+ 
+ fn run() -> Result<(), Box<dyn std::error::Error>> {
+     let cli = Cli::parse();
++    if let Some(package) = &cli.inspect_package {
++        let observed =
++            droidloom_applications::runtime_plan::inspect_package(&cli.socket, package, cli.user)?;
++        println!(
++            "{}",
++            serde_json::to_string_pretty(&serde_json::json!({
++                "operation": "inspect_installed_application", "observation": observed,
++                "production_ready": false, "runtime_qualified": false, "app_launches": 0
++            }))?
++        );
++        return Ok(());
++    }
++    if let Some(path) = &cli.runtime_plan {
++        let report = droidloom_applications::runtime_plan::run_files(
++            &cli.socket,
++            path,
++            cli.expect_runtime_plan_sha256
++                .as_deref()
++                .ok_or("missing runtime plan pin")?,
++            cli.expect_app_count
++                .ok_or("missing complete selected count")?,
++        )?;
++        println!("{}", serde_json::to_string_pretty(&report)?);
++        return Err("application acceptance remains incomplete; retain blocked, unsupported and pending gates".into());
++    }
++    if let Some(manifest) = cli.release_check {
++        let report = droidloom_applications::release::check_release_files(
++            &manifest,
++            &cli.release_results.ok_or("missing release results")?,
++            &cli.expect_release_sha256
++                .ok_or("missing release manifest pin")?,
++            &cli.expect_main_sha256.ok_or("missing current Main pin")?,
++            cli.expect_app_count
++                .ok_or("missing selected application count")?,
++        )?;
++        println!("{}", serde_json::to_string_pretty(&report)?);
++        return if report.evidence_complete {
++            Ok(())
++        } else {
++            Err("declared release evidence is incomplete; inspect the JSON report".into())
++        };
++    }
+     droidloom_cpu_placement::initialize(droidloom_cpu_placement::Role::Background);
+     let paths = CatalogPaths::from_environment(
+         env::var_os("XDG_DATA_HOME"),
+diff --git a/runtime/droidloom-applications/src/release.rs b/runtime/droidloom-applications/src/release.rs
+new file mode 100644
+index 0000000..26a74ba
+--- /dev/null
++++ b/runtime/droidloom-applications/src/release.rs
+@@ -0,0 +1,541 @@
++//! Read-only completeness checks for an externally pinned application release.
++//!
++//! This checks declared evidence and its byte identity. It neither runs Android
++//! tests nor authenticates the author or meaning of the supplied evidence.
++use std::collections::{BTreeMap, BTreeSet};
++use std::fs::{self, File};
++use std::io::{self, Read};
++use std::os::unix::fs::MetadataExt;
++use std::path::{Path, PathBuf};
++
++use serde::{Deserialize, Serialize};
++use sha2::{Digest, Sha256};
++
++const INPUT_LIMIT: u64 = 8 * 1024 * 1024;
++const EVIDENCE_LIMIT: u64 = 64 * 1024 * 1024;
++const TOTAL_EVIDENCE_LIMIT: u64 = 256 * 1024 * 1024;
++pub(crate) const COMMON_GATES: [&str; 6] = [
++    "identity", "lifecycle", "stability", "data_permissions", "release_scope", "ui_observation",
++];
++
++#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
++#[serde(deny_unknown_fields)]
++struct Main {
++    main_sha256: String,
++    boot_id: String,
++    framework_epoch_sha256: String,
++    cohort_sha256: String,
++}
++
++#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
++#[serde(deny_unknown_fields)]
++struct Apk {
++    name: String,
++    bytes: u64,
++    sha256: String,
++    signer_sha256: Vec<String>,
++}
++
++#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
++#[serde(deny_unknown_fields)]
++struct Identity {
++    package: String,
++    android_user: u32,
++    uid: u32,
++    version_code: u64,
++    version_name: String,
++    engine_mapping_sha256: String,
++    apks: Vec<Apk>,
++}
++
++#[derive(Clone, Debug, Deserialize, Serialize)]
++#[serde(deny_unknown_fields)]
++struct ExpectedApp {
++    identity: Identity,
++    required_gates: Vec<String>,
++}
++
++#[derive(Clone, Debug, Deserialize, Serialize)]
++#[serde(deny_unknown_fields)]
++struct Manifest {
++    schema: u32,
++    main: Main,
++    apps: Vec<ExpectedApp>,
++}
++
++#[derive(Clone, Debug, Deserialize, Serialize)]
++#[serde(deny_unknown_fields)]
++struct EvidenceRef {
++    path: PathBuf,
++    bytes: u64,
++    sha256: String,
++}
++
++#[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq)]
++#[serde(rename_all = "snake_case")]
++enum Status {
++    Passed,
++    Failed,
++    Blocked,
++    Unsupported,
++}
++
++#[derive(Clone, Debug, Deserialize, Serialize)]
++#[serde(deny_unknown_fields)]
++struct Gate {
++    id: String,
++    status: Status,
++    reason: Option<String>,
++    evidence: Vec<EvidenceRef>,
++}
++
++#[derive(Clone, Debug, Deserialize, Serialize)]
++#[serde(deny_unknown_fields)]
++struct AppResult {
++    identity: Identity,
++    main: Main,
++    gates: Vec<Gate>,
++}
++
++#[derive(Clone, Debug, Deserialize, Serialize)]
++#[serde(deny_unknown_fields)]
++struct Results {
++    schema: u32,
++    main: Main,
++    apps: Vec<AppResult>,
++}
++
++#[derive(Debug, Serialize)]
++struct AppAssessment {
++    package: String,
++    evidence_complete: bool,
++    passed_gates: usize,
++    failed_gates: usize,
++    blocked_gates: usize,
++    unsupported_gates: usize,
++    missing_gates: Vec<String>,
++    issues: Vec<String>,
++}
++
++/// Structural completeness and byte-integrity report, not a runtime attestation.
++#[derive(Debug, Serialize)]
++pub struct ReleaseReport {
++    schema: u32,
++    /// True only when every expected application and gate has matching evidence.
++    pub evidence_complete: bool,
++    expected_applications: usize,
++    complete_applications: usize,
++    manifest_sha256: String,
++    results_sha256: String,
++    main_sha256: String,
++    tests_executed_by_checker: usize,
++    production_ready: bool,
++    runtime_qualified: bool,
++    meaning: &'static str,
++    issues: Vec<String>,
++    applications: Vec<AppAssessment>,
++}
++
++fn invalid(message: impl Into<String>) -> io::Error {
++    io::Error::new(io::ErrorKind::InvalidData, message.into())
++}
++
++fn digest(raw: &[u8]) -> String {
++    hex::encode(Sha256::digest(raw))
++}
++
++pub(crate) fn valid_sha(value: &str) -> bool {
++    value.len() == 64 && value.bytes().all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c))
++}
++
++fn stable(a: &fs::Metadata, b: &fs::Metadata) -> bool {
++    a.dev() == b.dev() && a.ino() == b.ino() && a.mode() == b.mode()
++        && a.uid() == b.uid() && a.gid() == b.gid() && a.nlink() == b.nlink()
++        && a.len() == b.len() && a.mtime() == b.mtime() && a.mtime_nsec() == b.mtime_nsec()
++        && a.ctime() == b.ctime() && a.ctime_nsec() == b.ctime_nsec()
++}
++
++pub(crate) fn read_frozen(path: &Path, limit: u64) -> io::Result<Vec<u8>> {
++    if !path.is_absolute() || path.canonicalize()? != path {
++        return Err(invalid("evidence paths must be absolute and canonical"));
++    }
++    let named = fs::symlink_metadata(path)?;
++    if !named.file_type().is_file() || named.len() > limit {
++        return Err(invalid("input is not a bounded regular file"));
++    }
++    let mut file = File::open(path)?;
++    let before = file.metadata()?;
++    if !stable(&named, &before) {
++        return Err(invalid("input changed before opening"));
++    }
++    let mut raw = Vec::new();
++    Read::by_ref(&mut file).take(limit + 1).read_to_end(&mut raw)?;
++    if raw.len() as u64 != before.len()
++        || !stable(&before, &file.metadata()?)
++        || !stable(&before, &fs::symlink_metadata(path)?)
++    {
++        return Err(invalid("input changed while reading"));
++    }
++    Ok(raw)
++}
++
++fn normalized(mut identity: Identity) -> Identity {
++    for apk in &mut identity.apks {
++        apk.signer_sha256.sort();
++    }
++    identity.apks.sort_by(|a, b| a.name.cmp(&b.name));
++    identity
++}
++
++fn validate_manifest(value: &Manifest, count: usize, main_sha256: &str) -> io::Result<()> {
++    if value.schema != 1 || !(1..=1024).contains(&count) || value.apps.len() != count {
++        return Err(invalid("manifest schema or externally expected application count differs"));
++    }
++    let main = &value.main;
++    if !valid_sha(main_sha256) || main.main_sha256 != main_sha256
++        || !valid_sha(&main.framework_epoch_sha256) || !valid_sha(&main.cohort_sha256)
++        || main.boot_id.len() != 36
++        || !main.boot_id.bytes().enumerate().all(|(i, c)| {
++            if [8, 13, 18, 23].contains(&i) { c == b'-' }
++            else { c.is_ascii_digit() || (b'a'..=b'f').contains(&c) }
++        })
++    {
++        return Err(invalid("manifest does not bind the externally expected Main and boot"));
++    }
++    let mut packages = BTreeSet::new();
++    for app in &value.apps {
++        let id = &app.identity;
++        if id.package.is_empty() || id.package.len() > 255
++            || !id.package.split('.').all(|p| !p.is_empty() && p.bytes().all(|c| c.is_ascii_alphanumeric() || c == b'_'))
++            || !packages.insert(&id.package) || id.version_name.is_empty()
++            || id.version_name.len() > 256 || !valid_sha(&id.engine_mapping_sha256)
++            || id.apks.is_empty() || id.apks.len() > 256
++        {
++            return Err(invalid("invalid, duplicate, or incomplete expected application identity"));
++        }
++        let mut names = BTreeSet::new();
++        let mut common_signers = None;
++        for apk in &id.apks {
++            let signers: BTreeSet<_> = apk.signer_sha256.iter().collect();
++            if apk.name.is_empty() || apk.name.len() > 255 || !apk.name.ends_with(".apk")
++                || apk.name.contains(['/', '\\']) || !names.insert(&apk.name)
++                || apk.bytes == 0 || !valid_sha(&apk.sha256)
++                || signers.is_empty() || signers.len() > 16 || signers.len() != apk.signer_sha256.len()
++                || !signers.iter().all(|s| valid_sha(s))
++                || common_signers.as_ref().is_some_and(|expected| expected != &signers)
++            {
++                return Err(invalid("invalid APK identity, duplicate split, or split signer disagreement"));
++            }
++            common_signers = Some(signers);
++        }
++        if !names.contains(&String::from("base.apk")) {
++            return Err(invalid("each installed application must include its base.apk identity"));
++        }
++        let gates: BTreeSet<_> = app.required_gates.iter().map(String::as_str).collect();
++        if gates.len() != app.required_gates.len() || gates.len() > 128
++            || gates.iter().any(|g| g.is_empty() || g.len() > 128)
++            || !COMMON_GATES.iter().all(|g| gates.contains(g))
++            || !gates.iter().any(|g| !COMMON_GATES.contains(g))
++        {
++            return Err(invalid("each application requires all common gates and its business gates"));
++        }
++    }
++    Ok(())
++}
++
++fn check_gate_evidence(gate: &Gate, budget: &mut u64) -> io::Result<()> {
++    if gate.evidence.len() > 128 || (gate.status == Status::Passed && gate.evidence.iter().all(|r| r.bytes == 0)) {
++        return Err(invalid("passed gate requires bounded, nonempty evidence"));
++    }
++    if gate.status != Status::Passed && gate.reason.as_deref().is_none_or(|s| s.trim().is_empty()) {
++        return Err(invalid("failed, blocked, and unsupported gates require an explicit reason"));
++    }
++    for evidence in &gate.evidence {
++        if !valid_sha(&evidence.sha256) || evidence.bytes > EVIDENCE_LIMIT {
++            return Err(invalid("invalid evidence reference"));
++        }
++        *budget = budget.checked_add(evidence.bytes).ok_or_else(|| invalid("evidence budget overflow"))?;
++        if *budget > TOTAL_EVIDENCE_LIMIT {
++            return Err(invalid("total evidence read budget exceeded"));
++        }
++        let bytes = read_frozen(&evidence.path, evidence.bytes)?;
++        if bytes.len() as u64 != evidence.bytes || digest(&bytes) != evidence.sha256 {
++            return Err(invalid("evidence size or SHA-256 differs"));
++        }
++    }
++    Ok(())
++}
++
++/// Check a complete selected release against one pinned Main's declared results.
++///
++/// The caller independently supplies the trusted manifest digest, current Main
++/// receipt digest, and selected application count. No Android command is sent.
++pub fn check_release_files(
++    manifest_path: &Path,
++    results_path: &Path,
++    expected_manifest_sha256: &str,
++    expected_main_sha256: &str,
++    expected_applications: usize,
++) -> Result<ReleaseReport, Box<dyn std::error::Error>> {
++    let manifest_raw = read_frozen(manifest_path, INPUT_LIMIT)?;
++    if !valid_sha(expected_manifest_sha256) || digest(&manifest_raw) != expected_manifest_sha256 {
++        return Err(invalid("externally pinned release manifest SHA-256 differs").into());
++    }
++    let manifest: Manifest = serde_json::from_slice(&manifest_raw)?;
++    validate_manifest(&manifest, expected_applications, expected_main_sha256)?;
++    let results_raw = read_frozen(results_path, INPUT_LIMIT)?;
++    let results: Results = serde_json::from_slice(&results_raw)?;
++    let mut issues = Vec::new();
++    if results.schema != 1 || results.main != manifest.main {
++        issues.push("results schema or Main/boot/framework/cohort differs".into());
++    }
++    let expected: BTreeSet<_> = manifest.apps.iter().map(|app| app.identity.package.as_str()).collect();
++    let mut found = BTreeMap::new();
++    for app in &results.apps {
++        let package = app.identity.package.as_str();
++        if !expected.contains(package) {
++            issues.push(format!("unexpected application: {package}"));
++        }
++        if found.insert(package, app).is_some() {
++            issues.push(format!("duplicate application result: {package}"));
++        }
++    }
++    let mut budget = 0;
++    let mut applications = Vec::new();
++    for app in &manifest.apps {
++        let package = &app.identity.package;
++        let mut report = AppAssessment {
++            package: package.clone(), evidence_complete: false,
++            passed_gates: 0, failed_gates: 0, blocked_gates: 0, unsupported_gates: 0,
++            missing_gates: Vec::new(), issues: Vec::new(),
++        };
++        let Some(actual) = found.get(package.as_str()) else {
++            report.missing_gates = app.required_gates.clone();
++            report.issues.push("application has no result in this run".into());
++            applications.push(report);
++            continue;
++        };
++        if normalized(actual.identity.clone()) != normalized(app.identity.clone()) {
++            report.issues.push("version, package, UID/user, APK, signer, or engine mapping differs".into());
++        }
++        if actual.main != manifest.main || results.main != manifest.main {
++            report.issues.push("application is not bound to this Main/boot/framework/cohort".into());
++        }
++        let required: BTreeSet<_> = app.required_gates.iter().map(String::as_str).collect();
++        let mut seen = BTreeSet::new();
++        for gate in &actual.gates {
++            if !seen.insert(gate.id.as_str()) {
++                report.issues.push(format!("duplicate gate: {}", gate.id));
++                continue;
++            }
++            if !required.contains(gate.id.as_str()) {
++                report.issues.push(format!("unexpected gate: {}", gate.id));
++                continue;
++            }
++            match gate.status {
++                Status::Passed => report.passed_gates += 1,
++                Status::Failed => report.failed_gates += 1,
++                Status::Blocked => report.blocked_gates += 1,
++                Status::Unsupported => report.unsupported_gates += 1,
++            }
++            if let Err(error) = check_gate_evidence(gate, &mut budget) {
++                report.issues.push(format!("{}: {error}", gate.id));
++            }
++        }
++        report.missing_gates = required.difference(&seen).map(|s| (*s).to_owned()).collect();
++        report.evidence_complete = report.issues.is_empty() && report.missing_gates.is_empty()
++            && report.passed_gates == required.len();
++        applications.push(report);
++    }
++    let complete = applications.iter().filter(|app| app.evidence_complete).count();
++    Ok(ReleaseReport {
++        schema: 1, evidence_complete: issues.is_empty() && complete == expected_applications,
++        expected_applications, complete_applications: complete,
++        manifest_sha256: expected_manifest_sha256.into(), results_sha256: digest(&results_raw),
++        main_sha256: expected_main_sha256.into(), tests_executed_by_checker: 0,
++        production_ready: false, runtime_qualified: false,
++        meaning: "Declared evidence coverage and byte integrity only; this checker does not execute tests, authenticate evidence authors, establish live Main state, or grant production readiness.",
++        issues, applications,
++    })
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use tempfile::TempDir;
++
++    fn fixture(count: usize) -> (TempDir, Manifest, Results) {
++        let root = tempfile::tempdir().unwrap();
++        let path = root.path().join("observed.json");
++        fs::write(&path, b"{\"observation\":\"fixture, not Android\"}\n").unwrap();
++        let bytes = fs::read(&path).unwrap();
++        let reference = EvidenceRef { path, bytes: bytes.len() as u64, sha256: digest(&bytes) };
++        let main = Main { main_sha256: "1".repeat(64),
++            boot_id: "97d9600f-e081-465c-9e6e-62651e09806b".into(),
++            framework_epoch_sha256: "2".repeat(64), cohort_sha256: "3".repeat(64) };
++        let mut apps = Vec::new();
++        let mut results = Vec::new();
++        for i in 0..count {
++            let identity = Identity {
++                package: format!("org.example.app{i}"), android_user: 0, uid: 10000 + u32::try_from(i).unwrap(),
++                version_code: 2, version_name: "2.0".into(), engine_mapping_sha256: "4".repeat(64),
++                apks: vec![Apk { name: "base.apk".into(), bytes: 3, sha256: "5".repeat(64),
++                    signer_sha256: vec!["6".repeat(64)] }],
++            };
++            let mut gates: Vec<String> = COMMON_GATES.iter().map(|s| (*s).into()).collect();
++            gates.push("example.query".into());
++            apps.push(ExpectedApp { identity: identity.clone(), required_gates: gates.clone() });
++            results.push(AppResult { identity, main: main.clone(),
++                gates: gates.into_iter().map(|id| Gate { id, status: Status::Passed,
++                    reason: None, evidence: vec![reference.clone()] }).collect() });
++        }
++        (root, Manifest { schema: 1, main: main.clone(), apps },
++            Results { schema: 1, main, apps: results })
++    }
++
++    fn check(root: &TempDir, manifest: &Manifest, results: &Results, count: usize) -> ReleaseReport {
++        let m = root.path().join("manifest.json");
++        let r = root.path().join("results.json");
++        let raw = serde_json::to_vec(manifest).unwrap();
++        fs::write(&m, &raw).unwrap();
++        fs::write(&r, serde_json::to_vec(results).unwrap()).unwrap();
++        check_release_files(&m, &r, &digest(&raw), &manifest.main.main_sha256, count).unwrap()
++    }
++
++    #[test]
++    fn complete_42_is_only_evidence_completeness_and_13_is_incomplete() {
++        let (root, manifest, mut results) = fixture(42);
++        let report = check(&root, &manifest, &results, 42);
++        assert!(report.evidence_complete);
++        assert_eq!(report.tests_executed_by_checker, 0);
++        assert!(!report.production_ready);
++        assert!(!report.runtime_qualified);
++        results.apps.truncate(13);
++        let report = check(&root, &manifest, &results, 42);
++        assert!(!report.evidence_complete);
++        assert_eq!(report.complete_applications, 13);
++        assert_eq!(report.applications.iter().filter(|a| !a.missing_gates.is_empty()).count(), 29);
++    }
++
++    #[test]
++    fn blocked_unsupported_failed_and_missing_are_never_passes() {
++        for status in [Status::Blocked, Status::Unsupported, Status::Failed] {
++            let (root, manifest, mut results) = fixture(1);
++            results.apps[0].gates[0].status = status;
++            results.apps[0].gates[0].reason = Some("required service unavailable".into());
++            assert!(!check(&root, &manifest, &results, 1).evidence_complete);
++        }
++        let (root, manifest, mut results) = fixture(1);
++        results.apps[0].gates.pop();
++        assert!(!check(&root, &manifest, &results, 1).evidence_complete);
++    }
++
++    #[test]
++    fn old_main_boot_epoch_and_cohort_cannot_transfer_acceptance() {
++        for field in 0..4 {
++            let (root, manifest, mut results) = fixture(1);
++            match field {
++                0 => results.apps[0].main.main_sha256 = "9".repeat(64),
++                1 => results.apps[0].main.boot_id = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa".into(),
++                2 => results.apps[0].main.framework_epoch_sha256 = "9".repeat(64),
++                _ => results.apps[0].main.cohort_sha256 = "9".repeat(64),
++            }
++            assert!(!check(&root, &manifest, &results, 1).evidence_complete);
++        }
++    }
++
++    #[test]
++    fn exact_version_split_signer_uid_and_engine_are_required() {
++        for field in 0..7 {
++            let (root, manifest, mut results) = fixture(1);
++            let id = &mut results.apps[0].identity;
++            match field {
++                0 => id.version_code += 1,
++                1 => id.apks[0].signer_sha256[0] = "9".repeat(64),
++                2 => id.apks[0].sha256 = "9".repeat(64),
++                3 => id.apks[0].name = "split.apk".into(),
++                4 => id.uid += 1,
++                5 => id.android_user += 1,
++                _ => id.engine_mapping_sha256 = "9".repeat(64),
++            }
++            assert!(!check(&root, &manifest, &results, 1).evidence_complete);
++        }
++    }
++
++    #[test]
++    fn duplicates_and_extras_cannot_pad_coverage() {
++        let (root, manifest, mut results) = fixture(2);
++        results.apps[1] = results.apps[0].clone();
++        assert!(!check(&root, &manifest, &results, 2).evidence_complete);
++        let (root, manifest, mut results) = fixture(1);
++        let duplicate_gate = results.apps[0].gates[0].clone();
++        results.apps[0].gates.push(duplicate_gate);
++        assert!(!check(&root, &manifest, &results, 1).evidence_complete);
++        let (root, manifest, mut results) = fixture(1);
++        let mut extra = results.apps[0].clone();
++        extra.identity.package = "org.example.unselected".into();
++        results.apps.push(extra);
++        assert!(!check(&root, &manifest, &results, 1).evidence_complete);
++    }
++
++    #[test]
++    fn missing_corrupt_or_unpinned_evidence_is_incomplete() {
++        let (root, manifest, mut results) = fixture(1);
++        results.apps[0].gates[0].evidence.clear();
++        assert!(!check(&root, &manifest, &results, 1).evidence_complete);
++        let (root, manifest, results) = fixture(1);
++        fs::write(root.path().join("observed.json"), b"corrupt").unwrap();
++        assert!(!check(&root, &manifest, &results, 1).evidence_complete);
++    }
++
++    #[test]
++    fn empty_stderr_can_support_but_cannot_replace_a_runtime_receipt() {
++        let (root, manifest, mut results) = fixture(1);
++        let path = root.path().join("stderr.log");
++        fs::write(&path, b"").unwrap();
++        let empty = EvidenceRef { path, bytes: 0, sha256: digest(b"") };
++        results.apps[0].gates[0].evidence.push(empty.clone());
++        assert!(check(&root, &manifest, &results, 1).evidence_complete);
++        results.apps[0].gates[0].evidence = vec![empty];
++        assert!(!check(&root, &manifest, &results, 1).evidence_complete);
++    }
++
++    #[test]
++    fn understated_evidence_size_is_rejected_before_reading_payload() {
++        let root = tempfile::tempdir().unwrap();
++        let path = root.path().join("large-evidence.log");
++        File::create(&path).unwrap().set_len(EVIDENCE_LIMIT).unwrap();
++        for declared in [0, 1] {
++            let gate = Gate {
++                id: "identity".into(), status: Status::Blocked,
++                reason: Some("deliberately understated fixture".into()),
++                evidence: vec![EvidenceRef {
++                    path: path.clone(), bytes: declared, sha256: "0".repeat(64),
++                }],
++            };
++            let mut budget = 0;
++            let error = check_gate_evidence(&gate, &mut budget).unwrap_err();
++            assert_eq!(error.to_string(), "input is not a bounded regular file");
++            assert_eq!(budget, declared);
++        }
++    }
++
++    #[test]
++    fn expected_manifest_count_current_main_and_common_gates_are_external_pins() {
++        let (_root, mut manifest, _results) = fixture(2);
++        assert!(validate_manifest(&manifest, 42, &"1".repeat(64)).is_err());
++        assert!(validate_manifest(&manifest, 2, &"9".repeat(64)).is_err());
++        manifest.apps[0].required_gates.retain(|g| g != "release_scope");
++        assert!(validate_manifest(&manifest, 2, &"1".repeat(64)).is_err());
++    }
++
++    #[test]
++    fn split_identity_order_does_not_change_meaning() {
++        let (root, mut manifest, mut results) = fixture(1);
++        let mut split = manifest.apps[0].identity.apks[0].clone();
++        split.name = "split_config.arm64_v8a.apk".into();
++        manifest.apps[0].identity.apks.push(split.clone());
++        results.apps[0].identity.apks.insert(0, split);
++        assert!(check(&root, &manifest, &results, 1).evidence_complete);
++    }
++}
+diff --git a/runtime/droidloom-applications/src/runtime_plan.rs b/runtime/droidloom-applications/src/runtime_plan.rs
+new file mode 100644
+index 0000000..e5df998
+--- /dev/null
++++ b/runtime/droidloom-applications/src/runtime_plan.rs
+@@ -0,0 +1,659 @@
++//! Executable per-application admission and explicit business-flow routing.
++//!
++//! This preserves every selected row. A real browser invocation remains partial
++//! progress; unsupported profiles and pending gates never become acceptance.
++use std::collections::{BTreeMap, BTreeSet};
++use std::path::{Path, PathBuf};
++
++use droidloom_supervisor::control::application_probe::{
++    ApplicationInspection, RuntimeEpoch, validate_https_url,
++};
++use droidloom_supervisor::control::{self, ControlRequest};
++use serde::{Deserialize, Serialize};
++use sha2::{Digest, Sha256};
++
++const INPUT_LIMIT: u64 = 8 * 1024 * 1024;
++const BROWSER_GATES: [&str; 5] = [
++    "browser.external_https",
++    "browser.document",
++    "browser.media",
++    "browser.return",
++    "browser.recovery",
++];
++
++#[derive(Clone, Debug, Deserialize, Serialize)]
++#[serde(deny_unknown_fields)]
++struct FilePin {
++    path: PathBuf,
++    bytes: u64,
++    sha256: String,
++}
++
++#[derive(Clone, Debug, Deserialize, Serialize)]
++#[serde(deny_unknown_fields)]
++struct ApkInput {
++    name: String,
++    bytes: u64,
++    sha256: String,
++}
++
++#[derive(Clone, Debug, Deserialize, Serialize)]
++#[serde(deny_unknown_fields)]
++struct ExpectedInput {
++    version_code: u64,
++    apks: Vec<ApkInput>,
++    /// Independently reviewed official-artifact/signature receipt; not a new signature claim.
++    source_receipt: FilePin,
++}
++
++#[derive(Clone, Debug, Deserialize, Serialize)]
++#[serde(deny_unknown_fields)]
++struct ApplicationPlan {
++    package: String,
++    expected_input: Option<ExpectedInput>,
++}
++
++#[derive(Clone, Debug, Deserialize, Serialize)]
++#[serde(deny_unknown_fields)]
++struct BrowserFixture {
++    url: String,
++    input_scope: String,
++}
++
++#[derive(Clone, Debug, Deserialize, Serialize)]
++#[serde(deny_unknown_fields)]
++struct RuntimePlan {
++    schema: u32,
++    android_user: u32,
++    main_qualification: FilePin,
++    expected_epoch: RuntimeEpoch,
++    gate_registry: FilePin,
++    applications: Vec<ApplicationPlan>,
++    execute_public_browser: bool,
++    browser_fixture: Option<BrowserFixture>,
++}
++
++#[derive(Clone, Debug, Deserialize, Serialize)]
++#[serde(deny_unknown_fields)]
++struct GateProfile {
++    checks: BTreeMap<String, String>,
++}
++
++#[derive(Clone, Debug, Deserialize, Serialize)]
++#[serde(deny_unknown_fields)]
++struct PackageProfile {
++    app: String,
++    kind: String,
++    profile: String,
++    prerequisites: Vec<String>,
++}
++
++#[derive(Clone, Debug, Deserialize, Serialize)]
++#[serde(deny_unknown_fields)]
++struct GateRegistry {
++    schema: String,
++    common_gates: BTreeMap<String, String>,
++    profiles: BTreeMap<String, GateProfile>,
++    packages: BTreeMap<String, PackageProfile>,
++}
++
++#[derive(Debug, Serialize)]
++struct AppDispatch {
++    package: String,
++    profile: String,
++    status: &'static str,
++    reason: String,
++    inspection: Option<ApplicationInspection>,
++    invocation_output: Option<String>,
++    pending_gates: Vec<String>,
++    accepted_gates: usize,
++    runtime_qualified: bool,
++    production_ready: bool,
++}
++
++/// Actual metadata observations and invoked partial flows, never a release approval.
++#[derive(Debug, Serialize)]
++pub struct RuntimeReport {
++    schema: u32,
++    selected_applications: usize,
++    blocked_applications: usize,
++    unsupported_business_flows: usize,
++    partial_browser_invocations: usize,
++    accepted_applications: usize,
++    runtime_qualified: bool,
++    production_ready: bool,
++    automatic_retry: bool,
++    main_qualification_semantics_checked: bool,
++    meaning: &'static str,
++    applications: Vec<AppDispatch>,
++}
++
++trait RuntimeClient {
++    fn inspect(&mut self, package: &str, user: u32) -> Result<ApplicationInspection, String>;
++    fn browser(
++        &mut self,
++        expected: &ApplicationInspection,
++        url: &str,
++    ) -> Result<(ApplicationInspection, String), String>;
++}
++
++struct SocketClient<'a> {
++    socket: &'a Path,
++}
++
++impl RuntimeClient for SocketClient<'_> {
++    fn inspect(&mut self, package: &str, user: u32) -> Result<ApplicationInspection, String> {
++        let reply = control::request(
++            self.socket,
++            &ControlRequest::InspectApplication {
++                package: package.into(),
++                user,
++            },
++        )
++        .map_err(|e| e.to_string())?;
++        if !reply.ok {
++            return Err(reply.message);
++        }
++        reply
++            .inspection
++            .ok_or("Daemon returned no current package inspection; update both tools".into())
++    }
++    fn browser(
++        &mut self,
++        expected: &ApplicationInspection,
++        url: &str,
++    ) -> Result<(ApplicationInspection, String), String> {
++        let reply = control::request(
++            self.socket,
++            &ControlRequest::OpenBrowser {
++                expected: expected.clone(),
++                url: url.into(),
++            },
++        )
++        .map_err(|e| e.to_string())?;
++        if !reply.ok {
++            return Err(reply.message);
++        }
++        Ok((
++            reply
++                .inspection
++                .ok_or("Browser response lacks post-invocation identity")?,
++            reply
++                .launch
++                .ok_or("Browser response lacks actual activity output")?,
++        ))
++    }
++}
++
++fn pinned(reference: &FilePin) -> Result<Vec<u8>, String> {
++    if reference.bytes == 0
++        || reference.bytes > INPUT_LIMIT
++        || !crate::release::valid_sha(&reference.sha256)
++    {
++        return Err("runtime input has an invalid bounded file identity".into());
++    }
++    let raw =
++        crate::release::read_frozen(&reference.path, reference.bytes).map_err(|e| e.to_string())?;
++    if raw.len() as u64 != reference.bytes || hex::encode(Sha256::digest(&raw)) != reference.sha256
++    {
++        return Err("runtime input file bytes differ from the reviewed pin".into());
++    }
++    Ok(raw)
++}
++
++fn validate(plan: &RuntimePlan, gates: &GateRegistry, expected_count: usize) -> Result<(), String> {
++    if plan.schema != 1
++        || !(1..=1024).contains(&expected_count)
++        || plan.applications.len() != expected_count
++        || gates.schema != "pocket4-app-release-gates-v1"
++        || plan.android_user > 21_474
++        || plan.expected_epoch.boot_id.len() != 36
++        || plan.expected_epoch.cell_host_pid == 0
++        || plan.expected_epoch.framework_host_pid == 0
++        || plan.expected_epoch.framework_start_ticks == 0
++    {
++        return Err(
++            "runtime plan schema, complete selected count, or physical Main epoch is invalid"
++                .into(),
++        );
++    }
++    if !crate::release::COMMON_GATES.iter().all(|id| {
++        gates
++            .common_gates
++            .get(*id)
++            .is_some_and(|s| !s.trim().is_empty())
++    }) {
++        return Err("runtime registry omits a required common gate".into());
++    }
++    let mut seen = BTreeSet::new();
++    for app in &plan.applications {
++        if !seen.insert(&app.package) {
++            return Err("runtime selection repeats a package".into());
++        }
++        let package = gates
++            .packages
++            .get(&app.package)
++            .ok_or("runtime selection has no registered package profile")?;
++        let profile = gates
++            .profiles
++            .get(&package.profile)
++            .ok_or("registered business profile is missing")?;
++        if profile.checks.is_empty()
++            || profile.checks.len() > 128
++            || profile.checks.values().any(|v| v.trim().is_empty())
++        {
++            return Err("business gate definitions are empty or unbounded".into());
++        }
++        if app.package == "org.mozilla.firefox"
++            && (package.profile != "browser"
++                || !BROWSER_GATES
++                    .iter()
++                    .all(|id| profile.checks.contains_key(*id)))
++        {
++            return Err(
++                "Firefox browser profile does not contain the complete reviewed five-gate contract"
++                    .into(),
++            );
++        }
++        if let Some(input) = &app.expected_input {
++            let mut names = BTreeSet::new();
++            if input.version_code == 0 || input.apks.is_empty() || input.apks.len() > 64 {
++                return Err("expected source APK set is invalid".into());
++            }
++            for apk in &input.apks {
++                if !names.insert(apk.name.as_str())
++                    || apk.bytes == 0
++                    || apk.bytes > 1024 * 1024 * 1024
++                    || !crate::release::valid_sha(&apk.sha256)
++                {
++                    return Err("expected source APK role/bytes/hash is invalid".into());
++                }
++            }
++            if !names.contains("base.apk") {
++                return Err("source input omits the normalized base APK".into());
++            }
++        }
++    }
++    if plan.execute_public_browser {
++        let fixture = plan
++            .browser_fixture
++            .as_ref()
++            .ok_or("browser execution needs a reviewed fixture")?;
++        if fixture.input_scope != "public_owned_https"
++            || !seen.contains(&"org.mozilla.firefox".to_string())
++        {
++            return Err("browser operation is outside the selected public-fixture scope".into());
++        }
++        validate_https_url(&fixture.url)?;
++    }
++    Ok(())
++}
++
++fn source_matches(actual: &ApplicationInspection, expected: &ExpectedInput) -> bool {
++    let got: BTreeMap<_, _> = actual
++        .apks
++        .iter()
++        .map(|a| (a.name.as_str(), (a.bytes, a.sha256.as_str())))
++        .collect();
++    let wanted: BTreeMap<_, _> = expected
++        .apks
++        .iter()
++        .map(|a| (a.name.as_str(), (a.bytes, a.sha256.as_str())))
++        .collect();
++    actual.version_code == expected.version_code && actual.apks.len() == got.len() && got == wanted
++}
++
++fn dispatch(
++    plan: &RuntimePlan,
++    gates: &GateRegistry,
++    client: &mut impl RuntimeClient,
++) -> RuntimeReport {
++    let mut applications = Vec::new();
++    for app in &plan.applications {
++        let package = &gates.packages[&app.package];
++        let mut pending: Vec<_> = gates
++            .common_gates
++            .keys()
++            .chain(gates.profiles[&package.profile].checks.keys())
++            .cloned()
++            .collect();
++        pending.sort();
++        let mut row = AppDispatch {
++            package: app.package.clone(),
++            profile: package.profile.clone(),
++            status: "blocked",
++            reason: String::new(),
++            inspection: None,
++            invocation_output: None,
++            pending_gates: pending,
++            accepted_gates: 0,
++            runtime_qualified: false,
++            production_ready: false,
++        };
++        match client.inspect(&app.package, plan.android_user) {
++            Err(error) => {
++                row.reason = format!("runtime or installed-package precondition failed: {error}")
++            }
++            Ok(actual) => {
++                if actual.package != app.package
++                    || actual.user != plan.android_user
++                    || actual.epoch != plan.expected_epoch
++                {
++                    row.reason = "current PM observation does not match the selected package/user and independently pinned live Main epoch".into();
++                } else if app.expected_input.is_none() {
++                    row.reason = "current package observed, but reviewed current official source/split delivery is missing".into();
++                } else if !source_matches(
++                    &actual,
++                    app.expected_input.as_ref().expect("checked above"),
++                ) {
++                    row.reason = "installed version or complete APK byte identities differ from the reviewed official input".into();
++                } else if app.package != "org.mozilla.firefox" {
++                    row.status = "unsupported";
++                    row.reason = "identity observed; this entry has no executable whole-business flow for this registered profile; use its separately qualified existing leaf or implement the missing flow".into();
++                } else if !plan.execute_public_browser {
++                    row.reason = "browser identity observed; explicit reviewed public-fixture execution was not requested".into();
++                } else {
++                    let url = &plan
++                        .browser_fixture
++                        .as_ref()
++                        .expect("validated fixture")
++                        .url;
++                    match client.browser(&actual, url) {
++                        Err(error) => row.reason = format!("browser flow invocation failed; inspect retained observations before any explicit retry: {error}"),
++                        Ok((after, output)) if after == actual => {
++                            row.status = "partial_observation";
++                            row.reason = "actual implicit HTTPS activity invocation observed; rendered document/input/image, media, return/reopen, recovery and all common release gates remain pending".into();
++                            row.invocation_output = Some(output);
++                        }
++                        Ok(_) => row.reason = "browser invocation returned a different installed identity or Main generation".into(),
++                    }
++                }
++                row.inspection = Some(actual);
++            }
++        }
++        applications.push(row);
++    }
++    RuntimeReport {
++        schema: 1,
++        selected_applications: applications.len(),
++        blocked_applications: applications
++            .iter()
++            .filter(|r| r.status == "blocked")
++            .count(),
++        unsupported_business_flows: applications
++            .iter()
++            .filter(|r| r.status == "unsupported")
++            .count(),
++        partial_browser_invocations: applications
++            .iter()
++            .filter(|r| r.status == "partial_observation")
++            .count(),
++        accepted_applications: 0,
++        runtime_qualified: false,
++        production_ready: false,
++        automatic_retry: false,
++        main_qualification_semantics_checked: false,
++        meaning: "Live Package Manager/APK observations and actual bounded entry invocation only. All required gates remain pending; neither Main qualification nor whole-application production readiness is granted.",
++        applications,
++    }
++}
++
++/// Query one actual installed identity, with daemon-enforced current-runtime admission.
++pub fn inspect_package(
++    socket: &Path,
++    package: &str,
++    user: u32,
++) -> Result<ApplicationInspection, String> {
++    SocketClient { socket }.inspect(package, user)
++}
++
++/// Execute the selected plan without omitting unsupported or blocked applications.
++pub fn run_files(
++    socket: &Path,
++    path: &Path,
++    expected_sha256: &str,
++    expected_count: usize,
++) -> Result<RuntimeReport, String> {
++    let raw = crate::release::read_frozen(path, INPUT_LIMIT).map_err(|e| e.to_string())?;
++    if !crate::release::valid_sha(expected_sha256)
++        || hex::encode(Sha256::digest(&raw)) != expected_sha256
++    {
++        return Err("externally pinned runtime plan SHA-256 differs".into());
++    }
++    let plan: RuntimePlan = serde_json::from_slice(&raw).map_err(|e| e.to_string())?;
++    let gates: GateRegistry =
++        serde_json::from_slice(&pinned(&plan.gate_registry)?).map_err(|e| e.to_string())?;
++    validate(&plan, &gates, expected_count)?;
++    pinned(&plan.main_qualification)?;
++    for app in &plan.applications {
++        if let Some(input) = &app.expected_input {
++            pinned(&input.source_receipt)?;
++        }
++    }
++    Ok(dispatch(&plan, &gates, &mut SocketClient { socket }))
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use droidloom_supervisor::control::application_probe::InstalledApk;
++    struct Fake {
++        identities: BTreeMap<String, ApplicationInspection>,
++        opens: usize,
++    }
++    impl RuntimeClient for Fake {
++        fn inspect(&mut self, p: &str, _: u32) -> Result<ApplicationInspection, String> {
++            self.identities
++                .get(p)
++                .cloned()
++                .ok_or("not installed or boot unavailable".into())
++        }
++        fn browser(
++            &mut self,
++            x: &ApplicationInspection,
++            _: &str,
++        ) -> Result<(ApplicationInspection, String), String> {
++            self.opens += 1;
++            Ok((
++                x.clone(),
++                "Status: ok\nActivity: org.mozilla.firefox/.HomeActivity".into(),
++            ))
++        }
++    }
++    fn fixture() -> (RuntimePlan, GateRegistry, Fake) {
++        let epoch = RuntimeEpoch {
++            boot_id: "97d9600f-e081-465c-9e6e-62651e09806b".into(),
++            cell_host_pid: 10,
++            framework_host_pid: 20,
++            framework_start_ticks: 30,
++        };
++        let pin = FilePin {
++            path: "/fixture".into(),
++            bytes: 1,
++            sha256: "1".repeat(64),
++        };
++        let expected = ExpectedInput {
++            version_code: 2,
++            apks: vec![ApkInput {
++                name: "base.apk".into(),
++                bytes: 3,
++                sha256: "a".repeat(64),
++            }],
++            source_receipt: pin.clone(),
++        };
++        let mut gates = GateRegistry {
++            schema: "pocket4-app-release-gates-v1".into(),
++            common_gates: crate::release::COMMON_GATES
++                .iter()
++                .map(|s| ((*s).into(), "fixture".into()))
++                .collect(),
++            profiles: BTreeMap::from([
++                (
++                    "browser".into(),
++                    GateProfile {
++                        checks: BROWSER_GATES
++                            .iter()
++                            .map(|s| ((*s).into(), "fixture".into()))
++                            .collect(),
++                    },
++                ),
++                (
++                    "retail".into(),
++                    GateProfile {
++                        checks: BTreeMap::from([("retail.search".into(), "fixture".into())]),
++                    },
++                ),
++            ]),
++            packages: BTreeMap::new(),
++        };
++        let mut client = Fake {
++            identities: BTreeMap::new(),
++            opens: 0,
++        };
++        let mut applications = Vec::new();
++        for n in 0..42 {
++            let package = if n == 0 {
++                "org.mozilla.firefox".into()
++            } else {
++                format!("org.example.app{n}")
++            };
++            gates.packages.insert(
++                package.clone(),
++                PackageProfile {
++                    app: package.clone(),
++                    kind: "third_party".into(),
++                    profile: if n == 0 {
++                        "browser".into()
++                    } else {
++                        "retail".into()
++                    },
++                    prerequisites: Vec::new(),
++                },
++            );
++            client.identities.insert(
++                package.clone(),
++                ApplicationInspection {
++                    package: package.clone(),
++                    user: 0,
++                    uid: 10000 + n,
++                    version_code: 2,
++                    epoch: epoch.clone(),
++                    apks: vec![InstalledApk {
++                        name: "base.apk".into(),
++                        path: "/data/app/fixture/base.apk".into(),
++                        bytes: 3,
++                        sha256: "a".repeat(64),
++                    }],
++                },
++            );
++            applications.push(ApplicationPlan {
++                package,
++                expected_input: Some(expected.clone()),
++            });
++        }
++        (
++            RuntimePlan {
++                schema: 1,
++                android_user: 0,
++                main_qualification: pin.clone(),
++                expected_epoch: epoch,
++                gate_registry: pin,
++                applications,
++                execute_public_browser: true,
++                browser_fixture: Some(BrowserFixture {
++                    url: "https://example.com/".into(),
++                    input_scope: "public_owned_https".into(),
++                }),
++            },
++            gates,
++            client,
++        )
++    }
++    #[test]
++    fn all_42_rows_survive_missing_runtime_without_any_invocation() {
++        let (p, g, mut c) = fixture();
++        c.identities.clear();
++        validate(&p, &g, 42).unwrap();
++        let r = dispatch(&p, &g, &mut c);
++        assert_eq!(r.selected_applications, 42);
++        assert_eq!(r.blocked_applications, 42);
++        assert_eq!(c.opens, 0);
++        assert_eq!(r.accepted_applications, 0);
++    }
++    #[test]
++    fn one_real_entry_route_does_not_promote_41_unsupported_profiles() {
++        let (p, g, mut c) = fixture();
++        validate(&p, &g, 42).unwrap();
++        let r = dispatch(&p, &g, &mut c);
++        assert_eq!(c.opens, 1);
++        assert_eq!(r.partial_browser_invocations, 1);
++        assert_eq!(r.unsupported_business_flows, 41);
++        assert!(!r.production_ready && !r.runtime_qualified);
++        assert_eq!(r.accepted_applications, 0);
++        assert!(
++            r.applications
++                .iter()
++                .all(|a| a.accepted_gates == 0 && !a.pending_gates.is_empty())
++        );
++    }
++    #[test]
++    fn stale_main_or_changed_source_never_opens_browser() {
++        let (p, g, mut c) = fixture();
++        c.identities
++            .get_mut("org.mozilla.firefox")
++            .unwrap()
++            .epoch
++            .framework_start_ticks += 1;
++        assert_eq!(dispatch(&p, &g, &mut c).blocked_applications, 1);
++        assert_eq!(c.opens, 0);
++        let (p, g, mut c) = fixture();
++        c.identities.get_mut("org.mozilla.firefox").unwrap().apks[0].sha256 = "b".repeat(64);
++        assert_eq!(dispatch(&p, &g, &mut c).blocked_applications, 1);
++        assert_eq!(c.opens, 0);
++    }
++    #[test]
++    fn missing_delivery_or_unrequested_execution_is_blocked() {
++        let (mut p, g, mut c) = fixture();
++        p.applications[0].expected_input = None;
++        assert_eq!(dispatch(&p, &g, &mut c).blocked_applications, 1);
++        assert_eq!(c.opens, 0);
++        let (mut p, g, mut c) = fixture();
++        p.execute_public_browser = false;
++        assert_eq!(dispatch(&p, &g, &mut c).blocked_applications, 1);
++        assert_eq!(c.opens, 0);
++    }
++    #[test]
++    fn reduced_duplicate_selection_and_incomplete_firefox_contract_are_rejected() {
++        let (mut p, mut g, _) = fixture();
++        p.applications.truncate(13);
++        assert!(validate(&p, &g, 42).is_err());
++        let (mut p, _, _) = fixture();
++        p.applications[1] = p.applications[0].clone();
++        assert!(validate(&p, &g, 42).is_err());
++        let (p, _, _) = fixture();
++        g.profiles
++            .get_mut("browser")
++            .unwrap()
++            .checks
++            .remove("browser.media");
++        assert!(validate(&p, &g, 42).is_err());
++    }
++    #[test]
++    fn full_apk_set_and_dynamic_uid_are_preserved() {
++        let (p, g, mut c) = fixture();
++        c.identities.get_mut("org.mozilla.firefox").unwrap().uid = 10987;
++        let r = dispatch(&p, &g, &mut c);
++        assert_eq!(r.applications[0].inspection.as_ref().unwrap().uid, 10987);
++        assert_eq!(c.opens, 1);
++        let (p, g, mut c) = fixture();
++        let mut split = c.identities["org.mozilla.firefox"].apks[0].clone();
++        split.name = "split_extra.apk".into();
++        c.identities
++            .get_mut("org.mozilla.firefox")
++            .unwrap()
++            .apks
++            .push(split);
++        assert_eq!(dispatch(&p, &g, &mut c).blocked_applications, 1);
++        assert_eq!(c.opens, 0);
++    }
++}
+diff --git a/runtime/droidloom-supervisor/src/application_command.rs b/runtime/droidloom-supervisor/src/application_command.rs
+new file mode 100644
+index 0000000..91c71e4
+--- /dev/null
++++ b/runtime/droidloom-supervisor/src/application_command.rs
+@@ -0,0 +1,598 @@
++//! FD-bound Android namespace entry and bounded, invocation-owned retirement.
++//!
++//! A command owns only its new cgroup, never the Android cell's PID namespace.
++//! Missing cgroup delegation is a precondition error; there is no PID/timeout
++//! fallback. A failed retirement retains its handles and blocks new commands.
++
++use std::ffi::{CStr, CString};
++use std::fs::{self, File, OpenOptions};
++use std::io::{self, Read, Seek, SeekFrom, Write};
++use std::os::fd::{AsRawFd, FromRawFd, OwnedFd, RawFd};
++use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
++use std::os::unix::process::CommandExt;
++use std::path::{Component, Path, PathBuf};
++use std::process::{Child, Command, ExitStatus, Output, Stdio};
++use std::sync::atomic::{AtomicU64, Ordering};
++use std::sync::{Mutex, TryLockError};
++use std::thread;
++use std::time::{Duration, Instant};
++
++use crate::development::owned_process::{open_pidfd, pidfd_exited};
++
++const OUTPUT_LIMIT: usize = 64 * 1024;
++const RETIRE_TIMEOUT: Duration = Duration::from_secs(2);
++const POLL_INTERVAL: Duration = Duration::from_millis(5);
++static NEXT_GROUP: AtomicU64 = AtomicU64::new(0);
++// Also serializes invocations. At most one unresolved owned group is retained.
++static RETAINED: Mutex<Option<Invocation>> = Mutex::new(None);
++
++fn invalid(message: &str) -> io::Error {
++    io::Error::new(io::ErrorKind::InvalidData, message)
++}
++
++fn open_at(directory: RawFd, name: &CStr, flags: libc::c_int) -> io::Result<File> {
++    // SAFETY: name is NUL-terminated; a successful openat gives one owned FD.
++    let fd = unsafe { libc::openat(directory, name.as_ptr(), flags | libc::O_CLOEXEC) };
++    if fd < 0 {
++        return Err(io::Error::last_os_error());
++    }
++    // SAFETY: fd was newly allocated by openat.
++    Ok(unsafe { File::from_raw_fd(fd) })
++}
++
++fn bounded_text(mut file: File, maximum: u64) -> io::Result<String> {
++    let mut value = String::new();
++    Read::by_ref(&mut file)
++        .take(maximum + 1)
++        .read_to_string(&mut value)?;
++    if value.len() as u64 > maximum {
++        return Err(invalid("kernel metadata exceeds bound"));
++    }
++    Ok(value)
++}
++
++#[derive(Clone, Debug, Eq, PartialEq)]
++struct ProcessIdentity {
++    pid: u32,
++    comm: String,
++    start_ticks: u64,
++}
++
++fn process_identity(directory: &File) -> io::Result<ProcessIdentity> {
++    let stat = bounded_text(
++        open_at(directory.as_raw_fd(), c"stat", libc::O_RDONLY)?,
++        4096,
++    )?;
++    let (prefix, fields) = stat
++        .rsplit_once(") ")
++        .ok_or_else(|| invalid("malformed process stat"))?;
++    let (pid, comm) = prefix
++        .split_once(" (")
++        .ok_or_else(|| invalid("malformed process identity"))?;
++    let start_ticks = fields
++        .split_ascii_whitespace()
++        .nth(19)
++        .ok_or_else(|| invalid("process start ticks absent"))?
++        .parse()
++        .map_err(|_| invalid("invalid process start ticks"))?;
++    Ok(ProcessIdentity {
++        pid: pid.parse().map_err(|_| invalid("invalid process PID"))?,
++        comm: comm.into(),
++        start_ticks,
++    })
++}
++
++struct BoundProcess {
++    directory: File,
++    pidfd: OwnedFd,
++    identity: ProcessIdentity,
++}
++
++impl BoundProcess {
++    fn capture(pid: u32) -> io::Result<Self> {
++        let directory = OpenOptions::new()
++            .read(true)
++            .custom_flags(libc::O_PATH | libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
++            .open(format!("/proc/{pid}"))?;
++        let identity = process_identity(&directory)?;
++        if identity.pid != pid {
++            return Err(invalid("proc directory identity differs"));
++        }
++        let pidfd = open_pidfd(pid)?;
++        let bound = Self {
++            directory,
++            pidfd,
++            identity,
++        };
++        bound.validate()?;
++        Ok(bound)
++    }
++
++    fn validate(&self) -> io::Result<()> {
++        if pidfd_exited(&self.pidfd)? || process_identity(&self.directory)? != self.identity {
++            return Err(invalid("bound process exited or changed identity"));
++        }
++        Ok(())
++    }
++
++    fn open(&self, name: &str, directory: bool) -> io::Result<File> {
++        let name = CString::new(name).map_err(|_| invalid("invalid proc-relative path"))?;
++        open_at(
++            self.directory.as_raw_fd(),
++            &name,
++            if directory {
++                libc::O_PATH | libc::O_DIRECTORY
++            } else {
++                libc::O_RDONLY
++            },
++        )
++    }
++}
++
++fn same_file(left: &File, right: &File) -> io::Result<bool> {
++    let a = left.metadata()?;
++    let b = right.metadata()?;
++    Ok(a.dev() == b.dev() && a.ino() == b.ino())
++}
++
++/// Held identities for an unreaped cell owner and its live system_server.
++pub(super) struct NamespaceTarget {
++    cell: BoundProcess,
++    framework: BoundProcess,
++    namespaces: Vec<(&'static str, &'static str, File)>,
++    root: File,
++    cwd: File,
++}
++
++impl NamespaceTarget {
++    pub(super) fn capture(cell_pid: u32, framework_pid: u32, start_ticks: u64) -> io::Result<Self> {
++        Self::capture_named(cell_pid, framework_pid, start_ticks, Some("system_server"))
++    }
++
++    fn capture_named(
++        cell_pid: u32,
++        framework_pid: u32,
++        start_ticks: u64,
++        comm: Option<&str>,
++    ) -> io::Result<Self> {
++        let cell = BoundProcess::capture(cell_pid)?;
++        let framework = BoundProcess::capture(framework_pid)?;
++        if framework.identity.start_ticks != start_ticks
++            || comm.is_some_and(|c| framework.identity.comm != c)
++        {
++            return Err(invalid(
++                "framework process identity differs before namespace binding",
++            ));
++        }
++        let mut namespaces = Vec::new();
++        for (option, name) in [
++            ("mount", "ns/mnt"),
++            ("uts", "ns/uts"),
++            ("ipc", "ns/ipc"),
++            ("net", "ns/net"),
++            ("pid", "ns/pid"),
++            ("cgroup", "ns/cgroup"),
++            ("user", "ns/user"),
++        ] {
++            namespaces.push((option, name, framework.open(name, false)?));
++        }
++        if !same_file(
++            &cell.open("ns/net", false)?,
++            &framework.open("ns/net", false)?,
++        )? || !same_file(
++            &cell.open("ns/pid_for_children", false)?,
++            &framework.open("ns/pid", false)?,
++        )? {
++            return Err(invalid(
++                "framework does not belong to the held cell namespaces",
++            ));
++        }
++        let root = framework.open("root", true)?;
++        let cwd = framework.open("cwd", true)?;
++        let target = Self {
++            cell,
++            framework,
++            namespaces,
++            root,
++            cwd,
++        };
++        target.validate()?;
++        Ok(target)
++    }
++
++    pub(super) fn validate(&self) -> io::Result<()> {
++        self.cell.validate()?;
++        self.framework.validate()?;
++        for (_, name, held) in &self.namespaces {
++            if !same_file(held, &self.framework.open(name, false)?)? {
++                return Err(invalid("framework namespace changed after binding"));
++            }
++        }
++        if !same_file(&self.root, &self.framework.open("root", true)?)?
++            || !same_file(&self.cwd, &self.framework.open("cwd", true)?)?
++        {
++            return Err(invalid("framework root or cwd changed after binding"));
++        }
++        Ok(())
++    }
++
++    fn command(&self, args: &[String]) -> io::Result<(Command, Vec<RawFd>)> {
++        self.validate()?;
++        let mut command = droidloom_cpu_placement::command("/usr/bin/nsenter");
++        command
++            .env_clear()
++            .env("PATH", "/system/bin:/system/xbin")
++            .env("LANG", "C")
++            .env("ANDROID_ROOT", "/system")
++            .env("ANDROID_DATA", "/data");
++        let mut inherit = Vec::new();
++        let own_user = File::open("/proc/self/ns/user")?;
++        for (option, _, held) in &self.namespaces {
++            if *option == "user" && same_file(held, &own_user)? {
++                continue;
++            }
++            command.arg(format!("--{option}=/proc/self/fd/{}", held.as_raw_fd()));
++            inherit.push(held.as_raw_fd());
++        }
++        for (option, held) in [("root", &self.root), ("wd", &self.cwd)] {
++            command.arg(format!("--{option}=/proc/self/fd/{}", held.as_raw_fd()));
++            inherit.push(held.as_raw_fd());
++        }
++        command.arg("--").args(args);
++        Ok((command, inherit))
++    }
++
++    pub(super) fn execute(&self, args: &[String], deadline: Instant) -> Result<Output, String> {
++        let (command, inherit) = self.command(args).map_err(|e| e.to_string())?;
++        let output = run_owned(
++            command,
++            &inherit,
++            &[
++                self.cell.pidfd.as_raw_fd(),
++                self.framework.pidfd.as_raw_fd(),
++            ],
++            deadline,
++        )?;
++        self.validate().map_err(|e| e.to_string())?;
++        Ok(output)
++    }
++}
++
++struct OwnedCgroup {
++    path: PathBuf,
++    directory: File,
++    procs: File,
++    events: File,
++    kill: File,
++}
++
++fn current_cgroup_parent() -> io::Result<PathBuf> {
++    let raw = fs::read_to_string("/proc/self/cgroup")?;
++    let paths: Vec<_> = raw.lines().filter_map(|s| s.strip_prefix("0::")).collect();
++    let [value] = paths.as_slice() else {
++        return Err(invalid("one cgroup v2 membership is required"));
++    };
++    let path = Path::new(value);
++    if !path.is_absolute()
++        || path
++            .components()
++            .any(|c| !matches!(c, Component::RootDir | Component::Normal(_)))
++    {
++        return Err(invalid("invalid current cgroup path"));
++    }
++    let parent = Path::new("/sys/fs/cgroup").join(
++        path.strip_prefix("/")
++            .map_err(|_| invalid("invalid cgroup path"))?,
++    );
++    if parent.canonicalize()? != parent {
++        return Err(invalid("cgroup parent is not canonical"));
++    }
++    Ok(parent)
++}
++
++impl OwnedCgroup {
++    fn create() -> io::Result<Self> {
++        let parent = current_cgroup_parent()?;
++        let directory = File::open(&parent)?;
++        let mut stat = std::mem::MaybeUninit::<libc::statfs>::uninit();
++        // SAFETY: the FD is held; stat points to writable storage for statfs.
++        if unsafe { libc::fstatfs(directory.as_raw_fd(), stat.as_mut_ptr()) } != 0 {
++            return Err(io::Error::last_os_error());
++        }
++        // SAFETY: fstatfs succeeded and initialized stat.
++        if unsafe { stat.assume_init() }.f_type != libc::CGROUP2_SUPER_MAGIC {
++            return Err(invalid("writable cgroup v2 required"));
++        }
++        let nonce = NEXT_GROUP.fetch_add(1, Ordering::Relaxed);
++        let path = parent.join(format!(
++            "droidloom-app-probe-{}-{nonce}",
++            std::process::id()
++        ));
++        // create_dir refuses an existing name; no existing group is adopted.
++        fs::create_dir(&path)?;
++        let result = (|| {
++            let directory = OpenOptions::new()
++                .read(true)
++                .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
++                .open(&path)?;
++            let procs = open_at(
++                directory.as_raw_fd(),
++                c"cgroup.procs",
++                libc::O_WRONLY | libc::O_NOFOLLOW,
++            )?;
++            let events = open_at(
++                directory.as_raw_fd(),
++                c"cgroup.events",
++                libc::O_RDONLY | libc::O_NOFOLLOW,
++            )?;
++            let kill = open_at(
++                directory.as_raw_fd(),
++                c"cgroup.kill",
++                libc::O_WRONLY | libc::O_NOFOLLOW,
++            )?;
++            Ok(Self {
++                path: path.clone(),
++                directory,
++                procs,
++                events,
++                kill,
++            })
++        })();
++        if result.is_err() {
++            let _ = fs::remove_dir(&path);
++        }
++        result
++    }
++
++    fn populated(&mut self) -> io::Result<bool> {
++        self.events.seek(SeekFrom::Start(0))?;
++        let mut raw = String::new();
++        Read::by_ref(&mut self.events)
++            .take(1025)
++            .read_to_string(&mut raw)?;
++        if raw.len() > 1024 {
++            return Err(invalid("cgroup events exceeds bound"));
++        }
++        let values: Vec<_> = raw
++            .lines()
++            .filter_map(|s| s.strip_prefix("populated "))
++            .collect();
++        match values.as_slice() {
++            ["0"] => Ok(false),
++            ["1"] => Ok(true),
++            _ => Err(invalid("cgroup populated state invalid")),
++        }
++    }
++
++    fn kill(&mut self) -> io::Result<()> {
++        self.kill.seek(SeekFrom::Start(0))?;
++        self.kill.write_all(b"1\n")
++    }
++
++    fn remove(&mut self) -> io::Result<()> {
++        if self.populated()? {
++            return Err(invalid("owned invocation is still populated"));
++        }
++        let current = fs::symlink_metadata(&self.path)?;
++        let held = self.directory.metadata()?;
++        if !current.is_dir() || current.dev() != held.dev() || current.ino() != held.ino() {
++            return Err(invalid("owned invocation cgroup path changed"));
++        }
++        fs::remove_dir(&self.path)
++    }
++}
++
++struct Invocation {
++    child: Option<Child>,
++    status: Option<ExitStatus>,
++    group: OwnedCgroup,
++}
++
++impl Invocation {
++    fn poll(&mut self) -> io::Result<Option<ExitStatus>> {
++        if self.status.is_none() {
++            if let Some(child) = &mut self.child {
++                self.status = child.try_wait()?;
++            }
++        }
++        Ok(self.status)
++    }
++
++    fn retire(&mut self) -> io::Result<()> {
++        self.group.kill()?;
++        let deadline = Instant::now() + RETIRE_TIMEOUT;
++        loop {
++            let reaped = self.child.is_none() || self.poll()?.is_some();
++            if reaped && !self.group.populated()? {
++                return self.group.remove();
++            }
++            if Instant::now() >= deadline {
++                return Err(io::Error::new(
++                    io::ErrorKind::TimedOut,
++                    "invocation retirement remains unproven",
++                ));
++            }
++            thread::sleep(POLL_INTERVAL);
++        }
++    }
++}
++
++fn nonblocking(fd: RawFd) -> io::Result<()> {
++    // SAFETY: callers hold an open pipe descriptor for both fcntl calls.
++    let flags = unsafe { libc::fcntl(fd, libc::F_GETFL) };
++    if flags < 0 || unsafe { libc::fcntl(fd, libc::F_SETFL, flags | libc::O_NONBLOCK) } < 0 {
++        return Err(io::Error::last_os_error());
++    }
++    Ok(())
++}
++
++fn drain(stream: &mut impl Read, bytes: &mut Vec<u8>) -> io::Result<()> {
++    let mut buffer = [0_u8; 4096];
++    loop {
++        match stream.read(&mut buffer) {
++            Ok(0) => return Ok(()),
++            Ok(count) => {
++                if count > OUTPUT_LIMIT.saturating_sub(bytes.len()) {
++                    return Err(invalid("application command output bound exceeded"));
++                }
++                bytes.extend_from_slice(&buffer[..count]);
++            }
++            Err(e) if e.kind() == io::ErrorKind::WouldBlock => return Ok(()),
++            Err(e) if e.kind() == io::ErrorKind::Interrupted => continue,
++            Err(e) => return Err(e),
++        }
++    }
++}
++
++fn success_before_deadline(output: Output, deadline: Instant) -> Result<Output, String> {
++    if Instant::now() >= deadline {
++        return Err("application command deadline exceeded before accepting output".into());
++    }
++    Ok(output)
++}
++
++fn run_owned(
++    mut command: Command,
++    inherit: &[RawFd],
++    alive_pidfds: &[RawFd],
++    deadline: Instant,
++) -> Result<Output, String> {
++    let mut retained = loop {
++        match RETAINED.try_lock() {
++            Ok(guard) => break guard,
++            Err(TryLockError::Poisoned(_)) => {
++                return Err("application invocation owner lock poisoned".into());
++            }
++            Err(TryLockError::WouldBlock) if Instant::now() < deadline => {
++                thread::sleep(POLL_INTERVAL)
++            }
++            Err(TryLockError::WouldBlock) => {
++                return Err("application invocation ownership deadline exceeded".into());
++            }
++        }
++    };
++    if let Some(pending) = retained.as_mut() {
++        pending.retire().map_err(|e| {
++            format!(
++                "previous invocation retained at {}: {e}",
++                pending.group.path.display()
++            )
++        })?;
++        *retained = None;
++    }
++    if Instant::now() >= deadline {
++        return Err("application command deadline exceeded before spawn".into());
++    }
++    let group =
++        OwnedCgroup::create().map_err(|e| format!("invocation cgroup precondition failed: {e}"))?;
++    let group_fd = group.procs.as_raw_fd();
++    let inherit = inherit.to_vec();
++    let alive_pidfds = alive_pidfds.to_vec();
++    command
++        .stdin(Stdio::null())
++        .stdout(Stdio::piped())
++        .stderr(Stdio::piped());
++    // SAFETY: the closure uses only async-signal-safe syscalls and fixed bytes.
++    // The child joins its exclusively-created cgroup before any exec/fork by
++    // nsenter. Every descendant therefore inherits invocation ownership.
++    unsafe {
++        command.pre_exec(move || {
++            if libc::write(group_fd, b"0\n".as_ptr().cast(), 2) != 2 {
++                return Err(io::Error::last_os_error());
++            }
++            for fd in &alive_pidfds {
++                let mut poll = libc::pollfd {
++                    fd: *fd,
++                    events: libc::POLLIN,
++                    revents: 0,
++                };
++                if libc::poll(&mut poll, 1, 0) < 0 {
++                    return Err(io::Error::last_os_error());
++                }
++                if poll.revents != 0 {
++                    return Err(io::Error::from_raw_os_error(libc::ESRCH));
++                }
++            }
++            for fd in &inherit {
++                let flags = libc::fcntl(*fd, libc::F_GETFD);
++                if flags < 0 || libc::fcntl(*fd, libc::F_SETFD, flags & !libc::FD_CLOEXEC) < 0 {
++                    return Err(io::Error::last_os_error());
++                }
++            }
++            Ok(())
++        });
++    }
++    let spawn = command.spawn();
++    let mut invocation = Invocation {
++        child: None,
++        status: None,
++        group,
++    };
++    let result = match spawn {
++        Err(error) => Err(format!("application command spawn failed: {error}")),
++        Ok(mut child) => {
++            let pipes = (child.stdout.take(), child.stderr.take());
++            invocation.child = Some(child);
++            (|| -> Result<Output, String> {
++                let (Some(mut stdout), Some(mut stderr)) = pipes else {
++                    return Err("application pipes unavailable".into());
++                };
++                nonblocking(stdout.as_raw_fd())
++                    .and_then(|_| nonblocking(stderr.as_raw_fd()))
++                    .map_err(|e| e.to_string())?;
++                let mut out = Vec::new();
++                let mut err = Vec::new();
++                loop {
++                    if Instant::now() >= deadline {
++                        return Err("application command deadline exceeded".into());
++                    }
++                    drain(&mut stdout, &mut out)
++                        .and_then(|_| drain(&mut stderr, &mut err))
++                        .map_err(|e| e.to_string())?;
++                    if let Some(status) = invocation.poll().map_err(|e| e.to_string())? {
++                        if invocation.group.populated().map_err(|e| e.to_string())? {
++                            return Err(
++                                "command leader exited with live invocation descendants".into()
++                            );
++                        }
++                        // The producer is reaped. Drain buffered bytes without
++                        // waiting for EOF or joining a potentially stuck reader.
++                        drain(&mut stdout, &mut out)
++                            .and_then(|_| drain(&mut stderr, &mut err))
++                            .map_err(|e| e.to_string())?;
++                        return success_before_deadline(
++                            Output {
++                                status,
++                                stdout: out,
++                                stderr: err,
++                            },
++                            deadline,
++                        );
++                    }
++                    if Instant::now() >= deadline {
++                        return Err("application command deadline exceeded".into());
++                    }
++                    thread::sleep(POLL_INTERVAL);
++                }
++            })()
++        }
++    };
++    if let Err(error) = invocation.retire() {
++        let path = invocation.group.path.clone();
++        *retained = Some(invocation);
++        return Err(format!(
++            "{}; owned invocation retained at {}: {error}",
++            result
++                .err()
++                .unwrap_or_else(|| "command output withheld".into()),
++            path.display()
++        ));
++    }
++    result
++        .and_then(|output| success_before_deadline(output, deadline))
++        .map_err(|error| format!("{error}; invocation cgroup empty and direct child reaped"))
++}
++
++#[cfg(test)]
++#[path = "application_command_tests.rs"]
++mod tests;
+diff --git a/runtime/droidloom-supervisor/src/application_command_tests.rs b/runtime/droidloom-supervisor/src/application_command_tests.rs
+new file mode 100644
+index 0000000..7ec5c91
+--- /dev/null
++++ b/runtime/droidloom-supervisor/src/application_command_tests.rs
+@@ -0,0 +1,292 @@
++use super::*;
++use std::os::unix::net::UnixStream;
++use std::os::unix::process::ExitStatusExt;
++
++struct SleepFixture(Child);
++impl SleepFixture {
++    fn new() -> Self {
++        Self(
++            Command::new("/bin/sleep")
++                .arg("30")
++                .stdin(Stdio::null())
++                .stdout(Stdio::null())
++                .stderr(Stdio::null())
++                .spawn()
++                .unwrap(),
++        )
++    }
++}
++impl Drop for SleepFixture {
++    fn drop(&mut self) {
++        let _ = self.0.kill();
++        let _ = self.0.wait();
++    }
++}
++
++#[test]
++fn held_process_rejects_exit_after_original_identity_was_bound() {
++    let mut child = SleepFixture::new();
++    let held = BoundProcess::capture(child.0.id()).unwrap();
++    held.validate().unwrap();
++    child.0.kill().unwrap();
++    child.0.wait().unwrap();
++    assert!(held.validate().is_err());
++    assert!(pidfd_exited(&held.pidfd).unwrap());
++}
++
++#[test]
++fn framework_start_identity_is_required_before_entry() {
++    let me = BoundProcess::capture(std::process::id()).unwrap();
++    assert!(
++        NamespaceTarget::capture_named(
++            std::process::id(),
++            std::process::id(),
++            me.identity.start_ticks + 1,
++            None
++        )
++        .is_err()
++    );
++    assert!(
++        NamespaceTarget::capture_named(
++            std::process::id(),
++            std::process::id(),
++            me.identity.start_ticks,
++            Some("a-different-process")
++        )
++        .is_err()
++    );
++}
++
++#[test]
++fn namespace_arguments_use_only_held_fds_and_explicit_environment() {
++    let pid = std::process::id();
++    let me = BoundProcess::capture(pid).unwrap();
++    let target = NamespaceTarget::capture_named(pid, pid, me.identity.start_ticks, None).unwrap();
++    let (command, inherited) = target
++        .command(&["/system/bin/cmd".into(), "package".into()])
++        .unwrap();
++    let args: Vec<_> = command.get_args().map(|a| a.to_str().unwrap()).collect();
++    assert_eq!(args.last(), Some(&"package"));
++    assert!(
++        !args
++            .iter()
++            .any(|a| a.starts_with("--target") || a.starts_with("--env"))
++    );
++    assert!(
++        args.iter()
++            .take_while(|a| **a != "--")
++            .all(|a| a.contains("=/proc/self/fd/"))
++    );
++    assert!(!inherited.contains(&target.framework.directory.as_raw_fd()));
++    assert!(!inherited.contains(&target.framework.pidfd.as_raw_fd()));
++    let environment: Vec<_> = command
++        .get_envs()
++        .filter(|(_, v)| v.is_some())
++        .map(|(k, _)| k.to_str().unwrap())
++        .collect();
++    assert_eq!(
++        environment,
++        ["ANDROID_DATA", "ANDROID_ROOT", "LANG", "PATH"]
++    );
++}
++
++#[test]
++fn nonblocking_reader_does_not_wait_for_a_held_writer() {
++    let (mut reader, mut writer) = UnixStream::pair().unwrap();
++    reader.set_nonblocking(true).unwrap();
++    writer.write_all(b"still-open").unwrap();
++    let mut bytes = Vec::new();
++    let start = Instant::now();
++    drain(&mut reader, &mut bytes).unwrap();
++    assert_eq!(bytes, b"still-open");
++    assert!(start.elapsed() < Duration::from_secs(1));
++    // writer deliberately stays alive until after drain returns.
++    writer.write_all(b"later").unwrap();
++}
++
++#[test]
++fn successful_output_is_not_accepted_after_the_deadline() {
++    let output = Output {
++        status: ExitStatus::from_raw(0),
++        stdout: b"late".to_vec(),
++        stderr: Vec::new(),
++    };
++    assert!(success_before_deadline(output, Instant::now() - Duration::from_millis(1)).is_err());
++}
++
++fn require_owned_host_test() {
++    // SAFETY: geteuid is a read-only syscall.
++    assert_eq!(
++        unsafe { libc::geteuid() },
++        0,
++        "explicit root-owned cgroup fixture required"
++    );
++    assert_eq!(
++        std::env::var("DROIDLOOM_OWNED_COMMAND_TESTS").as_deref(),
++        Ok("1")
++    );
++}
++
++fn own_groups() -> Vec<PathBuf> {
++    let prefix = format!("droidloom-app-probe-{}-", std::process::id());
++    let mut paths: Vec<_> = fs::read_dir(current_cgroup_parent().unwrap())
++        .unwrap()
++        .map(Result::unwrap)
++        .filter(|e| e.file_name().to_string_lossy().starts_with(&prefix))
++        .map(|e| e.path())
++        .collect();
++    paths.sort();
++    paths
++}
++
++fn shell(script: &str, argument: Option<&Path>) -> Command {
++    let mut command = Command::new("/bin/sh");
++    command
++        .env_clear()
++        .env("PATH", "/usr/bin:/bin")
++        .arg("-c")
++        .arg(script)
++        .arg("owned-fixture");
++    if let Some(path) = argument {
++        command.arg(path);
++    }
++    command
++}
++
++fn assert_pid_dead_from(path: &Path) {
++    let pid: u32 = fs::read_to_string(path).unwrap().trim().parse().unwrap();
++    match open_pidfd(pid) {
++        Err(error) => assert_eq!(error.raw_os_error(), Some(libc::ESRCH)),
++        Ok(held) => assert!(
++            pidfd_exited(&held).unwrap(),
++            "owned escaped descendant remained live"
++        ),
++    }
++}
++
++#[test]
++#[ignore = "requires explicit root test in a writable cgroup v2; creates only owned host fixtures"]
++fn real_owned_group_retires_success_failure_overflow_and_escaped_pipe_holders() {
++    require_owned_host_test();
++    let before = own_groups();
++    let mut normal = Command::new("/bin/echo");
++    normal.arg("owned-output");
++    let output = run_owned(normal, &[], &[], Instant::now() + Duration::from_secs(2)).unwrap();
++    assert!(output.status.success());
++    assert_eq!(output.stdout, b"owned-output\n");
++    assert_eq!(own_groups(), before);
++
++    let error = run_owned(
++        shell("printf late; sleep 0.002", None),
++        &[],
++        &[],
++        Instant::now() + Duration::from_millis(1),
++    )
++    .unwrap_err();
++    assert!(error.contains("deadline exceeded"));
++    assert!(error.contains("cgroup empty and direct child reaped"));
++    assert_eq!(own_groups(), before);
++
++    let output = run_owned(
++        shell("printf bad >&2; exit 7", None),
++        &[],
++        &[],
++        Instant::now() + Duration::from_secs(2),
++    )
++    .unwrap();
++    assert_eq!(output.status.code(), Some(7));
++    assert_eq!(output.stderr, b"bad");
++    assert_eq!(own_groups(), before);
++
++    let error = run_owned(
++        shell("exec head -c 131072 /dev/zero", None),
++        &[],
++        &[],
++        Instant::now() + Duration::from_secs(2),
++    )
++    .unwrap_err();
++    assert!(error.contains("output bound exceeded"));
++    assert!(error.contains("cgroup empty and direct child reaped"));
++    assert_eq!(own_groups(), before);
++
++    let temp = tempfile::tempdir().unwrap();
++    let pidfile = temp.path().join("escaped.pid");
++    // setsid escapes a process group while keeping stdout/stderr open. The
++    // leader waits for its identity file, then exits before its descendant.
++    let command = shell(
++        "setsid sh -c 'echo $$ > \"$1\"; exec sleep 30' child \"$1\" & while ! test -s \"$1\"; do sleep 0.01; done; exit 0",
++        Some(&pidfile),
++    );
++    let start = Instant::now();
++    let error = run_owned(command, &[], &[], start + Duration::from_secs(2)).unwrap_err();
++    assert!(start.elapsed() < Duration::from_secs(4));
++    assert!(error.contains("leader exited with live invocation descendants"));
++    assert!(error.contains("cgroup empty and direct child reaped"));
++    assert_pid_dead_from(&pidfile);
++    assert_eq!(own_groups(), before);
++
++    let pidfile = temp.path().join("timeout.pid");
++    let command = shell(
++        "setsid sh -c 'echo $$ > \"$1\"; exec sleep 30' child \"$1\" & wait",
++        Some(&pidfile),
++    );
++    let start = Instant::now();
++    let error = run_owned(command, &[], &[], start + Duration::from_millis(300)).unwrap_err();
++    assert!(start.elapsed() < Duration::from_secs(3));
++    assert!(error.contains("deadline exceeded"));
++    assert!(error.contains("cgroup empty and direct child reaped"));
++    assert_pid_dead_from(&pidfile);
++    assert_eq!(own_groups(), before);
++}
++
++#[test]
++#[ignore = "requires explicit root test in a writable cgroup v2; enters only an owned host fixture"]
++fn real_fd_namespace_entry_and_dead_pidfd_preexec_rejection() {
++    require_owned_host_test();
++    let before = own_groups();
++    let mut child = SleepFixture::new();
++    let held = BoundProcess::capture(child.0.id()).unwrap();
++    let target = NamespaceTarget::capture_named(
++        std::process::id(),
++        child.0.id(),
++        held.identity.start_ticks,
++        Some("sleep"),
++    )
++    .unwrap();
++    let output = target
++        .execute(
++            &["/bin/echo".into(), "fd-bound".into()],
++            Instant::now() + Duration::from_secs(2),
++        )
++        .unwrap();
++    assert!(
++        output.status.success(),
++        "{}",
++        String::from_utf8_lossy(&output.stderr)
++    );
++    assert_eq!(output.stdout, b"fd-bound\n");
++    assert_eq!(own_groups(), before);
++    child.0.kill().unwrap();
++    child.0.wait().unwrap();
++    assert!(
++        target
++            .execute(
++                &["/bin/echo".into()],
++                Instant::now() + Duration::from_secs(2)
++            )
++            .is_err()
++    );
++    let directory = tempfile::tempdir().unwrap();
++    let marker = directory.path().join("must-not-exec");
++    let command = shell("echo wrong > \"$1\"", Some(&marker));
++    let error = run_owned(
++        command,
++        &[],
++        &[held.pidfd.as_raw_fd()],
++        Instant::now() + Duration::from_secs(2),
++    )
++    .unwrap_err();
++    assert!(error.contains("spawn failed"));
++    assert!(!marker.exists());
++    assert_eq!(own_groups(), before);
++}
+diff --git a/runtime/droidloom-supervisor/src/application_probe.rs b/runtime/droidloom-supervisor/src/application_probe.rs
+new file mode 100644
+index 0000000..4d75cf0
+--- /dev/null
++++ b/runtime/droidloom-supervisor/src/application_probe.rs
+@@ -0,0 +1,467 @@
++//! Bounded, live package identity and implicit browser invocation.
++//!
++//! These observations do not qualify rendered content, media, or a whole app.
++use std::collections::BTreeSet;
++
++use serde::{Deserialize, Serialize};
++
++/// Physical host/framework process generation, read by the lifecycle daemon.
++#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
++#[serde(deny_unknown_fields)]
++pub struct RuntimeEpoch {
++    /// Host kernel boot UUID.
++    pub boot_id: String,
++    /// Daemon-owned namespace leader PID on the host.
++    pub cell_host_pid: u32,
++    /// Exact system_server PID on the host.
++    pub framework_host_pid: u32,
++    /// Kernel process start ticks, preventing transfer across generations.
++    pub framework_start_ticks: u64,
++}
++
++/// A byte identity read from an APK path returned by Package Manager.
++#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
++#[serde(deny_unknown_fields)]
++pub struct InstalledApk {
++    /// Normalized APK role: first PM source path is base.apk.
++    pub name: String,
++    /// Actual PM source path inside Android.
++    pub path: String,
++    /// Stable observed byte length.
++    pub bytes: u64,
++    /// SHA-256 of the actual installed APK bytes.
++    pub sha256: String,
++}
++
++/// Fresh observed identity; its UID is never an input constant.
++#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
++#[serde(deny_unknown_fields)]
++pub struct ApplicationInspection {
++    /// Exact installed package name.
++    pub package: String,
++    /// Queried Android user.
++    pub user: u32,
++    /// Current UID read from Package Manager.
++    pub uid: u32,
++    /// Current numeric version read from Package Manager.
++    pub version_code: u64,
++    /// Live physical framework generation binding.
++    pub epoch: RuntimeEpoch,
++    /// Complete PM-returned base and split set.
++    pub apks: Vec<InstalledApk>,
++}
++
++/// Existing daemon transport, after peer authorization and readiness admission.
++pub trait AndroidProbe {
++    /// Recheck the actual current framework identity.
++    fn epoch(&mut self) -> Result<RuntimeEpoch, String>;
++    /// Execute literal arguments, with a fixed deadline and bounded output.
++    fn command(&mut self, args: &[String]) -> Result<String, String>;
++}
++
++fn argv(args: &[&str]) -> Vec<String> {
++    args.iter().map(|s| (*s).to_owned()).collect()
++}
++
++fn package_valid(package: &str) -> bool {
++    package.len() <= 255
++        && package.contains('.')
++        && package.split('.').all(|part| {
++            !part.is_empty() && part.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_')
++        })
++}
++
++/// Validate the only browser URL input accepted by the operation.
++pub fn validate_https_url(url: &str) -> Result<(), String> {
++    let Some(rest) = url.strip_prefix("https://") else {
++        return Err("browser fixture URL must use HTTPS".into());
++    };
++    let authority = rest.split(['/', '?', '#']).next().unwrap_or("");
++    if url.len() > 4096
++        || !url.is_ascii()
++        || url
++            .bytes()
++            .any(|b| b.is_ascii_control() || b.is_ascii_whitespace())
++        || authority.is_empty()
++        || authority.contains('@')
++        || authority.contains('\\')
++        || !authority
++            .bytes()
++            .all(|b| b.is_ascii_alphanumeric() || b".-:[]".contains(&b))
++    {
++        return Err("browser fixture URL has an invalid or credential-bearing authority".into());
++    }
++    Ok(())
++}
++
++fn parse_package(output: &str, package: &str, user: u32) -> Result<(u32, u64), String> {
++    let prefix = format!("package:{package}");
++    let rows: Vec<_> = output
++        .lines()
++        .filter(|line| line.split_whitespace().next() == Some(prefix.as_str()))
++        .collect();
++    if rows.len() != 1 {
++        return Err("exact installed package is absent or ambiguous".into());
++    }
++    let fields: Vec<_> = rows[0].split_whitespace().collect();
++    let field = |prefix: &str| -> Result<&str, String> {
++        let values: Vec<_> = fields
++            .iter()
++            .filter_map(|s| s.strip_prefix(prefix))
++            .collect();
++        if values.len() != 1 {
++            return Err(format!("PM field {prefix} missing or repeated"));
++        }
++        Ok(values[0])
++    };
++    let uid: u32 = field("uid:")?.parse().map_err(|_| "invalid PM UID")?;
++    let version: u64 = field("versionCode:")?
++        .parse()
++        .map_err(|_| "invalid PM version")?;
++    if uid / 100_000 != user || version == 0 {
++        return Err("PM UID is for another Android user or version is empty".into());
++    }
++    Ok((uid, version))
++}
++
++fn parse_paths(output: &str) -> Result<Vec<String>, String> {
++    let mut paths = Vec::new();
++    let mut seen = BTreeSet::new();
++    for line in output.lines().filter(|s| !s.trim().is_empty()) {
++        let path = line
++            .strip_prefix("package:")
++            .ok_or("unexpected PM path output")?;
++        let allowed = [
++            "/data/app/",
++            "/system/",
++            "/system_ext/",
++            "/product/",
++            "/vendor/",
++            "/odm/",
++            "/oem/",
++            "/apex/",
++        ];
++        if path.len() > 512
++            || !path.ends_with(".apk")
++            || !allowed.iter().any(|prefix| path.starts_with(prefix))
++            || path
++                .split('/')
++                .skip(1)
++                .any(|part| part.is_empty() || part == "." || part == "..")
++            || path
++                .bytes()
++                .any(|b| b.is_ascii_control() || b.is_ascii_whitespace())
++            || !seen.insert(path.to_owned())
++        {
++            return Err("invalid or duplicated installed APK path".into());
++        }
++        paths.push(path.to_owned());
++    }
++    if paths.is_empty() || paths.len() > 64 {
++        return Err("installed APK set is empty or exceeds bound".into());
++    }
++    Ok(paths)
++}
++
++fn stat_bytes(raw: &str) -> Result<u64, String> {
++    let raw = raw.trim();
++    let fields: Vec<_> = raw.splitn(4, ':').collect();
++    if fields.len() != 4 || fields[0].parse::<u64>().is_err() || fields[1].parse::<u64>().is_err() {
++        return Err("invalid APK metadata".into());
++    }
++    let bytes: u64 = fields[2].parse().map_err(|_| "invalid APK byte count")?;
++    if bytes == 0 || bytes > 1024 * 1024 * 1024 {
++        return Err("APK exceeds the bounded inspection size".into());
++    }
++    Ok(bytes)
++}
++
++fn fence(probe: &mut impl AndroidProbe, epoch: &RuntimeEpoch) -> Result<(), String> {
++    if probe.epoch()? != *epoch {
++        return Err("Android framework generation changed".into());
++    }
++    Ok(())
++}
++
++/// Inspect the exact installed package and all PM-returned APK source paths.
++pub fn inspect(
++    probe: &mut impl AndroidProbe,
++    package: &str,
++    user: u32,
++) -> Result<ApplicationInspection, String> {
++    if !package_valid(package) || user > 21_474 {
++        return Err("invalid package or Android user".into());
++    }
++    let epoch = probe.epoch()?;
++    let user_string = user.to_string();
++    let package_args = argv(&[
++        "/system/bin/cmd",
++        "package",
++        "list",
++        "packages",
++        "--user",
++        &user_string,
++        "-U",
++        "--show-versioncode",
++        package,
++    ]);
++    let path_args = argv(&[
++        "/system/bin/cmd",
++        "package",
++        "path",
++        "--user",
++        &user_string,
++        package,
++    ]);
++    let first_package = probe.command(&package_args)?;
++    let (uid, version_code) = parse_package(&first_package, package, user)?;
++    let paths = parse_paths(&probe.command(&path_args)?)?;
++    let mut apks = Vec::new();
++    let mut names = BTreeSet::new();
++    let mut total = 0_u64;
++    for (index, path) in paths.iter().enumerate() {
++        fence(probe, &epoch)?;
++        let stat_args = argv(&["/system/bin/toybox", "stat", "-c", "%d:%i:%s:%y:%z", path]);
++        let before = probe.command(&stat_args)?;
++        let bytes = stat_bytes(&before)?;
++        total = total.checked_add(bytes).ok_or("APK size overflow")?;
++        if total > 4 * 1024 * 1024 * 1024 {
++            return Err("installed APK set exceeds 4 GiB".into());
++        }
++        let checksum = probe.command(&argv(&["/system/bin/toybox", "sha256sum", path]))?;
++        let (sha256, named) = checksum
++            .trim()
++            .split_once("  ")
++            .ok_or("invalid APK checksum output")?;
++        if named != path
++            || sha256.len() != 64
++            || !sha256
++                .bytes()
++                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
++        {
++            return Err("APK checksum identity differs".into());
++        }
++        if probe.command(&stat_args)?.trim() != before.trim() {
++            return Err("APK changed during hash read".into());
++        }
++        let name = if index == 0 {
++            "base.apk"
++        } else {
++            path.rsplit('/').next().ok_or("missing split name")?
++        };
++        if !names.insert(name.to_owned()) {
++            return Err("normalized APK role is duplicated".into());
++        }
++        apks.push(InstalledApk {
++            name: name.into(),
++            path: path.clone(),
++            bytes,
++            sha256: sha256.into(),
++        });
++    }
++    if parse_package(&probe.command(&package_args)?, package, user)? != (uid, version_code)
++        || parse_paths(&probe.command(&path_args)?)? != paths
++    {
++        return Err("Package Manager identity changed during inspection".into());
++    }
++    fence(probe, &epoch)?;
++    apks.sort_by(|a, b| a.name.cmp(&b.name));
++    Ok(ApplicationInspection {
++        package: package.into(),
++        user,
++        uid,
++        version_code,
++        epoch,
++        apks,
++    })
++}
++
++/// Open one reviewed public HTTPS fixture through actual implicit Android routing.
++///
++/// This never reports that content, media, persistence or permissions passed.
++pub fn open_firefox(
++    probe: &mut impl AndroidProbe,
++    expected: &ApplicationInspection,
++    url: &str,
++) -> Result<(ApplicationInspection, String), String> {
++    validate_https_url(url)?;
++    if expected.package != "org.mozilla.firefox" {
++        return Err("only the selected Firefox browser flow is implemented".into());
++    }
++    if inspect(probe, &expected.package, expected.user)? != *expected {
++        return Err("installed browser or framework identity changed before invocation".into());
++    }
++    let user = expected.user.to_string();
++    let resolve = probe.command(&argv(&[
++        "/system/bin/cmd",
++        "package",
++        "resolve-activity",
++        "--brief",
++        "--user",
++        &user,
++        "-a",
++        "android.intent.action.VIEW",
++        "-c",
++        "android.intent.category.BROWSABLE",
++        "-d",
++        url,
++    ]))?;
++    let components: Vec<_> = resolve.lines().filter(|line| line.contains('/')).collect();
++    if components.len() != 1
++        || components[0]
++            .split_once('/')
++            .is_none_or(|(owner, activity)| owner != expected.package || activity.is_empty())
++    {
++        return Err("implicit HTTPS resolver does not select the pinned Firefox package".into());
++    }
++    fence(probe, &expected.epoch)?;
++    let output = probe.command(&argv(&[
++        "/system/bin/cmd",
++        "activity",
++        "start-activity",
++        "-W",
++        "--user",
++        &user,
++        "-a",
++        "android.intent.action.VIEW",
++        "-c",
++        "android.intent.category.BROWSABLE",
++        "-d",
++        url,
++    ]))?;
++    if !output.lines().any(|l| l.trim() == "Status: ok")
++        || !output.lines().any(|l| {
++            l.trim().strip_prefix("Activity: ").is_some_and(|c| {
++                c.split_once('/')
++                    .is_some_and(|(p, _)| p == expected.package)
++            })
++        })
++    {
++        return Err("Android did not confirm the actual Firefox activity start".into());
++    }
++    let after = inspect(probe, &expected.package, expected.user)?;
++    if after != *expected {
++        return Err("installed browser or framework identity changed after invocation".into());
++    }
++    Ok((after, output))
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use std::collections::VecDeque;
++    #[derive(Clone)]
++    struct Mock {
++        epoch: RuntimeEpoch,
++        output: VecDeque<String>,
++        mutations: usize,
++    }
++    impl AndroidProbe for Mock {
++        fn epoch(&mut self) -> Result<RuntimeEpoch, String> {
++            Ok(self.epoch.clone())
++        }
++        fn command(&mut self, args: &[String]) -> Result<String, String> {
++            if args.get(2).is_some_and(|s| s == "start-activity") {
++                self.mutations += 1;
++            }
++            self.output.pop_front().ok_or("unexpected command".into())
++        }
++    }
++    fn fixture(uid: u32) -> Mock {
++        let package = format!("package:org.mozilla.firefox versionCode:2016193998 uid:{uid}");
++        let path = "package:/data/app/browser/base.apk".to_owned();
++        Mock {
++            epoch: RuntimeEpoch {
++                boot_id: "1".into(),
++                cell_host_pid: 10,
++                framework_host_pid: 20,
++                framework_start_ticks: 30,
++            },
++            output: vec![
++                package.clone(),
++                path.clone(),
++                "1:2:3:time:ctime".into(),
++                format!("{}  /data/app/browser/base.apk", "a".repeat(64)),
++                "1:2:3:time:ctime".into(),
++                package,
++                path,
++            ]
++            .into(),
++            mutations: 0,
++        }
++    }
++    #[test]
++    fn uid_is_read_from_current_pm_and_not_fixed() {
++        for uid in [10021, 10237] {
++            assert_eq!(
++                inspect(&mut fixture(uid), "org.mozilla.firefox", 0)
++                    .unwrap()
++                    .uid,
++                uid
++            );
++        }
++    }
++    #[test]
++    fn absent_and_wrong_user_packages_fail_before_apk_reads() {
++        let mut m = fixture(10021);
++        m.output[0] = "".into();
++        assert!(inspect(&mut m, "org.mozilla.firefox", 0).is_err());
++        assert!(inspect(&mut fixture(110021), "org.mozilla.firefox", 0).is_err());
++    }
++    #[test]
++    fn private_traversal_and_duplicate_apk_paths_fail() {
++        for path in [
++            "package:/data/user/0/x/private.apk",
++            "package:/data/app/../private.apk",
++            "package:/system/a.apk\npackage:/system/a.apk",
++        ] {
++            assert!(parse_paths(path).is_err());
++        }
++    }
++    #[test]
++    fn package_update_and_byte_races_fail() {
++        let mut m = fixture(10021);
++        m.output[4] = "1:2:4:time:changed".into();
++        assert!(inspect(&mut m, "org.mozilla.firefox", 0).is_err());
++        let mut m = fixture(10021);
++        m.output[5] = "package:org.mozilla.firefox versionCode:2016193999 uid:10021".into();
++        assert!(inspect(&mut m, "org.mozilla.firefox", 0).is_err());
++    }
++    #[test]
++    fn non_https_and_credential_urls_never_execute() {
++        for url in [
++            "http://example.com/",
++            "https://u:p@example.com/",
++            "https:///empty",
++            "https://example.com/\n",
++        ] {
++            assert!(validate_https_url(url).is_err());
++        }
++    }
++    #[test]
++    fn other_default_browser_never_starts_firefox_explicitly() {
++        let expected = inspect(&mut fixture(10021), "org.mozilla.firefox", 0).unwrap();
++        let mut m = fixture(10021);
++        m.output.push_back("org.example.browser/.Main".into());
++        assert!(open_firefox(&mut m, &expected, "https://example.com/").is_err());
++        assert_eq!(m.mutations, 0);
++    }
++    #[test]
++    fn real_start_output_and_post_identity_are_required() {
++        let expected = inspect(&mut fixture(10021), "org.mozilla.firefox", 0).unwrap();
++        let mut m = fixture(10021);
++        m.output.extend([
++            "org.mozilla.firefox/.HomeActivity".into(),
++            "Status: ok\nActivity: org.mozilla.firefox/.HomeActivity".into(),
++        ]);
++        m.output.extend(fixture(10021).output);
++        assert!(open_firefox(&mut m, &expected, "https://example.com/").is_ok());
++        assert_eq!(m.mutations, 1);
++        let mut m = fixture(10021);
++        m.output.extend([
++            "org.mozilla.firefox/.HomeActivity".into(),
++            "Status: timeout".into(),
++        ]);
++        assert!(open_firefox(&mut m, &expected, "https://example.com/").is_err());
++    }
++}
+diff --git a/runtime/droidloom-supervisor/src/control.rs b/runtime/droidloom-supervisor/src/control.rs
+index 7dff564..9aa9b53 100644
+--- a/runtime/droidloom-supervisor/src/control.rs
++++ b/runtime/droidloom-supervisor/src/control.rs
+@@ -36,6 +36,12 @@ mod progress;
+ 
+ use progress::{LOG_HINT, Reporter};
+ 
++#[path = "application_probe.rs"]
++pub mod application_probe;
++
++#[path = "application_command.rs"]
++mod application_command;
++
+ /// Default root-owned lifecycle socket.
+ pub const DEFAULT_CONTROL_SOCKET: &str = "/run/droidloom/control.sock";
+ /// Default package-installed cell specification.
+@@ -121,6 +127,20 @@ pub enum ControlRequest {
+         /// Android user identifier.
+         user: u32,
+     },
++    /// Observe dynamic PM UID/version and installed APK byte identities.
++    InspectApplication {
++        /// Exact package to inspect.
++        package: String,
++        /// Android user owning the package.
++        user: u32,
++    },
++    /// Open a reviewed HTTPS fixture via the current implicit Firefox resolver.
++    OpenBrowser {
++        /// Exact current package and physical Main observation to recheck.
++        expected: application_probe::ApplicationInspection,
++        /// Reviewed public HTTPS fixture URL.
++        url: String,
++    },
+     /// List enabled Android MAIN/LAUNCHER activities.
+     ListApplications {
+         /// Android user identifier.
+@@ -193,6 +213,9 @@ pub struct ControlResponse {
+     /// Android log snapshot or crash report, when requested.
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+     pub diagnostics: Option<String>,
++    /// Current package observation; never a whole-application qualification.
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub inspection: Option<application_probe::ApplicationInspection>,
+ }
+ 
+ /// Daemon filesystem and executable configuration.
+@@ -312,6 +335,12 @@ impl Daemon {
+                 resolution.as_deref(),
+                 user,
+             ),
++            ControlRequest::InspectApplication { package, user } => {
++                self.inspect_application(peer_uid, &package, user)
++            }
++            ControlRequest::OpenBrowser { expected, url } => {
++                self.open_browser(peer_uid, &expected, &url)
++            }
+             ControlRequest::ListApplications { user } => self.list_applications(peer_uid, user),
+             ControlRequest::ApplicationIcon {
+                 component,
+@@ -355,6 +384,7 @@ impl Daemon {
+             applications: None,
+             application_icon: None,
+             diagnostics: None,
++            inspection: None,
+         })
+     }
+ 
+@@ -457,9 +487,46 @@ impl Daemon {
+             applications: None,
+             application_icon: None,
+             diagnostics: None,
++            inspection: None,
+         })
+     }
+ 
++    fn inspect_application(
++        &self,
++        peer_uid: u32,
++        package: &str,
++        user: u32,
++    ) -> Result<ControlResponse, ControlError> {
++        validate_package(package)?;
++        validate_android_user(user)?;
++        let active = self.require_active_cell(peer_uid, None)?;
++        let mut probe = LiveApplicationProbe::new(active)?;
++        let observed =
++            application_probe::inspect(&mut probe, package, user).map_err(ControlError::Invalid)?;
++        let mut response = self.success(
++            "Installed package metadata and APK bytes observed; no application acceptance granted",
++        );
++        response.inspection = Some(observed);
++        Ok(response)
++    }
++
++    fn open_browser(
++        &self,
++        peer_uid: u32,
++        expected: &application_probe::ApplicationInspection,
++        url: &str,
++    ) -> Result<ControlResponse, ControlError> {
++        validate_android_user(expected.user)?;
++        let active = self.require_active_cell(peer_uid, None)?;
++        let mut probe = LiveApplicationProbe::new(active)?;
++        let (observed, output) = application_probe::open_firefox(&mut probe, expected, url)
++            .map_err(ControlError::Invalid)?;
++        let mut response = self.success("Implicit Firefox HTTPS activity opened; content, media and whole-app acceptance remain pending");
++        response.inspection = Some(observed);
++        response.launch = Some(output);
++        Ok(response)
++    }
++
+     fn list_applications(&self, peer_uid: u32, user: u32) -> Result<ControlResponse, ControlError> {
+         validate_android_user(user)?;
+         let active = self.require_active_cell(peer_uid, None)?;
+@@ -488,6 +555,7 @@ impl Daemon {
+             applications: Some(applications),
+             application_icon: None,
+             diagnostics: None,
++            inspection: None,
+         })
+     }
+ 
+@@ -586,6 +654,7 @@ impl Daemon {
+             applications: None,
+             application_icon: Some(icon),
+             diagnostics: None,
++            inspection: None,
+         })
+     }
+ 
+@@ -614,6 +683,7 @@ impl Daemon {
+             applications: None,
+             application_icon: None,
+             diagnostics: None,
++            inspection: None,
+         })
+     }
+ 
+@@ -702,6 +772,7 @@ impl Daemon {
+             applications: None,
+             application_icon: None,
+             diagnostics: None,
++            inspection: None,
+         }
+     }
+ 
+@@ -1234,6 +1305,118 @@ fn android_boot_snapshot(spec: &CellSpec) -> Result<(Option<u32>, Option<String>
+     ))
+ }
+ 
++struct LiveApplicationProbe<'a> {
++    active: &'a ActiveCell,
++    initial: application_probe::RuntimeEpoch,
++    target: application_command::NamespaceTarget,
++    deadline: Instant,
++}
++
++impl<'a> LiveApplicationProbe<'a> {
++    fn new(active: &'a ActiveCell) -> Result<Self, ControlError> {
++        let (_, phase) = android_boot_snapshot(&active.spec)?;
++        if let Some(phase) = phase {
++            return Err(ControlError::Invalid(format!(
++                "Application runtime precondition failed: {phase}"
++            )));
++        }
++        let initial = application_runtime_epoch(active)?;
++        let target = application_command::NamespaceTarget::capture(
++            initial.cell_host_pid,
++            initial.framework_host_pid,
++            initial.framework_start_ticks,
++        )
++        .map_err(|e| io_error("bind application namespace identities", e))?;
++        Ok(Self {
++            active,
++            initial,
++            target,
++            deadline: Instant::now() + Duration::from_secs(90),
++        })
++    }
++}
++
++impl application_probe::AndroidProbe for LiveApplicationProbe<'_> {
++    fn epoch(&mut self) -> Result<application_probe::RuntimeEpoch, String> {
++        if Instant::now() >= self.deadline {
++            return Err("Application observation deadline exceeded".into());
++        }
++        self.target.validate().map_err(|e| e.to_string())?;
++        let now = application_runtime_epoch(self.active).map_err(|e| e.to_string())?;
++        if now != self.initial {
++            return Err("Application runtime framework generation changed".into());
++        }
++        if Instant::now() >= self.deadline {
++            return Err("Application observation deadline exceeded during epoch check".into());
++        }
++        Ok(now)
++    }
++
++    fn command(&mut self, args: &[String]) -> Result<String, String> {
++        self.epoch()?;
++        let command_deadline = self.deadline.min(Instant::now() + Duration::from_secs(20));
++        let output = self.target.execute(args, command_deadline)?;
++        self.epoch()?;
++        if !output.status.success() {
++            return Err(format!(
++                "Application command failed ({}): {}",
++                output.status,
++                String::from_utf8_lossy(&output.stderr)
++                    .chars()
++                    .take(512)
++                    .collect::<String>()
++            ));
++        }
++        String::from_utf8(output.stdout)
++            .map(|s| s.trim().to_owned())
++            .map_err(|_| "Application command returned non-UTF-8 data".into())
++    }
++}
++
++fn application_runtime_epoch(
++    active: &ActiveCell,
++) -> Result<application_probe::RuntimeEpoch, ControlError> {
++    let mut framework = Vec::new();
++    for pid in android_namespace_pids(&active.spec)? {
++        let stat = match fs::read_to_string(format!("/proc/{pid}/stat")) {
++            Ok(value) => value,
++            Err(error) if error.kind() == io::ErrorKind::NotFound => continue,
++            Err(error) => {
++                return Err(io_error(
++                    "read application framework process identity",
++                    error,
++                ));
++            }
++        };
++        let Some((prefix, tail)) = stat.rsplit_once(") ") else {
++            continue;
++        };
++        if !prefix.ends_with("(system_server") {
++            continue;
++        }
++        let start = tail
++            .split_whitespace()
++            .nth(19)
++            .ok_or_else(|| ControlError::Invalid("system_server stat lacks start time".into()))?
++            .parse::<u64>()
++            .map_err(|_| ControlError::Invalid("system_server start time is invalid".into()))?;
++        framework.push((pid, start));
++    }
++    if framework.len() != 1 {
++        return Err(ControlError::Invalid(
++            "Application observation requires exactly one live system_server".into(),
++        ));
++    }
++    let boot_id = fs::read_to_string("/proc/sys/kernel/random/boot_id")
++        .map_err(|e| io_error("read application host boot identity", e))?;
++    Ok(application_probe::RuntimeEpoch {
++        boot_id: boot_id.trim().into(),
++        cell_host_pid: active.cell.host_pid(),
++        framework_host_pid: framework[0].0,
++        framework_start_ticks: framework[0].1,
++    })
++}
++
+ fn android_properties(init_pid: u32) -> Result<Option<Vec<u8>>, ControlError> {
+     let pid = init_pid.to_string();
+     let output = droidloom_cpu_placement::command("timeout")
+@@ -1586,6 +1769,7 @@ mod tests {
+                         applications: None,
+                         application_icon: None,
+                         diagnostics: None,
++                        inspection: None,
+                     },
+                 )
+                 .unwrap();
+@@ -1648,6 +1832,7 @@ mod tests {
+                         applications: None,
+                         application_icon: None,
+                         diagnostics: None,
++                        inspection: None,
+                     },
+                 )
+                 .unwrap();
+diff --git a/runtime/droidloom-supervisor/src/development.rs b/runtime/droidloom-supervisor/src/development.rs
+index a54f21e..910cd65 100644
+--- a/runtime/droidloom-supervisor/src/development.rs
++++ b/runtime/droidloom-supervisor/src/development.rs
+@@ -33,7 +33,7 @@ mod android_overrides;
+ mod guest_dirs;
+ 
+ #[path = "development_process.rs"]
+-mod owned_process;
++pub(crate) mod owned_process;
+ use owned_process::OwnedNamespaceChild;
+ 
+ const DEVELOPMENT_UNSHARE_ARGUMENTS: &[&str] = &[
+diff --git a/runtime/droidloom-supervisor/src/development_process.rs b/runtime/droidloom-supervisor/src/development_process.rs
+index 8b8e3b7..d0dad67 100644
+--- a/runtime/droidloom-supervisor/src/development_process.rs
++++ b/runtime/droidloom-supervisor/src/development_process.rs
+@@ -173,7 +173,7 @@ impl OwnedNamespaceChild {
+     }
+ }
+ 
+-fn open_pidfd(pid: u32) -> io::Result<OwnedFd> {
++pub(crate) fn open_pidfd(pid: u32) -> io::Result<OwnedFd> {
+     let pid = i32::try_from(pid).map_err(|_| invalid("PID exceeds Linux pid_t"))?;
+     // SAFETY: this syscall returns a new descriptor or -1; flags are zero.
+     let fd = unsafe { libc::syscall(libc::SYS_pidfd_open, pid, 0) };
+@@ -184,7 +184,7 @@ fn open_pidfd(pid: u32) -> io::Result<OwnedFd> {
+     Ok(unsafe { OwnedFd::from_raw_fd(fd as libc::c_int) })
+ }
+ 
+-fn pidfd_exited(fd: &OwnedFd) -> io::Result<bool> {
++pub(crate) fn pidfd_exited(fd: &OwnedFd) -> io::Result<bool> {
+     let mut event = libc::pollfd {
+         fd: fd.as_raw_fd(),
+         events: libc::POLLIN,
+diff --git a/tools/README.md b/tools/README.md
+index 50951ad..1963d80 100644
+--- a/tools/README.md
++++ b/tools/README.md
+@@ -15,6 +15,158 @@ The package builder is the distribution entry point. The source updater is an
+ alternative developer installation; it cannot overwrite a pacman installation.
+ Do not assemble a preview from unrelated component builds.
+ 
++## Application release evidence
++
++The existing `droidloom-applications` binary also has a read-only evidence
++completeness check. It does not connect to Android, change the XDG catalog,
++install applications, or execute a test:
++
++```text
++droidloom-applications --release-check /absolute/release-manifest.json \
++  --release-results /absolute/release-results.json \
++  --expect-release-sha256 MANIFEST_SHA256 \
++  --expect-main-sha256 CURRENT_MAIN_QUALIFICATION_SHA256 \
++  --expect-app-count 42
++```
++
++Supply the manifest digest, current Main qualification receipt digest, and
++complete selected application count from independently reviewed release inputs.
++Do not derive the expected selection from whichever results happened to finish.
++A 42-application manifest with 13 results reports the 29 missing applications.
++
++Both JSON inputs use schema `1` and deny unknown fields. The manifest has
++`schema`, `main`, and `apps`. The result has those same top-level fields:
++
++- `main`: `main_sha256`, `boot_id`, `framework_epoch_sha256`, and
++  `cohort_sha256`. Every application result repeats this exact binding.
++- Manifest app: `identity` and `required_gates`.
++- Result app: `identity`, `main`, and `gates`.
++- `identity`: `package`, `android_user`, `uid`, `version_code`,
++  `version_name`, `engine_mapping_sha256`, and `apks`. Each APK has
++  `name` (a normalized APK role name), `bytes`,
++  `sha256`, and `signer_sha256` (an array of certificate digests).
++  All split APKs must have the same signer set.
++- Result gate: `id`, `status` (`passed`, `failed`, `blocked`, or
++  `unsupported`), `reason` (string or null), and `evidence`.
++  Each evidence reference has absolute canonical `path`, `bytes`, and
++  `sha256`.
++
++The main APK is always labeled `base.apk`, even when its installed path is
++`/system/priv-app/Settings/Settings.apk`. Derive that role from the installed
++package's base code path; do not infer it from the source filename. Give splits
++stable, unique names and apply the same normalization to manifest and results.
++Retain the actual installed paths in the identity evidence. The checker compares
++these declared roles; the runtime collector and reviewer establish their meaning.
++
++Every selected application must declare `identity`, `lifecycle`, `stability`,
++`data_permissions`, `release_scope`, and `ui_observation`, plus its complete
++reviewed business gate list. Reuse the existing application gate definitions;
++the checker does not invent business coverage. A passed gate requires nonempty
++evidence with at least one nonempty receipt; an empty stderr log is allowed as
++an additional reference. Other statuses require an explicit reason and remain incomplete.
++Duplicate applications or gates, unexpected results, changed APK/signer/version/
++UID, different Main bindings, missing gates, and damaged evidence fail the check.
++
++The checker rereads regular files and verifies identity stability and SHA-256.
++Input JSON is bounded to 8 MiB each, evidence to 64 MiB per reference and
++256 MiB total per invocation. An evidence file larger than its declared size is
++rejected before reading its payload, so an understated size cannot evade the
++total read budget. Use the retained compact runtime receipts for
++larger media artifacts; their semantic relationship to the media still requires
++review. SHA-256 values are lowercase hex. The command writes its JSON report to
++stdout and exits unsuccessfully for incomplete evidence or invalid input.
++
++`evidence_complete=true` means complete declared coverage with matching bytes.
++It is not a claim that the evidence is truthful, that Main is currently alive,
++or that the applications are production ready. The checker always records
++`tests_executed_by_checker=0`, `production_ready=false`, and
++`runtime_qualified=false`. The runtime owner must obtain the fresh Main
++receipt, execute the actual tests, review their meaning, and complete any
++account, authorized test recipient, data migration, and release approval gates.
++Source tests and prepared leaf entrypoints cannot be substituted for those
++runtime results.
++
++## Live application observations and browser entry
++
++The same binary has two explicit live entrypoints. Both require an already
++ready, authorized Droidloom cell and matching updated client/daemon binaries.
++They never start Android, install or downgrade an APK, clear app data, sign in,
++send a message, place an order, or approve a release.
++
++```text
++droidloom-applications --inspect-package org.mozilla.firefox --user 0
++droidloom-applications --runtime-plan /absolute/runtime-plan.json \
++  --expect-runtime-plan-sha256 INDEPENDENTLY_REVIEWED_PLAN_SHA256 \
++  --expect-app-count 42
++```
++
++The inspection reads the actual Package Manager UID, version code and full
++base/split path list, then rereads and hashes every installed APK with stable
++file metadata. It repeats PM identity/path queries and binds observations to
++the host boot UUID, the daemon-owned cell PID, and the live system_server
++PID/start ticks. The main PM source path receives the logical `base.apk`
++role even for system APKs whose physical basename differs. APK bytes are
++limited to 1 GiB each and 4 GiB per installed set. Signatures are not executed
++or invented by this observation: a separately reviewed official-source and
++signature receipt must establish the expected complete APK byte set.
++
++The daemon pins proc directories, PIDFDs, namespace FDs, root and cwd before
++entry, verifies that the framework belongs to the held cell, and uses only
++FD paths for nsenter. It clears the child environment and inherits only the
++explicit entry FDs. Each invocation joins a new, exclusively owned cgroup v2
++before exec; fixed commands have a 20-second deadline and 64 KiB per output
++stream, within a 90-second observation. Nonblocking readers never wait for
++pipe EOF. Success requires the invocation's cgroup to be empty and the direct
++child reaped before the deadline. Failure allows up to two seconds to prove
++retirement. An unresolved group retains its child/cgroup handles and blocks
++further invocations. Missing writable cgroup v2 or cgroup.kill is a clear
++precondition failure; the daemon does not fall back to numeric-PID entry or
++process-group-only retirement. It never kills the cell's namespace init to
++retire an application observation.
++
++A runtime plan uses schema `1`, denies unknown fields, and contains:
++
++- `android_user`, `execute_public_browser`, and the complete
++  `applications` array.
++- `main_qualification` and `gate_registry`: canonical regular-file
++  references containing `path`, `bytes`, and `sha256`.
++- `expected_epoch`: independently observed `boot_id`, `cell_host_pid`,
++  `framework_host_pid`, and `framework_start_ticks`.
++- Each application: `package` and `expected_input` (null when the reviewed
++  current official delivery is absent). A present input has `version_code`,
++  complete `apks` (`name`, `bytes`, `sha256`), and a pinned
++  `source_receipt`.
++- `browser_fixture`: null when execution is disabled; otherwise a reviewed
++  `url` and `input_scope: "public_owned_https"`. Supply only a benign,
++  public, operator-owned HTTPS fixture. No login, messaging, purchases, ride
++  dispatch or booking is authorized by that scope string.
++
++The gate registry uses the existing `pocket4-app-release-gates-v1` schema:
++`common_gates`, profile `checks`, and package `app/kind/profile/prerequisites`.
++All six common gates and every selected business contract must be present.
++Firefox must resolve to the complete five-gate browser contract. All input
++references are checked before any IPC. The Main receipt's bytes are pinned;
++its semantic qualification is not parsed or asserted by this entrypoint, as
++the report's `main_qualification_semantics_checked=false` states.
++
++Every selected row is retained. Missing runtime, installed package, expected
++source delivery or matching current epoch produces `blocked`. Other registered
++profiles currently produce `unsupported` after identity admission; their
++separately qualified existing leaves remain separate. No arbitrary shell,
++legacy leaf or account flow is auto-dispatched. Firefox resolves the reviewed
++HTTPS URL through the actual implicit Android BROWSABLE/VIEW resolver and
++requires it to select Firefox; it then executes the actual activity start and
++checks returned activity status and unchanged installed identity. It does not
++force an explicit component when another browser is selected.
++
++That successful entry is only `partial_observation`. Rendered document/input/
++images, media, navigation/reopen, recovery and all common gates remain pending.
++The report always has `accepted_applications=0`, `accepted_gates=0`,
++`production_ready=false`, `runtime_qualified=false`, and
++`automatic_retry=false`; the runtime-plan command exits unsuccessfully because
++whole-app acceptance is incomplete. Identity inspection may exit zero for its
++observation and still cannot be consumed as an application PASS.
++
+ ## Specialist helpers
+ 
+ These are not needed to install or build the x86_64 pacman preview. They remain

@@ -1,0 +1,43 @@
+{
+  "schema": "pocket4-editor-probe-mac-publication-controls-v1",
+  "host": "mac",
+  "job_id": "1a1bacabe41-12894-1d4d",
+  "base_commit": "480b0fe3b7352fcab33e92b3582948f4d14f674f",
+  "packet_sha256": "7b059d293a993edb2770bd8d6532738c1ff53d9ed1dcf0674663eee3341114a0",
+  "transferred_files_verified": 37,
+  "python_version": "3.14.3",
+  "source_integrity": {
+    "android_on_asterinas_verified": false,
+    "checked_files": 176,
+    "errors": [],
+    "required_files": 64,
+    "schema": 1,
+    "scope": "A08_SOURCE_INTEGRITY_ONLY",
+    "status": "source_integrity_passed"
+  },
+  "source_integrity_exit_code": 0,
+  "discovered_tests": 12,
+  "tests_passed": 12,
+  "test_exit_code": 0,
+  "test_command": [
+    "/opt/homebrew/bin/python3",
+    "-I",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/workloads/android",
+    "-p",
+    "test_pocket4_editor_support.py",
+    "-v"
+  ],
+  "temporary_directory": "Canonical isolated directory on the Mac host; removed after the tests",
+  "stdout_eof": true,
+  "stderr_eof": true,
+  "Main_actions": 0,
+  "Android_UI_actions": 0,
+  "runtime_qualified": false,
+  "whole_app_business_accepted": false,
+  "scope": "Actual Mac transfer integrity, complete source syntax/inventory gate and discovery wrapper tests. No Android execution."
+}

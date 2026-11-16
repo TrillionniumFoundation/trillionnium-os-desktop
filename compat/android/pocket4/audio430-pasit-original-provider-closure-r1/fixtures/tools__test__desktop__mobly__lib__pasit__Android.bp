@@ -1,0 +1,448 @@
+// Copyright (C) 2025 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+    default_team: "trendy_team_desktop_peripherals",
+}
+
+python_library_host {
+    name: "py-display-painter",
+    srcs: [
+        "*/*display_painter.py",
+        "*display_painter.py",
+    ],
+    exclude_srcs: ["passport/*"],
+    libs: [
+        "mobly",
+    ],
+    pkg_path: "lib/pasit",
+}
+
+python_library_host {
+    name: "py-display-helper",
+    srcs: [
+        "display_helper.py",
+    ],
+    libs: [
+        "mobly",
+        "py-pasit-display",
+        "py-test-policy",
+    ],
+    pkg_path: "lib/pasit",
+}
+
+python_library_host {
+    name: "py-hid-helper",
+    srcs: [
+        "hid_helper.py",
+    ],
+    libs: [
+        "mobly",
+        "py-desktop-utils",
+        "py-pasit-hid",
+        "py-test-policy",
+    ],
+    pkg_path: "lib/pasit",
+}
+
+python_library_host {
+    name: "py-display-camera-mapper",
+    srcs: [
+        "display_camera_mapper.py",
+        "color_capturer.py",
+    ],
+    libs: [
+        "mobly",
+        "py-pasit-display",
+        "py-display-painter",
+        "py-passport",
+    ],
+    pkg_path: "lib/pasit",
+}
+
+python_library_host {
+    name: "py-pasit-camera",
+    srcs: [
+        "*/*camera.py",
+        "*camera.py",
+    ],
+    exclude_srcs: ["passport/*"],
+    libs: [
+        "mobly",
+    ],
+    pkg_path: "lib/pasit",
+}
+
+python_library_host {
+    name: "py-pasit-device",
+    srcs: [
+        "*/*device.py",
+        "*device.py",
+        "dut_state_manager.py",
+        "*/snippet_tools.py",
+        "*/base_user_tools.py",
+        "*/android_user_tools.py",
+        "*/base_ui_tools.py",
+        "*/android_ui_tools.py",
+        "*/dumpsys_battery_parser.py",
+        "*/screen_recorder.py",
+        "*/input_recorder.py",
+        "*/adb_command_monitor.py",
+        "*/process_monitor_group.py",
+        "*/ui_watcher.py",
+        "*/device_state_parser.py",
+    ],
+    exclude_srcs: ["passport/*"],
+    libs: [
+        "mobly",
+        "py-desktop-utils",
+        "py-snippet-uiautomator",
+        "py-test-policy",
+    ],
+    pkg_path: "lib/pasit",
+}
+
+python_library_host {
+    name: "py-pasit-display",
+    srcs: [
+        "*/*display.py",
+        "*/*display_id.py",
+        "*/dumpsys_display_parser.py",
+        "*/dumpsys_surfaceflinger_parser.py",
+        "*display.py",
+    ],
+    exclude_srcs: ["passport/*"],
+    libs: [
+        "mobly",
+    ],
+    pkg_path: "lib/pasit",
+}
+
+python_library_host {
+    name: "py-pasit-file",
+    srcs: [
+        "*/*file.py",
+        "*file.py",
+    ],
+    exclude_srcs: ["passport/*"],
+    libs: [
+        "mobly",
+    ],
+    pkg_path: "lib/pasit",
+}
+
+python_library_host {
+    name: "py-pasit-hid",
+    srcs: [
+        "*/*hid.py",
+        "*hid.py",
+        "hid_emulator.py",
+        "hid_keys.py",
+    ],
+    exclude_srcs: ["passport/*"],
+    libs: [
+        "mobly",
+    ],
+    pkg_path: "lib/pasit",
+}
+
+python_library_host {
+    name: "py-pasit-network",
+    srcs: [
+        "*/*network.py",
+        "*network.py",
+    ],
+    exclude_srcs: ["passport/*"],
+    libs: [
+        "mobly",
+        "py-desktop-utils",
+        "py-passport",
+    ],
+    pkg_path: "lib/pasit",
+}
+
+python_library_host {
+    name: "py-pasit-storage",
+    srcs: [
+        "*/*storage.py",
+        "*storage.py",
+    ],
+    exclude_srcs: ["passport/*"],
+    libs: [
+        "mobly",
+    ],
+    pkg_path: "lib/pasit",
+}
+
+python_library_host {
+    name: "py-pasit-test",
+    srcs: [
+        "*/*test.py",
+        "*test.py",
+        "pasit_test_config.py",
+    ],
+    exclude_srcs: [
+        "passport/*",
+        "pasit_lib_imports_test.py",
+        "pasit_test_test.py",
+    ],
+    libs: [
+        "mobly",
+        "py-pasit-device",
+        "py-passport",
+        "py-test-policy",
+    ],
+    pkg_path: "lib/pasit",
+}
+
+python_library_host {
+    name: "py-passport",
+    srcs: ["passport/*.py"],
+    exclude_srcs: ["passport/*_test.py"],
+    libs: [
+        "py-grpcio",
+        "libprotobuf-python",
+        "mobly",
+        "py-chromiumos-config-passport",
+        "py-desktop-utils",
+    ],
+    pkg_path: "lib/pasit",
+}
+
+python_library_host {
+    name: "py-test-policy",
+    srcs: ["test_policy.py"],
+    pkg_path: "lib/pasit",
+}
+
+python_library_host {
+    name: "py-peripheral-connector",
+    srcs: ["peripheral_connector.py"],
+    libs: [
+        "py-passport",
+    ],
+    pkg_path: "lib/pasit",
+}
+
+python_test_host {
+    name: "pasit_lib_imports_test",
+    srcs: [
+        "pasit_lib_imports_test.py",
+    ],
+    test_options: {
+        unit_test: true,
+    },
+    libs: [
+        "py-display-helper",
+        "py-hid-helper",
+        "py-display-camera-mapper",
+        "py-display-painter",
+        "py-pasit-camera",
+        "py-pasit-device",
+        "py-pasit-display",
+        "py-pasit-file",
+        "py-pasit-hid",
+        "py-pasit-storage",
+        "py-pasit-test",
+        "py-passport",
+    ],
+}
+
+python_test_host {
+    name: "dumpsys_display_parser_test",
+    team: "trendy_team_desktop_peripherals",
+    main: "android/dumpsys_display_parser_test.py",
+    srcs: [
+        "android/dumpsys_display_parser_test.py",
+    ],
+    data: [
+        "android/testdata/dumpsys_display_internal.txt",
+        "android/testdata/dumpsys_display_external.txt",
+        "android/testdata/dumpsys_display_lid_closed.txt",
+    ],
+    test_options: {
+        unit_test: true,
+    },
+    libs: [
+        "py-pasit-display",
+    ],
+}
+
+python_test_host {
+    name: "dumpsys_surfaceflinger_parser_test",
+    team: "trendy_team_desktop_peripherals",
+    main: "android/dumpsys_surfaceflinger_parser_test.py",
+    srcs: [
+        "android/dumpsys_surfaceflinger_parser_test.py",
+    ],
+    data: [
+        "android/testdata/dumpsys_surfaceflinger_internal.txt",
+        "android/testdata/dumpsys_surfaceflinger_external.txt",
+        "android/testdata/dumpsys_surfaceflinger_negative_id.txt",
+    ],
+    test_options: {
+        unit_test: true,
+    },
+    libs: [
+        "py-pasit-display",
+    ],
+}
+
+python_test_host {
+    name: "dumpsys_battery_parser_test",
+    team: "trendy_team_desktop_peripherals",
+    main: "android/dumpsys_battery_parser_test.py",
+    srcs: [
+        "android/dumpsys_battery_parser_test.py",
+    ],
+    data: [
+        "android/testdata/dumpsys_battery_not_charging.txt",
+        "android/testdata/dumpsys_battery_usb_charging.txt",
+    ],
+    test_options: {
+        unit_test: true,
+    },
+    libs: [
+        "py-pasit-device",
+    ],
+}
+
+python_test_host {
+    name: "device_state_parser_test",
+    team: "trendy_team_desktop_peripherals",
+    main: "android/device_state_parser_test.py",
+    srcs: [
+        "android/device_state_parser_test.py",
+    ],
+    test_options: {
+        unit_test: true,
+    },
+    libs: [
+        "py-pasit-device",
+        "py-pasit-test",
+    ],
+}
+
+python_test_host {
+    name: "color_capturer_test",
+    team: "trendy_team_desktop_peripherals",
+    srcs: [
+        "color_capturer_test.py",
+    ],
+    test_options: {
+        unit_test: true,
+    },
+    libs: [
+        "py-display-camera-mapper",
+        "py-desktop-utils",
+    ],
+}
+
+python_test_host {
+    name: "peripheral_connector_test",
+    team: "trendy_team_desktop_peripherals",
+    srcs: [
+        "peripheral_connector_test.py",
+    ],
+    data: [
+        "testdata/non-standard-setup.yaml",
+        "testdata/pasit-box.yaml",
+        "testdata/single-display.yaml",
+    ],
+    test_options: {
+        unit_test: true,
+    },
+    libs: [
+        "py-peripheral-connector",
+        "py-desktop-utils",
+    ],
+}
+
+python_test_host {
+    name: "pasit_test_test",
+    team: "trendy_team_desktop_peripherals",
+    srcs: [
+        "pasit_test_test.py",
+    ],
+    test_options: {
+        unit_test: true,
+    },
+    libs: [
+        "py-pasit-test",
+        "py-desktop-utils",
+    ],
+}
+
+python_test_host {
+    name: "android_pasit_network_test",
+    team: "trendy_team_desktop_peripherals",
+    main: "android/android_pasit_network_test.py",
+    srcs: [
+        "android/android_pasit_network_test.py",
+    ],
+    test_options: {
+        unit_test: true,
+    },
+    libs: [
+        "py-pasit-network",
+    ],
+}
+
+python_library_host {
+    name: "py-network-helper",
+    srcs: [
+        "network_helper.py",
+    ],
+    libs: [
+        "mobly",
+        "py-pasit-network",
+        "py-test-policy",
+    ],
+    pkg_path: "lib/pasit",
+}
+
+python_test_host {
+    name: "adb_command_monitor_test",
+    team: "trendy_team_desktop_peripherals",
+    main: "android/adb_command_monitor_test.py",
+    srcs: [
+        "android/adb_command_monitor_test.py",
+    ],
+    test_options: {
+        unit_test: true,
+    },
+    libs: [
+        "mobly",
+        "py-desktop-utils",
+        "py-pasit-device",
+    ],
+}
+
+python_test_host {
+    name: "process_monitor_group_test",
+    team: "trendy_team_desktop_peripherals",
+    main: "android/process_monitor_group_test.py",
+    srcs: [
+        "android/process_monitor_group_test.py",
+    ],
+    test_options: {
+        unit_test: true,
+    },
+    libs: [
+        "mobly",
+        "py-desktop-utils",
+        "py-pasit-device",
+    ],
+}

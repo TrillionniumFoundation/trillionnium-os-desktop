@@ -1,0 +1,205 @@
+{
+  "control_runs": [
+    "full-ai395-r1",
+    "full-ai395-r2",
+    "full-ai395-r3",
+    "full-ai395-r4"
+  ],
+  "covered_projects": [
+    {
+      "commit": "4a67922f3276adcdd46642957ba6e53114a3625a",
+      "name": "platform/packages/modules/DeviceLock",
+      "path": "packages/modules/DeviceLock",
+      "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+      "sparse_paths": [
+        "apex",
+        "flags",
+        "framework",
+        "DeviceLockController/Android.bp",
+        "DeviceLockController/AndroidManifest.xml",
+        "DeviceLockController/AndroidManifestBase.xml",
+        "DeviceLockController/NOTICE",
+        "DeviceLockController/lint-baseline.xml",
+        "DeviceLockController/proguard.flags",
+        "DeviceLockController/proto",
+        "DeviceLockController/res",
+        "DeviceLockController/src",
+        "DeviceLockController/sysconfig",
+        "permissions",
+        "service"
+      ]
+    },
+    {
+      "commit": "9d71d482603aac054815958c9834ae1cd036f024",
+      "name": "platform/external/mime-support",
+      "path": "external/mime-support",
+      "purpose": "Pinned Debian MIME data and original generators required by framework MIME inputs",
+      "sparse_paths": [
+        "Android.bp",
+        "LICENSE",
+        "mime.types",
+        "mime.types-alt"
+      ]
+    }
+  ],
+  "failed_command": {
+    "argv": [
+      "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-provider-r1/droidloom-update",
+      "--source",
+      "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/recipe-provider-r1",
+      "--jobs",
+      "6",
+      "native-generation-build",
+      "--work",
+      "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work",
+      "--out",
+      "/home/qq/work/pocket4-native-build597-ai395-20261108-8b88-r1/out-r4"
+    ],
+    "errors": [
+      {
+        "message": "owned output allocation observation failed",
+        "stage": "execution",
+        "type": "RuntimeError"
+      }
+    ],
+    "name": "normal-full-native-engine-ART-pair",
+    "owned_retirement_complete": true,
+    "stderr": {
+      "bytes": 23814,
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r4/commands/normal-full-native-engine-ART-pair.stderr",
+      "sha256": "788a5269cb0116b378caba87886c727da59b373c6affc83bfe648fa6b5e300a0"
+    }
+  },
+  "host": "ai395",
+  "observed_utc": "2026-11-09T04:33:41.622753+00:00",
+  "qualification_runs": [
+    "full-ai395-r1",
+    "full-ai395-r1-fallback",
+    "full-ai395-r2",
+    "full-ai395-r2-fallback",
+    "full-ai395-r3",
+    "full-ai395-r3-fallback",
+    "full-ai395-r4",
+    "full-ai395-r4-fallback"
+  ],
+  "r4_state": {
+    "actual_build_processes_seen": [],
+    "build_success": false,
+    "complete_engine_ART_pair_qualified": false,
+    "effective_source_input_observation": null,
+    "errors": [
+      {
+        "message": "owned command failed: normal-full-native-engine-ART-pair",
+        "stage": "execution",
+        "type": "RuntimeError"
+      }
+    ],
+    "finished_ns": 1794197345302896600,
+    "input_after_qualified": true,
+    "memory_peak_bytes": 13513158656,
+    "memory_swap_current_bytes": 0,
+    "observed_work_growth_peak_bytes": 90112,
+    "owned_retirement_complete": true,
+    "owned_work_growth_after_bytes": 159744,
+    "resource_events_delta": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "resource_gate_passed": true,
+    "resource_observations_count": 0,
+    "resource_profile": {
+      "build_memory_high_bytes": 23622320128,
+      "build_memory_max_bytes": 25769803776,
+      "cpu_affinity": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "cpu_quota_percent": 800,
+      "fresh_disk_minimum_bytes": 266287972352,
+      "fresh_memavailable_minimum_bytes": 62277025792,
+      "go_gc_percent": 50,
+      "go_max_procs": 2,
+      "go_memory_limit_bytes": 5368709120,
+      "host_reserve_bytes": 8589934592,
+      "initial_build_work_budget_bytes": 103079215104,
+      "inner_runtime_max_seconds": 22800,
+      "memory_swap_max_bytes": 0,
+      "name": "ai395-native-source600-high22g-memory24g-cpu8-jobs6-go5g2-combined58g-work96g-peer120g-sharedreserve32g-v2",
+      "normal_build_timeout_seconds": 21600,
+      "normal_requested_jobs": 6,
+      "outer_cpu_quota_percent": 200,
+      "outer_memory_max_bytes": 2147483648,
+      "outer_timeout_seconds": 28800,
+      "reserved_peer_kernel_growth_bytes": 128849018880,
+      "shared_disk_reserve_bytes": 34359738368
+    },
+    "runtime_qualified": false,
+    "schema": "pocket4-native600-ai395-normal-full-build-v1",
+    "source_project_count": 600,
+    "source_projection_restored": true,
+    "started_ns": 1794196772662573300,
+    "state": "FAILED"
+  },
+  "r4_terminal": {
+    "bytes": 67469,
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r4/terminal.json",
+    "sha256": "cd10c2072487441293aa6c3a39b9603d4bc3a7a208ea0283eb3919c0d19e0b9d"
+  },
+  "root_identities": [
+    {
+      "device": 66306,
+      "gid": 1000,
+      "inode": 60857393,
+      "is_directory": true,
+      "mode": 16832,
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1",
+      "resolved": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1",
+      "uid": 1000
+    },
+    {
+      "device": 66306,
+      "gid": 1000,
+      "inode": 60857479,
+      "is_directory": true,
+      "mode": 16832,
+      "path": "/home/qq/work/pocket4-native-build597-ai395-20261108-8b88-r1",
+      "resolved": "/home/qq/work/pocket4-native-build597-ai395-20261108-8b88-r1",
+      "uid": 1000
+    }
+  ],
+  "root_relationship": {
+    "overlap": false,
+    "same_device": true,
+    "same_parent": true
+  },
+  "schema": "native600-allocation-observer-readonly-fresh-state-v1",
+  "source_lock": {
+    "bytes": 354218,
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/recipe-provider-r1/android/native-generation-pair/source-lock.json",
+    "sha256": "600dc00660af69b4b8eeb497fac8f2a83f0d8b24ad3d02c2774a4df96f5ec8cf"
+  },
+  "source_projects": 600,
+  "sources": [
+    {
+      "bytes": 40850,
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/full-ai395-r4/ai395_native_controller.py",
+      "sha256": "114a85f5e28f06d2d89b7578395eb9ed6b66768205074ab16d7414388221da31"
+    },
+    {
+      "bytes": 17569,
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/full-ai395-r4/ai395_build_support.py",
+      "sha256": "23370cf3fba43a8d6bbd8be888a28a3a7add33125cafff3cd2803f5e09e27297"
+    }
+  ]
+}

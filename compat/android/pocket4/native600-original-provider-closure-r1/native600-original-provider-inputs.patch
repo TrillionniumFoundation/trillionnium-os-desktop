@@ -1,0 +1,908 @@
+--- a/android/native-generation-pair/source-lock.json
++++ b/android/native-generation-pair/source-lock.json
+@@ -361,7 +361,50 @@
+         "tools/cts-v-host/Android.bp",
+         "tools/cts-v-host/README",
+         "tools/cts-v-host/res",
+-        "tools/lint"
++        "tools/lint",
++        "apps/CameraFeatureCombinationVerifier",
++        "apps/CarWatchdogCompanionApp",
++        "apps/CrossProfileTestApp",
++        "apps/CtsVerifierUSBCompanion",
++        "apps/DeviceControlsApp",
++        "apps/EmptyDeviceAdmin",
++        "apps/EmptyDeviceOwner",
++        "apps/NotesApp",
++        "apps/NotificationBot",
++        "apps/PermissionApp",
++        "apps/TileServiceApp",
++        "apps/TtsTestApp",
++        "apps/VpnApp",
++        "common/device-side/bedstead/deviceadminapp",
++        "common/device-side/bedstead/metricsrecorder",
++        "common/device-side/device-info",
++        "common/device-side/util-axt/tests",
++        "hostsidetests/appsecurity/test-apps",
++        "hostsidetests/compilation/app_using_other_app",
++        "hostsidetests/devicepolicy/app",
++        "hostsidetests/os/app",
++        "hostsidetests/os/test-apps",
++        "hostsidetests/scopedstorage/libs/ScopedStorageTestLib",
++        "hostsidetests/statsdatom/apps/adpfapp",
++        "hostsidetests/statsdatom/apps/expressloghelperapp",
++        "hostsidetests/statsdatom/apps/statsdapp",
++        "tests/jdwp/runner/host-side",
++        "tests/signature/api",
++        "tests/tests/keystore",
++        "tests/tests/os/jni",
++        "tests/tests/packageinstaller/test-apps/emptytestapp",
++        "tests/tests/telecom",
++        "tests/tests/telecom-apps/ConnectionServiceVoipAppClone",
++        "tests/tests/telecom-apps/ConnectionServiceVoipAppMain",
++        "tests/tests/telecom-apps/ManagedConnectionService",
++        "tests/tests/telecom-apps/ManagedConnectionServiceClone",
++        "tests/tests/telecom-apps/TransactionalVoipAppClone",
++        "tests/tests/telecom-apps/TransactionalVoipAppMain",
++        "tests/tests/telecom-apps/Utils",
++        "tests/tests/telecom-cuj",
++        "tests/tests/telecom2",
++        "tests/tests/telecom3",
++        "tools/cts-dynamic-config"
+       ]
+     },
+     {
+@@ -2408,7 +2451,13 @@
+         "system/types",
+         "system/udrv",
+         "tests/pandora/interfaces/pandora",
+-        "tests/pandora/test"
++        "tests/pandora/test",
++        "apex/permissions",
++        "framework/tests/util",
++        "tests/pandora/android_server",
++        "tests/pandora/bumble_server",
++        "tests/pandora/interfaces/python",
++        "tests/pandora/mmi2grpc"
+       ]
+     },
+     {
+@@ -2486,7 +2535,10 @@
+         "service-t",
+         "staticlibs",
+         "thread/apex",
+-        "thread/service"
++        "thread/service",
++        "Tethering/apex/permissions",
++        "nearby/flags",
++        "remoteauth/service"
+       ]
+     },
+     {
+@@ -2621,7 +2673,11 @@
+         "SafetyLabel/Android.bp",
+         "SafetyLabel/TEST_MAPPING",
+         "SafetyLabel/java",
+-        "service"
++        "service",
++        "SafetyCenter/Resources",
++        "permissions",
++        "sysconfig",
++        "tests/cts/permission/permissionTestUtilLib"
+       ]
+     },
+     {
+@@ -2687,7 +2743,9 @@
+         "tests/hostsidetests/multidevices/test/sniffer_helper.py",
+         "tests/hostsidetests/multidevices/test/softap",
+         "tests/hostsidetests/multidevices/test/usd",
+-        "tests/hostsidetests/multidevices/test/wifi_test_utils.py"
++        "tests/hostsidetests/multidevices/test/wifi_test_utils.py",
++        "OsuLogin",
++        "WifiDialog"
+       ]
+     },
+     {
+@@ -4900,7 +4958,12 @@
+         "service/support_lib/lint-baseline2.xml",
+         "service/support_lib/src",
+         "service/uci",
+-        "tests/cts/hostsidetests"
++        "tests/cts/hostsidetests",
++        "androidx_backend",
++        "ranging/rtt_backend",
++        "ranging/service",
++        "ranging/tests/multidevices/snippet/bluetooth",
++        "ranging/uwb_backend"
+       ]
+     },
+     {
+@@ -4952,7 +5015,19 @@
+         "chpp/test/transport_util.h",
+         "java/chre_ap",
+         "java/test/chdts/app",
+-        "std_overrides"
++        "std_overrides",
++        "java/test/audio_concurrency",
++        "java/test/ble_concurrency",
++        "java/test/chqts",
++        "java/test/chre_concurrency",
++        "java/test/cross_validation",
++        "java/test/endpoint",
++        "java/test/permissions",
++        "java/test/rpc_service",
++        "java/test/settings",
++        "java/test/stress",
++        "java/test/utils",
++        "java/utils/pigweed"
+       ]
+     },
+     {
+@@ -7035,7 +7110,16 @@
+         "unittests",
+         "utils/TableGen",
+         "utils/unittest",
+-        "soong"
++        "soong",
++        "lib/Target/AArch64/AsmParser",
++        "lib/Target/AArch64/TargetInfo",
++        "lib/Target/ARM/AsmParser",
++        "lib/Target/ARM/Disassembler",
++        "lib/Target/ARM/TargetInfo",
++        "lib/Target/Mips/AsmParser",
++        "lib/Target/Mips/Disassembler",
++        "lib/Target/Mips/TargetInfo",
++        "lib/Target/X86/TargetInfo"
+       ]
+     },
+     {
+@@ -8894,7 +8978,8 @@
+         "sdksandbox/tests/testutils/host-side",
+         "sdksandbox/tests/testutils/side-less",
+         "shared/libraries",
+-        "shared/testing-libraries"
++        "shared/testing-libraries",
++        "apex/permissions"
+       ]
+     },
+     {
+@@ -8918,7 +9003,19 @@
+       "sparse_paths": [
+         "apex",
+         "flags",
+-        "framework"
++        "framework",
++        "DeviceLockController/Android.bp",
++        "DeviceLockController/AndroidManifest.xml",
++        "DeviceLockController/AndroidManifestBase.xml",
++        "DeviceLockController/NOTICE",
++        "DeviceLockController/lint-baseline.xml",
++        "DeviceLockController/proguard.flags",
++        "DeviceLockController/proto",
++        "DeviceLockController/res",
++        "DeviceLockController/src",
++        "DeviceLockController/sysconfig",
++        "permissions",
++        "service"
+       ]
+     },
+     {
+@@ -8986,7 +9083,32 @@
+         "service/proto/phr/fhir_spec_utils.py",
+         "service/proto/phr/fhirspec.proto",
+         "service/proto/phr/generate_fhir_spec.py",
+-        "service/proto/serialization"
++        "service/proto/serialization",
++        "apex/permissions",
++        "apk/.gitignore",
++        "apk/Android.bp",
++        "apk/AndroidManifest.xml",
++        "apk/HealthPermissionsManifest.xml",
++        "apk/ManageHealthDataManifest.xml",
++        "apk/ManageHealthPermissionsManifest.xml",
++        "apk/OWNERS",
++        "apk/StartCloudBackupAndRestoreSettingsManifest.xml",
++        "apk/StartOnboardingManifest.xml",
++        "apk/com.android.healthconnect.controller.pk8",
++        "apk/com.android.healthconnect.controller.x509.pem",
++        "apk/lint-baseline.xml",
++        "apk/proguard.flags",
++        "apk/res",
++        "apk/src",
++        "apk/sysconfig",
++        "backuprestore/Android.bp",
++        "backuprestore/AndroidManifest.xml",
++        "backuprestore/OWNERS",
++        "backuprestore/PermissionsManifest.xml",
++        "backuprestore/com.android.health.connect.backuprestore.pk8",
++        "backuprestore/com.android.health.connect.backuprestore.x509.pem",
++        "backuprestore/src",
++        "backuprestore/sysconfig"
+       ]
+     },
+     {
+@@ -9033,7 +9155,8 @@
+         "framework",
+         "pluginlib",
+         "src",
+-        "systemservice"
++        "systemservice",
++        "federatedcompute/apk"
+       ]
+     },
+     {
+@@ -9092,7 +9215,8 @@
+       "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+       "sparse_paths": [
+         "apex",
+-        "framework"
++        "framework",
++        "service"
+       ]
+     },
+     {
+@@ -9109,7 +9233,8 @@
+         "javatests/com/android/sdkext/extensions/Android.bp",
+         "javatests/com/android/sdkext/extensions/SdkExtensionsHostTest.java",
+         "javatests/com/android/sdkext/extensions/apexes",
+-        "javatests/com/android/sdkext/extensions/sdkextensions-e2e-tests.xml"
++        "javatests/com/android/sdkext/extensions/sdkextensions-e2e-tests.xml",
++        "javatests/com/android/sdkext/extensions/apps"
+       ]
+     },
+     {
+@@ -9124,7 +9249,8 @@
+         "libs/libphonenumber",
+         "telecom/flags",
+         "telecom/framework",
+-        "telecom/service"
++        "telecom/service",
++        "tests/mcts"
+       ]
+     },
+     {
+@@ -9242,7 +9368,8 @@
+         "tests/res",
+         "tests/src",
+         "tests/test_app",
+-        "tests/utils"
++        "tests/utils",
++        "apex/permissions"
+       ]
+     },
+     {
+@@ -9937,6 +10064,41 @@
+       "sparse_paths": [
+         "scripts"
+       ]
++    },
++    {
++      "commit": "9d71d482603aac054815958c9834ae1cd036f024",
++      "name": "platform/external/mime-support",
++      "path": "external/mime-support",
++      "purpose": "Pinned Debian MIME data and original generators required by framework MIME inputs",
++      "sparse_paths": [
++        "Android.bp",
++        "LICENSE",
++        "mime.types",
++        "mime.types-alt"
++      ]
++    },
++    {
++      "commit": "87b8030626b04e16a7efbe2e15c673e2548eef52",
++      "name": "platform/external/android-key-attestation",
++      "path": "external/android-key-attestation",
++      "purpose": "Pinned key attestation library required by the selected original CTS device-info and keystore modules",
++      "sparse_paths": [
++        "Android.bp",
++        "LICENSE",
++        "server/src/main/java"
++      ]
++    },
++    {
++      "commit": "d2f888409e224dae9e9d4b02fa3d1b2e8b72d374",
++      "name": "platform/external/wycheproof",
++      "path": "external/wycheproof",
++      "purpose": "Pinned original Wycheproof Java and keystore data required by the selected CTS keystore provider",
++      "sparse_paths": [
++        "Android.bp",
++        "LICENSE",
++        "java",
++        "keystore-cts"
++      ]
+     }
+   ],
+   "remote_base": "https://android.googlesource.com/",
+--- a/tools/droidloom-update/src/native_generation_pair_build.rs
++++ b/tools/droidloom-update/src/native_generation_pair_build.rs
+@@ -20,9 +20,9 @@
+ const ENGINE_BP_BYTES: usize = 25403;
+ const BASE_SOURCE_LOCK_SHA: &str = "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d";
+ const PAIR_SOURCE_LOCK: &str = "android/native-generation-pair/source-lock.json";
+-const SOURCE_LOCK_BYTES: usize = 348136;
+-const SOURCE_LOCK_SHA: &str = "b1fb40b9de4e2ab35407022862706b9d0a7e580a59e607b27bc9d99ec0a67fbb";
+-// Exact original additions from frozen manifest SHA-256 b1fb40b9de4e2ab35407022862706b9d0a7e580a59e607b27bc9d99ec0a67fbb.
++const SOURCE_LOCK_BYTES: usize = 354218;
++const SOURCE_LOCK_SHA: &str = "600dc00660af69b4b8eeb497fac8f2a83f0d8b24ad3d02c2774a4df96f5ec8cf";
++// Exact original additions from frozen manifest SHA-256 600dc00660af69b4b8eeb497fac8f2a83f0d8b24ad3d02c2774a4df96f5ec8cf.
+ // Closure qualification remains separate from this source attestation.
+ const PAIR_ADDITIONS_JSON: &str = r#"[
+   {
+@@ -578,7 +578,12 @@
+       "service/support_lib/lint-baseline2.xml",
+       "service/support_lib/src",
+       "service/uci",
+-      "tests/cts/hostsidetests"
++      "tests/cts/hostsidetests",
++      "androidx_backend",
++      "ranging/rtt_backend",
++      "ranging/service",
++      "ranging/tests/multidevices/snippet/bluetooth",
++      "ranging/uwb_backend"
+     ]
+   },
+   {
+@@ -630,7 +635,19 @@
+       "chpp/test/transport_util.h",
+       "java/chre_ap",
+       "java/test/chdts/app",
+-      "std_overrides"
++      "std_overrides",
++      "java/test/audio_concurrency",
++      "java/test/ble_concurrency",
++      "java/test/chqts",
++      "java/test/chre_concurrency",
++      "java/test/cross_validation",
++      "java/test/endpoint",
++      "java/test/permissions",
++      "java/test/rpc_service",
++      "java/test/settings",
++      "java/test/stress",
++      "java/test/utils",
++      "java/utils/pigweed"
+     ]
+   },
+   {
+@@ -2713,7 +2730,16 @@
+       "unittests",
+       "utils/TableGen",
+       "utils/unittest",
+-      "soong"
++      "soong",
++      "lib/Target/AArch64/AsmParser",
++      "lib/Target/AArch64/TargetInfo",
++      "lib/Target/ARM/AsmParser",
++      "lib/Target/ARM/Disassembler",
++      "lib/Target/ARM/TargetInfo",
++      "lib/Target/Mips/AsmParser",
++      "lib/Target/Mips/Disassembler",
++      "lib/Target/Mips/TargetInfo",
++      "lib/Target/X86/TargetInfo"
+     ]
+   },
+   {
+@@ -4572,7 +4598,8 @@
+       "sdksandbox/tests/testutils/host-side",
+       "sdksandbox/tests/testutils/side-less",
+       "shared/libraries",
+-      "shared/testing-libraries"
++      "shared/testing-libraries",
++      "apex/permissions"
+     ]
+   },
+   {
+@@ -4596,7 +4623,19 @@
+     "sparse_paths": [
+       "apex",
+       "flags",
+-      "framework"
++      "framework",
++      "DeviceLockController/Android.bp",
++      "DeviceLockController/AndroidManifest.xml",
++      "DeviceLockController/AndroidManifestBase.xml",
++      "DeviceLockController/NOTICE",
++      "DeviceLockController/lint-baseline.xml",
++      "DeviceLockController/proguard.flags",
++      "DeviceLockController/proto",
++      "DeviceLockController/res",
++      "DeviceLockController/src",
++      "DeviceLockController/sysconfig",
++      "permissions",
++      "service"
+     ]
+   },
+   {
+@@ -4664,7 +4703,32 @@
+       "service/proto/phr/fhir_spec_utils.py",
+       "service/proto/phr/fhirspec.proto",
+       "service/proto/phr/generate_fhir_spec.py",
+-      "service/proto/serialization"
++      "service/proto/serialization",
++      "apex/permissions",
++      "apk/.gitignore",
++      "apk/Android.bp",
++      "apk/AndroidManifest.xml",
++      "apk/HealthPermissionsManifest.xml",
++      "apk/ManageHealthDataManifest.xml",
++      "apk/ManageHealthPermissionsManifest.xml",
++      "apk/OWNERS",
++      "apk/StartCloudBackupAndRestoreSettingsManifest.xml",
++      "apk/StartOnboardingManifest.xml",
++      "apk/com.android.healthconnect.controller.pk8",
++      "apk/com.android.healthconnect.controller.x509.pem",
++      "apk/lint-baseline.xml",
++      "apk/proguard.flags",
++      "apk/res",
++      "apk/src",
++      "apk/sysconfig",
++      "backuprestore/Android.bp",
++      "backuprestore/AndroidManifest.xml",
++      "backuprestore/OWNERS",
++      "backuprestore/PermissionsManifest.xml",
++      "backuprestore/com.android.health.connect.backuprestore.pk8",
++      "backuprestore/com.android.health.connect.backuprestore.x509.pem",
++      "backuprestore/src",
++      "backuprestore/sysconfig"
+     ]
+   },
+   {
+@@ -4711,7 +4775,8 @@
+       "framework",
+       "pluginlib",
+       "src",
+-      "systemservice"
++      "systemservice",
++      "federatedcompute/apk"
+     ]
+   },
+   {
+@@ -4770,7 +4835,8 @@
+     "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+     "sparse_paths": [
+       "apex",
+-      "framework"
++      "framework",
++      "service"
+     ]
+   },
+   {
+@@ -4787,7 +4853,8 @@
+       "javatests/com/android/sdkext/extensions/Android.bp",
+       "javatests/com/android/sdkext/extensions/SdkExtensionsHostTest.java",
+       "javatests/com/android/sdkext/extensions/apexes",
+-      "javatests/com/android/sdkext/extensions/sdkextensions-e2e-tests.xml"
++      "javatests/com/android/sdkext/extensions/sdkextensions-e2e-tests.xml",
++      "javatests/com/android/sdkext/extensions/apps"
+     ]
+   },
+   {
+@@ -4802,7 +4869,8 @@
+       "libs/libphonenumber",
+       "telecom/flags",
+       "telecom/framework",
+-      "telecom/service"
++      "telecom/service",
++      "tests/mcts"
+     ]
+   },
+   {
+@@ -4920,7 +4988,8 @@
+       "tests/res",
+       "tests/src",
+       "tests/test_app",
+-      "tests/utils"
++      "tests/utils",
++      "apex/permissions"
+     ]
+   },
+   {
+@@ -5614,6 +5683,41 @@
+     "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+     "sparse_paths": [
+       "scripts"
++    ]
++  },
++  {
++    "commit": "9d71d482603aac054815958c9834ae1cd036f024",
++    "name": "platform/external/mime-support",
++    "path": "external/mime-support",
++    "purpose": "Pinned Debian MIME data and original generators required by framework MIME inputs",
++    "sparse_paths": [
++      "Android.bp",
++      "LICENSE",
++      "mime.types",
++      "mime.types-alt"
++    ]
++  },
++  {
++    "commit": "87b8030626b04e16a7efbe2e15c673e2548eef52",
++    "name": "platform/external/android-key-attestation",
++    "path": "external/android-key-attestation",
++    "purpose": "Pinned key attestation library required by the selected original CTS device-info and keystore modules",
++    "sparse_paths": [
++      "Android.bp",
++      "LICENSE",
++      "server/src/main/java"
++    ]
++  },
++  {
++    "commit": "d2f888409e224dae9e9d4b02fa3d1b2e8b72d374",
++    "name": "platform/external/wycheproof",
++    "path": "external/wycheproof",
++    "purpose": "Pinned original Wycheproof Java and keystore data required by the selected CTS keystore provider",
++    "sparse_paths": [
++      "Android.bp",
++      "LICENSE",
++      "java",
++      "keystore-cts"
+     ]
+   }
+ ]"#;
+@@ -7294,6 +7398,64 @@
+         ("packages/modules/NeuralNetworks", "a44a9032ab9a8438c0e13aca765d6ee4edebba2c", "service"),
+         ("packages/modules/NeuralNetworks", "a44a9032ab9a8438c0e13aca765d6ee4edebba2c", "shim_and_sl"),
+         ("packages/modules/NeuralNetworks", "a44a9032ab9a8438c0e13aca765d6ee4edebba2c", "tools/test_generator"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "apps/CameraFeatureCombinationVerifier"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "apps/CarWatchdogCompanionApp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "apps/CrossProfileTestApp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "apps/CtsVerifierUSBCompanion"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "apps/DeviceControlsApp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "apps/EmptyDeviceAdmin"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "apps/EmptyDeviceOwner"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "apps/NotesApp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "apps/NotificationBot"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "apps/PermissionApp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "apps/TileServiceApp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "apps/TtsTestApp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "apps/VpnApp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "common/device-side/bedstead/deviceadminapp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "common/device-side/bedstead/metricsrecorder"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "common/device-side/device-info"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "common/device-side/util-axt/tests"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/compilation/app_using_other_app"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/devicepolicy/app"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/os/app"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/os/test-apps"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/scopedstorage/libs/ScopedStorageTestLib"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/statsdatom/apps/adpfapp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/statsdatom/apps/expressloghelperapp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/statsdatom/apps/statsdapp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/jdwp/runner/host-side"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/signature/api"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/keystore"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/os/jni"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/packageinstaller/test-apps/emptytestapp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom-apps/ConnectionServiceVoipAppClone"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom-apps/ConnectionServiceVoipAppMain"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom-apps/ManagedConnectionService"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom-apps/ManagedConnectionServiceClone"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom-apps/TransactionalVoipAppClone"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom-apps/TransactionalVoipAppMain"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom-apps/Utils"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom-cuj"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom2"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom3"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tools/cts-dynamic-config"),
++        ("packages/modules/Bluetooth", "c77db469de80f86660bc053bec4dee0c5d4b947c", "apex/permissions"),
++        ("packages/modules/Bluetooth", "c77db469de80f86660bc053bec4dee0c5d4b947c", "framework/tests/util"),
++        ("packages/modules/Bluetooth", "c77db469de80f86660bc053bec4dee0c5d4b947c", "tests/pandora/android_server"),
++        ("packages/modules/Bluetooth", "c77db469de80f86660bc053bec4dee0c5d4b947c", "tests/pandora/bumble_server"),
++        ("packages/modules/Bluetooth", "c77db469de80f86660bc053bec4dee0c5d4b947c", "tests/pandora/interfaces/python"),
++        ("packages/modules/Bluetooth", "c77db469de80f86660bc053bec4dee0c5d4b947c", "tests/pandora/mmi2grpc"),
++        ("packages/modules/Connectivity", "347fbd34b368d19f0d87e908ea101eed3601a731", "Tethering/apex/permissions"),
++        ("packages/modules/Connectivity", "347fbd34b368d19f0d87e908ea101eed3601a731", "nearby/flags"),
++        ("packages/modules/Connectivity", "347fbd34b368d19f0d87e908ea101eed3601a731", "remoteauth/service"),
++        ("packages/modules/Permission", "1093eca7407576c72e51b1a88550ee0667a6e5dc", "SafetyCenter/Resources"),
++        ("packages/modules/Permission", "1093eca7407576c72e51b1a88550ee0667a6e5dc", "permissions"),
++        ("packages/modules/Permission", "1093eca7407576c72e51b1a88550ee0667a6e5dc", "sysconfig"),
++        ("packages/modules/Permission", "1093eca7407576c72e51b1a88550ee0667a6e5dc", "tests/cts/permission/permissionTestUtilLib"),
++        ("packages/modules/Wifi", "67beff9acf0e91046d2a9a36a68cb06ef263d1f1", "OsuLogin"),
++        ("packages/modules/Wifi", "67beff9acf0e91046d2a9a36a68cb06ef263d1f1", "WifiDialog"),
+     ] {
+         let matches: Vec<usize> = projects.iter().enumerate()
+             .filter_map(|(index, row)| (row["path"] == path).then_some(index)).collect();
+@@ -7331,7 +7493,7 @@
+     validate_source_extension(&serde_json::from_slice(&base)?, &serde_json::from_slice(&extended)?)?;
+     let lock = droidloom_source::load_lock(&path)?;
+     let plan = droidloom_source::build_plan(&lock)?;
+-    if plan.projects.len() != 597 || plan.links.len() != 8 || plan.unrestricted_repo_sync {
++    if plan.projects.len() != 600 || plan.links.len() != 8 || plan.unrestricted_repo_sync {
+         return fail("ordinary pair source plan widened");
+     }
+     Ok(path)
+@@ -7598,7 +7760,7 @@
+         validate_source_extension(&base, &extended).unwrap();
+         let lock: droidloom_source::SparseSourceLock = serde_json::from_slice(raw).unwrap();
+         let plan = droidloom_source::build_plan(&lock).unwrap();
+-        assert_eq!((plan.projects.len(), plan.links.len(), plan.unrestricted_repo_sync), (597, 8, false));
++        assert_eq!((plan.projects.len(), plan.links.len(), plan.unrestricted_repo_sync), (600, 8, false));
+         assert_eq!(base["status"], extended["status"]);
+     }
+     #[test]
+@@ -7646,6 +7808,176 @@
+             serde_json::from_value(previous_without_plugins.clone()).unwrap();
+         assert!(droidloom_source::build_plan(&generic).is_ok());
+         assert!(validate_source_extension(&base, &previous_without_plugins).is_err());
++        assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
++    }
++
++    #[test]
++    fn ordinary_pair_r3_confirmed_providers_require_complete_original_inputs() {
++        let base: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
++        let good: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++        validate_source_extension(&base, &good).unwrap();
++        assert_eq!(good["projects"].as_array().unwrap().len(), 600);
++        let mut actual_failed_r3 = good.clone();
++        actual_failed_r3["projects"].as_array_mut().unwrap().truncate(597);
++        for (path, selection) in [
++            ("cts", "apps/CameraFeatureCombinationVerifier"),
++            ("cts", "apps/CarWatchdogCompanionApp"),
++            ("cts", "apps/CrossProfileTestApp"),
++            ("cts", "apps/CtsVerifierUSBCompanion"),
++            ("cts", "apps/DeviceControlsApp"),
++            ("cts", "apps/EmptyDeviceAdmin"),
++            ("cts", "apps/EmptyDeviceOwner"),
++            ("cts", "apps/NotesApp"),
++            ("cts", "apps/NotificationBot"),
++            ("cts", "apps/PermissionApp"),
++            ("cts", "apps/TileServiceApp"),
++            ("cts", "apps/TtsTestApp"),
++            ("cts", "apps/VpnApp"),
++            ("cts", "common/device-side/bedstead/deviceadminapp"),
++            ("cts", "common/device-side/bedstead/metricsrecorder"),
++            ("cts", "common/device-side/device-info"),
++            ("cts", "common/device-side/util-axt/tests"),
++            ("cts", "hostsidetests/appsecurity/test-apps"),
++            ("cts", "hostsidetests/compilation/app_using_other_app"),
++            ("cts", "hostsidetests/devicepolicy/app"),
++            ("cts", "hostsidetests/os/app"),
++            ("cts", "hostsidetests/os/test-apps"),
++            ("cts", "hostsidetests/scopedstorage/libs/ScopedStorageTestLib"),
++            ("cts", "hostsidetests/statsdatom/apps/adpfapp"),
++            ("cts", "hostsidetests/statsdatom/apps/expressloghelperapp"),
++            ("cts", "hostsidetests/statsdatom/apps/statsdapp"),
++            ("cts", "tests/jdwp/runner/host-side"),
++            ("cts", "tests/signature/api"),
++            ("cts", "tests/tests/keystore"),
++            ("cts", "tests/tests/os/jni"),
++            ("cts", "tests/tests/packageinstaller/test-apps/emptytestapp"),
++            ("cts", "tests/tests/telecom"),
++            ("cts", "tests/tests/telecom-apps/ConnectionServiceVoipAppClone"),
++            ("cts", "tests/tests/telecom-apps/ConnectionServiceVoipAppMain"),
++            ("cts", "tests/tests/telecom-apps/ManagedConnectionService"),
++            ("cts", "tests/tests/telecom-apps/ManagedConnectionServiceClone"),
++            ("cts", "tests/tests/telecom-apps/TransactionalVoipAppClone"),
++            ("cts", "tests/tests/telecom-apps/TransactionalVoipAppMain"),
++            ("cts", "tests/tests/telecom-apps/Utils"),
++            ("cts", "tests/tests/telecom-cuj"),
++            ("cts", "tests/tests/telecom2"),
++            ("cts", "tests/tests/telecom3"),
++            ("cts", "tools/cts-dynamic-config"),
++            ("external/llvm", "lib/Target/AArch64/AsmParser"),
++            ("external/llvm", "lib/Target/AArch64/TargetInfo"),
++            ("external/llvm", "lib/Target/ARM/AsmParser"),
++            ("external/llvm", "lib/Target/ARM/Disassembler"),
++            ("external/llvm", "lib/Target/ARM/TargetInfo"),
++            ("external/llvm", "lib/Target/Mips/AsmParser"),
++            ("external/llvm", "lib/Target/Mips/Disassembler"),
++            ("external/llvm", "lib/Target/Mips/TargetInfo"),
++            ("external/llvm", "lib/Target/X86/TargetInfo"),
++            ("packages/modules/AdServices", "apex/permissions"),
++            ("packages/modules/Bluetooth", "apex/permissions"),
++            ("packages/modules/Bluetooth", "framework/tests/util"),
++            ("packages/modules/Bluetooth", "tests/pandora/android_server"),
++            ("packages/modules/Bluetooth", "tests/pandora/bumble_server"),
++            ("packages/modules/Bluetooth", "tests/pandora/interfaces/python"),
++            ("packages/modules/Bluetooth", "tests/pandora/mmi2grpc"),
++            ("packages/modules/Connectivity", "Tethering/apex/permissions"),
++            ("packages/modules/Connectivity", "nearby/flags"),
++            ("packages/modules/Connectivity", "remoteauth/service"),
++            ("packages/modules/DeviceLock", "DeviceLockController/Android.bp"),
++            ("packages/modules/DeviceLock", "DeviceLockController/AndroidManifest.xml"),
++            ("packages/modules/DeviceLock", "DeviceLockController/AndroidManifestBase.xml"),
++            ("packages/modules/DeviceLock", "DeviceLockController/NOTICE"),
++            ("packages/modules/DeviceLock", "DeviceLockController/lint-baseline.xml"),
++            ("packages/modules/DeviceLock", "DeviceLockController/proguard.flags"),
++            ("packages/modules/DeviceLock", "DeviceLockController/proto"),
++            ("packages/modules/DeviceLock", "DeviceLockController/res"),
++            ("packages/modules/DeviceLock", "DeviceLockController/src"),
++            ("packages/modules/DeviceLock", "DeviceLockController/sysconfig"),
++            ("packages/modules/DeviceLock", "permissions"),
++            ("packages/modules/DeviceLock", "service"),
++            ("packages/modules/HealthFitness", "apex/permissions"),
++            ("packages/modules/HealthFitness", "apk/.gitignore"),
++            ("packages/modules/HealthFitness", "apk/Android.bp"),
++            ("packages/modules/HealthFitness", "apk/AndroidManifest.xml"),
++            ("packages/modules/HealthFitness", "apk/HealthPermissionsManifest.xml"),
++            ("packages/modules/HealthFitness", "apk/ManageHealthDataManifest.xml"),
++            ("packages/modules/HealthFitness", "apk/ManageHealthPermissionsManifest.xml"),
++            ("packages/modules/HealthFitness", "apk/OWNERS"),
++            ("packages/modules/HealthFitness", "apk/StartCloudBackupAndRestoreSettingsManifest.xml"),
++            ("packages/modules/HealthFitness", "apk/StartOnboardingManifest.xml"),
++            ("packages/modules/HealthFitness", "apk/com.android.healthconnect.controller.pk8"),
++            ("packages/modules/HealthFitness", "apk/com.android.healthconnect.controller.x509.pem"),
++            ("packages/modules/HealthFitness", "apk/lint-baseline.xml"),
++            ("packages/modules/HealthFitness", "apk/proguard.flags"),
++            ("packages/modules/HealthFitness", "apk/res"),
++            ("packages/modules/HealthFitness", "apk/src"),
++            ("packages/modules/HealthFitness", "apk/sysconfig"),
++            ("packages/modules/HealthFitness", "backuprestore/Android.bp"),
++            ("packages/modules/HealthFitness", "backuprestore/AndroidManifest.xml"),
++            ("packages/modules/HealthFitness", "backuprestore/OWNERS"),
++            ("packages/modules/HealthFitness", "backuprestore/PermissionsManifest.xml"),
++            ("packages/modules/HealthFitness", "backuprestore/com.android.health.connect.backuprestore.pk8"),
++            ("packages/modules/HealthFitness", "backuprestore/com.android.health.connect.backuprestore.x509.pem"),
++            ("packages/modules/HealthFitness", "backuprestore/src"),
++            ("packages/modules/HealthFitness", "backuprestore/sysconfig"),
++            ("packages/modules/OnDevicePersonalization", "federatedcompute/apk"),
++            ("packages/modules/Permission", "SafetyCenter/Resources"),
++            ("packages/modules/Permission", "permissions"),
++            ("packages/modules/Permission", "sysconfig"),
++            ("packages/modules/Permission", "tests/cts/permission/permissionTestUtilLib"),
++            ("packages/modules/Scheduling", "service"),
++            ("packages/modules/SdkExtensions", "javatests/com/android/sdkext/extensions/apps"),
++            ("packages/modules/Telephony", "tests/mcts"),
++            ("packages/modules/Uwb", "androidx_backend"),
++            ("packages/modules/Uwb", "ranging/rtt_backend"),
++            ("packages/modules/Uwb", "ranging/service"),
++            ("packages/modules/Uwb", "ranging/tests/multidevices/snippet/bluetooth"),
++            ("packages/modules/Uwb", "ranging/uwb_backend"),
++            ("packages/modules/Wifi", "OsuLogin"),
++            ("packages/modules/Wifi", "WifiDialog"),
++            ("packages/providers/MediaProvider", "apex/permissions"),
++            ("system/chre", "java/test/audio_concurrency"),
++            ("system/chre", "java/test/ble_concurrency"),
++            ("system/chre", "java/test/chqts"),
++            ("system/chre", "java/test/chre_concurrency"),
++            ("system/chre", "java/test/cross_validation"),
++            ("system/chre", "java/test/endpoint"),
++            ("system/chre", "java/test/permissions"),
++            ("system/chre", "java/test/rpc_service"),
++            ("system/chre", "java/test/settings"),
++            ("system/chre", "java/test/stress"),
++            ("system/chre", "java/test/utils"),
++            ("system/chre", "java/utils/pigweed"),
++        ] {
++            let project = actual_failed_r3["projects"].as_array_mut().unwrap().iter_mut()
++                .find(|p| p["path"] == path).unwrap();
++            let paths = project["sparse_paths"].as_array_mut().unwrap();
++            assert_eq!(paths.iter().filter(|p| *p == selection).count(), 1);
++            paths.retain(|p| p != selection);
++        }
++        let failed_raw = format!("{}\n", serde_json::to_string_pretty(&actual_failed_r3).unwrap());
++        assert_eq!(digest(failed_raw.as_bytes()), "b1fb40b9de4e2ab35407022862706b9d0a7e580a59e607b27bc9d99ec0a67fbb");
++        let generic: droidloom_source::SparseSourceLock = serde_json::from_value(actual_failed_r3.clone()).unwrap();
++        assert!(droidloom_source::build_plan(&generic).is_ok());
++        assert!(validate_source_extension(&base, &actual_failed_r3).is_err());
++        for path in ["external/mime-support", "external/android-key-attestation", "external/wycheproof"] {
++            let mut missing = good.clone();
++            missing["projects"].as_array_mut().unwrap().retain(|p| p["path"] != path);
++            assert!(validate_source_extension(&base, &missing).is_err());
++        }
++        // Android.bp alone omits the actual service and Controller source.
++        for (path, selection) in [("packages/modules/DeviceLock", "service"),
++                                  ("packages/modules/DeviceLock", "DeviceLockController/src"),
++                                  ("packages/modules/Scheduling", "service")] {
++            let mut partial = good.clone();
++            let project = partial["projects"].as_array_mut().unwrap().iter_mut()
++                .find(|p| p["path"] == path).unwrap();
++            let paths = project["sparse_paths"].as_array_mut().unwrap();
++            paths.retain(|p| p != selection);
++            paths.push(json!(format!("{selection}/Android.bp")));
++            assert!(validate_source_extension(&base, &partial).is_err());
++        }
+         assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
+     }
+ 
+--- a/tools/droidloom-source/src/lib.rs
++++ b/tools/droidloom-source/src/lib.rs
+@@ -24,17 +24,18 @@
+ pub use resume::materialize_resuming;
+ 
+ const MAX_LOCK_BYTES: u64 = 1024 * 1024;
+-// The current ordinary pair authenticates 597 exact superproject projects.
+-// Frozen manifest SHA-256: 2b699174977614e080cf99a991f3e648774b24581c4ecdc29f1bd53b7b01ef23
+-// A future change to this count must come from a SHA-pinned frozen lock recipe;
+-// provisional provider unions are not a source manifest or a capacity decision.
+-const NATIVE_SOURCE_PROJECT_COUNT: usize = 597;
++// The current ordinary pair authenticates 600 exact superproject projects.
++// Frozen manifest SHA-256: 600dc00660af69b4b8eeb497fac8f2a83f0d8b24ad3d02c2774a4df96f5ec8cf
++// Original 597 revisions stay exact; three original provider projects were added.
++// A different source plan still requires the route's complete lock validation.
++const NATIVE_SOURCE_PROJECT_COUNT: usize = 600;
+ const MAX_PROJECTS: usize = NATIVE_SOURCE_PROJECT_COUNT.div_ceil(16) * 16;
+ const MAX_LINKS: usize = 64;
+-// The original CTS cone audit needs 279 paths without exposing additional BPs.
+-// 288 is the smallest 16-aligned bound for that observed set. This does not
+-// authorize a different lock, coalesce paths, or relax project/path validation.
+-const MAX_SPARSE_PATHS: usize = 288;
++// The exact current source lock retains the original paths and adds the
++// observed graph providers: CTS has 323 paths and LLVM has 289. 336 is the
++// smallest 16-aligned bound for that actual selection. No path is coalesced,
++// truncated, or exempted from the unchanged relative-path and duplicate checks.
++const MAX_SPARSE_PATHS: usize = 336;
+ const OFFICIAL_REMOTE: &str = "https://android.googlesource.com/";
+ 
+ /// Exact sparse-source lock selected for one milestone.
+@@ -1036,11 +1037,11 @@
+     }
+ 
+     #[test]
+-    fn source_lock_preserves_exact_sparse_paths_through_the_288_bound() {
++    fn source_lock_preserves_exact_sparse_paths_through_the_336_bound() {
+         let mut lock = valid_lock();
+-        assert_eq!(MAX_SPARSE_PATHS, 288);
+-        assert_eq!(279_usize.div_ceil(16) * 16, MAX_SPARSE_PATHS);
+-        for count in [133, 256, 257, 279, 288] {
++        assert_eq!(MAX_SPARSE_PATHS, 336);
++        assert_eq!(323_usize.div_ceil(16) * 16, MAX_SPARSE_PATHS);
++        for count in [133, 256, 257, 279, 288, 289, 323, 336] {
+             let paths: Vec<PathBuf> = (0..count)
+                 .map(|i| format!("tests/pinned_{i:03}").into())
+                 .collect();
+@@ -1054,31 +1055,31 @@
+     }
+ 
+     #[test]
+-    fn source_lock_rejects_289_sparse_paths_without_truncating_them() {
++    fn source_lock_rejects_337_sparse_paths_without_truncating_them() {
+         let mut lock = valid_lock();
+-        let paths: Vec<PathBuf> = (0..289)
++        let paths: Vec<PathBuf> = (0..337)
+             .map(|i| format!("tests/pinned_{i:03}").into())
+             .collect();
+         lock.projects[0].sparse_paths = paths.clone();
+         let SourceError::Invalid(problems) = build_plan(&lock).unwrap_err() else {
+             panic!("expected the finite sparse-path bound");
+         };
+-        assert!(problems.iter().any(|line| line.contains("more than 288 sparse paths")));
++        assert!(problems.iter().any(|line| line.contains("more than 336 sparse paths")));
+         assert_eq!(lock.projects[0].sparse_paths, paths);
+     }
+ 
+     #[test]
+     fn bounded_sparse_paths_reject_duplicates_and_escapes_at_the_new_boundary() {
+         let mut lock = valid_lock();
+-        lock.projects[0].sparse_paths = (0..288)
++        lock.projects[0].sparse_paths = (0..336)
+             .map(|i| format!("tests/pinned_{i:03}").into())
+             .collect();
+         let mut duplicate = lock.clone();
+-        duplicate.projects[0].sparse_paths[287] = duplicate.projects[0].sparse_paths[0].clone();
++        duplicate.projects[0].sparse_paths[335] = duplicate.projects[0].sparse_paths[0].clone();
+         assert!(build_plan(&duplicate).unwrap_err().to_string().contains("repeats sparse path"));
+         for escape in ["", ".", "../outside", "/outside", "tests/../outside"] {
+             let mut bad = lock.clone();
+-            bad.projects[0].sparse_paths[287] = escape.into();
++            bad.projects[0].sparse_paths[335] = escape.into();
+             assert!(build_plan(&bad).unwrap_err().to_string().contains("not normalized and relative"),
+                 "sparse escape must remain rejected: {escape:?}");
+         }
+@@ -1102,12 +1103,12 @@
+     }
+ 
+     #[test]
+-    fn actual_git_checkout_preserves_279_cones_and_hidden_blueprints() {
++    fn actual_git_checkout_preserves_323_cones_and_hidden_blueprints() {
+         let sandbox = tempfile::tempdir().unwrap();
+         let origin = sandbox.path().join("origin");
+         run("git", &[OsStr::new("init"), OsStr::new("--quiet"),
+             OsStr::new("--initial-branch=main"), origin.as_os_str()]).unwrap();
+-        let paths: Vec<PathBuf> = (0..279)
++        let paths: Vec<PathBuf> = (0..323)
+             .map(|i| format!("inputs/pinned_{i:03}").into()).collect();
+         let root_bp = b"filegroup { name: \"original_root\", srcs: [] }\n";
+         fs::write(origin.join("Android.bp"), root_bp).unwrap();
+@@ -1124,7 +1125,7 @@
+         run_git(&origin, &[OsStr::new("-c"), OsStr::new("user.name=Droidloom Test"),
+             OsStr::new("-c"), OsStr::new("user.email=test@droidloom.invalid"),
+             OsStr::new("commit"), OsStr::new("--quiet"), OsStr::new("-m"),
+-            OsStr::new("original 279-cone fixture")]).unwrap();
++            OsStr::new("current 323-cone fixture")]).unwrap();
+         let head = run_git_output(&origin,
+             &[OsStr::new("rev-parse"), OsStr::new("HEAD")]).unwrap();
+         let mut lock = valid_lock();

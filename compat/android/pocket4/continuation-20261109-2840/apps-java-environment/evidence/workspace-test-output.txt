@@ -1,0 +1,23 @@
+{"schema": "pocket4-ui-runtime-environment-source-tests-v1", "utc": "2026-11-09T17:21:48.065012+00:00", "argv": ["/home/alex/.cargo/bin/cargo", "test", "--locked", "-j", "1", "-p", "droidloom-supervisor", "--lib", "control::application_command", "--", "--test-threads=1"], "exit_code": 0, "source_unchanged_during_tests": true, "sources": [{"path": "runtime/droidloom-supervisor/src/application_command.rs", "bytes": 22810, "sha256": "576dd46107100edff7993f325fa148a024fa40fa5cf9a6baea8cbd8df07e2a0d"}, {"path": "runtime/droidloom-supervisor/src/application_command_tests.rs", "bytes": 11791, "sha256": "23b107886d555b2e653c8bb0ab18528a9891180cf848c46ef84340add28a83d8"}, {"path": "runtime/droidloom-supervisor/src/application_environment.rs", "bytes": 11119, "sha256": "97e46072652c545e3480e691508d567bc33089964f132181dfbdb1857a3f21f1"}], "stdout": {"path": "/home/alex/work/pocket4-apps-ui-environment-controls-20261109-2840-r1/normal.stdout", "bytes": 2220, "sha256": "b6f2e7ce3f5c79610b7437728dbcf691cc4bec8f4e9d91a0e3d93a893e835e5f"}, "stderr": {"path": "/home/alex/work/pocket4-apps-ui-environment-controls-20261109-2840-r1/normal.stderr", "bytes": 296, "sha256": "745cef50120b3389ddda634ce9417f65624a3fd92a78ef1b3040fb61f948f2fe"}, "root_host_cgroup_controls_executed": false, "Android_commands": 0, "runtime_qualified": false, "production_ready": false}
+
+running 16 tests
+test control::application_command::application_environment::tests::android_java_operations_are_selected_without_changing_pm_or_browser_start ... ok
+test control::application_command::application_environment::tests::classpaths_cannot_escape_android_or_admit_ambiguous_segments ... ok
+test control::application_command::application_environment::tests::malformed_records_and_selected_non_utf8_values_fail ... ok
+test control::application_command::application_environment::tests::missing_duplicate_truncated_and_unbounded_environments_fail ... ok
+test control::application_command::application_environment::tests::only_current_android_runtime_keys_reach_the_child ... ok
+test control::application_command::application_environment::tests::optional_runtime_roots_and_an_empty_standalone_list_are_explicit ... ok
+test control::application_command::application_environment::tests::selected_environment_change_cannot_match_the_frozen_invocation ... ok
+test control::application_command::tests::current_java_environment_is_read_from_held_proc_and_stops_after_exit ... ok
+test control::application_command::tests::expired_java_invocation_does_not_enter_or_start_a_child ... ok
+test control::application_command::tests::framework_start_identity_is_required_before_entry ... ok
+test control::application_command::tests::held_process_rejects_exit_after_original_identity_was_bound ... ok
+test control::application_command::tests::namespace_arguments_use_only_held_fds_and_explicit_environment ... ok
+test control::application_command::tests::nonblocking_reader_does_not_wait_for_a_held_writer ... ok
+test control::application_command::tests::real_fd_namespace_entry_and_dead_pidfd_preexec_rejection ... ignored, requires explicit root test in a writable cgroup v2; enters only an owned host fixture
+test control::application_command::tests::real_owned_group_retires_success_failure_overflow_and_escaped_pipe_holders ... ignored, requires explicit root test in a writable cgroup v2; creates only owned host fixtures
+test control::application_command::tests::successful_output_is_not_accepted_after_the_deadline ... ok
+
+test result: ok. 14 passed; 0 failed; 2 ignored; 0 measured; 170 filtered out; finished in 0.00s
+
+

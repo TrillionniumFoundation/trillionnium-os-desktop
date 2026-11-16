@@ -1,0 +1,118 @@
+{
+  "Soong_invocations": 0,
+  "active_source_changed": false,
+  "active_source_lock_before_and_after_sha256": "94d2a5d2e00d3b5d126752ee58337e71fb88a5763f7b977be4a56471f4e68ee6",
+  "active_source_project_count": 268,
+  "controls": [
+    {
+      "command": "cargo test --offline --locked -j1 -p droidloom-source --lib --target x86_64-unknown-linux-gnu -- --test-threads=1",
+      "cpu_quota_percent": 100,
+      "memory_max_bytes": 1610612736,
+      "memory_peak_bytes": 469360640,
+      "memory_swap_max_bytes": 0,
+      "name": "library",
+      "oom_count": 0,
+      "original_result": {
+        "bytes": 1131,
+        "sha256": "2e76c24d9450fe49df573bcbd673fc67654b1eaf76261655e6f8318a07b37f7f"
+      },
+      "returncodes": [
+        0
+      ],
+      "state": "PASS",
+      "tests_failed": 0,
+      "tests_passed": 25
+    },
+    {
+      "command": "cargo test --offline --locked -j1 -p droidloom-source --example frozen_pair_recipe --target x86_64-unknown-linux-gnu -- --test-threads=1",
+      "cpu_quota_percent": 100,
+      "memory_max_bytes": 1610612736,
+      "memory_peak_bytes": 196374528,
+      "memory_swap_max_bytes": 0,
+      "name": "recipe",
+      "oom_count": 0,
+      "original_result": {
+        "bytes": 2916,
+        "sha256": "81d84ce52c351cc9220c58a7e41d6342a5e0ae1b629f82ffc7137e98c8e924ea"
+      },
+      "returncodes": [
+        {
+          "label": "recipe-r2-tests",
+          "returncode": 0
+        },
+        {
+          "label": "recipe-r2-replay",
+          "returncode": 0
+        },
+        {
+          "label": "recipe-r2-patch-check",
+          "returncode": 0
+        }
+      ],
+      "state": "PASS",
+      "tests_failed": 0,
+      "tests_passed": 6
+    },
+    {
+      "command": "cargo test --offline --locked -j1 -p droidloom-update --bin droidloom-update --target x86_64-unknown-linux-gnu native_generation_pair_build::tests::ordinary_pair -- --test-threads=1",
+      "cpu_quota_percent": 100,
+      "memory_max_bytes": 1610612736,
+      "memory_peak_bytes": 507879424,
+      "memory_swap_max_bytes": 0,
+      "name": "generated_actual_pair",
+      "oom_count": 0,
+      "original_result": {
+        "bytes": 1444,
+        "sha256": "c8163ce481a44356ad863df0c3708f5213420a122dd163166ead8df80db035bf"
+      },
+      "returncodes": [
+        0
+      ],
+      "state": "PASS",
+      "tests_failed": 0,
+      "tests_passed": 11
+    }
+  ],
+  "fixture_sha256": "399a1fab42e89feddbcb0d6c1ff96c19da46f8d5703893b86c6b4da625b67a53",
+  "full_native_ART_build_qualified": false,
+  "generated_actual_pair_scope": "The 11 tests ran after applying the recipe-generated frozen-source patch in a separate isolated source tree. Its exact source hashes below are distinct from the capacity candidate tested by the 25 library and 6 recipe controls.",
+  "generated_actual_pair_source_hashes": {
+    "android/native-generation-pair/source-lock.json": "94d2a5d2e00d3b5d126752ee58337e71fb88a5763f7b977be4a56471f4e68ee6",
+    "tools/droidloom-source/src/lib.rs": "f0ab3f8e45a36886c2fda692f30afe94d037875694df04e74bcd1e84c0def0c0",
+    "tools/droidloom-update/src/native_generation_pair_build.rs": "1f924a673a40d30b3e2b06f9e7335017e8c26ac2b35f813dafd346e1461f8c31"
+  },
+  "installed": false,
+  "observed_CTS_cone_count": 279,
+  "original_receipts_policy": "Compact observations bind original retained receipts by byte count and SHA-256; private original receipt paths and runtime identities are not published.",
+  "prior_recipe_attempt": {
+    "actual_recipe_replay_returncode": 1,
+    "all_passed": false,
+    "original_result": {
+      "bytes": 2523,
+      "sha256": "31070a14d49a44087f857564e65affb77146a94d8471540c02cb7c2946e7be68"
+    },
+    "state": "FAILED_REPLAY_RETAINED",
+    "unit_tests_returncode": 0
+  },
+  "project_capacity_unchanged": 272,
+  "recipe_source_sha256": "267be02695dfab430c3f1b014c30c89f8f237a825a9e382ee95cf44d75c28d01",
+  "recipe_superproject_input_sha256": "f91f1199d29a2818c71e37ebc453691299f406672f61f27b0d4bde9a130eb512",
+  "runtime_qualified": false,
+  "rust_toolchain_observed": "1.93.0-x86_64-unknown-linux-gnu",
+  "schema": "pocket4-native-capacity-recipe-results-v1",
+  "source_closure_complete": false,
+  "source_lib_sha256": "a91cefb336b535b38196d03c2fc05752c32b42629db3f0a16a95826e40739627",
+  "source_patch": {
+    "bytes": 44658,
+    "path": "source.patch",
+    "sha256": "290eb43af731f9753759898d58bd648f44d2aea48ee08f64df7c0daf15da1a16"
+  },
+  "sparse_capacity_after": 288,
+  "sparse_capacity_before": 256,
+  "state": "FOCUSED_SOURCE_CONTROLS_PASSED_FULL_BUILD_PENDING",
+  "test_counts": {
+    "generated_actual_pair": 11,
+    "library": 25,
+    "recipe": 6
+  }
+}

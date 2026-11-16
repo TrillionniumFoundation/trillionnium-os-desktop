@@ -1,0 +1,129 @@
+{
+  "schema": "pocket4-owner-lifecycle-reconciliation-r2-v1",
+  "apply_basis": "Exact independently frozen owner normal-production-private-dev-r1 generation; never bare b4dc and never the sealed r1 capsule preimages.",
+  "source": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/source",
+  "frozen_source_files": 408,
+  "modified_source_files": 3,
+  "unchanged_source_files": 405,
+  "changes": [
+    {
+      "path": "runtime/droidloom-supervisor/src/production_namespace.rs",
+      "preimage": {
+        "bytes": 45040,
+        "sha256": "5c3cc336fe7d35ce3be213e2494c2d2217b03c060ab1cd619aba54ea3d3bf782"
+      },
+      "postimage": {
+        "bytes": 48287,
+        "sha256": "2e7266092d0ac52b21b57e1910c02a3840873fbe1c0370560bf98315d34867ea"
+      }
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/production_namespace_child.rs",
+      "preimage": {
+        "bytes": 25986,
+        "sha256": "7a4031347cf57fa6982c0643c21a98d4836df60a0051b8ba0f7670ce8a41f0f0"
+      },
+      "postimage": {
+        "bytes": 30634,
+        "sha256": "af2f31a108a823f4701de18cfc2ac9079877c2c682ecab1a37c96006ca825d3b"
+      }
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+      "preimage": {
+        "bytes": 14458,
+        "sha256": "b279fc6e16ac685de6f9bb6635434b22e8ecc3d2f41bca0adb47266d1e705763"
+      },
+      "postimage": {
+        "bytes": 25162,
+        "sha256": "d3372123a268adb14fef4d3ec29372a029676316f6f9e2b8888c550ffefa09e9"
+      }
+    }
+  ],
+  "minimal_patch": {
+    "path": "minimal.patch",
+    "bytes": 29385,
+    "sha256": "71ad18672693d396f4b5a0c394e20f482e658df5a1ea0c052e82eb6fa28faee6"
+  },
+  "qualified_owner_normal_result_sha256": "c245d612fa35fbafa453785ff2a3fc4474226c82b1b008b64195a42a876d5c23",
+  "qualification_state": "ordinary and two fixed private fixtures passed; runtime not qualified",
+  "previous_sealed_r1_FILES_sha256": "a2a349a06844e995acb9c85aac8fd64b3b20ee6318f8d87865e6b186dd8aad59",
+  "previous_capsule_modified": false,
+  "production_admission": false,
+  "Android_starts": 0,
+  "runtime_qualified": false,
+  "production_ready": false,
+  "qualification": {
+    "normal_result": {
+      "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/capsule/normal/result.json",
+      "bytes": 10247,
+      "sha256": "3d963f68edf0e489e6ccac08bb289a5249f41be881dbbb2acd5f96b55aa33556"
+    },
+    "actual_normal_tests_passed": 92,
+    "actual_normal_tests_failed": 0,
+    "reported_ignored": 0,
+    "tests_filtered_out": 151,
+    "normal_binaries_built": 2,
+    "private_result": {
+      "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/capsule/private-r1/result.json",
+      "bytes": 11983,
+      "sha256": "2928ca765750202357622d3c0bf241cce83c7377d5a96cc7c14d2a7e8526591e"
+    },
+    "actual_private_fixed_fixture_tests_passed": 2,
+    "private_fixture_names": [
+      "production_namespace::tests::privileged_private_userns_mapping_controls",
+      "production_namespace::tree::tests::privileged_private_pid1_namespace_controls"
+    ],
+    "private_tests_filtered_out_per_run": 242,
+    "private_mount_empty_base_or_device_controls_executed": 0,
+    "private_stage_retirement": {
+      "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/capsule/private-stage-retirement.json",
+      "bytes": 1629,
+      "sha256": "409d22a6e3a95bcfc9e8b18157052ad97e49388b19e7d860b24e5ec35175e3dc"
+    },
+    "source_replay": {
+      "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/capsule/source-replay/result.json",
+      "bytes": 5766,
+      "sha256": "3251c8436ea7c2208152d7ba58d53918305dda4b03b3bc6fa4b2ec0fb2dd49cb"
+    },
+    "independent_static_review": {
+      "path": "independent-review.json",
+      "bytes": 21119,
+      "sha256": "f298860c6bae869ea9856a29d29f2d95dfd091bee717a0e3b3e2ddb50623146d"
+    },
+    "source_replay_actual_h_status": {
+      "path": "source-replay/actual-h-status.json",
+      "bytes": 729,
+      "sha256": "b85ffd1ea0294b21d506be83f16b04b8bca4c65e1c82bde1a1bd4bf06d9fc6f8"
+    },
+    "test_count_policy": "92 ordinary library tests plus 2 separate exact private fixtures; no credit for filtered, skipped or ignored tests. Static review and source replay are not runtime test counts."
+  },
+  "preserved_owner_additions": [
+    "DeviceResource error",
+    "private_dev module",
+    "device phases20/21/22/23",
+    "DeviceRootControl=8",
+    "SSSD admission checks",
+    "mounts and statfs correction",
+    "empty-base consumer and nested PID1 tree"
+  ],
+  "shared_owner_source_mutations": 0,
+  "host_accounts_or_grants_changed": false,
+  "original_data_body_opened": false,
+  "readme": {
+    "path": "README.md",
+    "bytes": 6478,
+    "sha256": "198c77cee4331f256889574096037319296c068e219067b749b356a41d26a3d0"
+  },
+  "capsule_relative_paths": {
+    "patch": "minimal.patch",
+    "preimages": "preimages",
+    "freeze": "freeze-manifest.json",
+    "ordinary_evidence": "normal",
+    "private_evidence": "private-r1",
+    "retirement": "private-stage-retirement.json",
+    "verifier": "verify-source.rs",
+    "replay_evidence": "source-replay",
+    "independent_review": "independent-review.json"
+  }
+}

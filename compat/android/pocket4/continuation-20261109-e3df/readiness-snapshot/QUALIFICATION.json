@@ -1,0 +1,63 @@
+{
+  "android_starts": 0,
+  "base_source_files": 430,
+  "canonical_current_modified": false,
+  "changed_source_files": [
+    "runtime/droidloom-supervisor/src/production_readiness.rs"
+  ],
+  "cpu_quota_percent": 100,
+  "created_utc": "2026-11-09T20:31:51.092859+00:00",
+  "memory_max_bytes": 4294967296,
+  "ordinary_uid": 1000,
+  "owner_source_modified": false,
+  "patch_sha256": "93183b20fe004234b8be71859d991a5d5b4b473778ab607016889a67ba504898",
+  "postimage_sha256": "61d5657960c7f06cf805bdfe389fb9498f5ac3433790a934d9352891a7fae545",
+  "preimage_commit": "6418452a6b1d0bfdb193c6f8214660d3119e3e4f",
+  "preimage_repository_path": "compat/android/pocket4/production-cell-foundations-r1/source/runtime/droidloom-supervisor/src/production_readiness.rs",
+  "preimage_sha256": "5b7e4974229d74e1531bdba37282501e4859a26ba6faefe1bf5deb2092bf795b",
+  "production_ready": false,
+  "regression_after": {
+    "exit_code": 0,
+    "failed": 0,
+    "ignored": 0,
+    "passed": 5
+  },
+  "regression_before": {
+    "exit_code": 101,
+    "failed": 1,
+    "failure": "valid concurrent property publication rejected as unaligned or escaped property offset",
+    "ignored": 0,
+    "passed": 4
+  },
+  "runtime_acceptances": 0,
+  "schema": "pocket4-readiness-snapshot-qualification-v1",
+  "scope": "source regression only; no Android boot or application acceptance",
+  "source_file": "runtime/droidloom-supervisor/src/production_readiness.rs",
+  "swap_max_bytes": 0,
+  "test_archives": {
+    "after": {
+      "bytes": 8623,
+      "retained_archive": "/home/alex/.local/state/hepta-runtime-mac-worker/terminals/dpty-ad26cac807c9cfb64a1bcdeba2e2c1c0b1c9f345ea8d22a5dc7e13d38aaf540e/output.log",
+      "sha256": "7d446784eaf4abbdce6218f94cf338632cc2d94e903a4ffd1cd9403c2b570499"
+    },
+    "before": {
+      "bytes": 9322,
+      "retained_archive": "/home/alex/.local/state/hepta-runtime-mac-worker/terminals/dpty-f644b4c9d990038fcd7a2e8aae5e5923fa910bb1c96b96b30245155635f77dcf/output.log",
+      "sha256": "7003a99d9fe56bdd2edc1ecf87b803742dd6707086f26131abddffe1886c1963"
+    }
+  },
+  "test_command": [
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "-j",
+    "1",
+    "-p",
+    "droidloom-supervisor",
+    "--lib",
+    "production_readiness_",
+    "--",
+    "--test-threads=1"
+  ]
+}

@@ -1,0 +1,3148 @@
+diff --git a/android/manifest/audio-bridge-source-lock.json b/android/manifest/audio-bridge-source-lock.json
+index 60fe7d3..b018e1a 100644
+--- a/android/manifest/audio-bridge-source-lock.json
++++ b/android/manifest/audio-bridge-source-lock.json
+@@ -105,7 +105,69 @@
+         "libs/runner",
+         "tests/core/runner-axt",
+         "libs/vogar-expect",
+-        "hostsidetests/compilation"
++        "hostsidetests/compilation",
++        "hostsidetests/appcompat/host/lib",
++        "hostsidetests/appsecurity/certs",
++        "hostsidetests/appsecurity/res",
++        "hostsidetests/appsecurity/src",
++        "hostsidetests/appsecurity/test-apps/AppAccessData",
++        "hostsidetests/appsecurity/test-apps/AppDataIsolationTestApp",
++        "hostsidetests/appsecurity/test-apps/AppWithData",
++        "hostsidetests/appsecurity/test-apps/DeclarePermissionsWithSpacesApp",
++        "hostsidetests/appsecurity/test-apps/DeviceIdentifiers",
++        "hostsidetests/appsecurity/test-apps/DuplicatePermissionDeclareApp",
++        "hostsidetests/appsecurity/test-apps/DuplicatePermissionSameGroup",
++        "hostsidetests/appsecurity/test-apps/InstrumentationAppDiffCert",
++        "hostsidetests/appsecurity/test-apps/KeyRotationTest",
++        "hostsidetests/appsecurity/test-apps/KeyStoreManagerTest",
++        "hostsidetests/appsecurity/test-apps/ListeningPortsApp",
++        "hostsidetests/appsecurity/test-apps/MalformedDuplicatePermission",
++        "hostsidetests/appsecurity/test-apps/PackageInstallerPermissionRequestApp",
++        "hostsidetests/appsecurity/test-apps/PackageInstallerWhitelistApp",
++        "hostsidetests/appsecurity/test-apps/PermissionDeclareApp",
++        "hostsidetests/appsecurity/test-apps/PermissionDeclareAppCompat",
++        "hostsidetests/appsecurity/test-apps/ReadSettingsFieldsApp",
++        "hostsidetests/appsecurity/test-apps/RoleSecurityTestApp",
++        "hostsidetests/appsecurity/test-apps/SimpleAppInstall",
++        "hostsidetests/appsecurity/test-apps/SimpleAppInstallDiffCert",
++        "hostsidetests/appsecurity/test-apps/StatsdSecurityApp",
++        "hostsidetests/appsecurity/test-apps/TargetInstrumentationApp",
++        "hostsidetests/appsecurity/test-apps/UsePermissionDiffCert",
++        "hostsidetests/appsecurity/test-apps/UseProcessFailActivity",
++        "hostsidetests/appsecurity/test-apps/V32HybridSigningScheme",
++        "hostsidetests/appsecurity/test-apps/V3SigningSchemeRotation",
++        "hostsidetests/appsecurity/test-apps/keysets/malBadKey",
++        "hostsidetests/appsecurity/test-apps/keysets/malNoDef",
++        "hostsidetests/appsecurity/test-apps/keysets/malOneDef",
++        "hostsidetests/appsecurity/test-apps/keysets/permDef",
++        "hostsidetests/appsecurity/test-apps/keysets/permUse",
++        "hostsidetests/appsecurity/test-apps/keysets/testApp",
++        "hostsidetests/appsecurity/test-apps/keysets/uA",
++        "hostsidetests/appsecurity/test-apps/keysets/uAuB",
++        "hostsidetests/appsecurity/test-apps/keysets/uB",
++        "hostsidetests/appsecurity/test-apps/keysets/uBsharedUser",
++        "hostsidetests/appsecurity/test-apps/keysets/uEcA",
++        "hostsidetests/appsecurity/test-apps/keysets/uNone",
++        "hostsidetests/appsecurity/test-apps/tinyapp",
++        "hostsidetests/statsdatom/Android.bp",
++        "hostsidetests/statsdatom/apps/adpfapp",
++        "hostsidetests/statsdatom/apps/expressloghelperapp",
++        "hostsidetests/statsdatom/apps/statsdapp",
++        "hostsidetests/statsdatom/configs/AndroidTestTelecom.xml",
++        "hostsidetests/statsdatom/express/src",
++        "hostsidetests/statsdatom/lib/src",
++        "hostsidetests/statsdatom/statsd/src",
++        "hostsidetests/statsdatom/telecom/src",
++        "hostsidetests/utils",
++        "tests/tests/telecom",
++        "tests/tests/telecom-apps/ConnectionServiceVoipAppClone",
++        "tests/tests/telecom-apps/ConnectionServiceVoipAppMain",
++        "tests/tests/telecom-apps/ManagedConnectionService",
++        "tests/tests/telecom-apps/ManagedConnectionServiceClone",
++        "tests/tests/telecom-apps/TransactionalVoipAppClone",
++        "tests/tests/telecom-apps/TransactionalVoipAppMain",
++        "tests/tests/telecom-apps/Utils",
++        "tests/tests/telecom-cuj"
+       ]
+     },
+     {
+@@ -252,7 +314,11 @@
+       "purpose": "Pinned Java crypto provider required by the host APK signing tool",
+       "sparse_paths": [
+         "Android.bp",
+-        "src"
++        "src",
++        "bcpkix/src/main/java",
++        "bcprov/src/main/java",
++        "repackaged_platform/bcpkix/src/main/java",
++        "repackaged_platform/bcprov/src/main/java"
+       ]
+     },
+     {
+@@ -266,6 +332,17 @@
+         "java"
+       ]
+     },
++    {
++      "path": "external/caliper",
++      "name": "platform/external/caliper",
++      "commit": "d7bb09dccd464969498584337b0e68a9347b4d40",
++      "purpose": "Original Caliper host providers required by retained STS utilities and their original sibling modules",
++      "sparse_paths": [
++        "caliper",
++        "examples",
++        "lib"
++      ]
++    },
+     {
+       "path": "external/cbor-java",
+       "name": "platform/external/cbor-java",
+@@ -278,7 +355,9 @@
+       "commit": "a36a1bcac7ec7ac9be29d8b0b5e669d53f7886f7",
+       "purpose": "Original compiler-rt CFI blocklist required by selected libmediaplayerservice sanitizer flags",
+       "sparse_paths": [
+-        "lib/cfi"
++        "lib/cfi",
++        "lib/builtins/comparedf2.c",
++        "lib/builtins/mulodi4.c"
+       ]
+     },
+     {
+@@ -304,7 +383,48 @@
+         "stable/components/cronet/android",
+         "android/flags",
+         "android/tools/classes_collector",
+-        "tot"
++        "tot",
++        "android/java/src/android/net/http/BidirectionalStream.java",
++        "android/java/src/android/net/http/BidirectionalStreamBuilderWrapper.java",
++        "android/java/src/android/net/http/BidirectionalStreamCallbackWrapper.java",
++        "android/java/src/android/net/http/BidirectionalStreamWrapper.java",
++        "android/java/src/android/net/http/CallbackException.java",
++        "android/java/src/android/net/http/CallbackExceptionWrapper.java",
++        "android/java/src/android/net/http/ConnectionMigrationOptions.java",
++        "android/java/src/android/net/http/CronetEngineWrapper.java",
++        "android/java/src/android/net/http/CronetExceptionTranslationUtils.java",
++        "android/java/src/android/net/http/CronetExceptionWrapper.java",
++        "android/java/src/android/net/http/DnsOptions.java",
++        "android/java/src/android/net/http/HeaderBlock.java",
++        "android/java/src/android/net/http/HeaderBlockImpl.java",
++        "android/java/src/android/net/http/HeaderBlockWrapper.java",
++        "android/java/src/android/net/http/HttpEngine.java",
++        "android/java/src/android/net/http/HttpEngineJavaClasses.java",
++        "android/java/src/android/net/http/HttpException.java",
++        "android/java/src/android/net/http/InlineExecutionProhibitedException.java",
++        "android/java/src/android/net/http/NetworkException.java",
++        "android/java/src/android/net/http/NetworkExceptionWrapper.java",
++        "android/java/src/android/net/http/Proxy.java",
++        "android/java/src/android/net/http/ProxyOptions.java",
++        "android/java/src/android/net/http/QuicException.java",
++        "android/java/src/android/net/http/QuicExceptionWrapper.java",
++        "android/java/src/android/net/http/QuicOptions.java",
++        "android/java/src/android/net/http/UploadDataProvider.java",
++        "android/java/src/android/net/http/UploadDataProviderWrapper.java",
++        "android/java/src/android/net/http/UploadDataSink.java",
++        "android/java/src/android/net/http/UploadDataSinkWrapper.java",
++        "android/java/src/android/net/http/UrlRequest.java",
++        "android/java/src/android/net/http/UrlRequestBuilderWrapper.java",
++        "android/java/src/android/net/http/UrlRequestCallbackWrapper.java",
++        "android/java/src/android/net/http/UrlRequestStatusListenerWrapper.java",
++        "android/java/src/android/net/http/UrlRequestWrapper.java",
++        "android/java/src/android/net/http/UrlResponseInfo.java",
++        "android/java/src/android/net/http/UrlResponseInfoWrapper.java",
++        "stable/build/Android.bp",
++        "stable/build/util/LASTCHANGE",
++        "stable/build/util/android_chrome_version.py",
++        "stable/build/util/version.py",
++        "stable/chrome/VERSION"
+       ]
+     },
+     {
+@@ -486,7 +606,8 @@
+       "purpose": "Template interpreter statically used by AutoValue processor",
+       "sparse_paths": [
+         "Android.bp",
+-        "src/main/java"
++        "src/main/java",
++        "src/main"
+       ]
+     },
+     {
+@@ -905,7 +1026,8 @@
+       "purpose": "Pinned BPF headers required by the Android memory-event programs",
+       "sparse_paths": [
+         "Android.bp",
+-        "src"
++        "src",
++        "android/bpf_stub.c"
+       ]
+     },
+     {
+@@ -1120,6 +1242,16 @@
+       "commit": "ff4977aa409384e7622a53230323981a785e621d",
+       "purpose": "Exact AOSP17 ART libelffile ELF decompression dependency, genuine Soong liblzma provider"
+     },
++    {
++      "path": "external/mime-support",
++      "name": "platform/external/mime-support",
++      "commit": "9d71d482603aac054815958c9834ae1cd036f024",
++      "purpose": "Original Debian MIME tables required by the retained framework MIME source filegroups",
++      "sparse_paths": [
++        "mime.types",
++        "mime.types-alt"
++      ]
++    },
+     {
+       "path": "external/minigbm",
+       "name": "platform/external/minigbm",
+@@ -1415,7 +1547,10 @@
+         "upb",
+         "upb_generator",
+         "rust/cpp_kernel",
+-        "python/google"
++        "python/google",
++        "java/lite/proguard.pgcfg",
++        "javanano/src/device/main/java/com/google/protobuf/nano",
++        "javanano/src/main/java/com/google/protobuf/nano"
+       ]
+     },
+     {
+@@ -2475,7 +2610,8 @@
+         "common/bluetooth/constants",
+         "framework/java",
+         "service/aidl",
+-        "tools/lint"
++        "tools/lint",
++        "framework/tests/util"
+       ]
+     },
+     {
+@@ -2496,7 +2632,8 @@
+       "commit": "333bc8067efc529ef4d197fec2f4f2cae1ad2ece",
+       "purpose": "Configuration flags used by system-server services",
+       "sparse_paths": [
+-        "aconfigd/Android.bp"
++        "aconfigd/Android.bp",
++        "aconfigd/proto"
+       ]
+     },
+     {
+@@ -2535,7 +2672,10 @@
+         "thread/framework/Android.bp",
+         "thread/framework/java",
+         "staticlibs/client-libs",
+-        "staticlibs/testutils"
++        "staticlibs/testutils",
++        "Tethering/apex/hiddenapi",
++        "staticlibs/device",
++        "staticlibs/framework"
+       ]
+     },
+     {
+@@ -2625,6 +2765,17 @@
+         "framework/java"
+       ]
+     },
++    {
++      "path": "packages/modules/NpuManager",
++      "name": "platform/packages/modules/NpuManager",
++      "commit": "d194f8ada2cab31b8487fb3aaac6fd383fc7e07f",
++      "purpose": "Original libandroid NPU shim, Rust AIDL provider and original SDK siblings required by the retained native graph",
++      "sparse_paths": [
++        "flags",
++        "framework",
++        "ndk"
++      ]
++    },
+     {
+       "path": "packages/modules/Permission",
+       "name": "platform/packages/modules/Permission",
+@@ -2664,7 +2815,10 @@
+         "telecom/framework",
+         "telecom/flags",
+         "flags",
+-        "libs/libphonenumber"
++        "libs/libphonenumber",
++        "tests/mcts/Android.bp",
++        "tests/mcts/AndroidTest.xml",
++        "tests/mcts/telecom-cuj"
+       ]
+     },
+     {
+@@ -2690,7 +2844,9 @@
+       "sparse_paths": [
+         "framework/Android.bp",
+         "framework/api",
+-        "flags"
++        "flags",
++        "framework/aidl-export",
++        "framework/java"
+       ]
+     },
+     {
+@@ -2821,7 +2977,12 @@
+         "libraries/systemui-tapl",
+         "libraries/systemui-helper",
+         "libraries/tapl-common",
+-        "scripts"
++        "scripts",
++        "libraries/sts-common-util/host-side/Android.bp",
++        "libraries/sts-common-util/host-side/res",
++        "libraries/sts-common-util/host-side/src",
++        "libraries/sts-common-util/util/Android.bp",
++        "libraries/sts-common-util/util/src"
+       ]
+     },
+     {
+@@ -3044,7 +3205,10 @@
+         "current/extras/app-toolkit",
+         "35/public/android.jar",
+         "35/public/framework.aidl",
+-        "35/public/core-for-system-modules.jar"
++        "35/public/core-for-system-modules.jar",
++        "tools/darwin/bin/aapt2",
++        "tools/linux/bin/aapt2",
++        "tools/windows/bin/aapt2.exe"
+       ]
+     },
+     {
+@@ -3271,7 +3435,14 @@
+       "purpose": "Original Android 17 libgsi_headers for fs_mgr libfstab",
+       "sparse_paths": [
+         "Android.bp",
+-        "include"
++        "include",
++        "aidl/android/gsi/AvbPublicKey.aidl",
++        "aidl/android/gsi/GsiProgress.aidl",
++        "aidl/android/gsi/IGsiService.aidl",
++        "aidl/android/gsi/IGsiServiceCallback.aidl",
++        "aidl/android/gsi/IImageService.aidl",
++        "aidl/android/gsi/IProgressCallback.aidl",
++        "aidl/android/gsi/MappedImage.aidl"
+       ]
+     },
+     {
+@@ -3368,6 +3539,16 @@
+       "commit": "feca0b466b9fa68a8e86a6e0b31579669e645f41",
+       "purpose": "Original PlatformProperties sysprop source provider selected by native media codec closure"
+     },
++    {
++      "path": "system/liburingutils",
++      "name": "platform/system/liburingutils",
++      "commit": "3d6286bdd07ec68ee6a411381e56c1aaa6e11247",
++      "purpose": "Original io_uring socket helpers required by the retained logd provider and its original sibling tests",
++      "sparse_paths": [
++        "include",
++        "src"
++      ]
++    },
+     {
+       "path": "system/libvintf",
+       "name": "platform/system/libvintf",
+@@ -3396,7 +3577,43 @@
+       "purpose": "Android native logging",
+       "sparse_paths": [
+         "liblog",
+-        "rust"
++        "rust",
++        "logd/Android.bp",
++        "logd/CommandListener.cpp",
++        "logd/CompressionEngine.cpp",
++        "logd/LogAudit.cpp",
++        "logd/LogBufferElement.cpp",
++        "logd/LogBufferTest.cpp",
++        "logd/LogKlog.cpp",
++        "logd/LogListener.cpp",
++        "logd/LogPermissions.cpp",
++        "logd/LogReader.cpp",
++        "logd/LogReaderList.cpp",
++        "logd/LogReaderThread.cpp",
++        "logd/LogSize.cpp",
++        "logd/LogStatistics.cpp",
++        "logd/LogTags.cpp",
++        "logd/LogdLock.cpp",
++        "logd/LogdNativeService.cpp",
++        "logd/PkgIds.cpp",
++        "logd/PruneList.cpp",
++        "logd/ReplayMessages.cpp",
++        "logd/SerializedFlushToState.cpp",
++        "logd/SerializedFlushToStateTest.cpp",
++        "logd/SerializedLogBuffer.cpp",
++        "logd/SerializedLogBufferTest.cpp",
++        "logd/SerializedLogChunk.cpp",
++        "logd/SerializedLogChunkTest.cpp",
++        "logd/SimpleLogBuffer.cpp",
++        "logd/TrustyLog.cpp",
++        "logd/auditctl.cpp",
++        "logd/binder",
++        "logd/device_test_config.xml",
++        "logd/flags",
++        "logd/libaudit",
++        "logd/logd_test.cpp",
++        "logd/logtagd.rc",
++        "logd/main.cpp"
+       ]
+     },
+     {
+@@ -3569,7 +3786,10 @@
+       "sparse_paths": [
+         "Android.bp",
+         "fuzzers",
+-        "liburing_cpp"
++        "liburing_cpp",
++        "binder_bindings/android/os/IUpdateEngine.aidl",
++        "binder_bindings/android/os/IUpdateEngineCallback.aidl",
++        "stable"
+       ]
+     },
+     {
+@@ -3589,7 +3809,11 @@
+       "sparse_paths": [
+         "Utils.cpp",
+         "tests",
+-        "aconfig/flags.aconfig"
++        "aconfig/flags.aconfig",
++        "binder/android/os/IVold.aidl",
++        "binder/android/os/IVoldListener.aidl",
++        "binder/android/os/IVoldMountCallback.aidl",
++        "binder/android/os/IVoldTaskListener.aidl"
+       ]
+     },
+     {
+diff --git a/tools/droidloom-source/src/lib.rs b/tools/droidloom-source/src/lib.rs
+index 039794d..fd397de 100644
+--- a/tools/droidloom-source/src/lib.rs
++++ b/tools/droidloom-source/src/lib.rs
+@@ -23,7 +23,7 @@ use thiserror::Error;
+ const MAX_LOCK_BYTES: u64 = 1024 * 1024;
+ // This independent audio builder consumes the exact pinned audio lock below.
+ // Keep the smallest finite 16-project boundary; URL/commit/path checks remain.
+-const AUDIO_SOURCE_PROJECT_COUNT: usize = 317;
++const AUDIO_SOURCE_PROJECT_COUNT: usize = 321;
+ const MAX_PROJECTS: usize = AUDIO_SOURCE_PROJECT_COUNT.div_ceil(16) * 16;
+ const MAX_LINKS: usize = 64;
+ // Android17 hardware/interfaces requires 133 exact paths in the pinned lock.
+@@ -942,8 +942,998 @@ mod tests {
+         }
+     }
+ 
++    // Reconstruct the exact previously qualified lock without changing its
++    // commits, purposes, field order or existing source cones.
++    fn audio_before_cts_sts_lock() -> String {
++        let mut previous = include_str!("../../../android/manifest/audio-bridge-source-lock.json").to_owned();
++        for (after, before) in [
++            (r###"    {
++      "path": "cts",
++      "name": "platform/cts",
++      "commit": "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd",
++      "purpose": "Pinned host JSON compatibility library required by the ProtoLog generator",
++      "sparse_paths": [
++        "Android.bp",
++        "common/device-side/nativetesthelper/Android.bp",
++        "common/device-side/nativetesthelper/jni",
++        "common/device-side/nativetesthelper/src",
++        "libs/json",
++        "common/device-side/util-axt",
++        "libs/shim",
++        "libs/install",
++        "hostsidetests/stagedinstall",
++        "hostsidetests/appsecurity/test-apps/PrivilegedUpdateApp",
++        "tools/cts-tradefed",
++        "libs/runner",
++        "tests/core/runner-axt",
++        "libs/vogar-expect",
++        "hostsidetests/compilation",
++        "hostsidetests/appcompat/host/lib",
++        "hostsidetests/appsecurity/certs",
++        "hostsidetests/appsecurity/res",
++        "hostsidetests/appsecurity/src",
++        "hostsidetests/appsecurity/test-apps/AppAccessData",
++        "hostsidetests/appsecurity/test-apps/AppDataIsolationTestApp",
++        "hostsidetests/appsecurity/test-apps/AppWithData",
++        "hostsidetests/appsecurity/test-apps/DeclarePermissionsWithSpacesApp",
++        "hostsidetests/appsecurity/test-apps/DeviceIdentifiers",
++        "hostsidetests/appsecurity/test-apps/DuplicatePermissionDeclareApp",
++        "hostsidetests/appsecurity/test-apps/DuplicatePermissionSameGroup",
++        "hostsidetests/appsecurity/test-apps/InstrumentationAppDiffCert",
++        "hostsidetests/appsecurity/test-apps/KeyRotationTest",
++        "hostsidetests/appsecurity/test-apps/KeyStoreManagerTest",
++        "hostsidetests/appsecurity/test-apps/ListeningPortsApp",
++        "hostsidetests/appsecurity/test-apps/MalformedDuplicatePermission",
++        "hostsidetests/appsecurity/test-apps/PackageInstallerPermissionRequestApp",
++        "hostsidetests/appsecurity/test-apps/PackageInstallerWhitelistApp",
++        "hostsidetests/appsecurity/test-apps/PermissionDeclareApp",
++        "hostsidetests/appsecurity/test-apps/PermissionDeclareAppCompat",
++        "hostsidetests/appsecurity/test-apps/ReadSettingsFieldsApp",
++        "hostsidetests/appsecurity/test-apps/RoleSecurityTestApp",
++        "hostsidetests/appsecurity/test-apps/SimpleAppInstall",
++        "hostsidetests/appsecurity/test-apps/SimpleAppInstallDiffCert",
++        "hostsidetests/appsecurity/test-apps/StatsdSecurityApp",
++        "hostsidetests/appsecurity/test-apps/TargetInstrumentationApp",
++        "hostsidetests/appsecurity/test-apps/UsePermissionDiffCert",
++        "hostsidetests/appsecurity/test-apps/UseProcessFailActivity",
++        "hostsidetests/appsecurity/test-apps/V32HybridSigningScheme",
++        "hostsidetests/appsecurity/test-apps/V3SigningSchemeRotation",
++        "hostsidetests/appsecurity/test-apps/keysets/malBadKey",
++        "hostsidetests/appsecurity/test-apps/keysets/malNoDef",
++        "hostsidetests/appsecurity/test-apps/keysets/malOneDef",
++        "hostsidetests/appsecurity/test-apps/keysets/permDef",
++        "hostsidetests/appsecurity/test-apps/keysets/permUse",
++        "hostsidetests/appsecurity/test-apps/keysets/testApp",
++        "hostsidetests/appsecurity/test-apps/keysets/uA",
++        "hostsidetests/appsecurity/test-apps/keysets/uAuB",
++        "hostsidetests/appsecurity/test-apps/keysets/uB",
++        "hostsidetests/appsecurity/test-apps/keysets/uBsharedUser",
++        "hostsidetests/appsecurity/test-apps/keysets/uEcA",
++        "hostsidetests/appsecurity/test-apps/keysets/uNone",
++        "hostsidetests/appsecurity/test-apps/tinyapp",
++        "hostsidetests/statsdatom/Android.bp",
++        "hostsidetests/statsdatom/apps/adpfapp",
++        "hostsidetests/statsdatom/apps/expressloghelperapp",
++        "hostsidetests/statsdatom/apps/statsdapp",
++        "hostsidetests/statsdatom/configs/AndroidTestTelecom.xml",
++        "hostsidetests/statsdatom/express/src",
++        "hostsidetests/statsdatom/lib/src",
++        "hostsidetests/statsdatom/statsd/src",
++        "hostsidetests/statsdatom/telecom/src",
++        "hostsidetests/utils",
++        "tests/tests/telecom",
++        "tests/tests/telecom-apps/ConnectionServiceVoipAppClone",
++        "tests/tests/telecom-apps/ConnectionServiceVoipAppMain",
++        "tests/tests/telecom-apps/ManagedConnectionService",
++        "tests/tests/telecom-apps/ManagedConnectionServiceClone",
++        "tests/tests/telecom-apps/TransactionalVoipAppClone",
++        "tests/tests/telecom-apps/TransactionalVoipAppMain",
++        "tests/tests/telecom-apps/Utils",
++        "tests/tests/telecom-cuj"
++      ]
++    },
++"###, r###"    {
++      "path": "cts",
++      "name": "platform/cts",
++      "commit": "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd",
++      "purpose": "Pinned host JSON compatibility library required by the ProtoLog generator",
++      "sparse_paths": [
++        "Android.bp",
++        "common/device-side/nativetesthelper/Android.bp",
++        "common/device-side/nativetesthelper/jni",
++        "common/device-side/nativetesthelper/src",
++        "libs/json",
++        "common/device-side/util-axt",
++        "libs/shim",
++        "libs/install",
++        "hostsidetests/stagedinstall",
++        "hostsidetests/appsecurity/test-apps/PrivilegedUpdateApp",
++        "tools/cts-tradefed",
++        "libs/runner",
++        "tests/core/runner-axt",
++        "libs/vogar-expect",
++        "hostsidetests/compilation"
++      ]
++    },
++"###),
++            (r###"    {
++      "path": "external/bouncycastle",
++      "name": "platform/external/bouncycastle",
++      "commit": "c404048739e9a35cd51ad82906aadf910cca09dd",
++      "purpose": "Pinned Java crypto provider required by the host APK signing tool",
++      "sparse_paths": [
++        "Android.bp",
++        "src",
++        "bcpkix/src/main/java",
++        "bcprov/src/main/java",
++        "repackaged_platform/bcpkix/src/main/java",
++        "repackaged_platform/bcprov/src/main/java"
++      ]
++    },
++"###, r###"    {
++      "path": "external/bouncycastle",
++      "name": "platform/external/bouncycastle",
++      "commit": "c404048739e9a35cd51ad82906aadf910cca09dd",
++      "purpose": "Pinned Java crypto provider required by the host APK signing tool",
++      "sparse_paths": [
++        "Android.bp",
++        "src"
++      ]
++    },
++"###),
++            (r###"    {
++      "path": "external/compiler-rt",
++      "name": "platform/external/compiler-rt",
++      "commit": "a36a1bcac7ec7ac9be29d8b0b5e669d53f7886f7",
++      "purpose": "Original compiler-rt CFI blocklist required by selected libmediaplayerservice sanitizer flags",
++      "sparse_paths": [
++        "lib/cfi",
++        "lib/builtins/comparedf2.c",
++        "lib/builtins/mulodi4.c"
++      ]
++    },
++"###, r###"    {
++      "path": "external/compiler-rt",
++      "name": "platform/external/compiler-rt",
++      "commit": "a36a1bcac7ec7ac9be29d8b0b5e669d53f7886f7",
++      "purpose": "Original compiler-rt CFI blocklist required by selected libmediaplayerservice sanitizer flags",
++      "sparse_paths": [
++        "lib/cfi"
++      ]
++    },
++"###),
++            (r###"    {
++      "path": "external/cronet",
++      "name": "platform/external/cronet",
++      "commit": "e184145f12ee023d07372bd6db33341b671cee27",
++      "purpose": "Pinned Cronet Tethering APEX defaults from Android17 original superproject",
++      "sparse_paths": [
++        "Android.bp",
++        "android/Android.bp",
++        "stable/components/cronet/android",
++        "android/flags",
++        "android/tools/classes_collector",
++        "tot",
++        "android/java/src/android/net/http/BidirectionalStream.java",
++        "android/java/src/android/net/http/BidirectionalStreamBuilderWrapper.java",
++        "android/java/src/android/net/http/BidirectionalStreamCallbackWrapper.java",
++        "android/java/src/android/net/http/BidirectionalStreamWrapper.java",
++        "android/java/src/android/net/http/CallbackException.java",
++        "android/java/src/android/net/http/CallbackExceptionWrapper.java",
++        "android/java/src/android/net/http/ConnectionMigrationOptions.java",
++        "android/java/src/android/net/http/CronetEngineWrapper.java",
++        "android/java/src/android/net/http/CronetExceptionTranslationUtils.java",
++        "android/java/src/android/net/http/CronetExceptionWrapper.java",
++        "android/java/src/android/net/http/DnsOptions.java",
++        "android/java/src/android/net/http/HeaderBlock.java",
++        "android/java/src/android/net/http/HeaderBlockImpl.java",
++        "android/java/src/android/net/http/HeaderBlockWrapper.java",
++        "android/java/src/android/net/http/HttpEngine.java",
++        "android/java/src/android/net/http/HttpEngineJavaClasses.java",
++        "android/java/src/android/net/http/HttpException.java",
++        "android/java/src/android/net/http/InlineExecutionProhibitedException.java",
++        "android/java/src/android/net/http/NetworkException.java",
++        "android/java/src/android/net/http/NetworkExceptionWrapper.java",
++        "android/java/src/android/net/http/Proxy.java",
++        "android/java/src/android/net/http/ProxyOptions.java",
++        "android/java/src/android/net/http/QuicException.java",
++        "android/java/src/android/net/http/QuicExceptionWrapper.java",
++        "android/java/src/android/net/http/QuicOptions.java",
++        "android/java/src/android/net/http/UploadDataProvider.java",
++        "android/java/src/android/net/http/UploadDataProviderWrapper.java",
++        "android/java/src/android/net/http/UploadDataSink.java",
++        "android/java/src/android/net/http/UploadDataSinkWrapper.java",
++        "android/java/src/android/net/http/UrlRequest.java",
++        "android/java/src/android/net/http/UrlRequestBuilderWrapper.java",
++        "android/java/src/android/net/http/UrlRequestCallbackWrapper.java",
++        "android/java/src/android/net/http/UrlRequestStatusListenerWrapper.java",
++        "android/java/src/android/net/http/UrlRequestWrapper.java",
++        "android/java/src/android/net/http/UrlResponseInfo.java",
++        "android/java/src/android/net/http/UrlResponseInfoWrapper.java",
++        "stable/build/Android.bp",
++        "stable/build/util/LASTCHANGE",
++        "stable/build/util/android_chrome_version.py",
++        "stable/build/util/version.py",
++        "stable/chrome/VERSION"
++      ]
++    },
++"###, r###"    {
++      "path": "external/cronet",
++      "name": "platform/external/cronet",
++      "commit": "e184145f12ee023d07372bd6db33341b671cee27",
++      "purpose": "Pinned Cronet Tethering APEX defaults from Android17 original superproject",
++      "sparse_paths": [
++        "Android.bp",
++        "android/Android.bp",
++        "stable/components/cronet/android",
++        "android/flags",
++        "android/tools/classes_collector",
++        "tot"
++      ]
++    },
++"###),
++            (r###"    {
++      "path": "external/escapevelocity",
++      "name": "platform/external/escapevelocity",
++      "commit": "03b11f293548ad5fd65b5164b46aca08a96968f5",
++      "purpose": "Template interpreter statically used by AutoValue processor",
++      "sparse_paths": [
++        "Android.bp",
++        "src/main/java",
++        "src/main"
++      ]
++    },
++"###, r###"    {
++      "path": "external/escapevelocity",
++      "name": "platform/external/escapevelocity",
++      "commit": "03b11f293548ad5fd65b5164b46aca08a96968f5",
++      "purpose": "Template interpreter statically used by AutoValue processor",
++      "sparse_paths": [
++        "Android.bp",
++        "src/main/java"
++      ]
++    },
++"###),
++            (r###"    {
++      "path": "external/libbpf",
++      "name": "platform/external/libbpf",
++      "commit": "9723b4de6459ab48b361aed3bae5df3c1bd20cb8",
++      "purpose": "Pinned BPF headers required by the Android memory-event programs",
++      "sparse_paths": [
++        "Android.bp",
++        "src",
++        "android/bpf_stub.c"
++      ]
++    },
++"###, r###"    {
++      "path": "external/libbpf",
++      "name": "platform/external/libbpf",
++      "commit": "9723b4de6459ab48b361aed3bae5df3c1bd20cb8",
++      "purpose": "Pinned BPF headers required by the Android memory-event programs",
++      "sparse_paths": [
++        "Android.bp",
++        "src"
++      ]
++    },
++"###),
++            (r###"    {
++      "path": "external/protobuf",
++      "name": "platform/external/protobuf",
++      "commit": "db06feae31e2a10ffc7ddaccd9e285ff7c13c0ab",
++      "purpose": "Pinned aprotoc host tool required by Android native stub generation",
++      "sparse_paths": [
++        "Android.bp",
++        "java/core/src/main",
++        "java/core/src/stubs",
++        "python/google/protobuf/internal/python_edition_defaults.py.template",
++        "src/google/protobuf",
++        "third_party/utf8_range",
++        "upb",
++        "upb_generator",
++        "rust/cpp_kernel",
++        "python/google",
++        "java/lite/proguard.pgcfg",
++        "javanano/src/device/main/java/com/google/protobuf/nano",
++        "javanano/src/main/java/com/google/protobuf/nano"
++      ]
++    },
++"###, r###"    {
++      "path": "external/protobuf",
++      "name": "platform/external/protobuf",
++      "commit": "db06feae31e2a10ffc7ddaccd9e285ff7c13c0ab",
++      "purpose": "Pinned aprotoc host tool required by Android native stub generation",
++      "sparse_paths": [
++        "Android.bp",
++        "java/core/src/main",
++        "java/core/src/stubs",
++        "python/google/protobuf/internal/python_edition_defaults.py.template",
++        "src/google/protobuf",
++        "third_party/utf8_range",
++        "upb",
++        "upb_generator",
++        "rust/cpp_kernel",
++        "python/google"
++      ]
++    },
++"###),
++            (r###"    {
++      "path": "packages/modules/Bluetooth",
++      "name": "platform/packages/modules/Bluetooth",
++      "commit": "c77db469de80f86660bc053bec4dee0c5d4b947c",
++      "purpose": "Pinned Bluetooth audio session library linked by the upstream core audio service",
++      "sparse_paths": [
++        "flags",
++        "framework/aidl-export",
++        "framework/api",
++        "system/audio_bluetooth_hw",
++        "system/build/Android.bp",
++        "system/test",
++        "android/app/aidl",
++        "common/Android.bp",
++        "common/bluetooth/constants",
++        "framework/java",
++        "service/aidl",
++        "tools/lint",
++        "framework/tests/util"
++      ]
++    },
++"###, r###"    {
++      "path": "packages/modules/Bluetooth",
++      "name": "platform/packages/modules/Bluetooth",
++      "commit": "c77db469de80f86660bc053bec4dee0c5d4b947c",
++      "purpose": "Pinned Bluetooth audio session library linked by the upstream core audio service",
++      "sparse_paths": [
++        "flags",
++        "framework/aidl-export",
++        "framework/api",
++        "system/audio_bluetooth_hw",
++        "system/build/Android.bp",
++        "system/test",
++        "android/app/aidl",
++        "common/Android.bp",
++        "common/bluetooth/constants",
++        "framework/java",
++        "service/aidl",
++        "tools/lint"
++      ]
++    },
++"###),
++            (r###"    {
++      "path": "packages/modules/ConfigInfrastructure",
++      "name": "platform/packages/modules/ConfigInfrastructure",
++      "commit": "333bc8067efc529ef4d197fec2f4f2cae1ad2ece",
++      "purpose": "Configuration flags used by system-server services",
++      "sparse_paths": [
++        "aconfigd/Android.bp",
++        "aconfigd/proto"
++      ]
++    },
++"###, r###"    {
++      "path": "packages/modules/ConfigInfrastructure",
++      "name": "platform/packages/modules/ConfigInfrastructure",
++      "commit": "333bc8067efc529ef4d197fec2f4f2cae1ad2ece",
++      "purpose": "Configuration flags used by system-server services",
++      "sparse_paths": [
++        "aconfigd/Android.bp"
++      ]
++    },
++"###),
++            (r###"    {
++      "path": "packages/modules/Connectivity",
++      "name": "platform/packages/modules/Connectivity",
++      "commit": "347fbd34b368d19f0d87e908ea101eed3601a731",
++      "purpose": "Pinned BPF client headers required by the Android memory-event client",
++      "sparse_paths": [
++        "Android.bp",
++        "Tethering/Android.bp",
++        "Tethering/apex/Android.bp",
++        "Tethering/common/TetheringLib",
++        "Vcn/flags",
++        "Vcn/framework-b",
++        "bpf",
++        "bpf/headers/include/bpf/BpfUtils.h",
++        "bpf/loader/Android.bp",
++        "bpf/loader/NetBpfLoad.cpp",
++        "bpf/netd/Android.bp",
++        "bpf/netd/BpfHandler.cpp",
++        "common",
++        "framework",
++        "framework-t",
++        "service",
++        "service/Android.bp",
++        "service/jni/com_android_server_connectivity_ClatCoordinator.cpp",
++        "service/jni/com_android_server_connectivity_LocalNetEventListener.cpp",
++        "staticlibs/device/com/android/net/module/util/IIpv4PrefixRequest.aidl",
++        "staticlibs/device/com/android/net/module/util/IRoutingCoordinator.aidl",
++        "staticlibs/native/bpfmapjni/com_android_net_module_util_Bpf.cpp",
++        "staticlibs/netd",
++        "tests",
++        "tools",
++        "nearby/framework/Android.bp",
++        "nearby/framework/java",
++        "thread/framework/Android.bp",
++        "thread/framework/java",
++        "staticlibs/client-libs",
++        "staticlibs/testutils",
++        "Tethering/apex/hiddenapi",
++        "staticlibs/device",
++        "staticlibs/framework"
++      ]
++    },
++"###, r###"    {
++      "path": "packages/modules/Connectivity",
++      "name": "platform/packages/modules/Connectivity",
++      "commit": "347fbd34b368d19f0d87e908ea101eed3601a731",
++      "purpose": "Pinned BPF client headers required by the Android memory-event client",
++      "sparse_paths": [
++        "Android.bp",
++        "Tethering/Android.bp",
++        "Tethering/apex/Android.bp",
++        "Tethering/common/TetheringLib",
++        "Vcn/flags",
++        "Vcn/framework-b",
++        "bpf",
++        "bpf/headers/include/bpf/BpfUtils.h",
++        "bpf/loader/Android.bp",
++        "bpf/loader/NetBpfLoad.cpp",
++        "bpf/netd/Android.bp",
++        "bpf/netd/BpfHandler.cpp",
++        "common",
++        "framework",
++        "framework-t",
++        "service",
++        "service/Android.bp",
++        "service/jni/com_android_server_connectivity_ClatCoordinator.cpp",
++        "service/jni/com_android_server_connectivity_LocalNetEventListener.cpp",
++        "staticlibs/device/com/android/net/module/util/IIpv4PrefixRequest.aidl",
++        "staticlibs/device/com/android/net/module/util/IRoutingCoordinator.aidl",
++        "staticlibs/native/bpfmapjni/com_android_net_module_util_Bpf.cpp",
++        "staticlibs/netd",
++        "tests",
++        "tools",
++        "nearby/framework/Android.bp",
++        "nearby/framework/java",
++        "thread/framework/Android.bp",
++        "thread/framework/java",
++        "staticlibs/client-libs",
++        "staticlibs/testutils"
++      ]
++    },
++"###),
++            (r###"    {
++      "path": "packages/modules/Telephony",
++      "name": "platform/packages/modules/Telephony",
++      "commit": "d83f23a96fbe6d68942d8d7245dbd3db91e9c711",
++      "purpose": "Exact original transitive provider required by retained audio closure consumers",
++      "sparse_paths": [
++        "framework",
++        "telecom/framework",
++        "telecom/flags",
++        "flags",
++        "libs/libphonenumber",
++        "tests/mcts/Android.bp",
++        "tests/mcts/AndroidTest.xml",
++        "tests/mcts/telecom-cuj"
++      ]
++    },
++"###, r###"    {
++      "path": "packages/modules/Telephony",
++      "name": "platform/packages/modules/Telephony",
++      "commit": "d83f23a96fbe6d68942d8d7245dbd3db91e9c711",
++      "purpose": "Exact original transitive provider required by retained audio closure consumers",
++      "sparse_paths": [
++        "framework",
++        "telecom/framework",
++        "telecom/flags",
++        "flags",
++        "libs/libphonenumber"
++      ]
++    },
++"###),
++            (r###"    {
++      "path": "packages/modules/Wifi",
++      "name": "platform/packages/modules/Wifi",
++      "commit": "67beff9acf0e91046d2a9a36a68cb06ef263d1f1",
++      "purpose": "Framework Wi-Fi annotations used by framework headers",
++      "sparse_paths": [
++        "framework/Android.bp",
++        "framework/api",
++        "flags",
++        "framework/aidl-export",
++        "framework/java"
++      ]
++    },
++"###, r###"    {
++      "path": "packages/modules/Wifi",
++      "name": "platform/packages/modules/Wifi",
++      "commit": "67beff9acf0e91046d2a9a36a68cb06ef263d1f1",
++      "purpose": "Framework Wi-Fi annotations used by framework headers",
++      "sparse_paths": [
++        "framework/Android.bp",
++        "framework/api",
++        "flags"
++      ]
++    },
++"###),
++            (r###"    {
++      "path": "platform_testing",
++      "name": "platform/platform_testing",
++      "commit": "6abefd291d50dee240ed2b22572d273175f070da",
++      "purpose": "Android17 superproject-gitlink-pinned Rust rdroidtest provider",
++      "sparse_paths": [
++        "Android.bp",
++        "libraries/annotations",
++        "libraries/compatibility-common-util/Android.bp",
++        "libraries/compatibility-common-util/src",
++        "libraries/rdroidtest",
++        "libraries/tradefed-error-prone",
++        "libraries/motion/src",
++        "libraries/motion/compose/src",
++        "libraries/motion/compose/values/src",
++        "libraries/screenshot/src/main",
++        "libraries/screenshot/proto",
++        "libraries/uiautomator-helpers/src",
++        "libraries/runner/src/main/java",
++        "libraries/device-collectors/src/main/java",
++        "libraries/collectors-helper/adservices/src",
++        "libraries/collectors-helper/app/src",
++        "libraries/collectors-helper/generic/src",
++        "libraries/collectors-helper/jank/src",
++        "libraries/collectors-helper/lyric/src",
++        "libraries/collectors-helper/memory/src",
++        "libraries/collectors-helper/perfetto/src",
++        "libraries/collectors-helper/power/src",
++        "libraries/collectors-helper/simpleperf/src",
++        "libraries/collectors-helper/system/src",
++        "libraries/collectors-helper/utilities/src",
++        "libraries/junitxml/src",
++        "libraries/flag-helpers/junit",
++        "libraries/metrics-helper",
++        "libraries/screenshot/utils/compose",
++        "libraries/health/rules",
++        "libraries/app-helpers/interfaces",
++        "libraries/health/utils",
++        "libraries/notes-role-test-helper",
++        "libraries/system-helpers/package-helper",
++        "libraries/collectors-helper/statsd",
++        "libraries/uinput-device-test-helper",
++        "libraries/system-helpers/user-helper",
++        "libraries/flicker",
++        "libraries/device-collectors/src/main/platform-collectors",
++        "libraries/system-helpers/accessibility-helper",
++        "libraries/system-helpers/account-helper",
++        "libraries/system-helpers/activity-helper",
++        "libraries/app-helpers/core",
++        "libraries/system-helpers/commands-helper",
++        "libraries/system-helpers/connectivity-helper",
++        "libraries/system-helpers/device-helper",
++        "utils/dpad",
++        "libraries/launcher-helper",
++        "libraries/system-helpers/permission-helper",
++        "libraries/system-helpers/settings-helper",
++        "libraries/system-helpers/sysui-helper",
++        "libraries/app-helpers/spectatio/spectatio-util",
++        "libraries/systemui-tapl",
++        "libraries/systemui-helper",
++        "libraries/tapl-common",
++        "scripts",
++        "libraries/sts-common-util/host-side/Android.bp",
++        "libraries/sts-common-util/host-side/res",
++        "libraries/sts-common-util/host-side/src",
++        "libraries/sts-common-util/util/Android.bp",
++        "libraries/sts-common-util/util/src"
++      ]
++    },
++"###, r###"    {
++      "path": "platform_testing",
++      "name": "platform/platform_testing",
++      "commit": "6abefd291d50dee240ed2b22572d273175f070da",
++      "purpose": "Android17 superproject-gitlink-pinned Rust rdroidtest provider",
++      "sparse_paths": [
++        "Android.bp",
++        "libraries/annotations",
++        "libraries/compatibility-common-util/Android.bp",
++        "libraries/compatibility-common-util/src",
++        "libraries/rdroidtest",
++        "libraries/tradefed-error-prone",
++        "libraries/motion/src",
++        "libraries/motion/compose/src",
++        "libraries/motion/compose/values/src",
++        "libraries/screenshot/src/main",
++        "libraries/screenshot/proto",
++        "libraries/uiautomator-helpers/src",
++        "libraries/runner/src/main/java",
++        "libraries/device-collectors/src/main/java",
++        "libraries/collectors-helper/adservices/src",
++        "libraries/collectors-helper/app/src",
++        "libraries/collectors-helper/generic/src",
++        "libraries/collectors-helper/jank/src",
++        "libraries/collectors-helper/lyric/src",
++        "libraries/collectors-helper/memory/src",
++        "libraries/collectors-helper/perfetto/src",
++        "libraries/collectors-helper/power/src",
++        "libraries/collectors-helper/simpleperf/src",
++        "libraries/collectors-helper/system/src",
++        "libraries/collectors-helper/utilities/src",
++        "libraries/junitxml/src",
++        "libraries/flag-helpers/junit",
++        "libraries/metrics-helper",
++        "libraries/screenshot/utils/compose",
++        "libraries/health/rules",
++        "libraries/app-helpers/interfaces",
++        "libraries/health/utils",
++        "libraries/notes-role-test-helper",
++        "libraries/system-helpers/package-helper",
++        "libraries/collectors-helper/statsd",
++        "libraries/uinput-device-test-helper",
++        "libraries/system-helpers/user-helper",
++        "libraries/flicker",
++        "libraries/device-collectors/src/main/platform-collectors",
++        "libraries/system-helpers/accessibility-helper",
++        "libraries/system-helpers/account-helper",
++        "libraries/system-helpers/activity-helper",
++        "libraries/app-helpers/core",
++        "libraries/system-helpers/commands-helper",
++        "libraries/system-helpers/connectivity-helper",
++        "libraries/system-helpers/device-helper",
++        "utils/dpad",
++        "libraries/launcher-helper",
++        "libraries/system-helpers/permission-helper",
++        "libraries/system-helpers/settings-helper",
++        "libraries/system-helpers/sysui-helper",
++        "libraries/app-helpers/spectatio/spectatio-util",
++        "libraries/systemui-tapl",
++        "libraries/systemui-helper",
++        "libraries/tapl-common",
++        "scripts"
++      ]
++    },
++"###),
++            (r###"    {
++      "path": "prebuilts/sdk",
++      "name": "platform/prebuilts/sdk",
++      "commit": "0f07e8d60ab0aba46129e427101f96ba459a95c1",
++      "purpose": "Pinned Android 17 released API tracking required by full vendor-image graph validation",
++      "sparse_paths": [
++        "28/public",
++        "29/public",
++        "29/system",
++        "30/public",
++        "31/public",
++        "34/public",
++        "34/system/android.jar",
++        "37.0/module-lib/api",
++        "37.0/public/api",
++        "37.0/system-server/api",
++        "37.0/system/api",
++        "37.0/test/api",
++        "8/public",
++        "9/public",
++        "Android.bp",
++        "current/androidx/Android.bp",
++        "current/androidx/m2repository/androidx/annotation/annotation-experimental/1.6.0",
++        "current/androidx/m2repository/androidx/annotation/annotation-jvm/1.10.0",
++        "current/androidx/m2repository/androidx/collection/collection-jvm/1.7.0-alpha01",
++        "current/androidx/m2repository/androidx/core/core-animation-testing/1.0.0",
++        "current/androidx/m2repository/androidx/core/core-animation/1.0.0",
++        "current/androidx/m2repository/androidx/core/core/1.20.0-alpha01",
++        "current/androidx/m2repository/androidx/leanback/leanback/1.3.0-alpha01",
++        "current/androidx/m2repository/androidx/transition/transition-ktx/1.7.0-rc01",
++        "current/androidx/m2repository/androidx/transition/transition/1.7.0-rc01",
++        "current/androidx/m2repository/androidx/webkit/webkit/1.12.0-alpha02",
++        "current/core",
++        "current/module-lib",
++        "current/public",
++        "current/system",
++        "current/system-server",
++        "extensions/19/module-lib",
++        "extensions/19/public",
++        "extensions/19/system",
++        "extensions/19/system-server",
++        "tools/Android.bp",
++        "tools/core-lambda-stubs.jar",
++        "update_prebuilts",
++        "current/androidx",
++        "18/public",
++        "current/multidex",
++        "current/test",
++        "current/support/v7/appcompat/res",
++        "current/support/manifests/android-support-v7-appcompat",
++        "current/extras/material-design-x",
++        "36/public/api/framework-ondeviceintelligence.txt",
++        "36/public/api/framework-ondeviceintelligence-removed.txt",
++        "36/system/api/framework-ondeviceintelligence.txt",
++        "36/system/api/framework-ondeviceintelligence-removed.txt",
++        "36/module-lib/api/framework-ondeviceintelligence.txt",
++        "36/module-lib/api/framework-ondeviceintelligence-removed.txt",
++        "current/androidx-legacy",
++        "current/extras/app-toolkit",
++        "35/public/android.jar",
++        "35/public/framework.aidl",
++        "35/public/core-for-system-modules.jar",
++        "tools/darwin/bin/aapt2",
++        "tools/linux/bin/aapt2",
++        "tools/windows/bin/aapt2.exe"
++      ]
++    },
++"###, r###"    {
++      "path": "prebuilts/sdk",
++      "name": "platform/prebuilts/sdk",
++      "commit": "0f07e8d60ab0aba46129e427101f96ba459a95c1",
++      "purpose": "Pinned Android 17 released API tracking required by full vendor-image graph validation",
++      "sparse_paths": [
++        "28/public",
++        "29/public",
++        "29/system",
++        "30/public",
++        "31/public",
++        "34/public",
++        "34/system/android.jar",
++        "37.0/module-lib/api",
++        "37.0/public/api",
++        "37.0/system-server/api",
++        "37.0/system/api",
++        "37.0/test/api",
++        "8/public",
++        "9/public",
++        "Android.bp",
++        "current/androidx/Android.bp",
++        "current/androidx/m2repository/androidx/annotation/annotation-experimental/1.6.0",
++        "current/androidx/m2repository/androidx/annotation/annotation-jvm/1.10.0",
++        "current/androidx/m2repository/androidx/collection/collection-jvm/1.7.0-alpha01",
++        "current/androidx/m2repository/androidx/core/core-animation-testing/1.0.0",
++        "current/androidx/m2repository/androidx/core/core-animation/1.0.0",
++        "current/androidx/m2repository/androidx/core/core/1.20.0-alpha01",
++        "current/androidx/m2repository/androidx/leanback/leanback/1.3.0-alpha01",
++        "current/androidx/m2repository/androidx/transition/transition-ktx/1.7.0-rc01",
++        "current/androidx/m2repository/androidx/transition/transition/1.7.0-rc01",
++        "current/androidx/m2repository/androidx/webkit/webkit/1.12.0-alpha02",
++        "current/core",
++        "current/module-lib",
++        "current/public",
++        "current/system",
++        "current/system-server",
++        "extensions/19/module-lib",
++        "extensions/19/public",
++        "extensions/19/system",
++        "extensions/19/system-server",
++        "tools/Android.bp",
++        "tools/core-lambda-stubs.jar",
++        "update_prebuilts",
++        "current/androidx",
++        "18/public",
++        "current/multidex",
++        "current/test",
++        "current/support/v7/appcompat/res",
++        "current/support/manifests/android-support-v7-appcompat",
++        "current/extras/material-design-x",
++        "36/public/api/framework-ondeviceintelligence.txt",
++        "36/public/api/framework-ondeviceintelligence-removed.txt",
++        "36/system/api/framework-ondeviceintelligence.txt",
++        "36/system/api/framework-ondeviceintelligence-removed.txt",
++        "36/module-lib/api/framework-ondeviceintelligence.txt",
++        "36/module-lib/api/framework-ondeviceintelligence-removed.txt",
++        "current/androidx-legacy",
++        "current/extras/app-toolkit",
++        "35/public/android.jar",
++        "35/public/framework.aidl",
++        "35/public/core-for-system-modules.jar"
++      ]
++    },
++"###),
++            (r###"    {
++      "path": "system/gsid",
++      "name": "platform/system/gsid",
++      "commit": "35a92d40f529b605fad8ff622691e76901044cc8",
++      "purpose": "Original Android 17 libgsi_headers for fs_mgr libfstab",
++      "sparse_paths": [
++        "Android.bp",
++        "include",
++        "aidl/android/gsi/AvbPublicKey.aidl",
++        "aidl/android/gsi/GsiProgress.aidl",
++        "aidl/android/gsi/IGsiService.aidl",
++        "aidl/android/gsi/IGsiServiceCallback.aidl",
++        "aidl/android/gsi/IImageService.aidl",
++        "aidl/android/gsi/IProgressCallback.aidl",
++        "aidl/android/gsi/MappedImage.aidl"
++      ]
++    },
++"###, r###"    {
++      "path": "system/gsid",
++      "name": "platform/system/gsid",
++      "commit": "35a92d40f529b605fad8ff622691e76901044cc8",
++      "purpose": "Original Android 17 libgsi_headers for fs_mgr libfstab",
++      "sparse_paths": [
++        "Android.bp",
++        "include"
++      ]
++    },
++"###),
++            (r###"    {
++      "path": "system/logging",
++      "name": "platform/system/logging",
++      "commit": "d35ba620451b28512f46ebb5421f783fd77968d5",
++      "purpose": "Android native logging",
++      "sparse_paths": [
++        "liblog",
++        "rust",
++        "logd/Android.bp",
++        "logd/CommandListener.cpp",
++        "logd/CompressionEngine.cpp",
++        "logd/LogAudit.cpp",
++        "logd/LogBufferElement.cpp",
++        "logd/LogBufferTest.cpp",
++        "logd/LogKlog.cpp",
++        "logd/LogListener.cpp",
++        "logd/LogPermissions.cpp",
++        "logd/LogReader.cpp",
++        "logd/LogReaderList.cpp",
++        "logd/LogReaderThread.cpp",
++        "logd/LogSize.cpp",
++        "logd/LogStatistics.cpp",
++        "logd/LogTags.cpp",
++        "logd/LogdLock.cpp",
++        "logd/LogdNativeService.cpp",
++        "logd/PkgIds.cpp",
++        "logd/PruneList.cpp",
++        "logd/ReplayMessages.cpp",
++        "logd/SerializedFlushToState.cpp",
++        "logd/SerializedFlushToStateTest.cpp",
++        "logd/SerializedLogBuffer.cpp",
++        "logd/SerializedLogBufferTest.cpp",
++        "logd/SerializedLogChunk.cpp",
++        "logd/SerializedLogChunkTest.cpp",
++        "logd/SimpleLogBuffer.cpp",
++        "logd/TrustyLog.cpp",
++        "logd/auditctl.cpp",
++        "logd/binder",
++        "logd/device_test_config.xml",
++        "logd/flags",
++        "logd/libaudit",
++        "logd/logd_test.cpp",
++        "logd/logtagd.rc",
++        "logd/main.cpp"
++      ]
++    },
++"###, r###"    {
++      "path": "system/logging",
++      "name": "platform/system/logging",
++      "commit": "d35ba620451b28512f46ebb5421f783fd77968d5",
++      "purpose": "Android native logging",
++      "sparse_paths": [
++        "liblog",
++        "rust"
++      ]
++    },
++"###),
++            (r###"    {
++      "path": "system/update_engine",
++      "name": "platform/system/update_engine",
++      "commit": "4591637f51644f5429f9e2fe589ab22b92f61842",
++      "purpose": "Pinned update-engine headers and metadata protos required by init second stage",
++      "sparse_paths": [
++        "Android.bp",
++        "fuzzers",
++        "liburing_cpp",
++        "binder_bindings/android/os/IUpdateEngine.aidl",
++        "binder_bindings/android/os/IUpdateEngineCallback.aidl",
++        "stable"
++      ]
++    },
++"###, r###"    {
++      "path": "system/update_engine",
++      "name": "platform/system/update_engine",
++      "commit": "4591637f51644f5429f9e2fe589ab22b92f61842",
++      "purpose": "Pinned update-engine headers and metadata protos required by init second stage",
++      "sparse_paths": [
++        "Android.bp",
++        "fuzzers",
++        "liburing_cpp"
++      ]
++    },
++"###),
++            (r###"    {
++      "path": "system/vold",
++      "name": "platform/system/vold",
++      "commit": "6d20a0078c2bcaa2499dc5d032f337bfe1182d9e",
++      "purpose": "Pinned filesystem-encryption headers and library required by init second stage",
++      "sparse_paths": [
++        "Utils.cpp",
++        "tests",
++        "aconfig/flags.aconfig",
++        "binder/android/os/IVold.aidl",
++        "binder/android/os/IVoldListener.aidl",
++        "binder/android/os/IVoldMountCallback.aidl",
++        "binder/android/os/IVoldTaskListener.aidl"
++      ]
++    },
++"###, r###"    {
++      "path": "system/vold",
++      "name": "platform/system/vold",
++      "commit": "6d20a0078c2bcaa2499dc5d032f337bfe1182d9e",
++      "purpose": "Pinned filesystem-encryption headers and library required by init second stage",
++      "sparse_paths": [
++        "Utils.cpp",
++        "tests",
++        "aconfig/flags.aconfig"
++      ]
++    },
++"###),
++            (r###"    {
++      "path": "external/caliper",
++      "name": "platform/external/caliper",
++      "commit": "d7bb09dccd464969498584337b0e68a9347b4d40",
++      "purpose": "Original Caliper host providers required by retained STS utilities and their original sibling modules",
++      "sparse_paths": [
++        "caliper",
++        "examples",
++        "lib"
++      ]
++    },
++"###, r###""###),
++            (r###"    {
++      "path": "external/mime-support",
++      "name": "platform/external/mime-support",
++      "commit": "9d71d482603aac054815958c9834ae1cd036f024",
++      "purpose": "Original Debian MIME tables required by the retained framework MIME source filegroups",
++      "sparse_paths": [
++        "mime.types",
++        "mime.types-alt"
++      ]
++    },
++"###, r###""###),
++            (r###"    {
++      "path": "packages/modules/NpuManager",
++      "name": "platform/packages/modules/NpuManager",
++      "commit": "d194f8ada2cab31b8487fb3aaac6fd383fc7e07f",
++      "purpose": "Original libandroid NPU shim, Rust AIDL provider and original SDK siblings required by the retained native graph",
++      "sparse_paths": [
++        "flags",
++        "framework",
++        "ndk"
++      ]
++    },
++"###, r###""###),
++            (r###"    {
++      "path": "system/liburingutils",
++      "name": "platform/system/liburingutils",
++      "commit": "3d6286bdd07ec68ee6a411381e56c1aaa6e11247",
++      "purpose": "Original io_uring socket helpers required by the retained logd provider and its original sibling tests",
++      "sparse_paths": [
++        "include",
++        "src"
++      ]
++    },
++"###, r###""###),
++        ] {
++            assert_eq!(previous.matches(after).count(), 1);
++            previous = previous.replacen(after, before, 1);
++        }
++        assert_eq!(format!("{:x}", Sha256::digest(previous.as_bytes())),
++            "dbcfc28fe99865aae9b103daebdab120a8fdcb932202da183f3fd5b62e41b593");
++        previous
++    }
++
++    #[test]
++    fn audio_cts_sts_recursive_closure_is_a_monotonic_pinned_extension() {
++        let old: SparseSourceLock = serde_json::from_str(&audio_before_cts_sts_lock()).unwrap();
++        let current: SparseSourceLock = serde_json::from_str(include_str!(
++            "../../../android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let before = build_plan(&old).unwrap();
++        let after = build_plan(&current).unwrap();
++        assert_eq!(before.projects.len(), 317);
++        assert_eq!(after.projects.len(), 321);
++        validate_plan_extension(&before, &after).unwrap();
++        assert!(validate_plan_extension(&after, &before).is_err());
++        let mut changed = after;
++        changed.projects.iter_mut().find(|p| p.path == Path::new("cts")).unwrap()
++            .commit = "0000000000000000000000000000000000000000".into();
++        assert!(validate_plan_extension(&before, &changed).is_err());
++    }
++
+     fn audio_before_jimfs_lock() -> String {
+-        let raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
++        let raw_owned = audio_before_cts_sts_lock();
++        let raw = raw_owned.as_str();
+         let added = r###"    {
+       "path": "external/jimfs",
+       "name": "platform/external/jimfs",
+@@ -963,7 +1953,8 @@ mod tests {
+ 
+     #[test]
+     fn audio_error_prone_jimfs_is_one_monotonic_pinned_project() {
+-        let raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
++        let raw_owned = audio_before_cts_sts_lock();
++        let raw = raw_owned.as_str();
+         let current_lock: SparseSourceLock = serde_json::from_str(raw).unwrap();
+         let previous_lock: SparseSourceLock = serde_json::from_str(&audio_before_jimfs_lock()).unwrap();
+         let previous = build_plan(&previous_lock).unwrap();
+@@ -1009,10 +2000,10 @@ mod tests {
+     fn audio_source_capacity_is_bound_to_the_exact_frozen_lock() {
+         let raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
+         assert_eq!(format!("{:x}", Sha256::digest(raw.as_bytes())),
+-            "dbcfc28fe99865aae9b103daebdab120a8fdcb932202da183f3fd5b62e41b593");
++            "2466de84fa9aeac43b4b5792efabbc27ea419652830e339844fa21fd67554bd9");
+         let lock: SparseSourceLock = serde_json::from_str(raw).unwrap();
+         assert_eq!(lock.projects.len(), AUDIO_SOURCE_PROJECT_COUNT);
+-        assert_eq!(MAX_PROJECTS, 320);
++        assert_eq!(MAX_PROJECTS, 336);
+         assert_eq!(MAX_PROJECTS % 16, 0);
+         assert!(MAX_PROJECTS - 16 < AUDIO_SOURCE_PROJECT_COUNT);
+         assert!(AUDIO_SOURCE_PROJECT_COUNT <= MAX_PROJECTS);
+diff --git a/tools/droidloom-update/src/android.rs b/tools/droidloom-update/src/android.rs
+index b6e5185..30aa8d5 100644
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -397,7 +397,29 @@ fn project_fallback_sdk_import(stem: &str) -> bool {
+ 
+ fn project_fallback_sdk_import_for_mode(stem: &str, scope: &str, mode: SoongDependencyMode) -> bool {
+     project_fallback_sdk_import(stem) && !(mode == SoongDependencyMode::AudioApexTargetClosure
+-        && stem == "framework-sdkextensions" && matches!(scope, "public" | "system" | "module-lib"))
++        && matches!(stem, "framework-sdkextensions" | "framework-npumanager")
++        && matches!(scope, "public" | "system" | "module-lib"))
++}
++
++// The retained libandroid NPU shim requires its original Rust AIDL. The
++// same upstream BP also defines the real SDK library; its public/system/module
++// scopes must not be duplicated by sparse prebuilt aliases. Check both the
++// original provider and the defaults that enable exactly those three scopes.
++fn validate_audio_npumanager_sdk_provider(source: &Path, mode: SoongDependencyMode) -> Result<()> {
++    if mode != SoongDependencyMode::AudioApexTargetClosure {
++        return Ok(());
++    }
++    for (relative, expected) in [
++        ("packages/modules/NpuManager/framework/Android.bp",
++         "199f86c7e2f5b7ccb49f4903e9adbd45039ac4966234e6184fecb0b7620fc081"),
++        ("packages/modules/common/sdk/Android.bp",
++         "f68716de589c8ab13e4aa46b00416144728ed61d488450659cb97265eae88e17"),
++    ] {
++        if hash(&source.join(relative))? != expected {
++            return fail("audio NPU SDK fallback requires its original three-scope provider and defaults");
++        }
++    }
++    Ok(())
+ }
+ 
+ fn validate_audio_sdk_import_provider(source: &Path, mode: SoongDependencyMode) -> Result<()> {
+@@ -581,6 +603,198 @@ fn validate_audio_provider_source_paths(
+         ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "libs/vogar-expect"),
+         ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/compilation"),
+         ("external/jimfs", "cd18acbf0036a7c6a3443e7e58b5091cacf327cf", "jimfs"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appcompat/host/lib"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/certs"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/res"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/src"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/AppAccessData"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/AppDataIsolationTestApp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/AppWithData"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/DeclarePermissionsWithSpacesApp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/DeviceIdentifiers"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/DuplicatePermissionDeclareApp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/DuplicatePermissionSameGroup"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/InstrumentationAppDiffCert"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/KeyRotationTest"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/KeyStoreManagerTest"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/ListeningPortsApp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/MalformedDuplicatePermission"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/PackageInstallerPermissionRequestApp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/PackageInstallerWhitelistApp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/PermissionDeclareApp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/PermissionDeclareAppCompat"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/ReadSettingsFieldsApp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/RoleSecurityTestApp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/SimpleAppInstall"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/SimpleAppInstallDiffCert"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/StatsdSecurityApp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/TargetInstrumentationApp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/UsePermissionDiffCert"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/UseProcessFailActivity"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/V32HybridSigningScheme"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/V3SigningSchemeRotation"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/keysets/malBadKey"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/keysets/malNoDef"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/keysets/malOneDef"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/keysets/permDef"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/keysets/permUse"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/keysets/testApp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/keysets/uA"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/keysets/uAuB"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/keysets/uB"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/keysets/uBsharedUser"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/keysets/uEcA"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/keysets/uNone"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/appsecurity/test-apps/tinyapp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/statsdatom/Android.bp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/statsdatom/apps/adpfapp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/statsdatom/apps/expressloghelperapp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/statsdatom/apps/statsdapp"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/statsdatom/configs/AndroidTestTelecom.xml"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/statsdatom/express/src"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/statsdatom/lib/src"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/statsdatom/statsd/src"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/statsdatom/telecom/src"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/utils"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom-apps/ConnectionServiceVoipAppClone"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom-apps/ConnectionServiceVoipAppMain"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom-apps/ManagedConnectionService"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom-apps/ManagedConnectionServiceClone"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom-apps/TransactionalVoipAppClone"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom-apps/TransactionalVoipAppMain"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom-apps/Utils"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/tests/telecom-cuj"),
++        ("external/bouncycastle", "c404048739e9a35cd51ad82906aadf910cca09dd", "bcpkix/src/main/java"),
++        ("external/bouncycastle", "c404048739e9a35cd51ad82906aadf910cca09dd", "bcprov/src/main/java"),
++        ("external/bouncycastle", "c404048739e9a35cd51ad82906aadf910cca09dd", "repackaged_platform/bcpkix/src/main/java"),
++        ("external/bouncycastle", "c404048739e9a35cd51ad82906aadf910cca09dd", "repackaged_platform/bcprov/src/main/java"),
++        ("external/caliper", "d7bb09dccd464969498584337b0e68a9347b4d40", "caliper"),
++        ("external/caliper", "d7bb09dccd464969498584337b0e68a9347b4d40", "examples"),
++        ("external/caliper", "d7bb09dccd464969498584337b0e68a9347b4d40", "lib"),
++        ("external/compiler-rt", "a36a1bcac7ec7ac9be29d8b0b5e669d53f7886f7", "lib/builtins/comparedf2.c"),
++        ("external/compiler-rt", "a36a1bcac7ec7ac9be29d8b0b5e669d53f7886f7", "lib/builtins/mulodi4.c"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/BidirectionalStream.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/BidirectionalStreamBuilderWrapper.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/BidirectionalStreamCallbackWrapper.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/BidirectionalStreamWrapper.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/CallbackException.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/CallbackExceptionWrapper.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/ConnectionMigrationOptions.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/CronetEngineWrapper.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/CronetExceptionTranslationUtils.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/CronetExceptionWrapper.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/DnsOptions.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/HeaderBlock.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/HeaderBlockImpl.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/HeaderBlockWrapper.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/HttpEngine.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/HttpEngineJavaClasses.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/HttpException.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/InlineExecutionProhibitedException.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/NetworkException.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/NetworkExceptionWrapper.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/Proxy.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/ProxyOptions.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/QuicException.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/QuicExceptionWrapper.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/QuicOptions.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/UploadDataProvider.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/UploadDataProviderWrapper.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/UploadDataSink.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/UploadDataSinkWrapper.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/UrlRequest.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/UrlRequestBuilderWrapper.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/UrlRequestCallbackWrapper.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/UrlRequestStatusListenerWrapper.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/UrlRequestWrapper.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/UrlResponseInfo.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/src/android/net/http/UrlResponseInfoWrapper.java"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "stable/build/Android.bp"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "stable/build/util/LASTCHANGE"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "stable/build/util/android_chrome_version.py"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "stable/build/util/version.py"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "stable/chrome/VERSION"),
++        ("external/escapevelocity", "03b11f293548ad5fd65b5164b46aca08a96968f5", "src/main"),
++        ("external/libbpf", "9723b4de6459ab48b361aed3bae5df3c1bd20cb8", "android/bpf_stub.c"),
++        ("external/mime-support", "9d71d482603aac054815958c9834ae1cd036f024", "mime.types"),
++        ("external/mime-support", "9d71d482603aac054815958c9834ae1cd036f024", "mime.types-alt"),
++        ("external/protobuf", "db06feae31e2a10ffc7ddaccd9e285ff7c13c0ab", "java/lite/proguard.pgcfg"),
++        ("external/protobuf", "db06feae31e2a10ffc7ddaccd9e285ff7c13c0ab", "javanano/src/device/main/java/com/google/protobuf/nano"),
++        ("external/protobuf", "db06feae31e2a10ffc7ddaccd9e285ff7c13c0ab", "javanano/src/main/java/com/google/protobuf/nano"),
++        ("packages/modules/Bluetooth", "c77db469de80f86660bc053bec4dee0c5d4b947c", "framework/tests/util"),
++        ("packages/modules/ConfigInfrastructure", "333bc8067efc529ef4d197fec2f4f2cae1ad2ece", "aconfigd/proto"),
++        ("packages/modules/Connectivity", "347fbd34b368d19f0d87e908ea101eed3601a731", "Tethering/apex/hiddenapi"),
++        ("packages/modules/Connectivity", "347fbd34b368d19f0d87e908ea101eed3601a731", "staticlibs/device"),
++        ("packages/modules/Connectivity", "347fbd34b368d19f0d87e908ea101eed3601a731", "staticlibs/framework"),
++        ("packages/modules/NpuManager", "d194f8ada2cab31b8487fb3aaac6fd383fc7e07f", "flags"),
++        ("packages/modules/NpuManager", "d194f8ada2cab31b8487fb3aaac6fd383fc7e07f", "framework"),
++        ("packages/modules/NpuManager", "d194f8ada2cab31b8487fb3aaac6fd383fc7e07f", "ndk"),
++        ("packages/modules/Telephony", "d83f23a96fbe6d68942d8d7245dbd3db91e9c711", "tests/mcts/Android.bp"),
++        ("packages/modules/Telephony", "d83f23a96fbe6d68942d8d7245dbd3db91e9c711", "tests/mcts/AndroidTest.xml"),
++        ("packages/modules/Telephony", "d83f23a96fbe6d68942d8d7245dbd3db91e9c711", "tests/mcts/telecom-cuj"),
++        ("packages/modules/Wifi", "67beff9acf0e91046d2a9a36a68cb06ef263d1f1", "framework/aidl-export"),
++        ("packages/modules/Wifi", "67beff9acf0e91046d2a9a36a68cb06ef263d1f1", "framework/java"),
++        ("platform_testing", "6abefd291d50dee240ed2b22572d273175f070da", "libraries/sts-common-util/host-side/Android.bp"),
++        ("platform_testing", "6abefd291d50dee240ed2b22572d273175f070da", "libraries/sts-common-util/host-side/res"),
++        ("platform_testing", "6abefd291d50dee240ed2b22572d273175f070da", "libraries/sts-common-util/host-side/src"),
++        ("platform_testing", "6abefd291d50dee240ed2b22572d273175f070da", "libraries/sts-common-util/util/Android.bp"),
++        ("platform_testing", "6abefd291d50dee240ed2b22572d273175f070da", "libraries/sts-common-util/util/src"),
++        ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "tools/darwin/bin/aapt2"),
++        ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "tools/linux/bin/aapt2"),
++        ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "tools/windows/bin/aapt2.exe"),
++        ("system/gsid", "35a92d40f529b605fad8ff622691e76901044cc8", "aidl/android/gsi/AvbPublicKey.aidl"),
++        ("system/gsid", "35a92d40f529b605fad8ff622691e76901044cc8", "aidl/android/gsi/GsiProgress.aidl"),
++        ("system/gsid", "35a92d40f529b605fad8ff622691e76901044cc8", "aidl/android/gsi/IGsiService.aidl"),
++        ("system/gsid", "35a92d40f529b605fad8ff622691e76901044cc8", "aidl/android/gsi/IGsiServiceCallback.aidl"),
++        ("system/gsid", "35a92d40f529b605fad8ff622691e76901044cc8", "aidl/android/gsi/IImageService.aidl"),
++        ("system/gsid", "35a92d40f529b605fad8ff622691e76901044cc8", "aidl/android/gsi/IProgressCallback.aidl"),
++        ("system/gsid", "35a92d40f529b605fad8ff622691e76901044cc8", "aidl/android/gsi/MappedImage.aidl"),
++        ("system/liburingutils", "3d6286bdd07ec68ee6a411381e56c1aaa6e11247", "include"),
++        ("system/liburingutils", "3d6286bdd07ec68ee6a411381e56c1aaa6e11247", "src"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/Android.bp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/CommandListener.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/CompressionEngine.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/LogAudit.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/LogBufferElement.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/LogBufferTest.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/LogKlog.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/LogListener.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/LogPermissions.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/LogReader.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/LogReaderList.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/LogReaderThread.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/LogSize.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/LogStatistics.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/LogTags.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/LogdLock.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/LogdNativeService.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/PkgIds.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/PruneList.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/ReplayMessages.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/SerializedFlushToState.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/SerializedFlushToStateTest.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/SerializedLogBuffer.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/SerializedLogBufferTest.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/SerializedLogChunk.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/SerializedLogChunkTest.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/SimpleLogBuffer.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/TrustyLog.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/auditctl.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/binder"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/device_test_config.xml"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/flags"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/libaudit"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/logd_test.cpp"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/logtagd.rc"),
++        ("system/logging", "d35ba620451b28512f46ebb5421f783fd77968d5", "logd/main.cpp"),
++        ("system/update_engine", "4591637f51644f5429f9e2fe589ab22b92f61842", "binder_bindings/android/os/IUpdateEngine.aidl"),
++        ("system/update_engine", "4591637f51644f5429f9e2fe589ab22b92f61842", "binder_bindings/android/os/IUpdateEngineCallback.aidl"),
++        ("system/update_engine", "4591637f51644f5429f9e2fe589ab22b92f61842", "stable"),
++        ("system/vold", "6d20a0078c2bcaa2499dc5d032f337bfe1182d9e", "binder/android/os/IVold.aidl"),
++        ("system/vold", "6d20a0078c2bcaa2499dc5d032f337bfe1182d9e", "binder/android/os/IVoldListener.aidl"),
++        ("system/vold", "6d20a0078c2bcaa2499dc5d032f337bfe1182d9e", "binder/android/os/IVoldMountCallback.aidl"),
++        ("system/vold", "6d20a0078c2bcaa2499dc5d032f337bfe1182d9e", "binder/android/os/IVoldTaskListener.aidl"),
+         ("external/e2fsprogs", "3eb17241db7cd4408cc1bce9d25b602465ace8ff", "debugfs"),
+         ("external/e2fsprogs", "3eb17241db7cd4408cc1bce9d25b602465ace8ff", "lib"),
+         ("external/e2fsprogs", "3eb17241db7cd4408cc1bce9d25b602465ace8ff", "misc"),
+@@ -670,6 +884,7 @@ fn project_blueprints(p: &mut Projection, source: &Path, mode: SoongDependencyMo
+     // This existing provider generates exactly these three prebuilt stubs.
+     // No system-server provider is declared: retain its original fallback.
+     validate_audio_sdk_import_provider(source, mode)?;
++    validate_audio_npumanager_sdk_provider(source, mode)?;
+     // In this exact Android17 sparse product, the original Connectivity Module
+     // SDK is the source for framework-connectivity-b; no source implementation
+     // of framework-connectivity-b is present in the fixed project tree.
+@@ -895,12 +1110,12 @@ fn audio_apex_pcm_patches(mode: SoongDependencyMode) -> &'static [(&'static str,
+     }
+ }
+ 
+-const AUDIO_SOURCE_LOCK_SHA256: &str = "dbcfc28fe99865aae9b103daebdab120a8fdcb932202da183f3fd5b62e41b593";
++const AUDIO_SOURCE_LOCK_SHA256: &str = "2466de84fa9aeac43b4b5792efabbc27ea419652830e339844fa21fd67554bd9";
+ fn selected_source_lock(repo: &Path, mode: SoongDependencyMode) -> Result<PathBuf> {
+     if mode == SoongDependencyMode::AudioApexTargetClosure {
+         let lock = repo.join("android/manifest/audio-bridge-source-lock.json");
+         if hash(&lock)? != AUDIO_SOURCE_LOCK_SHA256 {
+-            return fail("audio build requires its exact independent 317-project source lock");
++            return fail("audio build requires its exact independent 321-project source lock");
+         }
+         Ok(lock)
+     } else {
+@@ -3344,6 +3559,287 @@ mod tests {
+     }
+ 
+ 
++    #[test]
++    fn audio_cts_sts_recursive_closure_requires_all_original_source_cones() {
++        let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
++        let lock = droidloom_source::load_lock(
++            &repo.join("android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let audio = SoongDependencyMode::AudioApexTargetClosure;
++        validate_audio_provider_source_paths(&lock, audio).unwrap();
++        for (relative, required) in [
++            ("cts", "hostsidetests/appcompat/host/lib"),
++            ("cts", "hostsidetests/appsecurity/certs"),
++            ("cts", "hostsidetests/appsecurity/res"),
++            ("cts", "hostsidetests/appsecurity/src"),
++            ("cts", "hostsidetests/appsecurity/test-apps/AppAccessData"),
++            ("cts", "hostsidetests/appsecurity/test-apps/AppDataIsolationTestApp"),
++            ("cts", "hostsidetests/appsecurity/test-apps/AppWithData"),
++            ("cts", "hostsidetests/appsecurity/test-apps/DeclarePermissionsWithSpacesApp"),
++            ("cts", "hostsidetests/appsecurity/test-apps/DeviceIdentifiers"),
++            ("cts", "hostsidetests/appsecurity/test-apps/DuplicatePermissionDeclareApp"),
++            ("cts", "hostsidetests/appsecurity/test-apps/DuplicatePermissionSameGroup"),
++            ("cts", "hostsidetests/appsecurity/test-apps/InstrumentationAppDiffCert"),
++            ("cts", "hostsidetests/appsecurity/test-apps/KeyRotationTest"),
++            ("cts", "hostsidetests/appsecurity/test-apps/KeyStoreManagerTest"),
++            ("cts", "hostsidetests/appsecurity/test-apps/ListeningPortsApp"),
++            ("cts", "hostsidetests/appsecurity/test-apps/MalformedDuplicatePermission"),
++            ("cts", "hostsidetests/appsecurity/test-apps/PackageInstallerPermissionRequestApp"),
++            ("cts", "hostsidetests/appsecurity/test-apps/PackageInstallerWhitelistApp"),
++            ("cts", "hostsidetests/appsecurity/test-apps/PermissionDeclareApp"),
++            ("cts", "hostsidetests/appsecurity/test-apps/PermissionDeclareAppCompat"),
++            ("cts", "hostsidetests/appsecurity/test-apps/ReadSettingsFieldsApp"),
++            ("cts", "hostsidetests/appsecurity/test-apps/RoleSecurityTestApp"),
++            ("cts", "hostsidetests/appsecurity/test-apps/SimpleAppInstall"),
++            ("cts", "hostsidetests/appsecurity/test-apps/SimpleAppInstallDiffCert"),
++            ("cts", "hostsidetests/appsecurity/test-apps/StatsdSecurityApp"),
++            ("cts", "hostsidetests/appsecurity/test-apps/TargetInstrumentationApp"),
++            ("cts", "hostsidetests/appsecurity/test-apps/UsePermissionDiffCert"),
++            ("cts", "hostsidetests/appsecurity/test-apps/UseProcessFailActivity"),
++            ("cts", "hostsidetests/appsecurity/test-apps/V32HybridSigningScheme"),
++            ("cts", "hostsidetests/appsecurity/test-apps/V3SigningSchemeRotation"),
++            ("cts", "hostsidetests/appsecurity/test-apps/keysets/malBadKey"),
++            ("cts", "hostsidetests/appsecurity/test-apps/keysets/malNoDef"),
++            ("cts", "hostsidetests/appsecurity/test-apps/keysets/malOneDef"),
++            ("cts", "hostsidetests/appsecurity/test-apps/keysets/permDef"),
++            ("cts", "hostsidetests/appsecurity/test-apps/keysets/permUse"),
++            ("cts", "hostsidetests/appsecurity/test-apps/keysets/testApp"),
++            ("cts", "hostsidetests/appsecurity/test-apps/keysets/uA"),
++            ("cts", "hostsidetests/appsecurity/test-apps/keysets/uAuB"),
++            ("cts", "hostsidetests/appsecurity/test-apps/keysets/uB"),
++            ("cts", "hostsidetests/appsecurity/test-apps/keysets/uBsharedUser"),
++            ("cts", "hostsidetests/appsecurity/test-apps/keysets/uEcA"),
++            ("cts", "hostsidetests/appsecurity/test-apps/keysets/uNone"),
++            ("cts", "hostsidetests/appsecurity/test-apps/tinyapp"),
++            ("cts", "hostsidetests/statsdatom/Android.bp"),
++            ("cts", "hostsidetests/statsdatom/apps/adpfapp"),
++            ("cts", "hostsidetests/statsdatom/apps/expressloghelperapp"),
++            ("cts", "hostsidetests/statsdatom/apps/statsdapp"),
++            ("cts", "hostsidetests/statsdatom/configs/AndroidTestTelecom.xml"),
++            ("cts", "hostsidetests/statsdatom/express/src"),
++            ("cts", "hostsidetests/statsdatom/lib/src"),
++            ("cts", "hostsidetests/statsdatom/statsd/src"),
++            ("cts", "hostsidetests/statsdatom/telecom/src"),
++            ("cts", "hostsidetests/utils"),
++            ("cts", "tests/tests/telecom"),
++            ("cts", "tests/tests/telecom-apps/ConnectionServiceVoipAppClone"),
++            ("cts", "tests/tests/telecom-apps/ConnectionServiceVoipAppMain"),
++            ("cts", "tests/tests/telecom-apps/ManagedConnectionService"),
++            ("cts", "tests/tests/telecom-apps/ManagedConnectionServiceClone"),
++            ("cts", "tests/tests/telecom-apps/TransactionalVoipAppClone"),
++            ("cts", "tests/tests/telecom-apps/TransactionalVoipAppMain"),
++            ("cts", "tests/tests/telecom-apps/Utils"),
++            ("cts", "tests/tests/telecom-cuj"),
++            ("external/bouncycastle", "bcpkix/src/main/java"),
++            ("external/bouncycastle", "bcprov/src/main/java"),
++            ("external/bouncycastle", "repackaged_platform/bcpkix/src/main/java"),
++            ("external/bouncycastle", "repackaged_platform/bcprov/src/main/java"),
++            ("external/caliper", "caliper"),
++            ("external/caliper", "examples"),
++            ("external/caliper", "lib"),
++            ("external/compiler-rt", "lib/builtins/comparedf2.c"),
++            ("external/compiler-rt", "lib/builtins/mulodi4.c"),
++            ("external/cronet", "android/java/src/android/net/http/BidirectionalStream.java"),
++            ("external/cronet", "android/java/src/android/net/http/BidirectionalStreamBuilderWrapper.java"),
++            ("external/cronet", "android/java/src/android/net/http/BidirectionalStreamCallbackWrapper.java"),
++            ("external/cronet", "android/java/src/android/net/http/BidirectionalStreamWrapper.java"),
++            ("external/cronet", "android/java/src/android/net/http/CallbackException.java"),
++            ("external/cronet", "android/java/src/android/net/http/CallbackExceptionWrapper.java"),
++            ("external/cronet", "android/java/src/android/net/http/ConnectionMigrationOptions.java"),
++            ("external/cronet", "android/java/src/android/net/http/CronetEngineWrapper.java"),
++            ("external/cronet", "android/java/src/android/net/http/CronetExceptionTranslationUtils.java"),
++            ("external/cronet", "android/java/src/android/net/http/CronetExceptionWrapper.java"),
++            ("external/cronet", "android/java/src/android/net/http/DnsOptions.java"),
++            ("external/cronet", "android/java/src/android/net/http/HeaderBlock.java"),
++            ("external/cronet", "android/java/src/android/net/http/HeaderBlockImpl.java"),
++            ("external/cronet", "android/java/src/android/net/http/HeaderBlockWrapper.java"),
++            ("external/cronet", "android/java/src/android/net/http/HttpEngine.java"),
++            ("external/cronet", "android/java/src/android/net/http/HttpEngineJavaClasses.java"),
++            ("external/cronet", "android/java/src/android/net/http/HttpException.java"),
++            ("external/cronet", "android/java/src/android/net/http/InlineExecutionProhibitedException.java"),
++            ("external/cronet", "android/java/src/android/net/http/NetworkException.java"),
++            ("external/cronet", "android/java/src/android/net/http/NetworkExceptionWrapper.java"),
++            ("external/cronet", "android/java/src/android/net/http/Proxy.java"),
++            ("external/cronet", "android/java/src/android/net/http/ProxyOptions.java"),
++            ("external/cronet", "android/java/src/android/net/http/QuicException.java"),
++            ("external/cronet", "android/java/src/android/net/http/QuicExceptionWrapper.java"),
++            ("external/cronet", "android/java/src/android/net/http/QuicOptions.java"),
++            ("external/cronet", "android/java/src/android/net/http/UploadDataProvider.java"),
++            ("external/cronet", "android/java/src/android/net/http/UploadDataProviderWrapper.java"),
++            ("external/cronet", "android/java/src/android/net/http/UploadDataSink.java"),
++            ("external/cronet", "android/java/src/android/net/http/UploadDataSinkWrapper.java"),
++            ("external/cronet", "android/java/src/android/net/http/UrlRequest.java"),
++            ("external/cronet", "android/java/src/android/net/http/UrlRequestBuilderWrapper.java"),
++            ("external/cronet", "android/java/src/android/net/http/UrlRequestCallbackWrapper.java"),
++            ("external/cronet", "android/java/src/android/net/http/UrlRequestStatusListenerWrapper.java"),
++            ("external/cronet", "android/java/src/android/net/http/UrlRequestWrapper.java"),
++            ("external/cronet", "android/java/src/android/net/http/UrlResponseInfo.java"),
++            ("external/cronet", "android/java/src/android/net/http/UrlResponseInfoWrapper.java"),
++            ("external/cronet", "stable/build/Android.bp"),
++            ("external/cronet", "stable/build/util/LASTCHANGE"),
++            ("external/cronet", "stable/build/util/android_chrome_version.py"),
++            ("external/cronet", "stable/build/util/version.py"),
++            ("external/cronet", "stable/chrome/VERSION"),
++            ("external/escapevelocity", "src/main"),
++            ("external/libbpf", "android/bpf_stub.c"),
++            ("external/mime-support", "mime.types"),
++            ("external/mime-support", "mime.types-alt"),
++            ("external/protobuf", "java/lite/proguard.pgcfg"),
++            ("external/protobuf", "javanano/src/device/main/java/com/google/protobuf/nano"),
++            ("external/protobuf", "javanano/src/main/java/com/google/protobuf/nano"),
++            ("packages/modules/Bluetooth", "framework/tests/util"),
++            ("packages/modules/ConfigInfrastructure", "aconfigd/proto"),
++            ("packages/modules/Connectivity", "Tethering/apex/hiddenapi"),
++            ("packages/modules/Connectivity", "staticlibs/device"),
++            ("packages/modules/Connectivity", "staticlibs/framework"),
++            ("packages/modules/NpuManager", "flags"),
++            ("packages/modules/NpuManager", "framework"),
++            ("packages/modules/NpuManager", "ndk"),
++            ("packages/modules/Telephony", "tests/mcts/Android.bp"),
++            ("packages/modules/Telephony", "tests/mcts/AndroidTest.xml"),
++            ("packages/modules/Telephony", "tests/mcts/telecom-cuj"),
++            ("packages/modules/Wifi", "framework/aidl-export"),
++            ("packages/modules/Wifi", "framework/java"),
++            ("platform_testing", "libraries/sts-common-util/host-side/Android.bp"),
++            ("platform_testing", "libraries/sts-common-util/host-side/res"),
++            ("platform_testing", "libraries/sts-common-util/host-side/src"),
++            ("platform_testing", "libraries/sts-common-util/util/Android.bp"),
++            ("platform_testing", "libraries/sts-common-util/util/src"),
++            ("prebuilts/sdk", "tools/darwin/bin/aapt2"),
++            ("prebuilts/sdk", "tools/linux/bin/aapt2"),
++            ("prebuilts/sdk", "tools/windows/bin/aapt2.exe"),
++            ("system/gsid", "aidl/android/gsi/AvbPublicKey.aidl"),
++            ("system/gsid", "aidl/android/gsi/GsiProgress.aidl"),
++            ("system/gsid", "aidl/android/gsi/IGsiService.aidl"),
++            ("system/gsid", "aidl/android/gsi/IGsiServiceCallback.aidl"),
++            ("system/gsid", "aidl/android/gsi/IImageService.aidl"),
++            ("system/gsid", "aidl/android/gsi/IProgressCallback.aidl"),
++            ("system/gsid", "aidl/android/gsi/MappedImage.aidl"),
++            ("system/liburingutils", "include"),
++            ("system/liburingutils", "src"),
++            ("system/logging", "logd/Android.bp"),
++            ("system/logging", "logd/CommandListener.cpp"),
++            ("system/logging", "logd/CompressionEngine.cpp"),
++            ("system/logging", "logd/LogAudit.cpp"),
++            ("system/logging", "logd/LogBufferElement.cpp"),
++            ("system/logging", "logd/LogBufferTest.cpp"),
++            ("system/logging", "logd/LogKlog.cpp"),
++            ("system/logging", "logd/LogListener.cpp"),
++            ("system/logging", "logd/LogPermissions.cpp"),
++            ("system/logging", "logd/LogReader.cpp"),
++            ("system/logging", "logd/LogReaderList.cpp"),
++            ("system/logging", "logd/LogReaderThread.cpp"),
++            ("system/logging", "logd/LogSize.cpp"),
++            ("system/logging", "logd/LogStatistics.cpp"),
++            ("system/logging", "logd/LogTags.cpp"),
++            ("system/logging", "logd/LogdLock.cpp"),
++            ("system/logging", "logd/LogdNativeService.cpp"),
++            ("system/logging", "logd/PkgIds.cpp"),
++            ("system/logging", "logd/PruneList.cpp"),
++            ("system/logging", "logd/ReplayMessages.cpp"),
++            ("system/logging", "logd/SerializedFlushToState.cpp"),
++            ("system/logging", "logd/SerializedFlushToStateTest.cpp"),
++            ("system/logging", "logd/SerializedLogBuffer.cpp"),
++            ("system/logging", "logd/SerializedLogBufferTest.cpp"),
++            ("system/logging", "logd/SerializedLogChunk.cpp"),
++            ("system/logging", "logd/SerializedLogChunkTest.cpp"),
++            ("system/logging", "logd/SimpleLogBuffer.cpp"),
++            ("system/logging", "logd/TrustyLog.cpp"),
++            ("system/logging", "logd/auditctl.cpp"),
++            ("system/logging", "logd/binder"),
++            ("system/logging", "logd/device_test_config.xml"),
++            ("system/logging", "logd/flags"),
++            ("system/logging", "logd/libaudit"),
++            ("system/logging", "logd/logd_test.cpp"),
++            ("system/logging", "logd/logtagd.rc"),
++            ("system/logging", "logd/main.cpp"),
++            ("system/update_engine", "binder_bindings/android/os/IUpdateEngine.aidl"),
++            ("system/update_engine", "binder_bindings/android/os/IUpdateEngineCallback.aidl"),
++            ("system/update_engine", "stable"),
++            ("system/vold", "binder/android/os/IVold.aidl"),
++            ("system/vold", "binder/android/os/IVoldListener.aidl"),
++            ("system/vold", "binder/android/os/IVoldMountCallback.aidl"),
++            ("system/vold", "binder/android/os/IVoldTaskListener.aidl"),
++        ] {
++            let mut missing = lock.clone();
++            let project = missing.projects.iter_mut().find(|p| p.path == Path::new(relative)).unwrap();
++            project.sparse_paths.retain(|cone| !Path::new(required).starts_with(cone));
++            assert!(!project.sparse_paths.is_empty(), "test must not turn a sparse project into a full checkout");
++            assert!(validate_audio_provider_source_paths(&missing, audio).is_err(), "{relative}/{required}");
++        }
++        for relative in ["external/caliper", "external/mime-support", "packages/modules/NpuManager", "system/liburingutils"] {
++            let mut missing = lock.clone();
++            missing.projects.retain(|p| p.path != Path::new(relative));
++            assert!(validate_audio_provider_source_paths(&missing, audio).is_err());
++            for mode in [SoongDependencyMode::Strict, SoongDependencyMode::NativeBridgeTargetClosure,
++                         SoongDependencyMode::NativeEngineTargetClosure, SoongDependencyMode::MinigbmTargetClosure] {
++                validate_audio_provider_source_paths(&missing, mode).unwrap();
++            }
++            let mut wrong = lock.clone();
++            wrong.projects.iter_mut().find(|p| p.path == Path::new(relative)).unwrap()
++                .commit = "0000000000000000000000000000000000000000".into();
++            assert!(validate_audio_provider_source_paths(&wrong, audio).is_err());
++        }
++    }
++
++    #[test]
++    fn audio_cts_sts_keeps_original_provider_and_sibling_modules() {
++        use sha2::{Digest, Sha256};
++        let audio = SoongDependencyMode::AudioApexTargetClosure;
++        for (relative, original, expected, module) in [
++            ("cts/hostsidetests/appcompat/host/lib/Android.bp", include_str!("../tests/fixtures/audio-providers/cts-sts-appcompat.bp"),
++             "4df3e911da926b7b631a266df50d3509e89f6760a91dbf88ae50982c05a0e9b1", "CompatChangeGatingTestBase"),
++            ("cts/hostsidetests/appsecurity/test-apps/PackageInstallerPermissionRequestApp/Android.bp", include_str!("../tests/fixtures/audio-providers/cts-sts-package-installer.bp"),
++             "74013068c04801d46e844e8de1750243b2f118f2a91569a842b389748b38b8a0", "CtsPkgInstallerConstants"),
++            ("cts/hostsidetests/utils/Android.bp", include_str!("../tests/fixtures/audio-providers/cts-sts-host-utils.bp"),
++             "9190769e983df09706e7e2af7d5cd437b1d03bf19e294d214d90454c28c8a36f", "cts-host-utils"),
++            ("cts/hostsidetests/statsdatom/Android.bp", include_str!("../tests/fixtures/audio-providers/cts-sts-statsdatom.bp"),
++             "d89ae82c69508bdae1d54e8a7b22008403d50c0ce80b65b60ac4d1fe5f79828f", "cts-statsd-atom-host-test-utils"),
++            ("platform_testing/libraries/sts-common-util/host-side/Android.bp", include_str!("../tests/fixtures/audio-providers/cts-sts-host-side.bp"),
++             "e39cdc7bd48cd5e969b3c2a244299ba92ce8ee8699863bff40f77f2cfa989276", "sts-host-util"),
++            ("packages/modules/NpuManager/framework/Android.bp", include_str!("../tests/fixtures/audio-providers/cts-sts-npumanager.bp"),
++             "199f86c7e2f5b7ccb49f4903e9adbd45039ac4966234e6184fecb0b7620fc081", "framework-npumanager-aidl"),
++            ("external/caliper/Android.bp", include_str!("../tests/fixtures/audio-providers/cts-sts-caliper.bp"),
++             "3840744aea249f527f097ed1b795cb7ed07b92e907719548de722d617d1e9db2", "caliper-prebuilts"),
++            ("external/mime-support/Android.bp", include_str!("../tests/fixtures/audio-providers/cts-sts-mime.bp"),
++             "f4d6975d744ddaacf84dba49d31515a2464b49c0a8f008698d0d0e060769f458", "debian.mime.types.minimized"),
++            ("system/liburingutils/Android.bp", include_str!("../tests/fixtures/audio-providers/cts-sts-liburingutils.bp"),
++             "af40346c200ec0e1cacb28aff74975cfea44f57921334926f1e630a2f77605e4", "liburingutils"),
++            ("packages/modules/common/sdk/Android.bp", include_str!("../tests/fixtures/audio-providers/cts-sts-sdk-defaults.bp"),
++             "f68716de589c8ab13e4aa46b00416144728ed61d488450659cb97265eae88e17", "framework-module-defaults"),
++        ] {
++            assert_eq!(format!("{:x}", Sha256::digest(original.as_bytes())), expected);
++            assert!(original.contains(&format!("name: \"{module}\"")));
++            assert!(audio_original_shared_provider(relative, original, audio).unwrap().is_none());
++            assert!(audio_new_source_root_scope(relative, original, audio).unwrap().is_none());
++        }
++    }
++
++    #[test]
++    fn audio_npumanager_sdk_uses_exact_original_three_scopes() {
++        let audio = SoongDependencyMode::AudioApexTargetClosure;
++        for scope in ["public", "system", "module-lib"] {
++            assert!(!project_fallback_sdk_import_for_mode("framework-npumanager", scope, audio));
++            for mode in [SoongDependencyMode::Strict, SoongDependencyMode::NativeBridgeTargetClosure,
++                         SoongDependencyMode::NativeEngineTargetClosure, SoongDependencyMode::MinigbmTargetClosure] {
++                assert!(project_fallback_sdk_import_for_mode("framework-npumanager", scope, mode));
++            }
++        }
++        assert!(project_fallback_sdk_import_for_mode("framework-npumanager", "system-server", audio));
++        assert!(project_fallback_sdk_import_for_mode("framework-media", "module-lib", audio));
++        let d = tempfile::tempdir().unwrap();
++        let provider = d.path().join("packages/modules/NpuManager/framework/Android.bp");
++        let defaults = d.path().join("packages/modules/common/sdk/Android.bp");
++        write(&provider, include_bytes!("../tests/fixtures/audio-providers/cts-sts-npumanager.bp")).unwrap();
++        write(&defaults, include_bytes!("../tests/fixtures/audio-providers/cts-sts-sdk-defaults.bp")).unwrap();
++        validate_audio_npumanager_sdk_provider(d.path(), audio).unwrap();
++        write(&provider, b"different provider").unwrap();
++        assert!(validate_audio_npumanager_sdk_provider(d.path(), audio).is_err());
++        write(&provider, include_bytes!("../tests/fixtures/audio-providers/cts-sts-npumanager.bp")).unwrap();
++        write(&defaults, b"different scopes").unwrap();
++        assert!(validate_audio_npumanager_sdk_provider(d.path(), audio).is_err());
++        validate_audio_npumanager_sdk_provider(d.path(), SoongDependencyMode::Strict).unwrap();
++    }
++
+     #[test]
+     fn audio_cts_compilation_requires_original_defaults_without_deleting_consumers() {
+         use sha2::{Digest, Sha256};
+@@ -3613,7 +4109,7 @@ mod tests {
+         let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
+         let lock = selected_source_lock(repo, SoongDependencyMode::AudioApexTargetClosure).unwrap();
+         let parsed = droidloom_source::load_lock(&lock).unwrap();
+-        assert_eq!(parsed.projects.len(), 317);
++        assert_eq!(parsed.projects.len(), 321);
+         assert!(droidloom_source::build_plan(&parsed).is_ok());
+         for mode in [SoongDependencyMode::Strict, SoongDependencyMode::NativeBridgeTargetClosure,
+                      SoongDependencyMode::NativeEngineTargetClosure, SoongDependencyMode::MinigbmTargetClosure] {
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-appcompat.bp b/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-appcompat.bp
+new file mode 100644
+index 0000000..ba193e7
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-appcompat.bp
+@@ -0,0 +1,32 @@
++// Copyright (C) 2019 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_team: "trendy_team_lse_app_compat",
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++java_library_host {
++    name: "CompatChangeGatingTestBase",
++    srcs: ["**/*.java"],
++    libs: [
++        "cts-tradefed",
++        "tradefed",
++        "compatibility-host-util",
++        "host-libprotobuf-java-full",
++    ],
++    static_libs: [
++        "cts-statsd-atom-host-test-utils",
++    ],
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-caliper.bp b/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-caliper.bp
+new file mode 100644
+index 0000000..ca870cd
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-caliper.bp
+@@ -0,0 +1,164 @@
++// Copyright (C) 2015 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++// build caliper host jar
++// ============================================================
++
++package {
++    default_applicable_licenses: ["external_caliper_license"],
++}
++
++// Added automatically by a large-scale-change that took the approach of
++// 'apply every license found to every target'. While this makes sure we respect
++// every license restriction, it may not be entirely correct.
++//
++// e.g. GPL in an MIT project might only apply to the contrib/ directory.
++//
++// Please consider splitting the single license below into multiple licenses,
++// taking care not to lose any license_kind information, and overriding the
++// default license using the 'licenses: [...]' property on targets as needed.
++//
++// For unused files, consider creating a 'fileGroup' with "//visibility:private"
++// to attach the license to, and including a comment whether the files may be
++// used in the current project.
++//
++// large-scale-change included anything that looked like it might be a license
++// text as a license_text. e.g. LICENSE, NOTICE, COPYING etc.
++//
++// Please consider removing redundant or irrelevant files from 'license_text:'.
++// See: http://go/android-license-faq
++license {
++    name: "external_caliper_license",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "SPDX-license-identifier-Apache-2.0",
++        "SPDX-license-identifier-CDDL",
++        "SPDX-license-identifier-CDDL-1.0",
++        "SPDX-license-identifier-GPL",
++        "SPDX-license-identifier-GPL-2.0",
++        "SPDX-license-identifier-LGPL",
++    ],
++    license_text: [
++        "COPYING",
++        "NOTICE",
++    ],
++}
++
++java_library_host {
++    name: "caliper",
++
++    srcs: ["caliper/src/main/java/**/*.java"],
++    java_resource_dirs: ["caliper/src/main/resources"],
++
++    static_libs: [
++        "apache-commons-math",
++        "caliper-prebuilts",
++        "dagger2",
++        "gson",
++        "guava",
++        "jsr330",
++    ],
++
++    // Use Dagger2 annotation processor
++    plugins: ["dagger2-compiler"],
++
++    java_version: "1.8",
++}
++
++// build caliper target api jar
++// ============================================================
++// This contains just those classes needed for benchmarks to compile.
++
++java_library {
++    name: "caliper-api-target",
++    installable: true,
++
++    srcs: [
++        "caliper/src/main/java/com/google/caliper/AfterExperiment.java",
++        "caliper/src/main/java/com/google/caliper/BeforeExperiment.java",
++        "caliper/src/main/java/com/google/caliper/Param.java",
++        "caliper/src/main/java/com/google/caliper/All.java",
++        "caliper/src/main/java/com/google/caliper/Benchmark.java",
++    ],
++    sdk_version: "core_current",
++
++    java_version: "1.8",
++}
++
++// build caliper tests
++// ============================================================
++// vogar --expectations $ANDROID_BUILD_TOP/external/caliper/expectations/knownfailures.txt \
++//        --test-only \
++//        --classpath $ANDROID_BUILD_TOP/out/host/common/obj/JAVA_LIBRARIES/caliper-tests_intermediates/javalib.jar \
++//        com.google.caliper
++
++java_test_host {
++    name: "caliper-tests",
++
++    srcs: ["caliper/src/test/java/**/*.java"],
++    java_resource_dirs: ["caliper/src/test/resources"],
++
++    static_libs: [
++        "caliper",
++        "junit",
++        "mockito",
++    ],
++    // Avoid the tests running as unit tests. They have some jar requirement that doesn't currently
++    // quite work in CI.
++    test_options: {
++        unit_test: false,
++    },
++
++    // Use Dagger2 annotation processor
++    plugins: ["dagger2-compiler"],
++
++    java_version: "1.8",
++}
++
++// build caliper examples
++// ============================================================
++
++java_library_host {
++    name: "caliper-examples",
++
++    srcs: ["examples/src/main/java/**/*.java"],
++
++    static_libs: [
++        "caliper",
++        "junit",
++        "mockito",
++    ],
++
++    java_version: "1.8",
++
++    errorprone: {
++        javacflags: [
++            "-Xep:ReturnValueIgnored:WARN",
++        ],
++    },
++}
++
++// Build host dependencies.
++// ============================================================
++
++java_import_host {
++    name: "caliper-prebuilts",
++    jars: [
++        "lib/java-allocation-instrumenter-2.0.jar",
++        "lib/jersey-client-1.11.jar",
++        "lib/jersey-core-1.11.jar",
++        "lib/joda-time-2.1.jar",
++        "lib/jsr311-api-1.1.1.jar",
++    ],
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-host-side.bp b/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-host-side.bp
+new file mode 100644
+index 0000000..12a97e0
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-host-side.bp
+@@ -0,0 +1,131 @@
++// Copyright (C) 2022 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++// http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++java_library_host {
++    name: "sts-host-util",
++    java_resources: [":sts_host_util_java_resources"],
++    defaults: ["cts_error_prone_rules"],
++
++    srcs: [
++        "src/**/*.java",
++    ],
++    static_libs: [
++        "auto_value_annotations",
++        "caliper-prebuilts",
++        "sts-common-util-lib",
++        "sts-libtombstone_proto-java",
++        "truth",
++        "xz-java",
++    ],
++    plugins: ["auto_value_plugin"],
++    libs: [
++        "compatibility-host-util",
++        "compatibility-tradefed",
++        "guava",
++        "tradefed",
++    ],
++}
++
++// Workaround: java_resource_dirs ignores *.java files
++filegroup {
++    name: "sts_host_util_java_resources",
++    path: "res/",
++    srcs: ["res/**/*.java"],
++}
++
++java_library_host {
++    name: "sts-libtombstone_proto-java",
++    visibility: [
++        "//platform_testing/libraries/sts-common-util/host-side",
++    ],
++    srcs: [
++        ":libtombstone_proto-src",
++    ],
++    proto: {
++        type: "lite",
++    },
++    static_libs: [
++        "libprotobuf-java-lite",
++    ],
++}
++
++// Turn off various doclava warnings when generating
++// the docs. These are the same warnings that are
++// turned off in tools/tradefed/core
++tradefed_docs_only_args = " -hide 101 -hide 111 -hide 113 -hide 125 -hide 126 -hide 127 -hide 128 "
++
++droiddoc_host {
++    name: "sts-docs",
++    srcs: [
++        "src/**/*.java",
++    ],
++    libs: [
++        "auto_value_annotations",
++        "sts-common-util-lib",
++        "sts-libtombstone_proto-java",
++        "truth",
++        "xz-java",
++        "compatibility-host-util",
++        "compatibility-tradefed",
++        "guava",
++        "tradefed",
++    ],
++    custom_template: "droiddoc-templates-sdk",
++    // These settings are for integrating the javadoc with Devsite. See go/generate-tradefed-docs
++    hdf: [
++        "sac true",
++        "devices true",
++        "android.whichdoc online",
++        "css.path /reference/assets/css/doclava-devsite.css",
++        "book.root toc",
++        "book.path /_book.yaml",
++    ],
++    args: tradefed_docs_only_args +
++          "-yaml _toc.yaml " +
++          "-apidocsdir reference/sts/ " +
++          "-werror " +
++          "-package " +
++          "-devsite ",
++}
++
++cc_defaults {
++    name: "sts_defaults",
++    compile_multilib: "both",
++    multilib: {
++        lib32: {
++            suffix: "_sts32",
++        },
++        lib64: {
++            suffix: "_sts64",
++        },
++        // build/soong/common/arch.go default returns nil; no default possible
++    },
++    arch: {
++        arm: {
++            instruction_set: "arm",
++        },
++    },
++    auto_gen_config: false,
++    test_suites: [
++        "sts",
++    ],
++    cflags: [
++        "-Wall",
++        "-Werror",
++    ],
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-host-utils.bp b/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-host-utils.bp
+new file mode 100644
+index 0000000..a40ba4f
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-host-utils.bp
+@@ -0,0 +1,31 @@
++/*
++ * Copyright (C) 2020 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package {
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++java_library_host {
++    name: "cts-host-utils",
++    srcs: [
++        "src/**/*.java",
++        "src/**/*.kt",
++    ],
++    libs: [
++        "cts-tradefed",
++        "tradefed",
++    ],
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-liburingutils.bp b/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-liburingutils.bp
+new file mode 100644
+index 0000000..e1a5d3a
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-liburingutils.bp
+@@ -0,0 +1,118 @@
++package {
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++cc_library {
++    name: "liburingutils",
++
++    srcs: [
++        "src/IOUringSocketHandler.cpp",
++    ],
++
++    cflags: [
++        "-Wall",
++        "-Werror",
++    ],
++
++    export_include_dirs: ["include"],
++
++    static_libs: [
++        "liburing",
++    ],
++    shared_libs: [
++        "libbase",
++        "liblog",
++    ],
++
++    tidy: true,
++    tidy_checks: [
++        "-*",
++        "cert-*",
++        "clang-analyzer-security*",
++        "android-*",
++    ],
++    tidy_checks_as_errors: [
++        "cert-*",
++        "clang-analyzer-security*",
++        "android-*",
++    ],
++
++    min_sdk_version: "30",
++
++    apex_available: [
++        "//apex_available:platform",
++        "com.android.os.statsd",
++    ],
++}
++
++cc_test {
++    name: "IOUringSocketHandler_tests",
++    test_suites: ["device-tests"],
++    require_root: true,
++    srcs: [
++        "src/IOUringSocketHandler_test.cpp",
++    ],
++    cflags: [
++        "-Wall",
++        "-Werror",
++    ],
++    shared_libs: [
++        "libbase",
++        "liblog",
++    ],
++    static_libs: [
++        "liburing",
++        "liburingutils",
++    ],
++}
++
++cc_benchmark {
++    name: "IOUringSocketHandler_benchmark",
++    srcs: ["src/IOUringSocketHandlerBenchmark.cpp"],
++    shared_libs: [
++        "libbase",
++        "liblog",
++    ],
++    static_libs: [
++        "liburing",
++        "liburingutils",
++    ],
++    cflags: [
++        "-Wall",
++        "-Werror",
++    ],
++}
++
++cc_benchmark {
++    name: "IOUringSocketHandlerReceiver",
++    srcs: ["src/IOUringSocketHandlerReceiver.cpp"],
++    shared_libs: [
++        "libbase",
++        "liblog",
++    ],
++    static_libs: [
++        "liburing",
++        "liburingutils",
++    ],
++    cflags: [
++        "-Wall",
++        "-Werror",
++    ],
++}
++
++cc_benchmark {
++    name: "IOUringSocketHandlerSender",
++    srcs: ["src/IOUringSocketHandlerSender.cpp"],
++    shared_libs: [
++        "libbase",
++        "liblog",
++    ],
++    static_libs: [
++        "liburing",
++        "liburingutils",
++    ],
++    cflags: [
++        "-Wall",
++        "-Werror",
++    ],
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-mime.bp b/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-mime.bp
+new file mode 100644
+index 0000000..f6b8bbf
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-mime.bp
+@@ -0,0 +1,42 @@
++package {
++    default_applicable_licenses: ["external_mime-support_license"],
++}
++
++// Added automatically by a large-scale-change
++// See: http://go/android-license-faq
++license {
++    name: "external_mime-support_license",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "legacy_unencumbered",
++    ],
++    license_text: [
++        "LICENSE",
++    ],
++}
++
++java_genrule {
++    name: "debian.mime.types.minimized",
++    visibility: [
++        "//visibility:public",
++    ],
++    out: ["debian.mime.types"],
++    srcs: [
++        "mime.types",
++    ],
++    //    strip comments            normalize whitepace       drop empty lines
++    cmd: "awk '{gsub(/#.*$$/,\"\"); $$1=$$1; print;}' $(in) | grep ' ' > $(out)",
++}
++
++java_genrule {
++    name: "debian.mime.types.minimized-alt",
++    visibility: [
++        "//visibility:public",
++    ],
++    out: ["debian.mime.types"],
++    srcs: [
++        "mime.types-alt",
++    ],
++    //    strip comments            normalize whitepace       drop empty lines
++    cmd: "awk '{gsub(/#.*$$/,\"\"); $$1=$$1; print;}' $(in) | grep ' ' > $(out)",
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-npumanager.bp b/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-npumanager.bp
+new file mode 100644
+index 0000000..e4b6ebb
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-npumanager.bp
+@@ -0,0 +1,63 @@
++filegroup {
++    name: "framework-npumanager-sources",
++    srcs: [
++        "java/android/npumanager/*.java",
++        "java/android/npumanager/*.aidl",
++    ],
++    path: "java",
++    visibility: [
++        "//frameworks/base/api",
++        "//packages/modules/npumanager:__subpackages__",
++    ],
++}
++
++java_sdk_library {
++    name: "framework-npumanager",
++    permitted_packages: [
++        "android.npumanager",
++        "com.android.npumanager",
++    ],
++    srcs: [":framework-npumanager-sources"],
++    defaults: ["framework-module-defaults"],
++    apex_available: ["com.android.npumanager"],
++    min_sdk_version: "36",
++    impl_library_visibility: [
++        "//packages/modules/NpuManager:__subpackages__",
++        "//vendor:__subpackages__",
++    ],
++    static_libs: [
++        "npumanager_aconfig_flags_lib",
++    ],
++    unsafe_ignore_missing_latest_api: true,
++    jarjar_rules: "jarjar-rules.txt",
++
++}
++
++aidl_interface {
++    name: "framework-npumanager-aidl",
++    local_include_dir: "java",
++    include_dirs: [
++        "frameworks/native/aidl/binder",
++    ],
++    srcs: [
++        "java/android/npumanager/*.aidl",
++    ],
++    unstable: true,
++    defaults: ["framework-module-defaults"],
++    backend: {
++        rust: {
++            enabled: true,
++            apex_available: ["com.android.npumanager"],
++            min_sdk_version: "36",
++        },
++        java: {
++            enabled: false,
++        },
++        cpp: {
++            enabled: false,
++        },
++        ndk: {
++            enabled: false,
++        },
++    },
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-package-installer.bp b/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-package-installer.bp
+new file mode 100644
+index 0000000..1440550
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-package-installer.bp
+@@ -0,0 +1,43 @@
++// Copyright (C) 2020 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_team: "trendy_team_framework_android_packages",
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++android_test_helper_app {
++    name: "CtsPkgInstallerPermRequestApp",
++    defaults: ["cts_defaults"],
++    static_libs: [
++        "androidx.test.rules",
++        "truth",
++        "CtsPkgInstallerConstants",
++    ],
++    srcs: ["src/**/*.kt"],
++    // tag this module as a cts test artifact
++    test_suites: [
++        "general-tests",
++    ],
++    sdk_version: "test_current",
++    target_sdk_version: "29",
++    // sign this app with a different cert than CtsPkgInstallerPermWhitelistApp
++    certificate: ":cts-testkey2",
++}
++
++java_library {
++    name: "CtsPkgInstallerConstants",
++    srcs: ["utils/src/**/PackageSetInstallerConstants.kt"],
++    host_supported: true,
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-sdk-defaults.bp b/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-sdk-defaults.bp
+new file mode 100644
+index 0000000..bb75809
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-sdk-defaults.bp
+@@ -0,0 +1,350 @@
++// Copyright (C) 2019 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//     http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_visibility: [":__subpackages__"],
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++// Defaults common to all sources that contribute to the Android API.
++java_defaults {
++    name: "android-api-contributor-defaults",
++
++    defaults_visibility: [
++        "//visibility:public",
++    ],
++
++    errorprone: {
++        javacflags: [
++            "-Xep:NotJavadoc:ERROR",
++        ],
++    },
++}
++
++// Defaults common to all mainline module java_sdk_library instances.
++java_defaults {
++    name: "framework-module-common-defaults",
++    defaults: [
++        "android-api-contributor-defaults",
++    ],
++
++    // Use the source of annotations that affect metalava doc generation, since
++    // the relevant generation instructions are themselves in javadoc, which is
++    // not present in class files.
++    api_srcs: [":framework-metalava-annotations"],
++
++    // Make the source retention annotations available on the classpath when compiling
++    // the implementation library. (This should be in impl_only_libs but some modules
++    // use these defaults for java_library, sigh.)
++    libs: ["framework-annotations-lib"],
++
++    // Framework modules are not generally shared libraries, i.e. they are not
++    // intended, and must not be allowed, to be used in a <uses-library> manifest
++    // entry.
++    shared_library: false,
++
++    // Prevent dependencies that do not specify an sdk_version from accessing the
++    // implementation library by default and force them to use stubs instead.
++    default_to_stubs: true,
++
++    // Enable api lint. This will eventually become the default for java_sdk_library
++    // but it cannot yet be turned on because some usages have not been cleaned up.
++    // TODO(b/156126315) - Remove when no longer needed.
++    api_lint: {
++        enabled: true,
++        legacy_errors_allowed: false,
++    },
++
++    // The API scope specific properties.
++    public: {
++        enabled: true,
++        sdk_version: "module_current",
++    },
++
++    // installable implies we'll create a non-apex (platform) variant, which
++    // we shouldn't ordinarily need (and it can create issues), so disable that.
++    installable: false,
++
++    optimize: {
++        // Note that we don't enable optimizations by default, but we do
++        // bundle an additional set of Proguard rules that should always
++        // be used downstream for selectively optimized targets.
++        proguard_flags_files: [":framework-sdk-proguard-rules"],
++
++        // Disallow access modification during optimization that would promote
++        // members into the public or protected API surface.
++        protect_api_surface: true,
++    },
++
++    // Configure framework module specific metalava options.
++    droiddoc_options: [
++        "--error UnhiddenSystemApi",
++        "--error UnflaggedApi",
++        "--error FlaggedApiLiteral",
++        "--hide CallbackInterface",
++
++        // Hide UnresolvedLink in mainline modules as it is possible, due to
++        // dependency cycles between modules and the platform, that they are
++        // referencing parts of the API that are available when building the
++        // module. Any actual issues will be detected and reported when
++        // building the framework-doc-*stubs,
++        "--hide UnresolvedLink",
++
++        "--enhance-documentation",
++    ],
++
++    annotations_enabled: true,
++
++    // Allow access to the stubs from anywhere
++    visibility: ["//visibility:public"],
++    stubs_library_visibility: ["//visibility:public"],
++
++    // Hide impl library and stub sources
++    impl_library_visibility: [
++        ":__pkg__",
++        "//frameworks/base/api", // For framework-all
++    ],
++    stubs_source_visibility: [
++        ":__pkg__",
++        "//frameworks/base/api", // For all-modules-public-stubs-source-exportable
++    ],
++
++    defaults_visibility: ["//visibility:private"],
++
++    dist_group: "android",
++}
++
++// Defaults for the java_sdk_libraries of non-updatable modules.
++// java_sdk_libraries using these defaults should also add themselves to the
++// non_updatable_modules list in frameworks/base/api/api.go
++java_defaults {
++    name: "non-updatable-framework-module-defaults",
++    defaults: [
++        "boot-classpath-module-optimize-defaults",
++        "framework-module-common-defaults",
++    ],
++
++    system: {
++        enabled: true,
++        sdk_version: "module_current",
++    },
++    module_lib: {
++        enabled: true,
++        sdk_version: "module_current",
++    },
++    // Non-updatable modules are allowed to provide @TestApi
++    test: {
++        enabled: true,
++        sdk_version: "module_current",
++    },
++
++    defaults_visibility: [
++        "//frameworks/base",
++        "//frameworks/base/api",
++        "//packages/modules/Virtualization:__subpackages__",
++    ],
++}
++
++// Defaults for mainline module provided java_sdk_library instances.
++java_defaults {
++    name: "framework-module-defaults",
++    defaults: [
++        "boot-classpath-module-optimize-defaults",
++        "framework-module-common-defaults",
++    ],
++    sdk_version: "module_current",
++
++    system: {
++        enabled: true,
++        sdk_version: "module_current",
++    },
++    module_lib: {
++        enabled: true,
++        sdk_version: "module_current",
++    },
++
++    defaults_visibility: ["//visibility:public"],
++}
++
++// Defaults for mainline module system server provided java_sdk_library instances.
++java_defaults {
++    name: "framework-system-server-module-defaults",
++    defaults: ["framework-module-common-defaults"],
++    sdk_version: "system_server_current",
++
++    system_server: {
++        enabled: true,
++        sdk_version: "system_server_current",
++    },
++
++    defaults_visibility: ["//visibility:public"],
++}
++
++filegroup_defaults {
++    name: "framework-sources-module-defaults",
++    visibility: [
++        "//frameworks/base",
++        "//frameworks/base/api",
++    ],
++    defaults_visibility: ["//visibility:public"],
++}
++
++// These apex_defaults serve as a common place to add properties which should
++// affect all mainline modules.
++
++APEX_LOWEST_MIN_SDK_VERSION = select(release_flag("RELEASE_DEPRECATE_MAINLINE_R_SUPPORT"), {
++    true: "31",
++    default: "30",
++})
++
++DCLA_MIN_SDK_VERSION = "31"
++
++apex_defaults {
++    name: "any-launched-apex-modules",
++    updatable: true,
++    defaults_visibility: ["//visibility:public"],
++}
++
++apex_defaults {
++    name: "q-launched-apex-module",
++    defaults: ["any-launched-apex-modules"],
++    min_sdk_version: APEX_LOWEST_MIN_SDK_VERSION,
++    defaults_visibility: ["//visibility:public"],
++}
++
++soong_config_module_type_import {
++    from: "system/apex/Android.bp",
++    module_types: [
++        "library_linking_strategy_apex_defaults",
++        "library_linking_strategy_cc_defaults",
++    ],
++}
++
++library_linking_strategy_apex_defaults {
++    name: "q-launched-dcla-enabled-apex-module",
++    defaults_visibility: [
++        "//external/conscrypt/apex",
++        "//packages/modules/DnsResolver/apex",
++        "//frameworks/av/apex",
++    ],
++    defaults: ["q-launched-apex-module"],
++    soong_config_variables: {
++        library_linking_strategy: {
++            // Use the Q min_sdk_version
++            prefer_static: {},
++            // Override the Q min_sdk_version to min_sdk_version that supports dcla
++            conditions_default: {
++                min_sdk_version: DCLA_MIN_SDK_VERSION,
++            },
++        },
++    },
++}
++
++apex_defaults {
++    name: "r-launched-apex-module",
++    defaults: ["any-launched-apex-modules"],
++    min_sdk_version: APEX_LOWEST_MIN_SDK_VERSION,
++    defaults_visibility: ["//visibility:public"],
++}
++
++library_linking_strategy_apex_defaults {
++    name: "r-launched-dcla-enabled-apex-module",
++    defaults_visibility: [
++        "//packages/modules/adb:__subpackages__",
++        "//packages/modules/Connectivity/Tethering/apex",
++    ],
++    defaults: ["r-launched-apex-module"],
++    soong_config_variables: {
++        library_linking_strategy: {
++            // Use the R min_sdk_version
++            prefer_static: {},
++            // Override the R min_sdk_version to min_sdk_version that supports dcla
++            conditions_default: {
++                min_sdk_version: DCLA_MIN_SDK_VERSION,
++            },
++        },
++    },
++}
++
++apex_defaults {
++    name: "s-launched-apex-module",
++    defaults: ["any-launched-apex-modules"],
++    min_sdk_version: "31",
++    // Indicates that pre-installed version of this apex can be compressed.
++    // Whether it actually will be compressed is controlled on per-device basis.
++    compressible: true,
++    defaults_visibility: [
++        "//art:__subpackages__",
++        "//packages/modules:__subpackages__",
++    ],
++}
++
++apex_defaults {
++    name: "t-launched-apex-module",
++    defaults: ["any-launched-apex-modules"],
++    min_sdk_version: "Tiramisu",
++    // Indicates that pre-installed version of this apex can be compressed.
++    // Whether it actually will be compressed is controlled on per-device basis.
++    compressible: true,
++    defaults_visibility: ["//packages/modules:__subpackages__"],
++}
++
++apex_defaults {
++    name: "u-launched-apex-module",
++    defaults: ["any-launched-apex-modules"],
++    min_sdk_version: "UpsideDownCake",
++    // Indicates that pre-installed version of this apex can be compressed.
++    // Whether it actually will be compressed is controlled on per-device basis.
++    compressible: true,
++    defaults_visibility: ["//packages/modules:__subpackages__"],
++}
++
++apex_defaults {
++    name: "v-launched-apex-module",
++    defaults: ["any-launched-apex-modules"],
++    min_sdk_version: "VanillaIceCream",
++    // Indicates that pre-installed version of this apex can be compressed.
++    // Whether it actually will be compressed is controlled on per-device basis.
++    compressible: true,
++    defaults_visibility: ["//packages/modules:__subpackages__"],
++}
++
++apex_defaults {
++    name: "b-launched-apex-module",
++    defaults: ["any-launched-apex-modules"],
++    min_sdk_version: "36",
++    // Indicates that pre-installed version of this apex can be compressed.
++    // Whether it actually will be compressed is controlled on per-device basis.
++    compressible: true,
++    defaults_visibility: [
++        "//packages/modules:__subpackages__",
++        // TODO(b/367426693): Remove this once NFC codebase is moved.
++        "//packages/apps/Nfc:__subpackages__",
++    ],
++}
++
++library_linking_strategy_cc_defaults {
++    name: "apex-lowest-min-sdk-version",
++    defaults_visibility: [
++        "//system/core/libutils:__subpackages__",
++    ],
++    min_sdk_version: APEX_LOWEST_MIN_SDK_VERSION,
++    soong_config_variables: {
++        library_linking_strategy: {
++            prefer_static: {
++                min_sdk_version: "apex_inherit",
++            },
++        },
++    },
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-statsdatom.bp b/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-statsdatom.bp
+new file mode 100644
+index 0000000..ed45203
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/cts-sts-statsdatom.bp
+@@ -0,0 +1,106 @@
++// Copyright (C) 2020 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++java_defaults {
++    name: "CtsStatsdAtomHostTest_defaults",
++    defaults: ["cts_defaults"],
++    test_suites: [
++        "cts",
++        "general-tests",
++    ],
++    libs: [
++        "compatibility-host-util",
++        "core_cts_test_resources",
++        "cts-tradefed",
++        "host-libprotobuf-java-full",
++        "tradefed",
++        "truth",
++    ],
++    static_libs: [
++        "stats_flags_lib_host",
++        "cts-statsd-atom-host-test-utils",
++        "flag-junit-host",
++        "truth-liteproto-extension",
++        "truth-proto-extension",
++    ],
++    device_common_data: [
++        ":CtsStatsdAtomApp",
++    ],
++    per_testcase_directory: true,
++    enable_static_aconfig_pb: true,
++}
++
++java_test_host {
++    name: "CtsTelecomAtomHostTestCases",
++    team: "trendy_team_fwk_telecom",
++    defaults: ["CtsStatsdAtomHostTest_defaults"],
++    srcs: [
++        "telecom/src/**/*.java",
++    ],
++    device_common_data: [
++        ":CtsTelecomTestCases",
++        ":CtsTelecomCujTestCases",
++        ":TransactionalVoipAppMain",
++        ":ManagedConnectionServiceApp",
++    ],
++    test_config: "configs/AndroidTestTelecom.xml",
++}
++
++java_test_host {
++    name: "CtsStatsdAtomHostTestCases",
++    team: "trendy_team_android_telemetry_client_infra",
++    defaults: ["CtsStatsdAtomHostTest_defaults"],
++    srcs: [
++        "statsd/src/**/*.java",
++        "express/src/**/*.java",
++    ],
++
++    static_libs: [
++        "android.os.flags-aconfig-java-host",
++    ],
++
++    device_common_data: [
++        ":CtsStatsdExpressLogHelper",
++    ],
++}
++
++java_library_host {
++    name: "cts-statsd-atom-host-test-utils",
++    srcs: ["lib/src/**/*.java"],
++    static_libs: [
++        "platformprotos",
++        "host-libprotobuf-java-full",
++    ],
++    libs: [
++        "compatibility-host-util",
++        "cts-tradefed",
++        "tradefed",
++        "truth",
++    ],
++}
++
++test_module_config_host {
++    name: "CtsStatsdAtomHostTestCases-kernel-presubmit-brightness",
++    base: "CtsStatsdAtomHostTestCases",
++    test_suites: ["general-tests"],
++    include_filters: [
++        "android.cts.statsdatom.display.DisplayBrightnessChangedStatsTests",
++        "android.cts.statsdatom.statsd.UidAtomTests#testScreenBrightness",
++        "android.cts.statsdatom.display.DisplayWakeReportedStatsTests",
++    ],
++}

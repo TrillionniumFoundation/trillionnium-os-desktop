@@ -1,0 +1,379 @@
+{
+  "input_changed": false,
+  "kind": "selected_static_disassembly",
+  "production_ready": false,
+  "runs": [
+    {
+      "argv": [
+        "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+        "-Xmx256m",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-XX:-UsePerfData",
+        "-Djava.io.tmpdir=/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/tmp",
+        "-Duser.home=/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/tmp",
+        "-cp",
+        "/usr/share/java/antlr3-runtime-3.5.3.jar:/usr/share/java/baksmali-2.5.2.git2771eae.jar:/usr/share/java/dexlib2-2.5.2.git2771eae.jar:/usr/share/java/guava-32.0.1-jre.jar:/usr/share/java/jcommander-1.71.jar:/usr/share/java/smali-2.5.2.git2771eae.jar:/usr/share/java/smali-util-2.5.2.git2771eae.jar",
+        "org.jf.baksmali.Main",
+        "disassemble",
+        "--jobs",
+        "1",
+        "--code-offsets",
+        "--classes",
+        "Lcom/android/internal/os/ZygoteConnection;,Lcom/android/internal/os/Zygote;,Lcom/android/internal/os/WrapperInit;,Lcom/android/internal/os/ZygoteInit;,Landroid/content/Intent;,Landroid/app/TaskInfo;,Landroid/app/ActivityTaskManager$RootTaskInfo;,Landroid/app/ActivityManager$RecentTaskInfo;,Landroid/app/WaitResult;",
+        "--output",
+        "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex",
+        "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/dex/framework/classes.dex"
+      ],
+      "dex": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/dex/framework/classes.dex",
+      "exit_code": 0,
+      "files": [
+        {
+          "bytes": 18283,
+          "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/app/ActivityManager$RecentTaskInfo.smali",
+          "sha256": "743b5f1272512374d566a0366cde6464abcb13867df9d685870a556032ffc065"
+        },
+        {
+          "bytes": 13629,
+          "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/app/ActivityTaskManager$RootTaskInfo.smali",
+          "sha256": "924b731ede5a05df536a094649d633d7a323343496d98175631c6de6544d1a66"
+        },
+        {
+          "bytes": 90413,
+          "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/app/TaskInfo.smali",
+          "sha256": "4193a4e62b59f694016bd691b134928138a059cd0431e1ab785333504d27495e"
+        },
+        {
+          "bytes": 11835,
+          "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/app/WaitResult.smali",
+          "sha256": "36aff408342bdb0d3cacd7f431132a20e63d5614339763da870b8e33a4abb86d"
+        },
+        {
+          "bytes": 590970,
+          "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes.dex/android/content/Intent.smali",
+          "sha256": "0e4d55c1242c1874ff553e65750c3e1b2b7532842fff751cd1d07b5d2780b6d9"
+        }
+      ],
+      "group": "framework",
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+        "-Xmx256m",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-XX:-UsePerfData",
+        "-Djava.io.tmpdir=/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/tmp",
+        "-Duser.home=/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/tmp",
+        "-cp",
+        "/usr/share/java/antlr3-runtime-3.5.3.jar:/usr/share/java/baksmali-2.5.2.git2771eae.jar:/usr/share/java/dexlib2-2.5.2.git2771eae.jar:/usr/share/java/guava-32.0.1-jre.jar:/usr/share/java/jcommander-1.71.jar:/usr/share/java/smali-2.5.2.git2771eae.jar:/usr/share/java/smali-util-2.5.2.git2771eae.jar",
+        "org.jf.baksmali.Main",
+        "disassemble",
+        "--jobs",
+        "1",
+        "--code-offsets",
+        "--classes",
+        "Lcom/android/internal/os/ZygoteConnection;,Lcom/android/internal/os/Zygote;,Lcom/android/internal/os/WrapperInit;,Lcom/android/internal/os/ZygoteInit;,Landroid/content/Intent;,Landroid/app/TaskInfo;,Landroid/app/ActivityTaskManager$RootTaskInfo;,Landroid/app/ActivityManager$RecentTaskInfo;,Landroid/app/WaitResult;",
+        "--output",
+        "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes2.dex",
+        "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/dex/framework/classes2.dex"
+      ],
+      "dex": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/dex/framework/classes2.dex",
+      "exit_code": 0,
+      "files": [],
+      "group": "framework",
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+        "-Xmx256m",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-XX:-UsePerfData",
+        "-Djava.io.tmpdir=/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/tmp",
+        "-Duser.home=/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/tmp",
+        "-cp",
+        "/usr/share/java/antlr3-runtime-3.5.3.jar:/usr/share/java/baksmali-2.5.2.git2771eae.jar:/usr/share/java/dexlib2-2.5.2.git2771eae.jar:/usr/share/java/guava-32.0.1-jre.jar:/usr/share/java/jcommander-1.71.jar:/usr/share/java/smali-2.5.2.git2771eae.jar:/usr/share/java/smali-util-2.5.2.git2771eae.jar",
+        "org.jf.baksmali.Main",
+        "disassemble",
+        "--jobs",
+        "1",
+        "--code-offsets",
+        "--classes",
+        "Lcom/android/internal/os/ZygoteConnection;,Lcom/android/internal/os/Zygote;,Lcom/android/internal/os/WrapperInit;,Lcom/android/internal/os/ZygoteInit;,Landroid/content/Intent;,Landroid/app/TaskInfo;,Landroid/app/ActivityTaskManager$RootTaskInfo;,Landroid/app/ActivityManager$RecentTaskInfo;,Landroid/app/WaitResult;",
+        "--output",
+        "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes3.dex",
+        "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/dex/framework/classes3.dex"
+      ],
+      "dex": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/dex/framework/classes3.dex",
+      "exit_code": 0,
+      "files": [],
+      "group": "framework",
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+        "-Xmx256m",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-XX:-UsePerfData",
+        "-Djava.io.tmpdir=/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/tmp",
+        "-Duser.home=/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/tmp",
+        "-cp",
+        "/usr/share/java/antlr3-runtime-3.5.3.jar:/usr/share/java/baksmali-2.5.2.git2771eae.jar:/usr/share/java/dexlib2-2.5.2.git2771eae.jar:/usr/share/java/guava-32.0.1-jre.jar:/usr/share/java/jcommander-1.71.jar:/usr/share/java/smali-2.5.2.git2771eae.jar:/usr/share/java/smali-util-2.5.2.git2771eae.jar",
+        "org.jf.baksmali.Main",
+        "disassemble",
+        "--jobs",
+        "1",
+        "--code-offsets",
+        "--classes",
+        "Lcom/android/internal/os/ZygoteConnection;,Lcom/android/internal/os/Zygote;,Lcom/android/internal/os/WrapperInit;,Lcom/android/internal/os/ZygoteInit;,Landroid/content/Intent;,Landroid/app/TaskInfo;,Landroid/app/ActivityTaskManager$RootTaskInfo;,Landroid/app/ActivityManager$RecentTaskInfo;,Landroid/app/WaitResult;",
+        "--output",
+        "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes4.dex",
+        "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/dex/framework/classes4.dex"
+      ],
+      "dex": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/dex/framework/classes4.dex",
+      "exit_code": 0,
+      "files": [],
+      "group": "framework",
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+        "-Xmx256m",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-XX:-UsePerfData",
+        "-Djava.io.tmpdir=/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/tmp",
+        "-Duser.home=/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/tmp",
+        "-cp",
+        "/usr/share/java/antlr3-runtime-3.5.3.jar:/usr/share/java/baksmali-2.5.2.git2771eae.jar:/usr/share/java/dexlib2-2.5.2.git2771eae.jar:/usr/share/java/guava-32.0.1-jre.jar:/usr/share/java/jcommander-1.71.jar:/usr/share/java/smali-2.5.2.git2771eae.jar:/usr/share/java/smali-util-2.5.2.git2771eae.jar",
+        "org.jf.baksmali.Main",
+        "disassemble",
+        "--jobs",
+        "1",
+        "--code-offsets",
+        "--classes",
+        "Lcom/android/internal/os/ZygoteConnection;,Lcom/android/internal/os/Zygote;,Lcom/android/internal/os/WrapperInit;,Lcom/android/internal/os/ZygoteInit;,Landroid/content/Intent;,Landroid/app/TaskInfo;,Landroid/app/ActivityTaskManager$RootTaskInfo;,Landroid/app/ActivityManager$RecentTaskInfo;,Landroid/app/WaitResult;",
+        "--output",
+        "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes5.dex",
+        "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/dex/framework/classes5.dex"
+      ],
+      "dex": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/dex/framework/classes5.dex",
+      "exit_code": 0,
+      "files": [
+        {
+          "bytes": 16455,
+          "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes5.dex/com/android/internal/os/WrapperInit.smali",
+          "sha256": "a94c718abdb4bc8c6cd62e652a246c86b28c00d640f38a41f7c2b8bfa7a9309e"
+        },
+        {
+          "bytes": 91805,
+          "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes5.dex/com/android/internal/os/Zygote.smali",
+          "sha256": "84c7107c0917803cfeb952c95476b4acdc4db7298d4d68433f864e780b9b77fd"
+        },
+        {
+          "bytes": 71727,
+          "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes5.dex/com/android/internal/os/ZygoteConnection.smali",
+          "sha256": "cc7c3d5e23183e346ce82711c62278db527d171127f2437492c2701dd5f09d0d"
+        },
+        {
+          "bytes": 104463,
+          "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes5.dex/com/android/internal/os/ZygoteInit.smali",
+          "sha256": "225f286fd5e0b045fca5f6bca50ea1bf7638711c156ca8545c9624f091503e7d"
+        }
+      ],
+      "group": "framework",
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+        "-Xmx256m",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-XX:-UsePerfData",
+        "-Djava.io.tmpdir=/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/tmp",
+        "-Duser.home=/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/tmp",
+        "-cp",
+        "/usr/share/java/antlr3-runtime-3.5.3.jar:/usr/share/java/baksmali-2.5.2.git2771eae.jar:/usr/share/java/dexlib2-2.5.2.git2771eae.jar:/usr/share/java/guava-32.0.1-jre.jar:/usr/share/java/jcommander-1.71.jar:/usr/share/java/smali-2.5.2.git2771eae.jar:/usr/share/java/smali-util-2.5.2.git2771eae.jar",
+        "org.jf.baksmali.Main",
+        "disassemble",
+        "--jobs",
+        "1",
+        "--code-offsets",
+        "--classes",
+        "Lcom/android/internal/os/ZygoteConnection;,Lcom/android/internal/os/Zygote;,Lcom/android/internal/os/WrapperInit;,Lcom/android/internal/os/ZygoteInit;,Landroid/content/Intent;,Landroid/app/TaskInfo;,Landroid/app/ActivityTaskManager$RootTaskInfo;,Landroid/app/ActivityManager$RecentTaskInfo;,Landroid/app/WaitResult;",
+        "--output",
+        "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/framework/classes6.dex",
+        "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/dex/framework/classes6.dex"
+      ],
+      "dex": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/dex/framework/classes6.dex",
+      "exit_code": 0,
+      "files": [],
+      "group": "framework",
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+        "-Xmx256m",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-XX:-UsePerfData",
+        "-Djava.io.tmpdir=/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/tmp",
+        "-Duser.home=/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/tmp",
+        "-cp",
+        "/usr/share/java/antlr3-runtime-3.5.3.jar:/usr/share/java/baksmali-2.5.2.git2771eae.jar:/usr/share/java/dexlib2-2.5.2.git2771eae.jar:/usr/share/java/guava-32.0.1-jre.jar:/usr/share/java/jcommander-1.71.jar:/usr/share/java/smali-2.5.2.git2771eae.jar:/usr/share/java/smali-util-2.5.2.git2771eae.jar",
+        "org.jf.baksmali.Main",
+        "disassemble",
+        "--jobs",
+        "1",
+        "--code-offsets",
+        "--classes",
+        "Lcom/android/server/wm/ActivityTaskManagerShellCommand;,Lcom/android/server/wm/ActivityTaskManagerService;,Lcom/android/server/wm/ActivityStarter;,Lcom/android/server/wm/Task;,Lcom/android/server/wm/RootWindowContainer;",
+        "--output",
+        "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/services/classes.dex",
+        "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/dex/services/classes.dex"
+      ],
+      "dex": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/dex/services/classes.dex",
+      "exit_code": 0,
+      "files": [],
+      "group": "services",
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+        "-Xmx256m",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-XX:-UsePerfData",
+        "-Djava.io.tmpdir=/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/tmp",
+        "-Duser.home=/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/tmp",
+        "-cp",
+        "/usr/share/java/antlr3-runtime-3.5.3.jar:/usr/share/java/baksmali-2.5.2.git2771eae.jar:/usr/share/java/dexlib2-2.5.2.git2771eae.jar:/usr/share/java/guava-32.0.1-jre.jar:/usr/share/java/jcommander-1.71.jar:/usr/share/java/smali-2.5.2.git2771eae.jar:/usr/share/java/smali-util-2.5.2.git2771eae.jar",
+        "org.jf.baksmali.Main",
+        "disassemble",
+        "--jobs",
+        "1",
+        "--code-offsets",
+        "--classes",
+        "Lcom/android/server/wm/ActivityTaskManagerShellCommand;,Lcom/android/server/wm/ActivityTaskManagerService;,Lcom/android/server/wm/ActivityStarter;,Lcom/android/server/wm/Task;,Lcom/android/server/wm/RootWindowContainer;",
+        "--output",
+        "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/services/classes2.dex",
+        "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/dex/services/classes2.dex"
+      ],
+      "dex": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/dex/services/classes2.dex",
+      "exit_code": 0,
+      "files": [],
+      "group": "services",
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+        "-Xmx256m",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-XX:-UsePerfData",
+        "-Djava.io.tmpdir=/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/tmp",
+        "-Duser.home=/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/tmp",
+        "-cp",
+        "/usr/share/java/antlr3-runtime-3.5.3.jar:/usr/share/java/baksmali-2.5.2.git2771eae.jar:/usr/share/java/dexlib2-2.5.2.git2771eae.jar:/usr/share/java/guava-32.0.1-jre.jar:/usr/share/java/jcommander-1.71.jar:/usr/share/java/smali-2.5.2.git2771eae.jar:/usr/share/java/smali-util-2.5.2.git2771eae.jar",
+        "org.jf.baksmali.Main",
+        "disassemble",
+        "--jobs",
+        "1",
+        "--code-offsets",
+        "--classes",
+        "Lcom/android/server/wm/ActivityTaskManagerShellCommand;,Lcom/android/server/wm/ActivityTaskManagerService;,Lcom/android/server/wm/ActivityStarter;,Lcom/android/server/wm/Task;,Lcom/android/server/wm/RootWindowContainer;",
+        "--output",
+        "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/services/classes3.dex",
+        "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/dex/services/classes3.dex"
+      ],
+      "dex": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/dex/services/classes3.dex",
+      "exit_code": 0,
+      "files": [
+        {
+          "bytes": 425248,
+          "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/services/classes3.dex/com/android/server/wm/ActivityStarter.smali",
+          "sha256": "a677e763f93d030b54219184052db0febf5279f4087bf3d0e775cf738e55c23f"
+        },
+        {
+          "bytes": 877223,
+          "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/services/classes3.dex/com/android/server/wm/ActivityTaskManagerService.smali",
+          "sha256": "0434b450b1d142a18878ab0f0a881d03607388b642cc8c26dcb049688c85fee7"
+        },
+        {
+          "bytes": 384543,
+          "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/services/classes3.dex/com/android/server/wm/RootWindowContainer.smali",
+          "sha256": "508d61f9bb956754226b5d9a3cf3f7a289cdbf9723eb737649883f0509b218f7"
+        },
+        {
+          "bytes": 680044,
+          "path": "/home/alex/work/pocket4-native-qpr1-dex-audit-20261109-2840-r1/selected-smali-r1/services/classes3.dex/com/android/server/wm/Task.smali",
+          "sha256": "6617cb05856046bedcac4152f6a370dfb4ff873afdf7fbe0b7543581b4345702"
+        }
+      ],
+      "group": "services",
+      "stderr": "",
+      "stdout": ""
+    }
+  ],
+  "runtime_qualified": false,
+  "tool_pins": [
+    {
+      "bytes": 14536,
+      "path": "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+      "sha256": "00261dabda30e0dbf1a799d052a615fe404afff7530e50444eb75a30c4f8d9d5"
+    },
+    {
+      "bytes": 175393,
+      "path": "/usr/share/java/antlr3-runtime-3.5.3.jar",
+      "sha256": "5368fa9993cc10faef6e08a12766f83135bf892817cf2ac1864489da8b0a0770"
+    },
+    {
+      "bytes": 124714,
+      "path": "/usr/share/java/baksmali-2.5.2.git2771eae.jar",
+      "sha256": "44f430d8f3e05e6c9f044190c946e7873768f7d5981608c30d8e67564fbf4ff5"
+    },
+    {
+      "bytes": 1116212,
+      "path": "/usr/share/java/dexlib2-2.5.2.git2771eae.jar",
+      "sha256": "0c09465b2264180f2d52d21c0b5aab6c407a4d8fa8fd8dbade68cf50c39b4bd5"
+    },
+    {
+      "bytes": 3010670,
+      "path": "/usr/share/java/guava-32.0.1-jre.jar",
+      "sha256": "8dfa058dbce4082469e4147237cef974f3063db4aacbefe667be47770f5f6ddd"
+    },
+    {
+      "bytes": 76198,
+      "path": "/usr/share/java/jcommander-1.71.jar",
+      "sha256": "9dbeb89912a5b000d2b8a5ec2263f49fcab7405faf29b2a56a2766b0b1659f9c"
+    },
+    {
+      "bytes": 303196,
+      "path": "/usr/share/java/smali-2.5.2.git2771eae.jar",
+      "sha256": "786c6dde8c1d0d20d25d3fefca564add4d9e88b5e5cfe73fad2ceeb53466dbe0"
+    },
+    {
+      "bytes": 27447,
+      "path": "/usr/share/java/smali-util-2.5.2.git2771eae.jar",
+      "sha256": "ee8017ae11b7174a5eab4e3d7a773dd2cb660d3bced7c78a51430cdd32822e0e"
+    }
+  ]
+}

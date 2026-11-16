@@ -1,0 +1,76 @@
+{
+  "schema": "pocket4-native-transport-validation-v1",
+  "observed_utc": "2026-11-08T12:56:01.974331+00:00",
+  "current_source_attempt": {
+    "job_id": "1a1bb02fcbb-12894-1f0d",
+    "state": "failed",
+    "exit_code": 1,
+    "completed_utc": "2026-11-08T12:49:23.825Z",
+    "result": {
+      "bytes": 1143044,
+      "sha256": "45ec3f8e8a8f23c5ae0864d4fe863d48e641ae832f2402d673a555cdfd664b99"
+    },
+    "stderr": {
+      "bytes": 357,
+      "sha256": "60df79e59d12e0bfbfd0bb2a03baedd40ceb42588d4ec1b79b5923df057d2aa3",
+      "complete": true,
+      "diagnostic": "Git 128 / curl 56 connection timeout, early EOF and index-pack failure"
+    },
+    "resources": {
+      "cpu.max": "200000 100000",
+      "memory.current": "1250783232",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.max": "3221225472",
+      "memory.peak": "2887106560",
+      "memory.swap.current": "0",
+      "memory.swap.max": "0",
+      "reclaim_max_events_observed": 0,
+      "reclaim_max_is_oom": false
+    },
+    "owned_retirement_qualified": true,
+    "source_locks_released": true,
+    "pid_absent": true,
+    "cgroup_absent": true,
+    "manifest": {
+      "bytes": 131148,
+      "sha256": "63cb6c1937f6f2a749fd528b806f6d90f76b8735f21911edb4d0cb182717394a",
+      "source_lock_sha256": "94d2a5d2e00d3b5d126752ee58337e71fb88a5763f7b977be4a56471f4e68ee6",
+      "projects": 268
+    }
+  },
+  "qualified_retry_cli": {
+    "path": "/home/alex/work/pocket4-native-source-transport-retry-20261108-r2/target/release/droidloom-source",
+    "bytes": 1627024,
+    "sha256": "0a4a4bc426b1db8ec325d093858e9d9ce3200e8f0be33c93f4ea266566b73bda",
+    "original_build_job": "1a1bb00c20d-12894-1f01",
+    "original_focused_tests": 4,
+    "offline_release": true,
+    "was_used_by_failed_current_attempt": false
+  },
+  "independent_validator": {
+    "source_file": "r2_transport_gate_v2.py",
+    "source_sha256": "04c0fda522b486ee5bcf9823f440384622b6c17b0fdd01a0b9f5a0165f0a4981",
+    "check_file": "check_r2_transport_gate_v2.py",
+    "check_sha256": "11aa32533c8c7c2add7bf412aabc8a92a7906cbb2bce3d8960ce11830002b204",
+    "passed": 21,
+    "failed": 0,
+    "actual_host_control_result": {
+      "path": "/home/alex/work/pocket4-android-final/native/source-evidence/native-r2-transport-independent-review-20261108-r1/controls-attempt-02.json",
+      "bytes": 8989,
+      "sha256": "5a7657122b4c097e8589d8e815b55fea5bdbcaf714b12c4f464f6b5544548cc9"
+    },
+    "actual_cli_qualification_positive": 1,
+    "wrong_qualification_or_terminal_negatives": 4,
+    "synthetic_journal_cases": 16,
+    "materialization_commands": 0
+  },
+  "current_failure_classifier_check": {
+    "file": "actual-curl56-diagnostic-control.json",
+    "sha256": "d7cade5ff53a0fbafa35ece69e21e9e4cdc5583e59df0c2ecf604e8c9cb886ec",
+    "retry_executed": false
+  },
+  "native597_materialization_qualified": false,
+  "full_native_art_qualified": false,
+  "runtime_qualified": false,
+  "admission": "Fresh coordinator ownership, predecessor retirement, unchanged inputs, original locks and resource admission remain required. The prior failed job and request must not be replayed."
+}

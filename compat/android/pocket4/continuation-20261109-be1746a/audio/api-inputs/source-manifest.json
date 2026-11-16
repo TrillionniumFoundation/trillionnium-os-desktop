@@ -1,0 +1,126 @@
+{
+  "base_commit": "a0e5114a1728e5ac5a96cdffbf68a84958218765",
+  "base_tree": "fdfa6ed29a2af507ea948daeb0ec9f7adb706ed9",
+  "baseline_red_receipt": {
+    "bytes": 7452,
+    "path": "evidence/test-result.json",
+    "sha256": "b56b9939f563423e310a5bd9a5c0ee1095dec8fa9f5fbe6ecc57f1cc05ba37cc"
+  },
+  "full_qualified": false,
+  "green_job_terminal": {
+    "bytes": 733,
+    "path": "evidence/green-job-terminal.json",
+    "sha256": "89a2e2e5a7c8f2c4a29e24c86cc2501a459dac2aba51b6c554550b75d5ebff24"
+  },
+  "green_receipt": {
+    "bytes": 13757,
+    "path": "evidence/test-result-r2.json",
+    "sha256": "479c2e0fe2bac834d29042a9ae360cfbfcfff57978c8f567d256300e203ebcda"
+  },
+  "historical_425_sha256_unchanged": "1dd0671551fb3c07cac4bb9b587346421321a6e4809494299f7b6daa4c49371c",
+  "historical_pasit_430_sha256_unchanged": "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a",
+  "normal_test_counts": {
+    "audio_filtered_outside_scope": 174,
+    "audio_passed": 45,
+    "ignored": 0,
+    "new_input_regression_passed": 1,
+    "source_unit_passed": 24
+  },
+  "normal_tool_build_exit": 0,
+  "normal_verify_lock": {
+    "exit": 0,
+    "projects": 430,
+    "root_links": 8
+  },
+  "owner_source_mutations": 0,
+  "patch": {
+    "bytes": 11981,
+    "path": "audio-ondeviceintelligence-api36-r2.patch",
+    "sha256": "a5b7d0ef563d7f90c51d92bd9fed44589e7cc4dbf4122ad1bdd97c59c30f7a96"
+  },
+  "patch_applied_postimages_exact": true,
+  "postimages": [
+    {
+      "bytes": 238124,
+      "relative": "android/manifest/audio-bridge-source-lock.json",
+      "sha256": "46084ee55d24ee0178d09fb886886e07e8897949ea6300a30860b99f0a89c84f"
+    },
+    {
+      "bytes": 104375,
+      "relative": "tools/droidloom-source/src/lib.rs",
+      "sha256": "6e8d83710a8e32f07c54cd2eda110ee04b2f173c12ee922b0aa569b9be656b83"
+    },
+    {
+      "bytes": 417302,
+      "relative": "tools/droidloom-update/src/android.rs",
+      "sha256": "bf1153e11be340674d470d7fbd03516f8dd73b34d923770bef853cc9b0c0eb5c"
+    },
+    {
+      "bytes": 2479,
+      "relative": "tools/droidloom-source/tests/audio_ondeviceintelligence_api36.rs",
+      "sha256": "5dcce89aae288f9a92cb9620c997930c32fbf4fecee95dc1e8a66e55fffe2ab6"
+    },
+    {
+      "bytes": 3382,
+      "relative": "tools/droidloom-source/tests/fixtures/ondeviceintelligence-api36/provider-inputs.json",
+      "sha256": "56b4991b25ffe6bcaed072d52cc1621b65c68c9151b64cd00d7ed7a35268c18b"
+    },
+    {
+      "bytes": 25,
+      "relative": "tools/droidloom-source/tests/fixtures/ondeviceintelligence-api36/signature-format-2.0.txt",
+      "sha256": "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552"
+    }
+  ],
+  "preimages": [
+    {
+      "bytes": 237862,
+      "relative": "android/manifest/audio-bridge-source-lock.json",
+      "sha256": "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a"
+    },
+    {
+      "bytes": 103552,
+      "relative": "tools/droidloom-source/src/lib.rs",
+      "sha256": "f140abb630f10978e4894e6aa8877e66db82e660e4ce3d98f4ed8beed13ee820"
+    },
+    {
+      "bytes": 416490,
+      "relative": "tools/droidloom-update/src/android.rs",
+      "sha256": "5af4e761bb69937e77e08aadc5626e3fe2f002b7b30b6465c18e34a91eb8eaee"
+    }
+  ],
+  "preimages_archive": {
+    "bytes": 148644,
+    "path": "evidence/preimages.json.gz",
+    "sha256": "5fb855eac8ffdf01a3b9879d3e7a964093dd7b353909326e22f123180ceddd18"
+  },
+  "preimages_archive_format": "gzip-compressed JSON, files[] with relative, bytes, sha256, text. Exactly three complete UTF-8 preimages.",
+  "production_ready": false,
+  "reconstruction": "Each of the four exact appended lines must occur once, then is removed only for historical reconstruction; the original PASIT430 and 425 hashes are asserted unchanged. Current-lock pins are separate.",
+  "retirement_receipt": {
+    "bytes": 2572,
+    "path": "evidence/retirement-receipt.json",
+    "sha256": "f9a98aa4037aca737894e03289bc9f7bc52d38da603225b058fc731cddcf30ad"
+  },
+  "role": "Independent four-input regression evidence on the old exact base; not the selected owner successor.",
+  "runtime_qualified": false,
+  "schema": "audio-api-helper-source-manifest-v1",
+  "source_delta": {
+    "added_exact_paths": [
+      "36/public/api/service-ondeviceintelligence-removed.txt",
+      "36/public/api/service-ondeviceintelligence.txt",
+      "36/system-server/api/service-ondeviceintelligence-removed.txt",
+      "36/system-server/api/service-ondeviceintelligence.txt"
+    ],
+    "all_other_json_fields_unchanged": true,
+    "new_lock": {
+      "bytes": 238124,
+      "path": "/home/alex/work/pocket4-audio-ondevice-api-helper-be1746a-r1/source/android/manifest/audio-bridge-source-lock.json",
+      "sha256": "46084ee55d24ee0178d09fb886886e07e8897949ea6300a30860b99f0a89c84f"
+    },
+    "old_lock_sha256": "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a",
+    "project_count_unchanged": 430,
+    "sdk_commit_unchanged": "0f07e8d60ab0aba46129e427101f96ba459a95c1",
+    "sdk_sparse_paths_after": 68,
+    "sdk_sparse_paths_before": 64
+  }
+}

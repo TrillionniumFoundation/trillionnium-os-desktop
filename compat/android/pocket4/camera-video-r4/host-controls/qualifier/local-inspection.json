@@ -1,0 +1,120 @@
+{
+  "actual_host_controls_run": 0,
+  "local_kernel_admission": {
+    "child_processes_started": 0,
+    "error": "ACTUAL_SELF_PID_AND_SINGLE_THREAD_PROC",
+    "fallback_used": false,
+    "gate_passed": false
+  },
+  "production_sources_changed": false,
+  "runner_cleanup_regressions": [
+    {
+      "close_attempted": true,
+      "flag_changes": [
+        0
+      ],
+      "kernel_state": "inert fixture",
+      "passed": true,
+      "scenario": "capture_failure_before_fault_injection"
+    },
+    {
+      "flag_changes": [
+        0
+      ],
+      "kernel_state": "inert fixture",
+      "passed": true,
+      "primary_preserved": true,
+      "scenario": "capture_failure_plus_close_error"
+    },
+    {
+      "close_attempted": true,
+      "kernel_state": "inert fixture",
+      "original_unknown_receipt_unchanged": true,
+      "passed": true,
+      "scenario": "injected_fault_recovery_failure"
+    },
+    {
+      "kernel_state": "not invoked",
+      "passed": true,
+      "private_synthetic_clip_removed": true,
+      "scenario": "decoder_constructor_failure"
+    }
+  ],
+  "runtime_qualified": false,
+  "schema": "pocket4-camera-r4-host-runner-local-inspection-v1",
+  "source_inspection": {
+    "Android_actions": 0,
+    "Main_actions": 0,
+    "controls": [],
+    "expected_controls": [
+      "normal_decoder_and_fresh_nonce",
+      "uid1000_and_exact_two_fds",
+      "all_seals_and_denied_write_metadata",
+      "malformed_mov_known_failure",
+      "actual_timeout_and_owned_retirement",
+      "actual_output_bound_and_retirement",
+      "actual_adopted_descendant_retirement",
+      "actual_finish_fault_keeps_unknown"
+    ],
+    "host_component_qualified": false,
+    "live_Session_admission_qualified": false,
+    "mode": "inspect-source",
+    "not_run": [
+      "normal_decoder_and_fresh_nonce",
+      "uid1000_and_exact_two_fds",
+      "all_seals_and_denied_write_metadata",
+      "malformed_mov_known_failure",
+      "actual_timeout_and_owned_retirement",
+      "actual_output_bound_and_retirement",
+      "actual_adopted_descendant_retirement",
+      "actual_finish_fault_keeps_unknown"
+    ],
+    "packet": {
+      "bytes": 2355,
+      "path": "/workspace/scratch/347ef2dfe9ad/audio-runtime-independent-audit/camera-r4-decoder-host-qualification-r1/source-packet.json",
+      "sha256": "21bf3adee748faad01e41b5f6eef47cd602391041658da77bf7cce7b722f2893"
+    },
+    "physical_audio_actions": 0,
+    "runtime_qualified": false,
+    "schema": "pocket4-camera-r4-decoder-host-qualification-v1",
+    "source_changes": 0,
+    "source_inputs": [
+      {
+        "bytes": 6956,
+        "path": "/workspace/scratch/347ef2dfe9ad/runtime-acceptance-audit/camera-video-r4-integrated-candidate/source/camera_audio_challenge.py",
+        "sha256": "30b8560cf4f43e77e051e4915492ed18fe3c78e8b2a67527f4e14c02643dcd4c"
+      },
+      {
+        "bytes": 14597,
+        "path": "/workspace/scratch/347ef2dfe9ad/runtime-acceptance-audit/camera-video-r4-integrated-candidate/source/camera_decode.py",
+        "sha256": "7a42785a9d5d16fbc4644d0db961acd965b42f79dc9a75b2f101d88ab51574a4"
+      },
+      {
+        "bytes": 9197,
+        "path": "/workspace/scratch/347ef2dfe9ad/runtime-acceptance-audit/camera-video-r4-integrated-candidate/source/camera_video_media.py",
+        "sha256": "58c5b6508fe23532fe4282c38446e75dfc25800ed6b063691da80bd431f74190"
+      },
+      {
+        "bytes": 14933,
+        "path": "/workspace/scratch/347ef2dfe9ad/owner-current-capture-readonly/bounded_host_capture.py",
+        "sha256": "bb6d818cbe68b6976da57a996d17b6333cdf5dae03fa743fd0cb7f27f89c2bf3"
+      },
+      {
+        "bytes": 12813,
+        "path": "/workspace/scratch/347ef2dfe9ad/audio-runtime-independent-audit/camera-photo-r4-original/business_commands.py",
+        "sha256": "cfe92077ebb75db4f7f0fd577fcd7e6d664afd9338128a05435512549ceeb1f3"
+      },
+      {
+        "bytes": 25312,
+        "path": "/workspace/scratch/347ef2dfe9ad/owner-current-capture-readonly/capture_lifecycle.py",
+        "sha256": "6a0ba9438b10740a593e2d90962420e04868465a0fb55c0ce2e03afdb835e877"
+      }
+    ],
+    "source_inspection_passed": true,
+    "source_only_Session_fixture": true,
+    "synthetic_media_only": true,
+    "whole_app_business_accepted": false
+  },
+  "source_inspection_exit_code": 0,
+  "whole_app_business_accepted": false
+}

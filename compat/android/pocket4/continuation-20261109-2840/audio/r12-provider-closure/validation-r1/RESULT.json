@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "state": "NORMAL_TOOLS_VALIDATED_SOURCE_NOT_RECONCILED",
+  "started": "2026-11-09T17:27:04.966974+00:00",
+  "base_commit": "4caa694f25b3da022651a1078600a0eb1a5334fc",
+  "lock_sha256": "22ae84b8d0747e371096035f46e636a00990d2a7b4cae8c5727f56fa946d1ee3",
+  "changed_files_sha256": {
+    "android/manifest/audio-bridge-source-lock.json": "22ae84b8d0747e371096035f46e636a00990d2a7b4cae8c5727f56fa946d1ee3",
+    "tools/droidloom-source/src/lib.rs": "3cef5ac4c844b1b2ba66d2cc3f4e536349b58d88e43a4365316734dadd560750",
+    "tools/droidloom-update/src/android.rs": "4044c83e0ebe5d95ce23d57f0ee5f4cc99160c1155f2887eff10d4deca2d9b18"
+  },
+  "cpu_affinity": [
+    8,
+    9
+  ],
+  "commands": [
+    {
+      "name": "source-tests",
+      "argv": [
+        "/home/qian-qi/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j2",
+        "-p",
+        "droidloom-source",
+        "--",
+        "--test-threads=2"
+      ],
+      "cwd": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/recipe",
+      "started": "2026-11-09T17:27:04.967067+00:00",
+      "finished": "2026-11-09T17:27:27.594550+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": {
+        "path": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/validation-r1/source-tests.stdout",
+        "bytes": 2471,
+        "sha256": "b44c792dcec41bebab7aec0f7e391c6483410c545555339ab9eed80c5d92ded9"
+      },
+      "stderr": {
+        "path": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/validation-r1/source-tests.stderr",
+        "bytes": 1884,
+        "sha256": "31f627601d5717f43729c659d55216a76549d0735359448e143b3ba6f9503de1"
+      },
+      "summaries": [
+        "test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.43s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "name": "audio-updater-tests",
+      "argv": [
+        "/home/qian-qi/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j2",
+        "-p",
+        "droidloom-update",
+        "audio_",
+        "--",
+        "--test-threads=2"
+      ],
+      "cwd": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/recipe",
+      "started": "2026-11-09T17:27:27.595408+00:00",
+      "finished": "2026-11-09T17:27:42.665844+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": {
+        "path": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/validation-r1/audio-updater-tests.stdout",
+        "bytes": 5543,
+        "sha256": "b90a4c3252bd9a56824cd7ae796473389bbf49f06bd41e2148fa59902636848f"
+      },
+      "stderr": {
+        "path": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/validation-r1/audio-updater-tests.stderr",
+        "bytes": 1692,
+        "sha256": "5d5f16bc584b20e46f674fed06bb8c07cad41cee17a5a6e0e7938608c3cf093e"
+      },
+      "summaries": [
+        "test result: ok. 55 passed; 0 failed; 0 ignored; 0 measured; 171 filtered out; finished in 2.16s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "name": "normal-tools-build",
+      "argv": [
+        "/home/qian-qi/.cargo/bin/cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-j2",
+        "-p",
+        "droidloom-source",
+        "-p",
+        "droidloom-update"
+      ],
+      "cwd": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/recipe",
+      "started": "2026-11-09T17:27:42.666547+00:00",
+      "finished": "2026-11-09T17:27:43.378295+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": {
+        "path": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/validation-r1/normal-tools-build.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/validation-r1/normal-tools-build.stderr",
+        "bytes": 197,
+        "sha256": "766d7bb9c5af438629bcfa7dc71ab89fb35e4a05ce74b16aa836f265ae11bc19"
+      }
+    },
+    {
+      "name": "normal-verify-lock",
+      "argv": [
+        "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/tools/droidloom-source",
+        "verify-lock",
+        "--lock",
+        "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/recipe/android/manifest/audio-bridge-source-lock.json"
+      ],
+      "cwd": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/recipe",
+      "started": "2026-11-09T17:27:43.765266+00:00",
+      "finished": "2026-11-09T17:27:43.786292+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": {
+        "path": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/validation-r1/normal-verify-lock.stdout",
+        "bytes": 107,
+        "sha256": "4f03f51ecad117e7ea1e8b5aeaa1552f13c1b91a698d8b961e4c4bf092690d57"
+      },
+      "stderr": {
+        "path": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/validation-r1/normal-verify-lock.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "diff-check",
+      "argv": [
+        "/usr/bin/git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/recipe",
+      "started": "2026-11-09T17:27:43.787121+00:00",
+      "finished": "2026-11-09T17:27:43.906506+00:00",
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout": {
+        "path": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/validation-r1/diff-check.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/validation-r1/diff-check.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "source_materialized": false,
+  "full_build_succeeded": false,
+  "runtime_qualified": false,
+  "free_bytes_before": 175077330944,
+  "tools": {
+    "droidloom-source": {
+      "path": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/tools/droidloom-source",
+      "bytes": 19273856,
+      "sha256": "692d207108086c4b3b879c94c3681b99c154b40a4ad506d440fa873e6c8d96fd"
+    },
+    "droidloom-update": {
+      "path": "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/tools/droidloom-update",
+      "bytes": 32338512,
+      "sha256": "3531a408109359d0b41357bf9d3eff258d88e78353594a8bcad176dbaea65e42"
+    }
+  },
+  "finished": "2026-11-09T17:27:43.912001+00:00"
+}

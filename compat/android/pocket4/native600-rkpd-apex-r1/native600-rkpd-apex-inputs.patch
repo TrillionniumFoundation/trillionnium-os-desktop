@@ -1,0 +1,93 @@
+--- a/android/native-generation-pair/source-lock.json
++++ b/android/native-generation-pair/source-lock.json
+@@ -9196,7 +9196,8 @@
+         "system-server/TEST_MAPPING",
+         "system-server/api",
+         "system-server/src",
+-        "util"
++        "util",
++        "apex"
+       ]
+     },
+     {
+--- a/tools/droidloom-update/src/native_generation_pair_build.rs
++++ b/tools/droidloom-update/src/native_generation_pair_build.rs
+@@ -20,9 +20,9 @@
+ const ENGINE_BP_BYTES: usize = 25403;
+ const BASE_SOURCE_LOCK_SHA: &str = "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d";
+ const PAIR_SOURCE_LOCK: &str = "android/native-generation-pair/source-lock.json";
+-const SOURCE_LOCK_BYTES: usize = 354218;
+-const SOURCE_LOCK_SHA: &str = "600dc00660af69b4b8eeb497fac8f2a83f0d8b24ad3d02c2774a4df96f5ec8cf";
+-// Exact original additions from frozen manifest SHA-256 600dc00660af69b4b8eeb497fac8f2a83f0d8b24ad3d02c2774a4df96f5ec8cf.
++const SOURCE_LOCK_BYTES: usize = 354234;
++const SOURCE_LOCK_SHA: &str = "09a020b99c5f9f1876c69450d01ac99907cd6dda97cb4f69601f70151ea43d2b";
++// Exact original additions from frozen manifest SHA-256 09a020b99c5f9f1876c69450d01ac99907cd6dda97cb4f69601f70151ea43d2b.
+ // Closure qualification remains separate from this source attestation.
+ const PAIR_ADDITIONS_JSON: &str = r#"[
+   {
+@@ -4816,7 +4816,8 @@
+       "system-server/TEST_MAPPING",
+       "system-server/api",
+       "system-server/src",
+-      "util"
++      "util",
++      "apex"
+     ]
+   },
+   {
+@@ -7820,6 +7821,12 @@
+         validate_source_extension(&base, &good).unwrap();
+         assert_eq!(good["projects"].as_array().unwrap().len(), 600);
+         let mut actual_failed_r3 = good.clone();
++        // Keep the original r3 failed bytes exact after the later RKPD input addition.
++        let rkpd = actual_failed_r3["projects"].as_array_mut().unwrap().iter_mut()
++            .find(|p| p["path"] == "packages/modules/RemoteKeyProvisioning").unwrap();
++        let rkpd_paths = rkpd["sparse_paths"].as_array_mut().unwrap();
++        assert_eq!(rkpd_paths.iter().filter(|p| p.as_str() == Some("apex")).count(), 1);
++        rkpd_paths.retain(|p| p != "apex");
+         actual_failed_r3["projects"].as_array_mut().unwrap().truncate(597);
+         for (path, selection) in [
+             ("cts", "apps/CameraFeatureCombinationVerifier"),
+@@ -7978,6 +7985,42 @@
+             paths.push(json!(format!("{selection}/Android.bp")));
+             assert!(validate_source_extension(&base, &partial).is_err());
+         }
++        assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
++    }
++
++    #[test]
++    fn ordinary_pair_rkpd_apex_requires_complete_original_input() {
++        let base: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
++        let good: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++        validate_source_extension(&base, &good).unwrap();
++        assert_eq!(good["projects"].as_array().unwrap().len(), 600);
++        let index = good["projects"].as_array().unwrap().iter()
++            .position(|p| p["path"] == "packages/modules/RemoteKeyProvisioning").unwrap();
++        assert_eq!(good["projects"][index]["commit"], "d88e2305f9186661fe75ee2f00c8b250a76fdabe");
++        assert_eq!(good["projects"][index]["sparse_paths"].as_array().unwrap().iter()
++            .filter(|p| p.as_str() == Some("apex")).count(), 1);
++        let mut actual_failed_r5 = good.clone();
++        actual_failed_r5["projects"][index]["sparse_paths"].as_array_mut().unwrap()
++            .retain(|p| p != "apex");
++        let failed_raw = format!("{}\n", serde_json::to_string_pretty(&actual_failed_r5).unwrap());
++        assert_eq!(digest(failed_raw.as_bytes()), "600dc00660af69b4b8eeb497fac8f2a83f0d8b24ad3d02c2774a4df96f5ec8cf");
++        let generic: droidloom_source::SparseSourceLock = serde_json::from_value(actual_failed_r5.clone()).unwrap();
++        assert!(droidloom_source::build_plan(&generic).is_ok());
++        assert!(validate_source_extension(&base, &actual_failed_r5).is_err());
++        for replacement in ["apex/Android.bp", "apex/manifest.json"] {
++            let mut partial = actual_failed_r5.clone();
++            partial["projects"][index]["sparse_paths"].as_array_mut().unwrap().push(json!(replacement));
++            assert!(validate_source_extension(&base, &partial).is_err(),
++                "the complete pinned APEX input must not collapse to a Blueprint or manifest: {replacement}");
++        }
++        let mut wrong_commit = good.clone();
++        wrong_commit["projects"][index]["commit"] = json!("0000000000000000000000000000000000000000");
++        assert!(validate_source_extension(&base, &wrong_commit).is_err());
++        let mut wider = good;
++        wider["projects"][index]["sparse_paths"].as_array_mut().unwrap().push(json!("app/tests"));
++        assert!(validate_source_extension(&base, &wider).is_err());
+         assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
+     }
+ 

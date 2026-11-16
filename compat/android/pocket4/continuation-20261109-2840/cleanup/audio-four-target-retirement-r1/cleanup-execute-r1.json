@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "state": "EXACT_CLEANUP_COMPLETED_WITH_RETAINED_REPLACEMENTS",
+  "mode": "execute",
+  "started": "2026-11-09T17:52:30.182421+00:00",
+  "current_proof": {
+    "observed": "2026-11-09T17:51:34.701786+00:00",
+    "current_bytes": 334296,
+    "current_sha256": "0c7f33fb00bbf74958b83a1eca3a7fbdee5bbfa9c8a97d5fe585265149aabd89",
+    "foreground_owner": {
+      "acquisition": "same active owner; exact CURRENT32 CAS under unchanged original locks",
+      "active_until_utc": "2026-11-09T19:15:02.874978+00:00",
+      "generation": "20261109-8b88-r33",
+      "name": "foreground-root-8b88e19ff7ab",
+      "scope": "Finish actual QPR1 empty-data boot and coherent runtime repairs; serialize actual full builds with owned limits; complete latest-app acceptance and evidence-bound obsolete artifact retirement."
+    },
+    "candidate_references": [],
+    "checked_candidates": [
+      "/data/pocket4-audio-sdk-closure-20261109-2840-r1/target",
+      "/data/pocket4-audio-sdk-closure-20261109-2840-r1/target-source-history-r1",
+      "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/target",
+      "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/target-ci-harness",
+      "/workspace/scratch/2840a678aeda/audio-sdk-closeout/qpr1-audit/stage_audio_vendor_candidate.py",
+      "/workspace/scratch/2840a678aeda/audio-sdk-closeout/qpr1-audit/test_stage_audio_vendor_candidate.py",
+      "/workspace/scratch/2840a678aeda/audio-sdk-closeout/qpr1-audit/__pycache__",
+      "/workspace/scratch/2840a678aeda/audio-sdk-closeout/__pycache__",
+      "/workspace/scratch/2840a678aeda/audio-sdk-closeout/full-sdk-r1",
+      "/workspace/scratch/2840a678aeda/audio-sdk-closeout/full-sdk-r2"
+    ]
+  },
+  "current_proof_sha256": "dfdfe02cc9e7f7e32ac084241782ff133aad4369d08c4a7750e8bd2eca97fbb5",
+  "cross_uid_scan": {
+    "started": "2026-11-09T17:52:29.712173+00:00",
+    "scanned_live_pids": 878,
+    "references": [],
+    "unknown": [],
+    "mount_namespaces": 29,
+    "finished": "2026-11-09T17:52:30.182392+00:00"
+  },
+  "retained_tool_sha256": {
+    "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/tools-r2/droidloom-update": "208084afb0b16d7a0fe93a98e9131efb1b8d81a1a66bdebebb235831d0d19589",
+    "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/tools/droidloom-source": "692d207108086c4b3b879c94c3681b99c154b40a4ad506d440fa873e6c8d96fd",
+    "/data/pocket4-audio-r12-source-closure-20261109-2840-r1/tools/droidloom-update": "3531a408109359d0b41357bf9d3eff258d88e78353594a8bcad176dbaea65e42",
+    "/data/pocket4-audio-sdk-closure-20261109-2840-r1/tools/droidloom-source": "7263636f1057e3ed25422e52cb38960b4da3ec1f4918b8b92c0d35806ccf925d",
+    "/data/pocket4-audio-sdk-closure-20261109-2840-r1/tools/droidloom-update": "9755fc51b1dee6295eefa2e422fc9965f0e111b386c6e7a7a6d665c9175eddfe",
+    "/data/pocket4-audio-sdk-closure-20261109-2840-r1/tools-source-history-r3/droidloom-source": "6224f4a0074eaf02b5f32ed4c1c7f5431b4f6737810059c6137dbe8fb5190ba6",
+    "/data/pocket4-audio-sdk-closure-20261109-2840-r1/tools-source-history-r3/droidloom-update": "31ed55027bf698bbb618f073a8da176d650841a5539fd4346262aa6d018a408f"
+  },
+  "eligible": [
+    "/data/pocket4-audio-sdk-closure-20261109-2840-r1/target",
+    "/data/pocket4-audio-sdk-closure-20261109-2840-r1/target-source-history-r1",
+    "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/target",
+    "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/target-ci-harness"
+  ],
+  "skipped": [],
+  "deleted": [
+    {
+      "path": "/data/pocket4-audio-sdk-closure-20261109-2840-r1/target",
+      "device": 2067,
+      "inode": 17564633,
+      "allocated_bytes_before": 460017664,
+      "started": "2026-11-09T17:52:30.656431+00:00",
+      "reference_recheck": {
+        "started": "2026-11-09T17:52:30.196853+00:00",
+        "scanned_live_pids": 878,
+        "references": [],
+        "unknown": [],
+        "mount_namespaces": 29,
+        "finished": "2026-11-09T17:52:30.656343+00:00"
+      },
+      "finished": "2026-11-09T17:52:30.743394+00:00",
+      "named_absent_after_delete": true
+    },
+    {
+      "path": "/data/pocket4-audio-sdk-closure-20261109-2840-r1/target-source-history-r1",
+      "device": 2067,
+      "inode": 17567101,
+      "allocated_bytes_before": 582225920,
+      "started": "2026-11-09T17:52:31.262250+00:00",
+      "reference_recheck": {
+        "started": "2026-11-09T17:52:30.745289+00:00",
+        "scanned_live_pids": 878,
+        "references": [],
+        "unknown": [],
+        "mount_namespaces": 29,
+        "finished": "2026-11-09T17:52:31.262177+00:00"
+      },
+      "finished": "2026-11-09T17:52:31.378186+00:00",
+      "named_absent_after_delete": true
+    },
+    {
+      "path": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/target",
+      "device": 2067,
+      "inode": 20317178,
+      "allocated_bytes_before": 524324864,
+      "started": "2026-11-09T17:52:31.857039+00:00",
+      "reference_recheck": {
+        "started": "2026-11-09T17:52:31.380198+00:00",
+        "scanned_live_pids": 879,
+        "references": [],
+        "unknown": [],
+        "mount_namespaces": 29,
+        "finished": "2026-11-09T17:52:31.856967+00:00"
+      },
+      "finished": "2026-11-09T17:52:31.951201+00:00",
+      "named_absent_after_delete": true
+    },
+    {
+      "path": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/target-ci-harness",
+      "device": 2067,
+      "inode": 20318934,
+      "allocated_bytes_before": 178184192,
+      "started": "2026-11-09T17:52:32.437243+00:00",
+      "reference_recheck": {
+        "started": "2026-11-09T17:52:31.953053+00:00",
+        "scanned_live_pids": 879,
+        "references": [],
+        "unknown": [],
+        "mount_namespaces": 29,
+        "finished": "2026-11-09T17:52:32.437173+00:00"
+      },
+      "finished": "2026-11-09T17:52:32.492730+00:00",
+      "named_absent_after_delete": true
+    }
+  ],
+  "shared_locks_touched": false,
+  "shared_source_touched": false,
+  "old_sdk_tools_deleted": false,
+  "finished": "2026-11-09T17:52:33.155538+00:00"
+}

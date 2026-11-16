@@ -1,0 +1,143 @@
+{
+  "schema": "pocket4-settings-review-corrections-controls-v3",
+  "uid": 1000,
+  "affinity": [
+    2
+  ],
+  "parent": "7113c8fe36fc34b6350cb61478bf2082bb211d2e",
+  "branch": "fix/pocket4-settings-owned-page-20261109-2840",
+  "rustfmt_exit": 0,
+  "tests": [
+    {
+      "name": "settings-module-controls",
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-supervisor",
+        "--lib",
+        "control::application_settings",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "seconds": 1.253244,
+      "bytes": 3206,
+      "sha256": "b5c6fa764e8ba923433913f8fec2e385099f28f733bdf66d809c14422baf2380",
+      "cold_marker_observed": false
+    },
+    {
+      "name": "daemon-pending-admission",
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-supervisor",
+        "--lib",
+        "control::tests::application_settings_pending_blocks_every_daemon_mutation_without_relocking",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "seconds": 0.054776,
+      "bytes": 383,
+      "sha256": "c4ddb508b0c74add2709afd7d11214a045eb62c2ae2036c3bd2e3b0596c5402d",
+      "cold_marker_observed": false
+    },
+    {
+      "name": "cold-daemon-socket-control",
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-supervisor",
+        "--lib",
+        "control::tests::local_daemon_status_and_stopped_teardown_are_idempotent",
+        "--",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "seconds": 0.11631,
+      "bytes": 527,
+      "sha256": "762222aded6713b51a62484371eb2c6c937cc1d711da45bca5e7c65ce8ce579c",
+      "cold_marker_observed": true
+    },
+    {
+      "name": "all42-dispatcher-controls",
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-applications",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "seconds": 1.730011,
+      "bytes": 4935,
+      "sha256": "ac74d53cd467ba046b9d645c0253b771ffa89dd2cc5cc09891990ad5ade20ce2",
+      "cold_marker_observed": false
+    }
+  ],
+  "files": [
+    {
+      "path": "runtime/droidloom-supervisor/src/control.rs",
+      "bytes": 89609,
+      "sha256": "22cfe98ff60bb9ef5cf977cecf5867bdfc955ef39d86030a0d358d5a06820700"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/application_settings.rs",
+      "bytes": 18069,
+      "sha256": "3381d1c6a635899d77b34794d838996d6eb18fffeeece71c57dbbe75b1a3be11"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/application_settings_protocol.rs",
+      "bytes": 24454,
+      "sha256": "d9462c9df927f0d4928276f4a4880aa8d39dbca60fb9f20fef8f808c0d25635d"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/application_action_scope.rs",
+      "bytes": 10964,
+      "sha256": "4984cdebfc3dd0bdd3b1101ca40430bd6f9239b218a1d03680829f5fab5b0c0c"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/application_settings_tests.rs",
+      "bytes": 19214,
+      "sha256": "7153ca66acc6622fbe949495ff218aba396688a49a1438537fd52ad27ae29c39"
+    },
+    {
+      "path": "android/framework/droidloom-task-launcher/src/lib.rs",
+      "bytes": 76612,
+      "sha256": "5ba1b119f5898fb9d562f8ffdfc6092736d432b29a13a587d6a7b7616a4c3010"
+    },
+    {
+      "path": "android/framework/droidloom-task-launcher/src/main.rs",
+      "bytes": 12354,
+      "sha256": "d875eaf699c5716abb986912c66fc918df9adf60730afaeff3acf8ed99bb6325"
+    },
+    {
+      "path": "runtime/droidloom-applications/src/runtime_plan.rs",
+      "bytes": 47561,
+      "sha256": "8ceaa206dd0bd80fde538c6f483cf1565981354e6467394531298317dc8a6b8b"
+    }
+  ],
+  "runtime_qualified": false,
+  "production_ready": false,
+  "accepted_applications": 0,
+  "android_ui_invocations": 0,
+  "installed_or_deployed": false,
+  "success": true
+}

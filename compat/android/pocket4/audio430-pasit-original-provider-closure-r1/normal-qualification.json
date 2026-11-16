@@ -1,0 +1,98 @@
+{
+  "schema": "audio430-pasit-normal-qualification-public-summary-v1",
+  "scope": "normal tool tests and source materialization only",
+  "patch": {
+    "bytes": 105763,
+    "sha256": "1361d4f13ebc8f433403fd962be297db09509814899dfa9c7824d5d086850517"
+  },
+  "recipe": {
+    "commit": "a0e5114a1728e5ac5a96cdffbf68a84958218765",
+    "tree": "fdfa6ed29a2af507ea948daeb0ec9f7adb706ed9",
+    "tracked_files": 486
+  },
+  "normal_tool_build": {
+    "commands": 24,
+    "all_exit_zero": true,
+    "all_owned_children_retired": true,
+    "source_tests": {
+      "passed": 24,
+      "failed": 0,
+      "ignored": 0,
+      "stdout": {
+        "bytes": 2210,
+        "sha256": "bad45dc75c30a19436bbe6020705fc56e7034ebc9f5abe4c174dbb1b0f2c789c"
+      }
+    },
+    "audio_tests": {
+      "passed": 45,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 174,
+      "stdout": {
+        "bytes": 4627,
+        "sha256": "7e3c847359ab02dbca11c574d72e2a520a695efe1515ba3ace65da3bfbd6bba0"
+      }
+    },
+    "new_test_names": [
+      "audio_pasit_old_425_lock_reproduces_missing_original_project",
+      "audio_pasit_requires_all_five_complete_same_commit_sources",
+      "audio_pasit_original_provider_guard_rejects_drift_missing_and_links",
+      "audio_pasit_retains_original_consumer_defaults_and_transitive_edges",
+      "audio_pasit_extends_the_actual_425_source_with_only_five_original_projects"
+    ],
+    "tools": [
+      {
+        "name": "droidloom-source",
+        "bytes": 19272984,
+        "sha256": "bda5acbf709492ae533905229d09a782552ebb8fd22fec0c7b5ac307c1edacf4"
+      },
+      {
+        "name": "droidloom-update",
+        "bytes": 32320232,
+        "sha256": "1d69a6f4532a919337066b2abb45a1352a86273d5cd18ff71bc2882ccdd7a843"
+      }
+    ],
+    "result": {
+      "bytes": 351711,
+      "sha256": "252aa4e6d7f83561f0d069d3a6c07268763d8be37f167a1d17bd2700696a3c1a"
+    }
+  },
+  "normal_source": {
+    "commands": 17,
+    "all_exit_zero": true,
+    "all_owned_children_retired": true,
+    "project_count": 430,
+    "original_blueprint_pin_count": 1535,
+    "original_blueprint_prefix_count": 1519,
+    "all_external_alternates_absent": true,
+    "source_projection_restored": true,
+    "source_manifest": {
+      "bytes": 263945,
+      "sha256": "a7add5b00da39e4e18587399a3b26ecbaf3983f6cad93aea47061c3117ac805a"
+    },
+    "result": {
+      "bytes": 847085,
+      "sha256": "775a01513110d3a0018366040627393dcecce57ce1be0a9b7249345e875a6701"
+    }
+  },
+  "full_build_qualified": false,
+  "complete_apex_qualified": false,
+  "runtime_qualified": false,
+  "strict_full_attempt": {
+    "state": "FAILED_NORMAL_STRICT_SOONG",
+    "exit_code": 1,
+    "source_after_qualified": true,
+    "owned_retirement_complete": true,
+    "normal_source_projection_restored": true,
+    "remaining_error": "service-ondeviceintelligence system-server combined latest API inputs absent",
+    "terminal": {
+      "bytes": 56321,
+      "sha256": "692fa87ffcc47f8bb00a8ecbb70c0a7940e7b9443078cacef80a6bc60e474564"
+    },
+    "outer_terminal": {
+      "bytes": 9717,
+      "sha256": "2287a6c3b77993a2b1898789035cc273dfc3df305eb006359adbf039651c22e3"
+    },
+    "does_not_qualify_full_apex_or_runtime": true
+  }
+}

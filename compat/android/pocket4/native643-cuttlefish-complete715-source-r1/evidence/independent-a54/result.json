@@ -1,0 +1,79 @@
+{
+  "all_original_three_shared_locks_released": true,
+  "archive": {
+    "bytes": 2040247,
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/native643-cuttlefish-maintained-capsule-inputs-20261113-takeover-r1/producer-inputs.tar.gz",
+    "sha256": "8ea538b889af969b708f95f8a086450d868e1adf28abfda3590e9b333d34b6e6"
+  },
+  "budget_after": {
+    "cpu.max": "200000 100000",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "2147483648",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0"
+  },
+  "budget_before": {
+    "affinity": [
+      8,
+      9
+    ],
+    "budget_after_cap": {
+      "cpu.max": "200000 100000",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.max": "2147483648",
+      "memory.swap.current": "0",
+      "memory.swap.max": "0"
+    },
+    "budget_before_cap": {
+      "cpu.max": "200000 100000",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.max": "2147483648",
+      "memory.swap.current": "0",
+      "memory.swap.max": "max"
+    },
+    "controls_target_self_only": true,
+    "historical_outer_budget_upgraded": false,
+    "own_cap_control": {
+      "PIDFD_closed": true,
+      "PIDFD_exit_observed": true,
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "set-property",
+        "--runtime",
+        "hepta-runtime-job-1a1d75745b7-392-a54.service",
+        "MemorySwapMax=0"
+      ],
+      "pid": 2512926,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "self_cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d75745b7-392-a54.service",
+    "swap_zero_before_business": true
+  },
+  "full_builds_started": 0,
+  "independent_retirement": {
+    "bytes": 9020,
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/native643-cuttlefish-maintained-capsule-inputs-20261113-takeover-r1/NORMALA46-RETIREMENT.json",
+    "sha256": "8d41ced9a5a9a690c45e00e46da60e729f3609991fc44126e8e2e03615608156"
+  },
+  "manifest": {
+    "bytes": 239013,
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/native643-cuttlefish-maintained-capsule-inputs-20261113-takeover-r1/producer-inputs.json",
+    "sha256": "1f50f3099bdbd32ea0ae774b95bc67dc26dd82dcdbabd34b7cbc3aeb871264e7"
+  },
+  "normal_compilers_started": 0,
+  "normala46_owner": {
+    "bytes": 6611,
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/native643-cuttlefish-maintained-capsule-inputs-20261113-takeover-r1/normala46-owner-inputs.json",
+    "sha256": "223449e59652419b312a1d88cf32052d656ce9dabf0d6d96bc1fff8650067f46"
+  },
+  "runtime_qualified": false,
+  "schema": "native643-maintained-source-inputs-captured-v1",
+  "source_writes": 0,
+  "state": "CAPTURED_CURRENT_SOURCE_AND_ACTUAL_NORMAL_PROOF"
+}

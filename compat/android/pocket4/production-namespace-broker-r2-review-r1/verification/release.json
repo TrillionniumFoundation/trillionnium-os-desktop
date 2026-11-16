@@ -1,0 +1,78 @@
+{
+  "argv": [
+    "/usr/bin/systemd-run",
+    "--user",
+    "--wait",
+    "--collect",
+    "--pipe",
+    "--unit=pocket4-owner-broker-r2-controls-release-493ac",
+    "--property=CPUQuota=100%",
+    "--property=MemoryMax=3221225472",
+    "--property=MemorySwapMax=0",
+    "--property=Nice=19",
+    "--property=UMask=0077",
+    "--property=TasksMax=96",
+    "--property=RuntimeMaxSec=45",
+    "--property=TimeoutStopSec=2",
+    "--working-directory=/home/alex/work/pocket4-identity-review-20261109-493ac-r1/qualification/owner-broker-r2-review-r1",
+    "--setenv=TMPDIR=/home/alex/work/pocket4-identity-review-20261109-493ac-r1/qualification/owner-broker-r2-review-r1/tmp",
+    "--setenv=LC_ALL=C",
+    "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/qualification/owner-broker-r2-review-r1/target/release/deps/owner_broker_review-98d21bd88e3f798a",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "binary": {
+    "bytes": 1747976,
+    "path": "/home/alex/work/pocket4-identity-review-20261109-493ac-r1/qualification/owner-broker-r2-review-r1/target/release/deps/owner_broker_review-98d21bd88e3f798a",
+    "profile": {
+      "debug_assertions": false,
+      "debuginfo": 0,
+      "opt_level": "3",
+      "overflow_checks": false,
+      "test": true
+    },
+    "sha256": "78dfb2058909795cc4588c5cdde5cf8dd022be0a52a7c951df23573423a43187"
+  },
+  "elapsed_seconds": 2.1884259869999596,
+  "euid": 1000,
+  "kernel": "7.0.14-p4cred1",
+  "parent_boot_id": "97d9600f-e081-465c-9e6e-62651e09806b",
+  "privileged_ignored_controls_run": false,
+  "public_admission": "HostAdmissionRequired",
+  "returncode": 0,
+  "schema": 1,
+  "sourcepins": {
+    "Cargo.lock": {
+      "bytes": 12345,
+      "sha256": "ab7049db44479f692e994b795f6fc73efc92d0146b7fb5b6072c82b42d9c85da"
+    },
+    "Cargo.toml": {
+      "bytes": 567,
+      "sha256": "8c5591bc48959e3ab20faa5318bee9c17da92f76a3fe0e4f0e6b48131e886511"
+    },
+    "production_identity.rs": {
+      "bytes": 56537,
+      "sha256": "44822e3982ae7645c057e3622e8c2c68da64e6c820e569dfd62d5c30f3f07fb8"
+    },
+    "production_namespace.rs": {
+      "bytes": 43153,
+      "sha256": "32bc2e34986246afda38370795f1c56d567cc6c2646762ef38fd7a601733b6e3"
+    },
+    "production_namespace_child.rs": {
+      "bytes": 19781,
+      "sha256": "5c3d143be5a58f8986ea0dd4b2c8b4f0f586e8bc65da0069ababcbca2561a2aa"
+    },
+    "production_namespace_tests.rs": {
+      "bytes": 24305,
+      "sha256": "478a6f4e92b166fe6f29984278c3f3c0dfad9baed21d9c779928d5dfbc1c033f"
+    },
+    "review.rs": {
+      "bytes": 181,
+      "sha256": "73a0b94201a893e67c7a0c021649d911776f30283eb90a10cf38397f4e8cc2b5"
+    }
+  },
+  "stderr_sha256": "3ac4314b64a2aab9bd7fc729b5e03f8fc19cf56035a22d4bcc15640b1ba9c8b1",
+  "stdout_sha256": "c025351cb7e0f7abfe851e1bf00269851c15fa71ef662fdfacb15ad2d3d3cc7f",
+  "uid": 1000,
+  "unit_status": "LoadState=not-found\nActiveState=inactive\nSubState=dead\nMainPID=0\nControlGroup=\n"
+}

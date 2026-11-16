@@ -1,0 +1,17 @@
+{
+  "readiness": [
+    "production_readiness::tests::production_readiness_follows_exact_trie_instead_of_searching_value_bytes",
+    "production_readiness::tests::production_readiness_real_file_is_bounded_and_checks_mapped_owner",
+    "production_readiness::tests::production_readiness_rejects_cycles_escapes_unknown_abi_and_dirty_success",
+    "production_readiness::tests::production_readiness_stable_malformed_snapshot_stays_rejected",
+    "production_readiness::tests::production_readiness_torn_property_publication_is_retryable"
+  ],
+  "control_deadline": [
+    "control::request_deadline_tests::control_deadline_rejects_a_drip_fed_request_with_no_idle_timeout",
+    "control::request_deadline_tests::control_deadline_includes_descriptor_arrival_before_the_json_body",
+    "control::request_deadline_tests::control_deadline_preserves_peer_and_plain_json_requests",
+    "control::request_deadline_tests::control_deadline_preserves_progress_and_exact_scm_descriptor",
+    "control::request_deadline_tests::control_deadline_preserves_the_exact_message_size_boundary",
+    "control::request_deadline_tests::control_deadline_still_rejects_scm_on_non_install_requests"
+  ]
+}

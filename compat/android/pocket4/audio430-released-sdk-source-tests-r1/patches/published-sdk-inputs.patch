@@ -1,0 +1,286 @@
+From 557bff5c84eef7eea9af4533ac7391e3ae676d0f Mon Sep 17 00:00:00 2001
+From: ChatGPT <chatgpt@openai.com>
+Date: Mon, 9 Nov 2026 08:19:09 -0500
+Subject: [PATCH] Complete original released SDK inputs for the retained Audio
+ graph
+
+---
+ .../manifest/audio-bridge-source-lock.json    |  34 +++-
+ docs/BUILDING.md                              |  19 ++
+ tools/droidloom-update/src/android.rs         | 164 +++++++++++++++++-
+ 3 files changed, 214 insertions(+), 3 deletions(-)
+
+diff --git a/android/manifest/audio-bridge-source-lock.json b/android/manifest/audio-bridge-source-lock.json
+index c6569f4..bf0be53 100644
+--- a/android/manifest/audio-bridge-source-lock.json
++++ b/android/manifest/audio-bridge-source-lock.json
+@@ -5495,7 +5495,39 @@
+         "36/public/api/service-ondeviceintelligence.txt",
+         "36/public/api/service-ondeviceintelligence-removed.txt",
+         "36/system-server/api/service-ondeviceintelligence.txt",
+-        "36/system-server/api/service-ondeviceintelligence-removed.txt"
++        "36/system-server/api/service-ondeviceintelligence-removed.txt",
++        "4/public/android.jar",
++        "4/public/framework.aidl",
++        "7/public/android.jar",
++        "7/public/framework.aidl",
++        "15/public/android.jar",
++        "15/public/framework.aidl",
++        "16/public/android.jar",
++        "16/public/framework.aidl",
++        "19/public/android.jar",
++        "19/public/framework.aidl",
++        "21/public/android.jar",
++        "21/public/framework.aidl",
++        "22/public/android.jar",
++        "22/public/framework.aidl",
++        "23/public/android.jar",
++        "23/public/framework.aidl",
++        "24/public/android.jar",
++        "24/public/framework.aidl",
++        "25/public/android.jar",
++        "25/public/framework.aidl",
++        "26/public/android.jar",
++        "26/public/framework.aidl",
++        "27/public/android.jar",
++        "27/public/framework.aidl",
++        "33/public/android.jar",
++        "33/public/framework.aidl",
++        "33/public/core-for-system-modules.jar",
++        "37.0/public/android.jar",
++        "37.0/public/framework.aidl",
++        "37.0/public/core-for-system-modules.jar",
++        "31/system/android.jar",
++        "35/system/android.jar"
+       ]
+     },
+     {
+diff --git a/docs/BUILDING.md b/docs/BUILDING.md
+index ad1ddd0..c5b1bd8 100644
+--- a/docs/BUILDING.md
++++ b/docs/BUILDING.md
+@@ -596,3 +596,22 @@ sign-in does not guarantee that Google has refreshed its device profile or that
+ every app is compatible. Only declare capabilities the runtime implements;
+ Google certification and missing camera, microphone or sensor integration are
+ not repaired by adding feature names.
++
++## Audio target SDK prerequisites
++
++The Audio APEX source lock includes the original released Java SDK inputs
++referenced by its retained discovery graph. In particular, the original
++android-support-test-nodep provider uses SDK 23, while its companion support
++libraries use SDK 15. Preserve those API levels: changing them to current
++does not repair the missing build inputs.
++
++Select the official android.jar and public framework.aidl from the pinned
++platform/prebuilts/sdk revision. API 30 and newer also require the original
++core-for-system-modules.jar; system SDK consumers require their original
++system-scoped android.jar and the corresponding public AIDL/system modules.
++The source admission guard rejects incomplete SDK selections before Soong.
++These are build inputs, not additional Android installations.
++
++The source-lock checks establish input completeness only. A successful complete
++Audio APEX build, compiled-artifact checks, and runtime playback/capture remain
++separate release requirements.
+diff --git a/tools/droidloom-update/src/android.rs b/tools/droidloom-update/src/android.rs
+index 5591c12..55f9db5 100644
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -714,12 +714,87 @@ fn validate_audio_pasit_original_providers(source: &Path, mode: SoongDependencyM
+     Ok(())
+ }
+ 
++// Released Java SDK inputs used by the retained Audio discovery graph.
++// Keep the original consumer API levels and the pinned SDK revision. A jar,
++// public framework AIDL, and (API 30+) system module jar form one SDK input.
++const AUDIO_RELEASED_SDK_INPUTS: &[&str] = &[
++    "4/public/android.jar",
++    "4/public/framework.aidl",
++    "7/public/android.jar",
++    "7/public/framework.aidl",
++    "8/public/android.jar",
++    "8/public/framework.aidl",
++    "9/public/android.jar",
++    "9/public/framework.aidl",
++    "15/public/android.jar",
++    "15/public/framework.aidl",
++    "16/public/android.jar",
++    "16/public/framework.aidl",
++    "18/public/android.jar",
++    "18/public/framework.aidl",
++    "19/public/android.jar",
++    "19/public/framework.aidl",
++    "21/public/android.jar",
++    "21/public/framework.aidl",
++    "22/public/android.jar",
++    "22/public/framework.aidl",
++    "23/public/android.jar",
++    "23/public/framework.aidl",
++    "24/public/android.jar",
++    "24/public/framework.aidl",
++    "25/public/android.jar",
++    "25/public/framework.aidl",
++    "26/public/android.jar",
++    "26/public/framework.aidl",
++    "27/public/android.jar",
++    "27/public/framework.aidl",
++    "28/public/android.jar",
++    "28/public/framework.aidl",
++    "29/public/android.jar",
++    "29/public/framework.aidl",
++    "30/public/android.jar",
++    "30/public/framework.aidl",
++    "30/public/core-for-system-modules.jar",
++    "31/public/android.jar",
++    "31/public/framework.aidl",
++    "31/public/core-for-system-modules.jar",
++    "33/public/android.jar",
++    "33/public/framework.aidl",
++    "33/public/core-for-system-modules.jar",
++    "34/public/android.jar",
++    "34/public/framework.aidl",
++    "34/public/core-for-system-modules.jar",
++    "35/public/android.jar",
++    "35/public/framework.aidl",
++    "35/public/core-for-system-modules.jar",
++    "37.0/public/android.jar",
++    "37.0/public/framework.aidl",
++    "37.0/public/core-for-system-modules.jar",
++    "29/system/android.jar",
++    "31/system/android.jar",
++    "35/system/android.jar",
++];
++
+ fn validate_audio_provider_source_paths(
+     lock: &droidloom_source::SparseSourceLock, mode: SoongDependencyMode,
+ ) -> Result<()> {
+     if mode != SoongDependencyMode::AudioApexTargetClosure {
+         return Ok(());
+     }
++    let sdk = lock.projects.iter().find(|project| project.path == Path::new("prebuilts/sdk"))
++        .ok_or("audio consumers require the original released SDK provider")?;
++    if sdk.name != "platform/prebuilts/sdk"
++        || sdk.commit != "0f07e8d60ab0aba46129e427101f96ba459a95c1"
++    {
++        return fail("audio released SDK provider must retain its pinned upstream revision");
++    }
++    for required in AUDIO_RELEASED_SDK_INPUTS {
++        if !sdk.sparse_paths.is_empty()
++            && !sdk.sparse_paths.iter().any(|cone| Path::new(required).starts_with(cone))
++        {
++            return fail(format!("audio released SDK input is not selected: prebuilts/sdk/{required}"));
++        }
++    }
+     for (relative, commit, required) in [
+         ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "36/public/api/service-ondeviceintelligence.txt"),
+         ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "36/public/api/service-ondeviceintelligence-removed.txt"),
+@@ -1339,7 +1414,7 @@ fn audio_apex_pcm_patches(mode: SoongDependencyMode) -> &'static [(&'static str,
+     }
+ }
+ 
+-const AUDIO_SOURCE_LOCK_SHA256: &str = "45496b24c055fca9aa1f3fae7bd5c7c3c99cb46721150690645bf5d059159de2";
++const AUDIO_SOURCE_LOCK_SHA256: &str = "aab71dbce304aba849ac592b5d9cdc2a339cf9208c47faca98f27350c462437d";
+ fn selected_source_lock(repo: &Path, mode: SoongDependencyMode) -> Result<PathBuf> {
+     if mode == SoongDependencyMode::AudioApexTargetClosure {
+         let lock = repo.join("android/manifest/audio-bridge-source-lock.json");
+@@ -3424,11 +3499,96 @@ fn build_targets_with_dependency_mode(
+ mod tests {
+     use super::*;
+ 
+-    fn audio_before_ondeviceintelligence_lock() -> String {
++    fn audio_before_released_sdk_lock() -> String {
+         use sha2::{Digest, Sha256};
+         let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
+         let mut previous = fs::read_to_string(
+             repo.join("android/manifest/audio-bridge-source-lock.json")).unwrap();
++        for path in [
++            "4/public/android.jar",
++            "4/public/framework.aidl",
++            "7/public/android.jar",
++            "7/public/framework.aidl",
++            "15/public/android.jar",
++            "15/public/framework.aidl",
++            "16/public/android.jar",
++            "16/public/framework.aidl",
++            "19/public/android.jar",
++            "19/public/framework.aidl",
++            "21/public/android.jar",
++            "21/public/framework.aidl",
++            "22/public/android.jar",
++            "22/public/framework.aidl",
++            "23/public/android.jar",
++            "23/public/framework.aidl",
++            "24/public/android.jar",
++            "24/public/framework.aidl",
++            "25/public/android.jar",
++            "25/public/framework.aidl",
++            "26/public/android.jar",
++            "26/public/framework.aidl",
++            "27/public/android.jar",
++            "27/public/framework.aidl",
++            "33/public/android.jar",
++            "33/public/framework.aidl",
++            "33/public/core-for-system-modules.jar",
++            "37.0/public/android.jar",
++            "37.0/public/framework.aidl",
++            "37.0/public/core-for-system-modules.jar",
++            "31/system/android.jar",
++            "35/system/android.jar",
++        ] {
++            let added = format!(",\n        \"{path}\"");
++            assert_eq!(previous.matches(&added).count(), 1);
++            previous = previous.replacen(&added, "", 1);
++        }
++        assert_eq!(format!("{:x}", Sha256::digest(previous.as_bytes())),
++            "45496b24c055fca9aa1f3fae7bd5c7c3c99cb46721150690645bf5d059159de2");
++        previous
++    }
++
++    #[test]
++    fn audio_released_sdk_rejects_the_actual_r11_source_lock() {
++        let old = audio_before_released_sdk_lock();
++        let directory = tempfile::tempdir().unwrap();
++        let path = directory.path().join("android/manifest/audio-bridge-source-lock.json");
++        write(&path, old.as_bytes()).unwrap();
++        let old_lock = droidloom_source::load_lock(&path).unwrap();
++        assert_eq!(old_lock.projects.len(), 430);
++        let audio = SoongDependencyMode::AudioApexTargetClosure;
++        assert!(selected_source_lock(directory.path(), audio).is_err());
++        let error = validate_audio_provider_source_paths(&old_lock, audio).unwrap_err().to_string();
++        assert!(error.contains("released SDK input"));
++    }
++
++    #[test]
++    fn audio_released_sdk_requires_jar_aidl_and_system_module_inputs() {
++        let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
++        let lock = droidloom_source::load_lock(
++            &repo.join("android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let audio = SoongDependencyMode::AudioApexTargetClosure;
++        validate_audio_provider_source_paths(&lock, audio).unwrap();
++        for required in AUDIO_RELEASED_SDK_INPUTS {
++            let mut missing = lock.clone();
++            let sdk = missing.projects.iter_mut().find(|p| p.path == Path::new("prebuilts/sdk")).unwrap();
++            sdk.sparse_paths.retain(|cone| !Path::new(required).starts_with(cone));
++            assert!(!sdk.sparse_paths.is_empty());
++            assert!(validate_audio_provider_source_paths(&missing, audio).is_err(), "{required}");
++            for mode in [SoongDependencyMode::Strict, SoongDependencyMode::NativeBridgeTargetClosure,
++                         SoongDependencyMode::NativeEngineTargetClosure, SoongDependencyMode::MinigbmTargetClosure] {
++                validate_audio_provider_source_paths(&missing, mode).unwrap();
++            }
++        }
++        let mut parent_cone = lock.clone();
++        let sdk = parent_cone.projects.iter_mut().find(|p| p.path == Path::new("prebuilts/sdk")).unwrap();
++        sdk.sparse_paths.retain(|p| !p.starts_with("23/public"));
++        sdk.sparse_paths.push(PathBuf::from("23/public"));
++        validate_audio_provider_source_paths(&parent_cone, audio).unwrap();
++    }
++
++    fn audio_before_ondeviceintelligence_lock() -> String {
++        use sha2::{Digest, Sha256};
++        let mut previous = audio_before_released_sdk_lock();
+         for path in [
+             "36/public/api/service-ondeviceintelligence.txt",
+             "36/public/api/service-ondeviceintelligence-removed.txt",
+-- 
+2.43.0
+

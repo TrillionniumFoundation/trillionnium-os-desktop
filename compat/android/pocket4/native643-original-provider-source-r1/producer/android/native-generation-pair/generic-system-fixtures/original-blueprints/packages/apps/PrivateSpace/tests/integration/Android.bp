@@ -1,0 +1,29 @@
+package {
+    // See: http://go/android-license-faq
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+android_test {
+    name: "PrivateSpaceIntegrationTests",
+    certificate: "platform",
+    sdk_version: "system_current",
+    srcs: [
+        "src/**/*.kt",
+    ],
+    static_libs: [
+        "androidx.test.runner",
+        "androidx.test.ext.junit",
+        "androidx.test.ext.truth",
+        "androidx.test.uiautomator_uiautomator",
+        "PrivateSpaceLibrary",
+        "bedstead-multiuser",
+        "flag-junit",
+        "android.multiuser.flags-aconfig-java",
+    ],
+    associates: [
+        "PrivateSpaceLibrary",
+    ],
+    test_suites: [
+        "general-tests",
+    ],
+}

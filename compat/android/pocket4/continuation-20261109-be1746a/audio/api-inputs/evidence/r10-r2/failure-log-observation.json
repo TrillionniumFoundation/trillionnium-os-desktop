@@ -1,0 +1,53 @@
+{
+  "observed_utc": "2026-11-09T10:06:11.354101+00:00",
+  "files": [
+    {
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r10-r2/commands/normal-full-audio-apex.stdout",
+      "bytes": 67191,
+      "sha256": "229757460555e88220958f1568b768fbe4f7556a1c049aaadbd008832b060c24",
+      "same_inode_and_metadata": true,
+      "error_lines": [
+        {
+          "line": 317,
+          "text": "FAILED: /data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/soong/build.droidloom_x86_64.ninja"
+        },
+        {
+          "line": 357,
+          "text": "error: packages/modules/NeuralNetworks/service/Android.bp:72:1: \"service-ondeviceintelligence\" depends on undefined module \"service-ondeviceintelligence.api.combined.system-server.latest\"."
+        },
+        {
+          "line": 359,
+          "text": "error: packages/modules/NeuralNetworks/service/Android.bp:72:1: \"service-ondeviceintelligence\" depends on undefined module \"service-ondeviceintelligence-removed.api.combined.system-server.latest\"."
+        },
+        {
+          "line": 362,
+          "text": "05:01:10 soong bootstrap failed with: exit status 1"
+        }
+      ],
+      "last_lines": [
+        "Or did you mean [\"DeviceLockControllerDebug__droidloom_x86_64__auto_generated_rro_product\" \"DeviceLockControllerDebug__droidloom_x86_64__auto_generated_rro_vendor\"]?",
+        "ninja: build stopped: subcommand failed.",
+        "05:01:10 soong bootstrap failed with: exit status 1"
+      ]
+    },
+    {
+      "path": "/data/pocket4-audio-source316-offload-20261108-8b88-r1/qualification/full-desktop-r10-r2/commands/normal-full-audio-apex.stderr",
+      "bytes": 528065,
+      "sha256": "c003c585cef67b4c858cd4217a3c19e8dbdfefd44d2783058db7043312a07b12",
+      "same_inode_and_metadata": true,
+      "error_lines": [
+        {
+          "line": 4194,
+          "text": "Droidloom update failed: command failed (exit status: 1): cd \"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source\" && ALLOW_MISSING_DEPENDENCIES=\"false\" CCACHE_DIR=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/ccache\" CCACHE_TEMPDIR=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/ccache-tmp\" JAVA_HOME=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/jdk/jdk21/linux-x86\" ORIGINAL_PWD=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source\" OUT_DIR=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out\" PATH=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/mesa-tools/src/compiler/clc:/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/mesa-tools/src/compiler/spirv:/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/pasit-original-r1:/usr/bin:/bin:/usr/sbin:/sbin\" SOONG_INCREMENTAL_ANALYSIS=\"false\" SOONG_NINJA=\"ninja\" TARGET_BUILD_VARIANT=\"userdebug\" TARGET_PRODUCT=\"droidloom_x86_64\" TARGET_RELEASE=\"cp2a\" TOP=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source\" \"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/soong_ui\" \"--make-mode\" \"-j6\" \"com.android.hardware.audio.droidloom\""
+        }
+      ],
+      "last_lines": [
+        "DROIDLOOM_GO_BUDGET phase=leave pid=381674 gomaxprocs=2 gomemlimit_bytes=5368709120 gogc_percent=50",
+        "gc 59 @8.385s 14%: 0.054+25+0.014 ms clock, 0.10+6.2/13/3.2+0.029 ms cpu, 45->49->47 MB, 50 MB goal, 0 MB stacks, 0 MB globals, 2 P",
+        "Droidloom update failed: command failed (exit status: 1): cd \"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source\" && ALLOW_MISSING_DEPENDENCIES=\"false\" CCACHE_DIR=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/ccache\" CCACHE_TEMPDIR=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/ccache-tmp\" JAVA_HOME=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source/prebuilts/jdk/jdk21/linux-x86\" ORIGINAL_PWD=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source\" OUT_DIR=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out\" PATH=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/mesa-tools/src/compiler/clc:/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/mesa-tools/src/compiler/spirv:/data/pocket4-audio-source316-offload-20261108-8b88-r1/tools/pasit-original-r1:/usr/bin:/bin:/usr/sbin:/sbin\" SOONG_INCREMENTAL_ANALYSIS=\"false\" SOONG_NINJA=\"ninja\" TARGET_BUILD_VARIANT=\"userdebug\" TARGET_PRODUCT=\"droidloom_x86_64\" TARGET_RELEASE=\"cp2a\" TOP=\"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/aosp-source\" \"/data/pocket4-audio-source316-offload-20261108-8b88-r1/work/android-audio-closure-out/soong_ui\" \"--make-mode\" \"-j6\" \"com.android.hardware.audio.droidloom\""
+      ]
+    }
+  ],
+  "full_builds_started": 0,
+  "mutations": 0
+}

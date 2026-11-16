@@ -1,0 +1,40 @@
+{
+  "schema": "p4-guest-cipso-association-prerequisite-v1",
+  "scope": "Disposable guest diagnostic policy only; no production or host policy changes",
+  "previous_real_vm_result": {
+    "path": "/home/alex/work/p4-context-provider-runtime-8764-r1/previous-vm-r4b/result.json",
+    "bytes": 26707,
+    "sha256": "b8a6e1d6ab69f5b5d751879f02949baa58dcc26069edfc1100d9921dcc947d19"
+  },
+  "observed": {
+    "ip_send_errno": 111,
+    "cipso_doi": 8764,
+    "source_cipso_options_bytes": 12,
+    "zero_cap_sender": true,
+    "avc_lines_in_captured_kernel_ring": 0,
+    "known_stream_defect_still_expected_on_p4ctx2": true
+  },
+  "original_sources": [
+    {
+      "path": "/home/qq/work/pocket4-kernel-lsm-context-full-20261110-8b88-r1/source/security/selinux/hooks.c",
+      "functions": [
+        "selinux_ip_postroute_compat",
+        "selinux_sock_rcv_skb_compat"
+      ],
+      "lines": "5527-5555, 6204-6236",
+      "sha256": "afd2f9096726c67c7fba2bd8a8fad2e79007d0ecf2af70a5e0b2708e3bf6689e"
+    },
+    {
+      "path": "/home/qq/work/pocket4-kernel-lsm-context-full-20261110-8b88-r1/source/security/selinux/xfrm.c",
+      "functions": [
+        "selinux_xfrm_sock_rcv_skb",
+        "selinux_xfrm_postroute_last"
+      ],
+      "lines": "399-423, 432-465"
+    }
+  ],
+  "reason": "Original compatibility hooks require association sendto/recvfrom even without IPsec. Outgoing denial maps to NF_DROP_ERR(-ECONNREFUSED). This is a source-based diagnosis, not a captured AVC claim.",
+  "before_policy_sha256": "d7589a23af8f7d5d4e8686c13decfc837e978943370db36f4b4955658666f7af",
+  "after_policy_sha256": "6fbd3ad4e1e566b9166c6b513d09c9614f7a1409a7d50933724bbb6b3c80feab",
+  "exact_policy_delta": "--- r4b-guest-policy\n+++ r4c-guest-policy\n@@ -213,6 +213,9 @@\n (allow p4_diag_parent_t self (cap_userns (net_admin)))\n (allow p4_diag_parent_t p4_diag_unlabeled_t (udp_socket (name_bind node_bind)))\n (allow p4_diag_parent_t p4_packet_peer_t (udp_socket (recvfrom)))\n+(allow p4_context_a_t p4_diag_unlabeled_t (association (sendto)))\n+(allow p4_diag_parent_t p4_diag_unlabeled_t (association (recvfrom)))\n+(neverallow p4_context_b_t p4_diag_unlabeled_t (association (sendto)))\n (allow p4_context_a_t self (udp_socket (create read write getattr connect getopt setopt sendto)))\n (allow p4_context_b_t p4_diag_parent_t (udp_socket (read write getattr getopt)))\n (allowx p4_diag_parent_t self (ioctl udp_socket (0x8913 0x8914 0x8915)))\n"
+}

@@ -1,0 +1,85 @@
+{
+  "schema": "production-seccomp-readiness-readonly-review-pins-v1",
+  "observed_utc_date": "2026-11-09",
+  "github_commit": "caed30a83c3af70bf7a769968e6365b46d99d26c",
+  "files": [
+    {
+      "file": "production_runtime_seccomp.rs",
+      "github_path": "compat/android/pocket4/production-cell-foundations-r1/source/runtime/droidloom-supervisor/src/production_runtime_seccomp.rs",
+      "git_blob": "905cca7627ddae5b176786fd6b918ffa3511ca8b",
+      "bytes": 9969,
+      "sha256": "7acc608ea9dfc538ac7e1309ac0fddaf3aee60255fcc7ec8e05a43795d9126ee",
+      "source_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/caed30a83c3af70bf7a769968e6365b46d99d26c/compat/android/pocket4/production-cell-foundations-r1/source/runtime/droidloom-supervisor/src/production_runtime_seccomp.rs"
+    },
+    {
+      "file": "production_readiness.rs",
+      "github_path": "compat/android/pocket4/production-cell-foundations-r1/source/runtime/droidloom-supervisor/src/production_readiness.rs",
+      "git_blob": "a2ad158fc803d513cab6a5826440903101c6ac60",
+      "bytes": 11704,
+      "sha256": "5b7e4974229d74e1531bdba37282501e4859a26ba6faefe1bf5deb2092bf795b",
+      "source_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/caed30a83c3af70bf7a769968e6365b46d99d26c/compat/android/pocket4/production-cell-foundations-r1/source/runtime/droidloom-supervisor/src/production_readiness.rs"
+    }
+  ],
+  "successor_complete_readbacks": [
+    {
+      "host": "pocket4",
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/normal-production-writable-proc-r1/source/runtime/droidloom-supervisor/src/production_runtime_seccomp.rs",
+      "version": "66306:36046423:9969:1794245252983973048:1794245252983973048",
+      "bytes": 9969,
+      "sha256": "7acc608ea9dfc538ac7e1309ac0fddaf3aee60255fcc7ec8e05a43795d9126ee",
+      "offset": 0,
+      "eof": true,
+      "next_offset": 9969,
+      "content_matches_frozen_github_source": true
+    },
+    {
+      "host": "pocket4",
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/normal-production-writable-proc-r1/source/runtime/droidloom-supervisor/src/production_readiness.rs",
+      "version": "66306:36046421:11704:1794245252982937843:1794245252982937843",
+      "bytes": 11704,
+      "sha256": "5b7e4974229d74e1531bdba37282501e4859a26ba6faefe1bf5deb2092bf795b",
+      "offset": 0,
+      "eof": true,
+      "next_offset": 11704,
+      "content_matches_frozen_github_source": true
+    },
+    {
+      "host": "pocket4",
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/normal-production-binder-review-r1/source/runtime/droidloom-supervisor/src/production_runtime_seccomp.rs",
+      "version": "66306:36184981:9969:1794245529520609709:1794245529520609709",
+      "bytes": 9969,
+      "sha256": "7acc608ea9dfc538ac7e1309ac0fddaf3aee60255fcc7ec8e05a43795d9126ee",
+      "offset": 0,
+      "eof": true,
+      "next_offset": 9969,
+      "content_matches_frozen_github_source": true
+    },
+    {
+      "host": "pocket4",
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/normal-production-binder-review-r1/source/runtime/droidloom-supervisor/src/production_readiness.rs",
+      "version": "66306:36184979:11704:1794245529519602350:1794245529519602350",
+      "bytes": 11704,
+      "sha256": "5b7e4974229d74e1531bdba37282501e4859a26ba6faefe1bf5deb2092bf795b",
+      "offset": 0,
+      "eof": true,
+      "next_offset": 11704,
+      "content_matches_frozen_github_source": true
+    }
+  ],
+  "related_read_source_origin_git_blob": "c166d9cfafdac0cfec5b960939f8e9c459230dc2",
+  "related_read_qualification_git_blob": "e21e188d74cfe35b02d7fd74566133f580cd9d52",
+  "examined_sections": [
+    "entire seccomp and readiness modules",
+    "foundation.patch module declarations",
+    "lib.rs and relevant production_mounts.rs identity sections",
+    "README and QUALIFICATION scope boundaries",
+    "both successor supervisor src trees for readiness / seccomp / execution-witness references"
+  ],
+  "finding": "No new demonstrated reachable host-global or cross-generation readiness acceptance beyond publicly pending r33 integration and mount/proc/MAC gates.",
+  "installed_seccomp_for_production_verified": false,
+  "ExecutedTreeWitness_property_generation_binding_verified": false,
+  "selected_source_successor_tests_inherited": false,
+  "runtime_qualified": false,
+  "production_ready": false,
+  "tests_executed_by_review": 0
+}

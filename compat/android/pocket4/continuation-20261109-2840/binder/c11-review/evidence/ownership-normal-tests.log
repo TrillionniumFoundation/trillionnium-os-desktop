@@ -1,0 +1,240 @@
+Running as unit: p4-c11-binder-ownership-normal-20261109-2840-r1.service; invocation ID: 926abb2b959a4744b1734ab893e559e1
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+   Compiling version_check v0.9.5
+   Compiling generic-array v0.14.7
+   Compiling syn v3.0.2
+   Compiling libc v0.2.188
+   Compiling typenum v1.20.1
+   Compiling serde_core v1.0.229
+   Compiling zmij v1.0.23
+   Compiling cfg-if v1.0.4
+   Compiling getrandom v0.4.3
+   Compiling thiserror v2.0.19
+   Compiling serde v1.0.229
+   Compiling rustix v1.1.4
+   Compiling serde_json v1.0.151
+   Compiling utf8parse v0.2.2
+   Compiling anstyle-parse v1.0.0
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling thiserror-impl v2.0.19
+   Compiling serde_derive v1.0.229
+   Compiling itoa v1.0.18
+   Compiling is_terminal_polyfill v1.70.2
+   Compiling anstyle v1.0.14
+   Compiling colorchoice v1.0.5
+   Compiling bitflags v2.13.1
+   Compiling anstyle-query v1.1.5
+   Compiling memchr v2.8.3
+   Compiling linux-raw-sys v0.12.1
+   Compiling anstream v1.0.0
+   Compiling digest v0.10.7
+   Compiling syn v2.0.119
+   Compiling clap_lex v1.1.0
+   Compiling strsim v0.11.1
+   Compiling cpufeatures v0.2.17
+   Compiling heck v0.5.0
+   Compiling once_cell v1.21.4
+   Compiling fastrand v2.5.0
+   Compiling tempfile v3.27.0
+   Compiling clap_derive v4.6.1
+   Compiling sha2 v0.10.9
+   Compiling clap_builder v4.6.0
+   Compiling hex v0.4.3
+   Compiling droidloom-contracts v0.1.0 (/home/alex/work/pocket4-production-binder-stage-20261109-2840-r1/c11-ownership-review-r1/source/runtime/droidloom-contracts)
+   Compiling clap v4.6.1
+   Compiling droidloom-window-policy v0.1.0 (/home/alex/work/pocket4-production-binder-stage-20261109-2840-r1/c11-ownership-review-r1/source/runtime/droidloom-window-policy)
+   Compiling droidloom-cpu-placement v0.1.0 (/home/alex/work/pocket4-production-binder-stage-20261109-2840-r1/c11-ownership-review-r1/source/runtime/droidloom-cpu-placement)
+   Compiling droidloom-supervisor v0.1.0 (/home/alex/work/pocket4-production-binder-stage-20261109-2840-r1/c11-ownership-review-r1/source/runtime/droidloom-supervisor)
+warning: unused import: `PathBuf`
+  --> runtime/droidloom-supervisor/src/production_host_admission.rs:21:34
+   |
+21 | use std::path::{Component, Path, PathBuf};
+   |                                  ^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `fail`
+  --> runtime/droidloom-supervisor/src/production_namespace_binder_child.rs:10:44
+   |
+10 | use super::{CHILD_FD, Mode, Packet, Phase, fail, finish, send};
+   |                                            ^^^^
+
+warning: unused import: `fail`
+  --> runtime/droidloom-supervisor/src/production_namespace_processfs_child.rs:10:44
+   |
+10 | use super::{CHILD_FD, Mode, Packet, Phase, fail, finish, send};
+   |                                            ^^^^
+
+warning: field `reservation_retention` is never read
+   --> runtime/droidloom-supervisor/src/production_devices.rs:576:5
+    |
+563 | struct DeviceResources {
+    |        --------------- field in this struct
+...
+576 |     reservation_retention: File,
+    |     ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `DeviceResources` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: fields `device_nodes`, `owned_mount_descriptor_closed`, and `after_owned_tree_exit` are never read
+   --> runtime/droidloom-supervisor/src/production_devices.rs:639:16
+    |
+638 | pub(crate) struct DeviceRetirement {
+    |                   ---------------- fields in this struct
+639 |     pub(crate) device_nodes: usize,
+    |                ^^^^^^^^^^^^
+640 |     pub(crate) owned_mount_descriptor_closed: bool,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+641 |     pub(crate) after_owned_tree_exit: bool,
+    |                ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `DeviceRetirement` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: associated function `prepare` is never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:644:19
+    |
+643 | impl PreparedDevices {
+    | -------------------- associated function in this implementation
+644 |     pub(crate) fn prepare(witness: &OwnedNamespaceWitness<'_>) -> Result<Self> {
+    |                   ^^^^^^^
+
+warning: method `retire_untransferred` is never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:805:23
+    |
+790 |     impl PrivateControlDevices {
+    |     -------------------------- method in this implementation
+...
+805 |         pub(crate) fn retire_untransferred(self) -> Result<DeviceRetirement> {
+    |                       ^^^^^^^^^^^^^^^^^^^^
+
+warning: method `broker_verify_backing` is never used
+   --> runtime/droidloom-supervisor/src/production_identity.rs:896:19
+    |
+839 | impl IdentityLease {
+    | ------------------ method in this implementation
+...
+896 |     pub(crate) fn broker_verify_backing(&self, data: &File, metadata: &File) -> Result<()> {
+    |                   ^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `MANIFEST_ROOT` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:25:7
+   |
+25 | const MANIFEST_ROOT: &str = "/etc/droidloom/cohorts";
+   |       ^^^^^^^^^^^^^
+
+warning: constant `IMAGE_ROOT` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:26:7
+   |
+26 | const IMAGE_ROOT: &str = "/var/lib/droidloom/cohorts";
+   |       ^^^^^^^^^^
+
+warning: method `bounded_bytes` is never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:257:8
+    |
+200 | impl SealedFile {
+    | --------------- method in this implementation
+...
+257 |     fn bounded_bytes(&self, limit: u64) -> Result<Vec<u8>> {
+    |        ^^^^^^^^^^^^^
+
+warning: fields `system_fs` and `vendor_fs` are never read
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:368:5
+    |
+364 | pub(crate) struct VerifiedCohort {
+    |                   -------------- fields in this struct
+...
+368 |     system_fs: Filesystem,
+    |     ^^^^^^^^^
+369 |     vendor_fs: Filesystem,
+    |     ^^^^^^^^^
+    |
+    = note: `VerifiedCohort` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: associated items `load` and `layout` are never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:374:19
+    |
+373 | impl VerifiedCohort {
+    | ------------------- associated items in this implementation
+374 |     pub(crate) fn load(witness: &OwnedNamespaceWitness<'_>) -> Result<Self> {
+    |                   ^^^^
+...
+445 |     pub(crate) fn layout(&self) -> AndroidImageLayout {
+    |                   ^^^^^^
+
+warning: field `reservation_retention` is never read
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:901:5
+    |
+894 | struct MountResources {
+    |        -------------- field in this struct
+...
+901 |     reservation_retention: File,
+    |     ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `MountResources` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: associated items `prepare` and `retire_untransferred` are never used
+    --> runtime/droidloom-supervisor/src/production_mounts.rs:948:19
+     |
+ 947 | impl PreparedMounts {
+     | ------------------- associated items in this implementation
+ 948 |     pub(crate) fn prepare(
+     |                   ^^^^^^^
+...
+1078 |     pub(crate) fn retire_untransferred(mut self) -> Result<MountRetirement> {
+     |                   ^^^^^^^^^^^^^^^^^^^^
+
+warning: variant `Admitted` is never constructed
+  --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:17:5
+   |
+16 | enum BaseMounts {
+   |      ---------- variant in this enum
+17 |     Admitted(PreparedMounts),
+   |     ^^^^^^^^
+
+warning: variant `Admitted` is never constructed
+  --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:45:5
+   |
+44 | enum DeviceMounts {
+   |      ------------ variant in this enum
+45 |     Admitted(PreparedDevices),
+   |     ^^^^^^^^
+
+warning: methods `attach_empty_base` and `attach_private_devices` are never used
+   --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:435:19
+    |
+347 | impl IsolatedNamespaces {
+    | ----------------------- methods in this implementation
+...
+435 |     pub(crate) fn attach_empty_base(self, bases: PreparedMounts) -> Result<Self> {
+    |                   ^^^^^^^^^^^^^^^^^
+...
+477 |     pub(crate) fn attach_private_devices(self, devices: PreparedDevices) -> Result<Self> {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `droidloom-supervisor` (lib test) generated 18 warnings (run `cargo fix --lib -p droidloom-supervisor --tests` to apply 3 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 25.79s
+     Running unittests src/lib.rs (/home/alex/work/pocket4-production-binder-stage-20261109-2840-r1/c11-ownership-review-r1/target/debug/deps/droidloom_supervisor-63ac7238d3bd685e)
+
+running 10 tests
+test control::diagnostics::tests::binder_timeout_is_not_a_valid_exit_history ... ok
+test development::tests::binder_ioctl_matches_linux_uapi ... ok
+test linux_plan::tests::binder_and_partition_allowlists_are_exact ... ok
+test production_namespace::child::private_binder::tests::binder_diagnostics_do_not_accept_proc_stage_or_ready ... ok
+test production_namespace::child::private_binder::tests::exact_kernel_binder_ioctl_layouts ... ok
+test production_namespace::child::private_binder_ipc::tests::kernel_data_pointer_must_stay_wholly_in_held_mapping ... ok
+test production_namespace::child::private_binder_ipc::tests::transaction_layout_matches_exact_x86_64_binder_uapi ... ok
+test production_namespace::tree::binder::tests::binder_context_inventory_rejects_alias_and_foreign_major ... ok
+test production_namespace::tree::binder::tests::binder_mount_policy_rejects_inherited_global_or_device_disabled_mounts ... ok
+test production_namespace::tree::binder::tests::privileged_private_binder_controls ... ignored, requires separately reviewed root private Binder-major, loop and namespace control
+
+test result: ok. 9 passed; 0 failed; 1 ignored; 0 measured; 245 filtered out; finished in 0.00s
+
+          Finished with result: success
+Main processes terminated with: code=exited, status=0/SUCCESS
+               Service runtime: 25.836s
+             CPU time consumed: 25.801s
+                   Memory peak: 815.5M (swap: 0B)

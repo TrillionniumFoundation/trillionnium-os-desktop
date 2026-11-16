@@ -1,0 +1,177 @@
+{
+  "aosp_source_writes": 0,
+  "builds_started": 0,
+  "calls": [
+    {
+      "raw": {
+        "bytes": 8474,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/eyedropper-original-provider-r1/superproject-apps-tree.raw.json",
+        "sha256": "58bdef0de69bb839c70a6163333f874373f403953381af10d90085f8b4b894c8"
+      },
+      "status": 200,
+      "url": "https://android.googlesource.com/platform/superproject/+/28f0bbddc24d56c8ec5a8df5342ac7a292184039/packages/apps/?format=JSON"
+    },
+    {
+      "raw": {
+        "bytes": 1596,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/eyedropper-original-provider-r1/root-tree.raw.json",
+        "sha256": "c4e1f7b78a11b096661e9775b943878f73d2995f88ff3001f9338b8a27601025"
+      },
+      "status": 200,
+      "url": "https://android.googlesource.com/platform/packages/apps/EyeDropper/+/225af0c6253316198738699de9041d1f28d0df44/?format=JSON"
+    },
+    {
+      "raw": {
+        "bytes": 233,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/eyedropper-original-provider-r1/flags-tree.raw.json",
+        "sha256": "0b5ff69bfb4092137a1988f33183fc4de409f18b21beba269ead8799006bdc92"
+      },
+      "status": 200,
+      "url": "https://android.googlesource.com/platform/packages/apps/EyeDropper/+/225af0c6253316198738699de9041d1f28d0df44/flags/?format=JSON"
+    },
+    {
+      "raw": {
+        "bytes": 2940,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/eyedropper-original-provider-r1/encoded/000.b64",
+        "sha256": "e7fdbc75069b72a459042bab811f481981b32071d267878756203201947cbef8"
+      },
+      "status": 200,
+      "url": "https://android.googlesource.com/platform/packages/apps/EyeDropper/+/225af0c6253316198738699de9041d1f28d0df44/Android.bp?format=TEXT"
+    },
+    {
+      "raw": {
+        "bytes": 372,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/eyedropper-original-provider-r1/encoded/001.b64",
+        "sha256": "10b5c1592dda253a350e5cbfaf879c027904706ab014c4e97f1e7fb2af887f43"
+      },
+      "status": 200,
+      "url": "https://android.googlesource.com/platform/packages/apps/EyeDropper/+/225af0c6253316198738699de9041d1f28d0df44/flags/eye_dropper_flags.aconfig?format=TEXT"
+    }
+  ],
+  "commit": "225af0c6253316198738699de9041d1f28d0df44",
+  "errors": [],
+  "files": [
+    {
+      "mode": 33188,
+      "oid": "d263e2e169683853f1eecebb5b73a4effd064316",
+      "path": "Android.bp",
+      "reference": {
+        "bytes": 2204,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/eyedropper-original-provider-r1/original/Android.bp",
+        "sha256": "9ec427f67a6a645a847436f39ff26a7c15fa1f97fbe7f5e04a4c95b4fd9e3816"
+      },
+      "text": "package {\n    // See: http://go/android-license-faq\n    default_applicable_licenses: [\"Android-Apache-2.0\"],\n    default_team: \"trendy_team_arc_next\",\n}\n\nandroid_library {\n    name: \"EyeDropperLib\",\n    srcs: [\"src/**/*.kt\"],\n    resource_dirs: [\"res\"],\n    platform_apis: true,\n    static_libs: [\n        \"androidx.activity_activity\", // ComponentActivity\n        \"androidx.activity_activity-compose\", // setContent\n        \"androidx.appcompat_appcompat\", // AppCompatResources\n        \"hilt_android\",\n\n        // Jetpack Compose & runtime\n        \"androidx.compose.runtime_runtime\",\n        \"androidx.compose.ui_ui\", // ComposeView\n        \"androidx.compose.ui_ui-graphics\",\n        \"androidx.compose.ui_ui-geometry\",\n        \"androidx.compose.ui_ui-unit\",\n        \"androidx.compose.material_material-icons-core\",\n        \"androidx.compose.material_material-icons-extended\",\n        \"androidx.compose.foundation_foundation\",\n        \"androidx.compose.foundation_foundation-layout\",\n\n        \"androidx.compose.material3_material3\",\n\n        // Lifecycle, ViewModel, SavedState for ComposeView\n        \"androidx.lifecycle_lifecycle-service\",\n        \"androidx.lifecycle_lifecycle-common\",\n        \"androidx.lifecycle_lifecycle-runtime\", // Provides setViewTreeLifecycleOwner\n        \"androidx.lifecycle_lifecycle-viewmodel\", // Provides setViewTreeViewModelStoreOwner\n        \"androidx.savedstate_savedstate\", // Provides setViewTreeSavedStateRegistryOwner\n        \"androidx.lifecycle_lifecycle-viewmodel-compose\",\n    ],\n}\n\nandroid_app {\n    name: \"EyeDropper\",\n    platform_apis: true,\n    certificate: \"platform\",\n    privileged: true,\n    static_libs: [\n        \"EyeDropperLib\",\n    ],\n    optimize: {\n        optimize: true,\n        shrink_resources: true,\n    },\n}\n\naconfig_declarations {\n    name: \"com.android.eyedropper.flags-aconfig\",\n    package: \"com.android.eyedropper\",\n    container: \"system\",\n    exportable: true,\n    srcs: [\n        \"flags/eye_dropper_flags.aconfig\",\n    ],\n}\n\njava_aconfig_library {\n    name: \"com.android.eyedropper.flags-aconfig-java\",\n    aconfig_declarations: \"com.android.eyedropper.flags-aconfig\",\n    defaults: [\"framework-minus-apex-aconfig-java-defaults\"],\n}\n"
+    },
+    {
+      "mode": 33188,
+      "oid": "3467349407f6f9180ffed10b21d579783586627a",
+      "path": "flags/eye_dropper_flags.aconfig",
+      "reference": {
+        "bytes": 279,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/eyedropper-original-provider-r1/original/flags/eye_dropper_flags.aconfig",
+        "sha256": "71ab73bc32c2792955592a414cdeef3506d7faa6ab9cfbbab647032090677966"
+      },
+      "text": "package: \"com.android.eyedropper\"\ncontainer: \"system\"\n\nflag {\n    name: \"enable_eye_dropper_api\"\n    namespace: \"web_apps_on_chromeos_and_android\"\n    description: \"Feature flag to enable EyeDropper action and color extra in Intent.\"\n    bug: \"399172476\"\n    is_exported: true\n}\n"
+    }
+  ],
+  "finished_ns": 1794249984373719560,
+  "flags_tree": {
+    "entries": [
+      {
+        "id": "3467349407f6f9180ffed10b21d579783586627a",
+        "mode": 33188,
+        "name": "eye_dropper_flags.aconfig",
+        "type": "blob"
+      }
+    ],
+    "id": "9bd5a1d41742ddbb2b8d524bddf3144ee0b901e0"
+  },
+  "gitlink": {
+    "id": "225af0c6253316198738699de9041d1f28d0df44",
+    "mode": 57344,
+    "name": "EyeDropper",
+    "type": "commit"
+  },
+  "repo": "https://android.googlesource.com/platform/packages/apps/EyeDropper",
+  "root_tree": {
+    "entries": [
+      {
+        "id": "52f84bf2f7bdbddb03ce4b4b87e2556c3924445c",
+        "mode": 33188,
+        "name": ".gitignore",
+        "type": "blob"
+      },
+      {
+        "id": "d263e2e169683853f1eecebb5b73a4effd064316",
+        "mode": 33188,
+        "name": "Android.bp",
+        "type": "blob"
+      },
+      {
+        "id": "2a942dda2074248779aefb60f9fdf81d3479b974",
+        "mode": 33188,
+        "name": "AndroidManifest.xml",
+        "type": "blob"
+      },
+      {
+        "id": "2ab809b50d5bf645c3a6e754a968a72551cb146d",
+        "mode": 33188,
+        "name": "CleanSpec.mk",
+        "type": "blob"
+      },
+      {
+        "id": "9a2112dc1960bb384dd4340acb92e1014e1c1169",
+        "mode": 33188,
+        "name": "OWNERS",
+        "type": "blob"
+      },
+      {
+        "id": "1c577fb17bfc9a570e8f5c52bd741cfc2f8fd6b4",
+        "mode": 33188,
+        "name": "PREUPLOAD.cfg",
+        "type": "blob"
+      },
+      {
+        "id": "a48b15548515455454cb508605f3e852a8e25097",
+        "mode": 33188,
+        "name": "TEST_MAPPING",
+        "type": "blob"
+      },
+      {
+        "id": "9bd5a1d41742ddbb2b8d524bddf3144ee0b901e0",
+        "mode": 16384,
+        "name": "flags",
+        "type": "tree"
+      },
+      {
+        "id": "73966e1eb1d9f4c38409a4e42d0b67d5b3d5574c",
+        "mode": 16384,
+        "name": "res",
+        "type": "tree"
+      },
+      {
+        "id": "4505cdc2179486f18c671a0833dacb06b514e9df",
+        "mode": 16384,
+        "name": "src",
+        "type": "tree"
+      },
+      {
+        "id": "2058056333f1e3628f7b2d185d7c4721e7a8f2c1",
+        "mode": 16384,
+        "name": "tests",
+        "type": "tree"
+      }
+    ],
+    "id": "91901e492bd3dd2b26b0364f452e8a176d576354"
+  },
+  "schema": "native602-eyedropper-public-origin-v1",
+  "source": {
+    "bytes": 4021,
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/eyedropper-original-provider-r1/fetcher.py",
+    "sha256": "c6b41730a5fe8cc80e3fabe5ddbf6401d12c06bdf467e516ae9a2d1e05a9602b"
+  },
+  "source_qualified": false,
+  "started_ns": 1794249979401464252,
+  "state": "PINNED_ORIGINAL_METADATA_ONLY",
+  "superproject": "28f0bbddc24d56c8ec5a8df5342ac7a292184039"
+}

@@ -1,0 +1,630 @@
+{
+  "actual_audio_source": {
+    "full_APEX_qualified": false,
+    "materialized_manifest": {
+      "bytes": 151251,
+      "sha256": "39160dee9948e4680b73da42f25a43132902e1d113f34223e5dabecfb9781428"
+    },
+    "normal_commands_completed": 4,
+    "normal_migration_state": "SUCCEEDED",
+    "projects": 316,
+    "source_commit": "3b4199c0af6e430a852131a71f87aa65aef8f813",
+    "source_lock_sha256": "c104640627a1beb35b25423656e751a4b56ac17287505c0ee2efeeb7d0419560",
+    "source_locks_released": true,
+    "source_result": {
+      "bytes": 25639,
+      "sha256": "85e923e977cbcb91997fc48c482ea35c5507d9f675383dee120b0d40d3f8ea37"
+    },
+    "source_tree": "5ccefae63418a1efdd6bb716b63a77deb80601c0"
+  },
+  "actual_audio_source_previous_309": {
+    "materialized_manifest": {
+      "bytes": 147165,
+      "sha256": "b7c42d4574d048bce42a0994856121e38355f16e0b96884785686e37b7c7ae03"
+    },
+    "normal_commands_completed": 4,
+    "normal_migration_state": "SUCCEEDED",
+    "projects": 309,
+    "relationship_to_earlier_public_candidate": "A distinct actual source lineage. Earlier public prepared309 source and its focused test results remain historical; their qualification is not transferred.",
+    "source_commit": "2884a01f853caa94f7b66c7e945b0e2818f8ca74",
+    "source_lock_sha256": "ac2f7fa3d7e53be1b0e69f486876f8ad229dcc64686af208251bd4aee2424ae4",
+    "source_tree": "f5b7455507f68f4d2b60e763701149ac784aa401"
+  },
+  "all_blockers_closed": false,
+  "artifact_policy": "Public repair source and compact hashed observations only. Private runtime identities, device/account data, raw private logs and user application data are excluded. Source checks do not establish runtime acceptance.",
+  "audio316_actual_observation": {
+    "candidate_source_commit": "3b4199c0af6e430a852131a71f87aa65aef8f813",
+    "candidate_source_tree": "5ccefae63418a1efdd6bb716b63a77deb80601c0",
+    "current_materialized_manifest_sha256": "39160dee9948e4680b73da42f25a43132902e1d113f34223e5dabecfb9781428",
+    "current_materialized_projects": 316,
+    "first_entry": {
+      "Soong_invocations": 0,
+      "acquired_source_locks": 0,
+      "full_build_started": false,
+      "mutation_attempted": false,
+      "normal_source_commands": 0,
+      "outer_output_complete": true,
+      "outer_output_durable": true,
+      "result_sha256": "96657f737c9fe360e10b35157570d8c9e74303b3f9f7d8ff42c75c18f505f798",
+      "source_locks_released": true,
+      "state": "FIRST_ORIGINAL_NATIVE_LOCK_ADMISSION_REFUSED"
+    },
+    "focused_tests_passed": 9,
+    "full_APEX_qualified": false,
+    "full_attempts": [
+      {
+        "entry": "r2",
+        "job_id": "1a1bb44bfcb-13c47-191",
+        "reason": "Historical terminal omitted from pin map",
+        "state": "FAILED_BEFORE_FULL_COMMAND"
+      },
+      {
+        "entry": "r3",
+        "job_id": "1a1bb63263d-13c47-237",
+        "state": "FAILED_ORIGINAL_LOCK_ADMISSION",
+        "terminal_sha256": "fd0823013d07ec54e6281132166be2267e27d1fab834a1eac3d70109494ae25b"
+      },
+      {
+        "entry": "r4",
+        "exit_code": 1,
+        "full_output_created": false,
+        "inner_service_started": false,
+        "job_id": "1a1bc0b9232-10b31-56",
+        "memory_max_bytes": 10737418240,
+        "minimum_MemAvailable_bytes": 16106127360,
+        "source_projection_started": false,
+        "state": "FAILED_FRESH_MEMORY_ADMISSION_BEFORE_INNER"
+      },
+      {
+        "Soong_invocations": 0,
+        "artifact_qualified": false,
+        "entry": "r5",
+        "host_reserve_bytes": 5368709120,
+        "inner_MemAvailable_bytes": 13316415488,
+        "input_after_qualified": true,
+        "job_id": "1a1bc2b3d52-138b0-a4",
+        "memory_max_bytes": 8589934592,
+        "normal_builder_started": false,
+        "outer_MemAvailable_bytes": 14082367488,
+        "owned_retirement_complete": true,
+        "required_MemAvailable_bytes": 13958643712,
+        "runtime_admission": {
+          "bytes": 25446,
+          "sha256": "5ea8447292b3db580337197198e28ccac034544c7d5e86b551c4a9b5b6ab4c56"
+        },
+        "state": "FAILED_INNER_FRESH_MEMORY_ADMISSION_BEFORE_NORMAL_BUILD",
+        "terminal": {
+          "bytes": 287493,
+          "sha256": "7e220d77932f3b55646e441d214b52e423d89f35195f84d6567d2b2d990f5ead"
+        }
+      }
+    ],
+    "full_memory_max_bytes": 8589934592,
+    "historical_reconcile_observation": {
+      "completed_normal_verifications": [
+        {
+          "exit_code": 0,
+          "name": "verify-old-materialized"
+        },
+        {
+          "exit_code": 0,
+          "name": "verify-new-lock"
+        }
+      ],
+      "completed_verification_capture_and_retirement": true,
+      "full_APEX_qualified": false,
+      "full_build_started": false,
+      "normal_reconcile_started": true,
+      "recorded_utc": "2026-11-08T13:08:38Z",
+      "runtime_admission_sha256": "f0c009bebe5dd0f6bc3bbb8ebd05724a70bb985aea26b3b21793b7cea304b8ea",
+      "six_original_locks_admitted": true,
+      "source_materialization_qualified": false,
+      "state": "NORMAL_RECONCILE316_RUNNING_AT_LAST_SUCCESSFUL_READBACK"
+    },
+    "host_reserve_bytes": 5368709120,
+    "new_lock_sha256": "c104640627a1beb35b25423656e751a4b56ac17287505c0ee2efeeb7d0419560",
+    "normal_cli_profile": "dev",
+    "normal_cli_tools_built": 2,
+    "public_source": {
+      "actual309_base_commit": "2884a01f853caa94f7b66c7e945b0e2818f8ca74",
+      "files": 431,
+      "historical_prepared309_qualification_inherited": false,
+      "patches": 5,
+      "proof": "build-source-repair-20261108/audio-api35-cts316/public-proof.json",
+      "tree": "2c21ee1bbcbde46c8d07a26c6083e372d550c1c1"
+    },
+    "release_builds": 0,
+    "required_fresh_memavailable_bytes": 13958643712,
+    "runtime_qualified": false,
+    "source_memory_max_bytes": 6442450944,
+    "source_migration_qualified": true,
+    "target_projects": 316
+  },
+  "build_observations": {
+    "bytes": 6682,
+    "path": "continuation/build-observations-20261108-native597-audio316.json",
+    "sha256": "3db21f3ffeef82871c7896765f4ebee8dc89de621b0b9748f85ff82543108730"
+  },
+  "build_observations_previous": {
+    "bytes": 6285,
+    "path": "continuation/build-observations-20261108-native-tls-audio316.json",
+    "sha256": "ff6f8f63a3b391bee0ba661b7639b3bbcd2d8fcc2d74fdf522f6de69f17b7cb7"
+  },
+  "camera_child_cleanup_reconciled": {
+    "all_original_and_isolated_paths_absent": true,
+    "allocated_bytes_deleted": 10301440,
+    "deleted_trees": 2,
+    "job_id": "1a1bb826634-13c47-2ba",
+    "part_of_original_807_inventory": false,
+    "result_sha256": "ae286e61650230d502289cf8357ecc1497279a924bf9abc4c46ab1c7c1ca7d58",
+    "retained_canonical_and_external_sources_unchanged": true,
+    "state": "PRIOR_SUCCESS_RECONCILED_NOT_REPLAYED"
+  },
+  "camera_merged_source": {
+    "A08_conclusion": "success",
+    "A08_run_id": 42508471657,
+    "A08_source_commit": "1b622d1941fa9224c492c9f92c0ed82d9db5516a",
+    "actual_display_qualified": false,
+    "canonical_preparation_display_state_controls": 38,
+    "decoder_sha256": "7421cdd38bd45eff8c0697ce11b1372958a4a5f749c8097e3c0203ed5758056b",
+    "formal_current_preparation_created": true,
+    "fresh_Pocket4_host_controls_passed": true,
+    "fresh_decoder_host_controls": 8,
+    "fresh_owned_display_negative_controls": 4,
+    "inventory_sha256": "28e61371c50638a3ac33d4e28b0466754bc2b81c9f5d015f262d43e60243dd00",
+    "linux_decoder_controls": 11,
+    "observation": {
+      "bytes": 8997,
+      "path": "continuation/camera_video_current/host-controls/current_decoder/observation.json",
+      "sha256": "fa4e1e187ff0ff0222a187344c204ff7ca20a3527bb1dc40c02d9ce3de3e4b29"
+    },
+    "portable59_linux_passed": true,
+    "portable59_mac_passed": true,
+    "portable_controls": 59,
+    "prior_host_qualification_transferred": false,
+    "production_modules": 29,
+    "runtime_qualified": false,
+    "source_integrity_checked_files": 442,
+    "source_integrity_required_files": 74,
+    "state": "SOURCE_AND_FRESH_CANONICAL_COMPONENT_CONTROLS_PASSED_LIVE_RUNTIME_PENDING"
+  },
+  "cleanup_app_experiments": {
+    "all_deleted_paths_absent": true,
+    "allocated_bytes_deleted": 5150584832,
+    "batches": 17,
+    "current_retirement_summary": {
+      "bytes": 4184,
+      "path": "cleanup/obsolete-output-retirement-summary.json",
+      "sha256": "c3a1ca3f2241dd0e7318909a75d29bdee851885f4d0afb46fcb492e4560ab7d9"
+    },
+    "deleted_roots": 729,
+    "original_retirement_deleted_roots": 723,
+    "original_retirement_retained_roots": 84,
+    "protected_identities_unchanged": true,
+    "remaining_retirement": "After final deployment and runtime/application qualification, release current dependencies and recheck references/use before retirement.",
+    "requested_roots": 807,
+    "results": {
+      "bytes": 6043,
+      "path": "cleanup/app-retirement-20261108-summary.json",
+      "sha256": "1a2f7ca8b5e97b0ec0e68371aba3299d5b6dbcf0535868a84b113227da1ff5e7"
+    },
+    "retained_roots": 78,
+    "state": "COMPLETED_WITH_RETAINED_CURRENT_DEPENDENCIES"
+  },
+  "current_source_controls": {
+    "audio_continuation": 24,
+    "native_full_resource_profile": 26,
+    "native_release_consumer": 29,
+    "preserve_existing_sensor": 5,
+    "publication_python": "3.9.6",
+    "required_source_inputs": 72,
+    "runtime_or_app_acceptance_claimed": false,
+    "source_integrity_checked": 424,
+    "total": 84
+  },
+  "final_candidate_deployed": false,
+  "last_observed_android_state": "Normally stopped; no deployment performed by this continuation.",
+  "native_actual_observation": {
+    "R11_source_consumer": {
+      "Soong_invocations": 0,
+      "actual_authorities": 107,
+      "job_id": "1a1bc00fa71-10b31-13",
+      "passed": true,
+      "result": {
+        "bytes": 72656,
+        "sha256": "c1577a12f363d58f5ea0f02940daa9f3d559088c5d31b48c8b30b07953c044e3"
+      },
+      "source_commands": 0,
+      "state": "ACTUAL_READONLY_SOURCE_CONSUMER_QUALIFIED",
+      "work_locks": 0
+    },
+    "actual_source": {
+      "H_terminal_sha256": "402b2b777e7608b10627c60a421f055f4aaf654a1a9f15a8bd13a58484d2c4ff",
+      "adopted_children_reaped": 48,
+      "all_adopted_children_exit_zero": true,
+      "authority_projection_sha256": "52e6f45986eb408ebd2783200915f7a3a91f16b8f76824da623e203c52432ab7",
+      "contract": "normal-peer-promisor-recovery-v1",
+      "errors": [],
+      "job_id": "1a1bb6057d2-13c47-22d",
+      "materialized_manifest": {
+        "bytes": 386397,
+        "sha256": "f92b8096e7df2ea7eeff112be9817e0744cf1a829d28a655c0415d0087232807"
+      },
+      "normal_full_build_started": false,
+      "physical_retirement_sha256": "446cd500518fa2025ae6352d2b0fb7f23852b55f3ec332d1bda24d10ba70e416",
+      "result": {
+        "bytes": 68810,
+        "sha256": "1d89dcaa0267cebeb30989428802af8cd4117b4629cbebf985a6d0eb5519755b"
+      },
+      "source_locks_released": true,
+      "state": "NORMAL_EXACT_597_MATERIALIZATION_VERIFIED"
+    },
+    "current_full_execution_binding": {
+      "bytes": 75828,
+      "full_build_started": false,
+      "packet_sha256": "6c1ad3b16edba560d54d59dbf439044892ca4e44c3ed289ac2ace1878f9a5b34",
+      "sha256": "bc1aa383f812245b45c7e1f76310cadbe95ac89528ac27a5bc8c0c0ff1eaea94"
+    },
+    "current_preflight_attempts": [
+      {
+        "Soong_invocations": 0,
+        "job_id": "1a1bc2f841f-138b0-bb",
+        "memory_max_events": 4727,
+        "memory_peak_bytes": 1073741824,
+        "oom_events": 0,
+        "result_sha256": "f7f9bf96af1cf60371f652d932698f6000904b219310b79308c11fc78b1dbe57",
+        "state": "FAILED_PREFLIGHT_1GIB_MEMORY_MAX_EVENTS",
+        "swap_bytes": 0
+      },
+      {
+        "Soong_invocations": 0,
+        "job_id": "1a1bc336e91-138b0-d4",
+        "preflight_memory_max_bytes": 2147483648,
+        "result_sha256": "cc34e161cba11dd9be195f2ef4fe76976ace3d385b3ad71384f9ad72ac4bce17",
+        "state": "FAILED_PREFLIGHT_FRESH_13GIB_MEMORY_ADMISSION"
+      }
+    ],
+    "frozen_lock_sha256": "2b699174977614e080cf99a991f3e648774b24581c4ecdc29f1bd53b7b01ef23",
+    "full_native_ART_qualified": false,
+    "normal_full_entry_requirement": "Consume the actual R8 source and R11 qualification, then run the original normal strict builder. A separate source-only physical-discovery producer is not a prerequisite; the full graph remains unqualified until real execution.",
+    "normal_materialization_qualified": true,
+    "physical_fixedpoint_qualified": false,
+    "previous_curl56_failure": {
+      "adopted_children_reaped": 60,
+      "controller_sha256": "b56fd639a8250c85bbf67b966e406fa3af4687962c3063327f1d82db21e59c6d",
+      "fresh_entry_recheck_required": true,
+      "inner_EOF_stderr": true,
+      "inner_EOF_stdout": true,
+      "inner_capture_complete": true,
+      "inner_capture_prefix_only": false,
+      "lifecycle_operations_unchanged": true,
+      "memory_max_bytes": 3221225472,
+      "memory_max_events": 0,
+      "memory_peak_bytes": 2887106560,
+      "nonzero_status_children": 0,
+      "normal_cli_unchanged": true,
+      "normal_command_exit_codes": [
+        0,
+        0,
+        1
+      ],
+      "observed_error": "Git exit 128: curl 56 Recv failure: Connection timed out; 27824 bytes of body still expected; early EOF; index-pack failed; promisor fetch failed",
+      "oom_events": 0,
+      "outer_output_complete": true,
+      "outer_output_durable": true,
+      "owned_retirement_qualified": true,
+      "physical_retirement_observed_utc": "2026-11-08T13:02:06.939245628Z",
+      "physical_retirement_sha256": "294b52223e88ddbafcb593cbf49c001619132ac8031b5772b319b0f072149d5e",
+      "preparation_sha256": "75c156d4c254ec088a10ee36cce3d3600f49a0dbc4a8756d249811d0d8a1910d",
+      "result_bytes": 1143044,
+      "result_sha256": "45ec3f8e8a8f23c5ae0864d4fe863d48e641ae832f2402d673a555cdfd664b99",
+      "signals_sent": 0,
+      "six_original_locks_observed_free": true,
+      "source_locks_released": true,
+      "state": "FAILED_RETIRED",
+      "swap_bytes": 0,
+      "terminal_received": true,
+      "zero_status_children": 60
+    },
+    "previous_failure": {
+      "adopted_children_reaped": 379,
+      "inner_capture_complete": false,
+      "inner_capture_prefix_only": true,
+      "memory_max_bytes": 3221225472,
+      "memory_max_events": 15976,
+      "nonzero_exit_code": 128,
+      "nonzero_status_children": 1,
+      "observed_error_prefix": "Git exit 128: GnuTLS recv error (-110): The TLS connection was non-properly terminated.",
+      "oom_events": 0,
+      "outer_output_complete": true,
+      "outer_output_durable": true,
+      "owned_retirement_qualified": true,
+      "project": "platform/packages/services/CrossDeviceSync",
+      "reclaim_max_events_are_not_oom": true,
+      "result_sha256": "fde6cac7067c0a405a59a6b9d9a598080f9f2ed26977923d0649c80d1eec4b88",
+      "signals_sent": 0,
+      "state": "NORMAL_MATERIALIZATION_FAILED_PRESERVED",
+      "swap_bytes": 0,
+      "zero_status_children": 378
+    },
+    "published_source_projects": 597,
+    "runtime_qualified": false,
+    "target_projects": 597
+  },
+  "native_attempt12": {
+    "build_qualified": false,
+    "bytes": 1943,
+    "clean_retirement_observed": true,
+    "continuous_absence_or_unobserved_interference_excluded": false,
+    "path": "continuation/native-attempt12-reconciliation.json",
+    "sha256": "6182a47a6645051e2bb5d13c025197baac27ecf8084dbac25cabe6eec6ffafa6",
+    "state": "FAILED_BUILD_RECONCILED_AND_RETIRED"
+  },
+  "next_full_build_resource_profile": {
+    "Audio_GOGC": 50,
+    "Audio_GOMAXPROCS": 2,
+    "Audio_GOMEMLIMIT": "5GiB",
+    "Audio_then_Native_serialized": true,
+    "build_memory_max_bytes": 25769803776,
+    "complete_build_fit_demonstrated": false,
+    "cpu_count": 8,
+    "fresh_MemAvailable_minimum_bytes": 31138512896,
+    "host": "desktop",
+    "host_reserve_bytes": 5368709120,
+    "normal_parallelism": 6,
+    "public_disk_reserve_bytes": 17179869184,
+    "single_build_output_budget_bytes": 66571993088,
+    "swap_max_bytes": 0
+  },
+  "next_full_build_resource_profile_previous_Pocket4": {
+    "Go_memory_limit": "5GiB",
+    "build_memory_max_bytes": 8589934592,
+    "complete_build_fit_demonstrated": false,
+    "cpu_affinity": [
+      0,
+      1
+    ],
+    "cpu_quota_percent": 200,
+    "fresh_MemAvailable_minimum_bytes": 13958643712,
+    "host_reserve_bytes": 5368709120,
+    "swap_max_bytes": 0
+  },
+  "offload_preparation": {
+    "audio_source_transfer_complete": false,
+    "audio_source_transfer_job": "1a1bc7196b9-138b0-288",
+    "copied_previous_runtime_evidence_qualifies_new_build": false,
+    "destination_data_available_observed_bytes": 205116530688,
+    "files_per_batch_max": 8192,
+    "full_build_started": false,
+    "native_source_transfer_complete": false,
+    "native_source_transfer_job": "1a1bc6ea7b1-138b0-26f",
+    "new_host_build_generation_required": true,
+    "previous_unbatched_transfers_cancelled_and_retired": true,
+    "production_data_or_signing_secrets_transferred": false,
+    "source316_observed_bytes": 39471591424,
+    "state": "BOUNDED_EXACT_FILE_BATCH_SOURCE_TRANSFERS_RUNNING"
+  },
+  "original_application_acceptance": {
+    "accepted": 0,
+    "actual_WebView_provider_retained_separately": true,
+    "experimental_packages_to_retire_after_original_acceptance": 4,
+    "final_production_package_count_planned": 41,
+    "installed_registrations_observed": 45,
+    "latest_upstream_versions_verified": false,
+    "registry_audit_did_not_write_or_mount_user_image": true,
+    "registry_observation_utc": "2026-11-08T16:39:26Z",
+    "required": 45,
+    "source_or_host_checks_count_as_whole_application_acceptance": false
+  },
+  "pending": {
+    "audio": "Source316 is qualified. Exact source transfer to desktop is running; fresh whole-APEX and compiled-bridge full evidence remain required. No previous host runtime authority transfers.",
+    "camera_and_storage": "Current Camera source38, decoder8, owned display negative4 and formal preparation passed in the canonical location. Real Main/display/audio, Camera2/UVC, Camera recovery, Storage lifecycle and whole-app acceptance remain pending.",
+    "cleanup": "The original inventory is now 729 removed / 78 retained. Migrate live references and retire obsolete roots, old payloads and experiments after replacement validation; preserve user images and current signing material.",
+    "final_deployment": "Compose and inspect the complete canonical cohort before using the reviewed installation transaction.",
+    "framework": "The ABI-qualified Sensor library is staged in the canonical candidate. Its actual fresh installed Binder identity/death behavior remains pending.",
+    "native": "Normal597 materialization and R11 source consumption are qualified. Exact source transfer to a separately qualified desktop generation is running; full normal engine and whole-ART build remain unstarted.",
+    "release_currency": "Resolve the installed Android June security baseline against the current stable release/security target, and compare exact official device/channel app metadata. Public store dates alone cannot establish latest APK identity.",
+    "runtime_and_applications": "Qualify one fresh generation and the original 45 whole applications; current accepted count remains zero."
+  },
+  "previous_public_observation": {
+    "bytes": 9012,
+    "path": "continuation/history/state-20261108-before-native-retry-sensor-stage.json",
+    "repository_commit": "056533ec5c5a450a315c8eaa8b68f5c28527dfca",
+    "semantics": "Exact prior state retained; previous failure and qualification scopes remain unchanged.",
+    "sha256": "d68089d9b2a868279e302980035490d67775309b8f6293cd8db7e889bb00ce89"
+  },
+  "publication_state": "SOURCE_MATERIALIZATIONS_QUALIFIED_FULL_ARTIFACTS_AND_RUNTIME_PENDING",
+  "recorded_utc": "2026-11-08T18:43:39Z",
+  "resume_order": [
+    "Audio316 full-only strict APEX with fresh original locks and 8 GiB cap plus 5 GiB host reserve",
+    "Native597 normal strict full Native/ART after Audio retirement",
+    "Complete payload consumers and coherent canonical deployment, fresh host generation and original 45-application acceptance",
+    "Resolve current Android/security and official application release identities; rebuild and requalify changed cohort",
+    "Retire superseded versions and experiment artifacts after reference migration and actual replacement validation"
+  ],
+  "runtime_qualified": false,
+  "schema": "pocket4-android-continuation-v1",
+  "scope": "Pocket4 local Droidloom Android",
+  "sensor_canonical_stage": {
+    "production_changed": false,
+    "ready_for_apply": false,
+    "results": {
+      "bytes": 3203,
+      "path": "sensor-canonical-stage-20261108/verification.json",
+      "sha256": "8328cced4ea06abad0b4f873588a92a0226387d1d20f4a75abb37eaf889b3933"
+    },
+    "state": "ABI_QUALIFIED_CANONICAL_PAYLOAD_STAGED_RUNTIME_PENDING"
+  },
+  "source_package": {
+    "bytes": 10716,
+    "path": "build-source-repair-20261108/manifest.json",
+    "sha256": "9e6a461c5921699d222cf1ddddf79ec30c6634a6f571f8b18ebab6a16777a653"
+  },
+  "source_repairs": {
+    "audio_api35_cts316": {
+      "Mac_replay": {
+        "bytes": 3402,
+        "path": "build-source-repair-20261108/audio-api35-cts316-mac-replay-proof.json",
+        "sha256": "59acc54b0a81466dda0fde2b0fa7bd4f8566616b2ac61d91c6c0503b81b39792"
+      },
+      "candidate_deployed": false,
+      "full_audio_apex_build_qualified": false,
+      "historical_prepared309_qualification_inherited": false,
+      "normal_dev_tools_built": 2,
+      "package": {
+        "bytes": 1992,
+        "path": "build-source-repair-20261108/audio-api35-cts316/manifest.json",
+        "sha256": "1e783aa2f1986e995cab0463545924963627d5c977c3417ddd04f0189dd6f0a6"
+      },
+      "project_count": 316,
+      "public_source_files": 431,
+      "public_source_tree": "2c21ee1bbcbde46c8d07a26c6083e372d550c1c1",
+      "release_builds": 0,
+      "results": {
+        "bytes": 9383,
+        "path": "build-source-repair-20261108/audio-api35-cts316/public-proof.json",
+        "sha256": "0eee63076b490f1ead285d38e73f0fd73e783277d8d866469eac45c53e9ac35d"
+      },
+      "runtime_qualified": false,
+      "source_chain": {
+        "bytes": 2842,
+        "path": "build-source-repair-20261108/audio-api35-cts316/source-chain.json",
+        "sha256": "773d57bda7220c1f849a2032096334d3d77b735d710784de8d9416da6a9e4fca"
+      },
+      "source_commit": "3b4199c0af6e430a852131a71f87aa65aef8f813",
+      "source_reconcile_qualified": true,
+      "state": "EXACT316_ORIGINAL_PROVIDERS_NINE_CONTROLS_TWO_DEV_TOOLS_AND_FIVE_PATCH_REPLAY_VERIFIED",
+      "tests_passed": 9
+    },
+    "audio_junit309": {
+      "complete_audio_APEX_build_qualified": false,
+      "exact_project_count": 309,
+      "execution_observation": "Historical prepared 309 source chain retained. Its old308 entry refused before source work after another exact309 branch had already migrated; current actual lineage and full-host-r2 failure are recorded separately.",
+      "independent_replay_passed": true,
+      "normal_tools_built": 2,
+      "parent_commit": "6eb50f3e0a2184cb822d0704c6f53f261ebd2de4",
+      "results": {
+        "bytes": 7377,
+        "path": "build-source-repair-20261108/integrated-builder/audio-junit309-results.json",
+        "sha256": "a4c672542b46501112597df201e5d0329731d7b10a00fdef065dfb4a5b244d4a"
+      },
+      "source_commit": "7775926d69db45b4fb4989d2fd81db5fda4c3b4d",
+      "source_library_tests": 13,
+      "source_lock_sha256": "5ee79f187a0c308e76160831867552f0328babb54682bc92ddc82ca74785e24c",
+      "source_tree": "fd5593f43118c010b52232f29ed326c3de2e2f4c",
+      "state": "NORMAL_TOOLS_READY_SOURCE_RECONCILE_AND_FULL_APEX_PENDING",
+      "updater_focused_tests": 2
+    },
+    "audio_prerequisite_history": {
+      "bytes": 1386,
+      "complete_audio_APEX_build_qualified": false,
+      "final_repair_published": false,
+      "final_repair_tests_reported": false,
+      "path": "build-source-repair-20261108/audio-source-projection/source-manifest.json",
+      "sha256": "48c7798f1c64189bd03200190b620fddf4b8fcad94d575d2d61107b97a84624b",
+      "source_commit": "fc90abf09eb0f09cc5f46bead149b4d324882722",
+      "state": "PREREQUISITE_RECONSTRUCTED_FINAL_REPAIR_PENDING"
+    },
+    "audio_source_projection": {
+      "complete_audio_APEX_build_qualified": false,
+      "exact_project_count": 308,
+      "final_repair_published": true,
+      "next_provider_repair_qualified": false,
+      "source_chain": {
+        "bytes": 5537,
+        "path": "build-source-repair-20261108/integrated-builder/source-chains.json",
+        "sha256": "ea550089483fd56cf2a31da4871fd5d585fb887c10176a1dba2a8a3016a8b3b1"
+      },
+      "source_commit": "6eb50f3e0a2184cb822d0704c6f53f261ebd2de4",
+      "source_tree": "8df6ddcdea8bad1ee4b964ac472930e009e04443",
+      "state": "FROZEN_308_SOURCE_PUBLISHED_FULL_BUILD_FAILED_NEXT_PROVIDER_REPAIR_PENDING"
+    },
+    "combined_builder": {
+      "actual_historical_597_render_passed": true,
+      "complete_audio_APEX_build_qualified": false,
+      "complete_native_ART_build_qualified": false,
+      "focused_results": {
+        "bytes": 10140,
+        "path": "build-source-repair-20261108/integrated-builder/focused-results.json",
+        "sha256": "da49ffff05f65363a48b14a2d2da09cd1a7ac30c8f99e6a3d5c6591b26c68bc2"
+      },
+      "maximum_projects": 608,
+      "maximum_sparse_paths": 288,
+      "normal_release_tools_built": 2,
+      "recipe_tests": 6,
+      "separate_from_frozen_full_build_inputs": true,
+      "source_chain": {
+        "bytes": 5537,
+        "path": "build-source-repair-20261108/integrated-builder/source-chains.json",
+        "sha256": "ea550089483fd56cf2a31da4871fd5d585fb887c10176a1dba2a8a3016a8b3b1"
+      },
+      "source_files": 476,
+      "source_library_tests": 29,
+      "state": "FOCUSED_RUST_AND_NORMAL_TOOL_BUILDS_PASSED_NOT_DEPLOYED",
+      "unique_updater_tests": 58
+    },
+    "native_frozen_597": {
+      "complete_native_ART_build_qualified": false,
+      "exact_project_count": 597,
+      "source_chain": {
+        "bytes": 5537,
+        "path": "build-source-repair-20261108/integrated-builder/source-chains.json",
+        "sha256": "ea550089483fd56cf2a31da4871fd5d585fb887c10176a1dba2a8a3016a8b3b1"
+      },
+      "source_materialization_qualified": true,
+      "state": "FROZEN597_SOURCE_MATERIALIZED_NORMAL_FULL_PENDING"
+    },
+    "native_sparse_capacity_and_recipe": {
+      "bytes": 1556,
+      "complete_native_ART_build_qualified": false,
+      "path": "build-source-repair-20261108/native-sparse-capacity/source-manifest.json",
+      "sha256": "5d2786da760f71975da06f07782b6359d1285a3411759000cb153ecd352c8120",
+      "tests": {
+        "library": 25,
+        "recipe": 6,
+        "separate_generated_pair": 11
+      }
+    },
+    "native_transport_retry": {
+      "Mac_replay": {
+        "bytes": 2707,
+        "path": "build-source-repair-20261108/native-transport-retry/mac-replay-proof.json",
+        "sha256": "bec981e7228bde62124e13397c4d9daf3bc31baa6308f36babc066dac4bcf38c"
+      },
+      "focused_tests": 4,
+      "full_builder_modified": false,
+      "normal_materialization_run": false,
+      "normal_release_tools_built": 1,
+      "result_git_tree": "31d9c2d58cab931a5e914cb18df7b139a76e3f0b",
+      "results": {
+        "bytes": 6158,
+        "path": "build-source-repair-20261108/native-transport-retry/public-proof.json",
+        "sha256": "a99268e5a36e73f486bfbc3c53c2172abf4ad97df1e44ff47deb34a974fd415e"
+      },
+      "runtime_qualified": false,
+      "source_chain": {
+        "bytes": 2472,
+        "path": "build-source-repair-20261108/native-transport-retry/source-chain.json",
+        "sha256": "1d99804ccdc5461b57918fdda6df716d110069c2a36b2158806aa36fa91c7345"
+      },
+      "source_files": 451,
+      "source_reconcile_qualification_inherited": false,
+      "state": "ISOLATED_GNUTLS_SOURCE_CLI_AND_FOUR_FOCUSED_TESTS_PASSED"
+    }
+  },
+  "stage": {
+    "canonical_Sensor_staged": true,
+    "post_start_required": [
+      "main",
+      "storage",
+      "native",
+      "framework",
+      "applications",
+      "camera",
+      "audio"
+    ],
+    "production_actions_performed_by_this_continuation": false,
+    "ready_for_apply": false
+  },
+  "status": "SOURCE_QUALIFIED_FULL_BUILDS_AND_RUNTIME_PENDING"
+}

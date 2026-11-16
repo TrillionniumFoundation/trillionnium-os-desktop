@@ -1,0 +1,209 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+   Compiling version_check v0.9.5
+   Compiling generic-array v0.14.7
+   Compiling syn v3.0.2
+   Compiling serde_core v1.0.229
+   Compiling typenum v1.20.1
+   Compiling libc v0.2.188
+   Compiling cfg-if v1.0.4
+   Compiling zmij v1.0.23
+   Compiling serde v1.0.229
+   Compiling utf8parse v0.2.2
+   Compiling getrandom v0.4.3
+   Compiling thiserror v2.0.19
+   Compiling rustix v1.1.4
+   Compiling serde_json v1.0.151
+   Compiling anstyle-parse v1.0.0
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v2.0.19
+   Compiling anstyle-query v1.1.5
+   Compiling linux-raw-sys v0.12.1
+   Compiling colorchoice v1.0.5
+   Compiling itoa v1.0.18
+   Compiling anstyle v1.0.14
+   Compiling is_terminal_polyfill v1.70.2
+   Compiling bitflags v2.13.1
+   Compiling memchr v2.8.3
+   Compiling anstream v1.0.0
+   Compiling digest v0.10.7
+   Compiling syn v2.0.119
+   Compiling fastrand v2.5.0
+   Compiling once_cell v1.21.4
+   Compiling strsim v0.11.1
+   Compiling cpufeatures v0.2.17
+   Compiling clap_lex v1.1.0
+   Compiling heck v0.5.0
+   Compiling clap_derive v4.6.1
+   Compiling clap_builder v4.6.0
+   Compiling sha2 v0.10.9
+   Compiling tempfile v3.27.0
+   Compiling hex v0.4.3
+   Compiling droidloom-contracts v0.1.0 (/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/source/runtime/droidloom-contracts)
+   Compiling droidloom-window-policy v0.1.0 (/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/source/runtime/droidloom-window-policy)
+   Compiling clap v4.6.1
+   Compiling droidloom-cpu-placement v0.1.0 (/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/source/runtime/droidloom-cpu-placement)
+   Compiling droidloom-supervisor v0.1.0 (/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/source/runtime/droidloom-supervisor)
+warning: unused import: `PathBuf`
+  --> runtime/droidloom-supervisor/src/production_host_admission.rs:21:34
+   |
+21 | use std::path::{Component, Path, PathBuf};
+   |                                  ^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `reservation_retention` is never read
+   --> runtime/droidloom-supervisor/src/production_devices.rs:576:5
+    |
+563 | struct DeviceResources {
+    |        --------------- field in this struct
+...
+576 |     reservation_retention: File,
+    |     ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `DeviceResources` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: fields `device_nodes`, `owned_mount_descriptor_closed`, and `after_owned_tree_exit` are never read
+   --> runtime/droidloom-supervisor/src/production_devices.rs:639:16
+    |
+638 | pub(crate) struct DeviceRetirement {
+    |                   ---------------- fields in this struct
+639 |     pub(crate) device_nodes: usize,
+    |                ^^^^^^^^^^^^
+640 |     pub(crate) owned_mount_descriptor_closed: bool,
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+641 |     pub(crate) after_owned_tree_exit: bool,
+    |                ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `DeviceRetirement` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: associated function `prepare` is never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:644:19
+    |
+643 | impl PreparedDevices {
+    | -------------------- associated function in this implementation
+644 |     pub(crate) fn prepare(witness: &OwnedNamespaceWitness<'_>) -> Result<Self> {
+    |                   ^^^^^^^
+
+warning: method `retire_untransferred` is never used
+   --> runtime/droidloom-supervisor/src/production_devices.rs:805:23
+    |
+790 |     impl PrivateControlDevices {
+    |     -------------------------- method in this implementation
+...
+805 |         pub(crate) fn retire_untransferred(self) -> Result<DeviceRetirement> {
+    |                       ^^^^^^^^^^^^^^^^^^^^
+
+warning: method `broker_verify_backing` is never used
+   --> runtime/droidloom-supervisor/src/production_identity.rs:896:19
+    |
+839 | impl IdentityLease {
+    | ------------------ method in this implementation
+...
+896 |     pub(crate) fn broker_verify_backing(&self, data: &File, metadata: &File) -> Result<()> {
+    |                   ^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `MANIFEST_ROOT` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:25:7
+   |
+25 | const MANIFEST_ROOT: &str = "/etc/droidloom/cohorts";
+   |       ^^^^^^^^^^^^^
+
+warning: constant `IMAGE_ROOT` is never used
+  --> runtime/droidloom-supervisor/src/production_mounts.rs:26:7
+   |
+26 | const IMAGE_ROOT: &str = "/var/lib/droidloom/cohorts";
+   |       ^^^^^^^^^^
+
+warning: method `bounded_bytes` is never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:257:8
+    |
+200 | impl SealedFile {
+    | --------------- method in this implementation
+...
+257 |     fn bounded_bytes(&self, limit: u64) -> Result<Vec<u8>> {
+    |        ^^^^^^^^^^^^^
+
+warning: fields `system_fs` and `vendor_fs` are never read
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:368:5
+    |
+364 | pub(crate) struct VerifiedCohort {
+    |                   -------------- fields in this struct
+...
+368 |     system_fs: Filesystem,
+    |     ^^^^^^^^^
+369 |     vendor_fs: Filesystem,
+    |     ^^^^^^^^^
+    |
+    = note: `VerifiedCohort` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: associated items `load` and `layout` are never used
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:374:19
+    |
+373 | impl VerifiedCohort {
+    | ------------------- associated items in this implementation
+374 |     pub(crate) fn load(witness: &OwnedNamespaceWitness<'_>) -> Result<Self> {
+    |                   ^^^^
+...
+445 |     pub(crate) fn layout(&self) -> AndroidImageLayout {
+    |                   ^^^^^^
+
+warning: field `reservation_retention` is never read
+   --> runtime/droidloom-supervisor/src/production_mounts.rs:901:5
+    |
+894 | struct MountResources {
+    |        -------------- field in this struct
+...
+901 |     reservation_retention: File,
+    |     ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `MountResources` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: associated items `prepare` and `retire_untransferred` are never used
+    --> runtime/droidloom-supervisor/src/production_mounts.rs:948:19
+     |
+ 947 | impl PreparedMounts {
+     | ------------------- associated items in this implementation
+ 948 |     pub(crate) fn prepare(
+     |                   ^^^^^^^
+...
+1078 |     pub(crate) fn retire_untransferred(mut self) -> Result<MountRetirement> {
+     |                   ^^^^^^^^^^^^^^^^^^^^
+
+warning: variant `Admitted` is never constructed
+  --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:15:5
+   |
+14 | enum BaseMounts {
+   |      ---------- variant in this enum
+15 |     Admitted(PreparedMounts),
+   |     ^^^^^^^^
+
+warning: variant `Admitted` is never constructed
+  --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:43:5
+   |
+42 | enum DeviceMounts {
+   |      ------------ variant in this enum
+43 |     Admitted(PreparedDevices),
+   |     ^^^^^^^^
+
+warning: methods `attach_empty_base` and `attach_private_devices` are never used
+   --> runtime/droidloom-supervisor/src/production_namespace_tree.rs:421:19
+    |
+336 | impl IsolatedNamespaces {
+    | ----------------------- methods in this implementation
+...
+421 |     pub(crate) fn attach_empty_base(self, bases: PreparedMounts) -> Result<Self> {
+    |                   ^^^^^^^^^^^^^^^^^
+...
+463 |     pub(crate) fn attach_private_devices(self, devices: PreparedDevices) -> Result<Self> {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `droidloom-supervisor` (lib test) generated 16 warnings (run `cargo fix --lib -p droidloom-supervisor --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 25.53s
+     Running unittests src/lib.rs (/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/target/debug/deps/droidloom_supervisor-63ac7238d3bd685e)
+creator-exit barrier rearm=false: readable_after_join=true; held_thread_exit=true
+creator-exit barrier rearm=true: readable_after_join=false; held_thread_exit=true

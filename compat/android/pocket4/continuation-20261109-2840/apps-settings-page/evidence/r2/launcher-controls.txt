@@ -1,0 +1,55 @@
+   Compiling droidloom-task-launcher v0.1.0 (/home/alex/work/pocket4-app-release-check-20261109-2840-r1/android/framework/droidloom-task-launcher)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.86s
+     Running unittests src/lib.rs (target/debug/deps/droidloom_task_launcher-08b5b4c0d45df2e6)
+
+running 30 tests
+test policy::tests::changed_framework_during_setup_cannot_publish_success ... ok
+test policy::tests::failed_setup_is_retried_and_never_marks_the_user_prepared ... ok
+test policy::tests::malformed_cache_or_missing_framework_cannot_skip_setup ... ok
+test policy::tests::unavailable_or_untrusted_cache_falls_back_to_full_setup ... ok
+test policy::tests::warm_setup_skips_commands_and_new_users_or_frameworks_prepare_again ... ok
+test tests::completed_activity_can_differ_from_task_base_alias ... ok
+test tests::display_density_uses_androids_supported_numeric_range ... ok
+test tests::exact_completed_activity_takes_precedence_over_handoff_fallback ... ok
+test tests::explicit_completed_component_needs_no_package_manager_command ... ok
+test tests::follows_androids_completed_trampoline_launch ... ok
+test tests::follows_game_handoff_after_launcher_completion_and_on_reopen ... ok
+test tests::handoff_prefers_new_tasks_but_does_not_guess_between_ambiguous_tasks ... ok
+test tests::handoff_requires_visible_owned_task_user_and_display ... ok
+test tests::observation_preimage_keeps_all_root_and_child_ids_and_rejects_ambiguous_records ... ok
+test tests::package_manager_alias_matches_completed_real_activity ... ok
+test tests::package_prefix_does_not_match ... ok
+test tests::permission_completion_requires_the_framework_resolved_component ... ok
+test tests::permission_dialog_can_appear_or_close_during_task_discovery ... ok
+test tests::permission_dialog_is_exported_only_inside_the_owned_task_and_user ... ok
+test tests::play_store_sign_in_stays_in_its_visible_owned_task ... ok
+test tests::rejects_incomplete_or_foreign_launch_results ... ok
+test tests::reopening_accepts_a_unique_restored_or_already_running_task ... ok
+test tests::resolution_restarts_only_explicitly_sized_launches_before_activity_start ... ok
+test tests::retries_only_the_target_display_permission_race ... ok
+test tests::selects_exact_package_on_exact_display ... ok
+test tests::settings_candidate_protocol_uses_one_start_no_policy_and_actual_seqpacket_ack_binding ... ok
+test tests::settings_observation_requires_fixed_pages_and_an_explicit_non_restarting_request ... ok
+test tests::settings_public_entry_cannot_acquire_authority_from_a_component_or_ack ... ok
+test tests::settings_start_is_one_real_process_even_for_the_ordinary_retryable_display_error ... ok
+test tests::validates_component_ownership ... ok
+
+test result: ok. 30 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running unittests src/main.rs (target/debug/deps/droidloom_task_launcher-6bc9839780e6cba0)
+
+running 5 tests
+test tests::binding_an_existing_task_never_becomes_a_launch ... ok
+test tests::parses_persistent_density_operation ... ok
+test tests::preserves_launch_operation ... ok
+test tests::resolution_is_bounded_and_cannot_be_used_for_binding ... ok
+test tests::settings_observation_protocol_and_operation_cannot_bind_or_resize ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests droidloom_task_launcher
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

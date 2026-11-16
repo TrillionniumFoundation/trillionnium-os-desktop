@@ -1,0 +1,225 @@
+diff --git a/android/manifest/audio-bridge-source-lock.json b/android/manifest/audio-bridge-source-lock.json
+index 6b9b2b8979448c44879d23d7a5f4b386ed08e775..e769fa2fe218e490dd1fcf390e1a78ae157b941a 100644
+--- a/android/manifest/audio-bridge-source-lock.json
++++ b/android/manifest/audio-bridge-source-lock.json
+@@ -5530,7 +5530,9 @@
+         "35/system/android.jar",
+         "36/public/android.jar",
+         "36/public/framework.aidl",
+-        "36/public/core-for-system-modules.jar"
++        "36/public/core-for-system-modules.jar",
++        "33/module-lib/android.jar",
++        "33/module-lib/core-for-system-modules.jar"
+       ]
+     },
+     {
+@@ -6199,7 +6201,9 @@
+       "commit": "c24023080df0bdb5988c1e0c641d494574a97c40",
+       "purpose": "Exact Android 17 original providers required by the ordinary engine and complete ART APEX source dependency closure",
+       "sparse_paths": [
+-        "zygote-messages"
++        "zygote-messages",
++        "zygote-sys",
++        "zygote-proc-macros"
+       ]
+     },
+     {
+diff --git a/tools/droidloom-source/src/lib.rs b/tools/droidloom-source/src/lib.rs
+index 572204a739416a69be78427ae333e6e42efbd240..d6266001d31f65b2e825af6db47c5da9b4833622 100644
+--- a/tools/droidloom-source/src/lib.rs
++++ b/tools/droidloom-source/src/lib.rs
+@@ -943,10 +943,71 @@ mod tests {
+         }
+     }
+ 
++    // Preserve the exact r12/SDK58 lock for every earlier recovery fixture.
++    fn audio_before_r12_provider_closure_lock() -> String {
++        let mut previous = include_str!("../../../android/manifest/audio-bridge-source-lock.json").to_owned();
++        for path in [
++            "33/module-lib/android.jar",
++            "33/module-lib/core-for-system-modules.jar",
++            "zygote-sys",
++            "zygote-proc-macros",
++        ] {
++            let added = format!(",\n        \"{path}\"");
++            assert_eq!(previous.matches(&added).count(), 1);
++            previous = previous.replacen(&added, "", 1);
++        }
++        assert_eq!(format!("{:x}", Sha256::digest(previous.as_bytes())),
++            "db5187942e23ef535cfc53ebe47e98ef3e258a9f79d225a621f8fd20cded9a91");
++        previous
++    }
++
++    #[test]
++    fn audio_r12_original_provider_closure_is_a_four_selector_extension() {
++        let old_raw = audio_before_r12_provider_closure_lock();
++        let new_raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
++        let old: SparseSourceLock = serde_json::from_str(&old_raw).unwrap();
++        let new: SparseSourceLock = serde_json::from_str(new_raw).unwrap();
++        assert_eq!(old.projects.len(), 430);
++        assert_eq!(new.projects.len(), 430);
++        let before = build_plan(&old).unwrap();
++        let after = build_plan(&new).unwrap();
++        validate_plan_extension(&before, &after).unwrap();
++        assert!(validate_plan_extension(&after, &before).is_err());
++        let old_value: serde_json::Value = serde_json::from_str(&old_raw).unwrap();
++        let new_value: serde_json::Value = serde_json::from_str(new_raw).unwrap();
++        for (before, after) in old_value["projects"].as_array().unwrap().iter()
++            .zip(new_value["projects"].as_array().unwrap()) {
++            let additions: &[&str] = match before["path"].as_str().unwrap() {
++                "prebuilts/sdk" => &[
++                    "33/module-lib/android.jar",
++                    "33/module-lib/core-for-system-modules.jar",
++                ],
++                "system/zygote" => &["zygote-sys", "zygote-proc-macros"],
++                _ => {
++                    assert_eq!(before, after);
++                    continue;
++                }
++            };
++            for key in ["path", "name", "commit", "purpose"] {
++                assert_eq!(before[key], after[key], "{key}");
++            }
++            let selected_before = before["sparse_paths"].as_array().unwrap();
++            let selected_after = after["sparse_paths"].as_array().unwrap();
++            assert_eq!(&selected_after[..selected_before.len()], selected_before.as_slice());
++            let added: Vec<_> = selected_after[selected_before.len()..].iter()
++                .map(|path| path.as_str().unwrap()).collect();
++            assert_eq!(added.as_slice(), additions);
++        }
++        for key in ["superproject", "links", "policy", "remote_base", "schema_version", "selected_at", "status"] {
++            assert_eq!(old_value[key], new_value[key], "{key}");
++        }
++    }
++
+     #[test]
+     fn audio_released_sdks_extend_the_actual_r11_lock_without_repinning() {
+         let old_raw = audio_before_released_sdk_lock();
+-        let new_raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
++        let new_owned = audio_before_r12_provider_closure_lock();
++        let new_raw = new_owned.as_str();
+         let old: SparseSourceLock = serde_json::from_str(&old_raw).unwrap();
+         let new: SparseSourceLock = serde_json::from_str(new_raw).unwrap();
+         assert_eq!(old.projects.len(), 430);
+@@ -1018,7 +1079,7 @@ mod tests {
+     }
+ 
+     fn audio_before_released_sdk_lock() -> String {
+-        let mut previous = include_str!("../../../android/manifest/audio-bridge-source-lock.json").to_owned();
++        let mut previous = audio_before_r12_provider_closure_lock();
+         for path in [
+             "4/public/android.jar",
+             "4/public/framework.aidl",
+@@ -2300,7 +2361,7 @@ mod tests {
+     fn audio_source_capacity_is_bound_to_the_exact_frozen_lock() {
+         let raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
+         assert_eq!(format!("{:x}", Sha256::digest(raw.as_bytes())),
+-            "db5187942e23ef535cfc53ebe47e98ef3e258a9f79d225a621f8fd20cded9a91");
++            "22ae84b8d0747e371096035f46e636a00990d2a7b4cae8c5727f56fa946d1ee3");
+         let lock: SparseSourceLock = serde_json::from_str(raw).unwrap();
+         assert_eq!(lock.projects.len(), AUDIO_SOURCE_PROJECT_COUNT);
+         assert_eq!(MAX_PROJECTS, 432);
+diff --git a/tools/droidloom-update/src/android.rs b/tools/droidloom-update/src/android.rs
+index e032b972ace19f99c6c59ae42f06643db37b3410..f9bb0b9cc0109a7a470b5d99180dea512b75c40f 100644
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -776,6 +776,9 @@ const AUDIO_RELEASED_SDK_INPUTS: &[&str] = &[
+     "36/public/android.jar",
+     "36/public/framework.aidl",
+     "36/public/core-for-system-modules.jar",
++    // module_Tiramisu uses module-lib system modules, not the public API jar.
++    "33/module-lib/android.jar",
++    "33/module-lib/core-for-system-modules.jar",
+ ];
+ 
+ fn validate_audio_provider_source_paths(
+@@ -799,6 +802,8 @@ fn validate_audio_provider_source_paths(
+         }
+     }
+     for (relative, commit, required) in [
++        ("system/zygote", "c24023080df0bdb5988c1e0c641d494574a97c40", "zygote-sys"),
++        ("system/zygote", "c24023080df0bdb5988c1e0c641d494574a97c40", "zygote-proc-macros"),
+         ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "36/public/api/service-ondeviceintelligence.txt"),
+         ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "36/public/api/service-ondeviceintelligence-removed.txt"),
+         ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "36/system-server/api/service-ondeviceintelligence.txt"),
+@@ -1417,7 +1422,7 @@ fn audio_apex_pcm_patches(mode: SoongDependencyMode) -> &'static [(&'static str,
+     }
+ }
+ 
+-const AUDIO_SOURCE_LOCK_SHA256: &str = "db5187942e23ef535cfc53ebe47e98ef3e258a9f79d225a621f8fd20cded9a91";
++const AUDIO_SOURCE_LOCK_SHA256: &str = "22ae84b8d0747e371096035f46e636a00990d2a7b4cae8c5727f56fa946d1ee3";
+ fn selected_source_lock(repo: &Path, mode: SoongDependencyMode) -> Result<PathBuf> {
+     if mode == SoongDependencyMode::AudioApexTargetClosure {
+         let lock = repo.join("android/manifest/audio-bridge-source-lock.json");
+@@ -3502,11 +3507,70 @@ fn build_targets_with_dependency_mode(
+ mod tests {
+     use super::*;
+ 
+-    fn audio_before_released_sdk_lock() -> String {
++    fn audio_before_r12_provider_closure_lock() -> String {
+         use sha2::{Digest, Sha256};
+         let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
+         let mut previous = fs::read_to_string(
+             repo.join("android/manifest/audio-bridge-source-lock.json")).unwrap();
++        for path in [
++            "33/module-lib/android.jar",
++            "33/module-lib/core-for-system-modules.jar",
++            "zygote-sys",
++            "zygote-proc-macros",
++        ] {
++            let added = format!(",\n        \"{path}\"");
++            assert_eq!(previous.matches(&added).count(), 1);
++            previous = previous.replacen(&added, "", 1);
++        }
++        assert_eq!(format!("{:x}", Sha256::digest(previous.as_bytes())),
++            "db5187942e23ef535cfc53ebe47e98ef3e258a9f79d225a621f8fd20cded9a91");
++        previous
++    }
++
++    #[test]
++    fn audio_r12_provider_guard_rejects_the_actual_sdk58_lock() {
++        let old = audio_before_r12_provider_closure_lock();
++        let directory = tempfile::tempdir().unwrap();
++        let path = directory.path().join("android/manifest/audio-bridge-source-lock.json");
++        write(&path, old.as_bytes()).unwrap();
++        let old_lock = droidloom_source::load_lock(&path).unwrap();
++        let audio = SoongDependencyMode::AudioApexTargetClosure;
++        assert!(selected_source_lock(directory.path(), audio).is_err());
++        let error = validate_audio_provider_source_paths(&old_lock, audio).unwrap_err().to_string();
++        assert!(error.contains("33/module-lib/android.jar"));
++    }
++
++    #[test]
++    fn audio_r12_zygote_requires_original_complete_provider_sources() {
++        let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
++        let lock = droidloom_source::load_lock(
++            &repo.join("android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let audio = SoongDependencyMode::AudioApexTargetClosure;
++        validate_audio_provider_source_paths(&lock, audio).unwrap();
++        for required in ["zygote-sys", "zygote-proc-macros"] {
++            let mut missing = lock.clone();
++            let zygote = missing.projects.iter_mut()
++                .find(|project| project.path == Path::new("system/zygote")).unwrap();
++            zygote.sparse_paths.retain(|path| path != Path::new(required));
++            assert!(validate_audio_provider_source_paths(&missing, audio).is_err(), "{required}");
++            let mut bp_only = missing.clone();
++            bp_only.projects.iter_mut().find(|project| project.path == Path::new("system/zygote")).unwrap()
++                .sparse_paths.push(PathBuf::from(format!("{required}/Android.bp")));
++            assert!(validate_audio_provider_source_paths(&bp_only, audio).is_err());
++            for mode in [SoongDependencyMode::Strict, SoongDependencyMode::NativeBridgeTargetClosure,
++                         SoongDependencyMode::NativeEngineTargetClosure, SoongDependencyMode::MinigbmTargetClosure] {
++                validate_audio_provider_source_paths(&missing, mode).unwrap();
++            }
++        }
++        let mut wrong = lock;
++        wrong.projects.iter_mut().find(|project| project.path == Path::new("system/zygote")).unwrap()
++            .commit = "0000000000000000000000000000000000000000".into();
++        assert!(validate_audio_provider_source_paths(&wrong, audio).is_err());
++    }
++
++    fn audio_before_released_sdk_lock() -> String {
++        use sha2::{Digest, Sha256};
++        let mut previous = audio_before_r12_provider_closure_lock();
+         for path in [
+             "4/public/android.jar",
+             "4/public/framework.aidl",

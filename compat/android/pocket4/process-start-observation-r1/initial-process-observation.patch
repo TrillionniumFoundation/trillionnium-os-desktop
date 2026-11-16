@@ -1,0 +1,43 @@
+--- a/linux_build_support.py
++++ b/linux_build_support.py
+@@ -223,6 +223,25 @@
+             'argv': [s.decode('utf-8', 'strict') for s in (root / 'cmdline').read_bytes().split(b'\0') if s]}
+ 
+ 
++def initial_process_observation(pid, pidfd, reaper):
++    # /proc/PID/exe disappears during exit before WNOWAIT necessarily reports
++    # a waitable child. Keep the same PIDFD and unreaped child while closing
++    # that short observation gap. This does not qualify the executed argv.
++    deadline = time.monotonic() + 0.5
++    poller = select.poll(); poller.register(pidfd, select.POLLIN)
++    while True:
++        try:
++            return process_identity(pid)
++        except (FileNotFoundError, ProcessLookupError):
++            ended = reaper.peek(pid, pidfd)
++            if ended is not None:
++                return {'pid': pid, 'exited_before_process_snapshot': True,
++                        'unreaped_kernel_exit': reaper.observed(ended)}
++            need(time.monotonic() < deadline,
++                 'owned process identity and kernel exit remained unavailable')
++            poller.poll(10)
++
++
+ class OwnedCommands:
+     def __init__(self, directory, source_directory):
+         self.directory = Path(directory); self.directory.mkdir(mode=0o700)
+@@ -244,13 +263,7 @@
+             child = subprocess.Popen(argv, cwd=cwd, env=env, stdin=subprocess.DEVNULL, stdout=out,
+                                      stderr=err, close_fds=True, start_new_session=True)
+             pidfd = os.pidfd_open(child.pid, 0); row['lifecycle']['pidfd_closed'] = False
+-            try:
+-                row['driver'] = process_identity(child.pid)
+-            except (FileNotFoundError, ProcessLookupError):
+-                ended = reaper.peek(child.pid, pidfd)
+-                need(ended is not None, 'live owned child identity disappeared')
+-                row['driver'] = {'pid': child.pid, 'exited_before_process_snapshot': True,
+-                                 'unreaped_kernel_exit': reaper.observed(ended)}
++            row['driver'] = initial_process_observation(child.pid, pidfd, reaper)
+             deadline = time.monotonic() + timeout; poller = select.poll(); poller.register(pidfd, select.POLLIN)
+             while True:
+                 need(recovery or not CANCELLED, 'owned command cancelled')

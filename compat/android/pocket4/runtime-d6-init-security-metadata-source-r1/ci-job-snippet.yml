@@ -1,0 +1,20 @@
+# Independent Linux job; configure Rust and the existing host dependencies first.
+# Pin RUNTIME_D6_INVENTORY_SHA256 in the containing workflow, outside this capsule.
+- name: Authenticate and replay complete D6 component
+  shell: bash
+  run: |
+    set -euo pipefail
+    : "${RUNTIME_D6_INVENTORY_SHA256:?external D6 inventory pin required}"
+    capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-d6-init-security-metadata-source-r1"
+    printf '%s  %s\n' "$RUNTIME_D6_INVENTORY_SHA256" "$capsule/FILES.sha256" | sha256sum --check --status
+    (cd "$capsule" && sha256sum --quiet -c FILES.sha256)
+    python3 -I -B "$capsule/verify.py" --inventory-sha256 "$RUNTIME_D6_INVENTORY_SHA256" --output "$RUNNER_TEMP/runtime-d6-producer" --report "$RUNNER_TEMP/runtime-d6-replay.json"
+    python3 -I -B "$capsule/test_verifier.py"
+- name: Compile nine D6 controls and both normal release tools
+  timeout-minutes: 45
+  shell: bash
+  run: |
+    set -euo pipefail
+    capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-d6-init-security-metadata-source-r1"
+    python3 -I -B "$capsule/run_ci.py" --inventory-sha256 "$RUNTIME_D6_INVENTORY_SHA256" --producer "$RUNNER_TEMP/runtime-d6-producer" --target "$RUNNER_TEMP/runtime-d6-fresh-cargo-target" --report "$RUNNER_TEMP/runtime-d6-ci.json" --jobs 2
+    python3 -I -B "$capsule/verify.py" --inventory-sha256 "$RUNTIME_D6_INVENTORY_SHA256" --producer "$RUNNER_TEMP/runtime-d6-producer" --tests-log "$RUNNER_TEMP/runtime-d6-ci-logs/nine-runtime-input-controls.stdout" --report "$RUNNER_TEMP/runtime-d6-complete-after.json"

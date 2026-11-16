@@ -1,0 +1,362 @@
+{
+  "Android_starts": 0,
+  "VM_runs": 0,
+  "argv": [
+    "/usr/bin/systemd-run",
+    "--user",
+    "--quiet",
+    "--wait",
+    "--pipe",
+    "--unit",
+    "p4-native643-cuttlefish-normal-20261113-takeover-r1.service",
+    "--slice=app.slice",
+    "-p",
+    "Description=native604-ndk-ordinary:175d0d5adfb67792207361cb4349bff4e4af3c7ec1bfac43b34a779d62a5fbcf:58f35b254623ab8b1def3bbf7aeace5b3388e723e1198a594f868f5143d1efd2",
+    "-p",
+    "Environment=NATIVE_UNIT_NONCE=175d0d5adfb67792207361cb4349bff4e4af3c7ec1bfac43b34a779d62a5fbcf",
+    "-p",
+    "CPUQuota=200%",
+    "-p",
+    "CPUAffinity=8-9",
+    "-p",
+    "MemoryMax=4G",
+    "-p",
+    "MemorySwapMax=0",
+    "-p",
+    "TasksMax=128",
+    "-p",
+    "RuntimeMaxSec=3600",
+    "-p",
+    "TimeoutStopSec=10",
+    "-p",
+    "KillMode=control-group",
+    "--",
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/build_normal_tools.py"
+  ],
+  "automatic_retry": false,
+  "errors": [],
+  "host_policy_loads": 0,
+  "inner": {
+    "bytes": 190760,
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/result.json",
+    "sha256": "528b8f64d91654097a87939b672abb799c363b42cc3dfeb5f30eb3c1752e950b"
+  },
+  "inner_passed": true,
+  "inner_resources": {
+    "affinity": [
+      8,
+      9
+    ],
+    "cpu.max": "200000 100000",
+    "memory.current": "856981504",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.high": "max",
+    "memory.max": "4294967296",
+    "memory.peak": "1056743424",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service"
+  },
+  "intent": {
+    "bytes": 2007,
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/intent.json",
+    "sha256": "f8c4886f3c88754934260cde52eb0e4d9a1672845fd3cb564df79ae5558da8a3"
+  },
+  "observed_owned_cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service",
+  "outer_budget_after_business": {
+    "cpu.max": "100000 100000",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "1073741824",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0"
+  },
+  "outer_budget_before_business": {
+    "affinity": [
+      8,
+      9
+    ],
+    "budget_after_cap": {
+      "cpu.max": "100000 100000",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.max": "1073741824",
+      "memory.swap.current": "0",
+      "memory.swap.max": "0"
+    },
+    "budget_before_cap": {
+      "cpu.max": "100000 100000",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.max": "1073741824",
+      "memory.swap.current": "0",
+      "memory.swap.max": "0"
+    },
+    "controls_target_self_only": true,
+    "historical_outer_budget_upgraded": false,
+    "own_cap_control": {
+      "PIDFD_closed": true,
+      "PIDFD_exit_observed": true,
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "set-property",
+        "--runtime",
+        "hepta-runtime-job-1a1d7487a36-392-a46.service",
+        "MemorySwapMax=0"
+      ],
+      "pid": 2500010,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "self_cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d7487a36-392-a46.service",
+    "swap_zero_before_business": true
+  },
+  "owned_unit_retired": true,
+  "passed": true,
+  "privileged": false,
+  "returncode": 0,
+  "schema": "native643-cuttlefish-ordinary-outer-r1",
+  "stderr": {
+    "bytes": 0,
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/normal.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 0,
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/normal.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "systemd_launcher": {
+    "actual_parent_reaped": true,
+    "argv": [
+      "/usr/bin/systemd-run",
+      "--user",
+      "--quiet",
+      "--wait",
+      "--pipe",
+      "--unit",
+      "p4-native643-cuttlefish-normal-20261113-takeover-r1.service",
+      "--slice=app.slice",
+      "-p",
+      "Description=native604-ndk-ordinary:175d0d5adfb67792207361cb4349bff4e4af3c7ec1bfac43b34a779d62a5fbcf:58f35b254623ab8b1def3bbf7aeace5b3388e723e1198a594f868f5143d1efd2",
+      "-p",
+      "Environment=NATIVE_UNIT_NONCE=175d0d5adfb67792207361cb4349bff4e4af3c7ec1bfac43b34a779d62a5fbcf",
+      "-p",
+      "CPUQuota=200%",
+      "-p",
+      "CPUAffinity=8-9",
+      "-p",
+      "MemoryMax=4G",
+      "-p",
+      "MemorySwapMax=0",
+      "-p",
+      "TasksMax=128",
+      "-p",
+      "RuntimeMaxSec=3600",
+      "-p",
+      "TimeoutStopSec=10",
+      "-p",
+      "KillMode=control-group",
+      "--",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/build_normal_tools.py"
+    ],
+    "cwd": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1",
+    "elapsed_seconds": 57.07221559109166,
+    "errors": [],
+    "forced_termination": false,
+    "pid": 2500011,
+    "pidfd_exit_observed": true,
+    "pidfd_poll_mask": 17,
+    "retirement_known": true,
+    "returncode": 0,
+    "timed_out": false
+  },
+  "systemd_launcher_pidfd_exit_observed": true,
+  "timed_out": false,
+  "unit_reconciliation": {
+    "actual_invocation_id": "6623bf53f2914acd8c93bc28e70fef2c",
+    "actual_started": {
+      "bytes": 956,
+      "identity": [
+        66306,
+        63750678,
+        33024,
+        1000,
+        1000,
+        1,
+        956,
+        1794613214841099386,
+        1794613214841099386
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/qualification/owned-unit-started.json",
+      "sha256": "c214af701ccf8f57094b6bd8c708a292ec88bb614aa6c4f492f6cad2131b1e27"
+    },
+    "actual_started_value": {
+      "boot_id": "b1620269-aaef-43e7-bf47-bc6eb1c1a447",
+      "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service",
+      "controller": {
+        "bytes": 22534,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/build_normal_tools.py",
+        "sha256": "58f35b254623ab8b1def3bbf7aeace5b3388e723e1198a594f868f5143d1efd2"
+      },
+      "description": "native604-ndk-ordinary:175d0d5adfb67792207361cb4349bff4e4af3c7ec1bfac43b34a779d62a5fbcf:58f35b254623ab8b1def3bbf7aeace5b3388e723e1198a594f868f5143d1efd2",
+      "invocation_id": "6623bf53f2914acd8c93bc28e70fef2c",
+      "nonce": "175d0d5adfb67792207361cb4349bff4e4af3c7ec1bfac43b34a779d62a5fbcf",
+      "pid": 2500012,
+      "schema": "native604-ndk-owned-unit-started-r1",
+      "start_ticks": 163897644,
+      "unit": "p4-native643-cuttlefish-normal-20261113-takeover-r1.service"
+    },
+    "attempts": [
+      {
+        "process": {
+          "actual_parent_reaped": true,
+          "argv": [
+            "/usr/bin/systemctl",
+            "--user",
+            "show",
+            "p4-native643-cuttlefish-normal-20261113-takeover-r1.service",
+            "--property=Id,Description,InvocationID,LoadState,ActiveState,SubState,MainPID,ControlGroup,Result,ExecMainCode,ExecMainStatus,Job"
+          ],
+          "cwd": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1",
+          "elapsed_seconds": 0.0033072601072490215,
+          "errors": [],
+          "forced_termination": false,
+          "pid": 2503791,
+          "pidfd_exit_observed": true,
+          "pidfd_poll_mask": 17,
+          "retirement_known": true,
+          "returncode": 0,
+          "timed_out": false
+        },
+        "stderr": {
+          "bytes": 0,
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/launcher-show-00.stderr",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 280,
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/launcher-show-00.stdout",
+          "sha256": "bdb3f82841b78d418b1201af4a3ddcd1991f59b261600bed9fb58075eafed25e"
+        },
+        "unit": {
+          "ActiveState": "inactive",
+          "ControlGroup": "",
+          "Description": "p4-native643-cuttlefish-normal-20261113-takeover-r1.service",
+          "ExecMainCode": "0",
+          "ExecMainStatus": "0",
+          "Id": "p4-native643-cuttlefish-normal-20261113-takeover-r1.service",
+          "InvocationID": "",
+          "Job": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "Result": "success",
+          "SubState": "dead"
+        }
+      }
+    ],
+    "cgroup_absent": true,
+    "deadline_seconds": 45,
+    "errors": [],
+    "expected_cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-native643-cuttlefish-normal-20261113-takeover-r1.service",
+    "final_unit": {
+      "ActiveState": "inactive",
+      "ControlGroup": "",
+      "Description": "p4-native643-cuttlefish-normal-20261113-takeover-r1.service",
+      "ExecMainCode": "0",
+      "ExecMainStatus": "0",
+      "Id": "p4-native643-cuttlefish-normal-20261113-takeover-r1.service",
+      "InvocationID": "",
+      "Job": "",
+      "LoadState": "not-found",
+      "MainPID": "0",
+      "Result": "success",
+      "SubState": "dead"
+    },
+    "finished_ns": 1794613271861520142,
+    "identity_conflict": false,
+    "intent": {
+      "bytes": 2007,
+      "identity": [
+        66306,
+        62964244,
+        33152,
+        1000,
+        1000,
+        1,
+        2007,
+        1794613214780101431,
+        1794613214780101431
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/intent.json",
+      "sha256": "f8c4886f3c88754934260cde52eb0e4d9a1672845fd3cb564df79ae5558da8a3"
+    },
+    "no_start_replay": true,
+    "no_unbound_stop": true,
+    "observations": [
+      {
+        "process": {
+          "actual_parent_reaped": true,
+          "argv": [
+            "/usr/bin/systemctl",
+            "--user",
+            "show",
+            "p4-native643-cuttlefish-normal-20261113-takeover-r1.service",
+            "--property=Id,Description,InvocationID,LoadState,ActiveState,SubState,MainPID,ControlGroup,Result,ExecMainCode,ExecMainStatus,Job"
+          ],
+          "cwd": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1",
+          "elapsed_seconds": 0.0033072601072490215,
+          "errors": [],
+          "forced_termination": false,
+          "pid": 2503791,
+          "pidfd_exit_observed": true,
+          "pidfd_poll_mask": 17,
+          "retirement_known": true,
+          "returncode": 0,
+          "timed_out": false
+        },
+        "stderr": {
+          "bytes": 0,
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/launcher-show-00.stderr",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stdout": {
+          "bytes": 280,
+          "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/tools-build-cuttlefish643-20261113-takeover-r1/control/launcher-show-00.stdout",
+          "sha256": "bdb3f82841b78d418b1201af4a3ddcd1991f59b261600bed9fb58075eafed25e"
+        },
+        "unit": {
+          "ActiveState": "inactive",
+          "ControlGroup": "",
+          "Description": "p4-native643-cuttlefish-normal-20261113-takeover-r1.service",
+          "ExecMainCode": "0",
+          "ExecMainStatus": "0",
+          "Id": "p4-native643-cuttlefish-normal-20261113-takeover-r1.service",
+          "InvocationID": "",
+          "Job": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "Result": "success",
+          "SubState": "dead"
+        }
+      }
+    ],
+    "observed_cgroup_absent_at_return": true,
+    "original_controller_generation_absent": true,
+    "phase": "launcher",
+    "retired": true,
+    "schema": "native604-ndk-owned-unit-reconciliation-r1",
+    "started_ns": 1794613271856635323,
+    "state": "MATCHED_INVOCATION_RETIRED",
+    "stop_requests": [],
+    "unit": "p4-native643-cuttlefish-normal-20261113-takeover-r1.service"
+  }
+}

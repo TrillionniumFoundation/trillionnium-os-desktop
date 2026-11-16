@@ -1,0 +1,55 @@
+{
+  "schema": "pocket4-owner-lifecycle-r2-private-stage-retirement-v1",
+  "observed_utc": "2026-11-09T10:54:20.082354+00:00",
+  "exact_binary_files_retired": [
+    {
+      "file": {
+        "path": "/var/lib/droidloom-owner-lifecycle-r2-private-20261109-be1746a-r1/test-binary",
+        "bytes": 42320208,
+        "sha256": "118f78a02234c9eca71f5c0f5aa20922c0b88b6b0f9dea2d657212b1ebcc3a9d"
+      },
+      "identity": {
+        "dev": 66306,
+        "ino": 110239780,
+        "mode": 33088,
+        "uid": 0,
+        "gid": 0,
+        "nlink": 1
+      },
+      "absent_after": true
+    }
+  ],
+  "units": [
+    {
+      "unit": "pocket4-owner-lifecycle-r2-userns-20261109-be1746a-r1.service",
+      "fields": {
+        "LoadState": "not-found",
+        "ActiveState": "inactive",
+        "SubState": "dead",
+        "MainPID": "0",
+        "ControlGroup": ""
+      },
+      "cgroup_absent": true
+    },
+    {
+      "unit": "pocket4-owner-lifecycle-r2-pid1-20261109-be1746a-r1.service",
+      "fields": {
+        "LoadState": "not-found",
+        "ActiveState": "inactive",
+        "SubState": "dead",
+        "MainPID": "0",
+        "ControlGroup": ""
+      },
+      "cgroup_absent": true
+    }
+  ],
+  "original_helper_test_binary_retained": {
+    "path": "/home/alex/work/pocket4-owner-lifecycle-integration-20261109-be1746a-r2/target/debug/deps/droidloom_supervisor-63ac7238d3bd685e",
+    "bytes": 42320208,
+    "sha256": "118f78a02234c9eca71f5c0f5aa20922c0b88b6b0f9dea2d657212b1ebcc3a9d"
+  },
+  "root_stage_receipts_retained": true,
+  "owner_source_or_user_data_changes": 0,
+  "Android_starts": 0,
+  "production_ready": false
+}

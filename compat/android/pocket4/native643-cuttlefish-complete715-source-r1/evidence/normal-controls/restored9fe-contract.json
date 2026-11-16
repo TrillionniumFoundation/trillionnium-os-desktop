@@ -1,0 +1,4335 @@
+{
+  "actual_allocation_leaf_commands": 5,
+  "actual_build_success": false,
+  "actual_commands": 32,
+  "actual_original_cgroups_absent": [
+    "/sys/fs/cgroup/system.slice/p4-native643-global-compat-full-ai395-lowmem12g-20261113-takeover-r2.service",
+    "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d7215e1b-392-9fe.service",
+    "/sys/fs/cgroup/system.slice/hepta-runtime-job-1a1d7215e1b-392-9fe.service"
+  ],
+  "all_three_original_EX_leases_released": true,
+  "allocation_observations": [
+    {
+      "bytes": 3222,
+      "identity": [
+        66306,
+        73450196,
+        33024,
+        1000,
+        1000,
+        1,
+        3222,
+        1794610668185672811,
+        1794610668185672811
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-native643-global-compat-lowmem12g-20261113-takeover-r2/allocation-observations/observation-00000/result.json",
+      "sha256": "7e2817c72db9f1090bcb920a55d346f1cab802928b33368ef0320fda95f88bd7"
+    },
+    {
+      "bytes": 3222,
+      "identity": [
+        66306,
+        73450202,
+        33024,
+        1000,
+        1000,
+        1,
+        3222,
+        1794610673570477196,
+        1794610673570477196
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-native643-global-compat-lowmem12g-20261113-takeover-r2/allocation-observations/observation-00001/result.json",
+      "sha256": "edac2a2a29e87a2f32c1e6abbc09802ec66fe277101ad0c1691f7c5fa472970a"
+    },
+    {
+      "bytes": 3222,
+      "identity": [
+        66306,
+        73450208,
+        33024,
+        1000,
+        1000,
+        1,
+        3222,
+        1794610734518262970,
+        1794610734518262970
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-native643-global-compat-lowmem12g-20261113-takeover-r2/allocation-observations/observation-00002/result.json",
+      "sha256": "c4bb525b8cb5be0cc7814e368832d562bd99cf599a133c338c80785d7d54012d"
+    },
+    {
+      "bytes": 3223,
+      "identity": [
+        66306,
+        73450232,
+        33024,
+        1000,
+        1000,
+        1,
+        3223,
+        1794610798199949137,
+        1794610798199949137
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-native643-global-compat-lowmem12g-20261113-takeover-r2/allocation-observations/observation-00003/result.json",
+      "sha256": "4780902f969daa10c7d6fd3da0687a9ec80d486df1513e4ea57e30b2c5cf556d"
+    },
+    {
+      "bytes": 3223,
+      "identity": [
+        66306,
+        73450238,
+        33024,
+        1000,
+        1000,
+        1,
+        3223,
+        1794610853983922051,
+        1794610853983922051
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-native643-global-compat-lowmem12g-20261113-takeover-r2/allocation-observations/observation-00004/result.json",
+      "sha256": "989e30aaed0319b92484982c994c7be7d1932dd63cb569ef8b30394623cfb803"
+    }
+  ],
+  "budget_after": {
+    "cpu.max": "200000 100000",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "2147483648",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0"
+  },
+  "budget_before": {
+    "affinity": [
+      8,
+      9
+    ],
+    "budget_after_cap": {
+      "cpu.max": "200000 100000",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.max": "2147483648",
+      "memory.swap.current": "0",
+      "memory.swap.max": "0"
+    },
+    "budget_before_cap": {
+      "cpu.max": "200000 100000",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.max": "2147483648",
+      "memory.swap.current": "0",
+      "memory.swap.max": "max"
+    },
+    "controls_target_self_only": true,
+    "historical_outer_budget_upgraded": false,
+    "own_cap_control": {
+      "PIDFD_closed": true,
+      "PIDFD_exit_observed": true,
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "set-property",
+        "--runtime",
+        "hepta-runtime-job-1a1d728ffe2-392-a09.service",
+        "MemorySwapMax=0"
+      ],
+      "pid": 2471242,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "self_cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d728ffe2-392-a09.service",
+    "swap_zero_before_business": true
+  },
+  "business_first_errors": [
+    "error: device/google/cuttlefish/tests/graphics/Android.bp:19:1: \"CuttlefishDisplayHotplugTest\" depends on undefined module \"CuttlefishDisplayHotplugHelperApp\"."
+  ],
+  "cache_bookend": "complete initial held-FD SHA/F9 plus final held/named F9; no duplicate content reads",
+  "changed_F9_only_in_actual_projection": [],
+  "complete_indexes": 643,
+  "created_ns": 1794611156130765923,
+  "current_index_cache": {
+    "bytes": 525366,
+    "identity": [
+      66306,
+      76201782,
+      33024,
+      1000,
+      1000,
+      1,
+      525366,
+      1794611155992944972,
+      1794611155992944972
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/full9fe-retirement-20261113-takeover-r2/restored643-index-cache.json",
+    "sha256": "a3052296a62b90698390e1cd5c89f39a4dada6f4377f6b271bec38c618dabd28"
+  },
+  "current_locks": [
+    {
+      "bytes": 0,
+      "identity": [
+        66306,
+        60857531,
+        33152,
+        1000,
+        1000,
+        1,
+        0,
+        1794183129522871360,
+        1794183129522871360
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-full.serial.lock",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 8,
+      "identity": [
+        66306,
+        60857480,
+        33152,
+        1000,
+        1000,
+        1,
+        8,
+        1794610668189672666,
+        1794610668189672666
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/package-build.lock",
+      "sha256": "e92e53d6ef46e938cf8c6882146452a793fd1647fa382afa58889e709cd9cfa6"
+    },
+    {
+      "bytes": 8,
+      "identity": [
+        66306,
+        60857481,
+        33152,
+        1000,
+        1000,
+        1,
+        8,
+        1794610668189672666,
+        1794610668189672666
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source-update.lock",
+      "sha256": "e92e53d6ef46e938cf8c6882146452a793fd1647fa382afa58889e709cd9cfa6"
+    }
+  ],
+  "current_physical_index": {
+    "bytes": 21294043,
+    "identity": [
+      66306,
+      76201780,
+      33024,
+      1000,
+      1000,
+      1,
+      21294043,
+      1794611155919947625,
+      1794611155919947625
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/full9fe-retirement-20261113-takeover-r2/restored-source9fe-physical-index.json",
+    "sha256": "36d481110f719d2cfaa36a33db4e562a825ba7c012b140e114e03022000c33e5"
+  },
+  "current_projection_baseline": {
+    "bytes": 92743,
+    "identity": [
+      66306,
+      76201781,
+      33024,
+      1000,
+      1000,
+      1,
+      92743,
+      1794611155989945081,
+      1794611155989945081
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/full9fe-retirement-20261113-takeover-r2/restored161-projection-baseline.json",
+    "sha256": "75eca1596615c740624b1ccdfd266914f8b9fb514a64ee2cde27f78307d3339a"
+  },
+  "current_source_files": 30952,
+  "fresh_original_PIDFD_ESRCH": [
+    2433730,
+    2433732,
+    2433735,
+    2433742,
+    2433770,
+    2433775,
+    2433776,
+    2433777,
+    2433778,
+    2433779,
+    2433780,
+    2433784,
+    2433835,
+    2433864,
+    2433865,
+    2433866,
+    2433867,
+    2433868,
+    2433869,
+    2434073,
+    2434074,
+    2437214,
+    2437216,
+    2437218,
+    2437398,
+    2437402,
+    2437556,
+    2438950,
+    2457322,
+    2457349,
+    2457503,
+    2457722,
+    2460714,
+    2461168,
+    2461456,
+    2461457,
+    2464530,
+    2464531,
+    2464532,
+    2464538,
+    2464553,
+    2464554,
+    2467626,
+    2467627,
+    2467628
+  ],
+  "full_build_qualified": false,
+  "full_builds_started": 0,
+  "metadata_read_bytes": 186052280,
+  "metadata_read_limit_bytes": 268435456,
+  "normal_manifest_epoch": {
+    "after": {
+      "bytes": 409976,
+      "identity": [
+        66306,
+        61116708,
+        33152,
+        1000,
+        1000,
+        1,
+        409976,
+        1794610681692182152,
+        1794610681697894296
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/.droidloom-source-manifest.json",
+      "sha256": "e25ecb35f94bd247aaaf5c925dd96583d57dcfe394de6eebc89e56e604ee34be"
+    },
+    "before": {
+      "bytes": 409976,
+      "identity": [
+        66306,
+        61129227,
+        33152,
+        1000,
+        1000,
+        1,
+        409976,
+        1794605851105614081,
+        1794605851109613923
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/.droidloom-source-manifest.json",
+      "sha256": "e25ecb35f94bd247aaaf5c925dd96583d57dcfe394de6eebc89e56e604ee34be"
+    },
+    "immutable_physical_source_F9_not_relaxed": true
+  },
+  "original_control_manifest": {
+    "bytes": 26907,
+    "identity": [
+      66306,
+      76071767,
+      33024,
+      1000,
+      1000,
+      1,
+      26907,
+      1794610487503234984,
+      1794610487503234984
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/full-ai395-native643-global-compat-lowmem12g-20261113-takeover-r2/source-manifest.json",
+    "sha256": "807fdefade04beb2b5ad21613e4af6c6010940d75ec09ecf5425c58ed8362aeb"
+  },
+  "original_documents": {
+    "after_boundary": {
+      "bytes": 78860,
+      "identity": [
+        66306,
+        73319264,
+        33024,
+        1000,
+        1000,
+        1,
+        78860,
+        1794610851236021909,
+        1794610851236021909
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-native643-global-compat-lowmem12g-20261113-takeover-r2/commands/independent-original-source-boundary-after.json",
+      "sha256": "17e9642ae6334f190a7026bdc10c009fe1253596f2f5cf70eb0ab10315ad43c2"
+    },
+    "before_boundary": {
+      "bytes": 493,
+      "identity": [
+        66306,
+        73319232,
+        33024,
+        1000,
+        1000,
+        1,
+        493,
+        1794610665376774850,
+        1794610665376774850
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-native643-global-compat-lowmem12g-20261113-takeover-r2/commands/independent-original-source-boundary-before.json",
+      "sha256": "f26d82f5e83db61f203978e9c707954202b58a1af6203e2f68ccb6ce76628199"
+    },
+    "effective": {
+      "bytes": 28951,
+      "identity": [
+        66306,
+        73450226,
+        33024,
+        1000,
+        1000,
+        1,
+        28951,
+        1794610735654221698,
+        1794610735654221698
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-native643-global-compat-lowmem12g-20261113-takeover-r2/effective-inputs/result.json",
+      "sha256": "808cecf863b98fcc6e33d048f5c8f80ec8ef95cffa50c30b476e408e11a62760"
+    },
+    "exit": {
+      "bytes": 502,
+      "identity": [
+        66306,
+        78024940,
+        33152,
+        1000,
+        1000,
+        1,
+        502,
+        1794610860700615578,
+        1794610860700677965
+      ],
+      "path": "/home/qq/.local/state/hepta-runtime-mac-worker/jobs/1a1d7215e1b-392-9fe/exit.json",
+      "sha256": "bca850ae21f3fa7d894adeabb3886b7d7e4591d26203783cf8d045d13d85d196"
+    },
+    "fallback": {
+      "bytes": 18953,
+      "identity": [
+        66306,
+        73450258,
+        33024,
+        1000,
+        1000,
+        1,
+        18953,
+        1794610860647679891,
+        1794610860647679891
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-native643-global-compat-lowmem12g-20261113-takeover-r2-fallback/result.json",
+      "sha256": "7df2385ae41f0d99dcbcb56866c6d107889aea89684de39d750dc43d66f4cb33"
+    },
+    "fallback_boundary": {
+      "bytes": 78860,
+      "identity": [
+        66306,
+        73450257,
+        33024,
+        1000,
+        1000,
+        1,
+        78860,
+        1794610860627680617,
+        1794610860627680617
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-native643-global-compat-lowmem12g-20261113-takeover-r2-fallback/commands/independent-original-source-boundary-fallback.json",
+      "sha256": "17e9642ae6334f190a7026bdc10c009fe1253596f2f5cf70eb0ab10315ad43c2"
+    },
+    "index_modes_after": {
+      "bytes": 246103,
+      "identity": [
+        66306,
+        73319254,
+        33024,
+        1000,
+        1000,
+        1,
+        246103,
+        1794610848212131796,
+        1794610848212131796
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-native643-global-compat-lowmem12g-20261113-takeover-r2/commands/original643-index-modes-after.json",
+      "sha256": "c674f5c6064c63a6ec7f9dfd5c619338d30559fc277db339e9a402a5be39bed1"
+    },
+    "index_modes_fallback": {
+      "bytes": 246103,
+      "identity": [
+        66306,
+        73450247,
+        33024,
+        1000,
+        1000,
+        1,
+        246103,
+        1794610857600790615,
+        1794610857600790615
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-native643-global-compat-lowmem12g-20261113-takeover-r2-fallback/commands/original643-index-modes-fallback.json",
+      "sha256": "c674f5c6064c63a6ec7f9dfd5c619338d30559fc277db339e9a402a5be39bed1"
+    },
+    "inner": {
+      "bytes": 226601,
+      "identity": [
+        66306,
+        73319265,
+        33024,
+        1000,
+        1000,
+        1,
+        226601,
+        1794610853986921942,
+        1794610853986921942
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-native643-global-compat-lowmem12g-20261113-takeover-r2/terminal.json",
+      "sha256": "d981625852e0b659b38e9509e7c09799fa638c1d88e6312cd56b93374904a548"
+    },
+    "outer": {
+      "bytes": 16588,
+      "identity": [
+        66306,
+        76071805,
+        33024,
+        1000,
+        1000,
+        1,
+        16588,
+        1794610860648679854,
+        1794610860648679854
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/full-ai395-native643-global-compat-lowmem12g-20261113-takeover-r2/outer-terminal.json",
+      "sha256": "664c63c050903ce72fbd1c0d4e1e1fe0f4f9d2afe1596f06ee9f607c5a247fdb"
+    },
+    "request": {
+      "bytes": 26028,
+      "identity": [
+        66306,
+        78024931,
+        33152,
+        1000,
+        1000,
+        1,
+        26028,
+        1794610651476279804,
+        1794610651476279804
+      ],
+      "path": "/home/qq/.local/state/hepta-runtime-mac-worker/jobs/1a1d7215e1b-392-9fe/request.json",
+      "sha256": "9e21e942efa8aabe98c8c1759ba702c2a4b0bcdc1ecbd1548c148815c908515d"
+    },
+    "started": {
+      "bytes": 330,
+      "identity": [
+        66306,
+        78024936,
+        33152,
+        1000,
+        1000,
+        1,
+        330,
+        1794610651528010012,
+        1794610651528010012
+      ],
+      "path": "/home/qq/.local/state/hepta-runtime-mac-worker/jobs/1a1d7215e1b-392-9fe/started.json",
+      "sha256": "f3cf1c81d88aa1a0c4348c0a78588a6d06ba9d6fc2ce27be8035d149dd82e622"
+    }
+  },
+  "original_full_H": "1a1d7215e1b-392-9fe",
+  "original_result_preserved": true,
+  "previous_full_contract": {
+    "bytes": 21320,
+    "identity": [
+      66306,
+      76071764,
+      33024,
+      1000,
+      1000,
+      1,
+      21320,
+      1794610482988398914,
+      1794610482988398914
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/full-ai395-native643-global-compat-lowmem12g-20261113-takeover-r2/formal-source-contract.json",
+    "sha256": "c65402028d1b48c4e8ef039d52941d45a35a8f1df9a636ff511d45781db010f8"
+  },
+  "prior_failed_retirement_a06": {
+    "actual_original_cgroups_absent": [
+      "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1d7272f47-392-a06.service",
+      "/sys/fs/cgroup/system.slice/hepta-runtime-job-1a1d7272f47-392-a06.service"
+    ],
+    "error": "metadata read budget exceeded during redundant second index hash",
+    "fresh_original_PIDFD_ESRCH": [
+      2470036
+    ],
+    "original_H": "1a1d7272f47-392-a06",
+    "original_documents": {
+      "exit": {
+        "bytes": 498,
+        "identity": [
+          66306,
+          78024968,
+          33152,
+          1000,
+          1000,
+          1,
+          498,
+          1794611037140077353,
+          1794611037140077353
+        ],
+        "path": "/home/qq/.local/state/hepta-runtime-mac-worker/jobs/1a1d7272f47-392-a06/exit.json",
+        "sha256": "6fec032a59e3f8c39a834984ec4acd6a0abf15ac0ee59fcfe8aebf75f0606eba"
+      },
+      "request": {
+        "bytes": 25598,
+        "identity": [
+          66306,
+          78024957,
+          33152,
+          1000,
+          1000,
+          1,
+          25598,
+          1794611032681658617,
+          1794611032681658617
+        ],
+        "path": "/home/qq/.local/state/hepta-runtime-mac-worker/jobs/1a1d7272f47-392-a06/request.json",
+        "sha256": "c90f57ae4f5283f999547582b0fff2e6aac32a8644be6b00d738ecf050860564"
+      },
+      "started": {
+        "bytes": 330,
+        "identity": [
+          66306,
+          78024964,
+          33152,
+          1000,
+          1000,
+          1,
+          330,
+          1794611032729209081,
+          1794611032729209081
+        ],
+        "path": "/home/qq/.local/state/hepta-runtime-mac-worker/jobs/1a1d7272f47-392-a06/started.json",
+        "sha256": "c4f1558feb441d5c4050b5e7ebc812de801b146a489160590fbbf64ede61e60b"
+      }
+    },
+    "original_failed_result_preserved": true,
+    "source_epoch_files_published": 0
+  },
+  "production_ready": false,
+  "projection_originals": 161,
+  "runtime_qualified": false,
+  "schema": "native643-full9fe-independent-physical-retirement-v1",
+  "source_manifest": {
+    "bytes": 409976,
+    "identity": [
+      66306,
+      61116708,
+      33152,
+      1000,
+      1000,
+      1,
+      409976,
+      1794610681692182152,
+      1794610681697894296
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/.droidloom-source-manifest.json",
+    "sha256": "e25ecb35f94bd247aaaf5c925dd96583d57dcfe394de6eebc89e56e604ee34be"
+  },
+  "source_projection_absent": true,
+  "source_staging_absent": true,
+  "source_writers_started": 0,
+  "source_writes": 0,
+  "state": "FULL9FE_ACTUAL_RESULT_PRESERVED_SOURCE_AND_ALL_OWNED_ACTORS_RETIRED",
+  "strict_original_boundary": {
+    "actual_owned_v2_originals": 161,
+    "actual_projection_evidence": [
+      {
+        "bytes": 28951,
+        "identity": [
+          66306,
+          73450226,
+          33024,
+          1000,
+          1000,
+          1,
+          28951,
+          1794610735654221698,
+          1794610735654221698
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-native643-global-compat-lowmem12g-20261113-takeover-r2/effective-inputs/result.json",
+        "sha256": "808cecf863b98fcc6e33d048f5c8f80ec8ef95cffa50c30b476e408e11a62760"
+      }
+    ],
+    "actual_roles": 161,
+    "all_source_original_nsmtime_verified": true,
+    "changed_F9": [
+      {
+        "after": [
+          66306,
+          62037287,
+          33152,
+          1000,
+          1000,
+          1,
+          2679,
+          1793912307292310235,
+          1794610844850253964
+        ],
+        "before": [
+          66306,
+          62037287,
+          33152,
+          1000,
+          1000,
+          1,
+          2679,
+          1793912307292310235,
+          1794600138760572977
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/art/libnativebridge/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          62037293,
+          33152,
+          1000,
+          1000,
+          1,
+          20631,
+          1793912307292547725,
+          1794610844850253964
+        ],
+        "before": [
+          66306,
+          62037293,
+          33152,
+          1000,
+          1000,
+          1,
+          20631,
+          1793912307292547725,
+          1794600138760572977
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/art/libnativebridge/include/nativebridge/native_bridge.h"
+      },
+      {
+        "after": [
+          66306,
+          62037289,
+          33152,
+          1000,
+          1000,
+          1,
+          1012,
+          1793912307292547725,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          62037289,
+          33152,
+          1000,
+          1000,
+          1,
+          1012,
+          1793912307292547725,
+          1794600138760572977
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/art/libnativebridge/libnativebridge.map.txt"
+      },
+      {
+        "after": [
+          66306,
+          62037290,
+          33152,
+          1000,
+          1000,
+          1,
+          22550,
+          1793912307292547725,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          62037290,
+          33152,
+          1000,
+          1000,
+          1,
+          22550,
+          1793912307292547725,
+          1794600138760572977
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/art/libnativebridge/native_bridge.cc"
+      },
+      {
+        "after": [
+          66306,
+          62037514,
+          33152,
+          1000,
+          1000,
+          1,
+          47222,
+          1793912307304779528,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          62037514,
+          33152,
+          1000,
+          1000,
+          1,
+          47222,
+          1793912307304779528,
+          1794600138760572977
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/art/runtime/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          62037641,
+          33152,
+          1000,
+          1000,
+          1,
+          5114,
+          1793912307344517437,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          62037641,
+          33152,
+          1000,
+          1000,
+          1,
+          5114,
+          1793912307344517437,
+          1794600138760572977
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/art/runtime/native_bridge_art_interface.cc"
+      },
+      {
+        "after": [
+          66306,
+          62037688,
+          33152,
+          1000,
+          1000,
+          1,
+          147701,
+          1793912307349518200,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          62037688,
+          33152,
+          1000,
+          1000,
+          1,
+          147701,
+          1793912307349518200,
+          1794600138760572977
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/art/runtime/runtime.cc"
+      },
+      {
+        "after": [
+          66306,
+          67115870,
+          33188,
+          1000,
+          1000,
+          1,
+          7424,
+          1793912336176017166,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          67115870,
+          33188,
+          1000,
+          1000,
+          1,
+          7424,
+          1793912336176017166,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/build/blueprint/bootstrap/command.go"
+      },
+      {
+        "after": [
+          66306,
+          67115858,
+          33188,
+          1000,
+          1000,
+          1,
+          199777,
+          1793912336176573097,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          67115858,
+          33188,
+          1000,
+          1000,
+          1,
+          199777,
+          1793912336176573097,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/build/blueprint/context.go"
+      },
+      {
+        "after": [
+          66306,
+          67253558,
+          33188,
+          1000,
+          1000,
+          1,
+          31627,
+          1793912370087689605,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          67253558,
+          33188,
+          1000,
+          1000,
+          1,
+          31627,
+          1793912370087689605,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/build/soong/ui/build/soong.go"
+      },
+      {
+        "after": [
+          66306,
+          67266714,
+          33152,
+          1000,
+          1000,
+          1,
+          1522,
+          1794125877644245755,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          67266714,
+          33152,
+          1000,
+          1000,
+          1,
+          1522,
+          1794125877644245755,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/device/google/cuttlefish/guest/commands/vkms_controller/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          67268957,
+          33152,
+          1000,
+          1000,
+          1,
+          2832,
+          1793955334081037823,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          67268957,
+          33152,
+          1000,
+          1000,
+          1,
+          2832,
+          1793955334081037823,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/TestParameterInjector/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          69217507,
+          33152,
+          1000,
+          1000,
+          1,
+          5919,
+          1793954288384032076,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          69217507,
+          33152,
+          1000,
+          1000,
+          1,
+          5919,
+          1793954288384032076,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/icu/icu4j/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          69737231,
+          33188,
+          1000,
+          1000,
+          1,
+          7662,
+          1793912909052215070,
+          1794610844848254037
+        ],
+        "before": [
+          66306,
+          69737231,
+          33188,
+          1000,
+          1000,
+          1,
+          7662,
+          1793912909052215070,
+          1794600138758573050
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/minigbm/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          69737242,
+          33188,
+          1000,
+          1000,
+          1,
+          26964,
+          1793912909052215070,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          69737242,
+          33188,
+          1000,
+          1000,
+          1,
+          26964,
+          1793912909052215070,
+          1794600138758573050
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/minigbm/amdgpu.c"
+      },
+      {
+        "after": [
+          66306,
+          69737279,
+          33188,
+          1000,
+          1000,
+          1,
+          17279,
+          1793912909053165510,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          69737279,
+          33188,
+          1000,
+          1000,
+          1,
+          17279,
+          1793912909053165510,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/minigbm/cros_gralloc/cros_gralloc_driver.cc"
+      },
+      {
+        "after": [
+          66306,
+          69737245,
+          33188,
+          1000,
+          1000,
+          1,
+          4350,
+          1793912909053215152,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          69737245,
+          33188,
+          1000,
+          1000,
+          1,
+          4350,
+          1793912909053215152,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/minigbm/dma_heap.c"
+      },
+      {
+        "after": [
+          66306,
+          69737246,
+          33188,
+          1000,
+          1000,
+          1,
+          12528,
+          1793912909053215152,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          69737246,
+          33188,
+          1000,
+          1000,
+          1,
+          12528,
+          1793912909053215152,
+          1794600138758573050
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/minigbm/dri.c"
+      },
+      {
+        "after": [
+          66306,
+          69737248,
+          33188,
+          1000,
+          1000,
+          1,
+          19460,
+          1793912909053215152,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          69737248,
+          33188,
+          1000,
+          1000,
+          1,
+          19460,
+          1793912909053215152,
+          1794600138758573050
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/minigbm/drv.c"
+      },
+      {
+        "after": [
+          66306,
+          69737253,
+          33188,
+          1000,
+          1000,
+          1,
+          2986,
+          1793912909053215152,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          69737253,
+          33188,
+          1000,
+          1000,
+          1,
+          2986,
+          1793912909053215152,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/minigbm/drv_helpers.h"
+      },
+      {
+        "after": [
+          66306,
+          70036227,
+          33152,
+          1000,
+          1000,
+          1,
+          12618,
+          1793955325452786615,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          70036227,
+          33152,
+          1000,
+          1000,
+          1,
+          12618,
+          1793955325452786615,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/robolectric/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          70036578,
+          33152,
+          1000,
+          1000,
+          1,
+          1131,
+          1793955326028803367,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          70036578,
+          33152,
+          1000,
+          1000,
+          1,
+          1131,
+          1793955326028803367,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/robolectric/pluginapi/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          70036596,
+          33152,
+          1000,
+          1000,
+          1,
+          2723,
+          1793955326030549476,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          70036596,
+          33152,
+          1000,
+          1000,
+          1,
+          2723,
+          1793955326030549476,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/robolectric/processor/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          70036621,
+          33152,
+          1000,
+          1000,
+          1,
+          1395,
+          1793955326031479292,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          70036621,
+          33152,
+          1000,
+          1000,
+          1,
+          1395,
+          1793955326031479292,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/robolectric/resources/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          70036726,
+          33152,
+          1000,
+          1000,
+          1,
+          3390,
+          1793955326034803541,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          70036726,
+          33152,
+          1000,
+          1000,
+          1,
+          3390,
+          1793955326034803541,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/robolectric/robolectric/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          70036784,
+          33152,
+          1000,
+          1000,
+          1,
+          1820,
+          1793955326038384348,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          70036784,
+          33152,
+          1000,
+          1000,
+          1,
+          1820,
+          1793955326038384348,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/robolectric/sandbox/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          70036831,
+          33152,
+          1000,
+          1000,
+          1,
+          1218,
+          1793955326039825816,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          70036831,
+          33152,
+          1000,
+          1000,
+          1,
+          1218,
+          1793955326039825816,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/robolectric/shadowapi/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          70037581,
+          33152,
+          1000,
+          1000,
+          1,
+          2446,
+          1793955326065563937,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          70037581,
+          33152,
+          1000,
+          1000,
+          1,
+          2446,
+          1793955326065563937,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/robolectric/shadows/httpclient/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          70037599,
+          33152,
+          1000,
+          1000,
+          1,
+          1647,
+          1793955326065894936,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          70037599,
+          33152,
+          1000,
+          1000,
+          1,
+          1647,
+          1793955326065894936,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/robolectric/shadows/versioning/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          70037602,
+          33152,
+          1000,
+          1000,
+          1,
+          1491,
+          1793955326066286089,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          70037602,
+          33152,
+          1000,
+          1000,
+          1,
+          1491,
+          1793955326066286089,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/robolectric/utils/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          70037604,
+          33152,
+          1000,
+          1000,
+          1,
+          1169,
+          1793955326066340352,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          70037604,
+          33152,
+          1000,
+          1000,
+          1,
+          1169,
+          1793955326066340352,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/external/robolectric/utils/reflector/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          72123840,
+          33152,
+          1000,
+          1000,
+          1,
+          6272,
+          1793913374706787637,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          72123840,
+          33152,
+          1000,
+          1000,
+          1,
+          6272,
+          1793913374706787637,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/base/libs/WindowManager/Shell/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          72233629,
+          33152,
+          1000,
+          1000,
+          1,
+          49535,
+          1793913377374030257,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          72233629,
+          33152,
+          1000,
+          1000,
+          1,
+          49535,
+          1793913377374030257,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/base/packages/SystemUI/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          72383829,
+          33152,
+          1000,
+          1000,
+          1,
+          3392,
+          1793913377881156019,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          72383829,
+          33152,
+          1000,
+          1000,
+          1,
+          3392,
+          1793913377881156019,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/base/packages/SystemUI/tests/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          72521152,
+          33188,
+          1000,
+          1000,
+          1,
+          235519,
+          1793913378078843016,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          72521152,
+          33188,
+          1000,
+          1000,
+          1,
+          235519,
+          1793913378078843016,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/base/services/core/java/com/android/server/am/ActivityManagerShellCommand.java"
+      },
+      {
+        "after": [
+          66306,
+          72654860,
+          33188,
+          1000,
+          1000,
+          1,
+          341334,
+          1793913378245853657,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          72654860,
+          33188,
+          1000,
+          1000,
+          1,
+          341334,
+          1793913378245853657,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/base/services/core/java/com/android/server/wm/DisplayContent.java"
+      },
+      {
+        "after": [
+          66306,
+          72654897,
+          33188,
+          1000,
+          1000,
+          1,
+          51430,
+          1793913378248853848,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          72654897,
+          33188,
+          1000,
+          1000,
+          1,
+          51430,
+          1793913378248853848,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/base/services/core/java/com/android/server/wm/InsetsPolicy.java"
+      },
+      {
+        "after": [
+          66306,
+          72917208,
+          33188,
+          1000,
+          1000,
+          1,
+          25403,
+          1794185498335115133,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          72917208,
+          33188,
+          1000,
+          1000,
+          1,
+          25403,
+          1794185498335115133,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838584,
+          33188,
+          1000,
+          1000,
+          1,
+          1794,
+          1794185498338581262,
+          1794610844833254582
+        ],
+        "before": [
+          66306,
+          84838584,
+          33188,
+          1000,
+          1000,
+          1,
+          1794,
+          1794185498338581262,
+          1794600138755573160
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838588,
+          33188,
+          1000,
+          1000,
+          1,
+          4550,
+          1794185498338643859,
+          1794610844833254582
+        ],
+        "before": [
+          66306,
+          84838588,
+          33188,
+          1000,
+          1000,
+          1,
+          4550,
+          1794185498338643859,
+          1794600138755573160
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/digitalis_extra_proxy/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838633,
+          33188,
+          1000,
+          1000,
+          1,
+          1730,
+          1794185498339096534,
+          1794610844845254146
+        ],
+        "before": [
+          66306,
+          84838633,
+          33188,
+          1000,
+          1000,
+          1,
+          1730,
+          1794185498339096534,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/digitalis_libgui_stub/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838636,
+          33188,
+          1000,
+          1000,
+          1,
+          1033,
+          1794185498339118243,
+          1794610844833254582
+        ],
+        "before": [
+          66306,
+          84838636,
+          33188,
+          1000,
+          1000,
+          1,
+          1033,
+          1794185498339118243,
+          1794600138755573160
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/libEGL/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838637,
+          33188,
+          1000,
+          1000,
+          1,
+          862,
+          1794185498339127162,
+          1794610844833254582
+        ],
+        "before": [
+          66306,
+          84838637,
+          33188,
+          1000,
+          1000,
+          1,
+          862,
+          1794185498339127162,
+          1794600138755573160
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/libGLESv1_CM/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838638,
+          33188,
+          1000,
+          1000,
+          1,
+          948,
+          1794185498339147862,
+          1794610844834254546
+        ],
+        "before": [
+          66306,
+          84838638,
+          33188,
+          1000,
+          1000,
+          1,
+          948,
+          1794185498339147862,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/libGLESv2/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838639,
+          33188,
+          1000,
+          1000,
+          1,
+          948,
+          1794185498339160601,
+          1794610844833254582
+        ],
+        "before": [
+          66306,
+          84838639,
+          33188,
+          1000,
+          1000,
+          1,
+          948,
+          1794185498339160601,
+          1794600138755573160
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/libGLESv3/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838640,
+          33188,
+          1000,
+          1000,
+          1,
+          1355,
+          1794185498339170131,
+          1794610844833254582
+        ],
+        "before": [
+          66306,
+          84838640,
+          33188,
+          1000,
+          1000,
+          1,
+          1355,
+          1794185498339170131,
+          1794600138755573160
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/libOpenMAXAL/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838645,
+          33188,
+          1000,
+          1000,
+          1,
+          1378,
+          1794185498339199190,
+          1794610844833254582
+        ],
+        "before": [
+          66306,
+          84838645,
+          33188,
+          1000,
+          1000,
+          1,
+          1378,
+          1794185498339199190,
+          1794600138755573160
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/libOpenSLES/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838647,
+          33188,
+          1000,
+          1000,
+          1,
+          885,
+          1794185498339228959,
+          1794610844845254146
+        ],
+        "before": [
+          66306,
+          84838647,
+          33188,
+          1000,
+          1000,
+          1,
+          885,
+          1794185498339228959,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/libaaudio/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838648,
+          33188,
+          1000,
+          1000,
+          1,
+          923,
+          1794185498339247938,
+          1794610844833254582
+        ],
+        "before": [
+          66306,
+          84838648,
+          33188,
+          1000,
+          1000,
+          1,
+          923,
+          1794185498339247938,
+          1794600138755573160
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/libamidi/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838649,
+          33188,
+          1000,
+          1000,
+          1,
+          922,
+          1794185498339259618,
+          1794610844834254546
+        ],
+        "before": [
+          66306,
+          84838649,
+          33188,
+          1000,
+          1000,
+          1,
+          922,
+          1794185498339259618,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/libandroid/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838650,
+          33188,
+          1000,
+          1000,
+          1,
+          946,
+          1794185498339268327,
+          1794610844834254546
+        ],
+        "before": [
+          66306,
+          84838650,
+          33188,
+          1000,
+          1000,
+          1,
+          946,
+          1794185498339268327,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/libandroid_runtime/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838651,
+          33188,
+          1000,
+          1000,
+          1,
+          938,
+          1794185498339277727,
+          1794610844833254582
+        ],
+        "before": [
+          66306,
+          84838651,
+          33188,
+          1000,
+          1000,
+          1,
+          938,
+          1794185498339277727,
+          1794600138755573160
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/libbinder_ndk/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838652,
+          33188,
+          1000,
+          1000,
+          1,
+          1629,
+          1794185498339286467,
+          1794610844845254146
+        ],
+        "before": [
+          66306,
+          84838652,
+          33188,
+          1000,
+          1000,
+          1,
+          1629,
+          1794185498339286467,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/libc/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838654,
+          33188,
+          1000,
+          1000,
+          1,
+          1411,
+          1794185498339305576,
+          1794610844833254582
+        ],
+        "before": [
+          66306,
+          84838654,
+          33188,
+          1000,
+          1000,
+          1,
+          1411,
+          1794185498339305576,
+          1794600138755573160
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/libcamera2ndk/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838655,
+          33188,
+          1000,
+          1000,
+          1,
+          974,
+          1794185498339314396,
+          1794610844833254582
+        ],
+        "before": [
+          66306,
+          84838655,
+          33188,
+          1000,
+          1000,
+          1,
+          974,
+          1794185498339314396,
+          1794600138755573160
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/libjnigraphics/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838656,
+          33188,
+          1000,
+          1000,
+          1,
+          1321,
+          1794185498339324126,
+          1794610844834254546
+        ],
+        "before": [
+          66306,
+          84838656,
+          33188,
+          1000,
+          1000,
+          1,
+          1321,
+          1794185498339324126,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/libm/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838657,
+          33188,
+          1000,
+          1000,
+          1,
+          1300,
+          1794185498339332985,
+          1794610844833254582
+        ],
+        "before": [
+          66306,
+          84838657,
+          33188,
+          1000,
+          1000,
+          1,
+          1300,
+          1794185498339332985,
+          1794600138755573160
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/libmediandk/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838658,
+          33188,
+          1000,
+          1000,
+          1,
+          906,
+          1794185498339352915,
+          1794610844833254582
+        ],
+        "before": [
+          66306,
+          84838658,
+          33188,
+          1000,
+          1000,
+          1,
+          906,
+          1794185498339352915,
+          1794600138755573160
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/libnativehelper/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838659,
+          33188,
+          1000,
+          1000,
+          1,
+          903,
+          1794185498339361944,
+          1794610844834254546
+        ],
+        "before": [
+          66306,
+          84838659,
+          33188,
+          1000,
+          1000,
+          1,
+          903,
+          1794185498339361944,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/libnativewindow/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838660,
+          33188,
+          1000,
+          1000,
+          1,
+          909,
+          1794185498339372554,
+          1794610844834254546
+        ],
+        "before": [
+          66306,
+          84838660,
+          33188,
+          1000,
+          1000,
+          1,
+          909,
+          1794185498339372554,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/libneuralnetworks/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838661,
+          33188,
+          1000,
+          1000,
+          1,
+          3429,
+          1794185498339380284,
+          1794610844834254546
+        ],
+        "before": [
+          66306,
+          84838661,
+          33188,
+          1000,
+          1000,
+          1,
+          3429,
+          1794185498339380284,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/libvulkan/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84838662,
+          33188,
+          1000,
+          1000,
+          1,
+          951,
+          1794185498339389323,
+          1794610844833254582
+        ],
+        "before": [
+          66306,
+          84838662,
+          33188,
+          1000,
+          1000,
+          1,
+          951,
+          1794185498339389323,
+          1794600138755573160
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/android_api/libwebviewchromium_plat_support/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84839097,
+          33188,
+          1000,
+          1000,
+          1,
+          450644,
+          1794185498345354054,
+          1794610844833254582
+        ],
+        "before": [
+          66306,
+          84839097,
+          33188,
+          1000,
+          1000,
+          1,
+          450644,
+          1794185498345354054,
+          1794600138753573233
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/interpreter/arm64/interpreter.h"
+      },
+      {
+        "after": [
+          66306,
+          84839321,
+          33188,
+          1000,
+          1000,
+          1,
+          2507,
+          1794185498350548461,
+          1794610844845254146
+        ],
+        "before": [
+          66306,
+          84839321,
+          33188,
+          1000,
+          1000,
+          1,
+          2507,
+          1794185498350548461,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/binary_translation/native_activity/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          72767840,
+          33152,
+          1000,
+          1000,
+          1,
+          11184,
+          1793913404375510449,
+          1794610844818255127
+        ],
+        "before": [
+          66306,
+          72767840,
+          33152,
+          1000,
+          1000,
+          1,
+          11184,
+          1793913404375510449,
+          1794600138753573233
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/native_bridge_support/android_api/libEGL/proxy/egl_trampolines.cc"
+      },
+      {
+        "after": [
+          66306,
+          72768006,
+          33152,
+          1000,
+          1000,
+          1,
+          4768,
+          1793913404466724147,
+          1794610844818255127
+        ],
+        "before": [
+          66306,
+          72768006,
+          33152,
+          1000,
+          1000,
+          1,
+          4768,
+          1793913404466724147,
+          1794600138753573233
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/native_bridge_support/android_api/libc/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          72768176,
+          33152,
+          1000,
+          1000,
+          1,
+          19168,
+          1793913404483517264,
+          1794610844818255127
+        ],
+        "before": [
+          66306,
+          72768176,
+          33152,
+          1000,
+          1000,
+          1,
+          19168,
+          1793913404483517264,
+          1794600138753573233
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/native_bridge_support/android_api/libvulkan/proxy/vulkan_trampolines.cc"
+      },
+      {
+        "after": [
+          66306,
+          72768179,
+          33152,
+          1000,
+          1000,
+          1,
+          6128,
+          1793913404483517264,
+          1794610844818255127
+        ],
+        "before": [
+          66306,
+          72768179,
+          33152,
+          1000,
+          1000,
+          1,
+          6128,
+          1793913404483517264,
+          1794600138753573233
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/libs/native_bridge_support/android_api/libvulkan/proxy/vulkan_xml.h"
+      },
+      {
+        "after": [
+          66306,
+          72759154,
+          33188,
+          1000,
+          1000,
+          1,
+          5012,
+          1793913416377551618,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          72759154,
+          33188,
+          1000,
+          1000,
+          1,
+          5012,
+          1793913416377551618,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/cmds/servicemanager/Access.cpp"
+      },
+      {
+        "after": [
+          66306,
+          72759176,
+          33188,
+          1000,
+          1000,
+          1,
+          6693,
+          1793913416380266265,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          72759176,
+          33188,
+          1000,
+          1000,
+          1,
+          6693,
+          1793913416380266265,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/cmds/servicemanager/main.cpp"
+      },
+      {
+        "after": [
+          66306,
+          72759189,
+          33188,
+          1000,
+          1000,
+          1,
+          40321,
+          1793913416395392087,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          72766975,
+          33188,
+          1000,
+          1000,
+          1,
+          40321,
+          1793913416395392087,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/libs/binder/Binder.cpp"
+      },
+      {
+        "after": [
+          66306,
+          72766975,
+          33188,
+          1000,
+          1000,
+          1,
+          64118,
+          1793913416396267270,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          72771770,
+          33188,
+          1000,
+          1000,
+          1,
+          64118,
+          1793913416396267270,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/libs/binder/IPCThreadState.cpp"
+      },
+      {
+        "after": [
+          66306,
+          72759033,
+          33188,
+          1000,
+          1000,
+          1,
+          22533,
+          1793913416397267333,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          72759033,
+          33188,
+          1000,
+          1000,
+          1,
+          22533,
+          1793913416397267333,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/libs/binder/ProcessState.cpp"
+      },
+      {
+        "after": [
+          66306,
+          72774436,
+          33188,
+          1000,
+          1000,
+          1,
+          11154,
+          1793913416484830419,
+          1794610844848254037
+        ],
+        "before": [
+          66306,
+          72774436,
+          33188,
+          1000,
+          1000,
+          1,
+          11154,
+          1793913416484830419,
+          1794600138758573050
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/inputflinger/InputManager.cpp"
+      },
+      {
+        "after": [
+          66306,
+          72774437,
+          33188,
+          1000,
+          1000,
+          1,
+          6586,
+          1793913416484830419,
+          1794610844848254037
+        ],
+        "before": [
+          66306,
+          72774437,
+          33188,
+          1000,
+          1000,
+          1,
+          6586,
+          1793913416484830419,
+          1794600138758573050
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/inputflinger/InputManager.h"
+      },
+      {
+        "after": [
+          66306,
+          72774480,
+          33188,
+          1000,
+          1000,
+          1,
+          1019,
+          1793913416486490468,
+          1794610844848254037
+        ],
+        "before": [
+          66306,
+          72774480,
+          33188,
+          1000,
+          1000,
+          1,
+          1019,
+          1793913416486490468,
+          1794600138758573050
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/inputflinger/dispatcher/InjectionState.cpp"
+      },
+      {
+        "after": [
+          66306,
+          72774481,
+          33188,
+          1000,
+          1000,
+          1,
+          1221,
+          1793913416486490468,
+          1794610844848254037
+        ],
+        "before": [
+          66306,
+          72774481,
+          33188,
+          1000,
+          1000,
+          1,
+          1221,
+          1793913416486490468,
+          1794600138758573050
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/inputflinger/dispatcher/InjectionState.h"
+      },
+      {
+        "after": [
+          66306,
+          72774482,
+          33188,
+          1000,
+          1000,
+          1,
+          373179,
+          1793913416487272987,
+          1794610844848254037
+        ],
+        "before": [
+          66306,
+          72774482,
+          33188,
+          1000,
+          1000,
+          1,
+          373179,
+          1793913416487272987,
+          1794600138758573050
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/inputflinger/dispatcher/InputDispatcher.cpp"
+      },
+      {
+        "after": [
+          66306,
+          72774483,
+          33188,
+          1000,
+          1000,
+          1,
+          53156,
+          1793913416487272987,
+          1794610844848254037
+        ],
+        "before": [
+          66306,
+          72774483,
+          33188,
+          1000,
+          1000,
+          1,
+          53156,
+          1793913416487272987,
+          1794600138758573050
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/inputflinger/dispatcher/InputDispatcher.h"
+      },
+      {
+        "after": [
+          66306,
+          72774532,
+          33188,
+          1000,
+          1000,
+          1,
+          131347,
+          1793913416490009812,
+          1794610844848254037
+        ],
+        "before": [
+          66306,
+          72774532,
+          33188,
+          1000,
+          1000,
+          1,
+          131347,
+          1793913416490009812,
+          1794600138758573050
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/inputflinger/reader/EventHub.cpp"
+      },
+      {
+        "after": [
+          66306,
+          72774823,
+          33152,
+          1000,
+          1000,
+          1,
+          2441,
+          1793913416505755692,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          72774823,
+          33152,
+          1000,
+          1000,
+          1,
+          2441,
+          1793913416505755692,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/serialservice/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          72771770,
+          33188,
+          1000,
+          1000,
+          1,
+          14899,
+          1793913416506568032,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          72771780,
+          33188,
+          1000,
+          1000,
+          1,
+          14899,
+          1793913416506568032,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/surfaceflinger/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          72757083,
+          33188,
+          1000,
+          1000,
+          1,
+          2877,
+          1793913416506568032,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          72757083,
+          33188,
+          1000,
+          1000,
+          1,
+          2877,
+          1793913416506568032,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/surfaceflinger/BackgroundExecutor.cpp"
+      },
+      {
+        "after": [
+          66306,
+          72771780,
+          33188,
+          1000,
+          1000,
+          1,
+          3624,
+          1793913416506967655,
+          1794610844849738776
+        ],
+        "before": [
+          66306,
+          72772423,
+          33188,
+          1000,
+          1000,
+          1,
+          3624,
+          1793913416506967655,
+          1794600138759863965
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/surfaceflinger/CompositionEngine/include/compositionengine/CompositionRefreshArgs.h"
+      },
+      {
+        "after": [
+          66306,
+          72772423,
+          33188,
+          1000,
+          1000,
+          1,
+          14647,
+          1793913416507508210,
+          1794610844849738776
+        ],
+        "before": [
+          66306,
+          72772439,
+          33188,
+          1000,
+          1000,
+          1,
+          14647,
+          1793913416507508210,
+          1794600138759863965
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/surfaceflinger/CompositionEngine/include/compositionengine/impl/Output.h"
+      },
+      {
+        "after": [
+          66306,
+          72757090,
+          33188,
+          1000,
+          1000,
+          1,
+          2225,
+          1793913416508684885,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          72757090,
+          33188,
+          1000,
+          1000,
+          1,
+          2225,
+          1793913416508684885,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/surfaceflinger/CompositionEngine/src/HwcAsyncWorker.cpp"
+      },
+      {
+        "after": [
+          66306,
+          72772439,
+          33188,
+          1000,
+          1000,
+          1,
+          79001,
+          1793913416508684885,
+          1794610844849738776
+        ],
+        "before": [
+          66306,
+          72772465,
+          33188,
+          1000,
+          1000,
+          1,
+          79001,
+          1793913416508684885,
+          1794600138759863965
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/surfaceflinger/CompositionEngine/src/Output.cpp"
+      },
+      {
+        "after": [
+          66306,
+          72792240,
+          33188,
+          1000,
+          1000,
+          1,
+          74499,
+          1793913416515930372,
+          1794610844848254037
+        ],
+        "before": [
+          66306,
+          72792240,
+          33188,
+          1000,
+          1000,
+          1,
+          74499,
+          1793913416515930372,
+          1794600138758573050
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/surfaceflinger/Layer.cpp"
+      },
+      {
+        "after": [
+          66306,
+          72758765,
+          33188,
+          1000,
+          1000,
+          1,
+          38464,
+          1793913416517382589,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          72758765,
+          33188,
+          1000,
+          1000,
+          1,
+          38464,
+          1793913416517382589,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/surfaceflinger/Scheduler/EventThread.cpp"
+      },
+      {
+        "after": [
+          66306,
+          72788904,
+          33188,
+          1000,
+          1000,
+          1,
+          10743,
+          1793913416520485418,
+          1794610844849738776
+        ],
+        "before": [
+          66306,
+          72788904,
+          33188,
+          1000,
+          1000,
+          1,
+          10743,
+          1793913416520485418,
+          1794600138759863965
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/surfaceflinger/ScreenCaptureOutput.cpp"
+      },
+      {
+        "after": [
+          66306,
+          72788905,
+          33188,
+          1000,
+          1000,
+          1,
+          3475,
+          1793913416520485418,
+          1794610844849738776
+        ],
+        "before": [
+          66306,
+          72788905,
+          33188,
+          1000,
+          1000,
+          1,
+          3475,
+          1793913416520485418,
+          1794600138759863965
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/surfaceflinger/ScreenCaptureOutput.h"
+      },
+      {
+        "after": [
+          66306,
+          72788906,
+          33188,
+          1000,
+          1000,
+          1,
+          2539,
+          1793913416520485418,
+          1794610844849738776
+        ],
+        "before": [
+          66306,
+          72788906,
+          33188,
+          1000,
+          1000,
+          1,
+          2539,
+          1793913416520485418,
+          1794600138759863965
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/surfaceflinger/ScreenCaptureRenderSurface.h"
+      },
+      {
+        "after": [
+          66306,
+          72792239,
+          33188,
+          1000,
+          1000,
+          1,
+          495363,
+          1793913416521275123,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          72792239,
+          33188,
+          1000,
+          1000,
+          1,
+          495363,
+          1793913416521275123,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/surfaceflinger/SurfaceFlinger.cpp"
+      },
+      {
+        "after": [
+          66306,
+          72783962,
+          33188,
+          1000,
+          1000,
+          1,
+          91078,
+          1793913416522275186,
+          1794610844849738776
+        ],
+        "before": [
+          66306,
+          72783962,
+          33188,
+          1000,
+          1000,
+          1,
+          91078,
+          1793913416522275186,
+          1794600138759863965
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/surfaceflinger/SurfaceFlinger.h"
+      },
+      {
+        "after": [
+          66306,
+          72792243,
+          33188,
+          1000,
+          1000,
+          1,
+          14144,
+          1793913416523930277,
+          1794610844848254037
+        ],
+        "before": [
+          66306,
+          72792243,
+          33188,
+          1000,
+          1000,
+          1,
+          14144,
+          1793913416523930277,
+          1794600138758573050
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/surfaceflinger/TransactionCallbackInvoker.cpp"
+      },
+      {
+        "after": [
+          66306,
+          72755044,
+          33188,
+          1000,
+          1000,
+          1,
+          5201,
+          1793913416525009173,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          72755044,
+          33188,
+          1000,
+          1000,
+          1,
+          5201,
+          1793913416525009173,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/surfaceflinger/main_surfaceflinger.cpp"
+      },
+      {
+        "after": [
+          66306,
+          72792855,
+          33188,
+          1000,
+          1000,
+          1,
+          6797,
+          1793913416539276254,
+          1794610844848254037
+        ],
+        "before": [
+          66306,
+          72792855,
+          33188,
+          1000,
+          1000,
+          1,
+          6797,
+          1793913416539276254,
+          1794600138758573050
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/native/services/surfaceflinger/tests/unittests/TransactionCallbackInvoker_test.cpp"
+      },
+      {
+        "after": [
+          66306,
+          72758790,
+          33188,
+          1000,
+          1000,
+          1,
+          12671,
+          1793913441891817370,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          72758790,
+          33188,
+          1000,
+          1000,
+          1,
+          12671,
+          1793913441891817370,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/hardware/interfaces/audio/aidl/default/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          72758801,
+          33188,
+          1000,
+          1000,
+          1,
+          90063,
+          1793913441891861710,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          72758801,
+          33188,
+          1000,
+          1000,
+          1,
+          90063,
+          1793913441891861710,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/hardware/interfaces/audio/aidl/default/Module.cpp"
+      },
+      {
+        "after": [
+          66306,
+          72758821,
+          33188,
+          1000,
+          1000,
+          1,
+          12660,
+          1793913441897703716,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          72758821,
+          33188,
+          1000,
+          1000,
+          1,
+          12660,
+          1793913441897703716,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/hardware/interfaces/audio/aidl/default/primary/StreamPrimary.cpp"
+      },
+      {
+        "after": [
+          66306,
+          72784648,
+          33152,
+          1000,
+          1000,
+          1,
+          1869,
+          1793913441934961262,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          72784648,
+          33152,
+          1000,
+          1000,
+          1,
+          1869,
+          1793913441934961262,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/hardware/interfaces/automotive/audiocontrol/aidl/default/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          72903840,
+          33152,
+          1000,
+          1000,
+          1,
+          6960,
+          1793913483473432338,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          72903840,
+          33152,
+          1000,
+          1000,
+          1,
+          6960,
+          1793913483473432338,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/libnativehelper/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          73010906,
+          33152,
+          1000,
+          1000,
+          1,
+          18026,
+          1793913490298850932,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          73010906,
+          33152,
+          1000,
+          1000,
+          1,
+          18026,
+          1793913490298850932,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/apps/Launcher3/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          73024924,
+          33152,
+          1000,
+          1000,
+          1,
+          6448,
+          1793913498430348434,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          73024924,
+          33152,
+          1000,
+          1000,
+          1,
+          6448,
+          1793913498430348434,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/apps/Settings/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          73049076,
+          33152,
+          1000,
+          1000,
+          1,
+          3011,
+          1793913511189126476,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          73049076,
+          33152,
+          1000,
+          1000,
+          1,
+          3011,
+          1793913511189126476,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/modules/ConfigInfrastructure/aconfigd/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          73049848,
+          33188,
+          1000,
+          1000,
+          1,
+          8760,
+          1793913521752470531,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          73049848,
+          33188,
+          1000,
+          1000,
+          1,
+          8760,
+          1793913521752470531,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/modules/Connectivity/bpf/headers/include/bpf/BpfUtils.h"
+      },
+      {
+        "after": [
+          66306,
+          73044053,
+          33188,
+          1000,
+          1000,
+          1,
+          3094,
+          1793913521752470531,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          73044053,
+          33188,
+          1000,
+          1000,
+          1,
+          3094,
+          1793913521752470531,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/modules/Connectivity/bpf/loader/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          73049852,
+          33188,
+          1000,
+          1000,
+          1,
+          72064,
+          1793913521752831588,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          73049852,
+          33188,
+          1000,
+          1000,
+          1,
+          72064,
+          1793913521752831588,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/modules/Connectivity/bpf/loader/NetBpfLoad.cpp"
+      },
+      {
+        "after": [
+          66306,
+          73018818,
+          33188,
+          1000,
+          1000,
+          1,
+          2407,
+          1793913521753167006,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          73018818,
+          33188,
+          1000,
+          1000,
+          1,
+          2407,
+          1793913521753167006,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/modules/Connectivity/bpf/netd/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          73009175,
+          33188,
+          1000,
+          1000,
+          1,
+          29277,
+          1793913521753406448,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          73009175,
+          33188,
+          1000,
+          1000,
+          1,
+          29277,
+          1793913521753406448,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/modules/Connectivity/bpf/netd/BpfHandler.cpp"
+      },
+      {
+        "after": [
+          66306,
+          73140648,
+          33188,
+          1000,
+          1000,
+          1,
+          16884,
+          1793913521767051447,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          73140648,
+          33188,
+          1000,
+          1000,
+          1,
+          16884,
+          1793913521767051447,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/modules/Connectivity/service/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          73140522,
+          33188,
+          1000,
+          1000,
+          1,
+          22437,
+          1793913521772404575,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          73140522,
+          33188,
+          1000,
+          1000,
+          1,
+          22437,
+          1793913521772404575,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/modules/Connectivity/service/jni/com_android_server_connectivity_ClatCoordinator.cpp"
+      },
+      {
+        "after": [
+          66306,
+          73140923,
+          33188,
+          1000,
+          1000,
+          1,
+          2774,
+          1793913521772404575,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          73140923,
+          33188,
+          1000,
+          1000,
+          1,
+          2774,
+          1793913521772404575,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/modules/Connectivity/service/jni/com_android_server_connectivity_LocalNetEventListener.cpp"
+      },
+      {
+        "after": [
+          66306,
+          73140647,
+          33188,
+          1000,
+          1000,
+          1,
+          8152,
+          1793913521782061553,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          73140647,
+          33188,
+          1000,
+          1000,
+          1,
+          8152,
+          1793913521782061553,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/modules/Connectivity/staticlibs/native/bpfmapjni/com_android_net_module_util_Bpf.cpp"
+      },
+      {
+        "after": [
+          66306,
+          73145146,
+          33152,
+          1000,
+          1000,
+          1,
+          1726,
+          1793974681509292505,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          73145146,
+          33152,
+          1000,
+          1000,
+          1,
+          1726,
+          1793974681509292505,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/modules/NeuralNetworks/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          73145190,
+          33152,
+          1000,
+          1000,
+          1,
+          13060,
+          1793974681510092124,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          73145190,
+          33152,
+          1000,
+          1000,
+          1,
+          13060,
+          1793974681510092124,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/modules/NeuralNetworks/common/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          73145317,
+          33152,
+          1000,
+          1000,
+          1,
+          3279,
+          1793974681511292566,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          73145317,
+          33152,
+          1000,
+          1000,
+          1,
+          3279,
+          1793974681511292566,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/modules/NeuralNetworks/common/types/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          73154017,
+          33152,
+          1000,
+          1000,
+          1,
+          3331,
+          1793913559626052910,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          73154017,
+          33152,
+          1000,
+          1000,
+          1,
+          3331,
+          1793913559626052910,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/modules/Permission/framework-s/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          73165690,
+          33152,
+          1000,
+          1000,
+          1,
+          3748,
+          1793955377399475940,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          73165690,
+          33152,
+          1000,
+          1000,
+          1,
+          3748,
+          1793955377399475940,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/services/Car/car-builtin-lib/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          73165752,
+          33152,
+          1000,
+          1000,
+          1,
+          12547,
+          1793955377401536745,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          73165752,
+          33152,
+          1000,
+          1000,
+          1,
+          12547,
+          1793955377401536745,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/services/Car/car-lib/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          73165768,
+          33152,
+          1000,
+          1000,
+          1,
+          1590,
+          1793955377401713210,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          73165768,
+          33152,
+          1000,
+          1000,
+          1,
+          1590,
+          1793955377401713210,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/services/Car/car-lib/jni/large-parcelable/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          73166349,
+          33152,
+          1000,
+          1000,
+          1,
+          1355,
+          1793974663482249208,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          73166349,
+          33152,
+          1000,
+          1000,
+          1,
+          1355,
+          1793974663482249208,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/services/Car/cpp/car_binder_lib/largeParcelable/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          73166370,
+          33152,
+          1000,
+          1000,
+          1,
+          1705,
+          1793974663482669266,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          73166370,
+          33152,
+          1000,
+          1000,
+          1,
+          1705,
+          1793974663482669266,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/services/Car/cpp/vhal/client/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          73170455,
+          33152,
+          1000,
+          1000,
+          1,
+          2098,
+          1793954310071268858,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          73170455,
+          33152,
+          1000,
+          1000,
+          1,
+          2098,
+          1793954310071268858,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/platform_testing/libraries/motion/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          73171036,
+          33152,
+          1000,
+          1000,
+          1,
+          2088,
+          1793954310072917915,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          73171036,
+          33152,
+          1000,
+          1000,
+          1,
+          2088,
+          1793954310072917915,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/platform_testing/libraries/runner/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          73171058,
+          33152,
+          1000,
+          1000,
+          1,
+          2403,
+          1793954310073205352,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          73171058,
+          33152,
+          1000,
+          1000,
+          1,
+          2403,
+          1793954310073205352,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/platform_testing/libraries/screenshot/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          75128673,
+          33152,
+          1000,
+          1000,
+          1,
+          10181,
+          1793927943079436042,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          75128673,
+          33152,
+          1000,
+          1000,
+          1,
+          10181,
+          1793927943079436042,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/prebuilts/module_sdk/Connectivity/current/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          75143261,
+          33152,
+          1000,
+          1000,
+          1,
+          6333,
+          1793928159476320506,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          75143261,
+          33152,
+          1000,
+          1000,
+          1,
+          6333,
+          1793928159476320506,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/prebuilts/sdk/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          76310517,
+          33188,
+          1000,
+          1000,
+          1,
+          11051,
+          1793928672914972625,
+          1794610844848254037
+        ],
+        "before": [
+          66306,
+          76310517,
+          33188,
+          1000,
+          1000,
+          1,
+          11051,
+          1793928672914972625,
+          1794600138758573050
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/system/core/init/mount_namespace.cpp"
+      },
+      {
+        "after": [
+          66306,
+          76310548,
+          33188,
+          1000,
+          1000,
+          1,
+          4589,
+          1793928672915584422,
+          1794610844848254037
+        ],
+        "before": [
+          66306,
+          76310548,
+          33188,
+          1000,
+          1000,
+          1,
+          4589,
+          1793928672915584422,
+          1794600138758573050
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/system/core/init/security.cpp"
+      },
+      {
+        "after": [
+          66306,
+          76310567,
+          33188,
+          1000,
+          1000,
+          1,
+          13231,
+          1793928672916476154,
+          1794610844848254037
+        ],
+        "before": [
+          66306,
+          76310567,
+          33188,
+          1000,
+          1000,
+          1,
+          13231,
+          1793928672916476154,
+          1794600138758573050
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/system/core/init/subcontext.cpp"
+      },
+      {
+        "after": [
+          66306,
+          76311863,
+          33188,
+          1000,
+          1000,
+          1,
+          24194,
+          1793928932104402247,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          76311863,
+          33188,
+          1000,
+          1000,
+          1,
+          24194,
+          1793928932104402247,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/system/memory/libmeminfo/sysmeminfo.cpp"
+      },
+      {
+        "after": [
+          66306,
+          76303717,
+          33188,
+          1000,
+          1000,
+          1,
+          14654,
+          1793928939777345376,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          76303717,
+          33188,
+          1000,
+          1000,
+          1,
+          14654,
+          1793928939777345376,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/system/netd/server/Controllers.cpp"
+      },
+      {
+        "after": [
+          66306,
+          76303738,
+          33188,
+          1000,
+          1000,
+          1,
+          62709,
+          1793928939779089723,
+          1794610844849985247
+        ],
+        "before": [
+          66306,
+          76303738,
+          33188,
+          1000,
+          1000,
+          1,
+          62709,
+          1793928939779089723,
+          1794600138760112886
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/system/netd/server/RouteController.cpp"
+      },
+      {
+        "after": [
+          66306,
+          84411606,
+          33188,
+          1000,
+          1000,
+          1,
+          68249,
+          1793929077868634951,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          84411606,
+          33188,
+          1000,
+          1000,
+          1,
+          68249,
+          1793929077868634951,
+          1794600138758573050
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/system/vold/Utils.cpp"
+      },
+      {
+        "after": [
+          66306,
+          84415117,
+          33152,
+          1000,
+          1000,
+          1,
+          1751,
+          1793955356698698938,
+          1794610844847254073
+        ],
+        "before": [
+          66306,
+          84415117,
+          33152,
+          1000,
+          1000,
+          1,
+          1751,
+          1793955356698698938,
+          1794600138757573087
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/test/robolectric-extensions/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84415130,
+          33152,
+          1000,
+          1000,
+          1,
+          1132,
+          1793955356698698938,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          84415130,
+          33152,
+          1000,
+          1000,
+          1,
+          1132,
+          1793955356698698938,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/test/robolectric-extensions/clearcut-junit-listener/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84415876,
+          33152,
+          1000,
+          1000,
+          1,
+          5010,
+          1793929445574821227,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          84415876,
+          33152,
+          1000,
+          1000,
+          1,
+          5010,
+          1793929445574821227,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/tools/apksig/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84416561,
+          33152,
+          1000,
+          1000,
+          1,
+          1960,
+          1793955401768027020,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          84416561,
+          33152,
+          1000,
+          1000,
+          1,
+          1960,
+          1793955401768027020,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/tools/asuite/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84416588,
+          33152,
+          1000,
+          1000,
+          1,
+          4006,
+          1793955401768027020,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          84416588,
+          33152,
+          1000,
+          1000,
+          1,
+          4006,
+          1793955401768027020,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/tools/asuite/atest/Android.bp"
+      },
+      {
+        "after": [
+          66306,
+          84824679,
+          33152,
+          1000,
+          1000,
+          1,
+          2034,
+          1794577532493002022,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          84824680,
+          33152,
+          1000,
+          1000,
+          1,
+          2034,
+          1794577532493002022,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/vendor/droidloom/android/device/droidloom_x86_64/BoardConfig.mk"
+      },
+      {
+        "after": [
+          66306,
+          84840174,
+          33204,
+          1000,
+          1000,
+          1,
+          14864,
+          1793910289403005255,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          84840174,
+          33204,
+          1000,
+          1000,
+          1,
+          14864,
+          1793910289403005255,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/vendor/droidloom/mesa3d/android/mesa3d_cross.mk"
+      },
+      {
+        "after": [
+          66306,
+          84824721,
+          33204,
+          1000,
+          1000,
+          1,
+          54514,
+          1793910291770784985,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          84824721,
+          33204,
+          1000,
+          1000,
+          1,
+          54514,
+          1793910291770784985,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/vendor/droidloom/mesa3d/src/freedreno/common/freedreno_devices.py"
+      },
+      {
+        "after": [
+          66306,
+          84824722,
+          33204,
+          1000,
+          1000,
+          1,
+          195516,
+          1793910292347731523,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          84824722,
+          33204,
+          1000,
+          1000,
+          1,
+          195516,
+          1793910292347731523,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/vendor/droidloom/mesa3d/src/gallium/auxiliary/util/u_threaded_context.c"
+      },
+      {
+        "after": [
+          66306,
+          84824724,
+          33204,
+          1000,
+          1000,
+          1,
+          152233,
+          1793910293764600547,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          84824724,
+          33204,
+          1000,
+          1000,
+          1,
+          152233,
+          1793910293764600547,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/vendor/droidloom/mesa3d/src/gallium/drivers/zink/zink_screen.c"
+      },
+      {
+        "after": [
+          66306,
+          84824723,
+          33204,
+          1000,
+          1000,
+          1,
+          20988,
+          1793910298241189879,
+          1794610844846254110
+        ],
+        "before": [
+          66306,
+          84824723,
+          33204,
+          1000,
+          1000,
+          1,
+          20988,
+          1793910298241189879,
+          1794600138756573123
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/vendor/droidloom/mesa3d/src/util/u_queue.c"
+      }
+    ],
+    "initial": false,
+    "only_actual_projected_inode_ctime_may_change": true,
+    "original_absences": 15,
+    "original_files": 146,
+    "runtime_qualified": false,
+    "source_originals": 30952,
+    "source_writes": 0,
+    "unchanged_F9_required_outside_actual_projection": true,
+    "whole_original_bytes_mode_nsmtime_absence_verified": true
+  }
+}

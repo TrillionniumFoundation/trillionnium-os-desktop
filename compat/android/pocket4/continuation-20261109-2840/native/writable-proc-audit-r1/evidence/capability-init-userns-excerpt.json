@@ -1,0 +1,10 @@
+{
+  "source": {
+    "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/source-parent/linux-source-7.0.0/kernel/capability.c",
+    "bytes": 14529,
+    "sha256": "bc01c3e215c37927d7f9ee9ba9a5a6cfac5ac65cd9830182afbfa48e99b74bac"
+  },
+  "start": 404,
+  "end": 418,
+  "text": "404: /**\n405:  * capable - Determine if the current task has a superior capability in effect\n406:  * @cap: The capability to be tested for\n407:  *\n408:  * Return true if the current task has the given superior capability currently\n409:  * available for use, false if not.\n410:  *\n411:  * This sets PF_SUPERPRIV on the task if the capability is available on the\n412:  * assumption that it's about to be used.\n413:  */\n414: bool capable(int cap)\n415: {\n416: \treturn ns_capable(&init_user_ns, cap);\n417: }\n418: EXPORT_SYMBOL(capable);"
+}

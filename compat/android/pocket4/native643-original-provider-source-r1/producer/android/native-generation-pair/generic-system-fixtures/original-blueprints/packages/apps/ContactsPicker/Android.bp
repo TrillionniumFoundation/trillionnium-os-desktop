@@ -1,0 +1,88 @@
+package {
+    default_team: "trendy_team_android_data_aegis",
+    default_applicable_licenses: ["packages_apps_ContactsPicker_license"],
+}
+
+license {
+    name: "packages_apps_ContactsPicker_license",
+    visibility: [":__subpackages__"],
+    license_kinds: [
+        "SPDX-license-identifier-Apache-2.0",
+    ],
+    license_text: [
+        "NOTICE",
+    ],
+}
+
+android_app {
+    name: "ContactsPicker",
+    certificate: "platform",
+    privileged: true,
+    platform_apis: true,
+    static_libs: [
+        "ContactsPickerLib",
+    ],
+    optimize: {
+        enabled: true,
+        optimize: true,
+        shrink_resources: true,
+        d8_on_eng: true,
+    },
+}
+
+android_library {
+    name: "ContactsPickerLib",
+    platform_apis: true,
+    srcs: [
+        "src/**/*.kt",
+        ":statslog-contactspicker-java-gen",
+    ],
+    resource_dirs: ["res"],
+    static_libs: [
+        "androidx.appcompat_appcompat",
+        "androidx.compose.foundation_foundation",
+        "androidx.compose.material_material-icons-extended",
+        "androidx.compose.material3_material3",
+        "androidx.compose.runtime_runtime",
+        "androidx.compose.ui_ui",
+        "androidx.hilt_hilt-navigation-compose",
+        "androidx.exifinterface_exifinterface",
+        "androidx.room_room-runtime",
+        "androidx.room_room-ktx",
+        "contactspicker_aconfig_flags_java_lib",
+        "glide-prebuilt",
+        "glide-ktx-prebuilt",
+        "glide-gifdecoder-prebuilt",
+        "glide-disklrucache-prebuilt",
+        "glide-compose-prebuilt",
+        "hilt_android",
+    ],
+    plugins: [
+        "androidx.room_room-compiler-plugin",
+    ],
+    flags_packages: [
+        "android.content.flags-aconfig",
+    ],
+}
+
+aconfig_declarations {
+    name: "contactspicker_aconfig_flags",
+    package: "com.android.contactspicker",
+    container: "system",
+    srcs: [
+        "aconfig/contactspicker_flags.aconfig",
+    ],
+}
+
+java_aconfig_library {
+    name: "contactspicker_aconfig_flags_java_lib",
+    aconfig_declarations: "contactspicker_aconfig_flags",
+}
+
+genrule {
+    name: "statslog-contactspicker-java-gen",
+    tools: ["stats-log-api-gen"],
+    cmd: "$(location stats-log-api-gen) --java $(out) --module contactspicker" +
+        " --javaPackage com.android.contactspicker --javaClass ContactsPickerStatsLog",
+    out: ["com/android/contactspicker/logging/ContactsPickerStatsLog.java"],
+}

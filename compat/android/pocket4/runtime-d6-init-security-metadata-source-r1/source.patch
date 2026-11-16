@@ -1,0 +1,221 @@
+diff --git a/docs/contracts/runtime-layout-v1.md b/docs/contracts/runtime-layout-v1.md
+index 225c7b1e31c1b6254c680cda19770bbdbba57a01..ee10f29aa0c756123b862ffd66ba30153bcdeefe 100644
+--- a/docs/contracts/runtime-layout-v1.md
++++ b/docs/contracts/runtime-layout-v1.md
+@@ -295,3 +295,21 @@ PIDFD reap; unknown exit quarantines the lease and all remaining descriptors.
+ The kernel does not automatically lock these flags on an SCM_RIGHTS transfer.
+ Android proc write/remount policy, runtime/APEX, Binder and exec/seccomp remain
+ separate gates. This preparation cannot report a Running cell.
++
++## Original init security metadata
++
++The runtime broker checks the held original init inode's `security.selinux`
++value against the exact CP3A bytes `u:object_r:init_exec:s0` followed by one NUL.
++Its `security.capability` attribute must be absent. The checks use bounded
++descriptor reads and preserve the complete sealed file identity, including
++ctime, before and after both reads. They run before mount preparation and again
++when checking the live namespace or transferring the detached init mount.
++Missing, truncated, oversized, different or unreadable labels are rejected;
++an empty capability attribute is still present and is rejected. An unsupported
++attribute operation does not prove absence.
++
++These checks require preserved input metadata; they neither set a label nor
++establish the active SELinux/AppArmor policy or the post-exec process domain.
++The execution gate still requires independently implemented live MAC,
++init/APEX activation, guest cgroup and final capability/seccomp contracts.
++Ordinary xattr storage tests cannot construct that execution capability.
+diff --git a/runtime/droidloom-supervisor/src/production_runtime_assets.rs b/runtime/droidloom-supervisor/src/production_runtime_assets.rs
+index f69c52544756323b646a278014e501093860d8e4..be338d9002a9d834ae8e89aa9d7b2a3d8d4a455d 100644
+--- a/runtime/droidloom-supervisor/src/production_runtime_assets.rs
++++ b/runtime/droidloom-supervisor/src/production_runtime_assets.rs
+@@ -19,6 +19,9 @@ const RUNTIME_IMAGE_ROOT: &str = "/var/lib/droidloom/runtime-cohorts";
+ const MAX_RUNTIME_MANIFEST: u64 = 256 * 1024;
+ const MAX_RUNTIME_IMAGE: u64 = 16 * 1024 * 1024 * 1024;
+ const MAX_INIT: u64 = 32 * 1024 * 1024;
++// Exact original CP3A init xattr, including its terminating NUL. A matching
++// stored label is an input requirement, never proof of a MAC transition.
++const ORIGINAL_INIT_SELINUX: &[u8; 24] = b"u:object_r:init_exec:s0\0";
+ const OPEN_TREE_CLONE: u32 = 1;
+ const MOUNT_ATTR_NOEXEC: u64 = 8;
+ 
+@@ -221,6 +224,56 @@ fn original_init_elf(file: &File, declared_bytes: u64) -> Result<Option<String>>
+     Ok(interpreter)
+ }
+ 
++fn require_exact_xattr<const N: usize>(file: &File, name: &CStr, expected: &[u8; N]) -> Result<()> {
++    // One bounded descriptor read: oversized values fail with ERANGE rather
++    // than allocating from an untrusted length or truncating a context.
++    let mut value = [0u8; N];
++    let count = unsafe {
++        libc::fgetxattr(
++            file.as_raw_fd(),
++            name.as_ptr(),
++            value.as_mut_ptr().cast(),
++            value.len(),
++        )
++    };
++    if count < 0 {
++        return Err(io::Error::last_os_error().into());
++    }
++    require(
++        count as usize == N && &value == expected,
++        "exact original init security label bytes required",
++    )
++}
++
++fn require_absent_xattr(file: &File, name: &CStr) -> Result<()> {
++    let count =
++        unsafe { libc::fgetxattr(file.as_raw_fd(), name.as_ptr(), std::ptr::null_mut(), 0) };
++    if count >= 0 {
++        return Err(MountError::Rejected(
++            "original init must not carry a file capability, including an empty attribute",
++        ));
++    }
++    let error = io::Error::last_os_error();
++    // Unsupported or denied reads do not establish original absence.
++    if error.raw_os_error() != Some(libc::ENODATA) {
++        return Err(error.into());
++    }
++    Ok(())
++}
++
++fn require_init_security_xattrs(file: &File) -> Result<()> {
++    require_exact_xattr(file, c"security.selinux", ORIGINAL_INIT_SELINUX)?;
++    require_absent_xattr(file, c"security.capability")
++}
++
++fn verify_init_security_metadata(original: &SealedFile) -> Result<()> {
++    // The complete held-inode and path identity, including ctime, brackets
++    // both xattr reads. No path is reopened to obtain the attribute values.
++    original.revalidate()?;
++    require_init_security_xattrs(&original.file)?;
++    original.revalidate()
++}
++
+ fn verify_init_mount(
+     mount: &File,
+     original: &SealedFile,
+@@ -228,7 +281,7 @@ fn verify_init_mount(
+     gids: IdRange,
+     id: u64,
+ ) -> Result<()> {
+-    original.revalidate()?;
++    verify_init_security_metadata(original)?;
+     let meta = mount.metadata()?;
+     require(
+         meta.is_file()
+@@ -346,6 +399,7 @@ impl RuntimeResources {
+             lease.broker_reject_backing_body(&sealed.file)?;
+             sealed.revalidate()?;
+         }
++        verify_init_security_metadata(&self.init)?;
+         Ok(())
+     }
+     fn cleanup(&mut self) -> Result<Vec<u64>> {
+@@ -451,6 +505,7 @@ impl PreparedRuntime {
+             original_init_elf(&init.file, declaration.init.bytes)? == declaration.init_interpreter,
+             "exact original init ELF interpreter",
+         )?;
++        verify_init_security_metadata(&init)?;
+         let filesystem = Filesystem::detect(&image.file)?;
+         let userns = witness.user_namespace().try_clone()?;
+         let meta = userns.metadata()?;
+@@ -611,6 +666,98 @@ mod tests {
+     use super::*;
+     use std::io::{Seek, SeekFrom, Write};
+ 
++    fn set_xattr(file: &File, name: &CStr, value: &[u8]) {
++        let result = unsafe {
++            libc::fsetxattr(
++                file.as_raw_fd(),
++                name.as_ptr(),
++                value.as_ptr().cast(),
++                value.len(),
++                0,
++            )
++        };
++        assert_eq!(result, 0, "{}", io::Error::last_os_error());
++    }
++
++    #[test]
++    fn runtime_init_xattr_requires_complete_exact_bytes() {
++        let file = tempfile::tempfile().unwrap();
++        let name = c"user.droidloom-init-label";
++        assert!(require_exact_xattr(&file, name, ORIGINAL_INIT_SELINUX).is_err());
++        set_xattr(&file, name, ORIGINAL_INIT_SELINUX);
++        require_exact_xattr(&file, name, ORIGINAL_INIT_SELINUX).unwrap();
++        for value in [
++            b"".as_slice(),
++            b"u:object_r:init_exec:s0", // Missing original terminating NUL.
++            b"u:object_r:init_exec:s0\0\0",
++            b"u:object_r:init_exec:s1\0", // Same length, different context.
++            b"u:object_r:system_linker_exec:s0\0",
++        ] {
++            set_xattr(&file, name, value);
++            assert!(require_exact_xattr(&file, name, ORIGINAL_INIT_SELINUX).is_err());
++        }
++    }
++
++    #[test]
++    fn runtime_init_xattr_follows_held_descriptor_after_path_replacement() {
++        let parent = tempfile::tempdir().unwrap();
++        let path = parent.path().join("init");
++        let file = File::create(&path).unwrap();
++        let name = c"user.droidloom-init-label";
++        set_xattr(&file, name, ORIGINAL_INIT_SELINUX);
++        std::fs::rename(&path, parent.path().join("held-init")).unwrap();
++        let replacement = File::create(&path).unwrap();
++        set_xattr(&replacement, name, b"u:object_r:init_exec:s1\0");
++        require_exact_xattr(&file, name, ORIGINAL_INIT_SELINUX).unwrap();
++        assert!(require_exact_xattr(&replacement, name, ORIGINAL_INIT_SELINUX).is_err());
++    }
++
++    #[test]
++    fn runtime_init_capability_absence_rejects_present_empty_and_binary_values() {
++        let file = tempfile::tempfile().unwrap();
++        let name = c"user.droidloom-init-capability";
++        require_absent_xattr(&file, name).unwrap();
++        for value in [b"".as_slice(), &[0u8; 20], b"\x01\0\x02\0"] {
++            set_xattr(&file, name, value);
++            assert!(require_absent_xattr(&file, name).is_err());
++        }
++        let result = unsafe { libc::fremovexattr(file.as_raw_fd(), name.as_ptr()) };
++        assert_eq!(result, 0, "{}", io::Error::last_os_error());
++        require_absent_xattr(&file, name).unwrap();
++    }
++
++    #[test]
++    fn runtime_init_xattr_read_errors_do_not_establish_absence() {
++        let file = tempfile::NamedTempFile::new().unwrap();
++        let path_only = std::fs::OpenOptions::new()
++            .read(true)
++            .custom_flags(libc::O_PATH | libc::O_NOFOLLOW)
++            .open(file.path())
++            .unwrap();
++        assert!(matches!(
++            require_absent_xattr(&path_only, c"user.droidloom-init-capability"),
++            Err(MountError::Io(error)) if error.raw_os_error() == Some(libc::EBADF)
++        ));
++        assert!(
++            require_exact_xattr(
++                &path_only,
++                c"user.droidloom-init-label",
++                ORIGINAL_INIT_SELINUX,
++            )
++            .is_err()
++        );
++    }
++
++    #[test]
++    fn runtime_init_metadata_cannot_be_supplied_by_user_attributes() {
++        let file = tempfile::tempfile().unwrap();
++        set_xattr(&file, c"user.security.selinux", ORIGINAL_INIT_SELINUX);
++        require_exact_xattr(&file, c"user.security.selinux", ORIGINAL_INIT_SELINUX).unwrap();
++        // Ordinary xattr storage controls neither relabel an input nor grant
++        // SELinux authority. Production always reads the fixed security names.
++        assert!(require_init_security_xattrs(&file).is_err());
++    }
++
+     fn base() -> CohortDeclaration {
+         serde_json::from_value(serde_json::json!({
+             "schema":1,"scope":"android_base_images_v1","layout":"gsi_system_as_root",

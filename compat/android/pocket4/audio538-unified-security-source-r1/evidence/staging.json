@@ -1,0 +1,403 @@
+{
+  "APK_installs": 0,
+  "Android_builds": 0,
+  "actual_candidate_manifest": {
+    "bytes": 716909,
+    "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/SOURCE-1557.json",
+    "sha256": "24daae04f7daba0e2020d7743c753ce735636f3d7b2827bb39fb2f914ba11a56"
+  },
+  "actual_parent_330_retirement": {
+    "bytes": 5222,
+    "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/independent-normal-retirement-r1/RESULT.json",
+    "sha256": "e9681fa50104d4682c342510f9983959eba8b2e5e4e24520d0f95d4e866d6a90"
+  },
+  "all_1517_original_parent_source_files_preserved": true,
+  "all_commands_retired": true,
+  "base_commit": "9785ba83d9d37509e02462a0aa7c84d1c991006c",
+  "base_tree": "c9e0b5771b9e2a169ca4236c5c379446e9592760",
+  "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-audio538-security-stage-e2a3-r1.service",
+  "commands": [
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "parent-head",
+      "original_pidfd_retired": true,
+      "pid": 3591070,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/parent-head.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/parent-head.stdout",
+        "sha256": "134ec58699026909f19213e061771e26e964c82db31b8276527a1140be5aa230"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD^{tree}"
+      ],
+      "cwd": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "parent-tree",
+      "original_pidfd_retired": true,
+      "pid": 3591071,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/parent-tree.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/parent-tree.stdout",
+        "sha256": "4364a62f5f9304cfed80bc733b7e81ba26650b4bc3b4b14549881e43d936526d"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "clone",
+        "--no-local",
+        "--no-hardlinks",
+        "--depth",
+        "1",
+        "--",
+        "file:///data/pocket4-aac-security-normal-20261113-e2a3-r1/recipe",
+        "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/recipe"
+      ],
+      "cwd": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1",
+      "exit_code": 0,
+      "name": "clone-complete-private-parent",
+      "original_pidfd_retired": true,
+      "pid": 3591081,
+      "stderr": {
+        "bytes": 81,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/clone-complete-private-parent.stderr",
+        "sha256": "8aac4f049a429409b5e8e4e56ea5cc77e21f8bb179f6a844b74231557cbb7426"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/clone-complete-private-parent.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "clone-head",
+      "original_pidfd_retired": true,
+      "pid": 3591165,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/clone-head.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/clone-head.stdout",
+        "sha256": "134ec58699026909f19213e061771e26e964c82db31b8276527a1140be5aa230"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain"
+      ],
+      "cwd": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "clone-clean",
+      "original_pidfd_retired": true,
+      "pid": 3591166,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/clone-clean.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/clone-clean.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--check",
+        "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/inputs/source.patch"
+      ],
+      "cwd": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "official-private-producer-delta-check",
+      "original_pidfd_retired": true,
+      "pid": 3591170,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/official-private-producer-delta-check.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/official-private-producer-delta-check.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/inputs/source.patch"
+      ],
+      "cwd": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "official-private-producer-delta",
+      "original_pidfd_retired": true,
+      "pid": 3591171,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/official-private-producer-delta.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/official-private-producer-delta.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "add",
+        "--force",
+        "--all"
+      ],
+      "cwd": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "stage-exact-candidate",
+      "original_pidfd_retired": true,
+      "pid": 3591172,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/stage-exact-candidate.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/stage-exact-candidate.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--name-only"
+      ],
+      "cwd": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "exact-changed-files",
+      "original_pidfd_retired": true,
+      "pid": 3591176,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/exact-changed-files.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 4635,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/exact-changed-files.stdout",
+        "sha256": "37d60b82ff107d981af57272003bfa80239dc3f6a980e118b2032b3e5d762233"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--check",
+        "--",
+        "tools/droidloom-update/src",
+        "tools/droidloom-source/src/lib.rs",
+        "android/audio-bridge/libueventd538-originals.json",
+        "android/manifest/audio-bridge-source-lock.json"
+      ],
+      "cwd": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "authored-diff-check",
+      "original_pidfd_retired": true,
+      "pid": 3591184,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/authored-diff-check.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/authored-diff-check.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "write-tree"
+      ],
+      "cwd": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "actual-candidate-tree",
+      "original_pidfd_retired": true,
+      "pid": 3591185,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/actual-candidate-tree.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/actual-candidate-tree.stdout",
+        "sha256": "dbc77c6a13155296aee625b38f89dc4e72ebf7138bb719849bc26ac090d64df4"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "hash-object",
+        "-w",
+        "-t",
+        "commit",
+        "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/inputs/head.commit"
+      ],
+      "cwd": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "write-exact-head-commit",
+      "original_pidfd_retired": true,
+      "pid": 3591188,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/write-exact-head-commit.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/write-exact-head-commit.stdout",
+        "sha256": "d87f7ddfb689cba6387f48a1a6143cf99882fde4fd4985b5e8cdfab4eebc14eb"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "update-ref",
+        "HEAD",
+        "fbb235628023f5fb5d9e47064a6d2884d23534bc",
+        "9785ba83d9d37509e02462a0aa7c84d1c991006c"
+      ],
+      "cwd": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "select-private-head",
+      "original_pidfd_retired": true,
+      "pid": 3591189,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/select-private-head.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/select-private-head.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain"
+      ],
+      "cwd": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "final-clean",
+      "original_pidfd_retired": true,
+      "pid": 3591190,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/final-clean.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/final-clean.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD^"
+      ],
+      "cwd": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "final-parent",
+      "original_pidfd_retired": true,
+      "pid": 3591194,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/final-parent.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/stage-r1/final-parent.stdout",
+        "sha256": "134ec58699026909f19213e061771e26e964c82db31b8276527a1140be5aa230"
+      },
+      "timed_out": false
+    }
+  ],
+  "errors": [],
+  "finished_ns": 1794611037851307105,
+  "invocation_id": "e4ab07989f1e462ba93215abedabb18d",
+  "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+  "new_files": 40,
+  "new_producer_files": 1557,
+  "parent_source_before": {
+    "bytes": 699150,
+    "path": "/data/pocket4-audio538-security-normal-20261113-e2a3-r1/PARENT-SOURCE-BEFORE.json",
+    "sha256": "86a2f7f8731f68941932133c78c5d6b8f2f8b8bbce9d236c5a6f9831d0278e29"
+  },
+  "production_ready": false,
+  "recipe_commit": "fbb235628023f5fb5d9e47064a6d2884d23534bc",
+  "recipe_tree": "23c1a126efd8975156d219af22a2d858a4dd3b2b",
+  "runtime_qualified": false,
+  "shared_AOSP_writes": 0,
+  "state": "AUDIO538_UNIFIED_SECURITY_PRODUCER_STAGED_ORIGINAL1517_PRESERVED",
+  "unchanged_parent_files": 1514
+}

@@ -1,0 +1,123 @@
+--- a/runtime/droidloom-supervisor/src/production_host_admission.rs
++++ b/runtime/droidloom-supervisor/src/production_host_admission.rs
+@@ -493,6 +493,12 @@
+             return Err(reject("actual host procfs required for SSSD inactivity"));
+         }
+         let deadline = Instant::now() + Duration::from_secs(5);
++        complete_sssd_process_scan(deadline, || {
++            self.scan_no_live_service_credentials(&proc, deadline)
++        })
++    }
++
++    fn scan_no_live_service_credentials(&self, proc: &File, deadline: Instant) -> Result<()> {
+         let mut count = 0_usize;
+         for name in directory_names(&proc, PROC_LIMIT)? {
+             let Ok(pid) = name.parse::<u32>() else {
+@@ -551,6 +557,33 @@
+         }
+         Ok(())
+     }
++}
++
++const SSSD_PROC_SCAN_ATTEMPTS: usize = 8;
++
++// A process can exit between getdents and opening its proc directory. Restart
++// the entire read-only inventory on that race, within the original deadline;
++// never turn an incomplete scan into a successful absence observation.
++// This helper is scoped to process inventory. Provider/config changes, live
++// service credentials and owned-worker retirement errors are not retried.
++fn complete_sssd_process_scan(
++    deadline: Instant,
++    mut scan: impl FnMut() -> Result<()>,
++) -> Result<()> {
++    for _ in 0..SSSD_PROC_SCAN_ATTEMPTS {
++        if Instant::now() >= deadline {
++            return Err(reject("SSSD process observation deadline"));
++        }
++        match scan() {
++            Ok(()) if Instant::now() < deadline => return Ok(()),
++            Ok(()) => return Err(reject("SSSD process observation deadline")),
++            Err(HostAdmissionError::Changed) => {}
++            Err(HostAdmissionError::Io(error))
++                if matches!(error.raw_os_error(), Some(libc::ENOENT | libc::ESRCH)) => {}
++            Err(error) => return Err(error),
++        }
++    }
++    Err(HostAdmissionError::Changed)
+ }
+ 
+ fn trusted_systemd_library() -> Result<(File, Seal)> {
+@@ -4536,4 +4569,72 @@
+         assert!(!output.status.success());
+         assert!(output.stdout.len() < 1024 && output.stderr.len() < 1024);
+     }
+-}
++
++    #[test]
++    fn host_admission_sssd_proc_exit_requires_a_complete_replacement_scan() {
++        let mut attempts = 0;
++        let deadline = Instant::now() + Duration::from_secs(1);
++        complete_sssd_process_scan(deadline, || {
++            attempts += 1;
++            match attempts {
++                1 => Err(HostAdmissionError::Changed),
++                2 => Err(io::Error::from_raw_os_error(libc::ENOENT).into()),
++                3 => Err(io::Error::from_raw_os_error(libc::ESRCH).into()),
++                _ => Ok(()),
++            }
++        })
++        .unwrap();
++        assert_eq!(attempts, 4);
++    }
++
++    #[test]
++    fn host_admission_sssd_proc_retries_do_not_hide_policy_or_retirement_errors() {
++        for original in [
++            reject("SSSD service identity has a live host task"),
++            HostAdmissionError::RetirementUnproven,
++            io::Error::from_raw_os_error(libc::EACCES).into(),
++            io::Error::from_raw_os_error(libc::EINVAL).into(),
++            io::Error::new(io::ErrorKind::NotFound, "unclassified read").into(),
++        ] {
++            let expected = original.to_string();
++            let mut pending = Some(original);
++            let mut attempts = 0;
++            let got = complete_sssd_process_scan(Instant::now() + Duration::from_secs(1), || {
++                attempts += 1;
++                Err(pending
++                    .take()
++                    .expect("permanent failure must not be retried"))
++            })
++            .unwrap_err();
++            assert_eq!(got.to_string(), expected);
++            assert_eq!(attempts, 1);
++        }
++    }
++
++    #[test]
++    fn host_admission_sssd_proc_churn_cannot_exhaust_into_success() {
++        let mut attempts = 0;
++        let got = complete_sssd_process_scan(Instant::now() + Duration::from_secs(1), || {
++            attempts += 1;
++            Err(HostAdmissionError::Changed)
++        });
++        assert!(matches!(got, Err(HostAdmissionError::Changed)));
++        assert_eq!(attempts, SSSD_PROC_SCAN_ATTEMPTS);
++    }
++
++    #[test]
++    fn host_admission_sssd_proc_deadline_is_shared_and_checked_after_completion() {
++        let expired = Instant::now() - Duration::from_millis(1);
++        assert!(
++            complete_sssd_process_scan(expired, || panic!("expired scan must not start")).is_err()
++        );
++        let deadline = Instant::now() + Duration::from_millis(2);
++        assert!(
++            complete_sssd_process_scan(deadline, || {
++                std::thread::sleep(Duration::from_millis(4));
++                Ok(())
++            })
++            .is_err()
++        );
++    }
++}

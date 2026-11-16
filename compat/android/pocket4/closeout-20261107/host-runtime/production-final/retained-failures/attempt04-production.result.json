@@ -1,0 +1,106 @@
+{
+  "state": "FAIL",
+  "started_at": "2026-11-07T01:22:40.226115+00:00",
+  "root": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1",
+  "source": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/source",
+  "source_base": "500dd3af851aaadb95537b68129b8bd889504951",
+  "original_failed_result": "/home/alex/work/pocket4-native-status-lifecycle-readiness-compile-01-20261106/attempt01/result.json",
+  "original_failed_result_sha256": "95e5075de61ee94e9789c4632db9eab77e29e751df8c08da33f2b633e0b9d796",
+  "Main_actions": 0,
+  "runtime_qualified": false,
+  "commands": [
+    {
+      "name": "cargo-version",
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "--version"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt04-production/command01.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt04-production/command01.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 0.032,
+      "stdout_sha256": "49f46ff5ffe434e6c1c66388a9230ac33bbe3dbd9175314e9ffc9aa7c418d329",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "rustc-version",
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--version",
+        "--verbose"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt04-production/command02.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt04-production/command02.stderr",
+      "returncode": 0,
+      "elapsed_seconds": 0.064,
+      "stdout_sha256": "83e4eefd5e010a92d9f63328bf8219e23fe5e4cf5e5d17ce53d0263cfa4218a6",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "build-four-release-binaries",
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "build",
+        "--offline",
+        "--locked",
+        "-j1",
+        "--release",
+        "-p",
+        "droidloom-supervisor",
+        "-p",
+        "droidloom-applications",
+        "--bins",
+        "--message-format=json-render-diagnostics"
+      ],
+      "stdout": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt04-production/command03.stdout",
+      "stderr": "/home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt04-production/command03.stderr",
+      "returncode": 101,
+      "elapsed_seconds": 36.902,
+      "stdout_sha256": "3c734200cfc7283c1f615c3645f9203b48b6e8eef7b5f63f2a2ca6130904d60b",
+      "stderr_sha256": "80c1100bdc2a07d3c6a1ce453ee06bf9e88237b7f87ee49edfde25693fa85cde"
+    }
+  ],
+  "host_root_mount_before": "33 2 259:2 / / rw,relatime shared:1 - ext4 /dev/nvme0n1p2 rw",
+  "resources_before": {
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1b399bbaa-fc05-83c7.service",
+    "memory.max": "2147483648",
+    "memory.current": "18489344",
+    "memory.peak": "19468288",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.swap.max": "0",
+    "memory.swap.current": "0",
+    "memory.swap.peak": "0",
+    "cpu.max": "100000 100000"
+  },
+  "source_delta_sha256": {
+    "runtime/droidloom-supervisor/src/control.rs": "50d7bc3abd94f83233ef7d461f93cb714f843cacb3fd5c0e929d06671a95f89b",
+    "runtime/droidloom-supervisor/src/development.rs": "2140f8d23ff51016851ae7d2c0983dab7c1727604691748a2b8e9daa0dec858a",
+    "runtime/droidloom-supervisor/src/bin/droidloomctl.rs": "3733dd7586ebf534aef3d4a5d176a76b8822dd0c6a6b8b39fb64adf8e70cd484",
+    "runtime/droidloom-supervisor/tests/cli_lifecycle.rs": "e5d2b54a7f735ab6c18e8f6ca10fde347f8da832f4d8d7db720399caf0c8377c",
+    "runtime/droidloom-supervisor/src/control_status_tests.rs": "0bafad33112df280c73ceedf675305236275bb043d0909fc4a71f6366c0a6727",
+    "runtime/droidloom-supervisor/src/lib.rs": "b539588d8d353a9b5b658600687f532bd03a9b7c37a5c063c25b6612a58b0370",
+    "runtime/droidloom-supervisor/src/linux_plan.rs": "e7204473b982b1d26fbf13e59d67efbad2d24f04beaa9db0b664081e27bfbaaf"
+  },
+  "source_provenance_sha256": "84b3db060192fc71f3d67e1f14227653187fbbddaa38203afd6d1074f67c62a0",
+  "package_marker_sha256_before": "429d24757e8948a6c631488810abd30c02c07d5916e18f29f2ee3976c18b9d74",
+  "source_commit": "5dbcd5ba1d9db77d3f4aa20fa9a4c82f987b4db8",
+  "source_tree": "b2eff099371970c4865ac44db204cc301a3dec4b",
+  "toolchain": {
+    "cargo": "cargo 1.93.0 (083ac5135 2025-12-15)",
+    "rustc": "rustc 1.93.0 (254b59607 2026-01-19)\nbinary: rustc\ncommit-hash: 254b59607d4417e9dffbc307138ae5c86280fe4c\ncommit-date: 2026-01-19\nhost: x86_64-unknown-linux-gnu\nrelease: 1.93.0\nLLVM version: 21.1.8",
+    "cargo_sha256": "9548937d530bf439ff1ba47a3b2bd26eeb9c3aff1961c20c01798613de922578",
+    "rustc_sha256": "d32249a7c3bfcfc67b471460386e46323accae7125e344567a12d5664d99bb57",
+    "rustdoc_sha256": "ece7829b8e7448a9d59c88080e2b16253b885c560f792002837901c7f24b7695"
+  },
+  "error": "AssertionError('build-four-release-binaries exited 101; inspect /home/alex/work/pocket4-status-readiness-finalize-20261107-r1/verification/attempt04-production/command03.stderr')",
+  "finished_at": "2026-11-07T01:23:17.370408+00:00",
+  "resources_final": {
+    "memory.max": "2147483648",
+    "memory.peak": "548896768",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.swap.max": "0",
+    "memory.swap.current": "0",
+    "memory.swap.peak": "0",
+    "cpu.max": "100000 100000"
+  }
+}

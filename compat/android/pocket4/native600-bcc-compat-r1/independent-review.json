@@ -1,0 +1,437 @@
+{
+  "canonical_candidate": {
+    "commit": "68a334c93b4b42846cd2fe2ef23e46c7021149c0",
+    "host": "ai395",
+    "path": "/home/qq/work/pocket4-native600-renderscript-buildclosure-20261109-r1/source",
+    "tree": "4903434ccc65abcf26b569e155e643e538338b51",
+    "working_tree_clean": true
+  },
+  "canonical_capsule": "compat/android/pocket4/native600-bcc-compat-r1",
+  "canonical_source_postimages": [
+    {
+      "after_bytes": 354443,
+      "after_sha256": "86a215da1fed2945feccebe7878b95fe507114de6e3b8ee0fa673e830d9a7aba",
+      "before_bytes": 354415,
+      "before_sha256": "02fd330466357ecf744d85f27d23b03fabde46f31fae3ef69a5f6634e66e8837",
+      "path": "android/native-generation-pair/source-lock.json"
+    },
+    {
+      "after_bytes": 426694,
+      "after_sha256": "30a67139ba814589bf2c671ecaf00d6314dac80b3d7ce9abf5969df41a0e4ace",
+      "before_bytes": 423930,
+      "before_sha256": "52d7dabf9b34b9625f92fc7ecdf36cdc3dd575690a8990f778712995c4067cab",
+      "path": "tools/droidloom-update/src/native_generation_pair_build.rs"
+    }
+  ],
+  "existing_host_qualification": {
+    "environment_recovery_records_preserved": true,
+    "evidence_origin": "Unmodified published qualification.json, observed via immutable Git blob; this independent comparison did not rerun these host commands.",
+    "focused_test_count": 28,
+    "focused_test_filter": "ordinary_pair",
+    "normal_plan_execution_documented": false,
+    "qualification_pin": {
+      "bytes": 7893,
+      "sha256": "1f7f40a50dc12ddca0b3c10176890f7840baa6bdb5f75f9d2b53de475f60fbce"
+    },
+    "validation": {
+      "commit_job_id": "1a1bfce1acf-5e21-726",
+      "focused_tests": {
+        "actual_result": "test result: ok. 28 passed; 0 failed; 0 ignored; 0 measured; 222 filtered out; finished in 2.97s",
+        "command": "TMPDIR=/home/qq/work/pocket4-native600-renderscript-buildclosure-20261109-r1/tmp /home/qq/.cargo/bin/cargo test --locked --offline --target-dir /home/qq/work/pocket4-native600-renderscript-buildclosure-20261109-r1/cargo-target -j 2 -p droidloom-update ordinary_pair",
+        "existing_warning": "private_ART_conscrypt_fuzzer_scope_preserves_other_modules has a non_snake_case name",
+        "exit_code": 0,
+        "host": "ai395",
+        "job_id": "1a1bfca44f2-5e21-713",
+        "new_regression": "ordinary_pair_renderscript_provider_rejects_actual_r8_omission",
+        "output_complete": true,
+        "output_durable": true,
+        "state": "succeeded",
+        "stderr_bytes": 3087,
+        "stdout_bytes": 3340,
+        "terminal_at_unix_ms": 1794219081163
+      },
+      "git_diff_check_passed": true,
+      "identity_readback_job_id": "1a1bfd3b720-5e21-742",
+      "normal_tools": {
+        "actual_result": "Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.20s",
+        "binaries": [
+          {
+            "name": "droidloom-source",
+            "sha256": "36ffee1f1462a020934abe3ac3a928fcb5060bc6bb2de8e35394219239ee404a"
+          },
+          {
+            "name": "droidloom-update",
+            "sha256": "4f459cf9fd21926872b00ac1c86d63f1987d263046678a6e3bc607de5d2319d7"
+          }
+        ],
+        "build_succeeded": true,
+        "command": "TMPDIR=<candidate>/tmp cargo build --locked --offline --target-dir <candidate>/cargo-target -j 2 -p droidloom-update -p droidloom-source",
+        "enclosing_job_note": "The subsequent git commit in this job failed due to absent author identity; it does not invalidate the completed build and verify-lock phases. A later commit job supplied command-local ChatGPT identity and succeeded.",
+        "job_id": "1a1bfcc301e-5e21-71e"
+      },
+      "normal_verify_lock": {
+        "actual_stdout": "verified 600 exact AOSP projects and 8 root links at superproject 28f0bbddc24d56c8ec5a8df5342ac7a292184039\n",
+        "command": "<candidate>/cargo-target/debug/droidloom-source verify-lock --lock <candidate>/source/android/native-generation-pair/source-lock.json",
+        "job_id": "1a1bfcc301e-5e21-71e",
+        "succeeded": true
+      }
+    }
+  },
+  "limits": {
+    "all_blockers_closed": false,
+    "android_runtime_qualified": false,
+    "application_acceptance_qualified": false,
+    "full_apex_or_android_image_qualified": false,
+    "full_soong_qualified": false,
+    "host_qualification_records_rerun_by_review": false,
+    "new_host_builds": 0,
+    "production_ready": false,
+    "source_materialization_performed_by_review": false
+  },
+  "normal_source_reconciliation_still_required": true,
+  "offline_checks_actually_performed": {
+    "all_non_test_rust_bytes_equal_independent_candidate": true,
+    "all_original_FILES_members_checked": 3,
+    "git_apply_check_forward_reverse_and_exact_pre_post_bytes": [
+      "android/native-generation-pair/source-lock.json",
+      "tools/droidloom-update/src/native_generation_pair_build.rs"
+    ],
+    "normal_cli_executed_by_this_review": false,
+    "patch_paths_exactly_two_declared_source_files": true,
+    "rust_tests_executed_by_this_review": false,
+    "source_lock_equals_independent_official_cone_reconstruction": true
+  },
+  "original_published_files": {
+    "compat/android/pocket4/native600-bcc-compat-r1/FILES.json": {
+      "bytes": 547,
+      "git_blob": "4f3f02b398a1e779a9414edf0089e20dd4105608",
+      "sha256": "72f29d92b7cf2c07384984e0fd9fd46a5aed19841d9651870b94eb323996d2be"
+    },
+    "compat/android/pocket4/native600-bcc-compat-r1/README.md": {
+      "bytes": 2475,
+      "git_blob": "95d594d4a24027f9627faf1d7e1676e63e924be7",
+      "sha256": "7050b66fca02fac0221713a4cfc153a27fbaab2bd0c9340b2e41b5932dbf5c69"
+    },
+    "compat/android/pocket4/native600-bcc-compat-r1/native600-bcc-compat.patch": {
+      "bytes": 5653,
+      "git_blob": "4345bbf38ec31a41fe2597f3c156cd0777cc1621",
+      "sha256": "41494b6a04b7c7da0e1e4d8046a18b6a01d6c2a50c15f9d08c3ae6ea4cfdc854"
+    },
+    "compat/android/pocket4/native600-bcc-compat-r1/qualification.json": {
+      "bytes": 7893,
+      "git_blob": "116d1d27a32d658a057b96d29e99632274f098fe",
+      "sha256": "1f7f40a50dc12ddca0b3c10176890f7840baa6bdb5f75f9d2b53de475f60fbce"
+    }
+  },
+  "preserved_prior_full_build_failure": {
+    "host": "ai395",
+    "inner_receipt": {
+      "bytes": 62230,
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r8/terminal.json",
+      "sha256": "95bad93f7a148ed8bed4fb6be83f5e4ad3892a893a589f6bd8d6d9c30ba40a68"
+    },
+    "input_after_qualified": true,
+    "message": "development/build/Android.bp:119:1: \"deprecated-renderscript-tools\" depends on undefined module \"bcc_compat\".",
+    "outer_job_id": "1a1bfa96ee5-5e21-63d",
+    "outer_receipt": {
+      "bytes": 13306,
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/full-ai395-r8/outer-terminal.json",
+      "sha256": "3cd5e5ef39bb9289c7d7943625a27ed8cb0ca524f74eb1eda2522b2dd12e4158"
+    },
+    "owned_retirement_complete": true,
+    "source_projection_restored": true,
+    "state": "FAILED",
+    "upgraded_to_pass": false
+  },
+  "primary_original_source_inventory": {
+    "consumer": {
+      "commit": "4dafd114fab3c3d9543a5aff0ad097f479915176",
+      "module": "deprecated-renderscript-tools",
+      "path": "development/build/Android.bp",
+      "property": "target.not_windows.deps",
+      "required_provider": "bcc_compat"
+    },
+    "direct_provider_declarations_already_selected": [
+      {
+        "module": "libbcc-defaults",
+        "path": "frameworks/compile/libbcc/Android.bp"
+      },
+      {
+        "module": "libbcc-targets",
+        "path": "frameworks/compile/libbcc/Android.bp"
+      },
+      {
+        "module": "llvm-defaults",
+        "path": "external/llvm/Android.bp"
+      },
+      {
+        "module": "rs-version",
+        "path": "frameworks/compile/slang/Android.bp"
+      },
+      {
+        "module": "libbcc",
+        "path": "frameworks/compile/libbcc/lib/Android.bp"
+      },
+      {
+        "module": "libbcinfo",
+        "path": "frameworks/compile/libbcc/bcinfo/Android.bp"
+      },
+      {
+        "module": "libLLVM_android",
+        "path": "external/llvm/Android.bp"
+      },
+      {
+        "module": "slang_headers",
+        "path": "frameworks/compile/slang/Android.bp"
+      }
+    ],
+    "main_cpp_local_header_selections_already_present": [
+      "frameworks/compile/libbcc/include",
+      "external/llvm/include",
+      "external/llvm/host"
+    ],
+    "official_fetches": [
+      {
+        "bytes": 491,
+        "codec": "gzip+base64",
+        "format": "JSON",
+        "label": "superproject-frameworks-compile-tree",
+        "sha256": "a1e0601d44704d25140afb9d32a5431366fc478349b90982720a3b7e9580a15c",
+        "status": 200,
+        "url": "https://android.googlesource.com/platform/superproject/+/28f0bbddc24d56c8ec5a8df5342ac7a292184039/frameworks/compile/?format=JSON"
+      },
+      {
+        "bytes": 1864,
+        "codec": "gzip+base64",
+        "format": "JSON",
+        "label": "libbcc-root-tree",
+        "sha256": "302185aa32c40b15012aca00675c428afa8bc9de31f5bd79f40f9203f38ebe9a",
+        "status": 200,
+        "url": "https://android.googlesource.com/platform/frameworks/compile/libbcc/+/943016fade3dbbb725c363d0dc60a6e962bd88e5/?format=JSON"
+      },
+      {
+        "bytes": 632,
+        "codec": "gzip+base64",
+        "format": "JSON",
+        "label": "libbcc-tools-tree",
+        "sha256": "2d58b35a21c227af05488a323fbbfcf91f7a52cdb7fb5303e004ef9b742f9782",
+        "status": 200,
+        "url": "https://android.googlesource.com/platform/frameworks/compile/libbcc/+/943016fade3dbbb725c363d0dc60a6e962bd88e5/tools/?format=JSON"
+      },
+      {
+        "bytes": 15422,
+        "codec": "gzip+base64",
+        "format": "TEXT",
+        "git_blob": "3e6108003c66409615c378c364ba25db20beb341",
+        "label": "development-consumer-bp",
+        "sha256": "7ddfd0a4b3df0d09e6e57a69c659971ea243fcbaf6bf8e68732edf75699e3045",
+        "status": 200,
+        "url": "https://android.googlesource.com/platform/development/+/4dafd114fab3c3d9543a5aff0ad097f479915176/build/Android.bp?format=TEXT"
+      },
+      {
+        "bytes": 424,
+        "codec": "gzip+base64",
+        "format": "TEXT",
+        "git_blob": "47614533e40c2374a7b578f30519392fcf90c37d",
+        "label": "libbcc-tools-bp",
+        "sha256": "c01fb11463a73c3a123c5df71bd731206d1743379e75946b4524731004f2a47a",
+        "status": 200,
+        "url": "https://android.googlesource.com/platform/frameworks/compile/libbcc/+/943016fade3dbbb725c363d0dc60a6e962bd88e5/tools/Android.bp?format=TEXT"
+      },
+      {
+        "bytes": 1523,
+        "codec": "gzip+base64",
+        "format": "TEXT",
+        "git_blob": "192d5760b3b48c6c9621c7ec5b88c6f45f690859",
+        "label": "bcc-compat-bp",
+        "sha256": "ea4c4f94e63227e29e886ed6d7df7a51ca94b9a3e8c743f8d569d1db8f40086a",
+        "status": 200,
+        "url": "https://android.googlesource.com/platform/frameworks/compile/libbcc/+/943016fade3dbbb725c363d0dc60a6e962bd88e5/tools/bcc_compat/Android.bp?format=TEXT"
+      },
+      {
+        "bytes": 355,
+        "codec": "gzip+base64",
+        "format": "JSON",
+        "label": "bcc-compat-tree",
+        "sha256": "06d97f0e2dc82b10cbcfd5d4244f5a1215466712df2e49105e7f35a1480e5c2f",
+        "status": 200,
+        "url": "https://android.googlesource.com/platform/frameworks/compile/libbcc/+/943016fade3dbbb725c363d0dc60a6e962bd88e5/tools/bcc_compat/?format=JSON"
+      },
+      {
+        "bytes": 9427,
+        "codec": "gzip+base64",
+        "format": "TEXT",
+        "git_blob": "bc42a44d8f4bd7ae6c04bca924006af2cfed5fb6",
+        "label": "bcc-compat-main",
+        "sha256": "d7b8aef5a94119dd93620baf3fff0f260f277092a6113e6c0f8fed67643f7bad",
+        "status": 200,
+        "url": "https://android.googlesource.com/platform/frameworks/compile/libbcc/+/943016fade3dbbb725c363d0dc60a6e962bd88e5/tools/bcc_compat/Main.cpp?format=TEXT"
+      },
+      {
+        "bytes": 16290,
+        "codec": "gzip+base64",
+        "format": "TEXT",
+        "git_blob": "1344fe2cf942e979f1e5754ab923bcb9633bedd1",
+        "label": "libbcc-notice",
+        "sha256": "c1d6e4c50472bf11a7016796c6a4572ac074d4d48bd80d97a0f1b956df7e258f",
+        "status": 200,
+        "url": "https://android.googlesource.com/platform/frameworks/compile/libbcc/+/943016fade3dbbb725c363d0dc60a6e962bd88e5/NOTICE?format=TEXT"
+      },
+      {
+        "bytes": 2708,
+        "codec": "gzip+base64",
+        "format": "TEXT",
+        "git_blob": "0df1c99d832a97ba79895def04e07a8317587e5a",
+        "label": "actual-libbcc-lib-bp",
+        "sha256": "9c11eefede1e7a47e5d11ca416156687f490523e57480ad033f0638a6b95e0a8",
+        "status": 200,
+        "url": "https://android.googlesource.com/platform/frameworks/compile/libbcc/+/943016fade3dbbb725c363d0dc60a6e962bd88e5/lib/Android.bp?format=TEXT"
+      },
+      {
+        "bytes": 3254,
+        "codec": "gzip+base64",
+        "format": "TEXT",
+        "git_blob": "8cfa8cb402dfba247126665f172506707b1e6a44",
+        "label": "actual-libbcc-bcinfo-bp",
+        "sha256": "5de036d60938ea6fd8f5ec0ece88427a76a5e1539de6b8e13f6ad9c92577632d",
+        "status": 200,
+        "url": "https://android.googlesource.com/platform/frameworks/compile/libbcc/+/943016fade3dbbb725c363d0dc60a6e962bd88e5/bcinfo/Android.bp?format=TEXT"
+      },
+      {
+        "bytes": 6132,
+        "codec": "gzip+base64",
+        "format": "TEXT",
+        "git_blob": "6cad2a53fa430a647ddcd4fd9ae348dfb18591ae",
+        "label": "actual-slang-root-bp",
+        "sha256": "d35d89aff4360900e8d539bc5fd60c3fde59d3d9157f2f7c8c7fa556590822d2",
+        "status": 200,
+        "url": "https://android.googlesource.com/platform/frameworks/compile/slang/+/4080160ebeff7fef5d5ce7062b571830c8cc937e/Android.bp?format=TEXT"
+      },
+      {
+        "bytes": 9862,
+        "codec": "gzip+base64",
+        "format": "TEXT",
+        "git_blob": "19995d0161091b69718d12b67cff8b0f9f4efef8",
+        "label": "actual-llvm-root-bp",
+        "sha256": "0bda6d7cb9cd6e6d315faaf38738fe2ec170eeb03412a89868b217f49145a1a0",
+        "status": 200,
+        "url": "https://android.googlesource.com/platform/external/llvm/+/429d6c6097aea3326e49fc8e87cc7658b750c5d7/Android.bp?format=TEXT"
+      }
+    ],
+    "original_parent_blueprints_and_license_retained": true,
+    "provider": {
+      "commit": "943016fade3dbbb725c363d0dc60a6e962bd88e5",
+      "cone": "tools/bcc_compat",
+      "files": [
+        {
+          "bytes": 1523,
+          "git_blob": "192d5760b3b48c6c9621c7ec5b88c6f45f690859",
+          "path": "Android.bp",
+          "sha256": "ea4c4f94e63227e29e886ed6d7df7a51ca94b9a3e8c743f8d569d1db8f40086a"
+        },
+        {
+          "bytes": 9427,
+          "git_blob": "bc42a44d8f4bd7ae6c04bca924006af2cfed5fb6",
+          "path": "Main.cpp",
+          "sha256": "d7b8aef5a94119dd93620baf3fff0f260f277092a6113e6c0f8fed67643f7bad"
+        }
+      ],
+      "leaf_tree": "8c26537bdd8b4e0c04a7a01c1d7069ae87415833",
+      "path": "frameworks/compile/libbcc",
+      "project": "platform/frameworks/compile/libbcc"
+    },
+    "superproject_commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039"
+  },
+  "publication_policy": {
+    "alternative_candidate_selected": false,
+    "alternative_rust_patch_payload_or_ci_published": false,
+    "existing_source_patch_and_qualification_bytes_preserved": true,
+    "only_new_review_and_FILES_inventory_updated": true
+  },
+  "published_head_reviewed": "0d4ac0c18158ad2aa9e1f48195f3cfe9703d5646",
+  "readback": {
+    "all_output_bytes_retrieved": 36836,
+    "git_blob_content_hashes_checked": 9,
+    "host": "mac",
+    "idempotency_key": "p4-read-shared-0d4-source-capsules-493ac-20261109",
+    "operation": "nine immutable GitHub blob GET requests; no remote file writes, builds, or live source mutation",
+    "output_sha256": "6a15d9c37b55507328e301a948c93641f33c8c2af15ddeec5ae92f4e68990e6c",
+    "pages": [
+      {
+        "chunk_sha256": "7221908f861b262bbaffed0e05e93036bb35e505e8ab40846046ebae20b422d0",
+        "next_offset": 16384,
+        "offset": 0
+      },
+      {
+        "chunk_sha256": "eed0eb5b5864c9182de630b5263c92e10eca18224ee284891acc087906169491",
+        "next_offset": 32768,
+        "offset": 16384
+      },
+      {
+        "chunk_sha256": "af44022730ac7c6dff3306e4941a96b73c6af09ed2a6e149790122b82fb95d5a",
+        "next_offset": 36836,
+        "offset": 32768
+      }
+    ],
+    "raw_transport": {
+      "bytes": 115050,
+      "sha256": "9ef8b896182a6a182b1ada92a540b9cba182e89cf15b7e71a7021fb4dcdfe71a"
+    },
+    "session_id": "dpty-b6857b753463ec863e91e0d32afec5074c44bc012f1393b33d4c629f79a4a80c",
+    "terminal_status": {
+      "boot": "{ sec = 1791114158, usec = 120249 } Sun Oct  4 19:42:38 2026",
+      "bytes_seen": 36836,
+      "bytes_stored": 36836,
+      "capture_error": null,
+      "closed": false,
+      "created_unix_ms": 1794221880123,
+      "exit_code": 0,
+      "output_complete": true,
+      "owner_pid": 69539,
+      "pid": 69540,
+      "state": "exited"
+    }
+  },
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "reviewed_utc": "2026-11-09T11:06:32.197152+00:00",
+  "reviewer_scope": "Independent original-source and exact-byte offline replay; existing published candidate remains the sole selected source fix.",
+  "schema": "pocket4-canonical-source-independent-review-v1",
+  "semantic_comparison": {
+    "changed_project_revisions": 0,
+    "files": [
+      {
+        "before_sha256": "02fd330466357ecf744d85f27d23b03fabde46f31fae3ef69a5f6634e66e8837",
+        "byte_identical": true,
+        "independent_after_bytes": 354443,
+        "independent_after_sha256": "86a215da1fed2945feccebe7878b95fe507114de6e3b8ee0fa673e830d9a7aba",
+        "json_equal": true,
+        "path": "android/native-generation-pair/source-lock.json",
+        "published_after_bytes": 354443,
+        "published_after_sha256": "86a215da1fed2945feccebe7878b95fe507114de6e3b8ee0fa673e830d9a7aba"
+      },
+      {
+        "before_sha256": "52d7dabf9b34b9625f92fc7ecdf36cdc3dd575690a8990f778712995c4067cab",
+        "byte_identical": false,
+        "independent_after_bytes": 427018,
+        "independent_after_sha256": "70aa7da2fb37c634fd6db2f81e3dd3d20b732cb1fe2a2f988dc227590ecfb7c1",
+        "path": "tools/droidloom-update/src/native_generation_pair_build.rs",
+        "published_after_bytes": 426694,
+        "published_after_sha256": "30a67139ba814589bf2c671ecaf00d6314dac80b3d7ce9abf5969df41a0e4ace"
+      }
+    ],
+    "independent_candidate_disposition": "Superseded and not selected. Keep the already published normal-tested Rust candidate; do not publish or qualify the alternative test-only source variant.",
+    "independent_normal_cli_execution": "NOT_RUN",
+    "independent_patch": {
+      "bytes": 5359,
+      "sha256": "3e42924cb69e8d246643379ad444719b3ad4276e22bd651e6fea897ea9770c6d"
+    },
+    "independent_rust_compilation": "NOT_RUN",
+    "new_projects": 0,
+    "non_test_rust_prefix_byte_identical": true,
+    "only_rust_differences": "Names/comments and assertions in the added regression and historical test helper. The alternative adds explicit count/duplicate assertions; the published candidate retains the same exact source validator and passed its normal ordinary_pair suite.",
+    "project_count": 600,
+    "root_links": 8,
+    "source_lock_byte_identical": true
+  },
+  "source_cone_conclusion": "The added tools/bcc_compat cone includes both original Android.bp and Main.cpp at the existing libbcc commit. Its direct declarations and local-header selections are already present. This verifies the specific provider selection; it does not prove variant-specific compilation/linking or the full Soong closure."
+}

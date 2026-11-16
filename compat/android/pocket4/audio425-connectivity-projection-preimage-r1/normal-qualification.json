@@ -1,0 +1,83 @@
+{
+  "schema": "audio425-connectivity-normal-source-qualification-public-v1",
+  "scope": "completed original normal tool/source qualification; no new compilation performed when packaging",
+  "normal_tools": {
+    "qualified": true,
+    "normal_commands": 24,
+    "all_exit_zero": true,
+    "all_owned_children_retired": true,
+    "recipe_commit": "1017dd42a2adb3ef206082d4eeb80e762038eb01",
+    "recipe_tree": "651e54cb5ad1989c3bd1944155cfc449d5020de2",
+    "normal_tests": {
+      "normal-source-tests": {
+        "passed": 23,
+        "failed": 0,
+        "ignored": 0,
+        "filtered": 0,
+        "stdout": {
+          "bytes": 2116,
+          "sha256": "525772b2813c66627a8c04c76ac1e6422c8df17cb7531e5b944be23032bd6dac"
+        }
+      },
+      "normal-audio-tests": {
+        "passed": 41,
+        "failed": 0,
+        "ignored": 0,
+        "filtered": 174,
+        "stdout": {
+          "bytes": 4259,
+          "sha256": "87c2656894d2b7759712313bace3418eff7bec77f01a901bf7586899ee1e74f4"
+        }
+      }
+    },
+    "new_regression_tests": [
+      "audio_connectivity_normal_patch_chain_preserves_providers_and_recovers",
+      "audio_connectivity_projection_guard_rejects_unbound_or_changed_inputs",
+      "audio_connectivity_projection_guard_rejects_unapplied_and_partial_chain",
+      "audio_connectivity_projection_guard_keeps_other_modes_unchanged"
+    ],
+    "tools": [
+      {
+        "name": "droidloom-source",
+        "bytes": 19272992,
+        "sha256": "bd25fe67882cc2583e4014bcf077bc01121c76f892177a3219a8e8f0e42c4883"
+      },
+      {
+        "name": "droidloom-update",
+        "bytes": 32306704,
+        "sha256": "c47552e3c8e742d1a4f8597d2cdfa2a0e918a47c79ef9a554c06c64ea0e592c0"
+      }
+    ],
+    "result": {
+      "bytes": 345652,
+      "sha256": "c9f7ec2a257f98c8585f19ccf97aeb33dd4e7e29634e8baaa38d513b850a5a53"
+    },
+    "recipe_file_count": 469
+  },
+  "normal_source": {
+    "qualified": true,
+    "normal_commands": 17,
+    "all_exit_zero": true,
+    "all_owned_children_retired": true,
+    "project_count": 425,
+    "original_blueprint_count": 1519,
+    "all_project_commits_and_source_paths_unchanged": true,
+    "all_external_alternates_absent": true,
+    "source_projection_absent": true,
+    "source_manifest": {
+      "bytes": 261692,
+      "sha256": "62d52bea3c5230d8add2484d9e72ffcff8c279f8ac256eeb63320609630b75ad"
+    },
+    "result": {
+      "bytes": 840567,
+      "sha256": "f2a5486324c14a5ef380c96e50904b0d607144e8e2b46ad856626fb96b0c2a79"
+    }
+  },
+  "full_build_qualified": false,
+  "complete_apex_qualified": false,
+  "runtime_qualified": false,
+  "qpr1_compatibility_qualified": false,
+  "host_authority_transferred": false,
+  "portable_controls_newly_run": 0,
+  "normal_rust_tests_are_embedded_in_production_patch": true
+}

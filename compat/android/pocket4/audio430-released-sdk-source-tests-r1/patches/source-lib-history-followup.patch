@@ -1,0 +1,147 @@
+--- a/tools/droidloom-source/src/lib.rs
++++ b/tools/droidloom-source/src/lib.rs
+@@ -943,8 +943,124 @@
+         }
+     }
+ 
++    #[test]
++    fn audio_released_sdks_extend_the_actual_r11_lock_without_repinning() {
++        let old_raw = audio_before_released_sdk_lock();
++        let new_raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
++        let old: SparseSourceLock = serde_json::from_str(&old_raw).unwrap();
++        let new: SparseSourceLock = serde_json::from_str(new_raw).unwrap();
++        assert_eq!(old.projects.len(), 430);
++        assert_eq!(new.projects.len(), 430);
++        let before = build_plan(&old).unwrap();
++        let after = build_plan(&new).unwrap();
++        validate_plan_extension(&before, &after).unwrap();
++        assert!(validate_plan_extension(&after, &before).is_err());
++        let old_value: serde_json::Value = serde_json::from_str(&old_raw).unwrap();
++        let new_value: serde_json::Value = serde_json::from_str(new_raw).unwrap();
++        for (before, after) in old_value["projects"].as_array().unwrap().iter()
++            .zip(new_value["projects"].as_array().unwrap()) {
++            if before["path"] == "prebuilts/sdk" {
++                for key in ["path", "name", "commit", "purpose"] {
++                    assert_eq!(before[key], after[key], "{key}");
++                }
++                let selected_before = before["sparse_paths"].as_array().unwrap();
++                let selected_after = after["sparse_paths"].as_array().unwrap();
++                assert_eq!(&selected_after[..selected_before.len()], selected_before.as_slice());
++                let added: Vec<_> = selected_after[selected_before.len()..].iter()
++                    .map(|path| path.as_str().unwrap()).collect();
++                assert_eq!(added, vec![
++            "4/public/android.jar",
++            "4/public/framework.aidl",
++            "7/public/android.jar",
++            "7/public/framework.aidl",
++            "15/public/android.jar",
++            "15/public/framework.aidl",
++            "16/public/android.jar",
++            "16/public/framework.aidl",
++            "19/public/android.jar",
++            "19/public/framework.aidl",
++            "21/public/android.jar",
++            "21/public/framework.aidl",
++            "22/public/android.jar",
++            "22/public/framework.aidl",
++            "23/public/android.jar",
++            "23/public/framework.aidl",
++            "24/public/android.jar",
++            "24/public/framework.aidl",
++            "25/public/android.jar",
++            "25/public/framework.aidl",
++            "26/public/android.jar",
++            "26/public/framework.aidl",
++            "27/public/android.jar",
++            "27/public/framework.aidl",
++            "33/public/android.jar",
++            "33/public/framework.aidl",
++            "33/public/core-for-system-modules.jar",
++            "37.0/public/android.jar",
++            "37.0/public/framework.aidl",
++            "37.0/public/core-for-system-modules.jar",
++            "31/system/android.jar",
++            "35/system/android.jar",
++                ]);
++            } else {
++                assert_eq!(before, after);
++            }
++        }
++        for key in ["superproject", "links", "policy", "remote_base", "schema_version", "selected_at", "status"] {
++            assert_eq!(old_value[key], new_value[key], "{key}");
++        }
++        assert_eq!(MAX_PROJECTS, 432);
++        assert_eq!(MAX_SPARSE_PATHS, 368);
++        assert_eq!(new.projects.iter().map(|p| p.sparse_paths.len()).max(), Some(355));
++    }
++
++    fn audio_before_released_sdk_lock() -> String {
++        let mut previous = include_str!("../../../android/manifest/audio-bridge-source-lock.json").to_owned();
++        for path in [
++            "4/public/android.jar",
++            "4/public/framework.aidl",
++            "7/public/android.jar",
++            "7/public/framework.aidl",
++            "15/public/android.jar",
++            "15/public/framework.aidl",
++            "16/public/android.jar",
++            "16/public/framework.aidl",
++            "19/public/android.jar",
++            "19/public/framework.aidl",
++            "21/public/android.jar",
++            "21/public/framework.aidl",
++            "22/public/android.jar",
++            "22/public/framework.aidl",
++            "23/public/android.jar",
++            "23/public/framework.aidl",
++            "24/public/android.jar",
++            "24/public/framework.aidl",
++            "25/public/android.jar",
++            "25/public/framework.aidl",
++            "26/public/android.jar",
++            "26/public/framework.aidl",
++            "27/public/android.jar",
++            "27/public/framework.aidl",
++            "33/public/android.jar",
++            "33/public/framework.aidl",
++            "33/public/core-for-system-modules.jar",
++            "37.0/public/android.jar",
++            "37.0/public/framework.aidl",
++            "37.0/public/core-for-system-modules.jar",
++            "31/system/android.jar",
++            "35/system/android.jar",
++        ] {
++            let added = format!(",\n        \"{path}\"");
++            assert_eq!(previous.matches(&added).count(), 1);
++            previous = previous.replacen(&added, "", 1);
++        }
++        assert_eq!(format!("{:x}", Sha256::digest(previous.as_bytes())),
++            "45496b24c055fca9aa1f3fae7bd5c7c3c99cb46721150690645bf5d059159de2");
++        previous
++    }
++
+     fn audio_before_ondeviceintelligence_lock() -> String {
+-        let mut previous = include_str!("../../../android/manifest/audio-bridge-source-lock.json").to_owned();
++        let mut previous = audio_before_released_sdk_lock();
+         for path in [
+             "36/public/api/service-ondeviceintelligence.txt",
+             "36/public/api/service-ondeviceintelligence-removed.txt",
+@@ -963,7 +1079,8 @@
+     #[test]
+     fn audio_ondeviceintelligence_extends_actual_430_by_four_original_api_inputs() {
+         let old_raw = audio_before_ondeviceintelligence_lock();
+-        let new_raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
++        let new_owned = audio_before_released_sdk_lock();
++        let new_raw = new_owned.as_str();
+         let old: SparseSourceLock = serde_json::from_str(&old_raw).unwrap();
+         let new: SparseSourceLock = serde_json::from_str(new_raw).unwrap();
+         let before = build_plan(&old).unwrap();
+@@ -2177,7 +2294,7 @@
+     fn audio_source_capacity_is_bound_to_the_exact_frozen_lock() {
+         let raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
+         assert_eq!(format!("{:x}", Sha256::digest(raw.as_bytes())),
+-            "45496b24c055fca9aa1f3fae7bd5c7c3c99cb46721150690645bf5d059159de2");
++            "aab71dbce304aba849ac592b5d9cdc2a339cf9208c47faca98f27350c462437d");
+         let lock: SparseSourceLock = serde_json::from_str(raw).unwrap();
+         assert_eq!(lock.projects.len(), AUDIO_SOURCE_PROJECT_COUNT);
+         assert_eq!(MAX_PROJECTS, 432);

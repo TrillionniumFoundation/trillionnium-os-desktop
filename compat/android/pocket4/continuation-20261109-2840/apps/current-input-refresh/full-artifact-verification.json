@@ -1,0 +1,652 @@
+{
+  "schema": "pocket4-official-current-route-drift-full-verification-v1",
+  "started_utc": "2026-11-09T16:52:32.267811+00:00",
+  "completed_utc": "2026-11-09T16:54:40.471288+00:00",
+  "scope": "Only isolated full downloads and host APK inspection; no Android, install, package replacement, canonical write or user-data operation.",
+  "root": "/home/alex/work/pocket4-official-drift-20261109-2840-r1",
+  "input": {
+    "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/input.json",
+    "bytes": 6528,
+    "sha256": "fed29d49bf32b3c772f47f0118645f183c1ae54bfa1a9332b4e1209d4816b44f",
+    "uid": 1000,
+    "gid": 1000,
+    "mode": "0o600"
+  },
+  "candidates": [
+    {
+      "package": "com.lianjia.beike",
+      "started_utc": "2026-11-09T16:52:32.267870+00:00",
+      "previous_candidate": {
+        "package": "com.lianjia.beike",
+        "prior_artifact": {
+          "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-20261109-9f5d-r1/beike-3.06.71-3067100-official-arm64.apk",
+          "bytes": 228933721,
+          "sha256": "c7985ed41b91c782af8acb04b1868419cca8bc1fc52862bf6c89fa86b65c81fb",
+          "dev": 66306,
+          "inode": 50625394,
+          "nlink": 1,
+          "mode": "0o600",
+          "uid": 0,
+          "gid": 0,
+          "mtime_ns": 1794220741330826800
+        },
+        "prior_version_name": "3.06.71",
+        "prior_version_code": 3067100,
+        "prior_native_abis": [
+          "arm64-v8a"
+        ],
+        "prior_signer_certificate_sha256": [
+          "0b66624117621bb9bc3e7d12a1fe5436794cf8999b0253d9ff9bec71e0932178"
+        ],
+        "source_catalog": {
+          "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-20261109-9f5d-r1/CANDIDATES.json",
+          "sha256": "870f8aeaa7382af596902da974bc5c014eb402bd421b00bf687fe678ac7f6b57"
+        },
+        "official_current_download_url": "https://m.ke.com/download/lianjia?scheme=&direct=1",
+        "source_chain": {
+          "official_page": "https://m.ke.com/client/",
+          "published_download_url": "https://m.ke.com/download/lianjia?scheme=&direct=1",
+          "redirect_locations": [
+            "https://file.ljcdn.com/app-packages/shell/channel/20f1e58d/Android_ke_m.apk"
+          ],
+          "effective_url": "https://file.ljcdn.com/app-packages/shell/channel/20f1e58d/Android_ke_m.apk",
+          "http_code": 200,
+          "bytes_downloaded": 228933721,
+          "ssl_verify_result": 0,
+          "protocols": "HTTPS only; no authenticated request or third-party mirror",
+          "currency_scope": "The APK currently served by the publisher public stable 64-bit download route at observation time; not an assertion about other distribution channels."
+        },
+        "publisher_page": {
+          "url": "https://m.ke.com/client/",
+          "method": "GET",
+          "observed_utc": "2026-11-09T16:43:47.537478+00:00",
+          "status": 200,
+          "effective_url": "https://m.ke.com/client/",
+          "headers": {
+            "date": "Mon, 09 Nov 2026 16:43:51 GMT",
+            "content-type": "text/html; charset=UTF-8"
+          },
+          "body_over_512k": false,
+          "body": {
+            "path": "/home/alex/work/pocket4-official-route-refresh-20261109-2840-r1/com.lianjia.beike.page",
+            "bytes": 15888,
+            "sha256": "d2ff1bb74b1d364abb25c32118da4438a489ebba036cc7a03fe159d0a99db063"
+          },
+          "apk_url_literals": [],
+          "retained_version_literal_present": false
+        },
+        "route_head": {
+          "url": "https://m.ke.com/download/lianjia?scheme=&direct=1",
+          "method": "HEAD",
+          "observed_utc": "2026-11-09T16:43:52.456618+00:00",
+          "status": 200,
+          "effective_url": "https://file.ljcdn.com/app-packages/shell/channel/8f20537e/Android_ke_m.apk",
+          "headers": {
+            "date": "Mon, 09 Nov 2026 16:43:59 GMT",
+            "content-type": "application/octet-stream",
+            "content-length": "228991122",
+            "accept-ranges": "bytes",
+            "cache-control": "public, max-age=2592000",
+            "etag": "\"b599259b06c5fb5e75476c9e33f9b9d1\"",
+            "last-modified": "Mon, 09 Nov 2026 11:07:54 GMT"
+          }
+        }
+      },
+      "installed": false,
+      "canonical_custody": false,
+      "selected": false,
+      "runtime_accepted": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "whole_app_acceptance": "pending",
+      "artifact_input_eligible": true,
+      "download_command": {
+        "argv": [
+          "/usr/bin/curl",
+          "--fail",
+          "--location",
+          "--proto",
+          "=https",
+          "--proto-redir",
+          "=https",
+          "--max-redirs",
+          "5",
+          "--connect-timeout",
+          "20",
+          "--max-time",
+          "240",
+          "--max-filesize",
+          "536870912",
+          "--silent",
+          "--show-error",
+          "--dump-header",
+          "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.lianjia.beike/download.headers",
+          "--output",
+          "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.lianjia.beike/official-current.apk",
+          "--write-out",
+          "%{json}",
+          "https://m.ke.com/download/lianjia?scheme=&direct=1"
+        ],
+        "exit_code": 0,
+        "stdout": {
+          "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.lianjia.beike/curl.json",
+          "bytes": 12364,
+          "sha256": "fd713aee18da6e534ccc2198c5448f658834cdc7bdc89ee2d3d04137b579a9c5",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o600"
+        },
+        "stderr": {
+          "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.lianjia.beike/curl.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o600"
+        },
+        "headers": {
+          "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.lianjia.beike/download.headers",
+          "bytes": 1336,
+          "sha256": "ce38aa4d9e42a2ff0280ffc2a63fbb35339f6bcf17aa5a4d539379269f9d37dd",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o600"
+        }
+      },
+      "artifact": {
+        "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.lianjia.beike/official-current.apk",
+        "bytes": 228991122,
+        "sha256": "6984af4bbeda2818ad0a35183dd59af798eceebb9e441ef869b32dcc5095f728",
+        "uid": 1000,
+        "gid": 1000,
+        "mode": "0o400"
+      },
+      "source_chain": {
+        "publisher_page": {
+          "url": "https://m.ke.com/client/",
+          "method": "GET",
+          "observed_utc": "2026-11-09T16:43:47.537478+00:00",
+          "status": 200,
+          "effective_url": "https://m.ke.com/client/",
+          "headers": {
+            "date": "Mon, 09 Nov 2026 16:43:51 GMT",
+            "content-type": "text/html; charset=UTF-8"
+          },
+          "body_over_512k": false,
+          "body": {
+            "path": "/home/alex/work/pocket4-official-route-refresh-20261109-2840-r1/com.lianjia.beike.page",
+            "bytes": 15888,
+            "sha256": "d2ff1bb74b1d364abb25c32118da4438a489ebba036cc7a03fe159d0a99db063"
+          },
+          "apk_url_literals": [],
+          "retained_version_literal_present": false
+        },
+        "published_download_url": "https://m.ke.com/download/lianjia?scheme=&direct=1",
+        "effective_url": "https://file.ljcdn.com/app-packages/shell/channel/8f20537e/Android_ke_m.apk",
+        "http_status": 200,
+        "ssl_verify_result": 0,
+        "bytes_downloaded": 228991122,
+        "redirects": 1,
+        "response_headers": {
+          "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.lianjia.beike/download.headers",
+          "bytes": 1336,
+          "sha256": "ce38aa4d9e42a2ff0280ffc2a63fbb35339f6bcf17aa5a4d539379269f9d37dd",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o600"
+        },
+        "observed_utc": "2026-11-09T16:53:37.850973+00:00",
+        "scope": "Current complete bytes served by the previously source-bound publisher public Android route at this observation, not a cross-store rollout assertion."
+      },
+      "commands": {
+        "aapt-badging": {
+          "argv": [
+            "/usr/bin/aapt",
+            "dump",
+            "badging",
+            "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.lianjia.beike/official-current.apk"
+          ],
+          "exit_code": 0,
+          "stdout": {
+            "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.lianjia.beike/aapt-badging.stdout",
+            "bytes": 7073,
+            "sha256": "dc2b005038158dd7665f2d762fb6765a94117bde4dbdae9917395297553b0f60",
+            "uid": 1000,
+            "gid": 1000,
+            "mode": "0o600"
+          },
+          "stderr": {
+            "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.lianjia.beike/aapt-badging.stderr",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "uid": 1000,
+            "gid": 1000,
+            "mode": "0o600"
+          }
+        },
+        "aapt-manifest": {
+          "argv": [
+            "/usr/bin/aapt",
+            "dump",
+            "xmltree",
+            "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.lianjia.beike/official-current.apk",
+            "AndroidManifest.xml"
+          ],
+          "exit_code": 0,
+          "stdout": {
+            "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.lianjia.beike/aapt-manifest.stdout",
+            "bytes": 790314,
+            "sha256": "e027d785f4c26bfe83ca29935000c63136d66a21bd33c6231d5a9fe5082b3b62",
+            "uid": 1000,
+            "gid": 1000,
+            "mode": "0o600"
+          },
+          "stderr": {
+            "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.lianjia.beike/aapt-manifest.stderr",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "uid": 1000,
+            "gid": 1000,
+            "mode": "0o600"
+          }
+        },
+        "apksigner": {
+          "argv": [
+            "/usr/bin/apksigner",
+            "verify",
+            "--verbose",
+            "--print-certs",
+            "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.lianjia.beike/official-current.apk"
+          ],
+          "exit_code": 0,
+          "stdout": {
+            "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.lianjia.beike/apksigner.stdout",
+            "bytes": 18483,
+            "sha256": "e9527b81388118ab04043cabfc7a5b8c1f6c8c900aed048d524b5183c91f0808",
+            "uid": 1000,
+            "gid": 1000,
+            "mode": "0o600"
+          },
+          "stderr": {
+            "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.lianjia.beike/apksigner.stderr",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "uid": 1000,
+            "gid": 1000,
+            "mode": "0o600"
+          }
+        }
+      },
+      "version_name": "3.06.71",
+      "version_code": 3067100,
+      "split_name": null,
+      "native_abis": [
+        "arm64-v8a"
+      ],
+      "signature_verified": true,
+      "signer_certificate_sha256": [
+        "0b66624117621bb9bc3e7d12a1fe5436794cf8999b0253d9ff9bec71e0932178"
+      ],
+      "signature_schemes": {
+        "v1": true,
+        "v2": true,
+        "v3": false,
+        "v3.1": false,
+        "v4": false
+      },
+      "signature_warning_count": 86,
+      "manifest_flags": {
+        "debuggable": false,
+        "testOnly": false,
+        "isSplitRequired": false
+      },
+      "archive": {
+        "entries": 26101,
+        "duplicate_entries": 0,
+        "AndroidManifest_present": true,
+        "classes_dex_present": true,
+        "native_library_abis": [
+          "arm64-v8a"
+        ],
+        "full_zip_crc_recheck_performed": false
+      },
+      "file_identity_unchanged_during_verification": true,
+      "comparison_to_prior_candidate": {
+        "same_version_name": true,
+        "same_version_code": true,
+        "version_code_relation": "equal",
+        "same_native_abis": true,
+        "same_signer_set": true,
+        "same_full_sha256": false,
+        "same_bytes": false,
+        "matches_route_refresh_content_length": true
+      },
+      "status": "VERIFIED_OFFICIAL_SAME_VERSION_SAME_SIGNER_CHANGED_BYTES_CANDIDATE",
+      "completed_utc": "2026-11-09T16:53:40.500499+00:00"
+    },
+    {
+      "package": "com.rytong.airchina",
+      "started_utc": "2026-11-09T16:53:40.501636+00:00",
+      "previous_candidate": {
+        "package": "com.rytong.airchina",
+        "prior_artifact": {
+          "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-20261109-9f5d-r2/airchina-7.53.2-75302-official.apk",
+          "bytes": 207073898,
+          "sha256": "ffa029df81e16e0e50627d2db123ef62a00769bba65220ad5743b0cc88b263be",
+          "dev": 66306,
+          "inode": 51420162,
+          "nlink": 1,
+          "mode": "0o600",
+          "uid": 0,
+          "gid": 0,
+          "mtime_ns": 1794222019372686800
+        },
+        "prior_version_name": "7.53.2",
+        "prior_version_code": 75302,
+        "prior_native_abis": [
+          "arm64-v8a",
+          "armeabi-v7a"
+        ],
+        "prior_signer_certificate_sha256": [
+          "b48f75514e956be6bd7d56f1701136c8d76f19459bd724ac52390a572bc0ecbf"
+        ],
+        "source_catalog": {
+          "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-20261109-9f5d-r2/CANDIDATES.json",
+          "sha256": "0980d7fb93602f605d48fd5be30b7257138ca4f3df9f2ec94867755a634c806e"
+        },
+        "official_current_download_url": "https://m.airchina.com.cn/apps/ipa/AirChina.apk",
+        "source_chain": {
+          "official_page": "https://m.airchina.com.cn/apps/",
+          "published_download_url": "https://m.airchina.com.cn/apps/ipa/AirChina.apk",
+          "published_url_confirmed_in_retained_html": true,
+          "redirect_locations": [],
+          "effective_url": "https://m.airchina.com.cn/apps/ipa/AirChina.apk",
+          "http_code": 200,
+          "bytes_downloaded": 207073898,
+          "ssl_verify_result": 0,
+          "protocols": "HTTPS only; no authenticated request or third-party mirror",
+          "currency_scope": "The APK currently served by the publisher public stable Android download route, supporting arm64, at observation time; not an assertion about other distribution channels."
+        },
+        "publisher_page": {
+          "url": "https://m.airchina.com.cn/apps/",
+          "method": "GET",
+          "observed_utc": "2026-11-09T16:43:56.246528+00:00",
+          "status": 200,
+          "effective_url": "https://m.airchina.com.cn/apps/",
+          "headers": {
+            "date": "Mon, 09 Nov 2026 16:43:58 GMT",
+            "content-type": "text/html",
+            "content-length": "14298",
+            "accept-ranges": "bytes",
+            "etag": "W/\"14298-1794215606000\"",
+            "last-modified": "Mon, 09 Nov 2026 09:13:26 GMT"
+          },
+          "body_over_512k": false,
+          "body": {
+            "path": "/home/alex/work/pocket4-official-route-refresh-20261109-2840-r1/com.rytong.airchina.page",
+            "bytes": 14298,
+            "sha256": "dfe85eeece6ca2484f42bb248fb17eb06e487fbe8b913c30d9d2df7d9d305291"
+          },
+          "apk_url_literals": [],
+          "retained_version_literal_present": true
+        },
+        "route_head": {
+          "url": "https://m.airchina.com.cn/apps/ipa/AirChina.apk",
+          "method": "HEAD",
+          "observed_utc": "2026-11-09T16:43:59.096871+00:00",
+          "status": 200,
+          "effective_url": "https://m.airchina.com.cn/apps/ipa/AirChina.apk",
+          "headers": {
+            "date": "Mon, 09 Nov 2026 16:44:00 GMT",
+            "content-type": "application/vnd.android.package-archive",
+            "content-length": "207069802",
+            "accept-ranges": "bytes",
+            "etag": "W/\"207069802-1794224280000\"",
+            "last-modified": "Mon, 09 Nov 2026 11:38:00 GMT"
+          }
+        }
+      },
+      "installed": false,
+      "canonical_custody": false,
+      "selected": false,
+      "runtime_accepted": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "whole_app_acceptance": "pending",
+      "artifact_input_eligible": true,
+      "download_command": {
+        "argv": [
+          "/usr/bin/curl",
+          "--fail",
+          "--location",
+          "--proto",
+          "=https",
+          "--proto-redir",
+          "=https",
+          "--max-redirs",
+          "5",
+          "--connect-timeout",
+          "20",
+          "--max-time",
+          "240",
+          "--max-filesize",
+          "536870912",
+          "--silent",
+          "--show-error",
+          "--dump-header",
+          "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.rytong.airchina/download.headers",
+          "--output",
+          "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.rytong.airchina/official-current.apk",
+          "--write-out",
+          "%{json}",
+          "https://m.airchina.com.cn/apps/ipa/AirChina.apk"
+        ],
+        "exit_code": 0,
+        "stdout": {
+          "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.rytong.airchina/curl.json",
+          "bytes": 18730,
+          "sha256": "cf4039747554c8885c3af68241f8883ffeb88545060155e50216c4d3a4303eea",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o600"
+        },
+        "stderr": {
+          "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.rytong.airchina/curl.stderr",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o600"
+        },
+        "headers": {
+          "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.rytong.airchina/download.headers",
+          "bytes": 496,
+          "sha256": "95a00028e44f3ccd5253c7db7e2329e5f790b34be5c6f4e763fe24a09462d90a",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o600"
+        }
+      },
+      "artifact": {
+        "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.rytong.airchina/official-current.apk",
+        "bytes": 207069802,
+        "sha256": "f16f429b21c3402b362f5d3058476dfd97c29986f688e95e0d5294368d104fab",
+        "uid": 1000,
+        "gid": 1000,
+        "mode": "0o400"
+      },
+      "source_chain": {
+        "publisher_page": {
+          "url": "https://m.airchina.com.cn/apps/",
+          "method": "GET",
+          "observed_utc": "2026-11-09T16:43:56.246528+00:00",
+          "status": 200,
+          "effective_url": "https://m.airchina.com.cn/apps/",
+          "headers": {
+            "date": "Mon, 09 Nov 2026 16:43:58 GMT",
+            "content-type": "text/html",
+            "content-length": "14298",
+            "accept-ranges": "bytes",
+            "etag": "W/\"14298-1794215606000\"",
+            "last-modified": "Mon, 09 Nov 2026 09:13:26 GMT"
+          },
+          "body_over_512k": false,
+          "body": {
+            "path": "/home/alex/work/pocket4-official-route-refresh-20261109-2840-r1/com.rytong.airchina.page",
+            "bytes": 14298,
+            "sha256": "dfe85eeece6ca2484f42bb248fb17eb06e487fbe8b913c30d9d2df7d9d305291"
+          },
+          "apk_url_literals": [],
+          "retained_version_literal_present": true
+        },
+        "published_download_url": "https://m.airchina.com.cn/apps/ipa/AirChina.apk",
+        "effective_url": "https://m.airchina.com.cn/apps/ipa/AirChina.apk",
+        "http_status": 200,
+        "ssl_verify_result": 0,
+        "bytes_downloaded": 207069802,
+        "redirects": 0,
+        "response_headers": {
+          "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.rytong.airchina/download.headers",
+          "bytes": 496,
+          "sha256": "95a00028e44f3ccd5253c7db7e2329e5f790b34be5c6f4e763fe24a09462d90a",
+          "uid": 1000,
+          "gid": 1000,
+          "mode": "0o600"
+        },
+        "observed_utc": "2026-11-09T16:54:39.258277+00:00",
+        "scope": "Current complete bytes served by the previously source-bound publisher public Android route at this observation, not a cross-store rollout assertion."
+      },
+      "commands": {
+        "aapt-badging": {
+          "argv": [
+            "/usr/bin/aapt",
+            "dump",
+            "badging",
+            "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.rytong.airchina/official-current.apk"
+          ],
+          "exit_code": 0,
+          "stdout": {
+            "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.rytong.airchina/aapt-badging.stdout",
+            "bytes": 7234,
+            "sha256": "8b05f5b1581386f2e4f9742a6e2a5c66c5cd5c132788efab80c2b21ff21b7da0",
+            "uid": 1000,
+            "gid": 1000,
+            "mode": "0o600"
+          },
+          "stderr": {
+            "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.rytong.airchina/aapt-badging.stderr",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "uid": 1000,
+            "gid": 1000,
+            "mode": "0o600"
+          }
+        },
+        "aapt-manifest": {
+          "argv": [
+            "/usr/bin/aapt",
+            "dump",
+            "xmltree",
+            "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.rytong.airchina/official-current.apk",
+            "AndroidManifest.xml"
+          ],
+          "exit_code": 0,
+          "stdout": {
+            "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.rytong.airchina/aapt-manifest.stdout",
+            "bytes": 370152,
+            "sha256": "e1b84874e036af31f9b7fbae31a022303b9daf3cc12adb41d42478de44a26ae3",
+            "uid": 1000,
+            "gid": 1000,
+            "mode": "0o600"
+          },
+          "stderr": {
+            "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.rytong.airchina/aapt-manifest.stderr",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "uid": 1000,
+            "gid": 1000,
+            "mode": "0o600"
+          }
+        },
+        "apksigner": {
+          "argv": [
+            "/usr/bin/apksigner",
+            "verify",
+            "--verbose",
+            "--print-certs",
+            "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.rytong.airchina/official-current.apk"
+          ],
+          "exit_code": 0,
+          "stdout": {
+            "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.rytong.airchina/apksigner.stdout",
+            "bytes": 969,
+            "sha256": "c0fa4bb8eba81d050234f624a4608793881dc2e18ae74f4da3759a6037fc677d",
+            "uid": 1000,
+            "gid": 1000,
+            "mode": "0o600"
+          },
+          "stderr": {
+            "path": "/home/alex/work/pocket4-official-drift-20261109-2840-r1/com.rytong.airchina/apksigner.stderr",
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "uid": 1000,
+            "gid": 1000,
+            "mode": "0o600"
+          }
+        }
+      },
+      "version_name": "7.53.3",
+      "version_code": 75303,
+      "split_name": null,
+      "native_abis": [
+        "arm64-v8a",
+        "armeabi-v7a"
+      ],
+      "signature_verified": true,
+      "signer_certificate_sha256": [
+        "b48f75514e956be6bd7d56f1701136c8d76f19459bd724ac52390a572bc0ecbf"
+      ],
+      "signature_schemes": {
+        "v1": false,
+        "v2": true,
+        "v3": true,
+        "v3.1": false,
+        "v4": false
+      },
+      "signature_warning_count": 0,
+      "manifest_flags": {
+        "debuggable": false,
+        "testOnly": false,
+        "isSplitRequired": false
+      },
+      "archive": {
+        "entries": 9930,
+        "duplicate_entries": 0,
+        "AndroidManifest_present": true,
+        "classes_dex_present": true,
+        "native_library_abis": [
+          "arm64-v8a",
+          "armeabi-v7a"
+        ],
+        "full_zip_crc_recheck_performed": false
+      },
+      "file_identity_unchanged_during_verification": true,
+      "comparison_to_prior_candidate": {
+        "same_version_name": false,
+        "same_version_code": false,
+        "version_code_relation": "newer",
+        "same_native_abis": true,
+        "same_signer_set": true,
+        "same_full_sha256": false,
+        "same_bytes": false,
+        "matches_route_refresh_content_length": true
+      },
+      "status": "VERIFIED_OFFICIAL_CURRENT_CANDIDATE",
+      "completed_utc": "2026-11-09T16:54:40.469699+00:00"
+    }
+  ],
+  "verified_current_inputs": 2,
+  "runtime_accepted_count": 0,
+  "runtime_qualified": false,
+  "production_ready": false
+}

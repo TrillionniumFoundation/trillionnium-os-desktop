@@ -1,0 +1,54 @@
+{
+  "current_expected_control_counts": {
+    "existing_host_namespaces": 29,
+    "ordinary_uid": 54,
+    "private_namespace_integration": 10
+  },
+  "followup_Linux_controls": "ALL_THREE_GROUPS_PASSED_NORMAL_AND_OPTIMIZED",
+  "followup_observer_sha256": "311a943a3b3f2845c69ae1750eadb2e72b7058cac86c5c9ae39f18debc107aa5",
+  "followup_policy": {
+    "absolute_mountpoint_required": true,
+    "accepted_opaque_root_regex": "mnt:\\[[1-9][0-9]*\\]",
+    "all_other_non_absolute_roots": "UNKNOWN",
+    "ancestor_bind_alias": "verified namespace path-resolution index; actual references/mount source or point inside target still veto",
+    "coverage_witness": "same observer namespace and pinned root/mount-ID, or scanner-created and reverified FD/setns child with full native root view",
+    "deletion_authorized": false,
+    "different_namespace_root_identity": "requires scanner-owned full-root witness; matching a foreign task root alone is insufficient",
+    "external_coverage_dictionary_accepted": false,
+    "mountpoint_veto_preserved": true,
+    "namespace_objects_held_only_by_task_fd": "typed and pinned discovery; same witness requirements",
+    "opaque_ancestor_translation": false,
+    "opaque_target_mount": "UNKNOWN",
+    "persistent_namespace_coverage_required": true,
+    "required_filesystem_type": "nsfs",
+    "uncovered_or_chroot_only_namespace": "UNKNOWN",
+    "unknown_nested_namespace": "UNKNOWN"
+  },
+  "host": "pocket4",
+  "kernel_format_reference": "https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux.git/+/refs/tags/v6.6/fs/nsfs.c",
+  "matching_record_count": 6,
+  "mount_options_or_source_fields_retained": false,
+  "mountinfo": {
+    "bytes": 6273,
+    "sha256": "ff3ae14cd12563ad290a0fbb20e6abc826481c502d5c3f382b9948180b1b4d56"
+  },
+  "mountpoint_format": "/run/snapd/ns/<name>.mnt",
+  "observed_device": "0:5",
+  "observed_filesystem_type": "nsfs",
+  "observed_utc": "2026-11-09T04:56:58.276746+00:00",
+  "previous_observer": {
+    "host_preflight_result": "UNKNOWN invalid_mount_path before target/process enumeration; no deletion",
+    "module_sha256": "fd0984a8bd9a4050029c5e0e6e8c3ed472151d5dfd7daddf2ae6fbae0ee5850e"
+  },
+  "readback": {
+    "exit_code": 0,
+    "output_complete": true,
+    "session_id": "dpty-18e647974deca6f0-5e21-5d"
+  },
+  "root_format": "mnt:[positive decimal inode]",
+  "schema": "pocket4-nsfs-mount-format-observation-v2",
+  "source_control_pass_is_deletion_admission": false,
+  "test_receipt": "test-results.json",
+  "test_receipt_sha256": "88692d9ef6f5c86de95d12453d0e7a84b830aa1fb4e1ba03d8d8adbe38604847",
+  "unrelated_application_names_retained": false
+}

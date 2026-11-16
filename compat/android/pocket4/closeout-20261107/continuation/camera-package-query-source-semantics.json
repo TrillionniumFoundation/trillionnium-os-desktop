@@ -1,0 +1,152 @@
+{
+  "analysis": [
+    {
+      "file": "PackageManagerShellCommand.java",
+      "finding": "-a sets MATCH_KNOWN_PACKAGES plus MATCH_HIDDEN_UNTIL_INSTALLED_COMPONENTS; -u adds MATCH_UNINSTALLED_PACKAGES; --user all enumerates UserManagerInternal user IDs. translateUserId exceptions print stderr and continue, so return code zero alone is insufficient.",
+      "lines": [
+        973,
+        1083
+      ]
+    },
+    {
+      "file": "PackageManagerShellCommand.java",
+      "finding": "For all-user output, each package has a comma-separated UID list, while a single explicit user yields one UID.",
+      "lines": [
+        1159,
+        1179
+      ]
+    },
+    {
+      "file": "ComputerEngine.java",
+      "finding": "The known/uninstalled branch iterates the complete Settings package map, rather than only currently parsed installed package objects.",
+      "lines": [
+        1702,
+        1759
+      ]
+    },
+    {
+      "file": "ComputerEngine.java",
+      "finding": "When a retained PackageState has no parsed package, MATCH_UNINSTALLED plus availability still produces minimal PackageInfo with the original package name and app UID.",
+      "lines": [
+        1485,
+        1580
+      ]
+    },
+    {
+      "file": "PackageManager.java",
+      "finding": "MATCH_UNINSTALLED covers removed packages whose data was retained; MATCH_KNOWN_PACKAGES combines MATCH_ANY_USER and MATCH_UNINSTALLED_PACKAGES.",
+      "lines": [
+        1198,
+        1213,
+        1303,
+        1317
+      ]
+    },
+    {
+      "file": "PackageUserStateUtils.java",
+      "finding": "MATCH_ANY_USER makes isAvailable true, including an uninstalled retained record.",
+      "lines": [
+        100,
+        116
+      ]
+    }
+  ],
+  "android_runtime_invocation_performed": false,
+  "cold_controls": {
+    "new_negative_risks_tested": [
+      "exit0 plus nonempty stderr",
+      "retained single-user target",
+      "all-user target with multiple UIDs",
+      "malformed global stdout",
+      "multi-UID output rejected for owned user0"
+    ],
+    "passed": 15
+  },
+  "evidence_scope": "Exact upstream target source pinned by the selected AOSP superproject; this does not establish provenance of the complete currently installed services.jar.",
+  "files": [
+    {
+      "bytes": 235199,
+      "git_blob": "0a74bbf119767ad390d69326df34842c70a0ae8c",
+      "local_file": "/workspace/scratch/f5ba758eae36/camera-package-source/PackageManagerShellCommand.java",
+      "path": "services/core/java/com/android/server/pm/PackageManagerShellCommand.java",
+      "sha256": "5b4b1376a83a7916609d09ca2d86b2715a18c751fa4ea140a5d13fb1bd408fc3",
+      "url": "https://android.googlesource.com/platform/frameworks/base/+/94b4c163b7dfe5ce3607f7bb8456f9573f7de57d/services/core/java/com/android/server/pm/PackageManagerShellCommand.java?format=TEXT"
+    },
+    {
+      "bytes": 273410,
+      "git_blob": "4ce3cabdd9727974dcd1fa3586658185bc073bcd",
+      "local_file": "/workspace/scratch/f5ba758eae36/camera-package-source/ComputerEngine.java",
+      "path": "services/core/java/com/android/server/pm/ComputerEngine.java",
+      "sha256": "a0cfc04b90bfe56f8b85f430a7a507f990f2805bc2e96a4b76c94de9425e095c",
+      "url": "https://android.googlesource.com/platform/frameworks/base/+/94b4c163b7dfe5ce3607f7bb8456f9573f7de57d/services/core/java/com/android/server/pm/ComputerEngine.java?format=TEXT"
+    },
+    {
+      "bytes": 524683,
+      "git_blob": "5a9142dea8c2e357bd6e2383da4df697ee9b508a",
+      "local_file": "/workspace/scratch/f5ba758eae36/camera-package-source/PackageManager.java",
+      "path": "core/java/android/content/pm/PackageManager.java",
+      "sha256": "fefd48c61455289e8b33c3344e5509079b4169ee87cb1d17e950b273966eb0fa",
+      "url": "https://android.googlesource.com/platform/frameworks/base/+/94b4c163b7dfe5ce3607f7bb8456f9573f7de57d/core/java/android/content/pm/PackageManager.java?format=TEXT"
+    },
+    {
+      "bytes": 8315,
+      "git_blob": "fe80f743ffc3ebf74202be55293d84cd8bdb011b",
+      "local_file": "/workspace/scratch/f5ba758eae36/camera-package-source/PackageUserStateUtils.java",
+      "path": "services/core/java/com/android/server/pm/pkg/PackageUserStateUtils.java",
+      "sha256": "22f91c6efa66fd9624c297c83855bf631884cdfe83b97a612ffb45555018b40d",
+      "url": "https://android.googlesource.com/platform/frameworks/base/+/94b4c163b7dfe5ce3607f7bb8456f9573f7de57d/services/core/java/com/android/server/pm/pkg/PackageUserStateUtils.java?format=TEXT"
+    }
+  ],
+  "gitlink": {
+    "id": "94b4c163b7dfe5ce3607f7bb8456f9573f7de57d",
+    "mode": 57344,
+    "name": "base",
+    "type": "commit"
+  },
+  "installed_services_jar_source_proven": false,
+  "patch": {
+    "new_entry_sha256": "9357eafe31d557ee30a0e23cb89bdaeb12c851034f8a08ffed1841c5c8141503",
+    "old_entry_sha256": "c719cafbe71b2795072e6befbe676469d95d6046ed0e980b9c291611c4002dc8",
+    "path": "camera-global-package-absence.patch",
+    "sha256": "f15078ac5e9618ad58d55234f64155af91ec6da8e3e88d74075a5faaa68479f0"
+  },
+  "pocket4_package_registry_format_observed": false,
+  "runtime_predicates": {
+    "global_absence_argv": [
+      "/system/bin/cmd",
+      "package",
+      "list",
+      "packages",
+      "-a",
+      "-u",
+      "-U",
+      "--user",
+      "all",
+      "local.hepta.pocket4.cameraqualification"
+    ],
+    "owned_package_query_argv": [
+      "/system/bin/cmd",
+      "package",
+      "list",
+      "packages",
+      "-u",
+      "-U",
+      "--user",
+      "0",
+      "local.hepta.pocket4.cameraqualification"
+    ],
+    "package_registry_xml_encoding_assumed": false,
+    "required": [
+      "same fresh Main guard before and after the inherited owned command",
+      "qualified owned-command success and return code 0",
+      "captured stderr exactly empty",
+      "every nonempty stdout line parses",
+      "target exact package name absent from global known-package query",
+      "owned user-0 UID and installed APK hash retain their existing checks"
+    ]
+  },
+  "schema": "pocket4-camera-package-query-source-semantics-v1",
+  "superproject": "28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+  "tree_sha256": "a473a416076f9aaaebf7e6332f97f0dab6b87110be521cff7dbb442a70bbacfa",
+  "tree_url": "https://android.googlesource.com/platform/superproject/+/28f0bbddc24d56c8ec5a8df5342ac7a292184039/frameworks/?format=JSON"
+}

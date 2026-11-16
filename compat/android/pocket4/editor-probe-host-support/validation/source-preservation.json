@@ -1,0 +1,38 @@
+{
+  "expected_diagnostics": [
+    "compat/android/pocket4/editor-probe-host-support/migration.patch:5: trailing whitespace.",
+    "+ ",
+    "compat/android/pocket4/editor-probe-host-support/source/app_common.py:706: new blank line at EOF.",
+    "compat/android/pocket4/editor-probe-host-support/test-fixtures/editor-probe-current-preparation-20261108-r1/source/app_common.py:706: new blank line at EOF."
+  ],
+  "preserved_files": [
+    {
+      "bytes": 1968,
+      "path": "compat/android/pocket4/editor-probe-host-support/migration.patch",
+      "sha256": "240c8c561fc92b0700fd9d8e388f459ec994e73bcd353f9b258b851049de090f"
+    },
+    {
+      "bytes": 38256,
+      "path": "compat/android/pocket4/editor-probe-host-support/source/app_common.py",
+      "sha256": "6003e96be02cd0c6328340865bbb2962d39967f2b823656af258ed5a48f598d0"
+    },
+    {
+      "bytes": 38269,
+      "path": "compat/android/pocket4/editor-probe-host-support/test-fixtures/editor-probe-current-preparation-20261108-r1/source/app_common.py",
+      "sha256": "468e0fa093ec1c741547912b8fef41560e1ea9b1e124a76113ec97da7fe03420"
+    }
+  ],
+  "prior_publication_attempt": {
+    "commit_created": false,
+    "exit_code": 1,
+    "job_id": "1a1baccfce9-12894-1d5e",
+    "pushed": false,
+    "stage": "git diff --cached --check",
+    "state": "failed"
+  },
+  "publication_rule": "Require the complete staged whitespace diagnostic to equal only these exact entries, verify every staged source byte against the reviewed packet, and run the unmodified default whitespace check for every remaining file.",
+  "reason": "Keep the exact reviewed and tested source bytes. The patch blank context prefix is required by unified diff; both common modules retain their original final blank line. Do not silently rewrite frozen source or provenance to satisfy a generic new-file whitespace check.",
+  "runtime_qualified": false,
+  "schema": "pocket4-editor-probe-preserved-source-whitespace-v1",
+  "whole_app_business_accepted": false
+}

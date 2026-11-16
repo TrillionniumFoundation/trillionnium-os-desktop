@@ -1,0 +1,399 @@
+{
+  "APK_installs": 0,
+  "Android_builds": 0,
+  "actual_candidate_manifest": {
+    "bytes": 699150,
+    "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/SOURCE-1517.json",
+    "sha256": "86a2f7f8731f68941932133c78c5d6b8f2f8b8bbce9d236c5a6f9831d0278e29"
+  },
+  "actual_parent_326_retirement": {
+    "bytes": 5064,
+    "path": "/data/pocket4-intentresolver-security-normal-20261113-e2a3-r4/independent-normal-retirement-r1/RESULT.json",
+    "sha256": "aee3bbba0899890b4a8ff495db1f80a2672d58453116e1a353c6a11853e52345"
+  },
+  "all_1511_original_parent_source_files_preserved": true,
+  "all_commands_retired": true,
+  "base_commit": "1a5eb38dd809a31b18284839add632a049578f68",
+  "base_tree": "c5add898f97018c61515441e689bb854efc793fe",
+  "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-aac-security-stage-e2a3-r1.service",
+  "commands": [
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/data/pocket4-intentresolver-security-normal-20261113-e2a3-r4/recipe",
+      "exit_code": 0,
+      "name": "parent-head",
+      "original_pidfd_retired": true,
+      "pid": 2978529,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/parent-head.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/parent-head.stdout",
+        "sha256": "04775a04f69922584e75c60b701c4e600a27bbd0eb695b49d2be9a0a1b58ee95"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD^{tree}"
+      ],
+      "cwd": "/data/pocket4-intentresolver-security-normal-20261113-e2a3-r4/recipe",
+      "exit_code": 0,
+      "name": "parent-tree",
+      "original_pidfd_retired": true,
+      "pid": 2978530,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/parent-tree.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/parent-tree.stdout",
+        "sha256": "a3a91d1e4e73d3c116c17fea50a38bc0afbc88a72013e730e245dcdb781a8535"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "clone",
+        "--no-local",
+        "--no-hardlinks",
+        "--",
+        "/data/pocket4-intentresolver-security-normal-20261113-e2a3-r4/recipe",
+        "/data/pocket4-aac-security-normal-20261113-e2a3-r1/recipe"
+      ],
+      "cwd": "/data/pocket4-aac-security-normal-20261113-e2a3-r1",
+      "exit_code": 0,
+      "name": "clone-complete-private-parent",
+      "original_pidfd_retired": true,
+      "pid": 2978534,
+      "stderr": {
+        "bytes": 76,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/clone-complete-private-parent.stderr",
+        "sha256": "fcd88bc1093912b926b94a28a114be10d8cb5e28ac078f2a7dcaaee56c7d55b7"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/clone-complete-private-parent.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "clone-head",
+      "original_pidfd_retired": true,
+      "pid": 2978645,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/clone-head.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/clone-head.stdout",
+        "sha256": "04775a04f69922584e75c60b701c4e600a27bbd0eb695b49d2be9a0a1b58ee95"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain"
+      ],
+      "cwd": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "clone-clean",
+      "original_pidfd_retired": true,
+      "pid": 2978646,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/clone-clean.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/clone-clean.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--check",
+        "/data/pocket4-aac-security-normal-20261113-e2a3-r1/inputs/source.patch"
+      ],
+      "cwd": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "official-private-producer-delta-check",
+      "original_pidfd_retired": true,
+      "pid": 2978650,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/official-private-producer-delta-check.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/official-private-producer-delta-check.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "/data/pocket4-aac-security-normal-20261113-e2a3-r1/inputs/source.patch"
+      ],
+      "cwd": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "official-private-producer-delta",
+      "original_pidfd_retired": true,
+      "pid": 2978651,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/official-private-producer-delta.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/official-private-producer-delta.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "add",
+        "--force",
+        "--all"
+      ],
+      "cwd": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "stage-exact-candidate",
+      "original_pidfd_retired": true,
+      "pid": 2978652,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/stage-exact-candidate.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/stage-exact-candidate.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--name-only"
+      ],
+      "cwd": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "exact-changed-files",
+      "original_pidfd_retired": true,
+      "pid": 2978663,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/exact-changed-files.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 363,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/exact-changed-files.stdout",
+        "sha256": "4e642e9f8b064b790984bf46a10e06e0394abd404953ddbb4effa9539a0e9b14"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--check",
+        "--",
+        "tools/droidloom-update/src",
+        "android/security/aac-origin.json"
+      ],
+      "cwd": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "authored-diff-check",
+      "original_pidfd_retired": true,
+      "pid": 2978664,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/authored-diff-check.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/authored-diff-check.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "write-tree"
+      ],
+      "cwd": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "actual-candidate-tree",
+      "original_pidfd_retired": true,
+      "pid": 2978665,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/actual-candidate-tree.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/actual-candidate-tree.stdout",
+        "sha256": "4364a62f5f9304cfed80bc733b7e81ba26650b4bc3b4b14549881e43d936526d"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "hash-object",
+        "-w",
+        "-t",
+        "commit",
+        "/data/pocket4-aac-security-normal-20261113-e2a3-r1/inputs/head.commit"
+      ],
+      "cwd": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "write-exact-head-commit",
+      "original_pidfd_retired": true,
+      "pid": 2978834,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/write-exact-head-commit.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/write-exact-head-commit.stdout",
+        "sha256": "134ec58699026909f19213e061771e26e964c82db31b8276527a1140be5aa230"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "update-ref",
+        "HEAD",
+        "9785ba83d9d37509e02462a0aa7c84d1c991006c",
+        "1a5eb38dd809a31b18284839add632a049578f68"
+      ],
+      "cwd": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "select-private-head",
+      "original_pidfd_retired": true,
+      "pid": 2978835,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/select-private-head.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/select-private-head.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain"
+      ],
+      "cwd": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "final-clean",
+      "original_pidfd_retired": true,
+      "pid": 2978836,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/final-clean.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/final-clean.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD^"
+      ],
+      "cwd": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/recipe",
+      "exit_code": 0,
+      "name": "final-parent",
+      "original_pidfd_retired": true,
+      "pid": 2978840,
+      "stderr": {
+        "bytes": 0,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/final-parent.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 41,
+        "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/stage-r1/final-parent.stdout",
+        "sha256": "04775a04f69922584e75c60b701c4e600a27bbd0eb695b49d2be9a0a1b58ee95"
+      },
+      "timed_out": false
+    }
+  ],
+  "errors": [],
+  "finished_ns": 1794606014998685073,
+  "invocation_id": "fa28637226864b5d8c7188e5b4875ee4",
+  "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+  "new_files": 6,
+  "new_producer_files": 1517,
+  "parent_source_before": {
+    "bytes": 693614,
+    "path": "/data/pocket4-aac-security-normal-20261113-e2a3-r1/PARENT-SOURCE-BEFORE.json",
+    "sha256": "2daaa8e857449a5f3a053f6e8300a7ea0f6bd4d6ba5652d83a4d7269bae45f3c"
+  },
+  "production_ready": false,
+  "recipe_commit": "9785ba83d9d37509e02462a0aa7c84d1c991006c",
+  "recipe_tree": "c9e0b5771b9e2a169ca4236c5c379446e9592760",
+  "runtime_qualified": false,
+  "shared_AOSP_writes": 0,
+  "state": "AAC_OFFICIAL_FIX_PRIVATE_PRODUCER_STAGED_ORIGINAL1511_PRESERVED",
+  "unchanged_parent_files": 1509
+}

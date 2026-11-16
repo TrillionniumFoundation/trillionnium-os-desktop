@@ -1,0 +1,218 @@
+{
+  "CURRENT_or_owner_source_mutations": 0,
+  "actual_h_state": {
+    "audit_recorded": true,
+    "backend": "systemd",
+    "job_id": "1a1bffe0c63-5e21-848",
+    "state": "running",
+    "systemd": {
+      "ActiveState": "active",
+      "Description": "Hepta Runtime job 1a1bffe0c63-5e21-848 a61a7cfacf68efd91e2b07fbeed2b685",
+      "ExecMainCode": "0",
+      "ExecMainPID": "2846217",
+      "ExecMainStatus": "0",
+      "InvocationID": "abbdeebf28a246c088a2b3d91348bf03",
+      "LoadState": "loaded",
+      "Result": "success",
+      "SubState": "running"
+    }
+  },
+  "actual_unit_and_files": {
+    "files": [
+      {
+        "bytes": 20150,
+        "identity": {
+          "bytes": 20150,
+          "ctime_ns": 1794221927674686719,
+          "dev": 66306,
+          "gid": 1000,
+          "ino": 88109179,
+          "mode": 256,
+          "mtime_ns": 1794221927674686719,
+          "nlink": 1,
+          "type": 32768,
+          "uid": 1000
+        },
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/full-ai395-r10/READY.json",
+        "selected": {
+          "schema": "pocket4-native600-ai395-normal-full-ready-v1",
+          "state": "PREPARED_NOT_LAUNCHED"
+        },
+        "sha256": "fd39fee61fb27628756daf0313b9f2a0d336a37a628659a308df95284b72d90c"
+      },
+      {
+        "bytes": 608,
+        "identity": {
+          "bytes": 608,
+          "ctime_ns": 1794222462845842540,
+          "dev": 66306,
+          "gid": 1000,
+          "ino": 88109375,
+          "mode": 256,
+          "mtime_ns": 1794222462845842540,
+          "nlink": 1,
+          "type": 32768,
+          "uid": 1000
+        },
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/full-ai395-r10/inner-started.json",
+        "selected": {
+          "ActiveState": "active",
+          "ControlGroup": "/system.slice/p4-native-source600-full-ai395-20261109-8b88-r10.service",
+          "Description": "Pocket4 Native Source600 ai395 full 1a1bffe0c63-5e21-848 a61a7cfacf68efd91e2b07fbeed2b685",
+          "InvocationID": "f272100976c84eef97a9c06b6ad4fc32",
+          "LoadState": "loaded"
+        },
+        "sha256": "0eb1fd709659b75af7e274df364f32de828a858bc29ecdd9fa7ee84e3ffb585e"
+      },
+      {
+        "exists": false,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/full-ai395-r10/outer-terminal.json"
+      },
+      {
+        "exists": false,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r10/terminal.json"
+      },
+      {
+        "bytes": 9726,
+        "identity": {
+          "bytes": 9726,
+          "ctime_ns": 1794220963630076894,
+          "dev": 66306,
+          "gid": 1000,
+          "ino": 88108877,
+          "mode": 256,
+          "mtime_ns": 1794220963630076894,
+          "nlink": 1,
+          "type": 32768,
+          "uid": 1000
+        },
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r9/terminal.json",
+        "selected": {
+          "build_success": false,
+          "errors": [
+            {
+              "message": "new recipe and tools belong to another actual import generation",
+              "stage": "execution",
+              "type": "RuntimeError"
+            }
+          ],
+          "outer_job_id": "1a1bfe70551-5e21-7ba",
+          "schema": "pocket4-native600-ai395-normal-full-build-v1",
+          "state": "FAILED"
+        },
+        "sha256": "190863887af7b8a80a5d0b730745a93fa3200cc667cac65854890e36ad8d3bf2"
+      },
+      {
+        "bytes": 12591,
+        "identity": {
+          "bytes": 12591,
+          "ctime_ns": 1794221048836745889,
+          "dev": 66306,
+          "gid": 1000,
+          "ino": 88108896,
+          "mode": 256,
+          "mtime_ns": 1794221048836745889,
+          "nlink": 1,
+          "type": 32768,
+          "uid": 1000
+        },
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/full-ai395-r9/outer-terminal.json",
+        "selected": {
+          "build_success": false,
+          "errors": [],
+          "full_unit": "p4-native-source600-full-ai395-20261109-8b88-r9.service",
+          "inner_build_success": false,
+          "outer_job_id": "1a1bfe70551-5e21-7ba",
+          "owned_unit_retired": true,
+          "schema": "pocket4-native600-ai395-full-outer-v1",
+          "source_projection_absent_after": true,
+          "state": "FAILED_RETIRED_OR_REQUIRES_RECOVERY"
+        },
+        "sha256": "313309dc6c0a22c69270d3467c0842037316697e301d3ee1dc0dba090b9a4b23"
+      }
+    ],
+    "observed_utc": "2026-11-09T11:11:49.052608+00:00",
+    "unit": {
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "Id=p4-native-source600-full-ai395-20261109-8b88-r10.service\nDescription=Pocket4 Native Source600 ai395 full 1a1bffe0c63-5e21-848 a61a7cfacf68efd91e2b07fbeed2b685\nLoadState=loaded\nActiveState=active\nSubState=running\nInvocationID=f272100976c84eef97a9c06b6ad4fc32\nMainPID=2846228\nResult=success\nExecMainCode=0\nExecMainStatus=0\nControlGroup=/system.slice/p4-native-source600-full-ai395-20261109-8b88-r10.service\n"
+    }
+  },
+  "actual_unit_sample_utc": "2026-11-09T11:11:49.052608+00:00",
+  "builds_or_restarts_performed_by_observer": 0,
+  "chronology": [
+    "Native r8 failed on the actual undefined bcc_compat edge.",
+    "Owner prepared and imported a later BCC recipe/tools generation.",
+    "Native r9 actually ran but failed the import-generation guard; its owned unit was retired and source projection was absent after recovery.",
+    "The corrected registered r10 successor is actually running as observed here; no r10 inner/outer terminal existed at the unit sample."
+  ],
+  "current_build_input": {
+    "bytes": 3293953,
+    "full_prefix_occurrences": 0,
+    "helper_name_occurrences": 0,
+    "identity": {
+      "bytes": 3293953,
+      "ctime_ns": 1794221927655687102,
+      "dev": 66306,
+      "gid": 1000,
+      "ino": 88109175,
+      "mode": 256,
+      "mtime_ns": 1794221927655687102,
+      "nlink": 1,
+      "type": 32768,
+      "uid": 1000
+    },
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/full-ai395-r10/build-inputs.json",
+    "sha256": "2677abd4b386a87aa8a0dd2564605fe0eb2ab7c721431698989af3fc0190c4c4"
+  },
+  "current_generation": "full-ai395-r10",
+  "full_build_qualified": false,
+  "outer_h_job": "1a1bffe0c63-5e21-848",
+  "production_ready": false,
+  "recipe_snapshot": [
+    {
+      "commands": [
+        {
+          "argv": [
+            "rev-parse",
+            "HEAD"
+          ],
+          "returncode": 0,
+          "stderr": "",
+          "stdout": "47a625a3435fccf466982c8b043c1f8ea72d4891\n"
+        },
+        {
+          "argv": [
+            "rev-parse",
+            "HEAD^{tree}"
+          ],
+          "returncode": 0,
+          "stderr": "",
+          "stdout": "8097d6947f590edfba4033320d6899a1bf7b3536\n"
+        },
+        {
+          "argv": [
+            "status",
+            "--porcelain",
+            "--untracked-files=no"
+          ],
+          "returncode": 0,
+          "stderr": "",
+          "stdout": ""
+        }
+      ],
+      "lock": {
+        "bytes": 354443,
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/recipe-bcc-r1/android/native-generation-pair/source-lock.json",
+        "sha256": "86a215da1fed2945feccebe7878b95fe507114de6e3b8ee0fa673e830d9a7aba"
+      },
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/recipe-bcc-r1"
+    }
+  ],
+  "recipe_snapshot_utc": "2026-11-09T11:02:39.042839+00:00",
+  "recorded_utc": "2026-11-09T11:15:16.810633+00:00",
+  "runtime_qualified": false,
+  "schema": "pocket4.native-current-observation.v1",
+  "scope": "Read-only current successor observation taken during completed own-helper retirement. Historical READY state does not override actual active unit and H job state.",
+  "unit": "p4-native-source600-full-ai395-20261109-8b88-r10.service"
+}

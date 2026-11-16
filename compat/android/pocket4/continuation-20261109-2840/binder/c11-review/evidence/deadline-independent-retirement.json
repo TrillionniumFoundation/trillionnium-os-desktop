@@ -1,0 +1,71 @@
+{
+  "binary": "/home/alex/work/pocket4-production-binder-stage-20261109-2840-r1/c11-deadline-review-r1/target-r2/debug/deps/droidloom_supervisor-63ac7238d3bd685e",
+  "binary_sha256": "8f6179e92ce5f795090922de3a5e9b6d3c96c6e31c7f4abb77ffe64894564178",
+  "retirement": [
+    {
+      "unit": "p4-c11-binder-deadline-normal-20261109-2840-r1.service",
+      "manager": "user",
+      "returncode": 0,
+      "properties": {
+        "LoadState": "not-found",
+        "ActiveState": "inactive",
+        "SubState": "dead",
+        "MainPID": "0",
+        "Result": "success",
+        "ControlGroup": ""
+      },
+      "expected_cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-c11-binder-deadline-normal-20261109-2840-r1.service",
+      "expected_cgroup_exists": false,
+      "stderr": ""
+    },
+    {
+      "unit": "p4-c11-binder-deadline-normal-20261109-2840-r2.service",
+      "manager": "user",
+      "returncode": 0,
+      "properties": {
+        "LoadState": "not-found",
+        "ActiveState": "inactive",
+        "SubState": "dead",
+        "MainPID": "0",
+        "Result": "success",
+        "ControlGroup": ""
+      },
+      "expected_cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-c11-binder-deadline-normal-20261109-2840-r2.service",
+      "expected_cgroup_exists": false,
+      "stderr": ""
+    },
+    {
+      "unit": "p4-private-binder-normal-root-20261109-2840-r1.service",
+      "manager": "system",
+      "returncode": 0,
+      "properties": {
+        "LoadState": "not-found",
+        "ActiveState": "inactive",
+        "SubState": "dead",
+        "MainPID": "0",
+        "Result": "success",
+        "ControlGroup": ""
+      },
+      "expected_cgroup": "/sys/fs/cgroup/system.slice/p4-private-binder-normal-root-20261109-2840-r1.service",
+      "expected_cgroup_exists": false,
+      "stderr": ""
+    },
+    {
+      "unit": "p4-private-binder-normal-root-20261109-2840-r2.service",
+      "manager": "system",
+      "returncode": 0,
+      "properties": {
+        "LoadState": "not-found",
+        "ActiveState": "inactive",
+        "SubState": "dead",
+        "MainPID": "0",
+        "Result": "success",
+        "ControlGroup": ""
+      },
+      "expected_cgroup": "/sys/fs/cgroup/system.slice/p4-private-binder-normal-root-20261109-2840-r2.service",
+      "expected_cgroup_exists": false,
+      "stderr": ""
+    }
+  ],
+  "private_controls_run": 0
+}

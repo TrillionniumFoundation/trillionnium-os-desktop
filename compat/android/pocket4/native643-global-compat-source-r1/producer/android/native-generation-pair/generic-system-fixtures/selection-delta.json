@@ -1,0 +1,982 @@
+{
+  "schema": "native642-exact-generic59-source-extension-v1",
+  "previous_projects": 607,
+  "current_projects": 642,
+  "previous_lock_sha256": "2c57d50f68aa8db89dcbd6beaaba2057bd61fca881dcfbbf8873d0a4047fb7eb",
+  "current_lock_sha256": "f8663e08af2e28f2a5bd1b9b9c0d183c5b9fa2a6521d2c97fbc2ed1d3e62165a",
+  "added_projects": [
+    {
+      "path": "external/angle",
+      "name": "platform/external/angle",
+      "commit": "1f4500d3906c24de59eec5b9cda17a2ad2a8ba2d",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "external/dnsmasq",
+      "name": "platform/external/dnsmasq",
+      "commit": "37720d7ebe90b68428dc265204cebf26990f4edd",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "external/fsck_msdos",
+      "name": "platform/external/fsck_msdos",
+      "commit": "dc0d0efc50ad7246c283bd218d06ee2d41c14cc7",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "external/iproute2",
+      "name": "platform/external/iproute2",
+      "commit": "98d58311c2235def6596bda3a0da9366de2979e0",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "external/iptables",
+      "name": "platform/external/iptables",
+      "commit": "df1a07fd3d0c157a71a4c157cc728062a01032b2",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "external/iputils",
+      "name": "platform/external/iputils",
+      "commit": "9c014e33395657c45db7f074ea4f822e1cfadb0b",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "external/libcups",
+      "name": "platform/external/libcups",
+      "commit": "71b9b1b2fd81701120924b3e56f4af4f06344b44",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "external/musl",
+      "name": "platform/external/musl",
+      "commit": "e8872353b6db70a58369d66ec40562cfbe16b653",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "external/neven",
+      "name": "platform/external/neven",
+      "commit": "09a3bc2b0b971b159074707c36669520a47b684f",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "frameworks/compile/mclinker",
+      "name": "platform/frameworks/compile/mclinker",
+      "commit": "22f2506e585270da53cb910f6fda92395f6550c1",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/apps/CertInstaller",
+      "name": "platform/packages/apps/CertInstaller",
+      "commit": "3667349d355e2e064cb56bf4a8faf5fd5525db87",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/apps/ContactsPicker",
+      "name": "platform/packages/apps/ContactsPicker",
+      "commit": "9ba93bf644c56a825a263cfd15f2161c17c6935b",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/apps/DeviceDiagnostics",
+      "name": "platform/packages/apps/DeviceDiagnostics",
+      "commit": "08a7fc7b7d5366b8fabf5e6a11d769d7f5c3ae4c",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/apps/HTMLViewer",
+      "name": "platform/packages/apps/HTMLViewer",
+      "commit": "2e3e07363b649b1c86543bd9c4735a525952dba2",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/apps/KeyChain",
+      "name": "platform/packages/apps/KeyChain",
+      "commit": "3f0e2b0c85f1f1939f83bab71271935c8cb2f6f8",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/apps/MusicFX",
+      "name": "platform/packages/apps/MusicFX",
+      "commit": "f77abb40ac7fe8cafb41b3856eca7a8943dadc76",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/apps/PrivateSpace",
+      "name": "platform/packages/apps/PrivateSpace",
+      "commit": "2e54b4180f11ebf8292a754d7bc4dac74afc22c0",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/apps/SecureElement",
+      "name": "platform/packages/apps/SecureElement",
+      "commit": "a478ba7d1209c2140a03f50b48727442d86e15f2",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/apps/Stk",
+      "name": "platform/packages/apps/Stk",
+      "commit": "89a3ddbd38d35c3200813045d66f9998b6350417",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/apps/Tag",
+      "name": "platform/packages/apps/Tag",
+      "commit": "eb02d2d050275d6a1fc896d4ceda2d91b206658e",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/modules/CaptivePortalLogin",
+      "name": "platform/packages/modules/CaptivePortalLogin",
+      "commit": "586930a5bac4213c31f4b580e101653df145805c",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/modules/IntentResolver",
+      "name": "platform/packages/modules/IntentResolver",
+      "commit": "514e2233f8c1183308e31c86386aa932003c307a",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/providers/BookmarkProvider",
+      "name": "platform/packages/providers/BookmarkProvider",
+      "commit": "8cfd4be65fb59790b33c7b3d88bc7d2ac0dccb08",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/providers/CallLogProvider",
+      "name": "platform/packages/providers/CallLogProvider",
+      "commit": "1d4534e1a7dabcffa309799ee81ecf1ad427ae7d",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/providers/ContactsKeysProvider",
+      "name": "platform/packages/providers/ContactsKeysProvider",
+      "commit": "f9df0eba9f0b22df6772ab1a3b381cb7529331bc",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/providers/PartnerBookmarksProvider",
+      "name": "platform/packages/providers/PartnerBookmarksProvider",
+      "commit": "52b6d851e697d15aea1219588ba8a10d354b4594",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/providers/UserDictionaryProvider",
+      "name": "platform/packages/providers/UserDictionaryProvider",
+      "commit": "c2c6b446636f6229d2e1c4fb45b7bccd548178cd",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/screensavers/Basic",
+      "name": "platform/packages/screensavers/Basic",
+      "commit": "c8978290ea444e37662452e9c5af9b354e700c98",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/services/AlternativeNetworkAccess",
+      "name": "platform/packages/services/AlternativeNetworkAccess",
+      "commit": "05e7eb66772bad8bea7e5c09e79a004141105d43",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/services/BuiltInPrintService",
+      "name": "platform/packages/services/BuiltInPrintService",
+      "commit": "eddcc1ee8095ff98bcdbfdcf3084cd13e9391ee2",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/services/Mms",
+      "name": "platform/packages/services/Mms",
+      "commit": "480d20ef1d29179bbbc19f2d785c1a87de14a299",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "packages/wallpapers/LivePicker",
+      "name": "platform/packages/wallpapers/LivePicker",
+      "commit": "51483158083a239bee58229fcdd6efbf61e846bf",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "system/dmesgd",
+      "name": "platform/system/dmesgd",
+      "commit": "635120841f515b63fe0ab0451ac9b17fb7d8cca6",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "system/hwservicemanager",
+      "name": "platform/system/hwservicemanager",
+      "commit": "60271965cf6b055ed82b2e1ae0bf74b2c34a6af2",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    },
+    {
+      "path": "system/memory/guardian",
+      "name": "platform/system/memory/guardian",
+      "commit": "5d6ceb06e332cb7e0f5c2fde4cc37a6a6f24bc52",
+      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
+    }
+  ],
+  "added_sparse_cones": {
+    "bootable/recovery": {
+      "old": [
+        "bootloader_message",
+        "etc",
+        "fastboot",
+        "fuse_sideload",
+        "install",
+        "minadbd",
+        "minui",
+        "otautil",
+        "recovery_ui",
+        "recovery_utils",
+        "res-hdpi",
+        "res-mdpi",
+        "res-xhdpi",
+        "res-xxhdpi",
+        "res-xxxhdpi",
+        "tests/Android.bp",
+        "tests/common",
+        "tests/fuzz",
+        "tests/manual",
+        "tests/testdata",
+        "tests/unit",
+        "update_verifier"
+      ],
+      "added": [
+        "uncrypt"
+      ],
+      "new": [
+        "bootloader_message",
+        "etc",
+        "fastboot",
+        "fuse_sideload",
+        "install",
+        "minadbd",
+        "minui",
+        "otautil",
+        "recovery_ui",
+        "recovery_utils",
+        "res-hdpi",
+        "res-mdpi",
+        "res-xhdpi",
+        "res-xxhdpi",
+        "res-xxxhdpi",
+        "tests/Android.bp",
+        "tests/common",
+        "tests/fuzz",
+        "tests/manual",
+        "tests/testdata",
+        "tests/unit",
+        "update_verifier",
+        "uncrypt"
+      ]
+    },
+    "development": {
+      "old": [
+        "apps/Development",
+        "apps/GestureBuilder",
+        "apps/WidgetPreview",
+        "build",
+        "docs",
+        "host",
+        "python-packages",
+        "samples/AccelerometerPlay",
+        "samples/AconfigDemo/Android.bp",
+        "samples/AconfigDemo/AndroidManifest.xml",
+        "samples/AconfigDemo/aconfig_demo_flags.aconfig",
+        "samples/AconfigDemo/lib",
+        "samples/AconfigDemo/proguard.flags",
+        "samples/AconfigDemo/res",
+        "samples/AconfigDemo/src",
+        "samples/ApiDemos",
+        "samples/AppNavigation",
+        "samples/BackupRestore",
+        "samples/BasicGLSurfaceView",
+        "samples/BusinessCard",
+        "samples/ContactManager",
+        "samples/CrossCompatibility",
+        "samples/CubeLiveWallpaper",
+        "samples/HelloEffects",
+        "samples/Home",
+        "samples/HoneycombGallery",
+        "samples/JetBoy",
+        "samples/KeyChainDemo",
+        "samples/LceDemo",
+        "samples/LunarLander",
+        "samples/MultiResolution",
+        "samples/NotePad",
+        "samples/SampleSyncAdapter",
+        "samples/SceneTransitionLayoutDemo/Android.bp",
+        "samples/SceneTransitionLayoutDemo/AndroidManifest.xml",
+        "samples/SceneTransitionLayoutDemo/app",
+        "samples/SceneTransitionLayoutDemo/res",
+        "samples/SceneTransitionLayoutDemo/src",
+        "samples/SearchableDictionary",
+        "samples/SipDemo",
+        "samples/SkeletonApp",
+        "samples/Snake",
+        "samples/SoftKeyboard",
+        "samples/SpellChecker",
+        "samples/Spinner",
+        "samples/SpinnerTest",
+        "samples/TicTacToeLib",
+        "samples/TicTacToeMain",
+        "samples/ToyVpn",
+        "samples/TtsEngine",
+        "samples/USB",
+        "samples/UiAutomator",
+        "samples/VoiceRecognitionService",
+        "samples/VoicemailProviderDemo",
+        "samples/WeatherListWidget",
+        "samples/WiFiDirectDemo",
+        "samples/WiFiDirectServiceDiscovery",
+        "samples/Wiktionary",
+        "samples/WiktionarySimple",
+        "samples/XmlAdapters",
+        "samples/samples_source.prop_template",
+        "scripts",
+        "sdk",
+        "tools/etc1tool"
+      ],
+      "added": [
+        "cmds/monkey"
+      ],
+      "new": [
+        "apps/Development",
+        "apps/GestureBuilder",
+        "apps/WidgetPreview",
+        "build",
+        "docs",
+        "host",
+        "python-packages",
+        "samples/AccelerometerPlay",
+        "samples/AconfigDemo/Android.bp",
+        "samples/AconfigDemo/AndroidManifest.xml",
+        "samples/AconfigDemo/aconfig_demo_flags.aconfig",
+        "samples/AconfigDemo/lib",
+        "samples/AconfigDemo/proguard.flags",
+        "samples/AconfigDemo/res",
+        "samples/AconfigDemo/src",
+        "samples/ApiDemos",
+        "samples/AppNavigation",
+        "samples/BackupRestore",
+        "samples/BasicGLSurfaceView",
+        "samples/BusinessCard",
+        "samples/ContactManager",
+        "samples/CrossCompatibility",
+        "samples/CubeLiveWallpaper",
+        "samples/HelloEffects",
+        "samples/Home",
+        "samples/HoneycombGallery",
+        "samples/JetBoy",
+        "samples/KeyChainDemo",
+        "samples/LceDemo",
+        "samples/LunarLander",
+        "samples/MultiResolution",
+        "samples/NotePad",
+        "samples/SampleSyncAdapter",
+        "samples/SceneTransitionLayoutDemo/Android.bp",
+        "samples/SceneTransitionLayoutDemo/AndroidManifest.xml",
+        "samples/SceneTransitionLayoutDemo/app",
+        "samples/SceneTransitionLayoutDemo/res",
+        "samples/SceneTransitionLayoutDemo/src",
+        "samples/SearchableDictionary",
+        "samples/SipDemo",
+        "samples/SkeletonApp",
+        "samples/Snake",
+        "samples/SoftKeyboard",
+        "samples/SpellChecker",
+        "samples/Spinner",
+        "samples/SpinnerTest",
+        "samples/TicTacToeLib",
+        "samples/TicTacToeMain",
+        "samples/ToyVpn",
+        "samples/TtsEngine",
+        "samples/USB",
+        "samples/UiAutomator",
+        "samples/VoiceRecognitionService",
+        "samples/VoicemailProviderDemo",
+        "samples/WeatherListWidget",
+        "samples/WiFiDirectDemo",
+        "samples/WiFiDirectServiceDiscovery",
+        "samples/Wiktionary",
+        "samples/WiktionarySimple",
+        "samples/XmlAdapters",
+        "samples/samples_source.prop_template",
+        "scripts",
+        "sdk",
+        "tools/etc1tool",
+        "cmds/monkey"
+      ]
+    },
+    "frameworks/compile/libbcc": {
+      "old": [
+        "bcinfo/Android.bp",
+        "bcinfo/BitReader_2_7",
+        "bcinfo/BitReader_3_0",
+        "bcinfo/BitcodeTranslator.cpp",
+        "bcinfo/BitcodeWrapper.cpp",
+        "bcinfo/MetadataExtractor.cpp",
+        "bcinfo/Wrap",
+        "bcinfo/include",
+        "bcinfo/libbcinfo.map",
+        "include",
+        "lib",
+        "tools/bcc_compat"
+      ],
+      "added": [
+        "tools/bcc"
+      ],
+      "new": [
+        "bcinfo/Android.bp",
+        "bcinfo/BitReader_2_7",
+        "bcinfo/BitReader_3_0",
+        "bcinfo/BitcodeTranslator.cpp",
+        "bcinfo/BitcodeWrapper.cpp",
+        "bcinfo/MetadataExtractor.cpp",
+        "bcinfo/Wrap",
+        "bcinfo/include",
+        "bcinfo/libbcinfo.map",
+        "include",
+        "lib",
+        "tools/bcc_compat",
+        "tools/bcc"
+      ]
+    },
+    "packages/apps/CellBroadcastReceiver": {
+      "old": [
+        "flags",
+        "proto",
+        "res",
+        "src",
+        "sysconfig",
+        "tests/testapp",
+        "tests/unit"
+      ],
+      "added": [
+        "apex",
+        "legacy"
+      ],
+      "new": [
+        "flags",
+        "proto",
+        "res",
+        "src",
+        "sysconfig",
+        "tests/testapp",
+        "tests/unit",
+        "apex",
+        "legacy"
+      ]
+    },
+    "packages/modules/AppSearch": {
+      "old": [
+        "apk",
+        "flags",
+        "framework",
+        "safeparcel-processor",
+        "service"
+      ],
+      "added": [
+        "AppSearchAiSealConfig"
+      ],
+      "new": [
+        "apk",
+        "flags",
+        "framework",
+        "safeparcel-processor",
+        "service",
+        "AppSearchAiSealConfig"
+      ]
+    },
+    "packages/modules/DnsResolver": {
+      "old": [
+        "Android.bp",
+        "aidl_api/dnsresolver_aidl_interface",
+        "binder",
+        "rust",
+        "tests/Android.bp",
+        "tests/fuzzer/resolv_service_fuzzer.cpp",
+        "include/dnsproxyd_protocol",
+        "include",
+        "tests"
+      ],
+      "added": [
+        "apex"
+      ],
+      "new": [
+        "Android.bp",
+        "aidl_api/dnsresolver_aidl_interface",
+        "binder",
+        "rust",
+        "tests/Android.bp",
+        "tests/fuzzer/resolv_service_fuzzer.cpp",
+        "include/dnsproxyd_protocol",
+        "include",
+        "tests",
+        "apex"
+      ]
+    },
+    "packages/modules/ExtServices": {
+      "old": [
+        "flags",
+        "java/res",
+        "java/src",
+        "java/tests/Android.bp",
+        "java/tests/AndroidManifest.xml",
+        "java/tests/AndroidTest-sminus.xml",
+        "java/tests/AndroidTest-tplus.xml",
+        "java/tests/src",
+        "jni",
+        "native/Android.bp",
+        "native/ImageHashManager.cpp",
+        "native/ImageHashManager.h",
+        "native/pHash/array2d.h",
+        "native/pHash/fast_dct-inl.h",
+        "native/pHash/fast_dct.h",
+        "native/pHash/phash_config.h",
+        "native/pHash/phash_fingerprinter.cpp",
+        "native/pHash/phash_fingerprinter.h"
+      ],
+      "added": [
+        "apex"
+      ],
+      "new": [
+        "flags",
+        "java/res",
+        "java/src",
+        "java/tests/Android.bp",
+        "java/tests/AndroidManifest.xml",
+        "java/tests/AndroidTest-sminus.xml",
+        "java/tests/AndroidTest-tplus.xml",
+        "java/tests/src",
+        "jni",
+        "native/Android.bp",
+        "native/ImageHashManager.cpp",
+        "native/ImageHashManager.h",
+        "native/pHash/array2d.h",
+        "native/pHash/fast_dct-inl.h",
+        "native/pHash/fast_dct.h",
+        "native/pHash/phash_config.h",
+        "native/pHash/phash_fingerprinter.cpp",
+        "native/pHash/phash_fingerprinter.h",
+        "apex"
+      ]
+    },
+    "packages/modules/NeuralNetworks": {
+      "old": [
+        "common/types/include",
+        "common/types/operations/include",
+        "common/types/operations/src",
+        "common/types/src",
+        "flags",
+        "framework",
+        "common",
+        "driver",
+        "extensions",
+        "runtime",
+        "service",
+        "shim_and_sl",
+        "tools/test_generator"
+      ],
+      "added": [
+        "apex"
+      ],
+      "new": [
+        "common/types/include",
+        "common/types/operations/include",
+        "common/types/operations/src",
+        "common/types/src",
+        "flags",
+        "framework",
+        "common",
+        "driver",
+        "extensions",
+        "runtime",
+        "service",
+        "shim_and_sl",
+        "tools/test_generator",
+        "apex"
+      ]
+    },
+    "packages/modules/adb": {
+      "old": [
+        "Android.bp",
+        "NOTICE",
+        "libs/adbconnection",
+        "proto",
+        "client",
+        "crypto/Android.bp",
+        "crypto/include",
+        "crypto/key.cpp",
+        "crypto/rsa_2048_key.cpp",
+        "crypto/x509_generator.cpp",
+        "daemon",
+        "fastdeploy",
+        "fdevent",
+        "libs",
+        "pairing_auth/Android.bp",
+        "pairing_auth/aes_128_gcm.cpp",
+        "pairing_auth/include",
+        "pairing_auth/libadb_pairing_auth.map.txt",
+        "pairing_auth/pairing_auth.cpp",
+        "pairing_connection",
+        "sysdeps",
+        "test_utils",
+        "tls/Android.bp",
+        "tls/adb_ca_list.cpp",
+        "tls/include",
+        "tls/tls_connection.cpp"
+      ],
+      "added": [
+        "apex"
+      ],
+      "new": [
+        "Android.bp",
+        "NOTICE",
+        "libs/adbconnection",
+        "proto",
+        "client",
+        "crypto/Android.bp",
+        "crypto/include",
+        "crypto/key.cpp",
+        "crypto/rsa_2048_key.cpp",
+        "crypto/x509_generator.cpp",
+        "daemon",
+        "fastdeploy",
+        "fdevent",
+        "libs",
+        "pairing_auth/Android.bp",
+        "pairing_auth/aes_128_gcm.cpp",
+        "pairing_auth/include",
+        "pairing_auth/libadb_pairing_auth.map.txt",
+        "pairing_auth/pairing_auth.cpp",
+        "pairing_connection",
+        "sysdeps",
+        "test_utils",
+        "tls/Android.bp",
+        "tls/adb_ca_list.cpp",
+        "tls/include",
+        "tls/tls_connection.cpp",
+        "apex"
+      ]
+    },
+    "packages/modules/common": {
+      "old": [
+        "sdk",
+        "proguard",
+        "proto",
+        "tools/Android.bp",
+        "tools/gen_sdkinfo.py",
+        "tools/conv_classpaths_proto.py",
+        "tools/check_derive_classpath.py",
+        "java"
+      ],
+      "added": [
+        "build"
+      ],
+      "new": [
+        "sdk",
+        "proguard",
+        "proto",
+        "tools/Android.bp",
+        "tools/gen_sdkinfo.py",
+        "tools/conv_classpaths_proto.py",
+        "tools/check_derive_classpath.py",
+        "java",
+        "build"
+      ]
+    },
+    "packages/providers/DownloadProvider": {
+      "old": [
+        "flags",
+        "res",
+        "src",
+        "tests/Android.bp",
+        "tests/AndroidManifest.xml",
+        "tests/AndroidTest.xml",
+        "tests/src"
+      ],
+      "added": [
+        "ui"
+      ],
+      "new": [
+        "flags",
+        "res",
+        "src",
+        "tests/Android.bp",
+        "tests/AndroidManifest.xml",
+        "tests/AndroidTest.xml",
+        "tests/src",
+        "ui"
+      ]
+    },
+    "packages/services/DeviceAsWebcam": {
+      "old": [
+        "tests"
+      ],
+      "added": [
+        "impl",
+        "interface"
+      ],
+      "new": [
+        "tests",
+        "impl",
+        "interface"
+      ]
+    },
+    "system/apex": {
+      "old": [
+        "Android.bp",
+        "apexd/aidl",
+        "apexd/apex-info-list-api",
+        "apexer",
+        "libs/libapexsupport",
+        "libs/libapexutil",
+        "proto",
+        "tools",
+        "apexd",
+        "shim",
+        "tests/Android.bp",
+        "tests/TEST_MAPPING",
+        "tests/apex-revert-tests.xml",
+        "tests/apex-targetprep-tests.xml",
+        "tests/apex_compression_platform_tests.xml",
+        "tests/apexd-host-tests.xml",
+        "tests/apk-in-apex-tests.xml",
+        "tests/app",
+        "tests/max-sdk-tests.xml",
+        "tests/media-e2e-tests.xml",
+        "tests/media-swcodec-e2e-tests.xml",
+        "tests/src",
+        "tests/testdata/AndroidManifest.xml",
+        "tests/testdata/apex_manifest.json",
+        "tests/testdata/com.android.apex.test.avbpubkey",
+        "tests/testdata/com.android.apex.test.pem",
+        "tests/testdata/init.rc",
+        "tests/testdata/ld.config.txt",
+        "tests/testdata/maxsdk/app",
+        "tests/testdata/sample_prebuilt_file",
+        "tests/testdata/testcert.pk8",
+        "tests/testdata/testcert.x509.pem",
+        "tests/testdata/trigger_reboot.sh",
+        "tests/testdata/trigger_watchdog.rc",
+        "tests/testdata/trigger_watchdog.sh",
+        "tests/testdata/vendorapex",
+        "tests/timezone-data-e2e-tests.xml",
+        "tests/vendor-apex-tests.xml"
+      ],
+      "added": [
+        "patchlevel"
+      ],
+      "new": [
+        "Android.bp",
+        "apexd/aidl",
+        "apexd/apex-info-list-api",
+        "apexer",
+        "libs/libapexsupport",
+        "libs/libapexutil",
+        "proto",
+        "tools",
+        "apexd",
+        "shim",
+        "tests/Android.bp",
+        "tests/TEST_MAPPING",
+        "tests/apex-revert-tests.xml",
+        "tests/apex-targetprep-tests.xml",
+        "tests/apex_compression_platform_tests.xml",
+        "tests/apexd-host-tests.xml",
+        "tests/apk-in-apex-tests.xml",
+        "tests/app",
+        "tests/max-sdk-tests.xml",
+        "tests/media-e2e-tests.xml",
+        "tests/media-swcodec-e2e-tests.xml",
+        "tests/src",
+        "tests/testdata/AndroidManifest.xml",
+        "tests/testdata/apex_manifest.json",
+        "tests/testdata/com.android.apex.test.avbpubkey",
+        "tests/testdata/com.android.apex.test.pem",
+        "tests/testdata/init.rc",
+        "tests/testdata/ld.config.txt",
+        "tests/testdata/maxsdk/app",
+        "tests/testdata/sample_prebuilt_file",
+        "tests/testdata/testcert.pk8",
+        "tests/testdata/testcert.x509.pem",
+        "tests/testdata/trigger_reboot.sh",
+        "tests/testdata/trigger_watchdog.rc",
+        "tests/testdata/trigger_watchdog.sh",
+        "tests/testdata/vendorapex",
+        "tests/timezone-data-e2e-tests.xml",
+        "tests/vendor-apex-tests.xml",
+        "patchlevel"
+      ]
+    },
+    "system/extras": {
+      "old": [
+        "ext4_utils",
+        "libjsonpb/parse",
+        "libjsonpb/verify",
+        "simpleperf/scripts",
+        "simpleperf/testdata",
+        "f2fs_utils",
+        "libatrace_rust/Android.bp",
+        "libatrace_rust/benchmark",
+        "libatrace_rust/bindgen",
+        "libatrace_rust/src",
+        "libfec/Android.bp",
+        "libfec/NOTICE",
+        "libfec/avb_utils.cpp",
+        "libfec/avb_utils.h",
+        "libfec/avb_utils_stub.cpp",
+        "libfec/fec_open.cpp",
+        "libfec/fec_private.h",
+        "libfec/fec_process.cpp",
+        "libfec/fec_read.cpp",
+        "libfec/fec_verity.cpp",
+        "libfec/include",
+        "libfscrypt/Android.bp",
+        "libfscrypt/NOTICE",
+        "libfscrypt/fscrypt.cpp",
+        "libfscrypt/include",
+        "mmap-perf",
+        "partition_tools",
+        "profcollectd",
+        "simpleperf/app_api",
+        "simpleperf/demo",
+        "simpleperf/doc",
+        "simpleperf/include",
+        "simpleperf/nonlinux_support",
+        "simpleperf/runtest",
+        "simpleperf/rust",
+        "squashfs_utils",
+        "tests/Android.bp",
+        "tests/NOTICE",
+        "tests/binder",
+        "tests/kernel.config",
+        "tests/lib",
+        "tests/timetest",
+        "verity",
+        "module_ndk_libs",
+        "module_ndk_libs/libnativehelper"
+      ],
+      "added": [
+        "cppreopts",
+        "kcmdlinectrl",
+        "kcmdlinemodprobe",
+        "mtectrl",
+        "pinner",
+        "preopt2cachename",
+        "tests/schedtest"
+      ],
+      "new": [
+        "ext4_utils",
+        "libjsonpb/parse",
+        "libjsonpb/verify",
+        "simpleperf/scripts",
+        "simpleperf/testdata",
+        "f2fs_utils",
+        "libatrace_rust/Android.bp",
+        "libatrace_rust/benchmark",
+        "libatrace_rust/bindgen",
+        "libatrace_rust/src",
+        "libfec/Android.bp",
+        "libfec/NOTICE",
+        "libfec/avb_utils.cpp",
+        "libfec/avb_utils.h",
+        "libfec/avb_utils_stub.cpp",
+        "libfec/fec_open.cpp",
+        "libfec/fec_private.h",
+        "libfec/fec_process.cpp",
+        "libfec/fec_read.cpp",
+        "libfec/fec_verity.cpp",
+        "libfec/include",
+        "libfscrypt/Android.bp",
+        "libfscrypt/NOTICE",
+        "libfscrypt/fscrypt.cpp",
+        "libfscrypt/include",
+        "mmap-perf",
+        "partition_tools",
+        "profcollectd",
+        "simpleperf/app_api",
+        "simpleperf/demo",
+        "simpleperf/doc",
+        "simpleperf/include",
+        "simpleperf/nonlinux_support",
+        "simpleperf/runtest",
+        "simpleperf/rust",
+        "squashfs_utils",
+        "tests/Android.bp",
+        "tests/NOTICE",
+        "tests/binder",
+        "tests/kernel.config",
+        "tests/lib",
+        "tests/timetest",
+        "verity",
+        "module_ndk_libs",
+        "module_ndk_libs/libnativehelper",
+        "cppreopts",
+        "kcmdlinectrl",
+        "kcmdlinemodprobe",
+        "mtectrl",
+        "pinner",
+        "preopt2cachename",
+        "tests/schedtest"
+      ]
+    },
+    "system/server_configurable_flags": {
+      "old": [
+        "Android.bp",
+        "libflags",
+        "aconfigd/Android.bp",
+        "aconfigd/src",
+        "aconfigd/srcs"
+      ],
+      "added": [
+        "disaster_recovery"
+      ],
+      "new": [
+        "Android.bp",
+        "libflags",
+        "aconfigd/Android.bp",
+        "aconfigd/src",
+        "aconfigd/srcs",
+        "disaster_recovery"
+      ]
+    },
+    "system/timezone": {
+      "old": [
+        "output_data",
+        "testing/Android.bp",
+        "testing/src"
+      ],
+      "added": [
+        "apex"
+      ],
+      "new": [
+        "output_data",
+        "testing/Android.bp",
+        "testing/src",
+        "apex"
+      ]
+    },
+    "system/zygote": {
+      "old": [
+        "zygote-messages",
+        "zygote-proc-macros",
+        "zygote-sys"
+      ],
+      "added": [
+        "zygote",
+        "zygote-core"
+      ],
+      "new": [
+        "zygote-messages",
+        "zygote-proc-macros",
+        "zygote-sys",
+        "zygote",
+        "zygote-core"
+      ]
+    }
+  },
+  "source_and_full_qualified": false
+}

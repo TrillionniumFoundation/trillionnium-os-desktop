@@ -1,0 +1,30 @@
+{
+  "job_id": "1a1c0f48549-336d-40",
+  "status": {
+    "state": "pending_terminal_readback",
+    "exit_code": null,
+    "output_complete": null,
+    "output_durable": null,
+    "retirement_confirmed": false,
+    "reason": "The separate h_process_status read timed out/returned a tool error. It was read-only; the remote job was not replayed or cancelled."
+  },
+  "observation": {
+    "stdout_read_eof": true,
+    "stderr_read_eof": true,
+    "stdout_bytes": 2721,
+    "stderr_bytes": 1969,
+    "stdout_contains_final_script_metadata": true,
+    "locked_cargo_test_result": "22 passed; 0 failed; 2 ignored",
+    "source_commit": "4e16058cc0f6de83fabae68736dad7eb91edbc47",
+    "harness_lock_sha256": "94d5485165fa970400ddbcca6ac38d63e46e14c4ca1aea7054d6d18a5706f625"
+  },
+  "stdout": "\nrunning 24 tests\ntest application_command::tests::framework_start_identity_is_required_before_entry ... ok\ntest application_command::tests::held_process_rejects_exit_after_original_identity_was_bound ... ok\ntest application_command::tests::namespace_arguments_use_only_held_fds_and_explicit_environment ... ok\ntest application_command::tests::nonblocking_reader_does_not_wait_for_a_held_writer ... ok\ntest application_command::tests::real_fd_namespace_entry_and_dead_pidfd_preexec_rejection ... ignored, requires explicit root test in a writable cgroup v2; enters only an owned host fixture\ntest application_command::tests::real_owned_group_retires_success_failure_overflow_and_escaped_pipe_holders ... ignored, requires explicit root test in a writable cgroup v2; creates only owned host fixtures\ntest application_command::tests::successful_output_is_not_accepted_after_the_deadline ... ok\ntest application_probe::tests::absent_and_wrong_user_packages_fail_before_apk_reads ... ok\ntest application_probe::tests::non_https_and_credential_urls_never_execute ... ok\ntest application_probe::tests::other_default_browser_never_starts_firefox_explicitly ... ok\ntest application_probe::tests::package_update_and_byte_races_fail ... ok\ntest application_probe::tests::private_traversal_and_duplicate_apk_paths_fail ... ok\ntest application_probe::tests::real_start_output_and_post_identity_are_required ... ok\ntest application_probe::tests::uid_is_read_from_current_pm_and_not_fixed ... ok\ntest release::tests::blocked_unsupported_failed_and_missing_are_never_passes ... ok\ntest release::tests::complete_42_is_only_evidence_completeness_and_13_is_incomplete ... ok\ntest release::tests::duplicates_and_extras_cannot_pad_coverage ... ok\ntest release::tests::empty_stderr_can_support_but_cannot_replace_a_runtime_receipt ... ok\ntest release::tests::exact_version_split_signer_uid_and_engine_are_required ... ok\ntest release::tests::expected_manifest_count_current_main_and_common_gates_are_external_pins ... ok\ntest release::tests::missing_corrupt_or_unpinned_evidence_is_incomplete ... ok\ntest release::tests::old_main_boot_epoch_and_cohort_cannot_transfer_acceptance ... ok\ntest release::tests::split_identity_order_does_not_change_meaning ... ok\ntest release::tests::understated_evidence_size_is_rejected_before_reading_payload ... ok\n\ntest result: ok. 22 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.02s\n\n{\"harness_lock_sha256\": \"94d5485165fa970400ddbcca6ac38d63e46e14c4ca1aea7054d6d18a5706f625\", \"source_commit\": \"4e16058cc0f6de83fabae68736dad7eb91edbc47\", \"source_files_copied\": false, \"samefile_source_symlink\": \"/home/alex/work/pocket4-app-release-check-20261109-2840-r1\", \"android_operations\": 0}\n",
+  "stderr": "   Compiling version_check v0.9.5\n   Compiling generic-array v0.14.7\n   Compiling proc-macro2 v1.0.107\n   Compiling libc v0.2.188\n   Compiling unicode-ident v1.0.24\n   Compiling typenum v1.20.1\n   Compiling quote v1.0.47\n   Compiling serde_core v1.0.229\n   Compiling getrandom v0.4.3\n   Compiling cfg-if v1.0.4\n   Compiling rustix v1.1.4\n   Compiling zmij v1.0.23\n   Compiling syn v3.0.2\n   Compiling crypto-common v0.1.7\n   Compiling block-buffer v0.10.4\n   Compiling bitflags v2.13.1\n   Compiling linux-raw-sys v0.12.1\n   Compiling serde v1.0.229\n   Compiling serde_json v1.0.151\n   Compiling digest v0.10.7\n   Compiling serde_derive v1.0.229\n   Compiling fastrand v2.5.0\n   Compiling once_cell v1.21.4\n   Compiling itoa v1.0.18\n   Compiling cpufeatures v0.2.17\n   Compiling memchr v2.8.3\n   Compiling sha2 v0.10.9\n   Compiling tempfile v3.27.0\n   Compiling pocket4-process-fd v0.1.0 (/tmp/p4-app-runtime-harness-2840-b4ktp1_x/harness/process-fd)\n   Compiling droidloom-cpu-placement v0.1.0 (/tmp/p4-app-runtime-harness-2840-b4ktp1_x/harness/cpu-placement)\n   Compiling hex v0.4.3\n   Compiling pocket4-application-runtime-tests v0.1.0 (/tmp/p4-app-runtime-harness-2840-b4ktp1_x/harness)\nwarning: associated function `capture` is never used\n   --> src/../../source/runtime/droidloom-supervisor/src/application_command.rs:148:19\n    |\n147 | impl NamespaceTarget {\n    | -------------------- associated function in this implementation\n148 |     pub(super) fn capture(cell_pid: u32, framework_pid: u32, start_ticks: u64) -> io::Result<Self> {\n    |                   ^^^^^^^\n    |\n    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: `pocket4-application-runtime-tests` (lib test) generated 1 warning\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.34s\n     Running unittests src/lib.rs (/home/alex/work/pocket4-app-release-check-20261109-2840-r1/target/debug/deps/pocket4_application_runtime_tests-6c6855400cbcd907)\n",
+  "normal_passed": 22,
+  "root_controls_ignored": 2,
+  "android_operations": 0,
+  "production_ready": false,
+  "runtime_qualified": false,
+  "samefile": true,
+  "scope": "isolated same-source probe, transport and evidence modules; full-workspace dispatch/CLI and host-control terminal receipts are separate; remote harness job terminal/retirement remains unobserved"
+}

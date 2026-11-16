@@ -1,0 +1,2331 @@
+--- a/tools/droidloom-update/src/native_generation_pair_build.rs
++++ b/tools/droidloom-update/src/native_generation_pair_build.rs
+@@ -20,9 +20,9 @@
+ const ENGINE_BP_BYTES: usize = 25403;
+ const BASE_SOURCE_LOCK_SHA: &str = "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d";
+ const PAIR_SOURCE_LOCK: &str = "android/native-generation-pair/source-lock.json";
+-const SOURCE_LOCK_BYTES: usize = 354910;
+-const SOURCE_LOCK_SHA: &str = "74372a62836ec16c30a6f24c6e13725831f90e13f2bbc4c9f9f56c74895b163d";
+-// Exact original additions from frozen manifest SHA-256 74372a62836ec16c30a6f24c6e13725831f90e13f2bbc4c9f9f56c74895b163d.
++const SOURCE_LOCK_BYTES: usize = 369228;
++const SOURCE_LOCK_SHA: &str = "714a3542c632c50c1516a033bcde13426d67177934dbdbfc8006efc2190f5aec";
++// Exact original additions from frozen manifest SHA-256 d88549bc89076017baffcc28e39695431993cc12516238278e015f23325d9596.
+ // Closure qualification remains separate from this source attestation.
+ const PAIR_ADDITIONS_JSON: &str = r#"[
+   {
+@@ -4763,7 +4763,9 @@
+     "sparse_paths": [
+       "flags",
+       "framework",
+-      "ndk"
++      "ndk",
++      "apex",
++      "service"
+     ]
+   },
+   {
+@@ -4799,7 +4801,9 @@
+       "anomaly-detector/service",
+       "flags",
+       "framework",
+-      "util"
++      "util",
++      "apex",
++      "service"
+     ]
+   },
+   {
+@@ -4892,7 +4896,10 @@
+       "flags",
+       "framework",
+       "lib",
+-      "service"
++      "service",
++      "apex",
++      "bpfloader",
++      "bpf_progs"
+     ]
+   },
+   {
+@@ -4902,7 +4909,10 @@
+     "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+     "sparse_paths": [
+       "flags",
+-      "framework"
++      "framework",
++      "apex",
++      "service",
++      "template"
+     ]
+   },
+   {
+@@ -5356,7 +5366,8 @@
+     "path": "tools/security",
+     "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+     "sparse_paths": [
+-      "remote_provisioning/hwtrust"
++      "remote_provisioning/hwtrust",
++      "fuzzing/libFuzzer_mte_crash_handler"
+     ]
+   },
+   {
+@@ -5739,10 +5750,56 @@
+       "LICENSE",
+       "pyee"
+     ]
++  },
++  {
++    "commit": "225af0c6253316198738699de9041d1f28d0df44",
++    "name": "platform/packages/apps/EyeDropper",
++    "path": "packages/apps/EyeDropper",
++    "purpose": "Pinned original framework aconfig provider and complete retained EyeDropper library inputs",
++    "sparse_paths": [
++      "flags",
++      "res",
++      "src"
++    ]
++  },
++  {
++    "commit": "71d564487c9b34f65961570073f037658e07eb06",
++    "name": "platform/external/mksh",
++    "path": "external/mksh",
++    "purpose": "Exact Android 17 original shell and mkshrc providers required by the retained microdroid system image"
++  },
++  {
++    "commit": "4da9987aca2eedf386d1e22e19994a1b0de53c45",
++    "name": "platform/external/strace",
++    "path": "external/strace",
++    "purpose": "Exact Android 17 original strace provider and complete source tree required by the retained microdroid system image"
++  },
++  {
++    "commit": "ac781dac6cf4026016f2dacf824b2f0b0fba91c2",
++    "name": "platform/external/jmustache",
++    "path": "external/jmustache",
++    "purpose": "Exact original same-superproject JMustache provider and full source required by the retained WebApp production service",
++    "sparse_paths": []
++  },
++  {
++    "commit": "f91e18ccc73c0cce1194f3aef4a841c1a15003b3",
++    "name": "platform/system/memory/libwrapfd",
++    "path": "system/memory/libwrapfd",
++    "purpose": "Exact original same-superproject wrapfd Rust and native buffer providers required by the retained NpuManager service",
++    "sparse_paths": []
++  },
++  {
++    "commit": "49d155f26586a540266fd854c868a067f6db9204",
++    "name": "platform/external/android-browser-helper",
++    "path": "external/android-browser-helper",
++    "purpose": "Exact original same-superproject Android Browser Helper sources required by the retained WebApp production template",
++    "sparse_paths": [
++      "androidbrowserhelper/src/main"
++    ]
+   }
+ ]"#;
+ 
+-fn validate_source_extension(base: &Value, extended: &Value) -> Result<()> {
++fn validate_source_extension607(base: &Value, extended: &Value) -> Result<()> {
+     let mut expected = base.clone();
+     let projects = expected["projects"].as_array_mut().ok_or("pair source projects absent")?;
+     if projects.len() != 225 {
+@@ -6230,6 +6287,7 @@
+         ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "stable/tools"),
+         ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "stable/url"),
+         ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "test_runner"),
++        ("external/cronet", "e184145f12ee023d07372bd6db33341b671cee27", "android/java/shims"),
+         ("external/e2fsprogs", "3eb17241db7cd4408cc1bce9d25b602465ace8ff", "contrib"),
+         ("external/e2fsprogs", "3eb17241db7cd4408cc1bce9d25b602465ace8ff", "debugfs"),
+         ("external/e2fsprogs", "3eb17241db7cd4408cc1bce9d25b602465ace8ff", "e2fsck"),
+@@ -7010,6 +7068,8 @@
+         ("system/extras", "1289e9b3f282909eec6e80414e14dcc207bda439", "tests/lib"),
+         ("system/extras", "1289e9b3f282909eec6e80414e14dcc207bda439", "tests/timetest"),
+         ("system/extras", "1289e9b3f282909eec6e80414e14dcc207bda439", "verity"),
++        ("system/extras", "1289e9b3f282909eec6e80414e14dcc207bda439", "module_ndk_libs"),
++        ("system/extras", "1289e9b3f282909eec6e80414e14dcc207bda439", "module_ndk_libs/libnativehelper"),
+         ("system/gsid", "35a92d40f529b605fad8ff622691e76901044cc8", "aidl"),
+         ("system/gsid", "35a92d40f529b605fad8ff622691e76901044cc8", "fuzzers"),
+         ("system/hardware/interfaces", "9c3469aa3d4aeec5b2bc8e8ae8fdb4437dab4edb", "wifi/keystore/1.0/Android.bp"),
+@@ -7138,6 +7198,7 @@
+         ("system/security", "cbb2ef1617a94d6cdf2dc2ccb7a545575dbb20cb", "ondevice-signing/odsign_main.cpp"),
+         ("system/security", "cbb2ef1617a94d6cdf2dc2ccb7a545575dbb20cb", "ondevice-signing/proto"),
+         ("system/security", "cbb2ef1617a94d6cdf2dc2ccb7a545575dbb20cb", "provisioner"),
++        ("system/security", "cbb2ef1617a94d6cdf2dc2ccb7a545575dbb20cb", "prng_seeder"),
+         ("system/server_configurable_flags", "5069ba739faebf91ae72096577ae17e13061af72", "aconfigd/src"),
+         ("system/server_configurable_flags", "5069ba739faebf91ae72096577ae17e13061af72", "aconfigd/srcs"),
+         ("system/update_engine", "4591637f51644f5429f9e2fe589ab22b92f61842", "aosp"),
+@@ -7478,8 +7539,12 @@
+         ("packages/modules/Permission", "1093eca7407576c72e51b1a88550ee0667a6e5dc", "permissions"),
+         ("packages/modules/Permission", "1093eca7407576c72e51b1a88550ee0667a6e5dc", "sysconfig"),
+         ("packages/modules/Permission", "1093eca7407576c72e51b1a88550ee0667a6e5dc", "tests/cts/permission/permissionTestUtilLib"),
++        ("packages/modules/Permission", "1093eca7407576c72e51b1a88550ee0667a6e5dc", "tests/cts/permission/jni"),
+         ("packages/modules/Wifi", "67beff9acf0e91046d2a9a36a68cb06ef263d1f1", "OsuLogin"),
+         ("packages/modules/Wifi", "67beff9acf0e91046d2a9a36a68cb06ef263d1f1", "WifiDialog"),
++        ("packages/modules/Nfc", "940212c440f57032a19cf0f90c7faa8eca48d546", "apex"),
++        ("packages/modules/Nfc", "940212c440f57032a19cf0f90c7faa8eca48d546", "libnfc-nci/conf"),
++        ("system/memory/libdmabufheap", "09fe72b6ce0feead1b97c2859979b125f815d9b0", "rust"),
+     ] {
+         let matches: Vec<usize> = projects.iter().enumerate()
+             .filter_map(|(index, row)| (row["path"] == path).then_some(index)).collect();
+@@ -7504,6 +7569,212 @@
+     if &expected != extended {
+         return fail("ordinary pair source closure differs beyond the exact provider subtrees and authenticated projects");
+     }
++    Ok(())
++}
++
++// The previous complete 607 contract remains a pure immutable predecessor.
++// This route accepts only the concrete same-SP generic-provider extension.
++fn validate_source_extension642(base: &Value, extended: &Value) -> Result<()> {
++    const SOURCE_LOCK_SHA: &str = "f8663e08af2e28f2a5bd1b9b9c0d183c5b9fa2a6521d2c97fbc2ed1d3e62165a";
++    let previous_raw = include_bytes!("../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json");
++    if previous_raw.len() != 357293 || digest(previous_raw) != "2c57d50f68aa8db89dcbd6beaaba2057bd61fca881dcfbbf8873d0a4047fb7eb" {
++        return fail("immutable original607 source fixture changed");
++    }
++    let previous: Value = serde_json::from_slice(previous_raw)?;
++    validate_source_extension607(base, &previous)?;
++    let delta_raw = include_bytes!("../../../android/native-generation-pair/generic-system-fixtures/selection-delta.json");
++    if delta_raw.len() != 30872 || digest(delta_raw) != "cc6513436440c1975fc8be78905b69c556c374143f31604323f682a3773fb28e" {
++        return fail("exact generic59 source delta changed");
++    }
++    let delta: Value = serde_json::from_slice(delta_raw)?;
++    if delta["schema"] != "native642-exact-generic59-source-extension-v1"
++        || delta["previous_projects"] != 607 || delta["current_projects"] != 642
++        || delta["previous_lock_sha256"] != "2c57d50f68aa8db89dcbd6beaaba2057bd61fca881dcfbbf8873d0a4047fb7eb"
++        || delta["current_lock_sha256"] != SOURCE_LOCK_SHA
++        || delta["source_and_full_qualified"] != false {
++        return fail("generic59 source delta identity changed");
++    }
++    let mut expected = previous;
++    let projects = expected["projects"].as_array_mut().ok_or("original607 projects absent")?;
++    for (path, change) in delta["added_sparse_cones"].as_object().ok_or("generic provider cone delta absent")? {
++        let indices: Vec<usize> = projects.iter().enumerate().filter_map(|(index, row)| (row["path"] == path.as_str()).then_some(index)).collect();
++        if indices.len() != 1 || projects[indices[0]]["sparse_paths"] != change["old"] {
++            return fail("original607 provider cone predecessor changed");
++        }
++        projects[indices[0]]["sparse_paths"] = change["new"].clone();
++    }
++    let additions = delta["added_projects"].as_array().ok_or("generic provider additions absent")?;
++    if additions.len() != 35 { return fail("exact35 original provider projects required"); }
++    for addition in additions {
++        if projects.iter().any(|project| project["path"] == addition["path"] || project["name"] == addition["name"]) {
++            return fail("generic original provider project collides with predecessor");
++        }
++        projects.push(addition.clone());
++    }
++    if projects.len() != 642 || expected != *extended {
++        return fail("source differs beyond exact35 original projects and exact17 monotone cone additions");
++    }
++    Ok(())
++}
++
++
++// Retain the exact 642 predecessor, then admit only the original SDK producer.
++fn validate_source_extension643_sdk(base: &Value, extended: &Value) -> Result<()> {
++    const SOURCE_LOCK_SHA: &str = "e9326b795fd142f8b07a8536a3d96e7f3a957d7ec965030753720d609f9d87b4";
++    let previous_raw = include_bytes!("../../../android/native-generation-pair/sdk-samples-fixtures/original642-source-lock.json");
++    if previous_raw.len() != 368342 || digest(previous_raw) != "f8663e08af2e28f2a5bd1b9b9c0d183c5b9fa2a6521d2c97fbc2ed1d3e62165a" {
++        return fail("immutable actual642 source fixture changed");
++    }
++    let previous: Value = serde_json::from_slice(previous_raw)?;
++    validate_source_extension642(base, &previous)?;
++    let delta_raw = include_bytes!("../../../android/native-generation-pair/sdk-samples-fixtures/selection-delta.json");
++    if delta_raw.len() != 862 || digest(delta_raw) != "b7ed5fef21572cb5ab04eb15d7521ff80185b8cc9a200d5c2d1fcc22f551ea50" {
++        return fail("exact SDK samples source delta changed");
++    }
++    let delta: Value = serde_json::from_slice(delta_raw)?;
++    if delta["schema"] != "native643-exact-sdk-samples-original-producer-extension-v1"
++        || delta["previous_projects"] != 642 || delta["current_projects"] != 643
++        || delta["previous_lock_sha256"] != "f8663e08af2e28f2a5bd1b9b9c0d183c5b9fa2a6521d2c97fbc2ed1d3e62165a"
++        || delta["current_lock_sha256"] != SOURCE_LOCK_SHA
++        || delta["new_original_files"] != 8044 || delta["new_primary_BP"] != 1
++        || delta["source_and_full_qualified"] != false
++        || !delta["added_sparse_cones"].as_object().ok_or("SDK cone delta absent")?.is_empty() {
++        return fail("SDK samples source delta identity changed");
++    }
++    let additions = delta["added_projects"].as_array().ok_or("SDK project delta absent")?;
++    if additions.len() != 1
++        || additions[0]["path"] != "developers/build"
++        || additions[0]["name"] != "platform/developers/build"
++        || additions[0]["commit"] != "31d9b329ddc56636a279c7340e154e0d67d9a6fb"
++        || additions[0]["sparse_paths"] != json!(["prebuilts/gradle", "prebuilts/androidtv"]) {
++        return fail("one exact original SDK producer project required");
++    }
++    let mut expected = previous;
++    let projects = expected["projects"].as_array_mut().ok_or("original642 projects absent")?;
++    if projects.iter().any(|p| p["path"] == additions[0]["path"] || p["name"] == additions[0]["name"]) {
++        return fail("SDK producer collides with original642 project");
++    }
++    projects.push(additions[0].clone());
++    if projects.len() != 643 || expected != *extended {
++        return fail("source differs beyond the exact original SDK producer and its two complete cones");
++    }
++    Ok(())
++}
++
++// Retain actual643 SDK history, then admit only the original path-tag providers.
++fn validate_source_extension643_path_data(base: &Value, extended: &Value) -> Result<()> {
++    const SOURCE_LOCK_SHA: &str = "7866f9c66e6b9dc418b0f9998c6d7724402e4a51a3cf51453087a8dad7b84b42";
++    let old_raw = include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original643-source-lock.json");
++    if old_raw.len() != 368740 || digest(old_raw) != "e9326b795fd142f8b07a8536a3d96e7f3a957d7ec965030753720d609f9d87b4" { return fail("immutable actual643 source fixture changed"); }
++    let previous: Value = serde_json::from_slice(old_raw)?;
++    validate_source_extension643_sdk(base, &previous)?;
++    let delta_raw = include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/selection-delta.json");
++    if delta_raw.len() != 991 || digest(delta_raw) != "0408f7c7aaea0a19c2fd929db4eb376555f5ee76f015886d9d3d7041e391470a" { return fail("exact path-tag source delta changed"); }
++    let delta: Value = serde_json::from_slice(delta_raw)?;
++    if delta["schema"] != "native643-exact-path-tag-original-provider-cone-extension-v1"
++        || delta["previous_projects"] != 643 || delta["current_projects"] != 643
++        || delta["previous_lock_sha256"] != "e9326b795fd142f8b07a8536a3d96e7f3a957d7ec965030753720d609f9d87b4" || delta["current_lock_sha256"] != SOURCE_LOCK_SHA
++        || delta["new_original_files"] != 63 || delta["new_primary_BP"] != 8
++        || delta["source_and_full_qualified"] != false
++        || !delta["added_projects"].as_array().ok_or("path-tag project delta absent")?.is_empty() {
++        return fail("path-tag source delta identity changed");
++    }
++    let cones=delta["added_sparse_cones"].as_object().ok_or("path-tag cone delta absent")?;
++    if cones.len()!=3 { return fail("exact three existing original projects required"); }
++    let mut expected=previous;
++    let projects=expected["projects"].as_array_mut().ok_or("actual643 predecessor projects absent")?;
++    for (path, additions) in cones {
++        let matches: Vec<usize>=projects.iter().enumerate().filter_map(|(i,p)| (p["path"]==path.as_str()).then_some(i)).collect();
++        if matches.len()!=1 { return fail("path-tag project missing or duplicated"); }
++        let sparse=projects[matches[0]]["sparse_paths"].as_array_mut().ok_or("original sparse cones absent")?;
++        for addition in additions.as_array().ok_or("exact path-tag additions absent")? {
++            if sparse.contains(addition) { return fail("path-tag cone already present"); }
++            sparse.push(addition.clone());
++        }
++    }
++    if projects.len()!=643 || expected!=*extended { return fail("source differs beyond exact original path-tag provider cones"); }
++    Ok(())
++}
++
++
++// The ordinary producer retains both complete original cones at the same SP commits.
++// Generated API modules continue to come from the original Soong prebuilt_apis hook.
++fn validate_source_extension643_compose_car(base: &Value, extended: &Value) -> Result<()> {
++    const SOURCE_LOCK_SHA: &str = "6aacafd0aed644837e5616c658153f3ec6fa44c0e7ca2810e254f9fd0a2003a0";
++    let old_raw = include_bytes!("../../../android/native-generation-pair/compose-car-fixtures/original643-path-data-source-lock.json");
++    if old_raw.len() != 369125 || digest(old_raw) != "7866f9c66e6b9dc418b0f9998c6d7724402e4a51a3cf51453087a8dad7b84b42" {
++        return fail("immutable complete path-data643 predecessor changed");
++    }
++    let previous: Value = serde_json::from_slice(old_raw)?;
++    validate_source_extension643_path_data(base, &previous)?;
++    let delta_raw = include_bytes!("../../../android/native-generation-pair/compose-car-fixtures/selection-delta.json");
++    if delta_raw.len() != 583 || digest(delta_raw) != "ee1e94bf6eade56fb5be2b2ebd69d76ebd66b78f8ac99c03d5e74801ba76c333" {
++        return fail("exact Compose and Car original provider delta changed");
++    }
++    let delta: Value = serde_json::from_slice(delta_raw)?;
++    if delta["schema"] != "native643-exact-compose-car-original-provider-cone-extension-v1"
++        || delta["previous_projects"] != 643 || delta["current_projects"] != 643
++        || delta["previous_lock_sha256"] != "7866f9c66e6b9dc418b0f9998c6d7724402e4a51a3cf51453087a8dad7b84b42"
++        || delta["current_lock_sha256"] != SOURCE_LOCK_SHA
++        || delta["new_original_files"] != 17 || delta["new_primary_BP"] != 2
++        || delta["source_and_full_qualified"] != false
++        || delta["added_projects"] != json!([])
++        || delta["added_sparse_cones"] != json!({"packages/services/Car": ["prebuilts"], "prebuilts/misc": ["common/androidx-perf"]}) {
++        return fail("Compose and Car exact provider scope changed");
++    }
++    let mut expected = previous;
++    let projects = expected["projects"].as_array_mut().ok_or("path-data643 projects absent")?;
++    for (path, commit, cone) in [
++        ("packages/services/Car", "9f04df65daa8b9a65ee05fd4039fe95446874d76", "prebuilts"),
++        ("prebuilts/misc", "be7c3a630b5dc5eb3260035d77a81b2f322754f8", "common/androidx-perf"),
++    ] {
++        let indices: Vec<usize> = projects.iter().enumerate().filter_map(|(i, p)| (p["path"] == path).then_some(i)).collect();
++        if indices.len() != 1 || projects[indices[0]]["commit"] != commit {
++            return fail("original Compose or Car project identity differs");
++        }
++        let sparse = projects[indices[0]]["sparse_paths"].as_array_mut().ok_or("original provider cones absent")?;
++        if sparse.contains(&json!(cone)) { return fail("original provider cone already selected"); }
++        sparse.push(json!(cone));
++    }
++    if projects.len() != 643 || expected != *extended {
++        return fail("source differs beyond the two exact original Compose and Car provider cones");
++    }
++    Ok(())
++}
++
++
++// All three current multidevice consumers use the original complete Uwb snippet.
++fn validate_source_extension(base: &Value, extended: &Value) -> Result<()> {
++    let old_raw = include_bytes!("../../../android/native-generation-pair/ranging-snippet-fixtures/original643-compose-car-source-lock.json");
++    if old_raw.len() != 369178 || digest(old_raw) != "6aacafd0aed644837e5616c658153f3ec6fa44c0e7ca2810e254f9fd0a2003a0" {
++        return fail("immutable Compose/Car643 predecessor changed");
++    }
++    let previous: Value = serde_json::from_slice(old_raw)?;
++    validate_source_extension643_compose_car(base, &previous)?;
++    let raw = include_bytes!("../../../android/native-generation-pair/ranging-snippet-fixtures/selection-delta.json");
++    if raw.len() != 554 || digest(raw) != "5d2b3a71e2c091a8045db7885dfa1eb13d29e8468cb2e7d0caa3c966260a896f" { return fail("exact ranging source delta changed"); }
++    let delta: Value = serde_json::from_slice(raw)?;
++    if delta["schema"] != "native643-exact-ranging-snippet-original-provider-cone-extension-v1"
++        || delta["previous_projects"] != 643 || delta["current_projects"] != 643
++        || delta["previous_lock_sha256"] != "6aacafd0aed644837e5616c658153f3ec6fa44c0e7ca2810e254f9fd0a2003a0"
++        || delta["current_lock_sha256"] != SOURCE_LOCK_SHA
++        || delta["added_projects"] != json!([])
++        || delta["added_sparse_cones"] != json!({"packages/modules/Uwb": ["ranging/tests/multidevices/snippet/uwb"]})
++        || delta["new_original_files"] != 5 || delta["new_primary_BP"] != 1
++        || delta["source_and_full_qualified"] != false {
++        return fail("only the exact original ranging snippet cone is admitted");
++    }
++    let mut expected = previous;
++    let projects = expected["projects"].as_array_mut().ok_or("previous643 projects absent")?;
++    let matches: Vec<usize> = projects.iter().enumerate().filter_map(|(i,p)| (p["path"] == "packages/modules/Uwb").then_some(i)).collect();
++    if matches.len() != 1 || projects[matches[0]]["commit"] != "7c9e03046ff41cc28cf794cc2eda306fbc40279e" {
++        return fail("original fixed Uwb project differs");
++    }
++    let paths = projects[matches[0]]["sparse_paths"].as_array_mut().ok_or("original Uwb sparse cones absent")?;
++    let cone = json!("ranging/tests/multidevices/snippet/uwb");
++    if paths.contains(&cone) { return fail("ranging provider was already selected"); }
++    paths.push(cone);
++    if projects.len() != 643 || expected != *extended { return fail("source differs beyond one exact original ranging provider cone"); }
+     Ok(())
+ }
+ 
+@@ -7517,7 +7788,7 @@
+     validate_source_extension(&serde_json::from_slice(&base)?, &serde_json::from_slice(&extended)?)?;
+     let lock = droidloom_source::load_lock(&path)?;
+     let plan = droidloom_source::build_plan(&lock)?;
+-    if plan.projects.len() != 601 || plan.links.len() != 8 || plan.unrestricted_repo_sync {
++    if plan.projects.len() != 643 || plan.links.len() != 8 || plan.unrestricted_repo_sync {
+         return fail("ordinary pair source plan widened");
+     }
+     Ok(path)
+@@ -7825,19 +8096,23 @@
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++    // These unchanged tests continue authenticating the actual607 history.
++    use super::validate_source_extension607 as validate_source_extension;
++    const SOURCE_LOCK_BYTES: usize = 357293;
++    const SOURCE_LOCK_SHA: &str = "2c57d50f68aa8db89dcbd6beaaba2057bd61fca881dcfbbf8873d0a4047fb7eb";
+     use crate::native_generation_art::Flavor;
+     #[test]
+     fn ordinary_pair_source_extension_is_exact_and_monotonic() {
+         let base: Value = serde_json::from_slice(include_bytes!(
+             "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
+-        let raw = include_bytes!("../../../android/native-generation-pair/source-lock.json");
++        let raw = include_bytes!("../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json");
+         assert_eq!(raw.len(), SOURCE_LOCK_BYTES);
+         assert_eq!(digest(raw), SOURCE_LOCK_SHA);
+         let extended: Value = serde_json::from_slice(raw).unwrap();
+         validate_source_extension(&base, &extended).unwrap();
+         let lock: droidloom_source::SparseSourceLock = serde_json::from_slice(raw).unwrap();
+         let plan = droidloom_source::build_plan(&lock).unwrap();
+-        assert_eq!((plan.projects.len(), plan.links.len(), plan.unrestricted_repo_sync), (601, 8, false));
++        assert_eq!((plan.projects.len(), plan.links.len(), plan.unrestricted_repo_sync), (607, 8, false));
+         assert_eq!(base["status"], extended["status"]);
+     }
+     #[test]
+@@ -7845,7 +8120,7 @@
+         let base: Value = serde_json::from_slice(include_bytes!(
+             "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
+         let good: Value = serde_json::from_slice(include_bytes!(
+-            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++            "../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
+         validate_source_extension(&base, &good).unwrap();
+         let mut previous_without_plugins = good.clone();
+         for (path, commit) in [
+@@ -7893,10 +8168,10 @@
+         let base: Value = serde_json::from_slice(include_bytes!(
+             "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
+         let good: Value = serde_json::from_slice(include_bytes!(
+-            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++            "../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
+         validate_source_extension(&base, &good).unwrap();
+-        assert_eq!(good["projects"].as_array().unwrap().len(), 601);
+-        let mut actual_failed_r3 = good.clone();
++        assert_eq!(good["projects"].as_array().unwrap().len(), 607);
++        let mut actual_failed_r3 = original606_for_history();
+         remove_later_tradefed_cones(&mut actual_failed_r3);
+         // Reconstruct historical bytes before the later complete signature provider selection.
+         let cts = actual_failed_r3["projects"].as_array_mut().unwrap().iter_mut()
+@@ -8073,9 +8348,431 @@
+ 
+ 
+ 
+-    // Only historical fixtures remove these later original aconfig inputs.
+-    // Production always requires the complete declaration/source cones.
+-    fn remove_later_flags_inputs(value: &mut Value) {
++    fn original606_for_history() -> Value {
++        let raw = include_bytes!("../../../android/native-generation-pair/browser-helper-fixtures/original606-source-lock.json");
++        assert_eq!(raw.len(), 356905);
++        assert_eq!(digest(raw), "5e7d6e1a1bc8cb1151bf2312b1ca301f9b1f6070711474f464129b76dbf6eb61");
++        serde_json::from_slice(raw).unwrap()
++    }
++
++    // Reconstruct immutable previous locks before testing their original failures.
++    fn remove_later_five_apex_inputs(value: &mut Value) {
++        {
++            let project = value["projects"].as_array_mut().unwrap().iter_mut().find(|p| p["path"] == "packages/modules/Nfc").unwrap();
++            let paths = project["sparse_paths"].as_array_mut().unwrap();
++            assert_eq!(paths.iter().filter(|p| *p == "apex").count(), 1);
++            paths.retain(|p| p != "apex");
++            assert_eq!(paths.iter().filter(|p| *p == "libnfc-nci/conf").count(), 1);
++            paths.retain(|p| p != "libnfc-nci/conf");
++        }
++        {
++            let project = value["projects"].as_array_mut().unwrap().iter_mut().find(|p| p["path"] == "packages/modules/NpuManager").unwrap();
++            let paths = project["sparse_paths"].as_array_mut().unwrap();
++            assert_eq!(paths.iter().filter(|p| *p == "apex").count(), 1);
++            paths.retain(|p| p != "apex");
++            assert_eq!(paths.iter().filter(|p| *p == "service").count(), 1);
++            paths.retain(|p| p != "service");
++        }
++        {
++            let project = value["projects"].as_array_mut().unwrap().iter_mut().find(|p| p["path"] == "packages/modules/Profiling").unwrap();
++            let paths = project["sparse_paths"].as_array_mut().unwrap();
++            assert_eq!(paths.iter().filter(|p| *p == "apex").count(), 1);
++            paths.retain(|p| p != "apex");
++            assert_eq!(paths.iter().filter(|p| *p == "service").count(), 1);
++            paths.retain(|p| p != "service");
++        }
++        {
++            let project = value["projects"].as_array_mut().unwrap().iter_mut().find(|p| p["path"] == "packages/modules/UprobeStats").unwrap();
++            let paths = project["sparse_paths"].as_array_mut().unwrap();
++            assert_eq!(paths.iter().filter(|p| *p == "apex").count(), 1);
++            paths.retain(|p| p != "apex");
++            assert_eq!(paths.iter().filter(|p| *p == "bpfloader").count(), 1);
++            paths.retain(|p| p != "bpfloader");
++            assert_eq!(paths.iter().filter(|p| *p == "bpf_progs").count(), 1);
++            paths.retain(|p| p != "bpf_progs");
++        }
++        {
++            let project = value["projects"].as_array_mut().unwrap().iter_mut().find(|p| p["path"] == "packages/modules/WebApp").unwrap();
++            let paths = project["sparse_paths"].as_array_mut().unwrap();
++            assert_eq!(paths.iter().filter(|p| *p == "apex").count(), 1);
++            paths.retain(|p| p != "apex");
++            assert_eq!(paths.iter().filter(|p| *p == "service").count(), 1);
++            paths.retain(|p| p != "service");
++            assert_eq!(paths.iter().filter(|p| *p == "template").count(), 1);
++            paths.retain(|p| p != "template");
++        }
++        {
++            let project = value["projects"].as_array_mut().unwrap().iter_mut().find(|p| p["path"] == "system/memory/libdmabufheap").unwrap();
++            let paths = project["sparse_paths"].as_array_mut().unwrap();
++            assert_eq!(paths.iter().filter(|p| *p == "rust").count(), 1);
++            paths.retain(|p| p != "rust");
++        }
++        assert_eq!(value["projects"].as_array().unwrap().iter().filter(|p| p["path"] == "external/jmustache").count(), 1);
++        value["projects"].as_array_mut().unwrap().retain(|p| p["path"] != "external/jmustache");
++        assert_eq!(value["projects"].as_array().unwrap().iter().filter(|p| p["path"] == "system/memory/libwrapfd").count(), 1);
++        value["projects"].as_array_mut().unwrap().retain(|p| p["path"] != "system/memory/libwrapfd");
++    }
++
++    // The NDK library is an original provider distinct from the platform ART library.
++    fn remove_later_nativehelper_ndk_cone(value: &mut Value) {
++        remove_later_five_apex_inputs(value);
++        let extras = value["projects"].as_array_mut().unwrap().iter_mut()
++            .find(|p| p["path"] == "system/extras").unwrap();
++        assert_eq!(extras["commit"], "1289e9b3f282909eec6e80414e14dcc207bda439");
++        let paths = extras["sparse_paths"].as_array_mut().unwrap();
++        assert_eq!(paths.iter().filter(|p| *p == "module_ndk_libs").count(), 1);
++        assert_eq!(paths.iter().filter(|p| *p == "module_ndk_libs/libnativehelper").count(), 1);
++        paths.retain(|p| p != "module_ndk_libs" && p != "module_ndk_libs/libnativehelper");
++    }
++
++    #[test]
++    fn ordinary_pair_nativehelper_ndk_requires_complete_original_cone() {
++        let base: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
++        let good: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
++        validate_source_extension(&base, &good).unwrap();
++        assert_eq!(good["projects"].as_array().unwrap().len(), 607);
++        let mut actual_failed_r4 = original606_for_history();
++        remove_later_nativehelper_ndk_cone(&mut actual_failed_r4);
++        let failed_raw = format!("{}\n", serde_json::to_string_pretty(&actual_failed_r4).unwrap());
++        assert_eq!(failed_raw.len(), 355949);
++        assert_eq!(digest(failed_raw.as_bytes()), "31cd9670543e4062f62dfd5c9e59c3700e541a158f6aee8a112b75b9cea70dfc");
++        let generic: droidloom_source::SparseSourceLock = serde_json::from_value(actual_failed_r4.clone()).unwrap();
++        assert_eq!(droidloom_source::build_plan(&generic).unwrap().projects.len(), 604);
++        assert!(validate_source_extension(&base, &actual_failed_r4).is_err());
++        let index = good["projects"].as_array().unwrap().iter().position(|p| p["path"] == "system/extras").unwrap();
++        // H326 really published the parent cone. Retain it rather than weaken
++        // the normal materializer's literal monotonic-plan requirement.
++        let mut observed_quick = original606_for_history();
++        remove_later_five_apex_inputs(&mut observed_quick);
++        observed_quick["projects"][index]["sparse_paths"].as_array_mut().unwrap()
++            .retain(|p| p != "module_ndk_libs/libnativehelper");
++        let quick_raw = format!("{}\n", serde_json::to_string_pretty(&observed_quick).unwrap());
++        assert_eq!(quick_raw.len(), 355976);
++        assert_eq!(digest(quick_raw.as_bytes()), "a3437ed264c031774481270859d17bc995672a31f59b7ef293553f3b3fcaac7f");
++        assert!(validate_source_extension(&base, &observed_quick).is_err());
++        let mut previous_formal = original606_for_history();
++        remove_later_five_apex_inputs(&mut previous_formal);
++        previous_formal["projects"][index]["sparse_paths"].as_array_mut().unwrap()
++            .retain(|p| p != "module_ndk_libs");
++        let formal_raw = format!("{}\n", serde_json::to_string_pretty(&previous_formal).unwrap());
++        assert_eq!(formal_raw.len(), 355992);
++        assert_eq!(digest(formal_raw.as_bytes()), "a0bcdac2fb5dd496a2fdcd42baf9d99a80085d6279a2edf8ae29f750958a779c");
++        assert!(validate_source_extension(&base, &previous_formal).is_err());
++        let previous_paths = observed_quick["projects"][index]["sparse_paths"].as_array().unwrap();
++        let current_paths = good["projects"][index]["sparse_paths"].as_array().unwrap();
++        assert!(previous_paths.iter().all(|path| current_paths.contains(path)));
++        assert_eq!(current_paths.len(), previous_paths.len() + 1);
++        for invalid in [
++            json!(["module_ndk_libs/libnativehelper/Android.bp"]),
++            json!(["module_ndk_libs/libnativehelper/include", "module_ndk_libs/libnativehelper/include_jni"]),
++            json!(["module_ndk_libs/libnativehelper/libnativehelper.map.txt"]),
++            json!(["module_ndk_libs/libnativehelper/Android.bp", "module_ndk_libs/libnativehelper/include", "module_ndk_libs/libnativehelper/include_jni", "module_ndk_libs/libnativehelper/libnativehelper.map.txt"]),
++            json!(["module_ndk_libs"]),
++        ] {
++            let mut changed = good.clone();
++            let paths = changed["projects"][index]["sparse_paths"].as_array_mut().unwrap();
++            paths.retain(|p| p != "module_ndk_libs" && p != "module_ndk_libs/libnativehelper");
++            paths.extend(invalid.as_array().unwrap().iter().cloned());
++            assert!(validate_source_extension(&base, &changed).is_err());
++        }
++        let mut wrong_commit = good.clone();
++        wrong_commit["projects"][index]["commit"] = json!("0000000000000000000000000000000000000000");
++        assert!(validate_source_extension(&base, &wrong_commit).is_err());
++        let mut missing_old_input = good.clone();
++        missing_old_input["projects"][index]["sparse_paths"].as_array_mut().unwrap().retain(|p| p != "ext4_utils");
++        assert!(validate_source_extension(&base, &missing_old_input).is_err());
++        assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
++    }
++
++    // Retain exact older source generations while extending only the observed utility inputs.
++    fn remove_later_microdroid_inputs(value: &mut Value) {
++        remove_later_nativehelper_ndk_cone(value);
++        for (path, commit) in [
++            ("external/mksh", "71d564487c9b34f65961570073f037658e07eb06"),
++            ("external/strace", "4da9987aca2eedf386d1e22e19994a1b0de53c45"),
++        ] {
++            let projects = value["projects"].as_array_mut().unwrap();
++            let found: Vec<_> = projects.iter().filter(|p| p["path"] == path).collect();
++            assert_eq!(found.len(), 1);
++            assert_eq!(found[0]["commit"], commit);
++            assert!(found[0].get("sparse_paths").is_none());
++            projects.retain(|p| p["path"] != path);
++        }
++        let security = value["projects"].as_array_mut().unwrap().iter_mut()
++            .find(|p| p["path"] == "system/security").unwrap();
++        assert_eq!(security["commit"], "cbb2ef1617a94d6cdf2dc2ccb7a545575dbb20cb");
++        let paths = security["sparse_paths"].as_array_mut().unwrap();
++        assert_eq!(paths.iter().filter(|p| *p == "prng_seeder").count(), 1);
++        paths.retain(|p| p != "prng_seeder");
++    }
++
++    #[test]
++    fn ordinary_pair_microdroid_requires_exact_original_utilities() {
++        let base: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
++        let good: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
++        validate_source_extension(&base, &good).unwrap();
++        assert_eq!(good["projects"].as_array().unwrap().len(), 607);
++        assert_eq!(good["superproject"]["commit"], "28f0bbddc24d56c8ec5a8df5342ac7a292184039");
++        let mut actual_failed_full = original606_for_history();
++        remove_later_microdroid_inputs(&mut actual_failed_full);
++        let failed_raw = format!("{}\n", serde_json::to_string_pretty(&actual_failed_full).unwrap());
++        assert_eq!(failed_raw.len(), 355378);
++        assert_eq!(digest(failed_raw.as_bytes()), "dfee3de6092322f72d2278f5e87a07f2efa13de5c81467945018c1bcf083b3d2");
++        let generic: droidloom_source::SparseSourceLock = serde_json::from_value(actual_failed_full.clone()).unwrap();
++        assert_eq!(droidloom_source::build_plan(&generic).unwrap().projects.len(), 602);
++        assert!(validate_source_extension(&base, &actual_failed_full).is_err());
++        for path in ["external/mksh", "external/strace"] {
++            let index = good["projects"].as_array().unwrap().iter().position(|p| p["path"] == path).unwrap();
++            let mut missing = good.clone();
++            missing["projects"].as_array_mut().unwrap().remove(index);
++            assert!(validate_source_extension(&base, &missing).is_err());
++            let mut wrong_commit = good.clone();
++            wrong_commit["projects"][index]["commit"] = json!("0000000000000000000000000000000000000000");
++            assert!(validate_source_extension(&base, &wrong_commit).is_err());
++            let mut blueprint_only = good.clone();
++            blueprint_only["projects"][index]["sparse_paths"] = json!(["Android.bp"]);
++            assert!(validate_source_extension(&base, &blueprint_only).is_err());
++        }
++        let security = good["projects"].as_array().unwrap().iter().position(|p| p["path"] == "system/security").unwrap();
++        for invalid in [
++            json!(["prng_seeder/Android.bp"]),
++            json!(["prng_seeder/src"]),
++            json!(["prng_seeder/src/main.rs"]),
++            json!(["prng_seeder/Android.bp", "prng_seeder/src", "prng_seeder/prng_seeder.rc"]),
++        ] {
++            let mut partial = good.clone();
++            let paths = partial["projects"][security]["sparse_paths"].as_array_mut().unwrap();
++            paths.retain(|p| p != "prng_seeder");
++            paths.extend(invalid.as_array().unwrap().iter().cloned());
++            assert!(validate_source_extension(&base, &partial).is_err());
++        }
++        let mut wrong_security = good.clone();
++        wrong_security["projects"][security]["commit"] = json!("0000000000000000000000000000000000000000");
++        assert!(validate_source_extension(&base, &wrong_security).is_err());
++        let mut lost_prior_security = good.clone();
++        lost_prior_security["projects"][security]["sparse_paths"].as_array_mut().unwrap().retain(|p| p != "provisioner");
++        assert!(validate_source_extension(&base, &lost_prior_security).is_err());
++        assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
++    }
++
++    // Preserve both CTS JNI modules and every original input at the same commit.
++    fn remove_later_permission_jni_cone(value: &mut Value) {
++        remove_later_microdroid_inputs(value);
++        let project = value["projects"].as_array_mut().unwrap().iter_mut()
++            .find(|p| p["path"] == "packages/modules/Permission").unwrap();
++        assert_eq!(project["commit"], "1093eca7407576c72e51b1a88550ee0667a6e5dc");
++        let paths = project["sparse_paths"].as_array_mut().unwrap();
++        assert_eq!(paths.iter().filter(|p| *p == "tests/cts/permission/jni").count(), 1);
++        paths.retain(|p| p != "tests/cts/permission/jni");
++    }
++
++    #[test]
++    fn ordinary_pair_permission_jni_requires_complete_original_cone() {
++        let base: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
++        let good: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
++        validate_source_extension(&base, &good).unwrap();
++        assert_eq!(good["projects"].as_array().unwrap().len(), 607);
++        let mut actual_failed_full = original606_for_history();
++        remove_later_permission_jni_cone(&mut actual_failed_full);
++        let failed_raw = format!("{}\n", serde_json::to_string_pretty(&actual_failed_full).unwrap());
++        assert_eq!(failed_raw.len(), 355342);
++        assert_eq!(digest(failed_raw.as_bytes()), "674d00a2721ed08e1d72709656c73f804950657ea007acf9dea20761a0b271a6");
++        let generic: droidloom_source::SparseSourceLock =
++            serde_json::from_value(actual_failed_full.clone()).unwrap();
++        assert!(droidloom_source::build_plan(&generic).is_ok());
++        assert!(validate_source_extension(&base, &actual_failed_full).is_err());
++        let index = good["projects"].as_array().unwrap().iter()
++            .position(|p| p["path"] == "packages/modules/Permission").unwrap();
++        for invalid in [
++            json!(["tests/cts/permission/jni/Android.bp"]),
++            json!(["tests/cts/permission/jni/CtsPermissionsJniOnLoad.cpp"]),
++            json!(["tests/cts/permission/jni/PermissionManagerNativeJniTest.cpp"]),
++            json!(["tests/cts/permission/jni/android_permission_cts_FileUtils.cpp"]),
++            json!(["tests/cts/permission/jni/Android.bp", "tests/cts/permission/jni/PermissionManagerNativeJniTest.cpp"]),
++            json!(["tests/cts/permission"]),
++        ] {
++            let mut changed = good.clone();
++            changed["projects"][index]["sparse_paths"].as_array_mut().unwrap()
++                .retain(|p| p != "tests/cts/permission/jni");
++            changed["projects"][index]["sparse_paths"].as_array_mut().unwrap()
++                .extend(invalid.as_array().unwrap().iter().cloned());
++            assert!(validate_source_extension(&base, &changed).is_err());
++        }
++        let mut wrong_commit = good.clone();
++        wrong_commit["projects"][index]["commit"] = json!("0000000000000000000000000000000000000000");
++        assert!(validate_source_extension(&base, &wrong_commit).is_err());
++        let mut lost_existing_provider = good.clone();
++        lost_existing_provider["projects"][index]["sparse_paths"].as_array_mut().unwrap()
++            .retain(|p| p != "tests/cts/permission/permissionTestUtilLib");
++        assert!(validate_source_extension(&base, &lost_existing_provider).is_err());
++        assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
++    }
++
++    // Remove only the new cone when reconstructing historical source locks.
++    // The ordinary pair keeps both original files at the locked tools/security commit.
++    fn remove_later_libfuzzer_mte_cone(value: &mut Value) {
++        remove_later_permission_jni_cone(value);
++        let project = value["projects"].as_array_mut().unwrap().iter_mut()
++            .find(|p| p["path"] == "tools/security").unwrap();
++        assert_eq!(project["commit"], "e4e7ba1dabe64f33b9894624e43763bd8a3cbca5");
++        let paths = project["sparse_paths"].as_array_mut().unwrap();
++        assert_eq!(paths.iter().filter(|p| *p == "fuzzing/libFuzzer_mte_crash_handler").count(), 1);
++        paths.retain(|p| p != "fuzzing/libFuzzer_mte_crash_handler");
++    }
++
++    #[test]
++    fn ordinary_pair_libfuzzer_mte_requires_complete_original_cone() {
++        let base: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
++        let good: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
++        validate_source_extension(&base, &good).unwrap();
++        assert_eq!(good["projects"].as_array().unwrap().len(), 607);
++        let mut actual_failed_r15 = original606_for_history();
++        remove_later_libfuzzer_mte_cone(&mut actual_failed_r15);
++        let failed_raw = format!("{}\n", serde_json::to_string_pretty(&actual_failed_r15).unwrap());
++        assert_eq!(failed_raw.len(), 355295);
++        assert_eq!(digest(failed_raw.as_bytes()), "3314ff8b2e1efae78c4a6ec656003cb21ef2faefe43cbbbe841dcac3032e2c3f");
++        let generic: droidloom_source::SparseSourceLock =
++            serde_json::from_value(actual_failed_r15.clone()).unwrap();
++        assert!(droidloom_source::build_plan(&generic).is_ok());
++        assert!(validate_source_extension(&base, &actual_failed_r15).is_err());
++        let index = good["projects"].as_array().unwrap().iter()
++            .position(|p| p["path"] == "tools/security").unwrap();
++        // Either file alone loses an original build input. A parent selection
++        // also imports unrelated fuzzers and is not the authenticated cone.
++        for invalid in [
++            json!(["fuzzing/libFuzzer_mte_crash_handler/Android.bp"]),
++            json!(["fuzzing/libFuzzer_mte_crash_handler/crash_handler.cpp"]),
++            json!(["fuzzing"]),
++        ] {
++            let mut changed = good.clone();
++            changed["projects"][index]["sparse_paths"].as_array_mut().unwrap()
++                .retain(|p| p != "fuzzing/libFuzzer_mte_crash_handler");
++            changed["projects"][index]["sparse_paths"].as_array_mut().unwrap()
++                .extend(invalid.as_array().unwrap().iter().cloned());
++            assert!(validate_source_extension(&base, &changed).is_err());
++        }
++        let mut wrong_commit = good.clone();
++        wrong_commit["projects"][index]["commit"] = json!("0000000000000000000000000000000000000000");
++        assert!(validate_source_extension(&base, &wrong_commit).is_err());
++        let mut lost_existing_provider = good.clone();
++        lost_existing_provider["projects"][index]["sparse_paths"].as_array_mut().unwrap()
++            .retain(|p| p != "remote_provisioning/hwtrust");
++        assert!(validate_source_extension(&base, &lost_existing_provider).is_err());
++        assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
++    }
++
++    // Reconstruct exact earlier locks without carrying this later provider cone.
++    // The ordinary pair itself always requires every original shims input.
++    fn remove_later_cronet_shims_cone(value: &mut Value) {
++        remove_later_libfuzzer_mte_cone(value);
++        let project = value["projects"].as_array_mut().unwrap().iter_mut()
++            .find(|p| p["path"] == "external/cronet").unwrap();
++        assert_eq!(project["commit"], "e184145f12ee023d07372bd6db33341b671cee27");
++        let paths = project["sparse_paths"].as_array_mut().unwrap();
++        assert_eq!(paths.iter().filter(|p| *p == "android/java/shims").count(), 1);
++        paths.retain(|p| p != "android/java/shims");
++    }
++
++    #[test]
++    fn ordinary_pair_cronet_shims_requires_complete_original_cone() {
++        let base: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
++        let good: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
++        validate_source_extension(&base, &good).unwrap();
++        assert_eq!(good["projects"].as_array().unwrap().len(), 607);
++        let mut actual_failed_r14 = original606_for_history();
++        remove_later_cronet_shims_cone(&mut actual_failed_r14);
++        let failed_raw = format!("{}\n", serde_json::to_string_pretty(&actual_failed_r14).unwrap());
++        assert_eq!(failed_raw.len(), 355265);
++        assert_eq!(digest(failed_raw.as_bytes()), "b80751b1d878fa38a527f25eab4d6ea141cdcda1e5daf053792c152d782a64aa");
++        let generic: droidloom_source::SparseSourceLock =
++            serde_json::from_value(actual_failed_r14.clone()).unwrap();
++        assert!(droidloom_source::build_plan(&generic).is_ok());
++        assert!(validate_source_extension(&base, &actual_failed_r14).is_err());
++        let index = good["projects"].as_array().unwrap().iter()
++            .position(|p| p["path"] == "external/cronet").unwrap();
++        // These retain old paths but omit the Blueprint, Java sources, jarjar
++        // rules, or one original Java file. None is the complete original cone.
++        for incomplete in [
++            json!(["android/java/shims/Android.bp"]),
++            json!(["android/java/shims/srcs"]),
++            json!(["android/java/shims/Android.bp", "android/java/shims/srcs"]),
++            json!(["android/java/shims/Android.bp", "android/java/shims/connectivity_jarjar_rules.txt",
++                   "android/java/shims/srcs/org/chromium/base/ContextUtils.java",
++                   "android/java/shims/srcs/org/chromium/base/Log.java"]),
++        ] {
++            let mut partial = good.clone();
++            let paths = partial["projects"][index]["sparse_paths"].as_array_mut().unwrap();
++            paths.retain(|p| p != "android/java/shims");
++            paths.extend(incomplete.as_array().unwrap().iter().cloned());
++            assert!(validate_source_extension(&base, &partial).is_err());
++        }
++        let mut wrong_commit = good.clone();
++        wrong_commit["projects"][index]["commit"] = json!("0000000000000000000000000000000000000000");
++        assert!(validate_source_extension(&base, &wrong_commit).is_err());
++        let mut widened = good.clone();
++        widened["projects"][index]["sparse_paths"].as_array_mut().unwrap()
++            .push(json!("android/java"));
++        assert!(validate_source_extension(&base, &widened).is_err());
++        assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
++    }
++
++    // Remove this latest project only when reconstructing exact historical
++    // failed locks. The production pair always requires the whole selection.
++    fn remove_later_eyedropper_project(value: &mut Value) {
++        remove_later_cronet_shims_cone(value);
++        let projects = value["projects"].as_array_mut().unwrap();
++        assert_eq!(projects.iter().filter(|p| p["path"] == "packages/apps/EyeDropper").count(), 1);
++        projects.retain(|p| p["path"] != "packages/apps/EyeDropper");
++    }
++
++    #[test]
++    fn ordinary_pair_eyedropper_requires_original_declarations_and_retained_library() {
++        let base: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
++        let good: Value = serde_json::from_slice(include_bytes!(
++            "../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
++        validate_source_extension(&base, &good).unwrap();
++        assert_eq!(good["projects"].as_array().unwrap().len(), 607);
++        let mut actual_failed_r13 = original606_for_history();
++        remove_later_eyedropper_project(&mut actual_failed_r13);
++        let failed_raw = format!("{}\n", serde_json::to_string_pretty(&actual_failed_r13).unwrap());
++        assert_eq!(failed_raw.len(), 354910);
++        assert_eq!(digest(failed_raw.as_bytes()), "74372a62836ec16c30a6f24c6e13725831f90e13f2bbc4c9f9f56c74895b163d");
++        let generic: droidloom_source::SparseSourceLock = serde_json::from_value(actual_failed_r13.clone()).unwrap();
++        assert!(droidloom_source::build_plan(&generic).is_ok());
++        assert!(validate_source_extension(&base, &actual_failed_r13).is_err());
++        let index = good["projects"].as_array().unwrap().iter()
++            .position(|p| p["path"] == "packages/apps/EyeDropper").unwrap();
++        assert_eq!(good["projects"][index]["commit"], "225af0c6253316198738699de9041d1f28d0df44");
++        for incomplete in [json!(["Android.bp"]), json!(["flags"]), json!(["src", "res"]),
++                           json!(["flags/eye_dropper_flags.aconfig", "res", "src"])] {
++            let mut partial = good.clone();
++            partial["projects"][index]["sparse_paths"] = incomplete;
++            assert!(validate_source_extension(&base, &partial).is_err());
++        }
++        let mut wrong_commit = good.clone();
++        wrong_commit["projects"][index]["commit"] = json!("0000000000000000000000000000000000000000");
++        assert!(validate_source_extension(&base, &wrong_commit).is_err());
++        let mut widened = good.clone();
++        widened["projects"][index]["sparse_paths"].as_array_mut().unwrap().push(json!("tests"));
++        assert!(validate_source_extension(&base, &widened).is_err());
++        assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
++    }
++
++    // Historical fixtures remove only this later, exact flags extension.
++    // Production keeps the original declarations and every referenced .aconfig.
++    fn remove_later_flags_cones(value: &mut Value) {
++        remove_later_eyedropper_project(value);
+         for path in ["packages/services/Telecomm", "system/update_engine"] {
+             let project = value["projects"].as_array_mut().unwrap().iter_mut()
+                 .find(|p| p["path"] == path).unwrap();
+@@ -8086,86 +8783,51 @@
+     }
+ 
+     #[test]
+-    fn ordinary_pair_flags_rejects_the_exact_failed_r12_lock() {
++    fn ordinary_pair_flags_require_complete_original_declarations_and_inputs() {
+         let base: Value = serde_json::from_slice(include_bytes!(
+             "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
+         let good: Value = serde_json::from_slice(include_bytes!(
+-            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++            "../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
+         validate_source_extension(&base, &good).unwrap();
+-        let mut failed_r12 = good.clone();
+-        remove_later_flags_inputs(&mut failed_r12);
+-        let failed_raw = format!("{}\n", serde_json::to_string_pretty(&failed_r12).unwrap());
++        assert_eq!(good["projects"].as_array().unwrap().len(), 607);
++        let mut actual_failed_r12 = original606_for_history();
++        remove_later_flags_cones(&mut actual_failed_r12);
++        let failed_raw = format!("{}\n", serde_json::to_string_pretty(&actual_failed_r12).unwrap());
+         assert_eq!(failed_raw.len(), 354876);
+         assert_eq!(digest(failed_raw.as_bytes()), "34aa4c635fd8700c641641c5dbdf4ded4cd6a94b0a3ad369232fe1f287b691f0");
+         let generic: droidloom_source::SparseSourceLock =
+-            serde_json::from_value(failed_r12.clone()).unwrap();
++            serde_json::from_value(actual_failed_r12.clone()).unwrap();
+         assert!(droidloom_source::build_plan(&generic).is_ok());
+-        assert!(validate_source_extension(&base, &failed_r12).is_err());
+-        assert_eq!(good["projects"].as_array().unwrap().len(), 601);
+-        for (before, after) in failed_r12["projects"].as_array().unwrap().iter()
+-            .zip(good["projects"].as_array().unwrap()) {
+-            assert_eq!(before["path"], after["path"]);
+-            assert_eq!(before["name"], after["name"]);
+-            assert_eq!(before["commit"], after["commit"]);
+-        }
+-        assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
+-    }
+-
+-    #[test]
+-    fn ordinary_pair_flags_requires_complete_cones_and_original_fake_device_config() {
+-        let base: Value = serde_json::from_slice(include_bytes!(
+-            "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
+-        let good: Value = serde_json::from_slice(include_bytes!(
+-            "../../../android/native-generation-pair/source-lock.json")).unwrap();
+-        validate_source_extension(&base, &good).unwrap();
+-        for (path, revision, declaration) in [
+-            ("packages/services/Telecomm", "2353977dc28ff88d3cdc1ec636fa9c3251d2ff86", "telecom_api_flags.aconfig"),
++        assert!(validate_source_extension(&base, &actual_failed_r12).is_err());
++        for (path, commit, source) in [
++            ("packages/services/Telecomm", "2353977dc28ff88d3cdc1ec636fa9c3251d2ff86", "telecom_platform_flags.aconfig"),
+             ("system/update_engine", "4591637f51644f5429f9e2fe589ab22b92f61842", "update_engine_flags.aconfig"),
+         ] {
+             let index = good["projects"].as_array().unwrap().iter()
+                 .position(|p| p["path"] == path).unwrap();
+-            assert_eq!(good["projects"][index]["commit"], revision);
+-            assert_eq!(good["projects"][index]["sparse_paths"].as_array().unwrap()
+-                .iter().filter(|p| *p == "flags").count(), 1);
+-            // A blueprint without its declarations, one declaration alone, or
+-            // an unrequested parent is not the complete original provider.
++            assert_eq!(good["projects"][index]["commit"], commit);
+             for replacement in [None, Some("flags/Android.bp".to_owned()),
+-                                Some(format!("flags/{declaration}")), Some(".".to_owned())] {
++                                Some(format!("flags/{source}"))] {
+                 let mut partial = good.clone();
+                 let paths = partial["projects"][index]["sparse_paths"].as_array_mut().unwrap();
+                 paths.retain(|p| p != "flags");
+                 if let Some(value) = replacement { paths.push(json!(value)); }
+                 assert!(validate_source_extension(&base, &partial).is_err());
+             }
+-            let mut wrong_revision = good.clone();
+-            wrong_revision["projects"][index]["commit"] = json!("0000000000000000000000000000000000000000");
+-            assert!(validate_source_extension(&base, &wrong_revision).is_err());
++            let mut wrong_commit = good.clone();
++            wrong_commit["projects"][index]["commit"] = json!("0000000000000000000000000000000000000000");
++            assert!(validate_source_extension(&base, &wrong_commit).is_err());
++            let mut widened = good.clone();
++            widened["projects"][index]["sparse_paths"].as_array_mut().unwrap().push(json!("unreviewed"));
++            assert!(validate_source_extension(&base, &widened).is_err());
+         }
+-        // update_engine's original java_aconfig_library depends on the real
+-        // fake_device_config module. Its BP and all seven Java sources are in
+-        // the existing full build/make project; do not replace that project
+-        // with a BP-only or another-revision synthetic provider selection.
+-        let build_index = good["projects"].as_array().unwrap().iter()
+-            .position(|p| p["path"] == "build/make").unwrap();
+-        assert_eq!(good["projects"][build_index]["name"], "platform/build");
+-        assert_eq!(good["projects"][build_index]["commit"], "5ce6f787337d0223710bf7d4a16dbe6d2a35f777");
+-        assert!(good["projects"][build_index].get("sparse_paths").is_none());
+-        for selection in ["tools/aconfig/fake_device_config/Android.bp",
+-                          "tools/aconfig/fake_device_config/src", "tools/aconfig/fake_device_config"] {
+-            let mut narrowed = good.clone();
+-            narrowed["projects"][build_index]["sparse_paths"] = json!([selection]);
+-            assert!(validate_source_extension(&base, &narrowed).is_err());
+-        }
+-        let mut wrong_build_revision = good.clone();
+-        wrong_build_revision["projects"][build_index]["commit"] = json!("0000000000000000000000000000000000000000");
+-        assert!(validate_source_extension(&base, &wrong_build_revision).is_err());
+         assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
+     }
+ 
+     // This removes only the later complete host-tool cones from historical
+     // failed-lock fixtures. Production always requires their full originals.
+     fn remove_later_platform_tools_cones(value: &mut Value) {
+-        remove_later_flags_inputs(value);
++        remove_later_flags_cones(value);
+         for (path, selection) in [
+             ("development", "tools/etc1tool"),
+             ("dalvik", "tools/hprof-conv"),
+@@ -8183,10 +8845,10 @@
+         let base: Value = serde_json::from_slice(include_bytes!(
+             "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
+         let good: Value = serde_json::from_slice(include_bytes!(
+-            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++            "../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
+         validate_source_extension(&base, &good).unwrap();
+-        assert_eq!(good["projects"].as_array().unwrap().len(), 601);
+-        let mut actual_failed_r11 = good.clone();
++        assert_eq!(good["projects"].as_array().unwrap().len(), 607);
++        let mut actual_failed_r11 = original606_for_history();
+         remove_later_platform_tools_cones(&mut actual_failed_r11);
+         let failed_raw = format!("{}\n", serde_json::to_string_pretty(&actual_failed_r11).unwrap());
+         assert_eq!(failed_raw.len(), 354822);
+@@ -8238,13 +8900,13 @@
+         let base: Value = serde_json::from_slice(include_bytes!(
+             "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
+         let good: Value = serde_json::from_slice(include_bytes!(
+-            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++            "../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
+         validate_source_extension(&base, &good).unwrap();
+-        assert_eq!(good["projects"].as_array().unwrap().len(), 601);
++        assert_eq!(good["projects"].as_array().unwrap().len(), 607);
+         let index = good["projects"].as_array().unwrap().iter()
+             .position(|p| p["path"] == "dalvik").unwrap();
+         assert_eq!(good["projects"][index]["commit"], "5013071e756f89aa2cea97b437af12aacb8d4485");
+-        let mut actual_failed_r10 = good.clone();
++        let mut actual_failed_r10 = original606_for_history();
+         remove_later_dexdeps_pyee_inputs(&mut actual_failed_r10);
+         let failed_raw = format!("{}\n", serde_json::to_string_pretty(&actual_failed_r10).unwrap());
+         assert_eq!(failed_raw.len(), 354443);
+@@ -8275,7 +8937,7 @@
+         let base: Value = serde_json::from_slice(include_bytes!(
+             "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
+         let good: Value = serde_json::from_slice(include_bytes!(
+-            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++            "../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
+         validate_source_extension(&base, &good).unwrap();
+         let index = good["projects"].as_array().unwrap().iter()
+             .position(|p| p["path"] == "external/python/pyee").unwrap();
+@@ -8319,13 +8981,13 @@
+         let base: Value = serde_json::from_slice(include_bytes!(
+             "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
+         let good: Value = serde_json::from_slice(include_bytes!(
+-            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++            "../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
+         validate_source_extension(&base, &good).unwrap();
+-        assert_eq!(good["projects"].as_array().unwrap().len(), 601);
++        assert_eq!(good["projects"].as_array().unwrap().len(), 607);
+         let index = good["projects"].as_array().unwrap().iter()
+             .position(|p| p["path"] == "frameworks/compile/libbcc").unwrap();
+         assert_eq!(good["projects"][index]["commit"], "943016fade3dbbb725c363d0dc60a6e962bd88e5");
+-        let mut actual_failed_r8 = good.clone();
++        let mut actual_failed_r8 = original606_for_history();
+         remove_later_bcc_cone(&mut actual_failed_r8);
+         let failed_raw = format!("{}\n", serde_json::to_string_pretty(&actual_failed_r8).unwrap());
+         assert_eq!(failed_raw.len(), 354415);
+@@ -8376,10 +9038,10 @@
+         let base: Value = serde_json::from_slice(include_bytes!(
+             "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
+         let good: Value = serde_json::from_slice(include_bytes!(
+-            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++            "../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
+         validate_source_extension(&base, &good).unwrap();
+-        assert_eq!(good["projects"].as_array().unwrap().len(), 601);
+-        let mut actual_failed_r7 = good.clone();
++        assert_eq!(good["projects"].as_array().unwrap().len(), 607);
++        let mut actual_failed_r7 = original606_for_history();
+         remove_later_tradefed_cones(&mut actual_failed_r7);
+         let failed_raw = format!("{}\n", serde_json::to_string_pretty(&actual_failed_r7).unwrap());
+         assert_eq!(digest(failed_raw.as_bytes()), "fb05fce28e2541cc1c791350ede62d36579ac459922b6f394680930cba9f6d9d");
+@@ -8424,14 +9086,14 @@
+         let base: Value = serde_json::from_slice(include_bytes!(
+             "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
+         let good: Value = serde_json::from_slice(include_bytes!(
+-            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++            "../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
+         validate_source_extension(&base, &good).unwrap();
+         let index = good["projects"].as_array().unwrap().iter()
+             .position(|p| p["path"] == "cts").unwrap();
+         assert_eq!(good["projects"][index]["commit"], "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd");
+         assert_eq!(good["projects"][index]["sparse_paths"].as_array().unwrap().iter()
+             .filter(|p| p.as_str() == Some("tests/signature/lib/common")).count(), 1);
+-        let mut actual_failed_r6 = good.clone();
++        let mut actual_failed_r6 = original606_for_history();
+         remove_later_tradefed_cones(&mut actual_failed_r6);
+         actual_failed_r6["projects"][index]["sparse_paths"].as_array_mut().unwrap()
+             .retain(|p| p != "tests/signature/lib/common");
+@@ -8441,8 +9103,10 @@
+         assert!(droidloom_source::build_plan(&generic).is_ok());
+         assert!(validate_source_extension(&base, &actual_failed_r6).is_err());
+         for partial in ["tests/signature/lib/common/Android.bp", "tests/signature/lib/common/src"] {
+-            let mut candidate = actual_failed_r6.clone();
+-            candidate["projects"][index]["sparse_paths"].as_array_mut().unwrap().push(json!(partial));
++            let mut candidate = good.clone();
++            let paths = candidate["projects"][index]["sparse_paths"].as_array_mut().unwrap();
++            paths.retain(|p| p != "tests/signature/lib/common");
++            paths.push(json!(partial));
+             assert!(validate_source_extension(&base, &candidate).is_err());
+         }
+         let mut wrong_commit = good.clone();
+@@ -8459,15 +9123,15 @@
+         let base: Value = serde_json::from_slice(include_bytes!(
+             "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
+         let good: Value = serde_json::from_slice(include_bytes!(
+-            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++            "../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
+         validate_source_extension(&base, &good).unwrap();
+-        assert_eq!(good["projects"].as_array().unwrap().len(), 601);
++        assert_eq!(good["projects"].as_array().unwrap().len(), 607);
+         let index = good["projects"].as_array().unwrap().iter()
+             .position(|p| p["path"] == "packages/modules/RemoteKeyProvisioning").unwrap();
+         assert_eq!(good["projects"][index]["commit"], "d88e2305f9186661fe75ee2f00c8b250a76fdabe");
+         assert_eq!(good["projects"][index]["sparse_paths"].as_array().unwrap().iter()
+             .filter(|p| p.as_str() == Some("apex")).count(), 1);
+-        let mut actual_failed_r5 = good.clone();
++        let mut actual_failed_r5 = original606_for_history();
+         remove_later_tradefed_cones(&mut actual_failed_r5);
+         // Reconstruct historical bytes before the later complete signature provider selection.
+         let cts = actual_failed_r5["projects"].as_array_mut().unwrap().iter_mut()
+@@ -8483,8 +9147,10 @@
+         assert!(droidloom_source::build_plan(&generic).is_ok());
+         assert!(validate_source_extension(&base, &actual_failed_r5).is_err());
+         for replacement in ["apex/Android.bp", "apex/manifest.json"] {
+-            let mut partial = actual_failed_r5.clone();
+-            partial["projects"][index]["sparse_paths"].as_array_mut().unwrap().push(json!(replacement));
++            let mut partial = good.clone();
++            let paths = partial["projects"][index]["sparse_paths"].as_array_mut().unwrap();
++            paths.retain(|p| p != "apex");
++            paths.push(json!(replacement));
+             assert!(validate_source_extension(&base, &partial).is_err(),
+                 "the complete pinned APEX input must not collapse to a Blueprint or manifest: {replacement}");
+         }
+@@ -8497,12 +9163,199 @@
+         assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
+     }
+ 
++
++    #[test]
++    fn ordinary_pair_boot_apex_providers_require_full_original_production_cones() {
++        let base: Value = serde_json::from_slice(include_bytes!("../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
++        let good: Value = serde_json::from_slice(include_bytes!("../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
++        validate_source_extension(&base, &good).unwrap();
++        let mut original84e = original606_for_history();
++        remove_later_five_apex_inputs(&mut original84e);
++        let old_bytes = format!("{}\n", serde_json::to_string_pretty(&original84e).unwrap());
++        assert_eq!(old_bytes.len(), 356019);
++        assert_eq!(digest(old_bytes.as_bytes()), "d88549bc89076017baffcc28e39695431993cc12516238278e015f23325d9596");
++        assert!(validate_source_extension(&base, &original84e).is_err());
++        assert_eq!(droidloom_source::build_plan(&serde_json::from_value(original84e).unwrap()).unwrap().projects.len(), 604);
++        for replacement in [None, Some("apex/Android.bp"), Some("apex/manifest.json")] {
++            let mut partial = good.clone();
++            let p = partial["projects"].as_array_mut().unwrap().iter_mut().find(|p| p["path"] == "packages/modules/Nfc").unwrap();
++            p["sparse_paths"].as_array_mut().unwrap().retain(|v| v != "apex");
++            if let Some(value) = replacement { p["sparse_paths"].as_array_mut().unwrap().push(json!(value)); }
++            assert!(validate_source_extension(&base, &partial).is_err());
++        }
++        for replacement in [None, Some("libnfc-nci/conf/Android.bp"), Some("libnfc-nci/conf/manifest.json")] {
++            let mut partial = good.clone();
++            let p = partial["projects"].as_array_mut().unwrap().iter_mut().find(|p| p["path"] == "packages/modules/Nfc").unwrap();
++            p["sparse_paths"].as_array_mut().unwrap().retain(|v| v != "libnfc-nci/conf");
++            if let Some(value) = replacement { p["sparse_paths"].as_array_mut().unwrap().push(json!(value)); }
++            assert!(validate_source_extension(&base, &partial).is_err());
++        }
++        for replacement in [None, Some("apex/Android.bp"), Some("apex/manifest.json")] {
++            let mut partial = good.clone();
++            let p = partial["projects"].as_array_mut().unwrap().iter_mut().find(|p| p["path"] == "packages/modules/NpuManager").unwrap();
++            p["sparse_paths"].as_array_mut().unwrap().retain(|v| v != "apex");
++            if let Some(value) = replacement { p["sparse_paths"].as_array_mut().unwrap().push(json!(value)); }
++            assert!(validate_source_extension(&base, &partial).is_err());
++        }
++        for replacement in [None, Some("service/Android.bp"), Some("service/manifest.json")] {
++            let mut partial = good.clone();
++            let p = partial["projects"].as_array_mut().unwrap().iter_mut().find(|p| p["path"] == "packages/modules/NpuManager").unwrap();
++            p["sparse_paths"].as_array_mut().unwrap().retain(|v| v != "service");
++            if let Some(value) = replacement { p["sparse_paths"].as_array_mut().unwrap().push(json!(value)); }
++            assert!(validate_source_extension(&base, &partial).is_err());
++        }
++        for replacement in [None, Some("apex/Android.bp"), Some("apex/manifest.json")] {
++            let mut partial = good.clone();
++            let p = partial["projects"].as_array_mut().unwrap().iter_mut().find(|p| p["path"] == "packages/modules/Profiling").unwrap();
++            p["sparse_paths"].as_array_mut().unwrap().retain(|v| v != "apex");
++            if let Some(value) = replacement { p["sparse_paths"].as_array_mut().unwrap().push(json!(value)); }
++            assert!(validate_source_extension(&base, &partial).is_err());
++        }
++        for replacement in [None, Some("service/Android.bp"), Some("service/manifest.json")] {
++            let mut partial = good.clone();
++            let p = partial["projects"].as_array_mut().unwrap().iter_mut().find(|p| p["path"] == "packages/modules/Profiling").unwrap();
++            p["sparse_paths"].as_array_mut().unwrap().retain(|v| v != "service");
++            if let Some(value) = replacement { p["sparse_paths"].as_array_mut().unwrap().push(json!(value)); }
++            assert!(validate_source_extension(&base, &partial).is_err());
++        }
++        for replacement in [None, Some("apex/Android.bp"), Some("apex/manifest.json")] {
++            let mut partial = good.clone();
++            let p = partial["projects"].as_array_mut().unwrap().iter_mut().find(|p| p["path"] == "packages/modules/UprobeStats").unwrap();
++            p["sparse_paths"].as_array_mut().unwrap().retain(|v| v != "apex");
++            if let Some(value) = replacement { p["sparse_paths"].as_array_mut().unwrap().push(json!(value)); }
++            assert!(validate_source_extension(&base, &partial).is_err());
++        }
++        for replacement in [None, Some("bpfloader/Android.bp"), Some("bpfloader/manifest.json")] {
++            let mut partial = good.clone();
++            let p = partial["projects"].as_array_mut().unwrap().iter_mut().find(|p| p["path"] == "packages/modules/UprobeStats").unwrap();
++            p["sparse_paths"].as_array_mut().unwrap().retain(|v| v != "bpfloader");
++            if let Some(value) = replacement { p["sparse_paths"].as_array_mut().unwrap().push(json!(value)); }
++            assert!(validate_source_extension(&base, &partial).is_err());
++        }
++        for replacement in [None, Some("bpf_progs/Android.bp"), Some("bpf_progs/manifest.json")] {
++            let mut partial = good.clone();
++            let p = partial["projects"].as_array_mut().unwrap().iter_mut().find(|p| p["path"] == "packages/modules/UprobeStats").unwrap();
++            p["sparse_paths"].as_array_mut().unwrap().retain(|v| v != "bpf_progs");
++            if let Some(value) = replacement { p["sparse_paths"].as_array_mut().unwrap().push(json!(value)); }
++            assert!(validate_source_extension(&base, &partial).is_err());
++        }
++        for replacement in [None, Some("apex/Android.bp"), Some("apex/manifest.json")] {
++            let mut partial = good.clone();
++            let p = partial["projects"].as_array_mut().unwrap().iter_mut().find(|p| p["path"] == "packages/modules/WebApp").unwrap();
++            p["sparse_paths"].as_array_mut().unwrap().retain(|v| v != "apex");
++            if let Some(value) = replacement { p["sparse_paths"].as_array_mut().unwrap().push(json!(value)); }
++            assert!(validate_source_extension(&base, &partial).is_err());
++        }
++        for replacement in [None, Some("service/Android.bp"), Some("service/manifest.json")] {
++            let mut partial = good.clone();
++            let p = partial["projects"].as_array_mut().unwrap().iter_mut().find(|p| p["path"] == "packages/modules/WebApp").unwrap();
++            p["sparse_paths"].as_array_mut().unwrap().retain(|v| v != "service");
++            if let Some(value) = replacement { p["sparse_paths"].as_array_mut().unwrap().push(json!(value)); }
++            assert!(validate_source_extension(&base, &partial).is_err());
++        }
++        for replacement in [None, Some("template/Android.bp"), Some("template/manifest.json")] {
++            let mut partial = good.clone();
++            let p = partial["projects"].as_array_mut().unwrap().iter_mut().find(|p| p["path"] == "packages/modules/WebApp").unwrap();
++            p["sparse_paths"].as_array_mut().unwrap().retain(|v| v != "template");
++            if let Some(value) = replacement { p["sparse_paths"].as_array_mut().unwrap().push(json!(value)); }
++            assert!(validate_source_extension(&base, &partial).is_err());
++        }
++        for replacement in [None, Some("rust/Android.bp"), Some("rust/manifest.json")] {
++            let mut partial = good.clone();
++            let p = partial["projects"].as_array_mut().unwrap().iter_mut().find(|p| p["path"] == "system/memory/libdmabufheap").unwrap();
++            p["sparse_paths"].as_array_mut().unwrap().retain(|v| v != "rust");
++            if let Some(value) = replacement { p["sparse_paths"].as_array_mut().unwrap().push(json!(value)); }
++            assert!(validate_source_extension(&base, &partial).is_err());
++        }
++        assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
++    }
++
++    #[test]
++    fn ordinary_pair_boot_apex_blueprints_are_exact_upstream_inputs() {
++        {
++            let raw = include_bytes!("../../../android/native-generation-pair/apex-provider-fixtures/Nfc.Android.bp");
++            assert_eq!(raw.len(), 5755);
++            assert_eq!(digest(raw), "d4985ca345cac178a2e16d461172e7702c607c0855a14f4f5b8105a1f4a3f1b3");
++            let text = std::str::from_utf8(raw).unwrap();
++            assert!(text.contains("name: \"com.android.nfcservices\""));
++        }
++        {
++            let raw = include_bytes!("../../../android/native-generation-pair/apex-provider-fixtures/NpuManager.Android.bp");
++            assert_eq!(raw.len(), 3337);
++            assert_eq!(digest(raw), "ed4c5087bf1d8f23b6a704dd593c187f57cb27187c2eb8e4daa3964d0dd6e5f3");
++            let text = std::str::from_utf8(raw).unwrap();
++            assert!(text.contains("name: \"com.android.npumanager\""));
++        }
++        {
++            let raw = include_bytes!("../../../android/native-generation-pair/apex-provider-fixtures/Profiling.Android.bp");
++            assert_eq!(raw.len(), 3308);
++            assert_eq!(digest(raw), "9dc6ff30f147abdb4e5fb885aeddd7410cf22ede9405dc92a5a1694cb8ec6182");
++            let text = std::str::from_utf8(raw).unwrap();
++            assert!(text.contains("name: \"com.android.profiling\""));
++        }
++        {
++            let raw = include_bytes!("../../../android/native-generation-pair/apex-provider-fixtures/UprobeStats.Android.bp");
++            assert_eq!(raw.len(), 3788);
++            assert_eq!(digest(raw), "8c23fdc0dc97844910f24c07e0abfd6f899bbcdf6f8fc921cd6bb60708270adb");
++            let text = std::str::from_utf8(raw).unwrap();
++            assert!(text.contains("name: \"com.android.uprobestats\""));
++        }
++        {
++            let raw = include_bytes!("../../../android/native-generation-pair/apex-provider-fixtures/WebApp.Android.bp");
++            assert_eq!(raw.len(), 3590);
++            assert_eq!(digest(raw), "80c5e346b4a1050fdf17339b7a3d840b26f0411fd0ef1712a58e36627c840856");
++            let text = std::str::from_utf8(raw).unwrap();
++            assert!(text.contains("name: \"com.android.webapp\""));
++        }
++    }
++
++    #[test]
++    fn ordinary_pair_browser_helper_requires_complete_original_library() {
++        let base: Value = serde_json::from_slice(include_bytes!("../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
++        let good: Value = serde_json::from_slice(include_bytes!("../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
++        validate_source_extension(&base, &good).unwrap();
++        assert_eq!(good["projects"].as_array().unwrap().len(), 607);
++        let mut previous = good.clone();
++        previous["projects"].as_array_mut().unwrap().retain(|row| row["path"] != "external/android-browser-helper");
++        assert_eq!(previous, original606_for_history());
++        assert!(validate_source_extension(&base, &previous).is_err());
++        let original = good["projects"].as_array().unwrap().iter().find(|row| row["path"] == "external/android-browser-helper").unwrap();
++        assert_eq!(original["commit"], "49d155f26586a540266fd854c868a067f6db9204");
++        assert_eq!(original["sparse_paths"], json!(["androidbrowserhelper/src/main"]));
++        for selection in [json!([]), json!(["Android.bp"]), json!(["androidbrowserhelper/src/main/java"]), json!(["androidbrowserhelper/src/main/res"]), json!(["androidbrowserhelper/src/main/AndroidManifest.xml"])] {
++            let mut partial = good.clone();
++            let row = partial["projects"].as_array_mut().unwrap().iter_mut().find(|row| row["path"] == "external/android-browser-helper").unwrap();
++            row["sparse_paths"] = selection;
++            assert!(validate_source_extension(&base, &partial).is_err());
++        }
++        let mut changed = good.clone();
++        changed["projects"].as_array_mut().unwrap().iter_mut().find(|row| row["path"] == "external/android-browser-helper").unwrap()["commit"] = json!("0000000000000000000000000000000000000000");
++        assert!(validate_source_extension(&base, &changed).is_err());
++        assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
++    }
++
++    #[test]
++    fn ordinary_pair_browser_helper_blueprint_is_exact_original_input() {
++        let raw = include_bytes!("../../../android/native-generation-pair/browser-helper-fixtures/BrowserHelper.Android.bp");
++        assert_eq!(raw.len(), 1688);
++        assert_eq!(digest(raw), "6aa0640a9704e1d9b0be9f8173780d67d8cb998cd06116231a30957ed8a16358");
++        let text = std::str::from_utf8(raw).unwrap();
++        for input in ["name: \"android-browser-helper\"", "androidbrowserhelper/src/main/java/**/*.java", "androidbrowserhelper/src/main/res", "androidbrowserhelper/src/main/AndroidManifest.xml", "BuildConfig.java"] {
++            assert!(text.contains(input));
++        }
++        let origin: Value = serde_json::from_slice(include_bytes!("../../../android/native-generation-pair/browser-helper-fixtures/origin.json")).unwrap();
++        assert_eq!(origin["superproject"], "28f0bbddc24d56c8ec5a8df5342ac7a292184039");
++        assert_eq!(origin["project"]["commit"], "49d155f26586a540266fd854c868a067f6db9204");
++        assert_eq!(origin["blueprint"]["git_blob"], "961ace166662ff1d027100b815658418084f6671");
++        assert_eq!(origin["full_build_qualified"], false);
++    }
++
+     #[test]
+     fn ordinary_pair_source_extension_rejects_revision_policy_and_path_drift() {
+         let base: Value = serde_json::from_slice(include_bytes!(
+             "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
+         let good: Value = serde_json::from_slice(include_bytes!(
+-            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++            "../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
+         assert!(validate_source_extension(&base, &base).is_err());
+         for path in ["prebuilts/misc", "prebuilts/sdk", "frameworks/hardware/interfaces"] {
+             let mut bad = good.clone();
+@@ -8532,7 +9385,7 @@
+         let base: Value = serde_json::from_slice(include_bytes!(
+             "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
+         let good: Value = serde_json::from_slice(include_bytes!(
+-            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++            "../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
+         let mut unlisted = good.clone();
+         let mut extra = unlisted["projects"][0].clone();
+         extra["path"] = json!("tools/unlisted_pair_source");
+@@ -8580,7 +9433,7 @@
+         let base: Value = serde_json::from_slice(include_bytes!(
+             "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
+         let good: Value = serde_json::from_slice(include_bytes!(
+-            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++            "../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
+         validate_source_extension(&base, &good).unwrap();
+         for (path, subtree) in [
+             ("external/pigweed", "pw_elf"),
+@@ -8655,7 +9508,7 @@
+         let base: Value = serde_json::from_slice(include_bytes!(
+             "../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap();
+         let good: Value = serde_json::from_slice(include_bytes!(
+-            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++            "../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
+         let index = good["projects"].as_array().unwrap().iter()
+             .position(|project| project["path"] == "frameworks/hardware/interfaces").unwrap();
+         let paths = good["projects"][index]["sparse_paths"].as_array().unwrap();
+@@ -8675,7 +9528,7 @@
+         let tmp = tempfile::tempdir().unwrap();
+         let source = tmp.path().join("aosp-source");
+         let lock: droidloom_source::SparseSourceLock = serde_json::from_slice(include_bytes!(
+-            "../../../android/native-generation-pair/source-lock.json")).unwrap();
++            "../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
+         let path = tmp.path().join("lock.json");
+         assert!(verify_source_workspace(&path, &lock, &source).is_ok());
+         fs::create_dir(&source).unwrap();
+@@ -8755,3 +9608,363 @@
+         assert!(validate_effective_engine(&before,&after,&projection,blueprint).is_err());
+     }
+ }
++
++#[cfg(test)]
++mod source642_tests {
++    use super::*;
++    // Keep the actual 642 tests bound to their immutable predecessor.
++    use super::validate_source_extension642 as validate_source_extension;
++    const SOURCE_LOCK_BYTES: usize = 368342;
++    const SOURCE_LOCK_SHA: &str = "f8663e08af2e28f2a5bd1b9b9c0d183c5b9fa2a6521d2c97fbc2ed1d3e62165a";
++
++    fn base() -> Value { serde_json::from_slice(include_bytes!("../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap() }
++    fn current() -> Value { serde_json::from_slice(include_bytes!("../../../android/native-generation-pair/sdk-samples-fixtures/original642-source-lock.json")).unwrap() }
++    #[test]
++    fn generic642_requires_exact_monotone_original_provider_selection() {
++        let raw = include_bytes!("../../../android/native-generation-pair/sdk-samples-fixtures/original642-source-lock.json");
++        assert_eq!(raw.len(), SOURCE_LOCK_BYTES); assert_eq!(digest(raw), SOURCE_LOCK_SHA);
++        let good = current(); validate_source_extension(&base(), &good).unwrap();
++        let parsed: droidloom_source::SparseSourceLock = serde_json::from_slice(raw).unwrap();
++        let plan = droidloom_source::build_plan(&parsed).unwrap();
++        assert_eq!((plan.projects.len(), plan.links.len(), plan.unrestricted_repo_sync), (642, 8, false));
++        let old: Value = serde_json::from_slice(include_bytes!("../../../android/native-generation-pair/generic-system-fixtures/original607-source-lock.json")).unwrap();
++        assert!(validate_source_extension(&base(), &old).is_err());
++        assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
++    }
++    #[test]
++    fn generic642_rejects_each_missing_provider_cone_and_revision_or_scope_drift() {
++        let good = current(); let base = base();
++        for index in 607..642 {
++            let mut changed = good.clone(); changed["projects"].as_array_mut().unwrap().remove(index);
++            assert!(validate_source_extension(&base, &changed).is_err());
++            let mut changed = good.clone(); changed["projects"][index]["commit"] = json!("0000000000000000000000000000000000000000");
++            assert!(validate_source_extension(&base, &changed).is_err());
++            let mut changed = good.clone(); changed["projects"][index]["sparse_paths"] = json!(["Android.bp"]);
++            assert!(validate_source_extension(&base, &changed).is_err());
++        }
++        let delta: Value = serde_json::from_slice(include_bytes!("../../../android/native-generation-pair/generic-system-fixtures/selection-delta.json")).unwrap();
++        for (path, change) in delta["added_sparse_cones"].as_object().unwrap() {
++            for cone in change["added"].as_array().unwrap() {
++                let mut changed = good.clone();
++                let project = changed["projects"].as_array_mut().unwrap().iter_mut().find(|row| row["path"] == path.as_str()).unwrap();
++                project["sparse_paths"].as_array_mut().unwrap().retain(|row| row != cone);
++                assert!(validate_source_extension(&base, &changed).is_err());
++            }
++        }
++        for key in ["status", "policy", "superproject", "links"] {
++            let mut changed = good.clone(); changed[key] = json!(null);
++            assert!(validate_source_extension(&base, &changed).is_err());
++        }
++        let mut changed = good.clone(); changed["projects"].as_array_mut().unwrap().swap(0,1);
++        assert!(validate_source_extension(&base, &changed).is_err());
++    }
++    #[test]
++    fn generic642_all_new_primary_blueprints_are_exact_original_fixtures() {
++        let raw = include_bytes!("../../../android/native-generation-pair/generic-system-fixtures/origins.json");
++        assert_eq!(raw.len(), 52635); assert_eq!(digest(raw), "3f13c8a56beec8cc71d0b07d090f7bedcc29cf6b6affb8302634b0174af8fd5c");
++        let origin: Value = serde_json::from_slice(raw).unwrap();
++        assert_eq!(origin["superproject"], "28f0bbddc24d56c8ec5a8df5342ac7a292184039");
++        assert_eq!(origin["source_and_full_qualified"], false);
++        assert_eq!(origin["original_soong_missing_modules"].as_array().unwrap().len(), 59);
++        let rows = origin["primary_blueprints"].as_array().unwrap(); assert_eq!(rows.len(), 131);
++        let repo = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
++        for row in rows {
++            let relative = row["fixture"].as_str().unwrap();
++            assert!(relative.starts_with("android/native-generation-pair/generic-system-fixtures/original-blueprints/") && !relative.split('/').any(|part| part == ".."));
++            fixed_file(&repo.join(relative), row["bytes"].as_u64().unwrap() as usize, row["sha256"].as_str().unwrap()).unwrap();
++            assert_eq!(row["git_blob"].as_str().unwrap().len(), 40);
++        }
++    }
++}
++
++#[cfg(test)]
++mod source643_tests {
++    use super::*;
++    // Historical actual643 tests retain their original lock and validator.
++    use super::validate_source_extension643_sdk as validate_source_extension;
++    const SOURCE_LOCK_BYTES: usize = 368740;
++    const SOURCE_LOCK_SHA: &str = "e9326b795fd142f8b07a8536a3d96e7f3a957d7ec965030753720d609f9d87b4";
++
++    fn base() -> Value { serde_json::from_slice(include_bytes!("../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap() }
++    fn current() -> Value { serde_json::from_slice(include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original643-source-lock.json")).unwrap() }
++    #[test]
++    fn sdk643_requires_exact_original_producer_after_complete642() {
++        let raw = include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original643-source-lock.json");
++        assert_eq!(raw.len(), SOURCE_LOCK_BYTES); assert_eq!(digest(raw), SOURCE_LOCK_SHA);
++        validate_source_extension(&base(), &current()).unwrap();
++        let parsed: droidloom_source::SparseSourceLock = serde_json::from_slice(raw).unwrap();
++        let plan = droidloom_source::build_plan(&parsed).unwrap();
++        assert_eq!((plan.projects.len(), plan.links.len(), plan.unrestricted_repo_sync), (643,8,false));
++        let old: Value = serde_json::from_slice(include_bytes!("../../../android/native-generation-pair/sdk-samples-fixtures/original642-source-lock.json")).unwrap();
++        assert!(validate_source_extension(&base(), &old).is_err());
++        assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
++    }
++    #[test]
++    fn sdk643_rejects_missing_or_drifted_producer_cones_and_predecessor_scope() {
++        let good = current(); let base = base();
++        let mut bad=good.clone(); bad["projects"].as_array_mut().unwrap().pop();
++        assert!(validate_source_extension(&base,&bad).is_err());
++        for key in ["name","path","commit","purpose"] {
++            let mut bad=good.clone(); bad["projects"][642][key]=json!("changed");
++            assert!(validate_source_extension(&base,&bad).is_err());
++        }
++        for cones in [json!(["Android.bp"]),json!(["prebuilts/gradle"]),json!(["prebuilts/androidtv"]),json!(["prebuilts/gradle","prebuilts/androidtv","samples"])] {
++            let mut bad=good.clone();bad["projects"][642]["sparse_paths"]=cones;
++            assert!(validate_source_extension(&base,&bad).is_err());
++        }
++        for key in ["status","policy","superproject","links"] {
++            let mut bad=good.clone(); bad[key]=json!(null);
++            assert!(validate_source_extension(&base,&bad).is_err());
++        }
++        let mut bad=good.clone();bad["projects"][0]["commit"]=json!("0000000000000000000000000000000000000000");
++        assert!(validate_source_extension(&base,&bad).is_err());
++        let mut bad=good.clone();bad["projects"].as_array_mut().unwrap().swap(0,1);
++        assert!(validate_source_extension(&base,&bad).is_err());
++    }
++    #[test]
++    fn sdk643_original_blueprint_and_complete_sample_cones_fixture_are_pinned() {
++        let raw=include_bytes!("../../../android/native-generation-pair/sdk-samples-fixtures/original-developers-build.Android.bp");
++        assert_eq!(raw.len(),21439);
++        assert_eq!(digest(raw),"4c2ffa4deb65af220fa81bc1ea474c391f080d2963b8d2e1ccc6517d60152ce9");
++        let text=std::str::from_utf8(raw).unwrap();
++        assert!(text.contains("name: \"sdk_repo_sample_new_zip\""));
++        for name in ["\"sdk_clean\"","\"soong_zip\"","\"Android-Apache-2.0\""] { assert!(text.contains(name)); }
++        let srcs=text.split("srcs: [").nth(1).unwrap().split("],").next().unwrap();
++        let patterns: Vec<&str>=srcs.lines().map(str::trim).filter(|line|line.starts_with('"')).collect();
++        assert_eq!(patterns.len(),111);
++        for pattern in patterns { assert!(pattern.starts_with("\"prebuilts/gradle/") || pattern.starts_with("\"prebuilts/androidtv/")); }
++        let origin_raw=include_bytes!("../../../android/native-generation-pair/sdk-samples-fixtures/origins.json");
++        assert_eq!(origin_raw.len(),1002);assert_eq!(digest(origin_raw),"3b1deacf4f9c966d1b3ab3e65a74dcf639c778bbacd16d977218bdf3044e17db");
++        let origin: Value=serde_json::from_slice(origin_raw).unwrap();
++        assert_eq!(origin["source_and_full_qualified"],false);
++        assert_eq!(origin["runtime_qualified"],false);
++        assert_eq!(origin["selected_original_files"],8044);
++        assert_eq!(origin["unique_matched_declared_source_files"],6227);
++        assert_eq!(origin["project"]["commit"],"31d9b329ddc56636a279c7340e154e0d67d9a6fb");
++    }
++}
++
++#[cfg(test)]
++mod path_tag_provider_tests {
++    use super::*;
++    use super::validate_source_extension643_path_data as validate_source_extension;
++    const SOURCE_LOCK_BYTES: usize = 369125;
++    const SOURCE_LOCK_SHA: &str = "7866f9c66e6b9dc418b0f9998c6d7724402e4a51a3cf51453087a8dad7b84b42";
++    fn base()->Value { serde_json::from_slice(include_bytes!("../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap() }
++    fn current()->Value { serde_json::from_slice(include_bytes!("../../../android/native-generation-pair/compose-car-fixtures/original643-path-data-source-lock.json")).unwrap() }
++    #[test]
++    fn exact_original_path_tag_providers_after_complete_sdk643() {
++        let raw=include_bytes!("../../../android/native-generation-pair/compose-car-fixtures/original643-path-data-source-lock.json");
++        assert_eq!(raw.len(),SOURCE_LOCK_BYTES);assert_eq!(digest(raw),SOURCE_LOCK_SHA);
++        validate_source_extension(&base(),&current()).unwrap();
++        let parsed:droidloom_source::SparseSourceLock=serde_json::from_slice(raw).unwrap();let plan=droidloom_source::build_plan(&parsed).unwrap();
++        assert_eq!((plan.projects.len(),plan.links.len(),plan.unrestricted_repo_sync),(643,8,false));
++        assert_eq!(TARGETS,&["libberberis_arm64","com.android.art"]);
++        let predecessor:Value=serde_json::from_slice(include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original643-source-lock.json")).unwrap();
++        assert!(validate_source_extension(&base(),&predecessor).is_err());
++    }
++    #[test]
++    fn reject_missing_expanded_reordered_or_unrelated_path_tag_source_scope() {
++        let good=current();let base=base();
++        for name in ["packages/modules/adb","system/apex","system/timezone"] {
++            let index=good["projects"].as_array().unwrap().iter().position(|p|p["path"]==name).unwrap();
++            let mut bad=good.clone();bad["projects"][index]["sparse_paths"].as_array_mut().unwrap().pop();assert!(validate_source_extension(&base,&bad).is_err());
++            let mut bad=good.clone();bad["projects"][index]["sparse_paths"].as_array_mut().unwrap().push(json!("unrelated"));assert!(validate_source_extension(&base,&bad).is_err());
++            let mut bad=good.clone();bad["projects"][index]["commit"]=json!("0000000000000000000000000000000000000000");assert!(validate_source_extension(&base,&bad).is_err());
++        }
++        for key in ["status","policy","superproject","links"]{let mut bad=good.clone();bad[key]=json!(null);assert!(validate_source_extension(&base,&bad).is_err());}
++        let mut bad=good.clone();bad["projects"].as_array_mut().unwrap().swap(0,1);assert!(validate_source_extension(&base,&bad).is_err());
++    }
++    #[test]
++    fn original_path_tags_producer_bps_and_finite63_content_are_pinned() {
++        { let b=include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original-blueprints/packages/modules/adb/test_device_apks/Android.bp"); assert_eq!(b.len(),1084); assert_eq!(digest(b),"15897f373cc300a99d4afecb5c55903eb5afc4aa6e7944cf9153acfcd5d4c91e"); }
++        { let b=include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original-blueprints/system/apex/tests/testdata/apkinapex/com.android.apex.product.test/Android.bp"); assert_eq!(b.len(),1628); assert_eq!(digest(b),"afc83bd434990c16fd09b94e4a15a589a43fb67936c85b2f9d1a14eb9daa3f2a"); }
++        { let b=include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original-blueprints/system/apex/tests/testdata/apkinapex/com.android.apex.system.test/Android.bp"); assert_eq!(b.len(),1616); assert_eq!(digest(b),"8c29a71a1f67d56562f20d1c44bb5b5a15e721a5554ef5adfc6f6ee16fa4ce6e"); }
++        { let b=include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original-blueprints/system/apex/tests/testdata/apkinapex/com.android.apex.system_ext.test/Android.bp"); assert_eq!(b.len(),1664); assert_eq!(digest(b),"97ca4ab787245be5c69d0de881b93109eeedbe894441a869bc7d7f56b4bbacc7"); }
++        { let b=include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original-blueprints/system/apex/tests/testdata/apkinapex/com.android.apex.vendor.test/Android.bp"); assert_eq!(b.len(),1616); assert_eq!(digest(b),"781190bbd730e05a64a3a65af4a0f9b12158ee104f731a5aa121e7b966567d8f"); }
++        { let b=include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original-blueprints/system/apex/tests/testdata/maxsdk/com.android.apex.maxsdk.test/Android.bp"); assert_eq!(b.len(),2160); assert_eq!(digest(b),"642e3b8b7fe7ba13dfb1f50c7f7c8366e057892a3398993c8f94cf4ffc80b0d5"); }
++        { let b=include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original-blueprints/system/timezone/testing/data/test1/apex/Android.bp"); assert_eq!(b.len(),1941); assert_eq!(digest(b),"a0efdcfbfc590aca6247513fe2e163154d9e5345e45154a3dd0f86a772a27199"); }
++        { let b=include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original-blueprints/system/timezone/testing/data/test1/output_data/Android.bp"); assert_eq!(b.len(),5489); assert_eq!(digest(b),"62fa69d8c8569e019e0b61a0bbe8a93f0425ec7eeedcd8c769fdb4aa9b9ed1f3"); }
++        { let b=include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original-go/build/soong/android/path_properties.go"); assert_eq!(b.len(),13357); assert_eq!(digest(b),"dcc5dd854a47c950af45aaf3dcaa568625941ad35c9827cc274a1a25cf5c9882"); }
++        { let b=include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original-go/build/soong/python/test.go"); assert_eq!(b.len(),10780); assert_eq!(digest(b),"58beaa2a5fd936ced5c99ae089250c0967b0ff48d28f3c26adb9396931ff5ead"); }
++        { let b=include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original-go/build/soong/android_sdk/sdk_repo_host.go"); assert_eq!(b.len(),10795); assert_eq!(digest(b),"da575345850684a38ead830ae9393316a9a3db426c91f482593f3b11abf851cb"); }
++        { let b=include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original-go/build/soong/java/base.go"); assert_eq!(b.len(),140615); assert_eq!(digest(b),"5c5a5c433656e6520579560f9559bf0e47a4a2fa91ca3af0252b993459a1dd7c"); }
++        { let b=include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original-go/build/soong/java/java.go"); assert_eq!(b.len(),158581); assert_eq!(digest(b),"d4996f03e12cd3b9572f86b1eff8c9a8dbb4d3567e3daad87e7068ed48fbfc42"); }
++        { let b=include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original-go/build/blueprint/proptools/tag.go"); assert_eq!(b.len(),2155); assert_eq!(digest(b),"e53682e5ead6051a2b48ec306b2c2f5d8cd2b67802de641f0e3ffd99c2c2a6da"); }
++        { let b=include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original-go/build/blueprint/proptools/proptools.go"); assert_eq!(b.len(),4798); assert_eq!(digest(b),"1049d50e193e2d5c2eaf1737cf096e02fd56713df43653291fd06064485b8a43"); }
++        let raw=include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/origins.json");assert_eq!(raw.len(),37262);assert_eq!(digest(raw),"5b21d7b687a77d8eded4e1c64053fde67fcce9466b3430f05c2c366986208987");let value:Value=serde_json::from_slice(raw).unwrap();
++        assert_eq!(value["selected_new_original_files"],63);assert_eq!(value["new_primary_BP"],8);assert_eq!(value["new_cones"],7);assert_eq!(value["new_files"].as_array().unwrap().len(),63);
++        assert_eq!(value["raw_total_bytes"],819688);assert_eq!(value["max_raw_bytes"],409045);assert!(value["new_large_blob_exceptions"].as_array().unwrap().is_empty());
++        assert_eq!(value["actual_Soong_qualified"],false);assert_eq!(value["all_other_unresolved_branches_qualified"],false);assert_eq!(value["runtime_qualified"],false);
++        let python=std::str::from_utf8(include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original-go/build/soong/python/test.go")).unwrap();assert!(python.contains("Device_common_data []string `android:\"path_device_common\"`"));assert!(python.contains("p.AddProperties(&p.testProperties)"));
++        let sdk=std::str::from_utf8(include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original-go/build/soong/android_sdk/sdk_repo_host.go")).unwrap();assert!(sdk.contains("Merge_zips []string `android:\"arch_variant,path\"`"));assert!(sdk.contains("s.AddProperties(&s.properties)"));
++        let java=std::str::from_utf8(include_bytes!("../../../android/native-generation-pair/path-tag-fixtures/original-go/build/soong/java/base.go")).unwrap();assert!(java.contains("Device_common_java_resources proptools.Configurable[[]string] `android:\"path_device_common\"`"));
++    }
++}
++
++
++#[cfg(test)]
++mod compose_car_provider_tests {
++    use super::*;
++    use super::validate_source_extension643_compose_car as validate_source_extension;
++    const SOURCE_LOCK_BYTES: usize = 369178;
++    const SOURCE_LOCK_SHA: &str = "6aacafd0aed644837e5616c658153f3ec6fa44c0e7ca2810e254f9fd0a2003a0";
++    fn base() -> Value { serde_json::from_slice(include_bytes!("../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap() }
++    fn current() -> Value { serde_json::from_slice(include_bytes!("../../../android/native-generation-pair/ranging-snippet-fixtures/original643-compose-car-source-lock.json")).unwrap() }
++    fn origins() -> Value {
++        let raw = include_bytes!("../../../android/native-generation-pair/compose-car-fixtures/origins.json");
++        assert_eq!(raw.len(), 17156);
++        assert_eq!(digest(raw), "3521e8aadd6752dc706c630e0220cca80bbc34d98271166994b72d695d122ffa");
++        serde_json::from_slice(raw).unwrap()
++    }
++    #[test]
++    fn compose_car_accepts_only_complete_same643_original_provider_plan() {
++        let raw = include_bytes!("../../../android/native-generation-pair/ranging-snippet-fixtures/original643-compose-car-source-lock.json");
++        assert_eq!(raw.len(), SOURCE_LOCK_BYTES); assert_eq!(digest(raw), SOURCE_LOCK_SHA);
++        validate_source_extension(&base(), &current()).unwrap();
++        let parsed: droidloom_source::SparseSourceLock = serde_json::from_slice(raw).unwrap();
++        let plan = droidloom_source::build_plan(&parsed).unwrap();
++        assert_eq!((plan.projects.len(), plan.links.len(), plan.unrestricted_repo_sync), (643, 8, false));
++        assert_eq!(plan.superproject_commit, "28f0bbddc24d56c8ec5a8df5342ac7a292184039");
++        assert_eq!(TARGETS, &["libberberis_arm64", "com.android.art"]);
++        let old: Value = serde_json::from_slice(include_bytes!("../../../android/native-generation-pair/compose-car-fixtures/original643-path-data-source-lock.json")).unwrap();
++        assert!(validate_source_extension(&base(), &old).is_err());
++    }
++    #[test]
++    fn compose_car_rejects_missing_extra_reordered_or_revision_drifted_sources() {
++        let good = current(); let base = base();
++        for name in ["packages/services/Car", "prebuilts/misc"] {
++            let index = good["projects"].as_array().unwrap().iter().position(|p| p["path"] == name).unwrap();
++            for key in ["name", "path", "purpose", "commit"] {
++                let mut bad = good.clone(); bad["projects"][index][key] = json!("changed");
++                assert!(validate_source_extension(&base, &bad).is_err());
++            }
++            let mut bad = good.clone(); bad["projects"][index]["sparse_paths"].as_array_mut().unwrap().pop();
++            assert!(validate_source_extension(&base, &bad).is_err());
++            let mut bad = good.clone(); bad["projects"][index]["sparse_paths"].as_array_mut().unwrap().push(json!("unrelated"));
++            assert!(validate_source_extension(&base, &bad).is_err());
++            let mut bad = good.clone(); bad["projects"][index]["sparse_paths"].as_array_mut().unwrap().swap(0, 1);
++            assert!(validate_source_extension(&base, &bad).is_err());
++        }
++        for key in ["status", "policy", "superproject", "links"] {
++            let mut bad = good.clone(); bad[key] = json!(null);
++            assert!(validate_source_extension(&base, &bad).is_err());
++        }
++        let mut bad = good.clone(); bad["projects"].as_array_mut().unwrap().swap(0, 1);
++        assert!(validate_source_extension(&base, &bad).is_err());
++        let mut bad = good.clone(); bad["projects"][0]["commit"] = json!("0000000000000000000000000000000000000000");
++        assert!(validate_source_extension(&base, &bad).is_err());
++    }
++    #[test]
++    fn compose_car_pins_complete_fifteen_car_files_and_real_compose_apk() {
++        let value = origins(); let files = value["files"].as_array().unwrap();
++        assert_eq!(files.len(), 17); assert_eq!(value["physical_bytes"], 6272262);
++        assert_eq!(value["max_blob_bytes"], 6237245); assert_eq!(value["new_sparse_cones"], 2);
++        assert_eq!(value["new_source_projects"], 0); assert_eq!(value["new_large_blob_exceptions"], json!([]));
++        assert_eq!(value["actual_Soong_qualified"], false); assert_eq!(value["source_materialization_qualified"], false); assert_eq!(value["runtime_qualified"], false);
++        let mut expected = std::collections::BTreeSet::new();
++        expected.insert("packages/services/Car/prebuilts/Android.bp".to_owned());
++        for (version, scopes) in [("1", &["public"][..]), ("2", &["public", "system"][..]), ("3", &["module-lib", "public", "system", "test"][..])] {
++            for scope in scopes { for module in ["android.car", "android.car-removed"] {
++                expected.insert(format!("packages/services/Car/prebuilts/{version}/{scope}/api/{module}.txt"));
++            } }
++        }
++        assert_eq!(expected.len(), 15);
++        expected.insert("prebuilts/misc/common/androidx-perf/Android.bp".to_owned());
++        expected.insert("prebuilts/misc/common/androidx-perf/ui_apks_compose-integration-tests-demos_compose-demos-testapp-release.apk".to_owned());
++        let mut found = std::collections::BTreeSet::new();
++        for row in files {
++            let path = row["aosp_path"].as_str().unwrap(); assert!(found.insert(path.to_owned()));
++            assert_eq!(path, format!("{}/{}", row["project"].as_str().unwrap(), row["path"].as_str().unwrap()));
++            assert_eq!(row["mode"], "100644"); assert_eq!(row["git_blob"].as_str().unwrap().len(), 40);
++            assert_eq!(row["sha256"].as_str().unwrap().len(), 64);
++            assert!(row["bytes"].as_u64().unwrap() <= 16 * 1024 * 1024);
++        }
++        assert_eq!(found, expected);
++        let apk = files.iter().find(|row| row["path"].as_str().unwrap().ends_with(".apk")).unwrap();
++        assert_eq!(apk["bytes"], 6237245); assert_eq!(apk["git_blob"], "46c5e7718aea0f01ab407a7c2b94d2d902f37c6f");
++        assert_eq!(apk["sha256"], "d9da9100c0d7789fbf5e1e8c6acb1b7e21cac5fadf40e00daea9da0dc4241b93");
++        let bp = include_bytes!("../../../android/native-generation-pair/compose-car-fixtures/original-androidx-perf.Android.bp");
++        assert_eq!(bp.len(), 960); assert_eq!(digest(bp), "23b107a9ac2a92617a15cc707a6fa0af95800259b6c5d5313e87cdae2f8590e0");
++        let text = std::str::from_utf8(bp).unwrap();
++        assert!(text.contains("filegroup {")); assert!(text.contains("name: \"ui_apks_compose-integration-tests-demos.apk\""));
++        assert!(text.contains("\"ui_apks_compose-integration-tests-demos_compose-demos-testapp-release.apk\""));
++        assert!(text.contains("\"//platform_testing/scripts/androidx-perf-setup:__subpackages__\""));
++    }
++    #[test]
++    fn compose_car_uses_original_api_generator_for_both_missing_combined_names() {
++        let bp = include_bytes!("../../../android/native-generation-pair/compose-car-fixtures/original-Car-prebuilts.Android.bp");
++        assert_eq!(bp.len(), 833); assert_eq!(digest(bp), "8487f952ee4b8ee2921d425186ca51699bcdb25a24204d8f9eb2b7b4d7871082");
++        let text = std::str::from_utf8(bp).unwrap();
++        assert!(text.contains("prebuilt_apis {")); assert!(text.contains("name: \"car_sdk\""));
++        let dirs = text.split("api_dirs: [").nth(1).unwrap().split(']').next().unwrap();
++        let dirs: Vec<&str> = dirs.lines().map(str::trim).filter(|s| !s.is_empty()).collect();
++        assert_eq!(dirs, ["\"1\",", "\"2\",", "\"3\","]);
++        let go = include_bytes!("../../../android/native-generation-pair/compose-car-fixtures/original-prebuilt_apis.go");
++        assert_eq!(go.len(), 16590); assert_eq!(digest(go), "ac992ca42c67498bd1b3f5e54627f541e6ffa71de95135bd7bac511a2427272c");
++        let text = std::str::from_utf8(go).unwrap();
++        assert!(text.contains("return module + \".api.combined.\" + scope + \".\" + version"));
++        assert!(text.contains("apiLevelFiles := globApiDirs(mctx, p, \"api/*.txt\")"));
++        assert!(text.contains("name := PrebuiltApiCombinedModuleName(info.module, info.scope, \"latest\")"));
++        assert!(text.contains("createCombinedApiFilegroupModule(mctx, name, srcs)"));
++        let value = origins();
++        for module in ["android.car", "android.car-removed"] {
++            assert!(value["files"].as_array().unwrap().iter().any(|row| row["aosp_path"] == format!("packages/services/Car/prebuilts/3/public/api/{module}.txt")));
++            assert!(value["original_missing_modules"].as_array().unwrap().contains(&json!(format!("{module}.api.combined.public.latest"))));
++        }
++    }
++}
++
++
++#[cfg(test)]
++mod ranging_snippet_provider_tests {
++    use super::*;
++    fn base() -> Value { serde_json::from_slice(include_bytes!("../../../android/manifest/m2-role-ingress-hal-provider-source-lock.json")).unwrap() }
++    fn current() -> Value { serde_json::from_slice(include_bytes!("../../../android/native-generation-pair/source-lock.json")).unwrap() }
++    #[test]
++    fn ranging_snippet_accepts_only_complete_same643_original_provider_plan() {
++        let raw=include_bytes!("../../../android/native-generation-pair/source-lock.json");
++        assert_eq!(raw.len(),SOURCE_LOCK_BYTES);assert_eq!(digest(raw),SOURCE_LOCK_SHA);
++        validate_source_extension(&base(),&current()).unwrap();
++        let lock:droidloom_source::SparseSourceLock=serde_json::from_slice(raw).unwrap();
++        let plan=droidloom_source::build_plan(&lock).unwrap();
++        assert_eq!((plan.projects.len(),plan.links.len(),plan.unrestricted_repo_sync),(643,8,false));
++        assert_eq!(plan.superproject_commit,"28f0bbddc24d56c8ec5a8df5342ac7a292184039");
++        let old:Value=serde_json::from_slice(include_bytes!("../../../android/native-generation-pair/ranging-snippet-fixtures/original643-compose-car-source-lock.json")).unwrap();
++        assert!(validate_source_extension(&base(),&old).is_err());
++        assert_eq!(TARGETS,&["libberberis_arm64","com.android.art"]);
++    }
++    #[test]
++    fn ranging_snippet_rejects_partial_cone_extra_or_revision_policy_drift() {
++        let good=current();let base=base();let index=good["projects"].as_array().unwrap().iter().position(|p|p["path"]=="packages/modules/Uwb").unwrap();
++        for key in["name","path","purpose","commit"] {
++            let mut bad=good.clone();bad["projects"][index][key]=json!("changed");assert!(validate_source_extension(&base,&bad).is_err());
++        }
++        for suffix in["Android.bp","RangingSnippet.java","AndroidManifest.xml"] {
++            let mut bad=good.clone();let paths=bad["projects"][index]["sparse_paths"].as_array_mut().unwrap();paths.pop();paths.push(json!(format!("ranging/tests/multidevices/snippet/uwb/{suffix}")));assert!(validate_source_extension(&base,&bad).is_err());
++        }
++        let mut bad=good.clone();bad["projects"][index]["sparse_paths"].as_array_mut().unwrap().pop();assert!(validate_source_extension(&base,&bad).is_err());
++        let mut bad=good.clone();bad["projects"][index]["sparse_paths"].as_array_mut().unwrap().push(json!("unrelated"));assert!(validate_source_extension(&base,&bad).is_err());
++        let mut bad=good.clone();bad["projects"][index]["sparse_paths"].as_array_mut().unwrap().swap(0,1);assert!(validate_source_extension(&base,&bad).is_err());
++        for key in["status","policy","superproject","links"] {let mut bad=good.clone();bad[key]=json!(null);assert!(validate_source_extension(&base,&bad).is_err());}
++        let mut bad=good.clone();bad["projects"].as_array_mut().unwrap().swap(0,1);assert!(validate_source_extension(&base,&bad).is_err());
++    }
++    #[test]
++    fn ranging_snippet_pins_real_blueprint_manifest_and_all_three_java_sources() {
++        let raw=include_bytes!("../../../android/native-generation-pair/ranging-snippet-fixtures/origins.json");
++        assert_eq!(raw.len(),3019);assert_eq!(digest(raw),"d50334591ee8acbd79a8d7ddc5c362a41e6a136b7a2f13b8997bfd2df9991048");let origin:Value=serde_json::from_slice(raw).unwrap();
++        assert_eq!(origin["file_count"],5);assert_eq!(origin["physical_bytes"],45332);assert_eq!(origin["max_blob_bytes"],24943);
++        assert_eq!(origin["project_commit"],"7c9e03046ff41cc28cf794cc2eda306fbc40279e");assert_eq!(origin["new_source_projects"],0);assert_eq!(origin["new_sparse_cones"],1);assert_eq!(origin["new_large_blob_exceptions"],json!([]));
++        assert_eq!(origin["actual_Soong_qualified"],false);assert_eq!(origin["source_materialization_qualified"],false);assert_eq!(origin["runtime_qualified"],false);
++        { let b=include_bytes!("../../../android/native-generation-pair/ranging-snippet-fixtures/original-Android.bp"); assert_eq!(b.len(),1341); assert_eq!(digest(b),"d7c4d29864cbf720e6318cf8b516219cd569d013d40e2350d9e68eb3a5241376"); }
++        { let b=include_bytes!("../../../android/native-generation-pair/ranging-snippet-fixtures/original-AndroidManifest.xml"); assert_eq!(b.len(),1853); assert_eq!(digest(b),"0f8438c0c8d337a769714c539cc91bcd76e205ccea9d886edf6abc74d347e4a3"); }
++        { let b=include_bytes!("../../../android/native-generation-pair/ranging-snippet-fixtures/original-RangingPreferenceConverter.java"); assert_eq!(b.len(),15353); assert_eq!(digest(b),"8aa527968d98ba050a2f2839cdd8df87ccde227750abdc1949d1a6d72cddbbac"); }
++        { let b=include_bytes!("../../../android/native-generation-pair/ranging-snippet-fixtures/original-RangingSnippet.java"); assert_eq!(b.len(),24943); assert_eq!(digest(b),"e75526da0ebe7c3b1c3c0f216c3760ad96fac5ea5fad4e584fc4b35ef6a3e4e3"); }
++        { let b=include_bytes!("../../../android/native-generation-pair/ranging-snippet-fixtures/original-Utils.java"); assert_eq!(b.len(),1842); assert_eq!(digest(b),"59c001549be1f3b882d47b8ea929f7b2c7ce9ba87df1e57586619e635c5370ef"); }
++        let bp=std::str::from_utf8(include_bytes!("../../../android/native-generation-pair/ranging-snippet-fixtures/original-Android.bp")).unwrap();
++        assert!(bp.contains("android_test {"));assert!(bp.contains("name: \"ranging_snippet\""));assert!(bp.contains("sdk_version: \"system_34\""));
++        for name in["RangingSnippet.java","RangingPreferenceConverter.java","Utils.java","AndroidManifest.xml","framework-ranging.impl","ranging_aconfig_flags_lib"] {assert!(bp.contains(name));}
++        let names:std::collections::BTreeSet<&str>=origin["files"].as_array().unwrap().iter().map(|r|r["path"].as_str().unwrap().rsplit('/').next().unwrap()).collect();
++        assert_eq!(names,std::collections::BTreeSet::from(["Android.bp","AndroidManifest.xml","RangingPreferenceConverter.java","RangingSnippet.java","Utils.java"]));
++    }
++}
+--- a/tools/droidloom-source/src/lib.rs
++++ b/tools/droidloom-source/src/lib.rs
+@@ -24,11 +24,11 @@
+ pub use resume::materialize_resuming;
+ 
+ const MAX_LOCK_BYTES: u64 = 1024 * 1024;
+-// The current ordinary pair authenticates 601 exact superproject projects.
+-// Frozen manifest SHA-256: 74372a62836ec16c30a6f24c6e13725831f90e13f2bbc4c9f9f56c74895b163d
+-// All 601 revisions stay exact; the complete Telecom and update-engine flags cones were added.
++// The current ordinary pair authenticates 643 exact superproject projects.
++// Frozen manifest SHA-256: 714a3542c632c50c1516a033bcde13426d67177934dbdbfc8006efc2190f5aec
++// Prior source generations retain their exact reconstruction controls.
+ // A different source plan still requires the route's complete lock validation.
+-const NATIVE_SOURCE_PROJECT_COUNT: usize = 601;
++const NATIVE_SOURCE_PROJECT_COUNT: usize = 643;
+ const MAX_PROJECTS: usize = NATIVE_SOURCE_PROJECT_COUNT.div_ceil(16) * 16;
+ const MAX_LINKS: usize = 64;
+ // The exact current source lock retains the original paths and adds the
+--- a/android/native-generation-pair/source-lock.json
++++ b/android/native-generation-pair/source-lock.json
+@@ -719,7 +719,8 @@
+         "stable/third_party/zstd/src/zlibWrapper",
+         "stable/tools",
+         "stable/url",
+-        "test_runner"
++        "test_runner",
++        "android/java/shims"
+       ]
+     },
+     {
+@@ -2558,7 +2559,8 @@
+         "tests/fuzzer/resolv_service_fuzzer.cpp",
+         "include/dnsproxyd_protocol",
+         "include",
+-        "tests"
++        "tests",
++        "apex"
+       ]
+     },
+     {
+@@ -2629,7 +2631,9 @@
+         "libnfc-nci/src",
+         "libnfc-nci/tests",
+         "libnfc-nci/tools",
+-        "libnfc-nci/utils"
++        "libnfc-nci/utils",
++        "apex",
++        "libnfc-nci/conf"
+       ]
+     },
+     {
+@@ -2680,7 +2684,8 @@
+         "SafetyCenter/Resources",
+         "permissions",
+         "sysconfig",
+-        "tests/cts/permission/permissionTestUtilLib"
++        "tests/cts/permission/permissionTestUtilLib",
++        "tests/cts/permission/jni"
+       ]
+     },
+     {
+@@ -2782,7 +2787,9 @@
+         "tls/Android.bp",
+         "tls/adb_ca_list.cpp",
+         "tls/include",
+-        "tls/tls_connection.cpp"
++        "tls/tls_connection.cpp",
++        "apex",
++        "test_device_apks"
+       ]
+     },
+     {
+@@ -2798,7 +2805,8 @@
+         "tools/gen_sdkinfo.py",
+         "tools/conv_classpaths_proto.py",
+         "tools/check_derive_classpath.py",
+-        "java"
++        "java",
++        "build"
+       ]
+     },
+     {
+@@ -3076,7 +3084,8 @@
+         "common/devtools-annotations",
+         "common/incfs",
+         "common/tools-common",
+-        "common/ub-janktesthelper"
++        "common/ub-janktesthelper",
++        "common/androidx-perf"
+       ]
+     },
+     {
+@@ -3367,7 +3376,13 @@
+         "tests/testdata/trigger_watchdog.sh",
+         "tests/testdata/vendorapex",
+         "tests/timezone-data-e2e-tests.xml",
+-        "tests/vendor-apex-tests.xml"
++        "tests/vendor-apex-tests.xml",
++        "patchlevel",
++        "tests/testdata/apkinapex/com.android.apex.product.test",
++        "tests/testdata/apkinapex/com.android.apex.system.test",
++        "tests/testdata/apkinapex/com.android.apex.system_ext.test",
++        "tests/testdata/apkinapex/com.android.apex.vendor.test",
++        "tests/testdata/maxsdk/com.android.apex.maxsdk.test"
+       ]
+     },
+     {
+@@ -3451,7 +3466,16 @@
+         "tests/kernel.config",
+         "tests/lib",
+         "tests/timetest",
+-        "verity"
++        "verity",
++        "module_ndk_libs",
++        "module_ndk_libs/libnativehelper",
++        "cppreopts",
++        "kcmdlinectrl",
++        "kcmdlinemodprobe",
++        "mtectrl",
++        "pinner",
++        "preopt2cachename",
++        "tests/schedtest"
+       ]
+     },
+     {
+@@ -3676,7 +3700,8 @@
+         "BufferAllocatorWrapper.cpp",
+         "include",
+         "configs",
+-        "tests"
++        "tests",
++        "rust"
+       ]
+     },
+     {
+@@ -3762,7 +3787,8 @@
+         "ondevice-signing/odsign.rc",
+         "ondevice-signing/odsign_main.cpp",
+         "ondevice-signing/proto",
+-        "provisioner"
++        "provisioner",
++        "prng_seeder"
+       ]
+     },
+     {
+@@ -3781,7 +3807,8 @@
+         "libflags",
+         "aconfigd/Android.bp",
+         "aconfigd/src",
+-        "aconfigd/srcs"
++        "aconfigd/srcs",
++        "disaster_recovery"
+       ]
+     },
+     {
+@@ -4337,7 +4364,8 @@
+         "car-lib/api",
+         "cpp/car_binder_lib",
+         "cpp/watchdog/aidl",
+-        "packages/CarDeveloperOptions"
++        "packages/CarDeveloperOptions",
++        "prebuilts"
+       ]
+     },
+     {
+@@ -4348,7 +4376,9 @@
+       "sparse_paths": [
+         "output_data",
+         "testing/Android.bp",
+-        "testing/src"
++        "testing/src",
++        "apex",
++        "testing/data/test1"
+       ]
+     },
+     {
+@@ -4406,7 +4436,8 @@
+         "runtime",
+         "service",
+         "shim_and_sl",
+-        "tools/test_generator"
++        "tools/test_generator",
++        "apex"
+       ]
+     },
+     {
+@@ -4967,7 +4998,8 @@
+         "ranging/rtt_backend",
+         "ranging/service",
+         "ranging/tests/multidevices/snippet/bluetooth",
+-        "ranging/uwb_backend"
++        "ranging/uwb_backend",
++        "ranging/tests/multidevices/snippet/uwb"
+       ]
+     },
+     {
+@@ -5076,7 +5108,9 @@
+       "sparse_paths": [
+         "zygote-messages",
+         "zygote-proc-macros",
+-        "zygote-sys"
++        "zygote-sys",
++        "zygote",
++        "zygote-core"
+       ]
+     },
+     {
+@@ -5120,7 +5154,8 @@
+         "tests/manual",
+         "tests/testdata",
+         "tests/unit",
+-        "update_verifier"
++        "update_verifier",
++        "uncrypt"
+       ]
+     },
+     {
+@@ -5206,7 +5241,8 @@
+         "samples/samples_source.prop_template",
+         "scripts",
+         "sdk",
+-        "tools/etc1tool"
++        "tools/etc1tool",
++        "cmds/monkey"
+       ]
+     },
+     {
+@@ -8438,7 +8474,8 @@
+         "bcinfo/libbcinfo.map",
+         "include",
+         "lib",
+-        "tools/bcc_compat"
++        "tools/bcc_compat",
++        "tools/bcc"
+       ]
+     },
+     {
+@@ -8777,7 +8814,9 @@
+         "src",
+         "sysconfig",
+         "tests/testapp",
+-        "tests/unit"
++        "tests/unit",
++        "apex",
++        "legacy"
+       ]
+     },
+     {
+@@ -9002,7 +9041,8 @@
+         "flags",
+         "framework",
+         "safeparcel-processor",
+-        "service"
++        "service",
++        "AppSearchAiSealConfig"
+       ]
+     },
+     {
+@@ -9051,7 +9091,8 @@
+         "native/pHash/fast_dct.h",
+         "native/pHash/phash_config.h",
+         "native/pHash/phash_fingerprinter.cpp",
+-        "native/pHash/phash_fingerprinter.h"
++        "native/pHash/phash_fingerprinter.h",
++        "apex"
+       ]
+     },
+     {
+@@ -9147,7 +9188,9 @@
+       "sparse_paths": [
+         "flags",
+         "framework",
+-        "ndk"
++        "ndk",
++        "apex",
++        "service"
+       ]
+     },
+     {
+@@ -9183,7 +9226,9 @@
+         "anomaly-detector/service",
+         "flags",
+         "framework",
+-        "util"
++        "util",
++        "apex",
++        "service"
+       ]
+     },
+     {
+@@ -9276,7 +9321,10 @@
+         "flags",
+         "framework",
+         "lib",
+-        "service"
++        "service",
++        "apex",
++        "bpfloader",
++        "bpf_progs"
+       ]
+     },
+     {
+@@ -9286,7 +9334,10 @@
+       "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+       "sparse_paths": [
+         "flags",
+-        "framework"
++        "framework",
++        "apex",
++        "service",
++        "template"
+       ]
+     },
+     {
+@@ -9335,7 +9386,8 @@
+         "tests/Android.bp",
+         "tests/AndroidManifest.xml",
+         "tests/AndroidTest.xml",
+-        "tests/src"
++        "tests/src",
++        "ui"
+       ]
+     },
+     {
+@@ -9414,7 +9466,9 @@
+       "path": "packages/services/DeviceAsWebcam",
+       "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+       "sparse_paths": [
+-        "tests"
++        "tests",
++        "impl",
++        "interface"
+       ]
+     },
+     {
+@@ -9740,7 +9794,8 @@
+       "path": "tools/security",
+       "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+       "sparse_paths": [
+-        "remote_provisioning/hwtrust"
++        "remote_provisioning/hwtrust",
++        "fuzzing/libFuzzer_mte_crash_handler"
+       ]
+     },
+     {
+@@ -10123,6 +10178,272 @@
+         "LICENSE",
+         "pyee"
+       ]
++    },
++    {
++      "commit": "225af0c6253316198738699de9041d1f28d0df44",
++      "name": "platform/packages/apps/EyeDropper",
++      "path": "packages/apps/EyeDropper",
++      "purpose": "Pinned original framework aconfig provider and complete retained EyeDropper library inputs",
++      "sparse_paths": [
++        "flags",
++        "res",
++        "src"
++      ]
++    },
++    {
++      "commit": "71d564487c9b34f65961570073f037658e07eb06",
++      "name": "platform/external/mksh",
++      "path": "external/mksh",
++      "purpose": "Exact Android 17 original shell and mkshrc providers required by the retained microdroid system image"
++    },
++    {
++      "commit": "4da9987aca2eedf386d1e22e19994a1b0de53c45",
++      "name": "platform/external/strace",
++      "path": "external/strace",
++      "purpose": "Exact Android 17 original strace provider and complete source tree required by the retained microdroid system image"
++    },
++    {
++      "commit": "ac781dac6cf4026016f2dacf824b2f0b0fba91c2",
++      "name": "platform/external/jmustache",
++      "path": "external/jmustache",
++      "purpose": "Exact original same-superproject JMustache provider and full source required by the retained WebApp production service",
++      "sparse_paths": []
++    },
++    {
++      "commit": "f91e18ccc73c0cce1194f3aef4a841c1a15003b3",
++      "name": "platform/system/memory/libwrapfd",
++      "path": "system/memory/libwrapfd",
++      "purpose": "Exact original same-superproject wrapfd Rust and native buffer providers required by the retained NpuManager service",
++      "sparse_paths": []
++    },
++    {
++      "commit": "49d155f26586a540266fd854c868a067f6db9204",
++      "name": "platform/external/android-browser-helper",
++      "path": "external/android-browser-helper",
++      "purpose": "Exact original same-superproject Android Browser Helper sources required by the retained WebApp production template",
++      "sparse_paths": [
++        "androidbrowserhelper/src/main"
++      ]
++    },
++    {
++      "commit": "1f4500d3906c24de59eec5b9cda17a2ad2a8ba2d",
++      "name": "platform/external/angle",
++      "path": "external/angle",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "37720d7ebe90b68428dc265204cebf26990f4edd",
++      "name": "platform/external/dnsmasq",
++      "path": "external/dnsmasq",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "dc0d0efc50ad7246c283bd218d06ee2d41c14cc7",
++      "name": "platform/external/fsck_msdos",
++      "path": "external/fsck_msdos",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "98d58311c2235def6596bda3a0da9366de2979e0",
++      "name": "platform/external/iproute2",
++      "path": "external/iproute2",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "df1a07fd3d0c157a71a4c157cc728062a01032b2",
++      "name": "platform/external/iptables",
++      "path": "external/iptables",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "9c014e33395657c45db7f074ea4f822e1cfadb0b",
++      "name": "platform/external/iputils",
++      "path": "external/iputils",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "71b9b1b2fd81701120924b3e56f4af4f06344b44",
++      "name": "platform/external/libcups",
++      "path": "external/libcups",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "e8872353b6db70a58369d66ec40562cfbe16b653",
++      "name": "platform/external/musl",
++      "path": "external/musl",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "09a3bc2b0b971b159074707c36669520a47b684f",
++      "name": "platform/external/neven",
++      "path": "external/neven",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "22f2506e585270da53cb910f6fda92395f6550c1",
++      "name": "platform/frameworks/compile/mclinker",
++      "path": "frameworks/compile/mclinker",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "3667349d355e2e064cb56bf4a8faf5fd5525db87",
++      "name": "platform/packages/apps/CertInstaller",
++      "path": "packages/apps/CertInstaller",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "9ba93bf644c56a825a263cfd15f2161c17c6935b",
++      "name": "platform/packages/apps/ContactsPicker",
++      "path": "packages/apps/ContactsPicker",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "08a7fc7b7d5366b8fabf5e6a11d769d7f5c3ae4c",
++      "name": "platform/packages/apps/DeviceDiagnostics",
++      "path": "packages/apps/DeviceDiagnostics",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "2e3e07363b649b1c86543bd9c4735a525952dba2",
++      "name": "platform/packages/apps/HTMLViewer",
++      "path": "packages/apps/HTMLViewer",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "3f0e2b0c85f1f1939f83bab71271935c8cb2f6f8",
++      "name": "platform/packages/apps/KeyChain",
++      "path": "packages/apps/KeyChain",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "f77abb40ac7fe8cafb41b3856eca7a8943dadc76",
++      "name": "platform/packages/apps/MusicFX",
++      "path": "packages/apps/MusicFX",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "2e54b4180f11ebf8292a754d7bc4dac74afc22c0",
++      "name": "platform/packages/apps/PrivateSpace",
++      "path": "packages/apps/PrivateSpace",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "a478ba7d1209c2140a03f50b48727442d86e15f2",
++      "name": "platform/packages/apps/SecureElement",
++      "path": "packages/apps/SecureElement",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "89a3ddbd38d35c3200813045d66f9998b6350417",
++      "name": "platform/packages/apps/Stk",
++      "path": "packages/apps/Stk",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "eb02d2d050275d6a1fc896d4ceda2d91b206658e",
++      "name": "platform/packages/apps/Tag",
++      "path": "packages/apps/Tag",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "586930a5bac4213c31f4b580e101653df145805c",
++      "name": "platform/packages/modules/CaptivePortalLogin",
++      "path": "packages/modules/CaptivePortalLogin",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "514e2233f8c1183308e31c86386aa932003c307a",
++      "name": "platform/packages/modules/IntentResolver",
++      "path": "packages/modules/IntentResolver",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "8cfd4be65fb59790b33c7b3d88bc7d2ac0dccb08",
++      "name": "platform/packages/providers/BookmarkProvider",
++      "path": "packages/providers/BookmarkProvider",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "1d4534e1a7dabcffa309799ee81ecf1ad427ae7d",
++      "name": "platform/packages/providers/CallLogProvider",
++      "path": "packages/providers/CallLogProvider",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "f9df0eba9f0b22df6772ab1a3b381cb7529331bc",
++      "name": "platform/packages/providers/ContactsKeysProvider",
++      "path": "packages/providers/ContactsKeysProvider",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "52b6d851e697d15aea1219588ba8a10d354b4594",
++      "name": "platform/packages/providers/PartnerBookmarksProvider",
++      "path": "packages/providers/PartnerBookmarksProvider",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "c2c6b446636f6229d2e1c4fb45b7bccd548178cd",
++      "name": "platform/packages/providers/UserDictionaryProvider",
++      "path": "packages/providers/UserDictionaryProvider",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "c8978290ea444e37662452e9c5af9b354e700c98",
++      "name": "platform/packages/screensavers/Basic",
++      "path": "packages/screensavers/Basic",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "05e7eb66772bad8bea7e5c09e79a004141105d43",
++      "name": "platform/packages/services/AlternativeNetworkAccess",
++      "path": "packages/services/AlternativeNetworkAccess",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "eddcc1ee8095ff98bcdbfdcf3084cd13e9391ee2",
++      "name": "platform/packages/services/BuiltInPrintService",
++      "path": "packages/services/BuiltInPrintService",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "480d20ef1d29179bbbc19f2d785c1a87de14a299",
++      "name": "platform/packages/services/Mms",
++      "path": "packages/services/Mms",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "51483158083a239bee58229fcdd6efbf61e846bf",
++      "name": "platform/packages/wallpapers/LivePicker",
++      "path": "packages/wallpapers/LivePicker",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "635120841f515b63fe0ab0451ac9b17fb7d8cca6",
++      "name": "platform/system/dmesgd",
++      "path": "system/dmesgd",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "60271965cf6b055ed82b2e1ae0bf74b2c34a6af2",
++      "name": "platform/system/hwservicemanager",
++      "path": "system/hwservicemanager",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "5d6ceb06e332cb7e0f5c2fde4cc37a6a6f24bc52",
++      "name": "platform/system/memory/guardian",
++      "path": "system/memory/guardian",
++      "purpose": "Exact original same-superproject providers required by the retained ordinary Android filesystem dependency graph"
++    },
++    {
++      "commit": "31d9b329ddc56636a279c7340e154e0d67d9a6fb",
++      "name": "platform/developers/build",
++      "path": "developers/build",
++      "purpose": "Original sdk_repo_sample_new_zip producer with complete prebuilt Gradle and AndroidTV sample inputs required by the generic samples graph",
++      "sparse_paths": [
++        "prebuilts/gradle",
++        "prebuilts/androidtv"
++      ]
+     }
+   ],
+   "remote_base": "https://android.googlesource.com/",

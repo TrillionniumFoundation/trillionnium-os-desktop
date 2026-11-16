@@ -1,0 +1,87 @@
+{
+  "schema": "native601-source-checkpoint-validation-v1",
+  "snapshot": "after normal Native601 tool tests; new build-host source qualification remains pending",
+  "normal_tools": {
+    "state": "PASS",
+    "recipe_files": 459,
+    "normal_commands": 23,
+    "all_command_exit_codes_zero": true,
+    "all_command_children_retired": true,
+    "tests": [
+      {
+        "filter": "droidloom-source",
+        "passed": 26,
+        "failed": 0,
+        "ignored": 0
+      },
+      {
+        "filter": "droidloom-update ordinary_pair",
+        "passed": 30,
+        "failed": 0,
+        "ignored": 0
+      },
+      {
+        "filter": "droidloom-update native_generation_pair",
+        "passed": 20,
+        "failed": 0,
+        "ignored": 0
+      }
+    ],
+    "filters_overlap": true,
+    "distinct_test_total_not_claimed": true,
+    "memory_max_bytes": 4294967296,
+    "memory_peak_bytes": 1041432576,
+    "oom_events": 0,
+    "swap_bytes": 0,
+    "result": {
+      "bytes": 194746,
+      "sha256": "b2db7d7b131c97c28f0683f1082db9c362503beb9223c20d5d912f77cc708d20"
+    },
+    "independent_outer_result": {
+      "bytes": 4733,
+      "sha256": "db97f3c90125ddaa1be4d9b1e0503db108b79a8be7eb673f4ca03ed5a00d7506"
+    }
+  },
+  "source_chain_byte_reconstruction": {
+    "state": "PASS",
+    "method": "Exact unified-hunk reverse and forward reconstruction; no offsets or fuzz; all four initial preimages matched the independent RKPD normal-recipe SHA256 records and all final files matched the actual Native601 normal recipe.",
+    "normal_git_apply_checker_included": true,
+    "normal_build_rerun": false
+  },
+  "previous_full": {
+    "name": "native600-r10",
+    "state": "FAILED_RETIRED",
+    "missing_providers": [
+      "dexdeps",
+      "pyee"
+    ],
+    "source_projection_restored": true,
+    "owned_retirement_complete": true,
+    "resource_gate_passed": true,
+    "inner": {
+      "bytes": 63465,
+      "sha256": "26cfafd2b388581445e2eaaa0b3ff75956cd2c84d476864dd3d66171520b4b29"
+    },
+    "outer": {
+      "bytes": 13305,
+      "sha256": "14dd6a8e01aaaf344584b93c2a24f0dfccc20d52fc3c922275ad9d30e5539cd0"
+    },
+    "full_build_qualified": false
+  },
+  "new_build_host_recipe_import": {
+    "state": "RUNNING",
+    "qualified": false
+  },
+  "new_native601_source": {
+    "state": "PENDING",
+    "qualified": false
+  },
+  "new_native601_full": {
+    "state": "NOT_STARTED",
+    "qualified": false
+  },
+  "compiled_artifact_qualified": false,
+  "crypto_qualified": false,
+  "qpr1_runtime_qualified": false,
+  "production_ready": false
+}

@@ -1,0 +1,276 @@
+{
+  "schema": "pocket4-production-readonly-observation-v1",
+  "observer": "foreground-be1746a-production-isolation",
+  "observation_window_utc": {
+    "start": "2026-11-09T09:48:49.857507+00:00",
+    "end": "2026-11-09T09:58:29.796200+00:00"
+  },
+  "scope": "Read existing qualification receipts, selected source and lifecycle state only. No source/CURRENT/data changes, test reruns, Android starts, account or grant changes, package installs, or deletion by this observation.",
+  "qualification_accounting": "Each pass is confined to its exact source generation and actual command. Counts below overlap across generations and must not be added. Filtered/skipped/ignored tests, source drafts, successful formatting and CI publication do not establish runtime qualification.",
+  "current": {
+    "path": "/home/alex/work/pocket4-android-final/CONTINUATION_CURRENT.json",
+    "bytes": 221613,
+    "sha256": "04fe75a81b798613a98353504d004cb2be5bb66866af88238252e1a0ce00cbf4",
+    "read_utc": "2026-11-09T09:48:49.857507+00:00",
+    "content_mtime_utc": "2026-11-09T08:21:04.869714+00:00",
+    "foreground_owner": {
+      "active_until_utc": "2026-11-09T10:21:04.867373+00:00",
+      "name": "foreground-root-8b88e19ff7ab",
+      "scope": "Finish actual QPR1 empty-data boot and coherent runtime repairs; serialize actual full builds with owned limits; complete latest-app acceptance and evidence-bound obsolete artifact retirement."
+    },
+    "fresh_read_but_stale_content": true,
+    "production_ready": false,
+    "runtime_qualified": false,
+    "all_blockers_closed": false,
+    "stale_claim_not_reused": "CURRENT still describes failed private r2 capability admission. Subsequent private controls succeeded; this old r2 failure is not the current unresolved diagnosis."
+  },
+  "host": {
+    "kernel": "7.0.14-p4cred1",
+    "boot_id": "97d9600f-e081-465c-9e6e-62651e09806b",
+    "droidloomd_last_observation": {
+      "observed_utc": "2026-11-09T09:50:00Z",
+      "precision": "minute",
+      "state": "masked inactive dead"
+    },
+    "selected_related_cgroups_at_architecture_read": [],
+    "global_quiescence_proven": false,
+    "reason": "Foreground source owner lease remains active and these checks do not cover every build or runtime process."
+  },
+  "qualified_scoped_generations": {
+    "broker_source_r3_normal": {
+      "manifest": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/production-namespace-broker-source-20261109-8b88-r3/manifest.json",
+        "bytes": 54256,
+        "sha256": "3e0e67adf94b3018b2533f362f45b97cc7c7161aa6bc36b13347a6767b70919a"
+      },
+      "workspace_baseline": "b4dc3b49ce29e706efca0ba5a7c775864d9b54b8",
+      "normal_result": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/production-namespace-broker-source-20261109-8b88-r3/normal/result.json",
+        "bytes": 23350,
+        "sha256": "b8888996dd5de351630ba2555db4d9d6bfca44898aabcbc1109b4eda8f3186ac"
+      },
+      "actual_normal_tests_passed": 63,
+      "normal_binaries_built": 2,
+      "actual_negative_cli_controls_passed": 8,
+      "privileged_controls_not_executed_in_normal_run": 2,
+      "parallel_mounts_source_included": false,
+      "production_admission": false,
+      "Android_starts": 0,
+      "production_ready": false
+    },
+    "private_pid1_tree_r1": {
+      "result": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/production-namespace-tree-private-controls-20261109-8b88-r1/result.json",
+        "bytes": 10062,
+        "sha256": "3134d5136b78eee076381bdc9a3d285244ba8fc7a4f53e532e9f6db21262b1db"
+      },
+      "passed": true,
+      "actual_private_pid1_control_passed": true,
+      "actual_tests_passed": 1,
+      "actual_tests_failed": 0,
+      "tests_filtered_out": 210,
+      "test": "production_namespace::tree::tests::privileged_private_pid1_namespace_controls",
+      "scope": "Private fixture proves direct-parent pidfd/proc binding, namespace ownership, private propagation, wrong READY nonce rejection, exact init and keeper reaping, then lease release.",
+      "unit_terminal": "collected; inactive/dead; MainPID=0; no ControlGroup",
+      "production_admission": false,
+      "Android_starts": 0,
+      "production_ready": false
+    },
+    "mounts_normal_r4": {
+      "result": {
+        "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/normal-production-mounts-r4/result.json",
+        "bytes": 26959,
+        "sha256": "30df8895b14f9bee1199e4b519f19dd010446cb402e26878cab5e4b877316cbd"
+      },
+      "outer_result": {
+        "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/production-mounts-normal-launch-r4/result.json",
+        "bytes": 2892,
+        "sha256": "fc49daaec7c1705f0809302446c2b57b336a27dd64b602bee5b73c41ac4197c3"
+      },
+      "passed": true,
+      "actual_normal_tests_passed": 69,
+      "actual_normal_tests_failed": 0,
+      "reported_ignored": 0,
+      "tests_filtered_out": 148,
+      "explicit_privileged_skips": [
+        "privileged_private_userns_mapping_controls",
+        "privileged_private_pid1_namespace_controls"
+      ],
+      "normal_binaries_built": 2,
+      "actual_negative_cli_controls_passed": 8,
+      "private_controls_executed": 0,
+      "production_mounts_source_sha256": "1b01d0f19536b19a1f1534b1a900daf510e09b9f648e3a11fc40c2348c788921",
+      "source_scope": "Before later private-mount, empty-base and SSSD increments; this pass cannot qualify those increments.",
+      "unit_terminal": "owned unit retired; absent cgroup; MainPID=0",
+      "Android_starts": 0,
+      "original_data_opened": false,
+      "production_ready": false
+    }
+  },
+  "unresolved_latest_attempts": {
+    "host_nss_owned_probe_r1": {
+      "result": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/production-host-nss-owned-probe-20261109-8b88-r1/result.json",
+        "bytes": 9884,
+        "sha256": "334d1198359391933831f7e98e5edf4c0d492454b1e5fb2e37eb28dddd8787ba"
+      },
+      "passed": false,
+      "returncode": 1,
+      "exact_rejection": "droidloom-supervisor: production host admission rejected: root-owned non-writable host input required",
+      "production_admission": false,
+      "Android_starts": 0,
+      "owner_followup": "Owner subsequently added narrowly scoped SSSD identity, directory and inactive service validation. No successful NSS reprobe was observed in this review.",
+      "sssd_source_seen_in_latest_compile": "4e1b01ee58cdd3a431cd5860ffe768423ff709204e665f1b82641e2a00babbb1"
+    },
+    "empty_base_normal_r1": {
+      "result": {
+        "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/normal-production-empty-base-r1/result.json",
+        "bytes": 16104,
+        "sha256": "e92e2d25b740db7e7628b92e6adac95e076a39a1afe6c1b9cb471082e32b992f"
+      },
+      "outer_result": {
+        "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/production-empty-base-normal-launch-r1/result.json",
+        "bytes": 3825,
+        "sha256": "656d39daf79799426cf3be368485990d7638344dd34cdafb6eb54f14172e16b8"
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/qualification/normal-production-empty-base-r1/production-normal-tests.stderr",
+        "bytes": 1035,
+        "sha256": "8d9b837e4d3c642a3aa3a27f0673d1d39a9685561f1223e3d9e2e99169084ee3"
+      },
+      "receipt_mtime_utc": "2026-11-09T09:55:05Z",
+      "precision": "second",
+      "passed": false,
+      "cargo_test_returncode": 101,
+      "outer_returncode": 1,
+      "compile_success": false,
+      "actual_tests_executed": 0,
+      "private_controls_executed": 0,
+      "Android_starts": 0,
+      "production_ready": false,
+      "original_data_opened": false,
+      "host_account_or_grant_changes": 0,
+      "compiler_error": {
+        "code": "E0609",
+        "file": "runtime/droidloom-supervisor/src/production_namespace_mount_child.rs",
+        "line": 143,
+        "message": "no field f_flags on type statfs"
+      },
+      "scope": "Actual failed build supersedes the earlier source-only/uncompiled description. Formatting succeeded, but cargo stopped at compilation before running tests or building the two final binaries. This result includes the new SSSD source.",
+      "relevant_source_after_format": [
+        {
+          "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_namespace_child.rs",
+          "bytes": 25736,
+          "sha256": "c5ed0a70773fb6969c1dc068b069ce3cb06d5349134980ba63358c8e5bbbb218"
+        },
+        {
+          "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_namespace_tree.rs",
+          "bytes": 58509,
+          "sha256": "048bc5887195aca7062b90e196b1d805ed23b8c6da46e55f91216dc09b178b43"
+        },
+        {
+          "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_host_admission.rs",
+          "bytes": 161856,
+          "sha256": "4e1b01ee58cdd3a431cd5860ffe768423ff709204e665f1b82641e2a00babbb1"
+        },
+        {
+          "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_mounts.rs",
+          "bytes": 59100,
+          "sha256": "bbc9274949764d21522ba6c1ed9b7a9613a1668555623194d216eeaebd8ff06e"
+        },
+        {
+          "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_namespace_mount_child.rs",
+          "bytes": 22040,
+          "sha256": "187659dea632ae170ea860a5055df4c40274cfb96da095c185433a25b8941892"
+        }
+      ],
+      "owned_unit_retired": true,
+      "owned_cgroup_absent": true,
+      "unit": {
+        "ActiveState": "failed",
+        "ControlGroup": "",
+        "ExecMainCode": "1",
+        "ExecMainStatus": "1",
+        "LoadState": "loaded",
+        "MainPID": "0",
+        "Result": "exit-code",
+        "SubState": "failed"
+      },
+      "owner_later_changes_not_observed_or_qualified": true
+    }
+  },
+  "independent_architecture_gap": {
+    "status": "confirmed source integration gap; no mutation or retest performed",
+    "source": {
+      "path": "/home/alex/work/pocket4-production-namespace-broker-20261109-8b88-r1/source/runtime/droidloom-supervisor/src/production_namespace_child.rs",
+      "bytes": 25736,
+      "sha256": "c5ed0a70773fb6969c1dc068b069ce3cb06d5349134980ba63358c8e5bbbb218"
+    },
+    "observed_utc": "2026-11-09T09:57:31.918134+00:00",
+    "first_keeper_PIDFD_THREAD_occurrences": 0,
+    "finding": "First keeper still arms PR_SET_PDEATHSIG then checks getppid() against the process leader. This does not bind actual creating-thread death before initial arm or credential rearm. Nested PID1 use of PIDFD_THREAD does not repair the outer keeper. SignalMask Drop still uses debug_assert for restoration error.",
+    "single_action": "Reconcile the already published creating-thread lifecycle fix into a frozen copy of the newer owner generation, preserving its new tree APIs, before qualifying the empty-data consumer.",
+    "acceptance": "Bind a live creator-thread pidfd before release; bound polling until the exact kernel thread-exit event; require child rejection before arm and rearm; preserve explicit release-build signal-mask restoration errors and owned-child cleanup. Existing published creator-exit-barrier.patch provides the test ordering fix.",
+    "boundary": "Do not apply the older combined baseline patch directly to the concurrently edited owner source. Do not replace source review with a claim of runtime acceptance."
+  },
+  "runtime_gate": {
+    "production_ready": false,
+    "runtime_qualified": false,
+    "all_blockers_closed": false,
+    "latest_actual_android_boot_result_in_checked_cohort": {
+      "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/boot-probe-r1/qualification/actual-boot-r7",
+      "result_exists": true,
+      "mtime_utc": "2026-11-08T22:16:35.428136+00:00"
+    },
+    "new_android_boot_result_observed": false,
+    "checked_cohort_boundary": "Only the existing QPR1 cp3a-16176746 cohort boot-probe qualification root was enumerated; no claim of a global filesystem search.",
+    "empty_data_consumer_contract": "The reviewed draft receives exactly two admitted base mount descriptors, constructs a private empty root, pivots off inherited mounts and parks at a second barrier. It has no Android INIT command; device, runtime and APEX prerequisites remain separate.",
+    "no_runtime_credit_from": [
+      "normal source suites",
+      "private fixed-fixture namespace controls",
+      "successful kernel reboot",
+      "published CI",
+      "official APK custody",
+      "source drafts"
+    ],
+    "app_install_and_acceptance": "Not performed by this lane; parent must bind separate exact package install and runtime evidence."
+  },
+  "cleanup_boundary": {
+    "current_protected_paths": [
+      "/var/lib/droidloom/users/1000/data/data.img",
+      "/var/lib/droidloom/users/1000/data/metadata.img",
+      "/etc/droidloom/cell.json until reviewed final replacement",
+      "four current /usr/bin/droidloom programs and six installed consumer entrypoints until exact cohort replacement"
+    ],
+    "historical_CURRENT_cleanup_is_global_current_proof": false,
+    "explanation": "Historical batch cleanup audit does not retire the live owner source, new qualification inputs, candidate package custody, active builds, current installed consumers or original user images. Exact replacement acceptance and reference closure are still required.",
+    "changes_or_deletions_by_this_observer": 0
+  },
+  "local_evidence_captures": [
+    {
+      "path": "/workspace/scratch/be1746a9586f/production-current-review-current-projection.json",
+      "bytes": 29725,
+      "sha256": "a8c66d6d0ddac5d2e2a6201d0efd03f5df512e7d2664be5608d85c82a2c3511a"
+    },
+    {
+      "path": "/workspace/scratch/be1746a9586f/production-current-review-evidence.json",
+      "bytes": 88704,
+      "sha256": "a122203c2861dbcfe27a568db95fe8add0fe0b284e82e2f504a32e3a2ac21649"
+    },
+    {
+      "path": "/workspace/scratch/be1746a9586f/production-current-review-late-evidence.json",
+      "bytes": 89190,
+      "sha256": "f7c152e8b7ede0347c2eeefc30541380ea00f12e9bad6474da8183f9acfae0bc"
+    },
+    {
+      "path": "/workspace/scratch/be1746a9586f/production-current-review-architecture.json",
+      "bytes": 29351,
+      "sha256": "5f4fe5128a9301d1cb30fccc769e7db9779e8eef07771f38fd40c85f3dca8b80"
+    },
+    {
+      "path": "/workspace/scratch/be1746a9586f/production-current-review-emptybase-result.json",
+      "bytes": 24997,
+      "sha256": "63fe7e4f4e748c4dd2559b5550ec82a070a2704c29bafde9cd1b3b2b439ab07f"
+    }
+  ]
+}

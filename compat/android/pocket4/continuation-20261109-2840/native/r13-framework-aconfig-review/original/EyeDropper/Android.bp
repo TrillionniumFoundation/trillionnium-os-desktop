@@ -1,0 +1,69 @@
+package {
+    // See: http://go/android-license-faq
+    default_applicable_licenses: ["Android-Apache-2.0"],
+    default_team: "trendy_team_arc_next",
+}
+
+android_library {
+    name: "EyeDropperLib",
+    srcs: ["src/**/*.kt"],
+    resource_dirs: ["res"],
+    platform_apis: true,
+    static_libs: [
+        "androidx.activity_activity", // ComponentActivity
+        "androidx.activity_activity-compose", // setContent
+        "androidx.appcompat_appcompat", // AppCompatResources
+        "hilt_android",
+
+        // Jetpack Compose & runtime
+        "androidx.compose.runtime_runtime",
+        "androidx.compose.ui_ui", // ComposeView
+        "androidx.compose.ui_ui-graphics",
+        "androidx.compose.ui_ui-geometry",
+        "androidx.compose.ui_ui-unit",
+        "androidx.compose.material_material-icons-core",
+        "androidx.compose.material_material-icons-extended",
+        "androidx.compose.foundation_foundation",
+        "androidx.compose.foundation_foundation-layout",
+
+        "androidx.compose.material3_material3",
+
+        // Lifecycle, ViewModel, SavedState for ComposeView
+        "androidx.lifecycle_lifecycle-service",
+        "androidx.lifecycle_lifecycle-common",
+        "androidx.lifecycle_lifecycle-runtime", // Provides setViewTreeLifecycleOwner
+        "androidx.lifecycle_lifecycle-viewmodel", // Provides setViewTreeViewModelStoreOwner
+        "androidx.savedstate_savedstate", // Provides setViewTreeSavedStateRegistryOwner
+        "androidx.lifecycle_lifecycle-viewmodel-compose",
+    ],
+}
+
+android_app {
+    name: "EyeDropper",
+    platform_apis: true,
+    certificate: "platform",
+    privileged: true,
+    static_libs: [
+        "EyeDropperLib",
+    ],
+    optimize: {
+        optimize: true,
+        shrink_resources: true,
+    },
+}
+
+aconfig_declarations {
+    name: "com.android.eyedropper.flags-aconfig",
+    package: "com.android.eyedropper",
+    container: "system",
+    exportable: true,
+    srcs: [
+        "flags/eye_dropper_flags.aconfig",
+    ],
+}
+
+java_aconfig_library {
+    name: "com.android.eyedropper.flags-aconfig-java",
+    aconfig_declarations: "com.android.eyedropper.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}

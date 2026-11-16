@@ -1,0 +1,1545 @@
+{
+  "Android_builds": 0,
+  "Android_starts": 0,
+  "ExecutionAdmission_constructible": false,
+  "actual_SELinux_transition_qualified": false,
+  "audio": {
+    "commit": "fbb235628023f5fb5d9e47064a6d2884d23534bc",
+    "files": 1557,
+    "inventory": {
+      "bytes": 463312,
+      "path": "audio-files.json",
+      "sha256": "6120de065742c26f787e22cd40be91118234dfd96b307193e6121ba9c06a5ecd"
+    },
+    "raw_commit": {
+      "bytes": 308,
+      "path": "git-objects/audio.commit",
+      "sha256": "850d6b05e0ea1b9d0a258d0ed879b244ad6ffaef6877bf6970143283808aeb93"
+    },
+    "tree": "23c1a126efd8975156d219af22a2d858a4dd3b2b"
+  },
+  "changed_paths": [
+    "Cargo.lock",
+    "docs/contracts/runtime-layout-v1.md",
+    "docs/threat-model-v1.md",
+    "runtime/droidloom-supervisor/Cargo.toml",
+    "runtime/droidloom-supervisor/src/bin/droidloomd.rs",
+    "runtime/droidloom-supervisor/src/control.rs",
+    "runtime/droidloom-supervisor/src/control_status_tests.rs",
+    "runtime/droidloom-supervisor/src/development.rs",
+    "runtime/droidloom-supervisor/src/development_network.rs",
+    "runtime/droidloom-supervisor/src/gapps.rs",
+    "runtime/droidloom-supervisor/src/lib.rs",
+    "runtime/droidloom-supervisor/src/linux_plan.rs",
+    "runtime/droidloom-supervisor/src/main.rs"
+  ],
+  "evidence": {
+    "runtime/AUDIO538-PARENT-FILES.json": {
+      "bytes": 450856,
+      "path": "evidence/runtime/AUDIO538-PARENT-FILES.json",
+      "sha256": "24391b478e45ce1e09a2d8f0b41cdb918b68bcae287a3051523abcf65314c4be"
+    },
+    "runtime/CANDIDATE-MANIFEST-r1.json": {
+      "bytes": 488406,
+      "path": "evidence/runtime/CANDIDATE-MANIFEST-r1.json",
+      "sha256": "2f9cf9529f025cea2cbc8f1ee6fa512c8f169f9d93fbb43a5df071dbd2f88fe0"
+    },
+    "runtime/D6-PARENT-FILES.json": {
+      "bytes": 106582,
+      "path": "evidence/runtime/D6-PARENT-FILES.json",
+      "sha256": "ff85daaef42c5d3042d0bec2c56c1df63626ac7f3517119c18a83e2d14f158fc"
+    },
+    "runtime/EXPORT-MANIFEST.json": {
+      "bytes": 31261,
+      "path": "evidence/runtime/EXPORT-MANIFEST.json",
+      "sha256": "b1c19d267c94c16374adb24bac913ff96149c4ac4824dafdd5ca2cc4ba721a5f"
+    },
+    "runtime/controllers/independent-retirement-r1.py": {
+      "bytes": 14007,
+      "path": "evidence/runtime/controllers/independent-retirement-r1.py",
+      "sha256": "bc046485c36453dad421855f73cc3df9e3156bea28c4547f921bd431305eb0cb"
+    },
+    "runtime/controllers/normal-launch-r1.py": {
+      "bytes": 2062,
+      "path": "evidence/runtime/controllers/normal-launch-r1.py",
+      "sha256": "080d73c848fe7eb3c707e028d526e7895202221905f004b7e805ce71c3ddd950"
+    },
+    "runtime/controllers/normal-worker-r1.py": {
+      "bytes": 20150,
+      "path": "evidence/runtime/controllers/normal-worker-r1.py",
+      "sha256": "cba15eb1e2a7b0e18d7708c88c40c531bd3df24d306744b8be4fc3b95e0c0134"
+    },
+    "runtime/controllers/public-export-r1.py": {
+      "bytes": 5456,
+      "path": "evidence/runtime/controllers/public-export-r1.py",
+      "sha256": "87c112d17523216616a9a812887455ccf0f6bc6c2c8544817072643f6520a86c"
+    },
+    "runtime/durable/independent-exit.json": {
+      "bytes": 496,
+      "path": "evidence/runtime/durable/independent-exit.json",
+      "sha256": "c34e01f8482892473df92080a0446cefcfebe45c4d4b6aaae2640bc8f130778a"
+    },
+    "runtime/durable/independent-request.json": {
+      "bytes": 913,
+      "path": "evidence/runtime/durable/independent-request.json",
+      "sha256": "8da37dc22c9dc6d94790d0694dfd6df7c155ff21a3dd424ce96a3de1620711c3"
+    },
+    "runtime/durable/independent-started.json": {
+      "bytes": 330,
+      "path": "evidence/runtime/durable/independent-started.json",
+      "sha256": "3cbf0841a76019ec29df9f8e1eee3f03fc98edd76915a9862e2c8ef729dfc1a2"
+    },
+    "runtime/durable/normal-exit.json": {
+      "bytes": 502,
+      "path": "evidence/runtime/durable/normal-exit.json",
+      "sha256": "6e551de0fb8a66b0cfa4840967c139ea0ed245cd98dbb13918246db2ac4b9cb7"
+    },
+    "runtime/durable/normal-request.json": {
+      "bytes": 905,
+      "path": "evidence/runtime/durable/normal-request.json",
+      "sha256": "7f185df59403e3ea97eb723db71f68313f8ad9fd0f391c44f27eb550c54e3c7c"
+    },
+    "runtime/durable/normal-started.json": {
+      "bytes": 330,
+      "path": "evidence/runtime/durable/normal-started.json",
+      "sha256": "bcb90803b0dc308a44c0036464e34fc632b368477dc0c7518cf25727f11a0637"
+    },
+    "runtime/independent/PUBLIC-PACKET-MANIFEST.json": {
+      "bytes": 28395,
+      "path": "evidence/runtime/independent/PUBLIC-PACKET-MANIFEST.json",
+      "sha256": "8ee8c1cfe1b94c383a5362bf6821ddd74ffa34d4cb13859b44e92e28a7337950"
+    },
+    "runtime/independent/READER-RETIREMENT.json": {
+      "bytes": 1643,
+      "path": "evidence/runtime/independent/READER-RETIREMENT.json",
+      "sha256": "a220e74e57fdafe695a1b68003669d7a85c239f0b493f7e933decf8bcab6243a"
+    },
+    "runtime/independent/RESULT.json": {
+      "bytes": 7360,
+      "path": "evidence/runtime/independent/RESULT.json",
+      "sha256": "f64c29579d3c4b60a52201a8c8b6e9768119ce29f08e4b16cbdf9df24991ecdd"
+    },
+    "runtime/normal/OWNED-UNIT-RETIREMENT.json": {
+      "bytes": 315,
+      "path": "evidence/runtime/normal/OWNED-UNIT-RETIREMENT.json",
+      "sha256": "724cd517a56e51176009bcc22d860ed692ed9f85b46aac3c93671cacfbfa351b"
+    },
+    "runtime/normal/PARENT-SOURCE-BEFORE.json": {
+      "bytes": 834758,
+      "path": "evidence/runtime/normal/PARENT-SOURCE-BEFORE.json",
+      "sha256": "69e001cdd879fddc34a00293527ec3f1d6cface4cbd3a02888f41ddf5fe080db"
+    },
+    "runtime/normal/RESULT.json": {
+      "bytes": 97958,
+      "path": "evidence/runtime/normal/RESULT.json",
+      "sha256": "b7a18e0f8b37d855f95885ee53cf78b0a8c02446cb2713187e459dfd2a1318c3"
+    },
+    "runtime/normal/SOURCE-BEFORE.json": {
+      "bytes": 849880,
+      "path": "evidence/runtime/normal/SOURCE-BEFORE.json",
+      "sha256": "a0d380265ff9bbb8892167524aa552184bbef93d6ebd914943893d87a276544d"
+    },
+    "runtime/normal/all-ordinary-supervisor-tests.stderr": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/all-ordinary-supervisor-tests.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/all-ordinary-supervisor-tests.stdout": {
+      "bytes": 32411,
+      "path": "evidence/runtime/normal/all-ordinary-supervisor-tests.stdout",
+      "sha256": "d64d106c10e76ea856b0d0ededf444f3f16146b64ed423ff774d188ddc6aee41"
+    },
+    "runtime/normal/candidate-add.stderr": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/candidate-add.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/candidate-add.stdout": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/candidate-add.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/candidate-raw-commit.stderr": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/candidate-raw-commit.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/candidate-raw-commit.stdout": {
+      "bytes": 41,
+      "path": "evidence/runtime/normal/candidate-raw-commit.stdout",
+      "sha256": "31be8c98459697f408a6a28bb127b0d28ec2f16a838526c719c2655427d5b5de"
+    },
+    "runtime/normal/candidate-tree.stderr": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/candidate-tree.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/candidate-tree.stdout": {
+      "bytes": 41,
+      "path": "evidence/runtime/normal/candidate-tree.stdout",
+      "sha256": "42d10865da8b6f6c0dee41c413bd35c9733e8f12d643e222906173ba72f5f3e3"
+    },
+    "runtime/normal/cargo-version.stderr": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/cargo-version.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/cargo-version.stdout": {
+      "bytes": 36,
+      "path": "evidence/runtime/normal/cargo-version.stdout",
+      "sha256": "49f46ff5ffe434e6c1c66388a9230ac33bbe3dbd9175314e9ffc9aa7c418d329"
+    },
+    "runtime/normal/compile-supervisor-library.stderr": {
+      "bytes": 1978,
+      "path": "evidence/runtime/normal/compile-supervisor-library.stderr",
+      "sha256": "6ae32f436b9406caa69161ed6f814cdc24bdf47929203f66cc67f3b7f8b3c93b"
+    },
+    "runtime/normal/compile-supervisor-library.stdout": {
+      "bytes": 97935,
+      "path": "evidence/runtime/normal/compile-supervisor-library.stdout",
+      "sha256": "639fe1e5ff787565de4c153183f267523c5822a6cc2bc32c1036670d924d912a"
+    },
+    "runtime/normal/diff-check.stderr": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/diff-check.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/diff-check.stdout": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/diff-check.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/final-status.stderr": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/final-status.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/final-status.stdout": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/final-status.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/four-fresh-release-binaries.stderr": {
+      "bytes": 2449,
+      "path": "evidence/runtime/normal/four-fresh-release-binaries.stderr",
+      "sha256": "beb4a5f910ca8ff548caf9c4700728553562822c41da81f4cd8eedd1eccccea4"
+    },
+    "runtime/normal/four-fresh-release-binaries.stdout": {
+      "bytes": 116131,
+      "path": "evidence/runtime/normal/four-fresh-release-binaries.stdout",
+      "sha256": "4dc3e2de303904d462240d136e1ce7c114847612a4d6b0097b0eb85bf12a63cb"
+    },
+    "runtime/normal/full-parent.stderr": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/full-parent.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/full-parent.stdout": {
+      "bytes": 41,
+      "path": "evidence/runtime/normal/full-parent.stdout",
+      "sha256": "d87f7ddfb689cba6387f48a1a6143cf99882fde4fd4985b5e8cdfab4eebc14eb"
+    },
+    "runtime/normal/git-init.stderr": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/git-init.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/git-init.stdout": {
+      "bytes": 102,
+      "path": "evidence/runtime/normal/git-init.stdout",
+      "sha256": "3d162ae50d82e3cb6792787f2c05d0e23e26dd785594d9ad8318c4a31679b53b"
+    },
+    "runtime/normal/initial-status.stderr": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/initial-status.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/initial-status.stdout": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/initial-status.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/normal-help-droidloom-source.stderr": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/normal-help-droidloom-source.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/normal-help-droidloom-source.stdout": {
+      "bytes": 699,
+      "path": "evidence/runtime/normal/normal-help-droidloom-source.stdout",
+      "sha256": "b10e5dd4d4db8d30fd6e8529a849b8be9ced9c9ad8cb9d3da0fb95880f993ab5"
+    },
+    "runtime/normal/normal-help-droidloom-supervisor.stderr": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/normal-help-droidloom-supervisor.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/normal-help-droidloom-supervisor.stdout": {
+      "bytes": 712,
+      "path": "evidence/runtime/normal/normal-help-droidloom-supervisor.stdout",
+      "sha256": "6131f0fb5900c2d0052b9dbd5c975cd2270f25352ef9bc0d6f837071460277ea"
+    },
+    "runtime/normal/normal-help-droidloom-update.stderr": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/normal-help-droidloom-update.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/normal-help-droidloom-update.stdout": {
+      "bytes": 2282,
+      "path": "evidence/runtime/normal/normal-help-droidloom-update.stdout",
+      "sha256": "9fff74ad45afcd17d4c224674b94603252f4ffd5ae77e63ee7817d6556cf1f39"
+    },
+    "runtime/normal/normal-help-droidloomd.stderr": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/normal-help-droidloomd.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/normal-help-droidloomd.stdout": {
+      "bytes": 572,
+      "path": "evidence/runtime/normal/normal-help-droidloomd.stdout",
+      "sha256": "95bd58ae17f5f58107a0d75219c4e2d0e224618196c7eb2225107050eb3c548f"
+    },
+    "runtime/normal/parent-add.stderr": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/parent-add.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/parent-add.stdout": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/parent-add.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/parent-raw-commit.stderr": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/parent-raw-commit.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/parent-raw-commit.stdout": {
+      "bytes": 41,
+      "path": "evidence/runtime/normal/parent-raw-commit.stdout",
+      "sha256": "d87f7ddfb689cba6387f48a1a6143cf99882fde4fd4985b5e8cdfab4eebc14eb"
+    },
+    "runtime/normal/parent-tree.stderr": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/parent-tree.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/parent-tree.stdout": {
+      "bytes": 41,
+      "path": "evidence/runtime/normal/parent-tree.stdout",
+      "sha256": "dbc77c6a13155296aee625b38f89dc4e72ebf7138bb719849bc26ac090d64df4"
+    },
+    "runtime/normal/rustc-version.stderr": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/rustc-version.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/rustc-version.stdout": {
+      "bytes": 196,
+      "path": "evidence/runtime/normal/rustc-version.stdout",
+      "sha256": "83e4eefd5e010a92d9f63328bf8219e23fe5e4cf5e5d17ce53d0263cfa4218a6"
+    },
+    "runtime/normal/set-branch.stderr": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/set-branch.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/set-branch.stdout": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/set-branch.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/supervisor-ignored-catalog.stderr": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/supervisor-ignored-catalog.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/supervisor-ignored-catalog.stdout": {
+      "bytes": 1716,
+      "path": "evidence/runtime/normal/supervisor-ignored-catalog.stdout",
+      "sha256": "d9edbaf78cea897e138476fe456180f53d4c55f600622b48c2f4f18c4f86322d"
+    },
+    "runtime/normal/supervisor-test-catalog.stderr": {
+      "bytes": 0,
+      "path": "evidence/runtime/normal/supervisor-test-catalog.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtime/normal/supervisor-test-catalog.stdout": {
+      "bytes": 28845,
+      "path": "evidence/runtime/normal/supervisor-test-catalog.stdout",
+      "sha256": "0d25384a41d508af6bffa371a453456669788482c4874dcc5a91cedc77e6e74a"
+    },
+    "runtime/source/CANDIDATE-r1.patch": {
+      "bytes": 1195680,
+      "path": "evidence/runtime/source/CANDIDATE-r1.patch",
+      "sha256": "d8d0d873f3746539783756bb2514b4807cba3c29db39081d6076d4b0ec59d79f"
+    },
+    "runtime/source/candidate.commit": {
+      "bytes": 315,
+      "path": "evidence/runtime/source/candidate.commit",
+      "sha256": "e70b264b65d01fa5a365f1e5072a6125fc7a312682435ef2cedf6e179852e2d8"
+    },
+    "runtime/source/parent.commit": {
+      "bytes": 308,
+      "path": "evidence/runtime/source/parent.commit",
+      "sha256": "850d6b05e0ea1b9d0a258d0ed879b244ad6ffaef6877bf6970143283808aeb93"
+    },
+    "tools/catalog.json": {
+      "bytes": 31149,
+      "path": "evidence/tools/catalog.json",
+      "sha256": "f0cef31c0597ddb9c1f0f42361b8b7014df76a4284412a744136e02e71e02abb"
+    },
+    "tools/controls/independent-retirement-r2.py": {
+      "bytes": 19357,
+      "path": "evidence/tools/controls/independent-retirement-r2.py",
+      "sha256": "fc14302ffead38d4861f61bb26f1575bb420fd398f195765fe18eacc81ced5c7"
+    },
+    "tools/controls/test-terminal.py": {
+      "bytes": 10892,
+      "path": "evidence/tools/controls/test-terminal.py",
+      "sha256": "5839760e1804f5d4c8f345da8b71b9fc2d48a02e6efd9205535ed3f36787a69b"
+    },
+    "tools/controls/tools334-dma-launch-r1.py": {
+      "bytes": 1887,
+      "path": "evidence/tools/controls/tools334-dma-launch-r1.py",
+      "sha256": "52a0f230be8181679163a892338b4cdf0bf75b22bf0eda05ea66611267a1668b"
+    },
+    "tools/controls/tools334-dma-worker-r1.py": {
+      "bytes": 10285,
+      "path": "evidence/tools/controls/tools334-dma-worker-r1.py",
+      "sha256": "b35050fbfafb1dd83a30463b9013c8e68cd8fdf600274771f63aff561ef0922d"
+    },
+    "tools/controls/tools334-normal-launch-r1.py": {
+      "bytes": 2121,
+      "path": "evidence/tools/controls/tools334-normal-launch-r1.py",
+      "sha256": "ae1cb8a1ff19ce5ed8301feb7f5e60a594cf76a51ba79fd6aa5032739a0e6f21"
+    },
+    "tools/controls/tools334-normal-worker-r1.py": {
+      "bytes": 17382,
+      "path": "evidence/tools/controls/tools334-normal-worker-r1.py",
+      "sha256": "c3904dad7236043ac9b0ca05de5588661ab25ecb13836064e72447e3a404b50c"
+    },
+    "tools/dma/OWNED-RETIREMENT.json": {
+      "bytes": 401,
+      "path": "evidence/tools/dma/OWNED-RETIREMENT.json",
+      "sha256": "618adca11f0bcc90489f74270ab0d23ba34738609ccd84e7c1012256c7661b7d"
+    },
+    "tools/dma/RESULT.json": {
+      "bytes": 122995,
+      "path": "evidence/tools/dma/RESULT.json",
+      "sha256": "cb7147de2ad8a376f2136f241a63bd68af25bc51c56cac806eacdfa43553bac8"
+    },
+    "tools/dma/actual-catalog.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/dma/actual-catalog.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/dma/actual-catalog.stdout": {
+      "bytes": 60,
+      "path": "evidence/tools/dma/actual-catalog.stdout",
+      "sha256": "e954aecf9c8e60f647572a76b5081f3d04aa09f67f52dee7b1d87d7bc2bb0256"
+    },
+    "tools/dma/actual-original-dma-layout.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/dma/actual-original-dma-layout.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/dma/actual-original-dma-layout.stdout": {
+      "bytes": 264,
+      "path": "evidence/tools/dma/actual-original-dma-layout.stdout",
+      "sha256": "da4125bc56176e7c60315e34b547645531fce0f27accd483a19cd06855553aa2"
+    },
+    "tools/dma/all-original-files.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/dma/all-original-files.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/dma/all-original-files.stdout": {
+      "bytes": 8215,
+      "path": "evidence/tools/dma/all-original-files.stdout",
+      "sha256": "607606e2c4afe387917dc266af7478e65bb71b834ae0e51992b70cb51cdd4d96"
+    },
+    "tools/dma/final-private-source-clean.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/dma/final-private-source-clean.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/dma/final-private-source-clean.stdout": {
+      "bytes": 0,
+      "path": "evidence/tools/dma/final-private-source-clean.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/dma/final-producer-clean.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/dma/final-producer-clean.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/dma/final-producer-clean.stdout": {
+      "bytes": 0,
+      "path": "evidence/tools/dma/final-producer-clean.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/dma/final-producer-head.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/dma/final-producer-head.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/dma/final-producer-head.stdout": {
+      "bytes": 41,
+      "path": "evidence/tools/dma/final-producer-head.stdout",
+      "sha256": "31be8c98459697f408a6a28bb127b0d28ec2f16a838526c719c2655427d5b5de"
+    },
+    "tools/dma/head.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/dma/head.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/dma/head.stdout": {
+      "bytes": 41,
+      "path": "evidence/tools/dma/head.stdout",
+      "sha256": "c7b3c74eb9e63d8793f6559099686f9c31ba248f9915e12c2f1aad72b341beb4"
+    },
+    "tools/dma/original-clean.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/dma/original-clean.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/dma/original-clean.stdout": {
+      "bytes": 0,
+      "path": "evidence/tools/dma/original-clean.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/dma/private-copy-complete-original.stderr": {
+      "bytes": 696,
+      "path": "evidence/tools/dma/private-copy-complete-original.stderr",
+      "sha256": "7e57d651cd48ed8a74e58fa2c9a6aab1797b2ca101f98a94d1ec242398679611"
+    },
+    "tools/dma/private-copy-complete-original.stdout": {
+      "bytes": 0,
+      "path": "evidence/tools/dma/private-copy-complete-original.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/dma/tree.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/dma/tree.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/dma/tree.stdout": {
+      "bytes": 41,
+      "path": "evidence/tools/dma/tree.stdout",
+      "sha256": "dead76644ba74bdc9847dd2e51771d7176ef7539a2c9e36b779508e354005c8b"
+    },
+    "tools/durable/dma-exit.json": {
+      "bytes": 502,
+      "path": "evidence/tools/durable/dma-exit.json",
+      "sha256": "cb986fb69df56f3ce17c4162053e8554053f5c169e5bfa32b283dfd294a65071"
+    },
+    "tools/durable/dma-request.json": {
+      "bytes": 1284,
+      "path": "evidence/tools/durable/dma-request.json",
+      "sha256": "9fa40b8031d17ff314e734353bb7b3cf8b8c1835d7df49b6045d9be7bde6db38"
+    },
+    "tools/durable/dma-started.json": {
+      "bytes": 330,
+      "path": "evidence/tools/durable/dma-started.json",
+      "sha256": "984b7bf4b5cf0d848c6180884cf76e956015ba46566f09883394367ffe531283"
+    },
+    "tools/durable/independent-exit.json": {
+      "bytes": 496,
+      "path": "evidence/tools/durable/independent-exit.json",
+      "sha256": "1e7dd1926167dad26bd5ea26d8cfb229eb1ee9d3681e3207f4fed93fc5aadd6e"
+    },
+    "tools/durable/independent-request.json": {
+      "bytes": 1298,
+      "path": "evidence/tools/durable/independent-request.json",
+      "sha256": "4e657353da2d0bfe4de425fe169decb01cdce36541a69051b66ec7d0a2ff3e67"
+    },
+    "tools/durable/independent-started.json": {
+      "bytes": 330,
+      "path": "evidence/tools/durable/independent-started.json",
+      "sha256": "5fa3cca43f27bded5f4fe975fb4d7bc7399b913191821724b84a0170fe1ec57f"
+    },
+    "tools/durable/normal-exit.json": {
+      "bytes": 502,
+      "path": "evidence/tools/durable/normal-exit.json",
+      "sha256": "6a472f5e2df114a1f821ac17e2650e8570c85bdc88fbd7b57c64b5cd2906bcea"
+    },
+    "tools/durable/normal-request.json": {
+      "bytes": 1288,
+      "path": "evidence/tools/durable/normal-request.json",
+      "sha256": "47c4b8e1e7b0f6168e55a87acfc36d742640718ab8c47782c351e89fda8abce9"
+    },
+    "tools/durable/normal-started.json": {
+      "bytes": 330,
+      "path": "evidence/tools/durable/normal-started.json",
+      "sha256": "f21236f77cec85bd514e3defe6c992c760e4a80c776fb545fafcfd2219fd7037"
+    },
+    "tools/history/independent-r1-FAILED.json": {
+      "bytes": 1579,
+      "path": "evidence/tools/history/independent-r1-FAILED.json",
+      "sha256": "75d36de126429ce19adbab77ae97b09b50d52b88b7692c1577403d71592d7e64"
+    },
+    "tools/history/independent-r1-exit.json": {
+      "bytes": 498,
+      "path": "evidence/tools/history/independent-r1-exit.json",
+      "sha256": "eb2725c06887602dff3169b1c3132cee95a02d5270ee5f5ae2b2ac3346bfb0be"
+    },
+    "tools/history/independent-r1-request.json": {
+      "bytes": 1298,
+      "path": "evidence/tools/history/independent-r1-request.json",
+      "sha256": "eec6d91c8564a342d45c316d76f9e40d093dfe82bc5adc66efa4edde3126d060"
+    },
+    "tools/history/independent-r1-started.json": {
+      "bytes": 330,
+      "path": "evidence/tools/history/independent-r1-started.json",
+      "sha256": "3096db513097c271d28d74e699fc637a0c254ae2699932fa67d47c1e665a1356"
+    },
+    "tools/independent/RESULT.json": {
+      "bytes": 13227,
+      "path": "evidence/tools/independent/RESULT.json",
+      "sha256": "1a9c2d37e9d609ca5e6ced833ad96ce2f81917c074247075db6621fd085b50bc"
+    },
+    "tools/normal/OWNED-RETIREMENT.json": {
+      "bytes": 381,
+      "path": "evidence/tools/normal/OWNED-RETIREMENT.json",
+      "sha256": "812eb8677a1718bcb062f4b75762e52e62e909fbe54780c2620055a92f946e1a"
+    },
+    "tools/normal/RESULT.json": {
+      "bytes": 75557,
+      "path": "evidence/tools/normal/RESULT.json",
+      "sha256": "9b0c06c141bfbf4cee4ec765e6a3f437a2bfa7396c6b0276b90b8be4888bd0db"
+    },
+    "tools/normal/aac-security-entry-help.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/aac-security-entry-help.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/aac-security-entry-help.stdout": {
+      "bytes": 374,
+      "path": "evidence/tools/normal/aac-security-entry-help.stdout",
+      "sha256": "4ea22b8dbce40c70ffc67d0e14ce69d234a654ae60740209b98b996e7d6a2fe2"
+    },
+    "tools/normal/compile-all-harnesses.stderr": {
+      "bytes": 556,
+      "path": "evidence/tools/normal/compile-all-harnesses.stderr",
+      "sha256": "61da5418f8a4fa70aaffd2e3aad0960e412f9c7b39bc08fcb8138728f689e111"
+    },
+    "tools/normal/compile-all-harnesses.stdout": {
+      "bytes": 65107,
+      "path": "evidence/tools/normal/compile-all-harnesses.stdout",
+      "sha256": "cd78ff7ba39e71866675d06abf7c53b94a80ff0b908011510d3150b04036a9d4"
+    },
+    "tools/normal/composite-diff-check.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/composite-diff-check.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/composite-diff-check.stdout": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/composite-diff-check.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/dma-heap-catalog.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/dma-heap-catalog.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/dma-heap-catalog.stdout": {
+      "bytes": 60,
+      "path": "evidence/tools/normal/dma-heap-catalog.stdout",
+      "sha256": "e954aecf9c8e60f647572a76b5081f3d04aa09f67f52dee7b1d87d7bc2bb0256"
+    },
+    "tools/normal/final-head.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/final-head.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/final-head.stdout": {
+      "bytes": 41,
+      "path": "evidence/tools/normal/final-head.stdout",
+      "sha256": "31be8c98459697f408a6a28bb127b0d28ec2f16a838526c719c2655427d5b5de"
+    },
+    "tools/normal/final-source-tree.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/final-source-tree.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/final-source-tree.stdout": {
+      "bytes": 229716,
+      "path": "evidence/tools/normal/final-source-tree.stdout",
+      "sha256": "50c49bdbead413f8e5d668588e99bbf671c697987ec7d0bba8201745362480c4"
+    },
+    "tools/normal/final-status.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/final-status.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/final-status.stdout": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/final-status.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/initial-head.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/initial-head.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/initial-head.stdout": {
+      "bytes": 41,
+      "path": "evidence/tools/normal/initial-head.stdout",
+      "sha256": "31be8c98459697f408a6a28bb127b0d28ec2f16a838526c719c2655427d5b5de"
+    },
+    "tools/normal/initial-source-tree.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/initial-source-tree.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/initial-source-tree.stdout": {
+      "bytes": 229716,
+      "path": "evidence/tools/normal/initial-source-tree.stdout",
+      "sha256": "50c49bdbead413f8e5d668588e99bbf671c697987ec7d0bba8201745362480c4"
+    },
+    "tools/normal/initial-status.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/initial-status.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/initial-status.stdout": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/initial-status.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/initial-tree.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/initial-tree.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/initial-tree.stdout": {
+      "bytes": 41,
+      "path": "evidence/tools/normal/initial-tree.stdout",
+      "sha256": "42d10865da8b6f6c0dee41c413bd35c9733e8f12d643e222906173ba72f5f3e3"
+    },
+    "tools/normal/original-erofs-metadata-repack.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/original-erofs-metadata-repack.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/original-erofs-metadata-repack.stdout": {
+      "bytes": 1130,
+      "path": "evidence/tools/normal/original-erofs-metadata-repack.stdout",
+      "sha256": "b88ce0e110f94d3e784a9651731a9944439da5c071e8005064c771dc85ff7cbe"
+    },
+    "tools/normal/private-attr-extract.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/private-attr-extract.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/private-attr-extract.stdout": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/private-attr-extract.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/release-queue-catalog.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/release-queue-catalog.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/release-queue-catalog.stdout": {
+      "bytes": 134,
+      "path": "evidence/tools/normal/release-queue-catalog.stdout",
+      "sha256": "7a3b017e51a7d17831e4e7dffa12a6be53ed42bbe3a27ae848266cac99880839"
+    },
+    "tools/normal/release-queue-original-cpp-2.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/release-queue-original-cpp-2.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/release-queue-original-cpp-2.stdout": {
+      "bytes": 259,
+      "path": "evidence/tools/normal/release-queue-original-cpp-2.stdout",
+      "sha256": "b1dc0d95d14af722a3d323391aa042a3e2fd4a758b28be61795bb06dcabb9ced"
+    },
+    "tools/normal/security-entry-help.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/security-entry-help.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/security-entry-help.stdout": {
+      "bytes": 386,
+      "path": "evidence/tools/normal/security-entry-help.stdout",
+      "sha256": "26bd1a3c5b214d7c7338909292798f96a8acbbde9be59fc828b594ba747094a8"
+    },
+    "tools/normal/source-bin-catalog.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/source-bin-catalog.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/source-bin-catalog.stdout": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/source-bin-catalog.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/source-bin-no-tests.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/source-bin-no-tests.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/source-bin-no-tests.stdout": {
+      "bytes": 113,
+      "path": "evidence/tools/normal/source-bin-no-tests.stdout",
+      "sha256": "df166913f47ff1f04202cae9b31df67ed272d692d99a0023a8117dc3029100dd"
+    },
+    "tools/normal/source-catalog.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/source-catalog.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/source-catalog.stdout": {
+      "bytes": 3314,
+      "path": "evidence/tools/normal/source-catalog.stdout",
+      "sha256": "43516b71be6d8766336ec290ba1431b836b285b6f3754e76e1c2bf247be0f4d5"
+    },
+    "tools/normal/source-doc-tests.stderr": {
+      "bytes": 312,
+      "path": "evidence/tools/normal/source-doc-tests.stderr",
+      "sha256": "135da26f8ddda3262d52441e13248af8f1fe8cd842809ce23b8848ea36d5c529"
+    },
+    "tools/normal/source-doc-tests.stdout": {
+      "bytes": 113,
+      "path": "evidence/tools/normal/source-doc-tests.stdout",
+      "sha256": "df166913f47ff1f04202cae9b31df67ed272d692d99a0023a8117dc3029100dd"
+    },
+    "tools/normal/source-library-43.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/source-library-43.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/source-library-43.stdout": {
+      "bytes": 3687,
+      "path": "evidence/tools/normal/source-library-43.stdout",
+      "sha256": "b12738b0b4157df8c2e2dc5daeb5f9a6ded8b857bd3dc4c428ff5b20066db05b"
+    },
+    "tools/normal/updater-catalog.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/updater-catalog.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/updater-catalog.stdout": {
+      "bytes": 25340,
+      "path": "evidence/tools/normal/updater-catalog.stdout",
+      "sha256": "fd2624d2426cb403fa496a1c42626789849aaff7f6a7dfe3ac9bfb9bbab46c61"
+    },
+    "tools/normal/updater-ignored-catalog.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/updater-ignored-catalog.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/updater-ignored-catalog.stdout": {
+      "bytes": 70,
+      "path": "evidence/tools/normal/updater-ignored-catalog.stdout",
+      "sha256": "8a1aa91f4fb622557d3751a298b872b0eb2f8f214d514385b3e35ab04691a03e"
+    },
+    "tools/normal/updater-main-287-including-network.stderr": {
+      "bytes": 264,
+      "path": "evidence/tools/normal/updater-main-287-including-network.stderr",
+      "sha256": "4912e4a0f6be63972f1450914cf7fb0ed4183b360ad2f19164f50e577dcbb3b9"
+    },
+    "tools/normal/updater-main-287-including-network.stdout": {
+      "bytes": 27110,
+      "path": "evidence/tools/normal/updater-main-287-including-network.stdout",
+      "sha256": "bee604d62c2a03a320d17f118b7ec69988c9b1dd2fbbf87cfe82f09de8cf39e9"
+    },
+    "tools/normal/vendor-bundle-entry-help.stderr": {
+      "bytes": 0,
+      "path": "evidence/tools/normal/vendor-bundle-entry-help.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tools/normal/vendor-bundle-entry-help.stdout": {
+      "bytes": 327,
+      "path": "evidence/tools/normal/vendor-bundle-entry-help.stdout",
+      "sha256": "87beab3684695dc6cd8fce97152d221e78c48cdaf50e24c1baac5715dcde29cd"
+    },
+    "tools/prior-runtime/independent.json": {
+      "bytes": 7360,
+      "path": "evidence/tools/prior-runtime/independent.json",
+      "sha256": "f64c29579d3c4b60a52201a8c8b6e9768119ce29f08e4b16cbdf9df24991ecdd"
+    },
+    "tools/source/SOURCE-BEFORE.json": {
+      "bytes": 1012570,
+      "path": "evidence/tools/source/SOURCE-BEFORE.json",
+      "sha256": "9c63a196df1073f57540b9552191f91b697f84f58ddd3b23eff673d9baf4f309"
+    }
+  },
+  "external_parent_inventory_pins": {
+    "audio538": "41c50621d1d8359be7f18594247f8ccdee4d44b92f3e9b8398b8b67efca5b4d8",
+    "runtimeD6": "52f3362f9c5099538bf71e71256f9c7207882dff8cd4703f61dc6ebcdbaa0888"
+  },
+  "files": [
+    {
+      "mode": "100644",
+      "path": "Cargo.lock",
+      "post": {
+        "bytes": 51845,
+        "sha256": "ca5300907a8e609ac0340d016ecfe7b4292bf45fe5ab3cbe8dd0c013f12a2285"
+      },
+      "pre": {
+        "bytes": 51836,
+        "sha256": "c1dfa6f13f789cf40435d0d72973d029d0e264b27bd833eabb5a727492127f62"
+      }
+    },
+    {
+      "mode": "100644",
+      "path": "docs/contracts/runtime-layout-v1.md",
+      "post": {
+        "bytes": 19212,
+        "sha256": "66a7ba8bae67ba6bf18a51938ccc202402f257779d06d48f725e0870490f38ef"
+      },
+      "pre": {
+        "bytes": 12605,
+        "sha256": "2a2590622306318d37f83d23c8e73adf0e2412e571f70052a3222799d990e9c0"
+      }
+    },
+    {
+      "mode": "100644",
+      "path": "docs/threat-model-v1.md",
+      "post": {
+        "bytes": 7659,
+        "sha256": "11fa6cab25e40b1ad998677712edb175546183a6281356c38d2097b024891a57"
+      },
+      "pre": {
+        "bytes": 5317,
+        "sha256": "20a8ce423f8f77443b7d2910fd44c988214c8387a17067e9429c0ce8e996fa24"
+      }
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/Cargo.toml",
+      "post": {
+        "bytes": 866,
+        "sha256": "f2784bd67f725f21e3e3029d1f1b34114f533a82a81ab8dc448b8e59d50c003f"
+      },
+      "pre": {
+        "bytes": 844,
+        "sha256": "8a5c31742965d5226baadfae8f9ab3370cb1973b2761f4ab7395689c6425f20f"
+      }
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/bin/droidloomd.rs",
+      "post": {
+        "bytes": 3126,
+        "sha256": "0c37b3d172017681789daa9f1908b72112da07940cfbc50ae23b4def041beaf9"
+      },
+      "pre": {
+        "bytes": 1869,
+        "sha256": "85ba21c0d4bdb99218f95e3ea5c4242f01634e1266fff6b9b13ad84afeddb9b0"
+      }
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/control.rs",
+      "post": {
+        "bytes": 73026,
+        "sha256": "373dfcf01d8266c77d549e0028b0e17a939dbdbcfde9f2d3fc6a42cf68d3de64"
+      },
+      "pre": {
+        "bytes": 71588,
+        "sha256": "50d7bc3abd94f83233ef7d461f93cb714f843cacb3fd5c0e929d06671a95f89b"
+      }
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/control_status_tests.rs",
+      "post": {
+        "bytes": 11907,
+        "sha256": "54810199ebc83f282495183a9b608fd2f8dc10691319739ea9c2f9ec6e765422"
+      },
+      "pre": {
+        "bytes": 11843,
+        "sha256": "0bafad33112df280c73ceedf675305236275bb043d0909fc4a71f6366c0a6727"
+      }
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/development.rs",
+      "post": {
+        "bytes": 115701,
+        "sha256": "7745991017baaf8bd2e1ba6a5500465a9732c4b8356bd4edd6257a09d3ba2d95"
+      },
+      "pre": {
+        "bytes": 104803,
+        "sha256": "878631d58d8b08e51dee8903854f4f7a355cafb3b213f363fcd42ec13071c96c"
+      }
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/development_guest_dirs.rs",
+      "post": {
+        "bytes": 3760,
+        "sha256": "9ad6cc48ed5900e4ae106ffd114066acaa166071b1f2710be4246dba54821b1a"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/development_guest_dirs_tests.rs",
+      "post": {
+        "bytes": 17820,
+        "sha256": "6df7c34c9e7cfc0cb5218423392a5590ea7889a280f7f76e79cc0b4e7342573a"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/development_network.rs",
+      "post": {
+        "bytes": 19718,
+        "sha256": "604941e541d50de976a5bcea1342257ca9b52762ba8e58a410467ff86bd6bb7d"
+      },
+      "pre": {
+        "bytes": 19654,
+        "sha256": "19918ce2f6bbc6a6ffccf416ab1b2f91527a9c7ffbda785a72a4e01016627576"
+      }
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/development_process.rs",
+      "post": {
+        "bytes": 7443,
+        "sha256": "b1751c31bdff198cf3ecaec390c396b4a68c6fc5df36b30a888066dbc63b14d4"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/development_process_tests.rs",
+      "post": {
+        "bytes": 14633,
+        "sha256": "11e8030dbb8f4b9846c252d4d9c0a2c16eee9eadb58bb1b7142bc8f0824199b8"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/droidloom-production.service",
+      "post": {
+        "bytes": 722,
+        "sha256": "d081d9b48b632d3239007f4d4084ab397db9602f56adbf4d16115d9145e8e037"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/gapps.rs",
+      "post": {
+        "bytes": 10345,
+        "sha256": "d1676bd56aff2b87c6b7a86fe762687e5bc5d1299564c4ab77d7368a8e888a34"
+      },
+      "pre": {
+        "bytes": 10178,
+        "sha256": "5aae77729f0389ebdd80c41c55ba7dab980ab6caf38f427b0e7cbfab6d2f1978"
+      }
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/image_layout.rs",
+      "post": {
+        "bytes": 4624,
+        "sha256": "9374fb3261f7133a165ec5d075ffebc58cc7f3b2fd4301b3e068f48f215c89be"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/lib.rs",
+      "post": {
+        "bytes": 38147,
+        "sha256": "7a1134c6f28229471b1d2a2b67d99f26e2e5d04f203afdab815ef256ad4d7a0e"
+      },
+      "pre": {
+        "bytes": 33306,
+        "sha256": "b539588d8d353a9b5b658600687f532bd03a9b7c37a5c063c25b6612a58b0370"
+      }
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/linux_plan.rs",
+      "post": {
+        "bytes": 42286,
+        "sha256": "cb182868fe240a051497c70a8d1a3cf38467034a772f9211104f51c8dcfabe14"
+      },
+      "pre": {
+        "bytes": 39598,
+        "sha256": "e7204473b982b1d26fbf13e59d67efbad2d24f04beaa9db0b664081e27bfbaaf"
+      }
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/main.rs",
+      "post": {
+        "bytes": 10426,
+        "sha256": "a32c5c54d5ea5984876d74cecb8fdb65fc17323bad89d46c8e32c100fe9a92e1"
+      },
+      "pre": {
+        "bytes": 3223,
+        "sha256": "feff8417443e1b8cbe02fb84ee7c253fe136dee205f316d2184ec4a94345c862"
+      }
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/proc_postexec_probe.c",
+      "post": {
+        "bytes": 13152,
+        "sha256": "1c48880ddd3403507045f4807221f9c34d356bb712faf813cfcb3bc499acf99f"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_cell.rs",
+      "post": {
+        "bytes": 8011,
+        "sha256": "f424c4d38028cba4467aaeb3446d3d59a9c9d3da35da4e74816a8ab1f4532ef7"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_cgroup.rs",
+      "post": {
+        "bytes": 44128,
+        "sha256": "548e66f8c838d65fa625d242c23ee1c0639511323b90216d08dca6a09ab52857"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_control.rs",
+      "post": {
+        "bytes": 31218,
+        "sha256": "fd8434c97bdc3f15d59b986b11a68ae640edff7550101cf63fdbc180ac991a21"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_devices.rs",
+      "post": {
+        "bytes": 31533,
+        "sha256": "82001f3516461205f0e7688fcd04c2a95e05bba99c5fcbca3e04a556d72daff4"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_execution.rs",
+      "post": {
+        "bytes": 3213,
+        "sha256": "c2a19ac44e770e774a0d3a640798705b05b37de01fc2bde2f54240189c17a787"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_host_admission.rs",
+      "post": {
+        "bytes": 165820,
+        "sha256": "f6bab120181162c2841e2d9c5ca3cb145a199b96bd8c3cab44fed6d60118d550"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_identity.rs",
+      "post": {
+        "bytes": 58995,
+        "sha256": "953b5b896cf0f697082eb34c67057414f2874bb1a07a9d78e3355636c59f7e64"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_mounts.rs",
+      "post": {
+        "bytes": 59173,
+        "sha256": "35d262721fd821e6aa2658f0a9393ce683db0ee12d87d33b3e20e57632e23e65"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_namespace.rs",
+      "post": {
+        "bytes": 50774,
+        "sha256": "480fde2de907c552852a2ca4fcb97286f10d8e4a6bad2874cd4fbc30573a494d"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_namespace_binder_child.rs",
+      "post": {
+        "bytes": 23315,
+        "sha256": "8af29ce3b6824d72b6c2b4901b96e9bb549f8e903672065d3a5f16311195cd5e"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_namespace_binder_ipc_child.rs",
+      "post": {
+        "bytes": 26376,
+        "sha256": "b2e91a38012c533da580e0506ae7fd088c8eeca8552308df4e159ca0bb1ecf99"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_namespace_binder_parent.rs",
+      "post": {
+        "bytes": 21779,
+        "sha256": "ad7b9aa3b7a2ba81c35dd0a4cd66ca80e3e4a4f202a0b5584f9eb6b7607aef71"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_namespace_child.rs",
+      "post": {
+        "bytes": 29052,
+        "sha256": "5a6949cee33791ec5ea8698068d6eaa4d3a1b60f4c54c9bac323f35b0ba2a26d"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_namespace_device_child.rs",
+      "post": {
+        "bytes": 11662,
+        "sha256": "9064454443072575174fac97287778e50eda502b2d777536d07778c3697bc488"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_namespace_exec_child.rs",
+      "post": {
+        "bytes": 6503,
+        "sha256": "f0574322c6fac1ba0f86783dcc912cad8e9c47404338c0807e6a8bdeb68e17ee"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_namespace_execution_parent.rs",
+      "post": {
+        "bytes": 12503,
+        "sha256": "d50a9c4d10fbd8452f99f14a10797d97f862fa24f2827ac8a2441bd981c3777b"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_namespace_mount_child.rs",
+      "post": {
+        "bytes": 24490,
+        "sha256": "4aa536e2755db9b8bd4a2283c5a08159ba5c2451c0945a60b5fda2824af088bc"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_namespace_postexec_child.rs",
+      "post": {
+        "bytes": 9011,
+        "sha256": "e043da1ebe4a662b340b25d41128886ba315a3d67eed66772d6ab158292ec742"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_namespace_postexec_parent.rs",
+      "post": {
+        "bytes": 16695,
+        "sha256": "3ecbafe5dca7f0442d731a7f0e7a77410a6827e260dbd27218d6fb7555f7200b"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_namespace_processfs_child.rs",
+      "post": {
+        "bytes": 29662,
+        "sha256": "15a7ea59b960a70976eea66a5c8b3320a7005476c9bec041ded4cd9a726b5b98"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_namespace_runtime_child.rs",
+      "post": {
+        "bytes": 20536,
+        "sha256": "b05102037a54b5d5f96cc37b52e790d2365a56ec5415fc3bd6383cc467698676"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_namespace_runtime_parent.rs",
+      "post": {
+        "bytes": 15028,
+        "sha256": "fb486a17f45239cecbcec8169735349eaf63786aa05f92c8dec44cea0511cad5"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+      "post": {
+        "bytes": 14458,
+        "sha256": "b279fc6e16ac685de6f9bb6635434b22e8ecc3d2f41bca0adb47266d1e705763"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_namespace_tree.rs",
+      "post": {
+        "bytes": 156734,
+        "sha256": "c25dc18a52e0869d32384d48cb05ec20b11db531e793519e4d496afc38ae24b3"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_namespace_writable_proc_child.rs",
+      "post": {
+        "bytes": 18983,
+        "sha256": "780b9f0af9f2474eafb82288d419d386022699d1392e042c9a9e50e09094b2c7"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_namespace_writable_proc_parent.rs",
+      "post": {
+        "bytes": 53518,
+        "sha256": "4e6a3cdb4490eacb73b7823061ebacc1dc7a6e9bfc750e61ea013085a584869a"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_postexec_probe_identity.rs",
+      "post": {
+        "bytes": 229,
+        "sha256": "b2bcfa5421bfb48d21211036c17b350dca326d6ed4b421e7fe470f9634694f7d"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_readiness.rs",
+      "post": {
+        "bytes": 11704,
+        "sha256": "5b7e4974229d74e1531bdba37282501e4859a26ba6faefe1bf5deb2092bf795b"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_runtime_assets.rs",
+      "post": {
+        "bytes": 33850,
+        "sha256": "6c11a1212feac82b7fcdb44ef3d24e6634c8a5ed53adbf1cccefc0ee8ecd0903"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_runtime_seccomp.rs",
+      "post": {
+        "bytes": 9969,
+        "sha256": "7acc608ea9dfc538ac7e1309ac0fddaf3aee60255fcc7ec8e05a43795d9126ee"
+      },
+      "pre": null
+    },
+    {
+      "mode": "100644",
+      "path": "runtime/droidloom-supervisor/src/production_selection.rs",
+      "post": {
+        "bytes": 16759,
+        "sha256": "1e56ebc1a3ad8039c21d459dff717662f4a4f189e50eb040d7b7b7d7bc1a3572"
+      },
+      "pre": null
+    }
+  ],
+  "fresh_CI_current_tool_tests_requested": 4,
+  "fresh_CI_runtime_ordinary_tests_requested": 289,
+  "fresh_CI_tests_prequalified": false,
+  "head": {
+    "commit": "273d1a2b554923b7b53e645560ddbe5999cbde9b",
+    "files": 1595,
+    "inventory": {
+      "bytes": 473589,
+      "path": "head-files.json",
+      "sha256": "2d9aa4072e372ec71d0006f5a599a6271035aca4cf2094bd03dce1517f5a6d51"
+    },
+    "raw_commit": {
+      "bytes": 315,
+      "path": "git-objects/head.commit",
+      "sha256": "e70b264b65d01fa5a365f1e5072a6125fc7a312682435ef2cedf6e179852e2d8"
+    },
+    "tree": "cde7467f68d2de89f688431cafd494fed147e247"
+  },
+  "historical_actual_fresh_release_binaries": 4,
+  "historical_actual_runtime_ordinary_tests": 289,
+  "historical_actual_tool_tests": 334,
+  "historical_runtime_privileged_ignored": 21,
+  "host_policy_writes": 0,
+  "new_paths": [
+    "runtime/droidloom-supervisor/src/development_guest_dirs.rs",
+    "runtime/droidloom-supervisor/src/development_guest_dirs_tests.rs",
+    "runtime/droidloom-supervisor/src/development_process.rs",
+    "runtime/droidloom-supervisor/src/development_process_tests.rs",
+    "runtime/droidloom-supervisor/src/droidloom-production.service",
+    "runtime/droidloom-supervisor/src/image_layout.rs",
+    "runtime/droidloom-supervisor/src/proc_postexec_probe.c",
+    "runtime/droidloom-supervisor/src/production_cell.rs",
+    "runtime/droidloom-supervisor/src/production_cgroup.rs",
+    "runtime/droidloom-supervisor/src/production_control.rs",
+    "runtime/droidloom-supervisor/src/production_devices.rs",
+    "runtime/droidloom-supervisor/src/production_execution.rs",
+    "runtime/droidloom-supervisor/src/production_host_admission.rs",
+    "runtime/droidloom-supervisor/src/production_identity.rs",
+    "runtime/droidloom-supervisor/src/production_mounts.rs",
+    "runtime/droidloom-supervisor/src/production_namespace.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_binder_child.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_binder_ipc_child.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_binder_parent.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_child.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_device_child.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_exec_child.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_execution_parent.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_mount_child.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_postexec_child.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_postexec_parent.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_processfs_child.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_runtime_child.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_runtime_parent.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_tree.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_writable_proc_child.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_writable_proc_parent.rs",
+    "runtime/droidloom-supervisor/src/production_postexec_probe_identity.rs",
+    "runtime/droidloom-supervisor/src/production_readiness.rs",
+    "runtime/droidloom-supervisor/src/production_runtime_assets.rs",
+    "runtime/droidloom-supervisor/src/production_runtime_seccomp.rs",
+    "runtime/droidloom-supervisor/src/production_selection.rs"
+  ],
+  "original_candidate": {
+    "bytes": 488406,
+    "path": "provenance/CANDIDATE-MANIFEST-r1.json",
+    "sha256": "2f9cf9529f025cea2cbc8f1ee6fa512c8f169f9d93fbb43a5df071dbd2f88fe0"
+  },
+  "patch": {
+    "bytes": 1195680,
+    "path": "source.patch",
+    "sha256": "d8d0d873f3746539783756bb2514b4807cba3c29db39081d6076d4b0ec59d79f"
+  },
+  "private_minigbm_fixture_in_producer": false,
+  "production_ready": false,
+  "runtime": {
+    "commit": "7d86a66b8d95477781519cec99e53fd0e76b6f36",
+    "files": 430,
+    "inventory": {
+      "bytes": 110022,
+      "path": "runtime-files.json",
+      "sha256": "95d5b7c9cf2190fa4c822ca08955063a0ba034554bc05fcdab55b2d4c6e79bee"
+    },
+    "raw_commit": {
+      "bytes": 267,
+      "path": "git-objects/runtime.commit",
+      "sha256": "28718f392580db754534fb86e3324067fe5d3a0648300392b6b7653963c033b1"
+    },
+    "tree": "224fdc48b1083044cdce30a09ee4ec995a48c12d"
+  },
+  "runtime_qualified": false,
+  "schema": "pocket4-runtime-d7-complete-unified1595-source-v1",
+  "selected_runtime_paths": [
+    "runtime/droidloom-supervisor/Cargo.toml",
+    "runtime/droidloom-supervisor/assets/development-cgroups.json",
+    "runtime/droidloom-supervisor/examples/cpu-placement-probe.rs",
+    "runtime/droidloom-supervisor/src/apk.rs",
+    "runtime/droidloom-supervisor/src/apk_set.rs",
+    "runtime/droidloom-supervisor/src/bin/droidloomctl.rs",
+    "runtime/droidloom-supervisor/src/bin/droidloomd.rs",
+    "runtime/droidloom-supervisor/src/control.rs",
+    "runtime/droidloom-supervisor/src/control_progress.rs",
+    "runtime/droidloom-supervisor/src/control_status_tests.rs",
+    "runtime/droidloom-supervisor/src/cpu_placement.rs",
+    "runtime/droidloom-supervisor/src/development.rs",
+    "runtime/droidloom-supervisor/src/development_guest_dirs.rs",
+    "runtime/droidloom-supervisor/src/development_guest_dirs_tests.rs",
+    "runtime/droidloom-supervisor/src/development_network.rs",
+    "runtime/droidloom-supervisor/src/development_overrides.rs",
+    "runtime/droidloom-supervisor/src/development_process.rs",
+    "runtime/droidloom-supervisor/src/development_process_tests.rs",
+    "runtime/droidloom-supervisor/src/diagnostics.rs",
+    "runtime/droidloom-supervisor/src/droidloom-production.service",
+    "runtime/droidloom-supervisor/src/gapps.rs",
+    "runtime/droidloom-supervisor/src/image_layout.rs",
+    "runtime/droidloom-supervisor/src/lib.rs",
+    "runtime/droidloom-supervisor/src/linux_plan.rs",
+    "runtime/droidloom-supervisor/src/main.rs",
+    "runtime/droidloom-supervisor/src/package_cache.rs",
+    "runtime/droidloom-supervisor/src/proc_postexec_probe.c",
+    "runtime/droidloom-supervisor/src/production_cell.rs",
+    "runtime/droidloom-supervisor/src/production_cgroup.rs",
+    "runtime/droidloom-supervisor/src/production_control.rs",
+    "runtime/droidloom-supervisor/src/production_devices.rs",
+    "runtime/droidloom-supervisor/src/production_execution.rs",
+    "runtime/droidloom-supervisor/src/production_host_admission.rs",
+    "runtime/droidloom-supervisor/src/production_identity.rs",
+    "runtime/droidloom-supervisor/src/production_mounts.rs",
+    "runtime/droidloom-supervisor/src/production_namespace.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_binder_child.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_binder_ipc_child.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_binder_parent.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_child.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_device_child.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_exec_child.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_execution_parent.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_mount_child.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_postexec_child.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_postexec_parent.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_processfs_child.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_runtime_child.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_runtime_parent.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_tests.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_tree.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_writable_proc_child.rs",
+    "runtime/droidloom-supervisor/src/production_namespace_writable_proc_parent.rs",
+    "runtime/droidloom-supervisor/src/production_postexec_probe_identity.rs",
+    "runtime/droidloom-supervisor/src/production_readiness.rs",
+    "runtime/droidloom-supervisor/src/production_runtime_assets.rs",
+    "runtime/droidloom-supervisor/src/production_runtime_seccomp.rs",
+    "runtime/droidloom-supervisor/src/production_selection.rs",
+    "runtime/droidloom-supervisor/tests/cli_diagnostics.rs",
+    "runtime/droidloom-supervisor/tests/cli_inspect.rs",
+    "runtime/droidloom-supervisor/tests/cli_install.rs",
+    "runtime/droidloom-supervisor/tests/cli_install_multiple.rs",
+    "runtime/droidloom-supervisor/tests/cli_lifecycle.rs",
+    "Cargo.lock",
+    "docs/contracts/runtime-layout-v1.md",
+    "docs/threat-model-v1.md"
+  ],
+  "source_lock_projects": 538,
+  "test_catalog": {
+    "bytes": 90808,
+    "path": "test-catalog.json",
+    "sha256": "929e897ebc3179d1fec8987cd8f35dc05651931475c2f0c2619ae21f85de5239"
+  },
+  "unchanged_IR_and_AAC_repairs": true,
+  "unchanged_audio_files": 1544
+}

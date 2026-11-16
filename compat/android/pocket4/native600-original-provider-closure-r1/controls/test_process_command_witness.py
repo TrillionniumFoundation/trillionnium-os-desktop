@@ -1,0 +1,194 @@
+import copy
+import hashlib
+import os
+from pathlib import Path
+import select
+import subprocess
+import tempfile
+import unittest
+
+from process_command_witness import (PinnedExecutable, validate_executed_command,
+                                     validate_temporary_environment)
+
+
+ARGV = ['/build/tools/normal-builder', '--source', '/build/recipe', '-j6',
+        'audio-apex-build', '--work', '/build/work']
+INITIAL = {'pid': 4321, 'start_ticks': 123456, 'exe': ARGV[0],
+           'cgroup': '0::/system.slice/owned-build.service\n', 'argv': []}
+
+
+def numeric_proc_executable_available():
+    try:
+        fd = os.open('/proc/%d/exe' % os.getpid(), os.O_RDONLY | os.O_CLOEXEC)
+    except OSError:
+        return False
+    os.close(fd)
+    return True
+
+
+class CommandWitnessTests(unittest.TestCase):
+    def current(self):
+        return dict(INITIAL, argv=list(ARGV))
+
+    def check(self, current):
+        return validate_executed_command(INITIAL, current, ARGV, ARGV[0])
+
+    def test_original_full_dictionary_comparison_reproduces_exec_window_failure(self):
+        current = self.current()
+        self.assertNotEqual(INITIAL, current)
+        with self.assertRaisesRegex(RuntimeError, 'original generation check'):
+            if INITIAL != current:
+                raise RuntimeError('original generation check')
+        self.assertEqual(self.check(current)['pid'], INITIAL['pid'])
+
+    def test_pid_and_start_ticks_cannot_change(self):
+        for field in ('pid', 'start_ticks'):
+            with self.subTest(field=field), self.assertRaises(RuntimeError):
+                row = self.current(); row[field] += 1; self.check(row)
+
+    def test_identity_integers_reject_bool_float_and_string(self):
+        for field in ('pid', 'start_ticks'):
+            for bad in (True, False, 4321.0, '4321', 0, -1):
+                with self.subTest(field=field, value=bad), self.assertRaises(RuntimeError):
+                    row = self.current(); row[field] = bad; self.check(row)
+
+    def test_executable_and_cgroup_cannot_change(self):
+        for field, bad in (('exe', '/build/tools/other'), ('cgroup', '0::/other\n'),
+                           ('exe', ''), ('cgroup', False)):
+            with self.subTest(field=field, value=bad), self.assertRaises(RuntimeError):
+                row = self.current(); row[field] = bad; self.check(row)
+
+    def test_actual_argv_is_exact_even_when_generation_matches(self):
+        for argv in ([], ARGV[:-1], ARGV + ['--relaxed'], list(reversed(ARGV)),
+                     [*ARGV[:3], '-j1', *ARGV[4:]], [False, *ARGV[1:]], tuple(ARGV)):
+            with self.subTest(argv=argv), self.assertRaises(RuntimeError):
+                self.check(dict(INITIAL, argv=argv))
+
+    def test_frozen_command_requires_pinned_absolute_executable(self):
+        for expected in ('normal-builder', '/build/tools/other', False):
+            with self.subTest(expected=expected), self.assertRaises(RuntimeError):
+                validate_executed_command(INITIAL, self.current(), ARGV, expected)
+
+    def test_initial_observation_is_not_rewritten(self):
+        before = copy.deepcopy(INITIAL); current = self.current(); after = copy.deepcopy(current)
+        self.check(current)
+        self.assertEqual(INITIAL, before); self.assertEqual(current, after)
+
+    def test_named_executable_pin_rejects_changed_bytes_symlink_and_types(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / 'tool'; path.write_bytes(b'owned executable')
+            ref = {'path': str(path), 'bytes': path.stat().st_size,
+                   'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
+            with PinnedExecutable(ref) as held:
+                self.assertIsNotNone(held.named_fd)
+            self.assertIsNone(held.named_fd)
+            for key, bad in (('bytes', True), ('bytes', float(ref['bytes'])),
+                             ('sha256', '0' * 64), ('sha256', True)):
+                with self.subTest(field=key), self.assertRaises(RuntimeError):
+                    with PinnedExecutable(dict(ref, **{key: bad})):
+                        pass
+            link = Path(temporary) / 'link'; link.symlink_to(path)
+            with self.assertRaises(OSError):
+                with PinnedExecutable(dict(ref, path=str(link))):
+                    pass
+
+    def test_held_executable_rejects_replacement(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / 'tool'; path.write_bytes(b'owned executable')
+            ref = {'path': str(path), 'bytes': path.stat().st_size,
+                   'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
+            with self.assertRaises(RuntimeError):
+                with PinnedExecutable(ref) as held:
+                    replacement = Path(temporary) / 'replacement'; replacement.write_bytes(path.read_bytes())
+                    replacement.replace(path); held.verify_named()
+            self.assertIsNone(held.named_fd)
+
+    def test_actual_temporary_environment_requires_both_exact_values(self):
+        raw = b'PATH=/usr/bin\0TMPDIR=/owned/tmp\0OTHER=not-recorded\0GOTMPDIR=/owned/tmp\0'
+        self.assertEqual(validate_temporary_environment(raw, '/owned/tmp'),
+                         {'TMPDIR': '/owned/tmp', 'GOTMPDIR': '/owned/tmp'})
+        with self.assertRaises(RuntimeError):
+            self.check(INITIAL)  # Correct environment cannot qualify an empty initial argv.
+
+    def test_empty_incomplete_or_wrong_type_environment_never_passes(self):
+        for raw in (b'', b'\0', b'TMPDIR=/owned/tmp\0', b'GOTMPDIR=/owned/tmp\0',
+                    b'TMPDIR=/owned/tmp\0GOTMPDIR=/owned/tmp', '', True,
+                    bytearray(b'TMPDIR=/owned/tmp\0GOTMPDIR=/owned/tmp\0')):
+            with self.subTest(raw=repr(raw)), self.assertRaises(RuntimeError):
+                validate_temporary_environment(raw, '/owned/tmp')
+
+    def test_temporary_value_change_or_lookalike_path_is_rejected(self):
+        for name in (b'TMPDIR', b'GOTMPDIR'):
+            for bad in (b'', b'/tmp', b'/owned/tmp/', b'/owned/tmp-other'):
+                values = {b'TMPDIR': b'/owned/tmp', b'GOTMPDIR': b'/owned/tmp'}
+                values[name] = bad
+                raw = b'\0'.join(k + b'=' + v for k, v in values.items()) + b'\0'
+                with self.subTest(name=name, bad=bad), self.assertRaises(RuntimeError):
+                    validate_temporary_environment(raw, '/owned/tmp')
+
+    def test_duplicate_malformed_or_oversize_temporary_environment_is_rejected(self):
+        good = b'TMPDIR=/owned/tmp\0GOTMPDIR=/owned/tmp\0'
+        for raw in (good + b'TMPDIR=/owned/tmp\0', good + b'GOTMPDIR=/other\0',
+                    b'TMPDIR\0GOTMPDIR=/owned/tmp\0', good + b'Z=' + b'x' * 1024**2 + b'\0'):
+            with self.subTest(length=len(raw)), self.assertRaises(RuntimeError):
+                validate_temporary_environment(raw, '/owned/tmp')
+
+    def test_temporary_expected_path_is_a_strict_absolute_string(self):
+        raw = b'TMPDIR=/owned/tmp\0GOTMPDIR=/owned/tmp\0'
+        for expected in ('', 'relative', '/owned/tmp\0', True, b'/owned/tmp'):
+            with self.subTest(expected=expected), self.assertRaises(RuntimeError):
+                validate_temporary_environment(raw, expected)
+
+    @unittest.skipUnless(numeric_proc_executable_available(), 'readable Linux numeric procfs executable required')
+    def test_actual_running_executable_requires_two_boundaries_and_matches_pin(self):
+        path = Path('/proc/self/exe').resolve()
+        ref = {'path': str(path), 'bytes': path.stat().st_size,
+               'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
+        with tempfile.TemporaryDirectory() as temporary:
+            argv = [str(path), '-I', '-B', '-c',
+                    'import sys;sys.stdout.write("ready\\n");sys.stdout.flush();sys.stdin.buffer.read(1)']
+            child = subprocess.Popen(argv, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE,
+                                     env={'PATH': '/usr/bin:/bin', 'TMPDIR': temporary, 'GOTMPDIR': temporary})
+            pidfd = os.pidfd_open(child.pid)
+            try:
+                self.assertTrue(select.select([child.stdout], [], [], 5)[0])
+                self.assertEqual(child.stdout.readline(), b'ready\n')
+                def observe():
+                    root = Path('/proc') / str(child.pid)
+                    raw = (root / 'stat').read_text(); fields = raw[raw.rfind(')') + 2:].split()
+                    return {'pid': child.pid, 'start_ticks': int(fields[19]),
+                            'exe': os.readlink(root / 'exe'), 'cgroup': (root / 'cgroup').read_text(),
+                            'argv': [part.decode() for part in (root / 'cmdline').read_bytes().split(b'\0') if part]}
+                initial = dict(observe(), argv=[])
+                with PinnedExecutable(ref) as held:
+                    before = observe()
+                    stable = validate_executed_command(initial, before, argv, str(path))
+                    held.verify_running(child.pid)
+                    first = validate_temporary_environment(
+                        (Path('/proc') / str(child.pid) / 'environ').read_bytes(), temporary)
+                    with self.assertRaises(RuntimeError):
+                        held.record()
+                    after = observe()
+                    self.assertEqual(validate_executed_command(initial, after, argv, str(path)), stable)
+                    held.verify_running(child.pid)
+                    second = validate_temporary_environment(
+                        (Path('/proc') / str(child.pid) / 'environ').read_bytes(), temporary)
+                    self.assertEqual(first, second)
+                    self.assertEqual(held.record()['boundary_observations'], 2)
+                    self.assertFalse(select.select([pidfd], [], [], 0)[0])
+            finally:
+                if child.poll() is None:
+                    child.stdin.write(b'x'); child.stdin.flush()
+                try:
+                    child.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    child.kill(); child.wait(timeout=5)
+                os.close(pidfd)
+                child.stdin.close(); child.stdout.close(); child.stderr.close()
+            self.assertEqual(child.returncode, 0)
+        self.assertIsNone(held.executed_fd); self.assertIsNone(held.named_fd)
+
+
+if __name__ == '__main__':
+    unittest.main()

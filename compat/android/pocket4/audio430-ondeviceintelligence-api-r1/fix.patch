@@ -1,0 +1,1228 @@
+From 0342210a3bd82bf46067a1dbaf740e16f291a38a Mon Sep 17 00:00:00 2001
+From: Tomasrgbsf <tomasbraynt@gmail.com>
+Date: Mon, 9 Nov 2026 05:29:32 -0500
+Subject: [PATCH] Restore original ondeviceintelligence system-server APIs
+
+---
+ .../manifest/audio-bridge-source-lock.json    |   2 +
+ tools/droidloom-source/src/lib.rs             |  51 +-
+ tools/droidloom-update/src/android.rs         | 184 +++++++-
+ .../build__soong__java__prebuilt_apis.go      | 439 ++++++++++++++++++
+ ...dules__NeuralNetworks__service__Android.bp |  85 ++++
+ ...__service-ondeviceintelligence-removed.txt |   1 +
+ ...ver__api__service-ondeviceintelligence.txt |   1 +
+ .../prebuilts__sdk__Android.bp                | 259 +++++++++++
+ .../provenance.json                           |  51 ++
+ 9 files changed, 1066 insertions(+), 7 deletions(-)
+ create mode 100644 tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/build__soong__java__prebuilt_apis.go
+ create mode 100644 tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/packages__modules__NeuralNetworks__service__Android.bp
+ create mode 100644 tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__36__system-server__api__service-ondeviceintelligence-removed.txt
+ create mode 100644 tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__36__system-server__api__service-ondeviceintelligence.txt
+ create mode 100644 tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__Android.bp
+ create mode 100644 tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/provenance.json
+
+diff --git a/android/manifest/audio-bridge-source-lock.json b/android/manifest/audio-bridge-source-lock.json
+index 4188934bb766e8a5517587e4dc49c2b0bc61a0bb..e034c9c11fa92dc7b9a0d26a22e7ccbc02cfc97b 100644
+--- a/android/manifest/audio-bridge-source-lock.json
++++ b/android/manifest/audio-bridge-source-lock.json
+@@ -5479,6 +5479,8 @@
+         "36/system/api/framework-ondeviceintelligence-removed.txt",
+         "36/module-lib/api/framework-ondeviceintelligence.txt",
+         "36/module-lib/api/framework-ondeviceintelligence-removed.txt",
++        "36/system-server/api/service-ondeviceintelligence.txt",
++        "36/system-server/api/service-ondeviceintelligence-removed.txt",
+         "current/androidx-legacy",
+         "current/extras/app-toolkit",
+         "35/public/android.jar",
+diff --git a/tools/droidloom-source/src/lib.rs b/tools/droidloom-source/src/lib.rs
+index 766036c62881cf8f2d03ef7491305d2b2cb5da99..cbb7136b3cddd53adb12a95d8bcaa15a3ef6f31d 100644
+--- a/tools/droidloom-source/src/lib.rs
++++ b/tools/droidloom-source/src/lib.rs
+@@ -943,8 +943,24 @@ mod tests {
+         }
+     }
+ 
++    fn audio_before_ondeviceintelligence_api_lock() -> String {
++        let mut previous = include_str!("../../../android/manifest/audio-bridge-source-lock.json").to_string();
++        for path in [
++            "36/system-server/api/service-ondeviceintelligence.txt",
++            "36/system-server/api/service-ondeviceintelligence-removed.txt",
++        ] {
++            let selected = format!("        \"{path}\",\n");
++            assert_eq!(previous.matches(&selected).count(), 1, "{path}");
++            previous = previous.replacen(&selected, "", 1);
++        }
++        use sha2::{Digest, Sha256};
++        assert_eq!(format!("{:x}", Sha256::digest(previous.as_bytes())),
++            "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a");
++        previous
++    }
++
+     fn audio_before_pasit_lock() -> String {
+-        let current = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
++        let current = audio_before_ondeviceintelligence_api_lock();
+         let (prefix, _) = current.split_once(",\n    {\n      \"path\": \"tools/test/desktop/mobly\",").unwrap();
+         let previous = format!("{prefix}\n  ]\n}}\n");
+         assert_eq!(format!("{:x}", Sha256::digest(previous.as_bytes())),
+@@ -955,8 +971,8 @@ mod tests {
+     #[test]
+     fn audio_pasit_extends_the_actual_425_source_with_only_five_original_projects() {
+         let old: SparseSourceLock = serde_json::from_str(&audio_before_pasit_lock()).unwrap();
+-        let current: SparseSourceLock = serde_json::from_str(include_str!(
+-            "../../../android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let current: SparseSourceLock =
++            serde_json::from_str(&audio_before_ondeviceintelligence_api_lock()).unwrap();
+         let before = build_plan(&old).unwrap();
+         let after = build_plan(&current).unwrap();
+         assert_eq!(before.projects.len(), 425);
+@@ -972,6 +988,33 @@ mod tests {
+         assert!(validate_plan_extension(&before, &repinned).is_err());
+     }
+ 
++    #[test]
++    fn audio_ondeviceintelligence_extends_the_actual_430_lock_with_only_two_api_inputs() {
++        let previous = audio_before_ondeviceintelligence_api_lock();
++        let current = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
++        let old: SparseSourceLock = serde_json::from_str(&previous).unwrap();
++        let new: SparseSourceLock = serde_json::from_str(current).unwrap();
++        let before = build_plan(&old).unwrap();
++        let after = build_plan(&new).unwrap();
++        assert_eq!(before.projects.len(), 430);
++        assert_eq!(after.projects.len(), 430);
++        validate_plan_extension(&before, &after).unwrap();
++        assert!(validate_plan_extension(&after, &before).is_err());
++
++        let old_value: serde_json::Value = serde_json::from_str(&previous).unwrap();
++        let mut restored: serde_json::Value = serde_json::from_str(current).unwrap();
++        let sdk = restored["projects"].as_array_mut().unwrap().iter_mut()
++            .find(|project| project["path"] == "prebuilts/sdk").unwrap();
++        let paths = sdk["sparse_paths"].as_array_mut().unwrap();
++        let count = paths.len();
++        paths.retain(|path| ![
++            "36/system-server/api/service-ondeviceintelligence.txt",
++            "36/system-server/api/service-ondeviceintelligence-removed.txt",
++        ].contains(&path.as_str().unwrap()));
++        assert_eq!(count - paths.len(), 2);
++        assert_eq!(restored, old_value);
++    }
++
+     // Reconstruct the exact previously qualified lock without changing its
+     // commits, purposes, field order or existing source cones.
+ 
+@@ -2126,7 +2169,7 @@ mod tests {
+     fn audio_source_capacity_is_bound_to_the_exact_frozen_lock() {
+         let raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
+         assert_eq!(format!("{:x}", Sha256::digest(raw.as_bytes())),
+-            "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a");
++            "ddc03004f4c73f25c9682f19a829dac18312d4b8220e143266714aada61ee739");
+         let lock: SparseSourceLock = serde_json::from_str(raw).unwrap();
+         assert_eq!(lock.projects.len(), AUDIO_SOURCE_PROJECT_COUNT);
+         assert_eq!(MAX_PROJECTS, 432);
+diff --git a/tools/droidloom-update/src/android.rs b/tools/droidloom-update/src/android.rs
+index be3b116c98a6f1cd068b27cde878d00d734411ff..6ed865840453e32419736f7af906ab8208708302 100644
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -681,6 +681,42 @@ fn validate_audio_pasit_original_providers(source: &Path, mode: SoongDependencyM
+     Ok(())
+ }
+ 
++// The original java_sdk_library consumer needs both historical system-server
++// API files. The pinned SDK's normal prebuilt_apis module and Soong generator
++// turn these original API-36 inputs into the combined latest API providers.
++// Keep their signature headers and complete generator/consumer metadata intact.
++const AUDIO_ONDEVICEINTELLIGENCE_ORIGINAL_PROVIDERS: &[(&str, u64, &str)] = &[
++    ("prebuilts/sdk/Android.bp", 6333,
++        "78d50e1dd41ad06e0c716faee8e8f3ddd823f3d482c3f484466e846953f735e0"),
++    ("build/soong/java/prebuilt_apis.go", 16590,
++        "ac992ca42c67498bd1b3f5e54627f541e6ffa71de95135bd7bac511a2427272c"),
++    ("packages/modules/NeuralNetworks/service/Android.bp", 2758,
++        "50b264a5e8650135ce4893a47952a40f382ee129a93d6cfc96152dd350f87a18"),
++    ("prebuilts/sdk/36/system-server/api/service-ondeviceintelligence.txt", 25,
++        "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552"),
++    ("prebuilts/sdk/36/system-server/api/service-ondeviceintelligence-removed.txt", 25,
++        "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552"),
++];
++
++fn validate_audio_ondeviceintelligence_original_providers(
++    source: &Path, mode: SoongDependencyMode,
++) -> Result<()> {
++    if mode != SoongDependencyMode::AudioApexTargetClosure {
++        return Ok(());
++    }
++    for (relative, bytes, expected) in AUDIO_ONDEVICEINTELLIGENCE_ORIGINAL_PROVIDERS {
++        let path = source.join(relative);
++        let metadata = fs::symlink_metadata(&path)?;
++        if !metadata.file_type().is_file() || metadata.len() != *bytes
++            || hash(&path)? != *expected
++        {
++            return fail(format!(
++                "audio ondeviceintelligence requires its complete original API provider: {relative}"));
++        }
++    }
++    Ok(())
++}
++
+ fn validate_audio_provider_source_paths(
+     lock: &droidloom_source::SparseSourceLock, mode: SoongDependencyMode,
+ ) -> Result<()> {
+@@ -756,6 +792,11 @@ fn validate_audio_provider_source_paths(
+         ("external/deqp-deps/glslang", "14422bdc57fb93221192a0c542dde144980dfb69", "gtests"),
+         ("external/easymock", "06a9728c3609f856e87db38a6602196cec3ab727", "src"),
+         ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "9/public"),
++        ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "36/system-server/api/service-ondeviceintelligence.txt"),
++        ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "36/system-server/api/service-ondeviceintelligence-removed.txt"),
++        ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "Android.bp"),
++        ("build/soong", "6722dd8833db7482df1a2543ca3fcf67ddf0f7b1", "java/prebuilt_apis.go"),
++        ("packages/modules/NeuralNetworks", "a44a9032ab9a8438c0e13aca765d6ee4edebba2c", "service"),
+         ("prebuilts/clang/host/linux-x86", "29182889399818f97baa65ea238c80e8117981eb", "clang-r584948b"),
+         ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "35/public/android.jar"),
+         ("prebuilts/sdk", "0f07e8d60ab0aba46129e427101f96ba459a95c1", "35/public/framework.aidl"),
+@@ -1302,7 +1343,7 @@ fn audio_apex_pcm_patches(mode: SoongDependencyMode) -> &'static [(&'static str,
+     }
+ }
+ 
+-const AUDIO_SOURCE_LOCK_SHA256: &str = "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a";
++const AUDIO_SOURCE_LOCK_SHA256: &str = "ddc03004f4c73f25c9682f19a829dac18312d4b8220e143266714aada61ee739";
+ fn selected_source_lock(repo: &Path, mode: SoongDependencyMode) -> Result<PathBuf> {
+     if mode == SoongDependencyMode::AudioApexTargetClosure {
+         let lock = repo.join("android/manifest/audio-bridge-source-lock.json");
+@@ -2939,6 +2980,7 @@ fn build_targets_with_dependency_mode(
+     }
+     droidloom_source::verify_materialized(&lock, &source_lock, source)?;
+     validate_audio_pasit_original_providers(source, dependency_mode)?;
++    validate_audio_ondeviceintelligence_original_providers(source, dependency_mode)?;
+     let native_bridge_source = crate::native_bridge::prepare_source(repo, source)?;
+     for (aidl, adapter) in [
+         ("statusbar/IStatusBar.aidl", "EmptyStatusBar"),
+@@ -3386,11 +3428,26 @@ fn build_targets_with_dependency_mode(
+ mod tests {
+     use super::*;
+ 
++    fn audio_before_ondeviceintelligence_api_lock() -> String {
++        let mut previous = include_str!("../../../android/manifest/audio-bridge-source-lock.json").to_string();
++        for path in [
++            "36/system-server/api/service-ondeviceintelligence.txt",
++            "36/system-server/api/service-ondeviceintelligence-removed.txt",
++        ] {
++            let selected = format!("        \"{path}\",\n");
++            assert_eq!(previous.matches(&selected).count(), 1, "{path}");
++            previous = previous.replacen(&selected, "", 1);
++        }
++        use sha2::{Digest, Sha256};
++        assert_eq!(format!("{:x}", Sha256::digest(previous.as_bytes())),
++            "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a");
++        previous
++    }
++
+     #[test]
+     fn audio_pasit_old_425_lock_reproduces_missing_original_project() {
+         use sha2::{Digest, Sha256};
+-        let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
+-        let current = fs::read_to_string(repo.join("android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let current = audio_before_ondeviceintelligence_api_lock();
+         let (prefix, _) = current.split_once(",\n    {\n      \"path\": \"tools/test/desktop/mobly\",").unwrap();
+         let old = format!("{prefix}\n  ]\n}}\n");
+         assert_eq!(format!("{:x}", Sha256::digest(old.as_bytes())),
+@@ -3413,6 +3470,127 @@ mod tests {
+         }
+     }
+ 
++    #[test]
++    fn audio_ondeviceintelligence_old_430_lock_reproduces_missing_api_provider() {
++        let previous = audio_before_ondeviceintelligence_api_lock();
++        let old: droidloom_source::SparseSourceLock = serde_json::from_str(&previous).unwrap();
++        assert_eq!(old.projects.len(), 430);
++        let error = validate_audio_provider_source_paths(&old,
++            SoongDependencyMode::AudioApexTargetClosure).unwrap_err().to_string();
++        assert!(error.contains("36/system-server/api/service-ondeviceintelligence.txt"), "{error}");
++        let current: droidloom_source::SparseSourceLock = serde_json::from_str(include_str!(
++            "../../../android/manifest/audio-bridge-source-lock.json")).unwrap();
++        validate_audio_provider_source_paths(&current, SoongDependencyMode::AudioApexTargetClosure).unwrap();
++    }
++
++    #[test]
++    fn audio_ondeviceintelligence_requires_both_apis_and_the_normal_source_metadata() {
++        let current: droidloom_source::SparseSourceLock = serde_json::from_str(include_str!(
++            "../../../android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let audio = SoongDependencyMode::AudioApexTargetClosure;
++        for (relative, required) in [
++            ("prebuilts/sdk", "36/system-server/api/service-ondeviceintelligence.txt"),
++            ("prebuilts/sdk", "36/system-server/api/service-ondeviceintelligence-removed.txt"),
++            ("prebuilts/sdk", "Android.bp"),
++            ("build/soong", "java/prebuilt_apis.go"),
++            ("packages/modules/NeuralNetworks", "service"),
++        ] {
++            let mut missing = current.clone();
++            let project = missing.projects.iter_mut().find(|project|
++                project.path == Path::new(relative)).unwrap();
++            if project.sparse_paths.is_empty() {
++                project.sparse_paths = vec![PathBuf::from("README.md")];
++            } else {
++                project.sparse_paths.retain(|cone| !Path::new(required).starts_with(cone));
++            }
++            assert!(validate_audio_provider_source_paths(&missing, audio).is_err(), "{relative}/{required}");
++            for mode in [SoongDependencyMode::Strict, SoongDependencyMode::NativeBridgeTargetClosure,
++                SoongDependencyMode::NativeEngineTargetClosure, SoongDependencyMode::MinigbmTargetClosure] {
++                validate_audio_provider_source_paths(&missing, mode).unwrap();
++            }
++            let mut repinned = current.clone();
++            repinned.projects.iter_mut().find(|project|
++                project.path == Path::new(relative)).unwrap()
++                .commit = "0000000000000000000000000000000000000000".into();
++            assert!(validate_audio_provider_source_paths(&repinned, audio).is_err(), "{relative}");
++        }
++    }
++
++    fn audio_ondeviceintelligence_fixture_tree(source: &Path) {
++        for (relative, bytes) in [
++            ("prebuilts/sdk/Android.bp",
++                include_bytes!("../tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__Android.bp") as &[u8]),
++            ("build/soong/java/prebuilt_apis.go",
++                include_bytes!("../tests/fixtures/audio-ondeviceintelligence-original/build__soong__java__prebuilt_apis.go") as &[u8]),
++            ("packages/modules/NeuralNetworks/service/Android.bp",
++                include_bytes!("../tests/fixtures/audio-ondeviceintelligence-original/packages__modules__NeuralNetworks__service__Android.bp") as &[u8]),
++            ("prebuilts/sdk/36/system-server/api/service-ondeviceintelligence.txt",
++                include_bytes!("../tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__36__system-server__api__service-ondeviceintelligence.txt") as &[u8]),
++            ("prebuilts/sdk/36/system-server/api/service-ondeviceintelligence-removed.txt",
++                include_bytes!("../tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__36__system-server__api__service-ondeviceintelligence-removed.txt") as &[u8]),
++        ] {
++            write(&source.join(relative), bytes).unwrap();
++        }
++    }
++
++    #[test]
++    fn audio_ondeviceintelligence_original_api_guard_rejects_drift_missing_and_links() {
++        let d = tempfile::tempdir().unwrap();
++        let audio = SoongDependencyMode::AudioApexTargetClosure;
++        audio_ondeviceintelligence_fixture_tree(d.path());
++        validate_audio_ondeviceintelligence_original_providers(d.path(), audio).unwrap();
++        for (relative, _, _) in AUDIO_ONDEVICEINTELLIGENCE_ORIGINAL_PROVIDERS {
++            let path = d.path().join(relative);
++            let original = fs::read(&path).unwrap();
++            let mut changed = original.clone();
++            changed[0] ^= 1;
++            write(&path, &changed).unwrap();
++            assert!(validate_audio_ondeviceintelligence_original_providers(d.path(), audio).is_err(), "{relative}");
++            fs::remove_file(&path).unwrap();
++            assert!(validate_audio_ondeviceintelligence_original_providers(d.path(), audio).is_err(), "{relative}");
++            let referent = d.path().join("original-api-provider");
++            write(&referent, &original).unwrap();
++            std::os::unix::fs::symlink(&referent, &path).unwrap();
++            assert!(validate_audio_ondeviceintelligence_original_providers(d.path(), audio).is_err(), "{relative}");
++            fs::remove_file(&path).unwrap();
++            fs::remove_file(&referent).unwrap();
++            write(&path, &original).unwrap();
++        }
++        validate_audio_ondeviceintelligence_original_providers(d.path(), audio).unwrap();
++        let empty = tempfile::tempdir().unwrap();
++        for mode in [SoongDependencyMode::Strict, SoongDependencyMode::NativeBridgeTargetClosure,
++            SoongDependencyMode::NativeEngineTargetClosure, SoongDependencyMode::MinigbmTargetClosure] {
++            validate_audio_ondeviceintelligence_original_providers(empty.path(), mode).unwrap();
++        }
++    }
++
++    #[test]
++    fn audio_ondeviceintelligence_retains_normal_combined_provider_generation() {
++        let sdk = include_str!("../tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__Android.bp");
++        for retained in ["prebuilt_apis {", "name: \"sdk\"", "\"36\""] {
++            assert!(sdk.contains(retained), "{retained}");
++        }
++        let generator = include_str!("../tests/fixtures/audio-ondeviceintelligence-original/build__soong__java__prebuilt_apis.go");
++        for retained in [
++            "globApiDirs(mctx, p, \"api/*.txt\")",
++            "\"module-lib\", \"system-server\"",
++            "module + \".api.combined.\" + scope + \".\" + version",
++            "PrebuiltApiCombinedModuleName(info.module, info.scope, \"latest\")",
++            "createCombinedApiFilegroupModule(mctx, name, srcs)",
++        ] {
++            assert!(generator.contains(retained), "{retained}");
++        }
++        let consumer = include_str!("../tests/fixtures/audio-ondeviceintelligence-original/packages__modules__NeuralNetworks__service__Android.bp");
++        for retained in [
++            "java_sdk_library {", "name: \"service-ondeviceintelligence\"",
++            "defaults: [\"framework-system-server-module-defaults\"]",
++            "sdk_version: \"system_server_current\"", "min_sdk_version: \"36\"",
++            "jarjar_rules: \"jarjar-rules.txt\"",
++        ] {
++            assert!(consumer.contains(retained), "{retained}");
++        }
++    }
++
+     #[test]
+     fn audio_pasit_requires_all_five_complete_same_commit_sources() {
+         let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
+diff --git a/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/build__soong__java__prebuilt_apis.go b/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/build__soong__java__prebuilt_apis.go
+new file mode 100644
+index 0000000000000000000000000000000000000000..c00f0bc0e560057da4b19d2edd00c58cd739299b
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/build__soong__java__prebuilt_apis.go
+@@ -0,0 +1,439 @@
++// Copyright 2018 Google Inc. All rights reserved.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//     http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package java
++
++import (
++	"fmt"
++	"path"
++	"strconv"
++	"strings"
++
++	"github.com/google/blueprint/proptools"
++
++	"android/soong/android"
++	"android/soong/genrule"
++)
++
++func init() {
++	RegisterPrebuiltApisBuildComponents(android.InitRegistrationContext)
++}
++
++func RegisterPrebuiltApisBuildComponents(ctx android.RegistrationContext) {
++	ctx.RegisterModuleType("prebuilt_apis", PrebuiltApisFactory)
++}
++
++type prebuiltApisProperties struct {
++	// list of api version directories
++	Api_dirs proptools.Configurable[[]string]
++
++	// Directory containing finalized api txt files for extension versions.
++	// Extension versions higher than the base sdk extension version will
++	// be assumed to be finalized later than all Api_dirs.
++	Extensions_dir proptools.Configurable[string]
++
++	// The next API directory can optionally point to a directory where
++	// files incompatibility-tracking files are stored for the current
++	// "in progress" API. Each module present in one of the api_dirs will have
++	// a <module>-incompatibilities.api.<scope>.latest module created.
++	Next_api_dir proptools.Configurable[string]
++
++	// The sdk_version of java_import modules generated based on jar files.
++	// Defaults to "current"
++	Imports_sdk_version *string
++
++	// If set to true, compile dex for java_import modules. Defaults to false.
++	Imports_compile_dex *bool
++}
++
++type prebuiltApis struct {
++	android.ModuleBase
++	properties prebuiltApisProperties
++}
++
++func (module *prebuiltApis) GenerateAndroidBuildActions(ctx android.ModuleContext) {
++	// no need to implement
++}
++
++// parsePrebuiltPath parses the relevant variables out of a variety of paths, e.g.
++// <version>/<scope>/<module>.jar
++// <version>/<scope>/api/<module>.txt
++// *Note when using incremental platform API, <version> may be of the form MM.m where MM is the
++// API level and m is an incremental release, otherwise <version> is a single integer corresponding to the API level only.
++// extensions/<version>/<scope>/<module>.jar
++// extensions/<version>/<scope>/api/<module>.txt
++func parsePrebuiltPath(ctx android.LoadHookContext, p string) (module string, version string, scope string) {
++	elements := strings.Split(p, "/")
++
++	scopeIdx := len(elements) - 2
++	if elements[scopeIdx] == "api" {
++		scopeIdx--
++	}
++	scope = elements[scopeIdx]
++	if scope != "core" && scope != "public" && scope != "system" && scope != "test" && scope != "module-lib" && scope != "system-server" {
++		ctx.ModuleErrorf("invalid scope %q found in path: %q", scope, p)
++		return
++	}
++	version = elements[scopeIdx-1]
++
++	module = strings.TrimSuffix(path.Base(p), path.Ext(p))
++	return
++}
++
++// parseFinalizedPrebuiltPath is like parsePrebuiltPath, but verifies the version is numeric (a finalized version).
++func parseFinalizedPrebuiltPath(ctx android.LoadHookContext, p string) (module string, apiLevel android.ApiLevel, scope string) {
++	module, v, scope := parsePrebuiltPath(ctx, p)
++
++	// Hack for 37-prefinalized (b/489350505). This provides a stable reference for
++	// bp4a and mainline-beta builds that cannot use the finalized 37.0 SDK.
++	// TODO(b/491744570): Remove this hack
++	if v == "37-prefinalized" {
++		apiLevel, _ = android.ApiLevelFromUserWithConfig(ctx.Config(), "37")
++		return
++	}
++
++	var err error
++	apiLevel, err = android.ApiLevelFromUserWithConfig(ctx.Config(), v)
++	if err != nil {
++		ctx.ModuleErrorf("Unable to read version for prebuilt api '%v': %v", v, err)
++		return
++	}
++	return
++}
++
++func prebuiltApiModuleName(moduleName, module, scope, version string) string {
++	return fmt.Sprintf("%s_%s_%s_%s", moduleName, scope, version, module)
++}
++func createImport(mctx android.LoadHookContext, module, scope, version, path, sdkVersion string, compileDex bool) {
++	props := struct {
++		Name        *string
++		Jars        []string
++		Sdk_version *string
++		Installable *bool
++		Compile_dex *bool
++	}{
++		Name:        proptools.StringPtr(prebuiltApiModuleName(mctx.ModuleName(), module, scope, version)),
++		Jars:        []string{path},
++		Sdk_version: proptools.StringPtr(sdkVersion),
++		Installable: proptools.BoolPtr(false),
++		Compile_dex: proptools.BoolPtr(compileDex),
++	}
++	mctx.CreateModule(ImportFactory, &props)
++}
++
++func createApiModule(mctx android.LoadHookContext, name string, path string) {
++	genruleProps := struct {
++		Name *string
++		Srcs []string
++		Out  []string
++		Cmd  *string
++	}{}
++	genruleProps.Name = proptools.StringPtr(name)
++	genruleProps.Srcs = []string{path}
++	genruleProps.Out = []string{name}
++	genruleProps.Cmd = proptools.StringPtr("cp $(in) $(out)")
++	mctx.CreateModule(genrule.GenRuleFactory, &genruleProps)
++}
++
++func createCombinedApiFilegroupModule(mctx android.LoadHookContext, name string, srcs []string) {
++	filegroupProps := struct {
++		Name *string
++		Srcs []string
++	}{}
++	filegroupProps.Name = proptools.StringPtr(name)
++
++	var transformedSrcs []string
++	for _, src := range srcs {
++		transformedSrcs = append(transformedSrcs, ":"+src)
++	}
++	filegroupProps.Srcs = transformedSrcs
++	mctx.CreateModule(android.FileGroupFactory, &filegroupProps)
++}
++
++func createLatestApiModuleExtensionVersionFile(mctx android.LoadHookContext, name string, version string) {
++	genruleProps := struct {
++		Name *string
++		Srcs []string
++		Out  []string
++		Cmd  *string
++	}{}
++	genruleProps.Name = proptools.StringPtr(name)
++	genruleProps.Out = []string{name}
++	genruleProps.Cmd = proptools.StringPtr("echo " + version + " > $(out)")
++	mctx.CreateModule(genrule.GenRuleFactory, &genruleProps)
++}
++
++func createEmptyFile(mctx android.LoadHookContext, name string) {
++	props := struct {
++		Name *string
++		Cmd  *string
++		Out  []string
++	}{}
++	props.Name = proptools.StringPtr(name)
++	props.Out = []string{name}
++	props.Cmd = proptools.StringPtr("touch $(genDir)/" + name)
++	mctx.CreateModule(genrule.GenRuleFactory, &props)
++}
++
++// globApiDirs collects all the files in all api_dirs and all scopes that match the given glob, e.g. '*.jar' or 'api/*.txt'.
++// <api-dir>/<scope>/<glob> for all api-dir and scope.
++func globApiDirs(mctx android.LoadHookContext, p *prebuiltApis, api_dir_glob string) []string {
++	var files []string
++	eval := p.getEvaluator(mctx)
++	for _, apiver := range p.properties.Api_dirs.GetOrDefault(eval, nil) {
++		files = append(files, globScopeDir(mctx, apiver, api_dir_glob)...)
++	}
++	return files
++}
++
++// globExtensionDirs collects all the files under the extension dir (for all versions and scopes) that match the given glob
++// <extension-dir>/<version>/<scope>/<glob> for all version and scope.
++func globExtensionDirs(mctx android.LoadHookContext, p *prebuiltApis, extension_dir_glob string) []string {
++	// <extensions-dir>/<num>/<extension-dir-glob>
++	eval := p.getEvaluator(mctx)
++	extDir := p.properties.Extensions_dir.GetOrDefault(eval, "")
++	if extDir == "" {
++		return nil
++	}
++	return globScopeDir(mctx, extDir+"/*", extension_dir_glob)
++}
++
++// globScopeDir collects all the files in the given subdir across all scopes that match the given glob, e.g. '*.jar' or 'api/*.txt'.
++// <subdir>/<scope>/<glob> for all scope.
++func globScopeDir(mctx android.LoadHookContext, subdir string, subdir_glob string) []string {
++	var files []string
++	dir := mctx.ModuleDir() + "/" + subdir
++	for _, scope := range []string{"public", "system", "test", "core", "module-lib", "system-server"} {
++		glob := fmt.Sprintf("%s/%s/%s", dir, scope, subdir_glob)
++		vfiles, err := mctx.GlobWithDeps(glob, nil)
++		if err != nil {
++			mctx.ModuleErrorf("failed to glob %s files under %q: %s", subdir_glob, dir+"/"+scope, err)
++		}
++		files = append(files, vfiles...)
++	}
++	for i, f := range files {
++		files[i] = strings.TrimPrefix(f, mctx.ModuleDir()+"/")
++	}
++	return files
++}
++
++func prebuiltSdkStubs(mctx android.LoadHookContext, p *prebuiltApis) {
++	// <apiver>/<scope>/<module>.jar
++	files := globApiDirs(mctx, p, "*.jar")
++
++	sdkVersion := proptools.StringDefault(p.properties.Imports_sdk_version, "current")
++	compileDex := proptools.BoolDefault(p.properties.Imports_compile_dex, false)
++
++	for _, f := range files {
++		// create a Import module for each jar file
++		module, apiLevel, scope := parseFinalizedPrebuiltPath(mctx, f)
++		version := apiLevel.GetSdkVersion()
++		createImport(mctx, module, scope, version, f, sdkVersion, compileDex)
++
++		if module == "core-for-system-modules" {
++			createSystemModules(mctx, version, scope)
++		}
++	}
++}
++
++func createSystemModules(mctx android.LoadHookContext, version, scope string) {
++	props := struct {
++		Name *string
++		Libs []string
++	}{}
++	props.Name = proptools.StringPtr(prebuiltApiModuleName(mctx.ModuleName(), "system_modules", scope, version))
++	props.Libs = append(props.Libs, prebuiltApiModuleName(mctx.ModuleName(), "core-for-system-modules", scope, version))
++
++	mctx.CreateModule(systemModulesImportFactory, &props)
++}
++
++func PrebuiltApiModuleName(module, scope, version string) string {
++	return module + ".api." + scope + "." + version
++}
++
++func PrebuiltApiCombinedModuleName(module, scope, version string) string {
++	return module + ".api.combined." + scope + "." + version
++}
++
++func prebuiltApiFiles(mctx android.LoadHookContext, p *prebuiltApis) {
++	// <apiver>/<scope>/api/<module>.txt
++	apiLevelFiles := globApiDirs(mctx, p, "api/*.txt")
++	if len(apiLevelFiles) == 0 {
++		mctx.ModuleErrorf("no api file found under %q", mctx.ModuleDir())
++	}
++
++	// Create modules for all (<module>, <scope, <version>) triplets,
++	for _, f := range apiLevelFiles {
++		module, apiLevel, scope := parseFinalizedPrebuiltPath(mctx, f)
++		createApiModule(mctx, PrebuiltApiModuleName(module, scope, apiLevel.GetSdkVersion()), f)
++	}
++
++	// Figure out the latest version of each module/scope
++	type latestApiInfo struct {
++		module, scope, path string
++		apiLevel            android.ApiLevel
++		isExtensionApiFile  bool
++	}
++
++	getLatest := func(files []string, isExtensionApiFile bool) map[string]latestApiInfo {
++		m := make(map[string]latestApiInfo)
++		for _, f := range files {
++			module, apiLevel, scope := parseFinalizedPrebuiltPath(mctx, f)
++			if strings.HasSuffix(module, "incompatibilities") {
++				continue
++			}
++			key := module + "." + scope
++			info, exists := m[key]
++			if !exists || apiLevel.GreaterThan(info.apiLevel) {
++				m[key] = latestApiInfo{module, scope, f, apiLevel, isExtensionApiFile}
++			}
++		}
++		return m
++	}
++
++	latest := getLatest(apiLevelFiles, false)
++	eval := p.getEvaluator(mctx)
++	if extDir := p.properties.Extensions_dir.GetOrDefault(eval, ""); extDir != "" {
++		extensionApiFiles := globExtensionDirs(mctx, p, "api/*.txt")
++		for k, v := range getLatest(extensionApiFiles, true) {
++			if _, exists := latest[k]; !exists {
++				mctx.ModuleErrorf("Module %v finalized for extension %s but never during an API level; likely error", v.module, v.apiLevel.GetSdkVersion())
++			}
++			// The extension version is always at least as new as the last sdk int version (potentially identical)
++			latest[k] = v
++		}
++	}
++
++	// Sort the keys in order to make build.ninja stable
++	sortedLatestKeys := android.SortedKeys(latest)
++
++	for _, k := range sortedLatestKeys {
++		info := latest[k]
++		name := PrebuiltApiModuleName(info.module, info.scope, "latest")
++		latestExtensionVersionModuleName := PrebuiltApiModuleName(info.module, info.scope, "latest.extension_version")
++		if info.isExtensionApiFile {
++			createLatestApiModuleExtensionVersionFile(mctx, latestExtensionVersionModuleName, strconv.Itoa(info.apiLevel.FinalInt()))
++		} else {
++			createLatestApiModuleExtensionVersionFile(mctx, latestExtensionVersionModuleName, "-1")
++		}
++		createApiModule(mctx, name, info.path)
++	}
++
++	// Create incompatibilities tracking files for all modules, if we have a "next" api.
++	incompatibilities := make(map[string]bool)
++	if nextApiDir := p.properties.Next_api_dir.GetOrDefault(eval, ""); nextApiDir != "" {
++		files := globScopeDir(mctx, nextApiDir, "api/*incompatibilities.txt")
++		for _, f := range files {
++			filename, _, scope := parsePrebuiltPath(mctx, f)
++			referencedModule := strings.TrimSuffix(filename, "-incompatibilities")
++
++			createApiModule(mctx, PrebuiltApiModuleName(referencedModule+"-incompatibilities", scope, "latest"), f)
++
++			incompatibilities[referencedModule+"."+scope] = true
++		}
++	}
++	// Create empty incompatibilities files for remaining modules
++	// If the incompatibility module has been created, create a corresponding combined module
++	for _, k := range sortedLatestKeys {
++		if _, ok := incompatibilities[k]; !ok {
++			createEmptyFile(mctx, PrebuiltApiModuleName(latest[k].module+"-incompatibilities", latest[k].scope, "latest"))
++		}
++	}
++
++	// Create combined latest api and removed api files modules.
++	// The combined modules list all api files of the api scope and its subset api scopes.
++	for _, k := range sortedLatestKeys {
++		info := latest[k]
++		name := PrebuiltApiCombinedModuleName(info.module, info.scope, "latest")
++
++		// Iterate until the currentApiScope does not extend any other api scopes
++		// i.e. is not a superset of any other api scopes
++		// the relationship between the api scopes is defined in java/sdk_library.go
++		var srcs []string
++		currentApiScope := scopeByName[info.scope]
++		for currentApiScope != nil {
++			if _, ok := latest[fmt.Sprintf("%s.%s", info.module, currentApiScope.name)]; ok {
++				srcs = append(srcs, PrebuiltApiModuleName(info.module, currentApiScope.name, "latest"))
++			}
++			currentApiScope = currentApiScope.extends
++		}
++
++		// srcs is currently listed in the order from the widest api scope to the narrowest api scopes
++		// e.g. module lib -> system -> public
++		// In order to pass the files in metalava from the narrowest api scope to the widest api scope,
++		// the list has to be reversed.
++		android.ReverseSliceInPlace(srcs)
++		createCombinedApiFilegroupModule(mctx, name, srcs)
++	}
++}
++
++// releaseFlagOnlyEvaluator and configurableEvaluatorContextWrapper are a hack to enable bp4a config to build.
++// TODO(b/491744570): Refactor prebuilt_apis to not require evaluating the flags during module creation.
++func (p *prebuiltApis) getEvaluator(ctx android.LoadHookContext) proptools.ConfigurableEvaluator {
++	return releaseFlagOnlyEvaluator{p.ConfigurableEvaluator(configurableEvaluatorContextWrapper{ctx})}
++}
++
++type releaseFlagOnlyEvaluator struct {
++	proptools.ConfigurableEvaluator
++}
++
++func (e releaseFlagOnlyEvaluator) EvaluateConfiguration(condition proptools.ConfigurableCondition, property string) proptools.ConfigurableValue {
++	if condition.FunctionName() != "release_flag" {
++		e.PropertyErrorf(property, "Only release_flag is supported in selects for prebuilt_apis, found %s", condition.FunctionName())
++		return proptools.ConfigurableValueUndefined()
++	}
++	return e.ConfigurableEvaluator.EvaluateConfiguration(condition, property)
++}
++
++// configurableEvaluatorContextWrapper is a wrapper for android.LoadHookContext
++// that allows evaluating configurable properties during load hooks by overriding
++// HasMutatorFinished("defaults") to return true.
++type configurableEvaluatorContextWrapper struct {
++	android.LoadHookContext
++}
++
++func (c configurableEvaluatorContextWrapper) HasMutatorFinished(mutatorName string) bool {
++	if mutatorName == "defaults" {
++		return true
++	}
++	return c.LoadHookContext.HasMutatorFinished(mutatorName)
++}
++
++func createPrebuiltApiModules(mctx android.LoadHookContext) {
++	if p, ok := mctx.Module().(*prebuiltApis); ok {
++		prebuiltApiFiles(mctx, p)
++		prebuiltSdkStubs(mctx, p)
++	}
++}
++
++// prebuilt_apis is a meta-module that generates modules for all API txt files
++// found under the directory where the Android.bp is located.
++// Specifically, an API file located at ./<ver>/<scope>/api/<module>.txt
++// generates a module named <module>-api.<scope>.<ver>.
++//
++// It also creates <module>-api.<scope>.latest for the latest <ver>.
++//
++// Similarly, it generates a java_import for all API .jar files found under the
++// directory where the Android.bp is located. Specifically, an API file located
++// at ./<ver>/<scope>/api/<module>.jar generates a java_import module named
++// <prebuilt-api-module>_<scope>_<ver>_<module>, and for SDK versions >= 30
++// a java_system_modules module named
++// <prebuilt-api-module>_public_<ver>_system_modules
++func PrebuiltApisFactory() android.Module {
++	module := &prebuiltApis{}
++	module.AddProperties(&module.properties)
++	android.InitAndroidModule(module)
++	android.AddLoadHook(module, createPrebuiltApiModules)
++	return module
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/packages__modules__NeuralNetworks__service__Android.bp b/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/packages__modules__NeuralNetworks__service__Android.bp
+new file mode 100644
+index 0000000000000000000000000000000000000000..6950d6f8d3c7df6443ab87622cae34a19d5fa247
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/packages__modules__NeuralNetworks__service__Android.bp
+@@ -0,0 +1,85 @@
++// Copyright (C) 2022 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++java_defaults {
++    name: "service-ondeviceintelligence-defaults",
++    srcs: [
++        ":service-ondeviceintelligence-sources",
++        "proto/*.proto",
++    ],
++    defaults: ["framework-system-server-module-defaults"],
++    sdk_version: "system_server_current",
++    apex_available: [
++        "com.android.neuralnetworks",
++        "//apex_available:platform",
++    ],
++    proto: {
++        type: "nano",
++    },
++    static_libs: [
++        "android.os.flags-aconfig-java-export",
++        "android.app.ondeviceintelligence-aconfig-java",
++        "modules-utils-backgroundthread",
++        "modules-utils-handlerexecutor",
++        "modules-utils-shell-command-handler",
++    ],
++    min_sdk_version: "36",
++    libs: [
++        "framework-configinfrastructure.stubs.module_lib",
++        "framework-ondeviceintelligence.impl",
++    ],
++    errorprone: {
++        extra_check_modules: [
++            "//external/nullaway:nullaway_plugin",
++        ],
++        javacflags: [
++            "-Xep:NullAway:ERROR",
++            "-XepExcludedPaths:.*/out/soong/.*",
++            "-XepOpt:NullAway:AnnotatedPackages=android.app.ondeviceintelligence",
++            "-XepOpt:NullAway:AnnotatedPackages=android.service.ondeviceintelligence",
++        ],
++    },
++    enabled: select(release_flag("RELEASE_ONDEVICE_INTELLIGENCE_MODULE"), {
++        true: true,
++        default: false,
++    }),
++}
++
++java_library {
++    name: "service-ondeviceintelligence-internal",
++    defaults: ["service-ondeviceintelligence-defaults"],
++    visibility: [
++        "//frameworks/base:__subpackages__",
++        "//packages/modules/NeuralNetworks:__subpackages__",
++    ],
++}
++
++java_sdk_library {
++    name: "service-ondeviceintelligence",
++    defaults: ["service-ondeviceintelligence-defaults"],
++    impl_library_visibility: [
++        "//frameworks/base:__subpackages__",
++        "//packages/modules/NeuralNetworks:__subpackages__",
++    ],
++    permitted_packages: [
++        "com.android.modules.utils",
++        "com.android.neuralnetworks",
++        "com.android.server.ondeviceintelligence",
++    ],
++    jarjar_rules: "jarjar-rules.txt",
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__36__system-server__api__service-ondeviceintelligence-removed.txt b/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__36__system-server__api__service-ondeviceintelligence-removed.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..d802177e249b3f97128699222e65c35e57ba7540
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__36__system-server__api__service-ondeviceintelligence-removed.txt
+@@ -0,0 +1 @@
++// Signature format: 2.0
+diff --git a/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__36__system-server__api__service-ondeviceintelligence.txt b/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__36__system-server__api__service-ondeviceintelligence.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..d802177e249b3f97128699222e65c35e57ba7540
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__36__system-server__api__service-ondeviceintelligence.txt
+@@ -0,0 +1 @@
++// Signature format: 2.0
+diff --git a/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__Android.bp b/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__Android.bp
+new file mode 100644
+index 0000000000000000000000000000000000000000..849c7c268b3409656f462eb3af738c15e7b5ec06
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/prebuilts__sdk__Android.bp
+@@ -0,0 +1,259 @@
++// *** THIS PACKAGE HAS SPECIAL LICENSING CONDITIONS.  PLEASE
++//     CONSULT THE OWNERS AND opensource-licensing@google.com BEFORE
++//     DEPENDING ON IT IN YOUR PROJECT. ***
++package {
++    default_applicable_licenses: ["prebuilts_sdk_license"],
++}
++
++// Added automatically by a large-scale-change that took the approach of
++// 'apply every license found to every target'. While this makes sure we respect
++// every license restriction, it may not be entirely correct.
++//
++// e.g. GPL in an MIT project might only apply to the contrib/ directory.
++//
++// Please consider splitting the single license below into multiple licenses,
++// taking care not to lose any license_kind information, and overriding the
++// default license using the 'licenses: [...]' property on targets as needed.
++//
++// For unused files, consider creating a 'fileGroup' with "//visibility:private"
++// to attach the license to, and including a comment whether the files may be
++// used in the current project.
++// See: http://go/android-license-faq
++license {
++    name: "prebuilts_sdk_license",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "SPDX-license-identifier-Apache-2.0",
++        "SPDX-license-identifier-BSD",
++        "SPDX-license-identifier-CC0-1.0",
++        "SPDX-license-identifier-CPL-1.0",
++        "SPDX-license-identifier-MIT",
++        "SPDX-license-identifier-NCSA",
++        "SPDX-license-identifier-OFL", // by exception only
++        "SPDX-license-identifier-Unicode-DFS",
++        "SPDX-license-identifier-W3C",
++        "legacy_unencumbered",
++    ],
++    license_text: [
++        "NOTICE",
++    ],
++}
++
++subdirs = ["tools"]
++
++filegroup {
++    name: "current-support-api",
++    srcs: [
++        "current/support-api.txt",
++    ],
++}
++
++genrule {
++    name: "current-androidx-api",
++    srcs: ["current/androidx-api.txt"],
++    out: ["androidx-api.xml"],
++    tools: ["metalava"],
++    cmd: "$(location metalava) signature-to-jdiff $(in) $(out)",
++}
++
++filegroup {
++    name: "metalava-sdk-android-jars",
++    srcs: [
++        "**/android.jar",
++    ],
++}
++
++// Allow aconfig to use finalized flag files to automatically include SDK level
++// checks for finalized API flags.
++filegroup {
++    name: "finalized-api-flags",
++    srcs: [
++        "*/finalized-flags.txt",
++    ],
++    visibility: [
++        "//build/make/tools/aconfig:__subpackages__",
++    ],
++}
++
++droiddoc_exported_dir {
++    name: "sdk-dir",
++    path: ".",
++}
++
++genrule {
++    name: "last-released-public-api-for-metalava-annotations",
++    srcs: [
++        "*/public/api/android.txt",
++    ],
++    cmd: "cp -f $$(echo $(in) | tr \" \" \"\\n\" | sort -t/ -k3 -n | tail -2 | head -1) $(genDir)/last-released-api-for-metalava-annotations.txt",
++    out: [
++        "last-released-api-for-metalava-annotations.txt",
++    ],
++}
++
++// This filegroup is to package android.jar into CtsUsesNativeLibraryTestCase
++filegroup {
++    name: "sdk_public_30_android.jar",
++    srcs: [
++        "30/public/android.jar",
++    ],
++    visibility: [
++        "//cts/hostsidetests/library",
++    ],
++}
++
++prebuilt_apis {
++    name: "sdk",
++    api_dirs: [
++        "1",
++        "2",
++        "3",
++        "4",
++        "5",
++        "6",
++        "7",
++        "8",
++        "9",
++        "10",
++        "11",
++        "12",
++        "13",
++        "14",
++        "15",
++        "16",
++        "17",
++        "18",
++        "19",
++        "20",
++        "21",
++        "22",
++        "23",
++        "24",
++        "25",
++        "26",
++        "27",
++        "28",
++        "29",
++        "30",
++        "31",
++        "32",
++        "33",
++        "34",
++        "35",
++        "36",
++        "36.1",
++    ] + select(release_flag("RELEASE_PLATFORM_SDK_VERSION_FULL"), {
++        "36.1": ["37-prefinalized"],
++        default: ["37.0"],
++    }) + [
++        "current",
++    ],
++    extensions_dir: "extensions",
++    next_api_dir: select(release_flag("RELEASE_PLATFORM_SDK_VERSION_FULL"), {
++        "36.1": "37-prefinalized",
++        default: "37.0",
++    }),
++    imports_sdk_version: "none",
++    imports_compile_dex: true,
++}
++
++filegroup {
++    name: "prebuilt_sdk_system_public_api_txt",
++    srcs: [
++        "*/system/api/*.txt",
++        "*/public/api/*.txt",
++    ],
++}
++
++filegroup {
++    name: "prebuilt_sdk_system_api_android_txt",
++    srcs: [
++        "*/system/api/android.txt",
++    ],
++}
++
++filegroup {
++    name: "android27.txt",
++    srcs: [
++        "27/public/api/android.txt",
++    ],
++}
++
++filegroup {
++    name: "latest-prebuilt-public-android.txt",
++    srcs: select(release_flag("RELEASE_PLATFORM_SDK_VERSION_FULL"), {
++        any @ dir: [
++            dir + "/public/api/android.txt",
++        ],
++        default: [],
++    }),
++}
++
++filegroup {
++    name: "latest-prebuilt-system-android.txt",
++    srcs: select(release_flag("RELEASE_PLATFORM_SDK_VERSION_FULL"), {
++        any @ dir: [
++            dir + "/system/api/android.txt",
++        ],
++        default: [],
++    }),
++}
++
++filegroup {
++    name: "latest-prebuilt-system-android-removed.txt",
++    srcs: select(release_flag("RELEASE_PLATFORM_SDK_VERSION_FULL"), {
++        any @ dir: [
++            dir + "/system/api/android-removed.txt",
++        ],
++        default: [],
++    }),
++}
++
++filegroup {
++    name: "latest-prebuilt-public-android-test-base.txt",
++    srcs: select(release_flag("RELEASE_PLATFORM_SDK_VERSION_FULL"), {
++        any @ dir: [
++            dir + "/public/api/android.test.base.txt",
++        ],
++        default: [],
++    }),
++}
++
++filegroup {
++    name: "latest-prebuilt-public-android-test-mock.txt",
++    srcs: select(release_flag("RELEASE_PLATFORM_SDK_VERSION_FULL"), {
++        any @ dir: [
++            dir + "/public/api/android.test.mock.txt",
++        ],
++        default: [],
++    }),
++}
++
++filegroup {
++    name: "latest-prebuilt-public-android-test-runner.txt",
++    srcs: select(release_flag("RELEASE_PLATFORM_SDK_VERSION_FULL"), {
++        any @ dir: [
++            dir + "/public/api/android.test.runner.txt",
++        ],
++        default: [],
++    }),
++}
++
++filegroup {
++    name: "latest-prebuilt-public-apache-http-legacy.txt",
++    srcs: select(release_flag("RELEASE_PLATFORM_SDK_VERSION_FULL"), {
++        any @ dir: [
++            dir + "/public/api/org.apache.http.legacy.txt",
++        ],
++        default: [],
++    }),
++}
++
++genrule {
++    name: "latest-finalized-flags",
++    srcs: [
++        "*/finalized-flags.txt",
++    ],
++    out: ["latest-finalized-flags.txt"],
++    cmd: "cp `echo \"$(in)\" | tr ' ' '\n' | grep -v -e current | sort -V | tail -n1` $(out)",
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/provenance.json b/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/provenance.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..456e9e41ad72fdddc2907eb5d2d3024fe2ddf704
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-ondeviceintelligence-original/provenance.json
+@@ -0,0 +1,51 @@
++{
++  "base_commit": "a0e5114a1728e5ac5a96cdffbf68a84958218765",
++  "files": [
++    {
++      "path": "prebuilts/sdk/Android.bp",
++      "bytes": 6333,
++      "sha256": "78d50e1dd41ad06e0c716faee8e8f3ddd823f3d482c3f484466e846953f735e0",
++      "git_blob": "849c7c268b3409656f462eb3af738c15e7b5ec06"
++    },
++    {
++      "path": "build/soong/java/prebuilt_apis.go",
++      "bytes": 16590,
++      "sha256": "ac992ca42c67498bd1b3f5e54627f541e6ffa71de95135bd7bac511a2427272c",
++      "git_blob": "c00f0bc0e560057da4b19d2edd00c58cd739299b"
++    },
++    {
++      "path": "packages/modules/NeuralNetworks/service/Android.bp",
++      "bytes": 2758,
++      "sha256": "50b264a5e8650135ce4893a47952a40f382ee129a93d6cfc96152dd350f87a18",
++      "git_blob": "6950d6f8d3c7df6443ab87622cae34a19d5fa247"
++    },
++    {
++      "path": "prebuilts/sdk/36/system-server/api/service-ondeviceintelligence.txt",
++      "bytes": 25,
++      "sha256": "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552",
++      "git_blob": "d802177e249b3f97128699222e65c35e57ba7540"
++    },
++    {
++      "path": "prebuilts/sdk/36/system-server/api/service-ondeviceintelligence-removed.txt",
++      "bytes": 25,
++      "sha256": "39824f8c9fee1582598de5aa8cfa9653e84fbd69bd8aeb92c4a78c861faad552",
++      "git_blob": "d802177e249b3f97128699222e65c35e57ba7540"
++    }
++  ],
++  "api_tree_url": "https://android.googlesource.com/platform/prebuilts/sdk/+/0f07e8d60ab0aba46129e427101f96ba459a95c1/36/system-server/api/?format=JSON",
++  "projects": [
++    {
++      "path": "prebuilts/sdk",
++      "commit": "0f07e8d60ab0aba46129e427101f96ba459a95c1"
++    },
++    {
++      "path": "build/soong",
++      "commit": "6722dd8833db7482df1a2543ca3fcf67ddf0f7b1"
++    },
++    {
++      "path": "packages/modules/NeuralNetworks",
++      "commit": "a44a9032ab9a8438c0e13aca765d6ee4edebba2c"
++    }
++  ],
++  "description": "Unmodified original inputs: API-36 current and removed signature headers, complete SDK prebuilt_apis declaration, normal Soong generator and retained java_sdk_library consumer. The API files have the exact blob IDs recorded in the pinned official Gitiles tree."
++}
+-- 
+2.43.0
+

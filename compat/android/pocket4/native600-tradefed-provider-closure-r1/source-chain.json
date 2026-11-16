@@ -1,0 +1,113 @@
+{
+  "expected_added_paths": {
+    "cts": [
+      "tools/cts-tradefed/etc",
+      "tools/cts-tradefed/tests",
+      "tools/cts-v-host/etc",
+      "tools/cts-v-host/tests"
+    ],
+    "external/deqp": [
+      "android/cts/Android.bp",
+      "android/cts/AndroidTest.xml",
+      "android/cts/runner"
+    ],
+    "system/chre": [
+      "java/test/chdts"
+    ],
+    "test/vts": [
+      "tools/vts-core-tradefed"
+    ]
+  },
+  "expected_changed_projects": 4,
+  "expected_new_sparse_paths": 9,
+  "expected_project_commits": {
+    "cts": "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd",
+    "external/deqp": "eae519aaa6980b2a34ec07141bb19de3f6ddf69e",
+    "system/chre": "17b4a35a8c2b9f27e7f1b382b7d714aced928ce4",
+    "test/vts": "886725543e4078f87fc87aabb90b1871c7536b03"
+  },
+  "expected_projects": 600,
+  "expected_unchanged_projects": 596,
+  "full_build_qualified": false,
+  "groups": {
+    "cts": {
+      "added_paths": [
+        "tools/cts-tradefed/etc",
+        "tools/cts-tradefed/tests",
+        "tools/cts-v-host/etc",
+        "tools/cts-v-host/tests"
+      ],
+      "commit": "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd",
+      "known_size_files": 2,
+      "known_source_bytes": 2684,
+      "newly_locked_git_files": 13,
+      "unknown_size_files": 11
+    },
+    "external/deqp": {
+      "added_paths": [
+        "android/cts/Android.bp",
+        "android/cts/AndroidTest.xml",
+        "android/cts/runner"
+      ],
+      "commit": "eae519aaa6980b2a34ec07141bb19de3f6ddf69e",
+      "known_size_files": 3,
+      "known_source_bytes": 29210,
+      "newly_locked_git_files": 7,
+      "unknown_size_files": 4
+    },
+    "system/chre": {
+      "added_paths": [
+        "java/test/chdts"
+      ],
+      "commit": "17b4a35a8c2b9f27e7f1b382b7d714aced928ce4",
+      "known_size_files": 3,
+      "known_source_bytes": 6916,
+      "newly_locked_git_files": 13,
+      "unknown_size_files": 10
+    },
+    "test/vts": {
+      "added_paths": [
+        "tools/vts-core-tradefed"
+      ],
+      "commit": "886725543e4078f87fc87aabb90b1871c7536b03",
+      "known_size_files": 2,
+      "known_source_bytes": 2441,
+      "newly_locked_git_files": 32,
+      "unknown_size_files": 30
+    }
+  },
+  "materialization_qualified": false,
+  "provider_plan": {
+    "bytes": 32552,
+    "path": "provider-inputs.json",
+    "sha256": "7ff0b84154722d1e19a8879bad4ccfd0004a362a719ac4482adaaa28894d6233"
+  },
+  "published_base": {
+    "bytes": 354234,
+    "commit": "e123939aae9ffeec4e6a2bb928b28cadd44e7f1e",
+    "git_blob": "35e8d6e42fce3cbbeea1db3fb6aa60d1c5b83cad",
+    "path": "compat/android/pocket4/native600-rkpd-apex-r1/source-lock.json",
+    "sha256": "09a020b99c5f9f1876c69450d01ac99907cd6dda97cb4f69601f70151ea43d2b"
+  },
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "runtime_qualified": false,
+  "schema": "pocket4-native600-tradefed-source-chain-v1",
+  "steps": [
+    {
+      "bytes": 303,
+      "claim": "Reconstruct the observed latest owner source lock; preserve tests/signature/lib/common.",
+      "patch": "owner-signature-team-prerequisite.patch",
+      "result_bytes": 354272,
+      "result_sha256": "fb05fce28e2541cc1c791350ede62d36579ac459922b6f394680930cba9f6d9d",
+      "sha256": "f25be309b7692b70b799df53d98405ab8bd81f92a193f99e5d9c55c627cca46d"
+    },
+    {
+      "bytes": 1200,
+      "claim": "Append nine original sparse paths in four existing pinned projects.",
+      "patch": "native-provider-sparse-closure.patch",
+      "result_bytes": 354573,
+      "result_sha256": "881bf0ef909da06da09fe976c84c4efc1e1eebc6182fd3792f236b5eec4cbdcd",
+      "sha256": "168ab5b78c5070994b9f01779b74f0ff545242cf434ee3b6569f649c3596b34b"
+    }
+  ]
+}

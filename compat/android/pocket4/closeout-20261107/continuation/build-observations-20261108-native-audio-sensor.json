@@ -1,0 +1,139 @@
+{
+  "all_blockers_closed": false,
+  "audio_actual309": {
+    "materialized_manifest": {
+      "bytes": 147165,
+      "sha256": "b7c42d4574d048bce42a0994856121e38355f16e0b96884785686e37b7c7ae03"
+    },
+    "normal_commands_completed": 4,
+    "normal_migration_state": "SUCCEEDED",
+    "projects": 309,
+    "relationship_to_earlier_public_candidate": "A distinct actual source lineage. Earlier public prepared309 source and its focused test results remain historical; their qualification is not transferred.",
+    "source_commit": "2884a01f853caa94f7b66c7e945b0e2818f8ca74",
+    "source_lock_sha256": "ac2f7fa3d7e53be1b0e69f486876f8ad229dcc64686af208251bd4aee2424ae4",
+    "source_tree": "f5b7455507f68f4d2b60e763701149ac784aa401"
+  },
+  "audio_full_host_r2": {
+    "ALLOW_MISSING_DEPENDENCIES": "false",
+    "artifact_qualified": false,
+    "dependency_mode": "AudioApexTargetClosure",
+    "exit_code": 1,
+    "input_after_qualified": true,
+    "missing_inputs": [
+      "prebuilts/sdk/35/public/android.jar",
+      "cts-shim-host-lib",
+      "cts-install-lib-host"
+    ],
+    "normal_build_stdout": {
+      "bytes": 11823,
+      "sha256": "1f617173a88a70ad51787b044cc4fd4dd05b382f8063ace0de98fdcf96159fed"
+    },
+    "normal_verify_after_exit_code": 0,
+    "output_complete": true,
+    "output_durable": true,
+    "owned_resource_gate_passed": true,
+    "owned_retirement_complete": true,
+    "peak_memory_bytes": 5911158784,
+    "previous_JUnitParams_error_absent": true,
+    "resource_limit_and_oom_events": 0,
+    "runtime_qualified": false,
+    "source_projection_restored": true,
+    "state": "FAILED",
+    "swap_bytes": 0,
+    "terminal": {
+      "bytes": 77817,
+      "sha256": "8f83dcc828c030c4917a651546bdfb708b56208d0f0100c6837f1b25793528a5"
+    }
+  },
+  "audio_next": {
+    "full_build_started": false,
+    "missing_dependencies_enabled": false,
+    "scope": [
+      "SDK35 public android.jar, framework.aidl and core-for-system-modules.jar",
+      "Original CTS shim/install and their retained provider dependencies",
+      "CTS tradefed tools and required ATS/test dependencies",
+      "Original dEQP and supporting providers at fixed commits"
+    ],
+    "source_migration_started": false,
+    "state": "ORIGINAL_PROVIDER_CLOSURE_PREPARING_NOT_FROZEN",
+    "tests_removed": false
+  },
+  "deployed": false,
+  "historical_native_r4": {
+    "history_preserved": true,
+    "original_failure_kinds": [
+      "Git transport failure during reconcile",
+      "Original attempt resource gate rejected memory.max events"
+    ],
+    "result": {
+      "bytes": 42674,
+      "sha256": "88479c82b0b443b465e7b902852d34e5ba7853508ab3ba3c52aa2e161e0b96dd"
+    },
+    "state": "FAILED_AND_PHYSICALLY_RETIRED"
+  },
+  "native_existing_source": {
+    "declared_source_resources": {
+      "cpu_quota_percent": 200,
+      "memory_max_bytes": 3221225472,
+      "memory_max_reclaim_events_preserved": true,
+      "oom_and_oom_kill_events_must_be_zero": true,
+      "resource_contract_changed_during_run": false,
+      "swap_bytes": 0
+    },
+    "frozen_source_lock_sha256": "2b699174977614e080cf99a991f3e648774b24581c4ecdc29f1bd53b7b01ef23",
+    "full_Native_ART_qualified": false,
+    "next_gate": "Actual complete three-step result, authoritative terminal, physical retirement and source fixedpoint review before a matching full build.",
+    "normal_previous_verification_passed": true,
+    "original_controller": {
+      "bytes": 38579,
+      "sha256": "e80f6e7773ab31fb7b276de49c99584c3f5d3348fbf97dcf00701a245fe48246"
+    },
+    "preparation": {
+      "bytes": 9462,
+      "sha256": "0a80c19dbaf7501f1c3d87f623ea11e517a769a096bdc3a855a5e9806847a706"
+    },
+    "published_manifest_at_observation": {
+      "bytes": 131148,
+      "projects": 268,
+      "sha256": "63cb6c1937f6f2a749fd528b806f6d90f76b8735f21911edb4d0cb182717394a"
+    },
+    "source_closure_qualified": false,
+    "source_materialization_qualified": false,
+    "state_at_observation": "NORMAL_RECONCILE_RUNNING_AFTER_PREVIOUS268_VERIFICATION",
+    "target_projects": 597
+  },
+  "native_new_source_entry": {
+    "controller": {
+      "bytes": 83146,
+      "sha256": "a1445b207a76aa0dd3d8296c9be5dc5dd34eca8b43ba736d007fa52866eb6f80"
+    },
+    "exit_code": 1,
+    "history_preserved": true,
+    "locks_acquired": 0,
+    "normal_source_commands": 0,
+    "output_complete": true,
+    "output_durable": true,
+    "owned_retirement_qualified": true,
+    "reason": "The existing Native source owner held the original lock; the nonblocking entry refused before normal source commands.",
+    "resource_limit_events": 0,
+    "result": {
+      "bytes": 2152,
+      "sha256": "c72b0fc3de606dba3d700bf3c63fcdd09b82d7af14575eca6c4949d8dca9c3a3"
+    },
+    "source_mutations": 0,
+    "state": "FAILED_AT_ORIGINAL_LOCK_BEFORE_SOURCE_WORK",
+    "subreaper_restored": true
+  },
+  "observation_date_utc": "2026-11-08",
+  "original_applications": {
+    "accepted": 0,
+    "required": 45
+  },
+  "runtime_qualified": false,
+  "schema": "pocket4-build-observations-native-audio-sensor-v1",
+  "sensor": {
+    "production_changed": false,
+    "results": "sensor-canonical-stage-20261108/verification.json",
+    "state": "ABI_QUALIFIED_CANONICAL_PAYLOAD_STAGED_RUNTIME_PENDING"
+  }
+}

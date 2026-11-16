@@ -1,0 +1,58 @@
+{
+  "schema": "p4-native606-current-resource-plan-r1",
+  "created_utc": "2026-11-12T00:33:44.421227+00:00",
+  "host": "ai395",
+  "observation_H": "ai395/1a1ccf67f7f-2564-1110",
+  "observation_full_stdout": {
+    "bytes": 2852,
+    "sha256": "127be210e1a487d25d43b1b3ccbabdc72aad981027eb38c76d7a46eefa16e95a"
+  },
+  "observed_memavailable_bytes": 20584026112,
+  "observed_memory_pressure": "some avg10=3.65 avg60=2.84 avg300=1.17 total=732528717\nfull avg10=3.65 avg60=2.84 avg300=1.17 total=728052548\n",
+  "original_24GiB_kernel_peer_reservation": {
+    "new_reserved_bytes": 0,
+    "reason": "Old in-tree kernel build and subsequent 3GiB transform/full/1GiB collection have completed; exact known original job cgroups absent. Original33/29GiB normal refusal remains failed. No claim that unrelated work is absent.",
+    "known_job_cgroup_observations": {
+      "1a1c3e0196a-cf39-30": {
+        "cgroup_exists": false
+      },
+      "1a1cc31d4f4-2564-e82": {
+        "cgroup_exists": false
+      },
+      "1a1ccd59949-2564-1094": {
+        "cgroup_exists": false
+      },
+      "1a1cce90174-2564-10de": {
+        "cgroup_exists": false
+      },
+      "1a1cce85743-2564-10d8": {
+        "cgroup_exists": false
+      },
+      "1a1ccea1fdd-2564-10e1": {
+        "cgroup_exists": false
+      }
+    }
+  },
+  "normal_and_source_profiles": {
+    "compiler_memory_max_bytes": 4294967296,
+    "outer_memory_max_bytes": 1073741824,
+    "memory_swap_max_bytes": 0,
+    "cpu_quota_percent": 200,
+    "cpu_affinity": [
+      8,
+      9
+    ],
+    "fresh_memavailable_minimum_bytes": 17179869184,
+    "during_command_memavailable_minimum_bytes": 12884901888,
+    "available_memory_floor_role": "At least5GiB host reserve plus7GiB additional shared/outer/observer allowance; does not stop unrelated services.",
+    "host_reserve_original_minimum_bytes": 5368709120,
+    "disk_admission_and_monitor_unchanged": true,
+    "normal_tools_and_source_reconcile_serialized": true,
+    "new_kernel_external_compile_serialized_until_native_normal_and_source_terminal": true
+  },
+  "unrelated_services_unchanged": true,
+  "no_kill_no_swap_reconfiguration_no_cache_drop": true,
+  "full_native_24GiB_profile_not_authorized_by_this_plan": true,
+  "resource_failure_action": "Use existing owned-child retirement/restore; preserve failed H and no blind retry. Reassess actual availability.",
+  "resource_observation_is_not_a_reservation": true
+}

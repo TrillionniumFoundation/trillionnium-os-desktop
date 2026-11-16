@@ -1,0 +1,366 @@
+--- a/core/java/com/android/internal/os/Zygote.java
++++ b/core/java/com/android/internal/os/Zygote.java
+@@ -323,6 +323,26 @@
+     public static final String USAP_POOL_SECONDARY_SOCKET_NAME = "usap_pool_secondary";
+ 
+     private Zygote() {}
++
++    /**
++     * Fixed private Java-to-JNI data path. It currently rejects before preFork:
++     * immutable base/range policy, all-thread NNP and the actual root-parent
++     * approval producer are not implemented. A launch record is not a grant.
++     */
++    static void requireDroidloomAppZygoteRoleV1(ZygoteArguments.AppZygoteForkSpec spec,
++            int uid, int gid, boolean childZygote) {
++        if (spec == null) {
++            throw new IllegalArgumentException("Missing private AppZygote specification");
++        }
++        spec.requireMatches(uid, gid, childZygote);
++        nativeRequireDroidloomAppZygoteRoleV1(uid, gid, childZygote, spec.version, spec.kind,
++                spec.initialUid, spec.initialGid, spec.uidMin, spec.uidMax, spec.gidMin, spec.gidMax);
++        throw new IllegalStateException("Private AppZygote JNI returned without authorization");
++    }
++
++    private static native void nativeRequireDroidloomAppZygoteRoleV1(int uid, int gid,
++            boolean childZygote, int version, int kind, int initialUid, int initialGid,
++            int uidMin, int uidMax, int gidMin, int gidMax);
+ 
+     private static boolean containsInetGid(int[] gids) {
+         for (int i = 0; i < gids.length; i++) {
+--- a/core/java/com/android/internal/os/ZygoteArguments.java
++++ b/core/java/com/android/internal/os/ZygoteArguments.java
+@@ -15,6 +15,9 @@
+  */
+ 
+ package com.android.internal.os;
++
++import android.net.Credentials;
++import android.os.Process;
+ 
+ import java.io.EOFException;
+ import java.util.ArrayList;
+@@ -168,6 +171,17 @@
+      */
+     boolean mStartChildZygote;
+ 
++    // An explicit request for a stronger private path, never an authorization
++    // label. No existing AppZygote producer supplies this option. Without it,
++    // the ordinary child-zygote parser and fork path remain unchanged.
++    boolean mRequireDroidloomAppZygoteRoleV1;
++
++    // Only parseArgs may set these after an actual --setuid/--setgid value.
++    // applyUidSecurityPolicy also sets mUidSpecified/mGidSpecified for peer
++    // defaults, so those mutable policy flags cannot prove explicit input.
++    private boolean mDroidloomUidParsed;
++    private boolean mDroidloomGidParsed;
++
+     /**
+      * Whether the current arguments constitute a request for the zygote's PID.
+      */
+@@ -309,6 +323,7 @@
+                 }
+                 mUidSpecified = true;
+                 mUid = Integer.parseInt(getAssignmentValue(arg));
++                mDroidloomUidParsed = true;
+             } else if (arg.startsWith("--setgid=")) {
+                 if (mGidSpecified) {
+                     throw new IllegalArgumentException(
+@@ -316,6 +331,7 @@
+                 }
+                 mGidSpecified = true;
+                 mGid = Integer.parseInt(getAssignmentValue(arg));
++                mDroidloomGidParsed = true;
+             } else if (arg.startsWith("--target-sdk-version=")) {
+                 if (mTargetSdkVersionSpecified) {
+                     throw new IllegalArgumentException(
+@@ -427,6 +443,11 @@
+                 expectRuntimeArgs = false;
+             } else if (arg.equals("--start-child-zygote")) {
+                 mStartChildZygote = true;
++            } else if (arg.equals("--require-droidloom-app-zygote-role-v1")) {
++                if (mRequireDroidloomAppZygoteRoleV1) {
++                    throw new IllegalArgumentException("Duplicate private AppZygote request");
++                }
++                mRequireDroidloomAppZygoteRoleV1 = true;
+             } else if (arg.equals("--set-api-denylist-exemptions")) {
+                 // consume all remaining args; this is a stand-alone command, never included
+                 // with the regular fork command.
+@@ -517,6 +538,12 @@
+             }
+         }
+ 
++        if (mRequireDroidloomAppZygoteRoleV1
++                && (!mStartChildZygote || mRemainingArgs == null || mRemainingArgs.length == 0
++                    || !AppZygoteForkSpec.ENTRY_CLASS.equals(mRemainingArgs[0]))) {
++            throw new IllegalArgumentException("Private role request requires AppZygoteInit");
++        }
++
+         if (mStartChildZygote) {
+             boolean seenChildSocketArg = false;
+             for (String arg : mRemainingArgs) {
+@@ -530,6 +557,143 @@
+                         + "without " + Zygote.CHILD_ZYGOTE_SOCKET_NAME_ARG);
+             }
+         }
++    }
++
++    /**
++     * Immutable launch data for the private AppZygote JNI entry. This is not a
++     * factory grant or proof that an early policy has been installed.
++     */
++    static final class AppZygoteForkSpec {
++        static final int VERSION = 1;
++        static final int KIND_APP_ZYGOTE = 1;
++        static final String ENTRY_CLASS = "com.android.internal.os.AppZygoteInit";
++
++        final int version = VERSION;
++        final int kind = KIND_APP_ZYGOTE;
++        final int initialUid;
++        final int initialGid;
++        final int uidMin;
++        final int uidMax;
++        final int gidMin;
++        final int gidMax;
++        private final String socketName;
++        private final String abiList;
++
++        private AppZygoteForkSpec(int uid, int gid, int minimum, int maximum,
++                String socket, String abis) {
++            initialUid = uid;
++            initialGid = gid;
++            uidMin = gidMin = minimum;
++            uidMax = gidMax = maximum;
++            socketName = socket;
++            abiList = abis;
++        }
++
++        void requireMatches(int uid, int gid, boolean childZygote) {
++            if (!childZygote || uid <= 0 || gid <= 0
++                    || uid != initialUid || gid != initialGid
++                    || uidMin < Process.FIRST_APP_ZYGOTE_ISOLATED_UID
++                    || uidMin > uidMax || gidMin != uidMin || gidMax != uidMax) {
++                throw new IllegalArgumentException("AppZygote fork specification changed");
++            }
++        }
++
++        String[] copyRuntimeArguments() {
++            // Do not retain or return the mutable command argument array. The
++            // child receives exactly the range which was validated pre-fork.
++            return new String[] {ENTRY_CLASS,
++                    Zygote.CHILD_ZYGOTE_SOCKET_NAME_ARG + socketName,
++                    Zygote.CHILD_ZYGOTE_ABI_LIST_ARG + abiList,
++                    Zygote.CHILD_ZYGOTE_UID_RANGE_START + uidMin,
++                    Zygote.CHILD_ZYGOTE_UID_RANGE_END + uidMax};
++        }
++    }
++
++    /**
++     * Called by ZygoteConnection after its kernel peer authentication and the
++     * existing UID/invoke-with policies. An absent explicit requirement keeps
++     * the old AppZygote path. A present but invalid request never falls back.
++     */
++    AppZygoteForkSpec appZygoteForkSpec(Credentials peer) {
++        if (!mRequireDroidloomAppZygoteRoleV1) {
++            return null;
++        }
++        if (!mStartChildZygote) {
++            throw new IllegalArgumentException("Private role request is not AppZygoteInit");
++        }
++        if (peer == null || peer.getUid() != Process.SYSTEM_UID) {
++            throw new ZygoteSecurityException("AppZygote specification requires the system peer");
++        }
++        if (!mDroidloomUidParsed || !mDroidloomGidParsed
++                || !mUidSpecified || !mGidSpecified || mUid <= 0 || mGid <= 0 || mInvokeWith != null
++                || mPermittedCapabilities != 0 || mEffectiveCapabilities != 0) {
++            throw new ZygoteSecurityException("Unsupported AppZygote launch authority");
++        }
++        // startChildZygote supplies precisely these four extra arguments.
++        // Reject duplicate, missing and unknown fields before any fork.
++        final String[] requested = mRemainingArgs;
++        if (requested == null || requested.length != 5) {
++            throw new IllegalArgumentException("AppZygote requires four unique launch arguments");
++        }
++        final String[] arguments = requested.clone();
++        if (!AppZygoteForkSpec.ENTRY_CLASS.equals(arguments[0])) {
++            throw new IllegalArgumentException("Private role request is not AppZygoteInit");
++        }
++        String socket = null;
++        String abis = null;
++        Integer minimum = null;
++        Integer maximum = null;
++        for (int i = 1; i < arguments.length; ++i) {
++            final String arg = arguments[i];
++            if (arg == null) {
++                throw new IllegalArgumentException("Null AppZygote launch argument");
++            }
++            if (arg.startsWith(Zygote.CHILD_ZYGOTE_SOCKET_NAME_ARG)) {
++                if (socket != null) throw new IllegalArgumentException("Duplicate AppZygote socket");
++                socket = nonemptyAppZygoteValue(arg, Zygote.CHILD_ZYGOTE_SOCKET_NAME_ARG);
++            } else if (arg.startsWith(Zygote.CHILD_ZYGOTE_ABI_LIST_ARG)) {
++                if (abis != null) throw new IllegalArgumentException("Duplicate AppZygote ABI list");
++                abis = nonemptyAppZygoteValue(arg, Zygote.CHILD_ZYGOTE_ABI_LIST_ARG);
++            } else if (arg.startsWith(Zygote.CHILD_ZYGOTE_UID_RANGE_START)) {
++                if (minimum != null) throw new IllegalArgumentException("Duplicate AppZygote minimum");
++                minimum = canonicalAppZygoteId(arg, Zygote.CHILD_ZYGOTE_UID_RANGE_START);
++            } else if (arg.startsWith(Zygote.CHILD_ZYGOTE_UID_RANGE_END)) {
++                if (maximum != null) throw new IllegalArgumentException("Duplicate AppZygote maximum");
++                maximum = canonicalAppZygoteId(arg, Zygote.CHILD_ZYGOTE_UID_RANGE_END);
++            } else {
++                throw new IllegalArgumentException("Unknown AppZygote launch argument");
++            }
++        }
++        if (socket == null || abis == null || minimum == null || maximum == null
++                || minimum < Process.FIRST_APP_ZYGOTE_ISOLATED_UID || minimum > maximum) {
++            throw new IllegalArgumentException("Incomplete or invalid AppZygote range");
++        }
++        final AppZygoteForkSpec result =
++                new AppZygoteForkSpec(mUid, mGid, minimum, maximum, socket, abis);
++        result.requireMatches(mUid, mGid, mStartChildZygote);
++        return result;
++    }
++
++    private static String nonemptyAppZygoteValue(String arg, String prefix) {
++        final String value = arg.substring(prefix.length());
++        if (value.isEmpty() || value.indexOf('\0') >= 0) {
++            throw new IllegalArgumentException("Empty or invalid AppZygote argument");
++        }
++        return value;
++    }
++
++    private static int canonicalAppZygoteId(String arg, String prefix) {
++        final String value = nonemptyAppZygoteValue(arg, prefix);
++        final int id;
++        try {
++            id = Integer.parseInt(value);
++        } catch (NumberFormatException error) {
++            throw new IllegalArgumentException("AppZygote ID is not an int32 value", error);
++        }
++        if (id <= 0 || !Integer.toString(id).equals(value)) {
++            throw new IllegalArgumentException("AppZygote ID is not canonical positive decimal");
++        }
++        return id;
+     }
+ 
+     @RavenwoodKeep
+--- a/core/java/com/android/internal/os/ZygoteConnection.java
++++ b/core/java/com/android/internal/os/ZygoteConnection.java
+@@ -194,6 +194,19 @@
+ 
+                 Zygote.applyDebuggerSystemProperty(parsedArgs);
+                 Zygote.applyInvokeWithSystemProperty(parsedArgs);
++
++                // Only the authenticated command peer and the already-applied
++                // legacy policies can produce this immutable launch record.
++                // Requiring the private path must never silently run the old
++                // fork when its early policy/parent approval is unavailable.
++                final ZygoteArguments.AppZygoteForkSpec appZygoteSpec =
++                        parsedArgs.appZygoteForkSpec(peer);
++                if (appZygoteSpec != null) {
++                    parsedArgs.mRemainingArgs = appZygoteSpec.copyRuntimeArguments();
++                    Zygote.requireDroidloomAppZygoteRoleV1(appZygoteSpec, parsedArgs.mUid,
++                            parsedArgs.mGid, parsedArgs.mStartChildZygote);
++                    throw new IllegalStateException("Private AppZygote path returned without fork");
++                }
+ 
+                 int[][] rlimits = null;
+ 
+--- a/core/jni/com_android_internal_os_Zygote.cpp
++++ b/core/jni/com_android_internal_os_Zygote.cpp
+@@ -84,6 +84,7 @@
+ #include <unordered_set>
+ 
+ #include "core_jni_helpers.h"
++#include "droidloom_app_zygote_spec.h"
+ #include "fd_utils.h"
+ #include "filesystem_utils.h"
+ #include "nativebridge/native_bridge.h"
+@@ -2604,6 +2605,35 @@
+   PreApplicationInit();
+ }
+ 
++// Invoked only for the explicit private requirement, before Java preFork.
++// All fields are copied into an immutable native value; no caller label or
++// observed seccomp mode is converted into a factory authorization.
++static void com_android_internal_os_Zygote_nativeRequireDroidloomAppZygoteRoleV1(
++        JNIEnv* env, jclass, jint uid, jint gid, jboolean child_zygote, jint version, jint kind,
++        jint initial_uid, jint initial_gid, jint uid_min, jint uid_max,
++        jint gid_min, jint gid_max) {
++    using android::zygote::droidloom::AppZygoteSpecV1;
++    static_assert(sizeof(jint) == sizeof(int32_t));
++    static_assert(!android::zygote::droidloom::kAppZygoteRoleAuthorizationEnabled,
++                  "Implement early policy and actual parent approval before enabling this path");
++    const AppZygoteSpecV1 spec{version, kind, initial_uid, initial_gid,
++                             uid_min, uid_max, gid_min, gid_max};
++    if (!spec.Matches(uid, gid, child_zygote == JNI_TRUE)) {
++        jniThrowException(env, "java/lang/IllegalArgumentException",
++                          "Invalid private AppZygote specification V1");
++        return;
++    }
++    if (getuid() != 0 || geteuid() != 0 || getgid() != 0 || getegid() != 0) {
++        jniThrowException(env, "java/lang/SecurityException",
++                          "Private AppZygote path requires root credentials");
++        return;
++    }
++    // This is the exact remaining interface, not a permissive callback seam.
++    // Do not fork, load a guest, set NNP/caps, contact a factory or fall back.
++    jniThrowException(env, "java/lang/UnsupportedOperationException",
++                      "AppZygote early policy and root-parent approval are unavailable");
++}
++
+ NO_STACK_PROTECTOR
+ static jint com_android_internal_os_Zygote_nativeForkAndSpecialize(
+         JNIEnv* env, jclass, jint uid, jint gid, jintArray gids, jint runtime_flags,
+@@ -3139,6 +3169,8 @@
+ }
+ 
+ static const JNINativeMethod gMethods[] = {
++        {"nativeRequireDroidloomAppZygoteRoleV1", "(IIZIIIIIIII)V",
++         (void*)com_android_internal_os_Zygote_nativeRequireDroidloomAppZygoteRoleV1},
+         {"nativeForkAndSpecialize",
+          "(II[II[[IILjava/lang/String;Ljava/lang/String;[I[IZLjava/lang/String;Ljava/lang/"
+          "String;ZZ[Ljava/lang/String;[Ljava/lang/String;ZZZ)I",
+--- /dev/null
++++ b/core/jni/droidloom_app_zygote_spec.h
+@@ -0,0 +1,42 @@
++/* SPDX-License-Identifier: Apache-2.0 */
++#ifndef DROIDLOOM_APP_ZYGOTE_SPEC_H_
++#define DROIDLOOM_APP_ZYGOTE_SPEC_H_
++
++#include <stdint.h>
++
++namespace android::zygote::droidloom {
++
++inline constexpr int32_t kAppZygoteSpecVersion = 1;
++inline constexpr int32_t kAppZygoteSpecKind = 1;
++
++// This revision carries immutable launch data to the actual native fork
++// entry. It installs no policy and issues no factory approval. Changing this
++// constant alone must never enable a role: the native entry has a
++// compile-time rejection until the early-policy and parent-approval path exists.
++inline constexpr bool kAppZygoteRoleAuthorizationEnabled = false;
++
++struct AppZygoteSpecV1 final {
++    const int32_t version;
++    const int32_t kind;
++    const int32_t initial_uid;
++    const int32_t initial_gid;
++    const int32_t uid_min;
++    const int32_t uid_max;
++    const int32_t gid_min;
++    const int32_t gid_max;
++
++    // Only a structural check of the Java/JNI transport. The authenticated
++    // Java ingress also applies Process.FIRST_APP_ZYGOTE_ISOLATED_UID. Neither
++    // check proves a seccomp program, NNP, an immutable pair or a parent grant.
++    constexpr bool Matches(int32_t uid, int32_t gid, bool child_zygote) const {
++        return version == kAppZygoteSpecVersion && kind == kAppZygoteSpecKind &&
++                child_zygote && initial_uid > 0 && initial_gid > 0 &&
++                initial_uid == uid && initial_gid == gid && uid_min > 0 &&
++                uid_min <= uid_max && gid_min == uid_min && gid_max == uid_max;
++    }
++};
++
++static_assert(sizeof(AppZygoteSpecV1) == 8 * sizeof(int32_t));
++
++}  // namespace android::zygote::droidloom
++#endif

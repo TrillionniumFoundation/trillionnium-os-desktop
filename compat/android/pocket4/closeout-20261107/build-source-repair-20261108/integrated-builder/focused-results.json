@@ -1,0 +1,196 @@
+{
+  "AOSP_materializations": 0,
+  "Android_actions": 0,
+  "Main_actions": 0,
+  "Soong_invocations": 0,
+  "actual_historical_render": {
+    "active_source_written": false,
+    "actual_original_superproject_sha256": "f91f1199d29a2818c71e37ebc453691299f406672f61f27b0d4bde9a130eb512",
+    "generated_source_sha256": {
+      "android/native-generation-pair/source-lock.json": "2b699174977614e080cf99a991f3e648774b24581c4ecdc29f1bd53b7b01ef23",
+      "tools/droidloom-source/src/lib.rs": "9b4fe92d69a561da10687a88301b3f9b655c515944621629a267ca3f5d0cbd97",
+      "tools/droidloom-update/src/native_generation_pair_build.rs": "0ab04eb4fb8bc87e16e5e04979859906e6b81f607e3f0c897686a642e88d4d26"
+    },
+    "passed": true,
+    "patch": {
+      "bytes": 707877,
+      "sha256": "929451654fe609fde8ae8bb1d18c9383af00db8424693593a48cac9cd61002e2"
+    },
+    "patch_check_passed": true,
+    "recipe": {
+      "bytes": 1453,
+      "sha256": "d310e7d34fc4f3948938d34410e866a6aa04da2d3b6650ad56e8e1563caf0612"
+    }
+  },
+  "candidate_deployed": false,
+  "failures_preserved": [
+    {
+      "attempt": "r1",
+      "cargo_invocations": 0,
+      "cause": "New source manifest was root-private and unreadable to desktop compiler user",
+      "owned_unit_retired": true,
+      "phase": "before Cargo",
+      "receipt": {
+        "bytes": 1377,
+        "sha256": "65b5f4486ec1b84a8b8088c7cded9a4274c04b0c04049bcd3492548bd5c2fd13"
+      }
+    },
+    {
+      "attempt": "r2",
+      "case": "existing_exact_extension_is_retained",
+      "cause": "Historical 268 fixture followed current597 lock; generator template also followed current library",
+      "owned_unit_retired": true,
+      "phase": "recipe tests",
+      "recipe_failed": 1,
+      "recipe_passed": 5,
+      "result": {
+        "bytes": 4736,
+        "sha256": "9fdd7803c54e53f29c91c71139a5328eeca8bcc87a92e5b48e61e42c0435f563"
+      },
+      "source_library_passed": 29,
+      "stdout": {
+        "bytes": 1025,
+        "sha256": "ef8d1908fbce86259ef3db5255ce22e44ab6f92c99a861bc5bcc126aebdd175a"
+      }
+    }
+  ],
+  "frozen_source_writes": 0,
+  "full_audio_apex_build_pass": false,
+  "full_native_art_build_pass": false,
+  "normal_release_binaries": {
+    "droidloom-source": {
+      "bytes": 1501880,
+      "sha256": "a7a55c50d31095ddd8d0de419948e02d645458455bd433ad8cf08f55b624b311"
+    },
+    "droidloom-update": {
+      "bytes": 3830768,
+      "sha256": "abbea8f763d263c06b88d894e5a6e7d8b752858180c9f866f3faf75e54f6caa2"
+    }
+  },
+  "owned_children_empty": true,
+  "owned_unit_retired": true,
+  "owned_unit_retirement": {
+    "bytes": 1377,
+    "sha256": "1aab6dbae5c470a90d5abed3423f4c59792995c1a469c30b84daa9bd9b96e6cc"
+  },
+  "recipe_tests": {
+    "attempt": "r3",
+    "passed": 6
+  },
+  "resources": {
+    "cpu.max": "100000 100000",
+    "cpuset.cpus.effective": "18",
+    "memory.current": "426315776",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "1610612736",
+    "memory.peak": "900829184",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0"
+  },
+  "result": {
+    "bytes": 84355,
+    "sha256": "8bd2422b9d7e5f56c0ac32483e830dacc56aea17e186e43448e999dbc5523f04"
+  },
+  "runtime_qualified": false,
+  "schema": "pocket4-merged-builder-focused-results-v1",
+  "source_before_after_equal": true,
+  "source_files": 476,
+  "source_library": {
+    "attempt": "r2",
+    "later_changes_only": [
+      "tools/droidloom-source/examples/frozen_pair_recipe.rs",
+      "tools/droidloom-source/tests/fixtures/frozen-pair-268/source-lib.rs",
+      "tools/droidloom-source/tests/fixtures/frozen-pair-268/source-lock.json"
+    ],
+    "passed": 29,
+    "result": {
+      "bytes": 4736,
+      "sha256": "9fdd7803c54e53f29c91c71139a5328eeca8bcc87a92e5b48e61e42c0435f563"
+    },
+    "stdout": {
+      "bytes": 2458,
+      "sha256": "e5fa2436f3902e0bbc516462997a1ecc54ffea4f9d0e1bc200ed0760a028ef0a"
+    },
+    "unchanged_library_inputs_proved": true
+  },
+  "source_manifest": {
+    "bytes": 90838,
+    "sha256": "9963322e0cb43f1f89c9da7189e6f65e5c266bd77616e67a334c6de9e3428547"
+  },
+  "state": "FOCUSED_RUST_AND_NORMAL_TOOL_BUILDS_PASSED_NOT_DEPLOYED",
+  "update_tests": {
+    "categories": {
+      "audio": [
+        "android::tests::audio_actual_three_defaults_regression_preserves_original_consumers_and_providers",
+        "android::tests::audio_apex_scope_excludes_only_the_explicit_target_list",
+        "android::tests::audio_apex_target_closure_is_explicit_and_preserves_native_dependencies",
+        "android::tests::audio_apex_target_closure_rejects_other_or_mixed_targets",
+        "android::tests::audio_build_source_lock_is_scoped_and_exact",
+        "android::tests::audio_gatekeeper_requires_the_complete_locked_rust_provider_cones",
+        "android::tests::audio_kms_scope_preserves_the_real_local_signing_chain",
+        "android::tests::audio_launcher_tapl_preserves_original_generator_chain_and_dependency_bodies",
+        "android::tests::audio_new_crossdevice_roots_preserve_license_and_independent_original_flags",
+        "android::tests::audio_new_launcher_ancestor_tests_keep_only_the_unselected_root_scope",
+        "android::tests::audio_pcm_patches_are_private_and_keep_lifecycle_order",
+        "android::tests::audio_platform_test_scope_preserves_metadata_and_real_library_provider",
+        "android::tests::audio_power_provider_requires_complete_original_cone_without_changing_other_routes",
+        "android::tests::audio_prebuilt_tradefed_selection_preserves_other_product_configuration",
+        "android::tests::audio_required_settings_discovery_rejects_foreign_markers_without_removing_them",
+        "android::tests::audio_resource_projection_preserves_all_original_bytes_and_mtimes_on_restore",
+        "android::tests::audio_resource_projection_rejects_changed_inputs_and_does_not_touch_other_modes",
+        "android::tests::audio_room_processor_keeps_original_transitive_dependencies",
+        "android::tests::audio_sdk_fallback_preserves_original_scopes_and_other_modes",
+        "android::tests::audio_serialservice_metadata_preserves_license_without_inventing_a_team",
+        "android::tests::audio_shared_provider_visibility_is_exact_and_scoped",
+        "android::tests::m953_private_audio_hal_session_scopes_only_unselected_modules",
+        "android::tests::private_audio_preprocessing_benchmark_scope_is_not_product_scope",
+        "android::tests::private_audio_preprocessing_test_scope_preserves_production_modules"
+      ],
+      "merge_and_cli": [
+        "android::tests::merged_shared_provider_routes_preserve_each_frozen_scope",
+        "android::tests::merged_sdk_fallback_respects_exact_provider_presence_in_both_routes",
+        "tests::native_generation_pair_cli_requires_one_explicit_product",
+        "tests::source_recovery_cli_is_explicit_and_has_no_build_path",
+        "tests::source_recovery_requires_both_normal_locks_and_only_restores_journal"
+      ],
+      "native_fix18": [
+        "android::tests::ordinary_pair_providers_keep_all_ten_original_bodies_only_for_the_pair",
+        "android::tests::ordinary_pair_provider_drift_is_rejected_and_normal_projection_restores_bytes_and_time",
+        "android::tests::ordinary_pair_test_discovery_preserves_other_routes_and_restores_its_markers",
+        "android::tests::ordinary_pair_existing_test_markers_and_wrong_modes_fail_before_any_new_marker",
+        "android::tests::typed_shared_provider_projection_keeps_exact_upstream_bodies_and_metadata",
+        "android::tests::typed_shared_provider_projection_rejects_changed_missing_or_duplicate_stanzas",
+        "android::tests::typed_shared_provider_projection_keeps_other_root_projection_unchanged",
+        "android::tests::normal_systemui_projection_keeps_real_dagger_defaults",
+        "android::tests::normal_systemui_projection_rejects_drift_and_keeps_other_roots",
+        "android::tests::restoration_preserves_original_and_removes_created_file",
+        "android::patch_tests::interrupted_projection_recovers_before_next_build",
+        "android::tests::missing_dependencies_are_rejected_even_if_caller_asks_to_allow_them",
+        "android::tests::default_dependency_mode_still_overrides_inherited_allow_missing",
+        "native_generation_pair_build::tests::ordinary_pair_accepts_only_complete_strict_scope",
+        "android::tests::ordinary_pair_provider_bound_preserves_existing_writer_and_restores",
+        "android::tests::ordinary_pair_provider_bound_rejects_wrong_mode_and_drift_before_writes",
+        "android::tests::ordinary_pair_gc_observation_keeps_target_and_dependency_configuration"
+      ],
+      "native_pair": [
+        "native_generation_pair_build::tests::ordinary_pair_accepts_only_complete_strict_scope",
+        "native_generation_pair_build::tests::ordinary_pair_display_extension_rejects_previous_and_wider_subtrees",
+        "native_generation_pair_build::tests::ordinary_pair_effective_engine_rejects_untracked_or_unrelated_edits",
+        "native_generation_pair_build::tests::ordinary_pair_generator_provider_closure_rejects_partial_and_unrelated_inputs",
+        "native_generation_pair_build::tests::ordinary_pair_projection_is_exact_and_only_x86_64_arm64",
+        "native_generation_pair_build::tests::ordinary_pair_provider_closure_rejects_unlisted_projects_and_prior_plan",
+        "native_generation_pair_build::tests::ordinary_pair_records_are_create_only",
+        "native_generation_pair_build::tests::ordinary_pair_rejects_wrong_or_partial_engine_snapshot",
+        "native_generation_pair_build::tests::ordinary_pair_source_extension_is_exact_and_monotonic",
+        "native_generation_pair_build::tests::ordinary_pair_source_extension_rejects_revision_policy_and_path_drift",
+        "native_generation_pair_build::tests::ordinary_pair_source_workspace_rejects_previous_plan_and_alias"
+      ],
+      "native_sdk_presence": [
+        "android::tests::sdkextensions_fallbacks_preserve_original_scope_and_legacy_builds",
+        "android::tests::sdkextensions_provider_requires_complete_pinned_snapshot"
+      ]
+    },
+    "categories_overlap_and_are_not_summed": true,
+    "unique_passed": 58
+  }
+}

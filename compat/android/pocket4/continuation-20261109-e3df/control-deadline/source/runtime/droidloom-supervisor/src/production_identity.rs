@@ -1,0 +1,1314 @@
+//! Configured subordinate-ID authority and durable, non-reclaiming reservations.
+//!
+//! This is a prerequisite for the production namespace broker. It does not
+//! create namespaces, write ID maps, mount user data, or authorize Android
+//! execution. A broker must additionally reconcile actual namespace ownership,
+//! audit all effective NSS identities, bind its own child with pidfd/proc/ns
+//! descriptors, and preserve setgroups.
+//! Dropping a lease releases a process lock; it never releases the ID range.
+
+use std::collections::BTreeMap;
+use std::ffi::CString;
+use std::fs::{self, File, Metadata, OpenOptions};
+use std::io::{self, Read, Write};
+use std::os::fd::{AsRawFd, FromRawFd};
+use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+use std::path::{Component, Path, PathBuf};
+
+use droidloom_contracts::MIN_SUBORDINATE_IDS;
+use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
+use thiserror::Error;
+
+use crate::{CellSpec, IdRange};
+
+const MAX_AUTHORITY_BYTES: u64 = 1024 * 1024;
+const MAX_RECORD_BYTES: u64 = 16 * 1024;
+const MAX_RESERVATIONS: usize = 4096;
+const REGISTRY: &str = "/var/lib/droidloom/identity-reservations";
+
+/// A rejected identity input, conflicting reservation, or filesystem failure.
+#[derive(Debug, Error)]
+pub enum IdentityError {
+    /// The configured delegation does not authorize the complete request.
+    #[error("production identity is not configured: {0}")]
+    Unauthorized(String),
+    /// An authoritative input changed during the operation.
+    #[error("production identity authority changed; read fresh authority")]
+    AuthorityChanged,
+    /// A path does not satisfy the trusted-file contract.
+    #[error("unsafe identity custody: {0}")]
+    UnsafeCustody(String),
+    /// A live process already holds the requested lease or registry lock.
+    #[error("production identity reservation is busy")]
+    Busy,
+    /// An existing durable record binds this cell to different inputs.
+    #[error("existing identity reservation has a different cell, range, cohort, or data identity")]
+    BindingConflict,
+    /// A durable record belonging to another cell overlaps this request.
+    #[error("subordinate IDs overlap durable reservation {0}")]
+    RangeConflict(String),
+    /// A system call or bounded file read failed.
+    #[error(transparent)]
+    Io(#[from] io::Error),
+    /// A durable record is incomplete or has an unsupported shape.
+    #[error("invalid durable identity record: {0}")]
+    Record(String),
+}
+
+type Result<T> = std::result::Result<T, IdentityError>;
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Principal {
+    name: String,
+    uid: u32,
+    gid: u32,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Request {
+    host_uid: u32,
+    principal: Principal,
+    uids: IdRange,
+    gids: IdRange,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+struct FileSeal {
+    path: PathBuf,
+    device: u64,
+    inode: u64,
+    size: u64,
+    mtime: (i64, i64),
+    ctime: (i64, i64),
+    sha256: String,
+}
+
+#[derive(Clone, Debug)]
+struct AuthorityPaths {
+    passwd: PathBuf,
+    group: PathBuf,
+    subuid: PathBuf,
+    subgid: PathBuf,
+    owner: u32,
+}
+
+impl AuthorityPaths {
+    fn host() -> Self {
+        Self {
+            passwd: "/etc/passwd".into(),
+            group: "/etc/group".into(),
+            subuid: "/etc/subuid".into(),
+            subgid: "/etc/subgid".into(),
+            owner: 0,
+        }
+    }
+}
+
+/// A non-serializable result of reading the actual configured delegation.
+///
+/// There is no public constructor accepting an asserted grant or a JSON proof.
+/// Inspecting authority creates no files and grants no namespace authority.
+#[derive(Debug)]
+pub struct IdentityAuthority {
+    request: Request,
+    seals: Vec<FileSeal>,
+    paths: AuthorityPaths,
+}
+
+/// Read-only diagnostic output. Runtime mapping and production remain pending.
+#[derive(Debug, Serialize)]
+pub struct IdentityAuthoritySummary {
+    host_uid: u32,
+    dedicated_principal: String,
+    principal_uid: u32,
+    principal_gid: u32,
+    subordinate_uids: IdRange,
+    subordinate_gids: IdRange,
+    configured_delegation_valid: bool,
+    namespace_mapping_authorized: bool,
+    production_ready: bool,
+    authority_files: Vec<FileSeal>,
+}
+
+fn same_metadata(left: &Metadata, right: &Metadata) -> bool {
+    left.dev() == right.dev()
+        && left.ino() == right.ino()
+        && left.mode() == right.mode()
+        && left.uid() == right.uid()
+        && left.gid() == right.gid()
+        && left.nlink() == right.nlink()
+        && left.size() == right.size()
+        && (left.mtime(), left.mtime_nsec()) == (right.mtime(), right.mtime_nsec())
+        && (left.ctime(), left.ctime_nsec()) == (right.ctime(), right.ctime_nsec())
+}
+
+fn trusted_file(meta: &Metadata, owner: u32, maximum: u64) -> Result<()> {
+    if !meta.is_file()
+        || meta.uid() != owner
+        || meta.nlink() != 1
+        || meta.mode() & 0o022 != 0
+        || meta.len() > maximum
+    {
+        return Err(IdentityError::UnsafeCustody(
+            "single-link, non-writable trusted regular file required".into(),
+        ));
+    }
+    Ok(())
+}
+
+fn bounded_file(file: &mut File, owner: u32, maximum: u64) -> Result<(Vec<u8>, Metadata)> {
+    let before = file.metadata()?;
+    trusted_file(&before, owner, maximum)?;
+    let mut raw = Vec::new();
+    (&mut *file).take(before.len() + 1).read_to_end(&mut raw)?;
+    if raw.len() as u64 != before.len() || !same_metadata(&before, &file.metadata()?) {
+        return Err(IdentityError::AuthorityChanged);
+    }
+    Ok((raw, before))
+}
+
+fn authoritative_file(path: &Path, owner: u32) -> Result<(String, FileSeal)> {
+    let parent = trusted_directory(
+        path.parent()
+            .ok_or_else(|| IdentityError::UnsafeCustody("missing parent".into()))?,
+        owner,
+        false,
+    )?;
+    let name = path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .ok_or_else(|| IdentityError::UnsafeCustody("non-text authority name".into()))?;
+    let mut file = open_at(&parent, name, libc::O_RDONLY, 0)?;
+    let (raw, meta) = bounded_file(&mut file, owner, MAX_AUTHORITY_BYTES)?;
+    let again = open_at(&parent, name, libc::O_RDONLY, 0)?;
+    if !same_metadata(&meta, &again.metadata()?) {
+        return Err(IdentityError::AuthorityChanged);
+    }
+    let text = String::from_utf8(raw.clone())
+        .map_err(|_| IdentityError::Unauthorized("non-UTF8 authority file".into()))?;
+    Ok((
+        text,
+        FileSeal {
+            path: path.into(),
+            device: meta.dev(),
+            inode: meta.ino(),
+            size: meta.len(),
+            mtime: (meta.mtime(), meta.mtime_nsec()),
+            ctime: (meta.ctime(), meta.ctime_nsec()),
+            sha256: format!("{:x}", Sha256::digest(&raw)),
+        },
+    ))
+}
+
+fn decimal(value: &str) -> Result<u32> {
+    if value.is_empty() || !value.bytes().all(|byte| byte.is_ascii_digit()) {
+        return Err(IdentityError::Unauthorized(
+            "invalid numeric identity field".into(),
+        ));
+    }
+    value
+        .parse()
+        .map_err(|_| IdentityError::Unauthorized("numeric identity overflow".into()))
+}
+
+fn end(range: IdRange) -> Result<u64> {
+    let end = u64::from(range.start) + u64::from(range.count);
+    // uid_t(-1) is not an allocatable identity.
+    if range.count == 0 || end > u64::from(u32::MAX) {
+        return Err(IdentityError::Unauthorized(
+            "invalid or overflowing ID interval".into(),
+        ));
+    }
+    Ok(end)
+}
+
+fn overlaps(left: IdRange, right: IdRange) -> Result<bool> {
+    Ok(u64::from(left.start) < end(right)? && u64::from(right.start) < end(left)?)
+}
+
+fn contains(range: IdRange, id: u32) -> Result<bool> {
+    Ok(u64::from(id) >= u64::from(range.start) && u64::from(id) < end(range)?)
+}
+
+fn reject_local_account_overlap(
+    passwd: &str,
+    group: &str,
+    uids: IdRange,
+    gids: IdRange,
+) -> Result<()> {
+    for line in passwd
+        .lines()
+        .filter(|line| !line.is_empty() && !line.starts_with('#'))
+    {
+        let columns: Vec<_> = line.split(':').collect();
+        if columns.len() != 7 {
+            return Err(IdentityError::Unauthorized("malformed passwd entry".into()));
+        }
+        if contains(uids, decimal(columns[2])?)? || contains(gids, decimal(columns[3])?)? {
+            return Err(IdentityError::Unauthorized(
+                "subordinate range overlaps a configured local account".into(),
+            ));
+        }
+    }
+    for line in group
+        .lines()
+        .filter(|line| !line.is_empty() && !line.starts_with('#'))
+    {
+        let columns: Vec<_> = line.split(':').collect();
+        if columns.len() != 4 {
+            return Err(IdentityError::Unauthorized("malformed group entry".into()));
+        }
+        if contains(gids, decimal(columns[2])?)? {
+            return Err(IdentityError::Unauthorized(
+                "subordinate GID range overlaps a configured local group".into(),
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn check_requested_range(range: IdRange, host_uid: u32, principal: &Principal) -> Result<()> {
+    let finish = end(range)?;
+    if u64::from(range.count) < MIN_SUBORDINATE_IDS
+        || range.start == 0
+        || [host_uid, principal.uid, principal.gid]
+            .into_iter()
+            .any(|id| u64::from(id) >= u64::from(range.start) && u64::from(id) < finish)
+    {
+        return Err(IdentityError::Unauthorized("a complete dedicated range must exclude root, the desktop user, and the service principal".into()));
+    }
+    Ok(())
+}
+
+fn principal(passwd: &str, group: &str, host_uid: u32) -> Result<Principal> {
+    let name = format!("droidloom-cell-u{host_uid}");
+    let mut found = None;
+    let mut ids = BTreeMap::new();
+    let mut primary_groups = BTreeMap::new();
+    for line in passwd
+        .lines()
+        .filter(|line| !line.is_empty() && !line.starts_with('#'))
+    {
+        let columns: Vec<_> = line.split(':').collect();
+        if columns.len() != 7 {
+            return Err(IdentityError::Unauthorized("malformed passwd entry".into()));
+        }
+        let uid = decimal(columns[2])?;
+        *ids.entry(uid).or_insert(0usize) += 1;
+        *primary_groups.entry(decimal(columns[3])?).or_insert(0usize) += 1;
+        if columns[0] == name {
+            if found.is_some() || !matches!(columns[6], "/usr/sbin/nologin" | "/sbin/nologin") {
+                return Err(IdentityError::Unauthorized(
+                    "service account must be unique and non-login".into(),
+                ));
+            }
+            found = Some(Principal {
+                name: name.clone(),
+                uid,
+                gid: decimal(columns[3])?,
+            });
+        }
+    }
+    let found = found.ok_or_else(|| {
+        IdentityError::Unauthorized(format!("dedicated account {name} is missing"))
+    })?;
+    if matches!(host_uid, 0 | u32::MAX)
+        || matches!(found.uid, 0 | u32::MAX)
+        || matches!(found.gid, 0 | u32::MAX)
+        || found.uid == host_uid
+        || ids.get(&found.uid) != Some(&1)
+        || primary_groups.get(&found.gid) != Some(&1)
+    {
+        return Err(IdentityError::Unauthorized(
+            "dedicated account identity is not unique".into(),
+        ));
+    }
+    let mut primary = 0;
+    let mut gid_names = 0;
+    let mut group_names = 0;
+    for line in group
+        .lines()
+        .filter(|line| !line.is_empty() && !line.starts_with('#'))
+    {
+        let columns: Vec<_> = line.split(':').collect();
+        if columns.len() != 4 {
+            return Err(IdentityError::Unauthorized("malformed group entry".into()));
+        }
+        let gid = decimal(columns[2])?;
+        if gid == found.gid {
+            gid_names += 1;
+        }
+        if columns[0] == name {
+            group_names += 1;
+            if gid == found.gid {
+                primary += 1;
+                if !columns[3].is_empty() {
+                    return Err(IdentityError::Unauthorized(
+                        "dedicated primary group has explicit members".into(),
+                    ));
+                }
+            }
+        }
+        if columns[3].split(',').any(|member| member == name) {
+            return Err(IdentityError::Unauthorized(
+                "dedicated account has supplementary group membership".into(),
+            ));
+        }
+    }
+    if primary != 1 || gid_names != 1 || group_names != 1 {
+        return Err(IdentityError::Unauthorized(
+            "dedicated primary group is missing or ambiguous".into(),
+        ));
+    }
+    Ok(found)
+}
+
+fn grant(text: &str, principal: &Principal, wanted: IdRange) -> Result<()> {
+    let numeric = principal.uid.to_string();
+    let mut exact = 0;
+    let mut entries = 0;
+    for line in text.lines() {
+        let line = line.split('#').next().unwrap_or("").trim();
+        if line.is_empty() {
+            continue;
+        }
+        entries += 1;
+        if entries > MAX_RESERVATIONS {
+            return Err(IdentityError::Unauthorized(
+                "subordinate-ID table is too large".into(),
+            ));
+        }
+        let columns: Vec<_> = line.split(':').collect();
+        if columns.len() != 3 || columns[0].is_empty() {
+            return Err(IdentityError::Unauthorized(
+                "malformed subordinate-ID entry".into(),
+            ));
+        }
+        let range = IdRange {
+            start: decimal(columns[1])?,
+            count: decimal(columns[2])?,
+        };
+        end(range)?;
+        if overlaps(range, wanted)? {
+            if (columns[0] == principal.name || columns[0] == numeric) && range == wanted {
+                exact += 1;
+            } else {
+                return Err(IdentityError::Unauthorized(
+                    "requested range overlaps an unrelated or incomplete configured grant".into(),
+                ));
+            }
+        }
+    }
+    if exact != 1 {
+        return Err(IdentityError::Unauthorized(
+            "one exact complete grant for the dedicated account is required".into(),
+        ));
+    }
+    Ok(())
+}
+
+fn nss_matches(principal: &Principal) -> Result<()> {
+    let name = CString::new(principal.name.clone())
+        .map_err(|_| IdentityError::Unauthorized("invalid principal".into()))?;
+    let mut storage = vec![0u8; 65_536];
+    let mut value = std::mem::MaybeUninit::<libc::passwd>::uninit();
+    let mut result = std::ptr::null_mut();
+    // SAFETY: all buffers are live, writable and bounded for getpwnam_r.
+    let status = unsafe {
+        libc::getpwnam_r(
+            name.as_ptr(),
+            value.as_mut_ptr(),
+            storage.as_mut_ptr().cast(),
+            storage.len(),
+            &mut result,
+        )
+    };
+    if status != 0 || result.is_null() {
+        return Err(IdentityError::Unauthorized(
+            "NSS did not resolve the dedicated local principal".into(),
+        ));
+    }
+    // SAFETY: successful getpwnam_r initialized value and its returned pointer.
+    let value = unsafe { value.assume_init() };
+    if value.pw_uid != principal.uid || value.pw_gid != principal.gid {
+        return Err(IdentityError::Unauthorized(
+            "NSS and the local dedicated account disagree".into(),
+        ));
+    }
+    let mut value = std::mem::MaybeUninit::<libc::group>::uninit();
+    let mut result = std::ptr::null_mut();
+    // SAFETY: separate initialized output storage and the same bounded byte buffer.
+    let status = unsafe {
+        libc::getgrnam_r(
+            name.as_ptr(),
+            value.as_mut_ptr(),
+            storage.as_mut_ptr().cast(),
+            storage.len(),
+            &mut result,
+        )
+    };
+    if status != 0 || result.is_null() {
+        return Err(IdentityError::Unauthorized(
+            "NSS did not resolve the dedicated primary group".into(),
+        ));
+    }
+    // SAFETY: successful getgrnam_r initialized value. Its member array is
+    // null-terminated and remains valid while the bounded storage is live.
+    let value = unsafe { value.assume_init() };
+    let has_members = !value.gr_mem.is_null() && unsafe { !(*value.gr_mem).is_null() };
+    if value.gr_gid != principal.gid || has_members {
+        return Err(IdentityError::Unauthorized(
+            "NSS and the local dedicated group disagree".into(),
+        ));
+    }
+    Ok(())
+}
+
+impl IdentityAuthority {
+    /// Read actual local grants and cross-check the dedicated account with NSS.
+    /// No registry, account, namespace, process, or mapping is created.
+    pub fn inspect(spec: &CellSpec) -> Result<Self> {
+        spec.validate()
+            .map_err(|error| IdentityError::Unauthorized(error.to_string()))?;
+        let value = Self::read_paths(
+            spec.host_uid,
+            spec.subordinate_uids,
+            spec.subordinate_gids,
+            AuthorityPaths::host(),
+        )?;
+        nss_matches(&value.request.principal)?;
+        Ok(value)
+    }
+
+    fn read_paths(
+        host_uid: u32,
+        uids: IdRange,
+        gids: IdRange,
+        paths: AuthorityPaths,
+    ) -> Result<Self> {
+        let (passwd, passwd_seal) = authoritative_file(&paths.passwd, paths.owner)?;
+        let (group, group_seal) = authoritative_file(&paths.group, paths.owner)?;
+        let principal = principal(&passwd, &group, host_uid)?;
+        check_requested_range(uids, host_uid, &principal)?;
+        check_requested_range(gids, host_uid, &principal)?;
+        reject_local_account_overlap(&passwd, &group, uids, gids)?;
+        let (subuid, uid_seal) = authoritative_file(&paths.subuid, paths.owner)?;
+        let (subgid, gid_seal) = authoritative_file(&paths.subgid, paths.owner)?;
+        grant(&subuid, &principal, uids)?;
+        grant(&subgid, &principal, gids)?;
+        Ok(Self {
+            request: Request {
+                host_uid,
+                principal,
+                uids,
+                gids,
+            },
+            seals: vec![passwd_seal, group_seal, uid_seal, gid_seal],
+            paths,
+        })
+    }
+
+    fn revalidate(&self) -> Result<()> {
+        let fresh = Self::read_paths(
+            self.request.host_uid,
+            self.request.uids,
+            self.request.gids,
+            self.paths.clone(),
+        )?;
+        if fresh.request != self.request || fresh.seals != self.seals {
+            return Err(IdentityError::AuthorityChanged);
+        }
+        #[cfg(not(test))]
+        nss_matches(&self.request.principal)?;
+        Ok(())
+    }
+
+    /// Return a diagnostic which explicitly withholds runtime qualification.
+    pub fn summary(&self) -> IdentityAuthoritySummary {
+        IdentityAuthoritySummary {
+            host_uid: self.request.host_uid,
+            dedicated_principal: self.request.principal.name.clone(),
+            principal_uid: self.request.principal.uid,
+            principal_gid: self.request.principal.gid,
+            subordinate_uids: self.request.uids,
+            subordinate_gids: self.request.gids,
+            configured_delegation_valid: true,
+            namespace_mapping_authorized: false,
+            production_ready: false,
+            authority_files: self.seals.clone(),
+        }
+    }
+
+    /// Reserve this cell's configured identities in the root-owned registry.
+    ///
+    /// The range remains reserved after lease drop, process death, or reboot.
+    /// This method does not authorize namespace creation or ID-map writes.
+    pub fn reserve(&self, spec: &CellSpec, cohort_sha256: &str) -> Result<IdentityLease> {
+        // SAFETY: geteuid is a read-only, argument-free libc query.
+        if unsafe { libc::geteuid() } != 0 {
+            return Err(IdentityError::Unauthorized(
+                "root broker required for a persistent reservation".into(),
+            ));
+        }
+        spec.validate()
+            .map_err(|error| IdentityError::Unauthorized(error.to_string()))?;
+        if spec.host_uid != self.request.host_uid
+            || spec.subordinate_uids != self.request.uids
+            || spec.subordinate_gids != self.request.gids
+        {
+            return Err(IdentityError::BindingConflict);
+        }
+        self.revalidate()?;
+        let data = BackingIdentity::read(&spec.data_dir.join("data.img"))?;
+        let metadata = BackingIdentity::read(&spec.data_dir.join("metadata.img"))?;
+        self.reserve_at(Path::new(REGISTRY), 0, cohort_sha256, data, metadata)
+    }
+
+    fn reserve_at(
+        &self,
+        root: &Path,
+        owner: u32,
+        cohort: &str,
+        data: BackingIdentity,
+        metadata: BackingIdentity,
+    ) -> Result<IdentityLease> {
+        self.revalidate()?; // No registry write may precede fresh grant validation.
+        if cohort.len() != 64
+            || !cohort
+                .bytes()
+                .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+        {
+            return Err(IdentityError::Record(
+                "a lower-case cohort SHA256 is required".into(),
+            ));
+        }
+        let parent = trusted_directory(
+            root.parent()
+                .ok_or_else(|| IdentityError::UnsafeCustody("missing registry parent".into()))?,
+            owner,
+            false,
+        )?;
+        let directory_name = root
+            .file_name()
+            .and_then(|name| name.to_str())
+            .ok_or_else(|| IdentityError::UnsafeCustody("invalid registry name".into()))?;
+        let name = one_name(directory_name)?;
+        // SAFETY: parent is a held directory FD, and name is a single component.
+        if unsafe { libc::mkdirat(parent.as_raw_fd(), name.as_ptr(), 0o700) } != 0 {
+            let error = io::Error::last_os_error();
+            if error.kind() != io::ErrorKind::AlreadyExists {
+                return Err(error.into());
+            }
+        } else {
+            parent.sync_all()?;
+        }
+        let directory = open_at(
+            &parent,
+            directory_name,
+            libc::O_RDONLY | libc::O_DIRECTORY,
+            0,
+        )?;
+        check_directory(&directory.metadata()?, owner, true)?;
+        let global_lock = open_at(
+            &directory,
+            "registry.lock",
+            libc::O_RDWR | libc::O_CREAT,
+            0o600,
+        )?;
+        trusted_record(&global_lock.metadata()?, owner)?;
+        exclusive(&global_lock)?;
+        held_name_matches(&directory, "registry.lock", &global_lock)?;
+        self.revalidate()?;
+        let record = Reservation {
+            schema: 1,
+            request: self.request.clone(),
+            cohort_sha256: cohort.into(),
+            data,
+            metadata,
+            original_authority_sha256: self.seals.iter().map(|seal| seal.sha256.clone()).collect(),
+        };
+        let record_name = format!("u{}.json", self.request.host_uid);
+        let mut existing = None;
+        // Listing is anchored to this held descriptor. No caller-supplied path
+        // is used to open a descendant after the directory is admitted.
+        let entries = fs::read_dir(format!("/proc/self/fd/{}", directory.as_raw_fd()))?
+            .take(MAX_RESERVATIONS * 2 + 2)
+            .collect::<io::Result<Vec<_>>>()?;
+        if entries.len() > MAX_RESERVATIONS * 2 + 1 {
+            return Err(IdentityError::Record(
+                "registry entry bound exceeded".into(),
+            ));
+        }
+        for entry in entries {
+            let entry_name = entry
+                .file_name()
+                .into_string()
+                .map_err(|_| IdentityError::Record("non-text registry entry".into()))?;
+            if entry_name == "registry.lock" || valid_cell_name(&entry_name, ".lease") {
+                continue;
+            }
+            if !valid_cell_name(&entry_name, ".json") {
+                return Err(IdentityError::Record(
+                    "unknown registry entry; explicit reconciliation required".into(),
+                ));
+            }
+            let mut file = open_at(&directory, &entry_name, libc::O_RDONLY, 0)?;
+            trusted_record(&file.metadata()?, owner)?;
+            let (raw, _) = bounded_file(&mut file, owner, MAX_RECORD_BYTES)?;
+            held_name_matches(&directory, &entry_name, &file)?;
+            let other: Reservation = serde_json::from_slice(&raw)
+                .map_err(|error| IdentityError::Record(error.to_string()))?;
+            other.validate(&entry_name)?;
+            if entry_name == record_name {
+                if !record.same_binding(&other) {
+                    return Err(IdentityError::BindingConflict);
+                }
+                existing = Some(other);
+            } else if overlaps(record.request.uids, other.request.uids)?
+                || overlaps(record.request.gids, other.request.gids)?
+            {
+                return Err(IdentityError::RangeConflict(entry_name));
+            }
+        }
+        let lease_name = format!("u{}.lease", self.request.host_uid);
+        let lease = open_at(&directory, &lease_name, libc::O_RDWR | libc::O_CREAT, 0o600)?;
+        trusted_record(&lease.metadata()?, owner)?;
+        exclusive(&lease)?;
+        held_name_matches(&directory, &lease_name, &lease)?;
+        self.revalidate()?;
+        held_name_matches(&directory, "registry.lock", &global_lock)?;
+        let record = if let Some(previous) = existing {
+            previous
+        } else {
+            let mut file = open_at(
+                &directory,
+                &record_name,
+                libc::O_WRONLY | libc::O_CREAT | libc::O_EXCL,
+                0o600,
+            )?;
+            let raw = serde_json::to_vec_pretty(&record)
+                .map_err(|error| IdentityError::Record(error.to_string()))?;
+            file.write_all(&raw)?;
+            file.write_all(b"\n")?;
+            file.sync_all()?;
+            directory.sync_all()?;
+            held_name_matches(&directory, &record_name, &file)?;
+            record
+        };
+        self.revalidate()?;
+        held_name_matches(&parent, directory_name, &directory)?;
+        Ok(IdentityLease {
+            _directory: directory,
+            _lease: lease,
+            record,
+        })
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct BackingIdentity {
+    device: u64,
+    inode: u64,
+    bytes: u64,
+}
+
+impl BackingIdentity {
+    fn read(path: &Path) -> Result<Self> {
+        let parent = trusted_directory(
+            path.parent()
+                .ok_or_else(|| IdentityError::UnsafeCustody("data parent missing".into()))?,
+            0,
+            false,
+        )?;
+        let name = path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .ok_or_else(|| IdentityError::UnsafeCustody("data name missing".into()))?;
+        // O_PATH observes an inode without opening or reading its image body.
+        let file = open_at(&parent, name, libc::O_PATH, 0)?;
+        let meta = file.metadata()?;
+        trusted_file(&meta, 0, u64::MAX)?;
+        held_name_matches(&parent, name, &file)?;
+        Ok(Self {
+            device: meta.dev(),
+            inode: meta.ino(),
+            bytes: meta.len(),
+        })
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Reservation {
+    schema: u32,
+    request: Request,
+    cohort_sha256: String,
+    data: BackingIdentity,
+    metadata: BackingIdentity,
+    original_authority_sha256: Vec<String>,
+}
+
+impl Reservation {
+    fn same_binding(&self, other: &Self) -> bool {
+        self.schema == other.schema
+            && self.request == other.request
+            && self.cohort_sha256 == other.cohort_sha256
+            && self.data == other.data
+            && self.metadata == other.metadata
+    }
+    fn validate(&self, filename: &str) -> Result<()> {
+        if self.schema != 1
+            || filename != format!("u{}.json", self.request.host_uid)
+            || self.request.principal.name != format!("droidloom-cell-u{}", self.request.host_uid)
+            || matches!(self.request.host_uid, 0 | u32::MAX)
+            || matches!(self.request.principal.uid, 0 | u32::MAX)
+            || matches!(self.request.principal.gid, 0 | u32::MAX)
+            || self.cohort_sha256.len() != 64
+            || !self
+                .cohort_sha256
+                .bytes()
+                .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+            || self.original_authority_sha256.len() != 4
+            || self.original_authority_sha256.iter().any(|digest| {
+                digest.len() != 64
+                    || !digest
+                        .bytes()
+                        .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+            })
+        {
+            return Err(IdentityError::Record(
+                "unsupported reservation binding".into(),
+            ));
+        }
+        check_requested_range(
+            self.request.uids,
+            self.request.host_uid,
+            &self.request.principal,
+        )?;
+        check_requested_range(
+            self.request.gids,
+            self.request.host_uid,
+            &self.request.principal,
+        )?;
+        Ok(())
+    }
+}
+
+/// An exclusive process lease over a durable reservation. Drop never deletes it.
+#[derive(Debug)]
+pub struct IdentityLease {
+    _directory: File,
+    _lease: File,
+    record: Reservation,
+}
+
+impl IdentityLease {
+    /// Return the reserved host user. This is not Android runtime acceptance.
+    pub fn host_uid(&self) -> u32 {
+        self.record.request.host_uid
+    }
+}
+
+fn one_name(name: &str) -> Result<CString> {
+    if name.is_empty() || matches!(name, "." | "..") || name.contains('/') {
+        return Err(IdentityError::UnsafeCustody(
+            "one directory entry required".into(),
+        ));
+    }
+    CString::new(name).map_err(|_| IdentityError::UnsafeCustody("NUL in directory entry".into()))
+}
+
+fn open_at(parent: &File, name: &str, flags: i32, mode: u32) -> Result<File> {
+    let name = one_name(name)?;
+    // SAFETY: a valid held directory FD and terminated single-component name;
+    // O_NOFOLLOW refuses to follow final symlinks. O_PATH callers also check
+    // the held inode type or compare it with their admitted regular inode.
+    let fd = unsafe {
+        libc::openat(
+            parent.as_raw_fd(),
+            name.as_ptr(),
+            flags | libc::O_CLOEXEC | libc::O_NOFOLLOW,
+            mode,
+        )
+    };
+    if fd < 0 {
+        return Err(io::Error::last_os_error().into());
+    }
+    // SAFETY: the successful openat returned a new descriptor owned here.
+    Ok(unsafe { File::from_raw_fd(fd) })
+}
+
+fn check_directory(meta: &Metadata, owner: u32, private: bool) -> Result<()> {
+    if !meta.is_dir()
+        || meta.uid() != owner
+        || meta.mode() & 0o022 != 0
+        || (private && meta.mode() & 0o777 != 0o700)
+    {
+        return Err(IdentityError::UnsafeCustody(
+            "trusted directory ownership and mode required".into(),
+        ));
+    }
+    Ok(())
+}
+
+fn trusted_record(meta: &Metadata, owner: u32) -> Result<()> {
+    trusted_file(meta, owner, MAX_RECORD_BYTES)?;
+    if meta.mode() & 0o777 != 0o600 {
+        return Err(IdentityError::UnsafeCustody(
+            "identity records and locks require mode 0600".into(),
+        ));
+    }
+    Ok(())
+}
+
+fn trusted_directory(path: &Path, owner: u32, private: bool) -> Result<File> {
+    if !path.is_absolute() {
+        return Err(IdentityError::UnsafeCustody(
+            "absolute directory required".into(),
+        ));
+    }
+    #[cfg(test)]
+    if path.starts_with(std::env::temp_dir()) {
+        // Unit fixtures treat their private temporary directory as the trust
+        // anchor. Release builds always walk each component from host '/'.
+        let file = OpenOptions::new()
+            .read(true)
+            .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
+            .open(path)?;
+        check_directory(&file.metadata()?, owner, private)?;
+        return Ok(file);
+    }
+    let mut directory = OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
+        .open("/")?;
+    check_directory(&directory.metadata()?, 0, false)?;
+    for component in path.components() {
+        match component {
+            Component::RootDir => (),
+            Component::Normal(name) => {
+                let name = name
+                    .to_str()
+                    .ok_or_else(|| IdentityError::UnsafeCustody("non-text directory".into()))?;
+                directory = open_at(&directory, name, libc::O_RDONLY | libc::O_DIRECTORY, 0)?;
+                check_directory(&directory.metadata()?, owner, false)?;
+            }
+            _ => {
+                return Err(IdentityError::UnsafeCustody(
+                    "non-normal directory path".into(),
+                ));
+            }
+        }
+    }
+    check_directory(&directory.metadata()?, owner, private)?;
+    Ok(directory)
+}
+
+fn held_name_matches(parent: &File, name: &str, held: &File) -> Result<()> {
+    let check = open_at(parent, name, libc::O_PATH, 0)?;
+    if !same_metadata(&held.metadata()?, &check.metadata()?) {
+        return Err(IdentityError::UnsafeCustody(
+            "held inode was replaced or changed".into(),
+        ));
+    }
+    Ok(())
+}
+
+fn exclusive(file: &File) -> Result<()> {
+    // SAFETY: flock operates on this live, owned descriptor only.
+    if unsafe { libc::flock(file.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) } != 0 {
+        let error = io::Error::last_os_error();
+        if error.kind() == io::ErrorKind::WouldBlock {
+            return Err(IdentityError::Busy);
+        }
+        return Err(error.into());
+    }
+    Ok(())
+}
+
+fn valid_cell_name(name: &str, suffix: &str) -> bool {
+    name.strip_prefix('u')
+        .and_then(|rest| rest.strip_suffix(suffix))
+        .is_some_and(|number| {
+            !number.is_empty() && number.bytes().all(|byte| byte.is_ascii_digit())
+        })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::os::unix::fs::{PermissionsExt, symlink};
+
+    struct Fixture {
+        root: tempfile::TempDir,
+        paths: AuthorityPaths,
+        owner: u32,
+    }
+    impl Fixture {
+        fn new() -> Self {
+            let root = tempfile::tempdir().unwrap();
+            // SAFETY: read-only query; test custody is restricted to this tempdir.
+            let owner = unsafe { libc::geteuid() };
+            let paths = AuthorityPaths {
+                passwd: root.path().join("passwd"),
+                group: root.path().join("group"),
+                subuid: root.path().join("subuid"),
+                subgid: root.path().join("subgid"),
+                owner,
+            };
+            fs::write(&paths.passwd, "alex:x:1000:1000::/home/alex:/bin/bash\ndroidloom-cell-u1000:x:997:997::/nonexistent:/usr/sbin/nologin\n").unwrap();
+            fs::write(&paths.group, "alex:x:1000:\ndroidloom-cell-u1000:x:997:\n").unwrap();
+            fs::write(
+                &paths.subuid,
+                "alex:100000:65536\ndroidloom-cell-u1000:200000:100000\n",
+            )
+            .unwrap();
+            fs::write(&paths.subgid, "alex:100000:65536\n997:200000:100000\n").unwrap();
+            for p in [&paths.passwd, &paths.group, &paths.subuid, &paths.subgid] {
+                fs::set_permissions(p, fs::Permissions::from_mode(0o600)).unwrap();
+            }
+            Self { root, paths, owner }
+        }
+        fn authority(&self) -> Result<IdentityAuthority> {
+            IdentityAuthority::read_paths(
+                1000,
+                IdRange {
+                    start: 200000,
+                    count: 100000,
+                },
+                IdRange {
+                    start: 200000,
+                    count: 100000,
+                },
+                self.paths.clone(),
+            )
+        }
+        fn reserve(&self, authority: &IdentityAuthority, cohort: &str) -> Result<IdentityLease> {
+            authority.reserve_at(
+                &self.root.path().join("registry"),
+                self.owner,
+                cohort,
+                BackingIdentity {
+                    device: 1,
+                    inode: 2,
+                    bytes: 32 << 30,
+                },
+                BackingIdentity {
+                    device: 1,
+                    inode: 3,
+                    bytes: 128 << 20,
+                },
+            )
+        }
+    }
+    fn cohort() -> String {
+        "a".repeat(64)
+    }
+
+    #[test]
+    fn exact_name_and_numeric_grants_are_valid_but_never_runtime_authority() {
+        let fixture = Fixture::new();
+        let authority = fixture.authority().unwrap();
+        let summary = authority.summary();
+        assert!(summary.configured_delegation_valid);
+        assert!(!summary.namespace_mapping_authorized && !summary.production_ready);
+    }
+    #[test]
+    fn short_grant_rejected_without_creating_a_registry() {
+        let f = Fixture::new();
+        fs::write(&f.paths.subgid, "997:200000:65536\n").unwrap();
+        assert!(f.authority().is_err());
+        assert!(!f.root.path().join("registry").exists());
+    }
+    #[test]
+    fn missing_dedicated_account_is_not_replaced_by_desktop_authority() {
+        let f = Fixture::new();
+        fs::write(&f.paths.passwd, "alex:x:1000:1000::/home/alex:/bin/bash\n").unwrap();
+        assert!(matches!(f.authority(), Err(IdentityError::Unauthorized(_))));
+    }
+    #[test]
+    fn dedicated_group_with_an_explicit_member_is_rejected() {
+        let f = Fixture::new();
+        fs::write(
+            &f.paths.group,
+            "alex:x:1000:\ndroidloom-cell-u1000:x:997:alex\n",
+        )
+        .unwrap();
+        assert!(matches!(f.authority(), Err(IdentityError::Unauthorized(_))));
+        assert!(!f.root.path().join("registry").exists());
+    }
+    #[test]
+    fn dedicated_primary_group_shared_by_another_account_is_rejected() {
+        let f = Fixture::new();
+        let original = fs::read_to_string(&f.paths.passwd).unwrap();
+        fs::write(
+            &f.paths.passwd,
+            format!("{original}other:x:998:997::/none:/usr/sbin/nologin\n"),
+        )
+        .unwrap();
+        assert!(matches!(f.authority(), Err(IdentityError::Unauthorized(_))));
+        assert!(!f.root.path().join("registry").exists());
+    }
+    #[test]
+    fn duplicate_dedicated_group_name_is_rejected() {
+        let f = Fixture::new();
+        let original = fs::read_to_string(&f.paths.group).unwrap();
+        fs::write(
+            &f.paths.group,
+            format!("{original}droidloom-cell-u1000:x:998:\n"),
+        )
+        .unwrap();
+        assert!(matches!(f.authority(), Err(IdentityError::Unauthorized(_))));
+    }
+    #[test]
+    fn sentinel_host_and_service_ids_are_not_configured_authority() {
+        for (host_uid, uid, gid) in [
+            (u32::MAX, 997, 997),
+            (1000, u32::MAX, 997),
+            (1000, 997, u32::MAX),
+        ] {
+            let f = Fixture::new();
+            let name = format!("droidloom-cell-u{host_uid}");
+            fs::write(&f.paths.passwd, format!("alex:x:1000:1000::/home/alex:/bin/bash\n{name}:x:{uid}:{gid}::/nonexistent:/usr/sbin/nologin\n")).unwrap();
+            fs::write(&f.paths.group, format!("alex:x:1000:\n{name}:x:{gid}:\n")).unwrap();
+            fs::write(&f.paths.subuid, format!("{name}:200000:100000\n")).unwrap();
+            fs::write(&f.paths.subgid, format!("{name}:200000:100000\n")).unwrap();
+            assert!(matches!(
+                IdentityAuthority::read_paths(
+                    host_uid,
+                    IdRange {
+                        start: 200000,
+                        count: 100000
+                    },
+                    IdRange {
+                        start: 200000,
+                        count: 100000
+                    },
+                    f.paths.clone()
+                ),
+                Err(IdentityError::Unauthorized(_))
+            ));
+            assert!(!f.root.path().join("registry").exists());
+        }
+    }
+    #[test]
+    fn persisted_sentinel_owner_records_are_rejected_and_preserved() {
+        for field in 0..3 {
+            let f = Fixture::new();
+            let authority = f.authority().unwrap();
+            drop(f.reserve(&authority, &cohort()).unwrap());
+            let original = f.root.path().join("registry/u1000.json");
+            let mut record: Reservation =
+                serde_json::from_slice(&fs::read(&original).unwrap()).unwrap();
+            match field {
+                0 => {
+                    record.request.host_uid = u32::MAX;
+                    record.request.principal.name = format!("droidloom-cell-u{}", u32::MAX);
+                }
+                1 => record.request.principal.uid = u32::MAX,
+                _ => record.request.principal.gid = u32::MAX,
+            }
+            let destination = f
+                .root
+                .path()
+                .join(format!("registry/u{}.json", record.request.host_uid));
+            if destination != original {
+                fs::rename(&original, &destination).unwrap();
+            }
+            let raw = serde_json::to_vec(&record).unwrap();
+            fs::write(&destination, &raw).unwrap();
+            assert!(matches!(
+                f.reserve(&authority, &cohort()),
+                Err(IdentityError::Record(_))
+            ));
+            assert_eq!(fs::read(destination).unwrap(), raw);
+        }
+    }
+    #[test]
+    fn overlapping_or_duplicate_grants_rejected() {
+        let f = Fixture::new();
+        for extra in ["other:250000:65536\n", "997:200000:100000\n"] {
+            fs::write(
+                &f.paths.subuid,
+                format!("droidloom-cell-u1000:200000:100000\n{extra}"),
+            )
+            .unwrap();
+            assert!(f.authority().is_err());
+        }
+    }
+    #[test]
+    fn malformed_overflow_and_reserved_ids_are_rejected() {
+        let p = Principal {
+            name: "droidloom-cell-u1000".into(),
+            uid: 997,
+            gid: 997,
+        };
+        for raw in [
+            "997:200000:-1",
+            "997:200000:0",
+            "997:4294900000:100000",
+            "997:200000:100000:extra",
+        ] {
+            assert!(
+                grant(
+                    raw,
+                    &p,
+                    IdRange {
+                        start: 200000,
+                        count: 100000
+                    }
+                )
+                .is_err()
+            );
+        }
+        assert!(
+            check_requested_range(
+                IdRange {
+                    start: 0,
+                    count: 100000
+                },
+                1000,
+                &p
+            )
+            .is_err()
+        );
+        assert!(
+            check_requested_range(
+                IdRange {
+                    start: u32::MAX - 99999,
+                    count: 100000
+                },
+                1000,
+                &p
+            )
+            .is_err()
+        );
+    }
+    #[test]
+    fn authority_aliases_and_writable_files_are_rejected() {
+        let f = Fixture::new();
+        let original = f.root.path().join("original");
+        fs::rename(&f.paths.subuid, &original).unwrap();
+        symlink(&original, &f.paths.subuid).unwrap();
+        assert!(f.authority().is_err());
+        fs::remove_file(&f.paths.subuid).unwrap();
+        fs::hard_link(&original, &f.paths.subuid).unwrap();
+        assert!(f.authority().is_err());
+        fs::remove_file(&f.paths.subuid).unwrap();
+        fs::rename(&original, &f.paths.subuid).unwrap();
+        fs::set_permissions(&f.paths.subuid, fs::Permissions::from_mode(0o666)).unwrap();
+        assert!(f.authority().is_err());
+    }
+    #[test]
+    fn stale_authority_fails_before_any_registry_write() {
+        let f = Fixture::new();
+        let authority = f.authority().unwrap();
+        fs::write(&f.paths.subgid, "997:200000:99999\n").unwrap();
+        assert!(f.reserve(&authority, &cohort()).is_err());
+        assert!(!f.root.path().join("registry").exists());
+    }
+    #[test]
+    fn local_accounts_and_groups_inside_the_range_are_rejected() {
+        let f = Fixture::new();
+        let before = fs::read_to_string(&f.paths.passwd).unwrap();
+        fs::write(
+            &f.paths.passwd,
+            format!("{before}other:x:210000:700::/none:/usr/sbin/nologin\n"),
+        )
+        .unwrap();
+        assert!(f.authority().is_err());
+        fs::write(&f.paths.passwd, before).unwrap();
+        let before = fs::read_to_string(&f.paths.group).unwrap();
+        fs::write(&f.paths.group, format!("{before}other:x:210001:\n")).unwrap();
+        assert!(f.authority().is_err());
+    }
+    #[test]
+    fn live_lease_blocks_reentry_and_drop_preserves_the_reservation() {
+        let f = Fixture::new();
+        let authority = f.authority().unwrap();
+        let first = f.reserve(&authority, &cohort()).unwrap();
+        assert_eq!(first.host_uid(), 1000);
+        assert!(matches!(
+            f.reserve(&authority, &cohort()),
+            Err(IdentityError::Busy)
+        ));
+        let record = f.root.path().join("registry/u1000.json");
+        let before = fs::read(&record).unwrap();
+        drop(first);
+        assert_eq!(fs::read(&record).unwrap(), before);
+        let second = f.reserve(&authority, &cohort()).unwrap();
+        drop(second);
+        assert_eq!(fs::read(record).unwrap(), before);
+    }
+    #[test]
+    fn old_reservation_is_never_overwritten_for_an_upgrade() {
+        let f = Fixture::new();
+        let authority = f.authority().unwrap();
+        drop(f.reserve(&authority, &cohort()).unwrap());
+        let record = f.root.path().join("registry/u1000.json");
+        let before = fs::read(&record).unwrap();
+        assert!(matches!(
+            f.reserve(&authority, &"b".repeat(64)),
+            Err(IdentityError::BindingConflict)
+        ));
+        assert_eq!(fs::read(record).unwrap(), before);
+    }
+    #[test]
+    fn interrupted_record_is_preserved_and_cannot_be_reclaimed() {
+        let f = Fixture::new();
+        let authority = f.authority().unwrap();
+        drop(f.reserve(&authority, &cohort()).unwrap());
+        let path = f.root.path().join("registry/u1000.json");
+        fs::write(&path, b"{\"schema\":").unwrap();
+        assert!(matches!(
+            f.reserve(&authority, &cohort()),
+            Err(IdentityError::Record(_))
+        ));
+        assert_eq!(fs::read(path).unwrap(), b"{\"schema\":");
+    }
+    #[test]
+    fn registry_symlink_does_not_redirect_reservation_writes() {
+        let f = Fixture::new();
+        let authority = f.authority().unwrap();
+        let outside = f.root.path().join("outside");
+        fs::create_dir(&outside).unwrap();
+        symlink(&outside, f.root.path().join("registry")).unwrap();
+        assert!(f.reserve(&authority, &cohort()).is_err());
+        assert_eq!(fs::read_dir(outside).unwrap().count(), 0);
+    }
+    #[test]
+    fn inactive_other_cell_reservation_still_blocks_overlapping_ids() {
+        let f = Fixture::new();
+        let authority = f.authority().unwrap();
+        drop(f.reserve(&authority, &cohort()).unwrap());
+        let path = f.root.path().join("registry/u1000.json");
+        let mut previous: Reservation = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
+        previous.request.host_uid = 1001;
+        previous.request.principal.name = "droidloom-cell-u1001".into();
+        let other = f.root.path().join("registry/u1001.json");
+        fs::write(&other, serde_json::to_vec(&previous).unwrap()).unwrap();
+        fs::set_permissions(&other, fs::Permissions::from_mode(0o600)).unwrap();
+        assert!(matches!(
+            f.reserve(&authority, &cohort()),
+            Err(IdentityError::RangeConflict(_))
+        ));
+        assert!(path.exists() && other.exists());
+    }
+    #[test]
+    fn lease_symlink_cannot_touch_an_external_file() {
+        let f = Fixture::new();
+        let authority = f.authority().unwrap();
+        drop(f.reserve(&authority, &cohort()).unwrap());
+        let lease = f.root.path().join("registry/u1000.lease");
+        fs::remove_file(&lease).unwrap();
+        let outside = f.root.path().join("outside");
+        fs::write(&outside, b"preserve").unwrap();
+        symlink(&outside, lease).unwrap();
+        assert!(f.reserve(&authority, &cohort()).is_err());
+        assert_eq!(fs::read(outside).unwrap(), b"preserve");
+    }
+}

@@ -1,0 +1,629 @@
+diff --git a/android/security/0001-intentresolver-caller-package.patch b/android/security/0001-intentresolver-caller-package.patch
+new file mode 100644
+index 0000000000000000000000000000000000000000..d70323ae37bac67a1d3b13653057d08b11f69b80
+--- /dev/null
++++ b/android/security/0001-intentresolver-caller-package.patch
+@@ -0,0 +1,14 @@
++diff --git a/java/src/com/android/intentresolver/domain/UriCallerReadAccessValidator.kt b/java/src/com/android/intentresolver/domain/UriCallerReadAccessValidator.kt
++index 28a50f6..9a4a6bb 100644
++--- a/java/src/com/android/intentresolver/domain/UriCallerReadAccessValidator.kt
+++++ b/java/src/com/android/intentresolver/domain/UriCallerReadAccessValidator.kt
++@@ -71,7 +71,8 @@
++ object CallerUriReadAccessValidatorModule {
++     @Provides
++     @PackageName
++-    fun packageName(@ApplicationContext context: Context): String = context.packageName
+++    fun packageName(activityModelRepository: ActivityModelRepository): String =
+++        activityModelRepository.value.launchedFromPackage
++ 
++     @Provides
++     @LaunchedFromUid
+diff --git a/android/security/fixtures/IntentResolver.Android.bp b/android/security/fixtures/IntentResolver.Android.bp
+new file mode 100644
+index 0000000000000000000000000000000000000000..60d870dce9c41e4b45f4f722ce1112d00345f357
+--- /dev/null
++++ b/android/security/fixtures/IntentResolver.Android.bp
+@@ -0,0 +1,111 @@
++//
++// Copyright (C) 2023 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++
++package {
++    default_applicable_licenses: ["Android-Apache-2.0"],
++    default_visibility: [":__subpackages__"],
++}
++
++java_defaults {
++    name: "Java_Defaults",
++    srcs: [
++        "java/src/**/*.java",
++        "java/src/**/*.kt",
++    ],
++    resource_dirs: [
++        "java/res",
++    ],
++    manifest: "AndroidManifest-lib.xml",
++    min_sdk_version: "current",
++    lint: {
++        strict_updatability_linting: false,
++        extra_check_modules: ["SystemUILintChecker"],
++        warning_checks: ["MissingApacheLicenseDetector"],
++        baseline_filename: "lint-baseline.xml",
++    },
++}
++
++android_library {
++    name: "IntentResolver-core",
++    defaults: ["Java_Defaults"],
++    static_libs: [
++        "androidx.annotation_annotation",
++        "androidx.concurrent_concurrent-futures",
++        "androidx-constraintlayout_constraintlayout",
++        "androidx.recyclerview_recyclerview",
++        "androidx.viewpager_viewpager",
++        "androidx.lifecycle_lifecycle-common-java8",
++        "androidx.lifecycle_lifecycle-extensions",
++        "androidx.lifecycle_lifecycle-runtime-ktx",
++        "androidx.lifecycle_lifecycle-viewmodel-ktx",
++        "dagger2",
++        "//frameworks/libs/systemui:com_android_systemui_shared_flags_lib",
++        "//frameworks/libs/systemui:tracinglib-platform",
++        "hilt_android",
++        "IntentResolverFlagsLib",
++        "iconloader",
++        "jsr330",
++        "kotlin-stdlib",
++        "kotlinx_coroutines",
++        "kotlinx-coroutines-android",
++        "//external/kotlinc:kotlin-annotations",
++        "guava",
++        "PlatformComposeCore",
++        "PlatformComposeSceneTransitionLayout",
++        "androidx.compose.runtime_runtime",
++        "androidx.compose.material3_material3",
++        "androidx.compose.material_material-icons-extended",
++        "androidx.activity_activity-compose",
++        "androidx.compose.animation_animation-graphics",
++        "androidx.lifecycle_lifecycle-viewmodel-compose",
++        "androidx.lifecycle_lifecycle-runtime-compose",
++        "dynamiccolors",
++        "android.service.chooser.flags-aconfig-java",
++    ],
++    javacflags: [
++        "-Adagger.fastInit=enabled",
++        "-Adagger.explicitBindingConflictsWithInject=ERROR",
++        "-Adagger.strictMultibindingValidation=enabled",
++    ],
++}
++
++java_defaults {
++    name: "App_Defaults",
++    min_sdk_version: "current",
++    platform_apis: true,
++    certificate: "platform",
++    privileged: true,
++    manifest: "AndroidManifest-app.xml",
++    required: [
++        "privapp_whitelist_com.android.intentresolver",
++    ],
++}
++
++android_app {
++    name: "IntentResolver",
++    defaults: ["App_Defaults"],
++    static_libs: [
++        "IntentResolver-core",
++    ],
++    optimize: {
++        enabled: true,
++        optimize: true,
++        shrink: true,
++        optimized_shrink_resources: true,
++        proguard_flags_files: ["proguard.flags"],
++    },
++    visibility: ["//visibility:public"],
++}
+diff --git a/android/security/fixtures/UriCallerReadAccessValidator.kt b/android/security/fixtures/UriCallerReadAccessValidator.kt
+new file mode 100644
+index 0000000000000000000000000000000000000000..28a50f68f47bb12fe1ea00803b0fa820a376d928
+--- /dev/null
++++ b/android/security/fixtures/UriCallerReadAccessValidator.kt
+@@ -0,0 +1,80 @@
++/*
++ * Copyright 2025 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      https://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.intentresolver.domain
++
++import android.app.IUriGrantsManager
++import android.content.ContentProvider.getUriWithoutUserId
++import android.content.ContentProvider.getUserIdFromUri
++import android.content.Context
++import android.content.Intent
++import android.net.Uri
++import android.util.Log
++import com.android.intentresolver.data.repository.ActivityModelRepository
++import dagger.Module
++import dagger.Provides
++import dagger.hilt.InstallIn
++import dagger.hilt.android.components.ActivityRetainedComponent
++import dagger.hilt.android.qualifiers.ApplicationContext
++import javax.inject.Inject
++import javax.inject.Qualifier
++
++private const val TAG = "ChooserActivity"
++
++@Qualifier @MustBeDocumented @Retention(AnnotationRetention.BINARY) annotation class PackageName
++
++@Qualifier
++@MustBeDocumented
++@Retention(AnnotationRetention.BINARY)
++annotation class LaunchedFromUid
++
++/** Verifies that the Chooser activity caller has read access to a URI. */
++class UriCallerReadAccessValidator
++@Inject
++constructor(
++    private val uriGrantsManager: IUriGrantsManager,
++    @param:LaunchedFromUid private val launchedFromUid: Int,
++    @param:PackageName private val packageName: String,
++) {
++    fun checkAccess(uri: Uri): Boolean =
++        runCatching {
++                uriGrantsManager.checkGrantUriPermission_ignoreNonSystem(
++                    launchedFromUid,
++                    packageName,
++                    getUriWithoutUserId(uri),
++                    Intent.FLAG_GRANT_READ_URI_PERMISSION,
++                    getUserIdFromUri(uri),
++                )
++                true
++            }
++            .getOrElse {
++                Log.e(TAG, "Failed to get URI permission for $uri", it)
++                false
++            }
++}
++
++@Module
++@InstallIn(ActivityRetainedComponent::class)
++object CallerUriReadAccessValidatorModule {
++    @Provides
++    @PackageName
++    fun packageName(@ApplicationContext context: Context): String = context.packageName
++
++    @Provides
++    @LaunchedFromUid
++    fun launchedFromUid(activityModelRepository: ActivityModelRepository): Int =
++        activityModelRepository.value.launchedFromUid
++}
+diff --git a/tools/droidloom-update/src/android.rs b/tools/droidloom-update/src/android.rs
+index 1218e9d5a34b0165dedaaf0e06006747a7840ec7..2aa37d964cd01b7a84605f18aa411ff2c98f88c2 100644
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -2234,19 +2234,20 @@ enum FixedProductionRequest<'a> {
+     Existing(SoongDependencyMode, &'a [&'a str]),
+     VendorPolicyOnAudioSource,
+     VendorPolicyBundleOnAudioSource,
++    IntentResolverSecurityOnAudioSource,
+ }
+ 
+ impl FixedProductionRequest<'_> {
+     fn source_mode(&self) -> SoongDependencyMode {
+         match self {
+             Self::Existing(mode, _) => *mode,
+-            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource => SoongDependencyMode::AudioApexTargetClosure,
++            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource => SoongDependencyMode::AudioApexTargetClosure,
+         }
+     }
+     fn projection_targets(&self) -> &[&str] {
+         match self {
+             Self::Existing(_, targets) => targets,
+-            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource => &["com.android.hardware.audio.droidloom"],
++            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource => &["com.android.hardware.audio.droidloom"],
+         }
+     }
+     fn requested_targets(&self) -> &[&str] {
+@@ -2254,13 +2255,15 @@ impl FixedProductionRequest<'_> {
+             Self::Existing(_, targets) => targets,
+             Self::VendorPolicyOnAudioSource => &["vendor_sepolicy.cil"],
+             Self::VendorPolicyBundleOnAudioSource => VENDOR_POLICY_BUNDLE_TARGETS,
++            Self::IntentResolverSecurityOnAudioSource => &["IntentResolver"],
+         }
+     }
+     fn validate(&self, product: &str) -> Result<()> {
+         match self {
+             Self::Existing(mode, targets) => validate_soong_dependency_mode(*mode, targets),
+-            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource if product == "droidloom_x86_64" => Ok(()),
++            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource if product == "droidloom_x86_64" => Ok(()),
+             Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource => fail("fixed Audio-source vendor policy requires droidloom_x86_64"),
++            Self::IntentResolverSecurityOnAudioSource => fail("fixed IntentResolver security target requires droidloom_x86_64"),
+         }
+     }
+     fn soong_targets(&self, out: &Path, product: &str) -> Result<Vec<PathBuf>> {
+@@ -2269,13 +2272,14 @@ impl FixedProductionRequest<'_> {
+             Self::Existing(mode, targets) => selected_soong_targets(*mode, targets, out, product),
+             Self::VendorPolicyOnAudioSource => Ok(vec![PathBuf::from("vendor_sepolicy.cil")]),
+             Self::VendorPolicyBundleOnAudioSource => Ok(VENDOR_POLICY_BUNDLE_TARGETS.iter().map(|target|PathBuf::from(*target)).collect()),
++            Self::IntentResolverSecurityOnAudioSource => Ok(vec![PathBuf::from("IntentResolver")]),
+         }
+     }
+     fn configure_dependencies(&self, command: &mut Command, product: &str) -> Result<()> {
+         self.validate(product)?;
+         match self {
+             Self::Existing(mode, targets) => configure_soong_dependencies(command, *mode, targets),
+-            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource => {
++            Self::VendorPolicyOnAudioSource | Self::VendorPolicyBundleOnAudioSource | Self::IntentResolverSecurityOnAudioSource => {
+                 enforce_strict_soong_dependencies(command);
+                 command.env("SELINUX_IGNORE_NEVERALLOWS", "false");
+                 Ok(())
+@@ -2286,7 +2290,7 @@ impl FixedProductionRequest<'_> {
+         match self {
+             Self::VendorPolicyOnAudioSource => Some(("droidloom-vendor-policy-build-inputs.json", "droidloom-fixed-user-vendor-policy-inputs-v1", "droidloom-vendor-policy-normal-result.json", "droidloom-fixed-user-vendor-policy-normal-result-v1")),
+             Self::VendorPolicyBundleOnAudioSource => Some(("droidloom-vendor-policy-bundle-build-inputs.json", "droidloom-fixed-user-vendor-policy-bundle-inputs-v1", "droidloom-vendor-policy-bundle-normal-result.json", "droidloom-fixed-user-vendor-policy-bundle-normal-result-v1")),
+-            Self::Existing(_, _) => None,
++            Self::Existing(_, _) | Self::IntentResolverSecurityOnAudioSource => None,
+         }
+     }
+     fn description(&self, product: &str) -> Result<serde_json::Value> {
+@@ -2297,6 +2301,7 @@ impl FixedProductionRequest<'_> {
+             "source_profile": match self {
+                 Self::VendorPolicyOnAudioSource => "exact-audio537-original-libexif-source-policy-target",
+                 Self::VendorPolicyBundleOnAudioSource => "exact-audio537-libexif-source-vendor-policy-bundle",
++                Self::IntentResolverSecurityOnAudioSource => "exact-audio-source-intentresolver-security-target",
+                 Self::Existing(_, _) => "existing-normal-entry",
+             },
+             "product": product,
+@@ -2336,12 +2341,54 @@ fn validate_vendor_policy_bundle_originals(source:&Path)->Result<()> {
+     }
+     Ok(())
+ }
++
++const INTENTRESOLVER_PROJECT: &str = "packages/modules/IntentResolver";
++const INTENTRESOLVER_CALLER: &str = "java/src/com/android/intentresolver/domain/UriCallerReadAccessValidator.kt";
++const INTENTRESOLVER_BP_SHA: &str = "b85d86e1516b93d7d5f7181e2f2437086947b923f5223802d53a1cf417ddfd5a";
++const INTENTRESOLVER_ORIGINAL_SHA: &str = "6c510da683d4f9459fd041f86d7778e3187e4ae17b5fa22a2e00bd01e2a58aa2";
++const INTENTRESOLVER_PATCHED_SHA: &str = "2c24012b179245745a777fc53a8a586d2cf3de3564bc4d0fe7d64c86f4f660e9";
++const INTENTRESOLVER_PATCH: &str = "android/security/0001-intentresolver-caller-package.patch";
++const INTENTRESOLVER_PATCH_SHA: &str = "0e66877febce78d36d50a71e7787a844593f4c728744cade66d8d7833b6ee752";
++
++fn validate_intentresolver_security_original(repo: &Path, source: &Path) -> Result<()> {
++    for (path, expected) in [
++        (source.join(INTENTRESOLVER_PROJECT).join("Android.bp"), INTENTRESOLVER_BP_SHA),
++        (source.join(INTENTRESOLVER_PROJECT).join(INTENTRESOLVER_CALLER), INTENTRESOLVER_ORIGINAL_SHA),
++        (repo.join(INTENTRESOLVER_PATCH), INTENTRESOLVER_PATCH_SHA),
++    ] {
++        let metadata = fs::symlink_metadata(&path)?;
++        if !metadata.is_file() || metadata.file_type().is_symlink() || hash(&path)? != expected {
++            return fail("IntentResolver security build requires the exact original provider, source and official patch");
++        }
++    }
++    Ok(())
++}
+ pub fn build_vendor_policy_bundle_on_audio_source(
+     repo:&Path, source:&Path, out:&Path, work:&Path, product:&str, jobs:usize,
+ )->Result<()> {
+     build_targets_with_fixed_request(repo,source,out,work,product,jobs,FixedProductionRequest::VendorPolicyBundleOnAudioSource)
+ }
+ 
++fn project_intentresolver_security(p: &mut Projection, repo: &Path, source: &Path) -> Result<()> {
++    validate_intentresolver_security_original(repo, source)?;
++    p.patch(source, INTENTRESOLVER_PROJECT, &repo.join(INTENTRESOLVER_PATCH))?;
++    if hash(&source.join(INTENTRESOLVER_PROJECT).join(INTENTRESOLVER_CALLER))? != INTENTRESOLVER_PATCHED_SHA
++        || hash(&source.join(INTENTRESOLVER_PROJECT).join("Android.bp"))? != INTENTRESOLVER_BP_SHA {
++        return fail("IntentResolver official patch must change exactly the caller package binding");
++    }
++    Ok(())
++}
++
++/// Build the original privileged module with its official caller-package fix.
++/// The source release and test signing configuration remain explicit. This
++/// command neither installs an APK nor asserts QPR1 or production qualification.
++pub fn build_intentresolver_security_on_audio_source(
++    repo: &Path, source: &Path, out: &Path, work: &Path, product: &str, jobs: usize,
++) -> Result<()> {
++    build_targets_with_fixed_request(repo, source, out, work, product, jobs,
++        FixedProductionRequest::IntentResolverSecurityOnAudioSource)
++}
++
+ fn validate_vendor_policy_original(source: &Path) -> Result<()> {
+     if hash(&source.join("system/sepolicy/Android.bp"))?
+         != "037ba970d4bae28865245366b4f4f9a0e828197c43843f7950a9e18e754aa42b" {
+@@ -4974,6 +5021,7 @@ fn build_targets_with_fixed_request(
+     match request {
+         FixedProductionRequest::VendorPolicyOnAudioSource => validate_vendor_policy_original(source)?,
+         FixedProductionRequest::VendorPolicyBundleOnAudioSource => validate_vendor_policy_bundle_originals(source)?,
++        FixedProductionRequest::IntentResolverSecurityOnAudioSource => validate_intentresolver_security_original(repo, source)?,
+         FixedProductionRequest::Existing(_, _) => (),
+     }
+     validate_audio_pasit_original_providers(source, dependency_mode)?;
+@@ -5014,6 +5062,9 @@ fn build_targets_with_fixed_request(
+         }
+     }
+     let mut p = Projection::new(work.join("source-projection.json"))?;
++    if matches!(request, FixedProductionRequest::IntentResolverSecurityOnAudioSource) {
++        project_intentresolver_security(&mut p, repo, source)?;
++    }
+     for (cwd, patch) in PATCHES {
+         p.patch(source, cwd, &repo.join(patch))?;
+     }
+@@ -5390,6 +5441,33 @@ fn build_targets_with_fixed_request(
+         inputs["selinux_ignore_neverallows"] = "false".into();
+         write(policy_input_path.as_ref().ok_or("fixed policy input path missing")?, serde_json::to_vec_pretty(&inputs)?)?;
+     }
++
++    let security_input_path = out.join("droidloom-intentresolver-security-inputs.json");
++    if matches!(request, FixedProductionRequest::IntentResolverSecurityOnAudioSource) {
++        let mut inputs = request.description(product)?;
++        inputs["schema"] = "droidloom-intentresolver-security-inputs-v1".into();
++        inputs["source_lock"] = serde_json::json!({"path": lock, "sha256": hash(&lock)?});
++        inputs["official_patch"] = serde_json::json!({
++            "path": repo.join(INTENTRESOLVER_PATCH), "sha256": INTENTRESOLVER_PATCH_SHA,
++            "commit": "e4b1a233fb175e7f03671dcbc376fbe3c30dad58",
++            "public_security_tag": "android-security-17.0.0_r3",
++            "security_tag_project_commit": "fa1bb165e5bab1b64d82da55807c68771cfe44d2",
++        });
++        inputs["effective_source"] = serde_json::json!({
++            "path": source.join(INTENTRESOLVER_PROJECT).join(INTENTRESOLVER_CALLER),
++            "sha256": hash(&source.join(INTENTRESOLVER_PROJECT).join(INTENTRESOLVER_CALLER))?,
++            "expected_sha256": INTENTRESOLVER_PATCHED_SHA,
++        });
++        if inputs["effective_source"]["sha256"] != INTENTRESOLVER_PATCHED_SHA {
++            return fail("IntentResolver effective source lost its official security patch");
++        }
++        inputs["effective_projection"] = p.effective_inventory(repo, source)?;
++        inputs["selected_soong_targets"] = serde_json::json!(selected_targets);
++        inputs["strict_allow_missing_dependencies"] = "false".into();
++        inputs["production_signing_qualified"] = false.into();
++        inputs["whole_security_bulletin_qualified"] = false.into();
++        write(&security_input_path, serde_json::to_vec_pretty(&inputs)?)?;
++    }
+     let engine_inputs = if dependency_mode == SoongDependencyMode::NativeEngineTargetClosure {
+         Some(crate::native_engine::engine_build_inputs(
+             repo, source, &vendor, work, out, &native_bridge_source,
+@@ -5426,6 +5504,32 @@ fn build_targets_with_fixed_request(
+                 "runtime_qualified": false,
+             }))?)?;
+     }
++
++    if matches!(request, FixedProductionRequest::IntentResolverSecurityOnAudioSource) {
++        validate_intentresolver_security_original(repo, source)?;
++        let apk = out.join("target/product").join(product)
++            .join("system/priv-app/IntentResolver/IntentResolver.apk");
++        let metadata = fs::symlink_metadata(&apk)?;
++        if !metadata.is_file() || metadata.file_type().is_symlink() || metadata.len() == 0 {
++            return fail("normal IntentResolver target did not produce its original installed APK output");
++        }
++        write(&out.join("droidloom-intentresolver-security-normal-result.json"),
++            serde_json::to_vec_pretty(&serde_json::json!({
++                "schema": "droidloom-intentresolver-security-normal-result-v1",
++                "inputs": {"path": security_input_path, "sha256": hash(&security_input_path)?},
++                "APK": {"path": apk, "bytes": metadata.len(), "sha256": hash(&apk)?},
++                "normal_command_returned_success": true,
++                "original_source_restored": true,
++                "source_release": PRODUCTION_TARGET_RELEASE,
++                "build_variant": PRODUCTION_BUILD_VARIANT,
++                "QPR1_source_identity_claim": false,
++                "binary_semantic_fix_qualified": false,
++                "production_signing_qualified": false,
++                "whole_security_bulletin_qualified": false,
++                "runtime_qualified": false,
++                "production_ready": false,
++            }))?)?;
++    }
+     if let Some(inputs) = engine_inputs {
+         crate::native_engine::write_engine_build_receipt(source, out, product, inputs)?;
+     }
+@@ -6542,6 +6646,89 @@ mod tests {
+     }
+     use super::*;
+ 
++    fn intentresolver_security_fixture(root: &Path) -> (PathBuf, PathBuf) {
++        let repo = root.join("recipe"); let source = root.join("source");
++        let project = source.join(INTENTRESOLVER_PROJECT);
++        write(&project.join("Android.bp"), include_bytes!("../../../android/security/fixtures/IntentResolver.Android.bp")).unwrap();
++        write(&project.join(INTENTRESOLVER_CALLER), include_bytes!("../../../android/security/fixtures/UriCallerReadAccessValidator.kt")).unwrap();
++        write(&repo.join(INTENTRESOLVER_PATCH), include_bytes!("../../../android/security/0001-intentresolver-caller-package.patch")).unwrap();
++        (repo, source)
++    }
++
++    #[test]
++    fn intentresolver_official_git_patch_and_interrupted_recovery_preserve_original() {
++        use std::os::unix::fs::PermissionsExt;
++        for interrupted in [false, true] {
++            let d = tempfile::tempdir().unwrap();
++            let (repo, source) = intentresolver_security_fixture(d.path());
++            let file = source.join(INTENTRESOLVER_PROJECT).join(INTENTRESOLVER_CALLER);
++            fs::set_permissions(&file, fs::Permissions::from_mode(0o640)).unwrap();
++            let original = fs::metadata(&file).unwrap();
++            let journal = d.path().join("source-projection.json");
++            let mut projection = Projection::new(journal.clone()).unwrap();
++            project_intentresolver_security(&mut projection, &repo, &source).unwrap();
++            assert_eq!(hash(&file).unwrap(), INTENTRESOLVER_PATCHED_SHA);
++            if interrupted { std::mem::forget(projection); recover(&journal, &source).unwrap(); }
++            else { projection.restore().unwrap(); }
++            validate_intentresolver_security_original(&repo, &source).unwrap();
++            let restored = fs::metadata(&file).unwrap();
++            assert_eq!(restored.permissions().mode(), original.permissions().mode());
++            assert_eq!(restored.modified().unwrap(), original.modified().unwrap());
++            assert!(!journal.exists());
++        }
++    }
++
++    #[test]
++    fn intentresolver_changed_provider_source_or_patch_is_rejected_before_projection() {
++        for which in 0..3 {
++            let d = tempfile::tempdir().unwrap();
++            let (repo, source) = intentresolver_security_fixture(d.path());
++            validate_intentresolver_security_original(&repo, &source).unwrap();
++            let path = match which {
++                0 => source.join(INTENTRESOLVER_PROJECT).join("Android.bp"),
++                1 => source.join(INTENTRESOLVER_PROJECT).join(INTENTRESOLVER_CALLER),
++                _ => repo.join(INTENTRESOLVER_PATCH),
++            };
++            let changed = fs::read(&path).unwrap().into_iter().chain([b'\n']).collect::<Vec<_>>();
++            fs::write(&path, &changed).unwrap();
++            let journal = d.path().join("source-projection.json");
++            let mut projection = Projection::new(journal.clone()).unwrap();
++            assert!(project_intentresolver_security(&mut projection, &repo, &source).is_err());
++            assert!(!journal.exists()); assert_eq!(fs::read(&path).unwrap(), changed);
++        }
++    }
++
++    #[test]
++    fn intentresolver_fixed_request_keeps_audio_source_and_strict_user_command() {
++        const PROBE: &str = "DROIDLOOM_TEST_INTENTRESOLVER_ENV_CHILD";
++        if std::env::var_os(PROBE).is_none() {
++            let child = Command::new(std::env::current_exe().unwrap())
++                .args(["--exact", "android::tests::intentresolver_fixed_request_keeps_audio_source_and_strict_user_command", "--test-threads=1"])
++                .env(PROBE,"1").env("TARGET_BUILD_VARIANT","eng")
++                .env("TARGET_RELEASE","cp3a").env("ALLOW_MISSING_DEPENDENCIES","true")
++                .env("SELINUX_IGNORE_NEVERALLOWS","true").output().unwrap();
++            assert!(child.status.success(), "{}", String::from_utf8_lossy(&child.stderr));
++            assert!(String::from_utf8_lossy(&child.stdout).contains("1 passed; 0 failed"));
++            return;
++        }
++        let request = FixedProductionRequest::IntentResolverSecurityOnAudioSource;
++        assert_eq!(request.source_mode(), SoongDependencyMode::AudioApexTargetClosure);
++        assert_eq!(request.projection_targets(), ["com.android.hardware.audio.droidloom"]);
++        assert_eq!(request.requested_targets(), ["IntentResolver"]);
++        assert!(request.validate("droidloom_arm64").is_err());
++        use std::os::unix::fs::PermissionsExt;
++        let d=tempfile::tempdir().unwrap();
++        let executable=d.path().join("soong_ui");
++        fs::write(&executable,
++            b"#!/bin/sh\nset -eu\nprintf '%s\\n' \"$TARGET_BUILD_VARIANT\" \"$TARGET_RELEASE\" \"$ALLOW_MISSING_DEPENDENCIES\" \"$SELINUX_IGNORE_NEVERALLOWS\" \"$@\"\n").unwrap();
++        fs::set_permissions(&executable,fs::Permissions::from_mode(0o700)).unwrap();
++        let targets=request.soong_targets(d.path(),"droidloom_x86_64").unwrap();
++        let mut command=production_soong_command(d.path(),d.path(),d.path(),"droidloom_x86_64",2,&targets).unwrap();
++        request.configure_dependencies(&mut command,"droidloom_x86_64").unwrap();
++        let output=command.output().unwrap();assert!(output.status.success());
++        assert_eq!(output.stdout,b"user\ncp2a\nfalse\nfalse\n--make-mode\n-j2\nIntentResolver\n");
++    }
++
+     #[test]
+     fn vendor_policy_typed_request_keeps_audio_lock_and_rejects_widening() {
+         let request = FixedProductionRequest::VendorPolicyOnAudioSource;
+diff --git a/tools/droidloom-update/src/dependencies.rs b/tools/droidloom-update/src/dependencies.rs
+index a21988dc1d94430c2e6493062cb59b78479d92c7..374b32c3388982a31711c81f77328e3db32f8a9c 100644
+--- a/tools/droidloom-update/src/dependencies.rs
++++ b/tools/droidloom-update/src/dependencies.rs
+@@ -27,6 +27,7 @@ pub fn ensure() -> Result<()> {
+         ("mkfs.erofs", "erofs-utils"),
+         ("fakeroot", "fakeroot"),
+         ("getfattr", "attr"),
++        ("setfattr", "attr"),
+         ("dump.erofs", "erofs-utils"),
+         ("mkfs.ext4", "e2fsprogs"),
+         ("pkexec", "polkit"),
+diff --git a/tools/droidloom-update/src/main.rs b/tools/droidloom-update/src/main.rs
+index 06d497ed305e3c3b5ecb4c718285cbe98cfc0362..2c9a710a1547794d9840d55dd945a85d3a8b0c2c 100644
+--- a/tools/droidloom-update/src/main.rs
++++ b/tools/droidloom-update/src/main.rs
+@@ -100,6 +100,13 @@ enum Action {
+         #[arg(long)]
+         work: PathBuf,
+     },
++    /// Build the original IntentResolver module with its official caller-package security patch.
++    /// Does not install the APK or qualify production signing.
++    #[command(name = "intentresolver-security-build")]
++    IntentResolverSecurityBuild {
++        #[arg(long)]
++        work: PathBuf,
++    },
+     /// Restore an interrupted source projection under the normal two workspace locks.
+     /// Does not compile, install, bootstrap dependencies, or start services.
+     RecoverSource {
+@@ -177,8 +184,12 @@ fn repository(explicit: Option<PathBuf>) -> Result<PathBuf> {
+     Ok(path)
+ }
+ fn selected_build_out(command: Option<&Action>, work: &std::path::Path) -> Result<PathBuf> {
+-    if matches!(command, Some(Action::VendorPolicyBuild { .. } | Action::VendorPolicyBundleBuild { .. })) {
+-        let out = work.join(if matches!(command,Some(Action::VendorPolicyBundleBuild{..})) {"android-user-vendor-policy-bundle-out"} else {"android-user-vendor-policy-out"});
++    if matches!(command, Some(Action::VendorPolicyBuild { .. } | Action::VendorPolicyBundleBuild { .. } | Action::IntentResolverSecurityBuild { .. })) {
++        let out = work.join(match command {
++            Some(Action::VendorPolicyBundleBuild { .. }) => "android-user-vendor-policy-bundle-out",
++            Some(Action::IntentResolverSecurityBuild { .. }) => "android-user-intentresolver-security-out",
++            _ => "android-user-vendor-policy-out",
++        });
+         if !work.is_absolute() {
+             return fail("vendor policy workspace must be absolute");
+         }
+@@ -239,7 +250,7 @@ fn recover_source_workspace(work: &std::path::Path) -> Result<()> {
+ }
+ 
+ fn execute(args: Args) -> Result<()> {
+-    if matches!(&args.command, Some(Action::VendorPolicyBuild { .. } | Action::VendorPolicyBundleBuild { .. }))
++    if matches!(&args.command, Some(Action::VendorPolicyBuild { .. } | Action::VendorPolicyBundleBuild { .. } | Action::IntentResolverSecurityBuild { .. }))
+         && (args.clean || args.build_only || args.bootstrapped) {
+         return fail("fixed vendor policy does not accept cleanup, bundle or bootstrap options");
+     }
+@@ -320,6 +331,7 @@ fn execute(args: Args) -> Result<()> {
+         | Some(Action::AudioApexBuild { work })
+         | Some(Action::VendorPolicyBuild { work })
+         | Some(Action::VendorPolicyBundleBuild { work })
++        | Some(Action::IntentResolverSecurityBuild { work })
+         | Some(Action::NativeEngineBuild { work, .. })
+         | Some(Action::MinigbmBuild { work }) => Some(work.canonicalize()?),
+         _ => None,
+@@ -384,6 +396,11 @@ fn execute(args: Args) -> Result<()> {
+         eprintln!("Building native vendor policy, contexts, versions and VINTF declarations; compatibility qualification follows the actual artifacts.");
+         return android::build_vendor_policy_bundle_on_audio_source(&repo,&source,&out,&work,product,jobs);
+     }
++    if matches!(args.command, Some(Action::IntentResolverSecurityBuild { .. })) {
++        return android::build_intentresolver_security_on_audio_source(
++            &repo, &source, &out, &work, product, jobs,
++        );
++    }
+     if matches!(args.command, Some(Action::VendorPolicyBuild { .. })) {
+         eprintln!("Building the original final vendor_sepolicy.cil with the exact Audio source profile; APEX, selected-cohort policy compatibility and runtime remain separate.");
+         return android::build_vendor_policy_on_audio_source(
+@@ -535,6 +552,24 @@ mod tests {
+ 
+     use super::*;
+ 
++    #[test]
++    fn intentresolver_security_cli_rejects_widening_and_output_aliases() {
++        let d=tempfile::tempdir().unwrap();let work=d.path();
++        let valid=["droidloom-update","intentresolver-security-build","--work",work.to_str().unwrap()];
++        let args=Args::try_parse_from(valid).unwrap();
++        assert!(matches!(args.command,Some(Action::IntentResolverSecurityBuild { .. })));
++        assert_eq!(selected_build_out(args.command.as_ref(),work).unwrap(),work.join("android-user-intentresolver-security-out"));
++        for extra in [&["services"][..], &["--out","/another"][..], &["--variant","eng"][..], &["--source-lock","/other"][..]] {
++            let mut argv=valid.to_vec();argv.extend_from_slice(extra);assert!(Args::try_parse_from(argv).is_err());
++        }
++        for option in ["--clean","--build-only","--bootstrapped"] {
++            let args=Args::try_parse_from(["droidloom-update",option,"intentresolver-security-build","--work",work.to_str().unwrap()]).unwrap();
++            assert!(execute(args).unwrap_err().to_string().contains("does not accept cleanup"));
++        }
++        std::os::unix::fs::symlink(work,work.join("android-user-intentresolver-security-out")).unwrap();
++        assert!(selected_build_out(args.command.as_ref(),work).is_err());
++    }
++
+     #[test]
+     fn vendor_policy_cli_is_fixed_and_has_no_cleanup_or_target_override() {
+         let valid = ["droidloom-update", "vendor-policy-build", "--work", "/not-executed"];

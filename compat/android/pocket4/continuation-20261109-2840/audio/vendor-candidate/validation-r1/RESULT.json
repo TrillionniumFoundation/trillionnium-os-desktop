@@ -1,0 +1,80 @@
+{
+  "affinity": [
+    8,
+    9
+  ],
+  "android_full_builds_started": 0,
+  "cell_actions": 0,
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/control/integrate.py"
+      ],
+      "elapsed_seconds": 0.271,
+      "expected_returncode": 0,
+      "log": {
+        "bytes": 415,
+        "path": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/validation-r1/integrate.log",
+        "sha256": "c3359ae6abec0515d24ec5316fa1a7b900db0affccf6a6d179b43c381816b628"
+      },
+      "name": "integrate",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/home/qian-qi/.cargo/bin/rustfmt",
+        "--edition",
+        "2024",
+        "--config",
+        "skip_children=true",
+        "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/source/tools/droidloom-update/src/audio_vendor_candidate.rs",
+        "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/source/tools/droidloom-update/src/audio_vendor_candidate/tests.rs",
+        "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/source/tools/droidloom-update/src/audio_vendor_zip.rs"
+      ],
+      "elapsed_seconds": 0.211,
+      "expected_returncode": 0,
+      "log": {
+        "bytes": 0,
+        "path": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/validation-r1/format-new-modules.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "name": "format-new-modules",
+      "returncode": 0
+    },
+    {
+      "argv": [
+        "/home/qian-qi/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j2",
+        "-p",
+        "droidloom-update",
+        "audio_vendor",
+        "--",
+        "--test-threads=2"
+      ],
+      "elapsed_seconds": 0.225,
+      "expected_returncode": 0,
+      "log": {
+        "bytes": 120,
+        "path": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/validation-r1/targeted-normal-tests.log",
+        "sha256": "78702e8a0954bbeffd0d1704a8fdbc87719b80009f616d9c2dbd5f1338117200"
+      },
+      "name": "targeted-normal-tests",
+      "returncode": 101
+    }
+  ],
+  "deployments": 0,
+  "disk_free_before": 177155977216,
+  "error": "AssertionError('targeted-normal-tests returned unexpected code')",
+  "finished_utc": "2026-11-09T16:28:45Z",
+  "images_written": 0,
+  "mem_available_before": 92436889600,
+  "parent": "4caa694f25b3da022651a1078600a0eb1a5334fc",
+  "production_ready": false,
+  "source": "/data/pocket4-audio-qpr1-vendor-candidate-20261109-2840-r1/source",
+  "started_utc": "2026-11-09T16:28:44Z",
+  "state": "FAILED"
+}

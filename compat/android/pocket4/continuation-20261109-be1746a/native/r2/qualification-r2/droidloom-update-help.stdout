@@ -1,0 +1,26 @@
+Build, verify, install and restart all Droidloom components
+
+Usage: droidloom-update [OPTIONS] [COMMAND]
+
+Commands:
+  native-role-ingress-build    Build the complete framework Java library and Android JNI runtime only. Uses its independent exact source lock; does not install or enable roles
+  native-generation-art-build  Build only the paired ART libraries through the normal strict source projection. Builds no image and does not install, activate, or enable a running component
+  native-generation-build      Build the complete ordinary-app engine and ART APEX with strict dependencies. Uses fixed paired sources and a fresh output; does not install or grant runtime readiness
+  native-generation-pair       Record the exact enabled ART/engine pair from existing product files. Does not enable a feature, build, install, or activate any component
+  native-bridge-build          Rebuild the ARM64 translator in an already prepared Android workspace
+  target-closure-build         Build only NativeBridge targets, deferring missing modules to Ninja errors
+  native-engine-build          Build only the Android ARM64 translation engine; does not install it
+  audio-apex-build             Build only the AIDL audio APEX, deferring missing modules to Ninja errors. Does not install artifacts or start services
+  minigbm-build                Build the native AMD allocator candidate without installing anything
+  package-stage                Compile and stage a portable pacman payload; does not install or start services
+  plan                         Show the complete build plan without changing anything
+  verify                       Verify an already built bundle
+  help                         Print this message or the help of the given subcommand(s)
+
+Options:
+      --source <SOURCE>  Droidloom checkout (remembered automatically after installation)
+      --clean            Delete this updater's build outputs before compiling
+      --build-only       Build and verify a complete bundle without installing it
+  -j, --jobs <JOBS>      Maximum parallel jobs, capped at available CPUs minus two
+  -h, --help             Print help
+  -V, --version          Print version

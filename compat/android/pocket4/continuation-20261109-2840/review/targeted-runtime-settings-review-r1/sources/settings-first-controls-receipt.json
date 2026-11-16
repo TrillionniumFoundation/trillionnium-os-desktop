@@ -1,0 +1,116 @@
+{
+  "schema": "pocket4-settings-source-controls-v1",
+  "uid": 1000,
+  "affinity": [
+    2
+  ],
+  "parent": "7113c8fe36fc34b6350cb61478bf2082bb211d2e",
+  "branch": "fix/pocket4-settings-owned-page-20261109-2840",
+  "rustfmt_exit": 0,
+  "tests": [
+    {
+      "name": "supervisor-application-controls",
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-supervisor",
+        "--lib",
+        "control::application",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "seconds": 5.859334,
+      "bytes": 5847,
+      "sha256": "738e24765ef2633c8b1b2a000fbbad21e3abf4e1b51aba96f31a9377b8a90d2e",
+      "cold_marker_observed": false
+    },
+    {
+      "name": "launcher-controls",
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-task-launcher",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "seconds": 2.581075,
+      "bytes": 3936,
+      "sha256": "0187a396b4dff90c7d213fe36e7d6b3dee1269b897b9b75c47d3c9c77bd3ed33",
+      "cold_marker_observed": false
+    },
+    {
+      "name": "cold-daemon-socket-control",
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-supervisor",
+        "--lib",
+        "control::tests::local_daemon_status_and_stopped_teardown_are_idempotent",
+        "--",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "seconds": 0.122316,
+      "bytes": 527,
+      "sha256": "c1cecf548eeaee3f66c0dc209350ec3ae83c04cd296902bde85c7bd2fc7f111b",
+      "cold_marker_observed": true
+    }
+  ],
+  "files": [
+    {
+      "path": "runtime/droidloom-supervisor/src/control.rs",
+      "bytes": 84611,
+      "sha256": "186092001246a71ddb4b9e150afd6354c785a613f56425b0b42ff3773d270842"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/application_settings.rs",
+      "bytes": 17251,
+      "sha256": "7225619ccc19d20b7785e7b87cdbc28ddde0f35e9587cc22bece678696f56630"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/application_settings_protocol.rs",
+      "bytes": 23997,
+      "sha256": "6b9d3adea26d797b55ad8daf55c61d7b157a88a3a9a05078e61d8a3b58e66daa"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/application_action_scope.rs",
+      "bytes": 9353,
+      "sha256": "4dbf3a42cee7c467914c80af160aa1cd27e85a8d3f1254e4723f4aea5989cbe0"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/application_settings_tests.rs",
+      "bytes": 18776,
+      "sha256": "376858e6666cf89bb9cf393aa6fa1318de5ad3175ebce12392d820ce065ac923"
+    },
+    {
+      "path": "android/framework/droidloom-task-launcher/src/lib.rs",
+      "bytes": 74712,
+      "sha256": "d003c93b4b5d17b1d2946c96bd88f9f7eaedeb10748d7d6737c25435cbc8b6e4"
+    },
+    {
+      "path": "android/framework/droidloom-task-launcher/src/main.rs",
+      "bytes": 12354,
+      "sha256": "d875eaf699c5716abb986912c66fc918df9adf60730afaeff3acf8ed99bb6325"
+    }
+  ],
+  "runtime_qualified": false,
+  "production_ready": false,
+  "accepted_applications": 0,
+  "android_ui_invocations": 0,
+  "installed_or_deployed": false
+}

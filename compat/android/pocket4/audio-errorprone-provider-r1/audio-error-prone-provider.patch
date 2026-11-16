@@ -1,0 +1,812 @@
+diff --git a/android/manifest/audio-bridge-source-lock.json b/android/manifest/audio-bridge-source-lock.json
+index d8fb37a..60fe7d3 100644
+--- a/android/manifest/audio-bridge-source-lock.json
++++ b/android/manifest/audio-bridge-source-lock.json
+@@ -759,6 +759,15 @@
+       "commit": "ea1b5aa6741805a9464a2ee9b5716bcd1516b56e",
+       "purpose": "Original superproject-pinned jemalloc5 allocator required by Bionic libc"
+     },
++    {
++      "path": "external/jimfs",
++      "name": "platform/external/jimfs",
++      "commit": "cd18acbf0036a7c6a3443e7e58b5091cacf327cf",
++      "purpose": "Original Jimfs library and annotation generator required by the retained Error Prone test helper in the complete Audio APEX graph",
++      "sparse_paths": [
++        "jimfs"
++      ]
++    },
+     {
+       "path": "external/jsilver",
+       "name": "platform/external/jsilver",
+diff --git a/tools/droidloom-source/src/lib.rs b/tools/droidloom-source/src/lib.rs
+index 3a40893..039794d 100644
+--- a/tools/droidloom-source/src/lib.rs
++++ b/tools/droidloom-source/src/lib.rs
+@@ -23,7 +23,7 @@ use thiserror::Error;
+ const MAX_LOCK_BYTES: u64 = 1024 * 1024;
+ // This independent audio builder consumes the exact pinned audio lock below.
+ // Keep the smallest finite 16-project boundary; URL/commit/path checks remain.
+-const AUDIO_SOURCE_PROJECT_COUNT: usize = 316;
++const AUDIO_SOURCE_PROJECT_COUNT: usize = 317;
+ const MAX_PROJECTS: usize = AUDIO_SOURCE_PROJECT_COUNT.div_ceil(16) * 16;
+ const MAX_LINKS: usize = 64;
+ // Android17 hardware/interfaces requires 133 exact paths in the pinned lock.
+@@ -942,10 +942,49 @@ mod tests {
+         }
+     }
+ 
++    fn audio_before_jimfs_lock() -> String {
++        let raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
++        let added = r###"    {
++      "path": "external/jimfs",
++      "name": "platform/external/jimfs",
++      "commit": "cd18acbf0036a7c6a3443e7e58b5091cacf327cf",
++      "purpose": "Original Jimfs library and annotation generator required by the retained Error Prone test helper in the complete Audio APEX graph",
++      "sparse_paths": [
++        "jimfs"
++      ]
++    },
++"###;
++        assert_eq!(raw.matches(added).count(), 1);
++        let previous = raw.replacen(added, "", 1);
++        assert_eq!(format!("{:x}", Sha256::digest(previous.as_bytes())),
++            "617a55af8ad550d4534220d0621a76b9a7556951a850ebac9356ebaec3fff19e");
++        previous
++    }
++
+     #[test]
+-    fn audio_cts_compilation_is_one_monotonic_same_commit_cone() {
++    fn audio_error_prone_jimfs_is_one_monotonic_pinned_project() {
+         let raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
+         let current_lock: SparseSourceLock = serde_json::from_str(raw).unwrap();
++        let previous_lock: SparseSourceLock = serde_json::from_str(&audio_before_jimfs_lock()).unwrap();
++        let previous = build_plan(&previous_lock).unwrap();
++        let current = build_plan(&current_lock).unwrap();
++        assert_eq!(previous.projects.len(), 316);
++        assert_eq!(current.projects.len(), 317);
++        validate_plan_extension(&previous, &current).unwrap();
++        assert!(validate_plan_extension(&current, &previous).is_err());
++        let project = current.projects.iter().find(|p| p.path == Path::new("external/jimfs")).unwrap();
++        assert_eq!(project.commit, "cd18acbf0036a7c6a3443e7e58b5091cacf327cf");
++        let mut changed = current;
++        changed.projects.iter_mut().find(|p| p.path == Path::new("external/error_prone")).unwrap()
++            .commit = "0000000000000000000000000000000000000000".into();
++        assert!(validate_plan_extension(&previous, &changed).is_err());
++    }
++
++    #[test]
++    fn audio_cts_compilation_is_one_monotonic_same_commit_cone() {
++        let raw_owned = audio_before_jimfs_lock();
++        let raw = raw_owned.as_str();
++        let current_lock: SparseSourceLock = serde_json::from_str(raw).unwrap();
+         let current = build_plan(&current_lock).unwrap();
+         let addition = "\"libs/vogar-expect\",\n        \"hostsidetests/compilation\"";
+         assert_eq!(raw.matches(addition).count(), 1);
+@@ -970,7 +1009,7 @@ mod tests {
+     fn audio_source_capacity_is_bound_to_the_exact_frozen_lock() {
+         let raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
+         assert_eq!(format!("{:x}", Sha256::digest(raw.as_bytes())),
+-            "617a55af8ad550d4534220d0621a76b9a7556951a850ebac9356ebaec3fff19e");
++            "dbcfc28fe99865aae9b103daebdab120a8fdcb932202da183f3fd5b62e41b593");
+         let lock: SparseSourceLock = serde_json::from_str(raw).unwrap();
+         assert_eq!(lock.projects.len(), AUDIO_SOURCE_PROJECT_COUNT);
+         assert_eq!(MAX_PROJECTS, 320);
+@@ -1011,8 +1050,7 @@ mod tests {
+ 
+     #[test]
+     fn audio_junit_extension_keeps_the_actual_previous_projects_unchanged() {
+-        let lock: SparseSourceLock = serde_json::from_str(include_str!(
+-            "../../../android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let lock: SparseSourceLock = serde_json::from_str(&audio_before_jimfs_lock()).unwrap();
+         let mut lock = lock;
+         lock.projects.retain(|project| ![Path::new("tools/deviceinfra/prebuilts"), Path::new("external/deqp"), Path::new("external/deqp-deps/SPIRV-Headers"), Path::new("external/deqp-deps/SPIRV-Tools"), Path::new("external/deqp-deps/amber"), Path::new("external/deqp-deps/glslang"), Path::new("external/easymock")].contains(&project.path.as_path()));
+         let current = build_plan(&lock).unwrap();
+@@ -1031,8 +1069,7 @@ mod tests {
+ 
+     #[test]
+     fn audio_api35_cts_extension_preserves_the_previous_materialized_plan() {
+-        let lock: SparseSourceLock = serde_json::from_str(include_str!(
+-            "../../../android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let lock: SparseSourceLock = serde_json::from_str(&audio_before_jimfs_lock()).unwrap();
+         let current = build_plan(&lock).unwrap();
+         let mut previous = current.clone();
+         previous.projects.retain(|p| ![Path::new("tools/deviceinfra/prebuilts"), Path::new("external/deqp"), Path::new("external/deqp-deps/SPIRV-Headers"), Path::new("external/deqp-deps/SPIRV-Tools"), Path::new("external/deqp-deps/amber"), Path::new("external/deqp-deps/glslang"), Path::new("external/easymock")].contains(&p.path.as_path()));
+@@ -1046,7 +1083,7 @@ mod tests {
+             project.sparse_paths.retain(|p| !added.iter().any(|added| p == Path::new(added)));
+         }
+         assert_eq!(previous.projects.len(), 309);
+-        assert_eq!(current.projects.len(), AUDIO_SOURCE_PROJECT_COUNT);
++        assert_eq!(current.projects.len(), 316);
+         validate_plan_extension(&previous, &current).unwrap();
+         let mut wrong = current;
+         wrong.projects.iter_mut().find(|p| p.path == Path::new("prebuilts/sdk"))
+diff --git a/tools/droidloom-update/src/android.rs b/tools/droidloom-update/src/android.rs
+index ded9056..b6e5185 100644
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -438,6 +438,21 @@ fn audio_original_shared_provider(
+     Ok(Some(original.to_owned()))
+ }
+ 
++// SystemFeatures' retained Error Prone tests require this original helper.
++// Keep its complete implementation and every transitive dependency in Audio;
++// the allocator's prior private scope and NativeBridge route stay unchanged.
++fn native_leaf_error_prone(original: &str, mode: SoongDependencyMode) -> Result<String> {
++    if mode == SoongDependencyMode::AudioApexTargetClosure {
++        use sha2::{Digest, Sha256};
++        if original.len() != 5736 || format!("{:x}", Sha256::digest(original.as_bytes()))
++            != "a8647e651304f9b1a6ff3740aade8723cd0628e711fdc9c18b17ec01790f959f" {
++            return fail("audio original Error Prone provider changed");
++        }
++        return Ok(original.to_owned());
++    }
++    private_without_named_java_module(original, "java_library_host", "error_prone_test_helpers")
++}
++
+ fn audio_original_launcher_tapl_provider(original: &str) -> Result<String> {
+     use sha2::{Digest, Sha256};
+     if original.len() != 18026 || format!("{:x}", Sha256::digest(original.as_bytes()))
+@@ -565,6 +580,7 @@ fn validate_audio_provider_source_paths(
+         ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/core/runner-axt"),
+         ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "libs/vogar-expect"),
+         ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/compilation"),
++        ("external/jimfs", "cd18acbf0036a7c6a3443e7e58b5091cacf327cf", "jimfs"),
+         ("external/e2fsprogs", "3eb17241db7cd4408cc1bce9d25b602465ace8ff", "debugfs"),
+         ("external/e2fsprogs", "3eb17241db7cd4408cc1bce9d25b602465ace8ff", "lib"),
+         ("external/e2fsprogs", "3eb17241db7cd4408cc1bce9d25b602465ace8ff", "misc"),
+@@ -879,12 +895,12 @@ fn audio_apex_pcm_patches(mode: SoongDependencyMode) -> &'static [(&'static str,
+     }
+ }
+ 
+-const AUDIO_SOURCE_LOCK_SHA256: &str = "617a55af8ad550d4534220d0621a76b9a7556951a850ebac9356ebaec3fff19e";
++const AUDIO_SOURCE_LOCK_SHA256: &str = "dbcfc28fe99865aae9b103daebdab120a8fdcb932202da183f3fd5b62e41b593";
+ fn selected_source_lock(repo: &Path, mode: SoongDependencyMode) -> Result<PathBuf> {
+     if mode == SoongDependencyMode::AudioApexTargetClosure {
+         let lock = repo.join("android/manifest/audio-bridge-source-lock.json");
+         if hash(&lock)? != AUDIO_SOURCE_LOCK_SHA256 {
+-            return fail("audio build requires its exact independent 316-project source lock");
++            return fail("audio build requires its exact independent 317-project source lock");
+         }
+         Ok(lock)
+     } else {
+@@ -2652,8 +2668,7 @@ fn build_targets_with_dependency_mode(
+         p.put(&connectivity, original)?;
+         let error_prone = source.join("external/error_prone/Android.bp");
+         let original = fs::read_to_string(&error_prone)?;
+-        p.put(&error_prone, private_without_named_java_module(
+-            &original, "java_library_host", "error_prone_test_helpers")?)?;
++        p.put(&error_prone, native_leaf_error_prone(&original, dependency_mode)?)?;
+         // Retain the real Room processor required by the visible SystemUI
+         // providers in audio mode. Other leaf routes retain their old scope.
+         let plugins = source.join("prebuilts/sdk/current/androidx/JavaPlugins.bp");
+@@ -2946,6 +2961,109 @@ fn build_targets_with_dependency_mode(
+ mod tests {
+     use super::*;
+ 
++    #[test]
++    fn audio_error_prone_restores_original_provider_and_retained_consumer_edge() {
++        use sha2::{Digest, Sha256};
++        let original = include_str!("../tests/fixtures/audio-providers/error-prone.bp");
++        let consumer = include_str!("../tests/fixtures/audio-providers/systemfeatures.bp");
++        let jimfs = include_str!("../tests/fixtures/audio-providers/jimfs.bp");
++        for (bytes, expected) in [
++            (original, "a8647e651304f9b1a6ff3740aade8723cd0628e711fdc9c18b17ec01790f959f"),
++            (consumer, "1fb7036ce96dfc24f8ecbcb8db38af465de259132e85a07a674b58ab23869a3c"),
++            (jimfs, "ba0aca424deb294572edec43cd2df0e269a82b87d6371a58ef876105f327e540"),
++        ] {
++            assert_eq!(format!("{:x}", Sha256::digest(bytes.as_bytes())), expected);
++        }
++        // This is the exact failed old transformation, with its real consumer.
++        let old = private_without_named_java_module(original,
++            "java_library_host", "error_prone_test_helpers").unwrap();
++        assert!(!old.contains("name: \"error_prone_test_helpers\""));
++        assert!(consumer.contains("name: \"systemfeatures-errorprone-tests\""));
++        assert!(consumer.contains("\"error_prone_test_helpers\""));
++        let current = native_leaf_error_prone(original,
++            SoongDependencyMode::AudioApexTargetClosure).unwrap();
++        assert_eq!(current.as_bytes(), original.as_bytes());
++        for dependency in ["error_prone_check_api", "jimfs", "compile-testing-prebuilt",
++            "error_prone_annotations", "google_java_format", "hamcrest", "hamcrest-library",
++            "jspecify", "junit", "truth"] {
++            assert!(current.contains(&format!("\"{dependency}\"")), "{dependency}");
++        }
++        for dependency in ["jimfs-annotation-stubs-srcjar", "auto_service_annotations",
++            "guava", "icu4j", "auto_service_plugin", "gen_annotations.py", "soong_zip"] {
++            assert!(jimfs.contains(dependency), "{dependency}");
++        }
++        for path in ["external/error_prone/Android.bp", "external/jimfs/jimfs/Android.bp",
++                     "frameworks/base/tools/systemfeatures/Android.bp"] {
++            assert!(!SOONG_EXCLUDED_TEST_FIXTURES.contains(&path));
++        }
++    }
++
++    #[test]
++    fn audio_error_prone_requires_pinned_complete_provider_and_keeps_other_scope() {
++        let original = include_str!("../tests/fixtures/audio-providers/error-prone.bp");
++        let old = private_without_named_java_module(original,
++            "java_library_host", "error_prone_test_helpers").unwrap();
++        assert!(native_leaf_error_prone(&old, SoongDependencyMode::AudioApexTargetClosure).is_err());
++        assert!(native_leaf_error_prone(&(original.to_owned() + "\n"),
++            SoongDependencyMode::AudioApexTargetClosure).is_err());
++        assert_eq!(native_leaf_error_prone(original,
++            SoongDependencyMode::MinigbmTargetClosure).unwrap(), old);
++        assert!(PRIVATE_NATIVEBRIDGE_UNRELATED_JAVA_MODULES.iter().any(
++            |(path, kind, names)| *path == "external/error_prone/Android.bp"
++                && *kind == "java_library_host" && names == &["error_prone_test_helpers"]));
++    }
++
++    #[test]
++    fn audio_error_prone_jimfs_requires_original_full_cone_and_commit() {
++        let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
++        let lock = droidloom_source::load_lock(
++            &repo.join("android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let audio = SoongDependencyMode::AudioApexTargetClosure;
++        validate_audio_provider_source_paths(&lock, audio).unwrap();
++        let mut absent = lock.clone();
++        absent.projects.retain(|project| project.path != Path::new("external/jimfs"));
++        assert!(validate_audio_provider_source_paths(&absent, audio).is_err());
++        let mut header_only = lock.clone();
++        header_only.projects.iter_mut().find(|p| p.path == Path::new("external/jimfs")).unwrap()
++            .sparse_paths = vec![PathBuf::from("jimfs/Android.bp")];
++        assert!(validate_audio_provider_source_paths(&header_only, audio).is_err());
++        let mut wrong = lock.clone();
++        wrong.projects.iter_mut().find(|p| p.path == Path::new("external/jimfs")).unwrap()
++            .commit = "0000000000000000000000000000000000000000".into();
++        assert!(validate_audio_provider_source_paths(&wrong, audio).is_err());
++        for mode in [SoongDependencyMode::Strict, SoongDependencyMode::NativeBridgeTargetClosure,
++                     SoongDependencyMode::NativeEngineTargetClosure, SoongDependencyMode::MinigbmTargetClosure] {
++            validate_audio_provider_source_paths(&absent, mode).unwrap();
++        }
++    }
++
++    #[test]
++    fn audio_error_prone_projection_preserves_original_bytes_and_recovers_journal() {
++        let fixture = tempfile::tempdir().unwrap();
++        let original = include_bytes!("../tests/fixtures/audio-providers/error-prone.bp");
++        let consumer = include_bytes!("../tests/fixtures/audio-providers/systemfeatures.bp");
++        let provider_path = fixture.path().join("external/error_prone/Android.bp");
++        let consumer_path = fixture.path().join("frameworks/base/tools/systemfeatures/Android.bp");
++        write(&provider_path, original).unwrap();
++        write(&consumer_path, consumer).unwrap();
++        let old_time = fs::metadata(&provider_path).unwrap().modified().unwrap();
++        let journal = fixture.path().join("source-projection.json");
++        {
++            let mut p = Projection::new(journal.clone()).unwrap();
++            let projected = native_leaf_error_prone(std::str::from_utf8(original).unwrap(),
++                SoongDependencyMode::AudioApexTargetClosure).unwrap();
++            p.put(&provider_path, projected).unwrap();
++            assert_eq!(fs::read(&provider_path).unwrap(), original);
++            assert_eq!(fs::read(&consumer_path).unwrap(), consumer);
++            assert!(journal.exists());
++            p.restore().unwrap();
++        }
++        assert!(!journal.exists());
++        assert_eq!(fs::read(&provider_path).unwrap(), original);
++        assert_eq!(fs::read(&consumer_path).unwrap(), consumer);
++        assert_eq!(fs::metadata(&provider_path).unwrap().modified().unwrap(), old_time);
++    }
++
+     #[test]
+     fn audio_actual_three_defaults_regression_preserves_original_consumers_and_providers() {
+         let mode = SoongDependencyMode::AudioApexTargetClosure;
+@@ -3495,7 +3613,7 @@ mod tests {
+         let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
+         let lock = selected_source_lock(repo, SoongDependencyMode::AudioApexTargetClosure).unwrap();
+         let parsed = droidloom_source::load_lock(&lock).unwrap();
+-        assert_eq!(parsed.projects.len(), 316);
++        assert_eq!(parsed.projects.len(), 317);
+         assert!(droidloom_source::build_plan(&parsed).is_ok());
+         for mode in [SoongDependencyMode::Strict, SoongDependencyMode::NativeBridgeTargetClosure,
+                      SoongDependencyMode::NativeEngineTargetClosure, SoongDependencyMode::MinigbmTargetClosure] {
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/error-prone.bp b/tools/droidloom-update/tests/fixtures/audio-providers/error-prone.bp
+new file mode 100644
+index 0000000..a97d687
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/error-prone.bp
+@@ -0,0 +1,192 @@
++// Copyright (C) 2017 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_applicable_licenses: ["external_error_prone_license"],
++    default_visibility: ["//visibility:private"],
++}
++
++license {
++    name: "external_error_prone_license",
++    package_name: "Google Error Prone",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "SPDX-license-identifier-Apache-2.0",
++        "SPDX-license-identifier-MIT",
++    ],
++    license_text: ["LICENSE"],
++}
++
++// Lets ErrorProne access compiler internals
++java_defaults {
++    name: "error_prone_javac_defaults",
++    javacflags: [
++        "--add-modules=jdk.compiler",
++        "--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
++        "--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
++        "--add-exports=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
++        "--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
++        "--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
++        "--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
++        "--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
++        "--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
++        "--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
++        "--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
++    ],
++}
++
++java_library {
++    name: "error_prone_annotations",
++    defaults: ["error_prone_dependency_defaults"],
++    host_supported: true,
++    visibility: ["//visibility:public"],
++    srcs: ["annotations/src/main/java/**/*.java"],
++    exclude_srcs: ["annotations/src/main/java/module-info.java"],
++    sdk_version: "core_current",
++    apex_available: [
++        "//apex_available:anyapex",
++        "//apex_available:platform",
++    ],
++    // b/267831518: Pin tradefed and dependencies to Java 11.
++    java_version: "11",
++    target: {
++        windows: {
++            enabled: true,
++        },
++    },
++}
++
++java_library_host {
++    name: "error_prone_annotation",
++    defaults: ["error_prone_dependency_defaults"],
++    srcs: ["annotation/src/main/java/**/*.java"],
++    libs: [
++        "guava",
++    ],
++}
++
++filegroup {
++    name: "error_prone_error_properties",
++    srcs: ["check_api/src/main/java/com/google/errorprone/errors.properties"],
++    path: "check_api/src/main/java",
++}
++
++java_library_host {
++    name: "error_prone_check_api",
++    defaults: [
++        "error_prone_javac_defaults",
++        "error_prone_dependency_defaults",
++    ],
++    srcs: [
++        "check_api/src/main/java/**/*.java",
++    ] + select(release_flag("RELEASE_BUILD_WITH_JDK_25"), {
++        true: [
++            "check_api/src/main/java24/**/*.java",
++        ],
++        default: [],
++    }),
++    exclude_srcs: [] + select(release_flag("RELEASE_BUILD_WITH_JDK_25"), {
++        true: [
++            "check_api/src/main/java/com/google/errorprone/util/ErrorProneSignatureGenerator.java",
++        ],
++        default: [],
++    }),
++    java_resources: [":error_prone_error_properties"],
++    static_libs: [
++        "auto_common",
++        "auto_value_annotations",
++        "caffeine-prebuilt",
++        "checkerframework_dataflow_errorprone_prebuilt_jar",
++        "error_prone_annotation",
++        "error_prone_annotations",
++        "guava",
++        "java_diff_utils",
++        "jsr330",
++    ],
++    libs: [
++        "auto_value_memoized_extension_annotations",
++        "jspecify",
++    ],
++    plugins: [
++        "auto_value_memoized_extension_plugin",
++        "auto_value_plugin",
++    ],
++}
++
++java_library_host {
++    name: "error_prone_core",
++    visibility: ["//visibility:public"],
++    defaults: [
++        "error_prone_javac_defaults",
++        "error_prone_dependency_defaults",
++    ],
++    srcs: [
++        "core/src/main/java/**/*.java",
++        "core/src/main/proto/api_diff.proto",
++        "refaster/src/main/java/**/*.java",
++    ],
++    java_resources: [
++        "core/src/main/java/com/google/errorprone/bugpatterns/apidiff/8to11diff.binarypb",
++        "core/src/main/java/com/google/errorprone/bugpatterns/apidiff/android_java8.binarypb",
++    ],
++    static_libs: [
++        "error_prone_check_api",
++        "google_java_format",
++        "libprotobuf-java-full",
++        "pcollections",
++    ],
++    libs: [
++        "auto_service_annotations",
++        "jspecify",
++    ],
++    plugins: [
++        "auto_oneof_plugin",
++        "auto_service_plugin",
++        "auto_value_builder_plugin",
++        "auto_value_plugin",
++    ],
++    proto: {
++        type: "full",
++    },
++}
++
++java_plugin {
++    name: "error_prone_plugin",
++    defaults: ["error_prone_dependency_defaults"],
++    visibility: ["//visibility:public"],
++    static_libs: ["error_prone_core"],
++}
++
++java_library_host {
++    name: "error_prone_test_helpers",
++    visibility: ["//visibility:public"],
++    defaults: ["error_prone_javac_defaults"],
++    srcs: [
++        "test_helpers/src/main/java/**/*.java",
++    ],
++    static_libs: [
++        "error_prone_check_api",
++        "jimfs",
++    ],
++    libs: [
++        "compile-testing-prebuilt",
++        "error_prone_annotations",
++        "google_java_format",
++        "hamcrest",
++        "hamcrest-library",
++        "jspecify",
++        "junit",
++        "truth",
++    ],
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/jimfs.bp b/tools/droidloom-update/tests/fixtures/audio-providers/jimfs.bp
+new file mode 100644
+index 0000000..8e1d4d7
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/jimfs.bp
+@@ -0,0 +1,60 @@
++// Copyright (C) 2020 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++
++package {
++    // See: http://go/android-license-faq
++    // A large-scale-change added 'default_applicable_licenses' to import
++    // all of the 'license_kinds' from "external_jimfs_license"
++    // to get the below license kinds:
++    //   SPDX-license-identifier-Apache-2.0
++    //   legacy_unencumbered
++    default_applicable_licenses: ["external_jimfs_license"],
++}
++
++java_library_host {
++    name: "jimfs",
++    srcs: [
++        "src/main/java/**/*.java",
++        ":jimfs-annotation-stubs-srcjar",
++    ],
++    libs: [
++        "auto_service_annotations",
++        "guava",
++        "icu4j",
++    ],
++    plugins: [
++        "auto_service_plugin",
++    ],
++    errorprone: {
++        javacflags: [
++            "-Xep:LenientFormatStringValidation:WARN",
++        ],
++    },
++}
++
++java_genrule_host {
++    name: "jimfs-annotation-stubs-srcjar",
++    tool_files: [
++        "gen_annotations.py",
++    ],
++    tools: [
++        "soong_zip",
++    ],
++    cmd: "$(location gen_annotations.py) $(genDir)/java && " +
++        "$(location soong_zip) -jar -o $(out) -C $(genDir)/java -D $(genDir)/java",
++    out: [
++        "jimfs-annotation-stubs.srcjar",
++    ],
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/systemfeatures.bp b/tools/droidloom-update/tests/fixtures/audio-providers/systemfeatures.bp
+new file mode 100644
+index 0000000..7f897f0
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/systemfeatures.bp
+@@ -0,0 +1,242 @@
++package {
++    // See: http://go/android-license-faq
++    // A large-scale-change added 'default_applicable_licenses' to import
++    // all of the 'license_kinds' from "frameworks_base_license"
++    // to get the below license kinds:
++    //   SPDX-license-identifier-Apache-2.0
++    default_applicable_licenses: ["frameworks_base_license"],
++    default_team: "trendy_team_system_performance",
++}
++
++// Code generation for compile-time system feature queries in the framework.
++java_library_host {
++    name: "systemfeatures-gen-lib",
++    srcs: [
++        ":framework-metalava-annotations",
++        ":systemfeatures-lookup-srcs",
++        "src/com/android/systemfeatures/SystemFeaturesGenerator.kt",
++    ],
++    static_libs: [
++        "guava",
++        "javapoet",
++    ],
++}
++
++java_binary_host {
++    name: "systemfeatures-gen-tool",
++    main_class: "com.android.systemfeatures.SystemFeaturesGenerator",
++    static_libs: ["systemfeatures-gen-lib"],
++}
++
++// Code generation for system feature name lookups in host tools that cannot
++// depend on the framework.
++java_library_host {
++    name: "systemfeatures-lookup-gen-lib",
++    srcs: ["src/com/android/systemfeatures/SystemFeaturesLookupGenerator.kt"],
++    static_libs: [
++        "javapoet",
++        "metalava-signature-reader",
++    ],
++    visibility: ["//visibility:private"],
++}
++
++java_binary_host {
++    name: "systemfeatures-lookup-gen-tool",
++    main_class: "com.android.systemfeatures.SystemFeaturesLookupGenerator",
++    static_libs: ["systemfeatures-lookup-gen-lib"],
++    visibility: ["//visibility:private"],
++}
++
++genrule {
++    name: "systemfeatures-lookup-srcs",
++    cmd: "$(location systemfeatures-lookup-gen-tool) $(in) $(out)",
++    out: ["SystemFeaturesLookup.java"],
++    srcs: [
++        ":non-updatable-current.txt",
++        ":non-updatable-module-lib-current.txt",
++        ":non-updatable-system-current.txt",
++        ":non-updatable-test-current.txt",
++    ],
++    tools: ["systemfeatures-lookup-gen-tool"],
++    visibility: ["//visibility:private"],
++}
++
++// Code generation for runtime system feature metadata queries in the framework.
++java_library_host {
++    name: "systemfeatures-metadata-lib",
++    srcs: [
++        ":framework-metalava-annotations",
++        "src/com/android/systemfeatures/SystemFeaturesMetadataProcessor.kt",
++    ],
++    static_libs: [
++        "guava",
++        "javapoet",
++    ],
++}
++
++java_plugin {
++    name: "systemfeatures-metadata-processor",
++    processor_class: "com.android.systemfeatures.SystemFeaturesMetadataProcessor",
++    static_libs: ["systemfeatures-metadata-lib"],
++}
++
++genrule {
++    name: "systemfeatures-gen-tests-srcs",
++    srcs: [
++        "tests/data/features-1.xml",
++        "tests/data/features-2.xml",
++    ],
++    cmd: "$(location systemfeatures-gen-tool) com.android.systemfeatures.RwNoFeatures --readonly=false > $(location RwNoFeatures.java) && " +
++        "$(location systemfeatures-gen-tool) com.android.systemfeatures.RoNoFeatures --readonly=true --feature-apis=WATCH > $(location RoNoFeatures.java) && " +
++        "$(location systemfeatures-gen-tool) com.android.systemfeatures.RwFeatures --readonly=false --feature=WATCH:1 --feature=WIFI:0 --feature=VULKAN:UNAVAILABLE --feature=AUTO: --output-proguard-rules=$(location RwFeatures.proguard) > $(location RwFeatures.java) && " +
++        "$(location systemfeatures-gen-tool) com.android.systemfeatures.RoFeatures --readonly=true --feature=WATCH:1 --feature=WIFI:0 --feature=VULKAN:UNAVAILABLE --feature=AUTO: --feature-apis=WATCH,PC --output-proguard-rules=$(location RoFeatures.proguard) > $(location RoFeatures.java) && " +
++        "$(location systemfeatures-gen-tool) com.android.systemfeatures.RwFeaturesFromXml --readonly=false --feature-xml-files=$(location tests/data/features-1.xml),$(location tests/data/features-2.xml) > $(location RwFeaturesFromXml.java) && " +
++        "$(location systemfeatures-gen-tool) com.android.systemfeatures.RoFeaturesFromXml --readonly=true --feature-xml-files=$(location tests/data/features-1.xml),$(location tests/data/features-2.xml) > $(location RoFeaturesFromXml.java) && " +
++        "$(location systemfeatures-gen-tool) com.android.systemfeatures.RoUnavailableFeaturesFromXml --readonly=true --unavailable-feature-xml-files=$(location tests/data/features-1.xml),$(location tests/data/features-2.xml) --output-proguard-rules=$(location RoUnavailableFeaturesFromXml.proguard) > $(location RoUnavailableFeaturesFromXml.java)",
++    out: [
++        "RwNoFeatures.java",
++        "RoNoFeatures.java",
++        "RwFeatures.java",
++        "RwFeatures.proguard",
++        "RoFeatures.java",
++        "RoFeatures.proguard",
++        "RwFeaturesFromXml.java",
++        "RoFeaturesFromXml.java",
++        "RoUnavailableFeaturesFromXml.java",
++        "RoUnavailableFeaturesFromXml.proguard",
++    ],
++    tools: ["systemfeatures-gen-tool"],
++}
++
++// Functional runtime behavior testing.
++java_test_host {
++    name: "systemfeatures-gen-tests",
++    test_suites: ["general-tests"],
++    srcs: [
++        "tests/src/**/*.java",
++        ":systemfeatures-gen-tests-srcs",
++    ],
++    data: [
++        "tests/data/features-1.xml",
++        "tests/data/features-2.xml",
++    ],
++    test_options: {
++        unit_test: true,
++    },
++    static_libs: [
++        "aconfig-annotations-lib",
++        "framework-annotations-lib",
++        "junit",
++        "objenesis",
++        "mockito",
++        "systemfeatures-gen-lib",
++        "systemfeatures-lookup-gen-lib",
++        "truth",
++    ],
++    plugins: ["systemfeatures-metadata-processor"],
++}
++
++// Rename the goldens as they may be copied into the source tree, and we don't
++// need or want the usual `.java` linting (e.g., copyright checks).
++genrule {
++    name: "systemfeatures-gen-tests-golden-srcs",
++    cmd: "for f in $(in); do cp $$f $(genDir)/tests/gen/$$(basename $$f).gen; done",
++    srcs: [":systemfeatures-gen-tests-srcs"],
++    out: [
++        "tests/gen/RwNoFeatures.java.gen",
++        "tests/gen/RoNoFeatures.java.gen",
++        "tests/gen/RwFeatures.java.gen",
++        "tests/gen/RwFeatures.proguard.gen",
++        "tests/gen/RoFeatures.java.gen",
++        "tests/gen/RoFeatures.proguard.gen",
++        "tests/gen/RwFeaturesFromXml.java.gen",
++        "tests/gen/RoFeaturesFromXml.java.gen",
++        "tests/gen/RoUnavailableFeaturesFromXml.java.gen",
++        "tests/gen/RoUnavailableFeaturesFromXml.proguard.gen",
++    ],
++}
++
++// Golden output testing. Golden sources can be updated via:
++//   $ANDROID_BUILD_TOP/frameworks/base/tools/systemfeatures/tests/golden_test.sh --update
++sh_test_host {
++    name: "systemfeatures-gen-golden-tests",
++    src: "tests/golden_test.sh",
++    filename: "systemfeatures-gen-golden-tests.sh",
++    test_config: "tests/systemfeatures-gen-golden-tests.xml",
++    data: [
++        "tests/golden/**/*",
++        ":systemfeatures-gen-tests-golden-srcs",
++    ],
++    test_options: {
++        unit_test: true,
++    },
++}
++
++java_library_host {
++    name: "systemfeatures-errorprone-lib",
++    srcs: [
++        ":systemfeatures-gen-metadata-srcs",
++        "errorprone/java/**/*.java",
++    ],
++    static_libs: [
++        "//external/error_prone:error_prone_core",
++        "guava",
++        "jsr305",
++    ],
++    libs: [
++        "//external/auto:auto_service_annotations",
++    ],
++    javacflags: [
++        // These exports are needed because this errorprone plugin access some private classes
++        // of the java compiler.
++        "--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
++        "--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
++        "--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
++    ],
++    plugins: [
++        "//external/auto:auto_service_plugin",
++    ],
++}
++
++java_plugin {
++    name: "systemfeatures-errorprone",
++    static_libs: ["systemfeatures-errorprone-lib"],
++}
++
++java_test_host {
++    name: "systemfeatures-errorprone-tests",
++    srcs: [
++        "errorprone/tests/java/**/*.java",
++    ],
++    java_resource_dirs: ["tests/src"],
++    java_resources: [
++        ":systemfeatures-errorprone-tests-data",
++    ],
++    static_libs: [
++        "compile-testing-prebuilt",
++        "error_prone_test_helpers",
++        "framework-annotations-lib",
++        "hamcrest",
++        "hamcrest-library",
++        "junit",
++        "systemfeatures-errorprone-lib",
++        "truth",
++    ],
++    test_options: {
++        unit_test: true,
++    },
++}
++
++java_system_features_srcs {
++    name: "systemfeatures-gen-metadata-srcs",
++    full_class_name: "com.android.systemfeatures.RoSystemFeaturesMetadata",
++    metadata_only: true,
++    visibility: ["//visibility:private"],
++}
++
++filegroup {
++    name: "systemfeatures-errorprone-tests-data",
++    path: "tests/src",
++    srcs: ["tests/src/android/**/*.java"],
++    visibility: ["//visibility:private"],
++}

@@ -1,0 +1,71 @@
+{
+  "schema": "camera-r4-integrated-quiescence-peer-review-v1",
+  "full_review": {
+    "path": "/workspace/scratch/347ef2dfe9ad/runtime-acceptance-audit/camera-audio-quiescence-peer-review/review.json",
+    "bytes": 16696,
+    "sha256": "37a47878e3d7e64d7f52bb54da0f8a78cd0a94bd46374e999a6ac70f21a4fb34"
+  },
+  "observed_candidate_pins": {
+    "camera_audio_binding.py": {
+      "path": "/workspace/scratch/347ef2dfe9ad/camera-audio-quiescence-candidate/source/camera_audio_binding.py",
+      "bytes": 18775,
+      "sha256": "c8c0c123153a83a2397595d2efcf6ba3b40f60916362403348d1f6f6a57a4754"
+    },
+    "camera_audio_runtime.py": {
+      "path": "/workspace/scratch/347ef2dfe9ad/camera-audio-quiescence-candidate/source/camera_audio_runtime.py",
+      "bytes": 26272,
+      "sha256": "b480c7e99cd44bd9ff79e7d95fb87e80f7634c843e8e9c77f3f38ea8ab9f8cee"
+    }
+  },
+  "decision": "No blocking false-idle or foreign-active authorization defect identified within the three fixed C++ writer assumptions; source merge may proceed after owner freeze and exact repin.",
+  "reviewer_scope": "local static review only; no candidate mutations, H calls, imports, Main, Android, proc or host audio operations",
+  "findings": [
+    {
+      "id": "parser-current-set",
+      "severity": "pass",
+      "detail": "Exact begin/end section markers, nonempty bounded header set, column-zero framing, direction/kind allowlist, local-log terminators, full total/active count equality and unique track IDs/IO handles prevent silently dropping a recognized fixed-writer current table."
+    },
+    {
+      "id": "foreign-active",
+      "severity": "pass",
+      "detail": "active_tracks traverses all parsed directions and UIDs. quiescent requires zero; owned_track requires exactly one globally and exact requested direction/UID/PID before live process adoption. Both window samples are checked again by advancing."
+    },
+    {
+      "id": "raw-first",
+      "severity": "pass",
+      "detail": "Bounded successful dumpsys bytes are written before parse/admission at audio-flinger-before.txt, record-first/record-second/playback-first/playback-second-flinger.txt and audio-flinger-after.txt under the private case evidence_root. Parse/admission rejection retains bytes; admission JSON is emitted only after successful validation."
+    },
+    {
+      "id": "writer-history",
+      "severity": "pass-with-boundary",
+      "detail": "Pinned AudioFlinger::dump orders playback, record, mmap, orphan chains, then Historical Thread Log. Current headers after recognized history are rejected, historical rows cannot satisfy the nonempty current set, and pinned historical ThreadBase dumps use a separate - prefix. SimpleLog formatting is outside these three files and remains an actual-ABI gate."
+    },
+    {
+      "id": "failed-case-final-sample",
+      "severity": "qualification-boundary",
+      "detail": "verify_final is on the successful Driver.run path after task/provider closure, not the error-only Driver.finish cleanup path. An earlier failure retains the offending sample and cannot become successful, but does not establish a subsequent all-UID quiet dump after cleanup. Do not infer failure-path audio retirement from owned_task_cleanup_verified."
+    },
+    {
+      "id": "sample-not-continuous",
+      "severity": "qualification-boundary",
+      "detail": "AudioFlinger thread dumps are collected sequentially within a bounded command. No atomic all-time or between-samples exclusivity is claimed. Host PipeWire streams remain separately unqualified; hardware/selected-helper route checks do not prove global host quiet."
+    },
+    {
+      "id": "projection-not-real-abi",
+      "severity": "qualification-boundary",
+      "detail": "The 31 observed local controls use minimal writer projections and a fake session. Opaque HAL/effect/scheduler/local-log content, external getLogHeader and SimpleLog writers are not covered. A complete actual current dumpsys may be conservatively rejected; no physical/runtime ABI qualification is granted."
+    }
+  ],
+  "qualification": {
+    "source_review_completed": true,
+    "Main_accesses": 0,
+    "Android_executions": 0,
+    "host_audio_operations": 0,
+    "actual_full_dumpsys_ABI_qualified": false,
+    "runtime_qualified": false,
+    "host_audio_quiescence_qualified": false,
+    "continuous_exclusivity_qualified": false,
+    "production_preparation_created": false
+  },
+  "component_controls_observed_not_rerun_by_peer": 31
+}

@@ -1,0 +1,15 @@
+Fail-closed Android cell lifecycle transaction
+
+Usage: droidloomd [OPTIONS]
+
+Options:
+      --socket <SOCKET>
+          Root-owned local lifecycle socket [default: /run/droidloom/control.sock]
+      --supervisor <SUPERVISOR>
+          Legacy option retained for protocol compatibility; production never executes it [default: /usr/bin/droidloom-supervisor]
+      --spec-directory <SPEC_DIRECTORY>
+          Root-owned cell-specification directory trusted for user requests [default: /etc/droidloom]
+  -h, --help
+          Print help
+  -V, --version
+          Print version

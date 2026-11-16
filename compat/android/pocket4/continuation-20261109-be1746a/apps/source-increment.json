@@ -1,0 +1,404 @@
+{
+  "schema": "pocket4-official-four-app-source-increment-v1",
+  "scope": "Pocket4 Linux Droidloom only; official public Android delivery sources",
+  "observed_date": "2026-11-09",
+  "canonical_candidates_catalog": {
+    "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r2/CANDIDATES.json",
+    "bytes": 22015,
+    "sha256": "90e9265a63aa83708c87160dcb3b27f5f40c66202fdec0360c7918e9774ce3d1",
+    "uid": 0,
+    "gid": 0,
+    "mode": "0o600"
+  },
+  "source_currency_scope": "Current APK returned by the named publisher public download route at observation; no claim about all store channels, staged rollouts, installation, runtime compatibility or production readiness.",
+  "candidates": [
+    {
+      "package": "com.ss.android.ugc.aweme",
+      "name": "Douyin / 抖音",
+      "official_version_name": "41.0.0",
+      "official_version_code": 410001,
+      "current_currency_status": "CURRENT_OFFICIAL_SAME_VERSION_CODE_SIGNER_ABIS_DIFFERENT_BYTES_CANDIDATE",
+      "canonical_artifact": {
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r2/douyin-41.0.0-410001-official.apk",
+        "bytes": 364363658,
+        "sha256": "b1d8834c20e5dbd75e2d48b5b30dea67be88f6903dba78a78d736a80b7feff2f",
+        "uid": 0,
+        "gid": 0,
+        "mode": "0o600"
+      },
+      "installed_base_sha256": "c46bcb9274763d1ee48ff0932be53deb982e1b53dfce2e5afacd8825327b98b4",
+      "installed_binary_exact_match": false,
+      "signer_certificate_sha256": [
+        "5182ae3b1b85337bb182cf24882449f84447ded18e296a747a9f6a0a2622512e"
+      ],
+      "native_abis": [
+        "arm64-v8a"
+      ],
+      "signature_verified": true,
+      "verified_schemes": [
+        "v1",
+        "v2",
+        "v3"
+      ],
+      "new_signature_execution": true,
+      "verifier": {
+        "label": "signature",
+        "argv": [
+          "/opt/android-sdk/build-tools/35.0.1/apksigner",
+          "verify",
+          "--verbose",
+          "--print-certs",
+          "/data/pocket4-official-four-apps-20261109-be1746a-r1/douyin64-r2/official.apk"
+        ],
+        "exit": 0,
+        "stdout_sha256": "54ff814f4578f0f3921aed3a9396570d680545e0b37bd6acb866f3bb37b45aab",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "source_chain": [
+        {
+          "url": "https://www.douyin.com/downloadpage/app"
+        },
+        {
+          "url": "https://lf-douyin-pc-web.douyinstatic.com/obj/douyin-pc-web/ies/douyin_web/async/routes-Downloadpage-pageInfo-route.86dddf14.js",
+          "bytes": 42611,
+          "sha256": "d8c48c8aa7f4a23b0134f683ff138088d5e6e2f8c225d3272aea738ee9435fdd",
+          "role": "current download-page Android 64-bit button"
+        },
+        {
+          "url": "https://ugapk.com/mGFG",
+          "effective_url": "https://lf9-apk.ugapk.cn/package/apk/aweme/5072_410001/aweme_douyinweb1_64_v5072_410001_9594_1793703380.apk?v=1793703399",
+          "observed_status": 302,
+          "content_length": 364363658,
+          "last_modified": "Tue, 03 Nov 2026 10:56:29 GMT"
+        }
+      ],
+      "source_download_receipt": {
+        "path": "/data/pocket4-official-four-apps-20261109-be1746a-r1/douyin64-r2/candidate.json",
+        "bytes": 18691,
+        "sha256": "dbda6b261c7330bb197a8515fb55fe6b2e97be94cd1f6a08ef627bae73688718"
+      },
+      "source_inspection_receipt": {
+        "path": "/data/pocket4-official-four-apps-20261109-be1746a-r1/douyin64-r2/inspection.json",
+        "bytes": 13732,
+        "sha256": "bfbb89ae0a461701e047e34c188bfe3bb91d4424627b4783a951ad1c04ccbf7c"
+      },
+      "custody_receipt": {
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r2/douyin-custody-retirement-receipt.json",
+        "bytes": 1672,
+        "sha256": "e37efd2c5674c5d85a7cae9b6171384b36ddbb3cda0d9d341bff6aafef804a1f",
+        "uid": 0,
+        "gid": 0,
+        "mode": "0o600"
+      },
+      "raw_download_comparison_note": "CONTENT_BINDING_FAILED in the raw range receipt is the installed-body SHA comparison; the complete different body was then independently inspected and freshly signature-verified.",
+      "runtime_accepted": false,
+      "production_ready": false,
+      "selected": false,
+      "installed": false
+    },
+    {
+      "package": "com.taobao.taobao",
+      "name": "Taobao / 淘宝",
+      "official_version_name": "10.69.0",
+      "official_version_code": 866,
+      "current_currency_status": "CURRENT_OFFICIAL_SAME_VERSION_CODE_SIGNER_ABIS_DIFFERENT_BYTES_CANDIDATE",
+      "canonical_artifact": {
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r2/taobao-10.69.0-866-official.apk",
+        "bytes": 95212303,
+        "sha256": "75d76b60cbedf1a5fa1fe53184fca481d5bcef696c8a8134145925644b691808",
+        "uid": 0,
+        "gid": 0,
+        "mode": "0o600"
+      },
+      "installed_base_sha256": "5cc547a213b27c5fd38ab39dda8aa46dd45abf4fe8f58829b3c5f82c98aa2cd3",
+      "installed_binary_exact_match": false,
+      "signer_certificate_sha256": [
+        "c5e9bc4c5cc7a34482c627cb9a76b88e30b509d0da3ba54a66274200e19c2743"
+      ],
+      "native_abis": [
+        "arm64-v8a",
+        "armeabi-v7a"
+      ],
+      "signature_verified": true,
+      "verified_schemes": [
+        "v1",
+        "v2"
+      ],
+      "new_signature_execution": true,
+      "verifier": {
+        "label": "signature",
+        "argv": [
+          "/usr/bin/apksigner",
+          "verify",
+          "--verbose",
+          "--print-certs",
+          "/home/alex/work/pocket4-official-four-apps-20261109-be1746a-r1/taobao/official.apk"
+        ],
+        "exit": 0,
+        "stdout_sha256": "79889ef4f27a95dad9f4779e44f25331b4dbc35d76659bbfca9dba0184f40621",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_bytes": 8096,
+        "stderr_bytes": 0
+      },
+      "source_chain": [
+        {
+          "url": "https://m.taobao.com/",
+          "effective_url": "https://main.m.taobao.com/",
+          "bytes": 15367,
+          "sha256": "ed27ac1e7e1eac7c6949a1a6ebe06bdb6dea48b5a54ae506dcba2684912e6140",
+          "status": 200
+        },
+        {
+          "url": "https://g.alicdn.com/dinamic/h5-tb-home/3.3.45/index.min.js",
+          "effective_url": "https://g.alicdn.com/dinamic/h5-tb-home/3.3.45/index.min.js",
+          "bytes": 455945,
+          "sha256": "8339e20400dea06004b67ce15ddb0b243096f917404e56c6723b1f43e211620a",
+          "status": 200
+        },
+        {
+          "url": "https://h5.m.taobao.com/bcec/downloadTaobao.html",
+          "effective_url": "https://h5.m.taobao.com/bcec/downloadTaobao.html",
+          "bytes": 1746,
+          "sha256": "74e79c658393cc78f958bb627f02f4a5eaf225c3bcdedc23797f91402a847521",
+          "status": 200
+        },
+        {
+          "url": "https://g.alicdn.com/??starlink/wakeup-transit/0.0.57/vendors.js,starlink/wakeup-transit/0.0.57/downloadTaobao.js",
+          "effective_url": "https://g.alicdn.com/??starlink/wakeup-transit/0.0.57/vendors.js,starlink/wakeup-transit/0.0.57/downloadTaobao.js",
+          "bytes": 147796,
+          "sha256": "2f1597276573dd127faa877b87124962e421aabdde628652abdc218c8a408add",
+          "status": 200
+        },
+        {
+          "url": "https://ugcdn.taobao.com/app/starlink/core/index.js?id=7420",
+          "effective_url": "https://ugcdn.taobao.com/app/starlink/core/index.js?id=7420",
+          "bytes": 98208,
+          "sha256": "06a58ccb33534ccbb04a18f72259e8eec668a34778447e506b3dce0890dbb317",
+          "status": 200
+        }
+      ],
+      "official_apk_url": "https://download.alicdn.com/wireless/taobao4android/latest/taobao4android_703304.apk",
+      "source_download_inspection_receipt": {
+        "path": "/home/alex/work/pocket4-official-four-apps-20261109-be1746a-r1/taobao/candidate.json",
+        "bytes": 11684,
+        "sha256": "27c3077547a67cc936ade989c5f4e3a8821826e8f35b10c76191f1de956c085b"
+      },
+      "custody_receipt": {
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r2/custody-retirement-receipt.json",
+        "bytes": 1222,
+        "sha256": "efb4e79040c764bed0f442af65541d07d778c469f2aa4f2153f22b895240051b",
+        "uid": 0,
+        "gid": 0,
+        "mode": "0o600"
+      },
+      "runtime_accepted": false,
+      "production_ready": false,
+      "selected": false,
+      "installed": false
+    },
+    {
+      "package": "com.szzc",
+      "name": "SZZC / 神州租车",
+      "official_version_name": "9.6.2",
+      "official_version_code": 328,
+      "installed_version_name": "9.6.1",
+      "installed_version_code": 327,
+      "current_currency_status": "CURRENT_OFFICIAL_NEWER_VERSION_AND_CODE_SAME_SIGNER_ABIS_CANDIDATE",
+      "canonical_artifact": {
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r2/szzc-9.6.2-328-official.apk",
+        "bytes": 220267107,
+        "sha256": "c8611c1828fec03b7363a10cdc4da97c8bca1f0cf5ec91dff0c3b1e66337360f",
+        "uid": 0,
+        "gid": 0,
+        "mode": "0o600"
+      },
+      "installed_base_sha256": "997067da78cb0d8d0fde2adb58e26c90815de1daec4c1ee02beae39ce2ceda24",
+      "installed_binary_exact_match": false,
+      "signer_certificate_sha256": [
+        "d85bed4d2a7c08e1b6b5f0097d6c66a79a5b12b58d97e794d3b5c5bff2aeaf44"
+      ],
+      "native_abis": [
+        "arm64-v8a",
+        "armeabi-v7a"
+      ],
+      "signature_verified": true,
+      "verified_schemes": [
+        "v1",
+        "v2"
+      ],
+      "new_signature_execution": true,
+      "verifier": {
+        "label": "signature",
+        "argv": [
+          "/usr/bin/apksigner",
+          "verify",
+          "--verbose",
+          "--print-certs",
+          "/home/alex/work/pocket4-official-four-apps-20261109-be1746a-r1/szzc/official.apk"
+        ],
+        "exit": 0,
+        "stdout_sha256": "39d7d0cc19f3ad1297235226f3905694d91089c09242ae144ce4e8005504c211",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_bytes": 14373,
+        "stderr_bytes": 0
+      },
+      "source_chain": [
+        {
+          "url": "https://m.zuche.com/app/",
+          "evidence_kind": "official public search indexed link",
+          "linked_url": "https://static.zuchecdn.com/download/SZZC.apk",
+          "index_reference": "turn24search0",
+          "current_page_fetch": "timed out; cached 404 not treated as current APK availability"
+        },
+        {
+          "url": "https://static.zuchecdn.com/download/SZZC.apk",
+          "effective_url": "https://edfs.zuchecdn.com/android-package/SZZC.apk",
+          "method": "HEAD",
+          "status": 200,
+          "content_length": 220267107,
+          "last_modified": "Fri, 06 Nov 2026 12:01:21 GMT",
+          "etag": "\"E0E69958C488613A64319C2539D3A8A4\"",
+          "receipt": {
+            "path": "/home/alex/work/pocket4-official-four-apps-20261109-be1746a-r1/zuche-final-path-probe.json",
+            "sha256": "9b8b00b4be357141f550c4815d0b4970d38de92ec91cfaffdad08c482041a7eb"
+          }
+        }
+      ],
+      "official_apk_url": "https://static.zuchecdn.com/download/SZZC.apk",
+      "effective_apk_url": "https://edfs.zuchecdn.com/android-package/SZZC.apk",
+      "source_download_inspection_receipt": {
+        "path": "/home/alex/work/pocket4-official-four-apps-20261109-be1746a-r1/szzc/candidate.json",
+        "bytes": 30761,
+        "sha256": "4bf0ca4d1887f899a328949cbb7f041133cb4b48b7162dab48e15bbf6687dbab"
+      },
+      "custody_receipt": {
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r2/szzc-custody-retirement-receipt.json",
+        "bytes": 1316,
+        "sha256": "f7e984a4618774c6d8b0a36e53c8b2fc71103f5d1ec90a6b9b45757641e27b30",
+        "uid": 0,
+        "gid": 0,
+        "mode": "0o600"
+      },
+      "download_generation": {
+        "count": 1,
+        "elapsed_seconds": 106.15376871799981,
+        "aggregate_requested_bytes_including_probe": 221315683,
+        "max_total_bytes": 419430400,
+        "max_total_seconds": 480,
+        "retired_parts": 27,
+        "retries": 0
+      },
+      "runtime_accepted": false,
+      "production_ready": false,
+      "selected": false,
+      "installed": false
+    },
+    {
+      "package": "com.ubercab",
+      "name": "Uber",
+      "current_currency_status": "OFFICIAL_LATEST_BINARY_UNKNOWN",
+      "public_official_channel_provenance": "confirmed",
+      "official_help_url": "https://help.uber.com/riders/article/downloading-the-rider-app?nodeId=bd546eae-73e0-49e3-a2da-0dbfa2a1d526",
+      "official_play_url": "https://play.google.com/store/apps/details?hl=en&id=com.ubercab",
+      "play_page_sha256": "c8ca5d39adb1e7f4eff5f00888e06408b0956800e5e807e7902e7030afcff83a",
+      "play_page_updated": "2026-10-30",
+      "current_installed_identity": {
+        "version_name": "4.651.10003",
+        "version_code": 316108,
+        "base_sha256": "2a92686a421d1d37bd16d287869ac9dbc5c71f36a6b0793b187f0a2bc1c24a91",
+        "signer_certificate_sha256": "4003231ab42feb8d955e62fdfaa4fad59567054b9c6bbc3d950299ddfc268392",
+        "apk_count": 10,
+        "abi": "arm64-v8a in splits"
+      },
+      "official_latest_version_name": null,
+      "official_latest_version_code": null,
+      "official_latest_signature_verified": false,
+      "official_latest_delivered_apks": 0,
+      "blocker": "Anonymous publisher channel points to Google Play; no complete latest base-plus-splits delivery was obtained. Public listing date and review versions do not prove binary currency.",
+      "runtime_accepted": false,
+      "production_ready": false,
+      "installs": 0
+    }
+  ],
+  "qualification": {
+    "newly_bound_official_apk_candidates": 3,
+    "newer_version_candidate_packages": [
+      "com.szzc"
+    ],
+    "remaining_official_latest_binary_unknown": [
+      "com.ubercab"
+    ],
+    "installs": 0,
+    "selector_mutated": false,
+    "current_mutated": false,
+    "runtime_accepted": false,
+    "production_ready": false
+  },
+  "approval_boundary": {
+    "qr_decoder_installation": "Automatic approval review rejected an attempted QR decoder dependency installation; no installation was performed. Work continued using already public publisher JS and the official CDN link with existing tools."
+  },
+  "canonical_final_receipts": {
+    "source_increment": {
+      "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r2/SOURCE-INCREMENT.json",
+      "bytes": 14674,
+      "sha256": "1109ce7c0145bca475d222fdeaa39cb369917a778c22b5efd7479432a8e3b7d6",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o600"
+    },
+    "retirement": {
+      "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r2/RETIREMENT.json",
+      "bytes": 18743,
+      "sha256": "2457ab43beeaf341d06427662fa5c67a66e2e404d73e21d70992caf2bf56863c",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o600"
+    },
+    "manifest": {
+      "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r2/MANIFEST.json",
+      "bytes": 10238,
+      "sha256": "63ea9fd4fcadd28646cd25fdcb38a6e6c0ae7a054a613a79fb3b63bc9c49e415",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o600"
+    },
+    "canonical_candidates": {
+      "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r2/CANDIDATES.json",
+      "bytes": 22015,
+      "sha256": "90e9265a63aa83708c87160dcb3b27f5f40c66202fdec0360c7918e9774ce3d1",
+      "uid": 0,
+      "gid": 0,
+      "mode": "0o600"
+    },
+    "candidate_artifacts": [
+      {
+        "bytes": 95212303,
+        "gid": 0,
+        "mode": "0o600",
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r2/taobao-10.69.0-866-official.apk",
+        "sha256": "75d76b60cbedf1a5fa1fe53184fca481d5bcef696c8a8134145925644b691808",
+        "uid": 0
+      },
+      {
+        "bytes": 220267107,
+        "gid": 0,
+        "mode": "0o600",
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r2/szzc-9.6.2-328-official.apk",
+        "sha256": "c8611c1828fec03b7363a10cdc4da97c8bca1f0cf5ec91dff0c3b1e66337360f",
+        "uid": 0
+      },
+      {
+        "bytes": 364363658,
+        "gid": 0,
+        "mode": "0o600",
+        "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/official-app-inputs-be1746a-r2/douyin-41.0.0-410001-official.apk",
+        "sha256": "b1d8834c20e5dbd75e2d48b5b30dea67be88f6903dba78a78d736a80b7feff2f",
+        "uid": 0
+      }
+    ],
+    "remaining_own_apk_or_part_paths": [],
+    "manifest_bound_files": 29,
+    "manifest_bound_bytes": 680054973,
+    "selector_unchanged": true
+  }
+}

@@ -1,0 +1,2792 @@
+--- a/android/manifest/audio-bridge-source-lock.json
++++ b/android/manifest/audio-bridge-source-lock.json
+@@ -6301,6 +6301,61 @@
+       "name": "platform/tools/tradefederation/prebuilts",
+       "commit": "cff1e97158caa95de4919a38abf6f3ac10409f37",
+       "purpose": "Pinned original Tradefed prebuilt dependencies"
++    },
++    {
++      "path": "tools/test/desktop/mobly",
++      "name": "platform/tools/test/desktop/mobly",
++      "commit": "b77d8987bdd1d44645a015042130c8b7cba05b4b",
++      "purpose": "Original PASIT provider and complete transitive inputs for the retained DesktopTestLibTestsMobly consumer",
++      "sparse_paths": [
++        "lib/pasit",
++        "lib/utils",
++        "tests/pasit/Android.bp"
++      ]
++    },
++    {
++      "path": "external/grpc-grpc",
++      "name": "platform/external/grpc-grpc",
++      "commit": "a7112f326a9df61597d1bfdbdad7ad9ef3f764b7",
++      "purpose": "Original PASIT provider and complete transitive inputs for the retained DesktopTestLibTestsMobly consumer",
++      "sparse_paths": [
++        "etc",
++        "examples",
++        "include",
++        "src",
++        "third_party",
++        "tools",
++        "test/core/address_utils",
++        "test/core/event_engine",
++        "test/core/test_util",
++        "test/cpp/common",
++        "test/cpp/util"
++      ]
++    },
++    {
++      "path": "external/chromiumos-config",
++      "name": "platform/external/chromiumos-config",
++      "commit": "0f9ee62b2480d7ffa81c1584407813e7a6d930ca",
++      "purpose": "Original PASIT provider and complete transitive inputs for the retained DesktopTestLibTestsMobly consumer",
++      "sparse_paths": [
++        "proto",
++        "python"
++      ]
++    },
++    {
++      "path": "external/python/snippet-uiautomator",
++      "name": "platform/external/python/snippet-uiautomator",
++      "commit": "5dbbc2e9f543b88b6353b6d66f23dcb071f565a7",
++      "purpose": "Original PASIT provider and complete transitive inputs for the retained DesktopTestLibTestsMobly consumer",
++      "sparse_paths": [
++        "snippet_uiautomator"
++      ]
++    },
++    {
++      "path": "external/mobly-snippet-lib",
++      "name": "platform/external/mobly-snippet-lib",
++      "commit": "fcbe611cef61ea47d55107c6d70ac1b4706a6217",
++      "purpose": "Original Android snippet library required by the retained PASIT uiautomator provider"
+     }
+   ]
+ }
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -626,6 +626,61 @@
+     metadata_only(original).map(Some)
+ }
+ 
++// The retained DesktopTestLibTestsMobly consumer needs PASIT-defaults and its
++// original Python, protobuf, JNI and Android snippet providers. Check upstream
++// bytes immediately after normal source verification, before any projection.
++// These inputs are not replacements, stubs or a relaxed Soong dependency mode.
++const AUDIO_PASIT_ORIGINAL_PROVIDERS: &[(&str, u64, &str)] = &[
++    ("tools/test/desktop/mobly/lib/pasit/Android.bp", 9623,
++        "71cb178dbf79d5ce2974350a93f35fb82f3093b6ee46fca0d12d24ea6cc7c4fc"),
++    ("tools/test/desktop/mobly/lib/pasit/passport/Android.bp", 1172,
++        "6c46367958ae1a9a320c8925ad0f4a4ba5b1748ad3571a7344a5fb5ab3cb47d8"),
++    ("tools/test/desktop/mobly/lib/pasit/snippets/hid/Android.bp", 1163,
++        "f4425a2efa943566afeaf2aad3ad1754c8bd26053cf60429982b54ba7bd0e6f2"),
++    ("tools/test/desktop/mobly/lib/utils/Android.bp", 2030,
++        "95063ab7533dd67a4204cbb807323313675a340864321bb42642ba5c080f8d62"),
++    ("tools/test/desktop/mobly/tests/pasit/Android.bp", 1107,
++        "01b4a9495646aa94358153832915925f15c3b35752013e9810c7b2bed4d045e2"),
++    ("external/grpc-grpc/Android.bp", 43866,
++        "bf2fe1aa1e59fca322faed17fbeb0b9138d744fc51141674202a4060fcc3300f"),
++    ("external/grpc-grpc/src/python/grpcio/Android.bp", 2162,
++        "ca1565e658d47d0e0b65306fe30bcfdcb0d25b9df06ca1757e8e00953ec48c60"),
++    ("external/grpc-grpc/third_party/address_sorting/Android.bp", 858,
++        "6ad38a10c02683141584baf81774fbcb57aa60d5203bf9fbace6562d3592afce"),
++    ("external/grpc-grpc/third_party/upb/Android.bp", 3225,
++        "0848aa90ea027cb92124d031f6567bba6488a675f7e88722e0a67b41a576b631"),
++    ("external/grpc-grpc/third_party/utf8_range/Android.bp", 729,
++        "319e6b70c575b5b24713d3584b71393d23ff78ccf768ced8f5cb9e2d7c1bfd4a"),
++    ("external/grpc-grpc/third_party/xxhash/Android.bp", 601,
++        "bdc907cccd9e933a3539e122bf087eda7f46f578a8eeff14da27fb5bcf5d588b"),
++    ("external/chromiumos-config/Android.bp", 3859,
++        "5e3abe55cb6d81eb65cd78acb0f75c5386687b491159a919c71abb7e6ce67402"),
++    ("external/chromiumos-config/python/Android.bp", 1460,
++        "922664a63c44e569c6a2656590f243bccf95fbb1971348164ff1ca57433be85b"),
++    ("external/python/snippet-uiautomator/Android.bp", 936,
++        "069ba8f528d4c1312043e964cdcf7e7aaae7bb13a0e82a7df3679c8c95afa125"),
++    ("external/python/snippet-uiautomator/snippet_uiautomator/Android.bp", 1429,
++        "b4de85cd296a35c2ad4f0569b9cc6f0c05a240627f75c463b64aa1157b78a0b1"),
++    ("external/mobly-snippet-lib/Android.bp", 972,
++        "dd6f572562993de221a3efa2c874d5a080c47795dec3b3c8ac0fd9c6c5771ca6"),
++];
++
++fn validate_audio_pasit_original_providers(source: &Path, mode: SoongDependencyMode) -> Result<()> {
++    if mode != SoongDependencyMode::AudioApexTargetClosure {
++        return Ok(());
++    }
++    for (relative, bytes, expected) in AUDIO_PASIT_ORIGINAL_PROVIDERS {
++        let path = source.join(relative);
++        let metadata = fs::symlink_metadata(&path)?;
++        if !metadata.file_type().is_file() || metadata.len() != *bytes
++            || hash(&path)? != *expected
++        {
++            return fail(format!("audio PASIT requires its complete original provider: {relative}"));
++        }
++    }
++    Ok(())
++}
++
+ fn validate_audio_provider_source_paths(
+     lock: &droidloom_source::SparseSourceLock, mode: SoongDependencyMode,
+ ) -> Result<()> {
+@@ -633,6 +688,24 @@
+         return Ok(());
+     }
+     for (relative, commit, required) in [
++        ("tools/test/desktop/mobly", "b77d8987bdd1d44645a015042130c8b7cba05b4b", "lib/pasit"),
++        ("tools/test/desktop/mobly", "b77d8987bdd1d44645a015042130c8b7cba05b4b", "lib/utils"),
++        ("tools/test/desktop/mobly", "b77d8987bdd1d44645a015042130c8b7cba05b4b", "tests/pasit/Android.bp"),
++        ("external/grpc-grpc", "a7112f326a9df61597d1bfdbdad7ad9ef3f764b7", "etc"),
++        ("external/grpc-grpc", "a7112f326a9df61597d1bfdbdad7ad9ef3f764b7", "examples"),
++        ("external/grpc-grpc", "a7112f326a9df61597d1bfdbdad7ad9ef3f764b7", "include"),
++        ("external/grpc-grpc", "a7112f326a9df61597d1bfdbdad7ad9ef3f764b7", "src"),
++        ("external/grpc-grpc", "a7112f326a9df61597d1bfdbdad7ad9ef3f764b7", "third_party"),
++        ("external/grpc-grpc", "a7112f326a9df61597d1bfdbdad7ad9ef3f764b7", "tools"),
++        ("external/grpc-grpc", "a7112f326a9df61597d1bfdbdad7ad9ef3f764b7", "test/core/address_utils"),
++        ("external/grpc-grpc", "a7112f326a9df61597d1bfdbdad7ad9ef3f764b7", "test/core/event_engine"),
++        ("external/grpc-grpc", "a7112f326a9df61597d1bfdbdad7ad9ef3f764b7", "test/core/test_util"),
++        ("external/grpc-grpc", "a7112f326a9df61597d1bfdbdad7ad9ef3f764b7", "test/cpp/common"),
++        ("external/grpc-grpc", "a7112f326a9df61597d1bfdbdad7ad9ef3f764b7", "test/cpp/util"),
++        ("external/chromiumos-config", "0f9ee62b2480d7ffa81c1584407813e7a6d930ca", "proto"),
++        ("external/chromiumos-config", "0f9ee62b2480d7ffa81c1584407813e7a6d930ca", "python"),
++        ("external/python/snippet-uiautomator", "5dbbc2e9f543b88b6353b6d66f23dcb071f565a7", "snippet_uiautomator"),
++        ("external/mobly-snippet-lib", "fcbe611cef61ea47d55107c6d70ac1b4706a6217", "third_party/sl4a"),
+         ("packages/modules/RemoteKeyProvisioning", "d88e2305f9186661fe75ee2f00c8b250a76fdabe", "apex"),
+         ("external/gemmlowp", "9304d9b673e827202f9526913d161e3cb49a1560", "eight_bit_int_gemm"),
+         ("external/gemmlowp", "9304d9b673e827202f9526913d161e3cb49a1560", "fixedpoint"),
+@@ -1229,12 +1302,12 @@
+     }
+ }
+ 
+-const AUDIO_SOURCE_LOCK_SHA256: &str = "1dd0671551fb3c07cac4bb9b587346421321a6e4809494299f7b6daa4c49371c";
++const AUDIO_SOURCE_LOCK_SHA256: &str = "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a";
+ fn selected_source_lock(repo: &Path, mode: SoongDependencyMode) -> Result<PathBuf> {
+     if mode == SoongDependencyMode::AudioApexTargetClosure {
+         let lock = repo.join("android/manifest/audio-bridge-source-lock.json");
+         if hash(&lock)? != AUDIO_SOURCE_LOCK_SHA256 {
+-            return fail("audio build requires its exact independent 425-project source lock");
++            return fail("audio build requires its exact independent 430-project source lock");
+         }
+         Ok(lock)
+     } else {
+@@ -2865,6 +2938,7 @@
+         droidloom_source::reconcile(&lock, &source_lock, source)?;
+     }
+     droidloom_source::verify_materialized(&lock, &source_lock, source)?;
++    validate_audio_pasit_original_providers(source, dependency_mode)?;
+     let native_bridge_source = crate::native_bridge::prepare_source(repo, source)?;
+     for (aidl, adapter) in [
+         ("statusbar/IStatusBar.aidl", "EmptyStatusBar"),
+@@ -3311,6 +3385,144 @@
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++
++    #[test]
++    fn audio_pasit_old_425_lock_reproduces_missing_original_project() {
++        use sha2::{Digest, Sha256};
++        let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
++        let current = fs::read_to_string(repo.join("android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let (prefix, _) = current.split_once(",\n    {\n      \"path\": \"tools/test/desktop/mobly\",").unwrap();
++        let old = format!("{prefix}\n  ]\n}}\n");
++        assert_eq!(format!("{:x}", Sha256::digest(old.as_bytes())),
++            "1dd0671551fb3c07cac4bb9b587346421321a6e4809494299f7b6daa4c49371c");
++        let d = tempfile::tempdir().unwrap();
++        let path = d.path().join("android/manifest/audio-bridge-source-lock.json");
++        write(&path, old.as_bytes()).unwrap();
++        let old_lock = droidloom_source::load_lock(&path).unwrap();
++        assert_eq!(old_lock.projects.len(), 425);
++        assert!(validate_audio_provider_source_paths(&old_lock,
++            SoongDependencyMode::AudioApexTargetClosure).is_err());
++        assert!(selected_source_lock(d.path(), SoongDependencyMode::AudioApexTargetClosure).is_err());
++        let old_value: serde_json::Value = serde_json::from_str(&old).unwrap();
++        let new_value: serde_json::Value = serde_json::from_str(&current).unwrap();
++        assert_eq!(new_value["projects"].as_array().unwrap().len(), 430);
++        assert_eq!(&new_value["projects"].as_array().unwrap()[..425],
++            old_value["projects"].as_array().unwrap().as_slice());
++        for name in ["superproject", "links", "policy", "remote_base", "schema_version", "selected_at", "status"] {
++            assert_eq!(new_value[name], old_value[name], "{name}");
++        }
++    }
++
++    #[test]
++    fn audio_pasit_requires_all_five_complete_same_commit_sources() {
++        let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
++        let lock = droidloom_source::load_lock(
++            &repo.join("android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let audio = SoongDependencyMode::AudioApexTargetClosure;
++        validate_audio_provider_source_paths(&lock, audio).unwrap();
++        for path in [
++            "tools/test/desktop/mobly",
++            "external/grpc-grpc",
++            "external/chromiumos-config",
++            "external/python/snippet-uiautomator",
++            "external/mobly-snippet-lib",
++        ] {
++            let mut absent = lock.clone();
++            absent.projects.retain(|project| project.path != Path::new(path));
++            assert!(validate_audio_provider_source_paths(&absent, audio).is_err(), "{path}");
++            for mode in [SoongDependencyMode::Strict, SoongDependencyMode::NativeBridgeTargetClosure,
++                SoongDependencyMode::NativeEngineTargetClosure, SoongDependencyMode::MinigbmTargetClosure] {
++                validate_audio_provider_source_paths(&absent, mode).unwrap();
++            }
++            let mut incomplete = lock.clone();
++            incomplete.projects.iter_mut().find(|project| project.path == Path::new(path)).unwrap()
++                .sparse_paths = vec![PathBuf::from("Android.bp")];
++            assert!(validate_audio_provider_source_paths(&incomplete, audio).is_err(), "{path}");
++            let mut wrong = lock.clone();
++            wrong.projects.iter_mut().find(|project| project.path == Path::new(path)).unwrap()
++                .commit = "0000000000000000000000000000000000000000".into();
++            assert!(validate_audio_provider_source_paths(&wrong, audio).is_err(), "{path}");
++        }
++    }
++
++    fn audio_pasit_fixture_tree(source: &Path) {
++        for (relative, bytes) in [
++            ("tools/test/desktop/mobly/lib/pasit/Android.bp", include_bytes!("../tests/fixtures/audio-pasit-original/tools__test__desktop__mobly__lib__pasit__Android.bp") as &[u8]),
++            ("tools/test/desktop/mobly/lib/pasit/passport/Android.bp", include_bytes!("../tests/fixtures/audio-pasit-original/tools__test__desktop__mobly__lib__pasit__passport__Android.bp") as &[u8]),
++            ("tools/test/desktop/mobly/lib/pasit/snippets/hid/Android.bp", include_bytes!("../tests/fixtures/audio-pasit-original/tools__test__desktop__mobly__lib__pasit__snippets__hid__Android.bp") as &[u8]),
++            ("tools/test/desktop/mobly/lib/utils/Android.bp", include_bytes!("../tests/fixtures/audio-pasit-original/tools__test__desktop__mobly__lib__utils__Android.bp") as &[u8]),
++            ("tools/test/desktop/mobly/tests/pasit/Android.bp", include_bytes!("../tests/fixtures/audio-pasit-original/tools__test__desktop__mobly__tests__pasit__Android.bp") as &[u8]),
++            ("external/grpc-grpc/Android.bp", include_bytes!("../tests/fixtures/audio-pasit-original/external__grpc-grpc__Android.bp") as &[u8]),
++            ("external/grpc-grpc/src/python/grpcio/Android.bp", include_bytes!("../tests/fixtures/audio-pasit-original/external__grpc-grpc__src__python__grpcio__Android.bp") as &[u8]),
++            ("external/grpc-grpc/third_party/address_sorting/Android.bp", include_bytes!("../tests/fixtures/audio-pasit-original/external__grpc-grpc__third_party__address_sorting__Android.bp") as &[u8]),
++            ("external/grpc-grpc/third_party/upb/Android.bp", include_bytes!("../tests/fixtures/audio-pasit-original/external__grpc-grpc__third_party__upb__Android.bp") as &[u8]),
++            ("external/grpc-grpc/third_party/utf8_range/Android.bp", include_bytes!("../tests/fixtures/audio-pasit-original/external__grpc-grpc__third_party__utf8_range__Android.bp") as &[u8]),
++            ("external/grpc-grpc/third_party/xxhash/Android.bp", include_bytes!("../tests/fixtures/audio-pasit-original/external__grpc-grpc__third_party__xxhash__Android.bp") as &[u8]),
++            ("external/chromiumos-config/Android.bp", include_bytes!("../tests/fixtures/audio-pasit-original/external__chromiumos-config__Android.bp") as &[u8]),
++            ("external/chromiumos-config/python/Android.bp", include_bytes!("../tests/fixtures/audio-pasit-original/external__chromiumos-config__python__Android.bp") as &[u8]),
++            ("external/python/snippet-uiautomator/Android.bp", include_bytes!("../tests/fixtures/audio-pasit-original/external__python__snippet-uiautomator__Android.bp") as &[u8]),
++            ("external/python/snippet-uiautomator/snippet_uiautomator/Android.bp", include_bytes!("../tests/fixtures/audio-pasit-original/external__python__snippet-uiautomator__snippet_uiautomator__Android.bp") as &[u8]),
++            ("external/mobly-snippet-lib/Android.bp", include_bytes!("../tests/fixtures/audio-pasit-original/external__mobly-snippet-lib__Android.bp") as &[u8]),
++        ] {
++            write(&source.join(relative), bytes).unwrap();
++        }
++    }
++
++    #[test]
++    fn audio_pasit_original_provider_guard_rejects_drift_missing_and_links() {
++        let d = tempfile::tempdir().unwrap();
++        let audio = SoongDependencyMode::AudioApexTargetClosure;
++        audio_pasit_fixture_tree(d.path());
++        validate_audio_pasit_original_providers(d.path(), audio).unwrap();
++        for (relative, _, _) in AUDIO_PASIT_ORIGINAL_PROVIDERS {
++            let path = d.path().join(relative);
++            let original = fs::read(&path).unwrap();
++            let mut changed = original.clone();
++            changed[0] ^= 1;
++            write(&path, &changed).unwrap();
++            assert!(validate_audio_pasit_original_providers(d.path(), audio).is_err(), "{relative}");
++            fs::remove_file(&path).unwrap();
++            assert!(validate_audio_pasit_original_providers(d.path(), audio).is_err(), "{relative}");
++            let referent = d.path().join("original-provider");
++            write(&referent, &original).unwrap();
++            std::os::unix::fs::symlink(&referent, &path).unwrap();
++            assert!(validate_audio_pasit_original_providers(d.path(), audio).is_err(), "{relative}");
++            fs::remove_file(&path).unwrap();
++            fs::remove_file(&referent).unwrap();
++            write(&path, &original).unwrap();
++        }
++        validate_audio_pasit_original_providers(d.path(), audio).unwrap();
++        let empty = tempfile::tempdir().unwrap();
++        for mode in [SoongDependencyMode::Strict, SoongDependencyMode::NativeBridgeTargetClosure,
++            SoongDependencyMode::NativeEngineTargetClosure, SoongDependencyMode::MinigbmTargetClosure] {
++            validate_audio_pasit_original_providers(empty.path(), mode).unwrap();
++        }
++    }
++
++    #[test]
++    fn audio_pasit_retains_original_consumer_defaults_and_transitive_edges() {
++        use sha2::{Digest, Sha256};
++        let consumer = include_str!("../tests/fixtures/audio-pasit-original/desktop-test-lib-mobly-consumer.bp");
++        assert_eq!(format!("{:x}", Sha256::digest(consumer.as_bytes())),
++            "bf1647bf57fab65f5ff2fa7a82b434bb909880f1e258edebf163f8dea48672f0");
++        assert!(consumer.contains("name: \"DesktopTestLibTestsMobly\""));
++        assert!(consumer.contains("defaults: [\"PASIT-defaults\"]"));
++        let defaults = include_str!("../tests/fixtures/audio-pasit-original/tools__test__desktop__mobly__tests__pasit__Android.bp");
++        for retained in ["PASIT-defaults", "mobly", "py-pasit-test", "platform-test-py-annotations"] {
++            assert!(defaults.contains(&format!("\"{retained}\"")), "{retained}");
++        }
++        let provider = include_str!("../tests/fixtures/audio-pasit-original/tools__test__desktop__mobly__lib__pasit__Android.bp");
++        for retained in ["py-pasit-test", "py-pasit-device", "py-passport",
++            "py-snippet-uiautomator", "py-grpcio", "libprotobuf-python",
++            "py-chromiumos-config-passport", "py-desktop-utils"] {
++            assert!(provider.contains(&format!("\"{retained}\"")), "{retained}");
++        }
++        let snippet = include_str!("../tests/fixtures/audio-pasit-original/external__python__snippet-uiautomator__snippet_uiautomator__Android.bp");
++        assert!(snippet.contains("\"mobly-snippet-lib\""));
++        assert!(include_str!("../tests/fixtures/audio-pasit-original/external__mobly-snippet-lib__Android.bp")
++            .contains("\"androidx.test.runner\""));
++    }
++
+ 
+     #[test]
+     fn audio_error_prone_restores_original_provider_and_retained_consumer_edge() {
+@@ -4508,7 +4720,7 @@
+         let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
+         let lock = selected_source_lock(repo, SoongDependencyMode::AudioApexTargetClosure).unwrap();
+         let parsed = droidloom_source::load_lock(&lock).unwrap();
+-        assert_eq!(parsed.projects.len(), 425);
++        assert_eq!(parsed.projects.len(), 430);
+         assert!(droidloom_source::build_plan(&parsed).is_ok());
+         for mode in [SoongDependencyMode::Strict, SoongDependencyMode::NativeBridgeTargetClosure,
+                      SoongDependencyMode::NativeEngineTargetClosure, SoongDependencyMode::MinigbmTargetClosure] {
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-pasit-original/tools__test__desktop__mobly__lib__pasit__Android.bp
+@@ -0,0 +1,448 @@
++// Copyright (C) 2025 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_applicable_licenses: ["Android-Apache-2.0"],
++    default_team: "trendy_team_desktop_peripherals",
++}
++
++python_library_host {
++    name: "py-display-painter",
++    srcs: [
++        "*/*display_painter.py",
++        "*display_painter.py",
++    ],
++    exclude_srcs: ["passport/*"],
++    libs: [
++        "mobly",
++    ],
++    pkg_path: "lib/pasit",
++}
++
++python_library_host {
++    name: "py-display-helper",
++    srcs: [
++        "display_helper.py",
++    ],
++    libs: [
++        "mobly",
++        "py-pasit-display",
++        "py-test-policy",
++    ],
++    pkg_path: "lib/pasit",
++}
++
++python_library_host {
++    name: "py-hid-helper",
++    srcs: [
++        "hid_helper.py",
++    ],
++    libs: [
++        "mobly",
++        "py-desktop-utils",
++        "py-pasit-hid",
++        "py-test-policy",
++    ],
++    pkg_path: "lib/pasit",
++}
++
++python_library_host {
++    name: "py-display-camera-mapper",
++    srcs: [
++        "display_camera_mapper.py",
++        "color_capturer.py",
++    ],
++    libs: [
++        "mobly",
++        "py-pasit-display",
++        "py-display-painter",
++        "py-passport",
++    ],
++    pkg_path: "lib/pasit",
++}
++
++python_library_host {
++    name: "py-pasit-camera",
++    srcs: [
++        "*/*camera.py",
++        "*camera.py",
++    ],
++    exclude_srcs: ["passport/*"],
++    libs: [
++        "mobly",
++    ],
++    pkg_path: "lib/pasit",
++}
++
++python_library_host {
++    name: "py-pasit-device",
++    srcs: [
++        "*/*device.py",
++        "*device.py",
++        "dut_state_manager.py",
++        "*/snippet_tools.py",
++        "*/base_user_tools.py",
++        "*/android_user_tools.py",
++        "*/base_ui_tools.py",
++        "*/android_ui_tools.py",
++        "*/dumpsys_battery_parser.py",
++        "*/screen_recorder.py",
++        "*/input_recorder.py",
++        "*/adb_command_monitor.py",
++        "*/process_monitor_group.py",
++        "*/ui_watcher.py",
++        "*/device_state_parser.py",
++    ],
++    exclude_srcs: ["passport/*"],
++    libs: [
++        "mobly",
++        "py-desktop-utils",
++        "py-snippet-uiautomator",
++        "py-test-policy",
++    ],
++    pkg_path: "lib/pasit",
++}
++
++python_library_host {
++    name: "py-pasit-display",
++    srcs: [
++        "*/*display.py",
++        "*/*display_id.py",
++        "*/dumpsys_display_parser.py",
++        "*/dumpsys_surfaceflinger_parser.py",
++        "*display.py",
++    ],
++    exclude_srcs: ["passport/*"],
++    libs: [
++        "mobly",
++    ],
++    pkg_path: "lib/pasit",
++}
++
++python_library_host {
++    name: "py-pasit-file",
++    srcs: [
++        "*/*file.py",
++        "*file.py",
++    ],
++    exclude_srcs: ["passport/*"],
++    libs: [
++        "mobly",
++    ],
++    pkg_path: "lib/pasit",
++}
++
++python_library_host {
++    name: "py-pasit-hid",
++    srcs: [
++        "*/*hid.py",
++        "*hid.py",
++        "hid_emulator.py",
++        "hid_keys.py",
++    ],
++    exclude_srcs: ["passport/*"],
++    libs: [
++        "mobly",
++    ],
++    pkg_path: "lib/pasit",
++}
++
++python_library_host {
++    name: "py-pasit-network",
++    srcs: [
++        "*/*network.py",
++        "*network.py",
++    ],
++    exclude_srcs: ["passport/*"],
++    libs: [
++        "mobly",
++        "py-desktop-utils",
++        "py-passport",
++    ],
++    pkg_path: "lib/pasit",
++}
++
++python_library_host {
++    name: "py-pasit-storage",
++    srcs: [
++        "*/*storage.py",
++        "*storage.py",
++    ],
++    exclude_srcs: ["passport/*"],
++    libs: [
++        "mobly",
++    ],
++    pkg_path: "lib/pasit",
++}
++
++python_library_host {
++    name: "py-pasit-test",
++    srcs: [
++        "*/*test.py",
++        "*test.py",
++        "pasit_test_config.py",
++    ],
++    exclude_srcs: [
++        "passport/*",
++        "pasit_lib_imports_test.py",
++        "pasit_test_test.py",
++    ],
++    libs: [
++        "mobly",
++        "py-pasit-device",
++        "py-passport",
++        "py-test-policy",
++    ],
++    pkg_path: "lib/pasit",
++}
++
++python_library_host {
++    name: "py-passport",
++    srcs: ["passport/*.py"],
++    exclude_srcs: ["passport/*_test.py"],
++    libs: [
++        "py-grpcio",
++        "libprotobuf-python",
++        "mobly",
++        "py-chromiumos-config-passport",
++        "py-desktop-utils",
++    ],
++    pkg_path: "lib/pasit",
++}
++
++python_library_host {
++    name: "py-test-policy",
++    srcs: ["test_policy.py"],
++    pkg_path: "lib/pasit",
++}
++
++python_library_host {
++    name: "py-peripheral-connector",
++    srcs: ["peripheral_connector.py"],
++    libs: [
++        "py-passport",
++    ],
++    pkg_path: "lib/pasit",
++}
++
++python_test_host {
++    name: "pasit_lib_imports_test",
++    srcs: [
++        "pasit_lib_imports_test.py",
++    ],
++    test_options: {
++        unit_test: true,
++    },
++    libs: [
++        "py-display-helper",
++        "py-hid-helper",
++        "py-display-camera-mapper",
++        "py-display-painter",
++        "py-pasit-camera",
++        "py-pasit-device",
++        "py-pasit-display",
++        "py-pasit-file",
++        "py-pasit-hid",
++        "py-pasit-storage",
++        "py-pasit-test",
++        "py-passport",
++    ],
++}
++
++python_test_host {
++    name: "dumpsys_display_parser_test",
++    team: "trendy_team_desktop_peripherals",
++    main: "android/dumpsys_display_parser_test.py",
++    srcs: [
++        "android/dumpsys_display_parser_test.py",
++    ],
++    data: [
++        "android/testdata/dumpsys_display_internal.txt",
++        "android/testdata/dumpsys_display_external.txt",
++        "android/testdata/dumpsys_display_lid_closed.txt",
++    ],
++    test_options: {
++        unit_test: true,
++    },
++    libs: [
++        "py-pasit-display",
++    ],
++}
++
++python_test_host {
++    name: "dumpsys_surfaceflinger_parser_test",
++    team: "trendy_team_desktop_peripherals",
++    main: "android/dumpsys_surfaceflinger_parser_test.py",
++    srcs: [
++        "android/dumpsys_surfaceflinger_parser_test.py",
++    ],
++    data: [
++        "android/testdata/dumpsys_surfaceflinger_internal.txt",
++        "android/testdata/dumpsys_surfaceflinger_external.txt",
++        "android/testdata/dumpsys_surfaceflinger_negative_id.txt",
++    ],
++    test_options: {
++        unit_test: true,
++    },
++    libs: [
++        "py-pasit-display",
++    ],
++}
++
++python_test_host {
++    name: "dumpsys_battery_parser_test",
++    team: "trendy_team_desktop_peripherals",
++    main: "android/dumpsys_battery_parser_test.py",
++    srcs: [
++        "android/dumpsys_battery_parser_test.py",
++    ],
++    data: [
++        "android/testdata/dumpsys_battery_not_charging.txt",
++        "android/testdata/dumpsys_battery_usb_charging.txt",
++    ],
++    test_options: {
++        unit_test: true,
++    },
++    libs: [
++        "py-pasit-device",
++    ],
++}
++
++python_test_host {
++    name: "device_state_parser_test",
++    team: "trendy_team_desktop_peripherals",
++    main: "android/device_state_parser_test.py",
++    srcs: [
++        "android/device_state_parser_test.py",
++    ],
++    test_options: {
++        unit_test: true,
++    },
++    libs: [
++        "py-pasit-device",
++        "py-pasit-test",
++    ],
++}
++
++python_test_host {
++    name: "color_capturer_test",
++    team: "trendy_team_desktop_peripherals",
++    srcs: [
++        "color_capturer_test.py",
++    ],
++    test_options: {
++        unit_test: true,
++    },
++    libs: [
++        "py-display-camera-mapper",
++        "py-desktop-utils",
++    ],
++}
++
++python_test_host {
++    name: "peripheral_connector_test",
++    team: "trendy_team_desktop_peripherals",
++    srcs: [
++        "peripheral_connector_test.py",
++    ],
++    data: [
++        "testdata/non-standard-setup.yaml",
++        "testdata/pasit-box.yaml",
++        "testdata/single-display.yaml",
++    ],
++    test_options: {
++        unit_test: true,
++    },
++    libs: [
++        "py-peripheral-connector",
++        "py-desktop-utils",
++    ],
++}
++
++python_test_host {
++    name: "pasit_test_test",
++    team: "trendy_team_desktop_peripherals",
++    srcs: [
++        "pasit_test_test.py",
++    ],
++    test_options: {
++        unit_test: true,
++    },
++    libs: [
++        "py-pasit-test",
++        "py-desktop-utils",
++    ],
++}
++
++python_test_host {
++    name: "android_pasit_network_test",
++    team: "trendy_team_desktop_peripherals",
++    main: "android/android_pasit_network_test.py",
++    srcs: [
++        "android/android_pasit_network_test.py",
++    ],
++    test_options: {
++        unit_test: true,
++    },
++    libs: [
++        "py-pasit-network",
++    ],
++}
++
++python_library_host {
++    name: "py-network-helper",
++    srcs: [
++        "network_helper.py",
++    ],
++    libs: [
++        "mobly",
++        "py-pasit-network",
++        "py-test-policy",
++    ],
++    pkg_path: "lib/pasit",
++}
++
++python_test_host {
++    name: "adb_command_monitor_test",
++    team: "trendy_team_desktop_peripherals",
++    main: "android/adb_command_monitor_test.py",
++    srcs: [
++        "android/adb_command_monitor_test.py",
++    ],
++    test_options: {
++        unit_test: true,
++    },
++    libs: [
++        "mobly",
++        "py-desktop-utils",
++        "py-pasit-device",
++    ],
++}
++
++python_test_host {
++    name: "process_monitor_group_test",
++    team: "trendy_team_desktop_peripherals",
++    main: "android/process_monitor_group_test.py",
++    srcs: [
++        "android/process_monitor_group_test.py",
++    ],
++    test_options: {
++        unit_test: true,
++    },
++    libs: [
++        "mobly",
++        "py-desktop-utils",
++        "py-pasit-device",
++    ],
++}
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-pasit-original/tools__test__desktop__mobly__lib__pasit__passport__Android.bp
+@@ -0,0 +1,44 @@
++// Copyright (C) 2025 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_applicable_licenses: ["Android-Apache-2.0"],
++    default_team: "trendy_team_desktop_peripherals",
++}
++
++python_test_host {
++    name: "passport_host_switches_test",
++    srcs: [
++        "passport_host_switches_test.py",
++    ],
++    test_options: {
++        unit_test: true,
++    },
++    libs: [
++        "py-passport",
++    ],
++}
++
++python_test_host {
++    name: "passport_host_topology_test",
++    srcs: [
++        "passport_host_topology_test.py",
++    ],
++    test_options: {
++        unit_test: true,
++    },
++    libs: [
++        "py-passport",
++    ],
++}
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-pasit-original/tools__test__desktop__mobly__lib__pasit__snippets__hid__Android.bp
+@@ -0,0 +1,34 @@
++// Copyright 2025 Google LLC.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//     http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++// Android.bp for building the HidDeviceSnippet.
++
++// Build the snippet APK.
++android_test_helper_app {
++    name: "HidDeviceSnippet",
++    package_name: "com.google.android.hiddevicesnippet",
++    privileged: true,
++    srcs: ["*.java"],
++    resource_dirs: ["res"],
++    certificate: "platform",
++    min_sdk_version: "35",
++    // Specify the libraries your snippet depends on.
++    static_libs: [
++        "androidx.activity_activity",
++        "androidx.appcompat_appcompat",
++        "androidx.test.runner",
++        "android-support-multidex",
++        "mobly-snippet-lib",
++    ],
++}
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-pasit-original/tools__test__desktop__mobly__lib__utils__Android.bp
+@@ -0,0 +1,91 @@
++// Copyright (C) 2025 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++python_library_host {
++    name: "py-desktop-utils",
++    srcs: [
++        "*.py",
++    ],
++    exclude_srcs: ["*_test.py"],
++    libs: [
++        "py-chromiumos-config-lsnexus",
++    ],
++    pkg_path: "lib/utils",
++}
++
++python_test_host {
++    name: "retry_test",
++    team: "trendy_team_desktop_peripherals",
++    srcs: [
++        "retry_test.py",
++    ],
++    test_options: {
++        unit_test: true,
++    },
++    libs: [
++        "libprotobuf-python",
++        "py-desktop-utils",
++    ],
++}
++
++python_test_host {
++    name: "functools_test",
++    team: "trendy_team_desktop_peripherals",
++    srcs: [
++        "functools_test.py",
++    ],
++    test_options: {
++        unit_test: true,
++    },
++    libs: [
++        "libprotobuf-python",
++        "py-desktop-utils",
++    ],
++}
++
++python_test_host {
++    name: "managed_process_test",
++    team: "trendy_team_desktop_peripherals",
++    srcs: [
++        "managed_process_test.py",
++    ],
++    test_options: {
++        unit_test: true,
++    },
++    libs: [
++        "libprotobuf-python",
++        "py-desktop-utils",
++        "mobly",
++    ],
++}
++
++python_test_host {
++    name: "process_monitor_test",
++    team: "trendy_team_desktop_peripherals",
++    srcs: [
++        "process_monitor_test.py",
++    ],
++    test_options: {
++        unit_test: true,
++    },
++    libs: [
++        "libprotobuf-python",
++        "py-desktop-utils",
++        "mobly",
++    ],
++}
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-pasit-original/tools__test__desktop__mobly__tests__pasit__Android.bp
+@@ -0,0 +1,38 @@
++// Copyright (C) 2025 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_applicable_licenses: ["Android-Apache-2.0"],
++    default_team: "trendy_team_desktop_peripherals",
++}
++
++team {
++    name: "trendy_team_desktop_peripherals",
++
++    // go/trendy/manage/engineers/5858785764933632
++    trendy_team_id: "5858785764933632",
++}
++
++python_defaults {
++    name: "PASIT-defaults",
++    libs: [
++        "mobly",
++        "py-pasit-test",
++        "platform-test-py-annotations",
++    ],
++    test_suites: [
++        "general-tests",
++    ],
++    pkg_path: "pasit",
++}
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-pasit-original/external__grpc-grpc__Android.bp
+@@ -0,0 +1,1072 @@
++package {
++    default_applicable_licenses: ["external_grpc-grpc_license"],
++}
++
++// Added automatically by a large-scale-change that took the approach of
++// 'apply every license found to every target'. While this makes sure we respect
++// every license restriction, it may not be entirely correct.
++//
++// e.g. GPL in an MIT project might only apply to the contrib/ directory.
++//
++// Please consider splitting the single license below into multiple licenses,
++// taking care not to lose any license_kind information, and overriding the
++// default license using the 'licenses: [...]' property on targets as needed.
++//
++// For unused files, consider creating a 'fileGroup' with "//visibility:private"
++// to attach the license to, and including a comment whether the files may be
++// used in the current project.
++//
++// large-scale-change included anything that looked like it might be a license
++// text as a license_text. e.g. LICENSE, NOTICE, COPYING etc.
++//
++// Please consider removing redundant or irrelevant files from 'license_text:'.
++// See: http://go/android-license-faq
++license {
++    name: "external_grpc-grpc_license",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "SPDX-license-identifier-Apache-2.0",
++        "SPDX-license-identifier-BSD",
++        "SPDX-license-identifier-ISC",
++        "SPDX-license-identifier-MIT",
++        "SPDX-license-identifier-MPL-2.0",
++        "SPDX-license-identifier-Zlib",
++        "legacy_unencumbered",
++    ],
++    license_text: [
++        "LICENSE",
++        "NOTICE.txt",
++    ],
++}
++
++// Replicating the target structure from the upstream BUILD file is tedious
++// and requires updating the APEX dependency list on every upgrade. Instead,
++// we use the script update_android_bp.sh, which queries the source files with
++// Bazel and uses "diff" to construct the common, secure and unsecure source
++// file lists.
++// Proto files with service definitions have to be handled separately, but
++// fortunately there are much fewer of them.
++
++// file_lists_start
++// Autogenerated by update_android_bp.sh, do not modify.
++GRPC_COMMON_SRCS = [
++    "src/core/call/call_arena_allocator.cc",
++    "src/core/call/call_filters.cc",
++    "src/core/call/call_spine.cc",
++    "src/core/call/call_state.cc",
++    "src/core/call/client_call.cc",
++    "src/core/call/interception_chain.cc",
++    "src/core/call/message.cc",
++    "src/core/call/metadata_batch.cc",
++    "src/core/call/metadata.cc",
++    "src/core/call/metadata_info.cc",
++    "src/core/call/parsed_metadata.cc",
++    "src/core/call/request_buffer.cc",
++    "src/core/call/security_context.cc",
++    "src/core/call/server_call.cc",
++    "src/core/call/status_util.cc",
++    "src/core/channelz/channel_trace.cc",
++    "src/core/channelz/channelz.cc",
++    "src/core/channelz/channelz_registry.cc",
++    "src/core/client_channel/backup_poller.cc",
++    "src/core/client_channel/client_channel.cc",
++    "src/core/client_channel/client_channel_factory.cc",
++    "src/core/client_channel/client_channel_filter.cc",
++    "src/core/client_channel/client_channel_plugin.cc",
++    "src/core/client_channel/client_channel_service_config.cc",
++    "src/core/client_channel/direct_channel.cc",
++    "src/core/client_channel/dynamic_filters.cc",
++    "src/core/client_channel/global_subchannel_pool.cc",
++    "src/core/client_channel/lb_metadata.cc",
++    "src/core/client_channel/load_balanced_call_destination.cc",
++    "src/core/client_channel/local_subchannel_pool.cc",
++    "src/core/client_channel/retry_filter.cc",
++    "src/core/client_channel/retry_filter_legacy_call_data.cc",
++    "src/core/client_channel/retry_interceptor.cc",
++    "src/core/client_channel/retry_service_config.cc",
++    "src/core/client_channel/retry_throttle.cc",
++    "src/core/client_channel/subchannel.cc",
++    "src/core/client_channel/subchannel_pool_interface.cc",
++    "src/core/client_channel/subchannel_stream_client.cc",
++    "src/core/config/config_vars.cc",
++    "src/core/config/config_vars_non_generated.cc",
++    "src/core/config/core_configuration.cc",
++    "src/core/config/load_config.cc",
++    "src/core/credentials/call/call_creds_util.cc",
++    "src/core/credentials/call/composite/composite_call_credentials.cc",
++    "src/core/credentials/call/json_util.cc",
++    "src/core/credentials/call/plugin/plugin_credentials.cc",
++    "src/core/credentials/transport/alts/check_gcp_environment.cc",
++    "src/core/credentials/transport/alts/check_gcp_environment_linux.cc",
++    "src/core/credentials/transport/alts/check_gcp_environment_no_op.cc",
++    "src/core/credentials/transport/alts/check_gcp_environment_windows.cc",
++    "src/core/credentials/transport/alts/grpc_alts_credentials_client_options.cc",
++    "src/core/credentials/transport/alts/grpc_alts_credentials_options.cc",
++    "src/core/credentials/transport/alts/grpc_alts_credentials_server_options.cc",
++    "src/core/credentials/transport/composite/composite_channel_credentials.cc",
++    "src/core/credentials/transport/fake/fake_credentials.cc",
++    "src/core/credentials/transport/fake/fake_security_connector.cc",
++    "src/core/credentials/transport/insecure/insecure_credentials.cc",
++    "src/core/credentials/transport/insecure/insecure_security_connector.cc",
++    "src/core/credentials/transport/security_connector.cc",
++    "src/core/credentials/transport/tls/certificate_provider_registry.cc",
++    "src/core/credentials/transport/tls/load_system_roots_fallback.cc",
++    "src/core/credentials/transport/tls/load_system_roots_supported.cc",
++    "src/core/credentials/transport/tls/load_system_roots_windows.cc",
++    "src/core/credentials/transport/tls/tls_utils.cc",
++    "src/core/credentials/transport/transport_credentials.cc",
++    "src/core/ext/filters/backend_metrics/backend_metric_filter.cc",
++    "src/core/ext/filters/census/grpc_context.cc",
++    "src/core/ext/filters/channel_idle/idle_filter_state.cc",
++    "src/core/ext/filters/channel_idle/legacy_channel_idle_filter.cc",
++    "src/core/ext/filters/fault_injection/fault_injection_filter.cc",
++    "src/core/ext/filters/fault_injection/fault_injection_service_config_parser.cc",
++    "src/core/ext/filters/http/client_authority_filter.cc",
++    "src/core/ext/filters/http/client/http_client_filter.cc",
++    "src/core/ext/filters/http/http_filters_plugin.cc",
++    "src/core/ext/filters/http/message_compress/compression_filter.cc",
++    "src/core/ext/filters/http/server/http_server_filter.cc",
++    "src/core/ext/filters/message_size/message_size_filter.cc",
++    "src/core/ext/transport/chttp2/client/chttp2_connector.cc",
++    "src/core/ext/transport/chttp2/server/chttp2_server.cc",
++    "src/core/ext/transport/chttp2/transport/bin_decoder.cc",
++    "src/core/ext/transport/chttp2/transport/bin_encoder.cc",
++    "src/core/ext/transport/chttp2/transport/call_tracer_wrapper.cc",
++    "src/core/ext/transport/chttp2/transport/chttp2_transport.cc",
++    "src/core/ext/transport/chttp2/transport/decode_huff.cc",
++    "src/core/ext/transport/chttp2/transport/flow_control.cc",
++    "src/core/ext/transport/chttp2/transport/frame.cc",
++    "src/core/ext/transport/chttp2/transport/frame_data.cc",
++    "src/core/ext/transport/chttp2/transport/frame_goaway.cc",
++    "src/core/ext/transport/chttp2/transport/frame_ping.cc",
++    "src/core/ext/transport/chttp2/transport/frame_rst_stream.cc",
++    "src/core/ext/transport/chttp2/transport/frame_security.cc",
++    "src/core/ext/transport/chttp2/transport/frame_settings.cc",
++    "src/core/ext/transport/chttp2/transport/frame_window_update.cc",
++    "src/core/ext/transport/chttp2/transport/hpack_encoder.cc",
++    "src/core/ext/transport/chttp2/transport/hpack_encoder_table.cc",
++    "src/core/ext/transport/chttp2/transport/hpack_parser.cc",
++    "src/core/ext/transport/chttp2/transport/hpack_parse_result.cc",
++    "src/core/ext/transport/chttp2/transport/hpack_parser_table.cc",
++    "src/core/ext/transport/chttp2/transport/http2_settings.cc",
++    "src/core/ext/transport/chttp2/transport/huffsyms.cc",
++    "src/core/ext/transport/chttp2/transport/parsing.cc",
++    "src/core/ext/transport/chttp2/transport/ping_abuse_policy.cc",
++    "src/core/ext/transport/chttp2/transport/ping_callbacks.cc",
++    "src/core/ext/transport/chttp2/transport/ping_rate_policy.cc",
++    "src/core/ext/transport/chttp2/transport/stream_lists.cc",
++    "src/core/ext/transport/chttp2/transport/varint.cc",
++    "src/core/ext/transport/chttp2/transport/write_size_policy.cc",
++    "src/core/ext/transport/chttp2/transport/writing.cc",
++    "src/core/ext/transport/inproc/inproc_transport.cc",
++    "src/core/ext/transport/inproc/legacy_inproc_transport.cc",
++    "src/core/filter/auth/client_auth_filter.cc",
++    "src/core/filter/auth/server_auth_filter.cc",
++    "src/core/filter/blackboard.cc",
++    "src/core/handshaker/endpoint_info/endpoint_info_handshaker.cc",
++    "src/core/handshaker/handshaker.cc",
++    "src/core/handshaker/handshaker_registry.cc",
++    "src/core/handshaker/http_connect/http_connect_handshaker.cc",
++    "src/core/handshaker/http_connect/http_proxy_mapper.cc",
++    "src/core/handshaker/proxy_mapper_registry.cc",
++    "src/core/handshaker/security/secure_endpoint.cc",
++    "src/core/handshaker/security/security_handshaker.cc",
++    "src/core/handshaker/tcp_connect/tcp_connect_handshaker.cc",
++    "src/core/lib/address_utils/parse_address.cc",
++    "src/core/lib/address_utils/sockaddr_utils.cc",
++    "src/core/lib/channel/channel_args.cc",
++    "src/core/lib/channel/channel_args_preconditioning.cc",
++    "src/core/lib/channel/channel_stack_builder.cc",
++    "src/core/lib/channel/channel_stack_builder_impl.cc",
++    "src/core/lib/channel/channel_stack.cc",
++    "src/core/lib/channel/connected_channel.cc",
++    "src/core/lib/channel/promise_based_filter.cc",
++    "src/core/lib/compression/compression.cc",
++    "src/core/lib/compression/compression_internal.cc",
++    "src/core/lib/compression/message_compress.cc",
++    "src/core/lib/debug/trace.cc",
++    "src/core/lib/debug/trace_flags.cc",
++    "src/core/lib/event_engine/ares_resolver.cc",
++    "src/core/lib/event_engine/channel_args_endpoint_config.cc",
++    "src/core/lib/event_engine/default_event_engine.cc",
++    "src/core/lib/event_engine/default_event_engine_factory.cc",
++    "src/core/lib/event_engine/event_engine.cc",
++    "src/core/lib/event_engine/forkable.cc",
++    "src/core/lib/event_engine/posix_engine/event_poller_posix_default.cc",
++    "src/core/lib/event_engine/posix_engine/ev_epoll1_linux.cc",
++    "src/core/lib/event_engine/posix_engine/ev_poll_posix.cc",
++    "src/core/lib/event_engine/posix_engine/internal_errqueue.cc",
++    "src/core/lib/event_engine/posix_engine/lockfree_event.cc",
++    "src/core/lib/event_engine/posix_engine/native_posix_dns_resolver.cc",
++    "src/core/lib/event_engine/posix_engine/posix_endpoint.cc",
++    "src/core/lib/event_engine/posix_engine/posix_engine.cc",
++    "src/core/lib/event_engine/posix_engine/posix_engine_listener.cc",
++    "src/core/lib/event_engine/posix_engine/posix_engine_listener_utils.cc",
++    "src/core/lib/event_engine/posix_engine/set_socket_dualstack.cc",
++    "src/core/lib/event_engine/posix_engine/tcp_socket_utils.cc",
++    "src/core/lib/event_engine/posix_engine/timer.cc",
++    "src/core/lib/event_engine/posix_engine/timer_heap.cc",
++    "src/core/lib/event_engine/posix_engine/timer_manager.cc",
++    "src/core/lib/event_engine/posix_engine/traced_buffer_list.cc",
++    "src/core/lib/event_engine/posix_engine/wakeup_fd_eventfd.cc",
++    "src/core/lib/event_engine/posix_engine/wakeup_fd_pipe.cc",
++    "src/core/lib/event_engine/posix_engine/wakeup_fd_posix_default.cc",
++    "src/core/lib/event_engine/resolved_address.cc",
++    "src/core/lib/event_engine/shim.cc",
++    "src/core/lib/event_engine/slice_buffer.cc",
++    "src/core/lib/event_engine/slice.cc",
++    "src/core/lib/event_engine/tcp_socket_utils.cc",
++    "src/core/lib/event_engine/thread_local.cc",
++    "src/core/lib/event_engine/thread_pool/thread_count.cc",
++    "src/core/lib/event_engine/thread_pool/thread_pool_factory.cc",
++    "src/core/lib/event_engine/thread_pool/work_stealing_thread_pool.cc",
++    "src/core/lib/event_engine/thready_event_engine/thready_event_engine.cc",
++    "src/core/lib/event_engine/time_util.cc",
++    "src/core/lib/event_engine/utils.cc",
++    "src/core/lib/event_engine/windows/grpc_polled_fd_windows.cc",
++    "src/core/lib/event_engine/windows/iocp.cc",
++    "src/core/lib/event_engine/windows/native_windows_dns_resolver.cc",
++    "src/core/lib/event_engine/windows/windows_endpoint.cc",
++    "src/core/lib/event_engine/windows/windows_engine.cc",
++    "src/core/lib/event_engine/windows/windows_listener.cc",
++    "src/core/lib/event_engine/windows/win_socket.cc",
++    "src/core/lib/event_engine/work_queue/basic_work_queue.cc",
++    "src/core/lib/experiments/config.cc",
++    "src/core/lib/experiments/experiments.cc",
++    "src/core/lib/iomgr/buffer_list.cc",
++    "src/core/lib/iomgr/call_combiner.cc",
++    "src/core/lib/iomgr/cfstream_handle.cc",
++    "src/core/lib/iomgr/closure.cc",
++    "src/core/lib/iomgr/combiner.cc",
++    "src/core/lib/iomgr/dualstack_socket_posix.cc",
++    "src/core/lib/iomgr/endpoint.cc",
++    "src/core/lib/iomgr/endpoint_cfstream.cc",
++    "src/core/lib/iomgr/endpoint_pair_posix.cc",
++    "src/core/lib/iomgr/endpoint_pair_windows.cc",
++    "src/core/lib/iomgr/error.cc",
++    "src/core/lib/iomgr/error_cfstream.cc",
++    "src/core/lib/iomgr/ev_apple.cc",
++    "src/core/lib/iomgr/event_engine_shims/closure.cc",
++    "src/core/lib/iomgr/event_engine_shims/endpoint.cc",
++    "src/core/lib/iomgr/event_engine_shims/tcp_client.cc",
++    "src/core/lib/iomgr/ev_epoll1_linux.cc",
++    "src/core/lib/iomgr/ev_poll_posix.cc",
++    "src/core/lib/iomgr/ev_posix.cc",
++    "src/core/lib/iomgr/exec_ctx.cc",
++    "src/core/lib/iomgr/executor.cc",
++    "src/core/lib/iomgr/fork_posix.cc",
++    "src/core/lib/iomgr/fork_windows.cc",
++    "src/core/lib/iomgr/internal_errqueue.cc",
++    "src/core/lib/iomgr/iocp_windows.cc",
++    "src/core/lib/iomgr/iomgr.cc",
++    "src/core/lib/iomgr/iomgr_internal.cc",
++    "src/core/lib/iomgr/iomgr_posix.cc",
++    "src/core/lib/iomgr/iomgr_posix_cfstream.cc",
++    "src/core/lib/iomgr/iomgr_windows.cc",
++    "src/core/lib/iomgr/lockfree_event.cc",
++    "src/core/lib/iomgr/polling_entity.cc",
++    "src/core/lib/iomgr/pollset.cc",
++    "src/core/lib/iomgr/pollset_set.cc",
++    "src/core/lib/iomgr/pollset_set_windows.cc",
++    "src/core/lib/iomgr/pollset_windows.cc",
++    "src/core/lib/iomgr/resolve_address.cc",
++    "src/core/lib/iomgr/resolve_address_posix.cc",
++    "src/core/lib/iomgr/resolve_address_windows.cc",
++    "src/core/lib/iomgr/sockaddr_utils_posix.cc",
++    "src/core/lib/iomgr/socket_factory_posix.cc",
++    "src/core/lib/iomgr/socket_mutator.cc",
++    "src/core/lib/iomgr/socket_utils_common_posix.cc",
++    "src/core/lib/iomgr/socket_utils_linux.cc",
++    "src/core/lib/iomgr/socket_utils_posix.cc",
++    "src/core/lib/iomgr/socket_utils_windows.cc",
++    "src/core/lib/iomgr/socket_windows.cc",
++    "src/core/lib/iomgr/systemd_utils.cc",
++    "src/core/lib/iomgr/tcp_client.cc",
++    "src/core/lib/iomgr/tcp_client_cfstream.cc",
++    "src/core/lib/iomgr/tcp_client_posix.cc",
++    "src/core/lib/iomgr/tcp_client_windows.cc",
++    "src/core/lib/iomgr/tcp_posix.cc",
++    "src/core/lib/iomgr/tcp_server.cc",
++    "src/core/lib/iomgr/tcp_server_posix.cc",
++    "src/core/lib/iomgr/tcp_server_utils_posix_common.cc",
++    "src/core/lib/iomgr/tcp_server_utils_posix_ifaddrs.cc",
++    "src/core/lib/iomgr/tcp_server_utils_posix_noifaddrs.cc",
++    "src/core/lib/iomgr/tcp_server_windows.cc",
++    "src/core/lib/iomgr/tcp_windows.cc",
++    "src/core/lib/iomgr/timer.cc",
++    "src/core/lib/iomgr/timer_generic.cc",
++    "src/core/lib/iomgr/timer_heap.cc",
++    "src/core/lib/iomgr/timer_manager.cc",
++    "src/core/lib/iomgr/unix_sockets_posix.cc",
++    "src/core/lib/iomgr/unix_sockets_posix_noop.cc",
++    "src/core/lib/iomgr/vsock.cc",
++    "src/core/lib/iomgr/wakeup_fd_eventfd.cc",
++    "src/core/lib/iomgr/wakeup_fd_nospecial.cc",
++    "src/core/lib/iomgr/wakeup_fd_pipe.cc",
++    "src/core/lib/iomgr/wakeup_fd_posix.cc",
++    "src/core/lib/promise/activity.cc",
++    "src/core/lib/promise/party.cc",
++    "src/core/lib/promise/sleep.cc",
++    "src/core/lib/resource_quota/api.cc",
++    "src/core/lib/resource_quota/arena.cc",
++    "src/core/lib/resource_quota/connection_quota.cc",
++    "src/core/lib/resource_quota/memory_quota.cc",
++    "src/core/lib/resource_quota/periodic_update.cc",
++    "src/core/lib/resource_quota/resource_quota.cc",
++    "src/core/lib/resource_quota/thread_quota.cc",
++    "src/core/lib/security/authorization/authorization_policy_provider_vtable.cc",
++    "src/core/lib/security/authorization/evaluate_args.cc",
++    "src/core/lib/security/authorization/grpc_server_authz_filter.cc",
++    "src/core/lib/slice/percent_encoding.cc",
++    "src/core/lib/slice/slice_buffer.cc",
++    "src/core/lib/slice/slice.cc",
++    "src/core/lib/slice/slice_string_helpers.cc",
++    "src/core/lib/surface/byte_buffer.cc",
++    "src/core/lib/surface/byte_buffer_reader.cc",
++    "src/core/lib/surface/call.cc",
++    "src/core/lib/surface/call_details.cc",
++    "src/core/lib/surface/call_log_batch.cc",
++    "src/core/lib/surface/call_utils.cc",
++    "src/core/lib/surface/channel.cc",
++    "src/core/lib/surface/channel_create.cc",
++    "src/core/lib/surface/channel_init.cc",
++    "src/core/lib/surface/channel_stack_type.cc",
++    "src/core/lib/surface/completion_queue.cc",
++    "src/core/lib/surface/completion_queue_factory.cc",
++    "src/core/lib/surface/connection_context.cc",
++    "src/core/lib/surface/event_string.cc",
++    "src/core/lib/surface/filter_stack_call.cc",
++    "src/core/lib/surface/init.cc",
++    "src/core/lib/surface/init_internally.cc",
++    "src/core/lib/surface/lame_client.cc",
++    "src/core/lib/surface/legacy_channel.cc",
++    "src/core/lib/surface/metadata_array.cc",
++    "src/core/lib/surface/validate_metadata.cc",
++    "src/core/lib/surface/version.cc",
++    "src/core/lib/transport/bdp_estimator.cc",
++    "src/core/lib/transport/call_final_info.cc",
++    "src/core/lib/transport/connectivity_state.cc",
++    "src/core/lib/transport/error_utils.cc",
++    "src/core/lib/transport/status_conversion.cc",
++    "src/core/lib/transport/timeout_encoding.cc",
++    "src/core/lib/transport/transport.cc",
++    "src/core/lib/transport/transport_op_string.cc",
++    "src/core/load_balancing/address_filtering.cc",
++    "src/core/load_balancing/backend_metric_parser.cc",
++    "src/core/load_balancing/child_policy_handler.cc",
++    "src/core/load_balancing/endpoint_list.cc",
++    "src/core/load_balancing/grpclb/client_load_reporting_filter.cc",
++    "src/core/load_balancing/grpclb/grpclb_balancer_addresses.cc",
++    "src/core/load_balancing/grpclb/grpclb.cc",
++    "src/core/load_balancing/grpclb/grpclb_client_stats.cc",
++    "src/core/load_balancing/grpclb/load_balancer_api.cc",
++    "src/core/load_balancing/health_check_client.cc",
++    "src/core/load_balancing/lb_policy.cc",
++    "src/core/load_balancing/lb_policy_registry.cc",
++    "src/core/load_balancing/oob_backend_metric.cc",
++    "src/core/load_balancing/outlier_detection/outlier_detection.cc",
++    "src/core/load_balancing/pick_first/pick_first.cc",
++    "src/core/load_balancing/priority/priority.cc",
++    "src/core/load_balancing/ring_hash/ring_hash.cc",
++    "src/core/load_balancing/rls/rls.cc",
++    "src/core/load_balancing/round_robin/round_robin.cc",
++    "src/core/load_balancing/weighted_round_robin/static_stride_scheduler.cc",
++    "src/core/load_balancing/weighted_round_robin/weighted_round_robin.cc",
++    "src/core/load_balancing/weighted_target/weighted_target.cc",
++    "src/core/plugin_registry/grpc_plugin_registry.cc",
++    "src/core/resolver/dns/c_ares/dns_resolver_ares.cc",
++    "src/core/resolver/dns/c_ares/grpc_ares_ev_driver_posix.cc",
++    "src/core/resolver/dns/c_ares/grpc_ares_ev_driver_windows.cc",
++    "src/core/resolver/dns/c_ares/grpc_ares_wrapper.cc",
++    "src/core/resolver/dns/c_ares/grpc_ares_wrapper_posix.cc",
++    "src/core/resolver/dns/c_ares/grpc_ares_wrapper_windows.cc",
++    "src/core/resolver/dns/dns_resolver_plugin.cc",
++    "src/core/resolver/dns/event_engine/event_engine_client_channel_resolver.cc",
++    "src/core/resolver/dns/event_engine/service_config_helper.cc",
++    "src/core/resolver/dns/native/dns_resolver.cc",
++    "src/core/resolver/endpoint_addresses.cc",
++    "src/core/resolver/fake/fake_resolver.cc",
++    "src/core/resolver/polling_resolver.cc",
++    "src/core/resolver/resolver.cc",
++    "src/core/resolver/resolver_registry.cc",
++    "src/core/resolver/sockaddr/sockaddr_resolver.cc",
++    "src/core/server/server_call_tracer_filter.cc",
++    "src/core/server/server.cc",
++    "src/core/service_config/service_config_channel_arg_filter.cc",
++    "src/core/service_config/service_config_impl.cc",
++    "src/core/service_config/service_config_parser.cc",
++    "src/core/telemetry/call_tracer.cc",
++    "src/core/telemetry/histogram_view.cc",
++    "src/core/telemetry/metrics.cc",
++    "src/core/telemetry/stats.cc",
++    "src/core/telemetry/stats_data.cc",
++    "src/core/transport/auth_context.cc",
++    "src/core/tsi/alts/handshaker/transport_security_common_api.cc",
++    "src/core/tsi/fake_transport_security.cc",
++    "src/core/tsi/local_transport_security.cc",
++    "src/core/tsi/transport_security.cc",
++    "src/core/tsi/transport_security_grpc.cc",
++    "src/core/util/alloc.cc",
++    "src/core/util/backoff.cc",
++    "src/core/util/crash.cc",
++    "src/core/util/dump_args.cc",
++    "src/core/util/event_log.cc",
++    "src/core/util/examine_stack.cc",
++    "src/core/util/fork.cc",
++    "src/core/util/gethostname_fallback.cc",
++    "src/core/util/gethostname_host_name_max.cc",
++    "src/core/util/gethostname_sysconf.cc",
++    "src/core/util/glob.cc",
++    "src/core/util/gpr_time.cc",
++    "src/core/util/grpc_if_nametoindex_posix.cc",
++    "src/core/util/grpc_if_nametoindex_unsupported.cc",
++    "src/core/util/host_port.cc",
++    "src/core/util/http_client/format_request.cc",
++    "src/core/util/http_client/httpcli.cc",
++    "src/core/util/http_client/parser.cc",
++    "src/core/util/iphone/cpu.cc",
++    "src/core/util/json/json_object_loader.cc",
++    "src/core/util/json/json_reader.cc",
++    "src/core/util/json/json_writer.cc",
++    "src/core/util/latent_see.cc",
++    "src/core/util/linux/cpu.cc",
++    "src/core/util/linux/env.cc",
++    "src/core/util/load_file.cc",
++    "src/core/util/log.cc",
++    "src/core/util/mpscq.cc",
++    "src/core/util/msys/tmpfile.cc",
++    "src/core/util/per_cpu.cc",
++    "src/core/util/posix/cpu.cc",
++    "src/core/util/posix/env.cc",
++    "src/core/util/posix/stat.cc",
++    "src/core/util/posix/string.cc",
++    "src/core/util/posix/sync.cc",
++    "src/core/util/posix/thd.cc",
++    "src/core/util/posix/time.cc",
++    "src/core/util/posix/tmpfile.cc",
++    "src/core/util/random_early_detection.cc",
++    "src/core/util/ref_counted_string.cc",
++    "src/core/util/status_helper.cc",
++    "src/core/util/strerror.cc",
++    "src/core/util/string.cc",
++    "src/core/util/sync_abseil.cc",
++    "src/core/util/sync.cc",
++    "src/core/util/tchar.cc",
++    "src/core/util/time_averaged_stats.cc",
++    "src/core/util/time.cc",
++    "src/core/util/time_precise.cc",
++    "src/core/util/time_util.cc",
++    "src/core/util/uri.cc",
++    "src/core/util/uuid_v4.cc",
++    "src/core/util/validation_errors.cc",
++    "src/core/util/windows/cpu.cc",
++    "src/core/util/windows/env.cc",
++    "src/core/util/windows/stat.cc",
++    "src/core/util/windows/string.cc",
++    "src/core/util/windows/string_util.cc",
++    "src/core/util/windows/sync.cc",
++    "src/core/util/windows/thd.cc",
++    "src/core/util/windows/time.cc",
++    "src/core/util/windows/tmpfile.cc",
++    "src/core/util/work_serializer.cc",
++    "src/cpp/client/call_credentials.cc",
++    "src/cpp/client/channel_cc.cc",
++    "src/cpp/client/channel_credentials.cc",
++    "src/cpp/client/client_callback.cc",
++    "src/cpp/client/client_context.cc",
++    "src/cpp/client/client_interceptor.cc",
++    "src/cpp/client/client_stats_interceptor.cc",
++    "src/cpp/client/create_channel.cc",
++    "src/cpp/client/create_channel_internal.cc",
++    "src/cpp/client/create_channel_posix.cc",
++    "src/cpp/client/global_callback_hook.cc",
++    "src/cpp/client/insecure_credentials.cc",
++    "src/cpp/common/alarm.cc",
++    "src/cpp/common/channel_arguments.cc",
++    "src/cpp/common/completion_queue_cc.cc",
++    "src/cpp/common/resource_quota_cc.cc",
++    "src/cpp/common/rpc_method.cc",
++    "src/cpp/common/validate_service_config.cc",
++    "src/cpp/common/version_cc.cc",
++    "src/cpp/server/async_generic_service.cc",
++    "src/cpp/server/backend_metric_recorder.cc",
++    "src/cpp/server/channel_argument_option.cc",
++    "src/cpp/server/create_default_thread_pool.cc",
++    "src/cpp/server/external_connection_acceptor_impl.cc",
++    "src/cpp/server/health/default_health_check_service.cc",
++    "src/cpp/server/health/health_check_service.cc",
++    "src/cpp/server/health/health_check_service_server_builder_option.cc",
++    "src/cpp/server/insecure_server_credentials.cc",
++    "src/cpp/server/server_builder.cc",
++    "src/cpp/server/server_callback.cc",
++    "src/cpp/server/server_cc.cc",
++    "src/cpp/server/server_context.cc",
++    "src/cpp/server/server_credentials.cc",
++    "src/cpp/server/server_posix.cc",
++    "src/cpp/thread_manager/thread_manager.cc",
++    "src/cpp/util/byte_buffer_cc.cc",
++    "src/cpp/util/status.cc",
++    "src/cpp/util/string_ref.cc",
++    "src/cpp/util/time_cc.cc",
++]
++
++// Autogenerated by update_android_bp.sh, do not modify.
++GRPC_SECURE_SRCS = [
++    "src/core/credentials/call/external/aws_external_account_credentials.cc",
++    "src/core/credentials/call/external/aws_request_signer.cc",
++    "src/core/credentials/call/external/external_account_credentials.cc",
++    "src/core/credentials/call/external/file_external_account_credentials.cc",
++    "src/core/credentials/call/external/url_external_account_credentials.cc",
++    "src/core/credentials/call/gcp_service_account_identity/gcp_service_account_identity_credentials.cc",
++    "src/core/credentials/call/iam/iam_credentials.cc",
++    "src/core/credentials/call/jwt/json_token.cc",
++    "src/core/credentials/call/jwt/jwt_credentials.cc",
++    "src/core/credentials/call/jwt/jwt_verifier.cc",
++    "src/core/credentials/call/oauth2/oauth2_credentials.cc",
++    "src/core/credentials/call/token_fetcher/token_fetcher_credentials.cc",
++    "src/core/credentials/transport/alts/alts_credentials.cc",
++    "src/core/credentials/transport/alts/alts_security_connector.cc",
++    "src/core/credentials/transport/channel_creds_registry_init.cc",
++    "src/core/credentials/transport/google_default/credentials_generic.cc",
++    "src/core/credentials/transport/google_default/google_default_credentials.cc",
++    "src/core/credentials/transport/local/local_credentials.cc",
++    "src/core/credentials/transport/local/local_security_connector.cc",
++    "src/core/credentials/transport/ssl/ssl_credentials.cc",
++    "src/core/credentials/transport/ssl/ssl_security_connector.cc",
++    "src/core/credentials/transport/tls/grpc_tls_certificate_distributor.cc",
++    "src/core/credentials/transport/tls/grpc_tls_certificate_match.cc",
++    "src/core/credentials/transport/tls/grpc_tls_certificate_provider.cc",
++    "src/core/credentials/transport/tls/grpc_tls_certificate_verifier.cc",
++    "src/core/credentials/transport/tls/grpc_tls_credentials_options.cc",
++    "src/core/credentials/transport/tls/grpc_tls_crl_provider.cc",
++    "src/core/credentials/transport/tls/ssl_utils.cc",
++    "src/core/credentials/transport/tls/tls_credentials.cc",
++    "src/core/credentials/transport/tls/tls_security_connector.cc",
++    "src/core/credentials/transport/xds/xds_credentials.cc",
++    "src/core/ext/filters/gcp_authentication/gcp_authentication_filter.cc",
++    "src/core/ext/filters/gcp_authentication/gcp_authentication_service_config_parser.cc",
++    "src/core/ext/filters/rbac/rbac_filter.cc",
++    "src/core/ext/filters/rbac/rbac_service_config_parser.cc",
++    "src/core/ext/filters/stateful_session/stateful_session_filter.cc",
++    "src/core/ext/filters/stateful_session/stateful_session_service_config_parser.cc",
++    "src/core/ext/transport/chttp2/alpn/alpn.cc",
++    "src/core/handshaker/http_connect/xds_http_proxy_mapper.cc",
++    "src/core/lib/security/authorization/audit_logging.cc",
++    "src/core/lib/security/authorization/grpc_authorization_engine.cc",
++    "src/core/lib/security/authorization/matchers.cc",
++    "src/core/lib/security/authorization/rbac_policy.cc",
++    "src/core/lib/security/authorization/stdout_logger.cc",
++    "src/core/load_balancing/xds/cds.cc",
++    "src/core/load_balancing/xds/xds_cluster_impl.cc",
++    "src/core/load_balancing/xds/xds_cluster_manager.cc",
++    "src/core/load_balancing/xds/xds_override_host.cc",
++    "src/core/load_balancing/xds/xds_wrr_locality.cc",
++    "src/core/plugin_registry/grpc_plugin_registry_extra.cc",
++    "src/core/resolver/google_c2p/google_c2p_resolver.cc",
++    "src/core/resolver/xds/xds_config.cc",
++    "src/core/resolver/xds/xds_dependency_manager.cc",
++    "src/core/resolver/xds/xds_resolver.cc",
++    "src/core/server/server_config_selector_filter.cc",
++    "src/core/server/xds_channel_stack_modifier.cc",
++    "src/core/server/xds_server_config_fetcher.cc",
++    "src/core/tsi/alts/crypt/aes_gcm.cc",
++    "src/core/tsi/alts/crypt/gsec.cc",
++    "src/core/tsi/alts/frame_protector/alts_counter.cc",
++    "src/core/tsi/alts/frame_protector/alts_crypter.cc",
++    "src/core/tsi/alts/frame_protector/alts_frame_protector.cc",
++    "src/core/tsi/alts/frame_protector/alts_record_protocol_crypter_common.cc",
++    "src/core/tsi/alts/frame_protector/alts_seal_privacy_integrity_crypter.cc",
++    "src/core/tsi/alts/frame_protector/alts_unseal_privacy_integrity_crypter.cc",
++    "src/core/tsi/alts/frame_protector/frame_handler.cc",
++    "src/core/tsi/alts/handshaker/alts_handshaker_client.cc",
++    "src/core/tsi/alts/handshaker/alts_shared_resource.cc",
++    "src/core/tsi/alts/handshaker/alts_tsi_handshaker.cc",
++    "src/core/tsi/alts/handshaker/alts_tsi_utils.cc",
++    "src/core/tsi/alts/zero_copy_frame_protector/alts_grpc_integrity_only_record_protocol.cc",
++    "src/core/tsi/alts/zero_copy_frame_protector/alts_grpc_privacy_integrity_record_protocol.cc",
++    "src/core/tsi/alts/zero_copy_frame_protector/alts_grpc_record_protocol_common.cc",
++    "src/core/tsi/alts/zero_copy_frame_protector/alts_iovec_record_protocol.cc",
++    "src/core/tsi/alts/zero_copy_frame_protector/alts_zero_copy_grpc_protector.cc",
++    "src/core/tsi/ssl/key_logging/ssl_key_logging.cc",
++    "src/core/tsi/ssl/session_cache/ssl_session_boringssl.cc",
++    "src/core/tsi/ssl/session_cache/ssl_session_cache.cc",
++    "src/core/tsi/ssl/session_cache/ssl_session_openssl.cc",
++    "src/core/tsi/ssl_transport_security.cc",
++    "src/core/tsi/ssl_transport_security_utils.cc",
++    "src/core/util/gcp_metadata_query.cc",
++    "src/core/util/http_client/httpcli_security_connector.cc",
++    "src/core/util/json/json_util.cc",
++    "src/core/util/matchers.cc",
++    "src/core/util/posix/directory_reader.cc",
++    "src/core/util/windows/directory_reader.cc",
++    "src/core/xds/grpc/certificate_provider_store.cc",
++    "src/core/xds/grpc/file_watcher_certificate_provider_factory.cc",
++    "src/core/xds/grpc/xds_audit_logger_registry.cc",
++    "src/core/xds/grpc/xds_bootstrap_grpc.cc",
++    "src/core/xds/grpc/xds_certificate_provider.cc",
++    "src/core/xds/grpc/xds_client_grpc.cc",
++    "src/core/xds/grpc/xds_cluster.cc",
++    "src/core/xds/grpc/xds_cluster_parser.cc",
++    "src/core/xds/grpc/xds_cluster_specifier_plugin.cc",
++    "src/core/xds/grpc/xds_common_types.cc",
++    "src/core/xds/grpc/xds_common_types_parser.cc",
++    "src/core/xds/grpc/xds_endpoint.cc",
++    "src/core/xds/grpc/xds_endpoint_parser.cc",
++    "src/core/xds/grpc/xds_health_status.cc",
++    "src/core/xds/grpc/xds_http_fault_filter.cc",
++    "src/core/xds/grpc/xds_http_filter_registry.cc",
++    "src/core/xds/grpc/xds_http_gcp_authn_filter.cc",
++    "src/core/xds/grpc/xds_http_rbac_filter.cc",
++    "src/core/xds/grpc/xds_http_stateful_session_filter.cc",
++    "src/core/xds/grpc/xds_lb_policy_registry.cc",
++    "src/core/xds/grpc/xds_listener.cc",
++    "src/core/xds/grpc/xds_listener_parser.cc",
++    "src/core/xds/grpc/xds_metadata.cc",
++    "src/core/xds/grpc/xds_metadata_parser.cc",
++    "src/core/xds/grpc/xds_route_config.cc",
++    "src/core/xds/grpc/xds_route_config_parser.cc",
++    "src/core/xds/grpc/xds_routing.cc",
++    "src/core/xds/grpc/xds_server_grpc.cc",
++    "src/core/xds/grpc/xds_transport_grpc.cc",
++    "src/core/xds/xds_client/lrs_client.cc",
++    "src/core/xds/xds_client/xds_api.cc",
++    "src/core/xds/xds_client/xds_backend_metric_propagation.cc",
++    "src/core/xds/xds_client/xds_bootstrap.cc",
++    "src/core/xds/xds_client/xds_client.cc",
++    "src/cpp/client/secure_credentials.cc",
++    "src/cpp/client/xds_credentials.cc",
++    "src/cpp/common/auth_property_iterator.cc",
++    "src/cpp/common/secure_auth_context.cc",
++    "src/cpp/common/secure_create_auth_context.cc",
++    "src/cpp/common/tls_certificate_provider.cc",
++    "src/cpp/common/tls_certificate_verifier.cc",
++    "src/cpp/common/tls_credentials_options.cc",
++    "src/cpp/server/secure_server_credentials.cc",
++    "src/cpp/server/xds_server_builder.cc",
++    "src/cpp/server/xds_server_credentials.cc",
++]
++
++// Autogenerated by update_android_bp.sh, do not modify.
++GRPC_UNSECURE_SRCS = [
++    "src/core/plugin_registry/grpc_plugin_registry_noextra.cc",
++    "src/cpp/common/insecure_create_auth_context.cc",
++]
++// file_lists_end
++
++filegroup {
++    name: "grpc_roots_pem",
++    srcs: ["etc/roots.pem"],
++    visibility: ["//external/grpc-grpc:__subpackages__"],
++}
++
++// Defaults for the bundled dependencies in third_party
++cc_defaults {
++    name: "grpc_deps_defaults",
++    host_supported: true,
++    vendor_available: true,
++    product_available: true,
++    recovery_available: true,
++    apex_available: [
++        "//apex_available:platform",
++    ],
++    visibility: ["//external/grpc-grpc:__subpackages__"],
++}
++
++// These ABSL libs are referenced in the include/ dir
++GRPC_ABSL_LIBS_EXPORTED = [
++    "absl_functional_any_invocable",
++    "absl_functional_function_ref",
++    "absl_log_absl_check",
++    "absl_log_absl_log",
++    "absl_status",
++    "absl_status_statusor",
++    "absl_strings",
++    "absl_strings_cord",
++    "absl_synchronization",
++    "absl_time",
++    "absl_types_optional",
++    "absl_types_variant",
++    "absl_utility",
++]
++
++// These ABSL libs are only referenced in the src/ dir,
++// so they don't need to be exported
++GRPC_ABSL_LIBS_INTERNAL = [
++    "absl_algorithm_container",
++    "absl_base",
++    "absl_base_config",
++    "absl_base_core_headers",
++    "absl_base_no_destructor",
++    "absl_cleanup",
++    "absl_container_flat_hash_map",
++    "absl_container_flat_hash_set",
++    "absl_container_inlined_vector",
++    "absl_debugging_failure_signal_handler",
++    "absl_flags_flag",
++    "absl_flags_marshalling",
++    "absl_functional_bind_front",
++    "absl_hash",
++    "absl_log",
++    "absl_log_check",
++    "absl_log_initialize",
++    "absl_memory",
++    "absl_meta_type_traits",
++    "absl_numeric_int128",
++    "absl_random",
++    "absl_random_bit_gen_ref",
++    "absl_random_distributions",
++    "absl_strings_str_format",
++    "absl_types_span",
++]
++
++cc_defaults {
++    name: "grpc_defaults",
++    defaults: ["grpc_deps_defaults"],
++    cflags: [
++        "-Wno-implicit-fallthrough",
++        "-Wno-missing-field-initializers",
++        "-Wno-unused-parameter",
++    ],
++    header_libs: [
++        "jni_headers",
++        "libgrpc_third_party_xxhash",
++    ],
++    static_libs: [
++        "libaddress_sorting",
++    ],
++    shared_libs: [
++        "libbinder_ndk",
++        "libz",
++    ],
++    local_include_dirs: [
++        "include",
++    ],
++    target: {
++        darwin: {
++            cflags: ["-UANDROID"],
++        },
++    },
++}
++
++cc_defaults {
++    name: "grpc_version_defaults",
++    target: {
++        // Needs to be updated when a new version is imported.
++        vendor: {
++            suffix: "-1.72.2",
++        },
++        product: {
++            suffix: "-1.72.2",
++        },
++    },
++}
++
++cc_library_host_static {
++    name: "libgrpc_plugin_support",
++    defaults: ["grpc_defaults"],
++    srcs: [
++        "src/compiler/cpp_generator.cc",
++        "src/compiler/proto_parser_helper.cc",
++        "src/compiler/python_generator.cc",
++    ],
++    local_include_dirs: [
++        "include",
++    ],
++    shared_libs: [
++        "libprotoc",
++    ],
++    static_libs: GRPC_ABSL_LIBS_EXPORTED + GRPC_ABSL_LIBS_INTERNAL,
++    export_static_lib_headers: GRPC_ABSL_LIBS_EXPORTED,
++}
++
++cc_binary_host {
++    name: "protoc-gen-grpc-cpp-plugin",
++    defaults: ["grpc_defaults"],
++    srcs: [
++        "src/compiler/cpp_plugin.cc",
++    ],
++    static_libs: [
++        "libgrpc_plugin_support",
++    ],
++    shared_libs: [
++        "libprotoc",
++    ],
++    visibility: ["//visibility:public"],
++}
++
++cc_binary_host {
++    name: "protoc-gen-grpc-python-plugin",
++    defaults: ["grpc_defaults"],
++    srcs: [
++        "src/compiler/python_plugin.cc",
++    ],
++    static_libs: [
++        "libgrpc_plugin_support",
++    ],
++    shared_libs: [
++        "libprotoc",
++    ],
++    visibility: ["//visibility:public"],
++}
++
++genrule {
++    name: "reflection_proto_h",
++    tools: [
++        "aprotoc",
++        "protoc-gen-grpc-cpp-plugin",
++    ],
++    cmd: "$(location aprotoc) -Iexternal/grpc-grpc --plugin=protoc-gen-grpc=$(location protoc-gen-grpc-cpp-plugin) $(in) --grpc_out=$(genDir) --cpp_out=$(genDir)",
++    srcs: [
++        "src/proto/grpc/reflection/v1/reflection.proto",
++        "src/proto/grpc/reflection/v1alpha/reflection.proto",
++    ],
++    out: [
++        "src/proto/grpc/reflection/v1/reflection.pb.h",
++        "src/proto/grpc/reflection/v1/reflection.grpc.pb.h",
++        "src/proto/grpc/reflection/v1alpha/reflection.pb.h",
++        "src/proto/grpc/reflection/v1alpha/reflection.grpc.pb.h",
++    ],
++}
++
++genrule {
++    name: "reflection_proto_cc",
++    tools: [
++        "aprotoc",
++        "protoc-gen-grpc-cpp-plugin",
++    ],
++    cmd: "$(location aprotoc) -Iexternal/grpc-grpc --plugin=protoc-gen-grpc=$(location protoc-gen-grpc-cpp-plugin) $(in) --grpc_out=$(genDir) --cpp_out=$(genDir)",
++    srcs: [
++        "src/proto/grpc/reflection/v1/reflection.proto",
++        "src/proto/grpc/reflection/v1alpha/reflection.proto",
++    ],
++    out: [
++        "src/proto/grpc/reflection/v1/reflection.pb.cc",
++        "src/proto/grpc/reflection/v1/reflection.grpc.pb.cc",
++        "src/proto/grpc/reflection/v1alpha/reflection.pb.cc",
++        "src/proto/grpc/reflection/v1alpha/reflection.grpc.pb.cc",
++    ],
++}
++
++cc_library_host_static {
++    name: "libgrpc++_reflection",
++    defaults: ["grpc_defaults"],
++    srcs: [
++        "src/cpp/ext/proto_server_reflection.cc",
++        "src/cpp/ext/proto_server_reflection_plugin.cc",
++    ],
++    generated_headers: [
++        "reflection_proto_h",
++    ],
++    export_generated_headers: [
++        "reflection_proto_h",
++    ],
++    generated_sources: [
++        "reflection_proto_cc",
++    ],
++    static_libs: [
++        "libgrpc++_common",
++    ] + GRPC_ABSL_LIBS_EXPORTED + GRPC_ABSL_LIBS_INTERNAL,
++    shared_libs: [
++        "libprotobuf-cpp-full",
++    ],
++    visibility: ["//visibility:public"],
++}
++
++cc_library_host_static {
++    name: "grpc_cli_libs",
++    srcs: [
++        "test/cpp/util/cli_call.cc",
++        "test/cpp/util/cli_credentials.cc",
++        "test/cpp/util/grpc_tool.cc",
++        "test/cpp/util/proto_file_parser.cc",
++        "test/cpp/util/service_describer.cc",
++        "test/cpp/util/proto_reflection_descriptor_database.cc",
++        "test/cpp/util/test_config_cc.cc",
++    ],
++    local_include_dirs: [
++        "include",
++    ],
++    static_libs: [
++        "absl_flags_parse",
++    ] + GRPC_ABSL_LIBS_EXPORTED + GRPC_ABSL_LIBS_INTERNAL,
++    generated_headers: [
++        "reflection_proto_h",
++    ],
++    export_generated_headers: [
++        "reflection_proto_h",
++    ],
++    generated_sources: [
++        "reflection_proto_cc",
++    ],
++    shared_libs: [
++        "libprotobuf-cpp-full",
++    ],
++    cflags: [
++        "-Wno-unused-parameter",
++    ],
++    export_include_dirs: ["."],
++    visibility: ["//device/google/cuttlefish:__subpackages__"],
++}
++
++cc_library_headers {
++    name: "libgrpc++_internal_headers",
++    defaults: ["grpc_defaults"],
++    export_include_dirs: ["."],
++    visibility: ["//visibility:public"],
++}
++
++cc_library_static {
++    name: "libgrpc++_common",
++    defaults: ["grpc_defaults"],
++    srcs: GRPC_COMMON_SRCS,
++    static_libs: [
++        "libgrpc_third_party_upb",
++        "libgrpc_third_party_utf8_range",
++        "libgrpc_upb_protos",
++        "libregex_re2",
++    ] + GRPC_ABSL_LIBS_EXPORTED + GRPC_ABSL_LIBS_INTERNAL,
++    shared_libs: ["liblog"],
++    apex_available: [
++        "//apex_available:anyapex",
++        "//apex_available:platform",
++    ],
++    min_sdk_version: "apex_inherit",
++}
++
++// gRPC C++ library target with no encryption or authentication
++cc_library_shared {
++    name: "libgrpc++_unsecure",
++    defaults: [
++        "grpc_defaults",
++        "grpc_version_defaults",
++    ],
++    srcs: GRPC_UNSECURE_SRCS,
++    static_libs: [
++        "libgrpc_third_party_upb",
++        "libgrpc_third_party_utf8_range",
++        "libgrpc_upb_protos",
++        "libregex_re2",
++    ] + GRPC_ABSL_LIBS_EXPORTED + GRPC_ABSL_LIBS_INTERNAL,
++    whole_static_libs: [
++        "libgrpc++_common",
++    ],
++    shared_libs: [
++        "liblog",
++    ],
++    export_static_lib_headers: GRPC_ABSL_LIBS_EXPORTED,
++    export_include_dirs: [
++        "include",
++    ],
++    visibility: ["//visibility:public"],
++}
++
++// Secured gRPC C++ library target
++cc_library_shared {
++    name: "libgrpc++",
++    defaults: [
++        "grpc_defaults",
++        "grpc_version_defaults",
++    ],
++    srcs: GRPC_SECURE_SRCS,
++    static_libs: [
++        "libgrpc_third_party_upb",
++        "libgrpc_third_party_utf8_range",
++        "libgrpc_upb_protos",
++        "libregex_re2",
++    ] + GRPC_ABSL_LIBS_EXPORTED + GRPC_ABSL_LIBS_INTERNAL,
++    whole_static_libs: [
++        "libgrpc++_common",
++    ],
++    shared_libs: [
++        "liblog",
++        "libcrypto",
++        "libssl",
++    ],
++    export_static_lib_headers: GRPC_ABSL_LIBS_EXPORTED,
++    export_include_dirs: [
++        "include",
++    ],
++    visibility: ["//visibility:public"],
++    apex_available: [
++        "//apex_available:anyapex",
++        "//apex_available:platform",
++    ],
++    min_sdk_version: "apex_inherit",
++}
++
++cc_library_static {
++    name: "libgrpc_upb_protos",
++    defaults: ["grpc_defaults"],
++    srcs: [
++        "src/core/ext/upb-gen/**/*.c",
++        "src/core/ext/upbdefs-gen/**/*.c",
++    ],
++    export_include_dirs: [
++        "src/core/ext/upb-gen",
++        "src/core/ext/upbdefs-gen",
++    ],
++    header_libs: [
++        "libgrpc_third_party_upb_headers",
++    ],
++    apex_available: [
++        "//apex_available:anyapex",
++        "//apex_available:platform",
++    ],
++    min_sdk_version: "apex_inherit",
++}
++
++cc_library_static {
++    name: "libgpr_test_util",
++    defaults: ["grpc_defaults"],
++    srcs: [
++        "test/core/event_engine/test_init.cc",
++        "test/core/test_util/build.cc",
++        "test/core/test_util/stack_tracer.cc",
++        "test/core/test_util/test_config.cc",
++    ],
++    header_libs: [
++        "libgrpc++_internal_headers",
++    ],
++    static_libs: [
++        "libgrpc++_common",
++    ] + GRPC_ABSL_LIBS_EXPORTED + GRPC_ABSL_LIBS_INTERNAL,
++}
++
++cc_defaults {
++    name: "grpc_test_defaults",
++    defaults: ["grpc_defaults"],
++    test_suites: ["general-tests"],
++    header_libs: ["libgrpc++_internal_headers"],
++    static_libs: [
++        "libgpr_test_util",
++    ] + GRPC_ABSL_LIBS_EXPORTED + GRPC_ABSL_LIBS_INTERNAL,
++    shared_libs: [
++        "libgrpc++_unsecure",
++        "liblog",
++    ],
++    recovery_available: false,
++}
++
++cc_test {
++    name: "grpc_alarm_test",
++    defaults: ["grpc_test_defaults"],
++    srcs: ["test/cpp/common/alarm_test.cc"],
++}
++
++cc_test {
++    name: "grpc_sockaddr_utils_test",
++    defaults: ["grpc_test_defaults"],
++    srcs: ["test/core/address_utils/sockaddr_utils_test.cc"],
++}
++
++cc_test {
++    name: "grpc_parse_address_test",
++    defaults: ["grpc_test_defaults"],
++    srcs: ["test/core/address_utils/parse_address_test.cc"],
++}
++
++cc_test {
++    name: "grpc_tcp_socket_utils_test",
++    defaults: ["grpc_test_defaults"],
++    srcs: ["test/core/event_engine/tcp_socket_utils_test.cc"],
++}
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-pasit-original/external__grpc-grpc__src__python__grpcio__Android.bp
+@@ -0,0 +1,86 @@
++package {
++    default_applicable_licenses: ["external_grpc-grpc_license"],
++}
++
++genrule {
++    name: "py-grpcio-roots-pem",
++    srcs: [":grpc_roots_pem"],
++    out: ["_credentials/roots.pem"],
++    cmd: "mkdir -p $(genDir)/_credentials && cp -f $(location :grpc_roots_pem) $(genDir)/_credentials/roots.pem",
++}
++
++python_library_host {
++    name: "py-grpcio",
++    srcs: [
++        "grpc/**/*.py",
++    ],
++    libs: [
++        "py-grpcio-cygrpc",
++    ],
++}
++
++python_library_host {
++    name: "py-grpcio-cygrpc",
++    shared_libs: [
++        "cygrpc",
++    ],
++    data: [":py-grpcio-roots-pem"],
++    pkg_path: "grpc/_cython",
++    visibility: ["//visibility:private"],
++}
++
++cc_library_host_shared {
++    name: "cygrpc",
++    srcs: [
++        "grpc/_cython/cygrpc.cpp",
++    ],
++    compile_multilib: "64",
++    shared_libs: [
++        "libgrpc++",
++    ],
++    static_libs: [
++        "absl_algorithm_container",
++        "absl_base",
++        "absl_base_config",
++        "absl_base_core_headers",
++        "absl_base_no_destructor",
++        "absl_cleanup",
++        "absl_container_flat_hash_map",
++        "absl_container_flat_hash_set",
++        "absl_container_inlined_vector",
++        "absl_debugging_failure_signal_handler",
++        "absl_flags_flag",
++        "absl_flags_marshalling",
++        "absl_functional_any_invocable",
++        "absl_functional_bind_front",
++        "absl_functional_function_ref",
++        "absl_hash",
++        "absl_log",
++        "absl_log_absl_check",
++        "absl_log_absl_log",
++        "absl_log_check",
++        "absl_memory",
++        "absl_meta_type_traits",
++        "absl_numeric_int128",
++        "absl_random",
++        "absl_random_bit_gen_ref",
++        "absl_random_distributions",
++        "absl_status",
++        "absl_status_statusor",
++        "absl_strings",
++        "absl_strings_cord",
++        "absl_strings_str_format",
++        "absl_synchronization",
++        "absl_time",
++        "absl_types_optional",
++        "absl_types_span",
++        "absl_types_variant",
++        "absl_utility",
++    ],
++    allow_undefined_symbols: true,
++    header_libs: [
++        "libgrpc++_internal_headers",
++        "py3-headers",
++    ],
++    visibility: ["//visibility:private"],
++}
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-pasit-original/external__grpc-grpc__third_party__address_sorting__Android.bp
+@@ -0,0 +1,35 @@
++package {
++    default_applicable_licenses: [
++        "external_grpc-grpc_third_party_address_sorting_license",
++    ],
++}
++
++// Added automatically by a large-scale-change
++// See: http://go/android-license-faq
++license {
++    name: "external_grpc-grpc_third_party_address_sorting_license",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "SPDX-license-identifier-BSD",
++    ],
++    license_text: [
++        "LICENSE",
++    ],
++}
++
++cc_library_static {
++    name: "libaddress_sorting",
++    defaults: ["grpc_deps_defaults"],
++    srcs: [
++        "address_sorting.c",
++        "address_sorting_posix.c",
++        "address_sorting_windows.c",
++    ],
++    export_include_dirs: ["include"],
++    local_include_dirs: ["."],
++    apex_available: [
++        "//apex_available:anyapex",
++        "//apex_available:platform",
++    ],
++    min_sdk_version: "apex_inherit",
++}
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-pasit-original/external__grpc-grpc__third_party__upb__Android.bp
+@@ -0,0 +1,107 @@
++package {
++    default_applicable_licenses: ["external_grpc-grpc_third_party_upb_license"],
++}
++
++license {
++    name: "external_grpc-grpc_third_party_upb_license",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "SPDX-license-identifier-BSD-3-Clause",
++    ],
++    license_text: [
++        "LICENSE",
++    ],
++}
++
++cc_library_headers {
++    name: "libgrpc_third_party_upb_headers",
++    defaults: ["grpc_deps_defaults"],
++    export_include_dirs: [
++        ".",
++    ],
++    apex_available: [
++        "//apex_available:anyapex",
++        "//apex_available:platform",
++    ],
++    min_sdk_version: "apex_inherit",
++}
++
++cc_library_static {
++    name: "libgrpc_third_party_upb",
++    defaults: ["grpc_deps_defaults"],
++    srcs: [
++        "upb/base/status.c",
++        "upb/hash/common.c",
++        "upb/json/decode.c",
++        "upb/json/encode.c",
++        "upb/lex/atoi.c",
++        "upb/lex/round_trip.c",
++        "upb/lex/strtod.c",
++        "upb/lex/unicode.c",
++        "upb/mem/alloc.c",
++        "upb/mem/arena.c",
++        "upb/message/internal/extension.c",
++        "upb/message/internal/iterator.c",
++        "upb/message/internal/message.c",
++        "upb/message/accessors.c",
++        "upb/message/array.c",
++        "upb/message/compare.c",
++        "upb/message/compat.c",
++        "upb/message/copy.c",
++        "upb/message/map.c",
++        "upb/message/map_sorter.c",
++        "upb/message/merge.c",
++        "upb/message/message.c",
++        "upb/message/promote.c",
++        "upb/mini_descriptor/internal/base92.c",
++        "upb/mini_descriptor/internal/encode.c",
++        "upb/mini_descriptor/build_enum.c",
++        "upb/mini_descriptor/decode.c",
++        "upb/mini_descriptor/link.c",
++        "upb/mini_table/internal/message.c",
++        "upb/mini_table/compat.c",
++        "upb/mini_table/extension_registry.c",
++        "upb/mini_table/message.c",
++        "upb/reflection/internal/def_builder.c",
++        "upb/reflection/internal/strdup2.c",
++        "upb/reflection/def_pool.c",
++        "upb/reflection/def_type.c",
++        "upb/reflection/desc_state.c",
++        "upb/reflection/enum_def.c",
++        "upb/reflection/enum_reserved_range.c",
++        "upb/reflection/enum_value_def.c",
++        "upb/reflection/extension_range.c",
++        "upb/reflection/field_def.c",
++        "upb/reflection/file_def.c",
++        "upb/reflection/message.c",
++        "upb/reflection/message_def.c",
++        "upb/reflection/message_reserved_range.c",
++        "upb/reflection/method_def.c",
++        "upb/reflection/oneof_def.c",
++        "upb/reflection/service_def.c",
++        "upb/text/internal/encode.c",
++        "upb/text/debug_string.c",
++        "upb/text/encode.c",
++        "upb/wire/decode.c",
++        "upb/wire/encode.c",
++        "upb/wire/eps_copy_input_stream.c",
++        "upb/wire/reader.c",
++    ],
++    cflags: [
++        "-Wno-unused-parameter",
++    ],
++    // Pin this project to C17 until we have upstream's NULL/false confusion fixes.
++    c_std: "gnu17",
++    static_libs: [
++        "libgrpc_third_party_utf8_range",
++        "libgrpc_upb_protos",
++    ],
++    export_include_dirs: [
++        ".",
++    ],
++    apex_available: [
++        "//apex_available:anyapex",
++        "//apex_available:platform",
++    ],
++    min_sdk_version: "apex_inherit",
++}
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-pasit-original/external__grpc-grpc__third_party__utf8_range__Android.bp
+@@ -0,0 +1,33 @@
++package {
++    default_applicable_licenses: ["external_grpc-grpc_third_party_utf8_range_license"],
++}
++
++license {
++    name: "external_grpc-grpc_third_party_utf8_range_license",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "SPDX-license-identifier-MIT",
++    ],
++    license_text: [
++        "LICENSE",
++    ],
++}
++
++cc_library_static {
++    name: "libgrpc_third_party_utf8_range",
++    defaults: ["grpc_deps_defaults"],
++    srcs: [
++        "naive.c",
++        "range2-neon.c",
++        "range2-sse.c",
++        "utf8_range.c",
++    ],
++    export_include_dirs: [
++        ".",
++    ],
++    apex_available: [
++        "//apex_available:anyapex",
++        "//apex_available:platform",
++    ],
++    min_sdk_version: "apex_inherit",
++}
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-pasit-original/external__grpc-grpc__third_party__xxhash__Android.bp
+@@ -0,0 +1,25 @@
++package {
++    default_applicable_licenses: ["external_grpc-grpc_third_party_xxhash_license"],
++}
++
++license {
++    name: "external_grpc-grpc_third_party_xxhash_license",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "SPDX-license-identifier-BSD-3-Clause",
++    ],
++    license_text: [
++        "LICENSE",
++    ],
++}
++
++cc_library_headers {
++    name: "libgrpc_third_party_xxhash",
++    defaults: ["grpc_deps_defaults"],
++    export_include_dirs: ["."],
++    apex_available: [
++        "//apex_available:anyapex",
++        "//apex_available:platform",
++    ],
++    min_sdk_version: "apex_inherit",
++}
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-pasit-original/external__chromiumos-config__Android.bp
+@@ -0,0 +1,134 @@
++// Copyright (C) 2024 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_applicable_licenses: [
++        "external_chromiumos-config_license",
++        "Android-Apache-2.0",
++    ],
++}
++
++license {
++    name: "external_chromiumos-config_license",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "legacy_restricted",
++    ],
++    license_text: [
++        "LICENSE",
++    ],
++}
++
++// Common tools for Protobuf and gRPC generation
++PROTO_TOOLS = [
++    "aprotoc",
++    "protoc-gen-grpc-java-plugin",
++    "soong_zip",
++]
++
++// 1. Define your sources in a filegroup
++filegroup {
++    name: "chromiumos-config-grpc-srcs",
++    srcs: [
++        "proto/chromiumos/test/api/bols/bols_service.proto",
++        "proto/chromiumos/test/api/lsnexus/lsnexus_service.proto",
++    ],
++}
++
++// 2. Updated Command:
++//    - Keeps "-I external/protobuf/src" to resolve imports.
++//    - Uses "$(in)" so that it compiles EVERYTHING in srcs (including timestamp.proto).
++//      This ensures com.google.protobuf.Timestamp.java is generated and added to your jar.
++SERVO_PROTO_CMD = "mkdir -p $(genDir)/gen && " +
++    "$(location aprotoc) --java_opt=annotate_code=false " +
++    "--plugin=protoc-gen-grpc-java=$(location protoc-gen-grpc-java-plugin) " +
++    "--grpc-java_out=lite:$(genDir)/gen " +
++    "--java_out=lite:$(genDir)/gen " +
++    "-I external/chromiumos-config/proto " +
++    "-I external/protobuf/src " +
++    "$(in) && " +
++    "$(location soong_zip) -o $(out) -C $(genDir)/gen -D $(genDir)/gen"
++
++genrule {
++    name: "chromiumos-config-grpc-gen",
++    tools: [
++        "aprotoc",
++        "protoc-gen-grpc-java-plugin",
++        "soong_zip",
++    ],
++    cmd: SERVO_PROTO_CMD,
++    srcs: [
++        // 3. Include your files AND the standard protobuf definitions
++        ":chromiumos-config-grpc-srcs",
++        ":libprotobuf-internal-protos",
++    ],
++    out: [
++        "chromiumos_config_protos.srcjar",
++    ],
++}
++
++java_library {
++    name: "chromiumos-config-protos-java",
++    host_supported: true,
++    proto: {
++        type: "lite",
++        include_dirs: [
++            "external/chromiumos-config/proto",
++            "external/protobuf/src",
++        ],
++    },
++    srcs: [
++        ":chromiumos-config-grpc-gen",
++    ],
++    libs: ["javax_annotation-api_1.3.2"],
++    target: {
++        android: {
++            static_libs: [
++                "libprotobuf-java-lite",
++                "grpc-java-protobuf-lite",
++                "grpc-java-core-android",
++                "grpc-java-stub",
++                "grpc-java-context",
++                "grpc-java-core",
++                "grpc-java-core-internal",
++                "grpc-java-core-util",
++                "grpc-java-okhttp",
++                "guava",
++            ],
++        },
++        host: {
++            static_libs: [
++                "libprotobuf-java-lite",
++                "grpc-java-protobuf-lite",
++                "grpc-java-stub",
++                "grpc-java-context",
++                "grpc-java-core",
++                "grpc-java-core-internal",
++                "grpc-java-core-util",
++                "grpc-java-netty",
++                "guava",
++            ],
++        },
++    },
++}
++
++java_library {
++    name: "chromiumos-config-java-lib",
++    host_supported: true,
++    static_libs: ["chromiumos-config-protos-java"],
++    srcs: [
++        "src/**/*.java",
++        "src/**/*.kt",
++    ],
++}
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-pasit-original/external__chromiumos-config__python__Android.bp
+@@ -0,0 +1,45 @@
++// Copyright (C) 2025 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_applicable_licenses: ["external_chromiumos-config_license"],
++}
++
++python_library_host {
++    name: "py-chromiumos-config-passport",
++    srcs: [
++        "chromiumos/test/lab/api/pasit_host_pb2.py",
++        "chromiumos/test/lab/api/rpm_pb2.py",
++        "chromiumos/test/lab/api/ip_endpoint_pb2.py",
++        "chromiumos/test/lab/api/passport/*.py",
++    ],
++    libs: [
++        "libprotobuf-python",
++        "py-grpcio",
++    ],
++}
++
++python_library_host {
++    name: "py-chromiumos-config-lsnexus",
++    srcs: [
++        "chromiumos/test/api/lsnexus/lsnexus_service_pb2.py",
++        "chromiumos/test/api/lsnexus/lsnexus_service_pb2_grpc.py",
++        "chromiumos/test/api/bols/bols_service_pb2.py",
++        "chromiumos/test/api/bols/bols_service_pb2_grpc.py",
++    ],
++    libs: [
++        "libprotobuf-python",
++        "py-grpcio",
++    ],
++}
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-pasit-original/external__python__snippet-uiautomator__Android.bp
+@@ -0,0 +1,28 @@
++// Copyright (C) 2025 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_applicable_licenses: ["external_python_snippet_uiautomator_license"],
++}
++
++license {
++    name: "external_python_snippet_uiautomator_license",
++    visibility: [":__subpackages__"],
++    license_kinds: [
++        "SPDX-license-identifier-Apache-2.0",
++    ],
++    license_text: [
++        "LICENSE",
++    ],
++}
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-pasit-original/external__python__snippet-uiautomator__snippet_uiautomator__Android.bp
+@@ -0,0 +1,48 @@
++// Copyright (C) 2025 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++python_library_host {
++    name: "py-snippet-uiautomator",
++    srcs: ["*.py"],
++    libs: ["mobly"],
++    pkg_path: "snippet_uiautomator",
++}
++
++android_test {
++    name: "snippet-uiautomator",
++    static_libs: [
++        "snippet-uiautomator-lib",
++    ],
++    manifest: "android/app/src/main/AndroidManifest.xml",
++    sdk_version: "current",
++}
++
++android_library {
++    name: "snippet-uiautomator-lib",
++    srcs: [
++        "android/app/src/main/**/*.java",
++    ],
++    manifest: "android/app/src/main/AndroidManifest.xml",
++    static_libs: [
++        "androidx.test.runner",
++        "androidx.test.uiautomator_uiautomator",
++        "auto_value_annotations",
++        "checker-qual",
++        "mobly-snippet-lib",
++        "guava",
++    ],
++    plugins: ["auto_value_plugin"],
++    sdk_version: "current",
++    min_sdk_version: "30",
++}
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-pasit-original/external__mobly-snippet-lib__Android.bp
+@@ -0,0 +1,30 @@
++// Copyright (C) 2022 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++// http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++android_library {
++    name: "mobly-snippet-lib",
++    static_libs: [
++        "androidx.test.runner",
++    ],
++    srcs: [
++        "third_party/sl4a/src/main/**/*.java",
++    ],
++    manifest: "third_party/sl4a/src/main/AndroidManifest.xml",
++    sdk_version: "current",
++    min_sdk_version: "30",
++}
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-pasit-original/desktop-test-lib-mobly-consumer.bp
+@@ -0,0 +1,39 @@
++// Copyright (C) 2025 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++python_test_host {
++    name: "DesktopTestLibTestsMobly",
++    defaults: ["PASIT-defaults"],
++    srcs: ["src/*.py"],
++    main: "src/__main__.py",
++    libs: [
++        "mobly",
++        "desktop-test-lib-mobly",
++    ],
++    device_common_data: [
++        // module for the APK we are going to install on the device and run tests from
++        ":DesktopTestLibTests",
++    ],
++    test_options: {
++        unit_test: false,
++        // This option is used to identify Mobly modules in ATest
++        runner: "mobly",
++        tags: ["mobly"],
++    },
++    test_suites: ["general-tests"],
++}
+--- a/tools/droidloom-source/src/lib.rs
++++ b/tools/droidloom-source/src/lib.rs
+@@ -23,7 +23,7 @@
+ const MAX_LOCK_BYTES: u64 = 1024 * 1024;
+ // This independent audio builder consumes the exact pinned audio lock below.
+ // Keep the smallest finite 16-project boundary; URL/commit/path checks remain.
+-const AUDIO_SOURCE_PROJECT_COUNT: usize = 425;
++const AUDIO_SOURCE_PROJECT_COUNT: usize = 430;
+ const MAX_PROJECTS: usize = AUDIO_SOURCE_PROJECT_COUNT.div_ceil(16) * 16;
+ const MAX_LINKS: usize = 64;
+ // The fixed original-provider closure retains 355 exact CTS paths.
+@@ -943,12 +943,42 @@
+         }
+     }
+ 
++    fn audio_before_pasit_lock() -> String {
++        let current = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
++        let (prefix, _) = current.split_once(",\n    {\n      \"path\": \"tools/test/desktop/mobly\",").unwrap();
++        let previous = format!("{prefix}\n  ]\n}}\n");
++        assert_eq!(format!("{:x}", Sha256::digest(previous.as_bytes())),
++            "1dd0671551fb3c07cac4bb9b587346421321a6e4809494299f7b6daa4c49371c");
++        previous
++    }
++
++    #[test]
++    fn audio_pasit_extends_the_actual_425_source_with_only_five_original_projects() {
++        let old: SparseSourceLock = serde_json::from_str(&audio_before_pasit_lock()).unwrap();
++        let current: SparseSourceLock = serde_json::from_str(include_str!(
++            "../../../android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let before = build_plan(&old).unwrap();
++        let after = build_plan(&current).unwrap();
++        assert_eq!(before.projects.len(), 425);
++        assert_eq!(after.projects.len(), 430);
++        assert_eq!(after.projects.iter().filter(|project|
++            !before.projects.iter().any(|old| old.path == project.path)).count(), 5);
++        assert_eq!(current.projects.iter().map(|p| p.sparse_paths.len()).max(), Some(355));
++        validate_plan_extension(&before, &after).unwrap();
++        assert!(validate_plan_extension(&after, &before).is_err());
++        let mut repinned = after;
++        repinned.projects.iter_mut().find(|p| p.path == Path::new("cts")).unwrap()
++            .commit = "0000000000000000000000000000000000000000".into();
++        assert!(validate_plan_extension(&before, &repinned).is_err());
++    }
++
+     // Reconstruct the exact previously qualified lock without changing its
+     // commits, purposes, field order or existing source cones.
+ 
+     #[test]
+     fn audio_rkpd_apex_extends_the_actual_425_source_by_one_original_cone() {
+-        let current = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
++        let current_owned = audio_before_pasit_lock();
++        let current = current_owned.as_str();
+         let current_project = r###"    {
+       "path": "packages/modules/RemoteKeyProvisioning",
+       "name": "platform/packages/modules/RemoteKeyProvisioning",
+@@ -1027,8 +1057,7 @@
+     #[test]
+     fn audio_allgraph_extends_the_actual_previous_source_without_changing_commits() {
+         let old: SparseSourceLock = serde_json::from_str(audio_before_allgraph_lock()).unwrap();
+-        let current: SparseSourceLock = serde_json::from_str(include_str!(
+-            "../../../android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let current: SparseSourceLock = serde_json::from_str(&audio_before_pasit_lock()).unwrap();
+         let before = build_plan(&old).unwrap();
+         let after = build_plan(&current).unwrap();
+         assert_eq!(before.projects.len(), 321);
+@@ -2097,7 +2126,7 @@
+     fn audio_source_capacity_is_bound_to_the_exact_frozen_lock() {
+         let raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
+         assert_eq!(format!("{:x}", Sha256::digest(raw.as_bytes())),
+-            "1dd0671551fb3c07cac4bb9b587346421321a6e4809494299f7b6daa4c49371c");
++            "78cc10ee7459926ec151e6224e6341d1b33397801330499e5d7f1a13fadb997a");
+         let lock: SparseSourceLock = serde_json::from_str(raw).unwrap();
+         assert_eq!(lock.projects.len(), AUDIO_SOURCE_PROJECT_COUNT);
+         assert_eq!(MAX_PROJECTS, 432);

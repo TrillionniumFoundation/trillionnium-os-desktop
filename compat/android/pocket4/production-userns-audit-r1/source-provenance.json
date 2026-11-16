@@ -1,0 +1,168 @@
+{
+  "schema": "droidloom-userns-audit-source-provenance-v1",
+  "project_rules": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "eac22deaa59d6906afe7eef3dfc9696fbacf20e71a90590608d744b096a8ff46"
+    },
+    {
+      "path": "docs/threat-model-v1.md",
+      "sha256": "02f9aa4531344f2d39c59a939b5a469be599e05b3140a95efde3e0524d46016f"
+    },
+    {
+      "path": "docs/contracts/runtime-layout-v1.md",
+      "sha256": "50c5472d1efe3f309d426ea01fdb6937cafdb59be18522ef032a8e14ab725c5d"
+    }
+  ],
+  "upstream": [
+    {
+      "repository": "torvalds/linux",
+      "ref": "v7.0",
+      "path": "include/uapi/linux/nsfs.h",
+      "git_blob_sha": "a25e38d1c8747da2fa4124668e2fa0f7a4fb4022",
+      "url": "https://github.com/torvalds/linux/blob/v7.0/include/uapi/linux/nsfs.h"
+    },
+    {
+      "repository": "torvalds/linux",
+      "ref": "v7.0",
+      "path": "kernel/nstree.c",
+      "git_blob_sha": "6d12e5900ac0156b6f63d948344125cf61a5634c",
+      "url": "https://github.com/torvalds/linux/blob/v7.0/kernel/nstree.c"
+    },
+    {
+      "repository": "torvalds/linux",
+      "ref": "v7.0",
+      "path": "kernel/nscommon.c",
+      "git_blob_sha": "3166c1fd844afd6141f0042e1455604693872da5",
+      "url": "https://github.com/torvalds/linux/blob/v7.0/kernel/nscommon.c"
+    },
+    {
+      "repository": "torvalds/linux",
+      "ref": "v7.0",
+      "path": "fs/nsfs.c",
+      "git_blob_sha": "c215878d55e8798775c38b1d4c0eea96e20f71cd",
+      "url": "https://github.com/torvalds/linux/blob/v7.0/fs/nsfs.c"
+    },
+    {
+      "repository": "torvalds/linux",
+      "ref": "v7.0",
+      "path": "include/linux/exportfs.h",
+      "git_blob_sha": "8bcdba28b406075ce82a4b1247b22ff2da88dd07",
+      "url": "https://github.com/torvalds/linux/blob/v7.0/include/linux/exportfs.h"
+    },
+    {
+      "repository": "torvalds/linux",
+      "ref": "v7.0",
+      "path": "arch/x86/entry/syscalls/syscall_64.tbl",
+      "git_blob_sha": "524155d655da15478e81117a7b547cf3b172ad82",
+      "url": "https://github.com/torvalds/linux/blob/v7.0/arch/x86/entry/syscalls/syscall_64.tbl"
+    },
+    {
+      "repository": "torvalds/linux",
+      "ref": "v7.0",
+      "path": "tools/testing/selftests/namespaces/wrappers.h",
+      "git_blob_sha": "9741a64a5b1ddbfeb4d68cf061f880142181bfe1",
+      "url": "https://github.com/torvalds/linux/blob/v7.0/tools/testing/selftests/namespaces/wrappers.h"
+    },
+    {
+      "repository": "torvalds/linux",
+      "ref": "v7.0",
+      "path": "kernel/fork.c",
+      "git_blob_sha": "bc2bf58b93b6524ca8510474634c7e921ac25f9a",
+      "url": "https://github.com/torvalds/linux/blob/v7.0/kernel/fork.c",
+      "functions": [
+        "dup_mm",
+        "mm_init"
+      ],
+      "review": "independently fetched and reviewed by app_acceptance"
+    },
+    {
+      "repository": "torvalds/linux",
+      "ref": "v7.0",
+      "path": "kernel/cred.c",
+      "git_blob_sha": "12a7b1ce5131edc728c94aebc99450d46a151838",
+      "url": "https://github.com/torvalds/linux/blob/v7.0/kernel/cred.c",
+      "functions": [
+        "commit_creds",
+        "cred_cap_issubset"
+      ],
+      "review": "independently fetched and reviewed by app_acceptance"
+    },
+    {
+      "repository": "torvalds/linux",
+      "ref": "v7.0",
+      "path": "kernel/user_namespace.c",
+      "git_blob_sha": "0bed462e9b2a2406da03caa02e7a8f5d60485a5e",
+      "url": "https://github.com/torvalds/linux/blob/v7.0/kernel/user_namespace.c",
+      "functions": [
+        "userns_install",
+        "uid_m_show",
+        "gid_m_show"
+      ],
+      "review": "independently fetched and reviewed by app_acceptance"
+    },
+    {
+      "repository": "torvalds/linux",
+      "ref": "v7.0",
+      "path": "kernel/ptrace.c",
+      "git_blob_sha": "392ec2f75f013850a5476acf49654c86d9613ddd",
+      "url": "https://github.com/torvalds/linux/blob/v7.0/kernel/ptrace.c",
+      "functions": [
+        "__ptrace_may_access",
+        "ptrace_has_cap"
+      ],
+      "review": "independently fetched and reviewed by app_acceptance"
+    },
+    {
+      "repository": "torvalds/linux",
+      "ref": "v7.0",
+      "path": "kernel/pid.c",
+      "git_blob_sha": "3b96571d0fe652bbcc22fc80895c4e21df89f16c",
+      "url": "https://github.com/torvalds/linux/blob/v7.0/kernel/pid.c",
+      "functions": [
+        "__pidfd_fget"
+      ],
+      "review": "independently fetched and reviewed by app_acceptance"
+    }
+  ],
+  "coverage_contract": {
+    "active_namespace_enumeration": "global listns(USER_NS, owner=0) from verified initial user/PID namespaces",
+    "active_owner_chain": true,
+    "persistent_nsfs_and_namespace_fd_references": "included through active namespace references and owning user-namespace chain",
+    "inactive_kernel_references": false,
+    "concrete_missing_case": "an inactive network namespace retained by a socket may be resurrected through SIOCGSKNS, activating its owning user namespace",
+    "future_namespace_writer_lock": false,
+    "clean_active_result": "CoverageIncomplete; no NamespaceAuditGuard is issued",
+    "definite_overlap_result": "Conflict if remaining observations are complete; otherwise Unknown with conflicts retained",
+    "initial_user_namespace_exclusion": "typed actual nsfs FD, initial UAPI inode, initial PID namespace/proc PID1, identity UID/GID maps, initial-root credentials and effective capabilities; observed namespace IDs are not hardcoded",
+    "map_column_two": "read by the initial-userns parent from an owned task currently in the exact held namespace, yielding host IDs including nested namespaces"
+  },
+  "observed_host_headers": [
+    {
+      "path": "/usr/include/linux/nsfs.h",
+      "bytes": 3724,
+      "sha256": "29e45774f75a0288a4bf72efdddec5caebbf5382327c13628c4dfa9611e1329f"
+    },
+    {
+      "path": "/usr/include/x86_64-linux-gnu/asm/unistd_64.h",
+      "bytes": 10430,
+      "sha256": "261fc370ad799ba94c342ce4a3f8a83232e5e76339ca3cea5e5090efcc22370a"
+    },
+    {
+      "path": "/usr/include/linux/fcntl.h",
+      "bytes": 7282,
+      "sha256": "97a6f7544099b95d90b217acd59ec32301ef9f950d12532deed07eea50ab2356"
+    },
+    {
+      "path": "/usr/include/linux/pidfd.h",
+      "bytes": 4595,
+      "sha256": "f1ab18cf335f4699c8f4647511361319f38a135a8fd7469aa0283b1f23c70928"
+    },
+    {
+      "path": "/usr/include/linux/sched.h",
+      "bytes": 6287,
+      "sha256": "ff58ea1300af6bd0c72e6b45160d24e86e878f7f45259a6469df76e5e846270b"
+    }
+  ]
+}
+

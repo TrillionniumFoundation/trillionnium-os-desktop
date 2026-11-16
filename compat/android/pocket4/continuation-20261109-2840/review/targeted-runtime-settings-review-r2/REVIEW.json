@@ -1,0 +1,124 @@
+{
+  "accepted_applications": 0,
+  "accepted_release_gates": 0,
+  "actual_stock_binary_crosscheck": {
+    "all_manifest_members_hash_checked": 83,
+    "extraction_or_disassembly_repeated": false,
+    "file": "evidence/SELECTED-STOCK-EVIDENCE-CROSSCHECK.json",
+    "fully_read_methods": 7,
+    "index_sha256": "4767e9083da80c561e96ac21884ad10096bab9b29aec89ccccd59dca4b82702e"
+  },
+  "android_commands_executed_by_reviewer": 0,
+  "closed_findings": [
+    {
+      "id": "task-difference-is-not-created-task-authority",
+      "qualified_scope": "Source design only; Settings business execution remains blocked.",
+      "resolution": "Public native Settings entry always returns missing-authority error after pure request validation; production daemon calls unconditional blocker. Differential task/ACK/cleanup implementation is cfg(test) only. completed_partial is constant false."
+    },
+    {
+      "id": "pending-marker-bypass-by-other-daemon-or-helper-entry",
+      "qualified_scope": "Current reviewed daemon/source consumers only. The staged consumers have not been installed; no claim about unreviewed alternate entry points.",
+      "resolution": "ControlRequest dispatch defaults every non-read-only request to marker admission before request handling. Nine current mutations are covered; the two staged external consumers check the same fixed marker before arun/ui/dispatch under their existing flock. Any marker inode or unavailable/untrusted directory refuses without reading, clearing or retrying it."
+    },
+    {
+      "id": "settings-pre-blocker-android-probe",
+      "resolution": "Handler now validates the user and calls require_active_cell(peer_uid,None), whose selected path only checks host active-state/UID. It then invokes observe(expected,page), with no Probe or deadline parameter and an unconditional Err. The earlier nsenter/getprop path is no longer reached for this request."
+    },
+    {
+      "id": "settings-false-structured-response-reauthorizes-next-mutation",
+      "resolution": "Every incomplete structured Settings response now invalidates the sticky selection fence. The false action_scope_retained field cannot restore admission through a read-only epoch. The complete-looking synthetic response control now explicitly asserts zero browser invocations, one initial runtime query and all42 rows blocked."
+    }
+  ],
+  "files_changed_from_corrective_r2": [
+    "runtime/droidloom-supervisor/src/control.rs",
+    "runtime/droidloom-supervisor/src/application_settings.rs",
+    "runtime/droidloom-supervisor/src/application_settings_tests.rs",
+    "runtime/droidloom-applications/src/runtime_plan.rs"
+  ],
+  "framework_created_task_authority_qualified": false,
+  "installed_files_modified_by_reviewer": false,
+  "no_new_specific_defect_identified_in_reviewed_delta": true,
+  "normal_validation_observation": {
+    "independent_H_query_by_this_review": false,
+    "reported_exit_code": 0,
+    "reported_job": "1a1c19d1019-e62c-de",
+    "reported_output_complete": true,
+    "reported_output_durable": true,
+    "reported_terminal_state": "succeeded",
+    "runtime_credit": false,
+    "same_source_portable_controls_passed": 58,
+    "source_capsule_terminal_read": true,
+    "source_receipt_file": "evidence/final-r3-controls-receipt.json",
+    "unchanged_consumer_source_controls_from_r2": 6,
+    "workspace_tests_passed": 70
+  },
+  "observed_utc": "2026-11-09T18:45:44.296428+00:00",
+  "original_corrective_patch_sha256": "5e1914832c679a2ea1a03fa5e8d7800397f1f99051617387a20be551abbaf59e",
+  "predecessor_review_index": {
+    "bytes": 2129,
+    "path": "/workspace/scratch/2840a678aeda/audio-sdk-closeout/targeted-runtime-settings-review-r1/INDEX.json",
+    "sha256": "727ff76a330a1fdfbceb8b1e0906e13a9e47e357bce9928bf566e6dcd6910cd5"
+  },
+  "predecessor_unchanged": true,
+  "producer_parent": "7113c8fe36fc34b6350cb61478bf2082bb211d2e",
+  "production_ready": false,
+  "remaining_blockers": [
+    "Actual selected-framework task creation and conditional cleanup authority is not implemented or qualified.",
+    "Settings page execution, visible/business observations, setting/permission roundtrips and all common application release gates remain unqualified.",
+    "Production lifecycle/selected-QPR1 ABI and full Android/app runtime qualification are outside this static review and remain ungranted.",
+    "The two consumer successors remain staged; installed byte identities and deployment are not verified here."
+  ],
+  "review_only": true,
+  "reviewed_final_source_files": [
+    {
+      "bytes": 89609,
+      "path": "runtime/droidloom-supervisor/src/control.rs",
+      "sha256": "22cfe98ff60bb9ef5cf977cecf5867bdfc955ef39d86030a0d358d5a06820700"
+    },
+    {
+      "bytes": 18069,
+      "path": "runtime/droidloom-supervisor/src/application_settings.rs",
+      "sha256": "3381d1c6a635899d77b34794d838996d6eb18fffeeece71c57dbbe75b1a3be11"
+    },
+    {
+      "bytes": 24454,
+      "path": "runtime/droidloom-supervisor/src/application_settings_protocol.rs",
+      "sha256": "d9462c9df927f0d4928276f4a4880aa8d39dbca60fb9f20fef8f808c0d25635d"
+    },
+    {
+      "bytes": 10964,
+      "path": "runtime/droidloom-supervisor/src/application_action_scope.rs",
+      "sha256": "4984cdebfc3dd0bdd3b1101ca40430bd6f9239b218a1d03680829f5fab5b0c0c"
+    },
+    {
+      "bytes": 19214,
+      "path": "runtime/droidloom-supervisor/src/application_settings_tests.rs",
+      "sha256": "7153ca66acc6622fbe949495ff218aba396688a49a1438537fd52ad27ae29c39"
+    },
+    {
+      "bytes": 76612,
+      "path": "android/framework/droidloom-task-launcher/src/lib.rs",
+      "sha256": "5ba1b119f5898fb9d562f8ffdfc6092736d432b29a13a587d6a7b7616a4c3010"
+    },
+    {
+      "bytes": 12354,
+      "path": "android/framework/droidloom-task-launcher/src/main.rs",
+      "sha256": "d875eaf699c5716abb986912c66fc918df9adf60730afaeff3acf8ed99bb6325"
+    },
+    {
+      "bytes": 47561,
+      "path": "runtime/droidloom-applications/src/runtime_plan.rs",
+      "sha256": "8ceaa206dd0bd80fde538c6f483cf1565981354e6467394531298317dc8a6b8b"
+    }
+  ],
+  "runtime_qualified": false,
+  "schema": "pocket4-settings-final-targeted-review-v2",
+  "second_review_patch": {
+    "bytes": 4716,
+    "path": "/workspace/scratch/2840a678aeda/apps_settings_page_development/review-round2-corrections.patch",
+    "sha256": "970f0b03bbd2b73a3346b97694af98877b79d77ad838e1dd0ffd66faa3048097"
+  },
+  "shared_owner_source_or_current_modified": false,
+  "state": "TARGETED_SOURCE_DEFECTS_CLOSED_FUNCTIONAL_SETTINGS_BLOCKED",
+  "tests_executed_by_reviewer": 0
+}

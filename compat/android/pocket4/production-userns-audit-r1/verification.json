@@ -1,0 +1,1837 @@
+{
+  "schema": "pocket4-userns-audit-qualification-v1",
+  "source_files": [
+    {
+      "path": "production_namespace_audit.rs",
+      "bytes": 64412,
+      "sha256": "b6d04ec08d95c202ffa949a59cc0c6e007405f0f83f8b201714996f938e8f346"
+    },
+    {
+      "path": "production_namespace_audit_tests.rs",
+      "bytes": 4968,
+      "sha256": "549f26be47d3beb5bae48ef52b484d8b5a4d73be5c0b0d83ced3224a33cebe57"
+    },
+    {
+      "path": "main.rs",
+      "bytes": 2540,
+      "sha256": "308b796e8281e1030bd936f79fbbed2f70b377f5c71acc99695007b4f23d03f2"
+    },
+    {
+      "path": "Cargo.toml",
+      "bytes": 350,
+      "sha256": "ebea4d7e8980f67b9404259f3b42621655b935d7e7d5a04c528dba847c9719b5"
+    },
+    {
+      "path": "Cargo.lock",
+      "bytes": 2892,
+      "sha256": "f23428ea02279f973bb6e30c4e669b6f7b2ff3265128adbf3e8ea460033f3a4e"
+    }
+  ],
+  "production_admission": false,
+  "namespace_guards_issued": 0,
+  "namespace_mapping_authorized": false,
+  "final_status": "ACTIVE_DIAGNOSTICS_QUALIFIED_PRODUCTION_COVERAGE_INCOMPLETE",
+  "host": {
+    "name": "pocket4",
+    "kernel": "Linux 7.0.0-38-generic",
+    "boot_id": "981ff371-cd72-4f81-9be3-a862111afdb1"
+  },
+  "unit_tests": {
+    "terminal": {
+      "at_unix_ms": 1794210772244,
+      "audit_recorded": true,
+      "automatic_retry": false,
+      "cancelled": false,
+      "exit_code": 0,
+      "job_id": "1a1bf4b79db-5e21-481",
+      "launch_nonce": "7143b47cf84a1aefed6793a3fedb4e85",
+      "log_bytes": {
+        "stderr": {
+          "seen": 1209,
+          "stored": 1209
+        },
+        "stdout": {
+          "seen": 1017,
+          "stored": 1017
+        }
+      },
+      "log_errors": {
+        "stderr": null,
+        "stdout": null
+      },
+      "log_synced": {
+        "stderr": true,
+        "stdout": true
+      },
+      "log_truncated": {
+        "stderr": false,
+        "stdout": false
+      },
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal_publication_confirmed": true,
+      "terminal_publication_protocol": 1,
+      "timed_out": false
+    },
+    "streams": {
+      "stdout": {
+        "bytes": 1017,
+        "eof": true,
+        "sha256": "39aaf0131b0be503c65bce0bb3a4405d573b89ad913d37963386f85cc6971eaa"
+      },
+      "stderr": {
+        "bytes": 1209,
+        "eof": true,
+        "sha256": "ff34a482b7c9fe1ff2451a9d84d222dc2245a57abc9e4c08deea3548a2545cfb"
+      }
+    },
+    "test_count": 11,
+    "passed": 11,
+    "failed": 0,
+    "ignored": 0,
+    "filtered_out": 0,
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-j",
+      "1",
+      "--",
+      "--test-threads=1"
+    ],
+    "source_sha256": "b6d04ec08d95c202ffa949a59cc0c6e007405f0f83f8b201714996f938e8f346",
+    "test_source_sha256": "549f26be47d3beb5bae48ef52b484d8b5a4d73be5c0b0d83ced3224a33cebe57"
+  },
+  "build": {
+    "terminal": {
+      "at_unix_ms": 1794210828264,
+      "audit_recorded": true,
+      "automatic_retry": false,
+      "cancelled": false,
+      "exit_code": 0,
+      "job_id": "1a1bf4c5a9c-5e21-486",
+      "launch_nonce": "600f778bac156129bf4d2d547b9d1f20",
+      "log_bytes": {
+        "stderr": {
+          "seen": 1122,
+          "stored": 1122
+        },
+        "stdout": {
+          "seen": 0,
+          "stored": 0
+        }
+      },
+      "log_errors": {
+        "stderr": null,
+        "stdout": null
+      },
+      "log_synced": {
+        "stderr": true,
+        "stdout": true
+      },
+      "log_truncated": {
+        "stderr": false,
+        "stdout": false
+      },
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal_publication_confirmed": true,
+      "terminal_publication_protocol": 1,
+      "timed_out": false
+    },
+    "streams": {
+      "stdout": {
+        "bytes": 0,
+        "eof": true,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "bytes": 1122,
+        "eof": true,
+        "sha256": "26e958af0d1c0da9d406c1eec922365b560ab64710b9db204de182eef29906fe"
+      }
+    },
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--offline",
+      "-j",
+      "1"
+    ],
+    "binary_sha256": "7c0268e8921a65e812e39f2c101368fc7cde875bf18518d071dfe9872655c7b7",
+    "binary_pin_terminal": {
+      "at_unix_ms": 1794211053142,
+      "audit_recorded": true,
+      "automatic_retry": false,
+      "cancelled": false,
+      "exit_code": 0,
+      "job_id": "1a1bf4f9939-5e21-48e",
+      "launch_nonce": "7bb9eba81d013e427cd17944fc093f91",
+      "log_bytes": {
+        "stderr": {
+          "seen": 0,
+          "stored": 0
+        },
+        "stdout": {
+          "seen": 187,
+          "stored": 187
+        }
+      },
+      "log_errors": {
+        "stderr": null,
+        "stdout": null
+      },
+      "log_synced": {
+        "stderr": true,
+        "stdout": true
+      },
+      "log_truncated": {
+        "stderr": false,
+        "stdout": false
+      },
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal_publication_confirmed": true,
+      "terminal_publication_protocol": 1,
+      "timed_out": false
+    }
+  },
+  "actual_kernel_observations": [
+    {
+      "purpose": "no_active_overlap",
+      "session_id": "dpty-18e651515fbcb1e0-5e21-c6",
+      "terminal": {
+        "boot": "981ff371-cd72-4f81-9be3-a862111afdb1",
+        "bytes_seen": 8056,
+        "bytes_stored": 8056,
+        "capture_error": null,
+        "closed": false,
+        "created_unix_ms": 1794210912779,
+        "exit_code": 0,
+        "output_complete": true,
+        "owner_pid": 3588648,
+        "pid": 3588697,
+        "state": "exited"
+      },
+      "stdout_bytes": 8056,
+      "stdout_sha256": "3ef93696f99742e0e2a60101b584824e33e684cbffe54d401ac4d5add0c7a26a",
+      "complete_stdout_read": true,
+      "executable_sha256": "7c0268e8921a65e812e39f2c101368fc7cde875bf18518d071dfe9872655c7b7",
+      "source_sha256": "b6d04ec08d95c202ffa949a59cc0c6e007405f0f83f8b201714996f938e8f346",
+      "observation": {
+        "elapsed_ms": 25,
+        "namespace_mapping_authorized": false,
+        "owned_descriptor_set_restored": true,
+        "report": {
+          "active_owner_chain_included": true,
+          "android_actions": 0,
+          "child_terminals": [
+            {
+              "exit_code": 0,
+              "namespace_id": 118,
+              "pid": 3588702,
+              "reaped": true,
+              "starttime": 123662208,
+              "tid": 3588702
+            },
+            {
+              "exit_code": 0,
+              "namespace_id": 119,
+              "pid": 3588703,
+              "reaped": true,
+              "starttime": 123662208,
+              "tid": 3588703
+            },
+            {
+              "exit_code": 0,
+              "namespace_id": 121,
+              "pid": 3588704,
+              "reaped": true,
+              "starttime": 123662208,
+              "tid": 3588704
+            },
+            {
+              "exit_code": 0,
+              "namespace_id": 139,
+              "pid": 3588705,
+              "reaped": true,
+              "starttime": 123662209,
+              "tid": 3588705
+            },
+            {
+              "exit_code": 0,
+              "namespace_id": 171,
+              "pid": 3588706,
+              "reaped": true,
+              "starttime": 123662209,
+              "tid": 3588706
+            },
+            {
+              "exit_code": 0,
+              "namespace_id": 179,
+              "pid": 3588707,
+              "reaped": true,
+              "starttime": 123662209,
+              "tid": 3588707
+            },
+            {
+              "exit_code": 0,
+              "namespace_id": 217,
+              "pid": 3588708,
+              "reaped": true,
+              "starttime": 123662209,
+              "tid": 3588708
+            },
+            {
+              "exit_code": 0,
+              "namespace_id": 34837,
+              "pid": 3588709,
+              "reaped": true,
+              "starttime": 123662210,
+              "tid": 3588709
+            },
+            {
+              "exit_code": 0,
+              "namespace_id": 34951,
+              "pid": 3588710,
+              "reaped": true,
+              "starttime": 123662210,
+              "tid": 3588710
+            },
+            {
+              "exit_code": 0,
+              "namespace_id": 36581,
+              "pid": 3588711,
+              "reaped": true,
+              "starttime": 123662210,
+              "tid": 3588711
+            },
+            {
+              "exit_code": 0,
+              "namespace_id": 36584,
+              "pid": 3588713,
+              "reaped": true,
+              "starttime": 123662210,
+              "tid": 3588713
+            }
+          ],
+          "children_created": 11,
+          "children_reaped": 11,
+          "conflicts": [],
+          "enumerated_namespace_ids": [
+            3,
+            118,
+            119,
+            121,
+            139,
+            171,
+            179,
+            217,
+            34837,
+            34951,
+            36581,
+            36584
+          ],
+          "enumeration": "Linux listns USER_NS, owner=0; held nsfs handles",
+          "final_enumeration_matches": true,
+          "future_writer_lock": false,
+          "inactive_kernel_only_references_included": false,
+          "initial_namespace": {
+            "device": 5,
+            "inode": 4026531837,
+            "namespace_id": 3,
+            "namespace_type": 268435456
+          },
+          "initial_namespace_excluded_from_occupancy": true,
+          "initial_pid_namespace": {
+            "device": 5,
+            "inode": 4026531836,
+            "namespace_id": 4,
+            "namespace_type": 536870912
+          },
+          "namespace_mapping_authorized": false,
+          "namespace_maps": [
+            {
+              "gid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                }
+              ],
+              "gid_map_bytes": 33,
+              "namespace": {
+                "device": 5,
+                "inode": 4026533158,
+                "namespace_id": 118,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026531837,
+                "namespace_id": 3,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                }
+              ],
+              "uid_map_bytes": 33,
+              "witness_pid": 3588702,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513188695,
+              "witness_starttime": 123662208,
+              "witness_tid": 3588702
+            },
+            {
+              "gid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                }
+              ],
+              "gid_map_bytes": 33,
+              "namespace": {
+                "device": 5,
+                "inode": 4026533159,
+                "namespace_id": 119,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026531837,
+                "namespace_id": 3,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                }
+              ],
+              "uid_map_bytes": 33,
+              "witness_pid": 3588703,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513188709,
+              "witness_starttime": 123662208,
+              "witness_tid": 3588703
+            },
+            {
+              "gid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 0
+                },
+                {
+                  "count": 65536,
+                  "host_start": 100000,
+                  "inside_start": 1
+                }
+              ],
+              "gid_map_bytes": 66,
+              "namespace": {
+                "device": 5,
+                "inode": 4026533161,
+                "namespace_id": 121,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026531837,
+                "namespace_id": 3,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 0
+                },
+                {
+                  "count": 65536,
+                  "host_start": 100000,
+                  "inside_start": 1
+                }
+              ],
+              "uid_map_bytes": 66,
+              "witness_pid": 3588704,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513188723,
+              "witness_starttime": 123662208,
+              "witness_tid": 3588704
+            },
+            {
+              "gid_map": [
+                {
+                  "count": 1000,
+                  "host_start": 100000,
+                  "inside_start": 0
+                },
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                },
+                {
+                  "count": 64536,
+                  "host_start": 101000,
+                  "inside_start": 1001
+                }
+              ],
+              "gid_map_bytes": 99,
+              "namespace": {
+                "device": 5,
+                "inode": 4026533164,
+                "namespace_id": 139,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026533161,
+                "namespace_id": 121,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1000,
+                  "host_start": 100000,
+                  "inside_start": 0
+                },
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                },
+                {
+                  "count": 64536,
+                  "host_start": 101000,
+                  "inside_start": 1001
+                }
+              ],
+              "uid_map_bytes": 99,
+              "witness_pid": 3588705,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513188737,
+              "witness_starttime": 123662209,
+              "witness_tid": 3588705
+            },
+            {
+              "gid_map": [
+                {
+                  "count": 1,
+                  "host_start": 0,
+                  "inside_start": 0
+                },
+                {
+                  "count": 1,
+                  "host_start": 120,
+                  "inside_start": 120
+                }
+              ],
+              "gid_map_bytes": 66,
+              "namespace": {
+                "device": 5,
+                "inode": 4026533228,
+                "namespace_id": 171,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026531837,
+                "namespace_id": 3,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1,
+                  "host_start": 0,
+                  "inside_start": 0
+                },
+                {
+                  "count": 1,
+                  "host_start": 118,
+                  "inside_start": 118
+                }
+              ],
+              "uid_map_bytes": 66,
+              "witness_pid": 3588706,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513188751,
+              "witness_starttime": 123662209,
+              "witness_tid": 3588706
+            },
+            {
+              "gid_map": [
+                {
+                  "count": 1,
+                  "host_start": 0,
+                  "inside_start": 0
+                }
+              ],
+              "gid_map_bytes": 33,
+              "namespace": {
+                "device": 5,
+                "inode": 4026533283,
+                "namespace_id": 179,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026531837,
+                "namespace_id": 3,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1,
+                  "host_start": 0,
+                  "inside_start": 0
+                }
+              ],
+              "uid_map_bytes": 33,
+              "witness_pid": 3588707,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513188765,
+              "witness_starttime": 123662209,
+              "witness_tid": 3588707
+            },
+            {
+              "gid_map": [
+                {
+                  "count": 1,
+                  "host_start": 0,
+                  "inside_start": 0
+                }
+              ],
+              "gid_map_bytes": 33,
+              "namespace": {
+                "device": 5,
+                "inode": 4026533429,
+                "namespace_id": 217,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026531837,
+                "namespace_id": 3,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1,
+                  "host_start": 0,
+                  "inside_start": 0
+                }
+              ],
+              "uid_map_bytes": 33,
+              "witness_pid": 3588708,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513188779,
+              "witness_starttime": 123662209,
+              "witness_tid": 3588708
+            },
+            {
+              "gid_map": [
+                {
+                  "count": 1,
+                  "host_start": 0,
+                  "inside_start": 0
+                },
+                {
+                  "count": 1,
+                  "host_start": 103,
+                  "inside_start": 103
+                }
+              ],
+              "gid_map_bytes": 66,
+              "namespace": {
+                "device": 5,
+                "inode": 4026533660,
+                "namespace_id": 34837,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026531837,
+                "namespace_id": 3,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1,
+                  "host_start": 0,
+                  "inside_start": 0
+                },
+                {
+                  "count": 1,
+                  "host_start": 103,
+                  "inside_start": 103
+                }
+              ],
+              "uid_map_bytes": 66,
+              "witness_pid": 3588709,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513188793,
+              "witness_starttime": 123662210,
+              "witness_tid": 3588709
+            },
+            {
+              "gid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                }
+              ],
+              "gid_map_bytes": 33,
+              "namespace": {
+                "device": 5,
+                "inode": 4026533088,
+                "namespace_id": 34951,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026531837,
+                "namespace_id": 3,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                }
+              ],
+              "uid_map_bytes": 33,
+              "witness_pid": 3588710,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513188808,
+              "witness_starttime": 123662210,
+              "witness_tid": 3588710
+            },
+            {
+              "gid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                }
+              ],
+              "gid_map_bytes": 33,
+              "namespace": {
+                "device": 5,
+                "inode": 4026534475,
+                "namespace_id": 36581,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026531837,
+                "namespace_id": 3,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                }
+              ],
+              "uid_map_bytes": 33,
+              "witness_pid": 3588711,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513188822,
+              "witness_starttime": 123662210,
+              "witness_tid": 3588711
+            },
+            {
+              "gid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                }
+              ],
+              "gid_map_bytes": 33,
+              "namespace": {
+                "device": 5,
+                "inode": 4026534532,
+                "namespace_id": 36584,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026534475,
+                "namespace_id": 36581,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                }
+              ],
+              "uid_map_bytes": 33,
+              "witness_pid": 3588713,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513188836,
+              "witness_starttime": 123662210,
+              "witness_tid": 3588713
+            }
+          ],
+          "parent_identity_unchanged": true,
+          "parent_mount_namespace_unchanged": true,
+          "parent_user_namespace_unchanged": true,
+          "schema": "droidloom-active-userns-occupancy-v1",
+          "status": "COVERAGE_INCOMPLETE",
+          "uid_map_host_view": true,
+          "uid_or_gid_map_writes": 0,
+          "unknown": [
+            {
+              "code": "inactive_kernel_namespace_maps_not_enumerated",
+              "errno": null,
+              "namespace_id": null
+            }
+          ]
+        },
+        "requested_gids": {
+          "count": 100000,
+          "start": 200000
+        },
+        "requested_uids": {
+          "count": 100000,
+          "start": 200000
+        },
+        "schema": "pocket4-userns-audit-observation-v1",
+        "status": "COVERAGE_INCOMPLETE"
+      },
+      "close_acknowledgement": {
+        "audit_recorded": true,
+        "automatic_retry": false,
+        "host": "pocket4",
+        "outcome": "unknown",
+        "persistent_across_runtime_restart": true,
+        "reconcile_warning": "Terminal owner is not accepting close. Inspect this session's exit status; this acknowledgement does not confirm termination.",
+        "result": "already_exited",
+        "session_id": "dpty-18e651515fbcb1e0-5e21-c6",
+        "termination_confirmed": false
+      },
+      "post_close_terminal": {
+        "boot": "981ff371-cd72-4f81-9be3-a862111afdb1",
+        "bytes_seen": 8056,
+        "bytes_stored": 8056,
+        "capture_error": null,
+        "closed": false,
+        "created_unix_ms": 1794210912779,
+        "exit_code": 0,
+        "output_complete": true,
+        "owner_pid": 3588648,
+        "pid": 3588697,
+        "state": "exited"
+      }
+    },
+    {
+      "purpose": "actual_occupied_range",
+      "session_id": "dpty-18e6515922510a88-5e21-c7",
+      "terminal": {
+        "boot": "981ff371-cd72-4f81-9be3-a862111afdb1",
+        "bytes_seen": 8750,
+        "bytes_stored": 8750,
+        "capture_error": null,
+        "closed": false,
+        "created_unix_ms": 1794210946141,
+        "exit_code": 0,
+        "output_complete": true,
+        "owner_pid": 3609891,
+        "pid": 3609985,
+        "state": "exited"
+      },
+      "stdout_bytes": 8750,
+      "stdout_sha256": "3732e707f4857ea6aea0f15d8909976cf832156175b15e4a2b36f995d9f21c7a",
+      "complete_stdout_read": true,
+      "executable_sha256": "7c0268e8921a65e812e39f2c101368fc7cde875bf18518d071dfe9872655c7b7",
+      "source_sha256": "b6d04ec08d95c202ffa949a59cc0c6e007405f0f83f8b201714996f938e8f346",
+      "observation": {
+        "elapsed_ms": 22,
+        "namespace_mapping_authorized": false,
+        "owned_descriptor_set_restored": true,
+        "report": {
+          "active_owner_chain_included": true,
+          "android_actions": 0,
+          "child_terminals": [
+            {
+              "exit_code": 0,
+              "namespace_id": 118,
+              "pid": 3609990,
+              "reaped": true,
+              "starttime": 123665546,
+              "tid": 3609990
+            },
+            {
+              "exit_code": 0,
+              "namespace_id": 119,
+              "pid": 3609991,
+              "reaped": true,
+              "starttime": 123665546,
+              "tid": 3609991
+            },
+            {
+              "exit_code": 0,
+              "namespace_id": 121,
+              "pid": 3609992,
+              "reaped": true,
+              "starttime": 123665546,
+              "tid": 3609992
+            },
+            {
+              "exit_code": 0,
+              "namespace_id": 139,
+              "pid": 3609993,
+              "reaped": true,
+              "starttime": 123665546,
+              "tid": 3609993
+            },
+            {
+              "exit_code": 0,
+              "namespace_id": 171,
+              "pid": 3609994,
+              "reaped": true,
+              "starttime": 123665546,
+              "tid": 3609994
+            },
+            {
+              "exit_code": 0,
+              "namespace_id": 179,
+              "pid": 3610015,
+              "reaped": true,
+              "starttime": 123665546,
+              "tid": 3610015
+            },
+            {
+              "exit_code": 0,
+              "namespace_id": 217,
+              "pid": 3610016,
+              "reaped": true,
+              "starttime": 123665547,
+              "tid": 3610016
+            },
+            {
+              "exit_code": 0,
+              "namespace_id": 34837,
+              "pid": 3610017,
+              "reaped": true,
+              "starttime": 123665547,
+              "tid": 3610017
+            },
+            {
+              "exit_code": 0,
+              "namespace_id": 34951,
+              "pid": 3610018,
+              "reaped": true,
+              "starttime": 123665547,
+              "tid": 3610018
+            },
+            {
+              "exit_code": 0,
+              "namespace_id": 36581,
+              "pid": 3610019,
+              "reaped": true,
+              "starttime": 123665547,
+              "tid": 3610019
+            },
+            {
+              "exit_code": 0,
+              "namespace_id": 36584,
+              "pid": 3610020,
+              "reaped": true,
+              "starttime": 123665548,
+              "tid": 3610020
+            }
+          ],
+          "children_created": 11,
+          "children_reaped": 11,
+          "conflicts": [
+            {
+              "axis": "uid",
+              "existing_count": 65536,
+              "existing_host_start": 100000,
+              "namespace_id": 121,
+              "requested_count": 65536,
+              "requested_start": 100000
+            },
+            {
+              "axis": "gid",
+              "existing_count": 65536,
+              "existing_host_start": 100000,
+              "namespace_id": 121,
+              "requested_count": 65536,
+              "requested_start": 100000
+            },
+            {
+              "axis": "uid",
+              "existing_count": 1000,
+              "existing_host_start": 100000,
+              "namespace_id": 139,
+              "requested_count": 65536,
+              "requested_start": 100000
+            },
+            {
+              "axis": "uid",
+              "existing_count": 64536,
+              "existing_host_start": 101000,
+              "namespace_id": 139,
+              "requested_count": 65536,
+              "requested_start": 100000
+            },
+            {
+              "axis": "gid",
+              "existing_count": 1000,
+              "existing_host_start": 100000,
+              "namespace_id": 139,
+              "requested_count": 65536,
+              "requested_start": 100000
+            },
+            {
+              "axis": "gid",
+              "existing_count": 64536,
+              "existing_host_start": 101000,
+              "namespace_id": 139,
+              "requested_count": 65536,
+              "requested_start": 100000
+            }
+          ],
+          "enumerated_namespace_ids": [
+            3,
+            118,
+            119,
+            121,
+            139,
+            171,
+            179,
+            217,
+            34837,
+            34951,
+            36581,
+            36584
+          ],
+          "enumeration": "Linux listns USER_NS, owner=0; held nsfs handles",
+          "final_enumeration_matches": true,
+          "future_writer_lock": false,
+          "inactive_kernel_only_references_included": false,
+          "initial_namespace": {
+            "device": 5,
+            "inode": 4026531837,
+            "namespace_id": 3,
+            "namespace_type": 268435456
+          },
+          "initial_namespace_excluded_from_occupancy": true,
+          "initial_pid_namespace": {
+            "device": 5,
+            "inode": 4026531836,
+            "namespace_id": 4,
+            "namespace_type": 536870912
+          },
+          "namespace_mapping_authorized": false,
+          "namespace_maps": [
+            {
+              "gid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                }
+              ],
+              "gid_map_bytes": 33,
+              "namespace": {
+                "device": 5,
+                "inode": 4026533158,
+                "namespace_id": 118,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026531837,
+                "namespace_id": 3,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                }
+              ],
+              "uid_map_bytes": 33,
+              "witness_pid": 3609990,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513199796,
+              "witness_starttime": 123665546,
+              "witness_tid": 3609990
+            },
+            {
+              "gid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                }
+              ],
+              "gid_map_bytes": 33,
+              "namespace": {
+                "device": 5,
+                "inode": 4026533159,
+                "namespace_id": 119,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026531837,
+                "namespace_id": 3,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                }
+              ],
+              "uid_map_bytes": 33,
+              "witness_pid": 3609991,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513199810,
+              "witness_starttime": 123665546,
+              "witness_tid": 3609991
+            },
+            {
+              "gid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 0
+                },
+                {
+                  "count": 65536,
+                  "host_start": 100000,
+                  "inside_start": 1
+                }
+              ],
+              "gid_map_bytes": 66,
+              "namespace": {
+                "device": 5,
+                "inode": 4026533161,
+                "namespace_id": 121,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026531837,
+                "namespace_id": 3,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 0
+                },
+                {
+                  "count": 65536,
+                  "host_start": 100000,
+                  "inside_start": 1
+                }
+              ],
+              "uid_map_bytes": 66,
+              "witness_pid": 3609992,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513199824,
+              "witness_starttime": 123665546,
+              "witness_tid": 3609992
+            },
+            {
+              "gid_map": [
+                {
+                  "count": 1000,
+                  "host_start": 100000,
+                  "inside_start": 0
+                },
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                },
+                {
+                  "count": 64536,
+                  "host_start": 101000,
+                  "inside_start": 1001
+                }
+              ],
+              "gid_map_bytes": 99,
+              "namespace": {
+                "device": 5,
+                "inode": 4026533164,
+                "namespace_id": 139,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026533161,
+                "namespace_id": 121,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1000,
+                  "host_start": 100000,
+                  "inside_start": 0
+                },
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                },
+                {
+                  "count": 64536,
+                  "host_start": 101000,
+                  "inside_start": 1001
+                }
+              ],
+              "uid_map_bytes": 99,
+              "witness_pid": 3609993,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513199838,
+              "witness_starttime": 123665546,
+              "witness_tid": 3609993
+            },
+            {
+              "gid_map": [
+                {
+                  "count": 1,
+                  "host_start": 0,
+                  "inside_start": 0
+                },
+                {
+                  "count": 1,
+                  "host_start": 120,
+                  "inside_start": 120
+                }
+              ],
+              "gid_map_bytes": 66,
+              "namespace": {
+                "device": 5,
+                "inode": 4026533228,
+                "namespace_id": 171,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026531837,
+                "namespace_id": 3,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1,
+                  "host_start": 0,
+                  "inside_start": 0
+                },
+                {
+                  "count": 1,
+                  "host_start": 118,
+                  "inside_start": 118
+                }
+              ],
+              "uid_map_bytes": 66,
+              "witness_pid": 3609994,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513199852,
+              "witness_starttime": 123665546,
+              "witness_tid": 3609994
+            },
+            {
+              "gid_map": [
+                {
+                  "count": 1,
+                  "host_start": 0,
+                  "inside_start": 0
+                }
+              ],
+              "gid_map_bytes": 33,
+              "namespace": {
+                "device": 5,
+                "inode": 4026533283,
+                "namespace_id": 179,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026531837,
+                "namespace_id": 3,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1,
+                  "host_start": 0,
+                  "inside_start": 0
+                }
+              ],
+              "uid_map_bytes": 33,
+              "witness_pid": 3610015,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513199866,
+              "witness_starttime": 123665546,
+              "witness_tid": 3610015
+            },
+            {
+              "gid_map": [
+                {
+                  "count": 1,
+                  "host_start": 0,
+                  "inside_start": 0
+                }
+              ],
+              "gid_map_bytes": 33,
+              "namespace": {
+                "device": 5,
+                "inode": 4026533429,
+                "namespace_id": 217,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026531837,
+                "namespace_id": 3,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1,
+                  "host_start": 0,
+                  "inside_start": 0
+                }
+              ],
+              "uid_map_bytes": 33,
+              "witness_pid": 3610016,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513199880,
+              "witness_starttime": 123665547,
+              "witness_tid": 3610016
+            },
+            {
+              "gid_map": [
+                {
+                  "count": 1,
+                  "host_start": 0,
+                  "inside_start": 0
+                },
+                {
+                  "count": 1,
+                  "host_start": 103,
+                  "inside_start": 103
+                }
+              ],
+              "gid_map_bytes": 66,
+              "namespace": {
+                "device": 5,
+                "inode": 4026533660,
+                "namespace_id": 34837,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026531837,
+                "namespace_id": 3,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1,
+                  "host_start": 0,
+                  "inside_start": 0
+                },
+                {
+                  "count": 1,
+                  "host_start": 103,
+                  "inside_start": 103
+                }
+              ],
+              "uid_map_bytes": 66,
+              "witness_pid": 3610017,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513199894,
+              "witness_starttime": 123665547,
+              "witness_tid": 3610017
+            },
+            {
+              "gid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                }
+              ],
+              "gid_map_bytes": 33,
+              "namespace": {
+                "device": 5,
+                "inode": 4026533088,
+                "namespace_id": 34951,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026531837,
+                "namespace_id": 3,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                }
+              ],
+              "uid_map_bytes": 33,
+              "witness_pid": 3610018,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513199908,
+              "witness_starttime": 123665547,
+              "witness_tid": 3610018
+            },
+            {
+              "gid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                }
+              ],
+              "gid_map_bytes": 33,
+              "namespace": {
+                "device": 5,
+                "inode": 4026534475,
+                "namespace_id": 36581,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026531837,
+                "namespace_id": 3,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                }
+              ],
+              "uid_map_bytes": 33,
+              "witness_pid": 3610019,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513199923,
+              "witness_starttime": 123665547,
+              "witness_tid": 3610019
+            },
+            {
+              "gid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                }
+              ],
+              "gid_map_bytes": 33,
+              "namespace": {
+                "device": 5,
+                "inode": 4026534532,
+                "namespace_id": 36584,
+                "namespace_type": 268435456
+              },
+              "parent": {
+                "device": 5,
+                "inode": 4026534475,
+                "namespace_id": 36581,
+                "namespace_type": 268435456
+              },
+              "uid_map": [
+                {
+                  "count": 1,
+                  "host_start": 1000,
+                  "inside_start": 1000
+                }
+              ],
+              "uid_map_bytes": 33,
+              "witness_pid": 3610020,
+              "witness_proc_device": 26,
+              "witness_proc_inode": 3513199937,
+              "witness_starttime": 123665548,
+              "witness_tid": 3610020
+            }
+          ],
+          "parent_identity_unchanged": true,
+          "parent_mount_namespace_unchanged": true,
+          "parent_user_namespace_unchanged": true,
+          "schema": "droidloom-active-userns-occupancy-v1",
+          "status": "CONFLICT",
+          "uid_map_host_view": true,
+          "uid_or_gid_map_writes": 0,
+          "unknown": []
+        },
+        "requested_gids": {
+          "count": 65536,
+          "start": 100000
+        },
+        "requested_uids": {
+          "count": 65536,
+          "start": 100000
+        },
+        "schema": "pocket4-userns-audit-observation-v1",
+        "status": "CONFLICT"
+      },
+      "close_acknowledgement": {
+        "audit_recorded": true,
+        "automatic_retry": false,
+        "host": "pocket4",
+        "outcome": "unknown",
+        "persistent_across_runtime_restart": true,
+        "reconcile_warning": "Terminal owner is not accepting close. Inspect this session's exit status; this acknowledgement does not confirm termination.",
+        "result": "already_exited",
+        "session_id": "dpty-18e6515922510a88-5e21-c7",
+        "termination_confirmed": false
+      },
+      "post_close_terminal": {
+        "boot": "981ff371-cd72-4f81-9be3-a862111afdb1",
+        "bytes_seen": 8750,
+        "bytes_stored": 8750,
+        "capture_error": null,
+        "closed": false,
+        "created_unix_ms": 1794210946141,
+        "exit_code": 0,
+        "output_complete": true,
+        "owner_pid": 3609891,
+        "pid": 3609985,
+        "state": "exited"
+      }
+    }
+  ],
+  "lifecycle_summary": {
+    "actual_map_collectors_created": 22,
+    "actual_map_collectors_reaped": 22,
+    "all_map_collector_exit_codes_zero": true,
+    "namespace_creation_actions": 0,
+    "uid_or_gid_map_writes": 0,
+    "android_actions": 0,
+    "live_supervisor_patch_applied": false,
+    "live_cleanup_helper_patch_applied": false,
+    "active_owner_checkout_modified": false,
+    "parent_user_and_mount_namespace_unchanged": true,
+    "parent_identity_unchanged": true,
+    "owned_descriptor_set_restored": true,
+    "pty_close_metadata": "close acknowledged already_exited with outcome unknown; subsequent authoritative reads still confirm exit0 and complete captures; closed metadata is not asserted",
+    "unresolved_execution_requests": []
+  },
+  "independent_static_review": {
+    "reviewer": "app_acceptance",
+    "reviewed_semantic_source_sha256": "308877dcc454b3800e32e704ad1731175fd0b35327e95ae37e4359fe553384d5",
+    "reviewed_bytes": 61789,
+    "accepted_delta": [
+      "clone3 CLONE_PIDFD",
+      "waitid P_PIDFD and no numeric PID fallback",
+      "creating-thread PIDFD_THREAD and PDEATHSIG",
+      "calling-thread signal mask restoration",
+      "pre/post setns dumpable protection and CAP_SYS_PTRACE requirement",
+      "CoverageIncomplete blocks production guard"
+    ],
+    "subsequent_changes": "Two documentation clarifications followed by rustfmt; source qualified by 11 real Linux controls and two actual root observations."
+  },
+  "earlier_attempts": {
+    "compile_failure": {
+      "terminal": {
+        "at_unix_ms": 1794208238403,
+        "audit_recorded": true,
+        "automatic_retry": false,
+        "cancelled": false,
+        "exit_code": 101,
+        "job_id": "1a1bf24a0e2-5e21-40e",
+        "launch_nonce": "26ac8c44fbe4031d8278974781ab2c2a",
+        "log_bytes": {
+          "stderr": {
+            "seen": 964,
+            "stored": 964
+          },
+          "stdout": {
+            "seen": 0,
+            "stored": 0
+          }
+        },
+        "log_errors": {
+          "stderr": null,
+          "stdout": null
+        },
+        "log_synced": {
+          "stderr": true,
+          "stdout": true
+        },
+        "log_truncated": {
+          "stderr": false,
+          "stdout": false
+        },
+        "output_complete": true,
+        "output_durable": true,
+        "state": "failed",
+        "terminal_publication_confirmed": true,
+        "terminal_publication_protocol": 1,
+        "timed_out": false
+      },
+      "streams": {
+        "stdout": {
+          "bytes": 0,
+          "eof": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "bytes": 964,
+          "eof": true,
+          "sha256": "c72821a93d68af03b27f015865d11a0efb306db6d7063702821d41e34de6d7e4"
+        }
+      },
+      "source_sha256": "fcfc3d9fa2d8913b94fb92ea67cd84899d647e4eb9d6d7f96347a672180143b6",
+      "failure": "E0063: missing created field in WitnessAttempt initializer; fixed before later controls"
+    },
+    "superseded_nine_controls": {
+      "terminal": {
+        "at_unix_ms": 1794208479153,
+        "audit_recorded": true,
+        "automatic_retry": false,
+        "cancelled": false,
+        "exit_code": 0,
+        "job_id": "1a1bf28ad98-5e21-429",
+        "launch_nonce": "79fe863185566cef8a150def1a59e2ee",
+        "log_bytes": {
+          "stderr": {
+            "seen": 1209,
+            "stored": 1209
+          },
+          "stdout": {
+            "seen": 855,
+            "stored": 855
+          }
+        },
+        "log_errors": {
+          "stderr": null,
+          "stdout": null
+        },
+        "log_synced": {
+          "stderr": true,
+          "stdout": true
+        },
+        "log_truncated": {
+          "stderr": false,
+          "stdout": false
+        },
+        "output_complete": true,
+        "output_durable": true,
+        "state": "succeeded",
+        "terminal_publication_confirmed": true,
+        "terminal_publication_protocol": 1,
+        "timed_out": false
+      },
+      "streams": {
+        "stdout": {
+          "bytes": 855,
+          "eof": true,
+          "sha256": "e8624e019e0682baf075f688f69202421fd81d780bd34fb17a2568f1131c4105"
+        },
+        "stderr": {
+          "bytes": 1209,
+          "eof": true,
+          "sha256": "9b1709e81d63cfb02c176a704d4164057ab674325ee953f5ac9250fd5bfe4572"
+        }
+      },
+      "source_sha256": "968259eaf301f2c52d06fa1190e0fc0e922b7f8ea1a587585b08476405780712",
+      "test_count": 9,
+      "current_revision_qualified": false
+    },
+    "ordinary_uid_recovered": {
+      "terminal": {
+        "at_unix_ms": 1794208620912,
+        "audit_recorded": true,
+        "automatic_retry": false,
+        "cancelled": false,
+        "exit_code": 0,
+        "job_id": "1a1bf2a91ee-5e21-435",
+        "launch_nonce": "bf8ed5e356e0c1a6a916ac60660353dc",
+        "log_bytes": {
+          "stderr": {
+            "seen": 1192,
+            "stored": 1192
+          },
+          "stdout": {
+            "seen": 1101,
+            "stored": 1101
+          }
+        },
+        "log_errors": {
+          "stderr": null,
+          "stdout": null
+        },
+        "log_synced": {
+          "stderr": true,
+          "stdout": true
+        },
+        "log_truncated": {
+          "stderr": false,
+          "stdout": false
+        },
+        "output_complete": true,
+        "output_durable": true,
+        "state": "succeeded",
+        "terminal_publication_confirmed": true,
+        "terminal_publication_protocol": 1,
+        "timed_out": false
+      },
+      "streams": {
+        "stdout": {
+          "bytes": 1101,
+          "eof": true,
+          "sha256": "dedcf0f04d3cf53817febdec8f019390ff67275e4d8a4fbc9ccf862cd262b61c"
+        },
+        "stderr": {
+          "bytes": 1192,
+          "eof": true,
+          "sha256": "ef786924a8bf9174a549965cc355521c98298c6dfb0b8f06a75230b9c27a43ab"
+        }
+      },
+      "source_sha256": "968259eaf301f2c52d06fa1190e0fc0e922b7f8ea1a587585b08476405780712",
+      "observation": {
+        "elapsed_ms": 0,
+        "namespace_mapping_authorized": false,
+        "owned_descriptor_set_restored": true,
+        "report": {
+          "active_owner_chain_included": false,
+          "android_actions": 0,
+          "child_terminals": [],
+          "children_created": 0,
+          "children_reaped": 0,
+          "conflicts": [],
+          "enumerated_namespace_ids": [],
+          "enumeration": "Linux listns USER_NS, owner=0; held nsfs handles",
+          "final_enumeration_matches": false,
+          "future_writer_lock": false,
+          "inactive_kernel_only_references_included": false,
+          "initial_namespace": null,
+          "initial_namespace_excluded_from_occupancy": false,
+          "initial_pid_namespace": null,
+          "namespace_mapping_authorized": false,
+          "namespace_maps": [],
+          "parent_identity_unchanged": false,
+          "parent_mount_namespace_unchanged": false,
+          "parent_user_namespace_unchanged": false,
+          "schema": "droidloom-active-userns-occupancy-v1",
+          "status": "UNKNOWN",
+          "uid_map_host_view": false,
+          "uid_or_gid_map_writes": 0,
+          "unknown": [
+            {
+              "code": "initial_host_namespace_and_privilege_required",
+              "errno": null,
+              "namespace_id": null
+            }
+          ]
+        },
+        "requested_gids": {
+          "count": 100000,
+          "start": 200000
+        },
+        "requested_uids": {
+          "count": 100000,
+          "start": 200000
+        },
+        "schema": "pocket4-userns-audit-observation-v1",
+        "status": "UNKNOWN"
+      },
+      "idempotency_key": "p4-userns-audit-nonroot-493ac-r1",
+      "original_dispatch": {
+        "same_key_requests": 2,
+        "mcp_timeouts": 2,
+        "replayed_after_recovery": false
+      },
+      "recovery": {
+        "request_digest": "558721dfb13fae95017f08b88bf88c23d9542765f2cb45c6a3a9cfe3a73def67",
+        "exact_candidates_read": 41,
+        "unique_matches": 1
+      }
+    },
+    "global_api_probe": {
+      "source_sha256": "1f90212db147a4cc0b731ac19f17b29d6f6528cad646a6eba79f7c7a5dbdd010",
+      "source_retained_in_deliverable": false,
+      "session_id": "dpty-18e64e166834a910-5e21-a6",
+      "terminal": {
+        "boot": "981ff371-cd72-4f81-9be3-a862111afdb1",
+        "bytes_seen": 1068,
+        "bytes_stored": 1068,
+        "capture_error": null,
+        "closed": false,
+        "created_unix_ms": 1794207360959,
+        "exit_code": 0,
+        "output_complete": true,
+        "owner_pid": 917333,
+        "pid": 917426,
+        "state": "exited"
+      },
+      "stdout_bytes": 1068,
+      "stdout_sha256": "e5a7bcc720f1893bfa24c6cdc1418402cad225c7e2a948703030d7031c1ab7f6",
+      "active_userns_count": 12,
+      "typed_handles_opened": 12,
+      "children_created": 0,
+      "mapping_writes": 0,
+      "close_acknowledgement": {
+        "audit_recorded": true,
+        "automatic_retry": false,
+        "host": "pocket4",
+        "outcome": "unknown",
+        "persistent_across_runtime_restart": true,
+        "reconcile_warning": "Terminal owner is not accepting close. Inspect this session's exit status; this acknowledgement does not confirm termination.",
+        "result": "already_exited",
+        "session_id": "dpty-18e64e166834a910-5e21-a6",
+        "termination_confirmed": false
+      },
+      "post_close_terminal": {
+        "boot": "981ff371-cd72-4f81-9be3-a862111afdb1",
+        "bytes_seen": 1068,
+        "bytes_stored": 1068,
+        "capture_error": null,
+        "closed": false,
+        "created_unix_ms": 1794207360959,
+        "exit_code": 0,
+        "output_complete": true,
+        "owner_pid": 917333,
+        "pid": 917426,
+        "state": "exited"
+      }
+    }
+  },
+  "limitations": [
+    "listns active owner-chain coverage excludes inactive internal references, including socket-retained net namespaces that can be resurrected",
+    "no production guard is issued even when the active candidate range has no conflicts",
+    "snapshot enumeration is not a future namespace-writer lock",
+    "NSS/delegation/reservation/account qualification is outside this module",
+    "the historical 200000/100000 diagnostic input is not a current delegation",
+    "the 100000/65536 diagnostic is an actual occupied-range negative control and does not allocate or release that range",
+    "the deadline is cooperative; mandatory final kernel retirement wait is not a hard real-time bound"
+  ]
+}

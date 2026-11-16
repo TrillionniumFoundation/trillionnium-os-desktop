@@ -1,0 +1,147 @@
+{
+  "Android_starts": 0,
+  "CURRENT": {
+    "bytes": 270746,
+    "path": "/home/alex/work/pocket4-android-final/CONTINUATION_CURRENT.json",
+    "sha256": "2090bc8e1bc1785fb78f29e50dadfc13d53dff76e03afd85c8737a307853a3a3"
+  },
+  "actual_test_stderr": {
+    "bytes": 621,
+    "path": "/home/alex/work/pocket4-android-final/qualification/production-private-process-filesystems-controls-20261109-8b88-r5/normal.stderr",
+    "sha256": "38f21841f557259b91a87c73003fb98f7472a00aefc3fbd2b89a9ed528fb138f"
+  },
+  "actual_test_stdout": {
+    "bytes": 1257,
+    "path": "/home/alex/work/pocket4-android-final/qualification/production-private-process-filesystems-controls-20261109-8b88-r5/normal.stdout",
+    "sha256": "1dd6771a216e65a160aa4ccb05810edc564680cd2a56d3fadd6f43b607d4ca12"
+  },
+  "actual_unit_cgroup_absent": true,
+  "fixture_absent": true,
+  "host_fixture_mounts_absent": true,
+  "old_android_masks": [
+    {
+      "identity": [
+        66306,
+        76546888,
+        41471,
+        0,
+        0,
+        1,
+        9,
+        1794203622094906739,
+        1794203622094906739
+      ],
+      "normal": {
+        "argv": [
+          "/usr/bin/systemctl",
+          "show",
+          "droidloomd.service",
+          "-p",
+          "LoadState",
+          "-p",
+          "UnitFileState",
+          "-p",
+          "ActiveState",
+          "-p",
+          "MainPID",
+          "-p",
+          "FragmentPath"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "LoadState=masked\nActiveState=inactive\nFragmentPath=/etc/systemd/system/droidloomd.service\nUnitFileState=masked\nMainPID=0\n"
+      },
+      "path": "/etc/systemd/system/droidloomd.service",
+      "properties": {
+        "ActiveState": "inactive",
+        "FragmentPath": "/etc/systemd/system/droidloomd.service",
+        "LoadState": "masked",
+        "MainPID": "0",
+        "UnitFileState": "masked"
+      }
+    },
+    {
+      "identity": [
+        66306,
+        31592783,
+        41471,
+        1000,
+        1000,
+        1,
+        9,
+        1794203623688957978,
+        1794203623688957978
+      ],
+      "normal": {
+        "argv": [
+          "/usr/sbin/runuser",
+          "-u",
+          "alex",
+          "--",
+          "/usr/bin/env",
+          "XDG_RUNTIME_DIR=/run/user/1000",
+          "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus",
+          "/usr/bin/systemctl",
+          "--user",
+          "show",
+          "droidloom.service",
+          "-p",
+          "LoadState",
+          "-p",
+          "UnitFileState",
+          "-p",
+          "ActiveState",
+          "-p",
+          "MainPID",
+          "-p",
+          "FragmentPath"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "LoadState=masked\nActiveState=inactive\nFragmentPath=/home/alex/.config/systemd/user/droidloom.service\nUnitFileState=masked\nMainPID=0\n"
+      },
+      "path": "/home/alex/.config/systemd/user/droidloom.service",
+      "properties": {
+        "ActiveState": "inactive",
+        "FragmentPath": "/home/alex/.config/systemd/user/droidloom.service",
+        "LoadState": "masked",
+        "MainPID": "0",
+        "UnitFileState": "masked"
+      }
+    }
+  ],
+  "original_data_body_reads": 0,
+  "owned_loop_backings_absent": true,
+  "passed": true,
+  "production_ready": false,
+  "protected_before_equals_after": true,
+  "runtime_qualified": false,
+  "schema": "pocket4-proc-r5-independent-final-v1",
+  "source_manifest": {
+    "bytes": 183897,
+    "path": "/home/alex/work/pocket4-android-final/qualification/production-namespace-broker-source-20261109-8b88-r10/manifest.json",
+    "sha256": "cb48377ae33331194efecb5cb24a7f37478abe4689def86d0e9fbb501cfefd5b"
+  },
+  "source_result": {
+    "bytes": 15614,
+    "path": "/home/alex/work/pocket4-android-final/qualification/production-private-process-filesystems-controls-20261109-8b88-r5/result.json",
+    "sha256": "645842cac5498ae690a6a9d79b15e73c891520fe12d15102ffc1b2f7ffdc12fb"
+  },
+  "unit": "pocket4-private-process-filesystems-controls-20261109-8b88-r5.service",
+  "unit_fields": {
+    "ActiveState": "inactive",
+    "ControlGroup": "",
+    "ExecMainCode": "0",
+    "ExecMainStatus": "0",
+    "InvocationID": "",
+    "LoadState": "not-found",
+    "MainPID": "0",
+    "Result": "success",
+    "SubState": "dead"
+  },
+  "unit_show_stdout": {
+    "bytes": 140,
+    "path": "/home/alex/work/pocket4-android-final/qualification/production-private-process-filesystems-r5-independent-20261109-8b88-r1/unit-show.stdout",
+    "sha256": "009ddad1440ab32139ec238e54d4dc81e8cfeb9ab07896ccfe340806a1274d50"
+  }
+}

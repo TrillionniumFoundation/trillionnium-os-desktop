@@ -1,0 +1,75 @@
+{
+  "audio": {
+    "changes_since_fc90": 17,
+    "commit": "6eb50f3e0a2184cb822d0704c6f53f261ebd2de4",
+    "cumulative_patch_sha256": "376e574d1a463a3d7548f73cd3aeb0db08afd4ebecf8b9b051ea06f5ec045d70",
+    "exact_projects": 308,
+    "lock_sha256": "bf5db84637fe0508be889aa7c7343e4478ed8a4a537099babc87bfba456ce94b",
+    "selected_source_files": 409,
+    "tree": "8df6ddcdea8bad1ee4b964ac472930e009e04443"
+  },
+  "decisions": [
+    "lib.rs: retain Native finite project/name/sparse validation; add Audio exact bf5/308 and unchanged Gatekeeper-purpose regression. Derive global608 from both counts. Audio alone still derives320; obsolete shared320 assertion is removed.",
+    "lib.rs: Native original279 CTS cones require shared288 sparse bound. Keep Native positive133/256/257/279/288, reject289/duplicates/escapes rather than Audio predecessor257 rejection. This does not change either lock.",
+    "android.rs: ordinary strict pair source lock and typed-ingress source lock keep their existing routes; all other modes call Audio selected_source_lock, which preserves generic default and enforces exact bf5 in Audio mode.",
+    "android.rs: new selected_shared_blueprint chooses existing Audio projection only for AudioApexTargetClosure, otherwise keeps Native ordinary/typed/normal projection. Native and Audio original-provider fixtures remain separate.",
+    "android.rs: SDK fallback combines Native exact-provider presence and existing Audio mode requirement; retains system-server fallback. Existing Audio test non-Audio absence precondition becomes explicit; new mixed-route test covers presence.",
+    "android.rs: concatenate independent Native and Audio resource projections and source verifiers; their existing scope guards stay intact. All existing test bodies retained except SDK helper signature adaptation.",
+    "main.rs: retain both NativeGenerationPair and RecoverSource dispatch/CLI tests; no build path introduced for recovery."
+  ],
+  "deployed": false,
+  "focused_results": {
+    "bytes": 10140,
+    "path": "focused-results.json",
+    "sha256": "da49ffff05f65363a48b14a2d2da09cd1a7ac30c8f99e6a3d5c6591b26c68bc2"
+  },
+  "frozen_input_writes": 0,
+  "full_audio_apex_build_pass": false,
+  "full_native_art_build_pass": false,
+  "manual_conflicts": {
+    "tools/droidloom-source/src/lib.rs": 5,
+    "tools/droidloom-update/src/android.rs": 9,
+    "tools/droidloom-update/src/main.rs": 2
+  },
+  "native": {
+    "all_frozen_files_verified": 515,
+    "changes_since_public_candidate": 9,
+    "exact_projects": 597,
+    "lock_sha256": "2b699174977614e080cf99a991f3e648774b24581c4ecdc29f1bd53b7b01ef23",
+    "manifest_sha256": "73d23be7f7f4bd416f1837ef0d595d9a09e61f690d75f4d45aec83976131141a",
+    "selected_source_files": 450
+  },
+  "new_controls": [
+    "shared_project_capacity_matches_both_exact_frozen_locks",
+    "merged_shared_provider_routes_preserve_each_frozen_scope",
+    "merged_sdk_fallback_respects_exact_provider_presence_in_both_routes"
+  ],
+  "normal_focused_controls_pass": true,
+  "published_pr_head": "555b2710dcf3a393b65efb2caf5e469ca4d98e1b",
+  "recipe_repair": "recipe-fix-provenance.json",
+  "runtime_qualified": false,
+  "schema": "pocket4-native-audio-source-merge-decisions-v1",
+  "shared_capacity": {
+    "audio_minimal_capacity_independent": 320,
+    "derivation": "ceil(max(597,308)/16)*16",
+    "locks_preserved_exact": true,
+    "project_count": 608,
+    "sparse_path_count": 288
+  },
+  "source_refs": {
+    "tools/droidloom-source/src/lib.rs": {
+      "bytes": 57512,
+      "sha256": "2b5d2148bcbaf1947e52f4cf9d4d4ba02e445613517bf449ce3bc7a1e849049f"
+    },
+    "tools/droidloom-update/src/android.rs": {
+      "bytes": 395505,
+      "sha256": "91e3531d40e485c8f669e7a7a33de238f482d9cb48425f5329e923a2cd45a1d5"
+    },
+    "tools/droidloom-update/src/main.rs": {
+      "bytes": 27070,
+      "sha256": "ac1238f796fe9bf4ea9607544515121d86bdeacda9f2532a5316362790aaef00"
+    }
+  },
+  "state": "ISOLATED_SOURCE_MERGED_CONTROLS_PASSED_NOT_DEPLOYED",
+  "union_source_files": 476
+}

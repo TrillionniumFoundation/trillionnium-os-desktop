@@ -1,0 +1,84 @@
+{
+  "actual_host_controls_verified": 0,
+  "baseline_commit": "a355e81a753cdc1aed198424d87d0a8b6e4b2ebc",
+  "baseline_provenance_and_52_controls_remain_historical": true,
+  "candidate_inventory": {
+    "bytes": 8573,
+    "sha256": "ba82016a9633d3320a3ca774bd8c9527112a20025293deb9cb434d7fd128fc27"
+  },
+  "candidate_source_manifest": {
+    "bytes": 16142,
+    "sha256": "3b299bfcbdf497a56fb59ac8dbfd8847e02303748752f92f408d886517eaf107"
+  },
+  "current_publication_patch_refs": {
+    "camera-video-r4-integrated.patch": {
+      "bytes": 28060,
+      "sha256": "2176cf3de00240e786b088c3b3d1edb8b37e6f88920ff58706886e34cdaf44f3"
+    },
+    "failure-path-android-quiet.patch": {
+      "bytes": 6259,
+      "sha256": "ced84baccd33b86b3f60883c271c80fb769df24e3338a9c04ad0afa06697d9f3"
+    },
+    "provenance/failure-quiet-decoder-test-fixture.patch": {
+      "bytes": 2255,
+      "sha256": "93bb490afcbaa3a591a123e74590812911d1e9a91311f5f7a1225dae0147bb51"
+    },
+    "provenance/failure-quiet-host-pin-port.patch": {
+      "bytes": 1223,
+      "sha256": "929350e3ecd788838a9cb29dc697f8bf07ad5768816c772ff2a467781213a047"
+    },
+    "provenance/owner-decoder-merge.patch": {
+      "bytes": 2819,
+      "sha256": "7d3eb19535a0d4aac374b51c7666819e1cbc78357ae73e6ee2c6e271438f605e"
+    }
+  },
+  "integration_stage": "Historical frozen failure-quiet input selection before owner merge",
+  "owner_canonical_convergence_pending_at_input_selection": true,
+  "publication_patch_representation": "Zero-context unified diffs regenerated from exact baseline and current text; original frozen candidates unchanged.",
+  "runtime_qualified": false,
+  "schema": "camera-r4-failure-quiet-integration-inputs-v1",
+  "selected_frozen_input_paths_scope": "Names refer to the original frozen input candidate, not the final publication outputs.",
+  "selected_frozen_inputs": {
+    "decoder-test-fixture.patch": {
+      "bytes": 1493,
+      "sha256": "a1c4f11c6b4225e7c3a624d8c2ef0548b1f31373d6bdcc740ce8778acfa2a1d9"
+    },
+    "failure-path-android-quiet.patch": {
+      "bytes": 8984,
+      "sha256": "7902dd31eaed8db6eeb4e0b7ea1a650891279ab171ccf565e11eb4c9d7ec02ea"
+    },
+    "origin-source-manifest.json": {
+      "bytes": 16609,
+      "sha256": "143424cf8d0b36acc7b193ee1e9349fbf163f18322b4bae038fd227f87884b17"
+    },
+    "peer-review.json": {
+      "bytes": 2020,
+      "sha256": "c5ec929578b6058d6a04e6f8c38b1c4dd65dc23a938250db541fe19153efef69"
+    },
+    "source/camera_audio_runtime.py": {
+      "bytes": 30941,
+      "sha256": "281753695801a74ad65d589f1ba939bff3c64f6464056555a3582fc08a0a150b"
+    },
+    "source/camera_case.py": {
+      "bytes": 8212,
+      "sha256": "ff5f1bfc48617e42bb0d9c42bf9120995772d99449ffb8f515dcbca0981b59aa"
+    },
+    "source/camera_video_driver.py": {
+      "bytes": 43149,
+      "sha256": "68d394e9edc8eb62083e91edc442430d02f5301d9289b4f70005e96625a63c80"
+    },
+    "tests/fixtures/original-ast-pins.json": {
+      "bytes": 623,
+      "sha256": "96002db5f6ec42fe968c5b512235bc5f305c1885b2ce949aafc25528987ff4f9"
+    },
+    "tests/test_camera_r4_decode.py": {
+      "bytes": 18371,
+      "sha256": "e8ae7682849a540515f04eb7df22154a4de018c8ecbbd1d1c1a1687654e95b0c"
+    },
+    "tests/test_failure_cleanup.py": {
+      "bytes": 28127,
+      "sha256": "fd434b996b238bed6e4fb233d4f639002bdaa4f8ed0410c7d4d7131b3c5293de"
+    }
+  },
+  "source_inspection_or_runtime_inherited_as_live": false
+}

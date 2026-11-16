@@ -1,0 +1,668 @@
+{
+  "apparmor_after": {
+    "bytes": 85651,
+    "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/source-parent/linux-source-7.0.0/security/apparmor/lsm.c",
+    "sha256": "f32aa157c71d196cd516228db06236959242500b028153095c85da429fb32daf"
+  },
+  "apparmor_before": {
+    "bytes": 85116,
+    "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/source-parent/linux-source-7.0.0/security/apparmor/lsm.c",
+    "sha256": "2ca0d185cb272958c4a8ae7c2da0c923db9648765411187f940443f34c228021"
+  },
+  "dependencies": [
+    {
+      "apt_metadata": {
+        "Architecture": "amd64",
+        "Depends": "libc6 (>= 2.38), libstdc++6 (>= 4.1.1)",
+        "Filename": "pool/main/libg/libgc/libgc1_8.2.12-1_amd64.deb",
+        "Package": "libgc1",
+        "SHA256": "b00fdd469849892f74374018652599c55f6936dde28c6156505257d2a4ccca43",
+        "Size": "92896",
+        "Version": "1:8.2.12-1"
+      },
+      "file": {
+        "bytes": 92896,
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libgc1_8.2.12-1_amd64.deb",
+        "sha256": "b00fdd469849892f74374018652599c55f6936dde28c6156505257d2a4ccca43"
+      },
+      "private_extraction": {
+        "argv": [
+          "/usr/bin/dpkg-deb",
+          "--extract",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libgc1_8.2.12-1_amd64.deb",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "url": "https://mirrors.ustc.edu.cn/ubuntu/pool/main/libg/libgc/libgc1_8.2.12-1_amd64.deb"
+    },
+    {
+      "apt_metadata": {
+        "Architecture": "amd64",
+        "Depends": "gcc-16-base (= 16-20260322-1ubuntu1), libc6 (>= 2.38), libgc1 (>= 1:7.2d), libgcc-s1 (>= 3.0)",
+        "Filename": "pool/universe/g/gcc-16/libobjc4_16-20260322-1ubuntu1_amd64.deb",
+        "Package": "libobjc4",
+        "SHA256": "c0f6da8c4694a3157eb4c76dd2c0ddd2ffe25a69e1f8f7548c4590521049a57e",
+        "Size": "48210",
+        "Version": "16-20260322-1ubuntu1"
+      },
+      "file": {
+        "bytes": 48210,
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libobjc4_16-20260322-1ubuntu1_amd64.deb",
+        "sha256": "c0f6da8c4694a3157eb4c76dd2c0ddd2ffe25a69e1f8f7548c4590521049a57e"
+      },
+      "private_extraction": {
+        "argv": [
+          "/usr/bin/dpkg-deb",
+          "--extract",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libobjc4_16-20260322-1ubuntu1_amd64.deb",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "url": "https://mirrors.ustc.edu.cn/ubuntu/pool/universe/g/gcc-16/libobjc4_16-20260322-1ubuntu1_amd64.deb"
+    },
+    {
+      "apt_metadata": {
+        "Architecture": "amd64",
+        "Depends": "gcc-15-base (= 15.2.0-16ubuntu1), libgcc-15-dev (= 15.2.0-16ubuntu1), libobjc4 (>= 15.2.0-16ubuntu1)",
+        "Filename": "pool/universe/g/gcc-15/libobjc-15-dev_15.2.0-16ubuntu1_amd64.deb",
+        "Package": "libobjc-15-dev",
+        "SHA256": "2251b00349af01ecffeb934df74af5e656482939d572acf1180b0fac571f27e8",
+        "Size": "195862",
+        "Version": "15.2.0-16ubuntu1"
+      },
+      "file": {
+        "bytes": 195862,
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libobjc-15-dev_15.2.0-16ubuntu1_amd64.deb",
+        "sha256": "2251b00349af01ecffeb934df74af5e656482939d572acf1180b0fac571f27e8"
+      },
+      "private_extraction": {
+        "argv": [
+          "/usr/bin/dpkg-deb",
+          "--extract",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libobjc-15-dev_15.2.0-16ubuntu1_amd64.deb",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "url": "https://mirrors.ustc.edu.cn/ubuntu/pool/universe/g/gcc-15/libobjc-15-dev_15.2.0-16ubuntu1_amd64.deb"
+    },
+    {
+      "apt_metadata": {
+        "Architecture": "amd64",
+        "Filename": "pool/universe/l/llvm-toolchain-21/libclang-common-21-dev_21.1.8-6ubuntu1_amd64.deb",
+        "Package": "libclang-common-21-dev",
+        "SHA256": "c7188f593d77017a4ebb6fea76bb4b5180a3e5a1e7b9f0e3dbd5f5abf7e7183e",
+        "Size": "769884",
+        "Version": "1:21.1.8-6ubuntu1"
+      },
+      "file": {
+        "bytes": 769884,
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libclang-common-21-dev_21.1.8-6ubuntu1_amd64.deb",
+        "sha256": "c7188f593d77017a4ebb6fea76bb4b5180a3e5a1e7b9f0e3dbd5f5abf7e7183e"
+      },
+      "private_extraction": {
+        "argv": [
+          "/usr/bin/dpkg-deb",
+          "--extract",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libclang-common-21-dev_21.1.8-6ubuntu1_amd64.deb",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "url": "https://mirrors.ustc.edu.cn/ubuntu/pool/universe/l/llvm-toolchain-21/libclang-common-21-dev_21.1.8-6ubuntu1_amd64.deb"
+    },
+    {
+      "apt_metadata": {
+        "Architecture": "amd64",
+        "Depends": "libstdc++-15-dev, libgcc-15-dev, libobjc-15-dev, libclang1-21 (= 1:21.1.8-6ubuntu1), libclang-common-21-dev (= 1:21.1.8-6ubuntu1)",
+        "Filename": "pool/universe/l/llvm-toolchain-21/libclang-21-dev_21.1.8-6ubuntu1_amd64.deb",
+        "Package": "libclang-21-dev",
+        "SHA256": "ba5797e02caf800e49560a2c0971c410b05c90083d9d6b5ad7124f9f24056642",
+        "Size": "30202524",
+        "Version": "1:21.1.8-6ubuntu1"
+      },
+      "file": {
+        "bytes": 30202524,
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libclang-21-dev_21.1.8-6ubuntu1_amd64.deb",
+        "sha256": "ba5797e02caf800e49560a2c0971c410b05c90083d9d6b5ad7124f9f24056642"
+      },
+      "private_extraction": {
+        "argv": [
+          "/usr/bin/dpkg-deb",
+          "--extract",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libclang-21-dev_21.1.8-6ubuntu1_amd64.deb",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "url": "https://mirrors.ustc.edu.cn/ubuntu/pool/universe/l/llvm-toolchain-21/libclang-21-dev_21.1.8-6ubuntu1_amd64.deb"
+    },
+    {
+      "apt_metadata": {
+        "Architecture": "amd64",
+        "Depends": "libclang-21-dev (>= 1:21.1.6-1)",
+        "Filename": "pool/universe/l/llvm-defaults/libclang-dev_21.1.6-71_amd64.deb",
+        "Package": "libclang-dev",
+        "SHA256": "5c611aff366d6bf76722e4065ac6fca30a81bab6748c3869ac4ef93fddfd83c2",
+        "Size": "3444",
+        "Version": "1:21.1.6-71"
+      },
+      "file": {
+        "bytes": 3444,
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libclang-dev_21.1.6-71_amd64.deb",
+        "sha256": "5c611aff366d6bf76722e4065ac6fca30a81bab6748c3869ac4ef93fddfd83c2"
+      },
+      "private_extraction": {
+        "argv": [
+          "/usr/bin/dpkg-deb",
+          "--extract",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libclang-dev_21.1.6-71_amd64.deb",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "url": "https://mirrors.ustc.edu.cn/ubuntu/pool/universe/l/llvm-defaults/libclang-dev_21.1.6-71_amd64.deb"
+    },
+    {
+      "apt_metadata": {
+        "Architecture": "amd64",
+        "Depends": "libc6 (>= 2.39), libgcc-s1 (>= 4.2), libclang-dev",
+        "Filename": "pool/universe/r/rust-bindgen-cli/bindgen_0.72.1-1_amd64.deb",
+        "Package": "bindgen",
+        "SHA256": "d832caa2bce067120ab8ea583af728611611afa99d6c3ddde59f494b6b6b52db",
+        "Size": "2269814",
+        "Version": "0.72.1-1"
+      },
+      "file": {
+        "bytes": 2269814,
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/bindgen_0.72.1-1_amd64.deb",
+        "sha256": "d832caa2bce067120ab8ea583af728611611afa99d6c3ddde59f494b6b6b52db"
+      },
+      "private_extraction": {
+        "argv": [
+          "/usr/bin/dpkg-deb",
+          "--extract",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/bindgen_0.72.1-1_amd64.deb",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "url": "https://mirrors.ustc.edu.cn/ubuntu/pool/universe/r/rust-bindgen-cli/bindgen_0.72.1-1_amd64.deb"
+    },
+    {
+      "apt_metadata": {
+        "Architecture": "amd64",
+        "Depends": "libc6 (>= 2.38), libgcc-s1 (>= 3.0), libllvm21 (>= 1:21.1.0), libstdc++6 (>= 11)",
+        "Filename": "pool/universe/l/llvm-toolchain-21/llvm-21-linker-tools_21.1.8-6ubuntu1_amd64.deb",
+        "Package": "llvm-21-linker-tools",
+        "SHA256": "51e9cecdb44252d9fed8209ce8d3194455210905068fbbf7c08dd016e3ed4b8f",
+        "Size": "1324772",
+        "Version": "1:21.1.8-6ubuntu1"
+      },
+      "file": {
+        "bytes": 1324772,
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/llvm-21-linker-tools_21.1.8-6ubuntu1_amd64.deb",
+        "sha256": "51e9cecdb44252d9fed8209ce8d3194455210905068fbbf7c08dd016e3ed4b8f"
+      },
+      "private_extraction": {
+        "argv": [
+          "/usr/bin/dpkg-deb",
+          "--extract",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/llvm-21-linker-tools_21.1.8-6ubuntu1_amd64.deb",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "url": "https://mirrors.ustc.edu.cn/ubuntu/pool/universe/l/llvm-toolchain-21/llvm-21-linker-tools_21.1.8-6ubuntu1_amd64.deb"
+    },
+    {
+      "apt_metadata": {
+        "Architecture": "amd64",
+        "Depends": "libc6 (>= 2.34), libclang-cpp21 (>= 1:21.1.8), libgcc-s1 (>= 3.0), libllvm21 (= 1:21.1.8-6ubuntu1), libstdc++6 (>= 11), libstdc++-15-dev, libgcc-15-dev, libobjc-15-dev, libclang-common-21-dev (= 1:21.1.8-6ubuntu1), llvm-21-linker-tools (= 1:21.1.8-6ubuntu1), libclang1-21 (= 1:21.1.8-6ubuntu1), libc6-dev, binutils",
+        "Filename": "pool/universe/l/llvm-toolchain-21/clang-21_21.1.8-6ubuntu1_amd64.deb",
+        "Package": "clang-21",
+        "SHA256": "792701d9c82e5f237879cc0bda552d8a127ea24b0c7d520e815aff14bd314b03",
+        "Size": "127928",
+        "Version": "1:21.1.8-6ubuntu1"
+      },
+      "file": {
+        "bytes": 127928,
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/clang-21_21.1.8-6ubuntu1_amd64.deb",
+        "sha256": "792701d9c82e5f237879cc0bda552d8a127ea24b0c7d520e815aff14bd314b03"
+      },
+      "private_extraction": {
+        "argv": [
+          "/usr/bin/dpkg-deb",
+          "--extract",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/clang-21_21.1.8-6ubuntu1_amd64.deb",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "url": "https://mirrors.ustc.edu.cn/ubuntu/pool/universe/l/llvm-toolchain-21/clang-21_21.1.8-6ubuntu1_amd64.deb"
+    },
+    {
+      "apt_metadata": {
+        "Architecture": "amd64",
+        "Depends": "libbpf1 (>= 1:1.6.1), libc6 (>= 2.34), libdw1t64 (>= 0.157), libelf1t64 (>= 0.142), zlib1g (>= 1:1.1.4)",
+        "Filename": "pool/universe/d/dwarves/libdwarves1_1.31-2ubuntu1_amd64.deb",
+        "Package": "libdwarves1",
+        "SHA256": "f6b00e79db3d3683619918d14c32ab13871550591d1a1ffea855ac7a03e6244d",
+        "Size": "93230",
+        "Version": "1.31-2ubuntu1"
+      },
+      "file": {
+        "bytes": 93230,
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libdwarves1_1.31-2ubuntu1_amd64.deb",
+        "sha256": "f6b00e79db3d3683619918d14c32ab13871550591d1a1ffea855ac7a03e6244d"
+      },
+      "private_extraction": {
+        "argv": [
+          "/usr/bin/dpkg-deb",
+          "--extract",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libdwarves1_1.31-2ubuntu1_amd64.deb",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "url": "https://mirrors.ustc.edu.cn/ubuntu/pool/universe/d/dwarves/libdwarves1_1.31-2ubuntu1_amd64.deb"
+    },
+    {
+      "apt_metadata": {
+        "Architecture": "amd64",
+        "Depends": "libzstd1 (= 1.5.7+dfsg-3)",
+        "Filename": "pool/main/libz/libzstd/libzstd-dev_1.5.7+dfsg-3_amd64.deb",
+        "Package": "libzstd-dev",
+        "SHA256": "6d81369284ba3fd094f635fe6b9f8dfc71baaca36c1f758fe62244839e25ecf0",
+        "Size": "376362",
+        "Version": "1.5.7+dfsg-3"
+      },
+      "file": {
+        "bytes": 376362,
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libzstd-dev_1.5.7+dfsg-3_amd64.deb",
+        "sha256": "6d81369284ba3fd094f635fe6b9f8dfc71baaca36c1f758fe62244839e25ecf0"
+      },
+      "private_extraction": {
+        "argv": [
+          "/usr/bin/dpkg-deb",
+          "--extract",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libzstd-dev_1.5.7+dfsg-3_amd64.deb",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "url": "https://mirrors.ustc.edu.cn/ubuntu/pool/main/libz/libzstd/libzstd-dev_1.5.7+dfsg-3_amd64.deb"
+    },
+    {
+      "apt_metadata": {
+        "Architecture": "amd64",
+        "Depends": "libelf1t64 (= 0.194-4), zlib1g-dev, libzstd-dev",
+        "Filename": "pool/main/e/elfutils/libelf-dev_0.194-4_amd64.deb",
+        "Package": "libelf-dev",
+        "SHA256": "5a67bec4ff050ae031206f05e4d6ea79aa15b1d1dbd503bdac955966aa7a8699",
+        "Size": "115756",
+        "Version": "0.194-4"
+      },
+      "file": {
+        "bytes": 115756,
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libelf-dev_0.194-4_amd64.deb",
+        "sha256": "5a67bec4ff050ae031206f05e4d6ea79aa15b1d1dbd503bdac955966aa7a8699"
+      },
+      "private_extraction": {
+        "argv": [
+          "/usr/bin/dpkg-deb",
+          "--extract",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libelf-dev_0.194-4_amd64.deb",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "url": "https://mirrors.ustc.edu.cn/ubuntu/pool/main/e/elfutils/libelf-dev_0.194-4_amd64.deb"
+    },
+    {
+      "apt_metadata": {
+        "Architecture": "amd64",
+        "Depends": "libc6 (>= 2.39), libgcc-s1 (>= 4.2), libllvm21 (>= 1:21.1.0), libstdc++6 (>= 13.1)",
+        "Filename": "pool/main/r/rustc-1.93/libstd-rust-1.93_1.93.1+dfsg-0ubuntu6_amd64.deb",
+        "Package": "libstd-rust-1.93",
+        "SHA256": "df63365a59b50263d9bc4d4d40f6d3b6ca86a1f08f6657e1209e6fef915b469d",
+        "Size": "22466716",
+        "Version": "1.93.1+dfsg-0ubuntu6"
+      },
+      "file": {
+        "bytes": 22466716,
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libstd-rust-1.93_1.93.1+dfsg-0ubuntu6_amd64.deb",
+        "sha256": "df63365a59b50263d9bc4d4d40f6d3b6ca86a1f08f6657e1209e6fef915b469d"
+      },
+      "private_extraction": {
+        "argv": [
+          "/usr/bin/dpkg-deb",
+          "--extract",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libstd-rust-1.93_1.93.1+dfsg-0ubuntu6_amd64.deb",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "url": "https://mirrors.ustc.edu.cn/ubuntu/pool/main/r/rustc-1.93/libstd-rust-1.93_1.93.1+dfsg-0ubuntu6_amd64.deb"
+    },
+    {
+      "apt_metadata": {
+        "Architecture": "amd64",
+        "Depends": "libc6 (>= 2.39), libgcc-s1 (>= 4.2), libstd-rust-1.93 (= 1.93.1+dfsg-0ubuntu6)",
+        "Filename": "pool/main/r/rustc-1.93/libstd-rust-1.93-dev_1.93.1+dfsg-0ubuntu6_amd64.deb",
+        "Package": "libstd-rust-1.93-dev",
+        "SHA256": "a66558d9699e5b0a636ee9d86c9ccf4c3f7416d85dbfb89ffded99ce0192571a",
+        "Size": "46264876",
+        "Version": "1.93.1+dfsg-0ubuntu6"
+      },
+      "file": {
+        "bytes": 46264876,
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libstd-rust-1.93-dev_1.93.1+dfsg-0ubuntu6_amd64.deb",
+        "sha256": "a66558d9699e5b0a636ee9d86c9ccf4c3f7416d85dbfb89ffded99ce0192571a"
+      },
+      "private_extraction": {
+        "argv": [
+          "/usr/bin/dpkg-deb",
+          "--extract",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libstd-rust-1.93-dev_1.93.1+dfsg-0ubuntu6_amd64.deb",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "url": "https://mirrors.ustc.edu.cn/ubuntu/pool/main/r/rustc-1.93/libstd-rust-1.93-dev_1.93.1+dfsg-0ubuntu6_amd64.deb"
+    },
+    {
+      "apt_metadata": {
+        "Architecture": "amd64",
+        "Depends": "libc6 (>= 2.38), libgcc-s1 (>= 3.3), libllvm21 (>= 1:21.1.0), libstdc++6 (>= 12), libzstd1 (>= 1.5.5), zlib1g (>= 1:1.1.4)",
+        "Filename": "pool/universe/l/llvm-toolchain-21/llvm-21-runtime_21.1.8-6ubuntu1_amd64.deb",
+        "Package": "llvm-21-runtime",
+        "SHA256": "c8581096f4fb4b2dc4b48166e9abfe4d54d78cccca21dfc511dc5edbdd03136e",
+        "Size": "564298",
+        "Version": "1:21.1.8-6ubuntu1"
+      },
+      "file": {
+        "bytes": 564298,
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/llvm-21-runtime_21.1.8-6ubuntu1_amd64.deb",
+        "sha256": "c8581096f4fb4b2dc4b48166e9abfe4d54d78cccca21dfc511dc5edbdd03136e"
+      },
+      "private_extraction": {
+        "argv": [
+          "/usr/bin/dpkg-deb",
+          "--extract",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/llvm-21-runtime_21.1.8-6ubuntu1_amd64.deb",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "url": "https://mirrors.ustc.edu.cn/ubuntu/pool/universe/l/llvm-toolchain-21/llvm-21-runtime_21.1.8-6ubuntu1_amd64.deb"
+    },
+    {
+      "apt_metadata": {
+        "Architecture": "amd64",
+        "Depends": "libc6 (>= 2.38)",
+        "Filename": "pool/universe/libp/libpfm4/libpfm4_4.13.0+git106-g3e4031b-1ubuntu0.1_amd64.deb",
+        "Package": "libpfm4",
+        "SHA256": "34b1d3923be6ea7b4fde3efaf59165cc8f0ad1999f653051b13d7d1a6623f932",
+        "Size": "426836",
+        "Version": "4.13.0+git106-g3e4031b-1ubuntu0.1"
+      },
+      "file": {
+        "bytes": 426836,
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libpfm4_4.13.0+git106-g3e4031b-1ubuntu0.1_amd64.deb",
+        "sha256": "34b1d3923be6ea7b4fde3efaf59165cc8f0ad1999f653051b13d7d1a6623f932"
+      },
+      "private_extraction": {
+        "argv": [
+          "/usr/bin/dpkg-deb",
+          "--extract",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/libpfm4_4.13.0+git106-g3e4031b-1ubuntu0.1_amd64.deb",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "url": "https://mirrors.ustc.edu.cn/ubuntu/pool/universe/libp/libpfm4/libpfm4_4.13.0+git106-g3e4031b-1ubuntu0.1_amd64.deb"
+    },
+    {
+      "apt_metadata": {
+        "Architecture": "amd64",
+        "Depends": "llvm-21-runtime (= 1:21.1.8-6ubuntu1), llvm-21-linker-tools (= 1:21.1.8-6ubuntu1), libc6 (>= 2.38), libcurl4t64 (>= 7.16.2), libgcc-s1 (>= 4.3), libllvm21 (>= 1:21.1.0), libpfm4, libstdc++6 (>= 12), libzstd1 (>= 1.5.5), zlib1g (>= 1:1.2.0)",
+        "Filename": "pool/universe/l/llvm-toolchain-21/llvm-21_21.1.8-6ubuntu1_amd64.deb",
+        "Package": "llvm-21",
+        "SHA256": "9227b4149f0f553a58befd85bc905f1c91719dbae1c1971fade102f53692a40b",
+        "Size": "20012922",
+        "Version": "1:21.1.8-6ubuntu1"
+      },
+      "file": {
+        "bytes": 20012922,
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/llvm-21_21.1.8-6ubuntu1_amd64.deb",
+        "sha256": "9227b4149f0f553a58befd85bc905f1c91719dbae1c1971fade102f53692a40b"
+      },
+      "private_extraction": {
+        "argv": [
+          "/usr/bin/dpkg-deb",
+          "--extract",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/llvm-21_21.1.8-6ubuntu1_amd64.deb",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "url": "https://mirrors.ustc.edu.cn/ubuntu/pool/universe/l/llvm-toolchain-21/llvm-21_21.1.8-6ubuntu1_amd64.deb"
+    },
+    {
+      "apt_metadata": {
+        "Architecture": "amd64",
+        "Depends": "libdwarves1 (= 1.31-2ubuntu1), libbpf1 (>= 1:1.6.1), libc6 (>= 2.38), libelf1t64 (>= 0.142)",
+        "Filename": "pool/universe/d/dwarves/pahole_1.31-2ubuntu1_amd64.deb",
+        "Package": "pahole",
+        "SHA256": "dd3396a360290f7c04b1d55b836311e5da0ad15f93648d6f061f15c8554a9833",
+        "Size": "110574",
+        "Version": "1.31-2ubuntu1"
+      },
+      "file": {
+        "bytes": 110574,
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/pahole_1.31-2ubuntu1_amd64.deb",
+        "sha256": "dd3396a360290f7c04b1d55b836311e5da0ad15f93648d6f061f15c8554a9833"
+      },
+      "private_extraction": {
+        "argv": [
+          "/usr/bin/dpkg-deb",
+          "--extract",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/pahole_1.31-2ubuntu1_amd64.deb",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "url": "https://mirrors.ustc.edu.cn/ubuntu/pool/universe/d/dwarves/pahole_1.31-2ubuntu1_amd64.deb"
+    },
+    {
+      "apt_metadata": {
+        "Architecture": "all",
+        "Filename": "pool/universe/r/rustc-1.93/rust-1.93-src_1.93.1+dfsg-0ubuntu6_all.deb",
+        "Package": "rust-1.93-src",
+        "SHA256": "bc31da88ecbb851412ff45886da99761ba60eae2adaf5275c5113824cb633a3a",
+        "Size": "27711784",
+        "Version": "1.93.1+dfsg-0ubuntu6"
+      },
+      "file": {
+        "bytes": 27711784,
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/rust-1.93-src_1.93.1+dfsg-0ubuntu6_all.deb",
+        "sha256": "bc31da88ecbb851412ff45886da99761ba60eae2adaf5275c5113824cb633a3a"
+      },
+      "private_extraction": {
+        "argv": [
+          "/usr/bin/dpkg-deb",
+          "--extract",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/rust-1.93-src_1.93.1+dfsg-0ubuntu6_all.deb",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "url": "https://mirrors.ustc.edu.cn/ubuntu/pool/universe/r/rustc-1.93/rust-1.93-src_1.93.1+dfsg-0ubuntu6_all.deb"
+    },
+    {
+      "apt_metadata": {
+        "Architecture": "amd64",
+        "Depends": "libc6 (>= 2.39), libgcc-s1 (>= 4.2), libllvm21 (>= 1:21.1.0), libstdc++6 (>= 5.2), libstd-rust-1.93-dev (= 1.93.1+dfsg-0ubuntu6), gcc, libc-dev, binutils (>= 2.26)",
+        "Filename": "pool/main/r/rustc-1.93/rustc-1.93_1.93.1+dfsg-0ubuntu6_amd64.deb",
+        "Package": "rustc-1.93",
+        "SHA256": "b9e85cdaa060bea3d41c776a457420acbc771601bec9bb4402dfa3b074bead7c",
+        "Size": "6100978",
+        "Version": "1.93.1+dfsg-0ubuntu6"
+      },
+      "file": {
+        "bytes": 6100978,
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/rustc-1.93_1.93.1+dfsg-0ubuntu6_amd64.deb",
+        "sha256": "b9e85cdaa060bea3d41c776a457420acbc771601bec9bb4402dfa3b074bead7c"
+      },
+      "private_extraction": {
+        "argv": [
+          "/usr/bin/dpkg-deb",
+          "--extract",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/rustc-1.93_1.93.1+dfsg-0ubuntu6_amd64.deb",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "url": "https://mirrors.ustc.edu.cn/ubuntu/pool/main/r/rustc-1.93/rustc-1.93_1.93.1+dfsg-0ubuntu6_amd64.deb"
+    },
+    {
+      "apt_metadata": {
+        "Architecture": "amd64",
+        "Depends": "liblzma5 (= 5.8.3-1ubuntu0.1)",
+        "Filename": "pool/main/x/xz-utils/liblzma-dev_5.8.3-1ubuntu0.1_amd64.deb",
+        "Package": "liblzma-dev",
+        "SHA256": "b00302651654508be52052cd454851f7e1828f9d7ea8bb4cd4f1758084d66e1d",
+        "Size": "178788",
+        "Version": "5.8.3-1ubuntu0.1"
+      },
+      "file": {
+        "bytes": 178788,
+        "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/liblzma-dev_5.8.3-1ubuntu0.1_amd64.deb",
+        "sha256": "b00302651654508be52052cd454851f7e1828f9d7ea8bb4cd4f1758084d66e1d"
+      },
+      "private_extraction": {
+        "argv": [
+          "/usr/bin/dpkg-deb",
+          "--extract",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/packages/liblzma-dev_5.8.3-1ubuntu0.1_amd64.deb",
+          "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/deps/root"
+        ],
+        "exit_code": 0,
+        "stderr": "",
+        "stdout": ""
+      },
+      "url": "https://mirrors.ustc.edu.cn/ubuntu/pool/main/x/xz-utils/liblzma-dev_5.8.3-1ubuntu0.1_amd64.deb"
+    }
+  ],
+  "errors": [
+    {
+      "message": "[Errno 2] No such file or directory: '/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/source-parent/linux-source-7.0.0/debian/canonical-certs.pem'",
+      "type": "FileNotFoundError"
+    }
+  ],
+  "finished_ns": 1794178570068679337,
+  "host_module_loads": 0,
+  "host_packages_installed": 0,
+  "input_files": [
+    {
+      "bytes": 195544256,
+      "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/artifacts/linux-source-7.0.0.tar.bz2",
+      "sha256": "e2d3ecb74dabd037458e173f53a9b2eaced0039f65594c7ed38e60d3e6bab7ab"
+    },
+    {
+      "bytes": 308652,
+      "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/artifacts/config-7.0.0-43-generic",
+      "sha256": "90927fb7101a92d96cbe53873fd7042b7a1b7965fe5da7930621f55630a42aae"
+    }
+  ],
+  "kernel_builds_started": 0,
+  "official_source": {
+    "deb": {
+      "bytes": 193232960,
+      "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/packages/linux-source-7.0.0_7.0.0-43.43_all.deb",
+      "sha256": "208b9997b555c9494535edd0dee6f0ee67a7ccddc180fb40c30218f06bd2dc59"
+    },
+    "exact_regular_member": {
+      "bytes": 195544256,
+      "name": "./usr/src/linux-source-7.0.0/linux-source-7.0.0.tar.bz2",
+      "sha256": "e2d3ecb74dabd037458e173f53a9b2eaced0039f65594c7ed38e60d3e6bab7ab"
+    },
+    "peeled_commit": "f53b359683af7918c5436499948763cb726d5082",
+    "tag": "Ubuntu-7.0.0-43.43"
+  },
+  "package_metadata_source": "existing authenticated Ubuntu APT indexes",
+  "patch": {
+    "bytes": 1361,
+    "path": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/control/apparmor-credential-secid.patch",
+    "sha256": "a950dc6a02c0fec4ca26c2343c3daaee984216350b90280521d133195b618f95"
+  },
+  "patch_apply": {
+    "argv": [
+      "/usr/bin/git",
+      "apply",
+      "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/control/apparmor-credential-secid.patch"
+    ],
+    "exit_code": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  "patch_check": {
+    "argv": [
+      "/usr/bin/git",
+      "apply",
+      "--check",
+      "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/control/apparmor-credential-secid.patch"
+    ],
+    "exit_code": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  "schema": "pocket4-ubuntu43-private-build-inputs-v1",
+  "source_root": "/home/qq/work/pocket4-kernel-binder-cred-20261108-8b88-r1/build-r1/source-parent/linux-source-7.0.0",
+  "source_support": [],
+  "started_ns": 1794178545244140091,
+  "state": "PREPARATION_FAILED"
+}

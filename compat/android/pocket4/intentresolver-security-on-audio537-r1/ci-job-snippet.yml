@@ -1,0 +1,23 @@
+# Independent Linux A08 job. The containing workflow supplies the external pin:
+# env: SECURITY537_INVENTORY_SHA256: <reviewed SHA256 of this capsule's FILES.sha256>
+# Checkout, Rust and the existing host build dependencies precede these steps.
+- name: Reconstruct full Audio537 and security producer
+  shell: bash
+  run: |
+    set -euo pipefail
+    : "${SECURITY537_INVENTORY_SHA256:?external security inventory pin required}"
+    audio="$GITHUB_WORKSPACE/compat/android/pocket4/audio537-libexif-vendor-bundle-source-r1"
+    security="$GITHUB_WORKSPACE/compat/android/pocket4/intentresolver-security-on-audio537-r1"
+    printf '%s  %s\n' '486300e2a033679a87776c68bff4324eff11b53459de3c9712122788f2a76572' "$audio/FILES.sha256" | sha256sum --check --status
+    (cd "$audio" && sha256sum --quiet -c FILES.sha256)
+    python3 -I -B "$audio/replay_capsule.py" --capsule "$audio" --work "$RUNNER_TEMP/security537-audio-base" --report "$RUNNER_TEMP/security537-audio-replay.json"
+    python3 -I -B "$security/verify.py" --inventory-sha256 "$SECURITY537_INVENTORY_SHA256" --audio-source "$RUNNER_TEMP/security537-audio-base" --output "$RUNNER_TEMP/security537-producer" --report "$RUNNER_TEMP/security537-replay.json"
+    python3 -I -B "$security/test_verifier.py"
+- name: Compile four security tests and both release tools
+  timeout-minutes: 45
+  shell: bash
+  run: |
+    set -euo pipefail
+    security="$GITHUB_WORKSPACE/compat/android/pocket4/intentresolver-security-on-audio537-r1"
+    python3 -I -B "$security/run_ci.py" --inventory-sha256 "$SECURITY537_INVENTORY_SHA256" --producer "$RUNNER_TEMP/security537-producer" --target "$RUNNER_TEMP/security537-fresh-cargo-target" --report "$RUNNER_TEMP/security537-ci.json" --jobs 2
+    python3 -I -B "$security/verify.py" --inventory-sha256 "$SECURITY537_INVENTORY_SHA256" --producer "$RUNNER_TEMP/security537-producer" --tests-log "$RUNNER_TEMP/security537-ci-logs/security-four-tests.stdout" --report "$RUNNER_TEMP/security537-complete-after.json"

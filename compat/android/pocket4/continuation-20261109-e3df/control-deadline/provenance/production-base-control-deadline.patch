@@ -1,0 +1,223 @@
+--- a/runtime/droidloom-supervisor/src/control.rs
++++ b/runtime/droidloom-supervisor/src/control.rs
+@@ -967,11 +967,29 @@
+     Ok(listener)
+ }
+ 
++fn request_read_budget(deadline: Instant) -> Result<Duration, ControlError> {
++    let remaining = deadline.saturating_duration_since(Instant::now());
++    if remaining.is_zero() {
++        return Err(io_error(
++            "read lifecycle request",
++            io::Error::new(
++                io::ErrorKind::TimedOut,
++                "lifecycle request deadline expired",
++            ),
++        ));
++    }
++    Ok(remaining)
++}
++
+ fn receive_request(
+     stream: &mut UnixStream,
+ ) -> Result<(u32, ControlRequest, Option<fs::File>, bool), ControlError> {
++    // SO_RCVTIMEO bounds each syscall, not the complete message. One absolute
++    // deadline must cover both the first-byte/SCM_RIGHTS recvmsg and every body
++    // read; otherwise a drip-fed client monopolizes the single lifecycle owner.
++    let deadline = Instant::now() + CLIENT_TIMEOUT;
+     stream
+-        .set_read_timeout(Some(CLIENT_TIMEOUT))
++        .set_read_timeout(Some(request_read_budget(deadline)?))
+         .map_err(|source| io_error("set lifecycle request timeout", source))?;
+     stream
+         .set_write_timeout(Some(CLIENT_TIMEOUT))
+@@ -979,10 +997,26 @@
+     let peer_uid = peer_uid(stream)?;
+     let (first, file) = apk::receive_file(stream)?;
+     let mut encoded = vec![first];
+-    stream
+-        .take(MAX_MESSAGE_BYTES + 1)
+-        .read_to_end(&mut encoded)
+-        .map_err(|source| io_error("read lifecycle request", source))?;
++    let mut buffer = [0_u8; 8192];
++    while encoded.len() as u64 <= MAX_MESSAGE_BYTES {
++        stream
++            .set_read_timeout(Some(request_read_budget(deadline)?))
++            .map_err(|source| io_error("set lifecycle request timeout", source))?;
++        let available =
++            (MAX_MESSAGE_BYTES + 1 - encoded.len() as u64).min(buffer.len() as u64) as usize;
++        let count = match stream.read(&mut buffer[..available]) {
++            Ok(count) => count,
++            Err(error) if error.kind() == io::ErrorKind::Interrupted => continue,
++            Err(source) => return Err(io_error("read lifecycle request", source)),
++        };
++        // EOF or buffered bytes returned after the deadline cannot admit a
++        // request either. The received descriptor is dropped on every error.
++        request_read_budget(deadline)?;
++        if count == 0 {
++            break;
++        }
++        encoded.extend_from_slice(&buffer[..count]);
++    }
+     if encoded.len() as u64 > MAX_MESSAGE_BYTES {
+         return Err(ControlError::Invalid(
+             "lifecycle request is too large".into(),
+@@ -2006,3 +2040,158 @@
+ #[cfg(all(test, target_os = "linux", target_arch = "x86_64"))]
+ #[path = "control_status_tests.rs"]
+ mod status_lifecycle_tests;
++
++#[cfg(test)]
++mod request_deadline_tests {
++    use super::*;
++    use std::net::Shutdown;
++
++    #[test]
++    fn control_deadline_rejects_a_drip_fed_request_with_no_idle_timeout() {
++        let (mut sender, mut receiver) = UnixStream::pair().unwrap();
++        let payload = serde_json::to_vec(&ControlRequest::Status).unwrap();
++        let writer = thread::spawn(move || {
++            for byte in payload {
++                if sender.write_all(&[byte]).is_err() {
++                    return;
++                }
++                thread::sleep(Duration::from_millis(150));
++            }
++            let _ = sender.shutdown(Shutdown::Write);
++        });
++        let started = Instant::now();
++        let result = receive_request(&mut receiver);
++        let elapsed = started.elapsed();
++        drop(receiver);
++        writer.join().unwrap();
++        assert!(
++            result.is_err(),
++            "a client extended the total request deadline to {elapsed:?}"
++        );
++        assert!(
++            elapsed < CLIENT_TIMEOUT + Duration::from_millis(600),
++            "request reception exceeded the single wall-clock budget: {elapsed:?}"
++        );
++    }
++
++    #[test]
++    fn control_deadline_includes_descriptor_arrival_before_the_json_body() {
++        let (sender, mut receiver) = UnixStream::pair().unwrap();
++        let original = tempfile::tempfile().unwrap();
++        let identity = original.metadata().unwrap();
++        let sent_file = original.try_clone().unwrap();
++        let payload = serde_json::to_vec(&ControlRequest::Install { user: 0 }).unwrap();
++        let writer = thread::spawn(move || {
++            thread::sleep(Duration::from_millis(1200));
++            if apk::send_file(&sender, payload[0], &sent_file).is_err() {
++                return;
++            }
++            thread::sleep(Duration::from_millis(1200));
++            let mut sender = sender;
++            let _ = sender.write_all(&payload[1..]);
++            let _ = sender.shutdown(Shutdown::Write);
++        });
++        let started = Instant::now();
++        let result = receive_request(&mut receiver);
++        let elapsed = started.elapsed();
++        drop(receiver);
++        writer.join().unwrap();
++        let rejected = result.is_err();
++        drop(result);
++        let same_file_descriptors = fs::read_dir("/proc/self/fd")
++            .unwrap()
++            .filter_map(|entry| entry.ok())
++            .filter_map(|entry| fs::metadata(entry.path()).ok())
++            .filter(|metadata| metadata.dev() == identity.dev() && metadata.ino() == identity.ino())
++            .count();
++        assert_eq!(same_file_descriptors, 1, "timed-out SCM_RIGHTS was leaked");
++        assert!(
++            rejected,
++            "descriptor arrival reset the body budget: {elapsed:?}"
++        );
++        assert!(
++            elapsed < CLIENT_TIMEOUT + Duration::from_millis(600),
++            "descriptor and body reception did not share one deadline: {elapsed:?}"
++        );
++    }
++
++    #[test]
++    fn control_deadline_preserves_peer_and_plain_json_requests() {
++        let (mut sender, mut receiver) = UnixStream::pair().unwrap();
++        sender
++            .write_all(&serde_json::to_vec(&ControlRequest::Status).unwrap())
++            .unwrap();
++        sender.shutdown(Shutdown::Write).unwrap();
++        let (peer, request, file, streaming) = receive_request(&mut receiver).unwrap();
++        assert_eq!(peer, unsafe { libc::geteuid() });
++        assert_eq!(request, ControlRequest::Status);
++        assert!(file.is_none());
++        assert!(!streaming);
++    }
++
++    #[test]
++    fn control_deadline_preserves_progress_and_exact_scm_descriptor() {
++        let (mut sender, mut receiver) = UnixStream::pair().unwrap();
++        let original = tempfile::tempfile().unwrap();
++        let identity = original.metadata().unwrap();
++        let expected = ControlRequest::InstallMultiple {
++            user: 0,
++            lengths: vec![4, 8],
++        };
++        let payload = serde_json::to_vec(&serde_json::json!({"request": expected})).unwrap();
++        apk::send_file(&sender, payload[0], &original).unwrap();
++        sender.write_all(&payload[1..]).unwrap();
++        sender.shutdown(Shutdown::Write).unwrap();
++        let (peer, request, file, streaming) = receive_request(&mut receiver).unwrap();
++        assert_eq!(peer, unsafe { libc::geteuid() });
++        assert_eq!(request, expected);
++        assert!(streaming);
++        let received = file.unwrap();
++        let metadata = received.metadata().unwrap();
++        assert_eq!(
++            (metadata.dev(), metadata.ino()),
++            (identity.dev(), identity.ino())
++        );
++        assert_ne!(
++            unsafe { libc::fcntl(received.as_raw_fd(), libc::F_GETFD) } & libc::FD_CLOEXEC,
++            0
++        );
++    }
++
++    #[test]
++    fn control_deadline_preserves_the_exact_message_size_boundary() {
++        for extra in [0_usize, 1] {
++            let (mut sender, mut receiver) = UnixStream::pair().unwrap();
++            let mut payload = serde_json::to_vec(&ControlRequest::Status).unwrap();
++            payload.resize(MAX_MESSAGE_BYTES as usize + extra, b' ');
++            let writer = thread::spawn(move || {
++                let _ = sender.write_all(&payload);
++                let _ = sender.shutdown(Shutdown::Write);
++            });
++            let result = receive_request(&mut receiver);
++            drop(receiver);
++            writer.join().unwrap();
++            if extra == 0 {
++                assert_eq!(result.unwrap().1, ControlRequest::Status);
++            } else {
++                assert!(result.unwrap_err().to_string().contains("too large"));
++            }
++        }
++    }
++
++    #[test]
++    fn control_deadline_still_rejects_scm_on_non_install_requests() {
++        let (mut sender, mut receiver) = UnixStream::pair().unwrap();
++        let file = tempfile::tempfile().unwrap();
++        let payload = serde_json::to_vec(&ControlRequest::Status).unwrap();
++        apk::send_file(&sender, payload[0], &file).unwrap();
++        sender.write_all(&payload[1..]).unwrap();
++        sender.shutdown(Shutdown::Write).unwrap();
++        assert!(
++            receive_request(&mut receiver)
++                .unwrap_err()
++                .to_string()
++                .contains("only install or install_multiple")
++        );
++    }
++}

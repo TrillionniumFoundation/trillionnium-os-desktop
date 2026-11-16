@@ -1,0 +1,50 @@
+{
+  "actual_positive_render": {
+    "actual_frozen_597_lock_sha256": "2b699174977614e080cf99a991f3e648774b24581c4ecdc29f1bd53b7b01ef23",
+    "executed": true,
+    "expected_generated_lib_sha256": "9b4fe92d69a561da10687a88301b3f9b655c515944621629a267ca3f5d0cbd97",
+    "expected_generated_pair_sha256": "0ab04eb4fb8bc87e16e5e04979859906e6b81f607e3f0c897686a642e88d4d26",
+    "generated_sources_equal_actual_frozen_597": true,
+    "passed": true,
+    "patch_check_passed": true,
+    "pins_original_superproject": true,
+    "result": {
+      "bytes": 10140,
+      "path": "focused-results.json",
+      "sha256": "da49ffff05f65363a48b14a2d2da09cd1a7ac30c8f99e6a3d5c6591b26c68bc2"
+    }
+  },
+  "actual_recipe_tests_passed": 6,
+  "combined_29_library_source_unchanged": true,
+  "failure": {
+    "error": "complete input SHA-256 differs from the frozen manifest",
+    "failed_case": "tests::existing_exact_extension_is_retained",
+    "recipe_failed": 1,
+    "recipe_passed": 5,
+    "result_sha256": "9fdd7803c54e53f29c91c71139a5328eeca8bcc87a92e5b48e61e42c0435f563",
+    "source_library_passed": 29
+  },
+  "final_recipe": {
+    "bytes": 24105,
+    "sha256": "086e0061bc8776e28a6f9a89c86a9051d70cb31d0e67ffc2e3cf5a45e9cdbab5"
+  },
+  "frozen_r4_changed": false,
+  "pair_template": {
+    "bytes": 55419,
+    "sha256": "d512fe696a66c635920c8757497151d7f50841e11d3272137e4dee206eeeee82"
+  },
+  "previous_lock_fixture": {
+    "bytes": 116325,
+    "origin": "Published native-sparse-capacity source reconstruction at PR555b271, android/native-generation-pair/source-lock.json",
+    "sha256": "94d2a5d2e00d3b5d126752ee58337e71fb88a5763f7b977be4a56471f4e68ee6"
+  },
+  "repair_diff": "recipe-historical-fixtures.diff",
+  "schema": "pocket4-frozen-recipe-historical-template-fix-v1",
+  "source_lib_fixture": {
+    "actual_delta": "native-historical-recipe-template-vs-capacity.diff",
+    "bytes": 53514,
+    "origin": "Actual Native recipe-source-r3/tools/droidloom-source/src/lib.rs before597 generation",
+    "public_capacity_preimage_sha256": "a91cefb336b535b38196d03c2fc05752c32b42629db3f0a16a95826e40739627",
+    "sha256": "fb510211dbc52a32b6e4d83ecab6c514828b338749fcb4cf135cf09432cb0c7c"
+  }
+}

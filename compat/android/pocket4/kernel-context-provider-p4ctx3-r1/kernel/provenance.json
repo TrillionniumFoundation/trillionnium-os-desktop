@@ -1,0 +1,173 @@
+{
+  "foundation": "Qualified p4guest1 source, then the unchanged original p4ctx1 22-file context framework",
+  "foundation_source_inventory": {
+    "bytes": 39251134,
+    "path": "/home/qq/work/pocket4-kernel-guest-mntns-typed-lsm-full-20261109-8b88-r1/qualification/candidate-source-inventory.json",
+    "sha256": "09b3c4fa60a70089f9a4d908d48119f4a788a178900b387511cf4181dc591b4f"
+  },
+  "note": "The original source_origin object contains an earlier false source-equivalence field. The completed full result top-level field is true; this summary binds the complete result hash instead of treating the earlier planning field as current.",
+  "original_full_source_equivalence_qualified": true,
+  "original_p4ctx1_config": {
+    "bytes": 308714,
+    "identity": [
+      66306,
+      85239930,
+      33152,
+      1000,
+      1000,
+      1,
+      308714,
+      1794273505897887292,
+      1794273505898460712
+    ],
+    "path": "/home/qq/work/pocket4-kernel-lsm-context-full-20261110-8b88-r1/out/.config",
+    "sha256": "561f347708186f01e77e97b1f394a8c06733a9040340659ce21e0e538f849940"
+  },
+  "original_p4ctx1_inputs": {
+    "bytes": 28214,
+    "host": "ai395",
+    "path": "/home/qq/work/pocket4-kernel-lsm-context-full-20261110-8b88-r1/control/inputs.json",
+    "sha256": "30c794ff854a884f02c0e05cfcf19ab833530f212a5216d0d9dcc0f37e83765f"
+  },
+  "original_p4ctx1_result": {
+    "bytes": 434917,
+    "host": "ai395",
+    "path": "/home/qq/work/pocket4-kernel-lsm-context-full-20261110-8b88-r1/qualification/result.json",
+    "sha256": "1b6e1318226b5ea403001632574235a1901330c8b923b3dd7563bad1f653f579"
+  },
+  "original_upstream_identity_independently_reverified": true,
+  "p4ctx1_configuration_delta": {
+    "CONFIG_LOCALVERSION": {
+      "after": "\"-p4ctx1\"",
+      "before": "\"-p4guest1\""
+    },
+    "CONFIG_P4_LSM_CONTEXT": {
+      "after": "y",
+      "before": null
+    }
+  },
+  "p4ctx3_changed_paths": [
+    "Documentation/userspace-api/p4-lsm-context.rst",
+    "include/linux/security.h",
+    "include/net/af_unix.h",
+    "include/net/scm.h",
+    "net/core/scm.c",
+    "net/ipv4/ip_sockglue.c",
+    "net/unix/af_unix.c",
+    "net/unix/af_unix.h",
+    "security/security.c"
+  ],
+  "p4ctx3_config": {
+    "bytes": 308714,
+    "dev": 66306,
+    "inode": 56112494,
+    "path": "/home/qq/work/p4-kernel-p4ctx1-scm-8764-r3/out/.config",
+    "sha256": "85658dc84bd493671a4c533b2bc33e6a66d7032616c13ed57ebd28eade863e58"
+  },
+  "p4ctx3_configuration_delta": {
+    "CONFIG_LOCALVERSION": {
+      "after": "\"-p4ctx3\"",
+      "before": "\"-p4ctx1\""
+    }
+  },
+  "p4ctx3_whole_source_after": {
+    "files_apparent_bytes": 1573030497,
+    "nodes": 99342,
+    "root": "/home/qq/work/p4-kernel-p4ctx1-scm-8764-r3/source",
+    "root_identity": [
+      66306,
+      55840057,
+      16832,
+      1000,
+      1000,
+      28,
+      4096,
+      1794273499649117927,
+      1794286959745635519
+    ],
+    "semantic_sha256": "735a1be232eeeb6d09f5bf9ea6f6f342a58a012705107530142a469032d7432a"
+  },
+  "p4ctx3_whole_source_before": {
+    "files_apparent_bytes": 1573030497,
+    "nodes": 99342,
+    "root": "/home/qq/work/p4-kernel-p4ctx1-scm-8764-r3/source",
+    "root_identity": [
+      66306,
+      55840057,
+      16832,
+      1000,
+      1000,
+      28,
+      4096,
+      1794273499649117927,
+      1794286959745635519
+    ],
+    "semantic_sha256": "735a1be232eeeb6d09f5bf9ea6f6f342a58a012705107530142a469032d7432a"
+  },
+  "p4ctx3_whole_source_original": {
+    "files_apparent_bytes": 1573023310,
+    "nodes": 99342,
+    "root": "/home/qq/work/pocket4-kernel-lsm-context-full-20261110-8b88-r1/source",
+    "root_identity": [
+      66306,
+      85239791,
+      16832,
+      1000,
+      1000,
+      28,
+      4096,
+      1794273499649117927,
+      1794273499649117927
+    ],
+    "semantic_sha256": "ec3d9a3c8c8a17b7674388cbff6419af90ace6c21ec966ef88c6c3324c139c7a"
+  },
+  "recorded_upstream_commit": "f53b359683af7918c5436499948763cb726d5082",
+  "recorded_upstream_tag": "Ubuntu-7.0.0-43.43",
+  "unchanged_original_framework": [
+    {
+      "path": "security/p4_lsm_context.c",
+      "sha256": "5771f984aef3aa7d1b71662aa89f87843109f409b49e5a3165a9ebea4206b4e8"
+    },
+    {
+      "path": "include/linux/p4_lsm_context.h",
+      "sha256": "73e853470513f150f7d81c0fa84d35d2e1c47741bb06838be548b3d28fc186a7"
+    },
+    {
+      "path": "include/uapi/linux/p4_lsm_context.h",
+      "sha256": "ed64c81e0c9e7883c331666ada1d10feff24574908fe52ec3d394b1918f9b2d7"
+    },
+    {
+      "path": "drivers/android/binder.c",
+      "sha256": "6b6df9e733a351974349531ee0e42d2cf11b2a2403b9c1a4a060fa9261c45941"
+    },
+    {
+      "path": "drivers/android/binderfs.c",
+      "sha256": "c315e0ac5ea9bcbff2d415c48c7ac29677b71de81baacee5f27b667f96f824da"
+    },
+    {
+      "path": "drivers/android/binder_internal.h",
+      "sha256": "36fb412fe078de1f171ab5d543692cae78e2f4d9d8ac09962c06e7a54ea87ff2"
+    },
+    {
+      "path": "fs/proc/base.c",
+      "sha256": "6194e049b7130d8b39d3edf10e61c0274ae540f2345963245f786184b8d58086"
+    },
+    {
+      "path": "fs/proc/root.c",
+      "sha256": "15c84303630bc96debf30a58fb869dbd5a2182dbfebc5cb3abba76aa475b46c4"
+    },
+    {
+      "path": "fs/proc/inode.c",
+      "sha256": "b7d7ee091807d6d22bcd21cc43811e6ffbf63489d11a1e2ca4dd0e5b0e1a5137"
+    },
+    {
+      "path": "net/socket.c",
+      "sha256": "ed85a30ee3f52eef5d82fc4156795ed6924e048a2101bc0a4b250d9cf833d8c1"
+    },
+    {
+      "path": "net/core/net_namespace.c",
+      "sha256": "1dc6435e79f0aef376450a5780c648a3457b262a89b54510bdefee42a534e253"
+    }
+  ],
+  "whole_original_source_unchanged": true
+}

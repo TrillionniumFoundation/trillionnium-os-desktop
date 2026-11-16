@@ -1,0 +1,58 @@
+{
+  "schema": "host-guest-directory-umask-source-pins-v1",
+  "base_commit": "ecf986b7afe7a2c24e537e765ee600c0256b2096",
+  "commit": "fcb5afd7347b13f32c96daa073a63a048e95ecb2",
+  "tree": "bb8f2f3bc689da9f3441ea7d6c818f52d812896f",
+  "files": {
+    "runtime/droidloom-supervisor/src/development.rs": {
+      "bytes": 115701,
+      "sha256": "7745991017baaf8bd2e1ba6a5500465a9732c4b8356bd4edd6257a09d3ba2d95"
+    },
+    "runtime/droidloom-supervisor/src/development_guest_dirs.rs": {
+      "bytes": 3760,
+      "sha256": "9ad6cc48ed5900e4ae106ffd114066acaa166071b1f2710be4246dba54821b1a"
+    },
+    "runtime/droidloom-supervisor/src/development_guest_dirs_tests.rs": {
+      "bytes": 17820,
+      "sha256": "6df7c34c9e7cfc0cb5218423392a5590ea7889a280f7f76e79cc0b4e7342573a"
+    }
+  },
+  "patch": {
+    "bytes": 42332,
+    "sha256": "5cdf41bd21a0380c4bb5547f521222c0d2178d35a464f9fec022e028f504a413"
+  },
+  "aosp_first_stage_contract_sources": [
+    {
+      "path": "system/core/init/first_stage_init.cpp",
+      "bytes": 23491,
+      "sha256": "ddb34b37d470ad8266150865513ed25cbf29e1d404e248022765fbb1d9bc3b31"
+    },
+    {
+      "path": "bionic/libc/system_properties/contexts_serialized.cpp",
+      "bytes": 6298,
+      "sha256": "0b24b0f2d634cdef5071e745a685a5ab5e9e45ae264030375501ef9b224e5df5"
+    }
+  ],
+  "release_binaries": {
+    "droidloom-supervisor": {
+      "bytes": 2086576,
+      "sha256": "f4fb172b958d71aa730516f06186e255d2055c854ca3bb19efda4b10b7f34c01"
+    },
+    "droidloomd": {
+      "bytes": 2012288,
+      "sha256": "5e80cdbc4827b9ac9ee3bd670e59ef8a75700db8a7f1257fa615aa05e41205b1"
+    },
+    "droidloomctl": {
+      "bytes": 1748384,
+      "sha256": "d1acd7736ce7e8ea05380ecb1d7b2df77f49182121b85a9625596a2df364c0ff"
+    },
+    "droidloom-applications": {
+      "bytes": 1578200,
+      "sha256": "bfd32eee2d982b6fee2448721988e255ecb4bfd736209b9283fdb5903d164de5"
+    }
+  },
+  "release_rlib": {
+    "bytes": 4408348,
+    "sha256": "ca67a2742b4797ffd60a8a8ae904e45299a5ed10756fb683be8a7617165f197c"
+  }
+}

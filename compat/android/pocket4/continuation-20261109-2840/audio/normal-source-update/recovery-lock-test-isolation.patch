@@ -1,0 +1,27 @@
+diff --git a/tools/droidloom-update/src/main.rs b/tools/droidloom-update/src/main.rs
+index df346dc..ff6cdb0 100644
+--- a/tools/droidloom-update/src/main.rs
++++ b/tools/droidloom-update/src/main.rs
+@@ -484,6 +484,22 @@ mod tests {
+ 
+     #[test]
+     fn source_recovery_requires_both_normal_locks_and_only_restores_journal() {
++        // Production locks intentionally survive exec. Keep this lifecycle test
++        // separate from other test threads that spawn children, which could
++        // otherwise inherit its temporary lock descriptors after drop(held).
++        const CHILD: &str = "DROIDLOOM_SOURCE_RECOVERY_LOCK_TEST";
++        if std::env::var_os(CHILD).is_none() {
++            run(Command::new(std::env::current_exe().unwrap())
++                .args([
++                    "--exact",
++                    "tests::source_recovery_requires_both_normal_locks_and_only_restores_journal",
++                    "--nocapture",
++                    "--test-threads=1",
++                ])
++                .env(CHILD, "1"))
++            .unwrap();
++            return;
++        }
+         let d = tempfile::tempdir().unwrap(); let work = d.path(); let source = work.join("aosp-source");
+         fs::create_dir(&source).unwrap(); let input = source.join("original");
+         fs::write(&input, b"projected").unwrap(); let journal = work.join("source-projection.json");

@@ -1,0 +1,43 @@
+{
+  "unit": "hepta-runtime-job-1a1c1596541-e62c-78.service",
+  "namespaces": [
+    {
+      "argv": [
+        "/usr/bin/systemctl",
+        "show",
+        "hepta-runtime-job-1a1c1596541-e62c-78.service",
+        "--property=LoadState,ActiveState,SubState,ControlGroup,ExecMainPID"
+      ],
+      "returncode": 0,
+      "stdout": "ExecMainPID=0\nControlGroup=\nLoadState=not-found\nActiveState=inactive\nSubState=dead\n",
+      "stderr": "",
+      "properties": {
+        "ExecMainPID": "0",
+        "ControlGroup": "",
+        "LoadState": "not-found",
+        "ActiveState": "inactive",
+        "SubState": "dead"
+      }
+    },
+    {
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-runtime-job-1a1c1596541-e62c-78.service",
+        "--property=LoadState,ActiveState,SubState,ControlGroup,ExecMainPID"
+      ],
+      "returncode": 0,
+      "stdout": "ExecMainPID=0\nControlGroup=\nLoadState=not-found\nActiveState=inactive\nSubState=dead\n",
+      "stderr": "",
+      "properties": {
+        "ExecMainPID": "0",
+        "ControlGroup": "",
+        "LoadState": "not-found",
+        "ActiveState": "inactive",
+        "SubState": "dead"
+      }
+    }
+  ],
+  "private_processes": []
+}

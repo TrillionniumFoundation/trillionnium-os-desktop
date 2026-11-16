@@ -1,0 +1,10 @@
+package: "com.android.eyedropper"
+container: "system"
+
+flag {
+    name: "enable_eye_dropper_api"
+    namespace: "web_apps_on_chromeos_and_android"
+    description: "Feature flag to enable EyeDropper action and color extra in Intent."
+    bug: "399172476"
+    is_exported: true
+}

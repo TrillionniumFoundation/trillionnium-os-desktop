@@ -1,0 +1,704 @@
+{
+  "actual_failed_full": {
+    "fallback": {
+      "bytes": 18045,
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r13-fallback/result.json",
+      "sha256": "d5b0711b6d31a707e0e5e46f408dfc244816b362d33cc4414f92bc45688a1f3a"
+    },
+    "inner": {
+      "bytes": 64968,
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r13/terminal.json",
+      "sha256": "c5e20f89cf1317be866fc151339f71030d6b6364906251f7bfba10d378a1e235"
+    },
+    "outer": {
+      "bytes": 13294,
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/full-ai395-r13/outer-terminal.json",
+      "sha256": "3e2772df1f4fcf46146c8b568740c3409e61513127e09cdae19e682f2a8b3e4d"
+    }
+  },
+  "actual_full_source": {
+    "bytes": 55366,
+    "identity": [
+      66306,
+      91770635,
+      33024,
+      1000,
+      1000,
+      1,
+      55366,
+      1794247341139078016,
+      1794247341139078016
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/control/full-ai395-r13/ai395_native_controller.py",
+    "sha256": "8261b484eb67c7e0cc77ef36fb3ef9250cfe049e615676d852e8bf1b23aa89b7"
+  },
+  "actual_resources": {
+    "budget_after": {
+      "affinity": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "cpu.max": "800000 100000",
+      "file_size_rlimit": [
+        -1,
+        -1
+      ],
+      "memory.current": "1861234688",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.high": "23622320128",
+      "memory.max": "25769803776",
+      "memory.peak": "7765680128",
+      "memory.stat": "anon 31637504\nfile 1770340352\nkernel 58834944\nkernel_stack 0\npagetables 167936\nsec_pagetables 0\npercpu 1088\nsock 0\nvmalloc 0\nshmem 0\nzswap 0\nzswapped 0\nfile_mapped 0\nfile_dirty 110592\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 18874368\nshmem_thp 0\ninactive_anon 0\nactive_anon 31633408\ninactive_file 1647591424\nactive_file 122662912\nunevictable 0\nslab_reclaimable 58389624\nslab_unreclaimable 265792\nslab 58655416\nhugetlb 0\nworkingset_refault_anon 0\nworkingset_refault_file 2852\nworkingset_activate_anon 0\nworkingset_activate_file 2404\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgpromote_success 0\npgscan 2894\npgsteal 2894\npswpin 0\npswpout 0\npgscan_kswapd 2894\npgscan_direct 0\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 2894\npgsteal_direct 0\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 16200235\npgmajfault 499\npgrefill 14\npgactivate 0\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nzswpin 0\nzswpout 0\nzswpwb 0\nthp_fault_alloc 0\nthp_collapse_alloc 1\nthp_swpout 0\nthp_swpout_fallback 0\nnuma_pages_migrated 0\nnuma_pte_updates 0\nnuma_hint_faults 0",
+      "memory.swap.current": "0",
+      "memory.swap.max": "0",
+      "memory_stat_summary": {
+        "anon": 31637504,
+        "file": 1770340352,
+        "kernel": 58834944,
+        "kernel_stack": 0,
+        "pagetables": 167936,
+        "pgscan": 2894,
+        "pgscan_direct": 0,
+        "pgscan_kswapd": 2894,
+        "pgsteal": 2894,
+        "pgsteal_direct": 0,
+        "pgsteal_kswapd": 2894,
+        "slab": 58655416
+      },
+      "nice": 10
+    },
+    "observed_work_growth_peak_bytes": 645545984,
+    "owned_work_growth_after_bytes": 1329074176,
+    "resource_events_delta": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "resource_gate_passed": true,
+    "resource_profile": {
+      "build_memory_high_bytes": 23622320128,
+      "build_memory_max_bytes": 25769803776,
+      "cpu_affinity": [
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "cpu_quota_percent": 800,
+      "fresh_disk_minimum_bytes": 266287972352,
+      "fresh_memavailable_minimum_bytes": 62277025792,
+      "go_gc_percent": 50,
+      "go_max_procs": 2,
+      "go_memory_limit_bytes": 5368709120,
+      "host_reserve_bytes": 8589934592,
+      "initial_build_work_budget_bytes": 103079215104,
+      "inner_runtime_max_seconds": 22800,
+      "memory_swap_max_bytes": 0,
+      "name": "ai395-native-source600-high22g-memory24g-cpu8-jobs6-go5g2-combined58g-work96g-peer120g-sharedreserve32g-v2",
+      "normal_build_timeout_seconds": 21600,
+      "normal_requested_jobs": 6,
+      "outer_cpu_quota_percent": 200,
+      "outer_memory_max_bytes": 2147483648,
+      "outer_timeout_seconds": 28800,
+      "reserved_peer_kernel_growth_bytes": 128849018880,
+      "shared_disk_reserve_bytes": 34359738368
+    }
+  },
+  "all_command_children_retired": true,
+  "aosp_source_writes": 0,
+  "commands": [
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1275465.828094773,
+        "elapsed_seconds": 4.119798541069031e-05,
+        "leader_pid": 3532889,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/systemctl",
+        "show",
+        "p4-native-source601-full-ai395-20261109-8b88-r13.service",
+        "-p",
+        "LoadState",
+        "-p",
+        "MainPID",
+        "-p",
+        "ControlGroup"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/systemctl",
+          "show",
+          "p4-native-source601-full-ai395-20261109-8b88-r13.service",
+          "-p",
+          "LoadState",
+          "-p",
+          "MainPID",
+          "-p",
+          "ControlGroup"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1c19dac00-e62c-df.service\n",
+        "exe": "/usr/bin/systemctl",
+        "pid": 3532889,
+        "start_ticks": 127546082
+      },
+      "errors": [],
+      "finished_ns": 1794249699173468889,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 5.750800482928753e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 3532889,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "system-p4-native-source601-full-ai395-20261109-8b88-r13.service",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 3532889,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 3532886,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794249699168984259,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          91775834,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794249699167933770,
+          1794249699167933770
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r13-retirement-aconfig-origin-r1/commands/system-p4-native-source601-full-ai395-20261109-8b88-r13.service.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 44,
+        "identity": [
+          66306,
+          91775833,
+          33152,
+          1000,
+          1000,
+          1,
+          44,
+          1794249699170933661,
+          1794249699170933661
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r13-retirement-aconfig-origin-r1/commands/system-p4-native-source601-full-ai395-20261109-8b88-r13.service.stdout",
+        "sha256": "e41baf5e72a05c99cc4b001adcd78be001704106cb35b0197eaa52e82804fbd3"
+      }
+    },
+    {
+      "adopted_normal_exit": {
+        "children": [],
+        "complete": true,
+        "deadline": 1275465.833383934,
+        "elapsed_seconds": 3.24789434671402e-05,
+        "leader_pid": 3532890,
+        "leader_reaped_here": false,
+        "remaining_adopted_children": [],
+        "signals_sent": 0
+      },
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-runtime-job-1a1c184f061-e62c-be.service",
+        "-p",
+        "LoadState",
+        "-p",
+        "MainPID",
+        "-p",
+        "ControlGroup"
+      ],
+      "driver": {
+        "argv": [
+          "/usr/bin/systemctl",
+          "--user",
+          "show",
+          "hepta-runtime-job-1a1c184f061-e62c-be.service",
+          "-p",
+          "LoadState",
+          "-p",
+          "MainPID",
+          "-p",
+          "ControlGroup"
+        ],
+        "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1c19dac00-e62c-df.service\n",
+        "exe": "/usr/bin/systemctl",
+        "pid": 3532890,
+        "start_ticks": 127546083
+      },
+      "errors": [],
+      "finished_ns": 1794249699178311216,
+      "lifecycle": {
+        "child_reaped": true,
+        "cleanup_elapsed_seconds": 4.2798928916454315e-05,
+        "descendants": [],
+        "group_signal_unneeded_exited_only_child": true,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 3532890,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "owned_tree_cleanup_complete": true,
+        "pidfd_closed": true,
+        "remaining_owned_children": [],
+        "returncode": 0
+      },
+      "name": "user-hepta-runtime-job-1a1c184f061-e62c-be.service",
+      "observed_before_reap": {
+        "code": 1,
+        "pid": 3532890,
+        "status": 0
+      },
+      "owned_retirement_complete": true,
+      "reaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 3532886,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      },
+      "started_ns": 1794249699174298180,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          91775837,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1794249699173933552,
+          1794249699173933552
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r13-retirement-aconfig-origin-r1/commands/user-hepta-runtime-job-1a1c184f061-e62c-be.service.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 44,
+        "identity": [
+          66306,
+          91775836,
+          33152,
+          1000,
+          1000,
+          1,
+          44,
+          1794249699176933443,
+          1794249699176933443
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r13-retirement-aconfig-origin-r1/commands/user-hepta-runtime-job-1a1c184f061-e62c-be.service.stdout",
+        "sha256": "e41baf5e72a05c99cc4b001adcd78be001704106cb35b0197eaa52e82804fbd3"
+      }
+    }
+  ],
+  "complete_failed_driver_logs": {
+    "stderr": {
+      "origin": {
+        "bytes": 533535,
+        "identity": [
+          66306,
+          91770801,
+          33188,
+          1000,
+          1000,
+          1,
+          533535,
+          1794248582550696605,
+          1794248582550696605
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r13/commands/normal-full-native-engine-ART-pair.stderr",
+        "sha256": "3d244bc30d310da4361233cc12a7adcc394db39d1c795174df03abb59e14c3a5"
+      },
+      "snapshot": {
+        "bytes": 533535,
+        "identity": [
+          66306,
+          91775840,
+          33024,
+          1000,
+          1000,
+          1,
+          533535,
+          1794249699192932860,
+          1794249699192932860
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r13-retirement-aconfig-origin-r1/actual-full.stderr",
+        "sha256": "3d244bc30d310da4361233cc12a7adcc394db39d1c795174df03abb59e14c3a5"
+      }
+    },
+    "stdout": {
+      "origin": {
+        "bytes": 79951,
+        "identity": [
+          66306,
+          91770800,
+          33188,
+          1000,
+          1000,
+          1,
+          79951,
+          1794248582534697278,
+          1794248582534697278
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r13/commands/normal-full-native-engine-ART-pair.stdout",
+        "sha256": "da410f775b63329dfacd474c58198007983318e0714305a04cb490a463583147"
+      },
+      "snapshot": {
+        "bytes": 79951,
+        "identity": [
+          66306,
+          91775839,
+          33024,
+          1000,
+          1000,
+          1,
+          79951,
+          1794249699191932897,
+          1794249699191932897
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r13-retirement-aconfig-origin-r1/actual-full.stdout",
+        "sha256": "da410f775b63329dfacd474c58198007983318e0714305a04cb490a463583147"
+      }
+    }
+  },
+  "current_lock": {
+    "bytes": 354910,
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/recipe-flags-r1/android/native-generation-pair/source-lock.json",
+    "sha256": "74372a62836ec16c30a6f24c6e13725831f90e13f2bbc4c9f9f56c74895b163d"
+  },
+  "effective_inputs": {
+    "origin": {
+      "bytes": 26081,
+      "identity": [
+        66306,
+        91771877,
+        33024,
+        1000,
+        1000,
+        1,
+        26081,
+        1794248527594030289,
+        1794248527594030289
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r13/effective-inputs/result.json",
+      "sha256": "dc375848ad51c88e7d781ca9704a52801f9a4386eaa51d84fb51f6904ff23817"
+    },
+    "snapshot": {
+      "bytes": 26081,
+      "identity": [
+        66306,
+        91775841,
+        33024,
+        1000,
+        1000,
+        1,
+        26081,
+        1794249699193932824,
+        1794249699193932824
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r13-retirement-aconfig-origin-r1/effective-inputs.json",
+      "sha256": "dc375848ad51c88e7d781ca9704a52801f9a4386eaa51d84fb51f6904ff23817"
+    }
+  },
+  "errors": [],
+  "finished_ns": 1794249699199804758,
+  "full_builds_started": 0,
+  "locks": [
+    {
+      "free_then_held_for_readonly_origin": true,
+      "identity": [
+        66306,
+        60857531,
+        33152,
+        1000,
+        1000,
+        1,
+        0,
+        1794183129522871360,
+        1794183129522871360
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/native-full.serial.lock"
+    },
+    {
+      "free_then_held_for_readonly_origin": true,
+      "identity": [
+        66306,
+        60857480,
+        33152,
+        1000,
+        1000,
+        1,
+        8,
+        1794248164270910099,
+        1794248164270910099
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/package-build.lock"
+    },
+    {
+      "free_then_held_for_readonly_origin": true,
+      "identity": [
+        66306,
+        60857481,
+        33152,
+        1000,
+        1000,
+        1,
+        8,
+        1794248164270910099,
+        1794248164270910099
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source-update.lock"
+    }
+  ],
+  "locks_released": true,
+  "materialized_after": {
+    "bytes": 393709,
+    "identity": [
+      66306,
+      61121957,
+      33152,
+      1000,
+      1000,
+      1,
+      393709,
+      1794248414991949005,
+      1794248414993948916
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/.droidloom-source-manifest.json",
+    "sha256": "eb7dd68de94ff82addda54fd98f93fe78075fd37770b1a10392cd39917679e51"
+  },
+  "materialized_before": {
+    "bytes": 393709,
+    "identity": [
+      66306,
+      61121957,
+      33152,
+      1000,
+      1000,
+      1,
+      393709,
+      1794248414991949005,
+      1794248414993948916
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/.droidloom-source-manifest.json",
+    "sha256": "eb7dd68de94ff82addda54fd98f93fe78075fd37770b1a10392cd39917679e51"
+  },
+  "network_scope": "none",
+  "new_source_qualification": false,
+  "original_supervisor_generation_absent": true,
+  "planning_only_original_inputs": {
+    "AconfigFlags.bp": {
+      "origin": {
+        "bytes": 82319,
+        "identity": [
+          66306,
+          72094638,
+          33152,
+          1000,
+          1000,
+          1,
+          82319,
+          1793913372686017257,
+          1794180501649942475
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/frameworks/base/AconfigFlags.bp",
+        "sha256": "02f02f7de0500680d9e90ac662c652b71f096df22dc785e914798897eea5c7b6"
+      },
+      "snapshot": {
+        "bytes": 82319,
+        "identity": [
+          66306,
+          91775845,
+          33024,
+          1000,
+          1000,
+          1,
+          82319,
+          1794249699196932714,
+          1794249699196932714
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r13-retirement-aconfig-origin-r1/AconfigFlags.bp",
+        "sha256": "02f02f7de0500680d9e90ac662c652b71f096df22dc785e914798897eea5c7b6"
+      }
+    },
+    "Android.bp.list": {
+      "origin": {
+        "bytes": 568667,
+        "identity": [
+          66306,
+          91771781,
+          33261,
+          1000,
+          1000,
+          1,
+          568667,
+          1794248527492034658,
+          1794248527492034658
+        ],
+        "path": "/home/qq/work/pocket4-native-build597-ai395-20261108-8b88-r1/out-r13/.module_paths/Android.bp.list",
+        "sha256": "f4c253124b6ffbd1aecd0b56c6ccf798f0ecaca6b3df8b255ed5dbf64a814e2b"
+      },
+      "snapshot": {
+        "bytes": 568667,
+        "identity": [
+          66306,
+          91775846,
+          33024,
+          1000,
+          1000,
+          1,
+          568667,
+          1794249699197932678,
+          1794249699197932678
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r13-retirement-aconfig-origin-r1/Android.bp.list",
+        "sha256": "f4c253124b6ffbd1aecd0b56c6ccf798f0ecaca6b3df8b255ed5dbf64a814e2b"
+      }
+    }
+  },
+  "projects": [],
+  "raw_H": {
+    "exit": {
+      "bytes": 502,
+      "identity": [
+        66306,
+        91775791,
+        33152,
+        1000,
+        1000,
+        1,
+        502,
+        1794248752612036932,
+        1794248752612036932
+      ],
+      "path": "/home/qq/.local/state/hepta-runtime-mac-worker/jobs/1a1c184f061-e62c-be/exit.json",
+      "sha256": "8ad28df732808ae74cf6e8fc8c565a3dac7f9f498af589d01131195e10d69f17"
+    },
+    "request": {
+      "bytes": 18882,
+      "identity": [
+        66306,
+        91770759,
+        33152,
+        1000,
+        1000,
+        1,
+        18882,
+        1794248078139910609,
+        1794248078139910609
+      ],
+      "path": "/home/qq/.local/state/hepta-runtime-mac-worker/jobs/1a1c184f061-e62c-be/request.json",
+      "sha256": "8b8b4aa200838d94964a136692740a447098bf9735e3770437a8e065b13841a7"
+    },
+    "started": {
+      "bytes": 330,
+      "identity": [
+        66306,
+        91770764,
+        33152,
+        1000,
+        1000,
+        1,
+        330,
+        1794248078186519871,
+        1794248078186519871
+      ],
+      "path": "/home/qq/.local/state/hepta-runtime-mac-worker/jobs/1a1c184f061-e62c-be/started.json",
+      "sha256": "1a73fe6059d75cef1353bfaf515a1c330b7dc8cb383acc4990e204b3888ef6e4"
+    }
+  },
+  "schema": "native601-r13-retirement-original-aconfig-provider-v1",
+  "source": {
+    "bytes": 10233,
+    "identity": [
+      66306,
+      91775831,
+      33024,
+      1000,
+      1000,
+      1,
+      10233,
+      1794249699158934098,
+      1794249699158934098
+    ],
+    "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/qualification/full-ai395-r13-retirement-aconfig-origin-r1/observer.py",
+    "sha256": "04d0e52713fab1a75926d14da69a8675d59909104cf3e44c554831cdcf6e411b"
+  },
+  "started_ns": 1794249699163700108,
+  "state": "RETIRED_ORIGINAL_PROVIDER_METADATA_READ",
+  "units": [
+    {
+      "cgroup_absent": true,
+      "properties": {
+        "ControlGroup": "",
+        "LoadState": "not-found",
+        "MainPID": "0"
+      },
+      "scope": "system",
+      "unit": "p4-native-source601-full-ai395-20261109-8b88-r13.service"
+    },
+    {
+      "cgroup_absent": true,
+      "properties": {
+        "ControlGroup": "",
+        "LoadState": "not-found",
+        "MainPID": "0"
+      },
+      "scope": "user",
+      "unit": "hepta-runtime-job-1a1c184f061-e62c-be.service"
+    }
+  ]
+}

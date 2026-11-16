@@ -1,0 +1,1485 @@
+diff --git a/android/audio-bridge/0004-blueprint-explicit-go-budget.patch b/android/audio-bridge/0004-blueprint-explicit-go-budget.patch
+new file mode 100644
+index 0000000000000000000000000000000000000000..b6465cc98368963a55253693149218e6e05cf651
+--- /dev/null
++++ b/android/audio-bridge/0004-blueprint-explicit-go-budget.patch
+@@ -0,0 +1,48 @@
++--- a/bootstrap/command.go
+++++ b/bootstrap/command.go
++@@ -22,8 +22,10 @@
++ 	"os"
++ 	"runtime"
++ 	"runtime/debug"
+++	"runtime/metrics"
++ 	"runtime/pprof"
++ 	"runtime/trace"
+++	"strconv"
++ 	"strings"
++ 
++ 	"github.com/google/blueprint"
++@@ -68,11 +70,33 @@
++ // so that it is correctly rebuilt when needed in case Blueprint is itself
++ // invoked from Ninja
++ func RunBlueprint(args Args, stopBefore StopBefore, ctx *blueprint.Context, config interface{}) ([]string, error) {
++-	runtime.GOMAXPROCS(runtime.NumCPU())
+++	if configured := os.Getenv("GOMAXPROCS"); configured == "" {
+++		runtime.GOMAXPROCS(runtime.NumCPU())
+++	} else {
+++		requested, err := strconv.Atoi(configured)
+++		if err != nil || requested < 1 || runtime.GOMAXPROCS(0) != requested {
+++			return nil, fmt.Errorf("explicit GOMAXPROCS budget was not honored: %q", configured)
+++		}
+++	}
++ 
++ 	if args.NoGC {
++ 		debug.SetGCPercent(-1)
++ 	}
+++
+++	// Read the effective runtime limits, including after analysis or an error.
+++	// Environment values alone do not prove the active Go scheduler budget.
+++	reportGoBudget := func(phase string) {
+++		samples := []metrics.Sample{
+++			{Name: "/sched/gomaxprocs:threads"},
+++			{Name: "/gc/gomemlimit:bytes"},
+++			{Name: "/gc/gogc:percent"},
+++		}
+++		metrics.Read(samples)
+++		fmt.Fprintf(os.Stderr, "DROIDLOOM_GO_BUDGET phase=%s pid=%d gomaxprocs=%d gomemlimit_bytes=%d gogc_percent=%d\n",
+++			phase, os.Getpid(), samples[0].Value.Uint64(), samples[1].Value.Uint64(), samples[2].Value.Uint64())
+++	}
+++	reportGoBudget("enter")
+++	defer reportGoBudget("leave")
++ 
++ 	if args.Cpuprofile != "" {
++ 		f, err := os.Create(blueprint.JoinPath(ctx.SrcDir(), args.Cpuprofile))
+diff --git a/android/manifest/audio-bridge-source-lock.json b/android/manifest/audio-bridge-source-lock.json
+index b59421e78fa305899b7b185add84af2d88906acb..d8fb37a34f01be4a2dea8b9b23cc1eeeac324292 100644
+--- a/android/manifest/audio-bridge-source-lock.json
++++ b/android/manifest/audio-bridge-source-lock.json
+@@ -104,7 +104,8 @@
+         "tools/cts-tradefed",
+         "libs/runner",
+         "tests/core/runner-axt",
+-        "libs/vogar-expect"
++        "libs/vogar-expect",
++        "hostsidetests/compilation"
+       ]
+     },
+     {
+diff --git a/tools/droidloom-source/src/lib.rs b/tools/droidloom-source/src/lib.rs
+index 251b2240df6b257f82f16d8b07357454140b164f..3a40893ca245c2896e72e2fdd5cdab0fc16859f3 100644
+--- a/tools/droidloom-source/src/lib.rs
++++ b/tools/droidloom-source/src/lib.rs
+@@ -942,11 +942,35 @@ mod tests {
+         }
+     }
+ 
++    #[test]
++    fn audio_cts_compilation_is_one_monotonic_same_commit_cone() {
++        let raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
++        let current_lock: SparseSourceLock = serde_json::from_str(raw).unwrap();
++        let current = build_plan(&current_lock).unwrap();
++        let addition = "\"libs/vogar-expect\",\n        \"hostsidetests/compilation\"";
++        assert_eq!(raw.matches(addition).count(), 1);
++        let old_raw = raw.replacen(addition, "\"libs/vogar-expect\"", 1);
++        assert_eq!(format!("{:x}", Sha256::digest(old_raw.as_bytes())),
++            "c104640627a1beb35b25423656e751a4b56ac17287505c0ee2efeeb7d0419560");
++        let old_lock: SparseSourceLock = serde_json::from_str(&old_raw).unwrap();
++        let cts = old_lock.projects.iter().find(|p| p.path == Path::new("cts")).unwrap();
++        assert_eq!(cts.commit, "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd");
++        let old = build_plan(&old_lock).unwrap();
++        assert_eq!(old.projects.len(), 316);
++        assert_eq!(current.projects.len(), 316);
++        validate_plan_extension(&old, &current).unwrap();
++        assert!(validate_plan_extension(&current, &old).is_err());
++        let mut wrong = current;
++        wrong.projects.iter_mut().find(|p| p.path == Path::new("cts")).unwrap()
++            .commit = "0000000000000000000000000000000000000000".into();
++        assert!(validate_plan_extension(&old, &wrong).is_err());
++    }
++
+     #[test]
+     fn audio_source_capacity_is_bound_to_the_exact_frozen_lock() {
+         let raw = include_str!("../../../android/manifest/audio-bridge-source-lock.json");
+         assert_eq!(format!("{:x}", Sha256::digest(raw.as_bytes())),
+-            "c104640627a1beb35b25423656e751a4b56ac17287505c0ee2efeeb7d0419560");
++            "617a55af8ad550d4534220d0621a76b9a7556951a850ebac9356ebaec3fff19e");
+         let lock: SparseSourceLock = serde_json::from_str(raw).unwrap();
+         assert_eq!(lock.projects.len(), AUDIO_SOURCE_PROJECT_COUNT);
+         assert_eq!(MAX_PROJECTS, 320);
+diff --git a/tools/droidloom-update/src/android.rs b/tools/droidloom-update/src/android.rs
+index f9f9087c529486f60b607b4e7da15eac3872e133..ded9056fafbbd72d8dd822df0ced747e1aa7afb5 100644
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -564,6 +564,7 @@ fn validate_audio_provider_source_paths(
+         ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "libs/runner"),
+         ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "tests/core/runner-axt"),
+         ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "libs/vogar-expect"),
++        ("cts", "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd", "hostsidetests/compilation"),
+         ("external/e2fsprogs", "3eb17241db7cd4408cc1bce9d25b602465ace8ff", "debugfs"),
+         ("external/e2fsprogs", "3eb17241db7cd4408cc1bce9d25b602465ace8ff", "lib"),
+         ("external/e2fsprogs", "3eb17241db7cd4408cc1bce9d25b602465ace8ff", "misc"),
+@@ -878,7 +879,7 @@ fn audio_apex_pcm_patches(mode: SoongDependencyMode) -> &'static [(&'static str,
+     }
+ }
+ 
+-const AUDIO_SOURCE_LOCK_SHA256: &str = "c104640627a1beb35b25423656e751a4b56ac17287505c0ee2efeeb7d0419560";
++const AUDIO_SOURCE_LOCK_SHA256: &str = "617a55af8ad550d4534220d0621a76b9a7556951a850ebac9356ebaec3fff19e";
+ fn selected_source_lock(repo: &Path, mode: SoongDependencyMode) -> Result<PathBuf> {
+     if mode == SoongDependencyMode::AudioApexTargetClosure {
+         let lock = repo.join("android/manifest/audio-bridge-source-lock.json");
+@@ -899,6 +900,7 @@ fn project_audio_resources(p: &mut Projection, repo: &Path, source: &Path,
+     for (relative, expected) in [
+         ("build/blueprint/context.go", "e2b7bf50848ba9f9ac7078dae87c6b2e13ce7019ba997c71f90a04e602f1a9d4"),
+         ("build/soong/ui/build/soong.go", "ab745182f4fba6ab4fbd1cea6fc4943b78e588b4187dfc735cd28826bbaa7027"),
++        ("build/blueprint/bootstrap/command.go", "bb681356afa58932692866c41086e122509dc65d36edabc22c7bb154be5c8f38"),
+     ] {
+         if hash(&source.join(relative))? != expected {
+             return fail(format!("audio resource projection requires exact locked original {relative}"));
+@@ -908,6 +910,7 @@ fn project_audio_resources(p: &mut Projection, repo: &Path, source: &Path,
+         ("build/soong", "android/audio-bridge/0001-soong-resource-budget.patch"),
+         ("build/blueprint", "android/audio-bridge/0002-blueprint-stream-uncached-actions.patch"),
+         ("build/blueprint", "android/audio-bridge/0003-blueprint-provider-concurrency.patch"),
++        ("build/blueprint", "android/audio-bridge/0004-blueprint-explicit-go-budget.patch"),
+     ] { p.patch(source, cwd, &repo.join(patch))?; }
+     Ok(())
+ }
+@@ -3223,6 +3226,43 @@ mod tests {
+     }
+ 
+ 
++    #[test]
++    fn audio_cts_compilation_requires_original_defaults_without_deleting_consumers() {
++        use sha2::{Digest, Sha256};
++        let repo = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap().parent().unwrap();
++        let lock = droidloom_source::load_lock(
++            &repo.join("android/manifest/audio-bridge-source-lock.json")).unwrap();
++        let mode = SoongDependencyMode::AudioApexTargetClosure;
++        validate_audio_provider_source_paths(&lock, mode).unwrap();
++        let mut old = lock.clone();
++        old.projects.iter_mut().find(|p| p.path == Path::new("cts")).unwrap()
++            .sparse_paths.retain(|p| p != Path::new("hostsidetests/compilation"));
++        assert!(validate_audio_provider_source_paths(&old, mode).is_err());
++        let mut incomplete = old;
++        incomplete.projects.iter_mut().find(|p| p.path == Path::new("cts")).unwrap()
++            .sparse_paths.push(PathBuf::from("hostsidetests/compilation/Android.bp"));
++        assert!(validate_audio_provider_source_paths(&incomplete, mode).is_err());
++        let provider = include_str!("../tests/fixtures/audio-providers/cts-compilation.bp");
++        let consumer = include_str!("../tests/fixtures/audio-providers/cts-appsecurity.bp");
++        assert_eq!(format!("{:x}", Sha256::digest(provider.as_bytes())),
++            "e9bbc37ad6e6e4b53f64e2746aed5892848f7d25f2eb692e846f2d9bdd5595d8");
++        assert_eq!(format!("{:x}", Sha256::digest(consumer.as_bytes())),
++            "d15a2400b5f11d874614bd5e00f2e2628f71c1d2bf95ac6f46c7389ee6d8b916");
++        for name in ["profile_defaults", "dm_defaults"] {
++            assert!(provider.contains(&format!("name: \"{name}\"")));
++            assert!(consumer.contains(&format!("defaults: [\"{name}\"]")));
++        }
++        for expected in ["tools: [\"profman\"]", "name: \"generate_dm\"",
++                         "src: \"scripts/generate_dm.sh\"", "\"soong_zip\""] {
++            assert!(provider.contains(expected));
++        }
++        for (path, original) in [("cts/hostsidetests/compilation/Android.bp", provider),
++                                 ("cts/hostsidetests/appsecurity/Android.bp", consumer)] {
++            assert!(audio_original_shared_provider(path, original, mode).unwrap().is_none());
++            assert!(audio_new_source_root_scope(path, original, mode).unwrap().is_none());
++        }
++    }
++
+     #[test]
+     fn audio_api35_cts_keeps_real_consumers_and_original_provider_modules() {
+         use sha2::{Digest, Sha256};
+@@ -3494,9 +3534,11 @@ mod tests {
+         let source = d.path().join("source");
+         let context = source.join("build/blueprint/context.go");
+         let soong = source.join("build/soong/ui/build/soong.go");
+-        let originals: [(&Path, &[u8]); 2] = [
++        let bootstrap = source.join("build/blueprint/bootstrap/command.go");
++        let originals: [(&Path, &[u8]); 3] = [
+             (&context, include_bytes!("../tests/fixtures/audio-resources/context.go")),
+             (&soong, include_bytes!("../tests/fixtures/audio-resources/soong.go")),
++            (&bootstrap, include_bytes!("../tests/fixtures/audio-resources/bootstrap-command.go")),
+         ];
+         let mtime = std::time::UNIX_EPOCH + std::time::Duration::new(1_700_000_000, 123_456_789);
+         for (path, bytes) in originals {
+@@ -3511,7 +3553,14 @@ mod tests {
+                      "invocationEnv[\"GOGC\"] = \"50\"", "invocationEnv[\"GODEBUG\"] = \"gctrace=1\""] {
+             assert!(actual.contains(line), "{line}");
+         }
+-        assert_eq!(p.originals.len(), 2); assert_eq!(p.applied_patches.len(), 3);
++        let runtime = fs::read_to_string(&bootstrap).unwrap();
++        assert!(runtime.contains("if configured := os.Getenv(\"GOMAXPROCS\"); configured == \"\""));
++        assert!(runtime.contains("runtime.GOMAXPROCS(0) != requested"));
++        assert!(runtime.contains("/sched/gomaxprocs:threads"));
++        assert!(runtime.contains("/gc/gomemlimit:bytes"));
++        assert!(runtime.contains("/gc/gogc:percent"));
++        assert!(runtime.contains("defer reportGoBudget(\"leave\")"));
++        assert_eq!(p.originals.len(), 3); assert_eq!(p.applied_patches.len(), 4);
+         assert!(journal.exists()); p.restore().unwrap(); assert!(!journal.exists());
+         for (path, bytes) in originals {
+             assert_eq!(fs::read(path).unwrap(), bytes); assert_eq!(fs::metadata(path).unwrap().modified().unwrap(), mtime);
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/cts-appsecurity.bp b/tools/droidloom-update/tests/fixtures/audio-providers/cts-appsecurity.bp
+new file mode 100644
+index 0000000000000000000000000000000000000000..ad83d1d97e21b07cc363d1f281c5e5c7e463194b
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/cts-appsecurity.bp
+@@ -0,0 +1,752 @@
++// Copyright (C) 2009 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_applicable_licenses: ["Android-Apache-2.0"],
++}
++
++CTS_TEST_SUITES_DEFAULT = [
++    "cts",
++    "general-tests",
++]
++
++java_library_host {
++    name: "CtsAppSecurityUtils",
++    defaults: ["cts_defaults"],
++
++    libs: [
++        "cts-tradefed",
++        "tradefed",
++        "compatibility-host-util",
++        "truth",
++        "hamcrest-library",
++    ],
++
++    static_libs: [
++        "CompatChangeGatingTestBase",
++        "CtsPkgInstallerConstants",
++        "cts-host-utils",
++        "cts-statsd-atom-host-test-utils",
++        "sts-host-util",
++    ],
++
++    srcs: [
++        "src/**/AppSecurityPreparer.java",
++        "src/**/BaseAppSecurityTest.java",
++        "src/**/BaseInstallMultiple.java",
++        "src/**/ExceptionUtils.java",
++        "src/**/LockScreenInspector.java",
++        "src/**/MatcherUtils.java",
++        "src/**/ThrowingRunnable.java",
++        "src/**/Utils.java",
++    ],
++}
++
++java_defaults {
++    name: "appsecurity_cts_defaults",
++    defaults: ["cts_defaults"],
++
++    libs: [
++        "cts-tradefed",
++        "tradefed",
++        "compatibility-host-util",
++        "truth",
++        "hamcrest-library",
++    ],
++
++    static_libs: [
++        "CtsAppSecurityUtils",
++        "CompatChangeGatingTestBase",
++        "CtsPkgInstallerConstants",
++        "cts-host-utils",
++        "cts-statsd-atom-host-test-utils",
++        "sts-host-util",
++        "flag-junit-host",
++        "com.android.internal.pm.pkg.component.flags-aconfig-java-host",
++    ],
++
++    java_resource_dirs: ["res"],
++
++    per_testcase_directory: true,
++    enable_static_aconfig_pb: true,
++}
++
++// Unit tests for utilities used by the CTS tests - not CTS itself
++java_test_host {
++    name: "AppSecurityHostUnitTestCases",
++    team: "trendy_team_framework_android_multiuser",
++    srcs: [
++        "src/**/Utils.java",
++        "src/**/UtilsTest.java",
++    ],
++    static_libs: [
++        "mockito-hostside-prebuilt",
++        "tradefed",
++    ],
++    test_suites: [
++        "general-tests",
++    ],
++    test_config: "AppSecurityHostUnitTestCases.xml",
++}
++
++java_test_host {
++    name: "CtsAppSecurityHostTestCases",
++    team: "trendy_team_platform_security",
++    defaults: ["appsecurity_cts_defaults"],
++
++    srcs: [
++        "src/**/ApexSignatureVerificationTest.java",
++        "src/**/AppSecurityTests.java",
++        "src/**/DeviceIdentifierTest.java",
++        "src/**/HybridSignatureVerificationTest.java",
++        "src/**/KeySetHostTest.java",
++        "src/**/KeyStoreManagerTest.java",
++        "src/**/ListeningPortsTest.java",
++        "src/**/PackageInstallTestUtils.java",
++        "src/**/PkgInstallSignatureVerificationTest.java",
++        "src/**/StatsdAppSecurityAtomTest.java",
++        "src/**/RoleSecurityTest.java",
++    ],
++
++    static_libs: [
++        "flag-junit-host",
++        "android.security.flags-aconfig-java-host",
++        "sts-host-util",
++    ],
++
++    test_suites: CTS_TEST_SUITES_DEFAULT + ["sts"],
++
++    device_common_data: [
++        // AppSecurityTests
++        ":CtsAppAccessData",
++        ":CtsAppWithData",
++        ":CtsDuplicatePermission_SamePermissionGroup",
++        ":CtsDuplicatePermissionDeclareApp_DifferentProtectionLevel",
++        ":CtsDuplicatePermissionDeclareApp_SameProtectionLevel",
++        ":CtsDuplicatePermissionDeclareApp",
++        ":CtsInstrumentationAppDiffCert",
++        ":CtsMalformedDuplicatePermission_DifferentPermissionGroup",
++        ":CtsPermissionDeclareApp",
++        ":CtsPermissionDeclareAppCompat",
++        ":CtsSimpleAppInstall",
++        ":CtsSimpleAppInstallDiffCert",
++        ":CtsTargetInstrumentationApp",
++        ":CtsUsePermissionDiffCert",
++        ":CtsDeclarePermissions_WithSpaces",
++        // DeviceIdentifierTest
++        ":CtsAccessDeviceIdentifiers",
++        // HybridSignatureVerificationTest
++        ":CtsV32HybridSigningSchemeTest",
++        // KeySetHostTest
++        ":CtsKeySetPermDefSigningA",
++        ":CtsKeySetPermDefSigningB",
++        ":CtsKeySetPermUseSigningA",
++        ":CtsKeySetPermUseSigningB",
++        ":CtsKeySetSharedUserSigningAUpgradeB",
++        ":CtsKeySetSharedUserSigningBUpgradeB",
++        ":CtsKeySetSigningAAndBUpgradeA",
++        ":CtsKeySetSigningAAndCUpgradeB",
++        ":CtsKeySetSigningABadUpgradeB",
++        ":CtsKeySetSigningANoDefUpgradeB",
++        ":CtsKeySetSigningAUpgradeA",
++        ":CtsKeySetSigningAUpgradeAOrB",
++        ":CtsKeySetSigningAUpgradeB",
++        ":CtsKeySetSigningAUpgradeEcA",
++        ":CtsKeySetSigningAUpgradeNone",
++        ":CtsKeySetSigningBUpgradeA",
++        ":CtsKeySetSigningBUpgradeB",
++        ":CtsKeySetSigningCBadAUpgradeAB",
++        ":CtsKeySetSigningEcAUpgradeA",
++        ":CtsKeySetTestApp",
++        // ListeningPortsTest
++        ":CtsListeningPortsTest",
++        // PkgInstallSignatureVerificationTest deps
++        ":CtsSignatureQueryService",
++        ":CtsSignatureQueryServiceTest",
++        ":CtsV3SigningSchemeRotationTest",
++        ":CtsSignatureQueryService_v2-tgt-33",
++        ":CtsSignatureQueryService_v2",
++        ":CtsSignatureQueryService_v3-tgt-33",
++        ":CtsSignatureQueryService_v3",
++        ":CtsSignatureQueryServiceTest",
++        ":CtsSignatureQueryServiceTest_v2",
++        ":CtsSignatureQueryServiceTest_v2-tgt-33",
++        ":v1v2-ec-p256-two-signers-targetSdk-30",
++        ":v3-ec-p256-1-companion-usesperm",
++        ":v3-ec-p256-1-sharedUid",
++        ":v3-ec-p256-1-sharedUid-companion2",
++        ":v3-ec-p256_2-companion-uses-knownSigner",
++        ":v3-ec-p256-2-sharedUid-companion",
++        ":v3-ec-p256_3-companion-uses-knownSigner",
++        ":v3-ec-p256-with-por_1_2_3-1-no-caps-2-default-declperm",
++        ":v3-ec-p256-with-por-1_2_3_4_5-default-caps",
++        ":v3-ec-p256-with-por_1_2_3-no-caps-declperm",
++        ":v3-ec-p256-with-por_1_2_4-companion-usesperm",
++        ":v3-ec-p256-with-por_1_2-companion-uses-knownSigner",
++        ":v3-ec-p256-with-por_1_2-default-caps",
++        ":v3-ec-p256-with-por_1_2-default-caps-sharedUid",
++        ":v3-ec-p256-with-por_1_2-default-caps-sharedUid-companion",
++        ":v3-ec-p256-with-por_1_2-default-caps-sharedUid-companion3",
++        ":v3-ec-p256-with-por_1_2-no-perm-cap-sharedUid",
++        ":v3-ec-p256-with-por_1_2-no-shUid-cap-declperm2",
++        ":v3-ec-p256-with-por_1_2-no-shUid-cap-sharedUid",
++        ":v3-ec-p256-with-por_1_2-no-shUid-cap-sharedUid-companion",
++        ":v3-ec-p256-with-por_1_2-no-shUid-cap-sharedUid-companion2",
++        ":v3-por_Y_1_2-default-caps-sharedUid",
++        ":v3-por_Z_1_2-default-caps-sharedUid-companion",
++        ":v3-rsa-2048-decl-knownSigner-ec-p256-1-3",
++        ":v3-rsa-2048-decl-knownSigner-str-const-ec-p256-1",
++        ":v3-rsa-2048-decl-knownSigner-str-res-ec-p256-1",
++        ":v3-rsa-2048-declperm",
++        // StatsdAppSecurityAtomTest
++        ":CtsStatsSecurityApp",
++        // PackageSetInstallerTest
++        ":CtsPkgInstallerPermRequestApp",
++        ":CtsPkgInstallerPermWhitelistApp",
++        // CtsAppDataIsolationAppA
++        ":CtsAppDataIsolationAppA",
++        ":CtsAppDataIsolationAppSharedA",
++        ":CtsAppDataIsolationAppDirectBootA",
++        ":CtsAppDataIsolationAppApi29A",
++        ":CtsAppDataIsolationAppB",
++        ":CtsAppDataIsolationAppSharedB",
++        // ReadableSettingsFieldsTest
++        ":CtsReadSettingsFieldsApp",
++        ":CtsReadSettingsFieldsAppTestOnly",
++        ":CtsReadSettingsFieldsAppTargetQ",
++        ":CtsReadSettingsFieldsAppTargetR",
++        ":CtsReadSettingsFieldsAppTargetS",
++        // UseProcessTest
++        ":CtsUseProcessFailActivity",
++        // KeyStoreManagerTest
++        ":KeyStoreManagerTestGranteeApp",
++        ":KeyStoreManagerTestGranterApp",
++        // RoleSecurityTest
++        ":CtsRoleSecurityTestApp",
++    ],
++    device_common_java_resources: [":all_apex_certs{.avbpubkey}"],
++
++    test_config: "AppSecurityHostTestCases.xml",
++}
++
++java_test_host {
++    name: "CtsPermissionsHostTestCases",
++    team: "trendy_team_android_permissions",
++    defaults: ["appsecurity_cts_defaults"],
++
++    test_suites: CTS_TEST_SUITES_DEFAULT + ["sts"],
++
++    srcs: [
++        "src/**/AccessSerialNumberTest.java",
++        "src/**/AppOpsTest.java",
++        "src/**/LocationPolicyTest.java",
++        "src/**/PermissionEscalationTest.java",
++    ],
++    device_common_data: [
++        // AccessSerialNumberTest
++        ":CtsAccessSerialLegacy",
++        ":CtsAccessSerialModern",
++        // LocationPolicyTest
++        ":CtsLocationPolicyApp",
++        // PermissionEscalationTest
++        ":CtsDeclareNonRuntimePermissions",
++        ":CtsEscalateToRuntimePermissions",
++    ],
++    test_config: "PermissionsTests.xml",
++}
++
++java_test_host {
++    name: "CtsAppDataIsolationHostTestCases",
++    team: "trendy_team_android_storage",
++    defaults: ["appsecurity_cts_defaults"],
++
++    test_suites: CTS_TEST_SUITES_DEFAULT,
++
++    srcs: [
++        "src/**/AppDataIsolationTests.java",
++    ],
++    device_common_data: [
++        ":CtsAppDataIsolationAppA",
++        ":CtsAppDataIsolationAppApi29A",
++        ":CtsAppDataIsolationAppB",
++        ":CtsAppDataIsolationAppDirectBootA",
++        ":CtsAppDataIsolationAppSharedA",
++        ":CtsAppDataIsolationAppSharedB",
++    ],
++    test_config: "AppDataIsolationTests.xml",
++}
++
++java_test_host {
++    name: "CtsUseEmbeddedDexHostTestCases",
++    team: "trendy_team_art_performance",
++    defaults: ["appsecurity_cts_defaults"],
++
++    test_suites: CTS_TEST_SUITES_DEFAULT,
++
++    srcs: [
++        "src/**/UseEmbeddedDexTest.java",
++    ],
++    device_common_data: [
++        ":CtsUseEmbeddedDexApp_Canonical",
++        ":CtsUseEmbeddedDexApp_Canonical_PerProcess",
++        ":CtsUseEmbeddedDexApp_DexCompressed",
++        ":CtsUseEmbeddedDexApp_DexCompressed_PerProcess",
++        ":CtsUseEmbeddedDexApp_NotPreferred",
++        ":CtsUseEmbeddedDexAppSplit_Canonical",
++        ":CtsUseEmbeddedDexAppSplit_CompressedDex",
++    ],
++    test_config: "UseEmbeddedDexTests.xml",
++}
++
++java_test_host {
++    name: "CtsPackageManagerHostTestCases",
++    team: "trendy_team_framework_android_packages",
++    defaults: ["appsecurity_cts_defaults"],
++
++    test_suites: CTS_TEST_SUITES_DEFAULT,
++
++    srcs: [
++        "src/**/ApplicationVisibilityTest.java",
++        "src/**/BaseInstallMultiple.java",
++        "src/**/MajorVersionTest.java",
++        "src/**/PackageResolutionHostTest.java",
++        "src/**/PackageSetInstallerTest.kt",
++        "src/**/PackageVisibilityTest.java",
++        "src/**/PrivilegedUpdateTests.java",
++        "src/**/ReadableSettingsFieldsTest.java",
++        "src/**/SessionReferrerUriTest.java",
++        "src/**/SettingsProviderInvalidKeyTest.java",
++        "src/**/SharedUserIdTest.java",
++        "src/**/UseProcessTest.java",
++    ],
++    device_common_data: [
++        // ApplicationVisibilityTest
++        ":CtsPkgInstallTinyApp",
++        ":CtsApplicationVisibilityCrossUserApp",
++        // MajorVersionTest
++        ":CtsMajorVersion000000000000ffff",
++        ":CtsMajorVersion00000000ffffffff",
++        ":CtsMajorVersion000000ff00000000",
++        ":CtsMajorVersion000000ffffffffff",
++        // PackageResolutionHostTest
++        ":CtsOrderedActivityApp",
++        // PackageSetInstallerTest
++        ":CtsPkgInstallerPermRequestApp",
++        ":CtsPkgInstallerPermWhitelistApp",
++        // PackageVisibilityTest
++        ":CtsPkgAccessApp",
++        ":CtsPkgInstallTinyApp",
++        // PrivilegedUpdateTests
++        ":CtsPrivilegedUpdateTests",
++        ":CtsShimPrivUpgradePrebuilt",
++        ":CtsShimPrivUpgradeWrongSHAPrebuilt",
++        // ReadableSettingsFieldsTest
++        ":CtsReadSettingsFieldsApp",
++        ":CtsReadSettingsFieldsAppTargetQ",
++        ":CtsReadSettingsFieldsAppTargetR",
++        ":CtsReadSettingsFieldsAppTargetS",
++        ":CtsReadSettingsFieldsAppTestOnly",
++        // SessionReferrerUriTest
++        ":CtsSessionInspectorAppA",
++        ":CtsSessionInspectorAppB",
++        // SettingsProviderInvalidKeyTest
++        ":CtsSettingsProviderInvalidKeyTestApp",
++        // SharedUserIdTest
++        ":CtsSharedUidInstall",
++        ":CtsSharedUidInstallDiffCert",
++        // UseProcessTest
++        ":CtsUseProcessFailActivity",
++        ":CtsUseProcessFailApplication",
++        ":CtsUseProcessFailProvider",
++        ":CtsUseProcessFailReceiver",
++        ":CtsUseProcessFailService",
++        ":CtsUseProcessSuccess",
++    ],
++    test_config_template: "PackageManagerTests.xml",
++}
++
++java_test_host {
++    name: "CtsPackageManagerIsolatedSplitHostTestCases",
++    team: "trendy_team_framework_android_packages",
++    defaults: ["appsecurity_cts_defaults"],
++
++    test_suites: CTS_TEST_SUITES_DEFAULT,
++
++    srcs: [
++        "src/**/IsolatedSplitsTests.java",
++    ],
++    device_common_data: [
++        // IsolatedSplitsTests
++        ":CtsIsolatedSplitApp",
++        ":CtsIsolatedSplitAppExtractNativeLibsFalseJni",
++        ":CtsIsolatedSplitAppExtractNativeLibsFalseNumberProviderA",
++        ":CtsIsolatedSplitAppExtractNativeLibsFalseNumberProviderB",
++        ":CtsIsolatedSplitAppExtractNativeLibsFalseNumberProxy",
++        ":CtsIsolatedSplitAppExtractNativeLibsTrue",
++        ":CtsIsolatedSplitAppExtractNativeLibsTrueJni",
++        ":CtsIsolatedSplitAppExtractNativeLibsTrueNumberProviderA",
++        ":CtsIsolatedSplitAppExtractNativeLibsTrueNumberProviderB",
++        ":CtsIsolatedSplitAppExtractNativeLibsTrueNumberProxy",
++        ":CtsIsolatedSplitAppFeatureA",
++        ":CtsIsolatedSplitAppFeatureADiffRev",
++        ":CtsIsolatedSplitAppFeatureB",
++        ":CtsIsolatedSplitAppFeatureC",
++    ],
++    test_config_template: "PackageManagerTests.xml",
++}
++
++java_test_host {
++    name: "CtsPackageManagerSplitHostTestCases",
++    team: "trendy_team_framework_android_packages",
++    defaults: ["appsecurity_cts_defaults"],
++
++    test_suites: CTS_TEST_SUITES_DEFAULT,
++
++    srcs: [
++        "src/**/SplitTests.java",
++    ],
++    device_common_data: [
++        // SplitTests
++        ":CtsInvalidRequiredSplitTypeSplitApp",
++        ":CtsNeedSplitApp",
++        ":CtsNeedSplitFeatureWarm",
++        ":CtsNoRestartBase",
++        ":CtsNoRestartFeature",
++        ":CtsRequiredSplitTypeSplitApp",
++        ":CtsRequiredSplitTypeSplitAppUpdated",
++        ":CtsRequiredSplitTypeSplitApp",
++        ":CtsRequiredSplitTypeSplitAppUpdated",
++        ":CtsSplitApp",
++        ":CtsSplitApp_arm64-v8a",
++        ":CtsSplitApp_armeabi",
++        ":CtsSplitApp_armeabi-v7a",
++        ":CtsSplitApp_mips",
++        ":CtsSplitApp_mips64",
++        ":CtsSplitApp_x86",
++        ":CtsSplitApp_x86_64",
++        ":CtsSplitApp_revision12_arm64-v8a",
++        ":CtsSplitApp_revision12_armeabi",
++        ":CtsSplitApp_revision12_armeabi-v7a",
++        ":CtsSplitApp_revision12_mips",
++        ":CtsSplitApp_revision12_mips64",
++        ":CtsSplitApp_revision12_x86",
++        ":CtsSplitApp_revision12_x86_64",
++        ":CtsSplitApp_number_provider_a",
++        ":CtsSplitApp_number_provider_b",
++        ":CtsSplitApp_number_proxy",
++        ":CtsSplitAppDiffCert",
++        ":CtsSplitAppDiffRevision",
++        ":CtsSplitAppDiffVersion",
++        ":CtsSplitAppFeatureRose",
++        ":CtsSplitAppFeatureWarm",
++        ":CtsSplitAppFeatureWarmRevisionA",
++        ":CtsSplitAppRevisionA",
++        ":CtsSplitAppTypeDensity",
++        ":CtsSplitAppTypeFeature",
++        ":CtsSplitAppTypeFeatureData",
++        ":CtsSplitAppTypeFeatureFoo",
++        ":CtsSplitAppTypeFoo",
++        ":CtsSplitAppTypeLocale",
++        ":CtsSplitAppTypeMultiple",
++        ":CtsSplitInstantApp",
++    ],
++    test_config_template: "PackageManagerTests.xml",
++}
++
++java_test_host {
++    name: "CtsInstantAppsHostTestCases",
++    team: "trendy_team_framework_android_packages",
++    defaults: ["appsecurity_cts_defaults"],
++    test_suites: CTS_TEST_SUITES_DEFAULT + ["sts"],
++    srcs: [
++        "src/**/EphemeralTest.java",
++        "src/**/InstantAppUserTest.java",
++        "src/**/InstantCookieHostTest.java",
++    ],
++    device_common_data: [
++        // EphemeralTest deps
++        ":CtsEphemeralTestsNormalApp",
++        ":CtsEphemeralTestsUnexposedApp",
++        ":CtsEphemeralTestsImplicitApp",
++        ":CtsEphemeralTestsEphemeralApp1",
++        ":CtsEphemeralTestsEphemeralApp2",
++        ":CtsEphemeralTestsUserApp",
++        ":CtsEphemeralTestsUserAppTest",
++        ":CtsInstantUpgradeApp",
++        // InstantCookie deps
++        ":CtsInstantCookieApp",
++        ":CtsInstantCookieApp2",
++    ],
++    test_config: "InstantAppsTests.xml",
++}
++
++java_test_host {
++    name: "CtsAdoptableHostTestCases",
++    team: "trendy_team_android_storage",
++    defaults: ["appsecurity_cts_defaults"],
++
++    test_suites: CTS_TEST_SUITES_DEFAULT,
++
++    srcs: [
++        "src/**/*Adoptable*.java",
++    ],
++    device_common_data: [
++        ":CtsSplitApp",
++        ":CtsSplitApp_arm64-v8a",
++        ":CtsSplitApp_armeabi",
++        ":CtsSplitApp_armeabi-v7a",
++        ":CtsSplitApp_mips",
++        ":CtsSplitApp_mips64",
++        ":CtsSplitApp_x86",
++        ":CtsSplitApp_x86_64",
++    ],
++    test_config: "AdoptableTests.xml",
++}
++
++java_test_host {
++    name: "CtsDirectBootHostTestCases",
++    team: "trendy_team_android_storage",
++    defaults: ["appsecurity_cts_defaults"],
++
++    test_suites: CTS_TEST_SUITES_DEFAULT,
++
++    srcs: [
++        "src/**/*DirectBoot*.java",
++    ],
++    device_common_data: [
++        ":CtsEncryptionApp",
++        ":CtsSplitApp",
++    ],
++    test_config: "DirectBootTests.xml",
++}
++
++java_test_host {
++    name: "CtsStorageHostTestCases",
++    team: "trendy_team_android_storage",
++    defaults: ["appsecurity_cts_defaults"],
++
++    test_suites: CTS_TEST_SUITES_DEFAULT,
++
++    static_libs: [
++        "flag-junit-host",
++        "android.app.usage.flags-aconfig-java-host",
++    ],
++    srcs: [
++        "src/**/*Storage*.java",
++    ],
++    device_common_data: [
++        ":CtsExternalStorageApp",
++        ":CtsReadExternalStorageApp",
++        ":CtsWriteExternalStorageApp",
++        ":CtsWriteExternalStorageApp2",
++        ":CtsMultiUserStorageApp",
++        ":CtsMediaStorageApp",
++        ":CtsMediaStorageApp28",
++        ":CtsMediaStorageApp29",
++        ":CtsMediaStorageApp31",
++        ":CtsNoAppDataStorageApp",
++        ":CtsStorageStatsApp",
++        ":CtsStorageAppA",
++        ":CtsStorageAppB",
++        ":CtsStorageAppC",
++        ":CtsStorageAppC_dm",
++    ],
++    test_config: "StorageTests.xml",
++}
++
++java_genrule {
++    name: "CtsStorageAppC_profile",
++    defaults: ["profile_defaults"],
++    srcs: [
++        "assets/storage.prof.txt",
++        ":CtsStorageAppC",
++    ],
++    out: ["CtsStorageAppC.prof"],
++}
++
++java_genrule {
++    name: "CtsStorageAppC_dm",
++    defaults: ["dm_defaults"],
++    srcs: [
++        ":CtsStorageAppC_profile",
++    ],
++    out: ["CtsStorageAppC.dm"],
++}
++
++java_test_host {
++    name: "CtsResumeOnRebootHostTestCases",
++    team: "trendy_team_android_sudo",
++    defaults: ["appsecurity_cts_defaults"],
++
++    test_suites: CTS_TEST_SUITES_DEFAULT,
++
++    srcs: [
++        "src/**/*ResumeOnReboot*.java",
++        "src/**/BootCountTrackerRule.java",
++        "src/**/NormalizeScreenStateRule.java",
++    ],
++    device_common_data: [
++        ":CtsEncryptionApp",
++        ":CtsSplitApp",
++    ],
++    static_libs: [
++        "hamcrest-library",
++    ],
++    test_config: "ResumeOnRebootTests.xml",
++}
++
++java_test_host {
++    name: "CtsCorruptApkHostTestCases",
++    team: "trendy_team_android_resources",
++    defaults: ["appsecurity_cts_defaults"],
++
++    test_suites: CTS_TEST_SUITES_DEFAULT,
++
++    device_common_data: [
++        ":CtsCorruptApkTests_b71360999",
++        ":CtsCorruptApkTests_b71361168",
++        ":CtsCorruptApkTests_b79488511",
++        ":CtsCorruptApkTests_Compressed_Q",
++        ":CtsCorruptApkTests_Compressed_R",
++        ":CtsCorruptApkTests_Unaligned_Q",
++        ":CtsCorruptApkTests_Unaligned_R",
++    ],
++    srcs: [
++        "src/**/CorruptApkTests.java",
++    ],
++    test_config: "CorruptApkTests.xml",
++}
++
++java_test_host {
++    name: "CtsOverlayHostTestCases",
++    team: "trendy_team_android_resources",
++    defaults: ["appsecurity_cts_defaults"],
++
++    test_suites: CTS_TEST_SUITES_DEFAULT,
++
++    srcs: [
++        "src/**/OverlayHostTest.java",
++    ],
++    device_common_data: [
++        ":CtsOverlayApp",
++        ":CtsOverlayAndroid",
++        ":CtsOverlayPolicyAll",
++        ":CtsOverlayPolicyAllPie",
++        ":CtsOverlayPolicyAllHasCode",
++        ":CtsOverlayPolicyAllNoName",
++        ":CtsOverlayPolicyAllNoNameDifferentCert",
++        ":CtsOverlayPolicyProduct",
++        ":CtsOverlayPolicySystem",
++        ":CtsOverlayPolicySignatureDifferent",
++        ":CtsOverlayPolicyVendor",
++        ":CtsOverlayTarget",
++        ":CtsOverlayTargetNoOverlayable",
++    ],
++    test_config: "OverlayTests.xml",
++}
++
++filegroup {
++    name: "CtsHostsideTestsAppSecurityUtil",
++    srcs: ["src/android/appsecurity/cts/Utils.java"],
++}
++
++test_module_config_host {
++    name: "CtsInstantAppsHostTestCases_cts_ephemeraltest",
++    base: "CtsInstantAppsHostTestCases",
++    test_suites: ["general-tests"],
++    include_filters: ["android.appsecurity.cts.EphemeralTest"],
++    exclude_annotations: ["android.platform.test.annotations.FlakyTest"],
++}
++
++test_module_config_host {
++    name: "CtsAppSecurityHostTestCases_cts_externalstoragehosttest",
++    base: "CtsAppSecurityHostTestCases",
++    test_suites: ["general-tests"],
++    include_filters: ["android.appsecurity.cts.ExternalStorageHostTest"],
++}
++
++test_module_config_host {
++    name: "CtsPackageManagerHostTestCases_cts_readablesettingsfieldstest",
++    base: "CtsPackageManagerHostTestCases",
++    test_suites: ["general-tests"],
++    include_filters: ["android.appsecurity.cts.ReadableSettingsFieldsTest"],
++}
++
++test_module_config_host {
++    name: "CtsStorageHostTestCases_android_server_uri",
++    base: "CtsStorageHostTestCases",
++    test_suites: ["general-tests"],
++    include_filters: [
++        "android.appsecurity.cts.ExternalStorageHostTest#testGrantUriPermission29",
++        "android.appsecurity.cts.ExternalStorageHostTest#testMediaNone",
++        "android.appsecurity.cts.ExternalStorageHostTest#testGrantUriPermission",
++        "android.appsecurity.cts.ExternalStorageHostTest#testMediaNone28",
++        "android.appsecurity.cts.ExternalStorageHostTest#testMediaNone29",
++    ],
++}
++
++test_module_config_host {
++    name: "CtsStorageHostTestCases_cts_externalstoragehosttest",
++    base: "CtsStorageHostTestCases",
++    test_suites: ["general-tests"],
++    include_filters: ["android.appsecurity.cts.ExternalStorageHostTest"],
++}
++
++test_module_config_host {
++    name: "CtsPackageManagerHostTestCases_pm_Presubmit",
++    base: "CtsPackageManagerHostTestCases",
++    test_suites: ["general-tests"],
++    include_annotations: ["android.platform.test.annotations.Presubmit"],
++    exclude_annotations: ["android.platform.test.annotations.Postsubmit"],
++}
++
++test_module_config_host {
++    name: "CtsPackageManagerSplitHostTestCases_pm_Presubmit",
++    base: "CtsPackageManagerSplitHostTestCases",
++    test_suites: ["general-tests"],
++    include_annotations: ["android.platform.test.annotations.Presubmit"],
++    exclude_annotations: ["android.platform.test.annotations.Postsubmit"],
++}
++
++test_module_config_host {
++    name: "CtsPackageManagerIsolatedSplitHostTestCases_pm_Presubmit",
++    base: "CtsPackageManagerIsolatedSplitHostTestCases",
++    test_suites: ["general-tests"],
++    include_annotations: ["android.platform.test.annotations.Presubmit"],
++    exclude_annotations: ["android.platform.test.annotations.Postsubmit"],
++}
++
++test_module_config_host {
++    name: "CtsAppDataIsolationHostTestCases_qualified-tests",
++    base: "CtsAppDataIsolationHostTestCases",
++    test_suites: ["general-tests"],
++    include_filters: [
++        "android.appsecurity.cts.AppDataIsolationTests#testNormalProcessCannotAccessOtherAppDataDir",
++        "android.appsecurity.cts.AppDataIsolationTests#testAppZygoteIsolatedProcess",
++        "android.appsecurity.cts.AppDataIsolationTests#testSharedAppAbleToAccessOtherAppDataDir",
++        "android.appsecurity.cts.AppDataIsolationTests#testIsolatedProcess",
++        "android.appsecurity.cts.AppDataIsolationTests#testSharedAppAbleToAccessOtherAppExternalDataDir",
++        "android.appsecurity.cts.AppDataIsolationTests#testAppNotAbleToAccessItsDataAfterReinstall",
++        "android.appsecurity.cts.AppDataIsolationTests#testAppUnableToAccessOtherUserAppDataDirApi29",
++        "android.appsecurity.cts.AppDataIsolationTests#testAppAbleToAccessItsDataAfterForceStop",
++        "android.appsecurity.cts.AppDataIsolationTests#testAppUnableToAccessOtherUserAppDataDir",
++    ],
++}
++
++test_module_config_host {
++    name: "CtsPackageManagerHostTestCases_PlatinumTest",
++    base: "CtsPackageManagerHostTestCases",
++    test_suites: ["general-tests"],
++    include_annotations: ["android.platform.test.annotations.PlatinumTest"],
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-providers/cts-compilation.bp b/tools/droidloom-update/tests/fixtures/audio-providers/cts-compilation.bp
+new file mode 100644
+index 0000000000000000000000000000000000000000..b51d46926921e51ce801e1e4d9aeb0be9d6288c0
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-providers/cts-compilation.bp
+@@ -0,0 +1,240 @@
++// Copyright (C) 2016 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package {
++    default_applicable_licenses: ["Android-Apache-2.0"],
++    default_team: "trendy_team_art_mainline",
++}
++
++java_defaults {
++    name: "CompilationTestCases_defaults",
++    srcs: ["src/**/*.java"],
++    data: [
++        ":apksigner",
++        ":cts-compilation-testkey-files",
++        ":cts-compilation-testkey2-files",
++    ],
++    java_resource_dirs: ["assets/"],
++    device_common_java_resources: [
++        ":AppUsedByOtherApp",
++        ":AppUsedByOtherApp_1_disable_embedded_profile_dm",
++        ":AppUsedByOtherApp_1_dm",
++        ":AppUsedByOtherApp_2_prof",
++        ":AppUsingOtherApp",
++        ":CompilationTestCases-package-dex-usage",
++        ":CtsCompilationApp",
++        ":CtsCompilationApp_profile",
++        ":CtsCompilationApp_dm",
++        ":CtsCompilationApp_with_bad_profile",
++        ":CtsCompilationApp_with_good_profile",
++        ":CtsCompilationApp_debuggable",
++        ":StatusCheckerApp",
++        ":StatusCheckerApp_profile",
++        ":disable_embedded_profile_dm",
++        ":empty_config_dm",
++    ],
++    libs: [
++        "cts-tradefed",
++        "tradefed",
++        "compatibility-host-util",
++        "guava",
++        "truth",
++    ],
++    static_libs: [
++        // Test cases with flag checks are excluded from CTS through an option in
++        // CtsCompilationTestCases.xml.
++        "android.content.pm.flags-aconfig-java-host",
++        "art-aconfig-flags-java-lib-host",
++        "flag-junit-host",
++    ],
++    enable_static_aconfig_pb: false,
++}
++
++java_test_host {
++    name: "CtsCompilationTestCases",
++    defaults: ["CompilationTestCases_defaults"],
++    // tag this module as a cts test artifact
++    test_suites: [
++        "cts",
++        "general-tests",
++    ],
++    test_config: "CtsCompilationTestCases.xml",
++}
++
++java_test_host {
++    name: "CompilationTestCases",
++    defaults: ["CompilationTestCases_defaults"],
++    test_suites: [
++        "general-tests",
++    ],
++    test_config: "CompilationTestCases.xml",
++}
++
++// Generates a binary profile from a text profile for an APK.
++// The first input must be the text profile.
++// The second input must be the APK.
++genrule_defaults {
++    name: "profile_defaults",
++    tools: ["profman"],
++    cmd: "inputs=($(in)) && " +
++        "$(location profman) " +
++        "--create-profile-from=$${inputs[0]} " +
++        "--apk=$${inputs[1]} " +
++        "--dex-location=base.apk " +
++        "--reference-profile-file=$(out)",
++}
++
++sh_binary {
++    name: "generate_dm",
++    host_supported: true,
++    src: "scripts/generate_dm.sh",
++}
++
++// Generates a DM file.
++// Each input must be a binary profile or a config file in binary protobuf
++// format.
++genrule_defaults {
++    name: "dm_defaults",
++    tools: [
++        "generate_dm",
++        "soong_zip",
++    ],
++    cmd: "$(location generate_dm) $(location soong_zip) $(out) $(in)",
++}
++
++java_genrule {
++    name: "CtsCompilationApp_profile",
++    defaults: ["profile_defaults"],
++    srcs: [
++        "assets/primary.prof.txt",
++        ":CtsCompilationApp",
++    ],
++    out: ["CtsCompilationApp.prof"],
++}
++
++java_genrule {
++    name: "CtsCompilationApp_dm",
++    defaults: ["dm_defaults"],
++    srcs: [
++        ":CtsCompilationApp_profile",
++    ],
++    out: ["CtsCompilationApp.dm"],
++}
++
++java_genrule {
++    name: "AppUsedByOtherApp_1_prof",
++    defaults: ["profile_defaults"],
++    srcs: [
++        "assets/app_used_by_other_app_1.prof.txt",
++        ":AppUsedByOtherApp",
++    ],
++    out: ["AppUsedByOtherApp_1.prof"],
++}
++
++java_genrule {
++    name: "AppUsedByOtherApp_1_dm",
++    defaults: ["dm_defaults"],
++    srcs: [
++        ":AppUsedByOtherApp_1_prof",
++    ],
++    out: ["AppUsedByOtherApp_1.dm"],
++}
++
++java_genrule {
++    name: "AppUsedByOtherApp_2_prof",
++    defaults: ["profile_defaults"],
++    srcs: [
++        "assets/app_used_by_other_app_2.prof.txt",
++        ":AppUsedByOtherApp",
++    ],
++    out: ["AppUsedByOtherApp_2.prof"],
++}
++
++java_genrule {
++    name: "StatusCheckerApp_profile",
++    defaults: ["profile_defaults"],
++    srcs: [
++        "assets/status_checker_app.prof.txt",
++        ":StatusCheckerApp",
++    ],
++    out: ["StatusCheckerApp.prof"],
++}
++
++genrule {
++    name: "CompilationTestCases-package-dex-usage",
++    srcs: [
++        ":libartservice_protos",
++        "assets/package-dex-usage.textproto",
++    ],
++    tools: ["aprotoc"],
++    cmd: "$(location aprotoc) " +
++        "--encode=com.android.server.art.proto.DexUseProto " +
++        "$(locations :libartservice_protos) " +
++        "< $(location assets/package-dex-usage.textproto) > $(out)",
++    out: ["package-dex-usage.pb"],
++}
++
++genrule {
++    name: "CompilationTestCases-config-empty",
++    srcs: [
++        ":libartservice_protos",
++    ],
++    tools: ["aprotoc"],
++    cmd: "$(location aprotoc) " +
++        "--encode=com.android.server.art.proto.DexMetadataConfig " +
++        "$(locations :libartservice_protos) " +
++        "<<<'' > $(out)",
++    out: ["config-empty.pb"],
++}
++
++genrule {
++    name: "empty_config_dm",
++    defaults: ["dm_defaults"],
++    srcs: [
++        ":CompilationTestCases-config-empty",
++    ],
++    out: ["empty_config.dm"],
++}
++
++genrule {
++    name: "CompilationTestCases-config-disable_embedded_profile",
++    srcs: [
++        ":libartservice_protos",
++    ],
++    tools: ["aprotoc"],
++    cmd: "$(location aprotoc) " +
++        "--encode=com.android.server.art.proto.DexMetadataConfig " +
++        "$(locations :libartservice_protos) " +
++        "<<<'enable_embedded_profile: false' > $(out)",
++    out: ["config-disable_embedded_profile.pb"],
++}
++
++genrule {
++    name: "disable_embedded_profile_dm",
++    defaults: ["dm_defaults"],
++    srcs: [
++        ":CompilationTestCases-config-disable_embedded_profile",
++    ],
++    out: ["disable_embedded_profile.dm"],
++}
++
++java_genrule {
++    name: "AppUsedByOtherApp_1_disable_embedded_profile_dm",
++    defaults: ["dm_defaults"],
++    srcs: [
++        ":AppUsedByOtherApp_1_prof",
++        ":CompilationTestCases-config-disable_embedded_profile",
++    ],
++    out: ["AppUsedByOtherApp_1_disable_embedded_profile.dm"],
++}
+diff --git a/tools/droidloom-update/tests/fixtures/audio-resources/bootstrap-command.go b/tools/droidloom-update/tests/fixtures/audio-resources/bootstrap-command.go
+new file mode 100644
+index 0000000000000000000000000000000000000000..e5f6862942dd630d071faaa9408dfde86dbeb6a3
+--- /dev/null
++++ b/tools/droidloom-update/tests/fixtures/audio-resources/bootstrap-command.go
+@@ -0,0 +1,256 @@
++// Copyright 2014 Google Inc. All rights reserved.
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//     http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++
++package bootstrap
++
++import (
++	"bufio"
++	"errors"
++	"fmt"
++	"io"
++	"os"
++	"runtime"
++	"runtime/debug"
++	"runtime/pprof"
++	"runtime/trace"
++	"strings"
++
++	"github.com/google/blueprint"
++	"github.com/google/blueprint/proptools"
++)
++
++type Args struct {
++	ModuleListFile string
++	OutFile        string
++
++	EmptyNinjaFile bool
++
++	NoGC       bool
++	Cpuprofile string
++	Memprofile string
++	TraceFile  string
++
++	// Debug data json file
++	ModuleDebugFile         string
++	IncrementalBuildActions bool
++	IncrementalProviderTest bool
++	IncrementalDebugFile    string
++	PartialAnalysisTargets  string
++}
++
++// RegisterGoModuleTypes adds module types to build tools written in golang
++func RegisterGoModuleTypes(ctx *blueprint.Context) {
++	ctx.RegisterModuleType("bootstrap_go_package", newGoPackageModuleFactory())
++	ctx.RegisterModuleType("blueprint_go_binary", newGoBinaryModuleFactory())
++}
++
++// GoModuleTypesAreWrapped is called by Soong before calling RunBlueprint to provide its own wrapped
++// implementations of bootstrap_go_package and blueprint_go_bianry.
++func GoModuleTypesAreWrapped() {
++	goModuleTypesAreWrapped = true
++}
++
++var goModuleTypesAreWrapped = false
++
++// RunBlueprint emits `args.OutFile` (a Ninja file) and returns the list of
++// its dependencies. These can be written to a `${args.OutFile}.d` file
++// so that it is correctly rebuilt when needed in case Blueprint is itself
++// invoked from Ninja
++func RunBlueprint(args Args, stopBefore StopBefore, ctx *blueprint.Context, config interface{}) ([]string, error) {
++	runtime.GOMAXPROCS(runtime.NumCPU())
++
++	if args.NoGC {
++		debug.SetGCPercent(-1)
++	}
++
++	if args.Cpuprofile != "" {
++		f, err := os.Create(blueprint.JoinPath(ctx.SrcDir(), args.Cpuprofile))
++		if err != nil {
++			return nil, fmt.Errorf("error opening cpuprofile: %s", err)
++		}
++		pprof.StartCPUProfile(f)
++		defer f.Close()
++		defer pprof.StopCPUProfile()
++	}
++
++	if args.TraceFile != "" {
++		f, err := os.Create(blueprint.JoinPath(ctx.SrcDir(), args.TraceFile))
++		if err != nil {
++			return nil, fmt.Errorf("error opening trace: %s", err)
++		}
++		trace.Start(f)
++		defer f.Close()
++		defer trace.Stop()
++	}
++
++	if args.ModuleListFile == "" {
++		return nil, fmt.Errorf("-l <moduleListFile> is required and must be nonempty")
++	}
++	ctx.SetModuleListFile(args.ModuleListFile)
++
++	var ninjaDeps []string
++	ninjaDeps = append(ninjaDeps, args.ModuleListFile)
++
++	ctx.BeginEvent("list_modules")
++	var filesToParse []string
++	if f, err := ctx.ListModulePaths("."); err != nil {
++		return nil, fmt.Errorf("could not enumerate files: %v\n", err.Error())
++	} else {
++		filesToParse = f
++	}
++	ctx.EndEvent("list_modules")
++
++	ctx.RegisterFirstBottomUpMutator("bootstrap_deps", BootstrapDeps).UsesReverseDependencies()
++	ctx.RegisterSingletonType("bootstrap", newSingletonFactory(), false)
++	if !goModuleTypesAreWrapped {
++		RegisterGoModuleTypes(ctx)
++	}
++
++	if ctx.GetIncrementalAnalysis() {
++		err := ctx.RestoreGlobsFromCache(blueprint.JoinPath(ctx.SrcDir(), args.OutFile))
++		if err != nil {
++			fmt.Fprintf(os.Stderr, "failed to restore globs from cache, continuing: %s", err)
++		}
++	}
++
++	ctx.BeginEvent("parse_bp")
++	if blueprintFiles, errs := ctx.ParseFileList(".", filesToParse, config); len(errs) > 0 {
++		return nil, colorizeErrs(errs)
++	} else {
++		ctx.EndEvent("parse_bp")
++		ninjaDeps = append(ninjaDeps, blueprintFiles...)
++	}
++
++	if resolvedDeps, errs := ctx.ResolveDependencies(config); len(errs) > 0 {
++		return nil, colorizeErrs(errs)
++	} else {
++		ninjaDeps = append(ninjaDeps, resolvedDeps...)
++	}
++
++	if stopBefore == StopBeforePrepareBuildActions {
++		return ninjaDeps, nil
++	}
++
++	if ctx.BeforePrepareBuildActionsHook != nil {
++		if err := ctx.BeforePrepareBuildActionsHook(); err != nil {
++			return nil, colorizeErrs([]error{err})
++		}
++	}
++
++	if ctx.GetIncrementalAnalysis() {
++		ctx.BeginEvent("restore_build_actions")
++		err := ctx.RestoreAllBuildActions(config.(BootstrapConfig).SoongOutDir())
++		ctx.EndEvent("restore_build_actions")
++		if err != nil {
++			return nil, colorizeErrs([]error{err})
++		}
++	}
++
++	if args.ModuleDebugFile != "" {
++		finishFunc := ctx.InitializeModuleDebugInfoCollection(args.ModuleDebugFile)
++		defer finishFunc()
++	}
++
++	if buildActionsDeps, errs := ctx.PrepareBuildActions(config); len(errs) > 0 {
++		return nil, colorizeErrs(errs)
++	} else {
++		ninjaDeps = append(ninjaDeps, buildActionsDeps...)
++	}
++
++	if stopBefore == StopBeforeWriteNinja {
++		return ninjaDeps, nil
++	}
++
++	providersValidationChan := make(chan []error, 1)
++	go func() {
++		providersValidationChan <- ctx.VerifyProvidersWereUnchanged()
++	}()
++
++	ctx.RecordSandboxMetrics(config)
++
++	var out blueprint.StringWriterWriter
++	var buf *bufio.Writer
++
++	ctx.BeginEvent("write_files")
++	defer ctx.EndEvent("write_files")
++	if args.EmptyNinjaFile {
++		if err := os.WriteFile(blueprint.JoinPath(ctx.SrcDir(), args.OutFile), []byte(nil), blueprint.OutFilePermissions); err != nil {
++			return nil, fmt.Errorf("error writing empty Ninja file: %s", err)
++		}
++		out = io.Discard.(blueprint.StringWriterWriter)
++	} else {
++		f, err := os.OpenFile(blueprint.JoinPath(ctx.SrcDir(), args.OutFile), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, blueprint.OutFilePermissions)
++		if err != nil {
++			return nil, fmt.Errorf("error opening Ninja file: %s", err)
++		}
++		defer f.Close()
++		buf = bufio.NewWriterSize(f, 16*1024*1024)
++		out = buf
++	}
++
++	if err := ctx.WriteBuildFile(out, !strings.Contains(args.OutFile, "bootstrap.ninja") && !args.EmptyNinjaFile, args.OutFile); err != nil {
++		return nil, fmt.Errorf("error writing Ninja file contents: %s", err)
++	}
++
++	if buf != nil {
++		if err := buf.Flush(); err != nil {
++			return nil, fmt.Errorf("error flushing Ninja file contents: %s", err)
++		}
++	}
++
++	// TODO(b/357140398): parallelize this with other ninja file writing work.
++	if ctx.GetIncrementalEnabled() {
++		ctx.BeginEvent("cache_build_actions")
++		err := ctx.CacheAllBuildActions(config.(BootstrapConfig).SoongOutDir())
++		ctx.EndEvent("cache_build_actions")
++		if err != nil {
++			return nil, fmt.Errorf("error cache build actions: %s", err)
++		}
++	}
++
++	providerValidationErrors := <-providersValidationChan
++	if providerValidationErrors != nil {
++		return nil, proptools.MergeErrors(providerValidationErrors)
++	}
++
++	if args.Memprofile != "" {
++		f, err := os.Create(blueprint.JoinPath(ctx.SrcDir(), args.Memprofile))
++		if err != nil {
++			return nil, fmt.Errorf("error opening memprofile: %s", err)
++		}
++		defer f.Close()
++		pprof.WriteHeapProfile(f)
++	}
++
++	return ninjaDeps, nil
++}
++
++func colorizeErrs(errs []error) error {
++	red := "\x1b[31m"
++	unred := "\x1b[0m"
++
++	var colorizedErrs []error
++	for _, err := range errs {
++		switch err := err.(type) {
++		case *blueprint.BlueprintError,
++			*blueprint.ModuleError,
++			*blueprint.PropertyError:
++			colorizedErrs = append(colorizedErrs, fmt.Errorf("%serror:%s %w", red, unred, err))
++		default:
++			colorizedErrs = append(colorizedErrs, fmt.Errorf("%sinternal error:%s %s", red, unred, err))
++		}
++	}
++
++	return errors.Join(colorizedErrs...)
++}

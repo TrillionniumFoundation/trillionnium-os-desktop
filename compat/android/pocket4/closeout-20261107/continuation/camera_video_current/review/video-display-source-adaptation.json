@@ -1,0 +1,51 @@
+{
+  "base_holder_sha256": "68fef3e0a46ab2f1b5d783ab5640add6d2f6625c9655a803efb25409ad79917f",
+  "base_wrapper_sha256": "2a062fdc1e93bb8ca494bc2b2ade1196efb48527399b0843886920e06a8674e9",
+  "budgets": {
+    "acoustic_supervisor_seconds": 510,
+    "caller_seconds_minimum": 675,
+    "cancellation_grace_seconds": 90,
+    "outer_seconds": 665,
+    "ready_seconds": 20
+  },
+  "changed_supervisor_methods": [
+    "__init__",
+    "launch_camera",
+    "validate_camera_result",
+    "run"
+  ],
+  "holder_AST_only_changes": [
+    {
+      "from": 475,
+      "occurrences": 2,
+      "to": 665
+    }
+  ],
+  "lease_sha256_unchanged": "81f34cdbc75a2cf4e092a961fe4dce5d23522842c0ec54cdcff4fc9c99e4dbfd",
+  "real_Main_epoch_and_device_inputs_pending": true,
+  "real_display_qualification_pending": true,
+  "runtime_qualified": false,
+  "schema": "pocket4-camera-video-display-source-adaptation-v1",
+  "unchanged_methods_are_byte_identical": true,
+  "unchanged_supervisor_methods": [
+    "remember",
+    "cancelled",
+    "load_sources",
+    "actor",
+    "holder_argv",
+    "launch_holder",
+    "terminal",
+    "drain",
+    "check_logs",
+    "tick",
+    "wait_ready",
+    "release_request",
+    "wait_holder",
+    "cancel_camera",
+    "retire_principals",
+    "observe_release"
+  ],
+  "video_holder_sha256": "3268c20caa9523525e3db90d9fd9b56d703cacfc58fbc43187b127dd87f51c11",
+  "video_wrapper_sha256": "c971b2a1e86e789099ed29942b9e3c5e0eb1d9aa07d8f093fc5b1908e7a4e384",
+  "whole_app_business_accepted": false
+}

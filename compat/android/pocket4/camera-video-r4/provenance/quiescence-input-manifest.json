@@ -1,0 +1,99 @@
+{
+  "continuous_exclusivity_qualified": false,
+  "files": {
+    "HANDOFF.md": {
+      "bytes": 8185,
+      "sha256": "4f83e33cfa431b64b35f1513cf636b1d041080437f2383a8fa92012a34b74736"
+    },
+    "audio-quiescence.patch": {
+      "bytes": 12485,
+      "sha256": "e8f3dc1be9f12f10851539e8a63fc99dcf424a0c5c65ba049e071a48c56ef9a9"
+    },
+    "baseline.json": {
+      "bytes": 521,
+      "sha256": "24fd63a74d1f07a0dfdddb30e93434f4be64b781c8bc53ec0abf10c8796084ed"
+    },
+    "source/camera_audio_binding.py": {
+      "bytes": 18775,
+      "sha256": "c8c0c123153a83a2397595d2efcf6ba3b40f60916362403348d1f6f6a57a4754"
+    },
+    "source/camera_audio_runtime.py": {
+      "bytes": 26272,
+      "sha256": "b480c7e99cd44bd9ff79e7d95fb87e80f7634c843e8e9c77f3f38ea8ab9f8cee"
+    },
+    "tests/fixtures/camera-foreign-output.txt": {
+      "bytes": 1086,
+      "sha256": "94f72e40f337a775ab9d0a503816d8d34eee6a594fadaa6b7d661727ed7d3123"
+    },
+    "tests/fixtures/camera-next.txt": {
+      "bytes": 848,
+      "sha256": "59f072619c6bc2caed77ab6d4c92ef9226bca60db82ab2b5c75827dd9348fca8"
+    },
+    "tests/fixtures/camera-second-input.txt": {
+      "bytes": 967,
+      "sha256": "d8ecef8c1ce691adfd99d354a87dc8a43bb440b683e881321d83519666dfb590"
+    },
+    "tests/fixtures/camera.txt": {
+      "bytes": 848,
+      "sha256": "a543ca075c6ef42da5ef59a8e2029ef277bce8b0a1fe0ad4b725979080ec5868"
+    },
+    "tests/fixtures/foreign-input.txt": {
+      "bytes": 848,
+      "sha256": "db104d4b144e536ecc79c52a07d2ca2a8385d7e9e68fd0faab31c814bbd4e807"
+    },
+    "tests/fixtures/foreign-output.txt": {
+      "bytes": 946,
+      "sha256": "775979bc0f6e77e0e43f6058b7a0b0fc18d92925a3d72779eb89f095e4dae6fb"
+    },
+    "tests/fixtures/gallery-foreign-input.txt": {
+      "bytes": 1086,
+      "sha256": "04e59d8ba3a4e6d03558aae30540c10cc044f12c71c696152d1051ca694f6af7"
+    },
+    "tests/fixtures/gallery-next.txt": {
+      "bytes": 946,
+      "sha256": "2f51f606655a1cd4f0cf55c14f78197377906e21c7e318d6383c3beb48047447"
+    },
+    "tests/fixtures/gallery.txt": {
+      "bytes": 946,
+      "sha256": "b8915e55d7d9c521aabd573c1c8fa749789133e04e302d98fdbd32b23d2f5344"
+    },
+    "tests/fixtures/idle.txt": {
+      "bytes": 708,
+      "sha256": "c9066fdf6c98ddfcba1379b2cff4bfb5ea768fb04bcbedb44d6a6c000f0d796f"
+    },
+    "tests/fixtures/inactive-foreign.txt": {
+      "bytes": 1088,
+      "sha256": "6739333f3b9ec0fd6bf01ba1294b817f16596543b937a42d4003885a7cef0aa3"
+    },
+    "tests/fixtures/origin.json": {
+      "bytes": 3064,
+      "sha256": "501728945128ac3a8d0819d681dd658ba1bce2654c13c502b883b9d10cff3380"
+    },
+    "tests/test_camera_audio_quiescence.py": {
+      "bytes": 22993,
+      "sha256": "db921ee7ca03873ef10c4ac0e9cad6d47421b00cf2e0c4c2d12b8ddaee70071b"
+    },
+    "validation/controls-run-1.json": {
+      "bytes": 717,
+      "sha256": "b1eac75db7f583c6708c9c1de432088af682acc649543b3768fe5645b56a2970"
+    },
+    "validation/source-review.json": {
+      "bytes": 833,
+      "sha256": "8462b1e4bfcd6c50a5ca56bc1c0eb4456c30a04088aa33fecd8707e452059cae"
+    }
+  },
+  "host_audio_quiescence_qualified": false,
+  "independent_review": {
+    "bytes": 16696,
+    "path": "/workspace/scratch/347ef2dfe9ad/runtime-acceptance-audit/camera-audio-quiescence-peer-review/review.json",
+    "sha256": "37a47878e3d7e64d7f52bb54da0f8a78cd0a94bd46374e999a6ac70f21a4fb34"
+  },
+  "modified_production_files": [
+    "source/camera_audio_binding.py",
+    "source/camera_audio_runtime.py"
+  ],
+  "physical_audio_qualified": false,
+  "runtime_qualified": false,
+  "schema": "camera-r4-audio-quiescence-two-file-overlay-v1",
+  "scope": "independent source overlay; not complete Camera package"
+}

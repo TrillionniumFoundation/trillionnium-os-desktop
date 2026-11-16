@@ -1,0 +1,55 @@
+{
+  "schema": "firefox-runtime-contract-schema-integration-v1",
+  "source_inputs": {
+    "matrix": {
+      "path": "/home/alex/work/pocket4-android-final/qualification/selected42-independent-readiness-20261109-appaudit-r1/apps42-matrix.json",
+      "bytes": 376214,
+      "sha256": "9b812661db9171bd3d12bd4068a5d3d54c52ea6a7557bc02798693657a61f21c"
+    },
+    "gates": {
+      "path": "/home/alex/work/pocket4-cp13-canonical-app-gates-20261106-r12-01.json",
+      "bytes": 24135,
+      "sha256": "441289f9c04b46f38e1dd6e19f23ec6e4c6729b6a6f814cab81c0ae6fbbb1e78"
+    }
+  },
+  "outputs": {
+    "matrix": {
+      "path": "/home/alex/work/pocket4-android-final/qualification/firefox-runtime-contract-20261109-2840-r2/apps42-matrix.json",
+      "bytes": 379955,
+      "sha256": "d27b8bdccaa424275656251fb3df1e98b46b82ac789645269149a856ee488d28"
+    },
+    "gates": {
+      "path": "/home/alex/work/pocket4-android-final/qualification/firefox-runtime-contract-20261109-2840-r2/app-release-gates.json",
+      "bytes": 27878,
+      "sha256": "0b21f963898308b082f3808dd48165c1397badd1fa8a753c3a766e135b3cb3c8"
+    },
+    "matrix_patch": {
+      "path": "/home/alex/work/pocket4-android-final/qualification/firefox-runtime-contract-20261109-2840-r2/matrix-contract.patch.json",
+      "bytes": 4683,
+      "sha256": "c1cf8a1e89ba2d02c4cda20e8b12d7a742816a4a31d6dd87e9587c2806df65fb"
+    },
+    "registry_patch": {
+      "path": "/home/alex/work/pocket4-android-final/qualification/firefox-runtime-contract-20261109-2840-r2/registry-contract.patch.json",
+      "bytes": 3858,
+      "sha256": "4e02e21ba8bb7c67c098a53eb476992567d101d1879df57bd8fdf8b85a2474b3"
+    }
+  },
+  "matrix_json_pointer": "/apps/41/business_contract",
+  "matrix_semantic_changes": 1,
+  "registry_only_additions": [
+    "/profiles/browser",
+    "/packages/org.mozilla.firefox"
+  ],
+  "selected_apps": 42,
+  "selected_apps_with_resolved_contracts": 42,
+  "common_gates": 6,
+  "firefox_business_gates": 5,
+  "source_matrix_observation_utc_preserved": "2026-11-09T10:06:51.065023+00:00",
+  "scope": "Contract successor only; retained historical delivery observations are not a refreshed latest-artifact inventory.",
+  "runtime_acceptances_added": 0,
+  "Android_operations": 0,
+  "shared_registry_modified": false,
+  "canonical_CURRENT_modified": false,
+  "runtime_qualified": false,
+  "production_ready": false
+}

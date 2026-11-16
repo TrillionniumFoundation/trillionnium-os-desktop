@@ -1,0 +1,131 @@
+{
+  "acceptance": {
+    "Android_boot_qualified": false,
+    "application_runtime_qualified": false,
+    "host_LSM_changes": 0,
+    "host_kernel_installs": 0,
+    "host_module_loads": 0,
+    "host_reboots": 0,
+    "kernel_full_and_isolated_credential_VM_qualified": true,
+    "original_user_images_unchanged": true,
+    "production_ready": false
+  },
+  "actual_module_signature_verification": {
+    "all_exact_compiled_public_certificate_CMS_verified": true,
+    "every_unsigned_payload_preserved": true,
+    "modified_payload_rejected": true,
+    "modified_signature_rejected": true,
+    "private_key_body_read_copied_or_published": false,
+    "public_certificate": {
+      "bytes": 1324,
+      "sha256": "4425280c8f5c064d65e86ed9f41a9e1028c53f95b75d57788ae371f32943cc28"
+    },
+    "result": {
+      "bytes": 6680682,
+      "sha256": "f8a2cc45a1f1a178df8fdbda6abde3986e3a6cdb037e90f3c49067f7e8a87ad9"
+    },
+    "verified_modules": 6901
+  },
+  "actual_vm_controls": {
+    "baseline": {
+      "all_three_security_context_cases_failed": true,
+      "extended_error": -22,
+      "failed_reply": 29201,
+      "plain_Binder_passed": true,
+      "result": {
+        "bytes": 46174,
+        "sha256": "4738fcb6dc3e68362f84309d28df012059a9911a248f0ee5cc10fe3c780720a2"
+      }
+    },
+    "patched": {
+      "QEMU_child_retired": true,
+      "all_four_replies_valid": true,
+      "both_AppArmor_profiles_enforcing": true,
+      "cases": [
+        "plain Binder transaction",
+        "unconfined transaction requesting security context",
+        "FD opened under profile A and root, task changed to profile B and UID 10001; received retained profile A",
+        "fresh FD under profile B and UID 10001; received profile B"
+      ],
+      "diskless": true,
+      "forbidden_file_actual_errno": 13,
+      "guest_UID_drop": 10001,
+      "guest_cpus": 2,
+      "guest_memory_bytes": 805306368,
+      "network_devices": 0,
+      "oom_events": 0,
+      "real_Binder_cases_passed": 4,
+      "result": {
+        "bytes": 41754,
+        "sha256": "c7eee0921f95a0c4f675be89878d8734518498533c9b9145c9d0b0ce59f229e4"
+      },
+      "swap_bytes": 0,
+      "unit_and_cgroup_retired": true,
+      "unit_memory_limit_bytes": 2147483648
+    }
+  },
+  "configuration": {
+    "all_original_features_preserved": true,
+    "config": {
+      "bytes": 308667,
+      "sha256": "5dbd13a0eb91ecc3decd8456bc7387650d8996984c05c8bec9c6e56716d96966"
+    },
+    "module_signature": "SHA512 PKCS7",
+    "module_signature_force": false,
+    "release": "7.0.14-p4cred1"
+  },
+  "normal_full_r7": {
+    "all_five_normal_commands_returned_zero": true,
+    "all_owned_children_retired": true,
+    "core_module_count": 6901,
+    "kernel_image": {
+      "bytes": 17134080,
+      "sha256": "83d50d51be0f6a2d574f6b04ab80205613383c60da7b96788c9c3122efb7b5ad"
+    },
+    "memory_limit_bytes": 25769803776,
+    "oom_events": 0,
+    "peak_memory_bytes": 2138951680,
+    "result": {
+      "bytes": 41711,
+      "sha256": "644b42e83bbd3d77e65e87508b623c15dac56e52748b403146deb2668d9d63e1"
+    },
+    "swap_bytes": 0
+  },
+  "normal_guest_source_preparation": {
+    "actual_host_refusal_returncode": 64,
+    "compile_returncode": 0,
+    "gcc_args": [
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-O2",
+      "-static",
+      "binder_saved_cred_probe.c",
+      "-o",
+      "binder_saved_cred_probe"
+    ],
+    "normal_apparmor_parser_returncode": 0,
+    "policy_not_loaded_on_host": true,
+    "refusal_precedes_mounts": true,
+    "result": {
+      "bytes": 4758,
+      "sha256": "e61298fdfb640b4a6e0434d27324f8f7d8ab8db0a9677cc1b0d6c753efa1864a"
+    }
+  },
+  "official_source": {
+    "commit": "f53b359683af7918c5436499948763cb726d5082",
+    "repository": "https://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux/+git/resolute",
+    "tag": "Ubuntu-7.0.0-43.43"
+  },
+  "patch": {
+    "bytes": 1361,
+    "sha256": "a950dc6a02c0fec4ca26c2343c3daaee984216350b90280521d133195b618f95"
+  },
+  "patched_apparmor_lsm": {
+    "bytes": 85651,
+    "sha256": "f32aa157c71d196cd516228db06236959242500b028153095c85da429fb32daf"
+  },
+  "private_host_account_or_raw_runtime_logs_included": false,
+  "schema": "apparmor-retained-credential-binder-sanitized-validation-v1"
+}

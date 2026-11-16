@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "scope": "exact original Rust sources from two pinned provider cones; not compilation or shared materialization",
+  "project": "platform/system/zygote",
+  "commit": "c24023080df0bdb5988c1e0c641d494574a97c40",
+  "started": "2026-11-09T17:35:14.500375+00:00",
+  "inputs": [
+    {
+      "path": "zygote-proc-macros/src/lib.rs",
+      "url": "https://android.googlesource.com/platform/system/zygote/+/c24023080df0bdb5988c1e0c641d494574a97c40/zygote-proc-macros/src/lib.rs?format=TEXT",
+      "http_status": 200,
+      "bytes": 2099,
+      "sha256": "f6d969824bc83e2e36c525ee7dbbf0416f68f31018ddf83764983fe7c7e79752",
+      "git_blob": "bbabb3a21850e54039e7344ae607d8fa2a718d20",
+      "module_or_include_lines": [
+        {
+          "line": 21,
+          "text": "mod marshal;"
+        },
+        {
+          "line": 22,
+          "text": "mod unmarshal;"
+        },
+        {
+          "line": 23,
+          "text": "mod utils;"
+        }
+      ]
+    },
+    {
+      "path": "zygote-proc-macros/src/marshal.rs",
+      "url": "https://android.googlesource.com/platform/system/zygote/+/c24023080df0bdb5988c1e0c641d494574a97c40/zygote-proc-macros/src/marshal.rs?format=TEXT",
+      "http_status": 200,
+      "bytes": 12515,
+      "sha256": "4b729a37edf7c502192be467b102e1bbc7e8537ae3e65809c7b9363d874ad507",
+      "git_blob": "5e5cae79e8ec32e6ac4542592bac0cdd26e8b46d",
+      "module_or_include_lines": []
+    },
+    {
+      "path": "zygote-proc-macros/src/unmarshal.rs",
+      "url": "https://android.googlesource.com/platform/system/zygote/+/c24023080df0bdb5988c1e0c641d494574a97c40/zygote-proc-macros/src/unmarshal.rs?format=TEXT",
+      "http_status": 200,
+      "bytes": 14730,
+      "sha256": "ba1ba8608bf208ec82597abdbb51fd417bf5db920e99355a376c7d22f0491e1d",
+      "git_blob": "d28ab3d7a3d42f35ed7a852c516509ac03aed174",
+      "module_or_include_lines": []
+    },
+    {
+      "path": "zygote-proc-macros/src/utils.rs",
+      "url": "https://android.googlesource.com/platform/system/zygote/+/c24023080df0bdb5988c1e0c641d494574a97c40/zygote-proc-macros/src/utils.rs?format=TEXT",
+      "http_status": 200,
+      "bytes": 2255,
+      "sha256": "a54d250213d0caa452736c73c3b346c1d17b537c3747defd44c3f01ad45bce22",
+      "git_blob": "1b9ec49955c93ed240ef62ec86a3bd526eb9a76c",
+      "module_or_include_lines": []
+    },
+    {
+      "path": "zygote-sys/src/android.rs",
+      "url": "https://android.googlesource.com/platform/system/zygote/+/c24023080df0bdb5988c1e0c641d494574a97c40/zygote-sys/src/android.rs?format=TEXT",
+      "http_status": 200,
+      "bytes": 3493,
+      "sha256": "9150fb7df27014d5f74e9185d74dceec4781e1b8bf551095893982e5ba81ff87",
+      "git_blob": "0e4117588942250f215cdc905024d2d4a32ee316",
+      "module_or_include_lines": [
+        {
+          "line": 74,
+          "text": "mod inner {"
+        }
+      ]
+    },
+    {
+      "path": "zygote-sys/src/lib.rs",
+      "url": "https://android.googlesource.com/platform/system/zygote/+/c24023080df0bdb5988c1e0c641d494574a97c40/zygote-sys/src/lib.rs?format=TEXT",
+      "http_status": 200,
+      "bytes": 70506,
+      "sha256": "404195052722d7134c667bd9bfdce0630af44cb17040e06db81bb8544f64a259",
+      "git_blob": "4f85d0c67e65ea0889e33aa8ba8aee330addacb7",
+      "module_or_include_lines": [
+        {
+          "line": 34,
+          "text": "pub mod android;"
+        },
+        {
+          "line": 35,
+          "text": "mod libc_fill;"
+        },
+        {
+          "line": 36,
+          "text": "pub mod procfs;"
+        }
+      ]
+    },
+    {
+      "path": "zygote-sys/src/libc_fill.rs",
+      "url": "https://android.googlesource.com/platform/system/zygote/+/c24023080df0bdb5988c1e0c641d494574a97c40/zygote-sys/src/libc_fill.rs?format=TEXT",
+      "http_status": 200,
+      "bytes": 6003,
+      "sha256": "c1ee40f84d867e81d465c61b14604dd2dc2f2aab7aec939e194d6137c02c9ca2",
+      "git_blob": "73ce292cd64527d7c62d9648593043267db79e6a",
+      "module_or_include_lines": []
+    },
+    {
+      "path": "zygote-sys/src/procfs.rs",
+      "url": "https://android.googlesource.com/platform/system/zygote/+/c24023080df0bdb5988c1e0c641d494574a97c40/zygote-sys/src/procfs.rs?format=TEXT",
+      "http_status": 200,
+      "bytes": 9726,
+      "sha256": "c489f93454daa7ad680e907083177db13bac55ec9a2ec8497174bacca1187e2d",
+      "git_blob": "18e0a6e9be661b512decb26afc21970d907557d6",
+      "module_or_include_lines": [
+        {
+          "line": 241,
+          "text": "mod test {"
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "finished": "2026-11-09T17:35:20.697231+00:00",
+  "state": "ALL_8_ORIGINAL_RUST_BLOBS_VERIFIED"
+}

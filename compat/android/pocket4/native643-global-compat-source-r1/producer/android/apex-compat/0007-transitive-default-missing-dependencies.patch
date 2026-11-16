@@ -1,0 +1,56 @@
+--- a/android/defaults.go
++++ b/android/defaults.go
+@@ -287,6 +287,9 @@
+ func defaultsMutator(ctx BottomUpMutatorContext) {
+ 	if defaultable, ok := ctx.Module().(Defaultable); ok {
+ 		if _, isDefaultsModule := ctx.Module().(Defaults); isDefaultsModule {
++			// Retain missing defaults for each consumer's ErrorRule. A defaults
++			// module has no build output of its own to carry that failure.
++			ctx.AddMissingDependencies(ctx.blueprintBaseModuleContext().EarlyGetMissingDependencies())
+ 			// Don't squash transitive defaults into defaults modules
+ 			return
+ 		}
+@@ -300,6 +303,7 @@
+ 					if defaults, ok := module.(Defaults); ok {
+ 						if !seen[defaults] {
+ 							seen[defaults] = true
++							ctx.AddMissingDependencies(module.base().commonProperties.MissingDeps)
+ 							defaultsList = append(defaultsList, defaults)
+ 							return len(defaults.defaults().Defaults) > 0
+ 						}
+--- a/android/defaults_test.go
++++ b/android/defaults_test.go
+@@ -113,6 +113,15 @@
+ 			defaults: ["defaults"],
+ 			foo: ["module"],
+ 		}
++
++		defaults {
++			name: "nested_defaults",
++			defaults: ["defaults"],
++		}
++		test {
++			name: "missing_deep_transitive_defaults",
++			defaults: ["nested_defaults"],
++		}
+ 	`
+ 
+ 	result := GroupFixturePreparers(
+@@ -130,8 +139,15 @@
+ 
+ 	AssertStringEquals(t, "missing_defaults", "'module missing_defaults missing dependencies: missing\n'", missingDefaults.Args["error"])
+ 
+-	// TODO: missing transitive defaults is currently not handled
+-	_ = missingTransitiveDefaults
++	if !IsErrorRule(missingTransitiveDefaults.Rule) {
++		t.Errorf("missing transitive defaults did not preserve the Ninja failure")
++	}
++	AssertStringEquals(t, "missing_transitive_defaults", "'module missing_transitive_defaults missing dependencies: missing\n'", missingTransitiveDefaults.Args["error"])
++	deep := result.ModuleForTests(t, "missing_deep_transitive_defaults", "").Output("out")
++	if !IsErrorRule(deep.Rule) {
++		t.Errorf("deep transitive defaults did not preserve the Ninja failure")
++	}
++	AssertStringEquals(t, "missing_deep_transitive_defaults", "'module missing_deep_transitive_defaults missing dependencies: missing\n'", deep.Args["error"])
+ }
+ 
+ func TestDefaultsPathProperties(t *testing.T) {

@@ -1,0 +1,754 @@
+diff --git a/runtime/droidloom-supervisor/src/production_namespace.rs b/runtime/droidloom-supervisor/src/production_namespace.rs
+index 02cd314..43b6a0d 100644
+--- a/runtime/droidloom-supervisor/src/production_namespace.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace.rs
+@@ -53,6 +53,9 @@ pub enum NamespaceError {
+     /// A syscall failed; there is no PID-lookup or development-mode fallback.
+     #[error(transparent)]
+     Io(#[from] io::Error),
++    /// The calling thread's mask could not be restored; child custody is retained.
++    #[error("restoring the creating thread signal mask failed: {0}")]
++    SignalMaskRestore(#[source] io::Error),
+     /// Cleanup did not establish exit; the resources and lease were retained.
+     #[error("owned child exit was not proven; its lease remains quarantined")]
+     RetirementUnproven,
+@@ -213,7 +216,10 @@ impl Owner {
+             .custom_flags(libc::O_CLOEXEC | libc::O_DIRECTORY | libc::O_NOFOLLOW)
+             .open("/proc")?;
+         check_fs(proc_root.as_raw_fd(), PROC_MAGIC)?;
+-        let (pid, pidfd, control, parent_pid, creator_tid, nonce) = child::spawn(mode)?;
++        let parent_proc = bind_calling_thread_proc(&proc_root)?;
++        let parent_userns = open_userns(&parent_proc)?;
++        let (pid, pidfd, control, parent_pid, creator_tid, nonce, restore_error) =
++            child::spawn(mode)?;
+         let mut owner = Self {
+             resources: Some(Resources {
+                 lease,
+@@ -221,7 +227,7 @@ impl Owner {
+                 control,
+                 proc_root,
+                 proc_dir: None,
+-                parent_userns: None,
++                parent_userns: Some(parent_userns),
+                 userns: None,
+                 proc_node: None,
+                 identity: None,
+@@ -233,6 +239,11 @@ impl Owner {
+             }),
+             _same_thread: PhantomData,
+         };
++        if let Some(error) = restore_error {
++            // Owner now holds every child handle and the lease. Its Drop path
++            // must prove pidfd-bound retirement or retain the resources.
++            return Err(NamespaceError::SignalMaskRestore(error));
++        }
+         // The child remains at its CREATED barrier. Binding is performed only
+         // for the PID returned together with the atomic clone3 pidfd.
+         owner.receive(Phase::Created, None, PROTOCOL_TIMEOUT)?;
+@@ -248,18 +259,6 @@ impl Owner {
+         }
+         r.proc_node = Some(Node::of(&proc_dir)?);
+         r.identity = Some(identity);
+-        let self_dir = open_proc_at(
+-            &r.proc_root,
+-            &r.parent_pid.to_string(),
+-            libc::O_RDONLY | libc::O_DIRECTORY,
+-        )?;
+-        let self_identity = read_identity(&self_dir, r.parent_pid)?;
+-        if self_identity.pid != r.parent_pid {
+-            return Err(NamespaceError::Rejected(
+-                "procfs does not identify this parent",
+-            ));
+-        }
+-        r.parent_userns = Some(open_userns(&self_dir)?);
+         let initial_ns = open_userns(&proc_dir)?;
+         if Node::of(&initial_ns)? != Node::of(r.parent_userns.as_ref().unwrap())? {
+             return Err(NamespaceError::Rejected(
+@@ -292,6 +291,12 @@ impl Owner {
+ 
+     fn verify_kernel_owned(&self) -> Result<()> {
+         let r = self.held()?;
++        let parent_proc = bind_calling_thread_proc(&r.proc_root)?;
++        if Node::of(&open_userns(&parent_proc)?)? != Node::of(r.parent_userns.as_ref().unwrap())? {
++            return Err(NamespaceError::Rejected(
++                "broker changed its user namespace",
++            ));
++        }
+         if pidfd_exited(&r.pidfd)? {
+             return Err(NamespaceError::Rejected("owned child exited"));
+         }
+@@ -754,12 +759,7 @@ fn require_privileged_initial_parent(proc_root: &File, held_namespace: &File) ->
+         ));
+     }
+     require_initial_userns(held_namespace)?;
+-    let pid = unsafe { libc::getpid() };
+-    let self_dir = open_proc_at(
+-        proc_root,
+-        &pid.to_string(),
+-        libc::O_RDONLY | libc::O_DIRECTORY,
+-    )?;
++    let self_dir = bind_calling_thread_proc(proc_root)?;
+     let actual = open_userns(&self_dir)?;
+     require_initial_userns(&actual)?;
+     if Node::of(held_namespace)? != Node::of(&actual)? {
+@@ -800,6 +800,84 @@ fn require_privileged_initial_parent(proc_root: &File, held_namespace: &File) ->
+     Ok(())
+ }
+ 
++// A procfs mount reports PIDs in the namespace in which it was mounted.
++// Kernel thread-self resolves the actual caller even if a numeric PID lookup
++// would select a different task. A single NSpid/NStgid entry proves this mount
++// starts at the caller's active PID namespace (not an ancestor with coincident
++// PID numbers). Also reject a pending different PID namespace for new children.
++fn bind_calling_thread_proc(proc_root: &File) -> Result<File> {
++    check_fs(proc_root.as_raw_fd(), PROC_MAGIC)?;
++    let fd = unsafe {
++        libc::openat(
++            proc_root.as_raw_fd(),
++            c"thread-self".as_ptr(),
++            libc::O_RDONLY | libc::O_DIRECTORY | libc::O_CLOEXEC,
++        )
++    };
++    if fd < 0 {
++        return Err(io::Error::last_os_error().into());
++    }
++    // SAFETY: deliberately follow this kernel-owned procfs magic link only.
++    let caller = unsafe { File::from_raw_fd(fd) };
++    check_fs(caller.as_raw_fd(), PROC_MAGIC)?;
++    let pid = unsafe { libc::getpid() } as u32;
++    let tid = unsafe { libc::syscall(libc::SYS_gettid) } as u32;
++    let status = read_proc(&caller, "status")?;
++    require_proc_view_ids(&status, pid, tid)?;
++    read_identity(&caller, tid)?;
++    let active = open_pidns(&caller, c"pid")?;
++    let children = open_pidns(&caller, c"pid_for_children")?;
++    if Node::of(&active)? != Node::of(&children)? {
++        return Err(NamespaceError::Rejected(
++            "new children would enter a different PID namespace",
++        ));
++    }
++    Ok(caller)
++}
++
++fn require_proc_view_ids(status: &[u8], pid: u32, tid: u32) -> Result<()> {
++    for (field, expected) in [
++        ("Tgid:", pid),
++        ("Pid:", tid),
++        ("NStgid:", pid),
++        ("NSpid:", tid),
++    ] {
++        let value = status_field(status, field)?.trim();
++        if value.is_empty()
++            || !value.bytes().all(|byte| byte.is_ascii_digit())
++            || value.parse::<u32>().ok() != Some(expected)
++        {
++            return Err(NamespaceError::Rejected(
++                "procfs PID namespace does not identify this calling thread",
++            ));
++        }
++    }
++    Ok(())
++}
++
++fn open_pidns(proc_dir: &File, name: &std::ffi::CStr) -> Result<File> {
++    let ns_dir = open_proc_at(proc_dir, "ns", libc::O_RDONLY | libc::O_DIRECTORY)?;
++    let fd = unsafe {
++        libc::openat(
++            ns_dir.as_raw_fd(),
++            name.as_ptr(),
++            libc::O_RDONLY | libc::O_CLOEXEC,
++        )
++    };
++    if fd < 0 {
++        return Err(io::Error::last_os_error().into());
++    }
++    // SAFETY: only kernel pid/pid_for_children magic links are followed.
++    let file = unsafe { File::from_raw_fd(fd) };
++    check_fs(file.as_raw_fd(), NSFS_MAGIC)?;
++    if unsafe { libc::ioctl(file.as_raw_fd(), NS_GET_NSTYPE) } != libc::CLONE_NEWPID {
++        return Err(NamespaceError::Rejected(
++            "held namespace is not a PID namespace",
++        ));
++    }
++    Ok(file)
++}
++
+ fn open_proc_at(parent: &File, leaf: &str, flags: i32) -> Result<File> {
+     if leaf.is_empty() || leaf.contains('/') || matches!(leaf, "." | "..") {
+         return Err(NamespaceError::Rejected(
+diff --git a/runtime/droidloom-supervisor/src/production_namespace_child.rs b/runtime/droidloom-supervisor/src/production_namespace_child.rs
+index 9566cb7..dd1c447 100644
+--- a/runtime/droidloom-supervisor/src/production_namespace_child.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_child.rs
+@@ -11,6 +11,9 @@ use super::{NamespaceError, Result};
+ 
+ const MAGIC: u64 = 0x444c_4e53_4252_4b31;
+ const CHILD_FD: RawFd = 3;
++const CREATOR_FD: RawFd = 4;
++// include/uapi/linux/pidfd.h: PIDFD_THREAD = O_EXCL (Linux >= 6.9).
++const PIDFD_THREAD: i32 = libc::O_EXCL;
+ 
+ #[derive(Clone, Copy)]
+ #[repr(u32)]
+@@ -48,6 +51,12 @@ pub(super) enum Mode {
+     WithholdReady = 4,
+     #[cfg(test)]
+     GroupControl = 5,
++    #[cfg(test)]
++    SignalRestoreFailure = 6,
++    #[cfg(test)]
++    CreatorGoneBeforeArm = 7,
++    #[cfg(test)]
++    CreatorGoneBeforeRearm = 8,
+ }
+ 
+ #[derive(Clone, Copy)]
+@@ -105,7 +114,27 @@ struct CloneArgs {
+     cgroup: u64,
+ }
+ 
+-type Spawned = (u32, OwnedFd, OwnedFd, u32, libc::pid_t, [u8; 16]);
++type Spawned = (
++    u32,
++    OwnedFd,
++    OwnedFd,
++    u32,
++    libc::pid_t,
++    [u8; 16],
++    Option<io::Error>,
++);
++
++fn child_source(fd: OwnedFd) -> Result<OwnedFd> {
++    // The raw child remaps these sources to 3/4 in its private FD table.
++    // Pin both sources above those slots before cloning, so neither dup3 can
++    // overwrite the other source. Parent descriptors remain CLOEXEC.
++    let duplicated = unsafe { libc::fcntl(fd.as_raw_fd(), libc::F_DUPFD_CLOEXEC, 5) };
++    if duplicated < 0 {
++        return Err(io::Error::last_os_error().into());
++    }
++    // SAFETY: fcntl returned a new, exclusively owned descriptor.
++    Ok(unsafe { OwnedFd::from_raw_fd(duplicated) })
++}
+ 
+ pub(super) fn spawn(mode: Mode) -> Result<Spawned> {
+     // Do not permit inherited SIGCHLD auto-reaping: exit must be observed and
+@@ -184,6 +213,15 @@ pub(super) fn spawn(mode: Mode) -> Result<Spawned> {
+             "namespace broker cannot be host PID 1",
+         ));
+     }
++    // This is the live calling thread, so opening its PIDFD_THREAD has no
++    // numeric-task reuse window. A TGID pidfd would miss a creator's exit
++    // while another thread in the same process remains alive.
++    let creator_raw = unsafe { libc::syscall(libc::SYS_pidfd_open, creator_tid, PIDFD_THREAD) };
++    if creator_raw < 0 {
++        return Err(io::Error::last_os_error().into());
++    }
++    let creator = child_source(unsafe { OwnedFd::from_raw_fd(creator_raw as RawFd) })?;
++    let child = child_source(child)?;
+     let mask = SignalMask::block()?;
+     let mut pidfd = -1_i32;
+     let args = CloneArgs {
+@@ -199,11 +237,41 @@ pub(super) fn spawn(mode: Mode) -> Result<Spawned> {
+     if pid == 0 {
+         // SAFETY: only the newly cloned child reaches this no-return function.
+         unsafe {
+-            child_main(child.as_raw_fd(), parent_pid as u32, nonce, mode);
++            child_main(
++                child.as_raw_fd(),
++                creator.as_raw_fd(),
++                parent_pid as u32,
++                nonce,
++                mode,
++            );
+         }
+     }
++    // Save clone's errno before restoring the creating thread's mask. No
++    // parent return occurs between the successful block and this restoration.
++    let clone_errno = if pid < 0 {
++        unsafe { *libc::__errno_location() }
++    } else {
++        0
++    };
++    #[cfg(test)]
++    let injected_restore_error = if matches!(mode, Mode::SignalRestoreFailure) {
++        // A real EINVAL control, then restore the real mask before reporting
++        // the injected error. This is compiled out of production code.
++        Some(match mask.restore_with_size(7) {
++            Err(error) => error,
++            Ok(()) => io::Error::from_raw_os_error(libc::EPROTO),
++        })
++    } else {
++        None
++    };
++    let restore_error = mask.restore_with_size(8).err();
++    #[cfg(test)]
++    let restore_error = restore_error.or(injected_restore_error);
+     if pid < 0 {
+-        return Err(io::Error::last_os_error().into());
++        return Err(match restore_error {
++            Some(error) => NamespaceError::SignalMaskRestore(error),
++            None => io::Error::from_raw_os_error(clone_errno).into(),
++        });
+     }
+     // Successful CLONE_PIDFD guarantees this descriptor. No separate PID
+     // lookup is ever used to acquire lifecycle authority.
+@@ -217,7 +285,9 @@ pub(super) fn spawn(mode: Mode) -> Result<Spawned> {
+     // SAFETY: newly acquired atomic clone3 pidfd.
+     let owned_pidfd = unsafe { OwnedFd::from_raw_fd(pidfd) };
+     drop(child);
+-    drop(mask); // restore only this parent thread's original signal mask
++    // Even if restoration failed, return the acquired lifecycle handles.
++    // Owner installs its lease/resources before surfacing that failure, so
++    // cleanup still targets the exact pidfd and never releases an unknown child.
+     Ok((
+         pid as u32,
+         owned_pidfd,
+@@ -225,6 +295,7 @@ pub(super) fn spawn(mode: Mode) -> Result<Spawned> {
+         parent_pid as u32,
+         creator_tid,
+         nonce,
++        restore_error,
+     ))
+ }
+ 
+@@ -253,20 +324,23 @@ impl SignalMask {
+         }
+         Ok(Self { previous })
+     }
+-}
+-impl Drop for SignalMask {
+-    fn drop(&mut self) {
+-        // SAFETY: same valid fixed ABI and saved mask as the successful block.
+-        let rc = unsafe {
++
++    fn restore_with_size(&self, size: usize) -> io::Result<()> {
++        // SAFETY: the fixed saved mask remains live. Production uses the
++        // kernel ABI size 8; the private negative control uses invalid size 7.
++        if unsafe {
+             libc::syscall(
+                 libc::SYS_rt_sigprocmask,
+                 libc::SIG_SETMASK,
+                 &self.previous,
+                 std::ptr::null::<u64>(),
+-                8,
++                size,
+             )
+-        };
+-        debug_assert_eq!(rc, 0, "restoring the creating thread signal mask failed");
++        } != 0
++        {
++            return Err(io::Error::last_os_error());
++        }
++        Ok(())
+     }
+ }
+ 
+@@ -372,24 +446,47 @@ unsafe fn parent_death(parent_pid: u32, nonce: [u8; 16], pid: u32) {
+             fail(nonce, pid);
+         }
+     }
+-    if unsafe { libc::syscall(libc::SYS_getppid) } != libc::c_long::from(parent_pid) {
++    // Arm before observing the exact creating thread: death before the arm
++    // is visible on this held PIDFD_THREAD; death afterwards delivers SIGKILL.
++    // getppid alone cannot detect death of one thread while its TGID survives.
++    let mut creator = libc::pollfd {
++        fd: CREATOR_FD,
++        events: libc::POLLIN,
++        revents: 0,
++    };
++    if unsafe { libc::syscall(libc::SYS_poll, &mut creator, 1, 0) } != 0
++        || creator.revents != 0
++        || unsafe { libc::syscall(libc::SYS_getppid) } != libc::c_long::from(parent_pid)
++    {
+         unsafe {
+             finish(125);
+         }
+     }
+ }
+ 
+-unsafe fn child_main(fd: RawFd, parent_pid: u32, nonce: [u8; 16], _mode: Mode) -> ! {
++unsafe fn child_main(
++    fd: RawFd,
++    creator_fd: RawFd,
++    parent_pid: u32,
++    nonce: [u8; 16],
++    _mode: Mode,
++) -> ! {
+     unsafe {
+-        // Only the private control FD survives. Inherited reservation/data/
+-        // service descriptors cannot leak into the parked namespace child.
++        // Only the private control and exact creator-thread pidfd survive.
++        // Inherited reservation/data/service descriptors cannot leak into the
++        // parked namespace child; both source FDs were pinned above 3/4.
+         if fd != CHILD_FD
+             && libc::syscall(libc::SYS_dup3, fd, CHILD_FD, libc::O_CLOEXEC)
+                 != libc::c_long::from(CHILD_FD)
+         {
+             finish(120);
+         }
+-        if libc::syscall(libc::SYS_close_range, 4_u32, u32::MAX, 0) != 0 {
++        if libc::syscall(libc::SYS_dup3, creator_fd, CREATOR_FD, libc::O_CLOEXEC)
++            != libc::c_long::from(CREATOR_FD)
++        {
++            finish(120);
++        }
++        if libc::syscall(libc::SYS_close_range, 5_u32, u32::MAX, 0) != 0 {
+             finish(120);
+         }
+         libc::syscall(libc::SYS_close, 0);
+@@ -399,6 +496,15 @@ unsafe fn child_main(fd: RawFd, parent_pid: u32, nonce: [u8; 16], _mode: Mode) -
+             finish(120);
+         }
+         let pid = libc::syscall(libc::SYS_getpid) as u32;
++        #[cfg(test)]
++        if matches!(_mode, Mode::CreatorGoneBeforeArm) {
++            // The test releases the actual creator thread after this barrier.
++            // Its TGID stays alive, but the held thread pidfd becomes readable.
++            send(nonce, Phase::Created, 0, pid);
++            receive(nonce, parent_pid, Phase::Enter);
++            parent_death(parent_pid, nonce, pid);
++            finish(127); // surviving the dead-creator check is a test failure
++        }
+         parent_death(parent_pid, nonce, pid);
+         #[cfg(test)]
+         if matches!(_mode, Mode::ExitBeforeCreated) {
+@@ -415,6 +521,19 @@ unsafe fn child_main(fd: RawFd, parent_pid: u32, nonce: [u8; 16], _mode: Mode) -
+         send(nonce, Phase::Created, 0, pid);
+         receive(nonce, parent_pid, Phase::Enter);
+         #[cfg(test)]
++        if matches!(_mode, Mode::CreatorGoneBeforeRearm) {
++            // Reproduce the kernel's cleared-PDEATH state without requiring a
++            // map or privilege. The ordinary privileged mapping control still
++            // exercises the real setresgid/setresuid rearm path.
++            if libc::syscall(libc::SYS_prctl, libc::PR_SET_PDEATHSIG, 0, 0, 0, 0) != 0 {
++                fail(nonce, pid);
++            }
++            send(nonce, Phase::Parked, 0, pid);
++            receive(nonce, parent_pid, Phase::Go);
++            parent_death(parent_pid, nonce, pid);
++            finish(127);
++        }
++        #[cfg(test)]
+         if matches!(_mode, Mode::WithholdReady) {
+             loop {
+                 libc::syscall(libc::SYS_pause);
+diff --git a/runtime/droidloom-supervisor/src/production_namespace_tests.rs b/runtime/droidloom-supervisor/src/production_namespace_tests.rs
+index ad46afa..1ead33c 100644
+--- a/runtime/droidloom-supervisor/src/production_namespace_tests.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_tests.rs
+@@ -60,11 +60,15 @@ fn actual_clone_pidfd_proc_binding_fd_scrub_and_lease_lifetime() {
+     let r = owner.held().unwrap();
+     assert_eq!(r.identity.unwrap().pid, r.pid);
+     assert_eq!(r.identity.unwrap().parent, std::process::id());
+-    let descriptors: Vec<_> = fs::read_dir(format!("/proc/{}/fd", r.pid))
++    let mut descriptors: Vec<_> = fs::read_dir(format!("/proc/{}/fd", r.pid))
+         .unwrap()
+         .map(|p| p.unwrap().file_name())
+         .collect();
+-    assert_eq!(descriptors, [std::ffi::OsString::from("3")]);
++    descriptors.sort();
++    assert_eq!(
++        descriptors,
++        [std::ffi::OsString::from("3"), std::ffi::OsString::from("4")]
++    );
+     assert!(sentinel.metadata().is_ok());
+     owner.send(Phase::Enter).unwrap();
+     owner
+@@ -330,11 +334,15 @@ fn privileged_private_userns_mapping_controls() {
+     let inode = Node::of(r.userns.as_ref().unwrap()).unwrap().inode;
+     let start = r.identity.unwrap().start_ticks;
+     assert!(!exclusive_available(&lock));
+-    let fd_names: Vec<_> = fs::read_dir(format!("/proc/{pid}/fd"))
++    let mut fd_names: Vec<_> = fs::read_dir(format!("/proc/{pid}/fd"))
+         .unwrap()
+         .map(|p| p.unwrap().file_name())
+         .collect();
+-    assert_eq!(fd_names, [std::ffi::OsString::from("3")]);
++    fd_names.sort();
++    assert_eq!(
++        fd_names,
++        [std::ffi::OsString::from("3"), std::ffi::OsString::from("4")]
++    );
+     let report = owner.retire().unwrap();
+     assert_eq!(
+         report,
+@@ -383,3 +391,279 @@ fn privileged_private_userns_mapping_controls() {
+         "changed selected authority rejected with no map; fixed owned child retired; root public entry remains blocked"
+     );
+ }
++
++// These controls never map IDs or invoke the production admission entry point.
++struct CreatorProbe {
++    pid: u32,
++    pidfd: OwnedFd,
++    control: OwnedFd,
++    parent_pid: u32,
++    nonce: [u8; 16],
++    reaped: bool,
++}
++
++impl CreatorProbe {
++    fn receive(&self, wanted: Phase) {
++        let deadline = Instant::now() + Duration::from_secs(3);
++        loop {
++            match receive_packet(self.control.as_raw_fd()) {
++                Ok((packet, credentials)) => {
++                    assert!(packet.matches(self.nonce, self.pid));
++                    assert_eq!(packet.phase, wanted as u32);
++                    assert_eq!(packet.errno, 0);
++                    assert_eq!(credentials.pid, self.pid as i32);
++                    return;
++                }
++                Err(NamespaceError::Io(ref error)) if error.kind() == io::ErrorKind::WouldBlock => {
++                    assert!(
++                        Instant::now() < deadline,
++                        "creator probe protocol timed out"
++                    );
++                    std::thread::sleep(Duration::from_millis(2));
++                }
++                Err(error) => panic!("creator probe protocol failed: {error}"),
++            }
++        }
++    }
++
++    fn send(&self, phase: Phase) {
++        send_packet(
++            self.control.as_raw_fd(),
++            &Packet::new(self.nonce, phase, 0, self.parent_pid),
++        )
++        .unwrap();
++    }
++
++    fn reap(&mut self) -> Result<ChildExit> {
++        if self.reaped {
++            return Err(NamespaceError::Rejected("probe already reaped"));
++        }
++        if !wait_exited(&self.pidfd, Duration::from_secs(2))? {
++            signal_owned(&self.pidfd, libc::SIGKILL)?;
++            if !wait_exited(&self.pidfd, Duration::from_secs(2))? {
++                return Err(NamespaceError::RetirementUnproven);
++            }
++        }
++        let mut info: libc::siginfo_t = unsafe { std::mem::zeroed() };
++        if unsafe {
++            libc::waitid(
++                libc::P_PIDFD,
++                self.pidfd.as_raw_fd() as u32,
++                &mut info,
++                libc::WEXITED | libc::WNOHANG,
++            )
++        } != 0
++            || unsafe { info.si_pid() } != self.pid as i32
++        {
++            return Err(NamespaceError::RetirementUnproven);
++        }
++        self.reaped = true;
++        Ok(ChildExit {
++            pid: self.pid,
++            status: unsafe { info.si_status() },
++            reason: info.si_code,
++        })
++    }
++}
++
++impl Drop for CreatorProbe {
++    fn drop(&mut self) {
++        if !self.reaped {
++            let _ = signal_owned(&self.pidfd, libc::SIGKILL);
++            let _ = self.reap();
++        }
++    }
++}
++
++fn creator_death_case(mode: child::Mode, rearm: bool) {
++    let (created_tx, created_rx) = std::sync::mpsc::sync_channel(1);
++    let (release_tx, release_rx) = std::sync::mpsc::sync_channel(1);
++    let creator = std::thread::spawn(move || {
++        let spawned = child::spawn(mode);
++        if created_tx.send(spawned).is_ok() {
++            // This is the actual cloning thread. Keep it alive through the
++            // child's clear-PDEATH barrier in the rearm control.
++            let _ = release_rx.recv_timeout(Duration::from_secs(6));
++        }
++    });
++    let (pid, pidfd, control, parent_pid, creator_tid, nonce, restore_error) = created_rx
++        .recv_timeout(Duration::from_secs(3))
++        .unwrap()
++        .unwrap();
++    let mut probe = CreatorProbe {
++        pid,
++        pidfd,
++        control,
++        parent_pid,
++        nonce,
++        reaped: false,
++    };
++    assert!(restore_error.is_none());
++    assert_ne!(creator_tid, unsafe { libc::syscall(libc::SYS_gettid) }
++        as i32);
++    assert_eq!(parent_pid, std::process::id());
++    probe.receive(Phase::Created);
++    if rearm {
++        probe.send(Phase::Enter);
++        probe.receive(Phase::Parked);
++    }
++    release_tx.send(()).unwrap();
++    creator.join().unwrap(); // creator dead; the same parent TGID is still alive
++    assert_eq!(std::process::id(), parent_pid);
++    probe.send(if rearm { Phase::Go } else { Phase::Enter });
++    let exit = probe.reap().unwrap();
++    assert_eq!(exit.reason, libc::CLD_EXITED);
++    assert_eq!(exit.status, 125); // held creator pidfd rejected; not sentinel 127
++}
++
++#[test]
++fn creator_thread_death_before_initial_arm_is_rejected_and_reaped() {
++    creator_death_case(child::Mode::CreatorGoneBeforeArm, false);
++}
++
++#[test]
++fn creator_thread_death_before_rearm_is_rejected_and_reaped() {
++    creator_death_case(child::Mode::CreatorGoneBeforeRearm, true);
++}
++
++fn current_kernel_signal_mask() -> u64 {
++    let mut bits = 0_u64;
++    assert_eq!(
++        unsafe {
++            libc::syscall(
++                libc::SYS_rt_sigprocmask,
++                libc::SIG_SETMASK,
++                std::ptr::null::<u64>(),
++                &mut bits,
++                8,
++            )
++        },
++        0
++    );
++    bits
++}
++
++#[test]
++fn signal_restore_error_is_reported_after_owned_child_retirement() {
++    let children = task_children();
++    let mask = current_kernel_signal_mask();
++    let (root, lease) = broker_fixture();
++    let record = fs::read(root.path().join("registry/u1000.json")).unwrap();
++    let lock = fixture_lock(root.path());
++    assert!(matches!(
++        Owner::spawn(Some(lease), child::Mode::SignalRestoreFailure),
++        Err(NamespaceError::SignalMaskRestore(ref error)) if error.raw_os_error() == Some(libc::EINVAL)
++    ));
++    assert_eq!(current_kernel_signal_mask(), mask);
++    assert_eq!(task_children(), children);
++    assert!(exclusive_available(&lock));
++    assert_eq!(
++        fs::read(root.path().join("registry/u1000.json")).unwrap(),
++        record
++    );
++}
++
++#[test]
++fn proc_pid_view_requires_exact_single_namespace_ids() {
++    let valid = b"Tgid:\t42\nPid:\t43\nNStgid:\t42\nNSpid:\t43\n";
++    require_proc_view_ids(valid, 42, 43).unwrap();
++    for invalid in [
++        &b"Tgid: 42\nPid: 43\nNStgid: 42 42\nNSpid: 43 43\n"[..],
++        &b"Tgid: 42\nPid: 43\nNStgid: 42\nNSpid: 43\nNSpid: 43\n"[..],
++        &b"Tgid: 42\nPid: 43\nNStgid: 42\nNSpid: +43\n"[..],
++        &b"Tgid: 42\nPid: 43\nNStgid: 42\nNSpid:\n"[..],
++        &b"Tgid: 42\nPid: 43\nNStgid: 42\nNSpid: 44\n"[..],
++    ] {
++        assert!(require_proc_view_ids(invalid, 42, 43).is_err());
++    }
++}
++
++#[test]
++fn actual_proc_thread_view_binds_to_current_pid_namespace() {
++    let root = OpenOptions::new()
++        .read(true)
++        .custom_flags(libc::O_CLOEXEC | libc::O_DIRECTORY | libc::O_NOFOLLOW)
++        .open("/proc")
++        .unwrap();
++    let caller = bind_calling_thread_proc(&root).unwrap();
++    assert_eq!(
++        read_identity(&caller, unsafe { libc::syscall(libc::SYS_gettid) } as u32)
++            .unwrap()
++            .pid,
++        unsafe { libc::syscall(libc::SYS_gettid) } as u32
++    );
++}
++
++#[test]
++#[ignore = "requires separately approved private PID/mount namespace controls"]
++fn privileged_proc_pid_namespace_view_controls() {
++    assert_eq!(unsafe { libc::geteuid() }, 0);
++    if let Ok(case) = std::env::var("DROIDLOOM_REVIEW_PROC_CASE") {
++        if case == "pending" {
++            // Only this fresh-exec test thread changes its future-child PID
++            // namespace. No broker child or ID mapping is created.
++            assert_eq!(unsafe { libc::unshare(libc::CLONE_NEWPID) }, 0);
++        }
++        let root = OpenOptions::new()
++            .read(true)
++            .custom_flags(libc::O_CLOEXEC | libc::O_DIRECTORY | libc::O_NOFOLLOW)
++            .open("/proc")
++            .unwrap();
++        match case.as_str() {
++            "matched" => {
++                bind_calling_thread_proc(&root).unwrap();
++            }
++            "ancestor" | "pending" => {
++                assert!(bind_calling_thread_proc(&root).is_err());
++            }
++            _ => panic!("unrecognized private proc case"),
++        }
++        println!("private proc view {case}: expected result observed; maps=0");
++        return;
++    }
++    let before = ["pid", "mnt"].map(|name| {
++        let metadata = fs::metadata(format!("/proc/self/ns/{name}")).unwrap();
++        (metadata.dev(), metadata.ino())
++    });
++    let executable = std::env::current_exe().unwrap();
++    for case in ["ancestor", "matched", "pending"] {
++        let mut command = std::process::Command::new("/usr/bin/unshare");
++        command.args(["--mount", "--propagation", "private"]);
++        if case != "pending" {
++            command.args(["--pid", "--fork", "--kill-child=KILL"]);
++        }
++        if case == "matched" {
++            command.arg("--mount-proc=/proc");
++        }
++        command.arg("--").arg(&executable).args([
++            "--exact",
++            "production_namespace::tests::privileged_proc_pid_namespace_view_controls",
++            "--ignored",
++            "--nocapture",
++            "--test-threads=1",
++        ]);
++        let output = command
++            .env_clear()
++            .env("PATH", "/usr/bin:/bin")
++            .env("LC_ALL", "C")
++            .env("DROIDLOOM_REVIEW_PROC_CASE", case)
++            .output()
++            .unwrap();
++        assert!(
++            output.status.success(),
++            "{case}: status={} stdout={} stderr={}",
++            output.status,
++            String::from_utf8_lossy(&output.stdout),
++            String::from_utf8_lossy(&output.stderr)
++        );
++        assert!(String::from_utf8_lossy(&output.stdout).contains("1 passed; 0 failed"));
++    }
++    let after = ["pid", "mnt"].map(|name| {
++        let metadata = fs::metadata(format!("/proc/self/ns/{name}")).unwrap();
++        (metadata.dev(), metadata.ino())
++    });
++    assert_eq!(before, after);
++    println!(
++        "private proc namespace controls: ancestor rejected; fresh proc accepted; pending PID namespace rejected; parent namespaces unchanged; maps=0"
++    );
++}

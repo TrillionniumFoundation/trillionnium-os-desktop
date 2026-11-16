@@ -1,0 +1,170 @@
+{
+  "schema": "pocket4-applications-runtime-fence-capsule-v1",
+  "source_commit": "deacfc207c99a74a8aac056b086dc1b8f7e8f0c2",
+  "source_parent": "4e16058cc0f6de83fabae68736dad7eb91edbc47",
+  "runtime_qualified": false,
+  "production_ready": false,
+  "selected_app_runtime_accepted_count": 0,
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 6863,
+      "sha256": "5d73e2e1b785acafb4b9c4958634dc02e480861b59cc29855797f7b934919d4b"
+    },
+    {
+      "path": "application-runtime-fence.patch",
+      "bytes": 35264,
+      "sha256": "76ab9968be750f09b9b75e932df47c6cae637774d25910a073bdafdb20640c0f"
+    },
+    {
+      "path": "audit/current-leaf-migration.json",
+      "bytes": 14492,
+      "sha256": "6a170897864451b7b5edcb161cd0982aacdaf84cc61f24e9524e7416ee1807b0"
+    },
+    {
+      "path": "audit/leaf-custody.json",
+      "bytes": 13881,
+      "sha256": "134d989acca11873b37ea6c1a2955a253e3eedccd693981a41cae9b464ab2d29"
+    },
+    {
+      "path": "audit/production-and-leaf-integration-review.md",
+      "bytes": 11955,
+      "sha256": "f573c92a2fae37d2b50b12e1b21f884f25eab9e3cf7a64fe3569f6e5e8b4e289"
+    },
+    {
+      "path": "evidence/actual-cli-preflight-negative.json",
+      "bytes": 41637,
+      "sha256": "e79e24f2bf2d4982aaf6eac0362b368186db3cf4dc4c3aea9884eaf41ff63455"
+    },
+    {
+      "path": "evidence/independent-source-review.json",
+      "bytes": 994,
+      "sha256": "d44fc494052c3ededca1b33143faace52ec401ffafd60660e72b6974016cfa21"
+    },
+    {
+      "path": "evidence/local-package-verification.json",
+      "bytes": 604,
+      "sha256": "937b3c0a28c455482221006118fb51a37a5a67f84fc201f60eb1c7069b0dd8c8"
+    },
+    {
+      "path": "evidence/normal-and-samefile-tests.json",
+      "bytes": 12250,
+      "sha256": "a2ec1ec79f90d2a074cd2a5179cb65e2108b6f80749e8b3d8c7bfdbd5c7ede3d"
+    },
+    {
+      "path": "evidence/source-commit-terminal.json",
+      "bytes": 732,
+      "sha256": "56f734e6dd2564ee52c0c21a0114ad3f089dbe0e87e47dab7822cd29db924fd5"
+    },
+    {
+      "path": "harness/Cargo.lock",
+      "bytes": 7782,
+      "sha256": "94d5485165fa970400ddbcca6ac38d63e46e14c4ca1aea7054d6d18a5706f625"
+    },
+    {
+      "path": "harness/Cargo.toml",
+      "bytes": 507,
+      "sha256": "5d93ba2a526b772f63b389f04762cd1d2eb3f69d96c84555f8a9020b2fd2185e"
+    },
+    {
+      "path": "harness/LOCK-PROVENANCE.json",
+      "bytes": 1274,
+      "sha256": "c81debbc2c0b4e18dc89c2fcacdc5b91c383494aab7a11a72748c35d8d07010b"
+    },
+    {
+      "path": "harness/cpu-placement/Cargo.toml",
+      "bytes": 200,
+      "sha256": "746c3e996f0702dce121d6aff47778c0b95bbf84279310e5afc624bd7cd29793"
+    },
+    {
+      "path": "harness/process-fd/Cargo.toml",
+      "bytes": 123,
+      "sha256": "756a5617d7f9faea4c6ba9a22020e14e9c4294355f51c97b260c69c1b0d689ce"
+    },
+    {
+      "path": "harness/process-fd/src/lib.rs",
+      "bytes": 529,
+      "sha256": "9794bc5f3f9dbbc0ec64889b32e15892b7aca154c46d1fa5ecab92e8c755fc40"
+    },
+    {
+      "path": "harness/src/lib.rs",
+      "bytes": 899,
+      "sha256": "c4c7305fbc8bf767bfd694da574b675a074b3e78e9f0e401c427ec91f6d16890"
+    },
+    {
+      "path": "source/runtime/droidloom-applications/src/lib.rs",
+      "bytes": 34506,
+      "sha256": "ec944afe7d20773ca1d3100f15a7ffc2f936ae08fc10798842ee5a23be8ed340"
+    },
+    {
+      "path": "source/runtime/droidloom-applications/src/main.rs",
+      "bytes": 9193,
+      "sha256": "7d52e9abb404a7eb729afb7a7e21ddafd4e3336b456844d592575d5c4df7b060"
+    },
+    {
+      "path": "source/runtime/droidloom-applications/src/release.rs",
+      "bytes": 22695,
+      "sha256": "97b6075fbcbd8d9bc59e98356313ffa43ad16909aac5946132395f108454e45c"
+    },
+    {
+      "path": "source/runtime/droidloom-applications/src/runtime_fence.rs",
+      "bytes": 6216,
+      "sha256": "6fd1b72aabbc3c7e513490ce9c67b5d4a450f8c198e8994dc9bf9c61cf770818"
+    },
+    {
+      "path": "source/runtime/droidloom-applications/src/runtime_plan.rs",
+      "bytes": 32007,
+      "sha256": "2f5a815833e299d022a3680014167e7418bf6b39488849fb5150b5bcef861032"
+    },
+    {
+      "path": "source/runtime/droidloom-cpu-placement/src/lib.rs",
+      "bytes": 1956,
+      "sha256": "b711e37a7245dc0d817e69d6589263b864cfd7ea43f2428c6d590c7e47863ab0"
+    },
+    {
+      "path": "source/runtime/droidloom-cpu-placement/src/linux.rs",
+      "bytes": 11370,
+      "sha256": "addc956fcae5d493cdf9bf55bd82ea79119caffb58bd8bc1fee44e17069357f8"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/application_command.rs",
+      "bytes": 21082,
+      "sha256": "a72fc7da7b5d0eb2c1a7f7ffdc37db03998bc9be0c649474e8e73b7c8a0f998b"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/application_command_tests.rs",
+      "bytes": 9404,
+      "sha256": "cb5cfa45f1301ec8aa2018a8b8dd102e80fd09ce71eb2cd3533e2cf8610db746"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/application_probe.rs",
+      "bytes": 17853,
+      "sha256": "e97ca6b0856da1e394cbe227b42d21047a1c8a0a7cc66c1e3a9143988da60000"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/control.rs",
+      "bytes": 80567,
+      "sha256": "62821422867785c6b78eb2fa447857ed214c1b44f3ac47111d37da5057e7a652"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/development.rs",
+      "bytes": 115712,
+      "sha256": "b9b874e2ecba44d02a96d1ed71af248fa8c36fd6d0a2452adcae9d103cd4ae21"
+    },
+    {
+      "path": "source/runtime/droidloom-supervisor/src/development_process.rs",
+      "bytes": 7465,
+      "sha256": "ed34622d083249875dea28ab9327a980da14e5ee81ddd49a76fb7d537ec68864"
+    },
+    {
+      "path": "source/tools/README.md",
+      "bytes": 13815,
+      "sha256": "5a73e2a2067a6e58dcf14eacfcf7fe4f847748bbc9eb5c8775f4729b15be2c79"
+    },
+    {
+      "path": "source-publication.json",
+      "bytes": 1777,
+      "sha256": "6530f0709d4a18c65d939e651956027452216735f29aaccdeb06ec1911972705"
+    }
+  ]
+}

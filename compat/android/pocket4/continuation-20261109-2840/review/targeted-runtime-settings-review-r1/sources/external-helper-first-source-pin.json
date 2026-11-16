@@ -1,0 +1,30 @@
+{
+  "schema": "settings-reviewed-external-consumer-pin-v1",
+  "source_copy": "/workspace/scratch/2840a678aeda/apps_production_audit/final-ui-consumers/android-digitalis-observe-helper",
+  "deployed_path_reported_by_source": "/usr/local/libexec/android-digitalis-observe-helper",
+  "bytes": 36404,
+  "sha256": "76e9875d141f69976cbbafe469aa13439cf99c3214bc479a0c80cda740c8dcfa",
+  "git_blob": "de43da6850c857982dbc2fb0bf1344aadbb861e2",
+  "entry_excerpt_first_line": 456,
+  "entry_excerpt": [
+    "def helper():",
+    "    require(os.geteuid()==0,'HELPER_REQUIRES_SUDO');raw=sys.stdin.buffer.readline(65537)",
+    "    require(len(raw)<=65536,'REQUEST_TOO_LARGE')",
+    "    try:r=json.loads(raw)",
+    "    except Exception:raise ControlError('INVALID_JSON')",
+    "    require(isinstance(r,dict),'OBJECT_REQUIRED')",
+    "    fd=os.open('/run/lock/android-digitalis-actions.lock',os.O_CREAT|os.O_RDWR|os.O_NOFOLLOW,0o600)",
+    "    try:",
+    "        try:fcntl.flock(fd,fcntl.LOCK_EX|fcntl.LOCK_NB)",
+    "        except BlockingIOError:raise ControlError('DIGITALIS_BUSY_NO_ACTION_TAKEN')",
+    "        result=dispatch(r)",
+    "        if isinstance(result,bytes):require(result.startswith(b'\\x89PNG\\r\\n\\x1a\\n'),'INVALID_SCREENSHOT');sys.stdout.buffer.write(result)",
+    "        else:print(json.dumps(result,ensure_ascii=False))",
+    "    finally:os.close(fd)",
+    ""
+  ],
+  "new_Settings_pending_marker_string_present": false,
+  "live_installed_file_revalidated_by_this_review": false,
+  "installed_or_modified_by_review": false,
+  "scope": "Existing audited source copy: shared flock is acquired before dispatch, but the new Settings pending marker is not inspected."
+}

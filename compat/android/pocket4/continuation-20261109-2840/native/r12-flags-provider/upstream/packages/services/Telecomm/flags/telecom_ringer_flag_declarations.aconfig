@@ -1,0 +1,21 @@
+package: "com.android.server.telecom.flags"
+container: "system"
+
+# OWNER=yeabkal TARGET=24Q2
+flag {
+  name: "use_device_provided_serialized_ringer_vibration"
+  namespace: "telecom"
+  description: "Gates whether to use a serialized, device-specific ring vibration."
+  bug: "282113261"
+}
+
+# OWNER=tgunn TARGET=25Q4
+flag {
+  name: "vibration_accounts_for_main_setting"
+  namespace: "telecom"
+  description: "Ensures that we account for the main haptic on/off setting in addition to haptic intensity."
+  bug: "408238011"
+  metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
