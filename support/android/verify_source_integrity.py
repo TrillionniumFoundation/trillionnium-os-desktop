@@ -450,7 +450,7 @@ BINARY_FILES = {
     'compat/android/pocket4/runtime-current-source-r1/SOURCE-CAPSULE.tar.xz': {
         'bytes': 7696708, 'sha256': '7ab244365184ef670c244b6a0ed75857c6f942897f3fc59c00e6375e76f51816'},
     'compat/android/pocket4/runtime-current-source-r1/SOURCE-OVERLAY.json.xz': {
-        'bytes': 215824, 'sha256': 'db25fae99c3b874abe37623c1ae41508d9818bed76947f3862323b7b4e149af7'},
+        'bytes': 220836, 'sha256': '0fab6c4764d3887a2c95ff10c7cf183cee995b9d5cacca48f8a7565f50618271'},
 }
 
 

@@ -292,9 +292,9 @@ class OverlayControls(unittest.TestCase):
         self.assertIsNone(v.HEAD_COMMIT)
         self.assertEqual(capsule['parent_manifest']['head'], v.PARENT_COMMIT)
         self.assertEqual(len(capsule['rows']), 2233)
-        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 40718730)
-        self.assertEqual(v.tree_id(capsule['rows']), '5bd6d9a4f0faaff436fd81a4934d4aa3a9791e62')
-        self.assertEqual(len(capsule['overlay_manifest']['paths']), 31)
+        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 40728234)
+        self.assertEqual(v.tree_id(capsule['rows']), '2eebf00f0b3e446168c1d6baeacbf1b4adc84db5')
+        self.assertEqual(len(capsule['overlay_manifest']['paths']), 32)
         self.assertNotEqual(v.HEAD_TREE, v.PARENT_TREE)
 
     def test_overlay_rejects_wrong_base_omitted_extra_or_unsafe_member(self):
@@ -369,8 +369,21 @@ class OverlayControls(unittest.TestCase):
             del packet['files_base64'][name]
             with self.subTest(omitted_selected_lock_body=name), self.assertRaises(RuntimeError):
                 self.apply(packet)
+        # Either current AppBridge repair body must remain in the exact successor.
+        for name in ('runtime/droidloom-supervisor/src/application_probe.rs',
+                     'runtime/droidloom-supervisor/src/production_control.rs'):
+            packet = self.clone()
+            packet['manifest']['paths'][name]['after'] = dict(self.parent['files'][name])
+            packet['files_base64'][name] = v.base64.b64encode(self.entries['source/' + name][1]).decode()
+            with self.subTest(stale_appbridge_body=name), self.assertRaises(RuntimeError):
+                self.apply(packet)
+            packet = self.clone()
+            del packet['manifest']['paths'][name]
+            del packet['files_base64'][name]
+            with self.subTest(omitted_appbridge_body=name), self.assertRaises(RuntimeError):
+                self.apply(packet)
         for key, value in [('candidate_tree_from_manifest', '0' * 40),
-                           ('candidate_file_count', 2232), ('candidate_bytes', 40718729)]:
+                           ('candidate_file_count', 2232), ('candidate_bytes', 40728233)]:
             packet = self.clone(); packet['manifest'][key] = value
             with self.subTest(field=key), self.assertRaises(RuntimeError):
                 self.apply(packet)
