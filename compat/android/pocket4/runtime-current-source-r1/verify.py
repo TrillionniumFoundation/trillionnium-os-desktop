@@ -18,9 +18,9 @@ HERE = Path(__file__).resolve().parent
 PARENT_COMMIT = '61a38baa745483fbfb757466a1cf352febc20552'
 PARENT_TREE = 'db6249e80209abeda8000eeced6d045a1d57e0a2'
 HEAD_COMMIT = None
-HEAD_TREE = 'f733276e866388548b9995c8040d24f1799057fe'
+HEAD_TREE = '7c81d9f7ce8d0d66615d0fbb4033f584a89bf601'
 SOURCE_FILES = 2243
-SOURCE_BYTES = 41170196
+SOURCE_BYTES = 41179700
 
 
 def need(value, message):
@@ -311,7 +311,7 @@ def archive_entries(raw):
     return entries
 
 
-OVERLAY = {'bytes': 483692, 'sha256': 'e8675302cde5ae4cf555d0ed28a0bdb69658b4f9140f0b13fe571a3c4e0bdf2d'}
+OVERLAY = {'bytes': 489240, 'sha256': '5f523e8cfea8cef66ca5ce5dc13be694873493e9b493b1aa9ed30e5cf18d049b'}
 OVERLAY_EXPANSION_MAX = 4 * 1024 * 1024
 
 
@@ -348,8 +348,8 @@ def apply_overlay(parent, parent_rows, parent_entries, packet):
          'complete exact parent inventory required before overlay')
     changes, encoded_files = manifest['paths'], packet['files_base64']
     need(isinstance(changes, dict) and isinstance(encoded_files, dict)
-         and len(changes) == 43 and set(changes) == set(encoded_files),
-         'all and only 43 declared overlay bodies required')
+         and len(changes) == 44 and set(changes) == set(encoded_files),
+         'all and only 44 declared overlay bodies required')
     current = dict(parent['files'])
     entries = dict(parent_entries)
     for name, change in sorted(changes.items()):
