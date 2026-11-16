@@ -1591,7 +1591,7 @@ jobs:
             ${{ runner.temp }}/runtime-d6-ci-logs/*.stderr
 
   runtime-current-complete-producer:
-    name: Current source - 1293 ordinary cases and 19 normal releases
+    name: Current source - 1299 ordinary cases and 19 normal releases
     runs-on: ubuntu-24.04
     timeout-minutes: 140
     env:
@@ -1602,7 +1602,7 @@ jobs:
       GIT_CONFIG_GLOBAL: /dev/null
       GIT_TERMINAL_PROMPT: '0'
       # Pin the complete reviewed capsule inventory outside the capsule itself.
-      CURRENT_SOURCE_INVENTORY_SHA256: df0437662e8d32507fb8c882d1461acadf9ee8df775617033c78a7a2e8ea9fac
+      CURRENT_SOURCE_INVENTORY_SHA256: c7b3b2c2280d7298b9703f2513a6eee6f24b4d63667000f16c55e58617bb8a99
     steps:
       - uses: actions/checkout@v4
         with:
@@ -1619,7 +1619,7 @@ jobs:
           (cd "$capsule" && sha256sum --quiet -c FILES.sha256)
           timeout --signal=TERM --kill-after=10s 90s python3 -I -B "$capsule/test_verifier.py"
           timeout --signal=TERM --kill-after=10s 90s python3 -I -B "$capsule/test_runner.py"
-      - name: Reconstruct the complete 2250-file producer source
+      - name: Reconstruct the complete 2261-file producer source
         timeout-minutes: 5
         shell: bash
         run: |
@@ -1637,7 +1637,7 @@ jobs:
           capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1"
           timeout --signal=TERM --kill-after=30s 1860s bash "$capsule/prepare_ci.sh" \
             --work "$RUNNER_TEMP/current-dependencies"
-      - name: Build all 49 harnesses, execute fresh 1293 cases, and build 19 releases
+      - name: Build all 49 harnesses, execute fresh 1299 cases, and build 19 releases
         timeout-minutes: 92
         shell: bash
         run: |
