@@ -239,9 +239,9 @@ class OverlayControls(unittest.TestCase):
         self.assertIsNone(v.HEAD_COMMIT)
         self.assertEqual(capsule['parent_manifest']['head'], v.PARENT_COMMIT)
         self.assertEqual(len(capsule['rows']), 2231)
-        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 40685530)
-        self.assertEqual(v.tree_id(capsule['rows']), '17b5ead6e800ee80697ade52eb496e44323fe2ec')
-        self.assertEqual(len(capsule['overlay_manifest']['paths']), 25)
+        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 40696414)
+        self.assertEqual(v.tree_id(capsule['rows']), 'cbe7986c27605ea7d3167f1171a09f625dc22192')
+        self.assertEqual(len(capsule['overlay_manifest']['paths']), 27)
         self.assertNotEqual(v.HEAD_TREE, v.PARENT_TREE)
 
     def test_overlay_rejects_wrong_base_omitted_extra_or_unsafe_member(self):
@@ -273,8 +273,22 @@ class OverlayControls(unittest.TestCase):
                 self.apply(packet)
         packet = self.clone(); packet['files_base64'][name] = v.base64.b64encode(b'wrong body').decode()
         with self.assertRaises(RuntimeError): self.apply(packet)
+        # The combined overlay must include both actual MAC successor bodies.
+        # A self-consistent old body/row must still fail the complete new tree gate.
+        for name in ('runtime/droidloom-supervisor/src/production_mac.rs',
+                     'runtime/droidloom-supervisor/src/production_mac_systemd.rs'):
+            packet = self.clone()
+            packet['manifest']['paths'][name]['after'] = dict(self.parent['files'][name])
+            packet['files_base64'][name] = v.base64.b64encode(self.entries['source/' + name][1]).decode()
+            with self.subTest(stale_mac_body=name), self.assertRaises(RuntimeError):
+                self.apply(packet)
+            packet = self.clone()
+            del packet['manifest']['paths'][name]
+            del packet['files_base64'][name]
+            with self.subTest(omitted_mac_body=name), self.assertRaises(RuntimeError):
+                self.apply(packet)
         for key, value in [('candidate_tree_from_manifest', '0' * 40),
-                           ('candidate_file_count', 2230), ('candidate_bytes', 40685529)]:
+                           ('candidate_file_count', 2230), ('candidate_bytes', 40696413)]:
             packet = self.clone(); packet['manifest'][key] = value
             with self.subTest(field=key), self.assertRaises(RuntimeError):
                 self.apply(packet)
