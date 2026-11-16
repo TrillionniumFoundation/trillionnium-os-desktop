@@ -124,8 +124,14 @@ def updater_catalogs():
         'android::telephony_sms_asb_security::tests::telephony_sms_normal_receipt_requires_both_restored_originals_and_unqualified_scope',
         'android::telephony_sms_asb_security::tests::telephony_sms_official_patch_is_exact_and_journal_recovers_both_originals',
         'android::telephony_sms_asb_security::tests::telephony_sms_requests_use_existing_complete_product_and_unchanged_651_lock',
+        'android::telephony_mms_asb_security::tests::telephony_mms_artifact_metadata_rejects_wrong_provider_variant_and_aliases',
+        'android::telephony_mms_asb_security::tests::telephony_mms_changed_originals_recipe_and_aliases_fail_before_source_writes',
+        'android::telephony_mms_asb_security::tests::telephony_mms_journal_failure_does_not_modify_the_original_source',
+        'android::telephony_mms_asb_security::tests::telephony_mms_normal_receipt_requires_restoration_and_preserves_unqualified_scope',
+        'android::telephony_mms_asb_security::tests::telephony_mms_official_patch_is_exact_and_journal_recovers_one_original',
+        'android::telephony_mms_asb_security::tests::telephony_mms_requests_use_existing_complete_product_and_unchanged_651_lock',
     }
-    v.need(len(current['all']) == 486 and added <= set(current['all']), 'exact current updater catalog required')
+    v.need(len(current['all']) == 492 and added <= set(current['all']), 'exact current updater catalog required')
     historical = [name for name in current['all'] if name not in added]
     historical_body = (json.dumps(historical, sort_keys=True, separators=(',', ':')) + '\n').encode()
     v.need(len(historical) == 465 and v.digest(historical_body)['sha256'] ==
@@ -240,21 +246,21 @@ class Controls(unittest.TestCase):
         exact = set(v.decode(v.regular(P / 'UPDATER-EXACT64.json')))
         ignored = set(current['ignored'])
         passed = set(current['all']) - exact - ignored
-        self.assertEqual((len(passed), len(ignored), len(exact)), (421, 1, 64))
+        self.assertEqual((len(passed), len(ignored), len(exact)), (427, 1, 64))
         # Synthetic current-catalog transcript. The three ACTUAL_* constants
         # above remain byte-for-byte historical evidence, not new CI output.
         fragments = {
             'image_policy::tests::repack_preserves_android_metadata_and_adbd':
-                ACTUAL_IMAGE_CHILD.replace('464 filtered out;', '485 filtered out;'),
+                ACTUAL_IMAGE_CHILD.replace('464 filtered out;', '491 filtered out;'),
             'native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata':
-                ACTUAL_STAGING_CHILD.replace('464 filtered out;', '485 filtered out;'),
+                ACTUAL_STAGING_CHILD.replace('464 filtered out;', '491 filtered out;'),
             'native_generation::tests::real_erofs_bundle_verifies_its_embedded_pair': ACTUAL_TOOL_OUTPUT,
         }
         self.assertTrue(set(fragments) <= passed)
-        text = 'running 422 tests\n'
+        text = 'running 428 tests\n'
         for name in sorted(passed | ignored):
             text += fragments.get(name, f'test {name} ... ' + ('ignored' if name in ignored else 'ok') + '\n')
-        text += '\ntest result: ok. 421 passed; 0 failed; 1 ignored; 0 measured; 64 filtered out; finished in 1.00s\n'
+        text += '\ntest result: ok. 427 passed; 0 failed; 1 ignored; 0 measured; 64 filtered out; finished in 1.00s\n'
         self.assertEqual(v.test_terminal(text, passed, ignored, 64, catalog=current['all']),
                          {'passed': sorted(passed), 'ignored': sorted(ignored), 'filtered': 64})
         wrong_names = list(current['all'])
@@ -263,10 +269,11 @@ class Controls(unittest.TestCase):
                         current['all'][:-1] + [current['all'][0]]):
             with self.subTest(catalog=catalog), self.assertRaises(RuntimeError):
                 v.test_terminal(text, passed, ignored, 64, catalog=catalog)
-        for bad in (text.replace('485 filtered out;', '479 filtered out;', 1),
-                    text.replace('485 filtered out;', '473 filtered out;', 1),
-                    text.replace('485 filtered out;', '466 filtered out;', 1),
-                    text.replace('485 filtered out;', '465 filtered out;', 1),
+        for bad in (text.replace('491 filtered out;', '485 filtered out;', 1),
+                    text.replace('491 filtered out;', '479 filtered out;', 1),
+                    text.replace('491 filtered out;', '473 filtered out;', 1),
+                    text.replace('491 filtered out;', '466 filtered out;', 1),
+                    text.replace('491 filtered out;', '465 filtered out;', 1),
                     text.replace('1 ignored;', '0 ignored;', 1),
                     text.replace('64 filtered out;', '62 filtered out;', 1)):
             with self.subTest(text=bad), self.assertRaises(RuntimeError):
@@ -312,10 +319,10 @@ class OverlayControls(unittest.TestCase):
         capsule = v.verify_capsule(inventory_sha)
         self.assertIsNone(v.HEAD_COMMIT)
         self.assertEqual(capsule['parent_manifest']['head'], v.PARENT_COMMIT)
-        self.assertEqual(len(capsule['rows']), 2261)
-        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 41777469)
-        self.assertEqual(v.tree_id(capsule['rows']), 'af0ab8e0dd5e6d7ead400962dc86f2f4831de653')
-        self.assertEqual(len(capsule['overlay_manifest']['paths']), 61)
+        self.assertEqual(len(capsule['rows']), 2271)
+        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 42004577)
+        self.assertEqual(v.tree_id(capsule['rows']), '84d74983ea2c6f3ad131272efb0ac939d9ddcf55')
+        self.assertEqual(len(capsule['overlay_manifest']['paths']), 71)
         self.assertNotEqual(v.HEAD_TREE, v.PARENT_TREE)
 
     def test_overlay_rejects_wrong_base_omitted_extra_or_unsafe_member(self):
@@ -391,7 +398,7 @@ class OverlayControls(unittest.TestCase):
             with self.subTest(omitted_selected_lock_body=name), self.assertRaises(RuntimeError):
                 self.apply(packet)
         for key, value in [('candidate_tree_from_manifest', '0' * 40),
-                           ('candidate_file_count', 2260), ('candidate_bytes', 41777468)]:
+                           ('candidate_file_count', 2270), ('candidate_bytes', 42004576)]:
             packet = self.clone(); packet['manifest'][key] = value
             with self.subTest(field=key), self.assertRaises(RuntimeError):
                 self.apply(packet)

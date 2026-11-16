@@ -47,8 +47,8 @@ def configuration():
         registered[key] = row
     VERIFY.need(set(registered) == set(result[0]) and len({k[0] for k in result[0]}) == 28,
                 'all28 packages and49 test targets')
-    VERIFY.need(sum(len(r['all']) for r in registered.values()) == 1329
-                and sum(len(r['ignored']) for r in registered.values()) == 30, 'complete1329/30 catalog')
+    VERIFY.need(sum(len(r['all']) for r in registered.values()) == 1335
+                and sum(len(r['ignored']) for r in registered.values()) == 30, 'complete1335/30 catalog')
     VERIFY.need(len(exact) == len(set(exact)) == 64
                 and set(exact) <= set(registered[UPDATER]['all']) - set(registered[UPDATER]['ignored']),
                 '64 disjoint ordinary updater names')
@@ -444,7 +444,7 @@ def main():
                 skip = [value for case in exact for value in ('--skip',case)]
                 _, raw = run('updater-bulk-filtered-catalog',[binary,'--list',*skip,'--color','never'],30,test_cwd)
                 catalog(raw,set(cat['all'])-set(exact))
-                row, raw = run('updater-bulk421',[binary,*skip,'--test-threads=1','--color','never'],300,test_cwd)
+                row, raw = run('updater-bulk427',[binary,*skip,'--test-threads=1','--color','never'],300,test_cwd)
                 row['actual_tests'] = VERIFY.test_terminal(raw.decode(),passed-set(exact),cat['ignored'],64,catalog=cat['all'])
                 result['fresh_ordinary_passed'] += len(passed)-64
             else:
@@ -452,8 +452,8 @@ def main():
                 row['actual_tests'] = VERIFY.test_terminal(raw.decode(),passed,cat['ignored'],0,catalog=cat['all'])
                 result['fresh_ordinary_passed'] += len(passed)
             VERIFY.need(elf(item['path']) == frozen[key], 'harness changed after execution')
-        VERIFY.need(result['fresh_ordinary_passed'] == 1299 and len(result['ignored_not_executed']) == 30,
-                    'complete fresh1299 ordinary and30 unchanged ignored cases required')
+        VERIFY.need(result['fresh_ordinary_passed'] == 1305 and len(result['ignored_not_executed']) == 30,
+                    'complete fresh1305 ordinary and30 unchanged ignored cases required')
         for key,ref in debug_frozen.items():
             VERIFY.need(elf(debug[key]['path']) == ref, 'normal debug binary changed during ordinary tests')
         released, release_by_target = {}, {}
@@ -478,7 +478,7 @@ def main():
         result['all_source_bookends_equal'] = VERIFY.source_snapshot(producer,capsule['rows'],VERIFY.HEAD_TREE) == before
         VERIFY.need(result['all_source_bookends_equal'] and not owned_children(), 'source changed or command descendants remain')
         VERIFY.need(time.monotonic() < deadline, 'whole CI deadline expired during final artifact/source readback')
-        result['state'] = 'ALL1299_ORDINARY_AND19_NORMAL_RELEASE_BUILDS_PASSED'
+        result['state'] = 'ALL1305_ORDINARY_AND19_NORMAL_RELEASE_BUILDS_PASSED'
     except BaseException as error:
         result['state'] = 'FAILED'
         result['errors'].append({'type':type(error).__name__,'message':str(error),'traceback':traceback.format_exc()})
@@ -500,7 +500,7 @@ def main():
     VERIFY.write_report(report,result,[HERE,producer,work])
     print(json.dumps({'state':result['state'],'fresh_ordinary_passed':result['fresh_ordinary_passed'],
         'fresh_normal_release_count':len(result['fresh_release_binaries']),'report':str(report),'production_ready':False},sort_keys=True))
-    return 0 if result['state'] == 'ALL1299_ORDINARY_AND19_NORMAL_RELEASE_BUILDS_PASSED' else 1
+    return 0 if result['state'] == 'ALL1305_ORDINARY_AND19_NORMAL_RELEASE_BUILDS_PASSED' else 1
 
 
 if __name__ == '__main__':
