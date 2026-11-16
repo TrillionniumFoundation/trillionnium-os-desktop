@@ -99,6 +99,22 @@ ok
 """
 
 
+def updater_catalogs():
+    rows = v.decode(v.regular(P / 'EXPECTED-CATALOG.json'))
+    current = next(row for row in rows if (row['package'], row['target']) == ('droidloom-update', 'droidloom-update'))
+    added = {
+        'coherent_images::tests::release_mapping_cannot_relabel_the_actual_selected_cp2a_lock',
+        'coherent_images::tests::selected_lock_identity_requires_exact_typed_and_unique_identity_fields',
+    }
+    v.need(len(current['all']) == 467 and added <= set(current['all']), 'exact current updater catalog required')
+    historical = [name for name in current['all'] if name not in added]
+    historical_body = (json.dumps(historical, sort_keys=True, separators=(',', ':')) + '\n').encode()
+    v.need(len(historical) == 465 and v.digest(historical_body)['sha256'] ==
+           'feeb8f74d780b51eb215d34d3c924bca127443b759dca6b7325b89e91d534680',
+           'the unchanged actual historical fragments require their original complete name set')
+    return current, historical
+
+
 class Controls(unittest.TestCase):
     def test_terminal_rejects_contradictions_and_duplicate_identity(self):
             good='running 2 tests\ntest one ... ok\ntest privileged ... ignored, requires namespaces\ntest result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s\n'
@@ -148,21 +164,23 @@ class Controls(unittest.TestCase):
 
 
     def test_actual_nested_and_tool_fragments_credit_only_outer_records(self):
+        _, historical = updater_catalogs()
         names = {'image_policy::tests::repack_preserves_android_metadata_and_adbd',
                  'native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata',
                  'native_generation::tests::real_erofs_bundle_verifies_its_embedded_pair'}
         text = ('running 3 tests\n' + ACTUAL_IMAGE_CHILD + ACTUAL_TOOL_OUTPUT + ACTUAL_STAGING_CHILD
                 + '\ntest result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 462 filtered out; finished in 1.00s\n')
-        self.assertEqual(v.test_terminal(text, names, [], 462),
+        self.assertEqual(v.test_terminal(text, names, [], 462, catalog=historical),
                          {'passed': sorted(names), 'ignored': [], 'filtered': 462})
 
     def test_known_nested_child_rejects_failure_unknown_extra_and_unclosed_frames(self):
+        _, historical = updater_catalogs()
         name = 'native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata'
         child_record = f'test {name} ... ok\n'
         child_summary = 'test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 464 filtered out; finished in 0.68s\n'
         parent_summary = 'test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 464 filtered out; finished in 1.00s\n'
         wrap = lambda body: 'running 1 test\n' + body + '\n' + parent_summary
-        self.assertEqual(v.test_terminal(wrap(ACTUAL_STAGING_CHILD), [name], [], 464)['passed'], [name])
+        self.assertEqual(v.test_terminal(wrap(ACTUAL_STAGING_CHILD), [name], [], 464, catalog=historical)['passed'], [name])
         bad = {
             'unknown-child': ACTUAL_STAGING_CHILD.replace(child_record, 'test foreign ... ok\n'),
             'failed-child': ACTUAL_STAGING_CHILD.replace(child_record, f'test {name} ... FAILED\n'),
@@ -187,16 +205,51 @@ class Controls(unittest.TestCase):
         }
         for label, body in bad.items():
             with self.subTest(label=label), self.assertRaises(RuntimeError):
-                v.test_terminal(wrap(body), [name], [], 464)
+                v.test_terminal(wrap(body), [name], [], 464, catalog=historical)
         unknown = wrap(ACTUAL_STAGING_CHILD.replace(name, 'unknown::test'))
-        with self.assertRaises(RuntimeError): v.test_terminal(unknown, ['unknown::test'], [], 464)
+        with self.assertRaises(RuntimeError): v.test_terminal(unknown, ['unknown::test'], [], 464, catalog=historical)
         for invalid in [wrap(ACTUAL_STAGING_CHILD) + parent_summary,
                         wrap(ACTUAL_STAGING_CHILD + child_record),
                         parent_summary + wrap(ACTUAL_STAGING_CHILD),
                         wrap(ACTUAL_STAGING_CHILD).replace(parent_summary, parent_summary.replace('1 passed;', '2 passed;'))]:
             with self.subTest(text=invalid), self.assertRaises(RuntimeError):
-                v.test_terminal(invalid, [name], [], 464)
-        with self.assertRaises(RuntimeError): v.test_terminal(wrap(ACTUAL_STAGING_CHILD), [name], [], None)
+                v.test_terminal(invalid, [name], [], 464, catalog=historical)
+        with self.assertRaises(RuntimeError): v.test_terminal(wrap(ACTUAL_STAGING_CHILD), [name], [], None, catalog=historical)
+
+    def test_current_nested_catalog_binds_all_names_and_credits_only_parent_records(self):
+        current, historical = updater_catalogs()
+        exact = set(v.decode(v.regular(P / 'UPDATER-EXACT64.json')))
+        ignored = set(current['ignored'])
+        passed = set(current['all']) - exact - ignored
+        self.assertEqual((len(passed), len(ignored), len(exact)), (402, 1, 64))
+        # Synthetic current-catalog transcript. The three ACTUAL_* constants
+        # above remain byte-for-byte historical evidence, not new CI output.
+        fragments = {
+            'image_policy::tests::repack_preserves_android_metadata_and_adbd':
+                ACTUAL_IMAGE_CHILD.replace('464 filtered out;', '466 filtered out;'),
+            'native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata':
+                ACTUAL_STAGING_CHILD.replace('464 filtered out;', '466 filtered out;'),
+            'native_generation::tests::real_erofs_bundle_verifies_its_embedded_pair': ACTUAL_TOOL_OUTPUT,
+        }
+        self.assertTrue(set(fragments) <= passed)
+        text = 'running 403 tests\n'
+        for name in sorted(passed | ignored):
+            text += fragments.get(name, f'test {name} ... ' + ('ignored' if name in ignored else 'ok') + '\n')
+        text += '\ntest result: ok. 402 passed; 0 failed; 1 ignored; 0 measured; 64 filtered out; finished in 1.00s\n'
+        self.assertEqual(v.test_terminal(text, passed, ignored, 64, catalog=current['all']),
+                         {'passed': sorted(passed), 'ignored': sorted(ignored), 'filtered': 64})
+        wrong_names = list(current['all'])
+        wrong_names[wrong_names.index(sorted(passed)[0])] = 'foreign::same_size_catalog'
+        for catalog in (None, historical, wrong_names, current['all'] + ['extra::case'],
+                        current['all'][:-1] + [current['all'][0]]):
+            with self.subTest(catalog=catalog), self.assertRaises(RuntimeError):
+                v.test_terminal(text, passed, ignored, 64, catalog=catalog)
+        for bad in (text.replace('466 filtered out;', '464 filtered out;', 1),
+                    text.replace('466 filtered out;', '465 filtered out;', 1),
+                    text.replace('1 ignored;', '0 ignored;', 1),
+                    text.replace('64 filtered out;', '62 filtered out;', 1)):
+            with self.subTest(text=bad), self.assertRaises(RuntimeError):
+                v.test_terminal(bad, passed, ignored, 64, catalog=current['all'])
 
     def test_split_tool_output_requires_known_parent_and_exact_terminal(self):
         name = 'native_generation::tests::real_erofs_bundle_verifies_its_embedded_pair'
@@ -239,9 +292,9 @@ class OverlayControls(unittest.TestCase):
         self.assertIsNone(v.HEAD_COMMIT)
         self.assertEqual(capsule['parent_manifest']['head'], v.PARENT_COMMIT)
         self.assertEqual(len(capsule['rows']), 2233)
-        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 40712295)
-        self.assertEqual(v.tree_id(capsule['rows']), '511f87c67aaefe62167201ea01edb890acb135b3')
-        self.assertEqual(len(capsule['overlay_manifest']['paths']), 29)
+        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 40718730)
+        self.assertEqual(v.tree_id(capsule['rows']), '5bd6d9a4f0faaff436fd81a4934d4aa3a9791e62')
+        self.assertEqual(len(capsule['overlay_manifest']['paths']), 31)
         self.assertNotEqual(v.HEAD_TREE, v.PARENT_TREE)
 
     def test_overlay_rejects_wrong_base_omitted_extra_or_unsafe_member(self):
@@ -302,8 +355,22 @@ class OverlayControls(unittest.TestCase):
             packet['files_base64'][name] = v.base64.b64encode(body).decode()
             with self.subTest(changed_m3_body=name), self.assertRaises(RuntimeError):
                 self.apply(packet)
+        # Neither selected-lock repair body can be omitted or replaced with
+        # its self-consistent prior source without changing the full new tree.
+        for name in ('tools/droidloom-update/src/coherent_images.rs',
+                     'tools/droidloom-update/src/coherent_images_tests.rs'):
+            packet = self.clone()
+            packet['manifest']['paths'][name]['after'] = dict(self.parent['files'][name])
+            packet['files_base64'][name] = v.base64.b64encode(self.entries['source/' + name][1]).decode()
+            with self.subTest(stale_selected_lock_body=name), self.assertRaises(RuntimeError):
+                self.apply(packet)
+            packet = self.clone()
+            del packet['manifest']['paths'][name]
+            del packet['files_base64'][name]
+            with self.subTest(omitted_selected_lock_body=name), self.assertRaises(RuntimeError):
+                self.apply(packet)
         for key, value in [('candidate_tree_from_manifest', '0' * 40),
-                           ('candidate_file_count', 2232), ('candidate_bytes', 40712294)]:
+                           ('candidate_file_count', 2232), ('candidate_bytes', 40718729)]:
             packet = self.clone(); packet['manifest'][key] = value
             with self.subTest(field=key), self.assertRaises(RuntimeError):
                 self.apply(packet)

@@ -18,9 +18,9 @@ HERE = Path(__file__).resolve().parent
 PARENT_COMMIT = '61a38baa745483fbfb757466a1cf352febc20552'
 PARENT_TREE = 'db6249e80209abeda8000eeced6d045a1d57e0a2'
 HEAD_COMMIT = None
-HEAD_TREE = '511f87c67aaefe62167201ea01edb890acb135b3'
+HEAD_TREE = '5bd6d9a4f0faaff436fd81a4934d4aa3a9791e62'
 SOURCE_FILES = 2233
-SOURCE_BYTES = 40712295
+SOURCE_BYTES = 40718730
 
 
 def need(value, message):
@@ -188,11 +188,19 @@ def successful_cargo_stream(raw):
     return rows
 
 
-def test_terminal(text, passed, ignored=(), filtered=None):
+def test_terminal(text, passed, ignored=(), filtered=None, *, catalog=None):
     passed, ignored = set(passed), set(ignored)
     need(not passed.intersection(ignored), 'passed and ignored identities must be distinct')
     total = len(passed) + len(ignored)
-    # These two frozen updater tests run the same 465-case ELF inside fakeroot.
+    # The caller supplies the full name set already joined to the actual ELF.
+    # Do not infer that catalog from a child transcript or its reported counts.
+    if catalog is not None:
+        need(isinstance(catalog, (list, tuple)) and all(type(name) is str for name in catalog)
+             and len(catalog) == len(set(catalog)), 'distinct complete caller-bound catalog names required')
+        catalog = set(catalog)
+        need((passed | ignored) <= catalog and type(filtered) is int and filtered >= 0
+             and total + filtered == len(catalog), 'parent identities and filters must match the bound catalog')
+    # These two frozen updater tests run the same catalogued ELF inside fakeroot.
     # Their child records are evidence of the parent's work, never extra credit.
     image_case = 'image_policy::tests::repack_preserves_android_metadata_and_adbd'
     staging_case = 'native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata'
@@ -240,7 +248,7 @@ def test_terminal(text, passed, ignored=(), filtered=None):
             need(started, 'Rust summary before parent header')
             if pending is not None:
                 need(pending in nested_cases and phase == 'child-summary', 'unclosed or extra nested Rust summary')
-                summary(line, 1, 0, 464)
+                summary(line, 1, 0, len(catalog) - 1)
                 phase = 'parent-status'
             else:
                 outer_filtered = summary(line, len(passed), len(ignored), filtered)
@@ -263,7 +271,7 @@ def test_terminal(text, passed, ignored=(), filtered=None):
             else:
                 need(name in passed and name not in records, 'unknown or duplicate open parent Rust test')
                 if name in nested_cases and tail == '':
-                    need(type(filtered) is int and total + filtered == 465,
+                    need(catalog is not None,
                          'nested child must belong to the complete pinned updater catalog')
                     pending, phase = name, 'child-header'
                 else:
@@ -303,7 +311,7 @@ def archive_entries(raw):
     return entries
 
 
-OVERLAY = {'bytes': 185544, 'sha256': '59156d70cf9136f08dbb0d6571603a425e2876de903de66c0b88193183bd7e82'}
+OVERLAY = {'bytes': 215824, 'sha256': 'db25fae99c3b874abe37623c1ae41508d9818bed76947f3862323b7b4e149af7'}
 OVERLAY_EXPANSION_MAX = 4 * 1024 * 1024
 
 
@@ -340,8 +348,8 @@ def apply_overlay(parent, parent_rows, parent_entries, packet):
          'complete exact parent inventory required before overlay')
     changes, encoded_files = manifest['paths'], packet['files_base64']
     need(isinstance(changes, dict) and isinstance(encoded_files, dict)
-         and len(changes) == 29 and set(changes) == set(encoded_files),
-         'all and only 29 declared overlay bodies required')
+         and len(changes) == 31 and set(changes) == set(encoded_files),
+         'all and only 31 declared overlay bodies required')
     current = dict(parent['files'])
     entries = dict(parent_entries)
     for name, change in sorted(changes.items()):
