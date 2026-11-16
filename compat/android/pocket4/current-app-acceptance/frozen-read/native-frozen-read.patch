@@ -1,0 +1,109 @@
+diff --git a/Cargo.lock b/Cargo.lock
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -450,6 +450,7 @@
+  "droidloom-cpu-placement",
+  "droidloom-supervisor",
+  "hex",
++ "libc",
+  "serde",
+  "serde_json",
+  "sha2",
+diff --git a/runtime/droidloom-applications/Cargo.toml b/runtime/droidloom-applications/Cargo.toml
+--- a/runtime/droidloom-applications/Cargo.toml
++++ b/runtime/droidloom-applications/Cargo.toml
+@@ -12,6 +12,7 @@
+ clap.workspace = true
+ droidloom-supervisor = { path = "../droidloom-supervisor" }
+ hex.workspace = true
++libc.workspace = true
+ serde.workspace = true
+ serde_json.workspace = true
+ sha2.workspace = true
+diff --git a/runtime/droidloom-applications/src/release.rs b/runtime/droidloom-applications/src/release.rs
+--- a/runtime/droidloom-applications/src/release.rs
++++ b/runtime/droidloom-applications/src/release.rs
+@@ -3,9 +3,9 @@
+ //! This checks declared evidence and its byte identity. It neither runs Android
+ //! tests nor authenticates the author or meaning of the supplied evidence.
+ use std::collections::{BTreeMap, BTreeSet};
+-use std::fs::{self, File};
++use std::fs::{self, OpenOptions};
+ use std::io::{self, Read};
+-use std::os::unix::fs::MetadataExt;
++use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+ use std::path::{Path, PathBuf};
+ 
+ use serde::{Deserialize, Serialize};
+@@ -178,8 +178,17 @@
+     if !named.file_type().is_file() || named.len() > limit {
+         return Err(invalid("input is not a bounded regular file"));
+     }
+-    let mut file = File::open(path)?;
++    // A pathname can change after metadata admission. Never let a replacement
++    // FIFO block open, and never follow a replacement final-component symlink.
++    // Validate the opened descriptor before issuing any read.
++    let mut file = OpenOptions::new()
++        .read(true)
++        .custom_flags(libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK)
++        .open(path)?;
+     let before = file.metadata()?;
++    if !before.file_type().is_file() || before.len() > limit {
++        return Err(invalid("input is not a bounded regular file"));
++    }
+     if !stable(&named, &before) {
+         return Err(invalid("input changed before opening"));
+     }
+@@ -446,6 +455,7 @@
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++    use std::fs::File;
+     use tempfile::TempDir;
+ 
+     fn fixture(count: usize) -> (TempDir, Manifest, Results) {
+@@ -531,6 +541,44 @@
+     }
+ 
+     #[test]
++    fn frozen_regular_input_matches_exact_and_larger_limits() {
++        let root = tempfile::tempdir().unwrap();
++        let path = root.path().join("ordinary.log");
++        let content = b"ordinary frozen input\n";
++        fs::write(&path, content).unwrap();
++        let path = path.canonicalize().unwrap();
++        for limit in [content.len() as u64, content.len() as u64 + 1] {
++            assert_eq!(read_frozen(&path, limit).unwrap(), content);
++        }
++    }
++
++    #[test]
++    fn frozen_empty_input_accepts_zero_limit() {
++        let root = tempfile::tempdir().unwrap();
++        let path = root.path().join("empty.log");
++        fs::write(&path, b"").unwrap();
++        assert!(read_frozen(&path.canonicalize().unwrap(), 0)
++            .unwrap()
++            .is_empty());
++    }
++
++    #[test]
++    fn frozen_directory_is_rejected() {
++        let root = tempfile::tempdir().unwrap();
++        let error = read_frozen(&root.path().canonicalize().unwrap(), 4096).unwrap_err();
++        assert_eq!(error.to_string(), "input is not a bounded regular file");
++    }
++
++    #[test]
++    fn frozen_declared_bound_is_enforced() {
++        let root = tempfile::tempdir().unwrap();
++        let path = root.path().join("bounded.log");
++        fs::write(&path, b"ordinary").unwrap();
++        let error = read_frozen(&path.canonicalize().unwrap(), 7).unwrap_err();
++        assert_eq!(error.to_string(), "input is not a bounded regular file");
++    }
++
++    #[test]
+     fn complete_42_is_only_evidence_completeness_and_13_is_incomplete() {
+         let (root, manifest, mut results) = fixture(42);
+         let report = check(&root, &manifest, &results, 42);

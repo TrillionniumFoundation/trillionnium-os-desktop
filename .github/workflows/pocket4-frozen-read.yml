@@ -1,0 +1,158 @@
+name: Pocket4 frozen application input regression
+
+on:
+  pull_request:
+    paths:
+      - 'compat/android/pocket4/current-app-acceptance/frozen-read/**'
+      - '.github/workflows/pocket4-frozen-read.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'compat/android/pocket4/current-app-acceptance/frozen-read/**'
+      - '.github/workflows/pocket4-frozen-read.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ordinary-native-inputs:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUSTUP_TOOLCHAIN: '1.93.0'
+      CARGO_TERM_COLOR: never
+      GIT_CONFIG_NOSYSTEM: '1'
+      GIT_CONFIG_GLOBAL: /dev/null
+      GIT_TERMINAL_PROMPT: '0'
+      P4_SOURCE_WRAPPER_COMMIT: 16b2d43552add67b0d9a0d4e8d7337e0fdee1972
+      P4_CURRENT_SOURCE_INVENTORY_SHA256: 469c02ab24549f7c0bdd010bbac8bf544ca7f23732ebe63fed12460865ddad0c
+    steps:
+      - name: Check out reviewed input patch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: packet-source
+      - name: Check out complete original capsule and overlay at fixed wrapper
+        uses: actions/checkout@v4
+        with:
+          ref: 16b2d43552add67b0d9a0d4e8d7337e0fdee1972
+          path: producer-packet
+          sparse-checkout: compat/android/pocket4/runtime-current-source-r1
+      - name: Reserve two CPUs and new private source and Cargo directories
+        shell: bash
+        run: |
+          python3 -I -B - <<'PY'
+          import json, os
+          from pathlib import Path
+          allowed = sorted(os.sched_getaffinity(0))
+          assert len(allowed) > 2, 'two CPUs must remain free'
+          compile_cpus = allowed[:min(2, len(allowed) - 2)]
+          paths = {
+              'CARGO_HOME': str(Path(os.environ['RUNNER_TEMP']) / 'p4-frozen-native-cargo'),
+              'CARGO_TARGET_DIR': str(Path(os.environ['RUNNER_TEMP']) / 'p4-frozen-native-target'),
+              'P4_NATIVE_ROOT': str(Path(os.environ['RUNNER_TEMP']) / 'p4-frozen-native-source'),
+          }
+          assert all(not os.path.lexists(path) for path in paths.values())
+          with open(os.environ['GITHUB_ENV'], 'a') as stream:
+              for key, value in paths.items():
+                  stream.write(f'{key}={value}\n')
+              stream.write('P4_BUILD_CPUSET=' + ','.join(map(str, compile_cpus)) + '\n')
+              stream.write('CARGO_BUILD_JOBS=' + str(len(compile_cpus)) + '\n')
+          print(json.dumps({'allowed_cpus': allowed, 'compile_cpus': compile_cpus,
+                            'reserved_cpus': sorted(set(allowed) - set(compile_cpus))}))
+          PY
+      - name: Install fixed Rust toolchain
+        shell: bash
+        run: taskset --cpu-list "$P4_BUILD_CPUSET" rustup toolchain install 1.93.0 --profile minimal
+      - name: Verify full capsule and overlay and apply unchanged native reader patch
+        shell: bash
+        timeout-minutes: 3
+        run: |
+          taskset --cpu-list "$P4_BUILD_CPUSET" python3 -I -B \
+            packet-source/compat/android/pocket4/current-app-acceptance/frozen-read/host-regression/apply_native_patch.py \
+            --source-packet producer-packet/compat/android/pocket4/runtime-current-source-r1 \
+            --wrapper-commit "$P4_SOURCE_WRAPPER_COMMIT" \
+            --inventory-sha256 "$P4_CURRENT_SOURCE_INVENTORY_SHA256" \
+            --native-root "$P4_NATIVE_ROOT" \
+            --output "$RUNNER_TEMP/p4-native-before-tests.json"
+      - name: Run exactly fourteen ordinary native release tests with locked dependencies
+        shell: bash
+        working-directory: ${{ runner.temp }}/p4-frozen-native-source
+        run: |
+          set -o pipefail
+          unset RUSTFLAGS RUSTDOCFLAGS CARGO_ENCODED_RUSTFLAGS CARGO_ENCODED_RUSTDOCFLAGS RUSTC RUSTDOC RUSTC_WRAPPER RUSTC_WORKSPACE_WRAPPER RUSTC_BOOTSTRAP RUST_MIN_STACK LD_PRELOAD LD_LIBRARY_PATH LD_AUDIT
+          taskset --cpu-list "$P4_BUILD_CPUSET" cargo +1.93.0 test --locked \
+            --manifest-path "$P4_NATIVE_ROOT/Cargo.toml" -p droidloom-applications \
+            --lib release::tests:: -- --test-threads=1 2>&1 | tee "$RUNNER_TEMP/p4-native-release-tests.log"
+          python3 -I -B - <<'PY'
+          import hashlib, json, os, re
+          from pathlib import Path
+          packet = Path(os.environ['GITHUB_WORKSPACE']) / 'packet-source/compat/android/pocket4/current-app-acceptance/frozen-read'
+          manifest = json.loads((packet / 'source-manifest.json').read_text())
+          log_path = Path(os.environ['RUNNER_TEMP']) / 'p4-native-release-tests.log'
+          raw = log_path.read_bytes()
+          text = raw.decode()
+          expected = manifest['test_contract']['release_tests']
+          passed = re.findall(r'^test (release::tests::\S+) \.\.\. ok$', text, re.MULTILINE)
+          assert len(expected) == len(set(expected)) == len(passed) == len(set(passed)) == 14
+          assert set(passed) == set(expected), 'actual native test names differ'
+          summaries = re.findall(r'^test result: ok\. 14 passed; 0 failed; 0 ignored; 0 measured; (\d+) filtered out;', text, re.MULTILINE)
+          assert len(summaries) == 1, 'one exact fourteen-test native result required'
+          result = {'schema': 'p4-current-frozen-read-ordinary-tests-v1',
+                    'passed': 14, 'failed': 0, 'ignored': 0, 'filtered_out': int(summaries[0]),
+                    'executed_tests': passed, 'executed_test_filter': 'release::tests::',
+                    'compiled_actual_native_crate': True,
+                    'source_wrapper_commit': os.environ['P4_SOURCE_WRAPPER_COMMIT'],
+                    'source_tree': manifest['native_tree_after'],
+                    'log_sha256': hashlib.sha256(raw).hexdigest(),
+                    'historical_tests_counted_as_fresh': 0, 'Android_actions': 0,
+                    'runtime_qualified': False, 'production_ready': False}
+          output = Path(os.environ['RUNNER_TEMP']) / 'p4-native-release-test-result.json'
+          with output.open('x') as stream:
+              json.dump(result, stream, indent=2)
+              stream.write('\n')
+          print(json.dumps(result))
+          PY
+      - name: Check every target of the actual application crate locked and offline
+        shell: bash
+        working-directory: ${{ runner.temp }}/p4-frozen-native-source
+        run: |
+          set -o pipefail
+          unset RUSTFLAGS RUSTDOCFLAGS CARGO_ENCODED_RUSTFLAGS CARGO_ENCODED_RUSTDOCFLAGS RUSTC RUSTDOC RUSTC_WRAPPER RUSTC_WORKSPACE_WRAPPER RUSTC_BOOTSTRAP RUST_MIN_STACK LD_PRELOAD LD_LIBRARY_PATH LD_AUDIT
+          taskset --cpu-list "$P4_BUILD_CPUSET" cargo +1.93.0 check --locked --offline \
+            --manifest-path "$P4_NATIVE_ROOT/Cargo.toml" -p droidloom-applications \
+            --all-targets 2>&1 | tee "$RUNNER_TEMP/p4-native-all-targets.log"
+      - name: Verify complete source and lockfile unchanged after both Cargo commands
+        shell: bash
+        timeout-minutes: 3
+        run: |
+          taskset --cpu-list "$P4_BUILD_CPUSET" python3 -I -B \
+            packet-source/compat/android/pocket4/current-app-acceptance/frozen-read/host-regression/apply_native_patch.py \
+            --source-packet producer-packet/compat/android/pocket4/runtime-current-source-r1 \
+            --wrapper-commit "$P4_SOURCE_WRAPPER_COMMIT" \
+            --inventory-sha256 "$P4_CURRENT_SOURCE_INVENTORY_SHA256" \
+            --native-root "$P4_NATIVE_ROOT" \
+            --verify-applied --prior-report "$RUNNER_TEMP/p4-native-before-tests.json" \
+            --output "$RUNNER_TEMP/p4-native-after-tests.json"
+      - name: Preserve ordinary native source and test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pocket4-frozen-input-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            ${{ runner.temp }}/p4-native-before-tests.json
+            ${{ runner.temp }}/p4-native-release-tests.log
+            ${{ runner.temp }}/p4-native-release-test-result.json
+            ${{ runner.temp }}/p4-native-all-targets.log
+            ${{ runner.temp }}/p4-native-after-tests.json
+          if-no-files-found: warn
+      - name: Remove private source and Cargo directories and verify absence
+        if: always()
+        shell: bash
+        run: |
+          rm -rf -- "$RUNNER_TEMP/p4-frozen-native-source" "$RUNNER_TEMP/p4-frozen-native-target" "$RUNNER_TEMP/p4-frozen-native-cargo"
+          test ! -e "$RUNNER_TEMP/p4-frozen-native-source"
+          test ! -e "$RUNNER_TEMP/p4-frozen-native-target"
+          test ! -e "$RUNNER_TEMP/p4-frozen-native-cargo"
