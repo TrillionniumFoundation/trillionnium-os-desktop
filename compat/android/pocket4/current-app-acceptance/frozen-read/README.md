@@ -1,60 +1,89 @@
-# Bound frozen application inputs before reading
+# Bound frozen application inputs on the complete current source
 
-The native application reader checks file identity before and after reading. Its
-open operation also needs to remain bounded when an admitted pathname changes.
-The correction opens with `O_NONBLOCK`, `O_NOFOLLOW` and `O_CLOEXEC`, then verifies
-that the opened descriptor is a bounded regular file. Original inode, metadata,
-length and content checks remain required.
+The native application reader verifies input identity and content before accepting
+evidence. Its existing correction opens without following a final-component link
+or blocking on a replaced special file, and verifies the opened descriptor as a
+bounded regular file before reading. Original metadata, size and byte-identity
+checks remain required.
 
-This revision targets the complete current native commit
-`b2a0e4eb9eea33fec219049975b413877fed3f59`, tree
-`c1d0fc0aa364e64fe0538582e57e055a5e38887f`, with **2,130 tracked files**.
-The original reader, application Cargo manifest and workspace lockfile are
-byte-identical to the corresponding three files used by the earlier patch.
-The explicit workspace `libc` dependency is the only lockfile dependency change;
-no resolved versions or package checksums change.
+This revision binds that unchanged correction and its four ordinary native tests
+to the complete current source carried by public wrapper commit
+16b2d43552add67b0d9a0d4e8d7337e0fdee1972.
 
-## Current packet
+| Identity | Fixed value |
+| --- | --- |
+| Public wrapper tree | 550b1989b75444932c9df76ce8cb5eda89128312 |
+| Original producer parent commit | 61a38baa745483fbfb757466a1cf352febc20552 |
+| Original producer parent tree | db6249e80209abeda8000eeced6d045a1d57e0a2 |
+| Complete current producer tree | cbe7986c27605ea7d3167f1171a09f625dc22192 |
+| Complete producer files before and after the reader patch | 2,231 |
+| Producer tree after the three-file reader patch | a197f2a490bf47c611a38b4db5152e913652e417 |
+| External public capsule inventory SHA256 | 469c02ab24549f7c0bdd010bbac8bf544ca7f23732ebe63fed12460865ddad0c |
 
-`source-manifest.json` binds this packet, the workflow, the complete native Git
-index, and the three source files before and after applying
-`native-frozen-read.patch`. The patch contains the original reader correction
-and four ordinary native tests: regular content, empty input, a directory
-rejection, and a static declared-size bound.
+The current source is a verified original capsule plus its complete 27-path
+overlay. It has no new producer commit; the evidence records source_commit as
+null and identifies the original parent separately. The workflow checks out the
+public wrapper at its exact commit. It does not require the parent producer
+commit to be available as a GitHub checkout.
 
-The previous 9ec-based packet and its observed results remain in commit
-`2e3d48a77f539e2ab3dc56e349c6a286af50f476`. The current packet retains the existing
-ten release tests and adds four ordinary tests. Historical race executors and
-duplicate original/candidate modules have been removed from the current packet.
-The current workflow performs no race reproduction or Android operation.
+## Source composition
 
-## Complete native source validation
+The maintained public source verifier is pinned by complete size and SHA256.
+Its source-data validation checks the external inventory, complete original
+archive, original commit body, all 2,222 parent files, and every overlay before
+row, replacement body and mode. It reconstructs the exact 2,231-file current
+tree in a new private source directory.
 
-`.github/workflows/pocket4-frozen-read.yml` checks out the exact native commit
-separately from the reviewed packet. It verifies the complete Git index and
-every original tracked blob and mode, applies only the three declared changes,
-and checks their resulting SHA-256 values. It then uses Rust **1.93.0** with
-Cargo `--locked` to compile the actual application crate and require all
-**14 named release tests**, followed by `cargo check --all-targets` on that
-same crate. Source and lockfile identities are checked again after the commands.
-Zero tests, a different set of test names, ignored tests, modified unrelated
-source, or a changed lockfile cannot satisfy this workflow.
+The existing application helper calls only that verifier's input validation,
+source replay and full-source snapshot functions. The current source's
+preparation script, ordinary-suite controller and runtime entry points are not
+invoked by this workflow.
 
-Compiler processes use at most two logical CPUs and leave at least two logical
-CPUs free. Build outputs are isolated under runner temporary storage and removed
-afterward. Complete-source checks and logs are retained as CI artifacts.
+The patch still changes exactly three native files:
 
-For an isolated clean checkout of the exact native commit, use the existing
-application helper before running the focused native commands:
+- The reader and four ordinary tests in the application release module.
+- The application's explicit dependency on the existing workspace libc.
+- The corresponding single dependency edge in the current workspace lockfile.
 
-```sh
-python3 -B compat/android/pocket4/current-app-acceptance/frozen-read/host-regression/apply_native_patch.py \
-  --native-root /absolute/path/to/native-checkout --output /absolute/path/to/before-tests.json
-```
+The current 51,900-byte lockfile already contains the upstream source changes.
+Those changes remain byte-for-byte present. Adding the application dependency
+produces a 51,909-byte lockfile; no resolved version, registry source or package
+checksum changes. The two application source inputs remain identical to the
+original inputs of the existing reader patch.
 
-After the commands, use the same helper with `--verify-applied` and a different
-unused output path. The workflow contains the complete resource and named-test
-checks. Results apply only to this exact source generation and patched files.
+The packet manifest binds all three before and after files, both complete native
+trees, the complete source-row digests, this packet and its workflow. Every
+other native source file and mode must remain unchanged.
 
-The packet grants no application business-route, Android startup, deployment or
-production-readiness acceptance. Those gates remain separate and pending.
+## Fresh focused CI
+
+The workflow uses Rust 1.93.0 and Cargo --locked to compile the actual application
+crate and execute exactly the fourteen named release::tests:: cases. Ten are
+the original release tests and four exercise ordinary regular content, empty
+input, directory rejection and a static size bound. Each calls the real native
+reader. No duplicated implementation, test injection or old race executor is
+used.
+
+The same actual crate then receives a locked, offline all-targets check. Source
+and lockfile identities are checked again afterward, including the complete
+2,231-file physical source snapshot. Test compilation and all-targets checking
+do not execute the other application tests, ignored cases, documentation tests
+or runtime entry points. This is not a repeat of any earlier 967-, 1,257- or
+1,272-case qualification.
+
+Source verification and Cargo commands use at most two logical CPUs while
+leaving at least two others outside their affinity. Compilation uses a fresh
+Cargo home and target directory, with inherited compiler overrides cleared.
+The source replay, Cargo home and target directory are removed afterward and
+their absence is checked. CI artifacts preserve source bookends and the actual
+test and check logs.
+
+The ordinary entry is host-regression/apply_native_patch.py with the reviewed
+public capsule directory, exact wrapper and external inventory pins, a new
+native source destination and a new evidence output. After the Cargo commands,
+the same entry uses --verify-applied and the original --prior-report. The
+workflow records the complete invocation and named-test gate.
+
+Previous successful jobs remain evidence for their own source generations.
+This packet grants no Android startup, application business-route, deployment
+or production-readiness acceptance.

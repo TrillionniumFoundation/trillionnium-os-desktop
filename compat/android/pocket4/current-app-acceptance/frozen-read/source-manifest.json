@@ -1,72 +1,110 @@
 {
-  "Android_actions": 0,
-  "business_routes_closed": 0,
-  "ci_workflow": {
-    "bytes": 5477,
-    "relative": ".github/workflows/pocket4-frozen-read.yml",
-    "sha256": "e9a3c6105b768bed911dc27b22e6ba3e6900c35304eacb95cf18f7e1513e619f"
+  "schema": "p4-native-app-frozen-read-source-v3",
+  "source_wrapper": {
+    "commit": "16b2d43552add67b0d9a0d4e8d7337e0fdee1972",
+    "tree": "550b1989b75444932c9df76ce8cb5eda89128312",
+    "relative": "compat/android/pocket4/runtime-current-source-r1",
+    "inventory": {
+      "bytes": 997,
+      "sha256": "469c02ab24549f7c0bdd010bbac8bf544ca7f23732ebe63fed12460865ddad0c"
+    },
+    "verifier": {
+      "bytes": 24525,
+      "sha256": "61b5db75b8665909d021468ae8f2d348a3235021ff51835492dea570aee13ac0"
+    },
+    "original_capsule": {
+      "bytes": 7696708,
+      "sha256": "7ab244365184ef670c244b6a0ed75857c6f942897f3fc59c00e6375e76f51816"
+    },
+    "original_overlay": {
+      "bytes": 181740,
+      "sha256": "1d7ad87172bba46e0ff1d5f24d791bde2040aa730480a91a75ee42808388dd91"
+    },
+    "original_source_manifest": {
+      "bytes": 673996,
+      "sha256": "62194b76e735e879c596befe4b07dcf0442ae5d6c4612c6fd63cb3bc54fc038a"
+    },
+    "original_commit": {
+      "bytes": 331,
+      "sha256": "879f0ac4412540cc03fb3593933aa2ea5cc6519c1d3e6e4fd3251cd393148e2d"
+    }
+  },
+  "source_parent_commit": "61a38baa745483fbfb757466a1cf352febc20552",
+  "source_parent_tree": "db6249e80209abeda8000eeced6d045a1d57e0a2",
+  "source_commit": null,
+  "native_tree_before": "cbe7986c27605ea7d3167f1171a09f625dc22192",
+  "native_tree_after": "a197f2a490bf47c611a38b4db5152e913652e417",
+  "native_files_count": 2231,
+  "native_bytes_before": 40696414,
+  "native_bytes_after": 40698414,
+  "native_rows_sha256_before": "97edb5f7fb20090d64c95a2bf9a79869cdc7c4dc2ff6d388e64b849875e7b811",
+  "native_rows_sha256_after": "9fc8de89df78dad36fb24ad62250f0dfb1fa9bbe3e7749b4128e83b45a007254",
+  "native_files": {
+    "Cargo.lock": {
+      "before": {
+        "bytes": 51900,
+        "git_blob": "cbb2aa1b4e671143def404863a84b83197307ac0",
+        "git_mode": "100644",
+        "sha256": "de451576762b3dd73b79cd6c6c4fb8669b4fb6e108e00f80c1276e5f4aeac697"
+      },
+      "after": {
+        "bytes": 51909,
+        "sha256": "66ccf1ef693fb37f96b56ff7e2f814715bdb1564e18a61ecd7bb295d80815b03",
+        "git_blob": "0a289c933e8a12b60b316fce5f662649fd6663ea",
+        "git_mode": "100644"
+      }
+    },
+    "runtime/droidloom-applications/Cargo.toml": {
+      "before": {
+        "bytes": 640,
+        "git_blob": "0c20e342e76e6cba9d358112e33a215f968a5689",
+        "git_mode": "100644",
+        "sha256": "a16f5016a22a5e94b2ae46007ebfac27bee9ea2d0164e28c61b06e2b8d48c747"
+      },
+      "after": {
+        "bytes": 662,
+        "sha256": "4efc66264648692d222c4d0aee3f4c020f532a24972d103cd1b0f8c9e5eddb5a",
+        "git_blob": "559fa4047340e2c4913710591bd5d36cbb006f43",
+        "git_mode": "100644"
+      }
+    },
+    "runtime/droidloom-applications/src/release.rs": {
+      "before": {
+        "bytes": 24628,
+        "git_blob": "d19ff860439c70c4c7b5bc0ae86385f0e75b2a97",
+        "git_mode": "100644",
+        "sha256": "df7eeb8d4b8e808a5273847eb61d28d986d02787c61755d5b674e5305192aa2b"
+      },
+      "after": {
+        "bytes": 26597,
+        "sha256": "76454dae41107f3d835370d3271ee57055633cc16511cc001f88dd62a1505973",
+        "git_blob": "800f3c3b4b68b70f85000e6be475dcd2ca2ff30c",
+        "git_mode": "100644"
+      }
+    }
   },
   "files": {
     "README.md": {
-      "bytes": 3323,
-      "sha256": "c852497e8e2f070d55b708703aa05838792063aaf932f1b12e49097f2f21d46c"
+      "bytes": 4860,
+      "sha256": "3bfe6bea08688d1b88bfcf722bc0130caa18bcce6a1da8a22086ed51e59fed0d"
     },
     "host-regression/apply_native_patch.py": {
-      "bytes": 6392,
-      "sha256": "ce41c2ad58419c8538f078a75257f92ef66a15b82f8370eead4070bcf16ced4d"
+      "bytes": 8838,
+      "sha256": "e9dfcf604510fa199f7ca044b9c48a766d408e7f2f52ed2b5123e2e060700f19"
     },
     "native-frozen-read.patch": {
       "bytes": 4073,
       "sha256": "74ad50f3e3b2cc07638c1a0269b9b71e8e6575f9d0418a2da20d499961942948"
     }
   },
-  "historical_source_packet_commit": "2e3d48a77f539e2ab3dc56e349c6a286af50f476",
-  "native_base_commit": "b2a0e4eb9eea33fec219049975b413877fed3f59",
-  "native_base_tree": "c1d0fc0aa364e64fe0538582e57e055a5e38887f",
-  "native_files": {
-    "Cargo.lock": {
-      "after": {
-        "bytes": 51854,
-        "sha256": "a90afd8598978e6876dd20eed645c14505997ffe543668a9701a0882c410bb17"
-      },
-      "before": {
-        "bytes": 51845,
-        "sha256": "ca5300907a8e609ac0340d016ecfe7b4292bf45fe5ab3cbe8dd0c013f12a2285"
-      }
-    },
-    "runtime/droidloom-applications/Cargo.toml": {
-      "after": {
-        "bytes": 662,
-        "sha256": "4efc66264648692d222c4d0aee3f4c020f532a24972d103cd1b0f8c9e5eddb5a"
-      },
-      "before": {
-        "bytes": 640,
-        "sha256": "a16f5016a22a5e94b2ae46007ebfac27bee9ea2d0164e28c61b06e2b8d48c747"
-      }
-    },
-    "runtime/droidloom-applications/src/release.rs": {
-      "after": {
-        "bytes": 26597,
-        "sha256": "76454dae41107f3d835370d3271ee57055633cc16511cc001f88dd62a1505973"
-      },
-      "before": {
-        "bytes": 24628,
-        "sha256": "df7eeb8d4b8e808a5273847eb61d28d986d02787c61755d5b674e5305192aa2b"
-      }
-    }
+  "ci_workflow": {
+    "relative": ".github/workflows/pocket4-frozen-read.yml",
+    "bytes": 8664,
+    "sha256": "700478489053e66ba486cfc106f0b8d28fd078b74b98d269c8fa65e5a9700b07"
   },
-  "native_index_sha256": "9b78ebdae30777424bd1ecdb6082ea473eebb27f9a4df055841d18d6aada57fe",
-  "native_tracked_files": 2130,
-  "production_ready": false,
-  "publication_base_commit": "627a7a2fa8b367c4ba226a93b04cdaae8bc35136",
-  "runtime_qualified": false,
-  "schema": "p4-native-app-frozen-read-source-v2",
+  "previous_packet_commit": "7bd93ad014df88bc9e3c112c84ae989ba99fbb67",
   "test_contract": {
-    "compiler_max_logical_cpus": 2,
-    "logical_cpus_reserved": 2,
-    "native_cargo_locked": true,
-    "native_release_test_count": 14,
-    "native_release_tests": [
+    "release_tests": [
       "release::tests::frozen_regular_input_matches_exact_and_larger_limits",
       "release::tests::frozen_empty_input_accepts_zero_limit",
       "release::tests::frozen_directory_is_rejected",
@@ -82,10 +120,31 @@
       "release::tests::expected_manifest_count_current_main_and_common_gates_are_external_pins",
       "release::tests::split_identity_order_does_not_change_meaning"
     ],
-    "ordinary_input_cases": 4,
-    "race_reproduction_executed": false,
-    "real_application_all_targets_check_required": true,
-    "rust_toolchain": "1.93.0",
-    "whole_original_Git_blobs_before_and_after_required": true
-  }
+    "executed_test_filter": "release::tests::",
+    "fresh_tests_required": 14,
+    "locked": true,
+    "compiled_actual_native_crate": true,
+    "all_targets_check": true,
+    "all_targets_offline": true,
+    "toolchain": "1.93.0",
+    "maximum_compile_cpus": 2,
+    "minimum_reserved_cpus": 2,
+    "complete_source_bookends": true,
+    "old_race_executor": false,
+    "ignored_tests_executed": false,
+    "documentation_tests_executed": false,
+    "runtime_entrypoints_executed": false
+  },
+  "applicable_native_instructions": {
+    "path": "AGENTS.md",
+    "bytes": 4088,
+    "sha256": "eac22deaa59d6906afe7eef3dfc9696fbacf20e71a90590608d744b096a8ff46",
+    "git_blob": "9682e2c892ceaa4db825e100c9719ec8ff84d257",
+    "read": true,
+    "unchanged_current_source": true
+  },
+  "historical_tests_counted_as_fresh": 0,
+  "Android_actions": 0,
+  "runtime_qualified": false,
+  "production_ready": false
 }

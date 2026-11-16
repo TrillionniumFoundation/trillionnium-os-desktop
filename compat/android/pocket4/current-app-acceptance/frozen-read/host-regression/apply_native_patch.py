@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Verify the complete pinned native tree and apply its bounded-input correction."""
+"""Bind the existing input-reader patch to a complete current source replay."""
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -16,115 +17,167 @@ NATIVE_FILES = {
 }
 
 
+def need(value, message):
+    if not value:
+        raise RuntimeError(message)
+
+
+def content_digest(value):
+    raw = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    return hashlib.sha256(raw).hexdigest()
+
+
+def check_file(path, expected):
+    before = path.lstat()
+    need(stat.S_ISREG(before.st_mode) and before.st_nlink == 1,
+         "one regular source file required: " + str(path))
+    raw = path.read_bytes()
+    after = path.lstat()
+    need((before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns, before.st_ctime_ns)
+         == (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns, after.st_ctime_ns),
+         "source identity changed during reading")
+    need(len(raw) == expected["bytes"]
+         and hashlib.sha256(raw).hexdigest() == expected["sha256"],
+         "source identity differs: " + str(path))
+    return raw
+
+
+def git(root, *args):
+    return subprocess.check_output(["git", "-C", str(root), *args], timeout=30)
+
+
+def native_row(name, record):
+    return {"path": name, "bytes": record["bytes"], "sha256": record["sha256"],
+            "git_blob": record["git_blob"], "mode": record["git_mode"]}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--source-packet", type=Path, required=True)
+    parser.add_argument("--wrapper-commit", required=True)
+    parser.add_argument("--inventory-sha256", required=True)
     parser.add_argument("--native-root", type=Path, required=True)
     parser.add_argument("--verify-applied", action="store_true")
+    parser.add_argument("--prior-report", type=Path)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    if args.output.exists():
-        raise RuntimeError("evidence output already exists")
+    need(not os.path.lexists(args.output), "evidence output already exists")
+    need(args.verify_applied == (args.prior_report is not None),
+         "after-tests verification requires its original before-tests report")
     packet = Path(__file__).resolve().parents[1]
     manifest = json.loads((packet / "source-manifest.json").read_text())
-    root = args.native_root.resolve(strict=True)
-
-    def git(*argv):
-        return subprocess.check_output(["git", "-C", str(root), *argv], timeout=30)
-
-    def check_file(path, expected):
-        if path.is_symlink() or not path.is_file():
-            raise RuntimeError("regular source file required: " + str(path))
-        raw = path.read_bytes()
-        if len(raw) != expected["bytes"] or hashlib.sha256(raw).hexdigest() != expected["sha256"]:
-            raise RuntimeError("source identity differs: " + str(path))
-        return raw
-
+    need(manifest["schema"] == "p4-native-app-frozen-read-source-v3",
+         "current packet schema required")
     actual_files = {str(p.relative_to(packet)) for p in packet.rglob("*")
                     if (p.is_file() or p.is_symlink()) and p != packet / "source-manifest.json"}
-    if actual_files != set(manifest["files"]):
-        raise RuntimeError("packet file inventory differs")
+    need(actual_files == set(manifest["files"]), "packet file inventory differs")
     for name, expected in manifest["files"].items():
         relative = Path(name)
-        if relative.is_absolute() or ".." in relative.parts:
-            raise RuntimeError("invalid packet path")
+        need(not relative.is_absolute() and ".." not in relative.parts, "invalid packet path")
         check_file(packet / relative, expected)
     check_file(packet.parents[4] / manifest["ci_workflow"]["relative"], manifest["ci_workflow"])
-    if git("rev-parse", "HEAD").decode().strip() != manifest["native_base_commit"]:
-        raise RuntimeError("native checkout commit differs")
-    if git("rev-parse", "HEAD^{tree}").decode().strip() != manifest["native_base_tree"]:
-        raise RuntimeError("native checkout tree differs")
-    index = git("ls-files", "--stage", "-z")
-    if hashlib.sha256(index).hexdigest() != manifest["native_index_sha256"]:
-        raise RuntimeError("complete native Git index differs")
-    entries = [entry for entry in index.split(b"\0") if entry]
-    if len(entries) != manifest["native_tracked_files"]:
-        raise RuntimeError("complete native source inventory required")
-    if set(manifest["native_files"]) != NATIVE_FILES:
-        raise RuntimeError("native patch file inventory differs")
+    need(set(manifest["native_files"]) == NATIVE_FILES, "native patch inventory differs")
 
-    def verify_tree(applied):
-        content = []
-        for entry in entries:
-            fields, raw_name = entry.split(b"\t", 1)
-            mode, oid, stage = fields.split()
-            name = os.fsdecode(raw_name)
-            relative = Path(name)
-            if stage != b"0" or relative.is_absolute() or ".." in relative.parts:
-                raise RuntimeError("invalid native index entry")
-            path = root / relative
-            st = path.lstat()
-            if mode == b"120000":
-                if not stat.S_ISLNK(st.st_mode):
-                    raise RuntimeError("source symlink type differs: " + name)
-                raw = os.fsencode(os.readlink(path))
-            elif mode in (b"100644", b"100755"):
-                if not stat.S_ISREG(st.st_mode) or bool(st.st_mode & 0o111) != (mode == b"100755"):
-                    raise RuntimeError("source regular/executable mode differs: " + name)
-                raw = path.read_bytes()
-            else:
-                raise RuntimeError("unsupported native index mode")
-            digest = hashlib.sha256(raw).hexdigest()
-            if applied and name in NATIVE_FILES:
-                expected = manifest["native_files"][name]["after"]
-                if len(raw) != expected["bytes"] or digest != expected["sha256"]:
-                    raise RuntimeError("applied native identity differs: " + name)
-            else:
-                object_id = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
-                if object_id != oid.decode():
-                    raise RuntimeError("original Git blob differs: " + name)
-            content.append([name, mode.decode(), len(raw), digest])
-        if git("ls-files", "--others", "--exclude-standard", "-z"):
-            raise RuntimeError("unexpected native untracked files")
-        changed = {name.decode() for name in git("diff", "--name-only", "-z").split(b"\0") if name}
-        if changed != (NATIVE_FILES if applied else set()):
-            raise RuntimeError("unexpected native source changes")
-        return hashlib.sha256(json.dumps(content, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
+    public = args.source_packet.resolve(strict=True)
+    wrapper = manifest["source_wrapper"]
+    need(args.wrapper_commit == wrapper["commit"]
+         and args.inventory_sha256 == wrapper["inventory"]["sha256"],
+         "external wrapper and inventory pins differ")
+    need(public.name == "runtime-current-source-r1"
+         and public.parent.name == "pocket4"
+         and public.parent.parent.name == "android"
+         and public.parent.parent.parent.name == "compat",
+         "original public capsule location required")
+    wrapper_root = public.parents[3]
+    need(git(wrapper_root, "rev-parse", "HEAD").decode().strip() == args.wrapper_commit
+         and git(wrapper_root, "rev-parse", "HEAD^{tree}").decode().strip() == wrapper["tree"],
+         "source-wrapper checkout identity differs")
+    check_file(public / "FILES.sha256", wrapper["inventory"])
+    verifier_path = public / "verify.py"
+    check_file(verifier_path, wrapper["verifier"])
 
-    before = verify_tree(args.verify_applied)
-    if not args.verify_applied:
-        if git("status", "--porcelain", "--untracked-files=all"):
-            raise RuntimeError("native checkout must be clean")
-        for name, expected in manifest["native_files"].items():
-            check_file(root / name, expected["before"])
+    # This fixed verifier only validates source data and writes a fresh source
+    # replay. No producer module, test controller or runtime entry is imported.
+    spec = importlib.util.spec_from_file_location("p4_current_source_verifier", verifier_path)
+    need(spec is not None and spec.loader is not None, "source verifier import unavailable")
+    verifier = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(verifier)
+    need(verifier.HEAD_COMMIT is None
+         and verifier.PARENT_COMMIT == manifest["source_parent_commit"]
+         and verifier.PARENT_TREE == manifest["source_parent_tree"]
+         and verifier.HEAD_TREE == manifest["native_tree_before"]
+         and verifier.SOURCE_FILES == manifest["native_files_count"]
+         and verifier.SOURCE_BYTES == manifest["native_bytes_before"],
+         "complete native source generation differs")
+    capsule = verifier.verify_capsule(args.inventory_sha256)
+    rows = capsule["rows"]
+    need(len(rows) == manifest["native_files_count"]
+         and content_digest(rows) == manifest["native_rows_sha256_before"],
+         "complete original native rows differ")
+    by_name = {row["path"]: row for row in rows}
+    for name, record in manifest["native_files"].items():
+        need(by_name[name] == native_row(name, record["before"]),
+             "patch input is not the current original source: " + name)
+        by_name[name] = native_row(name, record["after"])
+    after_rows = [by_name[name] for name in sorted(by_name)]
+    need(verifier.tree_id(after_rows) == manifest["native_tree_after"]
+         and sum(row["bytes"] for row in after_rows) == manifest["native_bytes_after"]
+         and content_digest(after_rows) == manifest["native_rows_sha256_after"],
+         "complete patched native source identity differs")
+
+    root = args.native_root.absolute()
+    if args.verify_applied:
+        need(root.resolve(strict=True) == root, "canonical native source directory required")
+        prior = json.loads(args.prior_report.read_text())
+        need(prior["schema"] == "p4-current-frozen-read-native-bookend-v1"
+             and prior["status"] == "applied-and-verified"
+             and prior["source_wrapper_commit"] == args.wrapper_commit
+             and prior["source_tree_after"] == manifest["native_tree_after"]
+             and prior["native_rows_sha256_after"] == manifest["native_rows_sha256_after"],
+             "matching original before-tests report required")
+    else:
+        need(not os.path.lexists(root), "native replay destination must be new")
+        verifier.replay(capsule, root)
+        for name, record in manifest["native_files"].items():
+            check_file(root / name, record["before"])
         patch = str(packet / "native-frozen-read.patch")
-        git("apply", "--check", patch)
-        git("apply", patch)
-    after = verify_tree(True)
-    if git("ls-files", "--stage", "-z") != index:
-        raise RuntimeError("native Git index was modified")
-    git("diff", "--check")
-    evidence = {"native_base_commit": manifest["native_base_commit"],
-                "native_base_tree": manifest["native_base_tree"],
-                "native_index_sha256": manifest["native_index_sha256"],
-                "verified_tracked_files": len(entries),
-                "changed_files": sorted(NATIVE_FILES),
-                "content_before_sha256": before, "content_after_sha256": after,
-                "status": "verified-after-tests" if args.verify_applied else "applied-and-verified",
-                "Android_actions": 0, "runtime_qualified": False, "production_ready": False}
+        git(root, "apply", "--check", patch)
+        git(root, "apply", patch)
+    need(not os.path.lexists(root / ".git"), "portable producer must not contain Git metadata")
+    snapshot = verifier.source_snapshot(root, after_rows, manifest["native_tree_after"])
+    snapshot_sha = content_digest(snapshot)
+    if args.verify_applied:
+        need(snapshot_sha == prior["physical_source_snapshot_sha256"],
+             "native file or directory identity changed during the Cargo commands")
+    for name, record in manifest["native_files"].items():
+        check_file(root / name, record["after"])
+
+    result = {
+        "schema": "p4-current-frozen-read-native-bookend-v1",
+        "status": "verified-after-tests" if args.verify_applied else "applied-and-verified",
+        "source_wrapper_commit": args.wrapper_commit,
+        "source_wrapper_inventory_sha256": args.inventory_sha256,
+        "source_parent_commit": manifest["source_parent_commit"],
+        "source_parent_tree": manifest["source_parent_tree"],
+        "source_commit": None,
+        "source_tree_before": manifest["native_tree_before"],
+        "source_tree_after": manifest["native_tree_after"],
+        "verified_tracked_files": len(after_rows),
+        "changed_files": sorted(NATIVE_FILES),
+        "native_rows_sha256_before": manifest["native_rows_sha256_before"],
+        "native_rows_sha256_after": manifest["native_rows_sha256_after"],
+        "physical_source_snapshot_sha256": snapshot_sha,
+        "full_original_capsule_verified": True,
+        "full_original_overlay_verified": True,
+        "historical_tests_counted_as_fresh": 0,
+        "Android_actions": 0,
+        "runtime_qualified": False,
+        "production_ready": False,
+    }
     with args.output.open("x") as stream:
-        json.dump(evidence, stream, indent=2)
+        json.dump(result, stream, indent=2)
         stream.write("\n")
-    print(json.dumps(evidence))
+    print(json.dumps(result))
 
 
 if __name__ == "__main__":
