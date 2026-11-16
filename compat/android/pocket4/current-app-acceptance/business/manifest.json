@@ -1,5 +1,36 @@
 {
   "current_version_code": 50023496,
+  "diagnostic_revision": {
+    "base_commit": "8a1108a4cfcdb91f3d1b4b13a7034b66dd6160cd",
+    "changed_source_files": [
+      "ihg_artifacts.py"
+    ],
+    "current_runtime_preparation": null,
+    "diagnostic_literal_changes": 18,
+    "historical_host_result": {
+      "bytes": 3278,
+      "path": "host-result.json",
+      "sha256": "f2e9ab342fe9ee91d70251fd61bbfa254e4f0eafa2c061173704d822a14e7e6e"
+    },
+    "historical_preparation_fields": [
+      "source_preparation",
+      "successor_preparation"
+    ],
+    "prior_manifest": {
+      "bytes": 14857,
+      "path": "manifest.json",
+      "sha256": "b23e48c467059ed4268d468b4a57c8854992e04a6499d5f038241bc8397d92a5"
+    },
+    "prior_source": {
+      "bytes": 8360,
+      "path": "source/ihg_artifacts.py",
+      "sha256": "1c9d893769ea5e02674fbfb172121fec26320a0934767207a33e2e69627f8262"
+    },
+    "production_ready": false,
+    "runtime_qualified": false,
+    "scope": "IHG error-label attribution only; validation conditions and runtime bindings unchanged",
+    "source_only": true
+  },
   "formal_destination": "compat/android/pocket4/current-app-acceptance/business",
   "literal_changes": {
     "app_profiles.py": [
@@ -20,6 +51,78 @@
       [
         "VERSION = 50023219",
         "VERSION = 50023496"
+      ],
+      [
+        "'ACTUAL_AMAZON_METADATA_REFERENCE_REQUIRED'",
+        "'ACTUAL_IHG_METADATA_REFERENCE_REQUIRED'"
+      ],
+      [
+        "'ACTUAL_AMAZON_UID_OR_VERSION_CHANGED'",
+        "'ACTUAL_IHG_UID_OR_VERSION_CHANGED'"
+      ],
+      [
+        "'ACTUAL_AMAZON_APK_IDENTITY_CHANGED'",
+        "'ACTUAL_IHG_APK_IDENTITY_CHANGED'"
+      ],
+      [
+        "'AMAZON_APK_STREAM_HASH_DEADLINE'",
+        "'IHG_APK_STREAM_HASH_DEADLINE'"
+      ],
+      [
+        "'AMAZON_APK_GREW'",
+        "'IHG_APK_GREW'"
+      ],
+      [
+        "'ACTUAL_AMAZON_APK_CONTENT_CHANGED'",
+        "'ACTUAL_IHG_APK_CONTENT_CHANGED'"
+      ],
+      [
+        "'HELD_AMAZON_APK_CHANGED'",
+        "'HELD_IHG_APK_CHANGED'"
+      ],
+      [
+        "'AMAZON_APK_NAMED_PATH_CHANGED'",
+        "'IHG_APK_NAMED_PATH_CHANGED'"
+      ],
+      [
+        "'AMAZON_APK_SET_CHANGED'",
+        "'IHG_APK_SET_CHANGED'"
+      ],
+      [
+        "'AMAZON_ARTIFACT_FD_CLOSE_FAILED: '",
+        "'IHG_ARTIFACT_FD_CLOSE_FAILED: '"
+      ],
+      [
+        "'ONE_EXACT_TICKET12306_USER0_METADATA_ROW_REQUIRED'",
+        "'ONE_EXACT_IHG_USER0_METADATA_ROW_REQUIRED'"
+      ],
+      [
+        "'TICKET12306_METADATA_RANGE'",
+        "'IHG_METADATA_RANGE'"
+      ],
+      [
+        "'TICKET12306_PATH_OUTPUT_BOUND'",
+        "'IHG_PATH_OUTPUT_BOUND'"
+      ],
+      [
+        "'TICKET12306_APK_PATH_ROWS_REQUIRED'",
+        "'IHG_APK_PATH_ROWS_REQUIRED'"
+      ],
+      [
+        "'TICKET12306_PATH_SHAPE'",
+        "'IHG_PATH_SHAPE'"
+      ],
+      [
+        "'ONLY_EXACT_TICKET12306_INSTALL_DIRECTORY_APKS_MAY_BE_READ'",
+        "'ONLY_EXACT_IHG_INSTALL_DIRECTORY_APKS_MAY_BE_READ'"
+      ],
+      [
+        "'ONE_TICKET12306_BASE_AND_ONE_INSTALL_DIRECTORY_REQUIRED'",
+        "'ONE_IHG_BASE_AND_ONE_INSTALL_DIRECTORY_REQUIRED'"
+      ],
+      [
+        "'LAUNCHER_MUST_BELONG_TO_EXACT_TICKET12306_PACKAGE'",
+        "'LAUNCHER_MUST_BELONG_TO_EXACT_IHG_PACKAGE'"
       ]
     ]
   },
@@ -274,9 +377,9 @@
       "sha256": "df48544ba6e8bfcfc429e7dafa18ad9f11a3e065e2ed2efe7192d580c0eaee39"
     },
     {
-      "bytes": 8360,
+      "bytes": 8266,
       "path": "source/ihg_artifacts.py",
-      "sha256": "1c9d893769ea5e02674fbfb172121fec26320a0934767207a33e2e69627f8262"
+      "sha256": "3723a3f4bb7c818f8c2567cbe55f6f7b251b4364e9003825b230c51df20e6991"
     },
     {
       "bytes": 4051,

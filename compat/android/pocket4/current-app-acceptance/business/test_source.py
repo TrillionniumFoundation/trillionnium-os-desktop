@@ -51,7 +51,7 @@ class CurrentIHGIdentity(unittest.TestCase):
             self.assertEqual(hashlib.sha256(raw).hexdigest(), row['sha256'])
             ast.parse(raw, filename=row['path'])
 
-    def test_29_unchanged_files_and_four_exact_literal_changes(self):
+    def test_29_unchanged_files_and_exact_literal_changes(self):
         changed = []
         for row in MANIFEST['sources']:
             raw = (ROOT / row['path']).read_bytes()
@@ -65,7 +65,7 @@ class CurrentIHGIdentity(unittest.TestCase):
                 self.assertEqual(hashlib.sha256(text.encode()).hexdigest(), original['sha256'])
                 self.assertEqual(len(text.encode()), original['bytes'])
         self.assertEqual(changed, ['app_profiles.py', 'ihg_artifacts.py'])
-        self.assertEqual(sum(map(len, MANIFEST['literal_changes'].values())), 4)
+        self.assertEqual(sum(map(len, MANIFEST['literal_changes'].values())), 22)
 
     def test_current_metadata(self):
         self.assertEqual(self.common.package_metadata(self.current, self.profile.IHG), self.target)
@@ -106,7 +106,7 @@ class CurrentIHGIdentity(unittest.TestCase):
         self.artifacts.ArtifactSet(None, {'target': self.target}, None)
 
     def test_artifact_guard_old_identity_rejected(self):
-        with self.assertRaises(RuntimeError):
+        with self.assertRaisesRegex(RuntimeError, '^ACTUAL_IHG_METADATA_REFERENCE_REQUIRED$'):
             self.artifacts.ArtifactSet(None, {'target': {**self.target, 'version_code': 50023219}}, None)
 
     def test_existing_limits_and_clock_profiles_preserved(self):
