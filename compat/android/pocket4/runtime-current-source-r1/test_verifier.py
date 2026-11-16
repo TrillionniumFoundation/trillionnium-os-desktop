@@ -105,8 +105,15 @@ def updater_catalogs():
     added = {
         'coherent_images::tests::release_mapping_cannot_relabel_the_actual_selected_cp2a_lock',
         'coherent_images::tests::selected_lock_identity_requires_exact_typed_and_unique_identity_fields',
+        'android::settings_asb_security::tests::settings_changed_preimages_recipe_or_alias_fail_before_source_mutation',
+        'android::settings_asb_security::tests::settings_existing_providers_restore_metadata_and_normal_receipt_keeps_scope_false',
+        'android::settings_asb_security::tests::settings_journal_publication_failure_precedes_all_source_writes',
+        'android::settings_asb_security::tests::settings_normal_artifact_rejects_foreign_provider_paths_duplicates_and_aliases',
+        'android::settings_asb_security::tests::settings_normal_completion_rejects_unrestored_or_changed_source_and_input_receipt',
+        'android::settings_asb_security::tests::settings_official_patch_preregisters_five_paths_and_recovers_original_absence',
+        'android::settings_asb_security::tests::settings_requests_keep_exact_651_lock_strict_user_and_actual_module_targets',
     }
-    v.need(len(current['all']) == 467 and added <= set(current['all']), 'exact current updater catalog required')
+    v.need(len(current['all']) == 474 and added <= set(current['all']), 'exact current updater catalog required')
     historical = [name for name in current['all'] if name not in added]
     historical_body = (json.dumps(historical, sort_keys=True, separators=(',', ':')) + '\n').encode()
     v.need(len(historical) == 465 and v.digest(historical_body)['sha256'] ==
@@ -221,21 +228,21 @@ class Controls(unittest.TestCase):
         exact = set(v.decode(v.regular(P / 'UPDATER-EXACT64.json')))
         ignored = set(current['ignored'])
         passed = set(current['all']) - exact - ignored
-        self.assertEqual((len(passed), len(ignored), len(exact)), (402, 1, 64))
+        self.assertEqual((len(passed), len(ignored), len(exact)), (409, 1, 64))
         # Synthetic current-catalog transcript. The three ACTUAL_* constants
         # above remain byte-for-byte historical evidence, not new CI output.
         fragments = {
             'image_policy::tests::repack_preserves_android_metadata_and_adbd':
-                ACTUAL_IMAGE_CHILD.replace('464 filtered out;', '466 filtered out;'),
+                ACTUAL_IMAGE_CHILD.replace('464 filtered out;', '473 filtered out;'),
             'native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata':
-                ACTUAL_STAGING_CHILD.replace('464 filtered out;', '466 filtered out;'),
+                ACTUAL_STAGING_CHILD.replace('464 filtered out;', '473 filtered out;'),
             'native_generation::tests::real_erofs_bundle_verifies_its_embedded_pair': ACTUAL_TOOL_OUTPUT,
         }
         self.assertTrue(set(fragments) <= passed)
-        text = 'running 403 tests\n'
+        text = 'running 410 tests\n'
         for name in sorted(passed | ignored):
             text += fragments.get(name, f'test {name} ... ' + ('ignored' if name in ignored else 'ok') + '\n')
-        text += '\ntest result: ok. 402 passed; 0 failed; 1 ignored; 0 measured; 64 filtered out; finished in 1.00s\n'
+        text += '\ntest result: ok. 409 passed; 0 failed; 1 ignored; 0 measured; 64 filtered out; finished in 1.00s\n'
         self.assertEqual(v.test_terminal(text, passed, ignored, 64, catalog=current['all']),
                          {'passed': sorted(passed), 'ignored': sorted(ignored), 'filtered': 64})
         wrong_names = list(current['all'])
@@ -244,8 +251,8 @@ class Controls(unittest.TestCase):
                         current['all'][:-1] + [current['all'][0]]):
             with self.subTest(catalog=catalog), self.assertRaises(RuntimeError):
                 v.test_terminal(text, passed, ignored, 64, catalog=catalog)
-        for bad in (text.replace('466 filtered out;', '464 filtered out;', 1),
-                    text.replace('466 filtered out;', '465 filtered out;', 1),
+        for bad in (text.replace('473 filtered out;', '466 filtered out;', 1),
+                    text.replace('473 filtered out;', '465 filtered out;', 1),
                     text.replace('1 ignored;', '0 ignored;', 1),
                     text.replace('64 filtered out;', '62 filtered out;', 1)):
             with self.subTest(text=bad), self.assertRaises(RuntimeError):
@@ -291,10 +298,10 @@ class OverlayControls(unittest.TestCase):
         capsule = v.verify_capsule(inventory_sha)
         self.assertIsNone(v.HEAD_COMMIT)
         self.assertEqual(capsule['parent_manifest']['head'], v.PARENT_COMMIT)
-        self.assertEqual(len(capsule['rows']), 2233)
-        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 40718730)
-        self.assertEqual(v.tree_id(capsule['rows']), '5bd6d9a4f0faaff436fd81a4934d4aa3a9791e62')
-        self.assertEqual(len(capsule['overlay_manifest']['paths']), 31)
+        self.assertEqual(len(capsule['rows']), 2243)
+        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 41170196)
+        self.assertEqual(v.tree_id(capsule['rows']), 'f733276e866388548b9995c8040d24f1799057fe')
+        self.assertEqual(len(capsule['overlay_manifest']['paths']), 43)
         self.assertNotEqual(v.HEAD_TREE, v.PARENT_TREE)
 
     def test_overlay_rejects_wrong_base_omitted_extra_or_unsafe_member(self):
@@ -370,7 +377,7 @@ class OverlayControls(unittest.TestCase):
             with self.subTest(omitted_selected_lock_body=name), self.assertRaises(RuntimeError):
                 self.apply(packet)
         for key, value in [('candidate_tree_from_manifest', '0' * 40),
-                           ('candidate_file_count', 2232), ('candidate_bytes', 40718729)]:
+                           ('candidate_file_count', 2242), ('candidate_bytes', 41170195)]:
             packet = self.clone(); packet['manifest'][key] = value
             with self.subTest(field=key), self.assertRaises(RuntimeError):
                 self.apply(packet)
