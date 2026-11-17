@@ -397,6 +397,19 @@ class OverlayControls(unittest.TestCase):
             del packet['files_base64'][name]
             with self.subTest(omitted_selected_lock_body=name), self.assertRaises(RuntimeError):
                 self.apply(packet)
+        # Either current AppBridge repair body must remain in the exact successor.
+        for name in ('runtime/droidloom-supervisor/src/application_probe.rs',
+                     'runtime/droidloom-supervisor/src/production_control.rs'):
+            packet = self.clone()
+            packet['manifest']['paths'][name]['after'] = dict(self.parent['files'][name])
+            packet['files_base64'][name] = v.base64.b64encode(self.entries['source/' + name][1]).decode()
+            with self.subTest(stale_appbridge_body=name), self.assertRaises(RuntimeError):
+                self.apply(packet)
+            packet = self.clone()
+            del packet['manifest']['paths'][name]
+            del packet['files_base64'][name]
+            with self.subTest(omitted_appbridge_body=name), self.assertRaises(RuntimeError):
+                self.apply(packet)
         for key, value in [('candidate_tree_from_manifest', '0' * 40),
                            ('candidate_file_count', 2270), ('candidate_bytes', 42004576)]:
             packet = self.clone(); packet['manifest'][key] = value
