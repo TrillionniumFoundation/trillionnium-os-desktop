@@ -320,9 +320,9 @@ class OverlayControls(unittest.TestCase):
         self.assertIsNone(v.HEAD_COMMIT)
         self.assertEqual(capsule['parent_manifest']['head'], v.PARENT_COMMIT)
         self.assertEqual(len(capsule['rows']), 2271)
-        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 42004577)
-        self.assertEqual(v.tree_id(capsule['rows']), '84d74983ea2c6f3ad131272efb0ac939d9ddcf55')
-        self.assertEqual(len(capsule['overlay_manifest']['paths']), 71)
+        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 42014081)
+        self.assertEqual(v.tree_id(capsule['rows']), 'ed300c1b0f16e7bdf9f43a400003432d2390fb50')
+        self.assertEqual(len(capsule['overlay_manifest']['paths']), 72)
         self.assertNotEqual(v.HEAD_TREE, v.PARENT_TREE)
 
     def test_overlay_rejects_wrong_base_omitted_extra_or_unsafe_member(self):
@@ -396,6 +396,19 @@ class OverlayControls(unittest.TestCase):
             del packet['manifest']['paths'][name]
             del packet['files_base64'][name]
             with self.subTest(omitted_selected_lock_body=name), self.assertRaises(RuntimeError):
+                self.apply(packet)
+        # Either current AppBridge repair body must remain in the exact successor.
+        for name in ('runtime/droidloom-supervisor/src/application_probe.rs',
+                     'runtime/droidloom-supervisor/src/production_control.rs'):
+            packet = self.clone()
+            packet['manifest']['paths'][name]['after'] = dict(self.parent['files'][name])
+            packet['files_base64'][name] = v.base64.b64encode(self.entries['source/' + name][1]).decode()
+            with self.subTest(stale_appbridge_body=name), self.assertRaises(RuntimeError):
+                self.apply(packet)
+            packet = self.clone()
+            del packet['manifest']['paths'][name]
+            del packet['files_base64'][name]
+            with self.subTest(omitted_appbridge_body=name), self.assertRaises(RuntimeError):
                 self.apply(packet)
         for key, value in [('candidate_tree_from_manifest', '0' * 40),
                            ('candidate_file_count', 2270), ('candidate_bytes', 42004576)]:
