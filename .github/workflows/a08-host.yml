@@ -1591,7 +1591,7 @@ jobs:
             ${{ runner.temp }}/runtime-d6-ci-logs/*.stderr
 
   runtime-current-complete-producer:
-    name: Current source - 1293 ordinary cases and 19 normal releases
+    name: Current source - 1311 ordinary cases and 19 normal releases
     runs-on: ubuntu-24.04
     timeout-minutes: 140
     env:
@@ -1602,7 +1602,7 @@ jobs:
       GIT_CONFIG_GLOBAL: /dev/null
       GIT_TERMINAL_PROMPT: '0'
       # Pin the complete reviewed capsule inventory outside the capsule itself.
-      CURRENT_SOURCE_INVENTORY_SHA256: 0664fe0086d39008b43d7c979e22e0c65920934c590f2b7e37fb2e2786408368
+      CURRENT_SOURCE_INVENTORY_SHA256: f5b87e88463056a8bb82fa68a7ad42bf4777f360caf33830846cc41a48d63608
     steps:
       - uses: actions/checkout@v4
         with:
@@ -1619,7 +1619,7 @@ jobs:
           (cd "$capsule" && sha256sum --quiet -c FILES.sha256)
           timeout --signal=TERM --kill-after=10s 90s python3 -I -B "$capsule/test_verifier.py"
           timeout --signal=TERM --kill-after=10s 90s python3 -I -B "$capsule/test_runner.py"
-      - name: Reconstruct the complete 2243-file producer source
+      - name: Reconstruct the complete 2271-file producer source
         timeout-minutes: 5
         shell: bash
         run: |
@@ -1637,7 +1637,7 @@ jobs:
           capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1"
           timeout --signal=TERM --kill-after=30s 1860s bash "$capsule/prepare_ci.sh" \
             --work "$RUNNER_TEMP/current-dependencies"
-      - name: Build all 49 harnesses, execute fresh 1293 cases, and build 19 releases
+      - name: Build all 49 harnesses, execute fresh 1311 cases, and build 19 releases
         timeout-minutes: 92
         shell: bash
         run: |
@@ -1665,3 +1665,30 @@ jobs:
             ${{ runner.temp }}/current-dependencies/logs/*.stderr
             ${{ runner.temp }}/current-dependencies/source/config.log
             ${{ runner.temp }}/current-dependencies/source/config.h
+      - name: Preserve all 19 verified normal binaries
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a08-current-normal-binaries
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/current-ci.json
+            ${{ runner.temp }}/current-ordinary/target/release/droidloom-applications
+            ${{ runner.temp }}/current-ordinary/target/release/droidloom-classpath-wrapper
+            ${{ runner.temp }}/current-ordinary/target/release/droidloom-dmabuf-probe
+            ${{ runner.temp }}/current-ordinary/target/release/droidloom-doctor
+            ${{ runner.temp }}/current-ordinary/target/release/droidloom-gapps
+            ${{ runner.temp }}/current-ordinary/target/release/droidloom-host-mac
+            ${{ runner.temp }}/current-ordinary/target/release/droidloom-image
+            ${{ runner.temp }}/current-ordinary/target/release/droidloom-mesa
+            ${{ runner.temp }}/current-ordinary/target/release/droidloom-package
+            ${{ runner.temp }}/current-ordinary/target/release/droidloom-package-helper
+            ${{ runner.temp }}/current-ordinary/target/release/droidloom-runtime-inputs
+            ${{ runner.temp }}/current-ordinary/target/release/droidloom-source
+            ${{ runner.temp }}/current-ordinary/target/release/droidloom-supervisor
+            ${{ runner.temp }}/current-ordinary/target/release/droidloom-task-launcher
+            ${{ runner.temp }}/current-ordinary/target/release/droidloom-translation-bench
+            ${{ runner.temp }}/current-ordinary/target/release/droidloom-update
+            ${{ runner.temp }}/current-ordinary/target/release/droidloom-wayland
+            ${{ runner.temp }}/current-ordinary/target/release/droidloomctl
+            ${{ runner.temp }}/current-ordinary/target/release/droidloomd
