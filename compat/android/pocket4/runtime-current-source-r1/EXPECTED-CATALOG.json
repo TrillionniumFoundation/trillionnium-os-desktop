@@ -818,6 +818,13 @@
       "production_mac::listener::tests::held_path_attribute_uses_original_inode_after_path_replacement",
       "production_mac::loader::tests::fixed_loader_role_rejects_broker_host_and_wrong_enforcement",
       "production_mac::manager_label::tests::original_label_record_cannot_supply_a_role_path_or_success",
+      "production_mac::private_loop::tests::configure_busy_is_only_a_completed_driver_result",
+      "production_mac::private_loop::tests::fixed_requests_match_kernel_uapi",
+      "production_mac::private_loop::tests::unlabeled_regular_file_is_not_a_private_loop_label",
+      "production_mac::self_attr::tests::another_provider_and_nonzero_flags_are_rejected",
+      "production_mac::self_attr::tests::context_terminator_padding_and_unbounded_size_are_rejected",
+      "production_mac::self_attr::tests::count_truncation_and_extra_record_bytes_are_rejected",
+      "production_mac::self_attr::tests::empty_fscreate_is_one_complete_header",
       "production_mac::systemd::tests::actual_manager_server_inode_rejects_client_socket_and_regular_fd",
       "production_mac::tests::fixed_inode_reader_rejects_real_symlink_and_input_growth",
       "production_mac::tests::kernel_decision_wire_rejects_permissive_partial_or_zero_epoch",
@@ -837,6 +844,8 @@
       "production_mounts::runtime_assets::apex_blocks::mounts::tests::builtin_apex_mountpoint_rejects_real_ordinary_directory_and_replacement_inode",
       "production_mounts::runtime_assets::apex_blocks::mounts::tests::builtin_apex_publication_targets_cannot_select_capex_aliases_or_an_external_path",
       "production_mounts::runtime_assets::apex_blocks::tests::original_apex_block_provider_rejects_ordinary_or_writable_host_files",
+      "production_mounts::runtime_assets::apex_blocks::tests::original_apex_private_pool_missing_context_cannot_masquerade_as_an_empty_retirement",
+      "production_mounts::runtime_assets::apex_blocks::tests::original_apex_private_pool_unexplained_retirement_record_blocks_fresh_bypass",
       "production_mounts::runtime_assets::execution::tests::execution_scope_rejects_caller_masks_and_other_profile_names",
       "production_mounts::runtime_assets::native::build_evidence::tests::native_empty_build_objects_are_not_success_evidence",
       "production_mounts::runtime_assets::native::build_evidence::tests::native_failed_child_and_foreign_derived_pair_are_rejected",
@@ -962,6 +971,12 @@
       "production_namespace::tree::writable_proc::tests::production_runtime_proc_success_keeps_actual_live_verification",
       "production_namespace::tree::writable_proc::tests::production_runtime_proc_transition_preserves_all_other_mount_identity_fields",
       "production_namespace::tree::writable_proc::tests::production_runtime_proc_transition_preserves_hidden_layers_and_visible_selection",
+      "production_private_loop_owner::tests::device_numbers_require_canonical_sysfs_form",
+      "production_private_loop_owner::tests::directory_retirement_keeps_only_the_original_unlinked_inode",
+      "production_private_loop_owner::tests::inventory_observes_foreign_member_and_symlink",
+      "production_private_loop_owner::tests::inventory_rejects_attachment_truncation_and_duplicate_id",
+      "production_private_loop_owner::tests::same_bytes_on_replacement_inode_are_rejected",
+      "production_private_loop_owner::tests::unlink_retains_the_original_descriptor_and_rejects_later_mutation",
       "production_readiness::tests::production_readiness_bounds_continuous_allocation_changes",
       "production_readiness::tests::production_readiness_concurrent_property_writer_keeps_partial_updates_nonfatal",
       "production_readiness::tests::production_readiness_follows_exact_trie_instead_of_searching_value_bytes",
@@ -1211,8 +1226,6 @@
     "ignored": []
   },
   {
-    "package": "droidloom-update",
-    "target": "droidloom-update",
     "all": [
       "android::aac_security::tests::aac_changed_original_patch_alias_or_preexisting_test_is_rejected",
       "android::aac_security::tests::aac_fixed_request_keeps_strict_user_source_and_official_targets",
@@ -1523,6 +1536,10 @@
       "android::tests::private_translator_scopes_dsp_effects_but_keeps_other_media",
       "android::tests::private_update_engine_retains_only_original_header_provider",
       "android::tests::private_vintf_assembler_scope_keeps_real_libvintf",
+      "android::tests::production_full_ownership_metadata_is_wired_and_restores_every_original",
+      "android::tests::production_full_ownership_metadata_never_relaxes_dependency_mode",
+      "android::tests::production_full_ownership_metadata_rejects_second_active_projection_without_more_edits",
+      "android::tests::production_full_ownership_metadata_rejects_wrong_preimage_before_other_projection",
       "android::tests::production_soong_command_preserves_exact_targets_and_dependency_mode",
       "android::tests::production_soong_commands_fix_user_for_every_normal_entry",
       "android::tests::production_soong_inherited_environment_cannot_select_debug",
@@ -1713,7 +1730,9 @@
     ],
     "ignored": [
       "native_bridge::tests::published_source_pin_fetches_and_verifies"
-    ]
+    ],
+    "package": "droidloom-update",
+    "target": "droidloom-update"
   },
   {
     "package": "droidloom-update",

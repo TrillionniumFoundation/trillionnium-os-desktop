@@ -137,7 +137,8 @@ def updater_catalogs():
         'android::official_vendor::tests::vendor_mapping_refuses_system_replacement_and_path_escape',
         'tests::official_vendor_cli_requires_fixed_binary_inputs_and_fresh_output',
     })
-    v.need(len(current['all']) == 496 and added <= set(current['all']), 'exact current updater catalog required')
+    added.update({'android::tests::production_full_ownership_metadata_rejects_wrong_preimage_before_other_projection', 'android::tests::production_full_ownership_metadata_is_wired_and_restores_every_original', 'android::tests::production_full_ownership_metadata_never_relaxes_dependency_mode', 'android::tests::production_full_ownership_metadata_rejects_second_active_projection_without_more_edits'})
+    v.need(len(current['all']) == 500 and added <= set(current['all']), 'exact current updater catalog required')
     historical = [name for name in current['all'] if name not in added]
     historical_body = (json.dumps(historical, sort_keys=True, separators=(',', ':')) + '\n').encode()
     v.need(len(historical) == 465 and v.digest(historical_body)['sha256'] ==
@@ -252,21 +253,21 @@ class Controls(unittest.TestCase):
         exact = set(v.decode(v.regular(P / 'UPDATER-EXACT64.json')))
         ignored = set(current['ignored'])
         passed = set(current['all']) - exact - ignored
-        self.assertEqual((len(passed), len(ignored), len(exact)), (431, 1, 64))
+        self.assertEqual((len(passed), len(ignored), len(exact)), (435, 1, 64))
         # Synthetic current-catalog transcript. The three ACTUAL_* constants
         # above remain byte-for-byte historical evidence, not new CI output.
         fragments = {
             'image_policy::tests::repack_preserves_android_metadata_and_adbd':
-                ACTUAL_IMAGE_CHILD.replace('464 filtered out;', '495 filtered out;'),
+                ACTUAL_IMAGE_CHILD.replace('464 filtered out;', '499 filtered out;'),
             'native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata':
-                ACTUAL_STAGING_CHILD.replace('464 filtered out;', '495 filtered out;'),
+                ACTUAL_STAGING_CHILD.replace('464 filtered out;', '499 filtered out;'),
             'native_generation::tests::real_erofs_bundle_verifies_its_embedded_pair': ACTUAL_TOOL_OUTPUT,
         }
         self.assertTrue(set(fragments) <= passed)
-        text = 'running 432 tests\n'
+        text = 'running 436 tests\n'
         for name in sorted(passed | ignored):
             text += fragments.get(name, f'test {name} ... ' + ('ignored' if name in ignored else 'ok') + '\n')
-        text += '\ntest result: ok. 431 passed; 0 failed; 1 ignored; 0 measured; 64 filtered out; finished in 1.00s\n'
+        text += '\ntest result: ok. 435 passed; 0 failed; 1 ignored; 0 measured; 64 filtered out; finished in 1.00s\n'
         self.assertEqual(v.test_terminal(text, passed, ignored, 64, catalog=current['all']),
                          {'passed': sorted(passed), 'ignored': sorted(ignored), 'filtered': 64})
         wrong_names = list(current['all'])
@@ -275,11 +276,11 @@ class Controls(unittest.TestCase):
                         current['all'][:-1] + [current['all'][0]]):
             with self.subTest(catalog=catalog), self.assertRaises(RuntimeError):
                 v.test_terminal(text, passed, ignored, 64, catalog=catalog)
-        for bad in (text.replace('495 filtered out;', '485 filtered out;', 1),
-                    text.replace('495 filtered out;', '479 filtered out;', 1),
-                    text.replace('495 filtered out;', '473 filtered out;', 1),
-                    text.replace('495 filtered out;', '466 filtered out;', 1),
-                    text.replace('495 filtered out;', '465 filtered out;', 1),
+        for bad in (text.replace('499 filtered out;', '485 filtered out;', 1),
+                    text.replace('499 filtered out;', '479 filtered out;', 1),
+                    text.replace('499 filtered out;', '473 filtered out;', 1),
+                    text.replace('499 filtered out;', '466 filtered out;', 1),
+                    text.replace('499 filtered out;', '465 filtered out;', 1),
                     text.replace('1 ignored;', '0 ignored;', 1),
                     text.replace('64 filtered out;', '62 filtered out;', 1)):
             with self.subTest(text=bad), self.assertRaises(RuntimeError):
@@ -325,10 +326,10 @@ class OverlayControls(unittest.TestCase):
         capsule = v.verify_capsule(inventory_sha)
         self.assertIsNone(v.HEAD_COMMIT)
         self.assertEqual(capsule['parent_manifest']['head'], v.PARENT_COMMIT)
-        self.assertEqual(len(capsule['rows']), 2298)
-        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 42526544)
-        self.assertEqual(v.tree_id(capsule['rows']), 'ac9a2a3fe334a0f57ef3a3f3bcc5f6d293e79f18')
-        self.assertEqual(len(capsule['overlay_manifest']['paths']), 129)
+        self.assertEqual(len(capsule['rows']), 2301)
+        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 42620199)
+        self.assertEqual(v.tree_id(capsule['rows']), '5cdb20a31d4dd2a141ccce34690df2a307724935')
+        self.assertEqual(len(capsule['overlay_manifest']['paths']), 138)
         self.assertNotEqual(v.HEAD_TREE, v.PARENT_TREE)
 
     def test_overlay_rejects_wrong_base_omitted_extra_or_unsafe_member(self):
@@ -422,7 +423,7 @@ class OverlayControls(unittest.TestCase):
         self.assertLessEqual(len(body), v.OVERLAY_EXPANSION_MAX)
         with v.tarfile.open(fileobj=v.io.BytesIO(body), mode='r:') as archive:
             members = archive.getmembers()
-            self.assertEqual(len(members), 130)
+            self.assertEqual(len(members), 139)
             self.assertEqual(set(m.name for m in members), {'OVERLAY-MANIFEST.json'} |
                              {'postimages/' + name for name in self.packet['files_base64']})
             for member in members:

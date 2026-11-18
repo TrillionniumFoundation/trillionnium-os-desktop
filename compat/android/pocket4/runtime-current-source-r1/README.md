@@ -13,21 +13,21 @@ contain an Android image, an APK collection or a production runtime acceptance.
 | Committed source parent inside the baseline archive | `61a38baa745483fbfb757466a1cf352febc20552` |
 | Parent Git tree | `db6249e80209abeda8000eeced6d045a1d57e0a2` |
 | Previous published source tree | `0b85a69905ce8ebfa9eaada1e3a29048fc2308c0` |
-| Current complete source tree | `ac9a2a3fe334a0f57ef3a3f3bcc5f6d293e79f18` |
-| Current source files / bytes | 2,298 / 42,526,544 |
+| Current complete source tree | `5cdb20a31d4dd2a141ccce34690df2a307724935` |
+| Current source files / bytes | 2,301 / 42,620,199 |
 | Baseline archive members | 2,224: 2,222 source files, manifest and original commit body |
 | Baseline archive SHA256 | `7ab244365184ef670c244b6a0ed75857c6f942897f3fc59c00e6375e76f51816` |
-| Complete cumulative overlay | 129 path bodies / 613,936 compressed bytes |
-| Overlay SHA256 | `48fb5b87d99147ce532784fde7063fd19bac3671928e3cce53cec99e07ddc849` |
-| Expanded overlay bytes | 4,792,320 |
-| Expanded overlay SHA256 | `9331342e9b1150800c84d049b6739b8f18fcfb02326288b99b1938a6cc5b767f` |
+| Complete cumulative overlay | 138 path bodies / 651,964 compressed bytes |
+| Overlay SHA256 | `937c2383c01e8409b4ad6c56c36294cb6cfe19032d30ff4ba21cd90ba2cd0fab` |
+| Expanded overlay bytes | 5,017,600 |
+| Expanded overlay SHA256 | `8504e8d47dd2fb2f373087d654d105c5602b8180dab4d715c67fe7a9f518fa08` |
 
 The public wrapper commit is distinct from the source parent and reconstructed
 producer tree. `verify.py` checks every parent body, mode, Git blob and tree,
-then all 129 before/after rows and complete overlay bodies. The final tree
-includes exactly 2,298 files. `source_commit` remains null because the
+then all 138 before/after rows and complete overlay bodies. The final tree
+includes exactly 2,301 files. `source_commit` remains null because the
 producer is represented by a verified cumulative overlay. The input manifest
-awards no build or runtime credit. The prior public increment completed all 1,388 ordinary cases, nine recipe cases, nineteen normal release builds, three example builds and twenty documentation checks in CI run 44333341411. The current increment changes five Rust files, all checked by the pinned Rust 1.93.0 formatter. Its actual cargo check --tests and eleven focused cases passed. The preserved supervisor library ELF lists exactly three added cases, no removed cases and the same twenty-five ignored library cases. Other affected targets were checked, not claimed as freshly compiled test executables. Complete current CI remains a separate required execution.
+awards no build or runtime credit. The prior public increment completed all 1,391 ordinary cases, nine recipe cases, nineteen normal release builds, three examples and twenty documentation commands in CI run 44345493638. The private-loop and typed-self increment then passed all 465 ordinary supervisor library cases, with fifteen added cases and the same twenty-five ignored cases. The independent full-source ownership-metadata repair passed ten focused updater cases and added four cases to the actual updater ELF catalog without removing any prior case. A mutant with only the production call removed actually failed the new positive test. A later shared-target artifact collision was detected and preserved; a fresh private target rebuilt both fixed test and release executables, then passed the same ten cases with original PIDFD retirement. Current complete CI and privileged Android execution remain separate required runs.
 
 `SOURCE-OVERLAY.tar.xz` stores canonical USTAR postimages and a complete manifest
 without JSON base64 expansion. The verifier rejects extensions, aliases, links,
@@ -37,6 +37,14 @@ changed preimages or postimages. The original single-frame 5 MiB expansion and
 source-integrity gate pin the compressed byte count and SHA256.
 
 ## Repairs
+
+### Strict full-source ownership metadata repair
+
+The official CP3A vendor route now calls the existing exact vkms maintenance-metadata adapter before projecting the complete strict source graph. The upstream consumer names an absent trendy_team_desktop_display maintenance module. This adapter removes only the pinned 49-byte optional default_team line from the exact 1,522-byte original; it preserves every build target, compiler and linker dependency, and the original restoration journal. Changed preimages, duplicate fields, aliases, hard links, a second active projection and non-Strict modes fail before further mutation. Both normal restoration and interrupted recovery retain the original bytes, mode and timestamp. The new release updater was built from source tree 95b8f940d313b2f2db94911fb875411c9c0647b2; its actual locked Cargo dependency closure is identical in this combined tree and excludes the changed supervisor crate. Full vendor success is not inferred from these focused controls.
+
+### Private loop custody and typed self attributes
+
+The original MAC preflight and production selection now stay together in one same-thread owner before the first private-loop mutation. Detached private tmpfs nodes receive the selected automatic labels; only the four fixed loop operations are admitted. Loop aliases, source descriptors and monotonic unlink phases retain their original custody across partial retirement failures. An incomplete pool cannot be reported as an empty retirement. The typed SELinux self-attribute parser requires one complete bounded provider record, including the valid empty fscreate form; absence or another provider remains a failure. Constructor failures before any loop configuration expose no mount or descriptor and retain the original non-ready reservation. No privileged loop, original init/APEX boot, host installation or production readiness is claimed by these ordinary tests.
 
 ### Android scoped proc and the original mount-helper deadline
 
@@ -213,7 +221,7 @@ patch and never activates it or changes its input repository.
 
 The runner reconstructs this source into a new directory and uses a fresh
 Cargo target. Metadata and exact catalogs define 28 workspace packages,
-49 ordinary harnesses, 1,421 listed cases and 19 normal release binaries.
+49 ordinary harnesses, 1,440 listed cases and 19 normal release binaries.
 The latest runtime increment adds seven ordinary supervisor names.
 Cumulatively, increments 6 through 11 add 33 names relative to the
 ac099 producer: 26 supervisor and 7 runtime-inputs cases.
@@ -232,7 +240,7 @@ no fresh credit.
 | Frozen recipe example harness | 9 exact ordinary cases; no ignored cases | 300-second compilation, 60-second execution |
 | Documentation targets | 20 actual library targets, 0 doc cases | 180 seconds per target |
 
-The catalog total is **1,391 ordinary cases and 30 ignored cases**. The nine
+The catalog total is **1,410 ordinary cases and 30 ignored cases**. The nine
 recipe example cases are recorded separately. Each of the three normal
 example binaries and the separate recipe test ELF is joined to its actual
 source metadata and compilation interval. The recipe's exact and ignored
