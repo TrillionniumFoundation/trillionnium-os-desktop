@@ -147,7 +147,8 @@ Both inputs are the standard artifacts of the official stable
 Their actual whole-file hashes match the published GitHub asset digests,
 and SDK 37 verified the same historical certificate pin
 `9bd06727e62796c0130eb6dab39b73157451582cbd138e86c468acc395d14165`.
-Huawei `-hw` and `org.microg.gms-user` are separate variants. The release
+The Huawei `-hw` build and the `org.microg.gms` user preview are separate
+variants. The release
 prose's `250932036` is not used as a version-code pin; the selected asset
 and signed manifest establish `252432036` for Services.
 
