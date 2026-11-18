@@ -138,7 +138,8 @@ def updater_catalogs():
         'tests::official_vendor_cli_requires_fixed_binary_inputs_and_fresh_output',
     })
     added.update({'android::tests::production_full_ownership_metadata_rejects_wrong_preimage_before_other_projection', 'android::tests::production_full_ownership_metadata_is_wired_and_restores_every_original', 'android::tests::production_full_ownership_metadata_never_relaxes_dependency_mode', 'android::tests::production_full_ownership_metadata_rejects_second_active_projection_without_more_edits'})
-    v.need(len(current['all']) == 500 and added <= set(current['all']), 'exact current updater catalog required')
+    added.update({'android::tests::production_full_local_signer_interrupted_journal_restores_exact_metadata', 'android::tests::production_full_local_signer_is_selected_through_normal_provider_entry', 'android::tests::production_full_local_signer_rejects_unpinned_cloud_or_local_inputs'})
+    v.need(len(current['all']) == 503 and added <= set(current['all']), 'exact current updater catalog required')
     historical = [name for name in current['all'] if name not in added]
     historical_body = (json.dumps(historical, sort_keys=True, separators=(',', ':')) + '\n').encode()
     v.need(len(historical) == 465 and v.digest(historical_body)['sha256'] ==
@@ -253,21 +254,21 @@ class Controls(unittest.TestCase):
         exact = set(v.decode(v.regular(P / 'UPDATER-EXACT64.json')))
         ignored = set(current['ignored'])
         passed = set(current['all']) - exact - ignored
-        self.assertEqual((len(passed), len(ignored), len(exact)), (435, 1, 64))
+        self.assertEqual((len(passed), len(ignored), len(exact)), (438, 1, 64))
         # Synthetic current-catalog transcript. The three ACTUAL_* constants
         # above remain byte-for-byte historical evidence, not new CI output.
         fragments = {
             'image_policy::tests::repack_preserves_android_metadata_and_adbd':
-                ACTUAL_IMAGE_CHILD.replace('464 filtered out;', '499 filtered out;'),
+                ACTUAL_IMAGE_CHILD.replace('464 filtered out;', '502 filtered out;'),
             'native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata':
-                ACTUAL_STAGING_CHILD.replace('464 filtered out;', '499 filtered out;'),
+                ACTUAL_STAGING_CHILD.replace('464 filtered out;', '502 filtered out;'),
             'native_generation::tests::real_erofs_bundle_verifies_its_embedded_pair': ACTUAL_TOOL_OUTPUT,
         }
         self.assertTrue(set(fragments) <= passed)
-        text = 'running 436 tests\n'
+        text = 'running 439 tests\n'
         for name in sorted(passed | ignored):
             text += fragments.get(name, f'test {name} ... ' + ('ignored' if name in ignored else 'ok') + '\n')
-        text += '\ntest result: ok. 435 passed; 0 failed; 1 ignored; 0 measured; 64 filtered out; finished in 1.00s\n'
+        text += '\ntest result: ok. 438 passed; 0 failed; 1 ignored; 0 measured; 64 filtered out; finished in 1.00s\n'
         self.assertEqual(v.test_terminal(text, passed, ignored, 64, catalog=current['all']),
                          {'passed': sorted(passed), 'ignored': sorted(ignored), 'filtered': 64})
         wrong_names = list(current['all'])
@@ -276,11 +277,11 @@ class Controls(unittest.TestCase):
                         current['all'][:-1] + [current['all'][0]]):
             with self.subTest(catalog=catalog), self.assertRaises(RuntimeError):
                 v.test_terminal(text, passed, ignored, 64, catalog=catalog)
-        for bad in (text.replace('499 filtered out;', '485 filtered out;', 1),
-                    text.replace('499 filtered out;', '479 filtered out;', 1),
-                    text.replace('499 filtered out;', '473 filtered out;', 1),
-                    text.replace('499 filtered out;', '466 filtered out;', 1),
-                    text.replace('499 filtered out;', '465 filtered out;', 1),
+        for bad in (text.replace('502 filtered out;', '485 filtered out;', 1),
+                    text.replace('502 filtered out;', '479 filtered out;', 1),
+                    text.replace('502 filtered out;', '473 filtered out;', 1),
+                    text.replace('502 filtered out;', '466 filtered out;', 1),
+                    text.replace('502 filtered out;', '465 filtered out;', 1),
                     text.replace('1 ignored;', '0 ignored;', 1),
                     text.replace('64 filtered out;', '62 filtered out;', 1)):
             with self.subTest(text=bad), self.assertRaises(RuntimeError):
@@ -326,14 +327,14 @@ class OverlayControls(unittest.TestCase):
         capsule = v.verify_capsule(inventory_sha)
         self.assertIsNone(v.HEAD_COMMIT)
         self.assertEqual(capsule['parent_manifest']['head'], v.PARENT_COMMIT)
-        self.assertEqual(len(capsule['rows']), 2301)
-        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 42620199)
-        self.assertEqual(v.tree_id(capsule['rows']), '5cdb20a31d4dd2a141ccce34690df2a307724935')
-        self.assertEqual(len(capsule['overlay_manifest']['paths']), 138)
+        self.assertEqual(len(capsule['rows']), 2313)
+        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 42869310)
+        self.assertEqual(v.tree_id(capsule['rows']), '22d5793de3dab64093c7876dc449505a4edb2aae')
+        self.assertEqual(len(capsule['overlay_manifest']['paths']), 31)
         self.assertNotEqual(v.HEAD_TREE, v.PARENT_TREE)
 
     def test_overlay_rejects_wrong_base_omitted_extra_or_unsafe_member(self):
-        name = 'Cargo.lock'
+        name = 'runtime/droidloom-supervisor/src/production_namespace_tree.rs'
         mutations = []
         packet = self.clone(); packet['manifest']['paths'][name]['before']['sha256'] = '0' * 64
         mutations.append(packet)
@@ -352,7 +353,7 @@ class OverlayControls(unittest.TestCase):
                 self.apply(packet)
 
     def test_overlay_rejects_wrong_body_mode_size_blob_tree_and_count(self):
-        name = 'Cargo.lock'
+        name = 'runtime/droidloom-supervisor/src/production_namespace_tree.rs'
         changes = [('bytes', 1), ('sha256', '0' * 64),
                    ('git_blob', '0' * 40), ('git_mode', '100755')]
         for key, value in changes:
@@ -364,7 +365,7 @@ class OverlayControls(unittest.TestCase):
         # The combined overlay must include both actual MAC successor bodies.
         # A self-consistent old body/row must still fail the complete new tree gate.
         for name in ('runtime/droidloom-supervisor/src/production_mac.rs',
-                     'runtime/droidloom-supervisor/src/production_mac_systemd.rs'):
+                     'runtime/droidloom-supervisor/src/production_mac_policy.rs'):
             packet = self.clone()
             packet['manifest']['paths'][name]['after'] = dict(self.parent['files'][name])
             packet['files_base64'][name] = v.base64.b64encode(self.entries['source/' + name][1]).decode()
@@ -375,10 +376,10 @@ class OverlayControls(unittest.TestCase):
             del packet['files_base64'][name]
             with self.subTest(omitted_mac_body=name), self.assertRaises(RuntimeError):
                 self.apply(packet)
-        # Both new M3 sources are absent in the baseline: complete removal
+        # Both new init/provider sources are absent in the refreshed baseline: removal
         # and a self-consistent wrong body/row must fail the exact final tree.
-        for name in ('runtime/droidloom-supervisor/src/production_namespace_task_control_mac.rs',
-                     'runtime/droidloom-supervisor/src/production_namespace_task_control_mac_tests.rs'):
+        for name in ('runtime/droidloom-supervisor/src/production_namespace_init_cleanup.rs',
+                     'runtime/droidloom-supervisor/src/production_mac_host_proc.rs'):
             packet = self.clone()
             del packet['manifest']['paths'][name]
             del packet['files_base64'][name]
@@ -390,25 +391,76 @@ class OverlayControls(unittest.TestCase):
             packet['files_base64'][name] = v.base64.b64encode(body).decode()
             with self.subTest(changed_m3_body=name), self.assertRaises(RuntimeError):
                 self.apply(packet)
-        # Neither selected-lock repair body can be omitted or replaced with
-        # its self-consistent prior source without changing the full new tree.
+        # These selected-lock bodies now reside in the fully pinned baseline.
+        # Preserve omission and self-consistent altered-body coverage there.
         for name in ('tools/droidloom-update/src/coherent_images.rs',
                      'tools/droidloom-update/src/coherent_images_tests.rs'):
-            packet = self.clone()
-            packet['manifest']['paths'][name]['after'] = dict(self.parent['files'][name])
-            packet['files_base64'][name] = v.base64.b64encode(self.entries['source/' + name][1]).decode()
-            with self.subTest(stale_selected_lock_body=name), self.assertRaises(RuntimeError):
-                self.apply(packet)
-            packet = self.clone()
-            del packet['manifest']['paths'][name]
-            del packet['files_base64'][name]
-            with self.subTest(omitted_selected_lock_body=name), self.assertRaises(RuntimeError):
-                self.apply(packet)
+            self.reject_pinned_parent_changes(name)
         for key, value in [('candidate_tree_from_manifest', '0' * 40),
                            ('candidate_file_count', 2270), ('candidate_bytes', 42004576)]:
             packet = self.clone(); packet['manifest'][key] = value
             with self.subTest(field=key), self.assertRaises(RuntimeError):
                 self.apply(packet)
+
+    def reject_pinned_parent_changes(self, name):
+        # Pinned manifest, whole body, executable mode and full Git tree remain
+        # mandatory after a formerly overlaid path moves into the baseline.
+        with self.subTest(omitted_parent_body=name), self.assertRaises(RuntimeError):
+            entries = dict(self.entries)
+            del entries['source/' + name]
+            v.verify_parent_entries(entries)
+        with self.subTest(changed_parent_mode=name), self.assertRaises(RuntimeError):
+            entries = dict(self.entries)
+            mode, body = entries['source/' + name]
+            entries['source/' + name] = (0o755 if mode == 0o644 else 0o644, body)
+            v.verify_parent_entries(entries)
+        with self.subTest(changed_parent_body=name), self.assertRaises(RuntimeError):
+            entries = dict(self.entries)
+            mode, body = entries['source/' + name]
+            entries['source/' + name] = (mode, body + b'changed complete body\n')
+            v.verify_parent_entries(entries)
+        with self.subTest(self_consistent_changed_parent=name), self.assertRaises(RuntimeError):
+            entries = dict(self.entries)
+            parent = v.decode(json.dumps(self.parent))
+            mode, previous = entries['source/' + name]
+            body = previous + b'changed complete body\n'
+            parent['files'][name] = {
+                **v.digest(body), 'git_blob': v.object_id('blob', body),
+                'git_mode': format(0o100000 | mode, 'o')}
+            parent['file_bytes'] += len(body) - len(previous)
+            entries['source/' + name] = (mode, body)
+            entries['SOURCE-MANIFEST.json'] = (0o644, json.dumps(parent).encode())
+            v.verify_parent_entries(entries)
+
+    def test_refreshed_baseline_keeps_prior_overlay_body_controls(self):
+        for name in ('Cargo.lock',
+                     'runtime/droidloom-supervisor/src/production_mac_systemd.rs',
+                     'runtime/droidloom-supervisor/src/production_namespace_task_control_mac.rs',
+                     'runtime/droidloom-supervisor/src/production_namespace_task_control_mac_tests.rs'):
+            self.reject_pinned_parent_changes(name)
+
+    def test_refreshed_baseline_is_explicit_root_snapshot_with_full_provenance(self):
+        parent, rows = v.verify_parent_entries(self.entries)
+        self.assertEqual(len(rows), 2302)
+        self.assertEqual(sum(row['bytes'] for row in rows), 42628698)
+        self.assertEqual(v.tree_id(rows), 'ed4664376e9c4b60de0f4359753862425ab41d75')
+        self.assertFalse(parent['provenance']['upstream_ancestry_claimed'])
+        self.assertFalse(parent['provenance']['historical_qualification_transferred'])
+        self.assertEqual(parent['provenance']['parent_commits'], [])
+        for field, wrong in [('previous_source_parent_commit', '0' * 40),
+                             ('upstream_ancestry_claimed', True)]:
+            entries = dict(self.entries)
+            changed = v.decode(json.dumps(parent))
+            changed['provenance'][field] = wrong
+            entries['SOURCE-MANIFEST.json'] = (0o644, json.dumps(changed).encode())
+            with self.subTest(provenance=field), self.assertRaises(RuntimeError):
+                v.verify_parent_entries(entries)
+        entries = dict(self.entries)
+        old = entries['SOURCE-COMMIT.txt'][1]
+        changed = old.replace(b'\n', b'\nparent ' + b'0' * 40 + b'\n', 1)
+        entries['SOURCE-COMMIT.txt'] = (0o644, changed)
+        with self.assertRaises(RuntimeError):
+            v.verify_parent_entries(entries)
 
     def test_overlay_decoder_rejects_truncation_trailing_frames_and_expansion(self):
         tiny = v.lzma.compress(b'{}')
@@ -423,7 +475,7 @@ class OverlayControls(unittest.TestCase):
         self.assertLessEqual(len(body), v.OVERLAY_EXPANSION_MAX)
         with v.tarfile.open(fileobj=v.io.BytesIO(body), mode='r:') as archive:
             members = archive.getmembers()
-            self.assertEqual(len(members), 139)
+            self.assertEqual(len(members), 32)
             self.assertEqual(set(m.name for m in members), {'OVERLAY-MANIFEST.json'} |
                              {'postimages/' + name for name in self.packet['files_base64']})
             for member in members:

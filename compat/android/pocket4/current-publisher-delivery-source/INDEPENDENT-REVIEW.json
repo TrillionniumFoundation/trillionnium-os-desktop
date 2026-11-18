@@ -1,0 +1,231 @@
+{
+  "actual_scope_retired_observation": {
+    "argv": [
+      "systemctl",
+      "--user",
+      "show",
+      "p4-seven-delivery-sdk37-162b-r1.scope",
+      "--property=LoadState,ActiveState,SubState,ControlGroup",
+      "--no-pager"
+    ],
+    "exit_code": 0,
+    "observation_only": true,
+    "stderr": "",
+    "stdout": "LoadState=not-found\nActiveState=inactive\nSubState=dead\nControlGroup=\n"
+  },
+  "actual_sdk": {
+    "apk_bytes": 942526044,
+    "apks": 23,
+    "apps": 7,
+    "native_members": 81,
+    "rerun": false,
+    "sdk_range": [
+      37,
+      37
+    ],
+    "selected_arm64_members": 61
+  },
+  "archive": {
+    "all_member_pins_verified": true,
+    "body_bytes": 1265992,
+    "mode": "0444",
+    "regular_members": 122
+  },
+  "blocking_findings": [],
+  "consumer_current_source": {
+    "bytes": 29218,
+    "f9_after": [
+      66306,
+      101198204,
+      33188,
+      1000,
+      1000,
+      1,
+      29218,
+      1795017094729204299,
+      1795023137049414505
+    ],
+    "f9_before": [
+      66306,
+      101198204,
+      33188,
+      1000,
+      1000,
+      1,
+      29218,
+      1795017094729204299,
+      1795023137049414505
+    ],
+    "input_limit_bytes": 8388608,
+    "path": "/home/qq/work/p4-integrated-continuation-20261118-162b-r1/producer-inc13-local-signer-r2/runtime/droidloom-applications/src/runtime_plan.rs",
+    "sha256": "af63bda4d57b181b1d9eae1605dbd8c905e7c20280984bfc132297166e6c498c"
+  },
+  "controls": {
+    "actual_logs_hashes_and_source_catalog_matched": true,
+    "new": 39,
+    "old": 146,
+    "rerun": false,
+    "total": 185
+  },
+  "immutable_archive_should_also_be_retained": true,
+  "inputs": {
+    "archive": {
+      "bytes": 218378,
+      "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/publisher-delivery-verifier-r1/publisher-delivery-source-evidence-r1.tar.gz",
+      "sha256": "d3291642001aa72c4bf8342c32567958ec9f4e7ace46150414673d45f184bd6a"
+    },
+    "source_freeze": {
+      "bytes": 81018,
+      "sha256": "2c8ca0cc5c5466396c690be363c60cf113f9d82aa01abda6f5f040c92aa98c27"
+    }
+  },
+  "installed": false,
+  "notes": [
+    "The new two source files were read in full; original 20 gate files are unchanged by whole bytes and fresh original F9. No old schema or ABI-map widening was found.",
+    "All 39 new control tests explicitly mock SDK cryptography; real signature credit comes only from the separate fixed 23-APK SDK37 receipts, not from those controls.",
+    "All seven current expected signer sets come from separately pinned original Google GET_ITEMS metadata and match the delivered APK SDK observations. They are not historical signer claims.",
+    "Six containers explicitly declare local ZIP_STORED assembly, publisher_archive_obtained=false; IHG uses the original standalone APK.",
+    "Absent split versionName is preserved under the unchanged strict split contract; base versionName, all split package/versionCode and signer identities remain exact.",
+    "IHG has 28 native files, 8 ARM64 files, and one legacy armeabi ELF observation; legacy_armeabi_execution_supported remains false everywhere.",
+    "expected_input contains the complete normalized APK name/size/SHA set plus long versionCode and an opaque bounded receipt pin. The consumer independently matches installed bytes; this review grants no installation/runtime qualification.",
+    "Archived absolute paths describe original ai395 custody. Moving inputs/receipts to Pocket4 requires explicit destination pinning/review; existing frozen JSON must not be silently relabeled.",
+    "Keep the immutable full evidence archive, including failed earlier controls attempts, unchanged. Publish only the two new gate source files as the production source delta; tool lock members are not new source files.",
+    "Reviewer collection attempt r1 overcounted nested test helpers; r2 imposed a too-strong per-split versionName assertion. Both collector failures were retained in their PTY archives, the relevant unchanged source semantics were read, and r3 completed. No product source was changed or test weakened."
+  ],
+  "observed_at": "2026-11-18T18:26:20.815736+00:00",
+  "production_ready": false,
+  "recommended_small_pr_members": [
+    {
+      "archive_member": "gate/verify_publisher_delivery.py",
+      "bytes": 29557,
+      "sha256": "3af45fad99b313757ecf7dfb730c86c0ed99047d5a69af94e375ace62cff5421"
+    },
+    {
+      "archive_member": "gate/test_publisher_delivery.py",
+      "bytes": 21814,
+      "sha256": "f4bb288bb908eef0dd68105961e89c6ba08d231561eb240c7efd52221679ae0e"
+    },
+    {
+      "archive_member": "PUBLISHER-DELIVERY.md",
+      "bytes": 7996,
+      "sha256": "780c8352866706ec7ad2215e686e784fa27d2185c3ce3432333e4654168969cb"
+    },
+    {
+      "archive_member": "EXPECTED-INPUTS.json",
+      "bytes": 7072,
+      "sha256": "3318c9c1e87f60dc8ac7a7efac69f5cb56d636961009b88c5fe07b1a5b1d7d6e"
+    },
+    {
+      "archive_member": "SOURCE-INPUT-SUMMARY.json",
+      "bytes": 10624,
+      "sha256": "d549adb8d8587875eaffe86c8e35e24df6de8edc4d84c46d81e6a5232f3afbcf"
+    },
+    {
+      "archive_member": "DATA-INPUTS.json",
+      "bytes": 16454,
+      "sha256": "0af66d0ebd316568ff9f2d43db4d5bfeae562f6dbd03aa29405942e0b2b4c936"
+    },
+    {
+      "archive_member": "SOURCE_FREEZE.json",
+      "bytes": 81018,
+      "sha256": "2c8ca0cc5c5466396c690be363c60cf113f9d82aa01abda6f5f040c92aa98c27"
+    },
+    {
+      "archive_member": "actual/candidates/com.Hyatt.hyt.json",
+      "bytes": 2811,
+      "sha256": "f04b9daadca10b52421906bd4805dee7c20dcc2a18aef3996fa1a08ff5ee388c"
+    },
+    {
+      "archive_member": "actual/candidates/com.hilton.android.hhonors.json",
+      "bytes": 3245,
+      "sha256": "2c61d75dc0310a483ba902e38068ddc96895226aedfd21686dded611839c4e1b"
+    },
+    {
+      "archive_member": "actual/candidates/com.marriott.mrt.json",
+      "bytes": 2817,
+      "sha256": "c2ef34c4ac5c0f805c3037378edb4b04b57ef9cc151f69a31dd5b50a2111369e"
+    },
+    {
+      "archive_member": "actual/candidates/com.united.mobile.android.json",
+      "bytes": 3240,
+      "sha256": "b3aa5e3de7efb9a02e07ed2478caab257f11fa3b407ed7a0f6a3752447f190a2"
+    },
+    {
+      "archive_member": "actual/candidates/com.ihg.apps.android.json",
+      "bytes": 1970,
+      "sha256": "3276117033533b7b72ed5f53b62eda4a5427d60e2c69106b17e21e355db822e6"
+    },
+    {
+      "archive_member": "actual/candidates/com.zillow.android.streeteasy.json",
+      "bytes": 3251,
+      "sha256": "299dc82164747477ce93f8c53a267977e58e331e0146f857a920fa2f649c7359"
+    },
+    {
+      "archive_member": "actual/candidates/jp.co.ana.android.tabidachi.json",
+      "bytes": 3241,
+      "sha256": "6e1a32c28861515e49780412112eaa4c86773bcd1f2191b9821eaed6e43c520b"
+    },
+    {
+      "archive_member": "actual/receipts/com.Hyatt.hyt.json",
+      "bytes": 23050,
+      "sha256": "bf3f29f6641a0995ddc034ed770c73d621d5080c99f38b3efea1e44aa5a370ef"
+    },
+    {
+      "archive_member": "actual/receipts/com.hilton.android.hhonors.json",
+      "bytes": 29332,
+      "sha256": "7ae1bf7bcf7b15950cf5710cee5dceb69aba4c4cd1610d759ee8dbef3bb23aa9"
+    },
+    {
+      "archive_member": "actual/receipts/com.marriott.mrt.json",
+      "bytes": 27388,
+      "sha256": "9709fa73bcd1c483825110a9a0e37b822dd37e65dccf73ddb45f941f8e1e5960"
+    },
+    {
+      "archive_member": "actual/receipts/com.united.mobile.android.json",
+      "bytes": 31816,
+      "sha256": "882287f41b3b00e65ac0916d97ee88c501cdf9a7385a8b54141362aa390bab4e"
+    },
+    {
+      "archive_member": "actual/receipts/com.ihg.apps.android.json",
+      "bytes": 24293,
+      "sha256": "3dc1cf44b43d2a15f6f131beb09837efe002932a4749b39017f7ef423076b290"
+    },
+    {
+      "archive_member": "actual/receipts/com.zillow.android.streeteasy.json",
+      "bytes": 28181,
+      "sha256": "43de23523aa4dc2ce1fd2ca645d4a45fba4ba55ba0c3a6c34b935b7af91a6022"
+    },
+    {
+      "archive_member": "actual/receipts/jp.co.ana.android.tabidachi.json",
+      "bytes": 33094,
+      "sha256": "06d2200a73422c7e1c7d3aa714e8c618ba87c9622f573ce67082a053d65eb1a7"
+    }
+  ],
+  "review_evidence": {
+    "bytes": 14209,
+    "path": "/home/qq/work/p4-publisher-delivery-review-20261118-162b-r1/EVIDENCE-REVIEW-stage3.json",
+    "sha256": "1cee77703efbfec0b98eb02ae81f4feca198174bd9a2e2250f8d00d1c8a875ca"
+  },
+  "runtime_qualified": false,
+  "schema": "p4-publisher-delivery-independent-review-final-v1",
+  "source_mutated": false,
+  "status": "PASS_SOURCE_AND_EVIDENCE_ONLY",
+  "terminal_evidence": [
+    {
+      "complete_eof": true,
+      "exit_code": 0,
+      "file": "actual-r1-terminal.raw.json",
+      "raw_terminal_bytes": 14623,
+      "raw_terminal_sha256": "c34ebcac8aa996a7eeb7ccf827b07a8040cdfcd479bc401219e36e0791f98b92",
+      "session_id": "dpty-f1a26e2ffa668723f4e23f7bd23f7891c6ef6a6577ebd88400c02f3a756770a4"
+    },
+    {
+      "complete_eof": true,
+      "exit_code": 0,
+      "file": "controls-r3-terminal.raw.json",
+      "raw_terminal_bytes": 3274,
+      "raw_terminal_sha256": "b2f24c02230bd52c85989ecc7cae2c9f77eb63e44f2ecd61ec30019fe75a83cc",
+      "session_id": "dpty-aa2df568c1f08770409da56583bda4042e708097c5a28497a00c8dcf67b740f9"
+    }
+  ]
+}

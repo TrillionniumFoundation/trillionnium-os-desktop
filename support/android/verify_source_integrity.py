@@ -481,14 +481,83 @@ EXECUTABLE_FILES = (
     "support/android/build_smoke_apk.sh",
     "support/android/prepare_aosp.sh",
     "support/android/run_reference_cuttlefish.sh",
+    'compat/android/pocket4/current-publisher-delivery-source/DATA-INPUTS.json',
+    'compat/android/pocket4/current-publisher-delivery-source/EXPECTED-INPUTS.json',
+    'compat/android/pocket4/current-publisher-delivery-source/FILES.sha256',
+    'compat/android/pocket4/current-publisher-delivery-source/INDEPENDENT-REVIEW.json',
+    'compat/android/pocket4/current-publisher-delivery-source/MANIFEST.json',
+    'compat/android/pocket4/current-publisher-delivery-source/PUBLISHING.md',
+    'compat/android/pocket4/current-publisher-delivery-source/README.md',
+    'compat/android/pocket4/current-publisher-delivery-source/SOURCE-INPUT-SUMMARY.json',
+    'compat/android/pocket4/current-publisher-delivery-source/SOURCE.tar.gz',
+    'compat/android/pocket4/current-publisher-delivery-source/SOURCE_FREEZE.json',
+    'compat/android/pocket4/current-publisher-delivery-source/availability/XIAOMI-BROWSER-STOP.json',
+    'compat/android/pocket4/current-publisher-delivery-source/availability/XIAOMI-PUBLIC-FLOW-ASSESSMENT.json',
+    'compat/android/pocket4/current-publisher-delivery-source/availability/com.bestbuy.android.metadata.json',
+    'compat/android/pocket4/current-publisher-delivery-source/availability/com.ehi.national.mobile.metadata.json',
+    'compat/android/pocket4/current-publisher-delivery-source/availability/com.hertz.android.digital.metadata.json',
+    'compat/android/pocket4/current-publisher-delivery-source/candidates/com.Hyatt.hyt.json',
+    'compat/android/pocket4/current-publisher-delivery-source/candidates/com.hilton.android.hhonors.json',
+    'compat/android/pocket4/current-publisher-delivery-source/candidates/com.ihg.apps.android.json',
+    'compat/android/pocket4/current-publisher-delivery-source/candidates/com.marriott.mrt.json',
+    'compat/android/pocket4/current-publisher-delivery-source/candidates/com.united.mobile.android.json',
+    'compat/android/pocket4/current-publisher-delivery-source/candidates/com.zillow.android.streeteasy.json',
+    'compat/android/pocket4/current-publisher-delivery-source/candidates/jp.co.ana.android.tabidachi.json',
+    'compat/android/pocket4/current-publisher-delivery-source/receipts/com.Hyatt.hyt.json',
+    'compat/android/pocket4/current-publisher-delivery-source/receipts/com.hilton.android.hhonors.json',
+    'compat/android/pocket4/current-publisher-delivery-source/receipts/com.ihg.apps.android.json',
+    'compat/android/pocket4/current-publisher-delivery-source/receipts/com.marriott.mrt.json',
+    'compat/android/pocket4/current-publisher-delivery-source/receipts/com.united.mobile.android.json',
+    'compat/android/pocket4/current-publisher-delivery-source/receipts/com.zillow.android.streeteasy.json',
+    'compat/android/pocket4/current-publisher-delivery-source/receipts/jp.co.ana.android.tabidachi.json',
+    'compat/android/pocket4/current-publisher-delivery-source/source-evidence/TRANSPORT-RESULT.json',
+    'compat/android/pocket4/current-publisher-delivery-source/source-evidence/WORKER-RESULT.json',
+    'compat/android/pocket4/current-publisher-delivery-source/source-evidence/com.Hyatt.hyt.metadata.json',
+    'compat/android/pocket4/current-publisher-delivery-source/source-evidence/com.Hyatt.hyt.transport.json',
+    'compat/android/pocket4/current-publisher-delivery-source/source-evidence/com.hilton.android.hhonors.metadata.json',
+    'compat/android/pocket4/current-publisher-delivery-source/source-evidence/com.hilton.android.hhonors.transport.json',
+    'compat/android/pocket4/current-publisher-delivery-source/source-evidence/com.ihg.apps.android.metadata.json',
+    'compat/android/pocket4/current-publisher-delivery-source/source-evidence/com.ihg.apps.android.transport.json',
+    'compat/android/pocket4/current-publisher-delivery-source/source-evidence/com.marriott.mrt.metadata.json',
+    'compat/android/pocket4/current-publisher-delivery-source/source-evidence/com.marriott.mrt.transport.json',
+    'compat/android/pocket4/current-publisher-delivery-source/source-evidence/com.united.mobile.android.metadata.json',
+    'compat/android/pocket4/current-publisher-delivery-source/source-evidence/com.united.mobile.android.transport.json',
+    'compat/android/pocket4/current-publisher-delivery-source/source-evidence/com.zillow.android.streeteasy.metadata.json',
+    'compat/android/pocket4/current-publisher-delivery-source/source-evidence/com.zillow.android.streeteasy.transport.json',
+    'compat/android/pocket4/current-publisher-delivery-source/source-evidence/jp.co.ana.android.tabidachi.metadata.json',
+    'compat/android/pocket4/current-publisher-delivery-source/source-evidence/jp.co.ana.android.tabidachi.transport.json',
+    'compat/android/pocket4/current-publisher-delivery-source/verify.py',
+    'compat/android/pocket4/apk-content-identity/verify_publisher_delivery.py',
+    'compat/android/pocket4/apk-content-identity/test_publisher_delivery.py',
+    'compat/android/pocket4/current-app-acceptance/current-source-inputs.json',
+    'compat/android/pocket4/current-app-acceptance/current-source-freshness.json',
+    'compat/android/pocket4/current-private-control-policy/FILES.sha256',
+    'compat/android/pocket4/current-private-control-policy/README.md',
+    'compat/android/pocket4/current-private-control-policy/ROOT-VERIFICATION.json',
+    'compat/android/pocket4/current-private-control-policy/SOURCE.tar.gz',
+    'compat/android/pocket4/current-private-control-policy/SOURCE_FREEZE.json',
 )
 PARSED_SUFFIXES = {".py", ".sh", ".json", ".xml"}
 
 BINARY_FILES = {
     'compat/android/pocket4/runtime-current-source-r1/SOURCE-CAPSULE.tar.xz': {
-        'bytes': 7696708, 'sha256': '7ab244365184ef670c244b6a0ed75857c6f942897f3fc59c00e6375e76f51816'},
+        'bytes': 7894116, 'sha256': '3e8b2fa1ea1ef3555ca7c82e27abe79a2be029c701f69ac55ef4c82484f247ad'},
     'compat/android/pocket4/runtime-current-source-r1/SOURCE-OVERLAY.tar.xz': {
-        'bytes': 651964, 'sha256': '937c2383c01e8409b4ad6c56c36294cb6cfe19032d30ff4ba21cd90ba2cd0fab'},
+        'bytes': 151788, 'sha256': '2d4665166710435485d57397f31792a957673846c9e4d83b3d346c1dc8a8261a'},
+    'compat/android/pocket4/current-publisher-delivery-source/FILES.sha256': {
+        'bytes': 4738, 'sha256': 'a323a62e56adf8adce0e57433ed44977332dca148f192da0031ae5ebc7d4a1dd'},
+    'compat/android/pocket4/current-publisher-delivery-source/MANIFEST.json': {
+        'bytes': 19869, 'sha256': '872dc25ba3c8980b5ea67609b0a9fb17c6c31b925a823ee9642fe75d3218c699'},
+    'compat/android/pocket4/current-publisher-delivery-source/SOURCE.tar.gz': {
+        'bytes': 218378, 'sha256': 'd3291642001aa72c4bf8342c32567958ec9f4e7ace46150414673d45f184bd6a'},
+    'compat/android/pocket4/current-private-control-policy/FILES.sha256': {
+        'bytes': 330, 'sha256': '05300c7e883d2275149a6b92e99507d952bbbefe77f9f64f3e4fcd3db092aa95'},
+    'compat/android/pocket4/current-private-control-policy/ROOT-VERIFICATION.json': {
+        'bytes': 1574, 'sha256': '8222296e26308bdc1583a2af85d6008aa6c4c6c3b698d8a34797a0ba108e60b7'},
+    'compat/android/pocket4/current-private-control-policy/SOURCE.tar.gz': {
+        'bytes': 2820889, 'sha256': '332cf46c3af65c3d714d0e65a6f7500796e7b5302a63509a2b38b2bf7ed83035'},
+    'compat/android/pocket4/current-private-control-policy/SOURCE_FREEZE.json': {
+        'bytes': 74434, 'sha256': 'f4b0d098043b18320a2ff86d78f4788dfbac23d1fb3889909e41f07c7d78d47d'},
 }
 
 

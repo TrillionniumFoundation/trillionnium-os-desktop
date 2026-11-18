@@ -15,12 +15,12 @@ import stat
 import subprocess
 
 HERE = Path(__file__).resolve().parent
-PARENT_COMMIT = '61a38baa745483fbfb757466a1cf352febc20552'
-PARENT_TREE = 'db6249e80209abeda8000eeced6d045a1d57e0a2'
+PARENT_COMMIT = '8ddad986410bddb5c42bc5549513a3ee5e41327b'
+PARENT_TREE = 'ed4664376e9c4b60de0f4359753862425ab41d75'
 HEAD_COMMIT = None
-HEAD_TREE = '5cdb20a31d4dd2a141ccce34690df2a307724935'
-SOURCE_FILES = 2301
-SOURCE_BYTES = 42620199
+HEAD_TREE = '22d5793de3dab64093c7876dc449505a4edb2aae'
+SOURCE_FILES = 2313
+SOURCE_BYTES = 42869310
 
 
 def need(value, message):
@@ -290,16 +290,16 @@ def test_terminal(text, passed, ignored=(), filtered=None, *, catalog=None):
     return {'passed': sorted(passed), 'ignored': sorted(ignored), 'filtered': outer_filtered}
 
 
-CAPSULE = {'bytes': 7696708, 'sha256': '7ab244365184ef670c244b6a0ed75857c6f942897f3fc59c00e6375e76f51816'}
-MANIFEST = {'bytes': 673996, 'sha256': '62194b76e735e879c596befe4b07dcf0442ae5d6c4612c6fd63cb3bc54fc038a'}
-COMMIT = {'bytes': 331, 'sha256': '879f0ac4412540cc03fb3593933aa2ea5cc6519c1d3e6e4fd3251cd393148e2d'}
+CAPSULE = {'bytes': 7894116, 'sha256': '3e8b2fa1ea1ef3555ca7c82e27abe79a2be029c701f69ac55ef4c82484f247ad'}
+MANIFEST = {'bytes': 696880, 'sha256': '715560653e4c988287555527325f992fb1b5f53bdd48d38b7823c43b4cf5b1f3'}
+COMMIT = {'bytes': 775, 'sha256': '02db7881289cc5706d62261f8f7933b4e78f4ddd29bc13ee1ed5846807281959'}
 
 
 def archive_entries(raw):
     entries = {}
     with tarfile.open(fileobj=io.BytesIO(raw), mode='r:xz') as archive:
         members = archive.getmembers()
-        need(len(members) == 2224 and sum(m.size for m in members) == 41226493,
+        need(len(members) == 2304 and sum(m.size for m in members) == 43326353,
              'complete bounded current source archive required')
         for member in members:
             safe(member.name)
@@ -311,9 +311,9 @@ def archive_entries(raw):
     return entries
 
 
-OVERLAY = {'bytes': 651964, 'sha256': '937c2383c01e8409b4ad6c56c36294cb6cfe19032d30ff4ba21cd90ba2cd0fab'}
+OVERLAY = {'bytes': 151788, 'sha256': '2d4665166710435485d57397f31792a957673846c9e4d83b3d346c1dc8a8261a'}
 OVERLAY_PATH = 'SOURCE-OVERLAY.tar.xz'
-OVERLAY_PATHS = 138
+OVERLAY_PATHS = 31
 OVERLAY_EXPANSION_MAX = 5 * 1024 * 1024
 
 
@@ -392,7 +392,7 @@ def apply_overlay(parent, parent_rows, parent_entries, packet):
         'exact noncommitted overlay manifest required')
     need(parent['head'] == manifest['parent_head'] == PARENT_COMMIT
          and parent['tree'] == manifest['parent_tree'] == PARENT_TREE
-         and parent['file_count'] == manifest['parent_file_count'] == 2222
+         and parent['file_count'] == manifest['parent_file_count'] == 2302
          and manifest['candidate_file_count'] == SOURCE_FILES
          and manifest['candidate_bytes'] == SOURCE_BYTES
          and manifest['candidate_tree_from_manifest'] == HEAD_TREE
@@ -400,7 +400,7 @@ def apply_overlay(parent, parent_rows, parent_entries, packet):
          and manifest['format_qualified'] is True and manifest['compiled'] is False
          and manifest['runtime_qualified'] is False and manifest['production_ready'] is False,
          'fixed qualified parent and exact formatted successor tree required')
-    old_rows = validate_rows(parent_rows, 2222)
+    old_rows = validate_rows(parent_rows, 2302)
     need(tree_id(parent_rows) == PARENT_TREE and set(old_rows) == set(parent['files']),
          'complete exact parent inventory required before overlay')
     changes, encoded_files = manifest['paths'], packet['files_base64']
@@ -438,6 +438,48 @@ def apply_overlay(parent, parent_rows, parent_entries, packet):
     return rows, entries, manifest
 
 
+def verify_parent_entries(entries):
+    need('SOURCE-MANIFEST.json' in entries and 'SOURCE-COMMIT.txt' in entries,
+         'source manifest and exact commit object required')
+    manifest_body = entries['SOURCE-MANIFEST.json'][1]; commit_body = entries['SOURCE-COMMIT.txt'][1]
+    need(digest(manifest_body) == MANIFEST and digest(commit_body) == COMMIT
+         and object_id('commit', commit_body) == PARENT_COMMIT, 'original manifest and commit object must match')
+    manifest = decode(manifest_body)
+    need(manifest['schema'] == 'p4-portable-qualified-source-manifest-v2'
+         and manifest['head'] == PARENT_COMMIT and manifest['tree'] == PARENT_TREE
+         and manifest['file_count'] == 2302 and manifest['file_bytes'] == 42628698
+         and manifest['commit'] == COMMIT and len(manifest['files']) == 2302,
+         'exact complete current source generation required')
+    need(commit_body.startswith(('tree ' + PARENT_TREE + '\n').encode())
+         and not any(line.startswith(b'parent ') for line in commit_body.split(b'\n\n', 1)[0].splitlines()),
+         'explicit root snapshot commit and original tree required')
+    provenance = manifest.get('provenance')
+    need(isinstance(provenance, dict)
+         and provenance.get('snapshot_kind') == 'explicit_root_snapshot_from_verified_complete_tree'
+         and provenance.get('upstream_ancestry_claimed') is False
+         and provenance.get('parent_commits') == []
+         and provenance.get('previous_packet_inventory_sha256') == '5f131f2dbcccafb735b84594e5b1a5c29a77b2e4c9c7882d76b2e66c7a5ee473'
+         and provenance.get('previous_source_parent_commit') == '61a38baa745483fbfb757466a1cf352febc20552'
+         and provenance.get('previous_source_parent_tree') == 'db6249e80209abeda8000eeced6d045a1d57e0a2'
+         and provenance.get('previous_reconstructed_tree') == PARENT_TREE
+         and provenance.get('historical_qualification_transferred') is False,
+         'complete previous lineage and explicit new root snapshot required')
+    rows = [{'path': name, 'bytes': row['bytes'], 'sha256': row['sha256'],
+             'git_blob': row['git_blob'], 'mode': row['git_mode']}
+            for name, row in sorted(manifest['files'].items())]
+    wanted = validate_rows(rows, 2302)
+    need(set(entries) == {'source/' + name for name in wanted}
+         | {'SOURCE-MANIFEST.json', 'SOURCE-COMMIT.txt'}, 'missing or undeclared source member')
+    for name, row in wanted.items():
+        mode, body = entries['source/' + name]
+        need(mode == (int(row['mode'], 8) & 0o777)
+             and digest(body) == {key: row[key] for key in ('bytes', 'sha256')}
+             and object_id('blob', body) == row['git_blob'], 'source body, mode or Git blob differs: ' + name)
+    need(tree_id(rows) == PARENT_TREE and sum(row['bytes'] for row in rows) == 42628698,
+         'every source byte must contribute to the complete Git tree')
+    return manifest, rows
+
+
 def verify_capsule(expected_inventory_sha):
     need(re.fullmatch('[0-9a-f]{64}', expected_inventory_sha), 'external inventory SHA required')
     index = regular(HERE / 'FILES.sha256', 65536)
@@ -454,31 +496,7 @@ def verify_capsule(expected_inventory_sha):
     for name, sha in inventory.items():
         need(hashlib.sha256(regular(HERE / name)).hexdigest() == sha, 'capsule input differs: ' + name)
     entries = archive_entries(check(HERE / 'SOURCE-CAPSULE.tar.xz', CAPSULE))
-    need('SOURCE-MANIFEST.json' in entries and 'SOURCE-COMMIT.txt' in entries,
-         'source manifest and exact commit object required')
-    manifest_body = entries['SOURCE-MANIFEST.json'][1]; commit_body = entries['SOURCE-COMMIT.txt'][1]
-    need(digest(manifest_body) == MANIFEST and digest(commit_body) == COMMIT
-         and object_id('commit', commit_body) == PARENT_COMMIT, 'original manifest and commit object must match')
-    manifest = decode(manifest_body)
-    need(manifest['schema'] == 'p4-portable-qualified-source-manifest-v2'
-         and manifest['head'] == PARENT_COMMIT and manifest['tree'] == PARENT_TREE
-         and manifest['file_count'] == 2222 and manifest['file_bytes'] == 40552166
-         and manifest['commit'] == COMMIT and len(manifest['files']) == 2222,
-         'exact complete current source generation required')
-    need(commit_body.startswith(('tree ' + PARENT_TREE + '\n').encode()), 'original commit tree differs')
-    rows = [{'path': name, 'bytes': row['bytes'], 'sha256': row['sha256'],
-             'git_blob': row['git_blob'], 'mode': row['git_mode']}
-            for name, row in sorted(manifest['files'].items())]
-    wanted = validate_rows(rows, 2222)
-    need(set(entries) == {'source/' + name for name in wanted}
-         | {'SOURCE-MANIFEST.json', 'SOURCE-COMMIT.txt'}, 'missing or undeclared source member')
-    for name, row in wanted.items():
-        mode, body = entries['source/' + name]
-        need(mode == (int(row['mode'], 8) & 0o777)
-             and digest(body) == {key: row[key] for key in ('bytes', 'sha256')}
-             and object_id('blob', body) == row['git_blob'], 'source body, mode or Git blob differs: ' + name)
-    need(tree_id(rows) == PARENT_TREE and sum(row['bytes'] for row in rows) == 40552166,
-         'every source byte must contribute to the complete Git tree')
+    manifest, rows = verify_parent_entries(entries)
     packet = overlay_packet(check(HERE / OVERLAY_PATH, OVERLAY))
     rows, entries, overlay = apply_overlay(manifest, rows, entries, packet)
     return {'parent_manifest': manifest, 'overlay_manifest': overlay, 'rows': rows,
@@ -520,6 +538,8 @@ def main():
     capsule = verify_capsule(args.inventory_sha256)
     result = {'schema': 'p4-current-complete-source-verification-v1', 'source_commit': HEAD_COMMIT,
               'source_parent_commit': PARENT_COMMIT, 'source_parent_tree': PARENT_TREE,
+              'source_parent_kind': 'explicit_root_snapshot_from_verified_complete_tree',
+              'upstream_ancestry_claimed': False,
               'source_tree': HEAD_TREE, 'source_files': SOURCE_FILES, 'source_bytes': SOURCE_BYTES,
               'source_overlay_sha256': OVERLAY['sha256'], 'full_source_overlay_verified': True,
               'full_source_archive_verified': True, 'historical_tests_counted_as_fresh': 0,

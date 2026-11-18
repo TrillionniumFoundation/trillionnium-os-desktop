@@ -1,42 +1,121 @@
 # Complete current producer source and fresh CI
 
-This packet reconstructs one complete producer tree containing the cumulative
-Launch, MAC, task-control, selected-lock, Settings, Profiling, SMS and MMS work,
-plus the boot-property, actual execution-state and source-recipe repairs below.
-It contains ordinary source and reproducible host validation. It does not
-contain an Android image, an APK collection or a production runtime acceptance.
+This packet reconstructs the complete cumulative producer source and the exact
+inc14, inc15 and inc16 runtime increments. It contains ordinary source and reproducible host
+validation; Android images, app acceptance and production runtime results are
+separate required deliverables.
 
 ## Exact current source
 
 | Identity | Value |
 | --- | --- |
-| Committed source parent inside the baseline archive | `61a38baa745483fbfb757466a1cf352febc20552` |
-| Parent Git tree | `db6249e80209abeda8000eeced6d045a1d57e0a2` |
-| Previous published source tree | `0b85a69905ce8ebfa9eaada1e3a29048fc2308c0` |
-| Current complete source tree | `5cdb20a31d4dd2a141ccce34690df2a307724935` |
-| Current source files / bytes | 2,301 / 42,620,199 |
-| Baseline archive members | 2,224: 2,222 source files, manifest and original commit body |
-| Baseline archive SHA256 | `7ab244365184ef670c244b6a0ed75857c6f942897f3fc59c00e6375e76f51816` |
-| Complete cumulative overlay | 138 path bodies / 651,964 compressed bytes |
-| Overlay SHA256 | `937c2383c01e8409b4ad6c56c36294cb6cfe19032d30ff4ba21cd90ba2cd0fab` |
-| Expanded overlay bytes | 5,017,600 |
-| Expanded overlay SHA256 | `8504e8d47dd2fb2f373087d654d105c5602b8180dab4d715c67fe7a9f518fa08` |
+| Explicit new root snapshot commit inside the baseline | 8ddad986410bddb5c42bc5549513a3ee5e41327b |
+| Baseline Git tree | ed4664376e9c4b60de0f4359753862425ab41d75 |
+| Original historical source parent, retained in provenance | 61a38baa745483fbfb757466a1cf352febc20552 |
+| Previous exact packet FILES.sha256 | 6d73958a09685caf033f842221b180b0f73d1729c4f52418f51ce90a9dfb9423 |
+| Current complete source tree | 22d5793de3dab64093c7876dc449505a4edb2aae |
+| Current source files / bytes | 2,313 / 42,869,310 |
+| Baseline archive members | 2,304: 2,302 source files, complete manifest and actual root commit body |
+| Baseline archive SHA256 | 3e8b2fa1ea1ef3555ca7c82e27abe79a2be029c701f69ac55ef4c82484f247ad |
+| Exact cumulative runtime overlay | 31 path bodies / 151,788 compressed bytes |
+| Overlay SHA256 | 2d4665166710435485d57397f31792a957673846c9e4d83b3d346c1dc8a8261a |
+| Expanded overlay bytes | 972,800 |
+| Expanded overlay SHA256 | 5fdc9f1c7f9ffe56f7f72bccdc6fbfbb9ade84179db993cb6f12ae5e28f9686f |
 
-The public wrapper commit is distinct from the source parent and reconstructed
-producer tree. `verify.py` checks every parent body, mode, Git blob and tree,
-then all 138 before/after rows and complete overlay bodies. The final tree
-includes exactly 2,301 files. `source_commit` remains null because the
-producer is represented by a verified cumulative overlay. The input manifest
-awards no build or runtime credit. The prior public increment completed all 1,391 ordinary cases, nine recipe cases, nineteen normal release builds, three examples and twenty documentation commands in CI run 44345493638. The private-loop and typed-self increment then passed all 465 ordinary supervisor library cases, with fifteen added cases and the same twenty-five ignored cases. The independent full-source ownership-metadata repair passed ten focused updater cases and added four cases to the actual updater ELF catalog without removing any prior case. A mutant with only the production call removed actually failed the new positive test. A later shared-target artifact collision was detected and preserved; a fresh private target rebuilt both fixed test and release executables, then passed the same ten cases with original PIDFD retirement. Current complete CI and privileged Android execution remain separate required runs.
+The snapshot commit is a real new Git root constructed from the fully verified
+ed4664376e9c4b60de0f4359753862425ab41d75 tree. It deliberately has no parent;
+it does not claim upstream ancestry. The manifest records the exact original
+61a38baa745483fbfb757466a1cf352febc20552 archive, cumulative 140-path overlay
+and old external inventory. Those historical objects remain unchanged.
+The new snapshot preserves all 2,302 source bodies, Git executable modes and
+blob identities. Git tree calculation, actual commit object, full member
+inventory and Git fsck were independently checked during preparation.
 
-`SOURCE-OVERLAY.tar.xz` stores canonical USTAR postimages and a complete manifest
-without JSON base64 expansion. The verifier rejects extensions, aliases, links,
-special members, unlisted bodies, nonzero padding, concatenated frames and
-changed preimages or postimages. The original single-frame 5 MiB expansion and
-64 MiB decoder-memory bounds remain unchanged. The external inventory and
-source-integrity gate pin the compressed byte count and SHA256.
+The current noncommitted successor applies exactly 31 guarded cumulative runtime paths to
+that baseline. Every preimage, postimage and final Git tree is checked.
+The final source_commit remains null; only the baseline has a new actual
+commit. No old compilation or runtime credit is transferred to this packet.
+
+The complete baseline preserves the original archive's PAX long-path support;
+its exact member set and every safe name, mode, body and Git blob are pinned.
+The binary overlay remains one canonical USTAR archive inside one XZ frame.
+Its original 5 MiB expansion and 64 MiB decoder-memory bounds stay unchanged.
+Links, aliases, extensions, undeclared members, changed modes, nonzero padding,
+trailing archives or frames and altered source identities remain rejected.
+The external FILES.sha256 pin authenticates all fourteen packet members.
+
+The exact expected complete catalog is 1,435 ordinary and thirty ignored
+cases. It combines the independently compiled current updater and inc16
+supervisor catalogs without removing any previous case. Listing and component
+runs do not replace a fresh complete CI run for this exact combined tree.
 
 ## Repairs
+
+### Original init's three real tmpfs operations
+
+The fixed original pending init requests for /apex, /bootstrap-apex and
+/linkerconfig require the literal tmpfs strings, original flags and options,
+same PIDFD/generation, one-task/no-child observation, same MAC owner and absolute
+deadline. A distinct bounded, labeled and idmapped tmpfs is created with fixed
+source=tmpfs before CREATE. The owner retains the actual source and helper
+before releasing the creator barrier. Actual move_mount and the original
+helper's observed exit supply the result; no declared success or CONTINUE is
+substituted.
+
+The exact post-mount projection retains every lower mount record, admits only
+the one actual new source and its visible replacement, and remains separate
+from the unchanged strict initial view. Failures preserve original ownership
+through helper retirement and original tree quarantine or actual retirement.
+
+The component's actual library run passed 487 ordinary cases and retained all
+25 ignored cases, adding exactly three names without removing any old case.
+The actual tested tree is b22c6b049b8155042d6f6d4bf7ec9ac2f20441cd. Its final
+component tree is 27121602645e68e6991747d15d93b991a8e83933: the only subsequent
+change removes one extra EOF LF from runtime-layout-v1.md. Complete independent
+source reconstruction and the preserved draft bytes prove that all compiled
+Rust inputs are unchanged. These component tests do not replace complete fresh
+CI for this combined tree. Privileged positive mount-stack/idmap operations,
+original init/APEX activation and production runtime remain separate gates.
+
+### Original private network-control custody
+
+The inc15 implementation retains the original DEV owner through read-only
+network preparation, actual private control creation and immutable selector
+SET. A detached bounded tmpfs exposes only the fixed control alias and automatic
+labels. Every fallible phase keeps its original descriptor or returns it to
+the same owner, preventing a failed activation from importing fresh authority
+or retrying SET. Retirement reaps the original socket helper before closing
+private control and namespace views; closing a descriptor never claims to undo
+SET or retire the Android tree.
+
+The original compiled supervisor library passed 484 ordinary cases and retained
+25 explicitly ignored cases. Two new named controls cover actual nonmount
+rejection and bounded detached mount inventories. Both original provider tests
+and all their malformed-device and request-layout assertions remain present.
+The separately frozen runtime source tree and the combined current source tree
+are independently reconstructed and checked. Privileged positive runs, original
+init/APEX activation, Android acceptance and production readiness remain pending.
+
+### Original init cleanup and selected host providers
+
+The inc14 source retains the original owner's notification, PIDFD, root and
+mount namespace while admitting only the two original early init cleanup
+requests. The real pending notification, one-thread status and empty direct
+children observations bound the early actor graph. Same-thread helper custody,
+actual errno, original deadlines and complete retirement remain mandatory.
+Typed host proc attributes and the selected socket/netns provider use their
+original bounded interfaces. No successful privileged mount, original apexd
+activation, Android start or production readiness is inferred.
+
+The component's actual compiled supervisor library catalog contains 482
+ordinary and 25 ignored names, with seventeen added names and no removed
+ordinary or ignored case. Those component observations retain their original
+source tree and validation receipt. This combined source still requires the
+complete new CI, full Android vendor build and actual runtime qualification.
+
+### Strict full-source local APK signer selection
+
+The full production provider now invokes the existing exact local-signer adapter on the original 5,010-byte tools/apksig/Android.bp (SHA256 22f86ab11f2470d9e34861f7273dd92c0ba4e9b914710a71c22dc374ebbac2fb). It retains apksig, apksigner-defaults and apksigner and excludes only the two unselected cloud providers, their cloud CLI and aggregate SDK tests. The actual complete-source consumer audit scanned 11,536 AOSP and 286 product BP/MK files; those cloud module names had no external consumers. Local signapk and APEX signing retain their original compiler and signing dependencies. Strict missing-dependency rejection, neverallow enforcement, normal full targets and exact journal restoration remain mandatory. Thirteen focused controls passed; removing the production call in a separate mutant target caused the new positive control to fail. The actual test catalog adds three named cases with no removed case, and the normal release updater was compiled from this exact complete source tree. The complete vendor build and Android acceptance still require actual results.
 
 ### Strict full-source ownership metadata repair
 
@@ -221,8 +300,8 @@ patch and never activates it or changes its input repository.
 
 The runner reconstructs this source into a new directory and uses a fresh
 Cargo target. Metadata and exact catalogs define 28 workspace packages,
-49 ordinary harnesses, 1,440 listed cases and 19 normal release binaries.
-The latest runtime increment adds seven ordinary supervisor names.
+49 ordinary harnesses, 1,465 listed cases and 19 normal release binaries.
+The latest runtime increment adds three ordinary supervisor names.
 Cumulatively, increments 6 through 11 add 33 names relative to the
 ac099 producer: 26 supervisor and 7 runtime-inputs cases.
 These names were read from the actual newly compiled harnesses.
@@ -233,14 +312,14 @@ no fresh credit.
 | Execution group | Required result | Bound |
 | --- | --- | --- |
 | Explicit updater cases | 64 ordinary cases | 60 seconds per exact name |
-| Remaining updater catalog | 431 ordinary cases; 1 ignored | 300 seconds |
-| Other 48 harnesses | 893 ordinary cases; 29 ignored | 300 seconds per harness |
+| Remaining updater catalog | 438 ordinary cases; 1 ignored | 300 seconds |
+| Other 48 harnesses | 933 ordinary cases; 29 ignored | 300 seconds per harness |
 | Normal release builds | 19 fresh binaries | 900 seconds per package batch |
 | Workspace examples | 3 fresh binaries, mains never executed | 900 seconds |
 | Frozen recipe example harness | 9 exact ordinary cases; no ignored cases | 300-second compilation, 60-second execution |
 | Documentation targets | 20 actual library targets, 0 doc cases | 180 seconds per target |
 
-The catalog total is **1,410 ordinary cases and 30 ignored cases**. The nine
+The catalog total is **1,435 ordinary cases and 30 ignored cases**. The nine
 recipe example cases are recorded separately. Each of the three normal
 example binaries and the separate recipe test ELF is joined to its actual
 source metadata and compilation interval. The recipe's exact and ignored
@@ -256,8 +335,11 @@ whole runner retains its **5,400-second deadline**, including final source
 and artifact checks. Missing process-observation support or an incomplete
 child retirement fails the job. The exact source bookend must still match.
 
-The thirteen previous verifier controls are retained, with two new strict
-USTAR framing controls for fifteen total. The runner keeps all nine
+All fifteen previous verifier test methods are retained. Formerly overlaid
+members that now reside in the baseline retain whole-body, omission, mode and
+self-consistent-row negative controls. Two explicit snapshot/provenance methods
+bring these host verifier controls to seventeen; the original strict USTAR
+framing and decoder controls remain unchanged. The runner keeps all nine
 original controls and adds two for ordinary example/test-ELF locations and
 Cargo hardlink aliases, for eleven total. The alias control covers both
 plain and hyphenated target names: Cargo preserves the public binary name
