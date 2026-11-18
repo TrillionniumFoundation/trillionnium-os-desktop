@@ -46,6 +46,12 @@ jobs:
           set -euo pipefail
           python3 -I -B compat/android/pocket4/current-app-acceptance/business/test_source.py \
             2>&1 | tee "$RUNNER_TEMP/a08/current-app-business.log"
+      - name: Verify exact Pocket4 39-app release scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/current-app-acceptance/test_release_scope.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/current-app-release-scope.log"
       - name: Install Java, JNI and media host test tools
         shell: bash
         run: |
