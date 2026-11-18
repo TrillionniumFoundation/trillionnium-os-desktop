@@ -58,6 +58,10 @@ jobs:
           set -euo pipefail
           python3 -I -B compat/android/pocket4/apk-content-identity/test_candidate.py \
             2>&1 | tee "$RUNNER_TEMP/a08/apk-candidate.log"
+          python3 -I -B compat/android/pocket4/apk-content-identity/test_dual_dynamic_elf.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/apk-dual-dynamic.log"
+          python3 -I -B compat/android/pocket4/apk-content-identity/test_native_resource_payloads.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/apk-native-resources.log"
       - name: Verify R36 storage owner source without runtime admission
         timeout-minutes: 2
         shell: bash

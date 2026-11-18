@@ -1,0 +1,66 @@
+{
+  "schema": "pocket4-official-apk-candidate-v3",
+  "package": "com.MobileTicket",
+  "version_name": "5.9.4.5",
+  "version_code": 275,
+  "version_code_major": 0,
+  "min_sdk_version": 23,
+  "target_sdk_version": 34,
+  "apk": {
+    "name": "base.apk",
+    "bytes": 150377492,
+    "sha256": "c7e56101e5753002bba220ce40d07b00d4bc822e1eeef12bbe36ec9e2f8e272d"
+  },
+  "native_abis": [
+    "arm64-v8a"
+  ],
+  "signer_certificate_sha256": [
+    "53a2508d2efcef95deadf8ff74ef41eadcd1e96fbcc49b53d741787806c01904"
+  ],
+  "native_layout_exceptions": [
+    {
+      "path": "lib/arm64-v8a/libDexHelper-x86.so",
+      "kind": "dual_dynamic_shared_library",
+      "bytes": 1237645,
+      "sha256": "16eb45ff369a71af26ed34e3b318cde2ebfd0ece9da7353c60946b764efd1394",
+      "elf_class": 2,
+      "elf_machine": 62,
+      "elf_type": 3,
+      "soname": "libDexHelper.so",
+      "entry_point": 0,
+      "has_interpreter": false,
+      "layout_sha256": "d6687be7878f15be3d24622a109b2015363175f31f3e11e1931247fdc8a6b9a0"
+    },
+    {
+      "path": "lib/arm64-v8a/libWebViewCore_3.22.2.72.240709175818_7z_uc.so",
+      "kind": "embedded_7z_archive",
+      "bytes": 13999047,
+      "sha256": "fb2588ecfbfd0e8ae55c1454551098f24ab0308f88329b625d27e6b05c809c4e",
+      "layout_sha256": "6f45cd40d70c111d1be7002ba05f4362931a1eba30f7ee98d9b68f17bedc2b3c"
+    },
+    {
+      "path": "lib/arm64-v8a/libwb.so",
+      "kind": "interpreter_tagged_et_dyn",
+      "bytes": 2208920,
+      "sha256": "cd177d09ed8a9a0b902c42b1138895d958ffb185c6b47b6fa52b9149b8849a99",
+      "elf_class": 1,
+      "elf_machine": 40,
+      "elf_type": 3,
+      "soname": "libwb.so",
+      "entry_point": 0,
+      "has_interpreter": true,
+      "interpreter": "/system/bin/linker",
+      "layout_sha256": "63587c3383ae55b1becb76c792e6560290d55d580e144a15b5e326445a18aff8"
+    }
+  ],
+  "source": {
+    "apk_url": "https://dynamic.12306.cn/otn/appdownload/12306v5.9.4.5.apk",
+    "version_metadata_url": "https://dynamic.12306.cn/otn/appdownload/12306v5.9.4.5.apk",
+    "signer_reference_url": "https://raw.githubusercontent.com/TrillionniumFoundation/trillionnium-os-desktop/6fd7efdcfa27da2015b7eb5b103dc399491aa18f/compat/android/pocket4/continuation-20261109-e3df/application-candidates/CANDIDATE42.json",
+    "signer_reference_kind": "public_historical_candidate",
+    "version_metadata_kind": "signed_apk_android_manifest",
+    "observed_utc": "2026-11-18T09:52:38.104192+00:00",
+    "observed_stable_version": "5.9.4.5",
+    "sha256_kind": "observed_whole_file_digest"
+  }
+}

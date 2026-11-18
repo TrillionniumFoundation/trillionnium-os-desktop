@@ -87,15 +87,44 @@ install an application, change permissions, or execute a business action.
 
 ## Current input observations, 2026-11-18
 
-Current source-input verification has produced new native expected-input
-fragments for Firefox 160.0.1 / 2016196678, Fcitx
-0.1.3-0-g048f581c / 114, and Shenzhou 9.6.3 / 329. Their independently pinned
-candidate definitions are `firefox-candidate.json`, `fcitx-candidate.json`
-and `szzc-candidate.json`; the [APK verifier guide](../apk-content-identity/README.md)
-records the actual SDK 37 checks and their limits. Fcitx's latest official
-stable release and exact APK still match the historical input. Firefox and
-Shenzhou are newer verified source inputs. No installation, current device
-readback, native-loading success or business acceptance is inferred.
+Current source-input verification has produced native expected-input
+fragments for seven complete, unmodified publisher APKs, totaling
+1,112,420,343 bytes. All seven passed the same final verifier's actual SDK 37
+signature, binary manifest, whole-file hash and reviewed native-layout
+checks on 2026-11-18 between 10:24:30 and 10:24:52.025 UTC. The independently
+pinned candidate definitions retain each exact signer and payload hash:
+
+| Application | Signed Android version / code | Candidate definition |
+| --- | --- | --- |
+| Firefox | `160.0.1` / `2016196678` | [firefox-candidate.json](firefox-candidate.json) |
+| Fcitx | `0.1.3-0-g048f581c` / `114` | [fcitx-candidate.json](fcitx-candidate.json) |
+| Shenzhou | `9.6.3` / `329` | [szzc-candidate.json](szzc-candidate.json) |
+| Ctrip | `8.97.6` / `2136` | [ctrip-candidate.json](ctrip-candidate.json) |
+| Beike | `3.06.71` / `3067100` | [beike-candidate.json](beike-candidate.json) |
+| China Eastern | `9.5.16` / `239` | [ceair-candidate.json](ceair-candidate.json) |
+| Railway 12306 | `5.9.4.5` / `275` | [12306-candidate.json](12306-candidate.json) |
+
+The [APK verifier guide](../apk-content-identity/README.md) records the
+actual checks, source pins, channel observations and limits. Firefox,
+Shenzhou and Ctrip are newer than the historical candidates; the other four
+fresh official downloads still match their historical package versions.
+The Fcitx release tag is `0.1.3`; the exact signed Android build name above
+is preserved, along with the selected GitHub signing channel.
+
+The additional v3 layout model retains literal path/bytes/hash bindings
+and separately checks shared-library layouts, two dynamic-table views,
+zero-byte placeholders, a bounded 7z container and an interpreter-tagged
+ARM32 ET_DYN object. Compressed content is not decoded or counted as an ELF
+library; an interpreter declaration with a zero entry is not evidence of a
+standalone executable role. The original v1 behavior and v2 exact-four
+cross-architecture layout remain intact. Four real wrong-candidate controls
+failed without receipts, alongside 63 separate source controls.
+
+These are source-input results. They do not establish installation, current
+device readback, native loading, inner-archive compatibility, business
+acceptance or production qualification. Expected-input fragments retain
+their observed local paths; a future owner must regenerate and bind them
+to the actual deployment locations through the unchanged runtime gates.
 
 Fresh anonymous official Google Play US pages also exposed the following
 exact application-detail version strings. The observations were made on

@@ -1,0 +1,57 @@
+{
+  "schema": "pocket4-official-apk-candidate-v3",
+  "package": "com.rytong.ceair",
+  "version_name": "9.5.16",
+  "version_code": 239,
+  "version_code_major": 0,
+  "min_sdk_version": 24,
+  "target_sdk_version": 33,
+  "apk": {
+    "name": "base.apk",
+    "bytes": 220804847,
+    "sha256": "a6da8d746f98cae884f6b0137b5c7e8412836adf75530b763dae1536c75522ce"
+  },
+  "native_abis": [
+    "arm64-v8a"
+  ],
+  "signer_certificate_sha256": [
+    "b48f75514e956be6bd7d56f1701136c8d76f19459bd724ac52390a572bc0ecbf"
+  ],
+  "native_layout_exceptions": [
+    {
+      "path": "lib/arm64-v8a/libDexHelper-x86.so",
+      "kind": "dual_dynamic_shared_library",
+      "bytes": 1146781,
+      "sha256": "37b0cc1dd6a8a23f700a2c20aa3c20668e74dde6ce405a7f63a61830dd6c2b1b",
+      "elf_class": 2,
+      "elf_machine": 62,
+      "elf_type": 3,
+      "soname": "libDexHelper.so",
+      "entry_point": 0,
+      "has_interpreter": false,
+      "layout_sha256": "f3b7232ec5c5d871f8f1116c502af4f8d3890de4e4e99e1cb01aa06f87ae6ee9"
+    },
+    {
+      "path": "lib/arm64-v8a/liblocSDK7a.so",
+      "kind": "empty_placeholder",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "lib/arm64-v8a/liblocSDK8b.so",
+      "kind": "empty_placeholder",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "source": {
+    "apk_url": "https://ecresource-app.ceair.com/apk/ceair_release_v9_5_16_20261105.apk",
+    "version_metadata_url": "https://ecresource-app.ceair.com/apk/ceair_release_v9_5_16_20261105.apk",
+    "signer_reference_url": "https://raw.githubusercontent.com/TrillionniumFoundation/trillionnium-os-desktop/6fd7efdcfa27da2015b7eb5b103dc399491aa18f/compat/android/pocket4/continuation-20261109-e3df/application-candidates/CANDIDATE42.json",
+    "signer_reference_kind": "public_historical_candidate",
+    "version_metadata_kind": "signed_apk_android_manifest",
+    "observed_utc": "2026-11-18T09:42:54.284955+00:00",
+    "observed_stable_version": "9.5.16",
+    "sha256_kind": "observed_whole_file_digest"
+  }
+}

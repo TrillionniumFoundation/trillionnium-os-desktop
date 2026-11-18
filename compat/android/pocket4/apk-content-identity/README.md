@@ -87,9 +87,84 @@ python3 compat/android/pocket4/apk-content-identity/verify_apk.py \
 
 The native `ApplicationPlan` fragment has the same existing format as v1. The receipt is created only after all checks and still says `installed`, `runtime_qualified`, and `production_ready` are false. A new version, APK hash or shared-library layout requires a new reviewed candidate; the four recorded files are never skipped based on their names.
 
-Both candidate schemas accept the neutral digest description `observed_whole_file_digest` as well as the original `observed_whole_file_digest_not_publisher_published_checksum`. This allows an observation to coexist with a separately published publisher checksum without claiming that one does not exist. Neither description changes verification or grants trust: actual whole-file recomputation and the external candidate pin remain mandatory, and unknown digest descriptions fail.
+All candidate schemas accept the neutral digest description `observed_whole_file_digest` as well as the original `observed_whole_file_digest_not_publisher_published_checksum`. This allows an observation to coexist with a separately published publisher checksum without claiming that one does not exist. Neither description changes verification or grants trust: actual whole-file recomputation and the external candidate pin remain mandatory, and unknown digest descriptions fail.
 
 The actual signed 9.6.3 APK passed the complete v2 CLI on 2026-11-18. Independently repinned candidates with a wrong shared-library SHA-256 or a wrong ELF class/machine each failed after real APK verification, produced no stdout, and created no receipt. The positive receipt described all 118 native entries and the exact four foreign shared libraries. These are source identity observations; no app was installed or launched.
+
+## Exact native input layouts (candidate v3)
+
+V3 adds a distinct `native_layout_exceptions` list containing zero through eight records. V1 retains its original directory-to-ELF requirement, and v2 still requires exactly four `cross_arch_shared_libraries`. Adding v3 does not reinterpret either earlier schema.
+
+Every v3 exception has a literal, sorted, unique `lib/<abi>/lib*.so` path, an exact uncompressed byte count, and a complete SHA-256. The list must describe the entire actual exception set. Missing entries, additional foreign or empty payloads, wildcard paths, unknown kinds, and changed bytes fail before receipt publication. All unlisted `.so` entries still have to match their directory's ELF class and machine. No filename or path grants a general exemption.
+
+- `cross_arch_shared_library` requires the same explicit class, machine, `ET_DYN`, SONAME, entry point and no-interpreter pins as v2. It uses the unchanged bounded `_shared_elf_metadata` parser. A new APK or payload hash cannot make invalid program/dynamic/string tables, an executable type, an interpreter or a PIE flag pass that parser.
+- `empty_placeholder` requires `bytes: 0` and the actual empty-file SHA-256 `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`. The ZIP member's declared and read content must both be empty. These entries appear only in `empty_placeholders`; they never enter `native_libraries` and cannot establish that an ABI has a native ELF library. The model does not assume that the app avoids loading the placeholder.
+- `dual_dynamic_shared_library` explicitly describes an `ET_DYN` payload whose declared dynamic-table file range differs from its unique `PT_LOAD` mapping. The separate `dual_dynamic_elf.py` parser requires one `PT_DYNAMIC`, one matching `SHT_DYNAMIC`, a linked string table identifying the same complete bytes as the mapped string table, matching SONAME and ordered NEEDED identities, and bounded tables and pointers. Both complete dynamic views and their consumed prefixes are hashed. Consumed entries cannot overlap each other, the ELF/program/section headers, or the string table. Unconsumed tails, tag differences, section-name-index type, section/segment address differences, and 4 KiB versus 16 KiB load congruence remain explicit observations. The original shared-library parser still rejects this layout when the ordinary kind is selected.
+- `embedded_7z_archive` describes a 7z 0.3 resource, between 33 bytes and 64 MiB, with the complete signature header, valid start-header and next-header CRCs, and a next header of at most 64 KiB ending exactly at payload EOF. `native_resource_payloads.py` records the packed range without decompressing or verifying its contained streams. These entries appear in `embedded_archives`, never in `native_libraries`, and cannot supply a native-ELF ABI witness.
+- `interpreter_tagged_et_dyn` is limited to the observed ARM32, zero-entry `ET_DYN` form with exactly one literal `/system/bin/linker` interpreter, including its terminating NUL, before loadable segments. The interpreter is explicitly pinned. Program and dynamic table bounds, a unique file-backed mapping, bounded SONAME/NEEDED identities, and the no-PIE check remain enforced by the separate resource parser. These actual ELF entries appear separately in `interpreter_tagged_et_dyn`; the record does not establish that they serve as standalone executables. The ordinary shared-library kind continues to reject `PT_INTERP`.
+
+The last three kinds additionally require an independently pinned `layout_sha256`. Each helper returns its complete structural `layout`. The consumer serializes that object again using UTF-8 JSON with sorted keys, compact separators, `ensure_ascii=False`, `allow_nan=False`, and no trailing newline; it enforces a 64 KiB bound and compares the computed digest both to the helper's digest and the external candidate pin. Any helper-supplied kind, byte count or payload SHA must also equal the already verified payload pin before its metadata is recorded. A new kind never provides a generic opaque-payload allowance.
+
+An empty exception list can describe a conventional ELF layout while accurately recording a historical signer reference. V3 uses the same explicit `public_historical_candidate` signer reference and `signed_apk_android_manifest` version metadata distinction as v2. Neither a historical signer pin nor signed manifest metadata is relabeled as a publisher-published certificate statement or a global latest-release guarantee. The complete APK, actual signature verification, binary manifest, and independently reviewed external candidate SHA remain mandatory even when the exception list is empty.
+
+Every v3 binary-metadata result records `native_compatibility_qualified: false` and `dispatch_runtime_observed: false`. The source receipt and unchanged native `ApplicationPlan` fragment retain `installed: false`, `runtime_qualified: false`, and `production_ready: false`. A source identity result supplies no evidence that Android loads the libraries, that architecture selection works, or that application business flows pass.
+
+### Current publisher observations
+
+The complete publisher APKs below were acquired and verified with SDK 37 on 2026-11-18. Their package signers match the public historical candidate at immutable commit `6fd7efdcfa27da2015b7eb5b103dc399491aa18f`; the signer-reference URL is preserved in each new candidate. The source package contains candidate definitions and verification code, never the APK payloads.
+
+| Candidate | Signed APK version / code | Complete bytes / SHA-256 | Actual native entries |
+| --- | --- | --- | --- |
+| `../current-app-acceptance/ctrip-candidate.json` | `ctrip.android.view` `8.97.6` / `2136` | `104927037` / `d22e5db066d8d2fd7c1bd53e5c62cc108fc9d89d42169cbdaf3b2ddfc04ac68c` | 57 ELF64 ARM64 libraries; zero exceptions |
+| `../current-app-acceptance/beike-candidate.json` | `com.lianjia.beike` `3.06.71` / `3067100` | `228991122` / `6984af4bbeda2818ad0a35183dd59af798eceebb9e441ef869b32dcc5095f728` | 71 ELF64 ARM64 libraries and one explicitly pinned ELF64 x86_64 shared library |
+| `../current-app-acceptance/ceair-candidate.json` | `com.rytong.ceair` `9.5.16` / `239` | `220804847` / `a6da8d746f98cae884f6b0137b5c7e8412836adf75530b763dae1536c75522ce` | 46 ELF64 ARM64 entries, one dual-view ELF64 x86_64 entry, and two empty placeholders |
+| `../current-app-acceptance/12306-candidate.json` | `com.MobileTicket` `5.9.4.5` / `275` | `150377492` / `c7e56101e5753002bba220ce40d07b00d4bc822e1eeef12bbe36ec9e2f8e272d` | 59 ELF64 ARM64 entries, one dual-view ELF64 x86_64 entry, one interpreter-tagged ARM32 ELF, and one 7z resource |
+
+Ctrip's [official download page](https://m.ctrip.com/html5/mkt/centerpage/download/) requests the publisher's `getConfigUrl` endpoint with `config: versionInfo`; the observed response reported `8.97.6` and an update date of `2026-11-16`. The current [publisher QR image](https://pages.c-ctrip.com/market/union/adPlatform/ios_and_6_more.png), 11427 bytes with SHA-256 `5cc9d0bf75ac84166f9b71602e05f1d11640de92ec9f52e664a19a700bbe25b2`, decodes to `http://m.ctrip.com/m/c1052`. Its Android download selection returned the exact HTTPS publisher APK URL recorded in the candidate. The [HTTPS form of the same route](https://m.ctrip.com/m/c1052) was independently checked and returned that identical APK URL, byte count and ETag. The separate `c1051` route returned an older `8.94.6` filename and was not used. The actual new APK is `8.97.6` / code `2136`, min SDK 24, target SDK 30, with signer `8155dc0644fed517e8ef6bef9718c363d0eb3eb2c22c06455044d88268bdcf0a`. The candidate SHA is `df96be23ff2026e5d7296de32874f4adb7e19cf874f5d896d32edf9722145f08`.
+
+Beike's [publisher page](https://m.ke.com/client/) supplies the [current Android route](https://m.ke.com/download/lianjia?scheme=&direct=1), which redirected to the `file.ljcdn.com` APK URL recorded in the candidate. This observation delivered the same complete APK SHA-256 as the public historical candidate; it is a fresh official-channel observation, not an inferred version upgrade. Binary XML reports min SDK 23 and target SDK 31. Its signer is `0b66624117621bb9bc3e7d12a1fe5436794cf8999b0253d9ff9bec71e0932178`. The candidate SHA is `409a2304f11371604429e10d83a1f859372ea38ad01c6086819722c8274e7080`.
+
+Beike's one foreign entry is `lib/arm64-v8a/libjgclb_x86.so`: 992840 bytes, SHA-256 `7341951a925105ba15263c0f90943f41c740754a52821750d1317c23a1ae4676`, ELF64 little-endian machine 62, `ET_DYN`, SONAME `libjiagu.so`, entry point zero, no `PT_INTERP`, and seven program headers. The unchanged shared-library parser accepted its actual bounded structure. Static inspection of the signed `classes.dex` (63576 bytes, SHA-256 `ec759739e2aa7926d76ff7ebe2613e10cca9748432b0652ac02d0086133701a2`) with Google's SDK 37 `dexdump` shows `ekieb.aijnail.moc.StubApp` selecting `jgclb_x86` using Android ABI information and calling `System.loadLibrary` through its `a(String)` method, with a `System.load` file-path fallback. This is an in-process shared-library layout, not a separately executed helper. Neither the DEX nor native payload was executed during inspection.
+
+The existing candidate CLI accepts these v3 definitions with their reviewed external SHA and a new absolute receipt path. Only the stdout `application` object is a native `ApplicationPlan` entry; the wrapper is not a complete runtime plan.
+
+### China Eastern Airlines and 12306 structural observations
+
+The [China Eastern publisher page](https://app.ceair.com/) reported `V9.5.16`, updated `2026-11-05`, and supplied the exact HTTPS APK URL in `ceair-candidate.json`. The actual package has min SDK 24, target SDK 33, and signer `b48f75514e956be6bd7d56f1701136c8d76f19459bd724ac52390a572bc0ecbf`. Its candidate SHA is `f51645ff56426e595cfe5e12ab6383ab6c84e0260414bb2ee9a3ffe8b9c05910`. The two empty members are `lib/arm64-v8a/liblocSDK7a.so` and `lib/arm64-v8a/liblocSDK8b.so`; neither is counted as an ELF library.
+
+Its `lib/arm64-v8a/libDexHelper-x86.so` is 1146781 bytes with payload SHA-256 `37b0cc1dd6a8a23f700a2c20aa3c20668e74dde6ce405a7f63a61830dd6c2b1b`. The declared dynamic table is at file offset 1145072 with 608 bytes; the virtual-address mapping identifies a different 608-byte table at offset 1115240. The declared table's consumed prefix contains dependency and SONAME identities, while the mapped table carries additional tags. The exact layout pin is `f3b7232ec5c5d871f8f1116c502af4f8d3890de4e4e99e1cb01aa06f87ae6ee9`. The full declared range overlaps section-header bytes after its consumed prefix, the section-name index identifies `NOBITS`, and several other noncanonical facts remain in the layout. They are not normalized away or represented as loader compatibility.
+
+The separate paths have a concrete counterpart in official AOSP source: [`ElfReader::ReadDynamicSection`](https://android.googlesource.com/platform/bionic/+/refs/heads/main/linker/linker_phdr.cpp), observed blob `5967e2d48a29cbbaca8f87a2be42361ab43decd5`, checks section file offset/size against `PT_DYNAMIC` and reads the linked string table. `phdr_table_get_dynamic_section` uses the segment virtual address, and [`soinfo::prelink_image`](https://android.googlesource.com/platform/bionic/+/refs/heads/main/linker/linker.cpp), observed blob `4cf93b9badb616b892a2b063234abd72fb7c71e8`, consumes that mapped dynamic address. This supports recording both views. These observations do not identify the selected GSI's source revision or qualify its linker, relocations, namespaces, dependencies or Native Bridge behavior.
+
+The [12306 publisher page](https://mobile.12306.cn/otsmobile/h5/otsbussiness/downloadapp/downloadapp.html) supplied its published JavaScript and the `appDown` API; the observed `appAndroidDownUrl` selected the exact `12306v5.9.4.5.apk` HTTPS URL in `12306-candidate.json`. Binary XML reports min SDK 23 and target SDK 34. The signer is `53a2508d2efcef95deadf8ff74ef41eadcd1e96fbcc49b53d741787806c01904`; the candidate SHA is `c77e4c3ddd303b5417aeef9170f61e7f32e6a1563037979bb7c9ad88783ff112`. The three declared resources are:
+
+| Exact member under `lib/arm64-v8a/` | Actual bytes | Explicit kind | Canonical layout SHA-256 |
+| --- | ---: | --- | --- |
+| `libDexHelper-x86.so` | 1237645 | `dual_dynamic_shared_library` | `d6687be7878f15be3d24622a109b2015363175f31f3e11e1931247fdc8a6b9a0` |
+| `libWebViewCore_3.22.2.72.240709175818_7z_uc.so` | 13999047 | `embedded_7z_archive` | `6f45cd40d70c111d1be7002ba05f4362931a1eba30f7ee98d9b68f17bedc2b3c` |
+| `libwb.so` | 2208920 | `interpreter_tagged_et_dyn` | `63587c3383ae55b1becb76c792e6560290d55d580e144a15b5e326445a18aff8` |
+
+The full payload SHAs are in the candidate. The archive's start-header CRC is `ec19ea22`, and its 37-byte next header ends at EOF with CRC `a250b709`. No stream was decompressed. `libwb.so` is ELF32 ARM, `ET_DYN`, entry zero, SONAME `libwb.so`, with the exact interpreter string and no `DF_1_PIE`; an interpreter tag alone is not treated as evidence of a standalone executable role. Its existing ordinary shared-library rejection remains unchanged.
+
+### Final verification with one source revision
+
+From **2026-11-18T10:24:30.672214+00:00** through **2026-11-18T10:25:02.642998+00:00**, the same final `verify_apk.py` (39174 bytes, SHA-256 `e464907dc5cffdfe4a2b104eb1e7febfd8b6aebfe876b1a5c69647fab739ff0d`) and the frozen helper bytes repeated the complete SDK 37 candidate CLI for all seven listed APKs. All seven exited zero and produced new source receipts and exact `ApplicationPlan.expected_input` fragments. The original three candidate files remained unchanged; their schemas remain v1, v1 and v2 respectively.
+
+| Application / signed version | Candidate schema | Actual ELF entries | New source receipt bytes / SHA-256 |
+| --- | --- | ---: | --- |
+| Firefox `160.0.1` | v1 | 18 | `5958` / `84d555dd4920e8600f59b11cf939063501c54b2584361f3b1282912337bbccfb` |
+| Fcitx `0.1.3-0-g048f581c` | v1 | 24 | `6657` / `756889ed192b3848d37bd9171aad2bc96accdbe3c7c9002ef870a81ef778793c` |
+| SZZC `9.6.3` | v2 | 118 | `20844` / `4945bdbc416c76b995d51fcf787a444f80000a7f4e943efbb13358f46cd5b562` |
+| Ctrip `8.97.6` | v3 | 57 | `11318` / `01103603d36893d00e7b9e1005df3e906ba61903a43e517e798ae7d1ad439fba` |
+| Beike `3.06.71` | v3 | 72 | `13551` / `ba8d0c8a408b1353b990d1827b588403cc1b3f684068b1522999e2480c6ad4c0` |
+| China Eastern `9.5.16` | v3 | 47 | `29387` / `5aa4a7916b2b42a2f61c4a402ceb4ec56409e30d6b10fef92ddd95f9cf29d793` |
+| 12306 `5.9.4.5` | v3 | 61 | `43549` / `93cd90cf7a3f4d9d6677b4e319f4e0e86f2147ed834df743e8e1b61c73914011` |
+
+The counts include recorded actual foreign-architecture ELF entries. China Eastern's two empty placeholders and 12306's one 7z resource are excluded from ELF counts. Every original APK's full SHA and file-identity bookends stayed unchanged; their total size was 1112420343 bytes. All executed source-code files were checked against the same frozen hashes before and after verification.
+
+Four additional complete-APK candidate invocations deliberately used a wrong payload SHA, a wrong canonical layout SHA, a missing exception, or a 7z resource mislabeled as empty. Each exited one, emitted no stdout and created no receipt. The APKs remained unchanged, and the temporary incorrect candidate files were removed. The unified local `ACTUAL_INPUTS.json` index (33913 bytes, SHA-256 `0804c247f530acfb4ec00bdb00ecec8cee1b8430fd5f9712d43754ed1290887a`) binds all seven new receipts, native fragments, actual command records, candidate pins, code pins and four negative results. It is retained with the separately acquired current APK artifacts, not embedded in this source package.
+
+These results cover the seven listed source inputs only. Their receipts and fragments retain installed, runtime and production false; native loading, architecture dispatch, input delivery to an Android owner, and application business acceptance remain separate gates.
 
 ## Controls
 
@@ -110,6 +185,17 @@ python3 -I -B compat/android/pocket4/apk-content-identity/test_candidate.py
 ```
 
 These 18 source tests use explicitly synthetic inputs and mocks around the existing verifier. The original nine controls cover wrong package/version/hash/signer/ABI, signature failure, split declarations, raw version/SDK and ELF mapping, strict candidate JSON and external SHA, changed inputs, receipt overwrite, and CLI flag grouping. One control verifies neutral digest wording and rejects an unknown kind. Eight additional controls exercise exact four-library binding, every payload hash and size, actual ELF class/machine/SONAME/entry agreement, missing and additional payloads, unchanged v1 rejection, executable/interpreter/PIE rejection, and bounded program/dynamic tables even when synthetic whole-file pins are updated. They are separate from real signed-APK verification and from application runtime acceptance.
+
+V3 adds sixteen source controls without changing those initial 18 test bodies. Nine cover a normal zero-exception layout, separation of empty placeholders from actual ELF libraries, missing and additional payloads, false empty declarations and ABI witnesses, strict kinds and legacy-schema isolation, the eight-record upper bound, per-payload identity, the unchanged strict ELF parser after complete synthetic repinning, and external-pin/signature/manifest gates. Seven more cover the three explicit structural kinds, canonical digest agreement, changed helper summaries, strict original-kind rejection, and archive-versus-ELF accounting. All 34 candidate controls use inert synthetic inputs; successful unit controls do not stand in for SDK 37 verification of the complete real APKs.
+
+The two helper suites have independent isolated entry points:
+
+```sh
+python3 -I -B compat/android/pocket4/apk-content-identity/test_dual_dynamic_elf.py
+python3 -I -B compat/android/pocket4/apk-content-identity/test_native_resource_payloads.py
+```
+
+They contribute nine and twenty synthetic cases respectively, for 63 ordinary source controls across the three commands. The dual parser's real China Eastern payload was also observed separately with three modified-byte rejection cases. The resource helper's two optional actual 12306 payload cases are additional local byte-parser checks; the ordinary CI command neither reads those APKs nor counts them as two extra synthetic passes. The real payloads and modified copies are never included in the source package.
 
 This is an identity and signature gate. It does not establish delivery eligibility, split completeness for a particular device, runtime compatibility, or application business acceptance. It never installs or launches an app. APKs that require v3.2 signer selection are explicitly rejected until that mapping is implemented and qualified.
 

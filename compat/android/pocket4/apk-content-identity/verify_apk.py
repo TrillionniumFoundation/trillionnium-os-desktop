@@ -119,8 +119,12 @@ def inspect_apk_content(path, tools):
 
 _CANDIDATE_SCHEMA = 'pocket4-official-apk-candidate-v1'
 _CROSS_ARCH_SCHEMA = 'pocket4-official-apk-candidate-v2'
+_LAYOUT_SCHEMA = 'pocket4-official-apk-candidate-v3'
 _CANDIDATE_LIMIT = 16 * 1024
 _SHARED_LIBRARY_LIMIT = 16 * 1024 * 1024
+_ARCHIVE_LIMIT = 64 * 1024 * 1024
+_LAYOUT_LIMIT = 64 * 1024
+_EMPTY_SHA256 = hashlib.sha256(b'').hexdigest()
 _ABI_ELF = {'armeabi-v7a': (1, 40), 'arm64-v8a': (2, 183),
             'x86': (1, 3), 'x86_64': (2, 62), 'riscv64': (2, 243)}
 
@@ -181,6 +185,71 @@ def _cross_arch_pins(candidate):
     return {item['path']: item for item in values}
 
 
+def _native_layout_pins(candidate):
+    """V3 pins an exact bounded set; empty placeholders never become ELF libraries."""
+    values = candidate['native_layout_exceptions']
+    if type(values) is not list or len(values) > 8:
+        raise ValueError('Candidate v3 requires at most eight literal native-layout exceptions')
+    paths = []
+    for item in values:
+        if type(item) is not dict:
+            raise ValueError('Native-layout exception must be an object')
+        kind = item.get('kind')
+        fields = ('path', 'kind', 'bytes', 'sha256')
+        elf_kind = kind in ('cross_arch_shared_library', 'dual_dynamic_shared_library',
+                           'interpreter_tagged_et_dyn')
+        if elf_kind:
+            fields += ('elf_class', 'elf_machine', 'elf_type', 'soname',
+                       'entry_point', 'has_interpreter')
+            if kind == 'interpreter_tagged_et_dyn':
+                fields += ('interpreter',)
+        elif kind not in ('empty_placeholder', 'embedded_7z_archive'):
+            raise ValueError('Native-layout exception kind is outside the explicit source models')
+        if kind in ('dual_dynamic_shared_library', 'interpreter_tagged_et_dyn', 'embedded_7z_archive'):
+            fields += ('layout_sha256',)
+        _fields(item, fields, 'Native-layout exception')
+        path = item['path']
+        if type(path) is not str or len(path.encode('utf-8')) > 256:
+            raise ValueError('Invalid native-layout exception path')
+        parts = path.split('/')
+        if (len(parts) != 3 or parts[0] != 'lib' or parts[1] not in candidate['native_abis']
+                or not re.fullmatch(r'lib[A-Za-z0-9_.+-]+\.so', parts[2])):
+            raise ValueError('Native-layout exception requires a literal native-library path')
+        if kind == 'empty_placeholder':
+            if type(item['bytes']) is not int or item['bytes'] != 0 or item['sha256'] != _EMPTY_SHA256:
+                raise ValueError('Empty placeholder must pin zero bytes and the empty-file SHA-256')
+        elif kind == 'embedded_7z_archive':
+            if type(item['bytes']) is not int or not 33 <= item['bytes'] <= _ARCHIVE_LIMIT or not _sha(item['sha256']):
+                raise ValueError('Embedded 7z archive requires bounded complete bytes and SHA-256')
+        else:
+            if type(item['bytes']) is not int or not 52 <= item['bytes'] <= _SHARED_LIBRARY_LIMIT or not _sha(item['sha256']):
+                raise ValueError('Cross-architecture library requires bounded bytes and SHA-256')
+            if type(item['elf_type']) is not int or item['elf_type'] != 3:
+                raise ValueError('Cross-architecture payload must be an ET_DYN shared library')
+            if (type(item['elf_class']) is not int or type(item['elf_machine']) is not int
+                    or (item['elf_class'], item['elf_machine']) not in _ABI_ELF.values()
+                    or (item['elf_class'], item['elf_machine']) == _ABI_ELF[parts[1]]):
+                raise ValueError('Cross-architecture library must declare its actual different ELF architecture')
+            if kind == 'interpreter_tagged_et_dyn':
+                if ((item['elf_class'], item['elf_machine']) != (1, 40)
+                        or type(item['entry_point']) is not int or item['entry_point'] != 0
+                        or item['has_interpreter'] is not True or item['interpreter'] != '/system/bin/linker'):
+                    raise ValueError('Interpreter-tagged ET_DYN requires ARM32, entry zero and the exact Android interpreter')
+            elif (type(item['entry_point']) is not int
+                  or not 0 <= item['entry_point'] < 1 << (32 if item['elf_class'] == 1 else 64)
+                  or item['has_interpreter'] is not False):
+                raise ValueError('Cross-architecture shared library requires a bounded entry and no PT_INTERP')
+            if (type(item['soname']) is not str or len(item['soname']) > 128
+                    or not re.fullmatch(r'lib[A-Za-z0-9_.+-]+\.so', item['soname'])):
+                raise ValueError('Cross-architecture shared library requires an exact SONAME')
+        if 'layout_sha256' in item and not _sha(item['layout_sha256']):
+            raise ValueError('Native-layout exception requires an external canonical layout SHA-256')
+        paths.append(path)
+    if paths != sorted(set(paths)):
+        raise ValueError('Native-layout exception paths must be distinct and sorted')
+    return {item['path']: item for item in values}
+
+
 def load_candidate(path, expected_sha256):
     """Read an independently pinned observation, without fetching its URLs."""
     if not _sha(expected_sha256):
@@ -192,13 +261,15 @@ def load_candidate(path, expected_sha256):
     def reject_constant(value):
         raise ValueError('Non-finite candidate JSON number: ' + value)
     candidate = json.loads(raw, object_pairs_hook=_unique_json, parse_constant=reject_constant)
-    if type(candidate) is not dict or candidate.get('schema') not in (_CANDIDATE_SCHEMA, _CROSS_ARCH_SCHEMA):
+    if type(candidate) is not dict or candidate.get('schema') not in (_CANDIDATE_SCHEMA, _CROSS_ARCH_SCHEMA, _LAYOUT_SCHEMA):
         raise ValueError('Unsupported candidate schema')
     cross_arch = candidate['schema'] == _CROSS_ARCH_SCHEMA
+    layout = candidate['schema'] == _LAYOUT_SCHEMA
     fields = ('schema', 'package', 'version_name', 'version_code', 'version_code_major',
               'min_sdk_version', 'target_sdk_version', 'apk', 'native_abis',
               'signer_certificate_sha256', 'source')
-    _fields(candidate, fields + (('cross_arch_shared_libraries',) if cross_arch else ()), 'Candidate')
+    extra_fields = ('cross_arch_shared_libraries',) if cross_arch else ('native_layout_exceptions',) if layout else ()
+    _fields(candidate, fields + extra_fields, 'Candidate')
     if type(candidate['package']) is not str or not re.fullmatch(
             r'[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+', candidate['package']):
         raise ValueError('Invalid candidate package')
@@ -222,14 +293,18 @@ def load_candidate(path, expected_sha256):
             raise ValueError('Invalid or duplicate candidate ' + key)
     if cross_arch:
         _cross_arch_pins(candidate)
+    if layout:
+        _native_layout_pins(candidate)
     source = candidate['source']
     source_fields = ('apk_url', 'version_metadata_url', 'observed_utc', 'observed_stable_version', 'sha256_kind')
-    signer_url = 'signer_reference_url' if cross_arch else 'publisher_certificate_url'
+    historical_signer = cross_arch or layout
+    signer_url = 'signer_reference_url' if historical_signer else 'publisher_certificate_url'
     _fields(source, source_fields + ((signer_url, 'signer_reference_kind', 'version_metadata_kind')
-                                    if cross_arch else (signer_url,)), 'Candidate source')
-    if cross_arch and (source['signer_reference_kind'] != 'public_historical_candidate'
-                       or source['version_metadata_kind'] != 'signed_apk_android_manifest'):
-        raise ValueError('Candidate v2 must distinguish its historical signer pin and signed-APK version metadata')
+                                    if historical_signer else (signer_url,)), 'Candidate source')
+    if historical_signer and (source['signer_reference_kind'] != 'public_historical_candidate'
+                              or source['version_metadata_kind'] != 'signed_apk_android_manifest'):
+        raise ValueError('Candidate ' + ('v3' if layout else 'v2')
+                         + ' must distinguish its historical signer pin and signed-APK version metadata')
     for key in ('apk_url', 'version_metadata_url', signer_url):
         if type(source[key]) is not str or len(source[key]) > 2048:
             raise ValueError('Invalid candidate source URL')
@@ -337,6 +412,8 @@ def _shared_elf_metadata(body):
 
 def _candidate_binary_metadata(path, result, candidate):
     """Bind version name/SDK and actual ELF headers as well as library directory names."""
+    if candidate['schema'] == _LAYOUT_SCHEMA:
+        return _layout_binary_metadata(path, result, candidate)
     with zipfile.ZipFile(path) as apk:
         names = apk.namelist()
         if len(names) != len(set(names)):
@@ -394,6 +471,109 @@ def _candidate_binary_metadata(path, result, candidate):
         result.update(cross_arch_shared_libraries=sorted(observed_cross_arch, key=lambda item: item['path']),
                       native_compatibility_qualified=False, dispatch_runtime_observed=False)
     return result
+
+
+def _layout_binary_metadata(path, result, candidate):
+    """Observe V3 content without treating declared exceptions as load compatibility."""
+    pins = _native_layout_pins(candidate)
+    with zipfile.ZipFile(path) as apk:
+        names = apk.namelist()
+        if len(names) != len(set(names)):
+            raise ValueError('Duplicate APK ZIP members are ambiguous')
+        manifest = apk.read('AndroidManifest.xml')
+        if hashlib.sha256(manifest).hexdigest() != result['manifest_binary_sha256']:
+            raise ValueError('Candidate manifest changed after signature verification')
+        raw = axml_metadata(manifest)
+        for key in ('package', 'version_name', 'version_code', 'version_code_major'):
+            if raw[key] != candidate[key]:
+                raise ValueError('Binary manifest differs from candidate ' + key)
+        for key in ('min_sdk_version', 'target_sdk_version'):
+            if int(raw[key], 0) != candidate[key]:
+                raise ValueError('Binary manifest differs from candidate ' + key)
+        libraries, cross_arch, placeholders, archives, interpreter_elf = [], [], [], [], []
+        seen = set()
+        for name in names:
+            if not name.startswith('lib/') or not name.endswith('.so'):
+                continue
+            parts = name.split('/')
+            if len(parts) != 3 or parts[1] not in candidate['native_abis']:
+                raise ValueError('Native library path differs from candidate ABI')
+            pin = pins.get(name)
+            if pin is not None:
+                if apk.getinfo(name).file_size != pin['bytes']:
+                    raise ValueError('Native-layout payload differs from its pinned bytes')
+                with apk.open(name) as stream:
+                    body = stream.read(pin['bytes'] + 1)
+                if len(body) != pin['bytes'] or hashlib.sha256(body).hexdigest() != pin['sha256']:
+                    raise ValueError('Native-layout payload differs from its pinned SHA-256')
+                seen.add(name)
+                if pin['kind'] == 'empty_placeholder':
+                    # The schema and actual bytes are both empty. It is not an ELF or an ABI witness.
+                    placeholders.append(dict(pin))
+                    continue
+                if pin['kind'] == 'embedded_7z_archive':
+                    from native_resource_payloads import inspect_embedded_7z
+                    actual = inspect_embedded_7z(body)
+                    _checked_layout_observation(pin, actual)
+                    archives.append({**pin, **actual})
+                    continue
+                if pin['kind'] == 'dual_dynamic_shared_library':
+                    from dual_dynamic_elf import parse_dual_dynamic_shared_library
+                    actual = parse_dual_dynamic_shared_library(body)
+                    _checked_layout_observation(pin, actual)
+                elif pin['kind'] == 'interpreter_tagged_et_dyn':
+                    from native_resource_payloads import inspect_interpreter_tagged_et_dyn
+                    actual = inspect_interpreter_tagged_et_dyn(body)
+                    _checked_layout_observation(pin, actual)
+                    if actual['interpreter'] != pin['interpreter']:
+                        raise ValueError('Interpreter-tagged ET_DYN differs from its pinned interpreter')
+                else:
+                    actual = _shared_elf_metadata(body)
+                for key in ('elf_class', 'elf_machine', 'elf_type', 'soname', 'entry_point', 'has_interpreter'):
+                    if actual[key] != pin[key]:
+                        raise ValueError('Cross-architecture library differs from its pinned ' + key)
+                if (actual['elf_class'], actual['elf_machine']) == _ABI_ELF[parts[1]]:
+                    raise ValueError('Pinned cross-architecture library actually matches the directory ABI')
+                if pin['kind'] == 'interpreter_tagged_et_dyn':
+                    interpreter_elf.append({**pin, **actual})
+                else:
+                    cross_arch.append({**pin, **actual})
+                libraries.append({'path': name, 'elf_class': actual['elf_class'],
+                                  'elf_machine': actual['elf_machine'], 'kind': pin['kind']})
+                continue
+            with apk.open(name) as stream:
+                header = stream.read(20)
+            elf_class, machine = _ABI_ELF[parts[1]]
+            if len(header) != 20 or header[:4] != b'\x7fELF' or header[4] != elf_class or header[5] != 1 or int.from_bytes(header[18:20], 'little') != machine:
+                raise ValueError('Native ELF header differs from candidate ABI')
+            libraries.append({'path': name, 'elf_class': elf_class, 'elf_machine': machine})
+        if sorted({item['path'].split('/')[1] for item in libraries}) != candidate['native_abis']:
+            raise ValueError('Candidate native libraries are missing; placeholders are not ELF libraries')
+        if seen != set(pins):
+            raise ValueError('Candidate native-layout exception set is incomplete')
+    return {'min_sdk_version': candidate['min_sdk_version'],
+            'target_sdk_version': candidate['target_sdk_version'], 'native_libraries': libraries,
+            'cross_arch_shared_libraries': sorted(cross_arch, key=lambda item: item['path']),
+            'empty_placeholders': sorted(placeholders, key=lambda item: item['path']),
+            'embedded_archives': sorted(archives, key=lambda item: item['path']),
+            'interpreter_tagged_et_dyn': sorted(interpreter_elf, key=lambda item: item['path']),
+            'native_compatibility_qualified': False, 'dispatch_runtime_observed': False}
+
+
+def _checked_layout_observation(pin, actual):
+    """Recompute the helper's bounded canonical layout before comparing its external pin."""
+    if type(actual) is not dict or type(actual.get('layout')) is not dict:
+        raise ValueError('Native-layout parser did not return a structured layout')
+    for key in ('kind', 'bytes', 'sha256'):
+        if key in actual and actual[key] != pin[key]:
+            raise ValueError('Native-layout parser identity differs from its complete payload pin')
+    raw = json.dumps(actual['layout'], sort_keys=True, separators=(',', ':'),
+                     ensure_ascii=False, allow_nan=False).encode('utf-8')
+    if len(raw) > _LAYOUT_LIMIT:
+        raise ValueError('Native-layout observation exceeds its bounded size')
+    actual_sha = hashlib.sha256(raw).hexdigest()
+    if actual.get('layout_sha256') != actual_sha or pin['layout_sha256'] != actual_sha:
+        raise ValueError('Native-layout observation differs from its pinned canonical layout SHA-256')
 
 
 def verify_candidate(path, tools, candidate_path, expected_sha256, receipt_path):

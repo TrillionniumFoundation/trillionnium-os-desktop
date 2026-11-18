@@ -384,5 +384,379 @@ class CrossArchitectureControls(unittest.TestCase):
                 self.rejected('set is incomplete|Native ELF header differs')
 
 
+class NativeLayoutControls(unittest.TestCase):
+    """V3 source controls use inert ZIP/ELF bytes; SDK signature checks are mocked."""
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory(prefix='native-layout-source-controls-')
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+        self.apk = self.root / 'synthetic.zip'
+        self.candidate_path = self.root / 'candidate.json'
+        self.receipt = self.root / 'receipt.json'
+        self.candidate = json.loads(SZZC.read_bytes())
+        foreign = self.candidate.pop('cross_arch_shared_libraries')[0]
+        self.candidate.update(schema=gate._LAYOUT_SCHEMA, native_abis=['arm64-v8a'])
+        self.manifest = b'synthetic manifest; never a signed Android application'
+        body = synthetic_shared_elf(2, 62, foreign['soname'])
+        foreign.update(bytes=len(body), sha256=hashlib.sha256(body).hexdigest(), entry_point=0)
+        self.foreign_path = foreign['path']
+        self.empty_path = 'lib/arm64-v8a/libunused_a.so'
+        placeholders = [{'path': name, 'kind': 'empty_placeholder', 'bytes': 0,
+                         'sha256': hashlib.sha256(b'').hexdigest()}
+                        for name in (self.empty_path, 'lib/arm64-v8a/libunused_b.so')]
+        self.candidate['native_layout_exceptions'] = sorted([foreign] + placeholders,
+                                                           key=lambda item: item['path'])
+        self.payloads = {'AndroidManifest.xml': self.manifest, self.foreign_path: body,
+                         'lib/arm64-v8a/libordinary.so': synthetic_shared_elf(2, 183, 'libordinary.so')}
+        self.payloads.update({pin['path']: b'' for pin in placeholders})
+        self.actual = {key: copy.deepcopy(self.candidate[key]) for key in (
+            'package', 'version_name', 'version_code', 'version_code_major',
+            'native_abis', 'signer_certificate_sha256')}
+        self.actual.update(long_version_code=self.candidate['version_code'], split_name=None,
+                           uses_splits=[], config_for_split=None, manifest_split_fields=[],
+                           signature_verified=True, manifest_binary_sha256=hashlib.sha256(self.manifest).hexdigest())
+        self.rewrite_apk()
+        self.verify_mock = self.enterContext(patch.object(gate, 'verify', return_value=self.actual))
+        self.raw = {key: self.candidate[key] for key in ('package', 'version_name', 'version_code', 'version_code_major')}
+        self.raw.update(min_sdk_version='23', target_sdk_version='33')
+        self.enterContext(patch.object(gate, 'axml_metadata', return_value=self.raw))
+
+    def rewrite_apk(self):
+        with zipfile.ZipFile(self.apk, 'w') as archive:
+            for name, body in self.payloads.items():
+                archive.writestr(name, body)
+        self.candidate['apk'] = {'name': 'base.apk', 'bytes': self.apk.stat().st_size,
+                                 'sha256': gate.digest(self.apk)}
+        self.actual.update(bytes=self.candidate['apk']['bytes'], sha256=self.candidate['apk']['sha256'])
+
+    def run_gate(self, expected_sha=None):
+        raw = (json.dumps(self.candidate) + '\n').encode()
+        self.candidate_path.write_bytes(raw)
+        return gate.verify_candidate(self.apk, self.root / 'not-real-tools', self.candidate_path,
+                                     expected_sha or hashlib.sha256(raw).hexdigest(), self.receipt)
+
+    def rejected(self, pattern):
+        with self.assertRaisesRegex(ValueError, pattern):
+            self.run_gate()
+        self.assertFalse(self.receipt.exists())
+
+    def test_zero_exceptions_bind_plain_elf_without_upgrading_source_or_runtime_trust(self):
+        self.candidate['native_layout_exceptions'] = []
+        self.payloads = {name: body for name, body in self.payloads.items()
+                         if name in ('AndroidManifest.xml', 'lib/arm64-v8a/libordinary.so')}
+        self.rewrite_apk()
+        out = self.run_gate()
+        receipt = json.loads(self.receipt.read_bytes())
+        metadata = receipt['binary_metadata']
+        self.assertEqual(len(metadata['native_libraries']), 1)
+        self.assertEqual(metadata['cross_arch_shared_libraries'], [])
+        self.assertEqual(metadata['empty_placeholders'], [])
+        self.assertIs(metadata['native_compatibility_qualified'], False)
+        self.assertIs(metadata['dispatch_runtime_observed'], False)
+        self.assertEqual(receipt['source_observation']['signer_reference_kind'], 'public_historical_candidate')
+        self.assertNotIn('publisher_certificate_url', receipt['source_observation'])
+        expected = out['application']['expected_input']
+        self.assertEqual(set(expected), {'version_code', 'apks', 'source_receipt'})
+        self.assertEqual(expected['apks'], [self.candidate['apk']])
+        self.assertEqual(expected['source_receipt']['sha256'], gate.digest(self.receipt))
+        for obj in (out, receipt):
+            for key in ('installed', 'runtime_qualified', 'production_ready'):
+                self.assertIs(obj[key], False)
+
+    def test_mixed_layout_counts_only_actual_elf_and_records_every_empty_placeholder(self):
+        self.run_gate()
+        metadata = json.loads(self.receipt.read_bytes())['binary_metadata']
+        self.assertEqual(len(metadata['native_libraries']), 2)
+        self.assertEqual(len(metadata['cross_arch_shared_libraries']), 1)
+        self.assertEqual(len(metadata['empty_placeholders']), 2)
+        empty_paths = {pin['path'] for pin in metadata['empty_placeholders']}
+        self.assertFalse(empty_paths & {pin['path'] for pin in metadata['native_libraries']})
+        seen = empty_paths | {pin['path'] for pin in metadata['cross_arch_shared_libraries']}
+        self.assertEqual(seen, {pin['path'] for pin in self.candidate['native_layout_exceptions']})
+        self.assertTrue(all(pin['bytes'] == 0 and pin['sha256'] == gate._EMPTY_SHA256
+                            for pin in metadata['empty_placeholders']))
+        self.assertIs(metadata['native_compatibility_qualified'], False)
+        self.assertIs(metadata['dispatch_runtime_observed'], False)
+
+    def test_missing_extra_and_unlisted_changed_libraries_never_publish(self):
+        original = copy.deepcopy(self.payloads)
+        for mode in ('missing_foreign', 'missing_empty', 'extra_foreign', 'extra_empty', 'ordinary_changed'):
+            with self.subTest(mode=mode):
+                self.payloads = copy.deepcopy(original)
+                if mode == 'missing_foreign':
+                    del self.payloads[self.foreign_path]
+                elif mode == 'missing_empty':
+                    del self.payloads[self.empty_path]
+                elif mode == 'extra_foreign':
+                    self.payloads['lib/arm64-v8a/libunlisted.so'] = original[self.foreign_path]
+                elif mode == 'extra_empty':
+                    self.payloads['lib/arm64-v8a/libunlisted.so'] = b''
+                else:
+                    self.payloads['lib/arm64-v8a/libordinary.so'] = original[self.foreign_path]
+                self.rewrite_apk()
+                self.rejected('set is incomplete|Native ELF header differs')
+
+    def test_empty_kind_cannot_hide_nonempty_bytes_or_supply_an_abi_witness(self):
+        original_candidate, original_payloads = copy.deepcopy(self.candidate), copy.deepcopy(self.payloads)
+        for mode in ('nonempty_placeholder', 'foreign_claimed_empty', 'only_placeholders'):
+            with self.subTest(mode=mode):
+                self.candidate, self.payloads = copy.deepcopy(original_candidate), copy.deepcopy(original_payloads)
+                if mode == 'nonempty_placeholder':
+                    self.payloads[self.empty_path] = b'not empty'
+                elif mode == 'foreign_claimed_empty':
+                    self.candidate['native_layout_exceptions'][0] = {
+                        'path': self.foreign_path, 'kind': 'empty_placeholder', 'bytes': 0,
+                        'sha256': gate._EMPTY_SHA256}
+                else:
+                    self.candidate['native_layout_exceptions'] = [pin for pin in self.candidate['native_layout_exceptions']
+                                                                 if pin['kind'] == 'empty_placeholder']
+                    del self.payloads[self.foreign_path]
+                    del self.payloads['lib/arm64-v8a/libordinary.so']
+                self.rewrite_apk()
+                self.rejected('pinned bytes|placeholders are not ELF')
+
+    def test_schema_rejects_nonliteral_duplicate_unknown_kind_and_legacy_field_mixing(self):
+        original = copy.deepcopy(self.candidate)
+        mutations = [
+            lambda c: c['native_layout_exceptions'][0].update(kind='executable'),
+            lambda c: c['native_layout_exceptions'][0].update(path='lib/arm64-v8a/*.so'),
+            lambda c: c['native_layout_exceptions'][0].update(path='lib/arm64-v8a/../libother.so'),
+            lambda c: c['native_layout_exceptions'].__setitem__(1, copy.deepcopy(c['native_layout_exceptions'][0])),
+            lambda c: c['native_layout_exceptions'].reverse(),
+            lambda c: c['native_layout_exceptions'][1].update(bytes=False),
+            lambda c: c['native_layout_exceptions'][1].update(bytes=1),
+            lambda c: c['native_layout_exceptions'][1].update(sha256='0' * 64),
+            lambda c: c['native_layout_exceptions'][1].update(elf_type=3),
+            lambda c: c.update(native_layout_exceptions={}),
+            lambda c: c.update(cross_arch_shared_libraries=[]),
+            lambda c: c.update(schema=gate._CANDIDATE_SCHEMA),
+            lambda c: c.update(schema=gate._CROSS_ARCH_SCHEMA),
+            lambda c: c['source'].update(signer_reference_kind='publisher_certificate'),
+        ]
+        for index, mutate in enumerate(mutations):
+            with self.subTest(index=index):
+                self.candidate = copy.deepcopy(original)
+                mutate(self.candidate)
+                self.rejected('Candidate|Native-layout|Empty placeholder')
+        self.verify_mock.assert_not_called()
+
+    def test_eight_exact_pins_are_allowed_and_a_ninth_is_rejected_before_verification(self):
+        foreign = copy.deepcopy(self.candidate['native_layout_exceptions'][0])
+        placeholders = [{'path': 'lib/arm64-v8a/libunused_' + str(i) + '.so',
+                         'kind': 'empty_placeholder', 'bytes': 0, 'sha256': gate._EMPTY_SHA256}
+                        for i in range(7)]
+        self.candidate['native_layout_exceptions'] = sorted([foreign] + placeholders, key=lambda item: item['path'])
+        self.payloads = {name: body for name, body in self.payloads.items() if body}
+        self.payloads.update({pin['path']: b'' for pin in placeholders})
+        self.rewrite_apk()
+        self.run_gate()
+        metadata = json.loads(self.receipt.read_bytes())['binary_metadata']
+        self.assertEqual(len(metadata['native_libraries']), 2)
+        self.assertEqual(len(metadata['empty_placeholders']), 7)
+        self.receipt.unlink()
+        ninth = {'path': 'lib/arm64-v8a/libunused_8.so', 'kind': 'empty_placeholder',
+                 'bytes': 0, 'sha256': gate._EMPTY_SHA256}
+        self.candidate['native_layout_exceptions'].append(ninth)
+        self.payloads[ninth['path']] = b''
+        self.rewrite_apk()
+        self.rejected('at most eight')
+        self.verify_mock.assert_called_once()
+
+    def test_foreign_bytes_hash_and_real_structural_fields_are_bound(self):
+        original = copy.deepcopy(self.candidate)
+        for changes in ({'bytes': 1025}, {'sha256': '0' * 64}, {'elf_class': 1, 'elf_machine': 3},
+                        {'soname': 'libdifferent.so'}, {'entry_point': 1}):
+            with self.subTest(changes=changes):
+                self.candidate = copy.deepcopy(original)
+                self.candidate['native_layout_exceptions'][0].update(changes)
+                self.rejected('pinned bytes|pinned SHA-256|differs from its pinned')
+
+    def test_repinning_invalid_dynamic_interpreter_type_or_pie_keeps_original_elf_rejection(self):
+        original = self.payloads[self.foreign_path]
+        for field in ('dynamic', 'interpreter', 'type', 'pie'):
+            with self.subTest(field=field):
+                body = bytearray(original)
+                if field == 'dynamic':
+                    struct.pack_into('<Q', body, 64 + 56 + 32, 1)
+                elif field == 'interpreter':
+                    struct.pack_into('<I', body, 64 + 56, 3)
+                elif field == 'type':
+                    struct.pack_into('<H', body, 16, 2)
+                else:
+                    struct.pack_into('<Q', body, 256 + 4 * 16 + 8, 0x08000000)
+                self.payloads[self.foreign_path] = bytes(body)
+                self.candidate['native_layout_exceptions'][0].update(
+                    bytes=len(body), sha256=hashlib.sha256(body).hexdigest())
+                self.rewrite_apk()
+                self.rejected('dynamic segment|PT_INTERP|ET_DYN|DF_1_PIE')
+
+    def test_v3_still_requires_external_pin_real_verifier_and_manifest_identity(self):
+        with self.assertRaisesRegex(ValueError, 'external SHA-256'):
+            self.run_gate('0' * 64)
+        self.verify_mock.assert_not_called()
+        self.assertFalse(self.receipt.exists())
+        self.verify_mock.side_effect = ValueError('signature verification failed')
+        self.rejected('signature verification failed')
+        self.verify_mock.side_effect = None
+        self.raw['version_name'] = 'different signed manifest version'
+        self.rejected('Binary manifest differs')
+
+    def use_dual_dynamic_layout(self):
+        from test_dual_dynamic_elf import sample
+        from dual_dynamic_elf import parse_dual_dynamic_shared_library
+        body, _ = sample()
+        actual = parse_dual_dynamic_shared_library(body)
+        pin = self.candidate['native_layout_exceptions'][0]
+        pin.update(kind='dual_dynamic_shared_library', bytes=len(body),
+                   sha256=hashlib.sha256(body).hexdigest(),
+                   **{key: actual[key] for key in ('elf_class', 'elf_machine', 'elf_type',
+                       'soname', 'entry_point', 'has_interpreter', 'layout_sha256')})
+        self.payloads[self.foreign_path] = body
+        self.rewrite_apk()
+        return actual
+
+    def test_dual_dynamic_kind_retains_actual_views_and_never_claims_runtime_compatibility(self):
+        actual = self.use_dual_dynamic_layout()
+        self.run_gate()
+        metadata = json.loads(self.receipt.read_bytes())['binary_metadata']
+        entry = metadata['cross_arch_shared_libraries'][0]
+        self.assertEqual(entry['kind'], 'dual_dynamic_shared_library')
+        self.assertEqual(entry['layout'], actual['layout'])
+        self.assertEqual(entry['layout_sha256'], actual['layout_sha256'])
+        self.assertTrue(entry['layout']['range_overlaps']['declared_full_section_headers'])
+        self.assertFalse(entry['layout']['range_overlaps']['declared_consumed_section_headers'])
+        self.assertEqual(len(metadata['native_libraries']), 2)
+        self.assertEqual(len(metadata['empty_placeholders']), 2)
+        self.assertIs(metadata['native_compatibility_qualified'], False)
+        self.assertIs(metadata['dispatch_runtime_observed'], False)
+
+    def test_dual_external_layout_pin_and_helper_summary_must_match_canonical_bytes(self):
+        actual = self.use_dual_dynamic_layout()
+        pin = self.candidate['native_layout_exceptions'][0]
+        original_sha = pin['layout_sha256']
+        pin['layout_sha256'] = '0' * 64
+        self.rejected('pinned canonical layout SHA-256')
+        pin['layout_sha256'] = original_sha
+        for mode in ('stale_summary', 'changed_layout', 'nonfinite_layout'):
+            with self.subTest(mode=mode):
+                report = copy.deepcopy(actual)
+                if mode == 'stale_summary':
+                    report['layout_sha256'] = '0' * 64
+                elif mode == 'changed_layout':
+                    report['layout']['unexpected_text'] = '布局字段改变'
+                else:
+                    report['layout']['invalid_number'] = float('nan')
+                with patch('dual_dynamic_elf.parse_dual_dynamic_shared_library', return_value=report):
+                    self.rejected('pinned canonical layout SHA-256|Out of range float')
+
+    def test_dual_view_cannot_be_relabelled_as_an_ordinary_shared_library(self):
+        self.use_dual_dynamic_layout()
+        pin = self.candidate['native_layout_exceptions'][0]
+        pin['kind'] = 'cross_arch_shared_library'
+        pin.pop('layout_sha256')
+        self.rejected('Invalid cross-architecture dynamic segment')
+
+    def use_resource_layout(self, kind):
+        from test_native_resource_payloads import archive, elf
+        from native_resource_payloads import inspect_embedded_7z, inspect_interpreter_tagged_et_dyn
+        body = archive() if kind == 'embedded_7z_archive' else elf()
+        inspect = inspect_embedded_7z if kind == 'embedded_7z_archive' else inspect_interpreter_tagged_et_dyn
+        actual = inspect(body)
+        pin = {'path': self.foreign_path, 'kind': kind, 'bytes': len(body),
+               'sha256': hashlib.sha256(body).hexdigest(), 'layout_sha256': actual['layout_sha256']}
+        if kind == 'interpreter_tagged_et_dyn':
+            pin.update({key: actual[key] for key in ('elf_class', 'elf_machine', 'elf_type',
+                        'soname', 'entry_point', 'has_interpreter', 'interpreter')})
+        self.candidate['native_layout_exceptions'][0] = pin
+        self.payloads[self.foreign_path] = body
+        self.rewrite_apk()
+        return actual
+
+    def test_embedded_archive_is_explicit_and_never_counts_as_native_elf(self):
+        actual = self.use_resource_layout('embedded_7z_archive')
+        self.run_gate()
+        metadata = json.loads(self.receipt.read_bytes())['binary_metadata']
+        self.assertEqual(len(metadata['native_libraries']), 1)
+        self.assertEqual(metadata['cross_arch_shared_libraries'], [])
+        self.assertEqual(len(metadata['empty_placeholders']), 2)
+        self.assertEqual(len(metadata['embedded_archives']), 1)
+        entry = metadata['embedded_archives'][0]
+        self.assertEqual(entry['layout'], actual['layout'])
+        self.assertEqual(entry['layout_sha256'], actual['layout_sha256'])
+        self.assertIs(entry['native_elf'], False)
+        self.assertIs(entry['archive_contents_decoded'], False)
+        self.assertIs(entry['archive_contents_verified'], False)
+        self.assertNotIn(self.foreign_path, {item['path'] for item in metadata['native_libraries']})
+        self.assertIs(metadata['native_compatibility_qualified'], False)
+        self.assertIs(metadata['dispatch_runtime_observed'], False)
+
+    def test_archive_wrong_hash_layout_empty_kind_and_missing_elf_never_publish(self):
+        self.use_resource_layout('embedded_7z_archive')
+        original_candidate, original_payloads = copy.deepcopy(self.candidate), copy.deepcopy(self.payloads)
+        for mode in ('payload_hash', 'layout_hash', 'claimed_empty', 'no_elf'):
+            with self.subTest(mode=mode):
+                self.candidate, self.payloads = copy.deepcopy(original_candidate), copy.deepcopy(original_payloads)
+                pin = self.candidate['native_layout_exceptions'][0]
+                if mode == 'payload_hash':
+                    pin['sha256'] = '0' * 64
+                elif mode == 'layout_hash':
+                    pin['layout_sha256'] = '0' * 64
+                elif mode == 'claimed_empty':
+                    self.candidate['native_layout_exceptions'][0] = {
+                        'path': self.foreign_path, 'kind': 'empty_placeholder', 'bytes': 0,
+                        'sha256': gate._EMPTY_SHA256}
+                else:
+                    del self.payloads['lib/arm64-v8a/libordinary.so']
+                self.rewrite_apk()
+                self.rejected('pinned SHA-256|pinned canonical layout|pinned bytes|native libraries are missing')
+
+    def test_interpreter_tagged_et_dyn_is_separate_from_plain_shared_libraries(self):
+        actual = self.use_resource_layout('interpreter_tagged_et_dyn')
+        self.run_gate()
+        metadata = json.loads(self.receipt.read_bytes())['binary_metadata']
+        self.assertEqual(len(metadata['native_libraries']), 2)
+        self.assertEqual(metadata['cross_arch_shared_libraries'], [])
+        self.assertEqual(metadata['embedded_archives'], [])
+        self.assertEqual(len(metadata['interpreter_tagged_et_dyn']), 1)
+        entry = metadata['interpreter_tagged_et_dyn'][0]
+        self.assertEqual(entry['layout'], actual['layout'])
+        self.assertEqual(entry['layout_sha256'], actual['layout_sha256'])
+        self.assertEqual(entry['interpreter'], '/system/bin/linker')
+        self.assertEqual((entry['elf_class'], entry['elf_machine'], entry['elf_type'], entry['entry_point']),
+                         (1, 40, 3, 0))
+        self.assertIs(entry['has_interpreter'], True)
+        self.assertIs(entry['standalone_executable_role_established'], False)
+        self.assertIs(metadata['native_compatibility_qualified'], False)
+        self.assertIs(metadata['dispatch_runtime_observed'], False)
+
+    def test_interpreter_literal_kind_layout_and_helper_identity_cannot_drift(self):
+        actual = self.use_resource_layout('interpreter_tagged_et_dyn')
+        original = copy.deepcopy(self.candidate)
+        for mode in ('layout', 'literal', 'architecture', 'entry', 'plain_shared'):
+            with self.subTest(mode=mode):
+                self.candidate = copy.deepcopy(original)
+                pin = self.candidate['native_layout_exceptions'][0]
+                if mode == 'layout':
+                    pin['layout_sha256'] = '0' * 64
+                elif mode == 'literal':
+                    pin['interpreter'] = '/system/bin/linker64'
+                elif mode == 'architecture':
+                    pin['elf_machine'] = 3
+                elif mode == 'entry':
+                    pin['entry_point'] = 1
+                else:
+                    pin.update(kind='cross_arch_shared_library', has_interpreter=False)
+                    pin.pop('interpreter')
+                    pin.pop('layout_sha256')
+                self.rejected('pinned canonical layout|Interpreter-tagged ET_DYN|PT_INTERP')
+        self.candidate = original
+        for key, value in (('kind', 'cross_arch_shared_library'), ('bytes', 1), ('sha256', '0' * 64)):
+            with self.subTest(helper_key=key):
+                report = copy.deepcopy(actual)
+                report[key] = value
+                with patch('native_resource_payloads.inspect_interpreter_tagged_et_dyn', return_value=report):
+                    self.rejected('parser identity differs from its complete payload pin')
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
