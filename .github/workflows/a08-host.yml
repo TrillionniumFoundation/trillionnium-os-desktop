@@ -52,6 +52,12 @@ jobs:
           set -euo pipefail
           python3 -I -B compat/android/pocket4/current-app-acceptance/test_release_scope.py \
             2>&1 | tee "$RUNNER_TEMP/a08/current-app-release-scope.log"
+      - name: Verify pinned APK candidate and native input controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/apk-content-identity/test_candidate.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/apk-candidate.log"
       - name: Verify R36 storage owner source without runtime admission
         timeout-minutes: 2
         shell: bash
@@ -1617,7 +1623,7 @@ jobs:
       GIT_CONFIG_GLOBAL: /dev/null
       GIT_TERMINAL_PROMPT: '0'
       # Pin the complete reviewed capsule inventory outside the capsule itself.
-      CURRENT_SOURCE_INVENTORY_SHA256: 9449c4b9c11b058f0b5b0a906cc7a943befa9f7d0fde3d3ac6b6542017603529
+      CURRENT_SOURCE_INVENTORY_SHA256: 23f4b789c0f716bf66021879a37067820a471bee2adf0d4efd9d6bb83df93252
     steps:
       - uses: actions/checkout@v4
         with:

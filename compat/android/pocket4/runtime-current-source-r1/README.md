@@ -127,7 +127,11 @@ child retirement fails the job. The exact source bookend must still match.
 
 The thirteen verifier controls are retained. The runner keeps all nine
 original controls and adds two for ordinary example/test-ELF locations and
-Cargo hardlink aliases, for eleven total. These host controls are separate
+Cargo hardlink aliases, for eleven total. The alias control covers both
+plain and hyphenated target names: Cargo preserves the public binary name
+and uses the underscore-normalized crate name for its hashed hardlink. The
+original inode, full identity, exact parent and complete link count remain
+required. These host controls are separate
 from the Rust counts. On a host without `/proc/self/task/*/children`, the four
 original actual-child controls fail; that host cannot qualify this full job.
 They are not skipped or replaced with simulated success.

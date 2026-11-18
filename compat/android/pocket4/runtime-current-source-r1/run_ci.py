@@ -217,7 +217,7 @@ def aliases(ref, profile_root, example=False):
             return True
         if example:
             return path.parent == profile_root and re.fullmatch(
-                re.escape(original.name) + r'-[0-9a-f]{16}', path.name) is not None
+                re.escape(original.name.replace('-', '_')) + r'-[0-9a-f]{16}', path.name) is not None
         return path.parent == profile_root/'deps'
     VERIFY.need(len(found) == ref['identity'][5] and len(found) in (1,2) and original in found
                 and all(permitted(path) for path in found),

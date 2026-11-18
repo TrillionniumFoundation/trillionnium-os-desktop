@@ -127,16 +127,35 @@ class CatalogAndArtifactControls(unittest.TestCase):
                          self.target, expected, True, profile_dir='debug/examples')
 
     def test_example_aliases_require_the_original_same_directory_cargo_hash(self):
-        folder = self.target/'debug'/'examples'
-        folder.mkdir()
-        normal = folder/'example'; normal.write_bytes(b'alias fixture; not an ELF claim\n')
-        hashed = folder/'example-0123456789abcdef'; os.link(normal, hashed)
-        def ref():
-            return {'path':str(normal),'identity':CI.VERIFY.f9(normal.lstat())}
-        self.assertEqual(CI.aliases(ref(), folder, example=True), sorted(map(str, (normal, hashed))))
-        hashed.rename(folder/'unrelated-0123456789abcdef')
-        with self.assertRaises(RuntimeError):
-            CI.aliases(ref(), folder, example=True)
+        # Cargo retains '-' in the public executable, but rustc uses the crate
+        # identifier ('_') in its hashed original. Check both actual forms.
+        for name in ('example', 'cpu-placement-probe', 'notification-test-server'):
+            with self.subTest(target=name), tempfile.TemporaryDirectory(dir=self.root) as tmp:
+                folder = Path(tmp)
+                normal = folder/name
+                normal.write_bytes(b'alias fixture; not an ELF claim\n')
+                hashed = folder/(name.replace('-', '_')+'-0123456789abcdef')
+                os.link(normal, hashed)
+                def ref():
+                    return {'path':str(normal),'identity':CI.VERIFY.f9(normal.lstat())}
+                self.assertEqual(CI.aliases(ref(), folder, example=True),
+                                 sorted(map(str, (normal, hashed))))
+                wrong = folder/'unrelated-0123456789abcdef'
+                hashed.rename(wrong)
+                with self.assertRaises(RuntimeError):
+                    CI.aliases(ref(), folder, example=True)
+                wrong.rename(hashed)
+                outside = self.root/('external-'+name)
+                os.link(normal, outside)
+                try:
+                    with self.assertRaises(RuntimeError):
+                        CI.aliases(ref(), folder, example=True)
+                finally:
+                    outside.unlink()
+                if '-' in name:
+                    hashed.rename(folder/(name+'-0123456789abcdef'))
+                    with self.assertRaises(RuntimeError):
+                        CI.aliases(ref(), folder, example=True)
 
     def test_cargo_aliases_require_every_link_inside_the_actual_profile(self):
         profile = self.target / 'debug'
