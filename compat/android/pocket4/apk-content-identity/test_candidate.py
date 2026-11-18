@@ -758,5 +758,182 @@ class NativeLayoutControls(unittest.TestCase):
                     self.rejected('parser identity differs from its complete payload pin')
 
 
+class NoNativeCandidateControls(unittest.TestCase):
+    """Only this new schema observes absent standard lib files; SDK calls are mocked."""
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory(prefix='no-native-source-controls-')
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+        self.apk = self.root / 'synthetic.zip'
+        self.candidate_path = self.root / 'candidate.json'
+        self.receipt = self.root / 'receipt.json'
+        self.candidate = json.loads(SZZC.read_bytes())
+        self.candidate.pop('cross_arch_shared_libraries')
+        self.candidate.update(schema=gate._NO_NATIVE_SCHEMA, native_abis=[])
+        self.manifest = b'synthetic manifest; no APK signing claim'
+        self.entries = [('AndroidManifest.xml', self.manifest),
+                        ('classes.dex', b'inert synthetic DEX placeholder'),
+                        ('assets/library.so', b'\x7fELF outside the standard lib directory')]
+        self.actual = {key: copy.deepcopy(self.candidate[key]) for key in (
+            'package', 'version_name', 'version_code', 'version_code_major',
+            'native_abis', 'signer_certificate_sha256')}
+        self.actual.update(long_version_code=self.candidate['version_code'], split_name=None,
+                           uses_splits=[], config_for_split=None, manifest_split_fields=[],
+                           signature_verified=True,
+                           manifest_binary_sha256=hashlib.sha256(self.manifest).hexdigest())
+        self.rewrite_apk()
+        self.verify_mock = self.enterContext(patch.object(gate, 'verify', return_value=self.actual))
+        self.raw = {key: self.candidate[key] for key in (
+            'package', 'version_name', 'version_code', 'version_code_major')}
+        self.raw.update(min_sdk_version='23', target_sdk_version='33')
+        self.enterContext(patch.object(gate, 'axml_metadata', return_value=self.raw))
+
+    def pin_apk(self):
+        self.candidate['apk'] = {'name': 'base.apk', 'bytes': self.apk.stat().st_size,
+                                 'sha256': gate.digest(self.apk)}
+        self.actual.update(bytes=self.candidate['apk']['bytes'], sha256=self.candidate['apk']['sha256'])
+
+    def rewrite_apk(self):
+        with zipfile.ZipFile(self.apk, 'w') as archive:
+            for entry, body in self.entries:
+                archive.writestr(entry, body)
+        self.pin_apk()
+
+    def run_gate(self, expected_sha=None):
+        raw = (json.dumps(self.candidate) + '\n').encode()
+        self.candidate_path.write_bytes(raw)
+        return gate.verify_candidate(self.apk, self.root / 'not-real-tools', self.candidate_path,
+                                     expected_sha or hashlib.sha256(raw).hexdigest(), self.receipt)
+
+    def rejected(self, pattern):
+        with self.assertRaisesRegex(ValueError, pattern):
+            self.run_gate()
+        self.assertFalse(self.receipt.exists())
+
+    def test_absent_standard_lib_is_bound_without_claiming_native_code_absence(self):
+        for placeholders in ([], [('lib/', b''), ('lib/x86_64/', b'')]):
+            with self.subTest(directory_placeholders=bool(placeholders)):
+                if self.receipt.exists():
+                    self.receipt.unlink()
+                self.entries = self.entries[:3] + placeholders
+                self.rewrite_apk()
+                out = self.run_gate()
+                receipt = json.loads(self.receipt.read_bytes())
+                metadata = receipt['binary_metadata']
+                self.assertEqual(metadata['scope'], 'standard_lib_directory_only')
+                self.assertEqual(metadata['native_libraries'], [])
+                self.assertEqual(metadata['standard_lib_file_count'], 0)
+                self.assertEqual(metadata['directory_placeholders'], sorted(p[0] for p in placeholders))
+                for key in ('native_code_absence_proved', 'native_compatibility_qualified',
+                            'dispatch_runtime_observed'):
+                    self.assertIs(metadata[key], False)
+                for obj in (out, receipt):
+                    for key in ('installed', 'runtime_qualified', 'production_ready'):
+                        self.assertIs(obj[key], False)
+                expected = out['application']['expected_input']
+                self.assertEqual(set(out['application']), {'package', 'expected_input'})
+                self.assertEqual(set(expected), {'version_code', 'apks', 'source_receipt'})
+                self.assertEqual(expected['apks'], [self.candidate['apk']])
+                self.assertEqual(expected['source_receipt']['sha256'], gate.digest(self.receipt))
+                self.assertEqual(receipt['identity'], self.actual)
+        self.verify_mock.assert_called_with(self.apk, self.root / 'not-real-tools',
+            self.candidate['package'], self.candidate['signer_certificate_sha256'])
+
+    def test_legacy_schemas_reject_empty_abi_and_new_schema_keeps_signer_and_exact_fields(self):
+        original = copy.deepcopy(self.candidate)
+        for schema in (gate._CANDIDATE_SCHEMA, gate._CROSS_ARCH_SCHEMA, gate._LAYOUT_SCHEMA):
+            with self.subTest(legacy=schema):
+                value = json.loads((CURRENT if schema == gate._CANDIDATE_SCHEMA else SZZC).read_bytes())
+                value.update(schema=schema, native_abis=[])
+                if schema == gate._LAYOUT_SCHEMA:
+                    value.pop('cross_arch_shared_libraries')
+                    value['native_layout_exceptions'] = []
+                self.candidate = value
+                self.rejected('Invalid or duplicate candidate native_abis')
+        for key, value in [('native_abis', ['x86_64']), ('native_abis', False),
+                           ('signer_certificate_sha256', []), ('signer_certificate_sha256', ['bad']),
+                           ('native_layout_exceptions', []), ('cross_arch_shared_libraries', [])]:
+            with self.subTest(key=key, value=value):
+                self.candidate = copy.deepcopy(original)
+                self.candidate[key] = value
+                self.rejected('empty native ABI|candidate signer|fields differ')
+        self.verify_mock.assert_not_called()
+
+    def test_any_lib_file_and_nonempty_directory_are_rejected(self):
+        original = list(self.entries)
+        for name, body in [('lib/x86_64/libpresent.so', b'\x7fELF'),
+                           ('lib/x86_64/libempty.so', b''), ('lib/x86_64/readme', b'ordinary'),
+                           ('lib/unknown/payload', b'opaque'), ('lib', b''),
+                           ('lib/', b'directory data'), ('lib/x86_64/', b'directory data'),
+                           ('lib/unknown/', b''), ('lib/x86_64/nested/', b'')]:
+            with self.subTest(name=name):
+                self.entries = original + [(name, body)]
+                self.rewrite_apk()
+                self.rejected('standard lib directory|directory entry contains|native directory placeholder')
+
+    def test_ambiguous_paths_and_special_zip_members_are_rejected(self):
+        original = list(self.entries)
+        for name in ('./lib/x.so', '../lib/x.so', '/lib/x.so', 'lib/../assets/x.so',
+                     'lib//x.so', 'lib\\x.so', 'C:/lib/x.so', 'assets/control\nname'):
+            with self.subTest(path=name):
+                self.entries = original + [(name, b'opaque')]
+                self.rewrite_apk()
+                self.rejected('invalid ZIP path')
+        self.entries = original + [('lib!hidden.so', b'opaque')]
+        self.rewrite_apk()
+        body = self.apk.read_bytes()
+        self.assertEqual(body.count(b'lib!hidden.so'), 2)
+        self.apk.write_bytes(body.replace(b'lib!hidden.so', b'lib\x00hidden.so'))
+        self.pin_apk()
+        self.rejected('invalid ZIP path')
+        for name, mode in [('assets/link', 0o120777), ('assets/pipe', 0o010600),
+                           ('lib/x86_64/', 0o100644), ('assets/not-directory', 0o040755)]:
+            with self.subTest(name=name, mode=mode):
+                entry = zipfile.ZipInfo(name)
+                entry.create_system = 3
+                entry.external_attr = mode << 16
+                self.entries = original + [(entry, b'')]
+                self.rewrite_apk()
+                self.rejected('not a regular file or directory')
+
+    def test_duplicate_members_and_file_directory_aliases_are_rejected(self):
+        original = list(self.entries)
+        self.entries = original + [('classes.dex', b'other bytes')]
+        with self.assertWarnsRegex(UserWarning, 'Duplicate name'):
+            self.rewrite_apk()
+        self.rejected('Duplicate APK ZIP members')
+        self.entries = original + [('assets/alias', b''), ('assets/alias/', b'')]
+        self.rewrite_apk()
+        self.rejected('file and directory paths alias')
+
+    def test_signature_manifest_sdk_and_complete_identity_remain_required(self):
+        self.verify_mock.side_effect = ValueError('real signature verifier failed')
+        self.rejected('signature verifier failed')
+        self.verify_mock.side_effect = None
+        original = copy.deepcopy(self.actual)
+        for key, value in [('package', 'org.invalid.app'), ('version_name', 'wrong'),
+                           ('version_code', 1), ('sha256', '0' * 64), ('bytes', 1),
+                           ('signer_certificate_sha256', ['0' * 64]), ('native_abis', ['x86_64']),
+                           ('manifest_binary_sha256', '0' * 64)]:
+            with self.subTest(key=key):
+                self.actual.update(original)
+                self.actual[key] = value
+                self.rejected('differs from candidate|manifest changed')
+        self.actual.update(original)
+        original_raw = copy.deepcopy(self.raw)
+        for key, value in [('version_name', 'wrong'), ('version_code', 1),
+                           ('min_sdk_version', '19'), ('target_sdk_version', '29')]:
+            with self.subTest(binary_manifest_key=key):
+                self.raw.update(original_raw)
+                self.raw[key] = value
+                self.rejected('Binary manifest differs')
+        self.raw.update(original_raw)
+        self.verify_mock.reset_mock()
+        with self.assertRaisesRegex(ValueError, 'external SHA-256'):
+            self.run_gate('0' * 64)
+        self.verify_mock.assert_not_called()
+        self.assertFalse(self.receipt.exists())
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

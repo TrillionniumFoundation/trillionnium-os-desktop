@@ -401,6 +401,8 @@ REQUIRED_FILES = (
     "compat/android/pocket4/current-app-acceptance/beike-candidate.json",
     "compat/android/pocket4/current-app-acceptance/ceair-candidate.json",
     "compat/android/pocket4/current-app-acceptance/12306-candidate.json",
+    "compat/android/pocket4/current-app-acceptance/microg-candidate.json",
+    "compat/android/pocket4/current-app-acceptance/microg-companion-candidate.json",
     "compat/android/pocket4/current-app-acceptance/business/MEMBERS.json",
     "compat/android/pocket4/current-app-acceptance/business/README.md",
     "compat/android/pocket4/current-app-acceptance/business/host-prepare-current-ihg.py",

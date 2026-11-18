@@ -146,7 +146,7 @@ The [12306 publisher page](https://mobile.12306.cn/otsmobile/h5/otsbussiness/dow
 
 The full payload SHAs are in the candidate. The archive's start-header CRC is `ec19ea22`, and its 37-byte next header ends at EOF with CRC `a250b709`. No stream was decompressed. `libwb.so` is ELF32 ARM, `ET_DYN`, entry zero, SONAME `libwb.so`, with the exact interpreter string and no `DF_1_PIE`; an interpreter tag alone is not treated as evidence of a standalone executable role. Its existing ordinary shared-library rejection remains unchanged.
 
-### Final verification with one source revision
+### Published v3 seven-input verification
 
 From **2026-11-18T10:24:30.672214+00:00** through **2026-11-18T10:25:02.642998+00:00**, the same final `verify_apk.py` (39174 bytes, SHA-256 `e464907dc5cffdfe4a2b104eb1e7febfd8b6aebfe876b1a5c69647fab739ff0d`) and the frozen helper bytes repeated the complete SDK 37 candidate CLI for all seven listed APKs. All seven exited zero and produced new source receipts and exact `ApplicationPlan.expected_input` fragments. The original three candidate files remained unchanged; their schemas remain v1, v1 and v2 respectively.
 
@@ -165,6 +165,114 @@ The counts include recorded actual foreign-architecture ELF entries. China Easte
 Four additional complete-APK candidate invocations deliberately used a wrong payload SHA, a wrong canonical layout SHA, a missing exception, or a 7z resource mislabeled as empty. Each exited one, emitted no stdout and created no receipt. The APKs remained unchanged, and the temporary incorrect candidate files were removed. The unified local `ACTUAL_INPUTS.json` index (33913 bytes, SHA-256 `0804c247f530acfb4ec00bdb00ecec8cee1b8430fd5f9712d43754ed1290887a`) binds all seven new receipts, native fragments, actual command records, candidate pins, code pins and four negative results. It is retained with the separately acquired current APK artifacts, not embedded in this source package.
 
 These results cover the seven listed source inputs only. Their receipts and fragments retain installed, runtime and production false; native loading, architecture dispatch, input delivery to an Android owner, and application business acceptance remain separate gates.
+
+## Absent standard native payloads
+
+The independent `pocket4-official-apk-candidate-no-native-v1` schema represents
+a standalone signed APK with no files in Android's standard `lib` directory.
+It requires exactly `native_abis: []` and forbids both exception-list fields.
+The existing v1, v2 and v3 schemas still reject empty ABI lists. All schemas
+still require one through eight exact app-signing certificate SHA-256 pins,
+actual SDK 37 signature checks, binary XML identity and SDK checks, complete
+APK bytes/SHA, and the independently supplied candidate SHA.
+
+The new branch checks every ZIP member's original and decoded name. NUL
+truncation, absolute/drive paths, backslashes, control characters, empty/dot/
+dot-dot components, duplicate names and file/directory aliases are rejected.
+Members must have consistent regular-file or directory metadata; symlinks
+and other special types are rejected. Directories require zero uncompressed
+bytes and zero CRC. Inside `lib`, only empty `lib/` and `lib/<known ABI>/`
+directory placeholders are permitted. Any actual file fails, including zero
+bytes, non-`.so` names and unknown ABI paths. A trailing slash cannot hide
+file data.
+
+The receipt reports `scope: standard_lib_directory_only`, the empty actual
+native-library list and any directory placeholders. It keeps
+`native_code_absence_proved`, `native_compatibility_qualified` and
+`dispatch_runtime_observed` false. This does not establish that assets or
+DEX code cannot load native code later, or qualify installation or runtime.
+The native `ApplicationPlan.expected_input` format remains version code,
+complete nonempty base/split APK identities, and the source receipt's
+path/bytes/SHA. That existing consumer does not contain an ABI field. The
+verifier does not construct or execute a complete runtime plan.
+
+### Current microG and retained Companion
+
+The official [microG stable release](https://github.com/microg/GmsCore/releases/tag/v0.3.18.252432),
+release ID `442884973`, was published at `2026-11-12T13:54:29Z`. The normal
+[GitHub release API](https://api.github.com/repos/microg/GmsCore/releases/latest)
+was observed on 2026-11-18. The standard GmsCore and standard Companion
+artifacts were selected; Huawei `-hw` and `org.microg.gms-...-user` are separate
+variants. Each complete download matched the publisher's asset `digest` in
+addition to a locally computed whole-file SHA.
+
+| Candidate | Actual signed manifest | Complete APK bytes / SHA-256 | Official asset |
+| --- | --- | --- | --- |
+| `../current-app-acceptance/microg-candidate.json` | `com.google.android.gms`, `0.3.18.252432`, code `252432036`, min SDK `19`, target SDK `29` | `108520063` / `1094fa60ace2367ac52bd08d1bd4f33fa8144ba930e355121b28234b8ebbf382` | `739642136` |
+| `../current-app-acceptance/microg-companion-candidate.json` | `com.android.vending`, `0.3.18.40226`, code `84022636`, min SDK `19`, target SDK `29` | `4212484` / `3f1bde2f72bca746fbb53b61a32c2a85fcb026f886ee96d6fe9a05de9a6c6d5b` | `739655288` |
+
+Both actual SDK 37 app signers equal the historical public pin
+`9bd06727e62796c0130eb6dab39b73157451582cbd138e86c468acc395d14165`.
+The candidates accurately label that historical reference rather than claim a
+publisher certificate statement. Their neutral `observed_whole_file_digest`
+wording permits the additional independent publisher-digest match. Exact
+Android version/code values come from the signed APK, not the inconsistent
+number in the release prose.
+
+GmsCore uses v3 with no exceptions: its 24 actual ELF entries match all four
+ABI directories. Its candidate SHA is
+`7c62150023700833e5757face5ef5ab1a205387fd90a51ca283421434694311a`.
+Companion has 911 ZIP members, no `lib` namespace entry, no `.so`-suffix entry
+and one `classes.dex`. The published e925 v3 loader was run against a candidate
+with these actual identities and an empty ABI list; it rejected
+`Invalid or duplicate candidate native_abis` before SDK execution. The new
+independent schema represents the observed input without a fabricated ABI.
+Its candidate SHA is
+`d09d7d3d23eba081c96ce1c41dfe97f1adb6135c29f109bd03fce425608d7e44`.
+
+The public historical evidence records GmsCore `0.3.17.252432` / code
+`252432034` and Companion code `84022634`; these are not claims about current
+installed versions. Companion is a retained related dependency outside the
+required 39 applications. It is not Google Play Store, grants no application
+acceptance or exemption credit, and does not change the 39-required/3-unverified
+scope.
+
+### Final nine-input verification
+
+From **2026-11-18T11:04:11.300897+00:00** through **2026-11-18T11:04:38.162417+00:00**,
+all nine real APKs were verified once using the same final `verify_apk.py`
+(43006 bytes, SHA-256
+`ab15a0fde50ad710114525f49d7ab7c1732f1acc887342024f4c41a0e85c148e`).
+Every APK completed both actual `aapt2` commands and SDK 37 `apksigner` with
+exit zero; binary manifest, signing block, complete-APK and native-directory
+checks passed. Source and original-APK hashes and file-identity bookends stayed
+unchanged. The nine original APKs total **1225152890 bytes**.
+
+| Input | Actual version / code | Membership | Actual ELF entries | New source receipt bytes / SHA-256 |
+| --- | --- | --- | --- | --- |
+| `firefox` | `160.0.1` / `2016196678` | Required-39 member | `18` | `5957` / `a59d0c2ed42092781841367ca4187f9e740422b2dca4f06bc272af2adeebaa83` |
+| `fcitx` | `0.1.3-0-g048f581c` / `114` | Required-39 member | `24` | `6656` / `b515991fc3082f1f1e475987b0d55876031d8eef4b01604a4eb952044990bb73` |
+| `szzc` | `9.6.3` / `329` | Required-39 member | `118` | `20843` / `7245d3d865445ea8d8a2d770bf19795863f3e220a2ba962f432c00531d57936f` |
+| `ctrip` | `8.97.6` / `2136` | Required-39 member | `57` | `11317` / `32232122d67079e842e505801ab940ef4cfa0c2bf51eb3c1696c4b9263691d2a` |
+| `beike` | `3.06.71` / `3067100` | Required-39 member | `72` | `13550` / `238ad63e9867558e1fefb4fded8c1a6805057df04f350a1dfe1bcdd432248cda` |
+| `ceair` | `9.5.16` / `239` | Required-39 member | `47` | `29386` / `16cf8437d37a05ba5a9f48c0a6a0e1764382f82fff2e3164d2b8d54243314d55` |
+| `12306` | `5.9.4.5` / `275` | Required-39 member | `61` | `43548` / `24d14a46b2f94cd7dd11334add6cc3b30915162067deb62c4140e063f1cd7338` |
+| `microg` | `0.3.18.252432` / `252432036` | Required-39 member | `24` | `7363` / `c6929fa52004e007a5eb56e2d74ffe60d8dd01e0838aa7a1208208ce0a78141a` |
+| `companion` | `0.3.18.40226` / `84022636` | Retained dependency only | `0` | `4375` / `64f149a74b5096220cd2415dbdfa5ccbece61966efa3c7ba673941b635694811` |
+
+The new `ACTUAL_INPUTS.json` index is 39218 bytes with SHA-256
+`eb85fdb5a4dcfd51e8d73d31a4f2ac8746c1a944eb1e5d8f8bc3761a2230d93d`.
+It binds the nine receipts, native fragments, commands, candidate/source/tool
+pins, original-APK bookends, official microG acquisition records and old-schema
+reproduction. It records eight source inputs in the required 39 and one
+separate dependency. The index remains with the acquired APK artifacts, not
+inside this source package.
+
+The earlier e925 seven-input index and saved receipts remain unchanged
+historical evidence. None is retagged as an execution of the new code. No app
+was installed or executed; runtime, business and production qualifications
+remain false. Actual native ELF counts do not grant Native Bridge, dispatch
+or loader compatibility.
 
 ## Controls
 
@@ -186,7 +294,7 @@ python3 -I -B compat/android/pocket4/apk-content-identity/test_candidate.py
 
 These 18 source tests use explicitly synthetic inputs and mocks around the existing verifier. The original nine controls cover wrong package/version/hash/signer/ABI, signature failure, split declarations, raw version/SDK and ELF mapping, strict candidate JSON and external SHA, changed inputs, receipt overwrite, and CLI flag grouping. One control verifies neutral digest wording and rejects an unknown kind. Eight additional controls exercise exact four-library binding, every payload hash and size, actual ELF class/machine/SONAME/entry agreement, missing and additional payloads, unchanged v1 rejection, executable/interpreter/PIE rejection, and bounded program/dynamic tables even when synthetic whole-file pins are updated. They are separate from real signed-APK verification and from application runtime acceptance.
 
-V3 adds sixteen source controls without changing those initial 18 test bodies. Nine cover a normal zero-exception layout, separation of empty placeholders from actual ELF libraries, missing and additional payloads, false empty declarations and ABI witnesses, strict kinds and legacy-schema isolation, the eight-record upper bound, per-payload identity, the unchanged strict ELF parser after complete synthetic repinning, and external-pin/signature/manifest gates. Seven more cover the three explicit structural kinds, canonical digest agreement, changed helper summaries, strict original-kind rejection, and archive-versus-ELF accounting. All 34 candidate controls use inert synthetic inputs; successful unit controls do not stand in for SDK 37 verification of the complete real APKs.
+V3 adds sixteen source controls without changing those initial 18 test bodies. Nine cover a normal zero-exception layout, separation of empty placeholders from actual ELF libraries, missing and additional payloads, false empty declarations and ABI witnesses, strict kinds and legacy-schema isolation, the eight-record upper bound, per-payload identity, the unchanged strict ELF parser after complete synthetic repinning, and external-pin/signature/manifest gates. Seven more cover the three explicit structural kinds, canonical digest agreement, changed helper summaries, strict original-kind rejection, and archive-versus-ELF accounting. The v3 layer accounts for 34 candidate controls using inert synthetic inputs; successful unit controls do not stand in for SDK 37 verification of the complete real APKs.
 
 The two helper suites have independent isolated entry points:
 
@@ -195,13 +303,23 @@ python3 -I -B compat/android/pocket4/apk-content-identity/test_dual_dynamic_elf.
 python3 -I -B compat/android/pocket4/apk-content-identity/test_native_resource_payloads.py
 ```
 
-They contribute nine and twenty synthetic cases respectively, for 63 ordinary source controls across the three commands. The dual parser's real China Eastern payload was also observed separately with three modified-byte rejection cases. The resource helper's two optional actual 12306 payload cases are additional local byte-parser checks; the ordinary CI command neither reads those APKs nor counts them as two extra synthetic passes. The real payloads and modified copies are never included in the source package.
+They contribute nine and twenty synthetic cases respectively. Alongside the 40 candidate controls, the three commands contain 69 ordinary source controls. The dual parser's real China Eastern payload was also observed separately with three modified-byte rejection cases. The resource helper's two optional actual 12306 payload cases are additional local byte-parser checks; the ordinary CI command neither reads those APKs nor counts them as two extra synthetic passes. The real payloads and modified copies are never included in the source package.
 
 This is an identity and signature gate. It does not establish delivery eligibility, split completeness for a particular device, runtime compatibility, or application business acceptance. It never installs or launches an app. APKs that require v3.2 signer selection are explicitly rejected until that mapping is implemented and qualified.
 
 Binary XML attribute decoding follows the Android resource parser's fixed attribute layout, including the platform's handling of noncanonical `typedValue.size` fields. The complete attribute remains bounded by its declared record stride and the enclosing chunk. Source: https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/libs/androidfw/ResourceTypes.cpp (observed blob `de9991a8be5e2919b49f2fc4a307999972855bc9`).
 
 The package includes no application APKs, installed-package inventories, account files, private signing material, or raw device logs.
+
+The independent no-native schema adds six `NoNativeCandidateControls` cases
+without changing the previous 34 test bodies. They cover scoped absence with
+native-looking assets, empty directory placeholders, legacy empty-ABI rejection,
+nonempty signers and exact fields, all kinds of `lib` files, directory data,
+path/NUL aliases, duplicate/special members, and unchanged signature, manifest,
+SDK, whole-file and external-pin requirements. The six cases passed from `/tmp`
+under `python3 -I -B`; an independent complete invocation passed all 40 candidate
+cases with zero skips and unchanged source hashes. These controls mock SDK
+calls and are separate from the nine complete APK verifications above.
 
 ## Current Fcitx input
 

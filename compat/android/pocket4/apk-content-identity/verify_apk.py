@@ -6,6 +6,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import struct
 import subprocess
 import tempfile
@@ -120,6 +121,7 @@ def inspect_apk_content(path, tools):
 _CANDIDATE_SCHEMA = 'pocket4-official-apk-candidate-v1'
 _CROSS_ARCH_SCHEMA = 'pocket4-official-apk-candidate-v2'
 _LAYOUT_SCHEMA = 'pocket4-official-apk-candidate-v3'
+_NO_NATIVE_SCHEMA = 'pocket4-official-apk-candidate-no-native-v1'
 _CANDIDATE_LIMIT = 16 * 1024
 _SHARED_LIBRARY_LIMIT = 16 * 1024 * 1024
 _ARCHIVE_LIMIT = 64 * 1024 * 1024
@@ -261,10 +263,11 @@ def load_candidate(path, expected_sha256):
     def reject_constant(value):
         raise ValueError('Non-finite candidate JSON number: ' + value)
     candidate = json.loads(raw, object_pairs_hook=_unique_json, parse_constant=reject_constant)
-    if type(candidate) is not dict or candidate.get('schema') not in (_CANDIDATE_SCHEMA, _CROSS_ARCH_SCHEMA, _LAYOUT_SCHEMA):
+    if type(candidate) is not dict or candidate.get('schema') not in (_CANDIDATE_SCHEMA, _CROSS_ARCH_SCHEMA, _LAYOUT_SCHEMA, _NO_NATIVE_SCHEMA):
         raise ValueError('Unsupported candidate schema')
     cross_arch = candidate['schema'] == _CROSS_ARCH_SCHEMA
     layout = candidate['schema'] == _LAYOUT_SCHEMA
+    no_native = candidate['schema'] == _NO_NATIVE_SCHEMA
     fields = ('schema', 'package', 'version_name', 'version_code', 'version_code_major',
               'min_sdk_version', 'target_sdk_version', 'apk', 'native_abis',
               'signer_certificate_sha256', 'source')
@@ -289,6 +292,10 @@ def load_candidate(path, expected_sha256):
     for key, check in [('native_abis', lambda item: type(item) is str and item in _ABI_ELF),
                        ('signer_certificate_sha256', _sha)]:
         values = candidate[key]
+        if no_native and key == 'native_abis':
+            if type(values) is not list or values:
+                raise ValueError('No-native candidate requires an explicitly empty native ABI list')
+            continue
         if type(values) is not list or not 1 <= len(values) <= 8 or not all(check(v) for v in values) or values != sorted(set(values)):
             raise ValueError('Invalid or duplicate candidate ' + key)
     if cross_arch:
@@ -297,13 +304,13 @@ def load_candidate(path, expected_sha256):
         _native_layout_pins(candidate)
     source = candidate['source']
     source_fields = ('apk_url', 'version_metadata_url', 'observed_utc', 'observed_stable_version', 'sha256_kind')
-    historical_signer = cross_arch or layout
+    historical_signer = cross_arch or layout or no_native
     signer_url = 'signer_reference_url' if historical_signer else 'publisher_certificate_url'
     _fields(source, source_fields + ((signer_url, 'signer_reference_kind', 'version_metadata_kind')
                                     if historical_signer else (signer_url,)), 'Candidate source')
     if historical_signer and (source['signer_reference_kind'] != 'public_historical_candidate'
                               or source['version_metadata_kind'] != 'signed_apk_android_manifest'):
-        raise ValueError('Candidate ' + ('v3' if layout else 'v2')
+        raise ValueError('Candidate ' + ('no-native' if no_native else 'v3' if layout else 'v2')
                          + ' must distinguish its historical signer pin and signed-APK version metadata')
     for key in ('apk_url', 'version_metadata_url', signer_url):
         if type(source[key]) is not str or len(source[key]) > 2048:
@@ -412,6 +419,8 @@ def _shared_elf_metadata(body):
 
 def _candidate_binary_metadata(path, result, candidate):
     """Bind version name/SDK and actual ELF headers as well as library directory names."""
+    if candidate['schema'] == _NO_NATIVE_SCHEMA:
+        return _no_native_binary_metadata(path, result, candidate)
     if candidate['schema'] == _LAYOUT_SCHEMA:
         return _layout_binary_metadata(path, result, candidate)
     with zipfile.ZipFile(path) as apk:
@@ -471,6 +480,60 @@ def _candidate_binary_metadata(path, result, candidate):
         result.update(cross_arch_shared_libraries=sorted(observed_cross_arch, key=lambda item: item['path']),
                       native_compatibility_qualified=False, dispatch_runtime_observed=False)
     return result
+
+
+def _no_native_binary_metadata(path, result, candidate):
+    """Observe only the absence of files in the standard Android lib directory."""
+    with zipfile.ZipFile(path) as apk:
+        members = apk.infolist()
+        names = [item.filename for item in members]
+        if len(names) != len(set(names)):
+            raise ValueError('Duplicate APK ZIP members are ambiguous')
+        canonical_paths = set()
+        directories = []
+        for item in members:
+            name = item.filename
+            if (item.orig_filename != name or not name or len(name.encode('utf-8')) > 4096
+                    or '\\' in name or any(ord(c) < 32 or ord(c) == 127 for c in name)
+                    or name.startswith('/') or re.match(r'^[A-Za-z]:', name)):
+                raise ValueError('No-native APK member has an invalid ZIP path')
+            is_directory = item.is_dir()
+            parts = name[:-1].split('/') if is_directory else name.split('/')
+            if any(part in ('', '.', '..') for part in parts):
+                raise ValueError('No-native APK member has an invalid ZIP path')
+            canonical = '/'.join(parts)
+            if canonical in canonical_paths:
+                raise ValueError('No-native APK ZIP file and directory paths alias')
+            canonical_paths.add(canonical)
+            kind = stat.S_IFMT(item.external_attr >> 16)
+            if (kind not in (0, stat.S_IFREG, stat.S_IFDIR)
+                    or kind == stat.S_IFDIR and not is_directory
+                    or kind == stat.S_IFREG and is_directory):
+                raise ValueError('No-native APK member is not a regular file or directory')
+            if is_directory and (item.file_size != 0 or item.CRC != 0):
+                raise ValueError('No-native APK directory entry contains file data')
+            if parts[0] == 'lib':
+                if not is_directory:
+                    raise ValueError('No-native APK contains a file in the standard lib directory')
+                if len(parts) > 2 or len(parts) == 2 and parts[1] not in _ABI_ELF:
+                    raise ValueError('No-native APK has an invalid native directory placeholder')
+                directories.append(name)
+        manifest = apk.read('AndroidManifest.xml')
+        if hashlib.sha256(manifest).hexdigest() != result['manifest_binary_sha256']:
+            raise ValueError('Candidate manifest changed after signature verification')
+        raw = axml_metadata(manifest)
+        for key in ('package', 'version_name', 'version_code', 'version_code_major'):
+            if raw[key] != candidate[key]:
+                raise ValueError('Binary manifest differs from candidate ' + key)
+        for key in ('min_sdk_version', 'target_sdk_version'):
+            if int(raw[key], 0) != candidate[key]:
+                raise ValueError('Binary manifest differs from candidate ' + key)
+    return {'min_sdk_version': candidate['min_sdk_version'],
+            'target_sdk_version': candidate['target_sdk_version'],
+            'scope': 'standard_lib_directory_only', 'native_libraries': [],
+            'standard_lib_file_count': 0, 'directory_placeholders': sorted(directories),
+            'native_code_absence_proved': False, 'native_compatibility_qualified': False,
+            'dispatch_runtime_observed': False}
 
 
 def _layout_binary_metadata(path, result, candidate):

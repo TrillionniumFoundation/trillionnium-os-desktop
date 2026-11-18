@@ -87,7 +87,7 @@ install an application, change permissions, or execute a business action.
 
 ## Current input observations, 2026-11-18
 
-Current source-input verification has produced native expected-input
+The first current source-input verification produced native expected-input
 fragments for seven complete, unmodified publisher APKs, totaling
 1,112,420,343 bytes. All seven passed the same final verifier's actual SDK 37
 signature, binary manifest, whole-file hash and reviewed native-layout
@@ -125,6 +125,52 @@ device readback, native loading, inner-archive compatibility, business
 acceptance or production qualification. Expected-input fragments retain
 their observed local paths; a future owner must regenerate and bind them
 to the actual deployment locations through the unchanged runtime gates.
+
+### Current microG and its retained Companion dependency
+
+A subsequent common-verifier run checked all nine complete APKs on
+2026-11-18 between 11:04:11 and 11:04:38.163 UTC. All nine SDK 37 candidate
+invocations passed with unchanged APK F9 and whole-file SHA-256 bookends.
+The total original APK size is 1,225,152,890 bytes. This covers eight
+required39 source inputs and one separately retained dependency, with zero
+runtime, business, exemption or production credit. The nine-input record is
+39,218 bytes, SHA-256
+`eb85fdb5a4dcfd51e8d73d31a4f2ac8746c1a944eb1e5d8f8bc3761a2230d93d`.
+
+| Application | Signed Android version / code | Scope | Candidate definition |
+| --- | --- | --- | --- |
+| microG Services | `0.3.18.252432` / `252432036` | Required39 member | [microg-candidate.json](microg-candidate.json) |
+| microG Companion | `0.3.18.40226` / `84022636` | Retained dependency outside required39 | [microg-companion-candidate.json](microg-companion-candidate.json) |
+
+Both inputs are the standard artifacts of the official stable
+[microG v0.3.18.252432 release](https://github.com/microg/GmsCore/releases/tag/v0.3.18.252432).
+Their actual whole-file hashes match the published GitHub asset digests,
+and SDK 37 verified the same historical certificate pin
+`9bd06727e62796c0130eb6dab39b73157451582cbd138e86c468acc395d14165`.
+Huawei `-hw` and `org.microg.gms-user` are separate variants. The release
+prose's `250932036` is not used as a version-code pin; the selected asset
+and signed manifest establish `252432036` for Services.
+
+Services has 24 standard native libraries across four ABIs and no layout
+exceptions. Companion has no standard `lib` payload. Its separate
+`pocket4-official-apk-candidate-no-native-v1` model requires an empty ABI
+list while retaining all signature, external candidate hash, whole APK,
+binary manifest and standalone-base checks. It rejects every actual file
+under `lib`, ambiguous paths, special members and nonempty directory
+entries. Existing v1/v2/v3 candidates still reject empty ABI lists. This
+proves only the standard-directory observation; it does not prove absence
+of dynamically loaded native code. The source suites now contain 40
+candidate controls, 9 dual-dynamic controls and 20 resource controls.
+
+Companion is `com.android.vending`, not Google Play Store. It remains one
+of the five previously retained dependencies alongside
+`com.android.droidloom.home`, `com.android.droidloom.ime`,
+`local.pocket4.actions.v2` and `com.android.webview`. The other four require
+the actual coherent Android build and runtime; Firefox does not replace
+the embedded WebView provider. Neither Companion nor these dependencies
+changes the required39 denominator or the three explicit exemptions.
+
+### Other current-channel observations
 
 Fresh anonymous official Google Play US pages also exposed the following
 exact application-detail version strings. The observations were made on
