@@ -18,9 +18,9 @@ HERE = Path(__file__).resolve().parent
 PARENT_COMMIT = '61a38baa745483fbfb757466a1cf352febc20552'
 PARENT_TREE = 'db6249e80209abeda8000eeced6d045a1d57e0a2'
 HEAD_COMMIT = None
-HEAD_TREE = '0b85a69905ce8ebfa9eaada1e3a29048fc2308c0'
+HEAD_TREE = 'ac9a2a3fe334a0f57ef3a3f3bcc5f6d293e79f18'
 SOURCE_FILES = 2298
-SOURCE_BYTES = 42513744
+SOURCE_BYTES = 42526544
 
 
 def need(value, message):
@@ -311,9 +311,9 @@ def archive_entries(raw):
     return entries
 
 
-OVERLAY = {'bytes': 608480, 'sha256': 'bdbc0b3f4fd295d8ec0a805e494f8bb405343cb4629dc063dc2c1d1316f86b1d'}
+OVERLAY = {'bytes': 613936, 'sha256': '48fb5b87d99147ce532784fde7063fd19bac3671928e3cce53cec99e07ddc849'}
 OVERLAY_PATH = 'SOURCE-OVERLAY.tar.xz'
-OVERLAY_PATHS = 128
+OVERLAY_PATHS = 129
 OVERLAY_EXPANSION_MAX = 5 * 1024 * 1024
 
 

@@ -13,24 +13,21 @@ contain an Android image, an APK collection or a production runtime acceptance.
 | Committed source parent inside the baseline archive | `61a38baa745483fbfb757466a1cf352febc20552` |
 | Parent Git tree | `db6249e80209abeda8000eeced6d045a1d57e0a2` |
 | Previous published source tree | `0b85a69905ce8ebfa9eaada1e3a29048fc2308c0` |
-| Current complete source tree | `0b85a69905ce8ebfa9eaada1e3a29048fc2308c0` |
-| Current source files / bytes | 2,298 / 42,513,744 |
+| Current complete source tree | `ac9a2a3fe334a0f57ef3a3f3bcc5f6d293e79f18` |
+| Current source files / bytes | 2,298 / 42,526,544 |
 | Baseline archive members | 2,224: 2,222 source files, manifest and original commit body |
 | Baseline archive SHA256 | `7ab244365184ef670c244b6a0ed75857c6f942897f3fc59c00e6375e76f51816` |
-| Complete cumulative overlay | 128 path bodies / 608,480 compressed bytes |
-| Overlay SHA256 | `bdbc0b3f4fd295d8ec0a805e494f8bb405343cb4629dc063dc2c1d1316f86b1d` |
-| Expanded overlay bytes | 4,741,120 |
-| Expanded overlay SHA256 | `dd2daa4f4a959a57d6c66584b80a0b758caa51e1ddc22163e38cbbe3f9ad9de0` |
+| Complete cumulative overlay | 129 path bodies / 613,936 compressed bytes |
+| Overlay SHA256 | `48fb5b87d99147ce532784fde7063fd19bac3671928e3cce53cec99e07ddc849` |
+| Expanded overlay bytes | 4,792,320 |
+| Expanded overlay SHA256 | `9331342e9b1150800c84d049b6739b8f18fcfb02326288b99b1938a6cc5b767f` |
 
 The public wrapper commit is distinct from the source parent and reconstructed
 producer tree. `verify.py` checks every parent body, mode, Git blob and tree,
-then all 128 before/after rows and complete overlay bodies. The final tree
+then all 129 before/after rows and complete overlay bodies. The final tree
 includes exactly 2,298 files. `source_commit` remains null because the
 producer is represented by a verified cumulative overlay. The input manifest
-awards no build or runtime credit. The previous increments' 42 Rust files
-passed the pinned Rust 1.93.0 formatter check. The latest runtime increment changes 9 Rust files; all 9 passed that same check. Fourteen
-harnesses in the two affected packages compiled successfully. These local
-observations do not replace the new complete CI execution.
+awards no build or runtime credit. The prior public increment completed all 1,388 ordinary cases, nine recipe cases, nineteen normal release builds, three example builds and twenty documentation checks in CI run 44333341411. The current increment changes five Rust files, all checked by the pinned Rust 1.93.0 formatter. Its actual cargo check --tests and eleven focused cases passed. The preserved supervisor library ELF lists exactly three added cases, no removed cases and the same twenty-five ignored library cases. Other affected targets were checked, not claimed as freshly compiled test executables. Complete current CI remains a separate required execution.
 
 `SOURCE-OVERLAY.tar.xz` stores canonical USTAR postimages and a complete manifest
 without JSON base64 expansion. The verifier rejects extensions, aliases, links,
@@ -40,6 +37,12 @@ changed preimages or postimages. The original single-frame 5 MiB expansion and
 source-integrity gate pin the compressed byte count and SHA256.
 
 ## Repairs
+
+### Android scoped proc and the original mount-helper deadline
+
+The Android activation role uses distinct authenticated phases 64/65/66 to hand the original uncreated proc fs_context to the initial-userns broker. That broker sets the owned map's actual host readproc GID and lsm_context=selinux before CMD_CREATE and fsmount. This preserves the PID namespace selected by the original child's fsopen. Full mount readback requires the exact selected provider and mapped GID; the existing private control keeps its original phases and rejects the selector. Host LSM order and host MAC preflight remain independent gates.
+
+The mount helper now rejects a caller that extends its original deadline and rejects acceptance of a completed, reaped result after that deadline. Eleven focused cases passed on the recovered exact source; the compiled library catalog added three ordinary cases and removed none. The runtime source freeze is 73a706c182a5ead536eb085c2d67296a6405241a833d772b4739f643592ba0ea, with complete source bookends unchanged during validation. This does not claim a privileged proc mount or Android start. The independently built 6.18.64 kernel's real 160 active-SELinux and 100 inactive-SELinux VM checks are preserved in ../current-kernel-6.18/.
 
 ### Original-init notification custody and real thread exit
 
@@ -210,7 +213,7 @@ patch and never activates it or changes its input repository.
 
 The runner reconstructs this source into a new directory and uses a fresh
 Cargo target. Metadata and exact catalogs define 28 workspace packages,
-49 ordinary harnesses, 1,418 listed cases and 19 normal release binaries.
+49 ordinary harnesses, 1,421 listed cases and 19 normal release binaries.
 The latest runtime increment adds seven ordinary supervisor names.
 Cumulatively, increments 6 through 11 add 33 names relative to the
 ac099 producer: 26 supervisor and 7 runtime-inputs cases.
@@ -229,7 +232,7 @@ no fresh credit.
 | Frozen recipe example harness | 9 exact ordinary cases; no ignored cases | 300-second compilation, 60-second execution |
 | Documentation targets | 20 actual library targets, 0 doc cases | 180 seconds per target |
 
-The catalog total is **1,388 ordinary cases and 30 ignored cases**. The nine
+The catalog total is **1,391 ordinary cases and 30 ignored cases**. The nine
 recipe example cases are recorded separately. Each of the three normal
 example binaries and the separate recipe test ELF is joined to its actual
 source metadata and compilation interval. The recipe's exact and ignored
