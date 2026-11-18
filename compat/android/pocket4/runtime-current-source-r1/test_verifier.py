@@ -131,7 +131,13 @@ def updater_catalogs():
         'android::telephony_mms_asb_security::tests::telephony_mms_official_patch_is_exact_and_journal_recovers_one_original',
         'android::telephony_mms_asb_security::tests::telephony_mms_requests_use_existing_complete_product_and_unchanged_651_lock',
     }
-    v.need(len(current['all']) == 492 and added <= set(current['all']), 'exact current updater catalog required')
+    added.update({
+        'android::official_vendor::tests::product_uses_vendor_properties_and_no_global_binfmt_registration',
+        'android::official_vendor::tests::symbol_versions_remain_distinct_and_weak_imports_are_optional',
+        'android::official_vendor::tests::vendor_mapping_refuses_system_replacement_and_path_escape',
+        'tests::official_vendor_cli_requires_fixed_binary_inputs_and_fresh_output',
+    })
+    v.need(len(current['all']) == 496 and added <= set(current['all']), 'exact current updater catalog required')
     historical = [name for name in current['all'] if name not in added]
     historical_body = (json.dumps(historical, sort_keys=True, separators=(',', ':')) + '\n').encode()
     v.need(len(historical) == 465 and v.digest(historical_body)['sha256'] ==
@@ -246,21 +252,21 @@ class Controls(unittest.TestCase):
         exact = set(v.decode(v.regular(P / 'UPDATER-EXACT64.json')))
         ignored = set(current['ignored'])
         passed = set(current['all']) - exact - ignored
-        self.assertEqual((len(passed), len(ignored), len(exact)), (427, 1, 64))
+        self.assertEqual((len(passed), len(ignored), len(exact)), (431, 1, 64))
         # Synthetic current-catalog transcript. The three ACTUAL_* constants
         # above remain byte-for-byte historical evidence, not new CI output.
         fragments = {
             'image_policy::tests::repack_preserves_android_metadata_and_adbd':
-                ACTUAL_IMAGE_CHILD.replace('464 filtered out;', '491 filtered out;'),
+                ACTUAL_IMAGE_CHILD.replace('464 filtered out;', '495 filtered out;'),
             'native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata':
-                ACTUAL_STAGING_CHILD.replace('464 filtered out;', '491 filtered out;'),
+                ACTUAL_STAGING_CHILD.replace('464 filtered out;', '495 filtered out;'),
             'native_generation::tests::real_erofs_bundle_verifies_its_embedded_pair': ACTUAL_TOOL_OUTPUT,
         }
         self.assertTrue(set(fragments) <= passed)
-        text = 'running 428 tests\n'
+        text = 'running 432 tests\n'
         for name in sorted(passed | ignored):
             text += fragments.get(name, f'test {name} ... ' + ('ignored' if name in ignored else 'ok') + '\n')
-        text += '\ntest result: ok. 427 passed; 0 failed; 1 ignored; 0 measured; 64 filtered out; finished in 1.00s\n'
+        text += '\ntest result: ok. 431 passed; 0 failed; 1 ignored; 0 measured; 64 filtered out; finished in 1.00s\n'
         self.assertEqual(v.test_terminal(text, passed, ignored, 64, catalog=current['all']),
                          {'passed': sorted(passed), 'ignored': sorted(ignored), 'filtered': 64})
         wrong_names = list(current['all'])
@@ -269,11 +275,11 @@ class Controls(unittest.TestCase):
                         current['all'][:-1] + [current['all'][0]]):
             with self.subTest(catalog=catalog), self.assertRaises(RuntimeError):
                 v.test_terminal(text, passed, ignored, 64, catalog=catalog)
-        for bad in (text.replace('491 filtered out;', '485 filtered out;', 1),
-                    text.replace('491 filtered out;', '479 filtered out;', 1),
-                    text.replace('491 filtered out;', '473 filtered out;', 1),
-                    text.replace('491 filtered out;', '466 filtered out;', 1),
-                    text.replace('491 filtered out;', '465 filtered out;', 1),
+        for bad in (text.replace('495 filtered out;', '485 filtered out;', 1),
+                    text.replace('495 filtered out;', '479 filtered out;', 1),
+                    text.replace('495 filtered out;', '473 filtered out;', 1),
+                    text.replace('495 filtered out;', '466 filtered out;', 1),
+                    text.replace('495 filtered out;', '465 filtered out;', 1),
                     text.replace('1 ignored;', '0 ignored;', 1),
                     text.replace('64 filtered out;', '62 filtered out;', 1)):
             with self.subTest(text=bad), self.assertRaises(RuntimeError):
@@ -305,7 +311,7 @@ class OverlayControls(unittest.TestCase):
         cls.rows = [{'path': name, 'bytes': row['bytes'], 'sha256': row['sha256'],
                      'git_blob': row['git_blob'], 'mode': row['git_mode']}
                     for name, row in sorted(cls.parent['files'].items())]
-        cls.compressed = v.check(v.HERE / 'SOURCE-OVERLAY.json.xz', v.OVERLAY)
+        cls.compressed = v.check(v.HERE / v.OVERLAY_PATH, v.OVERLAY)
         cls.packet = v.overlay_packet(cls.compressed)
 
     def clone(self):
@@ -319,10 +325,10 @@ class OverlayControls(unittest.TestCase):
         capsule = v.verify_capsule(inventory_sha)
         self.assertIsNone(v.HEAD_COMMIT)
         self.assertEqual(capsule['parent_manifest']['head'], v.PARENT_COMMIT)
-        self.assertEqual(len(capsule['rows']), 2272)
-        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 42041849)
-        self.assertEqual(v.tree_id(capsule['rows']), 'c386679ac5fdc96eeaa424477435cd3ac09ce764')
-        self.assertEqual(len(capsule['overlay_manifest']['paths']), 77)
+        self.assertEqual(len(capsule['rows']), 2287)
+        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 42311114)
+        self.assertEqual(v.tree_id(capsule['rows']), 'ac099a3921615b7bec854dbe2272e3fa96fdf32c')
+        self.assertEqual(len(capsule['overlay_manifest']['paths']), 115)
         self.assertNotEqual(v.HEAD_TREE, v.PARENT_TREE)
 
     def test_overlay_rejects_wrong_base_omitted_extra_or_unsafe_member(self):
@@ -409,6 +415,58 @@ class OverlayControls(unittest.TestCase):
         for raw in [self.compressed[:-1], tiny + tiny, tiny + b'trailing', too_large]:
             with self.subTest(size=len(raw)), self.assertRaises(RuntimeError):
                 v.overlay_packet(raw)
+
+    def test_binary_overlay_preserves_the_original_expansion_and_memory_bounds(self):
+        body = v.lzma.decompress(self.compressed)
+        self.assertEqual(v.OVERLAY_EXPANSION_MAX, 5 * 1024 * 1024)
+        self.assertLessEqual(len(body), v.OVERLAY_EXPANSION_MAX)
+        with v.tarfile.open(fileobj=v.io.BytesIO(body), mode='r:') as archive:
+            members = archive.getmembers()
+            self.assertEqual(len(members), 116)
+            self.assertEqual(set(m.name for m in members), {'OVERLAY-MANIFEST.json'} |
+                             {'postimages/' + name for name in self.packet['files_base64']})
+            for member in members:
+                if member.name.startswith('postimages/'):
+                    name = member.name[len('postimages/'):]
+                    self.assertEqual(archive.extractfile(member).read(),
+                                     v.base64.b64decode(self.packet['files_base64'][name], validate=True))
+
+    def test_binary_overlay_rejects_links_aliases_extensions_and_trailing_archives(self):
+        original = v.lzma.decompress(self.compressed)
+        def mutated(kind):
+            output = v.io.BytesIO()
+            with v.tarfile.open(fileobj=v.io.BytesIO(original), mode='r:') as source, \
+                    v.tarfile.open(fileobj=output, mode='w', format=v.tarfile.USTAR_FORMAT) as target:
+                changed = False
+                for info in source.getmembers():
+                    body = source.extractfile(info).read()
+                    if info.name.startswith('postimages/') and not changed:
+                        changed = True
+                        if kind == 'symbolic': info.type = v.tarfile.SYMTYPE; info.linkname = '../external'
+                        elif kind == 'hardlink': info.type = v.tarfile.LNKTYPE; info.linkname = 'OVERLAY-MANIFEST.json'
+                        elif kind == 'alias': info.name = 'postimages/../escape'
+                        elif kind == 'prefix': info.name = 'undeclared/source.rs'
+                        elif kind == 'owner': info.uid = 1000
+                        elif kind == 'mode': info.mode = 0o755 if info.mode == 0o644 else 0o644
+                        elif kind == 'directory': info.type = v.tarfile.DIRTYPE
+                    target.addfile(info, v.io.BytesIO(body))
+            return v.lzma.compress(output.getvalue())
+        for kind in ['symbolic', 'hardlink', 'alias', 'prefix', 'owner', 'mode', 'directory']:
+            with self.subTest(kind=kind), self.assertRaises(RuntimeError):
+                v.overlay_packet(mutated(kind))
+        for trailing in (b'x' + bytes(511), original):
+            with self.subTest(trailing_bytes=len(trailing)), self.assertRaises(RuntimeError):
+                v.overlay_packet(v.lzma.compress(original + trailing))
+        # An explicitly included extension header is rejected, even if tarfile
+        # would otherwise reinterpret the following file's name or metadata.
+        output = v.io.BytesIO()
+        with v.tarfile.open(fileobj=output, mode='w', format=v.tarfile.PAX_FORMAT) as target:
+            info = v.tarfile.TarInfo('OVERLAY-MANIFEST.json')
+            info.pax_headers = {'comment': 'untrusted extension'}
+            body = b'{}'; info.size = len(body); info.mode = 0o644
+            target.addfile(info, v.io.BytesIO(body))
+        with self.assertRaises(RuntimeError):
+            v.overlay_packet(v.lzma.compress(output.getvalue()))
 
 
 

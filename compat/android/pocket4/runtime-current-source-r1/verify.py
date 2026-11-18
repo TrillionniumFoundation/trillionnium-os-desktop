@@ -18,9 +18,9 @@ HERE = Path(__file__).resolve().parent
 PARENT_COMMIT = '61a38baa745483fbfb757466a1cf352febc20552'
 PARENT_TREE = 'db6249e80209abeda8000eeced6d045a1d57e0a2'
 HEAD_COMMIT = None
-HEAD_TREE = 'c386679ac5fdc96eeaa424477435cd3ac09ce764'
-SOURCE_FILES = 2272
-SOURCE_BYTES = 42041849
+HEAD_TREE = 'ac099a3921615b7bec854dbe2272e3fa96fdf32c'
+SOURCE_FILES = 2287
+SOURCE_BYTES = 42311114
 
 
 def need(value, message):
@@ -311,7 +311,9 @@ def archive_entries(raw):
     return entries
 
 
-OVERLAY = {'bytes': 624640, 'sha256': '37789a01a8d14b5253cc71923c28ca61e8b09813c2b4f4a7bf2a9651ad995b92'}
+OVERLAY = {'bytes': 564452, 'sha256': 'c24b66f32ed9dbb4699d0f72d227868aa94cf8c6363b25f9940cc1c6c6502233'}
+OVERLAY_PATH = 'SOURCE-OVERLAY.tar.xz'
+OVERLAY_PATHS = 115
 OVERLAY_EXPANSION_MAX = 5 * 1024 * 1024
 
 
@@ -322,7 +324,62 @@ def overlay_packet(raw):
     body = decoder.decompress(raw, max_length=OVERLAY_EXPANSION_MAX + 1)
     need(decoder.eof and not decoder.unused_data and len(body) <= OVERLAY_EXPANSION_MAX,
          'one complete bounded XZ overlay without trailing frames required')
-    return decode(body)
+    # Whole binary postimages avoid base64's wire expansion. The original
+    # single-frame 5 MiB expansion and 64 MiB decoder bounds stay unchanged.
+    # Accept only contiguous canonical USTAR regular files, no extension
+    # headers, links, implicit directories, alternate archives or trailing data.
+    need(len(body) % 512 == 0, 'overlay USTAR blocks must be complete')
+    extracted = {}
+    next_offset = 0
+    try:
+        with tarfile.open(fileobj=io.BytesIO(body), mode='r:') as archive:
+            members = archive.getmembers()
+            need(len(members) == OVERLAY_PATHS + 1, 'exact overlay USTAR member count')
+            for member in members:
+                safe(member.name)
+                need(member.name not in extracted and member.isreg()
+                     and not member.linkname and not member.pax_headers
+                     and member.uid == member.gid == member.mtime == 0
+                     and member.uname == member.gname == ''
+                     and member.devmajor == member.devminor == 0
+                     and member.mode in (0o644, 0o755)
+                     and 0 <= member.size <= OVERLAY_EXPANSION_MAX,
+                     'canonical distinct regular overlay members required')
+                need(member.offset == next_offset
+                     and member.offset_data == member.offset + 512,
+                     'overlay extension headers or member gaps are forbidden')
+                header = body[member.offset:member.offset + 512]
+                need(header[156:157] in (b'0', b'\0')
+                     and header[257:263] == b'ustar\0' and header[263:265] == b'00',
+                     'one canonical USTAR header per overlay file required')
+                data = archive.extractfile(member).read(member.size + 1)
+                need(len(data) == member.size, 'whole overlay member required')
+                next_offset = member.offset_data + ((member.size + 511) // 512) * 512
+                need(not any(body[member.offset_data + member.size:next_offset]),
+                     'overlay member padding must be zero')
+                extracted[member.name] = (member.mode, data)
+    except (tarfile.TarError, EOFError) as error:
+        raise RuntimeError('invalid complete overlay USTAR archive') from error
+    need(len(body) - next_offset >= 1024 and not any(body[next_offset:]),
+         'overlay must end with only complete zero trailer blocks')
+    need('OVERLAY-MANIFEST.json' in extracted
+         and extracted['OVERLAY-MANIFEST.json'][0] == 0o644,
+         'exact overlay manifest member required')
+    manifest = decode(extracted.pop('OVERLAY-MANIFEST.json')[1])
+    need(isinstance(manifest, dict) and isinstance(manifest.get('paths'), dict),
+         'overlay manifest must declare its exact path set')
+    encoded = {}
+    for name, (mode, data) in extracted.items():
+        need(name.startswith('postimages/'), 'undeclared overlay member prefix')
+        relative = name[len('postimages/'):]
+        safe(relative)
+        change = manifest['paths'].get(relative)
+        need(isinstance(change, dict) and isinstance(change.get('after'), dict)
+             and change['after'].get('git_mode') == format(0o100000 | mode, 'o'),
+             'overlay member mode must match its exact declared postimage')
+        encoded[relative] = base64.b64encode(data).decode('ascii')
+    need(set(encoded) == set(manifest['paths']), 'all and only declared overlay members required')
+    return {'manifest': manifest, 'files_base64': encoded}
 
 
 def apply_overlay(parent, parent_rows, parent_entries, packet):
@@ -339,7 +396,7 @@ def apply_overlay(parent, parent_rows, parent_entries, packet):
          and manifest['candidate_file_count'] == SOURCE_FILES
          and manifest['candidate_bytes'] == SOURCE_BYTES
          and manifest['candidate_tree_from_manifest'] == HEAD_TREE
-         and manifest['schema'] == 'p4-launch-combined-formatted-overlay-v1'
+         and manifest['schema'] == 'p4-launch-combined-formatted-overlay-v2'
          and manifest['format_qualified'] is True and manifest['compiled'] is False
          and manifest['runtime_qualified'] is False and manifest['production_ready'] is False,
          'fixed qualified parent and exact formatted successor tree required')
@@ -348,8 +405,8 @@ def apply_overlay(parent, parent_rows, parent_entries, packet):
          'complete exact parent inventory required before overlay')
     changes, encoded_files = manifest['paths'], packet['files_base64']
     need(isinstance(changes, dict) and isinstance(encoded_files, dict)
-         and len(changes) == 77 and set(changes) == set(encoded_files),
-         'all and only 77 declared overlay bodies required')
+         and len(changes) == OVERLAY_PATHS and set(changes) == set(encoded_files),
+         'all and only declared overlay bodies required')
     current = dict(parent['files'])
     entries = dict(parent_entries)
     for name, change in sorted(changes.items()):
@@ -422,7 +479,7 @@ def verify_capsule(expected_inventory_sha):
              and object_id('blob', body) == row['git_blob'], 'source body, mode or Git blob differs: ' + name)
     need(tree_id(rows) == PARENT_TREE and sum(row['bytes'] for row in rows) == 40552166,
          'every source byte must contribute to the complete Git tree')
-    packet = overlay_packet(check(HERE / 'SOURCE-OVERLAY.json.xz', OVERLAY))
+    packet = overlay_packet(check(HERE / OVERLAY_PATH, OVERLAY))
     rows, entries, overlay = apply_overlay(manifest, rows, entries, packet)
     return {'parent_manifest': manifest, 'overlay_manifest': overlay, 'rows': rows,
             'entries': entries, 'inventory_sha256': expected_inventory_sha}

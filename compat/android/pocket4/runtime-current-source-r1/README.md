@@ -12,32 +12,76 @@ contain an Android image, an APK collection or a production runtime acceptance.
 | --- | --- |
 | Committed source parent inside the baseline archive | `61a38baa745483fbfb757466a1cf352febc20552` |
 | Parent Git tree | `db6249e80209abeda8000eeced6d045a1d57e0a2` |
-| Previous complete source tree | `84d74983ea2c6f3ad131272efb0ac939d9ddcf55` |
-| Current complete source tree | `c386679ac5fdc96eeaa424477435cd3ac09ce764` |
-| Current source files / bytes | 2,272 / 42,041,849 |
+| Previous complete source tree | `c386679ac5fdc96eeaa424477435cd3ac09ce764` |
+| Current complete source tree | `ac099a3921615b7bec854dbe2272e3fa96fdf32c` |
+| Current source files / bytes | 2,287 / 42,311,114 |
 | Baseline archive members | 2,224: 2,222 source files, manifest and original commit body |
 | Baseline archive SHA256 | `7ab244365184ef670c244b6a0ed75857c6f942897f3fc59c00e6375e76f51816` |
-| Complete cumulative overlay | 77 path bodies / 624,640 compressed bytes |
-| Overlay SHA256 | `37789a01a8d14b5253cc71923c28ca61e8b09813c2b4f4a7bf2a9651ad995b92` |
-| Expanded overlay bytes | 4,720,318 |
-| Expanded overlay SHA256 | `85444d1b869efcc2b90a13f0e368aa614fd734449e3cb133efbdb5015e0579d8` |
+| Complete cumulative overlay | 115 path bodies / 564,452 compressed bytes |
+| Overlay SHA256 | `c24b66f32ed9dbb4699d0f72d227868aa94cf8c6363b25f9940cc1c6c6502233` |
+| Expanded overlay bytes | 4,433,920 |
+| Expanded overlay SHA256 | `80a4b17c3473ba38f15144534c1e0226b2858a6c9cfd746be035ac3029ef0a11` |
 
 The public wrapper commit is distinct from the source parent and reconstructed
 producer tree. `verify.py` checks every parent body, mode, Git blob and tree,
-then all 77 before/after rows and complete overlay bodies. The final tree includes
-exactly 2,272 files. `source_commit` remains null because the producer is
-represented by a verified cumulative overlay, not a newly published producer
-commit. Its input manifest does not award build or runtime credit.
+then all 115 before/after rows and complete overlay bodies. The final tree
+includes exactly 2,287 files. `source_commit` remains null because the
+producer is represented by a verified cumulative overlay. The input manifest
+awards no build or runtime credit. All 42 Rust files changed by the new runtime
+and official-GSI increments passed the pinned Rust 1.93.0 formatter check.
 
-This increment changes five existing producer files and adds
-`runtime/droidloom-supervisor/src/production_execution_capabilities.rs`.
-The other 2,266 previous files are byte-identical. All four changed Rust source
-files passed the pinned Rust 1.93.0 formatter check. Existing parent files are
-not reformatted by this increment. The overlay remains a single complete XZ
-frame under the unchanged 5 MiB expansion and 64 MiB decoder-memory limits.
-The source-integrity gate also pins the compressed byte count and SHA256.
+`SOURCE-OVERLAY.tar.xz` stores canonical USTAR postimages and a complete manifest
+without JSON base64 expansion. The verifier rejects extensions, aliases, links,
+special members, unlisted bodies, nonzero padding, concatenated frames and
+changed preimages or postimages. The original single-frame 5 MiB expansion and
+64 MiB decoder-memory bounds remain unchanged. The external inventory and
+source-integrity gate pin the compressed byte count and SHA256.
 
 ## Repairs
+
+### Official CP3A binary inputs and independent vendor production
+
+The image preparer holds and verifies the complete official CP3A.260905.010
+archive and preserves its system, reference vbmeta and build properties byte
+for byte. Its separate vendor-input preparer checks 29 actual original
+references, including ART/NNAPI CAPEX layers, without using CP2A replacements.
+Actual preparation succeeded for the official 1,237,475,685-byte archive and
+all 29 references. These observations establish input identity only.
+
+The new strict `official-gsi-vendor-build` command uses two fresh normal outputs:
+an original Soong NativeBridge distribution followed by vendorimage, secilc and
+checkvintf. It retains the exact full651 source lock, `user` variant, strict
+Soong dependency checks and all neverallow checks. The checked translator and
+ARM64 interpreter data are scoped to vendor. Stock CP3A system/ART/APEX bytes
+are unchanged. Input provenance and source provenance remain distinct; no
+source-equivalence label is manufactured. Both actual Android builds and
+combined policy/VINTF acceptance remain required.
+
+### Original-init execution inputs and retained activation ownership
+
+The CP3A execution selection is bound to the exact original system and init.
+Its fixed capability set is scoped to the owned subordinate user namespace,
+with all six namespace owners, exact ID maps, the five capability masks,
+NoNewPrivs and PDEATHSIG checked. It cannot select arbitrary masks or grant
+initial-namespace administration. Actual `/dev` observation now inventories
+all entries under the held executed root; fresh-device creation still uses
+its original finite whitelist.
+
+The activation path retains one runtime owner through its authenticated
+listener, original linkerconfig broker and complete retirement. Separate
+bounded writable `/apex` and `/linkerconfig` roots retain their exact labels,
+noexec/nodev/nosuid flags and original inode/mount identities. The original
+CP3A linkerconfig payload and the reproducibly built static trampoline have
+complete code and metadata pins. Two independent trampoline builds matched;
+that does not mean the original linkerconfig has executed.
+
+The fixed query producer reads cmd, toybox, app_process64 and content.jar from
+the same held official system. Original executable files retain their actual
+0:2000 ownership, while the JAR remains 0:0 and nonexecutable. This repairs the
+previous all-root-group rejection without changing original files. No query
+or Android execution is claimed by input preparation. Actual APEX activation,
+init namespace transitions, task-profile acceptance, same-epoch MAC decisions
+and the final execution-contract type still require their genuine providers.
 
 ### Boot property reads survive legitimate concurrent updates
 
@@ -93,23 +137,24 @@ patch and never activates it or changes its input repository.
 
 The runner reconstructs this source into a new directory and uses a fresh
 Cargo target. Metadata and exact catalogs define 28 workspace packages,
-49 ordinary harnesses, 1,348 listed cases and 19 normal release binaries.
-The supervisor catalog gains precisely thirteen names: seven readiness and
-six capability-observation cases. Every old case and all thirty ignored
-names remain present. Historical tests, binaries and component runs receive
+49 ordinary harnesses, 1,385 listed cases and 19 normal release binaries.
+The current increment adds 37 ordinary names: 18 supervisor, 9 image,
+6 runtime-inputs and 4 updater cases. These names were read from the actual
+newly compiled harnesses. Every old case and all thirty ignored names remain
+present. Catalog listing is separate from execution. Historical tests, binaries and component runs receive
 no fresh credit.
 
 | Execution group | Required result | Bound |
 | --- | --- | --- |
 | Explicit updater cases | 64 ordinary cases | 60 seconds per exact name |
-| Remaining updater catalog | 427 ordinary cases; 1 ignored | 300 seconds |
-| Other 48 harnesses | 827 ordinary cases; 29 ignored | 300 seconds per harness |
+| Remaining updater catalog | 431 ordinary cases; 1 ignored | 300 seconds |
+| Other 48 harnesses | 860 ordinary cases; 29 ignored | 300 seconds per harness |
 | Normal release builds | 19 fresh binaries | 900 seconds per package batch |
 | Workspace examples | 3 fresh binaries, mains never executed | 900 seconds |
 | Frozen recipe example harness | 9 exact ordinary cases; no ignored cases | 300-second compilation, 60-second execution |
 | Documentation targets | 20 actual library targets, 0 doc cases | 180 seconds per target |
 
-The catalog total is **1,318 ordinary cases and 30 ignored cases**. The nine
+The catalog total is **1,355 ordinary cases and 30 ignored cases**. The nine
 recipe example cases are recorded separately. Each of the three normal
 example binaries and the separate recipe test ELF is joined to its actual
 source metadata and compilation interval. The recipe's exact and ignored
@@ -125,7 +170,8 @@ whole runner retains its **5,400-second deadline**, including final source
 and artifact checks. Missing process-observation support or an incomplete
 child retirement fails the job. The exact source bookend must still match.
 
-The thirteen verifier controls are retained. The runner keeps all nine
+The thirteen previous verifier controls are retained, with two new strict
+USTAR framing controls for fifteen total. The runner keeps all nine
 original controls and adds two for ordinary example/test-ELF locations and
 Cargo hardlink aliases, for eleven total. The alias control covers both
 plain and hyphenated target names: Cargo preserves the public binary name
@@ -149,9 +195,10 @@ The earlier SMS/MMS, MAC and selected-lock corrections remain in the complete
 source. Their old component evidence remains bound to its original source
 and run. The normal Android producer still requires its strict user build,
 unchanged original dependency and neverallow checks, original APEX/linker
-inputs and actual image/runtime acceptance. CP2A sources are not relabeled
-as CP3A; the selected CP3A GSI's missing complete source-equivalence mapping
-is not supplied by these repairs.
+inputs and actual image/runtime acceptance. CP2A sources are not relabeled as CP3A. The official-GSI route preserves the
+original binary system and separately qualifies its vendor; it does not need
+a fabricated full CP3A source-equivalence record. Original libvintf and the
+202604 matrix require the 6.18 kernel family. A 7.0 kernel is not a match.
 
 The user's current application scope is the separate
 [39-app release scope](../current-app-acceptance/RELEASE_SCOPE.md): TextNow,

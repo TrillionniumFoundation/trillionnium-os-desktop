@@ -455,7 +455,7 @@ REQUIRED_FILES = (
     'compat/android/pocket4/runtime-current-source-r1/EXTRA-TARGETS.json',
     'compat/android/pocket4/runtime-current-source-r1/UPDATER-EXACT64.json',
     'compat/android/pocket4/runtime-current-source-r1/SOURCE-CAPSULE.tar.xz',
-    'compat/android/pocket4/runtime-current-source-r1/SOURCE-OVERLAY.json.xz',
+    'compat/android/pocket4/runtime-current-source-r1/SOURCE-OVERLAY.tar.xz',
     'compat/android/pocket4/storage-r36-owner-source-r1/FILES.json',
     'compat/android/pocket4/storage-r36-owner-source-r1/README.md',
     'compat/android/pocket4/storage-r36-owner-source-r1/run_ci.py',
@@ -478,8 +478,8 @@ PARSED_SUFFIXES = {".py", ".sh", ".json", ".xml"}
 BINARY_FILES = {
     'compat/android/pocket4/runtime-current-source-r1/SOURCE-CAPSULE.tar.xz': {
         'bytes': 7696708, 'sha256': '7ab244365184ef670c244b6a0ed75857c6f942897f3fc59c00e6375e76f51816'},
-    'compat/android/pocket4/runtime-current-source-r1/SOURCE-OVERLAY.json.xz': {
-        'bytes': 624640, 'sha256': '37789a01a8d14b5253cc71923c28ca61e8b09813c2b4f4a7bf2a9651ad995b92'},
+    'compat/android/pocket4/runtime-current-source-r1/SOURCE-OVERLAY.tar.xz': {
+        'bytes': 564452, 'sha256': 'c24b66f32ed9dbb4699d0f72d227868aa94cf8c6363b25f9940cc1c6c6502233'},
 }
 
 
