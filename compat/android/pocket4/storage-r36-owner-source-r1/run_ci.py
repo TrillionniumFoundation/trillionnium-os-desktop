@@ -1,4 +1,4 @@
-"""Replay the pinned owner-format source and run its 23 ordinary Python cases.
+"""Replay the pinned owner-format source and run its 35 ordinary Python cases.
 
 No storage entry point is executed. The sole candidate helper is copied from
 this packet into a temporary source tree, which is removed after the tests.
@@ -16,9 +16,9 @@ import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parent
 BASELINE_SHA256 = '91772330fc4f500a6ed0961bf3b0ab5efcab3381a35de647c4470f0919f8fa11'
-CANDIDATE_SHA256 = 'cb129e2de653765fb4e67cc1a1e856336de506d030b80540ba943ea16937ee7f'
-POSTIMAGES = {'contract.json', 'prepare.py', 'rotation_support.py'}
-EXPECTED_TESTS = 23
+CANDIDATE_SHA256 = 'f3ad987024396fe19d33a51be57af57d1b2c6e3b7d97c4e249a49d422f5592fc'
+POSTIMAGES = {'admit.py', 'contract.json', 'prepare.py', 'rotation_support.py'}
+EXPECTED_TESTS = 35
 
 
 def require(ok, detail):
@@ -54,7 +54,7 @@ def verify_packet(expected):
     inventory = json.loads(raw)
     require(type(inventory) is dict and set(inventory) == {'schema', 'files'} and
             inventory['schema'] == 'p4-storage-owner-source-packet-v1' and
-            type(inventory['files']) is dict and len(inventory['files']) == 40,
+            type(inventory['files']) is dict and len(inventory['files']) == 41,
             'complete finite source packet')
     members = {}
     for name, reference in inventory['files'].items():
@@ -119,13 +119,13 @@ def main():
     with tempfile.TemporaryDirectory(prefix='p4-owner-v2-source-') as temporary:
         temporary_path = pathlib.Path(temporary)
         controls.BASELINE = ROOT / 'baseline-r8'
-        controls.CANDIDATE = replay_candidate(members, temporary_path / 'candidate-r36-v2-r1')
+        controls.CANDIDATE = replay_candidate(members, temporary_path / 'candidate-r36-v2-r2')
         suite = unittest.defaultTestLoader.loadTestsFromModule(controls)
-        require(suite.countTestCases() == EXPECTED_TESTS, 'all 23 source cases discovered')
+        require(suite.countTestCases() == EXPECTED_TESTS, 'all 35 source cases discovered')
         result = unittest.TextTestRunner(verbosity=2).run(suite)
         require(result.testsRun == EXPECTED_TESTS and result.wasSuccessful() and not result.skipped and
                 not result.expectedFailures and not result.unexpectedSuccesses,
-                'all 23 source cases executed without failure, skip or expected-failure credit')
+                'all 35 source cases executed without failure, skip or expected-failure credit')
     require(not temporary_path.exists(), 'temporary candidate source tree removed')
     report = {
         'schema': 'p4-r36-owner-source-ci-v1',
@@ -136,6 +136,11 @@ def main():
         'source_members_replayed': 30, 'tests_run': result.testsRun, 'tests_skipped': 0,
         'ordinary_source_checks_passed': True, 'temporary_source_removed': True,
         'unresolved_required_slots': ['owner_acquisition.root_acceptance'],
+        'unresolved_acceptance_semantics': ['original_lock_custody', 'source_review'],
+        'owner_cas_publication_revalidated': False,
+        'original_operation_bodies_in_packet': False,
+        'original_lock_verified': False, 'source_review_verified': False,
+        'owner_acquisition_acceptance_verified': False,
         'device_evidence_revalidated': False, 'owner_cas_root_verified': False,
         'new_storage_admitted': False, 'fresh_full_B_admitted': False,
         'Android_starts': 0, 'production_ready': False,

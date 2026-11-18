@@ -16,7 +16,8 @@ from failed_storage_authority import (OLD_MANIFEST as OLD_STORAGE_SHA,
     OLD_ADMISSION as OLD_ADMISSION_SHA, OLD_NONCE)
 from successor_storage_authority import (DOCUMENTS, qualified_successor_storage,
     IMMEDIATE_PREDECESSOR, OFFLINE_ANCESTOR)
-from owner_acquisition_v2 import validate_storage_owner_v2, FROZEN_R8_NONCE
+from owner_acquisition_v2 import (validate_storage_owner_v2, validate_owner_declaration_v2,
+    read_owner_cas_publication, FROZEN_R8_NONCE)
 
 
 def rotation_schedule(contract):
@@ -36,7 +37,7 @@ def rotation_schedule(contract):
         'admission_sha256': '37d06a61be3bfc74595a57dfb59c9966da919903d0e5793f6b64666030ca57e0',
         'nonce': '07fcf25dedaae64ee1f9fafb4d1ffc052f4f32175544b8d7be05b62abbfdba50'}
     need(contract['schema'] == 'p4-production651-successor-storage-contract-v2' and
-         contract['generation'] == 'e6ac-storage-r8-r36-v2-r1' and
+         contract['generation'] == 'e6ac-storage-r8-r36-v2-r2' and
          encoded(contract['rotation_schedule']) == encoded(expected) and
          encoded([contract['storage_work_seconds'], contract['storage_runtime_max_seconds'],
                   contract['storage_stop_seconds']]) == encoded([144000, 145200, 1200]) and
@@ -343,3 +344,15 @@ def external_consumers_retired(commands, contract):
              'root must independently retire every external recovery consumer before normal owner stop')
         results.append({'unit': unit, 'state': state, 'cgroup_absent': True})
     return results
+
+
+
+def owner_cas_publication_inputs(contract):
+    # Read only the three separately pinned original event files. Never follow
+    # any draft, diff, source, plan or retirement path from their contents.
+    def directory_f9(path):
+        directory = P(path)
+        need(directory.is_absolute() and directory.resolve() == directory,
+             'canonical original CAS directory without a parent alias')
+        return f9(directory.lstat())
+    return read_owner_cas_publication(contract, pin, directory_f9)

@@ -6,6 +6,7 @@ import json
 import os
 import re
 import shutil
+import struct
 import subprocess
 import tempfile
 import zipfile
@@ -117,7 +118,9 @@ def inspect_apk_content(path, tools):
 
 
 _CANDIDATE_SCHEMA = 'pocket4-official-apk-candidate-v1'
+_CROSS_ARCH_SCHEMA = 'pocket4-official-apk-candidate-v2'
 _CANDIDATE_LIMIT = 16 * 1024
+_SHARED_LIBRARY_LIMIT = 16 * 1024 * 1024
 _ABI_ELF = {'armeabi-v7a': (1, 40), 'arm64-v8a': (2, 183),
             'x86': (1, 3), 'x86_64': (2, 62), 'riscv64': (2, 243)}
 
@@ -140,6 +143,44 @@ def _unique_json(pairs):
     return result
 
 
+def _cross_arch_pins(candidate):
+    """A literal reviewed layout, never a filename pattern or loading permission."""
+    values = candidate['cross_arch_shared_libraries']
+    if type(values) is not list or len(values) != 4:
+        raise ValueError('Candidate v2 requires exactly four cross-architecture shared libraries')
+    paths = []
+    for item in values:
+        _fields(item, ('path', 'kind', 'bytes', 'sha256', 'elf_class', 'elf_machine',
+                       'elf_type', 'soname', 'entry_point', 'has_interpreter'), 'Cross-architecture library')
+        path = item['path']
+        if type(path) is not str or len(path.encode('utf-8')) > 256:
+            raise ValueError('Invalid cross-architecture library path')
+        parts = path.split('/')
+        if (len(parts) != 3 or parts[0] != 'lib' or parts[1] not in candidate['native_abis']
+                or not re.fullmatch(r'lib[A-Za-z0-9_.+-]+\.so', parts[2])):
+            raise ValueError('Cross-architecture library requires a literal native-library path')
+        if item['kind'] != 'cross_arch_shared_library' or type(item['elf_type']) is not int or item['elf_type'] != 3:
+            raise ValueError('Cross-architecture payload must be an ET_DYN shared library')
+        if (type(item['bytes']) is not int or not 52 <= item['bytes'] <= _SHARED_LIBRARY_LIMIT
+                or not _sha(item['sha256'])):
+            raise ValueError('Cross-architecture library requires bounded bytes and SHA-256')
+        if (type(item['elf_class']) is not int or type(item['elf_machine']) is not int
+                or (item['elf_class'], item['elf_machine']) not in _ABI_ELF.values()
+                or (item['elf_class'], item['elf_machine']) == _ABI_ELF[parts[1]]):
+            raise ValueError('Cross-architecture library must declare its actual different ELF architecture')
+        if (type(item['entry_point']) is not int
+                or not 0 <= item['entry_point'] < 1 << (32 if item['elf_class'] == 1 else 64)
+                or item['has_interpreter'] is not False):
+            raise ValueError('Cross-architecture shared library requires a bounded entry and no PT_INTERP')
+        if (type(item['soname']) is not str or len(item['soname']) > 128
+                or not re.fullmatch(r'lib[A-Za-z0-9_.+-]+\.so', item['soname'])):
+            raise ValueError('Cross-architecture shared library requires an exact SONAME')
+        paths.append(path)
+    if paths != sorted(set(paths)):
+        raise ValueError('Cross-architecture library paths must be distinct and sorted')
+    return {item['path']: item for item in values}
+
+
 def load_candidate(path, expected_sha256):
     """Read an independently pinned observation, without fetching its URLs."""
     if not _sha(expected_sha256):
@@ -151,11 +192,13 @@ def load_candidate(path, expected_sha256):
     def reject_constant(value):
         raise ValueError('Non-finite candidate JSON number: ' + value)
     candidate = json.loads(raw, object_pairs_hook=_unique_json, parse_constant=reject_constant)
-    _fields(candidate, ('schema', 'package', 'version_name', 'version_code',
-                       'version_code_major', 'min_sdk_version', 'target_sdk_version',
-                       'apk', 'native_abis', 'signer_certificate_sha256', 'source'), 'Candidate')
-    if candidate['schema'] != _CANDIDATE_SCHEMA:
+    if type(candidate) is not dict or candidate.get('schema') not in (_CANDIDATE_SCHEMA, _CROSS_ARCH_SCHEMA):
         raise ValueError('Unsupported candidate schema')
+    cross_arch = candidate['schema'] == _CROSS_ARCH_SCHEMA
+    fields = ('schema', 'package', 'version_name', 'version_code', 'version_code_major',
+              'min_sdk_version', 'target_sdk_version', 'apk', 'native_abis',
+              'signer_certificate_sha256', 'source')
+    _fields(candidate, fields + (('cross_arch_shared_libraries',) if cross_arch else ()), 'Candidate')
     if type(candidate['package']) is not str or not re.fullmatch(
             r'[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+', candidate['package']):
         raise ValueError('Invalid candidate package')
@@ -177,10 +220,17 @@ def load_candidate(path, expected_sha256):
         values = candidate[key]
         if type(values) is not list or not 1 <= len(values) <= 8 or not all(check(v) for v in values) or values != sorted(set(values)):
             raise ValueError('Invalid or duplicate candidate ' + key)
+    if cross_arch:
+        _cross_arch_pins(candidate)
     source = candidate['source']
-    _fields(source, ('apk_url', 'version_metadata_url', 'publisher_certificate_url',
-                    'observed_utc', 'observed_stable_version', 'sha256_kind'), 'Candidate source')
-    for key in ('apk_url', 'version_metadata_url', 'publisher_certificate_url'):
+    source_fields = ('apk_url', 'version_metadata_url', 'observed_utc', 'observed_stable_version', 'sha256_kind')
+    signer_url = 'signer_reference_url' if cross_arch else 'publisher_certificate_url'
+    _fields(source, source_fields + ((signer_url, 'signer_reference_kind', 'version_metadata_kind')
+                                    if cross_arch else (signer_url,)), 'Candidate source')
+    if cross_arch and (source['signer_reference_kind'] != 'public_historical_candidate'
+                       or source['version_metadata_kind'] != 'signed_apk_android_manifest'):
+        raise ValueError('Candidate v2 must distinguish its historical signer pin and signed-APK version metadata')
+    for key in ('apk_url', 'version_metadata_url', signer_url):
         if type(source[key]) is not str or len(source[key]) > 2048:
             raise ValueError('Invalid candidate source URL')
         url = urlsplit(source[key])
@@ -191,7 +241,8 @@ def load_candidate(path, expected_sha256):
     observed = datetime.fromisoformat(source['observed_utc'])
     if observed.utcoffset() is None or observed.utcoffset().total_seconds() != 0:
         raise ValueError('Candidate observation must have a UTC timestamp')
-    if source['observed_stable_version'] != version or source['sha256_kind'] != 'observed_whole_file_digest_not_publisher_published_checksum':
+    if source['observed_stable_version'] != version or source['sha256_kind'] not in (
+            'observed_whole_file_digest_not_publisher_published_checksum', 'observed_whole_file_digest'):
         raise ValueError('Candidate source observation differs from its pinned version or digest kind')
     return candidate, {'path': str(path.absolute()), 'bytes': len(raw), 'sha256': expected_sha256}
 
@@ -208,6 +259,80 @@ def _match_candidate(result, candidate):
         raise ValueError('Verified APK long version differs from candidate')
     if result['split_name'] is not None or result['uses_splits'] or result['config_for_split'] is not None or result['manifest_split_fields']:
         raise ValueError('Candidate input requires a standalone base APK without split declarations')
+
+
+def _shared_elf_metadata(body):
+    """Read bounded ELF load/dynamic structure without loading or executing it."""
+    if (not 52 <= len(body) <= _SHARED_LIBRARY_LIMIT or body[:4] != b'\x7fELF'
+            or body[4] not in (1, 2) or body[5:7] != b'\x01\x01'):
+        raise ValueError('Invalid cross-architecture ELF encoding')
+    elf_class = body[4]
+    header_size, program_size, dynamic_size = (64, 56, 16) if elf_class == 2 else (52, 32, 8)
+    if len(body) < header_size:
+        raise ValueError('Truncated cross-architecture ELF header')
+    header = struct.unpack_from('<HHIQQQIHHHHHH' if elf_class == 2 else '<HHIIIIIHHHHHH', body, 16)
+    elf_type, machine, version, entry, phoff, _, _, ehsize, phsize, phnum, _, _, _ = header
+    if (elf_type != 3 or version != 1 or ehsize != header_size or phsize != program_size
+            or not 1 <= phnum <= 128 or phoff < header_size or phoff + phnum * phsize > len(body)):
+        raise ValueError('Invalid cross-architecture ET_DYN program table')
+    programs = []
+    for index in range(phnum):
+        row = struct.unpack_from('<IIQQQQQQ' if elf_class == 2 else '<IIIIIIII', body, phoff + index * phsize)
+        if elf_class == 2:
+            kind, flags, offset, address, _, file_size, memory_size, _ = row
+        else:
+            kind, offset, address, _, file_size, memory_size, flags, _ = row
+        if offset + file_size > len(body) or (kind == 1 and file_size > memory_size):
+            raise ValueError('Cross-architecture ELF segment exceeds its file')
+        if kind == 3:
+            raise ValueError('Cross-architecture shared library must have no PT_INTERP')
+        programs.append((kind, flags, offset, address, file_size))
+    loads = [p for p in programs if p[0] == 1]
+    if not loads or (entry and not any(p[1] & 1 and p[3] <= entry < p[3] + p[4] for p in loads)):
+        raise ValueError('Cross-architecture ELF entry is outside executable file-backed loads')
+
+    def file_offset(address, size):
+        matches = [p[2] + address - p[3] for p in loads
+                   if p[3] <= address and address + size <= p[3] + p[4]]
+        if len(matches) != 1:
+            raise ValueError('Cross-architecture dynamic pointer lacks one file-backed load')
+        return matches[0]
+
+    dynamic = [p for p in programs if p[0] == 2]
+    if (len(dynamic) != 1 or not 0 < dynamic[0][4] <= 4096 * dynamic_size
+            or dynamic[0][4] % dynamic_size or file_offset(dynamic[0][3], dynamic[0][4]) != dynamic[0][2]):
+        raise ValueError('Invalid cross-architecture dynamic segment')
+    tags, needed, terminated = {}, [], False
+    start, size = dynamic[0][2], dynamic[0][4]
+    for position in range(start, start + size, dynamic_size):
+        tag, value = struct.unpack_from('<qQ' if elf_class == 2 else '<iI', body, position)
+        if tag == 0:
+            terminated = True
+            break
+        if tag == 1:
+            needed.append(value)
+        elif tag in (5, 10, 14, 30, 0x6ffffffb):
+            if tag in tags:
+                raise ValueError('Duplicate cross-architecture dynamic identity tag')
+            tags[tag] = value
+    if (not terminated or not {5, 10, 14} <= set(tags) or not 0 < tags[10] <= 1024 * 1024
+            or len(needed) > 64 or tags.get(0x6ffffffb, 0) & 0x08000000):
+        raise ValueError('Cross-architecture shared library needs bounded strings, SONAME and no DF_1_PIE')
+    start = file_offset(tags[5], tags[10])
+    strings = body[start:start + tags[10]]
+
+    def dynamic_string(offset):
+        if offset >= len(strings):
+            raise ValueError('Cross-architecture dynamic string is out of bounds')
+        end = strings.find(b'\0', offset)
+        if end < offset or end - offset > 256:
+            raise ValueError('Cross-architecture dynamic string is not bounded and terminated')
+        return strings[offset:end].decode('utf-8', 'strict')
+
+    return {'elf_class': elf_class, 'elf_machine': machine, 'elf_type': elf_type,
+            'soname': dynamic_string(tags[14]), 'entry_point': entry, 'has_interpreter': False,
+            'dynamic_needed': [dynamic_string(offset) for offset in needed],
+            'program_header_count': phnum}
 
 
 def _candidate_binary_metadata(path, result, candidate):
@@ -227,6 +352,8 @@ def _candidate_binary_metadata(path, result, candidate):
             if int(raw[key], 0) != candidate[key]:
                 raise ValueError('Binary manifest differs from candidate ' + key)
         libraries = []
+        pins = _cross_arch_pins(candidate) if candidate['schema'] == _CROSS_ARCH_SCHEMA else {}
+        observed_cross_arch = []
         for name in names:
             if not name.startswith('lib/') or not name.endswith('.so'):
                 continue
@@ -236,13 +363,37 @@ def _candidate_binary_metadata(path, result, candidate):
             with apk.open(name) as stream:
                 header = stream.read(20)
             elf_class, machine = _ABI_ELF[parts[1]]
+            if name in pins:
+                pin = pins[name]
+                if apk.getinfo(name).file_size != pin['bytes']:
+                    raise ValueError('Cross-architecture library differs from its pinned bytes')
+                with apk.open(name) as stream:
+                    body = stream.read(pin['bytes'] + 1)
+                if len(body) != pin['bytes'] or hashlib.sha256(body).hexdigest() != pin['sha256']:
+                    raise ValueError('Cross-architecture library differs from its pinned SHA-256')
+                actual = _shared_elf_metadata(body)
+                for key in ('elf_class', 'elf_machine', 'elf_type', 'soname', 'entry_point', 'has_interpreter'):
+                    if actual[key] != pin[key]:
+                        raise ValueError('Cross-architecture library differs from its pinned ' + key)
+                if (actual['elf_class'], actual['elf_machine']) == (elf_class, machine):
+                    raise ValueError('Pinned cross-architecture library actually matches the directory ABI')
+                observed_cross_arch.append({**pin, **actual})
+                libraries.append({'path': name, 'elf_class': actual['elf_class'],
+                                  'elf_machine': actual['elf_machine'], 'kind': pin['kind']})
+                continue
             if len(header) != 20 or header[:4] != b'\x7fELF' or header[4] != elf_class or header[5] != 1 or int.from_bytes(header[18:20], 'little') != machine:
                 raise ValueError('Native ELF header differs from candidate ABI')
             libraries.append({'path': name, 'elf_class': elf_class, 'elf_machine': machine})
         if sorted({item['path'].split('/')[1] for item in libraries}) != candidate['native_abis']:
             raise ValueError('Candidate native libraries are missing')
-    return {'min_sdk_version': candidate['min_sdk_version'],
-            'target_sdk_version': candidate['target_sdk_version'], 'native_libraries': libraries}
+        if {item['path'] for item in observed_cross_arch} != set(pins):
+            raise ValueError('Candidate cross-architecture library set is incomplete')
+    result = {'min_sdk_version': candidate['min_sdk_version'],
+              'target_sdk_version': candidate['target_sdk_version'], 'native_libraries': libraries}
+    if candidate['schema'] == _CROSS_ARCH_SCHEMA:
+        result.update(cross_arch_shared_libraries=sorted(observed_cross_arch, key=lambda item: item['path']),
+                      native_compatibility_qualified=False, dispatch_runtime_observed=False)
+    return result
 
 
 def verify_candidate(path, tools, candidate_path, expected_sha256, receipt_path):

@@ -391,6 +391,8 @@ REQUIRED_FILES = (
     "compat/android/pocket4/current-app-acceptance/release_scope.py",
     "compat/android/pocket4/current-app-acceptance/test_release_scope.py",
     "compat/android/pocket4/current-app-acceptance/firefox-candidate.json",
+    "compat/android/pocket4/current-app-acceptance/szzc-candidate.json",
+    "compat/android/pocket4/current-app-acceptance/fcitx-candidate.json",
     "compat/android/pocket4/current-app-acceptance/business/MEMBERS.json",
     "compat/android/pocket4/current-app-acceptance/business/README.md",
     "compat/android/pocket4/current-app-acceptance/business/host-prepare-current-ihg.py",
@@ -453,6 +455,7 @@ REQUIRED_FILES = (
     'compat/android/pocket4/storage-r36-owner-source-r1/CANDIDATE-STATUS.json',
     'compat/android/pocket4/storage-r36-owner-source-r1/baseline-r8/SOURCE-MANIFEST.json',
     'compat/android/pocket4/storage-r36-owner-source-r1/postimages/SOURCE-MANIFEST.json',
+    'compat/android/pocket4/storage-r36-owner-source-r1/postimages/admit.py',
 )
 EXECUTABLE_FILES = (
     "support/android/build_asterinas_abi.sh",

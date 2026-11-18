@@ -93,10 +93,10 @@ host, archive_sha, manifest_sha, proof_map_sha = sys.argv[1:]
 for expected_sha in (archive_sha, manifest_sha, proof_map_sha):
     sha(expected_sha)
 assert os.getresuid() == os.getresgid() == (0, 0, 0)
-archives = {'pocket4': '/home/alex/work/p4-production651-nbd-storage-e6ac-r8-r36-v2-r1.tar.xz',
-            'desktop': '/data/p4-production651-nbd-storage-e6ac-r8-r36-v2-r1.tar.xz'}
-targets = {'pocket4': '/home/alex/work/p4-remote-build-storage-e6ac-r1/production400-storage-source-r8-r36-v2-r1',
-           'desktop': '/data/p4-production651-nbd-storage-source-e6ac-r8-r36-v2-r1'}
+archives = {'pocket4': '/home/alex/work/p4-production651-nbd-storage-e6ac-r8-r36-v2-r2.tar.xz',
+            'desktop': '/data/p4-production651-nbd-storage-e6ac-r8-r36-v2-r2.tar.xz'}
+targets = {'pocket4': '/home/alex/work/p4-remote-build-storage-e6ac-r1/production400-storage-source-r8-r36-v2-r2',
+           'desktop': '/data/p4-production651-nbd-storage-source-e6ac-r8-r36-v2-r2'}
 bases = {'pocket4': '/home/alex/work', 'desktop': '/data'}
 labels = {'desktop.result', 'desktop.retirement', 'desktop.root', 'offline.inputs', 'offline.result',
           'offline.root', 'server.ready', 'server.result', 'server.retirement', 'server.root',
@@ -123,7 +123,7 @@ owner_validator = {'__name__': 'sealed_pure_owner_acquisition_v2'}
 exec(compile(entries['owner_acquisition_v2.py'], 'owner_acquisition_v2.py', 'exec'), owner_validator)
 owner_validator['validate_storage_owner_v2'](contract)  # Before any target/proof writes.
 assert contract['schema'] == 'p4-production651-successor-storage-contract-v2'
-assert contract['generation'] == 'e6ac-storage-r8-r36-v2-r1'
+assert contract['generation'] == 'e6ac-storage-r8-r36-v2-r2'
 sha(contract['nonce'])
 assert type(contract['owner_acquisition']) is dict and set(contract['owner_acquisition']) == {'owner', 'record', 'current', 'root_acceptance'}
 assert all(type(value) is dict for value in contract['owner_acquisition'].values()), 'actual independent owner slots required before seal writes'
@@ -131,12 +131,12 @@ assert contract['p4_source'] == targets['pocket4'] and contract['desktop_source'
 assert type(contract['transition_originals']) is dict and set(contract['transition_originals']) == labels
 assert pathlib.Path('/proc/sys/kernel/random/boot_id').read_text().strip() == contract['hosts'][host]['boot']
 
-proof_map_path = pathlib.Path(bases[host]) / 'p4-storage-r8-r36-v2-r1-proof-install-map-e6ac-r1.json'
+proof_map_path = pathlib.Path(bases[host]) / 'p4-storage-r8-r36-v2-r2-proof-install-map-e6ac-r1.json'
 proof_map_ref, proof_map_raw = read_fixed(proof_map_path, 256 * 1024, owner_mode=(1000, 1000, 0o600))
 assert proof_map_ref['sha256'] == proof_map_sha
 proof_map = json.loads(proof_map_raw)
 assert type(proof_map) is dict and set(proof_map) == {'schema', 'host', 'new_storage_nonce', 'records'}
-assert proof_map['schema'] == 'p4-storage-r8-r36-v2-r1-proof-install-map-v1'
+assert proof_map['schema'] == 'p4-storage-r8-r36-v2-r2-proof-install-map-v1'
 assert proof_map['host'] == host and proof_map['new_storage_nonce'] == contract['nonce']
 assert type(proof_map['records']) is dict and set(proof_map['records']) == labels
 proof_bodies, proof_records, ordinary_refs = {}, {}, [archive_ref, proof_map_ref]
@@ -148,7 +148,7 @@ for label in sorted(labels):
     assert record['original_host'] == wanted['host'] and wanted['host'] in ('pocket4', 'desktop')
     original, incoming = full_ref(record['original']), full_ref(record['incoming'])
     assert original == full_ref(wanted['original']) and 0 < original['bytes'] <= 2 * 1024**2
-    incoming_path = pathlib.Path(bases[host]) / ('p4-storage-r8-r36-v2-r1-proof-incoming-e6ac-r1-' + label + '.json')
+    incoming_path = pathlib.Path(bases[host]) / ('p4-storage-r8-r36-v2-r2-proof-incoming-e6ac-r1-' + label + '.json')
     assert incoming['path'] == str(incoming_path)
     assert incoming['identity'][3:6] == [1000, 1000, 1] and stat.S_IMODE(incoming['identity'][2]) == 0o600
     assert incoming['identity'][:2] != original['identity'][:2]

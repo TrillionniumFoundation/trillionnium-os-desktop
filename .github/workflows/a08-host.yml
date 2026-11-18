@@ -64,7 +64,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 -I -B compat/android/pocket4/storage-r36-owner-source-r1/run_ci.py \
-            --inventory-sha256 e958f8520dafdc7ba08cbac20b4d441466e47d8041e2c889f56cd6ff1672b988 \
+            --inventory-sha256 515c250022f96542437fb7e42afa6ee3a9fddd9a7a8ae6b7851a015c5327b5aa \
             --out "$RUNNER_TEMP/a08/storage-owner-r36-source.json" \
             2>&1 | tee "$RUNNER_TEMP/a08/storage-owner-r36-source.log"
       - name: Install Java, JNI and media host test tools
