@@ -132,6 +132,23 @@ class CandidateControls(unittest.TestCase):
             self.run_gate(hashlib.sha256(raw).hexdigest())
         self.verify_mock.assert_not_called()
 
+    def test_target_sdk_below_minimum_is_a_compatibility_level_not_an_upper_bound(self):
+        self.candidate.update(min_sdk_version=37, target_sdk_version=30)
+        candidate, _ = gate.load_candidate(self.candidate_path, self.write_candidate())
+        self.assertEqual((candidate['min_sdk_version'], candidate['target_sdk_version']),
+                         (37, 30))
+        self.verify_mock.assert_not_called()
+        for key, value in [('min_sdk_version', 38), ('min_sdk_version', 0),
+                           ('target_sdk_version', 0), ('target_sdk_version', 1001),
+                           ('target_sdk_version', True)]:
+            with self.subTest(field=key, value=value):
+                original = self.candidate[key]
+                self.candidate[key] = value
+                with self.assertRaisesRegex(ValueError, 'Invalid candidate'):
+                    gate.load_candidate(self.candidate_path, self.write_candidate())
+                self.candidate[key] = original
+        self.assertFalse(self.receipt.exists())
+
     def test_existing_receipt_and_changed_source_are_rejected(self):
         self.receipt.write_bytes(b'original receipt')
         self.assert_no_receipt_if_existing()

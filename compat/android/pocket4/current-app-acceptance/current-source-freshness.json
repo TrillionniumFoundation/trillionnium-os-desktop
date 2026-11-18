@@ -1,0 +1,1278 @@
+{
+  "schema": "pocket4-current-input-freshness-observations-v1",
+  "observed_utc": "2026-11-18T13:47:12.402210+00:00",
+  "required_non_system_count": 29,
+  "required_system_count": 10,
+  "excluded_packages": [
+    "com.enflick.android.TextNow",
+    "com.pinger.textfree",
+    "com.ubercab"
+  ],
+  "selected_current_source_input_count": 16,
+  "remaining_current_source_input_count": 13,
+  "scope": "Source/freshness observations only; never runtime/ABI/business production acceptance. Acquisition continues.",
+  "rows": [
+    {
+      "package": "com.Hyatt.hyt",
+      "name": "Hyatt",
+      "scope_kind": "third_party",
+      "complete_inputs": [],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_google_play_US_public_listing",
+          "version": "26.11.1",
+          "url": "https://play.google.com/store/apps/details?id=com.Hyatt.hyt&hl=en&gl=US",
+          "body_sha256": "42a1963ce06641e4d7dc7396b460fd52b8dad9db641f5044738852e168c4e26f",
+          "observed_utc": "2026-11-18T12:52:41.420550+00:00",
+          "field": "AF_initDataCallback ds:5 data[1][2][140][0][0][0]"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "input_blocker": "complete_current_input_missing",
+      "current_acquired_version": null,
+      "source_input_selected": false,
+      "selected_input_version": null
+    },
+    {
+      "package": "com.MobileTicket",
+      "name": "12306",
+      "scope_kind": "third_party",
+      "complete_inputs": [
+        {
+          "source_kind": "publisher_direct",
+          "version": "5.9.4.5",
+          "sha256": "c7e56101e5753002bba220ce40d07b00d4bc822e1eeef12bbe36ec9e2f8e272d",
+          "archive": "/workspace/scratch/162b3b07f778/Pocket4_Current_App_Inputs/Pocket4_Current_Apps_Travel.zip",
+          "receipt_member": "packages/com.MobileTicket/source-receipt.json",
+          "source_observation": {
+            "apk_url": "https://dynamic.12306.cn/otn/appdownload/12306v5.9.4.5.apk",
+            "observed_stable_version": "5.9.4.5",
+            "observed_utc": "2026-11-18T09:52:38.104192+00:00",
+            "sha256_kind": "observed_whole_file_digest",
+            "signer_reference_kind": "public_historical_candidate",
+            "signer_reference_url": "https://raw.githubusercontent.com/TrillionniumFoundation/trillionnium-os-desktop/6fd7efdcfa27da2015b7eb5b103dc399491aa18f/compat/android/pocket4/continuation-20261109-e3df/application-candidates/CANDIDATE42.json",
+            "version_metadata_kind": "signed_apk_android_manifest",
+            "version_metadata_url": "https://dynamic.12306.cn/otn/appdownload/12306v5.9.4.5.apk"
+          },
+          "signature_verified_by_parent": true,
+          "role": "superseded_retained_input_pending_parent_cleanup",
+          "superseded_by": "5.9.6.8"
+        },
+        {
+          "source_kind": "public_mirror_hebwy",
+          "version": "5.9.6.8",
+          "bytes": 179817557,
+          "sha256": "f817658541a12bc4405b47ff68d457dca5462ab0bc2ad4471d9021485a0fe83a",
+          "path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/rail12306-5.9.6.8-hebwy.apk",
+          "source_page": "https://www.hebwy.net/apps/posts/2179.html",
+          "download_url": "https://s3.hebwy.net/apps/com.MobileTicket_5.9.6.8.apk",
+          "acquisition_receipt": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/rail12306-5.9.6.8-hebwy.complete.receipt.json",
+          "all_outer_zip_members_crc_verified": true,
+          "abi_directories": [
+            "arm64-v8a"
+          ],
+          "signature_verified_by_parent": true,
+          "parent_source_receipt": "/workspace/scratch/162b3b07f778/p4-split-apk-implementation/actual/rail12306-source-receipt.json"
+        }
+      ],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_xiaomi_app_store",
+          "version": "5.9.6.8",
+          "listed_updated_date": "2026-07-15",
+          "url": "https://m.app.mi.com/details?id=com.MobileTicket",
+          "body_sha256": "d28097682bf5270910d27155a7c11572d18e472acd30320ada95f6dd91492a54",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/rail12306-mi-freshness.body",
+          "observed_utc": "2026-11-18T12:53:54.738618+00:00"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "difference": "Publisher dynamic current API still returns 5.9.4.5; official Xiaomi lists 5.9.6.8. Complete independent mirror 5.9.6.8 passed parent SDK37 signature and V4 source verification, including all outer ZIP CRCs and complete bounded 7z 0.4 decoded CRC/hash. Selected new input replaces 5.9.4.5. ARM32/x64 ELF source payloads are not ARM64 witnesses; no runtime credit.",
+      "input_blocker": null,
+      "current_acquired_version": "5.9.6.8",
+      "source_input_selected": true,
+      "selected_input_version": "5.9.6.8"
+    },
+    {
+      "package": "com.amazon.mShop.android.shopping",
+      "name": "Amazon",
+      "scope_kind": "third_party",
+      "complete_inputs": [
+        {
+          "source_kind": "public_mirror_apkhouse",
+          "version": "32.20.2.100",
+          "container": {
+            "bytes": 176908256,
+            "f9": [
+              27,
+              1223683,
+              33188,
+              1000,
+              1000,
+              1,
+              176908256,
+              1795005150623048229,
+              1795005151659037204
+            ],
+            "path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/amazon-32.20.2.100-arm64-apkhouse.apks",
+            "sha256": "59049ad7032e01afc42da13d4340d37d53638f7729ad5e9d019373ba7c577853"
+          },
+          "apks": [
+            {
+              "filename": "base.apk",
+              "split_name": null,
+              "bytes": 110021789,
+              "sha256": "ad61ce0f32bbe204296c07aa6957ce7492b62563c8617ba8c3c7bc2fecb4d740",
+              "signature_verified": true
+            },
+            {
+              "filename": "split_config.arm64_v8a.apk",
+              "split_name": "config.arm64_v8a",
+              "bytes": 62675156,
+              "sha256": "c4a7bbd17204d073fa8964a2d62ef86276bdfb610d2fd06c0abc10546161fe5a",
+              "signature_verified": true
+            },
+            {
+              "filename": "split_config.xxhdpi.apk",
+              "split_name": "config.xxhdpi",
+              "bytes": 4210859,
+              "sha256": "17fef5dc925bcaa588870848b228f5cffff0b81038137bd84e34f2dcbba64ad9",
+              "signature_verified": true
+            }
+          ],
+          "source_page": "https://apk.house/amazon-shopping",
+          "parent_source_receipt": "/workspace/scratch/162b3b07f778/p4-split-apk-implementation/actual/amazon-set-source-receipt.json",
+          "signature_verified_by_parent": true,
+          "manifest_dependency_closure_verified": true
+        }
+      ],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_google_play_US_public_listing",
+          "version": "32.19.0.100",
+          "url": "https://play.google.com/store/apps/details?id=com.amazon.mShop.android.shopping&hl=en&gl=US",
+          "body_sha256": "1651175d2f68d3010ab389a2b577bb82ca73cea740b2cd708006a3a2846fe4c5",
+          "observed_utc": "2026-11-18T12:52:41.421788+00:00",
+          "field": "AF_initDataCallback ds:5 data[1][2][140][0][0][0]"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "difference": "Official US public Play listing 32.19.0.100; independently acquired and publisher-signer-verified complete ARM64 bundle is newer 32.20.2.100. Preserve listing/channel difference; final candidate selected by parent is 32.20.2.100.",
+      "input_blocker": null,
+      "current_acquired_version": "32.20.2.100",
+      "source_input_selected": true,
+      "selected_input_version": "32.20.2.100"
+    },
+    {
+      "package": "com.bestbuy.android",
+      "name": "Best Buy",
+      "scope_kind": "third_party",
+      "complete_inputs": [],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_google_play_US_public_listing",
+          "version": "26.11.10",
+          "url": "https://play.google.com/store/apps/details?id=com.bestbuy.android&hl=en&gl=US",
+          "body_sha256": "31979e8f06240ea9e291e7f83eb1076fb0f086d02aa3c427b3e16c6fa759fedd",
+          "observed_utc": "2026-11-18T12:52:41.422702+00:00",
+          "field": "AF_initDataCallback ds:5 data[1][2][140][0][0][0]"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "input_blocker": "complete_current_input_missing",
+      "current_acquired_version": null,
+      "source_input_selected": false,
+      "selected_input_version": null
+    },
+    {
+      "package": "com.ehi.national.mobile",
+      "name": "National",
+      "scope_kind": "third_party",
+      "complete_inputs": [],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_google_play_US_public_listing",
+          "version": "6.16.0.9403",
+          "url": "https://play.google.com/store/apps/details?id=com.ehi.national.mobile&hl=en&gl=US",
+          "body_sha256": "2c4c346ca908f85c6d1126009badb7f5d057b91c46bb43dd5e9a8f22f4fad489",
+          "observed_utc": "2026-11-18T12:52:46.556101+00:00",
+          "field": "AF_initDataCallback ds:5 data[1][2][140][0][0][0]"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "input_blocker": "complete_current_input_missing",
+      "current_acquired_version": null,
+      "source_input_selected": false,
+      "selected_input_version": null
+    },
+    {
+      "package": "com.google.android.gms",
+      "name": "Google Play services / installed compatibility provider",
+      "scope_kind": "platform_service",
+      "complete_inputs": [
+        {
+          "source_kind": "publisher_direct",
+          "version": "0.3.18.252432",
+          "sha256": "1094fa60ace2367ac52bd08d1bd4f33fa8144ba930e355121b28234b8ebbf382",
+          "archive": "/workspace/scratch/162b3b07f778/Pocket4_Current_App_Inputs/Pocket4_Current_Apps_microG.zip",
+          "receipt_member": "evidence/final-current-inputs/microg-current-source-receipt.json",
+          "source_observation": {
+            "apk_url": "https://github.com/microg/GmsCore/releases/download/v0.3.18.252432/com.google.android.gms-252432036.apk",
+            "observed_stable_version": "0.3.18.252432",
+            "observed_utc": "2026-11-18T10:54:13.412966+00:00",
+            "sha256_kind": "observed_whole_file_digest",
+            "signer_reference_kind": "public_historical_candidate",
+            "signer_reference_url": "https://raw.githubusercontent.com/TrillionniumFoundation/trillionnium-os-desktop/6fd7efdcfa27da2015b7eb5b103dc399491aa18f/compat/android/pocket4/continuation-20261109-e3df/application-candidates/CANDIDATE42.json",
+            "version_metadata_kind": "signed_apk_android_manifest",
+            "version_metadata_url": "https://github.com/microg/GmsCore/releases/download/v0.3.18.252432/com.google.android.gms-252432036.apk"
+          },
+          "signature_verified_by_parent": true,
+          "role": "previously_retained_input"
+        }
+      ],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "publisher_stable_release_metadata",
+          "version": "0.3.18.252432",
+          "url": "https://api.github.com/repos/microg/GmsCore/releases/latest",
+          "body_sha256": "12c3409619aa4e892f296e4869df8c66b51a36b45b8d37a50e7ab024e1133cb9",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/microg-publisher-currentversion.body",
+          "observed_utc": "2026-11-18T12:52:46.679813+00:00"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "input_blocker": null,
+      "current_acquired_version": "0.3.18.252432",
+      "source_input_selected": true,
+      "selected_input_version": "0.3.18.252432"
+    },
+    {
+      "package": "com.hertz.android.digital",
+      "name": "Hertz",
+      "scope_kind": "third_party",
+      "complete_inputs": [],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_google_play_US_public_listing",
+          "version": "5.8.0",
+          "url": "https://play.google.com/store/apps/details?id=com.hertz.android.digital&hl=en&gl=US",
+          "body_sha256": "00d18efd451682e45df894ab460118906fd902e469fb516f8d27b491839be0bb",
+          "observed_utc": "2026-11-18T12:52:41.423226+00:00",
+          "field": "AF_initDataCallback ds:5 data[1][2][140][0][0][0]"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "input_blocker": "complete_current_input_missing",
+      "current_acquired_version": null,
+      "source_input_selected": false,
+      "selected_input_version": null
+    },
+    {
+      "package": "com.hilton.android.hhonors",
+      "name": "Hilton",
+      "scope_kind": "third_party",
+      "complete_inputs": [],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_google_play_US_public_listing",
+          "version": "2026.11.3",
+          "url": "https://play.google.com/store/apps/details?id=com.hilton.android.hhonors&hl=en&gl=US",
+          "body_sha256": "a011e8a810899e54d2ee375f0772f4f38a6b9c97b46d7bf6164bf0bfb2359201",
+          "observed_utc": "2026-11-18T12:52:41.424820+00:00",
+          "field": "AF_initDataCallback ds:5 data[1][2][140][0][0][0]"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "input_blocker": "complete_current_input_missing",
+      "current_acquired_version": null,
+      "source_input_selected": false,
+      "selected_input_version": null
+    },
+    {
+      "package": "com.ihg.apps.android",
+      "name": "IHG",
+      "scope_kind": "third_party",
+      "complete_inputs": [],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_google_play_US_public_listing",
+          "version": "5.111.1",
+          "url": "https://play.google.com/store/apps/details?id=com.ihg.apps.android&hl=en&gl=US",
+          "body_sha256": "3a3d2bc6afdfd682a1e9609cd4093ddbca7514481dd7a9bd3aae75649e4c7fc9",
+          "observed_utc": "2026-11-18T12:52:46.615710+00:00",
+          "field": "AF_initDataCallback ds:5 data[1][2][140][0][0][0]"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "input_blocker": "complete_current_input_missing",
+      "current_acquired_version": null,
+      "source_input_selected": false,
+      "selected_input_version": null
+    },
+    {
+      "package": "com.jingdong.app.mall",
+      "name": "JD",
+      "scope_kind": "third_party",
+      "complete_inputs": [
+        {
+          "source_kind": "independent_mirror_360",
+          "version": "16.1.50",
+          "bytes": 85156480,
+          "sha256": "6c1d16cd0314a26f6761fe5d054978995c217a3cb9594047306a0f8d64c686c7",
+          "path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/jd-16.1.50-360.apk",
+          "source_page": "https://m.app.so.com/detail/index?pname=com.jingdong.app.mall&id=1588",
+          "download_url": "https://s.shouji.qihucdn.com/261021/90350fe19e2ff45473a178450d435a73/com.jingdong.app.mall_102918.apk?en=curpage%3Dopenbox_wap_detail%26exp%3D1795608550%26from%3Dopenbox_mintf_getAppInfoByIds%26m2%3D%26ts%3D1795003750%26tok%3Dcc6f6b8548cbc0028cb77e4df2c0efeb%26v%3D%26f%3Dz.apk",
+          "acquisition_receipt": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/jd-16.1.50-360.complete.receipt.json",
+          "all_outer_zip_members_crc_verified": null,
+          "abi_directories": [
+            "arm64-v8a"
+          ],
+          "signature_verified_by_parent": true,
+          "parent_source_receipt": "/workspace/scratch/162b3b07f778/p4-split-apk-implementation/actual/jd-source-receipt.json"
+        }
+      ],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "current_store_download_verified_signed_manifest",
+          "version": "16.1.50",
+          "source_page": "https://m.app.so.com/detail/index?pname=com.jingdong.app.mall&id=1588",
+          "sha256": "6c1d16cd0314a26f6761fe5d054978995c217a3cb9594047306a0f8d64c686c7"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "input_blocker": null,
+      "current_acquired_version": "16.1.50",
+      "source_input_selected": true,
+      "selected_input_version": "16.1.50"
+    },
+    {
+      "package": "com.lianjia.beike",
+      "name": "Beike",
+      "scope_kind": "third_party",
+      "complete_inputs": [
+        {
+          "source_kind": "publisher_direct",
+          "version": "3.06.71",
+          "sha256": "6984af4bbeda2818ad0a35183dd59af798eceebb9e441ef869b32dcc5095f728",
+          "archive": "/workspace/scratch/162b3b07f778/Pocket4_Current_App_Inputs/Pocket4_Current_Apps_CEAir_Beike.zip",
+          "receipt_member": "packages/com.lianjia.beike/source-receipt.json",
+          "source_observation": {
+            "apk_url": "https://file.ljcdn.com/app-packages/shell/channel/8f20537e/Android_ke_m.apk",
+            "observed_stable_version": "3.06.71",
+            "observed_utc": "2026-11-18T09:48:31.591702+00:00",
+            "sha256_kind": "observed_whole_file_digest",
+            "signer_reference_kind": "public_historical_candidate",
+            "signer_reference_url": "https://raw.githubusercontent.com/TrillionniumFoundation/trillionnium-os-desktop/6fd7efdcfa27da2015b7eb5b103dc399491aa18f/compat/android/pocket4/continuation-20261109-e3df/application-candidates/CANDIDATE42.json",
+            "version_metadata_kind": "signed_apk_android_manifest",
+            "version_metadata_url": "https://file.ljcdn.com/app-packages/shell/channel/8f20537e/Android_ke_m.apk"
+          },
+          "signature_verified_by_parent": true,
+          "role": "previously_retained_input"
+        }
+      ],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_xiaomi_app_store",
+          "version": "3.06.71",
+          "listed_updated_date": "2026-11-12",
+          "url": "https://m.app.mi.com/details?id=com.lianjia.beike",
+          "body_sha256": "f56f34cd64c04d2ce89164e3f18538afebd53fb7f332c2420746a31713692e06",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/beike-mi-freshness.body",
+          "observed_utc": "2026-11-18T12:53:54.736757+00:00"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "input_blocker": null,
+      "current_acquired_version": "3.06.71",
+      "source_input_selected": true,
+      "selected_input_version": "3.06.71"
+    },
+    {
+      "package": "com.marriott.mrt",
+      "name": "Marriott",
+      "scope_kind": "third_party",
+      "complete_inputs": [],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_google_play_US_public_listing",
+          "version": "10.82.0",
+          "url": "https://play.google.com/store/apps/details?id=com.marriott.mrt&hl=en&gl=US",
+          "body_sha256": "747dadee121ffd32b7b8e137a9f67d6aa7ec3dc4244d7fb9ad3856c973a63fe3",
+          "observed_utc": "2026-11-18T12:52:41.426473+00:00",
+          "field": "AF_initDataCallback ds:5 data[1][2][140][0][0][0]"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "rejected_channel_inputs": [
+        {
+          "version": "11.15.0",
+          "version_code": 469,
+          "source_page": "https://m.app.so.com/detail/index?id=384958",
+          "bytes": 242613456,
+          "sha256": "fcdd1e67d5483e46387a0dc2b358c86dd75edf283005e5ee0dd305fda635799e",
+          "reason": "CN variant code469 is below installed US671 and current US680; no channel migration or downgrade is authorized; display version is not channel equivalence.",
+          "body_removed": true,
+          "signature_verified": false,
+          "rejection_record_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/marriott-cn-channel-rejection.json",
+          "rejection_record_sha256": "7e8166240bde3db8d6c32db26f330b7759bc919d6689d04323ac204afdeabe7b"
+        }
+      ],
+      "difference": "US Play current 10.82.0/code680 is the required upgrade lineage from installed US10.79.0/code671. China channel 11.15.0/code469 was downloaded and structurally inspected, but code469 is lower and no migration/downgrade is authorized. It is excluded; the unused full CN body was removed. Public Aptoide and The APK Lab requests returned403 and were stopped.",
+      "input_blocker": "complete_current_input_missing",
+      "current_acquired_version": null,
+      "source_input_selected": false,
+      "selected_input_version": null
+    },
+    {
+      "package": "com.rytong.airchina",
+      "name": "Air China",
+      "scope_kind": "third_party",
+      "complete_inputs": [
+        {
+          "source_kind": "public_mirror_996_25pp",
+          "version": "7.53.4",
+          "bytes": 207028842,
+          "sha256": "ae12f9a79ce842f43b6d15e51cd282dec0231b468bdc9df82dfae43ad8e4bed0",
+          "path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/airchina-7.53.4-996.apk",
+          "source_page": "https://www.996.com/download/30833/",
+          "download_url": "https://ucdl.25pp.com/fs08/2026/11/18/9/106_cd5ecd93a5651835443a0589a6ef920f.apk?yingid=web_space&packageid=207546007&did=f606a53fb40775f008f48cf3988a9cbe",
+          "acquisition_receipt": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/airchina-7.53.4-996.complete.receipt.json",
+          "all_outer_zip_members_crc_verified": true,
+          "abi_directories": [
+            "arm64-v8a",
+            "armeabi-v7a"
+          ],
+          "signature_verified_by_parent": true,
+          "parent_source_receipt": "/workspace/scratch/162b3b07f778/p4-split-apk-implementation/actual/airchina-source-receipt.json"
+        }
+      ],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_xiaomi_app_store",
+          "version": "7.53.0",
+          "listed_updated_date": "2026-11-03",
+          "url": "https://m.app.mi.com/details?id=com.rytong.airchina",
+          "body_sha256": "6388b3a5abb1a65edb31a34de606982b283cf3c267e16976ab3a5062e1950c67",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/airchina-mi-freshness.body",
+          "observed_utc": "2026-11-18T12:54:01.584137+00:00"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "difference": "Official Xiaomi listing 7.53.0; current public 996 source delivers publisher-signer-verified 7.53.4/code75304.",
+      "input_blocker": null,
+      "current_acquired_version": "7.53.4",
+      "source_input_selected": true,
+      "selected_input_version": "7.53.4"
+    },
+    {
+      "package": "com.rytong.ceair",
+      "name": "China Eastern",
+      "scope_kind": "third_party",
+      "complete_inputs": [
+        {
+          "source_kind": "publisher_direct",
+          "version": "9.5.16",
+          "sha256": "a6da8d746f98cae884f6b0137b5c7e8412836adf75530b763dae1536c75522ce",
+          "archive": "/workspace/scratch/162b3b07f778/Pocket4_Current_App_Inputs/Pocket4_Current_Apps_CEAir_Beike.zip",
+          "receipt_member": "packages/com.rytong.ceair/source-receipt.json",
+          "source_observation": {
+            "apk_url": "https://ecresource-app.ceair.com/apk/ceair_release_v9_5_16_20261105.apk",
+            "observed_stable_version": "9.5.16",
+            "observed_utc": "2026-11-18T09:42:54.284955+00:00",
+            "sha256_kind": "observed_whole_file_digest",
+            "signer_reference_kind": "public_historical_candidate",
+            "signer_reference_url": "https://raw.githubusercontent.com/TrillionniumFoundation/trillionnium-os-desktop/6fd7efdcfa27da2015b7eb5b103dc399491aa18f/compat/android/pocket4/continuation-20261109-e3df/application-candidates/CANDIDATE42.json",
+            "version_metadata_kind": "signed_apk_android_manifest",
+            "version_metadata_url": "https://ecresource-app.ceair.com/apk/ceair_release_v9_5_16_20261105.apk"
+          },
+          "signature_verified_by_parent": true,
+          "role": "previously_retained_input"
+        }
+      ],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_xiaomi_app_store",
+          "version": "9.5.16",
+          "listed_updated_date": "2026-11-06",
+          "url": "https://m.app.mi.com/details?id=com.rytong.ceair",
+          "body_sha256": "f0a567201660f1f7a8013408782d071e6b98e0679270420b7a9736df76b38548",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/ceair-mi-freshness.body",
+          "observed_utc": "2026-11-18T12:53:54.738099+00:00"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "input_blocker": null,
+      "current_acquired_version": "9.5.16",
+      "source_input_selected": true,
+      "selected_input_version": "9.5.16"
+    },
+    {
+      "package": "com.sankuai.meituan.takeoutnew",
+      "name": "Meituan Takeout",
+      "scope_kind": "third_party",
+      "complete_inputs": [
+        {
+          "source_kind": "independent_mirror_360",
+          "version": "8.85.1",
+          "bytes": 65680256,
+          "sha256": "518e8dce51ab465e200f330e7ce3dabd8ed731c3eb28e32dfd860574681d4b2a",
+          "path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/meituan-8.85.1-360.apk",
+          "source_page": "https://m.app.so.com/detail/index?id=939365&pname=com.sankuai.meituan.takeoutnew",
+          "download_url": "https://s.shouji.qihucdn.com/261103/58ecfd533b90525af3cb85fe66294dc4/com.sankuai.meituan.takeoutnew_800850001.apk?en=curpage%3Dopenbox_wap_detail%26exp%3D1795608512%26from%3Dopenbox_mintf_getAppInfoByIds%26m2%3D%26ts%3D1795003712%26tok%3D8ed49ea60770f803b72aaed8809315ac%26v%3D%26f%3Dz.apk",
+          "acquisition_receipt": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/meituan-8.85.1-360.complete.receipt.json",
+          "all_outer_zip_members_crc_verified": null,
+          "abi_directories": [
+            "arm64-v8a"
+          ],
+          "signature_verified_by_parent": true,
+          "parent_source_receipt": "/workspace/scratch/162b3b07f778/p4-split-apk-implementation/actual/meituan-final-source-receipt.json"
+        },
+        {
+          "source_kind": "independent_public_app_store_PP",
+          "version": "8.86.4",
+          "version_code": 800860004,
+          "bytes": 65625862,
+          "sha256": "b042fed10e238ec8c311f3ea22104b93932b04363210d2e561125624e7e0e76d",
+          "path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/meituan-8.86.4-pp-cdn.apk",
+          "source_page": "https://wap.pp.cn/app_cxmwLzmZOzN/",
+          "download_url": "http://ucdl.25pp.com/fs08/2026/11/18/1/106_4f2dc0b6e9ce2bf1ff546b77a2dc349f.apk",
+          "acquisition_receipt": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/meituan-8.86.4-pp-cdn.complete.receipt.json",
+          "all_outer_zip_members_crc_verified": true,
+          "abi_directories": [
+            "armeabi"
+          ],
+          "native_elf_classes_machines": [
+            [
+              1,
+              40
+            ]
+          ],
+          "static_observation_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/meituan-8.86.4-pp-cdn.static-observations.json",
+          "static_observation_sha256": "a1adb2f959ea6227cdd05bf944d7fd74d97984f18473c0e61a81b07c4b3107be",
+          "signature_verified_by_parent": false,
+          "role": "ARM32_only_observation_not_final_deployable_input"
+        }
+      ],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_xiaomi_app_store",
+          "version": "8.86.4",
+          "listed_updated_date": "2026-11-18",
+          "url": "https://m.app.mi.com/details?id=com.sankuai.meituan.takeoutnew",
+          "body_sha256": "6cb6aaf3b76977edabf1b95bd659ac3fc09965cbf25c1a0a37e284c840479145",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/meituan-mi-freshness.body",
+          "observed_utc": "2026-11-18T12:54:01.083343+00:00"
+        },
+        {
+          "platform": "Android",
+          "source_kind": "official_tencent_app_store_public_direct_download_metadata",
+          "version": "8.86.4",
+          "published_bytes": 65625862,
+          "published_md5": "c182eda708c84e02711bfccacd77e390",
+          "published_url": "http://imtt2.dd.qq.com/sjy.00009/sjy.00004/16891/apk/C182EDA708C84E02711BFCCACD77E390.apk?fsname=com.sankuai.meituan.takeoutnew_8.86.4.apk",
+          "response_sha256": "7d2996ac59d1e6b1e9d72566f0b8083136bbed83b01eb868f7499a801ce92a10",
+          "response_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/meituan-tencent-public-download-response.body",
+          "observed_utc": "2026-11-18T13:03:28.150135+00:00",
+          "not_a_verified_apk": true
+        },
+        {
+          "platform": "Android",
+          "source_kind": "independent_PP_public_app_store",
+          "version": "8.86.4",
+          "url": "https://wap.pp.cn/app_cxmwLzmZOzN/",
+          "body_sha256": "3ac50fbe00ff4c9e7feda4f62e4dc9e293fcdea4f5df9cdaac088f3325d1843d",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/meituan-pp-independent-current.body",
+          "observed_utc": "2026-11-18T13:39:03.987552+00:00",
+          "not_a_verified_apk": true
+        },
+        {
+          "platform": "Android",
+          "source_kind": "official_meizu_public_app_store",
+          "version": "8.85.1",
+          "url": "https://app.meizu.com/apps/public/detail?package_name=com.sankuai.meituan.takeoutnew",
+          "body_sha256": "d1bacf0c1c9e5878865c93778b83afe206a55d8922b133940444030d54cca6dd",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/meituan-meizu-current.body",
+          "observed_utc": "2026-11-18T13:27:12.938823+00:00",
+          "public_download_button_removed": true,
+          "not_a_verified_apk": true
+        },
+        {
+          "platform": "Android",
+          "source_kind": "official_baidu_public_app_store",
+          "version": "8.64.5",
+          "url": "https://shouji.baidu.com/detail/949171",
+          "body_sha256": "bde0c97e496cd8b74dcac78bc8d9fe3cc463fe7b12698248225ab0d42b5380e5",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/meituan-baidu-current.body",
+          "observed_utc": "2026-11-18T13:34:11.829698+00:00",
+          "not_a_verified_apk": true
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "difference": "The independently published PP normal download delivered complete 8.86.4/code800860004, 6237 ZIP members CRC verified, but all60 actual ELF files are ARM32 class1/machine40 under lib/armeabi. It cannot satisfy the fixed ARM64 translator input requirement. Old verified8.85.1 has63 ARM64 ELF files but is not latest and cannot replace8.86.4. AppShare category reports8.86.10 behind a CAPTCHA detail gate; this remains unverified metadata. Tencent challenge and Huawei403 chains were stopped. SDK signing verification of the nondeployable32-bit PP variant was not requested.",
+      "input_blocker": "latest_8.86.4_ARM64_input_missing",
+      "current_acquired_version": "8.86.4",
+      "source_input_selected": false,
+      "selected_input_version": null
+    },
+    {
+      "package": "com.sdu.didi.psnger",
+      "name": "DiDi",
+      "scope_kind": "third_party",
+      "complete_inputs": [
+        {
+          "source_kind": "public_mirror_360",
+          "version": "8.0.20",
+          "bytes": 76449476,
+          "sha256": "e375f424781a90c338e41eda41acd2893ec22878ccaf7b690b717bb8c38c7ebe",
+          "path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/didi-8.0.20-360.apk",
+          "source_page": "https://app.so.com/detail/index?id=185732&pt=oauth",
+          "download_url": "https://s.shouji.qihucdn.com/261116/9f3bac0ec3c4491ceb330c8c7c13b8bf/com.sdu.didi.psnger_1208002005.apk?en=curpage%3Dopenbox_wap_detail%26exp%3D1795611231%26from%3Dopenbox_mintf_getAppInfoByIds%26m2%3D%26ts%3D1795006431%26tok%3D140e58b1b77a1f12ad13230bad5d87fc%26v%3D%26f%3Dz.apk",
+          "acquisition_receipt": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/didi-8.0.20-360.complete.receipt.json",
+          "all_outer_zip_members_crc_verified": true,
+          "abi_directories": [
+            "arm64-v8a"
+          ],
+          "signature_verified_by_parent": true,
+          "parent_source_receipt": "/workspace/scratch/162b3b07f778/p4-split-apk-implementation/actual/didi-source-receipt.json"
+        }
+      ],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_xiaomi_app_store",
+          "version": null,
+          "listed_updated_date": null,
+          "url": "https://app.mi.com/details?id=com.sdu.didi.psnger",
+          "body_sha256": "773195949d077c1d3285fb1e3118851b46d4ebcbd118764fae6e1845567697a2",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/didi-mi-current.body",
+          "observed_utc": "2026-11-18T12:38:37.913376+00:00"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "input_blocker": null,
+      "current_acquired_version": "8.0.20",
+      "source_input_selected": true,
+      "selected_input_version": "8.0.20"
+    },
+    {
+      "package": "com.ss.android.ugc.aweme",
+      "name": "Douyin",
+      "scope_kind": "third_party",
+      "complete_inputs": [],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_xiaomi_app_store",
+          "version": "41.2.0",
+          "listed_updated_date": "2026-11-18",
+          "url": "https://m.app.mi.com/details?id=com.ss.android.ugc.aweme",
+          "body_sha256": "a56996dd80f25f6ba394f959fca25f1c22b311b0798dbe63d1a090acdc44a1ff",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/douyin-mi-current.body",
+          "observed_utc": "2026-11-18T12:38:37.914124+00:00"
+        },
+        {
+          "platform": "Android",
+          "source_kind": "official_tencent_app_store_public_direct_download_metadata",
+          "version": "41.2.0",
+          "published_bytes": 356756957,
+          "published_md5": "98b17fcaea8b86f10ff9d67a37ba8fe8",
+          "published_url": "http://imtt2.dd.qq.com/sjy.00009/sjy.00004/16891/apk/98B17FCAEA8B86F10FF9D67A37BA8FE8.apk?fsname=com.ss.android.ugc.aweme_41.2.0.apk",
+          "response_sha256": "8f754304f676367aa83ee45e9168bcb89ac7ff026c143c7329defb96d58226ea",
+          "response_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/douyin-tencent-public-download-response.body",
+          "observed_utc": "2026-11-18T13:05:21.798734+00:00",
+          "not_a_verified_apk": true
+        },
+        {
+          "platform": "Android",
+          "source_kind": "independent_PP_public_app_store",
+          "version": "41.1.0",
+          "url": "https://wap.pp.cn/app_z5DOcxYqUBernrnRiu00eang/",
+          "body_sha256": "c1e0e5ae8304f02a871236ad31c90feb3825f6886f985551ce01aee35d0db910",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/douyin-pp-independent-current.body",
+          "observed_utc": "2026-11-18T13:41:58.990199+00:00",
+          "not_a_verified_apk": true
+        },
+        {
+          "platform": "Android",
+          "source_kind": "official_meizu_public_app_store",
+          "version": "41.1.0",
+          "url": "https://app.meizu.com/apps/public/detail?package_name=com.ss.android.ugc.aweme",
+          "body_sha256": "d774e51835b45b20ee91fd29515285e94e732a94887f364c290729b1ebc2d372",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/douyin-meizu-current.body",
+          "observed_utc": "2026-11-18T13:27:12.940580+00:00",
+          "public_download_button_removed": true,
+          "not_a_verified_apk": true
+        },
+        {
+          "platform": "Android",
+          "source_kind": "official_baidu_public_app_store",
+          "version": "38.7.0",
+          "url": "https://shouji.baidu.com/detail/1858621",
+          "body_sha256": "794a9138814bb0878c57cc90680eb5c55e29359f7c6dad73f77b080cf36dab31",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/douyin-baidu-current.body",
+          "observed_utc": "2026-11-18T13:33:50.143754+00:00",
+          "not_a_verified_apk": true
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "difference": "Xiaomi/Tencent Android metadata lists 41.2.0; no complete current APK obtained. AppShare 41.2.0_41200001/code410200 is beta and excluded. Tencent file GET returns JS challenge; publisher ugapk approval rejection remains no-retry. FZXZ 41.2.0 is different package com.ss.android.ugc.aweme.hubble and excluded. Huawei public latest query returned 403; stopped.",
+      "input_blocker": "complete_current_input_missing",
+      "current_acquired_version": null,
+      "source_input_selected": false,
+      "selected_input_version": null
+    },
+    {
+      "package": "com.szzc",
+      "name": "SZZC",
+      "scope_kind": "third_party",
+      "complete_inputs": [
+        {
+          "source_kind": "publisher_direct",
+          "version": "9.6.3",
+          "sha256": "7af438808904dbd4457f8d5ea7e267e5779e8ad6ab4d6a9c156c1e8ea0285d96",
+          "archive": "/workspace/scratch/162b3b07f778/Pocket4_Current_App_Inputs/Pocket4_Current_Apps_Travel.zip",
+          "receipt_member": "packages/com.szzc/source-receipt.json",
+          "source_observation": {
+            "apk_url": "https://static.zuchecdn.com/download/SZZC.apk",
+            "observed_stable_version": "9.6.3",
+            "observed_utc": "2026-11-18T09:15:14.355468+00:00",
+            "sha256_kind": "observed_whole_file_digest",
+            "signer_reference_kind": "public_historical_candidate",
+            "signer_reference_url": "https://raw.githubusercontent.com/TrillionniumFoundation/trillionnium-os-desktop/6fd7efdcfa27da2015b7eb5b103dc399491aa18f/compat/android/pocket4/continuation-20261109-e3df/application-candidates/CANDIDATE42.json",
+            "version_metadata_kind": "signed_apk_android_manifest",
+            "version_metadata_url": "https://static.zuchecdn.com/download/SZZC.apk"
+          },
+          "signature_verified_by_parent": true,
+          "role": "previously_retained_input"
+        }
+      ],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_xiaomi_app_store",
+          "version": "9.6.2",
+          "listed_updated_date": "2026-11-18",
+          "url": "https://m.app.mi.com/details?id=com.szzc",
+          "body_sha256": "1be1d2efc6890240e4e2dc970ca3f1905104d3b119aa4717d76ed72a1026ca80",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/szzc-mi-freshness.body",
+          "observed_utc": "2026-11-18T12:53:54.735545+00:00"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "difference": "Official Xiaomi listing 9.6.2; latest retained publisher direct signed APK is 9.6.3.",
+      "input_blocker": null,
+      "current_acquired_version": "9.6.3",
+      "source_input_selected": true,
+      "selected_input_version": "9.6.3"
+    },
+    {
+      "package": "com.taobao.taobao",
+      "name": "Taobao",
+      "scope_kind": "third_party",
+      "complete_inputs": [
+        {
+          "source_kind": "independent_mirror_360",
+          "version": "10.69.0",
+          "bytes": 77298702,
+          "sha256": "b4a838335935773e7570822b939c4081f8d179c0153bbe93063b4a1e277d64d7",
+          "path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/taobao-10.69.0-360.apk",
+          "source_page": "https://m.app.so.com/detail/index?pname=com.taobao.taobao&id=3570",
+          "download_url": "https://s.shouji.qihucdn.com/261111/953e52b346051c3674e79172081d13bc/com.taobao.taobao_866.apk?en=curpage%3Dopenbox_wap_detail%26exp%3D1795608550%26from%3Dopenbox_mintf_getAppInfoByIds%26m2%3D%26ts%3D1795003750%26tok%3D44d87ff75b58c324572d14fffad98908%26v%3D%26f%3Dz.apk",
+          "acquisition_receipt": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/taobao-10.69.0-360.complete.receipt.json",
+          "all_outer_zip_members_crc_verified": null,
+          "abi_directories": [
+            "arm64-v8a"
+          ],
+          "signature_verified_by_parent": true,
+          "parent_source_receipt": "/workspace/scratch/162b3b07f778/p4-split-apk-implementation/actual/taobao-final-source-receipt.json"
+        }
+      ],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "current_store_download_verified_signed_manifest",
+          "version": "10.69.0",
+          "source_page": "https://m.app.so.com/detail/index?pname=com.taobao.taobao&id=3570",
+          "sha256": "b4a838335935773e7570822b939c4081f8d179c0153bbe93063b4a1e277d64d7"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "input_blocker": null,
+      "current_acquired_version": "10.69.0",
+      "source_input_selected": true,
+      "selected_input_version": "10.69.0"
+    },
+    {
+      "package": "com.tencent.mm",
+      "name": "WeChat",
+      "scope_kind": "third_party",
+      "complete_inputs": [
+        {
+          "source_kind": "independent_mirror_360",
+          "version": "8.0.80",
+          "bytes": 286319384,
+          "sha256": "9d9b6c516e8e07e437c81485fde21fe13ce4f61b37d19e793fff40c71be39c0e",
+          "path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/wechat-8.0.80-360.apk",
+          "source_page": "https://m.app.so.com/detail/index?pname=com.tencent.mm&id=5427",
+          "download_url": "https://s.shouji.qihucdn.com/261103/9ed2fbdd906f02e11a2d626086122786/com.tencent.mm_3220.apk?en=curpage%3Dopenbox_wap_detail%26exp%3D1795608550%26from%3Dopenbox_mintf_getAppInfoByIds%26m2%3D%26ts%3D1795003750%26tok%3Da2deb121bd6d138722d314a67b8acf8f%26v%3D%26f%3Dz.apk",
+          "acquisition_receipt": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/wechat-8.0.80-360.complete.receipt.json",
+          "all_outer_zip_members_crc_verified": null,
+          "abi_directories": [
+            "arm64-v8a"
+          ],
+          "signature_verified_by_parent": true,
+          "parent_source_receipt": "/workspace/scratch/162b3b07f778/p4-split-apk-implementation/actual/wechat-final-source-receipt.json"
+        }
+      ],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_xiaomi_app_store",
+          "version": "8.0.80",
+          "listed_updated_date": "2026-11-05",
+          "url": "https://m.app.mi.com/details?id=com.tencent.mm",
+          "body_sha256": "9d6f6ada3c936f140ec9254da2b797621b835dd8e798bcffebf5811b8cf38eed",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/wechat-mi-freshness.body",
+          "observed_utc": "2026-11-18T12:54:01.016336+00:00"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "input_blocker": null,
+      "current_acquired_version": "8.0.80",
+      "source_input_selected": true,
+      "selected_input_version": "8.0.80"
+    },
+    {
+      "package": "com.united.mobile.android",
+      "name": "United",
+      "scope_kind": "third_party",
+      "complete_inputs": [],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_google_play_US_public_listing",
+          "version": "4.2.103",
+          "url": "https://play.google.com/store/apps/details?id=com.united.mobile.android&hl=en&gl=US",
+          "body_sha256": "1e17d275da77706514a9c4428616a7bb35624f126e6e1a69bf8f34954afc9360",
+          "observed_utc": "2026-11-18T12:52:46.507097+00:00",
+          "field": "AF_initDataCallback ds:5 data[1][2][140][0][0][0]"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "input_blocker": "complete_current_input_missing",
+      "current_acquired_version": null,
+      "source_input_selected": false,
+      "selected_input_version": null
+    },
+    {
+      "package": "com.xunmeng.pinduoduo",
+      "name": "Pinduoduo",
+      "scope_kind": "third_party",
+      "complete_inputs": [
+        {
+          "source_kind": "public_mirror_996_25pp",
+          "version": "8.32.0",
+          "bytes": 26351172,
+          "sha256": "ee5437ff623df35eda7d21c26c04d1d562f40ed71b7c0b630abe8f52b423af09",
+          "path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/pdd-8.32.0-996.apk",
+          "source_page": "https://www.996.com/download/285799/",
+          "download_url": "https://ucdl.25pp.com/fs08/2026/11/18/11/106_0bef3fd4c8f481c998920c2a56f4d27e.apk?yingid=web_space&packageid=801883556&did=4ed4937a4d55c83d7baf0aee4e2bb327",
+          "acquisition_receipt": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/pdd-8.32.0-996.complete.receipt.json",
+          "all_outer_zip_members_crc_verified": true,
+          "abi_directories": [
+            "armeabi-v7a"
+          ],
+          "signature_verified_by_parent": false
+        }
+      ],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_xiaomi_app_store",
+          "version": "8.32.0",
+          "listed_updated_date": "2026-11-17",
+          "url": "https://m.app.mi.com/details?id=com.xunmeng.pinduoduo",
+          "body_sha256": "f08e21dcf5cb9b604f8fcf1b59e4922e342cdf102cc0e3dc4deba747c9876d0f",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/pdd-mi-current.body",
+          "observed_utc": "2026-11-18T12:38:37.912628+00:00"
+        },
+        {
+          "platform": "Android",
+          "source_kind": "official_tencent_app_store_public_direct_download_metadata",
+          "version": "8.32.0",
+          "published_bytes": 26351172,
+          "published_md5": "3f2d05fd7c5e7ce058bc057b56b6c84f",
+          "published_url": "http://imtt2.dd.qq.com/sjy.00009/sjy.00004/16891/apk/3F2D05FD7C5E7CE058BC057B56B6C84F.apk?fsname=com.xunmeng.pinduoduo_8.32.0.apk",
+          "response_sha256": "3fbc4747f1e5c5128bb21398d0430e03daa28c5bea64de3e54106d09d9937b60",
+          "response_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/pdd-tencent-public-download-response.body",
+          "observed_utc": "2026-11-18T13:04:50.038273+00:00",
+          "not_a_verified_apk": true
+        },
+        {
+          "platform": "Android",
+          "source_kind": "independent_PP_public_app_store",
+          "version": "8.32.0",
+          "url": "https://wap.pp.cn/app_zmoUBY8LcxD/?tdsourcetag=s_pcqq_aiomsg",
+          "body_sha256": "d52a8ef49c7ab85336cf98c6722d70cf118fb9972a13e15a55755b9c9f784384",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/pdd-pp-independent-current.body",
+          "observed_utc": "2026-11-18T13:39:03.986952+00:00",
+          "not_a_verified_apk": true
+        },
+        {
+          "platform": "Android",
+          "source_kind": "official_meizu_public_app_store",
+          "version": "8.32.0",
+          "url": "https://app.meizu.com/apps/public/detail?package_name=com.xunmeng.pinduoduo",
+          "body_sha256": "7f2a1db33487f16b26b9ece2ff7e83569a7bf1b1c484f0f83b720d2c15385270",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/pdd-meizu-current.body",
+          "observed_utc": "2026-11-18T13:27:12.938056+00:00",
+          "public_download_button_removed": true,
+          "not_a_verified_apk": true
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "additional_source_observations": [
+        {
+          "source_kind": "independent_public_app_store_PP",
+          "source_page": "https://wap.pp.cn/app_zmoUBY8LcxD/?tdsourcetag=s_pcqq_aiomsg",
+          "download_url": "http://ucdl.25pp.com/fs08/2026/11/18/11/106_0bef3fd4c8f481c998920c2a56f4d27e.apk",
+          "bytes": 26351172,
+          "sha256": "ee5437ff623df35eda7d21c26c04d1d562f40ed71b7c0b630abe8f52b423af09",
+          "all_outer_zip_members_crc_verified": true,
+          "abi_directories": [
+            "armeabi-v7a"
+          ],
+          "exact_duplicate_body_removed": true,
+          "receipt": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/pdd-8.32.0-pp-cdn.complete.receipt.json"
+        }
+      ],
+      "difference": "Held 8.32.0/code83200 is ARM32-only; Tencent public metadata refers to identical MD5/size. Fixed translator requires ARM64, so this is a source observation only and not a deployable final input. Huawei public latest query returned 403; stopped without interface credentials or alternate region.",
+      "input_blocker": "current_ARM64_input_missing",
+      "current_acquired_version": "8.32.0",
+      "source_input_selected": false,
+      "selected_input_version": null
+    },
+    {
+      "package": "com.zhubajie.client",
+      "name": "Zhubajie",
+      "scope_kind": "third_party",
+      "complete_inputs": [
+        {
+          "source_kind": "independent_mirror_360",
+          "version": "9.5.20",
+          "bytes": 166873622,
+          "sha256": "1822af13f666fea9814a7e571d50cc7def3aad72426d2e3eaa9101dcd6eaefa0",
+          "path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/zbj-9.5.20-360.apk",
+          "source_page": "https://m.app.so.com/detail/index?id=238882",
+          "download_url": "https://s.shouji.qihucdn.com/261009/9b8bc092373e8f09d56861322b8ce1c9/com.zhubajie.client_370.apk?en=curpage%3Dopenbox_wap_detail%26exp%3D1795608456%26from%3Dopenbox_mintf_getAppInfoByIds%26m2%3D%26ts%3D1795003656%26tok%3Dc05abce18faa3400da3b040bdaa01844%26v%3D%26f%3Dz.apk",
+          "acquisition_receipt": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/zbj-9.5.20-360.complete.receipt.json",
+          "all_outer_zip_members_crc_verified": null,
+          "abi_directories": [
+            "arm64-v8a",
+            "armeabi-v7a"
+          ],
+          "signature_verified_by_parent": true,
+          "parent_source_receipt": "/workspace/scratch/162b3b07f778/p4-split-apk-implementation/actual/zbj-source-receipt.json"
+        }
+      ],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_xiaomi_app_store",
+          "version": "9.5.20",
+          "listed_updated_date": "2026-10-09",
+          "url": "https://m.app.mi.com/details?id=com.zhubajie.client",
+          "body_sha256": "0d1754214fc7b51e196070bb7b2a770704952d46492821c10953f38c0abe9e25",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/zbj-mi-freshness.body",
+          "observed_utc": "2026-11-18T12:54:01.507364+00:00"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "input_blocker": null,
+      "current_acquired_version": "9.5.20",
+      "source_input_selected": true,
+      "selected_input_version": "9.5.20"
+    },
+    {
+      "package": "com.zillow.android.streeteasy",
+      "name": "StreetEasy",
+      "scope_kind": "third_party",
+      "complete_inputs": [],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_google_play_US_public_listing",
+          "version": "2026.47.0",
+          "url": "https://play.google.com/store/apps/details?id=com.zillow.android.streeteasy&hl=en&gl=US",
+          "body_sha256": "7c7ac0eb5890c710c4a1fc6129a82355ccedb49c3349c2685fad1d71062d2a5a",
+          "observed_utc": "2026-11-18T12:48:57.040566+00:00",
+          "field": "AF_initDataCallback ds:5 data[1][2][140][0][0][0]"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "input_blocker": "complete_current_input_missing",
+      "current_acquired_version": null,
+      "source_input_selected": false,
+      "selected_input_version": null
+    },
+    {
+      "package": "ctrip.android.view",
+      "name": "Ctrip",
+      "scope_kind": "third_party",
+      "complete_inputs": [
+        {
+          "source_kind": "publisher_direct",
+          "version": "8.97.6",
+          "sha256": "d22e5db066d8d2fd7c1bd53e5c62cc108fc9d89d42169cbdaf3b2ddfc04ac68c",
+          "archive": "/workspace/scratch/162b3b07f778/Pocket4_Current_App_Inputs/Pocket4_Current_Apps_Travel.zip",
+          "receipt_member": "packages/ctrip.android.view/source-receipt.json",
+          "source_observation": {
+            "apk_url": "https://download2.ctrip.com/html5/64_Ctrip_V8.97.6_SIT4.4_product_Product_30327309_55554008.apk",
+            "observed_stable_version": "8.97.6",
+            "observed_utc": "2026-11-18T09:51:36.393167+00:00",
+            "sha256_kind": "observed_whole_file_digest",
+            "signer_reference_kind": "public_historical_candidate",
+            "signer_reference_url": "https://raw.githubusercontent.com/TrillionniumFoundation/trillionnium-os-desktop/6fd7efdcfa27da2015b7eb5b103dc399491aa18f/compat/android/pocket4/continuation-20261109-e3df/application-candidates/CANDIDATE42.json",
+            "version_metadata_kind": "signed_apk_android_manifest",
+            "version_metadata_url": "https://download2.ctrip.com/html5/64_Ctrip_V8.97.6_SIT4.4_product_Product_30327309_55554008.apk"
+          },
+          "signature_verified_by_parent": true,
+          "role": "previously_retained_input"
+        }
+      ],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_xiaomi_app_store",
+          "version": "8.97.6",
+          "listed_updated_date": "2026-11-16",
+          "url": "https://m.app.mi.com/details?id=ctrip.android.view",
+          "body_sha256": "68a7f4197f3acda1fa14f725a5c03c892fac66e621e7276941d9e5029bf1f0d0",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/ctrip-mi-freshness.body",
+          "observed_utc": "2026-11-18T12:53:54.736300+00:00"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "input_blocker": null,
+      "current_acquired_version": "8.97.6",
+      "source_input_selected": true,
+      "selected_input_version": "8.97.6"
+    },
+    {
+      "package": "jp.co.ana.android.tabidachi",
+      "name": "ANA",
+      "scope_kind": "third_party",
+      "complete_inputs": [],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_google_play_US_public_listing",
+          "version": "7.7.1",
+          "url": "https://play.google.com/store/apps/details?id=jp.co.ana.android.tabidachi&hl=en&gl=US",
+          "body_sha256": "8570f0c3afb5c97285e2f8d383e706cd23ba9addb609d288def242c3a8d24081",
+          "observed_utc": "2026-11-18T12:48:57.041062+00:00",
+          "field": "AF_initDataCallback ds:5 data[1][2][140][0][0][0]"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "input_blocker": "complete_current_input_missing",
+      "current_acquired_version": null,
+      "source_input_selected": false,
+      "selected_input_version": null
+    },
+    {
+      "package": "org.fcitx.fcitx5.android",
+      "name": "Fcitx5",
+      "scope_kind": "input_method",
+      "complete_inputs": [
+        {
+          "source_kind": "publisher_direct",
+          "version": "0.1.3-0-g048f581c",
+          "sha256": "aaeb569fc3e9e8ec532b0ea33be39ce77b143c8add824d172f17356ddc3b9ed2",
+          "archive": "/workspace/scratch/162b3b07f778/Pocket4_Current_App_Inputs/Pocket4_Current_Apps_Firefox_Fcitx.zip",
+          "receipt_member": "packages/org.fcitx.fcitx5.android/source-receipt.json",
+          "source_observation": {
+            "apk_url": "https://github.com/fcitx5-android/fcitx5-android/releases/download/0.1.3/org.fcitx.fcitx5.android-0.1.3-0-g048f581c-x86_64-release.apk",
+            "observed_stable_version": "0.1.3-0-g048f581c",
+            "observed_utc": "2026-11-18T09:25:56.869451+00:00",
+            "publisher_certificate_url": "https://github.com/fcitx5-android/fcitx5-android/blob/0.1.3/README.md",
+            "sha256_kind": "observed_whole_file_digest",
+            "version_metadata_url": "https://api.github.com/repos/fcitx5-android/fcitx5-android/releases/latest"
+          },
+          "signature_verified_by_parent": true,
+          "role": "previously_retained_input"
+        }
+      ],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "publisher_stable_release_metadata",
+          "version": "0.1.3",
+          "url": "https://api.github.com/repos/fcitx5-android/fcitx5-android/releases/latest",
+          "body_sha256": "79c481553bf7cedfe209477045034c00bcc4a7ef6cb85306b1289a9edbc27785",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/fcitx-publisher-currentversion.body",
+          "observed_utc": "2026-11-18T12:52:46.676705+00:00"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "input_blocker": null,
+      "current_acquired_version": "0.1.3-0-g048f581c",
+      "source_input_selected": true,
+      "selected_input_version": "0.1.3-0-g048f581c"
+    },
+    {
+      "package": "tv.danmaku.bili",
+      "name": "Bilibili",
+      "scope_kind": "third_party",
+      "complete_inputs": [
+        {
+          "source_kind": "independent_mirror_360",
+          "version": "9.20.0",
+          "bytes": 257273718,
+          "sha256": "6b877e0e1d91d31c0d1e5ec06914cec37580927f835079df4c73806bd4d53ef3",
+          "path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/bili-9.20.0-360.apk",
+          "source_page": "https://m.app.so.com/detail/index?id=1343&pname=tv.danmaku.bili",
+          "download_url": "https://s.shouji.qihucdn.com/261118/8cf6ec382ef48cf05ba5805338c945e1/tv.danmaku.bili_9200300.apk?en=curpage%3Dopenbox_wap_detail%26exp%3D1795608513%26from%3Dopenbox_mintf_getAppInfoByIds%26m2%3D%26ts%3D1795003713%26tok%3D9b8c1959dbbf58bdd38a3372df8a90a8%26v%3D%26f%3Dz.apk",
+          "acquisition_receipt": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/bili-9.20.0-360.complete.receipt.json",
+          "all_outer_zip_members_crc_verified": null,
+          "abi_directories": [
+            "arm64-v8a"
+          ],
+          "signature_verified_by_parent": true,
+          "parent_source_receipt": "/workspace/scratch/162b3b07f778/p4-split-apk-implementation/actual/bili-source-receipt.json"
+        }
+      ],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "official_xiaomi_app_store",
+          "version": "9.19.0",
+          "listed_updated_date": "2026-11-11",
+          "url": "https://m.app.mi.com/details?id=tv.danmaku.bili",
+          "body_sha256": "bb87bcd8927df96f2f087770dc50c56e82505be55e17f1e8c0923cf20e9393e9",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/bili-mi-freshness.body",
+          "observed_utc": "2026-11-18T12:54:01.313187+00:00"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "difference": "Official Xiaomi listing 9.19.0; current public 360 source delivers publisher-signer-verified 9.20.0/code9200300.",
+      "input_blocker": null,
+      "current_acquired_version": "9.20.0",
+      "source_input_selected": true,
+      "selected_input_version": "9.20.0"
+    },
+    {
+      "package": "org.mozilla.firefox",
+      "name": "Firefox",
+      "scope_kind": "production_browser",
+      "complete_inputs": [
+        {
+          "source_kind": "publisher_direct",
+          "version": "160.0.1",
+          "sha256": "283b19f8313e8ce6e8a913bb178ce4a79c5cecd82c49f821de7fafb068c73fcd",
+          "archive": "/workspace/scratch/162b3b07f778/Pocket4_Current_App_Inputs/Pocket4_Current_Apps_Firefox_Fcitx.zip",
+          "receipt_member": "packages/org.mozilla.firefox/source-receipt.json",
+          "source_observation": {
+            "apk_url": "https://ftp.mozilla.org/pub/fenix/releases/160.0.1/android/fenix-160.0.1-android-x86_64/fenix-160.0.1.multi.android-x86_64.apk",
+            "observed_stable_version": "160.0.1",
+            "observed_utc": "2026-11-18T08:50:14.732419+00:00",
+            "publisher_certificate_url": "https://accounts.firefox.com/.well-known/assetlinks.json",
+            "sha256_kind": "observed_whole_file_digest_not_publisher_published_checksum",
+            "version_metadata_url": "https://product-details.mozilla.org/1.0/mobile_versions.json"
+          },
+          "signature_verified_by_parent": true,
+          "role": "previously_retained_input"
+        }
+      ],
+      "version_observations": [
+        {
+          "platform": "Android",
+          "source_kind": "publisher_stable_release_metadata",
+          "version": "160.0.1",
+          "url": "https://product-details.mozilla.org/1.0/mobile_versions.json",
+          "body_sha256": "0ee0fb630737d98aee187de6a18343bd685d709b3a64dabd3fbb3577ae4169ee",
+          "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/firefox-publisher-currentversion.body",
+          "observed_utc": "2026-11-18T12:52:46.672358+00:00"
+        }
+      ],
+      "installed": false,
+      "runtime_qualified": false,
+      "production_ready": false,
+      "input_blocker": null,
+      "current_acquired_version": "160.0.1",
+      "source_input_selected": true,
+      "selected_input_version": "160.0.1"
+    }
+  ]
+}

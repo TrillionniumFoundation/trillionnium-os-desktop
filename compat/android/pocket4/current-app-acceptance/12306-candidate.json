@@ -1,66 +1,61 @@
 {
-  "schema": "pocket4-official-apk-candidate-v3",
-  "package": "com.MobileTicket",
-  "version_name": "5.9.4.5",
-  "version_code": 275,
-  "version_code_major": 0,
-  "min_sdk_version": 23,
-  "target_sdk_version": 34,
   "apk": {
+    "bytes": 179817557,
     "name": "base.apk",
-    "bytes": 150377492,
-    "sha256": "c7e56101e5753002bba220ce40d07b00d4bc822e1eeef12bbe36ec9e2f8e272d"
+    "sha256": "f817658541a12bc4405b47ff68d457dca5462ab0bc2ad4471d9021485a0fe83a"
   },
+  "min_sdk_version": 23,
   "native_abis": [
     "arm64-v8a"
   ],
+  "package": "com.MobileTicket",
+  "publisher_payloads": [
+    {
+      "bytes": 1237645,
+      "format": "dual_dynamic_shared_library_source_v1",
+      "observation_sha256": "fa80166f19ff842166259cedf872a0842465a8d04008f59f1de9aff38e513a93",
+      "path": "lib/arm64-v8a/libDexHelper-x86.so",
+      "sha256": "7e5be84403fbda8ae08e1c6b0e31fbd6e9b50ebc4801d372cc7998634a664d91"
+    },
+    {
+      "bytes": 30064494,
+      "format": "seven_zip04_single_lzma2_v1",
+      "observation_sha256": "c41eac5570283fabe0c546c638420693a43c4eb8ff00b2bcee74be21a80a244d",
+      "path": "lib/arm64-v8a/libalipaywebview_0.11.0.250728104400_7z.so",
+      "sha256": "714cb8eafadd932d7536c61b431ae9f67034e689cd5089c4f6f84378950fcfb0"
+    },
+    {
+      "bytes": 12871112,
+      "format": "embedded_zip_v1",
+      "observation_sha256": "0911f69274fca1d44a40671402459ae3a23845381f61b197b5b350f47e63774b",
+      "path": "lib/arm64-v8a/libmyweb_sdk_0.11.0.250728104400.so",
+      "sha256": "c6c5bff02aa0e7392cc382f9f593c71c563ce78c2e1906487c310525a9ef5cfd"
+    },
+    {
+      "bytes": 2208920,
+      "format": "interpreter_tagged_et_dyn_source_v1",
+      "observation_sha256": "83bd8093459d8b1c74550f7ae70e0a6649b0939e12614a0a1e73820704d69d5b",
+      "path": "lib/arm64-v8a/libwb.so",
+      "sha256": "cd177d09ed8a9a0b902c42b1138895d958ffb185c6b47b6fa52b9149b8849a99"
+    }
+  ],
+  "schema": "pocket4-official-apk-candidate-v4",
   "signer_certificate_sha256": [
     "53a2508d2efcef95deadf8ff74ef41eadcd1e96fbcc49b53d741787806c01904"
   ],
-  "native_layout_exceptions": [
-    {
-      "path": "lib/arm64-v8a/libDexHelper-x86.so",
-      "kind": "dual_dynamic_shared_library",
-      "bytes": 1237645,
-      "sha256": "16eb45ff369a71af26ed34e3b318cde2ebfd0ece9da7353c60946b764efd1394",
-      "elf_class": 2,
-      "elf_machine": 62,
-      "elf_type": 3,
-      "soname": "libDexHelper.so",
-      "entry_point": 0,
-      "has_interpreter": false,
-      "layout_sha256": "d6687be7878f15be3d24622a109b2015363175f31f3e11e1931247fdc8a6b9a0"
-    },
-    {
-      "path": "lib/arm64-v8a/libWebViewCore_3.22.2.72.240709175818_7z_uc.so",
-      "kind": "embedded_7z_archive",
-      "bytes": 13999047,
-      "sha256": "fb2588ecfbfd0e8ae55c1454551098f24ab0308f88329b625d27e6b05c809c4e",
-      "layout_sha256": "6f45cd40d70c111d1be7002ba05f4362931a1eba30f7ee98d9b68f17bedc2b3c"
-    },
-    {
-      "path": "lib/arm64-v8a/libwb.so",
-      "kind": "interpreter_tagged_et_dyn",
-      "bytes": 2208920,
-      "sha256": "cd177d09ed8a9a0b902c42b1138895d958ffb185c6b47b6fa52b9149b8849a99",
-      "elf_class": 1,
-      "elf_machine": 40,
-      "elf_type": 3,
-      "soname": "libwb.so",
-      "entry_point": 0,
-      "has_interpreter": true,
-      "interpreter": "/system/bin/linker",
-      "layout_sha256": "63587c3383ae55b1becb76c792e6560290d55d580e144a15b5e326445a18aff8"
-    }
-  ],
   "source": {
-    "apk_url": "https://dynamic.12306.cn/otn/appdownload/12306v5.9.4.5.apk",
-    "version_metadata_url": "https://dynamic.12306.cn/otn/appdownload/12306v5.9.4.5.apk",
-    "signer_reference_url": "https://raw.githubusercontent.com/TrillionniumFoundation/trillionnium-os-desktop/6fd7efdcfa27da2015b7eb5b103dc399491aa18f/compat/android/pocket4/continuation-20261109-e3df/application-candidates/CANDIDATE42.json",
+    "apk_url": "https://s3.hebwy.net/apps/com.MobileTicket_5.9.6.8.apk",
+    "distribution": "public_mirror",
+    "observed_stable_version": "5.9.6.8",
+    "observed_utc": "2026-11-18T12:56:07.976771+00:00",
+    "sha256_kind": "observed_whole_file_digest",
     "signer_reference_kind": "public_historical_candidate",
+    "signer_reference_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/a1304b32634f90dce71bc6c24536c4a82a16f32b/compat/android/pocket4/continuation-20261109-e3df/application-candidates/CANDIDATE42.json",
     "version_metadata_kind": "signed_apk_android_manifest",
-    "observed_utc": "2026-11-18T09:52:38.104192+00:00",
-    "observed_stable_version": "5.9.4.5",
-    "sha256_kind": "observed_whole_file_digest"
-  }
+    "version_metadata_url": "https://www.hebwy.net/apps/posts/2179.html"
+  },
+  "target_sdk_version": 35,
+  "version_code": 280,
+  "version_code_major": 0,
+  "version_name": "5.9.6.8"
 }

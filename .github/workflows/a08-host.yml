@@ -62,6 +62,16 @@ jobs:
             2>&1 | tee "$RUNNER_TEMP/a08/apk-dual-dynamic.log"
           python3 -I -B compat/android/pocket4/apk-content-identity/test_native_resource_payloads.py \
             2>&1 | tee "$RUNNER_TEMP/a08/apk-native-resources.log"
+          python3 -I -B compat/android/pocket4/apk-content-identity/test_apk_set.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/apk-set.log"
+          python3 -I -B compat/android/pocket4/apk-content-identity/test_native_publisher_payloads.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/apk-publisher-payloads.log"
+          python3 -I -B compat/android/pocket4/apk-content-identity/test_verify_publisher_apk.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/apk-publisher-wrapper.log"
+          python3 -I -B compat/android/pocket4/apk-content-identity/test_seven_zip04_payload.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/apk-sevenzip04.log"
+          python3 -I -B compat/android/pocket4/apk-content-identity/test_mixed_publisher_payloads.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/apk-mixed-isa.log"
       - name: Verify R36 storage owner source without runtime admission
         timeout-minutes: 2
         shell: bash

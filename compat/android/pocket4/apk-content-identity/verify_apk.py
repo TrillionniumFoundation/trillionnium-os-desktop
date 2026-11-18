@@ -283,8 +283,9 @@ def load_candidate(path, expected_sha256):
                               ('min_sdk_version', 1, 37), ('target_sdk_version', 1, 1000)]:
         if type(candidate[key]) is not int or not lower <= candidate[key] <= upper:
             raise ValueError('Invalid candidate ' + key)
-    if candidate['target_sdk_version'] < candidate['min_sdk_version']:
-        raise ValueError('Candidate SDK interval is reversed')
+    # targetSdkVersion selects compatibility behavior; it is not maxSdkVersion.
+    # Official system APKs can require API 37 while retaining older target behavior.
+    # Each value is independently bounded above and later matched to signed AXML.
     apk = candidate['apk']
     _fields(apk, ('name', 'bytes', 'sha256'), 'Candidate APK')
     if apk['name'] != 'base.apk' or type(apk['bytes']) is not int or not 0 < apk['bytes'] <= 1 << 30 or not _sha(apk['sha256']):
