@@ -446,43 +446,45 @@
     "target": "droidloom_source"
   },
   {
+    "package": "droidloom-supervisor",
+    "target": "cli_diagnostics",
     "all": [
       "diagnostics_send_typed_requests_and_render_text_or_json",
       "invalid_limits_fail_before_connecting_to_the_daemon"
     ],
-    "ignored": [],
-    "package": "droidloom-supervisor",
-    "target": "cli_diagnostics"
+    "ignored": []
   },
   {
+    "package": "droidloom-supervisor",
+    "target": "cli_inspect",
     "all": [
       "inspection_cli_is_available_and_reports_missing_inputs_without_root"
     ],
-    "ignored": [],
-    "package": "droidloom-supervisor",
-    "target": "cli_inspect"
+    "ignored": []
   },
   {
+    "package": "droidloom-supervisor",
+    "target": "cli_install",
     "all": [
       "install_preserves_package_manager_results_in_text_and_json",
       "install_rejects_missing_and_invalid_apks_before_connecting"
     ],
-    "ignored": [],
-    "package": "droidloom-supervisor",
-    "target": "cli_install"
+    "ignored": []
   },
   {
+    "package": "droidloom-supervisor",
+    "target": "cli_install_multiple",
     "all": [
       "original_split_cli_preserves_success_and_failure_in_text_and_json",
       "split_cli_exposes_distinct_command_without_changing_single_apk_path",
       "split_cli_rejects_missing_or_non_apk_before_connecting",
       "split_cli_rejects_one_and_thirty_three_paths_without_contacting_daemon"
     ],
-    "ignored": [],
-    "package": "droidloom-supervisor",
-    "target": "cli_install_multiple"
+    "ignored": []
   },
   {
+    "package": "droidloom-supervisor",
+    "target": "cli_lifecycle",
     "all": [
       "explicit_mode_reaches_service_and_restart_preserves_it",
       "internal_cell_operations_do_not_recurse_into_systemd",
@@ -492,17 +494,17 @@
       "start_waits_for_boot_and_keeps_progress_out_of_json",
       "status_and_readiness_use_distinct_single_requests_without_wait_fallback"
     ],
-    "ignored": [],
-    "package": "droidloom-supervisor",
-    "target": "cli_lifecycle"
+    "ignored": []
   },
   {
+    "package": "droidloom-supervisor",
+    "target": "droidloom-host-mac",
     "all": [],
-    "ignored": [],
-    "package": "droidloom-supervisor",
-    "target": "droidloom-host-mac"
+    "ignored": []
   },
   {
+    "package": "droidloom-supervisor",
+    "target": "droidloom-supervisor",
     "all": [
       "tests::spec_fifo_is_rejected_without_waiting_for_a_writer",
       "tests::spec_reader_bounds_unending_input",
@@ -510,11 +512,11 @@
       "tests::spec_rejects_directory",
       "tests::spec_rejects_oversized_regular_file"
     ],
-    "ignored": [],
-    "package": "droidloom-supervisor",
-    "target": "droidloom-supervisor"
+    "ignored": []
   },
   {
+    "package": "droidloom-supervisor",
+    "target": "droidloom_supervisor",
     "all": [
       "control::apk::tests::descriptor_survives_unlink_and_is_close_on_exec",
       "control::apk::tests::legacy_json_needs_no_descriptor",
@@ -736,6 +738,13 @@
       "production_execution::capabilities::tests::missing_duplicate_truncated_or_malformed_status_never_becomes_an_observation",
       "production_execution::capabilities::tests::observed_capability_masks_are_complete_without_inventing_an_android_profile",
       "production_execution::capabilities::tests::selected_android_observation_requires_all_five_exact_masks_and_existing_confinement",
+      "production_execution_profile::apex_inputs::archive::tests::apex_archive_cannot_admit_unknown_role_or_expired_deadline",
+      "production_execution_profile::apex_inputs::archive::tests::apex_verity_layout_rejects_foreign_extents_fec_flags_and_descriptor_substitution",
+      "production_execution_profile::apex_inputs::archive::tests::apex_window_rejects_duplicate_compressed_encrypted_or_incomplete_zip_records",
+      "production_execution_profile::apex_inputs::archive::tests::apex_window_rejects_zip_boundary_aliases_and_mismatched_local_headers",
+      "production_execution_profile::apex_inputs::tests::builtin_apex_sources_exclude_all_decompression_outputs",
+      "production_execution_profile::apex_inputs::tests::cp3a_apex_profile_keeps_all_38_original_containers_and_erofs_virt",
+      "production_execution_profile::apex_inputs::tests::cp3a_apex_profile_rejects_omissions_order_versions_and_cross_cohort_layers",
       "production_execution_profile::tests::cp3a_profile_has_exact_service_union_without_unrequested_global_administration",
       "production_execution_profile::tests::scoped_profile_rejects_initial_identity_partial_and_overflowing_id_maps",
       "production_host_admission::tests::host_admission_actual_directory_fd_does_not_follow_symlink_metadata",
@@ -804,6 +813,7 @@
       "production_identity::tests::sentinel_host_and_service_ids_are_not_configured_authority",
       "production_identity::tests::short_grant_rejected_without_creating_a_registry",
       "production_identity::tests::stale_authority_fails_before_any_registry_write",
+      "production_mac::activation_roots::tests::activation_root_policy_delta_is_limited_to_two_original_directory_labels",
       "production_mac::listener::tests::held_path_attribute_uses_original_inode_after_path_replacement",
       "production_mac::loader::tests::fixed_loader_role_rejects_broker_host_and_wrong_enforcement",
       "production_mac::manager_label::tests::original_label_record_cannot_supply_a_role_path_or_success",
@@ -817,6 +827,14 @@
       "production_mounts::runtime_assets::activation::tests::cp3a_activation_requires_the_exact_original_payload_and_reproducible_trampoline",
       "production_mounts::runtime_assets::activation::tests::fixed_activation_declaration_rejects_other_source_or_command_roles",
       "production_mounts::runtime_assets::activation_mounts::tests::activation_roots_keep_distinct_fixed_labels_bounds_and_nonexecution_flags",
+      "production_mounts::runtime_assets::apex_blocks::mount_helper::tests::apex_mount_helper_creator_thread_exit_kills_ready_child_while_group_lives",
+      "production_mounts::runtime_assets::apex_blocks::mount_helper::tests::apex_mount_helper_native_statfs_matches_the_actual_kernel_descriptor",
+      "production_mounts::runtime_assets::apex_blocks::mount_helper::tests::apex_mount_helper_rejects_real_ordinary_directory_and_reaps_its_original_pidfd",
+      "production_mounts::runtime_assets::apex_blocks::mount_helper::tests::apex_mount_helper_success_requires_exact_reply_and_real_exit_agreement",
+      "production_mounts::runtime_assets::apex_blocks::mount_helper::tests::apex_mount_helper_unreleased_child_is_reaped_before_custody_release",
+      "production_mounts::runtime_assets::apex_blocks::mounts::tests::builtin_apex_mountpoint_rejects_real_ordinary_directory_and_replacement_inode",
+      "production_mounts::runtime_assets::apex_blocks::mounts::tests::builtin_apex_publication_targets_cannot_select_capex_aliases_or_an_external_path",
+      "production_mounts::runtime_assets::apex_blocks::tests::original_apex_block_provider_rejects_ordinary_or_writable_host_files",
       "production_mounts::runtime_assets::execution::tests::execution_scope_rejects_caller_masks_and_other_profile_names",
       "production_mounts::runtime_assets::native::build_evidence::tests::native_empty_build_objects_are_not_success_evidence",
       "production_mounts::runtime_assets::native::build_evidence::tests::native_failed_child_and_foreign_derived_pair_are_rejected",
@@ -837,6 +855,7 @@
       "production_mounts::runtime_assets::tests::runtime_schema_rejects_boolean_integer_and_unknown_authority_fields",
       "production_mounts::tests::aliases_links_writable_files_and_fifos_never_become_image_authority",
       "production_mounts::tests::complete_public_digest_covers_tail_and_revalidation_rejects_same_bytes_replacement",
+      "production_mounts::tests::loop_retirement_rejects_foreign_inode_window_flags_or_device_number",
       "production_mounts::tests::manifest_cannot_select_paths_another_layout_or_undeclared_inputs",
       "production_mounts::tests::metadata_admission_rejects_before_any_readable_descriptor_is_opened",
       "production_mounts::tests::retained_actual_flock_survives_identity_lease_drop",
@@ -860,6 +879,7 @@
       "production_namespace::child::private_postexec::tests::production_postexec_failure_encoding_does_not_overlap_runtime_or_xattr_errno",
       "production_namespace::child::process_filesystems::tests::private_failure_site_is_error_only_and_bounded",
       "production_namespace::child::process_filesystems::tests::proc_numeric_names_do_not_treat_non_pid_entries_as_processes",
+      "production_namespace::child::runtime::tests::bootstrap_activation_packets_bind_three_roots_to_exact_five_or_six_descriptors",
       "production_namespace::child::runtime::tests::contacts_runtime_packet_requires_its_explicit_phase_and_three_descriptors",
       "production_namespace::child::runtime::tests::production_runtime_diagnostics_are_disjoint_from_previous_phases",
       "production_namespace::child::runtime::tests::writable_activation_runtime_has_distinct_four_or_five_descriptor_phases",
@@ -892,6 +912,7 @@
       "production_namespace::tree::private_postexec::tests::production_postexec_checks_peer_phase_rights_and_bounded_xattr_separately",
       "production_namespace::tree::private_postexec::tests::production_postexec_queued_failure_keeps_real_errno_without_live_success",
       "production_namespace::tree::private_postexec::tests::production_postexec_stop_and_reap_precede_a_full_diagnostic_pipe",
+      "production_namespace::tree::runtime::tests::bootstrap_activation_requires_its_third_exact_mount_without_legacy_widening",
       "production_namespace::tree::runtime::tests::contacts_projection_rejects_partial_roles_exec_jar_and_actual_aliases",
       "production_namespace::tree::runtime::tests::production_runtime_fixed_component_walk_rejects_actual_symlinks",
       "production_namespace::tree::runtime::tests::production_runtime_query_mount_requires_selected_fixed_readonly_tmpfs",
@@ -989,21 +1010,19 @@
       "production_namespace::tree::tests::privileged_private_postexec_proc_controls",
       "production_namespace::tree::tests::privileged_private_process_filesystem_controls",
       "production_namespace::tree::tests::privileged_private_writable_proc_controls"
-    ],
-    "package": "droidloom-supervisor",
-    "target": "droidloom_supervisor"
+    ]
   },
   {
-    "all": [],
-    "ignored": [],
     "package": "droidloom-supervisor",
-    "target": "droidloomctl"
+    "target": "droidloomctl",
+    "all": [],
+    "ignored": []
   },
   {
-    "all": [],
-    "ignored": [],
     "package": "droidloom-supervisor",
-    "target": "droidloomd"
+    "target": "droidloomd",
+    "all": [],
+    "ignored": []
   },
   {
     "all": [
@@ -1134,20 +1153,29 @@
     "target": "droidloom_transport"
   },
   {
+    "package": "droidloom-update",
+    "target": "dma_heap_layout",
     "all": [
       "dma_heap_video_planes_satisfy_gpu_and_android_layouts"
     ],
     "ignored": [
       "dma_heap_video_planes_satisfy_gpu_and_android_layouts"
-    ],
-    "package": "droidloom-update",
-    "target": "dma_heap_layout"
+    ]
   },
   {
+    "package": "droidloom-update",
+    "target": "droidloom-runtime-inputs",
     "all": [
       "activation::tests::fixed_activation_input_rejects_other_code_payloads_and_caller_authority",
       "activation::tests::fixed_trampoline_pins_match_actual_current_source_bytes",
       "activation::tests::trampoline_build_record_cannot_substitute_other_sources_toolchain_or_elf",
+      "apex_inputs::archive::tests::apex_archive_cannot_admit_unknown_role_or_expired_deadline",
+      "apex_inputs::archive::tests::apex_verity_layout_rejects_foreign_extents_fec_flags_and_descriptor_substitution",
+      "apex_inputs::archive::tests::apex_window_rejects_duplicate_compressed_encrypted_or_incomplete_zip_records",
+      "apex_inputs::archive::tests::apex_window_rejects_zip_boundary_aliases_and_mismatched_local_headers",
+      "apex_inputs::tests::builtin_apex_sources_exclude_all_decompression_outputs",
+      "apex_inputs::tests::cp3a_apex_profile_keeps_all_38_original_containers_and_erofs_virt",
+      "apex_inputs::tests::cp3a_apex_profile_rejects_omissions_order_versions_and_cross_cohort_layers",
       "contract::tests::changed_source_is_rejected_before_any_image_operation",
       "contract::tests::empty_duplicate_or_reordered_apex_claims_fail",
       "contract::tests::explicit_execution_selection_rejects_other_images_and_unknown_authority_fields",
@@ -1170,11 +1198,11 @@
       "query::tests::fixed_query_selection_rejects_arbitrary_paths_and_other_images",
       "query::tests::original_query_metadata_rejects_wrong_shell_group_modes_labels_and_extra_xattrs"
     ],
-    "ignored": [],
-    "package": "droidloom-update",
-    "target": "droidloom-runtime-inputs"
+    "ignored": []
   },
   {
+    "package": "droidloom-update",
+    "target": "droidloom-update",
     "all": [
       "android::aac_security::tests::aac_changed_original_patch_alias_or_preexisting_test_is_rejected",
       "android::aac_security::tests::aac_fixed_request_keeps_strict_user_source_and_official_targets",
@@ -1675,18 +1703,16 @@
     ],
     "ignored": [
       "native_bridge::tests::published_source_pin_fetches_and_verifies"
-    ],
-    "package": "droidloom-update",
-    "target": "droidloom-update"
+    ]
   },
   {
+    "package": "droidloom-update",
+    "target": "release_queue",
     "all": [
       "host_fences_do_not_block_other_apps_or_commit_callbacks",
       "layer_pipeline_uses_one_commit_reply_and_preserves_legacy_staging"
     ],
-    "ignored": [],
-    "package": "droidloom-update",
-    "target": "release_queue"
+    "ignored": []
   },
   {
     "all": [

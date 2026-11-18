@@ -12,23 +12,26 @@ contain an Android image, an APK collection or a production runtime acceptance.
 | --- | --- |
 | Committed source parent inside the baseline archive | `61a38baa745483fbfb757466a1cf352febc20552` |
 | Parent Git tree | `db6249e80209abeda8000eeced6d045a1d57e0a2` |
-| Previous complete source tree | `c386679ac5fdc96eeaa424477435cd3ac09ce764` |
-| Current complete source tree | `ac099a3921615b7bec854dbe2272e3fa96fdf32c` |
-| Current source files / bytes | 2,287 / 42,311,114 |
+| Previous published source tree | `ac099a3921615b7bec854dbe2272e3fa96fdf32c` |
+| Current complete source tree | `9883a243a4e75fad6c84a21ae41e7321bf20a782` |
+| Current source files / bytes | 2,295 / 42,460,870 |
 | Baseline archive members | 2,224: 2,222 source files, manifest and original commit body |
 | Baseline archive SHA256 | `7ab244365184ef670c244b6a0ed75857c6f942897f3fc59c00e6375e76f51816` |
-| Complete cumulative overlay | 115 path bodies / 564,452 compressed bytes |
-| Overlay SHA256 | `c24b66f32ed9dbb4699d0f72d227868aa94cf8c6363b25f9940cc1c6c6502233` |
-| Expanded overlay bytes | 4,433,920 |
-| Expanded overlay SHA256 | `80a4b17c3473ba38f15144534c1e0226b2858a6c9cfd746be035ac3029ef0a11` |
+| Complete cumulative overlay | 125 path bodies / 600,980 compressed bytes |
+| Overlay SHA256 | `a46f13eab02596770e6c8bf2fbc1ffb16532f2ad8460c09c9ebe6066b3054470` |
+| Expanded overlay bytes | 4,679,680 |
+| Expanded overlay SHA256 | `afe891ae9a2dd202882fb4db328e3e0e73b029df34979e74ccd8afac1b34a410` |
 
 The public wrapper commit is distinct from the source parent and reconstructed
 producer tree. `verify.py` checks every parent body, mode, Git blob and tree,
-then all 115 before/after rows and complete overlay bodies. The final tree
-includes exactly 2,287 files. `source_commit` remains null because the
+then all 125 before/after rows and complete overlay bodies. The final tree
+includes exactly 2,295 files. `source_commit` remains null because the
 producer is represented by a verified cumulative overlay. The input manifest
-awards no build or runtime credit. All 42 Rust files changed by the new runtime
-and official-GSI increments passed the pinned Rust 1.93.0 formatter check.
+awards no build or runtime credit. The previous increments' 42 Rust files
+passed the pinned Rust 1.93.0 formatter check. The latest five runtime
+increments changed 20 Rust files; all 20 passed that same check. Fourteen
+harnesses in the two affected packages compiled successfully. These local
+observations do not replace the new complete CI execution.
 
 `SOURCE-OVERLAY.tar.xz` stores canonical USTAR postimages and a complete manifest
 without JSON base64 expansion. The verifier rejects extensions, aliases, links,
@@ -38,6 +41,49 @@ changed preimages or postimages. The original single-frame 5 MiB expansion and
 source-integrity gate pin the compressed byte count and SHA256.
 
 ## Repairs
+
+### Original APEX payloads and bootstrap namespace ownership
+
+The fixed CP3A profile binds all 38 original APEX/CAPEX containers and their
+payload lineage. Whole-file checks cover every container and payload;
+37 payloads use ext4 and the original virtualization payload uses EROFS.
+The payload-window verifier checks exact ZIP boundaries and the original
+AVB hashtree layout. Its opaque result binds each offset and size to the
+held original container. This is input identity, not an AVB signature or
+activation acceptance.
+
+Ten uncompressed builtin APEX sources can now be opened from the same
+held readonly original system tree as init. Readonly autoclear loop devices
+retain their backing inode, exact payload window and flags under the
+existing runtime owner before configuration. Retirement checks those same
+identities and the kernel's detached state. The remaining 28 compressed
+APEXes still require immutable decompression and genuine verity supervision.
+
+Original init binds `/bootstrap-apex` over `/apex` during its two-namespace
+setup. A third independently owned, bounded activation root now preserves
+that behavior. Fixed transport phases require exactly five or six descriptors;
+the existing two-root and readonly contracts remain strict. The source also
+adds a narrow activation-directory MAC contract, including same-policy-epoch
+positive and negative observations. No host policy was loaded. Actual loop
+configuration, payload mounts, original apexd syscall handling, namespace
+transition witnesses and Android boot remain required.
+
+The finite builtin mount backend now retains one actual clone3 PIDFD helper
+before releasing its operation barrier. It accepts only compiled builtin
+targets and held source, target, root and mount-namespace descriptors. The
+helper enters only that mount namespace, chroots to the held guest root and
+performs the fixed move_mount. The parent requires both the real errno reply
+and original PIDFD exit, then reads back the actual payload inode and mount.
+Partial publication remains in the original runtime's retirement custody.
+
+The creator's actual thread PIDFD and a post-PDEATHSIG READY/release handshake
+close the window where the creating thread could die while its thread group
+remained alive. Eight focused source controls passed, including real ordinary
+directory rejection, cancellation before release, and creator-thread death
+with actual helper termination and PIDFD reaping. These controls did not
+perform a privileged payload mount. Original apexd must still issue its own
+authenticated requests and produce its own AVB, database and activation
+results; no successful guest operation is synthesized by this backend.
 
 ### Official CP3A binary inputs and independent vendor production
 
@@ -137,10 +183,11 @@ patch and never activates it or changes its input repository.
 
 The runner reconstructs this source into a new directory and uses a fresh
 Cargo target. Metadata and exact catalogs define 28 workspace packages,
-49 ordinary harnesses, 1,385 listed cases and 19 normal release binaries.
-The current increment adds 37 ordinary names: 18 supervisor, 9 image,
-6 runtime-inputs and 4 updater cases. These names were read from the actual
-newly compiled harnesses. Every old case and all thirty ignored names remain
+49 ordinary harnesses, 1,411 listed cases and 19 normal release binaries.
+The latest five runtime increments add 26 ordinary names relative to the
+previous published producer: 19 supervisor and 7 runtime-inputs cases.
+These names were read from the actual newly compiled harnesses.
+Every old case and all thirty ignored names remain
 present. Catalog listing is separate from execution. Historical tests, binaries and component runs receive
 no fresh credit.
 
@@ -148,13 +195,13 @@ no fresh credit.
 | --- | --- | --- |
 | Explicit updater cases | 64 ordinary cases | 60 seconds per exact name |
 | Remaining updater catalog | 431 ordinary cases; 1 ignored | 300 seconds |
-| Other 48 harnesses | 860 ordinary cases; 29 ignored | 300 seconds per harness |
+| Other 48 harnesses | 886 ordinary cases; 29 ignored | 300 seconds per harness |
 | Normal release builds | 19 fresh binaries | 900 seconds per package batch |
 | Workspace examples | 3 fresh binaries, mains never executed | 900 seconds |
 | Frozen recipe example harness | 9 exact ordinary cases; no ignored cases | 300-second compilation, 60-second execution |
 | Documentation targets | 20 actual library targets, 0 doc cases | 180 seconds per target |
 
-The catalog total is **1,355 ordinary cases and 30 ignored cases**. The nine
+The catalog total is **1,381 ordinary cases and 30 ignored cases**. The nine
 recipe example cases are recorded separately. Each of the three normal
 example binaries and the separate recipe test ELF is joined to its actual
 source metadata and compilation interval. The recipe's exact and ignored

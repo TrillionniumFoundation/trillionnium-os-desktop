@@ -325,10 +325,10 @@ class OverlayControls(unittest.TestCase):
         capsule = v.verify_capsule(inventory_sha)
         self.assertIsNone(v.HEAD_COMMIT)
         self.assertEqual(capsule['parent_manifest']['head'], v.PARENT_COMMIT)
-        self.assertEqual(len(capsule['rows']), 2287)
-        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 42311114)
-        self.assertEqual(v.tree_id(capsule['rows']), 'ac099a3921615b7bec854dbe2272e3fa96fdf32c')
-        self.assertEqual(len(capsule['overlay_manifest']['paths']), 115)
+        self.assertEqual(len(capsule['rows']), 2295)
+        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 42460870)
+        self.assertEqual(v.tree_id(capsule['rows']), '9883a243a4e75fad6c84a21ae41e7321bf20a782')
+        self.assertEqual(len(capsule['overlay_manifest']['paths']), 125)
         self.assertNotEqual(v.HEAD_TREE, v.PARENT_TREE)
 
     def test_overlay_rejects_wrong_base_omitted_extra_or_unsafe_member(self):
@@ -422,7 +422,7 @@ class OverlayControls(unittest.TestCase):
         self.assertLessEqual(len(body), v.OVERLAY_EXPANSION_MAX)
         with v.tarfile.open(fileobj=v.io.BytesIO(body), mode='r:') as archive:
             members = archive.getmembers()
-            self.assertEqual(len(members), 116)
+            self.assertEqual(len(members), 126)
             self.assertEqual(set(m.name for m in members), {'OVERLAY-MANIFEST.json'} |
                              {'postimages/' + name for name in self.packet['files_base64']})
             for member in members:
