@@ -1626,7 +1626,7 @@ jobs:
             ${{ runner.temp }}/runtime-d6-ci-logs/*.stderr
 
   runtime-current-complete-producer:
-    name: Current source - 1381 ordinary cases, 19 releases, examples and docs
+    name: Current source - 1388 ordinary cases, 19 releases, examples and docs
     runs-on: ubuntu-24.04
     timeout-minutes: 140
     env:
@@ -1637,7 +1637,7 @@ jobs:
       GIT_CONFIG_GLOBAL: /dev/null
       GIT_TERMINAL_PROMPT: '0'
       # Pin the complete reviewed capsule inventory outside the capsule itself.
-      CURRENT_SOURCE_INVENTORY_SHA256: ccc41e9d0e1e6dd000bc9d12f80417de38e08109bb76c05482b5ddefe8ca7a3f
+      CURRENT_SOURCE_INVENTORY_SHA256: b2217cca2e741ed4764b11b9c0974ce7e0cb964f6b258eb4744761535729f7ee
     steps:
       - uses: actions/checkout@v4
         with:
@@ -1672,7 +1672,7 @@ jobs:
           capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1"
           timeout --signal=TERM --kill-after=30s 1860s bash "$capsule/prepare_ci.sh" \
             --work "$RUNNER_TEMP/current-dependencies"
-      - name: Run 1381 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
+      - name: Run 1388 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
         timeout-minutes: 92
         shell: bash
         run: |

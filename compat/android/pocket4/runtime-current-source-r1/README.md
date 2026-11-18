@@ -12,24 +12,23 @@ contain an Android image, an APK collection or a production runtime acceptance.
 | --- | --- |
 | Committed source parent inside the baseline archive | `61a38baa745483fbfb757466a1cf352febc20552` |
 | Parent Git tree | `db6249e80209abeda8000eeced6d045a1d57e0a2` |
-| Previous published source tree | `ac099a3921615b7bec854dbe2272e3fa96fdf32c` |
-| Current complete source tree | `9883a243a4e75fad6c84a21ae41e7321bf20a782` |
-| Current source files / bytes | 2,295 / 42,460,870 |
+| Previous published source tree | `0b85a69905ce8ebfa9eaada1e3a29048fc2308c0` |
+| Current complete source tree | `0b85a69905ce8ebfa9eaada1e3a29048fc2308c0` |
+| Current source files / bytes | 2,298 / 42,513,744 |
 | Baseline archive members | 2,224: 2,222 source files, manifest and original commit body |
 | Baseline archive SHA256 | `7ab244365184ef670c244b6a0ed75857c6f942897f3fc59c00e6375e76f51816` |
-| Complete cumulative overlay | 125 path bodies / 600,980 compressed bytes |
-| Overlay SHA256 | `a46f13eab02596770e6c8bf2fbc1ffb16532f2ad8460c09c9ebe6066b3054470` |
-| Expanded overlay bytes | 4,679,680 |
-| Expanded overlay SHA256 | `afe891ae9a2dd202882fb4db328e3e0e73b029df34979e74ccd8afac1b34a410` |
+| Complete cumulative overlay | 128 path bodies / 608,480 compressed bytes |
+| Overlay SHA256 | `bdbc0b3f4fd295d8ec0a805e494f8bb405343cb4629dc063dc2c1d1316f86b1d` |
+| Expanded overlay bytes | 4,741,120 |
+| Expanded overlay SHA256 | `dd2daa4f4a959a57d6c66584b80a0b758caa51e1ddc22163e38cbbe3f9ad9de0` |
 
 The public wrapper commit is distinct from the source parent and reconstructed
 producer tree. `verify.py` checks every parent body, mode, Git blob and tree,
-then all 125 before/after rows and complete overlay bodies. The final tree
-includes exactly 2,295 files. `source_commit` remains null because the
+then all 128 before/after rows and complete overlay bodies. The final tree
+includes exactly 2,298 files. `source_commit` remains null because the
 producer is represented by a verified cumulative overlay. The input manifest
 awards no build or runtime credit. The previous increments' 42 Rust files
-passed the pinned Rust 1.93.0 formatter check. The latest five runtime
-increments changed 20 Rust files; all 20 passed that same check. Fourteen
+passed the pinned Rust 1.93.0 formatter check. The latest runtime increment changes 9 Rust files; all 9 passed that same check. Fourteen
 harnesses in the two affected packages compiled successfully. These local
 observations do not replace the new complete CI execution.
 
@@ -41,6 +40,34 @@ changed preimages or postimages. The original single-frame 5 MiB expansion and
 source-integrity gate pin the compressed byte count and SHA256.
 
 ## Repairs
+
+### Original-init notification custody and real thread exit
+
+The original pre-exec init creates the fixed seccomp USER_NOTIF listener and
+hands it to its original tree owner through authenticated phases 62/63. The
+bounded receiver keeps its original PIDFD, creator-thread PIDFD, READY/release
+barrier and three fixed descriptors. A fixed receiver syscall filter rejects
+unrelated operations. Pending notification IDs, actual helper result and reap,
+and the original absolute deadline must all agree. An uncertain receive or send
+permits retirement only. This increment exposes only real negative-errno
+responses; it grants no successful response or CONTINUE operation. Original
+apexd dispatch, namespace changes and device-mapper activation remain open.
+
+CI run 44326022692 at the prior public head failed the newly added immediate
+creator-PIDFD assertion: pthread_join can return after clear_child_tid wakes
+but before exit_notify publishes exit_state. That failed run is preserved.
+The correction requires actual PIDFD POLLIN within the original three-second
+retirement bound, followed by the same exact child SIGKILL and PIDFD reap.
+It does not ignore the case or infer kernel exit from a thread-library return.
+
+Nine unique focused controls were independently executed from the integrated
+source, including real USER_NOTIF/errno delivery, receiver SIGSYS, idle receive
+timeout and reap, rejection after an already completed/reaped result exceeds
+its original deadline, the corrected creator-exit case and proc-phase
+separation. All nine passed. Local process cleanup used a subreaper and actual
+waitpid ECHILD because that local host lacks proc task children files. This
+does not qualify the complete CI runner; its original proc-observation gate
+and all thirty ignored cases remain unchanged.
 
 ### Original APEX payloads and bootstrap namespace ownership
 
@@ -183,9 +210,10 @@ patch and never activates it or changes its input repository.
 
 The runner reconstructs this source into a new directory and uses a fresh
 Cargo target. Metadata and exact catalogs define 28 workspace packages,
-49 ordinary harnesses, 1,411 listed cases and 19 normal release binaries.
-The latest five runtime increments add 26 ordinary names relative to the
-previous published producer: 19 supervisor and 7 runtime-inputs cases.
+49 ordinary harnesses, 1,418 listed cases and 19 normal release binaries.
+The latest runtime increment adds seven ordinary supervisor names.
+Cumulatively, increments 6 through 11 add 33 names relative to the
+ac099 producer: 26 supervisor and 7 runtime-inputs cases.
 These names were read from the actual newly compiled harnesses.
 Every old case and all thirty ignored names remain
 present. Catalog listing is separate from execution. Historical tests, binaries and component runs receive
@@ -195,13 +223,13 @@ no fresh credit.
 | --- | --- | --- |
 | Explicit updater cases | 64 ordinary cases | 60 seconds per exact name |
 | Remaining updater catalog | 431 ordinary cases; 1 ignored | 300 seconds |
-| Other 48 harnesses | 886 ordinary cases; 29 ignored | 300 seconds per harness |
+| Other 48 harnesses | 893 ordinary cases; 29 ignored | 300 seconds per harness |
 | Normal release builds | 19 fresh binaries | 900 seconds per package batch |
 | Workspace examples | 3 fresh binaries, mains never executed | 900 seconds |
 | Frozen recipe example harness | 9 exact ordinary cases; no ignored cases | 300-second compilation, 60-second execution |
 | Documentation targets | 20 actual library targets, 0 doc cases | 180 seconds per target |
 
-The catalog total is **1,381 ordinary cases and 30 ignored cases**. The nine
+The catalog total is **1,388 ordinary cases and 30 ignored cases**. The nine
 recipe example cases are recorded separately. Each of the three normal
 example binaries and the separate recipe test ELF is joined to its actual
 source metadata and compilation interval. The recipe's exact and ignored
