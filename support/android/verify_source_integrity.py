@@ -475,12 +475,6 @@ REQUIRED_FILES = (
     'compat/android/pocket4/storage-r36-owner-source-r1/baseline-r8/SOURCE-MANIFEST.json',
     'compat/android/pocket4/storage-r36-owner-source-r1/postimages/SOURCE-MANIFEST.json',
     'compat/android/pocket4/storage-r36-owner-source-r1/postimages/admit.py',
-)
-EXECUTABLE_FILES = (
-    "support/android/build_asterinas_abi.sh",
-    "support/android/build_smoke_apk.sh",
-    "support/android/prepare_aosp.sh",
-    "support/android/run_reference_cuttlefish.sh",
     'compat/android/pocket4/current-publisher-delivery-source/DATA-INPUTS.json',
     'compat/android/pocket4/current-publisher-delivery-source/EXPECTED-INPUTS.json',
     'compat/android/pocket4/current-publisher-delivery-source/FILES.sha256',
@@ -536,6 +530,12 @@ EXECUTABLE_FILES = (
     'compat/android/pocket4/current-private-control-policy/ROOT-VERIFICATION.json',
     'compat/android/pocket4/current-private-control-policy/SOURCE.tar.gz',
     'compat/android/pocket4/current-private-control-policy/SOURCE_FREEZE.json',
+)
+EXECUTABLE_FILES = (
+    "support/android/build_asterinas_abi.sh",
+    "support/android/build_smoke_apk.sh",
+    "support/android/prepare_aosp.sh",
+    "support/android/run_reference_cuttlefish.sh",
 )
 PARSED_SUFFIXES = {".py", ".sh", ".json", ".xml"}
 
