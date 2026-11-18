@@ -52,6 +52,15 @@ jobs:
           set -euo pipefail
           python3 -I -B compat/android/pocket4/current-app-acceptance/test_release_scope.py \
             2>&1 | tee "$RUNNER_TEMP/a08/current-app-release-scope.log"
+      - name: Verify R36 storage owner source without runtime admission
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/storage-r36-owner-source-r1/run_ci.py \
+            --inventory-sha256 e958f8520dafdc7ba08cbac20b4d441466e47d8041e2c889f56cd6ff1672b988 \
+            --out "$RUNNER_TEMP/a08/storage-owner-r36-source.json" \
+            2>&1 | tee "$RUNNER_TEMP/a08/storage-owner-r36-source.log"
       - name: Install Java, JNI and media host test tools
         shell: bash
         run: |
@@ -1597,7 +1606,7 @@ jobs:
             ${{ runner.temp }}/runtime-d6-ci-logs/*.stderr
 
   runtime-current-complete-producer:
-    name: Current source - 1305 ordinary cases and 19 normal releases
+    name: Current source - 1318 ordinary cases, 19 releases, examples and docs
     runs-on: ubuntu-24.04
     timeout-minutes: 140
     env:
@@ -1608,7 +1617,7 @@ jobs:
       GIT_CONFIG_GLOBAL: /dev/null
       GIT_TERMINAL_PROMPT: '0'
       # Pin the complete reviewed capsule inventory outside the capsule itself.
-      CURRENT_SOURCE_INVENTORY_SHA256: 7b6e43f051ec38a4c0fcc53c5caace2a00a0655bd28a15616eea45887d5a0b7f
+      CURRENT_SOURCE_INVENTORY_SHA256: 9449c4b9c11b058f0b5b0a906cc7a943befa9f7d0fde3d3ac6b6542017603529
     steps:
       - uses: actions/checkout@v4
         with:
@@ -1625,7 +1634,7 @@ jobs:
           (cd "$capsule" && sha256sum --quiet -c FILES.sha256)
           timeout --signal=TERM --kill-after=10s 90s python3 -I -B "$capsule/test_verifier.py"
           timeout --signal=TERM --kill-after=10s 90s python3 -I -B "$capsule/test_runner.py"
-      - name: Reconstruct the complete 2271-file producer source
+      - name: Reconstruct the complete 2272-file producer source
         timeout-minutes: 5
         shell: bash
         run: |
@@ -1643,7 +1652,7 @@ jobs:
           capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1"
           timeout --signal=TERM --kill-after=30s 1860s bash "$capsule/prepare_ci.sh" \
             --work "$RUNNER_TEMP/current-dependencies"
-      - name: Build all 49 harnesses, execute fresh 1305 cases, and build 19 releases
+      - name: Run 1318 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
         timeout-minutes: 92
         shell: bash
         run: |

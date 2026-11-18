@@ -319,10 +319,10 @@ class OverlayControls(unittest.TestCase):
         capsule = v.verify_capsule(inventory_sha)
         self.assertIsNone(v.HEAD_COMMIT)
         self.assertEqual(capsule['parent_manifest']['head'], v.PARENT_COMMIT)
-        self.assertEqual(len(capsule['rows']), 2271)
-        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 42004577)
-        self.assertEqual(v.tree_id(capsule['rows']), '84d74983ea2c6f3ad131272efb0ac939d9ddcf55')
-        self.assertEqual(len(capsule['overlay_manifest']['paths']), 71)
+        self.assertEqual(len(capsule['rows']), 2272)
+        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 42041849)
+        self.assertEqual(v.tree_id(capsule['rows']), 'c386679ac5fdc96eeaa424477435cd3ac09ce764')
+        self.assertEqual(len(capsule['overlay_manifest']['paths']), 77)
         self.assertNotEqual(v.HEAD_TREE, v.PARENT_TREE)
 
     def test_overlay_rejects_wrong_base_omitted_extra_or_unsafe_member(self):

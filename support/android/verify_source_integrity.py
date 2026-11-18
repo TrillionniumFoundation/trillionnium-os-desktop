@@ -438,9 +438,19 @@ REQUIRED_FILES = (
     'compat/android/pocket4/runtime-current-source-r1/EXPECTED-TARGETS.json',
     'compat/android/pocket4/runtime-current-source-r1/EXPECTED-CATALOG.json',
     'compat/android/pocket4/runtime-current-source-r1/EXPECTED-BINS.json',
+    'compat/android/pocket4/runtime-current-source-r1/EXTRA-TARGETS.json',
     'compat/android/pocket4/runtime-current-source-r1/UPDATER-EXACT64.json',
     'compat/android/pocket4/runtime-current-source-r1/SOURCE-CAPSULE.tar.xz',
     'compat/android/pocket4/runtime-current-source-r1/SOURCE-OVERLAY.json.xz',
+    'compat/android/pocket4/storage-r36-owner-source-r1/FILES.json',
+    'compat/android/pocket4/storage-r36-owner-source-r1/README.md',
+    'compat/android/pocket4/storage-r36-owner-source-r1/run_ci.py',
+    'compat/android/pocket4/storage-r36-owner-source-r1/test_owner_v2.py',
+    'compat/android/pocket4/storage-r36-owner-source-r1/prepare_candidate.py',
+    'compat/android/pocket4/storage-r36-owner-source-r1/owner_acquisition_v2.py',
+    'compat/android/pocket4/storage-r36-owner-source-r1/CANDIDATE-STATUS.json',
+    'compat/android/pocket4/storage-r36-owner-source-r1/baseline-r8/SOURCE-MANIFEST.json',
+    'compat/android/pocket4/storage-r36-owner-source-r1/postimages/SOURCE-MANIFEST.json',
 )
 EXECUTABLE_FILES = (
     "support/android/build_asterinas_abi.sh",
@@ -454,7 +464,7 @@ BINARY_FILES = {
     'compat/android/pocket4/runtime-current-source-r1/SOURCE-CAPSULE.tar.xz': {
         'bytes': 7696708, 'sha256': '7ab244365184ef670c244b6a0ed75857c6f942897f3fc59c00e6375e76f51816'},
     'compat/android/pocket4/runtime-current-source-r1/SOURCE-OVERLAY.json.xz': {
-        'bytes': 593640, 'sha256': 'a611c9ecf1f1d26b167920d5b5e25b5090a5a293020871e5d8fab835249d43c0'},
+        'bytes': 624640, 'sha256': '37789a01a8d14b5253cc71923c28ca61e8b09813c2b4f4a7bf2a9651ad995b92'},
 }
 
 
