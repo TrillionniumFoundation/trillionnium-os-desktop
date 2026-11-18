@@ -1,6 +1,6 @@
 """Standalone original DeskClock timer state machine for a fresh typed bridge.
 
-All business phase, ACK, pending-effect, ownership and cleanup logic is original.
+Business phase, ACK, pending-effect, ownership and cleanup contracts are retained.
 Caller supplies the fresh trial, pure selector namespace, timer model, fresh
 result, evidence root and newly implemented continuation factory. This file
 imports or instantiates no legacy Flow, Main, transport, installer or session.
@@ -172,11 +172,26 @@ class TimerFlow:
                 and self.c.actions == self.creation_dispatch_before + 1 and self.c.pending is None
                 and self.effect_pending is not None and self.effect_pending['operation'] == 'create',
                 'ONE_ACKNOWLEDGED_CREATE_REQUIRED')
-        current = self.m.read(self.t.s)
-        require(len(current['ids']) == 1 and self.timer_id is None, 'ONE_NEW_TIMER_REQUIRED')
+        require(self.timer_id is None, 'ONE_NEW_TIMER_REQUIRED')
+        # SharedPreferences.apply() may acknowledge UI work before its disk write.
+        # Retry only the read of a valid empty baseline, never the Start action.
+        for attempt in range(3):
+            require(time.monotonic() < self.deadline, 'TIMER_CREATION_READBACK_DEADLINE')
+            current = self.m.read(self.t.s)
+            self.t.record('create-read-' + str(attempt), current)
+            require(time.monotonic() < self.deadline, 'TIMER_CREATION_READBACK_DEADLINE')
+            if current['ids']:
+                break
+            self.m.empty(current)
+            require(attempt < 2, 'ACKNOWLEDGED_TIMER_CREATE_NOT_READ_BACK')
+            remaining = self.deadline - time.monotonic()
+            require(remaining > 0, 'TIMER_CREATION_READBACK_DEADLINE')
+            time.sleep(min(.25, remaining))
+        require(len(current['ids']) == 1, 'ONE_NEW_TIMER_REQUIRED')
         ident = current['ids'][0]
         timer = self.m.owned(current, ident, DURATION)
         now = self.uptime()
+        require(time.monotonic() < self.deadline, 'TIMER_CREATION_READBACK_DEADLINE')
         require(timer['state'] == 1 and self.creation_uptime_before - 10 <= timer['last_start_ms'] <= now + 10
                 and 0 < timer['remaining_ms'] <= DURATION, 'NEW_TIMER_CREATION_TIME_NOT_BOUND')
         self.timer_id = ident
