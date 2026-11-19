@@ -60,6 +60,27 @@ jobs:
             2>&1 | tee "$RUNNER_TEMP/a08/current-ihg-preboot.log"
           python3 -I -B compat/android/pocket4/current-app-acceptance/preboot-source-state/test_merge_required39.py \
             2>&1 | tee "$RUNNER_TEMP/a08/current-required39-source-merge.log"
+      - name: Verify current Beike source refresh and live metadata evidence
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/current-app-acceptance/source-refresh-20261119/verify_refresh.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/current-source-refresh.log"
+          python3 -I -B compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/test_override_beike.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/current-beike-source-controls.log"
+      - name: Verify required39 business plan and preserved installation prerequisites
+        timeout-minutes: 2
+        working-directory: compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum --check --strict FILES.sha256
+          python3 -I -B preflight.py --out "$RUNNER_TEMP/a08/required39-business-plan.json" \
+            2>&1 | tee "$RUNNER_TEMP/a08/required39-business-plan.log"
+          cmp PLAN.json "$RUNNER_TEMP/a08/required39-business-plan.json"
+          python3 -B -m unittest -v test_preflight.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/required39-business-controls.log"
       - name: Verify pinned APK candidate and native input controls
         shell: bash
         run: |
@@ -1645,7 +1666,7 @@ jobs:
             ${{ runner.temp }}/runtime-d6-ci-logs/*.stderr
 
   runtime-current-complete-producer:
-    name: Current source - 1481 ordinary cases, 19 releases, examples and docs
+    name: Current source - 1488 ordinary cases, 19 releases, examples and docs
     runs-on: ubuntu-24.04
     timeout-minutes: 140
     env:
@@ -1656,7 +1677,7 @@ jobs:
       GIT_CONFIG_GLOBAL: /dev/null
       GIT_TERMINAL_PROMPT: '0'
       # Pin the complete reviewed capsule inventory outside the capsule itself.
-      CURRENT_SOURCE_INVENTORY_SHA256: d76e784431bad44dd69edc2eacf3744574dfddb63bf7f2b55e017b7c3f13a707
+      CURRENT_SOURCE_INVENTORY_SHA256: 0df3947b01872ac565dc088d18b1acf88c73560a50be99c32911a432107b92a2
     steps:
       - uses: actions/checkout@v4
         with:
@@ -1673,7 +1694,7 @@ jobs:
           (cd "$capsule" && sha256sum --quiet -c FILES.sha256)
           timeout --signal=TERM --kill-after=10s 90s python3 -I -B "$capsule/test_verifier.py"
           timeout --signal=TERM --kill-after=10s 90s python3 -I -B "$capsule/test_runner.py"
-      - name: Reconstruct the complete 2336-file producer source
+      - name: Reconstruct the complete 2340-file producer source
         timeout-minutes: 5
         shell: bash
         run: |
@@ -1691,7 +1712,7 @@ jobs:
           capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1"
           timeout --signal=TERM --kill-after=30s 1860s bash "$capsule/prepare_ci.sh" \
             --work "$RUNNER_TEMP/current-dependencies"
-      - name: Run 1481 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
+      - name: Run 1488 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
         timeout-minutes: 92
         shell: bash
         run: |

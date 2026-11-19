@@ -1,0 +1,145 @@
+{
+  "Android_calls": 0,
+  "Meituan_signer_migration_qualified": false,
+  "SDK_commands": 0,
+  "actual_cli": {
+    "Android_calls": 0,
+    "business_qualified": false,
+    "input_bookends_equal": true,
+    "output": {
+      "bytes": 127403,
+      "path": "/workspace/scratch/11ea999c19b6/p4-required39-business-preflight-11ea-20261119-r2/PLAN.json",
+      "sha256": "648559a6623a530d0c6ddf95662a2476c6fa50b90cebc7ed3d8ea99d93e48b43"
+    },
+    "production_ready": false,
+    "runtime_qualified": false,
+    "state": "PLAN_PREPARED_RUNTIME_BLOCKED"
+  },
+  "business_qualified": false,
+  "commands": [
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "-m",
+        "unittest",
+        "-v",
+        "test_preflight.py"
+      ],
+      "elapsed_seconds": 0.2908466970002337,
+      "exit_code": 0,
+      "label": "controls",
+      "stderr": {
+        "bytes": 1580,
+        "f9": [
+          27,
+          549573,
+          33188,
+          1000,
+          1000,
+          1,
+          1580,
+          1795066884383468177,
+          1795066884383468177
+        ],
+        "path": "/workspace/scratch/11ea999c19b6/p4-required39-business-preflight-11ea-20261119-r2/validation-r2/controls.stderr",
+        "sha256": "aab05c865fd1cbfe424ce069e127ff57d949e77ddab4b11d1dbe10ed3956f5e0"
+      },
+      "stdout": {
+        "bytes": 0,
+        "f9": [
+          27,
+          549572,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1795066884379303070,
+          1795066884379303070
+        ],
+        "path": "/workspace/scratch/11ea999c19b6/p4-required39-business-preflight-11ea-20261119-r2/validation-r2/controls.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "working_directory": "/workspace/scratch/11ea999c19b6/p4-required39-business-preflight-11ea-20261119-r2"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "preflight.py",
+        "--out",
+        "/workspace/scratch/11ea999c19b6/p4-required39-business-preflight-11ea-20261119-r2/PLAN.json"
+      ],
+      "elapsed_seconds": 0.18481275400154118,
+      "exit_code": 0,
+      "label": "plan",
+      "stderr": {
+        "bytes": 0,
+        "f9": [
+          27,
+          549576,
+          33188,
+          1000,
+          1000,
+          1,
+          0,
+          1795066884567294030,
+          1795066884567294030
+        ],
+        "path": "/workspace/scratch/11ea999c19b6/p4-required39-business-preflight-11ea-20261119-r2/validation-r2/plan.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 387,
+        "f9": [
+          27,
+          549575,
+          33188,
+          1000,
+          1000,
+          1,
+          387,
+          1795066884567294030,
+          1795066884567294030
+        ],
+        "path": "/workspace/scratch/11ea999c19b6/p4-required39-business-preflight-11ea-20261119-r2/validation-r2/plan.stdout",
+        "sha256": "8ec5cda864ad233fe3b587ebdfff615302c83e8322dfd2b0ea4753fad5202fc0"
+      },
+      "working_directory": "/workspace/scratch/11ea999c19b6/p4-required39-business-preflight-11ea-20261119-r2"
+    }
+  ],
+  "complete_original_installation_prerequisites_preserved": true,
+  "credentials_reads": 0,
+  "errors": 0,
+  "failures": 0,
+  "new_control": "test_installation_prerequisites_cannot_be_omitted_or_promoted",
+  "new_control_mutations": 6,
+  "original_r1_files_F9_SHA_bookends_equal": true,
+  "original_r1_files_count": 16,
+  "original_r1_manifest": {
+    "bytes": 3232,
+    "f9": [
+      27,
+      434612,
+      33152,
+      1000,
+      1000,
+      1,
+      3232,
+      1795066221851453907,
+      1795066221851453907
+    ],
+    "sha256": "fb4bcfcc53a96e69152f379cca54af4f90be80a78dd40581fac654aa9d37b8db"
+  },
+  "original_ten_controls_retained": true,
+  "production_ready": false,
+  "recorded_utc": "2026-11-19T05:41:24.578044+00:00",
+  "retained_Play_restrictions_and_expiry_unchanged": true,
+  "runtime_qualified": false,
+  "schema": "pocket4-required39-business-preflight-validation-v2",
+  "state": "PASSED_HOST_ONLY_PLAN_AND_CONTROLS",
+  "ten_source_snapshots_byte_identical": true,
+  "tests_run": 11,
+  "user_data_reads": 0
+}

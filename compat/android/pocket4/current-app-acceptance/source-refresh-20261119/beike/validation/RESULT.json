@@ -1,0 +1,49 @@
+{
+  "actual_source_SDK_commands_in_this_validation": 0,
+  "commands": [
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-B",
+        "p4-beike-current-source-11ea/test_override_beike.py"
+      ],
+      "exit": 0,
+      "label": "controls",
+      "stderr_sha256": "3ba04b96d171433468d0e82c3a3cb6f667b8c28f0c5baeae53a3ad6f95b407cf",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-B",
+        "p4-beike-current-source-11ea/override_beike.py",
+        "--check-only"
+      ],
+      "exit": 0,
+      "label": "historical-replay",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "7b41fb6ab765b4adaec72d620b815021e71d2fee4366d4aec00f906627bb30f3"
+    }
+  ],
+  "controls_failed": 0,
+  "controls_passed": 12,
+  "controls_skipped": 0,
+  "created_utc": "2026-11-19T04:56:48.903049+00:00",
+  "files": [
+    {
+      "bytes": 32086,
+      "path": "/workspace/scratch/11ea999c19b6/p4-beike-current-source-11ea/override_beike.py",
+      "sha256": "4b8280c25d3a29251de5223b9a6c0f80b14da203e685cd4c77dceedd733d2b01"
+    },
+    {
+      "bytes": 7884,
+      "path": "/workspace/scratch/11ea999c19b6/p4-beike-current-source-11ea/test_override_beike.py",
+      "sha256": "0675a6774b6a75622bd7606b5a630e551aa8a016745936ca6abf23c00846fdf8"
+    }
+  ],
+  "production_ready": false,
+  "runtime_qualified": false,
+  "state": "PASSED"
+}

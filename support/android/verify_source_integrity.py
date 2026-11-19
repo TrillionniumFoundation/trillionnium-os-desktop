@@ -530,6 +530,57 @@ REQUIRED_FILES = (
     'compat/android/pocket4/current-private-control-policy/ROOT-VERIFICATION.json',
     'compat/android/pocket4/current-private-control-policy/SOURCE.tar.gz',
     'compat/android/pocket4/current-private-control-policy/SOURCE_FREEZE.json',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/FILES.sha256',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/README.md',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/SOURCE-REFRESH.json',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/CODE-MANIFEST.json',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/actual/CURRENT-SOURCE-STATE.json',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/actual/RESULT.json',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/actual/current-source-freshness.json',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/actual/current-source-inputs.json',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/inputs/NATIVE-PAYLOADS.json',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/inputs/PAGES.json',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/inputs/RESULT.json',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/inputs/SOURCE.json',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/inputs/base-freshness.json',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/inputs/base-registry.json',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/inputs/base-state.json',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/inputs/candidate.json',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/inputs/native-input.json',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/inputs/source-receipt.json',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/inputs/transport-cleanup.json',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/override_beike.py',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/test_override_beike.py',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/validation/RESULT.json',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/validation/controls.stderr',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/validation/controls.stdout',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/validation/historical-replay.stderr',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/validation/historical-replay.stdout',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/public-metadata/DIDI-TENCENT-SUPPLEMENT.json',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/public-metadata/OBSERVATIONS.json',
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/verify_refresh.py',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/FILES.sha256',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/MANIFEST.json',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/PLAN.json',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/README.md',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/VALIDATION.json',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/inputs/COVERAGE.json',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/inputs/CURRENT-SOURCE-STATE.json',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/inputs/EVIDENCE.json',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/inputs/canonical45.json',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/inputs/current-source-freshness.json',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/inputs/current-source-inputs.json',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/inputs/latest-metadata.json',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/inputs/release-scope.json',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/inputs/selection13.json',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/inputs/source-successor-RESULT.json',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/preflight.py',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/r1-to-r2.patch',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/test_preflight.py',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/validation-r2/controls.stderr',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/validation-r2/controls.stdout',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/validation-r2/plan.stderr',
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/validation-r2/plan.stdout',
 )
 EXECUTABLE_FILES = (
     "support/android/build_asterinas_abi.sh",
@@ -543,9 +594,9 @@ BINARY_FILES = {
     'compat/android/pocket4/runtime-current-source-r1/SOURCE-CAPSULE.tar.xz': {
         'bytes': 7894116, 'sha256': '3e8b2fa1ea1ef3555ca7c82e27abe79a2be029c701f69ac55ef4c82484f247ad'},
     'compat/android/pocket4/runtime-current-source-r1/SOURCE-OVERLAY.tar.xz': {
-        'bytes': 589512, 'sha256': '46c389caeb85377a6c150834879c69cc9f513150038067f755b56c0e0f6c8c3d'},
+        'bytes': 615020, 'sha256': '228c7f5612394b2406c0a2e2f376a400ce2a4475fa27036e9ba4aaad344ac618'},
     'compat/android/pocket4/current-publisher-delivery-source/FILES.sha256': {
-        'bytes': 5219, 'sha256': '2656cebe2555b3bcf4e46a63902ae0473784724a24f301206b350c1696f25cc5'},
+        'bytes': 5219, 'sha256': 'cb1ee3090eb2f8986743058d0ab34d22e7fa2f36988bde51407ab37ee3adaae3'},
     'compat/android/pocket4/current-publisher-delivery-source/MANIFEST.json': {
         'bytes': 19869, 'sha256': '872dc25ba3c8980b5ea67609b0a9fb17c6c31b925a823ee9642fe75d3218c699'},
     'compat/android/pocket4/current-publisher-delivery-source/SOURCE.tar.gz': {
@@ -558,6 +609,10 @@ BINARY_FILES = {
         'bytes': 2820889, 'sha256': '332cf46c3af65c3d714d0e65a6f7500796e7b5302a63509a2b38b2bf7ed83035'},
     'compat/android/pocket4/current-private-control-policy/SOURCE_FREEZE.json': {
         'bytes': 74434, 'sha256': 'f4b0d098043b18320a2ff86d78f4788dfbac23d1fb3889909e41f07c7d78d47d'},
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/FILES.sha256': {
+        'bytes': 2709, 'sha256': 'ddba25c9c6111662e3f4f475b4f1871139e36728938302660d7ef34c62871c6d'},
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/FILES.sha256': {
+        'bytes': 1878, 'sha256': 'f9a9c28f15c92a27555c36da5170cdb6f8012f75d6824986e1cad84abdfda6a2'},
 }
 
 
