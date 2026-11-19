@@ -75,6 +75,8 @@ jobs:
             2>&1 | tee "$RUNNER_TEMP/a08/current-provider-archive-controls.log"
           python3 -I -B compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/test_current_inputs.py \
             2>&1 | tee "$RUNNER_TEMP/a08/current-provider-input-controls.log"
+          python3 -I -B compat/android/pocket4/current-app-acceptance/gallery-official-dex-source-20261119/verify_gallery_source.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/current-gallery-static-source.log"
       - name: Verify complete kernel config binding repair and source controls
         timeout-minutes: 2
         shell: bash

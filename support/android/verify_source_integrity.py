@@ -1056,6 +1056,17 @@ REQUIRED_FILES = (
     'compat/android/pocket4/vendor-sparse-cone-source-repair-20261119/source/test_sparse_cone_bookends.py',
     'compat/android/pocket4/vendor-sparse-cone-source-repair-20261119/source/vendor_source_bookends_r13.py',
     'compat/android/pocket4/vendor-sparse-cone-source-repair-20261119/source_replay.py',
+    'compat/android/pocket4/current-app-acceptance/gallery-official-dex-source-20261119/FILES.sha256',
+    'compat/android/pocket4/current-app-acceptance/gallery-official-dex-source-20261119/README.md',
+    'compat/android/pocket4/current-app-acceptance/gallery-official-dex-source-20261119/actual/CLASS-DESCRIPTORS.json',
+    'compat/android/pocket4/current-app-acceptance/gallery-official-dex-source-20261119/actual/DEX-SOURCE-INVENTORY.json',
+    'compat/android/pocket4/current-app-acceptance/gallery-official-dex-source-20261119/actual/RESULT.json',
+    'compat/android/pocket4/current-app-acceptance/gallery-official-dex-source-20261119/actual/execution.json',
+    'compat/android/pocket4/current-app-acceptance/gallery-official-dex-source-20261119/actual/retirement.json',
+    'compat/android/pocket4/current-app-acceptance/gallery-official-dex-source-20261119/history/affinity-refusal-retirement.json',
+    'compat/android/pocket4/current-app-acceptance/gallery-official-dex-source-20261119/history/affinity-refusal.json',
+    'compat/android/pocket4/current-app-acceptance/gallery-official-dex-source-20261119/source/official_dex_inventory.py',
+    'compat/android/pocket4/current-app-acceptance/gallery-official-dex-source-20261119/verify_gallery_source.py',
 )
 EXECUTABLE_FILES = (
     "support/android/build_asterinas_abi.sh",
@@ -1066,6 +1077,29 @@ EXECUTABLE_FILES = (
 PARSED_SUFFIXES = {".py", ".sh", ".json", ".xml"}
 
 BINARY_FILES = {
+    # These 21 actual Provider streams are exactly empty; retain their zero-byte evidence.
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/actual/logs/com.android.externalstorage-badging.stderr': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/actual/logs/com.android.externalstorage-dump.stdout': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/actual/logs/com.android.externalstorage-manifest.stderr': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/actual/logs/com.android.externalstorage-signature.stderr': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/actual/logs/com.android.providers.calendar-badging.stderr': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/actual/logs/com.android.providers.calendar-dump.stdout': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/actual/logs/com.android.providers.calendar-manifest.stderr': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/actual/logs/com.android.providers.calendar-signature.stderr': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/actual/logs/com.android.providers.contacts-badging.stderr': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/actual/logs/com.android.providers.contacts-dump.stdout': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/actual/logs/com.android.providers.contacts-manifest.stderr': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/actual/logs/com.android.providers.contacts-signature.stderr': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/actual/logs/com.android.providers.media.module-badging.stderr': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/actual/logs/com.android.providers.media.module-manifest.stderr': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/actual/logs/com.android.providers.media.module-signature.stderr': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/actual/logs/mediaprovider-apk-dump.stdout': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/actual/logs/mediaprovider-capex-dump.stdout': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/validation/United_preflight.stderr': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/validation/archive_controls.stdout': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/validation/current_input_controls.stdout': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/validation/provider_cohort.stderr': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/gallery-official-dex-source-20261119/FILES.sha256': {'bytes': 926, 'sha256': 'ba56444e85ef0eb9a76fe8ef7853459aa59a0b194df27061c4e0c3a04b5638e2'},
     'compat/android/pocket4/vendor-sparse-cone-source-repair-20261119/FILES.sha256': {'bytes': 1832, 'sha256': 'b01ef15f4435ea28004c95c40c9fe05c89740e0f51a81a6b844b2c327c3899e4'},
     'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/FILES.sha256': {'bytes': 9204, 'sha256': '3b86c6027a635e5979e0665e0f2cc05111ca7bccf8ead9b16bfa00cfd94dce2c'},
     'compat/android/pocket4/kernel-native-exit-config-binding-20261119/FILES.sha256': {'bytes': 3154, 'sha256': 'e1be7ef6e1a99b11cac1fae14af7c4398f488def91b41b95fd84f52ed23756bb'},
@@ -1082,7 +1116,7 @@ BINARY_FILES = {
     'compat/android/pocket4/runtime-current-source-r1/SOURCE-OVERLAY.tar.xz': {
         'bytes': 657032, 'sha256': '5a87a80bebfc2c63696ca9932fcea8d9485810f75a310f9fa1f792cab292390b'},
     'compat/android/pocket4/current-publisher-delivery-source/FILES.sha256': {
-        'bytes': 5219, 'sha256': '7a597d6bdd60aec00d91d4bc01c679074349bb72ab03b25c5ed6af1e6206946f'},
+        'bytes': 5219, 'sha256': '891da64a6748ae39056df7a3ea4e7ad82aba9a5e8390fb53639f2e1835857c43'},
     'compat/android/pocket4/current-publisher-delivery-source/MANIFEST.json': {
         'bytes': 19869, 'sha256': '872dc25ba3c8980b5ea67609b0a9fb17c6c31b925a823ee9642fe75d3218c699'},
     'compat/android/pocket4/current-publisher-delivery-source/SOURCE.tar.gz': {
