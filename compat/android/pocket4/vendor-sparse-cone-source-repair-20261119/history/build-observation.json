@@ -1,0 +1,1753 @@
+{
+  "actual_updater_release_source_tree": "fa0382574f4fc18f59b2b5dd67a30939167d8c3a",
+  "admission": {
+    "affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "build_deadline_monotonic": 2140026.054408521,
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-cp3a-vendor-20261119-162b-r12.service",
+    "disk_floor": 25769803776,
+    "disk_free": 175869366272,
+    "emergency_memory_floor": 8589934592,
+    "fresh_ns": 1795085524398615959,
+    "growth_budget": 128849018880,
+    "limits": {
+      "cpu.max": "800000 100000",
+      "memory.high": "23622320128",
+      "memory.max": "25769803776",
+      "memory.swap.max": "0",
+      "pids.max": "8192"
+    },
+    "memory_available": 45417406464,
+    "pid": 2543394,
+    "start_ticks": "211128491"
+  },
+  "canonical_producer_replay": {
+    "bytes": 1024304,
+    "identity": [
+      66306,
+      72517268,
+      33152,
+      1000,
+      1000,
+      1,
+      1024304,
+      1795085557507681052,
+      1795085557507681052
+    ],
+    "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/build-r12/canonical-producer-replay.json",
+    "sha256": "1318387c6f81fe567a862ade010cda0ae898c8ba07de888672f6c575983bcc43"
+  },
+  "canonical_release_source_original_bookends": {
+    "bytes": 1024304,
+    "identity": [
+      66306,
+      72517269,
+      33152,
+      1000,
+      1000,
+      1,
+      1024304,
+      1795085557510125395,
+      1795085557510125395
+    ],
+    "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/build-r12/canonical-source-original-bookends.json",
+    "sha256": "89a18cbc1e9b5b4b32bb431e418b98e90fe6ade053d2750b04ac8d570d3d1b61"
+  },
+  "commands": [
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/home/qq/work/p4-integrated-continuation-20261118-162b-r1/unified-native-capex-asb-20261119-r2/release-tools-r1/bin/droidloom-source",
+        "--profile",
+        "production-full",
+        "verify-materialized",
+        "--lock",
+        "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/producer-build-r6/android/manifest/production-full-source-lock.json",
+        "--output",
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085573067352192,
+      "name": "verify-full651-before",
+      "original_pidfd_held_until_reaped": true,
+      "owned_descendants_remaining": 0,
+      "pid": 2543865,
+      "retired_descendants": [],
+      "start_ticks": "211133115",
+      "started_ns": 1795085569496261919,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          72517281,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1795085569495254923,
+          1795085569495254923
+        ],
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/build-r12/verify-full651-before.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 115,
+        "identity": [
+          66306,
+          72517278,
+          33152,
+          1000,
+          1000,
+          1,
+          115,
+          1795085573039128933,
+          1795085573039128933
+        ],
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/build-r12/verify-full651-before.stdout",
+        "sha256": "f7fb8424d8a015528afc900d6018464c6614e1abfd194c954db037876a33ed13"
+      }
+    }
+  ],
+  "disk_allocation_plan": {
+    "all_light_roots_growth_cap": 2147483648,
+    "combined_growth_cap": 128849018880,
+    "disk_floor": 25769803776,
+    "light_roots": [
+      "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1",
+      "/home/qq/work/p4-integrated-continuation-20261118-162b-r1",
+      "/home/qq/work/p4-runtime-continuation-20261118-162b-r1",
+      "/home/qq/work/p4-vendor-source-fix-20261118-162b-r1",
+      "/home/qq/work/p4-broker-mac-provider-20261118-162b-r1",
+      "/home/qq/work/p4-source-baseline-refresh-20261118-162b-r1",
+      "/home/qq/work/p4-kernel-6.18.64-cp3a-20261118-r1"
+    ],
+    "original_fresh_disk_minimum": 154618822656,
+    "vendor_growth_cap": 126701535232
+  },
+  "environment": {
+    "CCACHE_MAXSIZE": "2G",
+    "DROIDLOOM_NATIVE_BRIDGE_SOURCE": "/home/qq/work/p4-vendor-source-fix-20261118-162b-r1/teto-engine-source-r1",
+    "GIT_OPTIONAL_LOCKS": "0",
+    "LD_LIBRARY_PATH": "/home/qq/work/p4-vendor-hostdeps-20261118-162b-r1/root/usr/lib/x86_64-linux-gnu:/home/qq/work/p4-vendor-hostdeps-20261118-162b-r1/root/usr/lib/llvm-21/lib",
+    "LLVM_CONFIG": "/home/qq/work/p4-vendor-hostdeps-20261118-162b-r1/root/usr/lib/llvm-21/bin/llvm-config",
+    "PATH": "/home/qq/work/p4-integrated-continuation-20261118-162b-r1/unified-native-capex-asb-20261119-r2/release-tools-r1/bin:/home/qq/work/p4-vendor-hostdeps-20261118-162b-r1/bin:/home/qq/work/p4-vendor-hostdeps-20261118-162b-r1/root/usr/lib/llvm-21/bin:/home/qq/work/p4-vendor-hostdeps-20261118-162b-r1/root/usr/bin:/usr/bin:/bin",
+    "PKG_CONFIG_PATH": "/home/qq/work/p4-vendor-hostdeps-20261118-162b-r1/pkgconfig",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONPATH": "/home/qq/work/p4-vendor-hostdeps-20261118-162b-r1/python-pinned",
+    "TMPDIR": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/tmp-build-r12"
+  },
+  "errors": [
+    {
+      "error": "RuntimeError('actual sparse cones differ from original plan')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor_build_r12.py\", line 1249, in <module>\n    build() if mode == 'build' else recover()\n    ~~~~~^^\n  File \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor_build_r12.py\", line 1075, in build\n    normal_reconcile_and_verify(env)\n    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^\n  File \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor_build_r12.py\", line 839, in normal_reconcile_and_verify\n    before = content_bookend('original651-content-before', contracts[651]['plan']['projects'])\n  File \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor_build_r12.py\", line 653, in content_bookend\n    result = BOOKENDS.snapshot(SOURCE, projects, CONTROL / (name + '.ndjson'),\n                               DEADLINE, resource_guard)\n  File \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor_source_bookends_r12.py\", line 274, in snapshot\n    need(len(actual_cones) == len(set(actual_cones)) and set(actual_cones) == set(cones),\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n         'actual sparse cones differ from original plan')\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor_source_bookends_r12.py\", line 10, in need\n    raise RuntimeError(message)\nRuntimeError: actual sparse cones differ from original plan\n"
+    }
+  ],
+  "finished_ns": 1795085579604713043,
+  "initial_light_task_root_allocation": 10585919488,
+  "initial_non_source_work_allocation": 816558080,
+  "installed": false,
+  "latest_resources": {
+    "disk_free": 175793881088,
+    "memory_available": 44305956864,
+    "observed_ns": 1795085579602073395
+  },
+  "native_source_git": {
+    "commit": "9587399bccdbb7ec6f7de3edd3452609b974eb7c",
+    "origin": "https://github.com/denialwm/teto.git",
+    "parent": "917021cf3ecd077eb1581146a79d2265011755b8",
+    "tree": "cfe7f91f5afe6758e9dd94c7d4c09ae8e50eb150",
+    "upstream_tree": "5e2d7e1577a7bb03917fee7b2ad66b72d09bff85"
+  },
+  "native_source_member_count": 926,
+  "old651_manifest": {
+    "copy": {
+      "bytes": 441444,
+      "identity": [
+        66306,
+        72517280,
+        33152,
+        1000,
+        1000,
+        1,
+        441444,
+        1795085573068396846,
+        1795085573068396846
+      ],
+      "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/build-r12/manifest-651-before.json",
+      "sha256": "704ec2a6ba4fec751490b0da492b161887479ef9579f18025374d56ced72f5a3"
+    },
+    "original": {
+      "bytes": 441444,
+      "identity": [
+        66306,
+        61116705,
+        33152,
+        1000,
+        1000,
+        1,
+        441444,
+        1794644259255709612,
+        1794644259256709575
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/.droidloom-source-manifest.json",
+      "sha256": "704ec2a6ba4fec751490b0da492b161887479ef9579f18025374d56ced72f5a3"
+    }
+  },
+  "production_ready": false,
+  "runtime_qualified": false,
+  "schema": "p4-cp3a-normal-vendor-build-r12-v1",
+  "serialized_heavy_admission": {
+    "actual_retirements": [
+      {
+        "actual_fields": {
+          "ActiveState": "inactive",
+          "ControlGroup": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "SubState": "dead"
+        },
+        "cgroup_absent": true,
+        "pin": {
+          "bytes": 371,
+          "identity": [
+            66306,
+            100947087,
+            33152,
+            1000,
+            1000,
+            1,
+            371,
+            1795026998584579452,
+            1795026998584579452
+          ],
+          "path": "/home/qq/work/p4-runtime-continuation-20261118-162b-r1/increment-16/validation-r2-retirement.json",
+          "sha256": "5227627c14ec438e7342682eff3e43621aeebbe7fe47dd53fd95a2abcc164f4f"
+        },
+        "systemctl_exit_code": 0,
+        "unit": "hepta-runtime-job-1a1efeed3cf-ffbe-683.service"
+      },
+      {
+        "actual_fields": {
+          "ActiveState": "inactive",
+          "ControlGroup": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "SubState": "dead"
+        },
+        "cgroup_absent": true,
+        "pin": {
+          "bytes": 206,
+          "identity": [
+            66306,
+            101225740,
+            33152,
+            1000,
+            1000,
+            1,
+            206,
+            1795024572040488550,
+            1795024572040488550
+          ],
+          "path": "/home/qq/work/p4-runtime-continuation-20261118-162b-r1/increment-15/validation-r2-retirement.json",
+          "sha256": "9762d056176303cc6f8d7bb89dcffb267db333c6a3a02fa66c6360f968aeeb02"
+        },
+        "systemctl_exit_code": 0,
+        "unit": "hepta-runtime-job-1a1efcb1c52-ffbe-5ef.service"
+      },
+      {
+        "actual_fields": {
+          "ActiveState": "inactive",
+          "ControlGroup": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "SubState": "dead"
+        },
+        "cgroup_absent": true,
+        "pin": {
+          "bytes": 258,
+          "identity": [
+            66306,
+            101221573,
+            33152,
+            1000,
+            1000,
+            1,
+            258,
+            1795024490233124783,
+            1795024490233124783
+          ],
+          "path": "/home/qq/work/p4-source-baseline-refresh-20261118-162b-r1/RETIREMENT-r3.json",
+          "sha256": "abe57dcef06cd90909b408cdebc4022bdefbc748fc40e40283d51e7d8e15221c"
+        },
+        "systemctl_exit_code": 0,
+        "unit": "p4-source-baseline-refresh-20261118-r3.service"
+      },
+      {
+        "actual_fields": {
+          "ActiveState": "inactive",
+          "ControlGroup": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "SubState": "dead"
+        },
+        "cgroup_absent": true,
+        "pin": {
+          "bytes": 1988,
+          "identity": [
+            66306,
+            101225795,
+            33152,
+            1000,
+            1000,
+            1,
+            1988,
+            1795024584936874218,
+            1795024584936874218
+          ],
+          "path": "/home/qq/work/p4-source-baseline-refresh-20261118-162b-r1/RETIREMENT-controls-r1.json",
+          "sha256": "52b85111e9b279dc90d699ed705ab51ab94ba9e7ca663d31ec7a6868517bd023"
+        },
+        "systemctl_exit_code": 0,
+        "unit": "p4-source-baseline-controls-20261118-r1.service"
+      }
+    ],
+    "bounded_light_scopes_max_gib": 3.25,
+    "extra_exact_retirements": {
+      "actual_units": [
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "SubState": "dead"
+          },
+          "unit": "p4-cmake652-validation-20261118-appagent-r1.scope"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "SubState": "dead"
+          },
+          "unit": "p4-cmake652-validation-20261118-appagent-r2.scope"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "SubState": "dead"
+          },
+          "unit": "p4-cmake652-finalize-20261118-appagent-r3.scope"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "hepta-runtime-job-1a1f028e319-ffbe-722.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "hepta-runtime-job-1a1f0474cc0-ffbe-763.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-cp3a-vendor-20261118-162b-r9.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-cp3a-vendor-20261118-162b-r9-recovery.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "hepta-runtime-job-1a1f04256da-ffbe-754.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "hepta-runtime-job-1a1f0446d43-ffbe-75b.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "hepta-runtime-job-1a1f04697e7-ffbe-761.service"
+        }
+      ],
+      "inc18_receipt": {
+        "bytes": 3690,
+        "identity": [
+          66306,
+          100927638,
+          33152,
+          1000,
+          1000,
+          1,
+          3690,
+          1795032778533613313,
+          1795032778533613313
+        ],
+        "path": "/home/qq/work/p4-runtime-continuation-20261118-162b-r1/increment-18/FINAL-FREEZE-RETIREMENT.json",
+        "sha256": "cf1ee0f86de62d58658b1b1fcf6bfa83bb3e799261710c34af31ef73a79ff253"
+      },
+      "source_control_receipt": {
+        "bytes": 43944,
+        "identity": [
+          66306,
+          100796116,
+          33060,
+          1000,
+          1000,
+          1,
+          43944,
+          1795031940137495923,
+          1795031940137495923
+        ],
+        "path": "/home/qq/work/p4-broker-mac-provider-20261118-162b-r1/cmake652-final-packet-r1/SOURCE_FREEZE.json",
+        "sha256": "3f83c34869547c4d122574baa87d21e06094b783d3035eda5754e03fb32c047e"
+      }
+    },
+    "host_reserve_gib": 12,
+    "latest_r11_retirements": {
+      "actual_units": [
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "hepta-runtime-job-1a1f1f27008-ffbe-971.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-beike-aurora-compile-20261119-r2.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-kernel-native-exit-tu-20261119-r2.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-kernel-output-entry-read-20261119-r1.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-r11-lifecycle-partof-inner-r3.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-r11-lifecycle-partof-parent-r3.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-r11-lifecycle-r3-case-1-build.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-r11-lifecycle-r3-case-1-recover.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-r11-lifecycle-r3-case-2-build.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-r11-lifecycle-r3-case-2-recover.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-r11-lifecycle-r3-case-3-build.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-r11-lifecycle-r3-case-3-recover.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-r11-lifecycle-r3-case-4-build.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-r11-lifecycle-r3-case-4-recover.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-r11-lifecycle-unknown-build-r3.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-r11-lifecycle-unknown-parent-r3.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-r11-lifecycle-unknown-recover-r3.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-real28-capex-compile-20261119-root-r1.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-real28-capex-run-20261119-root-r1.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-unified-current-packet-20261119-root-r1.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-unified-current-packet-finalize-20261119-root-r2.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-unified-native-capex-asb-release-20261119-root-r1.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-unified-native-capex-asb-validate-20261119-root-r1.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-unified-native-capex-asb-validate-20261119-root-r2.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-unified-native-capex-asb-validate-20261119-root-r3.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-unified-native-capex-asb-validate-20261119-root-r4.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-unified-native-capex-asb-validate-20261119-root-r5.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-unified-native-capex-asb-validate-20261119-root-r6.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-vendor-r11-complete-preparation-20261119-r1.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-vendor-r11-complete-preparation-20261119-r2.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-vendor-r11-lifecycle-controls-20261119-r2.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-vendor-r11-lifecycle-controls-20261119-r3.service"
+        }
+      ],
+      "receipt": {
+        "bytes": 13399,
+        "identity": [
+          66306,
+          100853946,
+          33152,
+          1000,
+          1000,
+          1,
+          13399,
+          1795061351792009202,
+          1795061351792009202
+        ],
+        "path": "/home/qq/work/p4-broker-mac-provider-20261118-162b-r1/vendor-r11-latest-retirement-r2.json",
+        "sha256": "f025b3eb9c9c9070d95a5d141313391d9d1936ed1642a03dc595483018b6dee2"
+      }
+    },
+    "latest_r12_retirements": {
+      "actual_units": [
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-cp3a-vendor-supervisor-20261119-162b-r11.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-cp3a-vendor-20261119-162b-r11.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-cp3a-vendor-20261119-162b-r11-recovery.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-vendor-r11-retirement-20261119-root-r1.service"
+        },
+        {
+          "cgroup_absent": true,
+          "fields": {
+            "ActiveState": "inactive",
+            "ControlGroup": "",
+            "LoadState": "not-found",
+            "MainPID": "0",
+            "SubState": "dead"
+          },
+          "unit": "p4-vendor-r12-plans-20261119-r1.service"
+        }
+      ],
+      "receipt": {
+        "bytes": 7946,
+        "identity": [
+          66306,
+          101487887,
+          33152,
+          1000,
+          1000,
+          1,
+          7946,
+          1795062345081531935,
+          1795062345081531935
+        ],
+        "path": "/home/qq/work/p4-integrated-continuation-20261118-162b-r1/vendor-r11-final-retirement-r1/RESULT.json",
+        "sha256": "aee4308e3acfb86049d1fa41276b8936937f6ca99412d3b8d2f2665ba33db18e"
+      }
+    },
+    "observed_ns": 1795085524398318439,
+    "original_minimum_memory_gib": 42,
+    "schema": "p4-serialized-heavy-build-resource-plan-v1",
+    "simultaneous_other_heavy_compilers": 0,
+    "unallocated_margin_within_minimum_gib": 2.75,
+    "vendor_memory_max_gib": 24
+  },
+  "source_tree": "fa0382574f4fc18f59b2b5dd67a30939167d8c3a",
+  "started_ns": 1795085523310992304,
+  "status_commands": [
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-runtime-job-1a1efeed3cf-ffbe-683.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523358257717,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543395,
+      "started_ns": 1795085523337302557
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-runtime-job-1a1efcb1c52-ffbe-5ef.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523379231686,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543396,
+      "started_ns": 1795085523358378912
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-source-baseline-refresh-20261118-r3.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523399906295,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543397,
+      "started_ns": 1795085523379338742
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-source-baseline-controls-20261118-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523420814446,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543398,
+      "started_ns": 1795085523400006681
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cmake652-validation-20261118-appagent-r1.scope",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523441691688,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543399,
+      "started_ns": 1795085523421095186
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cmake652-validation-20261118-appagent-r2.scope",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523462610839,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543400,
+      "started_ns": 1795085523441740306
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cmake652-finalize-20261118-appagent-r3.scope",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523483181132,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543401,
+      "started_ns": 1795085523462645518
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-runtime-job-1a1f028e319-ffbe-722.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523504167990,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543402,
+      "started_ns": 1795085523483211001
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-runtime-job-1a1f0474cc0-ffbe-763.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523524761922,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543403,
+      "started_ns": 1795085523504196459
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261118-162b-r9.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523545712182,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543404,
+      "started_ns": 1795085523524818550
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261118-162b-r9-recovery.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523566663972,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543405,
+      "started_ns": 1795085523545766900
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-runtime-job-1a1f04256da-ffbe-754.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523587629211,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543406,
+      "started_ns": 1795085523566704920
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-runtime-job-1a1f0446d43-ffbe-75b.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523608542662,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543407,
+      "started_ns": 1795085523587672849
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-runtime-job-1a1f04697e7-ffbe-761.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523629106955,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543408,
+      "started_ns": 1795085523608574161
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-runtime-job-1a1f1f27008-ffbe-971.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523649872251,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543409,
+      "started_ns": 1795085523629313148
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-beike-aurora-compile-20261119-r2.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523670735634,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543410,
+      "started_ns": 1795085523649910030
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-kernel-native-exit-tu-20261119-r2.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523691586057,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543411,
+      "started_ns": 1795085523670762773
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-kernel-output-entry-read-20261119-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523712448589,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543412,
+      "started_ns": 1795085523691614656
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-partof-inner-r3.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523733123719,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543413,
+      "started_ns": 1795085523712502737
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-partof-parent-r3.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523754238223,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543414,
+      "started_ns": 1795085523733177757
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-r3-case-1-build.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523774907232,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543415,
+      "started_ns": 1795085523754291921
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-r3-case-1-recover.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523795829713,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543416,
+      "started_ns": 1795085523774958810
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-r3-case-2-build.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523816763263,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543417,
+      "started_ns": 1795085523795881851
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-r3-case-2-recover.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523837504740,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543418,
+      "started_ns": 1795085523816821201
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-r3-case-3-build.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523858398451,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543419,
+      "started_ns": 1795085523837551068
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-r3-case-3-recover.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523878942605,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543420,
+      "started_ns": 1795085523858431780
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-r3-case-4-build.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523899806988,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543421,
+      "started_ns": 1795085523878984854
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-r3-case-4-recover.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523920687520,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543422,
+      "started_ns": 1795085523899842377
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-unknown-build-r3.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523941619850,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543423,
+      "started_ns": 1795085523920740488
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-unknown-parent-r3.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523962181263,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543424,
+      "started_ns": 1795085523941654049
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-unknown-recover-r3.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085523982714918,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543425,
+      "started_ns": 1795085523962211222
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-real28-capex-compile-20261119-root-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085524003218443,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543426,
+      "started_ns": 1795085523982738887
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-real28-capex-run-20261119-root-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085524023782556,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543427,
+      "started_ns": 1795085524003242112
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-unified-current-packet-20261119-root-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085524044629519,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543428,
+      "started_ns": 1795085524023804865
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-unified-current-packet-finalize-20261119-root-r2.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085524065187673,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543429,
+      "started_ns": 1795085524044658008
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-unified-native-capex-asb-release-20261119-root-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085524086189120,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543430,
+      "started_ns": 1795085524065219131
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-unified-native-capex-asb-validate-20261119-root-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085524107180019,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543431,
+      "started_ns": 1795085524086218089
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-unified-native-capex-asb-validate-20261119-root-r2.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085524127728752,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543432,
+      "started_ns": 1795085524107203838
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-unified-native-capex-asb-validate-20261119-root-r3.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085524148317885,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543433,
+      "started_ns": 1795085524127748392
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-unified-native-capex-asb-validate-20261119-root-r4.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085524168894827,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543434,
+      "started_ns": 1795085524148342484
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-unified-native-capex-asb-validate-20261119-root-r5.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085524189756390,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543435,
+      "started_ns": 1795085524168932086
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-unified-native-capex-asb-validate-20261119-root-r6.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085524210333702,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543436,
+      "started_ns": 1795085524189785799
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-vendor-r11-complete-preparation-20261119-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085524230603186,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543437,
+      "started_ns": 1795085524210370601
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-vendor-r11-complete-preparation-20261119-r2.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085524251535776,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543438,
+      "started_ns": 1795085524230631935
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-vendor-r11-lifecycle-controls-20261119-r2.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085524272112739,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543439,
+      "started_ns": 1795085524251558765
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-vendor-r11-lifecycle-controls-20261119-r3.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085524293184924,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543440,
+      "started_ns": 1795085524272147008
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-supervisor-20261119-162b-r11.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085524314285449,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543441,
+      "started_ns": 1795085524293444105
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261119-162b-r11.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085524335173930,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543442,
+      "started_ns": 1795085524314326967
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261119-162b-r11-recovery.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085524356233726,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543443,
+      "started_ns": 1795085524335223059
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-vendor-r11-retirement-20261119-root-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085524377194986,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543444,
+      "started_ns": 1795085524356266375
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-vendor-r12-plans-20261119-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085524398219543,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 2543445,
+      "started_ns": 1795085524377225074
+    }
+  ],
+  "updater_release_and_full_canonical_source_tree_identical": true,
+  "whole_producer_source_verified": true
+}

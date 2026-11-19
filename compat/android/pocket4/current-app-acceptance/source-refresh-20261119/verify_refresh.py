@@ -9,6 +9,13 @@ import stat
 
 ROOT = Path(__file__).resolve().parent
 EXCLUDED = ['com.enflick.android.TextNow', 'com.pinger.textfree', 'com.ubercab']
+PROVIDER_PACKET = 'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/'
+SELECTED_CURRENT_PATHS = {
+    'current_source_packet_manifest': PROVIDER_PACKET + 'FILES.sha256',
+    'current_source_packet_verifier': PROVIDER_PACKET + 'verify_current_inputs.py',
+    'current_business_preflight': PROVIDER_PACKET + 'current/CURRENT-BUSINESS-PLAN.json',
+    'current_system_provider_cohort': PROVIDER_PACKET + 'current/CURRENT-CP3A-PROVIDER-COHORT.json',
+}
 
 
 def require(value, message):
@@ -31,6 +38,45 @@ def read(name):
 def check_pin(body, row):
     require(len(body) == row['bytes'] and hashlib.sha256(body).hexdigest() == row['sha256'],
             'complete source size/SHA pin')
+
+
+def current_source_inputs(index):
+    # The old packet reader still rejects traversal. Only these four fixed,
+    # repository-relative sibling paths can enter the current-source consumer.
+    repo = ROOT.parents[4]
+    pins = {}
+    for key, fixed_path in SELECTED_CURRENT_PATHS.items():
+        row = index[key]
+        require(row['path'] == fixed_path and set(row) == {'path', 'bytes', 'sha256'},
+                'fixed selected current-source member: ' + key)
+        path = repo / fixed_path
+        info = path.lstat()
+        require(path.resolve() == path and stat.S_ISREG(info.st_mode) and
+                info.st_nlink == 1 and info.st_size <= 2 * 1024 * 1024,
+                'bounded ordinary current-source member')
+        body = path.read_bytes()
+        check_pin(body, row)
+        pins[key] = row
+    spec = importlib.util.spec_from_file_location(
+        'current_cp3a_source_selection', repo / SELECTED_CURRENT_PATHS['current_source_packet_verifier'])
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    for key, expected in module.EXPECTED.items():
+        require(pins[key] == {**expected, 'path': PROVIDER_PACKET + expected['path']},
+                'current source consumer and selection pins agree')
+    result = module.verify()
+    require(result['state'] == 'PASS_CURRENT_SOURCE_INPUTS_RUNTIME_BLOCKED' and
+            result['selected_provider_source_identities'] == 4 and
+            result['current_outputs_reconstructed'] == 2 and result['required_apps'] == 39,
+            'selected current provider/preflight inputs were actually consumed')
+    require(result['United_version'] == '4.2.104' and result['United_version_code'] == 3622 and
+            result['other38_package_rows_unchanged'] is True and
+            result['installation_prerequisites_unchanged'] is True,
+            'current United source and preserved other38/install gates')
+    for key in ('provider_semantic_cleanup_qualified', 'runtime_qualified',
+                'business_qualified', 'production_ready'):
+        require(result[key] is False, 'no source-to-runtime promotion: ' + key)
+    return result
 
 
 def main():
@@ -152,9 +198,13 @@ def main():
         module.no_credit(value)
     require(index['all_39_latest_qualified'] is False and index['all_39_runtime_accepted'] is False,
             'no global latest or runtime admission from source evidence')
+    current_inputs = current_source_inputs(index)
     print(json.dumps({'state': 'PASS_SOURCE_REFRESH_EVIDENCE_ONLY', 'packet_files': len(inventory),
         'current_Beike_version': '3.06.80', 'current_United_version': '4.2.104',
         'current_United_version_code': 3622, 'actual_successor_outputs_reconstructed': 6,
+        'current_provider_and_preflight_outputs_reconstructed': current_inputs['current_outputs_reconstructed'],
+        'current_provider_source_identities_consumed': current_inputs['selected_provider_source_identities'],
+        'current_source_consumer_state': current_inputs['state'],
         'required_apps': 39, 'public_version_observations_with_supplement': 28,
         'United_4_2_104_payload_pending': False, 'SDK_commands': 0, 'Android_actions': 0,
         'APK_or_GSI_bodies_read': 0, 'production_ready': False}, sort_keys=True))

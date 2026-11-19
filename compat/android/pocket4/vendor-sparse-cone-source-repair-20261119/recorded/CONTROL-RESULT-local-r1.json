@@ -1,0 +1,1636 @@
+{
+  "VMs_started": 0,
+  "cases": [
+    {
+      "name": "test_body_change_still_rejected_against_original_git_blob",
+      "passed": true
+    },
+    {
+      "name": "test_duplicate_plan_still_rejected",
+      "passed": true
+    },
+    {
+      "name": "test_index_change_still_rejected_against_original_commit",
+      "passed": true
+    },
+    {
+      "name": "test_missing_required_cone_rejected",
+      "passed": true
+    },
+    {
+      "name": "test_nested_selection_order_does_not_change_original_plan",
+      "passed": true
+    },
+    {
+      "name": "test_noncanonical_plan_still_rejected",
+      "passed": true
+    },
+    {
+      "name": "test_original_commit_still_exact",
+      "passed": true
+    },
+    {
+      "name": "test_original_remote_still_exact",
+      "passed": true
+    },
+    {
+      "name": "test_real_git_prunes_redundant_descendants_and_original_fails",
+      "passed": true
+    },
+    {
+      "name": "test_required_body_removal_still_rejected",
+      "passed": true
+    },
+    {
+      "name": "test_sibling_prefixes_and_file_cones_remain_distinct",
+      "passed": true
+    },
+    {
+      "name": "test_unplanned_broader_parent_rejected",
+      "passed": true
+    },
+    {
+      "name": "test_unplanned_unrelated_cone_rejected",
+      "passed": true
+    }
+  ],
+  "compilers_started": 0,
+  "finished_utc": "2026-11-19T10:58:23.588780+00:00",
+  "fixture_git_commands": [
+    {
+      "after_reap_echild": true,
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902566702457",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 5,
+      "started_ns": "1795085902492051294",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "add",
+        "--all"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902580573245",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 6,
+      "started_ns": "1795085902566726954",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902691707552",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 7,
+      "started_ns": "1795085902580587395",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-cone-fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902696029030",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 10,
+      "started_ns": "1795085902691723620",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902699547682",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 11,
+      "started_ns": "1795085902696043377",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "151b3a26f6ebce46be94c1daecee3df8d3738316516f151a7a6226758a6c812c"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "set",
+        "--cone",
+        "--skip-checks",
+        "--",
+        "a"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902703777558",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 12,
+      "started_ns": "1795085902699591792",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "list"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902706780151",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 13,
+      "started_ns": "1795085902703787528",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 2,
+      "stdout_sha256": "87428fc522803d31065e7bce3cf03fe475096631e5e07bbd7a0fde60c4cf25c7"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902749373370",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 21,
+      "started_ns": "1795085902742918039",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "add",
+        "--all"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902754808769",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 22,
+      "started_ns": "1795085902749381809",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902768462289",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 23,
+      "started_ns": "1795085902754817544",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-cone-fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902775071864",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 26,
+      "started_ns": "1795085902768471088",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902779167220",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 27,
+      "started_ns": "1795085902775081290",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "151b3a26f6ebce46be94c1daecee3df8d3738316516f151a7a6226758a6c812c"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902786204627",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 28,
+      "started_ns": "1795085902782238993",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "add",
+        "--all"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902791575380",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 29,
+      "started_ns": "1795085902786212753",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902808760386",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 30,
+      "started_ns": "1795085902791583969",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-cone-fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902813128901",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 33,
+      "started_ns": "1795085902808768119",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902817052154",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 34,
+      "started_ns": "1795085902813138126",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "151b3a26f6ebce46be94c1daecee3df8d3738316516f151a7a6226758a6c812c"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "set",
+        "--cone",
+        "--skip-checks",
+        "--",
+        "a"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902821060115",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 35,
+      "started_ns": "1795085902817077490",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "list"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902824011539",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 36,
+      "started_ns": "1795085902821068412",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 2,
+      "stdout_sha256": "87428fc522803d31065e7bce3cf03fe475096631e5e07bbd7a0fde60c4cf25c7"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "add",
+        "a/b/deep.txt"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902828544554",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 37,
+      "started_ns": "1795085902824091679",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902864834509",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 43,
+      "started_ns": "1795085902860520257",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "add",
+        "--all"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902874862830",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 44,
+      "started_ns": "1795085902864843321",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902888584118",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 45,
+      "started_ns": "1795085902874870744",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-cone-fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902893406123",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 48,
+      "started_ns": "1795085902888591854",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902897386687",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 49,
+      "started_ns": "1795085902893414679",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "151b3a26f6ebce46be94c1daecee3df8d3738316516f151a7a6226758a6c812c"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "set",
+        "--cone",
+        "--skip-checks",
+        "--",
+        "a"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902902464495",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 50,
+      "started_ns": "1795085902897413380",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "list"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902905444338",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 51,
+      "started_ns": "1795085902902473266",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 2,
+      "stdout_sha256": "87428fc522803d31065e7bce3cf03fe475096631e5e07bbd7a0fde60c4cf25c7"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902943027473",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 59,
+      "started_ns": "1795085902938900716",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "add",
+        "--all"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902948053827",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 60,
+      "started_ns": "1795085902943035787",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902955676176",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 61,
+      "started_ns": "1795085902948062377",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-cone-fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902959615429",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 64,
+      "started_ns": "1795085902955685121",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902963314408",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 65,
+      "started_ns": "1795085902959624350",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "151b3a26f6ebce46be94c1daecee3df8d3738316516f151a7a6226758a6c812c"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "set",
+        "--cone",
+        "--skip-checks",
+        "--",
+        "a/c",
+        "ab",
+        "a/b",
+        "a"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902967212951",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 66,
+      "started_ns": "1795085902963341198",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "list"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085902970218035",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 67,
+      "started_ns": "1795085902967220910",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 5,
+      "stdout_sha256": "2b7dc3c75a19c838ecf1288e6114654a503188730c19815a360c15cf1ac55e96"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903022960041",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 77,
+      "started_ns": "1795085903019060282",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "add",
+        "--all"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903026493842",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 78,
+      "started_ns": "1795085903022966524",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903034518152",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 79,
+      "started_ns": "1795085903026499697",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-cone-fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903036925015",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 82,
+      "started_ns": "1795085903034526830",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903038863405",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 83,
+      "started_ns": "1795085903036931307",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "6539d433326c55a2107bfb77ca30f89dba4fa19e7e8c4cff22762579ad8615df"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903044445885",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 84,
+      "started_ns": "1795085903040579498",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "add",
+        "--all"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903049453323",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 85,
+      "started_ns": "1795085903044453242",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903072156234",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 86,
+      "started_ns": "1795085903049460447",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-cone-fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903075894002",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 89,
+      "started_ns": "1795085903072165173",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903079657448",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 90,
+      "started_ns": "1795085903075902012",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "6539d433326c55a2107bfb77ca30f89dba4fa19e7e8c4cff22762579ad8615df"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "set",
+        "--cone",
+        "--skip-checks",
+        "--",
+        "a"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903084390648",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 91,
+      "started_ns": "1795085903079679789",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "list"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903089732086",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 92,
+      "started_ns": "1795085903084398406",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 2,
+      "stdout_sha256": "87428fc522803d31065e7bce3cf03fe475096631e5e07bbd7a0fde60c4cf25c7"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903103162472",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 95,
+      "started_ns": "1795085903099409800",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "add",
+        "--all"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903108866102",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 96,
+      "started_ns": "1795085903103168462",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903116596034",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 97,
+      "started_ns": "1795085903108873671",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-cone-fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903119018714",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 100,
+      "started_ns": "1795085903116603416",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903121934123",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 101,
+      "started_ns": "1795085903119026184",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "6539d433326c55a2107bfb77ca30f89dba4fa19e7e8c4cff22762579ad8615df"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "set",
+        "--cone",
+        "--skip-checks",
+        "--",
+        "a"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903125679189",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 102,
+      "started_ns": "1795085903121951304",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "list"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903128711653",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 103,
+      "started_ns": "1795085903125686079",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 2,
+      "stdout_sha256": "87428fc522803d31065e7bce3cf03fe475096631e5e07bbd7a0fde60c4cf25c7"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903143038079",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 106,
+      "started_ns": "1795085903138807126",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "add",
+        "--all"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903151405317",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 107,
+      "started_ns": "1795085903143044798",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903159017802",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 108,
+      "started_ns": "1795085903151412666",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-cone-fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903162124670",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 111,
+      "started_ns": "1795085903159024972",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903164460447",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 112,
+      "started_ns": "1795085903162131674",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "6539d433326c55a2107bfb77ca30f89dba4fa19e7e8c4cff22762579ad8615df"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "set",
+        "--cone",
+        "--skip-checks",
+        "--",
+        "a/b",
+        "Android.bp",
+        "a"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903168703479",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 113,
+      "started_ns": "1795085903164479551",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "list"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903171182258",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 114,
+      "started_ns": "1795085903168709181",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 13,
+      "stdout_sha256": "fa5a094b8cca9cb893367c376393cef11f05739c64e05efe44d73180411f08a0"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903253760629",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 131,
+      "started_ns": "1795085903249503799",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "add",
+        "--all"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903264065800",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 132,
+      "started_ns": "1795085903253767725",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903274252982",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 133,
+      "started_ns": "1795085903264073740",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-cone-fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903279137107",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 136,
+      "started_ns": "1795085903274273821",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903282394461",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 137,
+      "started_ns": "1795085903279144584",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "6539d433326c55a2107bfb77ca30f89dba4fa19e7e8c4cff22762579ad8615df"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "set",
+        "--cone",
+        "--skip-checks",
+        "--",
+        "a"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903295328886",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 138,
+      "started_ns": "1795085903282415581",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "list"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903301089505",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 139,
+      "started_ns": "1795085903295337680",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 2,
+      "stdout_sha256": "87428fc522803d31065e7bce3cf03fe475096631e5e07bbd7a0fde60c4cf25c7"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903344783499",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 147,
+      "started_ns": "1795085903341217030",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "add",
+        "--all"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903349508334",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 148,
+      "started_ns": "1795085903344789370",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903362125703",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 149,
+      "started_ns": "1795085903349515948",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-cone-fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903364825796",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 152,
+      "started_ns": "1795085903362133299",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903367277425",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 153,
+      "started_ns": "1795085903364832989",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "6539d433326c55a2107bfb77ca30f89dba4fa19e7e8c4cff22762579ad8615df"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "set",
+        "--cone",
+        "--skip-checks",
+        "--",
+        "library/deep",
+        "lib",
+        "files/prebuilt.bin"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903371946651",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 154,
+      "started_ns": "1795085903367298481",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "list"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903375277853",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 155,
+      "started_ns": "1795085903371954404",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 36,
+      "stdout_sha256": "ec8993a70f3af9266a00e3e312447cd3087715c0937b6d1cc057af1478095249"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903427886986",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 165,
+      "started_ns": "1795085903424442216",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "add",
+        "--all"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903432964571",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 166,
+      "started_ns": "1795085903427894184",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903443271348",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 167,
+      "started_ns": "1795085903432992402",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-cone-fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903447789629",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 170,
+      "started_ns": "1795085903443278981",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903456965271",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 171,
+      "started_ns": "1795085903447796998",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "6539d433326c55a2107bfb77ca30f89dba4fa19e7e8c4cff22762579ad8615df"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "set",
+        "--cone",
+        "--skip-checks",
+        "--",
+        "a"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903463104120",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 172,
+      "started_ns": "1795085903457011430",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "list"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903467081021",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 173,
+      "started_ns": "1795085903463111109",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 2,
+      "stdout_sha256": "87428fc522803d31065e7bce3cf03fe475096631e5e07bbd7a0fde60c4cf25c7"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903517557009",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 181,
+      "started_ns": "1795085903513149300",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "add",
+        "--all"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903529522042",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 182,
+      "started_ns": "1795085903517564931",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903538553636",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 183,
+      "started_ns": "1795085903529529560",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-cone-fixture"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903541286884",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 186,
+      "started_ns": "1795085903538562114",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903543652855",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 187,
+      "started_ns": "1795085903541292912",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "6539d433326c55a2107bfb77ca30f89dba4fa19e7e8c4cff22762579ad8615df"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "set",
+        "--cone",
+        "--skip-checks",
+        "--",
+        "a",
+        "unselected"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903548336508",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 188,
+      "started_ns": "1795085903543693274",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "after_reap_echild": true,
+      "args": [
+        "sparse-checkout",
+        "list"
+      ],
+      "exit_code": 0,
+      "finished_ns": "1795085903550898074",
+      "original_pidfd_held_until_actual_reap": true,
+      "pid": 189,
+      "started_ns": "1795085903548343864",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 13,
+      "stdout_sha256": "f43596c8175e0496ac476761606a4a1729ffedb4517f3ef104d0c0b9e2e9179b"
+    }
+  ],
+  "git_version": "git version 2.47.3",
+  "operational_source_mutations": 0,
+  "original_helper_sha256": "461fc7b33a907381a7a8647f9df2cf89e6b282b9b0030c753091cb1c46c2b7ae",
+  "passed": true,
+  "production_ready": false,
+  "runtime_qualified": false,
+  "schema": "pocket4-real-git-sparse-cone-controls-v1",
+  "started_utc": "2026-11-19T10:58:22.490322+00:00",
+  "successor_helper_sha256": "4d192fa6738a954e0b2f4a480a8ba38a68ad47fefbd5eabbf3b8d00ca29cfad7",
+  "temporary_fixtures_removed": true,
+  "tests_run": 13
+}
