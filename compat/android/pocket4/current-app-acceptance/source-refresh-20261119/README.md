@@ -4,7 +4,8 @@
 and its exact registry and freshness records. This layer preserves the original
 publisher publication, the six-input closure, and the first required39 merge as
 historical evidence. Those earlier records alone do not select the refreshed
-Beike package.
+Beike or United packages. The previous selection index is preserved byte for byte
+in `history-before-united/SOURCE-REFRESH.json`.
 
 ## Actual source result
 
@@ -26,6 +27,31 @@ deleted after the final APK and retained proof set were checked. They are not
 installation dependencies. The final APK and 12 retained JSON proofs remain
 bound by the source-state result.
 
+## Additive United 4.2.104 source successor
+
+United now selects 4.2.104 / code 3622. One original-profile Google Play delivery
+produced one base and three declared splits. All four APKs passed the unchanged
+SDK37 signature, badging and manifest commands for SDK range [37,37], complete
+ZIP/CRC checks and the base/split dependency closure. Eleven ARM64 ELF members
+are recorded. The 351,042,037-byte stored container is locally assembled from
+the original delivery members; it is not a publisher-provided archive.
+
+`united/inputs` contains the complete original delivery, SDK, cleanup and handoff
+metadata plus exact copies of the prior Beike successor's three output files.
+`united/override_united.py` joins only those fixed bytes. It does not repeat SDK
+verification, read an APK, use the network or change the owner's CURRENT state.
+The join keeps Python integer precision for all original F9 identities. Its
+actual three output documents and metadata-only execution record are in
+`united/actual`. Replaying in another output directory yields identical bytes.
+
+Only United's required39 application record, its selected registry entry and
+its freshness row change. The other 38 application states, other 28 required
+registry entries, Play Store companion, Beike source and custody, all ten GSI
+system entries, all three exclusions and the full installation-prerequisite
+map remain identical. The old United 3621 registry/observations remain history.
+The verifier first reconstructs the original Beike outputs and applies Beike's
+original validator, then reconstructs and validates the additive United update.
+
 ## Latest-version observations
 
 The public metadata matrix and separate DiDi supplement preserve the actual
@@ -34,11 +60,13 @@ They cover 28 non-system applications directly; Beike has its separate source
 qualification. Three public channels advertise an older version than the
 already selected input, so those selected inputs are retained.
 
-United's current public listing is 4.2.104 while the qualified input is 4.2.103.
-The new payload must still be obtained and qualified. The original matrix is
-retained unchanged, including preliminary parser failures and the first DiDi
-page with no live version. The supplement records the successful independent
-DiDi observation without rewriting that history.
+The original public matrix observed United 4.2.104 while the then-selected
+qualified input was 4.2.103. That matrix remains unchanged. The additive United
+SDK37 receipt now qualifies 4.2.104/code3622 and resolves that source-input item
+in the current index. This does not establish that all39 applications are the
+latest at activation. The original matrix still retains preliminary parser
+failures and the first DiDi page with no live version; the supplement retains
+the independent successful DiDi observation.
 
 ## Remaining runtime requirements
 
@@ -58,5 +86,9 @@ acceptance result.
 
 Run `python3 -I -B verify_refresh.py` for the complete packet and actual output
 replay, and `python3 -I -B beike/test_override_beike.py` for the twelve source
-scope, history, and rejection controls. Neither command performs network,
-SDK, installation, or Android actions.
+scope, history, and rejection controls. Run
+`python3 -I -B united/test_override_united.py` for twenty United source controls,
+including old-version substitution, missing/duplicate splits, SDK/signature
+identity, complete scope/gate preservation, integer precision and independent
+output-directory reproduction. These commands perform no network, SDK,
+installation, or Android actions.

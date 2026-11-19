@@ -1,0 +1,434 @@
+{
+  "VM_invocations": 0,
+  "argv": [
+    "/usr/bin/systemd-run",
+    "--user",
+    "--unit=p4-kernel-native-exit-vm260-binding-11ea-20261119-r3.service",
+    "--wait",
+    "--collect",
+    "--pipe",
+    "--service-type=exec",
+    "--property=MemoryMax=3221225472",
+    "--property=MemoryHigh=2684354560",
+    "--property=MemorySwapMax=0",
+    "--property=CPUAffinity=22 23",
+    "--property=CPUQuota=200%",
+    "--property=TasksMax=128",
+    "--property=RuntimeMaxSec=900",
+    "--property=TimeoutStopSec=10",
+    "--property=KillMode=control-group",
+    "--property=Nice=10",
+    "--property=UMask=0077",
+    "--property=WorkingDirectory=/home/qq/work/p4-native-exit-vm260-binding-evidence-11ea-20261119-r3",
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "/home/qq/work/p4-native-exit-vm260-binding-evidence-11ea-20261119-r3/inputs/run_binding.py",
+    "worker",
+    "3787c6057491ea870f5366bc01e63b893e12490206164684562da4bec743c5a6",
+    "66306,61122450,33152,1000,1000,1,729,1795071836628164480,1795071836628164480"
+  ],
+  "compiler_invocations": 0,
+  "error": "RuntimeError('actual worker success and complete source/capture bookends')",
+  "finished_ns": 1795071968832278347,
+  "inputs_before": [
+    {
+      "bytes": 21307,
+      "identity": [
+        66306,
+        61122447,
+        33152,
+        1000,
+        1000,
+        1,
+        21307,
+        1795071836626164553,
+        1795071836626164553
+      ],
+      "path": "/home/qq/work/p4-native-exit-vm260-binding-evidence-11ea-20261119-r3/inputs/run_binding.py",
+      "sha256": "3787c6057491ea870f5366bc01e63b893e12490206164684562da4bec743c5a6"
+    },
+    {
+      "bytes": 45685,
+      "identity": [
+        66306,
+        61122448,
+        33152,
+        1000,
+        1000,
+        1,
+        45685,
+        1795071836627164516,
+        1795071836627164516
+      ],
+      "path": "/home/qq/work/p4-native-exit-vm260-binding-evidence-11ea-20261119-r3/inputs/bind_full.py",
+      "sha256": "45b7b7946f7935d2c7355303fc40d45b0bc80d7f28ff22182d815d62fc5e4f80"
+    },
+    {
+      "bytes": 15046,
+      "identity": [
+        66306,
+        61122449,
+        33152,
+        1000,
+        1000,
+        1,
+        15046,
+        1795071836628164480,
+        1795071836628164480
+      ],
+      "path": "/home/qq/work/p4-native-exit-vm260-binding-evidence-11ea-20261119-r3/inputs/KNOWN-INPUTS.json",
+      "sha256": "de0d4ab915bf6691283e4f0eb8090387cc446330ae9a385ff55339d5d17129b8"
+    },
+    {
+      "bytes": 729,
+      "identity": [
+        66306,
+        61122450,
+        33152,
+        1000,
+        1000,
+        1,
+        729,
+        1795071836628164480,
+        1795071836628164480
+      ],
+      "path": "/home/qq/work/p4-native-exit-vm260-binding-evidence-11ea-20261119-r3/full-durable-terminal.json",
+      "sha256": "f7daec1be6bdebd7f2c72aaaf385b8a8503474fde07403b5ff5194e5a04ac857"
+    }
+  ],
+  "native_exit_abi_qualified": false,
+  "observed_invocation_id": "6ad603b0f9ef4b7ab6cc42344d590641",
+  "original_serials_reacquired": true,
+  "passed": false,
+  "preflight_units": [
+    {
+      "cgroup_absent": true,
+      "fields": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "InvocationID": "",
+        "LoadState": "not-found",
+        "MainPID": "0",
+        "SubState": "dead"
+      },
+      "unit": "p4-kernel-native-exit-vm260-binding-11ea-20261119-r3.service"
+    },
+    {
+      "cgroup_absent": true,
+      "fields": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "InvocationID": "",
+        "LoadState": "not-found",
+        "MainPID": "0",
+        "SubState": "dead"
+      },
+      "unit": "p4-kernel-native-exit-full-11ea-20261119-r3.service"
+    },
+    {
+      "cgroup_absent": true,
+      "fields": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "InvocationID": "",
+        "LoadState": "not-found",
+        "MainPID": "0",
+        "SubState": "dead"
+      },
+      "unit": "p4-kernel-native-exit-tu-11ea-20261119-r3.service"
+    },
+    {
+      "cgroup_absent": true,
+      "fields": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "InvocationID": "",
+        "LoadState": "not-found",
+        "MainPID": "0",
+        "SubState": "dead"
+      },
+      "unit": "p4-kernel-native-exit-vm260-prepare-11ea-20261119-r3.service"
+    },
+    {
+      "cgroup_absent": true,
+      "fields": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "InvocationID": "",
+        "LoadState": "not-found",
+        "MainPID": "0",
+        "SubState": "dead"
+      },
+      "unit": "p4-kernel-native-exit-vm260-run-11ea-20261119-r3.service"
+    },
+    {
+      "cgroup_absent": true,
+      "fields": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "InvocationID": "",
+        "LoadState": "not-found",
+        "MainPID": "0",
+        "SubState": "dead"
+      },
+      "unit": "p4-kernel61864-vm-run-20261118-r5.service"
+    },
+    {
+      "cgroup_absent": true,
+      "fields": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "InvocationID": "",
+        "LoadState": "not-found",
+        "MainPID": "0",
+        "SubState": "dead"
+      },
+      "unit": "p4-cp3a-vendor-20261118-162b-r10.service"
+    },
+    {
+      "cgroup_absent": true,
+      "fields": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "InvocationID": "",
+        "LoadState": "not-found",
+        "MainPID": "0",
+        "SubState": "dead"
+      },
+      "unit": "p4-cp3a-vendor-20261118-162b-r10-outer.service"
+    },
+    {
+      "cgroup_absent": true,
+      "fields": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "InvocationID": "",
+        "LoadState": "not-found",
+        "MainPID": "0",
+        "SubState": "dead"
+      },
+      "unit": "p4-cp3a-vendor-20261119-162b-r11.service"
+    },
+    {
+      "cgroup_absent": true,
+      "fields": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "InvocationID": "",
+        "LoadState": "not-found",
+        "MainPID": "0",
+        "SubState": "dead"
+      },
+      "unit": "p4-cp3a-vendor-supervisor-20261119-162b-r11.service"
+    },
+    {
+      "cgroup_absent": true,
+      "fields": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "InvocationID": "",
+        "LoadState": "not-found",
+        "MainPID": "0",
+        "SubState": "dead"
+      },
+      "unit": "p4-cp3a-vendor-20261119-162b-r11-recovery.service"
+    },
+    {
+      "cgroup_absent": true,
+      "fields": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "InvocationID": "",
+        "LoadState": "not-found",
+        "MainPID": "0",
+        "SubState": "dead"
+      },
+      "unit": "p4-cp3a-vendor-supervisor-20261119-162b-r12.service"
+    },
+    {
+      "cgroup_absent": true,
+      "fields": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "InvocationID": "",
+        "LoadState": "not-found",
+        "MainPID": "0",
+        "SubState": "dead"
+      },
+      "unit": "p4-cp3a-vendor-20261119-162b-r12.service"
+    },
+    {
+      "cgroup_absent": true,
+      "fields": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "InvocationID": "",
+        "LoadState": "not-found",
+        "MainPID": "0",
+        "SubState": "dead"
+      },
+      "unit": "p4-cp3a-vendor-20261119-162b-r12-recovery.service"
+    }
+  ],
+  "production_android_runtime_qualified": false,
+  "resource_admission": {
+    "disk_free": 117034926080,
+    "memory_available": 44574261248,
+    "minimum_disk_GiB": 32,
+    "minimum_memory_GiB": 15,
+    "observed_ns": 1795071930024206943
+  },
+  "resources_latest": {
+    "disk_free": 117034803200,
+    "memory_available": 44174249984,
+    "minimum_disk_GiB": 32,
+    "minimum_memory_GiB": 12,
+    "observed_ns": 1795071968246733143
+  },
+  "schema": "p4-vm260-full-binding-terminal-11ea-v1",
+  "serials_after": {
+    "/home/qq/work/p4-kernel-6.18.64-cp3a-20261118-r1/control/build.serial.lock": [
+      66306,
+      72394674,
+      33152,
+      1000,
+      1000,
+      1,
+      0,
+      1795009302688014291,
+      1795009302688014291
+    ],
+    "/home/qq/work/p4-kernel-6.18.64-cp3a-20261118-r1/control/vm.serial.lock": [
+      66306,
+      72404993,
+      33152,
+      1000,
+      1000,
+      1,
+      0,
+      1795013851436014328,
+      1795013851436014328
+    ]
+  },
+  "serials_before": {
+    "/home/qq/work/p4-kernel-6.18.64-cp3a-20261118-r1/control/build.serial.lock": [
+      66306,
+      72394674,
+      33152,
+      1000,
+      1000,
+      1,
+      0,
+      1795009302688014291,
+      1795009302688014291
+    ],
+    "/home/qq/work/p4-kernel-6.18.64-cp3a-20261118-r1/control/vm.serial.lock": [
+      66306,
+      72404993,
+      33152,
+      1000,
+      1000,
+      1,
+      0,
+      1795013851436014328,
+      1795013851436014328
+    ]
+  },
+  "started_ns": 1795071929977900453,
+  "stderr": {
+    "bytes": 1643,
+    "identity": [
+      66306,
+      61122460,
+      33152,
+      1000,
+      1000,
+      1,
+      1643,
+      1795071968825338583,
+      1795071968825338583
+    ],
+    "path": "/home/qq/work/p4-native-exit-vm260-binding-evidence-11ea-20261119-r3/control/worker.stderr",
+    "sha256": "2b072b8e122b20eb517406123ab65a711be0dc6ba7c66c030e1c1a23a6c65404"
+  },
+  "stdout": {
+    "bytes": 0,
+    "identity": [
+      66306,
+      61122459,
+      33152,
+      1000,
+      1000,
+      1,
+      0,
+      1795071930031754752,
+      1795071930031754752
+    ],
+    "path": "/home/qq/work/p4-native-exit-vm260-binding-evidence-11ea-20261119-r3/control/worker.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "systemd_run_actual_reaped": true,
+  "systemd_run_exit": 1,
+  "systemd_run_pid": 2316499,
+  "systemd_run_pidfd_identity": [
+    6,
+    69426207,
+    448,
+    0,
+    0,
+    1,
+    0,
+    1795071930032754716,
+    1795071930032754716
+  ],
+  "unit_retirement": {
+    "cgroup_absent": true,
+    "fields": {
+      "ActiveState": "inactive",
+      "ControlGroup": "",
+      "InvocationID": "",
+      "LoadState": "not-found",
+      "MainPID": "0",
+      "SubState": "dead"
+    },
+    "unit": "p4-kernel-native-exit-vm260-binding-11ea-20261119-r3.service"
+  },
+  "waitid": {
+    "code": 1,
+    "pid": 2316499,
+    "status": 1
+  },
+  "worker_started": {
+    "bytes": 2764,
+    "identity": [
+      66306,
+      61122461,
+      33152,
+      1000,
+      1000,
+      1,
+      2764,
+      1795071930072753256,
+      1795071930072753256
+    ],
+    "path": "/home/qq/work/p4-native-exit-vm260-binding-evidence-11ea-20261119-r3/control/WORKER-STARTED.json",
+    "sha256": "936f0a48fa63e4b4670bfd7eee2cca02f4aa0f7247d77b134884ad1c8554e620"
+  },
+  "worker_started_complete": {
+    "bytes": 0,
+    "identity": [
+      66306,
+      61122462,
+      33152,
+      1000,
+      1000,
+      1,
+      0,
+      1795071930072753256,
+      1795071930072753256
+    ],
+    "path": "/home/qq/work/p4-native-exit-vm260-binding-evidence-11ea-20261119-r3/control/WORKER-STARTED.complete",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

@@ -3,23 +3,29 @@
   "all_39_runtime_accepted": false,
   "business_qualified": false,
   "current_freshness": {
-    "bytes": 105899,
-    "path": "beike/actual/current-source-freshness.json",
-    "sha256": "894162a5bb6fc31deadd2dfb4069b7a353fad3014c131f960a9cc14b3bb4258e"
+    "bytes": 109341,
+    "path": "united/actual/current-source-freshness.json",
+    "sha256": "459a5fd3b74ac186bb0bd19d30874b36ba9b54e2453824b38410843e24289918"
   },
   "current_registry": {
-    "bytes": 111728,
-    "path": "beike/actual/current-source-inputs.json",
-    "sha256": "5d14f8af912f57e9c93290fa9aa3c62a686b57d82f3aa964beb5860b452df9ab"
+    "bytes": 116810,
+    "path": "united/actual/current-source-inputs.json",
+    "sha256": "62df07622afa60960863dd9721cfd8b46a67b74076355c150534052f1f58abb1"
   },
   "current_source_state": {
-    "bytes": 157891,
-    "path": "beike/actual/CURRENT-SOURCE-STATE.json",
-    "sha256": "4d25fc0aafd5668cc3f0c31be157bc617732902976aad821333a02de84ff9bf7"
+    "bytes": 169275,
+    "path": "united/actual/CURRENT-SOURCE-STATE.json",
+    "sha256": "79a3b9063fa9140d2eff7709632378e7ed2c0520aa28293993ec389d3f5b7b31"
+  },
+  "current_united_successor": {
+    "bytes": 5716,
+    "path": "united/actual/RESULT.json",
+    "sha256": "7d8ffb603b7a6fb2acb874d99c1a78c1e6791f60929686a8c427a43068d7f45a"
   },
   "historical_original_publication_and_original39_merge_unchanged": true,
   "historical_source_overrides": [
-    "com.lianjia.beike"
+    "com.lianjia.beike",
+    "com.united.mobile.android"
   ],
   "independently_verified_actual_successor": {
     "bytes": 7311,
@@ -29,6 +35,11 @@
   },
   "installed": false,
   "original_system10_dependency": "Complete signed Android 17 QPR1 CP3A.260905.010 GSI cohort",
+  "previous_refresh_index": {
+    "bytes": 2153,
+    "path": "history-before-united/SOURCE-REFRESH.json",
+    "sha256": "3e6d6c9365760bc727d0f66cfb366cd71090b0626623a6789df2e575f0c522ae"
+  },
   "production_ready": false,
   "public_version_observations": [
     {
@@ -42,12 +53,20 @@
       "sha256": "052ccde50999368d7442c3e0058bbb494dd7a5ced511286a9f688bb6f03d078c"
     }
   ],
-  "required_current_source_updates": [
+  "required_current_source_updates": [],
+  "resolved_current_source_updates": [
     {
-      "new_payload_qualified": false,
+      "new_payload_qualified": true,
       "observed_version": "4.2.104",
       "package": "com.united.mobile.android",
-      "selected_version": "4.2.103"
+      "previous_selected_version": "4.2.103",
+      "selected_version": "4.2.104",
+      "source_receipt": {
+        "bytes": 31632,
+        "path": "united/inputs/source-receipt.json",
+        "sha256": "1023f326cc86f256fef91e873dcc8613b213d5ada5f692193fe41b747a5fb306"
+      },
+      "version_code": 3622
     }
   ],
   "runtime_qualified": false,

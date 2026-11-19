@@ -60,7 +60,7 @@ jobs:
             2>&1 | tee "$RUNNER_TEMP/a08/current-ihg-preboot.log"
           python3 -I -B compat/android/pocket4/current-app-acceptance/preboot-source-state/test_merge_required39.py \
             2>&1 | tee "$RUNNER_TEMP/a08/current-required39-source-merge.log"
-      - name: Verify current Beike source refresh and live metadata evidence
+      - name: Verify current Beike and United source refresh evidence
         timeout-minutes: 2
         shell: bash
         run: |
@@ -69,6 +69,15 @@ jobs:
             2>&1 | tee "$RUNNER_TEMP/a08/current-source-refresh.log"
           python3 -I -B compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/test_override_beike.py \
             2>&1 | tee "$RUNNER_TEMP/a08/current-beike-source-controls.log"
+          python3 -I -B compat/android/pocket4/current-app-acceptance/source-refresh-20261119/united/test_override_united.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/current-united-source-controls.log"
+      - name: Verify complete kernel config binding repair and source controls
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/kernel-native-exit-config-binding-20261119/source_replay.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/kernel-config-binding-source-replay.log"
       - name: Verify required39 business plan and preserved installation prerequisites
         timeout-minutes: 2
         working-directory: compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2

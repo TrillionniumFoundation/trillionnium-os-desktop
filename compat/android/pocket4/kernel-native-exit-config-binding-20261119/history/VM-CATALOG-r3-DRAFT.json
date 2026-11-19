@@ -1,0 +1,249 @@
+{
+  "schema": "p4-native-exit-vm-catalog-r3-draft-v1",
+  "status": "PLANNED_NOT_EXECUTED",
+  "compiled": false,
+  "vm_executed": false,
+  "production_ready": false,
+  "abi_status": "r3_not_frozen_r2_layout_reference_only",
+  "owner_r6": {
+    "path": "/home/qq/work/p4-runtime-continuation-20261118-162b-r1/native-successor-candidate-r6.json",
+    "bytes": 642845,
+    "sha256": "60a5eca4b8849df24ee6b14e81801d5b1491e87ee2107ef9c48fdcbd003856f3"
+  },
+  "fixture_path_reserved": "/home/qq/work/p4-native-exit-vm-fixture-11ea-20261119-r1",
+  "runtime_credit": false,
+  "notes": [
+    "No C fixture has been compiled or executed.",
+    "R2 single-thread refusal is a safety negative only; it cannot qualify the real threaded CP3A init path.",
+    "Freeze actual r3 guard errno, state machine, lifecycle and source hashes before concrete C fixture acceptance.",
+    "Each row may expand into separately named executable cases; aggregate labels are not passed cases.",
+    "No initial-userns CAP_SYS_PTRACE grant; no production policy change; no register/return-value editing.",
+    "Harness protocol planned: /native_exit_probe active|inactive [nonce], P4NATIVE_EVENT/CHECK/GROUP JSON, explicit statuses and original PIDFD terminal facts."
+  ],
+  "cases": [
+    {
+      "id": "N01",
+      "name": "threaded_init_three_epochs",
+      "setup": "Create property-like sibling first; main unshare NEWNS, setns bootstrap, later setns default on one original listener/task/PIDFD; sibling stays alive.",
+      "required": "All three real EXIT values are 0; target ns graph changes exactly; sibling retains original namespace; each stop detaches; later call is a new ID/epoch.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "N02",
+      "name": "nonleader_native_unshare",
+      "setup": "A nonleader executes unshare while group leader and another sibling remain live; use its original PIDFD_THREAD.",
+      "required": "Only that nonleader is attached, observed and detached; correct userns/mntns graph; no TGID substitution.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "N03",
+      "name": "shared_files_native_setns",
+      "setup": "After native unshare splits fs, perform setns with files_struct still shared by an unrelated live sibling.",
+      "required": "Same held file is used at actual native fdget; real native success, no blanket files-count refusal.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "N04",
+      "name": "shared_fs_native_denial",
+      "setup": "Perform mount setns with fs_struct still actually shared.",
+      "required": "The original native mntns_install returns EINVAL at real EXIT; no namespace change; ARM does not replace this with arbitrary EBUSY or fabricate success.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "N05",
+      "name": "native_permission_denial",
+      "setup": "Valid same-file input, but remove target's namespace CAP_SYS_ADMIN while preserving ordinary ptrace admission.",
+      "required": "Real native EPERM at EXIT and unchanged graph; original result remains unchanged after detach.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "N06",
+      "name": "no_initial_ptrace_cap",
+      "setup": "Pin initial userns; record then remove SYS_PTRACE eff/prm/inh/bnd/ambient before any ARM; enter a child userns and remove its SYS_PTRACE too.",
+      "required": "All five initial sets lack the bit, positive parent/child ptrace relies on ordinary gates; record actual MAC labels.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "N07",
+      "name": "fdget_held_file_stability",
+      "setup": "A sharing sibling replaces the table slot after setns has captured the original file.",
+      "required": "If the call succeeded, it joined only the original pinned namespace; table replacement cannot redirect an already held fdget.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "I01",
+      "name": "wrong_notification_state",
+      "setup": "Unknown ID, INIT without successful RECV, different listener, stale/replied ID, missing WAIT_KILLABLE.",
+      "required": "Each actual state is independently established; refusal before attach; no side effect or invented coverage.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "I02",
+      "name": "recv_copy_lifecycle",
+      "setup": "Actual preflight-passing RECV copy EFAULT, and separately a held copy-in-progress window.",
+      "required": "ARM refuses incomplete delivery; later successful RECV on the original request can proceed. A simple EFAULT does not count as the concurrency case.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "I03",
+      "name": "pidfd_identity",
+      "setup": "Negative/closed/non-pidfs/non-thread fd, another task, leader fd for nonleader, reaped original PIDFD, bounded numeric PID reuse.",
+      "required": "No attach or later numeric ptrace operation can reach the replacement task.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "I04",
+      "name": "fixed_abi",
+      "setup": "Assert all offsets/24 bytes/0x40182150; nonzero flags/reserved, partial ARM buffer EFAULT, wrong ioctl size/direction.",
+      "required": "Exact ABI and real errno; no mutation on malformed request.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "I05",
+      "name": "finite_syscall_scope",
+      "setup": "Wrong syscall/arch/x32, unshare extra flags, setns zero/other namespace type/fd0/wide fd.",
+      "required": "Only the frozen native shapes accepted; compat-arch coverage requires a real compat caller, not altered userspace notification copies.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "I06",
+      "name": "namespace_file_identity",
+      "setup": "Ordinary file, wrong ns type, separately reopened same inode, another mntns, pre-ARM ADDFD replacement.",
+      "required": "Original struct file identity is required; a matching inode alone is insufficient.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "I07",
+      "name": "guard_fd_replacement",
+      "setup": "Hold real original setns file at ARM; sibling replaces the shared fd after SEND admission but before native fdget.",
+      "required": "Actual native guard mismatch error (freeze exact errno with r3), no join of substituted namespace; coverage requires observing this native branch.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "I08",
+      "name": "guard_closed_fd",
+      "setup": "Close the shared original slot before native fdget.",
+      "required": "Original EBADF or frozen guard error, no namespace change, guard/file ref consumed once; a later epoch cannot reuse stale pin.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "I09",
+      "name": "double_arm_and_replay",
+      "setup": "Repeat ARM on pending armed ID and SEND after reply; try next ID with old namespace pin.",
+      "required": "No duplicate attachment or guard; original epoch unchanged; new epoch requires fresh exact file custody.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "I10",
+      "name": "addfd_lifetime",
+      "setup": "Queue real ADDFD before ARM, cancel queued request, and attempt ADDFD after successful ARM.",
+      "required": "Revalidation covers queue transition; after ARM no injection through the listener. This does not stand in for shared-files native guard races.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "P01",
+      "name": "ptrace_permissions",
+      "setup": "Compare ARM with ordinary SEIZE under mismatched credentials, nondumpability, existing tracer and actual Yama/SELinux/AppArmor denials.",
+      "required": "No original gate bypass; each LSM denial has a real enforcing policy/label and no initial SYS_PTRACE. Existing permissive fixture policy is not coverage.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "P02",
+      "name": "exact_tracer_task",
+      "setup": "Sibling tracer thread with same visible credentials attempts armed CONTINUE.",
+      "required": "Refused; only original tracer TID succeeds.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "P03",
+      "name": "credential_generation",
+      "setup": "Original tracer makes a real credential-object change then restores visible values.",
+      "required": "Armed CONTINUE refused; retire original task, never replace authority.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "P04",
+      "name": "send_fabrication",
+      "setup": "Send error/value or malformed CONTINUE on armed notification.",
+      "required": "Refused; real native return comes only from actual EXIT.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "P05",
+      "name": "normal_ptrace_regression",
+      "setup": "Original ATTACH/SEIZE/TRACEME, syscall tracing, EXITKILL, normal detach.",
+      "required": "Original behavior/error classes unchanged; full old 160+100 suite on the new kernel still mandatory.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "R01",
+      "name": "tracee_exit_windows",
+      "setup": "Fatal tracee exit before ARM, between passes, after commit, after CONTINUE before native guard, and at EXIT.",
+      "required": "No UAF, leak or stale guard; task reaped by original PIDFD; no killed request receives success credit.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "R02",
+      "name": "tracer_thread_exitkill",
+      "setup": "Attaching nonleader tracer exits while sibling tracer threads remain alive.",
+      "required": "Original tracee dies through EXITKILL; original task actually reaped; no unrelated sibling is substituted.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "R03",
+      "name": "listener_loss",
+      "setup": "Close original listener before ARM and after ARM/CONTINUE.",
+      "required": "Listener-loss ENOSYS is failure of native observation; guard cleared safely; no bypass of pending same-file requirement.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "R04",
+      "name": "cred_guard_and_attach_races",
+      "setup": "Actual credential lock contention and a competing authorized attach across the two ARM passes.",
+      "required": "Bounded precommit refusal or one valid committed owner; no partial attachment retry or stuck locks.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "R05",
+      "name": "mandatory_guard_cancel",
+      "setup": "Cancel/unlink tracer after CONTINUE while target may enter native setns.",
+      "required": "No transition from mandatory guard to silently unguarded native execution; held pin or explicit failure retained until consume/exit.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "R06",
+      "name": "guard_non_setns_cleanup",
+      "setup": "No native entry due fatal exit or changed syscall path; fork-copy/exec transitions where reachable under ordinary ptrace.",
+      "required": "No copied guard, leaked namespace file, stale guard on later syscall, or unconditional requirement for unarmed ordinary setns.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "R07",
+      "name": "deadline_and_reaping",
+      "setup": "One absolute deadline journaled before ARM, timeout at each mutation phase; no competing generic reaper.",
+      "required": "Only original PIDFD kills/reaps; all task/thread terminal evidence and exact teardown deadline recorded; no numeric reacquisition.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "R08",
+      "name": "lockdep_and_memory",
+      "setup": "Admitted diagnostic kernel with real LOCKDEP/KASAN/KCSAN races when available.",
+      "required": "No kernel warning/UAF/lock cycle/ref leak; diagnostic evidence does not replace production-config validation.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "X01",
+      "name": "actual_provider_integration",
+      "setup": "Run frozen real host provider, not merely a fixture invoking the same ABI.",
+      "required": "Audit actual ptrace operation allowlist, zero SETREG/POKE/SET_SYSCALL_INFO/SYSEMU/unapproved resume, exact result passthrough, custody/phase/APEX ledger and policy.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    },
+    {
+      "id": "X02",
+      "name": "actual_cp3a_android",
+      "setup": "Boot original qualified CP3A paths with its property-service thread, APEX/native phases, app queries and later default switch.",
+      "required": "All real paths use new qualified kernel/provider, no permanent tracing, exact ready/phase gates, all required apps accepted.",
+      "status": "NOT_IMPLEMENTED_NOT_RUN"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+Running as unit: p4-kernel-native-exit-vm260-binding-11ea-20261119-r3.service; invocation ID: 6ad603b0f9ef4b7ab6cc42344d590641
+Traceback (most recent call last):
+  File "/home/qq/work/p4-native-exit-vm260-binding-evidence-11ea-20261119-r3/inputs/run_binding.py", line 400, in <module>
+    sys.exit(worker(sys.argv[2],[int(x) for x in sys.argv[3].split(',')]))
+             ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qq/work/p4-native-exit-vm260-binding-evidence-11ea-20261119-r3/inputs/run_binding.py", line 240, in worker
+    record = binder.bind_completed_full(binder.ACTUAL_FULL_PIN,binder.ACTUAL_TERMINAL_PIN,rows[3],OUTPUT)
+  File "/home/qq/work/p4-native-exit-vm260-binding-evidence-11ea-20261119-r3/inputs/bind_full.py", line 601, in bind_completed_full
+    config = generated_configuration(reads, full)
+  File "/home/qq/work/p4-native-exit-vm260-binding-evidence-11ea-20261119-r3/inputs/bind_full.py", line 542, in generated_configuration
+    need(actual == wanted, 'complete generated autoconf does not match actual full config')
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qq/work/p4-native-exit-vm260-binding-evidence-11ea-20261119-r3/inputs/bind_full.py", line 83, in need
+    raise BindingError(reason)
+p4_reviewed_full_binding.BindingError: complete generated autoconf does not match actual full config
+          Finished with result: exit-code
+Main processes terminated with: code=exited, status=1/FAILURE
+               Service runtime: 38.786s
+             CPU time consumed: 13.190s
+                   Memory peak: 2.5G (swap: 0B)
