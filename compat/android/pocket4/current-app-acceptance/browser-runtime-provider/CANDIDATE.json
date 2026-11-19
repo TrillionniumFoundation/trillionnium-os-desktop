@@ -1,0 +1,117 @@
+{
+  "schema": "droidloom_native_browser_provider_source_v1",
+  "base_head": "9ecce4f94dec80500c05322106907e48a0668b05",
+  "base_tree": "12fe22ce02be9759963835faa4e7a7d0a762ddc2",
+  "patch": {
+    "file": "native-browser-provider.patch",
+    "bytes": 68005,
+    "sha256": "cd1bf3e8f57b46d3081039e908d95d2fcccb2ed2127a5d37cb1fe51f8b2a6f82"
+  },
+  "native_patch_files": [
+    {
+      "path": "Cargo.lock",
+      "bytes": 51957,
+      "sha256": "60370005b79115dcc5a9e51b9556a99d46400d020793c12ee179da194a72535a",
+      "base_sha256": "ca5300907a8e609ac0340d016ecfe7b4292bf45fe5ab3cbe8dd0c013f12a2285"
+    },
+    {
+      "path": "Cargo.toml",
+      "bytes": 2080,
+      "sha256": "d451b0792ea3a9e29dc15fc163c9661f80b75721f5241510c86f7fae1881ebb7",
+      "base_sha256": "e33185d2fc5a65e0a4ed6df552e4f8f8f40c793ec07f7289ed27e3c0d5fa4e60"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/Cargo.toml",
+      "bytes": 1067,
+      "sha256": "8f2a7b83963bf5c9d9b5157a38ae7bec2cddeace63386dc3867bb471d1b62f71",
+      "base_sha256": "43f14b5d601be70a095d2a856ae8fa4c2c35c7c16920983f00d85422b401e089"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/production_namespace_application_parent.rs",
+      "bytes": 19171,
+      "sha256": "090a72431f5186f0c9e4d7c3b96dfa787495319d3e317ae9813b9bf6ce539f30",
+      "base_sha256": "703ab3a5594944687dcbe6178ba8a23708267abd894dc1a788cada88707adb96"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/production_namespace_runtime_child.rs",
+      "bytes": 28489,
+      "sha256": "634ba7d9575ef92a0dea2f2d03dd3ea54859658d808ba26d33395816c66a3c9f",
+      "base_sha256": "f1c1f1b746d42c5919199d74e65325d6a73e37db89ecdbaf788469621b72e9e2"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/production_namespace_runtime_parent.rs",
+      "bytes": 40053,
+      "sha256": "841c5851f3c58ebae5bc63583bc47f878cec426b8f57915e2554e7106432b7c8",
+      "base_sha256": "f31046a74547ff57a47907fefde9f8ef13c28ccc73c7fcc2edabbabb94ac840f"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/production_runtime_assets.rs",
+      "bytes": 44668,
+      "sha256": "18916e3c262b8390989e0a8f2baf9a92067b188439cb2382b6ebefcd7e99fad7",
+      "base_sha256": "159307ce5958a4a3ae99ca3881b48ff09ff0c4d9a1a776b0c3227c446b527a5f"
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/production_runtime_browser_assets.rs",
+      "bytes": 22146,
+      "sha256": "be2b34b2e4ca51f071fcfd588232172357681d803bdbfd8e57d818c72f343af1",
+      "base_sha256": null
+    },
+    {
+      "path": "runtime/droidloom-supervisor/src/production_runtime_query_assets.rs",
+      "bytes": 23102,
+      "sha256": "6e435e8186e9730284edc7edb892a4a83cf5511f4fe8a5a4f17953be2cb852f3",
+      "base_sha256": "e31b2a4da887af0e9aee2459085a3cc9e939ea0d03fb2e45c150b799549f3f9a"
+    }
+  ],
+  "unchanged_contract_inputs": [
+    {
+      "path": "compat/android/pocket4/current-app-acceptance/browser-action-contract/Cargo.lock",
+      "bytes": 177,
+      "sha256": "f707460422ca96254d3e05aab785603eb57734173420f3a0785e269a9130cd94",
+      "base_sha256": null
+    },
+    {
+      "path": "compat/android/pocket4/current-app-acceptance/browser-action-contract/Cargo.toml",
+      "bytes": 144,
+      "sha256": "f3559a5083a9cc54f90dcfe9ed97cbaf58f57c02d5a240d351b5985486a7dd2f",
+      "base_sha256": null
+    },
+    {
+      "path": "compat/android/pocket4/current-app-acceptance/browser-action-contract/README.md",
+      "bytes": 7171,
+      "sha256": "8d9f96fdd6c46bcd73bbadcaf5a9661b81d1999ee9cdaaf6eb15c5bfad185249",
+      "base_sha256": null
+    },
+    {
+      "path": "compat/android/pocket4/current-app-acceptance/browser-action-contract/manifest.json",
+      "bytes": 3789,
+      "sha256": "2d6265f7910696653ce532921a6b0eceaae7e81acc999cabed460114a98a86e4",
+      "base_sha256": null
+    },
+    {
+      "path": "compat/android/pocket4/current-app-acceptance/browser-action-contract/policy/browser-action.cil",
+      "bytes": 4797,
+      "sha256": "8a4554e1211aa6ca56576c4f119e4a684fd10212b1576c813e8cd2221199edad",
+      "base_sha256": null
+    },
+    {
+      "path": "compat/android/pocket4/current-app-acceptance/browser-action-contract/policy/cases.json",
+      "bytes": 410,
+      "sha256": "33a2c4ae6350f663830fab7a8888ad25a15fa3a6addbc656afe53c06f8d0a05f",
+      "base_sha256": null
+    },
+    {
+      "path": "compat/android/pocket4/current-app-acceptance/browser-action-contract/policy/policy-query.c",
+      "bytes": 36752,
+      "sha256": "941d740079d706945b280c50d7722f5635ca90889cc3d5b00a22b19b0d758814",
+      "base_sha256": null
+    },
+    {
+      "path": "compat/android/pocket4/current-app-acceptance/browser-action-contract/src/lib.rs",
+      "bytes": 16915,
+      "sha256": "34dba35f48ba66e93d2558b1c9fb5748c53bf3fa0f7af7c16be918b717177c3a",
+      "base_sha256": null
+    }
+  ],
+  "qualification": "Complete native crate source qualification only; no production browser action or runtime acceptance."
+}
