@@ -1,0 +1,409 @@
+{
+  "schema": "p4-system-cp3a-adapter-independent-readonly-review-v1",
+  "verdict": "NO_CONFIRMED_BLOCKER_TO_SOURCE_ONLY_ADAPTER",
+  "scope": "Read fixed local source/metadata and actual logs only. No helper import, package execution, controls rerun, SDK, APK body, Android, VM or owner/source mutation.",
+  "frozen_source_pins": [
+    {
+      "path": "/workspace/scratch/11ea999c19b6/p4-system-cp3a-adapter-11ea-20261119-r1/adapt_cp3a.py",
+      "bytes": 44608,
+      "sha256": "3d04239f428156b2a507a5cce6f50ca438eb66434f5df712d43ce86173173aea"
+    },
+    {
+      "path": "/workspace/scratch/11ea999c19b6/p4-system-cp3a-adapter-11ea-20261119-r1/test_adapt_cp3a.py",
+      "bytes": 12273,
+      "sha256": "b2ddef5232911ce98ad4e514f1fab539d5efdaf67d5851eb9239c9d976b43cad"
+    },
+    {
+      "path": "/workspace/scratch/11ea999c19b6/p4-system-cp3a-adapter-11ea-20261119-r1/run_validation.py",
+      "bytes": 3667,
+      "sha256": "52b9f79b6514c380fa0b5b7bc641cb94892f9e6c3d3214ebc7a729ce25f4a1c7"
+    },
+    {
+      "path": "/workspace/scratch/11ea999c19b6/p4-system-cp3a-adapter-11ea-20261119-r1/README.md",
+      "bytes": 11573,
+      "sha256": "7cbfc35205c24b512b5c1f8f854aedeafd7fd94f6a03cc5c442d03ba28f3c8bc"
+    },
+    {
+      "path": "/workspace/scratch/11ea999c19b6/p4-system-cp3a-adapter-11ea-20261119-r1/ORIGINAL-SOURCE-MANIFEST.json",
+      "bytes": 132175,
+      "sha256": "dfe01692552abdb112575362e9ab80fb5b9782f1e7a878035b152198a2bec53d"
+    }
+  ],
+  "output_pins": [
+    {
+      "path": "/workspace/scratch/11ea999c19b6/p4-system-cp3a-adapter-11ea-20261119-r1/successor-r1/MANIFEST.json",
+      "bytes": 7815,
+      "sha256": "117b12fb448b4452a7d41f17790244f31ce03733eed8df9e7c08ce3a48263791"
+    },
+    {
+      "path": "/workspace/scratch/11ea999c19b6/p4-system-cp3a-adapter-11ea-20261119-r1/successor-r1/CURRENT-CP3A-COHORT.json",
+      "bytes": 65110,
+      "sha256": "78b8beaae7505370f59c20d50a1b8b378253f5ab090712e94ed32628b96f718b"
+    },
+    {
+      "path": "/workspace/scratch/11ea999c19b6/p4-system-cp3a-adapter-11ea-20261119-r1/successor-r1/PLAN.json",
+      "bytes": 143601,
+      "sha256": "9e622b0941a909f7ed2a887a3b6970b17c78ab72a9f05cec00030b68a1fb91e3"
+    },
+    {
+      "path": "/workspace/scratch/11ea999c19b6/p4-system-cp3a-adapter-11ea-20261119-r1/successor-r1/PREFLIGHT-CORRECTIONS.json",
+      "bytes": 22490,
+      "sha256": "f26ef2c127b451f5c58f0b203085a8a626925f3f16a4e609b734e7db6a7b7ac5"
+    },
+    {
+      "path": "/workspace/scratch/11ea999c19b6/p4-system-cp3a-adapter-11ea-20261119-r1/successor-r1/changes.patch",
+      "bytes": 21466,
+      "sha256": "a10d1b807c9c15fc26466818555ca9c051d4b5b6a2e3a0a87613e81f8ec40954"
+    }
+  ],
+  "actual_validation": {
+    "path": "/workspace/scratch/11ea999c19b6/p4-system-cp3a-adapter-11ea-20261119-r1/validation-r1/RESULT.json",
+    "bytes": 8541,
+    "sha256": "874a7b9e1b5dc2b6e2550b76e08e960df09eb09e26799f61274f517b735f01de"
+  },
+  "independent_static_observations": {
+    "whole_original_source_files_read_SHA_checked_with_same_read_F9": 224,
+    "metadata_inputs_read_SHA_checked": 10,
+    "original_preparation_bookends_in_fixed_manifest": 11,
+    "actual_output_members_exact": 29,
+    "postimages_exact": 23,
+    "raw_byte_edits_exact": 42,
+    "AST_constant_changes_only": 34,
+    "AST_documents_exact_size_fields_added": 2,
+    "Gallery_unconditional_entry_guards_only": 6,
+    "plan_JSON_field_corrections_exact": 23,
+    "README_sentence_corrections_exact": 2,
+    "original_plan_plus_exact_corrections_equals_new_plan": true,
+    "unselected_executor_rows_unchanged": 32,
+    "required39_rows": 39,
+    "source_snapshots_and_source_preservation_unchanged": true,
+    "canonical_gate_definitions_and_global_unresolved_gates_unchanged": true,
+    "actual_test_names_in_log_match_all_source_test_methods": 9,
+    "actual_validation_commands": 2,
+    "all_logged_command_exit_codes": 0
+  },
+  "AST_constant_changes": [
+    {
+      "path": "business-system-cases-runtime-inputs-20261108-8b88-r2/calendar_base.py.body[10].value",
+      "before": "c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1",
+      "after": "726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e"
+    },
+    {
+      "path": "business-system-cases-runtime-inputs-20261108-8b88-r2/calendar_core.py.body[5].value",
+      "before": "c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1",
+      "after": "726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e"
+    },
+    {
+      "path": "business-system-cases-runtime-inputs-20261108-8b88-r2/contacts_model.py.body[10].value.values[0].values[3]",
+      "before": 11839391,
+      "after": 11896473
+    },
+    {
+      "path": "business-system-cases-runtime-inputs-20261108-8b88-r2/contacts_model.py.body[10].value.values[0].values[4]",
+      "before": "11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0",
+      "after": "f91e45e89b3a302198c9269a60bb07387150c0f40def95feb873b765520ae028"
+    },
+    {
+      "path": "business-system-cases-runtime-inputs-20261108-8b88-r2/contacts_trial.py.body[16].value",
+      "before": "11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0",
+      "after": "f91e45e89b3a302198c9269a60bb07387150c0f40def95feb873b765520ae028"
+    },
+    {
+      "path": "business-system-cases-runtime-inputs-20261108-8b88-r2/contacts_trial.py.body[23].body[0].body[5].body[1].value.args[0].values[0].comparators[0]",
+      "before": 11839391,
+      "after": 11896473
+    },
+    {
+      "path": "business-system-cases-runtime-inputs-20261108-8b88-r2/system_profiles.py.body[1].value.values[4].elts[0].values[0]",
+      "before": 11839391,
+      "after": 11896473
+    },
+    {
+      "path": "business-system-cases-runtime-inputs-20261108-8b88-r2/system_profiles.py.body[1].value.values[4].elts[0].values[1]",
+      "before": "11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0",
+      "after": "f91e45e89b3a302198c9269a60bb07387150c0f40def95feb873b765520ae028"
+    },
+    {
+      "path": "business-system-cases-runtime-inputs-20261108-8b88-r2/system_profiles.py.body[1].value.values[5]",
+      "before": null,
+      "after": "28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd"
+    },
+    {
+      "path": "business-system-cases-runtime-inputs-20261108-8b88-r2/system_profiles.py.body[3].value.values[4].elts[0].values[0]",
+      "before": 2635213,
+      "after": 2520846
+    },
+    {
+      "path": "business-system-cases-runtime-inputs-20261108-8b88-r2/system_profiles.py.body[3].value.values[4].elts[0].values[1]",
+      "before": "c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1",
+      "after": "726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e"
+    },
+    {
+      "path": "business-system-cases-runtime-inputs-20261108-8b88-r2/system_profiles.py.body[3].value.values[5]",
+      "before": null,
+      "after": "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+    },
+    {
+      "path": "calendar-reminder-runtime-inputs-20261108-8b88-r2/calendar_base.py.body[10].value",
+      "before": "c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1",
+      "after": "726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e"
+    },
+    {
+      "path": "calendar-reminder-runtime-inputs-20261108-8b88-r2/calendar_core.py.body[5].value",
+      "before": "c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1",
+      "after": "726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e"
+    },
+    {
+      "path": "calendar-reminder-runtime-inputs-20261108-8b88-r2/system_profiles.py.body[1].value.values[4].elts[0].values[0]",
+      "before": 2635213,
+      "after": 2520846
+    },
+    {
+      "path": "calendar-reminder-runtime-inputs-20261108-8b88-r2/system_profiles.py.body[1].value.values[4].elts[0].values[1]",
+      "before": "c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1",
+      "after": "726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e"
+    },
+    {
+      "path": "calendar-reminder-runtime-inputs-20261108-8b88-r2/system_profiles.py.body[1].value.values[5]",
+      "before": null,
+      "after": "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+    },
+    {
+      "path": "camera-app-photo-preparation-resume-20261107-r4/camera_profiles.py.body[1].value.values[4].elts[0].values[0]",
+      "before": 11892407,
+      "after": 7709134
+    },
+    {
+      "path": "camera-app-photo-preparation-resume-20261107-r4/camera_profiles.py.body[1].value.values[4].elts[0].values[1]",
+      "before": "0218041bc46f49c0c9622196e2a3610c641e0cc8f12386f23cdd88dc3a3ce18e",
+      "after": "24632b0e1a1c22741177583b0dfd4a3fa71ff9b1d1b72af60a3d7cf373c7e61f"
+    },
+    {
+      "path": "clock-remaining-runtime-inputs-20261108-8b88-r2/clock_profiles.py.body[4].value.values[4].elts[0].values[0]",
+      "before": 7597225,
+      "after": 7665498
+    },
+    {
+      "path": "clock-remaining-runtime-inputs-20261108-8b88-r2/clock_profiles.py.body[4].value.values[4].elts[0].values[1]",
+      "before": "433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d",
+      "after": "9f24ea5fa57bca4a453556ab7cb44fbad1813cb3d15292a8e572cfb40fff7a77"
+    },
+    {
+      "path": "clock-remaining-runtime-inputs-20261108-8b88-r2/clock_protection.py.body[8].body[8].body[4].value.args[0].values[0].comparators[0]",
+      "before": 7597225,
+      "after": 7665498
+    },
+    {
+      "path": "clock-remaining-runtime-inputs-20261108-8b88-r2/clock_protection.py.body[8].body[8].body[4].value.args[0].values[1].comparators[0]",
+      "before": "433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d",
+      "after": "9f24ea5fa57bca4a453556ab7cb44fbad1813cb3d15292a8e572cfb40fff7a77"
+    },
+    {
+      "path": "documents-saf11-runtime-inputs-20261108-8b88-r2/documents_profiles.py.body[1].value.values[4].elts[0].values[0]",
+      "before": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+      "after": "f7db1705178644333d5c9d291afd1170e71fcddfd1f73021381e1224be824899"
+    },
+    {
+      "path": "documents-saf11-runtime-inputs-20261108-8b88-r2/documents_profiles.py.body[1].value.values[5]",
+      "before": null,
+      "after": "c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8"
+    },
+    {
+      "path": "documents-saf11-runtime-inputs-20261108-8b88-r2/documents_saf_core.py.body[15].body[2].body[0].value.values[0].args[2]",
+      "before": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+      "after": "f7db1705178644333d5c9d291afd1170e71fcddfd1f73021381e1224be824899"
+    },
+    {
+      "path": "documents-search-sort-runtime-inputs-20261108-8b88-r2/documents_package_fixture.py.body[11].body[3].body[0].value.values[0].args[2]",
+      "before": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+      "after": "f7db1705178644333d5c9d291afd1170e71fcddfd1f73021381e1224be824899"
+    },
+    {
+      "path": "documents-search-sort-runtime-inputs-20261108-8b88-r2/documents_profiles.py.body[1].value.values[4].elts[0].values[0]",
+      "before": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+      "after": "f7db1705178644333d5c9d291afd1170e71fcddfd1f73021381e1224be824899"
+    },
+    {
+      "path": "documents-search-sort-runtime-inputs-20261108-8b88-r2/documents_profiles.py.body[1].value.values[5]",
+      "before": null,
+      "after": "c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8"
+    },
+    {
+      "path": "ihg-5.111.1-r1/app_profiles.py.body[1].value.values[4].elts[0].values[0]",
+      "before": 7597225,
+      "after": 7665498
+    },
+    {
+      "path": "ihg-5.111.1-r1/app_profiles.py.body[1].value.values[4].elts[0].values[1]",
+      "before": "433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d",
+      "after": "9f24ea5fa57bca4a453556ab7cb44fbad1813cb3d15292a8e572cfb40fff7a77"
+    },
+    {
+      "path": "ihg-5.111.1-r1/clock_guard.py.body[12].body[0].value.args[0].values[5].comparators[0]",
+      "before": 7597225,
+      "after": 7665498
+    },
+    {
+      "path": "ihg-5.111.1-r1/clock_protection.py.body[9].body[11].body[4].value.args[0].values[0].comparators[0]",
+      "before": 7597225,
+      "after": 7665498
+    },
+    {
+      "path": "ihg-5.111.1-r1/clock_protection.py.body[9].body[11].body[4].value.args[0].values[1].comparators[0]",
+      "before": "433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d",
+      "after": "9f24ea5fa57bca4a453556ab7cb44fbad1813cb3d15292a8e572cfb40fff7a77"
+    }
+  ],
+  "documents_stricter_size_additions": [
+    "documents-saf11-runtime-inputs-20261108-8b88-r2/documents_profiles.py.body[1].value.values[4].elts[0]",
+    "documents-search-sort-runtime-inputs-20261108-8b88-r2/documents_profiles.py.body[1].value.values[4].elts[0]"
+  ],
+  "Gallery_entry_guards": [
+    "gallery-album-current-preparation-20261107-r6/video_entry.py:main",
+    "gallery-new-runtime-preparation-20261107-r7/gallery_current_entry.py:main",
+    "gallery-new-runtime-preparation-20261107-r7/gallery_current_install.py:verify_art_receipt",
+    "gallery-new-runtime-preparation-20261107-r7/gallery_current_install.py:execute",
+    "gallery-new-runtime-preparation-20261107-r7/gallery_current_verify.py:execute",
+    "gallery-rotation-current-preparation-20261107-r7/gallery_rotation_entry.py:main"
+  ],
+  "identity_scope": {
+    "full_GSI": {
+      "bytes": 2294853632,
+      "sha256": "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4"
+    },
+    "per_target": {
+      "com.android.calendar": {
+        "bytes": 2520846,
+        "sha256": "726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e",
+        "version_code": 37,
+        "signer_certificate_sha256": [
+          "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+        ],
+        "historical_UID_constraint": 10061,
+        "actual_runtime_bindings": {
+          "Main": null,
+          "UID": null,
+          "UI_selectors": null,
+          "framework_epoch": null,
+          "helper_custody": null,
+          "installed_APK_identity": null
+        }
+      },
+      "com.android.camera2": {
+        "bytes": 7709134,
+        "sha256": "24632b0e1a1c22741177583b0dfd4a3fa71ff9b1d1b72af60a3d7cf373c7e61f",
+        "version_code": 20002000,
+        "signer_certificate_sha256": [
+          "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+        ],
+        "historical_UID_constraint": 10062,
+        "actual_runtime_bindings": {
+          "Main": null,
+          "UID": null,
+          "UI_selectors": null,
+          "framework_epoch": null,
+          "helper_custody": null,
+          "installed_APK_identity": null
+        }
+      },
+      "com.android.contacts": {
+        "bytes": 11896473,
+        "sha256": "f91e45e89b3a302198c9269a60bb07387150c0f40def95feb873b765520ae028",
+        "version_code": 10734,
+        "signer_certificate_sha256": [
+          "28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd"
+        ],
+        "historical_UID_constraint": 10055,
+        "actual_runtime_bindings": {
+          "Main": null,
+          "UID": null,
+          "UI_selectors": null,
+          "framework_epoch": null,
+          "helper_custody": null,
+          "installed_APK_identity": null
+        }
+      },
+      "com.android.deskclock": {
+        "bytes": 7665498,
+        "sha256": "9f24ea5fa57bca4a453556ab7cb44fbad1813cb3d15292a8e572cfb40fff7a77",
+        "version_code": 37,
+        "signer_certificate_sha256": [
+          "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+        ],
+        "historical_UID_constraint": 10063,
+        "actual_runtime_bindings": {
+          "Main": null,
+          "UID": null,
+          "UI_selectors": null,
+          "framework_epoch": null,
+          "helper_custody": null,
+          "installed_APK_identity": null
+        }
+      },
+      "com.android.documentsui": {
+        "bytes": 8923434,
+        "sha256": "f7db1705178644333d5c9d291afd1170e71fcddfd1f73021381e1224be824899",
+        "version_code": 37,
+        "signer_certificate_sha256": [
+          "c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8"
+        ],
+        "historical_UID_constraint": 10022,
+        "actual_runtime_bindings": {
+          "Main": null,
+          "UID": null,
+          "UI_selectors": null,
+          "framework_epoch": null,
+          "helper_custody": null,
+          "installed_APK_identity": null
+        }
+      },
+      "com.android.gallery3d": {
+        "bytes": 7390425,
+        "sha256": "835fe119745324276457b4434fc39f25b633e752c822d2fc9be40eb4b2d45439",
+        "version_code": 40030,
+        "signer_certificate_sha256": [
+          "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+        ],
+        "historical_UID_constraint": null,
+        "actual_runtime_bindings": {
+          "Main": null,
+          "UID": null,
+          "UI_selectors": null,
+          "framework_epoch": null,
+          "helper_custody": null,
+          "installed_APK_identity": null
+        }
+      }
+    },
+    "all_original_UIDs_action_counts_v3_providers_helpers_IHG_logic_preserved": true
+  },
+  "Gallery_scope": {
+    "baseline_matches_current_official_APK": true,
+    "modified_candidate_matches_current_official_APK": false,
+    "modified_DEX_matches_current_official_DEX": false,
+    "old_ART_or_modified_method_credit_transferred": false,
+    "old_pm_install_entry_retired": true,
+    "current_official_ART_qualified": false,
+    "current_official_rotation_or_edit_semantics_qualified": false
+  },
+  "remaining_gates": [
+    "New complete preparation/source pins and host boundary qualification before any postimage adoption.",
+    "Fresh Main/UID/framework/install custody and original continuity/permissions/timeouts/action counts/cleanup/business/stability evidence.",
+    "Calendar official UI and repaired-install custody successor; original CE/DE inode/UID/gid/firstInstallTime checks remain.",
+    "CalendarProvider, ContactsProvider, ExternalStorageProvider and inner MediaProvider APK/source/signer plus semantic qualification remain absent in this revision. CAPEX container is not inner APK identity.",
+    "Official Gallery DEX ART/class-set and official edit/rotation/video/seek/album behavior remain unqualified. No modified-candidate receipt transfers.",
+    "Dialer, Messaging, QuickSearchBox and Settings still lack selected finite business executors in the frozen selector."
+  ],
+  "qualification": {
+    "state": "SOURCE_ADAPTER_PREPARED_RUNTIME_BLOCKED",
+    "runtime_qualified": false,
+    "installed": false,
+    "production_ready": false,
+    "current_business_runtime_compatible_packages_qualified": 0,
+    "Android_actions": 0,
+    "SDK_commands": 0,
+    "APK_bodies_read": 0,
+    "user_data_reads": 0
+  },
+  "source_origin_observation_boundary": "This reviewer rechecked local fixed metadata/source copies; remote origin F9s are preserved recorded observations, not newly probed remote APK/GSI or user state."
+}

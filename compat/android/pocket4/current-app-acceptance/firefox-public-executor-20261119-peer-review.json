@@ -1,0 +1,776 @@
+{
+  "APK_body_reads": 0,
+  "Android_calls": 0,
+  "SDK_commands": 0,
+  "actual_control_evidence": {
+    "AST_case_names_equal_raw_stderr": true,
+    "case_names": [
+      "CustodyControls.test_actual_file_stream_uses_64k_reads_not_whole_body",
+      "CustodyControls.test_actual_held_file_change_rejects",
+      "CustodyControls.test_elapsed_deadline_rejects_before_read",
+      "CustodyControls.test_extra_hardlink_rejects",
+      "CustodyControls.test_paths_and_observed_uid_version_not_guessed",
+      "CustodyControls.test_same_content_wrong_inode_rejects",
+      "CustodyControls.test_unselected_large_body_refuses_before_target_access",
+      "CustodyControls.test_wrong_hash_rejects_full_stream",
+      "ProtocolControls.test_caller_self_attestation_cannot_unlock_either_entry_or_guard",
+      "ProtocolControls.test_certificate_warning",
+      "ProtocolControls.test_complete_real_sequence_shape_but_offline_credit_only",
+      "ProtocolControls.test_duplicate_second_tab",
+      "ProtocolControls.test_existing_tab_contamination",
+      "ProtocolControls.test_force_stop_is_not_normal_close",
+      "ProtocolControls.test_host_release_requires_explicit_true_not_truthy_or_false",
+      "ProtocolControls.test_incomplete_cleanup",
+      "ProtocolControls.test_insecure_page",
+      "ProtocolControls.test_lost_mutation_ack_no_retry_or_blind_android_cleanup",
+      "ProtocolControls.test_main_uid_and_epoch_changes_reject",
+      "ProtocolControls.test_missing_real_browser_owner_refuses_before_main_or_ui",
+      "ProtocolControls.test_offline_port_cannot_enter_production",
+      "ProtocolControls.test_reopen_must_restore_owned_page",
+      "ProtocolControls.test_same_task_is_not_independent_reopen",
+      "ProtocolControls.test_task_claim_is_not_browser_ownership",
+      "ProtocolControls.test_unacknowledged_resource_release_removes_protocol_credit",
+      "ProtocolControls.test_unproved_browser_owner",
+      "ProtocolControls.test_unscoped_history_read",
+      "ProtocolControls.test_user_tab_enumeration",
+      "ProtocolControls.test_wrong_heading",
+      "ProtocolControls.test_wrong_public_url",
+      "WireControls.test_actual_parent_chain_verifier_accepts_only_complete_fixture",
+      "WireControls.test_exact_find_wire_and_ambiguity",
+      "WireControls.test_missing_selector_binding_refuses",
+      "WireControls.test_parent_without_reap_is_rejected",
+      "WireControls.test_wrong_parent_scope_or_argv_rejected"
+    ],
+    "current_sources_equal_recorded_before_after": true,
+    "historical32_logs_and_sources_preserved": true,
+    "performed_by_source_author": true,
+    "recorded_case_count": 35,
+    "recorded_exit_code": 0,
+    "recorded_wall_seconds": "0.035",
+    "rerun_by_reviewer": false
+  },
+  "all_bookends_unchanged": true,
+  "business_qualified": false,
+  "candidate_files": [
+    {
+      "F9": {
+        "ctime_ns": 1795069963611940601,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 552311,
+        "mode": 33188,
+        "mtime_ns": 1795069963611940601,
+        "nlink": 1,
+        "size": 4619,
+        "uid": 1000
+      },
+      "bytes": 4619,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/CURRENT-SOURCE-SUCCESSOR.json",
+      "sha256": "b707d115a06d7fb962926dde9cb570135fc274a69339de3c6c6a26bdc90e7445"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069963626204939,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 566959,
+        "mode": 33188,
+        "mtime_ns": 1795069963626204939,
+        "nlink": 1,
+        "size": 3171,
+        "uid": 1000
+      },
+      "bytes": 3171,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/FILES.sha256",
+      "sha256": "02563e9828de2c8790189540570b640d40306609d4e856ae7e2d4144288e5918"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069963625499935,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 566942,
+        "mode": 33188,
+        "mtime_ns": 1795069963625499935,
+        "nlink": 1,
+        "size": 7905,
+        "uid": 1000
+      },
+      "bytes": 7905,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/MANIFEST.json",
+      "sha256": "22ec962410837130f5c34569aefdbacd7fcf18feaacfc4d4ad655020f7447a5f"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069522730681789,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 552309,
+        "mode": 33188,
+        "mtime_ns": 1795069522730681789,
+        "nlink": 1,
+        "size": 4406,
+        "uid": 1000
+      },
+      "bytes": 4406,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/ORIGINS.json",
+      "sha256": "ea3bfa0428a3f6b13d09d78cbbb9810dddd3f35d2c494757f9a720e8c7d03cb4"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069963611010500,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 566926,
+        "mode": 33188,
+        "mtime_ns": 1795069963611010500,
+        "nlink": 1,
+        "size": 700,
+        "uid": 1000
+      },
+      "bytes": 700,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/PUBLIC-PAGES.json",
+      "sha256": "f217128321a90f46925f05a4289f356bcdf563c23a76a3ec685d7aa09a050ac8"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069930779730061,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 566954,
+        "mode": 33188,
+        "mtime_ns": 1795069930779730061,
+        "nlink": 1,
+        "size": 8210,
+        "uid": 1000
+      },
+      "bytes": 8210,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/README.md",
+      "sha256": "af05d37283176ec0b76d1bfaa6b429228ce72cefb774ae1b63da9aa40810acb6"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069522727656552,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 552308,
+        "mode": 33188,
+        "mtime_ns": 1795069522727656552,
+        "nlink": 1,
+        "size": 8844,
+        "uid": 1000
+      },
+      "bytes": 8844,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/SOURCE-BINDING.json",
+      "sha256": "f0449ace05e183fd7f38c9ed43527c3d3e5398427cc2c9b9bbe1e378ff1ad00b"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069963611458303,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 552310,
+        "mode": 33188,
+        "mtime_ns": 1795069963611458303,
+        "nlink": 1,
+        "size": 4949,
+        "uid": 1000
+      },
+      "bytes": 4949,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/VALIDATION.json",
+      "sha256": "a7561db1648c38bdbc3fde420070198c55c1f31a737fa7aed4573116cfaacb97"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069855140111788,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 552804,
+        "mode": 33188,
+        "mtime_ns": 1795069855140111788,
+        "nlink": 1,
+        "size": 7139,
+        "uid": 1000
+      },
+      "bytes": 7139,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/admission-and-release-r2.patch",
+      "sha256": "0fca6d92e0e8373de0244204a1bf0b610ffa49cb240a3ab768e765403a51ab7d"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069826276752578,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 552505,
+        "mode": 33188,
+        "mtime_ns": 1795069826276752578,
+        "nlink": 1,
+        "size": 24396,
+        "uid": 1000
+      },
+      "bytes": 24396,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/firefox_adapter.py",
+      "sha256": "c4ec48c8c332de155c9f68b0033105f970d9ccb2ddc666ba8d36d026706eba6d"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069058901891916,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 552195,
+        "mode": 33188,
+        "mtime_ns": 1795069058901891916,
+        "nlink": 1,
+        "size": 8792,
+        "uid": 1000
+      },
+      "bytes": 8792,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/firefox_custody.py",
+      "sha256": "f3726ae934b20212df35b9875f1954d4bcd3acf94072dea1d890bdf3732fe8bb"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069826624735801,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 552196,
+        "mode": 33188,
+        "mtime_ns": 1795069826624735801,
+        "nlink": 1,
+        "size": 8823,
+        "uid": 1000
+      },
+      "bytes": 8823,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/firefox_protocol.py",
+      "sha256": "545c7549d56ab6309ee08f8c09171303275a510df813f43a46b69d465a0d12b8"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069809873806870,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 657257,
+        "mode": 33188,
+        "mtime_ns": 1795069809873806870,
+        "nlink": 1,
+        "size": 3636,
+        "uid": 1000
+      },
+      "bytes": 3636,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/history-32-controls-r1/CURRENT-SOURCE-SUCCESSOR.json",
+      "sha256": "bda7880b6a91c6a4ba1d43b3502649b38b8ed7d3929c95bdea8433aa9a879dfa"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069809874166782,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 657259,
+        "mode": 33188,
+        "mtime_ns": 1795069809874166782,
+        "nlink": 1,
+        "size": 4406,
+        "uid": 1000
+      },
+      "bytes": 4406,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/history-32-controls-r1/ORIGINS.json",
+      "sha256": "ea3bfa0428a3f6b13d09d78cbbb9810dddd3f35d2c494757f9a720e8c7d03cb4"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069809874073994,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 657258,
+        "mode": 33188,
+        "mtime_ns": 1795069809874073994,
+        "nlink": 1,
+        "size": 8844,
+        "uid": 1000
+      },
+      "bytes": 8844,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/history-32-controls-r1/SOURCE-BINDING.json",
+      "sha256": "f0449ace05e183fd7f38c9ed43527c3d3e5398427cc2c9b9bbe1e378ff1ad00b"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069809873708984,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 657256,
+        "mode": 33188,
+        "mtime_ns": 1795069809873708984,
+        "nlink": 1,
+        "size": 2413,
+        "uid": 1000
+      },
+      "bytes": 2413,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/history-32-controls-r1/VALIDATION.json",
+      "sha256": "368048ea7a49ab9ee816ab8c552784a722e0ab9c3275909b68690ea0ead8e1fa"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069809873448087,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 657254,
+        "mode": 33188,
+        "mtime_ns": 1795069809873448087,
+        "nlink": 1,
+        "size": 23433,
+        "uid": 1000
+      },
+      "bytes": 23433,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/history-32-controls-r1/firefox_adapter.py",
+      "sha256": "82ab1754b7f99c0fd7ca794d53aa3be0f1eb57504996a5cc38256539ff4f8389"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069809873047802,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 657252,
+        "mode": 33188,
+        "mtime_ns": 1795069809873047802,
+        "nlink": 1,
+        "size": 8792,
+        "uid": 1000
+      },
+      "bytes": 8792,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/history-32-controls-r1/firefox_custody.py",
+      "sha256": "f3726ae934b20212df35b9875f1954d4bcd3acf94072dea1d890bdf3732fe8bb"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069809873237478,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 657253,
+        "mode": 33188,
+        "mtime_ns": 1795069809873237478,
+        "nlink": 1,
+        "size": 8740,
+        "uid": 1000
+      },
+      "bytes": 8740,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/history-32-controls-r1/firefox_protocol.py",
+      "sha256": "864883230ab12ef7b69769e76020c5760d8ad7b4c15c546087538022bf8bb6f8"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069809873608946,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 657255,
+        "mode": 33188,
+        "mtime_ns": 1795069809873608946,
+        "nlink": 1,
+        "size": 15920,
+        "uid": 1000
+      },
+      "bytes": 15920,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/history-32-controls-r1/test_firefox.py",
+      "sha256": "0b759021d35169717aae910bc6845ff6509ab54f795d1c1213c77efeba17383e"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795068806921744513,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 552297,
+        "mode": 33188,
+        "mtime_ns": 1795068806921744513,
+        "nlink": 1,
+        "size": 132822,
+        "uid": 1000
+      },
+      "bytes": 132822,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/originals/ActionRunner.smali",
+      "sha256": "548dc51db06a267849eedf250847676f1f97641d58f73a3de0b940e9c22e0d42"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795068363873623058,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 551978,
+        "mode": 33188,
+        "mtime_ns": 1795068363873623058,
+        "nlink": 1,
+        "size": 37467,
+        "uid": 1000
+      },
+      "bytes": 37467,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/originals/android-app.py",
+      "sha256": "e775301b11960df8109f39ef1adfc662bebd8fc536414580c71c7aa0da263efe"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795068363874568490,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 551979,
+        "mode": 33188,
+        "mtime_ns": 1795068363874568490,
+        "nlink": 1,
+        "size": 36404,
+        "uid": 1000
+      },
+      "bytes": 36404,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/originals/android-digitalis-observe-helper.py",
+      "sha256": "d1fc02bdbbd72c8e9ee440dbf81274662d60228a4e7ecc661484241d889d7bd4"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795068062479055629,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 551924,
+        "mode": 33188,
+        "mtime_ns": 1795068062479055629,
+        "nlink": 1,
+        "size": 53280,
+        "uid": 1000
+      },
+      "bytes": 53280,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/originals/business_baseline.py",
+      "sha256": "0d26c720f2d349b97c192a2f18d7db9d62f5421944a50ae31d6499188e5bdcff"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795068062479519319,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 551925,
+        "mode": 33188,
+        "mtime_ns": 1795068062479519319,
+        "nlink": 1,
+        "size": 34964,
+        "uid": 1000
+      },
+      "bytes": 34964,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/originals/business_scope.py",
+      "sha256": "e2a9b509102806483c64c181034e59aded211f42e5f05fcfd85057cc25c9fb7a"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795068062481275259,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 551926,
+        "mode": 33188,
+        "mtime_ns": 1795068062481275259,
+        "nlink": 1,
+        "size": 26456,
+        "uid": 1000
+      },
+      "bytes": 26456,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/originals/business_ui_entry.py",
+      "sha256": "c33e86290d835bdd6ed82f5994572025807846addf141e1253c0665398db48f6"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795068800718593719,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 552296,
+        "mode": 33188,
+        "mtime_ns": 1795068800718593719,
+        "nlink": 1,
+        "size": 156924,
+        "uid": 1000
+      },
+      "bytes": 156924,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/originals/native-actions-source-export.json",
+      "sha256": "765eca8b99e6ffadb7dec8a9d49dbba9a7ba2605cbae109bf36ebf224dfa1e86"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795068800717237419,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 552295,
+        "mode": 33188,
+        "mtime_ns": 1795068800717237419,
+        "nlink": 1,
+        "size": 19802,
+        "uid": 1000
+      },
+      "bytes": 19802,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/originals/native-actions-source-export.json.gz",
+      "sha256": "a20c3023874e564adc25f2970332ded40fc9fd96fcce7dae8a8175820f019c6c"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069826864724232,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 552717,
+        "mode": 33188,
+        "mtime_ns": 1795069826864724232,
+        "nlink": 1,
+        "size": 18725,
+        "uid": 1000
+      },
+      "bytes": 18725,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/test_firefox.py",
+      "sha256": "bec4b243fb1995a3e66c447bf48369035b101ea3f41397194c8cb34935138c2f"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069310697336463,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 552772,
+        "mode": 33188,
+        "mtime_ns": 1795069310697336463,
+        "nlink": 1,
+        "size": 3739,
+        "uid": 1000
+      },
+      "bytes": 3739,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/validation-r1/controls.stderr",
+      "sha256": "5a1300fe254ec655fa1abf8ba8a9f2c080c785feec3bf5b578ef873c0be26ca6"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069310689836824,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 552771,
+        "mode": 33188,
+        "mtime_ns": 1795069310689836824,
+        "nlink": 1,
+        "size": 0,
+        "uid": 1000
+      },
+      "bytes": 0,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/validation-r1/controls.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069840084910178,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 657263,
+        "mode": 33188,
+        "mtime_ns": 1795069840084910178,
+        "nlink": 1,
+        "size": 3471,
+        "uid": 1000
+      },
+      "bytes": 3471,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/validation-r2/EXECUTION.json",
+      "sha256": "71d5e1f2730e2adbfdc82ae4f30fc75d11723701c6c464b53722b3edc5aa5c87"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069840084089128,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 657262,
+        "mode": 33188,
+        "mtime_ns": 1795069840084089128,
+        "nlink": 1,
+        "size": 4230,
+        "uid": 1000
+      },
+      "bytes": 4230,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/validation-r2/controls.stderr",
+      "sha256": "291bcdde0127687dfcec86d39d00482dd02d7104062f64d85034de1d3b14e3b6"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795069840080089320,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 657261,
+        "mode": 33188,
+        "mtime_ns": 1795069840080089320,
+        "nlink": 1,
+        "size": 0,
+        "uid": 1000
+      },
+      "bytes": 0,
+      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/validation-r2/controls.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "candidate_files_written": 0,
+  "candidate_modules_imported": 0,
+  "candidate_tests_rerun": 0,
+  "checksum_entry_count": 33,
+  "created_utc": "2026-11-19T06:38:30Z",
+  "custody_unchanged_from_history32": true,
+  "decision": "NO_BLOCKER_TO_SOURCE_ONLY_PUBLICATION_PRODUCTION_ENTRY_REMAINS_HELD",
+  "exact_delta_reconstruction": true,
+  "execution_ready": false,
+  "external_metadata_count": 4,
+  "external_metadata_inputs": [
+    {
+      "F9": {
+        "ctime_ns": 1795066884555503738,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 549574,
+        "mode": 33152,
+        "mtime_ns": 1795066884555503738,
+        "nlink": 1,
+        "size": 127403,
+        "uid": 1000
+      },
+      "bytes": 127403,
+      "path": "/workspace/scratch/11ea999c19b6/p4-required39-business-preflight-11ea-20261119-r2/PLAN.json",
+      "sha256": "648559a6623a530d0c6ddf95662a2476c6fa50b90cebc7ed3d8ea99d93e48b43"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795066769243756996,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 549477,
+        "mode": 33152,
+        "mtime_ns": 1795065900261171171,
+        "nlink": 1,
+        "size": 111728,
+        "uid": 1000
+      },
+      "bytes": 111728,
+      "path": "/workspace/scratch/11ea999c19b6/p4-required39-business-preflight-11ea-20261119-r2/inputs/current-source-inputs.json",
+      "sha256": "5d14f8af912f57e9c93290fa9aa3c62a686b57d82f3aa964beb5860b452df9ab"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795066769243625564,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 549476,
+        "mode": 33152,
+        "mtime_ns": 1795065900262345241,
+        "nlink": 1,
+        "size": 2397,
+        "uid": 1000
+      },
+      "bytes": 2397,
+      "path": "/workspace/scratch/11ea999c19b6/p4-required39-business-preflight-11ea-20261119-r2/inputs/release-scope.json",
+      "sha256": "7d3715d360abbdadf3206406c331d575eed4020040d7963c182af9bad85bf24d"
+    },
+    {
+      "F9": {
+        "ctime_ns": 1795066769253189837,
+        "dev": 27,
+        "gid": 1000,
+        "ino": 549481,
+        "mode": 33152,
+        "mtime_ns": 1795065900258977930,
+        "nlink": 1,
+        "size": 157891,
+        "uid": 1000
+      },
+      "bytes": 157891,
+      "path": "/workspace/scratch/11ea999c19b6/p4-required39-business-preflight-11ea-20261119-r2/inputs/CURRENT-SOURCE-STATE.json",
+      "sha256": "4d25fc0aafd5668cc3f0c31be157bc617732902976aad821333a02de84ff9bf7"
+    }
+  ],
+  "findings": [
+    {
+      "conclusion": "The public execution entry, admit and common operation guard reach unconditional Refused before any root probe, controller callback, owner getter or Flow command. Constructor merely stores controller and initializes owner=None. No configuration or caller attestation unlocks these frozen paths.",
+      "files": [
+        "firefox_protocol.py:execute",
+        "firefox_adapter.py:require_frozen_runtime_implementations",
+        "firefox_adapter.py:FirefoxFlowAdapter.admit",
+        "firefox_adapter.py:FirefoxFlowAdapter._guard"
+      ],
+      "id": "PRODUCTION_HOLD",
+      "status": "CONFIRMED"
+    },
+    {
+      "conclusion": "Controller host release must return literal True; false/None/integer/truthy object is rejected. Protocol release failure changes state to UNKNOWN and removes finite/protocol credit. Host closure never substitutes for Android cleanup.",
+      "files": [
+        "firefox_adapter.py:FirefoxFlowAdapter.close_resources",
+        "firefox_protocol.py:_sequence"
+      ],
+      "id": "HOST_RELEASE_ACK",
+      "status": "CONFIRMED"
+    },
+    {
+      "conclusion": "Only fixed Firefox 160.0.1 versionCode2016196678, 140689915-byte SHA283b19f8313e8ce6e8a913bb178ce4a79c5cecd82c49f821de7fafb068c73fcd is admitted by the larger-body production wrapper. Read chunks <=65536; held descriptor full-body SHA/EOF and F9, named-inode comparison, absolute deadline and source-original helper custody are retained. APK not read or reverified in this review.",
+      "files": [
+        "firefox_custody.py:HeldFirefoxAPK",
+        "firefox_custody.py:stream_exact_fd",
+        "firefox_custody.py:CombinedCustody"
+      ],
+      "id": "EXACT_SELECTED_CUSTODY",
+      "status": "CONFIRMED_SOURCE_ONLY"
+    },
+    {
+      "conclusion": "Ordered two-public-Mozilla-page flow, exact URLs/headings, bounded find/click/set-text, task/tab/session binding, normal owned close/reopen and final owned cleanup are implemented as held source. Browser-owner, selector and actual controller prerequisites are explicit and absent. No current installed or business credit.",
+      "files": [
+        "firefox_protocol.py:_sequence",
+        "firefox_adapter.py:FirefoxFlowAdapter"
+      ],
+      "id": "OWNED_PUBLIC_FLOW",
+      "status": "CONFIRMED_PREPARATION_ONLY"
+    },
+    {
+      "conclusion": "Current recorded host-client hashes e775301b.../d1fc02bd... differ from the unchanged original typed-entry 4823c1a6.../76e9875d... pins. The source retains read_ref checks before launch; neither old consumer pins nor live clients were changed.",
+      "files": [
+        "firefox_adapter.py:FirefoxFlowAdapter._open",
+        "ORIGINS.json",
+        "originals/business_ui_entry.py"
+      ],
+      "id": "CURRENT_CONSUMER_MISMATCH",
+      "status": "CORRECTLY_HELD"
+    },
+    {
+      "conclusion": "Compressed export equals expanded export; smali equals exact embedded text/hash. Targeted find count/matches/window_context and set-text readback fields agree with adapter. Historical signed helper proof is not promoted to currently installed helper custody.",
+      "files": [
+        "originals/native-actions-source-export.json",
+        "originals/ActionRunner.smali"
+      ],
+      "id": "HISTORICAL_HELPER_WIRE",
+      "status": "PROVENANCE_COHERENT"
+    },
+    {
+      "conclusion": "Selected source record, prior null runtime bindings and additive checklist exactly equal frozen registry/state/plan records. 42 selected/39 required/three original exemptions retained. Source-only publication grants no execution authorization, finite/public case, whole-app business, latest-all39, native compatibility, runtime or production pass.",
+      "files": [
+        "SOURCE-BINDING.json",
+        "CURRENT-SOURCE-SUCCESSOR.json",
+        "MANIFEST.json"
+      ],
+      "id": "SOURCE_AND_SCOPE_BOUNDARY",
+      "status": "CONFIRMED"
+    }
+  ],
+  "limitations": [
+    "Only public production entry and guarded adapter paths are admitted interfaces; internal helpers/test doubles are not production admission authority.",
+    "The actual controller, browser-session owner, selectors, Android rendering, installed APK/helper custody, task lifecycle and common release gates were not executed or qualified.",
+    "Official page-heading observation is inherited from root public-page read; this review did not browse or claim Android observation."
+  ],
+  "manifest_entry_count": 32,
+  "package_file_count": 34,
+  "package_root": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1",
+  "production_entry_held": true,
+  "production_ready": false,
+  "remaining_gates": [
+    "A separately reviewed source successor must replace the unconditional production hold only after binding real controller and independent browser-owner implementations and their evidence",
+    "Actual final Main/UID/user/framework epoch and per-app engine mapping",
+    "Fresh complete installed Firefox APK custody and source-qualified helper APK identity",
+    "Reviewed actual public-control selectors; no history or tab-list controls",
+    "Source-bound browser session/tab owner provider independent of Android task claims",
+    "Reviewed controller phase scopes, lease, UI context and source origin validators",
+    "Current host-client/typed-entry consumer cohort reconciliation without silently changing old pins",
+    "Real public sequence, stability/data-preservation/common gates and release review"
+  ],
+  "remote_commands": 0,
+  "review_scope": [
+    "Complete current four Python sources, exact narrow delta, README, successor, source binding, origins, manifest, validation and actual raw control logs",
+    "Targeted existing smali wire construction and original typed-entry argv/source pins",
+    "Independent complete-byte SHA and same-read F9 for 34 candidate files and four external fixed metadata inputs; bookend unchanged",
+    "Static AST and content comparison only; no candidate module import or test rerun"
+  ],
+  "reviewer": "/root/runtime_cleanup_audit",
+  "runtime_qualified": false,
+  "schema": "p4-firefox-source-peer-review-v1"
+}

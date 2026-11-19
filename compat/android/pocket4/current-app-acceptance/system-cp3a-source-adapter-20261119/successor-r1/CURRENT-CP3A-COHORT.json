@@ -1,0 +1,1822 @@
+{
+  "APK_bodies_read": 0,
+  "Android_actions": 0,
+  "SDK_commands": 0,
+  "adapted_target_profile_mismatch_count": 5,
+  "build_identity": {
+    "cpu_abi": "x86_64",
+    "id": "CP3A.260905.010",
+    "incremental": "16176746",
+    "release": "17",
+    "sdk": 37,
+    "sdk_full": "37.1",
+    "security_patch": "2026-09-05",
+    "uuid": "e9RP-YwNfrwMgtv9iyGpEqrDCgFs5iWJIAtcWyfY4-Q",
+    "variant": "user"
+  },
+  "business_qualified": false,
+  "current_business_runtime_compatible_packages_qualified": 0,
+  "current_required_system_count": 10,
+  "execution_authorized": false,
+  "execution_ready": false,
+  "full_GSI": {
+    "bytes": 2294853632,
+    "identity": [
+      "66306",
+      "75949965",
+      "33060",
+      "1000",
+      "1000",
+      "1",
+      "2294853632",
+      "1795010165841291907",
+      "1795010165841291907"
+    ],
+    "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/official-gsi/images/system.img",
+    "sha256": "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4"
+  },
+  "gallery_candidate_mismatch": {
+    "baseline_matches_current_official_APK": true,
+    "current_official_ART_qualified": false,
+    "current_official_DEX_metadata": {
+      "bytes": 1857660,
+      "name": "classes.dex",
+      "sha256": "725ac7153e9ab4a9742672c238fc140bda311e6c940daf9e1d10a2b26c33e829"
+    },
+    "current_official_rotation_or_edit_semantics_qualified": false,
+    "current_official_source_record": {
+      "apk": {
+        "bytes": 7390425,
+        "identity": [
+          "66306",
+          "100946924",
+          "33060",
+          "1000",
+          "1000",
+          "1",
+          "7390425",
+          "1795054659966014768",
+          "1795054659971014587"
+        ],
+        "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/apks/com.android.gallery3d.apk",
+        "sha256": "835fe119745324276457b4434fc39f25b633e752c822d2fc9be40eb4b2d45439"
+      },
+      "complete_ZIP_member_count": 944,
+      "image_path": "/system/product/app/Gallery2/Gallery2.apk",
+      "installed": false,
+      "min_sdk": "37",
+      "native_ABIs": [],
+      "native_member_count": 0,
+      "package": "com.android.gallery3d",
+      "production_ready": false,
+      "runtime_qualified": false,
+      "signer_certificate_sha256": [
+        "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+      ],
+      "source_identity_verified": true,
+      "source_receipt": {
+        "bytes": 326611,
+        "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/receipts/com.android.gallery3d.json",
+        "sha256": "e0326b9a0f8acc599cf7ef1190cc03c967a5578e34efcdba55cc0f3f46f932ad"
+      },
+      "target_sdk": "28",
+      "version_code": 40030,
+      "version_name": "1.1.40030",
+      "zip_members": 944
+    },
+    "historical_artifact_contract": {
+      "bytes": 3978,
+      "path": "/home/alex/work/pocket4-android-final/qualification/gallery-qpr1-current-inputs-20261108-8b88-r1/inputs/host-artifact-contract.json",
+      "sha256": "c6fb3ad1c2ec673bab72ba3808418f140d0b73051627acdf6cccac34704beb2a"
+    },
+    "historical_baseline_APK": {
+      "bytes": 7390425,
+      "sha256": "835fe119745324276457b4434fc39f25b633e752c822d2fc9be40eb4b2d45439"
+    },
+    "historical_build_receipt": {
+      "bytes": 494342,
+      "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/gallery-app-port-20261108-8b88-r1/proof/remote-build-proof.json",
+      "sha256": "918c9e68573848bb6cb68b3e1474f97ba867262ea06fc994fe19084f9dcf5f09"
+    },
+    "historical_modified_DEX": {
+      "bytes": 1886696,
+      "sha256": "6a994fabd3494dcbf071d727922351f72ff8fdbee0d3d3c1a46b6ed30ca034ee"
+    },
+    "historical_modified_candidate": {
+      "bytes": 7493022,
+      "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/gallery-app-port-20261108-8b88-r1/apps/Gallery2-QPR1-rotation.apk",
+      "sha256": "6677d382076f10f0502c813c7614c32127ccf3cd8f02756b75a8c3574980e87e"
+    },
+    "historical_modified_method_metadata": [
+      {
+        "QPR1_preimage_sha256": "47e8211aef9ac2124b5837342f642a3e323f349b4e3e48276b4cf6f4432acbd1",
+        "class": "com/android/gallery3d/exif/ExifInterface.smali",
+        "entire_QPR1_target_preimage_byte_equal_to_reviewed_preimage": true,
+        "non_target_method_bytes_preserved": true,
+        "patched_IR_sha256": "73511f1fa8729aa60dc5e2625ac2c27e8d9924770d18b6d7851f1d8abc287d01",
+        "patched_source_sha256": "d13100fe136529c2789df0cf771573074cec8250fb308850a8604bc199d528c5",
+        "replaced_method": "public rewriteExif(Ljava/lang/String;Ljava/util/Collection;)Z"
+      },
+      {
+        "QPR1_preimage_sha256": "43cb1c4fcd4783e605a644b618841505cce84ab7159d46bf80ac5618b40822ef",
+        "class": "com/android/gallery3d/ui/MenuExecutor$MediaOperation.smali",
+        "entire_QPR1_target_preimage_byte_equal_to_reviewed_preimage": true,
+        "non_target_method_bytes_preserved": true,
+        "patched_IR_sha256": "73d080ef77523546dcb60e9d98f38a9174bbc5bd5a31477e980a52fee76d3f8a",
+        "patched_source_sha256": "cbd73e0efddd8e97a327f6f8fc4e90a3c5c7b3df7107f8d6f7c025b208f81f40",
+        "replaced_method": "public run(Lcom/android/gallery3d/util/ThreadPool$JobContext;)Ljava/lang/Void;"
+      }
+    ],
+    "method_hash_scope": "These are complete class preimage, patched-source and patched-IR hashes associated with the named replaced method; they are not a newly measured method-body hash.",
+    "modified_DEX_matches_current_official_DEX": false,
+    "modified_candidate_matches_current_official_APK": false,
+    "old_ART_or_modified_method_credit_transferred": false,
+    "old_pm_install_entry_retired": true,
+    "required_future_gates": [
+      "fresh official-DEX ART and complete class-set proof",
+      "review and execute supported official-APK edit/rotation behavior on owned fixtures",
+      "fresh image generation and installed APK custody bound to the same Main/UID",
+      "current MediaProvider source and owned cleanup semantics"
+    ]
+  },
+  "historical_finite_source_package_count": 7,
+  "host_product_mutations": 0,
+  "installed": false,
+  "native_compatibility_qualified": false,
+  "old_sources_or_receipts_modified": false,
+  "production_ready": false,
+  "provider_cohort": {
+    "com.android.externalstorage": {
+      "actual_UID": null,
+      "current_APK": null,
+      "current_signer": null,
+      "historical_expected_profile": {
+        "apks": [
+          {
+            "sha256": "50d1e6f2be950e049cdc898dd812c8e609f421cc167013d4ee2c795dcdc0e5ea"
+          }
+        ],
+        "certificate_sha256": null,
+        "component": null,
+        "package": "com.android.externalstorage",
+        "require_v3": false,
+        "uid": 10024,
+        "version_code": 37
+      },
+      "historical_expected_profile_is_current_authority": false,
+      "historical_profile_source": {
+        "bytes": 1395,
+        "path": "/home/alex/work/pocket4-android-final/qualification/documents-saf11-runtime-inputs-20261108-8b88-r2/source/documents_profiles.py",
+        "sha256": "b54e88715bbfcb82d4ed5435017ee388fda529ec3a8e3cb2f72456088d6e2c43"
+      },
+      "required_full_GSI": {
+        "bytes": 2294853632,
+        "identity": [
+          "66306",
+          "75949965",
+          "33060",
+          "1000",
+          "1000",
+          "1",
+          "2294853632",
+          "1795010165841291907",
+          "1795010165841291907"
+        ],
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/official-gsi/images/system.img",
+        "sha256": "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4"
+      },
+      "status": "PENDING_CURRENT_GSI_PROVIDER_SOURCE_AND_SEMANTIC_QUALIFICATION"
+    },
+    "com.android.providers.calendar": {
+      "actual_UID": null,
+      "current_APK": null,
+      "current_signer": null,
+      "historical_expected_profile": {
+        "apks": [
+          {
+            "bytes": 340711,
+            "sha256": "eebf12f81981f7d8c59a9b9ed465945818d2ab0208c121d858cbc4e6426f5fff"
+          }
+        ],
+        "certificate_sha256": null,
+        "component": null,
+        "package": "com.android.providers.calendar",
+        "require_v3": false,
+        "uid": 10017,
+        "version_code": 37
+      },
+      "historical_expected_profile_is_current_authority": false,
+      "historical_profile_source": {
+        "bytes": 3422,
+        "path": "/home/alex/work/pocket4-android-final/qualification/business-system-cases-runtime-inputs-20261108-8b88-r2/source/system_profiles.py",
+        "sha256": "bd11c3cee421bcccf8ed18fc38ebec93a6ea85cbeaec9a281c907127ff25de7b"
+      },
+      "required_full_GSI": {
+        "bytes": 2294853632,
+        "identity": [
+          "66306",
+          "75949965",
+          "33060",
+          "1000",
+          "1000",
+          "1",
+          "2294853632",
+          "1795010165841291907",
+          "1795010165841291907"
+        ],
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/official-gsi/images/system.img",
+        "sha256": "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4"
+      },
+      "status": "PENDING_CURRENT_GSI_PROVIDER_SOURCE_AND_SEMANTIC_QUALIFICATION"
+    },
+    "com.android.providers.contacts": {
+      "actual_UID": null,
+      "current_APK": null,
+      "current_signer": null,
+      "historical_expected_profile": {
+        "apks": [
+          {
+            "bytes": 872865,
+            "sha256": "9a8d8238565ff977a025ad6eb3f1496b5bd2ea9c819b3229278d62e29da0c313"
+          }
+        ],
+        "certificate_sha256": null,
+        "component": null,
+        "package": "com.android.providers.contacts",
+        "require_v3": false,
+        "uid": 10015,
+        "version_code": 37
+      },
+      "historical_expected_profile_is_current_authority": false,
+      "historical_profile_source": {
+        "bytes": 3422,
+        "path": "/home/alex/work/pocket4-android-final/qualification/business-system-cases-runtime-inputs-20261108-8b88-r2/source/system_profiles.py",
+        "sha256": "bd11c3cee421bcccf8ed18fc38ebec93a6ea85cbeaec9a281c907127ff25de7b"
+      },
+      "required_full_GSI": {
+        "bytes": 2294853632,
+        "identity": [
+          "66306",
+          "75949965",
+          "33060",
+          "1000",
+          "1000",
+          "1",
+          "2294853632",
+          "1795010165841291907",
+          "1795010165841291907"
+        ],
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/official-gsi/images/system.img",
+        "sha256": "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4"
+      },
+      "status": "PENDING_CURRENT_GSI_PROVIDER_SOURCE_AND_SEMANTIC_QUALIFICATION"
+    },
+    "com.android.providers.media.module": {
+      "CAPEX_hash_is_not_an_APK_identity": true,
+      "actual_UID": null,
+      "current_APK": null,
+      "current_CAPEX_container_metadata_only": {
+        "bytes": 17256448,
+        "path": "/system/apex/com.android.mediaprovider.capex",
+        "sha256": "a15084a3dcf7eca1fa0344625226b4600c3020cce3bdda9749bcb77d76c7ad95"
+      },
+      "current_signer": null,
+      "historical_expected_APK": {
+        "bytes": 15447727,
+        "path": "/apex/com.android.mediaprovider/priv-app/MediaProvider@CP2A.260605.016/MediaProvider.apk",
+        "sha256": "b98258475c14043fe1f7e0d5a61caa13aa22dea426ffc589e83012f0377ce0f4"
+      },
+      "historical_expected_profile_is_current_authority": false,
+      "historical_profile_source": {
+        "bytes": 2384,
+        "path": "/home/alex/work/pocket4-android-final/qualification/camera-app-photo-preparation-resume-20261107-r4/source/camera_profiles.py",
+        "sha256": "1f98f87c4d730c1f353701fc69dd8ab7db29335814e78b63b51d1de99d3700de"
+      },
+      "required_full_GSI": {
+        "bytes": 2294853632,
+        "identity": [
+          "66306",
+          "75949965",
+          "33060",
+          "1000",
+          "1000",
+          "1",
+          "2294853632",
+          "1795010165841291907",
+          "1795010165841291907"
+        ],
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/official-gsi/images/system.img",
+        "sha256": "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4"
+      },
+      "status": "PENDING_CURRENT_GSI_INNER_MEDIAPROVIDER_APK_AND_SEMANTIC_QUALIFICATION"
+    }
+  },
+  "required39_source_state": {
+    "bytes": 157891,
+    "path": "inputs/CURRENT-SOURCE-STATE.json",
+    "sha256": "4d25fc0aafd5668cc3f0c31be157bc617732902976aad821333a02de84ff9bf7"
+  },
+  "required_before_installation": {
+    "Beike_current_publisher_refresh_and_qualification": {
+      "distribution": "public_mirror",
+      "latest_release_recheck_required_before_activation": true,
+      "source": {
+        "bytes": 5851,
+        "path": "/home/alex/work/p4-beike-current-arm64-11ea-20261119-r1/source-qualification-r1/SOURCE.json",
+        "sha256": "ae6f31e0007c84889decf37dcda9b714838b236fa6f597d1eefd0de81e481542"
+      },
+      "source_receipt": {
+        "bytes": 13179,
+        "path": "/home/alex/work/p4-beike-current-arm64-11ea-20261119-r1/source-qualification-r1/source-receipt.json",
+        "sha256": "46452cb13bfc8ed0b47bc929be5870d286d47107124d4daafc7c04f77609924c"
+      },
+      "status": "SOURCE_QUALIFIED_AT_PINNED_ANDROID_OBSERVATIONS"
+    },
+    "Meituan_official_signer_and_existing_userdata_migration": "PENDING",
+    "actual_business_and_common_gates_for_all_required39": "PENDING",
+    "any_required_user_login_or_SMS": "EXTERNAL_GATE_IF_ENCOUNTERED",
+    "final_actual_UID_package_identity_and_runtime_gate_manifest": "PENDING",
+    "final_coherent_Android_GSI_framework_vendor_native_cohort": "PENDING",
+    "fresh_destination_custody_for_every_selected_APK_and_split": "PENDING",
+    "fresh_official_metadata_for_retained_Play_inputs": {
+      "com.bestbuy.android": {
+        "activation_metadata_revalidated": false,
+        "historical_expiry": "2026-11-19T17:44:09.086253+00:00",
+        "new_delivery_obtained": false,
+        "restriction": "UNAVAILABLE_COUNTRY"
+      },
+      "com.ehi.national.mobile": {
+        "activation_metadata_revalidated": false,
+        "historical_expiry": "2026-11-19T17:44:09.086253+00:00",
+        "new_delivery_obtained": false,
+        "restriction": "UNAVAILABLE_COUNTRY"
+      },
+      "com.hertz.android.digital": {
+        "activation_metadata_revalidated": false,
+        "historical_expiry": "2026-11-19T17:44:09.086253+00:00",
+        "new_delivery_obtained": false,
+        "restriction": "UNAVAILABLE_COUNTRY"
+      }
+    },
+    "latest_release_recheck_for_every_required_application": "PENDING"
+  },
+  "runtime_bootstrap_preparation_admission_claimed": false,
+  "runtime_qualified": false,
+  "schema": "pocket4-current-cp3a-system-source-adapter-v1",
+  "separate_Gallery_modified_candidate_mismatch_count": 1,
+  "source_files_validated": 224,
+  "source_only": true,
+  "source_postimages": [
+    {
+      "change_kind": "exact_target_metadata",
+      "edits": [
+        {
+          "after": "'726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e'",
+          "before": "'c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1'",
+          "end": 618,
+          "line": 11,
+          "purpose": "com.android.calendar:sha256",
+          "start": 552
+        }
+      ],
+      "original": {
+        "local": "originals/business-system-cases-runtime-inputs-20261108-8b88-r2/calendar_base.py",
+        "origin": {
+          "bytes": 11815,
+          "path": "/home/alex/work/pocket4-android-final/qualification/business-system-cases-runtime-inputs-20261108-8b88-r2/source/calendar_base.py",
+          "sha256": "bee9c6da53d37873864197117985f934b22f3ca9a7bc80e8dc7a1866a64b5687"
+        },
+        "origin_f9": [
+          66306,
+          44190076,
+          33024,
+          0,
+          0,
+          1,
+          11815,
+          1794177240041928567,
+          1794177240041928567
+        ]
+      },
+      "postimage": {
+        "bytes": 11815,
+        "sha256": "01c37eaa81bec65d2095001602687aa02eb8614626a000e6726ba82ce30e737a"
+      },
+      "relative": "business-system-cases-runtime-inputs-20261108-8b88-r2/calendar_base.py"
+    },
+    {
+      "change_kind": "exact_target_metadata",
+      "edits": [
+        {
+          "after": "'726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e'",
+          "before": "'c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1'",
+          "end": 426,
+          "line": 6,
+          "purpose": "com.android.calendar:sha256",
+          "start": 360
+        }
+      ],
+      "original": {
+        "local": "originals/business-system-cases-runtime-inputs-20261108-8b88-r2/calendar_core.py",
+        "origin": {
+          "bytes": 26509,
+          "path": "/home/alex/work/pocket4-android-final/qualification/business-system-cases-runtime-inputs-20261108-8b88-r2/source/calendar_core.py",
+          "sha256": "4b4b407f48d8a4ea24ab6bda74eb23685db0e69f998064944dc58d2ce45fe0b3"
+        },
+        "origin_f9": [
+          66306,
+          44190077,
+          33024,
+          0,
+          0,
+          1,
+          26509,
+          1794177240044969796,
+          1794177240044969796
+        ]
+      },
+      "postimage": {
+        "bytes": 26509,
+        "sha256": "fce8b795f917764c7e43d5c21aabfb7dc700e2d322708035770f9586518d5b34"
+      },
+      "relative": "business-system-cases-runtime-inputs-20261108-8b88-r2/calendar_core.py"
+    },
+    {
+      "change_kind": "exact_target_metadata",
+      "edits": [
+        {
+          "after": "'f91e45e89b3a302198c9269a60bb07387150c0f40def95feb873b765520ae028'",
+          "before": "'11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0'",
+          "end": 495,
+          "line": 11,
+          "purpose": "com.android.contacts:sha256",
+          "start": 429
+        },
+        {
+          "after": "11896473",
+          "before": "11839391",
+          "end": 417,
+          "line": 11,
+          "purpose": "com.android.contacts:bytes",
+          "start": 409
+        }
+      ],
+      "original": {
+        "local": "originals/business-system-cases-runtime-inputs-20261108-8b88-r2/contacts_model.py",
+        "origin": {
+          "bytes": 6862,
+          "path": "/home/alex/work/pocket4-android-final/qualification/business-system-cases-runtime-inputs-20261108-8b88-r2/source/contacts_model.py",
+          "sha256": "b5dd7b1a2fb04b607b52a18522861966909e06b6404d6c0735a6cb16f2e298f0"
+        },
+        "origin_f9": [
+          66306,
+          44190091,
+          33024,
+          0,
+          0,
+          1,
+          6862,
+          1794177240090511361,
+          1794177240090511361
+        ]
+      },
+      "postimage": {
+        "bytes": 6862,
+        "sha256": "93a98bcfb3b6963d495f50ab79fe4e282904c0c842fa4023e197cdd32c096d7c"
+      },
+      "relative": "business-system-cases-runtime-inputs-20261108-8b88-r2/contacts_model.py"
+    },
+    {
+      "change_kind": "exact_target_metadata",
+      "edits": [
+        {
+          "after": "'f91e45e89b3a302198c9269a60bb07387150c0f40def95feb873b765520ae028'",
+          "before": "'11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0'",
+          "end": 661,
+          "line": 17,
+          "purpose": "com.android.contacts:sha256",
+          "start": 595
+        },
+        {
+          "after": "11896473",
+          "before": "11839391",
+          "end": 6734,
+          "line": 114,
+          "purpose": "com.android.contacts:bytes",
+          "start": 6726
+        }
+      ],
+      "original": {
+        "local": "originals/business-system-cases-runtime-inputs-20261108-8b88-r2/contacts_trial.py",
+        "origin": {
+          "bytes": 22553,
+          "path": "/home/alex/work/pocket4-android-final/qualification/business-system-cases-runtime-inputs-20261108-8b88-r2/source/contacts_trial.py",
+          "sha256": "fc245ae5b834f193457f6d15e26792c8dee58ed907e439bd7b551b213b26d318"
+        },
+        "origin_f9": [
+          66306,
+          44190094,
+          33024,
+          0,
+          0,
+          1,
+          22553,
+          1794177240099036328,
+          1794177240099036328
+        ]
+      },
+      "postimage": {
+        "bytes": 22553,
+        "sha256": "c18190f986513a7aca494f5360827ef0489210e0af28f41af7ca0c357b53c616"
+      },
+      "relative": "business-system-cases-runtime-inputs-20261108-8b88-r2/contacts_trial.py"
+    },
+    {
+      "change_kind": "exact_target_metadata",
+      "edits": [
+        {
+          "after": "'f91e45e89b3a302198c9269a60bb07387150c0f40def95feb873b765520ae028'",
+          "before": "'11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0'",
+          "end": 344,
+          "line": 5,
+          "purpose": "com.android.contacts:sha256",
+          "start": 278
+        },
+        {
+          "after": "11896473",
+          "before": "11839391",
+          "end": 266,
+          "line": 5,
+          "purpose": "com.android.contacts:bytes",
+          "start": 258
+        },
+        {
+          "after": "'726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e'",
+          "before": "'c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1'",
+          "end": 932,
+          "line": 12,
+          "purpose": "com.android.calendar:sha256",
+          "start": 866
+        },
+        {
+          "after": "2520846",
+          "before": "2635213",
+          "end": 854,
+          "line": 12,
+          "purpose": "com.android.calendar:bytes",
+          "start": 847
+        },
+        {
+          "after": "'28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd'",
+          "before": "None",
+          "end": 378,
+          "line": 6,
+          "purpose": "com.android.contacts:add_exact_current_signer",
+          "start": 374
+        },
+        {
+          "after": "'a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc'",
+          "before": "None",
+          "end": 966,
+          "line": 13,
+          "purpose": "com.android.calendar:add_exact_current_signer",
+          "start": 962
+        }
+      ],
+      "original": {
+        "local": "originals/business-system-cases-runtime-inputs-20261108-8b88-r2/system_profiles.py",
+        "origin": {
+          "bytes": 3422,
+          "path": "/home/alex/work/pocket4-android-final/qualification/business-system-cases-runtime-inputs-20261108-8b88-r2/source/system_profiles.py",
+          "sha256": "bd11c3cee421bcccf8ed18fc38ebec93a6ea85cbeaec9a281c907127ff25de7b"
+        },
+        "origin_f9": [
+          66306,
+          44190102,
+          33024,
+          0,
+          0,
+          1,
+          3422,
+          1794177240124263301,
+          1794177240124263301
+        ]
+      },
+      "postimage": {
+        "bytes": 3546,
+        "sha256": "81e8f98dff7513d82624a3e5e0e5c0b20e7c54395025df064246948670e6da8b"
+      },
+      "relative": "business-system-cases-runtime-inputs-20261108-8b88-r2/system_profiles.py"
+    },
+    {
+      "change_kind": "exact_target_metadata",
+      "edits": [
+        {
+          "after": "'726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e'",
+          "before": "'c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1'",
+          "end": 618,
+          "line": 11,
+          "purpose": "com.android.calendar:sha256",
+          "start": 552
+        }
+      ],
+      "original": {
+        "local": "originals/calendar-reminder-runtime-inputs-20261108-8b88-r2/calendar_base.py",
+        "origin": {
+          "bytes": 11905,
+          "path": "/home/alex/work/pocket4-android-final/qualification/calendar-reminder-runtime-inputs-20261108-8b88-r2/source/calendar_base.py",
+          "sha256": "0feb6ef930abcf4cc85ee6d8e8ee6fabe5068d534f1650f2b24d4583fe4aabad"
+        },
+        "origin_f9": [
+          66306,
+          44190116,
+          33024,
+          0,
+          0,
+          1,
+          11905,
+          1794177240135571843,
+          1794177240135571843
+        ]
+      },
+      "postimage": {
+        "bytes": 11905,
+        "sha256": "6df1b12dab9568b42f61b016975bfe4eacdfd931cefab4a0ded02acf37c84ebf"
+      },
+      "relative": "calendar-reminder-runtime-inputs-20261108-8b88-r2/calendar_base.py"
+    },
+    {
+      "change_kind": "exact_target_metadata",
+      "edits": [
+        {
+          "after": "'726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e'",
+          "before": "'c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1'",
+          "end": 426,
+          "line": 6,
+          "purpose": "com.android.calendar:sha256",
+          "start": 360
+        }
+      ],
+      "original": {
+        "local": "originals/calendar-reminder-runtime-inputs-20261108-8b88-r2/calendar_core.py",
+        "origin": {
+          "bytes": 4916,
+          "path": "/home/alex/work/pocket4-android-final/qualification/calendar-reminder-runtime-inputs-20261108-8b88-r2/source/calendar_core.py",
+          "sha256": "7c966c88d462b583c8c6adf6d9055120fcc02ee94410b8aa69ee2a037e7d9882"
+        },
+        "origin_f9": [
+          66306,
+          44190117,
+          33024,
+          0,
+          0,
+          1,
+          4916,
+          1794177240136269933,
+          1794177240136269933
+        ]
+      },
+      "postimage": {
+        "bytes": 4916,
+        "sha256": "d651ed871d16ae7e5b9c6669a484eac8747242281ba41b5804f8f75f4f11a77f"
+      },
+      "relative": "calendar-reminder-runtime-inputs-20261108-8b88-r2/calendar_core.py"
+    },
+    {
+      "change_kind": "exact_target_metadata",
+      "edits": [
+        {
+          "after": "'726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e'",
+          "before": "'c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1'",
+          "end": 332,
+          "line": 2,
+          "purpose": "com.android.calendar:sha256",
+          "start": 266
+        },
+        {
+          "after": "2520846",
+          "before": "2635213",
+          "end": 254,
+          "line": 2,
+          "purpose": "com.android.calendar:bytes",
+          "start": 247
+        },
+        {
+          "after": "'a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc'",
+          "before": "None",
+          "end": 362,
+          "line": 2,
+          "purpose": "com.android.calendar:add_exact_current_signer",
+          "start": 358
+        }
+      ],
+      "original": {
+        "local": "originals/calendar-reminder-runtime-inputs-20261108-8b88-r2/system_profiles.py",
+        "origin": {
+          "bytes": 2513,
+          "path": "/home/alex/work/pocket4-android-final/qualification/calendar-reminder-runtime-inputs-20261108-8b88-r2/source/system_profiles.py",
+          "sha256": "fe7442c93aae67eaf4c3b75aac43d4cee847b79463ad8d458ebad512b77d436c"
+        },
+        "origin_f9": [
+          66306,
+          44190139,
+          33024,
+          0,
+          0,
+          1,
+          2513,
+          1794177240183269026,
+          1794177240183269026
+        ]
+      },
+      "postimage": {
+        "bytes": 2575,
+        "sha256": "bda830ff4fa458f50cdc906b11011b9ab6b503f1f5120292669c17338871c339"
+      },
+      "relative": "calendar-reminder-runtime-inputs-20261108-8b88-r2/system_profiles.py"
+    },
+    {
+      "change_kind": "exact_target_metadata",
+      "edits": [
+        {
+          "after": "'24632b0e1a1c22741177583b0dfd4a3fa71ff9b1d1b72af60a3d7cf373c7e61f'",
+          "before": "'0218041bc46f49c0c9622196e2a3610c641e0cc8f12386f23cdd88dc3a3ce18e'",
+          "end": 582,
+          "line": 11,
+          "purpose": "com.android.camera2:sha256",
+          "start": 516
+        },
+        {
+          "after": "7709134",
+          "before": "11892407",
+          "end": 496,
+          "line": 10,
+          "purpose": "com.android.camera2:bytes",
+          "start": 488
+        }
+      ],
+      "original": {
+        "local": "originals/camera-app-photo-preparation-resume-20261107-r4/camera_profiles.py",
+        "origin": {
+          "bytes": 2384,
+          "path": "/home/alex/work/pocket4-android-final/qualification/camera-app-photo-preparation-resume-20261107-r4/source/camera_profiles.py",
+          "sha256": "1f98f87c4d730c1f353701fc69dd8ab7db29335814e78b63b51d1de99d3700de"
+        },
+        "origin_f9": [
+          66306,
+          57417317,
+          33024,
+          0,
+          0,
+          1,
+          2384,
+          1794121086760516239,
+          1794121086760516239
+        ]
+      },
+      "postimage": {
+        "bytes": 2383,
+        "sha256": "728361ccf9ebba755c98acb1e2e1646de16f743e430573ec516f15d7e02df90a"
+      },
+      "relative": "camera-app-photo-preparation-resume-20261107-r4/camera_profiles.py"
+    },
+    {
+      "change_kind": "exact_target_metadata",
+      "edits": [
+        {
+          "after": "'9f24ea5fa57bca4a453556ab7cb44fbad1813cb3d15292a8e572cfb40fff7a77'",
+          "before": "'433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d'",
+          "end": 359,
+          "line": 6,
+          "purpose": "com.android.deskclock:sha256",
+          "start": 293
+        },
+        {
+          "after": "7665498",
+          "before": "7597225",
+          "end": 283,
+          "line": 6,
+          "purpose": "com.android.deskclock:bytes",
+          "start": 276
+        }
+      ],
+      "original": {
+        "local": "originals/clock-remaining-runtime-inputs-20261108-8b88-r2/clock_profiles.py",
+        "origin": {
+          "bytes": 2429,
+          "path": "/home/alex/work/pocket4-android-final/qualification/clock-remaining-runtime-inputs-20261108-8b88-r2/source/clock_profiles.py",
+          "sha256": "edb2b0bd154e67a17a48d6c4fa0849857345b2a9c8c1707c40d7cf6df2abcd6f"
+        },
+        "origin_f9": [
+          66306,
+          44190203,
+          33024,
+          0,
+          0,
+          1,
+          2429,
+          1794177240521770915,
+          1794177240521770915
+        ]
+      },
+      "postimage": {
+        "bytes": 2429,
+        "sha256": "63095fd26b715f0f5471ef09a585fb31910f8041a74328062eb97bed46373757"
+      },
+      "relative": "clock-remaining-runtime-inputs-20261108-8b88-r2/clock_profiles.py"
+    },
+    {
+      "change_kind": "exact_target_metadata",
+      "edits": [
+        {
+          "after": "'9f24ea5fa57bca4a453556ab7cb44fbad1813cb3d15292a8e572cfb40fff7a77'",
+          "before": "'433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d'",
+          "end": 2927,
+          "line": 64,
+          "purpose": "com.android.deskclock:sha256",
+          "start": 2861
+        },
+        {
+          "after": "7665498",
+          "before": "7597225",
+          "end": 2824,
+          "line": 63,
+          "purpose": "com.android.deskclock:bytes",
+          "start": 2817
+        }
+      ],
+      "original": {
+        "local": "originals/clock-remaining-runtime-inputs-20261108-8b88-r2/clock_protection.py",
+        "origin": {
+          "bytes": 5535,
+          "path": "/home/alex/work/pocket4-android-final/qualification/clock-remaining-runtime-inputs-20261108-8b88-r2/source/clock_protection.py",
+          "sha256": "93320326e96eff5320a3fc93c6493616b6eeba9274ce52e5c077494b08ef6f6c"
+        },
+        "origin_f9": [
+          66306,
+          44190204,
+          33024,
+          0,
+          0,
+          1,
+          5535,
+          1794177240524732971,
+          1794177240524732971
+        ]
+      },
+      "postimage": {
+        "bytes": 5535,
+        "sha256": "e6cdb905aa7abeb0498680f01682a14cd539c3db7b7794358ec3b8228b06268b"
+      },
+      "relative": "clock-remaining-runtime-inputs-20261108-8b88-r2/clock_protection.py"
+    },
+    {
+      "change_kind": "exact_target_metadata",
+      "edits": [
+        {
+          "after": "'f7db1705178644333d5c9d291afd1170e71fcddfd1f73021381e1224be824899'",
+          "before": "'757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086'",
+          "end": 259,
+          "line": 3,
+          "purpose": "com.android.documentsui:sha256",
+          "start": 193
+        },
+        {
+          "after": "'c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8'",
+          "before": "None",
+          "end": 292,
+          "line": 4,
+          "purpose": "com.android.documentsui:add_exact_current_signer",
+          "start": 288
+        },
+        {
+          "after": "'bytes': 8923434, ",
+          "before": "",
+          "end": 184,
+          "line": 3,
+          "purpose": "com.android.documentsui:add_exact_size",
+          "start": 184
+        }
+      ],
+      "original": {
+        "local": "originals/documents-saf11-runtime-inputs-20261108-8b88-r2/documents_profiles.py",
+        "origin": {
+          "bytes": 1395,
+          "path": "/home/alex/work/pocket4-android-final/qualification/documents-saf11-runtime-inputs-20261108-8b88-r2/source/documents_profiles.py",
+          "sha256": "b54e88715bbfcb82d4ed5435017ee388fda529ec3a8e3cb2f72456088d6e2c43"
+        },
+        "origin_f9": [
+          66306,
+          44190227,
+          33024,
+          0,
+          0,
+          1,
+          1395,
+          1794177240629252979,
+          1794177240629252979
+        ]
+      },
+      "postimage": {
+        "bytes": 1475,
+        "sha256": "a7e9ee2893adf96fafaa88a358d1b8db9baa9b7d80941ed0f00137f03c914fe1"
+      },
+      "relative": "documents-saf11-runtime-inputs-20261108-8b88-r2/documents_profiles.py"
+    },
+    {
+      "change_kind": "exact_target_metadata",
+      "edits": [
+        {
+          "after": "'f7db1705178644333d5c9d291afd1170e71fcddfd1f73021381e1224be824899'",
+          "before": "'757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086'",
+          "end": 14119,
+          "line": 248,
+          "purpose": "com.android.documentsui:sha256",
+          "start": 14053
+        }
+      ],
+      "original": {
+        "local": "originals/documents-saf11-runtime-inputs-20261108-8b88-r2/documents_saf_core.py",
+        "origin": {
+          "bytes": 34432,
+          "path": "/home/alex/work/pocket4-android-final/qualification/documents-saf11-runtime-inputs-20261108-8b88-r2/source/documents_saf_core.py",
+          "sha256": "f505c8e712aab79cc478b9d9e0b6d15fd238993c99f6d365ac021d19ed3c7c74"
+        },
+        "origin_f9": [
+          66306,
+          44190228,
+          33024,
+          0,
+          0,
+          1,
+          34432,
+          1794177240630750083,
+          1794177240630750083
+        ]
+      },
+      "postimage": {
+        "bytes": 34432,
+        "sha256": "14155170c5a0ccc07166d731c2c4df5dcd50c73aa6424e438e6e16b1986abf91"
+      },
+      "relative": "documents-saf11-runtime-inputs-20261108-8b88-r2/documents_saf_core.py"
+    },
+    {
+      "change_kind": "exact_target_metadata",
+      "edits": [
+        {
+          "after": "'f7db1705178644333d5c9d291afd1170e71fcddfd1f73021381e1224be824899'",
+          "before": "'757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086'",
+          "end": 8519,
+          "line": 146,
+          "purpose": "com.android.documentsui:sha256",
+          "start": 8453
+        }
+      ],
+      "original": {
+        "local": "originals/documents-search-sort-runtime-inputs-20261108-8b88-r2/documents_package_fixture.py",
+        "origin": {
+          "bytes": 14240,
+          "path": "/home/alex/work/pocket4-android-final/qualification/documents-search-sort-runtime-inputs-20261108-8b88-r2/source/documents_package_fixture.py",
+          "sha256": "30a12507a53de33a99b7c354e2bc5db39ddcf4c1e3e0c2ae40462e16814e1c09"
+        },
+        "origin_f9": [
+          66306,
+          44190254,
+          33024,
+          0,
+          0,
+          1,
+          14240,
+          1794177240690992733,
+          1794177240690992733
+        ]
+      },
+      "postimage": {
+        "bytes": 14240,
+        "sha256": "8ebc18d2534f755c6596fa63b6180da5a9f39e3d570bc9b491ebdd4d5dda80ff"
+      },
+      "relative": "documents-search-sort-runtime-inputs-20261108-8b88-r2/documents_package_fixture.py"
+    },
+    {
+      "change_kind": "exact_target_metadata",
+      "edits": [
+        {
+          "after": "'f7db1705178644333d5c9d291afd1170e71fcddfd1f73021381e1224be824899'",
+          "before": "'757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086'",
+          "end": 259,
+          "line": 3,
+          "purpose": "com.android.documentsui:sha256",
+          "start": 193
+        },
+        {
+          "after": "'c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8'",
+          "before": "None",
+          "end": 292,
+          "line": 4,
+          "purpose": "com.android.documentsui:add_exact_current_signer",
+          "start": 288
+        },
+        {
+          "after": "'bytes': 8923434, ",
+          "before": "",
+          "end": 184,
+          "line": 3,
+          "purpose": "com.android.documentsui:add_exact_size",
+          "start": 184
+        }
+      ],
+      "original": {
+        "local": "originals/documents-search-sort-runtime-inputs-20261108-8b88-r2/documents_profiles.py",
+        "origin": {
+          "bytes": 1580,
+          "path": "/home/alex/work/pocket4-android-final/qualification/documents-search-sort-runtime-inputs-20261108-8b88-r2/source/documents_profiles.py",
+          "sha256": "43cb1bc271ee7f01eccd6447ae740b689682ce0f87bfed1d20d46a6b473a047d"
+        },
+        "origin_f9": [
+          66306,
+          44190257,
+          33024,
+          0,
+          0,
+          1,
+          1580,
+          1794177240699360738,
+          1794177240699360738
+        ]
+      },
+      "postimage": {
+        "bytes": 1660,
+        "sha256": "88127e2660951e6fbb5f1b579f7068feda0f49a14f26d7b9b5f9549b07f12af2"
+      },
+      "relative": "documents-search-sort-runtime-inputs-20261108-8b88-r2/documents_profiles.py"
+    },
+    {
+      "change_kind": "retire_modified_gallery_entry",
+      "edits": [
+        {
+          "after": "    raise RuntimeError('CP3A_OFFICIAL_FULL_GSI_ONLY_OLD_MODIFIED_CANDIDATE_RUNTIME_ENTRY_RETIRED')\n",
+          "before": "",
+          "end": 14914,
+          "line": 148,
+          "purpose": "retire_old_modified_candidate_entry:main",
+          "start": 14914
+        }
+      ],
+      "original": {
+        "local": "originals/gallery-album-current-preparation-20261107-r6/video_entry.py",
+        "origin": {
+          "bytes": 21302,
+          "path": "/home/alex/work/pocket4-android-final/qualification/gallery-album-current-preparation-20261107-r6/source/video_entry.py",
+          "sha256": "a185810c7b3b50da5f92286c3735b29e65985d79e2d9d325d7e124d33823d1d9"
+        },
+        "origin_f9": [
+          66306,
+          44304757,
+          33024,
+          0,
+          0,
+          1,
+          21302,
+          1794181485851069298,
+          1794181485851069298
+        ]
+      },
+      "postimage": {
+        "bytes": 21401,
+        "sha256": "62445c1eab30533af2a15790a70d2d5cfa5512c12ad678fcf1672c41ecb724c8"
+      },
+      "relative": "gallery-album-current-preparation-20261107-r6/video_entry.py"
+    },
+    {
+      "change_kind": "retire_modified_gallery_entry",
+      "edits": [
+        {
+          "after": "    raise RuntimeError('CP3A_OFFICIAL_FULL_GSI_ONLY_OLD_MODIFIED_CANDIDATE_RUNTIME_ENTRY_RETIRED')\n",
+          "before": "",
+          "end": 10932,
+          "line": 200,
+          "purpose": "retire_old_modified_candidate_entry:main",
+          "start": 10932
+        }
+      ],
+      "original": {
+        "local": "originals/gallery-new-runtime-preparation-20261107-r7/gallery_current_entry.py",
+        "origin": {
+          "bytes": 18187,
+          "path": "/home/alex/work/pocket4-android-final/qualification/gallery-new-runtime-preparation-20261107-r7/source/gallery_current_entry.py",
+          "sha256": "0e8f214ee884586bfb1da812b48b5f71995899d7b097bffc01daf209c9bf7425"
+        },
+        "origin_f9": [
+          66306,
+          44304685,
+          33024,
+          0,
+          0,
+          1,
+          18187,
+          1794181485729860174,
+          1794181485729860174
+        ]
+      },
+      "postimage": {
+        "bytes": 18286,
+        "sha256": "a9452a272d7b94582547bfe805fb2af99c31bab2146d0c11ea009dba1cbe5b9d"
+      },
+      "relative": "gallery-new-runtime-preparation-20261107-r7/gallery_current_entry.py"
+    },
+    {
+      "change_kind": "retire_modified_gallery_entry",
+      "edits": [
+        {
+          "after": "    raise RuntimeError('CP3A_OFFICIAL_FULL_GSI_ONLY_OLD_MODIFIED_CANDIDATE_RUNTIME_ENTRY_RETIRED')\n",
+          "before": "",
+          "end": 545,
+          "line": 21,
+          "purpose": "retire_old_modified_candidate_entry:verify_art_receipt",
+          "start": 545
+        },
+        {
+          "after": "    raise RuntimeError('CP3A_OFFICIAL_FULL_GSI_ONLY_OLD_MODIFIED_CANDIDATE_RUNTIME_ENTRY_RETIRED')\n",
+          "before": "",
+          "end": 4279,
+          "line": 76,
+          "purpose": "retire_old_modified_candidate_entry:execute",
+          "start": 4279
+        }
+      ],
+      "original": {
+        "local": "originals/gallery-new-runtime-preparation-20261107-r7/gallery_current_install.py",
+        "origin": {
+          "bytes": 11788,
+          "path": "/home/alex/work/pocket4-android-final/qualification/gallery-new-runtime-preparation-20261107-r7/source/gallery_current_install.py",
+          "sha256": "1d70b18925edeef2411e3f3accc122dee220bb213022d9d476abaf21567a9841"
+        },
+        "origin_f9": [
+          66306,
+          44304686,
+          33024,
+          0,
+          0,
+          1,
+          11788,
+          1794181485730824787,
+          1794181485730824787
+        ]
+      },
+      "postimage": {
+        "bytes": 11986,
+        "sha256": "d39c6e100a109c81934accf700b6f640af38e3a7a4da4a8396036830fb817064"
+      },
+      "relative": "gallery-new-runtime-preparation-20261107-r7/gallery_current_install.py"
+    },
+    {
+      "change_kind": "retire_modified_gallery_entry",
+      "edits": [
+        {
+          "after": "    raise RuntimeError('CP3A_OFFICIAL_FULL_GSI_ONLY_OLD_MODIFIED_CANDIDATE_RUNTIME_ENTRY_RETIRED')\n",
+          "before": "",
+          "end": 5045,
+          "line": 91,
+          "purpose": "retire_old_modified_candidate_entry:execute",
+          "start": 5045
+        }
+      ],
+      "original": {
+        "local": "originals/gallery-new-runtime-preparation-20261107-r7/gallery_current_verify.py",
+        "origin": {
+          "bytes": 16785,
+          "path": "/home/alex/work/pocket4-android-final/qualification/gallery-new-runtime-preparation-20261107-r7/source/gallery_current_verify.py",
+          "sha256": "f7438c04a18e30333ffb6a5db081e304a127baf1deebdd2519be57045063033f"
+        },
+        "origin_f9": [
+          66306,
+          44304687,
+          33024,
+          0,
+          0,
+          1,
+          16785,
+          1794181485734795036,
+          1794181485734795036
+        ]
+      },
+      "postimage": {
+        "bytes": 16884,
+        "sha256": "53e79a1bc91a1f24deb3629f711f3243708edd918d63af767d065632726a2c43"
+      },
+      "relative": "gallery-new-runtime-preparation-20261107-r7/gallery_current_verify.py"
+    },
+    {
+      "change_kind": "retire_modified_gallery_entry",
+      "edits": [
+        {
+          "after": "    raise RuntimeError('CP3A_OFFICIAL_FULL_GSI_ONLY_OLD_MODIFIED_CANDIDATE_RUNTIME_ENTRY_RETIRED')\n",
+          "before": "",
+          "end": 9073,
+          "line": 143,
+          "purpose": "retire_old_modified_candidate_entry:main",
+          "start": 9073
+        }
+      ],
+      "original": {
+        "local": "originals/gallery-rotation-current-preparation-20261107-r7/gallery_rotation_entry.py",
+        "origin": {
+          "bytes": 14884,
+          "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-current-preparation-20261107-r7/source/gallery_rotation_entry.py",
+          "sha256": "99b18c7c860f1913df25a56606ad236ddd0d67dad038c7de4b8c9d76023ab3bd"
+        },
+        "origin_f9": [
+          66306,
+          44304697,
+          33024,
+          0,
+          0,
+          1,
+          14884,
+          1794181485744672214,
+          1794181485744672214
+        ]
+      },
+      "postimage": {
+        "bytes": 14983,
+        "sha256": "f4af012b6fa3143419c4ca2f034c01f0b1c6bd7195959d02c4bbf520ea289e10"
+      },
+      "relative": "gallery-rotation-current-preparation-20261107-r7/gallery_rotation_entry.py"
+    },
+    {
+      "change_kind": "exact_target_metadata",
+      "edits": [
+        {
+          "after": "'9f24ea5fa57bca4a453556ab7cb44fbad1813cb3d15292a8e572cfb40fff7a77'",
+          "before": "'433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d'",
+          "end": 320,
+          "line": 5,
+          "purpose": "com.android.deskclock:sha256",
+          "start": 254
+        },
+        {
+          "after": "7665498",
+          "before": "7597225",
+          "end": 242,
+          "line": 5,
+          "purpose": "com.android.deskclock:bytes",
+          "start": 235
+        }
+      ],
+      "original": {
+        "local": "originals/ihg-5.111.1-r1/app_profiles.py",
+        "origin": {
+          "bytes": 2295,
+          "path": "/home/alex/work/p4-app-acceptance-preboot-11ea-20261119-r1/ihg-5.111.1-r1/source/app_profiles.py",
+          "sha256": "c99472edfe3a25f16bd2cdfc4ecc35d139c11ccf5b8edc16b8780a1d2c082c5b"
+        },
+        "origin_f9": [
+          66306,
+          34111263,
+          33024,
+          0,
+          0,
+          1,
+          2295,
+          1795059701985273200,
+          1795059701985273200
+        ]
+      },
+      "postimage": {
+        "bytes": 2295,
+        "sha256": "0dc898e715476be94f03281414674b912b8fdee36b689f9edc7f396c608a6b58"
+      },
+      "relative": "ihg-5.111.1-r1/app_profiles.py"
+    },
+    {
+      "change_kind": "exact_target_metadata",
+      "edits": [
+        {
+          "after": "7665498",
+          "before": "7597225",
+          "end": 1392,
+          "line": 34,
+          "purpose": "com.android.deskclock:bytes",
+          "start": 1385
+        }
+      ],
+      "original": {
+        "local": "originals/ihg-5.111.1-r1/clock_guard.py",
+        "origin": {
+          "bytes": 16608,
+          "path": "/home/alex/work/p4-app-acceptance-preboot-11ea-20261119-r1/ihg-5.111.1-r1/source/clock_guard.py",
+          "sha256": "0c3584921086e0a42ecbd2e450abe92637376ab0a3d087740707811e1a2eca9a"
+        },
+        "origin_f9": [
+          66306,
+          34111268,
+          33024,
+          0,
+          0,
+          1,
+          16608,
+          1795059701987623044,
+          1795059701987623044
+        ]
+      },
+      "postimage": {
+        "bytes": 16608,
+        "sha256": "2879bebcb5512d99e06894fd68a74571032d1f922ae603abf1c285c80e447d8a"
+      },
+      "relative": "ihg-5.111.1-r1/clock_guard.py"
+    },
+    {
+      "change_kind": "exact_target_metadata",
+      "edits": [
+        {
+          "after": "'9f24ea5fa57bca4a453556ab7cb44fbad1813cb3d15292a8e572cfb40fff7a77'",
+          "before": "'433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d'",
+          "end": 6273,
+          "line": 127,
+          "purpose": "com.android.deskclock:sha256",
+          "start": 6207
+        },
+        {
+          "after": "7665498",
+          "before": "7597225",
+          "end": 6170,
+          "line": 126,
+          "purpose": "com.android.deskclock:bytes",
+          "start": 6163
+        }
+      ],
+      "original": {
+        "local": "originals/ihg-5.111.1-r1/clock_protection.py",
+        "origin": {
+          "bytes": 9087,
+          "path": "/home/alex/work/p4-app-acceptance-preboot-11ea-20261119-r1/ihg-5.111.1-r1/source/clock_protection.py",
+          "sha256": "ea6bfac96f3adbe97f0c8f4aadfab803c45d6c645b612ba563383caae0cfab6c"
+        },
+        "origin_f9": [
+          66306,
+          34111271,
+          33024,
+          0,
+          0,
+          1,
+          9087,
+          1795059701989011354,
+          1795059701989011354
+        ]
+      },
+      "postimage": {
+        "bytes": 9087,
+        "sha256": "ab571eca7b4b38a5be2f49ba21facfdbf8d70daa799b0d1a77a0fc1281175528"
+      },
+      "relative": "ihg-5.111.1-r1/clock_protection.py"
+    }
+  ],
+  "state": "SOURCE_ADAPTER_PREPARED_RUNTIME_BLOCKED",
+  "targets": {
+    "com.android.calendar": {
+      "actual_runtime_bindings": {
+        "Main": null,
+        "UID": null,
+        "UI_selectors": null,
+        "framework_epoch": null,
+        "helper_custody": null,
+        "installed_APK_identity": null
+      },
+      "business_qualified": false,
+      "current_runtime_profile_qualified": false,
+      "execution_authorized": false,
+      "execution_ready": false,
+      "historical_UID_constraint": 10061,
+      "historical_UID_is_actual_observation": false,
+      "individual_APK_install_authorized": false,
+      "install_mode": "coherent_full_GSI_only",
+      "installed": false,
+      "native_compatibility_qualified": false,
+      "production_ready": false,
+      "provider_dependencies": [
+        "com.android.providers.calendar"
+      ],
+      "required_future_gates": [
+        "fresh current Main/qualification/UID and same data continuity",
+        "new preparation source pins and host boundary qualification",
+        "all original finite business, cleanup and stability gates",
+        "explicit coherent-GSI custody successor for the old repaired Calendar install receipt; do not relabel a standalone install as image custody",
+        "review official Calendar source/UI semantics and current CalendarProvider atomic empty-delete contract",
+        "preserve historical CE/DE inode/UID/gid and firstInstallTime continuity gates; no new data receipt is fabricated"
+      ],
+      "runtime_qualified": false,
+      "source_APK_body_read_by_this_adapter": false,
+      "source_record": {
+        "apk": {
+          "bytes": 2520846,
+          "identity": [
+            "66306",
+            "100946852",
+            "33060",
+            "1000",
+            "1000",
+            "1",
+            "2520846",
+            "1795054657054120329",
+            "1795054657057120220"
+          ],
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/apks/com.android.calendar.apk",
+          "sha256": "726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e"
+        },
+        "complete_ZIP_member_count": 669,
+        "image_path": "/system/product/app/Calendar/Calendar.apk",
+        "installed": false,
+        "min_sdk": "37",
+        "native_ABIs": [],
+        "native_member_count": 0,
+        "package": "com.android.calendar",
+        "production_ready": false,
+        "runtime_qualified": false,
+        "signer_certificate_sha256": [
+          "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+        ],
+        "source_identity_verified": true,
+        "source_receipt": {
+          "bytes": 238232,
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/receipts/com.android.calendar.json",
+          "sha256": "8c5bd82c3af585435083598f6ac183f42482ad413741519ce82358fdd19848c8"
+        },
+        "target_sdk": "34",
+        "version_code": 37,
+        "version_name": "17",
+        "zip_members": 669
+      },
+      "static_target_literal_adaptation_prepared": true,
+      "whole_app_business_accepted": false
+    },
+    "com.android.camera2": {
+      "actual_runtime_bindings": {
+        "Main": null,
+        "UID": null,
+        "UI_selectors": null,
+        "framework_epoch": null,
+        "helper_custody": null,
+        "installed_APK_identity": null
+      },
+      "business_qualified": false,
+      "current_runtime_profile_qualified": false,
+      "execution_authorized": false,
+      "execution_ready": false,
+      "historical_UID_constraint": 10062,
+      "historical_UID_is_actual_observation": false,
+      "individual_APK_install_authorized": false,
+      "install_mode": "coherent_full_GSI_only",
+      "installed": false,
+      "native_compatibility_qualified": false,
+      "production_ready": false,
+      "provider_dependencies": [
+        "com.android.providers.media.module"
+      ],
+      "required_future_gates": [
+        "fresh current Main/qualification/UID and same data continuity",
+        "new preparation source pins and host boundary qualification",
+        "all original finite business, cleanup and stability gates"
+      ],
+      "runtime_qualified": false,
+      "source_APK_body_read_by_this_adapter": false,
+      "source_record": {
+        "apk": {
+          "bytes": 7709134,
+          "identity": [
+            "66306",
+            "100946864",
+            "33060",
+            "1000",
+            "1000",
+            "1",
+            "7709134",
+            "1795054657509103835",
+            "1795054657514103654"
+          ],
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/apks/com.android.camera2.apk",
+          "sha256": "24632b0e1a1c22741177583b0dfd4a3fa71ff9b1d1b72af60a3d7cf373c7e61f"
+        },
+        "complete_ZIP_member_count": 1053,
+        "image_path": "/system/product/app/Camera2/Camera2.apk",
+        "installed": false,
+        "min_sdk": "37",
+        "native_ABIs": [],
+        "native_member_count": 0,
+        "package": "com.android.camera2",
+        "production_ready": false,
+        "runtime_qualified": false,
+        "signer_certificate_sha256": [
+          "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+        ],
+        "source_identity_verified": true,
+        "source_receipt": {
+          "bytes": 362247,
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/receipts/com.android.camera2.json",
+          "sha256": "fcfb21bda5f136e2652d05a605961abcefb8fcc0adb580ecbf260b0bc50452f1"
+        },
+        "target_sdk": "1000",
+        "version_code": 20002000,
+        "version_name": "2.0.002",
+        "zip_members": 1053
+      },
+      "static_target_literal_adaptation_prepared": true,
+      "whole_app_business_accepted": false
+    },
+    "com.android.contacts": {
+      "actual_runtime_bindings": {
+        "Main": null,
+        "UID": null,
+        "UI_selectors": null,
+        "framework_epoch": null,
+        "helper_custody": null,
+        "installed_APK_identity": null
+      },
+      "business_qualified": false,
+      "current_runtime_profile_qualified": false,
+      "execution_authorized": false,
+      "execution_ready": false,
+      "historical_UID_constraint": 10055,
+      "historical_UID_is_actual_observation": false,
+      "individual_APK_install_authorized": false,
+      "install_mode": "coherent_full_GSI_only",
+      "installed": false,
+      "native_compatibility_qualified": false,
+      "production_ready": false,
+      "provider_dependencies": [
+        "com.android.providers.contacts"
+      ],
+      "required_future_gates": [
+        "fresh current Main/qualification/UID and same data continuity",
+        "new preparation source pins and host boundary qualification",
+        "all original finite business, cleanup and stability gates"
+      ],
+      "runtime_qualified": false,
+      "source_APK_body_read_by_this_adapter": false,
+      "source_record": {
+        "apk": {
+          "bytes": 11896473,
+          "identity": [
+            "66306",
+            "100946876",
+            "33060",
+            "1000",
+            "1000",
+            "1",
+            "11896473",
+            "1795054657848091546",
+            "1795054657864090966"
+          ],
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/apks/com.android.contacts.apk",
+          "sha256": "f91e45e89b3a302198c9269a60bb07387150c0f40def95feb873b765520ae028"
+        },
+        "complete_ZIP_member_count": 2770,
+        "image_path": "/system/product/priv-app/Contacts/Contacts.apk",
+        "installed": false,
+        "min_sdk": "37",
+        "native_ABIs": [],
+        "native_member_count": 0,
+        "package": "com.android.contacts",
+        "production_ready": false,
+        "runtime_qualified": false,
+        "signer_certificate_sha256": [
+          "28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd"
+        ],
+        "source_identity_verified": true,
+        "source_receipt": {
+          "bytes": 940530,
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/receipts/com.android.contacts.json",
+          "sha256": "8823e1c3b686c407e8ce79415d88fddd19fafa340956be0a70212f248b083083"
+        },
+        "target_sdk": "37",
+        "version_code": 10734,
+        "version_name": "1.7.34",
+        "zip_members": 2770
+      },
+      "static_target_literal_adaptation_prepared": true,
+      "whole_app_business_accepted": false
+    },
+    "com.android.deskclock": {
+      "actual_runtime_bindings": {
+        "Main": null,
+        "UID": null,
+        "UI_selectors": null,
+        "framework_epoch": null,
+        "helper_custody": null,
+        "installed_APK_identity": null
+      },
+      "business_qualified": false,
+      "current_runtime_profile_qualified": false,
+      "execution_authorized": false,
+      "execution_ready": false,
+      "historical_UID_constraint": 10063,
+      "historical_UID_is_actual_observation": false,
+      "individual_APK_install_authorized": false,
+      "install_mode": "coherent_full_GSI_only",
+      "installed": false,
+      "native_compatibility_qualified": false,
+      "production_ready": false,
+      "provider_dependencies": [],
+      "required_future_gates": [
+        "fresh current Main/qualification/UID and same data continuity",
+        "new preparation source pins and host boundary qualification",
+        "all original finite business, cleanup and stability gates"
+      ],
+      "runtime_qualified": false,
+      "source_APK_body_read_by_this_adapter": false,
+      "source_record": {
+        "apk": {
+          "bytes": 7665498,
+          "identity": [
+            "66306",
+            "100946888",
+            "33060",
+            "1000",
+            "1000",
+            "1",
+            "7665498",
+            "1795054658425070630",
+            "1795054658431070412"
+          ],
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/apks/com.android.deskclock.apk",
+          "sha256": "9f24ea5fa57bca4a453556ab7cb44fbad1813cb3d15292a8e572cfb40fff7a77"
+        },
+        "complete_ZIP_member_count": 1357,
+        "image_path": "/system/product/app/DeskClock/DeskClock.apk",
+        "installed": false,
+        "min_sdk": "37",
+        "native_ABIs": [],
+        "native_member_count": 0,
+        "package": "com.android.deskclock",
+        "production_ready": false,
+        "runtime_qualified": false,
+        "signer_certificate_sha256": [
+          "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+        ],
+        "source_identity_verified": true,
+        "source_receipt": {
+          "bytes": 463562,
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/receipts/com.android.deskclock.json",
+          "sha256": "27fb293c22c16cc3d3cfd3d936a21555b20ee48d9fdf020d79a8bc98e52f08d5"
+        },
+        "target_sdk": "30",
+        "version_code": 37,
+        "version_name": "17",
+        "zip_members": 1357
+      },
+      "static_target_literal_adaptation_prepared": true,
+      "whole_app_business_accepted": false
+    },
+    "com.android.documentsui": {
+      "actual_runtime_bindings": {
+        "Main": null,
+        "UID": null,
+        "UI_selectors": null,
+        "framework_epoch": null,
+        "helper_custody": null,
+        "installed_APK_identity": null
+      },
+      "business_qualified": false,
+      "current_runtime_profile_qualified": false,
+      "execution_authorized": false,
+      "execution_ready": false,
+      "historical_UID_constraint": 10022,
+      "historical_UID_is_actual_observation": false,
+      "individual_APK_install_authorized": false,
+      "install_mode": "coherent_full_GSI_only",
+      "installed": false,
+      "native_compatibility_qualified": false,
+      "production_ready": false,
+      "provider_dependencies": [
+        "com.android.externalstorage"
+      ],
+      "required_future_gates": [
+        "fresh current Main/qualification/UID and same data continuity",
+        "new preparation source pins and host boundary qualification",
+        "all original finite business, cleanup and stability gates"
+      ],
+      "runtime_qualified": false,
+      "source_APK_body_read_by_this_adapter": false,
+      "source_record": {
+        "apk": {
+          "bytes": 8923434,
+          "identity": [
+            "66306",
+            "100946912",
+            "33060",
+            "1000",
+            "1000",
+            "1",
+            "8923434",
+            "1795054659541030174",
+            "1795054659544030066"
+          ],
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/apks/com.android.documentsui.apk",
+          "sha256": "f7db1705178644333d5c9d291afd1170e71fcddfd1f73021381e1224be824899"
+        },
+        "complete_ZIP_member_count": 1218,
+        "image_path": "/system/priv-app/DocumentsUI/DocumentsUI.apk",
+        "installed": false,
+        "min_sdk": "31",
+        "native_ABIs": [],
+        "native_member_count": 0,
+        "package": "com.android.documentsui",
+        "production_ready": false,
+        "runtime_qualified": false,
+        "signer_certificate_sha256": [
+          "c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8"
+        ],
+        "source_identity_verified": true,
+        "source_receipt": {
+          "bytes": 415704,
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/receipts/com.android.documentsui.json",
+          "sha256": "899491cb2766cd591ed0e3ad2b67a542907793ac354efac2ca2ba7672baf7401"
+        },
+        "target_sdk": "37",
+        "version_code": 37,
+        "version_name": "17",
+        "zip_members": 1218
+      },
+      "static_target_literal_adaptation_prepared": true,
+      "whole_app_business_accepted": false
+    },
+    "com.android.gallery3d": {
+      "actual_runtime_bindings": {
+        "Main": null,
+        "UID": null,
+        "UI_selectors": null,
+        "framework_epoch": null,
+        "helper_custody": null,
+        "installed_APK_identity": null
+      },
+      "business_qualified": false,
+      "current_runtime_profile_qualified": false,
+      "execution_authorized": false,
+      "execution_ready": false,
+      "historical_UID_constraint": null,
+      "historical_UID_is_actual_observation": false,
+      "individual_APK_install_authorized": false,
+      "install_mode": "coherent_full_GSI_only",
+      "installed": false,
+      "native_compatibility_qualified": false,
+      "production_ready": false,
+      "provider_dependencies": [
+        "com.android.providers.media.module"
+      ],
+      "required_future_gates": [
+        "fresh current Main/qualification/UID and same data continuity",
+        "new preparation source pins and host boundary qualification",
+        "all original finite business, cleanup and stability gates",
+        "fresh official-DEX ART and complete class-set proof",
+        "review and execute supported official-APK edit/rotation behavior on owned fixtures",
+        "fresh image generation and installed APK custody bound to the same Main/UID",
+        "current MediaProvider source and owned cleanup semantics"
+      ],
+      "runtime_qualified": false,
+      "source_APK_body_read_by_this_adapter": false,
+      "source_record": {
+        "apk": {
+          "bytes": 7390425,
+          "identity": [
+            "66306",
+            "100946924",
+            "33060",
+            "1000",
+            "1000",
+            "1",
+            "7390425",
+            "1795054659966014768",
+            "1795054659971014587"
+          ],
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/apks/com.android.gallery3d.apk",
+          "sha256": "835fe119745324276457b4434fc39f25b633e752c822d2fc9be40eb4b2d45439"
+        },
+        "complete_ZIP_member_count": 944,
+        "image_path": "/system/product/app/Gallery2/Gallery2.apk",
+        "installed": false,
+        "min_sdk": "37",
+        "native_ABIs": [],
+        "native_member_count": 0,
+        "package": "com.android.gallery3d",
+        "production_ready": false,
+        "runtime_qualified": false,
+        "signer_certificate_sha256": [
+          "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+        ],
+        "source_identity_verified": true,
+        "source_receipt": {
+          "bytes": 326611,
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/receipts/com.android.gallery3d.json",
+          "sha256": "e0326b9a0f8acc599cf7ef1190cc03c967a5578e34efcdba55cc0f3f46f932ad"
+        },
+        "target_sdk": "28",
+        "version_code": 40030,
+        "version_name": "1.1.40030",
+        "zip_members": 944
+      },
+      "static_target_literal_adaptation_prepared": false,
+      "whole_app_business_accepted": false
+    }
+  },
+  "user_data_reads": 0,
+  "whole_app_business_accepted": false
+}

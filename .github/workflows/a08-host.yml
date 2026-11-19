@@ -81,6 +81,29 @@ jobs:
           cmp PLAN.json "$RUNNER_TEMP/a08/required39-business-plan.json"
           python3 -B -m unittest -v test_preflight.py \
             2>&1 | tee "$RUNNER_TEMP/a08/required39-business-controls.log"
+      - name: Verify current CP3A system-app source adaptation
+        timeout-minutes: 2
+        working-directory: compat/android/pocket4/current-app-acceptance/system-cp3a-source-adapter-20261119
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum --check --strict FILES.sha256
+          python3 -I -B adapt_cp3a.py materialize --out "$RUNNER_TEMP/a08/cp3a-source-adapter" \
+            2>&1 | tee "$RUNNER_TEMP/a08/cp3a-source-adapter.log"
+          diff --recursive successor-r1 "$RUNNER_TEMP/a08/cp3a-source-adapter"
+          python3 -B -m unittest -v test_adapt_cp3a.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/cp3a-source-controls.log"
+      - name: Verify held Firefox public-navigation source and controls
+        timeout-minutes: 2
+        working-directory: compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum --check --strict FILES.sha256
+          python3 -I -B ../verify_firefox_source.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/firefox-source-binding.log"
+          python3 -B -m unittest -v test_firefox.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/firefox-host-controls.log"
       - name: Verify pinned APK candidate and native input controls
         shell: bash
         run: |
