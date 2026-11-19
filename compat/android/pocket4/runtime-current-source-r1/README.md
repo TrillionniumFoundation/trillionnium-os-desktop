@@ -1,7 +1,8 @@
 # Complete current producer source and fresh CI
 
 This packet reconstructs the complete cumulative producer source and the exact
-inc14, inc15 and inc16 runtime increments. It contains ordinary source and reproducible host
+inc14 through inc19 runtime increments, the combined host MAC fixes and the
+explicit CMake 652-project source profile. It contains ordinary source and reproducible host
 validation; Android images, app acceptance and production runtime results are
 separate required deliverables.
 
@@ -12,15 +13,15 @@ separate required deliverables.
 | Explicit new root snapshot commit inside the baseline | 8ddad986410bddb5c42bc5549513a3ee5e41327b |
 | Baseline Git tree | ed4664376e9c4b60de0f4359753862425ab41d75 |
 | Original historical source parent, retained in provenance | 61a38baa745483fbfb757466a1cf352febc20552 |
-| Previous exact packet FILES.sha256 | 6d73958a09685caf033f842221b180b0f73d1729c4f52418f51ce90a9dfb9423 |
-| Current complete source tree | 22d5793de3dab64093c7876dc449505a4edb2aae |
-| Current source files / bytes | 2,313 / 42,869,310 |
+| Previous exact packet FILES.sha256 | bdb8ff267a2efd9acf8f6c2dfd178f8f21d6feb4929caa8635cd18b2a5ec5d34 |
+| Current complete source tree | 77434bc6c8953471a8685d5023975d659a202ca9 |
+| Current source files / bytes | 2,331 / 43,683,337 |
 | Baseline archive members | 2,304: 2,302 source files, complete manifest and actual root commit body |
 | Baseline archive SHA256 | 3e8b2fa1ea1ef3555ca7c82e27abe79a2be029c701f69ac55ef4c82484f247ad |
-| Exact cumulative runtime overlay | 31 path bodies / 151,788 compressed bytes |
-| Overlay SHA256 | 2d4665166710435485d57397f31792a957673846c9e4d83b3d346c1dc8a8261a |
-| Expanded overlay bytes | 972,800 |
-| Expanded overlay SHA256 | 5fdc9f1c7f9ffe56f7f72bccdc6fbfbb9ade84179db993cb6f12ae5e28f9686f |
+| Exact cumulative runtime overlay | 69 path bodies / 514,444 compressed bytes |
+| Overlay SHA256 | 27ebb01285e62678fba80069a9dfea54e46e6462618074f71694596fa70f7da8 |
+| Expanded overlay bytes | 3,870,720 |
+| Expanded overlay SHA256 | 704d0e189b273642dfcc8af80eefbd4267425d99f3cea6d6da4f899a01a5e786 |
 
 The snapshot commit is a real new Git root constructed from the fully verified
 ed4664376e9c4b60de0f4359753862425ab41d75 tree. It deliberately has no parent;
@@ -31,7 +32,7 @@ The new snapshot preserves all 2,302 source bodies, Git executable modes and
 blob identities. Git tree calculation, actual commit object, full member
 inventory and Git fsck were independently checked during preparation.
 
-The current noncommitted successor applies exactly 31 guarded cumulative runtime paths to
+The current noncommitted successor applies exactly 69 guarded cumulative source paths to
 that baseline. Every preimage, postimage and final Git tree is checked.
 The final source_commit remains null; only the baseline has a new actual
 commit. No old compilation or runtime credit is transferred to this packet.
@@ -44,12 +45,53 @@ Links, aliases, extensions, undeclared members, changed modes, nonzero padding,
 trailing archives or frames and altered source identities remain rejected.
 The external FILES.sha256 pin authenticates all fourteen packet members.
 
-The exact expected complete catalog is 1,435 ordinary and thirty ignored
-cases. It combines the independently compiled current updater and inc16
-supervisor catalogs without removing any previous case. Listing and component
+The exact expected complete catalog is 1,468 ordinary and thirty ignored
+cases. It combines actual catalogs from the tested combined supervisor, CMake
+source tools and updater, retaining all previous cases and ignored names. Listing and component
 runs do not replace a fresh complete CI run for this exact combined tree.
 
 ## Repairs
+
+### Current combined runtime and CMake successor
+
+The complete current tree is 77434bc6c8953471a8685d5023975d659a202ca9.
+It retains the independent local APK signer corrections already present in the
+published inc16 source and applies the exact inc17, inc18, inc19 and combined
+host MAC postimages. No original source path or test name is removed.
+
+The combined supervisor component 48e48cf54be5ec04adb4fb97898fc3f6b88d59fb
+passed 512 ordinary tests with 25 unchanged ignored cases. Original storage
+creation, propagation and bind requests now retain their actual pending
+notification, source mounts, helper ownership, selected MAC context and full
+mount projections. The host MAC owner is established before package socket
+creation and binds the fixed helper, broker and loader roles. The original
+holder retains its PIDFD and creator-thread lifetime. Socket helpers create
+selected-namespace sockets; the original parent performs connect/bind/listen,
+so actual peer credentials identify the living parent. All owned socket
+descriptions close before the selected namespace holder is retired.
+
+The explicit CMake profile preserves the original 651-project manifest and
+adds the pinned 652nd project only through the normal reconciliation path.
+Its complete canonical component tree is
+97577c13b47289eb0ffcca8a4407fef5120e7542. The ordinary source-tool validation
+passed 94 cases including the existing nine recipe cases; the separate
+focused updater run passed 38 cases. These component executions and the
+actual ELF catalogs do not supply fresh full-workspace credit for this
+combined tree. The canonical CMake packet SHA256 is
+8843660d765be187333d59ebb2768f34a72fbe53f14952ea646ceff1ca450905.
+
+All 49 complete catalogs were preserved and the four changed harness catalogs
+were joined to their actual retained compiled ELFs. The next full CI must
+execute exactly 1,468 ordinary cases and nine separate recipe cases, build
+19 normal release binaries and three examples, and check 20 documentation
+targets. All 30 originally ignored cases remain ignored. Original Android
+boot, native unshare/setns observation, APEX activation, the full vendor build
+and the selected application's real acceptance remain separate open gates.
+
+### Retained earlier component history
+
+The following sections preserve the original component identities, counts
+and limitations. Their historical pass counts are not current complete CI.
 
 ### Original init's three real tmpfs operations
 
@@ -300,8 +342,8 @@ patch and never activates it or changes its input repository.
 
 The runner reconstructs this source into a new directory and uses a fresh
 Cargo target. Metadata and exact catalogs define 28 workspace packages,
-49 ordinary harnesses, 1,465 listed cases and 19 normal release binaries.
-The latest runtime increment adds three ordinary supervisor names.
+49 ordinary harnesses, 1,498 listed cases and 19 normal release binaries.
+The current successor adds 25 supervisor names and 8 source/updater names.
 Cumulatively, increments 6 through 11 add 33 names relative to the
 ac099 producer: 26 supervisor and 7 runtime-inputs cases.
 These names were read from the actual newly compiled harnesses.
@@ -312,14 +354,14 @@ no fresh credit.
 | Execution group | Required result | Bound |
 | --- | --- | --- |
 | Explicit updater cases | 64 ordinary cases | 60 seconds per exact name |
-| Remaining updater catalog | 438 ordinary cases; 1 ignored | 300 seconds |
-| Other 48 harnesses | 933 ordinary cases; 29 ignored | 300 seconds per harness |
+| Remaining updater catalog | 440 ordinary cases; 1 ignored | 300 seconds |
+| Other 48 harnesses | 964 ordinary cases; 29 ignored | 300 seconds per harness |
 | Normal release builds | 19 fresh binaries | 900 seconds per package batch |
 | Workspace examples | 3 fresh binaries, mains never executed | 900 seconds |
 | Frozen recipe example harness | 9 exact ordinary cases; no ignored cases | 300-second compilation, 60-second execution |
 | Documentation targets | 20 actual library targets, 0 doc cases | 180 seconds per target |
 
-The catalog total is **1,435 ordinary cases and 30 ignored cases**. The nine
+The catalog total is **1,468 ordinary cases and 30 ignored cases**. The nine
 recipe example cases are recorded separately. Each of the three normal
 example binaries and the separate recipe test ELF is joined to its actual
 source metadata and compilation interval. The recipe's exact and ignored

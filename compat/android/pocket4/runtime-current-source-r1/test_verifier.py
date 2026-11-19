@@ -139,7 +139,8 @@ def updater_catalogs():
     })
     added.update({'android::tests::production_full_ownership_metadata_rejects_wrong_preimage_before_other_projection', 'android::tests::production_full_ownership_metadata_is_wired_and_restores_every_original', 'android::tests::production_full_ownership_metadata_never_relaxes_dependency_mode', 'android::tests::production_full_ownership_metadata_rejects_second_active_projection_without_more_edits'})
     added.update({'android::tests::production_full_local_signer_interrupted_journal_restores_exact_metadata', 'android::tests::production_full_local_signer_is_selected_through_normal_provider_entry', 'android::tests::production_full_local_signer_rejects_unpinned_cloud_or_local_inputs'})
-    v.need(len(current['all']) == 503 and added <= set(current['all']), 'exact current updater catalog required')
+    added.update({'android::production_source::tests::original_651_manifest_requires_explicit_cmake_reconciliation', 'coherent_images::tests::complete_product_cmake_header_rejects_old_schema_and_source_pair'})
+    v.need(len(current['all']) == 505 and added <= set(current['all']), 'exact current updater catalog required')
     historical = [name for name in current['all'] if name not in added]
     historical_body = (json.dumps(historical, sort_keys=True, separators=(',', ':')) + '\n').encode()
     v.need(len(historical) == 465 and v.digest(historical_body)['sha256'] ==
@@ -254,21 +255,21 @@ class Controls(unittest.TestCase):
         exact = set(v.decode(v.regular(P / 'UPDATER-EXACT64.json')))
         ignored = set(current['ignored'])
         passed = set(current['all']) - exact - ignored
-        self.assertEqual((len(passed), len(ignored), len(exact)), (438, 1, 64))
+        self.assertEqual((len(passed), len(ignored), len(exact)), (440, 1, 64))
         # Synthetic current-catalog transcript. The three ACTUAL_* constants
         # above remain byte-for-byte historical evidence, not new CI output.
         fragments = {
             'image_policy::tests::repack_preserves_android_metadata_and_adbd':
-                ACTUAL_IMAGE_CHILD.replace('464 filtered out;', '502 filtered out;'),
+                ACTUAL_IMAGE_CHILD.replace('464 filtered out;', '504 filtered out;'),
             'native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata':
-                ACTUAL_STAGING_CHILD.replace('464 filtered out;', '502 filtered out;'),
+                ACTUAL_STAGING_CHILD.replace('464 filtered out;', '504 filtered out;'),
             'native_generation::tests::real_erofs_bundle_verifies_its_embedded_pair': ACTUAL_TOOL_OUTPUT,
         }
         self.assertTrue(set(fragments) <= passed)
-        text = 'running 439 tests\n'
+        text = 'running 441 tests\n'
         for name in sorted(passed | ignored):
             text += fragments.get(name, f'test {name} ... ' + ('ignored' if name in ignored else 'ok') + '\n')
-        text += '\ntest result: ok. 438 passed; 0 failed; 1 ignored; 0 measured; 64 filtered out; finished in 1.00s\n'
+        text += '\ntest result: ok. 440 passed; 0 failed; 1 ignored; 0 measured; 64 filtered out; finished in 1.00s\n'
         self.assertEqual(v.test_terminal(text, passed, ignored, 64, catalog=current['all']),
                          {'passed': sorted(passed), 'ignored': sorted(ignored), 'filtered': 64})
         wrong_names = list(current['all'])
@@ -277,11 +278,11 @@ class Controls(unittest.TestCase):
                         current['all'][:-1] + [current['all'][0]]):
             with self.subTest(catalog=catalog), self.assertRaises(RuntimeError):
                 v.test_terminal(text, passed, ignored, 64, catalog=catalog)
-        for bad in (text.replace('502 filtered out;', '485 filtered out;', 1),
-                    text.replace('502 filtered out;', '479 filtered out;', 1),
-                    text.replace('502 filtered out;', '473 filtered out;', 1),
-                    text.replace('502 filtered out;', '466 filtered out;', 1),
-                    text.replace('502 filtered out;', '465 filtered out;', 1),
+        for bad in (text.replace('504 filtered out;', '485 filtered out;', 1),
+                    text.replace('504 filtered out;', '479 filtered out;', 1),
+                    text.replace('504 filtered out;', '473 filtered out;', 1),
+                    text.replace('504 filtered out;', '466 filtered out;', 1),
+                    text.replace('504 filtered out;', '465 filtered out;', 1),
                     text.replace('1 ignored;', '0 ignored;', 1),
                     text.replace('64 filtered out;', '62 filtered out;', 1)):
             with self.subTest(text=bad), self.assertRaises(RuntimeError):
@@ -327,10 +328,10 @@ class OverlayControls(unittest.TestCase):
         capsule = v.verify_capsule(inventory_sha)
         self.assertIsNone(v.HEAD_COMMIT)
         self.assertEqual(capsule['parent_manifest']['head'], v.PARENT_COMMIT)
-        self.assertEqual(len(capsule['rows']), 2313)
-        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 42869310)
-        self.assertEqual(v.tree_id(capsule['rows']), '22d5793de3dab64093c7876dc449505a4edb2aae')
-        self.assertEqual(len(capsule['overlay_manifest']['paths']), 31)
+        self.assertEqual(len(capsule['rows']), 2331)
+        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 43683337)
+        self.assertEqual(v.tree_id(capsule['rows']), '77434bc6c8953471a8685d5023975d659a202ca9')
+        self.assertEqual(len(capsule['overlay_manifest']['paths']), 69)
         self.assertNotEqual(v.HEAD_TREE, v.PARENT_TREE)
 
     def test_overlay_rejects_wrong_base_omitted_extra_or_unsafe_member(self):
@@ -475,7 +476,7 @@ class OverlayControls(unittest.TestCase):
         self.assertLessEqual(len(body), v.OVERLAY_EXPANSION_MAX)
         with v.tarfile.open(fileobj=v.io.BytesIO(body), mode='r:') as archive:
             members = archive.getmembers()
-            self.assertEqual(len(members), 32)
+            self.assertEqual(len(members), 70)
             self.assertEqual(set(m.name for m in members), {'OVERLAY-MANIFEST.json'} |
                              {'postimages/' + name for name in self.packet['files_base64']})
             for member in members:
