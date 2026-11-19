@@ -9,6 +9,7 @@ These tools bind an Android source input to its complete signed bytes, binary ma
 | Standalone APK with ordinary native libraries or the existing narrowly specified v3 payloads | `verify_apk.py` | Existing v1/v2/v3 candidate schemas, including the explicit no-native-directory schema |
 | Complete base and split APK set | `verify_apk_set.py` | `pocket4-official-apk-set-candidate-v1` |
 | Standalone APK with exact publisher resource payloads | `verify_publisher_apk.py` | `pocket4-official-apk-candidate-v4` |
+| Retained official Play base + native x86_64 split set, with matching current unavailable-country release metadata | `verify_retained_play_set.py` | `pocket4-retained-google-play-apk-set-candidate-v1` |
 
 Each CLI takes the original input path and the following required options:
 
@@ -44,7 +45,7 @@ The two mixed-ISA v4 forms reuse the existing strict v3 interpreter-tagged ET_DY
 
 ## Fresh source controls
 
-The current local run completed all 146 cases with exit 0 and no skips under `python3 -I -B`:
+The original source-control batch below completed all 146 cases with exit 0 and no skips under `python3 -I -B`:
 
 | Test file | Cases |
 | --- | ---: |
@@ -57,7 +58,7 @@ The current local run completed all 146 cases with exit 0 and no skips under `py
 | `test_seven_zip04_payload.py` | 13 |
 | `test_mixed_publisher_payloads.py` | 7 |
 
-These include malformed manifests, absent/duplicate/incompatible splits, wrong package/version/signer, native ABI mismatches, unsafe ZIP paths, CRC errors, missing or extra pinned payloads, file-identity changes, receipt limits and no-replace publication. SDK failure controls use bounded test doubles; actual publisher receipts are separate real SDK invocations. `VALIDATION.json` records the exact executed source and control results. `SOURCE_MANIFEST.json` pins every file in this component. The host workflow executes all eight test files directly, so omission cannot silently shrink discovery.
+These include malformed manifests, absent/duplicate/incompatible splits, wrong package/version/signer, native ABI mismatches, unsafe ZIP paths, CRC errors, missing or extra pinned payloads, file-identity changes, receipt limits and no-replace publication. SDK failure controls use bounded test doubles; actual publisher receipts are separate real SDK invocations. `VALIDATION.json` records the exact executed source and control results. `SOURCE_MANIFEST.json` pins this component's source files. The host workflow invokes each control suite explicitly, including the separate current-delivery and retained-source suites.
 
 ## Current signed inputs
 
@@ -75,9 +76,27 @@ Actual SDK 37 verification has completed for these newly obtained or replaced cu
 | DiDi | 8.0.20 | 1208002005 | Standalone v3 |
 | Railway 12306 | 5.9.6.8 | 280 | Standalone v4 |
 
-The latest 12306 replaces the previously acquired 5.9.4.5 input. The 16 current compatible third-party source inputs also include Firefox, Fcitx, SZZC, Ctrip, Beike, China Eastern and microG. The Companion dependency remains outside the selected 42 / required 39 application denominator. The ten official system APKs have separate original-GSI source receipts; their final image selection and runtime qualification remain pending.
+The latest 12306 replaces the previously acquired 5.9.4.5 input. The current acceptance inventory also includes Firefox, Fcitx, SZZC, Ctrip, Beike, China Eastern and microG, followed by the separately recorded current Play deliveries. `current-app-acceptance/current-source-inputs.json` records the current complete source count. The Companion dependency remains outside the selected 42 / required 39 application denominator. The ten official system APKs have separate original-GSI source receipts; their final image selection and runtime qualification remain pending.
 
 Current-source availability and runtime qualification are distinct. The release scope retains exactly three exclusions: `com.enflick.android.TextNow`, `com.pinger.textfree`, and `com.ubercab`. No other package becomes exempt because a current compatible APK is still unavailable. An older version, ARM32-only variant, different package, lower-code channel variant or changed signer cannot substitute silently for the required current input. Freshness/channel differences and unresolved acquisition are preserved in the current acceptance data.
+
+## Retained official Play code paths
+
+`verify_retained_play_set.py` is a separate admission path for an already held, complete official Google Play code-path collection from an owned authenticated AVD. It requires externally pinned original `COLLECTED-APKS.json`, the historical SDK identity receipt, current `GET_ITEMS` metadata, and the original current acquisition transaction. No account is accessed or replayed. The original `UNAVAILABLE_COUNTRY` response and failed acquisition result stay unchanged; the receipt explicitly records `current_delivery_obtained: false` and does not claim publisher download digests.
+
+The current package, version name, long version code and publisher signing certificates must all match both the historical receipt and a fresh SDK 37 inspection of every original APK. Current metadata expires after 24 hours and cannot be relabelled with a newer timestamp. The complete historical collection, normalized split names, sizes, full SHA-256, stable code-path cohort, manifest dependencies, all ZIP CRCs and every native x86_64 ELF are checked. Other native ABIs are rejected by this path. Google's exact build-tools 37.0.0 tool bytes are pinned and held for the full verification. The existing new-delivery gate continues to require `AVAILABLE` and ARM64.
+
+```sh
+python3 -I -B verify_retained_play_set.py \
+  --build-tools /absolute/isolated-sdk37 \
+  --candidate /absolute/retained-candidate.json \
+  --expect-candidate-sha256 EXACT_CANDIDATE_SHA256 \
+  --receipt-output /absolute/new-retained-source-receipt.json
+```
+
+The command returns the standard native `expected_input` fragment for the complete original set. It does not create a publisher archive, replace the input bytes, install an APK, prove the device profile matches its density/language splits, or qualify native execution and business flows. Raw account/session data and APKs must remain outside git; only reviewed release metadata, original evidence hashes, candidates and sanitized verification receipts may be published. The 31 retained-source controls run with `python3 -I -B test_retained_play_set.py`; they include a failed unrelated historical batch member and reject a failed selected member. Historical aggregate failures are retained in the source receipt, with qualification limited to the exact selected package.
+
+The retained-source receipts for Best Buy 26.11.10/code2012312346, National 6.16.0.9403/code9403 and Hertz 5.8.0/code1392 cover eleven original APKs and 99 actual native x86_64 libraries. Separate local ZIP_STORED containers have complete member-byte custody records; they are not publisher archives. The same acceptance update includes Pinduoduo 8.32.0/code83200 through the unchanged v3 gate, plus Meituan Takeout 8.86.4/code800860004 and the formal Douyin 41.2.0/code410201 release through the unchanged v4 gate. All retain explicit historical signer references. Pinduoduo uses the publisher's ARM64 QR route; Meituan uses its publisher-linked app-store ARM64 route; Douyin explicitly records the public app-store distribution as `public_mirror`. Meituan's three opaque containers keep their unknown-body status, and migration from the old local test-installed signer remains unqualified. The acceptance inventory now has all 29 required non-system source inputs; the three user exclusions and ten separately handled system applications are unchanged. Candidate, receipt, native-input and source-custody pins are in `current-app-input-closure`; all installation, device-profile, native-runtime, business and production flags remain false.
 
 ## Remaining production gates
 

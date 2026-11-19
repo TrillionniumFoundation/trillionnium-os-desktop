@@ -74,6 +74,8 @@ jobs:
             2>&1 | tee "$RUNNER_TEMP/a08/apk-mixed-isa.log"
           python3 -I -B compat/android/pocket4/apk-content-identity/test_publisher_delivery.py \
             2>&1 | tee "$RUNNER_TEMP/a08/apk-publisher-delivery.log"
+          python3 -I -B compat/android/pocket4/apk-content-identity/test_retained_play_set.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/apk-retained-play.log"
       - name: Replay exact current publisher source evidence and custody records
         timeout-minutes: 2
         shell: bash
