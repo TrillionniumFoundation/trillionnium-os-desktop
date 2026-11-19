@@ -77,6 +77,10 @@ jobs:
             2>&1 | tee "$RUNNER_TEMP/a08/current-provider-input-controls.log"
           python3 -I -B compat/android/pocket4/current-app-acceptance/gallery-official-dex-source-20261119/verify_gallery_source.py \
             2>&1 | tee "$RUNNER_TEMP/a08/current-gallery-static-source.log"
+          python3 -I -B compat/android/pocket4/current-app-acceptance/source-refresh-20261119/late-metadata/test_late_metadata.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/current-late-public-metadata-controls.log"
+          python3 -I -B compat/android/pocket4/current-app-acceptance/source-refresh-20261119/late-metadata/test_current_source_selection.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/current-source-selection-controls.log"
       - name: Verify complete kernel config binding repair and source controls
         timeout-minutes: 2
         shell: bash
@@ -91,6 +95,13 @@ jobs:
           set -euo pipefail
           python3 -I -B compat/android/pocket4/vendor-sparse-cone-source-repair-20261119/source_replay.py \
             2>&1 | tee "$RUNNER_TEMP/a08/vendor-sparse-source-replay.log"
+      - name: Verify recorded same-plan source restoration and retirement
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/vendor-same-plan-source-restoration-20261119/source_replay.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/vendor-same-plan-source-restoration.log"
       - name: Verify required39 business plan and preserved installation prerequisites
         timeout-minutes: 2
         working-directory: compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2
