@@ -1,0 +1,1715 @@
+{
+  "Android_starts": 0,
+  "C_D_admitted": false,
+  "allocation_lock_path": "/home/alex/work/p4-remote-build-storage-e6ac-r1/production400-r1/owner.lock",
+  "allocation_result_path": "/home/alex/work/p4-remote-build-storage-e6ac-r1/production400-r1/ALLOCATION-RESULT.json",
+  "allocation_retirement_path": "/home/alex/work/p4-remote-build-storage-e6ac-r1/production400-allocation-source-r1/ALLOCATION-INDEPENDENT-RETIREMENT.json",
+  "allocation_source_manifest_sha256": "1e87e9d119b7b7f40dca83cfdfd02c31342fec3852829adc68983194e8524631",
+  "allocation_unit": "p4-nbd400-allocate-e6ac-r1.service",
+  "canonical": {
+    "path": "/home/alex/work/pocket4-android-final/CONTINUATION_CURRENT.json"
+  },
+  "client_description": "Pocket4 Production651 private NBD client e6ac r8 6cf6434eda1e2e196fcb5fc2dde3d777276573d609e9038615994f7480f11326",
+  "client_unit": "p4-production651-nbd-client-e6ac-r8.service",
+  "controller_description": "Pocket4 Production651 private NBD controller e6ac r8 6cf6434eda1e2e196fcb5fc2dde3d777276573d609e9038615994f7480f11326",
+  "controller_unit": "p4-production651-nbd-controller-e6ac-r8.service",
+  "desktop_fresh_memory_minimum": 30064771072,
+  "desktop_live_memory_reserve": 12884901888,
+  "desktop_local_disk_minimum": 8589934592,
+  "desktop_root": "/data/p4-production651-nbd-e6ac-r8",
+  "desktop_source": "/data/p4-production651-nbd-storage-source-e6ac-r8",
+  "export_name": "p4-production651-e6ac-r8",
+  "external_recovery_units": [
+    "p4-production651-recovery-reuse-e6ac-r5.service",
+    "p4-production651-final-f9-e6ac-r1.service",
+    "p4-production651-final-f9-independent-e6ac-r1.service",
+    "p4-production651-final-f9-close-e6ac-r1.service",
+    "p4-production651-recovery-gap-receive-e6ac-r6.service",
+    "p4-production651-recovery-verify-e6ac-r6.service",
+    "p4-production651-final-f9-paged-close-e6ac-r2.service",
+    "p4-production651-mounted-f9-e6ac-r1.service",
+    "p4-production651-mounted-f9-independent-e6ac-r1.service",
+    "p4-production651-mounted-f9-close-e6ac-r1.service",
+    "p4-production651-mounted-full-B-e6ac-r7.service",
+    "p4-production651-mounted-full-B-independent-e6ac-r7.service",
+    "p4-production651-mounted-full-B-close-e6ac-r7.service",
+    "p4-production651-mounted-cd-gap-receive-e6ac-r4.service",
+    "p4-production651-mounted-cd-verify-e6ac-r4.service",
+    "p4-production651-nbd-controller-e6ac-r7.service",
+    "p4-production651-nbd-client-e6ac-r7.service",
+    "p4-production651-nbd-ssh-e6ac-r7.service",
+    "p4-storage-r7-controller-retirement-desktop-e6ac-r1.service",
+    "p4-production651-mounted-full-B-e6ac-r8.service",
+    "p4-production651-mounted-full-B-independent-e6ac-r8.service",
+    "p4-production651-mounted-full-B-close-e6ac-r8.service",
+    "p4-production651-mounted-cd-gap-receive-e6ac-r5.service",
+    "p4-production651-mounted-cd-verify-e6ac-r5.service"
+  ],
+  "failed_B_is_accepted_ancestor": false,
+  "finalize_description": "Pocket4 Production651 private NBD finalize e6ac r8 6cf6434eda1e2e196fcb5fc2dde3d777276573d609e9038615994f7480f11326",
+  "finalize_runtime_max_seconds": 14400,
+  "finalize_unit": "p4-production651-nbd-finalize-e6ac-r8.service",
+  "finalize_work_seconds": 13200,
+  "fresh_full_B_required_before_C_D": true,
+  "full_builds_started_by_storage_owner": 0,
+  "full_source_dir": "/data/p4-production651-full-source-e6ac-r8",
+  "full_tools_relative": "source-production651/tools-production-current",
+  "future_full_independent_budgets_are_proposals": true,
+  "generation": "e6ac-storage-r8",
+  "history_only_previous_transition": {
+    "consumed_for_new_storage_admission": false,
+    "original_contract_fields": {
+      "accepted_audit_ancestor": {
+        "authenticated_manifest": {
+          "bytes": 532010462,
+          "identity": [
+            66306,
+            85067704,
+            33152,
+            1000,
+            1000,
+            1,
+            532010462,
+            1794710253945968368,
+            1794710253945968368
+          ],
+          "path": "/home/qq/work/p4-production651-source-recovery-e6ac-r3/operation/audit/producer/SOURCE-AUTHENTICATED.ndjson",
+          "sha256": "b849bf416a3f8a3f33bcf7970b3de825ad8782433c39db863a5c2f56b935ebd7"
+        },
+        "members": 1096681,
+        "nonce": "d3d42145c55ccd5e99aa0172eb1647370d2f9a3570a8cfec9c264799760490d7",
+        "payload_bytes": 78320143965,
+        "result": {
+          "bytes": 13405,
+          "identity": [
+            66306,
+            85095638,
+            33152,
+            1000,
+            1000,
+            1,
+            13405,
+            1794710457634505826,
+            1794710457634505826
+          ],
+          "path": "/home/qq/work/p4-production651-source-recovery-e6ac-r3/operation/audit/producer/RESULT.json",
+          "sha256": "2df7380f8e022d73d35a3761bbf7c7137b0baf4d067555a22b929b4648f4aa10"
+        },
+        "retirement": {
+          "bytes": 19687,
+          "identity": [
+            66306,
+            52218908,
+            33060,
+            0,
+            0,
+            1,
+            19687,
+            1794710521147267900,
+            1794710521147267900
+          ],
+          "path": "/home/qq/work/p4-production651-source-recovery-e6ac-r3/retirements/audit.json",
+          "sha256": "394fc57b208035ba931b3836a2c5b7a347d4f496d5126a973a31aacfb1dc4e30"
+        },
+        "root_acceptance": {
+          "bytes": 127628,
+          "identity": [
+            66306,
+            31333779,
+            33152,
+            1000,
+            1000,
+            1,
+            127628,
+            1794711311138150508,
+            1794711311140429449
+          ],
+          "path": "/home/alex/work/p4-recovery-a-r3-root-final-acceptance.json",
+          "sha256": "4f6763af50151f6d94e389964dd818271534acabe35f079c4619847b8bc1dd8a"
+        },
+        "schema": "p4-production651-exact-accepted-audit-ancestor-v1",
+        "source_contract": {
+          "bytes": 15817,
+          "identity": [
+            2067,
+            24117607,
+            33060,
+            0,
+            0,
+            1,
+            15817,
+            1794708245994184837,
+            1794708245994184837
+          ],
+          "path": "/data/p4-production651-source-recovery-e6ac-r3/source/contract.json",
+          "sha256": "449adb0ba79eed3242b2f966f66c0b51338106b1155ad97d25c2e20a94b1883d"
+        },
+        "source_lock_sha256": "30dcc1b5b090530b3fc06aeb3e489a961b0fc7c6368ed9d19eb0a1b2054e3eb4",
+        "source_manifest": {
+          "bytes": 2917,
+          "identity": [
+            2067,
+            24117602,
+            33060,
+            0,
+            0,
+            1,
+            2917,
+            1794708245844779774,
+            1794708245844779774
+          ],
+          "path": "/data/p4-production651-source-recovery-e6ac-r3/source/SOURCE-MANIFEST.json",
+          "sha256": "52be50350a73e2d16b1baac19f25dd608bb4b68b9e16a1484ae9e8ad5fd38004"
+        },
+        "source_manifest_sha256": "52be50350a73e2d16b1baac19f25dd608bb4b68b9e16a1484ae9e8ad5fd38004"
+      },
+      "generation": "e6ac-observed-plan-storage-r6",
+      "historical_B_nonce": "50e61f3b9db070a26e5841a273cf9bcf340a2a6617f35b0d1499645b8f0a7c22",
+      "historical_B_source_sha256": "3d69d078be546f147307660ff17ff6372c486de2ed47e0fd1e6fc6c6df45eb56",
+      "nonce": "07fcf25dedaae64ee1f9fafb4d1ffc052f4f32175544b8d7be05b62abbfdba50",
+      "observed_final_f9_nonce": "ad8546f4bb7e18728839f877b3800cf4d48825ec8f39e33078c4a1961f7f142f",
+      "observed_final_f9_source_manifest_sha256": "d84a90d376beded3c3f9dfc5124dd522c882316a6ccdf1a696294ea8f7e6992e",
+      "offline_image": {
+        "allocated_bytes": 429497376768,
+        "bytes": 429496729600,
+        "identity": [
+          66306,
+          48104071,
+          33152,
+          1000,
+          1000,
+          1,
+          429496729600,
+          1794779583308834355,
+          1794779583308834355
+        ],
+        "path": "/home/alex/work/p4-remote-build-storage-e6ac-r1/production400-r1/production651.raw",
+        "sha256": "bf285ce83097a4d97ba78a5b5e2459ea61bb39695d8f478ca4754f6127017240"
+      },
+      "offline_nonce": "78814c8fb718710b94377114e1803382069434756144af0c057258a4f606137e",
+      "previous_storage_admission_sha256": "b9c754e35530394b0ccbf51da5a7259bc9863a11dd264266a98440e436808e20",
+      "previous_storage_nonce": "ec078d295a4ea48154b584f3aa0b7400cbd9c0178075d52baec2d6fbf95eb804",
+      "previous_storage_source_manifest_sha256": "04f63af431b9386d6aaf2e44627f668ccb6861945fdbc83a3546d56c600e0772",
+      "schema": "p4-production651-observed-plan-storage-contract-v1",
+      "scope": "new-finite-storage-after-observed-plan-and-current-offline-v2",
+      "terminal_originals": {
+        "current_offline": {
+          "close": {
+            "bytes": 7772,
+            "sha256": "838dd5ecf2326dc56088743d58083869de285b8033481d9459a2c6d6c0076845",
+            "source_kind": "original-tool-H-read-raw"
+          },
+          "independent": {
+            "bytes": 7916,
+            "sha256": "05c892c819914e8601a9c27104010b68953ba9a24c0299ad293f53d738dcf0d9",
+            "source_kind": "original-tool-H-read-raw"
+          }
+        },
+        "observed": {
+          "close": {
+            "bytes": 4954,
+            "original": {
+              "bytes": 4954,
+              "identity": [
+                2067,
+                50631,
+                33152,
+                1000,
+                1000,
+                1,
+                4954,
+                1794795744675999803,
+                1794795744895113894
+              ],
+              "path": "/data/p4-observed-f9-close-original-H-e6ac-r1.raw.json",
+              "sha256": "8ddc2f6fb44038e2b1b65beb0a5f0adeac122d1d2c66d86060434d53eb2eb0eb"
+            },
+            "sha256": "8ddc2f6fb44038e2b1b65beb0a5f0adeac122d1d2c66d86060434d53eb2eb0eb",
+            "source_kind": "published-original-tool-H-raw"
+          },
+          "dispatch": {
+            "bytes": 7007,
+            "original": {
+              "bytes": 7007,
+              "identity": [
+                2067,
+                50629,
+                33152,
+                1000,
+                1000,
+                1,
+                7007,
+                1794795742559525691,
+                1794795742601248570
+              ],
+              "path": "/data/p4-observed-f9-dispatch-original-H-e6ac-r1.raw.json",
+              "sha256": "a6060f74d5d6e099fe2fb9368a281e76211e003ab64af8adf3706e0ae8404a24"
+            },
+            "sha256": "a6060f74d5d6e099fe2fb9368a281e76211e003ab64af8adf3706e0ae8404a24",
+            "source_kind": "published-original-tool-H-raw"
+          },
+          "independent": {
+            "bytes": 83722,
+            "original": {
+              "bytes": 83722,
+              "identity": [
+                2067,
+                50378,
+                33152,
+                1000,
+                1000,
+                1,
+                83722,
+                1794785659613167799,
+                1794785659650905981
+              ],
+              "path": "/data/p4-final-f9-independent-pages-e6ac-r2.json",
+              "sha256": "0ea5e1b5d9eb1955febc54f9e3a72ce27ded6cdbef0a6bd00ce56cbd17a6fc18"
+            },
+            "sha256": "0ea5e1b5d9eb1955febc54f9e3a72ce27ded6cdbef0a6bd00ce56cbd17a6fc18",
+            "source_kind": "explicit-original-H-pagination-envelope"
+          }
+        }
+      },
+      "transition_originals": {
+        "current_offline.close": {
+          "host": "pocket4",
+          "original": {
+            "bytes": 565366,
+            "identity": [
+              66306,
+              31391753,
+              33060,
+              0,
+              0,
+              1,
+              565366,
+              1794794713382995697,
+              1794794713382995697
+            ],
+            "path": "/home/alex/work/p4-r5-offline-readonly-close-e6ac-r2.json",
+            "sha256": "3d448bb662215128b73368b1f369dbca191f606c40d4ec90766fd8300b551595"
+          }
+        },
+        "current_offline.independent": {
+          "host": "pocket4",
+          "original": {
+            "bytes": 335315,
+            "identity": [
+              66306,
+              31391745,
+              33060,
+              0,
+              0,
+              1,
+              335315,
+              1794794654530193978,
+              1794794654530193978
+            ],
+            "path": "/home/alex/work/p4-r5-offline-readonly-independent-e6ac-r2.json",
+            "sha256": "0067a54bb6d7f5d802560e1763d364fa2b3a5710cbadd2dcbf5b978d0efc069e"
+          }
+        },
+        "current_offline.inputs": {
+          "host": "pocket4",
+          "original": {
+            "bytes": 4627,
+            "identity": [
+              66306,
+              31389386,
+              33152,
+              1000,
+              1000,
+              1,
+              4627,
+              1794793265295831792,
+              1794793265297403403
+            ],
+            "path": "/home/alex/work/p4-r5-offline-readonly-inputs-e6ac-r1.json",
+            "sha256": "c6a230a4a8c3c415397b86549876ec2671322e070449221631557167a6de5ce3"
+          }
+        },
+        "current_offline.main": {
+          "host": "pocket4",
+          "original": {
+            "bytes": 49870,
+            "identity": [
+              66306,
+              35389816,
+              33060,
+              1000,
+              1000,
+              1,
+              49870,
+              1794794557091786893,
+              1794794557091786893
+            ],
+            "path": "/home/alex/work/p4-r5-offline-readonly-e6ac-r1/RESULT.json",
+            "sha256": "a9a22a1d3c637d5c20cfe13ad919061199aa47ee928e0151cc0071b4e33f4e22"
+          }
+        },
+        "current_offline.pagination": {
+          "host": "pocket4",
+          "original": {
+            "bytes": 103870,
+            "identity": [
+              66306,
+              31391740,
+              33152,
+              1000,
+              1000,
+              1,
+              103870,
+              1794794632550444767,
+              1794794632555444215
+            ],
+            "path": "/home/alex/work/p4-r5-offline-readonly-main-pagination-e6ac-r2.json",
+            "sha256": "f7d8581bf2650bc5cee47d0cb4ddd1ab3d8893bcf9a546f922a47d2fe3f18724"
+          }
+        },
+        "current_offline.root": {
+          "host": "pocket4",
+          "original": {
+            "bytes": 15090,
+            "identity": [
+              66306,
+              31391878,
+              33152,
+              1000,
+              1000,
+              1,
+              15090,
+              1794795139472738640,
+              1794795139474866677
+            ],
+            "path": "/home/alex/work/p4-r5-new-offline-root-acceptance-e6ac-r1.json",
+            "sha256": "0b5882dbbc9e1e5863f1c1a2db6d1ed3130fb5a9447def0bbf583db5a62f4072"
+          }
+        },
+        "desktop.result": {
+          "host": "desktop",
+          "original": {
+            "bytes": 58191,
+            "identity": [
+              2067,
+              8397271,
+              33060,
+              0,
+              0,
+              1,
+              58191,
+              1794789010970421483,
+              1794789010970421483
+            ],
+            "path": "/data/p4-production651-nbd-e6ac-r5/DESKTOP-RESULT.json",
+            "sha256": "c14c07a15068b6d214a0c5b48f5bfa01b66c193adb6f2f2c9f663239b7871cb2"
+          }
+        },
+        "historical_mountpoint": {
+          "host": "desktop",
+          "original": {
+            "bytes": 1388,
+            "identity": [
+              2067,
+              32913955,
+              33060,
+              0,
+              0,
+              1,
+              1388,
+              1794735378056601148,
+              1794735378056601148
+            ],
+            "path": "/data/p4-original-storage-task-detachment-e6ac-r2/MOUNTPOINT-AFTER-DETACH.json",
+            "sha256": "66398c1cdf2a517a32d4be01c53ff33e8a833db47bd67dc252a833a71ce521f3"
+          }
+        },
+        "observed.admission": {
+          "host": "desktop",
+          "original": {
+            "bytes": 97232,
+            "identity": [
+              2067,
+              8389925,
+              33060,
+              0,
+              0,
+              1,
+              97232,
+              1794779391733561937,
+              1794779391733561937
+            ],
+            "path": "/data/p4-production651-final-f9-e6ac-r2/admissions/final_f9.json",
+            "sha256": "751e6c1dfd3ef7d79f2351e250e05d96af5f88bb10ef2db9a43643596ffe236a"
+          }
+        },
+        "observed.close": {
+          "host": "desktop",
+          "original": {
+            "bytes": 12395,
+            "identity": [
+              2067,
+              8397233,
+              33060,
+              0,
+              0,
+              1,
+              12395,
+              1794786587148778545,
+              1794786587148778545
+            ],
+            "path": "/data/p4-production651-final-f9-e6ac-r2/retirements/final_f9-paged-close-r2.json",
+            "sha256": "5aa22871529991a00e64d41649299929e526e2a99ce561033a9258739860f717"
+          }
+        },
+        "observed.contract": {
+          "host": "desktop",
+          "original": {
+            "bytes": 27841,
+            "identity": [
+              2067,
+              8389827,
+              33060,
+              0,
+              0,
+              1,
+              27841,
+              1794777415245609913,
+              1794777415245609913
+            ],
+            "path": "/data/p4-production651-final-f9-e6ac-r2/source/contract.json",
+            "sha256": "645f46dd2a3597e08ba9c21763322f1338d98a4c64dc730fbcc1cf48f31df512"
+          }
+        },
+        "observed.dispatch": {
+          "host": "desktop",
+          "original": {
+            "bytes": 3823,
+            "identity": [
+              2067,
+              8389956,
+              33060,
+              0,
+              0,
+              1,
+              3823,
+              1794779557465205771,
+              1794779557465205771
+            ],
+            "path": "/data/p4-production651-final-f9-e6ac-r2/dispatch-receipts/final_f9.json",
+            "sha256": "afe0da6cf1a11c372b941a195d8a0a439af3e2828ee24585997eaa632baf05d8"
+          }
+        },
+        "observed.entry": {
+          "host": "desktop",
+          "original": {
+            "bytes": 4015,
+            "identity": [
+              2067,
+              8389970,
+              33060,
+              0,
+              0,
+              1,
+              4015,
+              1794779557586186306,
+              1794779557586186306
+            ],
+            "path": "/data/p4-production651-final-f9-e6ac-r2/entry-proofs/final_f9.json",
+            "sha256": "f17e1984e2dae9e564fb696174d63b935f99753a0e5fb60695c18bd4559f2fff"
+          }
+        },
+        "observed.independent": {
+          "host": "desktop",
+          "original": {
+            "bytes": 24753,
+            "identity": [
+              2067,
+              8397222,
+              33060,
+              0,
+              0,
+              1,
+              24753,
+              1794785243746430421,
+              1794785243746430421
+            ],
+            "path": "/data/p4-production651-final-f9-e6ac-r2/retirements/final_f9.json",
+            "sha256": "c7ca9263f06862c7ee0c813db2f669fc9fd04c628a00f81d5173910577ece171"
+          }
+        },
+        "observed.old_B_result": {
+          "host": "desktop",
+          "original": {
+            "bytes": 18127,
+            "identity": [
+              2067,
+              32914229,
+              33152,
+              1000,
+              1000,
+              1,
+              18127,
+              1794752716368827122,
+              1794752716368827122
+            ],
+            "path": "/data/p4-production651-source-recovery-e6ac-r5/operation/reuse/producer/RESULT.json",
+            "sha256": "8433cbedda0b3ed6f139c6411b892db16ab1fa96e1359f3bfe3f1a763a9751d8"
+          }
+        },
+        "observed.old_B_retirement": {
+          "host": "desktop",
+          "original": {
+            "bytes": 20248,
+            "identity": [
+              2067,
+              32914253,
+              33060,
+              0,
+              0,
+              1,
+              20248,
+              1794753682453243284,
+              1794753682453243284
+            ],
+            "path": "/data/p4-production651-source-recovery-e6ac-r5/retirements/reuse.json",
+            "sha256": "1c6dfae87b26a31271e492957994866e52353def6dc0c58c7b0953a9bea75302"
+          }
+        },
+        "observed.result": {
+          "host": "desktop",
+          "original": {
+            "bytes": 3177528,
+            "identity": [
+              2067,
+              8397194,
+              33152,
+              1000,
+              1000,
+              1,
+              3177528,
+              1794783136518279485,
+              1794783136518279485
+            ],
+            "path": "/data/p4-production651-final-f9-e6ac-r2/operation/final_f9/producer/RESULT.json",
+            "sha256": "6ad6615c6089e1f5f7978a876bfb699f327b824970c373a03b74f0ccf699f876"
+          }
+        },
+        "observed.root_acceptance": {
+          "host": "desktop",
+          "original": {
+            "bytes": 20863,
+            "identity": [
+              2067,
+              50470,
+              33152,
+              1000,
+              1000,
+              1,
+              20863,
+              1794787986881031733,
+              1794787986926249894
+            ],
+            "path": "/data/p4-final-f9-root-observed-epoch-acceptance-e6ac-r2.json",
+            "sha256": "17197e500d1b7a41d0ef808e4a26fe1bcb4c5475fd5eabb486499f7578e43ad3"
+          }
+        },
+        "observed.source_manifest": {
+          "host": "desktop",
+          "original": {
+            "bytes": 3847,
+            "identity": [
+              2067,
+              8389822,
+              33060,
+              0,
+              0,
+              1,
+              3847,
+              1794777415225296320,
+              1794777415225296320
+            ],
+            "path": "/data/p4-production651-final-f9-e6ac-r2/source/SOURCE-MANIFEST.json",
+            "sha256": "d84a90d376beded3c3f9dfc5124dd522c882316a6ccdf1a696294ea8f7e6992e"
+          }
+        },
+        "r5.desktop_ROOT_receipt": {
+          "host": "desktop",
+          "original": {
+            "bytes": 40163,
+            "identity": [
+              2067,
+              50525,
+              33152,
+              1000,
+              1000,
+              1,
+              40163,
+              1794789784492553024,
+              1794789784505993378
+            ],
+            "path": "/data/p4-original-storage-r5-desktop-retirement-root-acceptance-e6ac-r1.json",
+            "sha256": "0e19103dd1c7dd8dd6567c37decfb232b0592d2fa2915b50b0197def8cd12dc9",
+            "version": "2067:50525:40163:1794789784492553024:1794789784505993378"
+          }
+        },
+        "r5.desktop_independent_report": {
+          "host": "desktop",
+          "original": {
+            "bytes": 81329,
+            "identity": [
+              2067,
+              8389709,
+              33060,
+              0,
+              0,
+              1,
+              81329,
+              1794789013754563137,
+              1794789013754563137
+            ],
+            "path": "/data/p4-production651-nbd-storage-source-e6ac-r5/controller-INDEPENDENT-RETIREMENT.json",
+            "sha256": "ca2ecb55df3253d22661bb384b5fe3043880f72c676cd2147d85e6b2f93e6bd0"
+          }
+        },
+        "r5.root": {
+          "host": "pocket4",
+          "original": {
+            "bytes": 87409,
+            "identity": [
+              66306,
+              31389335,
+              33152,
+              1000,
+              1000,
+              1,
+              87409,
+              1794790896360706113,
+              1794790896360765025
+            ],
+            "path": "/home/alex/work/p4-storage-r5-complete-retirement-root-acceptance-e6ac-r1.json",
+            "sha256": "551dd93764f28bb0773d80e2789979ec8c14968610570e3444d9385c9a6f34f5"
+          }
+        },
+        "r5.server_independent_report": {
+          "host": "pocket4",
+          "original": {
+            "bytes": 17603,
+            "identity": [
+              66306,
+              51296564,
+              33060,
+              0,
+              0,
+              1,
+              17603,
+              1794790191197587231,
+              1794790191197587231
+            ],
+            "path": "/home/alex/work/p4-remote-build-storage-e6ac-r1/production400-storage-source-r5/server-INDEPENDENT-RETIREMENT.json",
+            "sha256": "29aaf1156e13e866af49b4754c59d168f341ab711e4b5e3a0cd4a380b3e0f07d"
+          }
+        },
+        "r5.server_original_failure": {
+          "host": "pocket4",
+          "original": {
+            "bytes": 19016,
+            "identity": [
+              66306,
+              62570114,
+              33060,
+              1000,
+              1000,
+              1,
+              19016,
+              1794785295077673035,
+              1794785295077673035
+            ],
+            "path": "/home/alex/work/p4-remote-build-storage-e6ac-r1/production400-r1/storage-r5/SERVER-RESULT.json",
+            "sha256": "f8bced85b2f826738e1e23a585e2f529321125465b35211d5c6e432430a8f9f6"
+          }
+        }
+      }
+    },
+    "parent_contract_sha256": "82fb4673297eed094abae0a9d8093f0e03a86e9d9f622e60bbebaa94d7d3fdd7",
+    "parent_source_manifest_sha256": "b9c8805f82f628a8f67fcd17a73193b6141be7ee5a9c04b67ff270b9762b708d"
+  },
+  "hosts": {
+    "desktop": {
+      "boot": "8c55b477-233a-4771-995a-6f666f6299b3",
+      "commands": [],
+      "module": {
+        "bytes": 31204,
+        "identity": [
+          2050,
+          36837016,
+          33188,
+          0,
+          0,
+          1,
+          31204,
+          1793389859000000000,
+          1794484716570851949
+        ],
+        "path": "/usr/lib/modules/7.0.0-43-generic/kernel/drivers/block/nbd.ko.zst",
+        "sha256": "a26e2ad1b02037bccf6f9252c5f1010d388b22306817b8f848c98c75be6c29b1"
+      },
+      "resolved_ssh": [
+        "user alex",
+        "hostname 192.168.0.9",
+        "port 22",
+        "controlmaster false",
+        "stricthostkeychecking true",
+        "identityfile /home/qian-qi/.ssh/id_ed25519",
+        "identityfile ~/.ssh/id_ed25519",
+        "globalknownhostsfile /etc/ssh/ssh_known_hosts /etc/ssh/ssh_known_hosts2",
+        "userknownhostsfile /home/qian-qi/.ssh/hepta-transport/known_hosts",
+        "controlpersist no",
+        "proxycommand /usr/bin/python3 /home/qian-qi/.ssh/hepta-transport/ssh_transport.py --inventory /home/qian-qi/.ssh/hepta-transport/inventory.json --peer pocket4"
+      ],
+      "resolved_ssh_whole_sha256": "43ac0501107e73f297d7d64eed06a08e6eab3304f2dac4e6829f8925ca5d147f",
+      "tools": {
+        "blkid": {
+          "bytes": 55720,
+          "identity": [
+            2050,
+            36474686,
+            33261,
+            0,
+            0,
+            1,
+            55720,
+            1787158071000000000,
+            1788301079628745620
+          ],
+          "path": "/usr/sbin/blkid",
+          "resolved": "/usr/sbin/blkid",
+          "sha256": "0d7e7a3e410b59848f0e36cacae29b94bcdb362f120dd9ab9ce4d51baf999a10"
+        },
+        "blockdev": {
+          "bytes": 35200,
+          "identity": [
+            2050,
+            36474688,
+            33261,
+            0,
+            0,
+            1,
+            35200,
+            1787158071000000000,
+            1788301079628745620
+          ],
+          "path": "/usr/sbin/blockdev",
+          "resolved": "/usr/sbin/blockdev",
+          "sha256": "645be62ad1fcc4ddfe15f8cc0f6816112f2680292d370e99e8ade8ee1b05d3a8"
+        },
+        "insmod": {
+          "bytes": 174328,
+          "identity": [
+            2050,
+            36438977,
+            33261,
+            0,
+            0,
+            1,
+            174328,
+            1777552331000000000,
+            1777589149170139149
+          ],
+          "path": "/usr/sbin/insmod",
+          "resolved": "/usr/bin/kmod",
+          "sha256": "5abf732e561c8be9ccd1794940b5d43025b041d4bed1db34782d979e0accc36f"
+        },
+        "mount": {
+          "bytes": 51584,
+          "identity": [
+            2050,
+            36451644,
+            35309,
+            0,
+            0,
+            1,
+            51584,
+            1787158071000000000,
+            1788301082051683578
+          ],
+          "path": "/usr/bin/mount",
+          "resolved": "/usr/bin/mount",
+          "sha256": "fde2b1540ca79ea42df942653bdfd09b9b3e3ff1d4713602bd280f754033957a"
+        },
+        "python3": {
+          "bytes": 8020928,
+          "identity": [
+            2050,
+            36451609,
+            33261,
+            0,
+            0,
+            1,
+            8020928,
+            1788171506000000000,
+            1789164879262713172
+          ],
+          "path": "/usr/bin/python3",
+          "resolved": "/usr/bin/python3.12",
+          "sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f"
+        },
+        "qemu-nbd": {
+          "bytes": 2647776,
+          "identity": [
+            2050,
+            36475747,
+            33261,
+            0,
+            0,
+            1,
+            2647776,
+            1782289680000000000,
+            1786564512546201288
+          ],
+          "path": "/usr/bin/qemu-nbd",
+          "resolved": "/usr/bin/qemu-nbd",
+          "sha256": "61f2c1bc8fd801d817a969cbebc15de51bcccd77ba05747d38b41ca5c54d8423"
+        },
+        "rmmod": {
+          "bytes": 174328,
+          "identity": [
+            2050,
+            36438977,
+            33261,
+            0,
+            0,
+            1,
+            174328,
+            1777552331000000000,
+            1777589149170139149
+          ],
+          "path": "/usr/sbin/rmmod",
+          "resolved": "/usr/bin/kmod",
+          "sha256": "5abf732e561c8be9ccd1794940b5d43025b041d4bed1db34782d979e0accc36f"
+        },
+        "ssh": {
+          "bytes": 846888,
+          "identity": [
+            2050,
+            36448235,
+            33261,
+            0,
+            0,
+            1,
+            846888,
+            1791479958000000000,
+            1792017540528516768
+          ],
+          "path": "/usr/bin/ssh",
+          "resolved": "/usr/bin/ssh",
+          "sha256": "fc47ea24323fdd5687c5aefae6fd0060faabfa8f2944c6a68f6a442fbe0dd131"
+        },
+        "systemctl": {
+          "bytes": 1501304,
+          "identity": [
+            2050,
+            36454962,
+            33261,
+            0,
+            0,
+            1,
+            1501304,
+            1791790576000000000,
+            1792017510792349303
+          ],
+          "path": "/usr/bin/systemctl",
+          "resolved": "/usr/bin/systemctl",
+          "sha256": "37ec607113f55f1b385b4fa75588a43402aec0de57927500763b267713f10f63"
+        },
+        "systemd-run": {
+          "bytes": 68392,
+          "identity": [
+            2050,
+            36455016,
+            33261,
+            0,
+            0,
+            1,
+            68392,
+            1791790576000000000,
+            1792017510793349274
+          ],
+          "path": "/usr/bin/systemd-run",
+          "resolved": "/usr/bin/systemd-run",
+          "sha256": "de28cc5757d3789efa5f6fed5659893410469f68b42175d4531f5b34d3a09e16"
+        },
+        "udevadm": {
+          "bytes": 1443632,
+          "identity": [
+            2050,
+            36440742,
+            33261,
+            0,
+            0,
+            1,
+            1443632,
+            1791790576000000000,
+            1792017511172338292
+          ],
+          "path": "/usr/bin/udevadm",
+          "resolved": "/usr/bin/udevadm",
+          "sha256": "03b911e5547b6da8a45269b247195b59b53b7b4784ac67f138584e089a0ecf14"
+        },
+        "umount": {
+          "bytes": 39296,
+          "identity": [
+            2050,
+            36451648,
+            35309,
+            0,
+            0,
+            1,
+            39296,
+            1787158071000000000,
+            1788301082051683578
+          ],
+          "path": "/usr/bin/umount",
+          "resolved": "/usr/bin/umount",
+          "sha256": "186774a008ad69cf60bce6af35a850608d1c6ba410d3eca4113ea55b3a8b54d6"
+        }
+      }
+    },
+    "pocket4": {
+      "boot": "97d9600f-e081-465c-9e6e-62651e09806b",
+      "tools": {
+        "blkid": {
+          "bytes": 55800,
+          "identity": [
+            66306,
+            108028171,
+            33261,
+            0,
+            0,
+            1,
+            55800,
+            1787149416000000000,
+            1791083664418813240
+          ],
+          "path": "/usr/sbin/blkid",
+          "resolved": "/usr/sbin/blkid",
+          "sha256": "ca21432531372e34870eb11e78d700fe4cacbae47b2a35fa80fafc97b6946389"
+        },
+        "debugfs": {
+          "bytes": 231368,
+          "identity": [
+            66306,
+            108006000,
+            33261,
+            0,
+            0,
+            1,
+            231368,
+            1770985020000000000,
+            1791083649320555768
+          ],
+          "path": "/usr/sbin/debugfs",
+          "resolved": "/usr/sbin/debugfs",
+          "sha256": "864e1d7b445e7b5bfc831da78330dbcafc590fa82b89ea9de60b7527f989954f"
+        },
+        "e2fsck": {
+          "bytes": 377416,
+          "identity": [
+            66306,
+            108006003,
+            33261,
+            0,
+            0,
+            1,
+            377416,
+            1770985020000000000,
+            1791083649320555768
+          ],
+          "path": "/usr/sbin/e2fsck",
+          "resolved": "/usr/sbin/e2fsck",
+          "sha256": "2e51f521c676729920eaba694933d9d4048645f1a5789556fd0027e62d11ecc8"
+        },
+        "mkfs.ext4": {
+          "bytes": 146136,
+          "identity": [
+            66306,
+            108017173,
+            33261,
+            0,
+            0,
+            1,
+            146136,
+            1770985020000000000,
+            1791083649321555785
+          ],
+          "path": "/usr/sbin/mkfs.ext4",
+          "resolved": "/usr/sbin/mke2fs",
+          "sha256": "e42e49656dfc308efeed86f9bfad7746fc22ad1d4a3b0d508b5dba7a4b9a904f"
+        },
+        "python3": {
+          "bytes": 7477160,
+          "identity": [
+            66306,
+            108009763,
+            33261,
+            0,
+            0,
+            1,
+            7477160,
+            1787222518000000000,
+            1791083390422846841
+          ],
+          "path": "/usr/bin/python3",
+          "resolved": "/usr/bin/python3.14",
+          "sha256": "52e0a13e60a981d8c4b6478be2ba5176f69da07948a056bf49cf6f077e30cb41"
+        },
+        "qemu-nbd": {
+          "bytes": 2711952,
+          "identity": [
+            66306,
+            33992140,
+            33261,
+            1000,
+            1000,
+            1,
+            2711952,
+            1788340723000000000,
+            1794656378479123447
+          ],
+          "path": "/home/alex/work/p4-remote-build-storage-e6ac-r1/tools/usr/bin/qemu-nbd",
+          "resolved": "/home/alex/work/p4-remote-build-storage-e6ac-r1/tools/usr/bin/qemu-nbd",
+          "sha256": "d8f406908c6a47d135a4d50b85c9c0c677a4294aa472c21f3a6c1895ad36b140"
+        },
+        "systemctl": {
+          "bytes": 302112,
+          "identity": [
+            66306,
+            108017358,
+            33261,
+            0,
+            0,
+            1,
+            302112,
+            1789570531000000000,
+            1792945456488110570
+          ],
+          "path": "/usr/bin/systemctl",
+          "resolved": "/usr/bin/systemctl",
+          "sha256": "639bce3ce5c06b605079ea56f74e3f08216ddffcfa76e11f62073aa775180082"
+        },
+        "systemd-run": {
+          "bytes": 97272,
+          "identity": [
+            66306,
+            108038720,
+            33261,
+            0,
+            0,
+            1,
+            97272,
+            1789570531000000000,
+            1792945456490110634
+          ],
+          "path": "/usr/bin/systemd-run",
+          "resolved": "/usr/bin/systemd-run",
+          "sha256": "6eaf6650fc3bc07ba2fb51242d9d286e56770a2abd7306678aa22050ddf9f935"
+        }
+      }
+    }
+  },
+  "image_bytes": 429496729600,
+  "image_path": "/home/alex/work/p4-remote-build-storage-e6ac-r1/production400-r1/production651.raw",
+  "image_sectors": 838860800,
+  "image_uuid": "e7efc16f-ddb8-4ca7-a543-9b55b2af70fa",
+  "immediate_predecessor": {
+    "admission_sha256": "c23b850ce75955ec335d8dee495c2c2c3ac0ff16f95efd0d48e9225378d91ffc",
+    "nonce": "046f051d71c6863654c12575eceebee89005c40385591a5cbcb3ea306b1fc7dd",
+    "source_manifest_sha256": "9aa8b8685c9682ce6e0b3d3c319cf95c27172d21878bf556f8e859dc836ea383"
+  },
+  "import_source_dir": "/data/p4-production651-import-source-e6ac-r8",
+  "incoming_admission_path": "/data/p4-production651-nbd-storage-admission-e6ac-r8.incoming.json",
+  "incoming_rotation_paths": {
+    "desktop": "/data/p4-storage-r8-rotation-inputs-e6ac-r1.incoming.json",
+    "pocket4": "/home/alex/work/p4-storage-r8-rotation-inputs-e6ac-r1.incoming.json"
+  },
+  "initial_ready_fresh_seconds": 300,
+  "minimum_current_lease_seconds": 21600,
+  "mount_target": "/data/p4-production651-nbd-e6ac-r8/mount",
+  "new_directory_modes": {
+    "actor_entries": 457,
+    "actor_intents": 448,
+    "commands": 448,
+    "desktop_root": 457,
+    "ipc": 448
+  },
+  "new_mount_F9_qualified": false,
+  "new_mount_complete_F9_required_before_C_D": true,
+  "new_storage_admitted": false,
+  "nonce": "6cf6434eda1e2e196fcb5fc2dde3d777276573d609e9038615994f7480f11326",
+  "offline_ancestor": {
+    "admission_sha256": "37d06a61be3bfc74595a57dfb59c9966da919903d0e5793f6b64666030ca57e0",
+    "nonce": "07fcf25dedaae64ee1f9fafb4d1ffc052f4f32175544b8d7be05b62abbfdba50",
+    "source_manifest_sha256": "b9c8805f82f628a8f67fcd17a73193b6141be7ee5a9c04b67ff270b9762b708d"
+  },
+  "offline_image": {
+    "allocated_bytes": 429497376768,
+    "bytes": 429496729600,
+    "identity": [
+      66306,
+      48104071,
+      33152,
+      1000,
+      1000,
+      1,
+      429496729600,
+      1794867102995070104,
+      1794867102995070104
+    ],
+    "path": "/home/alex/work/p4-remote-build-storage-e6ac-r1/production400-r1/production651.raw",
+    "sha256": "98b4bdbf3d823cdfbcdb163c50e53540e350ebe5d9e375c2299add8aefc033d2"
+  },
+  "old_owner_deadline_extended": false,
+  "old_storage_READY_reusable": false,
+  "original_B_passed": false,
+  "original_storage_functional_passed": false,
+  "owner_acquisition": {
+    "current": {
+      "bytes": 1548523,
+      "identity": [
+        66306,
+        41718398,
+        33152,
+        1000,
+        1000,
+        1,
+        1548523,
+        1794896777258171430,
+        1794896777264171736
+      ],
+      "path": "/home/alex/work/pocket4-android-final/CONTINUATION_CURRENT.json",
+      "sha256": "a08e74e843b8ed94bc191de076acc89f49da2d83f61b5cf3095bc0eb19f1d1ed"
+    },
+    "owner": {
+      "acquisition": "Explicit new independent 48-hour foreground acquisition under the same recorded owner and original two locks after known r7 retirement. Complete prior owner and expiry are archived. Only future separately admitted storage/full-B generations may consume this window; no old actor, admission, captured CURRENT or deadline is extended.",
+      "acquisition_id": "p4-current-r34-independent-owner-e6ac-r2",
+      "active_until_utc": "2026-11-19T06:26:17.085005+00:00",
+      "generation": "20261117-e6ac-r34",
+      "name": "foreground-root-e6ac9e05361c",
+      "scope": "Continue Pocket4 Linux Android runtime lifecycle repair, unified strict source/build closure, exact current app acceptance and final obsolete artifact retirement."
+    },
+    "record": {
+      "Android_starts": 0,
+      "C_D_admitted": false,
+      "acquired_at_utc": "2026-11-17T06:26:17.085005+00:00",
+      "acquisition_id": "p4-current-r34-independent-owner-e6ac-r2",
+      "active_until_utc": "2026-11-19T06:26:17.085005+00:00",
+      "complete_old_storage_retirement": false,
+      "duration_seconds": 172800,
+      "eligible_future_scope": [
+        "independently_admitted_new_storage_generation",
+        "independently_admitted_fresh_full_B_generation"
+      ],
+      "existing_actor_deadlines_extended": false,
+      "existing_storage_deadlines_extended": false,
+      "explicit_same_owner_supersession": true,
+      "fresh_full_B_admitted": false,
+      "future_full_B_binding": null,
+      "future_full_B_source_manifest_sha256": null,
+      "future_storage_binding": null,
+      "future_storage_source_manifest_sha256": null,
+      "generation": "20261117-e6ac-r34",
+      "image_or_allocation_lock_operations": 0,
+      "inherited_bindings_are_not_new_window_runtime_admissions": true,
+      "new_storage_START": 0,
+      "new_storage_admission_issued": false,
+      "old_SQLite_resume_accepted": false,
+      "old_owner_history_preserved_in_full": true,
+      "old_r7_full_B_source_manifest_sha256": "201cf37eb58354c552c2f7875dad4769d049622fc5ad6d053a3d2ac7e010925f",
+      "old_r7_source_captures_sealed_CURRENT_READY_and_admissions_unchanged": true,
+      "old_r7_storage_source_manifest_sha256": "9aa8b8685c9682ce6e0b3d3c319cf95c27172d21878bf556f8e859dc836ea383",
+      "original_ROOT_evidence": {
+        "controller_root": {
+          "bytes": 63374,
+          "identity": [
+            66306,
+            31392960,
+            33152,
+            1000,
+            1000,
+            1,
+            63374,
+            1794894282965151956,
+            1794894282968238247
+          ],
+          "path": "/home/alex/work/p4-storage-r7-controller-retirement-ROOT-actual-acceptance-e6ac-r1.json",
+          "sha256": "38228ca78dcf8e2c8bd93db16d7e026f727656593c46fed67bd1c5ea271df168",
+          "version": "66306:31392960:63374:1794894282965151956:1794894282968238247"
+        },
+        "public_root": {
+          "bytes": 27488,
+          "identity": [
+            66306,
+            31392970,
+            33152,
+            1000,
+            1000,
+            1,
+            27488,
+            1794895115016265192,
+            1794895115019410019
+          ],
+          "path": "/home/alex/work/p4-r7-public-leaf-ROOT-actual-acceptance-e6ac-r2.json",
+          "sha256": "21b3da06e4d97304044765deaffe05b12280413fa272e66f867561d980fc1561",
+          "version": "66306:31392970:27488:1794895115016265192:1794895115019410019"
+        },
+        "server_root": {
+          "bytes": 59663,
+          "identity": [
+            66306,
+            31392968,
+            33152,
+            1000,
+            1000,
+            1,
+            59663,
+            1794895057736857633,
+            1794895057738570064
+          ],
+          "path": "/home/alex/work/p4-storage-r7-server-retirement-ROOT-actual-acceptance-e6ac-r1.json",
+          "sha256": "354d1eaa4e3676f96c1e9a4e987c5c8e97c9e869fe5e781256d76237b355a6cb",
+          "version": "66306:31392968:59663:1794895057736857633:1794895057738570064"
+        }
+      },
+      "owner_name": "foreground-root-e6ac9e05361c",
+      "predecessor_observations": {
+        "complete_old_storage_retirement": false,
+        "controller_failed_and_known_retired": true,
+        "new_role_permission": false,
+        "new_storage_permission": false,
+        "ordinary_public_originals_actually_read": true,
+        "server_clean_and_known_retired": true,
+        "unknown_old_reader_retired": false
+      },
+      "production_ready": false,
+      "schema": "p4-independent-foreground-owner-acquisition-v1",
+      "superseded_current": {
+        "bytes": 1548379,
+        "identity": [
+          66306,
+          41718399,
+          33152,
+          1000,
+          1000,
+          1,
+          1548379,
+          1794892101245434972,
+          1794892101258435352
+        ],
+        "path": "/home/alex/work/pocket4-android-final/CONTINUATION_CURRENT.json",
+        "sha256": "c2c4dc76d2ff5700fc26be1991ac9491e36edaaeb0c88e5a7644a952b0a97a9f"
+      },
+      "superseded_generation": "20261117-e6ac-r33",
+      "superseded_owner": {
+        "acquisition": "Exact prior SHA/F9 and original two lock inodes; accepted current-source CI, offline image, and sealed r6 source/proof binding. New foreground owner 36 hours; no old actor deadline extended and no storage phase, C/D, Android launch or application acceptance authorized.",
+        "active_until_utc": "2026-11-17T16:15:16.693096+00:00",
+        "generation": "20261117-e6ac-r33",
+        "name": "foreground-root-e6ac9e05361c",
+        "scope": "Continue Pocket4 Linux Android runtime lifecycle repair, unified strict source/build closure, exact current app acceptance and final obsolete artifact retirement."
+      },
+      "unknown_old_reader_retired": false
+    },
+    "root_acceptance": {
+      "bytes": 70618,
+      "identity": [
+        66306,
+        31392991,
+        33152,
+        1000,
+        1000,
+        1,
+        70618,
+        1794897094990774804,
+        1794897094992279228
+      ],
+      "path": "/home/alex/work/p4-current-r34-ROOT-actual-acceptance-e6ac-r2.json",
+      "sha256": "a98fc9acf15c897b6d99f31b0d641f4a4e262de713ab81c21c37489ca24ab1b9"
+    }
+  },
+  "owner_acquisition_id": "p4-current-r34-independent-owner-e6ac-r2",
+  "p4_fresh_disk_minimum": 296352743424,
+  "p4_fresh_memory_minimum": 6442450944,
+  "p4_live_disk_reserve": 274877906944,
+  "p4_live_memory_reserve": 5368709120,
+  "p4_root": "/home/alex/work/p4-remote-build-storage-e6ac-r1/production400-r1/storage-r8",
+  "p4_source": "/home/alex/work/p4-remote-build-storage-e6ac-r1/production400-storage-source-r8",
+  "previous_storage_admission_sha256": "c23b850ce75955ec335d8dee495c2c2c3ac0ff16f95efd0d48e9225378d91ffc",
+  "previous_storage_nonce": "046f051d71c6863654c12575eceebee89005c40385591a5cbcb3ea306b1fc7dd",
+  "previous_storage_source_manifest_sha256": "9aa8b8685c9682ce6e0b3d3c319cf95c27172d21878bf556f8e859dc836ea383",
+  "prior_image_reallocated": false,
+  "prior_image_reformatted": false,
+  "production_ready": false,
+  "role_units": {
+    "vendor_inner": "p4-production651-vendor-inner-desktop-e6ac-r8.service",
+    "vendor_outer": "p4-production651-vendor-outer-desktop-e6ac-r8.service",
+    "wm_inner": "p4-production651-wm-inner-desktop-e6ac-r8.service",
+    "wm_outer": "p4-production651-wm-outer-desktop-e6ac-r8.service"
+  },
+  "rotation_input_schema": "p4-production651-successor-storage-inputs-v2",
+  "rotation_inputs_paths": {
+    "desktop": "/data/p4-production651-nbd-storage-source-e6ac-r8/ROTATION-INPUTS.json",
+    "pocket4": "/home/alex/work/p4-remote-build-storage-e6ac-r1/production400-storage-source-r8/ROTATION-INPUTS.json"
+  },
+  "rotation_schedule": {
+    "fresh_full_B_whole_envelope_seconds": 36900,
+    "gap_receive_and_peer_retirement_upper_seconds": 21300,
+    "setup_upper_seconds": 600,
+    "storage_cleanup_reserve_seconds": 1200,
+    "vendor_independent_upper_seconds": 4500,
+    "vendor_native_and_stop_upper_seconds": 28800,
+    "verification_and_retirement_upper_seconds": 14100,
+    "wm_independent_upper_seconds": 4500,
+    "wm_native_and_stop_upper_seconds": 28800
+  },
+  "schema": "p4-production651-successor-storage-contract-v2",
+  "scope": "new-finite-storage-after-r7-known-failure-retirement-with-unchanged-r6-offline-ancestor",
+  "server_description": "Pocket4 Production651 private NBD server e6ac r8 6cf6434eda1e2e196fcb5fc2dde3d777276573d609e9038615994f7480f11326",
+  "server_unit": "p4-production651-nbd-server-e6ac-r8.service",
+  "ssh_description": "Pocket4 Production651 private NBD ssh e6ac r8 6cf6434eda1e2e196fcb5fc2dde3d777276573d609e9038615994f7480f11326",
+  "ssh_unit": "p4-production651-nbd-ssh-e6ac-r8.service",
+  "storage_runtime_max_seconds": 145200,
+  "storage_stop_seconds": 1200,
+  "storage_work_seconds": 144000,
+  "superseded_foreground_owner": {
+    "acquisition": "Exact prior SHA/F9 and original two lock inodes; accepted current-source CI, offline image, and sealed r6 source/proof binding. New foreground owner 36 hours; no old actor deadline extended and no storage phase, C/D, Android launch or application acceptance authorized.",
+    "active_until_utc": "2026-11-17T16:15:16.693096+00:00",
+    "generation": "20261117-e6ac-r33",
+    "name": "foreground-root-e6ac9e05361c",
+    "scope": "Continue Pocket4 Linux Android runtime lifecycle repair, unified strict source/build closure, exact current app acceptance and final obsolete artifact retirement."
+  },
+  "transition_originals": {
+    "desktop.result": {
+      "host": "desktop",
+      "original": {
+        "bytes": 100782,
+        "identity": [
+          2067,
+          38148312,
+          33060,
+          0,
+          0,
+          1,
+          100782,
+          1794867103633386058,
+          1794867103633386058
+        ],
+        "path": "/data/p4-production651-nbd-e6ac-r6/DESKTOP-RESULT.json",
+        "sha256": "66635d410684790522e145f56f4c136962390629ecc047942fc3ebc8b3f78a9d"
+      }
+    },
+    "desktop.retirement": {
+      "host": "desktop",
+      "original": {
+        "bytes": 275600,
+        "identity": [
+          2067,
+          53871089,
+          33060,
+          0,
+          0,
+          1,
+          275600,
+          1794879464846248331,
+          1794879464846248331
+        ],
+        "path": "/data/p4-r6-failed-desktop-retirement-e6ac-r1/RESULT.json",
+        "sha256": "43f1e74b7c580b437559e6a03382030d064da3cf428276a0ba429762f96bac1c"
+      }
+    },
+    "desktop.root": {
+      "host": "desktop",
+      "original": {
+        "bytes": 6788,
+        "identity": [
+          2067,
+          57426,
+          33152,
+          1000,
+          1000,
+          1,
+          6788,
+          1794880391279756808,
+          1794880391293941137
+        ],
+        "path": "/data/p4-r6-failed-desktop-retirement-ROOT-actual-acceptance-e6ac-r1.json",
+        "sha256": "773956998587f45d1deb7072b37d633ae2681a142cce2fe2aa2f54ba105c2c4b"
+      }
+    },
+    "offline.inputs": {
+      "host": "pocket4",
+      "original": {
+        "bytes": 35818,
+        "identity": [
+          66306,
+          31392808,
+          33152,
+          1000,
+          1000,
+          1,
+          35818,
+          1794882194317610279,
+          1794882194319772707
+        ],
+        "path": "/home/alex/work/p4-r6-failed-storage-finalize-INPUTS-e6ac-r1.json",
+        "sha256": "3e417a93ae1040e7b01e51424f9a48b0142750e5edba5103d0067f0c256e0526"
+      }
+    },
+    "offline.result": {
+      "host": "pocket4",
+      "original": {
+        "bytes": 68363,
+        "identity": [
+          66306,
+          35803688,
+          33060,
+          1000,
+          1000,
+          1,
+          68363,
+          1794883557384160807,
+          1794883557384160807
+        ],
+        "path": "/home/alex/work/p4-r6-failed-storage-finalize-e6ac-r1/RESULT.json",
+        "sha256": "3571d8771eddc39990093d471bdb889b5b238c7be626c7cff43eab71758e32bd"
+      }
+    },
+    "offline.root": {
+      "host": "pocket4",
+      "original": {
+        "bytes": 34031,
+        "identity": [
+          66306,
+          31392852,
+          33152,
+          1000,
+          1000,
+          1,
+          34031,
+          1794885922230874909,
+          1794885922233148886
+        ],
+        "path": "/home/alex/work/p4-r6-failed-storage-finalize-ROOT-actual-acceptance-e6ac-r1.json",
+        "sha256": "896f745234dc857649f634e157b977f568f6ac52d22e3f4cb4bc6e8d3118b02c"
+      }
+    },
+    "r7.controller.result": {
+      "host": "desktop",
+      "original": {
+        "bytes": 11039,
+        "identity": [
+          2067,
+          17564660,
+          33060,
+          0,
+          0,
+          1,
+          11039,
+          1794893025402956754,
+          1794893025402956754
+        ],
+        "path": "/data/p4-production651-nbd-e6ac-r7/DESKTOP-RESULT.json",
+        "sha256": "515e79797b642cce0b79ff69fc21a10ea305dc7be4c3f93b111c8461cebb465c"
+      }
+    },
+    "r7.controller.retirement": {
+      "host": "desktop",
+      "original": {
+        "bytes": 16305,
+        "identity": [
+          2067,
+          41175491,
+          33060,
+          0,
+          0,
+          1,
+          16305,
+          1794894091740425291,
+          1794894091740425291
+        ],
+        "path": "/data/p4-production651-nbd-storage-source-e6ac-r7/controller-INDEPENDENT-RETIREMENT.json",
+        "sha256": "ee708d8713a49b2fe262f1babcbad87da5da293fc7f3f0841ffe37abac31e667"
+      }
+    },
+    "r7.controller.root": {
+      "host": "pocket4",
+      "original": {
+        "bytes": 63374,
+        "identity": [
+          66306,
+          31392960,
+          33152,
+          1000,
+          1000,
+          1,
+          63374,
+          1794894282965151956,
+          1794894282968238247
+        ],
+        "path": "/home/alex/work/p4-storage-r7-controller-retirement-ROOT-actual-acceptance-e6ac-r1.json",
+        "sha256": "38228ca78dcf8e2c8bd93db16d7e026f727656593c46fed67bd1c5ea271df168"
+      }
+    },
+    "r7.public.root": {
+      "host": "pocket4",
+      "original": {
+        "bytes": 27488,
+        "identity": [
+          66306,
+          31392970,
+          33152,
+          1000,
+          1000,
+          1,
+          27488,
+          1794895115016265192,
+          1794895115019410019
+        ],
+        "path": "/home/alex/work/p4-r7-public-leaf-ROOT-actual-acceptance-e6ac-r2.json",
+        "sha256": "21b3da06e4d97304044765deaffe05b12280413fa272e66f867561d980fc1561"
+      }
+    },
+    "r7.server.result": {
+      "host": "pocket4",
+      "original": {
+        "bytes": 22417,
+        "identity": [
+          66306,
+          62550532,
+          33060,
+          1000,
+          1000,
+          1,
+          22417,
+          1794894333045371181,
+          1794894333045371181
+        ],
+        "path": "/home/alex/work/p4-remote-build-storage-e6ac-r1/production400-r1/storage-r7/SERVER-RESULT.json",
+        "sha256": "4da774fc45c0383785b7dfbc13e8a8a3b7b5915f81fc9bc574d611e06ba9d13d"
+      }
+    },
+    "r7.server.retirement": {
+      "host": "pocket4",
+      "original": {
+        "bytes": 16119,
+        "identity": [
+          66306,
+          51296513,
+          33060,
+          0,
+          0,
+          1,
+          16119,
+          1794894333308369306,
+          1794894333308369306
+        ],
+        "path": "/home/alex/work/p4-remote-build-storage-e6ac-r1/production400-storage-source-r7/server-INDEPENDENT-RETIREMENT.json",
+        "sha256": "37a450b2ba22915441500fd76ea7264d9fd3098b3bb29a84710aa563da8b0c83"
+      }
+    },
+    "r7.server.root": {
+      "host": "pocket4",
+      "original": {
+        "bytes": 59663,
+        "identity": [
+          66306,
+          31392968,
+          33152,
+          1000,
+          1000,
+          1,
+          59663,
+          1794895057736857633,
+          1794895057738570064
+        ],
+        "path": "/home/alex/work/p4-storage-r7-server-retirement-ROOT-actual-acceptance-e6ac-r1.json",
+        "sha256": "354d1eaa4e3676f96c1e9a4e987c5c8e97c9e869fe5e781256d76237b355a6cb"
+      }
+    },
+    "server.ready": {
+      "host": "pocket4",
+      "original": {
+        "bytes": 3942,
+        "identity": [
+          66306,
+          62550349,
+          33060,
+          1000,
+          1000,
+          1,
+          3942,
+          1794805700746066269,
+          1794805700746066269
+        ],
+        "path": "/home/alex/work/p4-remote-build-storage-e6ac-r1/production400-r1/storage-r6/SERVER-READY.json",
+        "sha256": "a80c6957fa064a0721df94a46ba1e31ff7c458b238f0c5f08566fea4a1fa2e78"
+      }
+    },
+    "server.result": {
+      "host": "pocket4",
+      "original": {
+        "bytes": 21402,
+        "identity": [
+          66306,
+          62550479,
+          33060,
+          1000,
+          1000,
+          1,
+          21402,
+          1794881888922913159,
+          1794881888922913159
+        ],
+        "path": "/home/alex/work/p4-remote-build-storage-e6ac-r1/production400-r1/storage-r6/SERVER-RESULT.json",
+        "sha256": "583d6eb75aff489640e5cf027ee3f9659caf883b15cb4f797834e0f7e620ec24"
+      }
+    },
+    "server.retirement": {
+      "host": "pocket4",
+      "original": {
+        "bytes": 140303,
+        "identity": [
+          66306,
+          35803644,
+          33060,
+          0,
+          0,
+          1,
+          140303,
+          1794881889186066208,
+          1794881889186066208
+        ],
+        "path": "/home/alex/work/p4-r6-failed-server-retirement-e6ac-r1/RESULT.json",
+        "sha256": "a903841336098bdcebae0cd2eba6bbd604bf2c13742e009c95b2c6d4b70c0147"
+      }
+    },
+    "server.root": {
+      "host": "desktop",
+      "original": {
+        "bytes": 6742,
+        "identity": [
+          2067,
+          57476,
+          33152,
+          1000,
+          1000,
+          1,
+          6742,
+          1794882461477762069,
+          1794882461478271666
+        ],
+        "path": "/data/p4-r6-failed-server-retirement-ROOT-actual-acceptance-e6ac-r1.json",
+        "sha256": "6c6559621dd17253b19480a9ce65f441bf42d97a673be23fdf16cd798c469f1e"
+      }
+    }
+  },
+  "volume_prebuild_free_minimum": 266287972352
+}

@@ -21,6 +21,20 @@
         "VERSION = 50023219",
         "VERSION = 50023496"
       ]
+    ],
+    "timer_flow.py": [
+      [
+        "All business phase, ACK, pending-effect, ownership and cleanup logic is original.",
+        "Business phase, ACK, pending-effect, ownership and cleanup contracts are retained."
+      ],
+      [
+        "        current = self.m.read(self.t.s)\n        require(len(current['ids']) == 1 and self.timer_id is None, 'ONE_NEW_TIMER_REQUIRED')",
+        "        require(self.timer_id is None, 'ONE_NEW_TIMER_REQUIRED')\n        # SharedPreferences.apply() may acknowledge UI work before its disk write.\n        # Retry only the read of a valid empty baseline, never the Start action.\n        for attempt in range(3):\n            require(time.monotonic() < self.deadline, 'TIMER_CREATION_READBACK_DEADLINE')\n            current = self.m.read(self.t.s)\n            self.t.record('create-read-' + str(attempt), current)\n            require(time.monotonic() < self.deadline, 'TIMER_CREATION_READBACK_DEADLINE')\n            if current['ids']:\n                break\n            self.m.empty(current)\n            require(attempt < 2, 'ACKNOWLEDGED_TIMER_CREATE_NOT_READ_BACK')\n            remaining = self.deadline - time.monotonic()\n            require(remaining > 0, 'TIMER_CREATION_READBACK_DEADLINE')\n            time.sleep(min(.25, remaining))\n        require(len(current['ids']) == 1, 'ONE_NEW_TIMER_REQUIRED')"
+      ],
+      [
+        "        now = self.uptime()",
+        "        now = self.uptime()\n        require(time.monotonic() < self.deadline, 'TIMER_CREATION_READBACK_DEADLINE')"
+      ]
     ]
   },
   "official_candidate": {
@@ -344,9 +358,9 @@
       "sha256": "dd5964f1c9731a8734cc7e22292f0fc91aa44a9c489b9e38f2098dd1ca3a0e6a"
     },
     {
-      "bytes": 17135,
+      "bytes": 18043,
       "path": "source/timer_flow.py",
-      "sha256": "05450cdb8de36d95c92cde1c41570e789c66e05f54f07704f32a9e0d3e3b1f62"
+      "sha256": "9f606a145d073d7a9236b4a324cab1da932be4b441b9ab1d0143784e619ee110"
     }
   ],
   "successor_preparation": {

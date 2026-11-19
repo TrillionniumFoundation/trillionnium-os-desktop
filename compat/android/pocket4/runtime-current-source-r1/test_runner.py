@@ -94,6 +94,69 @@ class CatalogAndArtifactControls(unittest.TestCase):
                 CI.artifacts(bad, {self.package_id: 'example'}, self.producer,
                              self.target, self.expected, True)
 
+    def test_example_artifacts_cannot_reuse_normal_or_test_binaries(self):
+        folder = self.target / 'debug' / 'examples'
+        folder.mkdir()
+        binary = folder / 'example'
+        binary.write_bytes(b'example location fixture; never executed\n')
+        expected = copy.deepcopy(self.expected)
+        expected[self.key].update(kind=['example'], test=False)
+        message = copy.deepcopy(self.message)
+        message['target'].update(kind=['example'], test=False)
+        message.update(executable=str(binary), profile={'test':False})
+        def joined(rows):
+            return CI.artifacts(self.stream(rows), {self.package_id:'example'}, self.producer,
+                                self.target, expected, False, profile_dir='debug/examples')
+        self.assertEqual(joined([message])[self.key]['path'], binary)
+        for path in (self.target/'release'/'example', self.binary, folder/'example-old'):
+            changed = copy.deepcopy(message); changed['executable'] = str(path)
+            with self.subTest(path=path), self.assertRaises(RuntimeError):
+                joined([changed])
+        for changes in ({'fresh':True}, {'profile':{'test':True}}):
+            changed = copy.deepcopy(message); changed.update(changes)
+            with self.subTest(changes=changes), self.assertRaises(RuntimeError):
+                joined([changed])
+        harness = copy.deepcopy(message)
+        harness.update(executable=str(folder/'example-0123456789abcdef'), profile={'test':True})
+        actual = CI.artifacts(self.stream([harness]), {self.package_id:'example'}, self.producer,
+                              self.target, expected, True, profile_dir='debug/examples')
+        self.assertEqual(actual[self.key]['path'], folder/'example-0123456789abcdef')
+        harness['executable'] = str(binary)
+        with self.assertRaises(RuntimeError):
+            CI.artifacts(self.stream([harness]), {self.package_id:'example'}, self.producer,
+                         self.target, expected, True, profile_dir='debug/examples')
+
+    def test_example_aliases_require_the_original_same_directory_cargo_hash(self):
+        # Cargo retains '-' in the public executable, but rustc uses the crate
+        # identifier ('_') in its hashed original. Check both actual forms.
+        for name in ('example', 'cpu-placement-probe', 'notification-test-server'):
+            with self.subTest(target=name), tempfile.TemporaryDirectory(dir=self.root) as tmp:
+                folder = Path(tmp)
+                normal = folder/name
+                normal.write_bytes(b'alias fixture; not an ELF claim\n')
+                hashed = folder/(name.replace('-', '_')+'-0123456789abcdef')
+                os.link(normal, hashed)
+                def ref():
+                    return {'path':str(normal),'identity':CI.VERIFY.f9(normal.lstat())}
+                self.assertEqual(CI.aliases(ref(), folder, example=True),
+                                 sorted(map(str, (normal, hashed))))
+                wrong = folder/'unrelated-0123456789abcdef'
+                hashed.rename(wrong)
+                with self.assertRaises(RuntimeError):
+                    CI.aliases(ref(), folder, example=True)
+                wrong.rename(hashed)
+                outside = self.root/('external-'+name)
+                os.link(normal, outside)
+                try:
+                    with self.assertRaises(RuntimeError):
+                        CI.aliases(ref(), folder, example=True)
+                finally:
+                    outside.unlink()
+                if '-' in name:
+                    hashed.rename(folder/(name+'-0123456789abcdef'))
+                    with self.assertRaises(RuntimeError):
+                        CI.aliases(ref(), folder, example=True)
+
     def test_cargo_aliases_require_every_link_inside_the_actual_profile(self):
         profile = self.target / 'debug'
         normal = profile / 'example'

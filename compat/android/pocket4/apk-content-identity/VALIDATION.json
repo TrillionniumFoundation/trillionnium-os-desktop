@@ -1,11 +1,94 @@
 {
-  "valid_reference_passed": true,
-  "wrong_expected_package_rejected": true,
-  "source_stamp_separate_from_application_signer": true,
-  "valid_reused_external_filename_passed": true,
-  "same_external_filename_with_changed_signed_bytes_rejected": true,
-  "reference_bytes_unchanged": true,
-  "temporary_counterexamples_removed": true,
-  "reference_sha256": "dc4310b6193a5cadf3b7eff119e677aea006071c8484fa7a35874c2613fd18e1",
-  "applications_installed_or_executed": 0
+  "schema": "pocket4-apk-source-validation-v2",
+  "scope": "source controls and independent actual SDK receipts; no Android execution",
+  "source_controls": [
+    {
+      "name": "test_candidate.py",
+      "source_sha256": "4d4c3e53dbbcfaee7d9fea6a936e57ffdc9607ed193e899037fa3cc07d5e5c32",
+      "started_utc": "2026-11-18T13:24:37.841993+00:00",
+      "finished_utc": "2026-11-18T13:24:38.494264+00:00",
+      "exit_code": 0,
+      "tests": 41,
+      "skipped": 0
+    },
+    {
+      "name": "test_dual_dynamic_elf.py",
+      "source_sha256": "b9c28f019e2032f4e92b4d966670b30cd4e35eca3c44691e6ce95c23496cf634",
+      "started_utc": "2026-11-18T13:24:38.494281+00:00",
+      "finished_utc": "2026-11-18T13:24:38.597806+00:00",
+      "exit_code": 0,
+      "tests": 9,
+      "skipped": 0
+    },
+    {
+      "name": "test_native_resource_payloads.py",
+      "source_sha256": "35f8c5c4c59deb5df2b6300d3323814be67eb522c38882c4e755ff839e16278d",
+      "started_utc": "2026-11-18T13:24:38.597820+00:00",
+      "finished_utc": "2026-11-18T13:24:39.059929+00:00",
+      "exit_code": 0,
+      "tests": 20,
+      "skipped": 0
+    },
+    {
+      "name": "test_apk_set.py",
+      "source_sha256": "6314ef96cd16a539e9aeaa16ab5030f1a69a2e1d33308f4668fd201d49087fd6",
+      "started_utc": "2026-11-18T13:24:39.059948+00:00",
+      "finished_utc": "2026-11-18T13:24:39.234348+00:00",
+      "exit_code": 0,
+      "tests": 14,
+      "skipped": 0
+    },
+    {
+      "name": "test_native_publisher_payloads.py",
+      "source_sha256": "fd1a67ecd5f5a40c86a0c16381b72b6f85f16de62a4c783447b422ce5129d0d6",
+      "started_utc": "2026-11-18T13:24:39.234362+00:00",
+      "finished_utc": "2026-11-18T13:24:39.370785+00:00",
+      "exit_code": 0,
+      "tests": 22,
+      "skipped": 0
+    },
+    {
+      "name": "test_verify_publisher_apk.py",
+      "source_sha256": "db658cf84ca88a0215089b6e2cf3c4ca28caff02b062059ad2d4f7a751bd52f9",
+      "started_utc": "2026-11-18T13:24:39.370798+00:00",
+      "finished_utc": "2026-11-18T13:24:39.537818+00:00",
+      "exit_code": 0,
+      "tests": 20,
+      "skipped": 0
+    },
+    {
+      "name": "test_seven_zip04_payload.py",
+      "source_sha256": "928c1c063461b8060bc23da1a9e7eced9554c331dbf6c1513744824ee376df2a",
+      "started_utc": "2026-11-18T13:24:39.537832+00:00",
+      "finished_utc": "2026-11-18T13:24:39.741541+00:00",
+      "exit_code": 0,
+      "tests": 13,
+      "skipped": 0
+    },
+    {
+      "name": "test_mixed_publisher_payloads.py",
+      "source_sha256": "e303636376cf03ea659c5c635669100547bd4d18e365101ab8413aa2571b2ec6",
+      "started_utc": "2026-11-18T13:24:39.741557+00:00",
+      "finished_utc": "2026-11-18T13:24:39.897365+00:00",
+      "exit_code": 0,
+      "tests": 7,
+      "skipped": 0
+    }
+  ],
+  "ordinary_source_controls_passed": 146,
+  "failed": 0,
+  "skipped": 0,
+  "applications_installed_or_executed": 0,
+  "production_ready": false,
+  "historical_reference_controls": {
+    "valid_reference_passed": true,
+    "wrong_expected_package_rejected": true,
+    "source_stamp_separate_from_application_signer": true,
+    "valid_reused_external_filename_passed": true,
+    "same_external_filename_with_changed_signed_bytes_rejected": true,
+    "reference_bytes_unchanged": true,
+    "temporary_counterexamples_removed": true,
+    "reference_sha256": "dc4310b6193a5cadf3b7eff119e677aea006071c8484fa7a35874c2613fd18e1",
+    "applications_installed_or_executed": 0
+  }
 }

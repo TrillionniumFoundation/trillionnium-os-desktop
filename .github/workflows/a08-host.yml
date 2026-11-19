@@ -46,6 +46,50 @@ jobs:
           set -euo pipefail
           python3 -I -B compat/android/pocket4/current-app-acceptance/business/test_source.py \
             2>&1 | tee "$RUNNER_TEMP/a08/current-app-business.log"
+      - name: Verify exact Pocket4 39-app release scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/current-app-acceptance/test_release_scope.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/current-app-release-scope.log"
+      - name: Verify pinned APK candidate and native input controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/apk-content-identity/test_candidate.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/apk-candidate.log"
+          python3 -I -B compat/android/pocket4/apk-content-identity/test_dual_dynamic_elf.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/apk-dual-dynamic.log"
+          python3 -I -B compat/android/pocket4/apk-content-identity/test_native_resource_payloads.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/apk-native-resources.log"
+          python3 -I -B compat/android/pocket4/apk-content-identity/test_apk_set.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/apk-set.log"
+          python3 -I -B compat/android/pocket4/apk-content-identity/test_native_publisher_payloads.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/apk-publisher-payloads.log"
+          python3 -I -B compat/android/pocket4/apk-content-identity/test_verify_publisher_apk.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/apk-publisher-wrapper.log"
+          python3 -I -B compat/android/pocket4/apk-content-identity/test_seven_zip04_payload.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/apk-sevenzip04.log"
+          python3 -I -B compat/android/pocket4/apk-content-identity/test_mixed_publisher_payloads.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/apk-mixed-isa.log"
+          python3 -I -B compat/android/pocket4/apk-content-identity/test_publisher_delivery.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/apk-publisher-delivery.log"
+      - name: Replay exact current publisher source evidence and custody records
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/current-publisher-delivery-source/verify.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/current-publisher-source-evidence.log"
+      - name: Verify R36 storage owner source without runtime admission
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/storage-r36-owner-source-r1/run_ci.py \
+            --inventory-sha256 515c250022f96542437fb7e42afa6ee3a9fddd9a7a8ae6b7851a015c5327b5aa \
+            --out "$RUNNER_TEMP/a08/storage-owner-r36-source.json" \
+            2>&1 | tee "$RUNNER_TEMP/a08/storage-owner-r36-source.log"
       - name: Install Java, JNI and media host test tools
         shell: bash
         run: |
@@ -1591,7 +1635,7 @@ jobs:
             ${{ runner.temp }}/runtime-d6-ci-logs/*.stderr
 
   runtime-current-complete-producer:
-    name: Current source - 1305 ordinary cases and 19 normal releases
+    name: Current source - 1523 ordinary cases, 19 releases, examples and docs
     runs-on: ubuntu-24.04
     timeout-minutes: 140
     env:
@@ -1602,7 +1646,7 @@ jobs:
       GIT_CONFIG_GLOBAL: /dev/null
       GIT_TERMINAL_PROMPT: '0'
       # Pin the complete reviewed capsule inventory outside the capsule itself.
-      CURRENT_SOURCE_INVENTORY_SHA256: 7b6e43f051ec38a4c0fcc53c5caace2a00a0655bd28a15616eea45887d5a0b7f
+      CURRENT_SOURCE_INVENTORY_SHA256: 075affecd123cc60e30eadf70ae95cc9ec34d5686694bedf0914014c36d04c0b
     steps:
       - uses: actions/checkout@v4
         with:
@@ -1619,7 +1663,7 @@ jobs:
           (cd "$capsule" && sha256sum --quiet -c FILES.sha256)
           timeout --signal=TERM --kill-after=10s 90s python3 -I -B "$capsule/test_verifier.py"
           timeout --signal=TERM --kill-after=10s 90s python3 -I -B "$capsule/test_runner.py"
-      - name: Reconstruct the complete 2271-file producer source
+      - name: Reconstruct the complete current producer source
         timeout-minutes: 5
         shell: bash
         run: |
@@ -1637,7 +1681,7 @@ jobs:
           capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1"
           timeout --signal=TERM --kill-after=30s 1860s bash "$capsule/prepare_ci.sh" \
             --work "$RUNNER_TEMP/current-dependencies"
-      - name: Build all 49 harnesses, execute fresh 1305 cases, and build 19 releases
+      - name: Run 1523 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
         timeout-minutes: 92
         shell: bash
         run: |

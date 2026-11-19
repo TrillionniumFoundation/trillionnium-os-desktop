@@ -15,12 +15,12 @@ import stat
 import subprocess
 
 HERE = Path(__file__).resolve().parent
-PARENT_COMMIT = '61a38baa745483fbfb757466a1cf352febc20552'
-PARENT_TREE = 'db6249e80209abeda8000eeced6d045a1d57e0a2'
+PARENT_COMMIT = '8ddad986410bddb5c42bc5549513a3ee5e41327b'
+PARENT_TREE = 'ed4664376e9c4b60de0f4359753862425ab41d75'
 HEAD_COMMIT = None
-HEAD_TREE = '84d74983ea2c6f3ad131272efb0ac939d9ddcf55'
-SOURCE_FILES = 2271
-SOURCE_BYTES = 42004577
+HEAD_TREE = '64f57a4de88053fea58cfa5112cd089e45b20be6'
+SOURCE_FILES = 2351
+SOURCE_BYTES = 44223952
 
 
 def need(value, message):
@@ -206,8 +206,11 @@ def test_terminal(text, passed, ignored=(), filtered=None, *, catalog=None):
     staging_case = 'native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata'
     tool_case = 'native_generation::tests::real_erofs_bundle_verifies_its_embedded_pair'
     nested_cases = {image_case, staging_case}
+    # Exact observed banners only: private official Ubuntu erofs-utils 1.9.1
+    # prints 1.9; the pinned CI tool prints 1.9.4. Parent/child phases and all
+    # exact Rust catalog, status, count and terminal checks remain unchanged.
     tool_line = re.compile(
-        r'(?:mkfs\.erofs 1\.9\.4|Processing [^\r\n]+ \.\.\.|Build completed\.|------|'
+        r'(?:mkfs\.erofs (?:1\.9|1\.9\.4)|Processing [^\r\n]+ \.\.\.|Build completed\.|------|'
         r'Filesystem UUID: [0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}|'
         r'Filesystem total blocks: [0-9]+ \(of [0-9]+-byte blocks\)|'
         r'Filesystem total (?:inodes|metadata blocks): [0-9]+|'
@@ -275,7 +278,7 @@ def test_terminal(text, passed, ignored=(), filtered=None, *, catalog=None):
                          'nested child must belong to the complete pinned updater catalog')
                     pending, phase = name, 'child-header'
                 else:
-                    need(name == tool_case and tail == 'mkfs.erofs 1.9.4', 'unknown split Rust test record')
+                    need(name == tool_case and tail in ('mkfs.erofs 1.9', 'mkfs.erofs 1.9.4'), 'unknown split Rust test record')
                     pending, phase = name, 'tool-output'
         elif line == 'ok':
             need(pending is not None and phase in ('parent-status', 'tool-output'),
@@ -290,16 +293,16 @@ def test_terminal(text, passed, ignored=(), filtered=None, *, catalog=None):
     return {'passed': sorted(passed), 'ignored': sorted(ignored), 'filtered': outer_filtered}
 
 
-CAPSULE = {'bytes': 7696708, 'sha256': '7ab244365184ef670c244b6a0ed75857c6f942897f3fc59c00e6375e76f51816'}
-MANIFEST = {'bytes': 673996, 'sha256': '62194b76e735e879c596befe4b07dcf0442ae5d6c4612c6fd63cb3bc54fc038a'}
-COMMIT = {'bytes': 331, 'sha256': '879f0ac4412540cc03fb3593933aa2ea5cc6519c1d3e6e4fd3251cd393148e2d'}
+CAPSULE = {'bytes': 7894116, 'sha256': '3e8b2fa1ea1ef3555ca7c82e27abe79a2be029c701f69ac55ef4c82484f247ad'}
+MANIFEST = {'bytes': 696880, 'sha256': '715560653e4c988287555527325f992fb1b5f53bdd48d38b7823c43b4cf5b1f3'}
+COMMIT = {'bytes': 775, 'sha256': '02db7881289cc5706d62261f8f7933b4e78f4ddd29bc13ee1ed5846807281959'}
 
 
 def archive_entries(raw):
     entries = {}
     with tarfile.open(fileobj=io.BytesIO(raw), mode='r:xz') as archive:
         members = archive.getmembers()
-        need(len(members) == 2224 and sum(m.size for m in members) == 41226493,
+        need(len(members) == 2304 and sum(m.size for m in members) == 43326353,
              'complete bounded current source archive required')
         for member in members:
             safe(member.name)
@@ -311,7 +314,9 @@ def archive_entries(raw):
     return entries
 
 
-OVERLAY = {'bytes': 593640, 'sha256': 'a611c9ecf1f1d26b167920d5b5e25b5090a5a293020871e5d8fab835249d43c0'}
+OVERLAY = {'bytes': 657032, 'sha256': '5a87a80bebfc2c63696ca9932fcea8d9485810f75a310f9fa1f792cab292390b'}
+OVERLAY_PATH = 'SOURCE-OVERLAY.tar.xz'
+OVERLAY_PATHS = 107
 OVERLAY_EXPANSION_MAX = 5 * 1024 * 1024
 
 
@@ -322,7 +327,62 @@ def overlay_packet(raw):
     body = decoder.decompress(raw, max_length=OVERLAY_EXPANSION_MAX + 1)
     need(decoder.eof and not decoder.unused_data and len(body) <= OVERLAY_EXPANSION_MAX,
          'one complete bounded XZ overlay without trailing frames required')
-    return decode(body)
+    # Whole binary postimages avoid base64's wire expansion. The original
+    # single-frame 5 MiB expansion and 64 MiB decoder bounds stay unchanged.
+    # Accept only contiguous canonical USTAR regular files, no extension
+    # headers, links, implicit directories, alternate archives or trailing data.
+    need(len(body) % 512 == 0, 'overlay USTAR blocks must be complete')
+    extracted = {}
+    next_offset = 0
+    try:
+        with tarfile.open(fileobj=io.BytesIO(body), mode='r:') as archive:
+            members = archive.getmembers()
+            need(len(members) == OVERLAY_PATHS + 1, 'exact overlay USTAR member count')
+            for member in members:
+                safe(member.name)
+                need(member.name not in extracted and member.isreg()
+                     and not member.linkname and not member.pax_headers
+                     and member.uid == member.gid == member.mtime == 0
+                     and member.uname == member.gname == ''
+                     and member.devmajor == member.devminor == 0
+                     and member.mode in (0o644, 0o755)
+                     and 0 <= member.size <= OVERLAY_EXPANSION_MAX,
+                     'canonical distinct regular overlay members required')
+                need(member.offset == next_offset
+                     and member.offset_data == member.offset + 512,
+                     'overlay extension headers or member gaps are forbidden')
+                header = body[member.offset:member.offset + 512]
+                need(header[156:157] in (b'0', b'\0')
+                     and header[257:263] == b'ustar\0' and header[263:265] == b'00',
+                     'one canonical USTAR header per overlay file required')
+                data = archive.extractfile(member).read(member.size + 1)
+                need(len(data) == member.size, 'whole overlay member required')
+                next_offset = member.offset_data + ((member.size + 511) // 512) * 512
+                need(not any(body[member.offset_data + member.size:next_offset]),
+                     'overlay member padding must be zero')
+                extracted[member.name] = (member.mode, data)
+    except (tarfile.TarError, EOFError) as error:
+        raise RuntimeError('invalid complete overlay USTAR archive') from error
+    need(len(body) - next_offset >= 1024 and not any(body[next_offset:]),
+         'overlay must end with only complete zero trailer blocks')
+    need('OVERLAY-MANIFEST.json' in extracted
+         and extracted['OVERLAY-MANIFEST.json'][0] == 0o644,
+         'exact overlay manifest member required')
+    manifest = decode(extracted.pop('OVERLAY-MANIFEST.json')[1])
+    need(isinstance(manifest, dict) and isinstance(manifest.get('paths'), dict),
+         'overlay manifest must declare its exact path set')
+    encoded = {}
+    for name, (mode, data) in extracted.items():
+        need(name.startswith('postimages/'), 'undeclared overlay member prefix')
+        relative = name[len('postimages/'):]
+        safe(relative)
+        change = manifest['paths'].get(relative)
+        need(isinstance(change, dict) and isinstance(change.get('after'), dict)
+             and change['after'].get('git_mode') == format(0o100000 | mode, 'o'),
+             'overlay member mode must match its exact declared postimage')
+        encoded[relative] = base64.b64encode(data).decode('ascii')
+    need(set(encoded) == set(manifest['paths']), 'all and only declared overlay members required')
+    return {'manifest': manifest, 'files_base64': encoded}
 
 
 def apply_overlay(parent, parent_rows, parent_entries, packet):
@@ -335,21 +395,21 @@ def apply_overlay(parent, parent_rows, parent_entries, packet):
         'exact noncommitted overlay manifest required')
     need(parent['head'] == manifest['parent_head'] == PARENT_COMMIT
          and parent['tree'] == manifest['parent_tree'] == PARENT_TREE
-         and parent['file_count'] == manifest['parent_file_count'] == 2222
+         and parent['file_count'] == manifest['parent_file_count'] == 2302
          and manifest['candidate_file_count'] == SOURCE_FILES
          and manifest['candidate_bytes'] == SOURCE_BYTES
          and manifest['candidate_tree_from_manifest'] == HEAD_TREE
-         and manifest['schema'] == 'p4-launch-combined-formatted-overlay-v1'
+         and manifest['schema'] == 'p4-launch-combined-formatted-overlay-v2'
          and manifest['format_qualified'] is True and manifest['compiled'] is False
          and manifest['runtime_qualified'] is False and manifest['production_ready'] is False,
          'fixed qualified parent and exact formatted successor tree required')
-    old_rows = validate_rows(parent_rows, 2222)
+    old_rows = validate_rows(parent_rows, 2302)
     need(tree_id(parent_rows) == PARENT_TREE and set(old_rows) == set(parent['files']),
          'complete exact parent inventory required before overlay')
     changes, encoded_files = manifest['paths'], packet['files_base64']
     need(isinstance(changes, dict) and isinstance(encoded_files, dict)
-         and len(changes) == 71 and set(changes) == set(encoded_files),
-         'all and only 71 declared overlay bodies required')
+         and len(changes) == OVERLAY_PATHS and set(changes) == set(encoded_files),
+         'all and only declared overlay bodies required')
     current = dict(parent['files'])
     entries = dict(parent_entries)
     for name, change in sorted(changes.items()):
@@ -381,6 +441,48 @@ def apply_overlay(parent, parent_rows, parent_entries, packet):
     return rows, entries, manifest
 
 
+def verify_parent_entries(entries):
+    need('SOURCE-MANIFEST.json' in entries and 'SOURCE-COMMIT.txt' in entries,
+         'source manifest and exact commit object required')
+    manifest_body = entries['SOURCE-MANIFEST.json'][1]; commit_body = entries['SOURCE-COMMIT.txt'][1]
+    need(digest(manifest_body) == MANIFEST and digest(commit_body) == COMMIT
+         and object_id('commit', commit_body) == PARENT_COMMIT, 'original manifest and commit object must match')
+    manifest = decode(manifest_body)
+    need(manifest['schema'] == 'p4-portable-qualified-source-manifest-v2'
+         and manifest['head'] == PARENT_COMMIT and manifest['tree'] == PARENT_TREE
+         and manifest['file_count'] == 2302 and manifest['file_bytes'] == 42628698
+         and manifest['commit'] == COMMIT and len(manifest['files']) == 2302,
+         'exact complete current source generation required')
+    need(commit_body.startswith(('tree ' + PARENT_TREE + '\n').encode())
+         and not any(line.startswith(b'parent ') for line in commit_body.split(b'\n\n', 1)[0].splitlines()),
+         'explicit root snapshot commit and original tree required')
+    provenance = manifest.get('provenance')
+    need(isinstance(provenance, dict)
+         and provenance.get('snapshot_kind') == 'explicit_root_snapshot_from_verified_complete_tree'
+         and provenance.get('upstream_ancestry_claimed') is False
+         and provenance.get('parent_commits') == []
+         and provenance.get('previous_packet_inventory_sha256') == '5f131f2dbcccafb735b84594e5b1a5c29a77b2e4c9c7882d76b2e66c7a5ee473'
+         and provenance.get('previous_source_parent_commit') == '61a38baa745483fbfb757466a1cf352febc20552'
+         and provenance.get('previous_source_parent_tree') == 'db6249e80209abeda8000eeced6d045a1d57e0a2'
+         and provenance.get('previous_reconstructed_tree') == PARENT_TREE
+         and provenance.get('historical_qualification_transferred') is False,
+         'complete previous lineage and explicit new root snapshot required')
+    rows = [{'path': name, 'bytes': row['bytes'], 'sha256': row['sha256'],
+             'git_blob': row['git_blob'], 'mode': row['git_mode']}
+            for name, row in sorted(manifest['files'].items())]
+    wanted = validate_rows(rows, 2302)
+    need(set(entries) == {'source/' + name for name in wanted}
+         | {'SOURCE-MANIFEST.json', 'SOURCE-COMMIT.txt'}, 'missing or undeclared source member')
+    for name, row in wanted.items():
+        mode, body = entries['source/' + name]
+        need(mode == (int(row['mode'], 8) & 0o777)
+             and digest(body) == {key: row[key] for key in ('bytes', 'sha256')}
+             and object_id('blob', body) == row['git_blob'], 'source body, mode or Git blob differs: ' + name)
+    need(tree_id(rows) == PARENT_TREE and sum(row['bytes'] for row in rows) == 42628698,
+         'every source byte must contribute to the complete Git tree')
+    return manifest, rows
+
+
 def verify_capsule(expected_inventory_sha):
     need(re.fullmatch('[0-9a-f]{64}', expected_inventory_sha), 'external inventory SHA required')
     index = regular(HERE / 'FILES.sha256', 65536)
@@ -397,32 +499,8 @@ def verify_capsule(expected_inventory_sha):
     for name, sha in inventory.items():
         need(hashlib.sha256(regular(HERE / name)).hexdigest() == sha, 'capsule input differs: ' + name)
     entries = archive_entries(check(HERE / 'SOURCE-CAPSULE.tar.xz', CAPSULE))
-    need('SOURCE-MANIFEST.json' in entries and 'SOURCE-COMMIT.txt' in entries,
-         'source manifest and exact commit object required')
-    manifest_body = entries['SOURCE-MANIFEST.json'][1]; commit_body = entries['SOURCE-COMMIT.txt'][1]
-    need(digest(manifest_body) == MANIFEST and digest(commit_body) == COMMIT
-         and object_id('commit', commit_body) == PARENT_COMMIT, 'original manifest and commit object must match')
-    manifest = decode(manifest_body)
-    need(manifest['schema'] == 'p4-portable-qualified-source-manifest-v2'
-         and manifest['head'] == PARENT_COMMIT and manifest['tree'] == PARENT_TREE
-         and manifest['file_count'] == 2222 and manifest['file_bytes'] == 40552166
-         and manifest['commit'] == COMMIT and len(manifest['files']) == 2222,
-         'exact complete current source generation required')
-    need(commit_body.startswith(('tree ' + PARENT_TREE + '\n').encode()), 'original commit tree differs')
-    rows = [{'path': name, 'bytes': row['bytes'], 'sha256': row['sha256'],
-             'git_blob': row['git_blob'], 'mode': row['git_mode']}
-            for name, row in sorted(manifest['files'].items())]
-    wanted = validate_rows(rows, 2222)
-    need(set(entries) == {'source/' + name for name in wanted}
-         | {'SOURCE-MANIFEST.json', 'SOURCE-COMMIT.txt'}, 'missing or undeclared source member')
-    for name, row in wanted.items():
-        mode, body = entries['source/' + name]
-        need(mode == (int(row['mode'], 8) & 0o777)
-             and digest(body) == {key: row[key] for key in ('bytes', 'sha256')}
-             and object_id('blob', body) == row['git_blob'], 'source body, mode or Git blob differs: ' + name)
-    need(tree_id(rows) == PARENT_TREE and sum(row['bytes'] for row in rows) == 40552166,
-         'every source byte must contribute to the complete Git tree')
-    packet = overlay_packet(check(HERE / 'SOURCE-OVERLAY.json.xz', OVERLAY))
+    manifest, rows = verify_parent_entries(entries)
+    packet = overlay_packet(check(HERE / OVERLAY_PATH, OVERLAY))
     rows, entries, overlay = apply_overlay(manifest, rows, entries, packet)
     return {'parent_manifest': manifest, 'overlay_manifest': overlay, 'rows': rows,
             'entries': entries, 'inventory_sha256': expected_inventory_sha}
@@ -463,6 +541,8 @@ def main():
     capsule = verify_capsule(args.inventory_sha256)
     result = {'schema': 'p4-current-complete-source-verification-v1', 'source_commit': HEAD_COMMIT,
               'source_parent_commit': PARENT_COMMIT, 'source_parent_tree': PARENT_TREE,
+              'source_parent_kind': 'explicit_root_snapshot_from_verified_complete_tree',
+              'upstream_ancestry_claimed': False,
               'source_tree': HEAD_TREE, 'source_files': SOURCE_FILES, 'source_bytes': SOURCE_BYTES,
               'source_overlay_sha256': OVERLAY['sha256'], 'full_source_overlay_verified': True,
               'full_source_archive_verified': True, 'historical_tests_counted_as_fresh': 0,

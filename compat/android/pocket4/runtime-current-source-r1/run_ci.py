@@ -47,8 +47,8 @@ def configuration():
         registered[key] = row
     VERIFY.need(set(registered) == set(result[0]) and len({k[0] for k in result[0]}) == 28,
                 'all28 packages and49 test targets')
-    VERIFY.need(sum(len(r['all']) for r in registered.values()) == 1335
-                and sum(len(r['ignored']) for r in registered.values()) == 30, 'complete1335/30 catalog')
+    VERIFY.need(sum(len(r['all']) for r in registered.values()) == 1553
+                and sum(len(r['ignored']) for r in registered.values()) == 30, 'complete1523 ordinary/30 ignored (1553 total) catalog')
     VERIFY.need(len(exact) == len(set(exact)) == 64
                 and set(exact) <= set(registered[UPDATER]['all']) - set(registered[UPDATER]['ignored']),
                 '64 disjoint ordinary updater names')
@@ -85,6 +85,56 @@ def metadata_targets(raw, producer, wanted_tests, wanted_bins):
     return {key:value['name'] for key,value in packages.items()}
 
 
+def auxiliary_targets(raw, producer):
+    """Bind all examples and doctest-enabled libraries to the same source tree."""
+    wanted = VERIFY.decode(VERIFY.regular(HERE / 'EXTRA-TARGETS.json'))
+    VERIFY.need(set(wanted) == {'examples', 'doc_targets', 'example_test'}, 'exact auxiliary target groups')
+    fields = {'package', 'target', 'kind', 'source_path', 'required_features', 'test', 'doctest', 'doc'}
+    for group, count, kind in [('examples', 3, ['example']), ('doc_targets', 20, ['lib'])]:
+        rows = wanted[group]
+        VERIFY.need(isinstance(rows, list) and len(rows) == count, 'complete auxiliary target count')
+        keys = []
+        for row in rows:
+            VERIFY.need(set(row) == fields and row['kind'] == kind and row['required_features'] == []
+                        and all(type(row[key]) is bool for key in ('test', 'doctest', 'doc')),
+                        'exact ordinary auxiliary target shape')
+            VERIFY.safe(row['source_path'])
+            VERIFY.need((row['test'], row['doctest'], row['doc']) ==
+                        ((False, False, False) if group == 'examples' else (True, True, True)),
+                        'fixed current example and library selection')
+            keys.append((row['package'], row['target']))
+        VERIFY.need(keys == sorted(set(keys)), 'distinct ordered auxiliary targets')
+    meta = VERIFY.decode(raw)
+    members = set(meta['workspace_members'])
+    actual = {'examples': [], 'doc_targets': []}
+    for package in meta['packages']:
+        if package['id'] not in members:
+            continue
+        for target in package['targets']:
+            group = ('examples' if target['kind'] == ['example'] else
+                     'doc_targets' if target['kind'] == ['lib'] and target['doctest'] else None)
+            if group is not None:
+                actual[group].append({**canonical_target(package['name'], target, producer),
+                                      'doctest': target['doctest'], 'doc': target['doc']})
+    for rows in actual.values():
+        rows.sort(key=lambda row: (row['package'], row['target']))
+    VERIFY.need(actual == {key:wanted[key] for key in actual},
+                'complete actual examples and documentation targets differ')
+    examples = {(row['package'], row['target']):
+                {key: value for key, value in row.items() if key not in ('doctest', 'doc')}
+                for row in wanted['examples']}
+    tested = wanted['example_test']
+    VERIFY.need(set(tested) == {'package', 'target', 'tests'}
+                and (tested['package'], tested['target']) == ('droidloom-source', 'frozen_pair_recipe')
+                and (tested['package'], tested['target']) in examples
+                and isinstance(tested['tests'], list) and len(tested['tests']) == 9
+                and all(isinstance(name, str) and re.fullmatch(r'tests::[a-z0-9_]+', name)
+                        for name in tested['tests'])
+                and tested['tests'] == sorted(set(tested['tests'])),
+                'one exact source-only recipe example with nine distinct tests')
+    return examples, wanted['doc_targets'], tested
+
+
 def artifacts(raw, package_ids, producer, target, expected, test_profile, profile_dir='release', complete=True):
     result = {}
     for row in VERIFY.successful_cargo_stream(raw):
@@ -100,10 +150,16 @@ def artifacts(raw, package_ids, producer, target, expected, test_profile, profil
         VERIFY.need(key in expected and spec == expected[key] and key not in result and row['fresh'] is False,
                     'one freshly built exact source target required')
         path = Path(row['executable']).absolute()
-        folder = target / ('debug/deps' if test_profile else profile_dir)
+        folder = target / (profile_dir if profile_dir == 'debug/examples' else
+                           'debug/deps' if test_profile else profile_dir)
         VERIFY.need(path.resolve() == path and path.parent == folder, 'unexpected actual artifact location')
+        if test_profile and profile_dir == 'debug/examples':
+            VERIFY.need(spec['kind'] == ['example'] and re.fullmatch(
+                re.escape(spec['target']) + r'-[0-9a-f]{16}', path.name) is not None,
+                'exact source-only example test harness')
         if not test_profile:
-            VERIFY.need(path.name == spec['target'] and spec['kind'] == ['bin'], 'exact normal release target')
+            kind = ['example'] if profile_dir == 'debug/examples' else ['bin']
+            VERIFY.need(path.name == spec['target'] and spec['kind'] == kind, 'exact normal compiled target')
         result[key] = {'message':row, 'path':path}
     VERIFY.need(set(result) == set(expected) if complete else set(result) <= set(expected), 'missing or extra compiled targets')
     return result
@@ -146,7 +202,7 @@ def catalog(raw, expected):
     return names
 
 
-def aliases(ref, profile_root):
+def aliases(ref, profile_root, example=False):
     found = []
     for directory, children, names in os.walk(profile_root, followlinks=False):
         for name in names:
@@ -156,8 +212,15 @@ def aliases(ref, profile_root):
                 VERIFY.need(VERIFY.f9(observed) == ref['identity'], 'original Cargo alias changed')
                 found.append(path)
     original = Path(ref['path'])
+    def permitted(path):
+        if path == original:
+            return True
+        if example:
+            return path.parent == profile_root and re.fullmatch(
+                re.escape(original.name.replace('-', '_')) + r'-[0-9a-f]{16}', path.name) is not None
+        return path.parent == profile_root/'deps'
     VERIFY.need(len(found) == ref['identity'][5] and len(found) in (1,2) and original in found
-                and all(p == original or p.parent == profile_root/'deps' for p in found),
+                and all(permitted(path) for path in found),
                 'all original Cargo aliases must stay inside this fresh target')
     return [str(path) for path in sorted(found)]
 
@@ -364,13 +427,19 @@ def main():
     result = {'schema':'p4-current-fresh-ordinary-and-release-ci-v1','state':'RUNNING',
         'source_commit':VERIFY.HEAD_COMMIT,'source_parent_commit':VERIFY.PARENT_COMMIT,
         'source_tree':VERIFY.HEAD_TREE,'source_files':VERIFY.SOURCE_FILES,
+        'source_parent_kind':'explicit_root_snapshot_from_verified_complete_tree',
+        'upstream_ancestry_claimed':False,
         'source_bytes':VERIFY.SOURCE_BYTES,'source_overlay_sha256':VERIFY.OVERLAY['sha256'],
         'started_ns':time.time_ns(),'commands':[],'errors':[],'fresh_ordinary_passed':0,
         'fresh_test_targets':0,'fresh_release_binaries':{},'ignored_not_executed':[],
         'historical_tests_counted_as_fresh':0,'historical_ELFs_reused':False,'jobs':1,'test_threads':1,
         'affinity':cpus[:2],'reserved_cpus':cpus[2:],'tool_identities':tools,
         'Android_builds':0,'Android_starts':0,'runtime_qualified':False,'production_ready':False,
-        'doc_tests_executed':False,'full_workspace_qualified':False,'positive_hardware_branches_inferred':False}
+        'doc_tests_executed':False,'doc_test_commands_executed':False,
+        'doc_targets_checked':[], 'fresh_doc_tests_passed':0,
+        'fresh_example_binaries':{},'example_mains_executed':False,
+        'fresh_example_tests_passed':0, 'example_test_harness':None,
+        'full_workspace_qualified':False,'positive_hardware_branches_inferred':False}
     deadline = time.monotonic() + 5400
 
     def run(name, argv, timeout, cwd=producer):
@@ -402,6 +471,7 @@ def main():
         env['CARGO_NET_OFFLINE'] = 'true'
         _, raw = run('workspace-metadata',['cargo','+1.93.0','metadata','--offline','--locked','--no-deps','--format-version=1'],60)
         ids = metadata_targets(raw, producer, expected_tests, expected_bins)
+        expected_examples, expected_docs, expected_example_test = auxiliary_targets(raw, producer)
         packages = sorted(set(ids.values()))
         batches = [('updater',['droidloom-update']),('remaining27',[p for p in packages if p!='droidloom-update'])]
         VERIFY.need(len(batches[1][1])==27 and set(batches[0][1]+batches[1][1])==set(packages),
@@ -444,7 +514,7 @@ def main():
                 skip = [value for case in exact for value in ('--skip',case)]
                 _, raw = run('updater-bulk-filtered-catalog',[binary,'--list',*skip,'--color','never'],30,test_cwd)
                 catalog(raw,set(cat['all'])-set(exact))
-                row, raw = run('updater-bulk427',[binary,*skip,'--test-threads=1','--color','never'],300,test_cwd)
+                row, raw = run('updater-bulk431',[binary,*skip,'--test-threads=1','--color','never'],300,test_cwd)
                 row['actual_tests'] = VERIFY.test_terminal(raw.decode(),passed-set(exact),cat['ignored'],64,catalog=cat['all'])
                 result['fresh_ordinary_passed'] += len(passed)-64
             else:
@@ -452,8 +522,8 @@ def main():
                 row['actual_tests'] = VERIFY.test_terminal(raw.decode(),passed,cat['ignored'],0,catalog=cat['all'])
                 result['fresh_ordinary_passed'] += len(passed)
             VERIFY.need(elf(item['path']) == frozen[key], 'harness changed after execution')
-        VERIFY.need(result['fresh_ordinary_passed'] == 1305 and len(result['ignored_not_executed']) == 30,
-                    'complete fresh1305 ordinary and30 unchanged ignored cases required')
+        VERIFY.need(result['fresh_ordinary_passed'] == 1523 and len(result['ignored_not_executed']) == 30,
+                    'complete fresh1523 ordinary and30 unchanged ignored cases required')
         for key,ref in debug_frozen.items():
             VERIFY.need(elf(debug[key]['path']) == ref, 'normal debug binary changed during ordinary tests')
         released, release_by_target = {}, {}
@@ -475,10 +545,63 @@ def main():
             result['fresh_release_binaries'][key[1]] = {'package':key[0],**ref,
                 'all_original_aliases':aliases(ref,target/'release')}
         VERIFY.need(len(result['fresh_release_binaries']) == 19, 'all19 normal binary artifacts required')
+        # Examples are compiled as ordinary binaries and never executed here:
+        # the CPU placement probe needs privileged runtime operations and the
+        # notification example starts a service. Neither is a CI side effect.
+        compilation, raw = run('compile-all-examples', ['cargo','+1.93.0','build','--offline','--locked',
+            '--workspace','--examples','-j1','--message-format=json'], 900)
+        compiled_examples = artifacts(raw, ids, producer, target, expected_examples, False,
+                                      profile_dir='debug/examples')
+        for key, item in sorted(compiled_examples.items()):
+            ref = elf(item['path'])
+            VERIFY.need(compilation['started_ns'] <= ref['identity'][7] <= compilation['finished_ns']
+                        and compilation['started_ns'] <= ref['identity'][8] <= compilation['finished_ns'],
+                        'example ELF predates actual ordinary compilation')
+            result['fresh_example_binaries'][key[1]] = {'package':key[0], **ref,
+                'all_original_aliases':aliases(ref, target/'debug/examples', example=True)}
+        VERIFY.need(len(result['fresh_example_binaries']) == 3, 'all three examples must compile')
+        # The source-recipe example also contains nine ordinary pure-source
+        # regressions. Build its distinct test harness, authenticate its actual
+        # ELF and catalogs, and execute only that harness. No example main runs.
+        key = (expected_example_test['package'], expected_example_test['target'])
+        compilation, raw = run('compile-recipe-example-tests', ['cargo','+1.93.0','test',
+            '--offline','--locked','-p',key[0],'--example',key[1],'-j1','--no-run',
+            '--message-format=json'], 300)
+        compiled_recipe = artifacts(raw, ids, producer, target, {key:expected_examples[key]},
+                                    True, profile_dir='debug/examples')[key]
+        recipe_ref = elf(compiled_recipe['path'])
+        VERIFY.need(compilation['started_ns'] <= recipe_ref['identity'][7] <= compilation['finished_ns']
+                    and compilation['started_ns'] <= recipe_ref['identity'][8] <= compilation['finished_ns'],
+                    'source-only recipe test harness predates its compilation')
+        result['example_test_harness'] = {'package':key[0],'target':key[1],**recipe_ref}
+        binary = str(compiled_recipe['path'])
+        _, raw = run('recipe-example-test-catalog', [binary,'--list','--color','never'], 30, test_cwd)
+        catalog(raw, expected_example_test['tests'])
+        _, raw = run('recipe-example-ignored-catalog', [binary,'--ignored','--list','--color','never'], 30, test_cwd)
+        catalog(raw, [])
+        VERIFY.need(elf(compiled_recipe['path']) == recipe_ref, 'recipe test harness changed before execution')
+        row, raw = run('recipe-example-tests', [binary,'--test-threads=1','--color','never'], 60, test_cwd)
+        row['actual_tests'] = VERIFY.test_terminal(raw.decode('utf-8','strict'),
+                                                 expected_example_test['tests'], [], 0)
+        VERIFY.need(elf(compiled_recipe['path']) == recipe_ref, 'recipe test harness changed after execution')
+        result['fresh_example_tests_passed'] = len(row['actual_tests']['passed'])
+        VERIFY.need(result['fresh_example_tests_passed'] == 9, 'all nine recipe example regressions required')
+        # This exact source has 20 doctest-enabled libraries and zero examples
+        # in their documentation. Execute each actual rustdoc target and require
+        # its zero-case terminal; a missing output is not counted as a pass.
+        for index, item in enumerate(expected_docs):
+            row, raw = run('doc-target-%02d'%index, ['cargo','+1.93.0','test','--offline','--locked',
+                '-p',item['package'],'--doc','-j1','--','--test-threads=1','--color','never'], 180)
+            terminal = VERIFY.test_terminal(raw.decode('utf-8','strict'), [], [], 0)
+            row['actual_tests'] = terminal
+            result['doc_targets_checked'].append({'package':item['package'],'target':item['target'],
+                                                  'passed_cases':len(terminal['passed'])})
+        VERIFY.need(len(result['doc_targets_checked']) == 20, 'all20 actual rustdoc targets required')
+        result['doc_test_commands_executed'] = True
         result['all_source_bookends_equal'] = VERIFY.source_snapshot(producer,capsule['rows'],VERIFY.HEAD_TREE) == before
         VERIFY.need(result['all_source_bookends_equal'] and not owned_children(), 'source changed or command descendants remain')
         VERIFY.need(time.monotonic() < deadline, 'whole CI deadline expired during final artifact/source readback')
-        result['state'] = 'ALL1305_ORDINARY_AND19_NORMAL_RELEASE_BUILDS_PASSED'
+        result['state'] = 'ALL1523_ORDINARY_AND19_NORMAL_RELEASE_BUILDS_PASSED'
     except BaseException as error:
         result['state'] = 'FAILED'
         result['errors'].append({'type':type(error).__name__,'message':str(error),'traceback':traceback.format_exc()})
@@ -499,8 +622,13 @@ def main():
     result['finished_ns'] = time.time_ns()
     VERIFY.write_report(report,result,[HERE,producer,work])
     print(json.dumps({'state':result['state'],'fresh_ordinary_passed':result['fresh_ordinary_passed'],
-        'fresh_normal_release_count':len(result['fresh_release_binaries']),'report':str(report),'production_ready':False},sort_keys=True))
-    return 0 if result['state'] == 'ALL1305_ORDINARY_AND19_NORMAL_RELEASE_BUILDS_PASSED' else 1
+        'fresh_normal_release_count':len(result['fresh_release_binaries']),
+        'fresh_example_binary_count':len(result['fresh_example_binaries']),
+        'fresh_example_tests_passed':result['fresh_example_tests_passed'],
+        'doc_targets_checked':len(result['doc_targets_checked']),
+        'fresh_doc_tests_passed':result['fresh_doc_tests_passed'],
+        'report':str(report),'production_ready':False},sort_keys=True))
+    return 0 if result['state'] == 'ALL1523_ORDINARY_AND19_NORMAL_RELEASE_BUILDS_PASSED' else 1
 
 
 if __name__ == '__main__':
