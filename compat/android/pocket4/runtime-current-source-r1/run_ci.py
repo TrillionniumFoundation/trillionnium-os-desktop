@@ -47,8 +47,8 @@ def configuration():
         registered[key] = row
     VERIFY.need(set(registered) == set(result[0]) and len({k[0] for k in result[0]}) == 28,
                 'all28 packages and49 test targets')
-    VERIFY.need(sum(len(r['all']) for r in registered.values()) == 1518
-                and sum(len(r['ignored']) for r in registered.values()) == 30, 'complete1488 ordinary/30 ignored (1518 total) catalog')
+    VERIFY.need(sum(len(r['all']) for r in registered.values()) == 1525
+                and sum(len(r['ignored']) for r in registered.values()) == 30, 'complete1495 ordinary/30 ignored (1525 total) catalog')
     VERIFY.need(len(exact) == len(set(exact)) == 64
                 and set(exact) <= set(registered[UPDATER]['all']) - set(registered[UPDATER]['ignored']),
                 '64 disjoint ordinary updater names')
@@ -522,8 +522,8 @@ def main():
                 row['actual_tests'] = VERIFY.test_terminal(raw.decode(),passed,cat['ignored'],0,catalog=cat['all'])
                 result['fresh_ordinary_passed'] += len(passed)
             VERIFY.need(elf(item['path']) == frozen[key], 'harness changed after execution')
-        VERIFY.need(result['fresh_ordinary_passed'] == 1488 and len(result['ignored_not_executed']) == 30,
-                    'complete fresh1488 ordinary and30 unchanged ignored cases required')
+        VERIFY.need(result['fresh_ordinary_passed'] == 1495 and len(result['ignored_not_executed']) == 30,
+                    'complete fresh1495 ordinary and30 unchanged ignored cases required')
         for key,ref in debug_frozen.items():
             VERIFY.need(elf(debug[key]['path']) == ref, 'normal debug binary changed during ordinary tests')
         released, release_by_target = {}, {}
@@ -601,7 +601,7 @@ def main():
         result['all_source_bookends_equal'] = VERIFY.source_snapshot(producer,capsule['rows'],VERIFY.HEAD_TREE) == before
         VERIFY.need(result['all_source_bookends_equal'] and not owned_children(), 'source changed or command descendants remain')
         VERIFY.need(time.monotonic() < deadline, 'whole CI deadline expired during final artifact/source readback')
-        result['state'] = 'ALL1488_ORDINARY_AND19_NORMAL_RELEASE_BUILDS_PASSED'
+        result['state'] = 'ALL1495_ORDINARY_AND19_NORMAL_RELEASE_BUILDS_PASSED'
     except BaseException as error:
         result['state'] = 'FAILED'
         result['errors'].append({'type':type(error).__name__,'message':str(error),'traceback':traceback.format_exc()})
@@ -628,7 +628,7 @@ def main():
         'doc_targets_checked':len(result['doc_targets_checked']),
         'fresh_doc_tests_passed':result['fresh_doc_tests_passed'],
         'report':str(report),'production_ready':False},sort_keys=True))
-    return 0 if result['state'] == 'ALL1488_ORDINARY_AND19_NORMAL_RELEASE_BUILDS_PASSED' else 1
+    return 0 if result['state'] == 'ALL1495_ORDINARY_AND19_NORMAL_RELEASE_BUILDS_PASSED' else 1
 
 
 if __name__ == '__main__':
