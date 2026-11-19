@@ -613,6 +613,16 @@ BINARY_FILES = {
         'bytes': 2709, 'sha256': 'ddba25c9c6111662e3f4f475b4f1871139e36728938302660d7ef34c62871c6d'},
     'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/FILES.sha256': {
         'bytes': 1878, 'sha256': 'f9a9c28f15c92a27555c36da5170cdb6f8012f75d6824986e1cad84abdfda6a2'},
+    # These actual evidence streams were empty. Pin their exact zero bytes;
+    # all ordinary source files still require nonempty content.
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/validation-r2/controls.stdout': {
+        'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2/validation-r2/plan.stderr': {
+        'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/validation/controls.stdout': {
+        'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+    'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/validation/historical-replay.stderr': {
+        'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
 }
 
 
