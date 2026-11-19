@@ -1,53 +1,52 @@
 # Pocket4 current complete source packet
 
-This packet reconstructs producer tree `7950a18a37330bf3d97e6bb3847b7163fb88a82a`
-with **2,344 files / 44,037,638 bytes**. It preserves the complete source capsule,
-all original targets and all ignored cases. The cumulative overlay remains
-bounded by the original 5 MiB expansion and 64 MiB decoder limits.
+This packet reconstructs the actually finalized producer tree `64f57a4de88053fea58cfa5112cd089e45b20be6`
+with **2,351 files / 44,223,952 bytes**. It preserves the complete
+source capsule, all original targets and every unchanged ignored case. The
+cumulative overlay retains the original 5 MiB expansion and 64 MiB decoder limits.
 
 ## Changes
 
-The successor contains the eighteen frozen runtime source changes for the
-original init default namespace and bootstrap bind sequence, including four
-new files. It preserves the original namespace observations, covered mount
-layers and source shared group. The original notification journal is prepared and held before SEND.
-A successful SEND is recorded immediately, without intervening fallible work;
-subsequent checks retain that irreversible state.
-No other APEX source candidate is included.
+The successor contains twelve runtime source changes, including one new file,
+for retaining an original apexd CAPEX request in its original runtime ledger.
+The complete device object enters the original custody slot before the actual
+configuration operation. The same slot retains source, MAC and pool ownership
+across errors. Alias-only retirement is kept separate from actual owned-binding
+retirement, and any retired request history prevents ordinary Ready admission.
 
-The actual ordinary fixture needed its trace options corrected. That single
-fixture change is retained separately from the frozen production source;
-production policy was not changed by the correction. The next compile and test
-run completed all six commands, but its final Python catalog comparison failed
-because a string variable shadowed the parent catalog. Both failed receipts
-remain unchanged. A separate finalizer read the complete original logs,
-catalog, test ELF and source bookends and generated the tested source freeze.
-It did not recompile or rerun the tests, and does not relabel the failed worker
-as successful.
+The only normal entry obtains and matches the source inside the original
+request. The original exclusive outer ledger borrow remains held; request
+validation occurs outside short inner ledger and slot borrows. Custody commit
+does not issue an original target block association or an ioctl-success reply.
 
-## Exact verification scope
+## Exact evidence scope
 
-The affected complete supervisor harness actually passed **538 ordinary cases,
-zero failures and 25 unchanged ignored cases**, with the original commands
-reaped. The source tree and complete file identities matched across execution.
-This adds seven cases to the preceding 531-case supervisor catalog. No existing
-test was removed, renamed or newly ignored.
+The original R9 orchestration receipt remains **FAILED**. Its six actual
+formatter, compiler, ordinary-test and catalog commands exited successfully and
+their original PIDFDs were reaped. Its final comparison used eight crate-alias
+prefixes instead of the actual module paths.
 
-The full current runner requires **49 harnesses / 1,495 ordinary cases /
-30 unchanged ignored cases**, nine separate recipe tests, 19 normal release
-binaries, three compiled examples and 20 documentation targets. The current
-full CI must pass on this exact packet; the local supervisor result is not a
-substitute. Example mains and hardware-specific ignored branches are not
-claimed executed by those gates.
+A separately pinned finalizer independently checked the original complete logs,
+ELF, catalogs, source identities and corrected module mapping. It recorded
+**566 ordinary cases, zero test failures and 25 unchanged
+ignored cases**, with the exact nine additions and no old test removal.
+That finalizer performed zero additional compilation and zero test execution.
+Both the original failure and the separate successful evidence finalization
+remain preserved; neither replaces the other.
 
-The immediately preceding producer tree was
-`ab772244ccef9bbce1ef90c5a92ff6d66e17f64c`, with packet inventory
-`0df3947b01872ac565dc088d18b1acf88c73560a50be99c32911a432107b92a2`.
-Its complete run
-[44463432409](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/44463432409)
-passed 1,488 ordinary cases and built 19 normal release binaries. That result
-belongs to the preceding tree. All unchanged recipe targets and source repairs
-remain in this successor.
+This packet preparation applies no new source edit after those finalized
+artifacts. Every actual formatter change is tied to the exact original frozen
+input. The earlier R7 failure and its independent finalization remain preserved.
+
+The complete successor runner requires **49 harnesses / 1523 ordinary
+cases / 30 unchanged ignored cases**, nine separate recipe tests, 19 normal
+release binaries, three compiled examples and 20 documentation targets. The
+full CI must pass on this exact packet. Example mains and hardware-specific
+ignored branches are not claimed executed by these source checks.
+
+The preceding tested tree is `28c270a8e32478e6789c8319b0df164b67268224`, with packet inventory
+`b2e2d096b4a59ef6076d20462b6e0d60498717324ba902af1a430b07f3d25808`. Its source and receipts retain their own identity; they are
+not new execution evidence for this successor.
 
 ## Reproduction
 
@@ -60,22 +59,24 @@ python3 -I -B test_verifier.py
 python3 -I -B test_runner.py
 ```
 
-The unchanged preparation script and run_ci.py retain their normal locked build,
-complete catalog, complete terminal, ordinary release, recipe and source
-bookend checks. SOURCE-CAPSULE.tar.xz, EXPECTED-BINS.json, EXPECTED-TARGETS.json,
-EXTRA-TARGETS.json, UPDATER-EXACT64.json, prepare_ci.sh and test_runner.py are
-byte-for-byte unchanged from the preceding packet.
+The unchanged preparation script and run_ci.py retain normal locked builds,
+complete catalogs and terminals, ordinary release, recipe and source bookend
+checks. SOURCE-CAPSULE.tar.xz, EXPECTED-BINS.json, EXPECTED-TARGETS.json,
+EXTRA-TARGETS.json, UPDATER-EXACT64.json, prepare_ci.sh and test_runner.py remain
+byte-for-byte identical to the preceding packet.
 
 ## Open acceptance gates
 
-This is a tested source packet. Its ordinary tests and source replay do not
-establish privileged namespace execution, original apexd activation, complete
-vendor build, Android boot or application acceptance. Those production gates
-remain separate. The frozen vendor R12 controller and inputs are unchanged by
-this packet. The three permitted app exclusions remain TextNow, TextFree and
-Uber. **Android starts in this packet preparation: 0. Production ready: false.**
+This is a finalized source packet. It issued zero successful guest ioctl replies
+and provides no original guest block handle association. Ordinary tests and
+source replay do not establish original apexd activation, AVB, dm-verity,
+privileged runtime execution, the complete vendor build, Android boot or
+application acceptance. The vendor R12 controller and inputs are unchanged.
+Only the three existing app exclusions remain permitted.
+
+**Android starts in this packet preparation: 0. Production ready: false.**
 
 
 ## Cumulative overlay
 
-99 paths; 625168 compressed bytes; SHA256 `377a5e650b1dcf1c46a6ff28a04499e2246f4d0c8922e5faf98bcdd5ae18ed24`. Expanded bytes: 4720640; SHA256 `ae676b837c599208409b022df595e3f85b188fbe0a30c2fef26068b111dfe5e1`.
+107 paths; 657032 compressed bytes; SHA256 `5a87a80bebfc2c63696ca9932fcea8d9485810f75a310f9fa1f792cab292390b`. Expanded bytes: 4956160; SHA256 `3f5050cbf889eaa38faa18a952b19b74a5acf088acbd82ab1206ba2fba4e511c`.
