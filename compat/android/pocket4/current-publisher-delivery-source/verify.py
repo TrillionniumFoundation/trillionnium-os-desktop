@@ -2,9 +2,12 @@
 """Replay frozen publisher source evidence without claiming an APK/device rerun."""
 from pathlib import Path, PurePosixPath
 import hashlib
+import importlib.util
 import io
 import json
 import stat
+import subprocess
+import sys
 import tarfile
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -54,11 +57,24 @@ def main():
         require(sha(read(prefix + '/' + name)) == expected, 'packet file: ' + name)
     actual = {p.relative_to(PACKET).as_posix() for p in PACKET.rglob('*') if p.is_file()}
     require(set(files) == actual - {'FILES.sha256'}, 'exact packet inventory')
-    manifest = json.loads(read(prefix + '/MANIFEST.json'))
+    manifest_body = read(prefix + '/MANIFEST.json')
+    manifest = json.loads(manifest_body)
     require(manifest['schema'] == 'pocket4-current-publisher-delivery-publication-v1', 'publication schema')
     require(len({r['path'] for r in manifest['files']}) == len(manifest['files']), 'unique pinned sources')
+    spec = importlib.util.spec_from_file_location('publisher_source_successor', PACKET / 'successor.py')
+    successor_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(successor_module)
+    successor = successor_module.Successor(read, manifest_body)
     for row in manifest['files']:
-        read_pin(row)
+        if row['path'] in successor.history:
+            # The original publication remains a historical 23-input record.
+            # Its exact registry bytes are retained; current bytes have their
+            # own fixed successor pins and separate complete semantic checks.
+            body = successor.historical_registry(row['path'])
+            require(len(body) == row['bytes'] and sha(body) == row['sha256'],
+                    'original registry snapshot: ' + row['path'])
+        else:
+            read_pin(row)
     archive_body = read_pin(manifest['source_archive'])
     require(len(archive_body) == ARCHIVE_BYTES and sha(archive_body) == ARCHIVE_SHA256, 'original frozen archive')
     with tarfile.open(fileobj=io.BytesIO(archive_body), mode='r:gz') as archive:
@@ -86,8 +102,14 @@ def main():
     require(len(old_gate_names) == 20, 'exact original 20 product gate files')
     gate_names = old_gate_names | {'verify_publisher_delivery.py', 'test_publisher_delivery.py'}
     for name in gate_names:
-        require(read('compat/android/pocket4/apk-content-identity/' + name) == payloads['gate/' + name],
-                'all original 20 gate sources plus two additions retain frozen bytes')
+        if name in successor_module.DOCUMENTATION:
+            # All historical documentation remains fully pinned in SOURCE.tar.gz.
+            # These three current documentation records explicitly describe the
+            # additional gate; old executable gate/test sources stay byte-exact.
+            successor.check_documentation(name)
+        else:
+            require(read('compat/android/pocket4/apk-content-identity/' + name) == payloads['gate/' + name],
+                    'all original executable gate and test sources retain frozen bytes')
     # Two frozen transport lock records are archival evidence, not product sources.
     # Their bytes remain covered by the complete 121-entry archive verification.
     require({n[5:] for n in payloads if n.startswith('gate/')} - gate_names
@@ -103,8 +125,8 @@ def main():
     require(sum(r['original_delivery_bytes'] for r in summary['packages']) == 942526044, 'original APK byte total')
     require(freeze['old_gate_source_files_unchanged'] == 20 and freeze['old_controls_passed'] == 146
             and freeze['new_controls_passed'] == 39, 'actual frozen control observations')
-    inputs = json.loads(read('compat/android/pocket4/current-app-acceptance/current-source-inputs.json'))
-    freshness = json.loads(read('compat/android/pocket4/current-app-acceptance/current-source-freshness.json'))
+    inputs = json.loads(successor.historical_registry(successor_module.INPUTS))
+    freshness = json.loads(successor.historical_registry(successor_module.FRESHNESS))
     scope = inputs['scope']
     require(inputs['schema'] == 'pocket4-current-source-inputs-v3', 'explicit custody union schema')
     require(sha(canonical(inputs['applications'][:17])) == manifest['preserved_previous_application_entries_sha256'],
@@ -124,13 +146,18 @@ def main():
     for row in [manifest, scope, summary, freeze, *inputs['applications'], *freshness['rows']]:
         require(not any(row.get(k, False) for k in ['installed', 'runtime_qualified', 'native_compatibility_qualified',
                                                    'business_qualified', 'production_ready']), 'no runtime acceptance from source evidence')
+    current = successor.verify()
+    # This entry point is a CI evidence replay, so its new finite rejection
+    # controls run here without changing the frozen workflow or APK tests.
+    subprocess.run([sys.executable, '-I', '-B', str(PACKET / 'test_successor.py')],
+                   cwd=ROOT, check=True, timeout=30)
     print(json.dumps({'status': 'PASS_SOURCE_EVIDENCE_REPLAY_ONLY', 'packet_files': len(files),
                       'frozen_members': 122, 'source_bindings': len(manifest['source_bindings']),
                       'actual_sdk_evidence_packages': 7, 'actual_sdk_evidence_original_apks': 23,
                       'old_controls_recorded': 146, 'new_controls_recorded': 39,
-                      'current_required_third_party_inputs': 23, 'remaining_required_third_party_inputs': 6,
+                      'historical_required_third_party_inputs': 23, 'historical_remaining_source_inputs': 6,
                       'sdk_reexecuted_by_this_command': False, 'installed': False,
-                      'runtime_qualified': False, 'production_ready': False}, sort_keys=True))
+                      'runtime_qualified': False, 'production_ready': False, **current}, sort_keys=True))
     return 0
 
 
