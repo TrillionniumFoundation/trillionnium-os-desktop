@@ -18,9 +18,9 @@ HERE = Path(__file__).resolve().parent
 PARENT_COMMIT = '8ddad986410bddb5c42bc5549513a3ee5e41327b'
 PARENT_TREE = 'ed4664376e9c4b60de0f4359753862425ab41d75'
 HEAD_COMMIT = None
-HEAD_TREE = '77434bc6c8953471a8685d5023975d659a202ca9'
-SOURCE_FILES = 2331
-SOURCE_BYTES = 43683337
+HEAD_TREE = 'fa0382574f4fc18f59b2b5dd67a30939167d8c3a'
+SOURCE_FILES = 2336
+SOURCE_BYTES = 43854389
 
 
 def need(value, message):
@@ -206,8 +206,11 @@ def test_terminal(text, passed, ignored=(), filtered=None, *, catalog=None):
     staging_case = 'native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata'
     tool_case = 'native_generation::tests::real_erofs_bundle_verifies_its_embedded_pair'
     nested_cases = {image_case, staging_case}
+    # Exact observed banners only: private official Ubuntu erofs-utils 1.9.1
+    # prints 1.9; the pinned CI tool prints 1.9.4. Parent/child phases and all
+    # exact Rust catalog, status, count and terminal checks remain unchanged.
     tool_line = re.compile(
-        r'(?:mkfs\.erofs 1\.9\.4|Processing [^\r\n]+ \.\.\.|Build completed\.|------|'
+        r'(?:mkfs\.erofs (?:1\.9|1\.9\.4)|Processing [^\r\n]+ \.\.\.|Build completed\.|------|'
         r'Filesystem UUID: [0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}|'
         r'Filesystem total blocks: [0-9]+ \(of [0-9]+-byte blocks\)|'
         r'Filesystem total (?:inodes|metadata blocks): [0-9]+|'
@@ -275,7 +278,7 @@ def test_terminal(text, passed, ignored=(), filtered=None, *, catalog=None):
                          'nested child must belong to the complete pinned updater catalog')
                     pending, phase = name, 'child-header'
                 else:
-                    need(name == tool_case and tail == 'mkfs.erofs 1.9.4', 'unknown split Rust test record')
+                    need(name == tool_case and tail in ('mkfs.erofs 1.9', 'mkfs.erofs 1.9.4'), 'unknown split Rust test record')
                     pending, phase = name, 'tool-output'
         elif line == 'ok':
             need(pending is not None and phase in ('parent-status', 'tool-output'),
@@ -311,9 +314,9 @@ def archive_entries(raw):
     return entries
 
 
-OVERLAY = {'bytes': 514444, 'sha256': '27ebb01285e62678fba80069a9dfea54e46e6462618074f71694596fa70f7da8'}
+OVERLAY = {'bytes': 589512, 'sha256': '46c389caeb85377a6c150834879c69cc9f513150038067f755b56c0e0f6c8c3d'}
 OVERLAY_PATH = 'SOURCE-OVERLAY.tar.xz'
-OVERLAY_PATHS = 69
+OVERLAY_PATHS = 87
 OVERLAY_EXPANSION_MAX = 5 * 1024 * 1024
 
 

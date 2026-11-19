@@ -149,6 +149,28 @@ def updater_catalogs():
     return current, historical
 
 
+
+def erofs19_current_fixture():
+    current, historical = updater_catalogs()
+    ignored = set(current['ignored'])
+    passed = set(current['all']) - ignored
+    child_filter = str(len(current['all']) - 1) + ' filtered out;'
+    fragments = {
+        'image_policy::tests::repack_preserves_android_metadata_and_adbd':
+            ACTUAL_IMAGE_CHILD.replace('464 filtered out;', child_filter).replace('mkfs.erofs 1.9.4', 'mkfs.erofs 1.9'),
+        'native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata':
+            ACTUAL_STAGING_CHILD.replace('464 filtered out;', child_filter),
+        'native_generation::tests::real_erofs_bundle_verifies_its_embedded_pair':
+            ACTUAL_TOOL_OUTPUT.replace('mkfs.erofs 1.9.4', 'mkfs.erofs 1.9'),
+    }
+    v.need(set(fragments) <= passed, 'known ordinary parent identities required')
+    # This is a synthetic current-catalog parser fixture, not an actual CI log.
+    text = f"running {len(current['all'])} tests\n"
+    for name in sorted(passed | ignored):
+        text += fragments.get(name, f'test {name} ... ' + ('ignored' if name in ignored else 'ok') + '\n')
+    text += f"\ntest result: ok. {len(passed)} passed; 0 failed; {len(ignored)} ignored; 0 measured; 0 filtered out; finished in 1.00s\n"
+    return current, passed, ignored, text
+
 class Controls(unittest.TestCase):
     def test_terminal_rejects_contradictions_and_duplicate_identity(self):
             good='running 2 tests\ntest one ... ok\ntest privileged ... ignored, requires namespaces\ntest result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s\n'
@@ -305,6 +327,21 @@ class Controls(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             v.test_terminal(wrap(ACTUAL_TOOL_OUTPUT.replace(name, 'unknown::test')), ['unknown::test'], [], 464)
 
+    def test_official_erofs19_banner_keeps_complete_parent_and_child_contract(self):
+        current, passed, ignored, text = erofs19_current_fixture()
+        self.assertEqual(v.test_terminal(text, passed, ignored, 0, catalog=current['all']),
+                         {'passed': sorted(passed), 'ignored': sorted(ignored), 'filtered': 0})
+
+    def test_unobserved_erofs_banner_cannot_enter_either_tool_phase(self):
+        current, passed, ignored, text = erofs19_current_fixture()
+        inline = 'test native_generation::tests::real_erofs_bundle_verifies_its_embedded_pair ... mkfs.erofs 1.9'
+        for banner in ('1.9.1', '1.9.40', '1.8', '1.90', '1.9 extra', 'unexpected tool'):
+            for changed in (text.replace('mkfs.erofs 1.9', 'mkfs.erofs ' + banner, 1),
+                            text.replace(inline, inline[:-3] + banner, 1)):
+                with self.subTest(banner=banner), self.assertRaises(RuntimeError):
+                    v.test_terminal(changed, passed, ignored, 0, catalog=current['all'])
+
+
 
 class OverlayControls(unittest.TestCase):
     @classmethod
@@ -328,10 +365,10 @@ class OverlayControls(unittest.TestCase):
         capsule = v.verify_capsule(inventory_sha)
         self.assertIsNone(v.HEAD_COMMIT)
         self.assertEqual(capsule['parent_manifest']['head'], v.PARENT_COMMIT)
-        self.assertEqual(len(capsule['rows']), 2331)
-        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 43683337)
-        self.assertEqual(v.tree_id(capsule['rows']), '77434bc6c8953471a8685d5023975d659a202ca9')
-        self.assertEqual(len(capsule['overlay_manifest']['paths']), 69)
+        self.assertEqual(len(capsule['rows']), 2336)
+        self.assertEqual(sum(row['bytes'] for row in capsule['rows']), 43854389)
+        self.assertEqual(v.tree_id(capsule['rows']), 'fa0382574f4fc18f59b2b5dd67a30939167d8c3a')
+        self.assertEqual(len(capsule['overlay_manifest']['paths']), 87)
         self.assertNotEqual(v.HEAD_TREE, v.PARENT_TREE)
 
     def test_overlay_rejects_wrong_base_omitted_extra_or_unsafe_member(self):
@@ -476,7 +513,7 @@ class OverlayControls(unittest.TestCase):
         self.assertLessEqual(len(body), v.OVERLAY_EXPANSION_MAX)
         with v.tarfile.open(fileobj=v.io.BytesIO(body), mode='r:') as archive:
             members = archive.getmembers()
-            self.assertEqual(len(members), 70)
+            self.assertEqual(len(members), 88)
             self.assertEqual(set(m.name for m in members), {'OVERLAY-MANIFEST.json'} |
                              {'postimages/' + name for name in self.packet['files_base64']})
             for member in members:
