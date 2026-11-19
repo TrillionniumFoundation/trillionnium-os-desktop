@@ -52,6 +52,91 @@ jobs:
           set -euo pipefail
           python3 -I -B compat/android/pocket4/current-app-acceptance/test_release_scope.py \
             2>&1 | tee "$RUNNER_TEMP/a08/current-app-release-scope.log"
+      - name: Verify current IHG preparation and required39 source merge
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/current-app-acceptance/preboot-inputs-20261119/test_prepare_ihg.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/current-ihg-preboot.log"
+          python3 -I -B compat/android/pocket4/current-app-acceptance/preboot-source-state/test_merge_required39.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/current-required39-source-merge.log"
+      - name: Verify current app sources and four CP3A provider identities
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/current-app-acceptance/source-refresh-20261119/verify_refresh.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/current-source-refresh.log"
+          python3 -I -B compat/android/pocket4/current-app-acceptance/source-refresh-20261119/beike/test_override_beike.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/current-beike-source-controls.log"
+          python3 -I -B compat/android/pocket4/current-app-acceptance/source-refresh-20261119/united/test_override_united.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/current-united-source-controls.log"
+          python3 -I -B compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/test_archive_chain.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/current-provider-archive-controls.log"
+          python3 -I -B compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/test_current_inputs.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/current-provider-input-controls.log"
+          python3 -I -B compat/android/pocket4/current-app-acceptance/gallery-official-dex-source-20261119/verify_gallery_source.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/current-gallery-static-source.log"
+          python3 -I -B compat/android/pocket4/current-app-acceptance/source-refresh-20261119/late-metadata/test_late_metadata.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/current-late-public-metadata-controls.log"
+          python3 -I -B compat/android/pocket4/current-app-acceptance/source-refresh-20261119/late-metadata/test_current_source_selection.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/current-source-selection-controls.log"
+      - name: Verify complete kernel config binding repair and source controls
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/kernel-native-exit-config-binding-20261119/source_replay.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/kernel-config-binding-source-replay.log"
+      - name: Verify sparse source comparison repair and retained R12 failure
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/vendor-sparse-cone-source-repair-20261119/source_replay.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/vendor-sparse-source-replay.log"
+      - name: Verify recorded same-plan source restoration and retirement
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B compat/android/pocket4/vendor-same-plan-source-restoration-20261119/source_replay.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/vendor-same-plan-source-restoration.log"
+      - name: Verify required39 business plan and preserved installation prerequisites
+        timeout-minutes: 2
+        working-directory: compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum --check --strict FILES.sha256
+          python3 -I -B preflight.py --out "$RUNNER_TEMP/a08/required39-business-plan.json" \
+            2>&1 | tee "$RUNNER_TEMP/a08/required39-business-plan.log"
+          cmp PLAN.json "$RUNNER_TEMP/a08/required39-business-plan.json"
+          python3 -B -m unittest -v test_preflight.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/required39-business-controls.log"
+      - name: Verify current CP3A system-app source adaptation
+        timeout-minutes: 2
+        working-directory: compat/android/pocket4/current-app-acceptance/system-cp3a-source-adapter-20261119
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum --check --strict FILES.sha256
+          python3 -I -B adapt_cp3a.py materialize --out "$RUNNER_TEMP/a08/cp3a-source-adapter" \
+            2>&1 | tee "$RUNNER_TEMP/a08/cp3a-source-adapter.log"
+          diff --recursive successor-r1 "$RUNNER_TEMP/a08/cp3a-source-adapter"
+          python3 -B -m unittest -v test_adapt_cp3a.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/cp3a-source-controls.log"
+      - name: Verify held Firefox public-navigation source and controls
+        timeout-minutes: 2
+        working-directory: compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum --check --strict FILES.sha256
+          python3 -I -B ../verify_firefox_source.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/firefox-source-binding.log"
+          python3 -B -m unittest -v test_firefox.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/firefox-host-controls.log"
       - name: Verify pinned APK candidate and native input controls
         shell: bash
         run: |
@@ -74,6 +159,8 @@ jobs:
             2>&1 | tee "$RUNNER_TEMP/a08/apk-mixed-isa.log"
           python3 -I -B compat/android/pocket4/apk-content-identity/test_publisher_delivery.py \
             2>&1 | tee "$RUNNER_TEMP/a08/apk-publisher-delivery.log"
+          python3 -I -B compat/android/pocket4/apk-content-identity/test_retained_play_set.py \
+            2>&1 | tee "$RUNNER_TEMP/a08/apk-retained-play.log"
       - name: Replay exact current publisher source evidence and custody records
         timeout-minutes: 2
         shell: bash

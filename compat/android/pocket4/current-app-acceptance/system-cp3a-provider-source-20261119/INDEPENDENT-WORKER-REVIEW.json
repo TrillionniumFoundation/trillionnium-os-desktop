@@ -1,0 +1,75 @@
+{
+  "R2_delta": [
+    "Original root UID/GID 0:0 remains the default for outer system APK members.",
+    "Only the exact MediaProvider leaf is pinned to inode 51, regular mode 100644, UID/GID 1000:1000 and 13826854 bytes.",
+    "The observed original APEX and inner payload exact length/SHA256 are independently pinned before next extraction.",
+    "A new owned r2 output root preserves the actual failed r1 result unchanged."
+  ],
+  "actual_R2_result_independently_read_by_this_reviewer": false,
+  "independently_read_original_R1_evidence": {
+    "APEX-PAYLOAD-CHAIN": {
+      "bytes": 3210,
+      "sha256": "fa99e524ce72f25e0182fffa6ee326161d3e36d3702c20d2eda6d8ae5ec2ab05"
+    },
+    "CAPEX-MEMBER-CHAIN": {
+      "bytes": 2668,
+      "sha256": "2037e6bf0af13eff5a88ce9075be33919bdf079620112ba2df6dda66d73f5ec6"
+    },
+    "RESULT": {
+      "bytes": 38113,
+      "sha256": "90d956d263b47b0ae5de16ec00cafc81766036a96c689a06cf6ddcb8783e02bc"
+    },
+    "mediaprovider-apk-ls.stdout": {
+      "bytes": 95,
+      "observed_member": "/51/100644/1000/1000/MediaProvider.apk/13826854/",
+      "sha256": "516e6fa66b176b603bd219aaa278fcc6159a2dd4000f8ea5503f118454060868"
+    }
+  },
+  "original_R1_findings": [
+    "Before execution, original stdout/stderr collection and aggregate output reservation needed hard byte bounds; fixed with selector pipe collection at 8 MiB per stream, declared extraction-byte reservation and 16 MiB terminal evidence reserve.",
+    "Before execution, PIDFD ownership/reaping assumptions needed SIGCHLD default and single-thread/main-native-TID preconditions; fixed and checked before every spawn."
+  ],
+  "production_ready_credit": 0,
+  "readonly_boundary": {
+    "SDK": "pinned SDK37 aapt2/apksigner, static identity verification only",
+    "android_started": false,
+    "compiled": false,
+    "cpu_affinity": [
+      31
+    ],
+    "inner_seconds": 540,
+    "installed": false,
+    "max_memory_bytes": 805306368,
+    "max_output_bytes": 268435456,
+    "mounted": false,
+    "normal_uid": 1000,
+    "outer_seconds": 600,
+    "privileged_access": false,
+    "source_chain": "pinned official CP3A GSI -> 3 outer provider APKs + Media CAPEX -> original APEX -> apex payload -> MediaProvider APK"
+  },
+  "recorded_ns": 1795086544502450092,
+  "reviewed_R1_fixed_sha256": "32acd79baf79b5c2ef6f4d0e28f31e0ff9d89cca44b89c4468f5ec5cc1beac08",
+  "reviewed_R2_sha256": "b75a440ab7707032a22c28a621d9df254e416b8170f9b1a9d96429ecf30e462d",
+  "reviewed_files": [
+    {
+      "bytes": 30664,
+      "path": "/workspace/scratch/5cd1a8fe7e31/p4-cp3a-provider-source-5cd1-r1/verify_providers.py",
+      "sha256": "32acd79baf79b5c2ef6f4d0e28f31e0ff9d89cca44b89c4468f5ec5cc1beac08"
+    },
+    {
+      "bytes": 31257,
+      "path": "/workspace/scratch/5cd1a8fe7e31/p4-cp3a-provider-source-5cd1-r1/verify_providers_r2.py",
+      "sha256": "b75a440ab7707032a22c28a621d9df254e416b8170f9b1a9d96429ecf30e462d"
+    },
+    {
+      "bytes": 3373,
+      "path": "/workspace/scratch/5cd1a8fe7e31/p4-cp3a-provider-source-5cd1-r1/r1-to-r2.patch",
+      "sha256": "ea4282da0a42c828de5220634b2aa3b1fe16040f200f6449a0fb6402f5d326db"
+    }
+  ],
+  "reviewer": "owner_continuation",
+  "runtime_qualification_credit": 0,
+  "schema": "pocket4-provider-independent-worker-review-v1",
+  "source_only_scope": true,
+  "source_review_passed": true
+}

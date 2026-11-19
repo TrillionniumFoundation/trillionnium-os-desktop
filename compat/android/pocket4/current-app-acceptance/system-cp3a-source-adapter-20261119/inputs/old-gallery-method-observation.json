@@ -1,0 +1,71 @@
+{
+  "all_class_IR_checked": 2144,
+  "bytes": 494342,
+  "f9": [
+    66306,
+    44181751,
+    33152,
+    0,
+    0,
+    1,
+    494342,
+    1794174218021821400,
+    1794174218075861800
+  ],
+  "keys": [
+    "schema",
+    "official_APK_sha256",
+    "official_DEX_sha256",
+    "new_DEX_sha256",
+    "new_DEX_bytes",
+    "new_DEX_version",
+    "unsigned_APK",
+    "all_class_IR_checked",
+    "target_classes",
+    "non_target_classes_unchanged",
+    "classes",
+    "method_port",
+    "only_changed_APK_payload",
+    "manifest_resources_and_other_payload_bytes_unchanged",
+    "alignment_16KiB_verified",
+    "official_image_unchanged",
+    "tools",
+    "commands",
+    "signed",
+    "installed",
+    "Android_runtime_accepted",
+    "user_data_accessed",
+    "production_ready"
+  ],
+  "method_port": [
+    {
+      "QPR1_preimage_sha256": "47e8211aef9ac2124b5837342f642a3e323f349b4e3e48276b4cf6f4432acbd1",
+      "class": "com/android/gallery3d/exif/ExifInterface.smali",
+      "entire_QPR1_target_preimage_byte_equal_to_reviewed_preimage": true,
+      "non_target_method_bytes_preserved": true,
+      "patched_IR_sha256": "73511f1fa8729aa60dc5e2625ac2c27e8d9924770d18b6d7851f1d8abc287d01",
+      "patched_source_sha256": "d13100fe136529c2789df0cf771573074cec8250fb308850a8604bc199d528c5",
+      "replaced_method": "public rewriteExif(Ljava/lang/String;Ljava/util/Collection;)Z"
+    },
+    {
+      "QPR1_preimage_sha256": "43cb1c4fcd4783e605a644b618841505cce84ab7159d46bf80ac5618b40822ef",
+      "class": "com/android/gallery3d/ui/MenuExecutor$MediaOperation.smali",
+      "entire_QPR1_target_preimage_byte_equal_to_reviewed_preimage": true,
+      "non_target_method_bytes_preserved": true,
+      "patched_IR_sha256": "73d080ef77523546dcb60e9d98f38a9174bbc5bd5a31477e980a52fee76d3f8a",
+      "patched_source_sha256": "cbd73e0efddd8e97a327f6f8fc4e90a3c5c7b3df7107f8d6f7c025b208f81f40",
+      "replaced_method": "public run(Lcom/android/gallery3d/util/ThreadPool$JobContext;)Ljava/lang/Void;"
+    }
+  ],
+  "new_DEX_bytes": 1886696,
+  "new_DEX_sha256": "6a994fabd3494dcbf071d727922351f72ff8fdbee0d3d3c1a46b6ed30ca034ee",
+  "official_APK_sha256": "835fe119745324276457b4434fc39f25b633e752c822d2fc9be40eb4b2d45439",
+  "only_changed_APK_payload": [
+    "classes.dex"
+  ],
+  "path": "/home/alex/work/pocket4-android-final/cohorts/qpr1-cp3a-16176746-20261108-8b88-r1/gallery-app-port-20261108-8b88-r1/proof/remote-build-proof.json",
+  "sha256": "918c9e68573848bb6cb68b3e1474f97ba867262ea06fc994fe19084f9dcf5f09",
+  "snapshot_representation": "selected parsed metadata from complete SHA-pinned original; not a raw-byte copy",
+  "source_only": true,
+  "Android_actions": 0
+}

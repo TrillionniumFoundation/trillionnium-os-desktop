@@ -1,0 +1,507 @@
+{
+  "GSI_manifest": {
+    "bytes": 12184,
+    "identity": [
+      "66306",
+      "74639245",
+      "33060",
+      "1000",
+      "1000",
+      "1",
+      "12184",
+      "1795010167062241279",
+      "1795010167062241279"
+    ],
+    "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/official-gsi/official-gsi-manifest.json",
+    "sha256": "8dff52f9abc8bd219266e1e85ba8cd3063677443aafc3efd90c4df9c8f04bfde"
+  },
+  "SDK_preparation": {
+    "bytes": 7636,
+    "identity": [
+      "66306",
+      "100960465",
+      "33152",
+      "1000",
+      "1000",
+      "1",
+      "7636",
+      "1795018516929182351",
+      "1795018516929182351"
+    ],
+    "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/metadata/sdk37-preparation-receipt.json",
+    "sha256": "c9b2003dfeec0d0dc72263ff63723f9b4fe5f77ca4ad0b6ac77224ca80a78bb5"
+  },
+  "actual_UID": null,
+  "apk": {
+    "bytes": 336615,
+    "identity": [
+      "66306",
+      "49546585",
+      "33060",
+      "1000",
+      "1000",
+      "1",
+      "336615",
+      "1795086128034344651",
+      "1795086128143340758"
+    ],
+    "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/apks/com.android.providers.calendar.apk",
+    "sha256": "1ae37944b4f5f24d8d7bc849c76bd80c678d19cc3f5647ccaebd1254d8508744"
+  },
+  "business_qualified": false,
+  "commands": [
+    {
+      "actual_child_reaped": true,
+      "after_reap_echild": true,
+      "argv": [
+        "/usr/sbin/debugfs",
+        "-R",
+        "ls -p /system/priv-app/CalendarProvider",
+        "/proc/self/fd/21"
+      ],
+      "ended_ns": 1795086128030963113,
+      "exit": 0,
+      "name": "com.android.providers.calendar-ls",
+      "original_pidfd_held_until_reaped": true,
+      "output_complete": true,
+      "pid": 2560569,
+      "started_ns": 1795086127915458252,
+      "stderr": {
+        "bytes": 28,
+        "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/logs/com.android.providers.calendar-ls.stderr",
+        "sha256": "d1f395f3b25e168ae41957e6d34052c014f7ea951493daefffd1b986039396c8"
+      },
+      "stdout": {
+        "bytes": 113,
+        "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/logs/com.android.providers.calendar-ls.stdout",
+        "sha256": "c4baddc5059138ffec5fab2cf065a5e0565332032520946f301caa8650a44650"
+      }
+    },
+    {
+      "actual_child_reaped": true,
+      "after_reap_echild": true,
+      "argv": [
+        "/usr/sbin/debugfs",
+        "-R",
+        "dump /system/priv-app/CalendarProvider/CalendarProvider.apk /proc/self/fd/22",
+        "/proc/self/fd/21"
+      ],
+      "ended_ns": 1795086128143979272,
+      "exit": 0,
+      "name": "com.android.providers.calendar-dump",
+      "original_pidfd_held_until_reaped": true,
+      "output_complete": true,
+      "pid": 2560587,
+      "started_ns": 1795086128032041165,
+      "stderr": {
+        "bytes": 28,
+        "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/logs/com.android.providers.calendar-dump.stderr",
+        "sha256": "d1f395f3b25e168ae41957e6d34052c014f7ea951493daefffd1b986039396c8"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/logs/com.android.providers.calendar-dump.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "actual_child_reaped": true,
+      "after_reap_echild": true,
+      "argv": [
+        "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/sdk37/aapt2",
+        "dump",
+        "badging",
+        "/proc/self/fd/22"
+      ],
+      "ended_ns": 1795086128256868646,
+      "exit": 0,
+      "name": "com.android.providers.calendar-badging",
+      "original_pidfd_held_until_reaped": true,
+      "output_complete": true,
+      "pid": 2560605,
+      "started_ns": 1795086128147273987,
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/logs/com.android.providers.calendar-badging.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 7701,
+        "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/logs/com.android.providers.calendar-badging.stdout",
+        "sha256": "084bb381c310b6d560185c0e987afac39e9e620cb957381cde753c4de24e83be"
+      }
+    },
+    {
+      "actual_child_reaped": true,
+      "after_reap_echild": true,
+      "argv": [
+        "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/sdk37/aapt2",
+        "dump",
+        "xmltree",
+        "/proc/self/fd/22",
+        "--file",
+        "AndroidManifest.xml"
+      ],
+      "ended_ns": 1795086128365807298,
+      "exit": 0,
+      "name": "com.android.providers.calendar-manifest",
+      "original_pidfd_held_until_reaped": true,
+      "output_complete": true,
+      "pid": 2560606,
+      "started_ns": 1795086128258371763,
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/logs/com.android.providers.calendar-manifest.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 12209,
+        "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/logs/com.android.providers.calendar-manifest.stdout",
+        "sha256": "bd7d0c1f8b7050cddb946c802ecaa8fcf5b8b2c9a22da417f86e6fafba04b6a1"
+      }
+    },
+    {
+      "actual_child_reaped": true,
+      "after_reap_echild": true,
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-Xmx128m",
+        "-XX:+UseSerialGC",
+        "-XX:CompressedClassSpaceSize=32m",
+        "-XX:ReservedCodeCacheSize=32m",
+        "-XX:MaxMetaspaceSize=64m",
+        "-Xss256k",
+        "-Duser.home=/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/home",
+        "-Djava.io.tmpdir=/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/tmp",
+        "-jar",
+        "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/sdk37/lib/apksigner.jar",
+        "verify",
+        "--min-sdk-version",
+        "37",
+        "--max-sdk-version",
+        "37",
+        "--verbose",
+        "--print-certs",
+        "/proc/self/fd/22"
+      ],
+      "ended_ns": 1795086128634452722,
+      "exit": 0,
+      "name": "com.android.providers.calendar-signature",
+      "original_pidfd_held_until_reaped": true,
+      "output_complete": true,
+      "pid": 2560612,
+      "started_ns": 1795086128366627329,
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/logs/com.android.providers.calendar-signature.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 1116,
+        "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/logs/com.android.providers.calendar-signature.stdout",
+        "sha256": "c6383e77a62e4745b8b70f322740c41fb7d5648dab8fda32cc11dbf1e6234a1a"
+      }
+    }
+  ],
+  "complete_zip_members": [
+    {
+      "bytes": 187924,
+      "complete_eof_crc_verified": true,
+      "compressed_bytes": 187924,
+      "compression": 0,
+      "crc32": "082eec17",
+      "directory": false,
+      "name": "classes.dex",
+      "sha256": "8fe6405b1843353e105f4d614238f72be7a4aacfa1da58af0d38bf5f6ac4ced1"
+    },
+    {
+      "bytes": 6749,
+      "complete_eof_crc_verified": true,
+      "compressed_bytes": 6749,
+      "compression": 0,
+      "crc32": "d025aa08",
+      "directory": false,
+      "name": "res/drawable-hdpi-v4/app_icon.png",
+      "sha256": "a66a04df4851c318f9933617fc4d476b4123e3e9aa2fc8e0241434f348401f6d"
+    },
+    {
+      "bytes": 3549,
+      "complete_eof_crc_verified": true,
+      "compressed_bytes": 3549,
+      "compression": 0,
+      "crc32": "4230ac02",
+      "directory": false,
+      "name": "res/drawable-mdpi-v4/app_icon.png",
+      "sha256": "30d5a2c340dd8916ef94e2fad89035a631c6b789adfa43f7db2411aad3a4b5c7"
+    },
+    {
+      "bytes": 10643,
+      "complete_eof_crc_verified": true,
+      "compressed_bytes": 10643,
+      "compression": 0,
+      "crc32": "93c0ebd0",
+      "directory": false,
+      "name": "res/drawable-xhdpi-v4/app_icon.png",
+      "sha256": "851a707ff550ccc4d33d13e93437cf8de00f93c65c3f0e8d120e0a87ebcfa5de"
+    },
+    {
+      "bytes": 116328,
+      "complete_eof_crc_verified": true,
+      "compressed_bytes": 116328,
+      "compression": 0,
+      "crc32": "340877a4",
+      "directory": false,
+      "name": "resources.arsc",
+      "sha256": "0f28acb25ae4ebee578ec754ad0a3274bb18ce2b94ea913a0336220ff549fe7d"
+    },
+    {
+      "bytes": 9732,
+      "complete_eof_crc_verified": true,
+      "compressed_bytes": 2323,
+      "compression": 8,
+      "crc32": "19f47ab7",
+      "directory": false,
+      "name": "AndroidManifest.xml",
+      "sha256": "f2db9f678afedb31b0fad0d501e3908e83033242eab776efd5996e5100bd8542"
+    },
+    {
+      "bytes": 242,
+      "complete_eof_crc_verified": true,
+      "compressed_bytes": 192,
+      "compression": 8,
+      "crc32": "1976699a",
+      "directory": false,
+      "name": "com/android/providers/calendar/CalendarProvider2_compat_config.xml",
+      "sha256": "e5bc4f9fb43e87d8e278e746370d2aa887ca47b3662c4a555fecc0646cfaca56"
+    },
+    {
+      "bytes": 1740,
+      "complete_eof_crc_verified": true,
+      "compressed_bytes": 598,
+      "compression": 8,
+      "crc32": "2dbad202",
+      "directory": false,
+      "name": "res/layout/dialog_activity.xml",
+      "sha256": "0b150c9938a433b2a0c7ea550e8f926da985e813d0bc64256a3d02465c488e4a"
+    },
+    {
+      "bytes": 368,
+      "complete_eof_crc_verified": true,
+      "compressed_bytes": 223,
+      "compression": 8,
+      "crc32": "31558629",
+      "directory": false,
+      "name": "res/xml/syncadapter.xml",
+      "sha256": "84615932cd40c10112ec7f4adb796696b61492c8eb9fdda764069b8e1a5a604c"
+    }
+  ],
+  "container_chain": [],
+  "framework_epoch": null,
+  "full_CRC_and_SHA_verified": true,
+  "full_system_image": {
+    "bytes": 2294853632,
+    "identity": [
+      "66306",
+      "75949965",
+      "33060",
+      "1000",
+      "1000",
+      "1",
+      "2294853632",
+      "1795010165841291907",
+      "1795010165841291907"
+    ],
+    "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/official-gsi/images/system.img",
+    "sha256": "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4"
+  },
+  "individual_APK_install_authorized": false,
+  "install_mode": "coherent_full_GSI_only",
+  "installed": false,
+  "manifest": {
+    "axml_noncanonical_typed_header_count": 0,
+    "axml_noncanonical_typed_header_examples": [],
+    "config_for_split": null,
+    "is_feature_split": false,
+    "is_split_required": false,
+    "isolated_splits": false,
+    "manifest_flags": {
+      "allowBackup": "false",
+      "debuggable": null,
+      "testOnly": null
+    },
+    "min_sdk_version": "37",
+    "package": "com.android.providers.calendar",
+    "required_split_types": [],
+    "shared_user_id_name": "android.uid.calendar",
+    "split_name": null,
+    "split_types": [],
+    "target_sdk_version": "37",
+    "uses_split": null,
+    "version_code": 37,
+    "version_code_attribute_present": true,
+    "version_code_major": 0,
+    "version_name": "17"
+  },
+  "native_compatibility_qualified": false,
+  "native_members": [],
+  "observed_ns": 1795086128636038777,
+  "original_image_path": "/system/priv-app/CalendarProvider/CalendarProvider.apk",
+  "original_parser_source_pins": {
+    "axml_metadata.py": {
+      "bytes": 13457,
+      "identity": [
+        "66306",
+        "100946840",
+        "33060",
+        "1000",
+        "1000",
+        "1",
+        "13457",
+        "1795054653431251657",
+        "1795054653432251621"
+      ],
+      "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/source/axml_metadata.py",
+      "sha256": "3759ae23233d6909060d591795281e565b447de2ab74e245d244be17a30a8813"
+    },
+    "verify_apk.py": {
+      "bytes": 43119,
+      "identity": [
+        "66306",
+        "100946841",
+        "33060",
+        "1000",
+        "1000",
+        "1",
+        "43119",
+        "1795054653432251621",
+        "1795054653433251585"
+      ],
+      "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/source/verify_apk.py",
+      "sha256": "cd83cd9beb2479ab01c27f5a1422d2ceb2b4703f3e2632b036f3f0fc4633ce20"
+    },
+    "verify_apk_set.py": {
+      "bytes": 22828,
+      "identity": [
+        "66306",
+        "100946842",
+        "33060",
+        "1000",
+        "1000",
+        "1",
+        "22828",
+        "1795054653433251585",
+        "1795054653433251585"
+      ],
+      "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/source/verify_apk_set.py",
+      "sha256": "2f7f862a368fcf1e53f6618b2de21f082afd18a8b42aa09282b85a7026c7738f"
+    }
+  },
+  "package": "com.android.providers.calendar",
+  "production_ready": false,
+  "public_signing_block": {
+    "block_sha256": "77c36fac0002b5bc649abb837571a1c6c7cba280ec826f42ffcf47ade3fcaa94",
+    "certificate_sha256": [
+      "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+    ],
+    "certificate_sha256_by_scheme": {
+      "0x7109871a": [
+        "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+      ],
+      "0xf05368c0": [
+        "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+      ]
+    },
+    "cryptographic_verification_by_this_parser": false,
+    "scheme_ids": [
+      "0x7109871a",
+      "0xf05368c0"
+    ],
+    "signing_block_present": true
+  },
+  "runtime_qualified": false,
+  "schema": "pocket4-verified-cp3a-provider-apk-source-v1",
+  "selected_signing_scheme": {
+    "certificate_sha256": [
+      "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+    ],
+    "scheme": "v3"
+  },
+  "semantic_cleanup_qualified": false,
+  "signature_verified_for_api": 37,
+  "signer_certificate_sha256": [
+    "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
+  ],
+  "signer_reference_kind": "certificate in APK extracted through the fully SHA-pinned official GSI chain",
+  "source_identity_verified": true,
+  "tool_pins": {
+    "aapt2": {
+      "bytes": 6274200,
+      "identity": [
+        "66306",
+        "100960452",
+        "33261",
+        "1000",
+        "1000",
+        "1",
+        "6274200",
+        "1795018516732065210",
+        "1795018516732205748"
+      ],
+      "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/sdk37/aapt2",
+      "sha256": "0f1c0e560f99db510a76ebc99ad5c3e68438f62e8e8617018a716ca4a589a699"
+    },
+    "apksigner": {
+      "bytes": 1181416,
+      "identity": [
+        "66306",
+        "100960455",
+        "33188",
+        "1000",
+        "1000",
+        "1",
+        "1181416",
+        "1795018516738337679",
+        "1795018516738337679"
+      ],
+      "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/sdk37/lib/apksigner.jar",
+      "sha256": "2defad215d7ff52968a409cde528cdaef7918b115e276b8e3378ca7a178e4180"
+    },
+    "debugfs": {
+      "bytes": 231368,
+      "identity": [
+        "66306",
+        "82184804",
+        "33261",
+        "0",
+        "0",
+        "1",
+        "231368",
+        "1770985020000000000",
+        "1791032142861643835"
+      ],
+      "path": "/usr/sbin/debugfs",
+      "sha256": "864e1d7b445e7b5bfc831da78330dbcafc590fa82b89ea9de60b7527f989954f"
+    },
+    "java": {
+      "bytes": 8528,
+      "identity": [
+        "66306",
+        "75127988",
+        "33216",
+        "1000",
+        "1000",
+        "1",
+        "8528",
+        "1793927923777918872",
+        "1794181184774715783"
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+      "sha256": "cfa21aeadd00925925c9e1287f5c08f3e04ee7f26a9e23d9dbfb16149153d842"
+    }
+  },
+  "version_code": 37,
+  "version_code_major": 0,
+  "version_name": "17",
+  "version_name_axml": "17"
+}

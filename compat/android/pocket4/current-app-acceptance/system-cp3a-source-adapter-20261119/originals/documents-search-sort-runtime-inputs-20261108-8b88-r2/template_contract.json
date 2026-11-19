@@ -1,0 +1,50 @@
+{
+  "schema": "pocket4-documents-remaining-features-v1",
+  "package": "org.droidloom.qa.documents.r12.neeff7aa90e47139a",
+  "run_id": "eeff7aa90e47139a",
+  "launcher": false,
+  "permissions": [],
+  "network": false,
+  "activity": "org.droidloom.qa.documents.r12.neeff7aa90e47139a/.FeaturesActivity",
+  "root": "Pocket4_DocFeatures_r12_eeff7aa90e47139a",
+  "source_directory": "source-eeff7aa90e47139a",
+  "ui_created_directory": "copies-eeff7aa90e47139a",
+  "files": {
+    "alpha-eeff7aa90e47139a.txt": {
+      "bytes": 59,
+      "sha256": "5cffe960dad99f99bdc3aeace1389e7a67a03e478c17bf92e689999a7fc8ffe1"
+    },
+    "beta-eeff7aa90e47139a.txt": {
+      "bytes": 118,
+      "sha256": "a57fd69e8058d3534a67c331e12042b370be4c7ce496b971e1e31ce06bc88842"
+    }
+  },
+  "lease_ms": 1200000,
+  "lease_clock": "elapsedRealtime, never reset; fixed Main epoch required by controller",
+  "setup_credit": "host creates only exclusive empty root; App tree API seeds source directory and two files; neither counts as Files UI creation",
+  "business": [
+    "GET_CONTENT cancel without URI/grant",
+    "OPEN_DOCUMENT_TREE cancel without URI/grant",
+    "exact non-root owned tree selection/persist",
+    "Files UI New folder",
+    "two-file multiselect Copy to owned copies directory",
+    "two-file Move from source into owned root",
+    "Files UI Delete both copies",
+    "owned-folder search and visible sort verification in controller",
+    "tree grant release and normal task close/reopen",
+    "SecurityException opening still-present owned beta after grant revocation",
+    "GET_CONTENT alpha result/read without persisted tree grant",
+    "Files UI delete remaining exact four owned entries and true absence"
+  ],
+  "provider_mutations_in_fixture": [
+    "take/release only exact owned tree grant",
+    "create sole source directory",
+    "create/write alpha once",
+    "create/write beta once"
+  ],
+  "fixture_provider_delete_calls": 0,
+  "unknown_policy": "persist phase+step before each mutation; no automatic retry/reset; controller preserves partial fixture until exact read-only reconciliation",
+  "cleanup": "All expected business deletions through real Files UI. On a known halted phase, controller may separately remove only exact known bytes/names/births after no pending UI/provider/file-operation work; cleanup never earns business credit. Unknown install/pending write preserves inputs.",
+  "supported_scope": "primary ExternalStorageProvider, two generated text files, no user document/account access",
+  "qualification": "BUILD03_CANDIDATE; original01 SDK lambda failure and02 compiled-success/class-count observer failure retained; no install/UI"
+}

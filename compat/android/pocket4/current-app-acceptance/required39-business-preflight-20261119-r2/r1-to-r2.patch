@@ -1,0 +1,114 @@
+--- r1/preflight.py
++++ r2/preflight.py
+@@ -54,6 +54,7 @@
+     "source_state_installed", "source_state_runtime_qualified",
+     "source_state_business_qualified", "source_state_production_ready",
+     "individual_APK_install_authorized", "individual_system_APK_installation_allowed",
++    "signer_migration_qualified", "migration_execution_authorized",
+ }
+ ZERO_COUNTERS = {
+     "Android_actions", "CURRENT_writes", "Main_actions", "new_runtime_acceptance_count",
+@@ -62,6 +63,7 @@
+     "execution_ready_count", "Android_calls", "user_data_reads", "credentials_reads",
+ }
+ FIREFOX = "org.mozilla.firefox"
++MEITUAN = "com.sankuai.meituan.takeoutnew"
+ FIREFOX_PAGES = {
+     "manifesto": {"url": "https://www.mozilla.org/en-US/about/manifesto/", "heading": "The Mozilla Manifesto"},
+     "history": {"url": "https://www.mozilla.org/en-US/about/history/", "heading": "History of the Mozilla Project"},
+@@ -213,6 +215,9 @@
+     require(records["com.android.vending"]["required39_member"] is False, "companion cannot count toward39")
+     require(records["com.android.vending"]["source_identity_verified"] is True and
+             records["com.android.vending"]["signature_verified"] is True, "companion source unverified")
++    require(state["required_before_installation"]["Meituan_official_signer_and_existing_userdata_migration"] == "PENDING" and
++            records[MEITUAN]["signer_migration_qualified"] is False,
++            "original Meituan signer and userdata migration remains pending")
+     for package, app in apps.items():
+         require(app["source_identity_verified"] is True and rows[package]["source_identity_verified"] is True,
+                 "unverified source refused: " + package)
+@@ -352,6 +357,11 @@
+         if package == "com.united.mobile.android":
+             plan["latest_update_pending"] = copy.deepcopy(united["fresh_observation"])
+             plan["latest_input_status"] = "4.2.104_METADATA_ONLY_FIXED_PAYLOAD_REMAINS_4.2.103"
++        if package == MEITUAN:
++            plan["signer_migration_qualified"] = records[MEITUAN]["signer_migration_qualified"]
++            plan["migration_prerequisite"] = state["required_before_installation"]["Meituan_official_signer_and_existing_userdata_migration"]
++            plan["migration_execution_authorized"] = False
++            plan["pending_work"].append("Review and qualify preservation of existing test-signed app data before a standard official-signer transition; no uninstall, clear-data, or userdata generation change is admitted by this plan.")
+         if package == FIREFOX:
+             plan["additive_checklist"] = firefox
+             plan["driver_implemented"] = False
+@@ -369,6 +379,7 @@
+         "exemptions": copy.deepcopy(state["exemptions"]),
+         "retained_companion_not_required39": "com.android.vending",
+         "common_gate_definitions": copy.deepcopy(gates["common_gates"]),
++        "required_before_installation": copy.deepcopy(state["required_before_installation"]),
+         "global_unresolved_gates": [
+             "All installed identity/Main/UID/user/framework epoch and actual engine mappings",
+             "Fresh destination custody, current source/latest release reconciliation before activation",
+@@ -398,6 +409,12 @@
+             "output cannot promote unimplemented packages")
+     state_apps = indexed(documents["CURRENT-SOURCE-STATE.json"]["applications"], "state")
+     registry = indexed(documents["current-source-inputs.json"]["applications"], "registry")
++    require(plan.get("required_before_installation") == documents["CURRENT-SOURCE-STATE.json"]["required_before_installation"],
++            "original installation prerequisites changed or omitted")
++    require(rows[MEITUAN].get("migration_prerequisite") == "PENDING" and
++            rows[MEITUAN].get("signer_migration_qualified") is False and
++            rows[MEITUAN].get("migration_execution_authorized") is False,
++            "Meituan migration prerequisite changed or omitted")
+     for package, row in rows.items():
+         require(row["finite_prepared_case_source_exists"] is (package in SELECTED), "output source-scope promotion")
+         require(set(row["common_gate_ids"]) == COMMON, "output omitted a common gate")
+--- r1/test_preflight.py
++++ r2/test_preflight.py
+@@ -147,6 +147,31 @@
+                 p.write_new(target, {"production_ready": False})
+             self.assertEqual(target.read_bytes(), original)
+ 
++    def test_installation_prerequisites_cannot_be_omitted_or_promoted(self):
++        original = p.build_plan(self.original)
++        expected = self.original["CURRENT-SOURCE-STATE.json"]["required_before_installation"]
++        self.assertEqual(original["required_before_installation"], expected)
++        self.assertIsNot(original["required_before_installation"], expected)
++        for mutation in ("all_missing", "migration_missing", "country_available", "expiry_extended", "migration_row", "migration_qualified"):
++            with self.subTest(mutation=mutation):
++                plan = copy.deepcopy(original)
++                if mutation == "all_missing":
++                    del plan["required_before_installation"]
++                elif mutation == "migration_missing":
++                    del plan["required_before_installation"]["Meituan_official_signer_and_existing_userdata_migration"]
++                elif mutation in ("country_available", "expiry_extended"):
++                    retained = plan["required_before_installation"]["fresh_official_metadata_for_retained_Play_inputs"]["com.bestbuy.android"]
++                    retained["restriction" if mutation == "country_available" else "historical_expiry"] = "AVAILABLE" if mutation == "country_available" else "2026-11-20T17:44:09.086253+00:00"
++                else:
++                    row = next(x for x in plan["packages"] if x["package"] == p.MEITUAN)
++                    row["migration_prerequisite" if mutation == "migration_row" else "signer_migration_qualified"] = "COMPLETED" if mutation == "migration_row" else True
++                reason = ("runtime/latest promotion refused" if mutation == "migration_qualified" else
++                          "Meituan migration prerequisite" if mutation == "migration_row" else
++                          "original installation prerequisites")
++                with self.assertRaisesRegex(p.PreflightError, reason):
++                    p.validate_plan(plan, self.original)
++        self.assertEqual(self.original["CURRENT-SOURCE-STATE.json"]["required_before_installation"], expected)
++
+ 
+ if __name__ == "__main__":
+     unittest.main(verbosity=2)
+--- r1/README.md
++++ r2/README.md
+@@ -12,6 +12,7 @@
+ - Calendar, Camera, Contacts, Clock and DocumentsUI have five confirmed target APK hash mismatches against the current coherent GSI. Equal version codes do not make these source profiles current.
+ - Gallery's official target hash matches, but its historical entry permits standalone APK installation. The selected source-state prohibits that path; an image-installed custody/verification adapter still needs review. Camera also retains an old CP2A MediaProvider binding. Calendar/Contacts/ExternalStorage/MediaProvider bindings must be checked against the current coherent GSI.
+ - All 39 actual Main/UID/user/framework epoch, installed APK identity, engine mapping, helper custody, owned task/fixture and UI selector bindings remain explicit null/unresolved gates. No guessed historical UID is admitted.
++- The complete original `required_before_installation` map is preserved in the plan. Meituan's official-signer and existing-userdata migration remains `PENDING`, with `signer_migration_qualified=false`. The three retained Play inputs keep their original `UNAVAILABLE_COUNTRY` restrictions, historical metadata expiry and unqualified activation state. No migration, uninstall, data clearing or userdata generation change is admitted.
+ 
+ The source audit is bounded to 17 complete metadata documents and 29 pinned source files inspected without importing them. The evidence snapshot retains original source-document pins and parsed content; it does not claim their raw source-host bytes were reopened by this generator.
+ 
+@@ -28,7 +29,7 @@
+ 
+ Semantic checks independently verify the exact 39/10/29 scope, original three exemptions, 29 plus companion registry, all accepted source/signature records, state-to-registry/freshness/actual-result links, 13 preparation references, seven-package mapping, five mismatches, all common gates and the pending United update. Runtime/business/production values remain false throughout. The historical audit's `counts.execution_ready` is an integer zero; this exact source field is accepted as a count, while per-package and output readiness fields must be boolean false.
+ 
+-`PLAN.json` is the actual local output. `VALIDATION.json` records the ten accepted host-only contract tests and actual CLI outcome. Tests include exact rejection reasons, so an unrelated earlier failure cannot make a negative control pass. They cover changed pins, symlinks, duplicate keys, missing/duplicate packages, added exemptions, unverified signatures, broken source links, nested acceptance claims, selector-count promotion, erased target mismatches, unapproved Firefox actions/URLs, fabricated runtime bindings, omitted common gates and output overwrite refusal. No SDK, Android, VM, install or application execution occurred.
++`PLAN.json` is the actual local output. `VALIDATION.json` records the eleven accepted host-only contract tests and actual CLI outcome. The original ten controls remain unchanged; one additional control rejects omitted installation prerequisites, removed Meituan migration gates, changed retained-Play country restrictions or expiry, and promoted migration state. Tests include exact rejection reasons, so an unrelated earlier failure cannot make a negative control pass. They also cover changed pins, symlinks, duplicate keys, missing/duplicate packages, added exemptions, unverified signatures, broken source links, nested acceptance claims, selector-count promotion, erased target mismatches, unapproved Firefox actions/URLs, fabricated runtime bindings, omitted common gates and output overwrite refusal. No SDK, Android, VM, install or application execution occurred. The earlier r1 plan, validation and all ten source snapshots are retained unchanged.
+ 
+ ## Firefox additive checklist
+ 

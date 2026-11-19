@@ -1,0 +1,112 @@
+{
+  "Android_actions": 0,
+  "business_qualified": false,
+  "commands": [
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-B",
+        "/workspace/scratch/5cd1a8fe7e31/p4-cp3a-provider-source-5cd1-r1/publication/compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/test_archive_chain.py",
+        "-v"
+      ],
+      "exit": 0,
+      "finished_utc": "2026-11-19T11:08:37.966789+00:00",
+      "name": "archive_controls",
+      "started_utc": "2026-11-19T11:08:37.174273+00:00",
+      "stderr": {
+        "bytes": 1027,
+        "path": "validation/archive_controls.stderr",
+        "sha256": "45cd7c4e92c8ee41fb945cf1754ba87e8dd235181cacb953f30e6df3191e5550"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "validation/archive_controls.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-B",
+        "/workspace/scratch/5cd1a8fe7e31/p4-cp3a-provider-source-5cd1-r1/publication/compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/test_current_inputs.py",
+        "-v"
+      ],
+      "exit": 0,
+      "finished_utc": "2026-11-19T11:08:38.158186+00:00",
+      "name": "current_input_controls",
+      "started_utc": "2026-11-19T11:08:37.966810+00:00",
+      "stderr": {
+        "bytes": 1056,
+        "path": "validation/current_input_controls.stderr",
+        "sha256": "fde8c2cabe24c379f592cf1a076900dc04d690e174dcc4a9b6dd8bf3607ba2f7"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "validation/current_input_controls.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-B",
+        "/workspace/scratch/5cd1a8fe7e31/p4-cp3a-provider-source-5cd1-r1/publication/compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/assemble_provider_cohort.py",
+        "--repo-root",
+        "/workspace/scratch/5cd1a8fe7e31/p4-cp3a-provider-source-5cd1-r1/publication",
+        "--packet-dir",
+        "/workspace/scratch/5cd1a8fe7e31/p4-cp3a-provider-source-5cd1-r1/publication/compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119",
+        "--out",
+        "/workspace/scratch/5cd1a8fe7e31/p4-cp3a-provider-source-5cd1-r1/publication/compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/current/CURRENT-CP3A-PROVIDER-COHORT.json"
+      ],
+      "exit": 0,
+      "finished_utc": "2026-11-19T11:08:38.229411+00:00",
+      "name": "provider_cohort",
+      "started_utc": "2026-11-19T11:08:38.158204+00:00",
+      "stderr": {
+        "bytes": 0,
+        "path": "validation/provider_cohort.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 582,
+        "path": "validation/provider_cohort.stdout",
+        "sha256": "a2ddacc2b2f52b54e1d27eb4fd4f95284732b0092851e3396d91a3e362fee6ea"
+      }
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-B",
+        "/workspace/scratch/5cd1a8fe7e31/p4-cp3a-provider-source-5cd1-r1/publication/compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/refresh_preflight.py",
+        "--repo-root",
+        "/workspace/scratch/5cd1a8fe7e31/p4-cp3a-provider-source-5cd1-r1/publication",
+        "--out",
+        "/workspace/scratch/5cd1a8fe7e31/p4-cp3a-provider-source-5cd1-r1/publication/compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/current/CURRENT-BUSINESS-PLAN.json"
+      ],
+      "exit": 0,
+      "finished_utc": "2026-11-19T11:08:38.383324+00:00",
+      "name": "United_preflight",
+      "started_utc": "2026-11-19T11:08:38.229425+00:00",
+      "stderr": {
+        "bytes": 0,
+        "path": "validation/United_preflight.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 631,
+        "path": "validation/United_preflight.stdout",
+        "sha256": "4419afbe413556a63992dfa430745b84af45058ce18b7c507cb370685ac1f2ce"
+      }
+    }
+  ],
+  "local_control_test_count": 14,
+  "new_SDK_commands": 0,
+  "original_first_archive_control_attempt": "Failed only because duplicate rejection assertion used uppercase Duplicate instead of the existing exact lowercase error message; worker behavior was correct and original helper unchanged.",
+  "production_ready": false,
+  "runtime_qualified": false,
+  "schema": "pocket4-provider-source-and-current-plan-local-validation-v1"
+}

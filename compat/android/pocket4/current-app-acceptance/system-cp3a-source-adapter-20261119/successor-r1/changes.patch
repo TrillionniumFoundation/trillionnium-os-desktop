@@ -1,0 +1,282 @@
+--- originals/business-system-cases-runtime-inputs-20261108-8b88-r2/calendar_base.py
++++ postimages/business-system-cases-runtime-inputs-20261108-8b88-r2/calendar_base.py
+@@ -8,7 +8,7 @@
+ RUN = 'pocket4-calendar-r12-11d95b10e4c4545d'
+ GRANTS = ('android.permission.READ_CALENDAR', 'android.permission.WRITE_CALENDAR')
+ CALENDAR = 'com.android.calendar'
+-CALENDAR_SHA = 'c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1'
++CALENDAR_SHA = '726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e'
+ MAIN = CALENDAR + '.AllInOneActivity'
+ EDITOR = CALENDAR + '.event.EditEventActivity'
+ EDITOR_ALIAS = CALENDAR + '.EditEventActivity'
+--- originals/business-system-cases-runtime-inputs-20261108-8b88-r2/calendar_core.py
++++ postimages/business-system-cases-runtime-inputs-20261108-8b88-r2/calendar_core.py
+@@ -3,7 +3,7 @@
+ import argparse, hashlib, json, os, re, signal, sys, time, types
+ PROFILE_TX_SHA = 'b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+ PROFILE_ACTIVATION_SHA = '7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615'
+-NEW_SHA = 'c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1'
++NEW_SHA = '726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e'
+ PROVIDER_SHA = 'eebf12f81981f7d8c59a9b9ed465945818d2ab0208c121d858cbc4e6426f5fff'
+ READER_SHA = '08400fd889d2373bcefafe60630d0e619dddcb72cb913db4617acb885f2d9705'
+ ADAPTER_SHA = '21e368ea3369a12339f288eb9f53b1475e555b055289aca782ba5267677e8aca'
+--- originals/business-system-cases-runtime-inputs-20261108-8b88-r2/contacts_model.py
++++ postimages/business-system-cases-runtime-inputs-20261108-8b88-r2/contacts_model.py
+@@ -8,7 +8,7 @@
+ NAME = 'Pocket4 Search QA r12 f4a76c9d'
+ EDITED = NAME + ' Edited'
+ NAME_MIME = 'vnd.android.cursor.item/name'
+-PINS = {'com.android.contacts': {'uid': 10055, 'version': 10734, 'path': '/product/priv-app/Contacts/Contacts.apk', 'bytes': 11839391, 'sha256': '11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0'}, 'com.android.providers.contacts': {'uid': 10015, 'version': 37, 'path': '/system/priv-app/ContactsProvider/ContactsProvider.apk', 'bytes': 872865, 'sha256': '9a8d8238565ff977a025ad6eb3f1496b5bd2ea9c819b3229278d62e29da0c313'}}
++PINS = {'com.android.contacts': {'uid': 10055, 'version': 10734, 'path': '/product/priv-app/Contacts/Contacts.apk', 'bytes': 11896473, 'sha256': 'f91e45e89b3a302198c9269a60bb07387150c0f40def95feb873b765520ae028'}, 'com.android.providers.contacts': {'uid': 10015, 'version': 37, 'path': '/system/priv-app/ContactsProvider/ContactsProvider.apk', 'bytes': 872865, 'sha256': '9a8d8238565ff977a025ad6eb3f1496b5bd2ea9c819b3229278d62e29da0c313'}}
+ PHASES = ('before', 'created', 'edited', 'persisted', 'deleted')
+ 
+ def require(condition, code):
+--- originals/business-system-cases-runtime-inputs-20261108-8b88-r2/contacts_trial.py
++++ postimages/business-system-cases-runtime-inputs-20261108-8b88-r2/contacts_trial.py
+@@ -14,7 +14,7 @@
+ QUICK_ACTIVITY = 'com.android.contacts.quickcontact.QuickContactActivity'
+ COMPONENT = PACKAGE + '/.activities.PeopleActivity'
+ APK_PATH = '/product/priv-app/Contacts/Contacts.apk'
+-APK_SHA = '11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0'
++APK_SHA = 'f91e45e89b3a302198c9269a60bb07387150c0f40def95feb873b765520ae028'
+ CREATE_LABELS = {'Create contact', 'Add contact', 'New contact', '创建联系人', '新建联系人', '添加联系人'}
+ 
+ def require(value, reason):
+@@ -111,7 +111,7 @@
+ 
+         def identity(self):
+             data, _ = self.s.target.read_file(APK_PATH, 16 * 1024 * 1024)
+-            require(len(data) == 11839391 and hashlib.sha256(data).hexdigest() == APK_SHA, 'CONTACTS_APK_CHANGED')
++            require(len(data) == 11896473 and hashlib.sha256(data).hexdigest() == APK_SHA, 'CONTACTS_APK_CHANGED')
+             paths = self.s.android(['/system/bin/pm', 'path', PACKAGE]).decode('utf-8', 'strict').splitlines()
+             require(paths == ['package:' + APK_PATH], 'CONTACTS_ACTIVE_PATH_CHANGED')
+             self.s.guard()
+--- originals/business-system-cases-runtime-inputs-20261108-8b88-r2/system_profiles.py
++++ postimages/business-system-cases-runtime-inputs-20261108-8b88-r2/system_profiles.py
+@@ -2,15 +2,15 @@
+ 
+ CONTACTS = {'package': 'com.android.contacts', 'uid': 10055, 'version_code': 10734,
+     'component': 'com.android.contacts/.activities.PeopleActivity',
+-    'apks': [{'bytes': 11839391, 'sha256': '11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0'}],
+-    'certificate_sha256': None, 'require_v3': False}
++    'apks': [{'bytes': 11896473, 'sha256': 'f91e45e89b3a302198c9269a60bb07387150c0f40def95feb873b765520ae028'}],
++    'certificate_sha256': '28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd', 'require_v3': False}
+ CONTACTS_PROVIDER = {'package': 'com.android.providers.contacts', 'uid': 10015, 'version_code': 37,
+     'component': None, 'apks': [{'bytes': 872865, 'sha256': '9a8d8238565ff977a025ad6eb3f1496b5bd2ea9c819b3229278d62e29da0c313'}],
+     'certificate_sha256': None, 'require_v3': False}
+ CALENDAR = {'package': 'com.android.calendar', 'uid': 10061, 'version_code': 37,
+     'component': 'com.android.calendar/.AllInOneActivity',
+-    'apks': [{'bytes': 2635213, 'sha256': 'c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1'}],
+-    'certificate_sha256': None, 'require_v3': False}
++    'apks': [{'bytes': 2520846, 'sha256': '726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e'}],
++    'certificate_sha256': 'a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc', 'require_v3': False}
+ CALENDAR_PROVIDER = {'package': 'com.android.providers.calendar', 'uid': 10017, 'version_code': 37,
+     'component': None, 'apks': [{'bytes': 340711, 'sha256': 'eebf12f81981f7d8c59a9b9ed465945818d2ab0208c121d858cbc4e6426f5fff'}],
+     'certificate_sha256': None, 'require_v3': False}
+--- originals/calendar-reminder-runtime-inputs-20261108-8b88-r2/calendar_base.py
++++ postimages/calendar-reminder-runtime-inputs-20261108-8b88-r2/calendar_base.py
+@@ -8,7 +8,7 @@
+ RUN = 'pocket4-calendar-r12-11d95b10e4c4545d'
+ GRANTS = ('android.permission.READ_CALENDAR', 'android.permission.WRITE_CALENDAR')
+ CALENDAR = 'com.android.calendar'
+-CALENDAR_SHA = 'c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1'
++CALENDAR_SHA = '726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e'
+ MAIN = CALENDAR + '.AllInOneActivity'
+ EDITOR = CALENDAR + '.event.EditEventActivity'
+ EDITOR_ALIAS = CALENDAR + '.EditEventActivity'
+--- originals/calendar-reminder-runtime-inputs-20261108-8b88-r2/calendar_core.py
++++ postimages/calendar-reminder-runtime-inputs-20261108-8b88-r2/calendar_core.py
+@@ -3,7 +3,7 @@
+ import argparse, hashlib, json, os, re, signal, sys, time, types
+ PROFILE_TX_SHA = 'b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+ PROFILE_ACTIVATION_SHA = '7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615'
+-NEW_SHA = 'c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1'
++NEW_SHA = '726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e'
+ PROVIDER_SHA = 'eebf12f81981f7d8c59a9b9ed465945818d2ab0208c121d858cbc4e6426f5fff'
+ READER_SHA = '08400fd889d2373bcefafe60630d0e619dddcb72cb913db4617acb885f2d9705'
+ ADAPTER_SHA = '21e368ea3369a12339f288eb9f53b1475e555b055289aca782ba5267677e8aca'
+--- originals/calendar-reminder-runtime-inputs-20261108-8b88-r2/system_profiles.py
++++ postimages/calendar-reminder-runtime-inputs-20261108-8b88-r2/system_profiles.py
+@@ -1,5 +1,5 @@
+ """Exact original reminder22 package and lease contract; no historical execution credit."""
+-CALENDAR = {'package': 'com.android.calendar', 'uid': 10061, 'version_code': 37, 'component': 'com.android.calendar/.AllInOneActivity', 'apks': [{'bytes': 2635213, 'sha256': 'c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1'}], 'certificate_sha256': None, 'require_v3': False}
++CALENDAR = {'package': 'com.android.calendar', 'uid': 10061, 'version_code': 37, 'component': 'com.android.calendar/.AllInOneActivity', 'apks': [{'bytes': 2520846, 'sha256': '726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e'}], 'certificate_sha256': 'a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc', 'require_v3': False}
+ CALENDAR_PROVIDER = {'package': 'com.android.providers.calendar', 'uid': 10017, 'version_code': 37, 'component': None, 'apks': [{'bytes': 340711, 'sha256': 'eebf12f81981f7d8c59a9b9ed465945818d2ab0208c121d858cbc4e6426f5fff'}], 'certificate_sha256': None, 'require_v3': False}
+ NATIVE_HELPER = {'package': 'local.pocket4.actions.v2', 'uid': 10125, 'version_code': 2, 'component': None, 'apks': [{'bytes': 20847, 'sha256': 'a5368465d5f6faef3299bf1ba6d6bde268cc8b37c72401c6e668872b24725058'}], 'certificate_sha256': None, 'require_v3': False}
+ CALENDAR_INSTALL = {'path': '/home/alex/work/pocket4-android-final/qualification/app-runtime-dependencies-20261108-8b88-r2/runtime-inputs/pocket4-calendar-repair-install-20261106-r12-12/result.json', 'bytes': 10606, 'sha256': 'ad31776194c0fb66dd4bed6a77bbbec3409782317912812ee965705d2d4053c2'}
+--- originals/camera-app-photo-preparation-resume-20261107-r4/camera_profiles.py
++++ postimages/camera-app-photo-preparation-resume-20261107-r4/camera_profiles.py
+@@ -7,8 +7,8 @@
+ 
+ CAMERA = {'package': 'com.android.camera2', 'uid': 10062, 'version_code': 20002000,
+     'component': 'com.android.camera2/com.android.camera.CameraLauncher',
+-    'apks': [{'bytes': 11892407,
+-        'sha256': '0218041bc46f49c0c9622196e2a3610c641e0cc8f12386f23cdd88dc3a3ce18e'}],
++    'apks': [{'bytes': 7709134,
++        'sha256': '24632b0e1a1c22741177583b0dfd4a3fa71ff9b1d1b72af60a3d7cf373c7e61f'}],
+     'certificate_sha256': 'a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc',
+     'require_v3': True}
+ NATIVE_HELPER = {'package': 'local.pocket4.actions.v2', 'uid': 10125, 'version_code': 2,
+--- originals/clock-remaining-runtime-inputs-20261108-8b88-r2/clock_profiles.py
++++ postimages/clock-remaining-runtime-inputs-20261108-8b88-r2/clock_profiles.py
+@@ -3,7 +3,7 @@
+ COMPONENT=PACKAGE+'/.DeskClock'
+ NATIVE='local.pocket4.actions.v2'
+ CLOCK={'package':PACKAGE,'uid':10063,'version_code':37,'component':COMPONENT,
+-    'apks':[{'bytes':7597225,'sha256':'433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d'}],
++    'apks':[{'bytes':7665498,'sha256':'9f24ea5fa57bca4a453556ab7cb44fbad1813cb3d15292a8e572cfb40fff7a77'}],
+     'certificate_sha256':'a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc','require_v3':True}
+ NATIVE_HELPER={'package':NATIVE,'uid':10125,'version_code':2,'component':None,
+     'apks':[{'bytes':20847,'sha256':'a5368465d5f6faef3299bf1ba6d6bde268cc8b37c72401c6e668872b24725058'}],
+--- originals/clock-remaining-runtime-inputs-20261108-8b88-r2/clock_protection.py
++++ postimages/clock-remaining-runtime-inputs-20261108-8b88-r2/clock_protection.py
+@@ -60,8 +60,8 @@
+         first_command = len(self.commands)
+         identity = self.identity(); guest = self.identity_receipt['artifacts'][0]['guest_path']
+         data, _ = self.target.read_file(guest, 16 * 1024 * 1024)
+-        self.c.need(len(data) == 7597225 and self.c.sha(data) ==
+-            '433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d', 'ORIGINAL_CLOCK_APK_CHANGED')
++        self.c.need(len(data) == 7665498 and self.c.sha(data) ==
++            '9f24ea5fa57bca4a453556ab7cb44fbad1813cb3d15292a8e572cfb40fff7a77', 'ORIGINAL_CLOCK_APK_CHANGED')
+         directories = {}
+         for key, path in (('ce', '/data/user/0/' + PACKAGE), ('de', '/data/user_de/0/' + PACKAGE)):
+             fd = self.target.open_root(path, os.O_PATH | os.O_DIRECTORY | os.O_NOFOLLOW)
+--- originals/documents-saf11-runtime-inputs-20261108-8b88-r2/documents_profiles.py
++++ postimages/documents-saf11-runtime-inputs-20261108-8b88-r2/documents_profiles.py
+@@ -1,7 +1,7 @@
+ """Original scoped inputs, never live authority or whole-app acceptance."""
+ DOCUMENTS={'package':'com.android.documentsui','uid':10022,'version_code':37,'component':None,
+-    'apks':[{'sha256':'757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086'}],
+-    'certificate_sha256':None,'require_v3':False}
++    'apks':[{'bytes': 8923434, 'sha256':'f7db1705178644333d5c9d291afd1170e71fcddfd1f73021381e1224be824899'}],
++    'certificate_sha256':'c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8','require_v3':False}
+ PROVIDER={'package':'com.android.externalstorage','uid':10024,'version_code':37,'component':None,
+     'apks':[{'sha256':'50d1e6f2be950e049cdc898dd812c8e609f421cc167013d4ee2c795dcdc0e5ea'}],
+     'certificate_sha256':None,'require_v3':False}
+--- originals/documents-saf11-runtime-inputs-20261108-8b88-r2/documents_saf_core.py
++++ postimages/documents-saf11-runtime-inputs-20261108-8b88-r2/documents_saf_core.py
+@@ -245,7 +245,7 @@
+         self.result['installed_identity'] = self.installed
+ 
+     def packages(self, label):
+-        values = {DOCS: identity(self.s, DOCS, '757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086', 10022, 37), 'com.android.externalstorage': identity(self.s, 'com.android.externalstorage', '50d1e6f2be950e049cdc898dd812c8e609f421cc167013d4ee2c795dcdc0e5ea', 10024, 37)}
++        values = {DOCS: identity(self.s, DOCS, 'f7db1705178644333d5c9d291afd1170e71fcddfd1f73021381e1224be824899', 10022, 37), 'com.android.externalstorage': identity(self.s, 'com.android.externalstorage', '50d1e6f2be950e049cdc898dd812c8e609f421cc167013d4ee2c795dcdc0e5ea', 10024, 37)}
+         self.ui.record(label, values)
+         return values
+ 
+--- originals/documents-search-sort-runtime-inputs-20261108-8b88-r2/documents_package_fixture.py
++++ postimages/documents-search-sort-runtime-inputs-20261108-8b88-r2/documents_package_fixture.py
+@@ -143,7 +143,7 @@
+         self.result['installed_identity'] = self.installed
+ 
+     def packages(self, label):
+-        values = {DOCS: identity(self.s, DOCS, '757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086', 10022, 37), 'com.android.externalstorage': identity(self.s, 'com.android.externalstorage', '50d1e6f2be950e049cdc898dd812c8e609f421cc167013d4ee2c795dcdc0e5ea', 10024, 37)}
++        values = {DOCS: identity(self.s, DOCS, 'f7db1705178644333d5c9d291afd1170e71fcddfd1f73021381e1224be824899', 10022, 37), 'com.android.externalstorage': identity(self.s, 'com.android.externalstorage', '50d1e6f2be950e049cdc898dd812c8e609f421cc167013d4ee2c795dcdc0e5ea', 10024, 37)}
+         self.ui.record(label, values)
+         return values
+ 
+--- originals/documents-search-sort-runtime-inputs-20261108-8b88-r2/documents_profiles.py
++++ postimages/documents-search-sort-runtime-inputs-20261108-8b88-r2/documents_profiles.py
+@@ -1,7 +1,7 @@
+ """Original scoped inputs, never live authority or whole-app acceptance."""
+ DOCUMENTS={'package':'com.android.documentsui','uid':10022,'version_code':37,'component':None,
+-    'apks':[{'sha256':'757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086'}],
+-    'certificate_sha256':None,'require_v3':False}
++    'apks':[{'bytes': 8923434, 'sha256':'f7db1705178644333d5c9d291afd1170e71fcddfd1f73021381e1224be824899'}],
++    'certificate_sha256':'c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8','require_v3':False}
+ PROVIDER={'package':'com.android.externalstorage','uid':10024,'version_code':37,'component':None,
+     'apks':[{'sha256':'50d1e6f2be950e049cdc898dd812c8e609f421cc167013d4ee2c795dcdc0e5ea'}],
+     'certificate_sha256':None,'require_v3':False}
+--- originals/gallery-album-current-preparation-20261107-r6/video_entry.py
++++ postimages/gallery-album-current-preparation-20261107-r6/video_entry.py
+@@ -145,6 +145,7 @@
+ 
+ 
+ def main():
++    raise RuntimeError('CP3A_OFFICIAL_FULL_GSI_ONLY_OLD_MODIFIED_CANDIDATE_RUNTIME_ENTRY_RETIRED')
+     parser = argparse.ArgumentParser(description=__doc__)
+     parser.add_argument('--preparation', required=True); parser.add_argument('--expect-preparation-sha256', required=True)
+     parser.add_argument('mode', choices=('inspect', 'execute'), nargs='?', default='inspect')
+--- originals/gallery-new-runtime-preparation-20261107-r7/gallery_current_entry.py
++++ postimages/gallery-new-runtime-preparation-20261107-r7/gallery_current_entry.py
+@@ -197,6 +197,7 @@
+ 
+ 
+ def main():
++    raise RuntimeError('CP3A_OFFICIAL_FULL_GSI_ONLY_OLD_MODIFIED_CANDIDATE_RUNTIME_ENTRY_RETIRED')
+     parser = argparse.ArgumentParser(description=__doc__)
+     parser.add_argument('--preparation', required=True)
+     parser.add_argument('--expect-preparation-sha256', required=True)
+--- originals/gallery-new-runtime-preparation-20261107-r7/gallery_current_install.py
++++ postimages/gallery-new-runtime-preparation-20261107-r7/gallery_current_install.py
+@@ -18,6 +18,7 @@
+ 
+ 
+ def verify_art_receipt(common, reference, request, preparation_ref, support):
++    raise RuntimeError('CP3A_OFFICIAL_FULL_GSI_ONLY_OLD_MODIFIED_CANDIDATE_RUNTIME_ENTRY_RETIRED')
+     value = common.parse(common.read_ref(reference, 2 * 1024 * 1024))
+     need(value['schema'] == 'pocket4-gallery-qpr1-art-qualification-v2' and value['state'] == ART_STATE
+          and value['baseline'] == request['baseline'] and value['qualification'] == request['qualification']
+@@ -73,6 +74,7 @@
+ 
+ 
+ def execute(request, preparation_ref, root, common, originals, held_reader, support, closure_module):
++    raise RuntimeError('CP3A_OFFICIAL_FULL_GSI_ONLY_OLD_MODIFIED_CANDIDATE_RUNTIME_ENTRY_RETIRED')
+     result = {'schema': 'pocket4-gallery-current-install-v1', 'state': 'PREINSTALL_REJECTED_NO_DISPATCH',
+         'baseline': request['baseline'], 'qualification': request['qualification'],
+         'source_preparation': preparation_ref, 'current_art_qualification': request['art_qualification'],
+--- originals/gallery-new-runtime-preparation-20261107-r7/gallery_current_verify.py
++++ postimages/gallery-new-runtime-preparation-20261107-r7/gallery_current_verify.py
+@@ -88,6 +88,7 @@
+ 
+ 
+ def execute(request, preparation_ref, root, common, originals, held_reader, support, closure, parser):
++    raise RuntimeError('CP3A_OFFICIAL_FULL_GSI_ONLY_OLD_MODIFIED_CANDIDATE_RUNTIME_ENTRY_RETIRED')
+     result = {'schema': 'pocket4-gallery-qpr1-art-qualification-v2', 'state': 'FAILED',
+         'baseline': request['baseline'], 'qualification': request['qualification'],
+         'source_preparation': preparation_ref, 'candidate_sha256': support.APK_SHA,
+--- originals/gallery-rotation-current-preparation-20261107-r7/gallery_rotation_entry.py
++++ postimages/gallery-rotation-current-preparation-20261107-r7/gallery_rotation_entry.py
+@@ -140,6 +140,7 @@
+ 
+ 
+ def main():
++    raise RuntimeError('CP3A_OFFICIAL_FULL_GSI_ONLY_OLD_MODIFIED_CANDIDATE_RUNTIME_ENTRY_RETIRED')
+     parser = argparse.ArgumentParser(description=__doc__)
+     parser.add_argument('--preparation', required=True); parser.add_argument('--expect-preparation-sha256', required=True)
+     parser.add_argument('mode', choices=('inspect', 'execute'), nargs='?', default='inspect')
+--- originals/ihg-5.111.1-r1/app_profiles.py
++++ postimages/ihg-5.111.1-r1/app_profiles.py
+@@ -2,7 +2,7 @@
+ 
+ CLOCK = {'package': 'com.android.deskclock', 'uid': 10063, 'version_code': 37,
+     'component': 'com.android.deskclock/.DeskClock',
+-    'apks': [{'bytes': 7597225, 'sha256': '433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d'}],
++    'apks': [{'bytes': 7665498, 'sha256': '9f24ea5fa57bca4a453556ab7cb44fbad1813cb3d15292a8e572cfb40fff7a77'}],
+     'certificate_sha256': 'a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc',
+     'require_v3': True}
+ CLOCK_HELPER = {'package': 'local.pocket4.actions.v2', 'uid': 10125, 'version_code': None,
+--- originals/ihg-5.111.1-r1/clock_guard.py
++++ postimages/ihg-5.111.1-r1/clock_guard.py
+@@ -31,7 +31,7 @@
+     common.need(value['package'] == PACKAGE and value['epoch_sha256'] == plan['framework_epoch_sha256']
+         and value['timer_and_stopwatch_empty'] is True and value['notification_appop_allow'] is True
+         and value['alarm_content_sha256'] == preservation.ALARM_SHA
+-        and value['apk']['bytes'] == 7597225 and value['apk']['sha256'] == plan['target_profile']['apks'][0]['sha256'],
++        and value['apk']['bytes'] == 7665498 and value['apk']['sha256'] == plan['target_profile']['apks'][0]['sha256'],
+         'ACTUAL_ORIGINAL_CLOCK_PROTECTION_PREIMAGE_REQUIRED')
+     preservation.verify_before(value['alarm_state'])
+     common.need(preservation.baseline_ids(value['alarm_state']) == {1, 2}, 'ORIGINAL_TWO_ALARM_TEMPLATES_REQUIRED')
+--- originals/ihg-5.111.1-r1/clock_protection.py
++++ postimages/ihg-5.111.1-r1/clock_protection.py
+@@ -123,8 +123,8 @@
+         first_command = len(self.commands)
+         identity = self.identity(); guest = self.identity_receipt['artifacts'][0]['guest_path']
+         data, _ = self.target.read_file(guest, 16 * 1024 * 1024)
+-        self.c.need(len(data) == 7597225 and self.c.sha(data) ==
+-            '433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d', 'ORIGINAL_CLOCK_APK_CHANGED')
++        self.c.need(len(data) == 7665498 and self.c.sha(data) ==
++            '9f24ea5fa57bca4a453556ab7cb44fbad1813cb3d15292a8e572cfb40fff7a77', 'ORIGINAL_CLOCK_APK_CHANGED')
+         directories = {}
+         for key, path in (('ce', '/data/user/0/' + PACKAGE), ('de', '/data/user_de/0/' + PACKAGE)):
+             fd = self.target.open_root(path, os.O_PATH | os.O_DIRECTORY | os.O_NOFOLLOW)

@@ -1,0 +1,36 @@
+{
+  "schema": "p4-cp3a-provider-metadata-observation-v1",
+  "scope": "bounded existing metadata only; absence outside these listed directories is not asserted",
+  "Android_actions": 0,
+  "APK_bodies_read": 0,
+  "provider_APK_source_receipts_qualified_here": 0,
+  "observed_roots": [
+    "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/official-gsi",
+    "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r1/receipts",
+    "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/receipts"
+  ],
+  "required_provider_packages": [
+    "com.android.providers.calendar",
+    "com.android.providers.contacts",
+    "com.android.externalstorage",
+    "com.android.providers.media.module"
+  ],
+  "observed_system_required_receipt_packages": [
+    "com.android.calendar",
+    "com.android.camera2",
+    "com.android.contacts",
+    "com.android.deskclock",
+    "com.android.dialer",
+    "com.android.documentsui",
+    "com.android.gallery3d",
+    "com.android.messaging",
+    "com.android.quicksearchbox",
+    "com.android.settings"
+  ],
+  "capex_reference_is_not_inner_APK_identity": {
+    "path": "/system/apex/com.android.mediaprovider.capex",
+    "bytes": 17256448,
+    "sha256": "a15084a3dcf7eca1fa0344625226b4600c3020cce3bdda9749bcb77d76c7ad95"
+  },
+  "all_current_provider_APK_pins": null
+}

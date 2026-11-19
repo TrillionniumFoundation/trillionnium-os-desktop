@@ -1,0 +1,219 @@
+{
+  "Android_calls": 0,
+  "business_plan_r2": {
+    "bytes": 127403,
+    "path": "/workspace/scratch/11ea999c19b6/p4-required39-business-preflight-11ea-20261119-r2/PLAN.json",
+    "sha256": "648559a6623a530d0c6ddf95662a2476c6fa50b90cebc7ed3d8ea99d93e48b43"
+  },
+  "exemptions": [
+    {
+      "package": "com.enflick.android.TextNow",
+      "reason": "Explicit user exclusion on 2026-11-18: complete official compatible APK unavailable.",
+      "status": "exempt_unverified"
+    },
+    {
+      "package": "com.pinger.textfree",
+      "reason": "Explicit user exclusion on 2026-11-18: complete official compatible APK unavailable.",
+      "status": "exempt_unverified"
+    },
+    {
+      "package": "com.ubercab",
+      "reason": "Explicit user exclusion on 2026-11-18: complete official compatible APK unavailable.",
+      "status": "exempt_unverified"
+    }
+  ],
+  "new_APK_body_reads": 0,
+  "new_SDK_commands": 0,
+  "old_plan_modified": false,
+  "previous_actual_runtime_bindings": {
+    "Android_user": null,
+    "Main_identity": null,
+    "UID": null,
+    "UI_selectors": null,
+    "actual_engine_mapping": null,
+    "framework_epoch": null,
+    "helper_custody": null,
+    "installed_APK_identity": null,
+    "owned_task_and_fixture": null
+  },
+  "previous_additive_checklist": {
+    "business_qualified": false,
+    "driver_implemented": false,
+    "execution_authorized": false,
+    "execution_ready": false,
+    "forbidden": [
+      "download",
+      "login",
+      "form_submit",
+      "message_send",
+      "payment",
+      "purchase",
+      "user_history_read",
+      "user_tab_enumeration",
+      "clear_data",
+      "force_stop"
+    ],
+    "origin": "ADDITIVE_REVIEWABLE_CHECKLIST_ORIGINAL_CANONICAL45_UNCHANGED",
+    "package": "org.mozilla.firefox",
+    "pages": {
+      "history": {
+        "heading": "History of the Mozilla Project",
+        "url": "https://www.mozilla.org/en-US/about/history/"
+      },
+      "manifesto": {
+        "heading": "The Mozilla Manifesto",
+        "url": "https://www.mozilla.org/en-US/about/manifesto/"
+      }
+    },
+    "remaining": [
+      "Implement and independently review a source-bound UI executor",
+      "Resolve Main/UID/user/epoch/helper and owned-session admissions",
+      "Observe actual rendering/input/reopen behavior",
+      "Run canonical common stability, data-preservation and release-review gates"
+    ],
+    "steps": [
+      {
+        "action": "Resolve current Main/UID/user/epoch and verified Firefox payload; create a controlled owned test session without opening existing tabs or history.",
+        "id": "admit_owned_session",
+        "required_observation": "Record owned task/tab identifiers and review source-bound UI controls; otherwise stop.",
+        "status": "NOT_EXECUTED"
+      },
+      {
+        "action": "Enter the exact Mozilla Manifesto HTTPS URL in the owned tab.",
+        "id": "open_manifesto",
+        "required_observation": "Observe the exact final URL, normal HTTPS page and visible The Mozilla Manifesto heading; retain owned-page evidence.",
+        "status": "NOT_EXECUTED"
+      },
+      {
+        "action": "Navigate the same owned tab to the exact Mozilla History URL.",
+        "id": "open_history_same_tab",
+        "required_observation": "Observe the exact final URL and visible History of the Mozilla Project heading.",
+        "status": "NOT_EXECUTED"
+      },
+      {
+        "action": "Use the browser Back control exactly once.",
+        "id": "back",
+        "required_observation": "The same owned tab returns to the exact Manifesto URL and heading.",
+        "status": "NOT_EXECUTED"
+      },
+      {
+        "action": "Use the browser Forward control exactly once.",
+        "id": "forward",
+        "required_observation": "The same owned tab returns to the exact History URL and heading.",
+        "status": "NOT_EXECUTED"
+      },
+      {
+        "action": "Open a new owned tab and navigate only to the Manifesto URL.",
+        "id": "open_second_owned_tab",
+        "required_observation": "Exactly two test-owned tabs exist; the second has the exact Manifesto URL and heading. Do not enumerate user tabs.",
+        "status": "NOT_EXECUTED"
+      },
+      {
+        "action": "Close only the second test-owned tab using its recorded identity.",
+        "id": "close_second_owned_tab",
+        "required_observation": "Exactly one test-owned tab remains, showing the prior History page. Existing user tabs are unchanged.",
+        "status": "NOT_EXECUTED"
+      },
+      {
+        "action": "Normally close only the admitted test-owned Firefox task, preserving its controlled test state.",
+        "id": "normal_close_owned_task",
+        "required_observation": "Observe that exact owned task closing; no force-stop, clear-data or unrelated task action.",
+        "status": "NOT_EXECUTED"
+      },
+      {
+        "action": "Reopen the controlled Firefox test session as a separate launch.",
+        "id": "independent_reopen_owned_task",
+        "required_observation": "Bind the new owned task and observe the expected public page/state without reading user history; any restore mismatch remains a failure.",
+        "status": "NOT_EXECUTED"
+      },
+      {
+        "action": "Close only recorded test-owned tabs/tasks and remove only explicit owned fixtures.",
+        "id": "owned_cleanup",
+        "required_observation": "Retain success/failure evidence and show pre-existing task/data boundaries unchanged; otherwise do not claim completion.",
+        "status": "NOT_EXECUTED"
+      }
+    ],
+    "whole_app_business_accepted": false
+  },
+  "production_ready": false,
+  "registry": {
+    "bytes": 111728,
+    "path": "/workspace/scratch/11ea999c19b6/p4-required39-business-preflight-11ea-20261119-r2/inputs/current-source-inputs.json",
+    "sha256": "5d14f8af912f57e9c93290fa9aa3c62a686b57d82f3aa964beb5860b452df9ab"
+  },
+  "release_scope": {
+    "bytes": 2397,
+    "path": "/workspace/scratch/11ea999c19b6/p4-required39-business-preflight-11ea-20261119-r2/inputs/release-scope.json",
+    "sha256": "7d3715d360abbdadf3206406c331d575eed4020040d7963c182af9bad85bf24d"
+  },
+  "required_count": 39,
+  "runtime_qualified": false,
+  "schema": "p4-firefox-fixed-source-binding-v1",
+  "selected_count": 42,
+  "selected_source": {
+    "business_qualified": false,
+    "installed": false,
+    "kind": "third_party",
+    "latest_qualified_at_merge_time": false,
+    "native_compatibility_qualified": false,
+    "package": "org.mozilla.firefox",
+    "production_ready": false,
+    "runtime_qualified": false,
+    "source_identity_verified": true,
+    "unchanged_current_registry_record": {
+      "archive": "Pocket4_Current_Apps_Firefox_Fcitx.zip",
+      "business_qualified": false,
+      "input": {
+        "bytes": 140689915,
+        "member": "packages/org.mozilla.firefox/base.apk",
+        "sha256": "283b19f8313e8ce6e8a913bb178ce4a79c5cecd82c49f821de7fafb068c73fcd"
+      },
+      "installed": false,
+      "label": "firefox",
+      "native_compatibility_qualified": false,
+      "package": "org.mozilla.firefox",
+      "production_ready": false,
+      "proofs": {
+        "candidate.json": {
+          "bytes": 1046,
+          "member": "packages/org.mozilla.firefox/candidate.json",
+          "sha256": "6374df29a903904b8e9793d59cc96221d573cab35047382f1ad182b0c0db34cb"
+        },
+        "command.json": {
+          "bytes": 6220,
+          "member": "packages/org.mozilla.firefox/command.json",
+          "sha256": "4675ef92dade18efa0cee5960a2a8ff7a68216f0c32e1aea3e4ae9ecf1d64083"
+        },
+        "native-input.json": {
+          "bytes": 943,
+          "member": "packages/org.mozilla.firefox/native-input.json",
+          "sha256": "be6bb853994ab5c8366b581b0ce62b51670f8a25dca3981fbbce922c6402a208"
+        },
+        "source-receipt.json": {
+          "bytes": 5957,
+          "member": "packages/org.mozilla.firefox/source-receipt.json",
+          "sha256": "a59d0c2ed42092781841367ca4187f9e740422b2dca4f06bc272af2adeebaa83"
+        },
+        "stderr.txt": {
+          "bytes": 0,
+          "member": "packages/org.mozilla.firefox/stderr.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "required39_member": true,
+      "retained_dependency_outside_required39": false,
+      "runtime_qualified": false,
+      "signature_verified": true,
+      "source_identity_verified": true,
+      "source_receipt_origin": "previous actual SDK verification preserved byte-for-byte",
+      "version_code": 2016196678,
+      "version_name": "160.0.1"
+    }
+  },
+  "source_state": {
+    "bytes": 157891,
+    "path": "/workspace/scratch/11ea999c19b6/p4-required39-business-preflight-11ea-20261119-r2/inputs/CURRENT-SOURCE-STATE.json",
+    "sha256": "4d25fc0aafd5668cc3f0c31be157bc617732902976aad821333a02de84ff9bf7"
+  },
+  "source_state_modified": false
+}

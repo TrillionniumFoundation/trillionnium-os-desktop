@@ -1,0 +1,111 @@
+{
+  "VM_invocations": 0,
+  "admission": {
+    "affinity": [
+      22,
+      23
+    ],
+    "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/p4-kernel-native-exit-vm260-binding-11ea-20261119-r3.service",
+    "limits": {
+      "cpu.max": "200000 100000",
+      "memory.high": "2684354560",
+      "memory.max": "3221225472",
+      "memory.swap.max": "0",
+      "pids.max": "128"
+    },
+    "original_capture_F9": [
+      66306,
+      61122450,
+      33152,
+      1000,
+      1000,
+      1,
+      729,
+      1795071836628164480,
+      1795071836628164480
+    ],
+    "pid": 2316500
+  },
+  "compiler_invocations": 0,
+  "error": "BindingError('complete generated autoconf does not match actual full config')",
+  "finished_ns": 1795071968591627432,
+  "inputs_before": [
+    {
+      "bytes": 21307,
+      "identity": [
+        66306,
+        61122447,
+        33152,
+        1000,
+        1000,
+        1,
+        21307,
+        1795071836626164553,
+        1795071836626164553
+      ],
+      "path": "/home/qq/work/p4-native-exit-vm260-binding-evidence-11ea-20261119-r3/inputs/run_binding.py",
+      "sha256": "3787c6057491ea870f5366bc01e63b893e12490206164684562da4bec743c5a6"
+    },
+    {
+      "bytes": 45685,
+      "identity": [
+        66306,
+        61122448,
+        33152,
+        1000,
+        1000,
+        1,
+        45685,
+        1795071836627164516,
+        1795071836627164516
+      ],
+      "path": "/home/qq/work/p4-native-exit-vm260-binding-evidence-11ea-20261119-r3/inputs/bind_full.py",
+      "sha256": "45b7b7946f7935d2c7355303fc40d45b0bc80d7f28ff22182d815d62fc5e4f80"
+    },
+    {
+      "bytes": 15046,
+      "identity": [
+        66306,
+        61122449,
+        33152,
+        1000,
+        1000,
+        1,
+        15046,
+        1795071836628164480,
+        1795071836628164480
+      ],
+      "path": "/home/qq/work/p4-native-exit-vm260-binding-evidence-11ea-20261119-r3/inputs/KNOWN-INPUTS.json",
+      "sha256": "de0d4ab915bf6691283e4f0eb8090387cc446330ae9a385ff55339d5d17129b8"
+    },
+    {
+      "bytes": 729,
+      "identity": [
+        66306,
+        61122450,
+        33152,
+        1000,
+        1000,
+        1,
+        729,
+        1795071836628164480,
+        1795071836628164480
+      ],
+      "path": "/home/qq/work/p4-native-exit-vm260-binding-evidence-11ea-20261119-r3/full-durable-terminal.json",
+      "sha256": "f7daec1be6bdebd7f2c72aaaf385b8a8503474fde07403b5ff5194e5a04ac857"
+    }
+  ],
+  "invocation_id": "6ad603b0f9ef4b7ab6cc42344d590641",
+  "native_exit_abi_qualified": false,
+  "production_android_runtime_qualified": false,
+  "resource_admission": {
+    "disk_free": 117034905600,
+    "memory_available": 44569575424,
+    "minimum_disk_GiB": 32,
+    "minimum_memory_GiB": 15,
+    "observed_ns": 1795071930073155649
+  },
+  "schema": "p4-vm260-full-binding-worker-11ea-v1",
+  "started_ns": 1795071930072986425,
+  "state": "FAILED"
+}

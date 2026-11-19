@@ -1,0 +1,1722 @@
+{
+  "schema": "pocket4-required39-business-source-coverage-audit-v1",
+  "created_utc": "2026-11-19T05:15:39Z",
+  "scope": "Read-only source/metadata coverage; no Android, runtime import, user data or credentials accessed",
+  "source_state": {
+    "path": "/home/alex/work/p4-beike-current-arm64-11ea-20261119-r1/source-state-successor-r1/CURRENT-SOURCE-STATE.json",
+    "bytes": 157891,
+    "sha256": "4d25fc0aafd5668cc3f0c31be157bc617732902976aad821333a02de84ff9bf7"
+  },
+  "canonical_gates": {
+    "path": "/home/alex/work/pocket4-cp13-canonical-app-gates-20261106-r12-01.json",
+    "bytes": 24135,
+    "sha256": "441289f9c04b46f38e1dd6e19f23ec6e4c6729b6a6f814cab81c0ae6fbbb1e78"
+  },
+  "selector": {
+    "path": "/home/alex/work/p4-app-acceptance-preboot-11ea-20261119-r1/ihg-5.111.1-r1/selection-13.json",
+    "bytes": 14314,
+    "sha256": "9c5c77c387711dac2f7387a880932e40f0148939feca2a6348daa939587f9598"
+  },
+  "counts": {
+    "required_packages": 39,
+    "system_packages": 10,
+    "non_system_packages": 29,
+    "prepared_finite_case_packages": 7,
+    "prepared_finite_case_system_packages": 6,
+    "prepared_finite_case_non_system_packages": 1,
+    "packages_without_selected_business_executor": 32,
+    "canonical_required_package_matches": 38,
+    "missing_canonical_package_count": 1,
+    "verified_target_APK_profile_mismatches": 5,
+    "actual_runtime_acceptances": 0,
+    "execution_ready": 0
+  },
+  "common_gates": {
+    "identity": "Bind the exact installed APK SHA-256/signing identity, UID, Android user, version, framework epoch and actual per-App engine mapping.",
+    "lifecycle": "Prove owned-task normal close and separate reopen; retain the required state and exclude pre-existing tasks.",
+    "stability": "Run the reviewed repeat/soak budget with fresh exact-UID crash/ANR/exit evidence and resource/epoch fences; unexplained self-exit is not a pass.",
+    "data_permissions": "Preserve existing data, permissions and accounts; verify intended test-state persistence and cleanup only owned fixtures.",
+    "release_scope": "Review the complete supported feature checklist, dependencies and failure paths; reconcile retained failures and explicitly accept the whole App release.",
+    "ui_observation": "Verify the correct owned foreground window, usable visual/native controls and exact input readback. A tool observation failure alone does not prove an App crash."
+  },
+  "excluded_packages": [
+    {
+      "package": "com.enflick.android.TextNow",
+      "reason": "Explicit user exclusion on 2026-11-18: complete official compatible APK unavailable.",
+      "status": "exempt_unverified"
+    },
+    {
+      "package": "com.pinger.textfree",
+      "reason": "Explicit user exclusion on 2026-11-18: complete official compatible APK unavailable.",
+      "status": "exempt_unverified"
+    },
+    {
+      "package": "com.ubercab",
+      "reason": "Explicit user exclusion on 2026-11-18: complete official compatible APK unavailable.",
+      "status": "exempt_unverified"
+    }
+  ],
+  "rows": [
+    {
+      "package": "com.Hyatt.hyt",
+      "name": "Hyatt",
+      "kind": "third_party",
+      "source_version": "26.11.1",
+      "source_version_code": 26111078,
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "hotel",
+      "canonical_gate_ids": [
+        "hotel.query",
+        "hotel.details",
+        "hotel.return",
+        "hotel.account"
+      ],
+      "canonical_prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.MobileTicket",
+      "name": "12306",
+      "kind": "third_party",
+      "source_version": "5.9.6.8",
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "train",
+      "canonical_gate_ids": [
+        "train.query",
+        "train.details",
+        "train.return",
+        "train.account"
+      ],
+      "canonical_prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.amazon.mShop.android.shopping",
+      "name": "Amazon",
+      "kind": "third_party",
+      "source_version": "32.20.2.100",
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "retail",
+      "canonical_gate_ids": [
+        "retail.search",
+        "retail.detail",
+        "retail.navigation",
+        "retail.account"
+      ],
+      "canonical_prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.android.calendar",
+      "name": "Calendar",
+      "kind": "system",
+      "source_version": "17",
+      "source_version_code": 37,
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "calendar",
+      "canonical_gate_ids": [
+        "calendar.edit",
+        "calendar.persist",
+        "calendar.reminder",
+        "calendar.sync"
+      ],
+      "canonical_prerequisites": [],
+      "selected_preparation_indices": [
+        0,
+        1
+      ],
+      "selected_preparation_refs": [
+        {
+          "bytes": 11067,
+          "path": "/home/alex/work/pocket4-android-final/qualification/business-system-cases-runtime-inputs-20261108-8b88-r2/preparation.json",
+          "sha256": "8da1f9c0adfde0652758ba111fc66fe23be81c268e83f1897d5ac0a03afda4ae"
+        },
+        {
+          "bytes": 10413,
+          "path": "/home/alex/work/pocket4-android-final/qualification/calendar-reminder-runtime-inputs-20261108-8b88-r2/preparation.json",
+          "sha256": "e36435f20f98816c49294cf139c99cd55ed5514e2009704a2e72eb14661b8c58"
+        }
+      ],
+      "existing_implemented_scopes": [
+        "calendar_core (Core21)",
+        "calendar_reminder (Reminder22)"
+      ],
+      "implementation_class": "LIMITED_CASE_SOURCE_PREPARED_RUNTIME_UNQUALIFIED",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Owned local event core lifecycle and natural notification/UI-delete case; account/sync and whole-App gates remain.",
+      "remaining": [
+        "Current GSI target and CalendarProvider source/identity rebind",
+        "Fresh Main/UID/helper/data-preservation admission",
+        "Actual event/reminder evidence; supported recurrence/sync/denied-permission paths",
+        "Common stability/soak and whole-App release review"
+      ],
+      "execution_ready": false,
+      "system_image_only": {
+        "individual_APK_install_authorized": false,
+        "current_apk": {
+          "bytes": 2520846,
+          "sha256": "726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e",
+          "image_path": "/system/product/app/Calendar/Calendar.apk"
+        },
+        "source_receipt": {
+          "bytes": 238232,
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/receipts/com.android.calendar.json",
+          "sha256": "8c5bd82c3af585435083598f6ac183f42482ad413741519ce82358fdd19848c8"
+        }
+      },
+      "target_profile_mismatch": {
+        "old_sha256": "c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1",
+        "old_bytes": 2635213,
+        "current_sha256": "726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e",
+        "current_bytes": 2520846,
+        "status": "REQUIRES_REVIEWED_SOURCE_AND_COHERENT_GSI_REBIND_NOT_LITERAL_BYPASS"
+      }
+    },
+    {
+      "package": "com.android.camera2",
+      "name": "Camera",
+      "kind": "system",
+      "source_version": "2.0.002",
+      "source_version_code": 20002000,
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "camera",
+      "canonical_gate_ids": [
+        "camera.preview",
+        "camera.photo",
+        "camera.persist",
+        "camera.video",
+        "camera.recovery"
+      ],
+      "canonical_prerequisites": [],
+      "selected_preparation_indices": [
+        2,
+        3
+      ],
+      "selected_preparation_refs": [
+        {
+          "bytes": 22598,
+          "path": "/home/alex/work/pocket4-android-final/qualification/camera-app-photo-preparation-resume-20261107-r4/preparation.json",
+          "sha256": "2279201a341ee941e7d733763ef17b9ab7e739d6aa2e2c03692de9bd9cc7cb32"
+        },
+        {
+          "bytes": 6152,
+          "path": "/home/alex/work/pocket4-android-final/qualification/camera-photo-display-preparation-resume-20261107-r4/preparation.json",
+          "sha256": "bc90ee546748dc5405ce4f0a354b4e5eb5d44af416dd041009f5af73e5f6b468"
+        }
+      ],
+      "existing_implemented_scopes": [
+        "one-photo persistence",
+        "photo display lease wrapper"
+      ],
+      "implementation_class": "LIMITED_CASE_SOURCE_PREPARED_RUNTIME_UNQUALIFIED",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "One owned photo, two normal launches and persistence; display restoration wrapper; independent visual review remains.",
+      "remaining": [
+        "Current GSI APK rebind",
+        "Replace/review old CP2A MediaProvider binding against coherent current GSI",
+        "Fresh physical camera/provider/Main identity and owned-pixel review",
+        "Video/audio/playback/recovery case preparation",
+        "Common stability/soak and whole-App release review"
+      ],
+      "execution_ready": false,
+      "system_image_only": {
+        "individual_APK_install_authorized": false,
+        "current_apk": {
+          "bytes": 7709134,
+          "sha256": "24632b0e1a1c22741177583b0dfd4a3fa71ff9b1d1b72af60a3d7cf373c7e61f",
+          "image_path": "/system/product/app/Camera2/Camera2.apk"
+        },
+        "source_receipt": {
+          "bytes": 362247,
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/receipts/com.android.camera2.json",
+          "sha256": "fcfb21bda5f136e2652d05a605961abcefb8fcc0adb580ecbf260b0bc50452f1"
+        }
+      },
+      "target_profile_mismatch": {
+        "old_sha256": "0218041bc46f49c0c9622196e2a3610c641e0cc8f12386f23cdd88dc3a3ce18e",
+        "old_bytes": 11892407,
+        "current_sha256": "24632b0e1a1c22741177583b0dfd4a3fa71ff9b1d1b72af60a3d7cf373c7e61f",
+        "current_bytes": 7709134,
+        "status": "REQUIRES_REVIEWED_SOURCE_AND_COHERENT_GSI_REBIND_NOT_LITERAL_BYPASS"
+      }
+    },
+    {
+      "package": "com.android.contacts",
+      "name": "Contacts",
+      "kind": "system",
+      "source_version": "1.7.34",
+      "source_version_code": 10734,
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "contacts",
+      "canonical_gate_ids": [
+        "contacts.edit",
+        "contacts.persist",
+        "contacts.cleanup",
+        "contacts.sync"
+      ],
+      "canonical_prerequisites": [],
+      "selected_preparation_indices": [
+        0
+      ],
+      "selected_preparation_refs": [
+        {
+          "bytes": 11067,
+          "path": "/home/alex/work/pocket4-android-final/qualification/business-system-cases-runtime-inputs-20261108-8b88-r2/preparation.json",
+          "sha256": "8da1f9c0adfde0652758ba111fc66fe23be81c268e83f1897d5ac0a03afda4ae"
+        }
+      ],
+      "existing_implemented_scopes": [
+        "contacts_search (Search03)"
+      ],
+      "implementation_class": "LIMITED_CASE_SOURCE_PREPARED_RUNTIME_UNQUALIFIED",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Owned contact creation/edit, search/reopen and exact UI deletion with preserved unrelated state.",
+      "remaining": [
+        "Current GSI target and ContactsProvider source/identity rebind",
+        "Fresh Main/UID/helper admission",
+        "Actual scoped flow and supported sync/permission paths",
+        "Common stability/soak and whole-App release review"
+      ],
+      "execution_ready": false,
+      "system_image_only": {
+        "individual_APK_install_authorized": false,
+        "current_apk": {
+          "bytes": 11896473,
+          "sha256": "f91e45e89b3a302198c9269a60bb07387150c0f40def95feb873b765520ae028",
+          "image_path": "/system/product/priv-app/Contacts/Contacts.apk"
+        },
+        "source_receipt": {
+          "bytes": 940530,
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/receipts/com.android.contacts.json",
+          "sha256": "8823e1c3b686c407e8ce79415d88fddd19fafa340956be0a70212f248b083083"
+        }
+      },
+      "target_profile_mismatch": {
+        "old_sha256": "11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0",
+        "old_bytes": 11839391,
+        "current_sha256": "f91e45e89b3a302198c9269a60bb07387150c0f40def95feb873b765520ae028",
+        "current_bytes": 11896473,
+        "status": "REQUIRES_REVIEWED_SOURCE_AND_COHERENT_GSI_REBIND_NOT_LITERAL_BYPASS"
+      }
+    },
+    {
+      "package": "com.android.deskclock",
+      "name": "DeskClock",
+      "kind": "system",
+      "source_version": "17",
+      "source_version_code": 37,
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "clock",
+      "canonical_gate_ids": [
+        "clock.alarm",
+        "clock.timer",
+        "clock.persist"
+      ],
+      "canonical_prerequisites": [],
+      "selected_preparation_indices": [
+        4,
+        5
+      ],
+      "selected_preparation_refs": [
+        {
+          "bytes": 8281,
+          "path": "/home/alex/work/pocket4-android-final/qualification/clock-remaining-runtime-inputs-20261108-8b88-r2/preparation.json",
+          "sha256": "ba10fb358748971e9ffb811a87f26c281a4b0d2e7283667b344638e92efacbd1"
+        },
+        {
+          "bytes": 12360,
+          "path": "/home/alex/work/p4-app-acceptance-preboot-11ea-20261119-r1/ihg-5.111.1-r1/preparation.json",
+          "sha256": "5ce3547d63262341d8356120590e96a6876a90e95470ae82dc94962db5cbc24a"
+        }
+      ],
+      "existing_implemented_scopes": [
+        "clock_timer (reviewed Timer15 readback successor)",
+        "expiry06",
+        "alarm04"
+      ],
+      "implementation_class": "LIMITED_CASE_SOURCE_PREPARED_RUNTIME_UNQUALIFIED",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Timer create/pause/reopen/resume/reset/delete; separate natural expiry/notification/stop and owned alarm firing/dismiss/reopen/delete source cases.",
+      "remaining": [
+        "Current GSI DeskClock identity/source rebind",
+        "Fresh Main/UID/helper/notification and protected-state admission",
+        "Actual source-bound alarm/timer/sound delivery; independent scheduler-cancellation review",
+        "Common continuous observation/soak and whole-App release review"
+      ],
+      "execution_ready": false,
+      "system_image_only": {
+        "individual_APK_install_authorized": false,
+        "current_apk": {
+          "bytes": 7665498,
+          "sha256": "9f24ea5fa57bca4a453556ab7cb44fbad1813cb3d15292a8e572cfb40fff7a77",
+          "image_path": "/system/product/app/DeskClock/DeskClock.apk"
+        },
+        "source_receipt": {
+          "bytes": 463562,
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/receipts/com.android.deskclock.json",
+          "sha256": "27fb293c22c16cc3d3cfd3d936a21555b20ee48d9fdf020d79a8bc98e52f08d5"
+        }
+      },
+      "target_profile_mismatch": {
+        "old_sha256": "433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d",
+        "old_bytes": 7597225,
+        "current_sha256": "9f24ea5fa57bca4a453556ab7cb44fbad1813cb3d15292a8e572cfb40fff7a77",
+        "current_bytes": 7665498,
+        "status": "REQUIRES_REVIEWED_SOURCE_AND_COHERENT_GSI_REBIND_NOT_LITERAL_BYPASS"
+      }
+    },
+    {
+      "package": "com.android.dialer",
+      "name": "Dialer",
+      "kind": "system",
+      "source_version": "23.0",
+      "source_version_code": 2900000,
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "dialer",
+      "canonical_gate_ids": [
+        "dialer.ui",
+        "dialer.call",
+        "dialer.history"
+      ],
+      "canonical_prerequisites": [
+        "No outbound message or call until an explicit authorized test recipient/endpoint is available."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false,
+      "system_image_only": {
+        "individual_APK_install_authorized": false,
+        "current_apk": {
+          "bytes": 11693449,
+          "sha256": "672ac9afb8cc4a2a9003245c58e1632114f03eca5240703a0011c9c52a594455",
+          "image_path": "/system/product/priv-app/Dialer/Dialer.apk"
+        },
+        "source_receipt": {
+          "bytes": 1058825,
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/receipts/com.android.dialer.json",
+          "sha256": "37ef451c850f52294fcc800ee8416ea52a006257855b0bc0df41d0312e921e68"
+        }
+      }
+    },
+    {
+      "package": "com.android.documentsui",
+      "name": "DocumentsUI",
+      "kind": "system",
+      "source_version": "17",
+      "source_version_code": 37,
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "documents",
+      "canonical_gate_ids": [
+        "documents.io",
+        "documents.provider",
+        "documents.persist"
+      ],
+      "canonical_prerequisites": [],
+      "selected_preparation_indices": [
+        6,
+        7
+      ],
+      "selected_preparation_refs": [
+        {
+          "bytes": 9051,
+          "path": "/home/alex/work/pocket4-android-final/qualification/documents-saf11-runtime-inputs-20261108-8b88-r2/preparation.json",
+          "sha256": "5091889ab9bfef3844f9ba4bdc947d9b12ca27c730ec3a720e13680838a5d9ab"
+        },
+        {
+          "bytes": 9795,
+          "path": "/home/alex/work/pocket4-android-final/qualification/documents-search-sort-runtime-inputs-20261108-8b88-r2/preparation.json",
+          "sha256": "fbee67c105e89920643d15a8f9b6de2b5bd423f6548fcead14aab85fbe6ca7ee"
+        }
+      ],
+      "existing_implemented_scopes": [
+        "SAF11 nine gates",
+        "Features10 plus owned search/sort fourteen gates"
+      ],
+      "implementation_class": "LIMITED_CASE_SOURCE_PREPARED_RUNTIME_UNQUALIFIED",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Owned files and URI/grant lifecycle; UI create/rename/copy/move/delete, cancel, revoke denial, search/sort and close/reopen; exact helper cleanup.",
+      "remaining": [
+        "Current GSI DocumentsUI and ExternalStorageProvider binding",
+        "Fresh Main/UID/generated-helper and owned-fixture admission",
+        "Actual nine SAF plus fourteen feature/search/sort gates and cleanup",
+        "Common continuous observation/soak and whole-App release review"
+      ],
+      "execution_ready": false,
+      "system_image_only": {
+        "individual_APK_install_authorized": false,
+        "current_apk": {
+          "bytes": 8923434,
+          "sha256": "f7db1705178644333d5c9d291afd1170e71fcddfd1f73021381e1224be824899",
+          "image_path": "/system/priv-app/DocumentsUI/DocumentsUI.apk"
+        },
+        "source_receipt": {
+          "bytes": 415704,
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/receipts/com.android.documentsui.json",
+          "sha256": "899491cb2766cd591ed0e3ad2b67a542907793ac354efac2ca2ba7672baf7401"
+        }
+      },
+      "target_profile_mismatch": {
+        "old_sha256": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+        "old_bytes": null,
+        "current_sha256": "f7db1705178644333d5c9d291afd1170e71fcddfd1f73021381e1224be824899",
+        "current_bytes": 8923434,
+        "status": "REQUIRES_REVIEWED_SOURCE_AND_COHERENT_GSI_REBIND_NOT_LITERAL_BYPASS"
+      }
+    },
+    {
+      "package": "com.android.gallery3d",
+      "name": "Gallery",
+      "kind": "system",
+      "source_version": "1.1.40030",
+      "source_version_code": 40030,
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "gallery",
+      "canonical_gate_ids": [
+        "gallery.enumeration",
+        "gallery.open",
+        "gallery.persist"
+      ],
+      "canonical_prerequisites": [],
+      "selected_preparation_indices": [
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "selected_preparation_refs": [
+        {
+          "bytes": 8898,
+          "path": "/home/alex/work/pocket4-android-final/qualification/gallery-new-runtime-preparation-20261107-r7/preparation.json",
+          "sha256": "dc50b4a6abb81c6c203cf1eca2de8f62d7c350bd35cbb0f6bff2725aa4f3cb18"
+        },
+        {
+          "bytes": 10488,
+          "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-current-preparation-20261107-r7/preparation.json",
+          "sha256": "41d16fa49e5bec646824ba2308037d975076008adb4740b7ee773b6c5f9907ac"
+        },
+        {
+          "bytes": 13247,
+          "path": "/home/alex/work/pocket4-android-final/qualification/gallery-video-current-preparation-20261107-r7/preparation.json",
+          "sha256": "3563cac29c2103862909efe1af3d1b4e3d75426b742e320d5cebdfe9b8e025b2"
+        },
+        {
+          "bytes": 14058,
+          "path": "/home/alex/work/pocket4-android-final/qualification/gallery-seek-current-preparation-20261107-r6/preparation.json",
+          "sha256": "64fe8ff704810722967f9851a3277592adb60c01d80c7b87d7efb9a9274613aa"
+        },
+        {
+          "bytes": 14183,
+          "path": "/home/alex/work/pocket4-android-final/qualification/gallery-album-current-preparation-20261107-r6/preparation.json",
+          "sha256": "056c1646c851d08a3dc961b1593d6ac01dba3fccd1db34bcd89e19e184bbd2b9"
+        }
+      ],
+      "existing_implemented_scopes": [
+        "current ART/source verification (dependency only)",
+        "eight image-rotation gates",
+        "silent video + midpoint seek + two owned-album observations"
+      ],
+      "implementation_class": "LIMITED_CASE_SOURCE_PREPARED_RUNTIME_UNQUALIFIED",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Scoped image rotation and silent-video decoded-frame/pause/resume/reopen/seek plus owned-bucket thumbnail observations; original audio/soak remain false.",
+      "remaining": [
+        "Admit Gallery through coherent full GSI; standalone install mode is prohibited by current source-state",
+        "Adapt verifier/case installation-custody contract to image-installed Gallery",
+        "Fresh actual Main/UID/source/owned-fixture/window identity",
+        "Actual rotation/video/seek/album cases; audio, supported edit/format/failure paths",
+        "Continuous sampling/long-duration stability and whole-App release review"
+      ],
+      "execution_ready": false,
+      "system_image_only": {
+        "individual_APK_install_authorized": false,
+        "current_apk": {
+          "bytes": 7390425,
+          "sha256": "835fe119745324276457b4434fc39f25b633e752c822d2fc9be40eb4b2d45439",
+          "image_path": "/system/product/app/Gallery2/Gallery2.apk"
+        },
+        "source_receipt": {
+          "bytes": 326611,
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/receipts/com.android.gallery3d.json",
+          "sha256": "e0326b9a0f8acc599cf7ef1190cc03c967a5578e34efcdba55cc0f3f46f932ad"
+        }
+      }
+    },
+    {
+      "package": "com.android.messaging",
+      "name": "Messaging",
+      "kind": "system",
+      "source_version": "1.0.001",
+      "source_version_code": 10001040,
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "messaging",
+      "canonical_gate_ids": [
+        "messaging.compose",
+        "messaging.delivery",
+        "messaging.persist"
+      ],
+      "canonical_prerequisites": [
+        "No outbound message or call until an explicit authorized test recipient/endpoint is available."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false,
+      "system_image_only": {
+        "individual_APK_install_authorized": false,
+        "current_apk": {
+          "bytes": 10909723,
+          "sha256": "283ff8ae1c87982b17e34a27fdc172bebe55543dacb811993e50b4689aa89037",
+          "image_path": "/system/product/app/messaging/messaging.apk"
+        },
+        "source_receipt": {
+          "bytes": 908138,
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/receipts/com.android.messaging.json",
+          "sha256": "ae2d351a8232f9e074abd7c1b58f02a9c99fd5184a89de92d933282c2d5b8311"
+        }
+      }
+    },
+    {
+      "package": "com.android.quicksearchbox",
+      "name": "QuickSearchBox",
+      "kind": "system",
+      "source_version": "17",
+      "source_version_code": 37,
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "search",
+      "canonical_gate_ids": [
+        "search.query",
+        "search.open",
+        "search.failure"
+      ],
+      "canonical_prerequisites": [],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false,
+      "system_image_only": {
+        "individual_APK_install_authorized": false,
+        "current_apk": {
+          "bytes": 758587,
+          "sha256": "5dfc0ff991727e14035f53cd9fa76fed48df438676e72f18090ff564cfe1dc32",
+          "image_path": "/system/product/app/QuickSearchBox/QuickSearchBox.apk"
+        },
+        "source_receipt": {
+          "bytes": 116124,
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/receipts/com.android.quicksearchbox.json",
+          "sha256": "dc17c07736a02bbe5af46ffb7db096717c127cae1c2d92384bda4ea15e4a8896"
+        }
+      }
+    },
+    {
+      "package": "com.android.settings",
+      "name": "Settings",
+      "kind": "system",
+      "source_version": "17",
+      "source_version_code": 37,
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "settings",
+      "canonical_gate_ids": [
+        "settings.pages",
+        "settings.roundtrip",
+        "settings.permissions"
+      ],
+      "canonical_prerequisites": [],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false,
+      "system_image_only": {
+        "individual_APK_install_authorized": false,
+        "current_apk": {
+          "bytes": 91609273,
+          "sha256": "c2d4c45348dd45483f0893c6236ffb29322a52d2db61f83936be1508bd03a090",
+          "image_path": "/system/system_ext/priv-app/Settings/Settings.apk"
+        },
+        "source_receipt": {
+          "bytes": 1338881,
+          "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/receipts/com.android.settings.json",
+          "sha256": "ccb7708e5206dd3f053b681d67ffa234684eb3df6bdc97b44b1ca31914f3f2f5"
+        }
+      }
+    },
+    {
+      "package": "com.bestbuy.android",
+      "name": "Best Buy",
+      "kind": "third_party",
+      "source_version": "26.11.10",
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "retail",
+      "canonical_gate_ids": [
+        "retail.search",
+        "retail.detail",
+        "retail.navigation",
+        "retail.account"
+      ],
+      "canonical_prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.ehi.national.mobile",
+      "name": "National",
+      "kind": "third_party",
+      "source_version": "6.16.0.9403",
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "rental",
+      "canonical_gate_ids": [
+        "rental.query",
+        "rental.details",
+        "rental.return",
+        "rental.account"
+      ],
+      "canonical_prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.google.android.gms",
+      "name": "Google Play services / installed compatibility provider",
+      "kind": "third_party",
+      "source_version": "0.3.18.252432",
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "gms",
+      "canonical_gate_ids": [
+        "gms.identity",
+        "gms.consumer",
+        "gms.failure"
+      ],
+      "canonical_prerequisites": [],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.hertz.android.digital",
+      "name": "Hertz",
+      "kind": "third_party",
+      "source_version": "5.8.0",
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "rental",
+      "canonical_gate_ids": [
+        "rental.query",
+        "rental.details",
+        "rental.return",
+        "rental.account"
+      ],
+      "canonical_prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.hilton.android.hhonors",
+      "name": "Hilton",
+      "kind": "third_party",
+      "source_version": "2026.11.3",
+      "source_version_code": 1034,
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "hotel",
+      "canonical_gate_ids": [
+        "hotel.query",
+        "hotel.details",
+        "hotel.return",
+        "hotel.account"
+      ],
+      "canonical_prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.ihg.apps.android",
+      "name": "IHG",
+      "kind": "third_party",
+      "source_version": "5.111.1",
+      "source_version_code": 50023808,
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "hotel",
+      "canonical_gate_ids": [
+        "hotel.query",
+        "hotel.details",
+        "hotel.return",
+        "hotel.account"
+      ],
+      "canonical_prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ],
+      "selected_preparation_indices": [
+        5
+      ],
+      "selected_preparation_refs": [
+        {
+          "bytes": 12360,
+          "path": "/home/alex/work/p4-app-acceptance-preboot-11ea-20261119-r1/ihg-5.111.1-r1/preparation.json",
+          "sha256": "5ce3547d63262341d8356120590e96a6876a90e95470ae82dc94962db5cbc24a"
+        }
+      ],
+      "existing_implemented_scopes": [
+        "ihg_london"
+      ],
+      "implementation_class": "LIMITED_CASE_SOURCE_PREPARED_RUNTIME_UNQUALIFIED",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "One native launch; public Search then Destination; one fixed London text input and exact readback; owned-task close. Coordinator explicitly keeps business_outcome_unknown=true.",
+      "remaining": [
+        "Fresh final Main/UID/current payload/helper build-install-chain",
+        "Populated hotel availability with dates/occupancy",
+        "Matching hotel/room/rate/total-price details and query edit/reopen",
+        "Authorized account/booking-management test scope",
+        "Common stability/soak and whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.jingdong.app.mall",
+      "name": "JD",
+      "kind": "third_party",
+      "source_version": "16.1.50",
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "retail",
+      "canonical_gate_ids": [
+        "retail.search",
+        "retail.detail",
+        "retail.navigation",
+        "retail.account"
+      ],
+      "canonical_prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.lianjia.beike",
+      "name": "Beike",
+      "kind": "third_party",
+      "source_version": "3.06.80",
+      "source_version_code": 3068010,
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "housing",
+      "canonical_gate_ids": [
+        "housing.query",
+        "housing.details",
+        "housing.navigation"
+      ],
+      "canonical_prerequisites": [],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.marriott.mrt",
+      "name": "Marriott",
+      "kind": "third_party",
+      "source_version": "10.82.0",
+      "source_version_code": 680,
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "hotel",
+      "canonical_gate_ids": [
+        "hotel.query",
+        "hotel.details",
+        "hotel.return",
+        "hotel.account"
+      ],
+      "canonical_prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.rytong.airchina",
+      "name": "Air China",
+      "kind": "third_party",
+      "source_version": "7.53.4",
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "flight",
+      "canonical_gate_ids": [
+        "flight.query",
+        "flight.details",
+        "flight.return",
+        "flight.account"
+      ],
+      "canonical_prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.rytong.ceair",
+      "name": "China Eastern",
+      "kind": "third_party",
+      "source_version": "9.5.16",
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "flight",
+      "canonical_gate_ids": [
+        "flight.query",
+        "flight.details",
+        "flight.return",
+        "flight.account"
+      ],
+      "canonical_prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.sankuai.meituan.takeoutnew",
+      "name": "Meituan Takeout",
+      "kind": "third_party",
+      "source_version": "8.86.4",
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "delivery",
+      "canonical_gate_ids": [
+        "delivery.start",
+        "delivery.query",
+        "delivery.detail",
+        "delivery.order_scope"
+      ],
+      "canonical_prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.sdu.didi.psnger",
+      "name": "DiDi",
+      "kind": "third_party",
+      "source_version": "8.0.20",
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "ride",
+      "canonical_gate_ids": [
+        "ride.location",
+        "ride.quote",
+        "ride.lifecycle"
+      ],
+      "canonical_prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.ss.android.ugc.aweme",
+      "name": "Douyin",
+      "kind": "third_party",
+      "source_version": "41.2.0",
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "video",
+      "canonical_gate_ids": [
+        "video.search",
+        "video.playback",
+        "video.controls",
+        "video.reopen"
+      ],
+      "canonical_prerequisites": [],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.szzc",
+      "name": "SZZC",
+      "kind": "third_party",
+      "source_version": "9.6.3",
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "rental",
+      "canonical_gate_ids": [
+        "rental.query",
+        "rental.details",
+        "rental.return",
+        "rental.account"
+      ],
+      "canonical_prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.taobao.taobao",
+      "name": "Taobao",
+      "kind": "third_party",
+      "source_version": "10.69.0",
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "retail",
+      "canonical_gate_ids": [
+        "retail.search",
+        "retail.detail",
+        "retail.navigation",
+        "retail.account"
+      ],
+      "canonical_prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.tencent.mm",
+      "name": "WeChat",
+      "kind": "third_party",
+      "source_version": "8.0.80",
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "messaging",
+      "canonical_gate_ids": [
+        "messaging.compose",
+        "messaging.delivery",
+        "messaging.persist"
+      ],
+      "canonical_prerequisites": [
+        "No outbound message or call until an explicit authorized test recipient/endpoint is available."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.united.mobile.android",
+      "name": "United",
+      "kind": "third_party",
+      "source_version": "4.2.103",
+      "source_version_code": 3621,
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "flight",
+      "canonical_gate_ids": [
+        "flight.query",
+        "flight.details",
+        "flight.return",
+        "flight.account"
+      ],
+      "canonical_prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false,
+      "new_latest_input_gate": {
+        "selected_version": "4.2.103",
+        "observed_version": "4.2.104",
+        "metadata_audit_sha256": "dca1ba954f28b1f3487fe16942acb74e88d03799253fd5a8f5db4493fe61d620",
+        "new_payload_qualification_not_granted_here": true
+      }
+    },
+    {
+      "package": "com.xunmeng.pinduoduo",
+      "name": "Pinduoduo",
+      "kind": "third_party",
+      "source_version": "8.32.0",
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "retail",
+      "canonical_gate_ids": [
+        "retail.search",
+        "retail.detail",
+        "retail.navigation",
+        "retail.account"
+      ],
+      "canonical_prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.zhubajie.client",
+      "name": "Zhubajie",
+      "kind": "third_party",
+      "source_version": "9.5.20",
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "services",
+      "canonical_gate_ids": [
+        "services.query",
+        "services.detail",
+        "services.account"
+      ],
+      "canonical_prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "com.zillow.android.streeteasy",
+      "name": "StreetEasy",
+      "kind": "third_party",
+      "source_version": "2026.47.0",
+      "source_version_code": 23075,
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "housing",
+      "canonical_gate_ids": [
+        "housing.query",
+        "housing.details",
+        "housing.navigation"
+      ],
+      "canonical_prerequisites": [],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "ctrip.android.view",
+      "name": "Ctrip",
+      "kind": "third_party",
+      "source_version": "8.97.6",
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "travel",
+      "canonical_gate_ids": [
+        "travel.query",
+        "travel.details",
+        "travel.account"
+      ],
+      "canonical_prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "jp.co.ana.android.tabidachi",
+      "name": "ANA",
+      "kind": "third_party",
+      "source_version": "7.7.1",
+      "source_version_code": 343,
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "flight",
+      "canonical_gate_ids": [
+        "flight.query",
+        "flight.details",
+        "flight.return",
+        "flight.account"
+      ],
+      "canonical_prerequisites": [
+        "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+      ],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "org.fcitx.fcitx5.android",
+      "name": "Fcitx5",
+      "kind": "third_party",
+      "source_version": "0.1.3-0-g048f581c",
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "ime",
+      "canonical_gate_ids": [
+        "ime.composition",
+        "ime.editing",
+        "ime.lifecycle"
+      ],
+      "canonical_prerequisites": [],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    },
+    {
+      "package": "org.mozilla.firefox",
+      "name": "Firefox",
+      "kind": "third_party",
+      "source_version": "160.0.1",
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": null,
+      "canonical_gate_ids": [],
+      "canonical_prerequisites": [],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Add a reviewed Firefox checklist and an actual executor",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false,
+      "canonical_profile_missing": true
+    },
+    {
+      "package": "tv.danmaku.bili",
+      "name": "Bilibili",
+      "kind": "third_party",
+      "source_version": "9.20.0",
+      "source_identity_verified": true,
+      "source_state_installed": false,
+      "source_state_runtime_qualified": false,
+      "source_state_business_qualified": false,
+      "source_state_production_ready": false,
+      "canonical_profile": "video",
+      "canonical_gate_ids": [
+        "video.search",
+        "video.playback",
+        "video.controls",
+        "video.reopen"
+      ],
+      "canonical_prerequisites": [],
+      "selected_preparation_indices": [],
+      "selected_preparation_refs": [],
+      "existing_implemented_scopes": [],
+      "implementation_class": "NO_SELECTED_BUSINESS_EXECUTOR",
+      "actual_current_main_business_results_observed": 0,
+      "scope_description": "Selected source identity and historical checklist only; no App-specific business executor in the inspected current selector.",
+      "remaining": [
+        "Implement explicit App-specific flows for the historical canonical gates",
+        "Bind current package/Main/UID/helper/owned task and allowed public test fixtures",
+        "Run scoped business, lifecycle, stability/soak and data-preservation gates",
+        "Independent whole-App release review"
+      ],
+      "execution_ready": false
+    }
+  ],
+  "notable_boundaries": {
+    "selector_is_preparation_refs_not_application_acceptance_count": true,
+    "local_business_capsule_kinds": [
+      "clock_timer",
+      "ihg_london"
+    ],
+    "broader_selected_runtime_preparations": 13,
+    "IHG_current_preparation_ref": {
+      "bytes": 12360,
+      "path": "/home/alex/work/p4-app-acceptance-preboot-11ea-20261119-r1/ihg-5.111.1-r1/preparation.json",
+      "sha256": "5ce3547d63262341d8356120590e96a6876a90e95470ae82dc94962db5cbc24a"
+    },
+    "IHG_current_source_preparation_is_not_business_success": true,
+    "Gallery_install_mode_conflicts_with_full_GSI_system_source_contract": true,
+    "Gallery_video_is_silent_fixture_audio_qualification": false,
+    "old_CP2A_MediaProvider_binding": "/apex/com.android.mediaprovider/priv-app/MediaProvider@CP2A.260605.016/MediaProvider.apk",
+    "fresh_provider_bindings_required": [
+      "com.android.providers.calendar",
+      "com.android.providers.contacts",
+      "com.android.externalstorage",
+      "com.android.mediaprovider"
+    ],
+    "no_runtime_credit_transferred": true
+  },
+  "proposed_preboot_diff": {
+    "implementation_status": "AUTHORIZED_NEXT_STEP_NOT_YET_IMPLEMENTED_IN_THIS_AUDIT",
+    "independent_only": true,
+    "do_not_modify": [
+      "historical canonical45 gates",
+      "old/new selection13",
+      "frozen runtime source packets"
+    ],
+    "reuse": [
+      "Exact required39 source-state and selected source registry",
+      "Existing finite case source references and semantics",
+      "Existing canonical per-profile gate definitions"
+    ],
+    "new_static_verifier": [
+      "Pin exact source-state/registry/freshness/gates/selector snapshots",
+      "Require exact 39 package set, 10+29 partition and three original exemptions",
+      "Require every accepted source identity; recursively reject runtime/business/production promotion",
+      "Map selected preparations to packages/subcases, never infer 13 or 39 business passes",
+      "Flag five target identity mismatches and current GSI/provider contract gaps",
+      "Keep actual UID, Main/epoch, installation identity, task ownership and UI selector bindings explicitly unresolved",
+      "Emit action plans with all runtime/business/production false"
+    ],
+    "Firefox_additive_plan_only": [
+      "Mozilla official Manifesto and History public pages",
+      "Exact public URL/title/content-anchor observation",
+      "Back/forward and two owned tabs",
+      "Close only owned tab/task and separate reopen",
+      "No login, form submission, message, purchase or download; no existing user history inspection"
+    ],
+    "validation_proposals": [
+      "Altered source pin rejected",
+      "Unverified source or extra exemption rejected",
+      "Duplicate/omitted required package rejected",
+      "Nested runtime/business/prod true rejected",
+      "Unrelated registry mismatch rejected",
+      "Firefox download/external-send action rejected",
+      "Generated package matrix cannot promote unimplemented cases"
+    ],
+    "Android_calls": 0,
+    "user_data_reads": 0,
+    "credentials_reads": 0
+  }
+}

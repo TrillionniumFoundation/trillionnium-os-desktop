@@ -1,0 +1,148 @@
+--- a/firefox_protocol.py
++++ b/firefox_protocol.py
+@@ -136,8 +136,9 @@
+ 
+ 
+ def execute(adapter):
+-    """Production entry: an offline double cannot issue a finite-case receipt."""
+-    from firefox_adapter import FirefoxFlowAdapter
++    """Held until actual controller/browser-owner implementations are bound."""
++    from firefox_adapter import FirefoxFlowAdapter, require_frozen_runtime_implementations
++    require_frozen_runtime_implementations()
+     need(type(adapter) is FirefoxFlowAdapter, "ACTUAL_FLOW_ADAPTER_REQUIRED")
+     return _sequence(adapter, offline=False)
+ 
+--- a/firefox_adapter.py
++++ b/firefox_adapter.py
+@@ -12,7 +12,7 @@
+ import stat
+ import time
+ 
+-from firefox_custody import APK_BYTES, APK_SHA256, PACKAGE, VERSION_CODE, need
++from firefox_custody import APK_BYTES, APK_SHA256, PACKAGE, VERSION_CODE, Refused, need
+ from firefox_protocol import PAGES
+ 
+ FLOW_SHA = "926793aabf5610fc32f6b94bd772c660c7e24bc992641f8b2ca4ae257bfa59bb"
+@@ -23,6 +23,16 @@
+ ROLES = {"address", "url_editor", "url_go", "back", "forward", "new_tab", "close_tab",
+          "page_url", "secure_indicator", "heading_manifesto", "heading_history"}
+ VIEW_KINDS = {"browser_toolbar", "browser_menu", "owned_public_content"}
++
++
++def require_frozen_runtime_implementations():
++    """This source revision has no admitted controller/browser-owner cohort.
++
++    No caller assertion, configuration flag or method can unlock this entry.
++    A successor must bind reviewed implementations and their actual evidence
++    before replacing this hold. The transport functions remain reviewable.
++    """
++    raise Refused("HELD_FIREFOX_CONTROLLER_AND_BROWSER_OWNER_NOT_SOURCE_BOUND")
+ 
+ 
+ def file_sha(path, limit=131072):
+@@ -141,12 +151,13 @@
+         self.mutation_attempts = 0
+         self.binding = None
+         self.selected = None
+-        self.owner = getattr(controller, "browser_owner", None)
++        self.owner = None
+         self.failed = False
+         self.closed = False
+         self.evidence = []
+ 
+     def _guard(self):
++        require_frozen_runtime_implementations()
+         need(not self.closed and not self.failed, "FIREFOX_CASE_CLOSED_OR_POISONED")
+         need(type(self.c.deadline) in (int, float) and time.monotonic() < self.c.deadline,
+              "ORIGINAL_FIREFOX_CASE_DEADLINE_EXPIRED")
+@@ -224,6 +235,8 @@
+                 **extra}
+ 
+     def admit(self):
++        require_frozen_runtime_implementations()
++        self.owner = getattr(self.c, "browser_owner", None)
+         need(os.getuid() == os.geteuid() == 0, "ROOT_CURRENT_FIREFOX_CONTROLLER_REQUIRED")
+         need(self.owner is not None and not isinstance(self.owner, (dict, bool, int, str)),
+              "BROWSER_SESSION_OWNERSHIP_PROVIDER_UNAVAILABLE")
+@@ -425,11 +438,18 @@
+         return result
+ 
+     def close_resources(self):
++        """True means the controller explicitly confirmed host release.
++
++        False, None, other truthy values and exceptions are not acknowledgments.
++        The case remains closed even when release cannot be proved; callers
++        must retain the failure without retrying guest cleanup.
++        """
+         self.closed = True
+         if self.flow is not None:
+             flow, self.flow = self.flow, None
+             flow.close()
+         # The controller retains a failed Android claim for reconciliation;
+         # closing host descriptors never manufactures guest cleanup credit.
+-        self.c.release_host_resources()
++        need(self.c.release_host_resources() is True,
++             "EXPLICIT_CONTROLLER_HOST_RESOURCE_RELEASE_ACK_REQUIRED")
+         return True
+--- a/test_firefox.py
++++ b/test_firefox.py
+@@ -122,8 +122,58 @@
+         controller = types.SimpleNamespace(browser_owner=None)
+         adapter = a.FirefoxFlowAdapter(controller)
+         with patch.object(a.os, "getuid", return_value=0), patch.object(a.os, "geteuid", return_value=0):
+-            with self.assertRaisesRegex(c.Refused, "BROWSER_SESSION_OWNERSHIP_PROVIDER_UNAVAILABLE"):
++            with self.assertRaisesRegex(c.Refused, "HELD_FIREFOX_CONTROLLER_AND_BROWSER_OWNER_NOT_SOURCE_BOUND"):
+                 adapter.admit()
++
++    def test_caller_self_attestation_cannot_unlock_either_entry_or_guard(self):
++        touched = []
++        class SelfAttestedController:
++            @property
++            def browser_owner(self):
++                touched.append("owner")
++                return object()
++            def verify_controller_source_and_owner_capability(self):
++                touched.append("self-attestation")
++                return True
++        adapter = a.FirefoxFlowAdapter(SelfAttestedController())
++        self.assertEqual(touched, [])
++        with patch.object(a.os, "getuid", side_effect=AssertionError("root probe before hold")), \
++             patch.object(a.os, "geteuid", side_effect=AssertionError("root probe before hold")):
++            for entry in (lambda: p.execute(adapter), adapter.admit, adapter._guard):
++                with self.subTest(entry=entry):
++                    with self.assertRaisesRegex(c.Refused, "HELD_FIREFOX_CONTROLLER_AND_BROWSER_OWNER_NOT_SOURCE_BOUND"):
++                        entry()
++        self.assertEqual(touched, [])
++        self.assertEqual((adapter.calls, adapter.launch_attempts, adapter.mutation_attempts,
++                          adapter.actual_command_acks), (0, 0, 0, 0))
++
++    def test_host_release_requires_explicit_true_not_truthy_or_false(self):
++        for acknowledgment in (True, False, None, 1, {"released": True}):
++            with self.subTest(acknowledgment=acknowledgment):
++                calls = []
++                def release():
++                    calls.append("controller-release")
++                    return acknowledgment
++                adapter = a.FirefoxFlowAdapter(types.SimpleNamespace(release_host_resources=release))
++                adapter.flow = types.SimpleNamespace(close=lambda: calls.append("flow-close"))
++                if acknowledgment is True:
++                    self.assertIs(adapter.close_resources(), True)
++                else:
++                    with self.assertRaisesRegex(c.Refused, "EXPLICIT_CONTROLLER_HOST_RESOURCE_RELEASE_ACK_REQUIRED"):
++                        adapter.close_resources()
++                self.assertEqual(calls, ["flow-close", "controller-release"])
++                self.assertTrue(adapter.closed)
++
++    def test_unacknowledged_resource_release_removes_protocol_credit(self):
++        port = OfflinePort()
++        port.close_resources = lambda: False
++        result = p.offline_control(port)
++        self.assertEqual(result["state"], "UNKNOWN")
++        self.assertIs(result["host_resources_released"], False)
++        self.assertFalse(result["protocol_control_passed"])
++        self.assertFalse(result["finite_public_case_passed"])
++        self.assertFalse(result["Android_execution_observed"])
++        self.assertIn("ACTUAL_HOST_RESOURCE_RELEASE_REQUIRED", result["resource_error"]["message"])
+ 
+     def test_task_claim_is_not_browser_ownership(self):
+         self.rejected("admit", "task_ownership_is_browser_ownership", True)

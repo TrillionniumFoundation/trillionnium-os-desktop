@@ -1,0 +1,201 @@
+{
+  "actual_updater_release_source_tree": "fa0382574f4fc18f59b2b5dd67a30939167d8c3a",
+  "admission": {
+    "affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-cp3a-vendor-20261119-162b-r12-recovery.service",
+    "limits": {
+      "cpu.max": "200000 100000",
+      "memory.high": "1610612736",
+      "memory.max": "2147483648",
+      "memory.swap.max": "0",
+      "pids.max": "512"
+    },
+    "pid": 2547328,
+    "start_ticks": "211134141"
+  },
+  "commands": [
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/home/qq/work/p4-integrated-continuation-20261118-162b-r1/unified-native-capex-asb-20261119-r2/release-tools-r1/bin/droidloom-update",
+        "recover-source",
+        "--work",
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085579841987805,
+      "name": "normal-source-recovery",
+      "original_pidfd_held_until_reaped": true,
+      "owned_descendants_remaining": 0,
+      "pid": 2547329,
+      "retired_descendants": [],
+      "start_ticks": "211134149",
+      "started_ns": 1795085579837658726,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          72517306,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1795085579836887247,
+          1795085579836887247
+        ],
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/build-r12/normal-source-recovery.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          72517305,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1795085579836887247,
+          1795085579836887247
+        ],
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/build-r12/normal-source-recovery.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/home/qq/work/p4-integrated-continuation-20261118-162b-r1/unified-native-capex-asb-20261119-r2/release-tools-r1/bin/droidloom-source",
+        "--profile",
+        "production-full",
+        "verify-materialized",
+        "--lock",
+        "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/producer-build-r6/android/manifest/production-full-source-lock.json",
+        "--output",
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795085585411451106,
+      "name": "verify-full651-after",
+      "original_pidfd_held_until_reaped": true,
+      "owned_descendants_remaining": 0,
+      "pid": 2547330,
+      "retired_descendants": [],
+      "start_ticks": "211134161",
+      "started_ns": 1795085579959731077,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          72517312,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1795085579959640570,
+          1795085579959640570
+        ],
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/build-r12/verify-full651-after.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 115,
+        "identity": [
+          66306,
+          72517308,
+          33152,
+          1000,
+          1000,
+          1,
+          115,
+          1795085582479793276,
+          1795085582479793276
+        ],
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/build-r12/verify-full651-after.stdout",
+        "sha256": "f7fb8424d8a015528afc900d6018464c6614e1abfd194c954db037876a33ed13"
+      }
+    }
+  ],
+  "errors": [
+    {
+      "error": "RuntimeError('actual sparse cones differ from original plan')",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor_build_r12.py\", line 1249, in <module>\n    build() if mode == 'build' else recover()\n                                    ~~~~~~~^^\n  File \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor_build_r12.py\", line 1124, in recover\n    verify_recovered_source(env)\n    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^\n  File \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor_build_r12.py\", line 957, in verify_recovered_source\n    after = content_bookend('original651-content-after-recovery', contracts[651]['plan']['projects'])\n  File \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor_build_r12.py\", line 653, in content_bookend\n    result = BOOKENDS.snapshot(SOURCE, projects, CONTROL / (name + '.ndjson'),\n                               DEADLINE, resource_guard)\n  File \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor_source_bookends_r12.py\", line 274, in snapshot\n    need(len(actual_cones) == len(set(actual_cones)) and set(actual_cones) == set(cones),\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n         'actual sparse cones differ from original plan')\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor_source_bookends_r12.py\", line 10, in need\n    raise RuntimeError(message)\nRuntimeError: actual sparse cones differ from original plan\n"
+    }
+  ],
+  "finished_ns": 1795085587411140803,
+  "installed": false,
+  "latest_resources": {
+    "disk_free": 175779794944,
+    "memory_available": 44337086464,
+    "observed_ns": 1795085587408753316
+  },
+  "production_ready": false,
+  "runtime_qualified": false,
+  "schema": "p4-cp3a-normal-vendor-build-r12-v1",
+  "source_recovery_branch": {
+    "branch": "651-before-reconcile-dispatch",
+    "observed_manifest": {
+      "copy": {
+        "bytes": 441444,
+        "identity": [
+          66306,
+          72517307,
+          33152,
+          1000,
+          1000,
+          1,
+          441444,
+          1795085579918859983,
+          1795085579918859983
+        ],
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/build-r12/manifest-recovery-state-before-verify.json",
+        "sha256": "704ec2a6ba4fec751490b0da492b161887479ef9579f18025374d56ced72f5a3"
+      },
+      "original": {
+        "bytes": 441444,
+        "identity": [
+          66306,
+          61116705,
+          33152,
+          1000,
+          1000,
+          1,
+          441444,
+          1794644259255709612,
+          1794644259256709575
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/.droidloom-source-manifest.json",
+        "sha256": "704ec2a6ba4fec751490b0da492b161887479ef9579f18025374d56ced72f5a3"
+      }
+    },
+    "reconcile_dispatch_journal_present": false,
+    "reconcile_return_journal_present": false,
+    "source_complete_journal_present": false,
+    "vendor_dispatch_journal_present": false
+  },
+  "source_tree": "fa0382574f4fc18f59b2b5dd67a30939167d8c3a",
+  "started_ns": 1795085579802531441,
+  "updater_release_and_full_canonical_source_tree_identical": true
+}

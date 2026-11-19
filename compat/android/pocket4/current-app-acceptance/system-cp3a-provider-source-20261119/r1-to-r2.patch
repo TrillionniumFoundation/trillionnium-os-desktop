@@ -1,0 +1,47 @@
+--- r1/verify_providers.py
++++ r2/verify_providers.py
+@@ -2,7 +2,7 @@
+ """Read-only CP3A provider APK source verification. No Android execution."""
+ import os, sys, stat, json, hashlib, time, subprocess, signal, resource, re, zipfile, struct, traceback, datetime, selectors, threading
+ from pathlib import Path
+-ROOT=Path('/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r1')
++ROOT=Path('/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2')
+ OUT=ROOT/'work'
+ APP=Path('/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1')
+ GSI=Path('/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/official-gsi')
+@@ -239,13 +239,13 @@
+     need(rows,'nonempty image directory required')
+     return rows,cmd
+ 
+-def dump_image(label,image_fd,path,out,expected_inode,expected_size,expected_sha=None):
++def dump_image(label,image_fd,path,out,expected_inode,expected_size,expected_sha=None,expected_uid=0,expected_gid=0):
+     need(re.fullmatch(r'/[A-Za-z0-9_./@-]+',path) and '..' not in path.split('/'),'fixed image file path')
+     rows,ls= list_image(label+'-ls',image_fd,str(Path(path).parent))
+     matching=[r for r in rows if r['name']==Path(path).name]
+     need(len(matching)==1,'exact image member')
+     row=matching[0]
+-    need(row=={'inode':expected_inode,'mode':0o100644,'uid':0,'gid':0,
++    need(row=={'inode':expected_inode,'mode':0o100644,'uid':expected_uid,'gid':expected_gid,
+                'name':Path(path).name,'bytes':expected_size},'image member changed')
+     fd=os.open(out,os.O_RDWR|os.O_CREAT|os.O_EXCL|os.O_CLOEXEC|os.O_NOFOLLOW,0o600)
+     try:
+@@ -448,6 +448,8 @@
+     apexfd,apexpin,capchain=zip_member(capfd,cappin,'original_apex',OUT/'containers/original.apex','CAPEX-MEMBER-CHAIN')
+     payloadfd,payloadpin,apexchain=zip_member(apexfd,apexpin,'apex_payload.img',
+         OUT/'containers/apex_payload.img','APEX-PAYLOAD-CHAIN')
++    need((apexpin['bytes'],apexpin['sha256'])==(38428672,'a7a5eae92c563e9b26c552de818af4cecda768213a3c57895d5a76cdd56b4670'),'current MediaProvider original APEX identity')
++    need((payloadpin['bytes'],payloadpin['sha256'])==(38154240,'a1018f008013e8363534e4effc2d70d36ac471af18bccea205dad1bf3ab6ef23'),'current MediaProvider inner payload identity')
+     need(os.pread(payloadfd,2,1080)==b'\x53\xef','current media payload requires ext4')
+     rows,dircmd=list_image('mediaprovider-apex-privapp',payloadfd,'/priv-app')
+     dirs=[r for r in rows if r['name'] not in ('.','..')]
+@@ -459,8 +461,9 @@
+     matches=[r for r in leaves if r['name']=='MediaProvider.apk']
+     need(len(matches)==1 and matches[0]['mode']==0o100644 and 0<matches[0]['bytes']<64*1024*1024,'one current provider APK')
+     leaf=matches[0]
++    need(leaf=={'inode':51,'mode':0o100644,'uid':1000,'gid':1000,'name':'MediaProvider.apk','bytes':13826854},'current exact MediaProvider leaf record')
+     mediafd,mediapin,mediacmds=dump_image('mediaprovider-apk',payloadfd,image_path,
+-        OUT/'apks'/(MEDIA+'.apk'),leaf['inode'],leaf['bytes'])
++        OUT/'apks'/(MEDIA+'.apk'),leaf['inode'],leaf['bytes'],expected_uid=1000,expected_gid=1000)
+     R['media_source_chain']={'capex':cappin,'original_apex':apexpin,'payload':payloadpin,
+                             'capex_member_proof':capchain,'apex_payload_proof':apexchain,
+                             'image_member_path':image_path,'container_signature_or_AVB_qualified':False}

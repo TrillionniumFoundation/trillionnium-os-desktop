@@ -1,0 +1,156 @@
+diff --git a/bind_full.py b/bind_full.py
+--- a/bind_full.py
++++ b/bind_full.py
+@@ -25,7 +25,7 @@
+ ORIGINAL = Path('/home/qq/work/p4-kernel-6.18.64-cp3a-20261118-r1')
+ NATIVE = Path('/home/qq/work/p4-broker-mac-provider-20261118-162b-r1/kernel-native-exit-candidate-r3')
+ VM = Path('/home/qq/work/p4-kernel-native-exit-vm260-11ea-20261119-r3')
+-EVIDENCE = Path('/home/qq/work/p4-native-exit-vm260-binding-evidence-11ea-20261119-r3')
++EVIDENCE = Path('/home/qq/work/p4-native-exit-vm260-binding-evidence-5cd1-20261119-r1')
+ STATUS_PATH = EVIDENCE / 'full-durable-terminal.json'
+ RELEASE = '6.18.64-p4ctx6182'
+ UNIT = 'p4-kernel-native-exit-full-11ea-20261119-r3.service'
+@@ -54,6 +54,13 @@
+                     'security/selinux/include/initial_sid_to_string.h',
+                     'security/selinux/include/policycap_names.h',
+                     'scripts/extract-module-sig.pl')
++CONFIG_HEX_SYMBOL = 'CONFIG_MTD_NAND_DISKONCHIP_PROBE_ADDRESS'
++CONFIG_SEMANTIC_SOURCES = {
++    'drivers/mtd/nand/raw/Kconfig':
++        (17514, '7a7251734f79da0928019d8a384039139f277507088bed7060408ad8a62ab4f5'),
++    'scripts/kconfig/confdata.c':
++        (22318, 'aa99f69b2c4ae3ea38b031151e2604e49b8c3b9d4521a5c6f0b217f9dd982bea'),
++}
+ PUBLIC_FIXTURES = {
+     'tools/testing/selftests/net/ovpn/data64.key':
+         (349, '20cf1390bc45fab71cd13f6e530c3941330d4ac67da19748a3bf34425cbef15f'),
+@@ -515,10 +522,33 @@
+             'future_VM_requirement': 'Retain the original actual OpenSSL CMS verification of each loaded module and the genuine unsigned/tampered negative modules.'}
+ 
+ 
+-def generated_configuration(reads, full, expected_pin=None):
+-    """Bind a previously unrecorded generated input without inventing its origin."""
+-    config = reads.read(full['config'], capture=True).decode()
++def verified_hex_symbols(reads, full):
++    """Use the exact full-build Kconfig type and C writer, never infer from text."""
++    source_rows = reads.document(full['whole_source_before'])
++    pins, bodies = [], {}
++    for name, expected in CONFIG_SEMANTIC_SOURCES.items():
++        row = source_rows[name]
++        need(row['kind'] == 'file' and (row['bytes'], row['sha256']) == expected,
++             'exact full-build Kconfig semantic source: ' + name)
++        pin = {'path': str(SOURCE / name), 'bytes': row['bytes'],
++               'sha256': row['sha256'], 'identity': row['identity']}
++        bodies[name] = reads.read(pin, capture=True).decode()
++        pins.append(pin)
++    # confdata.c:print_symbol_for_c preserves S_HEX text and adds 0x only
++    # when neither 0x nor 0X is present. Its complete body is pinned above.
++    blocks = re.findall(r'(?m)^config ' + re.escape(CONFIG_HEX_SYMBOL[7:])
++                        + r'\n((?:[ \t].*\n|\n)*)', bodies['drivers/mtd/nand/raw/Kconfig'])
++    need(len(blocks) == 1 and re.findall(r'(?m)^[ \t]+(bool|tristate|string|int|hex)(?:[ \t]|$)',
++                                       blocks[0]) == ['hex'],
++         'exact selected configuration symbol is Kconfig HEX')
++    return {CONFIG_HEX_SYMBOL}, pins
++
++
++def compare_generated_configuration(config, header, hex_symbols):
++    """Compare every symbol; only proven HEX symbols use the C writer's spelling."""
++    need(hex_symbols == {CONFIG_HEX_SYMBOL}, 'only the source-proven HEX symbol')
+     wanted = {}
++    normalizations = []
+     for line in config.splitlines():
+         if not line.startswith('CONFIG_'):
+             continue
+@@ -527,21 +557,38 @@
+             continue
+         key = name + '_MODULE' if value == 'm' else name
+         need(key not in wanted, 'duplicate config symbol')
++        if name in hex_symbols:
++            need(re.fullmatch(r'(?:0[xX])?[0-9a-fA-F]+', value) is not None,
++                 'source-proven HEX symbol must have an unquoted hexadecimal value')
++            if not value.startswith(('0x', '0X')):
++                normalizations.append({'symbol': name, 'config_value': value,
++                                       'generated_value': '0x' + value})
++                value = '0x' + value
+         wanted[key] = '1' if value in ('y', 'm') else value
++    actual = {}
++    for line in header.splitlines():
++        if line.startswith('#define CONFIG_'):
++            name, value = line[len('#define '):].split(' ', 1)
++            need(name not in actual, 'duplicate generated config macro')
++            actual[name] = value.strip()
++    need(set(actual) == set(wanted), 'complete generated CONFIG symbol set differs')
++    need(actual == wanted, 'complete generated autoconf does not match actual full config')
++    return {'compared_CONFIG_macro_count': len(actual), 'HEX_spelling_normalizations': normalizations}
++
++
++def generated_configuration(reads, full, expected_pin=None):
++    """Bind a previously unrecorded generated input without inventing its origin."""
++    config = reads.read(full['config'], capture=True).decode()
++    hex_symbols, semantics = verified_hex_symbols(reads, full)
+     if expected_pin is None:
+         header, body = reads.current(OUT / 'include/generated/autoconf.h')
+     else:
+         check_pin_shape(expected_pin, OUT / 'include/generated/autoconf.h')
+         header, body = expected_pin, reads.read(expected_pin, capture=True)
+-    actual = {}
+-    for line in body.decode().splitlines():
+-        if line.startswith('#define CONFIG_'):
+-            name, value = line[len('#define '):].split(' ', 1)
+-            need(name not in actual, 'duplicate generated config macro')
+-            actual[name] = value.strip()
+-    need(actual == wanted, 'complete generated autoconf does not match actual full config')
++    comparison = compare_generated_configuration(config, body.decode(), hex_symbols)
+     return {'pin': header, 'scope': 'fresh post-full readonly input; not a previously recorded full-worker artifact',
+-            'actual_full_config': full['config'], 'all_generated_CONFIG_macros_match_full_config': True}
++            'actual_full_config': full['config'], 'all_generated_CONFIG_macros_match_full_config': True,
++            'Kconfig_semantic_sources': semantics, **comparison}
+ 
+ 
+ def module_indexes(reads, expected=None):
+@@ -719,6 +766,7 @@
+     def source_inputs(self):
+         return (list(self.binding['source']['VM_source_inputs'])
+                 + [self.binding['generated_configuration']['pin']]
++                 + list(self.binding['generated_configuration']['Kconfig_semantic_sources'])
+                 + list(self.binding['module_indexes']['inputs']))
+ 
+     def receipt_inputs(self):
+diff --git a/run_binding.py b/run_binding.py
+--- a/run_binding.py
++++ b/run_binding.py
+@@ -19,7 +19,7 @@
+ import sys
+ import time
+ 
+-ROOT = Path('/home/qq/work/p4-native-exit-vm260-binding-evidence-11ea-20261119-r3')
++ROOT = Path('/home/qq/work/p4-native-exit-vm260-binding-evidence-5cd1-20261119-r1')
+ INPUT = ROOT / 'inputs'
+ CONTROL = ROOT / 'control'
+ SELF = INPUT / 'run_binding.py'
+@@ -27,12 +27,12 @@
+ KNOWN = INPUT / 'KNOWN-INPUTS.json'
+ CAPTURE = ROOT / 'full-durable-terminal.json'
+ OUTPUT = ROOT / 'HELD-BINDING.json'
+-UNIT = 'p4-kernel-native-exit-vm260-binding-11ea-20261119-r3.service'
++UNIT = 'p4-kernel-native-exit-vm260-binding-5cd1-20261119-r1.service'
+ CGROUP_PARENT = Path('/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice')
+ CGROUP = CGROUP_PARENT / UNIT
+ ORIGINAL = Path('/home/qq/work/p4-kernel-6.18.64-cp3a-20261118-r1')
+-BINDER_BYTES = 45685
+-BINDER_SHA = '45b7b7946f7935d2c7355303fc40d45b0bc80d7f28ff22182d815d62fc5e4f80'
++BINDER_BYTES = 48449
++BINDER_SHA = 'd1c509c344406c5509d5b486e24e2742ec0e5fc41ebc3e7204e7efab660f754f'
+ KNOWN_BYTES = 15046
+ KNOWN_SHA = 'de0d4ab915bf6691283e4f0eb8090387cc446330ae9a385ff55339d5d17129b8'
+ STATUS_BYTES = 729
+@@ -275,7 +275,8 @@
+     rows = source_inputs(expected_self)
+     need({p.name for p in ROOT.iterdir()} == {'inputs','full-durable-terminal.json'}, 'fresh exact binding root')
+     ENV = bus_environment()
+-    units = [UNIT,'p4-kernel-native-exit-full-11ea-20261119-r3.service',
++    units = [UNIT,'p4-kernel-native-exit-vm260-binding-11ea-20261119-r3.service',
++             'p4-kernel-native-exit-full-11ea-20261119-r3.service',
+              'p4-kernel-native-exit-tu-11ea-20261119-r3.service',
+              'p4-kernel-native-exit-vm260-prepare-11ea-20261119-r3.service',
+              'p4-kernel-native-exit-vm260-run-11ea-20261119-r3.service',

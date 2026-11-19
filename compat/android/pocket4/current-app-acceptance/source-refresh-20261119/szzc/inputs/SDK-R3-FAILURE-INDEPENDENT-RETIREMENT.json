@@ -1,0 +1,304 @@
+{
+  "SDK_children_started": 0,
+  "actual_SDK_failed_result": {
+    "bytes": 13681,
+    "path": "/workspace/scratch/5cd1a8fe7e31/p4-szzc-current-source-5cd1-r1/actual/SDK-R3-FAILED-RESULT-INDEPENDENT.json",
+    "sha256": "39b9ef57cb36527de9caf1b4002f1776ad7cdd0bf5a4628fa5978b2b9dd30b82"
+  },
+  "actual_client_and_observer_record": {
+    "bytes": 18136,
+    "path": "/workspace/scratch/5cd1a8fe7e31/p4-szzc-current-source-5cd1-r1/actual/SDK-R3-FAILED-RETIREMENT-CLIENTS.json",
+    "sha256": "d9f6071eb09722089521c131da59d2c16c85f8160e0b699f983fd00c5f77c36d"
+  },
+  "actual_observation": {
+    "SDK_children_started": 0,
+    "SDK_failure": "ValueError('native ELF machine mismatches directory ABI')",
+    "all_four_units_retired": true,
+    "all_source_input_after_bookends_claimed": false,
+    "business_qualified": false,
+    "complete_candidate_body_reread_by_this_observer": false,
+    "current_input_selected": false,
+    "elapsed_seconds": 0.01884661102667451,
+    "installed": false,
+    "observed_ns": 1795090861195743565,
+    "original_client_exit_still_requires_separate_exact_client_observation": true,
+    "passed": true,
+    "passed_scope": "exact original four units and immutable terminal evidence retirement only",
+    "production_ready": false,
+    "runtime_qualified": false,
+    "schema": "pocket4-szzc-sdk-r3-failure-independent-retirement-raw-v1",
+    "sdk_source_qualification_passed": false,
+    "source_mutations": 0,
+    "source_pins": [
+      {
+        "bytes": 23606,
+        "identity": [
+          "66306",
+          "49548977",
+          "33152",
+          "1000",
+          "1000",
+          "1",
+          "23606",
+          "1795090484106174811",
+          "1795090484106174811"
+        ],
+        "path": "/home/qq/work/p4-szzc-current-source-5cd1-20261119-r1/qualify_current_szzc_r3.py",
+        "sha256": "fb9cd65a6f33f699099e8c71c9b9e7b5c7b5c17659a55f67b71006291600612d"
+      },
+      {
+        "bytes": 31257,
+        "identity": [
+          "66306",
+          "49546486",
+          "33024",
+          "1000",
+          "1000",
+          "1",
+          "31257",
+          "1795086115728596328",
+          "1795086115728784122"
+        ],
+        "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/verify_providers.py",
+        "sha256": "b75a440ab7707032a22c28a621d9df254e416b8170f9b1a9d96429ecf30e462d"
+      }
+    ],
+    "terminal_pins": {
+      "first_failed_resume": {
+        "bytes": 4818,
+        "identity": [
+          "66306",
+          "49548890",
+          "33152",
+          "1000",
+          "1000",
+          "1",
+          "4818",
+          "1795090203153973226",
+          "1795090203153973226"
+        ],
+        "path": "/home/qq/work/p4-szzc-current-source-5cd1-20261119-r1/download/RESUME-TRANSPORT-RESULT.json",
+        "sha256": "b8ee3b641bdfdce72a1e0cdab1f9f2af057af0a415e5a82397876676dc4c5ce8"
+      },
+      "original_failed_transport": {
+        "bytes": 2031,
+        "identity": [
+          "66306",
+          "49548795",
+          "33152",
+          "1000",
+          "1000",
+          "1",
+          "2031",
+          "1795089120811953063",
+          "1795089120811953063"
+        ],
+        "path": "/home/qq/work/p4-szzc-current-source-5cd1-20261119-r1/download/TRANSPORT-RESULT.json",
+        "sha256": "25c53c96e6cccbd90479d023e9d0e60e955fd0d7485c750bb32171fe5bdf2b07"
+      },
+      "resumed_transport": {
+        "bytes": 7051,
+        "identity": [
+          "66306",
+          "49548992",
+          "33152",
+          "1000",
+          "1000",
+          "1",
+          "7051",
+          "1795090536003499028",
+          "1795090536003499028"
+        ],
+        "path": "/home/qq/work/p4-szzc-current-source-5cd1-20261119-r1/download/RESUME2-TRANSPORT-RESULT.json",
+        "sha256": "450a84ed4b1c70b092c175fa8e3c8fd1d8912fd86295b80518dd960fdffe33d5"
+      },
+      "sdk_qualification": {
+        "bytes": 13681,
+        "identity": [
+          "66306",
+          "49549489",
+          "33060",
+          "1000",
+          "1000",
+          "1",
+          "13681",
+          "1795090656239942997",
+          "1795090656239942997"
+        ],
+        "path": "/home/qq/work/p4-szzc-current-source-5cd1-20261119-r1/qualification/RESULT.json",
+        "sha256": "39b9ef57cb36527de9caf1b4002f1776ad7cdd0bf5a4628fa5978b2b9dd30b82"
+      }
+    },
+    "units": [
+      {
+        "actual_child_reaped": true,
+        "argv": [
+          "/usr/bin/systemctl",
+          "--user",
+          "show",
+          "p4-szzc-current-download-5cd1-r1.service",
+          "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+        ],
+        "cgroup_exists": false,
+        "exit_code": 0,
+        "expected_cgroup_path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-szzc-current-download-5cd1-r1.service",
+        "name": "p4-szzc-current-download-5cd1-r1.service",
+        "original_pidfd_held_until_reaped": true,
+        "pid": 2645371,
+        "stderr": "",
+        "stdout": "LoadState=not-found\nActiveState=inactive\nSubState=dead\nMainPID=0\nControlGroup=\n",
+        "unit_properties": {
+          "ActiveState": "inactive",
+          "ControlGroup": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "SubState": "dead"
+        }
+      },
+      {
+        "actual_child_reaped": true,
+        "argv": [
+          "/usr/bin/systemctl",
+          "--user",
+          "show",
+          "p4-szzc-current-resume-5cd1-r1.service",
+          "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+        ],
+        "cgroup_exists": false,
+        "exit_code": 0,
+        "expected_cgroup_path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-szzc-current-resume-5cd1-r1.service",
+        "name": "p4-szzc-current-resume-5cd1-r1.service",
+        "original_pidfd_held_until_reaped": true,
+        "pid": 2645373,
+        "stderr": "",
+        "stdout": "LoadState=not-found\nActiveState=inactive\nSubState=dead\nMainPID=0\nControlGroup=\n",
+        "unit_properties": {
+          "ActiveState": "inactive",
+          "ControlGroup": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "SubState": "dead"
+        }
+      },
+      {
+        "actual_child_reaped": true,
+        "argv": [
+          "/usr/bin/systemctl",
+          "--user",
+          "show",
+          "p4-szzc-current-resume2-5cd1-r1.service",
+          "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+        ],
+        "cgroup_exists": false,
+        "exit_code": 0,
+        "expected_cgroup_path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-szzc-current-resume2-5cd1-r1.service",
+        "name": "p4-szzc-current-resume2-5cd1-r1.service",
+        "original_pidfd_held_until_reaped": true,
+        "pid": 2645374,
+        "stderr": "",
+        "stdout": "LoadState=not-found\nActiveState=inactive\nSubState=dead\nMainPID=0\nControlGroup=\n",
+        "unit_properties": {
+          "ActiveState": "inactive",
+          "ControlGroup": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "SubState": "dead"
+        }
+      },
+      {
+        "actual_child_reaped": true,
+        "argv": [
+          "/usr/bin/systemctl",
+          "--user",
+          "show",
+          "p4-szzc-current-sdk37-5cd1-r1.service",
+          "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+        ],
+        "cgroup_exists": false,
+        "exit_code": 0,
+        "expected_cgroup_path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-szzc-current-sdk37-5cd1-r1.service",
+        "name": "p4-szzc-current-sdk37-5cd1-r1.service",
+        "original_pidfd_held_until_reaped": true,
+        "pid": 2645375,
+        "stderr": "",
+        "stdout": "LoadState=not-found\nActiveState=inactive\nSubState=dead\nMainPID=0\nControlGroup=\n",
+        "unit_properties": {
+          "ActiveState": "inactive",
+          "ControlGroup": "",
+          "LoadState": "not-found",
+          "MainPID": "0",
+          "SubState": "dead"
+        }
+      }
+    ]
+  },
+  "all_four_units_retired": true,
+  "all_source_input_after_bookends_claimed": false,
+  "business_qualified": false,
+  "collector_source": {
+    "bytes": 7315,
+    "path": "/workspace/scratch/5cd1a8fe7e31/p4-szzc-current-source-5cd1-r1/collect_sdk_r3_failure_retirement.py",
+    "sha256": "bf095a4cd8d0b4e488ecf97b63f7c7617a6037a615dbbaec8d03f330074f35b5"
+  },
+  "complete_candidate_body_reread_by_this_observer": false,
+  "current_input_selected": false,
+  "existing_registry_changed": false,
+  "existing_selected_APK_changed": false,
+  "installed": false,
+  "limits": "ordinary qq; CPU 31; 128 MiB AS; 20/25 CPU seconds; four readonly systemctl metadata children; no APK reread, Android, native executable payload, mounts or VM",
+  "mutations": 0,
+  "native_compatibility_qualified": false,
+  "observed_utc": "2026-11-19T12:21:41.009443+00:00",
+  "original_client_exits_and_complete_output_independently_observed": true,
+  "original_clients": [
+    {
+      "exit_code": 1,
+      "original_full_output_in": "/workspace/scratch/5cd1a8fe7e31/p4-szzc-current-source-5cd1-r1/actual/SDK-R3-FAILED-RETIREMENT-CLIENTS.json",
+      "output_complete": true,
+      "session_id": "dpty-7cc463c11a090b00909074e35f085c6f131e75401467727ed0f0bfbbdb19bcfe",
+      "whole_output_bytes": 730,
+      "whole_output_sha256": "6b27e4c5d6ad47af56be0b760294cdb4f06aa2830d21e3627cd7a71d62cbe869"
+    },
+    {
+      "exit_code": 1,
+      "original_full_output_in": "/workspace/scratch/5cd1a8fe7e31/p4-szzc-current-source-5cd1-r1/actual/SDK-R3-FAILED-RETIREMENT-CLIENTS.json",
+      "output_complete": true,
+      "session_id": "dpty-e3114b8d37ec1ecccec3f6fec62efd367c21beb501839d8b4493238db1df31b5",
+      "whole_output_bytes": 1634,
+      "whole_output_sha256": "c936c809c9ca63fb64b9685bcc13575dbe82b5d9f145a679072ad7737acfbc6c"
+    },
+    {
+      "exit_code": 0,
+      "original_full_output_in": "/workspace/scratch/5cd1a8fe7e31/p4-szzc-current-source-5cd1-r1/actual/SDK-R3-FAILED-RETIREMENT-CLIENTS.json",
+      "output_complete": true,
+      "session_id": "dpty-1fc0cbe32da6816affde397cf4bcb2e011109c66d206de24cab7dd4e9f6930d5",
+      "whole_output_bytes": 2847,
+      "whole_output_sha256": "de6146a3c446d6711323089f26808bff7b8c79132eecc6c13d33f4f5cf5bd06a"
+    },
+    {
+      "exit_code": 1,
+      "original_full_output_in": "/workspace/scratch/5cd1a8fe7e31/p4-szzc-current-source-5cd1-r1/actual/SDK-R3-FAILED-RETIREMENT-CLIENTS.json",
+      "output_complete": true,
+      "session_id": "dpty-38a05f1243df46e2eada63f530ae988e99dd61629e6256825fb4f9783f25a11a",
+      "whole_output_bytes": 840,
+      "whole_output_sha256": "3fbd56abcb04ec35511201f6d1150faa556bac5624bed23e9a698e87674f747a"
+    }
+  ],
+  "passed": true,
+  "passed_scope": "SDK r3 failure preserved; exact four original user units/cgroups retired",
+  "production_ready": false,
+  "reviewed_launch": {
+    "bytes": 1330,
+    "path": "/workspace/scratch/5cd1a8fe7e31/p4-szzc-current-source-5cd1-r1/SDK-LAUNCH.json",
+    "sha256": "d050048a6171132da34a5f155f8f61446b0f6db312d91ec47a6ab6b961d39862"
+  },
+  "reviewed_worker": {
+    "bytes": 23606,
+    "path": "/workspace/scratch/5cd1a8fe7e31/p4-szzc-current-source-5cd1-r1/qualify_current_szzc_r3.py",
+    "sha256": "fb9cd65a6f33f699099e8c71c9b9e7b5c7b5c17659a55f67b71006291600612d"
+  },
+  "runtime_qualified": false,
+  "schema": "pocket4-szzc-sdk-r3-failure-independent-retirement-v1",
+  "sdk_source_qualification_passed": false,
+  "source_identity_verified": false
+}

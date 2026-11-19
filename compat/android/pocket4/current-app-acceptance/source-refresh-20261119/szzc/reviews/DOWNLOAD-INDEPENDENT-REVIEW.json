@@ -1,0 +1,49 @@
+{
+  "schema": "pocket4-szzc-source-download-independent-review-v1",
+  "state": "PASSED",
+  "created_utc": "2026-11-19T11:48:56.593748+00:00",
+  "review_only": true,
+  "source": {
+    "path": "/workspace/scratch/5cd1a8fe7e31/p4-szzc-current-source-5cd1-r1/download_current_szzc_r2.py",
+    "bytes": 8589,
+    "sha256": "20f6983d65601f2fc4f620ced5f019a173bfff73697b353144b63bdeea664314"
+  },
+  "launch": {
+    "path": "/workspace/scratch/5cd1a8fe7e31/p4-szzc-current-source-5cd1-r1/DOWNLOAD-LAUNCH.json",
+    "bytes": 1258,
+    "sha256": "d0339080848e141654ad37d7290dbb2aaf1387ed7fd23b7e60d9addc2f84589c"
+  },
+  "original_observed_HEAD": {
+    "path": "/workspace/scratch/5cd1a8fe7e31/p4-source-freshness-check-5cd1-20261119-r1/actual/PUBLISHER-REDIRECT-HEAD.json",
+    "bytes": 1502,
+    "sha256": "73fc14312fe687859899e9a1f9fa2d2ed3d3a52d90dcdd29ee1642a7845c64fd"
+  },
+  "historical_signer_input": {
+    "path": "/workspace/scratch/5cd1a8fe7e31/p4-szzc-current-source-5cd1-r1/inputs/CANDIDATE42.json",
+    "bytes": 283411,
+    "sha256": "3fd428793499f4811ff5a73c912c95ed23dfd2c82987f3a737a84624e79f5669"
+  },
+  "verified_scope": [
+    "One TLS conditional GET of exact previously observed public publisher host/path",
+    "Exact HEAD-bound 220498418-byte size, ETag, Last-Modified, content-type, identity encoding; no redirected/authenticated or cookie request",
+    "Canonical ordinary-qq new owned root and HEAD path; held descriptor/path full F9 before/after and exact full source bytes SHA",
+    "One-MiB streaming bounded output; maximum new APK plus small receipt below 256 MiB; no previous APK or current selector mutation",
+    "24 GiB free disk plus total candidate at admission; every read/write loop enforces 24 GiB runtime floor",
+    "128 MiB hard /112 MiB high /96 MiB RLIMIT_AS, CPU31/100%, swap0, Tasks8, worker transfer150s, unit180s/stop5/KillModecontrol-group/NoNewPrivileges",
+    "On failure no qualification; transport full SHA refers accurately to streamed bytes, SDK must independently hash actual on-disk body",
+    "Source identity/signature/runtime/business/production flags remain false; no install or Android operation"
+  ],
+  "fixed_before_pass": [
+    "HEAD pathname full F9 added to held-FD bookends",
+    "Runtime disk floor added around every download write"
+  ],
+  "signer_basis": "Historical CANDIDATE42 com.szzc current327/proposed328 same signer d85bed4d2a7c08e1b6b5f0097d6c66a79a5b12b58d97e794d3b5c5bff2aeaf44; SDK must use current registry 329 for version comparison. Historical inaccessible paths not opened.",
+  "necessary_fixes": [],
+  "actual_execution_performed_by_reviewer": false,
+  "actual_completion_required": [
+    "Exact original client exit and complete logs",
+    "Actual transport receipt and actual file SHA/F9",
+    "Exact unit/cgroup retirement",
+    "Subsequent SDK signature/AXML/full ZIP body verification before source qualification"
+  ]
+}

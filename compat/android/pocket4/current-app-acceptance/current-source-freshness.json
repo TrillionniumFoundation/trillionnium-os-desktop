@@ -5,8 +5,8 @@
     "com.ubercab"
   ],
   "observed_utc": "2026-11-18T13:47:12.402210+00:00",
-  "reconciled_utc": "2026-11-18T18:54:03.638665+00:00",
-  "remaining_current_source_input_count": 6,
+  "reconciled_utc": "2026-11-19T02:47:21.616528+00:00",
+  "remaining_current_source_input_count": 0,
   "required_non_system_count": 29,
   "required_system_count": 10,
   "rows": [
@@ -226,16 +226,74 @@
       ]
     },
     {
-      "complete_inputs": [],
-      "current_acquired_version": null,
-      "input_blocker": "current_original_google_play_delivery_unavailable_country",
+      "business_qualified": false,
+      "complete_inputs": [
+        {
+          "all_outer_zip_members_crc_verified": true,
+          "current_delivery_obtained": false,
+          "form": "complete_retained_official_base_and_split_set",
+          "input": {
+            "bytes": 229139750,
+            "f9": [
+              66306,
+              40394112,
+              33152,
+              1000,
+              1000,
+              1,
+              229139750,
+              1795054887843145545,
+              1795054887843145545
+            ],
+            "path": "/home/alex/work/p4-retained-play-x86_64-revalidation-20261119-audit-r1/transport/com.bestbuy.android.apks",
+            "sha256": "3d1f639de8a52c66abb4b28346d5d132df9f7bf23a8ad071b0239a450ab3e6d0"
+          },
+          "original_apks": [
+            {
+              "bytes": 149379585,
+              "member": "base.apk",
+              "retained_path": "/home/alex/work/p4-official-play-apk-delivery-01a1ca08-r1/com.bestbuy.android/base.apk",
+              "sha256": "2bcac97ddc90ed651d5d3b6f589e606eb1041347a615ded2a585c75d10e79342"
+            },
+            {
+              "bytes": 77012168,
+              "member": "split_config.x86_64.apk",
+              "retained_path": "/home/alex/work/p4-official-play-apk-delivery-01a1ca08-r1/com.bestbuy.android/split_config.x86_64.apk",
+              "sha256": "e25c5930aac42f02cc9205b47be12e6fc4b37e364b3bfd6a3970d4a27a49676c"
+            },
+            {
+              "bytes": 2747579,
+              "member": "split_config.xxhdpi.apk",
+              "retained_path": "/home/alex/work/p4-official-play-apk-delivery-01a1ca08-r1/com.bestbuy.android/split_config.xxhdpi.apk",
+              "sha256": "8dea005602658bf1bf859a4654fadc547a91f42a22b27d1f4194c45558707528"
+            }
+          ],
+          "production_ready": false,
+          "role": "selected_current_source_input",
+          "runtime_qualified": false,
+          "selected_abi": "x86_64",
+          "signature_verified_by_SDK37": true,
+          "source_receipt": {
+            "bytes": 45091,
+            "path": "compat/android/pocket4/current-app-input-closure/receipts/com.bestbuy.android.json",
+            "sha256": "7392d906f938b6d367b62eb10d258e1ed22786014f683cb7ea2fc76331d7f896"
+          },
+          "version": "26.11.10",
+          "version_code": 2012312346
+        }
+      ],
+      "current_acquired_version": "26.11.10",
+      "difference": "The complete retained official Play owned-AVD set matches current GET_ITEMS package, version name, long version code and signer. Fresh SDK37 verification, full ZIP CRC and native x86_64 split dependency closure passed. Current UNAVAILABLE_COUNTRY remains unchanged; no new delivery is claimed. Destination custody, device profile, native execution and business acceptance remain pending.",
+      "input_blocker": null,
       "installed": false,
       "name": "Best Buy",
+      "native_compatibility_qualified": false,
       "package": "com.bestbuy.android",
+      "previous_input_blocker": "current_original_google_play_delivery_unavailable_country",
       "production_ready": false,
       "runtime_qualified": false,
       "scope_kind": "third_party",
-      "selected_input_version": null,
+      "selected_input_version": "26.11.10",
       "source_availability_observations": [
         {
           "downloaded_apks": 0,
@@ -253,7 +311,12 @@
           "version_code": 2012312346
         }
       ],
-      "source_input_selected": false,
+      "source_input_closed_by": {
+        "bytes": 45091,
+        "path": "compat/android/pocket4/current-app-input-closure/receipts/com.bestbuy.android.json",
+        "sha256": "7392d906f938b6d367b62eb10d258e1ed22786014f683cb7ea2fc76331d7f896"
+      },
+      "source_input_selected": true,
       "version_observations": [
         {
           "body_sha256": "31979e8f06240ea9e291e7f83eb1076fb0f086d02aa3c427b3e16c6fa759fedd",
@@ -267,16 +330,80 @@
       ]
     },
     {
-      "complete_inputs": [],
-      "current_acquired_version": null,
-      "input_blocker": "current_original_google_play_delivery_unavailable_country",
+      "business_qualified": false,
+      "complete_inputs": [
+        {
+          "all_outer_zip_members_crc_verified": true,
+          "current_delivery_obtained": false,
+          "form": "complete_retained_official_base_and_split_set",
+          "input": {
+            "bytes": 91030159,
+            "f9": [
+              66306,
+              40394113,
+              33152,
+              1000,
+              1000,
+              1,
+              91030159,
+              1795054888764155723,
+              1795054888764155723
+            ],
+            "path": "/home/alex/work/p4-retained-play-x86_64-revalidation-20261119-audit-r1/transport/com.ehi.national.mobile.apks",
+            "sha256": "b4a53b0a1758f05870f6a17f086fa4f6192e83c6fc73815f7179adb00f6fbb32"
+          },
+          "original_apks": [
+            {
+              "bytes": 59416960,
+              "member": "base.apk",
+              "retained_path": "/home/alex/work/p4-official-play-apk-delivery-01a1ca08-r1/com.ehi.national.mobile/base.apk",
+              "sha256": "78fc62db288612350a2c3c5b990dbd3dfd3d1acc9fcf55bf605cf7cebba7e637"
+            },
+            {
+              "bytes": 70041,
+              "member": "split_config.en.apk",
+              "retained_path": "/home/alex/work/p4-official-play-apk-delivery-01a1ca08-r1/com.ehi.national.mobile/split_config.en.apk",
+              "sha256": "1297bbcfae6c88510cb24c7feedc207ed0ef21199860b429abd8910f617519e1"
+            },
+            {
+              "bytes": 31435286,
+              "member": "split_config.x86_64.apk",
+              "retained_path": "/home/alex/work/p4-official-play-apk-delivery-01a1ca08-r1/com.ehi.national.mobile/split_config.x86_64.apk",
+              "sha256": "dce80c9358549ae86eca557f9d9e2cd3dcb86fec25dc2f95b94898066abc1573"
+            },
+            {
+              "bytes": 107320,
+              "member": "split_config.xxhdpi.apk",
+              "retained_path": "/home/alex/work/p4-official-play-apk-delivery-01a1ca08-r1/com.ehi.national.mobile/split_config.xxhdpi.apk",
+              "sha256": "96020c5b19c2384cf4e20c0ccec6f4541170a72643b825472053ef8918c5d19b"
+            }
+          ],
+          "production_ready": false,
+          "role": "selected_current_source_input",
+          "runtime_qualified": false,
+          "selected_abi": "x86_64",
+          "signature_verified_by_SDK37": true,
+          "source_receipt": {
+            "bytes": 44815,
+            "path": "compat/android/pocket4/current-app-input-closure/receipts/com.ehi.national.mobile.json",
+            "sha256": "f337bc50bacbbde84ffd6a34d7c312df86041dba0443d4ae3eb9e4cc645cb68f"
+          },
+          "version": "6.16.0.9403",
+          "version_code": 9403
+        }
+      ],
+      "current_acquired_version": "6.16.0.9403",
+      "difference": "The complete retained official Play owned-AVD set matches current GET_ITEMS package, version name, long version code and signer. Fresh SDK37 verification, full ZIP CRC and native x86_64 split dependency closure passed. Current UNAVAILABLE_COUNTRY remains unchanged; no new delivery is claimed. Destination custody, device profile, native execution and business acceptance remain pending.",
+      "input_blocker": null,
       "installed": false,
       "name": "National",
+      "native_compatibility_qualified": false,
       "package": "com.ehi.national.mobile",
+      "previous_input_blocker": "current_original_google_play_delivery_unavailable_country",
       "production_ready": false,
       "runtime_qualified": false,
       "scope_kind": "third_party",
-      "selected_input_version": null,
+      "selected_input_version": "6.16.0.9403",
       "source_availability_observations": [
         {
           "downloaded_apks": 0,
@@ -294,7 +421,12 @@
           "version_code": 9403
         }
       ],
-      "source_input_selected": false,
+      "source_input_closed_by": {
+        "bytes": 44815,
+        "path": "compat/android/pocket4/current-app-input-closure/receipts/com.ehi.national.mobile.json",
+        "sha256": "f337bc50bacbbde84ffd6a34d7c312df86041dba0443d4ae3eb9e4cc645cb68f"
+      },
+      "source_input_selected": true,
       "version_observations": [
         {
           "body_sha256": "2c4c346ca908f85c6d1126009badb7f5d057b91c46bb43dd5e9a8f22f4fad489",
@@ -352,16 +484,80 @@
       ]
     },
     {
-      "complete_inputs": [],
-      "current_acquired_version": null,
-      "input_blocker": "current_original_google_play_delivery_unavailable_country",
+      "business_qualified": false,
+      "complete_inputs": [
+        {
+          "all_outer_zip_members_crc_verified": true,
+          "current_delivery_obtained": false,
+          "form": "complete_retained_official_base_and_split_set",
+          "input": {
+            "bytes": 129672496,
+            "f9": [
+              66306,
+              40394114,
+              33152,
+              1000,
+              1000,
+              1,
+              129672496,
+              1795054889392162665,
+              1795054889392162665
+            ],
+            "path": "/home/alex/work/p4-retained-play-x86_64-revalidation-20261119-audit-r1/transport/com.hertz.android.digital.apks",
+            "sha256": "de7b799fb56d004c4c23585f43dc9c6d31621d7e9bc8f636411da616426b1f9c"
+          },
+          "original_apks": [
+            {
+              "bytes": 90079086,
+              "member": "base.apk",
+              "retained_path": "/home/alex/work/p4-official-play-apk-delivery-01a1ca08-r1/com.hertz.android.digital/base.apk",
+              "sha256": "21217707c167e37f40b9652feb02daf68d3f3a7d7c57b09182fa472d5fb01a74"
+            },
+            {
+              "bytes": 209305,
+              "member": "split_config.en.apk",
+              "retained_path": "/home/alex/work/p4-official-play-apk-delivery-01a1ca08-r1/com.hertz.android.digital/split_config.en.apk",
+              "sha256": "8d2578bd8c5fc8b5147074f7e92e99a17d13b9d9b9eab15812662d36c746959d"
+            },
+            {
+              "bytes": 35162938,
+              "member": "split_config.x86_64.apk",
+              "retained_path": "/home/alex/work/p4-official-play-apk-delivery-01a1ca08-r1/com.hertz.android.digital/split_config.x86_64.apk",
+              "sha256": "b7b04f1d6d1ccc82df31eeb8517df5b4964898aed6e0f91c266d9eaf53f55de3"
+            },
+            {
+              "bytes": 4220615,
+              "member": "split_config.xxhdpi.apk",
+              "retained_path": "/home/alex/work/p4-official-play-apk-delivery-01a1ca08-r1/com.hertz.android.digital/split_config.xxhdpi.apk",
+              "sha256": "54b1ad7fc3a62bd7cfb908f778d7caf303a07de6d6be88b301f78f26c20988d3"
+            }
+          ],
+          "production_ready": false,
+          "role": "selected_current_source_input",
+          "runtime_qualified": false,
+          "selected_abi": "x86_64",
+          "signature_verified_by_SDK37": true,
+          "source_receipt": {
+            "bytes": 47259,
+            "path": "compat/android/pocket4/current-app-input-closure/receipts/com.hertz.android.digital.json",
+            "sha256": "e825d9a93af5390a698c2dbfdc39a17063d8de014ec7fbc5448607d01dfce372"
+          },
+          "version": "5.8.0",
+          "version_code": 1392
+        }
+      ],
+      "current_acquired_version": "5.8.0",
+      "difference": "The complete retained official Play owned-AVD set matches current GET_ITEMS package, version name, long version code and signer. Fresh SDK37 verification, full ZIP CRC and native x86_64 split dependency closure passed. Current UNAVAILABLE_COUNTRY remains unchanged; no new delivery is claimed. Destination custody, device profile, native execution and business acceptance remain pending.",
+      "input_blocker": null,
       "installed": false,
       "name": "Hertz",
+      "native_compatibility_qualified": false,
       "package": "com.hertz.android.digital",
+      "previous_input_blocker": "current_original_google_play_delivery_unavailable_country",
       "production_ready": false,
       "runtime_qualified": false,
       "scope_kind": "third_party",
-      "selected_input_version": null,
+      "selected_input_version": "5.8.0",
       "source_availability_observations": [
         {
           "downloaded_apks": 0,
@@ -379,7 +575,12 @@
           "version_code": 1392
         }
       ],
-      "source_input_selected": false,
+      "source_input_closed_by": {
+        "bytes": 47259,
+        "path": "compat/android/pocket4/current-app-input-closure/receipts/com.hertz.android.digital.json",
+        "sha256": "e825d9a93af5390a698c2dbfdc39a17063d8de014ec7fbc5448607d01dfce372"
+      },
+      "source_input_selected": true,
       "version_observations": [
         {
           "body_sha256": "00d18efd451682e45df894ab460118906fd902e469fb516f8d27b491839be0bb",
@@ -818,6 +1019,7 @@
       ]
     },
     {
+      "business_qualified": false,
       "complete_inputs": [
         {
           "abi_directories": [
@@ -859,18 +1061,73 @@
           "static_observation_sha256": "a1adb2f959ea6227cdd05bf944d7fd74d97984f18473c0e61a81b07c4b3107be",
           "version": "8.86.4",
           "version_code": 800860004
+        },
+        {
+          "abi_directories": [
+            "arm64-v8a"
+          ],
+          "actual_ARM64_ELF_libraries": 59,
+          "all_outer_zip_members_crc_verified": true,
+          "bytes": 65623708,
+          "download_url": "https://imtt.dd.qq.com/sjy.00022/sjy.00004/16891/apk/B455B86A4352A640E59D47FA1188E2CA.apk?fsname=com.sankuai.meituan.takeoutnew_8.86.4.apk",
+          "f9": [
+            66306,
+            40394116,
+            33152,
+            1000,
+            1000,
+            1,
+            65623708,
+            1795054955435901240,
+            1795054955435901240
+          ],
+          "path": "/home/alex/work/p4-required-apps-11ea-20261119-r1/meituan-waimai-current-arm64.apk",
+          "production_ready": false,
+          "publisher_payload_count": 4,
+          "role": "selected_current_source_input",
+          "runtime_qualified": false,
+          "sha256": "ff35e3525b1bd353209bb3694c2f15c7076169571a16d3c377b2e623a6396461",
+          "signature_verified_by_SDK37": true,
+          "source_kind": "publisher_linked_official_standalone_apk",
+          "source_observation": {
+            "bytes": 5040,
+            "path": "compat/android/pocket4/current-app-input-closure/MEITUAN-SOURCE.json",
+            "sha256": "3eb7de6eb7cfc515a0d300a2baefc7d7f3ce03306ba029886709dd94a1c65d29"
+          },
+          "source_page": "https://a.app.qq.com/o/simple.jsp?pkgname=com.sankuai.meituan.takeoutnew",
+          "source_receipt": {
+            "bytes": 31779,
+            "path": "compat/android/pocket4/current-app-input-closure/receipts/com.sankuai.meituan.takeoutnew.json",
+            "sha256": "7bbf2bdbea678c0b64de22e133dc740036359d87c98ad782efe18beb2095dcb0"
+          },
+          "version": "8.86.4",
+          "version_code": 800860004
         }
       ],
       "current_acquired_version": "8.86.4",
-      "difference": "The independently published PP normal download delivered complete 8.86.4/code800860004, 6237 ZIP members CRC verified, but all60 actual ELF files are ARM32 class1/machine40 under lib/armeabi. It cannot satisfy the fixed ARM64 translator input requirement. Old verified8.85.1 has63 ARM64 ELF files but is not latest and cannot replace8.86.4. AppShare category reports8.86.10 behind a CAPTCHA detail gate; this remains unverified metadata. Tencent challenge and Huawei403 chains were stopped. SDK signing verification of the nondeployable32-bit PP variant was not requested.",
-      "input_blocker": "latest_8.86.4_ARM64_input_missing",
+      "difference": "Publisher website QR leads to its getapp1013 page, which links the public app-store page. Its published appDetail.apkUrl64 and HTTPS protocol rule delivered complete 8.86.4/code800860004 ARM64. Actual SDK37 and unchanged v4 verification passed with 59 actual ARM64 ELF libraries, three exact mtguard versioned containers whose bodies remain unverified, and one exact DEX035 payload. Current official signer matches the previous official candidate but differs from the old local test-installed signer; preserving app data and signer migration remain unqualified. Prior old-version, ARM32 and unverified AppShare observations remain evidence, not selected input.",
+      "input_blocker": null,
       "installed": false,
       "name": "Meituan Takeout",
+      "native_compatibility_qualified": false,
       "package": "com.sankuai.meituan.takeoutnew",
+      "previous_input_blocker": "latest_8.86.4_ARM64_input_missing",
       "production_ready": false,
       "runtime_qualified": false,
       "scope_kind": "third_party",
-      "selected_input_version": null,
+      "selected_input_version": "8.86.4",
+      "signer_migration_gate": {
+        "current_candidate_signers": [
+          "73a611c3a01dc6e11388873daeee1e556ad9e5768e5c222055f508a24c3a8215"
+        ],
+        "old_app_or_data_uninstalled": false,
+        "recorded_installed_signers": [
+          "8b6737279ed0a9839ec3c4b256256e68eb1e5f7e1386b0dc6c38eb7a04742bbd"
+        ],
+        "same_package_data_preserving_upgrade_qualified": false,
+        "source_note": "Current official signer 73a611c3 differs from prior local test-installed 8b673727. No signature override, uninstallation, private data access, or data migration is performed.",
+        "state": "PENDING"
+      },
       "source_availability_observations": [
         {
           "apks_obtained": 0,
@@ -892,7 +1149,12 @@
           "this_package_browser_attempted": true
         }
       ],
-      "source_input_selected": false,
+      "source_input_closed_by": {
+        "bytes": 31779,
+        "path": "compat/android/pocket4/current-app-input-closure/receipts/com.sankuai.meituan.takeoutnew.json",
+        "sha256": "7bbf2bdbea678c0b64de22e133dc740036359d87c98ad782efe18beb2095dcb0"
+      },
+      "source_input_selected": true,
       "version_observations": [
         {
           "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/meituan-mi-freshness.body",
@@ -992,17 +1254,62 @@
       ]
     },
     {
-      "complete_inputs": [],
-      "current_acquired_version": null,
-      "difference": "Xiaomi/Tencent Android metadata lists 41.2.0; no complete current APK obtained. AppShare 41.2.0_41200001/code410200 is beta and excluded. Tencent file GET returns JS challenge; publisher ugapk approval rejection remains no-retry. FZXZ 41.2.0 is different package com.ss.android.ugc.aweme.hubble and excluded. Huawei public latest query returned 403; stopped.",
-      "input_blocker": "complete_current_input_missing",
+      "business_qualified": false,
+      "complete_inputs": [
+        {
+          "abi_directories": [
+            "arm64-v8a"
+          ],
+          "actual_ARM64_ELF_libraries": 255,
+          "all_outer_zip_members_crc_verified": true,
+          "bytes": 356756957,
+          "download_url": "https://imtt.dd.qq.com/sjy.00022/sjy.00004/16891/apk/98B17FCAEA8B86F10FF9D67A37BA8FE8.apk?fsname=com.ss.android.ugc.aweme_41.2.0.apk",
+          "f9": [
+            66306,
+            40394226,
+            33152,
+            1000,
+            1000,
+            1,
+            356756957,
+            1795055714228245666,
+            1795055714228245666
+          ],
+          "path": "/home/alex/work/p4-required-apps-11ea-20261119-r1/douyin-complete-arm64.apk",
+          "production_ready": false,
+          "publisher_payload_count": 1,
+          "role": "selected_current_source_input",
+          "runtime_qualified": false,
+          "sha256": "823f3be5c715d810015dd914292ec2f55082f8ad0e50347b681409bfc62a7d27",
+          "signature_verified_by_SDK37": true,
+          "source_kind": "official_app_store_standalone_apk",
+          "source_observation": {
+            "bytes": 3727,
+            "path": "compat/android/pocket4/current-app-input-closure/DOUYIN-SOURCE.json",
+            "sha256": "7a1d653df4b11076895a99fd17840cba44b14a5e8330621b3fb004dfa009bca6"
+          },
+          "source_page": "https://a.app.qq.com/o/simple.jsp?pkgname=com.ss.android.ugc.aweme",
+          "source_receipt": {
+            "bytes": 94131,
+            "path": "compat/android/pocket4/current-app-input-closure/receipts/com.ss.android.ugc.aweme.json",
+            "sha256": "86b9d596e7e34fe947d4b32206d5345db961b92747071a89451b83d783e5786d"
+          },
+          "version": "41.2.0",
+          "version_code": 410201
+        }
+      ],
+      "current_acquired_version": "41.2.0",
+      "difference": "The current public official app-store release has a complete ARM64 source input. Actual SDK37, full ZIP CRC and unchanged content-gate verification passed with an explicit historical signer reference and exact native/publisher payload identities. Earlier incomplete downloads, beta/different package candidates and stopped provider routes remain historical observations. No installation, native execution or business acceptance is claimed.",
+      "input_blocker": null,
       "installed": false,
       "name": "Douyin",
+      "native_compatibility_qualified": false,
       "package": "com.ss.android.ugc.aweme",
+      "previous_input_blocker": "complete_current_input_missing",
       "production_ready": false,
       "runtime_qualified": false,
       "scope_kind": "third_party",
-      "selected_input_version": null,
+      "selected_input_version": "41.2.0",
       "source_availability_observations": [
         {
           "apks_obtained": 0,
@@ -1024,7 +1331,12 @@
           "this_package_browser_attempted": false
         }
       ],
-      "source_input_selected": false,
+      "source_input_closed_by": {
+        "bytes": 94131,
+        "path": "compat/android/pocket4/current-app-input-closure/receipts/com.ss.android.ugc.aweme.json",
+        "sha256": "86b9d596e7e34fe947d4b32206d5345db961b92747071a89451b83d783e5786d"
+      },
+      "source_input_selected": true,
       "version_observations": [
         {
           "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/douyin-mi-current.body",
@@ -1303,6 +1615,7 @@
           "source_page": "https://wap.pp.cn/app_zmoUBY8LcxD/?tdsourcetag=s_pcqq_aiomsg"
         }
       ],
+      "business_qualified": false,
       "complete_inputs": [
         {
           "abi_directories": [
@@ -1318,18 +1631,48 @@
           "source_kind": "public_mirror_996_25pp",
           "source_page": "https://www.996.com/download/285799/",
           "version": "8.32.0"
+        },
+        {
+          "abi_directories": [
+            "arm64-v8a"
+          ],
+          "all_outer_zip_members_crc_verified": true,
+          "bytes": 32719695,
+          "download_url": "https://home-api.pinduoduo.com/homesite/download-app-v2?rs=0&arch=arm64",
+          "path": "/home/alex/work/p4-required-apps-11ea-20261119-r1/pinduoduo-current-arm64.apk",
+          "production_ready": false,
+          "role": "selected_current_source_input",
+          "runtime_qualified": false,
+          "sha256": "63f72a45017afe73aa06ff844460b63b947876ad0581d71adc19cf203435b744",
+          "signature_verified_by_SDK37": true,
+          "source_kind": "official_publisher_explicit_arm64_QR_download",
+          "source_observation": {
+            "bytes": 3014,
+            "path": "compat/android/pocket4/current-app-input-closure/PINDUODUO-SOURCE.json",
+            "sha256": "649b030d5c0ba9c26e95ce08b0975e1548e3d039b0037823dbe1f233065ac248"
+          },
+          "source_page": "https://www.yangkeduo.com/home/download/",
+          "source_receipt": {
+            "bytes": 9944,
+            "path": "compat/android/pocket4/current-app-input-closure/receipts/com.xunmeng.pinduoduo.json",
+            "sha256": "945dcb12d849affec7346b637891f1cfc5ad461e3640934801241b62a331f43d"
+          },
+          "version": "8.32.0",
+          "version_code": 83200
         }
       ],
       "current_acquired_version": "8.32.0",
-      "difference": "Held 8.32.0/code83200 is ARM32-only; Tencent public metadata refers to identical MD5/size. Fixed translator requires ARM64, so this is a source observation only and not a deployable final input. Huawei public latest query returned 403; stopped without interface credentials or alternate region.",
-      "input_blocker": "current_ARM64_input_missing",
+      "difference": "The publisher website explicitly offers a 64-bit installation QR. Its normal official redirect chain delivered current 8.32.0/code83200 with 49 actual ARM64 ELF libraries, full ZIP CRC and SDK37 signature verification matching the pinned historical official signer. The earlier ARM32-only observations remain historical evidence; final installation and runtime/business acceptance remain pending.",
+      "input_blocker": null,
       "installed": false,
       "name": "Pinduoduo",
+      "native_compatibility_qualified": false,
       "package": "com.xunmeng.pinduoduo",
+      "previous_input_blocker": "current_ARM64_input_missing",
       "production_ready": false,
       "runtime_qualified": false,
       "scope_kind": "third_party",
-      "selected_input_version": null,
+      "selected_input_version": "8.32.0",
       "source_availability_observations": [
         {
           "apks_obtained": 0,
@@ -1351,7 +1694,12 @@
           "this_package_browser_attempted": false
         }
       ],
-      "source_input_selected": false,
+      "source_input_closed_by": {
+        "bytes": 9944,
+        "path": "compat/android/pocket4/current-app-input-closure/receipts/com.xunmeng.pinduoduo.json",
+        "sha256": "945dcb12d849affec7346b637891f1cfc5ad461e3640934801241b62a331f43d"
+      },
+      "source_input_selected": true,
       "version_observations": [
         {
           "body_path": "/workspace/scratch/162b3b07f778/p4-app-sources-20261118-r1/pdd-mi-current.body",
@@ -1773,6 +2121,6 @@
     }
   ],
   "schema": "pocket4-current-input-freshness-observations-v1",
-  "scope": "Source/freshness observations only; never runtime/ABI/business production acceptance. Acquisition continues.",
-  "selected_current_source_input_count": 23
+  "scope": "Source/freshness observations only. All 29 required non-system source inputs are selected; installation, native execution, business acceptance and production qualification remain pending.",
+  "selected_current_source_input_count": 29
 }

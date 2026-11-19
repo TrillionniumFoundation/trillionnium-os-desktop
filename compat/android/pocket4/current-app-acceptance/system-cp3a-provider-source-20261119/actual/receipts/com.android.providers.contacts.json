@@ -1,0 +1,467 @@
+{
+  "GSI_manifest": {
+    "bytes": 12184,
+    "identity": [
+      "66306",
+      "74639245",
+      "33060",
+      "1000",
+      "1000",
+      "1",
+      "12184",
+      "1795010167062241279",
+      "1795010167062241279"
+    ],
+    "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/official-gsi/official-gsi-manifest.json",
+    "sha256": "8dff52f9abc8bd219266e1e85ba8cd3063677443aafc3efd90c4df9c8f04bfde"
+  },
+  "SDK_preparation": {
+    "bytes": 7636,
+    "identity": [
+      "66306",
+      "100960465",
+      "33152",
+      "1000",
+      "1000",
+      "1",
+      "7636",
+      "1795018516929182351",
+      "1795018516929182351"
+    ],
+    "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/metadata/sdk37-preparation-receipt.json",
+    "sha256": "c9b2003dfeec0d0dc72263ff63723f9b4fe5f77ca4ad0b6ac77224ca80a78bb5"
+  },
+  "actual_UID": null,
+  "apk": {
+    "bytes": 942497,
+    "identity": [
+      "66306",
+      "49546755",
+      "33060",
+      "1000",
+      "1000",
+      "1",
+      "942497",
+      "1795086128749319116",
+      "1795086128853315402"
+    ],
+    "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/apks/com.android.providers.contacts.apk",
+    "sha256": "196cf184ca743601469dc235a4c7a163ac8ca9442cfdbd033bdaf109f5a9fd14"
+  },
+  "business_qualified": false,
+  "commands": [
+    {
+      "actual_child_reaped": true,
+      "after_reap_echild": true,
+      "argv": [
+        "/usr/sbin/debugfs",
+        "-R",
+        "ls -p /system/priv-app/ContactsProvider",
+        "/proc/self/fd/21"
+      ],
+      "ended_ns": 1795086128746890801,
+      "exit": 0,
+      "name": "com.android.providers.contacts-ls",
+      "original_pidfd_held_until_reaped": true,
+      "output_complete": true,
+      "pid": 2560637,
+      "started_ns": 1795086128638619576,
+      "stderr": {
+        "bytes": 28,
+        "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/logs/com.android.providers.contacts-ls.stderr",
+        "sha256": "d1f395f3b25e168ae41957e6d34052c014f7ea951493daefffd1b986039396c8"
+      },
+      "stdout": {
+        "bytes": 113,
+        "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/logs/com.android.providers.contacts-ls.stdout",
+        "sha256": "ea1ecf8b19527901934e26a21148688a2a6dcb4ce66712987bfa289bffa3f1fb"
+      }
+    },
+    {
+      "actual_child_reaped": true,
+      "after_reap_echild": true,
+      "argv": [
+        "/usr/sbin/debugfs",
+        "-R",
+        "dump /system/priv-app/ContactsProvider/ContactsProvider.apk /proc/self/fd/23",
+        "/proc/self/fd/21"
+      ],
+      "ended_ns": 1795086128854390894,
+      "exit": 0,
+      "name": "com.android.providers.contacts-dump",
+      "original_pidfd_held_until_reaped": true,
+      "output_complete": true,
+      "pid": 2560655,
+      "started_ns": 1795086128747757151,
+      "stderr": {
+        "bytes": 28,
+        "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/logs/com.android.providers.contacts-dump.stderr",
+        "sha256": "d1f395f3b25e168ae41957e6d34052c014f7ea951493daefffd1b986039396c8"
+      },
+      "stdout": {
+        "bytes": 0,
+        "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/logs/com.android.providers.contacts-dump.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "actual_child_reaped": true,
+      "after_reap_echild": true,
+      "argv": [
+        "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/sdk37/aapt2",
+        "dump",
+        "badging",
+        "/proc/self/fd/23"
+      ],
+      "ended_ns": 1795086128969944524,
+      "exit": 0,
+      "name": "com.android.providers.contacts-badging",
+      "original_pidfd_held_until_reaped": true,
+      "output_complete": true,
+      "pid": 2560673,
+      "started_ns": 1795086128858560158,
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/logs/com.android.providers.contacts-badging.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 7645,
+        "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/logs/com.android.providers.contacts-badging.stdout",
+        "sha256": "1a0e3d6b4a570bec1e92a3e8d4ee5f32c81b7a123d9b55a9b5bc594c322bd6e0"
+      }
+    },
+    {
+      "actual_child_reaped": true,
+      "after_reap_echild": true,
+      "argv": [
+        "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/sdk37/aapt2",
+        "dump",
+        "xmltree",
+        "/proc/self/fd/23",
+        "--file",
+        "AndroidManifest.xml"
+      ],
+      "ended_ns": 1795086129080265878,
+      "exit": 0,
+      "name": "com.android.providers.contacts-manifest",
+      "original_pidfd_held_until_reaped": true,
+      "output_complete": true,
+      "pid": 2560674,
+      "started_ns": 1795086128971082874,
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/logs/com.android.providers.contacts-manifest.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 19041,
+        "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/logs/com.android.providers.contacts-manifest.stdout",
+        "sha256": "373c599cbd1679a2396883cfc1e723f9c533fd81acbffedbe014df045dee5757"
+      }
+    },
+    {
+      "actual_child_reaped": true,
+      "after_reap_echild": true,
+      "argv": [
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-Xmx128m",
+        "-XX:+UseSerialGC",
+        "-XX:CompressedClassSpaceSize=32m",
+        "-XX:ReservedCodeCacheSize=32m",
+        "-XX:MaxMetaspaceSize=64m",
+        "-Xss256k",
+        "-Duser.home=/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/home",
+        "-Djava.io.tmpdir=/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/tmp",
+        "-jar",
+        "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/sdk37/lib/apksigner.jar",
+        "verify",
+        "--min-sdk-version",
+        "37",
+        "--max-sdk-version",
+        "37",
+        "--verbose",
+        "--print-certs",
+        "/proc/self/fd/23"
+      ],
+      "ended_ns": 1795086129364685639,
+      "exit": 0,
+      "name": "com.android.providers.contacts-signature",
+      "original_pidfd_held_until_reaped": true,
+      "output_complete": true,
+      "pid": 2560675,
+      "started_ns": 1795086129081422707,
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/logs/com.android.providers.contacts-signature.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 1116,
+        "path": "/home/qq/work/p4-cp3a-provider-source-5cd1-20261119-r2/work/logs/com.android.providers.contacts-signature.stdout",
+        "sha256": "b261428f3371b3ffdb327d67465e4abc2964ca3cf773f7cb46ac07e67239c837"
+      }
+    }
+  ],
+  "complete_zip_members": [
+    {
+      "bytes": 751948,
+      "complete_eof_crc_verified": true,
+      "compressed_bytes": 751948,
+      "compression": 0,
+      "crc32": "0cc79484",
+      "directory": false,
+      "name": "classes.dex",
+      "sha256": "ee267bc7cc6fcf0cf02fcc0d6e1dbb1c9f83ef6b740201a21d1b14baf189e328"
+    },
+    {
+      "bytes": 780,
+      "complete_eof_crc_verified": true,
+      "compressed_bytes": 780,
+      "compression": 0,
+      "crc32": "2d67e612",
+      "directory": false,
+      "name": "com/android/providers/contacts/ChangeIds_compat_config.xml",
+      "sha256": "6a5f530919a08acf0dd7406649b308e950d53519cf3b56d23f54b28866f87868"
+    },
+    {
+      "bytes": 179240,
+      "complete_eof_crc_verified": true,
+      "compressed_bytes": 179240,
+      "compression": 0,
+      "crc32": "085121a7",
+      "directory": false,
+      "name": "resources.arsc",
+      "sha256": "bbf8502c85c5ce6acd0880376a520d640bf59cff2510efff82fb59504a05d5a3"
+    },
+    {
+      "bytes": 13120,
+      "complete_eof_crc_verified": true,
+      "compressed_bytes": 3224,
+      "compression": 8,
+      "crc32": "eb105fa5",
+      "directory": false,
+      "name": "AndroidManifest.xml",
+      "sha256": "e1657ed72f8a749a352d59803014eb5e8ab7e21d8f9ac4674eb9bac09c5979e1"
+    },
+    {
+      "bytes": 1740,
+      "complete_eof_crc_verified": true,
+      "compressed_bytes": 597,
+      "compression": 8,
+      "crc32": "5feed473",
+      "directory": false,
+      "name": "res/layout/contact_dump_activity.xml",
+      "sha256": "e68bd31bdbd5eef0efe9a3cf1786fd2ec33725f62b239106f173483009932730"
+    }
+  ],
+  "container_chain": [],
+  "framework_epoch": null,
+  "full_CRC_and_SHA_verified": true,
+  "full_system_image": {
+    "bytes": 2294853632,
+    "identity": [
+      "66306",
+      "75949965",
+      "33060",
+      "1000",
+      "1000",
+      "1",
+      "2294853632",
+      "1795010165841291907",
+      "1795010165841291907"
+    ],
+    "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/official-gsi/images/system.img",
+    "sha256": "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4"
+  },
+  "individual_APK_install_authorized": false,
+  "install_mode": "coherent_full_GSI_only",
+  "installed": false,
+  "manifest": {
+    "axml_noncanonical_typed_header_count": 0,
+    "axml_noncanonical_typed_header_examples": [],
+    "config_for_split": null,
+    "is_feature_split": false,
+    "is_split_required": false,
+    "isolated_splits": false,
+    "manifest_flags": {
+      "allowBackup": "false",
+      "debuggable": null,
+      "testOnly": null
+    },
+    "min_sdk_version": "37",
+    "package": "com.android.providers.contacts",
+    "required_split_types": [],
+    "shared_user_id_name": "android.uid.shared",
+    "split_name": null,
+    "split_types": [],
+    "target_sdk_version": "37",
+    "uses_split": null,
+    "version_code": 37,
+    "version_code_attribute_present": true,
+    "version_code_major": 0,
+    "version_name": "17"
+  },
+  "native_compatibility_qualified": false,
+  "native_members": [],
+  "observed_ns": 1795086129365838939,
+  "original_image_path": "/system/priv-app/ContactsProvider/ContactsProvider.apk",
+  "original_parser_source_pins": {
+    "axml_metadata.py": {
+      "bytes": 13457,
+      "identity": [
+        "66306",
+        "100946840",
+        "33060",
+        "1000",
+        "1000",
+        "1",
+        "13457",
+        "1795054653431251657",
+        "1795054653432251621"
+      ],
+      "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/source/axml_metadata.py",
+      "sha256": "3759ae23233d6909060d591795281e565b447de2ab74e245d244be17a30a8813"
+    },
+    "verify_apk.py": {
+      "bytes": 43119,
+      "identity": [
+        "66306",
+        "100946841",
+        "33060",
+        "1000",
+        "1000",
+        "1",
+        "43119",
+        "1795054653432251621",
+        "1795054653433251585"
+      ],
+      "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/source/verify_apk.py",
+      "sha256": "cd83cd9beb2479ab01c27f5a1422d2ceb2b4703f3e2632b036f3f0fc4633ce20"
+    },
+    "verify_apk_set.py": {
+      "bytes": 22828,
+      "identity": [
+        "66306",
+        "100946842",
+        "33060",
+        "1000",
+        "1000",
+        "1",
+        "22828",
+        "1795054653433251585",
+        "1795054653433251585"
+      ],
+      "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/gsi-system-apks-source-20261119-r2/source/verify_apk_set.py",
+      "sha256": "2f7f862a368fcf1e53f6618b2de21f082afd18a8b42aa09282b85a7026c7738f"
+    }
+  },
+  "package": "com.android.providers.contacts",
+  "production_ready": false,
+  "public_signing_block": {
+    "block_sha256": "65b77175b3b8e9a94d5bc11a4b40f0a07c77ea8bfa0a262114133a48d98f456d",
+    "certificate_sha256": [
+      "28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd"
+    ],
+    "certificate_sha256_by_scheme": {
+      "0x7109871a": [
+        "28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd"
+      ],
+      "0xf05368c0": [
+        "28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd"
+      ]
+    },
+    "cryptographic_verification_by_this_parser": false,
+    "scheme_ids": [
+      "0x7109871a",
+      "0xf05368c0"
+    ],
+    "signing_block_present": true
+  },
+  "runtime_qualified": false,
+  "schema": "pocket4-verified-cp3a-provider-apk-source-v1",
+  "selected_signing_scheme": {
+    "certificate_sha256": [
+      "28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd"
+    ],
+    "scheme": "v3"
+  },
+  "semantic_cleanup_qualified": false,
+  "signature_verified_for_api": 37,
+  "signer_certificate_sha256": [
+    "28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd"
+  ],
+  "signer_reference_kind": "certificate in APK extracted through the fully SHA-pinned official GSI chain",
+  "source_identity_verified": true,
+  "tool_pins": {
+    "aapt2": {
+      "bytes": 6274200,
+      "identity": [
+        "66306",
+        "100960452",
+        "33261",
+        "1000",
+        "1000",
+        "1",
+        "6274200",
+        "1795018516732065210",
+        "1795018516732205748"
+      ],
+      "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/sdk37/aapt2",
+      "sha256": "0f1c0e560f99db510a76ebc99ad5c3e68438f62e8e8617018a716ca4a589a699"
+    },
+    "apksigner": {
+      "bytes": 1181416,
+      "identity": [
+        "66306",
+        "100960455",
+        "33188",
+        "1000",
+        "1000",
+        "1",
+        "1181416",
+        "1795018516738337679",
+        "1795018516738337679"
+      ],
+      "path": "/home/qq/work/p4-remaining-app-inputs-20261118-162b-r1/sdk37/lib/apksigner.jar",
+      "sha256": "2defad215d7ff52968a409cde528cdaef7918b115e276b8e3378ca7a178e4180"
+    },
+    "debugfs": {
+      "bytes": 231368,
+      "identity": [
+        "66306",
+        "82184804",
+        "33261",
+        "0",
+        "0",
+        "1",
+        "231368",
+        "1770985020000000000",
+        "1791032142861643835"
+      ],
+      "path": "/usr/sbin/debugfs",
+      "sha256": "864e1d7b445e7b5bfc831da78330dbcafc590fa82b89ea9de60b7527f989954f"
+    },
+    "java": {
+      "bytes": 8528,
+      "identity": [
+        "66306",
+        "75127988",
+        "33216",
+        "1000",
+        "1000",
+        "1",
+        "8528",
+        "1793927923777918872",
+        "1794181184774715783"
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+      "sha256": "cfa21aeadd00925925c9e1287f5c08f3e04ee7f26a9e23d9dbfb16149153d842"
+    }
+  },
+  "version_code": 37,
+  "version_code_major": 0,
+  "version_name": "17",
+  "version_name_axml": "17"
+}
