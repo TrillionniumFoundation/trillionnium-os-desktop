@@ -1,0 +1,199 @@
+{
+  "Android_actions": 0,
+  "CURRENT_writes": 0,
+  "conclusion": {
+    "absence_claim_scope": "No compatible official variant in the checked original channels; no universal absence claim over all possible packages.",
+    "current_candidate_proves_rotation_from_old_signer": false,
+    "in_place_data_preserving_upgrade_qualified": false,
+    "official_variant_compatible_with_old_signer_found": false,
+    "old_signer_is_documented_local_compatibility_test_identity": true,
+    "same_local_test_signer_search_would_not_establish_official_provenance": true
+  },
+  "current_official_APK": {
+    "apk": "/home/alex/work/p4-app-library-custody-20261120-r1/payloads/com.sankuai.meituan.takeoutnew/base.apk",
+    "apk_bytes": 65623708,
+    "apk_identity_unchanged": true,
+    "apk_sha256": "ff35e3525b1bd353209bb3694c2f15c7076169571a16d3c377b2e623a6396461",
+    "commands": [
+      {
+        "argv": [
+          "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+          "-XX:ActiveProcessorCount=1",
+          "-Xmx192m",
+          "-jar",
+          "/home/alex/work/p4-retained-play-x86_64-revalidation-20261119-audit-r1/sdk37/lib/apksigner.jar",
+          "verify",
+          "--min-sdk-version",
+          "37",
+          "--max-sdk-version",
+          "37",
+          "--verbose",
+          "--print-certs",
+          "/home/alex/work/p4-app-library-custody-20261120-r1/payloads/com.sankuai.meituan.takeoutnew/base.apk"
+        ],
+        "exit_code": 0,
+        "stderr": "WARNING: A restricted method in java.lang.System has been called\nWARNING: java.lang.System::loadLibrary has been called by org.conscrypt.NativeLibraryUtil in an unnamed module (file:/home/alex/work/p4-retained-play-x86_64-revalidation-20261119-audit-r1/sdk37/lib/apksigner.jar)\nWARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module\nWARNING: Restricted methods will be blocked in a future release unless native access is enabled\n\n",
+        "stdout": "Verifies\nVerified using v1 scheme (JAR signing): false\nVerified using v2 scheme (APK Signature Scheme v2): true\nVerified using v3 scheme (APK Signature Scheme v3): false\nVerified using v3.1 scheme (APK Signature Scheme v3.1): false\nVerified using v3.2 scheme (APK Signature Scheme v3.2): false\nVerified using v4 scheme (APK Signature Scheme v4): false\nVerified for SourceStamp: false\nNumber of signers: 1\nV2 Signer: certificate DN: CN=CHEN Liang, OU=meituan.com, O=Sankuai Technology Co. Ltd., L=Beijing, ST=Beijing, C=CN\nV2 Signer: certificate SHA-256 digest: 73a611c3a01dc6e11388873daeee1e556ad9e5768e5c222055f508a24c3a8215\nV2 Signer: certificate SHA-1 digest: 0b7d82cfcf3875d06cd3c135c2a5ad1d5597f128\nV2 Signer: certificate MD5 digest: 638c81261479c2104ede3f2518e91725\nV2 Signer: key algorithm: RSA\nV2 Signer: key size (bits): 1024\nV2 Signer: public key SHA-256 digest: 7ed876be9c881811cdf056dea8a0deec6d9f0669a540e5a5ce870e2ec0169d1a\nV2 Signer: public key SHA-1 digest: 5d0014f6ead9de9e3323cbeaf77cda3feb94b4e7\nV2 Signer: public key MD5 digest: 967dd954816465f9a055a6b15fc4ba13\n"
+      },
+      {
+        "argv": [
+          "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+          "-XX:ActiveProcessorCount=1",
+          "-Xmx192m",
+          "-jar",
+          "/home/alex/work/p4-retained-play-x86_64-revalidation-20261119-audit-r1/sdk37/lib/apksigner.jar",
+          "lineage",
+          "--in",
+          "/home/alex/work/p4-app-library-custody-20261120-r1/payloads/com.sankuai.meituan.takeoutnew/base.apk",
+          "--print-certs"
+        ],
+        "exit_code": 1,
+        "stderr": "WARNING: A restricted method in java.lang.System has been called\nWARNING: java.lang.System::loadLibrary has been called by org.conscrypt.NativeLibraryUtil in an unnamed module (file:/home/alex/work/p4-retained-play-x86_64-revalidation-20261119-audit-r1/sdk37/lib/apksigner.jar)\nWARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module\nWARNING: Restricted methods will be blocked in a future release unless native access is enabled\n\nThe provided APK does not contain a valid V3 nor V3.1 signature block.\n",
+        "stdout": ""
+      }
+    ],
+    "execution_receipt": {
+      "archive_path": "/home/alex/.local/state/hepta-runtime-mac-worker/terminals/dpty-c3b78ea6c39f11515faec44bf130afa367a3978db0df17fd4270e042b12f6e36/output.log",
+      "bytes": 3503,
+      "exit_code": 0,
+      "host": "pocket4",
+      "output_complete": true,
+      "session_id": "dpty-c3b78ea6c39f11515faec44bf130afa367a3978db0df17fd4270e042b12f6e36",
+      "sha256": "b49b066065c8e13ed95daf7470157fbf9dafaee84ef918c9af31c5096db43bf1"
+    },
+    "installed_signer_sha256": "8b6737279ed0a9839ec3c4b256256e68eb1e5f7e1386b0dc6c38eb7a04742bbd",
+    "interpretation": "The exact official APK verifies using v2, with no v3 or v3.1 signing block. The observed old signer differs, so this input does not establish a trusted signing lineage for an in-place data-preserving upgrade. Original userdata and migration hold remain unchanged.",
+    "observed_utc": "2026-11-20T10:34:51Z",
+    "package_mutation": false,
+    "primary_reference_urls": [
+      "https://android.googlesource.com/platform/tools/apksig/+/master/src/apksigner/java/com/android/apksigner/help_lineage.txt",
+      "https://android.googlesource.com/platform/tools/apksig/+/master/src/apksigner/java/com/android/apksigner/help_rotate.txt"
+    ],
+    "private_data_read": false,
+    "result": {
+      "data_preserving_in_place_upgrade_qualified": false,
+      "official_apk_signature_valid_on_sdk37": true,
+      "production_ready": false,
+      "proof_of_rotation_to_installed_signer_present": false,
+      "signer_matches_installed": false
+    },
+    "runtime_qualified": false,
+    "schema": "p4-meituan-official-signing-lineage-observation-v1"
+  },
+  "evidence_refs": [
+    {
+      "bytes": 6248,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_app_business_successor/MEITUAN-ORIGINAL-SIGNER-REFERENCES.json",
+      "sha256": "03247f0df504564c99d7c77401a144b5ec00329d5928a2e28926c9150ff93387"
+    },
+    {
+      "bytes": 5081,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_meituan_signing_lineage_observation.json",
+      "sha256": "bb45e31112b93b63b5a029b2b0fa20ab81aad617c4d0d5e5bf043eb3b83c6078"
+    },
+    {
+      "bytes": 4952,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_meituan_private_metadata_summary.json",
+      "sha256": "8acf9fc2aecfd133a00724069b0b12b503da3d038c82779a59916b8a9c1c2db7"
+    }
+  ],
+  "execution_receipts": {
+    "original_metadata": "dpty-18e9c174e13878f8-ffbe-76",
+    "public_pages": "dpty-18e9c141fa66f238-ffbe-75",
+    "xiaomi_download_job": "1a1f8fa0390-ffbe-188c"
+  },
+  "existing_channel_observations": [
+    {
+      "bytes": 10191,
+      "download_lines": [
+        ".download-txt{top: 200px;}",
+        ".download-arrow {left: 56%;height: 151px;}",
+        "<a id=\"downloadBtn\" class=\"btn btn-green\" href=\"javascript:void(0)\" src=\"/download/56249?from=singleDetail\">免费下载</a>",
+        "<p>版本号：8.86.4</p>",
+        "var downloadBtn = document.getElementById(\"downloadBtn\");",
+        "var guildDownload = function(token) {",
+        "dom.innerHTML = '<div class=\"download-arrow\"></div><div class=\"download-txt\"></div>';",
+        "downloadBtn.classList.add(\"download-btn\");",
+        "// downloadBtn.classList.add(\"btn-gray\");",
+        "// downloadBtn.classList.remove(\"btn-green\");",
+        "// downloadBtn.innerHTML = \"正在下载…\";",
+        "var src = $('#downloadBtn').attr('src');",
+        "downloadBtn.classList.remove(\"download-btn\");",
+        "downloadBtn.onclick = guildDownload;",
+        "// downloadBtn.onclick = guildDownload;",
+        "a: 'download',",
+        "guildDownload(token);",
+        "$('#downloadBtn').on('click', function() {",
+        "// a: 'download',",
+        "downloadBtn.src = downloadBtn.src + urlParamEncode;"
+      ],
+      "final_url": "https://m.app.mi.com/details?id=com.sankuai.meituan.takeoutnew",
+      "observed_utc": "2026-11-20T12:40:16.355545+00:00",
+      "sha256": "6cb6aaf3b76977edabf1b95bd659ac3fc09965cbf25c1a0a37e284c840479145",
+      "status": 200,
+      "url": "https://m.app.mi.com/details?id=com.sankuai.meituan.takeoutnew"
+    },
+    {
+      "error": "HTTPError:HTTP Error 403: Forbidden",
+      "observed_utc": "2026-11-20T12:40:19.315952+00:00",
+      "url": "https://a.app.qq.com/o/simple.jsp?pkgname=com.sankuai.meituan.takeoutnew"
+    }
+  ],
+  "installed_public_APK_metadata": {
+    "bytes": 66897293,
+    "manifest_flags": {
+      "allowBackup": "false",
+      "debuggable": "false",
+      "testOnly": null
+    },
+    "sha256": "bb0fd5a5b2b13759073f72099bb6673a02d046e027bee2b16b3141aa20bc657b",
+    "signer_certificate_dn": [
+      "CN=Pocket4 Local Compatibility Test"
+    ],
+    "signer_certificate_sha256": [
+      "8b6737279ed0a9839ec3c4b256256e68eb1e5f7e1386b0dc6c38eb7a04742bbd"
+    ],
+    "version_code": 800830002,
+    "version_name": "8.83.2"
+  },
+  "limits": [
+    "No Android boot, install, uninstall, package signing-record mutation, local re-signing, userdata write, or private data body read occurred.",
+    "Official APK installation into a separately admitted new data generation still needs actual runtime and original backup gates.",
+    "Account sign-in, SMS/2FA and app-supported migration require the actual supported flow; no account session was inferred.",
+    "Nonexportable/local-only data and Keystore-bound state remain protected and unresolved; copying files is not proof of migration.",
+    "Old protected executable/userdata cannot be retired until data preservation succeeds or the user explicitly resolves concrete data disposition."
+  ],
+  "package": "com.sankuai.meituan.takeoutnew",
+  "production_ready": false,
+  "remaining_data_preservation_route": [
+    "Obtain and revalidate official current APK into canonical input custody; do not re-sign it.",
+    "Keep protected original Android data/metadata images byte-stable; prepare official app only in final new isolated Android data generation after runtime qualifies.",
+    "Use supported Meituan account sign-in/sync and any app-provided export/import to migrate required business data; inspect supported mechanisms without exposing tokens or copying private data to reports.",
+    "After user completes any SMS/2FA/interactive account approval, verify expected addresses, history, preferences and accessible local content against private data-preservation acceptance criteria.",
+    "Local-only records or Keystore-bound secrets cannot be declared migrated by copying files; if no supported transfer exists, retain original user-data bytes and mark migration blocked.",
+    "Retire old executable only after official-app functional and data-preservation gates pass; do not uninstall/clear old data to resolve signature conflict."
+  ],
+  "runtime_qualified": false,
+  "schema": "pocket4-meituan-existing-channel-upgrade-route-review-v1",
+  "scope": "Existing immutable official source and installed APK receipts, plus one actual existing Xiaomi page download link; no broad source scan.",
+  "xiaomi_exact_observed_link_result": {
+    "content_length": null,
+    "content_type": "text/html;charset=UTF-8",
+    "download": {
+      "bytes": 10191,
+      "path": "/home/alex/work/p4-meituan-mi-variant-readonly-20261120-3b9d-r1/candidate.download",
+      "sha256": "6cb6aaf3b76977edabf1b95bd659ac3fc09965cbf25c1a0a37e284c840479145"
+    },
+    "final_url": "https://m.app.mi.com/details?id=com.sankuai.meituan.takeoutnew",
+    "http_status": 200,
+    "observed_download_attribute": "/download/56249?from=singleDetail",
+    "observed_utc": "2026-11-20T12:41:37.675415+00:00",
+    "package_mutation": false,
+    "request_url": "https://m.app.mi.com/download/56249?from=singleDetail",
+    "runtime_qualified": false,
+    "schema": "pocket4-existing-channel-apk-variant-observation-v1",
+    "source_page": "https://m.app.mi.com/details?id=com.sankuai.meituan.takeoutnew",
+    "userdata_read": false,
+    "zip_magic": "0d0a0d0a"
+  }
+}

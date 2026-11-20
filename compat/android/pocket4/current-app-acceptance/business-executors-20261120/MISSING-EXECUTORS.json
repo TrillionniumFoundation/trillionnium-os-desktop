@@ -1,0 +1,2268 @@
+{
+  "Android_commands": 0,
+  "CURRENT_writes": 0,
+  "applications": [
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "exact location/dates/occupancy query input and readback",
+        "populated matching hotel availability"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10138,
+      "label": "Hyatt",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 49150,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.Hyatt.hyt/source-custody-receipt.json",
+          "sha256": "629fb7ab6aaef40756757866bf99942e0bec9d0575ccb456b5038c99067da6b2"
+        },
+        "version_code": 26111078,
+        "version_name": "26.11.1"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "hotel_availability_details",
+        "package_binding_required": "com.Hyatt.hyt",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "hotel.account": "Verify supported account/booking-management paths using an authorized test account and non-chargeable test data.",
+          "hotel.details": "Open the selected hotel; match address, images, amenities, room/rate and total-price details.",
+          "hotel.query": "Enter location/dates/occupancy and verify populated matching availability.",
+          "hotel.return": "Return/edit query and reopen without losing or mismatching the selected search."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+        ],
+        "primary_flow": "输入城市、日期、人数 → 匹配酒店列表 → 酒店、房型与完整价格详情 → 修改条件并重新打开；已有授权账户的预订管理另验",
+        "profile": "hotel",
+        "purpose": "酒店查询和预订管理"
+      },
+      "package": "com.Hyatt.hyt",
+      "production_ready": false,
+      "profile": "hotel",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "hotel_availability_details",
+      "unique_required_evidence_steps": [
+        "exact location/dates/occupancy query input and readback",
+        "populated matching hotel availability",
+        "same result address/images/amenities/room rate/total price",
+        "edit/return/normal reopen with state preserved",
+        "approved existing-account booking-management route"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "exact stations/date input and readback",
+        "matching trains and seat availability"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10121,
+      "label": "12306",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 88456,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.MobileTicket/source-custody-receipt.json",
+          "sha256": "f5b9faa88aa9a6c22bd1f3bde0bc6867022ffa71a1382d617351f5effe2ffd10"
+        },
+        "version_code": 280,
+        "version_name": "5.9.6.8"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "train_route_seat_details",
+        "package_binding_required": "com.MobileTicket",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "train.account": "Qualify supported login/traveller/booking-management paths with approved test data; no real booking is implied.",
+          "train.details": "Match service/date/timetable/fare details to the chosen result.",
+          "train.query": "Enter origin/destination/date; verify matching trains and seat availability.",
+          "train.return": "Change a query, return, and reopen with correct state."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+        ],
+        "primary_flow": "输入出发地、目的地、日期 → 车次和余票 → 所选车次时刻及票价 → 返回修改并重开；授权账户行程路径另验",
+        "profile": "train",
+        "purpose": "铁路车次查询和行程管理"
+      },
+      "package": "com.MobileTicket",
+      "production_ready": false,
+      "profile": "train",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "train_route_seat_details",
+      "unique_required_evidence_steps": [
+        "exact stations/date input and readback",
+        "matching trains and seat availability",
+        "same service date/timetable/fare details",
+        "change query and normal reopen",
+        "approved login/traveller/booking route"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "exact public product query and populated matching results",
+        "same product variant/image/price/availability"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10129,
+      "label": "Amazon",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 119967,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.amazon.mShop.android.shopping/source-custody-receipt.json",
+          "sha256": "8ca9eed2fc401f5f46206aa796ed8564440be5279c04585d018b2dc354834684"
+        },
+        "version_code": 1243262206,
+        "version_name": "32.20.2.100"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "retail_query_product_details",
+        "package_binding_required": "com.amazon.mShop.android.shopping",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "retail.account": "Qualify supported account/cart/order-management paths with an authorized test account; paid submission needs a separate approved test.",
+          "retail.detail": "Match selected product, variant, image, price and availability.",
+          "retail.navigation": "Verify filters, back navigation and reopen state; render detail without blank/pale corruption.",
+          "retail.search": "Enter a product query; verify matching populated search results."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+        ],
+        "primary_flow": "输入商品查询 → 搜索及筛选 → 商品、规格、图片、价格和库存 → 返回并重开；授权账户购物车与订单查看另验",
+        "profile": "retail",
+        "purpose": "商品搜索和购物账户管理"
+      },
+      "package": "com.amazon.mShop.android.shopping",
+      "production_ready": false,
+      "profile": "retail",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "retail_query_product_details",
+      "unique_required_evidence_steps": [
+        "exact public product query and populated matching results",
+        "same product variant/image/price/availability",
+        "filter/return/normal reopen state",
+        "approved existing-account/cart/order route without order submission"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "number edit and contact lookup readback",
+        "supported call route UI"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10056,
+      "label": "Dialer",
+      "latest_selected_source": {
+        "install_mode": "coherent_full_GSI_with_framework_and_native_dependencies",
+        "source_custody_receipt": {
+          "bytes": 32471,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.android.dialer/source-custody-receipt.json",
+          "sha256": "611bf09a73a3d8c5ce5923580dfe8cbdb06710cc534d4d1f680cb32db89caff3"
+        },
+        "version_code": 2900000,
+        "version_name": "23.0"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "dialer_owned_number_lookup",
+        "package_binding_required": "com.android.dialer",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "dialer.call": "Use a separately authorized test endpoint to prove call setup, two-way audio and normal end.",
+          "dialer.history": "Verify the owned call record and lifecycle without disturbing existing history.",
+          "dialer.ui": "Verify number entry/editing, contact lookup and supported dialer routes."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "No outbound message or call until an explicit authorized test recipient/endpoint is available."
+        ],
+        "primary_flow": "输入和编辑号码 → 联系人匹配 → 拨号界面与返回重开；通话建立、双向音频和结束需要明确授权的测试端点",
+        "profile": "dialer",
+        "purpose": "拨号和联系人查找"
+      },
+      "package": "com.android.dialer",
+      "production_ready": false,
+      "profile": "dialer",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": true,
+      "shared_implementation_candidate": "dialer_owned_number_lookup",
+      "unique_required_evidence_steps": [
+        "number edit and contact lookup readback",
+        "supported call route UI",
+        "separately authorized test endpoint and actual two-way audio",
+        "owned call-history cleanup while preserving existing history"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "approved recipient resolution and exact owned draft",
+        "separately authorized send/receive endpoint and delivery evidence"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10070,
+      "label": "Messaging",
+      "latest_selected_source": {
+        "install_mode": "coherent_full_GSI_with_framework_and_native_dependencies",
+        "source_custody_receipt": {
+          "bytes": 25291,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.android.messaging/source-custody-receipt.json",
+          "sha256": "74ed128b8cbe980492ab5ee73aa2584bd97d8f5fc88bef8f84853ce7b747e537"
+        },
+        "version_code": 10001040,
+        "version_name": "1.0.001"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "messaging_owned_draft_roundtrip",
+        "package_binding_required": "com.android.messaging",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "messaging.compose": "Verify recipient resolution and exact draft composition with owned test data.",
+          "messaging.delivery": "Prove send/receive and delivery semantics only with an explicitly authorized test recipient/service.",
+          "messaging.persist": "Reopen the owned conversation and verify content/state; preserve existing messages."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "No outbound message or call until an explicit authorized test recipient/endpoint is available."
+        ],
+        "primary_flow": "接收方解析及自有草稿准确输入 → 会话界面与返回重开；实际发送、接收和送达检查须有明确授权的测试接收方",
+        "profile": "messaging",
+        "purpose": "消息界面和会话草稿"
+      },
+      "package": "com.android.messaging",
+      "production_ready": false,
+      "profile": "messaging",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": true,
+      "shared_implementation_candidate": "messaging_owned_draft_roundtrip",
+      "unique_required_evidence_steps": [
+        "approved recipient resolution and exact owned draft",
+        "separately authorized send/receive endpoint and delivery evidence",
+        "owned conversation persistence and precise fixture cleanup"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "exact Unicode query readback",
+        "matching local/web results"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10069,
+      "label": "QuickSearchBox",
+      "latest_selected_source": {
+        "install_mode": "coherent_full_GSI_with_framework_and_native_dependencies",
+        "source_custody_receipt": {
+          "bytes": 9997,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.android.quicksearchbox/source-custody-receipt.json",
+          "sha256": "5177d030ef54901cc2e4927c74f0c9646277dd390456c3924f19af3c329a0c18"
+        },
+        "version_code": 37,
+        "version_name": "17"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "search_unicode_result_return",
+        "package_binding_required": "com.android.quicksearchbox",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "search.failure": "Verify empty/offline/error paths and lifecycle without a blank or unusable UI.",
+          "search.open": "Open a known result, return and verify query state.",
+          "search.query": "Enter Unicode queries with exact readback and verify matching local/web results."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [],
+        "primary_flow": "Unicode查询准确输入 → 匹配结果 → 打开已知结果并返回 → 空结果、离线及重开状态",
+        "profile": "search",
+        "purpose": "本地及网页搜索入口"
+      },
+      "package": "com.android.quicksearchbox",
+      "production_ready": false,
+      "profile": "search",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "search_unicode_result_return",
+      "unique_required_evidence_steps": [
+        "exact Unicode query readback",
+        "matching local/web results",
+        "known result open and return retaining query",
+        "empty/offline/error UI and normal reopen"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "system/network/display/storage/application page identity and actual rendered controls",
+        "one explicitly selected reversible setting effect/persistence/restore"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": null,
+      "label": "Settings",
+      "latest_selected_source": {
+        "install_mode": "coherent_full_GSI_with_framework_and_native_dependencies",
+        "source_custody_receipt": {
+          "bytes": 266028,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.android.settings/source-custody-receipt.json",
+          "sha256": "9958277aab447dd547f4b73806d324dd6905de5da74b85256876208dfc971b1c"
+        },
+        "version_code": 37,
+        "version_name": "17"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "settings_supported_pages",
+        "package_binding_required": "com.android.settings",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "settings.pages": "Verify supported system, network, display, storage and application settings pages.",
+          "settings.permissions": "Verify permission/account interfaces and error handling without granting or changing unrelated state.",
+          "settings.roundtrip": "Change one explicitly selected reversible test setting, verify effect/persistence and restore its original value."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [],
+        "primary_flow": "网络、显示、存储、应用和权限页面 → 检查已选可逆设置的效果和持久性 → 恢复原值",
+        "profile": "settings",
+        "purpose": "Android系统设置和权限界面"
+      },
+      "package": "com.android.settings",
+      "production_ready": false,
+      "profile": "settings",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "settings_supported_pages",
+      "unique_required_evidence_steps": [
+        "system/network/display/storage/application page identity and actual rendered controls",
+        "one explicitly selected reversible setting effect/persistence/restore",
+        "permission/account-interface error handling with unrelated state preserved"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "exact public product query and populated matching results",
+        "same product variant/image/price/availability"
+      ],
+      "existing_partial_route": null,
+      "existing_source_freshness_blocker": "Public version matches; original authoritative Play delivery metadata needs a legitimate refresh. Public listing is not a delivery receipt.",
+      "historical_uid_is_not_live_identity": 10130,
+      "label": "Best Buy",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 72998,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.bestbuy.android/source-custody-receipt.json",
+          "sha256": "8e22e86f19e6acd365ffc755485efabfca3edca3d7ffee588e722d8d8792b33d"
+        },
+        "version_code": 2012312346,
+        "version_name": "26.11.10"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "retail_query_product_details",
+        "package_binding_required": "com.bestbuy.android",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "retail.account": "Qualify supported account/cart/order-management paths with an authorized test account; paid submission needs a separate approved test.",
+          "retail.detail": "Match selected product, variant, image, price and availability.",
+          "retail.navigation": "Verify filters, back navigation and reopen state; render detail without blank/pale corruption.",
+          "retail.search": "Enter a product query; verify matching populated search results."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+        ],
+        "primary_flow": "输入商品查询 → 搜索及筛选 → 商品、规格、图片、价格和库存 → 返回并重开；授权账户购物车与订单查看另验",
+        "profile": "retail",
+        "purpose": "商品搜索和购物账户管理"
+      },
+      "package": "com.bestbuy.android",
+      "production_ready": false,
+      "profile": "retail",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "retail_query_product_details",
+      "unique_required_evidence_steps": [
+        "exact public product query and populated matching results",
+        "same product variant/image/price/availability",
+        "filter/return/normal reopen state",
+        "approved existing-account/cart/order route without order submission"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "pickup/dropoff location and date readback",
+        "matching vehicle availability"
+      ],
+      "existing_partial_route": null,
+      "existing_source_freshness_blocker": "Public version matches; original authoritative Play delivery metadata needs a legitimate refresh. Public listing is not a delivery receipt.",
+      "historical_uid_is_not_live_identity": 10141,
+      "label": "National",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 52582,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.ehi.national.mobile/source-custody-receipt.json",
+          "sha256": "6fdb285bce0501e9fb9af41b58382281af1882025665a07e4d755d9d30dde4d3"
+        },
+        "version_code": 9403,
+        "version_name": "6.16.0.9403"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "rental_availability_quote",
+        "package_binding_required": "com.ehi.national.mobile",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "rental.account": "Qualify supported account/reservation-management paths using authorized non-chargeable test data.",
+          "rental.details": "Match vehicle class, location, dates and complete displayed price breakdown.",
+          "rental.query": "Enter pickup/dropoff location and dates; verify populated matching vehicle availability.",
+          "rental.return": "Change query and return/reopen without stale results."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+        ],
+        "primary_flow": "取还车地点与日期 → 可租车辆 → 车型、地点、日期和完整价格 → 修改条件并重开；授权账户预订管理另验",
+        "profile": "rental",
+        "purpose": "租车查询和预订管理"
+      },
+      "package": "com.ehi.national.mobile",
+      "production_ready": false,
+      "profile": "rental",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "rental_availability_quote",
+      "unique_required_evidence_steps": [
+        "pickup/dropoff location and date readback",
+        "matching vehicle availability",
+        "same vehicle class/locations/dates/full price",
+        "edit/return/reopen and approved existing reservation/account route"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "exact enabled microG compatibility services and declared scope",
+        "owned dependent application for each required account/token/push/location API"
+      ],
+      "disallowed_false_evidence": "microG settings or enabled-service output is not a successful dependent API call.",
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10118,
+      "label": "Google Play services / installed compatibility provider",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 163414,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.google.android.gms/source-custody-receipt.json",
+          "sha256": "99a5c6b150703b84c4c888d0b76b5db9e46376b3206c9be2d57268aace32f7da"
+        },
+        "version_code": 252432036,
+        "version_name": "0.3.18.252432"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "microg_owned_api_dependents",
+        "package_binding_required": "com.google.android.gms",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "gms.consumer": "Exercise each required account/token/push/location API through an owned dependent test App.",
+          "gms.failure": "Verify permission-denied/unavailable-service behavior; do not infer integrity bypass or missing packages from an alert.",
+          "gms.identity": "Verify the actual installed microG/GMS implementation, enabled services and declared compatibility scope."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [],
+        "primary_flow": "确认真实microG实现与已启用服务 → 通过自有依赖应用检查必要账户、推送、定位接口 → 权限拒绝和服务不可用处理",
+        "profile": "gms",
+        "purpose": "microG兼容服务"
+      },
+      "package": "com.google.android.gms",
+      "production_ready": false,
+      "profile": "gms",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "microg_owned_api_dependents",
+      "unique_required_evidence_steps": [
+        "exact enabled microG compatibility services and declared scope",
+        "owned dependent application for each required account/token/push/location API",
+        "actual denied/unavailable API paths without fabricated integrity success"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "pickup/dropoff location and date readback",
+        "matching vehicle availability"
+      ],
+      "existing_partial_route": null,
+      "existing_source_freshness_blocker": "Public version matches; original authoritative Play delivery metadata needs a legitimate refresh. Public listing is not a delivery receipt.",
+      "historical_uid_is_not_live_identity": 10140,
+      "label": "Hertz",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 78492,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.hertz.android.digital/source-custody-receipt.json",
+          "sha256": "52611ad8c855fb9b8d6a2e45dfd3a9f8b83abab64d64ad3fd5e24d0947f70a92"
+        },
+        "version_code": 1392,
+        "version_name": "5.8.0"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "rental_availability_quote",
+        "package_binding_required": "com.hertz.android.digital",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "rental.account": "Qualify supported account/reservation-management paths using authorized non-chargeable test data.",
+          "rental.details": "Match vehicle class, location, dates and complete displayed price breakdown.",
+          "rental.query": "Enter pickup/dropoff location and dates; verify populated matching vehicle availability.",
+          "rental.return": "Change query and return/reopen without stale results."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+        ],
+        "primary_flow": "取还车地点与日期 → 可租车辆 → 车型、地点、日期和完整价格 → 修改条件并重开；授权账户预订管理另验",
+        "profile": "rental",
+        "purpose": "租车查询和预订管理"
+      },
+      "package": "com.hertz.android.digital",
+      "production_ready": false,
+      "profile": "rental",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "rental_availability_quote",
+      "unique_required_evidence_steps": [
+        "pickup/dropoff location and date readback",
+        "matching vehicle availability",
+        "same vehicle class/locations/dates/full price",
+        "edit/return/reopen and approved existing reservation/account route"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "exact location/dates/occupancy query input and readback",
+        "populated matching hotel availability"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10135,
+      "label": "Hilton",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 82646,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.hilton.android.hhonors/source-custody-receipt.json",
+          "sha256": "ddf2eb79af5cd222cd9c63d6c0f3b1178dfad2cfd0040ee3588a6b93f051a6dc"
+        },
+        "version_code": 1034,
+        "version_name": "2026.11.3"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "hotel_availability_details",
+        "package_binding_required": "com.hilton.android.hhonors",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "hotel.account": "Verify supported account/booking-management paths using an authorized test account and non-chargeable test data.",
+          "hotel.details": "Open the selected hotel; match address, images, amenities, room/rate and total-price details.",
+          "hotel.query": "Enter location/dates/occupancy and verify populated matching availability.",
+          "hotel.return": "Return/edit query and reopen without losing or mismatching the selected search."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+        ],
+        "primary_flow": "输入城市、日期、人数 → 匹配酒店列表 → 酒店、房型与完整价格详情 → 修改条件并重新打开；已有授权账户的预订管理另验",
+        "profile": "hotel",
+        "purpose": "酒店查询和预订管理"
+      },
+      "package": "com.hilton.android.hhonors",
+      "production_ready": false,
+      "profile": "hotel",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "hotel_availability_details",
+      "unique_required_evidence_steps": [
+        "exact location/dates/occupancy query input and readback",
+        "populated matching hotel availability",
+        "same result address/images/amenities/room rate/total price",
+        "edit/return/normal reopen with state preserved",
+        "approved existing-account booking-management route"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "exact public product query and populated matching results",
+        "same product variant/image/price/availability"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10126,
+      "label": "JD",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 246196,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.jingdong.app.mall/source-custody-receipt.json",
+          "sha256": "2d0a223df541bea5ccb911285d54289fdf8e432ffbc46dd3895b89cbcc3b9cf5"
+        },
+        "version_code": 102918,
+        "version_name": "16.1.50"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "retail_query_product_details",
+        "package_binding_required": "com.jingdong.app.mall",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "retail.account": "Qualify supported account/cart/order-management paths with an authorized test account; paid submission needs a separate approved test.",
+          "retail.detail": "Match selected product, variant, image, price and availability.",
+          "retail.navigation": "Verify filters, back navigation and reopen state; render detail without blank/pale corruption.",
+          "retail.search": "Enter a product query; verify matching populated search results."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+        ],
+        "primary_flow": "输入商品查询 → 搜索及筛选 → 商品、规格、图片、价格和库存 → 返回并重开；授权账户购物车与订单查看另验",
+        "profile": "retail",
+        "purpose": "商品搜索和购物账户管理"
+      },
+      "package": "com.jingdong.app.mall",
+      "production_ready": false,
+      "profile": "retail",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "retail_query_product_details",
+      "unique_required_evidence_steps": [
+        "exact public product query and populated matching results",
+        "same product variant/image/price/availability",
+        "filter/return/normal reopen state",
+        "approved existing-account/cart/order route without order submission"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "location/filter input and populated matching listings",
+        "same listing image/address/price/detail content"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10143,
+      "label": "Beike",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 381988,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.lianjia.beike/source-custody-receipt.json",
+          "sha256": "00f7ce16dd5a820b92edb88e3394cfd69cc578ff2ba8fb978761a3068bd2acdd"
+        },
+        "version_code": 3068010,
+        "version_name": "3.06.80"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "housing_query_listing_details",
+        "package_binding_required": "com.lianjia.beike",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "housing.details": "Open a matching listing and verify image, address, price and detail data.",
+          "housing.navigation": "Verify return/reopen and legitimate authenticated routes; a blank login router is a failure.",
+          "housing.query": "Enter location/filters and verify matching populated listings."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [],
+        "primary_flow": "位置和筛选条件 → 匹配房源 → 图片、地址、价格与详情 → 返回、重开及正常登录入口",
+        "profile": "housing",
+        "purpose": "房源查询和详情浏览"
+      },
+      "package": "com.lianjia.beike",
+      "production_ready": false,
+      "profile": "housing",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "housing_query_listing_details",
+      "unique_required_evidence_steps": [
+        "location/filter input and populated matching listings",
+        "same listing image/address/price/detail content",
+        "return/normal reopen and legitimate supported account route"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "exact location/dates/occupancy query input and readback",
+        "populated matching hotel availability"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10136,
+      "label": "Marriott",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 47170,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.marriott.mrt/source-custody-receipt.json",
+          "sha256": "e63817b73537edda503316bc91a177237e9940cf502dcf37be5fe52ad1c96b18"
+        },
+        "version_code": 680,
+        "version_name": "10.82.0"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "hotel_availability_details",
+        "package_binding_required": "com.marriott.mrt",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "hotel.account": "Verify supported account/booking-management paths using an authorized test account and non-chargeable test data.",
+          "hotel.details": "Open the selected hotel; match address, images, amenities, room/rate and total-price details.",
+          "hotel.query": "Enter location/dates/occupancy and verify populated matching availability.",
+          "hotel.return": "Return/edit query and reopen without losing or mismatching the selected search."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+        ],
+        "primary_flow": "输入城市、日期、人数 → 匹配酒店列表 → 酒店、房型与完整价格详情 → 修改条件并重新打开；已有授权账户的预订管理另验",
+        "profile": "hotel",
+        "purpose": "酒店查询和预订管理"
+      },
+      "package": "com.marriott.mrt",
+      "production_ready": false,
+      "profile": "hotel",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "hotel_availability_details",
+      "unique_required_evidence_steps": [
+        "exact location/dates/occupancy query input and readback",
+        "populated matching hotel availability",
+        "same result address/images/amenities/room rate/total price",
+        "edit/return/normal reopen with state preserved",
+        "approved existing-account booking-management route"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "route/date/passenger readback and matching availability",
+        "same itinerary/fare/restrictions"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10132,
+      "label": "Air China",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 185128,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.rytong.airchina/source-custody-receipt.json",
+          "sha256": "09432eb0aca2764b8dc9ce79cddced16cb053274b4e6edfd03a8f8cb44119fe7"
+        },
+        "version_code": 75304,
+        "version_name": "7.53.4"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "flight_availability_fare",
+        "package_binding_required": "com.rytong.airchina",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "flight.account": "Qualify supported login/check-in/booking-management paths with authorized test data; no real purchase/change is implied.",
+          "flight.details": "Match itinerary, dates, fare, restrictions and selected flight details.",
+          "flight.query": "Enter route/date/passenger query and verify matching populated availability.",
+          "flight.return": "Verify back/edit/reopen state without stale query results."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+        ],
+        "primary_flow": "航线、日期、旅客条件 → 匹配航班 → 时刻、票价和限制详情 → 修改条件并重开；授权账户值机或行程查看另验",
+        "profile": "flight",
+        "purpose": "航班查询和行程管理"
+      },
+      "package": "com.rytong.airchina",
+      "production_ready": false,
+      "profile": "flight",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "flight_availability_fare",
+      "unique_required_evidence_steps": [
+        "route/date/passenger readback and matching availability",
+        "same itinerary/fare/restrictions",
+        "back/edit/reopen with state retained",
+        "approved existing-account/check-in/booking route"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "route/date/passenger readback and matching availability",
+        "same itinerary/fare/restrictions"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10145,
+      "label": "China Eastern",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 129732,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.rytong.ceair/source-custody-receipt.json",
+          "sha256": "f5baba43082e9fb2d1f473d298df9d117e2aee4384cc0b75c950077761ceb259"
+        },
+        "version_code": 239,
+        "version_name": "9.5.16"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "flight_availability_fare",
+        "package_binding_required": "com.rytong.ceair",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "flight.account": "Qualify supported login/check-in/booking-management paths with authorized test data; no real purchase/change is implied.",
+          "flight.details": "Match itinerary, dates, fare, restrictions and selected flight details.",
+          "flight.query": "Enter route/date/passenger query and verify matching populated availability.",
+          "flight.return": "Verify back/edit/reopen state without stale query results."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+        ],
+        "primary_flow": "航线、日期、旅客条件 → 匹配航班 → 时刻、票价和限制详情 → 修改条件并重开；授权账户值机或行程查看另验",
+        "profile": "flight",
+        "purpose": "航班查询和行程管理"
+      },
+      "package": "com.rytong.ceair",
+      "production_ready": false,
+      "profile": "flight",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "flight_availability_fare",
+      "unique_required_evidence_steps": [
+        "route/date/passenger readback and matching availability",
+        "same itinerary/fare/restrictions",
+        "back/edit/reopen with state retained",
+        "approved existing-account/check-in/booking route"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "stable actual home without self-exit loop",
+        "location/merchant/item query and matching results"
+      ],
+      "existing_installation_blocker": "Official new signer has no V3 rotation lineage to existing signer; real existing data must be preserved. No uninstall/data reset authorized.",
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10147,
+      "label": "Meituan Takeout",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 109719,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.sankuai.meituan.takeoutnew/source-custody-receipt.json",
+          "sha256": "35dce2c71424212e515243f7e94cc1fb989fc38552bb811706f7f6064c39c6bb"
+        },
+        "version_code": 800860004,
+        "version_name": "8.86.4"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "delivery_merchant_item_details",
+        "package_binding_required": "com.sankuai.meituan.takeoutnew",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "delivery.detail": "Open matching menu/item details and return with query preserved.",
+          "delivery.order_scope": "Qualify supported account/cart/order-management paths using an approved test environment; no paid order is implied.",
+          "delivery.query": "Verify merchant/item search and location-specific matching results.",
+          "delivery.start": "Reach a stable usable home without a self-exit loop."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+        ],
+        "primary_flow": "稳定主页 → 选定位置的商家或菜品搜索 → 菜单和商品详情 → 返回保留查询；授权账户路径另验",
+        "profile": "delivery",
+        "purpose": "外卖商家和菜品查询"
+      },
+      "package": "com.sankuai.meituan.takeoutnew",
+      "production_ready": false,
+      "profile": "delivery",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "delivery_merchant_item_details",
+      "unique_required_evidence_steps": [
+        "stable actual home without self-exit loop",
+        "location/merchant/item query and matching results",
+        "same merchant/item details and return",
+        "approved existing-account/cart/order route without paid submission"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "legitimate existing account state and pickup/destination readback",
+        "matching route/service/quote without driver dispatch"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10131,
+      "label": "DiDi",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 122892,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.sdu.didi.psnger/source-custody-receipt.json",
+          "sha256": "57666ce0d47cd04c24e442a8249bf4a789ededf976c8fc332dbd42736f57395a"
+        },
+        "version_code": 1208002005,
+        "version_name": "8.0.20"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "ride_public_route_quote",
+        "package_binding_required": "com.sdu.didi.psnger",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "ride.lifecycle": "Verify editing, return/reopen and supported trip/account paths using an approved test environment.",
+          "ride.location": "Verify legitimate account and selected pickup/destination handling.",
+          "ride.quote": "Obtain matching route/service/estimate data without dispatching a driver."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+        ],
+        "primary_flow": "正常账户与定位入口 → 起终点输入 → 匹配路线、服务与估价 → 修改和重开，不发出叫车请求",
+        "profile": "ride",
+        "purpose": "打车地点、路线和估价"
+      },
+      "package": "com.sdu.didi.psnger",
+      "production_ready": false,
+      "profile": "ride",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "ride_public_route_quote",
+      "unique_required_evidence_steps": [
+        "legitimate existing account state and pickup/destination readback",
+        "matching route/service/quote without driver dispatch",
+        "edit/return/reopen and approved existing trip/account route"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "public query with matching title/author",
+        "advancing decoded content frames and actual audio"
+      ],
+      "disallowed_false_evidence": "A screenshot or playing state is not advancing decoded frames plus audible output.",
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10122,
+      "label": "Douyin",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 498627,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.ss.android.ugc.aweme/source-custody-receipt.json",
+          "sha256": "9792a7293daa3dbc411194728df5fbb9197a110e1f1faa1963fdc85e84a7f05f"
+        },
+        "version_code": 410201,
+        "version_name": "41.2.0"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "video_public_playback_controls",
+        "package_binding_required": "com.ss.android.ugc.aweme",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "video.controls": "Verify pause/resume/seek and in-App return against the same selected item.",
+          "video.playback": "Prove advancing decoded video frames and actual audio; buffering-label changes do not qualify.",
+          "video.reopen": "Close the owned task, reopen separately and verify supported playback/history state.",
+          "video.search": "Enter a legitimate public query and verify matching title/author results."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [],
+        "primary_flow": "公开查询 → 匹配标题和作者 → 实际解码画面推进与可听音频 → 暂停、恢复、拖动、返回和重开同一内容",
+        "profile": "video",
+        "purpose": "在线视频搜索和播放"
+      },
+      "package": "com.ss.android.ugc.aweme",
+      "production_ready": false,
+      "profile": "video",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "video_public_playback_controls",
+      "unique_required_evidence_steps": [
+        "public query with matching title/author",
+        "advancing decoded content frames and actual audio",
+        "pause/resume/seek/return business state",
+        "normal close and separate reopen preserving history"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "pickup/dropoff location and date readback",
+        "matching vehicle availability"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10146,
+      "label": "SZZC",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 178805,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.szzc/source-custody-receipt.json",
+          "sha256": "40ae420474aeca8af58705241c432b3d42b393054a3b62afd40b30acbeea8e31"
+        },
+        "version_code": 330,
+        "version_name": "9.6.3"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "rental_availability_quote",
+        "package_binding_required": "com.szzc",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "rental.account": "Qualify supported account/reservation-management paths using authorized non-chargeable test data.",
+          "rental.details": "Match vehicle class, location, dates and complete displayed price breakdown.",
+          "rental.query": "Enter pickup/dropoff location and dates; verify populated matching vehicle availability.",
+          "rental.return": "Change query and return/reopen without stale results."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+        ],
+        "primary_flow": "取还车地点与日期 → 可租车辆 → 车型、地点、日期和完整价格 → 修改条件并重开；授权账户预订管理另验",
+        "profile": "rental",
+        "purpose": "租车查询和预订管理"
+      },
+      "package": "com.szzc",
+      "production_ready": false,
+      "profile": "rental",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "rental_availability_quote",
+      "unique_required_evidence_steps": [
+        "pickup/dropoff location and date readback",
+        "matching vehicle availability",
+        "same vehicle class/locations/dates/full price",
+        "edit/return/reopen and approved existing reservation/account route"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "exact public product query and populated matching results",
+        "same product variant/image/price/availability"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10120,
+      "label": "Taobao",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 424979,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.taobao.taobao/source-custody-receipt.json",
+          "sha256": "d9ef0e63e5afee719350aa00decbe934c65cf96584bc3a5571d324bf23e3e956"
+        },
+        "version_code": 866,
+        "version_name": "10.69.0"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "retail_query_product_details",
+        "package_binding_required": "com.taobao.taobao",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "retail.account": "Qualify supported account/cart/order-management paths with an authorized test account; paid submission needs a separate approved test.",
+          "retail.detail": "Match selected product, variant, image, price and availability.",
+          "retail.navigation": "Verify filters, back navigation and reopen state; render detail without blank/pale corruption.",
+          "retail.search": "Enter a product query; verify matching populated search results."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+        ],
+        "primary_flow": "输入商品查询 → 搜索及筛选 → 商品、规格、图片、价格和库存 → 返回并重开；授权账户购物车与订单查看另验",
+        "profile": "retail",
+        "purpose": "商品搜索和购物账户管理"
+      },
+      "package": "com.taobao.taobao",
+      "production_ready": false,
+      "profile": "retail",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "retail_query_product_details",
+      "unique_required_evidence_steps": [
+        "exact public product query and populated matching results",
+        "same product variant/image/price/availability",
+        "filter/return/normal reopen state",
+        "approved existing-account/cart/order route without order submission"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "approved recipient resolution and exact owned draft",
+        "separately authorized send/receive endpoint and delivery evidence"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10114,
+      "label": "WeChat",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 399506,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.tencent.mm/source-custody-receipt.json",
+          "sha256": "46a168faa3e359f2749227d085cce3b3dc41198929c67b3f74b8a46fdf95d586"
+        },
+        "version_code": 3220,
+        "version_name": "8.0.80"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "messaging_owned_draft_roundtrip",
+        "package_binding_required": "com.tencent.mm",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "messaging.compose": "Verify recipient resolution and exact draft composition with owned test data.",
+          "messaging.delivery": "Prove send/receive and delivery semantics only with an explicitly authorized test recipient/service.",
+          "messaging.persist": "Reopen the owned conversation and verify content/state; preserve existing messages."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "No outbound message or call until an explicit authorized test recipient/endpoint is available."
+        ],
+        "primary_flow": "接收方解析及自有草稿准确输入 → 会话界面与返回重开；实际发送、接收和送达检查须有明确授权的测试接收方",
+        "profile": "messaging",
+        "purpose": "消息界面和会话草稿"
+      },
+      "package": "com.tencent.mm",
+      "production_ready": false,
+      "profile": "messaging",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": true,
+      "shared_implementation_candidate": "messaging_owned_draft_roundtrip",
+      "unique_required_evidence_steps": [
+        "approved recipient resolution and exact owned draft",
+        "separately authorized send/receive endpoint and delivery evidence",
+        "owned conversation persistence and precise fixture cleanup"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "route/date/passenger readback and matching availability",
+        "same itinerary/fare/restrictions"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10133,
+      "label": "United",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 78514,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.united.mobile.android/source-custody-receipt.json",
+          "sha256": "524cb9b82eeed6a9f1b425a3420972de776ed49e752e20a7239ad4f74e47cccd"
+        },
+        "version_code": 3622,
+        "version_name": "4.2.104"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "flight_availability_fare",
+        "package_binding_required": "com.united.mobile.android",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "flight.account": "Qualify supported login/check-in/booking-management paths with authorized test data; no real purchase/change is implied.",
+          "flight.details": "Match itinerary, dates, fare, restrictions and selected flight details.",
+          "flight.query": "Enter route/date/passenger query and verify matching populated availability.",
+          "flight.return": "Verify back/edit/reopen state without stale query results."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+        ],
+        "primary_flow": "航线、日期、旅客条件 → 匹配航班 → 时刻、票价和限制详情 → 修改条件并重开；授权账户值机或行程查看另验",
+        "profile": "flight",
+        "purpose": "航班查询和行程管理"
+      },
+      "package": "com.united.mobile.android",
+      "production_ready": false,
+      "profile": "flight",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "flight_availability_fare",
+      "unique_required_evidence_steps": [
+        "route/date/passenger readback and matching availability",
+        "same itinerary/fare/restrictions",
+        "back/edit/reopen with state retained",
+        "approved existing-account/check-in/booking route"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "exact public product query and populated matching results",
+        "same product variant/image/price/availability"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10142,
+      "label": "Pinduoduo",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 42279,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.xunmeng.pinduoduo/source-custody-receipt.json",
+          "sha256": "97400fdd102dfe635325771b464b2f3a5f9718d383d4a0f5d1db80e57f431cd8"
+        },
+        "version_code": 83200,
+        "version_name": "8.32.0"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "retail_query_product_details",
+        "package_binding_required": "com.xunmeng.pinduoduo",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "retail.account": "Qualify supported account/cart/order-management paths with an authorized test account; paid submission needs a separate approved test.",
+          "retail.detail": "Match selected product, variant, image, price and availability.",
+          "retail.navigation": "Verify filters, back navigation and reopen state; render detail without blank/pale corruption.",
+          "retail.search": "Enter a product query; verify matching populated search results."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+        ],
+        "primary_flow": "输入商品查询 → 搜索及筛选 → 商品、规格、图片、价格和库存 → 返回并重开；授权账户购物车与订单查看另验",
+        "profile": "retail",
+        "purpose": "商品搜索和购物账户管理"
+      },
+      "package": "com.xunmeng.pinduoduo",
+      "production_ready": false,
+      "profile": "retail",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "retail_query_product_details",
+      "unique_required_evidence_steps": [
+        "exact public product query and populated matching results",
+        "same product variant/image/price/availability",
+        "filter/return/normal reopen state",
+        "approved existing-account/cart/order route without order submission"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "public service query and matching providers",
+        "same service/provider detail and return"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10144,
+      "label": "Zhubajie",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 152651,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.zhubajie.client/source-custody-receipt.json",
+          "sha256": "2807822a19d1d6fcf15f0221b2f23bb87200d1868a7dbdc82a5889278141836b"
+        },
+        "version_code": 370,
+        "version_name": "9.5.20"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "services_query_provider_details",
+        "package_binding_required": "com.zhubajie.client",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "services.account": "Qualify supported authenticated/order-management paths with approved test data; no real message/order is implied.",
+          "services.detail": "Open a matching service/provider detail and return with query preserved.",
+          "services.query": "Enter a service query and verify matching populated results."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+        ],
+        "primary_flow": "服务查询 → 匹配服务或供应商 → 详情 → 返回保留查询；授权账户管理路径另验",
+        "profile": "services",
+        "purpose": "服务商搜索和详情浏览"
+      },
+      "package": "com.zhubajie.client",
+      "production_ready": false,
+      "profile": "services",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "services_query_provider_details",
+      "unique_required_evidence_steps": [
+        "public service query and matching providers",
+        "same service/provider detail and return",
+        "approved existing-account/order route without messages or order submission"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "location/filter input and populated matching listings",
+        "same listing image/address/price/detail content"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10123,
+      "label": "StreetEasy",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 60344,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/com.zillow.android.streeteasy/source-custody-receipt.json",
+          "sha256": "cd6365a735e6c9e9a8d7256c61dbe3ce0b0035470c096c97b36c5a3a136f0dc0"
+        },
+        "version_code": 23075,
+        "version_name": "2026.47.0"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "housing_query_listing_details",
+        "package_binding_required": "com.zillow.android.streeteasy",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "housing.details": "Open a matching listing and verify image, address, price and detail data.",
+          "housing.navigation": "Verify return/reopen and legitimate authenticated routes; a blank login router is a failure.",
+          "housing.query": "Enter location/filters and verify matching populated listings."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [],
+        "primary_flow": "位置和筛选条件 → 匹配房源 → 图片、地址、价格与详情 → 返回、重开及正常登录入口",
+        "profile": "housing",
+        "purpose": "房源查询和详情浏览"
+      },
+      "package": "com.zillow.android.streeteasy",
+      "production_ready": false,
+      "profile": "housing",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "housing_query_listing_details",
+      "unique_required_evidence_steps": [
+        "location/filter input and populated matching listings",
+        "same listing image/address/price/detail content",
+        "return/normal reopen and legitimate supported account route"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "all supported flight/hotel/train search inputs and matching results",
+        "same result full fare/room/seat details"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10119,
+      "label": "Ctrip",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 147543,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/ctrip.android.view/source-custody-receipt.json",
+          "sha256": "589a797ad123f98ce08b50c95378da80cde4824477ef23a861e98000919669aa"
+        },
+        "version_code": 2136,
+        "version_name": "8.97.6"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "travel_flight_hotel_train_details",
+        "package_binding_required": "ctrip.android.view",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "travel.account": "Verify return/reopen and supported account/booking-management paths using approved test data.",
+          "travel.details": "Match availability, itinerary/property and complete displayed fare/rate details.",
+          "travel.query": "Verify the supported flight/hotel/train search routes with location/date input."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+        ],
+        "primary_flow": "支持的机票、酒店及铁路查询 → 匹配日期、线路或物业和完整价格 → 返回重开；授权账户行程管理另验",
+        "profile": "travel",
+        "purpose": "综合旅行查询和行程管理"
+      },
+      "package": "ctrip.android.view",
+      "production_ready": false,
+      "profile": "travel",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "travel_flight_hotel_train_details",
+      "unique_required_evidence_steps": [
+        "all supported flight/hotel/train search inputs and matching results",
+        "same result full fare/room/seat details",
+        "return/reopen and approved existing-account route"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "route/date/passenger readback and matching availability",
+        "same itinerary/fare/restrictions"
+      ],
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10134,
+      "label": "ANA",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 58645,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/jp.co.ana.android.tabidachi/source-custody-receipt.json",
+          "sha256": "ee9ac7bef929d9c43950f75818797d4e94d94144085273ac40a1ff9103e37733"
+        },
+        "version_code": 343,
+        "version_name": "7.7.1"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "flight_availability_fare",
+        "package_binding_required": "jp.co.ana.android.tabidachi",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "flight.account": "Qualify supported login/check-in/booking-management paths with authorized test data; no real purchase/change is implied.",
+          "flight.details": "Match itinerary, dates, fare, restrictions and selected flight details.",
+          "flight.query": "Enter route/date/passenger query and verify matching populated availability.",
+          "flight.return": "Verify back/edit/reopen state without stale query results."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
+        ],
+        "primary_flow": "航线、日期、旅客条件 → 匹配航班 → 时刻、票价和限制详情 → 修改条件并重开；授权账户值机或行程查看另验",
+        "profile": "flight",
+        "purpose": "航班查询和行程管理"
+      },
+      "package": "jp.co.ana.android.tabidachi",
+      "production_ready": false,
+      "profile": "flight",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "flight_availability_fare",
+      "unique_required_evidence_steps": [
+        "route/date/passenger readback and matching availability",
+        "same itinerary/fare/restrictions",
+        "back/edit/reopen with state retained",
+        "approved existing-account/check-in/booking route"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "owned non-password editor and actual configured Chinese/Unicode IME composition",
+        "actual candidate selection and exact committed editor value"
+      ],
+      "disallowed_false_evidence": "Accessibility set-text bypasses the IME and cannot prove composition/candidate/commit gates.",
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10150,
+      "label": "Fcitx5",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 13761,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/org.fcitx.fcitx5.android/source-custody-receipt.json",
+          "sha256": "22543e88ec4d27c56f7cb677109bf88b8df39b6396233f4af5dc2f36b16dfe6d"
+        },
+        "version_code": 114,
+        "version_name": "0.1.3-0-g048f581c"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "ime_owned_composition_editing",
+        "package_binding_required": "org.fcitx.fcitx5.android",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "ime.composition": "Verify configured Chinese/Unicode composition, candidate selection and exact commit into an owned field.",
+          "ime.editing": "Verify deletion, selection, enter/action behavior and focus transitions.",
+          "ime.lifecycle": "Verify reopen and switch/restore behavior without recording private password input or changing unrelated input settings."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [],
+        "primary_flow": "在自有输入框组合、候选选择和精确提交 → 删除、选择、Enter和焦点切换 → 应用重开及IME保持/恢复",
+        "profile": "ime",
+        "purpose": "Fcitx中文及Unicode输入"
+      },
+      "package": "org.fcitx.fcitx5.android",
+      "production_ready": false,
+      "profile": "ime",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "ime_owned_composition_editing",
+      "unique_required_evidence_steps": [
+        "owned non-password editor and actual configured Chinese/Unicode IME composition",
+        "actual candidate selection and exact committed editor value",
+        "delete/select/Enter/focus behavior",
+        "reopen and input-method switch/restore with original settings retained"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "public query with matching title/author",
+        "advancing decoded content frames and actual audio"
+      ],
+      "disallowed_false_evidence": "A screenshot or playing state is not advancing decoded frames plus audible output.",
+      "existing_partial_route": null,
+      "historical_uid_is_not_live_identity": 10117,
+      "label": "Bilibili",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 258421,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/tv.danmaku.bili/source-custody-receipt.json",
+          "sha256": "4170c90f4edbc84660ecdda13744ac3fb482736346165c4bdf0b9d45c460c7aa"
+        },
+        "version_code": 9200300,
+        "version_name": "9.20.0"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "video_public_playback_controls",
+        "package_binding_required": "tv.danmaku.bili",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "video.controls": "Verify pause/resume/seek and in-App return against the same selected item.",
+          "video.playback": "Prove advancing decoded video frames and actual audio; buffering-label changes do not qualify.",
+          "video.reopen": "Close the owned task, reopen separately and verify supported playback/history state.",
+          "video.search": "Enter a legitimate public query and verify matching title/author results."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [],
+        "primary_flow": "公开查询 → 匹配标题和作者 → 实际解码画面推进与可听音频 → 暂停、恢复、拖动、返回和重开同一内容",
+        "profile": "video",
+        "purpose": "在线视频搜索和播放"
+      },
+      "package": "tv.danmaku.bili",
+      "production_ready": false,
+      "profile": "video",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "video_public_playback_controls",
+      "unique_required_evidence_steps": [
+        "public query with matching title/author",
+        "advancing decoded content frames and actual audio",
+        "pause/resume/seek/return business state",
+        "normal close and separate reopen preserving history"
+      ]
+    },
+    {
+      "automatic_purchase_message_dispatch_or_account_mutation": false,
+      "business_qualified": false,
+      "common_gates": [
+        "identity",
+        "lifecycle",
+        "stability",
+        "data_permissions",
+        "release_scope",
+        "ui_observation"
+      ],
+      "currently_eligible_nontransactional_scope": [
+        "actual implicit HTTPS caller dispatch and verified return",
+        "rendered page text/edit/reference-image evidence"
+      ],
+      "existing_partial_route": "implicit HTTPS OpenBrowser in native runtime_plan",
+      "historical_uid_is_not_live_identity": null,
+      "label": "Firefox",
+      "latest_selected_source": {
+        "install_mode": "preserve-data-package-update",
+        "source_custody_receipt": {
+          "bytes": 73283,
+          "host": "pocket4",
+          "path": "/home/alex/work/p4-app-library-custody-20261120-r1/source-revalidation-r1/org.mozilla.firefox/source-custody-receipt.json",
+          "sha256": "706b8a916fb4e5f7dffec1f7e62b56523911199cd24f9c408edbec91ab16126b"
+        },
+        "version_code": 2016196678,
+        "version_name": "160.0.1"
+      },
+      "missing_selected_entry": {
+        "complete_native_business_executor_selected": false,
+        "name": "firefox_caller_render_media_return",
+        "package_binding_required": "org.mozilla.firefox",
+        "runtime_execution_available": false
+      },
+      "original_contract": {
+        "business_gate_definitions": {
+          "browser.document": "Load a predeclared HTTPS fixture containing exact reference text, one editable field, and one reference image. Verify visible text and layout, type and edit an owned Unicode value without submitting a form, and read back the exact result. Verify that the reference image decoded with the expected dimensions and matching visible content; a DOM record or successful HTTP response without the rendered UI is insufficient.",
+          "browser.external_https": "From an owned Android caller, open an implicit ACTION_VIEW HTTPS intent with the browsable category and no explicit Firefox component. Record the BROWSER/default-handler resolution and the actually opened activity; both must identify org.mozilla.firefox in the selected installed identity. The owned/public fixture must display the expected URL and document, and Back must return to the caller. Resolver output alone does not qualify the flow.",
+          "browser.media": "Play a predeclared owned/public audio-video clip with known reference frames and audio. Observe both advancing rendered video and actual output of the reference audio in the current run; require position to advance during playback, remain paused when paused, and move to the requested segment after a seek. Resume and finish or stop normally, then confirm output stops and no crash, self-exit, blank video, or stuck audio remains. A play-button action or decoder log alone is insufficient.",
+          "browser.recovery": "For an owned fixture request, induce a scoped unavailable-network condition without disrupting the host network, observe the browser's failure UI, restore the fixture and retry successfully. On an owned fixture origin, deny one declared site-permission request and verify that denial is honored while the page and navigation remain usable; restore only that fixture origin's original permission state. Record unsupported capability as unsupported and unavailable prerequisites as blocked; neither can become passed.",
+          "browser.return": "Using only owned normal tabs, navigate between two uniquely identified fixtures, then exercise Back and Forward and confirm the correct URL and document at each step. Leave and reopen Firefox normally and verify the owned tab/page state promised by the recorded current browser settings. Preserve pre-existing tabs, history, and preferences; close only the owned fixture tabs after evidence is captured."
+        },
+        "common_gate_ids": [
+          "identity",
+          "lifecycle",
+          "stability",
+          "data_permissions",
+          "release_scope",
+          "ui_observation"
+        ],
+        "prerequisites": [
+          "Execution requires the runtime owner's fresh final Main qualification and exact current installed Firefox identity under the six common gates; this contract supplies no Main, boot, process, or acceptance evidence.",
+          "Use predeclared owned fixtures or public HTTPS resources with expected text, image and media identities. Use only owned test inputs and no account login, SMS, message recipient, purchase, booking or ride request.",
+          "Use valid HTTPS trust and the actual implicit browser routing; do not bypass certificate checks, force an explicit Firefox component to conceal resolver failure, alter unrelated user data, or disrupt the host network.",
+          "Capture the current relevant browser settings and owned-fixture baselines before testing. Restore only fixture-local state and remove only owned tabs/data; any unavailable required capability remains blocked or unsupported.",
+          "Pair visible observations with the current runtime's exact app/UID and compact byte-pinned receipts. Pending definitions, source tests, and prepared entrypoints confer no runtime acceptance."
+        ],
+        "primary_flow": "从应用外部打开HTTPS链接 → 网页文字、输入框、图片与音视频 → 返回及重开 → 验证默认BROWSER解析稳定",
+        "profile": "browser",
+        "purpose": "正式浏览器及外部网页链接入口"
+      },
+      "package": "org.mozilla.firefox",
+      "production_ready": false,
+      "profile": "browser",
+      "runtime_qualified": false,
+      "separate_external_party_authorization_required": false,
+      "shared_implementation_candidate": "firefox_caller_render_media_return",
+      "unique_required_evidence_steps": [
+        "actual implicit HTTPS caller dispatch and verified return",
+        "rendered page text/edit/reference-image evidence",
+        "actual video frames/audio and pause/seek behavior",
+        "owned tabs/back/forward/reopen preserving pre-existing tabs",
+        "scoped network-failure and site-permission denial/restore"
+      ]
+    }
+  ],
+  "inputs": {
+    "latest_source_snapshot": {
+      "bytes": 221007,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_apps_prestart_readonly_input.json",
+      "sha256": "954432f3e2f37eba966fd293355cc6b8b58895410fa43ee1df5801c4f4ec14e8"
+    },
+    "original_contract_matrix": {
+      "bytes": 379955,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_apps_executor_audit/apps42-matrix.json",
+      "sha256": "d27b8bdccaa424275656251fb3df1e98b46b82ac789645269149a856ee488d28"
+    },
+    "original_gates": {
+      "bytes": 27878,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_apps_executor_audit/app-release-gates.json",
+      "sha256": "0b21f963898308b082f3808dd48165c1397badd1fa8a753c3a766e135b3cb3c8"
+    }
+  },
+  "original_common_gates": {
+    "data_permissions": "Preserve existing data, permissions and accounts; verify intended test-state persistence and cleanup only owned fixtures.",
+    "identity": "Bind the exact installed APK SHA-256/signing identity, UID, Android user, version, framework epoch and actual per-App engine mapping.",
+    "lifecycle": "Prove owned-task normal close and separate reopen; retain the required state and exclude pre-existing tasks.",
+    "release_scope": "Review the complete supported feature checklist, dependencies and failure paths; reconcile retained failures and explicitly accept the whole App release.",
+    "stability": "Run the reviewed repeat/soak budget with fresh exact-UID crash/ANR/exit evidence and resource/epoch fences; unexplained self-exit is not a pass.",
+    "ui_observation": "Verify the correct owned foreground window, usable visual/native controls and exact input readback. A tool observation failure alone does not prove an App crash."
+  },
+  "runtime_acceptance_credit": 0,
+  "schema": "pocket4-required39-missing-business-route-inventory-v1",
+  "scope": {
+    "exact_missing_APK_exemptions": [
+      "com.enflick.android.TextNow",
+      "com.pinger.textfree",
+      "com.ubercab"
+    ],
+    "no_selected_business_route": 31,
+    "partial_native_browser_route": 1,
+    "required": 39,
+    "required_without_complete_business_executor": 32,
+    "selected": 42,
+    "selected_leaves_cover_packages": 7
+  },
+  "statement": "This inventory defines the missing work. A partial source implementation or generic launch observation does not satisfy the original per-app business contract."
+}

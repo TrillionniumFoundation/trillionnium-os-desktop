@@ -1,0 +1,39 @@
+{
+  "Android_actions": 0,
+  "CURRENT_after_sha256": "091f53bb8ad9623c9825c5e94a91e7226157ba90205fa1bddf06eb362aa0875b",
+  "CURRENT_before_sha256": "091f53bb8ad9623c9825c5e94a91e7226157ba90205fa1bddf06eb362aa0875b",
+  "all_UI_packets_are_model_fixtures": true,
+  "native_release_profile_prepared": false,
+  "observed_utc": "2026-11-20T13:02:35.313626+00:00",
+  "production_ready": false,
+  "results": [
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "/home/alex/work/p4-settings-pages-consumer-20261120-3b9d-r1/test_settings_source.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "stderr": "test_exact_once_policy_rejects_setting_writes_and_unowned_cleanup (__main__.SourceControls.test_exact_once_policy_rejects_setting_writes_and_unowned_cleanup) ... ok\ntest_five_exact_pages_and_reopened_home_have_scoped_content_checks (__main__.SourceControls.test_five_exact_pages_and_reopened_home_have_scoped_content_checks) ... ok\ntest_full_permission_and_data_metadata_are_preserved (__main__.SourceControls.test_full_permission_and_data_metadata_are_preserved) ... ok\ntest_wrong_window_unknown_empty_and_flat_pages_refuse (__main__.SourceControls.test_wrong_window_unknown_empty_and_flat_pages_refuse) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.065s\n\nOK\n",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "/home/alex/work/p4-settings-pages-consumer-20261120-3b9d-r1/source/settings_entry.py",
+        "--preparation",
+        "/home/alex/work/p4-settings-pages-consumer-20261120-3b9d-r1/preparation.json",
+        "--expect-preparation-sha256",
+        "969d3069cce74a13e4717284e80bad026a333f2e1fafe9079e9fe9b3e2d6c835",
+        "inspect-source"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\"Android_actions\": 0, \"business_consumer_entrypoints_present\": true, \"native_execution_binding_present\": false, \"native_profile_adoption_required\": \"settings-pages\", \"source_files\": 12, \"source_preparation\": {\"bytes\": 4687, \"path\": \"/home/alex/work/p4-settings-pages-consumer-20261120-3b9d-r1/preparation.json\", \"sha256\": \"969d3069cce74a13e4717284e80bad026a333f2e1fafe9079e9fe9b3e2d6c835\"}, \"source_publication_authorizes_Android\": false, \"whole_app_business_accepted\": false}\n"
+    }
+  ],
+  "runtime_qualified": false,
+  "schema": "pocket4-settings-source-host-controls-v1"
+}
