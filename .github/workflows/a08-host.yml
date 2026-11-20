@@ -1749,7 +1749,7 @@ jobs:
             ${{ runner.temp }}/runtime-d6-ci-logs/*.stderr
 
   runtime-current-complete-producer:
-    name: Current source - 1604 ordinary cases, 19 releases, examples and docs
+    name: Current source - 1612 ordinary cases, 19 releases, examples and docs
     runs-on: ubuntu-24.04
     timeout-minutes: 140
     env:
@@ -1767,6 +1767,7 @@ jobs:
       CURRENT_LEAF_INVENTORY_SHA256: b932f58f5a3eaf7feea4d458fbd67d2e248a29a5aeb45eb940c6f2c7450f6374
       CURRENT_NATIVE_INVENTORY_SHA256: 8be17cef0f7dab7b1b2ae508fd2753a2f334cf9249d389dcf5f70896356cbe9b
       CURRENT_OWNED_CANONICAL_INVENTORY_SHA256: ab44dde611350652f99c5f60f96e4113038ba77f5b4c2692ea96c15705e3ee1e
+      CURRENT_JOINT_DATA_INVENTORY_SHA256: 2b6f008191571e8562ac39bef62aefddaecb66e0a82250c819f7060fdee15756
       P4_NATIVE_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
@@ -1814,6 +1815,10 @@ jobs:
           (cd "$owned" && sha256sum --quiet -c FILES.sha256)
           run_controls owned-native-runner 60s "$owned/test_runner.py"
           run_controls canonical-native-release 30s "$owned/tests/test_canonical_native_release.py"
+          owned="$GITHUB_WORKSPACE/compat/android/pocket4/current-owned-persistent-data-successor-20261120"
+          printf '%s  %s\n' "$CURRENT_JOINT_DATA_INVENTORY_SHA256" "$owned/FILES.sha256" | sha256sum --check --status
+          (cd "$owned" && sha256sum --quiet -c FILES.sha256)
+          run_controls joint-native-runner 60s "$owned/test_runner.py"
       - name: Reconstruct the complete current producer source
         timeout-minutes: 5
         shell: bash
@@ -1865,6 +1870,17 @@ jobs:
             --parent-source "$RUNNER_TEMP/current-native-producer" \
             --output "$RUNNER_TEMP/current-owned-producer" \
             --report "$RUNNER_TEMP/current-owned-source-replay.json"
+      - name: Reconstruct the complete owned native and persistent-data source successor
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          owned="$GITHUB_WORKSPACE/compat/android/pocket4/current-owned-persistent-data-successor-20261120"
+          timeout --signal=TERM --kill-after=5s 90s python3 -I -B "$owned/source_verify.py" \
+            --inventory-sha256 "$CURRENT_JOINT_DATA_INVENTORY_SHA256" \
+            --parent-source "$RUNNER_TEMP/current-owned-producer" \
+            --output "$RUNNER_TEMP/current-owned-data-producer" \
+            --report "$RUNNER_TEMP/current-owned-data-source-replay.json"
       - name: Prepare pinned EROFS and recorded host dependencies
         timeout-minutes: 32
         shell: bash
@@ -1873,15 +1889,15 @@ jobs:
           capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1"
           timeout --signal=TERM --kill-after=30s 1860s bash "$capsule/prepare_ci.sh" \
             --work "$RUNNER_TEMP/current-dependencies"
-      - name: Run 1604 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
+      - name: Run 1612 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
         timeout-minutes: 92
         shell: bash
         run: |
           set -euo pipefail
-          cohort="$GITHUB_WORKSPACE/compat/android/pocket4/current-owned-canonical-leaf-successor-20261120"
+          cohort="$GITHUB_WORKSPACE/compat/android/pocket4/current-owned-persistent-data-successor-20261120"
           timeout --signal=TERM --kill-after=30s 5460s python3 -I -B "$cohort/run_ci.py" \
-            --inventory-sha256 "$CURRENT_OWNED_CANONICAL_INVENTORY_SHA256" \
-            --producer "$RUNNER_TEMP/current-owned-producer" \
+            --inventory-sha256 "$CURRENT_JOINT_DATA_INVENTORY_SHA256" \
+            --producer "$RUNNER_TEMP/current-owned-data-producer" \
             --work "$RUNNER_TEMP/current-ordinary" \
             --report "$RUNNER_TEMP/current-ci.json" \
             --erofs-prefix "$RUNNER_TEMP/current-dependencies/erofs"
@@ -1898,6 +1914,10 @@ jobs:
             ${{ runner.temp }}/current-combined-source-replay.json
             ${{ runner.temp }}/current-native-source-replay.json
             ${{ runner.temp }}/current-owned-source-replay.json
+            ${{ runner.temp }}/current-owned-data-source-replay.json
+            ${{ github.workspace }}/compat/android/pocket4/current-owned-persistent-data-successor-20261120/MANIFEST.json
+            ${{ github.workspace }}/compat/android/pocket4/current-owned-persistent-data-successor-20261120/FILES.sha256
+            ${{ github.workspace }}/compat/android/pocket4/current-owned-persistent-data-successor-20261120/REVIEWED-DATA-OVERLAY.json
             ${{ github.workspace }}/compat/android/pocket4/current-owned-canonical-leaf-successor-20261120/MANIFEST.json
             ${{ github.workspace }}/compat/android/pocket4/current-owned-canonical-leaf-successor-20261120/FILES.sha256
             ${{ github.workspace }}/compat/android/pocket4/current-owned-canonical-leaf-successor-20261120/CANONICAL-INTEGRATION.json

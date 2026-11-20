@@ -1,0 +1,17 @@
+[
+  {
+    "component": "persistent_original_data_provider",
+    "package": "droidloom-supervisor",
+    "target": "droidloom_supervisor",
+    "tests": [
+      "production_mounts::persistent_data::backings::tests::mutable_backing_identity_allows_content_clocks_but_never_role_substitution",
+      "production_mounts::persistent_data::superblock::tests::actual_superblock_corruption_and_changed_geometry_fail_closed",
+      "production_mounts::persistent_data::superblock::tests::actual_unmounted_ext4_superblocks_admit_only_the_selected_whole_filesystem",
+      "production_mounts::persistent_data::superblock::tests::superblock_checksum_uses_crc32c_without_the_standard_final_complement",
+      "production_mounts::persistent_data::superblock::tests::valid_checksums_do_not_admit_dirty_or_external_journal_superblocks",
+      "production_mounts::persistent_data::writable_loop::tests::writable_data_loop_cannot_accept_readonly_window_or_foreign_source",
+      "production_selection::persistent_data_policy::tests::persistent_policy_keeps_original_guest_ids_and_checks_actual_map_extent",
+      "production_selection::persistent_data_policy::tests::persistent_policy_rejects_alias_roles_and_unreviewed_mutable_features"
+    ]
+  }
+]

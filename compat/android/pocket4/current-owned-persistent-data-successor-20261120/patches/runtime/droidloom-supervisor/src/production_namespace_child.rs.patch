@@ -1,0 +1,41 @@
+--- a/runtime/droidloom-supervisor/src/production_namespace_child.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_child.rs
+@@ -49,6 +49,8 @@
+     TreeReady = 15,
+     MountEmptyBase = 16,
+     EmptyRootReady = 17,
++    MountPersistentBase = 68,
++    PersistentRootReady = 69,
+     MountPrivateDev = 20,
+     PrivateDevReady = 21,
+     MountActivationDev = 55,
+@@ -122,6 +124,29 @@
+     ClearGroups = 11,
+     #[cfg(test)]
+     GroupsCleared = 12,
++}
++
++/// Fixed data layout comes only from the authenticated phase, with an exact
++/// matching rights count. Empty controls do not accept persistent descriptors.
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub(super) enum BaseLayout {
++    Empty,
++    Persistent,
++}
++impl BaseLayout {
++    pub(super) fn from_phase(phase: u32) -> Option<Self> {
++        match phase {
++            value if value == Phase::MountEmptyBase as u32 => Some(Self::Empty),
++            value if value == Phase::MountPersistentBase as u32 => Some(Self::Persistent),
++            _ => None,
++        }
++    }
++    pub(super) fn descriptor_count(self) -> usize {
++        match self { Self::Empty => 2, Self::Persistent => 4 }
++    }
++    pub(super) fn ready_phase(self) -> Phase {
++        match self { Self::Empty => Phase::EmptyRootReady, Self::Persistent => Phase::PersistentRootReady }
++    }
+ }
+ 
+ /// The device role is selected by the authenticated protocol phase, never by

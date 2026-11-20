@@ -1,0 +1,98 @@
+--- a/runtime/droidloom-supervisor/src/production_selection.rs
++++ b/runtime/droidloom-supervisor/src/production_selection.rs
+@@ -27,6 +27,11 @@
+ const SELECTION_LIMIT: u64 = 16 * 1024;
+ const SPEC_LIMIT: u64 = 1024 * 1024;
+ const SCHEMA: &str = "droidloom-production-selection-v1";
++const PERSISTENT_SCHEMA: &str = "droidloom-production-selection-v2";
++
++#[path = "production_persistent_data_policy.rs"]
++mod persistent_data_policy;
++pub(crate) use persistent_data_policy::{PersistentDataPolicy, PersistentImagePolicy};
+ 
+ #[derive(Debug, Error)]
+ pub(crate) enum SelectionError {
+@@ -51,6 +56,8 @@
+     cell_spec_sha256: String,
+     base_cohort_sha256: String,
+     runtime_manifest_sha256: String,
++    #[serde(default)]
++    persistent_data: Option<PersistentDataPolicy>,
+ }
+ 
+ #[derive(Clone, Debug, Eq, PartialEq)]
+@@ -98,6 +105,7 @@
+     spec: CellSpec,
+     base_cohort: String,
+     runtime_manifest: String,
++    persistent_data: Option<PersistentDataPolicy>,
+ }
+ 
+ impl ProductionSelection {
+@@ -161,6 +169,7 @@
+             spec,
+             base_cohort: record.base_cohort_sha256,
+             runtime_manifest: record.runtime_manifest_sha256,
++            persistent_data: record.persistent_data,
+         })
+     }
+ 
+@@ -183,6 +192,7 @@
+             spec: self.spec.clone(),
+             base_cohort: self.base_cohort.clone(),
+             runtime_manifest: self.runtime_manifest.clone(),
++            persistent_data: self.persistent_data.clone(),
+         };
+         value.revalidate()?;
+         self.revalidate()?;
+@@ -230,6 +240,17 @@
+         &self.runtime_manifest
+     }
+ 
++    /// Configuration only; the provider must also hold actual live MAC, tree
++    /// and original backing/lease custody. Legacy v1 cannot authorize data I/O.
++    pub(crate) fn persistent_data_policy(&self) -> Result<&PersistentDataPolicy> {
++        self.revalidate()?;
++        let policy = self.persistent_data.as_ref().ok_or(SelectionError::Rejected(
++            "explicit root-selected original persistent data policy required",
++        ))?;
++        policy.validate().map_err(SelectionError::Rejected)?;
++        Ok(policy)
++    }
++
+     pub(crate) fn same_selection(&self, other: &Self) -> bool {
+         self.selected.sha256 == other.selected.sha256
+             && self.specification.sha256 == other.specification.sha256
+@@ -243,7 +264,12 @@
+ }
+ 
+ fn validate_record(record: &Record) -> Result<()> {
+-    if record.schema != SCHEMA
++    let valid_version = match record.schema.as_str() {
++        SCHEMA => record.persistent_data.is_none(),
++        PERSISTENT_SCHEMA => record.persistent_data.as_ref().is_some_and(|p| p.validate().is_ok()),
++        _ => false,
++    };
++    if !valid_version
+         || record.host_uid == 0
+         || record.host_uid == u32::MAX
+         || record.cell_spec_bytes == 0
+@@ -289,8 +315,8 @@
+     }
+     // These development fields are not silently ignored. A separately
+     // reviewed same-cohort runtime manifest is the only override authority.
+-    // Original user data is reserved by identity metadata only; this initial
+-    // production backend assembles fresh private tmpfs data and metadata.
++    // Identity reservation remains metadata-only. Mutable original data needs
++    // the separately reviewed v2 policy and actual live provider authority.
+     if spec.gapps_dir.is_some()
+         || spec.android_init.is_some()
+         || !spec.android_file_overrides.is_empty()
+@@ -500,6 +526,7 @@
+             cell_spec_sha256: "a".repeat(64),
+             base_cohort_sha256: "b".repeat(64),
+             runtime_manifest_sha256: "c".repeat(64),
++            persistent_data: None,
+         }
+     }
+ 

@@ -1,0 +1,12 @@
+--- a/runtime/droidloom-supervisor/src/production_mounts.rs
++++ b/runtime/droidloom-supervisor/src/production_mounts.rs
+@@ -28,6 +28,9 @@
+ 
+ #[path = "production_mounts_custody.rs"]
+ pub(crate) mod custody;
++
++#[path = "production_persistent_data.rs"]
++pub(crate) mod persistent_data;
+ 
+ const MANIFEST_ROOT: &str = "/etc/droidloom/cohorts";
+ const IMAGE_ROOT: &str = "/var/lib/droidloom/cohorts";

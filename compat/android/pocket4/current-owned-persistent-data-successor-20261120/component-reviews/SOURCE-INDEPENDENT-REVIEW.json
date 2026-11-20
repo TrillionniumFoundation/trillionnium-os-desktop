@@ -1,0 +1,313 @@
+{
+  "all_eleven_review_input_full_body_and_F9_bookends_unchanged": true,
+  "checked_boundaries": [
+    {
+      "boundary": "Admission before original image body opens",
+      "evidence": [
+        "ProductionCell::start requires the explicit root-sealed v2 persistent policy before acquiring new runtime preparation.",
+        "PreparedPersistentData::prepare and OriginalBackingPair::open require PreparedExecution::revalidate_tree, actual live OwnedNamespaceWitness, same IdentityLease and selected fixed /var/lib/droidloom/users/<host_uid>/data.",
+        "Metadata-only IdentityLease/HeldBackings code is byte-identical; it does not become a standalone mutable-mount grant."
+      ]
+    },
+    {
+      "boundary": "Exact selected original filesystem and map",
+      "evidence": [
+        "PersistentDataPolicy and image records deny unknown fields; serde numeric fields retain typed deserialization. UUID, pair distinction, guest root identity, map extent and conservative feature allowlist are checked.",
+        "Whole 1024-byte primary ext4 superblocks are read only before writable opens; exact geometry/extent/UUID/features/clean internal-journal state and CRC32C are checked; a second held read must be byte-identical after acquiring backing flock.",
+        "No chown, mkfs, e2fsck, repair, format conversion or fallback tmpfs is used for the persistent path. Data and metadata root values must be separately observed and selected; unknown metadata identity remains an unmet prerequisite."
+      ]
+    },
+    {
+      "boundary": "Original backing and writable loop custody",
+      "evidence": [
+        "Actual held parent and both no-follow original file roles are bound to the preexisting lease inode/size identity, root-private mode and distinct inodes before body access.",
+        "Writable loop owner is separate; original readonly LoopBinding and the remainder of production_mounts.rs are byte-identical after removing the sole new submodule declaration.",
+        "LOOP_CONFIGURE is create-only, permits EBUSY retry only, and requires whole-image offset0/limit0, exact source inode/device, exact loop number, no encryption and AUTOCLEAR without READ_ONLY.",
+        "New owned loop is stored in DataResources before fallible verification/mount steps; observed foreign aliases reject and are not cleared. Sysfs enumeration is explicitly not claimed to be a kernel exclusivity grant."
+      ]
+    },
+    {
+      "boundary": "Actual idmapped roots and four descriptor protocol",
+      "evidence": [
+        "detached_data_mount verifies actual unmapped root uid/gid/mode/device before IDMAP and actual mapped uid/gid plus unchanged inode/mode/device afterward; no idmap flag or numeric comparison alone mints authority.",
+        "Provider descriptors can be exported once, and the data/metadata order and distinct system/vendor/data/metadata devices are checked.",
+        "New wire phases68/69 require exactly four SCM_RIGHTS descriptors; legacy empty phases retain exactly two. Truncated packets, wrong nonce/parent, extra rights and wrong role filesystem/flags reject.",
+        "The caller retains both actual opaque owners with the original tree even if send/ack fails. Child performs move_mount of only the transferred sources, never opens backing paths.",
+        "Initial child barrier requires actual /data and /metadata mount IDs, ext4 nodes and writable nosuid/nodev executable flags, alongside full initial inventory validation."
+      ]
+    },
+    {
+      "boundary": "Original namespace lifetime and retirement",
+      "evidence": [
+        "IsolatedNamespaces::verify continues actual keeper/child validation and adds original provider retained-FD, lease, namespace, loop and root bookends. OwnedNamespaceWitness::revalidate calls TreeChild directly, so this addition does not recurse into IsolatedNamespaces::verify.",
+        "Original provider mount IDs are compared only on the retained original mount descriptors / initial child phase. Runtime/native clone graph remains the original full-inventory and old-ID/new-ID bijection path; it is not changed to device-only acceptance.",
+        "Actual init PIDFD reap and release of proc/default namespace views precede runtime/device/data/base resource teardown. RetiredTreeWitness still authenticates the same original tree/userns/cohort.",
+        "Data cleanup syncfs uses an ordinary descriptor reopened under its held mount with same mount ID/device, then drops mount descriptors, observes owned loop ENXIO, syncs original backing files, and only then releases extra reservation/backing OFDs.",
+        "Uncertain cleanup or post-export Drop retains real resource/lease OFDs; no success receipt is synthesized. Package retirement inventory now requires the fourth actual admitted persistent role."
+      ]
+    }
+  ],
+  "compiled": false,
+  "compiler_invocations": 0,
+  "disposable_fixture_passed": false,
+  "findings": [],
+  "host_calls": 0,
+  "mount_transition_boundary_report": {
+    "bytes": 8194,
+    "path": "/workspace/scratch/3b9ddccd362c/p4_namespace_reference/PERSISTENT-MOUNT-TRANSITION-REVIEW.json",
+    "sha256": "31743833a96db851263b6d44824e31c7330d2f0f9ec2690724d4fd71627dbce6"
+  },
+  "new_focused_tests_source_declared": [
+    {
+      "name": "mutable_backing_identity_allows_content_clocks_but_never_role_substitution",
+      "source": "production_persistent_data_backings.rs"
+    },
+    {
+      "name": "writable_data_loop_cannot_accept_readonly_window_or_foreign_source",
+      "source": "production_persistent_data_loop.rs"
+    },
+    {
+      "name": "persistent_policy_keeps_original_guest_ids_and_checks_actual_map_extent",
+      "source": "production_persistent_data_policy.rs"
+    },
+    {
+      "name": "persistent_policy_rejects_alias_roles_and_unreviewed_mutable_features",
+      "source": "production_persistent_data_policy.rs"
+    },
+    {
+      "name": "superblock_checksum_uses_crc32c_without_the_standard_final_complement",
+      "source": "production_persistent_data_superblock.rs"
+    }
+  ],
+  "no_additional_static_blocker_found": true,
+  "original_image_body_reads": 0,
+  "pending_verification": [
+    "Actual Rust compile and all relevant existing crate tests with the eleven exact postimages, including legacy empty-root controls and complete retirement inventory checks.",
+    "Actual disposable ext4 data/metadata pair using newly created private images only; root metadata observations, real IDMAP mapping and exact four-FD positive path.",
+    "Wrong/duplicate/swapped descriptors and sender/phase cases, dirty/unsupported original image rejection before writable mount, foreign-loop refusal, owned send/ack failure and actual child cancellation/reap.",
+    "Busy-loop or sync/cleanup uncertainty must retain the original reservation OFD; exact loop ENXIO and backing sync must be demonstrated before release.",
+    "Final current Main on the selected original protected pair remains separately gated; no mutable access to that pair has been exercised by this review."
+  ],
+  "privileged_fixture_actions": 0,
+  "production_ready": false,
+  "reviewed_candidate_files": [
+    {
+      "bytes": 15156,
+      "f9": [
+        27,
+        3285033,
+        33188,
+        1000,
+        1000,
+        1,
+        15156,
+        1795183685203223462,
+        1795183685203223462
+      ],
+      "path": "/workspace/scratch/3b9ddccd362c/p4_persistent_data_provider/candidate/production_cell.rs",
+      "sha256": "59f6b028288c3e687c0f0fed707f904c1318879d94ee56768b7e39330286b02f"
+    },
+    {
+      "bytes": 69097,
+      "f9": [
+        27,
+        3284788,
+        33188,
+        1000,
+        1000,
+        1,
+        69097,
+        1795183211914421042,
+        1795183211914421042
+      ],
+      "path": "/workspace/scratch/3b9ddccd362c/p4_persistent_data_provider/candidate/production_mounts.rs",
+      "sha256": "8cef25e9512a30040560171445601fd3b85a29daae3390f2f9fbf09959680645"
+    },
+    {
+      "bytes": 34193,
+      "f9": [
+        27,
+        3285031,
+        33188,
+        1000,
+        1000,
+        1,
+        34193,
+        1795183685201045650,
+        1795183685201045650
+      ],
+      "path": "/workspace/scratch/3b9ddccd362c/p4_persistent_data_provider/candidate/production_namespace_child.rs",
+      "sha256": "943ad044fb3ed6c43d518eb67a1fd6698bebeec79c22de13136a2b2cc32ced93"
+    },
+    {
+      "bytes": 26380,
+      "f9": [
+        27,
+        3285032,
+        33188,
+        1000,
+        1000,
+        1,
+        26380,
+        1795183685202287196,
+        1795183685202287196
+      ],
+      "path": "/workspace/scratch/3b9ddccd362c/p4_persistent_data_provider/candidate/production_namespace_mount_child.rs",
+      "sha256": "732dee1cc3830094f26ac7d8a0ad35e805205a832b1ad4754bd8629f865323dc"
+    },
+    {
+      "bytes": 202235,
+      "f9": [
+        27,
+        3285002,
+        33188,
+        1000,
+        1000,
+        1,
+        202235,
+        1795183585403381540,
+        1795183585403381540
+      ],
+      "path": "/workspace/scratch/3b9ddccd362c/p4_persistent_data_provider/candidate/production_namespace_tree.rs",
+      "sha256": "1c88387508b3d9043809498b9b6d15ce463c69226b27468785d2df6f675fcc68"
+    },
+    {
+      "bytes": 15649,
+      "f9": [
+        27,
+        3284787,
+        33188,
+        1000,
+        1000,
+        1,
+        15649,
+        1795183504173062597,
+        1795183504173062597
+      ],
+      "path": "/workspace/scratch/3b9ddccd362c/p4_persistent_data_provider/candidate/production_persistent_data.rs",
+      "sha256": "a6b5cda037f21f391d8d1f2fd1f3da641a838ef9e5c76db30c984c91d840a7fa"
+    },
+    {
+      "bytes": 7949,
+      "f9": [
+        27,
+        3284401,
+        33188,
+        1000,
+        1000,
+        1,
+        7949,
+        1795183118345356015,
+        1795183118345356015
+      ],
+      "path": "/workspace/scratch/3b9ddccd362c/p4_persistent_data_provider/candidate/production_persistent_data_backings.rs",
+      "sha256": "baa1bb6b56ab8f2b2367441e3174badad7444007b59a3f64f267eda6cba5aff0"
+    },
+    {
+      "bytes": 9895,
+      "f9": [
+        27,
+        3284261,
+        33188,
+        1000,
+        1000,
+        1,
+        9895,
+        1795183054330109029,
+        1795183054330109029
+      ],
+      "path": "/workspace/scratch/3b9ddccd362c/p4_persistent_data_provider/candidate/production_persistent_data_loop.rs",
+      "sha256": "4afa433efab84806de20f8b11bb5121eeb4433cc02210090ac25b8c56d5478cb"
+    },
+    {
+      "bytes": 6614,
+      "f9": [
+        27,
+        3283733,
+        33188,
+        1000,
+        1000,
+        1,
+        6614,
+        1795182655002521455,
+        1795182655002521455
+      ],
+      "path": "/workspace/scratch/3b9ddccd362c/p4_persistent_data_provider/candidate/production_persistent_data_policy.rs",
+      "sha256": "bdf1a7ffaefe11ae2a659d0cda927796aaaa3bc4c568302050ec0f3d7267e98a"
+    },
+    {
+      "bytes": 2923,
+      "f9": [
+        27,
+        3283734,
+        33188,
+        1000,
+        1000,
+        1,
+        2923,
+        1795182655126520051,
+        1795182655126520051
+      ],
+      "path": "/workspace/scratch/3b9ddccd362c/p4_persistent_data_provider/candidate/production_persistent_data_superblock.rs",
+      "sha256": "ce8ba8ab1288aaba14ccbee14b58ffc2c15958bcc4c3b15138d2d756da4209cb"
+    },
+    {
+      "bytes": 20854,
+      "f9": [
+        27,
+        3283942,
+        33188,
+        1000,
+        1000,
+        1,
+        20854,
+        1795182806917855337,
+        1795182806917855337
+      ],
+      "path": "/workspace/scratch/3b9ddccd362c/p4_persistent_data_provider/candidate/production_selection.rs",
+      "sha256": "69e9965b74435219fe0251fb6e0f9a8930666e004bcd382b9c85097cb50c1d96"
+    }
+  ],
+  "reviewed_predecessor_tree": "fd0ef624e436d1eb5c8d2c4083335088811a6a42",
+  "runtime_qualified": false,
+  "schema": "p4-persistent-original-data-provider-independent-source-review-v1",
+  "scope": "Independent static source review of the frozen eleven-file candidate against the actual 2367 source inputs. No source edits, compiler, fixture, image-body read, mount, loop, child or Android execution.",
+  "source_changes": 0,
+  "source_semantics_to_keep_visible": [
+    "Legacy production-selection-v1 can still be parsed but ProductionCell::start now intentionally rejects it because it has no persistent data policy. There is no successful production fallback to empty tmpfs.",
+    "The frozen candidate still uses exact selected filesystem facts. No metadata.img root uid/gid/mode has been inferred from data.img.",
+    "Original production_mounts.rs module header describes only readonly behavior; the new child submodule is explicitly separate. A later documentation update can clarify that scope without changing admission."
+  ],
+  "unchanged_original_authority_and_graph_sources": [
+    {
+      "bytes": 65076,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_namespace_reference/production_identity.rs",
+      "sha256": "593726a00f3cc481ab24444ab9ec99bc132e5e3818f6f2da9666b2909953940d"
+    },
+    {
+      "bytes": 7464,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_namespace_reference/production_identity_backings.rs",
+      "sha256": "801456b592c15d9a45c9b989246c6b1b6a336b4c153491eb1000b836a7a478a1"
+    },
+    {
+      "bytes": 32443,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_namespace_reference/production_namespace_native_mount_epoch.rs",
+      "sha256": "110e9417dca7a11538c5cde49578b73ebce9eba6af2b2b93cb132ae47539c245"
+    },
+    {
+      "bytes": 45284,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_namespace_reference/production_namespace_runtime_parent.rs",
+      "sha256": "3ebd30c579607d6e0b9a7b90fa24e922d188c3b32b4db5f5d41c3d9efdb885f7"
+    },
+    {
+      "bytes": 14370,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_namespace_reference/production_namespace_initial_mount_projection.rs",
+      "sha256": "f1574feac74a9a471efa133feec777a44422bbbc657edd8518f08a2a5c3dd4f0"
+    },
+    {
+      "bytes": 25686,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_namespace_reference/production_namespace_init_storage_bind_projection.rs",
+      "sha256": "5bbb6ac17a70d712aca8e09a189a6f77b9c8dd1ac686ab1b1a2bfddd74686b3c"
+    }
+  ]
+}
