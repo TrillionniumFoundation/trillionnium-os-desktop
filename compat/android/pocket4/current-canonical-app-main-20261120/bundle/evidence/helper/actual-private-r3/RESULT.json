@@ -1,0 +1,344 @@
+{
+  "schema": "p4-held-main-userns-entry-private-kernel-controls-v1",
+  "passed": true,
+  "error": null,
+  "started_ns": 1795181230513259886,
+  "finished_ns": 1795181230537371966,
+  "source_binary": {
+    "path": "/home/alex/work/p4-guest-entry-source-20261120-runtimeaudit-r1/held-namespace-entry",
+    "bytes": 3972024,
+    "sha256": "67cfd1c212e9f40ce3f0ff7be856a05f8189c674cbfa270757a672ea596a6c3f",
+    "identity": [
+      66306,
+      67681291,
+      33216,
+      1000,
+      1000,
+      1,
+      3972024,
+      1795180634806213293,
+      1795180634808016542
+    ]
+  },
+  "private_binary": {
+    "path": "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r3/held-namespace-entry",
+    "bytes": 3972024,
+    "sha256": "67cfd1c212e9f40ce3f0ff7be856a05f8189c674cbfa270757a672ea596a6c3f",
+    "identity": [
+      66306,
+      34899618,
+      33216,
+      0,
+      0,
+      1,
+      3972024,
+      1795181230503581961,
+      1795181230503581961
+    ]
+  },
+  "commands": [
+    {
+      "name": "wrong-userns",
+      "argv": [
+        "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r3/held-namespace-entry",
+        "--parent-pid=2916347",
+        "--root-fd=8",
+        "--mnt-fd=9",
+        "--pid-fd=10",
+        "--uts-fd=11",
+        "--ipc-fd=12",
+        "--net-fd=13",
+        "--cgroup-fd=14",
+        "--expected-userns-device=5",
+        "--expected-userns-inode=4026532883",
+        "--expected-init-start-ticks=26778684",
+        "--",
+        "/usr/bin/id",
+        "-u"
+      ],
+      "pid": 2916351,
+      "exit_code": 125,
+      "started_ns": 1795181230516801440,
+      "finished_ns": 1795181230518751799,
+      "actual_child_reaped": true,
+      "original_pidfd_held_until_reaped": true,
+      "stdout": {
+        "path": "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r3/wrong-userns.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          34899619,
+          33152,
+          0,
+          0,
+          1,
+          0,
+          1795181230515700712,
+          1795181230515700712
+        ]
+      },
+      "stderr": {
+        "path": "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r3/wrong-userns.stderr",
+        "bytes": 74,
+        "sha256": "ace491f6826d918292cb75465688542bf2845e2ff6082e1ed36c06271b1e7cd8",
+        "identity": [
+          66306,
+          34899620,
+          33152,
+          0,
+          0,
+          1,
+          74,
+          1795181230516700749,
+          1795181230516700749
+        ]
+      }
+    },
+    {
+      "name": "wrong-start",
+      "argv": [
+        "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r3/held-namespace-entry",
+        "--parent-pid=2916347",
+        "--root-fd=8",
+        "--mnt-fd=9",
+        "--pid-fd=10",
+        "--uts-fd=11",
+        "--ipc-fd=12",
+        "--net-fd=13",
+        "--cgroup-fd=14",
+        "--expected-userns-device=5",
+        "--expected-userns-inode=4026532882",
+        "--expected-init-start-ticks=26778685",
+        "--",
+        "/usr/bin/id",
+        "-u"
+      ],
+      "pid": 2916352,
+      "exit_code": 125,
+      "started_ns": 1795181230518946019,
+      "finished_ns": 1795181230521121137,
+      "actual_child_reaped": true,
+      "original_pidfd_held_until_reaped": true,
+      "stdout": {
+        "path": "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r3/wrong-start.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          34899621,
+          33152,
+          0,
+          0,
+          1,
+          0,
+          1795181230517700786,
+          1795181230517700786
+        ]
+      },
+      "stderr": {
+        "path": "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r3/wrong-start.stderr",
+        "bytes": 64,
+        "sha256": "62df7d294f58a44b52a06e9023ed704efc00978efb793582772d3dcc0afc78da",
+        "identity": [
+          66306,
+          34899622,
+          33152,
+          0,
+          0,
+          1,
+          64,
+          1795181230518700824,
+          1795181230518700824
+        ]
+      }
+    },
+    {
+      "name": "mixed-namespace",
+      "argv": [
+        "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r3/held-namespace-entry",
+        "--parent-pid=2916347",
+        "--root-fd=8",
+        "--mnt-fd=9",
+        "--pid-fd=10",
+        "--uts-fd=16",
+        "--ipc-fd=12",
+        "--net-fd=13",
+        "--cgroup-fd=14",
+        "--expected-userns-device=5",
+        "--expected-userns-inode=4026532882",
+        "--expected-init-start-ticks=26778684",
+        "--",
+        "/usr/bin/id",
+        "-u"
+      ],
+      "pid": 2916353,
+      "exit_code": 125,
+      "started_ns": 1795181230521274840,
+      "finished_ns": 1795181230523152300,
+      "actual_child_reaped": true,
+      "original_pidfd_held_until_reaped": true,
+      "stdout": {
+        "path": "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r3/mixed-namespace.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          34899623,
+          33152,
+          0,
+          0,
+          1,
+          0,
+          1795181230520700899,
+          1795181230520700899
+        ]
+      },
+      "stderr": {
+        "path": "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r3/mixed-namespace.stderr",
+        "bytes": 45,
+        "sha256": "892043c4abf7c8af7dbe3f736933c60fa06a1f5cc4b3bca879479e9ce7fa3935",
+        "identity": [
+          66306,
+          34899624,
+          33152,
+          0,
+          0,
+          1,
+          45,
+          1795181230521935259,
+          1795181230521935259
+        ]
+      }
+    },
+    {
+      "name": "wrong-root",
+      "argv": [
+        "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r3/held-namespace-entry",
+        "--parent-pid=2916347",
+        "--root-fd=16",
+        "--mnt-fd=9",
+        "--pid-fd=10",
+        "--uts-fd=11",
+        "--ipc-fd=12",
+        "--net-fd=13",
+        "--cgroup-fd=14",
+        "--expected-userns-device=5",
+        "--expected-userns-inode=4026532882",
+        "--expected-init-start-ticks=26778684",
+        "--",
+        "/usr/bin/id",
+        "-u"
+      ],
+      "pid": 2916354,
+      "exit_code": 125,
+      "started_ns": 1795181230523273431,
+      "finished_ns": 1795181230525130272,
+      "actual_child_reaped": true,
+      "original_pidfd_held_until_reaped": true,
+      "stdout": {
+        "path": "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r3/wrong-root.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          34899625,
+          33152,
+          0,
+          0,
+          1,
+          0,
+          1795181230522700974,
+          1795181230522700974
+        ]
+      },
+      "stderr": {
+        "path": "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r3/wrong-root.stderr",
+        "bytes": 53,
+        "sha256": "408e49bb52bd4992ad1136e6d969621ebf6d822761626cb0fecbd0b8e088a591",
+        "identity": [
+          66306,
+          34899626,
+          33152,
+          0,
+          0,
+          1,
+          53,
+          1795181230523889656,
+          1795181230523889656
+        ]
+      }
+    },
+    {
+      "name": "actual-private-userns-entry",
+      "argv": [
+        "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r3/held-namespace-entry",
+        "--parent-pid=2916347",
+        "--root-fd=8",
+        "--mnt-fd=9",
+        "--pid-fd=10",
+        "--uts-fd=11",
+        "--ipc-fd=12",
+        "--net-fd=13",
+        "--cgroup-fd=14",
+        "--expected-userns-device=5",
+        "--expected-userns-inode=4026532882",
+        "--expected-init-start-ticks=26778684",
+        "--",
+        "/usr/bin/id",
+        "-u"
+      ],
+      "pid": 2916355,
+      "exit_code": 0,
+      "started_ns": 1795181230525241344,
+      "finished_ns": 1795181230529488262,
+      "actual_child_reaped": true,
+      "original_pidfd_held_until_reaped": true,
+      "stdout": {
+        "path": "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r3/actual-private-userns-entry.stdout",
+        "bytes": 2,
+        "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "identity": [
+          66306,
+          34899627,
+          33152,
+          0,
+          0,
+          1,
+          2,
+          1795181230526701124,
+          1795181230526701124
+        ]
+      },
+      "stderr": {
+        "path": "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r3/actual-private-userns-entry.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          34899628,
+          33152,
+          0,
+          0,
+          1,
+          0,
+          1795181230524701049,
+          1795181230524701049
+        ]
+      }
+    }
+  ],
+  "normal_fixture_retirement": true,
+  "all_owned_children_reaped": true,
+  "host_mount_and_namespace_bookends_equal": true,
+  "input_bookends_equal": true,
+  "original_privileged_root_operator": true,
+  "inherited_authority_fd_count": 7,
+  "private_guest_uid": 805306368,
+  "Android_namespace_entries": 0,
+  "Android_commands_executed": 0,
+  "daemon_ReadyTreeWitness_issued": false,
+  "production_ready": false,
+  "runtime_qualified": false,
+  "current_or_original_inputs_mutated": false
+}

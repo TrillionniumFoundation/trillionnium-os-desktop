@@ -1,0 +1,34 @@
+{
+  "Android_started": false,
+  "base": {
+    "bytes": 6653,
+    "path": "/workspace/scratch/3b9ddccd362c/p4_native_guest_entry/base/held_namespace_entry.rs",
+    "sha256": "adf5b08f7854bec061ab8d2a208f3414339701c816218881e6550afde2e6c31c"
+  },
+  "candidate": {
+    "bytes": 21907,
+    "path": "/workspace/scratch/3b9ddccd362c/p4_native_guest_entry/candidate/held_namespace_entry.rs",
+    "sha256": "5367f5c9786b9d3795b14c51af6c6bd488782a624b9066ce84e64af7feacf792"
+  },
+  "findings": [],
+  "passed_source_review": true,
+  "production_ready": false,
+  "reviewed_relations": [
+    "Exactly seven distinct inherited authority FDs are retained; user namespace comes from kernel NS_GET_USERNS on the held mount namespace rather than another caller-supplied FD or host PID scan",
+    "Actual initial user namespace inode and NS_GET_ID, direct userns parent and creator UID0 are checked; all six namespaces must be owned by the exact expected Main user namespace",
+    "Held root procfs/PID1 resolves actual init namespace links/root/start ticks and unchanged UID/GID map bodies before entry; maps must describe one non-host extent beginning at guest zero",
+    "Original supplementary groups are cleared before entering the user namespace; setresgid and setresuid explicitly select guest zero and all IDs/groups are checked",
+    "PDEATHSIG is rearmed after userns/gid/uid credential transitions and checked against the original held parent pidfd, retaining the post-transition failure boundary",
+    "PID setns affects the subsequent child; child arms parent death then polls the real entry-parent pidfd, checks original proc1 start epoch and executes; original entry parent waits and reaps the exact child",
+    "All inherited and kernel-derived authority descriptors have CLOEXEC before final exec; normal and failure paths close them through process retirement or File ownership"
+  ],
+  "reviewer_host_execution": false,
+  "runtime_qualified": false,
+  "schema": "p4-native-guest-entry-independent-source-review-v1",
+  "scope": "Finite static tail review of actual FD derivation, credential transition and parent/Main lifetime checks",
+  "scope_limits": [
+    "This helper does not authenticate or issue a Main witness. Caller must retain original daemon peer/socket/lease and full same-epoch Main authority throughout its bounded command and retirement.",
+    "Its root Node comparison is device/inode identity; it does not independently certify a mount graph or idmapped persistent data. Those remain caller/provider proof obligations.",
+    "The actual isolated R3 fixture/compilation reports are owned by the implementing agent; this review did not rerun them or claim Android production acceptance."
+  ]
+}

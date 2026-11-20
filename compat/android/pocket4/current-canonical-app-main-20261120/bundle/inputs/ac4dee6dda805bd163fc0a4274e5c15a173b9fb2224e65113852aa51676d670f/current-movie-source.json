@@ -1,0 +1,727 @@
+{
+  "actual_DEX_sha256": "6a994fabd3494dcbf071d727922351f72ff8fdbee0d3d3c1a46b6ed30ca034ee",
+  "actual_movie_method_declarations": {
+    "Lcom/android/gallery3d/app/MovieActivity$1;": {
+      "class_def_index": 854,
+      "methods": [
+        {
+          "name": "<init>",
+          "owner": "Lcom/android/gallery3d/app/MovieActivity$1;",
+          "prototype": "(Lcom/android/gallery3d/app/MovieActivity;Landroid/view/View;Lcom/android/gallery3d/app/MovieActivity;Landroid/net/Uri;Landroid/os/Bundle;Z)V"
+        },
+        {
+          "name": "onCompletion",
+          "owner": "Lcom/android/gallery3d/app/MovieActivity$1;",
+          "prototype": "()V"
+        }
+      ],
+      "superclass": "Lcom/android/gallery3d/app/MoviePlayer;"
+    },
+    "Lcom/android/gallery3d/app/MovieActivity$2;": {
+      "class_def_index": 855,
+      "methods": [
+        {
+          "name": "<init>",
+          "owner": "Lcom/android/gallery3d/app/MovieActivity$2;",
+          "prototype": "(Lcom/android/gallery3d/app/MovieActivity;Landroid/content/ContentResolver;Landroid/app/ActionBar;)V"
+        },
+        {
+          "name": "onQueryComplete",
+          "owner": "Lcom/android/gallery3d/app/MovieActivity$2;",
+          "prototype": "(ILjava/lang/Object;Landroid/database/Cursor;)V"
+        }
+      ],
+      "superclass": "Landroid/content/AsyncQueryHandler;"
+    },
+    "Lcom/android/gallery3d/app/MovieActivity;": {
+      "class_def_index": 856,
+      "methods": [
+        {
+          "name": "-$$Nest$fgetmFinishOnCompletion",
+          "owner": "Lcom/android/gallery3d/app/MovieActivity;",
+          "prototype": "(Lcom/android/gallery3d/app/MovieActivity;)Z"
+        },
+        {
+          "name": "<init>",
+          "owner": "Lcom/android/gallery3d/app/MovieActivity;",
+          "prototype": "()V"
+        },
+        {
+          "name": "createShareIntent",
+          "owner": "Lcom/android/gallery3d/app/MovieActivity;",
+          "prototype": "()Landroid/content/Intent;"
+        },
+        {
+          "name": "initializeActionBar",
+          "owner": "Lcom/android/gallery3d/app/MovieActivity;",
+          "prototype": "(Landroid/content/Intent;)V"
+        },
+        {
+          "name": "setActionBarLogoFromIntent",
+          "owner": "Lcom/android/gallery3d/app/MovieActivity;",
+          "prototype": "(Landroid/content/Intent;)V"
+        },
+        {
+          "name": "setSystemUiVisibility",
+          "owner": "Lcom/android/gallery3d/app/MovieActivity;",
+          "prototype": "(Landroid/view/View;)V"
+        },
+        {
+          "name": "onCreate",
+          "owner": "Lcom/android/gallery3d/app/MovieActivity;",
+          "prototype": "(Landroid/os/Bundle;)V"
+        },
+        {
+          "name": "onCreateOptionsMenu",
+          "owner": "Lcom/android/gallery3d/app/MovieActivity;",
+          "prototype": "(Landroid/view/Menu;)Z"
+        },
+        {
+          "name": "onDestroy",
+          "owner": "Lcom/android/gallery3d/app/MovieActivity;",
+          "prototype": "()V"
+        },
+        {
+          "name": "onKeyDown",
+          "owner": "Lcom/android/gallery3d/app/MovieActivity;",
+          "prototype": "(ILandroid/view/KeyEvent;)Z"
+        },
+        {
+          "name": "onKeyUp",
+          "owner": "Lcom/android/gallery3d/app/MovieActivity;",
+          "prototype": "(ILandroid/view/KeyEvent;)Z"
+        },
+        {
+          "name": "onOptionsItemSelected",
+          "owner": "Lcom/android/gallery3d/app/MovieActivity;",
+          "prototype": "(Landroid/view/MenuItem;)Z"
+        },
+        {
+          "name": "onPause",
+          "owner": "Lcom/android/gallery3d/app/MovieActivity;",
+          "prototype": "()V"
+        },
+        {
+          "name": "onResume",
+          "owner": "Lcom/android/gallery3d/app/MovieActivity;",
+          "prototype": "()V"
+        },
+        {
+          "name": "onSaveInstanceState",
+          "owner": "Lcom/android/gallery3d/app/MovieActivity;",
+          "prototype": "(Landroid/os/Bundle;)V"
+        },
+        {
+          "name": "onStart",
+          "owner": "Lcom/android/gallery3d/app/MovieActivity;",
+          "prototype": "()V"
+        },
+        {
+          "name": "onStop",
+          "owner": "Lcom/android/gallery3d/app/MovieActivity;",
+          "prototype": "()V"
+        }
+      ],
+      "superclass": "Landroid/app/Activity;"
+    },
+    "Lcom/android/gallery3d/app/MovieControllerOverlay$1;": {
+      "class_def_index": 857,
+      "methods": [
+        {
+          "name": "<init>",
+          "owner": "Lcom/android/gallery3d/app/MovieControllerOverlay$1;",
+          "prototype": "(Lcom/android/gallery3d/app/MovieControllerOverlay;)V"
+        },
+        {
+          "name": "run",
+          "owner": "Lcom/android/gallery3d/app/MovieControllerOverlay$1;",
+          "prototype": "()V"
+        }
+      ],
+      "superclass": "Ljava/lang/Object;"
+    },
+    "Lcom/android/gallery3d/app/MovieControllerOverlay;": {
+      "class_def_index": 858,
+      "methods": [
+        {
+          "name": "-$$Nest$mstartHiding",
+          "owner": "Lcom/android/gallery3d/app/MovieControllerOverlay;",
+          "prototype": "(Lcom/android/gallery3d/app/MovieControllerOverlay;)V"
+        },
+        {
+          "name": "<init>",
+          "owner": "Lcom/android/gallery3d/app/MovieControllerOverlay;",
+          "prototype": "(Landroid/content/Context;)V"
+        },
+        {
+          "name": "cancelHiding",
+          "owner": "Lcom/android/gallery3d/app/MovieControllerOverlay;",
+          "prototype": "()V"
+        },
+        {
+          "name": "maybeStartHiding",
+          "owner": "Lcom/android/gallery3d/app/MovieControllerOverlay;",
+          "prototype": "()V"
+        },
+        {
+          "name": "startHideAnimation",
+          "owner": "Lcom/android/gallery3d/app/MovieControllerOverlay;",
+          "prototype": "(Landroid/view/View;)V"
+        },
+        {
+          "name": "startHiding",
+          "owner": "Lcom/android/gallery3d/app/MovieControllerOverlay;",
+          "prototype": "()V"
+        },
+        {
+          "name": "createTimeBar",
+          "owner": "Lcom/android/gallery3d/app/MovieControllerOverlay;",
+          "prototype": "(Landroid/content/Context;)V"
+        },
+        {
+          "name": "hide",
+          "owner": "Lcom/android/gallery3d/app/MovieControllerOverlay;",
+          "prototype": "()V"
+        },
+        {
+          "name": "onAnimationEnd",
+          "owner": "Lcom/android/gallery3d/app/MovieControllerOverlay;",
+          "prototype": "(Landroid/view/animation/Animation;)V"
+        },
+        {
+          "name": "onAnimationRepeat",
+          "owner": "Lcom/android/gallery3d/app/MovieControllerOverlay;",
+          "prototype": "(Landroid/view/animation/Animation;)V"
+        },
+        {
+          "name": "onAnimationStart",
+          "owner": "Lcom/android/gallery3d/app/MovieControllerOverlay;",
+          "prototype": "(Landroid/view/animation/Animation;)V"
+        },
+        {
+          "name": "onKeyDown",
+          "owner": "Lcom/android/gallery3d/app/MovieControllerOverlay;",
+          "prototype": "(ILandroid/view/KeyEvent;)Z"
+        },
+        {
+          "name": "onScrubbingEnd",
+          "owner": "Lcom/android/gallery3d/app/MovieControllerOverlay;",
+          "prototype": "(III)V"
+        },
+        {
+          "name": "onScrubbingMove",
+          "owner": "Lcom/android/gallery3d/app/MovieControllerOverlay;",
+          "prototype": "(I)V"
+        },
+        {
+          "name": "onScrubbingStart",
+          "owner": "Lcom/android/gallery3d/app/MovieControllerOverlay;",
+          "prototype": "()V"
+        },
+        {
+          "name": "onTouchEvent",
+          "owner": "Lcom/android/gallery3d/app/MovieControllerOverlay;",
+          "prototype": "(Landroid/view/MotionEvent;)Z"
+        },
+        {
+          "name": "show",
+          "owner": "Lcom/android/gallery3d/app/MovieControllerOverlay;",
+          "prototype": "()V"
+        },
+        {
+          "name": "updateViews",
+          "owner": "Lcom/android/gallery3d/app/MovieControllerOverlay;",
+          "prototype": "()V"
+        }
+      ],
+      "superclass": "Lcom/android/gallery3d/app/CommonControllerOverlay;"
+    },
+    "Lcom/android/gallery3d/app/MoviePlayer$1;": {
+      "class_def_index": 859,
+      "methods": [
+        {
+          "name": "<init>",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$1;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;)V"
+        },
+        {
+          "name": "run",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$1;",
+          "prototype": "()V"
+        }
+      ],
+      "superclass": "Ljava/lang/Object;"
+    },
+    "Lcom/android/gallery3d/app/MoviePlayer$2;": {
+      "class_def_index": 860,
+      "methods": [
+        {
+          "name": "<init>",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$2;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;)V"
+        },
+        {
+          "name": "run",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$2;",
+          "prototype": "()V"
+        }
+      ],
+      "superclass": "Ljava/lang/Object;"
+    },
+    "Lcom/android/gallery3d/app/MoviePlayer$3;": {
+      "class_def_index": 861,
+      "methods": [
+        {
+          "name": "<init>",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$3;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;)V"
+        },
+        {
+          "name": "onTouch",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$3;",
+          "prototype": "(Landroid/view/View;Landroid/view/MotionEvent;)Z"
+        }
+      ],
+      "superclass": "Ljava/lang/Object;"
+    },
+    "Lcom/android/gallery3d/app/MoviePlayer$4;": {
+      "class_def_index": 862,
+      "methods": [
+        {
+          "name": "<init>",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$4;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;)V"
+        },
+        {
+          "name": "onPrepared",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$4;",
+          "prototype": "(Landroid/media/MediaPlayer;)V"
+        }
+      ],
+      "superclass": "Ljava/lang/Object;"
+    },
+    "Lcom/android/gallery3d/app/MoviePlayer$5;": {
+      "class_def_index": 863,
+      "methods": [
+        {
+          "name": "<init>",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$5;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;)V"
+        },
+        {
+          "name": "run",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$5;",
+          "prototype": "()V"
+        }
+      ],
+      "superclass": "Ljava/lang/Object;"
+    },
+    "Lcom/android/gallery3d/app/MoviePlayer$6;": {
+      "class_def_index": 864,
+      "methods": [
+        {
+          "name": "<init>",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$6;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;)V"
+        },
+        {
+          "name": "onSystemUiVisibilityChange",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$6;",
+          "prototype": "(I)V"
+        }
+      ],
+      "superclass": "Ljava/lang/Object;"
+    },
+    "Lcom/android/gallery3d/app/MoviePlayer$7;": {
+      "class_def_index": 865,
+      "methods": [
+        {
+          "name": "<init>",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$7;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;)V"
+        },
+        {
+          "name": "onCancel",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$7;",
+          "prototype": "(Landroid/content/DialogInterface;)V"
+        }
+      ],
+      "superclass": "Ljava/lang/Object;"
+    },
+    "Lcom/android/gallery3d/app/MoviePlayer$8;": {
+      "class_def_index": 866,
+      "methods": [
+        {
+          "name": "<init>",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$8;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;I)V"
+        },
+        {
+          "name": "onClick",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$8;",
+          "prototype": "(Landroid/content/DialogInterface;I)V"
+        }
+      ],
+      "superclass": "Ljava/lang/Object;"
+    },
+    "Lcom/android/gallery3d/app/MoviePlayer$9;": {
+      "class_def_index": 867,
+      "methods": [
+        {
+          "name": "<init>",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$9;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;)V"
+        },
+        {
+          "name": "onClick",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$9;",
+          "prototype": "(Landroid/content/DialogInterface;I)V"
+        }
+      ],
+      "superclass": "Ljava/lang/Object;"
+    },
+    "Lcom/android/gallery3d/app/MoviePlayer$AudioBecomingNoisyReceiver;": {
+      "class_def_index": 868,
+      "methods": [
+        {
+          "name": "<init>",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$AudioBecomingNoisyReceiver;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;)V"
+        },
+        {
+          "name": "<init>",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$AudioBecomingNoisyReceiver;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;Lcom/android/gallery3d/app/MoviePlayer-IA;)V"
+        },
+        {
+          "name": "onReceive",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$AudioBecomingNoisyReceiver;",
+          "prototype": "(Landroid/content/Context;Landroid/content/Intent;)V"
+        },
+        {
+          "name": "register",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$AudioBecomingNoisyReceiver;",
+          "prototype": "()V"
+        },
+        {
+          "name": "unregister",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer$AudioBecomingNoisyReceiver;",
+          "prototype": "()V"
+        }
+      ],
+      "superclass": "Landroid/content/BroadcastReceiver;"
+    },
+    "Lcom/android/gallery3d/app/MoviePlayer-IA;": {
+      "class_def_index": 869,
+      "methods": [],
+      "superclass": "Ljava/lang/Object;"
+    },
+    "Lcom/android/gallery3d/app/MoviePlayer;": {
+      "class_def_index": 853,
+      "methods": [
+        {
+          "name": "-$$Nest$fgetmContext",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;)Landroid/content/Context;"
+        },
+        {
+          "name": "-$$Nest$fgetmController",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;)Lcom/android/gallery3d/app/MovieControllerOverlay;"
+        },
+        {
+          "name": "-$$Nest$fgetmHandler",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;)Landroid/os/Handler;"
+        },
+        {
+          "name": "-$$Nest$fgetmLastSystemUiVis",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;)I"
+        },
+        {
+          "name": "-$$Nest$fgetmPlayingChecker",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;)Ljava/lang/Runnable;"
+        },
+        {
+          "name": "-$$Nest$fgetmProgressChecker",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;)Ljava/lang/Runnable;"
+        },
+        {
+          "name": "-$$Nest$fgetmVideoView",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;)Landroid/widget/VideoView;"
+        },
+        {
+          "name": "-$$Nest$fputmLastSystemUiVis",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;I)V"
+        },
+        {
+          "name": "-$$Nest$mpauseVideo",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;)V"
+        },
+        {
+          "name": "-$$Nest$msetProgress",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;)I"
+        },
+        {
+          "name": "-$$Nest$mstartVideo",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(Lcom/android/gallery3d/app/MoviePlayer;)V"
+        },
+        {
+          "name": "<init>",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(Landroid/view/View;Lcom/android/gallery3d/app/MovieActivity;Landroid/net/Uri;Landroid/os/Bundle;Z)V"
+        },
+        {
+          "name": "isMediaKey",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(I)Z"
+        },
+        {
+          "name": "pauseVideo",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "()V"
+        },
+        {
+          "name": "playVideo",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "()V"
+        },
+        {
+          "name": "setOnSystemUiVisibilityChangeListener",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "()V"
+        },
+        {
+          "name": "setProgress",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "()I"
+        },
+        {
+          "name": "showResumeDialog",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(Landroid/content/Context;I)V"
+        },
+        {
+          "name": "showSystemUi",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(Z)V"
+        },
+        {
+          "name": "startVideo",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "()V"
+        },
+        {
+          "name": "onCompletion",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "()V"
+        },
+        {
+          "name": "onCompletion",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(Landroid/media/MediaPlayer;)V"
+        },
+        {
+          "name": "onDestroy",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "()V"
+        },
+        {
+          "name": "onError",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(Landroid/media/MediaPlayer;II)Z"
+        },
+        {
+          "name": "onHidden",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "()V"
+        },
+        {
+          "name": "onKeyDown",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(ILandroid/view/KeyEvent;)Z"
+        },
+        {
+          "name": "onKeyUp",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(ILandroid/view/KeyEvent;)Z"
+        },
+        {
+          "name": "onPause",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "()V"
+        },
+        {
+          "name": "onPlayPause",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "()V"
+        },
+        {
+          "name": "onReplay",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "()V"
+        },
+        {
+          "name": "onResume",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "()V"
+        },
+        {
+          "name": "onSaveInstanceState",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(Landroid/os/Bundle;)V"
+        },
+        {
+          "name": "onSeekEnd",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(III)V"
+        },
+        {
+          "name": "onSeekMove",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "(I)V"
+        },
+        {
+          "name": "onSeekStart",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "()V"
+        },
+        {
+          "name": "onShown",
+          "owner": "Lcom/android/gallery3d/app/MoviePlayer;",
+          "prototype": "()V"
+        }
+      ],
+      "superclass": "Ljava/lang/Object;"
+    }
+  },
+  "all_movie_classes_unchanged_by_current_port": true,
+  "candidate_APK_sha256": "6677d382076f10f0502c813c7614c32127ccf3cd8f02756b75a8c3574980e87e",
+  "installed": false,
+  "modified_methods": [
+    [
+      "com/android/gallery3d/exif/ExifInterface.smali",
+      "public rewriteExif(Ljava/lang/String;Ljava/util/Collection;)Z"
+    ],
+    [
+      "com/android/gallery3d/ui/MenuExecutor$MediaOperation.smali",
+      "public run(Lcom/android/gallery3d/util/ThreadPool$JobContext;)Ljava/lang/Void;"
+    ]
+  ],
+  "movie_classes": [
+    {
+      "IR_sha256": "dc57c1f648a67370610f3ad033e8fcbe4052c11600cac764fb5187410a5c7d56",
+      "class": "com/android/gallery3d/app/MovieActivity$1.smali",
+      "equal_expected": true,
+      "target": false
+    },
+    {
+      "IR_sha256": "c856ee05ba38781b0bb075a100db74eb205d85f1c225ccc6d51e9eee35d66047",
+      "class": "com/android/gallery3d/app/MovieActivity$2.smali",
+      "equal_expected": true,
+      "target": false
+    },
+    {
+      "IR_sha256": "f89b7a50ffbba8c332b125a868dd79811b5281402dce7a83d8100013bb102e2a",
+      "class": "com/android/gallery3d/app/MovieActivity.smali",
+      "equal_expected": true,
+      "target": false
+    },
+    {
+      "IR_sha256": "229990ad8e9b3a6449fa555d9a9b14522d650b171b3ef82b24b7cceb9e462d3c",
+      "class": "com/android/gallery3d/app/MovieControllerOverlay$1.smali",
+      "equal_expected": true,
+      "target": false
+    },
+    {
+      "IR_sha256": "6f36b7eb9427c476f764e65bf8d2552e6f1e835cb181b3598b36c0257d1d717a",
+      "class": "com/android/gallery3d/app/MovieControllerOverlay.smali",
+      "equal_expected": true,
+      "target": false
+    },
+    {
+      "IR_sha256": "c8fbda776462fdfa867e26e42f58f5d4ae44ad3874530d2eb85164ff74143502",
+      "class": "com/android/gallery3d/app/MoviePlayer$1.smali",
+      "equal_expected": true,
+      "target": false
+    },
+    {
+      "IR_sha256": "f33cf62f2cff833b522e9c510ba24e9b13524b1f6ed80e64eb2f2355d21ca290",
+      "class": "com/android/gallery3d/app/MoviePlayer$2.smali",
+      "equal_expected": true,
+      "target": false
+    },
+    {
+      "IR_sha256": "acf37c7ec8ed66ef2a5d8a7cbff824733103c6eca5ea3515d69f2ad82c9862f6",
+      "class": "com/android/gallery3d/app/MoviePlayer$3.smali",
+      "equal_expected": true,
+      "target": false
+    },
+    {
+      "IR_sha256": "56d3df5e5a3fb8da30c9bd1f8c212bd769ad13abea91eb2ca742a267321632a0",
+      "class": "com/android/gallery3d/app/MoviePlayer$4.smali",
+      "equal_expected": true,
+      "target": false
+    },
+    {
+      "IR_sha256": "e1add54e5660c418a278aa5b57f48af1472086477b9f6c92939975d33e69a30e",
+      "class": "com/android/gallery3d/app/MoviePlayer$5.smali",
+      "equal_expected": true,
+      "target": false
+    },
+    {
+      "IR_sha256": "8122bdbb73227e74032fc73f8cc87d8ee706c12d89467e7990df4b692b0022d1",
+      "class": "com/android/gallery3d/app/MoviePlayer$6.smali",
+      "equal_expected": true,
+      "target": false
+    },
+    {
+      "IR_sha256": "606dec43cf442d473c9ab5a56f6cc5ebef8a4125429aa85f350b1d0a888db2f7",
+      "class": "com/android/gallery3d/app/MoviePlayer$7.smali",
+      "equal_expected": true,
+      "target": false
+    },
+    {
+      "IR_sha256": "eb298b707721ad2b0e23e83eceb2be300317a9bede4224d70d28d16032715636",
+      "class": "com/android/gallery3d/app/MoviePlayer$8.smali",
+      "equal_expected": true,
+      "target": false
+    },
+    {
+      "IR_sha256": "f0bba0ad00b3ed55f411b71281277c8caf2da4ec5b95a15fbc3127186e4b7d41",
+      "class": "com/android/gallery3d/app/MoviePlayer$9.smali",
+      "equal_expected": true,
+      "target": false
+    },
+    {
+      "IR_sha256": "e7ff4bc37d25298c050a50f2041b95b5e32d6f96fe0c252b0352b8a0acc56ce5",
+      "class": "com/android/gallery3d/app/MoviePlayer$AudioBecomingNoisyReceiver.smali",
+      "equal_expected": true,
+      "target": false
+    },
+    {
+      "IR_sha256": "9b0c97c3fb5c2f2c8b2f8b12129763faeb902f092da207cfb32741c770fcd303",
+      "class": "com/android/gallery3d/app/MoviePlayer-IA.smali",
+      "equal_expected": true,
+      "target": false
+    },
+    {
+      "IR_sha256": "40586fe5b379b509faf889a5ea6955a210517d045b34c2d75a9f0ab8a8b526f3",
+      "class": "com/android/gallery3d/app/MoviePlayer.smali",
+      "equal_expected": true,
+      "target": false
+    }
+  ],
+  "official_APK_sha256": "835fe119745324276457b4434fc39f25b633e752c822d2fc9be40eb4b2d45439",
+  "runtime_credit": 0,
+  "schema": "QPR1-Gallery-current-movie-source-v1",
+  "state": "QPR1_MOVIE_CODE_SOURCE_INSPECTED_NOT_INSTALLED"
+}

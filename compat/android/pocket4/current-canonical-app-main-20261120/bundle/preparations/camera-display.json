@@ -1,0 +1,170 @@
+{
+  "Android_execution_authorized_by_publication": false,
+  "Main_admission_authorized": false,
+  "base_wrapper": {
+    "bytes": 27331,
+    "path": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/inputs/b7fa87e852a84f8a5a7e6d5e80bd5158a31e529e9bbe8a678d51b7aa176e20c4/display_runtime_wrapper.py",
+    "sha256": "b7fa87e852a84f8a5a7e6d5e80bd5158a31e529e9bbe8a678d51b7aa176e20c4"
+  },
+  "budgets": {
+    "caller_seconds_minimum": 480,
+    "cancellation_grace_seconds": 40,
+    "outer_seconds": 475,
+    "photo_cleanup_seconds": 40,
+    "photo_seconds_including_cleanup": 400,
+    "photo_work_seconds": 360,
+    "ready_seconds": 20
+  },
+  "camera_recovery_qualified": false,
+  "canonical_source_successor": {
+    "Android_actions": 0,
+    "CURRENT_writes": 0,
+    "historical_runtime_authority_transferred": false,
+    "original_source_preparation": {
+      "bytes": 7036,
+      "path": "/home/alex/work/p4-cp3a-bootstrap-20261120-runtimeaudit-r1/camera-display/preparation.json",
+      "sha256": "820b1fe7ee85105277226da27141757ac39567f6b019d76128b753dd7d294e9a"
+    },
+    "production_ready": false,
+    "runtime_qualified": false,
+    "same_Main_user_namespace_required": true,
+    "state": "SOURCE_ONLY_CURRENT_MAIN_V2_AND_RELEASE_REQUIRED"
+  },
+  "execute_args": [
+    "execute",
+    "--input",
+    "<reviewed absolute input>",
+    "--expect-input-sha256",
+    "<exact input SHA256>",
+    "--output",
+    "/var/lib/droidloom/qualification/pocket4/camera-photo-display-<32 lowercase hex>"
+  ],
+  "frozen_photo_preparation": {
+    "bytes": 26938,
+    "path": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/preparations/camera-photo.json",
+    "sha256": "c8efc2e4783749ba4b47b4dc456258c938305c700fbee923265531ba928430cf"
+  },
+  "host_preparation_complete": true,
+  "input_exact_keys": [
+    "schema",
+    "plan",
+    "source_preparation",
+    "automatic_retry",
+    "whole_app_business_accepted"
+  ],
+  "input_schema": "pocket4-camera-photo-display-input-v1",
+  "inspect_args": [
+    "inspect-source"
+  ],
+  "photo_capture_persistence_verified": false,
+  "photo_source_files_checked": 17,
+  "plan_source": "fresh original photo factory business-camera-photo-plan-<32hex>/plan.json, exact size/SHA; never an old attempt",
+  "production_ready": false,
+  "program": [
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/camera-display/photo_display_wrapper.py"
+  ],
+  "qualified_host_controls": {
+    "bytes": 43596,
+    "path": "/home/alex/work/pocket4-android-final/qualification/camera-photo-display-preparation-resume-20261107-r1/qualified-host-controls.json",
+    "sha256": "442127bb888eadc222c575de816a26d109dde8fb2fc932be6b4c58d23cb44947"
+  },
+  "result_schema": "pocket4-final-camera-photo-display-result-v1",
+  "runtime_qualified": false,
+  "schema": "pocket4-camera-photo-display-preparation-v1",
+  "source": {
+    "bytes": 35561,
+    "path": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/camera-display/photo_display_wrapper.py",
+    "sha256": "887cb8b1bc6fd96a8654d3fef1c2c3b98ecc3478f166c611460ba496c8290707"
+  },
+  "source_dependencies": [
+    {
+      "bytes": 7718,
+      "path": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/camera-display/display_holder.py",
+      "role": "holder",
+      "sha256": "68fef3e0a46ab2f1b5d783ab5640add6d2f6625c9655a803efb25409ad79917f"
+    },
+    {
+      "bytes": 12505,
+      "path": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/camera-display/display_lease.py",
+      "role": "lease",
+      "sha256": "81f34cdbc75a2cf4e092a961fe4dce5d23522842c0ec54cdcff4fc9c99e4dbfd"
+    },
+    {
+      "bytes": 7708,
+      "path": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/camera-photo/camera_entry.py",
+      "role": "camera",
+      "sha256": "dd02488a0a5f997ccc8a399f7c26ce54431cda8b1ab2490ec67d526e412bb8bd"
+    },
+    {
+      "bytes": 26938,
+      "path": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/preparations/camera-photo.json",
+      "role": "preparation",
+      "sha256": "c8efc2e4783749ba4b47b4dc456258c938305c700fbee923265531ba928430cf"
+    },
+    {
+      "bytes": 25312,
+      "path": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/camera-display/capture_lifecycle.py",
+      "role": "lifecycle",
+      "sha256": "6a0ba9438b10740a593e2d90962420e04868465a0fb55c0ce2e03afdb835e877"
+    }
+  ],
+  "source_only": true,
+  "source_rebind": {
+    "all_other_AST_unchanged": true,
+    "historical_runtime_credit_transferred": false,
+    "only_assignments_changed": [
+      "PHOTO_PREPARED",
+      "PREPARATION_REF",
+      "SOURCES"
+    ],
+    "original_preparation": {
+      "bytes": 6152,
+      "path": "/home/alex/work/pocket4-android-final/qualification/camera-photo-display-preparation-resume-20261107-r4/preparation.json",
+      "sha256": "bc90ee546748dc5405ce4f0a354b4e5eb5d44af416dd041009f5af73e5f6b468"
+    },
+    "source_manifest": {
+      "bytes": 239979,
+      "path": "/home/alex/work/p4-cp3a-bootstrap-20261120-runtimeaudit-r1/candidate/MANIFEST.json",
+      "sha256": "0f6d48ca590a9e0f7951f383361bcaeafced5dbd4e7f2ac9e74b5efbbc061baf"
+    },
+    "supervisor_methods_byte_identical": 20
+  },
+  "state": "SOURCE_REBOUND_INSPECTION_PASSED_RUNTIME_AND_VISUAL_PENDING",
+  "success_requires": [
+    "exact inner original photo contract and cancellation commit",
+    "actual owned root child PID/PPID/start_ticks/uids in create-only execute-once claim",
+    "entire same physical Sunplus USB3-4 identity",
+    "normal display release and entry DPMS restored",
+    "independent inhibitor absence, owners unchanged, locked",
+    "all owned children and FDs retired",
+    "no prior cancellation or pending outcome"
+  ],
+  "successful_state": "PHOTO_AND_DISPLAY_VERIFIED_VISUAL_AND_OTHER_APP_GATES_PENDING",
+  "support_migration": {
+    "actual_source_inspection_recorded_separately": true,
+    "all_supervisor_methods_AST_unchanged": true,
+    "historical_controls_apply_to_original_sources": true,
+    "only_assignments_changed": [
+      "PHOTO_PREPARED",
+      "PREPARATION_REF",
+      "SOURCES"
+    ],
+    "photo_preparation": {
+      "bytes": 24722,
+      "path": "/home/alex/work/p4-cp3a-bootstrap-20261120-runtimeaudit-r1/candidate/preparations/camera-app-photo-preparation-resume-20261107-r4.json",
+      "sha256": "bf69655f2fd2d05afd35599c6f1abdef8d5b3bea69ecac1366b0b29a231078aa"
+    },
+    "prior_preparation": {
+      "bytes": 6152,
+      "path": "/home/alex/work/pocket4-android-final/qualification/camera-photo-display-preparation-resume-20261107-r4/preparation.json",
+      "sha256": "bc90ee546748dc5405ce4f0a354b4e5eb5d44af416dd041009f5af73e5f6b468"
+    }
+  },
+  "unchanged_supervisor_methods": 20,
+  "video_audio_playback_qualified": false,
+  "visual_review_required": true,
+  "whole_app_business_accepted": false
+}

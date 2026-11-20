@@ -1,0 +1,1966 @@
+{
+  "Android_commands": 0,
+  "automatic_retry": false,
+  "cleanup_actions_taken": 0,
+  "command_observer": {
+    "bytes": 29655,
+    "identity": [
+      66306,
+      43126711,
+      33216,
+      0,
+      0,
+      1,
+      29655,
+      1794064363581269442,
+      1794064363581269442
+    ],
+    "path": "/home/alex/work/pocket4-android-final/deployment/transaction-runner.py",
+    "sha256": "1ebd5406c5cf37d84e9b16b6caa5783554918e624537bddcd0ed64e044049de0"
+  },
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/systemctl",
+        "show",
+        "droidloomd.service",
+        "--property=ActiveState,SubState,MainPID,ControlPID,ControlGroup,InvocationID,ExecStart,ExecStartPre,FragmentPath,DropInPaths"
+      ],
+      "evidence": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0000.json",
+        "sha256": "cc73faeeaaea0845084bdb9cfe05a2d40e6f02843e1461b5a5b6f561b4327c45"
+      },
+      "index": 0,
+      "lifecycle": {
+        "all_acquired_fds_closed": true,
+        "capture_backend": "bounded-pipes-v1",
+        "child_reaped": true,
+        "child_started": true,
+        "cleanup_elapsed_seconds": 0.00011212099343538284,
+        "descendants": [],
+        "finished_monotonic": 1105354.175997558,
+        "first_error": null,
+        "group_signal_unneeded_exited_only_child": true,
+        "input": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "fd": 4,
+          "sealed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "kill_attempted": false,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 552358,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "observation_deadline": 1105444.116963322,
+        "observed_before_reap": {
+          "code": 1,
+          "pid": 552358,
+          "status": 0
+        },
+        "output_capture": {
+          "EOF": {
+            "stderr": true,
+            "stdout": true
+          },
+          "RLIMIT_FSIZE_after": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_before": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_modified": false,
+          "complete": true,
+          "limit_exceeded": false,
+          "maximum_bytes": 16777216,
+          "no_stream_reads_after_capture_failure": true,
+          "observed_bytes": {
+            "stderr": 0,
+            "stdout": 965
+          },
+          "policy": "per-stream-prefix-v1",
+          "prefix_only": false,
+          "stored_bytes": {
+            "stderr": 0,
+            "stdout": 965
+          }
+        },
+        "owned_tree_cleanup_complete": true,
+        "pid": 552358,
+        "pidfd": 7,
+        "pidfd_closed": true,
+        "pipe_algorithm_source_sha256": "368c68728c9af2feb280661731879545bcdbd1f8d363b8a153fcf8e1d7087b4c",
+        "qualified_success": true,
+        "remaining_owned_children": [],
+        "retirement_deadline": 1105359.175851062,
+        "retirement_within_deadline": true,
+        "returncode": 0,
+        "schema": 2,
+        "secondary_errors": [],
+        "selector_closed": true,
+        "selector_fd": 5,
+        "source_lifecycle_sha256": "6a0ba9438b10740a593e2d90962420e04868465a0fb55c0ce2e03afdb835e877",
+        "stderr": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "complete": true,
+          "fd": 8,
+          "read_closed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "write_closed": true,
+          "write_fd": 9
+        },
+        "stdout": {
+          "acquired": true,
+          "bytes": 965,
+          "closed": true,
+          "complete": true,
+          "fd": 6,
+          "read_closed": true,
+          "sha256": "a0fea38645e54b6a73f5de011abcefd94553880fb06a5f96ada6eaf2e2e21a63",
+          "write_closed": true,
+          "write_fd": 7
+        },
+        "timed_out": false
+      },
+      "lifecycle_source": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/bounded_host_capture.py",
+        "sha256": "bb6d818cbe68b6976da57a996d17b6333cdf5dae03fa743fd0cb7f27f89c2bf3"
+      },
+      "retirement_proved": true,
+      "stderr": {
+        "available": true,
+        "bytes": 0,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0000.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "available": true,
+        "bytes": 965,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0000.stdout",
+        "sha256": "a0fea38645e54b6a73f5de011abcefd94553880fb06a5f96ada6eaf2e2e21a63"
+      },
+      "subreaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 552357,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      }
+    },
+    {
+      "argv": [
+        "/usr/sbin/runuser",
+        "-u",
+        "alex",
+        "--",
+        "/usr/bin/env",
+        "XDG_RUNTIME_DIR=/run/user/1000",
+        "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus",
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "droidloom.service",
+        "--property=ActiveState,SubState,MainPID,ControlPID,ControlGroup,InvocationID,ExecStart,ExecStartPre,FragmentPath,DropInPaths"
+      ],
+      "evidence": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0001.json",
+        "sha256": "fcb3f45ac507a9d3a9fe9c3f4ac0e3ae81d826ce0328402c66a3c0f88e5aa9a5"
+      },
+      "index": 1,
+      "lifecycle": {
+        "all_acquired_fds_closed": true,
+        "capture_backend": "bounded-pipes-v1",
+        "child_reaped": true,
+        "child_started": true,
+        "cleanup_elapsed_seconds": 0.00015739607624709606,
+        "descendants": [],
+        "finished_monotonic": 1105354.200118362,
+        "first_error": null,
+        "group_signal_unneeded_exited_only_child": true,
+        "input": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "fd": 4,
+          "sealed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "kill_attempted": false,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 552359,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "observation_deadline": 1105444.186518242,
+        "observed_before_reap": {
+          "code": 1,
+          "pid": 552359,
+          "status": 0
+        },
+        "output_capture": {
+          "EOF": {
+            "stderr": true,
+            "stdout": true
+          },
+          "RLIMIT_FSIZE_after": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_before": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_modified": false,
+          "complete": true,
+          "limit_exceeded": false,
+          "maximum_bytes": 16777216,
+          "no_stream_reads_after_capture_failure": true,
+          "observed_bytes": {
+            "stderr": 0,
+            "stdout": 811
+          },
+          "policy": "per-stream-prefix-v1",
+          "prefix_only": false,
+          "stored_bytes": {
+            "stderr": 0,
+            "stdout": 811
+          }
+        },
+        "owned_tree_cleanup_complete": true,
+        "pid": 552359,
+        "pidfd": 7,
+        "pidfd_closed": true,
+        "pipe_algorithm_source_sha256": "368c68728c9af2feb280661731879545bcdbd1f8d363b8a153fcf8e1d7087b4c",
+        "qualified_success": true,
+        "remaining_owned_children": [],
+        "retirement_deadline": 1105359.199919928,
+        "retirement_within_deadline": true,
+        "returncode": 0,
+        "schema": 2,
+        "secondary_errors": [],
+        "selector_closed": true,
+        "selector_fd": 5,
+        "source_lifecycle_sha256": "6a0ba9438b10740a593e2d90962420e04868465a0fb55c0ce2e03afdb835e877",
+        "stderr": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "complete": true,
+          "fd": 8,
+          "read_closed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "write_closed": true,
+          "write_fd": 9
+        },
+        "stdout": {
+          "acquired": true,
+          "bytes": 811,
+          "closed": true,
+          "complete": true,
+          "fd": 6,
+          "read_closed": true,
+          "sha256": "fa310c95b6c7f0deb35514b18afe6179025f954c2db289a66975881e0a007965",
+          "write_closed": true,
+          "write_fd": 7
+        },
+        "timed_out": false
+      },
+      "lifecycle_source": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/bounded_host_capture.py",
+        "sha256": "bb6d818cbe68b6976da57a996d17b6333cdf5dae03fa743fd0cb7f27f89c2bf3"
+      },
+      "retirement_proved": true,
+      "stderr": {
+        "available": true,
+        "bytes": 0,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0001.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "available": true,
+        "bytes": 811,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0001.stdout",
+        "sha256": "fa310c95b6c7f0deb35514b18afe6179025f954c2db289a66975881e0a007965"
+      },
+      "subreaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 552357,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      }
+    },
+    {
+      "argv": [
+        "/usr/sbin/runuser",
+        "-u",
+        "alex",
+        "--",
+        "/usr/bin/env",
+        "XDG_RUNTIME_DIR=/run/user/1000",
+        "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus",
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "droidloom-applications.service",
+        "--property=ActiveState,SubState,MainPID,ControlPID,ControlGroup,InvocationID,ExecStart,ExecStartPre,FragmentPath,DropInPaths"
+      ],
+      "evidence": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0002.json",
+        "sha256": "0dc46841d040aa0fcf6597570aa5e09af6450a472959196a6d2c0cdb66847195"
+      },
+      "index": 2,
+      "lifecycle": {
+        "all_acquired_fds_closed": true,
+        "capture_backend": "bounded-pipes-v1",
+        "child_reaped": true,
+        "child_started": true,
+        "cleanup_elapsed_seconds": 0.00014123599976301193,
+        "descendants": [],
+        "finished_monotonic": 1105354.223364868,
+        "first_error": null,
+        "group_signal_unneeded_exited_only_child": true,
+        "input": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "fd": 4,
+          "sealed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "kill_attempted": false,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 552361,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "observation_deadline": 1105444.210180933,
+        "observed_before_reap": {
+          "code": 1,
+          "pid": 552361,
+          "status": 0
+        },
+        "output_capture": {
+          "EOF": {
+            "stderr": true,
+            "stdout": true
+          },
+          "RLIMIT_FSIZE_after": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_before": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_modified": false,
+          "complete": true,
+          "limit_exceeded": false,
+          "maximum_bytes": 16777216,
+          "no_stream_reads_after_capture_failure": true,
+          "observed_bytes": {
+            "stderr": 0,
+            "stdout": 438
+          },
+          "policy": "per-stream-prefix-v1",
+          "prefix_only": false,
+          "stored_bytes": {
+            "stderr": 0,
+            "stdout": 438
+          }
+        },
+        "owned_tree_cleanup_complete": true,
+        "pid": 552361,
+        "pidfd": 7,
+        "pidfd_closed": true,
+        "pipe_algorithm_source_sha256": "368c68728c9af2feb280661731879545bcdbd1f8d363b8a153fcf8e1d7087b4c",
+        "qualified_success": true,
+        "remaining_owned_children": [],
+        "retirement_deadline": 1105359.223184438,
+        "retirement_within_deadline": true,
+        "returncode": 0,
+        "schema": 2,
+        "secondary_errors": [],
+        "selector_closed": true,
+        "selector_fd": 5,
+        "source_lifecycle_sha256": "6a0ba9438b10740a593e2d90962420e04868465a0fb55c0ce2e03afdb835e877",
+        "stderr": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "complete": true,
+          "fd": 8,
+          "read_closed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "write_closed": true,
+          "write_fd": 9
+        },
+        "stdout": {
+          "acquired": true,
+          "bytes": 438,
+          "closed": true,
+          "complete": true,
+          "fd": 6,
+          "read_closed": true,
+          "sha256": "0fe1586d3a426642140fe0ac0e1679beaf9d2e9964f495a6b2e7f4296f838b0f",
+          "write_closed": true,
+          "write_fd": 7
+        },
+        "timed_out": false
+      },
+      "lifecycle_source": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/bounded_host_capture.py",
+        "sha256": "bb6d818cbe68b6976da57a996d17b6333cdf5dae03fa743fd0cb7f27f89c2bf3"
+      },
+      "retirement_proved": true,
+      "stderr": {
+        "available": true,
+        "bytes": 0,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0002.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "available": true,
+        "bytes": 438,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0002.stdout",
+        "sha256": "0fe1586d3a426642140fe0ac0e1679beaf9d2e9964f495a6b2e7f4296f838b0f"
+      },
+      "subreaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 552357,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      }
+    },
+    {
+      "argv": [
+        "/usr/sbin/debugfs",
+        "-R",
+        "cat /system/packages.list",
+        "/var/lib/droidloom/users/1000/data/data.img"
+      ],
+      "evidence": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0003.json",
+        "sha256": "7fd86d02b207bea0a720512e8903f70e1c29bd642b5323e05c4d64ce9c84d0c1"
+      },
+      "index": 3,
+      "lifecycle": {
+        "all_acquired_fds_closed": true,
+        "capture_backend": "bounded-pipes-v1",
+        "child_reaped": true,
+        "child_started": true,
+        "cleanup_elapsed_seconds": 9.175296872854233e-05,
+        "descendants": [],
+        "finished_monotonic": 1105354.279144418,
+        "first_error": null,
+        "group_signal_unneeded_exited_only_child": true,
+        "input": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "fd": 5,
+          "sealed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "kill_attempted": false,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 552363,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "observation_deadline": 1105384.269230507,
+        "observed_before_reap": {
+          "code": 1,
+          "pid": 552363,
+          "status": 0
+        },
+        "output_capture": {
+          "EOF": {
+            "stderr": true,
+            "stdout": true
+          },
+          "RLIMIT_FSIZE_after": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_before": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_modified": false,
+          "complete": true,
+          "limit_exceeded": false,
+          "maximum_bytes": 16777216,
+          "no_stream_reads_after_capture_failure": true,
+          "observed_bytes": {
+            "stderr": 28,
+            "stdout": 30065
+          },
+          "policy": "per-stream-prefix-v1",
+          "prefix_only": false,
+          "stored_bytes": {
+            "stderr": 28,
+            "stdout": 30065
+          }
+        },
+        "owned_tree_cleanup_complete": true,
+        "pid": 552363,
+        "pidfd": 8,
+        "pidfd_closed": true,
+        "pipe_algorithm_source_sha256": "368c68728c9af2feb280661731879545bcdbd1f8d363b8a153fcf8e1d7087b4c",
+        "qualified_success": true,
+        "remaining_owned_children": [],
+        "retirement_deadline": 1105359.279020334,
+        "retirement_within_deadline": true,
+        "returncode": 0,
+        "schema": 2,
+        "secondary_errors": [],
+        "selector_closed": true,
+        "selector_fd": 6,
+        "source_lifecycle_sha256": "6a0ba9438b10740a593e2d90962420e04868465a0fb55c0ce2e03afdb835e877",
+        "stderr": {
+          "acquired": true,
+          "bytes": 28,
+          "closed": true,
+          "complete": true,
+          "fd": 9,
+          "read_closed": true,
+          "sha256": "d1f395f3b25e168ae41957e6d34052c014f7ea951493daefffd1b986039396c8",
+          "write_closed": true,
+          "write_fd": 10
+        },
+        "stdout": {
+          "acquired": true,
+          "bytes": 30065,
+          "closed": true,
+          "complete": true,
+          "fd": 7,
+          "read_closed": true,
+          "sha256": "fa05bd6709c5ab0ae111850e8bbbd985a2155e7ebc3572f43726cd7a0689568e",
+          "write_closed": true,
+          "write_fd": 8
+        },
+        "timed_out": false
+      },
+      "lifecycle_source": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/bounded_host_capture.py",
+        "sha256": "bb6d818cbe68b6976da57a996d17b6333cdf5dae03fa743fd0cb7f27f89c2bf3"
+      },
+      "retirement_proved": true,
+      "stderr": {
+        "available": true,
+        "bytes": 28,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0003.stderr",
+        "sha256": "d1f395f3b25e168ae41957e6d34052c014f7ea951493daefffd1b986039396c8"
+      },
+      "stdout": {
+        "available": true,
+        "bytes": 30065,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0003.stdout",
+        "sha256": "fa05bd6709c5ab0ae111850e8bbbd985a2155e7ebc3572f43726cd7a0689568e"
+      },
+      "subreaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 552357,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      }
+    },
+    {
+      "argv": [
+        "/usr/sbin/debugfs",
+        "-R",
+        "stat /app/~~vaemoxBONiRvhxp9UGaLdQ==/org.droidloom.qa.galleryrotation.r12.nd24b61ed8f7c9a03-xo00sNnKc05Yg12zicj6eA==/base.apk",
+        "/var/lib/droidloom/users/1000/data/data.img"
+      ],
+      "evidence": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0004.json",
+        "sha256": "03bb40c5e3757de29517082d7525565582a4fa10aff5b4901b252d15dd670a63"
+      },
+      "index": 4,
+      "lifecycle": {
+        "all_acquired_fds_closed": true,
+        "capture_backend": "bounded-pipes-v1",
+        "child_reaped": true,
+        "child_started": true,
+        "cleanup_elapsed_seconds": 9.773392230272293e-05,
+        "descendants": [],
+        "finished_monotonic": 1105354.29820362,
+        "first_error": null,
+        "group_signal_unneeded_exited_only_child": true,
+        "input": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "fd": 5,
+          "sealed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "kill_attempted": false,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 552364,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "observation_deadline": 1105384.289362352,
+        "observed_before_reap": {
+          "code": 1,
+          "pid": 552364,
+          "status": 0
+        },
+        "output_capture": {
+          "EOF": {
+            "stderr": true,
+            "stdout": true
+          },
+          "RLIMIT_FSIZE_after": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_before": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_modified": false,
+          "complete": true,
+          "limit_exceeded": false,
+          "maximum_bytes": 16777216,
+          "no_stream_reads_after_capture_failure": true,
+          "observed_bytes": {
+            "stderr": 181,
+            "stdout": 0
+          },
+          "policy": "per-stream-prefix-v1",
+          "prefix_only": false,
+          "stored_bytes": {
+            "stderr": 181,
+            "stdout": 0
+          }
+        },
+        "owned_tree_cleanup_complete": true,
+        "pid": 552364,
+        "pidfd": 8,
+        "pidfd_closed": true,
+        "pipe_algorithm_source_sha256": "368c68728c9af2feb280661731879545bcdbd1f8d363b8a153fcf8e1d7087b4c",
+        "qualified_success": true,
+        "remaining_owned_children": [],
+        "retirement_deadline": 1105359.298074046,
+        "retirement_within_deadline": true,
+        "returncode": 0,
+        "schema": 2,
+        "secondary_errors": [],
+        "selector_closed": true,
+        "selector_fd": 6,
+        "source_lifecycle_sha256": "6a0ba9438b10740a593e2d90962420e04868465a0fb55c0ce2e03afdb835e877",
+        "stderr": {
+          "acquired": true,
+          "bytes": 181,
+          "closed": true,
+          "complete": true,
+          "fd": 9,
+          "read_closed": true,
+          "sha256": "495dd1a32678fedf2473548427cba835b18b88ec594b7a43dffc2bf40ada9138",
+          "write_closed": true,
+          "write_fd": 10
+        },
+        "stdout": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "complete": true,
+          "fd": 7,
+          "read_closed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "write_closed": true,
+          "write_fd": 8
+        },
+        "timed_out": false
+      },
+      "lifecycle_source": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/bounded_host_capture.py",
+        "sha256": "bb6d818cbe68b6976da57a996d17b6333cdf5dae03fa743fd0cb7f27f89c2bf3"
+      },
+      "retirement_proved": true,
+      "stderr": {
+        "available": true,
+        "bytes": 181,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0004.stderr",
+        "sha256": "495dd1a32678fedf2473548427cba835b18b88ec594b7a43dffc2bf40ada9138"
+      },
+      "stdout": {
+        "available": true,
+        "bytes": 0,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0004.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "subreaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 552357,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      }
+    },
+    {
+      "argv": [
+        "/usr/sbin/debugfs",
+        "-R",
+        "stat /data/org.droidloom.qa.galleryrotation.r12.nd24b61ed8f7c9a03",
+        "/var/lib/droidloom/users/1000/data/data.img"
+      ],
+      "evidence": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0005.json",
+        "sha256": "7f482ca29110ca084534fd910ba8b9e29d1662f511c8c67f5b9978f8d0472be8"
+      },
+      "index": 5,
+      "lifecycle": {
+        "all_acquired_fds_closed": true,
+        "capture_backend": "bounded-pipes-v1",
+        "child_reaped": true,
+        "child_started": true,
+        "cleanup_elapsed_seconds": 8.943909779191017e-05,
+        "descendants": [],
+        "finished_monotonic": 1105354.317142556,
+        "first_error": null,
+        "group_signal_unneeded_exited_only_child": true,
+        "input": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "fd": 5,
+          "sealed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "kill_attempted": false,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 552365,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "observation_deadline": 1105384.3081702,
+        "observed_before_reap": {
+          "code": 1,
+          "pid": 552365,
+          "status": 0
+        },
+        "output_capture": {
+          "EOF": {
+            "stderr": true,
+            "stdout": true
+          },
+          "RLIMIT_FSIZE_after": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_before": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_modified": false,
+          "complete": true,
+          "limit_exceeded": false,
+          "maximum_bytes": 16777216,
+          "no_stream_reads_after_capture_failure": true,
+          "observed_bytes": {
+            "stderr": 121,
+            "stdout": 0
+          },
+          "policy": "per-stream-prefix-v1",
+          "prefix_only": false,
+          "stored_bytes": {
+            "stderr": 121,
+            "stdout": 0
+          }
+        },
+        "owned_tree_cleanup_complete": true,
+        "pid": 552365,
+        "pidfd": 8,
+        "pidfd_closed": true,
+        "pipe_algorithm_source_sha256": "368c68728c9af2feb280661731879545bcdbd1f8d363b8a153fcf8e1d7087b4c",
+        "qualified_success": true,
+        "remaining_owned_children": [],
+        "retirement_deadline": 1105359.317019704,
+        "retirement_within_deadline": true,
+        "returncode": 0,
+        "schema": 2,
+        "secondary_errors": [],
+        "selector_closed": true,
+        "selector_fd": 6,
+        "source_lifecycle_sha256": "6a0ba9438b10740a593e2d90962420e04868465a0fb55c0ce2e03afdb835e877",
+        "stderr": {
+          "acquired": true,
+          "bytes": 121,
+          "closed": true,
+          "complete": true,
+          "fd": 9,
+          "read_closed": true,
+          "sha256": "bed975b39eb58e3aa1d267512aa08561b9271bb87b0b6d635d0ff48b0bf0479e",
+          "write_closed": true,
+          "write_fd": 10
+        },
+        "stdout": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "complete": true,
+          "fd": 7,
+          "read_closed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "write_closed": true,
+          "write_fd": 8
+        },
+        "timed_out": false
+      },
+      "lifecycle_source": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/bounded_host_capture.py",
+        "sha256": "bb6d818cbe68b6976da57a996d17b6333cdf5dae03fa743fd0cb7f27f89c2bf3"
+      },
+      "retirement_proved": true,
+      "stderr": {
+        "available": true,
+        "bytes": 121,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0005.stderr",
+        "sha256": "bed975b39eb58e3aa1d267512aa08561b9271bb87b0b6d635d0ff48b0bf0479e"
+      },
+      "stdout": {
+        "available": true,
+        "bytes": 0,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0005.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "subreaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 552357,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      }
+    },
+    {
+      "argv": [
+        "/usr/sbin/debugfs",
+        "-R",
+        "stat /user_de/0/org.droidloom.qa.galleryrotation.r12.nd24b61ed8f7c9a03",
+        "/var/lib/droidloom/users/1000/data/data.img"
+      ],
+      "evidence": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0006.json",
+        "sha256": "93aafc4658cc90fbfe20fd27e3213303d4cbe35ec5468ef8409dd2fcedf7c9d6"
+      },
+      "index": 6,
+      "lifecycle": {
+        "all_acquired_fds_closed": true,
+        "capture_backend": "bounded-pipes-v1",
+        "child_reaped": true,
+        "child_started": true,
+        "cleanup_elapsed_seconds": 9.591109119355679e-05,
+        "descendants": [],
+        "finished_monotonic": 1105354.377489168,
+        "first_error": null,
+        "group_signal_unneeded_exited_only_child": true,
+        "input": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "fd": 5,
+          "sealed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "kill_attempted": false,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 552366,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "observation_deadline": 1105384.367422589,
+        "observed_before_reap": {
+          "code": 1,
+          "pid": 552366,
+          "status": 0
+        },
+        "output_capture": {
+          "EOF": {
+            "stderr": true,
+            "stdout": true
+          },
+          "RLIMIT_FSIZE_after": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_before": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_modified": false,
+          "complete": true,
+          "limit_exceeded": false,
+          "maximum_bytes": 16777216,
+          "no_stream_reads_after_capture_failure": true,
+          "observed_bytes": {
+            "stderr": 126,
+            "stdout": 0
+          },
+          "policy": "per-stream-prefix-v1",
+          "prefix_only": false,
+          "stored_bytes": {
+            "stderr": 126,
+            "stdout": 0
+          }
+        },
+        "owned_tree_cleanup_complete": true,
+        "pid": 552366,
+        "pidfd": 8,
+        "pidfd_closed": true,
+        "pipe_algorithm_source_sha256": "368c68728c9af2feb280661731879545bcdbd1f8d363b8a153fcf8e1d7087b4c",
+        "qualified_success": true,
+        "remaining_owned_children": [],
+        "retirement_deadline": 1105359.377361678,
+        "retirement_within_deadline": true,
+        "returncode": 0,
+        "schema": 2,
+        "secondary_errors": [],
+        "selector_closed": true,
+        "selector_fd": 6,
+        "source_lifecycle_sha256": "6a0ba9438b10740a593e2d90962420e04868465a0fb55c0ce2e03afdb835e877",
+        "stderr": {
+          "acquired": true,
+          "bytes": 126,
+          "closed": true,
+          "complete": true,
+          "fd": 9,
+          "read_closed": true,
+          "sha256": "442febdc8d72a350a2b5e4760a11362ab9ba455f181162d0603f06b3e71f3a71",
+          "write_closed": true,
+          "write_fd": 10
+        },
+        "stdout": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "complete": true,
+          "fd": 7,
+          "read_closed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "write_closed": true,
+          "write_fd": 8
+        },
+        "timed_out": false
+      },
+      "lifecycle_source": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/bounded_host_capture.py",
+        "sha256": "bb6d818cbe68b6976da57a996d17b6333cdf5dae03fa743fd0cb7f27f89c2bf3"
+      },
+      "retirement_proved": true,
+      "stderr": {
+        "available": true,
+        "bytes": 126,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0006.stderr",
+        "sha256": "442febdc8d72a350a2b5e4760a11362ab9ba455f181162d0603f06b3e71f3a71"
+      },
+      "stdout": {
+        "available": true,
+        "bytes": 0,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0006.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "subreaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 552357,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      }
+    },
+    {
+      "argv": [
+        "/usr/sbin/debugfs",
+        "-R",
+        "stat /media/0/DCIM/Pocket4_Rotate_Control_r12_d24b61ed8f7c9a03",
+        "/var/lib/droidloom/users/1000/data/data.img"
+      ],
+      "evidence": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0007.json",
+        "sha256": "14680461cf390095aefeae3f9ccfa013b3c6de208d6a94d655cfae6f8d031942"
+      },
+      "index": 7,
+      "lifecycle": {
+        "all_acquired_fds_closed": true,
+        "capture_backend": "bounded-pipes-v1",
+        "child_reaped": true,
+        "child_started": true,
+        "cleanup_elapsed_seconds": 9.051081724464893e-05,
+        "descendants": [],
+        "finished_monotonic": 1105354.39768854,
+        "first_error": null,
+        "group_signal_unneeded_exited_only_child": true,
+        "input": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "fd": 5,
+          "sealed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "kill_attempted": false,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 552367,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "observation_deadline": 1105384.387917218,
+        "observed_before_reap": {
+          "code": 1,
+          "pid": 552367,
+          "status": 0
+        },
+        "output_capture": {
+          "EOF": {
+            "stderr": true,
+            "stdout": true
+          },
+          "RLIMIT_FSIZE_after": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_before": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_modified": false,
+          "complete": true,
+          "limit_exceeded": false,
+          "maximum_bytes": 16777216,
+          "no_stream_reads_after_capture_failure": true,
+          "observed_bytes": {
+            "stderr": 118,
+            "stdout": 0
+          },
+          "policy": "per-stream-prefix-v1",
+          "prefix_only": false,
+          "stored_bytes": {
+            "stderr": 118,
+            "stdout": 0
+          }
+        },
+        "owned_tree_cleanup_complete": true,
+        "pid": 552367,
+        "pidfd": 8,
+        "pidfd_closed": true,
+        "pipe_algorithm_source_sha256": "368c68728c9af2feb280661731879545bcdbd1f8d363b8a153fcf8e1d7087b4c",
+        "qualified_success": true,
+        "remaining_owned_children": [],
+        "retirement_deadline": 1105359.397564957,
+        "retirement_within_deadline": true,
+        "returncode": 0,
+        "schema": 2,
+        "secondary_errors": [],
+        "selector_closed": true,
+        "selector_fd": 6,
+        "source_lifecycle_sha256": "6a0ba9438b10740a593e2d90962420e04868465a0fb55c0ce2e03afdb835e877",
+        "stderr": {
+          "acquired": true,
+          "bytes": 118,
+          "closed": true,
+          "complete": true,
+          "fd": 9,
+          "read_closed": true,
+          "sha256": "855e37997e65aec9a35aa39a2e83a9f55b47827e15e4a7d18551f417a651bfec",
+          "write_closed": true,
+          "write_fd": 10
+        },
+        "stdout": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "complete": true,
+          "fd": 7,
+          "read_closed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "write_closed": true,
+          "write_fd": 8
+        },
+        "timed_out": false
+      },
+      "lifecycle_source": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/bounded_host_capture.py",
+        "sha256": "bb6d818cbe68b6976da57a996d17b6333cdf5dae03fa743fd0cb7f27f89c2bf3"
+      },
+      "retirement_proved": true,
+      "stderr": {
+        "available": true,
+        "bytes": 118,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0007.stderr",
+        "sha256": "855e37997e65aec9a35aa39a2e83a9f55b47827e15e4a7d18551f417a651bfec"
+      },
+      "stdout": {
+        "available": true,
+        "bytes": 0,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0007.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "subreaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 552357,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      }
+    },
+    {
+      "argv": [
+        "/usr/sbin/debugfs",
+        "-R",
+        "stat /media/0/DCIM/Pocket4_Rotate_Copy_r12_d24b61ed8f7c9a03",
+        "/var/lib/droidloom/users/1000/data/data.img"
+      ],
+      "evidence": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0008.json",
+        "sha256": "132bc0e94d68a7a0fa4bd82bd42fbae3f71522aa457798205ba5a1502840b2d6"
+      },
+      "index": 8,
+      "lifecycle": {
+        "all_acquired_fds_closed": true,
+        "capture_backend": "bounded-pipes-v1",
+        "child_reaped": true,
+        "child_started": true,
+        "cleanup_elapsed_seconds": 8.761510252952576e-05,
+        "descendants": [],
+        "finished_monotonic": 1105354.41597714,
+        "first_error": null,
+        "group_signal_unneeded_exited_only_child": true,
+        "input": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "fd": 5,
+          "sealed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "kill_attempted": false,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 552368,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "observation_deadline": 1105384.40750117,
+        "observed_before_reap": {
+          "code": 1,
+          "pid": 552368,
+          "status": 0
+        },
+        "output_capture": {
+          "EOF": {
+            "stderr": true,
+            "stdout": true
+          },
+          "RLIMIT_FSIZE_after": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_before": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_modified": false,
+          "complete": true,
+          "limit_exceeded": false,
+          "maximum_bytes": 16777216,
+          "no_stream_reads_after_capture_failure": true,
+          "observed_bytes": {
+            "stderr": 115,
+            "stdout": 0
+          },
+          "policy": "per-stream-prefix-v1",
+          "prefix_only": false,
+          "stored_bytes": {
+            "stderr": 115,
+            "stdout": 0
+          }
+        },
+        "owned_tree_cleanup_complete": true,
+        "pid": 552368,
+        "pidfd": 8,
+        "pidfd_closed": true,
+        "pipe_algorithm_source_sha256": "368c68728c9af2feb280661731879545bcdbd1f8d363b8a153fcf8e1d7087b4c",
+        "qualified_success": true,
+        "remaining_owned_children": [],
+        "retirement_deadline": 1105359.415856773,
+        "retirement_within_deadline": true,
+        "returncode": 0,
+        "schema": 2,
+        "secondary_errors": [],
+        "selector_closed": true,
+        "selector_fd": 6,
+        "source_lifecycle_sha256": "6a0ba9438b10740a593e2d90962420e04868465a0fb55c0ce2e03afdb835e877",
+        "stderr": {
+          "acquired": true,
+          "bytes": 115,
+          "closed": true,
+          "complete": true,
+          "fd": 9,
+          "read_closed": true,
+          "sha256": "86f9e8237c318dab30d22306b9528a51a178f8287c9991f54435548ab91fb7e1",
+          "write_closed": true,
+          "write_fd": 10
+        },
+        "stdout": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "complete": true,
+          "fd": 7,
+          "read_closed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "write_closed": true,
+          "write_fd": 8
+        },
+        "timed_out": false
+      },
+      "lifecycle_source": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/bounded_host_capture.py",
+        "sha256": "bb6d818cbe68b6976da57a996d17b6333cdf5dae03fa743fd0cb7f27f89c2bf3"
+      },
+      "retirement_proved": true,
+      "stderr": {
+        "available": true,
+        "bytes": 115,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0008.stderr",
+        "sha256": "86f9e8237c318dab30d22306b9528a51a178f8287c9991f54435548ab91fb7e1"
+      },
+      "stdout": {
+        "available": true,
+        "bytes": 0,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0008.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "subreaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 552357,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      }
+    },
+    {
+      "argv": [
+        "/usr/bin/systemctl",
+        "show",
+        "droidloomd.service",
+        "--property=ActiveState,SubState,MainPID,ControlPID,ControlGroup,InvocationID,ExecStart,ExecStartPre,FragmentPath,DropInPaths"
+      ],
+      "evidence": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0009.json",
+        "sha256": "eacaf958690c1997d551dd4a19eea9a4987c6192ca769535554ad81d3d817e3a"
+      },
+      "index": 9,
+      "lifecycle": {
+        "all_acquired_fds_closed": true,
+        "capture_backend": "bounded-pipes-v1",
+        "child_reaped": true,
+        "child_started": true,
+        "cleanup_elapsed_seconds": 9.77138988673687e-05,
+        "descendants": [],
+        "finished_monotonic": 1105354.477783614,
+        "first_error": null,
+        "group_signal_unneeded_exited_only_child": true,
+        "input": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "fd": 5,
+          "sealed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "kill_attempted": false,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 552369,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "observation_deadline": 1105444.469989119,
+        "observed_before_reap": {
+          "code": 1,
+          "pid": 552369,
+          "status": 0
+        },
+        "output_capture": {
+          "EOF": {
+            "stderr": true,
+            "stdout": true
+          },
+          "RLIMIT_FSIZE_after": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_before": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_modified": false,
+          "complete": true,
+          "limit_exceeded": false,
+          "maximum_bytes": 16777216,
+          "no_stream_reads_after_capture_failure": true,
+          "observed_bytes": {
+            "stderr": 0,
+            "stdout": 965
+          },
+          "policy": "per-stream-prefix-v1",
+          "prefix_only": false,
+          "stored_bytes": {
+            "stderr": 0,
+            "stdout": 965
+          }
+        },
+        "owned_tree_cleanup_complete": true,
+        "pid": 552369,
+        "pidfd": 8,
+        "pidfd_closed": true,
+        "pipe_algorithm_source_sha256": "368c68728c9af2feb280661731879545bcdbd1f8d363b8a153fcf8e1d7087b4c",
+        "qualified_success": true,
+        "remaining_owned_children": [],
+        "retirement_deadline": 1105359.477653008,
+        "retirement_within_deadline": true,
+        "returncode": 0,
+        "schema": 2,
+        "secondary_errors": [],
+        "selector_closed": true,
+        "selector_fd": 6,
+        "source_lifecycle_sha256": "6a0ba9438b10740a593e2d90962420e04868465a0fb55c0ce2e03afdb835e877",
+        "stderr": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "complete": true,
+          "fd": 9,
+          "read_closed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "write_closed": true,
+          "write_fd": 10
+        },
+        "stdout": {
+          "acquired": true,
+          "bytes": 965,
+          "closed": true,
+          "complete": true,
+          "fd": 7,
+          "read_closed": true,
+          "sha256": "a0fea38645e54b6a73f5de011abcefd94553880fb06a5f96ada6eaf2e2e21a63",
+          "write_closed": true,
+          "write_fd": 8
+        },
+        "timed_out": false
+      },
+      "lifecycle_source": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/bounded_host_capture.py",
+        "sha256": "bb6d818cbe68b6976da57a996d17b6333cdf5dae03fa743fd0cb7f27f89c2bf3"
+      },
+      "retirement_proved": true,
+      "stderr": {
+        "available": true,
+        "bytes": 0,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0009.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "available": true,
+        "bytes": 965,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0009.stdout",
+        "sha256": "a0fea38645e54b6a73f5de011abcefd94553880fb06a5f96ada6eaf2e2e21a63"
+      },
+      "subreaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 552357,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      }
+    },
+    {
+      "argv": [
+        "/usr/sbin/runuser",
+        "-u",
+        "alex",
+        "--",
+        "/usr/bin/env",
+        "XDG_RUNTIME_DIR=/run/user/1000",
+        "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus",
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "droidloom.service",
+        "--property=ActiveState,SubState,MainPID,ControlPID,ControlGroup,InvocationID,ExecStart,ExecStartPre,FragmentPath,DropInPaths"
+      ],
+      "evidence": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0010.json",
+        "sha256": "79783c34a8254a48e3e525c07de74f6d4db1d00aa2bf34cb6080615553077247"
+      },
+      "index": 10,
+      "lifecycle": {
+        "all_acquired_fds_closed": true,
+        "capture_backend": "bounded-pipes-v1",
+        "child_reaped": true,
+        "child_started": true,
+        "cleanup_elapsed_seconds": 0.0001413971185684204,
+        "descendants": [],
+        "finished_monotonic": 1105354.501306382,
+        "first_error": null,
+        "group_signal_unneeded_exited_only_child": true,
+        "input": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "fd": 5,
+          "sealed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "kill_attempted": false,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 552370,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "observation_deadline": 1105444.48812457,
+        "observed_before_reap": {
+          "code": 1,
+          "pid": 552370,
+          "status": 0
+        },
+        "output_capture": {
+          "EOF": {
+            "stderr": true,
+            "stdout": true
+          },
+          "RLIMIT_FSIZE_after": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_before": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_modified": false,
+          "complete": true,
+          "limit_exceeded": false,
+          "maximum_bytes": 16777216,
+          "no_stream_reads_after_capture_failure": true,
+          "observed_bytes": {
+            "stderr": 0,
+            "stdout": 811
+          },
+          "policy": "per-stream-prefix-v1",
+          "prefix_only": false,
+          "stored_bytes": {
+            "stderr": 0,
+            "stdout": 811
+          }
+        },
+        "owned_tree_cleanup_complete": true,
+        "pid": 552370,
+        "pidfd": 8,
+        "pidfd_closed": true,
+        "pipe_algorithm_source_sha256": "368c68728c9af2feb280661731879545bcdbd1f8d363b8a153fcf8e1d7087b4c",
+        "qualified_success": true,
+        "remaining_owned_children": [],
+        "retirement_deadline": 1105359.501126392,
+        "retirement_within_deadline": true,
+        "returncode": 0,
+        "schema": 2,
+        "secondary_errors": [],
+        "selector_closed": true,
+        "selector_fd": 6,
+        "source_lifecycle_sha256": "6a0ba9438b10740a593e2d90962420e04868465a0fb55c0ce2e03afdb835e877",
+        "stderr": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "complete": true,
+          "fd": 9,
+          "read_closed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "write_closed": true,
+          "write_fd": 10
+        },
+        "stdout": {
+          "acquired": true,
+          "bytes": 811,
+          "closed": true,
+          "complete": true,
+          "fd": 7,
+          "read_closed": true,
+          "sha256": "fa310c95b6c7f0deb35514b18afe6179025f954c2db289a66975881e0a007965",
+          "write_closed": true,
+          "write_fd": 8
+        },
+        "timed_out": false
+      },
+      "lifecycle_source": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/bounded_host_capture.py",
+        "sha256": "bb6d818cbe68b6976da57a996d17b6333cdf5dae03fa743fd0cb7f27f89c2bf3"
+      },
+      "retirement_proved": true,
+      "stderr": {
+        "available": true,
+        "bytes": 0,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0010.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "available": true,
+        "bytes": 811,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0010.stdout",
+        "sha256": "fa310c95b6c7f0deb35514b18afe6179025f954c2db289a66975881e0a007965"
+      },
+      "subreaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 552357,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      }
+    },
+    {
+      "argv": [
+        "/usr/sbin/runuser",
+        "-u",
+        "alex",
+        "--",
+        "/usr/bin/env",
+        "XDG_RUNTIME_DIR=/run/user/1000",
+        "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus",
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "droidloom-applications.service",
+        "--property=ActiveState,SubState,MainPID,ControlPID,ControlGroup,InvocationID,ExecStart,ExecStartPre,FragmentPath,DropInPaths"
+      ],
+      "evidence": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0011.json",
+        "sha256": "671c9d5b4aea415bd6e0b137ee889802ce8541ab4c3e64ebe626446c31ac551b"
+      },
+      "index": 11,
+      "lifecycle": {
+        "all_acquired_fds_closed": true,
+        "capture_backend": "bounded-pipes-v1",
+        "child_reaped": true,
+        "child_started": true,
+        "cleanup_elapsed_seconds": 0.0001472479198127985,
+        "descendants": [],
+        "finished_monotonic": 1105354.524927976,
+        "first_error": null,
+        "group_signal_unneeded_exited_only_child": true,
+        "input": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "fd": 5,
+          "sealed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "kill_attempted": false,
+        "leader_alive_before_group_cleanup": false,
+        "leader_observed_before_reap": {
+          "code": 1,
+          "pid": 552374,
+          "status": 0
+        },
+        "leader_unreaped_before_group_cleanup": true,
+        "observation_deadline": 1105444.511452711,
+        "observed_before_reap": {
+          "code": 1,
+          "pid": 552374,
+          "status": 0
+        },
+        "output_capture": {
+          "EOF": {
+            "stderr": true,
+            "stdout": true
+          },
+          "RLIMIT_FSIZE_after": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_before": [
+            -1,
+            -1
+          ],
+          "RLIMIT_FSIZE_modified": false,
+          "complete": true,
+          "limit_exceeded": false,
+          "maximum_bytes": 16777216,
+          "no_stream_reads_after_capture_failure": true,
+          "observed_bytes": {
+            "stderr": 0,
+            "stdout": 438
+          },
+          "policy": "per-stream-prefix-v1",
+          "prefix_only": false,
+          "stored_bytes": {
+            "stderr": 0,
+            "stdout": 438
+          }
+        },
+        "owned_tree_cleanup_complete": true,
+        "pid": 552374,
+        "pidfd": 8,
+        "pidfd_closed": true,
+        "pipe_algorithm_source_sha256": "368c68728c9af2feb280661731879545bcdbd1f8d363b8a153fcf8e1d7087b4c",
+        "qualified_success": true,
+        "remaining_owned_children": [],
+        "retirement_deadline": 1105359.524741183,
+        "retirement_within_deadline": true,
+        "returncode": 0,
+        "schema": 2,
+        "secondary_errors": [],
+        "selector_closed": true,
+        "selector_fd": 6,
+        "source_lifecycle_sha256": "6a0ba9438b10740a593e2d90962420e04868465a0fb55c0ce2e03afdb835e877",
+        "stderr": {
+          "acquired": true,
+          "bytes": 0,
+          "closed": true,
+          "complete": true,
+          "fd": 9,
+          "read_closed": true,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "write_closed": true,
+          "write_fd": 10
+        },
+        "stdout": {
+          "acquired": true,
+          "bytes": 438,
+          "closed": true,
+          "complete": true,
+          "fd": 7,
+          "read_closed": true,
+          "sha256": "0fe1586d3a426642140fe0ac0e1679beaf9d2e9964f495a6b2e7f4296f838b0f",
+          "write_closed": true,
+          "write_fd": 8
+        },
+        "timed_out": false
+      },
+      "lifecycle_source": {
+        "path": "/home/alex/work/pocket4-android-final/qualification/bounded_host_capture.py",
+        "sha256": "bb6d818cbe68b6976da57a996d17b6333cdf5dae03fa743fd0cb7f27f89c2bf3"
+      },
+      "retirement_proved": true,
+      "stderr": {
+        "available": true,
+        "bytes": 0,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0011.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "available": true,
+        "bytes": 438,
+        "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/commands/0011.stdout",
+        "sha256": "0fe1586d3a426642140fe0ac0e1679beaf9d2e9964f495a6b2e7f4296f838b0f"
+      },
+      "subreaper": {
+        "begin_passed": true,
+        "cleanup_deadline_supplied_by_caller": true,
+        "final_children_empty": true,
+        "max_adopted_per_command": 128,
+        "original_subreaper_flag": 0,
+        "pid": 552357,
+        "protected_pid_count": 0,
+        "restored": true,
+        "signals_only_to_kernel_proven_owned_children": true
+      }
+    }
+  ],
+  "controller": {
+    "bytes": 7155,
+    "identity": [
+      66306,
+      50339186,
+      33024,
+      0,
+      0,
+      1,
+      7155,
+      1794079644810608743,
+      1794079644810608743
+    ],
+    "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r2/controller.py",
+    "sha256": "17b484021a646fbb8431272f85ded0420f689f8617281f7eb830cb50ec09769a"
+  },
+  "current_whole_app_qualified": false,
+  "data_image_unchanged": true,
+  "exact_absence_observations": [
+    {
+      "absent": true,
+      "image_path": "/app/~~vaemoxBONiRvhxp9UGaLdQ==/org.droidloom.qa.galleryrotation.r12.nd24b61ed8f7c9a03-xo00sNnKc05Yg12zicj6eA==/base.apk",
+      "stderr_sha256": "495dd1a32678fedf2473548427cba835b18b88ec594b7a43dffc2bf40ada9138"
+    },
+    {
+      "absent": true,
+      "image_path": "/data/org.droidloom.qa.galleryrotation.r12.nd24b61ed8f7c9a03",
+      "stderr_sha256": "bed975b39eb58e3aa1d267512aa08561b9271bb87b0b6d635d0ff48b0bf0479e"
+    },
+    {
+      "absent": true,
+      "image_path": "/user_de/0/org.droidloom.qa.galleryrotation.r12.nd24b61ed8f7c9a03",
+      "stderr_sha256": "442febdc8d72a350a2b5e4760a11362ab9ba455f181162d0603f06b3e71f3a71"
+    },
+    {
+      "absent": true,
+      "image_path": "/media/0/DCIM/Pocket4_Rotate_Control_r12_d24b61ed8f7c9a03",
+      "stderr_sha256": "855e37997e65aec9a35aa39a2e83a9f55b47827e15e4a7d18551f417a651bfec"
+    },
+    {
+      "absent": true,
+      "image_path": "/media/0/DCIM/Pocket4_Rotate_Copy_r12_d24b61ed8f7c9a03",
+      "stderr_sha256": "86f9e8237c318dab30d22306b9528a51a178f8287c9991f54435548ab91fb7e1"
+    }
+  ],
+  "filesystem_mounts_performed": 0,
+  "finished_ns": 1794079645240094450,
+  "historical_UI_pass_granted": false,
+  "historical_fixture_result": {
+    "bytes": 28887,
+    "identity": [
+      66306,
+      50491369,
+      33184,
+      0,
+      1000,
+      1,
+      28887,
+      1793926570918895283,
+      1793926570918895283
+    ],
+    "path": "/home/alex/work/pocket4-gallery-rotation-flow-20261105-r12-06/result.json",
+    "sha256": "04c985255668013b8582fecc0566a25e2e4b8c451f0d614c87ff3a55de145219"
+  },
+  "image_after": {
+    "identity": [
+      66306,
+      111810948,
+      33152,
+      0,
+      0,
+      1,
+      34359738368,
+      1794030280963569636,
+      1794030280963569636
+    ],
+    "path": "/var/lib/droidloom/users/1000/data/data.img"
+  },
+  "image_before": {
+    "identity": [
+      66306,
+      111810948,
+      33152,
+      0,
+      0,
+      1,
+      34359738368,
+      1794030280963569636,
+      1794030280963569636
+    ],
+    "path": "/var/lib/droidloom/users/1000/data/data.img"
+  },
+  "loops_after": [],
+  "loops_before": [],
+  "original_rotation_functional_failure_resolved": false,
+  "owned_commands_retired": true,
+  "package_registry_rows": [],
+  "prior_current_image_observation": {
+    "bytes": 71505,
+    "identity": [
+      66306,
+      50338958,
+      33152,
+      0,
+      0,
+      1,
+      71505,
+      1794079495524535187,
+      1794079495524535187
+    ],
+    "path": "/home/alex/work/pocket4-android-final/qualification/gallery-rotation-prior-reconciliation-20261107-r1/result.json",
+    "sha256": "b10a25361e9cf27297e7adf249a66700b8fe1e61dfbf310924d4bdc62fddafb2"
+  },
+  "prior_fixture_cleanup_prerequisite_closed": true,
+  "production_changed": false,
+  "resources": {
+    "cpu.max": "50000 100000",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "268435456",
+    "memory.peak": "30965760",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0"
+  },
+  "rotation_inputs_sent": 0,
+  "schema": "pocket4-gallery-prior-fixture-cleanup-readonly-v1",
+  "started_ns": 1794079644820152616,
+  "state": "PRIOR_OWNED_FIXTURE_AND_HELPER_ABSENCE_CONFIRMED",
+  "stopped_after": [
+    {
+      "state": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "ControlPID": "0",
+        "DropInPaths": "/etc/systemd/system/droidloomd.service.d/10-ubuntu-unshare-compat.conf /etc/systemd/system.control/droidloomd.service.d/50-AllowedCPUs.conf /etc/systemd/system.control/droidloomd.service.d/50-TasksMax.conf /etc/systemd/system/droidloomd.service.d/90-digitalis-validation-resources.conf",
+        "ExecStart": "{ path=/usr/bin/droidloomd ; argv[]=/usr/bin/droidloomd ; ignore_errors=no ; start_time=[Fri 2026-11-06 18:08:44 PST] ; stop_time=[Fri 2026-11-06 21:44:41 PST] ; pid=3038255 ; code=exited ; status=0 }",
+        "ExecStartPre": "{ path=/opt/android-digitalis-validation/check-kernel-compat ; argv[]=/opt/android-digitalis-validation/check-kernel-compat ; ignore_errors=no ; start_time=[Fri 2026-11-06 18:08:44 PST] ; stop_time=[Fri 2026-11-06 18:08:44 PST] ; pid=3038249 ; code=exited ; status=0 }",
+        "FragmentPath": "/usr/lib/systemd/system/droidloomd.service",
+        "InvocationID": "5225b38a98ff4979a64de07386e42245",
+        "MainPID": "0",
+        "SubState": "dead"
+      },
+      "unit": "droidloomd.service"
+    },
+    {
+      "state": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "ControlPID": "0",
+        "DropInPaths": "/home/alex/.config/systemd/user/droidloom.service.d/95-presenter-guard.conf",
+        "ExecStart": "{ path=/opt/pocket4-presenter-timing-20261104-r10/payload/droidloom-wayland ; argv[]=/opt/pocket4-presenter-timing-20261104-r10/payload/droidloom-wayland ; ignore_errors=no ; start_time=[Fri 2026-11-06 18:08:44 PST] ; stop_time=[Fri 2026-11-06 21:44:30 PST] ; pid=3038257 ; code=killed ; status=15/TERM }",
+        "ExecStartPre": "{ path=/usr/bin/systemctl ; argv[]=/usr/bin/systemctl start droidloomd.service ; ignore_errors=no ; start_time=[Fri 2026-11-06 18:08:44 PST] ; stop_time=[Fri 2026-11-06 18:08:44 PST] ; pid=3038245 ; code=exited ; status=0 }",
+        "FragmentPath": "/usr/lib/systemd/user/droidloom.service",
+        "InvocationID": "403faa82087c4b89a2410ab51cdaaea9",
+        "MainPID": "0",
+        "SubState": "dead"
+      },
+      "unit": "droidloom.service"
+    },
+    {
+      "state": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "ControlPID": "0",
+        "DropInPaths": "",
+        "ExecStart": "{ path=/usr/bin/droidloom-applications ; argv[]=/usr/bin/droidloom-applications ; ignore_errors=no ; start_time=[Fri 2026-11-06 20:03:33 PST] ; stop_time=[Fri 2026-11-06 21:44:30 PST] ; pid=3450246 ; code=killed ; status=15/TERM }",
+        "FragmentPath": "/usr/lib/systemd/user/droidloom-applications.service",
+        "InvocationID": "12bb8adac49a465d8b9a0ac2f3f822e6",
+        "MainPID": "0",
+        "SubState": "dead"
+      },
+      "unit": "droidloom-applications.service"
+    }
+  ],
+  "stopped_before": [
+    {
+      "state": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "ControlPID": "0",
+        "DropInPaths": "/etc/systemd/system/droidloomd.service.d/10-ubuntu-unshare-compat.conf /etc/systemd/system.control/droidloomd.service.d/50-AllowedCPUs.conf /etc/systemd/system.control/droidloomd.service.d/50-TasksMax.conf /etc/systemd/system/droidloomd.service.d/90-digitalis-validation-resources.conf",
+        "ExecStart": "{ path=/usr/bin/droidloomd ; argv[]=/usr/bin/droidloomd ; ignore_errors=no ; start_time=[Fri 2026-11-06 18:08:44 PST] ; stop_time=[Fri 2026-11-06 21:44:41 PST] ; pid=3038255 ; code=exited ; status=0 }",
+        "ExecStartPre": "{ path=/opt/android-digitalis-validation/check-kernel-compat ; argv[]=/opt/android-digitalis-validation/check-kernel-compat ; ignore_errors=no ; start_time=[Fri 2026-11-06 18:08:44 PST] ; stop_time=[Fri 2026-11-06 18:08:44 PST] ; pid=3038249 ; code=exited ; status=0 }",
+        "FragmentPath": "/usr/lib/systemd/system/droidloomd.service",
+        "InvocationID": "5225b38a98ff4979a64de07386e42245",
+        "MainPID": "0",
+        "SubState": "dead"
+      },
+      "unit": "droidloomd.service"
+    },
+    {
+      "state": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "ControlPID": "0",
+        "DropInPaths": "/home/alex/.config/systemd/user/droidloom.service.d/95-presenter-guard.conf",
+        "ExecStart": "{ path=/opt/pocket4-presenter-timing-20261104-r10/payload/droidloom-wayland ; argv[]=/opt/pocket4-presenter-timing-20261104-r10/payload/droidloom-wayland ; ignore_errors=no ; start_time=[Fri 2026-11-06 18:08:44 PST] ; stop_time=[Fri 2026-11-06 21:44:30 PST] ; pid=3038257 ; code=killed ; status=15/TERM }",
+        "ExecStartPre": "{ path=/usr/bin/systemctl ; argv[]=/usr/bin/systemctl start droidloomd.service ; ignore_errors=no ; start_time=[Fri 2026-11-06 18:08:44 PST] ; stop_time=[Fri 2026-11-06 18:08:44 PST] ; pid=3038245 ; code=exited ; status=0 }",
+        "FragmentPath": "/usr/lib/systemd/user/droidloom.service",
+        "InvocationID": "403faa82087c4b89a2410ab51cdaaea9",
+        "MainPID": "0",
+        "SubState": "dead"
+      },
+      "unit": "droidloom.service"
+    },
+    {
+      "state": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "ControlPID": "0",
+        "DropInPaths": "",
+        "ExecStart": "{ path=/usr/bin/droidloom-applications ; argv[]=/usr/bin/droidloom-applications ; ignore_errors=no ; start_time=[Fri 2026-11-06 20:03:33 PST] ; stop_time=[Fri 2026-11-06 21:44:30 PST] ; pid=3450246 ; code=killed ; status=15/TERM }",
+        "FragmentPath": "/usr/lib/systemd/user/droidloom-applications.service",
+        "InvocationID": "12bb8adac49a465d8b9a0ac2f3f822e6",
+        "MainPID": "0",
+        "SubState": "dead"
+      },
+      "unit": "droidloom-applications.service"
+    }
+  ]
+}

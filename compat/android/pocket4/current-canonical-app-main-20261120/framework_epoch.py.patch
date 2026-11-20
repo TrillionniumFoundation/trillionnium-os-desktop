@@ -1,0 +1,60 @@
+--- framework_epoch.py
++++ framework_epoch.py
+@@ -97,16 +97,21 @@
+             "collected_monotonic_ns": finished}
+ 
+ 
+-def capture_android(init_pid: int) -> dict:
++def capture_android(init_pid: int, main_user_namespace) -> dict:
+     """Discover framework processes inside an already verified Android cell.
+ 
+     The caller must first validate the daemon's cell identity and resource
+     limits. This guard supplements those checks; it does not replace them.
+     zygote's Linux comm is often 'main', so discovery uses argv[0].
+     """
++    mapped_main = main_user_namespace.guard()
+     init = process_identity(init_pid)
++    if (mapped_main['init']['host_pid'] != init_pid
++            or mapped_main['init']['start_ticks'] != init['start_ticks']
++            or mapped_main['init']['parent_host_pid'] != init['parent_host_pid']):
++        raise EpochError('ANDROID_INIT_DIFFERS_FROM_HELD_NATIVE_OWNER')
+     if (init["executable"] != "/system/bin/init" or init["cmdline"][0] != "/init"
+-            or init["namespace_pids"][-1] != 1 or init["uids"] != [0, 0, 0, 0]):
++            or init["namespace_pids"][-1] != 1 or init["uids"] != mapped_main["root_uids"]):
+         raise EpochError("ANDROID_INIT_UNVERIFIED")
+     matches: dict[str, list[int]] = {name: [] for name in ROLES}
+     for path in Path("/proc").iterdir():
+@@ -133,12 +138,32 @@
+         identity = processes[role]
+         groups = [line[3:] for line in identity["cgroup"] if line.startswith("0::")]
+         parent = processes["zygote64"]["host_pid"] if role == "system_server" else init_pid
+-        if (identity["executable"] != executable or identity["uids"] != [uid] * 4
++        if (identity["executable"] != executable or identity["uids"] != [main_user_namespace.mapped_owner(uid)[0]] * 4
+                 or identity["parent_host_pid"] != parent
+                 or identity["namespaces"]["pid"] != init["namespaces"]["pid"]
+                 or len(groups) != 1
+                 or not (groups[0] == root_groups[0] or groups[0].startswith(root_groups[0] + "/"))):
+             raise EpochError("FRAMEWORK_PROCESS_UNVERIFIED")
++    # The original generic process snapshot remains unchanged. Each Android
++    # role is additionally read through its own held proc/pidfd and must share
++    # the authenticated Main userns instance and both live maps. These facts
++    # are retained independently in the final Main/business observations.
++    for role, identity in processes.items():
++        fds = []
++        try:
++            pidfd = os.pidfd_open(identity['host_pid'], 0); fds.append(pidfd)
++            proc = os.open('/proc/' + str(identity['host_pid']),
++                           os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC); fds.append(proc)
++            user = os.open('ns/user', os.O_RDONLY | os.O_CLOEXEC, dir_fd=proc); fds.append(user)
++            main_user_namespace.observe_role({'pidfd': pidfd, 'proc': proc, 'namespaces': {'user': user}}, identity, role)
++        finally:
++            errors = []
++            for fd in reversed(fds):
++                try: os.close(fd)
++                except OSError as error: errors.append(error)
++            if errors: raise EpochError('FRAMEWORK_ROLE_OBSERVATION_FD_CLOSE_FAILED') from errors[0]
++    if main_user_namespace.guard() != mapped_main:
++        raise EpochError('ANDROID_MAIN_USER_NAMESPACE_CHANGED')
+     # Apps and zygote have private mount namespaces. Pin each one's actual
+     # namespace; requiring all of them to equal init's would reject valid cells.
+     require_unchanged(snapshot)

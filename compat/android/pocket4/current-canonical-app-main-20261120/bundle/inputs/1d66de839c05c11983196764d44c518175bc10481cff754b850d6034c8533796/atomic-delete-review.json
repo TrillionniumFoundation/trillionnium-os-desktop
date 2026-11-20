@@ -1,0 +1,63 @@
+{
+  "schema": "pocket4-calendar-empty-delete-static-review-v1",
+  "review_type": "installed-bytecode-read-only",
+  "provider_apk_sha256": "eebf12f81981f7d8c59a9b9ed465945818d2ab0208c121d858cbc4e6426f5fff",
+  "provider_dex_sha256": "f82eb5a869731b069f0fa1cae09c0d85ef787d249e0c8d6149c9470f8b7bed8c",
+  "source_archive": {
+    "bytes": 56365,
+    "sha256": "b169d8bc1077f2e1d936c28af05366104156faba38894fc0c1f45bc7696314f4"
+  },
+  "source_classes": {
+    "com/android/providers/calendar/CalendarProvider2": {
+      "bytes": 485849,
+      "sha256": "adf08be5685d0c7c4610887e3135512ac4950cee0c78ccfb5b2696a5fbf18a2a"
+    },
+    "com/android/providers/calendar/SQLiteContentProvider": {
+      "bytes": 29184,
+      "sha256": "881b329ee9dd0622febac217456d7cc0399eeee6c2dcc6a59f158c605f049d00"
+    }
+  },
+  "extracted_methods": {
+    "CalendarProvider2-appendAccountToSelection0.smali": "1cdd0ea0e26fd57548bd7e5cf7b06d46cad2b987d4a25ecf5652fed89c952122",
+    "CalendarProvider2-deleteInTransaction0.smali": "763649c943ce5af93f9105000594a5c88a6c8e099a576a2b1763352f1b6c7dc8",
+    "CalendarProvider2-deleteInTransactionInner0.smali": "cb9e3c6d25be8de2849c64464c594551b269bc01c0770f82d56c49924b8bac5b",
+    "CalendarProvider2-modifyCalendarSubscription0.smali": "f9c07c0b5fbe563e64ec9d0ae387aafa50d25cf8d413692b308e972fa2b98ba9",
+    "CalendarProvider2-verifyTransactionAllowed0.smali": "bc8110bce93f7380e35a24b1cdaed4973a3e2fa5892719b581bb5a1a047c2643",
+    "SQLiteContentProvider-delete0.smali": "57b33a2ac12dc8eea3347ec0b6a8b3c90220efa8ad65ba0d38d9ba829d3395fc",
+    "deleteMatchingCalendars.smali": "fa40ec3c0f01c43c28322858cd3abb0f452bd0c700eebc6c5722c8dee3cf02a8"
+  },
+  "read_only_query_evidence": {
+    "path": "calendar-flow08/shell-query02-result.json",
+    "sha256": "b93b2cdcbce2912e96037a7b2de29d75d91f905aa902bf7fcbf20056cb727601"
+  },
+  "conclusion": "The exact collection predicate is evaluated again by the final SQLite DELETE statement; a prior ID query is not reused for an unconditional delete. This is sufficient for the proposed atomic owner-and-empty-row guard at the mutation point.",
+  "chain": [
+    {
+      "method": "SQLiteContentProvider.delete",
+      "source_lines": "181-205",
+      "fact": "Non-batch path begins a writable transaction before deleteInTransaction, marks successful only after return, and ends the transaction in success/failure paths."
+    },
+    {
+      "method": "CalendarProvider2.deleteInTransactionInner",
+      "source_lines": "3363-3367,3502-3504",
+      "fact": "CALENDARS match 4 preserves selection and args, appends optional URI account constraints, and invokes deleteMatchingCalendars."
+    },
+    {
+      "method": "CalendarProvider2.appendAccountToSelection",
+      "source_lines": "4555-4568",
+      "fact": "With no account query parameters, returns the original selection unchanged."
+    },
+    {
+      "method": "CalendarProvider2.deleteMatchingCalendars",
+      "source_lines": "3930-3946",
+      "fact": "Queries IDs using the full predicate/args; after per-row subscription handling calls mDb.delete(Calendars, the same predicate, the same args). NOT EXISTS Events is therefore checked by the actual deleting statement."
+    }
+  ],
+  "original_failure_explanation": "verifyTransactionAllowed permits a nonempty selection on the collection CALENDARS URI; it rejects the original calendar-ID URI with a nonempty selection. The original cleanup03 failure remains unchanged.",
+  "scope_limits": [
+    "This review executes no device command or mutation and does not claim that cleanup has happened.",
+    "modifyCalendarSubscription(id,false) may call CalendarDatabaseHelper.scheduleSync for the same owned LOCAL account when sync_events is true; helper sets sync_events=1. This bundle does not contain scheduleSync body. No claim of an absence of all indirect effects is made.",
+    "The exact final SQL predicate remains the safety condition even if a concurrent change occurs before that statement. Existing ownership/readback/count/task guards remain required.",
+    "A timeout or unknown return must be reconciled read-only; do not replay the delete automatically."
+  ]
+}

@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/system/system_entry.py", line 110, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/system/system_entry.py", line 63, in main
+    args = p.parse_args(); c, packet, prep, planner = bootstrap(args)
+                                                      ~~~~~~~~~^^^^^^
+  File "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/system/system_entry.py", line 32, in bootstrap
+    raise RuntimeError('EXTERNAL_FROZEN_SYSTEM_PREPARATION_PIN_REQUIRED')
+RuntimeError: EXTERNAL_FROZEN_SYSTEM_PREPARATION_PIN_REQUIRED

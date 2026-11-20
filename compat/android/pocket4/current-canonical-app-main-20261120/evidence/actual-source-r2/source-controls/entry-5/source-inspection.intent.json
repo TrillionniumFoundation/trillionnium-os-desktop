@@ -1,0 +1,28 @@
+{
+  "Binder_task_cleanup_authorized": false,
+  "Main_before": {
+    "bundle_sha256": "fabbfbcb2ea9a461ba0e15ec236a6a0e66a951442b4832e0a144a10d51d714e8",
+    "private_mount_inode": 4026532859
+  },
+  "argv": [
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "-c",
+    "import argparse,json,pathlib,sys,types\np=pathlib.Path(sys.argv[1]);m=types.ModuleType('actual_IHG_source_entry');m.__file__=str(p)\nexec(compile(p.read_bytes(),str(p),'exec'),m.__dict__)\nc,packet,ref=m.bootstrap(argparse.Namespace(preparation=pathlib.Path(sys.argv[2]),expect_preparation_sha256=sys.argv[3]))\nprint(json.dumps({'preparation':ref,'source_files':len(packet['files']),'Android_actions':0,'whole_app_business_accepted':False}))\n",
+    "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/ihg/app_entry.py",
+    "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/preparations/ihg.json",
+    "471e682afbd91290c6cd4381c47ce7e8869dde1d5b4997d28ab85305eba4deb8"
+  ],
+  "authority_fds_passed": [],
+  "automatic_retry": false,
+  "capture_sha256": "60e3c83173b99c420090ce0642a94b88d5c3c574fd91c67d30af42371cfc8f7d",
+  "image_channel": false,
+  "mutation": false,
+  "output_bound_per_stream": 1048576,
+  "private_output": false,
+  "schema": "pocket4-business-host-intent-v1",
+  "stdin_bytes": 0,
+  "stdin_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "timeout_seconds": 20
+}

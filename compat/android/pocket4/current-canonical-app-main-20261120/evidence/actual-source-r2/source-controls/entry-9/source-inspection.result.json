@@ -1,0 +1,161 @@
+{
+  "Android_outcome_unknown": false,
+  "Binder_UID_cleanup_verified": false,
+  "Binder_task_cleanup_verified": false,
+  "Main_after": {
+    "bundle_sha256": "fabbfbcb2ea9a461ba0e15ec236a6a0e66a951442b4832e0a144a10d51d714e8",
+    "private_mount_inode": 4026532859
+  },
+  "Main_before": {
+    "bundle_sha256": "fabbfbcb2ea9a461ba0e15ec236a6a0e66a951442b4832e0a144a10d51d714e8",
+    "private_mount_inode": 4026532859
+  },
+  "action_attempted": false,
+  "argv": [
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/gallery/source/gallery_image_entry.py",
+    "--preparation",
+    "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/preparations/gallery-rotation.json",
+    "--expect-preparation-sha256",
+    "7fa156d7885552c48867ac9eafb642b2bf25e48f3af5a74d832bae886464b0f6",
+    "inspect-source"
+  ],
+  "automatic_retry": false,
+  "cancellation": {
+    "count": 0,
+    "signals": []
+  },
+  "errors": [],
+  "evidence_complete": true,
+  "host_retirement_proved": true,
+  "lifecycle": {
+    "all_acquired_fds_closed": true,
+    "capture_backend": "bounded-pipes-v1",
+    "child_reaped": true,
+    "child_started": true,
+    "cleanup_elapsed_seconds": 0.00022101501235738397,
+    "descendants": [],
+    "finished_monotonic": 272648.390549742,
+    "first_error": null,
+    "group_signal_unneeded_exited_only_child": true,
+    "input": {
+      "acquired": true,
+      "bytes": 0,
+      "closed": true,
+      "fd": 4,
+      "sealed": true,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "kill_attempted": false,
+    "leader_alive_before_group_cleanup": false,
+    "leader_observed_before_reap": {
+      "code": 1,
+      "pid": 3087290,
+      "status": 0
+    },
+    "leader_unreaped_before_group_cleanup": true,
+    "observation_deadline": 272668.187800341,
+    "observed_before_reap": {
+      "code": 1,
+      "pid": 3087290,
+      "status": 0
+    },
+    "output_capture": {
+      "EOF": {
+        "stderr": true,
+        "stdout": true
+      },
+      "RLIMIT_FSIZE_after": [
+        -1,
+        -1
+      ],
+      "RLIMIT_FSIZE_before": [
+        -1,
+        -1
+      ],
+      "RLIMIT_FSIZE_modified": false,
+      "complete": true,
+      "limit_exceeded": false,
+      "maximum_bytes": 1048576,
+      "no_stream_reads_after_capture_failure": true,
+      "observed_bytes": {
+        "stderr": 0,
+        "stdout": 500
+      },
+      "policy": "per-stream-prefix-v1",
+      "prefix_only": false,
+      "stored_bytes": {
+        "stderr": 0,
+        "stdout": 500
+      }
+    },
+    "owned_tree_cleanup_complete": true,
+    "pid": 3087290,
+    "pidfd": 7,
+    "pidfd_closed": true,
+    "pipe_algorithm_source_sha256": "368c68728c9af2feb280661731879545bcdbd1f8d363b8a153fcf8e1d7087b4c",
+    "qualified_success": true,
+    "remaining_owned_children": [],
+    "retirement_deadline": 272653.390263061,
+    "retirement_within_deadline": true,
+    "returncode": 0,
+    "schema": 2,
+    "secondary_errors": [],
+    "selector_closed": true,
+    "selector_fd": 5,
+    "source_lifecycle_sha256": "6a0ba9438b10740a593e2d90962420e04868465a0fb55c0ce2e03afdb835e877",
+    "stderr": {
+      "acquired": true,
+      "bytes": 0,
+      "closed": true,
+      "complete": true,
+      "fd": 8,
+      "read_closed": true,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "write_closed": true,
+      "write_fd": 9
+    },
+    "stdout": {
+      "acquired": true,
+      "bytes": 500,
+      "closed": true,
+      "complete": true,
+      "fd": 6,
+      "read_closed": true,
+      "sha256": "e7eab0ccc4beeebb9cf0124fb8a5b9f38b7417451c04ca1639748ec911f05ae6",
+      "write_closed": true,
+      "write_fd": 7
+    },
+    "timed_out": false
+  },
+  "name": "source-inspection",
+  "post_guard_deferred_to_held_transport": false,
+  "private_output": false,
+  "returncode": 0,
+  "schema": "pocket4-business-host-result-v1",
+  "spawned": true,
+  "stderr": {
+    "bytes": 0,
+    "path": "/home/alex/work/p4-canonical-source-validation-20261120-3b9d-r2/source-controls/entry-9/source-inspection.stderr",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout": {
+    "bytes": 500,
+    "path": "/home/alex/work/p4-canonical-source-validation-20261120-3b9d-r2/source-controls/entry-9/source-inspection.stdout",
+    "sha256": "e7eab0ccc4beeebb9cf0124fb8a5b9f38b7417451c04ca1639748ec911f05ae6"
+  },
+  "subreaper": {
+    "begin_passed": true,
+    "cleanup_deadline_supplied_by_caller": true,
+    "final_children_empty": true,
+    "max_adopted_per_command": 128,
+    "original_subreaper_flag": 0,
+    "pid": 3087232,
+    "protected_pid_count": 2,
+    "restored": true,
+    "signals_only_to_kernel_proven_owned_children": true
+  },
+  "timed_out": false
+}

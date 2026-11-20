@@ -1,0 +1,265 @@
+{
+  "complete_methods": [
+    {
+      "bytes": 31492,
+      "file": "handleOption.smali",
+      "original_file_line": 28,
+      "sha256": "aa995687a2e682bd73d55fd854f29db23463f1edf4e3bc350c1fb9acb9b63a5b",
+      "signature": "public handleOption(Ljava/lang/String;Landroid/os/ShellCommand;)Z",
+      "source_class": "ActivityManagerShellCommand$1.smali"
+    },
+    {
+      "bytes": 246,
+      "file": "taskIdSetter.smali",
+      "original_file_line": 369,
+      "sha256": "5e473e8336f483f6af7ce69da6ba501fc0a9913e30893ff1f393cf50973b7aa0",
+      "signature": "static bridge synthetic -$$Nest$fputmTaskId(Lcom/android/server/am/ActivityManagerShellCommand;I)V",
+      "source_class": "ActivityManagerShellCommand.smali"
+    },
+    {
+      "bytes": 3072,
+      "file": "makeIntent.smali",
+      "original_file_line": 3623,
+      "sha256": "90ce0ba3b9a72fe24f78864b4941b1d21a576752168ec5f8e0fbfa33557db906",
+      "signature": "private makeIntent(I)Landroid/content/Intent;",
+      "source_class": "ActivityManagerShellCommand.smali"
+    },
+    {
+      "bytes": 36396,
+      "file": "runStartActivity.smali",
+      "original_file_line": 20667,
+      "sha256": "7d6b66cf33dff2c502b11bc843186b8ef1552c2824c6688ac93260ba60f7d367",
+      "signature": "runStartActivity(Ljava/io/PrintWriter;)I",
+      "source_class": "ActivityManagerShellCommand.smali"
+    }
+  ],
+  "job": {
+    "UI_actions": 0,
+    "exit_code": 0,
+    "job_id": "1a1ab320d72-fc05-4b50",
+    "new_disassembly": false,
+    "output_complete": true,
+    "reader_sha256": "3367d996b7db196b59b06bacf61ed11995217d5d46f1676a1977b4f86cfc4b33",
+    "runtime_reads": 0,
+    "state": "succeeded",
+    "terminal_publication_confirmed": true
+  },
+  "launch": {
+    "blocks": [
+      {
+        "end_line": 35,
+        "method": "runStartActivity.smali",
+        "start_line": 31,
+        "text": "    iget v0, v1, Lcom/android/server/am/ActivityManagerShellCommand;->mUserId:I\n\n    const/4 v9, -0x1\n\n    const/4 v10, 0x1\n"
+      },
+      {
+        "end_line": 605,
+        "method": "runStartActivity.smali",
+        "start_line": 573,
+        "text": "    .line 889\n    :cond_1a5\n    iget v5, v1, Lcom/android/server/am/ActivityManagerShellCommand;->mTaskId:I\n\n    if-eq v5, v9, :cond_1bc\n\n    .line 890\n    if-nez v3, :cond_1af\n\n    .line 891\n    invoke-static {}, Landroid/app/ActivityOptions;->makeBasic()Landroid/app/ActivityOptions;\n\n    move-result-object v3\n\n    .line 893\n    :cond_1af\n    iget v5, v1, Lcom/android/server/am/ActivityManagerShellCommand;->mTaskId:I\n\n    invoke-virtual {v3, v5}, Landroid/app/ActivityOptions;->setLaunchTaskId(I)V\n\n    .line 895\n    iget-boolean v5, v1, Lcom/android/server/am/ActivityManagerShellCommand;->mIsTaskOverlay:Z\n\n    if-eqz v5, :cond_1bc\n\n    .line 896\n    const/4 v5, 0x1\n\n    invoke-virtual {v3, v5, v5}, Landroid/app/ActivityOptions;->setTaskOverlay(ZZ)V\n\n    .line 899\n    :cond_1bc\n    iget-boolean v5, v1, Lcom/android/server/am/ActivityManagerShellCommand;->mIsLockTask:Z\n"
+      },
+      {
+        "end_line": 790,
+        "method": "runStartActivity.smali",
+        "start_line": 659,
+        "text": "    invoke-static {}, Landroid/app/ActivityOptions;->makeBasic()Landroid/app/ActivityOptions;\n\n    move-result-object v3\n\n    .line 915\n    :cond_1e4\n    invoke-virtual {v3}, Landroid/app/ActivityOptions;->setDismissKeyguardIfInsecure()V\n\n    move-object/from16 v18, v3\n\n    goto :goto_1ec\n\n    .line 911\n    :cond_1ea\n    move-object/from16 v18, v3\n\n    .line 917\n    .end local v3    # \"options\":Landroid/app/ActivityOptions;\n    .local v18, \"options\":Landroid/app/ActivityOptions;\n    :goto_1ec\n    invoke-virtual {v4}, Landroid/content/Intent;->collectExtraIntentKeys()V\n\n    .line 918\n    iget-boolean v3, v1, Lcom/android/server/am/ActivityManagerShellCommand;->mWaitOption:Z\n\n    .line 924\n    move v6, v3\n\n    iget-object v3, v1, Lcom/android/server/am/ActivityManagerShellCommand;->mInternal:Lcom/android/server/am/ActivityManagerService;\n\n    .line 918\n    const/4 v7, 0x0\n\n    if-eqz v6, :cond_21a\n\n    .line 919\n    iget v12, v1, Lcom/android/server/am/ActivityManagerShellCommand;->mStartFlags:I\n\n    .line 921\n    if-eqz v18, :cond_1ff\n\n    invoke-virtual/range {v18 .. v18}, Landroid/app/ActivityOptions;->toBundle()Landroid/os/Bundle;\n\n    move-result-object v7\n\n    :cond_1ff\n    move-object v14, v7\n\n    iget v15, v1, Lcom/android/server/am/ActivityManagerShellCommand;->mUserId:I\n\n    .line 919\n    move-object v7, v4\n\n    .end local v4    # \"intent\":Landroid/content/Intent;\n    .restart local v7    # \"intent\":Landroid/content/Intent;\n    const/4 v4, 0x0\n\n    move/from16 v25, v5\n\n    const-string v5, \"com.android.shell\"\n\n    const/4 v6, 0x0\n\n    move v10, v9\n\n    const/4 v9, 0x0\n\n    move v11, v10\n\n    const/4 v10, 0x0\n\n    move/from16 v19, v11\n\n    const/4 v11, 0x0\n\n    const/16 v24, 0x0\n\n    invoke-virtual/range {v3 .. v15}, Lcom/android/server/am/ActivityManagerService;->startActivityAndWait(Landroid/app/IApplicationThread;Ljava/lang/String;Ljava/lang/String;Landroid/content/Intent;Ljava/lang/String;Landroid/os/IBinder;Ljava/lang/String;IILandroid/app/ProfilerInfo;Landroid/os/Bundle;I)Landroid/app/WaitResult;\n\n    move-result-object v0\n\n    .line 922\n    move-object v4, v7\n\n    .end local v7    # \"intent\":Landroid/content/Intent;\n    .restart local v4    # \"intent\":Landroid/content/Intent;\n    iget v3, v0, Landroid/app/WaitResult;->result:I\n\n    .local v3, \"res\":I\n    goto :goto_238\n\n    .line 924\n    .end local v3    # \"res\":I\n    :cond_21a\n    move/from16 v25, v5\n\n    move/from16 v19, v9\n\n    const/16 v24, 0x0\n\n    iget v12, v1, Lcom/android/server/am/ActivityManagerShellCommand;->mStartFlags:I\n\n    .line 926\n    if-eqz v18, :cond_228\n\n    invoke-virtual/range {v18 .. v18}, Landroid/app/ActivityOptions;->toBundle()Landroid/os/Bundle;\n\n    move-result-object v7\n\n    :cond_228\n    move-object v14, v7\n\n    iget v15, v1, Lcom/android/server/am/ActivityManagerShellCommand;->mUserId:I\n\n    .line 924\n    move-object v7, v4\n\n    .end local v4    # \"intent\":Landroid/content/Intent;\n    .restart local v7    # \"intent\":Landroid/content/Intent;\n    const/4 v4, 0x0\n\n    const-string v5, \"com.android.shell\"\n\n    const/4 v6, 0x0\n\n    const/4 v9, 0x0\n\n    const/4 v10, 0x0\n\n    const/4 v11, 0x0\n\n    invoke-virtual/range {v3 .. v15}, Lcom/android/server/am/ActivityManagerService;->startActivityAsUserWithFeature(Landroid/app/IApplicationThread;Ljava/lang/String;Ljava/lang/String;Landroid/content/Intent;Ljava/lang/String;Landroid/os/IBinder;Ljava/lang/String;IILandroid/app/ProfilerInfo;Landroid/os/Bundle;I)I\n"
+      }
+    ],
+    "condition": "v9 is -1 on entry to :cond_1a5. If mTaskId equals -1, skip to :cond_1bc; otherwise retain existing ActivityOptions or makeBasic if null, then setLaunchTaskId(mTaskId).",
+    "locations": [
+      {
+        "instruction_index_zero_based": 11,
+        "method_line": 33,
+        "text": "const/4 v9, -0x1"
+      },
+      {
+        "instruction_index_zero_based": 215,
+        "method_line": 574,
+        "text": ":cond_1a5"
+      },
+      {
+        "instruction_index_zero_based": 220,
+        "method_line": 588,
+        "text": ":cond_1af"
+      },
+      {
+        "instruction_index_zero_based": 221,
+        "method_line": 591,
+        "text": "invoke-virtual {v3, v5}, Landroid/app/ActivityOptions;->setLaunchTaskId(I)V"
+      },
+      {
+        "instruction_index_zero_based": 226,
+        "method_line": 604,
+        "text": ":cond_1bc"
+      },
+      {
+        "instruction_index_zero_based": 251,
+        "method_line": 678,
+        "text": ":goto_1ec"
+      },
+      {
+        "instruction_index_zero_based": 259,
+        "method_line": 700,
+        "text": "invoke-virtual/range {v18 .. v18}, Landroid/app/ActivityOptions;->toBundle()Landroid/os/Bundle;"
+      },
+      {
+        "instruction_index_zero_based": 275,
+        "method_line": 736,
+        "text": "invoke-virtual/range {v3 .. v15}, Lcom/android/server/am/ActivityManagerService;->startActivityAndWait(Landroid/app/IApplicationThread;Ljava/lang/String;Ljava/lang/String;Landroid/content/Intent;Ljava/lang/String;Landroid/os/IBinder;Ljava/lang/String;IILandroid/app/ProfilerInfo;Landroid/os/Bundle;I)Landroid/app/WaitResult;"
+      },
+      {
+        "instruction_index_zero_based": 280,
+        "method_line": 752,
+        "text": ":cond_21a"
+      },
+      {
+        "instruction_index_zero_based": 285,
+        "method_line": 764,
+        "text": "invoke-virtual/range {v18 .. v18}, Landroid/app/ActivityOptions;->toBundle()Landroid/os/Bundle;"
+      },
+      {
+        "instruction_index_zero_based": 296,
+        "method_line": 790,
+        "text": "invoke-virtual/range {v3 .. v15}, Lcom/android/server/am/ActivityManagerService;->startActivityAsUserWithFeature(Landroid/app/IApplicationThread;Ljava/lang/String;Ljava/lang/String;Landroid/content/Intent;Ljava/lang/String;Landroid/os/IBinder;Ljava/lang/String;IILandroid/app/ProfilerInfo;Landroid/os/Bundle;I)I"
+      }
+    ],
+    "normal_api": "ActivityManagerService.startActivityAsUserWithFeature(...,Bundle options,int userId)",
+    "optional_overlay": "setTaskOverlay(true,true) runs only if the independent mIsTaskOverlay option is true; it is not required for --task.",
+    "options_flow": "v3 ActivityOptions is copied into v18. Both wait and non-wait paths call v18.toBundle(), place Bundle in v14 and pass it as the options argument in invoke-virtual/range {v3 .. v15}.",
+    "wait_api": "ActivityManagerService.startActivityAndWait(...,Bundle options,int userId)"
+  },
+  "make_intent": {
+    "blocks": [
+      {
+        "end_line": 69,
+        "method": "makeIntent.smali",
+        "start_line": 49,
+        "text": "    .line 620\n    const/4 v2, -0x1\n\n    iput v2, p0, Lcom/android/server/am/ActivityManagerShellCommand;->mDisplayId:I\n\n    .line 621\n    iput v2, p0, Lcom/android/server/am/ActivityManagerShellCommand;->mTaskDisplayAreaFeatureId:I\n\n    .line 622\n    iput v0, p0, Lcom/android/server/am/ActivityManagerShellCommand;->mWindowingMode:I\n\n    .line 623\n    iput-object v1, p0, Lcom/android/server/am/ActivityManagerShellCommand;->mDroidloomLaunchBounds:Landroid/graphics/Rect;\n\n    .line 624\n    iput v0, p0, Lcom/android/server/am/ActivityManagerShellCommand;->mActivityType:I\n\n    .line 625\n    iput v2, p0, Lcom/android/server/am/ActivityManagerShellCommand;->mTaskId:I\n\n    .line 626\n"
+      },
+      {
+        "end_line": 91,
+        "method": "makeIntent.smali",
+        "start_line": 81,
+        "text": "    .line 631\n    new-instance v0, Lcom/android/server/am/ActivityManagerShellCommand$1;\n\n    invoke-direct {v0, p0}, Lcom/android/server/am/ActivityManagerShellCommand$1;-><init>(Lcom/android/server/am/ActivityManagerShellCommand;)V\n\n    invoke-static {p0, v0}, Landroid/content/Intent;->parseCommandArgs(Landroid/os/ShellCommand;Landroid/content/Intent$CommandOptionHandler;)Landroid/content/Intent;\n\n    move-result-object v0\n\n    return-object v0\n.end method\n"
+      },
+      {
+        "end_line": 24,
+        "method": "runStartActivity.smali",
+        "start_line": 11,
+        "text": "    move-object/from16 v1, p0\n\n    move-object/from16 v2, p1\n\n    const/4 v0, -0x2\n\n    :try_start_5\n    invoke-direct {v1, v0}, Lcom/android/server/am/ActivityManagerShellCommand;->makeIntent(I)Landroid/content/Intent;\n\n    move-result-object v0\n    :try_end_9\n    .catch Ljava/net/URISyntaxException; {:try_start_5 .. :try_end_9} :catch_3af\n\n    move-object v7, v0\n"
+      }
+    ],
+    "locations": [
+      {
+        "instruction_index_zero_based": 6,
+        "method_line": 19,
+        "text": "iput-boolean v0, p0, Lcom/android/server/am/ActivityManagerShellCommand;->mStopOption:Z"
+      },
+      {
+        "instruction_index_zero_based": 23,
+        "method_line": 67,
+        "text": "iput v2, p0, Lcom/android/server/am/ActivityManagerShellCommand;->mTaskId:I"
+      },
+      {
+        "instruction_index_zero_based": 30,
+        "method_line": 86,
+        "text": "invoke-static {p0, v0}, Landroid/content/Intent;->parseCommandArgs(Landroid/os/ShellCommand;Landroid/content/Intent$CommandOptionHandler;)Landroid/content/Intent;"
+      }
+    ],
+    "semantics": "makeIntent resets mTaskId=-1 and mStopOption=false before passing the new AM$1 option handler to Intent.parseCommandArgs; runStartActivity invokes this makeIntent."
+  },
+  "parser": {
+    "blocks": [
+      {
+        "end_line": 773,
+        "method": "handleOption.smali",
+        "start_line": 748,
+        "text": "    .line 711\n    :cond_291\n    const-string v0, \"--task\"\n\n    invoke-virtual {p1, v0}, Ljava/lang/Object;->equals(Ljava/lang/Object;)Z\n\n    move-result v0\n\n    if-eqz v0, :cond_2aa\n\n    .line 712\n    iget-object v0, p0, Lcom/android/server/am/ActivityManagerShellCommand$1;->this$0:Lcom/android/server/am/ActivityManagerShellCommand;\n\n    iget-object v2, p0, Lcom/android/server/am/ActivityManagerShellCommand$1;->this$0:Lcom/android/server/am/ActivityManagerShellCommand;\n\n    invoke-virtual {v2}, Landroid/os/ShellCommand;->getNextArgRequired()Ljava/lang/String;\n\n    move-result-object v2\n\n    invoke-static {v2}, Ljava/lang/Integer;->parseInt(Ljava/lang/String;)I\n\n    move-result v2\n\n    invoke-static {v0, v2}, Lcom/android/server/am/ActivityManagerShellCommand;->-$$Nest$fputmTaskId(Lcom/android/server/am/ActivityManagerShellCommand;I)V\n\n    goto/16 :goto_349\n"
+      },
+      {
+        "end_line": 970,
+        "method": "handleOption.smali",
+        "start_line": 968,
+        "text": "    :goto_349\n    return v1\n.end method\n"
+      },
+      {
+        "end_line": 8,
+        "method": "taskIdSetter.smali",
+        "start_line": 1,
+        "text": ".method static bridge synthetic -$$Nest$fputmTaskId(Lcom/android/server/am/ActivityManagerShellCommand;I)V\n    .registers 2\n\n    .line 0\n    iput p1, p0, Lcom/android/server/am/ActivityManagerShellCommand;->mTaskId:I\n\n    return-void\n.end method\n"
+      }
+    ],
+    "locations": [
+      {
+        "instruction_index_zero_based": 313,
+        "method_line": 749,
+        "text": ":cond_291"
+      },
+      {
+        "instruction_index_zero_based": 313,
+        "method_line": 750,
+        "text": "const-string v0, \"--task\""
+      },
+      {
+        "instruction_index_zero_based": 323,
+        "method_line": 771,
+        "text": "invoke-static {v0, v2}, Lcom/android/server/am/ActivityManagerShellCommand;->-$$Nest$fputmTaskId(Lcom/android/server/am/ActivityManagerShellCommand;I)V"
+      },
+      {
+        "instruction_index_zero_based": 325,
+        "method_line": 776,
+        "text": ":cond_2aa"
+      },
+      {
+        "instruction_index_zero_based": 404,
+        "method_line": 968,
+        "text": ":goto_349"
+      }
+    ],
+    "match": "ActivityManagerShellCommand$1.handleOption compares opt with exact --task; false branches to :cond_2aa, true consumes the next required argument.",
+    "success": "goto :goto_349; return v1, with v1 initialized to 1.",
+    "value": "getNextArgRequired() -> Integer.parseInt(String) -> bridge setter -> iput mTaskId:I. No swallowing catch in this method; missing/non-integer arguments cannot successfully set the field."
+  },
+  "qualification": "INSTALLED_DEX_TASK_OPTION_STATIC_PROOF",
+  "result_file": {
+    "bytes": 16001,
+    "sha256": "7e56fef7e4b380d6a750e7005493b5ded18840142a48c00b129880d45a515e04"
+  },
+  "scope_limits": [
+    "Static proof is linked to the retained tree by whole installed DEX byte equality and the historical candidate roundtrip receipt; no fresh disassembly was performed.",
+    "This proves installed command parsing/options propagation, not that an arbitrary task exists or a selected component will reuse it at runtime.",
+    "A real owner flow must still bind the exact uniquely owned task, component, UID and Main epoch; preserve other tasks; record one action receipt; and verify the resulting task topology. No UI action was performed for this proof.",
+    "No -S/--force-stop, --task-overlay or --lock-task option is implied or needed by this proof."
+  ],
+  "source_provenance": {
+    "installed_and_legacy_dex_bytes_equal": true,
+    "installed_classes_dex_sha256": "70975dd40f27f01f35ff254bd7cbb8a1683c6255aca515ffe162f35df8c35d1c",
+    "installed_jar_sha256": "f33987e633e476f47ea043af3f7fb94907fd2431fa2b5b49df84cb586bce5c50",
+    "legacy_candidate_dex_sha256": "70975dd40f27f01f35ff254bd7cbb8a1683c6255aca515ffe162f35df8c35d1c",
+    "legacy_candidate_jar_sha256": "e954c8b2423c370d7f0ff6abdb26c26e1628924dc29a305732a83a51da50678e",
+    "linkage": "retained candidate roundtrip tree plus matching complete DEX and historical verifier receipt; no new disassembly",
+    "retained_verification_sha256": "b5bdfedcb333684922a9982d33395245786782f79caae15340318b98085d767d",
+    "source_files": {
+      "ActivityManagerShellCommand$1.smali": {
+        "bytes": 32251,
+        "sha256": "f6b12e367d7d5d99d8c7a73b1342283204e259be40f4aa1f37ec92b1b54c615c"
+      },
+      "ActivityManagerShellCommand$2.smali": {
+        "bytes": 1270,
+        "sha256": "ca49ba10bf1d89bdc8ce41004119dbdf4c1c2a5d6a5f590bad3a883c965da185"
+      },
+      "ActivityManagerShellCommand$3.smali": {
+        "bytes": 1369,
+        "sha256": "d75b1f09e0f76026e9d06aca8a429d8134cc9b7689253f2ccc097754d2f674b3"
+      },
+      "ActivityManagerShellCommand$4.smali": {
+        "bytes": 2461,
+        "sha256": "63147834253126fcd22dc4be24ebc406c5e9afae329a7a2c0b2a4db39d63063c"
+      },
+      "ActivityManagerShellCommand.smali": {
+        "bytes": 682933,
+        "sha256": "f7cb996e556f41ed92b60f076a6134c515bc5de589f0f7ffb233de2bc6f1565d"
+      }
+    }
+  }
+}
