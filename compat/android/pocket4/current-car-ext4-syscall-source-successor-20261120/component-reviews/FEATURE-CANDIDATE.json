@@ -1,0 +1,84 @@
+{
+  "actual_fixture_controls": {
+    "bytes": 19380,
+    "path": "p4_original_metadata_read/actual-feature-fixture-controls/CONTROLS.json",
+    "sha256": "40a7cdd89c2e9ffd07b0121b1efa759b76b38e49dbe34195e6f4a807263e59d7"
+  },
+  "actual_original_readonly_observation": {
+    "bytes": 44808,
+    "path": "p4_original_metadata_read/ORIGINAL-OBSERVATION-R2.json",
+    "sha256": "fe3a96d61acf157ee34b9fcc96911b9a2e902ced77207905f2f867002e00ec41"
+  },
+  "files": [
+    {
+      "after": {
+        "bytes": 1024,
+        "git_blob": "2a0f54f5e82b95737bf8cb34c8c76c92c231035d",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_persistent_data_fixtures/data-known-features-superblock.bin",
+        "sha256": "f5fd88e4c1ef065971f1678f199f2b1da1cb62a54dddb4c0d5e4d1de9b728a70"
+      },
+      "before": null
+    },
+    {
+      "after": {
+        "bytes": 1024,
+        "git_blob": "f2c518dd7144e071bc60a1889d2da8d82385bb55",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_persistent_data_fixtures/metadata-known-features-superblock.bin",
+        "sha256": "041e062131f3b8cc9d5f87c9152c8c1f6eeb4b325970c9377baeea7cd3562606"
+      },
+      "before": null
+    },
+    {
+      "after": {
+        "bytes": 7408,
+        "git_blob": "32f7e2af2afc4e436bfb6befac1e0e49f33cbf9a",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_persistent_data_policy.rs",
+        "sha256": "a22974972ff1b4a63ed8973f3a50f1cf93e7e06a54fe6671cb04c773bcce1fd0"
+      },
+      "before": {
+        "bytes": 6614,
+        "git_blob": "4eb1214842fc036b3cc737a531c513b42176e12a",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_persistent_data_policy.rs",
+        "sha256": "bdf1a7ffaefe11ae2a659d0cda927796aaaa3bc4c568302050ec0f3d7267e98a"
+      }
+    },
+    {
+      "after": {
+        "bytes": 9443,
+        "git_blob": "1df43d3d5058e3cc7c97d96c488750e116dfdf45",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_persistent_data_superblock.rs",
+        "sha256": "0f9734e0c3ed1703d695f273f508761ae0400e71d7ef4262f9d7771ced09ca4e"
+      },
+      "before": {
+        "bytes": 6752,
+        "git_blob": "cd4cb9e09c1d68dd5d3cce2c4914c13ef90a377c",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_persistent_data_superblock.rs",
+        "sha256": "5e5eb491823535753a10b71aab89424260e60756fe1d91f696ee63baba824c2a"
+      }
+    }
+  ],
+  "new_ordinary_tests": 3,
+  "new_rust_compiled": false,
+  "old_ordinary_tests_retained": 8,
+  "original_image_writes": 0,
+  "original_policy_installed": false,
+  "primary_sources": [
+    "https://docs.kernel.org/filesystems/ext4/super.html",
+    "https://docs.kernel.org/filesystems/ext4/orphan.html"
+  ],
+  "production_ready": false,
+  "runtime_qualified": false,
+  "schema": "p4-observed-clean-ext4-features-source-delta-v1",
+  "source_only": true,
+  "test_names": [
+    "production_selection::persistent_data_policy::tests::persistent_policy_admits_reviewed_orphan_file_and_verity_profiles",
+    "production_mounts::persistent_data::superblock::tests::actual_orphan_file_and_verity_superblocks_admit_clean_profiles",
+    "production_mounts::persistent_data::superblock::tests::orphan_file_bounds_and_pending_scan_reject_resealed_superblocks"
+  ]
+}

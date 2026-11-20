@@ -1,0 +1,167 @@
+{
+  "actual_fixture_controls": {
+    "bytes": 19380,
+    "path": "p4_original_metadata_read/actual-feature-fixture-controls/CONTROLS.json",
+    "sha256": "40a7cdd89c2e9ffd07b0121b1efa759b76b38e49dbe34195e6f4a807263e59d7"
+  },
+  "actual_original_readonly_observation": {
+    "bytes": 44808,
+    "path": "p4_original_metadata_read/ORIGINAL-OBSERVATION-R2.json",
+    "sha256": "fe3a96d61acf157ee34b9fcc96911b9a2e902ced77207905f2f867002e00ec41"
+  },
+  "both_original_patches_reverse_and_replay": true,
+  "candidate": {
+    "bytes": 3367,
+    "sha256": "d5e776cd8e27e4e8a33611f65ef0393d78c4c72f855ee14dc403e286e29a40e4"
+  },
+  "existing_negative_policy_case_adjustment": "The formerly rejected orphan-file bit is now the allowed feature; that one existing mutation instead rejects fast-commit bit 0x400. Existing test names remain.",
+  "files": [
+    {
+      "after": {
+        "bytes": 1024,
+        "git_blob": "2a0f54f5e82b95737bf8cb34c8c76c92c231035d",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_persistent_data_fixtures/data-known-features-superblock.bin",
+        "sha256": "f5fd88e4c1ef065971f1678f199f2b1da1cb62a54dddb4c0d5e4d1de9b728a70"
+      },
+      "before": null,
+      "path": "runtime/droidloom-supervisor/src/production_persistent_data_fixtures/data-known-features-superblock.bin"
+    },
+    {
+      "after": {
+        "bytes": 1024,
+        "git_blob": "f2c518dd7144e071bc60a1889d2da8d82385bb55",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_persistent_data_fixtures/metadata-known-features-superblock.bin",
+        "sha256": "041e062131f3b8cc9d5f87c9152c8c1f6eeb4b325970c9377baeea7cd3562606"
+      },
+      "before": null,
+      "path": "runtime/droidloom-supervisor/src/production_persistent_data_fixtures/metadata-known-features-superblock.bin"
+    },
+    {
+      "after": {
+        "bytes": 7408,
+        "git_blob": "32f7e2af2afc4e436bfb6befac1e0e49f33cbf9a",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_persistent_data_policy.rs",
+        "sha256": "a22974972ff1b4a63ed8973f3a50f1cf93e7e06a54fe6671cb04c773bcce1fd0"
+      },
+      "before": {
+        "bytes": 6614,
+        "git_blob": "4eb1214842fc036b3cc737a531c513b42176e12a",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_persistent_data_policy.rs",
+        "sha256": "bdf1a7ffaefe11ae2a659d0cda927796aaaa3bc4c568302050ec0f3d7267e98a"
+      },
+      "path": "runtime/droidloom-supervisor/src/production_persistent_data_policy.rs"
+    },
+    {
+      "after": {
+        "bytes": 9443,
+        "git_blob": "1df43d3d5058e3cc7c97d96c488750e116dfdf45",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_persistent_data_superblock.rs",
+        "sha256": "0f9734e0c3ed1703d695f273f508761ae0400e71d7ef4262f9d7771ced09ca4e"
+      },
+      "before": {
+        "bytes": 6752,
+        "git_blob": "cd4cb9e09c1d68dd5d3cce2c4914c13ef90a377c",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_persistent_data_superblock.rs",
+        "sha256": "5e5eb491823535753a10b71aab89424260e60756fe1d91f696ee63baba824c2a"
+      },
+      "path": "runtime/droidloom-supervisor/src/production_persistent_data_superblock.rs"
+    }
+  ],
+  "four_candidate_full_pins_match": true,
+  "golden_fixtures": [
+    {
+      "bytes": 1024,
+      "checksum_verified": true,
+      "features": [
+        4156,
+        8898,
+        33899
+      ],
+      "file": "data-known-features-superblock.bin",
+      "filesystem_bytes": 67108864,
+      "journal_inode": 8,
+      "orphan_file_inode": 12,
+      "sha256": "f5fd88e4c1ef065971f1678f199f2b1da1cb62a54dddb4c0d5e4d1de9b728a70",
+      "uuid": "144320aa-5806-413a-9e39-7edb797c5f57"
+    },
+    {
+      "bytes": 1024,
+      "checksum_verified": true,
+      "features": [
+        4156,
+        8898,
+        1131
+      ],
+      "file": "metadata-known-features-superblock.bin",
+      "filesystem_bytes": 33554432,
+      "journal_inode": 8,
+      "orphan_file_inode": 12,
+      "sha256": "041e062131f3b8cc9d5f87c9152c8c1f6eeb4b325970c9377baeea7cd3562606",
+      "uuid": "a7f1f350-d947-4b29-81a9-0eab6ee1ed36"
+    }
+  ],
+  "mount_actions_by_reviewer": 0,
+  "new_declared_test_names": [
+    "production_selection::persistent_data_policy::tests::persistent_policy_admits_reviewed_orphan_file_and_verity_profiles",
+    "production_mounts::persistent_data::superblock::tests::actual_orphan_file_and_verity_superblocks_admit_clean_profiles",
+    "production_mounts::persistent_data::superblock::tests::orphan_file_bounds_and_pending_scan_reject_resealed_superblocks"
+  ],
+  "new_rust_compilation_completed": false,
+  "new_rust_tests_executed": 0,
+  "original_images_opened_by_reviewer": 0,
+  "original_six_policy_and_superblock_test_names_retained": true,
+  "other_two_original_provider_test_names_unchanged": true,
+  "patch": {
+    "bytes": 6581,
+    "sha256": "c287d0771b120b12469c749b11b81656c0b0e83093eea9d7afb9b3ab92bc19e8"
+  },
+  "primary_references": [
+    {
+      "supports": "feature bit values and orphan inode superblock offset",
+      "url": "https://docs.kernel.org/filesystems/ext4/super.html"
+    },
+    {
+      "supports": "allocated orphan file differs from pending orphan recovery; clean unmount clears ORPHAN_PRESENT",
+      "url": "https://docs.kernel.org/filesystems/ext4/orphan.html"
+    }
+  ],
+  "production_ready": false,
+  "production_review": [
+    "Only COMPAT 0x1000 and RO_COMPAT 0x8000 are added to the original allowed masks; recovery, external journal, fast commit, readonly image, ORPHAN_PRESENT, encryption, bigalloc and unknown flags remain rejected.",
+    "The selected exact feature tuple, UUID, complete geometry, clean state, internal journal and CRC32C checks remain; the new orphan-file check is bounded, non-reserved and distinct from the journal.",
+    "The eight original provider test names remain and three feature-specific cases are declared. The real fixture files model the recorded original feature tuples, not original application content.",
+    "No caller, live namespace, identity lease, selected root identity, mounting, backing role, mutable authority or cleanup semantics are changed by this source delta."
+  ],
+  "recorded_original_feature_observation": {
+    "data.img": {
+      "features": [
+        4156,
+        8898,
+        33899
+      ],
+      "filesystem_state": 1,
+      "orphan_file_inode": 12,
+      "orphan_scan_required": false
+    },
+    "metadata.img": {
+      "features": [
+        4156,
+        8898,
+        1131
+      ],
+      "filesystem_state": 1,
+      "orphan_file_inode": 12,
+      "orphan_scan_required": false
+    }
+  },
+  "review_passed": true,
+  "runtime_qualified": false,
+  "schema": "p4-persistent-observed-feature-independent-source-review-v1",
+  "scope": "source-and-local-recorded-fixture-integrity-only"
+}

@@ -1,0 +1,73 @@
+{
+  "Android_started": false,
+  "CURRENT_written": false,
+  "build_executed": false,
+  "compatible_with_native_joint_r2": {
+    "condition": "Native owner confirmed droidloom-source/update before bodies unchanged from exact2367; composition must recheck all before SHA/bytes.",
+    "head": "7f7044c3e92efa57f7ccb584eb1c7bc0aa8bea28",
+    "producer_tree": "00c99f0f89fef255d6e8e818769f687f80c1af86"
+  },
+  "current_ci_untouched": true,
+  "manifest": {
+    "bytes": 7778,
+    "path": "p4_vendor_car_source_successor/MANIFEST.json",
+    "sha256": "cbab8268a344ecf16a94ad1e48982b58fb2ad9512f365a0bf199eb82b26d14f6"
+  },
+  "new_rust_test_count": 8,
+  "new_rust_tests": [
+    {
+      "name": "car_profile_retains_original_652_and_adds_only_authenticated_provider_sources",
+      "path": "tools/droidloom-source/src/production_car.rs"
+    },
+    {
+      "name": "car_profile_rejects_each_missing_partial_duplicate_or_repinned_source_cone",
+      "path": "tools/droidloom-source/src/production_car.rs"
+    },
+    {
+      "name": "car_profile_rejects_foreign_service_gitlink_and_incomplete_api_or_proto",
+      "path": "tools/droidloom-source/src/production_car.rs"
+    },
+    {
+      "name": "car_profile_rejects_unrelated_metadata_scope_and_source_policy_changes",
+      "path": "tools/droidloom-source/src/production_car.rs"
+    },
+    {
+      "name": "car_operations_reject_old_or_partial_scope_before_source_io",
+      "path": "tools/droidloom-source/src/production_car.rs"
+    },
+    {
+      "name": "car_verification_never_rewrites_original_652_manifest",
+      "path": "tools/droidloom-source/src/production_car.rs"
+    },
+    {
+      "name": "source_cli_requires_named_car_profile_and_preserves_original_652_recovery",
+      "path": "tools/droidloom-source/src/main.rs"
+    },
+    {
+      "name": "original_652_apex_manifest_requires_explicit_car_source_reconciliation",
+      "path": "tools/droidloom-update/src/production_source.rs"
+    }
+  ],
+  "next_normal_result_filename": "droidloom-production-full653-vendor-normal-result.json",
+  "operator_tree_modified": false,
+  "patch": {
+    "bytes": 450571,
+    "path": "p4_vendor_car_source_successor/changes.patch",
+    "sha256": "300b3e4491bea0a66a6d2f8dca845f64393877df22745e3541ea69499dc89934"
+  },
+  "production_ready": false,
+  "recovery_preservation": "Historical production_full/production_cmake/production_lint/production_apex_tests modules unchanged; their CLI values remain. android::recover and entire Projection code byte-identical, proved by reversing only the two future normal-build profile calls.",
+  "runtime_qualified": false,
+  "schema": "p4-car-source-successor-handoff-v1",
+  "source_closure": {
+    "bytes": 14444,
+    "path": "p4_vendor_car_source_successor/SOURCE-CLOSURE.json",
+    "sha256": "388a7bc25690c3b0ce982c1e7f73a0bd2cfd4de9397452765e2354e22d789e55"
+  },
+  "state": "SOURCE_ONLY_READY_FOR_INDEPENDENT_REVIEW",
+  "static_controls": {
+    "bytes": 32274,
+    "path": "p4_vendor_car_source_successor/STATIC-SOURCE-CONTROLS.json",
+    "sha256": "eb0c5eb8c96d132fdcb94f0c137419ef1896c0382531d916f69d32dd69bce6a3"
+  }
+}

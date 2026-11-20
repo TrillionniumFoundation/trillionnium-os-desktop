@@ -1,0 +1,41 @@
+[
+  {
+    "component": "observed_clean_ext4_features",
+    "package": "droidloom-supervisor",
+    "target": "droidloom_supervisor",
+    "tests": [
+      "production_mounts::persistent_data::superblock::tests::actual_orphan_file_and_verity_superblocks_admit_clean_profiles",
+      "production_mounts::persistent_data::superblock::tests::orphan_file_bounds_and_pending_scan_reject_resealed_superblocks",
+      "production_selection::persistent_data_policy::tests::persistent_policy_admits_reviewed_orphan_file_and_verity_profiles"
+    ]
+  },
+  {
+    "component": "same_original_superproject_car_normal_source_653",
+    "package": "droidloom-source",
+    "target": "droidloom_source",
+    "tests": [
+      "production_car::tests::car_operations_reject_old_or_partial_scope_before_source_io",
+      "production_car::tests::car_profile_rejects_each_missing_partial_duplicate_or_repinned_source_cone",
+      "production_car::tests::car_profile_rejects_foreign_service_gitlink_and_incomplete_api_or_proto",
+      "production_car::tests::car_profile_rejects_unrelated_metadata_scope_and_source_policy_changes",
+      "production_car::tests::car_profile_retains_original_652_and_adds_only_authenticated_provider_sources",
+      "production_car::tests::car_verification_never_rewrites_original_652_manifest"
+    ]
+  },
+  {
+    "component": "same_original_superproject_car_normal_source_653",
+    "package": "droidloom-source",
+    "target": "droidloom-source",
+    "tests": [
+      "tests::source_cli_requires_named_car_profile_and_preserves_original_652_recovery"
+    ]
+  },
+  {
+    "component": "same_original_superproject_car_normal_source_653",
+    "package": "droidloom-update",
+    "target": "droidloom-update",
+    "tests": [
+      "production_source::tests::original_652_apex_manifest_requires_explicit_car_source_reconciliation"
+    ]
+  }
+]

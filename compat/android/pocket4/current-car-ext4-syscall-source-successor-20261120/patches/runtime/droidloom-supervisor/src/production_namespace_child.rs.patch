@@ -1,0 +1,33 @@
+--- a/runtime/droidloom-supervisor/src/production_namespace_child.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_child.rs
+@@ -35,6 +35,10 @@
+ #[path = "production_namespace_writable_proc_child.rs"]
+ mod writable_proc;
+ 
++#[cfg(test)]
++#[path = "production_namespace_persistent_control_child.rs"]
++pub(super) mod persistent_control;
++
+ #[derive(Clone, Copy)]
+ #[repr(u32)]
+ pub(super) enum Phase {
+@@ -51,6 +55,10 @@
+     EmptyRootReady = 17,
+     MountPersistentBase = 68,
+     PersistentRootReady = 69,
++    #[cfg(test)]
++    ProbePersistentData = 70,
++    #[cfg(test)]
++    PersistentDataChecked = 71,
+     MountPrivateDev = 20,
+     PrivateDevReady = 21,
+     MountActivationDev = 55,
+@@ -251,6 +259,8 @@
+     PostExecProcControl = 13,
+     #[cfg(test)]
+     CgroupControl = 14,
++    #[cfg(test)]
++    PersistentDataControl = 15,
+     #[cfg(test)]
+     ExitWithPrivateDiagnostic = 255,
+ }

@@ -1,0 +1,27 @@
+{
+  "actual_new_ci_executed": false,
+  "after": {
+    "bytes": 137706,
+    "sha256": "cbf3e21fa1af8cf164ce7e931da2c0a4a9f47fb2badae244a1f6fb0300445160"
+  },
+  "all_other_eight_jobs_equal": true,
+  "before": {
+    "bytes": 133980,
+    "sha256": "4e920225416323d355a42402e0ec7776e857625bd48bdd015db41ad22be999b0"
+  },
+  "findings": [
+    "Exact current2391-source replay and1623 ordinary catalog is added only to the current-source job with the prior2381 reconstruction preserved.",
+    "New exporter runs only after actual current-job success, with a150-second process timeout and10-second kill grace inside a3-minute step. It preserves the already independently reviewed exact exporter body.",
+    "A separate compile-only artifact contains exactly one test driver, its custody manifest and original CI report. Its ignored syscall test remains unexecuted; production artifacts remain unchanged.",
+    "Always-upload exporter diagnostics preserve actual export failure without rewriting current ordinary-test or production-release success counts.",
+    "Other workflow jobs and final workflow status remain independent actual gates; source review does not mark any unexecuted run passed."
+  ],
+  "global_workflow_settings_equal": true,
+  "original_19_production_upload_step_equal": true,
+  "original_main_job_140_minute_limit_equal": true,
+  "passed_source_review": true,
+  "privileged_fixture_executed": false,
+  "production_ready": false,
+  "runtime_qualified": false,
+  "schema": "p4-car-ext4-syscall-workflow-independent-review-v1"
+}

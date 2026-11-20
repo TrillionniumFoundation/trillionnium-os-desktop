@@ -1,0 +1,54 @@
+--- a/runtime/droidloom-supervisor/src/production_persistent_data_policy.rs
++++ b/runtime/droidloom-supervisor/src/production_persistent_data_policy.rs
+@@ -55,14 +55,16 @@
+         }
+         self.uuid()?;
+         // Narrow reviewed ordinary ext4 profile: internal journal, filetype,
+-        // extents, optional 64bit/flex_bg/checksum seed, metadata checksums.
+-        // Recovery, external journals, encryption, bigalloc, orphan-file,
+-        // snapshots and unreviewed feature bits cannot enter this constructor.
+-        if self.feature_compat & !0x003c != 0
++        // extents, optional 64bit/flex_bg/checksum seed, metadata checksums,
++        // and the observed clean orphan-file / verity-compatible profiles.
++        // RO_COMPAT_ORPHAN_PRESENT still cannot enter this constructor; an
++        // allocated orphan inode is not evidence of pending orphan recovery.
++        // External journals, encryption, bigalloc and snapshots remain excluded.
++        if self.feature_compat & !0x103c != 0
+             || self.feature_compat & 0x0004 == 0
+             || self.feature_incompat & !0x22c2 != 0
+             || self.feature_incompat & 0x0042 != 0x0042
+-            || self.feature_ro_compat & !0x046b != 0
++            || self.feature_ro_compat & !0x846b != 0
+             || self.feature_ro_compat & 0x0400 == 0
+         {
+             return Err("persistent image has an unreviewed ext4 feature profile");
+@@ -154,7 +156,7 @@
+             match mutation {
+                 0 => value.feature_incompat |= 4,
+                 1 => value.feature_incompat |= 0x1_0000,
+-                2 => value.feature_compat |= 0x1000,
++                2 => value.feature_compat |= 0x400,
+                 3 => value.feature_ro_compat |= 0x200,
+                 4 => value.feature_ro_compat &= !0x400,
+                 5 => value.guest_root_mode |= 0o002,
+@@ -165,4 +167,20 @@
+         }
+         assert_eq!(original.uuid().unwrap(), [0xc2,0xe0,0x70,0x1f,0xf5,0xd5,0x42,0x34,0x87,0xa7,0x50,0x6b,0x21,0xfe,0x62,0xcb]);
+     }
++
++    #[test]
++    fn persistent_policy_admits_reviewed_orphan_file_and_verity_profiles() {
++        for readonly in [0x046b, 0x846b] {
++            let mut value = policy();
++            value.feature_compat = 0x103c;
++            value.feature_ro_compat = readonly;
++            assert_eq!(value.validate(), Ok(()));
++            let mut pending = value.clone();
++            pending.feature_ro_compat |= 0x10000;
++            assert!(pending.validate().is_err());
++            let mut readonly_image = value.clone();
++            readonly_image.feature_ro_compat |= 0x1000;
++            assert!(readonly_image.validate().is_err());
++        }
++    }
+ }

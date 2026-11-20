@@ -1,0 +1,72 @@
+{
+  ".droidloom-source-manifest.json": {
+    "bytes": 441851,
+    "lock_sha": "14fd227541b01876c7e34d7e6a1ffcb2a202d97d94c6a8f6e14be369e4b79505",
+    "projects": [
+      {
+        "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+        "path": "packages/services/Car",
+        "purpose": "Actual android.car and android.car.builtin.impl providers required by the upstream Robolectric host framework",
+        "sparse_paths": [
+          "aconfig",
+          "car-lib/src",
+          "car-lib/jni/large-parcelable/src",
+          "car-builtin-lib/src",
+          "car-builtin-lib/api",
+          "libs/car-internal-dep-lib/src",
+          "teams",
+          "cpp/vhal/client/include",
+          "cpp/vhal/client/src",
+          "cpp/car_binder_lib/largeParcelable/include",
+          "car-lib/api",
+          "cpp/car_binder_lib",
+          "cpp/watchdog/aidl",
+          "packages/CarDeveloperOptions",
+          "prebuilts",
+          "cpp/power/client"
+        ],
+        "url": "https://android.googlesource.com/platform/packages/services/Car"
+      },
+      {
+        "commit": "32927b80c3fcba2cee73f03d1cc4a982a9426032",
+        "path": "external/lua",
+        "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+        "sparse_paths": [
+          "src"
+        ],
+        "url": "https://android.googlesource.com/platform/external/lua"
+      }
+    ],
+    "projects_count": 652,
+    "schema": 1,
+    "sha256": "ce334d5386e99dbabd61e8913802db417adb085e76bfb93e9d2fed04b4c80843",
+    "superproject": "28f0bbddc24d56c8ec5a8df5342ac7a292184039"
+  },
+  "external/lua/Android.bp": {
+    "body": "package {\n    default_applicable_licenses: [\"external_lua_license\"],\n}\n\n// Added automatically by a large-scale-change\n// See: http://go/android-license-faq\nlicense {\n    name: \"external_lua_license\",\n    visibility: [\":__subpackages__\"],\n    license_kinds: [\n        \"SPDX-license-identifier-MIT\",\n    ],\n    license_text: [\n        \"LICENSE\",\n    ],\n}\n\ncc_library_static {\n    name: \"liblua\",\n    sdk_version: \"current\",\n    min_sdk_version: \"30\",\n    cflags: [\n        \"-Werror\",\n        \"-Wall\",\n        \"-Wno-deprecated-declarations\",\n        \"-Wno-string-plus-int\",\n        \"-O2\",\n        \"-DLUA_USE_LINUX\",\n        \"-DLUA_COMPAT_5_3\",\n    ],\n    export_include_dirs: [\"src\"],\n    srcs: [\n        \":liblua-sources\"\n    ],\n\n    apex_available: [\n        \"//apex_available:platform\",\n        \"com.android.extservices\",\n        \"com.android.car.framework\",\n    ],\n    visibility: [\n        \"//external/libtextclassifier:__subpackages__\",\n        \"//packages/services/Car/cpp/telemetry:__subpackages__\",\n        \"//packages/services/Car/packages/ScriptExecutor:__subpackages__\",\n    ],\n}\n\nfilegroup {\n    name: \"liblua-sources\",\n    srcs: [\n        \"src/**/*.c\",\n    ],\n    exclude_srcs: [\n        // Exclude the interpreter\n        \"src/lua.c\",\n    ],\n}\n",
+    "bytes": 1257,
+    "sha256": "a7062441770fcbd0fd21ce9f02e381e78e0072fe24bfaddbb7b444374e9b703f"
+  },
+  "frameworks/opt/car/services": {
+    "exists": false
+  },
+  "packages/services/Car/apex_car_framework": {
+    "exists": false
+  },
+  "packages/services/Car/car-lib-module": {
+    "exists": false
+  },
+  "packages/services/Car/packages/ScriptExecutor": {
+    "exists": false
+  },
+  "packages/services/Car/service": {
+    "exists": false
+  },
+  "upstream_superproject": {
+    "body": ")]}'\n{\n  \"id\": \"6a7b6227f59e936761be5ac419af5a1c9f4b9592\",\n  \"entries\": [\n    {\n      \"mode\": 57344,\n      \"type\": \"commit\",\n      \"id\": \"2bb3349c1a84b9b15c5ef05ef9c2e3dc6dde427a\",\n      \"name\": \"services\"\n    },\n    {\n      \"mode\": 57344,\n      \"type\": \"commit\",\n      \"id\": \"1e1de04405291025244448dfddda320fb0b47b42\",\n      \"name\": \"setupwizard\"\n    }\n  ]\n}\n",
+    "bytes": 360,
+    "sha256": "292e0683f691e49a07e959333a7310c9ac37a6e32b96a6bce1adbd0760caf920",
+    "url": "https://android.googlesource.com/platform/superproject/+/28f0bbddc24d56c8ec5a8df5342ac7a292184039/frameworks/opt/car/?format=JSON"
+  }
+}
+

@@ -1,0 +1,125 @@
+{
+  "Main_started": 0,
+  "actual_fixture_outputs_verified": {
+    "bytes": 3417,
+    "path": "p4_original_metadata_read/actual-feature-fixture-controls/OUTPUTS-VERIFIED.json",
+    "sha256": "14c8a20142bdb383dade95e01e7abb35133717dd25268aee0bc29e6b1b9cf9fd"
+  },
+  "actual_known_feature_fixture_controls": {
+    "bytes": 19380,
+    "path": "p4_original_metadata_read/actual-feature-fixture-controls/CONTROLS.json",
+    "sha256": "40a7cdd89c2e9ffd07b0121b1efa759b76b38e49dbe34195e6f4a807263e59d7"
+  },
+  "actual_original_readonly_observation": {
+    "bytes": 44808,
+    "path": "p4_original_metadata_read/ORIGINAL-OBSERVATION-R2.json",
+    "sha256": "fe3a96d61acf157ee34b9fcc96911b9a2e902ced77207905f2f867002e00ec41"
+  },
+  "actual_roots": {
+    "data.img": {
+      "blocks": 8,
+      "directory_contents_read": false,
+      "extra_isize": 32,
+      "flags": 524288,
+      "generation": 0,
+      "gid": 1000,
+      "group_descriptor_bytes": 64,
+      "group_descriptor_checksum_valid": true,
+      "group_descriptor_sha256": "cbaf4c3da6284fddef0a9b8a093273bc5130d76949da481c14798d20904d2f6a",
+      "inode": 2,
+      "inode_bytes": 256,
+      "inode_checksum_valid": true,
+      "inode_offset": 4337920,
+      "inode_sha256": "51c8e7392d4bec5456d025d569a69d47c2f125a44b72f81ac835de7714b93e83",
+      "links": 51,
+      "mode": 505,
+      "project_id": 0,
+      "size": 4096,
+      "superblock_checksum_valid": true,
+      "type": "directory",
+      "uid": 1000
+    },
+    "metadata.img": {
+      "blocks": 8,
+      "directory_contents_read": false,
+      "extra_isize": 32,
+      "flags": 524288,
+      "generation": 0,
+      "gid": 0,
+      "group_descriptor_bytes": 64,
+      "group_descriptor_checksum_valid": true,
+      "group_descriptor_sha256": "4016326491dab3959ac9845bc251e01a90fa686ca95934fc0f566471ed925b87",
+      "inode": 2,
+      "inode_bytes": 256,
+      "inode_checksum_valid": true,
+      "inode_offset": 200960,
+      "inode_sha256": "795e516c70c2f29f4f7d39e18bd01300bb823001051e9939c94362467529497b",
+      "links": 16,
+      "mode": 493,
+      "project_id": 0,
+      "size": 4096,
+      "superblock_checksum_valid": true,
+      "type": "directory",
+      "uid": 0
+    }
+  },
+  "actual_status_command_count": 6,
+  "actual_terminal": {
+    "bytes": 34558,
+    "path": "p4_original_metadata_read/OBSERVER-R2-TERMINAL.log",
+    "sha256": "322f50a6e23e08245b2b71381ab1964fda6ee7ce148c7929e67d0d8eb38f954e"
+  },
+  "all_observer_owned_fds_closed": true,
+  "all_original_body_f9_and_superblock_bookends_unchanged": true,
+  "exact_unit_key_validation": true,
+  "fixture_count": 2,
+  "fixture_high_uid_gid_control": true,
+  "fixture_original_images_opened": false,
+  "image_fds_closed_before_original_shared_locks": true,
+  "independent_initial_review": {
+    "bytes": 5912,
+    "path": "p4_original_metadata_observer_review/INDEPENDENT-SOURCE-REVIEW.json",
+    "sha256": "e3dc3e4e5ce0ef43518fe162e95042682d5972c75d32f0c22627f82852af9ac6"
+  },
+  "independent_known_features_review": {
+    "bytes": 3468,
+    "path": "p4_original_metadata_review/EXT4-R2-INDEPENDENT-SOURCE-REVIEW.json",
+    "sha256": "4f0f3c8a8b9761b4274aeced28f94379a72e639029bde4011c2d373b2716c463"
+  },
+  "journal_replay_or_repair": false,
+  "loader": {
+    "bytes": 1473,
+    "path": "p4_original_metadata_read/pinned_observer_loader.py",
+    "sha256": "9b08b107098cfecb84d1d1fc713985133933dbc880bb568fac0f28f0c4053e8d"
+  },
+  "loop_scan_path_diagnostic_only": true,
+  "mutable_authority_granted": false,
+  "negative_control_count": 18,
+  "original_app_file_contents_read": false,
+  "original_image_fd_passed_to_child": false,
+  "original_image_opened_readonly": true,
+  "original_image_writes": 0,
+  "original_observer_host_execution": true,
+  "parser": {
+    "bytes": 6740,
+    "path": "p4_original_metadata_read/ext4_inode2_readonly.py",
+    "sha256": "074712933113cfdda9d3dd2ca4b19c8d814ecf6f6eb58030cd9c29b29397ee2d"
+  },
+  "passed": true,
+  "policy_candidate": {
+    "bytes": 598,
+    "path": "p4_original_metadata_read/PERSISTENT-DATA-POLICY-CANDIDATE.json",
+    "sha256": "f3963b304be69ab019595d377d1b0d1f86e93d208216dcae89661884c08b0df1"
+  },
+  "policy_installed": false,
+  "prior_proposal_and_failed_original_R1_retained": true,
+  "production_ready": false,
+  "runtime_qualified": false,
+  "same_held_noatime_image_fd_only": true,
+  "schema": "p4-offline-original-metadata-reader-source-and-actual-controls-v3",
+  "source": {
+    "bytes": 22125,
+    "path": "p4_original_metadata_read/observe_original_metadata.py",
+    "sha256": "707ef076f3962ddd60a171f94fafe1cf13affd5b75327bfbb964882980367ca4"
+  }
+}

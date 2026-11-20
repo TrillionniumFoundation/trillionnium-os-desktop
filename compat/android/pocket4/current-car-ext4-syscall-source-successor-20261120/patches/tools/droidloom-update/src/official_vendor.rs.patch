@@ -1,0 +1,11 @@
+--- a/tools/droidloom-update/src/official_vendor.rs
++++ b/tools/droidloom-update/src/official_vendor.rs
+@@ -792,7 +792,7 @@
+     let record = json!({"schema":"droidloom-official-gsi-independent-vendor-normal-result-v1",
+         "official_inputs":inputs.receipt()?,"native_build_inputs":artifact(&native.join(INPUT_NAME),16*1024*1024)?,
+         "vendor_build_inputs":artifact(&vendor_out.join(INPUT_NAME),16*1024*1024)?,
+-        "normal_vendor_result":artifact(&vendor_out.join("droidloom-production-full652-vendor-normal-result.json"),64*1024*1024)?,
++        "normal_vendor_result":artifact(&vendor_out.join("droidloom-production-full653-vendor-normal-result.json"),64*1024*1024)?,
+         "normal_vendor_image":artifact(&product_out.join("vendor.img"),2*1024*1024*1024)?,
+         "host_checkvintf":artifact(&vendor_out.join("host/linux-x86/bin/checkvintf"),128*1024*1024)?,
+         "native_binaries":actual,"native_static_link_check":bridge.qualification,

@@ -1,0 +1,91 @@
+--- a/runtime/droidloom-supervisor/src/production_persistent_data_superblock.rs
++++ b/runtime/droidloom-supervisor/src/production_persistent_data_superblock.rs
+@@ -69,6 +69,18 @@
+     {
+         return Err("original ext4 must be clean with an internal journal and no pending recovery");
+     }
++    let first_inode = u32_at(raw, 0x54);
++    let orphan_inode = u32_at(raw, 0x280);
++    let valid_orphan = if selected.feature_compat & 0x1000 != 0 {
++        orphan_inode >= first_inode
++            && orphan_inode < u32_at(raw, 0)
++            && orphan_inode != u32_at(raw, 0xe0)
++    } else {
++        orphan_inode == 0
++    };
++    if first_inode != 11 || !valid_orphan {
++        return Err("original ext4 orphan-file inode is not a distinct bounded non-reserved inode");
++    }
+     if raw[0x175] != 1 || u32_at(raw, 0x3fc) != crc32c(&raw[..0x3fc]) {
+         return Err("original ext4 superblock checksum failed");
+     }
+@@ -86,6 +98,12 @@
+         include_bytes!("production_persistent_data_fixtures/data-superblock.bin");
+     const METADATA: &[u8; 1024] =
+         include_bytes!("production_persistent_data_fixtures/metadata-superblock.bin");
++    // Two further real, newly formatted and retired ordinary files reproduce
++    // the original images' feature tuples. No original app content is stored.
++    const KNOWN_DATA: &[u8; 1024] =
++        include_bytes!("production_persistent_data_fixtures/data-known-features-superblock.bin");
++    const KNOWN_METADATA: &[u8; 1024] =
++        include_bytes!("production_persistent_data_fixtures/metadata-known-features-superblock.bin");
+ 
+     fn selected(image_bytes: u64, uuid: &str) -> PersistentImagePolicy {
+         PersistentImagePolicy {
+@@ -102,6 +120,13 @@
+ 
+     fn data_policy() -> PersistentImagePolicy {
+         selected(64 * 1024 * 1024, "748861cb-65b5-4fcb-8aba-5c5dc40811df")
++    }
++
++    fn known_data_policy() -> PersistentImagePolicy {
++        let mut policy = selected(64 * 1024 * 1024, "144320aa-5806-413a-9e39-7edb797c5f57");
++        policy.feature_compat = 0x103c;
++        policy.feature_ro_compat = 0x846b;
++        policy
+     }
+ 
+     fn reseal(raw: &mut [u8; 1024]) {
+@@ -171,4 +196,41 @@
+         assert_eq!(validate(&wrong_block_size, &data_policy()),
+             Err("selected raw 4096-byte-block ext4 geometry required"));
+     }
+-}
++
++    #[test]
++    fn actual_orphan_file_and_verity_superblocks_admit_clean_profiles() {
++        assert_eq!(validate(KNOWN_DATA, &known_data_policy()), Ok(()));
++        let mut metadata = selected(32 * 1024 * 1024, "a7f1f350-d947-4b29-81a9-0eab6ee1ed36");
++        metadata.feature_compat = 0x103c;
++        metadata.guest_root_uid = 131073;
++        metadata.guest_root_gid = 262145;
++        assert_eq!(validate(KNOWN_METADATA, &metadata), Ok(()));
++        assert!(validate(KNOWN_DATA, &metadata).is_err());
++        assert!(validate(KNOWN_METADATA, &known_data_policy()).is_err());
++    }
++
++    #[test]
++    fn orphan_file_bounds_and_pending_scan_reject_resealed_superblocks() {
++        for mutation in 0..6 {
++            let mut raw = *KNOWN_DATA;
++            let mut policy = known_data_policy();
++            let (offset, value) = match mutation {
++                0 => (0x280, 0),
++                1 => (0x280, u32_at(&raw, 0xe0)),
++                2 => (0x280, u32_at(&raw, 0)),
++                3 => (0x54, 10),
++                4 => {
++                    policy.feature_compat &= !0x1000;
++                    (0x5c, policy.feature_compat)
++                }
++                _ => {
++                    policy.feature_ro_compat |= 0x10000;
++                    (0x64, policy.feature_ro_compat)
++                }
++            };
++            raw[offset..offset + 4].copy_from_slice(&value.to_le_bytes());
++            reseal(&mut raw);
++            assert!(validate(&raw, &policy).is_err(), "unsafe orphan mutation {mutation}");
++        }
++    }
++}

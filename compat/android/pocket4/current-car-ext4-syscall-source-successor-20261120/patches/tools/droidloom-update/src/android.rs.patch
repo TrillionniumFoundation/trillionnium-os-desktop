@@ -1,0 +1,15 @@
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -12928,9 +12928,9 @@
+     }
+     if production_full {
+         if !source.exists() {
+-            droidloom_source::production_apex_tests::materialize(&lock, &source_lock, source)?;
+-        }
+-        droidloom_source::production_apex_tests::verify_materialized(&lock, &source_lock, source)?;
++            droidloom_source::production_car::materialize(&lock, &source_lock, source)?;
++        }
++        droidloom_source::production_car::verify_materialized(&lock, &source_lock, source)?;
+     } else if native_source {
+         if typed_ingress && !source.exists() {
+             droidloom_source::native_pair::materialize_resuming(

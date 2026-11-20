@@ -1,0 +1,43 @@
+--- a/tools/droidloom-source/src/lib.rs
++++ b/tools/droidloom-source/src/lib.rs
+@@ -32,6 +32,8 @@
+ pub mod production_lint;
+ /// Explicit original 652 lint plus complete IPsec and Permission APEX test providers.
+ pub mod production_apex_tests;
++/// Exact original Car APEX dependency closure; previous profiles remain separate.
++pub mod production_car;
+ 
+ #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ enum SourceProfile {
+@@ -39,6 +41,7 @@
+     NativePair656,
+     Production651,
+     Production652,
++    Production653,
+ }
+ 
+ impl SourceProfile {
+@@ -48,6 +51,7 @@
+             Self::NativePair656 => native_pair::MAX_PROJECTS,
+             Self::Production651 => production_full::MAX_PROJECTS,
+             Self::Production652 => production_cmake::MAX_PROJECTS,
++            Self::Production653 => production_car::MAX_PROJECTS,
+         }
+     }
+     fn maximum_sparse_paths(self) -> usize {
+@@ -56,6 +60,7 @@
+             Self::NativePair656 => native_pair::MAX_SPARSE_PATHS,
+             Self::Production651 => production_full::MAX_SPARSE_PATHS,
+             Self::Production652 => production_cmake::MAX_SPARSE_PATHS,
++            Self::Production653 => production_car::MAX_SPARSE_PATHS,
+         }
+     }
+     fn accepts_project_name(self, name: &str) -> bool {
+@@ -64,6 +69,7 @@
+             Self::NativePair656 => native_pair::is_project_name(name),
+             Self::Production651 => native_pair::is_project_name(name),
+             Self::Production652 => native_pair::is_project_name(name),
++            Self::Production653 => native_pair::is_project_name(name),
+         }
+     }
+ }

@@ -1,0 +1,14 @@
+--- a/runtime/droidloom-supervisor/src/production_namespace_mount_child.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_mount_child.rs
+@@ -611,6 +611,11 @@
+         libc::syscall(libc::SYS_close, 2);
+         send(nonce, layout.ready_phase(), 0, 1);
+         #[cfg(test)]
++        if matches!(_mode, Mode::PersistentDataControl) {
++            if layout != BaseLayout::Persistent { protocol_failure(nonce) }
++            super::persistent_control::run(nonce, parent_pid);
++        }
++        #[cfg(test)]
+         if matches!(
+             _mode,
+             Mode::EmptyRootControl

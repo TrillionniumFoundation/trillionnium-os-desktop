@@ -1,0 +1,35 @@
+[
+  {
+    "args": [
+      "show",
+      "9f04df65daa8b9a65ee05fd4039fe95446874d76:car-lib/generated-prop-config/Android.bp"
+    ],
+    "body": "// Copyright (C) 2023 The Android Open Source Project\n//\n// Licensed under the Apache License, Version 2.0 (the \"License\");\n// you may not use this file except in compliance with the License.\n// You may obtain a copy of the License at\n//\n//      http://www.apache.org/licenses/LICENSE-2.0\n//\n// Unless required by applicable law or agreed to in writing, software\n// distributed under the License is distributed on an \"AS IS\" BASIS,\n// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n// See the License for the specific language governing permissions and\n// limitations under the License.\n\npackage {\n    default_team: \"trendy_team_aaos_framework\",\n    default_applicable_licenses: [\"Android-Apache-2.0\"],\n}\n\nfilegroup {\n    name: \"CarSvcProps_JSON\",\n    visibility: [\n        \"//packages/services/Car/service\",\n        \"//cts/tests/tests/car:__subpackages__\",\n    ],\n    srcs: [\n        \"CarSvcProps.json\",\n        \"CarSvcProps-Released.json\",\n    ],\n}\n",
+    "bytes": 977,
+    "exit": 0,
+    "project": "packages/services/Car",
+    "sha256": "796df9fae0956616e3fc309541242dbc5080b0a49aae30d7ace9c9d2ce89fa55",
+    "stderr": ""
+  },
+  {
+    "args": [
+      "grep",
+      "-n",
+      "-F",
+      "-e",
+      "name: \"VehicleHalDefaultProperties_JSON\"",
+      "-e",
+      "name: \"VhalTestVendorProperties\"",
+      "HEAD",
+      "--",
+      "automotive/vehicle"
+    ],
+    "body": "HEAD:automotive/vehicle/aidl/impl/current/default_config/config/Android.bp:11:    name: \"VehicleHalDefaultProperties_JSON\",\nHEAD:automotive/vehicle/aidl/impl/current/utils/test_vendor_properties/Android.bp:22:    name: \"VhalTestVendorProperties\",\n",
+    "bytes": 247,
+    "exit": 0,
+    "project": "hardware/interfaces",
+    "sha256": "a563f8deadb86c327e415e8881a2252778ee707a210dc0d24a857b322803f722",
+    "stderr": ""
+  }
+]
+

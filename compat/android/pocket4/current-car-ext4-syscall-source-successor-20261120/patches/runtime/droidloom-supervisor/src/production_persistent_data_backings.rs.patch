@@ -1,0 +1,13 @@
+--- a/runtime/droidloom-supervisor/src/production_persistent_data_backings.rs
++++ b/runtime/droidloom-supervisor/src/production_persistent_data_backings.rs
+@@ -133,6 +133,10 @@
+ }
+ 
+ #[cfg(test)]
++#[path = "production_persistent_data_fixture_backings.rs"]
++pub(super) mod private_control;
++
++#[cfg(test)]
+ mod tests {
+     use super::*;
+     #[test]

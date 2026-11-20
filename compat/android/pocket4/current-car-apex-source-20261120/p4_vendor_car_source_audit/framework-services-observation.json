@@ -1,0 +1,17 @@
+[
+  {
+    "body": "package {\n    default_team: \"trendy_team_aaos_framework\",\n    default_applicable_licenses: [\"Android-Apache-2.0\"],\n}\n\nfilegroup {\n    name: \"car-frameworks-updatable-service-sources\",\n    srcs: [\n        \"src/**/*.java\",\n    ],\n    visibility: [\n        \":__subpackages__\",\n    ],\n}\n\njava_library {\n    name: \"car-frameworks-service-module\",\n    installable: true,\n    libs: [\n            \"android.car\",\n            \"android.car.builtin.stubs.module_lib\",\n            \"car-frameworks-service.stubs.module_lib\",\n            \"framework-annotations-lib\",\n            \"framework-permission-s.stubs.module_lib\"\n    ],\n    srcs: [\n        \":car-frameworks-updatable-service-sources\",\n    ],\n\n    sdk_version: \"module_current\",\n    // TODO(b/288271411): enable it when car mainline module is supported\n    // min_sdk_version: \"33\",\n    apex_available: [\n        \"//apex_available:platform\",\n        \"com.android.car.framework\"\n    ],\n}\n\n",
+    "bytes": 930,
+    "path": "updatableServices/Android.bp",
+    "sha256": "922e422f115d4743dbf3cfe78eecabde8322a6b984b73e515d1c7d68f75d7fbb",
+    "url": "https://android.googlesource.com/platform/frameworks/opt/car/services/+/2bb3349c1a84b9b15c5ef05ef9c2e3dc6dde427a/updatableServices/Android.bp?format=TEXT"
+  },
+  {
+    "body": "package {\n    default_team: \"trendy_team_aaos_framework\",\n    default_applicable_licenses: [\"Android-Apache-2.0\"],\n}\n\njava_sdk_library {\n    name: \"car-frameworks-service\",\n    libs: [\n        \"services\",\n        \"android.car\",\n        \"android.car.builtin.stubs.module_lib\", // Will remove once split is complete\n        \"android.hardware.automotive.vehicle-V2.0-java\",\n    ],\n    srcs: [\n        \"src/**/*.java\",\n    ],\n    static_libs: [\n        \"android.car.watchdoglib\",\n        \"android.automotive.watchdog.internal-java\",\n        \"car-builtin-protos\",\n    ],\n    api_lint: {\n        enabled: true,\n    },\n\n    stub_only_libs: [\n        \"framework-annotations-lib\",\n    ],\n\n    droiddoc_options: [\n        \"--include-annotations --pass-through-annotation android.annotation.RequiresApi\",\n    ],\n\n    apex_available: [\n        \"//apex_available:platform\",\n        \"com.android.car.framework\",\n    ],\n\n    unsafe_ignore_missing_latest_api: true,\n\n    test: {\n        enabled: false,\n    },\n    system: {\n        enabled: true,\n        sdk_version: \"module_current\",\n    },\n    module_lib: {\n        enabled: true,\n        sdk_version: \"module_current\",\n    },\n}\n",
+    "bytes": 1166,
+    "path": "builtInServices/Android.bp",
+    "sha256": "fcb35d3fa28b10811dddb3d324eb542ec424c630590af4742579dea58b37bc62",
+    "url": "https://android.googlesource.com/platform/frameworks/opt/car/services/+/2bb3349c1a84b9b15c5ef05ef9c2e3dc6dde427a/builtInServices/Android.bp?format=TEXT"
+  }
+]
+
