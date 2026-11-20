@@ -59,3 +59,9 @@ Canonical CURRENT changed from `b29be8cb340b4744c73df67046be421faf33ad00ea04bff8
 ## Remaining runtime requirements
 
 Original apexd still needs a genuine preconfiguration block-device OFD and its provider association. Real BLKRASET/sysfs, dm-verity/EIO, AVB, original APEX activation, coherent full-GSI/current-Main custody, and original application business cases remain required. Calendar historical receipts were not relabeled. Six old modified-Gallery entry guards remain retired in the reviewed source closure; this packet does not introduce a current official Gallery consumer or remove its runtime hold.
+
+## Required-39 resume scope correction
+
+A later, separate metadata correction removed one obsolete instruction to obtain the three explicitly exempt unavailable APKs. `correct_required_scope.py` changes only `/resume_order/3`, from the existing source-selector CURRENT preimage to the authorized 39 required contracts plus TextNow, TextFree, and Uber Rider as the three exceptions. It preserves the inventory count of 42, all source pointers, the owner and expiry, original lock inodes, and every runtime flag.
+
+The exact original-lock whole-document CAS and independent readback produced CURRENT SHA256 `091f53bb8ad9623c9825c5e94a91e7226157ba90205fa1bddf06eb362aa0875b` (1,582,705 bytes). `scope_independent_readback.py` restores just the old sentence in memory and requires the resulting complete JSON to equal the preimage. The two small verbatim result records are `evidence/required39-scope-commit.json` and `evidence/required39-scope-independent-readback.json`. This change grants no Android or application runtime credit.
