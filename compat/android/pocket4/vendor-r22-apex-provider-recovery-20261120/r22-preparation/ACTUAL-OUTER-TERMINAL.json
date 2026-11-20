@@ -1,0 +1,2167 @@
+{
+  "all_created_children_reaped": true,
+  "all_owned_units_retired": true,
+  "build_attempted": false,
+  "bundle": {
+    "bytes": 4934,
+    "f9": [
+      66306,
+      74456840,
+      33152,
+      1000,
+      1000,
+      1,
+      4934,
+      1795178256219266727,
+      1795178256219266727
+    ],
+    "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r22/inputs/BUNDLE.json",
+    "sha256": "b97888b0542bace5aa55bcf43dd13b0a699be9a437878372703d8bd6e214b296"
+  },
+  "children": [],
+  "errors": [
+    {
+      "error": "RuntimeError('original fresh 42 GiB / 144 GiB admission')",
+      "stage": "outer",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r22/outer.py\", line 601, in main\n    require(resources['memory_available'] >= 42 * GIB and resources['disk_free'] >= 144 * GIB,\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n            'original fresh 42 GiB / 144 GiB admission')\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r22/outer.py\", line 39, in require\n    raise RuntimeError(message)\nRuntimeError: original fresh 42 GiB / 144 GiB admission\n"
+    }
+  ],
+  "final_retirement_errors": [],
+  "finished_ns": 1795178474751690411,
+  "fixed_deadline_exceeded": false,
+  "installed": false,
+  "normal_recovery_attempted": false,
+  "normal_recovery_verified": false,
+  "original_worker_status_children": [
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-source-restore-20261120-9907-r4.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472024626525,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151604,
+      "started_ns": 1795178472003869012
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-42efb825e969f92ae933ece85b5b604eafd9635faacbfcb6302521850c0c924a.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472045319690,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151605,
+      "started_ns": 1795178472024780280
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-9c64e4807a7c0c4a78f6ea503c67272755ff5dbaced2e2d39fd20c20f04a0de0.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472065591377,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151606,
+      "started_ns": 1795178472045382218
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-b4b40eb2c7d128ccac13a1ea253a6340137152e0ab9f4b897ab33941fd838e20.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472085840065,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151607,
+      "started_ns": 1795178472065649165
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-5bed86c6667ce92b0ca78a3a0f33e5859ff5fa208a5e5df6ffd3d3647e689eb7.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472106099422,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151608,
+      "started_ns": 1795178472085899573
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-be45052289f02ae5c6c36543b66d24863719c536ecbf5965bb232add40aec0a1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472126358270,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151609,
+      "started_ns": 1795178472106158191
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-cc24a6c9785e655920a5192923c9af87f2f64e00c1b179323b54b79a5327031a.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472146616388,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151610,
+      "started_ns": 1795178472126417588
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-14dbae44624d9c203d588394a2c7959cf9e2ee52edefb882b3ee9bbdc1d807df.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472166875125,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151611,
+      "started_ns": 1795178472146676456
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-supervisor-20261120-2331-r18.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472187130483,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151612,
+      "started_ns": 1795178472166932744
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261120-2331-r18.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472207398751,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151613,
+      "started_ns": 1795178472187189241
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261120-2331-r18-recovery.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472227653058,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151614,
+      "started_ns": 1795178472207457169
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-source-restore-20261120-2331-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472247918746,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151615,
+      "started_ns": 1795178472227713096
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-source-restore-20261120-9907-r2.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472268179423,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151616,
+      "started_ns": 1795178472247977454
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-34b210a6c43e7272c95ccdc3671e681dfd58926baa1087ba5b44ce87f1c33e48.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472288469080,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151623,
+      "started_ns": 1795178472268248601
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-5764fc3823ba577e8e0ec4b49dc177f7d4b12e6091ac1c16ca02024727cd93d3.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472308734278,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151625,
+      "started_ns": 1795178472288529058
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-30ee1faa30f3247f5cfcd6036c7e01abe19d372fb48ace340520d456e654820e.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472328993915,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151626,
+      "started_ns": 1795178472308794266
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-source-restore-20261120-9907-r3.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472349276352,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151627,
+      "started_ns": 1795178472329052493
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-685753585c0919cbba7b06552aafc61ae63e66d6a4f16ad0d7b4a349daa90059.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472369534320,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151628,
+      "started_ns": 1795178472349332530
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-fd134082cc0393806a63b2810d90d6bc057b5ccfe35c2c8e463cb835862086a6.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472389791747,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151629,
+      "started_ns": 1795178472369591108
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-939dfc80c507f5fd9df8c6eeb3e14441dc66d02647da4212ee4c7e4482f873d2.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472410047345,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151630,
+      "started_ns": 1795178472389848496
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-cfbbc8196b93d34698f2c08161675e84704ab31ea7838b976d6a95d88eb4779a.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472430301413,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151631,
+      "started_ns": 1795178472410103913
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-d9a10ce3db34668dfa63df06f5c8ed57fd7872212e9f2f0552c117724b736072.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472450552651,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151632,
+      "started_ns": 1795178472430357301
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-c8f8af4ed81c1153a0eb828698d7edcc15e005561cc40acad14f2c73e4b6e28d.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472470806939,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151633,
+      "started_ns": 1795178472450610409
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-b3724f9009b368891b50ea6616012330984650b43f6739257d36b6372341afd0.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472491065336,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151634,
+      "started_ns": 1795178472470863857
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-192b8b17dd90e9b0949239158fa494e02a2cc4767b86fdb58fc61c7fd5da77a8.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472511306604,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151635,
+      "started_ns": 1795178472491121555
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-9024a53f799bfdf48c9f12dcb3ca0aa93bf71cdf7ccdcc9e18fe71119a72ef35.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472531559612,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151636,
+      "started_ns": 1795178472511363903
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-6ce480861f10fda0035ec99d2ba52238b43dd3ad71dfde2d32a9057249467abb.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472551817580,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151637,
+      "started_ns": 1795178472531616841
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-supervisor-20261119-5cd1-r17.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472572076088,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151638,
+      "started_ns": 1795178472551874028
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261119-5cd1-r17.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472592334405,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151639,
+      "started_ns": 1795178472572134476
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261119-5cd1-r17-recovery.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472612594593,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151640,
+      "started_ns": 1795178472592396443
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-runtime-job-1a1efeed3cf-ffbe-683.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472632882820,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151641,
+      "started_ns": 1795178472612653261
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-runtime-job-1a1efcb1c52-ffbe-5ef.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472653228725,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151642,
+      "started_ns": 1795178472632979787
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-source-baseline-refresh-20261118-r3.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472673493142,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151643,
+      "started_ns": 1795178472653281493
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-source-baseline-controls-20261118-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472693749610,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151644,
+      "started_ns": 1795178472673553270
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cmake652-validation-20261118-appagent-r1.scope",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472713994068,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151645,
+      "started_ns": 1795178472693804908
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cmake652-validation-20261118-appagent-r2.scope",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472734235436,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151646,
+      "started_ns": 1795178472714047506
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cmake652-finalize-20261118-appagent-r3.scope",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472754486774,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151647,
+      "started_ns": 1795178472734294654
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-runtime-job-1a1f028e319-ffbe-722.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472774732692,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151648,
+      "started_ns": 1795178472754541182
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-runtime-job-1a1f0474cc0-ffbe-763.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472794980530,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151649,
+      "started_ns": 1795178472774785730
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261118-162b-r9.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472815236308,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151650,
+      "started_ns": 1795178472795035808
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261118-162b-r9-recovery.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472835520215,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151651,
+      "started_ns": 1795178472815293466
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-runtime-job-1a1f04256da-ffbe-754.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472856058064,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151652,
+      "started_ns": 1795178472835615892
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-runtime-job-1a1f0446d43-ffbe-75b.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472877269283,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151653,
+      "started_ns": 1795178472856391294
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-runtime-job-1a1f04697e7-ffbe-761.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472898348117,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151654,
+      "started_ns": 1795178472877528886
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-runtime-job-1a1f1f27008-ffbe-971.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472919493588,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151655,
+      "started_ns": 1795178472898605959
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-beike-aurora-compile-20261119-r2.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472940642839,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151656,
+      "started_ns": 1795178472919761480
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-kernel-native-exit-tu-20261119-r2.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472961809120,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151657,
+      "started_ns": 1795178472940902791
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-kernel-output-entry-read-20261119-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178472983009329,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151658,
+      "started_ns": 1795178472962077092
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-partof-inner-r3.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473004238728,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151659,
+      "started_ns": 1795178472983301461
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-partof-parent-r3.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473025349400,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151660,
+      "started_ns": 1795178473004501780
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-r3-case-1-build.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473046345596,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151661,
+      "started_ns": 1795178473025607143
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-r3-case-1-recover.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473066860786,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151662,
+      "started_ns": 1795178473046443983
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-r3-case-2-build.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473087947969,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151663,
+      "started_ns": 1795178473067103829
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-r3-case-2-recover.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473109107360,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151664,
+      "started_ns": 1795178473088203832
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-r3-case-3-build.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473130232132,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151665,
+      "started_ns": 1795178473109390862
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-r3-case-3-recover.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473151381013,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151666,
+      "started_ns": 1795178473130467535
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-r3-case-4-build.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473172372569,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151667,
+      "started_ns": 1795178473151597377
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-r3-case-4-recover.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473193348325,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151668,
+      "started_ns": 1795178473172636611
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-unknown-build-r3.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473213908974,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151669,
+      "started_ns": 1795178473193447162
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-unknown-parent-r3.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473235093664,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151670,
+      "started_ns": 1795178473214173776
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r11-lifecycle-unknown-recover-r3.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473256139158,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151671,
+      "started_ns": 1795178473235395185
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-real28-capex-compile-20261119-root-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473276410356,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151672,
+      "started_ns": 1795178473256200917
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-real28-capex-run-20261119-root-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473296661734,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151673,
+      "started_ns": 1795178473276467654
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-unified-current-packet-20261119-root-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473316913022,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151674,
+      "started_ns": 1795178473296716552
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-unified-current-packet-finalize-20261119-root-r2.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473337158530,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151675,
+      "started_ns": 1795178473316969290
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-unified-native-capex-asb-release-20261119-root-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473357411457,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151676,
+      "started_ns": 1795178473337216078
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-unified-native-capex-asb-validate-20261119-root-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473377660495,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151677,
+      "started_ns": 1795178473357466106
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-unified-native-capex-asb-validate-20261119-root-r2.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473397904893,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151678,
+      "started_ns": 1795178473377713634
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-unified-native-capex-asb-validate-20261119-root-r3.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473418151071,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151679,
+      "started_ns": 1795178473397957122
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-unified-native-capex-asb-validate-20261119-root-r4.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473438392140,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151680,
+      "started_ns": 1795178473418204730
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-unified-native-capex-asb-validate-20261119-root-r5.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473458633298,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151681,
+      "started_ns": 1795178473438444748
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-unified-native-capex-asb-validate-20261119-root-r6.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473478872746,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151682,
+      "started_ns": 1795178473458686666
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-vendor-r11-complete-preparation-20261119-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473499119744,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151683,
+      "started_ns": 1795178473478929534
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-vendor-r11-complete-preparation-20261119-r2.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473519367382,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151684,
+      "started_ns": 1795178473499172332
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-vendor-r11-lifecycle-controls-20261119-r2.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473539606530,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151685,
+      "started_ns": 1795178473519419660
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-vendor-r11-lifecycle-controls-20261119-r3.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473559841918,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151686,
+      "started_ns": 1795178473539659199
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-supervisor-20261119-162b-r11.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473580088706,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151687,
+      "started_ns": 1795178473559894347
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261119-162b-r11.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473600347274,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151688,
+      "started_ns": 1795178473580145615
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261119-162b-r11-recovery.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473620591002,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151689,
+      "started_ns": 1795178473600401472
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-vendor-r11-retirement-20261119-root-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473640828401,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151690,
+      "started_ns": 1795178473620643411
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-vendor-r12-plans-20261119-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473661084798,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151691,
+      "started_ns": 1795178473640882609
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-sameplan-source-repair-5cd1-20261119-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473681409324,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151692,
+      "started_ns": 1795178473661146066
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-sameplan-source-repair-5cd1-20261119-r2.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473701662692,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151693,
+      "started_ns": 1795178473681462952
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-supervisor-20261119-5cd1-r13.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473721904820,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151694,
+      "started_ns": 1795178473701716690
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261119-5cd1-r13.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473742154068,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151695,
+      "started_ns": 1795178473721961238
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261119-5cd1-r13-recovery.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473762416185,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151696,
+      "started_ns": 1795178473742213526
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-supervisor-20261119-162b-r12.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473782657663,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151697,
+      "started_ns": 1795178473762470944
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261119-162b-r12.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473802919351,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151698,
+      "started_ns": 1795178473782713422
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261119-162b-r12-recovery.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473823167799,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151699,
+      "started_ns": 1795178473802973429
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-vendor-r12-frozen-preparation-20261119-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473843426477,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151700,
+      "started_ns": 1795178473823228477
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-supervisor-20261119-5cd1-r14.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473863666625,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151701,
+      "started_ns": 1795178473843479765
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261119-5cd1-r14.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473883906053,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151702,
+      "started_ns": 1795178473863720323
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261119-5cd1-r14-recovery.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473904152511,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151703,
+      "started_ns": 1795178473883959501
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-supervisor-20261119-5cd1-r15.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473924404859,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151704,
+      "started_ns": 1795178473904213789
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "show",
+        "p4-cp3a-vendor-supervisor-20261119-5cd1-r15.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473944647487,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151705,
+      "started_ns": 1795178473924459777
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261119-5cd1-r15.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473964892675,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151706,
+      "started_ns": 1795178473944698885
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "show",
+        "p4-cp3a-vendor-20261119-5cd1-r15.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178473985143393,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151707,
+      "started_ns": 1795178473964947513
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261119-5cd1-r15-recovery.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474005399461,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151708,
+      "started_ns": 1795178473985194461
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "show",
+        "p4-cp3a-vendor-20261119-5cd1-r15-recovery.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474025641749,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151709,
+      "started_ns": 1795178474005451679
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-supervisor-20261119-5cd1-r16.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474045884607,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151710,
+      "started_ns": 1795178474025692117
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "show",
+        "p4-cp3a-vendor-supervisor-20261119-5cd1-r16.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474066129055,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151711,
+      "started_ns": 1795178474045938445
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261119-5cd1-r16.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474086376523,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151712,
+      "started_ns": 1795178474066179604
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "show",
+        "p4-cp3a-vendor-20261119-5cd1-r16.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474106624021,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151713,
+      "started_ns": 1795178474086428431
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261119-5cd1-r16-recovery.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474126871869,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151714,
+      "started_ns": 1795178474106675359
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "show",
+        "p4-cp3a-vendor-20261119-5cd1-r16-recovery.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474147116007,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151718,
+      "started_ns": 1795178474126926597
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r17-status-scope-controls-5cd1-20261119-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474167375814,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151719,
+      "started_ns": 1795178474147167695
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-supervisor-20261120-9907-r19.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474187617113,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151720,
+      "started_ns": 1795178474167431773
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261120-9907-r19.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474207872311,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151721,
+      "started_ns": 1795178474187677591
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261120-9907-r19-recovery.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474228122568,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151722,
+      "started_ns": 1795178474207930109
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-fe3051a5d87345e0f30abeebe7ba857f9442808e07b420a0f335eb6697863809.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474248374926,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151723,
+      "started_ns": 1795178474228179467
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-e476448f5267887628bf40a59719f72ea524776b527d4ca5123126bb4631a51f.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474268628774,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151724,
+      "started_ns": 1795178474248433124
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-b49b061f8d9a194fddb39ad4d6a59527b331e849c8a6377af541c95e58d3b539.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474288873952,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151725,
+      "started_ns": 1795178474268685612
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-50054211cfeebcac85dcabd0b09331e9eab8a7e763aa80fe945f3d016c608d61.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474309121220,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151726,
+      "started_ns": 1795178474288931860
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-18657557dbdd464ecb20daa0d2361fac9a3d4540b54c078b1c8e616854fa34ed.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474329450926,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151727,
+      "started_ns": 1795178474309179008
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-842d6fe9bb1e2c9152f9d9d262710424a80cc9e9a0ee2622c78869bae481980e.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474349699454,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151728,
+      "started_ns": 1795178474329508274
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-da4a21911ffafe721d0b97c0636608c73b9efd77cc44c1c6f68efe0f40f11a2b.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474369946291,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151729,
+      "started_ns": 1795178474349755612
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-faaf6b5db570803f0323b93e6c67d205f888c2be6043f931e0b61f9993d680e1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474390191959,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151730,
+      "started_ns": 1795178474370001270
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-2ec729e34622c4027feae082d32a4bc690c672a822d1a8110fa048536cba4e70.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474410444637,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151731,
+      "started_ns": 1795178474390261617
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-76cc73c00ec8ff2a21492e32bed78851c98e2c171d9258a084151a03a151b8fc.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474430696185,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151732,
+      "started_ns": 1795178474410502256
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-120a79ccc54de1cc4d1a337183371fcfeb29d5add3942ef243b0f057c753b7dc.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474450938663,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151733,
+      "started_ns": 1795178474430751893
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-0278679ea512f44ae45fec3f4a22d910365aa8375a753587de0adc1cf52a1889.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474471180781,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151734,
+      "started_ns": 1795178474450994572
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-b657f95b5181f269a65eba84742dd94019d97b3dbc6793d0b469018d769485e9.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474491428459,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151735,
+      "started_ns": 1795178474471241970
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-956d941948122cbcf464eb785926f72ad59edb06fbc946e23cb4fd7c77dac73e.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474511673727,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151736,
+      "started_ns": 1795178474491486308
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-supervisor-20261120-9907-r20.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474531912966,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151737,
+      "started_ns": 1795178474511732586
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-2906d42bdba8abfc78eebb6aa3abf1cf3f2420fe7a4939ddab62b99b147555b5.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474552193963,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151738,
+      "started_ns": 1795178474532007283
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-433a4b7bf1b84328abf4925c89e8a1a57c6d8e447f480523fe82fa00f9f1448d.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474572444100,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151739,
+      "started_ns": 1795178474552257351
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "hepta-terminal-dpty-6eb2228900859cc420b575cb9988e0cfa6620621ef7fdeb584726060a8856357.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474592691599,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151740,
+      "started_ns": 1795178474572505619
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-supervisor-20261120-9907-r21.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474612935087,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151741,
+      "started_ns": 1795178474592750987
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261120-9907-r21.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474633191614,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151742,
+      "started_ns": 1795178474612993385
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261120-9907-r21-recovery.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474653441102,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151743,
+      "started_ns": 1795178474633249223
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r22-apex-providers-git-fixture-20261120-3b9d-r1.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474673686890,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151744,
+      "started_ns": 1795178474653493951
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-r22-apex-providers-git-fixture-20261120-3b9d-r2.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795178474693989016,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 4151745,
+      "started_ns": 1795178474673746978
+    }
+  ],
+  "passed": false,
+  "phases": [],
+  "production_ready": false,
+  "runtime_qualified": false,
+  "schema": "pocket4-vendor-r22-supervisor-terminal-v1",
+  "serial_held_through_all_source_operations": false,
+  "serial_lock_acquired": true,
+  "started_ns": 1795178464870301503,
+  "worker": {
+    "bytes": 315362,
+    "f9": [
+      66306,
+      74456838,
+      33152,
+      1000,
+      1000,
+      1,
+      315362,
+      1795178256076008425,
+      1795178256076008425
+    ],
+    "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r22/source.py",
+    "sha256": "ab581ee8886af0ad6d64a0694bc8595387e43531e4e4bd8b1a49cd313cbc13cc"
+  }
+}

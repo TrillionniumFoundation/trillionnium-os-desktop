@@ -1,4 +1,45 @@
-# Pocket4 R22 vendor source and recovery continuation
+# Pocket4 R22: qualified inputs, actual prebuild memory failure
+
+The final 2,367-file producer and all 19 normal release binaries passed CI and
+were admitted on ai395. The frozen R22 supervisor was launched exactly once.
+It exited at its original fresh resource gate: 42,968,989,696 bytes available
+memory were below the required 45,097,156,608 bytes (42 GiB). Disk space passed.
+No build or recovery phase started. This is a recorded prebuild failure, not
+an Android build or production acceptance.
+
+## Actual preparation and launch
+
+- PR322 head `e69efd552c1732e8bb3bf92d191f95648b59e7d5`, run
+  `44732433154`: all nine jobs succeeded. The exact producer contains 2,367
+  files and 45,262,277 bytes, tree `fd0ef624e436d1eb5c8d2c4083335088811a6a42`.
+- The full artifact review validated the official 541-member evidence archive
+  and 20-member binary archive, the same complete CI report, 244 owned commands,
+  488 logs, 1,588 ordinary tests, nine recipe tests, 19 releases, three examples
+  and 20 rustdoc targets. Thirty ignored cases were not run.
+- The same 19 ELF bodies were extracted to a new staging directory. Nineteen
+  readelf inspections and nine direct host symbol-provider commands exited
+  zero and were reaped. The ABI result covers direct imports only; it does not
+  establish dynamic transitive loading or Android runtime compatibility.
+- Both normal source plan commands exited zero with full input bookends. The
+  source controller then consumed the actual release, ABI, plans, original R21
+  records, and the unchanged source manifest and original three lock inodes.
+- The first input freezer rejected a tuple/list representation difference
+  before creating its destination. The diagnostic checked every native F9
+  value for all 2,367 files and 1,811 directories and rejected a one-nanosecond
+  mutation. The narrow representation fix then froze the complete controller.
+  Both actual outcomes remain recorded.
+- The original R22 supervisor exited one after 9.986 seconds. It recorded 132
+  actual reaped status children, empty build/recovery phase and child lists,
+  and the sole original 42 GiB / 144 GiB resource-admission failure. Its source
+  manifest and three lock contents and identities remained unchanged.
+
+The actual worker, outer supervisor, contract, bundle, freeze receipts, complete
+CI report and review, direct ABI report, plan report, original terminal outcome,
+resource probe and serialized admission are included. The original source-only
+templates and their first publication are retained as history; they are not
+the frozen controller that actually ran.
+
+## Preserved source and recovery fix
 
 R21 reached the real Soong build and stopped because the selected sparse source
 did not include the test APEX definitions for IPsec and Permission. Its normal
@@ -6,7 +47,7 @@ recovery completed: all 726 outer children and 127 earlier status children were
 retired, the original source was restored, and the original native inputs were
 unchanged. The actual failed build remains recorded in PR318.
 
-This source-only successor admits that exact failed-and-recovered predecessor.
+This successor admits that exact failed-and-recovered predecessor.
 It keeps the old 652 project metadata and native inputs, adds the two complete
 test-provider cones, and accepts precisely the four tracked provider files
 proven absent in the original full 1,045,300-row source observation. It handles
@@ -33,43 +74,22 @@ path. It does not suppress Soong dependency checks.
   Its build, recovery, resource, source-lock and command-owner functions are
   unchanged. Five existing definitions change, as listed in the source review.
 
-## Exact next release admission
+## Continuation constraints
 
-The CI consumer requires the actual final GitHub head/run and complete source
-chain, 1,588 ordinary tests, nine recipe tests, 19 normal releases, three example
-builds, and 20 rustdoc targets. The original 30 ignored tests remain unrun.
-It requires all 244 owned commands, including the first original Git child
-whose `git rev-parse HEAD` output must equal the selected complete head.
-The five original pure admission helpers are byte-identical to their parent.
+R22 must not be relabeled as a completed build or reissued against its existing
+create-only control directory. A fresh successor must consume this actual
+failure, recheck live retirement and the unchanged source baseline, and pass
+the original fresh resource gate. The required 42 GiB available memory,
+144 GiB free disk, 120 GiB aggregate growth cap, 24 GiB build limit, original
+three source locks and fixed 1,200-second recovery window remain unchanged.
 
-The actual final CI report and 19 ELFs have not been consumed by this packet.
-The ABI and two normal read-only plan templates therefore have empty input
-pins. The controller has `R22_CONTRACT_PIN = None`; the outer bundle pin is
-`UNFROZEN_SOURCE_ONLY`. These templates reject before operational admission.
-They must not be installed or launched as the final controller.
+`MANIFEST.json` binds all packet members by size, SHA256 and Git blob. The exact
+raw operational files retain their original hashes; terminal observation
+wrappers omit only their duplicate hexadecimal output rendering. Binaries,
+download archives and signed download URLs are not included.
 
-After the selected complete CI succeeds, the root owner must retain its exact
-report and artifact hashes, independently verify all 19 binaries and their
-direct host symbol providers, run the two normal read-only source plans, freeze
-the new contract and bundle, and perform fresh original resource and retirement
-admission. The original requirements remain: 42 GiB available memory, 144 GiB
-free disk, 120 GiB aggregate growth, a 24 GiB vendor build, the original three
-source locks, and a fixed 1,200-second recovery window.
-
-## Review and reproduction
-
-`MANIFEST.json` binds every packet member by size, SHA256 and Git blob. The
-`r22-preparation` directory preserves the exact tested helpers; sibling input
-directories retain the original relative layout needed by their pure tests.
-From `r22-preparation`, `python test_apex_test_transition.py` and
-`python R22-TRANSITION-REVIEW.py` run the local controls. Host fixture and
-admission scripts name their actual frozen host inputs and are evidence, not
-portable commands to rerun against another source tree.
-
-No R22 Android build has started at this publication. No CURRENT state,
-installed kernel, installed Android, application data, or APK was changed.
-Production readiness and runtime qualification remain false, with 0/39
-required applications accepted. Original userdata, metadata, backups and
-account/signing state remain protected. This packet does not qualify the
-private-loop kernel subsystem, app business executors, or the Meituan signing
-migration.
+No CURRENT state, installed kernel, installed Android, application data or APK
+was changed. Runtime and production acceptance remain false: 0/39 required
+applications accepted. Original userdata, metadata, backups and account/signing
+state remain protected. Kernel private-loop implementation, actual app business
+executors, and Meituan data migration still require their own completion.

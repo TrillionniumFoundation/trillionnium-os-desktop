@@ -1,0 +1,200 @@
+[
+  {
+    "name": "r21-original",
+    "expected_exit_code": 1,
+    "observation": {
+      "archive_path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-1618aa2e0ba5842dbb2e4afdbe2af92bfeea50728dbfee0476bb3cd3f07ef41c/output.log",
+      "available_end": 7180,
+      "chunk_sha256": "298c8b71407905df18215146bd45cffe4865187830fa16d4103255212b7b71e3",
+      "host": "ai395",
+      "next_offset": 7180,
+      "offset": 0,
+      "output_complete": true,
+      "persistent_across_runtime_restart": true,
+      "session_id": "dpty-1618aa2e0ba5842dbb2e4afdbe2af92bfeea50728dbfee0476bb3cd3f07ef41c",
+      "status": {
+        "boot": "b1620269-aaef-43e7-bf47-bc6eb1c1a447",
+        "bytes_seen": 7180,
+        "bytes_stored": 7180,
+        "capture_error": null,
+        "closed": false,
+        "created_unix_ms": 1795169432056,
+        "exit_code": 1,
+        "output_complete": true,
+        "owner_pid": 3887909,
+        "pid": 3887910,
+        "state": "exited"
+      },
+      "storage": "target_archive",
+      "text": "Running as unit: p4-cp3a-vendor-supervisor-20261120-9907-r21.service; invocation ID: 5e2854176e1e4ed1955c2dde5d02095b\r\r\n{\"passed\": false, \"phases\": [{\"unit\": \"p4-cp3a-vendor-20261120-9907-r21.service\", \"mode\": \"build\", \"argv\": [\"/usr/bin/systemd-run\", \"--user\", \"--unit=p4-cp3a-vendor-20261120-9907-r21.service\", \"--wait\", \"--collect\", \"--pipe\", \"--service-type=exec\", \"--property=Description=Pocket4 R21 b3f08948c86d22b40589aac68bf136ea build\", \"--property=MemoryMax=25769803776\", \"--property=MemoryHigh=23622320128\", \"--property=MemorySwapMax=0\", \"--property=CPUQuota=800%\", \"--property=CPUAffinity=0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15\", \"--property=TasksMax=8192\", \"--property=RuntimeMaxSec=28800\", \"--property=TimeoutStopSec=30\", \"--property=KillMode=control-group\", \"--property=Nice=10\", \"--property=UMask=0077\", \"--property=Restart=no\", \"--property=Requisite=p4-cp3a-vendor-supervisor-20261120-9907-r21.service\", \"--property=After=p4-cp3a-vendor-supervisor-20261120-9907-r21.service\", \"--property=PartOf=p4-cp3a-vendor-supervisor-20261120-9907-r21.service\", \"/usr/bin/python3\", \"-I\", \"-B\", \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r21/source.py\", \"build\"], \"started_ns\": 1795169443001471096, \"operation_deadline\": 2224034.635305325, \"retirement_deadline\": 2224173.763443912, \"forced_service_retirement\": false, \"service_retired\": true, \"errors\": [], \"client_retirement_boundary\": {\"invocation_id\": \"d9c82f1887564fdcb02f6ec493fbe912\", \"held_cgroup_identity\": [29, 37856674], \"original_actor_observed_before_client_reap\": true, \"original_client_actual_reaped\": true, \"original_pidfd_held_until_reaped\": true, \"client_exit_code\": 1, \"client_forced\": false, \"phase_errors\": []}, \"late_start_unresolved\": false, \"client\": {\"name\": \"outer-build\", \"argv\": [\"/usr/bin/systemd-run\", \"--user\", \"--unit=p4-cp3a-vendor-20261120-9907-r21.service\", \"--wait\", \"--collect\", \"--pipe\", \"--service-type=exec\", \"--property=Description=Pocket4 R21 b3f08948c86d22b40589aac68bf136ea build\", \"--property=MemoryMax=25769803776\", \"--property=MemoryHigh=23622320128\", \"--property=MemorySwapMax=0\", \"--property=CPUQuota=800%\", \"--property=CPUAffinity=0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15\", \"--property=TasksMax=8192\", \"--property=RuntimeMaxSec=28800\", \"--property=TimeoutStopSec=30\", \"--property=KillMode=control-group\", \"--property=Nice=10\", \"--property=UMask=0077\", \"--property=Restart=no\", \"--property=Requisite=p4-cp3a-vendor-supervisor-20261120-9907-r21.service\", \"--property=After=p4-cp3a-vendor-supervisor-20261120-9907-r21.service\", \"--property=PartOf=p4-cp3a-vendor-supervisor-20261120-9907-r21.service\", \"/usr/bin/python3\", \"-I\", \"-B\", \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r21/source.py\", \"build\"], \"actual_reaped\": true, \"original_pidfd_held_until_reaped\": true, \"pid\": 3888165, \"started_ns\": 1795169443001666439, \"exit_code\": 1, \"forced\": false, \"waitid\": {\"pid\": 3888165, \"code\": 1, \"status\": 1}, \"finished_ns\": 1795171966490005592}, \"final_properties\": {\"Description\": \"p4-cp3a-vendor-20261120-9907-r21.service\", \"LoadState\": \"not-found\", \"ActiveState\": \"inactive\", \"SubState\": \"dead\", \"InvocationID\": \"\", \"MainPID\": \"0\", \"Result\": \"success\", \"ExecMainCode\": \"0\", \"ExecMainStatus\": \"0\", \"ControlGroup\": \"\"}, \"invocation_id\": \"d9c82f1887564fdcb02f6ec493fbe912\", \"held_cgroup_identity\": [29, 37856674], \"finished_ns\": 1795171966533630325, \"success\": false}, {\"unit\": \"p4-cp3a-vendor-20261120-9907-r21-recovery.service\", \"mode\": \"recover\", \"argv\": [\"/usr/bin/systemd-run\", \"--user\", \"--unit=p4-cp3a-vendor-20261120-9907-r21-recovery.service\", \"--wait\", \"--collect\", \"--pipe\", \"--service-type=exec\", \"--property=Description=Pocket4 R21 b3f08948c86d22b40589aac68bf136ea recover\", \"--property=MemoryMax=2147483648\", \"--property=MemoryHigh=1610612736\", \"--property=MemorySwapMax=0\", \"--property=CPUQuota=200%\", \"--property=CPUAffinity=0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15\", \"--property=TasksMax=512\", \"--property=RuntimeMaxSec=1260\", \"--property=TimeoutStopSec=30\", \"--property=KillMode=control-group\", \"--property=Nice=10\", \"--property=UMask=0077\", \"--property=Restart=no\", \"--property=Requisite=p4-cp3a-vendor-supervisor-20261120-9907-r21.service\", \"--property=After=p4-cp3a-vendor-supervisor-20261120-9907-r21.service\", \"--property=PartOf=p4-cp3a-vendor-supervisor-20261120-9907-r21.service\", \"/usr/bin/python3\", \"-I\", \"-B\", \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r21/source.py\", \"recover\"], \"started_ns\": 1795171966579750597, \"operation_deadline\": 2198988.21448882, \"retirement_deadline\": 2225483.763443912, \"forced_service_retirement\": false, \"service_retired\": true, \"errors\": [], \"original_queued_state_observed\": true, \"client_retirement_boundary\": {\"invocation_id\": \"d06a4376421d4ca19eda23359ecf722a\", \"held_cgroup_identity\": [29, 37888378], \"original_actor_observed_before_client_reap\": true, \"original_client_actual_reaped\": true, \"original_pidfd_held_until_reaped\": true, \"client_exit_code\": 0, \"client_forced\": false, \"phase_errors\": []}, \"late_start_unresolved\": false, \"client\": {\"name\": \"outer-recover\", \"argv\": [\"/usr/bin/systemd-run\", \"--user\", \"--unit=p4-cp3a-vendor-20261120-9907-r21-recovery.service\", \"--wait\", \"--collect\", \"--pipe\", \"--service-type=exec\", \"--property=Description=Pocket4 R21 b3f08948c86d22b40589aac68bf136ea recover\", \"--property=MemoryMax=2147483648\", \"--property=MemoryHigh=1610612736\", \"--property=MemorySwapMax=0\", \"--property=CPUQuota=200%\", \"--property=CPUAffinity=0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15\", \"--property=TasksMax=512\", \"--property=RuntimeMaxSec=1260\", \"--property=TimeoutStopSec=30\", \"--property=KillMode=control-group\", \"--property=Nice=10\", \"--property=UMask=0077\", \"--property=Restart=no\", \"--property=Requisite=p4-cp3a-vendor-supervisor-20261120-9907-r21.service\", \"--property=After=p4-cp3a-vendor-supervisor-20261120-9907-r21.service\", \"--property=PartOf=p4-cp3a-vendor-supervisor-20261120-9907-r21.service\", \"/usr/bin/python3\", \"-I\", \"-B\", \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r21/source.py\", \"recover\"], \"actual_reaped\": true, \"original_pidfd_held_until_reaped\": true, \"pid\": 3971289, \"started_ns\": 1795171966580738211, \"exit_code\": 0, \"forced\": false, \"waitid\": {\"pid\": 3971289, \"code\": 1, \"status\": 0}, \"finished_ns\": 1795173032673002639}, \"final_properties\": {\"Description\": \"p4-cp3a-vendor-20261120-9907-r21-recovery.service\", \"LoadState\": \"not-found\", \"ActiveState\": \"inactive\", \"SubState\": \"dead\", \"InvocationID\": \"\", \"MainPID\": \"0\", \"Result\": \"success\", \"ExecMainCode\": \"0\", \"ExecMainStatus\": \"0\", \"ControlGroup\": \"\"}, \"invocation_id\": \"d06a4376421d4ca19eda23359ecf722a\", \"held_cgroup_identity\": [29, 37888378], \"finished_ns\": 1795173032716646632, \"success\": true}], \"errors\": []}\r\n\u001b[0;94m          Finished with result:\u001b[0m \u001b[0;1;31mexit-code                    \u001b[0m\r\n\u001b[0;94mMain processes terminated with:\u001b[0m code=exited, status=1/FAILURE\r\n\u001b[0;94m               Service runtime:\u001b[0m 1h 734ms\r\n\u001b[0;94m             CPU time consumed:\u001b[0m 6.518s\r\n\u001b[0;94m                   Memory peak:\u001b[0m 384.7M (swap: 0B)\r\n",
+      "text_is_lossy": false,
+      "truncated_before_offset": false,
+      "utf8_pending": false
+    }
+  },
+  {
+    "name": "git-fixture-r1",
+    "expected_exit_code": 1,
+    "observation": {
+      "archive_path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-392533b957e2128192672eefb6ef98f459208f5c6585a5bf5316ce0b417b9d5d/output.log",
+      "available_end": 2681,
+      "chunk_sha256": "5eb2021239c0963d3d81352d8ba630ab6dcd92300a8b7f1d43574b731cb914d5",
+      "host": "ai395",
+      "next_offset": 2681,
+      "offset": 0,
+      "output_complete": true,
+      "persistent_across_runtime_restart": true,
+      "session_id": "dpty-392533b957e2128192672eefb6ef98f459208f5c6585a5bf5316ce0b417b9d5d",
+      "status": {
+        "boot": "b1620269-aaef-43e7-bf47-bc6eb1c1a447",
+        "bytes_seen": 2681,
+        "bytes_stored": 2681,
+        "capture_error": null,
+        "closed": false,
+        "created_unix_ms": 1795174884421,
+        "exit_code": 1,
+        "output_complete": true,
+        "owner_pid": 4040949,
+        "pid": 4040950,
+        "state": "exited"
+      },
+      "storage": "target_archive",
+      "text": "Running as unit: p4-r22-apex-providers-git-fixture-20261120-3b9d-r1.service; invocation ID: 21565bf40fdb41b8a31c98e8060bc613\r\r\n{\"cases\": 0, \"created_git_commands\": 1, \"all_retired\": false, \"fixture_removed\": true, \"errors\": []}\r\nTraceback (most recent call last):\r\n  File \u001b[35m\"/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r1/real_git_fixture.py\"\u001b[0m, line \u001b[35m106\u001b[0m, in \u001b[35m<module>\u001b[0m\r\n    \u001b[31mrun\u001b[0m\u001b[1;31m(['clone','--shared','--no-checkout','--',str(ORIGINAL/project['path']),str(destination)])\u001b[0m\r\n    \u001b[31m~~~\u001b[0m\u001b[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\u001b[0m\r\n  File \u001b[35m\"/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r1/real_git_fixture.py\"\u001b[0m, line \u001b[35m76\u001b[0m, in \u001b[35mrun\u001b[0m\r\n    assert \u001b[1;31mrow['exit_code']==0 and group_empty and not timed_out\u001b[0m, (row,err.decode(errors='replace')[:2000])\r\n           \u001b[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\u001b[0m\r\n\u001b[1;35mAssertionError\u001b[0m: \u001b[35m({'argv': ['/usr/bin/git', '-c', 'core.fsmonitor=false', 'clone', '--shared', '--no-checkout', '--', '/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/packages/modules/Permission', '/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r1/fixture-source/packages/modules/Permission'], 'pid': 4040953, 'exit_code': 128, 'actual_reaped': True, 'pidfd_held_until_reaped': True, 'owned_process_group_absent': True, 'timed_out': False, 'started_ns': 1795174884480509092, 'finished_ns': 1795174884528322781, 'stdout_bytes': 0, 'stdout_sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', 'stderr_bytes': 591, 'stderr_sha256': 'a4e52e258797a6c36a68b47cb838e2aefd90e8ba10ac3bfa1febd961b5557874'}, \"Cloning into '/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r1/fixture-source/packages/modules/Permission'...\\nremote: warning: lazy fetching disabled; some objects may not be available        \\nremote: fatal: could not fetch 46d2cfe4db9f28ee3fe68371a87dc8f9c1f1d553 from promisor remote        \\nerror: git upload-pack: git-pack-objects died with error.\\nremote: aborting due to possible repository corruption on the remote side.\\nfatal: early EOF\\nfatal: fetch-pack: invalid index-pack output\\nfatal: git upload-pack: aborting due to possible repository corruption on the remote side.\\n\")\u001b[0m\r\n\u001b[0;94m          Finished with result:\u001b[0m \u001b[0;1;31mexit-code                    \u001b[0m\r\n\u001b[0;94mMain processes terminated with:\u001b[0m code=exited, status=1/FAILURE\r\n\u001b[0;94m               Service runtime:\u001b[0m 167ms\r\n\u001b[0;94m             CPU time consumed:\u001b[0m 91ms\r\n\u001b[0;94m                   Memory peak:\u001b[0m 35.2M (swap: 0B)\r\n",
+      "text_is_lossy": false,
+      "truncated_before_offset": false,
+      "utf8_pending": false
+    }
+  },
+  {
+    "name": "git-fixture-r2",
+    "expected_exit_code": 0,
+    "observation": {
+      "archive_path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-2d41f63aa17b701d3ead838f872e8f2be268158fe7318b3b90ee576673ff7abc/output.log",
+      "available_end": 794,
+      "chunk_sha256": "cce8251827add0f685e9edd449d4084d506ea362f4e411b6d0b5f556ffebf03a",
+      "host": "ai395",
+      "next_offset": 794,
+      "offset": 0,
+      "output_complete": true,
+      "persistent_across_runtime_restart": true,
+      "session_id": "dpty-2d41f63aa17b701d3ead838f872e8f2be268158fe7318b3b90ee576673ff7abc",
+      "status": {
+        "boot": "b1620269-aaef-43e7-bf47-bc6eb1c1a447",
+        "bytes_seen": 794,
+        "bytes_stored": 794,
+        "capture_error": null,
+        "closed": false,
+        "created_unix_ms": 1795174974264,
+        "exit_code": 0,
+        "output_complete": true,
+        "owner_pid": 4045724,
+        "pid": 4045725,
+        "state": "exited"
+      },
+      "storage": "target_archive",
+      "text": "Running as unit: p4-r22-apex-providers-git-fixture-20261120-3b9d-r2.service; invocation ID: f7d1821a80bd4c8ab6ef950ed9ef9a7c\r\r\n{\"case\": \"both-old\", \"provider_present\": 0}\r\n{\"case\": \"first-new-second-old\", \"provider_present\": 2}\r\n{\"case\": \"both-new\", \"provider_present\": 4}\r\n{\"case\": \"both-new-one-original-skip-absent\", \"provider_present\": 3}\r\n{\"fixture_passed\": true, \"cases\": 4, \"created_git_commands\": 12, \"all_retired\": true, \"fixture_removed\": true, \"errors\": []}\r\n\u001b[0;94m          Finished with result:\u001b[0m \u001b[0;1;32msuccess                      \u001b[0m\r\n\u001b[0;94mMain processes terminated with:\u001b[0m code=exited, status=0/SUCCESS\r\n\u001b[0;94m               Service runtime:\u001b[0m 6.045s\r\n\u001b[0;94m             CPU time consumed:\u001b[0m 5.557s\r\n\u001b[0;94m                   Memory peak:\u001b[0m 93.6M (swap: 0B)\r\n",
+      "text_is_lossy": false,
+      "truncated_before_offset": false,
+      "utf8_pending": false
+    }
+  },
+  {
+    "name": "admission-r2",
+    "expected_exit_code": 0,
+    "observation": {
+      "archive_path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-123dfd532550412134cb263fdee45f3ff1f75cf5f14c6806e1cc4e78a01afa99/output.log",
+      "available_end": 95,
+      "chunk_sha256": "6bb38ce3c52a8738ee58e922e41b599b8226fa2134c2a38e4725ab0cf042985c",
+      "host": "ai395",
+      "next_offset": 95,
+      "offset": 0,
+      "output_complete": true,
+      "persistent_across_runtime_restart": true,
+      "session_id": "dpty-123dfd532550412134cb263fdee45f3ff1f75cf5f14c6806e1cc4e78a01afa99",
+      "status": {
+        "boot": "b1620269-aaef-43e7-bf47-bc6eb1c1a447",
+        "bytes_seen": 95,
+        "bytes_stored": 95,
+        "capture_error": null,
+        "closed": false,
+        "created_unix_ms": 1795176328239,
+        "exit_code": 0,
+        "output_complete": true,
+        "owner_pid": 4086139,
+        "pid": 4086140,
+        "state": "exited"
+      },
+      "storage": "target_archive",
+      "text": "{\"passed\": true, \"negative_cases\": 9, \"source_mutations\": 0, \"actual_new_ci_consumed\": false}\r\n",
+      "text_is_lossy": false,
+      "truncated_before_offset": false,
+      "utf8_pending": false
+    }
+  },
+  {
+    "name": "source-r1",
+    "expected_exit_code": 1,
+    "observation": {
+      "archive_path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-08d94bd376a44a4472495f94999df88a57fbd42cc54e541ae54a6aa28c478ca3/output.log",
+      "available_end": 468,
+      "chunk_sha256": "3b7fdd8b8c846df257312e9a21a993162f5c3a05e14257d01d3798f5dd234071",
+      "host": "ai395",
+      "next_offset": 468,
+      "offset": 0,
+      "output_complete": true,
+      "persistent_across_runtime_restart": true,
+      "session_id": "dpty-08d94bd376a44a4472495f94999df88a57fbd42cc54e541ae54a6aa28c478ca3",
+      "status": {
+        "boot": "b1620269-aaef-43e7-bf47-bc6eb1c1a447",
+        "bytes_seen": 468,
+        "bytes_stored": 468,
+        "capture_error": null,
+        "closed": false,
+        "created_unix_ms": 1795175836994,
+        "exit_code": 1,
+        "output_complete": true,
+        "owner_pid": 4074607,
+        "pid": 4074608,
+        "state": "exited"
+      },
+      "storage": "target_archive",
+      "text": "Traceback (most recent call last):\r\n  File \u001b[35m\"<string>\"\u001b[0m, line \u001b[35m8\u001b[0m, in \u001b[35m<module>\u001b[0m\r\n    \u001b[31mexec\u001b[0m\u001b[1;31m(compile(body,name,'exec'),{'__name__':'__main__','__file__':name})\u001b[0m\r\n    \u001b[31m~~~~\u001b[0m\u001b[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\u001b[0m\r\n  File \u001b[35m\"/home/qq/work/current2367-cli-preparation-20261120-3b9d-r1/prepare_current_source.py\"\u001b[0m, line \u001b[35m69\u001b[0m, in \u001b[35m<module>\u001b[0m\r\n\u001b[1;35mAssertionError\u001b[0m\r\n",
+      "text_is_lossy": false,
+      "truncated_before_offset": false,
+      "utf8_pending": false
+    }
+  },
+  {
+    "name": "source-r2",
+    "expected_exit_code": 0,
+    "observation": {
+      "archive_path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-8775bd006e35859b91fb974cd9e773ac926aa5cb4119bc603d17242b599557fa/output.log",
+      "available_end": 525,
+      "chunk_sha256": "0486972221fb5a22c52a73dd3fb54cbbb3b952d8cef51b4478fff67eeacbc259",
+      "host": "ai395",
+      "next_offset": 525,
+      "offset": 0,
+      "output_complete": true,
+      "persistent_across_runtime_restart": true,
+      "session_id": "dpty-8775bd006e35859b91fb974cd9e773ac926aa5cb4119bc603d17242b599557fa",
+      "status": {
+        "boot": "b1620269-aaef-43e7-bf47-bc6eb1c1a447",
+        "bytes_seen": 525,
+        "bytes_stored": 525,
+        "capture_error": null,
+        "closed": false,
+        "created_unix_ms": 1795176064127,
+        "exit_code": 0,
+        "output_complete": true,
+        "owner_pid": 4080451,
+        "pid": 4080452,
+        "state": "exited"
+      },
+      "storage": "target_archive",
+      "text": "{\"source\": {\"tree\": \"fd0ef624e436d1eb5c8d2c4083335088811a6a42\", \"files\": 2367, \"bytes\": 45262277}, \"freeze\": {\"path\": \"/home/qq/work/current2367-cli-preparation-20261120-3b9d-r1/SOURCE_FREEZE.json\", \"bytes\": 2243323, \"sha256\": \"2663841a3ff4d3b646bfbb67e4a54189ce23e47b364f08b32abb4efbf9dacba8\", \"identity\": [66306, 53350559, 33152, 1000, 1000, 1, 2243323, 1795176066804321749, 1795176066804321749]}, \"all_original_source_unchanged\": true, \"current_ci_consumed\": false, \"runtime_qualified\": false, \"production_ready\": false}\r\n",
+      "text_is_lossy": false,
+      "truncated_before_offset": false,
+      "utf8_pending": false
+    }
+  }
+]
