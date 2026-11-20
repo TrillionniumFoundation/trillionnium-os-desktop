@@ -16,9 +16,9 @@ HERE = Path(__file__).resolve().parent
 PACKET = 'firefox-public-executor-20261119'
 PREFLIGHT = 'required39-business-preflight-20261119-r2'
 FIXED = {
-    'FILES.sha256': (3975, 'c5858d0f55889a6ba58857754337a399784471f380dbc682029132915d78787e'),
-    'MANIFEST.json': (9509, '6226f1a8891692f51bfd03df874d80b09bbc7ece5027f736b7ae157cbb0cca55'),
-    'CURRENT-SOURCE-SUCCESSOR.json': (4373, 'ac4430ee17464e12c3318065b4173042cf095742d74a7ad0f670c58b0e83a34b'),
+    'FILES.sha256': (4349, 'f03ce060a8e537fc7adb21a091d5e34a797e0563a1e5277c16ce2e1f138bc838'),
+    'MANIFEST.json': (11077, 'e3bc041d91b088e80a7be8e5e2fede85938b7caadf1a194ba97ff86d1fbb52b5'),
+    'CURRENT-SOURCE-SUCCESSOR.json': (5393, 'cec6487c9d3d308ded9ef6703d9ddbff14224564a6057f6d4a0451cfe364a6b6'),
 }
 METADATA = {
     'business_plan_r2': 'PLAN.json',
@@ -78,8 +78,8 @@ def main():
         digest, name = line.split('  ', 1)
         need(name not in inventory and len(digest) == 64, 'unique exact inventory member')
         inventory[name] = digest
-    need(len(inventory) == 41 and set(inventory) == {row['path'] for row in manifest['files']} | {'MANIFEST.json'},
-         'complete 42-file response-validation successor packet')
+    need(len(inventory) == 45 and set(inventory) == {row['path'] for row in manifest['files']} | {'MANIFEST.json'},
+         'complete 46-file owner-mapping successor packet')
     bodies = {}
     expected = {row['path']: row for row in manifest['files']}
     for name, digest in inventory.items():
@@ -124,8 +124,8 @@ def main():
          and all(current[key] is False for key in ('installed', 'execution_ready', 'runtime_qualified', 'business_qualified',
              'whole_app_business_accepted', 'production_ready', 'finite_public_case_passed', 'all39_runtime_accepted', 'all39_latest_qualified')),
          'source publication cannot qualify execution')
-    print(json.dumps({'state': 'PASS_FIREFOX_FROZEN_SOURCE_ONLY', 'packet_files': 42, 'external_metadata_files': 4,
-        'production_entry_held': True, 'historical_controls': 32, 'current_host_controls': 39,
+    print(json.dumps({'state': 'PASS_FIREFOX_FROZEN_SOURCE_ONLY', 'packet_files': 46, 'external_metadata_files': 4,
+        'production_entry_held': True, 'historical_controls': 32, 'current_host_controls': 64,
         'Android_calls': 0, 'runtime_qualified': False, 'production_ready': False}, sort_keys=True))
 
 

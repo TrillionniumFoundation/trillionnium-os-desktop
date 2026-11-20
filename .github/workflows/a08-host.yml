@@ -162,7 +162,7 @@ jobs:
           sha256sum --check --strict FILES.sha256
           python3 -I -B ../verify_firefox_source.py \
             2>&1 | tee "$RUNNER_TEMP/a08/firefox-source-binding.log"
-          python3 -B -m unittest -v test_firefox.py \
+          python3 -B -m unittest -v test_firefox.py test_mapped_owner.py \
             2>&1 | tee "$RUNNER_TEMP/a08/firefox-host-controls.log"
       - name: Verify pinned APK candidate and native input controls
         shell: bash
