@@ -1,0 +1,75 @@
+{
+  "HISTORY_shape": "same tuple shape as original R22 helper: name -> (relative path, whole bytes, SHA256, original F9)",
+  "actual_positive_cases": 1,
+  "all_original_thresholds_unchanged": true,
+  "api": "validate_r23_prebuild(inputs, baseline)",
+  "build_started": false,
+  "files": [
+    {
+      "bytes": 20612,
+      "path": "/workspace/scratch/3b9ddccd362c/r24-preparation/r23_prebuild_admission.py",
+      "sha256": "fe5511a7f22f17769c23cb8dbc18b31665556e358eb676575dfeac53c6ae0fa6"
+    },
+    {
+      "bytes": 12403,
+      "path": "/workspace/scratch/3b9ddccd362c/r24-preparation/test_r23_prebuild_actual.py",
+      "sha256": "52aab99fcb781b6466561401157b97bf021d5194991205bad825182257e8374b"
+    },
+    {
+      "bytes": 32987,
+      "path": "/workspace/scratch/3b9ddccd362c/r24-preparation/R23-PREBUILD-ACTUAL-CONTROLS.json",
+      "sha256": "c6511162ca1200f8523075c5706861e8bffcffcbe98138535082daaad95c1927"
+    },
+    {
+      "bytes": 4629,
+      "path": "/workspace/scratch/3b9ddccd362c/r24-preparation/R23-PREBUILD-HELPER-INPUTS.json",
+      "sha256": "419b11a33e2ddd9bdc43cb16c9d44e442602e72586bbdce485cbfa21ea5c9f73"
+    },
+    {
+      "bytes": 1785,
+      "path": "/workspace/scratch/3b9ddccd362c/r24-preparation/R23-ACTUAL-FILE-INFO.json",
+      "sha256": "f803b68c54f44107ce1a0214f3c344904e8c12ea807f721412d86b21ec47616a"
+    },
+    {
+      "bytes": 319,
+      "path": "/workspace/scratch/3b9ddccd362c/r24-preparation/originals/outer-resource-probe.json",
+      "sha256": "625b79af7389ca75e6c5a427dc5a94fbfd32e179891fd2c1e54d2fbb1530e1c7"
+    }
+  ],
+  "input_keys": [
+    "worker",
+    "outer",
+    "contract",
+    "bundle",
+    "terminal",
+    "resource",
+    "serialized",
+    "r22_helper",
+    "r22",
+    "preparation_outputs"
+  ],
+  "input_shapes": {
+    "baseline": "Actual original manifest and three lock references/bodies read with unchanged original host bookends.",
+    "original_seven": "Each {reference: exact original FileRef, raw: complete bytes}.",
+    "preparation_outputs": "Exactly the four original R23 preparation archive bodies keyed by actual session id.",
+    "r22": "Complete original validate_r22_prebuild input map, including all seven R22 bodies and original thirteen preparation_outputs.",
+    "r22_helper": "{reference: R22_HELPER_REF, raw: complete original R22 helper bytes}; fixed whole hash is verified before compiling/executing this previously reviewed pure module."
+  },
+  "negative_cases": 33,
+  "nested_R22_status_children": 132,
+  "new_host_execution": false,
+  "preserved_actual_status_children": 135,
+  "production_ready": false,
+  "pure_control_scope": "Local replay of complete actual captured original bodies; no new host process, live lock, resource admission or runtime qualification.",
+  "required_caller_work": [
+    "Read actual host originals with full body and F9 bookends; pure code cannot manufacture custody.",
+    "Retain R22 and R23 historical source/controller/output records and every actual PINS entry.",
+    "Prove all never-materialized predecessor producer/output/temp/LOCK paths absent under original held parent authority.",
+    "Freshly retire original R23 units plus later root resource-view/stability clients and retain original shared 150s admission deadline.",
+    "The final original fresh42GiB/144GiB gate and 24GiB vendor/1200s recovery/three source locks remain mandatory."
+  ],
+  "runtime_qualified": false,
+  "schema": "p4-r24-r23-prebuild-helper-handoff-v1",
+  "source_mutations": 0,
+  "state": "ACTUAL_ORIGINAL_BODY_CONSUMPTION_AND_33_NEGATIVE_CONTROLS_PASSED"
+}
