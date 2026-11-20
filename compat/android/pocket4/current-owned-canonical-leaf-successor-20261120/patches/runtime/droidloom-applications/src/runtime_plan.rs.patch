@@ -1,0 +1,18 @@
+--- a/runtime/droidloom-applications/src/runtime_plan.rs
++++ b/runtime/droidloom-applications/src/runtime_plan.rs
+@@ -19,7 +19,15 @@
+ mod leaf_release;
+ #[path = "leaf_adoption.rs"]
+ mod leaf_adoption;
++#[path = "leaf_unit_entry.rs"]
++mod leaf_unit_entry;
+ use leaf_routes::{LeafObservation, LeafPlan};
++
++/// Execute only a root content-addressed single-app plan in its fixed installed
++/// unit. This preserves the original dispatcher and never grants acceptance.
++pub fn run_owned_leaf_plan(profile: &str, expected_sha256: &str) -> Result<(), String> {
++    leaf_unit_entry::run(profile, expected_sha256)
++}
+ 
+ /// Publish one explicitly pinned root CI/source release pairing under the
+ /// original owner locks. This installs nothing and grants no Android success.

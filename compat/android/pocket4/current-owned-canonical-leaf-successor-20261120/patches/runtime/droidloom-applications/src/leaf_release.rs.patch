@@ -1,0 +1,32 @@
+--- a/runtime/droidloom-applications/src/leaf_release.rs
++++ b/runtime/droidloom-applications/src/leaf_release.rs
+@@ -304,6 +304,12 @@
+ }
+ 
+ impl NativeRelease {
++    pub(super) fn cover_window(&self, seconds: u64) -> Result<(),String> {
++        self.guard()?;
++        require(self.manifest.owner_expires_unix_seconds>now()?.saturating_add(seconds),
++            "original owner window cannot cover the complete owned controller and retirement")
++    }
++
+     pub(super) fn bind_current(selection:&FilePin,catalog:&str,preparation:&FilePin,entry:&FilePin) -> Result<Self,String> {
+         let _locks=NativeApplicationSourceLocks::acquire().map_err(|e|e.to_string())?;
+         let mut discovery=Inputs::new();
+@@ -331,13 +337,13 @@
+         let before=json(&inputs.read(&manifest.before_current_copy.path,Some(&manifest.before_current_copy),2*1024*1024,true,false)?)?;
+         require(before.get("foreground_owner")==Some(&owner),"preserved original CURRENT owner differs")?;
+         forward_relation(&before,&current,reference)?;
+-        inputs.read(&selection.path,Some(selection),1024*1024,false,false)?;
++        inputs.read(&selection.path,Some(selection),1024*1024,true,false)?;
+         let catalog_pin=FilePin {path:PathBuf::from(format!("{ROOT}/catalogs/{}.json",hex::encode(Sha256::digest(catalog)))),
+             bytes:catalog.len() as u64,sha256:hex::encode(Sha256::digest(catalog))};
+         require(manifest.catalog==catalog_pin,"root release catalog differs from independently compiled source anchor")?;
+         require(inputs.read(&catalog_pin.path,Some(&catalog_pin),65536,true,false)?==catalog.as_bytes(),"compiled catalog body differs")?;
+-        inputs.read(&preparation.path,Some(preparation),1024*1024,false,false)?;
+-        inputs.read(&entry.path,Some(entry),262144,false,false)?;
++        inputs.read(&preparation.path,Some(preparation),1024*1024,true,false)?;
++        inputs.read(&entry.path,Some(entry),262144,true,false)?;
+         inputs.read(Path::new(CLI),Some(&manifest.binary),64*1024*1024,true,true)?;
+         // This deliberate kernel magic-link open captures the running image's
+         // actual OFD, not argv[0], current_exe() or a pathname-only assertion.

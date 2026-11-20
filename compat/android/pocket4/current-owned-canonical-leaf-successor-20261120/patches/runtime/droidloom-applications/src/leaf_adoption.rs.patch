@@ -1,0 +1,20 @@
+--- a/runtime/droidloom-applications/src/leaf_adoption.rs
++++ b/runtime/droidloom-applications/src/leaf_adoption.rs
+@@ -19,7 +19,7 @@
+ use super::{FilePin, leaf_release, leaf_routes};
+ use leaf_release::{CLI, CURRENT, Inputs, Manifest, Preimage, ROOT, body, f9};
+ 
+-const EXPECTED_ORDINARY_TESTS:u64=1588;
++const EXPECTED_ORDINARY_TESTS:u64=1604;
+ const EXPECTED_RELEASES:[&str;19]=[
+     "droidloom-applications",
+     "droidloom-classpath-wrapper",
+@@ -131,7 +131,7 @@
+     require(intent.selection==selection && intent.binary.path.to_str()==Some(CLI)
+         && intent.expected_current.path.to_str()==Some(CURRENT),"adoption intent must retain compiled source selection and canonical files")?;
+     leaf_routes::validate_selection(&selection)?;
+-    inputs.read(&selection.path,Some(&selection),1024*1024,false,false)?;
++    inputs.read(&selection.path,Some(&selection),1024*1024,true,false)?;
+     let before_pin=FilePin {path:CURRENT.into(),bytes:intent.expected_current.bytes,sha256:intent.expected_current.sha256.clone()};
+     let before_raw=inputs.read(Path::new(CURRENT),Some(&before_pin),2*1024*1024,false,false)?;
+     require(inputs.identity(Path::new(CURRENT))?==intent.expected_current.f9,"actual complete CURRENT F9 differs from externally reviewed preimage")?;
