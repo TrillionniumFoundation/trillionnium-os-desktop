@@ -1,0 +1,566 @@
+{
+  "schema": "p4-private-loop-k0a-exact-source-observation-v1",
+  "host": "ai395",
+  "job_id": "1a1f8e946ea-ffbe-1874",
+  "exit_code": 0,
+  "output_complete": true,
+  "output_durable": true,
+  "full_bodies_retained_locally": false,
+  "observations": [
+    {
+      "path": "/home/qq/work/p4-kernel-6.18.64-cp3a-20261118-r1/source/linux-6.18.64/include/linux/sched.h",
+      "bytes": 71461,
+      "sha256": "77985ca9b866d5d7d25b68d6c4c69ae6102a4e982928479f025298427addc727",
+      "lines": [
+        {
+          "line": 1098,
+          "text": ""
+        },
+        {
+          "line": 1099,
+          "text": "\tstruct completion\t\t*vfork_done;"
+        },
+        {
+          "line": 1100,
+          "text": ""
+        },
+        {
+          "line": 1101,
+          "text": "\t/* CLONE_CHILD_SETTID: */"
+        },
+        {
+          "line": 1102,
+          "text": "\tint __user\t\t\t*set_child_tid;"
+        },
+        {
+          "line": 1103,
+          "text": ""
+        },
+        {
+          "line": 1104,
+          "text": "\t/* CLONE_CHILD_CLEARTID: */"
+        },
+        {
+          "line": 1105,
+          "text": "\tint __user\t\t\t*clear_child_tid;"
+        },
+        {
+          "line": 1106,
+          "text": ""
+        },
+        {
+          "line": 1107,
+          "text": "\t/* PF_KTHREAD | PF_IO_WORKER */"
+        },
+        {
+          "line": 1108,
+          "text": "\tvoid\t\t\t\t*worker_private;"
+        },
+        {
+          "line": 1109,
+          "text": ""
+        },
+        {
+          "line": 1110,
+          "text": "\tu64\t\t\t\tutime;"
+        },
+        {
+          "line": 1111,
+          "text": "\tu64\t\t\t\tstime;"
+        },
+        {
+          "line": 1112,
+          "text": "#ifdef CONFIG_ARCH_HAS_SCALED_CPUTIME"
+        },
+        {
+          "line": 1113,
+          "text": "\tu64\t\t\t\tutimescaled;"
+        },
+        {
+          "line": 1114,
+          "text": "\tu64\t\t\t\tstimescaled;"
+        },
+        {
+          "line": 1115,
+          "text": "#endif"
+        },
+        {
+          "line": 1116,
+          "text": "\tu64\t\t\t\tgtime;"
+        },
+        {
+          "line": 1756,
+          "text": "#define PF_USED_MATH\t\t0x00002000\t/* If unset the fpu must be initialized before use */"
+        },
+        {
+          "line": 1757,
+          "text": "#define PF_USER_WORKER\t\t0x00004000\t/* Kernel thread cloned from userspace thread */"
+        },
+        {
+          "line": 1758,
+          "text": "#define PF_NOFREEZE\t\t0x00008000\t/* This thread should not be frozen */"
+        },
+        {
+          "line": 1759,
+          "text": "#define PF_KCOMPACTD\t\t0x00010000\t/* I am kcompactd */"
+        },
+        {
+          "line": 1760,
+          "text": "#define PF_KSWAPD\t\t0x00020000\t/* I am kswapd */"
+        },
+        {
+          "line": 1761,
+          "text": "#define PF_MEMALLOC_NOFS\t0x00040000\t/* All allocations inherit GFP_NOFS. See memalloc_nfs_save() */"
+        },
+        {
+          "line": 1762,
+          "text": "#define PF_MEMALLOC_NOIO\t0x00080000\t/* All allocations inherit GFP_NOIO. See memalloc_noio_save() */"
+        },
+        {
+          "line": 1763,
+          "text": "#define PF_LOCAL_THROTTLE\t0x00100000\t/* Throttle writes only against the bdi I write to,"
+        },
+        {
+          "line": 1764,
+          "text": "\t\t\t\t\t\t * I am cleaning dirty pages from some other bdi. */"
+        },
+        {
+          "line": 1765,
+          "text": "#define PF_KTHREAD\t\t0x00200000\t/* I am a kernel thread */"
+        },
+        {
+          "line": 1766,
+          "text": "#define PF_RANDOMIZE\t\t0x00400000\t/* Randomize virtual address space */"
+        },
+        {
+          "line": 1767,
+          "text": "#define PF_NO_NOTIFY_SIGNAL\t0x00800000\t/* see no_notify_signal_save() */"
+        },
+        {
+          "line": 1768,
+          "text": "#define PF__HOLE__01000000\t0x01000000"
+        },
+        {
+          "line": 1769,
+          "text": "#define PF__HOLE__02000000\t0x02000000"
+        },
+        {
+          "line": 1770,
+          "text": "#define PF_NO_SETAFFINITY\t0x04000000\t/* Userland is not allowed to meddle with cpus_mask */"
+        },
+        {
+          "line": 1771,
+          "text": "#define PF_MCE_EARLY\t\t0x08000000      /* Early kill for mce process policy */"
+        },
+        {
+          "line": 1772,
+          "text": "#define PF_MEMALLOC_PIN\t\t0x10000000\t/* Allocations constrained to zones which allow long term pinning."
+        },
+        {
+          "line": 1773,
+          "text": "\t\t\t\t\t\t * See memalloc_pin_save() */"
+        },
+        {
+          "line": 1774,
+          "text": "#define PF_BLOCK_TS\t\t0x20000000\t/* plug has ts that needs updating */"
+        },
+        {
+          "line": 1805,
+          "text": ""
+        },
+        {
+          "line": 1806,
+          "text": "static __always_inline bool is_percpu_thread(void)"
+        },
+        {
+          "line": 1807,
+          "text": "{"
+        },
+        {
+          "line": 1808,
+          "text": "\treturn (current->flags & PF_NO_SETAFFINITY) &&"
+        },
+        {
+          "line": 1809,
+          "text": "\t\t(current->nr_cpus_allowed  == 1);"
+        },
+        {
+          "line": 1810,
+          "text": "}"
+        },
+        {
+          "line": 1811,
+          "text": ""
+        },
+        {
+          "line": 1812,
+          "text": "static __always_inline bool is_user_task(struct task_struct *task)"
+        },
+        {
+          "line": 1813,
+          "text": "{"
+        },
+        {
+          "line": 1814,
+          "text": "\treturn task->mm && !(task->flags & (PF_KTHREAD | PF_USER_WORKER));"
+        },
+        {
+          "line": 1815,
+          "text": "}"
+        },
+        {
+          "line": 1816,
+          "text": ""
+        },
+        {
+          "line": 1817,
+          "text": "/* Per-process atomic flags. */"
+        },
+        {
+          "line": 1818,
+          "text": "#define PFA_NO_NEW_PRIVS\t\t0\t/* May not gain new privileges. */"
+        },
+        {
+          "line": 1819,
+          "text": "#define PFA_SPREAD_PAGE\t\t\t1\t/* Spread page cache over cpuset */"
+        },
+        {
+          "line": 1820,
+          "text": "#define PFA_SPREAD_SLAB\t\t\t2\t/* Spread some slab caches over cpuset */"
+        },
+        {
+          "line": 1821,
+          "text": "#define PFA_SPEC_SSB_DISABLE\t\t3\t/* Speculative Store Bypass disabled */"
+        },
+        {
+          "line": 1822,
+          "text": "#define PFA_SPEC_SSB_FORCE_DISABLE\t4\t/* Speculative Store Bypass force disabled*/"
+        },
+        {
+          "line": 1823,
+          "text": "#define PFA_SPEC_IB_DISABLE\t\t5\t/* Indirect branch speculation restricted */"
+        }
+      ]
+    },
+    {
+      "path": "/home/qq/work/p4-kernel-6.18.64-cp3a-20261118-r1/source/linux-6.18.64/fs/exec.c",
+      "bytes": 52354,
+      "sha256": "8561930ae4ec56ef3adc173bde1dba2e5c43bc9055cf779556f3ad4d160369bb",
+      "lines": [
+        {
+          "line": 1544,
+          "text": "\tread_seqlock_excl(&p->fs->seq);"
+        },
+        {
+          "line": 1545,
+          "text": "\trcu_read_lock();"
+        },
+        {
+          "line": 1546,
+          "text": "\tfor_other_threads(p, t) {"
+        },
+        {
+          "line": 1547,
+          "text": "\t\tif (t->fs == p->fs)"
+        },
+        {
+          "line": 1548,
+          "text": "\t\t\tn_fs++;"
+        },
+        {
+          "line": 1549,
+          "text": "\t}"
+        },
+        {
+          "line": 1550,
+          "text": "\trcu_read_unlock();"
+        },
+        {
+          "line": 1551,
+          "text": ""
+        },
+        {
+          "line": 1552,
+          "text": "\t/* \"users\" and \"in_exec\" locked for copy_fs() */"
+        },
+        {
+          "line": 1553,
+          "text": "\tif (p->fs->users > n_fs)"
+        },
+        {
+          "line": 1554,
+          "text": "\t\tbprm->unsafe |= LSM_UNSAFE_SHARE;"
+        },
+        {
+          "line": 1555,
+          "text": "\telse"
+        },
+        {
+          "line": 1556,
+          "text": "\t\tp->fs->in_exec = 1;"
+        },
+        {
+          "line": 1557,
+          "text": "\tread_sequnlock_excl(&p->fs->seq);"
+        },
+        {
+          "line": 1558,
+          "text": "}"
+        },
+        {
+          "line": 1559,
+          "text": ""
+        },
+        {
+          "line": 1560,
+          "text": "static void bprm_fill_uid(struct linux_binprm *bprm, struct file *file)"
+        },
+        {
+          "line": 1561,
+          "text": "{"
+        },
+        {
+          "line": 1562,
+          "text": "\t/* Handle suid and sgid on files */"
+        }
+      ]
+    },
+    {
+      "path": "/home/qq/work/p4-kernel-6.18.64-cp3a-20261118-r1/source/linux-6.18.64/kernel/fork.c",
+      "bytes": 81999,
+      "sha256": "6710c5ebc795bd38ca790dd207f167ed2ea776a21d2ef106afc9d1880f29f253",
+      "lines": [
+        {
+          "line": 1561,
+          "text": "\tstruct fs_struct *fs = current->fs;"
+        },
+        {
+          "line": 1562,
+          "text": "\tif (clone_flags & CLONE_FS) {"
+        },
+        {
+          "line": 1563,
+          "text": "\t\t/* tsk->fs is already what we want */"
+        },
+        {
+          "line": 1564,
+          "text": "\t\tread_seqlock_excl(&fs->seq);"
+        },
+        {
+          "line": 1565,
+          "text": "\t\t/* \"users\" and \"in_exec\" locked for check_unsafe_exec() */"
+        },
+        {
+          "line": 1566,
+          "text": "\t\tif (fs->in_exec) {"
+        },
+        {
+          "line": 1567,
+          "text": "\t\t\tread_sequnlock_excl(&fs->seq);"
+        },
+        {
+          "line": 1568,
+          "text": "\t\t\treturn -EAGAIN;"
+        },
+        {
+          "line": 1569,
+          "text": "\t\t}"
+        },
+        {
+          "line": 1570,
+          "text": "\t\tfs->users++;"
+        },
+        {
+          "line": 1571,
+          "text": "\t\tread_sequnlock_excl(&fs->seq);"
+        },
+        {
+          "line": 1572,
+          "text": "\t\treturn 0;"
+        },
+        {
+          "line": 1573,
+          "text": "\t}"
+        },
+        {
+          "line": 1574,
+          "text": "\ttsk->fs = copy_fs_struct(fs);"
+        },
+        {
+          "line": 1575,
+          "text": "\tif (!tsk->fs)"
+        },
+        {
+          "line": 1576,
+          "text": "\t\treturn -ENOMEM;"
+        },
+        {
+          "line": 1577,
+          "text": "\treturn 0;"
+        },
+        {
+          "line": 1578,
+          "text": "}"
+        },
+        {
+          "line": 1579,
+          "text": ""
+        },
+        {
+          "line": 3044,
+          "text": " */"
+        },
+        {
+          "line": 3045,
+          "text": "static int unshare_fs(unsigned long unshare_flags, struct fs_struct **new_fsp)"
+        },
+        {
+          "line": 3046,
+          "text": "{"
+        },
+        {
+          "line": 3047,
+          "text": "\tstruct fs_struct *fs = current->fs;"
+        },
+        {
+          "line": 3048,
+          "text": ""
+        },
+        {
+          "line": 3049,
+          "text": "\tif (!(unshare_flags & CLONE_FS) || !fs)"
+        },
+        {
+          "line": 3050,
+          "text": "\t\treturn 0;"
+        },
+        {
+          "line": 3051,
+          "text": ""
+        },
+        {
+          "line": 3052,
+          "text": "\t/* don't need lock here; in the worst case we'll do useless copy */"
+        },
+        {
+          "line": 3053,
+          "text": "\tif (!(unshare_flags & CLONE_NEWNS) && fs->users == 1)"
+        },
+        {
+          "line": 3054,
+          "text": "\t\treturn 0;"
+        },
+        {
+          "line": 3055,
+          "text": ""
+        },
+        {
+          "line": 3056,
+          "text": "\t*new_fsp = copy_fs_struct(fs);"
+        },
+        {
+          "line": 3057,
+          "text": "\tif (!*new_fsp)"
+        },
+        {
+          "line": 3058,
+          "text": "\t\treturn -ENOMEM;"
+        },
+        {
+          "line": 3059,
+          "text": ""
+        },
+        {
+          "line": 3060,
+          "text": "\treturn 0;"
+        },
+        {
+          "line": 3061,
+          "text": "}"
+        },
+        {
+          "line": 3062,
+          "text": ""
+        },
+        {
+          "line": 3164,
+          "text": "\t\t\tnew_nsproxy = NULL;"
+        },
+        {
+          "line": 3165,
+          "text": "\t\t}"
+        },
+        {
+          "line": 3166,
+          "text": ""
+        },
+        {
+          "line": 3167,
+          "text": "\t\ttask_lock(current);"
+        },
+        {
+          "line": 3168,
+          "text": ""
+        },
+        {
+          "line": 3169,
+          "text": "\t\tif (new_fs) {"
+        },
+        {
+          "line": 3170,
+          "text": "\t\t\tfs = current->fs;"
+        },
+        {
+          "line": 3171,
+          "text": "\t\t\tread_seqlock_excl(&fs->seq);"
+        },
+        {
+          "line": 3172,
+          "text": "\t\t\tcurrent->fs = new_fs;"
+        },
+        {
+          "line": 3173,
+          "text": "\t\t\tif (--fs->users)"
+        },
+        {
+          "line": 3174,
+          "text": "\t\t\t\tnew_fs = NULL;"
+        },
+        {
+          "line": 3175,
+          "text": "\t\t\telse"
+        },
+        {
+          "line": 3176,
+          "text": "\t\t\t\tnew_fs = fs;"
+        },
+        {
+          "line": 3177,
+          "text": "\t\t\tread_sequnlock_excl(&fs->seq);"
+        },
+        {
+          "line": 3178,
+          "text": "\t\t}"
+        },
+        {
+          "line": 3179,
+          "text": ""
+        },
+        {
+          "line": 3180,
+          "text": "\t\tif (new_fd)"
+        },
+        {
+          "line": 3181,
+          "text": "\t\t\tswap(current->files, new_fd);"
+        },
+        {
+          "line": 3182,
+          "text": ""
+        }
+      ]
+    }
+  ],
+  "source_modified": false,
+  "compiler_executed": false
+}

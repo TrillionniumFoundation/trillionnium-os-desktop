@@ -1,0 +1,303 @@
+--- a/block/Kconfig
++++ b/block/Kconfig
+@@ -221,6 +221,20 @@
+ config BLK_MQ_STACKING
+ 	bool
+ 
++config P4_PRIVATE_LOOP_ACTOR
++	bool "Pocket4 private-loop actor reference foundation"
++	depends on EXPERT && USER_NS && PID_NS
++	default n
++	help
++	  Build an internal exact-thread context reference type for the
++	  future private-loop implementation. This adds no userspace API,
++	  device allocator, loop access permission or namespace mutation.
++	  It does not isolate ordinary host loop devices. All block access,
++	  mount-graph and IO lifetime gates remain separate prerequisites.
++
++	  Say N unless developing the separately reviewed private-loop
++	  implementation against this exact kernel source.
++
+ source "block/Kconfig.iosched"
+ 
+ endif # BLOCK
+--- a/block/Makefile
++++ b/block/Makefile
+@@ -36,3 +36,5 @@
+ 					   blk-crypto-sysfs.o
+ obj-$(CONFIG_BLK_INLINE_ENCRYPTION_FALLBACK)	+= blk-crypto-fallback.o
+ obj-$(CONFIG_BLOCK_HOLDER_DEPRECATED)	+= holder.o
++
++obj-$(CONFIG_P4_PRIVATE_LOOP_ACTOR) += p4_private_loop_actor.o
+--- /dev/null
++++ b/block/p4_private_loop_actor.c
+@@ -0,0 +1,218 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * K0a: real kernel reference custody for an exact original userspace thread.
++ *
++ * No device allocator, loop/control operation, ioctl, miscdevice, namespace
++ * mutation or access-gate success path is added by this translation unit.
++ * Mount namespace identity and pinned root/pwd do not prove that the mount
++ * graph stayed unchanged.  K0b/K1 must supply that independent graph binding
++ * and the complete block access/lifetime gates before any issuer is possible.
++ */
++#include <linux/cred.h>
++#include <linux/err.h>
++#include <linux/errno.h>
++#include <linux/fs_struct.h>
++#include <linux/limits.h>
++#include <linux/mm.h>
++#include <linux/nsproxy.h>
++#include <linux/path.h>
++#include <linux/p4_private_loop_actor.h>
++#include <linux/pid.h>
++#include <linux/pid_namespace.h>
++#include <linux/rcupdate.h>
++#include <linux/refcount.h>
++#include <linux/sched.h>
++#include <linux/sched/mm.h>
++#include <linux/sched/task.h>
++#include <linux/slab.h>
++
++struct p4_private_loop_actor {
++	refcount_t refs;
++	struct task_struct *task;
++	struct pid *pid;
++	struct mm_struct *mm;
++	const struct cred *cred;
++	struct nsproxy *ns;
++	struct pid_namespace *pid_ns;
++	struct fs_struct *fs;
++	unsigned int fs_seq;
++	int fs_umask;
++	struct path root;
++	struct path pwd;
++};
++
++/*
++ * One counted fs users reference prevents pointer ABA after unshare/exit.
++ * The existing 6.18.64 fs_struct users discipline is task_lock -> fs->seq.
++ * Releasing the final fs and path references happens outside those locks.
++ * This reference is visible to shared-fs/exec/unshare decisions; retaining it
++ * is not behaviorally transparent and cannot be treated as a live lease.
++ */
++static void p4_private_loop_fs_put(struct fs_struct *fs)
++{
++	bool destroy;
++
++	read_seqlock_excl(&fs->seq);
++	destroy = !--fs->users;
++	read_sequnlock_excl(&fs->seq);
++	if (destroy)
++		free_fs_struct(fs);
++}
++
++static void p4_private_loop_actor_destroy(struct p4_private_loop_actor *actor)
++{
++	if (actor->fs)
++		p4_private_loop_fs_put(actor->fs);
++	if (actor->pwd.mnt)
++		path_put(&actor->pwd);
++	if (actor->root.mnt)
++		path_put(&actor->root);
++	if (actor->pid_ns)
++		put_pid_ns(actor->pid_ns);
++	if (actor->ns)
++		put_nsproxy(actor->ns);
++	if (actor->cred)
++		put_cred(actor->cred);
++	if (actor->mm)
++		mmdrop(actor->mm);
++	if (actor->pid)
++		put_pid(actor->pid);
++	if (actor->task)
++		put_task_struct(actor->task);
++	kfree(actor);
++}
++
++struct p4_private_loop_actor *
++p4_private_loop_actor_get(struct p4_private_loop_actor *actor)
++{
++	if (actor)
++		refcount_inc(&actor->refs);
++	return actor;
++}
++
++void p4_private_loop_actor_put(struct p4_private_loop_actor *actor)
++{
++	if (actor && refcount_dec_and_test(&actor->refs))
++		p4_private_loop_actor_destroy(actor);
++}
++
++struct p4_private_loop_actor *
++p4_private_loop_actor_capture(struct task_struct *task)
++{
++	struct p4_private_loop_actor *actor;
++	struct fs_struct *fs;
++	int ret = -ESTALE;
++
++	if (!task)
++		return ERR_PTR(-EINVAL);
++	actor = kzalloc(sizeof(*actor), GFP_KERNEL);
++	if (!actor)
++		return ERR_PTR(-ENOMEM);
++	refcount_set(&actor->refs, 1);
++	actor->task = get_task_struct(task);
++	actor->pid = get_task_pid(task, PIDTYPE_PID);
++	if (!actor->pid) {
++		ret = -ESRCH;
++		goto fail;
++	}
++
++	/* No allocation, path release, mm teardown or other sleeping operation
++	 * is performed while task_lock or the fs sequence lock is held.
++	 */
++	task_lock(task);
++	if (READ_ONCE(task->flags) & PF_EXITING ||
++	    task_pid(task) != actor->pid) {
++		ret = -ESRCH;
++		goto unlock_task;
++	}
++	if (!is_user_task(task) || READ_ONCE(task->ptrace) || !task->nsproxy ||
++	    !task->fs || atomic_read(&task->mm->mm_users) <= 0)
++		goto unlock_task;
++
++	actor->cred = get_task_cred(task);
++	/* get_task_cred pins the objective credentials.  An active subjective
++	 * override must not be mistaken for the original actor context.
++	 */
++	if (rcu_access_pointer(task->cred) != actor->cred ||
++	    rcu_access_pointer(task->real_cred) != actor->cred ||
++	    task->mm->user_ns != actor->cred->user_ns)
++		goto unlock_task;
++
++	fs = task->fs;
++	read_seqlock_excl(&fs->seq);
++	if (fs->users <= 0 || fs->users == INT_MAX || fs->in_exec ||
++	    !fs->root.mnt || !fs->root.dentry || !fs->pwd.mnt ||
++	    !fs->pwd.dentry)
++		goto unlock_fs;
++	fs->users++;
++	actor->fs = fs;
++	actor->fs_seq = read_seqbegin(&fs->seq);
++	actor->fs_umask = fs->umask;
++	actor->root = fs->root;
++	actor->pwd = fs->pwd;
++	path_get(&actor->root);
++	path_get(&actor->pwd);
++
++	actor->mm = task->mm;
++	/* Pin mm identity, not mm_users: this reference must not keep a dying
++	 * actor's address space or live userspace execution alive.
++	 */
++	mmgrab(actor->mm);
++	actor->ns = task->nsproxy;
++	get_nsproxy(actor->ns);
++	actor->pid_ns = get_pid_ns(ns_of_pid(actor->pid));
++	ret = 0;
++unlock_fs:
++	read_sequnlock_excl(&fs->seq);
++unlock_task:
++	task_unlock(task);
++	if (ret)
++		goto fail;
++
++	/* Capture is not a lock across future execution.  Reject a context
++	 * that changed while references were being assembled.
++	 */
++	ret = p4_private_loop_actor_check_task(actor, task);
++	if (!ret)
++		return actor;
++fail:
++	p4_private_loop_actor_put(actor);
++	return ERR_PTR(ret);
++}
++
++int p4_private_loop_actor_check_task(const struct p4_private_loop_actor *actor,
++				   struct task_struct *task)
++{
++	struct fs_struct *fs;
++	int ret = -ESTALE;
++
++	if (!actor || !task || task != actor->task)
++		return -ESTALE;
++	task_lock(task);
++	if (READ_ONCE(task->flags) & PF_EXITING ||
++	    task_pid(task) != actor->pid) {
++		ret = -ESRCH;
++		goto unlock_task;
++	}
++	if (!is_user_task(task) || READ_ONCE(task->ptrace) ||
++	    task->mm != actor->mm ||
++	    task->nsproxy != actor->ns || task->fs != actor->fs ||
++	    rcu_access_pointer(task->cred) != actor->cred ||
++	    rcu_access_pointer(task->real_cred) != actor->cred ||
++	    atomic_read(&actor->mm->mm_users) <= 0 ||
++	    ns_of_pid(actor->pid) != actor->pid_ns)
++		goto unlock_task;
++
++	fs = actor->fs;
++	read_seqlock_excl(&fs->seq);
++	if (fs->users >= 2 && !fs->in_exec &&
++	    read_seqbegin(&fs->seq) == actor->fs_seq &&
++	    fs->umask == actor->fs_umask &&
++	    path_equal(&fs->root, &actor->root) &&
++	    path_equal(&fs->pwd, &actor->pwd))
++		ret = 0;
++	read_sequnlock_excl(&fs->seq);
++unlock_task:
++	task_unlock(task);
++	return ret;
++}
+--- /dev/null
++++ b/include/linux/p4_private_loop_actor.h
+@@ -0,0 +1,48 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++#ifndef _LINUX_P4_PRIVATE_LOOP_ACTOR_H
++#define _LINUX_P4_PRIVATE_LOOP_ACTOR_H
++
++struct task_struct;
++struct p4_private_loop_actor;
++
++/*
++ * Internal, retained task-context identity only.  This is NOT a private-loop
++ * lease, an access decision, a mount-graph snapshot, or a device issuer.
++ * There is no userspace constructor and no exported module symbol.
++ *
++ * A future issuer must separately bind a fresh original request, controller,
++ * exact actor/thread, default mount graph, device generation, operation and
++ * deadline, and cover every block entry and graph/IO lifetime.  In particular,
++ * a successful check below must never make an ordinary host loop private.
++ */
++
++/*
++ * Caller already owns a live task reference obtained by its separately
++ * reviewed kernel binding.  Numeric PID lookup is deliberately not supplied.
++ * Capture may sleep, takes its own references, and returns ERR_PTR on failure.
++ * Its counted fs reference affects shared-fs/exec/unshare decisions. This is
++ * deliberate lifetime custody, not an observationally transparent monitor.
++ * It accepts an exact nonleader userspace thread; it never promotes a TID to
++ * the thread-group leader.  The caller retains its original task reference.
++ */
++struct p4_private_loop_actor *
++p4_private_loop_actor_capture(struct task_struct *task);
++
++/* Caller must already own a reference.  No reference can be resurrected. */
++struct p4_private_loop_actor *
++p4_private_loop_actor_get(struct p4_private_loop_actor *actor);
++
++/* Final put may release paths and task state; do not call under a spinlock. */
++void p4_private_loop_actor_put(struct p4_private_loop_actor *actor);
++
++/*
++ * Check a caller-held task against the retained exact task context.  This is
++ * one bounded observation, not authority that survives a subsequent mutation.
++ * A syscall entry must pass current, never a task supplied by userspace.
++ * Returns 0, -ESRCH for exit, or -ESTALE for any identity/context difference.
++ * No task, credential, namespace, filesystem or device is changed.
++ */
++int p4_private_loop_actor_check_task(const struct p4_private_loop_actor *actor,
++				   struct task_struct *task);
++
++#endif /* _LINUX_P4_PRIVATE_LOOP_ACTOR_H */
