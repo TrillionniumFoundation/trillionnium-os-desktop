@@ -10,7 +10,7 @@
       "runtime/droidloom-supervisor/src/production_namespace_apexd_execution_identity.rs",
       "its existing focused source tests"
     ],
-    "instructions": "Use new isolated checkout; preserve exact original/identity/tgid/proc/pidfd/executable/default fields and all live owner validations. Keep wire::Notification in full request generation equality; same-actor comparison requires two independently revalidated request owners. Do not broaden worker identity to TGID without original execution proof. Keep MissingOriginalTargetIssuer empty.",
+    "instructions": "Use new isolated checkout; preserve exact original/identity/tgid/proc/pidfd/executable/default fields and all live owner validations. Keep wire::Notification in full request generation equality. A private structural same-actor comparison grants no live authority: a completed probe notification is no longer pending, so do not require two successive requests to remain pending or relax existing pending/deadline checks. A retained live actor/target lease is a later R1/native interface task. Do not broaden worker identity to TGID without original execution proof. Keep MissingOriginalTargetIssuer empty.",
     "acceptance": [
       "Focused cases distinguish stable actor with distinct fresh requests from stale/replayed requests",
       "Any stable field change rejects cross-request binding",
