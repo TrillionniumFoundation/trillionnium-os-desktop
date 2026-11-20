@@ -1,0 +1,120 @@
+{
+  "Android_started": false,
+  "VM_started": false,
+  "candidate_files": [
+    {
+      "after": {
+        "bytes": 1878,
+        "sha256": "c10c0fb2486442141957111eb5895f377963ecfb48470b4695874dd9fb7ad392"
+      },
+      "before": {
+        "bytes": 1066,
+        "sha256": "ec9afb74c3321719d044af007b900f8e72a09f496246cfd74d92476deada1aaf"
+      },
+      "path": "include/linux/fs_struct.h"
+    },
+    {
+      "after": {
+        "bytes": 3779,
+        "sha256": "e116620999b72f87bac1d4f45c2a7646daf6ed93c67b90e8efd4f52e18172cc0"
+      },
+      "before": {
+        "bytes": 3238,
+        "sha256": "dfb27ae16982f252124f708339b5989b9e9bdc5a62bccef1aefe68538ff22133"
+      },
+      "path": "fs/fs_struct.c"
+    },
+    {
+      "after": {
+        "bytes": 5909,
+        "sha256": "3a90c1ec59c5b619c06ff8e14d25bc25b84ad47823033c6e1b2676df6cca5ed6"
+      },
+      "before": {
+        "bytes": 6103,
+        "sha256": "910c7ef5480e2b0cdf8ba3cd0676698dfa0da1445537167275455df4de353641"
+      },
+      "path": "block/p4_private_loop_actor.c"
+    },
+    {
+      "after": {
+        "bytes": 2294,
+        "sha256": "ff385b20904c916b226037c5c10b5779b566e3c17250da12a8fc0e62367a0c43"
+      },
+      "before": {
+        "bytes": 2217,
+        "sha256": "4728b7357734021980ce29253b1f1a677fade7594e5ef5e068a4ca28c73c696c"
+      },
+      "path": "include/linux/p4_private_loop_actor.h"
+    }
+  ],
+  "candidate_patch": {
+    "bytes": 5959,
+    "sha256": "94e4927b9669b7f7cfd19c1ce3e0c2c37ef85a5db51a1418e608a91aa9f7d6bd"
+  },
+  "device_operations": 0,
+  "findings": [],
+  "independently_fresh_read_current_kernel_sources": [
+    {
+      "bytes": 52354,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_private_loop_k0b_review/inputs/fs/exec.c",
+      "sha256": "8561930ae4ec56ef3adc173bde1dba2e5c43bc9055cf779556f3ad4d160369bb"
+    },
+    {
+      "bytes": 51212,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_private_loop_k0b_review/inputs/kernel/exit.c",
+      "sha256": "2e17663366683a5861244695254dea4c2a41822c88c97bea1484209115abebcc"
+    },
+    {
+      "bytes": 81999,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_private_loop_k0b_review/inputs/kernel/fork.c",
+      "sha256": "6710c5ebc795bd38ca790dd207f167ed2ea776a21d2ef106afc9d1880f29f253"
+    },
+    {
+      "bytes": 14060,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_private_loop_k0b_review/inputs/kernel/nsproxy.c",
+      "sha256": "dede00482f42112ad9d395563033c15bec981ef2ea98a4ebd02d1abb6189f8b2"
+    },
+    {
+      "bytes": 11777,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_private_loop_k0b_review/inputs/kernel/p4_guest_mntns.c",
+      "sha256": "9807e3b53684b59796e73c33bcac78bdb9e81a3f5ea886d2b6c39866e6f4efcc"
+    },
+    {
+      "bytes": 36834,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_private_loop_k0b_review/inputs/kernel/user_namespace.c",
+      "sha256": "921c4be164146fce51cce1382b18ba84a9d38c765679e4ca0d00e25df865bdf1"
+    }
+  ],
+  "kernel_compiled_by_reviewer": false,
+  "kernel_loaded": false,
+  "limits": [
+    "This is independent source review and exact local patch replay only; no kernel or VM execution, race stress, runtime qualification or production claim.",
+    "The complete-tree occurrence audit is the owner-provided fixed-tree audit; this review independently reread and hashed six relevant original source files, and reviewed the other recorded allocation and release occurrences.",
+    "Changing fs_struct layout requires an appropriately complete rebuilt kernel before boot. Compiling only selected objects does not qualify a mixed old/new kernel.",
+    "New independent observers retain fs allocation and root/pwd paths; this intentionally does not preserve mount graph immutability or prove actual private loop issuance."
+  ],
+  "mechanical_checks": {
+    "copy_fs_body_only_adds_initial_refcount_set": true,
+    "exact_git_apply_and_reverse_restore_all_bytes": true,
+    "four_before_after_full_hashes_match": true,
+    "independent_original_grant_whole_body_hash": {
+      "bytes": 11777,
+      "sha256": "9807e3b53684b59796e73c33bcac78bdb9e81a3f5ea886d2b6c39866e6f4efcc"
+    },
+    "six_original_fs_functions_whole_body_unchanged": true
+  },
+  "production_ready": false,
+  "review_scope": [
+    "Original users task-sharing and existing grant slots remain the only inputs to exec/CLONE_FS/unshare/setns sharing predicates. The new refs value never substitutes for users.",
+    "The initial unpublished copy and init_fs each acquire exactly one aggregate refs owner. All unchanged original last-users or unpublished-copy frees now drop that one aggregate owner.",
+    "Observer acquisition remains under task_lock then fs sequence lock while an attached task owns a positive users slot. Actor destruction drops an independent ref outside spinlocks.",
+    "Last task exit, failed clone cleanup, both unshare paths, temporary nsset copy destruction and the original grant consume/expiry retain the original users transitions. The aggregate remains alive if its original grant users slot survives a task detachment.",
+    "Final refcount release alone releases the held fs paths and allocation; observer references prevent allocation ABA without granting execution or device authority.",
+    "Original grant kernel/p4_guest_mntns.c fresh whole-body hash is unchanged and absent from the exact four-path patch.",
+    "Exec remains a bounded identity observation: in_exec or later mm/cred/task/fs differences reject. There is no new live lease, graph proof, issuer, device operation or block access path."
+  ],
+  "reviewer": "android_runtime_audit",
+  "runtime_qualified": false,
+  "schema": "p4-k0b-independent-fs-lifetime-source-review-v1",
+  "source_review_passed": true
+}
