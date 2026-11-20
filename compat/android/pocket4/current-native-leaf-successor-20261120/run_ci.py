@@ -435,7 +435,7 @@ def main():
         'source_parent_kind':'explicit_root_snapshot_from_verified_complete_tree',
         'upstream_ancestry_claimed':False,
         'source_bytes':VERIFY.SOURCE_BYTES,'source_overlay_sha256':VERIFY.OVERLAY['sha256'],
-        'source_chain':VERIFY.SOURCE_CHAIN,'current_packet_inventory_sha256':args.inventory_sha256,
+        'source_chain':capsule['source_chain'],'current_packet_inventory_sha256':args.inventory_sha256,
         'started_ns':time.time_ns(),'commands':[],'errors':[],'fresh_ordinary_passed':0,
         'fresh_test_targets':0,'fresh_release_binaries':{},'ignored_not_executed':[],
         'historical_tests_counted_as_fresh':0,'historical_ELFs_reused':False,'jobs':1,'test_threads':1,
