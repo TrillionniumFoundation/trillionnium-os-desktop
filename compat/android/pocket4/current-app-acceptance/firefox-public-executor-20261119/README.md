@@ -7,6 +7,28 @@ the actual controller, browser-session owner, current selectors and runtime
 receipts before replacing the explicit hold. There is no configuration flag or
 caller-supplied attestation that unlocks it.
 
+## Response validation repair (r3)
+
+Malformed UI and recorder success metadata could pass the previous adapter:
+unknown outcomes encoded as an integer or string, automatic retries, Boolean
+or floating-point return codes, and numeric logical flags. Success responses
+now require literal Boolean success and restoration fields. Optional unknown
+and retry markers may be absent, as in the retained real CLI parser output;
+if present, they must be literal false. Recorder return codes must be integer
+zero, and logical mutation/retry fields must have the exact Boolean values.
+
+Six retained reproductions show the previous source accepting invalid
+records. The original 35 tests remain unchanged and four regression controls
+pass. Six separate offline cases exercise the AST-extracted current CLI `ui`
+parsers with substituted fixture transports; ordinary find, click and set-text
+output stays compatible. These checks make no Android or privileged calls.
+The complete observations are in `validation-r3` and the code change is in
+`response-validation-r3.patch`.
+
+The six-consumer deployment identity, browser owner implementation, reviewed
+runtime selectors and production entry remain unresolved. This source repair
+does not replace their expected hashes or supply runtime acceptance.
+
 ## Prepared implementation
 
 `firefox_protocol.py` specifies one ordered, bounded execution: admit an owned
@@ -99,9 +121,9 @@ schema are not observations of the currently installed helper.
 
 ## Actual host controls and reproduction
 
-The final source revision passed **35** host-only controls: the original32 plus
-three targeted controls for the hard production hold, exact resource release
-acknowledgment and loss of protocol credit on unacknowledged release. The
+The current source revision passed **39** host-only controls: all original35
+remain unchanged, with four additional controls for exact success markers,
+unknown/retry rejection, integer return codes and literal Boolean flags. The
 suite includes real temporary-file streaming/hash/identity checks and exact
 existing parent-recorder fixtures. It performs zero Android, download or SDK
 operations. Its test doubles cannot issue finite application credit.
@@ -113,8 +135,10 @@ python3 -B -m unittest -v test_firefox.py
 ```
 
 The actual interpreter, timestamps, exit status, before/after source hashes and
-unaltered raw stdout/stderr are in `validation-r2/EXECUTION.json`. `VALIDATION.json`
-binds that execution and the preserved original32 evidence. The original32
+unaltered raw stdout/stderr are in `validation-r3/EXECUTION.json`. `VALIDATION.json`
+binds that execution and the preserved original32 and previous35 evidence.
+The previous35 validation is retained at `validation-r2/VALIDATION.json`, with
+its original source bodies preserved at commit `765c67ff1113885c98bcf84a31e937f484cc5c35`. The original32
 source snapshots and original metadata are in `history-32-controls-r1`; its raw
 logs remain at `validation-r1`. The snapshots are historical source records,
 not a newly executed second package. `admission-and-release-r2.patch` shows the

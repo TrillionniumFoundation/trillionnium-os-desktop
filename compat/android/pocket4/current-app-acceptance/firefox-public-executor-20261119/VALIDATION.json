@@ -3,9 +3,9 @@
   "Android_calls": 0,
   "SDK_commands": 0,
   "actual_execution": {
-    "bytes": 3471,
-    "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/validation-r2/EXECUTION.json",
-    "sha256": "71d5e1f2730e2adbfdc82ae4f30fc75d11723701c6c464b53722b3edc5aa5c87"
+    "bytes": 2631,
+    "path": "validation-r3/EXECUTION.json",
+    "sha256": "f8ed80e6a737f6e9e8758f0890e9bf74bad8425863264326719da5d32790764e"
   },
   "argv": [
     "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
@@ -15,14 +15,29 @@
     "-v",
     "test_firefox.py"
   ],
-  "controls": 35,
-  "cwd": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1",
+  "controls": 39,
+  "current_cli_parser_compatibility": {
+    "bytes": 3322,
+    "path": "validation-r3/current-cli-parser-compatibility.json",
+    "sha256": "71b01c0cce287088033540a3c41caef333fec1b001888ebaf3031e3d1e0230f2"
+  },
+  "current_cli_source_observation": {
+    "bytes": 1108,
+    "path": "validation-r3/current-source-observation.json",
+    "sha256": "c06cc70cc71611c62cca28b0847569bcad3db77fe90f4dffcbf4a989715dc5f9"
+  },
+  "cwd": "/workspace/scratch/9907ce0d335a/publication/compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119",
   "exit_code": 0,
-  "finished_ns": 1795069840083837579,
+  "finished_ns": 1795148725696714785,
+  "malformed_success_reproductions": {
+    "bytes": 974,
+    "path": "validation-r3/pre-repair.json",
+    "sha256": "273abb2ee541299c1f34f1490e97eeb5399dad6a892d14aeb83056c662c6d24c"
+  },
   "narrow_revision": {
-    "bytes": 7139,
-    "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/admission-and-release-r2.patch",
-    "sha256": "0fca6d92e0e8373de0244204a1bf0b610ffa49cb240a3ab768e765403a51ab7d"
+    "bytes": 7169,
+    "path": "response-validation-r3.patch",
+    "sha256": "06b40dffb70278d8892a003167e491826d1d80edba49160bfc87794a5544087f"
   },
   "passed": true,
   "previous32_raw_logs": {
@@ -64,49 +79,60 @@
     "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/history-32-controls-r1/VALIDATION.json",
     "sha256": "368048ea7a49ab9ee816ab8c552784a722e0ab9c3275909b68690ea0ead8e1fa"
   },
+  "previous35_source_commit": "765c67ff1113885c98bcf84a31e937f484cc5c35",
+  "previous35_source_paths": [
+    "compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/firefox_custody.py",
+    "compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/firefox_protocol.py",
+    "compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/firefox_adapter.py",
+    "compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/test_firefox.py"
+  ],
+  "previous35_validation": {
+    "bytes": 4949,
+    "path": "validation-r2/VALIDATION.json",
+    "sha256": "a7561db1648c38bdbc3fde420070198c55c1f31a737fa7aed4573116cfaacb97"
+  },
   "production_ready": false,
   "runtime_qualified": false,
-  "schema": "p4-firefox-host-controls-v2",
+  "schema": "p4-firefox-host-controls-v3",
   "source_bytes_unchanged_during_actual_execution": true,
-  "started_ns": 1795069839893847494,
+  "started_ns": 1795148725263711526,
   "stderr": {
-    "bytes": 4230,
-    "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/validation-r2/controls.stderr",
-    "sha256": "291bcdde0127687dfcec86d39d00482dd02d7104062f64d85034de1d3b14e3b6"
+    "bytes": 4796,
+    "path": "validation-r3/controls.stderr",
+    "sha256": "0e6ac51bb11287a89f4c62b0d6383717693ba75117354cb6337fd794731636cd"
   },
   "stdout": {
     "bytes": 0,
-    "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/validation-r2/controls.stdout",
+    "path": "validation-r3/controls.stdout",
     "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   },
   "tested_sources": [
     {
       "bytes": 8792,
-      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/firefox_custody.py",
+      "path": "firefox_custody.py",
       "sha256": "f3726ae934b20212df35b9875f1954d4bcd3acf94072dea1d890bdf3732fe8bb"
     },
     {
       "bytes": 8823,
-      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/firefox_protocol.py",
+      "path": "firefox_protocol.py",
       "sha256": "545c7549d56ab6309ee08f8c09171303275a510df813f43a46b69d465a0d12b8"
     },
     {
-      "bytes": 24396,
-      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/firefox_adapter.py",
-      "sha256": "c4ec48c8c332de155c9f68b0033105f970d9ccb2ddc666ba8d36d026706eba6d"
+      "bytes": 25076,
+      "path": "firefox_adapter.py",
+      "sha256": "da084330cc03226258b5a05d68497fb276710868499cbb0a380f20994e673525"
     },
     {
-      "bytes": 18725,
-      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/test_firefox.py",
-      "sha256": "bec4b243fb1995a3e66c447bf48369035b101ea3f41397194c8cb34935138c2f"
+      "bytes": 21170,
+      "path": "test_firefox.py",
+      "sha256": "491abdff1ccee9bcc2bc092eb88eb403dd91d6799601a4818e2cd199136c1038"
     }
   ],
-  "tool_chunk_id": "0ac9ee",
   "unchanged_original_test_dependency": {
     "bytes": 26456,
-    "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/originals/business_ui_entry.py",
+    "path": "originals/business_ui_entry.py",
     "sha256": "c33e86290d835bdd6ed82f5994572025807846addf141e1253c0665398db48f6"
   },
-  "validation_scope": "35 offline controls: original32 plus hard-held caller self-attestation refusal, exact host-release acknowledgment, and unacknowledged-release credit removal; real temporary-file streaming/F9/hash checks",
+  "validation_scope": "39 offline controls: the original35 unchanged plus exact optional success markers, unknown/retry rejection, integer return code, and literal logical Boolean flags; six additional offline current-parser compatibility cases are retained separately.",
   "whole_current_Firefox_APK_reverified_here": false
 }
