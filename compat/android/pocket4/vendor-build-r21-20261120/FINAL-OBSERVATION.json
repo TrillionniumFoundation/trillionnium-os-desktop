@@ -1,0 +1,227 @@
+{
+  "schema": "p4-r21-final-build-failure-and-source-recovery-v1",
+  "original_session": {
+    "host": "ai395",
+    "session_id": "dpty-1618aa2e0ba5842dbb2e4afdbe2af92bfeea50728dbfee0476bb3cd3f07ef41c",
+    "archive_path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-1618aa2e0ba5842dbb2e4afdbe2af92bfeea50728dbfee0476bb3cd3f07ef41c/output.log",
+    "available_end": 7180,
+    "chunk_sha256": "298c8b71407905df18215146bd45cffe4865187830fa16d4103255212b7b71e3",
+    "status": {
+      "boot": "b1620269-aaef-43e7-bf47-bc6eb1c1a447",
+      "bytes_seen": 7180,
+      "bytes_stored": 7180,
+      "capture_error": null,
+      "closed": false,
+      "created_unix_ms": 1795169432056,
+      "exit_code": 1,
+      "output_complete": true,
+      "owner_pid": 3887909,
+      "pid": 3887910,
+      "state": "exited"
+    },
+    "output_complete": true
+  },
+  "independent_final_observer": {
+    "host": "ai395",
+    "session_id": "dpty-e088084749a4a88925b3ac8cafd28fa618e254bd4b91cccf808a72e8dfd5d1f6",
+    "archive_path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-e088084749a4a88925b3ac8cafd28fa618e254bd4b91cccf808a72e8dfd5d1f6/output.log",
+    "available_end": 5266,
+    "chunk_sha256": "33b720b996f74607638f3e10d13206f767bb7e211e895b59046540239ad686e0",
+    "status": {
+      "boot": "b1620269-aaef-43e7-bf47-bc6eb1c1a447",
+      "bytes_seen": 5266,
+      "bytes_stored": 5266,
+      "capture_error": null,
+      "closed": false,
+      "created_unix_ms": 1795173664714,
+      "exit_code": 0,
+      "output_complete": true,
+      "owner_pid": 4024368,
+      "pid": 4024369,
+      "state": "exited"
+    },
+    "output_complete": true
+  },
+  "source_records": {
+    "outer-terminal.json": {
+      "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r21/actual/outer-terminal.json",
+      "bytes": 538436,
+      "sha256": "1272d9ba69e958d8e4bdd3c1b2efbf7663f42a51e29cc760fb146ee5ad06e5bd",
+      "result": {
+        "schema": "pocket4-vendor-r21-supervisor-terminal-v1",
+        "passed": false,
+        "errors": [],
+        "normal_recovery_attempted": true,
+        "normal_recovery_verified": true,
+        "all_owned_units_retired": true,
+        "all_created_children_reaped": true,
+        "serial_held_through_all_source_operations": true,
+        "fixed_deadline_exceeded": false,
+        "runtime_qualified": false,
+        "production_ready": false,
+        "installed": false,
+        "phase_results": [
+          {
+            "unit": "p4-cp3a-vendor-20261120-9907-r21.service",
+            "mode": "build",
+            "success": false,
+            "service_retired": true,
+            "late_start_unresolved": false,
+            "errors": [],
+            "invocation_id": "d9c82f1887564fdcb02f6ec493fbe912",
+            "held_cgroup_identity": [
+              29,
+              37856674
+            ]
+          },
+          {
+            "unit": "p4-cp3a-vendor-20261120-9907-r21-recovery.service",
+            "mode": "recover",
+            "success": true,
+            "service_retired": true,
+            "late_start_unresolved": false,
+            "errors": [],
+            "invocation_id": "d06a4376421d4ca19eda23359ecf722a",
+            "held_cgroup_identity": [
+              29,
+              37888378
+            ]
+          }
+        ],
+        "command_results": []
+      }
+    },
+    "build-observation.json": {
+      "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r21/actual/build-observation.json",
+      "bytes": 330997,
+      "sha256": "88bf7e778a3d08c830f3c3e51f0e6f64e3b50feaf6a519a60d11dcb426219c1c",
+      "result": {
+        "schema": "p4-cp3a-normal-vendor-build-r21-v1",
+        "errors": [
+          {
+            "error": "RuntimeError('command or retirement failed: normal-official-gsi-vendor-build')",
+            "traceback": "Traceback (most recent call last):\n  File \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r21/source.py\", line 4178, in <module>\n    build() if mode == 'build' else recover()\n    ~~~~~^^\n  File \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r21/source.py\", line 1084, in build\n    run('normal-official-gsi-vendor-build', [str(UPDATE_TOOL), '--source', str(REPO), '--jobs', '8',\n    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        'official-gsi-vendor-build', '--work', str(WORK), '--out', str(OUT),\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        '--system-image', str(SYSTEM), '--references', str(ROOT / 'official-vendor-inputs')],\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n        env, max(1, DEADLINE - time.monotonic()), True)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r21/source.py\", line 332, in run\n    need(error is None and row['exit_code'] == 0 and row['actual_child_reaped']\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n         and row['owned_descendants_remaining'] == 0, 'command or retirement failed: ' + name)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r21/source.py\", line 143, in need\n    raise RuntimeError(message)\nRuntimeError: command or retirement failed: normal-official-gsi-vendor-build\n"
+          }
+        ],
+        "runtime_qualified": false,
+        "production_ready": false,
+        "installed": false,
+        "phase_results": [],
+        "command_results": [
+          {
+            "name": "verify-cmake652-before",
+            "exit_code": 0,
+            "actual_child_reaped": true,
+            "original_pidfd_held_until_reaped": true,
+            "error": null
+          },
+          {
+            "name": "normal-reconcile-lint652",
+            "exit_code": 0,
+            "actual_child_reaped": true,
+            "original_pidfd_held_until_reaped": true,
+            "error": null
+          },
+          {
+            "name": "verify-lint652-before",
+            "exit_code": 0,
+            "actual_child_reaped": true,
+            "original_pidfd_held_until_reaped": true,
+            "error": null
+          },
+          {
+            "name": "original-cmake-provider-cmake-version",
+            "exit_code": 0,
+            "actual_child_reaped": true,
+            "original_pidfd_held_until_reaped": true,
+            "error": null
+          },
+          {
+            "name": "original-cmake-provider-ctest-version",
+            "exit_code": 0,
+            "actual_child_reaped": true,
+            "original_pidfd_held_until_reaped": true,
+            "error": null
+          },
+          {
+            "name": "normal-official-gsi-vendor-build",
+            "exit_code": 1,
+            "actual_child_reaped": true,
+            "original_pidfd_held_until_reaped": true,
+            "error": null
+          }
+        ]
+      }
+    },
+    "recovery-observation.json": {
+      "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r21/actual/recovery-observation.json",
+      "bytes": 9720,
+      "sha256": "057c4958dafb3aaab4b5982ca71e19a701f19c8e675dc4c46c9dbd93eb61f7f1",
+      "result": {
+        "schema": "p4-cp3a-normal-vendor-build-r21-v1",
+        "errors": [],
+        "source_recovery_complete": true,
+        "all_original_inputs_and_source_files_unchanged": true,
+        "new_lint652_source_state_verified": true,
+        "runtime_qualified": false,
+        "production_ready": false,
+        "installed": false,
+        "phase_results": [],
+        "command_results": [
+          {
+            "name": "normal-source-recovery",
+            "exit_code": 0,
+            "actual_child_reaped": true,
+            "original_pidfd_held_until_reaped": true,
+            "error": null
+          },
+          {
+            "name": "verify-lint652-after",
+            "exit_code": 0,
+            "actual_child_reaped": true,
+            "original_pidfd_held_until_reaped": true,
+            "error": null
+          }
+        ]
+      }
+    }
+  },
+  "vendor_result": "failed",
+  "source_recovery": "complete",
+  "missing_upstream_declarations": [
+    {
+      "module": "test_com.android.ipsec",
+      "project": "packages/modules/IPsec",
+      "commit": "5c58f82cc230a9a4e22c80d6eaec62dffaec4444",
+      "missing_complete_cone": "apex/testing",
+      "files": 2,
+      "bytes": 1060,
+      "original_installable": false
+    },
+    {
+      "module": "test_com.android.permission",
+      "project": "packages/modules/Permission",
+      "commit": "1093eca7407576c72e51b1a88550ee0667a6e5dc",
+      "missing_complete_cone": "testing",
+      "files": 2,
+      "bytes": 1126,
+      "original_installable": false
+    }
+  ],
+  "successor_source_prepared_separately": {
+    "base_producer_tree": "56548053c91840f2dd3de50db45b705069d35fa9",
+    "profile": "production-full-apex-tests",
+    "new_lock_bytes": 400720,
+    "new_lock_sha256": "14fd227541b01876c7e34d7e6a1ffcb2a202d97d94c6a8f6e14be369e4b79505",
+    "compiled": false,
+    "soong_passed": false
+  },
+  "prior_failure_and_point_in_time_observation_preserved": true,
+  "runtime_app_passed": 0,
+  "runtime_app_required": 39,
+  "exempt_unverified": 3,
+  "production_ready": false,
+  "runtime_qualified": false,
+  "all_blockers_closed": false,
+  "final_candidate_deployed": false
+}

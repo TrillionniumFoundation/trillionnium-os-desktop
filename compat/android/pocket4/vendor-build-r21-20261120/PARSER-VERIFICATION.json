@@ -1,0 +1,124 @@
+{
+  "Android_starts": 0,
+  "actual_units": [
+    {
+      "fields": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "LoadState": "not-found",
+        "SubState": "dead"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "LoadState=not-found\nActiveState=inactive\nSubState=dead\nControlGroup=\n",
+      "unit": "p4-cmake652-validation-20261118-appagent-r1.scope"
+    },
+    {
+      "fields": {
+        "ActiveState": "inactive",
+        "ControlGroup": "",
+        "LoadState": "not-found",
+        "MainPID": "0",
+        "SubState": "dead"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "LoadState=not-found\nActiveState=inactive\nSubState=dead\nMainPID=0\nControlGroup=\n",
+      "unit": "p4-cp3a-vendor-supervisor-20261120-9907-r20.service"
+    }
+  ],
+  "builds_started": 0,
+  "case_count": 15,
+  "cases": [
+    {
+      "accepted": true,
+      "case": "retired_service",
+      "passed": true
+    },
+    {
+      "accepted": true,
+      "case": "retired_scope",
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "case": "service_missing_pid",
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "case": "scope_extra_pid",
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "case": "active_scope",
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "case": "loaded_scope",
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "case": "scope_cgroup",
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "case": "service_live_pid",
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "case": "duplicate_field",
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "case": "stderr",
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "case": "nonzero_exit",
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "case": "boolean_exit",
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "case": "invalid_utf8",
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "case": "unsupported_unit",
+      "passed": true
+    },
+    {
+      "accepted": false,
+      "case": "malformed_line",
+      "passed": true
+    }
+  ],
+  "only_ast_extracted_pure_parser_executed": true,
+  "production_ready": false,
+  "schema": "p4-r21-retired-wire-direct-regression-v1",
+  "source_sha256": "71e439b91b5363ed9f295589ea7b29f6404de1556b9e61af0d85c6640e4768e9",
+  "source_unchanged": true,
+  "execution_receipt": {
+    "host": "ai395",
+    "session_id": "dpty-879dbcfbbaa56178409707bb6c61fb0b2b3f473efd4e1dae8c22429be9861e10",
+    "archive_path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-879dbcfbbaa56178409707bb6c61fb0b2b3f473efd4e1dae8c22429be9861e10/output.log",
+    "exit_code": 0,
+    "output_complete": true,
+    "bytes": 1867,
+    "sha256": "73b06c67e062256ff90c38b9c66f4d1d90987edf21e8b530ed3ddd846b804d9b"
+  }
+}
+
