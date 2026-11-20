@@ -1,0 +1,1146 @@
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -41,6 +41,7 @@
+ struct blk_queue_stats;
+ struct blk_stat_callback;
+ struct blk_crypto_profile;
++struct p4_private_loop_target;
+ 
+ extern const struct device_type disk_type;
+ extern const struct device_type part_type;
+@@ -160,6 +161,10 @@
+ 	const struct block_device_operations *fops;
+ 	struct request_queue *queue;
+ 	void *private_data;
++#ifdef CONFIG_P4_PRIVATE_LOOP_LEASE
++	/* Immutable association until native final disk_release. */
++	struct p4_private_loop_target *p4_private_loop_target;
++#endif
+ 
+ 	struct bio_set bio_split;
+ 
+--- a/include/linux/backing-dev-defs.h
++++ b/include/linux/backing-dev-defs.h
+@@ -165,6 +165,10 @@
+ };
+ 
+ struct backing_dev_info {
++#ifdef CONFIG_P4_PRIVATE_LOOP_LEASE
++	/* One-way closed marker; no borrowed target pointer or access grant. */
++	bool p4_private_loop_closed;
++#endif
+ 	u64 id;
+ 	struct rb_node rb_node; /* keyed by ->id */
+ 	struct list_head bdi_list;
+--- a/block/Kconfig
++++ b/block/Kconfig
+@@ -235,6 +235,19 @@
+ 	  Say N unless developing the separately reviewed private-loop
+ 	  implementation against this exact kernel source.
+ 
++config P4_PRIVATE_LOOP_LEASE
++	bool "Closed private-loop lease reference foundation"
++	depends on P4_PRIVATE_LOOP_ACTOR && BLK_DEV_LOOP=y
++	default n
++	help
++	  Retain exact controller, actor, generation and original block-file
++	  references for a fresh unpublished private target. Every private
++	  operation and publication remains denied. No active state, userspace
++	  API, module symbol, allocator or runtime issuer is supplied.
++
++	  This changes internal disk/BDI layout and requires a coherent kernel
++	  build. Say N outside the separately reviewed development work.
++
+ source "block/Kconfig.iosched"
+ 
+ endif # BLOCK
+--- a/block/Makefile
++++ b/block/Makefile
+@@ -38,3 +38,4 @@
+ obj-$(CONFIG_BLOCK_HOLDER_DEPRECATED)	+= holder.o
+ 
+ obj-$(CONFIG_P4_PRIVATE_LOOP_ACTOR) += p4_private_loop_actor.o
++obj-$(CONFIG_P4_PRIVATE_LOOP_LEASE) += p4_private_loop_lease.o
+--- a/block/bdev.c
++++ b/block/bdev.c
+@@ -5,6 +5,7 @@
+  *  Copyright (C) 2016 - 2020 Christoph Hellwig
+  */
+ 
++#include <linux/p4_private_loop_lease.h>
+ #include <linux/init.h>
+ #include <linux/mm.h>
+ #include <linux/slab.h>
+@@ -181,6 +182,10 @@
+ 	struct block_device *bdev = I_BDEV(inode);
+ 	int ret;
+ 
++	ret = p4_private_loop_file_gate(file);
++	if (ret)
++		return ret;
++
+ 	ret = bdev_validate_blocksize(bdev, size);
+ 	if (ret)
+ 		return ret;
+@@ -481,6 +486,9 @@
+ 
+ void bdev_set_nr_sectors(struct block_device *bdev, sector_t sectors)
+ {
++	/* Zero remains available to original invalidation/teardown. */
++	if (sectors && p4_private_loop_disk_gate(bdev->bd_disk))
++		return;
+ 	spin_lock(&bdev->bd_size_lock);
+ 	i_size_write(BD_INODE(bdev), (loff_t)sectors << SECTOR_SHIFT);
+ 	bdev->bd_nr_sectors = sectors;
+@@ -490,6 +498,10 @@
+ void bdev_add(struct block_device *bdev, dev_t dev)
+ {
+ 	struct inode *inode = BD_INODE(bdev);
++
++	/* Also close direct inode publication, independently of add_disk. */
++	if (p4_private_loop_disk_gate(bdev->bd_disk))
++		return;
+ 	if (bdev_stable_writes(bdev))
+ 		mapping_set_stable_writes(bdev->bd_mapping);
+ 	bdev->bd_dev = dev;
+@@ -924,6 +936,10 @@
+ 	bool unblock_events = true;
+ 	struct gendisk *disk = bdev->bd_disk;
+ 	int ret;
++
++	ret = p4_private_loop_disk_gate(disk);
++	if (ret)
++		return ret;
+ 
+ 	if (holder) {
+ 		mode |= BLK_OPEN_EXCL;
+--- a/block/fops.c
++++ b/block/fops.c
+@@ -4,6 +4,7 @@
+  * Copyright (C) 2001  Andrea Arcangeli <andrea@suse.de> SuSE
+  * Copyright (C) 2016 - 2020 Christoph Hellwig
+  */
++#include <linux/p4_private_loop_lease.h>
+ #include <linux/init.h>
+ #include <linux/mm.h>
+ #include <linux/blkdev.h>
+@@ -614,6 +615,10 @@
+ 	struct inode *bd_inode = bdev_file_inode(file);
+ 	loff_t retval;
+ 
++	retval = p4_private_loop_file_gate(file);
++	if (retval)
++		return retval;
++
+ 	inode_lock(bd_inode);
+ 	retval = fixed_size_llseek(file, offset, whence, i_size_read(bd_inode));
+ 	inode_unlock(bd_inode);
+@@ -625,6 +630,10 @@
+ {
+ 	struct block_device *bdev = I_BDEV(filp->f_mapping->host);
+ 	int error;
++
++	error = p4_private_loop_file_gate(filp);
++	if (error)
++		return error;
+ 
+ 	error = file_write_and_wait_range(filp, start, end);
+ 	if (error)
+@@ -763,6 +772,10 @@
+ 	size_t shorted = 0;
+ 	ssize_t ret;
+ 
++	ret = p4_private_loop_file_gate(file);
++	if (ret)
++		return ret;
++
+ 	if (bdev_read_only(bdev))
+ 		return -EPERM;
+ 
+@@ -828,6 +841,10 @@
+ 	ssize_t ret = 0;
+ 	size_t count;
+ 
++	ret = p4_private_loop_file_gate(iocb->ki_filp);
++	if (ret)
++		return ret;
++
+ 	if (unlikely(pos + iov_iter_count(to) > size)) {
+ 		if (pos >= size)
+ 			return 0;
+@@ -884,6 +901,10 @@
+ 	loff_t isize;
+ 	unsigned int flags;
+ 	int error;
++
++	error = p4_private_loop_file_gate(file);
++	if (error)
++		return error;
+ 
+ 	/* Fail if we don't recognize the flags. */
+ 	if (mode & ~BLKDEV_FALLOC_FL_SUPPORTED)
+@@ -952,11 +973,36 @@
+ static int blkdev_mmap_prepare(struct vm_area_desc *desc)
+ {
+ 	struct file *file = desc->file;
++	int ret = p4_private_loop_file_gate(file);
++
++	if (ret)
++		return ret;
+ 
+ 	if (bdev_read_only(I_BDEV(bdev_file_inode(file))))
+ 		return generic_file_readonly_mmap_prepare(desc);
+ 
+ 	return generic_file_mmap_prepare(desc);
++}
++
++/* Generic splice helpers can read cached pages without a fresh BIO. */
++static ssize_t blkdev_splice_read(struct file *in, loff_t *ppos,
++		struct pipe_inode_info *pipe, size_t len, unsigned int flags)
++{
++	int ret = p4_private_loop_file_gate(in);
++
++	if (ret)
++		return ret;
++	return filemap_splice_read(in, ppos, pipe, len, flags);
++}
++
++static ssize_t blkdev_splice_write(struct pipe_inode_info *pipe,
++		struct file *out, loff_t *ppos, size_t len, unsigned int flags)
++{
++	int ret = p4_private_loop_file_gate(out);
++
++	if (ret)
++		return ret;
++	return iter_file_splice_write(pipe, out, ppos, len, flags);
+ }
+ 
+ const struct file_operations def_blk_fops = {
+@@ -972,8 +1018,8 @@
+ #ifdef CONFIG_COMPAT
+ 	.compat_ioctl	= compat_blkdev_ioctl,
+ #endif
+-	.splice_read	= filemap_splice_read,
+-	.splice_write	= iter_file_splice_write,
++	.splice_read	= blkdev_splice_read,
++	.splice_write	= blkdev_splice_write,
+ 	.fallocate	= blkdev_fallocate,
+ 	.uring_cmd	= blkdev_uring_cmd,
+ 	.fop_flags	= FOP_BUFFER_RASYNC,
+--- a/block/ioctl.c
++++ b/block/ioctl.c
+@@ -1,4 +1,5 @@
+ // SPDX-License-Identifier: GPL-2.0
++#include <linux/p4_private_loop_lease.h>
+ #include <linux/capability.h>
+ #include <linux/compat.h>
+ #include <linux/blkdev.h>
+@@ -308,6 +309,10 @@
+ 			unsigned cmd, unsigned long arg)
+ {
+ 	struct gendisk *disk = bdev->bd_disk;
++	int ret = p4_private_loop_disk_gate(disk);
++
++	if (ret)
++		return ret;
+ 
+ 	if (disk->fops->ioctl)
+ 		return disk->fops->ioctl(bdev, mode, cmd,
+@@ -662,6 +667,10 @@
+ 	blk_mode_t mode = file_to_blk_mode(file);
+ 	int ret;
+ 
++	ret = p4_private_loop_file_gate(file);
++	if (ret)
++		return ret;
++
+ 	switch (cmd) {
+ 	/* These need separate implementations for the data structure */
+ 	case HDIO_GETGEO:
+@@ -721,6 +730,10 @@
+ 	struct block_device *bdev = I_BDEV(file->f_mapping->host);
+ 	struct gendisk *disk = bdev->bd_disk;
+ 	blk_mode_t mode = file_to_blk_mode(file);
++
++	ret = p4_private_loop_file_gate(file);
++	if (ret)
++		return ret;
+ 
+ 	switch (cmd) {
+ 	/* These need separate implementations for the data structure */
+@@ -855,6 +868,10 @@
+ 	struct block_device *bdev = I_BDEV(cmd->file->f_mapping->host);
+ 	struct blk_iou_cmd *bic = io_uring_cmd_to_pdu(cmd, struct blk_iou_cmd);
+ 	u32 cmd_op = cmd->cmd_op;
++	int ret = p4_private_loop_file_gate(cmd->file);
++
++	if (ret)
++		return ret;
+ 
+ 	/* Read what we need from the SQE on the first issue */
+ 	if (!(cmd->flags & IORING_URING_CMD_REISSUE)) {
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -5,6 +5,7 @@
+  * Portions Copyright (C) 2020 Christoph Hellwig
+  */
+ 
++#include <linux/p4_private_loop_lease.h>
+ #include <linux/module.h>
+ #include <linux/ctype.h>
+ #include <linux/fs.h>
+@@ -78,6 +79,9 @@
+ 	sector_t capacity = get_capacity(disk);
+ 	char *envp[] = { "RESIZE=1", NULL };
+ 
++	if (p4_private_loop_disk_gate(disk))
++		return false;
++
+ 	set_capacity(disk, size);
+ 
+ 	/*
+@@ -365,6 +369,10 @@
+ 	struct file *file;
+ 	int ret = 0;
+ 
++	ret = p4_private_loop_disk_gate(disk);
++	if (ret)
++		return ret;
++
+ 	if (!disk_has_partscan(disk))
+ 		return -EINVAL;
+ 	if (disk->open_partitions)
+@@ -431,6 +439,11 @@
+ {
+ 	struct device *ddev = disk_to_dev(disk);
+ 	int ret;
++
++	/* K0c never publishes a private disk into the global device graph. */
++	ret = p4_private_loop_disk_gate(disk);
++	if (ret)
++		return ret;
+ 
+ 	if (WARN_ON_ONCE(bdev_nr_sectors(disk->part0) > BLK_DEV_MAX_SECTORS))
+ 		return -EINVAL;
+@@ -869,6 +882,9 @@
+ 					const char *page, size_t len)
+ {
+ 	struct gendisk *disk = dev_to_disk(dev);
++
++	if (p4_private_loop_disk_gate(disk))
++		return -EACCES;
+ 
+ 	if (!disk->bb)
+ 		return -ENXIO;
+@@ -1192,6 +1208,9 @@
+ {
+ 	int i;
+ 
++	if (p4_private_loop_disk_gate(dev_to_bdev(dev)->bd_disk))
++		return -EACCES;
++
+ 	if (count > 0 && sscanf(buf, "%d", &i) > 0) {
+ 		if (i)
+ 			bdev_set_flag(dev_to_bdev(dev), BD_MAKE_IT_FAIL);
+@@ -1318,6 +1337,7 @@
+ 	if (test_bit(GD_ADDED, &disk->state) && disk->fops->free_disk)
+ 		disk->fops->free_disk(disk);
+ 
++	p4_private_loop_target_release(disk);
+ 	bdev_drop(disk->part0);	/* frees the disk */
+ }
+ 
+--- a/block/blk-sysfs.c
++++ b/block/blk-sysfs.c
+@@ -2,6 +2,7 @@
+ /*
+  * Functions related to sysfs handling
+  */
++#include <linux/p4_private_loop_lease.h>
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+ #include <linux/module.h>
+@@ -819,6 +820,9 @@
+ 	struct queue_sysfs_entry *entry = to_queue(attr);
+ 	struct gendisk *disk = container_of(kobj, struct gendisk, queue_kobj);
+ 
++	if (p4_private_loop_disk_gate(disk))
++		return -EACCES;
++
+ 	if (!entry->show && !entry->show_limit)
+ 		return -EIO;
+ 
+@@ -841,6 +845,9 @@
+ 	struct queue_sysfs_entry *entry = to_queue(attr);
+ 	struct gendisk *disk = container_of(kobj, struct gendisk, queue_kobj);
+ 	struct request_queue *q = disk->queue;
++
++	if (p4_private_loop_disk_gate(disk))
++		return -EACCES;
+ 
+ 	if (!entry->store_limit && !entry->store)
+ 		return -EIO;
+@@ -908,6 +915,10 @@
+ {
+ 	struct request_queue *q = disk->queue;
+ 	int ret;
++
++	ret = p4_private_loop_disk_gate(disk);
++	if (ret)
++		return ret;
+ 
+ 	ret = kobject_add(&disk->queue_kobj, &disk_to_dev(disk)->kobj, "queue");
+ 	if (ret < 0)
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -1,5 +1,6 @@
+ // SPDX-License-Identifier: GPL-2.0-only
+ 
++#include <linux/p4_private_loop_lease.h>
+ #include <linux/blkdev.h>
+ #include <linux/wait.h>
+ #include <linux/rbtree.h>
+@@ -265,6 +266,10 @@
+ 	unsigned long read_ahead_kb;
+ 	ssize_t ret;
+ 
++	ret = p4_private_loop_bdi_gate(bdi);
++	if (ret)
++		return ret;
++
+ 	ret = kstrtoul(buf, 10, &read_ahead_kb);
+ 	if (ret < 0)
+ 		return ret;
+@@ -293,6 +298,10 @@
+ 	unsigned int ratio;
+ 	ssize_t ret;
+ 
++	ret = p4_private_loop_bdi_gate(bdi);
++	if (ret)
++		return ret;
++
+ 	ret = kstrtouint(buf, 10, &ratio);
+ 	if (ret < 0)
+ 		return ret;
+@@ -312,6 +321,10 @@
+ 	unsigned int ratio;
+ 	ssize_t ret;
+ 
++	ret = p4_private_loop_bdi_gate(bdi);
++	if (ret)
++		return ret;
++
+ 	ret = kstrtouint(buf, 10, &ratio);
+ 	if (ret < 0)
+ 		return ret;
+@@ -331,6 +344,10 @@
+ 	unsigned int ratio;
+ 	ssize_t ret;
+ 
++	ret = p4_private_loop_bdi_gate(bdi);
++	if (ret)
++		return ret;
++
+ 	ret = kstrtouint(buf, 10, &ratio);
+ 	if (ret < 0)
+ 		return ret;
+@@ -350,6 +367,10 @@
+ 	unsigned int ratio;
+ 	ssize_t ret;
+ 
++	ret = p4_private_loop_bdi_gate(bdi);
++	if (ret)
++		return ret;
++
+ 	ret = kstrtouint(buf, 10, &ratio);
+ 	if (ret < 0)
+ 		return ret;
+@@ -378,6 +399,10 @@
+ 	u64 bytes;
+ 	ssize_t ret;
+ 
++	ret = p4_private_loop_bdi_gate(bdi);
++	if (ret)
++		return ret;
++
+ 	ret = kstrtoull(buf, 10, &bytes);
+ 	if (ret < 0)
+ 		return ret;
+@@ -406,6 +431,10 @@
+ 	u64 bytes;
+ 	ssize_t ret;
+ 
++	ret = p4_private_loop_bdi_gate(bdi);
++	if (ret)
++		return ret;
++
+ 	ret = kstrtoull(buf, 10, &bytes);
+ 	if (ret < 0)
+ 		return ret;
+@@ -434,6 +463,10 @@
+ 	struct backing_dev_info *bdi = dev_get_drvdata(dev);
+ 	unsigned int strict_limit;
+ 	ssize_t ret;
++
++	ret = p4_private_loop_bdi_gate(bdi);
++	if (ret)
++		return ret;
+ 
+ 	ret = kstrtouint(buf, 10, &strict_limit);
+ 	if (ret < 0)
+@@ -1094,6 +1127,9 @@
+ 	struct device *dev;
+ 	struct rb_node *parent, **p;
+ 
++	if (p4_private_loop_bdi_gate(bdi))
++		return -EACCES;
++
+ 	if (bdi->dev)	/* The driver needs to use separate queues per device */
+ 		return 0;
+ 
+--- a/block/partitions/core.c
++++ b/block/partitions/core.c
+@@ -4,6 +4,7 @@
+  * Re-organised Feb 1998 Russell King
+  * Copyright (C) 2020 Christoph Hellwig
+  */
++#include <linux/p4_private_loop_lease.h>
+ #include <linux/fs.h>
+ #include <linux/major.h>
+ #include <linux/slab.h>
+@@ -302,6 +303,8 @@
+ 	int err;
+ 
+ 	lockdep_assert_held(&disk->open_mutex);
++	if (p4_private_loop_disk_gate(disk))
++		return ERR_PTR(-EACCES);
+ 
+ 	if (partno >= DISK_MAX_PARTS)
+ 		return ERR_PTR(-EINVAL);
+@@ -430,6 +433,9 @@
+ 	struct block_device *part;
+ 	int ret;
+ 
++	if (p4_private_loop_disk_gate(disk))
++		return -EACCES;
++
+ 	mutex_lock(&disk->open_mutex);
+ 	if (!disk_live(disk)) {
+ 		ret = -ENXIO;
+@@ -458,6 +464,9 @@
+ {
+ 	struct block_device *part = NULL;
+ 	int ret = -ENXIO;
++
++	if (p4_private_loop_disk_gate(disk))
++		return -EACCES;
+ 
+ 	mutex_lock(&disk->open_mutex);
+ 	part = xa_load(&disk->part_tbl, partno);
+@@ -491,6 +500,9 @@
+ {
+ 	struct block_device *part = NULL;
+ 	int ret = -ENXIO;
++
++	if (p4_private_loop_disk_gate(disk))
++		return -EACCES;
+ 
+ 	mutex_lock(&disk->open_mutex);
+ 	part = xa_load(&disk->part_tbl, partno);
+@@ -646,6 +658,8 @@
+ 	int ret = 0;
+ 
+ 	lockdep_assert_held(&disk->open_mutex);
++	if (p4_private_loop_disk_gate(disk))
++		return -EACCES;
+ 
+ 	if (!disk_live(disk))
+ 		return -ENXIO;
+@@ -714,6 +728,9 @@
+ 	struct address_space *mapping = state->disk->part0->bd_mapping;
+ 	struct folio *folio;
+ 
++	if (p4_private_loop_disk_gate(state->disk))
++		goto out;
++
+ 	if (n >= get_capacity(state->disk)) {
+ 		state->access_beyond_eod = true;
+ 		goto out;
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -12,6 +12,7 @@
+ /*
+  * This handles all read/write requests to block devices
+  */
++#include <linux/p4_private_loop_lease.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/bio.h>
+@@ -628,6 +629,11 @@
+ 	/* If plug is not used, add new plug here to cache nsecs time. */
+ 	struct blk_plug plug;
+ 
++	if (p4_private_loop_disk_gate(bio->bi_bdev->bd_disk)) {
++		bio_endio_status(bio, BLK_STS_IOERR);
++		return;
++	}
++
+ 	if (unlikely(!blk_crypto_bio_prep(bio)))
+ 		return;
+ 
+@@ -727,6 +733,11 @@
+ 
+ void submit_bio_noacct_nocheck(struct bio *bio, bool split)
+ {
++	if (p4_private_loop_disk_gate(bio->bi_bdev->bd_disk)) {
++		bio_endio_status(bio, BLK_STS_IOERR);
++		return;
++	}
++
+ 	blk_cgroup_bio_start(bio);
+ 
+ 	if (!bio_flagged(bio, BIO_TRACE_COMPLETION)) {
+@@ -791,6 +802,11 @@
+ 	 */
+ 	if ((bio->bi_opf & REQ_NOWAIT) && !bdev_nowait(bdev))
+ 		goto not_supported;
++
++	if (p4_private_loop_disk_gate(bio->bi_bdev->bd_disk)) {
++		bio_endio_status(bio, BLK_STS_IOERR);
++		return;
++	}
+ 
+ 	if (should_fail_bio(bio))
+ 		goto end_io;
+--- a/drivers/block/loop.c
++++ b/drivers/block/loop.c
+@@ -2,6 +2,7 @@
+ /*
+  * Copyright 1993 by Theodore Ts'o.
+  */
++#include <linux/p4_private_loop_lease.h>
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+ #include <linux/sched.h>
+@@ -640,6 +641,9 @@
+ 	struct gendisk *disk = dev_to_disk(dev);
+ 	struct loop_device *lo = disk->private_data;
+ 
++	if (p4_private_loop_disk_gate(disk))
++		return -EACCES;
++
+ 	return callback(lo, page);
+ }
+ 
+@@ -1520,6 +1524,10 @@
+ 	struct loop_device *lo = bdev->bd_disk->private_data;
+ 	void __user *argp = (void __user *) arg;
+ 	int err;
++
++	err = p4_private_loop_disk_gate(bdev->bd_disk);
++	if (err)
++		return err;
+ 
+ 	switch (cmd) {
+ 	case LOOP_SET_FD: {
+@@ -1684,6 +1692,10 @@
+ 	struct loop_device *lo = bdev->bd_disk->private_data;
+ 	int err;
+ 
++	err = p4_private_loop_disk_gate(bdev->bd_disk);
++	if (err)
++		return err;
++
+ 	switch(cmd) {
+ 	case LOOP_SET_STATUS:
+ 		err = -EPERM;
+@@ -1721,6 +1733,10 @@
+ 	struct loop_device *lo = disk->private_data;
+ 	int err;
+ 
++	err = p4_private_loop_disk_gate(disk);
++	if (err)
++		return err;
++
+ 	err = mutex_lock_killable(&lo->lo_mutex);
+ 	if (err)
+ 		return err;
+@@ -1858,6 +1874,12 @@
+ 	struct request *rq = bd->rq;
+ 	struct loop_cmd *cmd = blk_mq_rq_to_pdu(rq);
+ 	struct loop_device *lo = rq->q->queuedata;
++
++	/* Workers do not inherit the issuing task: this closed gate never
++	 * substitutes current for a future retained I/O authorization.
++	 */
++	if (p4_private_loop_disk_gate(lo->lo_disk))
++		return BLK_STS_IOERR;
+ 
+ 	blk_mq_start_request(rq);
+ 
+@@ -2157,6 +2179,8 @@
+ 	lo = idr_find(&loop_index_idr, idx);
+ 	if (!lo || !lo->idr_visible)
+ 		ret = -ENODEV;
++	else if (p4_private_loop_disk_gate(lo->lo_disk))
++		ret = -EACCES;
+ 	else
+ 		lo->idr_visible = false;
+ 	mutex_unlock(&loop_ctl_mutex);
+@@ -2197,7 +2221,8 @@
+ 		return ret;
+ 	idr_for_each_entry(&loop_index_idr, lo, id) {
+ 		/* Hitting a race results in creating a new loop device which is harmless. */
+-		if (lo->idr_visible && data_race(lo->lo_state) == Lo_unbound)
++		if (lo->idr_visible && !p4_private_loop_disk_gate(lo->lo_disk) &&
++		    data_race(lo->lo_state) == Lo_unbound)
+ 			goto found;
+ 	}
+ 	mutex_unlock(&loop_ctl_mutex);
+--- /dev/null
++++ b/include/linux/p4_private_loop_lease.h
+@@ -0,0 +1,90 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++#ifndef _LINUX_P4_PRIVATE_LOOP_LEASE_H
++#define _LINUX_P4_PRIVATE_LOOP_LEASE_H
++
++#include <linux/types.h>
++
++struct backing_dev_info;
++struct file;
++struct gendisk;
++struct p4_private_loop_actor;
++struct p4_private_loop_lease;
++struct p4_private_loop_authorization;
++
++/*
++ * K0c is reference custody and a CLOSED block boundary, not an issuer.
++ * There is no ACTIVE state, userspace API, module export or permitted private
++ * operation.  Only a new, exclusively owned, unpublished empty disk can be
++ * marked.  Ordinary disks cannot be converted after registration or opening.
++ * K1--K3 must supply the allocator, original request/source/graph admission,
++ * actual I/O references and terminal reconciliation before any gate can open.
++ */
++#ifdef CONFIG_P4_PRIVATE_LOOP_LEASE
++/* Caller owns both actor references.  The controller must be current. */
++struct p4_private_loop_lease *
++p4_private_loop_lease_create(struct p4_private_loop_actor *controller,
++			     struct p4_private_loop_actor *actor);
++struct p4_private_loop_lease *
++p4_private_loop_lease_get(struct p4_private_loop_lease *lease);
++/* Final put is sleepable and must be outside spinlocks/RCU callbacks. */
++void p4_private_loop_lease_put(struct p4_private_loop_lease *lease);
++/* Monotonic FENCED -> REVOKED only.  It neither drops custody nor drains I/O. */
++void p4_private_loop_lease_revoke(struct p4_private_loop_lease *lease);
++u64 p4_private_loop_lease_generation(const struct p4_private_loop_lease *lease);
++
++/*
++ * Caller exclusively owns the fresh disk: it is not shared with a registration
++ * or I/O thread.  This is a kernel construction precondition, not a promise
++ * inferred from a userspace PID/path.  The native open_mutex additionally
++ * protects the checked block state.  The target stays attached until the
++ * native final disk_release; its BDI gets a permanent closed marker.
++ */
++int p4_private_loop_target_attach(struct p4_private_loop_lease *lease,
++				struct gendisk *disk);
++void p4_private_loop_target_release(struct gendisk *disk);
++
++/*
++ * Bind exactly one real O_RDWR block open-file description.  The caller owns
++ * the file and lease references and must be the original controller.  This
++ * takes independent get_file/target references; it does NOT occupy
++ * file->private_data, change the native holder, open a device or confer access.
++ * K0c has no way to obtain such a private OFD because all opens stay closed.
++ * Rebinding, including after the first association is dropped, is forbidden.
++ */
++struct p4_private_loop_authorization *
++p4_private_loop_authorization_bind(struct p4_private_loop_lease *lease,
++				  struct gendisk *disk, struct file *file);
++struct p4_private_loop_authorization *
++p4_private_loop_authorization_get(struct p4_private_loop_authorization *auth);
++/* Final put removes association under its lock, then releases outside it. */
++void p4_private_loop_authorization_put(struct p4_private_loop_authorization *auth);
++/*
++ * A bounded exact-actor/current and OFD custody observation ONLY.  Even a zero
++ * result never admits a syscall, request, mount graph or I/O.  All gates below
++ * still reject the private target.  Caller already owns the auth reference.
++ */
++int p4_private_loop_authorization_check_custody(
++		const struct p4_private_loop_authorization *auth,
++		struct file *file);
++
++/* Native callers hold the disk/file/BDI lifetime.  No allocation or sleep. */
++int p4_private_loop_disk_gate(const struct gendisk *disk);
++int p4_private_loop_file_gate(struct file *file);
++int p4_private_loop_bdi_gate(const struct backing_dev_info *bdi);
++#else
++static inline void p4_private_loop_target_release(struct gendisk *disk) { }
++static inline int p4_private_loop_disk_gate(const struct gendisk *disk)
++{
++	return 0;
++}
++static inline int p4_private_loop_file_gate(struct file *file)
++{
++	return 0;
++}
++static inline int p4_private_loop_bdi_gate(const struct backing_dev_info *bdi)
++{
++	return 0;
++}
++#endif
++
++#endif /* _LINUX_P4_PRIVATE_LOOP_LEASE_H */
+--- /dev/null
++++ b/block/p4_private_loop_lease.c
+@@ -0,0 +1,351 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * K0c: retained controller/actor, non-reused generation and exact original OFD
++ * association.  Private disks remain closed even to the matching actor.
++ * Nothing here implements a device issuer, a loop probe/configure operation,
++ * a mount graph lease, a source grant or asynchronous I/O retirement.
++ */
++#include <linux/atomic.h>
++#include <linux/backing-dev.h>
++#include <linux/blkdev.h>
++#include <linux/err.h>
++#include <linux/errno.h>
++#include <linux/file.h>
++#include <linux/fs.h>
++#include <linux/limits.h>
++#include <linux/p4_private_loop_actor.h>
++#include <linux/p4_private_loop_lease.h>
++#include <linux/pagemap.h>
++#include <linux/refcount.h>
++#include <linux/sched.h>
++#include <linux/slab.h>
++#include <linux/spinlock.h>
++
++enum p4_private_loop_state {
++	P4_PRIVATE_LOOP_FENCED,
++	P4_PRIVATE_LOOP_REVOKED,
++};
++
++struct p4_private_loop_lease {
++	refcount_t refs;
++	atomic_t state;
++	atomic_t target_bound;
++	u64 generation;
++	struct p4_private_loop_actor *controller;
++	struct p4_private_loop_actor *actor;
++};
++
++struct p4_private_loop_target {
++	refcount_t refs;
++	spinlock_t lock;
++	struct p4_private_loop_lease *lease;
++	struct p4_private_loop_authorization *authorization;
++	bool bound_once;
++};
++
++struct p4_private_loop_authorization {
++	refcount_t refs;
++	struct p4_private_loop_target *target;
++	struct file *file;
++	u64 generation;
++};
++
++/* Saturate rather than wrap.  Zero is never a valid allocated generation. */
++static atomic64_t p4_private_loop_next_generation = ATOMIC64_INIT(0);
++
++static int p4_private_loop_new_generation(u64 *generation)
++{
++	s64 previous = atomic64_read(&p4_private_loop_next_generation);
++
++	do {
++		if (previous < 0 || previous == S64_MAX)
++			return -EOVERFLOW;
++	} while (!atomic64_try_cmpxchg(&p4_private_loop_next_generation,
++				     &previous, previous + 1));
++	*generation = previous + 1;
++	return 0;
++}
++
++struct p4_private_loop_lease *
++p4_private_loop_lease_create(struct p4_private_loop_actor *controller,
++			     struct p4_private_loop_actor *actor)
++{
++	struct p4_private_loop_lease *lease;
++	int ret;
++
++	if (!controller || !actor)
++		return ERR_PTR(-EINVAL);
++	ret = p4_private_loop_actor_check_task(controller, current);
++	if (ret)
++		return ERR_PTR(ret);
++	lease = kzalloc(sizeof(*lease), GFP_KERNEL);
++	if (!lease)
++		return ERR_PTR(-ENOMEM);
++	ret = p4_private_loop_new_generation(&lease->generation);
++	if (ret) {
++		kfree(lease);
++		return ERR_PTR(ret);
++	}
++	refcount_set(&lease->refs, 1);
++	atomic_set(&lease->state, P4_PRIVATE_LOOP_FENCED);
++	atomic_set(&lease->target_bound, 0);
++	lease->controller = p4_private_loop_actor_get(controller);
++	lease->actor = p4_private_loop_actor_get(actor);
++	return lease;
++}
++
++struct p4_private_loop_lease *
++p4_private_loop_lease_get(struct p4_private_loop_lease *lease)
++{
++	if (lease)
++		refcount_inc(&lease->refs);
++	return lease;
++}
++
++void p4_private_loop_lease_put(struct p4_private_loop_lease *lease)
++{
++	if (!lease || !refcount_dec_and_test(&lease->refs))
++		return;
++	might_sleep();
++	p4_private_loop_actor_put(lease->actor);
++	p4_private_loop_actor_put(lease->controller);
++	kfree(lease);
++}
++
++void p4_private_loop_lease_revoke(struct p4_private_loop_lease *lease)
++{
++	atomic_cmpxchg(&lease->state, P4_PRIVATE_LOOP_FENCED,
++		       P4_PRIVATE_LOOP_REVOKED);
++}
++
++u64 p4_private_loop_lease_generation(const struct p4_private_loop_lease *lease)
++{
++	return lease->generation;
++}
++
++static void p4_private_loop_target_put(struct p4_private_loop_target *target)
++{
++	if (!refcount_dec_and_test(&target->refs))
++		return;
++	might_sleep();
++	WARN_ON_ONCE(target->authorization);
++	p4_private_loop_lease_put(target->lease);
++	kfree(target);
++}
++
++int p4_private_loop_target_attach(struct p4_private_loop_lease *lease,
++				struct gendisk *disk)
++{
++	struct p4_private_loop_target *target;
++	struct block_device *part;
++	unsigned long index;
++	int ret;
++
++	if (!lease || !disk || !disk->part0 || !disk->bdi)
++		return -EINVAL;
++	ret = p4_private_loop_actor_check_task(lease->controller, current);
++	if (ret)
++		return ret;
++	if (atomic_read(&lease->state) != P4_PRIVATE_LOOP_FENCED)
++		return -EKEYREVOKED;
++	target = kzalloc(sizeof(*target), GFP_KERNEL);
++	if (!target)
++		return -ENOMEM;
++	refcount_set(&target->refs, 1);
++	spin_lock_init(&target->lock);
++	target->lease = p4_private_loop_lease_get(lease);
++
++	/* Exclusive construction ownership is required in addition to this lock.
++	 * In particular, this never races device_add/bdi_register on a shared disk.
++	 */
++	mutex_lock(&disk->open_mutex);
++	ret = -EBUSY;
++	if (READ_ONCE(disk->p4_private_loop_target) ||
++	    test_bit(GD_ADDED, &disk->state) || disk_live(disk) ||
++	    device_is_registered(disk_to_dev(disk)) ||
++	    disk->queue_kobj.state_in_sysfs || disk_openers(disk) ||
++	    disk->open_partitions || get_capacity(disk) ||
++	    disk->part0->bd_dev || !mapping_empty(disk->part0->bd_mapping) ||
++	    disk->bdi->dev || disk->bdi->owner || disk->bdi->id ||
++	    test_bit(WB_registered, &disk->bdi->wb.state) ||
++	    READ_ONCE(disk->bdi->p4_private_loop_closed))
++		goto unlock;
++	xa_for_each(&disk->part_tbl, index, part) {
++		if (index || part != disk->part0)
++			goto unlock;
++	}
++	if (atomic_read(&lease->state) != P4_PRIVATE_LOOP_FENCED) {
++		ret = -EKEYREVOKED;
++		goto unlock;
++	}
++	/* One generation names one target for its entire lifetime, even after
++	 * that target is retired.  A later disk requires a newly created lease.
++	 */
++	if (atomic_cmpxchg(&lease->target_bound, 0, 1)) {
++		ret = -EALREADY;
++		goto unlock;
++	}
++	/* The BDI may outlive the disk through ordinary writeback references.
++	 * Its one-way closed bit never dereferences the target and is not cleared.
++	 */
++	WRITE_ONCE(disk->bdi->p4_private_loop_closed, true);
++	WRITE_ONCE(disk->p4_private_loop_target, target);
++	ret = 0;
++unlock:
++	mutex_unlock(&disk->open_mutex);
++	if (ret)
++		p4_private_loop_target_put(target);
++	return ret;
++}
++
++void p4_private_loop_target_release(struct gendisk *disk)
++{
++	struct p4_private_loop_target *target;
++
++	/* Only native final disk_release calls this after its queue is drained.
++	 * An associated file pins the native block lifetime, so this cannot clear
++	 * a marker underneath a live authorization.  Never called from inode RCU.
++	 */
++	target = xchg(&disk->p4_private_loop_target, NULL);
++	if (!target)
++		return;
++	p4_private_loop_lease_revoke(target->lease);
++	p4_private_loop_target_put(target);
++}
++
++static bool p4_private_loop_original_file(struct gendisk *disk, struct file *file)
++{
++	return file && file->f_op == &def_blk_fops &&
++		file->f_mapping == disk->part0->bd_mapping &&
++		S_ISBLK(file->f_mapping->host->i_mode) &&
++		file_bdev(file) == disk->part0 &&
++		(file->f_flags & O_ACCMODE) == O_RDWR &&
++		(file->f_mode & (FMODE_READ | FMODE_WRITE)) ==
++				(FMODE_READ | FMODE_WRITE);
++}
++
++struct p4_private_loop_authorization *
++p4_private_loop_authorization_bind(struct p4_private_loop_lease *lease,
++				  struct gendisk *disk, struct file *file)
++{
++	struct p4_private_loop_authorization *auth;
++	struct p4_private_loop_target *target;
++	unsigned long flags;
++	int ret;
++
++	if (!lease || !disk || !disk->part0 ||
++	    !p4_private_loop_original_file(disk, file))
++		return ERR_PTR(-EINVAL);
++	ret = p4_private_loop_actor_check_task(lease->controller, current);
++	if (ret)
++		return ERR_PTR(ret);
++	/* Caller already holds the real file and disk lifetimes. */
++	target = READ_ONCE(disk->p4_private_loop_target);
++	if (!target || target->lease != lease)
++		return ERR_PTR(-ESTALE);
++	auth = kzalloc(sizeof(*auth), GFP_KERNEL);
++	if (!auth)
++		return ERR_PTR(-ENOMEM);
++	refcount_set(&auth->refs, 1);
++	auth->file = get_file(file);
++	auth->target = target;
++	refcount_inc(&target->refs);
++	auth->generation = lease->generation;
++
++	spin_lock_irqsave(&target->lock, flags);
++	if (atomic_read(&lease->state) != P4_PRIVATE_LOOP_FENCED)
++		ret = -EKEYREVOKED;
++	else if (target->bound_once || target->authorization)
++		ret = -EALREADY;
++	else {
++		target->bound_once = true;
++		target->authorization = auth;
++		ret = 0;
++	}
++	spin_unlock_irqrestore(&target->lock, flags);
++	if (!ret)
++		return auth;
++	/* No target association was installed; both independent refs are ours. */
++	fput(auth->file);
++	p4_private_loop_target_put(target);
++	kfree(auth);
++	return ERR_PTR(ret);
++}
++
++struct p4_private_loop_authorization *
++p4_private_loop_authorization_get(struct p4_private_loop_authorization *auth)
++{
++	if (auth)
++		refcount_inc(&auth->refs);
++	return auth;
++}
++
++void p4_private_loop_authorization_put(struct p4_private_loop_authorization *auth)
++{
++	struct p4_private_loop_target *target;
++	unsigned long flags;
++
++	if (!auth || !refcount_dec_and_test(&auth->refs))
++		return;
++	might_sleep();
++	target = auth->target;
++	spin_lock_irqsave(&target->lock, flags);
++	if (WARN_ON_ONCE(target->authorization != auth)) {
++		spin_unlock_irqrestore(&target->lock, flags);
++		/* Corrupt/unknown association must not release retained custody. */
++		return;
++	}
++	target->authorization = NULL;
++	/* bound_once deliberately stays set: no second OFD/ABA admission. */
++	spin_unlock_irqrestore(&target->lock, flags);
++	fput(auth->file);
++	p4_private_loop_target_put(target);
++	kfree(auth);
++}
++
++int p4_private_loop_authorization_check_custody(
++		const struct p4_private_loop_authorization *auth, struct file *file)
++{
++	struct p4_private_loop_target *target;
++	struct p4_private_loop_lease *lease;
++	struct gendisk *disk;
++	unsigned long flags;
++	int ret;
++
++	if (!auth || file != auth->file)
++		return -ESTALE;
++	target = auth->target;
++	lease = target->lease;
++	if (atomic_read(&lease->state) != P4_PRIVATE_LOOP_FENCED)
++		return -EKEYREVOKED;
++	ret = p4_private_loop_actor_check_task(lease->actor, current);
++	if (ret)
++		return ret;
++	disk = file_bdev(auth->file)->bd_disk;
++	if (!p4_private_loop_original_file(disk, file) ||
++	    READ_ONCE(disk->p4_private_loop_target) != target ||
++	    auth->generation != lease->generation)
++		return -ESTALE;
++	spin_lock_irqsave(&target->lock, flags);
++	ret = target->authorization == auth && target->bound_once ? 0 : -ESTALE;
++	if (atomic_read(&lease->state) != P4_PRIVATE_LOOP_FENCED)
++		ret = -EKEYREVOKED;
++	spin_unlock_irqrestore(&target->lock, flags);
++	return ret;
++}
++
++int p4_private_loop_disk_gate(const struct gendisk *disk)
++{
++	/* No state, actor, generation or valid OFD can turn this into an allow. */
++	return READ_ONCE(disk->p4_private_loop_target) ? -EACCES : 0;
++}
++
++int p4_private_loop_file_gate(struct file *file)
++{
++	return p4_private_loop_disk_gate(file_bdev(file)->bd_disk);
++}
++
++int p4_private_loop_bdi_gate(const struct backing_dev_info *bdi)
++{
++	return READ_ONCE(bdi->p4_private_loop_closed) ? -EACCES : 0;
++}
