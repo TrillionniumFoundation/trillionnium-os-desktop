@@ -1,0 +1,289 @@
+{
+  "schema": "p4-held-main-userns-entry-private-kernel-controls-v1",
+  "passed": false,
+  "error": {
+    "type": "RuntimeError",
+    "message": "negative rejected before fixed command: wrong-root"
+  },
+  "started_ns": 1795181188530139123,
+  "finished_ns": 1795181188590166090,
+  "source_binary": {
+    "path": "/home/alex/work/p4-guest-entry-source-20261120-runtimeaudit-r1/held-namespace-entry",
+    "bytes": 3972024,
+    "sha256": "67cfd1c212e9f40ce3f0ff7be856a05f8189c674cbfa270757a672ea596a6c3f",
+    "identity": [
+      66306,
+      67681291,
+      33216,
+      1000,
+      1000,
+      1,
+      3972024,
+      1795180634806213293,
+      1795180634808016542
+    ]
+  },
+  "private_binary": {
+    "path": "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r2/held-namespace-entry",
+    "bytes": 3972024,
+    "sha256": "67cfd1c212e9f40ce3f0ff7be856a05f8189c674cbfa270757a672ea596a6c3f",
+    "identity": [
+      66306,
+      34899607,
+      33216,
+      0,
+      0,
+      1,
+      3972024,
+      1795181188519058200,
+      1795181188519058200
+    ]
+  },
+  "commands": [
+    {
+      "name": "wrong-userns",
+      "argv": [
+        "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r2/held-namespace-entry",
+        "--parent-pid=2915521",
+        "--root-fd=8",
+        "--mnt-fd=9",
+        "--pid-fd=10",
+        "--uts-fd=11",
+        "--ipc-fd=12",
+        "--net-fd=13",
+        "--cgroup-fd=14",
+        "--expected-userns-device=5",
+        "--expected-userns-inode=4026532883",
+        "--expected-init-start-ticks=26774486",
+        "--",
+        "/usr/bin/id",
+        "-u"
+      ],
+      "pid": 2915525,
+      "exit_code": 125,
+      "started_ns": 1795181188534139732,
+      "finished_ns": 1795181188536082196,
+      "actual_child_reaped": true,
+      "original_pidfd_held_until_reaped": true,
+      "stdout": {
+        "path": "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r2/wrong-userns.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          34899608,
+          33152,
+          0,
+          0,
+          1,
+          0,
+          1795181188533122923,
+          1795181188533122923
+        ]
+      },
+      "stderr": {
+        "path": "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r2/wrong-userns.stderr",
+        "bytes": 74,
+        "sha256": "ace491f6826d918292cb75465688542bf2845e2ff6082e1ed36c06271b1e7cd8",
+        "identity": [
+          66306,
+          34899609,
+          33152,
+          0,
+          0,
+          1,
+          74,
+          1795181188534122961,
+          1795181188534122961
+        ]
+      }
+    },
+    {
+      "name": "wrong-start",
+      "argv": [
+        "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r2/held-namespace-entry",
+        "--parent-pid=2915521",
+        "--root-fd=8",
+        "--mnt-fd=9",
+        "--pid-fd=10",
+        "--uts-fd=11",
+        "--ipc-fd=12",
+        "--net-fd=13",
+        "--cgroup-fd=14",
+        "--expected-userns-device=5",
+        "--expected-userns-inode=4026532882",
+        "--expected-init-start-ticks=26774487",
+        "--",
+        "/usr/bin/id",
+        "-u"
+      ],
+      "pid": 2915526,
+      "exit_code": 125,
+      "started_ns": 1795181188536272620,
+      "finished_ns": 1795181188538313662,
+      "actual_child_reaped": true,
+      "original_pidfd_held_until_reaped": true,
+      "stdout": {
+        "path": "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r2/wrong-start.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          34899610,
+          33152,
+          0,
+          0,
+          1,
+          0,
+          1795181188535122998,
+          1795181188535122998
+        ]
+      },
+      "stderr": {
+        "path": "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r2/wrong-start.stderr",
+        "bytes": 64,
+        "sha256": "62df7d294f58a44b52a06e9023ed704efc00978efb793582772d3dcc0afc78da",
+        "identity": [
+          66306,
+          34899611,
+          33152,
+          0,
+          0,
+          1,
+          64,
+          1795181188537043600,
+          1795181188537043600
+        ]
+      }
+    },
+    {
+      "name": "mixed-namespace",
+      "argv": [
+        "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r2/held-namespace-entry",
+        "--parent-pid=2915521",
+        "--root-fd=8",
+        "--mnt-fd=9",
+        "--pid-fd=10",
+        "--uts-fd=16",
+        "--ipc-fd=12",
+        "--net-fd=13",
+        "--cgroup-fd=14",
+        "--expected-userns-device=5",
+        "--expected-userns-inode=4026532882",
+        "--expected-init-start-ticks=26774486",
+        "--",
+        "/usr/bin/id",
+        "-u"
+      ],
+      "pid": 2915527,
+      "exit_code": 125,
+      "started_ns": 1795181188538446115,
+      "finished_ns": 1795181188540288919,
+      "actual_child_reaped": true,
+      "original_pidfd_held_until_reaped": true,
+      "stdout": {
+        "path": "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r2/mixed-namespace.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          34899612,
+          33152,
+          0,
+          0,
+          1,
+          0,
+          1795181188537123074,
+          1795181188537123074
+        ]
+      },
+      "stderr": {
+        "path": "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r2/mixed-namespace.stderr",
+        "bytes": 45,
+        "sha256": "892043c4abf7c8af7dbe3f736933c60fa06a1f5cc4b3bca879479e9ce7fa3935",
+        "identity": [
+          66306,
+          34899613,
+          33152,
+          0,
+          0,
+          1,
+          45,
+          1795181188539045398,
+          1795181188539045398
+        ]
+      }
+    },
+    {
+      "name": "wrong-root",
+      "argv": [
+        "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r2/held-namespace-entry",
+        "--parent-pid=2915521",
+        "--root-fd=16",
+        "--mnt-fd=9",
+        "--pid-fd=10",
+        "--uts-fd=11",
+        "--ipc-fd=12",
+        "--net-fd=13",
+        "--cgroup-fd=14",
+        "--expected-userns-device=5",
+        "--expected-userns-inode=4026532882",
+        "--expected-init-start-ticks=26774486",
+        "--",
+        "/usr/bin/id",
+        "-u"
+      ],
+      "pid": 2915528,
+      "exit_code": 125,
+      "started_ns": 1795181188540408157,
+      "finished_ns": 1795181188542233808,
+      "actual_child_reaped": true,
+      "original_pidfd_held_until_reaped": true,
+      "stdout": {
+        "path": "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r2/wrong-root.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          34899614,
+          33152,
+          0,
+          0,
+          1,
+          0,
+          1795181188539123150,
+          1795181188539123150
+        ]
+      },
+      "stderr": {
+        "path": "/opt/p4-guest-entry-private-controls-20261120-runtimeaudit-r2/wrong-root.stderr",
+        "bytes": 53,
+        "sha256": "408e49bb52bd4992ad1136e6d969621ebf6d822761626cb0fecbd0b8e088a591",
+        "identity": [
+          66306,
+          34899615,
+          33152,
+          0,
+          0,
+          1,
+          53,
+          1795181188540999665,
+          1795181188540999665
+        ]
+      }
+    }
+  ],
+  "normal_fixture_retirement": false,
+  "all_owned_children_reaped": true,
+  "host_mount_and_namespace_bookends_equal": true,
+  "input_bookends_equal": true,
+  "original_privileged_root_operator": true,
+  "inherited_authority_fd_count": 7,
+  "private_guest_uid": 805306368,
+  "Android_namespace_entries": 0,
+  "Android_commands_executed": 0,
+  "daemon_ReadyTreeWitness_issued": false,
+  "production_ready": false,
+  "runtime_qualified": false,
+  "current_or_original_inputs_mutated": false
+}
