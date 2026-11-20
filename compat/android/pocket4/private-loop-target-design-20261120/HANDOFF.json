@@ -1,0 +1,60 @@
+{
+  "schema": "p4-private-loop-implementation-handoff-v1",
+  "status": "design_and_model_only",
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "immutable_base": "1af163b21f5c7dcaaf94084d7cc1ef19aed05ae1",
+  "next_task": {
+    "id": "R0",
+    "title": "Separate stable original apexd actor/epoch identity from per-request notification identity without constructing a native target issuer",
+    "files": [
+      "runtime/droidloom-supervisor/src/production_namespace_apexd_execution_identity.rs",
+      "its existing focused source tests"
+    ],
+    "instructions": "Use new isolated checkout; preserve exact original/identity/tgid/proc/pidfd/executable/default fields and all live owner validations. Keep wire::Notification in full request generation equality. A private structural same-actor comparison grants no live authority: a completed probe notification is no longer pending, so do not require two successive requests to remain pending or relax existing pending/deadline checks. A retained live actor/target lease is a later R1/native interface task. Do not broaden worker identity to TGID without original execution proof. Keep MissingOriginalTargetIssuer empty.",
+    "acceptance": [
+      "Focused cases distinguish stable actor with distinct fresh requests from stale/replayed requests",
+      "Any stable field change rejects cross-request binding",
+      "Existing held handles, deadline, original executable, parent, credentials, cgroup, namespaces, root and graph checks preserved",
+      "No target issuer/native success/runtime qualification can be constructed from source tests/model"
+    ]
+  },
+  "dependency_order": [
+    "R0 stable actor vs request",
+    "R1 typed exact probe and configure requests with custody",
+    "K0 internal lifetime/authorization and full block entry coverage, allocator unexposed",
+    "K1 separate real private control/block allocation and original control semantics",
+    "K2 actual loop probe/configure, source arm, read-ahead/sysfs and dm graph custody",
+    "K3 real revocation/drain/unbind/retirement with races",
+    "R2 construct issuer only from real complete kernel contract",
+    "Q isolated native positive/negative validation then original Android/APEX graph",
+    "Independent data/metadata, service, newest app and cleanup acceptance"
+  ],
+  "native_acceptance_reference": "DESIGN.md section 6",
+  "known_constraints": [
+    "Do not edit or contend with active r21 source/vendor build, its fixed2359 producer, budget or locks",
+    "Do not run a VM/Android, install/load kernel or reboot under this design task",
+    "Previously rejected privileged patched-kernel VM action must not be retried, renamed, moved to another tool or reinterpreted as conventional VM authorization",
+    "No global unconfigured loop/control export, fake errno, original init/apexd edits or security policy weakening",
+    "Do not overwrite original data/metadata, uninstall/clear app data or clean still-needed failure/custody evidence",
+    "No CURRENT/runtime success or cleanup-ready update from model or source-only evidence"
+  ],
+  "estimate": {
+    "kind": "engineering estimate, not actual repair completed",
+    "range_engineering_weeks": [
+      2,
+      4
+    ],
+    "assumed_engineers": 2,
+    "assumed_expertise": [
+      "Linux block/loop lifetime and security",
+      "Droidloom original actor/seccomp/mount custody"
+    ],
+    "dependency": "Authorized isolated native qualification environment; original control/thread contract confirmation",
+    "excludes": [
+      "All other Android production blockers",
+      "39 app business qualification",
+      "Final data continuity and cleanup"
+    ]
+  },
+  "VM_alternative": "Read-only comparison in DESIGN.md section 7. No ready full Android VM backend identified in pinned runtime; no VM action authorized by this packet."
+}
