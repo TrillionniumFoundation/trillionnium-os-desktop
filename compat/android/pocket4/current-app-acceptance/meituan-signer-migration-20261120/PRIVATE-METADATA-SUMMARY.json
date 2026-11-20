@@ -1,0 +1,173 @@
+{
+  "account_or_business_state_classified": false,
+  "areas": [
+    {
+      "area": "CE",
+      "category": "cache",
+      "entry_count": 5,
+      "regular_file_count": 0,
+      "subdirectory_count": 5
+    },
+    {
+      "area": "CE",
+      "category": "code_cache",
+      "entry_count": 0,
+      "regular_file_count": 0,
+      "subdirectory_count": 0
+    },
+    {
+      "area": "CE",
+      "category": "shared_prefs",
+      "entry_count": 24,
+      "regular_file_count": 24,
+      "subdirectory_count": 0
+    },
+    {
+      "area": "CE",
+      "category": "files",
+      "entry_count": 11,
+      "regular_file_count": 4,
+      "subdirectory_count": 7
+    },
+    {
+      "area": "CE",
+      "category": "databases",
+      "entry_count": 22,
+      "regular_file_count": 22,
+      "subdirectory_count": 0
+    },
+    {
+      "area": "CE",
+      "category": "app_webview",
+      "entry_count": 7,
+      "regular_file_count": 6,
+      "subdirectory_count": 1
+    },
+    {
+      "area": "CE",
+      "category": "other_app_directory",
+      "entry_count": 0,
+      "regular_file_count": 0,
+      "subdirectory_count": 0
+    },
+    {
+      "area": "CE",
+      "category": "no_backup",
+      "entry_count": 0,
+      "regular_file_count": 0,
+      "subdirectory_count": 0
+    },
+    {
+      "area": "DE",
+      "category": "cache",
+      "entry_count": 2,
+      "regular_file_count": 2,
+      "subdirectory_count": 0
+    },
+    {
+      "area": "DE",
+      "category": "code_cache",
+      "entry_count": 0,
+      "regular_file_count": 0,
+      "subdirectory_count": 0
+    },
+    {
+      "area": "DE",
+      "category": "shared_prefs",
+      "entry_count": 1,
+      "regular_file_count": 1,
+      "subdirectory_count": 0
+    }
+  ],
+  "keystore_read": false,
+  "metadata_only": true,
+  "mutations": 0,
+  "observed_utc": "2026-11-20T10:48:33Z",
+  "old_data_discardable": false,
+  "private_file_contents_read": false,
+  "private_filenames_emitted": false,
+  "schema": "p4-meituan-private-storage-metadata-summary-v1",
+  "source_and_backup_original_F9_exactly_unchanged": true,
+  "execution_receipt": {
+    "host": "pocket4",
+    "session_id": "dpty-18e9bb2932b515f8-ffbe-53",
+    "exit_code": 0,
+    "output_complete": true,
+    "bytes": 1596,
+    "sha256": "b7dbb194ec5584882ba89090b56fdeb9f829c905df84919bd1015b6746b2e3fc"
+  },
+  "read_scope": "Read-only debugfs directory entries from the verified R2 backup; no private file bodies or keystore objects were opened.",
+  "conclusion": "The old Meituan storage is not empty. CE shared_prefs has 24 regular files and databases has 22 regular files, with other app files also present. Metadata cannot prove these are disposable fixtures or identify which data is account/business state. Preserve the data migration hold.",
+  "failed_preflight": {
+    "session_id": "dpty-18e9baf04946ee60-ffbe-4f",
+    "exit_code": 1,
+    "sha256": "f46505bf041429e2d8ccccc04f441ddb390b27c9c9dfe23ae48337aa7275dec4",
+    "reason": "Manually transported nanosecond metadata pins were rounded through JSON Number representation. Failure occurred before any debugfs read."
+  },
+  "exact_native_integer_diagnostic": {
+    "session_id": "dpty-18e9baf959fac110-ffbe-50",
+    "exit_code": 0,
+    "sha256": "691a6f25ab4349dab71b965b518e9d8ac312f70fff73f6097c76ed9a8758dee2",
+    "result": {
+      "image_body_read": false,
+      "only_stat_and_pinned_receipt_read": true,
+      "rows": [
+        {
+          "actual_as_decimal_strings": [
+            "66306",
+            "111810948",
+            "33152",
+            "0",
+            "0",
+            "1",
+            "34359738368",
+            "1794030280963569636",
+            "1794030280963569636"
+          ],
+          "expected_as_decimal_strings": [
+            "66306",
+            "111810948",
+            "33152",
+            "0",
+            "0",
+            "1",
+            "34359738368",
+            "1794030280963569636",
+            "1794030280963569636"
+          ],
+          "match_exact": true,
+          "side": "source"
+        },
+        {
+          "actual_as_decimal_strings": [
+            "66306",
+            "52168998",
+            "33152",
+            "0",
+            "0",
+            "1",
+            "34359738368",
+            "1794030280963569636",
+            "1795142648452932009"
+          ],
+          "expected_as_decimal_strings": [
+            "66306",
+            "52168998",
+            "33152",
+            "0",
+            "0",
+            "1",
+            "34359738368",
+            "1794030280963569636",
+            "1795142648452932009"
+          ],
+          "match_exact": true,
+          "side": "backup"
+        }
+      ],
+      "schema": "p4-meituan-metadata-exact-pin-diagnostic-v1"
+    }
+  },
+  "corrected_pin_handling": "Read the full originally hashed USERDATA-ROLLBACK-STATUS.json in native Python, retain integer precision, compare original full F9 both before and after reads. Never adopt new observed pins to bypass mismatch."
+}
+
