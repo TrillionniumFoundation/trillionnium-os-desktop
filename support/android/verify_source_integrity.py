@@ -19,6 +19,19 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE_ROOTS = ("compat/android", "support/android", "tests/workloads/android")
 REQUIRED_FILES = (
+    'compat/android/pocket4/current-runtime-cohort-20261120/EXPECTED-BINS.json',
+    'compat/android/pocket4/current-runtime-cohort-20261120/EXPECTED-CATALOG.json',
+    'compat/android/pocket4/current-runtime-cohort-20261120/EXPECTED-TARGETS.json',
+    'compat/android/pocket4/current-runtime-cohort-20261120/EXTRA-TARGETS.json',
+    'compat/android/pocket4/current-runtime-cohort-20261120/FILES.sha256',
+    'compat/android/pocket4/current-runtime-cohort-20261120/MANIFEST.json',
+    'compat/android/pocket4/current-runtime-cohort-20261120/README.md',
+    'compat/android/pocket4/current-runtime-cohort-20261120/RUNNER.patch',
+    'compat/android/pocket4/current-runtime-cohort-20261120/UPDATER-EXACT64.json',
+    'compat/android/pocket4/current-runtime-cohort-20261120/run_ci.py',
+    'compat/android/pocket4/current-runtime-cohort-20261120/test_adapter.py',
+    'compat/android/pocket4/current-runtime-cohort-20261120/test_runner.py',
+    'compat/android/pocket4/current-runtime-cohort-20261120/verify.py',
     'compat/android/pocket4/current-runtime-release-20261120/FILES.sha256',
     'compat/android/pocket4/current-runtime-release-20261120/MANIFEST.json',
     'compat/android/pocket4/current-runtime-release-20261120/README.md',
@@ -1253,6 +1266,7 @@ EXECUTABLE_FILES = (
 PARSED_SUFFIXES = {".py", ".sh", ".json", ".xml"}
 
 BINARY_FILES = {
+    'compat/android/pocket4/current-runtime-cohort-20261120/FILES.sha256': {'bytes': 983, 'sha256': '9c1c330bd29ea6d2bdbcde0ead6e27bafaaab07177fb22a6f90ef81c967466a2'},
     'compat/android/pocket4/current-runtime-release-20261120/FILES.sha256': {'bytes': 319, 'sha256': 'd5d0ab96a6f12e690316c12a8dc59f3dc1b760fca9ddf14a3fa7120be27ebcdf'},
     'compat/android/pocket4/vendor-representation-repair-20261120/FILES.sha256': {'bytes': 2552, 'sha256': '6f33f54d51dfe10c251c81dc4940ff13cb5eda9bb2c26485fe02ec20d7c5f60e'},
     'compat/android/pocket4/vendor-representation-repair-20261120/evidence/LOCAL-CONTROLS.json.gz': {'bytes': 117392, 'sha256': 'd4e3419cb1bdad76338d6d4b0e549059751b85454705d2f8d898066b9d31241d'},
@@ -1311,7 +1325,7 @@ BINARY_FILES = {
         'bytes': 7894116, 'sha256': '3e8b2fa1ea1ef3555ca7c82e27abe79a2be029c701f69ac55ef4c82484f247ad'},
     'compat/android/pocket4/runtime-current-source-r1/SOURCE-OVERLAY.tar.xz': {
         'bytes': 657032, 'sha256': '5a87a80bebfc2c63696ca9932fcea8d9485810f75a310f9fa1f792cab292390b'},
-    'compat/android/pocket4/current-publisher-delivery-source/FILES.sha256': {'bytes': 5219, 'sha256': '0ddcf91fd9217a4c4c6ef0f140e4ae4521396270621c4155a0a07b07e1ba4ff8'},
+    'compat/android/pocket4/current-publisher-delivery-source/FILES.sha256': {'bytes': 5219, 'sha256': '2ad15c5ef2de12c862efb3c18f20298976d3458f5549f9fe387e7620c9e805e3'},
     'compat/android/pocket4/current-publisher-delivery-source/MANIFEST.json': {
         'bytes': 19869, 'sha256': '872dc25ba3c8980b5ea67609b0a9fb17c6c31b925a823ee9642fe75d3218c699'},
     'compat/android/pocket4/current-publisher-delivery-source/SOURCE.tar.gz': {
