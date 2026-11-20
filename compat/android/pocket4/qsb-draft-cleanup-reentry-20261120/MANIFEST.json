@@ -1,0 +1,99 @@
+{
+  "base_commit": "68e04fe39215c5a97e49b141f993d6fb172a5548",
+  "change": {
+    "function": "make_session_class.Session.begin_cleanup",
+    "journal_create_exclusive_preserved": true,
+    "new_journal": "phase-cleanup-<existing native_launches>.json",
+    "new_retry_or_launch_authority": false,
+    "old_journal": "phase-cleanup.json",
+    "original_absolute_cleanup_budget_seconds": 720,
+    "original_business_budget_seconds": 600,
+    "original_launch_limit": 2
+  },
+  "original_snapshot": {
+    "current_app_and_canonical_source_subtrees_did_not_contain_qsb_draft": true,
+    "exact_blob_absent_from_repository_when_checked": true,
+    "f9": [
+      27,
+      3190268,
+      33188,
+      1000,
+      1000,
+      1,
+      28337,
+      1795188303535587004,
+      1795188303535587004
+    ],
+    "mtime_utc": "2026-11-20T15:25:03.535587+00:00",
+    "path": "/workspace/scratch/3b9ddccd362c/p4_qsb_business_successor/source/qsb_runtime.py"
+  },
+  "patch": {
+    "bytes": 647,
+    "git_blob": "308e1b7215fb5075f94863437e799002364c78eb",
+    "mode": "100644",
+    "path": "QSB-CLEANUP.patch",
+    "sha256": "83a1dec4198ebd8eddf5defc608e8d01fbc51a5494e2a69fce2edea3b3f7d789"
+  },
+  "postimage": {
+    "bytes": 28361,
+    "git_blob": "cd3be5cae361ad5e2a8f3300d12f30a03d42c81c",
+    "mode": "100644",
+    "path": "source/qsb_runtime.py",
+    "sha256": "72b8fd9d44a86c26c9fc14191b7d98b60c18babd934afc0cbe5b774c6d449444"
+  },
+  "preimage": {
+    "bytes": 28337,
+    "git_blob": "fecf305bd68017face21d7a4071ab8722e6cdb09",
+    "mode": "100644",
+    "path": "preimage/qsb_runtime.py",
+    "sha256": "5da8c14db7e6b3489b7729bf960b543658edf4f705553daeccaf287b094348fe"
+  },
+  "published_writer": {
+    "bytes": 44516,
+    "commit": "68e04fe39215c5a97e49b141f993d6fb172a5548",
+    "functions_used": [
+      "canonical",
+      "need",
+      "sha",
+      "write_new"
+    ],
+    "git_blob": "145e91887f89359b2267e88be48dc9ed53aa339c",
+    "mode": "100644",
+    "path": "compat/android/pocket4/current-canonical-app-main-20261120/bundle/source/shared/app_common.py",
+    "selected_function_bodies_equal_to_original_draft_helpers": true,
+    "sha256": "682e0805008846437882162bf4b21fdd4982937c1003a5804f64d7aa4d2e2211"
+  },
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "required_phase_controls": [
+    "exact_preimage_reproduces_second_cleanup_collision",
+    "two_cleanup_cycles_keep_distinct_exclusive_receipts_and_original_deadlines",
+    "same_cycle_replay_still_fails_exclusive_create_without_overwrite",
+    "original_720_second_cleanup_cutoff_rejects_before_journal_creation",
+    "original_600_second_reopen_cutoff_remains_enforced"
+  ],
+  "schema": "p4-qsb-unadopted-draft-cleanup-reentry-source-repair-v1",
+  "scope": {
+    "A08_workflow_changed": false,
+    "Android_commands": 0,
+    "Main_entries": 0,
+    "adoption_changed": false,
+    "app_accepted": false,
+    "canonical_14_selection_changed": false,
+    "clock_and_launch_count_in_tests_are_explicit_phase_models": true,
+    "complete_executable_entry_and_orchestration_supplied": false,
+    "current_2391_producer_changed": false,
+    "current_2391_producer_tree": "83431a8a5796fe75fbe629197fabbb95e3b5b756",
+    "fresh_GitHub_control_run_required": true,
+    "host_commands": 0,
+    "live_constructor_or_transport_called": false,
+    "live_source_changed": false,
+    "production_ready": false,
+    "publisher_inputs_changed": false,
+    "runtime_business_evidence_supplied": false,
+    "runtime_qualified": false,
+    "scoped_offline_error_fixture_supplied": false,
+    "source_only": true,
+    "unadopted_draft": true,
+    "whole_controller_reviewed_or_qualified": false
+  }
+}

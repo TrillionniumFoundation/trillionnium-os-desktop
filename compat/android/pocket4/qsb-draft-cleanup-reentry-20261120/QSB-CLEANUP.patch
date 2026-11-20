@@ -1,0 +1,11 @@
+--- a/qsb_runtime.py
++++ b/qsb_runtime.py
+@@ -363,7 +363,7 @@
+                 and self.phase=='business' and time.monotonic()<self.cleanup_deadline,
+                 'QSB_CLEANUP_REQUIRES_KNOWN_EFFECTS_AND_ORIGINAL_RESERVE')
+             self.phase='cleanup';self.deadline=self.cleanup_deadline
+-            self.phase_ref=self.record('phase-cleanup',{'phase':'cleanup','base_plan':self.base_ref,
++            self.phase_ref=self.record('phase-cleanup-%d'%self.native_launches,{'phase':'cleanup','base_plan':self.base_ref,
+                 'deadline_monotonic':self.deadline,'automatic_retry':False})
+ 
+         def normal_close_qsb(self,label):
