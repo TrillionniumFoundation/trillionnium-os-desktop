@@ -1,0 +1,59 @@
+name: Pocket4 QSB draft cleanup source controls
+
+on:
+  pull_request:
+    paths:
+      - 'compat/android/pocket4/qsb-draft-cleanup-reentry-20261120/**'
+      - 'compat/android/pocket4/current-canonical-app-main-20261120/bundle/source/shared/app_common.py'
+      - '.github/workflows/pocket4-qsb-cleanup-source.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'compat/android/pocket4/qsb-draft-cleanup-reentry-20261120/**'
+      - 'compat/android/pocket4/current-canonical-app-main-20261120/bundle/source/shared/app_common.py'
+      - '.github/workflows/pocket4-qsb-cleanup-source.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qsb-draft-cleanup-source-controls:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      QSB_SOURCE_INVENTORY_SHA256: d9c29d4397dcdd8f9b5b7dc5e62fda89dac8e8e65a4b093aa0acba37eba5741a
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify exact source-only capsule and run five local phase controls
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/qsb-draft-cleanup-reentry-20261120"
+          printf '%s  %s\n' "$QSB_SOURCE_INVENTORY_SHA256" "$capsule/FILES.sha256" | sha256sum --check --strict
+          (cd "$capsule" && sha256sum --check --strict FILES.sha256)
+          status=0
+          timeout --signal=TERM --kill-after=5s 60s python3 -I -B "$capsule/check_cleanup_phase.py" \
+            --work "$RUNNER_TEMP" --report "$RUNNER_TEMP/qsb-cleanup-source-controls.json" \
+            >"$RUNNER_TEMP/qsb-cleanup-source-controls.stdout" \
+            2>"$RUNNER_TEMP/qsb-cleanup-source-controls.stderr" || status=$?
+          cat "$RUNNER_TEMP/qsb-cleanup-source-controls.stdout"
+          cat "$RUNNER_TEMP/qsb-cleanup-source-controls.stderr" >&2
+          exit "$status"
+      - name: Preserve source-control result and original streams
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pocket4-qsb-draft-cleanup-source-controls-${{ github.run_id }}
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            ${{ runner.temp }}/qsb-cleanup-source-controls.json
+            ${{ runner.temp }}/qsb-cleanup-source-controls.stdout
+            ${{ runner.temp }}/qsb-cleanup-source-controls.stderr
