@@ -1,0 +1,11 @@
+# Original Car provider, ext4 features and disposable syscall test source
+
+The new explicit production-full-car profile preserves the original 652-project recovery profiles and adds eighteen original dependency cones plus the authenticated framework Car services Gitlink from the same AOSP superproject. The complete normal source lock has 653 projects; the updater and its input/result consumers use the matching full653 contract. Eight new ordinary tests preserve all prior named tests. Static source closure is not a normal Soong build result.
+
+This exact source successor adds support for the recorded clean orphan-file and verity feature tuples. It preserves the root-selected backing, geometry, UUID, original UID/GID and mode, clean journal, lease and namespace checks. Three new ordinary tests use actual newly formatted temporary filesystem headers. No original application content is a fixture.
+
+The six disposable syscall source modules are reachable only through reviewed cfg(test) wiring. Their single named privileged test is explicitly ignored. The complete runner must compile and list it and must preserve all 30 original ignored tests. It does not execute this new test. The separately reviewed outer wrapper and live input custody are still prerequisites to any later disposable syscall execution.
+
+Required complete verification: 1623 named ordinary tests, 31 unexecuted ignored cases, 49 targets, 19 normal releases, 3 examples, 9 recipe cases and 20 rustdoc targets. The previous 2381-source packet stays intact. This packet grants no image mount, Main receipt, app acceptance, CURRENT adoption or production qualification. All current execution and retirement gates are retained.
+
+After the complete current CI succeeds, export_test_driver.py joins the actual supervisor test ELF to Cargo compiler-artifact metadata, the original harness SHA/F9, all 244 commands and 488 stream hashes, the actual ordinary/ignored catalogs, and the complete source chain. It holds the ELF OFD while copying to a separate artifact and rechecks all bookends. It never executes an ELF and does not add the test driver to the 19 normal production binaries. The copied test harness contains ordinary tests already run by CI; the one new privileged case remains compiled and listed only. Other workflow jobs require their own success.

@@ -1,0 +1,78 @@
+{
+  "changed_R3_sources": [
+    "production_identity_persistent_fixture.rs",
+    "production_mounts_persistent_fixture.rs",
+    "production_namespace_persistent_control_child.rs"
+  ],
+  "final_new_sources": [
+    {
+      "bytes": 35893,
+      "cfg_test_only": true,
+      "git_blob": "b23441c0f372d900aa86f01160fddf8ed6839112",
+      "name": "production_identity_persistent_fixture.rs",
+      "sha256": "7b85eb16bcc7edef32d8ac6a05c28ecf9bf8f5906b971e2b16385dad18c21a50"
+    },
+    {
+      "bytes": 7426,
+      "cfg_test_only": true,
+      "git_blob": "5ef11405f412492ad9f3ea4f927d09535b2c8bd4",
+      "name": "production_mounts_persistent_fixture.rs",
+      "sha256": "9e1316f6e91d9c8da5662be64ac438203b735c1170307f9804e1cc1988acbf09"
+    },
+    {
+      "bytes": 9813,
+      "cfg_test_only": true,
+      "git_blob": "7c3334e83c7ed7f361c713004357658f070795df",
+      "name": "production_namespace_persistent_control_child.rs",
+      "sha256": "de628fa57e0aef35cfc369e6249b30ae384364360f4c867cb99723317e25ea34"
+    },
+    {
+      "bytes": 20335,
+      "cfg_test_only": true,
+      "git_blob": "cc6e20e24fc0c56c4d9d2742cdb3bd85f0c07510",
+      "name": "production_namespace_persistent_controls.rs",
+      "sha256": "ca334a15288ce8825462d7e840ca80dbcd6f673cd04a2eb520be6278617d90b8"
+    },
+    {
+      "bytes": 18595,
+      "cfg_test_only": true,
+      "git_blob": "e8079ac7aece34d36b456c9da284295340fc4b47",
+      "name": "production_persistent_data_controls.rs",
+      "sha256": "62eb34221d09eb718b96e7a28ec87e951aceb25bf36e3b9e3fbeef16e68a56f6"
+    },
+    {
+      "bytes": 4959,
+      "cfg_test_only": true,
+      "git_blob": "a278e86c05aea54a10e486da4db111ab57bca231",
+      "name": "production_persistent_data_fixture_backings.rs",
+      "sha256": "695f4b63d6c5056a78972ccb2050601834dc4a7aafdf631fbf1dfcc35132a3fc"
+    }
+  ],
+  "final_patch": {
+    "bytes": 102762,
+    "git_blob": "e77b503391ea4b1a3b7eadc58e1809386882376f",
+    "sha256": "03d1f4fca946687b212724edba4747ddedc9f6a2a3560f9ef61fd829b554fb53"
+  },
+  "findings_closed": [
+    "mkfs normal timeout has finite pidfd readiness and nonblocking try_wait; no blocking Child.wait",
+    "pidfd-open failure keeps the original unreaped Child and finite kill/try_wait; no discovered-PID authority",
+    "unproven formatter keeps Child, optional original pidfd and image/directory/tool/stdout/stderr/seed OFDs until outer teardown; no positive result",
+    "base factory preserves TempDir names on formatter error",
+    "guest writer timeout uses bounded same-pidfd poll and WNOHANG; returns failure and original PID1 tree retains mount retirement authority"
+  ],
+  "full_crate_compiled": false,
+  "original_images_opened": false,
+  "passed_source_review": true,
+  "privileged_fixture_executed": false,
+  "production_ready": false,
+  "required_before_execution": [
+    "Complete crate typecheck and ignored fixture compilation",
+    "Independently reviewed outer wrapper pinning CURRENT whole SHA, both original locks, exact three Main units before/after",
+    "Same fixed private disposable root and resource-limited original owning unit; no original backing opened",
+    "No previously rejected VM operation retried by this fixture"
+  ],
+  "review_basis": "Previously reviewed all six new R2 source bodies and seven cfg(test) parent wiring changes; now reviewed complete R2 to R3 differences and final retained process/descriptor semantics.",
+  "runtime_qualified": false,
+  "schema": "p4-new-disposable-persistent-syscall-source-r3-independent-review-v1",
+  "unchanged_parent_wiring_count": 7
+}

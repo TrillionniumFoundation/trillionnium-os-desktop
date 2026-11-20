@@ -1,0 +1,127 @@
+--- a/.github/workflows/a08-host.yml
++++ b/.github/workflows/a08-host.yml
+@@ -1749,7 +1749,7 @@
+             ${{ runner.temp }}/runtime-d6-ci-logs/*.stderr
+ 
+   runtime-current-complete-producer:
+-    name: Current source - 1612 ordinary cases, 19 releases, examples and docs
++    name: Current source - 1623 ordinary cases, 19 releases, examples and docs
+     runs-on: ubuntu-24.04
+     timeout-minutes: 140
+     env:
+@@ -1768,6 +1768,7 @@
+       CURRENT_NATIVE_INVENTORY_SHA256: 8be17cef0f7dab7b1b2ae508fd2753a2f334cf9249d389dcf5f70896356cbe9b
+       CURRENT_OWNED_CANONICAL_INVENTORY_SHA256: ab44dde611350652f99c5f60f96e4113038ba77f5b4c2692ea96c15705e3ee1e
+       CURRENT_JOINT_DATA_INVENTORY_SHA256: 715557d89c6fdfecbaae5fb617f26537769a95e77d01b2538ce0b62606831799
++      CURRENT_CAR_EXT4_INVENTORY_SHA256: 1c1f600fdfb65c48e0b867a5d0e94b47c477e85505c5ee5d93ab14ce92f517ea
+       P4_NATIVE_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+     steps:
+       - uses: actions/checkout@v4
+@@ -1819,6 +1820,12 @@
+           printf '%s  %s\n' "$CURRENT_JOINT_DATA_INVENTORY_SHA256" "$owned/FILES.sha256" | sha256sum --check --status
+           (cd "$owned" && sha256sum --quiet -c FILES.sha256)
+           run_controls joint-native-runner 60s "$owned/test_runner.py"
++          current="$GITHUB_WORKSPACE/compat/android/pocket4/current-car-ext4-syscall-source-successor-20261120"
++          printf '%s  %s\n' "$CURRENT_CAR_EXT4_INVENTORY_SHA256" "$current/FILES.sha256" | sha256sum --check --status
++          (cd "$current" && sha256sum --quiet -c FILES.sha256)
++          run_controls car-ext4-original-runner 60s "$current/test_runner.py"
++          run_controls car-ext4-catalog-extension 30s "$current/test_catalog_extension.py"
++          run_controls actual-test-driver-export 30s "$current/test_export_test_driver.py"
+       - name: Reconstruct the complete current producer source
+         timeout-minutes: 5
+         shell: bash
+@@ -1881,6 +1888,17 @@
+             --parent-source "$RUNNER_TEMP/current-owned-producer" \
+             --output "$RUNNER_TEMP/current-owned-data-producer" \
+             --report "$RUNNER_TEMP/current-owned-data-source-replay.json"
++      - name: Reconstruct original Car provider, ext4 and compile-only syscall successor
++        timeout-minutes: 2
++        shell: bash
++        run: |
++          set -euo pipefail
++          current="$GITHUB_WORKSPACE/compat/android/pocket4/current-car-ext4-syscall-source-successor-20261120"
++          timeout --signal=TERM --kill-after=5s 90s python3 -I -B "$current/source_verify.py" \
++            --inventory-sha256 "$CURRENT_CAR_EXT4_INVENTORY_SHA256" \
++            --parent-source "$RUNNER_TEMP/current-owned-data-producer" \
++            --output "$RUNNER_TEMP/current-car-data-producer" \
++            --report "$RUNNER_TEMP/current-car-data-source-replay.json"
+       - name: Prepare pinned EROFS and recorded host dependencies
+         timeout-minutes: 32
+         shell: bash
+@@ -1889,15 +1907,15 @@
+           capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1"
+           timeout --signal=TERM --kill-after=30s 1860s bash "$capsule/prepare_ci.sh" \
+             --work "$RUNNER_TEMP/current-dependencies"
+-      - name: Run 1612 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
++      - name: Run 1623 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
+         timeout-minutes: 92
+         shell: bash
+         run: |
+           set -euo pipefail
+-          cohort="$GITHUB_WORKSPACE/compat/android/pocket4/current-owned-persistent-data-successor-20261120"
++          cohort="$GITHUB_WORKSPACE/compat/android/pocket4/current-car-ext4-syscall-source-successor-20261120"
+           timeout --signal=TERM --kill-after=30s 5460s python3 -I -B "$cohort/run_ci.py" \
+-            --inventory-sha256 "$CURRENT_JOINT_DATA_INVENTORY_SHA256" \
+-            --producer "$RUNNER_TEMP/current-owned-data-producer" \
++            --inventory-sha256 "$CURRENT_CAR_EXT4_INVENTORY_SHA256" \
++            --producer "$RUNNER_TEMP/current-car-data-producer" \
+             --work "$RUNNER_TEMP/current-ordinary" \
+             --report "$RUNNER_TEMP/current-ci.json" \
+             --erofs-prefix "$RUNNER_TEMP/current-dependencies/erofs"
+@@ -1915,6 +1933,10 @@
+             ${{ runner.temp }}/current-native-source-replay.json
+             ${{ runner.temp }}/current-owned-source-replay.json
+             ${{ runner.temp }}/current-owned-data-source-replay.json
++            ${{ runner.temp }}/current-car-data-source-replay.json
++            ${{ github.workspace }}/compat/android/pocket4/current-car-ext4-syscall-source-successor-20261120/MANIFEST.json
++            ${{ github.workspace }}/compat/android/pocket4/current-car-ext4-syscall-source-successor-20261120/FILES.sha256
++            ${{ github.workspace }}/compat/android/pocket4/current-car-ext4-syscall-source-successor-20261120/NEW-IGNORED.json
+             ${{ github.workspace }}/compat/android/pocket4/current-owned-persistent-data-successor-20261120/MANIFEST.json
+             ${{ github.workspace }}/compat/android/pocket4/current-owned-persistent-data-successor-20261120/FILES.sha256
+             ${{ github.workspace }}/compat/android/pocket4/current-owned-persistent-data-successor-20261120/REVIEWED-DATA-OVERLAY.json
+@@ -1960,6 +1982,45 @@
+             ${{ runner.temp }}/current-ordinary/target/release/droidloom-wayland
+             ${{ runner.temp }}/current-ordinary/target/release/droidloomctl
+             ${{ runner.temp }}/current-ordinary/target/release/droidloomd
++      - name: Preserve the actual compiled disposable test driver without executing it
++        if: success()
++        timeout-minutes: 3
++        shell: bash
++        run: |
++          set -euo pipefail
++          set -o noclobber
++          current="$GITHUB_WORKSPACE/compat/android/pocket4/current-car-ext4-syscall-source-successor-20261120"
++          status=0
++          timeout --signal=TERM --kill-after=10s 150s python3 -I -B "$current/export_test_driver.py" \
++            --inventory-sha256 "$CURRENT_CAR_EXT4_INVENTORY_SHA256" \
++            --producer "$RUNNER_TEMP/current-car-data-producer" \
++            --work "$RUNNER_TEMP/current-ordinary" \
++            --report "$RUNNER_TEMP/current-ci.json" \
++            --output "$RUNNER_TEMP/current-disposable-test-driver" \
++            >"$RUNNER_TEMP/current-test-driver-export.stdout" \
++            2>"$RUNNER_TEMP/current-test-driver-export.stderr" || status=$?
++          cat "$RUNNER_TEMP/current-test-driver-export.stdout"
++          cat "$RUNNER_TEMP/current-test-driver-export.stderr" >&2
++          exit "$status"
++      - name: Preserve the separate compiled-only disposable test artifact
++        if: success()
++        uses: actions/upload-artifact@v4
++        with:
++          name: a08-current-disposable-syscall-test-driver
++          if-no-files-found: error
++          path: |
++            ${{ runner.temp }}/current-disposable-test-driver/droidloom_supervisor-test-driver
++            ${{ runner.temp }}/current-disposable-test-driver/COMPILE-ONLY-MANIFEST.json
++            ${{ runner.temp }}/current-disposable-test-driver/CURRENT-CI.json
++      - name: Preserve test-driver custody diagnostics
++        if: always()
++        uses: actions/upload-artifact@v4
++        with:
++          name: a08-current-test-driver-export-evidence
++          if-no-files-found: warn
++          path: |
++            ${{ runner.temp }}/current-test-driver-export.stdout
++            ${{ runner.temp }}/current-test-driver-export.stderr
+ 
+   source-materialization-successor:
+     name: Required checkout presence - complete source successor

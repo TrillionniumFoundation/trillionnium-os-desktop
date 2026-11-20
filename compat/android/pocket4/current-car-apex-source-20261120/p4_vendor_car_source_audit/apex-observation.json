@@ -1,0 +1,42 @@
+{
+  "actual_worktree_apex_exists": false,
+  "rows": [
+    {
+      "args": [
+        "ls-tree",
+        "-r",
+        "--long",
+        "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+        "apex_car_framework"
+      ],
+      "bytes": 641,
+      "exit": 0,
+      "sha256": "44ed056f96f5f2f3d74dd0f129d76b69438697c201cf5d64c76316bcf3d16674",
+      "stderr": "",
+      "stdout": "100644 blob 6e621ed795f97d8c8eb7e68da50106641af78d68    5221\tapex_car_framework/Android.bp\n100644 blob 5f376e6927c36a069c0768b3b2ae848f5742bc9c     BAD\tapex_car_framework/apex_manifest.json\n100644 blob 0b720b84598dd321e5121e60dbf818af37865bce     BAD\tapex_car_framework/com.android.car.framework.avbpubkey\n100644 blob 06afeb49878ac137523d0c1ce815dba7eb49597c     BAD\tapex_car_framework/com.android.car.framework.pem\n100644 blob 29a61cbdf3071f0be07a6ea91d9e0b21eef8fbfa     BAD\tapex_car_framework/com.android.car.framework.pk8\n100644 blob adc1957ff26a43cc64c2f5034addd9d33ca136e6     BAD\tapex_car_framework/com.android.car.framework.x509.pem\n"
+    },
+    {
+      "args": [
+        "show",
+        "9f04df65daa8b9a65ee05fd4039fe95446874d76:apex_car_framework/Android.bp"
+      ],
+      "bytes": 5221,
+      "exit": 0,
+      "sha256": "6490cc1e39611432be33d985b70c17cac6ec2fde51b7fb01a1020f96133668f9",
+      "stderr": "",
+      "stdout": "// Copyright (C) 2021 The Android Open Source Project\n//\n// Licensed under the Apache License, Version 2.0 (the \"License\");\n// you may not use this file except in compliance with the License.\n// You may obtain a copy of the License at\n//\n//     http://www.apache.org/licenses/LICENSE-2.0\n//\n// Unless required by applicable law or agreed to in writing, software\n// distributed under the License is distributed on an \"AS IS\" BASIS,\n// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n// See the License for the specific language governing permissions and\n// limitations under the License.\n\npackage {\n    default_team: \"trendy_team_aaos_framework\",\n    default_applicable_licenses: [\"Android-Apache-2.0\"],\n}\n\napex {\n    name: \"com.android.car.framework\",\n    defaults: [\"com.android.car.framework-defaults\"],\n    manifest: \"apex_manifest.json\",\n}\n\napex_defaults {\n    bootclasspath_fragments: [\"com.android.car.framework-bootclasspath-fragment\"],\n    systemserverclasspath_fragments: [\"com.android.car.framework-systemserverclasspath-fragment\"],\n\n    // TODO(b/202031799) Fix jni dependencies\n    //jni_libs: [\n    //    \"libcarservicejni\",\n    //],\n\n    apps: [\n        \"CarServiceUpdatable\",\n        \"ScriptExecutor\",\n    ],\n    compile_multilib: \"both\",\n    name: \"com.android.car.framework-defaults\",\n\n    // TODO(b/288271411): enable it when car mainline module is supported\n    // min_sdk_version: \"33\",\n    file_contexts: \":com.android.car.framework-file_contexts\",\n    key: \"com.android.car.framework.key\",\n    certificate: \":com.android.car.framework.certificate\",\n\n    // TODO(b/202773532) Enable this after all dependencies are resolved.\n    updatable: false,\n}\n\napex_key {\n    name: \"com.android.car.framework.key\",\n    public_key: \"com.android.car.framework.avbpubkey\",\n    private_key: \"com.android.car.framework.pem\",\n}\n\nandroid_app_certificate {\n    name: \"com.android.car.framework.certificate\",\n    // This will use com.android.car.framework.x509.pem (the cert) and\n    // com.android.car.framework.pk8 (the private key)\n    certificate: \"com.android.car.framework\",\n}\n\nsystemserverclasspath_fragment {\n    name: \"com.android.car.framework-systemserverclasspath-fragment\",\n    contents: [\"car-frameworks-service-module\"],\n    apex_available: [\"com.android.car.framework\"],\n}\n\nbootclasspath_fragment {\n    name: \"com.android.car.framework-bootclasspath-fragment\",\n    contents: [\"android.car-module\"],\n    apex_available: [\"com.android.car.framework\"],\n\n    // The bootclasspath_fragments that provide APIs on which this depends.\n    fragments: [\n        {\n            apex: \"com.android.art\",\n            module: \"art-bootclasspath-fragment\",\n        },\n        // framework-statsd\n        {\n            apex: \"com.android.os.statsd\",\n            module: \"com.android.os.statsd-bootclasspath-fragment\",\n        },\n        // frameworks-wifi\n        {\n            apex: \"com.android.wifi\",\n            module: \"com.android.wifi-bootclasspath-fragment\",\n        },\n    ],\n\n    // Additional stubs libraries that this fragment's contents use which are\n    // not provided by another bootclasspath_fragment.\n    additional_stubs: [\n        \"android-non-updatable\",\n    ],\n    hidden_api: {\n\n        // This module does not contain any split packages.\n        split_packages: [],\n\n        // The following packages currently only contain classes from this\n        // bootclasspath_fragment but some of their sub-packages contain classes\n        // from other bootclasspath modules. Packages should only be listed here\n        // when necessary for legacy purposes, new packages should match a\n        // package prefix.\n        single_packages: [\n            \"android.car\",\n        ],\n\n        // The following packages and all their subpackages currently only\n        // contain classes from this bootclasspath_fragment. Listing a package\n        // here won't prevent other bootclasspath modules from adding classes in\n        // any of those packages but it will prevent them from adding those\n        // classes into an API surface, e.g. public, system, etc.. Doing so will\n        // result in a build failure due to inconsistent flags.\n        package_prefixes: [\n            \"android.car.admin\",\n            \"android.car.annotation\",\n            \"android.car.app\",\n            \"android.car.cluster\",\n            \"android.car.content\",\n            \"android.car.diagnostic\",\n            \"android.car.drivingstate\",\n            \"android.car.evs\",\n            \"android.car.hardware\",\n            \"android.car.input\",\n            \"android.car.media\",\n            \"android.car.navigation\",\n            \"android.car.occupantawareness\",\n            \"android.car.occupantconnection\",\n            \"android.car.oem\",\n            \"android.car.os\",\n            \"android.car.projection\",\n            \"android.car.remoteaccess\",\n            \"android.car.settings\",\n            \"android.car.storagemonitoring\",\n            \"android.car.telemetry\",\n            \"android.car.test\",\n            \"android.car.user\",\n            \"android.car.util\",\n            \"android.car.view\",\n            \"android.car.vms\",\n            \"android.car.watchdog\",\n            \"com.android.car\",\n        ],\n    },\n\n}\n"
+    },
+    {
+      "args": [
+        "show",
+        "9f04df65daa8b9a65ee05fd4039fe95446874d76:apex_car_framework/apex_manifest.json"
+      ],
+      "bytes": 0,
+      "exit": 128,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "fatal: bad object 9f04df65daa8b9a65ee05fd4039fe95446874d76:apex_car_framework/apex_manifest.json\n",
+      "stdout": ""
+    }
+  ]
+}
+

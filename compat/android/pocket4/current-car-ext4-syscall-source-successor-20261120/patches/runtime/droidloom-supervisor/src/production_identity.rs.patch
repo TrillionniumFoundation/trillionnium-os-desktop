@@ -1,0 +1,10 @@
+--- a/runtime/droidloom-supervisor/src/production_identity.rs
++++ b/runtime/droidloom-supervisor/src/production_identity.rs
+@@ -1070,6 +1070,7 @@
+ 
+ #[cfg(test)]
+ pub(crate) mod tests {
++    include!("production_identity_persistent_fixture.rs");
+     use super::*;
+     use std::os::unix::fs::{PermissionsExt, symlink};
+ 

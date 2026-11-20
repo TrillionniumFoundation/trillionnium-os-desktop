@@ -1,0 +1,37 @@
+--- a/tools/droidloom-update/src/settings_asb_security_tests.rs
++++ b/tools/droidloom-update/src/settings_asb_security_tests.rs
+@@ -287,7 +287,7 @@
+         validate_source_lock(&recipe, &lock).unwrap();
+         assert_eq!(hash(&lock).unwrap(), production_source::LOCK_SHA);
+         let parsed = droidloom_source::load_lock(&lock).unwrap();
+-        assert_eq!(parsed.projects.len(), 652);
++        assert_eq!(parsed.projects.len(), 653);
+         let original = droidloom_source::load_lock(
+             &recipe.join("android/manifest/production-full-source-lock.json"),
+         )
+@@ -314,6 +314,11 @@
+                     expected_sparse.push(cone.into());
+                 }
+             }
++            for &(provider, _, cone) in droidloom_source::production_car::PROVIDERS {
++                if path == Path::new(provider) {
++                    expected_sparse.push(cone.into());
++                }
++            }
+             assert_eq!(
+                 (path, name, commit, purpose, sparse_paths),
+                 (
+@@ -335,6 +340,13 @@
+             cmake.commit,
+             droidloom_source::production_cmake::CMAKE_COMMIT
+         );
++        let service = &parsed.projects[652];
++        assert_eq!(service.path, Path::new(droidloom_source::production_car::SERVICES_PATH));
++        assert_eq!(service.name, droidloom_source::production_car::SERVICES_NAME);
++        assert_eq!(service.commit, droidloom_source::production_car::SERVICES_COMMIT);
++        assert_eq!(service.purpose, droidloom_source::production_car::SERVICES_PURPOSE);
++        assert_eq!(service.sparse_paths, droidloom_source::production_car::SERVICES_CONES
++            .iter().map(PathBuf::from).collect::<Vec<_>>());
+         let settings = parsed
+             .projects
+             .iter()

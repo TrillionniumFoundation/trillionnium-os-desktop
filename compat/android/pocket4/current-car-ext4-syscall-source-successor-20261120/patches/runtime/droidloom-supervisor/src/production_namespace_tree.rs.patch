@@ -1,0 +1,10 @@
+--- a/runtime/droidloom-supervisor/src/production_namespace_tree.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_tree.rs
+@@ -3209,6 +3209,7 @@
+ 
+ #[cfg(test)]
+ mod tests {
++    include!("production_namespace_persistent_controls.rs");
+     use super::*;
+     use crate::production_identity::tests::broker_fixture;
+     use std::fs;

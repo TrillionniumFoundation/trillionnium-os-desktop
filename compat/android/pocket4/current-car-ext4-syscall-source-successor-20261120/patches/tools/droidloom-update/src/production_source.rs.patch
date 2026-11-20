@@ -1,0 +1,180 @@
+--- a/tools/droidloom-update/src/production_source.rs
++++ b/tools/droidloom-update/src/production_source.rs
+@@ -15,10 +15,12 @@
+ const LINT_LOCK_SHA: &str =
+     "aa14d968c14c2febcfacbb90e82598e2ba8e57f4bbb2cfc8f1f2a741555153ca";
+ const LINT_LOCK_BYTES: usize = 400677;
+-pub(super) const LOCK_PATH: &str = "android/manifest/production-full-apex-tests-source-lock.json";
+-pub(super) const LOCK_SHA: &str =
+-    "14fd227541b01876c7e34d7e6a1ffcb2a202d97d94c6a8f6e14be369e4b79505";
+-pub(super) const LOCK_BYTES: usize = 400720;
++const APEX_TEST_LOCK_PATH: &str = "android/manifest/production-full-apex-tests-source-lock.json";
++const APEX_TEST_LOCK_SHA: &str = "14fd227541b01876c7e34d7e6a1ffcb2a202d97d94c6a8f6e14be369e4b79505";
++const APEX_TEST_LOCK_BYTES: usize = 400720;
++pub(super) const LOCK_PATH: &str = "android/manifest/production-full-car-source-lock.json";
++pub(super) const LOCK_SHA: &str = "77b29310a2614484722e3fa39ac70352a12e3550e1067ce7d8b854eb3753a5d0";
++pub(super) const LOCK_BYTES: usize = 401818;
+ 
+ fn digest(bytes: &[u8]) -> String {
+     format!("{:x}", Sha256::digest(bytes))
+@@ -212,7 +214,7 @@
+     Ok(path)
+ }
+ 
+-pub(super) fn source_lock_path(repo: &Path) -> Result<PathBuf> {
++fn apex_test_source_lock_path(repo: &Path) -> Result<PathBuf> {
+     let lint_path = lint_source_lock_path(repo)?;
+     let mut expected: Value = serde_json::from_slice(&exact_file(
+         &lint_path,
+@@ -234,12 +236,44 @@
+             .ok_or("original APEX provider sparse scope missing")?
+             .push(json!(cone));
+     }
++    let path = repo.join(APEX_TEST_LOCK_PATH);
++    let raw = exact_file(&path, APEX_TEST_LOCK_BYTES, APEX_TEST_LOCK_SHA)?;
++    if serde_json::from_slice::<Value>(&raw)? != expected {
++        return fail("production APEX test lock changes more than both original provider directories");
++    }
++    droidloom_source::production_apex_tests::build_plan(&droidloom_source::load_lock(&path)?)?;
++    Ok(path)
++}
++
++pub(super) fn source_lock_path(repo: &Path) -> Result<PathBuf> {
++    let old_path = apex_test_source_lock_path(repo)?;
++    let mut expected: Value = serde_json::from_slice(&exact_file(
++        &old_path, APEX_TEST_LOCK_BYTES, APEX_TEST_LOCK_SHA,
++    )?)?;
++    let projects = expected["projects"].as_array_mut()
++        .ok_or("original APEX-test projects missing")?;
++    for &(path, commit, cone) in droidloom_source::production_car::PROVIDERS {
++        let project = projects.iter_mut().find(|project| project["path"] == path)
++            .ok_or("original Car dependency project missing")?;
++        if project["commit"] != commit {
++            return fail("Car provider must retain its original superproject Gitlink");
++        }
++        project["sparse_paths"].as_array_mut()
++            .ok_or("original Car provider sparse scope missing")?.push(json!(cone));
++    }
++    projects.push(json!({
++        "path": droidloom_source::production_car::SERVICES_PATH,
++        "name": droidloom_source::production_car::SERVICES_NAME,
++        "commit": droidloom_source::production_car::SERVICES_COMMIT,
++        "purpose": droidloom_source::production_car::SERVICES_PURPOSE,
++        "sparse_paths": droidloom_source::production_car::SERVICES_CONES,
++    }));
+     let path = repo.join(LOCK_PATH);
+     let raw = exact_file(&path, LOCK_BYTES, LOCK_SHA)?;
+     if serde_json::from_slice::<Value>(&raw)? != expected {
+-        return fail("production APEX test lock changes more than both original provider directories");
+-    }
+-    droidloom_source::production_apex_tests::build_plan(&droidloom_source::load_lock(&path)?)?;
++        return fail("production Car lock differs from the complete fixed original provider closure");
++    }
++    droidloom_source::production_car::build_plan(&droidloom_source::load_lock(&path)?)?;
+     Ok(path)
+ }
+ 
+@@ -263,7 +297,7 @@
+             let expected = droidloom_source::MaterializedManifest {
+                 schema_version: 1,
+                 source_lock_sha256: LOCK_SHA.to_owned(),
+-                plan: droidloom_source::production_apex_tests::build_plan(lock)?,
++                plan: droidloom_source::production_car::build_plan(lock)?,
+             };
+             let bytes = serde_json::to_vec_pretty(&expected)?;
+             exact_file(
+@@ -271,7 +305,7 @@
+                 bytes.len(),
+                 &digest(&bytes),
+             )?;
+-            droidloom_source::production_apex_tests::verify_materialized(lock_path, lock, source)?;
++            droidloom_source::production_car::verify_materialized(lock_path, lock, source)?;
+             Ok(())
+         }
+         Ok(_) => fail("production source workspace must be a real directory"),
+@@ -293,7 +327,7 @@
+     }
+     let lock = source_lock_path(repo)?;
+     let mut receipt = request.description(product)?;
+-    receipt["schema"] = "droidloom-production-full652-inputs-v1".into();
++    receipt["schema"] = "droidloom-production-full653-inputs-v1".into();
+     receipt["source_lock"] = json!({"path": lock, "bytes": LOCK_BYTES, "sha256": LOCK_SHA});
+     receipt["source_manifest"] = json!({"path": source.join(".droidloom-source-manifest.json"),
+         "sha256": hash(&source.join(".droidloom-source-manifest.json"))?});
+@@ -305,7 +339,7 @@
+     receipt["production_signing_qualified"] = false.into();
+     receipt["whole_security_bulletin_qualified"] = false.into();
+     write(
+-        &out.join("droidloom-production-full652-inputs.json"),
++        &out.join("droidloom-production-full653-inputs.json"),
+         serde_json::to_vec_pretty(&receipt)?,
+     )
+ }
+@@ -367,9 +401,9 @@
+         return fail("actual vendor build.prop must identify the user build");
+     }
+     let tool = out.join("host/linux-x86/bin/secilc");
+-    let input = out.join("droidloom-production-full652-inputs.json");
++    let input = out.join("droidloom-production-full653-inputs.json");
+     let receipt = json!({
+-        "schema":"droidloom-production-full652-vendor-normal-result-v1",
++        "schema":"droidloom-production-full653-vendor-normal-result-v1",
+         "inputs":artifact(&input)?,
+         "requested_targets":request.requested_targets(),
+         "vendor_image":artifact(&product_out.join("vendor.img"))?,
+@@ -393,7 +427,7 @@
+         "Audio_runtime_qualified":false,"runtime_qualified":false,"production_ready":false
+     });
+     write(
+-        &out.join("droidloom-production-full652-vendor-normal-result.json"),
++        &out.join("droidloom-production-full653-vendor-normal-result.json"),
+         serde_json::to_vec_pretty(&receipt)?,
+     )
+ }
+@@ -401,6 +435,32 @@
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++
++    #[test]
++    fn original_652_apex_manifest_requires_explicit_car_source_reconciliation() {
++        let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..")
++            .canonicalize().unwrap();
++        let old_path = apex_test_source_lock_path(&repo).unwrap();
++        let selected = source_lock_path(&repo).unwrap();
++        let old = droidloom_source::load_lock(&old_path).unwrap();
++        let current = droidloom_source::load_lock(&selected).unwrap();
++        assert!(droidloom_source::production_car::build_plan(&old).is_err());
++        assert!(droidloom_source::production_apex_tests::build_plan(&current).is_err());
++        let prior = droidloom_source::MaterializedManifest {
++            schema_version: 1,
++            source_lock_sha256: APEX_TEST_LOCK_SHA.into(),
++            plan: droidloom_source::production_apex_tests::build_plan(&old).unwrap(),
++        };
++        let directory = tempfile::tempdir().unwrap();
++        let source = directory.path().join("source");
++        fs::create_dir(&source).unwrap();
++        let manifest = source.join(".droidloom-source-manifest.json");
++        let original = serde_json::to_vec_pretty(&prior).unwrap();
++        fs::write(&manifest, &original).unwrap();
++        assert!(verify_source_workspace(&selected, &current, &source).is_err());
++        assert_eq!(fs::read(manifest).unwrap(), original);
++        assert_eq!(fs::read_dir(source).unwrap().count(), 1);
++    }
+     #[test]
+     fn actual_production_requests_use_fixed_union_and_independent_pair_targets() {
+         let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+@@ -408,11 +468,11 @@
+             .canonicalize()
+             .unwrap();
+         let path = source_lock_path(&repo).unwrap();
+-        let plan = droidloom_source::production_apex_tests::build_plan(
++        let plan = droidloom_source::production_car::build_plan(
+             &droidloom_source::load_lock(&path).unwrap(),
+         )
+         .unwrap();
+-        assert_eq!(plan.projects.len(), 652);
++        assert_eq!(plan.projects.len(), 653);
+         assert_eq!(hash(&path).unwrap(), LOCK_SHA);
+         for request in [
+             FixedProductionRequest::Existing(SoongDependencyMode::Strict, TARGETS),

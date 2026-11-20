@@ -1,0 +1,158 @@
+{
+  "Android_started": false,
+  "all9_workflow_jobs_passed": true,
+  "archive_metadata": [
+    {
+      "bytes": 1501986,
+      "created_at": "2026-11-20T16:26:52Z",
+      "digest": "sha256:ebfa1002c1d851d59365e149b915be3af589a2c647599a1d0303d393f6318e9b",
+      "id": 14648740988,
+      "name": "a08-source-and-host-evidence"
+    },
+    {
+      "bytes": 1878132,
+      "created_at": "2026-11-20T16:17:41Z",
+      "digest": "sha256:fe0046e9fb46759862ffe51a94acee581d019a050a0446f35c7d80680570acb9",
+      "id": 14648091518,
+      "name": "a08-current-complete-source-evidence"
+    },
+    {
+      "bytes": 20008697,
+      "created_at": "2026-11-20T16:17:45Z",
+      "digest": "sha256:9a4081f6d31ec7bd5998a23e9d420687feeec56f8a10a0e41fe917ee52206d15",
+      "id": 14647927343,
+      "name": "a08-current-normal-binaries"
+    },
+    {
+      "bytes": 187487,
+      "created_at": "2026-11-20T16:03:53Z",
+      "digest": "sha256:8756147190733c7c229475c350134c0d6ed83a07169f835fd72a079eac786308",
+      "id": 14646052998,
+      "name": "a08-source-and-host-evidence"
+    }
+  ],
+  "commands_verified": 244,
+  "example_binaries": 3,
+  "first_host_attempt": {
+    "archive": {
+      "bytes": 187487,
+      "sha256": "8756147190733c7c229475c350134c0d6ed83a07169f835fd72a079eac786308"
+    },
+    "conclusion": "cancelled",
+    "decoded_job_log": {
+      "bytes": 218019,
+      "sha256": "d89d677772ddfcac63d640999bd13e092335627797834367124814be70d4615c"
+    },
+    "job_id": 136394131474
+  },
+  "ignored_cases_not_executed": 30,
+  "independent_full_artifact_review": {
+    "bytes": 610500,
+    "sha256": "2a6a7a8ff9dc11a894999864c616386d5df10f3ed5fbe30822c0c6da81ef3c1d"
+  },
+  "named_ordinary_cases_verified": 1612,
+  "normal_release_ELFs_full_body_verified": 19,
+  "packet_inventory_sha256": "715557d89c6fdfecbaae5fb617f26537769a95e77d01b2538ce0b62606831799",
+  "parent_commit": "7f7044c3e92efa57f7ccb584eb1c7bc0aa8bea28",
+  "production_ready": false,
+  "raw_ci_report": {
+    "bytes": 550727,
+    "sha256": "a85ca77299fcfcdcbf0596b6153a8fbfda01ac8481890633cccf9941704e680f"
+  },
+  "recipe_cases": 9,
+  "run_attempts": 2,
+  "run_id": 44766990025,
+  "runtime_qualified": false,
+  "rustdoc_targets": 20,
+  "schema": "p4-complete-parent-ci-before-car-ext4-successor-v1",
+  "scope": "Exact parent source CI and artifact custody; does not qualify successor source or live Android.",
+  "second_host_attempt": {
+    "archive": {
+      "bytes": 1501986,
+      "sha256": "ebfa1002c1d851d59365e149b915be3af589a2c647599a1d0303d393f6318e9b"
+    },
+    "completed_at": "2026-11-20T16:26:55Z",
+    "conclusion": "success",
+    "decoded_job_log": {
+      "bytes": 666103,
+      "sha256": "bde12ddde9c5f8739097a371c422a843064131dccd0342200043c014d19b3b3b"
+    },
+    "exact_archive_members_verified": 151,
+    "job_id": 136412872920,
+    "started_at": "2026-11-20T16:20:04Z"
+  },
+  "source": {
+    "bytes": 45436614,
+    "files": 2381,
+    "tree": "00c99f0f89fef255d6e8e818769f687f80c1af86"
+  },
+  "successful_original_jobs_not_reexecuted": [
+    {
+      "completed_at": "2026-11-20T15:49:52Z",
+      "entire_step_list_equal": true,
+      "first_attempt_job_id": 136394130817,
+      "latest_attempt_display_job_id": 136412874859,
+      "name": "audio537-current-producer",
+      "started_at": "2026-11-20T15:48:39Z"
+    },
+    {
+      "completed_at": "2026-11-20T15:58:18Z",
+      "entire_step_list_equal": true,
+      "first_attempt_job_id": 136394131227,
+      "latest_attempt_display_job_id": 136412876007,
+      "name": "Required checkout presence - complete source successor",
+      "started_at": "2026-11-20T15:48:39Z"
+    },
+    {
+      "completed_at": "2026-11-20T16:17:50Z",
+      "entire_step_list_equal": true,
+      "first_attempt_job_id": 136394131289,
+      "latest_attempt_display_job_id": 136412931072,
+      "name": "Current source - 1612 ordinary cases, 19 releases, examples and docs",
+      "started_at": "2026-11-20T15:48:39Z"
+    },
+    {
+      "completed_at": "2026-11-20T15:50:16Z",
+      "entire_step_list_equal": true,
+      "first_attempt_job_id": 136394131317,
+      "latest_attempt_display_job_id": 136412962499,
+      "name": "audio538-current-producer",
+      "started_at": "2026-11-20T15:48:39Z"
+    },
+    {
+      "completed_at": "2026-11-20T15:50:09Z",
+      "entire_step_list_equal": true,
+      "first_attempt_job_id": 136394131395,
+      "latest_attempt_display_job_id": 136412876390,
+      "name": "aac-security330-current-producer",
+      "started_at": "2026-11-20T15:48:39Z"
+    },
+    {
+      "completed_at": "2026-11-20T15:50:24Z",
+      "entire_step_list_equal": true,
+      "first_attempt_job_id": 136394131476,
+      "latest_attempt_display_job_id": 136412973405,
+      "name": "intentresolver-security537-current-producer",
+      "started_at": "2026-11-20T15:48:40Z"
+    },
+    {
+      "completed_at": "2026-11-20T15:50:18Z",
+      "entire_step_list_equal": true,
+      "first_attempt_job_id": 136394131500,
+      "latest_attempt_display_job_id": 136412924805,
+      "name": "runtime-d6-init-security-metadata",
+      "started_at": "2026-11-20T15:48:39Z"
+    },
+    {
+      "completed_at": "2026-11-20T15:51:55Z",
+      "entire_step_list_equal": true,
+      "first_attempt_job_id": 136394131806,
+      "latest_attempt_display_job_id": 136412946913,
+      "name": "native643-current-producer",
+      "started_at": "2026-11-20T15:48:40Z"
+    }
+  ],
+  "successor_source_tested_by_this_parent": false,
+  "test_harnesses": 49,
+  "whole_stdout_stderr_bodies_verified": 488
+}

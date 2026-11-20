@@ -1,0 +1,25 @@
+--- a/tools/droidloom-update/src/wm_security.rs
++++ b/tools/droidloom-update/src/wm_security.rs
+@@ -377,8 +377,8 @@
+                 .unwrap()
+         );
+         let lock = droidloom_source::load_lock(&selected).unwrap();
+-        let plan = droidloom_source::production_apex_tests::build_plan(&lock).unwrap();
+-        assert_eq!(plan.projects.len(), 652);
++        let plan = droidloom_source::production_car::build_plan(&lock).unwrap();
++        assert_eq!(plan.projects.len(), 653);
+         let original = droidloom_source::load_lock(
+             &repo.join("android/manifest/production-full-source-lock.json"),
+         ).unwrap();
+@@ -389,6 +389,11 @@
+             .find(|project| project.path == Path::new(droidloom_source::production_lint::HEALTH_PATH))
+             .unwrap().sparse_paths.push(droidloom_source::production_lint::LINT_PATH.into());
+         for &(path, _, cone) in droidloom_source::production_apex_tests::PROVIDERS {
++            expected_projects.iter_mut()
++                .find(|project| project.path == Path::new(path))
++                .unwrap().sparse_paths.push(cone.into());
++        }
++        for &(path, _, cone) in droidloom_source::production_car::PROVIDERS {
+             expected_projects.iter_mut()
+                 .find(|project| project.path == Path::new(path))
+                 .unwrap().sparse_paths.push(cone.into());

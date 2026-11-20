@@ -1,0 +1,10 @@
+--- a/runtime/droidloom-supervisor/src/production_mounts.rs
++++ b/runtime/droidloom-supervisor/src/production_mounts.rs
+@@ -1601,6 +1601,7 @@
+ /// This type never constructs HostAdmission or a public cohort authority.
+ #[cfg(test)]
+ pub(crate) mod private_control {
++    include!("production_mounts_persistent_fixture.rs");
+     use super::*;
+     use std::os::unix::fs::{PermissionsExt, symlink};
+     use std::process::{Command, Stdio};

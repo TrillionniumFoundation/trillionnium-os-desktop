@@ -1,0 +1,13 @@
+--- a/runtime/droidloom-supervisor/src/production_persistent_data.rs
++++ b/runtime/droidloom-supervisor/src/production_persistent_data.rs
+@@ -15,6 +15,10 @@
+ mod writable_loop;
+ #[path = "production_persistent_data_superblock.rs"]
+ mod superblock;
++
++#[cfg(test)]
++#[path = "production_persistent_data_controls.rs"]
++pub(crate) mod private_control;
+ 
+ use backings::OriginalBackingPair;
+ use writable_loop::WritableLoop;

@@ -1,0 +1,54 @@
+--- a/tools/droidloom-source/src/main.rs
++++ b/tools/droidloom-source/src/main.rs
+@@ -26,6 +26,7 @@
+     ProductionFullCmake,
+     ProductionFullLint,
+     ProductionFullApexTests,
++    ProductionFullCar,
+ }
+ 
+ #[derive(Debug, Subcommand)]
+@@ -87,6 +88,7 @@
+         Profile::ProductionFullCmake => droidloom_source::production_cmake::build_plan,
+         Profile::ProductionFullLint => droidloom_source::production_lint::build_plan,
+         Profile::ProductionFullApexTests => droidloom_source::production_apex_tests::build_plan,
++        Profile::ProductionFullCar => droidloom_source::production_car::build_plan,
+     };
+     type SourceOperation = fn(&Path, &SparseSourceLock, &Path) -> Result<MaterializedManifest, SourceError>;
+     let (materialize, reconcile, verify_materialized): (SourceOperation, SourceOperation, SourceOperation) = match cli.profile {
+@@ -96,6 +98,7 @@
+         Profile::ProductionFullCmake => (droidloom_source::production_cmake::materialize, droidloom_source::production_cmake::reconcile, droidloom_source::production_cmake::verify_materialized),
+         Profile::ProductionFullLint => (droidloom_source::production_lint::materialize, droidloom_source::production_lint::reconcile, droidloom_source::production_lint::verify_materialized),
+         Profile::ProductionFullApexTests => (droidloom_source::production_apex_tests::materialize, droidloom_source::production_apex_tests::reconcile, droidloom_source::production_apex_tests::verify_materialized),
++        Profile::ProductionFullCar => (droidloom_source::production_car::materialize, droidloom_source::production_car::reconcile, droidloom_source::production_car::verify_materialized),
+     };
+     match cli.command {
+         Command::VerifyLock { lock } => {
+@@ -146,6 +149,27 @@
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++
++    #[test]
++    fn source_cli_requires_named_car_profile_and_preserves_original_652_recovery() {
++        for argv in [
++            ["droidloom-source", "--profile", "production-full-car", "verify-lock"],
++            ["droidloom-source", "verify-lock", "--profile", "production-full-car"],
++        ] {
++            assert!(matches!(Cli::try_parse_from(argv).unwrap().profile, Profile::ProductionFullCar));
++        }
++        assert!(matches!(Cli::try_parse_from([
++            "droidloom-source", "--profile", "production-full-apex-tests", "verify-lock",
++        ]).unwrap().profile, Profile::ProductionFullApexTests));
++        assert!(matches!(Cli::try_parse_from([
++            "droidloom-source", "verify-lock",
++        ]).unwrap().profile, Profile::Audio));
++        for alias in ["car", "653", "production-latest", "unbounded"] {
++            assert!(Cli::try_parse_from([
++                "droidloom-source", "--profile", alias, "verify-lock",
++            ]).is_err());
++        }
++    }
+ 
+     #[test]
+     fn source_cli_requires_explicit_original_apex_test_providers() {

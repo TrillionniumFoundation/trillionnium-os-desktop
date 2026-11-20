@@ -1,0 +1,163 @@
+{
+  "actual_source_manifest": {
+    "bytes": 441851,
+    "lock_sha": "14fd227541b01876c7e34d7e6a1ffcb2a202d97d94c6a8f6e14be369e4b79505",
+    "projects": [
+      {
+        "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+        "path": "packages/services/Car",
+        "purpose": "Actual android.car and android.car.builtin.impl providers required by the upstream Robolectric host framework",
+        "sparse_paths": [
+          "aconfig",
+          "car-lib/src",
+          "car-lib/jni/large-parcelable/src",
+          "car-builtin-lib/src",
+          "car-builtin-lib/api",
+          "libs/car-internal-dep-lib/src",
+          "teams",
+          "cpp/vhal/client/include",
+          "cpp/vhal/client/src",
+          "cpp/car_binder_lib/largeParcelable/include",
+          "car-lib/api",
+          "cpp/car_binder_lib",
+          "cpp/watchdog/aidl",
+          "packages/CarDeveloperOptions",
+          "prebuilts",
+          "cpp/power/client"
+        ],
+        "url": "https://android.googlesource.com/platform/packages/services/Car"
+      },
+      {
+        "commit": "32927b80c3fcba2cee73f03d1cc4a982a9426032",
+        "path": "external/lua",
+        "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+        "sparse_paths": [
+          "src"
+        ],
+        "url": "https://android.googlesource.com/platform/external/lua"
+      }
+    ],
+    "projects_count": 652,
+    "schema": 1,
+    "sha256": "ce334d5386e99dbabd61e8913802db417adb085e76bfb93e9d2fed04b4c80843",
+    "superproject": "28f0bbddc24d56c8ec5a8df5342ac7a292184039"
+  },
+  "build_passed": false,
+  "car": {
+    "actual_missing_direct_cones": [
+      "apex_car_framework",
+      "car-lib-module",
+      "service",
+      "packages/ScriptExecutor"
+    ],
+    "actual_required_apex_provider": "apex_car_framework/Android.bp",
+    "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+    "provider_bytes": 5221,
+    "provider_sha256": "6490cc1e39611432be33d985b70c17cac6ec2fde51b7fb01a1020f96133668f9"
+  },
+  "compiled": false,
+  "failure": {
+    "file": "external/lua/Android.bp",
+    "line": 36,
+    "message": "apex_available: com.android.car.framework is not a valid module name",
+    "module": "liblua",
+    "stdout": {
+      "bytes": 80374,
+      "path": "r25-dispatch-correction/failure-readback/normal-official-gsi-vendor-build.stdout",
+      "sha256": "c113fa56df5a4d46a70ad55607744f1c21e434fbc13340ba3e06a3d1892dad81"
+    },
+    "variant": "android_x86_64_sdk_static_apex31"
+  },
+  "frameworks_services": {
+    "dependency": "builtInServices/Android.bp:car-frameworks-service",
+    "name": "platform/frameworks/opt/car/services",
+    "official_gitlink_response": {
+      "body": ")]}'\n{\n  \"id\": \"6a7b6227f59e936761be5ac419af5a1c9f4b9592\",\n  \"entries\": [\n    {\n      \"mode\": 57344,\n      \"type\": \"commit\",\n      \"id\": \"2bb3349c1a84b9b15c5ef05ef9c2e3dc6dde427a\",\n      \"name\": \"services\"\n    },\n    {\n      \"mode\": 57344,\n      \"type\": \"commit\",\n      \"id\": \"1e1de04405291025244448dfddda320fb0b47b42\",\n      \"name\": \"setupwizard\"\n    }\n  ]\n}\n",
+      "bytes": 360,
+      "sha256": "292e0683f691e49a07e959333a7310c9ac37a6e32b96a6bce1adbd0760caf920",
+      "url": "https://android.googlesource.com/platform/superproject/+/28f0bbddc24d56c8ec5a8df5342ac7a292184039/frameworks/opt/car/?format=JSON"
+    },
+    "path": "frameworks/opt/car/services",
+    "present_in_652_manifest": false,
+    "present_in_actual_tree": false,
+    "provider": "updatableServices/Android.bp:car-frameworks-service-module",
+    "same_superproject_commit": "2bb3349c1a84b9b15c5ef05ef9c2e3dc6dde427a"
+  },
+  "lua": {
+    "body_pin": {
+      "bytes": 1257,
+      "sha256": "a7062441770fcbd0fd21ce9f02e381e78e0072fe24bfaddbb7b444374e9b703f"
+    },
+    "commit": "32927b80c3fcba2cee73f03d1cc4a982a9426032"
+  },
+  "production_ready": false,
+  "prohibited_changes_not_made": [
+    "AI395 source mutation",
+    "Soong mutation",
+    "lua apex_available deletion",
+    "stub apex",
+    "ALLOW_MISSING_DEPENDENCIES",
+    "APEX installation/product selection",
+    "Android runtime",
+    "original userdata"
+  ],
+  "repair": {
+    "minimum_project_count": 653,
+    "new_profile_required": true,
+    "new_tests_must_verify_old_profile_rejection_new_scope_exactness_monotonic_extension": true,
+    "old_652_profiles_retained_for_recovery": true,
+    "preserve_original_superproject_all_existing_commits_paths_purposes_cones_links_policy": true,
+    "source_scope_closure_in_progress": true,
+    "strict_missing_dependency_policy_unchanged": true
+  },
+  "runtime_qualified": false,
+  "schema": "p4-r25-original-car-apex-provider-audit-v1",
+  "state": "actual_source_scope_omission_confirmed",
+  "upstream_raw_bodies": [
+    {
+      "bytes": 5221,
+      "path": "upstream/apex_car_framework/Android.bp",
+      "sha256": "6490cc1e39611432be33d985b70c17cac6ec2fde51b7fb01a1020f96133668f9"
+    },
+    {
+      "bytes": 58,
+      "path": "upstream/apex_car_framework/apex_manifest.json",
+      "sha256": "15c36929afb35467b8bb129b2ac94d08429f0a8789f590cdd0b462c9d8800e41"
+    },
+    {
+      "bytes": 3492,
+      "path": "upstream/car-lib-module/Android.bp",
+      "sha256": "aa5a8ed238912afaab23e2559cec11783b531af5e9697ea0f5290e3246ec2534"
+    },
+    {
+      "bytes": 1257,
+      "path": "upstream/external-lua/Android.bp",
+      "sha256": "a7062441770fcbd0fd21ce9f02e381e78e0072fe24bfaddbb7b444374e9b703f"
+    },
+    {
+      "bytes": 1166,
+      "path": "upstream/frameworks-opt-car-services/builtInServices/Android.bp",
+      "sha256": "fcb35d3fa28b10811dddb3d324eb542ec424c630590af4742579dea58b37bc62"
+    },
+    {
+      "bytes": 930,
+      "path": "upstream/frameworks-opt-car-services/updatableServices/Android.bp",
+      "sha256": "922e422f115d4743dbf3cfe78eecabde8322a6b984b73e515d1c7d68f75d7fbb"
+    },
+    {
+      "bytes": 2201,
+      "path": "upstream/packages/ScriptExecutor/Android.bp",
+      "sha256": "63e58787d2cac3e06eb1b2abd6f55c432b48728fc4c9dfdad25872e74674cfe4"
+    },
+    {
+      "bytes": 12448,
+      "path": "upstream/service/Android.bp",
+      "sha256": "c73305bbed9799f7fd56d5bed67c2b4c135887823e622c79a447bbccb59bddb9"
+    },
+    {
+      "bytes": 2000,
+      "path": "upstream/service-builtin/Android.bp",
+      "sha256": "c32d4b92fce64a35310f81889a7f06c3ead6ba2f99e3656993eba3111da12ca1"
+    }
+  ]
+}

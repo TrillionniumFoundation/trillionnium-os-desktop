@@ -1,0 +1,342 @@
+{
+  "actual_652_manifest": {
+    "bytes": 4183,
+    "path": "p4_vendor_car_source_audit/actual-manifest-observation.json",
+    "sha256": "8b2e870a22a733441b1e908d0a19134a8277a214c8452534097ef20c48f828ef"
+  },
+  "base_tree": "fd0ef624e436d1eb5c8d2c4083335088811a6a42",
+  "car_internal_array_references_resolved": 60,
+  "compiled": false,
+  "excluded_unneeded_sibling_sources": [
+    "Car/service/jni (APEX defaults deliberately leave this JNI list commented in original source)",
+    "Car/packages/ScriptExecutor/tests (not referenced by the selected APK/JNI provider BP)",
+    "Car/cpp/telemetry/cartelemetryd/sampleclient",
+    "frameworks/opt/car/services/{builtInServices,updatableServices}/tests and builtInServices/host_tests",
+    "frameworks/hardware/interfaces/automotive/telemetry/aidl/vts"
+  ],
+  "inherited_external_scope": {
+    "frameworks/hardware/interfaces": "Original automotive/power/aidl already supplies power, powerpolicy V3 and internal V1; only missing telemetry API/current source cones added.",
+    "hardware/interfaces": "Original complete automotive cone already includes VehicleHalDefaultProperties_JSON, VhalTestVendorProperties, vehicle V4, remoteaccess, occupant-awareness and audiocontrol providers. No new hardware/interfaces pin or scope.",
+    "remaining_external_modules": "Exact original 652 projects retained; 74 dependency references listed in STATIC-SOURCE-CONTROLS require normal Soong variant/type/visibility evaluation. Static selection is not a complete Soong success claim.",
+    "system/sepolicy": "Original complete selected project remains the APEX file_contexts provider."
+  },
+  "materialized": false,
+  "new_car_blueprints": [
+    {
+      "bytes": 5221,
+      "path": "apex_car_framework/Android.bp",
+      "sha256": "6490cc1e39611432be33d985b70c17cac6ec2fde51b7fb01a1020f96133668f9"
+    },
+    {
+      "bytes": 3492,
+      "path": "car-lib-module/Android.bp",
+      "sha256": "aa5a8ed238912afaab23e2559cec11783b531af5e9697ea0f5290e3246ec2534"
+    },
+    {
+      "bytes": 977,
+      "path": "car-lib/generated-prop-config/Android.bp",
+      "sha256": "796df9fae0956616e3fc309541242dbc5080b0a49aae30d7ace9c9d2ce89fa55"
+    },
+    {
+      "bytes": 1356,
+      "path": "cpp/power/aidl/Android.bp",
+      "sha256": "eb728bd8a4ce6ab67e519ce7617978903c923985cd5d13bc81b1181d48dc0483"
+    },
+    {
+      "bytes": 2718,
+      "path": "cpp/telemetry/cartelemetryd/Android.bp",
+      "sha256": "b1ed367517a03abe3f68d43002923548a036147a03dfedad4de5cdc338a6f775"
+    },
+    {
+      "bytes": 1732,
+      "path": "cpp/telemetry/cartelemetryd/aidl/Android.bp",
+      "sha256": "40a61a398c31e2d351012f2c6acf071b0c78e16ecd9c7651f89ceb7c5feb679b"
+    },
+    {
+      "bytes": 868,
+      "path": "cpp/telemetry/proto/Android.bp",
+      "sha256": "0f9279f8b716911eaff2a5283e7021971a9ed65c4a613f2d797e2b41dcdcab75"
+    },
+    {
+      "bytes": 8127,
+      "path": "data/etc/Android.bp",
+      "sha256": "6bed0515dbfe86a88b294f521e4072f0c366d8c9a172b02827c831b989e86236"
+    },
+    {
+      "bytes": 1423,
+      "path": "libs/car-watchdog-lib/Android.bp",
+      "sha256": "02dd317752b52e434ff3a11477b8d094d4579c0a269e971231bf8c683c0fc7ff"
+    },
+    {
+      "bytes": 1359,
+      "path": "libs/procfs-inspector/client/Android.bp",
+      "sha256": "755515ae6e366c0e9f41297d578630d33213c5ef52620cbab1c6f75a5d56aa2e"
+    },
+    {
+      "bytes": 2201,
+      "path": "packages/ScriptExecutor/Android.bp",
+      "sha256": "63e58787d2cac3e06eb1b2abd6f55c432b48728fc4c9dfdad25872e74674cfe4"
+    },
+    {
+      "bytes": 12448,
+      "path": "service/Android.bp",
+      "sha256": "c73305bbed9799f7fd56d5bed67c2b4c135887823e622c79a447bbccb59bddb9"
+    }
+  ],
+  "new_profile_lock": {
+    "bytes": 401818,
+    "path": "android/manifest/production-full-car-source-lock.json",
+    "sha256": "77b29310a2614484722e3fa39ac70352a12e3550e1067ce7d8b854eb3753a5d0"
+  },
+  "new_project": {
+    "commit": "2bb3349c1a84b9b15c5ef05ef9c2e3dc6dde427a",
+    "name": "platform/frameworks/opt/car/services",
+    "path": "frameworks/opt/car/services",
+    "purpose": "Original superproject Car framework system-server module, builtin API and protobuf source required by com.android.car.framework",
+    "sparse_paths": [
+      "builtInServices/api",
+      "builtInServices/proto",
+      "builtInServices/src",
+      "updatableServices/src"
+    ]
+  },
+  "normal_cone_semantics": "Complete selected subtrees plus every immediate file in their ancestors, including the original Android.bp declarations. No rewritten or synthetic Blueprint file.",
+  "normal_soong_passed": false,
+  "production_ready": false,
+  "providers": [
+    {
+      "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+      "cone": "apex_car_framework",
+      "project": "packages/services/Car",
+      "reason": "Original com.android.car.framework APEX/defaults/key/certificate/classpath declarations and manifest"
+    },
+    {
+      "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+      "cone": "car-lib-module",
+      "project": "packages/services/Car",
+      "reason": "Original android.car-module implementation and complete API/lint resources"
+    },
+    {
+      "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+      "cone": "car-lib/generated-prop-config",
+      "project": "packages/services/Car",
+      "reason": "Both original CarSvcProps JSON resources consumed by CarServiceUpdatable"
+    },
+    {
+      "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+      "cone": "service/proto",
+      "project": "packages/services/Car",
+      "reason": "All original Car service native/Java dump, telemetry and watchdog protobuf groups"
+    },
+    {
+      "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+      "cone": "service/res",
+      "project": "packages/services/Car",
+      "reason": "Original CarServiceUpdatable Android resources"
+    },
+    {
+      "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+      "cone": "service/src",
+      "project": "packages/services/Car",
+      "reason": "Original Java implementation, ScriptExecutor AIDL and feature-selected Java implementations"
+    },
+    {
+      "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+      "cone": "packages/ScriptExecutor/res",
+      "project": "packages/services/Car",
+      "reason": "Original ScriptExecutor APK resources"
+    },
+    {
+      "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+      "cone": "packages/ScriptExecutor/src",
+      "project": "packages/services/Car",
+      "reason": "Original ScriptExecutor Java and liblua JNI implementation"
+    },
+    {
+      "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+      "cone": "cpp/power/aidl",
+      "project": "packages/services/Car",
+      "reason": "Original android.automotive.power.delegate AIDL implementation and imports"
+    },
+    {
+      "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+      "cone": "cpp/telemetry/cartelemetryd/aidl",
+      "project": "packages/services/Car",
+      "reason": "Original versioned android.automotive.telemetry.internal AIDL and API snapshots"
+    },
+    {
+      "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+      "cone": "cpp/telemetry/cartelemetryd/src",
+      "project": "packages/services/Car",
+      "reason": "Ancestor Android.bp also declares real telemetry daemon/library sources"
+    },
+    {
+      "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+      "cone": "cpp/telemetry/cartelemetryd/tests",
+      "project": "packages/services/Car",
+      "reason": "Same unavoidable ancestor Android.bp declares real test sources; no test execution credit"
+    },
+    {
+      "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+      "cone": "cpp/telemetry/proto",
+      "project": "packages/services/Car",
+      "reason": "Original telemetry cardata/EVS protobuf source groups"
+    },
+    {
+      "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+      "cone": "libs/car-watchdog-lib",
+      "project": "packages/services/Car",
+      "reason": "Original android.car.watchdoglib Java source and source group"
+    },
+    {
+      "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+      "cone": "libs/procfs-inspector/client",
+      "project": "packages/services/Car",
+      "reason": "Original procfs inspector Java/AIDL source group used by Car service"
+    },
+    {
+      "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+      "cone": "data/etc",
+      "project": "packages/services/Car",
+      "reason": "Original allowed_privapp_com.android.car and sibling resource files declared by the same BP"
+    },
+    {
+      "commit": "9de6d032a248523c22d0bd86e224d1762355c41e",
+      "cone": "automotive/telemetry/aidl/aidl_api",
+      "project": "frameworks/hardware/interfaces",
+      "reason": "Complete frozen and current original framework telemetry AIDL API snapshots"
+    },
+    {
+      "commit": "9de6d032a248523c22d0bd86e224d1762355c41e",
+      "cone": "automotive/telemetry/aidl/android",
+      "project": "frameworks/hardware/interfaces",
+      "reason": "Original framework telemetry AIDL implementation; inherited ancestor BP retained"
+    }
+  ],
+  "runtime_qualified": false,
+  "same_original_superproject": "28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+  "schema": "p4-original-car-source-closure-v1",
+  "source_raw_evidence": [
+    {
+      "bytes": 5221,
+      "path": "p4_vendor_car_source_audit/upstream/apex_car_framework/Android.bp",
+      "sha256": "6490cc1e39611432be33d985b70c17cac6ec2fde51b7fb01a1020f96133668f9"
+    },
+    {
+      "bytes": 58,
+      "path": "p4_vendor_car_source_audit/upstream/apex_car_framework/apex_manifest.json",
+      "sha256": "15c36929afb35467b8bb129b2ac94d08429f0a8789f590cdd0b462c9d8800e41"
+    },
+    {
+      "bytes": 3748,
+      "path": "p4_vendor_car_source_audit/upstream/car-builtin-lib/Android.bp",
+      "sha256": "b7e38fdc5a873a7cd2607759d4eff2b560db218ea14c6a137da5bde70b4e9ceb"
+    },
+    {
+      "bytes": 12547,
+      "path": "p4_vendor_car_source_audit/upstream/car-lib/Android.bp",
+      "sha256": "e88e92f8113c3c05f71999adfde6c50612d9d15d6454fbb0db9b98aba26fc6a2"
+    },
+    {
+      "bytes": 977,
+      "path": "p4_vendor_car_source_audit/upstream/car-lib/generated-prop-config/Android.bp",
+      "sha256": "796df9fae0956616e3fc309541242dbc5080b0a49aae30d7ace9c9d2ce89fa55"
+    },
+    {
+      "bytes": 3492,
+      "path": "p4_vendor_car_source_audit/upstream/car-lib-module/Android.bp",
+      "sha256": "aa5a8ed238912afaab23e2559cec11783b531af5e9697ea0f5290e3246ec2534"
+    },
+    {
+      "bytes": 1356,
+      "path": "p4_vendor_car_source_audit/upstream/cpp/power/aidl/Android.bp",
+      "sha256": "eb728bd8a4ce6ab67e519ce7617978903c923985cd5d13bc81b1181d48dc0483"
+    },
+    {
+      "bytes": 2718,
+      "path": "p4_vendor_car_source_audit/upstream/cpp/telemetry/cartelemetryd/Android.bp",
+      "sha256": "b1ed367517a03abe3f68d43002923548a036147a03dfedad4de5cdc338a6f775"
+    },
+    {
+      "bytes": 1732,
+      "path": "p4_vendor_car_source_audit/upstream/cpp/telemetry/cartelemetryd/aidl/Android.bp",
+      "sha256": "40a61a398c31e2d351012f2c6acf071b0c78e16ecd9c7651f89ceb7c5feb679b"
+    },
+    {
+      "bytes": 868,
+      "path": "p4_vendor_car_source_audit/upstream/cpp/telemetry/proto/Android.bp",
+      "sha256": "0f9279f8b716911eaff2a5283e7021971a9ed65c4a613f2d797e2b41dcdcab75"
+    },
+    {
+      "bytes": 1837,
+      "path": "p4_vendor_car_source_audit/upstream/cpp/watchdog/aidl/Android.bp",
+      "sha256": "594580d317f694e72d40f99f6df40f3da5c832bfa43d15f2aa85d40398c3485d"
+    },
+    {
+      "bytes": 8127,
+      "path": "p4_vendor_car_source_audit/upstream/data/etc/Android.bp",
+      "sha256": "6bed0515dbfe86a88b294f521e4072f0c366d8c9a172b02827c831b989e86236"
+    },
+    {
+      "bytes": 1257,
+      "path": "p4_vendor_car_source_audit/upstream/external-lua/Android.bp",
+      "sha256": "a7062441770fcbd0fd21ce9f02e381e78e0072fe24bfaddbb7b444374e9b703f"
+    },
+    {
+      "bytes": 885,
+      "path": "p4_vendor_car_source_audit/upstream/framework-services/builtInServices/proto/Android.bp",
+      "sha256": "0e7d98b4702bedfc716e21aaf10855adc88922d52f645d28ca9e8b2fe9b0b54c"
+    },
+    {
+      "bytes": 4311,
+      "path": "p4_vendor_car_source_audit/upstream/frameworks-hardware-interfaces/automotive/power/aidl/Android.bp",
+      "sha256": "812307d7f78bc7827c5b21558e8777815aed844af4116d9eb82b4a88e6ac7a4a"
+    },
+    {
+      "bytes": 1937,
+      "path": "p4_vendor_car_source_audit/upstream/frameworks-hardware-interfaces/automotive/telemetry/aidl/Android.bp",
+      "sha256": "442eff61429ce15eb2a41141774351fc118367ddd23876ea1157e7ae55960ef6"
+    },
+    {
+      "bytes": 1166,
+      "path": "p4_vendor_car_source_audit/upstream/frameworks-opt-car-services/builtInServices/Android.bp",
+      "sha256": "fcb35d3fa28b10811dddb3d324eb542ec424c630590af4742579dea58b37bc62"
+    },
+    {
+      "bytes": 930,
+      "path": "p4_vendor_car_source_audit/upstream/frameworks-opt-car-services/updatableServices/Android.bp",
+      "sha256": "922e422f115d4743dbf3cfe78eecabde8322a6b984b73e515d1c7d68f75d7fbb"
+    },
+    {
+      "bytes": 1423,
+      "path": "p4_vendor_car_source_audit/upstream/libs/car-watchdog-lib/Android.bp",
+      "sha256": "02dd317752b52e434ff3a11477b8d094d4579c0a269e971231bf8c683c0fc7ff"
+    },
+    {
+      "bytes": 1359,
+      "path": "p4_vendor_car_source_audit/upstream/libs/procfs-inspector/client/Android.bp",
+      "sha256": "755515ae6e366c0e9f41297d578630d33213c5ef52620cbab1c6f75a5d56aa2e"
+    },
+    {
+      "bytes": 2201,
+      "path": "p4_vendor_car_source_audit/upstream/packages/ScriptExecutor/Android.bp",
+      "sha256": "63e58787d2cac3e06eb1b2abd6f55c432b48728fc4c9dfdad25872e74674cfe4"
+    },
+    {
+      "bytes": 12448,
+      "path": "p4_vendor_car_source_audit/upstream/service/Android.bp",
+      "sha256": "c73305bbed9799f7fd56d5bed67c2b4c135887823e622c79a447bbccb59bddb9"
+    },
+    {
+      "bytes": 2719,
+      "path": "p4_vendor_car_source_audit/upstream/service/jni/Android.bp",
+      "sha256": "9e21794a150441490336788265bec30b566c0510962b8902b281aef4d084aabc"
+    },
+    {
+      "bytes": 2000,
+      "path": "p4_vendor_car_source_audit/upstream/service-builtin/Android.bp",
+      "sha256": "c32d4b92fce64a35310f81889a7f06c3ead6ba2f99e3656993eba3111da12ca1"
+    }
+  ],
+  "source_review_boundary": "Candidate source closure only. Future normal reconciliation must fetch and verify every exact original source, then real full Soong/build must pass. No operator worktree or old recovery manifest was changed."
+}
