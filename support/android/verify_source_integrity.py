@@ -1039,6 +1039,7 @@ REQUIRED_FILES = (
     'compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/originals/native-actions-source-export.json',
     'compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/originals/native-actions-source-export.json.gz',
     'compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/test_firefox.py',
+    'compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/test_mapped_owner.py',
     'compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/validation-r1/controls.stderr',
     'compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/validation-r1/controls.stdout',
     'compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/validation-r2/EXECUTION.json',
@@ -1052,6 +1053,9 @@ REQUIRED_FILES = (
     'compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/validation-r3/current-cli-parser-compatibility.json',
     'compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/validation-r3/current-source-observation.json',
     'compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/validation-r3/pre-repair.json',
+    'compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/validation-r4/EXECUTION.json',
+    'compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/validation-r4/controls.stderr',
+    'compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/validation-r4/controls.stdout',
     'compat/android/pocket4/current-app-acceptance/verify_firefox_source.py',
     'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/history-before-united/SOURCE-REFRESH.json',
     'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/united/CODE-MANIFEST.json',
@@ -1404,7 +1408,8 @@ BINARY_FILES = {
     'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-source-20261119/FILES.sha256': {'bytes': 9204, 'sha256': '3b86c6027a635e5979e0665e0f2cc05111ca7bccf8ead9b16bfa00cfd94dce2c'},
     'compat/android/pocket4/kernel-native-exit-config-binding-20261119/FILES.sha256': {'bytes': 3154, 'sha256': 'e1be7ef6e1a99b11cac1fae14af7c4398f488def91b41b95fd84f52ed23756bb'},
     'compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119-peer-review.json': {'bytes': 28107, 'sha256': '56dc638b9ed1b0825bc41d21b4a36fda77c00c1f31f3f093dc7292eca2581731'},
-    'compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/FILES.sha256': {'bytes': 3975, 'sha256': 'c5858d0f55889a6ba58857754337a399784471f380dbc682029132915d78787e'},
+    'compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/FILES.sha256': {'bytes': 4349, 'sha256': 'f03ce060a8e537fc7adb21a091d5e34a797e0563a1e5277c16ce2e1f138bc838'},
+    'compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/validation-r4/controls.stdout': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
     'compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/validation-r3/controls.stdout': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
     'compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/originals/native-actions-source-export.json.gz': {'bytes': 19802, 'sha256': 'a20c3023874e564adc25f2970332ded40fc9fd96fcce7dae8a8175820f019c6c'},
     'compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119/validation-r1/controls.stdout': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
@@ -1416,7 +1421,7 @@ BINARY_FILES = {
         'bytes': 7894116, 'sha256': '3e8b2fa1ea1ef3555ca7c82e27abe79a2be029c701f69ac55ef4c82484f247ad'},
     'compat/android/pocket4/runtime-current-source-r1/SOURCE-OVERLAY.tar.xz': {
         'bytes': 657032, 'sha256': '5a87a80bebfc2c63696ca9932fcea8d9485810f75a310f9fa1f792cab292390b'},
-    'compat/android/pocket4/current-publisher-delivery-source/FILES.sha256': {'bytes': 5219, 'sha256': '48ffe9476250ccf78e4a4991aabfbfadfb9f7226ca0a8bd46e1d38d2f2d87c3f'},
+    'compat/android/pocket4/current-publisher-delivery-source/FILES.sha256': {'bytes': 5219, 'sha256': '92da063e3cdf77a95720948d0fa47c41860f1fdf4e74576d1ab250c113b51398'},
     'compat/android/pocket4/current-publisher-delivery-source/MANIFEST.json': {
         'bytes': 19869, 'sha256': '872dc25ba3c8980b5ea67609b0a9fb17c6c31b925a823ee9642fe75d3218c699'},
     'compat/android/pocket4/current-publisher-delivery-source/SOURCE.tar.gz': {

@@ -2,7 +2,7 @@
   "APK_downloads": 0,
   "Android_calls": 0,
   "SDK_commands": 0,
-  "actual_controls": 39,
+  "actual_controls": 64,
   "binary_or_empty_files": [
     {
       "bytes": 19802,
@@ -23,13 +23,18 @@
       "bytes": 0,
       "path": "validation-r3/controls.stdout",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "validation-r4/controls.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
   ],
   "current_source_files": [
     {
-      "bytes": 8792,
+      "bytes": 13200,
       "path": "firefox_custody.py",
-      "sha256": "f3726ae934b20212df35b9875f1954d4bcd3acf94072dea1d890bdf3732fe8bb"
+      "sha256": "ca1330a722df24a0fc3eaae450f225942a10305d8b80fad09a06ff9ea9386b95"
     },
     {
       "bytes": 8823,
@@ -45,6 +50,11 @@
       "bytes": 21170,
       "path": "test_firefox.py",
       "sha256": "491abdff1ccee9bcc2bc092eb88eb403dd91d6799601a4818e2cd199136c1038"
+    },
+    {
+      "bytes": 22466,
+      "path": "test_mapped_owner.py",
+      "sha256": "40f1b81f87671a6a3d5134cffc713d96631543532a78f2531baeb5c0c4f893c8"
     }
   ],
   "external_pinned_evidence": [
@@ -69,12 +79,12 @@
       "sha256": "4d25fc0aafd5668cc3f0c31be157bc617732902976aad821333a02de84ff9bf7"
     }
   ],
-  "file_count_without_manifest_and_checksum_index": 40,
+  "file_count_without_manifest_and_checksum_index": 44,
   "files": [
     {
-      "bytes": 4373,
+      "bytes": 5393,
       "path": "CURRENT-SOURCE-SUCCESSOR.json",
-      "sha256": "ac4430ee17464e12c3318065b4173042cf095742d74a7ad0f670c58b0e83a34b"
+      "sha256": "cec6487c9d3d308ded9ef6703d9ddbff14224564a6057f6d4a0451cfe364a6b6"
     },
     {
       "bytes": 4406,
@@ -87,9 +97,9 @@
       "sha256": "f217128321a90f46925f05a4289f356bcdf563c23a76a3ec685d7aa09a050ac8"
     },
     {
-      "bytes": 9677,
+      "bytes": 12460,
       "path": "README.md",
-      "sha256": "235b9e1efa9b0d543e1cf11c2f7660a45f49cb7f72f45f06eb17c1bc4dd1a1f1"
+      "sha256": "1ee15a9964e0a1ee71db5a4c6418647380742bf9feafe8b90ffc4d8d15380f7d"
     },
     {
       "bytes": 8844,
@@ -97,9 +107,9 @@
       "sha256": "f0449ace05e183fd7f38c9ed43527c3d3e5398427cc2c9b9bbe1e378ff1ad00b"
     },
     {
-      "bytes": 5635,
+      "bytes": 7352,
       "path": "VALIDATION.json",
-      "sha256": "e19829dda2203da48e856b1f4702c74d40fef0b0460cd96a2803a7398eef7caa"
+      "sha256": "4fe0d8a3e28e8a3baa9a5781eb36f476fd63533f6e5e0c754bdcf21098f47f43"
     },
     {
       "bytes": 7139,
@@ -112,9 +122,9 @@
       "sha256": "da084330cc03226258b5a05d68497fb276710868499cbb0a380f20994e673525"
     },
     {
-      "bytes": 8792,
+      "bytes": 13200,
       "path": "firefox_custody.py",
-      "sha256": "f3726ae934b20212df35b9875f1954d4bcd3acf94072dea1d890bdf3732fe8bb"
+      "sha256": "ca1330a722df24a0fc3eaae450f225942a10305d8b80fad09a06ff9ea9386b95"
     },
     {
       "bytes": 8823,
@@ -212,6 +222,11 @@
       "sha256": "491abdff1ccee9bcc2bc092eb88eb403dd91d6799601a4818e2cd199136c1038"
     },
     {
+      "bytes": 22466,
+      "path": "test_mapped_owner.py",
+      "sha256": "40f1b81f87671a6a3d5134cffc713d96631543532a78f2531baeb5c0c4f893c8"
+    },
+    {
       "bytes": 3739,
       "path": "validation-r1/controls.stderr",
       "sha256": "5a1300fe254ec655fa1abf8ba8a9f2c080c785feec3bf5b578ef873c0be26ca6"
@@ -270,15 +285,42 @@
       "bytes": 974,
       "path": "validation-r3/pre-repair.json",
       "sha256": "273abb2ee541299c1f34f1490e97eeb5399dad6a892d14aeb83056c662c6d24c"
+    },
+    {
+      "bytes": 9952,
+      "path": "validation-r4/EXECUTION.json",
+      "sha256": "40e017aeab5643cdcc99b97511a87dc086d8466de19b7fd0ac66daee3a1b8c68"
+    },
+    {
+      "bytes": 8894,
+      "path": "validation-r4/controls.stderr",
+      "sha256": "62385b5687ba5019c964bb2fc3ccb30c46971bbd776f68a1d231ad760e500c54"
+    },
+    {
+      "bytes": 0,
+      "path": "validation-r4/controls.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
   ],
   "historical_controls": 32,
-  "previous_controls": 35,
-  "previous_source_commit": "765c67ff1113885c98bcf84a31e937f484cc5c35",
+  "main_owner_mapping_dependency": {
+    "commit": "9f34dfb3f8d8deac7ed02ce6e197e052be34019e",
+    "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+    "runtime_controller_binding_completed": false,
+    "source": {
+      "bytes": 44032,
+      "path": "compat/android/pocket4/current-app-acceptance/calendar-core-live-id-map-20261120/source/app_common.py",
+      "sha256": "adebfe99b64afc5a06caf30d2023d113f937920cba92dbe751a53c473ea8c2b4"
+    },
+    "use": "Original source-admitted MainView and mapped_file_info; no copied mapper or configured offset."
+  },
+  "new_mapping_controls": 25,
+  "previous_controls": 39,
+  "previous_source_commit": "9f34dfb3f8d8deac7ed02ce6e197e052be34019e",
   "production_ready": false,
   "publication_lifts_hold": false,
   "runtime_qualified": false,
-  "schema": "p4-firefox-source-candidate-manifest-v3",
+  "schema": "p4-firefox-source-candidate-manifest-v4",
   "state": "HELD_SOURCE_CANDIDATE",
-  "total_bytes_without_manifest_and_checksum_index": 715327
+  "total_bytes_without_manifest_and_checksum_index": 766567
 }
