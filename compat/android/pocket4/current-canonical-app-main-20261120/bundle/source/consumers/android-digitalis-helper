@@ -1,0 +1,225 @@
+#!/usr/bin/python3 -I
+"""Pocket4 Droidloom/Digitalis Android control. No ADB and no arbitrary shell API."""
+import argparse,base64,fcntl,glob,json,os,re,subprocess,sys
+
+CTL='/usr/bin/droidloomctl'
+RUNNER='local.pocket4.actions/.ActionRunner'
+ENV_KEYS={
+ 'PATH','BOOTCLASSPATH','DEX2OATBOOTCLASSPATH','ANDROID_ART_ROOT','ANDROID_ASSETS',
+ 'ANDROID_BOOTLOGO','ANDROID_DATA','ANDROID_I18N_ROOT','ANDROID_ROOT','ANDROID_STORAGE',
+ 'ANDROID_TZDATA_ROOT','ASEC_MOUNTPOINT','DOWNLOAD_CACHE','EXTERNAL_STORAGE',
+ 'LOOP_MOUNTPOINT','STANDALONE_SYSTEMSERVER_JARS','SYSTEMSERVERCLASSPATH','LANG'
+}
+HOST_ENV={'PATH':'/usr/sbin:/usr/bin:/sbin:/bin','HOME':'/root','LANG':'C.UTF-8'}
+
+def proc_cmd(pid):
+    return open(f'/proc/{pid}/cmdline','rb').read().replace(b'\0',b' ').decode('utf-8','replace').strip()
+
+def ppid(pid):
+    for line in open(f'/proc/{pid}/status',encoding='utf-8',errors='replace'):
+        if line.startswith('PPid:'): return int(line.split()[1])
+    raise RuntimeError('PPID_NOT_FOUND')
+
+def require_root_process(pid,exe=None):
+    if type(pid) is not int or pid<=1: raise RuntimeError('INVALID_CELL_PID')
+    fields={line.split(':',1)[0]:line.split(':',1)[1].strip()
+            for line in open(f'/proc/{pid}/status',encoding='utf-8',errors='replace') if ':' in line}
+    if fields.get('Uid','').split()!=['0','0','0','0']:
+        raise RuntimeError('CELL_PROCESS_NOT_ROOT')
+    if exe is not None and os.readlink(f'/proc/{pid}/exe')!=exe:
+        raise RuntimeError('UNEXPECTED_CELL_EXECUTABLE')
+
+
+def cell_ancestors(pid,host):
+    # Only the daemon-recorded production host may anchor a bridge. A separate
+    # test cell can have the same command line but is never a fallback target.
+    cur=pid; seen={pid}; ancestors=[]
+    for _ in range(128):
+        par=ppid(cur)
+        if par<=1 or par in seen: return None
+        ancestors.append(par)
+        if par==host: return ancestors
+        seen.add(par); cur=par
+    return None
+
+
+def discover():
+    status=json.loads(subprocess.run([CTL,'readiness','--json'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=8,env=HOST_ENV,check=True).stdout)
+    if status.get('state')!='running' or 'Android is ready' not in status.get('message',''):
+        raise RuntimeError('DROIDLOOM_NOT_READY')
+    host=status.get('host_pid')
+    require_root_process(host)
+    bridges=[]
+    for p in glob.glob('/proc/[0-9]*'):
+        try:
+            pid=int(p.rsplit('/',1)[1])
+            if proc_cmd(pid)=='app_process /system/bin com.android.droidloom.input.InputBridge':
+                ancestors=cell_ancestors(pid,host)
+                if ancestors is not None: bridges.append((pid,ancestors))
+        except (OSError,ValueError):
+            pass
+    if len(bridges)!=1: raise RuntimeError(f'INPUT_BRIDGE_COUNT:{len(bridges)}')
+    bridge,ancestors=bridges[0]; init=None
+    for par in ancestors:
+        try: cmd=proc_cmd(par)
+        except OSError: cmd=''
+        if cmd=='/init' or cmd.startswith('/init '):
+            init=par; break
+    if not init: raise RuntimeError('ANDROID_INIT_NOT_FOUND')
+    require_root_process(bridge,'/system/bin/app_process64')
+    require_root_process(init,'/system/bin/init')
+    owner=ppid(init)
+    require_root_process(owner,'/usr/bin/unshare')
+    expected='/usr/bin/unshare --mount --pid --mount-proc --ipc --uts --fork --kill-child=KILL --propagation=private /usr/bin/droidloom-supervisor development-enter --spec /etc/droidloom/cell.json'
+    if proc_cmd(owner)!=expected: raise RuntimeError('UNEXPECTED_CELL_OWNER')
+    # The verified Ubuntu compatibility launcher is the daemon's recorded
+    # host_pid; its immediate child is the real util-linux unshare process.
+    # Also accept a directly recorded real unshare process on an upstream host.
+    if owner!=host and ppid(owner)!=host: raise RuntimeError('CELL_OWNER_NOT_STATUS_CHILD')
+    if owner!=host:
+        expected_host='/usr/bin/python3 -I /usr/local/libexec/droidloom-compat/unshare --mount --pid --mount-proc --ipc --uts --fork --kill-child=TERM --forward-signals --propagation=private /usr/bin/droidloom-supervisor development-enter --spec /etc/droidloom/cell.json'
+        if proc_cmd(host)!=expected_host: raise RuntimeError('UNEXPECTED_CELL_LAUNCHER')
+        if not re.fullmatch(r'/usr/bin/python3(?:\.\d+)?',os.readlink(f'/proc/{host}/exe')):
+            raise RuntimeError('UNEXPECTED_CELL_LAUNCHER_EXECUTABLE')
+    for ns in ('mnt','pid','uts','ipc'):
+        if os.readlink(f'/proc/{bridge}/ns/{ns}')!=os.readlink(f'/proc/{init}/ns/{ns}'):
+            raise RuntimeError('INPUT_BRIDGE_NAMESPACE_MISMATCH')
+    if os.readlink(f'/proc/{init}/ns/mnt')==os.readlink('/proc/self/ns/mnt'):
+        raise RuntimeError('ANDROID_CELL_IS_HOST_MOUNT_NAMESPACE')
+    raw=open(f'/proc/{bridge}/environ','rb').read().split(b'\0')
+    env={}
+    for item in raw:
+        if b'=' not in item: continue
+        k,v=item.split(b'=',1)
+        k=k.decode('utf-8','strict')
+        if k in ENV_KEYS:
+            value=v.decode('utf-8','strict')
+            if len(value)>65536 or '\x00' in value: raise RuntimeError('INVALID_ANDROID_ENV')
+            env[k]=value
+    required={'PATH','BOOTCLASSPATH','DEX2OATBOOTCLASSPATH','ANDROID_ROOT','ANDROID_DATA','ANDROID_ART_ROOT'}
+    if not required.issubset(env): raise RuntimeError('INCOMPLETE_ANDROID_ENV')
+    return init,env,status
+
+
+def arun(args,timeout=30):
+    init,env,_=discover()
+    envargs=[]
+    for k in sorted(env): envargs.append(k+'='+env[k])
+    # Terminate the Android command's process group before the host deadline.
+    # Instrumentation may already have acted; timeout still means unknown
+    # outcome and must not invite an automatic retry.
+    inner_timeout=max(1,timeout-5)
+    cmd=['/usr/bin/nsenter','-t',str(init),'-m','-p','-u','-i','/system/bin/env']+envargs+['/system/xbin/su','2000','/system/bin/timeout','-k','2',str(inner_timeout)]+list(args)
+    p=subprocess.run(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=timeout,env=HOST_ENV)
+    if p.returncode in (124,137):
+        raise subprocess.TimeoutExpired(cmd,inner_timeout,output=p.stdout,stderr=p.stderr)
+    if p.returncode:
+        raise RuntimeError((p.stderr or p.stdout).decode('utf-8','replace')[-1800:])
+    return p.stdout
+
+def ui(r):
+    selector=r.get('selector',{})
+    if not isinstance(selector,dict) or set(selector)-{'text','id','desc','package','class','focused','editable','contains'}:
+        raise ValueError('INVALID_SELECTOR')
+    if any(not isinstance(v,(str,bool)) for v in selector.values()): raise ValueError('INVALID_SELECTOR_VALUE')
+    if 'index' in r and (type(r['index']) is not int or r['index']<0): raise ValueError('INVALID_INDEX')
+    if r['op'] in ('set-text','type-text'):
+        value=r.get('value')
+        if not isinstance(value,str) or len(value.encode('utf-8'))>4096: raise ValueError('TEXT_MUST_BE_UTF8_AT_MOST_4096_BYTES')
+    encoded=base64.b64encode(json.dumps(r,ensure_ascii=True,separators=(',',':')).encode()).decode()
+    raw=arun(['/system/bin/am','instrument','-w','-r','-e','request',encoded,RUNNER],timeout=50).decode('utf-8','replace')
+    matches=re.findall(r'^INSTRUMENTATION_RESULT: sidecar_result_base64=(.*)$',raw,re.M)
+    if len(matches)!=1: raise RuntimeError('UI_RUNNER_FAILED:'+raw[-1600:])
+    result=json.loads(base64.b64decode(matches[0],validate=True))
+    if not isinstance(result,dict) or result.get('ok') is not True: raise RuntimeError(result.get('error','UI_ACTION_FAILED'))
+    return result
+
+def dispatch(r):
+    op=r.get('op'); allowed={'op','coords','duration','package','selector','index','value'}
+    if set(r)-allowed: raise ValueError('UNKNOWN_ARGUMENT')
+    if op=='status':
+        init,_,st=discover()
+        properties=dict(re.findall(r'^\[([^\]]+)\]: \[(.*)\]$',arun(['/system/bin/getprop']).decode('utf-8','replace'),re.M))
+        def prop(k): return properties.get(k,'')
+        return {'ok':True,'backend':'droidloom-teto-digitalis-derived','running':True,'host_pid':st.get('host_pid'),'android_init_host_pid':init,
+                'boot_completed':prop('sys.boot_completed'),'android':prop('ro.build.version.release'),
+                'sdk':prop('ro.build.version.sdk'),'native_bridge':prop('ro.dalvik.vm.native.bridge'),'berberis_flags':prop('ro.berberis.flags'),
+                'adbd':prop('init.svc.adbd'),'adb_tcp_port':prop('service.adb.tcp.port'),
+                'persist_adb_tcp_port':prop('persist.adb.tcp.port'),'usb_config':prop('sys.usb.config'),
+                'persist_usb_config':prop('persist.sys.usb.config')}
+    if op=='screenshot': return arun(['/system/bin/screencap','-p'])
+    if op=='apps': return {'ok':True,'packages':arun(['/system/bin/pm','list','packages','-3']).decode().splitlines()}
+    if op in ('home','back','enter'):
+        arun(['/system/bin/input','keyevent',{'home':'KEYCODE_HOME','back':'KEYCODE_BACK','enter':'KEYCODE_ENTER'}[op]])
+        return {'ok':True,'performed':op,'visual_verified':False}
+    if op in ('tap','swipe'):
+        c=r.get('coords',[]); count=2 if op=='tap' else 4
+        if len(c)!=count or any(type(x) is not int or not 0<=x<=32767 for x in c): raise ValueError('INVALID_COORDINATES')
+        args=['/system/bin/input',op]+[str(x) for x in c]
+        if op=='swipe':
+            d=r.get('duration',300)
+            if type(d) is not int or not 50<=d<=5000: raise ValueError('INVALID_DURATION')
+            args.append(str(d))
+        arun(args); return {'ok':True,'performed':op,'visual_verified':False}
+    if op=='launch':
+        pkg=r.get('package','')
+        if not isinstance(pkg,str) or not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+',pkg): raise ValueError('INVALID_PACKAGE')
+        text=arun(['/system/bin/cmd','package','resolve-activity','--brief','-a','android.intent.action.MAIN','-c','android.intent.category.LAUNCHER',pkg]).decode()
+        comps=[s.strip() for s in text.splitlines() if re.fullmatch(r'[A-Za-z0-9_.$]+/[A-Za-z0-9_.$]+',s.strip())]
+        if len(comps)!=1: raise ValueError('NO_UNIQUE_LAUNCHER')
+        out=arun(['/system/bin/am','start','-W','-n',comps[0]],timeout=35).decode('utf-8','replace')
+        if 'Error:' in out or 'Exception' in out: raise RuntimeError(out)
+        return {'ok':True,'component':comps[0],'output':out}
+    if op in ('set-text','type-text','dump','find','click'): return ui(r)
+    raise ValueError('UNSUPPORTED_OPERATION')
+
+def helper():
+    if os.geteuid()!=0: raise PermissionError('HELPER_REQUIRES_SUDO')
+    raw=sys.stdin.buffer.readline(65537)
+    if len(raw)>65536: raise ValueError('REQUEST_TOO_LARGE')
+    r=json.loads(raw)
+    if not isinstance(r,dict): raise ValueError('OBJECT_REQUIRED')
+    fd=os.open('/run/lock/android-digitalis-actions.lock',os.O_CREAT|os.O_RDWR|os.O_NOFOLLOW,0o600)
+    try: fcntl.flock(fd,fcntl.LOCK_EX|fcntl.LOCK_NB)
+    except BlockingIOError: raise RuntimeError('DIGITALIS_BUSY_NO_ACTION_TAKEN')
+    result=dispatch(r)
+    if isinstance(result,bytes):
+        if not result.startswith(b'\x89PNG\r\n\x1a\n'): raise RuntimeError('INVALID_SCREENSHOT')
+        sys.stdout.buffer.write(result)
+    else: print(json.dumps(result,ensure_ascii=False))
+
+def client():
+    p=argparse.ArgumentParser(description='Pocket4 Droidloom/Digitalis Android control; no ADB.')
+    subs=p.add_subparsers(dest='op',required=True)
+    for op in ('status','apps','home','back','enter','dump'): subs.add_parser(op)
+    s=subs.add_parser('screenshot'); s.add_argument('output',nargs='?',default='-')
+    s=subs.add_parser('tap'); s.add_argument('coords',nargs=2,type=int)
+    s=subs.add_parser('swipe'); s.add_argument('coords',nargs=4,type=int); s.add_argument('--duration',type=int,default=300)
+    s=subs.add_parser('launch'); s.add_argument('package')
+    for op in ('find','click','set-text'):
+        s=subs.add_parser(op)
+        for key in ('text','contains','id','desc','package','class'): s.add_argument('--'+key)
+        if op in ('click','set-text'): s.add_argument('--index',type=int)
+        if op=='set-text': s.add_argument('value')
+    s=subs.add_parser('type-text'); s.add_argument('value')
+    a=vars(p.parse_args()); out=a.pop('output',None); r={k:v for k,v in a.items() if v is not None}
+    if r['op'] in ('find','click','set-text'):
+        r['selector']={k:r.pop(k) for k in ('text','contains','id','desc','package','class') if k in r}
+    q=subprocess.run(['/usr/bin/sudo','-n','/usr/local/libexec/android-digitalis-helper'],
+                     input=(json.dumps(r,ensure_ascii=False)+'\n').encode(),stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=90)
+    if q.stderr: sys.stderr.buffer.write(q.stderr)
+    if q.returncode: sys.stdout.buffer.write(q.stdout); return q.returncode
+    if out and out!='-':
+        with open(out,'wb') as f:f.write(q.stdout)
+        print(json.dumps({'ok':True,'path':os.path.abspath(out),'bytes':len(q.stdout)}))
+    else: sys.stdout.buffer.write(q.stdout)
+    return 0
+
+if __name__=='__main__':
+    try:
+        if os.path.basename(sys.argv[0])=='android-digitalis-helper': helper()
+        else: sys.exit(client())
+    except subprocess.TimeoutExpired:
+        print(json.dumps({'ok':False,'error':'TIMEOUT','outcome_unknown':True,'automatic_retry':False}),file=sys.stderr);sys.exit(2)
+    except Exception as e:
+        print(json.dumps({'ok':False,'error':str(e)},ensure_ascii=False),file=sys.stderr);sys.exit(1)

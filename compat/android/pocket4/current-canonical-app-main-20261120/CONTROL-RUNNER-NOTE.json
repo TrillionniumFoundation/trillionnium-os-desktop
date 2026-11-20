@@ -1,0 +1,24 @@
+{
+  "actual_bounded_fallback_unit": "p4-canonical-source-inspect-20261120-3b9d-r2",
+  "actual_pty": "dpty-18e9c83c84fc7d90-ffbe-8a",
+  "actual_result": {
+    "bytes": 21183,
+    "path": "/workspace/scratch/3b9ddccd362c/p4_canonical_app_cohort/evidence/actual-source-r2/source-controls/RESULT.json",
+    "sha256": "ed11ad474682a32eb93c4fa97410e2d34c2eb1d59c5de4f814465c7ae314731b"
+  },
+  "atomic_stage_mkdir_prevented_duplicate_source_execution": true,
+  "bounds": {
+    "cpu_quota_percent": 50,
+    "memory_bytes": 268435456,
+    "nice": 10,
+    "runtime_seconds": 300
+  },
+  "create_only_stage_was_observed_absent_before_fallback": true,
+  "exit_code": 0,
+  "first_attempt": "The test graph reader rejected an exact empty historical stdout/stderr input before any entry was launched. Production sources did not change.",
+  "harness_fix": "Only graph inputs whose pinned length is zero allow an empty regular file. Source modules still require positive length and every graph body retains its exact SHA256.",
+  "r2_durable_job": "1a1f96ae865-ffbe-1970",
+  "r2_durable_job_state": "launch_unknown; status reported missing private job directory; same-key reconciliation did not relaunch",
+  "runtime_qualified": false,
+  "schema": "pocket4-canonical-source-controls-runner-note-v1"
+}

@@ -1,0 +1,236 @@
+{
+  "Android_actions": 0,
+  "files": [
+    {
+      "bytes": 14456,
+      "f9_after": [
+        66306,
+        76310764,
+        33152,
+        1000,
+        1000,
+        1,
+        14456,
+        1793928672921656701,
+        1794181635827196851
+      ],
+      "f9_before": [
+        66306,
+        76310764,
+        33152,
+        1000,
+        1000,
+        1,
+        14456,
+        1793928672921656701,
+        1794181635827196851
+      ],
+      "lines": [
+        {
+          "line": 54,
+          "text": "#define AID_SYSTEM 1000 /* system server */"
+        },
+        {
+          "line": 58,
+          "text": "#define AID_GRAPHICS 1003        /* graphics devices */"
+        }
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/system/core/libcutils/include/private/android_filesystem_config.h",
+      "sha256": "f67aad90bc5a274b097cc2724a48739f790869fc424a957e85fb32a42fbd4019"
+    },
+    {
+      "bytes": 27744,
+      "f9_after": [
+        66306,
+        76310558,
+        33152,
+        1000,
+        1000,
+        1,
+        27744,
+        1793928672916476154,
+        1794181635815826418
+      ],
+      "f9_before": [
+        66306,
+        76310558,
+        33152,
+        1000,
+        1000,
+        1,
+        27744,
+        1793928672916476154,
+        1794181635815826418
+      ],
+      "lines": [
+        {
+          "line": 171,
+          "text": "Result<void> ServiceParser::ParseGroup(std::vector<std::string>&& args) {"
+        },
+        {
+          "line": 172,
+          "text": "    auto gid = DecodeUid(args[1]);"
+        },
+        {
+          "line": 173,
+          "text": "    if (!gid.ok()) {"
+        },
+        {
+          "line": 174,
+          "text": "        return Error() << \"Unable to decode GID for '\" << args[1] << \"': \" << gid.error();"
+        },
+        {
+          "line": 175,
+          "text": "    }"
+        },
+        {
+          "line": 176,
+          "text": "    service_->proc_attr_.gid = *gid;"
+        },
+        {
+          "line": 177,
+          "text": ""
+        },
+        {
+          "line": 178,
+          "text": "    for (std::size_t n = 2; n < args.size(); n++) {"
+        },
+        {
+          "line": 179,
+          "text": "        gid = DecodeUid(args[n]);"
+        },
+        {
+          "line": 180,
+          "text": "        if (!gid.ok()) {"
+        },
+        {
+          "line": 181,
+          "text": "            return Error() << \"Unable to decode GID for '\" << args[n] << \"': \" << gid.error();"
+        },
+        {
+          "line": 182,
+          "text": "        }"
+        },
+        {
+          "line": 183,
+          "text": "        service_->proc_attr_.supp_gids.emplace_back(*gid);"
+        },
+        {
+          "line": 184,
+          "text": "    }"
+        },
+        {
+          "line": 185,
+          "text": "    return {};"
+        },
+        {
+          "line": 186,
+          "text": "}"
+        },
+        {
+          "line": 187,
+          "text": ""
+        },
+        {
+          "line": 188,
+          "text": "Result<void> ServiceParser::ParsePriority(std::vector<std::string>&& args) {"
+        },
+        {
+          "line": 189,
+          "text": "    service_->proc_attr_.priority = 0;"
+        },
+        {
+          "line": 190,
+          "text": "    if (!ParseInt(args[1], &service_->proc_attr_.priority,"
+        },
+        {
+          "line": 191,
+          "text": "                  static_cast<int>(ANDROID_PRIORITY_HIGHEST),  // highest is negative"
+        },
+        {
+          "line": 192,
+          "text": "                  static_cast<int>(ANDROID_PRIORITY_LOWEST))) {"
+        },
+        {
+          "line": 193,
+          "text": "        return Errorf(\"process priority value must be range {} - {}\","
+        },
+        {
+          "line": 194,
+          "text": "                      static_cast<int>(ANDROID_PRIORITY_HIGHEST),"
+        },
+        {
+          "line": 195,
+          "text": "                      static_cast<int>(ANDROID_PRIORITY_LOWEST));"
+        },
+        {
+          "line": 196,
+          "text": "    }"
+        },
+        {
+          "line": 197,
+          "text": "    return {};"
+        },
+        {
+          "line": 198,
+          "text": "}"
+        },
+        {
+          "line": 199,
+          "text": ""
+        },
+        {
+          "line": 200,
+          "text": "Result<void> ServiceParser::ParseInterface(std::vector<std::string>&& args) {"
+        },
+        {
+          "line": 201,
+          "text": "    const std::string& interface_name = args[1];"
+        },
+        {
+          "line": 202,
+          "text": "    const std::string& instance_name = args[2];"
+        },
+        {
+          "line": 203,
+          "text": "    const std::string fullname = interface_name + \"/\" + instance_name;"
+        },
+        {
+          "line": 204,
+          "text": ""
+        },
+        {
+          "line": 205,
+          "text": "    for (const auto& svc : *service_list_) {"
+        },
+        {
+          "line": 206,
+          "text": "        if (svc->interfaces().count(fullname) > 0 && !service_->is_override()) {"
+        },
+        {
+          "line": 207,
+          "text": "            return Error() << \"Interface '\" << fullname << \"' redefined in \" << service_->name()"
+        },
+        {
+          "line": 208,
+          "text": "                           << \" but is already defined by \" << svc->name();"
+        },
+        {
+          "line": 209,
+          "text": "        }"
+        },
+        {
+          "line": 210,
+          "text": "    }"
+        }
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/system/core/init/service_parser.cpp",
+      "sha256": "ec75b1d70f286eb5bb47002fad51ac4032d7e4464b2f4d548679e1c2951dd730"
+    }
+  ],
+  "image_opens": 0,
+  "schema": "pocket4-pinned-AOSP-service-primary-group-source-v1",
+  "source_actions": "read_only_exact_two_files",
+  "source_locks_acquired": 0,
+  "writes": 0
+}

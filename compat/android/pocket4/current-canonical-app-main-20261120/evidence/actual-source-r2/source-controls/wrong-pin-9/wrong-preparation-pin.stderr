@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/gallery/source/gallery_image_entry.py", line 316, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/gallery/source/gallery_image_entry.py", line 300, in main
+    prepared, c, held, support, identity, custody, components, source_guard = bootstrap(ref)
+                                                                              ~~~~~~~~~^^^^^
+  File "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/gallery/source/gallery_image_entry.py", line 85, in bootstrap
+    preparation = parse(read(preparation_ref))
+                        ~~~~^^^^^^^^^^^^^^^^^
+  File "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/gallery/source/gallery_image_entry.py", line 64, in read
+    need(os.read(fd, 1) == b'' and hashlib.sha256(body).hexdigest() == ref['sha256']
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+         and all(getattr(before, key) == getattr(os.fstat(fd), key) == getattr(path.lstat(), key)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                 for key in META), 'PINNED_FILE_CHANGED')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/gallery/source/gallery_image_entry.py", line 33, in need
+    raise RuntimeError(reason)
+RuntimeError: PINNED_FILE_CHANGED

@@ -1,0 +1,91 @@
+{
+  "additional_fix": "Legacy process-only fallback rejected malformed launcher as owner; now uses the same authenticated daemon owner and ancestry verification as the observation helper.",
+  "before_error": "UNEXPECTED_CELL_OWNER",
+  "before_status_returncode": 1,
+  "files": [
+    {
+      "bytes": 37467,
+      "candidate": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/consumers/android-app",
+      "gid": 0,
+      "mode": 493,
+      "new_sha256": "4823c1a6d2434a9d102b2b6dbc369dd0cf192e7fc0a31384a68dddb370d0a340",
+      "old_sha256": "e775301b11960df8109f39ef1adfc662bebd8fc536414580c71c7aa0da263efe",
+      "path": "/usr/local/bin/android-app",
+      "prior_device": 66306,
+      "prior_inode": 108038655,
+      "replacements": 1,
+      "uid": 0
+    },
+    {
+      "bytes": 36404,
+      "candidate": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/consumers/android-digitalis-observe-helper",
+      "gid": 0,
+      "mode": 493,
+      "new_sha256": "76e9875d141f69976cbbafe469aa13439cf99c3214bc479a0c80cda740c8dcfa",
+      "old_sha256": "d1fc02bdbbd72c8e9ee440dbf81274662d60228a4e7ecc661484241d889d7bd4",
+      "path": "/usr/local/libexec/android-digitalis-observe-helper",
+      "prior_device": 66306,
+      "prior_inode": 6422533,
+      "replacements": 1,
+      "uid": 0
+    },
+    {
+      "bytes": 13344,
+      "candidate": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/consumers/android-digitalis-helper",
+      "gid": 0,
+      "mode": 493,
+      "new_sha256": "70fa3c0203e189a84b0919991434cf556221166b34010475bb5b6633191cb8ed",
+      "old_sha256": "9c4ef950fab47d018fd186baa3990e78dcd4973f47e9c424a02e8d9e1125a207",
+      "path": "/usr/local/libexec/android-digitalis-helper",
+      "prior_device": 66306,
+      "prior_inode": 6422547,
+      "replacements": 2,
+      "uid": 0
+    },
+    {
+      "bytes": 14121,
+      "candidate": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/consumers/android-digitalis-validation-helper",
+      "gid": 0,
+      "mode": 493,
+      "new_sha256": "48884c942546089334cadb6d11ca0ded5a1dab5ff5def9b3193051656fb600a5",
+      "old_sha256": "1b7f380c8e78187a73f7c96a736709252613c8cd8b437916e911b1596c5a5db1",
+      "path": "/usr/local/libexec/android-digitalis-validation-helper",
+      "prior_device": 66306,
+      "prior_inode": 6422546,
+      "replacements": 2,
+      "uid": 0
+    },
+    {
+      "bytes": 14287,
+      "candidate": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/consumers/android-app-digitalis",
+      "client_behavior_ast_unchanged": true,
+      "gid": 0,
+      "mode": 493,
+      "new_sha256": "38e094cc442caaf56ffe0bfab24f16214436e662d2ff39db8882f80af1b58022",
+      "old_sha256": "6bfbf38d7106b6b38816ce176a951476a57f2289dae3ce332629ad8bfee73102",
+      "path": "/usr/local/bin/android-app-digitalis",
+      "prior_device": 66306,
+      "prior_inode": 108052428,
+      "replacements": 1,
+      "uid": 0
+    },
+    {
+      "bytes": 14121,
+      "candidate": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/consumers/android-app-digitalis-validation",
+      "client_behavior_ast_unchanged": true,
+      "gid": 0,
+      "mode": 493,
+      "new_sha256": "48884c942546089334cadb6d11ca0ded5a1dab5ff5def9b3193051656fb600a5",
+      "old_sha256": "1b7f380c8e78187a73f7c96a736709252613c8cd8b437916e911b1596c5a5db1",
+      "path": "/usr/local/bin/android-app-digitalis-validation",
+      "prior_device": 66306,
+      "prior_inode": 108052426,
+      "replacements": 1,
+      "uid": 0
+    }
+  ],
+  "new_client_candidates_live_validation_pending": true,
+  "production_installed": false,
+  "schema": "pocket4-consumer-owner-fix-v1",
+  "scope": "six-consumers-exact-KILL-child-TERM-launcher-and-authenticated-daemon-owner"
+}

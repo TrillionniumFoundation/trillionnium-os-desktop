@@ -1,0 +1,97 @@
+{
+  "decoded": {
+    "bytes": 895,
+    "dimensions": [
+      40,
+      30
+    ],
+    "fully_decoded": true,
+    "sha256": "6d88ca11bc6487fad9124df3bea291c44558ee29c3a8728d67c5d8549605ae58"
+  },
+  "fixture_jpeg": {
+    "bytes": 895,
+    "path": "/dev/shm/p4-camera-app-current-camera-framework/pure-controls-01/media_and_pixels/synthetic-pattern.jpg",
+    "sha256": "6d88ca11bc6487fad9124df3bea291c44558ee29c3a8728d67c5d8549605ae58"
+  },
+  "matching_real_preview_or_business_qualified": false,
+  "negative_controls": [
+    {
+      "change": "_id",
+      "rejection": {
+        "message": "NEW_IMAGE_OWNER_UNVERIFIED",
+        "type": "Stop"
+      }
+    },
+    {
+      "change": "owner_package_name",
+      "rejection": {
+        "message": "NEW_IMAGE_OWNER_UNVERIFIED",
+        "type": "Stop"
+      }
+    },
+    {
+      "change": "date_added",
+      "rejection": {
+        "message": "NEW_IMAGE_PREDATES_SHUTTER",
+        "type": "Stop"
+      }
+    },
+    {
+      "change": "_data",
+      "rejection": {
+        "message": "NEW_IMAGE_PATH_OUTSIDE_CAMERA",
+        "type": "Stop"
+      }
+    },
+    {
+      "change": "_display_name",
+      "rejection": {
+        "message": "NEW_IMAGE_FILENAME_DIFFERS",
+        "type": "Stop"
+      }
+    },
+    {
+      "change": "mime_type",
+      "rejection": {
+        "message": "NEW_IMAGE_NOT_JPEG",
+        "type": "Stop"
+      }
+    },
+    {
+      "change": "width",
+      "rejection": {
+        "message": "NEW_IMAGE_METADATA_INVALID",
+        "type": "Stop"
+      }
+    },
+    {
+      "change": "two_new_ids",
+      "rejection": {
+        "message": "MORE_THAN_ONE_NEW_IMAGE",
+        "type": "Stop"
+      }
+    },
+    {
+      "change": "old_id_missing",
+      "rejection": {
+        "message": "PREEXISTING_MEDIASTORE_ROW_DISAPPEARED",
+        "type": "Stop"
+      }
+    },
+    {
+      "change": "truncated_jpeg",
+      "rejection": {
+        "message": "NEW_IMAGE_DECODE_FAILED",
+        "type": "Stop"
+      }
+    },
+    {
+      "change": "wrong_pixel_dimensions",
+      "rejection": {
+        "message": "NEW_IMAGE_DIMENSIONS_DIFFER",
+        "type": "Stop"
+      }
+    }
+  ],
+  "passed": true
+}

@@ -1,0 +1,61 @@
+{
+  "actual_AOSP_group_definition_and_parser": {
+    "bytes": 6040,
+    "path": "/workspace/scratch/3b9ddccd362c/p4_canonical_app_cohort/evidence/ACTUAL-AOSP-PRIMARY-GROUP-SOURCE.json",
+    "sha256": "785fc5f27750c87ef9f6f723b4d74caeb2399dad362a59986c9fcea5bd7e5e11"
+  },
+  "actual_selected_image_receipt": {
+    "bytes": 2183,
+    "path": "/workspace/scratch/3b9ddccd362c/p4_canonical_main_review/ACTUAL-SELECTED-SURFACEFLINGER.json",
+    "sha256": "3dbd31db55e637191bf7a584a8d8102fcae35e850c4578add403a6b0f0c53fe7"
+  },
+  "actual_selected_rc": {
+    "bytes": 233,
+    "path": "/workspace/scratch/3b9ddccd362c/p4_canonical_main_review/surfaceflinger.rc",
+    "sha256": "c6f8279f4fff66ff9add26a521a01dbd563a38576c0f85e2c7d88de78e2c167d"
+  },
+  "all_original_identity_map_namespace_and_receipt_gates_preserved": true,
+  "capture_only_two_module_pin_literals": true,
+  "findings": [],
+  "mapping_one_exact_tuple_only": true,
+  "new_Android_commands": 0,
+  "new_host_execution": false,
+  "passed_source_review": true,
+  "prior_review": {
+    "bytes": 4845,
+    "path": "/workspace/scratch/3b9ddccd362c/p4_canonical_main_review/INDEPENDENT-SOURCE-REVIEW.json",
+    "sha256": "a45305dc69bf5746700d42c1d441fc8f07dae5b9e77c1cfae08be767a1fff7da"
+  },
+  "production_ready": false,
+  "resolved_finding": "SurfaceFlinger requires actual selected primary graphics GID 1003, with UID system1000. Exact one-role tuple change reverses to prior full SHA; the two capture module pins reverse to prior full capture SHA.",
+  "reviewed_sources": [
+    {
+      "bytes": 16043,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_canonical_app_cohort/source/native_main_observation.py",
+      "sha256": "7f9224c7c5c089b396ff8fb99f1f6f62aea9cb60c1ea499ca7990d075356ed2e"
+    },
+    {
+      "bytes": 21700,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_canonical_app_cohort/source/main_user_namespace.py",
+      "sha256": "88c66969a2fd312eca02064aa1d6c4213ec031df7c7592daedb34ae57b48fda0"
+    },
+    {
+      "bytes": 14350,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_canonical_app_cohort/source/helper_contract.py",
+      "sha256": "bf8bfa382bae75b738717d03384a812a4e18c287678551081039a3144763390c"
+    },
+    {
+      "bytes": 19895,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_canonical_app_cohort/source/capture_main.py",
+      "sha256": "3d2a6cc7684d8b2fa1b6b9b018d298230a2627152d5df4935779f3236aef7e65"
+    },
+    {
+      "bytes": 6526,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_canonical_app_cohort/source/main_readonly_entry.py",
+      "sha256": "28bfcf094b02ad818fabe7cbb07ccc4342f16f74b56584247bc4d2ad8c1e25df"
+    }
+  ],
+  "runtime_qualified": false,
+  "schema": "p4-canonical-main-five-module-independent-review-r2-v1",
+  "unchanged_module_bodies": 3
+}
