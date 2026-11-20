@@ -323,6 +323,52 @@
     },
     {
       "after": {
+        "bytes": 18542,
+        "git_blob": "acf5258313dd54863ff147a88edc6431928c96ca",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_namespace_writable_proc_child.rs",
+        "sha256": "6e24d1a0e4bdec187e838085e946ef7621e4fd15bc3d6efaeb4c01e6a2dfda52"
+      },
+      "before": {
+        "bytes": 18522,
+        "git_blob": "8b92bda5b589317c0426f4338c0c459d05d9a50c",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_namespace_writable_proc_child.rs",
+        "sha256": "ab03edeafc357a0fb7bdc993465634d8278f5ff386e843b0d5e191fbeaef6f27"
+      },
+      "component": "proc_masks",
+      "patch": {
+        "bytes": 3831,
+        "path": "patches/runtime/droidloom-supervisor/src/production_namespace_writable_proc_child.rs.patch",
+        "sha256": "15789e7279b16f810f7fcafa7d741da3c1de6916f463e1367f731a79d20e1955"
+      },
+      "path": "runtime/droidloom-supervisor/src/production_namespace_writable_proc_child.rs"
+    },
+    {
+      "after": {
+        "bytes": 67068,
+        "git_blob": "7727e4f2fa402473aaae04ee54ead205f806ebfc",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_namespace_writable_proc_parent.rs",
+        "sha256": "d522a6e64bd157d2e73babc5b604df537478e693c328f0d37bd54176e58bf35c"
+      },
+      "before": {
+        "bytes": 61151,
+        "git_blob": "cbe1c1e25c833109e874c710632d7d26e564b665",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_namespace_writable_proc_parent.rs",
+        "sha256": "b9e865a58b9610a0ff4153e2cb40ee0681f47118eb124ee4d21ed9c3a247886d"
+      },
+      "component": "proc_masks",
+      "patch": {
+        "bytes": 10627,
+        "path": "patches/runtime/droidloom-supervisor/src/production_namespace_writable_proc_parent.rs.patch",
+        "sha256": "7b1a947a4f36914e6a8ef6ae6d28b7827c3cca0e0f89348428af6fe24fa329e9"
+      },
+      "path": "runtime/droidloom-supervisor/src/production_namespace_writable_proc_parent.rs"
+    },
+    {
+      "after": {
         "bytes": 173682,
         "git_blob": "39c1a12c9eac8601cbd5d33ed0acb5df6b9f77c1",
         "mode": "100644",
@@ -606,6 +652,33 @@
         "files": 2357,
         "tree": "c9966bf21016d49f4975c4d12af1cf419893e61c"
       }
+    },
+    {
+      "added_paths": [],
+      "addition_patch_header": "dev_null",
+      "changed_paths": [
+        "runtime/droidloom-supervisor/src/production_namespace_writable_proc_child.rs",
+        "runtime/droidloom-supervisor/src/production_namespace_writable_proc_parent.rs"
+      ],
+      "name": "proc_masks",
+      "patch": {
+        "bytes": 14458,
+        "sha256": "a162038fda902edd3c5eb7d0146a4691692ce0b58f85011d7b2c0096bd749ee7"
+      },
+      "review": {
+        "bytes": 8499,
+        "path": "component-reviews/proc_masks.json",
+        "sha256": "ba5691438f6da9b099140f7187e6179b4a94679473b727adec57ec72a7889af0"
+      },
+      "rows": {
+        "bytes": 700253,
+        "sha256": "772aa885c8d2647d474575ac25d7480980c59f4481765a4bc29b0d225c69aa1b"
+      },
+      "source": {
+        "bytes": 44266083,
+        "files": 2352,
+        "tree": "62380cd8a0ee9a6770b72cfda597ee84c140828a"
+      }
     }
   ],
   "parent_packet": {
@@ -636,8 +709,8 @@
     "source_only": true
   },
   "successor": {
-    "source_bytes": 44737433,
+    "source_bytes": 44743370,
     "source_files": 2359,
-    "source_tree": "4d78aae1aba2ec9952c37153069cca85c5a87953"
+    "source_tree": "7a9fffe94f39d18b9bc13a5659c2c2fc3607a102"
   }
 }

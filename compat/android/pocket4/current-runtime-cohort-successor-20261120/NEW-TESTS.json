@@ -30,7 +30,7 @@
     ]
   },
   {
-    "component": "image_custody",
+    "component": "image_custody_and_proc_masks",
     "package": "droidloom-supervisor",
     "target": "droidloom_supervisor",
     "tests": [
@@ -44,7 +44,10 @@
       "control::progress::tests::complete_three_mib_response_uses_the_unchanged_four_mib_bound",
       "control::progress::tests::only_exact_user_zero_gallery_inspection_gets_the_longer_response_wait",
       "production_application::custody::tests::image_gallery_never_adopts_an_installed_replacement",
-      "production_application::custody::tests::image_gallery_query_scope_keeps_the_existing_finite_read_boundary"
+      "production_application::custody::tests::image_gallery_query_scope_keeps_the_existing_finite_read_boundary",
+      "production_namespace::tree::writable_proc::tests::production_runtime_proc_masks_require_owned_root_projection_for_both_inode_kinds",
+      "production_namespace::tree::writable_proc::tests::production_runtime_proc_root_mask_name_collisions_preserve_existing_inodes",
+      "production_namespace::tree::writable_proc::tests::production_runtime_proc_root_masks_reject_projection_identity_or_flag_changes"
     ]
   },
   {

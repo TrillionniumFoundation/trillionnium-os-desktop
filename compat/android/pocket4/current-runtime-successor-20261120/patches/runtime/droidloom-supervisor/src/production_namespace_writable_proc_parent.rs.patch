@@ -1,0 +1,234 @@
+--- a/runtime/droidloom-supervisor/src/production_namespace_writable_proc_parent.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_writable_proc_parent.rs
+@@ -436,6 +436,15 @@
+     Ok(Some(unsafe { File::from_raw_fd(raw) }))
+ }
+ 
++fn mask_names_absent(root: &File) -> Result<()> {
++    for name in [c".droidloom-proc-mask-file", c".droidloom-proc-mask-directory"] {
++        if optional_path(root, name)?.is_some() {
++            return Err(NamespaceError::Rejected("private root mask name already exists"));
++        }
++    }
++    Ok(())
++}
++
+ fn fixed_nodes(
+     proc: &File,
+     names: &[&str],
+@@ -477,6 +486,32 @@
+     &expected == after && flags(&after.flags, &["rw", "nosuid", "nodev", "noexec"], &["ro"])
+ }
+ 
++fn mask_projection_matches(
++    record: &MountRecord,
++    proc: &MountRecord,
++    root: &MountRecord,
++    expected: Node,
++    kind: u32,
++) -> bool {
++    let name = match kind {
++        libc::S_IFREG => "/.droidloom-proc-mask-file",
++        libc::S_IFDIR => "/.droidloom-proc-mask-directory",
++        _ => return false,
++    };
++    root.root == "/"
++        && root.target == "/"
++        && root.filesystem == "tmpfs"
++        && flags(&root.flags, &["rw", "nosuid", "nodev"], &["ro"])
++        && expected.device == root.device
++        && record.parent == proc.id
++        && record.device == expected.device
++        && record.root == name
++        && record.filesystem == "tmpfs"
++        && record.source == root.source
++        && record.options == root.options
++        && flags(&record.flags, &["ro", "nosuid", "nodev", "noexec"], &["rw"])
++}
++
+ fn verify_old_layers(before: &MountInventory, after: &MountInventory) -> Result<()> {
+     let original_proc = before.at("/proc")?;
+     for (id, original) in &before.records {
+@@ -505,6 +540,9 @@
+ impl WritableProc {
+     fn before(child: &TreeChild) -> Result<Self> {
+         let root = held_child_root(child)?;
++        // Refuse pre-existing names, including symlinks. The child still uses
++        // exclusive creation, so a later collision cannot become a mask.
++        mask_names_absent(&root)?;
+         let proc = root_subdirectory(&root, c"proc")?;
+         let before = MountInventory::observe(child, "before-writable-command")?;
+         let original = before.at("/proc")?;
+@@ -537,7 +575,6 @@
+         child.verify()?;
+         let root = held_child_root(child)?;
+         let proc = root_subdirectory(&root, c"proc")?;
+-        let metadata = root_subdirectory(&root, c"metadata")?;
+         let current = MountInventory::observe(child, "after-writable-ready")?;
+         let original = self.before.at("/proc")?;
+         let changed = current.at("/proc")?;
+@@ -547,15 +584,15 @@
+             ));
+         }
+         verify_process_statfs(&proc, 0x9fa0, 2 | 4 | 8, 1)?;
+-        let mask_file = optional_path(&metadata, c"proc-mask-file")?
++        let mask_file = optional_path(&root, c".droidloom-proc-mask-file")?
+             .ok_or(NamespaceError::Rejected("private empty mask file absent"))?;
+-        let mask_dir = optional_path(&metadata, c"proc-mask-directory")?.ok_or(
++        let mask_dir = optional_path(&root, c".droidloom-proc-mask-directory")?.ok_or(
+             NamespaceError::Rejected("private empty mask directory absent"),
+         )?;
+         for (file, kind) in [(&mask_file, libc::S_IFREG), (&mask_dir, libc::S_IFDIR)] {
+             let m = file.metadata()?;
+             if m.mode() != kind
+-                || m.dev() != metadata.metadata()?.dev()
++                || m.dev() != root.metadata()?.dev()
+                 || m.uid() != child.uids.start
+                 || m.gid() != child.gids.start
+                 || (kind == libc::S_IFREG && (m.len() != 0 || m.nlink() != 1))
+@@ -610,7 +647,7 @@
+             }
+             verify_process_statfs(&leaf, 0x9fa0, 1 | 2 | 4 | 8, 0)?;
+         }
+-        let meta_record = self.before.at("/metadata")?;
++        let root_record = self.before.at("/")?;
+         for (name, node) in &self.masked {
+             let target = format!("/proc/{name}");
+             targets.insert(target.clone());
+@@ -620,19 +657,12 @@
+                     "mask projection must be one new mount",
+                 ));
+             }
+-            let (expected, mask_name) = if node.kind == libc::S_IFREG {
+-                (file_node, "/proc-mask-file")
++            let expected = if node.kind == libc::S_IFREG {
++                file_node
+             } else {
+-                (dir_node, "/proc-mask-directory")
++                dir_node
+             };
+-            if record.parent != original.id
+-                || record.device != expected.device
+-                || record.root != mask_name
+-                || record.filesystem != "tmpfs"
+-                || record.source != meta_record.source
+-                || record.options != meta_record.options
+-                || !flags(&record.flags, &["ro", "nosuid", "nodev", "noexec"], &["rw"])
+-            {
++            if !mask_projection_matches(record, original, root_record, expected, node.kind) {
+                 return Err(NamespaceError::Rejected("private masked mount differs"));
+             }
+             let leaf = optional_path(&proc, &CString::new(name.as_str()).unwrap())?
+@@ -1047,6 +1077,112 @@
+         changed.id += 1;
+         assert!(!changed_proc_root(&before, &changed));
+     }
++
++    fn root_mask_records(kind: u32) -> (MountRecord, MountRecord, MountRecord, Node) {
++        let proc = mount_records(PROC.as_bytes()).unwrap().remove(&9).unwrap();
++        let root = mount_records(
++            b"1 1 0:1 / / rw,nosuid,nodev - tmpfs owned-root rw,size=16384k,mode=755\n",
++        )
++        .unwrap()
++        .remove(&1)
++        .unwrap();
++        let node = Node { device: root.device, inode: 73 };
++        let record = MountRecord {
++            id: 10,
++            parent: proc.id,
++            device: node.device,
++            root: if kind == libc::S_IFREG {
++                "/.droidloom-proc-mask-file"
++            } else {
++                "/.droidloom-proc-mask-directory"
++            }
++            .into(),
++            target: "/proc/kcore".into(),
++            flags: ["ro", "nosuid", "nodev", "noexec"].map(str::to_owned).into(),
++            filesystem: "tmpfs".into(),
++            source: root.source.clone(),
++            options: root.options.clone(),
++        };
++        (record, proc, root, node)
++    }
++
++    #[test]
++    fn production_runtime_proc_masks_require_owned_root_projection_for_both_inode_kinds() {
++        for kind in [libc::S_IFREG, libc::S_IFDIR] {
++            let (record, proc, root, node) = root_mask_records(kind);
++            assert!(mask_projection_matches(&record, &proc, &root, node, kind));
++            let mut metadata = root.clone();
++            metadata.target = "/metadata".into();
++            metadata.device = libc::makedev(0, 2);
++            metadata.source = "metadata".into();
++            assert!(!mask_projection_matches(&record, &proc, &metadata, node, kind));
++            let mut old = record.clone();
++            old.root = if kind == libc::S_IFREG { "/proc-mask-file" } else { "/proc-mask-directory" }.into();
++            assert!(!mask_projection_matches(&old, &proc, &root, node, kind));
++            assert!(!mask_projection_matches(&record, &proc, &root, node, libc::S_IFLNK));
++        }
++    }
++
++    #[test]
++    fn production_runtime_proc_root_masks_reject_projection_identity_or_flag_changes() {
++        let (record, proc, root, node) = root_mask_records(libc::S_IFREG);
++        let changes: [fn(&mut MountRecord); 9] = [
++            |r| r.parent += 1,
++            |r| r.device += 1,
++            |r| r.root.push_str("-alias"),
++            |r| r.filesystem = "ext4".into(),
++            |r| r.source = "foreign-tmpfs".into(),
++            |r| r.options = "rw,size=16777216".into(),
++            |r| { r.flags.remove("ro"); },
++            |r| { r.flags.remove("noexec"); },
++            |r| { r.flags.insert("rw".into()); },
++        ];
++        for change in changes {
++            let mut changed = record.clone();
++            change(&mut changed);
++            assert!(!mask_projection_matches(&changed, &proc, &root, node, libc::S_IFREG));
++        }
++        let mut different_root = root.clone();
++        different_root.device += 1;
++        assert!(!mask_projection_matches(&record, &proc, &different_root, node, libc::S_IFREG));
++        different_root = root;
++        different_root.flags.remove("rw");
++        different_root.flags.insert("ro".into());
++        assert!(!mask_projection_matches(&record, &proc, &different_root, node, libc::S_IFREG));
++    }
++
++    #[test]
++    fn production_runtime_proc_root_mask_name_collisions_preserve_existing_inodes() {
++        for name in [".droidloom-proc-mask-file", ".droidloom-proc-mask-directory"] {
++            for kind in [libc::S_IFREG, libc::S_IFDIR, libc::S_IFLNK] {
++                let temp = tempfile::tempdir().unwrap();
++                let root = OpenOptions::new()
++                    .read(true)
++                    .custom_flags(libc::O_PATH | libc::O_DIRECTORY | libc::O_CLOEXEC | libc::O_NOFOLLOW)
++                    .open(temp.path())
++                    .unwrap();
++                assert!(mask_names_absent(&root).is_ok());
++                let collision = temp.path().join(name);
++                match kind {
++                    libc::S_IFREG => std::fs::write(&collision, b"existing inode").unwrap(),
++                    libc::S_IFDIR => std::fs::create_dir(&collision).unwrap(),
++                    libc::S_IFLNK => std::os::unix::fs::symlink("missing-target", &collision).unwrap(),
++                    _ => unreachable!(),
++                }
++                let before = std::fs::symlink_metadata(&collision).unwrap();
++                assert!(matches!(mask_names_absent(&root), Err(NamespaceError::Rejected(_))));
++                let after = std::fs::symlink_metadata(&collision).unwrap();
++                assert_eq!((after.dev(), after.ino(), after.mode(), after.len()),
++                    (before.dev(), before.ino(), before.mode(), before.len()));
++                if kind == libc::S_IFREG {
++                    assert_eq!(std::fs::read(&collision).unwrap(), b"existing inode");
++                } else if kind == libc::S_IFLNK {
++                    assert_eq!(std::fs::read_link(&collision).unwrap(), std::path::Path::new("missing-target"));
++                }
++            }
++        }
++    }
++
+     #[test]
+     fn production_runtime_proc_fixed_mask_roles_never_include_process_or_network_entries() {
+         let ro: BTreeSet<_> = READ_ONLY.into_iter().collect();

@@ -32,7 +32,7 @@ class CombinedCatalogControls(unittest.TestCase):
         actual = V.current_catalog(self.parent, self.additions)
         self.assertEqual(actual, V.decode(V.regular(HERE / 'EXPECTED-CATALOG.json')))
         self.assertEqual(len(actual), 49)
-        self.assertEqual(sum(len(r['all']) - len(r['ignored']) for r in actual), 1555)
+        self.assertEqual(sum(len(r['all']) - len(r['ignored']) for r in actual), 1558)
         self.assertEqual(sum(len(r['ignored']) for r in actual), 30)
         for before, after in zip(self.parent, actual):
             self.assertEqual((before['package'], before['target']), (after['package'], after['target']))
@@ -50,7 +50,7 @@ class CombinedCatalogControls(unittest.TestCase):
             with self.subTest(kind=kind), self.assertRaises(RuntimeError):
                 V.current_catalog(parent, self.additions)
 
-    def test_only_the21_exact_declared_additions_are_accepted(self):
+    def test_only_the24_exact_declared_additions_are_accepted(self):
         for kind in ('omit', 'rename', 'extra', 'duplicate', 'target'):
             extra = copy.deepcopy(self.additions)
             if kind == 'omit': extra[0]['tests'].pop()
@@ -66,7 +66,7 @@ class CombinedCatalogControls(unittest.TestCase):
         packet = V.verify_capsule(expected)
         self.assertEqual(V.BASE.tree_id(packet['rows']), V.HEAD_TREE)
         self.assertEqual(len(packet['rows']), 2359)
-        self.assertEqual(sum(r['bytes'] for r in packet['rows']), 44737433)
+        self.assertEqual(sum(r['bytes'] for r in packet['rows']), 44743370)
         self.assertFalse(packet['manifest']['production_ready'])
         self.assertFalse(packet['manifest']['runtime_qualified'])
         self.assertFalse(packet['manifest']['fresh_current_rust_run_in_this_packet'])

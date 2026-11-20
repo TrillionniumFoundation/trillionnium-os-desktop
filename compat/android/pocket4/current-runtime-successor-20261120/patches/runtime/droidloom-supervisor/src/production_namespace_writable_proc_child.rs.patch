@@ -1,0 +1,93 @@
+--- a/runtime/droidloom-supervisor/src/production_namespace_writable_proc_child.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_writable_proc_child.rs
+@@ -223,12 +223,12 @@
+     }
+ }
+ 
+-unsafe fn new_mask_file(metadata_dir: RawFd, nonce: [u8; 16]) -> RawFd {
++unsafe fn new_mask_file(mask_root: RawFd, nonce: [u8; 16]) -> RawFd {
+     let raw = unsafe {
+         libc::syscall(
+             libc::SYS_openat,
+-            metadata_dir,
+-            c"proc-mask-file".as_ptr(),
++            mask_root,
++            c".droidloom-proc-mask-file".as_ptr(),
+             libc::O_RDWR | libc::O_CREAT | libc::O_EXCL | libc::O_CLOEXEC | libc::O_NOFOLLOW,
+             0o000_u32,
+         )
+@@ -239,6 +239,7 @@
+     let fd = raw as RawFd;
+     let got = unsafe { metadata(fd, nonce) };
+     if got.st_mode != libc::S_IFREG
++        || got.st_dev != unsafe { metadata(mask_root, nonce) }.st_dev
+         || got.st_size != 0
+         || got.st_nlink != 1
+         || got.st_uid != 0
+@@ -249,21 +250,25 @@
+     fd
+ }
+ 
+-unsafe fn new_mask_directory(metadata_dir: RawFd, nonce: [u8; 16]) -> RawFd {
++unsafe fn new_mask_directory(mask_root: RawFd, nonce: [u8; 16]) -> RawFd {
+     if unsafe {
+         libc::syscall(
+             libc::SYS_mkdirat,
+-            metadata_dir,
+-            c"proc-mask-directory".as_ptr(),
++            mask_root,
++            c".droidloom-proc-mask-directory".as_ptr(),
+             0o000_u32,
+         )
+     } != 0
+     {
+         unsafe { failed(nonce, line!()) }
+     }
+-    let fd = unsafe { path(metadata_dir, c"proc-mask-directory", false, nonce) };
++    let fd = unsafe { path(mask_root, c".droidloom-proc-mask-directory", false, nonce) };
+     let got = unsafe { metadata(fd, nonce) };
+-    if got.st_mode != libc::S_IFDIR || got.st_uid != 0 || got.st_gid != 0 {
++    if got.st_mode != libc::S_IFDIR
++        || got.st_dev != unsafe { metadata(mask_root, nonce) }.st_dev
++        || got.st_uid != 0
++        || got.st_gid != 0
++    {
+         unsafe { rejected(nonce) }
+     }
+     fd
+@@ -299,9 +304,9 @@
+     }
+ }
+ 
+-unsafe fn masked_globals(proc: RawFd, proc_dev: u64, metadata_dir: RawFd, nonce: [u8; 16]) {
+-    let file = unsafe { new_mask_file(metadata_dir, nonce) };
+-    let directory = unsafe { new_mask_directory(metadata_dir, nonce) };
++unsafe fn masked_globals(proc: RawFd, proc_dev: u64, mask_root: RawFd, nonce: [u8; 16]) {
++    let file = unsafe { new_mask_file(mask_root, nonce) };
++    let directory = unsafe { new_mask_directory(mask_root, nonce) };
+     for name in MASKED {
+         let target = unsafe { path(proc, name, true, nonce) };
+         if target < 0 {
+@@ -421,19 +426,17 @@
+         STAGE.store(1, std::sync::atomic::Ordering::Relaxed);
+         let root = path(libc::AT_FDCWD, c"/", false, nonce);
+         let proc = path(root, c"proc", false, nonce);
+-        let metadata_dir = path(root, c"metadata", false, nonce);
+         fs(root, TMPFS_MAGIC, 2 | 4, RO, nonce);
+         fs(proc, PROC_MAGIC, RO | BASE_FLAGS, 0, nonce);
+-        fs(metadata_dir, TMPFS_MAGIC, 2 | 4, RO, nonce);
+         let proc_dev = metadata(proc, nonce).st_dev;
+-        let metadata_dev = metadata(metadata_dir, nonce).st_dev;
+-        if proc_dev == metadata_dev || metadata_dev == metadata(root, nonce).st_dev {
++        if proc_dev == metadata(root, nonce).st_dev {
+             rejected(nonce);
+         }
+         readonly_globals(proc, proc_dev, nonce);
+         #[cfg(test)]
+         STAGE.store(2, std::sync::atomic::Ordering::Relaxed);
+-        masked_globals(proc, proc_dev, metadata_dir, nonce);
++        // Mask inodes belong to the already-owned ephemeral root, never data.
++        masked_globals(proc, proc_dev, root, nonce);
+         #[cfg(test)]
+         STAGE.store(3, std::sync::atomic::Ordering::Relaxed);
+         attributes(proc, BASE_FLAGS, RO, nonce);
