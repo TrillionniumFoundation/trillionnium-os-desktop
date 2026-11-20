@@ -1,0 +1,35 @@
+{
+  "observation": {
+    "archive_path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-3e29def546a7320efec65db89c2a343b88211cef4e3644e018b04ad5f6c1df7c/output.log",
+    "available_end": 1063,
+    "chunk_sha256": "dcf1b22bfa411884f98badf3071b1b329f91aeb3031ea0f4a8f6d1beb998cf53",
+    "host": "ai395",
+    "next_offset": 1063,
+    "offset": 0,
+    "output_complete": true,
+    "persistent_across_runtime_restart": true,
+    "session_id": "dpty-3e29def546a7320efec65db89c2a343b88211cef4e3644e018b04ad5f6c1df7c",
+    "status": {
+      "boot": "b1620269-aaef-43e7-bf47-bc6eb1c1a447",
+      "bytes_seen": 1063,
+      "bytes_stored": 1063,
+      "capture_error": null,
+      "closed": false,
+      "created_unix_ms": 1795178067052,
+      "exit_code": 1,
+      "output_complete": true,
+      "owner_pid": 4144258,
+      "pid": 4144259,
+      "state": "exited"
+    },
+    "storage": "target_archive",
+    "text": "Traceback (most recent call last):\r\n  File \u001b[35m\"/home/qq/work/p4-r22-controller-preparation-20261120-3b9d-r1/freeze_r22.py\"\u001b[0m, line \u001b[35m258\u001b[0m, in \u001b[35m<module>\u001b[0m\r\n    \u001b[31mmain\u001b[0m\u001b[1;31m()\u001b[0m\r\n    \u001b[31m~~~~\u001b[0m\u001b[1;31m^^\u001b[0m\r\n  File \u001b[35m\"/home/qq/work/p4-r22-controller-preparation-20261120-3b9d-r1/freeze_r22.py\"\u001b[0m, line \u001b[35m150\u001b[0m, in \u001b[35mmain\u001b[0m\r\n    \u001b[31mneed\u001b[0m\u001b[1;31m(helper.source_snapshot(PREP/'producer',rows,CURRENT['tree'])==source['source_snapshot'],\u001b[0m\r\n    \u001b[31m~~~~\u001b[0m\u001b[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\u001b[0m\r\n         \u001b[1;31m'actual complete producer still matches original preparation identities')\u001b[0m\r\n         \u001b[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\u001b[0m\r\n  File \u001b[35m\"/home/qq/work/p4-r22-controller-preparation-20261120-3b9d-r1/freeze_r22.py\"\u001b[0m, line \u001b[35m33\u001b[0m, in \u001b[35mneed\u001b[0m\r\n    raise RuntimeError(message)\r\n\u001b[1;35mRuntimeError\u001b[0m: \u001b[35mactual complete producer still matches original preparation identities\u001b[0m\r\n",
+    "text_is_lossy": false,
+    "truncated_before_offset": false,
+    "utf8_pending": false
+  },
+  "original_local_bytes": 4261,
+  "original_local_sha256": "0e2a7912953d4fcf27ff6d9d028edbba0761bf55d56dc1af08e0c3047df35ef8",
+  "removed_only_duplicate_bytes_hex": true,
+  "schema": "p4-actual-tool-observation-without-duplicate-hex-v1"
+}

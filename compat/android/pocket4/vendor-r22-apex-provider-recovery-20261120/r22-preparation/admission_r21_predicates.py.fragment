@@ -1,0 +1,140 @@
+def validate_r21_predecessor(values, refs, baseline):
+    need(set(values) == {'contract', 'bundle', 'terminal', 'build', 'recovery'}
+         and set(refs) == set(HISTORY), 'all original R21 source and terminal inputs')
+    for name, expected in HISTORY.items():
+        ref = reference(refs[name])
+        need((ref['bytes'], ref['sha256']) == expected, 'immutable actual R21 input: ' + name)
+    contract, bundle, terminal, build, recovery = [values[k] for k in
+        ('contract', 'bundle', 'terminal', 'build', 'recovery')]
+    need(contract['schema'] == 'p4-vendor-r21-operational-input-contract-v1'
+         and contract['operational_inputs_frozen'] is True
+         and contract['current_source']['tree'] == '4d78aae1aba2ec9952c37153069cca85c5a87953'
+         and bundle['schema'] == 'pocket4-vendor-r21-launch-bundle-v1'
+         and bundle['dispatch_inputs_frozen'] is True
+         and bundle['source_tree'] == contract['current_source']['tree'],
+         'R21 historical 2359 cohort remains distinct from the successor')
+    need(content_reference(bundle['operational_contract']) == content_reference(refs['contract'])
+         and content_reference(bundle['worker']) == content_reference(refs['worker'])
+         and reference(terminal['worker']) == reference(refs['worker'])
+         and reference(terminal['bundle']) == reference(refs['bundle']),
+         'actual original outer used the exact original worker and bundle')
+    need(terminal['schema'] == 'pocket4-vendor-r21-supervisor-terminal-v1'
+         and terminal['passed'] is False
+         and all(terminal[k] is True for k in ('build_attempted', 'serial_lock_acquired',
+             'normal_recovery_attempted', 'normal_recovery_verified', 'all_owned_units_retired',
+             'all_created_children_reaped', 'serial_held_through_all_source_operations'))
+         and terminal['errors'] == terminal['build_retirement_errors'] == terminal['final_retirement_errors'] == []
+         and terminal['fixed_deadline_exceeded'] is False,
+         'actual R21 failed build and successful bounded original source recovery')
+    need(len(terminal['phases']) == 2
+         and [p['mode'] for p in terminal['phases']] == ['build', 'recover'],
+         'original R21 build then recovery exactly once')
+    for phase, code, invocation in zip(terminal['phases'], (1, 0),
+            ('d9c82f1887564fdcb02f6ec493fbe912', 'd06a4376421d4ca19eda23359ecf722a')):
+        client = phase['client']
+        need(phase['service_retired'] is True and phase['success'] is (code == 0)
+             and phase['late_start_unresolved'] is False and phase['forced_service_retirement'] is False
+             and phase['errors'] == [] and phase['invocation_id'] == invocation
+             and client['actual_reaped'] is True and client['original_pidfd_held_until_reaped'] is True
+             and type(client['exit_code']) is int and client['exit_code'] == code
+             and client['forced'] is False,
+             'original phase invocation, failure/success and complete custody retirement')
+    need(len(terminal['children']) == 726 and len(terminal['original_worker_status_children']) == 127,
+         'whole actual original outer and status child rosters')
+    for child in terminal['children']:
+        need(child['actual_reaped'] is True and child['original_pidfd_held_until_reaped'] is True,
+             'every original R21 outer child is reaped under its PIDFD')
+    for child in terminal['original_worker_status_children']:
+        command_reaped(child)
+    need(build['schema'] == recovery['schema'] == 'p4-cp3a-normal-vendor-build-r21-v1'
+         and build['source_tree'] == recovery['source_tree'] == contract['current_source']['tree']
+         and len(build['commands']) == 6 and len(recovery['commands']) == 2,
+         'exact original historical build/recovery cohort and command scopes')
+    expected_build = ['verify-cmake652-before', 'normal-reconcile-lint652', 'verify-lint652-before',
+        'original-cmake-provider-cmake-version', 'original-cmake-provider-ctest-version',
+        'normal-official-gsi-vendor-build']
+    need([c['name'] for c in build['commands']] == expected_build
+         and [c['name'] for c in recovery['commands']] == ['normal-source-recovery', 'verify-lint652-after'],
+         'original complete source transition, CMake checks, failed Vendor and normal recovery')
+    for command, code in zip(build['commands'], (0, 0, 0, 0, 0, 1)):
+        command_reaped(command, code)
+    for command in recovery['commands']:
+        command_reaped(command)
+    need(len(build['errors']) == 1
+         and build['errors'][0]['error'] == repr(RuntimeError(
+             'command or retirement failed: normal-official-gsi-vendor-build'))
+         and recovery['errors'] == []
+         and all(recovery[k] is True for k in ('source_recovery_complete',
+             'all_original_inputs_and_source_files_unchanged', 'new_lint652_source_state_verified',
+             'native_source_926_members_and_git_provenance_unchanged',
+             'original652_non_lint_tuples_preserved'))
+         and recovery['complete_cmake_members_preserved'] == 3915,
+         'original failure remains explicit; all original native and source inputs recovered')
+    comparison = recovery['complete_original_lint_comparison']
+    need(comparison['schema'] == 'p4-r20-six-original-lint-content-comparison-v1'
+         and comparison['tracked_members_compared'] == 1045300
+         and comparison['lint_materialized'] == comparison['original_lint_members'] == 6
+         and comparison['lint_raw_bytes_materialized'] == 19376
+         and comparison['lint_remaining_absent'] == 0
+         and comparison['all_other_original_tuples_identical'] is True
+         and comparison['partial_recovery_admission_only'] is False
+         and comparison['Vendor_build_credit'] is False,
+         'actual completed R21 six-file transition, not the new four-file transition')
+    need(set(baseline) == {'manifest', 'locks'}
+         and baseline['manifest'] == MANIFEST and baseline['locks'] == LOCKS
+         and reference(recovery['final_normal_manifest']['original']) == MANIFEST,
+         'exact current original manifest and separately observed original lock baseline')
+    command = recovery['commands'][0]
+    need(type(command['pid']) is int and command['pid'] == 3972147,
+         'actual original normal source-recovery child')
+    need(LOCKS[0]['body_hex'] == '' and LOCKS[0]['bytes'] == 0,
+         'original serial body unchanged')
+    for lock in LOCKS[1:]:
+        raw = bytes.fromhex(lock['body_hex'])
+        need(raw == (str(command['pid']) + '\n').encode()
+             and len(raw) == lock['bytes'] and hashlib.sha256(raw).hexdigest() == lock['sha256']
+             and command['started_ns'] <= lock['identity'][7] <= command['finished_ns']
+             and command['started_ns'] <= lock['identity'][8] <= command['finished_ns']
+             and lock['actual_lock_records'] == [],
+             'each original PID-lock body and timestamp belongs to the actual recovered source')
+    for value in (contract, bundle, terminal, build, recovery):
+        need(value['production_ready'] is False and value['runtime_qualified'] is False,
+             'no predecessor production or runtime credit')
+    for value in (terminal, build, recovery):
+        need(value['installed'] is False, 'no predecessor installation credit')
+    return {'schema': 'p4-r22-actual-r21-failure-and-recovery-consumed-v1',
+            'actual_R21_build_exit_code': 1, 'actual_R21_recovery_exit_code': 0,
+            'original_outer_children_reaped': 726, 'original_status_children_reaped': 127,
+            'new_manifest_baseline': MANIFEST, 'new_lock_baseline': LOCKS,
+            'historical_failure_replaced': False, 'four_apex_provider_credit': False,
+            'runtime_qualified': False, 'production_ready': False}
+
+
+def validate_original_git_fixture(result):
+    need(result['schema'] == 'p4-r22-real-original-git-object-partial-fixture-v1'
+         and result['fixture_passed'] is True and result['errors'] == []
+         and result['original_git_metadata_unchanged'] is True
+         and result['all_created_git_commands_retired'] is True
+         and result['fixture_source_removed'] is True
+         and result['only_two_isolated_clone_projects'] is True
+         and result['complete_652_production_source_qualification'] is False
+         and result['source_mutations_on_original_workspace'] is False
+         and result['Android_builds'] == result['Android_starts'] == 0
+         and result['runtime_qualified'] is result['production_ready'] is False,
+         'actual isolated two-project Git control, without production source credit')
+    need(len(result['commands']) == 12
+         and [r['label'] for r in result['snapshots']] == ['both-old', 'first-new-second-old',
+             'both-new', 'both-new-one-original-skip-absent'],
+         'all actual four partial/complete provider source states and twelve Git children')
+    for command in result['commands']:
+        need(type(command['exit_code']) is int and command['exit_code'] == 0
+             and command['actual_reaped'] is True and command['pidfd_held_until_reaped'] is True
+             and command['owned_process_group_absent'] is True and command['timed_out'] is False,
+             'original fixture child execution and retirement')
+    for row, count in zip(result['snapshots'], (0, 2, 4, 3)):
+        need(len(row['actual_candidates']) == 4
+             and sum(v['present'] is True for v in row['actual_candidates']) == count,
+             'actual full original provider membership and materialization count')
+    return {'fixture_passed': True, 'isolated_source_states': 4, 'created_git_commands_reaped': 12,
+            'complete_652_production_source_qualification': False, 'runtime_qualified': False,
+            'production_ready': False}
