@@ -1,0 +1,374 @@
+{
+  "Android_builds": 0,
+  "Android_starts": 0,
+  "cargo_jobs": 2,
+  "commands": [
+    {
+      "argv": [
+        "rustc",
+        "+1.93.0",
+        "--version"
+      ],
+      "cwd": "/home/qq/work/source-materialization-successor-20261120-9907-r1/producer",
+      "exit_code": 0,
+      "label": "toolchain",
+      "parent_reaped": true,
+      "pid": 3475021,
+      "process_group_gone": true,
+      "seconds": 0.032,
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/toolchain.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 36,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/toolchain.stdout",
+        "sha256": "a2d88be55921309c5e126c58ad4a9040d034419589b58684cb44dfd13e14f66e"
+      },
+      "timeout_seconds": 30
+    },
+    {
+      "argv": [
+        "cargo",
+        "+1.93.0",
+        "check",
+        "--offline",
+        "--locked",
+        "-p",
+        "droidloom-source",
+        "--all-targets",
+        "--message-format=json"
+      ],
+      "cwd": "/home/qq/work/source-materialization-successor-20261120-9907-r1/producer",
+      "exit_code": 0,
+      "label": "check-all-targets",
+      "parent_reaped": true,
+      "pid": 3475025,
+      "process_group_gone": true,
+      "seconds": 5.933,
+      "stderr": {
+        "bytes": 1573,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/check-all-targets.stderr",
+        "sha256": "637967e971bf49029d5cabdf035e2c50afa06e1cc95286d67db7abc078775f8a"
+      },
+      "stdout": {
+        "bytes": 51174,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/check-all-targets.stdout",
+        "sha256": "ce5bbdc4ff847666de09b8004b97c4ffbb80ff92ddfedb193f8c53d7b475277b"
+      },
+      "timeout_seconds": 900
+    },
+    {
+      "argv": [
+        "cargo",
+        "+1.93.0",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "droidloom-source",
+        "--all-targets",
+        "--no-run",
+        "--message-format=json"
+      ],
+      "cwd": "/home/qq/work/source-materialization-successor-20261120-9907-r1/producer",
+      "exit_code": 0,
+      "label": "compile-all-tests",
+      "parent_reaped": true,
+      "pid": 3475988,
+      "process_group_gone": true,
+      "seconds": 5.535,
+      "stderr": {
+        "bytes": 1266,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/compile-all-tests.stderr",
+        "sha256": "9f74eb450cedaca4057cb84427841d4518436dcac9b0d7b760fdbd1bdaafa357"
+      },
+      "stdout": {
+        "bytes": 55148,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/compile-all-tests.stdout",
+        "sha256": "c5b45d350dfe9e3c10fa33ba649d1431de8aecdc62e455bedde57c58f583a947"
+      },
+      "timeout_seconds": 900
+    },
+    {
+      "argv": [
+        "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/target/debug/deps/droidloom_source-953ea307c82eeaeb",
+        "--list",
+        "--color",
+        "never"
+      ],
+      "cwd": "/home/qq/work/source-materialization-successor-20261120-9907-r1/producer",
+      "exit_code": 0,
+      "label": "harness-0-catalog",
+      "parent_reaped": true,
+      "pid": 3477028,
+      "process_group_gone": true,
+      "seconds": 0.002,
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/harness-0-catalog.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 168,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/harness-0-catalog.stdout",
+        "sha256": "903adf607871d97b32dc42456addf88a6ceb8eff862b6d44859a9b794e4669be"
+      },
+      "timeout_seconds": 60
+    },
+    {
+      "argv": [
+        "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/target/debug/deps/droidloom_source-953ea307c82eeaeb",
+        "--ignored",
+        "--list",
+        "--color",
+        "never"
+      ],
+      "cwd": "/home/qq/work/source-materialization-successor-20261120-9907-r1/producer",
+      "exit_code": 0,
+      "label": "harness-0-ignored",
+      "parent_reaped": true,
+      "pid": 3477030,
+      "process_group_gone": true,
+      "seconds": 0.001,
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/harness-0-ignored.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 22,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/harness-0-ignored.stdout",
+        "sha256": "414c144fa67f1df75f7b14a69af5641637772e81c4c3fa0a171e3228adbb922e"
+      },
+      "timeout_seconds": 60
+    },
+    {
+      "argv": [
+        "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/target/debug/deps/droidloom_source-953ea307c82eeaeb",
+        "--test-threads=2",
+        "--color",
+        "never"
+      ],
+      "cwd": "/home/qq/work/source-materialization-successor-20261120-9907-r1/producer",
+      "exit_code": 0,
+      "label": "harness-0-tests",
+      "parent_reaped": true,
+      "pid": 3477031,
+      "process_group_gone": true,
+      "seconds": 0.003,
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/harness-0-tests.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 270,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/harness-0-tests.stdout",
+        "sha256": "122a936c81029dec4ce70ef2a3905a2d68e8b9ecdb76e38f189d591bb07f897a"
+      },
+      "timeout_seconds": 300
+    },
+    {
+      "argv": [
+        "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/target/debug/examples/frozen_pair_recipe-2b0926de8d0dc971",
+        "--list",
+        "--color",
+        "never"
+      ],
+      "cwd": "/home/qq/work/source-materialization-successor-20261120-9907-r1/producer",
+      "exit_code": 0,
+      "label": "harness-1-catalog",
+      "parent_reaped": true,
+      "pid": 3477034,
+      "process_group_gone": true,
+      "seconds": 0.001,
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/harness-1-catalog.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 665,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/harness-1-catalog.stdout",
+        "sha256": "84a2ec7ceb1f5d674dc7fbbb01fab912616170de95a7d27357421bc976506e86"
+      },
+      "timeout_seconds": 60
+    },
+    {
+      "argv": [
+        "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/target/debug/examples/frozen_pair_recipe-2b0926de8d0dc971",
+        "--ignored",
+        "--list",
+        "--color",
+        "never"
+      ],
+      "cwd": "/home/qq/work/source-materialization-successor-20261120-9907-r1/producer",
+      "exit_code": 0,
+      "label": "harness-1-ignored",
+      "parent_reaped": true,
+      "pid": 3477035,
+      "process_group_gone": true,
+      "seconds": 0.001,
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/harness-1-ignored.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 22,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/harness-1-ignored.stdout",
+        "sha256": "414c144fa67f1df75f7b14a69af5641637772e81c4c3fa0a171e3228adbb922e"
+      },
+      "timeout_seconds": 60
+    },
+    {
+      "argv": [
+        "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/target/debug/examples/frozen_pair_recipe-2b0926de8d0dc971",
+        "--test-threads=2",
+        "--color",
+        "never"
+      ],
+      "cwd": "/home/qq/work/source-materialization-successor-20261120-9907-r1/producer",
+      "exit_code": 0,
+      "label": "harness-1-tests",
+      "parent_reaped": true,
+      "pid": 3477036,
+      "process_group_gone": true,
+      "seconds": 0.214,
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/harness-1-tests.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 809,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/harness-1-tests.stdout",
+        "sha256": "ebe8dc3cf8eb43305819bffbf99389b35fee28660522c0454c748a73bd490619"
+      },
+      "timeout_seconds": 300
+    },
+    {
+      "argv": [
+        "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/target/debug/deps/droidloom_source-f11870d43916baca",
+        "--list",
+        "--color",
+        "never"
+      ],
+      "cwd": "/home/qq/work/source-materialization-successor-20261120-9907-r1/producer",
+      "exit_code": 0,
+      "label": "harness-2-catalog",
+      "parent_reaped": true,
+      "pid": 3477046,
+      "process_group_gone": true,
+      "seconds": 0.002,
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/harness-2-catalog.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 7372,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/harness-2-catalog.stdout",
+        "sha256": "a6bb3a370f481c4d5a3beded5543e088d7b4a4fb9b787f04c5a02f14193d95c4"
+      },
+      "timeout_seconds": 60
+    },
+    {
+      "argv": [
+        "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/target/debug/deps/droidloom_source-f11870d43916baca",
+        "--ignored",
+        "--list",
+        "--color",
+        "never"
+      ],
+      "cwd": "/home/qq/work/source-materialization-successor-20261120-9907-r1/producer",
+      "exit_code": 0,
+      "label": "harness-2-ignored",
+      "parent_reaped": true,
+      "pid": 3477047,
+      "process_group_gone": true,
+      "seconds": 0.001,
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/harness-2-ignored.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 22,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/harness-2-ignored.stdout",
+        "sha256": "414c144fa67f1df75f7b14a69af5641637772e81c4c3fa0a171e3228adbb922e"
+      },
+      "timeout_seconds": 60
+    },
+    {
+      "argv": [
+        "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/target/debug/deps/droidloom_source-f11870d43916baca",
+        "--test-threads=2",
+        "--color",
+        "never"
+      ],
+      "cwd": "/home/qq/work/source-materialization-successor-20261120-9907-r1/producer",
+      "exit_code": 0,
+      "label": "harness-2-tests",
+      "parent_reaped": true,
+      "pid": 3477048,
+      "process_group_gone": true,
+      "seconds": 1.566,
+      "stderr": {
+        "bytes": 0,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/harness-2-tests.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 7997,
+        "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/logs/harness-2-tests.stdout",
+        "sha256": "c38a5b0566d9602f03aff9a3f16ec8bb7a1d4bd72ca06330855df187cb32a90d"
+      },
+      "timeout_seconds": 300
+    }
+  ],
+  "complete_source_files": 2351,
+  "format_check_run": false,
+  "format_qualified": false,
+  "fresh_passed": 100,
+  "fresh_release_binaries_claimed": 0,
+  "harnesses": [
+    {
+      "bytes": 21563432,
+      "kind": "bin",
+      "passed": 2,
+      "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/target/debug/deps/droidloom_source-953ea307c82eeaeb",
+      "sha256": "9f4783b98b13c4739d2e0805281a2b04f2dbaf1651b3a6d889724d726b3c1ae3",
+      "target": "droidloom-source"
+    },
+    {
+      "bytes": 22860640,
+      "kind": "example",
+      "passed": 9,
+      "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/target/debug/examples/frozen_pair_recipe-2b0926de8d0dc971",
+      "sha256": "baadd951add05bdfbef4267c383e1b37e1614623e226f1e5851016bea103d631",
+      "target": "frozen_pair_recipe"
+    },
+    {
+      "bytes": 24872776,
+      "kind": "lib",
+      "passed": 89,
+      "path": "/home/qq/work/source-materialization-successor-20261120-9907-r1/build/target/debug/deps/droidloom_source-f11870d43916baca",
+      "sha256": "31c1e0e2de79f11af2d42e1ca9f77e58a10778ac46ae50f5ea1878088a5fe9e5",
+      "target": "droidloom_source"
+    }
+  ],
+  "lockfile_modified": false,
+  "packet_inventory_sha256": "ea75a0a28022944b80acebb65aca9ce49c9c66fbd519531da7677bbd114ed35e",
+  "parent_release_claims_transferred": false,
+  "production_ready": false,
+  "runtime_qualified": false,
+  "schema": "p4-materialization-complete-crate-ci-v1",
+  "source_tree": "454a50a52837f80a50d39815da91b0c8cd7a1e4c",
+  "source_unchanged": true,
+  "state": "COMPLETE",
+  "toolchain": "rustc 1.93.0 (254b59607 2026-01-19)",
+  "workspace_manifest_modified": false
+}

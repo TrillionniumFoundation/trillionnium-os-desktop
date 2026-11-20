@@ -19,6 +19,33 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE_ROOTS = ("compat/android", "support/android", "tests/workloads/android")
 REQUIRED_FILES = (
+    'compat/android/pocket4/vendor-source-materialization-20261120/README.md',
+    'compat/android/pocket4/vendor-source-materialization-20261120/validation/complete-successor-host-result.json',
+    'compat/android/pocket4/vendor-source-materialization-20261120/validation/complete-successor-readback.json',
+    'compat/android/pocket4/vendor-source-materialization-20261120/rust/CI-INTEGRATION.md',
+    'compat/android/pocket4/vendor-source-materialization-20261120/rust/EXPECTED-CATALOG.json',
+    'compat/android/pocket4/vendor-source-materialization-20261120/rust/FILES.sha256',
+    'compat/android/pocket4/vendor-source-materialization-20261120/rust/MANIFEST.json',
+    'compat/android/pocket4/vendor-source-materialization-20261120/rust/PARENT-SOURCE-ROWS.json',
+    'compat/android/pocket4/vendor-source-materialization-20261120/rust/README.md',
+    'compat/android/pocket4/vendor-source-materialization-20261120/rust/SOURCE.patch',
+    'compat/android/pocket4/vendor-source-materialization-20261120/rust/run_ci.py',
+    'compat/android/pocket4/vendor-source-materialization-20261120/rust/test_replay.py',
+    'compat/android/pocket4/vendor-source-materialization-20261120/rust/verify.py',
+    'compat/android/pocket4/vendor-source-materialization-20261120/crlf/.gitattributes',
+    'compat/android/pocket4/vendor-source-materialization-20261120/crlf/FILES.sha256',
+    'compat/android/pocket4/vendor-source-materialization-20261120/crlf/HELPER.patch',
+    'compat/android/pocket4/vendor-source-materialization-20261120/crlf/MANIFEST.json',
+    'compat/android/pocket4/vendor-source-materialization-20261120/crlf/README.md',
+    'compat/android/pocket4/vendor-source-materialization-20261120/crlf/baseline/vendor_source_bookends_r18_2331.py',
+    'compat/android/pocket4/vendor-source-materialization-20261120/crlf/fixtures/autogen.bat.working',
+    'compat/android/pocket4/vendor-source-materialization-20261120/crlf/fixtures/libopus.gitattributes',
+    'compat/android/pocket4/vendor-source-materialization-20261120/crlf/test_committed_crlf.py',
+    'compat/android/pocket4/vendor-source-materialization-20261120/crlf/validation/fixture-development.json',
+    'compat/android/pocket4/vendor-source-materialization-20261120/crlf/validation/real-git-controls-r3.json',
+    'compat/android/pocket4/vendor-source-materialization-20261120/crlf/validation/real-git-controls-r3.stderr',
+    'compat/android/pocket4/vendor-source-materialization-20261120/crlf/validation/real-git-controls-r3.stdout',
+    'compat/android/pocket4/vendor-source-materialization-20261120/crlf/vendor_source_bookends_r19_9907.py',
     "compat/android/INTERFACES.md",
     "compat/android/aosp-profile.json",
     "compat/android/capability-matrix.json",
@@ -1194,6 +1221,14 @@ EXECUTABLE_FILES = (
 PARSED_SUFFIXES = {".py", ".sh", ".json", ".xml"}
 
 BINARY_FILES = {
+    'compat/android/pocket4/vendor-source-materialization-20261120/validation/complete-successor-host-result.json': {'bytes': 13905, 'sha256': '746f79e87bc5d4e1b8d7b18bc8ac1acd436a9f2e0cbc753ffa22425c4dc20d8a'},
+    'compat/android/pocket4/vendor-source-materialization-20261120/validation/complete-successor-readback.json': {'bytes': 4051, 'sha256': '33f99e905f9d95ec9d510e33af49df0f04a40c805572676396b22faa3fd17b8c'},
+
+    'compat/android/pocket4/vendor-source-materialization-20261120/rust/FILES.sha256': {'bytes': 730, 'sha256': 'ea75a0a28022944b80acebb65aca9ce49c9c66fbd519531da7677bbd114ed35e'},
+
+    'compat/android/pocket4/vendor-source-materialization-20261120/crlf/FILES.sha256': {'bytes': 1223, 'sha256': '2c19c6424c70fd5bea9543fa66dfa04bf7b768d717683410a9a9421e636d5300'},
+    'compat/android/pocket4/vendor-source-materialization-20261120/crlf/fixtures/autogen.bat.working': {'bytes': 377, 'sha256': '8e5832cadb90219c1f99d016b5628ac87af887f52a99270d431e65db71fa20f5'},
+
     'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/szzc/inputs/szzc-badging.stderr': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
     'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/szzc/inputs/szzc-manifest.stderr': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
     'compat/android/pocket4/current-app-acceptance/source-refresh-20261119/szzc/inputs/szzc-signature.stderr': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},

@@ -1,0 +1,324 @@
+--- a/tools/droidloom-source/src/lib.rs
++++ b/tools/droidloom-source/src/lib.rs
+@@ -12,6 +12,7 @@
+ use std::ffi::OsStr;
+ use std::fs;
+ use std::io::{self, BufReader, Write as _};
++use std::os::unix::ffi::OsStrExt;
+ use std::path::{Component, Path, PathBuf};
+ use std::process::{Command, Output};
+ 
+@@ -549,12 +550,22 @@
+     for project in &plan.projects {
+         let checkout = destination.join(&project.path);
+         if checkout.exists() {
++            // Identity/cleanliness must be checked before expanding a sparse
++            // tree. The new plan's required files can legitimately be absent
++            // until the normal Git materialization below has completed.
+             verify_project(&checkout, project)?;
+-            apply_sparse_checkout(&checkout, project)?;
+-            verify_project(&checkout, project)?;
++            if project.sparse_paths.is_empty() {
++                // HEAD is already verified here. Even a false sparse config
++                // can retain skip-worktree entries left by an interrupted
++                // earlier checkout; disable restores the complete plan.
++                run_git(&checkout, &[OsStr::new("sparse-checkout"), OsStr::new("disable")])?;
++            } else {
++                apply_sparse_checkout(&checkout, project)?;
++            }
++            verify_materialized_project(&checkout, project)?;
+         } else {
+             install_missing_project(destination, project)?;
+-            verify_project(&checkout, project)?;
++            verify_materialized_project(&checkout, project)?;
+         }
+     }
+     for link in &plan.links {
+@@ -576,8 +587,8 @@
+ /// # Errors
+ ///
+ /// Returns when the manifest does not exactly match the lock, a project is
+-/// dirty or has the wrong origin/commit, or a declared root link is missing or
+-/// points somewhere else.
++/// dirty, has the wrong origin/commit, or lacks a required tracked checkout
++/// entry, or a declared root link is missing or points somewhere else.
+ pub fn verify_materialized(
+     lock_path: &Path,
+     lock: &SparseSourceLock,
+@@ -618,7 +629,7 @@
+     }
+ 
+     for project in &manifest.plan.projects {
+-        verify_project(&destination.join(&project.path), project)?;
++        verify_materialized_project(&destination.join(&project.path), project)?;
+     }
+     for link in &manifest.plan.links {
+         verify_root_link(destination, link)?;
+@@ -704,6 +715,83 @@
+             "project {} has local changes",
+             project.path.display()
+         )]));
++    }
++    Ok(())
++}
++
++fn required_by_cone(path: &Path, sparse_paths: &[PathBuf]) -> bool {
++    // Cone mode includes every root file and the immediate files in each
++    // ancestor of a selected directory, as well as its complete subtree.
++    // --skip-checks also permits a selected file; its siblings in the parent
++    // remain included by the same Git cone rules.
++    let parent = path.parent().unwrap_or_else(|| Path::new(""));
++    sparse_paths.is_empty()
++        || sparse_paths.iter().any(|cone| path.starts_with(cone) || cone.starts_with(parent))
++}
++
++fn verify_materialized_project(checkout: &Path, project: &PlannedProject) -> Result<(), SourceError> {
++    verify_project(checkout, project)?;
++    let tree = run_git_output(checkout, &[
++        OsStr::new("ls-tree"), OsStr::new("-r"), OsStr::new("-z"),
++        OsStr::new("--full-tree"), OsStr::new(&project.commit),
++    ])?;
++    let mut checked_directories = BTreeSet::new();
++    for record in tree.stdout.split(|byte| *byte == 0).filter(|record| !record.is_empty()) {
++        let separator = record.iter().position(|byte| *byte == b'\t')
++            .ok_or_else(|| SourceError::Invalid(vec!["malformed tracked-tree record".into()]))?;
++        let header = std::str::from_utf8(&record[..separator])
++            .map_err(|_| SourceError::Invalid(vec!["non-ASCII tracked-tree header".into()]))?;
++        let mut fields = header.split_whitespace();
++        let mode = fields.next().unwrap_or("");
++        let kind = fields.next().unwrap_or("");
++        if !is_commit(fields.next().unwrap_or("")) || fields.next().is_some() {
++            return Err(SourceError::Invalid(vec!["malformed tracked-tree identity".into()]));
++        }
++        let path = Path::new(OsStr::from_bytes(&record[separator + 1..]));
++        if !is_normal_relative(path) {
++            return Err(SourceError::Invalid(vec!["non-relative tracked-tree path".into()]));
++        }
++        // Ordinary checkout does not recursively populate submodule gitlinks.
++        // Their identity remains in the pinned tree, not a required blob body.
++        if mode == "160000" && kind == "commit" {
++            continue;
++        }
++        let is_link = match (mode, kind) {
++            ("100644" | "100755", "blob") => false,
++            ("120000", "blob") => true,
++            _ => return Err(SourceError::Invalid(vec![format!(
++                "unsupported tracked-tree entry {} in project {}",
++                path.display(), project.path.display()
++            )])),
++        };
++        if !required_by_cone(path, &project.sparse_paths) {
++            continue;
++        }
++        let mut directory = PathBuf::new();
++        for component in path.parent().unwrap_or_else(|| Path::new("")).components() {
++            directory.push(component);
++            if checked_directories.insert(directory.clone()) {
++                let info = fs::symlink_metadata(checkout.join(&directory)).map_err(|error| io_error(
++                    &format!("stat required tracked directory {} in project {}",
++                        directory.display(), project.path.display()), error))?;
++                if !info.is_dir() {
++                    return Err(SourceError::Invalid(vec![format!(
++                        "required tracked directory {} in project {} is not a directory",
++                        directory.display(), project.path.display()
++                    )]));
++                }
++            }
++        }
++        let info = fs::symlink_metadata(checkout.join(path)).map_err(|error| io_error(
++            &format!("stat required tracked entry {} in project {}",
++                path.display(), project.path.display()), error))?;
++        let correct_type = if is_link { info.file_type().is_symlink() } else { info.is_file() };
++        if !correct_type {
++            return Err(SourceError::Invalid(vec![format!(
++                "required tracked entry {} in project {} has the wrong file type",
++                path.display(), project.path.display()
++            )]));
++        }
+     }
+     Ok(())
+ }
+@@ -832,16 +920,7 @@
+             OsStr::new("FETCH_HEAD"),
+         ],
+     )?;
+-    let head = run_git_output(&checkout, &[OsStr::new("rev-parse"), OsStr::new("HEAD")])?;
+-    let actual = String::from_utf8_lossy(&head.stdout).trim().to_owned();
+-    if actual != project.commit {
+-        return Err(SourceError::RevisionMismatch {
+-            path: project.path.clone(),
+-            expected: project.commit.clone(),
+-            actual,
+-        });
+-    }
+-    Ok(())
++    verify_materialized_project(&checkout, project)
+ }
+ 
+ fn apply_sparse_checkout(checkout: &Path, project: &PlannedProject) -> Result<(), SourceError> {
+@@ -3191,6 +3270,165 @@
+         assert!(validate_plan_extension(&initial, &contracted).is_err());
+     }
+ 
++    fn tracked_presence_fixture(sparse_paths: &[&str])
++        -> (tempfile::TempDir, PathBuf, SparseSourceLock, PathBuf)
++    {
++        let sandbox = tempfile::tempdir().unwrap();
++        let root = sandbox.path().join("checkout");
++        let checkout = root.join("build/make");
++        fs::create_dir_all(&checkout).unwrap();
++        run_git(&checkout, &[OsStr::new("init"), OsStr::new("--quiet"),
++            OsStr::new("--initial-branch=main")]).unwrap();
++        for name in [
++            "Android.bp", "nested/ancestor.txt", "nested/selected/source.txt",
++            "nested/unselected/hidden.txt", "outside/hidden.txt",
++            "android_tools/ancestor.txt",
++            "android_tools/android_tools/all_android_tools_deploy.jar",
++            "android_tools/android_tools/ImportDepsChecker_deploy.jar",
++            "android_tools/android_tools/desugar_jdk_libs.jar",
++            "android_tools/unselected/hidden.txt",
++        ] {
++            let path = checkout.join(name);
++            fs::create_dir_all(path.parent().unwrap()).unwrap();
++            fs::write(path, name.as_bytes()).unwrap();
++        }
++        std::os::unix::fs::symlink("missing-target", checkout.join("nested/selected/dangling-link")).unwrap();
++        run_git(&checkout, &[OsStr::new("add"), OsStr::new(".")]).unwrap();
++        run_git(&checkout, &[OsStr::new("-c"), OsStr::new("user.name=Droidloom Test"),
++            OsStr::new("-c"), OsStr::new("user.email=test@droidloom.invalid"),
++            OsStr::new("commit"), OsStr::new("--quiet"), OsStr::new("-m"),
++            OsStr::new("tracked presence fixture")]).unwrap();
++        let head = run_git_output(&checkout, &[OsStr::new("rev-parse"), OsStr::new("HEAD")]).unwrap();
++        let gitlink = format!("160000,{},nested/selected/submodule",
++            String::from_utf8(head.stdout).unwrap().trim());
++        run_git(&checkout, &[OsStr::new("update-index"), OsStr::new("--add"),
++            OsStr::new("--cacheinfo"), OsStr::new(&gitlink)]).unwrap();
++        fs::create_dir(checkout.join("nested/selected/submodule")).unwrap();
++        run_git(&checkout, &[OsStr::new("-c"), OsStr::new("user.name=Droidloom Test"),
++            OsStr::new("-c"), OsStr::new("user.email=test@droidloom.invalid"),
++            OsStr::new("commit"), OsStr::new("--quiet"), OsStr::new("-m"),
++            OsStr::new("unexpanded gitlink")]).unwrap();
++        let mut lock = valid_lock();
++        lock.links.clear();
++        let head = run_git_output(&checkout, &[OsStr::new("rev-parse"), OsStr::new("HEAD")]).unwrap();
++        lock.projects[0].commit = String::from_utf8(head.stdout).unwrap().trim().to_owned();
++        lock.projects[0].sparse_paths = sparse_paths.iter().map(|path| PathBuf::from(*path)).collect();
++        let plan = build_plan(&lock).unwrap();
++        run_git(&checkout, &[OsStr::new("remote"), OsStr::new("add"), OsStr::new("origin"),
++            OsStr::new(&plan.projects[0].url)]).unwrap();
++        apply_sparse_checkout(&checkout, &plan.projects[0]).unwrap();
++        let lock_path = sandbox.path().join("lock.json");
++        fs::write(&lock_path, b"exact tracked presence fixture lock").unwrap();
++        let manifest = MaterializedManifest {
++            schema_version: 1, source_lock_sha256: sha256_file(&lock_path).unwrap(), plan,
++        };
++        write_manifest_atomically(&root, &manifest).unwrap();
++        verify_materialized(&lock_path, &lock, &root).unwrap();
++        (sandbox, root, lock, lock_path)
++    }
++
++    fn hide_required_file(checkout: &Path, path: &str) {
++        run_git(checkout, &[OsStr::new("update-index"), OsStr::new("--skip-worktree"),
++            OsStr::new("--"), OsStr::new(path)]).unwrap();
++        fs::remove_file(checkout.join(path)).unwrap();
++        assert!(run_git_output(checkout, &[OsStr::new("status"), OsStr::new("--porcelain")])
++            .unwrap().stdout.is_empty());
++    }
++
++    #[test]
++    fn materialized_presence_rejects_and_reconcile_restores_single_file_cone_siblings() {
++        let (_sandbox, root, lock, lock_path) = tracked_presence_fixture(&[
++            "android_tools/android_tools/all_android_tools_deploy.jar",
++        ]);
++        let checkout = root.join(&lock.projects[0].path);
++        for path in ["android_tools/android_tools/ImportDepsChecker_deploy.jar",
++                     "android_tools/android_tools/desugar_jdk_libs.jar"] {
++            hide_required_file(&checkout, path);
++        }
++        // A clean index and exact HEAD still do not establish complete bodies.
++        verify_project(&checkout, &build_plan(&lock).unwrap().projects[0]).unwrap();
++        let error = verify_materialized(&lock_path, &lock, &root).unwrap_err();
++        assert!(error.to_string().contains("ImportDepsChecker_deploy.jar"));
++        reconcile(&lock_path, &lock, &root).unwrap();
++        verify_materialized(&lock_path, &lock, &root).unwrap();
++        for path in ["android_tools/android_tools/ImportDepsChecker_deploy.jar",
++                     "android_tools/android_tools/desugar_jdk_libs.jar"] {
++            assert_eq!(fs::read(checkout.join(path)).unwrap(), path.as_bytes());
++        }
++        assert!(!checkout.join("android_tools/unselected/hidden.txt").exists());
++    }
++
++    #[test]
++    fn full_materialization_reconcile_restores_skip_files_with_false_sparse_config() {
++        let (_sandbox, root, lock, lock_path) = tracked_presence_fixture(&[]);
++        let checkout = root.join(&lock.projects[0].path);
++        run_git(&checkout, &[OsStr::new("config"), OsStr::new("core.sparseCheckout"), OsStr::new("false")]).unwrap();
++        hide_required_file(&checkout, "outside/hidden.txt");
++        assert!(verify_materialized(&lock_path, &lock, &root).unwrap_err().to_string()
++            .contains("outside/hidden.txt"));
++        reconcile(&lock_path, &lock, &root).unwrap();
++        assert_eq!(fs::read(checkout.join("outside/hidden.txt")).unwrap(), b"outside/hidden.txt");
++        verify_materialized(&lock_path, &lock, &root).unwrap();
++    }
++
++    #[test]
++    fn required_presence_is_postcondition_not_a_sparse_expansion_precondition() {
++        let (_sandbox, root, mut lock, lock_path) = tracked_presence_fixture(&["nested/selected"]);
++        let checkout = root.join(&lock.projects[0].path);
++        assert!(!checkout.join("outside/hidden.txt").exists());
++        lock.projects[0].sparse_paths.push("outside".into());
++        fs::write(&lock_path, b"expanded tracked presence fixture lock").unwrap();
++        reconcile(&lock_path, &lock, &root).unwrap();
++        assert_eq!(fs::read(checkout.join("outside/hidden.txt")).unwrap(), b"outside/hidden.txt");
++        verify_materialized(&lock_path, &lock, &root).unwrap();
++    }
++
++    #[test]
++    fn cone_presence_requires_root_and_ancestor_files_but_not_excluded_subtrees() {
++        for missing in ["Android.bp", "nested/ancestor.txt"] {
++            let (_sandbox, root, lock, lock_path) = tracked_presence_fixture(&["nested/selected"]);
++            let checkout = root.join(&lock.projects[0].path);
++            assert!(!checkout.join("nested/unselected/hidden.txt").exists());
++            assert!(!checkout.join("outside/hidden.txt").exists());
++            hide_required_file(&checkout, missing);
++            let error = verify_materialized(&lock_path, &lock, &root).unwrap_err();
++            assert!(error.to_string().contains(missing));
++        }
++    }
++
++    #[test]
++    fn materialized_presence_preserves_dangling_symlinks_and_unexpanded_gitlinks() {
++        let (_sandbox, root, lock, lock_path) = tracked_presence_fixture(&["nested/selected"]);
++        let checkout = root.join(&lock.projects[0].path);
++        let link = checkout.join("nested/selected/dangling-link");
++        assert!(fs::symlink_metadata(&link).unwrap().file_type().is_symlink());
++        assert!(!link.exists());
++        assert!(checkout.join("nested/selected/submodule").is_dir());
++        assert_eq!(fs::read_dir(checkout.join("nested/selected/submodule")).unwrap().count(), 0);
++        verify_materialized(&lock_path, &lock, &root).unwrap();
++        hide_required_file(&checkout, "nested/selected/dangling-link");
++        assert!(verify_materialized(&lock_path, &lock, &root).unwrap_err().to_string()
++            .contains("dangling-link"));
++    }
++
++    #[test]
++    fn fresh_materialization_preserves_single_file_cone_siblings() {
++        let (sandbox, root, lock, _lock_path) = tracked_presence_fixture(&[]);
++        let mut project = build_plan(&lock).unwrap().projects.remove(0);
++        project.url = root.join(&project.path).to_string_lossy().into_owned();
++        project.sparse_paths = vec!["android_tools/android_tools/all_android_tools_deploy.jar".into()];
++        let fresh = sandbox.path().join("fresh");
++        fs::create_dir(&fresh).unwrap();
++        materialize_project(&fresh, &project).unwrap();
++        let checkout = fresh.join(&project.path);
++        for path in ["android_tools/android_tools/all_android_tools_deploy.jar",
++                     "android_tools/android_tools/ImportDepsChecker_deploy.jar",
++                     "android_tools/android_tools/desugar_jdk_libs.jar"] {
++            assert_eq!(fs::read(checkout.join(path)).unwrap(), path.as_bytes());
++        }
++        assert!(!checkout.join("outside/hidden.txt").exists());
++    }
++
+     #[test]
+     fn materialized_verification_rejects_dirty_projects() {
+         let sandbox = tempfile::tempdir().unwrap();

@@ -102,6 +102,15 @@ jobs:
           set -euo pipefail
           python3 -I -B compat/android/pocket4/vendor-same-plan-source-restoration-20261119/source_replay.py \
             2>&1 | tee "$RUNNER_TEMP/a08/vendor-same-plan-source-restoration.log"
+      - name: Verify committed CRLF checkout equivalence with real Git
+        timeout-minutes: 2
+        working-directory: compat/android/pocket4/vendor-source-materialization-20261120/crlf
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum --check --strict FILES.sha256
+          python3 -I -B test_committed_crlf.py --result "$RUNNER_TEMP/a08/committed-crlf-controls.json" \
+            2>&1 | tee "$RUNNER_TEMP/a08/committed-crlf-controls.log"
       - name: Verify required39 business plan and preserved installation prerequisites
         timeout-minutes: 2
         working-directory: compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2
@@ -1823,3 +1832,58 @@ jobs:
             ${{ runner.temp }}/current-ordinary/target/release/droidloom-wayland
             ${{ runner.temp }}/current-ordinary/target/release/droidloomctl
             ${{ runner.temp }}/current-ordinary/target/release/droidloomd
+
+  source-materialization-successor:
+    name: Required checkout presence - complete source successor
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      P4_MATERIALIZATION_INVENTORY_SHA256: ea75a0a28022944b80acebb65aca9ce49c9c66fbd519531da7677bbd114ed35e
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: dtolnay/rust-toolchain@1.93.0
+      - name: Verify complete parent and exact source successor
+        shell: bash
+        run: |
+          set -euo pipefail
+          a08_materialization_parent="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1"
+          a08_materialization_packet="$GITHUB_WORKSPACE/compat/android/pocket4/vendor-source-materialization-20261120/rust"
+          a08_materialization_parent_pin=075affecd123cc60e30eadf70ae95cc9ec34d5686694bedf0914014c36d04c0b
+          printf '%s  %s\n' "$P4_MATERIALIZATION_INVENTORY_SHA256" "$a08_materialization_packet/FILES.sha256" | sha256sum --check --status
+          (cd "$a08_materialization_packet" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' "$a08_materialization_parent_pin" "$a08_materialization_parent/FILES.sha256" | sha256sum --check --status
+          (cd "$a08_materialization_parent" && sha256sum --quiet -c FILES.sha256)
+          python3 -I -B "$a08_materialization_packet/test_replay.py"
+          python3 -I -B "$a08_materialization_parent/verify.py" --inventory-sha256 "$a08_materialization_parent_pin" \
+            --output "$RUNNER_TEMP/materialization-parent" \
+            --report "$RUNNER_TEMP/materialization-parent.json"
+          python3 -I -B "$a08_materialization_packet/verify.py" --inventory-sha256 "$P4_MATERIALIZATION_INVENTORY_SHA256" \
+            --parent-packet "$a08_materialization_parent" --parent-source "$RUNNER_TEMP/materialization-parent" \
+            --output "$RUNNER_TEMP/materialization-successor" \
+            --report "$RUNNER_TEMP/materialization-replay.json"
+      - name: Compile and execute all 100 affected crate tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B "$GITHUB_WORKSPACE/compat/android/pocket4/vendor-source-materialization-20261120/rust/run_ci.py" \
+            --inventory-sha256 "$P4_MATERIALIZATION_INVENTORY_SHA256" \
+            --producer "$RUNNER_TEMP/materialization-successor" \
+            --work "$RUNNER_TEMP/materialization-build" \
+            --report "$RUNNER_TEMP/materialization-ci.json" --jobs 2 --fetch
+      - name: Preserve exact source and test execution evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a08-source-materialization-successor-${{ github.event.pull_request.head.sha || github.sha }}
+          if-no-files-found: error
+          retention-days: 7
+          path: |
+            ${{ runner.temp }}/materialization-parent.json
+            ${{ runner.temp }}/materialization-replay.json
+            ${{ runner.temp }}/materialization-ci.json
+            ${{ runner.temp }}/materialization-build/logs/*.stdout
+            ${{ runner.temp }}/materialization-build/logs/*.stderr
