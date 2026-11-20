@@ -1,0 +1,338 @@
+{
+  "K1_K2_K3_qualified": false,
+  "closed_foundation_only": true,
+  "inherited_K0b_full_bodies_equal": true,
+  "kernel_runtime_tests_executed": false,
+  "new_private_data_assignments": 0,
+  "normal_devices_keep_original_handlers_after_zero_gate": true,
+  "original_native_holder_assignments": [
+    {
+      "assignment_lines": [
+        "\tbdev_file->private_data = holder;",
+        "\t\tbdev_file->private_data = ERR_PTR(ret);",
+        "\t\tbdev_file->private_data = BDEV_I(bdev_file->f_mapping->host);"
+      ],
+      "path": "block/bdev.c"
+    },
+    {
+      "assignment_lines": [
+        "\t\tfilp->private_data = filp;"
+      ],
+      "path": "block/fops.c"
+    },
+    {
+      "assignment_lines": [],
+      "path": "block/ioctl.c"
+    },
+    {
+      "assignment_lines": [],
+      "path": "block/genhd.c"
+    },
+    {
+      "assignment_lines": [],
+      "path": "block/blk-sysfs.c"
+    },
+    {
+      "assignment_lines": [],
+      "path": "mm/backing-dev.c"
+    },
+    {
+      "assignment_lines": [],
+      "path": "block/partitions/core.c"
+    },
+    {
+      "assignment_lines": [],
+      "path": "block/blk-core.c"
+    },
+    {
+      "assignment_lines": [
+        "\tdisk->private_data\t= lo;"
+      ],
+      "path": "drivers/block/loop.c"
+    }
+  ],
+  "original_probe_cleanup_completion_functions": [
+    {
+      "bytes": 3214,
+      "function": "loop_configure",
+      "path": "drivers/block/loop.c",
+      "sha256": "86f94d0f1b1ef187c2dbf499fcceeb7a32bf50a00a0001ac2887ee64e5ef975c"
+    },
+    {
+      "bytes": 2299,
+      "function": "__loop_clr_fd",
+      "path": "drivers/block/loop.c",
+      "sha256": "d3efbdcc97f7bd66de37086d56708fcf108028120e3ae0f6856483b84acd4af4"
+    },
+    {
+      "bytes": 938,
+      "function": "loop_clr_fd",
+      "path": "drivers/block/loop.c",
+      "sha256": "c30250a45e1332b36ebb430416fd0c4340476ee8c76ffee66d9fcc9006bc2898"
+    },
+    {
+      "bytes": 574,
+      "function": "lo_release",
+      "path": "drivers/block/loop.c",
+      "sha256": "c678836608e0e881b1330d38850f98300aea82f4a1c8eb0b99feb54715a35b04"
+    },
+    {
+      "bytes": 265,
+      "function": "lo_free_disk",
+      "path": "drivers/block/loop.c",
+      "sha256": "bf184215d9db16bed18c64977eab6ab8b99155490c1287fd8cd4265ecaf8a12e"
+    },
+    {
+      "bytes": 1258,
+      "function": "loop_handle_cmd",
+      "path": "drivers/block/loop.c",
+      "sha256": "6c98e23989de0490c035811670decc12855f072b3f78a44fa6d1e21809eef0e8"
+    },
+    {
+      "bytes": 933,
+      "function": "loop_process_work",
+      "path": "drivers/block/loop.c",
+      "sha256": "efaf8115e0ce73d08f9413eed733baa218d9fe4e6c6265c670dbcd6d9f5c752d"
+    },
+    {
+      "bytes": 190,
+      "function": "loop_workfn",
+      "path": "drivers/block/loop.c",
+      "sha256": "2156b69ea041e56d95285d7ead4fcea72fcea39f06934f0bb826b6e280bfda62"
+    },
+    {
+      "bytes": 193,
+      "function": "loop_rootcg_workfn",
+      "path": "drivers/block/loop.c",
+      "sha256": "5ab6bed90b911272b0d4371e8d56243a0a612e2ac69cbefbfd7b969eda1eea74"
+    },
+    {
+      "bytes": 303,
+      "function": "loop_remove",
+      "path": "drivers/block/loop.c",
+      "sha256": "80865f913fe2c7698605d9c831b83bdc5fa52bf45ed3365d52b8c165f6eadb04"
+    },
+    {
+      "bytes": 1188,
+      "function": "bdev_release",
+      "path": "block/bdev.c",
+      "sha256": "6ec4d52944d906d462f04f26f07a7835022162d877805fc4a986109de09af6ad"
+    },
+    {
+      "bytes": 625,
+      "function": "bdev_fput",
+      "path": "block/bdev.c",
+      "sha256": "d6757a2738e8d3a55832d9ab6ac7220bd890c76e1814f7f1fcf6396ae62ef20a"
+    },
+    {
+      "bytes": 454,
+      "function": "bdev_free_inode",
+      "path": "block/bdev.c",
+      "sha256": "5dfa7e7bef5b31b398b4333216f7b25e4d7953a82bcbf02abaf25681d62645fd"
+    },
+    {
+      "bytes": 216,
+      "function": "blkdev_put_whole",
+      "path": "block/bdev.c",
+      "sha256": "5d7c45ff6c278435079373b7c5247f6eb5e2ce8a14124de97fb84c4a70a4da11"
+    },
+    {
+      "bytes": 250,
+      "function": "blkdev_put_part",
+      "path": "block/bdev.c",
+      "sha256": "17091654bab7d095add83f7a60862e4c936b76da722b13456a1d6052f01dc54b"
+    },
+    {
+      "bytes": 83,
+      "function": "bdev_unhash",
+      "path": "block/bdev.c",
+      "sha256": "aa0efa9c8b0f808abb7a1cc7f4958519dfdf9b31715fc515365f4662773d8c1b"
+    },
+    {
+      "bytes": 68,
+      "function": "bdev_drop",
+      "path": "block/bdev.c",
+      "sha256": "adbb21b49dbd6ea50e42db279c6e74f7b6926d1c3a71a8c0c4aedd9addeb3613"
+    },
+    {
+      "bytes": 101,
+      "function": "blkdev_release",
+      "path": "block/fops.c",
+      "sha256": "907b621c653717b2400b785b428074e2573de6b614668a9899ae9073fd67082d"
+    },
+    {
+      "bytes": 1143,
+      "function": "bio_poll",
+      "path": "block/blk-core.c",
+      "sha256": "90d5ccde55a1aa448c573a98c69814225ea162e80a4bb0f283876225cd76fd85"
+    },
+    {
+      "bytes": 1253,
+      "function": "iocb_bio_iopoll",
+      "path": "block/blk-core.c",
+      "sha256": "63c581e6ae4d0716722160d1875559cba34511aa125c8232425aa7183d5e6eaf"
+    },
+    {
+      "bytes": 2064,
+      "function": "__del_gendisk",
+      "path": "block/genhd.c",
+      "sha256": "f9a6a4f71c2493f6d713b07bd002895698bfb81a68f76c27b39826b54ee958b4"
+    },
+    {
+      "bytes": 402,
+      "function": "del_gendisk",
+      "path": "block/genhd.c",
+      "sha256": "83b76b39246444bc5379f3b1495d63323d2b1dcc7802cd359ac505eb263af3c5"
+    },
+    {
+      "bytes": 334,
+      "function": "bio_cmd_bio_end_io",
+      "path": "block/ioctl.c",
+      "sha256": "b10f1db3e56ef1fab06b5082e7cc5627ffda0a47836c7539e16860aa8b7cbfc4"
+    },
+    {
+      "bytes": 290,
+      "function": "blk_cmd_complete",
+      "path": "block/ioctl.c",
+      "sha256": "a3a61193fa86f3f98adc5e2b608f9dceb2d353ad63b5d4199f86cfbe2d88e279"
+    },
+    {
+      "bytes": 574,
+      "function": "bdi_unregister",
+      "path": "mm/backing-dev.c",
+      "sha256": "9a2753d167090c3d197b1c869ab47cc1efb7456246c62ea99e8488302ca2b7b6"
+    },
+    {
+      "bytes": 247,
+      "function": "release_bdi",
+      "path": "mm/backing-dev.c",
+      "sha256": "68bd5ce1e74f1f872942b6f87cd0a15523c9fe8723cae048fabf088d2223b513"
+    },
+    {
+      "bytes": 255,
+      "function": "drop_partition",
+      "path": "block/partitions/core.c",
+      "sha256": "6533c120924732f8367e05a18c39bd23697b5ae8058605c09ac171c6ef0ac3a2"
+    },
+    {
+      "bytes": 116,
+      "function": "part_release",
+      "path": "block/partitions/core.c",
+      "sha256": "1caf9a05ffbacc4eb76c640bb05f58e1eecf16337bc2af882273769613484c61"
+    }
+  ],
+  "patch_apply_and_reverse_commands": [
+    {
+      "argv": [
+        "/usr/bin/git",
+        "apply",
+        "--check",
+        "/workspace/scratch/3b9ddccd362c/p4_private_loop_k0c/K0c.patch"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "apply",
+        "/workspace/scratch/3b9ddccd362c/p4_private_loop_k0c/K0c.patch"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "apply",
+        "--reverse",
+        "--check",
+        "/workspace/scratch/3b9ddccd362c/p4_private_loop_k0c/K0c.patch"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "apply",
+        "--reverse",
+        "/workspace/scratch/3b9ddccd362c/p4_private_loop_k0c/K0c.patch"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ""
+    }
+  ],
+  "postimage_pins": [
+    {
+      "path": "include/linux/blkdev.h",
+      "whole_before_and_after_pins_match": true
+    },
+    {
+      "path": "include/linux/backing-dev-defs.h",
+      "whole_before_and_after_pins_match": true
+    },
+    {
+      "path": "block/Kconfig",
+      "whole_before_and_after_pins_match": true
+    },
+    {
+      "path": "block/Makefile",
+      "whole_before_and_after_pins_match": true
+    },
+    {
+      "path": "block/bdev.c",
+      "whole_before_and_after_pins_match": true
+    },
+    {
+      "path": "block/fops.c",
+      "whole_before_and_after_pins_match": true
+    },
+    {
+      "path": "block/ioctl.c",
+      "whole_before_and_after_pins_match": true
+    },
+    {
+      "path": "block/genhd.c",
+      "whole_before_and_after_pins_match": true
+    },
+    {
+      "path": "block/blk-sysfs.c",
+      "whole_before_and_after_pins_match": true
+    },
+    {
+      "path": "mm/backing-dev.c",
+      "whole_before_and_after_pins_match": true
+    },
+    {
+      "path": "block/partitions/core.c",
+      "whole_before_and_after_pins_match": true
+    },
+    {
+      "path": "block/blk-core.c",
+      "whole_before_and_after_pins_match": true
+    },
+    {
+      "path": "drivers/block/loop.c",
+      "whole_before_and_after_pins_match": true
+    },
+    {
+      "path": "include/linux/p4_private_loop_lease.h",
+      "whole_before_and_after_pins_match": true
+    },
+    {
+      "path": "block/p4_private_loop_lease.c",
+      "whole_before_and_after_pins_match": true
+    }
+  ],
+  "private_loop_issuer_enabled": false,
+  "production_ready": false,
+  "runtime_qualified": false,
+  "schema": "p4-k0c-exact-source-preservation-controls-v1",
+  "state": "PASSED_FINITE_SOURCE_CHECKS",
+  "whole_patch_forward_and_reverse_equal": true
+}

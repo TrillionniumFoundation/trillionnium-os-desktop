@@ -1,0 +1,43 @@
+{
+  "base_K0b_commit": "69e7c31c9e7e34fa39d3422df1c22d4c5f33d9ce",
+  "complete_postimage_count": 15,
+  "exact_patch_reconstruction": true,
+  "findings": [
+    "Retains independent controller and actor references plus exact original struct file custody; no file private_data replacement or struct file layout change.",
+    "Generation saturates at signed64 maximum; a lease binds at most one disk and each target binds one OFD for its entire lifetime, including after authorization release.",
+    "Lease has only FENCED and REVOKED states. Every marked disk/file/BDI gate denies even a matching actor and exact OFD. Custody observation grants no syscall or I/O permission.",
+    "Association spinlock is released before sleepable final fput/target/actor release. A retained real block file pins native disk lifetime; target marker is removed only by final native disk_release.",
+    "Fresh-target attach additionally requires exclusive kernel construction ownership and checks unpublished empty disk, no openers/partitions, no capacity/pagecache/device number, and no registered BDI/queue. These preconditions are not inferred from a userspace path.",
+    "BDI uses a permanent closed boolean rather than a target pointer, preserving denial when BDI writeback references outlive disk release.",
+    "Publication gates cover add_disk, direct bdev inode publication, queue and BDI registration, plus partition creation and rescan.",
+    "Operation gates cover native/compat ioctl, io_uring commands, read/write/seek/sync/mmap/fallocate/splice, BIO submission routes, loop queue operations and queue/BDI mutation entries.",
+    "Normal disks keep null target and false BDI marker; CONFIG disabled stubs return zero. Coherent full kernel build remains required because disk and BDI layouts change."
+  ],
+  "host_execution_by_this_review": false,
+  "issuer_enabled": false,
+  "kernel_executed": false,
+  "kernel_linked": false,
+  "manifest": {
+    "bytes": 5915,
+    "sha256": "67ad1846aebfa04bd4515eb1bf51000d93a7723c32ba8e271a0a849a1370465e"
+  },
+  "original_host_input_evidence": {
+    "bytes": 10230,
+    "sha256": "00e7264a21405b630ba445be6bab271d7c83a615adbad1e1efca1a61db90e802"
+  },
+  "passed_closed_foundation_source_review": true,
+  "patch": {
+    "bytes": 32097,
+    "sha256": "1622c046842eda170051eb62dacf5de15eafc2a1f97c86c8bafbc373418a24d6"
+  },
+  "private_device_published": false,
+  "production_ready": false,
+  "remaining_requirements": [
+    "Actual complete matching object results are pending and do not replace full kernel link or execution.",
+    "K1 allocator and control API, K2 native probe/configuration and I/O graph authorization, and K3 lifetime/race/teardown coverage are still required before gates can admit a private device.",
+    "Original apexd same-OFD native probe, source admission, Android startup, original-data continuity and application acceptance remain unqualified."
+  ],
+  "runtime_qualified": false,
+  "schema": "p4-private-loop-K0c-independent-source-review-v1",
+  "unchanged_K0b_files": 4
+}

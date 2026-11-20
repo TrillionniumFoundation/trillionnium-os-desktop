@@ -1,0 +1,87 @@
+{
+  "schema": "p4-k0c-actual-job-readback-v1",
+  "r1": {
+    "launch": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\n  \"audit_recorded\": true,\n  \"job\": {\n    \"args\": [\n      \"/home/alex/work/p4-private-loop-k0c-20261120-3b9d-r1/compile_objects.py\"\n    ],\n    \"created_unix_ms\": 1795192349066,\n    \"cwd\": \"/home/alex/work/p4-private-loop-k0c-20261120-3b9d-r1\",\n    \"env_keys\": [],\n    \"executable\": \"/usr/bin/python3\",\n    \"execution_mode\": \"operator\",\n    \"host\": \"pocket4\",\n    \"id\": \"1a1f9cd618a-ffbe-1a51\",\n    \"idempotency_key\": \"p4-k0c-matching-24-objects-20261120-3b9d-r1\",\n    \"launch_error\": null,\n    \"launch_state\": \"launched\",\n    \"remote_job_dir\": \"/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1f9cd618a-ffbe-1a51\",\n    \"request_digest\": \"25994a8675640a639f4e379aaede2551e5910469554e7b0840d9541051e6b04a\",\n    \"request_fingerprint\": 2709278592195627619,\n    \"ssh_target\": \"hepta-pocket4\",\n    \"system_jobctl\": false,\n    \"unit\": \"hepta-runtime-job-1a1f9cd618a-ffbe-1a51\"\n  },\n  \"launch\": {\n    \"backend\": \"systemd\",\n    \"launcher_pid\": null,\n    \"ok\": true,\n    \"unit\": \"hepta-runtime-job-1a1f9cd618a-ffbe-1a51\"\n  },\n  \"local_record_pending\": false,\n  \"reused\": false\n}"
+        }
+      ],
+      "structuredContent": null,
+      "isError": false
+    },
+    "status": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\n  \"at_unix_ms\": 1795192359510,\n  \"audit_recorded\": true,\n  \"automatic_retry\": false,\n  \"cancelled\": false,\n  \"exit_code\": 1,\n  \"job_id\": \"1a1f9cd618a-ffbe-1a51\",\n  \"launch_nonce\": \"4b94328e75a3df04cefbffa51d2e4140\",\n  \"log_bytes\": {\n    \"stderr\": {\n      \"seen\": 915,\n      \"stored\": 915\n    },\n    \"stdout\": {\n      \"seen\": 257,\n      \"stored\": 257\n    }\n  },\n  \"log_errors\": {\n    \"stderr\": null,\n    \"stdout\": null\n  },\n  \"log_synced\": {\n    \"stderr\": true,\n    \"stdout\": true\n  },\n  \"log_truncated\": {\n    \"stderr\": false,\n    \"stdout\": false\n  },\n  \"output_complete\": true,\n  \"output_durable\": true,\n  \"state\": \"failed\",\n  \"terminal_publication_confirmed\": true,\n  \"terminal_publication_protocol\": 1,\n  \"timed_out\": false\n}"
+        }
+      ],
+      "structuredContent": null,
+      "isError": false
+    },
+    "output": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\n  \"audit_recorded\": true,\n  \"job_id\": \"1a1f9cd618a-ffbe-1a51\",\n  \"stderr\": {\n    \"bytes_hex\": \"54726163656261636b20286d6f737420726563656e742063616c6c206c617374293a0a202046696c6520222f686f6d652f616c65782f776f726b2f70342d707269766174652d6c6f6f702d6b30632d32303236313132302d336239642d72312f636f6d70696c655f6f626a656374732e7079222c206c696e65203333362c20696e203c6d6f64756c653e0a202020206d61696e28290a202020207e7e7e7e5e5e0a202046696c6520222f686f6d652f616c65782f776f726b2f70342d707269766174652d6c6f6f702d6b30632d32303236313132302d336239642d72312f636f6d70696c655f6f626a656374732e7079222c206c696e65203239362c20696e206d61696e0a2020202072756e286c6162656c2b272d636f6d70696c65272c61726773290a202020207e7e7e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e0a202046696c6520222f686f6d652f616c65782f776f726b2f70342d707269766174652d6c6f6f702d6b30632d32303236313132302d336239642d72312f636f6d70696c655f6f626a656374732e7079222c206c696e65203132352c20696e2072756e0a202020206e65656428636f6465203d3d20657870656374656420616e6420726f775b27737464657272275d5b276279746573275d203d3d20302c0a202020207e7e7e7e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e0a2020202020202020202761637475616c20636f6d6d616e6420726573756c74206f7220646961676e6f73746963732072657175697265207265766965773a2027202b206e616d65290a2020202020202020205e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e0a202046696c6520222f686f6d652f616c65782f776f726b2f70342d707269766174652d6c6f6f702d6b30632d32303236313132302d336239642d72312f636f6d70696c655f6f626a656374732e7079222c206c696e652034312c20696e206e6565640a2020202072616973652052756e74696d654572726f72286d657373616765290a52756e74696d654572726f723a2061637475616c20636f6d6d616e6420726573756c74206f7220646961676e6f73746963732072657175697265207265766965773a20656e61626c65642d6d6d2d6261636b696e672d6465762d636f6d70696c650a\",\n    \"eof\": true,\n    \"next_offset\": 915,\n    \"offset\": 0,\n    \"size\": 915,\n    \"text\": \"Traceback (most recent call last):\\n  File \\\"/home/alex/work/p4-private-loop-k0c-20261120-3b9d-r1/compile_objects.py\\\", line 336, in <module>\\n    main()\\n    ~~~~^^\\n  File \\\"/home/alex/work/p4-private-loop-k0c-20261120-3b9d-r1/compile_objects.py\\\", line 296, in main\\n    run(label+'-compile',args)\\n    ~~~^^^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"/home/alex/work/p4-private-loop-k0c-20261120-3b9d-r1/compile_objects.py\\\", line 125, in run\\n    need(code == expected and row['stderr']['bytes'] == 0,\\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n         'actual command result or diagnostics require review: ' + name)\\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \\\"/home/alex/work/p4-private-loop-k0c-20261120-3b9d-r1/compile_objects.py\\\", line 41, in need\\n    raise RuntimeError(message)\\nRuntimeError: actual command result or diagnostics require review: enabled-mm-backing-dev-compile\\n\"\n  },\n  \"stdout\": {\n    \"bytes_hex\": \"7b227374617465223a20224641494c4544222c202272656365697074223a20222f686f6d652f616c65782f776f726b2f70342d707269766174652d6c6f6f702d6b30632d32303236313132302d336239642d72312f4f424a4543542d434f4d50494c452e6a736f6e222c20226279746573223a203234333538332c2022736861323536223a202231343336626230666134303661663932353731663562386631643965363936656532336464303639643532303463623266333263363739323035313263656434222c202272756e74696d655f7175616c6966696564223a2066616c73652c202270726f64756374696f6e5f7265616479223a2066616c73657d0a\",\n    \"eof\": true,\n    \"next_offset\": 257,\n    \"offset\": 0,\n    \"size\": 257,\n    \"text\": \"{\\\"state\\\": \\\"FAILED\\\", \\\"receipt\\\": \\\"/home/alex/work/p4-private-loop-k0c-20261120-3b9d-r1/OBJECT-COMPILE.json\\\", \\\"bytes\\\": 243583, \\\"sha256\\\": \\\"1436bb0fa406af92571f5b8f1d9e696ee23dd069d5204cb2f32c67920512ced4\\\", \\\"runtime_qualified\\\": false, \\\"production_ready\\\": false}\\n\"\n  }\n}"
+        }
+      ],
+      "structuredContent": null,
+      "isError": false
+    },
+    "receipt": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"metadata\":{\"acl_sha256\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"gid\":1000,\"link_count\":1,\"metadata_platform\":\"linux\",\"mode\":384,\"uid\":1000,\"xattr_names\":[],\"xattr_sha256\":{}},\"mode\":384,\"path\":\"/home/alex/work/p4-private-loop-k0c-20261120-3b9d-r1/OBJECT-COMPILE.json\",\"sha256\":\"1436bb0fa406af92571f5b8f1d9e696ee23dd069d5204cb2f32c67920512ced4\",\"size\":243583,\"version\":\"66306:37759994:243583:1795192359393188190:1795192359393188190\"}"
+        }
+      ],
+      "structuredContent": null,
+      "isError": false
+    }
+  },
+  "r2": {
+    "launch": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\n  \"audit_recorded\": true,\n  \"job\": {\n    \"args\": [\n      \"/home/alex/work/p4-private-loop-k0c-20261120-3b9d-r2/compile_objects.py\"\n    ],\n    \"created_unix_ms\": 1795192499476,\n    \"cwd\": \"/home/alex/work/p4-private-loop-k0c-20261120-3b9d-r2\",\n    \"env_keys\": [],\n    \"executable\": \"/usr/bin/python3\",\n    \"execution_mode\": \"operator\",\n    \"host\": \"pocket4\",\n    \"id\": \"1a1f9cfad14-ffbe-1a5c\",\n    \"idempotency_key\": \"p4-k0c-matching-24-objects-20261120-3b9d-r2\",\n    \"launch_error\": null,\n    \"launch_state\": \"launched\",\n    \"remote_job_dir\": \"/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1f9cfad14-ffbe-1a5c\",\n    \"request_digest\": \"5406f75c37ca7fa82614da6692fdebec0787b22d47394ceabade7a77e75e4fed\",\n    \"request_fingerprint\": 6054798724491280296,\n    \"ssh_target\": \"hepta-pocket4\",\n    \"system_jobctl\": false,\n    \"unit\": \"hepta-runtime-job-1a1f9cfad14-ffbe-1a5c\"\n  },\n  \"launch\": {\n    \"backend\": \"systemd\",\n    \"launcher_pid\": null,\n    \"ok\": true,\n    \"unit\": \"hepta-runtime-job-1a1f9cfad14-ffbe-1a5c\"\n  },\n  \"local_record_pending\": false,\n  \"reused\": false\n}"
+        }
+      ],
+      "structuredContent": null,
+      "isError": false
+    },
+    "status": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\n  \"at_unix_ms\": 1795192523754,\n  \"audit_recorded\": true,\n  \"automatic_retry\": false,\n  \"cancelled\": false,\n  \"exit_code\": 0,\n  \"job_id\": \"1a1f9cfad14-ffbe-1a5c\",\n  \"launch_nonce\": \"f119fcbc5d680c4abae38bc3d5219171\",\n  \"log_bytes\": {\n    \"stderr\": {\n      \"seen\": 0,\n      \"stored\": 0\n    },\n    \"stdout\": {\n      \"seen\": 301,\n      \"stored\": 301\n    }\n  },\n  \"log_errors\": {\n    \"stderr\": null,\n    \"stdout\": null\n  },\n  \"log_synced\": {\n    \"stderr\": true,\n    \"stdout\": true\n  },\n  \"log_truncated\": {\n    \"stderr\": false,\n    \"stdout\": false\n  },\n  \"output_complete\": true,\n  \"output_durable\": true,\n  \"state\": \"succeeded\",\n  \"terminal_publication_confirmed\": true,\n  \"terminal_publication_protocol\": 1,\n  \"timed_out\": false\n}"
+        }
+      ],
+      "structuredContent": null,
+      "isError": false
+    },
+    "output": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\n  \"audit_recorded\": true,\n  \"job_id\": \"1a1f9cfad14-ffbe-1a5c\",\n  \"stderr\": {\n    \"bytes_hex\": \"\",\n    \"eof\": true,\n    \"next_offset\": 0,\n    \"offset\": 0,\n    \"size\": 0,\n    \"text\": \"\"\n  },\n  \"stdout\": {\n    \"bytes_hex\": \"7b227374617465223a20224d41544348494e475f32345f435f4f424a454354535f414e445f4f524947494e414c5f4f424a544f4f4c5f504153534544222c202272656365697074223a20222f686f6d652f616c65782f776f726b2f70342d707269766174652d6c6f6f702d6b30632d32303236313132302d336239642d72322f4f424a4543542d434f4d50494c452e6a736f6e222c20226279746573223a20313631363938362c2022736861323536223a202238653065346561313666323235633062353331656561333366633866373465373831613566336538303938346565316331616366376165363538326633323034222c202272756e74696d655f7175616c6966696564223a2066616c73652c202270726f64756374696f6e5f7265616479223a2066616c73657d0a\",\n    \"eof\": true,\n    \"next_offset\": 301,\n    \"offset\": 0,\n    \"size\": 301,\n    \"text\": \"{\\\"state\\\": \\\"MATCHING_24_C_OBJECTS_AND_ORIGINAL_OBJTOOL_PASSED\\\", \\\"receipt\\\": \\\"/home/alex/work/p4-private-loop-k0c-20261120-3b9d-r2/OBJECT-COMPILE.json\\\", \\\"bytes\\\": 1616986, \\\"sha256\\\": \\\"8e0e4ea16f225c0b531eea33fc8f74e781a5f3e80984ee1c1acf7ae6582f3204\\\", \\\"runtime_qualified\\\": false, \\\"production_ready\\\": false}\\n\"\n  }\n}"
+        }
+      ],
+      "structuredContent": null,
+      "isError": false
+    },
+    "receipt": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"metadata\":{\"acl_sha256\":\"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\",\"gid\":1000,\"link_count\":1,\"metadata_platform\":\"linux\",\"mode\":384,\"uid\":1000,\"xattr_names\":[],\"xattr_sha256\":{}},\"mode\":384,\"path\":\"/home/alex/work/p4-private-loop-k0c-20261120-3b9d-r2/OBJECT-COMPILE.json\",\"sha256\":\"8e0e4ea16f225c0b531eea33fc8f74e781a5f3e80984ee1c1acf7ae6582f3204\",\"size\":1616986,\"version\":\"66306:40240633:1616986:1795192523707596344:1795192523707596344\"}"
+        }
+      ],
+      "structuredContent": null,
+      "isError": false
+    }
+  }
+}
