@@ -1,0 +1,165 @@
+--- a/include/linux/fs_struct.h
++++ b/include/linux/fs_struct.h
+@@ -3,11 +3,17 @@
+ #define _LINUX_FS_STRUCT_H
+ 
+ #include <linux/path.h>
++#include <linux/refcount.h>
+ #include <linux/spinlock.h>
+ #include <linux/seqlock.h>
+ 
+ struct fs_struct {
+ 	int users;
++	/* One aggregate owner reference while the original users discipline
++	 * owns this fs (also the initial unpublished-copy reference), plus
++	 * independent observers. Never use refs for shared-fs access checks.
++	 */
++	refcount_t refs;
+ 	seqlock_t seq;
+ 	int umask;
+ 	int in_exec;
+@@ -20,7 +26,18 @@
+ extern void set_fs_root(struct fs_struct *, const struct path *);
+ extern void set_fs_pwd(struct fs_struct *, const struct path *);
+ extern struct fs_struct *copy_fs_struct(struct fs_struct *);
++/* Drop the original aggregate ownership, after its last users slot
++ * or when discarding an unpublished copy. This may leave observers alive.
++ */
+ extern void free_fs_struct(struct fs_struct *);
++
++/* Lifetime only: neither function reads or changes users or in_exec.
++ * get requires a reference the caller already owns, or task_lock followed
++ * by fs->seq with an attached, positively counted task fs. No resurrection.
++ * Final put releases paths and may sleep; never call it under a spinlock.
++ */
++extern void get_fs_struct_ref(struct fs_struct *);
++extern void put_fs_struct_ref(struct fs_struct *);
+ extern int unshare_fs_struct(void);
+ 
+ static inline void get_fs_root(struct fs_struct *fs, struct path *root)
+--- a/fs/fs_struct.c
++++ b/fs/fs_struct.c
+@@ -80,11 +80,29 @@
+ 		path_put(old_root);
+ }
+ 
+-void free_fs_struct(struct fs_struct *fs)
++void get_fs_struct_ref(struct fs_struct *fs)
+ {
++	/* The caller already owns a lifetime reference or holds the attached
++	 * task/fs locks. Do not acquire a reference from an unowned pointer.
++	 */
++	refcount_inc(&fs->refs);
++}
++
++void put_fs_struct_ref(struct fs_struct *fs)
++{
++	if (!refcount_dec_and_test(&fs->refs))
++		return;
+ 	path_put(&fs->root);
+ 	path_put(&fs->pwd);
+ 	kmem_cache_free(fs_cachep, fs);
++}
++
++void free_fs_struct(struct fs_struct *fs)
++{
++	/* All original callers retire the users aggregate exactly once, or
++	 * discard a copy that was never published to another owner.
++	 */
++	put_fs_struct_ref(fs);
+ }
+ 
+ void exit_fs(struct task_struct *tsk)
+@@ -110,6 +128,7 @@
+ 	/* We don't need to lock fs - think why ;-) */
+ 	if (fs) {
+ 		fs->users = 1;
++		refcount_set(&fs->refs, 1);
+ 		fs->in_exec = 0;
+ 		seqlock_init(&fs->seq);
+ 		fs->umask = old->umask;
+@@ -156,6 +175,7 @@
+ /* to be mentioned only in INIT_TASK */
+ struct fs_struct init_fs = {
+ 	.users		= 1,
++	.refs		= REFCOUNT_INIT(1),
+ 	.seq		= __SEQLOCK_UNLOCKED(init_fs.seq),
+ 	.umask		= 0022,
+ };
+--- a/block/p4_private_loop_actor.c
++++ b/block/p4_private_loop_actor.c
+@@ -5,7 +5,7 @@
+  * No device allocator, loop/control operation, ioctl, miscdevice, namespace
+  * mutation or access-gate success path is added by this translation unit.
+  * Mount namespace identity and pinned root/pwd do not prove that the mount
+- * graph stayed unchanged.  K0b/K1 must supply that independent graph binding
++ * graph stayed unchanged. Later stages must supply independent graph binding
+  * and the complete block access/lifetime gates before any issuer is possible.
+  */
+ #include <linux/cred.h>
+@@ -42,27 +42,16 @@
+ };
+ 
+ /*
+- * One counted fs users reference prevents pointer ABA after unshare/exit.
+- * The existing 6.18.64 fs_struct users discipline is task_lock -> fs->seq.
+- * Releasing the final fs and path references happens outside those locks.
+- * This reference is visible to shared-fs/exec/unshare decisions; retaining it
+- * is not behaviorally transparent and cannot be treated as a live lease.
++ * An independent fs lifetime reference prevents pointer ABA after unshare or
++ * exit without adding a users slot or changing shared-fs/exec decisions.
++ * Capture takes it under task_lock -> fs->seq while a counted task owns fs.
++ * Final release happens outside those locks and may release path custody.
++ * This is still only retained identity, never an execution or access lease.
+  */
+-static void p4_private_loop_fs_put(struct fs_struct *fs)
+-{
+-	bool destroy;
+-
+-	read_seqlock_excl(&fs->seq);
+-	destroy = !--fs->users;
+-	read_sequnlock_excl(&fs->seq);
+-	if (destroy)
+-		free_fs_struct(fs);
+-}
+-
+ static void p4_private_loop_actor_destroy(struct p4_private_loop_actor *actor)
+ {
+ 	if (actor->fs)
+-		p4_private_loop_fs_put(actor->fs);
++		put_fs_struct_ref(actor->fs);
+ 	if (actor->pwd.mnt)
+ 		path_put(&actor->pwd);
+ 	if (actor->root.mnt)
+@@ -144,7 +133,7 @@
+ 	    !fs->root.mnt || !fs->root.dentry || !fs->pwd.mnt ||
+ 	    !fs->pwd.dentry)
+ 		goto unlock_fs;
+-	fs->users++;
++	get_fs_struct_ref(fs);
+ 	actor->fs = fs;
+ 	actor->fs_seq = read_seqbegin(&fs->seq);
+ 	actor->fs_umask = fs->umask;
+@@ -205,7 +194,7 @@
+ 
+ 	fs = actor->fs;
+ 	read_seqlock_excl(&fs->seq);
+-	if (fs->users >= 2 && !fs->in_exec &&
++	if (fs->users >= 1 && !fs->in_exec &&
+ 	    read_seqbegin(&fs->seq) == actor->fs_seq &&
+ 	    fs->umask == actor->fs_umask &&
+ 	    path_equal(&fs->root, &actor->root) &&
+--- a/include/linux/p4_private_loop_actor.h
++++ b/include/linux/p4_private_loop_actor.h
+@@ -20,8 +20,9 @@
+  * Caller already owns a live task reference obtained by its separately
+  * reviewed kernel binding.  Numeric PID lookup is deliberately not supplied.
+  * Capture may sleep, takes its own references, and returns ERR_PTR on failure.
+- * Its counted fs reference affects shared-fs/exec/unshare decisions. This is
+- * deliberate lifetime custody, not an observationally transparent monitor.
++ * Its independent fs lifetime reference does not add a users slot or change
++ * shared-fs/exec/unshare predicates. It still retains the fs allocation and
++ * its paths, and must not be mistaken for a live execution or access lease.
+  * It accepts an exact nonleader userspace thread; it never promotes a TID to
+  * the thread-group leader.  The caller retains its original task reference.
+  */
