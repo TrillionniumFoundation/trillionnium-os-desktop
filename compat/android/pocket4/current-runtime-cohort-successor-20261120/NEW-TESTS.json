@@ -1,0 +1,67 @@
+[
+  {
+    "component": "image_custody",
+    "package": "droidloom-applications",
+    "target": "droidloom_applications",
+    "tests": [
+      "runtime_plan::image_custody_consumer_tests::consumer_rejects_a_different_actual_package_or_user",
+      "runtime_plan::image_custody_consumer_tests::gallery_legacy_metadata_cannot_substitute_for_the_owned_image_producer",
+      "runtime_plan::image_custody_consumer_tests::unchanged_non_gallery_identity_shape_remains_available"
+    ]
+  },
+  {
+    "component": "lint",
+    "package": "droidloom-source",
+    "target": "droidloom-source",
+    "tests": [
+      "tests::source_cli_requires_explicit_complete_healthfitness_lint_profile"
+    ]
+  },
+  {
+    "component": "lint",
+    "package": "droidloom-source",
+    "target": "droidloom_source",
+    "tests": [
+      "production_lint::tests::lint_operations_reject_incomplete_scope_before_any_source_io",
+      "production_lint::tests::lint_profile_extends_only_the_complete_original_lint_directory",
+      "production_lint::tests::lint_profile_rejects_partial_provider_repin_and_wrong_project",
+      "production_lint::tests::lint_profile_rejects_unrelated_projects_metadata_and_policy_changes",
+      "production_lint::tests::lint_verification_never_rewrites_the_original_cmake_manifest"
+    ]
+  },
+  {
+    "component": "image_custody_proc_masks_and_backing_custody",
+    "package": "droidloom-supervisor",
+    "target": "droidloom_supervisor",
+    "tests": [
+      "control::application_custody::tests::complete_wire_model_is_coherent_without_granting_live_custody",
+      "control::application_custody::tests::current_owner_and_all_original_namespaces_are_bound",
+      "control::application_custody::tests::custody_wire_rejects_an_added_authority_field",
+      "control::application_custody::tests::missing_reordered_or_unreaped_commands_do_not_replay_as_observations",
+      "control::application_custody::tests::optional_response_preserves_legacy_wire_but_request_cannot_import_custody",
+      "control::application_custody::tests::whole_image_and_same_inode_are_required_even_with_matching_apk_hash",
+      "control::application_custody::tests::wire_observation_cannot_promote_data_or_release_gates",
+      "control::progress::tests::complete_three_mib_response_uses_the_unchanged_four_mib_bound",
+      "control::progress::tests::only_exact_user_zero_gallery_inspection_gets_the_longer_response_wait",
+      "production_application::custody::tests::image_gallery_never_adopts_an_installed_replacement",
+      "production_application::custody::tests::image_gallery_query_scope_keeps_the_existing_finite_read_boundary",
+      "production_identity::backings::tests::metadata_only_backings_keep_original_handles_and_reject_same_inode_roles",
+      "production_identity::tests::backing_aliases_fail_before_any_registry_write",
+      "production_identity::tests::backing_content_and_time_changes_do_not_replace_stable_identity",
+      "production_identity::tests::backing_parent_replacement_is_rejected_with_original_inodes_still_held",
+      "production_identity::tests::backing_path_replacement_never_rebinds_or_reclaims_the_reservation",
+      "production_identity::tests::backing_size_or_access_changes_fail_without_rewriting_the_record",
+      "production_namespace::tree::writable_proc::tests::production_runtime_proc_masks_require_owned_root_projection_for_both_inode_kinds",
+      "production_namespace::tree::writable_proc::tests::production_runtime_proc_root_mask_name_collisions_preserve_existing_inodes",
+      "production_namespace::tree::writable_proc::tests::production_runtime_proc_root_masks_reject_projection_identity_or_flag_changes"
+    ]
+  },
+  {
+    "component": "lint",
+    "package": "droidloom-update",
+    "target": "droidloom-update",
+    "tests": [
+      "android::production_source::tests::original_cmake_manifest_requires_explicit_complete_lint_reconciliation"
+    ]
+  }
+]

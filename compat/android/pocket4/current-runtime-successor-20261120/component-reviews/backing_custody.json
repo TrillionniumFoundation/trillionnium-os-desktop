@@ -1,0 +1,205 @@
+{
+  "added_paths": [
+    "runtime/droidloom-supervisor/src/production_identity_backings.rs"
+  ],
+  "all_other_parent_files_byte_identical": 2351,
+  "candidate": "/workspace/scratch/9907ce0d335a/backing-custody-component-9907/candidate",
+  "candidate_bytes": 44273691,
+  "candidate_files": 2353,
+  "candidate_rows": {
+    "bytes": 700524,
+    "path": "candidate-source-rows.json",
+    "sha256": "d00005cde6963a7f1c54c9405534f6a894da4b13503eed04dce1635e032ef7af"
+  },
+  "candidate_tree": "f81f82393cf2f95fab7f9d00145add9cadd2821c",
+  "canonical_unified_patch_exactly_replays": true,
+  "changed_paths": [
+    "runtime/droidloom-supervisor/src/production_identity.rs"
+  ],
+  "closed_full_source_snapshot": true,
+  "current_R20_39513_inputs_changed": false,
+  "data_continuity_qualified": false,
+  "data_or_metadata_body_accessed": false,
+  "declared_ordinary_tests_on_original2352": 1540,
+  "disjoint_component_scope_checks": [
+    {
+      "component": "image_custody",
+      "intersection": [],
+      "paths": [
+        "runtime/droidloom-applications/src/main.rs",
+        "runtime/droidloom-applications/src/runtime_plan.rs",
+        "runtime/droidloom-supervisor/src/control.rs",
+        "runtime/droidloom-supervisor/src/control_progress.rs",
+        "runtime/droidloom-supervisor/src/production_application.rs",
+        "runtime/droidloom-supervisor/src/production_cell.rs",
+        "runtime/droidloom-supervisor/src/production_control.rs",
+        "runtime/droidloom-supervisor/src/production_mounts.rs",
+        "runtime/droidloom-supervisor/src/production_namespace_application_parent.rs",
+        "runtime/droidloom-supervisor/src/application_custody.rs",
+        "runtime/droidloom-supervisor/src/application_custody_tests.rs",
+        "runtime/droidloom-supervisor/src/production_application_custody.rs",
+        "runtime/droidloom-supervisor/src/production_mounts_custody.rs",
+        "runtime/droidloom-supervisor/src/production_namespace_image_custody.rs"
+      ],
+      "review": {
+        "bytes": 12782,
+        "path": "SOURCE-REVIEW-r3.json",
+        "sha256": "ee6addc679cb53697a237eb85807f5e0fad1a05b2efda07ffc49350cbdc69dac"
+      },
+      "root": "/workspace/scratch/9907ce0d335a/image-custody-producer-9907"
+    },
+    {
+      "component": "lint",
+      "intersection": [],
+      "paths": [
+        "tools/droidloom-source/src/lib.rs",
+        "tools/droidloom-source/src/main.rs",
+        "tools/droidloom-update/src/android.rs",
+        "tools/droidloom-update/src/coherent_images.rs",
+        "tools/droidloom-update/src/coherent_images_tests.rs",
+        "tools/droidloom-update/src/framework_asb_security.rs",
+        "tools/droidloom-update/src/production_source.rs",
+        "tools/droidloom-update/src/settings_asb_security_tests.rs",
+        "tools/droidloom-update/src/wm_security.rs",
+        "android/manifest/production-full-lint-source-lock.json",
+        "tools/droidloom-source/src/production_lint.rs"
+      ],
+      "review": {
+        "bytes": 10746,
+        "path": "SOURCE-REVIEW.json",
+        "sha256": "ee8d9eed8510d94188895851f797cd0828e6ca58c9138fa50e0ffa22062cbedd"
+      },
+      "root": "/workspace/scratch/9907ce0d335a/vendor-lint-compile-fix-9907"
+    },
+    {
+      "component": "proc_masks",
+      "intersection": [],
+      "paths": [
+        "runtime/droidloom-supervisor/src/production_namespace_writable_proc_child.rs",
+        "runtime/droidloom-supervisor/src/production_namespace_writable_proc_parent.rs"
+      ],
+      "review": {
+        "bytes": 8499,
+        "path": "SOURCE-REVIEW.json",
+        "sha256": "ba5691438f6da9b099140f7187e6179b4a94679473b727adec57ec72a7889af0"
+      },
+      "root": "/workspace/scratch/9907ce0d335a/proc-mask-component-9907"
+    }
+  ],
+  "lifetime_scope": {
+    "namespace_failure": "Existing namespace and HostAdmission quarantine retains the entire original resources/lease; its added O_PATH fields remain with that same object.",
+    "normal_owner": "ProductionCell tree -> keeper Resources -> HeldAuthority::Budgeted(PreparedCgroup) -> HostAdmission -> IdentityLease",
+    "normal_release": "Existing retire_inner proves init/runtime/device/base retirement before keeper/cgroup retirement releases the actual lease.",
+    "promise": "Only the lifetime of the actual IdentityLease, including existing whole-lease quarantine. No cross-lease writable-resource custody is claimed.",
+    "separate_mount_retention": "PreparedMounts/MountResources retains only the unchanged cloned flock File. If that outlives IdentityLease, this delta does not retain data/metadata descriptors there.",
+    "source_files": [
+      {
+        "bytes": 14644,
+        "path": "/workspace/scratch/9907ce0d335a/runtime-proc-successor-9907/candidate/runtime/droidloom-supervisor/src/production_cell.rs",
+        "sha256": "cb5adaebbe79765b1007c85ddeb2ac74e8e4da19840dd5fafe4f419d9aff33ad"
+      },
+      {
+        "bytes": 53236,
+        "path": "/workspace/scratch/9907ce0d335a/runtime-proc-successor-9907/candidate/runtime/droidloom-supervisor/src/production_namespace.rs",
+        "sha256": "2af4129ce0681f6dd78acdfd450f099b9215d2ab719c3fbe29f35d8e2d252e8b"
+      },
+      {
+        "bytes": 194403,
+        "path": "/workspace/scratch/9907ce0d335a/runtime-proc-successor-9907/candidate/runtime/droidloom-supervisor/src/production_namespace_tree.rs",
+        "sha256": "77618e9b00a0155b1c25b2606702e881c8c5520f11fdf5a17ca5477cadf1d0bf"
+      },
+      {
+        "bytes": 166091,
+        "path": "/workspace/scratch/9907ce0d335a/runtime-proc-successor-9907/candidate/runtime/droidloom-supervisor/src/production_host_admission.rs",
+        "sha256": "b745636bb1cd5c509c726b8a856b92a16833895ad528435917b347dd37554086"
+      },
+      {
+        "bytes": 69022,
+        "path": "/workspace/scratch/9907ce0d335a/runtime-proc-successor-9907/candidate/runtime/droidloom-supervisor/src/production_mounts.rs",
+        "sha256": "12ba578ab83f8a888fb1730360ed5021b29bb0cb3608556605f86fa60f9a4ab7"
+      }
+    ],
+    "writable_successor_dependency": "A future writable owner must separately retain its complete backing/loop/mount/lease bundle through actual synchronization and retirement. This delta neither implements nor authorizes that owner."
+  },
+  "new_source_declared_test_names": [
+    "production_identity::backings::tests::metadata_only_backings_keep_original_handles_and_reject_same_inode_roles",
+    "production_identity::tests::backing_aliases_fail_before_any_registry_write",
+    "production_identity::tests::backing_content_and_time_changes_do_not_replace_stable_identity",
+    "production_identity::tests::backing_parent_replacement_is_rejected_with_original_inodes_still_held",
+    "production_identity::tests::backing_path_replacement_never_rebinds_or_reclaims_the_reservation",
+    "production_identity::tests::backing_size_or_access_changes_fail_without_rewriting_the_record"
+  ],
+  "new_source_declared_tests": 6,
+  "observed_ns": 1795166467444919349,
+  "original2352_and_proc_preimage_identical": {
+    "bytes": 58995,
+    "git_blob": "a2579703c6455b90821969fc0574bb5d42e7562c",
+    "mode": "100644",
+    "path": "runtime/droidloom-supervisor/src/production_identity.rs",
+    "sha256": "953b5b896cf0f697082eb34c67057414f2874bb1a07a9d78e3355636c59f7e64"
+  },
+  "original30_ignored_tests_unchanged": true,
+  "original_identity_test_bodies_preserved": 25,
+  "parent_bytes": 44260146,
+  "parent_files": 2352,
+  "parent_full_f9_bookend_unchanged": true,
+  "parent_identity_bookends": {
+    "bytes": 2198378,
+    "path": "PARENT-IDENTITY-BOOKENDS.json",
+    "sha256": "abad5f0ddb3ed00abcb29d0f6146d192891eed5e9ed4651dd2feaef60d51fb91"
+  },
+  "parent_tree": "7bfb70d7107cb5c95e9aec307124e1369aa735d1",
+  "patch": {
+    "bytes": 20417,
+    "path": "SOURCE.patch",
+    "sha256": "8a1517c22de8eb52c0808ab394c437f3794c19a9b7fe6fa0682b44d61708e7ce"
+  },
+  "persistent_data_implemented": false,
+  "postimages": [
+    {
+      "after": {
+        "bytes": 65076,
+        "git_blob": "fa352b47cbe77053b9f57bc9c67f57c77ab3e350",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_identity.rs",
+        "sha256": "593726a00f3cc481ab24444ab9ec99bc132e5e3818f6f2da9666b2909953940d"
+      },
+      "before": {
+        "bytes": 58995,
+        "git_blob": "a2579703c6455b90821969fc0574bb5d42e7562c",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_identity.rs",
+        "sha256": "953b5b896cf0f697082eb34c67057414f2874bb1a07a9d78e3355636c59f7e64"
+      }
+    },
+    {
+      "after": {
+        "bytes": 7464,
+        "git_blob": "bca9eb729d3b5773d9203066d1107d9f71ebbf1f",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_identity_backings.rs",
+        "sha256": "801456b592c15d9a45c9b989246c6b1b6a336b4c153491eb1000b836a7a478a1"
+      },
+      "before": null
+    }
+  ],
+  "postimages_identical_to_frozen_proc_parent_backing_delta": true,
+  "production_ready": false,
+  "remote_actions": 0,
+  "root_source_review_pending_at_preparation": true,
+  "runtime_qualified": false,
+  "rust_compilation_passed": false,
+  "rust_tests_executed": false,
+  "schema": "p4-original-backing-metadata-source-component-v1",
+  "source_handoff": {
+    "bytes": 2088,
+    "path": "/workspace/scratch/9907ce0d335a/persistent-backing-custody-9907/HANDOFF.json",
+    "sha256": "c3ab8e09c254546a9bb6b20e926b42217268d9182d0ef6195aa6aa8ca105210a"
+  },
+  "source_review": {
+    "bytes": 11313,
+    "path": "/workspace/scratch/9907ce0d335a/persistent-backing-custody-9907/SOURCE-REVIEW.json",
+    "sha256": "c1256187c9c4aa89620f8522d7566f2e4ecb43ae98b19808bc2cf3f7d127f4bf"
+  },
+  "source_scope": "Only the original IdentityLease metadata backing handles and their six finite ordinary source controls; no lint/Gallery/proc code is included in this component."
+}

@@ -1,0 +1,117 @@
+--- frozen/R19-helper-89c48
++++ successor/text-auto-helper
+@@ -171,7 +171,8 @@
+             return True
+     return False
+ 
+-def git(checkout, args, deadline, guard, commands, committed_attributes_only=False):
++def git(checkout, args, deadline, guard, commands, committed_attributes_only=False,
++        text_auto_identification_only=False):
+     until = min(deadline, time.monotonic() + 120)
+     argv = ['/usr/bin/git', '-c', 'core.fsmonitor=false', '-c', 'core.untrackedCache=false',
+             '-C', str(checkout), *args]
+@@ -180,6 +181,16 @@
+         need(args[:7] == ['-c', 'core.attributesFile=/dev/null',
+              '-c', 'core.packedGitWindowSize=8m', '-c', 'core.packedGitLimit=16m', 'check-attr'],
+              'attribute-only query must not execute a content filter')
++    if text_auto_identification_only:
++        fmt = ('%(objectmode)%x00%(objectname)%x00%(stage)%x00'
++               '%(eolinfo:index)%x00%(eolinfo:worktree)%x00%(path)')
++        need(not committed_attributes_only and len(args) == 13 and args[:-1] == [
++             '--literal-pathspecs', '-c', 'core.attributesFile=/dev/null',
++             '-c', 'core.packedGitWindowSize=8m', '-c', 'core.packedGitLimit=16m',
++             'ls-files', '--cached', '-z', '--format='+fmt, '--'],
++             'content-identification query must be the exact read-only Git text probe')
++        safe_relative(args[-1])
++    if committed_attributes_only or text_auto_identification_only:
+         need(not any(name in env for name in ('GIT_DIR', 'GIT_COMMON_DIR', 'GIT_WORK_TREE',
+              'GIT_INDEX_FILE', 'GIT_ATTR_SOURCE', 'GIT_CONFIG_COUNT', 'GIT_CONFIG_PARAMETERS')),
+              'no alternate repository, index or injected attribute configuration')
+@@ -284,8 +295,10 @@
+     """Verify only Git's explicit committed eol=crlf representation.
+ 
+     Git's committed eol=crlf rule also enables text conversion when text is
+-    unspecified. Explicit -text and other text modes remain outside this
+-    equivalence; neither config nor an uncommitted rule can supply it.
++    unspecified. Committed text=auto additionally requires Git's own content
++    identification to report LF text in the exact index blob and CRLF text in
++    the held worktree file. Explicit -text and unknown modes remain excluded;
++    neither config nor an uncommitted rule can supply the conversion rule.
+ 
+     No clean/smudge filter, encoding conversion, ident expansion or source write
+     is performed. The complete normalized body must still equal the committed
+@@ -293,8 +306,10 @@
+     worktree/index rules; system/global rules and local info overrides cannot
+     supply an exception. Raw bytes and their original custody remain recorded.
+     """
+-    need(mode == '100644' and 0 < before[6] <= 8*1024*1024,
+-         'CRLF conversion is limited to bounded non-executable regular text')
++    need(mode in ('100644', '100755') and stat.S_ISREG(before[2])
++         and bool(before[2] & 0o111) == (mode == '100755')
++         and 0 < before[6] <= 8*1024*1024,
++         'CRLF conversion requires bounded regular text with the committed executable mode')
+     need(lower_hex(revision, 40) and type(commands) is list,
+          'fixed project commit and recorded attribute query required')
+     with held_git_attribute_metadata(checkout) as metadata:
+@@ -305,6 +320,7 @@
+                  '--source='+revision, '-z', *names, '--', relative]
+         raw_attributes = git(checkout, query, deadline, guard, commands,
+                              committed_attributes_only=True)
++        attribute_command = commands[-1]
+         fields = raw_attributes.split(b'\0')
+         need(len(raw_attributes) <= 65536 and fields[-1] == b''
+              and len(fields) == 3*len(names)+1, 'complete bounded attribute triples')
+@@ -314,7 +330,7 @@
+             need(path.decode('utf-8') == relative and attribute.decode('ascii') == name,
+                  'exact path and ordered committed attributes')
+             attributes[name] = value.decode('ascii')
+-        need(attributes['text'] in ('set', 'unspecified') and attributes['eol'] == 'crlf'
++        need(attributes['text'] in ('set', 'unspecified', 'auto') and attributes['eol'] == 'crlf'
+              and all(attributes[name] in ('unspecified', 'unset')
+                      for name in ('filter', 'ident', 'working-tree-encoding')),
+              'only explicit committed text/eol=crlf without other content transforms')
+@@ -342,19 +358,42 @@
+         normalized_blob = hashlib.sha1(
+             b'blob '+str(len(normalized)).encode()+b'\0'+normalized).hexdigest()
+         need(normalized_blob == oid, 'normalized full source content differs from committed Git blob')
++        auto_content = None
++        if attributes['text'] == 'auto':
++            # eolinfo is Git's own text=auto content classification, not an
++            # attribute override. It rejects binary control-byte bodies even
++            # when they contain no NUL. --format reads bytes without filters.
++            fmt = ('%(objectmode)%x00%(objectname)%x00%(stage)%x00'
++                   '%(eolinfo:index)%x00%(eolinfo:worktree)%x00%(path)')
++            observed = git(checkout, ['--literal-pathspecs', '-c',
++                'core.attributesFile=/dev/null', '-c', 'core.packedGitWindowSize=8m',
++                '-c', 'core.packedGitLimit=16m', 'ls-files', '--cached', '-z',
++                '--format='+fmt, '--', relative], deadline, guard, commands,
++                text_auto_identification_only=True)
++            need(len(observed) <= 65536 and observed.split(b'\0') == [
++                 mode.encode('ascii'), oid.encode('ascii'), b'0', b'lf', b'crlf',
++                 relative.encode('utf-8'), b''],
++                 'text=auto requires exact stage-zero Git LF text and CRLF worktree text')
++            auto_content = {'index_mode': mode, 'index_blob': oid, 'index_stage': 0,
++                            'index_content': 'lf', 'worktree_content': 'crlf',
++                            'git_builtin_text_identification': True}
+         need(before == f9(os.fstat(fd)) == f9((checkout/relative).lstat()),
+              'original source inode or bytes changed during CRLF comparison')
+         metadata_after = metadata()
+         need(metadata_before == metadata_after, 'Git attribute metadata changed during CRLF comparison')
+-        commands[-1]['committed_CRLF_attribute_metadata'] = {
++        attribute_command['committed_CRLF_attribute_metadata'] = {
+             'before': metadata_before, 'after': metadata_after,
+             'local_info_attributes_absent': True, 'system_and_global_attributes_disabled': True,
+             'custom_filters_executed': False, 'source_commit': revision}
+-        return {'kind': 'explicit-committed-text-eol-crlf', 'source_commit': revision,
++        result = {'kind': 'explicit-committed-text-eol-crlf', 'source_commit': revision,
+                 'attributes': attributes, 'normalized_bytes': len(normalized),
+                 'normalized_sha256': hashlib.sha256(normalized).hexdigest(),
+                 'normalized_git_blob': normalized_blob, 'CRLF_pairs': crlf_count,
+                 'custom_filters_executed': False, 'source_mutated': False}
++        if auto_content is not None:
++            result['kind'] = 'explicit-committed-text-auto-eol-crlf'
++            result['git_text_auto'] = auto_content
++        return result
+ 
+ 
+ def observe_blob(checkout, relative, mode, oid, sparse_flag, cones, deadline, guard,

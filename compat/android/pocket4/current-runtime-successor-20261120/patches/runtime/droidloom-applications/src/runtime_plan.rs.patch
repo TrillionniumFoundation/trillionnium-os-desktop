@@ -1,0 +1,120 @@
+--- a/runtime/droidloom-applications/src/runtime_plan.rs
++++ b/runtime/droidloom-applications/src/runtime_plan.rs
+@@ -8,6 +8,7 @@
+ use droidloom_supervisor::control::application_probe::{
+     ApplicationInspection, RuntimeEpoch, validate_https_url,
+ };
++use droidloom_supervisor::control::application_custody::ImageApplicationCustody;
+ use droidloom_supervisor::control::{self, ControlRequest};
+ use serde::{Deserialize, Serialize};
+ use sha2::{Digest, Sha256};
+@@ -159,20 +160,7 @@
+ 
+ impl RuntimeClient for SocketClient<'_> {
+     fn inspect(&mut self, package: &str, user: u32) -> Result<ApplicationInspection, String> {
+-        let reply = control::request(
+-            self.socket,
+-            &ControlRequest::InspectApplication {
+-                package: package.into(),
+-                user,
+-            },
+-        )
+-        .map_err(|e| e.to_string())?;
+-        if !reply.ok {
+-            return Err(reply.message);
+-        }
+-        reply
+-            .inspection
+-            .ok_or("Daemon returned no current package inspection; update both tools".into())
++        inspect_package_with_custody(self.socket, package, user).map(|(application, _)| application)
+     }
+     fn browser(
+         &mut self,
+@@ -476,6 +464,87 @@
+     user: u32,
+ ) -> Result<ApplicationInspection, String> {
+     SocketClient { socket }.inspect(package, user)
++}
++
++/// Preserve the actual daemon's readonly whole-image/query provenance when
++/// present. The original installed identity is unchanged. A legacy or missing
++/// Gallery custody result cannot stand in for the current image-installed path.
++pub fn inspect_package_with_custody(
++    socket: &Path,
++    package: &str,
++    user: u32,
++) -> Result<(ApplicationInspection, Option<ImageApplicationCustody>), String> {
++    let reply = control::request(
++        socket,
++        &ControlRequest::InspectApplication { package: package.into(), user },
++    ).map_err(|error| error.to_string())?;
++    consume_inspection(reply, package, user)
++}
++
++fn consume_inspection(
++    reply: control::ControlResponse,
++    package: &str,
++    user: u32,
++) -> Result<(ApplicationInspection, Option<ImageApplicationCustody>), String> {
++    if !reply.ok { return Err(reply.message); }
++    let application = reply.inspection
++        .ok_or("Daemon returned no current package inspection; update both tools")?;
++    if application.package != package || application.user != user {
++        return Err("Daemon returned a different installed package or Android user".into());
++    }
++    if package == "com.android.gallery3d" && user == 0 && reply.image_custody.is_none() {
++        return Err("Gallery requires the actual owned whole-image inspection; an APK-only or historical install result is insufficient".into());
++    }
++    if let Some(custody) = &reply.image_custody {
++        if reply.state != control::CellState::Running
++            || reply.host_pid != Some(application.epoch.cell_host_pid)
++        {
++            return Err("Image custody does not belong to the current running daemon owner".into());
++        }
++        custody.validate(&application)?;
++    }
++    Ok((application, reply.image_custody))
++}
++
++#[cfg(test)]
++mod image_custody_consumer_tests {
++    use super::*;
++
++    fn reply(package: &str) -> control::ControlResponse {
++        control::ControlResponse {
++            ok: true, state: control::CellState::Running, message: "unit metadata model".into(),
++            host_pid: Some(321), launch: None, applications: None, application_icon: None,
++            diagnostics: None, image_custody: None,
++            inspection: Some(ApplicationInspection {
++                package: package.into(), user: 0, uid: 10064, version_code: 40030,
++                epoch: RuntimeEpoch {
++                    boot_id: "00000000-0000-0000-0000-000000000001".into(),
++                    cell_host_pid: 321, framework_host_pid: 322, framework_start_ticks: 101,
++                },
++                apks: Vec::new(),
++            }),
++        }
++    }
++
++    #[test]
++    fn gallery_legacy_metadata_cannot_substitute_for_the_owned_image_producer() {
++        assert!(consume_inspection(reply("com.android.gallery3d"), "com.android.gallery3d", 0).is_err());
++    }
++
++    #[test]
++    fn unchanged_non_gallery_identity_shape_remains_available() {
++        let response = reply("org.mozilla.firefox");
++        let expected = response.inspection.clone().unwrap();
++        let (application, custody) = consume_inspection(response, "org.mozilla.firefox", 0).unwrap();
++        assert_eq!(application, expected);
++        assert!(custody.is_none());
++    }
++
++    #[test]
++    fn consumer_rejects_a_different_actual_package_or_user() {
++        assert!(consume_inspection(reply("org.mozilla.firefox"), "com.android.gallery3d", 0).is_err());
++        assert!(consume_inspection(reply("org.mozilla.firefox"), "org.mozilla.firefox", 1).is_err());
++    }
+ }
+ 
+ /// Execute the selected plan without omitting unsupported or blocked applications.

@@ -2,7 +2,7 @@
   "APK_downloads": 0,
   "Android_calls": 0,
   "SDK_commands": 0,
-  "actual_controls": 35,
+  "actual_controls": 39,
   "binary_or_empty_files": [
     {
       "bytes": 19802,
@@ -18,6 +18,11 @@
       "bytes": 0,
       "path": "validation-r2/controls.stdout",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "validation-r3/controls.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
   ],
   "current_source_files": [
@@ -32,14 +37,14 @@
       "sha256": "545c7549d56ab6309ee08f8c09171303275a510df813f43a46b69d465a0d12b8"
     },
     {
-      "bytes": 24396,
+      "bytes": 25076,
       "path": "firefox_adapter.py",
-      "sha256": "c4ec48c8c332de155c9f68b0033105f970d9ccb2ddc666ba8d36d026706eba6d"
+      "sha256": "da084330cc03226258b5a05d68497fb276710868499cbb0a380f20994e673525"
     },
     {
-      "bytes": 18725,
+      "bytes": 21170,
       "path": "test_firefox.py",
-      "sha256": "bec4b243fb1995a3e66c447bf48369035b101ea3f41397194c8cb34935138c2f"
+      "sha256": "491abdff1ccee9bcc2bc092eb88eb403dd91d6799601a4818e2cd199136c1038"
     }
   ],
   "external_pinned_evidence": [
@@ -64,12 +69,12 @@
       "sha256": "4d25fc0aafd5668cc3f0c31be157bc617732902976aad821333a02de84ff9bf7"
     }
   ],
-  "file_count_without_manifest_and_checksum_index": 32,
+  "file_count_without_manifest_and_checksum_index": 40,
   "files": [
     {
-      "bytes": 4619,
+      "bytes": 4373,
       "path": "CURRENT-SOURCE-SUCCESSOR.json",
-      "sha256": "b707d115a06d7fb962926dde9cb570135fc274a69339de3c6c6a26bdc90e7445"
+      "sha256": "ac4430ee17464e12c3318065b4173042cf095742d74a7ad0f670c58b0e83a34b"
     },
     {
       "bytes": 4406,
@@ -82,9 +87,9 @@
       "sha256": "f217128321a90f46925f05a4289f356bcdf563c23a76a3ec685d7aa09a050ac8"
     },
     {
-      "bytes": 8210,
+      "bytes": 9677,
       "path": "README.md",
-      "sha256": "af05d37283176ec0b76d1bfaa6b429228ce72cefb774ae1b63da9aa40810acb6"
+      "sha256": "235b9e1efa9b0d543e1cf11c2f7660a45f49cb7f72f45f06eb17c1bc4dd1a1f1"
     },
     {
       "bytes": 8844,
@@ -92,9 +97,9 @@
       "sha256": "f0449ace05e183fd7f38c9ed43527c3d3e5398427cc2c9b9bbe1e378ff1ad00b"
     },
     {
-      "bytes": 4949,
+      "bytes": 5635,
       "path": "VALIDATION.json",
-      "sha256": "a7561db1648c38bdbc3fde420070198c55c1f31a737fa7aed4573116cfaacb97"
+      "sha256": "e19829dda2203da48e856b1f4702c74d40fef0b0460cd96a2803a7398eef7caa"
     },
     {
       "bytes": 7139,
@@ -102,9 +107,9 @@
       "sha256": "0fca6d92e0e8373de0244204a1bf0b610ffa49cb240a3ab768e765403a51ab7d"
     },
     {
-      "bytes": 24396,
+      "bytes": 25076,
       "path": "firefox_adapter.py",
-      "sha256": "c4ec48c8c332de155c9f68b0033105f970d9ccb2ddc666ba8d36d026706eba6d"
+      "sha256": "da084330cc03226258b5a05d68497fb276710868499cbb0a380f20994e673525"
     },
     {
       "bytes": 8792,
@@ -197,9 +202,14 @@
       "sha256": "a20c3023874e564adc25f2970332ded40fc9fd96fcce7dae8a8175820f019c6c"
     },
     {
-      "bytes": 18725,
+      "bytes": 7169,
+      "path": "response-validation-r3.patch",
+      "sha256": "06b40dffb70278d8892a003167e491826d1d80edba49160bfc87794a5544087f"
+    },
+    {
+      "bytes": 21170,
       "path": "test_firefox.py",
-      "sha256": "bec4b243fb1995a3e66c447bf48369035b101ea3f41397194c8cb34935138c2f"
+      "sha256": "491abdff1ccee9bcc2bc092eb88eb403dd91d6799601a4818e2cd199136c1038"
     },
     {
       "bytes": 3739,
@@ -217,6 +227,11 @@
       "sha256": "71d5e1f2730e2adbfdc82ae4f30fc75d11723701c6c464b53722b3edc5aa5c87"
     },
     {
+      "bytes": 4949,
+      "path": "validation-r2/VALIDATION.json",
+      "sha256": "a7561db1648c38bdbc3fde420070198c55c1f31a737fa7aed4573116cfaacb97"
+    },
+    {
       "bytes": 4230,
       "path": "validation-r2/controls.stderr",
       "sha256": "291bcdde0127687dfcec86d39d00482dd02d7104062f64d85034de1d3b14e3b6"
@@ -225,13 +240,45 @@
       "bytes": 0,
       "path": "validation-r2/controls.stdout",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2631,
+      "path": "validation-r3/EXECUTION.json",
+      "sha256": "f8ed80e6a737f6e9e8758f0890e9bf74bad8425863264326719da5d32790764e"
+    },
+    {
+      "bytes": 4796,
+      "path": "validation-r3/controls.stderr",
+      "sha256": "0e6ac51bb11287a89f4c62b0d6383717693ba75117354cb6337fd794731636cd"
+    },
+    {
+      "bytes": 0,
+      "path": "validation-r3/controls.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 3322,
+      "path": "validation-r3/current-cli-parser-compatibility.json",
+      "sha256": "71b01c0cce287088033540a3c41caef333fec1b001888ebaf3031e3d1e0230f2"
+    },
+    {
+      "bytes": 1108,
+      "path": "validation-r3/current-source-observation.json",
+      "sha256": "c06cc70cc71611c62cca28b0847569bcad3db77fe90f4dffcbf4a989715dc5f9"
+    },
+    {
+      "bytes": 974,
+      "path": "validation-r3/pre-repair.json",
+      "sha256": "273abb2ee541299c1f34f1490e97eeb5399dad6a892d14aeb83056c662c6d24c"
     }
   ],
   "historical_controls": 32,
+  "previous_controls": 35,
+  "previous_source_commit": "765c67ff1113885c98bcf84a31e937f484cc5c35",
   "production_ready": false,
   "publication_lifts_hold": false,
   "runtime_qualified": false,
-  "schema": "p4-firefox-source-candidate-manifest-v2",
+  "schema": "p4-firefox-source-candidate-manifest-v3",
   "state": "HELD_SOURCE_CANDIDATE",
-  "total_bytes_without_manifest_and_checksum_index": 685346
+  "total_bytes_without_manifest_and_checksum_index": 715327
 }

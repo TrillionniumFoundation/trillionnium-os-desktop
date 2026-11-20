@@ -1,0 +1,4546 @@
+{
+  "Android_actions": 0,
+  "baseline_sha256": "95511da9a71294064259935a6917c2c8fcbf2d96307d84e1b2085f060f61ebb8",
+  "build_qualified": false,
+  "cases": [
+    {
+      "name": "test_NUL_remains_rejected",
+      "passed": true
+    },
+    {
+      "name": "test_actual_libopus_checkout_old_rejects_new_accepts",
+      "passed": true
+    },
+    {
+      "name": "test_attribute_metadata_change_during_observation_is_rejected",
+      "passed": true
+    },
+    {
+      "name": "test_autocrlf_config_cannot_replace_committed_eol",
+      "passed": true
+    },
+    {
+      "name": "test_committed_bang_text_is_unspecified_not_unset",
+      "passed": true
+    },
+    {
+      "name": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "passed": true
+    },
+    {
+      "name": "test_custom_filter_rejected_and_never_executed",
+      "passed": true
+    },
+    {
+      "name": "test_every_other_existing_function_is_unchanged",
+      "passed": true
+    },
+    {
+      "name": "test_executable_CRLF_remains_rejected",
+      "passed": true
+    },
+    {
+      "name": "test_explicit_minus_text_remains_rejected",
+      "passed": true
+    },
+    {
+      "name": "test_explicit_text_crlf_still_passes",
+      "passed": true
+    },
+    {
+      "name": "test_explicit_unset_other_transform_attributes_still_pass",
+      "passed": true
+    },
+    {
+      "name": "test_external_attributes_file_cannot_grant_equivalence",
+      "passed": true
+    },
+    {
+      "name": "test_ident_remains_rejected",
+      "passed": true
+    },
+    {
+      "name": "test_injected_environment_cannot_supply_alternate_attributes",
+      "passed": true
+    },
+    {
+      "name": "test_local_info_override_remains_rejected",
+      "passed": true
+    },
+    {
+      "name": "test_lone_CR_remains_rejected",
+      "passed": true
+    },
+    {
+      "name": "test_missing_committed_eol_remains_rejected",
+      "passed": true
+    },
+    {
+      "name": "test_mixed_line_endings_remain_rejected",
+      "passed": true
+    },
+    {
+      "name": "test_one_content_byte_changed_remains_rejected",
+      "passed": true
+    },
+    {
+      "name": "test_original_sparse_absence_behavior_is_unchanged",
+      "passed": true
+    },
+    {
+      "name": "test_original_symlink_behavior_is_unchanged",
+      "passed": true
+    },
+    {
+      "name": "test_raw_LF_fast_path_has_no_attribute_query",
+      "passed": true
+    },
+    {
+      "name": "test_staged_attributes_cannot_grant_equivalence",
+      "passed": true
+    },
+    {
+      "name": "test_text_auto_remains_outside_this_equivalence",
+      "passed": true
+    },
+    {
+      "name": "test_unknown_text_value_remains_rejected",
+      "passed": true
+    },
+    {
+      "name": "test_working_tree_encoding_remains_rejected",
+      "passed": true
+    },
+    {
+      "name": "test_worktree_attributes_cannot_grant_equivalence",
+      "passed": true
+    },
+    {
+      "name": "test_wrong_committed_eol_remains_rejected",
+      "passed": true
+    }
+  ],
+  "finished_ns": 1795148733323543769,
+  "fixture_git_commands": [
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_NUL_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_NUL_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_NUL_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_NUL_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_NUL_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_NUL_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_NUL_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_NUL_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_NUL_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "2bd1a0f12df822cc17b61c44bd9a39e7d1b95d6b41b35e1f39ed4ac7271a8d28"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_NUL_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_actual_libopus_checkout_old_rejects_new_accepts",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_actual_libopus_checkout_old_rejects_new_accepts",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_actual_libopus_checkout_old_rejects_new_accepts",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_actual_libopus_checkout_old_rejects_new_accepts",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_actual_libopus_checkout_old_rejects_new_accepts",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_actual_libopus_checkout_old_rejects_new_accepts",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_actual_libopus_checkout_old_rejects_new_accepts",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_actual_libopus_checkout_old_rejects_new_accepts",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_actual_libopus_checkout_old_rejects_new_accepts",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "2bd1a0f12df822cc17b61c44bd9a39e7d1b95d6b41b35e1f39ed4ac7271a8d28"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_actual_libopus_checkout_old_rejects_new_accepts",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_actual_libopus_checkout_old_rejects_new_accepts",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "status",
+        "--porcelain=v1"
+      ],
+      "case": "test_actual_libopus_checkout_old_rejects_new_accepts",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "status",
+        "--porcelain=v1"
+      ],
+      "case": "test_actual_libopus_checkout_old_rejects_new_accepts",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_attribute_metadata_change_during_observation_is_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_attribute_metadata_change_during_observation_is_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_attribute_metadata_change_during_observation_is_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_attribute_metadata_change_during_observation_is_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_attribute_metadata_change_during_observation_is_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_attribute_metadata_change_during_observation_is_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_attribute_metadata_change_during_observation_is_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_attribute_metadata_change_during_observation_is_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_attribute_metadata_change_during_observation_is_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "dd2975415e856214a463c7b36f14015bfb6ef858e75291cf9b369de3809fd2e9"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_attribute_metadata_change_during_observation_is_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_attribute_metadata_change_during_observation_is_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_autocrlf_config_cannot_replace_committed_eol",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_autocrlf_config_cannot_replace_committed_eol",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_autocrlf_config_cannot_replace_committed_eol",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_autocrlf_config_cannot_replace_committed_eol",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_autocrlf_config_cannot_replace_committed_eol",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_autocrlf_config_cannot_replace_committed_eol",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_autocrlf_config_cannot_replace_committed_eol",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_autocrlf_config_cannot_replace_committed_eol",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_autocrlf_config_cannot_replace_committed_eol",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "9437ad88228f5e551867b3a37f63e9c7a804c56b579361454677be50cd0d2a08"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_autocrlf_config_cannot_replace_committed_eol",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_autocrlf_config_cannot_replace_committed_eol",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "true"
+      ],
+      "case": "test_autocrlf_config_cannot_replace_committed_eol",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_autocrlf_config_cannot_replace_committed_eol",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_committed_bang_text_is_unspecified_not_unset",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_committed_bang_text_is_unspecified_not_unset",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_committed_bang_text_is_unspecified_not_unset",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_committed_bang_text_is_unspecified_not_unset",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_committed_bang_text_is_unspecified_not_unset",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_committed_bang_text_is_unspecified_not_unset",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_committed_bang_text_is_unspecified_not_unset",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_committed_bang_text_is_unspecified_not_unset",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_committed_bang_text_is_unspecified_not_unset",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "cf58336c1d1c431d3f30e735087f602bc8eaa012cbe3775005ba96e60dfe4359"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_committed_bang_text_is_unspecified_not_unset",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_committed_bang_text_is_unspecified_not_unset",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "dd2975415e856214a463c7b36f14015bfb6ef858e75291cf9b369de3809fd2e9"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "crlf"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "input"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "input"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "crlf"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "true"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "true"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "crlf"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_committed_unspecified_text_overrides_autocrlf_and_eol_config",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_custom_filter_rejected_and_never_executed",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_custom_filter_rejected_and_never_executed",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_custom_filter_rejected_and_never_executed",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_custom_filter_rejected_and_never_executed",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_custom_filter_rejected_and_never_executed",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_custom_filter_rejected_and_never_executed",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_custom_filter_rejected_and_never_executed",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_custom_filter_rejected_and_never_executed",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_custom_filter_rejected_and_never_executed",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "dc91aa7dc1e4a4327a60cae2d6c331f6888ef1622fd45ffa17b4ccabe217ba65"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_custom_filter_rejected_and_never_executed",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "config",
+        "filter.tripwire.clean",
+        "/usr/bin/touch /tmp/p4-crlf-control-45yuwbgl/filter-must-not-run"
+      ],
+      "case": "test_custom_filter_rejected_and_never_executed",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "filter.tripwire.smudge",
+        "/usr/bin/touch /tmp/p4-crlf-control-45yuwbgl/filter-must-not-run"
+      ],
+      "case": "test_custom_filter_rejected_and_never_executed",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_every_other_existing_function_is_unchanged",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_every_other_existing_function_is_unchanged",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_every_other_existing_function_is_unchanged",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_every_other_existing_function_is_unchanged",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_executable_CRLF_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_executable_CRLF_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_executable_CRLF_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_executable_CRLF_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_executable_CRLF_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100755,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_executable_CRLF_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_executable_CRLF_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_executable_CRLF_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_executable_CRLF_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "18f5814cdb6cfd72c4b5f4ea5ed2156cc111d6d81b1af98146fe6a4c9081c228"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_executable_CRLF_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_executable_CRLF_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_explicit_minus_text_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_explicit_minus_text_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_explicit_minus_text_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_explicit_minus_text_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_explicit_minus_text_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_explicit_minus_text_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_explicit_minus_text_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_explicit_minus_text_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_explicit_minus_text_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "a2d1b29ee9bff3b9ae42e2293ad0112adb23b6821f72c2b928db65b0276ba467"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_explicit_minus_text_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_explicit_text_crlf_still_passes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_explicit_text_crlf_still_passes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_explicit_text_crlf_still_passes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_explicit_text_crlf_still_passes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_explicit_text_crlf_still_passes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_explicit_text_crlf_still_passes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_explicit_text_crlf_still_passes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_explicit_text_crlf_still_passes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_explicit_text_crlf_still_passes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "f09116774c8d391ab0c30176b54e18d291fcb90f2805aba48da207139a044871"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_explicit_text_crlf_still_passes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_explicit_text_crlf_still_passes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_explicit_unset_other_transform_attributes_still_pass",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_explicit_unset_other_transform_attributes_still_pass",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_explicit_unset_other_transform_attributes_still_pass",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_explicit_unset_other_transform_attributes_still_pass",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_explicit_unset_other_transform_attributes_still_pass",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_explicit_unset_other_transform_attributes_still_pass",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_explicit_unset_other_transform_attributes_still_pass",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_explicit_unset_other_transform_attributes_still_pass",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_explicit_unset_other_transform_attributes_still_pass",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "1720191168cc476557f8bd1508050bc4261a9d23d01aca6d15867e7d04d52313"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_explicit_unset_other_transform_attributes_still_pass",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_explicit_unset_other_transform_attributes_still_pass",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_external_attributes_file_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_external_attributes_file_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_external_attributes_file_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_external_attributes_file_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_external_attributes_file_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_external_attributes_file_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_external_attributes_file_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_external_attributes_file_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_external_attributes_file_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "9437ad88228f5e551867b3a37f63e9c7a804c56b579361454677be50cd0d2a08"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_external_attributes_file_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_external_attributes_file_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "config",
+        "core.attributesFile",
+        "/tmp/p4-crlf-control-wy68bqcf/external-attributes"
+      ],
+      "case": "test_external_attributes_file_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_ident_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_ident_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_ident_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_ident_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_ident_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_ident_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_ident_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_ident_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_ident_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "f0507bb2f01db13ff9b7ec7b8fe2ab1f6ef68a40fe82d825eb374bf6e0f599d4"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_ident_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_injected_environment_cannot_supply_alternate_attributes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_injected_environment_cannot_supply_alternate_attributes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_injected_environment_cannot_supply_alternate_attributes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_injected_environment_cannot_supply_alternate_attributes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_injected_environment_cannot_supply_alternate_attributes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_injected_environment_cannot_supply_alternate_attributes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_injected_environment_cannot_supply_alternate_attributes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_injected_environment_cannot_supply_alternate_attributes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_injected_environment_cannot_supply_alternate_attributes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "dd2975415e856214a463c7b36f14015bfb6ef858e75291cf9b369de3809fd2e9"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_injected_environment_cannot_supply_alternate_attributes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_injected_environment_cannot_supply_alternate_attributes",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_local_info_override_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_local_info_override_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_local_info_override_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_local_info_override_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_local_info_override_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_local_info_override_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_local_info_override_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_local_info_override_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_local_info_override_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "dd2975415e856214a463c7b36f14015bfb6ef858e75291cf9b369de3809fd2e9"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_local_info_override_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_local_info_override_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_lone_CR_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_lone_CR_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_lone_CR_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_lone_CR_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_lone_CR_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_lone_CR_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_lone_CR_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_lone_CR_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_lone_CR_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "dd2975415e856214a463c7b36f14015bfb6ef858e75291cf9b369de3809fd2e9"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_lone_CR_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_lone_CR_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_missing_committed_eol_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_missing_committed_eol_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_missing_committed_eol_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_missing_committed_eol_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_missing_committed_eol_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_missing_committed_eol_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_missing_committed_eol_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_missing_committed_eol_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_missing_committed_eol_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "9437ad88228f5e551867b3a37f63e9c7a804c56b579361454677be50cd0d2a08"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_missing_committed_eol_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_mixed_line_endings_remain_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_mixed_line_endings_remain_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_mixed_line_endings_remain_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_mixed_line_endings_remain_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_mixed_line_endings_remain_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_mixed_line_endings_remain_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_mixed_line_endings_remain_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_mixed_line_endings_remain_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_mixed_line_endings_remain_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "dd2975415e856214a463c7b36f14015bfb6ef858e75291cf9b369de3809fd2e9"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_mixed_line_endings_remain_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_mixed_line_endings_remain_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_one_content_byte_changed_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_one_content_byte_changed_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_one_content_byte_changed_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_one_content_byte_changed_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_one_content_byte_changed_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_one_content_byte_changed_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_one_content_byte_changed_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_one_content_byte_changed_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_one_content_byte_changed_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "dd2975415e856214a463c7b36f14015bfb6ef858e75291cf9b369de3809fd2e9"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_one_content_byte_changed_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_one_content_byte_changed_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_original_sparse_absence_behavior_is_unchanged",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_original_sparse_absence_behavior_is_unchanged",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_original_sparse_absence_behavior_is_unchanged",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_original_sparse_absence_behavior_is_unchanged",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_original_symlink_behavior_is_unchanged",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_original_symlink_behavior_is_unchanged",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_original_symlink_behavior_is_unchanged",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_original_symlink_behavior_is_unchanged",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_original_symlink_behavior_is_unchanged",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_original_symlink_behavior_is_unchanged",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_original_symlink_behavior_is_unchanged",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_original_symlink_behavior_is_unchanged",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_original_symlink_behavior_is_unchanged",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "9437ad88228f5e551867b3a37f63e9c7a804c56b579361454677be50cd0d2a08"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_original_symlink_behavior_is_unchanged",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_original_symlink_behavior_is_unchanged",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_raw_LF_fast_path_has_no_attribute_query",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_raw_LF_fast_path_has_no_attribute_query",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_raw_LF_fast_path_has_no_attribute_query",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_raw_LF_fast_path_has_no_attribute_query",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_raw_LF_fast_path_has_no_attribute_query",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_raw_LF_fast_path_has_no_attribute_query",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_raw_LF_fast_path_has_no_attribute_query",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_raw_LF_fast_path_has_no_attribute_query",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_raw_LF_fast_path_has_no_attribute_query",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "a69d2302f35a3607a56d3166762c4170356a3d9513e2ae7b41ee129f9d71e236"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_raw_LF_fast_path_has_no_attribute_query",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_raw_LF_fast_path_has_no_attribute_query",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_staged_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_staged_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_staged_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_staged_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_staged_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_staged_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_staged_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_staged_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_staged_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "a69d2302f35a3607a56d3166762c4170356a3d9513e2ae7b41ee129f9d71e236"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_staged_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_staged_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_staged_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_text_auto_remains_outside_this_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_text_auto_remains_outside_this_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_text_auto_remains_outside_this_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_text_auto_remains_outside_this_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_text_auto_remains_outside_this_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_text_auto_remains_outside_this_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_text_auto_remains_outside_this_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_text_auto_remains_outside_this_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_text_auto_remains_outside_this_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "db8c6324f9544ea6e5548f75b4464d9f420fe999c86631befb8fc04526ecad13"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_text_auto_remains_outside_this_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_unknown_text_value_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_unknown_text_value_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_unknown_text_value_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_unknown_text_value_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_unknown_text_value_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_unknown_text_value_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_unknown_text_value_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_unknown_text_value_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_unknown_text_value_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "9c059ef1c8b64a376043857797485b91d4a11fa9e234ba357ae8aeaaed9937fb"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_unknown_text_value_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_working_tree_encoding_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_working_tree_encoding_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_working_tree_encoding_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_working_tree_encoding_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_working_tree_encoding_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_working_tree_encoding_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_working_tree_encoding_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_working_tree_encoding_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_working_tree_encoding_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "5fe2e4788e47c9140c38f43dec60de10cbd6b6a81d83a5acc343dcab4d365722"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_working_tree_encoding_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_worktree_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_worktree_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_worktree_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_worktree_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_worktree_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_worktree_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_worktree_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_worktree_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_worktree_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "a69d2302f35a3607a56d3166762c4170356a3d9513e2ae7b41ee129f9d71e236"
+    },
+    {
+      "args": [
+        "checkout-index",
+        "-u",
+        "-f",
+        "--",
+        "autogen.bat"
+      ],
+      "case": "test_worktree_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_worktree_attributes_cannot_grant_equivalence",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    },
+    {
+      "args": [
+        "init",
+        "-q",
+        "--initial-branch=main"
+      ],
+      "case": "test_wrong_committed_eol_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.autocrlf",
+        "false"
+      ],
+      "case": "test_wrong_committed_eol_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "config",
+        "core.eol",
+        "lf"
+      ],
+      "case": "test_wrong_committed_eol_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "remote",
+        "add",
+        "origin",
+        "https://example.invalid/pocket4-crlf-fixture"
+      ],
+      "case": "test_wrong_committed_eol_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "hash-object",
+        "-w",
+        "--stdin"
+      ],
+      "case": "test_wrong_committed_eol_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "ed49b8ce57b583785dc9f184d45a5cb5b1c4f678926e2432c56dd954f45f6403"
+    },
+    {
+      "args": [
+        "update-index",
+        "--add",
+        "--cacheinfo",
+        "100644,b7c735b1e6eec97fde785fee89c13f0ba91b0dd8,autogen.bat"
+      ],
+      "case": "test_wrong_committed_eol_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "add",
+        "--",
+        ".gitattributes"
+      ],
+      "case": "test_wrong_committed_eol_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "-c",
+        "user.name=Pocket4 fixture",
+        "-c",
+        "user.email=p4-fixture@example.invalid",
+        "commit",
+        "-qm",
+        "fixed CRLF fixture"
+      ],
+      "case": "test_wrong_committed_eol_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "args": [
+        "rev-parse",
+        "HEAD"
+      ],
+      "case": "test_wrong_committed_eol_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 41,
+      "stdout_sha256": "60118ecbe740ff9d4cd8fc24db786cf81b6dc4fbcc3c15da4a6dcc300e3fc44c"
+    },
+    {
+      "args": [
+        "cat-file",
+        "blob",
+        "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8"
+      ],
+      "case": "test_wrong_committed_eol_remains_rejected",
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 364,
+      "stdout_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146"
+    }
+  ],
+  "git_version": "git version 2.47.3",
+  "historical_19_controls_rerun": false,
+  "observations": [
+    {
+      "case": "test_actual_libopus_checkout_old_rejects_new_accepts",
+      "original_rejection": "only explicit committed text/eol=crlf without other content transforms",
+      "stable_content_sha256": "c20db95b0664c1f2ed774ef0d1a190fada316e806231493e2549a7669315cec0",
+      "successor_row": {
+        "bytes": 377,
+        "checkout_conversion": {
+          "CRLF_pairs": 13,
+          "attributes": {
+            "eol": "crlf",
+            "filter": "unspecified",
+            "ident": "unspecified",
+            "text": "unspecified",
+            "working-tree-encoding": "unspecified"
+          },
+          "custom_filters_executed": false,
+          "kind": "explicit-committed-text-eol-crlf",
+          "normalized_bytes": 364,
+          "normalized_git_blob": "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8",
+          "normalized_sha256": "c5ef007085ba5211c188f77b28bceb8ccbe7c044beb9f92227d9fb3bee299146",
+          "source_commit": "090a5f6ce6999f40ada02bff4009b9e8d88e01e4",
+          "source_mutated": false
+        },
+        "git_blob": "b7c735b1e6eec97fde785fee89c13f0ba91b0dd8",
+        "git_mode": "100644",
+        "mode": 420,
+        "path": "autogen.bat",
+        "present": true,
+        "raw_git_blob": "9501a497281b458e7c634765fc6d9f367507d095",
+        "sha256": "8e5832cadb90219c1f99d016b5628ac87af887f52a99270d431e65db71fa20f5"
+      }
+    }
+  ],
+  "old_test_source_available": false,
+  "operational_source_mutations": 0,
+  "passed": true,
+  "production_ready": false,
+  "remote_commands": 0,
+  "runtime_qualified": false,
+  "schema": "pocket4-implicit-text-crlf-real-git-controls-v1",
+  "source_restore_executed": false,
+  "started_ns": 1795148731879326788,
+  "successor_sha256": "89c48f7fe7147db9ea8cb2309a3a3ae08ce4203ab63546fbe06db6d0764efe56",
+  "temporary_repositories_removed": true,
+  "test_source_sha256": "d99bb44144a1f21018fd6a9007863c1af1d3ada2f9e429ad38c2a5f21e3c0435",
+  "tests_run": 29
+}

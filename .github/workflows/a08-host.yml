@@ -102,6 +102,15 @@ jobs:
           set -euo pipefail
           python3 -I -B compat/android/pocket4/vendor-same-plan-source-restoration-20261119/source_replay.py \
             2>&1 | tee "$RUNNER_TEMP/a08/vendor-same-plan-source-restoration.log"
+      - name: Verify committed CRLF checkout equivalence with real Git
+        timeout-minutes: 2
+        working-directory: compat/android/pocket4/vendor-source-materialization-20261120/crlf
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum --check --strict FILES.sha256
+          python3 -I -B test_committed_crlf.py --result "$RUNNER_TEMP/a08/committed-crlf-controls.json" \
+            2>&1 | tee "$RUNNER_TEMP/a08/committed-crlf-controls.log"
       - name: Verify required39 business plan and preserved installation prerequisites
         timeout-minutes: 2
         working-directory: compat/android/pocket4/current-app-acceptance/required39-business-preflight-20261119-r2
@@ -126,6 +135,24 @@ jobs:
           diff --recursive successor-r1 "$RUNNER_TEMP/a08/cp3a-source-adapter"
           python3 -B -m unittest -v test_adapt_cp3a.py \
             2>&1 | tee "$RUNNER_TEMP/a08/cp3a-source-controls.log"
+      - name: Verify complete CP3A provider source rebinding and preserved runtime holds
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider="$GITHUB_WORKSPACE/compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120"
+          printf '%s  %s\n' 27743c96bd9806fe165eadd6676b4d0ef8ad45123d19fb85bab4116950316e37 "$provider/FILES.sha256" | sha256sum --check --status
+          (cd "$provider" && sha256sum --check --strict FILES.sha256)
+          run_provider_source() {
+            local name="$1" limit="$2" script="$3" rc=0
+            timeout --signal=TERM --kill-after=5s "$limit" python3 -I -B "$script" --repo-root "$GITHUB_WORKSPACE" \
+              >"$RUNNER_TEMP/a08/$name.stdout" 2>"$RUNNER_TEMP/a08/$name.stderr" || rc=$?
+            cat "$RUNNER_TEMP/a08/$name.stdout"
+            cat "$RUNNER_TEMP/a08/$name.stderr" >&2
+            return "$rc"
+          }
+          run_provider_source cp3a-provider-source-replay 30s "$provider/verify_prepared.py"
+          run_provider_source cp3a-provider-source-controls 60s "$provider/test_prepare_cp3a.py"
       - name: Verify held Firefox public-navigation source and controls
         timeout-minutes: 2
         working-directory: compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119
@@ -1722,7 +1749,7 @@ jobs:
             ${{ runner.temp }}/runtime-d6-ci-logs/*.stderr
 
   runtime-current-complete-producer:
-    name: Current source - 1523 ordinary cases, 19 releases, examples and docs
+    name: Current source - 1564 ordinary cases, 19 releases, examples and docs
     runs-on: ubuntu-24.04
     timeout-minutes: 140
     env:
@@ -1734,6 +1761,10 @@ jobs:
       GIT_TERMINAL_PROMPT: '0'
       # Pin the complete reviewed capsule inventory outside the capsule itself.
       CURRENT_SOURCE_INVENTORY_SHA256: 075affecd123cc60e30eadf70ae95cc9ec34d5686694bedf0914014c36d04c0b
+      CURRENT_COHORT_INVENTORY_SHA256: 078ee44241e588d8942869336798e7059ee33ad5e0a7ba232b1a6b2522f5329d
+      CURRENT_COMBINED_SOURCE_INVENTORY_SHA256: 56277deace25f558a4998e1cfdc830fe46bdd1e828f154d9b250fa8fb3e7d08d
+      CURRENT_MATERIALIZATION_INVENTORY_SHA256: ea75a0a28022944b80acebb65aca9ce49c9c66fbd519531da7677bbd114ed35e
+      CURRENT_LEAF_INVENTORY_SHA256: b932f58f5a3eaf7feea4d458fbd67d2e248a29a5aeb45eb940c6f2c7450f6374
     steps:
       - uses: actions/checkout@v4
         with:
@@ -1750,6 +1781,26 @@ jobs:
           (cd "$capsule" && sha256sum --quiet -c FILES.sha256)
           timeout --signal=TERM --kill-after=10s 90s python3 -I -B "$capsule/test_verifier.py"
           timeout --signal=TERM --kill-after=10s 90s python3 -I -B "$capsule/test_runner.py"
+      - name: Verify the current complete source chain and unchanged full runner gates
+        timeout-minutes: 3
+        shell: bash
+        run: |
+          set -euo pipefail
+          cohort="$GITHUB_WORKSPACE/compat/android/pocket4/current-runtime-cohort-successor-20261120"
+          printf '%s  %s\n' "$CURRENT_COHORT_INVENTORY_SHA256" "$cohort/FILES.sha256" | sha256sum --check --status
+          (cd "$cohort" && sha256sum --quiet -c FILES.sha256)
+          mkdir "$RUNNER_TEMP/current-cohort-controls"
+          run_controls() {
+            local name="$1" limit="$2" script="$3" rc=0
+            timeout --signal=TERM --kill-after=10s "$limit" python3 -I -B "$script" \
+              >"$RUNNER_TEMP/current-cohort-controls/$name.stdout" \
+              2>"$RUNNER_TEMP/current-cohort-controls/$name.stderr" || rc=$?
+            cat "$RUNNER_TEMP/current-cohort-controls/$name.stdout"
+            cat "$RUNNER_TEMP/current-cohort-controls/$name.stderr" >&2
+            return "$rc"
+          }
+          run_controls source-adapter 90s "$cohort/test_adapter.py"
+          run_controls original-runner 60s "$cohort/test_runner.py"
       - name: Reconstruct the complete current producer source
         timeout-minutes: 5
         shell: bash
@@ -1760,6 +1811,25 @@ jobs:
             --inventory-sha256 "$CURRENT_SOURCE_INVENTORY_SHA256" \
             --output "$RUNNER_TEMP/current-producer" \
             --report "$RUNNER_TEMP/current-source-replay.json"
+          materialization="$GITHUB_WORKSPACE/compat/android/pocket4/vendor-source-materialization-20261120/rust"
+          leaf="$GITHUB_WORKSPACE/compat/android/pocket4/current-leaf-selection-20261120/rust"
+          timeout --signal=TERM --kill-after=10s 30s python3 -I -B "$materialization/verify.py" \
+            --inventory-sha256 "$CURRENT_MATERIALIZATION_INVENTORY_SHA256" \
+            --parent-packet "$capsule" --parent-source "$RUNNER_TEMP/current-producer" \
+            --output "$RUNNER_TEMP/current-materialized-producer" \
+            --report "$RUNNER_TEMP/current-materialized-source-replay.json"
+          timeout --signal=TERM --kill-after=10s 30s python3 -I -B "$leaf/verify.py" \
+            --inventory-sha256 "$CURRENT_LEAF_INVENTORY_SHA256" \
+            --parent-packet "$materialization" --parent-source "$RUNNER_TEMP/current-materialized-producer" \
+            --output "$RUNNER_TEMP/current-leaf-producer" \
+            --report "$RUNNER_TEMP/current-leaf-source-replay.json"
+          current="$GITHUB_WORKSPACE/compat/android/pocket4/current-runtime-successor-20261120"
+          current_parent="$GITHUB_WORKSPACE/compat/android/pocket4/current-runtime-cohort-20261120"
+          timeout --signal=TERM --kill-after=5s 20s python3 -I -B "$current/verify.py" \
+            --inventory-sha256 "$CURRENT_COMBINED_SOURCE_INVENTORY_SHA256" \
+            --parent-packet "$current_parent" --parent-source "$RUNNER_TEMP/current-leaf-producer" \
+            --output "$RUNNER_TEMP/current-combined-producer" \
+            --report "$RUNNER_TEMP/current-combined-source-replay.json"
       - name: Prepare pinned EROFS and recorded host dependencies
         timeout-minutes: 32
         shell: bash
@@ -1768,15 +1838,15 @@ jobs:
           capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1"
           timeout --signal=TERM --kill-after=30s 1860s bash "$capsule/prepare_ci.sh" \
             --work "$RUNNER_TEMP/current-dependencies"
-      - name: Run 1523 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
+      - name: Run 1564 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
         timeout-minutes: 92
         shell: bash
         run: |
           set -euo pipefail
-          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1"
-          timeout --signal=TERM --kill-after=30s 5460s python3 -I -B "$capsule/run_ci.py" \
-            --inventory-sha256 "$CURRENT_SOURCE_INVENTORY_SHA256" \
-            --producer "$RUNNER_TEMP/current-producer" \
+          cohort="$GITHUB_WORKSPACE/compat/android/pocket4/current-runtime-cohort-successor-20261120"
+          timeout --signal=TERM --kill-after=30s 5460s python3 -I -B "$cohort/run_ci.py" \
+            --inventory-sha256 "$CURRENT_COHORT_INVENTORY_SHA256" \
+            --producer "$RUNNER_TEMP/current-combined-producer" \
             --work "$RUNNER_TEMP/current-ordinary" \
             --report "$RUNNER_TEMP/current-ci.json" \
             --erofs-prefix "$RUNNER_TEMP/current-dependencies/erofs"
@@ -1788,6 +1858,11 @@ jobs:
           if-no-files-found: warn
           path: |
             ${{ runner.temp }}/current-source-replay.json
+            ${{ runner.temp }}/current-materialized-source-replay.json
+            ${{ runner.temp }}/current-leaf-source-replay.json
+            ${{ runner.temp }}/current-combined-source-replay.json
+            ${{ runner.temp }}/current-cohort-controls/*.stdout
+            ${{ runner.temp }}/current-cohort-controls/*.stderr
             ${{ runner.temp }}/current-ci.json
             ${{ runner.temp }}/current-ordinary/logs/*.stdout
             ${{ runner.temp }}/current-ordinary/logs/*.stderr
@@ -1823,3 +1898,167 @@ jobs:
             ${{ runner.temp }}/current-ordinary/target/release/droidloom-wayland
             ${{ runner.temp }}/current-ordinary/target/release/droidloomctl
             ${{ runner.temp }}/current-ordinary/target/release/droidloomd
+
+  source-materialization-successor:
+    name: Required checkout presence - complete source successor
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      P4_MATERIALIZATION_INVENTORY_SHA256: ea75a0a28022944b80acebb65aca9ce49c9c66fbd519531da7677bbd114ed35e
+      P4_LEAF_SELECTION_INVENTORY_SHA256: b932f58f5a3eaf7feea4d458fbd67d2e248a29a5aeb45eb940c6f2c7450f6374
+      P4_RUNTIME_RELEASE_INVENTORY_SHA256: d5d0ab96a6f12e690316c12a8dc59f3dc1b760fca9ddf14a3fa7120be27ebcdf
+      P4_REPRESENTATION_INVENTORY_SHA256: 6f33f54d51dfe10c251c81dc4940ff13cb5eda9bb2c26485fe02ec20d7c5f60e
+    steps:
+      - name: Record the single bounded successor job interval
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PYCODE'
+          import os, time
+          started = time.time_ns()
+          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as stream:
+              stream.write('P4_SUCCESSOR_JOB_STARTED_NS=' + str(started) + '\n')
+              stream.write('P4_SUCCESSOR_JOB_DEADLINE_NS=' + str(started + 1680 * 10**9) + '\n')
+          PYCODE
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: dtolnay/rust-toolchain@1.93.0
+        with:
+          components: rustfmt
+      - name: Verify complete parent and exact source successor
+        shell: bash
+        run: |
+          set -euo pipefail
+          a08_materialization_parent="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1"
+          a08_materialization_packet="$GITHUB_WORKSPACE/compat/android/pocket4/vendor-source-materialization-20261120/rust"
+          a08_materialization_parent_pin=075affecd123cc60e30eadf70ae95cc9ec34d5686694bedf0914014c36d04c0b
+          printf '%s  %s\n' "$P4_MATERIALIZATION_INVENTORY_SHA256" "$a08_materialization_packet/FILES.sha256" | sha256sum --check --status
+          (cd "$a08_materialization_packet" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' "$a08_materialization_parent_pin" "$a08_materialization_parent/FILES.sha256" | sha256sum --check --status
+          (cd "$a08_materialization_parent" && sha256sum --quiet -c FILES.sha256)
+          python3 -I -B "$a08_materialization_packet/test_replay.py"
+          python3 -I -B "$a08_materialization_parent/verify.py" --inventory-sha256 "$a08_materialization_parent_pin" \
+            --output "$RUNNER_TEMP/materialization-parent" \
+            --report "$RUNNER_TEMP/materialization-parent.json"
+          python3 -I -B "$a08_materialization_packet/verify.py" --inventory-sha256 "$P4_MATERIALIZATION_INVENTORY_SHA256" \
+            --parent-packet "$a08_materialization_parent" --parent-source "$RUNNER_TEMP/materialization-parent" \
+            --output "$RUNNER_TEMP/materialization-successor" \
+            --report "$RUNNER_TEMP/materialization-replay.json"
+      - name: Compile and execute all 100 affected crate tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B "$GITHUB_WORKSPACE/compat/android/pocket4/vendor-source-materialization-20261120/rust/run_ci.py" \
+            --inventory-sha256 "$P4_MATERIALIZATION_INVENTORY_SHA256" \
+            --producer "$RUNNER_TEMP/materialization-successor" \
+            --work "$RUNNER_TEMP/materialization-build" \
+            --report "$RUNNER_TEMP/materialization-ci.json" --jobs 2 --fetch
+      - name: Replay the current leaf selection on the complete fixed source
+        shell: bash
+        run: |
+          set -euo pipefail
+          a08_leaf_packet="$GITHUB_WORKSPACE/compat/android/pocket4/current-leaf-selection-20261120/rust"
+          a08_leaf_parent_packet="$GITHUB_WORKSPACE/compat/android/pocket4/vendor-source-materialization-20261120/rust"
+          printf '%s  %s\n' "$P4_LEAF_SELECTION_INVENTORY_SHA256" "$a08_leaf_packet/FILES.sha256" | sha256sum --check --status
+          (cd "$a08_leaf_packet" && sha256sum --quiet -c FILES.sha256)
+          python3 -I -B "$a08_leaf_packet/test_replay.py"
+          python3 -I -B "$a08_leaf_packet/verify.py" --inventory-sha256 "$P4_LEAF_SELECTION_INVENTORY_SHA256" \
+            --parent-packet "$a08_leaf_parent_packet" --parent-source "$RUNNER_TEMP/materialization-successor" \
+            --output "$RUNNER_TEMP/current-leaf-successor" \
+            --report "$RUNNER_TEMP/current-leaf-replay.json"
+      - name: Compile and execute all 42 application crate tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B "$GITHUB_WORKSPACE/compat/android/pocket4/current-leaf-selection-20261120/rust/run_ci.py" \
+            --inventory-sha256 "$P4_LEAF_SELECTION_INVENTORY_SHA256" \
+            --producer "$RUNNER_TEMP/current-leaf-successor" \
+            --work "$RUNNER_TEMP/current-leaf-build" \
+            --report "$RUNNER_TEMP/current-leaf-ci.json" --jobs 2
+      - name: Verify exact committed text-auto and executable CRLF checkouts
+        shell: bash
+        run: |
+          set -euo pipefail
+          a08_representation_packet="$GITHUB_WORKSPACE/compat/android/pocket4/vendor-representation-repair-20261120"
+          printf '%s  %s\n' "$P4_REPRESENTATION_INVENTORY_SHA256" "$a08_representation_packet/FILES.sha256" | sha256sum --check --status
+          (cd "$a08_representation_packet" && sha256sum --quiet -c FILES.sha256)
+          python3 -I -B - <<'PYCODE'
+          import os, time
+          remaining = (int(os.environ['P4_SUCCESSOR_JOB_DEADLINE_NS']) - time.time_ns()) / 10**9
+          if remaining < 260:
+              raise SystemExit('Insufficient original job interval for Git controls and retirement')
+          PYCODE
+          python3 -I -B "$a08_representation_packet/ci.py" \
+            --output-dir "$RUNNER_TEMP/current-representation-controls"
+      - name: Verify normal release admission controls and prepare the original native dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          a08_release_packet="$GITHUB_WORKSPACE/compat/android/pocket4/current-runtime-release-20261120"
+          a08_release_legacy="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1"
+          printf '%s  %s\n' "$P4_RUNTIME_RELEASE_INVENTORY_SHA256" "$a08_release_packet/FILES.sha256" | sha256sum --check --status
+          (cd "$a08_release_packet" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' 075affecd123cc60e30eadf70ae95cc9ec34d5686694bedf0914014c36d04c0b "$a08_release_legacy/FILES.sha256" | sha256sum --check --status
+          (cd "$a08_release_legacy" && sha256sum --quiet -c FILES.sha256)
+          python3 -I -B "$a08_release_packet/test_release.py" \
+            --legacy-packet "$a08_release_legacy" --inventory-sha256 "$P4_RUNTIME_RELEASE_INVENTORY_SHA256" -v
+          a08_native_limit=$(python3 -I -B - <<'PYCODE'
+          import os, time
+          remaining = (int(os.environ['P4_SUCCESSOR_JOB_DEADLINE_NS']) - time.time_ns()) / 10**9
+          limit = min(300, int(remaining - 90))
+          if limit < 30:
+              raise SystemExit('Insufficient original job interval for native preparation and retirement')
+          print(limit)
+          PYCODE
+          )
+          timeout --signal=TERM --kill-after=30s "${a08_native_limit}s" bash "$a08_release_legacy/prepare_ci.sh" \
+            --work "$RUNNER_TEMP/current-leaf-dependencies"
+      - name: Build and verify all 19 current normal release binaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B "$GITHUB_WORKSPACE/compat/android/pocket4/current-runtime-release-20261120/run_release.py" \
+            --inventory-sha256 "$P4_RUNTIME_RELEASE_INVENTORY_SHA256" \
+            --legacy-packet "$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1" \
+            --leaf-packet "$GITHUB_WORKSPACE/compat/android/pocket4/current-leaf-selection-20261120/rust" \
+            --producer "$RUNNER_TEMP/current-leaf-successor" \
+            --dependencies "$RUNNER_TEMP/current-leaf-dependencies/DEPENDENCIES.json" \
+            --work "$RUNNER_TEMP/current-leaf-release" \
+            --report "$RUNNER_TEMP/current-leaf-release-ci.json"
+      - name: Preserve exact source and test execution evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a08-source-materialization-successor-${{ github.event.pull_request.head.sha || github.sha }}
+          if-no-files-found: error
+          retention-days: 7
+          path: |
+            ${{ runner.temp }}/materialization-parent.json
+            ${{ runner.temp }}/materialization-replay.json
+            ${{ runner.temp }}/materialization-ci.json
+            ${{ runner.temp }}/materialization-build/logs/*.stdout
+            ${{ runner.temp }}/materialization-build/logs/*.stderr
+            ${{ runner.temp }}/current-leaf-replay.json
+            ${{ runner.temp }}/current-leaf-ci.json
+            ${{ runner.temp }}/current-leaf-build/logs/*.stdout
+            ${{ runner.temp }}/current-leaf-build/logs/*.stderr
+            ${{ runner.temp }}/current-representation-controls/SUMMARY.json
+            ${{ runner.temp }}/current-representation-controls/CONTROLS.json
+            ${{ runner.temp }}/current-representation-controls/stdout.log
+            ${{ runner.temp }}/current-representation-controls/stderr.log
+            ${{ runner.temp }}/current-leaf-dependencies/DEPENDENCIES.json
+            ${{ runner.temp }}/current-leaf-dependencies/logs/*.stdout
+            ${{ runner.temp }}/current-leaf-dependencies/logs/*.stderr
+            ${{ runner.temp }}/current-leaf-release-ci.json
+            ${{ runner.temp }}/current-leaf-release/logs/*.stdout
+            ${{ runner.temp }}/current-leaf-release/logs/*.stderr
+      - name: Preserve all 19 current normal release binaries without activation
+        uses: actions/upload-artifact@v4
+        with:
+          name: a08-current-leaf-normal-release-19-${{ github.event.pull_request.head.sha || github.sha }}
+          if-no-files-found: error
+          retention-days: 7
+          path: ${{ runner.temp }}/current-leaf-release/artifacts/*

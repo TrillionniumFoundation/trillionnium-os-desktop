@@ -85,12 +85,27 @@ def validate_selector_contract(value, binding):
     return value
 
 
+def verify_ui_success(value):
+    """Accept the existing success shape without coercing optional markers.
+
+    The pinned helper omits these two markers on some successful responses.
+    Absence is therefore compatible; a supplied marker must be literal False.
+    Python's bool/int equality must not turn an unknown or retried response
+    into permission to continue the ordered case.
+    """
+    need(type(value) is dict and value.get("ok") is True
+         and value.get("accessibility_mode_restoration_verified") is True,
+         "ACTUAL_UI_ACTION_OR_RESTORATION_UNQUALIFIED")
+    for marker in ("outcome_unknown", "automatic_retry"):
+        need(marker not in value or value[marker] is False,
+             "UNAMBIGUOUS_NONRETRIED_UI_RESULT_REQUIRED:" + marker)
+    return value
+
+
 def one_find(value, package=PACKAGE):
     """Wire fields verified from exact a536… APK / 548dc5… smali, not guessed."""
-    need(type(value) is dict and value.get("ok") is True
-         and value.get("accessibility_mode_restoration_verified") is True
-         and value.get("outcome_unknown") is not True
-         and type(value.get("count")) is int and value["count"] == 1
+    verify_ui_success(value)
+    need(type(value.get("count")) is int and value["count"] == 1
          and type(value.get("matches")) is list and len(value["matches"]) == 1,
          "ONE_ACTUAL_FIND_MATCH_WITH_RESTORATION_REQUIRED")
     node = value["matches"][0]
@@ -112,12 +127,17 @@ def verify_ui_parent_result(flow, step, output, request):
     logical = common.parse(common.regular(step / "command-001.logical.json")[0])
     entry = flow.modules["business_ui_entry.py"]
     argv = entry.logical_argv(request, PACKAGE, step)
-    need(logical == {"schema": "pocket4-final-ui-logical-command-v1", "scope_sha256": flow.scope_ref["sha256"],
+    need(type(logical) is dict
+         and logical.get("mutation") is (request["op"] in ("click", "set-text"))
+         and logical.get("automatic_retry") is False
+         and logical == {"schema": "pocket4-final-ui-logical-command-v1", "scope_sha256": flow.scope_ref["sha256"],
          "argv": argv, "mutation": request["op"] in ("click", "set-text"),
          "label": "Existing android-app CLI", "automatic_retry": False},
          "EXACT_SOURCE_BOUND_UI_REQUEST_AND_SCOPE_REQUIRED")
-    need(result.get("host_retirement_proved") is True and result.get("evidence_complete") is True
-         and result.get("returncode") == 0 and result.get("timed_out") is False
+    need(type(result) is dict and result.get("host_retirement_proved") is True
+         and result.get("evidence_complete") is True
+         and type(result.get("returncode")) is int and result["returncode"] == 0
+         and result.get("timed_out") is False
          and result.get("errors") == [] and result.get("first_error") is None
          and result.get("argv") == entry.entry_argv(flow.scope_ref, "client", step.name, "command-001", argv[1:])
          and common.parse(common.read_ref(result["stdout"])) == output,
@@ -296,9 +316,7 @@ class FirefoxFlowAdapter:
             # The existing recorder's raw result, original PIDFD retirement,
             # held-entry post guard and exact helper response are mandatory.
             verify_ui_parent_result(self.flow, step, output, request)
-            need(output.get("ok") is True and output.get("outcome_unknown") is not True
-                 and output.get("accessibility_mode_restoration_verified") is True,
-                 "ACTUAL_UI_ACTION_OR_RESTORATION_UNQUALIFIED")
+            verify_ui_success(output)
             if op == "find":
                 one_find(output)
             else:

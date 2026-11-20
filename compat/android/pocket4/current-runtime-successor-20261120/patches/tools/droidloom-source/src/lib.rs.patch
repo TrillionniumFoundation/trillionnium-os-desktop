@@ -1,0 +1,11 @@
+--- a/tools/droidloom-source/src/lib.rs
++++ b/tools/droidloom-source/src/lib.rs
+@@ -28,6 +28,8 @@
+ pub mod production_full;
+ /// Explicit original 651 plus the complete superproject-pinned CMake provider.
+ pub mod production_cmake;
++/// Explicit original 652 with the complete pinned HealthFitness lint provider.
++pub mod production_lint;
+ 
+ #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ enum SourceProfile {

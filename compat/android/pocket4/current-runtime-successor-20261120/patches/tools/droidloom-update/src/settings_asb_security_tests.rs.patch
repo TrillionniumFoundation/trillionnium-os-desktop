@@ -1,0 +1,24 @@
+--- a/tools/droidloom-update/src/settings_asb_security_tests.rs
++++ b/tools/droidloom-update/src/settings_asb_security_tests.rs
+@@ -303,6 +303,12 @@
+                 purpose,
+                 sparse_paths,
+             } = current;
++            // Keep all original cones and append the complete original lint
++            // directory only for this one superproject-pinned provider.
++            let mut expected_sparse = previous.sparse_paths.clone();
++            if path == Path::new(droidloom_source::production_lint::HEALTH_PATH) {
++                expected_sparse.push(droidloom_source::production_lint::LINT_PATH.into());
++            }
+             assert_eq!(
+                 (path, name, commit, purpose, sparse_paths),
+                 (
+@@ -310,7 +316,7 @@
+                     &previous.name,
+                     &previous.commit,
+                     &previous.purpose,
+-                    &previous.sparse_paths,
++                    &expected_sparse,
+                 )
+             );
+         }

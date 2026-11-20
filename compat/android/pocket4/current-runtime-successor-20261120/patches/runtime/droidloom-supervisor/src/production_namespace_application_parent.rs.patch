@@ -1,0 +1,12 @@
+--- a/runtime/droidloom-supervisor/src/production_namespace_application_parent.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_application_parent.rs
+@@ -12,6 +12,9 @@
+ #[path = "production_namespace_task_control_parent.rs"]
+ mod task_control;
+ pub(crate) use task_control::{TaskControlEndpoint, TaskControlPeer};
++
++#[path = "production_namespace_image_custody.rs"]
++mod image_custody;
+ 
+ pub(crate) struct ApplicationAuthority<'a> {
+     tree: &'a IsolatedNamespaces,

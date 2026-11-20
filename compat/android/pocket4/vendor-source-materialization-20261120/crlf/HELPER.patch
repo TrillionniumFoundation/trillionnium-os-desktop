@@ -1,0 +1,24 @@
+--- a/vendor_source_bookends_r18_2331.py
++++ b/vendor_source_bookends_r19_9907.py
+@@ -281,7 +281,11 @@
+ 
+ def committed_crlf_equivalence(checkout, relative, mode, oid, revision, fd, before,
+                                raw_sha256, raw_git_blob, deadline, guard, commands):
+-    """Verify only Git's explicit committed text/eol=crlf representation.
++    """Verify only Git's explicit committed eol=crlf representation.
++
++    Git's committed eol=crlf rule also enables text conversion when text is
++    unspecified. Explicit -text and other text modes remain outside this
++    equivalence; neither config nor an uncommitted rule can supply it.
+ 
+     No clean/smudge filter, encoding conversion, ident expansion or source write
+     is performed. The complete normalized body must still equal the committed
+@@ -310,7 +314,7 @@
+             need(path.decode('utf-8') == relative and attribute.decode('ascii') == name,
+                  'exact path and ordered committed attributes')
+             attributes[name] = value.decode('ascii')
+-        need(attributes['text'] == 'set' and attributes['eol'] == 'crlf'
++        need(attributes['text'] in ('set', 'unspecified') and attributes['eol'] == 'crlf'
+              and all(attributes[name] in ('unspecified', 'unset')
+                      for name in ('filter', 'ident', 'working-tree-encoding')),
+              'only explicit committed text/eol=crlf without other content transforms')

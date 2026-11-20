@@ -1,0 +1,46 @@
+--- a/tools/droidloom-source/src/main.rs
++++ b/tools/droidloom-source/src/main.rs
+@@ -24,6 +24,7 @@
+     NativePair,
+     ProductionFull,
+     ProductionFullCmake,
++    ProductionFullLint,
+ }
+ 
+ #[derive(Debug, Subcommand)]
+@@ -83,6 +84,7 @@
+         Profile::NativePair => droidloom_source::native_pair::build_plan,
+         Profile::ProductionFull => droidloom_source::production_full::build_plan,
+         Profile::ProductionFullCmake => droidloom_source::production_cmake::build_plan,
++        Profile::ProductionFullLint => droidloom_source::production_lint::build_plan,
+     };
+     type SourceOperation = fn(&Path, &SparseSourceLock, &Path) -> Result<MaterializedManifest, SourceError>;
+     let (materialize, reconcile, verify_materialized): (SourceOperation, SourceOperation, SourceOperation) = match cli.profile {
+@@ -90,6 +92,7 @@
+         Profile::NativePair => (droidloom_source::native_pair::materialize, droidloom_source::native_pair::reconcile, droidloom_source::native_pair::verify_materialized),
+         Profile::ProductionFull => (droidloom_source::production_full::materialize, droidloom_source::production_full::reconcile, droidloom_source::production_full::verify_materialized),
+         Profile::ProductionFullCmake => (droidloom_source::production_cmake::materialize, droidloom_source::production_cmake::reconcile, droidloom_source::production_cmake::verify_materialized),
++        Profile::ProductionFullLint => (droidloom_source::production_lint::materialize, droidloom_source::production_lint::reconcile, droidloom_source::production_lint::verify_materialized),
+     };
+     match cli.command {
+         Command::VerifyLock { lock } => {
+@@ -140,6 +143,19 @@
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++
++    #[test]
++    fn source_cli_requires_explicit_complete_healthfitness_lint_profile() {
++        for argv in [
++            ["droidloom-source", "--profile", "production-full-lint", "verify-lock"],
++            ["droidloom-source", "verify-lock", "--profile", "production-full-lint"],
++        ] {
++            let parsed = Cli::try_parse_from(argv).unwrap();
++            assert!(matches!(parsed.profile, Profile::ProductionFullLint));
++        }
++        let default = Cli::try_parse_from(["droidloom-source", "verify-lock"]).unwrap();
++        assert!(matches!(default.profile, Profile::Audio));
++    }
+ 
+     #[test]
+     fn source_cli_keeps_audio_default_and_requires_named_native_profile() {

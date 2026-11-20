@@ -1,0 +1,76 @@
+--- a/runtime/droidloom-supervisor/src/control_progress.rs
++++ b/runtime/droidloom-supervisor/src/control_progress.rs
+@@ -17,7 +17,21 @@
+ 
+ pub(super) const LOG_HINT: &str = "Check the logs with:\n  journalctl -b -u droidloomd.service -n 200 --no-pager\n  journalctl --user -b -u droidloom.service -n 100 --no-pager";
+ const REQUEST_TIMEOUT: Duration = Duration::from_secs(250);
++const GALLERY_CUSTODY_RESPONSE_TIMEOUT: Duration = Duration::from_secs(330);
+ const UPDATE_INTERVAL: Duration = Duration::from_secs(10);
++
++fn response_timeout(request: &ControlRequest) -> Duration {
++    match request {
++        ControlRequest::InspectApplication { package, user: 0 }
++            if package == super::application_custody::GALLERY_PACKAGE =>
++        {
++            // Client waiting only. The same production operation keeps its
++            // original 300-second absolute deadline and real reap rules.
++            GALLERY_CUSTODY_RESPONSE_TIMEOUT
++        }
++        _ => REQUEST_TIMEOUT,
++    }
++}
+ 
+ // Legacy clients still send a bare ControlRequest and receive one JSON object.
+ // The envelope opts into newline-delimited progress followed by the same result.
+@@ -104,7 +118,7 @@
+     read_response(
+         &mut stream,
+         started,
+-        REQUEST_TIMEOUT,
++        response_timeout(request),
+         UPDATE_INTERVAL,
+         progress,
+     )
+@@ -266,6 +280,42 @@
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++
++    #[test]
++    fn only_exact_user_zero_gallery_inspection_gets_the_longer_response_wait() {
++        assert_eq!(response_timeout(&ControlRequest::InspectApplication {
++            package: "com.android.gallery3d".into(), user: 0,
++        }), Duration::from_secs(330));
++        for request in [
++            ControlRequest::InspectApplication { package: "com.android.gallery3d".into(), user: 1 },
++            ControlRequest::InspectApplication { package: "com.android.contacts".into(), user: 0 },
++            ControlRequest::InspectApplication { package: "com.android.gallery3d.other".into(), user: 0 },
++            ControlRequest::Status,
++            ControlRequest::Stop,
++            ControlRequest::Install { user: 0 },
++        ] {
++            assert_eq!(response_timeout(&request), Duration::from_secs(250));
++        }
++    }
++
++    #[test]
++    fn complete_three_mib_response_uses_the_unchanged_four_mib_bound() {
++        let (mut client, mut server) = UnixStream::pair().unwrap();
++        let expected = "x".repeat(3 * 1024 * 1024);
++        let mut raw = serde_json::to_vec(&serde_json::json!({
++            "ok": true, "state": "running", "message": &expected,
++        })).unwrap();
++        raw.push(b'\n');
++        assert!(raw.len() as u64 > MAX_MESSAGE_BYTES);
++        assert!((raw.len() as u64) < MAX_RESPONSE_BYTES);
++        let writer = std::thread::spawn(move || server.write_all(&raw));
++        let observed = read_response(
++            &mut client, Instant::now(), Duration::from_secs(5), Duration::from_millis(50), None,
++        );
++        drop(client);
++        writer.join().unwrap().unwrap();
++        assert_eq!(observed.unwrap().message, expected);
++    }
+     use std::os::unix::net::UnixListener;
+     use std::thread;
+ 

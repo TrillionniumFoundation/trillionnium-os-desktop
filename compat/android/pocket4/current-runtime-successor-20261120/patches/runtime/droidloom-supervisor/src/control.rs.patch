@@ -1,0 +1,86 @@
+--- a/runtime/droidloom-supervisor/src/control.rs
++++ b/runtime/droidloom-supervisor/src/control.rs
+@@ -46,6 +46,9 @@
+ 
+ #[path = "application_probe.rs"]
+ pub mod application_probe;
++
++#[path = "application_custody.rs"]
++pub mod application_custody;
+ 
+ #[path = "application_command.rs"]
+ mod application_command;
+@@ -247,6 +250,9 @@
+     /// Current package observation; never a whole-application qualification.
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+     pub inspection: Option<application_probe::ApplicationInspection>,
++    /// Readonly whole-image and actual query provenance; never a release gate.
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub image_custody: Option<application_custody::ImageApplicationCustody>,
+ }
+ 
+ /// Daemon filesystem and executable configuration.
+@@ -419,6 +425,7 @@
+             application_icon: None,
+             diagnostics: None,
+             inspection: None,
++            image_custody: None,
+         })
+     }
+ 
+@@ -522,6 +529,7 @@
+             application_icon: None,
+             diagnostics: None,
+             inspection: None,
++            image_custody: None,
+         })
+     }
+ 
+@@ -590,6 +598,7 @@
+             application_icon: None,
+             diagnostics: None,
+             inspection: None,
++            image_custody: None,
+         })
+     }
+ 
+@@ -689,6 +698,7 @@
+             application_icon: Some(icon),
+             diagnostics: None,
+             inspection: None,
++            image_custody: None,
+         })
+     }
+ 
+@@ -718,6 +728,7 @@
+             application_icon: None,
+             diagnostics: None,
+             inspection: None,
++            image_custody: None,
+         })
+     }
+ 
+@@ -807,6 +818,7 @@
+             application_icon: None,
+             diagnostics: None,
+             inspection: None,
++            image_custody: None,
+         }
+     }
+ 
+@@ -1821,6 +1833,7 @@
+                         application_icon: None,
+                         diagnostics: None,
+                         inspection: None,
++                        image_custody: None,
+                     },
+                 )
+                 .unwrap();
+@@ -1884,6 +1897,7 @@
+                         application_icon: None,
+                         diagnostics: None,
+                         inspection: None,
++                        image_custody: None,
+                     },
+                 )
+                 .unwrap();

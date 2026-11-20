@@ -1,0 +1,18 @@
+--- a/runtime/droidloom-applications/src/main.rs
++++ b/runtime/droidloom-applications/src/main.rs
+@@ -211,12 +211,13 @@
+         return Ok(());
+     }
+     if let Some(package) = &cli.inspect_package {
+-        let observed =
+-            droidloom_applications::runtime_plan::inspect_package(&cli.socket, package, cli.user)?;
++        let (observed, image_custody) =
++            droidloom_applications::runtime_plan::inspect_package_with_custody(&cli.socket, package, cli.user)?;
+         println!(
+             "{}",
+             serde_json::to_string_pretty(&serde_json::json!({
+                 "operation": "inspect_installed_application", "observation": observed,
++                "image_custody": image_custody, "data_continuity_qualified": false,
+                 "production_ready": false, "runtime_qualified": false, "app_launches": 0
+             }))?
+         );

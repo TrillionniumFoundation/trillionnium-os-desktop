@@ -1,0 +1,295 @@
+{
+  "added_paths": [
+    "android/manifest/production-full-lint-source-lock.json",
+    "tools/droidloom-source/src/production_lint.rs"
+  ],
+  "android_executed": false,
+  "candidate_bytes": 44676502,
+  "candidate_files": 2354,
+  "candidate_rows": {
+    "bytes": 700769,
+    "path": "candidate-source-rows.json",
+    "sha256": "459b7dc122c4afbbd128e1812a48ba374eb8855c355bd2645fe408fc2b5c0fe6"
+  },
+  "candidate_tree": "deec841ee7cabd33e9c7d061c5498331c0729d90",
+  "changed_paths": [
+    "tools/droidloom-source/src/lib.rs",
+    "tools/droidloom-source/src/main.rs",
+    "tools/droidloom-update/src/android.rs",
+    "tools/droidloom-update/src/coherent_images.rs",
+    "tools/droidloom-update/src/coherent_images_tests.rs",
+    "tools/droidloom-update/src/framework_asb_security.rs",
+    "tools/droidloom-update/src/production_source.rs",
+    "tools/droidloom-update/src/settings_asb_security_tests.rs",
+    "tools/droidloom-update/src/wm_security.rs"
+  ],
+  "closed_full_source_snapshot": true,
+  "creation_record_is_historical_draft": true,
+  "exact_original_provider_files": [
+    {
+      "git_blob": "9bb62a2bd8df6f99c6ccee5aa9f5b862d71ee1f2",
+      "path": "lint/Android.bp",
+      "raw_bytes": 1301,
+      "sha256": "f740623733b5f4e0e3e8b9ce0e9fa041f8fa87dccabcd47ecdd2568ad022822e"
+    },
+    {
+      "git_blob": "e6a4d39c88cbc2fbf8d294c798a3ebf4e2d2c4e2",
+      "path": "lint/OWNERS",
+      "raw_bytes": 81,
+      "sha256": "d6d083143f0855e9c95a8d9766fab03544c80af8e98b8390946832471c13b1ab"
+    },
+    {
+      "git_blob": "8cbc030138752beeac61da5e8139bd4d9241fda6",
+      "path": "lint/README.md",
+      "raw_bytes": 2590,
+      "sha256": "177906d96f9640773c81ac09657d1f417da229500249700d80d2b381069ff1f3"
+    },
+    {
+      "git_blob": "a19c17d747b23b1f9bfad8f3de4fd8aae21ab8c8",
+      "path": "lint/src/com/android/health/connect/lint/CheckFlagsRuleDetector.kt",
+      "raw_bytes": 3555,
+      "sha256": "78bc37735efc6f27b3c55b38070fc6e9b1e310a2de6337f6efd7689c9c510945"
+    },
+    {
+      "git_blob": "7c8dad2e03770b0b839fc81c81145010933e6400",
+      "path": "lint/src/com/android/health/connect/lint/HealthConnectIssueRegistry.kt",
+      "raw_bytes": 1434,
+      "sha256": "62b826fe4296bc218b29ce11ae6cfc2fb3dbbbfab21c8b2c70ca0caf20497c68"
+    },
+    {
+      "git_blob": "b6fa8245aa31875f51c037266f8ee5053f94803f",
+      "path": "lint/tests/com/android/health/connect/lint/CheckFlagsRuleDetectorTest.kt",
+      "raw_bytes": 10415,
+      "sha256": "7665b17f07fad08cb3ab659082d6849469e5629b2b274e1ed3ddbd17bab0f170"
+    }
+  ],
+  "new_source_declared_test_names": [
+    {
+      "name": "source_cli_requires_explicit_complete_healthfitness_lint_profile",
+      "path": "tools/droidloom-source/src/main.rs"
+    },
+    {
+      "name": "lint_operations_reject_incomplete_scope_before_any_source_io",
+      "path": "tools/droidloom-source/src/production_lint.rs"
+    },
+    {
+      "name": "lint_profile_extends_only_the_complete_original_lint_directory",
+      "path": "tools/droidloom-source/src/production_lint.rs"
+    },
+    {
+      "name": "lint_profile_rejects_partial_provider_repin_and_wrong_project",
+      "path": "tools/droidloom-source/src/production_lint.rs"
+    },
+    {
+      "name": "lint_profile_rejects_unrelated_projects_metadata_and_policy_changes",
+      "path": "tools/droidloom-source/src/production_lint.rs"
+    },
+    {
+      "name": "lint_verification_never_rewrites_the_original_cmake_manifest",
+      "path": "tools/droidloom-source/src/production_lint.rs"
+    },
+    {
+      "name": "original_cmake_manifest_requires_explicit_complete_lint_reconciliation",
+      "path": "tools/droidloom-update/src/production_source.rs"
+    }
+  ],
+  "observed_ns": 1795161967902226627,
+  "only_manifest_scope_delta": {
+    "appended_cone": "lint",
+    "commit": "a292a16a8ac82667b65d763c00fa935cc44e9925",
+    "current_cones": 62,
+    "previous_cones": 61,
+    "project": "packages/modules/HealthFitness",
+    "retained_projects": 652
+  },
+  "parent_bytes": 44260146,
+  "parent_files": 2352,
+  "parent_full_f9_bookend_unchanged": true,
+  "parent_tree": "7bfb70d7107cb5c95e9aec307124e1369aa735d1",
+  "patch": {
+    "bytes": 440252,
+    "path": "SOURCE.patch",
+    "sha256": "3050a4fb3bfcb70492fff1cb9c7fa33ca8de8b6ce812dc95b61511e90f738878"
+  },
+  "postimages": [
+    {
+      "after": {
+        "bytes": 400677,
+        "git_blob": "ac09856fde243ac8749762539071a1cd895c1cb1",
+        "mode": "100644",
+        "path": "android/manifest/production-full-lint-source-lock.json",
+        "sha256": "aa14d968c14c2febcfacbb90e82598e2ba8e57f4bbb2cfc8f1f2a741555153ca"
+      },
+      "before": null
+    },
+    {
+      "after": {
+        "bytes": 173682,
+        "git_blob": "39c1a12c9eac8601cbd5d33ed0acb5df6b9f77c1",
+        "mode": "100644",
+        "path": "tools/droidloom-source/src/lib.rs",
+        "sha256": "9d17e46f5e842c45055c787787c26bb2223268be165299797870457f6bae2a32"
+      },
+      "before": {
+        "bytes": 173577,
+        "git_blob": "77a47f71ed10750e787dc92c6dd4c1ad898d3ab2",
+        "mode": "100644",
+        "path": "tools/droidloom-source/src/lib.rs",
+        "sha256": "084a4476d1e5f98222fc1104526919f918f57147b49561a05fd01fc60866ee23"
+      }
+    },
+    {
+      "after": {
+        "bytes": 8535,
+        "git_blob": "33ab70248e05a92f9164700ecff7409ee7cd5e39",
+        "mode": "100644",
+        "path": "tools/droidloom-source/src/main.rs",
+        "sha256": "1e0952436c573155454a86e6c0b63fc90d26cb801946f2b793f300d6f609dfb2"
+      },
+      "before": {
+        "bytes": 7637,
+        "git_blob": "db858c0abdabfb047292126cdb2428b33a74135a",
+        "mode": "100644",
+        "path": "tools/droidloom-source/src/main.rs",
+        "sha256": "9ea9fba62386326e71a73a2bbe5f80161fd3ebc4e64f6a091d2c9c8d25c84413"
+      }
+    },
+    {
+      "after": {
+        "bytes": 10498,
+        "git_blob": "f91bb2514ab6db2eb458dc7e751278a18b204214",
+        "mode": "100644",
+        "path": "tools/droidloom-source/src/production_lint.rs",
+        "sha256": "f3a92da876eb814a9028a8b0caa28616563ddec9b0b3db85fc33392e0e2cf196"
+      },
+      "before": null
+    },
+    {
+      "after": {
+        "bytes": 1257936,
+        "git_blob": "24c1170b619aabd436aea50d22b88c20af26b2f2",
+        "mode": "100644",
+        "path": "tools/droidloom-update/src/android.rs",
+        "sha256": "ea7d6e679d6133dce24b61bd82c22c16dda9cc548afe00d545b1d75e44c3b9d4"
+      },
+      "before": {
+        "bytes": 1257788,
+        "git_blob": "deecd250d69ca43601f32624dacf41e04fb808c0",
+        "mode": "100644",
+        "path": "tools/droidloom-update/src/android.rs",
+        "sha256": "d9cbee6d2d99187a03f3435078248ce1d232ec9a7e55e9b2375c1e1a1b1ca473"
+      }
+    },
+    {
+      "after": {
+        "bytes": 98796,
+        "git_blob": "9dbf0bc9c9962f8dac5ca077f3aff22ca48b06d5",
+        "mode": "100644",
+        "path": "tools/droidloom-update/src/coherent_images.rs",
+        "sha256": "4102281c1de4e3661f2d268faf1c74ad9babdb39db1b4cecb04d1c4b7eccf3c1"
+      },
+      "before": {
+        "bytes": 98862,
+        "git_blob": "d09f0d103eb13674c5a7c501da7ca8dfc5039a84",
+        "mode": "100644",
+        "path": "tools/droidloom-update/src/coherent_images.rs",
+        "sha256": "79441d993cda082aa3520547a3c7effeabf31d76bb688643c51b61cb605ffda5"
+      }
+    },
+    {
+      "after": {
+        "bytes": 23279,
+        "git_blob": "f39522a14a6a24e111464d63cdd75b4eaa8464e6",
+        "mode": "100644",
+        "path": "tools/droidloom-update/src/coherent_images_tests.rs",
+        "sha256": "550d34694d79bfafec6a7056f8147792b3a1297fdb5156cf0985fb89bb31a032"
+      },
+      "before": {
+        "bytes": 23160,
+        "git_blob": "83b97743d8c7aa5a15ac43abce4c632e987b271d",
+        "mode": "100644",
+        "path": "tools/droidloom-update/src/coherent_images_tests.rs",
+        "sha256": "84cb12f3e2eda5868654cb69a2395fb903d9afc13220dd96b3f5f4918fa7af20"
+      }
+    },
+    {
+      "after": {
+        "bytes": 137034,
+        "git_blob": "5937a5ae1cfd0df6b714aefcd7b8abe293d0234a",
+        "mode": "100644",
+        "path": "tools/droidloom-update/src/framework_asb_security.rs",
+        "sha256": "023d820efbe7d2f5f5791d0f89929e84a349d7ebaa350214b34fcb3c79900861"
+      },
+      "before": {
+        "bytes": 136738,
+        "git_blob": "e5457b2617a5d8754081ed96bb7af2100854678a",
+        "mode": "100644",
+        "path": "tools/droidloom-update/src/framework_asb_security.rs",
+        "sha256": "15072ae867b60209497b475d5bcc0df1d83545d50696a9b7a57f3b69430a79c2"
+      }
+    },
+    {
+      "after": {
+        "bytes": 23234,
+        "git_blob": "4be92e9974fa6792c086a035bff64d27ad1310bd",
+        "mode": "100644",
+        "path": "tools/droidloom-update/src/production_source.rs",
+        "sha256": "885bd82f52a7b8687ed11415f6d6627ebdb70450204f248c3182dbeee7633f77"
+      },
+      "before": {
+        "bytes": 20250,
+        "git_blob": "bab3c929c6adb69777b7fe5f2803beb82791c97f",
+        "mode": "100644",
+        "path": "tools/droidloom-update/src/production_source.rs",
+        "sha256": "618b5c90311649a6eda356add67a7f6f0d2c1a7b54407da87a48b125852d69fa"
+      }
+    },
+    {
+      "after": {
+        "bytes": 21015,
+        "git_blob": "4c31532124a2c880b3d6369974cbd21b4d36c7a2",
+        "mode": "100644",
+        "path": "tools/droidloom-update/src/settings_asb_security_tests.rs",
+        "sha256": "e8ef94c2522d6c590bdaf7e11b777ffe612d9fe987999480ad2319820682a413"
+      },
+      "before": {
+        "bytes": 20614,
+        "git_blob": "e8bd60562cb3e6bc465f37d2014a74dd39aba30e",
+        "mode": "100644",
+        "path": "tools/droidloom-update/src/settings_asb_security_tests.rs",
+        "sha256": "bb5de5a1f52e50f31334593e957834e5c0e901013a5e2b48be128c12a975cb15"
+      }
+    },
+    {
+      "after": {
+        "bytes": 18061,
+        "git_blob": "e0a02539582ad3489e0255a7c6a541afc70e1b40",
+        "mode": "100644",
+        "path": "tools/droidloom-update/src/wm_security.rs",
+        "sha256": "146d916ffc0e56d6c6e5ac194d4bb5f4557820d702d207232514b658300f4843"
+      },
+      "before": {
+        "bytes": 17765,
+        "git_blob": "62b9b2a18ee27119dd235fbbdded3c183667abe3",
+        "mode": "100644",
+        "path": "tools/droidloom-update/src/wm_security.rs",
+        "sha256": "624cc497042159e0a025d076e4a8610f706bbf8951b682882d0f0eeacb58e68d"
+      }
+    }
+  ],
+  "production_ready": false,
+  "provider_dependency_source_observation": {
+    "actual_Soong_visibility_qualification": false,
+    "bytes": 63475358,
+    "missing_literal_definitions": [],
+    "present_bp": 10105
+  },
+  "removed_paths": [],
+  "runtime_qualified": false,
+  "rust_compilation_passed": false,
+  "rust_tests_executed": false,
+  "schema": "p4-lint-normal-source-freeze-v1",
+  "source_only": true,
+  "unchanged_original_files": 2343,
+  "vendor_build_passed": false
+}

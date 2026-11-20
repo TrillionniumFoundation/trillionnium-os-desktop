@@ -1,0 +1,78 @@
+{
+  "correction": "Force checkout conversion of the owned temporary leaf and refresh Git stat data with checkout-index -u -f. The helper was unchanged across all three runs.",
+  "earlier_fixture_runs": [
+    {
+      "failed_cases": [
+        {
+          "failure": "b'@echo off\\nREM Run this to set up the build system:[325 chars]..\\n' != b'@echo off\\r\\nREM Run this to set up the build syste[351 chars]\\r\\n'",
+          "name": "test_actual_libopus_checkout_old_rejects_new_accepts",
+          "passed": false
+        },
+        {
+          "failure": "RuntimeError not raised",
+          "name": "test_attribute_metadata_change_during_observation_is_rejected",
+          "passed": false
+        },
+        {
+          "failure": "b'@echo off\\nREM Run this to set up the build system:[325 chars]..\\n' != b'@echo off\\r\\nREM Run this to set up the build syste[351 chars]\\r\\n'",
+          "name": "test_autocrlf_config_cannot_replace_committed_eol",
+          "passed": false
+        },
+        {
+          "failure": "b'@echo off\\nREM Run this to set up the build system:[325 chars]..\\n' != b'@echo off\\r\\nREM Run this to set up the build syste[351 chars]\\r\\n'",
+          "name": "test_committed_bang_text_is_unspecified_not_unset",
+          "passed": false
+        },
+        {
+          "failure": "RuntimeError not raised",
+          "name": "test_executable_CRLF_remains_rejected",
+          "passed": false
+        },
+        {
+          "error": "'checkout_conversion'",
+          "name": "test_explicit_text_crlf_still_passes",
+          "passed": false
+        },
+        {
+          "error": "'checkout_conversion'",
+          "name": "test_explicit_unset_other_transform_attributes_still_pass",
+          "passed": false
+        },
+        {
+          "failure": "RuntimeError not raised",
+          "name": "test_local_info_override_remains_rejected",
+          "passed": false
+        }
+      ],
+      "original_report": {
+        "bytes": 144062,
+        "path": "/workspace/scratch/9907ce0d335a/vendor-crlf-repair-9907/validation/real-git-controls-r1.json",
+        "sha256": "48d7c9a0a084240ee6c6d6ee5c0f9ff2d199f660f4ae61dca89959760222ec7b"
+      },
+      "passed": false,
+      "successor_sha256": "89c48f7fe7147db9ea8cb2309a3a3ae08ce4203ab63546fbe06db6d0764efe56",
+      "test_source_sha256": "9384cb7ba44c7db595cc4d3b97c98fffdea7106d582adb43c1031f70f1275b91",
+      "tests_run": 29
+    },
+    {
+      "failed_cases": [
+        {
+          "failure": "b' M autogen.bat\\n' != b''",
+          "name": "test_actual_libopus_checkout_old_rejects_new_accepts",
+          "passed": false
+        }
+      ],
+      "original_report": {
+        "bytes": 144019,
+        "path": "/workspace/scratch/9907ce0d335a/vendor-crlf-repair-9907/validation/real-git-controls-r2.json",
+        "sha256": "3592c06942df0eb80c0b13a8f64b20f1fb88c5de2b40ea160471e988225dd3a1"
+      },
+      "passed": false,
+      "successor_sha256": "89c48f7fe7147db9ea8cb2309a3a3ae08ce4203ab63546fbe06db6d0764efe56",
+      "test_source_sha256": "051816a70a5186b56fe3a10172960c82355385ba1ae4d2c8b0876b710d4e3c3d",
+      "tests_run": 29
+    }
+  ],
+  "latest_complete_report": "real-git-controls-r3.json",
+  "schema": "pocket4-crlf-fixture-development-history-v1"
+}

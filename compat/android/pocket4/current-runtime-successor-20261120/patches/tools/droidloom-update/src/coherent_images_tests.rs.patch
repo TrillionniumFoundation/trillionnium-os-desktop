@@ -1,0 +1,19 @@
+--- a/tools/droidloom-update/src/coherent_images_tests.rs
++++ b/tools/droidloom-update/src/coherent_images_tests.rs
+@@ -547,7 +547,7 @@
+ #[test]
+ fn complete_product_cmake_header_rejects_old_schema_and_source_pair() {
+     let targets = full_targets();
+-    let actual_lock = include_bytes!("../../../android/manifest/production-full-cmake-source-lock.json");
++    let actual_lock = include_bytes!("../../../android/manifest/production-full-lint-source-lock.json");
+     let actual_sha = hex::encode(Sha256::digest(actual_lock));
+     let current = json!({
+         "schema": "droidloom-production-full652-inputs-v1",
+@@ -558,6 +558,7 @@
+     });
+     validate_full_source_header(&current, &targets).unwrap();
+     for (schema, source_sha) in [
++        ("droidloom-production-full652-inputs-v1", "2e9877a58ebbc3625c7411d3573951afa409d9b13692468b825b4c25961ffffb"),
+         ("droidloom-production-full651-inputs-v1", actual_sha.as_str()),
+         ("droidloom-production-full652-inputs-v1", "30dcc1b5b090530b3fc06aeb3e489a961b0fc7c6368ed9d19eb0a1b2054e3eb4"),
+         ("droidloom-production-full651-inputs-v1", "30dcc1b5b090530b3fc06aeb3e489a961b0fc7c6368ed9d19eb0a1b2054e3eb4"),

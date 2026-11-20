@@ -1,0 +1,58 @@
+[
+  {
+    "ignored": [],
+    "kind": "lib",
+    "target": "droidloom_applications",
+    "tests": [
+      "release::tests::blocked_unsupported_failed_and_missing_are_never_passes",
+      "release::tests::complete_42_is_only_evidence_completeness_and_13_is_incomplete",
+      "release::tests::duplicates_and_extras_cannot_pad_coverage",
+      "release::tests::empty_stderr_can_support_but_cannot_replace_a_runtime_receipt",
+      "release::tests::exact_version_split_signer_uid_and_engine_are_required",
+      "release::tests::expected_manifest_count_current_main_and_common_gates_are_external_pins",
+      "release::tests::missing_corrupt_or_unpinned_evidence_is_incomplete",
+      "release::tests::old_main_boot_epoch_and_cohort_cannot_transfer_acceptance",
+      "release::tests::split_identity_order_does_not_change_meaning",
+      "release::tests::understated_evidence_size_is_rejected_before_reading_payload",
+      "runtime_plan::leaf_routes::tests::arbitrary_or_old_preparation_selection_is_rejected_before_a_child",
+      "runtime_plan::leaf_routes::tests::current_selector_cannot_dispatch_a_stale_or_reordered_compiled_catalog",
+      "runtime_plan::leaf_routes::tests::current_selector_requires_every_preparation_once_in_selected_order",
+      "runtime_plan::leaf_routes::tests::finite_routes_cover_seven_packages_without_install_or_raw_camera_bypass",
+      "runtime_plan::leaf_routes::tests::gallery_cancelled_or_wrong_epoch_receipt_is_rejected",
+      "runtime_plan::leaf_routes::tests::ihg_ok_only_verifies_input_readback_and_preserves_unknown_business_outcome",
+      "runtime_plan::leaf_routes::tests::november_fourteen_and_mixed_selector_pins_are_rejected_before_reading",
+      "runtime_plan::leaf_routes::tests::physical_main_binding_rejects_changed_epoch_and_current_apk",
+      "runtime_plan::leaf_routes::tests::published_current_selector_binds_the_real_ihg_and_clock_entry",
+      "runtime_plan::leaf_routes::tests::selection_source_refresh_cannot_promote_runtime_or_expand_its_update",
+      "runtime_plan::leaf_routes::tests::wrong_case_kind_and_unwrapped_camera_never_dispatch",
+      "runtime_plan::leaf_routes::tests::zero_exit_equivalent_empty_or_stale_output_is_not_success",
+      "runtime_plan::tests::all_42_rows_survive_missing_runtime_without_any_invocation",
+      "runtime_plan::tests::finite_leaf_dispatch_reaches_executor_and_keeps_all_42_gate_rows",
+      "runtime_plan::tests::full_apk_set_and_dynamic_uid_are_preserved",
+      "runtime_plan::tests::missing_delivery_or_unrequested_execution_is_blocked",
+      "runtime_plan::tests::one_real_entry_route_does_not_promote_41_unsupported_profiles",
+      "runtime_plan::tests::reduced_duplicate_selection_and_incomplete_firefox_contract_are_rejected",
+      "runtime_plan::tests::stale_main_or_changed_source_never_opens_browser",
+      "tests::desktop_entry_uses_only_launch_and_escapes_labels",
+      "tests::empty_query_preserves_the_previous_catalog",
+      "tests::icon_transport_base64_is_strict",
+      "tests::package_removal_rejects_catalog_path_traversal_before_deleting_anything",
+      "tests::package_removal_uses_the_catalog_and_retains_unrelated_desktop_files",
+      "tests::reconciliation_is_atomic_idempotent_and_removes_stale_entries",
+      "tests::reconciliation_migrates_only_managed_legacy_entries",
+      "tests::reconciliation_preserves_validated_launch_resolution",
+      "tests::xdg_paths_never_accept_relative_overrides"
+    ]
+  },
+  {
+    "ignored": [],
+    "kind": "bin",
+    "target": "droidloom-applications",
+    "tests": [
+      "cli_tests::contacts_fixture_inspection_excludes_mutation_other_operations_and_user_override",
+      "cli_tests::installed_identity_inspection_allows_only_its_own_socket_and_user",
+      "cli_tests::release_check_requires_external_pins_and_excludes_catalog_mutation",
+      "cli_tests::runtime_plan_requires_complete_pins_and_excludes_other_actions"
+    ]
+  }
+]

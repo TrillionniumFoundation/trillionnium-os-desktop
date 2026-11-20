@@ -13,6 +13,7 @@
   "explicit_host_release_acknowledgment_required": true,
   "finite_public_case_passed": false,
   "installed": false,
+  "malformed_success_response_rejection_implemented": true,
   "native_compatibility_qualified": false,
   "new_controller_source_integration_completed": false,
   "new_exemptions": [],
@@ -31,23 +32,23 @@
   "prepared_sources": [
     {
       "bytes": 8792,
-      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/firefox_custody.py",
+      "path": "firefox_custody.py",
       "sha256": "f3726ae934b20212df35b9875f1954d4bcd3acf94072dea1d890bdf3732fe8bb"
     },
     {
       "bytes": 8823,
-      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/firefox_protocol.py",
+      "path": "firefox_protocol.py",
       "sha256": "545c7549d56ab6309ee08f8c09171303275a510df813f43a46b69d465a0d12b8"
     },
     {
-      "bytes": 24396,
-      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/firefox_adapter.py",
-      "sha256": "c4ec48c8c332de155c9f68b0033105f970d9ccb2ddc666ba8d36d026706eba6d"
+      "bytes": 25076,
+      "path": "firefox_adapter.py",
+      "sha256": "da084330cc03226258b5a05d68497fb276710868499cbb0a380f20994e673525"
     },
     {
-      "bytes": 18725,
-      "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/test_firefox.py",
-      "sha256": "bec4b243fb1995a3e66c447bf48369035b101ea3f41397194c8cb34935138c2f"
+      "bytes": 21170,
+      "path": "test_firefox.py",
+      "sha256": "491abdff1ccee9bcc2bc092eb88eb403dd91d6799601a4818e2cd199136c1038"
     }
   ],
   "previous32_historical_status": {
@@ -56,6 +57,7 @@
     "sha256": "bda7880b6a91c6a4ba1d43b3502649b38b8ed7d3929c95bdea8433aa9a879dfa"
   },
   "previous32_missing_selected_executors_not_recounted_as_passed": true,
+  "previous35_source_commit": "765c67ff1113885c98bcf84a31e937f484cc5c35",
   "previous_required39_plan": {
     "bytes": 127403,
     "path": "/workspace/scratch/11ea999c19b6/p4-required39-business-preflight-11ea-20261119-r2/PLAN.json",
@@ -76,7 +78,7 @@
     "Real public sequence, stability/data-preservation/common gates and release review"
   ],
   "runtime_qualified": false,
-  "schema": "p4-firefox-executor-source-successor-v2",
+  "schema": "p4-firefox-executor-source-successor-v3",
   "scoped_public_execution_sequence_implemented": true,
   "selected42_required39_exempt3_scope_unchanged": true,
   "source_binding": {
@@ -86,9 +88,9 @@
   },
   "state": "EXECUTOR_SOURCE_PREPARED_PRODUCTION_ENTRY_HELD",
   "validation": {
-    "bytes": 4949,
-    "path": "/workspace/scratch/11ea999c19b6/p4-firefox-public-executor-11ea-20261119-r1/VALIDATION.json",
-    "sha256": "a7561db1648c38bdbc3fde420070198c55c1f31a737fa7aed4573116cfaacb97"
+    "bytes": 5635,
+    "path": "VALIDATION.json",
+    "sha256": "e19829dda2203da48e856b1f4702c74d40fef0b0460cd96a2803a7398eef7caa"
   },
   "whole_app_business_accepted": false
 }

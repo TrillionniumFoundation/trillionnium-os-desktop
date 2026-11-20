@@ -315,6 +315,26 @@ class CustodyControls(unittest.TestCase):
 
 
 class WireControls(unittest.TestCase):
+    def test_success_markers_preserve_existing_optional_wire_shape(self):
+        for markers in ({}, {"outcome_unknown": False}, {"automatic_retry": False},
+                        {"outcome_unknown": False, "automatic_retry": False}):
+            with self.subTest(markers=markers):
+                value = {"ok": True, "accessibility_mode_restoration_verified": True, **markers}
+                self.assertIs(a.verify_ui_success(value), value)
+
+    def test_ambiguous_or_retried_success_cannot_supply_a_find_match(self):
+        for marker in ("outcome_unknown", "automatic_retry"):
+            for invalid in (True, 1, 0, 0.0, "true", "false", None, [], {}):
+                with self.subTest(marker=marker, invalid=invalid):
+                    value = {"ok": True, "accessibility_mode_restoration_verified": True,
+                        "count": 1, "matches": [{"package": c.PACKAGE, "visible": True,
+                        "enabled": True, "password": False, "source": "native_accessibility",
+                        "window_id": 4}], "window_context": {}, marker: invalid}
+                    for parser in (a.verify_ui_success, a.one_find):
+                        with self.assertRaisesRegex(c.Refused,
+                                "UNAMBIGUOUS_NONRETRIED_UI_RESULT_REQUIRED:" + marker):
+                            parser(value)
+
     def test_exact_find_wire_and_ambiguity(self):
         value = {"ok": True, "accessibility_mode_restoration_verified": True, "count": 1,
             "matches": [{"package": c.PACKAGE, "visible": True, "enabled": True, "password": False,
@@ -380,6 +400,23 @@ class WireControls(unittest.TestCase):
             values = self.parent_fixture(Path(directory), lambda r, _: r.update(host_retirement_proved=False))
             with self.assertRaises(c.Refused):
                 a.verify_ui_parent_result(*values)
+
+    def test_parent_exit_code_requires_integer_zero(self):
+        for invalid in (False, 0.0, True, "0", None):
+            with self.subTest(invalid=invalid), tempfile.TemporaryDirectory() as directory:
+                values = self.parent_fixture(Path(directory),
+                    lambda result, _: result.update(returncode=invalid))
+                with self.assertRaisesRegex(c.Refused, "ACTUAL_TYPED_UI_PARENT_EXIT_AND_REAP_REQUIRED"):
+                    a.verify_ui_parent_result(*values)
+
+    def test_parent_logical_flags_require_exact_booleans(self):
+        for marker in ("mutation", "automatic_retry"):
+            for invalid in (0, 0.0, None, "false"):
+                with self.subTest(marker=marker, invalid=invalid), tempfile.TemporaryDirectory() as directory:
+                    values = self.parent_fixture(Path(directory),
+                        lambda _, logical: logical.update({marker: invalid}))
+                    with self.assertRaisesRegex(c.Refused, "EXACT_SOURCE_BOUND_UI_REQUEST_AND_SCOPE_REQUIRED"):
+                        a.verify_ui_parent_result(*values)
 
     def test_wrong_parent_scope_or_argv_rejected(self):
         for change in (lambda r, _: r["argv"].append("--unbound"),
