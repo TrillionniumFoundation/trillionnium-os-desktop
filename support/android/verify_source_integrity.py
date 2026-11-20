@@ -19,6 +19,41 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE_ROOTS = ("compat/android", "support/android", "tests/workloads/android")
 REQUIRED_FILES = (
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/FILES.sha256',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/README.md',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepare_cp3a.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/SOURCE-CONTRACT.json',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/SOURCE.patch',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/TRANSFORM.json',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/business-system-cases-runtime-inputs-20261108-8b88-r2/calendar_base.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/business-system-cases-runtime-inputs-20261108-8b88-r2/calendar_core.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/business-system-cases-runtime-inputs-20261108-8b88-r2/contacts_model.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/business-system-cases-runtime-inputs-20261108-8b88-r2/contacts_trial.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/business-system-cases-runtime-inputs-20261108-8b88-r2/system_profiles.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/calendar-reminder-runtime-inputs-20261108-8b88-r2/calendar_base.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/calendar-reminder-runtime-inputs-20261108-8b88-r2/calendar_core.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/calendar-reminder-runtime-inputs-20261108-8b88-r2/system_profiles.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/camera-app-photo-preparation-resume-20261107-r4/camera_profiles.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/clock-remaining-runtime-inputs-20261108-8b88-r2/clock_profiles.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/clock-remaining-runtime-inputs-20261108-8b88-r2/clock_protection.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/documents-saf11-runtime-inputs-20261108-8b88-r2/documents_profiles.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/documents-saf11-runtime-inputs-20261108-8b88-r2/documents_saf_core.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/documents-search-sort-runtime-inputs-20261108-8b88-r2/documents_package_fixture.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/documents-search-sort-runtime-inputs-20261108-8b88-r2/documents_profiles.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/gallery-album-current-preparation-20261107-r6/video_entry.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/gallery-new-runtime-preparation-20261107-r7/gallery_current_entry.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/gallery-new-runtime-preparation-20261107-r7/gallery_current_install.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/gallery-new-runtime-preparation-20261107-r7/gallery_current_verify.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/gallery-rotation-current-preparation-20261107-r7/gallery_rotation_entry.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/gallery-rotation-current-preparation-20261107-r7/owned_media.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/ihg-5.111.1-r1/app_profiles.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/ihg-5.111.1-r1/clock_guard.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/prepared/postimages/ihg-5.111.1-r1/clock_protection.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/test_prepare_cp3a.py',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/validation/RESULT.json',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/validation/controls.stderr',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/validation/controls.stdout',
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/verify_prepared.py',
     'compat/android/pocket4/current-runtime-cohort-20261120/EXPECTED-BINS.json',
     'compat/android/pocket4/current-runtime-cohort-20261120/EXPECTED-CATALOG.json',
     'compat/android/pocket4/current-runtime-cohort-20261120/EXPECTED-TARGETS.json',
@@ -1266,6 +1301,8 @@ EXECUTABLE_FILES = (
 PARSED_SUFFIXES = {".py", ".sh", ".json", ".xml"}
 
 BINARY_FILES = {
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/FILES.sha256': {'bytes': 4511, 'sha256': '27743c96bd9806fe165eadd6676b4d0ef8ad45123d19fb85bab4116950316e37'},
+    'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/validation/controls.stdout': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
     'compat/android/pocket4/current-runtime-cohort-20261120/FILES.sha256': {'bytes': 983, 'sha256': '9c1c330bd29ea6d2bdbcde0ead6e27bafaaab07177fb22a6f90ef81c967466a2'},
     'compat/android/pocket4/current-runtime-release-20261120/FILES.sha256': {'bytes': 319, 'sha256': 'd5d0ab96a6f12e690316c12a8dc59f3dc1b760fca9ddf14a3fa7120be27ebcdf'},
     'compat/android/pocket4/vendor-representation-repair-20261120/FILES.sha256': {'bytes': 2552, 'sha256': '6f33f54d51dfe10c251c81dc4940ff13cb5eda9bb2c26485fe02ec20d7c5f60e'},
@@ -1325,7 +1362,7 @@ BINARY_FILES = {
         'bytes': 7894116, 'sha256': '3e8b2fa1ea1ef3555ca7c82e27abe79a2be029c701f69ac55ef4c82484f247ad'},
     'compat/android/pocket4/runtime-current-source-r1/SOURCE-OVERLAY.tar.xz': {
         'bytes': 657032, 'sha256': '5a87a80bebfc2c63696ca9932fcea8d9485810f75a310f9fa1f792cab292390b'},
-    'compat/android/pocket4/current-publisher-delivery-source/FILES.sha256': {'bytes': 5219, 'sha256': '2ad15c5ef2de12c862efb3c18f20298976d3458f5549f9fe387e7620c9e805e3'},
+    'compat/android/pocket4/current-publisher-delivery-source/FILES.sha256': {'bytes': 5219, 'sha256': '95ef9895b1d223c4299210c323459e32093b5c782de60e45f66ccb5b00000cfa'},
     'compat/android/pocket4/current-publisher-delivery-source/MANIFEST.json': {
         'bytes': 19869, 'sha256': '872dc25ba3c8980b5ea67609b0a9fb17c6c31b925a823ee9642fe75d3218c699'},
     'compat/android/pocket4/current-publisher-delivery-source/SOURCE.tar.gz': {

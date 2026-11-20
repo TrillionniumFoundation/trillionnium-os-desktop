@@ -135,6 +135,24 @@ jobs:
           diff --recursive successor-r1 "$RUNNER_TEMP/a08/cp3a-source-adapter"
           python3 -B -m unittest -v test_adapt_cp3a.py \
             2>&1 | tee "$RUNNER_TEMP/a08/cp3a-source-controls.log"
+      - name: Verify complete CP3A provider source rebinding and preserved runtime holds
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          provider="$GITHUB_WORKSPACE/compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120"
+          printf '%s  %s\n' 27743c96bd9806fe165eadd6676b4d0ef8ad45123d19fb85bab4116950316e37 "$provider/FILES.sha256" | sha256sum --check --status
+          (cd "$provider" && sha256sum --check --strict FILES.sha256)
+          run_provider_source() {
+            local name="$1" limit="$2" script="$3" rc=0
+            timeout --signal=TERM --kill-after=5s "$limit" python3 -I -B "$script" --repo-root "$GITHUB_WORKSPACE" \
+              >"$RUNNER_TEMP/a08/$name.stdout" 2>"$RUNNER_TEMP/a08/$name.stderr" || rc=$?
+            cat "$RUNNER_TEMP/a08/$name.stdout"
+            cat "$RUNNER_TEMP/a08/$name.stderr" >&2
+            return "$rc"
+          }
+          run_provider_source cp3a-provider-source-replay 30s "$provider/verify_prepared.py"
+          run_provider_source cp3a-provider-source-controls 60s "$provider/test_prepare_cp3a.py"
       - name: Verify held Firefox public-navigation source and controls
         timeout-minutes: 2
         working-directory: compat/android/pocket4/current-app-acceptance/firefox-public-executor-20261119
