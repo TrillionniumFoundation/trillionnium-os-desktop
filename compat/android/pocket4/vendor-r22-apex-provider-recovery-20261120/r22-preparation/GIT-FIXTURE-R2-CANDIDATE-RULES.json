@@ -1,0 +1,1177 @@
+{
+  "schema": "p4-r22-four-original-apex-provider-checkout-rules-v1",
+  "providers": {
+    "packages/modules/IPsec": {
+      "schema": "p4-r22-original-apex-project-checkout-rules-v1",
+      "HEAD": "5c58f82cc230a9a4e22c80d6eaec62dffaec4444",
+      "origin": "https://android.googlesource.com/platform/packages/modules/IPsec",
+      "project": "packages/modules/IPsec",
+      "candidate_count": 2,
+      "attributes": [
+        {
+          "committed": true,
+          "values": {
+            "apex/testing/Android.bp": {
+              "text": "unspecified",
+              "eol": "unspecified",
+              "filter": "unspecified",
+              "ident": "unspecified",
+              "working-tree-encoding": "unspecified"
+            },
+            "apex/testing/test_apex_manifest.json": {
+              "text": "unspecified",
+              "eol": "unspecified",
+              "filter": "unspecified",
+              "ident": "unspecified",
+              "working-tree-encoding": "unspecified"
+            }
+          },
+          "stdout": {
+            "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/candidate-rule-queries/provider-00/query-0002.stdout",
+            "identity": [
+              66306,
+              57025025,
+              33152,
+              1000,
+              1000,
+              1,
+              513,
+              1795174974488067129,
+              1795174974488067129
+            ],
+            "bytes": 513,
+            "sha256": "5accd17ebab91770c852c76ae7c861b4b14c993812eab11ed9637bd52e12196a"
+          }
+        },
+        {
+          "committed": false,
+          "values": {
+            "apex/testing/Android.bp": {
+              "text": "unspecified",
+              "eol": "unspecified",
+              "filter": "unspecified",
+              "ident": "unspecified",
+              "working-tree-encoding": "unspecified"
+            },
+            "apex/testing/test_apex_manifest.json": {
+              "text": "unspecified",
+              "eol": "unspecified",
+              "filter": "unspecified",
+              "ident": "unspecified",
+              "working-tree-encoding": "unspecified"
+            }
+          },
+          "stdout": {
+            "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/candidate-rule-queries/provider-00/query-0003.stdout",
+            "identity": [
+              66306,
+              57025027,
+              33152,
+              1000,
+              1000,
+              1,
+              513,
+              1795174974490692942,
+              1795174974490692942
+            ],
+            "bytes": 513,
+            "sha256": "5accd17ebab91770c852c76ae7c861b4b14c993812eab11ed9637bd52e12196a"
+          }
+        }
+      ],
+      "configuration": {
+        "fsmonitor_values": [
+          {
+            "scope": "command",
+            "origin": "command line:",
+            "value": "false"
+          }
+        ],
+        "conversion_stdout_bytes": 522,
+        "conversion_stdout_sha256": "0bcf5c2337c8b9b2f472bd805fe352f1b420e9eac3d1d3cf5661c3d8c41d091e"
+      },
+      "commands": [
+        {
+          "args": [
+            "config",
+            "--show-origin",
+            "--show-scope",
+            "--null",
+            "--get-regexp",
+            "^core\\.fsmonitor$"
+          ],
+          "pid": 4045740,
+          "pidfd_inode": 70921170,
+          "exit_code": 0,
+          "actual_child_reaped": true,
+          "stdout_bytes": 43,
+          "stdout_sha256": "4fbbc7f28c95517de42ba3781b1d3257c55dc24489ee4b196d41570e54ad7242",
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "config",
+            "--show-origin",
+            "--show-scope",
+            "--null",
+            "--get-regexp",
+            "^(core\\.(autocrlf|eol|safecrlf|attributesfile|checkroundtripencoding)|filter\\..*\\.(clean|smudge|process|required))$"
+          ],
+          "pid": 4045741,
+          "pidfd_inode": 70921171,
+          "exit_code": 0,
+          "actual_child_reaped": true,
+          "stdout_bytes": 522,
+          "stdout_sha256": "0bcf5c2337c8b9b2f472bd805fe352f1b420e9eac3d1d3cf5661c3d8c41d091e",
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "rev-parse",
+            "HEAD"
+          ],
+          "pid": 4045742,
+          "pidfd_inode": 70921172,
+          "exit_code": 0,
+          "actual_child_reaped": true,
+          "stdout_bytes": 41,
+          "stdout_sha256": "6b6142eaf42b4a1d5cb3f81be0caa589e36fbf7e588296140680676a6c0c4366",
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "remote",
+            "get-url",
+            "origin"
+          ],
+          "pid": 4045743,
+          "pidfd_inode": 70921173,
+          "exit_code": 0,
+          "actual_child_reaped": true,
+          "stdout_bytes": 65,
+          "stdout_sha256": "e4f146cbd4ddf3ad358ac7cb1c02f7629a6c9ea7d902b241e350c8ecc2a2f330",
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "-c",
+            "core.attributesFile=/dev/null",
+            "-c",
+            "core.packedGitWindowSize=8m",
+            "-c",
+            "core.packedGitLimit=16m",
+            "check-attr",
+            "--source=5c58f82cc230a9a4e22c80d6eaec62dffaec4444",
+            "-z",
+            "text",
+            "eol",
+            "filter",
+            "ident",
+            "working-tree-encoding",
+            "--",
+            "apex/testing/Android.bp",
+            "apex/testing/test_apex_manifest.json"
+          ],
+          "pid": 4045744,
+          "pidfd_inode": 70921174,
+          "exit_code": 0,
+          "actual_child_reaped": true,
+          "stdout_bytes": 513,
+          "stdout_sha256": "5accd17ebab91770c852c76ae7c861b4b14c993812eab11ed9637bd52e12196a",
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "check-attr",
+            "-z",
+            "text",
+            "eol",
+            "filter",
+            "ident",
+            "working-tree-encoding",
+            "--",
+            "apex/testing/Android.bp",
+            "apex/testing/test_apex_manifest.json"
+          ],
+          "pid": 4045745,
+          "pidfd_inode": 70921175,
+          "exit_code": 0,
+          "actual_child_reaped": true,
+          "stdout_bytes": 513,
+          "stdout_sha256": "5accd17ebab91770c852c76ae7c861b4b14c993812eab11ed9637bd52e12196a",
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "query_captures": [
+        {
+          "command": {
+            "args": [
+              "config",
+              "--show-origin",
+              "--show-scope",
+              "--null",
+              "--get-regexp",
+              "^core\\.fsmonitor$"
+            ],
+            "pid": 4045740,
+            "pidfd_inode": 70921170,
+            "exit_code": 0,
+            "actual_child_reaped": true,
+            "stdout_bytes": 43,
+            "stdout_sha256": "4fbbc7f28c95517de42ba3781b1d3257c55dc24489ee4b196d41570e54ad7242",
+            "stderr_bytes": 0,
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/candidate-rule-queries/provider-00/query-0000.stdout",
+            "identity": [
+              66306,
+              57025021,
+              33152,
+              1000,
+              1000,
+              1,
+              43,
+              1795174974475003006,
+              1795174974475003006
+            ],
+            "bytes": 43,
+            "sha256": "4fbbc7f28c95517de42ba3781b1d3257c55dc24489ee4b196d41570e54ad7242"
+          },
+          "stderr": {
+            "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/candidate-rule-queries/provider-00/query-0000.stderr",
+            "identity": [
+              66306,
+              57025022,
+              33152,
+              1000,
+              1000,
+              1,
+              0,
+              1795174974479693073,
+              1795174974479693073
+            ],
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "command": {
+            "args": [
+              "config",
+              "--show-origin",
+              "--show-scope",
+              "--null",
+              "--get-regexp",
+              "^(core\\.(autocrlf|eol|safecrlf|attributesfile|checkroundtripencoding)|filter\\..*\\.(clean|smudge|process|required))$"
+            ],
+            "pid": 4045741,
+            "pidfd_inode": 70921171,
+            "exit_code": 0,
+            "actual_child_reaped": true,
+            "stdout_bytes": 522,
+            "stdout_sha256": "0bcf5c2337c8b9b2f472bd805fe352f1b420e9eac3d1d3cf5661c3d8c41d091e",
+            "stderr_bytes": 0,
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/candidate-rule-queries/provider-00/query-0001.stdout",
+            "identity": [
+              66306,
+              57025023,
+              33152,
+              1000,
+              1000,
+              1,
+              522,
+              1795174974481693049,
+              1795174974481693049
+            ],
+            "bytes": 522,
+            "sha256": "0bcf5c2337c8b9b2f472bd805fe352f1b420e9eac3d1d3cf5661c3d8c41d091e"
+          },
+          "stderr": {
+            "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/candidate-rule-queries/provider-00/query-0001.stderr",
+            "identity": [
+              66306,
+              57025024,
+              33152,
+              1000,
+              1000,
+              1,
+              0,
+              1795174974481693049,
+              1795174974481693049
+            ],
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "command": {
+            "args": [
+              "-c",
+              "core.attributesFile=/dev/null",
+              "-c",
+              "core.packedGitWindowSize=8m",
+              "-c",
+              "core.packedGitLimit=16m",
+              "check-attr",
+              "--source=5c58f82cc230a9a4e22c80d6eaec62dffaec4444",
+              "-z",
+              "text",
+              "eol",
+              "filter",
+              "ident",
+              "working-tree-encoding",
+              "--",
+              "apex/testing/Android.bp",
+              "apex/testing/test_apex_manifest.json"
+            ],
+            "pid": 4045744,
+            "pidfd_inode": 70921174,
+            "exit_code": 0,
+            "actual_child_reaped": true,
+            "stdout_bytes": 513,
+            "stdout_sha256": "5accd17ebab91770c852c76ae7c861b4b14c993812eab11ed9637bd52e12196a",
+            "stderr_bytes": 0,
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/candidate-rule-queries/provider-00/query-0002.stdout",
+            "identity": [
+              66306,
+              57025025,
+              33152,
+              1000,
+              1000,
+              1,
+              513,
+              1795174974488067129,
+              1795174974488067129
+            ],
+            "bytes": 513,
+            "sha256": "5accd17ebab91770c852c76ae7c861b4b14c993812eab11ed9637bd52e12196a"
+          },
+          "stderr": {
+            "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/candidate-rule-queries/provider-00/query-0002.stderr",
+            "identity": [
+              66306,
+              57025026,
+              33152,
+              1000,
+              1000,
+              1,
+              0,
+              1795174974488692966,
+              1795174974488692966
+            ],
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "command": {
+            "args": [
+              "check-attr",
+              "-z",
+              "text",
+              "eol",
+              "filter",
+              "ident",
+              "working-tree-encoding",
+              "--",
+              "apex/testing/Android.bp",
+              "apex/testing/test_apex_manifest.json"
+            ],
+            "pid": 4045745,
+            "pidfd_inode": 70921175,
+            "exit_code": 0,
+            "actual_child_reaped": true,
+            "stdout_bytes": 513,
+            "stdout_sha256": "5accd17ebab91770c852c76ae7c861b4b14c993812eab11ed9637bd52e12196a",
+            "stderr_bytes": 0,
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/candidate-rule-queries/provider-00/query-0003.stdout",
+            "identity": [
+              66306,
+              57025027,
+              33152,
+              1000,
+              1000,
+              1,
+              513,
+              1795174974490692942,
+              1795174974490692942
+            ],
+            "bytes": 513,
+            "sha256": "5accd17ebab91770c852c76ae7c861b4b14c993812eab11ed9637bd52e12196a"
+          },
+          "stderr": {
+            "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/candidate-rule-queries/provider-00/query-0003.stderr",
+            "identity": [
+              66306,
+              57025028,
+              33152,
+              1000,
+              1000,
+              1,
+              0,
+              1795174974491692930,
+              1795174974491692930
+            ],
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ],
+      "Git_metadata_before_after": [
+        {
+          "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/fixture-source/packages/modules/IPsec/.git/index",
+          "identity": [
+            66306,
+            57024455,
+            33152,
+            1000,
+            1000,
+            1,
+            63686,
+            1795174974470245330,
+            1795174974470872713
+          ],
+          "bytes": 63686,
+          "sha256": "2495630e2e9b3ae1271e5e802f8ed7609e6f683ef08f4ebbcd3b954d37de910e"
+        },
+        {
+          "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/fixture-source/packages/modules/IPsec/.git/HEAD",
+          "identity": [
+            66306,
+            57025017,
+            33152,
+            1000,
+            1000,
+            1,
+            41,
+            1795174974471019571,
+            1795174974471037611
+          ],
+          "bytes": 41,
+          "sha256": "6b6142eaf42b4a1d5cb3f81be0caa589e36fbf7e588296140680676a6c0c4366"
+        },
+        {
+          "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/fixture-source/packages/modules/IPsec/.git/config",
+          "identity": [
+            66306,
+            57024453,
+            33152,
+            1000,
+            1000,
+            1,
+            263,
+            1795174974449693430,
+            1795174974449693430
+          ],
+          "bytes": 263,
+          "sha256": "61025977b1c0a18fc09f0dcfb231d0c142fd70c5993877ee97630eb88719e83d"
+        },
+        {
+          "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/fixture-source/packages/modules/IPsec/.git/config.worktree",
+          "identity": [
+            66306,
+            57024454,
+            33152,
+            1000,
+            1000,
+            1,
+            57,
+            1795174974449693430,
+            1795174974449693430
+          ],
+          "bytes": 57,
+          "sha256": "bfefdfeb2bf56f4a5282c172fe3a69b4075e13fe3bf3cd54f6611bafa461c276"
+        },
+        {
+          "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/fixture-source/packages/modules/IPsec/.git/info/sparse-checkout",
+          "identity": [
+            66306,
+            57024441,
+            33152,
+            1000,
+            1000,
+            1,
+            252,
+            1795174974451062496,
+            1795174974451062496
+          ],
+          "bytes": 252,
+          "sha256": "f0a0a75548819b2cc478eddd600e104a1a3d3a407c3aa9522bbf342e805178df"
+        },
+        {
+          "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/fixture-source/packages/modules/IPsec/.git/info/attributes",
+          "errno": 2
+        },
+        {
+          "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/fixture-source/packages/modules/IPsec/.gitattributes",
+          "errno": 2
+        },
+        {
+          "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/fixture-source/packages/modules/IPsec/apex/.gitattributes",
+          "errno": 2
+        },
+        {
+          "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/fixture-source/packages/modules/IPsec/apex/testing/.gitattributes",
+          "errno": 2
+        }
+      ],
+      "conversion_scope": [
+        {
+          "bytes": 126,
+          "identity": [
+            66306,
+            71434973,
+            33188,
+            0,
+            0,
+            1,
+            126,
+            1791034842552377874,
+            1791034842552377874
+          ],
+          "path": "/etc/gitconfig",
+          "sha256": "b76f47ee2fe5df0e3029804fc5fb3433887d1b06da2dcee95c590e8af5e353b6"
+        },
+        {
+          "bytes": 126,
+          "identity": [
+            66306,
+            46009122,
+            33204,
+            1000,
+            1000,
+            1,
+            126,
+            1791039650681083958,
+            1791039650681083958
+          ],
+          "path": "/home/qq/.gitconfig",
+          "sha256": "b76f47ee2fe5df0e3029804fc5fb3433887d1b06da2dcee95c590e8af5e353b6"
+        },
+        {
+          "errno": 2,
+          "path": "/home/qq/.config/git/config"
+        },
+        {
+          "errno": 2,
+          "path": "/etc/gitattributes"
+        },
+        {
+          "errno": 2,
+          "path": "/home/qq/.config/git/attributes"
+        }
+      ],
+      "all_five_attributes_unspecified": true,
+      "committed_effective_equal": true,
+      "custom_filters_executed": false,
+      "source_mutations": false,
+      "source_recovery_complete": false,
+      "runtime_qualified": false,
+      "production_ready": false
+    },
+    "packages/modules/Permission": {
+      "schema": "p4-r22-original-apex-project-checkout-rules-v1",
+      "HEAD": "1093eca7407576c72e51b1a88550ee0667a6e5dc",
+      "origin": "https://android.googlesource.com/platform/packages/modules/Permission",
+      "project": "packages/modules/Permission",
+      "candidate_count": 2,
+      "attributes": [
+        {
+          "committed": true,
+          "values": {
+            "testing/Android.bp": {
+              "text": "unspecified",
+              "eol": "unspecified",
+              "filter": "unspecified",
+              "ident": "unspecified",
+              "working-tree-encoding": "unspecified"
+            },
+            "testing/test_manifest.json": {
+              "text": "unspecified",
+              "eol": "unspecified",
+              "filter": "unspecified",
+              "ident": "unspecified",
+              "working-tree-encoding": "unspecified"
+            }
+          },
+          "stdout": {
+            "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/candidate-rule-queries/provider-01/query-0002.stdout",
+            "identity": [
+              66306,
+              57025035,
+              33152,
+              1000,
+              1000,
+              1,
+              438,
+              1795174974505589772,
+              1795174974505589772
+            ],
+            "bytes": 438,
+            "sha256": "25330076056d620f5404f4a13fcb6e3df84f27fd37a1717b0f80b57715417394"
+          }
+        },
+        {
+          "committed": false,
+          "values": {
+            "testing/Android.bp": {
+              "text": "unspecified",
+              "eol": "unspecified",
+              "filter": "unspecified",
+              "ident": "unspecified",
+              "working-tree-encoding": "unspecified"
+            },
+            "testing/test_manifest.json": {
+              "text": "unspecified",
+              "eol": "unspecified",
+              "filter": "unspecified",
+              "ident": "unspecified",
+              "working-tree-encoding": "unspecified"
+            }
+          },
+          "stdout": {
+            "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/candidate-rule-queries/provider-01/query-0003.stdout",
+            "identity": [
+              66306,
+              57025037,
+              33152,
+              1000,
+              1000,
+              1,
+              438,
+              1795174974507692739,
+              1795174974507692739
+            ],
+            "bytes": 438,
+            "sha256": "25330076056d620f5404f4a13fcb6e3df84f27fd37a1717b0f80b57715417394"
+          }
+        }
+      ],
+      "configuration": {
+        "fsmonitor_values": [
+          {
+            "scope": "command",
+            "origin": "command line:",
+            "value": "false"
+          }
+        ],
+        "conversion_stdout_bytes": 522,
+        "conversion_stdout_sha256": "0bcf5c2337c8b9b2f472bd805fe352f1b420e9eac3d1d3cf5661c3d8c41d091e"
+      },
+      "commands": [
+        {
+          "args": [
+            "config",
+            "--show-origin",
+            "--show-scope",
+            "--null",
+            "--get-regexp",
+            "^core\\.fsmonitor$"
+          ],
+          "pid": 4045746,
+          "pidfd_inode": 70921176,
+          "exit_code": 0,
+          "actual_child_reaped": true,
+          "stdout_bytes": 43,
+          "stdout_sha256": "4fbbc7f28c95517de42ba3781b1d3257c55dc24489ee4b196d41570e54ad7242",
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "config",
+            "--show-origin",
+            "--show-scope",
+            "--null",
+            "--get-regexp",
+            "^(core\\.(autocrlf|eol|safecrlf|attributesfile|checkroundtripencoding)|filter\\..*\\.(clean|smudge|process|required))$"
+          ],
+          "pid": 4045747,
+          "pidfd_inode": 70921177,
+          "exit_code": 0,
+          "actual_child_reaped": true,
+          "stdout_bytes": 522,
+          "stdout_sha256": "0bcf5c2337c8b9b2f472bd805fe352f1b420e9eac3d1d3cf5661c3d8c41d091e",
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "rev-parse",
+            "HEAD"
+          ],
+          "pid": 4045748,
+          "pidfd_inode": 70921178,
+          "exit_code": 0,
+          "actual_child_reaped": true,
+          "stdout_bytes": 41,
+          "stdout_sha256": "8593fca04de04946de0542ea18a559f8c798d85326eab84629a0e35780e92ed1",
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "remote",
+            "get-url",
+            "origin"
+          ],
+          "pid": 4045750,
+          "pidfd_inode": 70921179,
+          "exit_code": 0,
+          "actual_child_reaped": true,
+          "stdout_bytes": 70,
+          "stdout_sha256": "e6cf7ae9f4c362616f1b9318ee2900e6826bcbcc75691fa78480bb5cf9e6d59b",
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "-c",
+            "core.attributesFile=/dev/null",
+            "-c",
+            "core.packedGitWindowSize=8m",
+            "-c",
+            "core.packedGitLimit=16m",
+            "check-attr",
+            "--source=1093eca7407576c72e51b1a88550ee0667a6e5dc",
+            "-z",
+            "text",
+            "eol",
+            "filter",
+            "ident",
+            "working-tree-encoding",
+            "--",
+            "testing/Android.bp",
+            "testing/test_manifest.json"
+          ],
+          "pid": 4045751,
+          "pidfd_inode": 70921180,
+          "exit_code": 0,
+          "actual_child_reaped": true,
+          "stdout_bytes": 438,
+          "stdout_sha256": "25330076056d620f5404f4a13fcb6e3df84f27fd37a1717b0f80b57715417394",
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "args": [
+            "check-attr",
+            "-z",
+            "text",
+            "eol",
+            "filter",
+            "ident",
+            "working-tree-encoding",
+            "--",
+            "testing/Android.bp",
+            "testing/test_manifest.json"
+          ],
+          "pid": 4045752,
+          "pidfd_inode": 70921181,
+          "exit_code": 0,
+          "actual_child_reaped": true,
+          "stdout_bytes": 438,
+          "stdout_sha256": "25330076056d620f5404f4a13fcb6e3df84f27fd37a1717b0f80b57715417394",
+          "stderr_bytes": 0,
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "query_captures": [
+        {
+          "command": {
+            "args": [
+              "config",
+              "--show-origin",
+              "--show-scope",
+              "--null",
+              "--get-regexp",
+              "^core\\.fsmonitor$"
+            ],
+            "pid": 4045746,
+            "pidfd_inode": 70921176,
+            "exit_code": 0,
+            "actual_child_reaped": true,
+            "stdout_bytes": 43,
+            "stdout_sha256": "4fbbc7f28c95517de42ba3781b1d3257c55dc24489ee4b196d41570e54ad7242",
+            "stderr_bytes": 0,
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/candidate-rule-queries/provider-01/query-0000.stdout",
+            "identity": [
+              66306,
+              57025030,
+              33152,
+              1000,
+              1000,
+              1,
+              43,
+              1795174974494692894,
+              1795174974494692894
+            ],
+            "bytes": 43,
+            "sha256": "4fbbc7f28c95517de42ba3781b1d3257c55dc24489ee4b196d41570e54ad7242"
+          },
+          "stderr": {
+            "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/candidate-rule-queries/provider-01/query-0000.stderr",
+            "identity": [
+              66306,
+              57025032,
+              33152,
+              1000,
+              1000,
+              1,
+              0,
+              1795174974495692882,
+              1795174974495692882
+            ],
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "command": {
+            "args": [
+              "config",
+              "--show-origin",
+              "--show-scope",
+              "--null",
+              "--get-regexp",
+              "^(core\\.(autocrlf|eol|safecrlf|attributesfile|checkroundtripencoding)|filter\\..*\\.(clean|smudge|process|required))$"
+            ],
+            "pid": 4045747,
+            "pidfd_inode": 70921177,
+            "exit_code": 0,
+            "actual_child_reaped": true,
+            "stdout_bytes": 522,
+            "stdout_sha256": "0bcf5c2337c8b9b2f472bd805fe352f1b420e9eac3d1d3cf5661c3d8c41d091e",
+            "stderr_bytes": 0,
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/candidate-rule-queries/provider-01/query-0001.stdout",
+            "identity": [
+              66306,
+              57025033,
+              33152,
+              1000,
+              1000,
+              1,
+              522,
+              1795174974497692858,
+              1795174974497692858
+            ],
+            "bytes": 522,
+            "sha256": "0bcf5c2337c8b9b2f472bd805fe352f1b420e9eac3d1d3cf5661c3d8c41d091e"
+          },
+          "stderr": {
+            "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/candidate-rule-queries/provider-01/query-0001.stderr",
+            "identity": [
+              66306,
+              57025034,
+              33152,
+              1000,
+              1000,
+              1,
+              0,
+              1795174974497692858,
+              1795174974497692858
+            ],
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "command": {
+            "args": [
+              "-c",
+              "core.attributesFile=/dev/null",
+              "-c",
+              "core.packedGitWindowSize=8m",
+              "-c",
+              "core.packedGitLimit=16m",
+              "check-attr",
+              "--source=1093eca7407576c72e51b1a88550ee0667a6e5dc",
+              "-z",
+              "text",
+              "eol",
+              "filter",
+              "ident",
+              "working-tree-encoding",
+              "--",
+              "testing/Android.bp",
+              "testing/test_manifest.json"
+            ],
+            "pid": 4045751,
+            "pidfd_inode": 70921180,
+            "exit_code": 0,
+            "actual_child_reaped": true,
+            "stdout_bytes": 438,
+            "stdout_sha256": "25330076056d620f5404f4a13fcb6e3df84f27fd37a1717b0f80b57715417394",
+            "stderr_bytes": 0,
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/candidate-rule-queries/provider-01/query-0002.stdout",
+            "identity": [
+              66306,
+              57025035,
+              33152,
+              1000,
+              1000,
+              1,
+              438,
+              1795174974505589772,
+              1795174974505589772
+            ],
+            "bytes": 438,
+            "sha256": "25330076056d620f5404f4a13fcb6e3df84f27fd37a1717b0f80b57715417394"
+          },
+          "stderr": {
+            "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/candidate-rule-queries/provider-01/query-0002.stderr",
+            "identity": [
+              66306,
+              57025036,
+              33152,
+              1000,
+              1000,
+              1,
+              0,
+              1795174974505692763,
+              1795174974505692763
+            ],
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        },
+        {
+          "command": {
+            "args": [
+              "check-attr",
+              "-z",
+              "text",
+              "eol",
+              "filter",
+              "ident",
+              "working-tree-encoding",
+              "--",
+              "testing/Android.bp",
+              "testing/test_manifest.json"
+            ],
+            "pid": 4045752,
+            "pidfd_inode": 70921181,
+            "exit_code": 0,
+            "actual_child_reaped": true,
+            "stdout_bytes": 438,
+            "stdout_sha256": "25330076056d620f5404f4a13fcb6e3df84f27fd37a1717b0f80b57715417394",
+            "stderr_bytes": 0,
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stdout": {
+            "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/candidate-rule-queries/provider-01/query-0003.stdout",
+            "identity": [
+              66306,
+              57025037,
+              33152,
+              1000,
+              1000,
+              1,
+              438,
+              1795174974507692739,
+              1795174974507692739
+            ],
+            "bytes": 438,
+            "sha256": "25330076056d620f5404f4a13fcb6e3df84f27fd37a1717b0f80b57715417394"
+          },
+          "stderr": {
+            "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/candidate-rule-queries/provider-01/query-0003.stderr",
+            "identity": [
+              66306,
+              57025038,
+              33152,
+              1000,
+              1000,
+              1,
+              0,
+              1795174974508692727,
+              1795174974508692727
+            ],
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      ],
+      "Git_metadata_before_after": [
+        {
+          "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/fixture-source/packages/modules/Permission/.git/index",
+          "identity": [
+            66306,
+            57017928,
+            33152,
+            1000,
+            1000,
+            1,
+            562182,
+            1795174974439693550,
+            1795174974440956029
+          ],
+          "bytes": 562182,
+          "sha256": "668ac7e337e01587b55c5edecf66c03a242f2f9af2ab341664b5c698c9b35cdb"
+        },
+        {
+          "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/fixture-source/packages/modules/Permission/.git/HEAD",
+          "identity": [
+            66306,
+            57024411,
+            33152,
+            1000,
+            1000,
+            1,
+            41,
+            1795174974441693526,
+            1795174974442603451
+          ],
+          "bytes": 41,
+          "sha256": "8593fca04de04946de0542ea18a559f8c798d85326eab84629a0e35780e92ed1"
+        },
+        {
+          "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/fixture-source/packages/modules/Permission/.git/config",
+          "identity": [
+            66306,
+            57017926,
+            33152,
+            1000,
+            1000,
+            1,
+            268,
+            1795174974319694979,
+            1795174974319694979
+          ],
+          "bytes": 268,
+          "sha256": "f0219f89b4d50c2d0ddc5b2df2232e144a43d3aeac40ff0ba7ecb72f62a32bfa"
+        },
+        {
+          "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/fixture-source/packages/modules/Permission/.git/config.worktree",
+          "identity": [
+            66306,
+            57017927,
+            33152,
+            1000,
+            1000,
+            1,
+            57,
+            1795174974320694968,
+            1795174974320694968
+          ],
+          "bytes": 57,
+          "sha256": "bfefdfeb2bf56f4a5282c172fe3a69b4075e13fe3bf3cd54f6611bafa461c276"
+        },
+        {
+          "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/fixture-source/packages/modules/Permission/.git/info/sparse-checkout",
+          "identity": [
+            66306,
+            57017917,
+            33152,
+            1000,
+            1000,
+            1,
+            4778,
+            1795174974321395784,
+            1795174974321395784
+          ],
+          "bytes": 4778,
+          "sha256": "768f3b741ed9e551dce2f1ad5f713d67727c2943cfccd4efcb0f9896cfda6a20"
+        },
+        {
+          "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/fixture-source/packages/modules/Permission/.git/info/attributes",
+          "errno": 2
+        },
+        {
+          "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/fixture-source/packages/modules/Permission/.gitattributes",
+          "errno": 2
+        },
+        {
+          "path": "/home/qq/work/p4-r22-apex-provider-fixture-20261120-3b9d-r2/fixture-source/packages/modules/Permission/testing/.gitattributes",
+          "errno": 2
+        }
+      ],
+      "conversion_scope": [
+        {
+          "bytes": 126,
+          "identity": [
+            66306,
+            71434973,
+            33188,
+            0,
+            0,
+            1,
+            126,
+            1791034842552377874,
+            1791034842552377874
+          ],
+          "path": "/etc/gitconfig",
+          "sha256": "b76f47ee2fe5df0e3029804fc5fb3433887d1b06da2dcee95c590e8af5e353b6"
+        },
+        {
+          "bytes": 126,
+          "identity": [
+            66306,
+            46009122,
+            33204,
+            1000,
+            1000,
+            1,
+            126,
+            1791039650681083958,
+            1791039650681083958
+          ],
+          "path": "/home/qq/.gitconfig",
+          "sha256": "b76f47ee2fe5df0e3029804fc5fb3433887d1b06da2dcee95c590e8af5e353b6"
+        },
+        {
+          "errno": 2,
+          "path": "/home/qq/.config/git/config"
+        },
+        {
+          "errno": 2,
+          "path": "/etc/gitattributes"
+        },
+        {
+          "errno": 2,
+          "path": "/home/qq/.config/git/attributes"
+        }
+      ],
+      "all_five_attributes_unspecified": true,
+      "committed_effective_equal": true,
+      "custom_filters_executed": false,
+      "source_mutations": false,
+      "source_recovery_complete": false,
+      "runtime_qualified": false,
+      "production_ready": false
+    }
+  },
+  "candidate_count": 4,
+  "all_five_attributes_unspecified": true,
+  "committed_effective_equal": true,
+  "custom_filters_executed": false,
+  "source_mutations": false,
+  "source_recovery_complete": false,
+  "runtime_qualified": false,
+  "production_ready": false
+}
