@@ -1,0 +1,526 @@
+--- a/drivers/block/loop.c
++++ b/drivers/block/loop.c
+@@ -3,6 +3,8 @@
+  * Copyright 1993 by Theodore Ts'o.
+  */
+ #include <linux/p4_private_loop_lease.h>
++#include <linux/p4_private_loop_realm.h>
++#include <linux/backing-dev.h>
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+ #include <linux/sched.h>
+@@ -1771,16 +1773,19 @@
+ 		__loop_clr_fd(lo);
+ }
+ 
+-static void lo_free_disk(struct gendisk *disk)
+-{
+-	struct loop_device *lo = disk->private_data;
+-
++static void loop_free_device(struct loop_device *lo)
++{
+ 	if (lo->workqueue)
+ 		destroy_workqueue(lo->workqueue);
+ 	loop_free_idle_workers(lo, true);
+ 	timer_shutdown_sync(&lo->timer);
+ 	mutex_destroy(&lo->lo_mutex);
+ 	kfree(lo);
++}
++
++static void lo_free_disk(struct gendisk *disk)
++{
++	loop_free_device(disk->private_data);
+ }
+ 
+ static const struct block_device_operations lo_fops = {
+@@ -2017,6 +2022,140 @@
+ 	.queue_rq       = loop_queue_rq,
+ 	.complete	= lo_complete_rq,
+ };
++
++#ifdef CONFIG_P4_PRIVATE_LOOP_REALM
++/* Internal allocation handle, deliberately absent from the global loop IDR. */
++struct p4_private_loop_device {
++	struct loop_device *lo;
++};
++
++struct p4_private_loop_device *
++p4_private_loop_device_alloc_unpublished(struct p4_private_loop_lease *lease)
++{
++	struct queue_limits lim = { .max_hw_sectors = 2560u };
++	struct p4_private_loop_device *device;
++	struct loop_device *lo;
++	struct gendisk *disk;
++	int ret;
++
++	if (!lease)
++		return ERR_PTR(-EINVAL);
++	device = kzalloc(sizeof(*device), GFP_KERNEL);
++	if (!device)
++		return ERR_PTR(-ENOMEM);
++	lo = kzalloc(sizeof(*lo), GFP_KERNEL);
++	if (!lo) {
++		ret = -ENOMEM;
++		goto free_device;
++	}
++	lo->worker_tree = RB_ROOT;
++	INIT_LIST_HEAD(&lo->idle_worker_list);
++	timer_setup(&lo->timer, loop_free_idle_workers_timer, TIMER_DEFERRABLE);
++	lo->lo_state = Lo_unbound;
++	/* No global loop index has been allocated or can name this object. */
++	lo->lo_number = -1;
++	mutex_init(&lo->lo_mutex);
++	spin_lock_init(&lo->lo_lock);
++	spin_lock_init(&lo->lo_work_lock);
++	INIT_WORK(&lo->rootcg_work, loop_rootcg_workfn);
++	INIT_LIST_HEAD(&lo->rootcg_cmd_list);
++	lo->tag_set.ops = &loop_mq_ops;
++	lo->tag_set.nr_hw_queues = 1;
++	lo->tag_set.queue_depth = LOOP_DEFAULT_HW_Q_DEPTH;
++	lo->tag_set.numa_node = NUMA_NO_NODE;
++	lo->tag_set.cmd_size = sizeof(struct loop_cmd);
++	lo->tag_set.flags = BLK_MQ_F_STACKING | BLK_MQ_F_NO_SCHED_BY_DEFAULT;
++	lo->tag_set.driver_data = lo;
++	ret = blk_mq_alloc_tag_set(&lo->tag_set);
++	if (ret)
++		goto free_loop;
++	disk = blk_mq_alloc_disk(&lo->tag_set, &lim, lo);
++	if (IS_ERR(disk)) {
++		ret = PTR_ERR(disk);
++		goto free_tags;
++	}
++	lo->lo_disk = disk;
++	lo->lo_queue = disk->queue;
++	disk->fops = &lo_fops;
++	disk->private_data = lo;
++	disk->flags = GENHD_FL_HIDDEN | GENHD_FL_NO_PART;
++	set_bit(GD_SUPPRESS_PART_SCAN, &disk->state);
++	snprintf(disk->disk_name, sizeof(disk->disk_name), "p4loop-%llu",
++		 (unsigned long long)p4_private_loop_lease_generation(lease));
++	/* No major/minor allocation, add_disk, bdev_add, BDI/queue registration,
++	 * sysfs node, event, idr_visible update, control FD or block FD follows.
++	 */
++	ret = p4_private_loop_target_attach(lease, disk);
++	if (ret)
++		goto put_unpublished_disk;
++	device->lo = lo;
++	return device;
++
++put_unpublished_disk:
++	/* Native never-added disk release first drains/exits its queue. */
++	put_disk(disk);
++free_tags:
++	blk_mq_free_tag_set(&lo->tag_set);
++free_loop:
++	loop_free_device(lo);
++free_device:
++	kfree(device);
++	return ERR_PTR(ret);
++}
++
++int p4_private_loop_device_retire_unpublished(struct p4_private_loop_device *device)
++{
++	struct loop_device *lo;
++	struct gendisk *disk;
++	int ret = -EBUSY;
++
++	if (!device)
++		return -EINVAL;
++	lo = device->lo;
++	disk = lo->lo_disk;
++	/* Match native block open -> loop open lock order. There can be no
++	 * admitted private operation, so a changed state is a real refusal.
++	 */
++	mutex_lock(&disk->open_mutex);
++	mutex_lock(&lo->lo_mutex);
++	if (!p4_private_loop_disk_gate(disk) || disk_live(disk) ||
++	    test_bit(GD_ADDED, &disk->state) ||
++	    device_is_registered(disk_to_dev(disk)) ||
++	    disk->queue_kobj.state_in_sysfs ||
++	    test_bit(QUEUE_FLAG_REGISTERED, &disk->queue->queue_flags) ||
++	    disk_openers(disk) || disk->open_partitions || get_capacity(disk) ||
++	    disk->major || disk->first_minor || disk->minors ||
++	    disk->part0->bd_dev || !mapping_empty(disk->part0->bd_mapping) ||
++	    disk->bdi->dev || disk->bdi->owner ||
++	    test_bit(WB_registered, &disk->bdi->wb.state) ||
++	    !p4_private_loop_bdi_gate(disk->bdi) ||
++	    lo->idr_visible || lo->lo_number != -1 || lo->lo_state != Lo_unbound ||
++	    lo->lo_backing_file || lo->lo_device || lo->workqueue ||
++	    lo->lo_flags || lo->lo_offset || lo->lo_sizelimit || lo->sysfs_inited ||
++	    !RB_EMPTY_ROOT(&lo->worker_tree) ||
++	    !list_empty(&lo->idle_worker_list) ||
++	    !list_empty(&lo->rootcg_cmd_list) ||
++	    work_pending(&lo->rootcg_work) || timer_pending(&lo->timer))
++		goto unlock;
++	lo->lo_state = Lo_deleting;
++	ret = 0;
++unlock:
++	mutex_unlock(&lo->lo_mutex);
++	mutex_unlock(&disk->open_mutex);
++	if (ret)
++		return ret;
++	/* The never-published disk has no external device reference or holder.
++	 * Its native release does not call free_disk when GD_ADDED was never set.
++	 * Keep the exact original allocation-failure order: queue/disk, tags, lo.
++	 * Do not dereference disk after put_disk; its inode release may be deferred.
++	 */
++	put_disk(disk);
++	blk_mq_free_tag_set(&lo->tag_set);
++	loop_free_device(lo);
++	kfree(device);
++	return 0;
++}
++#endif /* CONFIG_P4_PRIVATE_LOOP_REALM */
+ 
+ static int loop_add(int i)
+ {
+--- a/block/Kconfig
++++ b/block/Kconfig
+@@ -248,6 +248,18 @@
+ 	  This changes internal disk/BDI layout and requires a coherent kernel
+ 	  build. Say N outside the separately reviewed development work.
+ 
++config P4_PRIVATE_LOOP_REALM
++	bool "Unpublished closed private-loop native allocations"
++	depends on P4_PRIVATE_LOOP_LEASE
++	default n
++	help
++	  Build a retained internal realm and a bounded native loop/blk-mq
++	  allocator. Its objects have no device number, global loop index,
++	  node, control FD, block FD, userspace ABI or permitted operation.
++	  All K0c entry gates stay closed; this does not enable an issuer.
++
++	  Say N outside development of the separately reviewed private realm.
++
+ source "block/Kconfig.iosched"
+ 
+ endif # BLOCK
+--- a/block/Makefile
++++ b/block/Makefile
+@@ -39,3 +39,4 @@
+ 
+ obj-$(CONFIG_P4_PRIVATE_LOOP_ACTOR) += p4_private_loop_actor.o
+ obj-$(CONFIG_P4_PRIVATE_LOOP_LEASE) += p4_private_loop_lease.o
++obj-$(CONFIG_P4_PRIVATE_LOOP_REALM) += p4_private_loop_realm.o
+--- /dev/null
++++ b/block/p4_private_loop_realm.c
+@@ -0,0 +1,245 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/* K1a: actual native allocations behind the unchanged CLOSED K0c gates. */
++#include <linux/err.h>
++#include <linux/errno.h>
++#include <linux/list.h>
++#include <linux/mutex.h>
++#include <linux/p4_private_loop_actor.h>
++#include <linux/p4_private_loop_lease.h>
++#include <linux/p4_private_loop_realm.h>
++#include <linux/refcount.h>
++#include <linux/sched.h>
++#include <linux/sched/task.h>
++#include <linux/slab.h>
++
++#define P4_PRIVATE_LOOP_REALM_MAX_DEVICES 256U
++
++struct p4_private_loop_realm {
++	refcount_t refs;
++	struct mutex lock;
++	struct list_head allocations;
++	struct p4_private_loop_actor *controller;
++	struct p4_private_loop_actor *actor;
++	struct task_struct *actor_task;
++	unsigned int max_devices;
++	unsigned int slots;
++	bool revoked;
++};
++
++struct p4_private_loop_allocation {
++	struct list_head realm_node;
++	struct p4_private_loop_realm *realm;
++	struct p4_private_loop_lease *lease;
++	struct p4_private_loop_device *device;
++	bool retiring;
++};
++
++static int p4_private_loop_realm_check_locked(struct p4_private_loop_realm *realm)
++{
++	int ret;
++
++	lockdep_assert_held(&realm->lock);
++	if (realm->revoked)
++		return -EKEYREVOKED;
++	ret = p4_private_loop_actor_check_task(realm->controller, current);
++	if (ret)
++		return ret;
++	return p4_private_loop_actor_check_task(realm->actor, realm->actor_task);
++}
++
++static void p4_private_loop_realm_revoke_locked(struct p4_private_loop_realm *realm)
++{
++	struct p4_private_loop_allocation *allocation;
++
++	lockdep_assert_held(&realm->lock);
++	realm->revoked = true;
++	list_for_each_entry(allocation, &realm->allocations, realm_node)
++		p4_private_loop_lease_revoke(allocation->lease);
++}
++
++struct p4_private_loop_realm *
++p4_private_loop_realm_create(struct p4_private_loop_actor *controller,
++			     struct p4_private_loop_actor *actor,
++			     struct task_struct *actor_task,
++			     unsigned int max_devices)
++{
++	struct p4_private_loop_realm *realm;
++	int ret;
++
++	if (!controller || !actor || !actor_task || !max_devices ||
++	    max_devices > P4_PRIVATE_LOOP_REALM_MAX_DEVICES)
++		return ERR_PTR(-EINVAL);
++	ret = p4_private_loop_actor_check_task(controller, current);
++	if (!ret)
++		ret = p4_private_loop_actor_check_task(actor, actor_task);
++	if (ret)
++		return ERR_PTR(ret);
++	realm = kzalloc(sizeof(*realm), GFP_KERNEL);
++	if (!realm)
++		return ERR_PTR(-ENOMEM);
++	refcount_set(&realm->refs, 1);
++	mutex_init(&realm->lock);
++	INIT_LIST_HEAD(&realm->allocations);
++	realm->controller = p4_private_loop_actor_get(controller);
++	realm->actor = p4_private_loop_actor_get(actor);
++	realm->actor_task = get_task_struct(actor_task);
++	realm->max_devices = max_devices;
++	mutex_lock(&realm->lock);
++	ret = p4_private_loop_realm_check_locked(realm);
++	mutex_unlock(&realm->lock);
++	if (ret) {
++		p4_private_loop_realm_put(realm);
++		return ERR_PTR(ret);
++	}
++	return realm;
++}
++
++struct p4_private_loop_realm *
++p4_private_loop_realm_get(struct p4_private_loop_realm *realm)
++{
++	if (realm)
++		refcount_inc(&realm->refs);
++	return realm;
++}
++
++void p4_private_loop_realm_put(struct p4_private_loop_realm *realm)
++{
++	if (!realm || !refcount_dec_and_test(&realm->refs))
++		return;
++	might_sleep();
++	/* Every reserved/owned allocation carries an independent realm ref. */
++	if (WARN_ON_ONCE(realm->slots || !list_empty(&realm->allocations)))
++		return;
++	put_task_struct(realm->actor_task);
++	p4_private_loop_actor_put(realm->actor);
++	p4_private_loop_actor_put(realm->controller);
++	mutex_destroy(&realm->lock);
++	kfree(realm);
++}
++
++void p4_private_loop_realm_revoke(struct p4_private_loop_realm *realm)
++{
++	mutex_lock(&realm->lock);
++	p4_private_loop_realm_revoke_locked(realm);
++	mutex_unlock(&realm->lock);
++}
++
++int p4_private_loop_allocate_closed(struct p4_private_loop_realm *realm,
++				    struct p4_private_loop_allocation **owned)
++{
++	struct p4_private_loop_allocation *allocation;
++	int ret;
++
++	if (!realm || !owned || *owned)
++		return -EINVAL;
++	allocation = kzalloc(sizeof(*allocation), GFP_KERNEL);
++	if (!allocation)
++		return -ENOMEM;
++	INIT_LIST_HEAD(&allocation->realm_node);
++	ret = mutex_lock_killable(&realm->lock);
++	if (ret)
++		goto free_allocation;
++	ret = p4_private_loop_realm_check_locked(realm);
++	if (ret) {
++		p4_private_loop_realm_revoke_locked(realm);
++		goto unlock;
++	}
++	if (realm->slots >= realm->max_devices) {
++		ret = -ENOSPC;
++		goto unlock;
++	}
++	realm->slots++;
++	allocation->realm = p4_private_loop_realm_get(realm);
++	mutex_unlock(&realm->lock);
++
++	/* Reservation owns quota and the realm while native allocation may sleep.
++	 * Revocation need not wait for allocation; the final bookend catches it.
++	 */
++	allocation->lease = p4_private_loop_lease_create(realm->controller,
++						       realm->actor);
++	if (IS_ERR(allocation->lease)) {
++		ret = PTR_ERR(allocation->lease);
++		allocation->lease = NULL;
++		goto undo_reservation;
++	}
++	allocation->device =
++		p4_private_loop_device_alloc_unpublished(allocation->lease);
++	if (IS_ERR(allocation->device)) {
++		ret = PTR_ERR(allocation->device);
++		allocation->device = NULL;
++		goto put_lease;
++	}
++
++	mutex_lock(&realm->lock);
++	/* Publish only an internal cleanup handle, never a device or permission.
++	 * Even a failed bookend returns this real handle so custody is not lost.
++	 */
++	list_add_tail(&allocation->realm_node, &realm->allocations);
++	ret = p4_private_loop_realm_check_locked(realm);
++	if (ret)
++		p4_private_loop_realm_revoke_locked(realm);
++	*owned = allocation;
++	mutex_unlock(&realm->lock);
++	return ret;
++
++put_lease:
++	p4_private_loop_lease_revoke(allocation->lease);
++	p4_private_loop_lease_put(allocation->lease);
++undo_reservation:
++	mutex_lock(&realm->lock);
++	realm->slots--;
++	mutex_unlock(&realm->lock);
++	p4_private_loop_realm_put(realm);
++	goto free_allocation;
++unlock:
++	mutex_unlock(&realm->lock);
++free_allocation:
++	kfree(allocation);
++	return ret;
++}
++
++int p4_private_loop_retire_closed(struct p4_private_loop_allocation **owned)
++{
++	struct p4_private_loop_allocation *allocation;
++	struct p4_private_loop_realm *realm;
++	int ret;
++
++	if (!owned || !*owned)
++		return -EINVAL;
++	allocation = *owned;
++	realm = allocation->realm;
++	mutex_lock(&realm->lock);
++	if (allocation->retiring) {
++		mutex_unlock(&realm->lock);
++		return -EBUSY;
++	}
++	allocation->retiring = true;
++	p4_private_loop_lease_revoke(allocation->lease);
++	mutex_unlock(&realm->lock);
++
++	/* No current-task admission here: owners may have exited. The driver
++	 * requires the actual unpublished/unbound/no-open/no-work state instead.
++	 */
++	ret = p4_private_loop_device_retire_unpublished(allocation->device);
++	mutex_lock(&realm->lock);
++	if (ret) {
++		allocation->retiring = false;
++		p4_private_loop_realm_revoke_locked(realm);
++		mutex_unlock(&realm->lock);
++		return ret;
++	}
++	list_del(&allocation->realm_node);
++	realm->slots--;
++	mutex_unlock(&realm->lock);
++	*owned = NULL;
++	p4_private_loop_lease_put(allocation->lease);
++	kfree(allocation);
++	p4_private_loop_realm_put(realm);
++	return 0;
++}
++
++u64 p4_private_loop_allocation_generation(
++		const struct p4_private_loop_allocation *allocation)
++{
++	return p4_private_loop_lease_generation(allocation->lease);
++}
+--- /dev/null
++++ b/include/linux/p4_private_loop_realm.h
+@@ -0,0 +1,71 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++#ifndef _LINUX_P4_PRIVATE_LOOP_REALM_H
++#define _LINUX_P4_PRIVATE_LOOP_REALM_H
++
++#include <linux/types.h>
++
++struct task_struct;
++struct p4_private_loop_actor;
++struct p4_private_loop_lease;
++struct p4_private_loop_realm;
++struct p4_private_loop_allocation;
++struct p4_private_loop_device;
++
++#ifdef CONFIG_P4_PRIVATE_LOOP_REALM
++/*
++ * K1a internal CLOSED construction only. There is no control FD, block FD,
++ * node, lookup registry, global loop index, ioctl or userspace constructor.
++ * No caller can obtain access authority from these objects. The existing
++ * K0c disk/file/BIO/BDI gates remain closed and the runtime issuer stays empty.
++ *
++ * The original verified kernel binding must supply already-owned exact actor
++ * references and the corresponding held task. No numeric PID lookup exists.
++ * max_devices is a fixed kernel-owner resource policy, not an ioctl argument;
++ * the source ceiling is 256 and no production value is selected here.
++ */
++struct p4_private_loop_realm *
++p4_private_loop_realm_create(struct p4_private_loop_actor *controller,
++			     struct p4_private_loop_actor *actor,
++			     struct task_struct *actor_task,
++			     unsigned int max_devices);
++/* Caller must already own a reference. Final put is sleepable. */
++struct p4_private_loop_realm *
++p4_private_loop_realm_get(struct p4_private_loop_realm *realm);
++void p4_private_loop_realm_put(struct p4_private_loop_realm *realm);
++/* Stop further construction and revoke all retained leases; do not free them. */
++void p4_private_loop_realm_revoke(struct p4_private_loop_realm *realm);
++
++/*
++ * Returns an exclusively owned cleanup handle through *owned. A negative
++ * result CAN leave a non-NULL handle when an identity/revoke bookend failed
++ * after real native allocation: the caller MUST still retire that handle.
++ * Zero means only a closed object was constructed, never device access.
++ * Do not share a handle concurrently with retirement. No get-disk/get-file
++ * operation is provided. Each handle owns one quota slot and one realm ref.
++ */
++int __must_check p4_private_loop_allocate_closed(
++		struct p4_private_loop_realm *realm,
++		struct p4_private_loop_allocation **owned);
++/*
++ * Consumes *owned and sets it to NULL only after actual native closed-device
++ * retirement. On failure, the handle, slot and all references stay owned;
++ * the realm is revoked. The caller must not substitute success or discard it.
++ * Cleanup is allowed after actor/controller exit; it is not actor admission.
++ */
++int __must_check p4_private_loop_retire_closed(
++		struct p4_private_loop_allocation **owned);
++/* Reporting only, while the caller still owns the exclusive handle. */
++u64 p4_private_loop_allocation_generation(
++		const struct p4_private_loop_allocation *allocation);
++
++/*
++ * Internal loop-driver side of this constructor. Only realm construction owns
++ * these opaque pointers. No module symbols or userspace operations are added.
++ */
++struct p4_private_loop_device *
++p4_private_loop_device_alloc_unpublished(struct p4_private_loop_lease *lease);
++int __must_check p4_private_loop_device_retire_unpublished(
++		struct p4_private_loop_device *device);
++#endif
++
++#endif /* _LINUX_P4_PRIVATE_LOOP_REALM_H */

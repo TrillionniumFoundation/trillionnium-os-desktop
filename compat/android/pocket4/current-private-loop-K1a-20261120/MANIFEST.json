@@ -1,0 +1,158 @@
+{
+  "Android_started": false,
+  "K1_complete": false,
+  "VM_started": false,
+  "base_K0c_patch": {
+    "bytes": 32097,
+    "sha256": "1622c046842eda170051eb62dacf5de15eafc2a1f97c86c8bafbc373418a24d6"
+  },
+  "files": [
+    {
+      "after": {
+        "bytes": 64925,
+        "sha256": "021f7818db7a11f6b198eb6876020ce0d171fafc15d2c0a7e40cbab9ba60d974"
+      },
+      "before": {
+        "bytes": 60299,
+        "sha256": "966b5327a36245f5fb9dafea3fb2687ed06b037700c05437211e7825cc2d626a"
+      },
+      "path": "drivers/block/loop.c"
+    },
+    {
+      "after": {
+        "bytes": 9158,
+        "sha256": "e450125f231a6705dde49c87315c0b1bea7bf36bf1e239b40aff32132871c8b9"
+      },
+      "before": {
+        "bytes": 8673,
+        "sha256": "f285d3476fcac797d6a5be5e27a171f3601b4eb5bd53146011062cb9a5cfe628"
+      },
+      "path": "block/Kconfig"
+    },
+    {
+      "after": {
+        "bytes": 1801,
+        "sha256": "9d45349c2086302d6d096bbfa9711137ac5fc88b23e4858eaca285642cb0ac7a"
+      },
+      "before": {
+        "bytes": 1738,
+        "sha256": "a90a0c2e85fe2d090a4b1554e93fd55b31f621b3a89f25d89f174cc692ceb67c"
+      },
+      "path": "block/Makefile"
+    },
+    {
+      "after": {
+        "bytes": 6951,
+        "sha256": "8b342286425b84af069e78361098a7135205cebb5ad668dce2cc6e61bd3589fa"
+      },
+      "before": null,
+      "path": "block/p4_private_loop_realm.c"
+    },
+    {
+      "after": {
+        "bytes": 3200,
+        "sha256": "ba8369bd3d357a1060935578c767b9b248cbb691773e8573e31641c3cac8b87d"
+      },
+      "before": null,
+      "path": "include/linux/p4_private_loop_realm.h"
+    }
+  ],
+  "independent_review_passed": false,
+  "issuer_enabled": false,
+  "kernel_executed": false,
+  "kernel_object_compile_passed": false,
+  "original_control_index_ABI_selected": false,
+  "parent_K0c_commit": "f83f52dde3594d7eef4a1e44785f940c824467d5",
+  "patch": {
+    "bytes": 17230,
+    "sha256": "8fe45b94e18ca94c6181bd4b7ef1297a2181a6d4b9799d25ab5299c6ba45e518"
+  },
+  "private_device_published": false,
+  "production_ready": false,
+  "real_control_or_block_OFD_created": false,
+  "runtime_qualified": false,
+  "schema": "p4-private-loop-K1a-unpublished-allocator-source-v1",
+  "state": "SOURCE_CANDIDATE_UNPUBLISHED_NATIVE_ALLOCATIONS",
+  "unchanged_inherited_files": [
+    {
+      "bytes": 54400,
+      "path": "include/linux/blkdev.h",
+      "sha256": "5dccc20ad0a9eea11db88611b25a1f952a0d09f8a0485586d3de25308d5601d9"
+    },
+    {
+      "bytes": 8933,
+      "path": "include/linux/backing-dev-defs.h",
+      "sha256": "4d1391161de9e5e2913cb5199a40208a1bf59da418545c658036e4052c4a40b5"
+    },
+    {
+      "bytes": 36532,
+      "path": "block/bdev.c",
+      "sha256": "e9db8d7e6d4b08f7de6aa87a8ffb54117e3bfca1a1ed897992d3370cb14a722c"
+    },
+    {
+      "bytes": 26067,
+      "path": "block/fops.c",
+      "sha256": "0dd3e46466dc81458fe9f808f4a92e66a39fb145cf2e52060784161a7fcefd1e"
+    },
+    {
+      "bytes": 22431,
+      "path": "block/ioctl.c",
+      "sha256": "0f97a3fcaec0a3149ea925119e1b18b7379ab788cf8148a00d3e4fc2d0ebeccd"
+    },
+    {
+      "bytes": 42446,
+      "path": "block/genhd.c",
+      "sha256": "8fcc9ec84c93321faa114294724b44c17bfa8b84221d2a8b4512c4dbfb60e813"
+    },
+    {
+      "bytes": 28548,
+      "path": "block/blk-sysfs.c",
+      "sha256": "5baf050f4ddd16d0f37dd53bbfead658b3be4529bef8bae3536c1d63d713db19"
+    },
+    {
+      "bytes": 31039,
+      "path": "mm/backing-dev.c",
+      "sha256": "8d53317675e2aff16ad7fc331d873e062c1c5a3b27599715b7078bd5518519fe"
+    },
+    {
+      "bytes": 17969,
+      "path": "block/partitions/core.c",
+      "sha256": "66e1cbc03e63ee2a505c73362410a7755c7418956d7e5271f7d451353f85281f"
+    },
+    {
+      "bytes": 36334,
+      "path": "block/blk-core.c",
+      "sha256": "01058a54f9b4d3f8ea0447b923ff33a2dacd12b713a8ec0d6c9d0a53ab952ac3"
+    },
+    {
+      "bytes": 3964,
+      "path": "include/linux/p4_private_loop_lease.h",
+      "sha256": "ca60c79c7f37bb0d84024ca58027506ebae5d0f0baf90bde7eaf31649b424a8b"
+    },
+    {
+      "bytes": 10415,
+      "path": "block/p4_private_loop_lease.c",
+      "sha256": "ec844a4cf90721251ff74c87f1ae6d5b5901dc4946c65681b1f5b827ba7a7068"
+    },
+    {
+      "bytes": 1878,
+      "path": "include/linux/fs_struct.h",
+      "sha256": "c10c0fb2486442141957111eb5895f377963ecfb48470b4695874dd9fb7ad392"
+    },
+    {
+      "bytes": 3779,
+      "path": "fs/fs_struct.c",
+      "sha256": "e116620999b72f87bac1d4f45c2a7646daf6ed93c67b90e8efd4f52e18172cc0"
+    },
+    {
+      "bytes": 2294,
+      "path": "include/linux/p4_private_loop_actor.h",
+      "sha256": "ff385b20904c916b226037c5c10b5779b566e3c17250da12a8fc0e62367a0c43"
+    },
+    {
+      "bytes": 5909,
+      "path": "block/p4_private_loop_actor.c",
+      "sha256": "3a90c1ec59c5b619c06ff8e14d25bc25b84ad47823033c6e1b2676df6cca5ed6"
+    }
+  ]
+}
