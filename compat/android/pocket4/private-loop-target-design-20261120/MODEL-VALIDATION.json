@@ -1,0 +1,87 @@
+{
+  "schema": "p4-private-loop-model-validation-v1",
+  "status": "model_passed_native_interface_unimplemented",
+  "final_source": {
+    "path": "protocol_model.rs",
+    "bytes": 20418,
+    "sha256": "e1528bb6651103a4b07368d3a30d761333efa3645a111f0bcba55a0c1102d54d"
+  },
+  "runs": [
+    {
+      "revision": "r1",
+      "host": "pocket4",
+      "job_id": "1a1f88d19e7-ffbe-17e6",
+      "state": "failed",
+      "exit_code": 101,
+      "source_sha256": "7a3038b75d239f6e86a5f4ffe1401586b6dc1931e49e81b112ad4c10565c7f7c",
+      "stdout_jsonl": "{\"phase\": \"pure_model_compile\", \"exit\": 0, \"stdout\": \"\", \"stderr\": \"\"}\n{\"model_source_sha256\": \"7a3038b75d239f6e86a5f4ffe1401586b6dc1931e49e81b112ad4c10565c7f7c\", \"model_binary_sha256\": \"d9ecd904c0dacb115de8a8591609a5c0313095fd17c5c83b6a41f51144a75ddd\", \"model_binary_bytes\": 7029328, \"cpu\": 23, \"kernel_operations\": 0, \"Android_starts\": 0, \"VM_starts\": 0}\n{\"phase\": \"pure_model_tests\", \"exit\": 101, \"stdout\": \"\\nrunning 19 tests\\ntest tests::a_new_request_needs_a_new_notification ... ok\\ntest tests::an_alias_unlink_or_closed_fd_is_not_retirement ... ok\\ntest tests::bounded_event_exploration_preserves_safety_invariants ... MODEL_ONLY distinct_states=71 transitions=1349\\nFAILED\\ntest tests::enotty_eacces_or_fake_success_are_not_probe_success ... ok\\ntest tests::every_identity_component_is_required ... ok\\ntest tests::fd_number_reuse_does_not_preserve_ofd_identity ... ok\\ntest tests::geometry_cannot_overflow_or_silently_change ... ok\\ntest tests::native_failure_and_unknown_result_keep_full_custody ... ok\\ntest tests::no_configure_before_probe ... ok\\ntest tests::no_success_reply_without_native_success ... ok\\ntest tests::ordinary_global_device_is_never_an_issuer ... ok\\ntest tests::original_native_probe_then_same_ofd_configure_and_retire ... ok\\ntest tests::original_readonly_complete_and_sealed_custody_are_all_required ... ok\\ntest tests::owner_exit_after_submission_cannot_turn_native_success_into_guest_success ... ok\\ntest tests::probe_requires_the_exact_zero_body ... ok\\ntest tests::retirement_does_not_allow_reactivation ... ok\\ntest tests::revocation_drains_graph_and_async_io_before_unbind ... ok\\ntest tests::source_or_geometry_cannot_be_swapped_after_arm ... ok\\ntest tests::success_reply_is_single_use ... ok\\n\\nfailures:\\n\\nfailures:\\n    tests::bounded_event_exploration_preserves_safety_invariants\\n\\ntest result: FAILED. 18 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\\n\\n\", \"stderr\": \"\\nthread 'tests::bounded_event_exploration_preserves_safety_invariants' (2396528) panicked at /home/alex/work/p4-apex-loop-model-3b9d-jfdzmdpl/protocol_model.rs:410:9:\\nassertion failed: seen.len() > 100\\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\\n\", \"elapsed_seconds\": 0.4984325359982904, \"scope\": \"MODEL_ONLY; no native errno/FD/kernel proof\"}\n{\"temporary_directory_removed\": true}\n",
+      "stderr": "",
+      "correction": "Arbitrary seen.len()>100 coverage assertion failed at the real fixed point of 71 states. Replaced with fixed-point completion, coverage of all nine phases and specific reply/unknown/drain states. Protocol transitions and safety invariants were unchanged."
+    },
+    {
+      "revision": "r2",
+      "host": "pocket4",
+      "job_id": "1a1f890d5b9-ffbe-17f4",
+      "state": "succeeded",
+      "exit_code": 0,
+      "output_complete": true,
+      "output_durable": true,
+      "stdout_jsonl": "{\"phase\": \"pure_model_compile\", \"exit\": 0, \"stdout\": \"\", \"stderr\": \"\"}\n{\"model_source_sha256\": \"e1528bb6651103a4b07368d3a30d761333efa3645a111f0bcba55a0c1102d54d\", \"model_binary_sha256\": \"eb1c52770abeac9afe43c41e89f87de5391109fb4aca574f63466fa94d63f952\", \"model_binary_bytes\": 7038784, \"cpu\": 23, \"kernel_operations\": 0, \"Android_starts\": 0, \"VM_starts\": 0}\n{\"phase\": \"pure_model_tests\", \"exit\": 0, \"stdout\": \"\\nrunning 19 tests\\ntest tests::a_new_request_needs_a_new_notification ... ok\\ntest tests::an_alias_unlink_or_closed_fd_is_not_retirement ... ok\\ntest tests::bounded_event_exploration_preserves_safety_invariants ... MODEL_ONLY distinct_states=71 transitions=1349\\nok\\ntest tests::enotty_eacces_or_fake_success_are_not_probe_success ... ok\\ntest tests::every_identity_component_is_required ... ok\\ntest tests::fd_number_reuse_does_not_preserve_ofd_identity ... ok\\ntest tests::geometry_cannot_overflow_or_silently_change ... ok\\ntest tests::native_failure_and_unknown_result_keep_full_custody ... ok\\ntest tests::no_configure_before_probe ... ok\\ntest tests::no_success_reply_without_native_success ... ok\\ntest tests::ordinary_global_device_is_never_an_issuer ... ok\\ntest tests::original_native_probe_then_same_ofd_configure_and_retire ... ok\\ntest tests::original_readonly_complete_and_sealed_custody_are_all_required ... ok\\ntest tests::owner_exit_after_submission_cannot_turn_native_success_into_guest_success ... ok\\ntest tests::probe_requires_the_exact_zero_body ... ok\\ntest tests::retirement_does_not_allow_reactivation ... ok\\ntest tests::revocation_drains_graph_and_async_io_before_unbind ... ok\\ntest tests::source_or_geometry_cannot_be_swapped_after_arm ... ok\\ntest tests::success_reply_is_single_use ... ok\\n\\ntest result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\\n\\n\", \"stderr\": \"\", \"elapsed_seconds\": 0.5021226319950074, \"scope\": \"MODEL_ONLY; no native errno/FD/kernel proof\"}\n{\"temporary_directory_removed\": true}\n",
+      "stderr": ""
+    }
+  ],
+  "commands": [
+    [
+      "rustc",
+      "--edition=2024",
+      "--test",
+      "-C",
+      "opt-level=0",
+      "-C",
+      "codegen-units=1",
+      "-C",
+      "debuginfo=0",
+      "protocol_model.rs",
+      "-o",
+      "<temporary-model-test>"
+    ],
+    [
+      "<temporary-model-test>",
+      "--test-threads=1",
+      "--nocapture"
+    ]
+  ],
+  "resource_bounds": {
+    "cpu_affinity_count": 1,
+    "cpu_id": 23,
+    "address_space_bytes": 2147483648,
+    "cpu_seconds": 45,
+    "output_file_bytes": 33554432,
+    "compile_timeout_seconds": 35,
+    "test_timeout_seconds": 15,
+    "remote_job_timeout_seconds": 60
+  },
+  "cleanup": "Temporary source and test binary removed by TemporaryDirectory; repository contains no model binary.",
+  "evidence_scope": {
+    "pure_model_tests": 19,
+    "passed": 19,
+    "failed": 0,
+    "ignored": 0,
+    "distinct_states": 71,
+    "transitions": 1349,
+    "fixed_point_reached": true,
+    "native_kernel_implementation": false,
+    "native_errno_observation": false,
+    "original_ofd_observation": false,
+    "Android_starts": 0,
+    "VM_starts": 0,
+    "production_gate_changes": 0,
+    "runtime_qualified_apps_added": 0
+  },
+  "limitations": [
+    "Fact inputs are assumptions, not kernel receipts",
+    "Finite event/identity/source/geometry set; at most two graph and I/O references",
+    "No memory ordering, real scheduling, cache, LSM, block device or kernel race semantics",
+    "Builtin image custody, control allocation, MAC, AVB, dm and original Android runtime acceptance remain separate"
+  ]
+}
