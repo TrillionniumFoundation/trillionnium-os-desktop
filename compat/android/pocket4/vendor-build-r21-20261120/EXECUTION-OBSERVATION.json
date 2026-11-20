@@ -1,0 +1,73 @@
+{
+  "schema": "p4-r21-original-launch-observation-v1",
+  "observed_utc": "2026-11-20T10:30:58Z",
+  "host": "ai395",
+  "idempotency_key": "p4android-20261120-3b9d-r21-original-supervisor-once",
+  "session_id": "dpty-1618aa2e0ba5842dbb2e4afdbe2af92bfeea50728dbfee0476bb3cd3f07ef41c",
+  "executable": "/usr/bin/systemd-run",
+  "args": [
+    "--user",
+    "--unit=p4-cp3a-vendor-supervisor-20261120-9907-r21.service",
+    "--wait",
+    "--collect",
+    "--pipe",
+    "--service-type=exec",
+    "--property=Description=Pocket4 R21 vendor build continuation",
+    "--property=MemoryMax=536870912",
+    "--property=MemoryHigh=402653184",
+    "--property=MemorySwapMax=0",
+    "--property=CPUQuota=100%",
+    "--property=CPUAffinity=20",
+    "--property=TasksMax=128",
+    "--property=RuntimeMaxSec=30330",
+    "--property=TimeoutStopSec=30",
+    "--property=KillMode=control-group",
+    "--property=Nice=10",
+    "--property=UMask=0077",
+    "--property=Restart=no",
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r21/outer.py"
+  ],
+  "supervisor": {
+    "unit": "p4-cp3a-vendor-supervisor-20261120-9907-r21.service",
+    "invocation_id": "5e2854176e1e4ed1955c2dde5d02095b",
+    "pid": 3887911
+  },
+  "build": {
+    "unit": "p4-cp3a-vendor-20261120-9907-r21.service",
+    "invocation_id": "d9c82f1887564fdcb02f6ec493fbe912",
+    "pid": 3888167
+  },
+  "observation_receipt": {
+    "session_id": "dpty-761cb6ba90909ce3409967e3d53880093401c87813506edd0d6a398836225687",
+    "exit_code": 0,
+    "output_complete": true,
+    "bytes": 3849,
+    "sha256": "d4efb40ca05ac3456bdf88c08cfd08e13b833133ec6e4e9229c84aad701fc40a"
+  },
+  "whole_producer_source_verified": true,
+  "completed_commands": [
+    {
+      "name": "verify-cmake652-before",
+      "exit_code": 0,
+      "actual_child_reaped": true,
+      "original_pidfd_held_until_reaped": true,
+      "owned_descendants_remaining": 0
+    }
+  ],
+  "observed_current_stage": "normal-reconcile-lint652",
+  "vendor_build_complete": false,
+  "Android_boot_qualified": false,
+  "application_runtime_acceptance": {
+    "passed": 0,
+    "required": 39,
+    "exempt_unverified": 3
+  },
+  "production_ready": false,
+  "runtime_qualified": false,
+  "all_blockers_closed": false,
+  "final_candidate_deployed": false
+}
+
