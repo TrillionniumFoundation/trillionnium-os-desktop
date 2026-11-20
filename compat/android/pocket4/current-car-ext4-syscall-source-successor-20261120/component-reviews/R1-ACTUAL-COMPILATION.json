@@ -1,0 +1,244 @@
+{
+  "actual_ordinary_passed": 0,
+  "all_commands_reaped": true,
+  "all_input_packet_bookends_equal": null,
+  "all_source_bookends_equal": true,
+  "artifact": {
+    "bytes": 1636360,
+    "id": 14650322304,
+    "sha256": "a55c14991326ed445c5b3ef9d4c7a9155497d4c9519a4c5fd447fddc748f1d8d"
+  },
+  "commands": 5,
+  "diagnostics": [
+    {
+      "code": "E0603",
+      "message": "function `open_fixture` is private",
+      "package_id": "path+file:///home/runner/work/_temp/current-car-data-producer/runtime/droidloom-supervisor#0.1.0",
+      "rendered": "error[E0603]: function `open_fixture` is private\n  --> runtime/droidloom-supervisor/src/production_persistent_data_controls.rs:85:51\n   |\n85 |         let backings = backings::private_control::open_fixture(fixture, witness)?;\n   |                                                   ^^^^^^^^^^^^ private function\n   |\nnote: the function `open_fixture` is defined here\n  --> runtime/droidloom-supervisor/src/production_persistent_data_fixture_backings.rs:5:1\n   |\n 5 | / pub(super) fn open_fixture(\n 6 | |     fixture: &crate::production_identity::tests::persistent_fixture::PersistentFixture<'_>,\n 7 | |     witness: &OwnedNamespaceWitness<'_>,\n 8 | | ) -> Result<OriginalBackingPair> {\n...  |\n85 | |         Ok(value)\n86 | |     }\n   | |_____^\n\n",
+      "spans": [
+        {
+          "byte_end": 3846,
+          "byte_start": 3834,
+          "column_end": 63,
+          "column_start": 51,
+          "expansion": null,
+          "file_name": "runtime/droidloom-supervisor/src/production_persistent_data_controls.rs",
+          "is_primary": true,
+          "label": "private function",
+          "line_end": 85,
+          "line_start": 85,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 63,
+              "highlight_start": 51,
+              "text": "        let backings = backings::private_control::open_fixture(fixture, witness)?;"
+            }
+          ]
+        }
+      ],
+      "target": "droidloom_supervisor"
+    },
+    {
+      "code": "E0603",
+      "message": "function `open_fixture` is private",
+      "package_id": "path+file:///home/runner/work/_temp/current-car-data-producer/runtime/droidloom-supervisor#0.1.0",
+      "rendered": "error[E0603]: function `open_fixture` is private\n   --> runtime/droidloom-supervisor/src/production_persistent_data_controls.rs:217:38\n    |\n217 |     match backings::private_control::open_fixture(fixture, witness) {\n    |                                      ^^^^^^^^^^^^ private function\n    |\nnote: the function `open_fixture` is defined here\n   --> runtime/droidloom-supervisor/src/production_persistent_data_fixture_backings.rs:5:1\n    |\n  5 | / pub(super) fn open_fixture(\n  6 | |     fixture: &crate::production_identity::tests::persistent_fixture::PersistentFixture<'_>,\n  7 | |     witness: &OwnedNamespaceWitness<'_>,\n  8 | | ) -> Result<OriginalBackingPair> {\n...   |\n 85 | |         Ok(value)\n 86 | |     }\n    | |_____^\n\n",
+      "spans": [
+        {
+          "byte_end": 11852,
+          "byte_start": 11840,
+          "column_end": 50,
+          "column_start": 38,
+          "expansion": null,
+          "file_name": "runtime/droidloom-supervisor/src/production_persistent_data_controls.rs",
+          "is_primary": true,
+          "label": "private function",
+          "line_end": 217,
+          "line_start": 217,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 50,
+              "highlight_start": 38,
+              "text": "    match backings::private_control::open_fixture(fixture, witness) {"
+            }
+          ]
+        }
+      ],
+      "target": "droidloom_supervisor"
+    },
+    {
+      "code": "E0603",
+      "message": "function `open_fixture` is private",
+      "package_id": "path+file:///home/runner/work/_temp/current-car-data-producer/runtime/droidloom-supervisor#0.1.0",
+      "rendered": "error[E0603]: function `open_fixture` is private\n   --> runtime/droidloom-supervisor/src/production_persistent_data_controls.rs:232:43\n    |\n232 |     let pair = backings::private_control::open_fixture(fixture, witness)?;\n    |                                           ^^^^^^^^^^^^ private function\n    |\nnote: the function `open_fixture` is defined here\n   --> runtime/droidloom-supervisor/src/production_persistent_data_fixture_backings.rs:5:1\n    |\n  5 | / pub(super) fn open_fixture(\n  6 | |     fixture: &crate::production_identity::tests::persistent_fixture::PersistentFixture<'_>,\n  7 | |     witness: &OwnedNamespaceWitness<'_>,\n  8 | | ) -> Result<OriginalBackingPair> {\n...   |\n 85 | |         Ok(value)\n 86 | |     }\n    | |_____^\n\n",
+      "spans": [
+        {
+          "byte_end": 12685,
+          "byte_start": 12673,
+          "column_end": 55,
+          "column_start": 43,
+          "expansion": null,
+          "file_name": "runtime/droidloom-supervisor/src/production_persistent_data_controls.rs",
+          "is_primary": true,
+          "label": "private function",
+          "line_end": 232,
+          "line_start": 232,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 55,
+              "highlight_start": 43,
+              "text": "    let pair = backings::private_control::open_fixture(fixture, witness)?;"
+            }
+          ]
+        }
+      ],
+      "target": "droidloom_supervisor"
+    }
+  ],
+  "failing_command": "compile-remaining27",
+  "failing_exit_code": 101,
+  "final_descendant_retirement": [],
+  "github_commit": "1462de2073ec20d9a4f42b529ada97864b03c5ab",
+  "github_job_id": 136424517568,
+  "github_run_id": 44775619598,
+  "ignored_syscall_executed": false,
+  "jobs": [
+    {
+      "conclusion": "success",
+      "id": 136424516804,
+      "name": "audio538-current-producer"
+    },
+    {
+      "conclusion": "success",
+      "id": 136424517302,
+      "name": "source-and-linux-host"
+    },
+    {
+      "conclusion": "success",
+      "id": 136424517363,
+      "name": "audio537-current-producer"
+    },
+    {
+      "conclusion": "success",
+      "id": 136424517430,
+      "name": "runtime-d6-init-security-metadata"
+    },
+    {
+      "conclusion": "success",
+      "id": 136424517468,
+      "name": "intentresolver-security537-current-producer"
+    },
+    {
+      "conclusion": "failure",
+      "id": 136424517568,
+      "name": "Current source - 1623 ordinary cases, 19 releases, examples and docs"
+    },
+    {
+      "conclusion": "success",
+      "id": 136424517749,
+      "name": "aac-security330-current-producer"
+    },
+    {
+      "conclusion": "success",
+      "id": 136424517874,
+      "name": "Required checkout presence - complete source successor"
+    },
+    {
+      "conclusion": "success",
+      "id": 136424518625,
+      "name": "native643-current-producer"
+    }
+  ],
+  "original_ci_report": {
+    "bytes": 18710,
+    "sha256": "224758168b71db5923ecbfa89cea4b821b8a92feba011b19b4482e1749abaa79"
+  },
+  "production_ready": false,
+  "run_conclusion": "failure",
+  "runtime_qualified": false,
+  "schema": "p4-car-syscall-first-actual-ci-compile-failure-v1",
+  "source": {
+    "bytes": 45962784,
+    "files": 2391,
+    "tree": "aaa93b48201acbad91f44e18e3b011c4f183154a"
+  },
+  "streams_verified": [
+    {
+      "bytes": 41,
+      "command": "actual-github-source-head",
+      "path": "/home/runner/work/_temp/current-ordinary/logs/actual-github-source-head.stdout",
+      "sha256": "4144980e6aa2a1783c19391f6e3945d8572fa55256e4d404a9d6c4feade03df0",
+      "stream": "stdout"
+    },
+    {
+      "bytes": 0,
+      "command": "actual-github-source-head",
+      "path": "/home/runner/work/_temp/current-ordinary/logs/actual-github-source-head.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stream": "stderr"
+    },
+    {
+      "bytes": 0,
+      "command": "dependency-fetch",
+      "path": "/home/runner/work/_temp/current-ordinary/logs/dependency-fetch.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stream": "stdout"
+    },
+    {
+      "bytes": 6385,
+      "command": "dependency-fetch",
+      "path": "/home/runner/work/_temp/current-ordinary/logs/dependency-fetch.stderr",
+      "sha256": "70b40c0978bc1abd43342fb1abf12f30cc433c5de2189124c2008732d710e77e",
+      "stream": "stderr"
+    },
+    {
+      "bytes": 74582,
+      "command": "workspace-metadata",
+      "path": "/home/runner/work/_temp/current-ordinary/logs/workspace-metadata.stdout",
+      "sha256": "5c7357b272f29afcd3627f3fca6e007141712f7a0baa02f54e3985cb3b478d39",
+      "stream": "stdout"
+    },
+    {
+      "bytes": 0,
+      "command": "workspace-metadata",
+      "path": "/home/runner/work/_temp/current-ordinary/logs/workspace-metadata.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stream": "stderr"
+    },
+    {
+      "bytes": 133784,
+      "command": "compile-updater",
+      "path": "/home/runner/work/_temp/current-ordinary/logs/compile-updater.stdout",
+      "sha256": "5446862fbce5af76f82f461c800a296df2d1b333fc21801ce5f0069e2160f47b",
+      "stream": "stdout"
+    },
+    {
+      "bytes": 2031,
+      "command": "compile-updater",
+      "path": "/home/runner/work/_temp/current-ordinary/logs/compile-updater.stderr",
+      "sha256": "bf8abd8edc912380196eaa72b62e1c713b5eef63a06a00bc83e05f78e572b102",
+      "stream": "stderr"
+    },
+    {
+      "bytes": 889139,
+      "command": "compile-remaining27",
+      "path": "/home/runner/work/_temp/current-ordinary/logs/compile-remaining27.stdout",
+      "sha256": "4632ce791bab43b6546005715e01b04e48e20ef52f08ad9fbd62703a1418391c",
+      "stream": "stdout"
+    },
+    {
+      "bytes": 7054,
+      "command": "compile-remaining27",
+      "path": "/home/runner/work/_temp/current-ordinary/logs/compile-remaining27.stderr",
+      "sha256": "00682ce3f377ffc4c251b7b802118099945bd0c4a86ecaddc0d05bab151a274a",
+      "stream": "stderr"
+    }
+  ],
+  "test_driver_exported": false
+}

@@ -2,7 +2,7 @@
 //! Production constructors and complete MAC/prepared gates stay unchanged.
 use super::*;
 
-pub(super) fn open_fixture(
+pub(in crate::production_mounts::persistent_data) fn open_fixture(
     fixture: &crate::production_identity::tests::persistent_fixture::PersistentFixture<'_>,
     witness: &OwnedNamespaceWitness<'_>,
 ) -> Result<OriginalBackingPair> {
