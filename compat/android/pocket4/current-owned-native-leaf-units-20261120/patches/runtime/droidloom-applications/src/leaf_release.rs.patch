@@ -1,0 +1,15 @@
+--- a/runtime/droidloom-applications/src/leaf_release.rs
++++ b/runtime/droidloom-applications/src/leaf_release.rs
+@@ -304,6 +304,12 @@
+ }
+ 
+ impl NativeRelease {
++    pub(super) fn cover_window(&self, seconds: u64) -> Result<(),String> {
++        self.guard()?;
++        require(self.manifest.owner_expires_unix_seconds>now()?.saturating_add(seconds),
++            "original owner window cannot cover the complete owned controller and retirement")
++    }
++
+     pub(super) fn bind_current(selection:&FilePin,catalog:&str,preparation:&FilePin,entry:&FilePin) -> Result<Self,String> {
+         let _locks=NativeApplicationSourceLocks::acquire().map_err(|e|e.to_string())?;
+         let mut discovery=Inputs::new();

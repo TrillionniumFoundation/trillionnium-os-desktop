@@ -1,0 +1,12 @@
+--- a/runtime/droidloom-supervisor/src/application_command.rs
++++ b/runtime/droidloom-supervisor/src/application_command.rs
+@@ -21,6 +21,9 @@
+ 
+ #[path = "application_leaf_resources.rs"]
+ mod gallery_resources;
++#[path = "application_leaf_unit.rs"]
++mod application_leaf_unit;
++pub use application_leaf_unit::{NativeOwnedLeafUnit, OwnedLeafProfile};
+ 
+ const OUTPUT_LIMIT: usize = 64 * 1024;
+ const RETIRE_TIMEOUT: Duration = Duration::from_secs(2);

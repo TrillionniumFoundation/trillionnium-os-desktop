@@ -1,0 +1,24 @@
+--- a/runtime/droidloom-applications/src/leaf_routes.rs
++++ b/runtime/droidloom-applications/src/leaf_routes.rs
+@@ -28,6 +28,21 @@
+ 
+ pub(super) fn compiled_release_sources() -> (FilePin, &'static str) {
+     (FilePin { path: SELECTION_PATH.into(), bytes: SELECTION_BYTES, sha256: SELECTION_SHA.into() }, SOURCE_CATALOG)
++}
++
++/// Hold the already adopted source/native release before the fixed unit's
++/// initial PM query. Actual business validation and the original claim remain
++/// in execute; this method grants neither Main nor application acceptance.
++pub(super) fn owned_route_release(plan: &LeafPlan, selection: &FilePin) -> Result<NativeRelease,String> {
++    validate_selection(selection)?;
++    let sources=fixed_sources()?;
++    let source=&sources[plan.route.definition().source];
++    if plan.route.current_gallery() {
++        let request=value(&plan.request)?;
++        NativeRelease::bind(&ref_field(&request,"native_release")?,selection,SOURCE_CATALOG,&source.preparation,&source.entry)
++    } else if plan.route==Route::CalendarReminder {
++        NativeRelease::bind_current(selection,SOURCE_CATALOG,&source.preparation,&source.entry)
++    } else { Err("owned unit release binding supports only current Calendar/Gallery routes".into()) }
+ }
+ 
+ #[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq)]

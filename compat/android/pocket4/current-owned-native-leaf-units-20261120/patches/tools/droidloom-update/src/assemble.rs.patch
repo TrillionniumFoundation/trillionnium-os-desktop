@@ -1,0 +1,72 @@
+--- a/tools/droidloom-update/src/assemble.rs
++++ b/tools/droidloom-update/src/assemble.rs
+@@ -464,17 +464,65 @@
+         payload,
+         &payload.join("var/lib/droidloom/images/images"),
+     )?;
++    stage_unit_templates(repo, payload)?;
++    Ok(())
++}
++
++fn stage_unit_templates(repo: &Path, payload: &Path) -> Result<()> {
+     for name in [
+         "system/droidloomd.service",
++        "system/droidloom-native-calendar@.service",
++        "system/droidloom-native-gallery@.service",
+         "user/droidloom.service",
+         "user/droidloom-applications.service",
+     ] {
+-        copy(
+-            &repo.join("packaging/systemd").join(name),
+-            &payload.join("usr/lib/systemd").join(name),
+-        )?;
++        let source = repo.join("packaging/systemd").join(name);
++        if !fs::symlink_metadata(&source)?.is_file() {
++            return fail("installed unit templates must be regular source files");
++        }
++        let target = payload.join("usr/lib/systemd").join(name);
++        copy(&source, &target)?;
++        mode(&target, 0o644)?;
+     }
+     Ok(())
++}
++
++#[cfg(test)]
++mod owned_leaf_unit_tests {
++    use super::*;
++    use std::os::unix::fs::PermissionsExt;
++
++    #[test]
++    fn normal_payload_stages_exact_owned_unit_templates_without_activation() {
++        let directory = tempfile::tempdir().unwrap();
++        let source = directory.path().join("source");
++        let payload = directory.path().join("payload");
++        for (name, body) in [
++            ("system/droidloomd.service", "original daemon fixture"),
++            ("user/droidloom.service", "original user fixture"),
++            ("user/droidloom-applications.service", "original catalog fixture"),
++            ("system/droidloom-native-calendar@.service", include_str!("../../../packaging/systemd/system/droidloom-native-calendar@.service")),
++            ("system/droidloom-native-gallery@.service", include_str!("../../../packaging/systemd/system/droidloom-native-gallery@.service")),
++        ] {
++            let path = source.join("packaging/systemd").join(name);
++            fs::create_dir_all(path.parent().unwrap()).unwrap();
++            fs::write(path, body).unwrap();
++        }
++        stage_unit_templates(&source, &payload).unwrap();
++        for name in ["droidloom-native-calendar@.service", "droidloom-native-gallery@.service"] {
++            let target = payload.join("usr/lib/systemd/system").join(name);
++            assert_eq!(fs::read(&target).unwrap(), fs::read(source.join("packaging/systemd/system").join(name)).unwrap());
++            let metadata = fs::symlink_metadata(&target).unwrap();
++            assert!(metadata.is_file());
++            assert_eq!(metadata.permissions().mode() & 0o777, 0o644);
++            let body = fs::read_to_string(target).unwrap();
++            assert!(body.contains("KillMode=control-group\n"));
++            assert!(body.contains("FinalKillSignal=SIGKILL\n"));
++            assert!(!body.contains("[Install]"));
++        }
++        assert!(!payload.join("etc").exists());
++        assert!(!payload.join("var").exists());
++    }
+ }
+ 
+ fn configure_local(repo: &Path, payload: &Path, uid: u32) -> Result<()> {

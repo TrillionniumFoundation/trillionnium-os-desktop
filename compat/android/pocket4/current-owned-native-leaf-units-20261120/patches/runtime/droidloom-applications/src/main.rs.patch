@@ -1,0 +1,48 @@
+--- a/runtime/droidloom-applications/src/main.rs
++++ b/runtime/droidloom-applications/src/main.rs
+@@ -16,6 +16,19 @@
+ #[cfg(test)]
+ mod cli_tests {
+     use super::*;
++
++    #[test]
++    fn owned_unit_entry_requires_both_fixed_profile_and_content_pin_without_other_actions() {
++        assert!(Cli::try_parse_from(["apps","--owned-leaf-profile","gallery"]).is_err());
++        assert!(Cli::try_parse_from(["apps","--owned-leaf-plan-sha256","pin"]).is_err());
++        let args=["apps","--owned-leaf-profile","gallery","--owned-leaf-plan-sha256","pin"];
++        assert!(Cli::try_parse_from(args).is_ok());
++        for extra in [vec!["--once"],vec!["--socket","/other"],vec!["--expect-app-count","1"],
++            vec!["--inspect-package","com.android.gallery3d"],vec!["--remove-managed"]] {
++            let mut changed=args.to_vec();changed.extend(extra);assert!(Cli::try_parse_from(changed).is_err());
++        }
++        assert!(Cli::try_parse_from(["apps","--owned-leaf-profile","arbitrary","--owned-leaf-plan-sha256","pin"]).is_err());
++    }
+ 
+     #[test]
+     fn native_adoption_requires_an_explicit_intent_pin_and_excludes_runtime_actions() {
+@@ -131,6 +144,13 @@
+ #[command(name = "droidloom-applications", version, about)]
+ #[command(group(clap::ArgGroup::new("release_action").args(["release_check", "runtime_plan"])))]
+ struct Cli {
++    /// Run one content-addressed root plan in its exact installed owned unit.
++    #[arg(long, value_parser = ["calendar-reminder", "gallery"], requires = "owned_leaf_plan_sha256",
++        conflicts_with_all = ["adopt_native_leaf_release", "release_check", "runtime_plan", "inspect_package", "inspect_contacts_fixture", "remove_managed", "socket", "user", "once", "refresh_seconds", "expect_app_count"])]
++    owned_leaf_profile: Option<String>,
++    /// Exact root request and instance identity; no arbitrary path is accepted.
++    #[arg(long, requires = "owned_leaf_profile")]
++    owned_leaf_plan_sha256: Option<String>,
+     /// Explicit root-only adoption of the pinned final CI/source pairing.
+     /// Changes only its CURRENT release reference; never installs or runs Android.
+     #[arg(long, requires = "expect_native_adoption_sha256", conflicts_with_all = ["release_check", "runtime_plan", "inspect_package", "inspect_contacts_fixture", "remove_managed", "socket", "user", "once", "refresh_seconds"])]
+@@ -193,6 +213,11 @@
+ 
+ fn run() -> Result<(), Box<dyn std::error::Error>> {
+     let cli = Cli::parse();
++    if let Some(profile) = &cli.owned_leaf_profile {
++        droidloom_applications::runtime_plan::run_owned_leaf_plan(profile,
++            cli.owned_leaf_plan_sha256.as_deref().ok_or("missing owned root plan pin")?)?;
++        return Err("application acceptance remains incomplete".into());
++    }
+     if let Some(path) = &cli.adopt_native_leaf_release {
+         let result = droidloom_applications::runtime_plan::adopt_native_leaf_release(path,
+             cli.expect_native_adoption_sha256.as_deref().ok_or("missing explicit native adoption intent pin")?)?;

@@ -1,0 +1,22 @@
+--- a/packaging/install-runtime
++++ b/packaging/install-runtime
+@@ -32,6 +32,8 @@
+     "$payload/usr/lib/systemd/user/droidloom-applications.service" \
+     "$payload/usr/lib/systemd/user/droidloom.service" \
+     "$payload/usr/lib/systemd/system/droidloomd.service" \
++    "$payload/usr/lib/systemd/system/droidloom-native-calendar@.service" \
++    "$payload/usr/lib/systemd/system/droidloom-native-gallery@.service" \
+     "$payload/usr/lib/environment.d/60-droidloom.conf" \
+     "$payload/usr/lib/droidloom/runtime/bin/droidloom-android-init" \
+     "$payload/var/lib/droidloom/images/images/system.img" \
+@@ -144,6 +146,10 @@
+ install -D -m 0644 "$payload/etc/droidloom/cell.json" /etc/droidloom/cell.json
+ install -D -m 0644 "$payload/usr/lib/systemd/system/droidloomd.service" \
+     /usr/lib/systemd/system/droidloomd.service
++install -D -m 0644 "$payload/usr/lib/systemd/system/droidloom-native-calendar@.service" \
++    /usr/lib/systemd/system/droidloom-native-calendar@.service
++install -D -m 0644 "$payload/usr/lib/systemd/system/droidloom-native-gallery@.service" \
++    /usr/lib/systemd/system/droidloom-native-gallery@.service
+ install -D -m 0644 "$payload/usr/lib/systemd/user/droidloom.service" \
+     /usr/lib/systemd/user/droidloom.service
+ install -D -m 0644 "$payload/usr/lib/systemd/user/droidloom-applications.service" \

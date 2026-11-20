@@ -1,0 +1,51 @@
+--- a/packaging/README.md
++++ b/packaging/README.md
+@@ -94,6 +94,48 @@
+ at `$XDG_CONFIG_HOME/droidloom/window-policy-v1.json`; automatically remembered
+ sizes live at `$XDG_STATE_HOME/droidloom/window-sizes-v1.json`.
+ 
++## Bounded application qualification units
++
++The normal runtime payload also contains `droidloom-native-calendar@.service`
++and `droidloom-native-gallery@.service`. They are explicit root qualification
++entries, have no automatic enable target, and do not start Android. Calendar
++reminder retains its half-CPU, 512 MiB budget; Gallery retains its two-CPU,
++2 GiB budget. Both forbid swap and core dumps and cap the complete unit at
++64 tasks. The unchanged native leaf runs in a child of this exact unit, so
++unit cancellation and the original child retirement cover the same tree.
++
++An instance is the lowercase SHA-256 of one root-owned complete native runtime
++plan at `/etc/droidloom/native-application-leaves/plans/calendar-reminder/`
++or `/etc/droidloom/native-application-leaves/plans/gallery/`, with a `.json`
++suffix. The native entry accepts exactly one matching package and route,
++requires the adopted current native/source release, and calls the existing
++runtime-plan dispatcher. It does not create a Main qualification, change the
++control peer policy, extend the foreground owner lease, or grant acceptance
++from a resource observation.
++
++Before and after dispatch it authenticates the actual PID 1 private socket,
++uses the held controller PIDFD to query its actual systemd invocation, and
++checks the effective command, namespace identities, CPU affinity, resource
++limits and complete-unit stop behavior. Transient units, extra lifecycle
++commands, different invocations and expanded budgets are rejected. The full
++controller budgets are 1,200 seconds for Calendar and 2,400 seconds for Gallery;
++the original leaf business and cleanup timeouts remain unchanged.
++
++Only an operator with an already prepared and adopted release should start
++an exact instance. Preserve its native report and independently read back the
++same invocation's final unit result, empty cgroup and descendant retirement.
++The emitted report remains partial evidence and explicitly marks whole-app
++acceptance false. Installing these unit files, a successful source build, or
++a rejected precondition does not establish a working production resource path.
++
++The component package builder already freezes all packaging inputs against
++its complete baseline. Adding or changing these templates therefore requires
++a complete package build; a component rebuild cannot silently reuse a payload
++that lacks the corresponding unit bytes. The separate developer installation
++using release symlinks does not meet this entry's canonical regular-file
++contract. The ordinary package owner or the direct runtime installer must
++place the actual current executable and templates at their canonical paths.
++
+ ## Build and installation ownership
+ 
+ The Rust package builder produces `droidloom-runtime` and `droidloom-image`.

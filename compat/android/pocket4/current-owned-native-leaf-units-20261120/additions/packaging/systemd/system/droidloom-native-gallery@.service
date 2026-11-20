@@ -1,0 +1,32 @@
+[Unit]
+Description=Droidloom owned Gallery qualification %i
+After=droidloomd.service
+
+[Service]
+Type=exec
+User=root
+Group=root
+ExecStart=/usr/bin/droidloom-applications --owned-leaf-profile gallery --owned-leaf-plan-sha256 %i
+Restart=no
+KillMode=control-group
+KillSignal=SIGTERM
+FinalKillSignal=SIGKILL
+SendSIGKILL=yes
+TimeoutStopFailureMode=terminate
+TimeoutStopSec=180s
+RuntimeMaxSec=2400s
+CPUQuota=200%
+CPUQuotaPeriodSec=100ms
+CPUAffinity=20 21
+MemoryAccounting=yes
+MemoryMax=2147483648
+MemorySwapMax=0
+TasksAccounting=yes
+TasksMax=64
+LimitCORE=0
+UMask=0077
+WorkingDirectory=/
+Environment=PATH=/usr/sbin:/usr/bin:/sbin:/bin
+Environment=LANG=C.UTF-8
+StandardOutput=journal
+StandardError=journal
