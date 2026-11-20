@@ -1,0 +1,48 @@
+--- a/runtime/droidloom-applications/src/main.rs
++++ b/runtime/droidloom-applications/src/main.rs
+@@ -16,6 +16,18 @@
+ #[cfg(test)]
+ mod cli_tests {
+     use super::*;
++
++    #[test]
++    fn native_adoption_requires_an_explicit_intent_pin_and_excludes_runtime_actions() {
++        assert!(Cli::try_parse_from(["apps","--adopt-native-leaf-release","/intent"]).is_err());
++        let args=["apps","--adopt-native-leaf-release","/intent","--expect-native-adoption-sha256","pin"];
++        assert!(Cli::try_parse_from(args).is_ok());
++        for extra in [vec!["--once"],vec!["--socket","/other"],vec!["--inspect-contacts-fixture"],
++            vec!["--user","0"],vec!["--remove-managed"]] {
++            let mut combined=args.to_vec(); combined.extend(extra);
++            assert!(Cli::try_parse_from(combined).is_err());
++        }
++    }
+ 
+     #[test]
+     fn release_check_requires_external_pins_and_excludes_catalog_mutation() {
+@@ -119,6 +131,13 @@
+ #[command(name = "droidloom-applications", version, about)]
+ #[command(group(clap::ArgGroup::new("release_action").args(["release_check", "runtime_plan"])))]
+ struct Cli {
++    /// Explicit root-only adoption of the pinned final CI/source pairing.
++    /// Changes only its CURRENT release reference; never installs or runs Android.
++    #[arg(long, requires = "expect_native_adoption_sha256", conflicts_with_all = ["release_check", "runtime_plan", "inspect_package", "inspect_contacts_fixture", "remove_managed", "socket", "user", "once", "refresh_seconds"])]
++    adopt_native_leaf_release: Option<PathBuf>,
++    /// Independent SHA-256 of the root-owned adoption intent.
++    #[arg(long, requires = "adopt_native_leaf_release")]
++    expect_native_adoption_sha256: Option<String>,
+     /// Check complete declared release evidence without contacting Android or changing the catalog.
+     #[arg(long, value_name = "MANIFEST", requires_all = ["release_results", "expect_release_sha256", "expect_main_sha256", "expect_app_count"],
+         conflicts_with_all = ["runtime_plan", "inspect_package", "remove_managed", "socket", "user", "once", "refresh_seconds"])]
+@@ -174,6 +193,12 @@
+ 
+ fn run() -> Result<(), Box<dyn std::error::Error>> {
+     let cli = Cli::parse();
++    if let Some(path) = &cli.adopt_native_leaf_release {
++        let result = droidloom_applications::runtime_plan::adopt_native_leaf_release(path,
++            cli.expect_native_adoption_sha256.as_deref().ok_or("missing explicit native adoption intent pin")?)?;
++        println!("{}",serde_json::to_string_pretty(&result)?);
++        return Ok(());
++    }
+     if cli.inspect_contacts_fixture {
+         let contacts = droidloom_applications::runtime_plan::inspect_package(
+             &cli.socket,

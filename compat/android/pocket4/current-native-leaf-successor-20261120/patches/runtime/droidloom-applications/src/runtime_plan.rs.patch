@@ -1,0 +1,20 @@
+--- a/runtime/droidloom-applications/src/runtime_plan.rs
++++ b/runtime/droidloom-applications/src/runtime_plan.rs
+@@ -15,7 +15,17 @@
+ 
+ #[path = "leaf_routes.rs"]
+ mod leaf_routes;
++#[path = "leaf_release.rs"]
++mod leaf_release;
++#[path = "leaf_adoption.rs"]
++mod leaf_adoption;
+ use leaf_routes::{LeafObservation, LeafPlan};
++
++/// Publish one explicitly pinned root CI/source release pairing under the
++/// original owner locks. This installs nothing and grants no Android success.
++pub fn adopt_native_leaf_release(path: &Path, expected_sha256: &str) -> Result<serde_json::Value, String> {
++    leaf_adoption::adopt(path, expected_sha256)
++}
+ 
+ const INPUT_LIMIT: u64 = 8 * 1024 * 1024;
+ const BROWSER_GATES: [&str; 5] = [

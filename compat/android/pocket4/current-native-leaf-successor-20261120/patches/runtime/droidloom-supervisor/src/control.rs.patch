@@ -1,0 +1,39 @@
+--- a/runtime/droidloom-supervisor/src/control.rs
++++ b/runtime/droidloom-supervisor/src/control.rs
+@@ -53,6 +53,10 @@
+ #[path = "application_command.rs"]
+ mod application_command;
+ 
++#[path = "application_leaf_locks.rs"]
++mod application_leaf_locks;
++pub use application_leaf_locks::NativeApplicationSourceLocks;
++
+ /// Run a finite prepared application leaf from the native applications CLI.
+ /// The caller validates the frozen route, source and request. This is not a
+ /// remotely callable generic command and performs no namespace entry.
+@@ -62,6 +66,25 @@
+     budget: std::time::Duration,
+ ) -> Result<std::process::Output, String> {
+     application_command::run_prepared_host_leaf(command, epoch, budget)
++}
++
++/// Run only the selected current-image Gallery entry with its two image
++/// observations and unchanged 600-second business/120-second cleanup limits.
++/// The fixed 1530-second outer bound is not available to other host leaves.
++pub fn run_prepared_gallery_image_leaf(
++    command: std::process::Command,
++    epoch: &application_probe::RuntimeEpoch,
++) -> Result<std::process::Output, String> {
++    application_command::run_prepared_gallery_image_leaf(command, epoch)
++}
++
++/// Run only the selected Calendar reminder entry under its original
++/// 50-percent CPU, 512-MiB memory and 690-second outer bounds.
++pub fn run_prepared_calendar_reminder_leaf(
++    command: std::process::Command,
++    epoch: &application_probe::RuntimeEpoch,
++) -> Result<std::process::Output, String> {
++    application_command::run_prepared_calendar_reminder_leaf(command, epoch)
+ }
+ 
+ /// Default root-owned lifecycle socket.

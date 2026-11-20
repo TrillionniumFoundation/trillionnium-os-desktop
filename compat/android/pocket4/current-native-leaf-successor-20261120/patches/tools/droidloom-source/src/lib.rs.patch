@@ -1,0 +1,11 @@
+--- a/tools/droidloom-source/src/lib.rs
++++ b/tools/droidloom-source/src/lib.rs
+@@ -30,6 +30,8 @@
+ pub mod production_cmake;
+ /// Explicit original 652 with the complete pinned HealthFitness lint provider.
+ pub mod production_lint;
++/// Explicit original 652 lint plus complete IPsec and Permission APEX test providers.
++pub mod production_apex_tests;
+ 
+ #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+ enum SourceProfile {

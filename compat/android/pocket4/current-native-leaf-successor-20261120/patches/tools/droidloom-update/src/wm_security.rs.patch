@@ -1,0 +1,23 @@
+--- a/tools/droidloom-update/src/wm_security.rs
++++ b/tools/droidloom-update/src/wm_security.rs
+@@ -377,7 +377,7 @@
+                 .unwrap()
+         );
+         let lock = droidloom_source::load_lock(&selected).unwrap();
+-        let plan = droidloom_source::production_lint::build_plan(&lock).unwrap();
++        let plan = droidloom_source::production_apex_tests::build_plan(&lock).unwrap();
+         assert_eq!(plan.projects.len(), 652);
+         let original = droidloom_source::load_lock(
+             &repo.join("android/manifest/production-full-source-lock.json"),
+@@ -388,6 +388,11 @@
+         expected_projects.iter_mut()
+             .find(|project| project.path == Path::new(droidloom_source::production_lint::HEALTH_PATH))
+             .unwrap().sparse_paths.push(droidloom_source::production_lint::LINT_PATH.into());
++        for &(path, _, cone) in droidloom_source::production_apex_tests::PROVIDERS {
++            expected_projects.iter_mut()
++                .find(|project| project.path == Path::new(path))
++                .unwrap().sparse_paths.push(cone.into());
++        }
+         assert_eq!(&plan.projects[..651], expected_projects.as_slice());
+         assert_eq!(plan.links.len(), 8);
+         assert!(!plan.unrestricted_repo_sync);

@@ -1,0 +1,23 @@
+--- a/runtime/droidloom-supervisor/src/production_namespace_default_mounts.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_default_mounts.rs
+@@ -182,6 +182,20 @@
+     namespace: Node,
+     revision: u64,
+     init_epoch: u64,
++}
++
++// Equality-test values only. This constructor does not exist in production,
++// cannot create a DefaultMountOwner, and holds no live task or kernel handle.
++#[cfg(test)]
++impl DefaultMountBinding {
++    pub(super) fn from_test_parts(
++        original: Binding,
++        namespace: Node,
++        revision: u64,
++        init_epoch: u64,
++    ) -> Self {
++        Self { original, namespace, revision, init_epoch }
++    }
+ }
+ 
+ /// Shared only inside the original TreeChild and its one notification owner.

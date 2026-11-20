@@ -1,0 +1,278 @@
+--- a/runtime/droidloom-supervisor/src/application_command.rs
++++ b/runtime/droidloom-supervisor/src/application_command.rs
+@@ -18,6 +18,9 @@
+ use std::time::{Duration, Instant};
+ 
+ use crate::development::owned_process::{open_pidfd, pidfd_exited};
++
++#[path = "application_leaf_resources.rs"]
++mod gallery_resources;
+ 
+ const OUTPUT_LIMIT: usize = 64 * 1024;
+ const RETIRE_TIMEOUT: Duration = Duration::from_secs(2);
+@@ -264,6 +267,7 @@
+     procs: File,
+     events: File,
+     kill: File,
++    gallery_scope: Option<gallery_resources::Scope>,
+ }
+ 
+ fn current_cgroup_parent() -> io::Result<PathBuf> {
+@@ -292,6 +296,10 @@
+ 
+ impl OwnedCgroup {
+     fn create() -> io::Result<Self> {
++        Self::create_owned(None)
++    }
++
++    fn create_owned(profile: Option<gallery_resources::Profile>) -> io::Result<Self> {
+         let parent = current_cgroup_parent()?;
+         let directory = File::open(&parent)?;
+         let mut stat = std::mem::MaybeUninit::<libc::statfs>::uninit();
+@@ -303,11 +311,13 @@
+         if unsafe { stat.assume_init() }.f_type != libc::CGROUP2_SUPER_MAGIC {
+             return Err(invalid("writable cgroup v2 required"));
+         }
++        let gallery_scope = if let Some(profile) = profile {
++            gallery_resources::require_original_cpu_available()?;
++            Some(gallery_resources::Scope::capture(&parent, &directory, profile)?)
++        } else { None };
+         let nonce = NEXT_GROUP.fetch_add(1, Ordering::Relaxed);
+-        let path = parent.join(format!(
+-            "droidloom-app-probe-{}-{nonce}",
+-            std::process::id()
+-        ));
++        let prefix = profile.map_or("droidloom-app-probe",gallery_resources::Profile::prefix);
++        let path = parent.join(format!("{prefix}-{}-{nonce}", std::process::id()));
+         // create_dir refuses an existing name; no existing group is adopted.
+         fs::create_dir(&path)?;
+         let result = (|| {
+@@ -336,12 +346,26 @@
+                 procs,
+                 events,
+                 kill,
++                gallery_scope,
+             })
+         })();
+         if result.is_err() {
+             let _ = fs::remove_dir(&path);
+         }
+         result
++    }
++
++    fn prepare_resources(&self) -> io::Result<()> {
++        if let Some(scope) = &self.gallery_scope {
++            scope.validate()?;
++            scope.configure_child(&self.directory)?;
++            scope.validate()?;
++        }
++        Ok(())
++    }
++
++    fn validate_resources(&self) -> io::Result<()> {
++        self.gallery_scope.as_ref().map_or(Ok(()), gallery_resources::Scope::validate)
+     }
+ 
+     fn populated(&mut self) -> io::Result<bool> {
+@@ -452,11 +476,22 @@
+ }
+ 
+ fn run_owned(
++    command: Command,
++    inherit: &[RawFd],
++    alive_pidfds: &[RawFd],
++    deadline: Instant,
++) -> Result<Output, String> {
++    run_owned_with_resources(command, inherit, alive_pidfds, deadline, None)
++}
++
++fn run_owned_with_resources(
+     mut command: Command,
+     inherit: &[RawFd],
+     alive_pidfds: &[RawFd],
+     deadline: Instant,
++    profile: Option<gallery_resources::Profile>,
+ ) -> Result<Output, String> {
++    let gallery = profile.is_some();
+     let mut retained = loop {
+         match RETAINED.try_lock() {
+             Ok(guard) => break guard,
+@@ -483,8 +518,17 @@
+     if Instant::now() >= deadline {
+         return Err("application command deadline exceeded before spawn".into());
+     }
+-    let group =
+-        OwnedCgroup::create().map_err(|e| format!("invocation cgroup precondition failed: {e}"))?;
++    let mut group = (if gallery { OwnedCgroup::create_owned(profile) } else { OwnedCgroup::create() })
++        .map_err(|e| format!("invocation cgroup precondition failed: {e}"))?;
++    if let Err(error) = group.prepare_resources() {
++        let cleanup = group.remove();
++        if let Err(cleanup) = cleanup {
++            let path = group.path.clone();
++            *retained = Some(Invocation { child: None, status: None, group });
++            return Err(format!("Gallery resources changed before spawn: {error}; empty owned group retained at {}: {cleanup}", path.display()));
++        }
++        return Err(format!("Gallery resources changed before spawn: {error}; new empty group removed"));
++    }
+     let group_fd = group.procs.as_raw_fd();
+     let inherit = inherit.to_vec();
+     let alive_pidfds = alive_pidfds.to_vec();
+@@ -497,6 +541,14 @@
+     // nsenter. Every descendant therefore inherits invocation ownership.
+     unsafe {
+         command.pre_exec(move || {
++            if gallery {
++                let mut affinity: libc::cpu_set_t = std::mem::zeroed();
++                libc::CPU_ZERO(&mut affinity);
++                libc::CPU_SET(20, &mut affinity);
++                if libc::sched_setaffinity(0, std::mem::size_of::<libc::cpu_set_t>(), &affinity) != 0
++                    || libc::setrlimit(libc::RLIMIT_CORE, &libc::rlimit { rlim_cur: 0, rlim_max: 0 }) != 0
++                { return Err(io::Error::last_os_error()); }
++            }
+             if libc::write(group_fd, b"0\n".as_ptr().cast(), 2) != 2 {
+                 return Err(io::Error::last_os_error());
+             }
+@@ -542,7 +594,12 @@
+                     .map_err(|e| e.to_string())?;
+                 let mut out = Vec::new();
+                 let mut err = Vec::new();
++                let mut resource_bookend = Instant::now();
+                 loop {
++                    if gallery && Instant::now() >= resource_bookend {
++                        invocation.group.validate_resources().map_err(|e| e.to_string())?;
++                        resource_bookend = Instant::now() + Duration::from_millis(100);
++                    }
+                     if Instant::now() >= deadline {
+                         return Err("application command deadline exceeded".into());
+                     }
+@@ -588,7 +645,9 @@
+             path.display()
+         ));
+     }
++    let resources = invocation.group.validate_resources().map_err(|e| e.to_string());
+     result
++        .and_then(|output| resources.map(|()| output))
+         .and_then(|output| success_before_deadline(output, deadline))
+         .map_err(|error| format!("{error}; invocation cgroup empty and direct child reaped"))
+ }
+@@ -640,6 +699,120 @@
+     success_before_deadline(output, deadline)
+ }
+ 
++fn gallery_command(command: &Command) -> Result<(), String> {
++    const ROOT: &str = "/home/alex/work/p4-gallery-image-consumer-20261120-3b9d-r1";
++    let args = command.get_args().map(|v| v.to_str()).collect::<Option<Vec<_>>>()
++        .ok_or("Gallery argv is not UTF-8")?;
++    let hash = |v: &str| v.len() == 64 && v.bytes().all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c));
++    let allowed_preparation = ["rotation", "video", "seek", "album"].iter()
++        .any(|name| args.get(4).is_some_and(|arg| *arg == format!("{ROOT}/preparations/{name}.json")));
++    if command.get_program() != "/usr/bin/python3" || args.len() != 12
++        || args[..2] != ["-I", "-B"] || args[2] != format!("{ROOT}/source/gallery_image_entry.py")
++        || args[3] != "--preparation" || !allowed_preparation
++        || args[5] != "--expect-preparation-sha256" || !hash(args[6])
++        || args[7] != "execute" || args[8] != "--request" || !Path::new(args[9]).is_absolute()
++        || args[10] != "--expect-request-sha256" || !hash(args[11])
++    {
++        return Err("only the exact selected current-image Gallery entry receives its fixed outer budget".into());
++    }
++    Ok(())
++}
++
++fn calendar_command(command: &Command) -> Result<(),String> {
++    const ROOT: &str = "/home/alex/work/p4-calendar-resource-consumer-20261120-3b9d-r1";
++    let args = command.get_args().map(|v|v.to_str()).collect::<Option<Vec<_>>>()
++        .ok_or("Calendar argv is not UTF-8")?;
++    let hash=|value:&str| value.len()==64 && value.bytes().all(|c|c.is_ascii_digit()||(b'a'..=b'f').contains(&c));
++    if command.get_program()!="/usr/bin/python3" || args.len()!=12 || args[..2]!=["-I","-B"]
++        || args[2]!=format!("{ROOT}/source/system_entry.py") || args[3]!="--preparation"
++        || args[4]!=format!("{ROOT}/preparation.json") || args[5]!="--expect-preparation-sha256"
++        || !hash(args[6]) || args[7]!="execute" || args[8]!="--request"
++        || !Path::new(args[9]).is_absolute() || args[10]!="--expect-request-sha256" || !hash(args[11])
++    { return Err("only the exact current Calendar reminder entry receives its original resource profile".into()); }
++    Ok(())
++}
++
++pub(super) fn run_prepared_gallery_image_leaf(
++    command: Command,
++    epoch: &super::application_probe::RuntimeEpoch,
++) -> Result<Output, String> {
++    gallery_command(&command)?;
++    run_prepared_resource_leaf(command, epoch, Duration::from_secs(1530), gallery_resources::Profile::Gallery)
++}
++
++pub(super) fn run_prepared_calendar_reminder_leaf(
++    command: Command,
++    epoch: &super::application_probe::RuntimeEpoch,
++) -> Result<Output, String> {
++    calendar_command(&command)?;
++    run_prepared_resource_leaf(command, epoch, Duration::from_secs(690), gallery_resources::Profile::CalendarReminder)
++}
++
++fn run_prepared_resource_leaf(
++    command: Command,
++    epoch: &super::application_probe::RuntimeEpoch,
++    budget: Duration,
++    profile: gallery_resources::Profile,
++) -> Result<Output,String> {
++    let deadline = Instant::now() + budget;
++    let check_boot = || -> Result<(), String> {
++        if fs::read_to_string("/proc/sys/kernel/random/boot_id").map_err(|e| e.to_string())?.trim() != epoch.boot_id {
++            return Err("host boot differs from the admitted Gallery Main".into());
++        }
++        Ok(())
++    };
++    check_boot()?;
++    let target = NamespaceTarget::capture(epoch.cell_host_pid, epoch.framework_host_pid, epoch.framework_start_ticks)
++        .map_err(|e| e.to_string())?;
++    let output = run_owned_with_resources(command, &[],
++        &[target.cell.pidfd.as_raw_fd(), target.framework.pidfd.as_raw_fd()], deadline, Some(profile))?;
++    target.validate().map_err(|e| e.to_string())?;
++    check_boot()?;
++    success_before_deadline(output, deadline)
++}
++
++#[cfg(test)]
++mod gallery_tests {
++    use super::*;
++
++    fn selected_command(preparation: &str) -> Command {
++        let root = "/home/alex/work/p4-gallery-image-consumer-20261120-3b9d-r1";
++        let mut command = Command::new("/usr/bin/python3");
++        command.args(["-I", "-B"]).arg(format!("{root}/source/gallery_image_entry.py"))
++            .arg("--preparation").arg(format!("{root}/preparations/{preparation}.json"))
++            .arg("--expect-preparation-sha256").arg("a".repeat(64)).arg("execute")
++            .arg("--request").arg("/fixture/request.json").arg("--expect-request-sha256").arg("b".repeat(64));
++        command
++    }
++
++    #[test]
++    fn extended_budget_is_limited_to_four_exact_current_gallery_entries() {
++        for name in ["rotation", "video", "seek", "album"] {
++            gallery_command(&selected_command(name)).unwrap();
++        }
++        assert!(gallery_command(&selected_command("identity")).is_err());
++        assert!(gallery_command(&selected_command("../rotation")).is_err());
++        let mut extra = selected_command("rotation"); extra.arg("--disable-source-check");
++        assert!(gallery_command(&extra).is_err());
++        assert!(gallery_command(&Command::new("/usr/bin/python3")).is_err());
++    }
++
++    #[test]
++    fn calendar_resource_profile_cannot_be_selected_by_an_unrelated_entry() {
++        let root="/home/alex/work/p4-calendar-resource-consumer-20261120-3b9d-r1";
++        let mut command=Command::new("/usr/bin/python3");
++        command.args(["-I","-B"]).arg(format!("{root}/source/system_entry.py"))
++            .arg("--preparation").arg(format!("{root}/preparation.json"))
++            .arg("--expect-preparation-sha256").arg("a".repeat(64)).arg("execute")
++            .arg("--request").arg("/fixture/request.json").arg("--expect-request-sha256").arg("b".repeat(64));
++        calendar_command(&command).unwrap();
++        assert!(gallery_command(&command).is_err());
++        assert!(calendar_command(&selected_command("rotation")).is_err());
++        command.arg("--resource-profile=gallery");
++        assert!(calendar_command(&command).is_err());
++    }
++}
++
+ #[cfg(test)]
+ #[path = "application_command_tests.rs"]
+ mod tests;
