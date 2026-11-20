@@ -1340,6 +1340,9 @@ REQUIRED_FILES = (
     'compat/android/pocket4/current-runtime-successor-20261120/component-reviews/proc_masks.json',
     'compat/android/pocket4/current-runtime-successor-20261120/patches/runtime/droidloom-supervisor/src/production_namespace_writable_proc_child.rs.patch',
     'compat/android/pocket4/current-runtime-successor-20261120/patches/runtime/droidloom-supervisor/src/production_namespace_writable_proc_parent.rs.patch',
+    'compat/android/pocket4/current-runtime-successor-20261120/additions/runtime/droidloom-supervisor/src/production_identity_backings.rs',
+    'compat/android/pocket4/current-runtime-successor-20261120/component-reviews/backing_custody.json',
+    'compat/android/pocket4/current-runtime-successor-20261120/patches/runtime/droidloom-supervisor/src/production_identity.rs.patch',
 )
 EXECUTABLE_FILES = (
     "support/android/build_asterinas_abi.sh",
@@ -1350,8 +1353,8 @@ EXECUTABLE_FILES = (
 PARSED_SUFFIXES = {".py", ".sh", ".json", ".xml"}
 
 BINARY_FILES = {
-    'compat/android/pocket4/current-runtime-successor-20261120/FILES.sha256': {'bytes': 4218, 'sha256': 'f41a0a9225422d13e8549519ac06b787f998b259f83a8aff949e78463165fafa'},
-    'compat/android/pocket4/current-runtime-cohort-successor-20261120/FILES.sha256': {'bytes': 1064, 'sha256': 'b63deac3354d4320d343986faccc2a4c25e1b9691c4d28aec928c9fdfe832c89'},
+    'compat/android/pocket4/current-runtime-successor-20261120/FILES.sha256': {'bytes': 4600, 'sha256': '56277deace25f558a4998e1cfdc830fe46bdd1e828f154d9b250fa8fb3e7d08d'},
+    'compat/android/pocket4/current-runtime-cohort-successor-20261120/FILES.sha256': {'bytes': 1064, 'sha256': '078ee44241e588d8942869336798e7059ee33ad5e0a7ba232b1a6b2522f5329d'},
     'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/FILES.sha256': {'bytes': 4511, 'sha256': '27743c96bd9806fe165eadd6676b4d0ef8ad45123d19fb85bab4116950316e37'},
     'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/validation/controls.stdout': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
     'compat/android/pocket4/current-runtime-cohort-20261120/FILES.sha256': {'bytes': 983, 'sha256': '9c1c330bd29ea6d2bdbcde0ead6e27bafaaab07177fb22a6f90ef81c967466a2'},
@@ -1413,7 +1416,7 @@ BINARY_FILES = {
         'bytes': 7894116, 'sha256': '3e8b2fa1ea1ef3555ca7c82e27abe79a2be029c701f69ac55ef4c82484f247ad'},
     'compat/android/pocket4/runtime-current-source-r1/SOURCE-OVERLAY.tar.xz': {
         'bytes': 657032, 'sha256': '5a87a80bebfc2c63696ca9932fcea8d9485810f75a310f9fa1f792cab292390b'},
-    'compat/android/pocket4/current-publisher-delivery-source/FILES.sha256': {'bytes': 5219, 'sha256': 'c15f49f052877b85f7718be857720849ec09f289fe55f984ba617d30dc2ba208'},
+    'compat/android/pocket4/current-publisher-delivery-source/FILES.sha256': {'bytes': 5219, 'sha256': '48ffe9476250ccf78e4a4991aabfbfadfb9f7226ca0a8bd46e1d38d2f2d87c3f'},
     'compat/android/pocket4/current-publisher-delivery-source/MANIFEST.json': {
         'bytes': 19869, 'sha256': '872dc25ba3c8980b5ea67609b0a9fb17c6c31b925a823ee9642fe75d3218c699'},
     'compat/android/pocket4/current-publisher-delivery-source/SOURCE.tar.gz': {

@@ -1,0 +1,311 @@
+--- a/runtime/droidloom-supervisor/src/production_identity.rs
++++ b/runtime/droidloom-supervisor/src/production_identity.rs
+@@ -21,6 +21,10 @@
+ use thiserror::Error;
+ 
+ use crate::{CellSpec, IdRange};
++
++#[path = "production_identity_backings.rs"]
++mod backings;
++use backings::HeldBackings;
+ 
+ const MAX_AUTHORITY_BYTES: u64 = 1024 * 1024;
+ const MAX_RECORD_BYTES: u64 = 16 * 1024;
+@@ -562,9 +566,8 @@
+             return Err(IdentityError::BindingConflict);
+         }
+         self.revalidate()?;
+-        let data = BackingIdentity::read(&spec.data_dir.join("data.img"))?;
+-        let metadata = BackingIdentity::read(&spec.data_dir.join("metadata.img"))?;
+-        self.reserve_at(Path::new(REGISTRY), 0, cohort_sha256, data, metadata)
++        let backings = HeldBackings::open(&spec.data_dir, 0)?;
++        self.reserve_at(Path::new(REGISTRY), 0, cohort_sha256, backings)
+     }
+ 
+     fn reserve_at(
+@@ -572,8 +575,7 @@
+         root: &Path,
+         owner: u32,
+         cohort: &str,
+-        data: BackingIdentity,
+-        metadata: BackingIdentity,
++        backings: HeldBackings,
+     ) -> Result<IdentityLease> {
+         self.revalidate()?; // No registry write may precede fresh grant validation.
+         if cohort.len() != 64
+@@ -585,6 +587,10 @@
+                 "a lower-case cohort SHA256 is required".into(),
+             ));
+         }
++        // Validate both retained original inodes and their trusted parent
++        // before any registry directory, lock or durable record is created.
++        backings.revalidate(owner)?;
++        let (data, metadata) = backings.identities();
+         let parent = trusted_directory(
+             root.parent()
+                 .ok_or_else(|| IdentityError::UnsafeCustody("missing registry parent".into()))?,
+@@ -680,6 +686,7 @@
+         held_name_matches(&directory, &lease_name, &lease)?;
+         self.revalidate()?;
+         held_name_matches(&directory, "registry.lock", &global_lock)?;
++        backings.revalidate(owner)?;
+         let record = if let Some(previous) = existing {
+             previous
+         } else {
+@@ -710,6 +717,8 @@
+         if record != stored {
+             return Err(IdentityError::BindingConflict);
+         }
++        backings.verify_record(&record.data, &record.metadata)?;
++        backings.revalidate(owner)?;
+         let lease_metadata = lease.metadata()?;
+         let reservation_sha256 = Sha256::digest(&record_bytes).into();
+         Ok(IdentityLease {
+@@ -722,6 +731,7 @@
+             record_metadata,
+             lease_metadata,
+             reservation_sha256,
++            backings,
+             authority: IdentityAuthority {
+                 request: self.request.clone(),
+                 seals: self.seals.clone(),
+@@ -737,31 +747,6 @@
+     device: u64,
+     inode: u64,
+     bytes: u64,
+-}
+-
+-impl BackingIdentity {
+-    fn read(path: &Path) -> Result<Self> {
+-        let parent = trusted_directory(
+-            path.parent()
+-                .ok_or_else(|| IdentityError::UnsafeCustody("data parent missing".into()))?,
+-            0,
+-            false,
+-        )?;
+-        let name = path
+-            .file_name()
+-            .and_then(|name| name.to_str())
+-            .ok_or_else(|| IdentityError::UnsafeCustody("data name missing".into()))?;
+-        // O_PATH observes an inode without opening or reading its image body.
+-        let file = open_at(&parent, name, libc::O_PATH, 0)?;
+-        let meta = file.metadata()?;
+-        trusted_file(&meta, 0, u64::MAX)?;
+-        held_name_matches(&parent, name, &file)?;
+-        Ok(Self {
+-            device: meta.dev(),
+-            inode: meta.ino(),
+-            bytes: meta.len(),
+-        })
+-    }
+ }
+ 
+ #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+@@ -833,6 +818,7 @@
+     record_metadata: Metadata,
+     lease_metadata: Metadata,
+     reservation_sha256: [u8; 32],
++    backings: HeldBackings,
+     authority: IdentityAuthority,
+ }
+ 
+@@ -861,6 +847,7 @@
+ 
+     /// Keep the existing flock open for an owned mount's uncertain lifetime.
+     /// This is the same open-file-description, not a new lock or grant token.
++    /// It does not transfer the lease's metadata-only backing descriptors.
+     pub(crate) fn broker_retain_reservation(&self) -> Result<File> {
+         self.revalidate_for_broker()?;
+         let retained = self.lease.try_clone()?;
+@@ -920,6 +907,9 @@
+ 
+     pub(crate) fn revalidate_for_broker(&self) -> Result<()> {
+         self.authority.revalidate()?;
++        self.backings
++            .verify_record(&self.record.data, &self.record.metadata)?;
++        self.backings.revalidate(self.owner)?;
+         let directory = trusted_directory(&self.root, self.owner, true)?;
+         let actual = directory.metadata()?;
+         let held = self.directory.metadata()?;
+@@ -946,6 +936,7 @@
+             return Err(IdentityError::AuthorityChanged);
+         }
+         self.authority.revalidate()?;
++        self.backings.revalidate(self.owner)?;
+         Ok(())
+     }
+ }
+@@ -1110,6 +1101,19 @@
+             for p in [&paths.passwd, &paths.group, &paths.subuid, &paths.subgid] {
+                 fs::set_permissions(p, fs::Permissions::from_mode(0o600)).unwrap();
+             }
++            let data = root.path().join("backings");
++            fs::create_dir(&data).unwrap();
++            fs::set_permissions(&data, fs::Permissions::from_mode(0o700)).unwrap();
++            for (name, bytes) in [("data.img", 4096), ("metadata.img", 1024)] {
++                OpenOptions::new()
++                    .write(true)
++                    .create_new(true)
++                    .mode(0o600)
++                    .open(data.join(name))
++                    .unwrap()
++                    .set_len(bytes)
++                    .unwrap();
++            }
+             Self { root, paths, owner }
+         }
+         fn authority(&self) -> Result<IdentityAuthority> {
+@@ -1131,16 +1135,7 @@
+                 &self.root.path().join("registry"),
+                 self.owner,
+                 cohort,
+-                BackingIdentity {
+-                    device: 1,
+-                    inode: 2,
+-                    bytes: 32 << 30,
+-                },
+-                BackingIdentity {
+-                    device: 1,
+-                    inode: 3,
+-                    bytes: 128 << 20,
+-                },
++                HeldBackings::open(&self.root.path().join("backings"), self.owner)?,
+             )
+         }
+     }
+@@ -1562,4 +1557,134 @@
+         .unwrap();
+         assert!(lease.revalidate_for_broker().is_err());
+     }
+-}
++
++    #[test]
++    fn backing_path_replacement_never_rebinds_or_reclaims_the_reservation() {
++        for name in ["data.img", "metadata.img"] {
++            let f = Fixture::new();
++            let authority = f.authority().unwrap();
++            let lease = f.reserve(&authority, &cohort()).unwrap();
++            let record = f.root.path().join("registry/u1000.json");
++            let original_record = fs::read(&record).unwrap();
++            let path = f.root.path().join("backings").join(name);
++            let body = fs::read(&path).unwrap();
++            fs::rename(&path, path.with_extension("saved")).unwrap();
++            fs::write(&path, &body).unwrap();
++            fs::set_permissions(&path, fs::Permissions::from_mode(0o600)).unwrap();
++            assert!(lease.revalidate_for_broker().is_err());
++            drop(lease);
++            assert!(matches!(
++                f.reserve(&authority, &cohort()),
++                Err(IdentityError::BindingConflict)
++            ));
++            assert_eq!(fs::read(&record).unwrap(), original_record);
++            assert_eq!(fs::read(&path).unwrap(), body);
++        }
++    }
++
++    #[test]
++    fn backing_parent_replacement_is_rejected_with_original_inodes_still_held() {
++        let f = Fixture::new();
++        let lease = f.reserve(&f.authority().unwrap(), &cohort()).unwrap();
++        let record = f.root.path().join("registry/u1000.json");
++        let original_record = fs::read(&record).unwrap();
++        let parent = f.root.path().join("backings");
++        let saved = f.root.path().join("held-original-backings");
++        fs::rename(&parent, &saved).unwrap();
++        fs::create_dir(&parent).unwrap();
++        fs::set_permissions(&parent, fs::Permissions::from_mode(0o700)).unwrap();
++        for name in ["data.img", "metadata.img"] {
++            fs::copy(saved.join(name), parent.join(name)).unwrap();
++        }
++        assert!(matches!(
++            lease.revalidate_for_broker(),
++            Err(IdentityError::AuthorityChanged)
++        ));
++        assert_eq!(fs::read(&record).unwrap(), original_record);
++        assert!(saved.join("data.img").is_file());
++        assert!(saved.join("metadata.img").is_file());
++    }
++
++    #[test]
++    fn backing_aliases_fail_before_any_registry_write() {
++        for alias in ["hardlink", "symlink", "extra-hardlink"] {
++            let f = Fixture::new();
++            let parent = f.root.path().join("backings");
++            let data = parent.join("data.img");
++            let metadata = parent.join("metadata.img");
++            match alias {
++                "hardlink" => {
++                    fs::remove_file(&metadata).unwrap();
++                    fs::hard_link(&data, &metadata).unwrap();
++                }
++                "symlink" => {
++                    fs::remove_file(&metadata).unwrap();
++                    symlink(&data, &metadata).unwrap();
++                }
++                _ => fs::hard_link(&data, parent.join("extra-name")).unwrap(),
++            }
++            assert!(matches!(
++                f.reserve(&f.authority().unwrap(), &cohort()),
++                Err(IdentityError::UnsafeCustody(_))
++            ));
++            assert!(!f.root.path().join("registry").exists());
++        }
++    }
++
++    #[test]
++    fn backing_size_or_access_changes_fail_without_rewriting_the_record() {
++        for name in ["data.img", "metadata.img"] {
++            for change in ["size", "mode"] {
++                let f = Fixture::new();
++                let lease = f.reserve(&f.authority().unwrap(), &cohort()).unwrap();
++                let record = f.root.path().join("registry/u1000.json");
++                let original_record = fs::read(&record).unwrap();
++                let path = f.root.path().join("backings").join(name);
++                if change == "size" {
++                    let file = OpenOptions::new().write(true).open(&path).unwrap();
++                    file.set_len(file.metadata().unwrap().len() + 1).unwrap();
++                } else {
++                    fs::set_permissions(&path, fs::Permissions::from_mode(0o660)).unwrap();
++                }
++                assert!(lease.revalidate_for_broker().is_err());
++                assert_eq!(fs::read(&record).unwrap(), original_record);
++            }
++        }
++    }
++
++    #[test]
++    fn backing_content_and_time_changes_do_not_replace_stable_identity() {
++        let f = Fixture::new();
++        let lease = f.reserve(&f.authority().unwrap(), &cohort()).unwrap();
++        let record = f.root.path().join("registry/u1000.json");
++        let original_record = fs::read(&record).unwrap();
++        for name in ["data.img", "metadata.img"] {
++            let path = f.root.path().join("backings").join(name);
++            let mut file = OpenOptions::new().write(true).open(&path).unwrap();
++            let before = file.metadata().unwrap();
++            file.write_all(&vec![0x5a; before.len() as usize]).unwrap();
++            file.set_modified(std::time::UNIX_EPOCH + std::time::Duration::from_secs(123))
++                .unwrap();
++            let after = file.metadata().unwrap();
++            assert_eq!(
++                (before.dev(), before.ino(), before.len()),
++                (after.dev(), after.ino(), after.len())
++            );
++            assert_ne!(
++                (before.mtime(), before.mtime_nsec()),
++                (after.mtime(), after.mtime_nsec())
++            );
++            lease.revalidate_for_broker().unwrap();
++            // An O_PATH handle still identifies a protected backing. This
++            // cannot become an admissible public artifact after body writes.
++            let parent =
++                trusted_directory(&f.root.path().join("backings"), f.owner, false).unwrap();
++            let held = open_at(&parent, name, libc::O_PATH, 0).unwrap();
++            assert!(matches!(
++                lease.broker_reject_backing_body(&held),
++                Err(IdentityError::UnsafeCustody(_))
++            ));
++        }
++        assert_eq!(fs::read(&record).unwrap(), original_record);
++    }
++}

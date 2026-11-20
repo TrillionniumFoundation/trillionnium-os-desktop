@@ -1749,7 +1749,7 @@ jobs:
             ${{ runner.temp }}/runtime-d6-ci-logs/*.stderr
 
   runtime-current-complete-producer:
-    name: Current source - 1558 ordinary cases, 19 releases, examples and docs
+    name: Current source - 1564 ordinary cases, 19 releases, examples and docs
     runs-on: ubuntu-24.04
     timeout-minutes: 140
     env:
@@ -1761,8 +1761,8 @@ jobs:
       GIT_TERMINAL_PROMPT: '0'
       # Pin the complete reviewed capsule inventory outside the capsule itself.
       CURRENT_SOURCE_INVENTORY_SHA256: 075affecd123cc60e30eadf70ae95cc9ec34d5686694bedf0914014c36d04c0b
-      CURRENT_COHORT_INVENTORY_SHA256: b63deac3354d4320d343986faccc2a4c25e1b9691c4d28aec928c9fdfe832c89
-      CURRENT_COMBINED_SOURCE_INVENTORY_SHA256: f41a0a9225422d13e8549519ac06b787f998b259f83a8aff949e78463165fafa
+      CURRENT_COHORT_INVENTORY_SHA256: 078ee44241e588d8942869336798e7059ee33ad5e0a7ba232b1a6b2522f5329d
+      CURRENT_COMBINED_SOURCE_INVENTORY_SHA256: 56277deace25f558a4998e1cfdc830fe46bdd1e828f154d9b250fa8fb3e7d08d
       CURRENT_MATERIALIZATION_INVENTORY_SHA256: ea75a0a28022944b80acebb65aca9ce49c9c66fbd519531da7677bbd114ed35e
       CURRENT_LEAF_INVENTORY_SHA256: b932f58f5a3eaf7feea4d458fbd67d2e248a29a5aeb45eb940c6f2c7450f6374
     steps:
@@ -1838,7 +1838,7 @@ jobs:
           capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1"
           timeout --signal=TERM --kill-after=30s 1860s bash "$capsule/prepare_ci.sh" \
             --work "$RUNNER_TEMP/current-dependencies"
-      - name: Run 1558 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
+      - name: Run 1564 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
         timeout-minutes: 92
         shell: bash
         run: |

@@ -66,6 +66,22 @@
     },
     {
       "after": {
+        "bytes": 7464,
+        "git_blob": "bca9eb729d3b5773d9203066d1107d9f71ebbf1f",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_identity_backings.rs",
+        "sha256": "801456b592c15d9a45c9b989246c6b1b6a336b4c153491eb1000b836a7a478a1"
+      },
+      "component": "backing_custody",
+      "path": "runtime/droidloom-supervisor/src/production_identity_backings.rs",
+      "payload": {
+        "bytes": 7464,
+        "path": "additions/runtime/droidloom-supervisor/src/production_identity_backings.rs",
+        "sha256": "801456b592c15d9a45c9b989246c6b1b6a336b4c153491eb1000b836a7a478a1"
+      }
+    },
+    {
+      "after": {
         "bytes": 12575,
         "git_blob": "d5e2dfa44e2dbcb4c5f51b9320b0024b9255eee6",
         "mode": "100644",
@@ -274,6 +290,29 @@
         "sha256": "e16c7ab4fd5ca799b0a8a793a01c6104da26eb971264ef5c039de2508b41dfa0"
       },
       "path": "runtime/droidloom-supervisor/src/production_control.rs"
+    },
+    {
+      "after": {
+        "bytes": 65076,
+        "git_blob": "fa352b47cbe77053b9f57bc9c67f57c77ab3e350",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_identity.rs",
+        "sha256": "593726a00f3cc481ab24444ab9ec99bc132e5e3818f6f2da9666b2909953940d"
+      },
+      "before": {
+        "bytes": 58995,
+        "git_blob": "a2579703c6455b90821969fc0574bb5d42e7562c",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_identity.rs",
+        "sha256": "953b5b896cf0f697082eb34c67057414f2874bb1a07a9d78e3355636c59f7e64"
+      },
+      "component": "backing_custody",
+      "patch": {
+        "bytes": 12644,
+        "path": "patches/runtime/droidloom-supervisor/src/production_identity.rs.patch",
+        "sha256": "e6b14ea69cfc637192ddb5e827174d519a7ede8448b51955d9c9a8e695c3bbb4"
+      },
+      "path": "runtime/droidloom-supervisor/src/production_identity.rs"
     },
     {
       "after": {
@@ -679,6 +718,34 @@
         "files": 2352,
         "tree": "62380cd8a0ee9a6770b72cfda597ee84c140828a"
       }
+    },
+    {
+      "added_paths": [
+        "runtime/droidloom-supervisor/src/production_identity_backings.rs"
+      ],
+      "addition_patch_header": "dev_null",
+      "changed_paths": [
+        "runtime/droidloom-supervisor/src/production_identity.rs"
+      ],
+      "name": "backing_custody",
+      "patch": {
+        "bytes": 20417,
+        "sha256": "8a1517c22de8eb52c0808ab394c437f3794c19a9b7fe6fa0682b44d61708e7ce"
+      },
+      "review": {
+        "bytes": 9803,
+        "path": "component-reviews/backing_custody.json",
+        "sha256": "42f79ea20b100fe8d48741fda8ab776ef50cdc13597be168a2185eba5276bdbb"
+      },
+      "rows": {
+        "bytes": 700524,
+        "sha256": "d00005cde6963a7f1c54c9405534f6a894da4b13503eed04dce1635e032ef7af"
+      },
+      "source": {
+        "bytes": 44273691,
+        "files": 2353,
+        "tree": "f81f82393cf2f95fab7f9d00145add9cadd2821c"
+      }
     }
   ],
   "parent_packet": {
@@ -709,8 +776,8 @@
     "source_only": true
   },
   "successor": {
-    "source_bytes": 44743370,
-    "source_files": 2359,
-    "source_tree": "7a9fffe94f39d18b9bc13a5659c2c2fc3607a102"
+    "source_bytes": 44756915,
+    "source_files": 2360,
+    "source_tree": "56548053c91840f2dd3de50db45b705069d35fa9"
   }
 }

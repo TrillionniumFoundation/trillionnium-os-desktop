@@ -47,8 +47,8 @@ def configuration():
         registered[key] = row
     VERIFY.need(set(registered) == set(result[0]) and len({k[0] for k in result[0]}) == 28,
                 'all28 packages and49 test targets')
-    VERIFY.need(sum(len(r['all']) for r in registered.values()) == 1588
-                and sum(len(r['ignored']) for r in registered.values()) == 30, 'complete1558 ordinary/30 ignored (1588 total) catalog')
+    VERIFY.need(sum(len(r['all']) for r in registered.values()) == 1594
+                and sum(len(r['ignored']) for r in registered.values()) == 30, 'complete1564 ordinary/30 ignored (1594 total) catalog')
     VERIFY.need(len(exact) == len(set(exact)) == 64
                 and set(exact) <= set(registered[UPDATER]['all']) - set(registered[UPDATER]['ignored']),
                 '64 disjoint ordinary updater names')
@@ -424,7 +424,7 @@ def main():
     for key in ('LD_PRELOAD','FAKEROOTKEY','FAKED_MODE','DROIDLOOM_IMAGE_POLICY_TEST','DROIDLOOM_GAPPS_EROFS_TEST',
                 'DROIDLOOM_TEST_DRM_NODE','DBUS_SESSION_BUS_ADDRESS','WAYLAND_DISPLAY','DISPLAY','RUST_MIN_STACK','CARGO_NET_OFFLINE'):
         env.pop(key, None)
-    result = {'schema':'p4-current2359-fresh-ordinary-and-release-ci-v1','state':'RUNNING',
+    result = {'schema':'p4-current2360-fresh-ordinary-and-release-ci-v1','state':'RUNNING',
         'source_commit':VERIFY.HEAD_COMMIT,'source_parent_commit':VERIFY.PARENT_COMMIT,
         'source_tree':VERIFY.HEAD_TREE,'source_files':VERIFY.SOURCE_FILES,
         'source_parent_kind':'explicit_root_snapshot_from_verified_complete_tree',
@@ -523,8 +523,8 @@ def main():
                 row['actual_tests'] = VERIFY.test_terminal(raw.decode(),passed,cat['ignored'],0,catalog=cat['all'])
                 result['fresh_ordinary_passed'] += len(passed)
             VERIFY.need(elf(item['path']) == frozen[key], 'harness changed after execution')
-        VERIFY.need(result['fresh_ordinary_passed'] == 1558 and len(result['ignored_not_executed']) == 30,
-                    'complete fresh1558 ordinary and30 unchanged ignored cases required')
+        VERIFY.need(result['fresh_ordinary_passed'] == 1564 and len(result['ignored_not_executed']) == 30,
+                    'complete fresh1564 ordinary and30 unchanged ignored cases required')
         for key,ref in debug_frozen.items():
             VERIFY.need(elf(debug[key]['path']) == ref, 'normal debug binary changed during ordinary tests')
         released, release_by_target = {}, {}
@@ -607,7 +607,7 @@ def main():
                     'complete source input packets changed during the full cohort')
         result['all_input_packet_bookends_equal'] = True
         VERIFY.need(time.monotonic() < deadline, 'whole CI deadline expired during final artifact/source readback')
-        result['state'] = 'ALL1558_ORDINARY_AND19_NORMAL_RELEASE_BUILDS_PASSED'
+        result['state'] = 'ALL1564_ORDINARY_AND19_NORMAL_RELEASE_BUILDS_PASSED'
     except BaseException as error:
         result['state'] = 'FAILED'
         result['errors'].append({'type':type(error).__name__,'message':str(error),'traceback':traceback.format_exc()})
@@ -634,7 +634,7 @@ def main():
         'doc_targets_checked':len(result['doc_targets_checked']),
         'fresh_doc_tests_passed':result['fresh_doc_tests_passed'],
         'report':str(report),'production_ready':False},sort_keys=True))
-    return 0 if result['state'] == 'ALL1558_ORDINARY_AND19_NORMAL_RELEASE_BUILDS_PASSED' else 1
+    return 0 if result['state'] == 'ALL1564_ORDINARY_AND19_NORMAL_RELEASE_BUILDS_PASSED' else 1
 
 
 if __name__ == '__main__':
