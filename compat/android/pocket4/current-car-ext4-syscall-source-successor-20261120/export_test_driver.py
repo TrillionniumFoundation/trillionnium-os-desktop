@@ -24,6 +24,21 @@ def integer(value, minimum=0):
     return type(value) is int and value >= minimum
 
 
+def recorded_harness_pin(ref):
+    """Validate the JSON record and restore its F9 tuple for actual ELF checks."""
+    need(type(ref) is dict
+         and set(ref) == {'package', 'target', 'path', 'bytes', 'sha256', 'identity'},
+         'exact recorded harness pin')
+    need(all(type(ref[key]) is str for key in ('package', 'target', 'path', 'sha256'))
+         and re.fullmatch('[0-9a-f]{64}', ref['sha256']) and integer(ref['bytes'], 1)
+         and type(ref['identity']) is list and len(ref['identity']) == 9
+         and all(integer(value) for value in ref['identity']), 'typed actual executable identity')
+    # JSON arrays decode as lists, while the original f9/elf readers return tuples.
+    # Retain the JSON record unchanged for the exported provenance manifest.
+    return {key: tuple(ref[key]) if key == 'identity' else ref[key]
+            for key in ('path', 'bytes', 'sha256', 'identity')}
+
+
 def check_terminal(result, source, catalog, bins, docs, head, run_id, inventory):
     """Pure report checks; source, logs and actual OFD checks are separate below."""
     ordinary = sum(len(row['all']) - len(row['ignored']) for row in catalog.values())
@@ -148,18 +163,13 @@ def main():
     need(set(compiled) == set(expected_tests), 'all 49 actual compilation targets required')
     harnesses = {}
     for ref in result['harnesses']:
-        need(set(ref) == {'package', 'target', 'path', 'bytes', 'sha256', 'identity'}, 'exact recorded harness pin')
-        need(all(type(ref[key]) is str for key in ('package', 'target', 'path', 'sha256'))
-             and re.fullmatch('[0-9a-f]{64}', ref['sha256']) and integer(ref['bytes'], 1)
-             and type(ref['identity']) is list and len(ref['identity']) == 9
-             and all(integer(value) for value in ref['identity']), 'typed actual executable identity')
+        pin = recorded_harness_pin(ref)
         key = (ref['package'], ref['target'])
         need(key in compiled and key not in harnesses and ref['path'] == str(compiled[key]['path']),
              'harness pin must join to one actual compiler-artifact executable')
-        harnesses[key] = ref
+        harnesses[key] = (ref, pin)
     need(set(harnesses) == set(expected_tests), 'complete original harness pins required')
-    selected_ref = harnesses[KEY]
-    original_ref = {key: selected_ref[key] for key in ('path', 'bytes', 'sha256', 'identity')}
+    selected_ref, original_ref = harnesses[KEY]
     original = compiled[KEY]['path']
     need(ci.elf(original) == original_ref, 'actual original compiler ELF differs from executed CI pin')
     index = sorted(compiled).index(KEY)

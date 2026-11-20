@@ -1,14 +1,98 @@
-"""Pure rejection controls; no Cargo, ELF execution, namespace or host changes."""
+"""Report and real ELF read controls; no Cargo, ELF execution or namespaces."""
 import copy
 import importlib.util
 import json
+import os
 from pathlib import Path
+import shutil
+import sys
+import tempfile
 import unittest
 
 HERE = Path(__file__).resolve().parent
 SPEC = importlib.util.spec_from_file_location('test_driver_export', HERE / 'export_test_driver.py')
 EXPORT = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(EXPORT)
+CI_SPEC = importlib.util.spec_from_file_location('test_driver_actual_ci', HERE / 'run_ci.py')
+CI = importlib.util.module_from_spec(CI_SPEC)
+CI_SPEC.loader.exec_module(CI)
+
+
+class HarnessIdentityControls(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory(prefix='test-driver-json-controls-')
+        self.addCleanup(temporary.cleanup)
+        self.binary = Path(temporary.name).resolve() / 'unexecuted-elf'
+        shutil.copyfile(Path(sys.executable).resolve(), self.binary)
+        self.binary.chmod(0o700)
+        self.actual = CI.elf(self.binary)
+        self.good = json.loads(json.dumps({
+            'package': EXPORT.KEY[0], 'target': EXPORT.KEY[1], **self.actual}))
+
+    def bound(self, value):
+        pin = EXPORT.recorded_harness_pin(value)
+        EXPORT.need(CI.elf(self.binary) == pin,
+                    'actual original compiler ELF differs from executed CI pin')
+        return pin
+
+    def test_actual_elf_json_roundtrip_preserves_all_held_identity_fields(self):
+        before = copy.deepcopy(self.good)
+        self.assertIs(type(self.actual['identity']), tuple)
+        self.assertIs(type(self.good['identity']), list)
+        pin = self.bound(self.good)
+        self.assertEqual(pin, self.actual)
+        self.assertEqual(len(pin['identity']), 9)
+        fd = os.open(self.binary, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+        try:
+            self.assertEqual(CI.VERIFY.f9(os.fstat(fd)), pin['identity'])
+            self.assertEqual(CI.VERIFY.f9(self.binary.lstat()), pin['identity'])
+            self.assertEqual(CI.elf(self.binary), pin)
+        finally:
+            os.close(fd)
+        self.assertEqual(self.good, before)
+        self.assertIs(type(self.good['identity']), list)
+
+    def test_malformed_recorded_identity_is_rejected(self):
+        for identity in (None, (), tuple(self.good['identity']), {}, 'not-an-array',
+                         [], self.good['identity'][:-1], self.good['identity'] + [0]):
+            with self.subTest(identity=identity), self.assertRaises(RuntimeError):
+                self.bound({**self.good, 'identity': identity})
+        for index in range(9):
+            for value in (True, False, -1, 0.0, '0', None):
+                bad = copy.deepcopy(self.good)
+                bad['identity'][index] = value
+                with self.subTest(index=index, value=value), self.assertRaises(RuntimeError):
+                    self.bound(bad)
+
+    def test_harness_fields_are_exact_and_typed(self):
+        for field in self.good:
+            bad = copy.deepcopy(self.good)
+            del bad[field]
+            with self.subTest(missing=field), self.assertRaises(RuntimeError):
+                self.bound(bad)
+        with self.assertRaises(RuntimeError):
+            self.bound({**self.good, 'extra': 0})
+        for field, value in [('package', False), ('target', []), ('path', None),
+                             ('bytes', True), ('bytes', 0), ('bytes', -1), ('bytes', 1.0),
+                             ('sha256', 0), ('sha256', 'A' * 64), ('sha256', '0' * 63)]:
+            with self.subTest(field=field, value=value), self.assertRaises(RuntimeError):
+                self.bound({**self.good, field: value})
+
+    def test_changed_pin_or_actual_elf_is_rejected(self):
+        for index in range(9):
+            bad = copy.deepcopy(self.good)
+            bad['identity'][index] += 1
+            with self.subTest(changed_identity=index), self.assertRaises(RuntimeError):
+                self.bound(bad)
+        other_sha = ('0' if self.good['sha256'][0] != '0' else '1') + self.good['sha256'][1:]
+        for field, value in [('path', str(self.binary) + '-other'),
+                             ('bytes', self.good['bytes'] + 1), ('sha256', other_sha)]:
+            with self.subTest(changed_field=field), self.assertRaises(RuntimeError):
+                self.bound({**self.good, field: value})
+        with self.binary.open('ab') as stream:
+            stream.write(b'changed after the recorded pin')
+        with self.assertRaises(RuntimeError):
+            self.bound(self.good)
 
 
 class ReportControls(unittest.TestCase):
