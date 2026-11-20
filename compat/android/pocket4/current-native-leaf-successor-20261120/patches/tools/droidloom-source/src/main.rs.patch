@@ -1,0 +1,55 @@
+--- a/tools/droidloom-source/src/main.rs
++++ b/tools/droidloom-source/src/main.rs
+@@ -25,6 +25,7 @@
+     ProductionFull,
+     ProductionFullCmake,
+     ProductionFullLint,
++    ProductionFullApexTests,
+ }
+ 
+ #[derive(Debug, Subcommand)]
+@@ -85,6 +86,7 @@
+         Profile::ProductionFull => droidloom_source::production_full::build_plan,
+         Profile::ProductionFullCmake => droidloom_source::production_cmake::build_plan,
+         Profile::ProductionFullLint => droidloom_source::production_lint::build_plan,
++        Profile::ProductionFullApexTests => droidloom_source::production_apex_tests::build_plan,
+     };
+     type SourceOperation = fn(&Path, &SparseSourceLock, &Path) -> Result<MaterializedManifest, SourceError>;
+     let (materialize, reconcile, verify_materialized): (SourceOperation, SourceOperation, SourceOperation) = match cli.profile {
+@@ -93,6 +95,7 @@
+         Profile::ProductionFull => (droidloom_source::production_full::materialize, droidloom_source::production_full::reconcile, droidloom_source::production_full::verify_materialized),
+         Profile::ProductionFullCmake => (droidloom_source::production_cmake::materialize, droidloom_source::production_cmake::reconcile, droidloom_source::production_cmake::verify_materialized),
+         Profile::ProductionFullLint => (droidloom_source::production_lint::materialize, droidloom_source::production_lint::reconcile, droidloom_source::production_lint::verify_materialized),
++        Profile::ProductionFullApexTests => (droidloom_source::production_apex_tests::materialize, droidloom_source::production_apex_tests::reconcile, droidloom_source::production_apex_tests::verify_materialized),
+     };
+     match cli.command {
+         Command::VerifyLock { lock } => {
+@@ -143,6 +146,28 @@
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++
++    #[test]
++    fn source_cli_requires_explicit_original_apex_test_providers() {
++        for argv in [
++            ["droidloom-source", "--profile", "production-full-apex-tests", "verify-lock"],
++            ["droidloom-source", "verify-lock", "--profile", "production-full-apex-tests"],
++        ] {
++            let parsed = Cli::try_parse_from(argv).unwrap();
++            assert!(matches!(parsed.profile, Profile::ProductionFullApexTests));
++        }
++        let default = Cli::try_parse_from(["droidloom-source", "verify-lock"]).unwrap();
++        assert!(matches!(default.profile, Profile::Audio));
++        let prior = Cli::try_parse_from([
++            "droidloom-source", "--profile", "production-full-lint", "verify-lock",
++        ]).unwrap();
++        assert!(matches!(prior.profile, Profile::ProductionFullLint));
++        for alias in ["apex", "test", "production-latest", "unbounded"] {
++            assert!(Cli::try_parse_from([
++                "droidloom-source", "--profile", alias, "verify-lock",
++            ]).is_err());
++        }
++    }
+ 
+     #[test]
+     fn source_cli_requires_explicit_complete_healthfitness_lint_profile() {

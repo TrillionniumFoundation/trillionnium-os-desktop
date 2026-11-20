@@ -1,0 +1,72 @@
+{
+  "apk": "/home/alex/work/p4-app-library-custody-20261120-r1/payloads/com.sankuai.meituan.takeoutnew/base.apk",
+  "apk_bytes": 65623708,
+  "apk_identity_unchanged": true,
+  "apk_sha256": "ff35e3525b1bd353209bb3694c2f15c7076169571a16d3c377b2e623a6396461",
+  "commands": [
+    {
+      "argv": [
+        "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-Xmx192m",
+        "-jar",
+        "/home/alex/work/p4-retained-play-x86_64-revalidation-20261119-audit-r1/sdk37/lib/apksigner.jar",
+        "verify",
+        "--min-sdk-version",
+        "37",
+        "--max-sdk-version",
+        "37",
+        "--verbose",
+        "--print-certs",
+        "/home/alex/work/p4-app-library-custody-20261120-r1/payloads/com.sankuai.meituan.takeoutnew/base.apk"
+      ],
+      "exit_code": 0,
+      "stderr": "WARNING: A restricted method in java.lang.System has been called\nWARNING: java.lang.System::loadLibrary has been called by org.conscrypt.NativeLibraryUtil in an unnamed module (file:/home/alex/work/p4-retained-play-x86_64-revalidation-20261119-audit-r1/sdk37/lib/apksigner.jar)\nWARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module\nWARNING: Restricted methods will be blocked in a future release unless native access is enabled\n\n",
+      "stdout": "Verifies\nVerified using v1 scheme (JAR signing): false\nVerified using v2 scheme (APK Signature Scheme v2): true\nVerified using v3 scheme (APK Signature Scheme v3): false\nVerified using v3.1 scheme (APK Signature Scheme v3.1): false\nVerified using v3.2 scheme (APK Signature Scheme v3.2): false\nVerified using v4 scheme (APK Signature Scheme v4): false\nVerified for SourceStamp: false\nNumber of signers: 1\nV2 Signer: certificate DN: CN=CHEN Liang, OU=meituan.com, O=Sankuai Technology Co. Ltd., L=Beijing, ST=Beijing, C=CN\nV2 Signer: certificate SHA-256 digest: 73a611c3a01dc6e11388873daeee1e556ad9e5768e5c222055f508a24c3a8215\nV2 Signer: certificate SHA-1 digest: 0b7d82cfcf3875d06cd3c135c2a5ad1d5597f128\nV2 Signer: certificate MD5 digest: 638c81261479c2104ede3f2518e91725\nV2 Signer: key algorithm: RSA\nV2 Signer: key size (bits): 1024\nV2 Signer: public key SHA-256 digest: 7ed876be9c881811cdf056dea8a0deec6d9f0669a540e5a5ce870e2ec0169d1a\nV2 Signer: public key SHA-1 digest: 5d0014f6ead9de9e3323cbeaf77cda3feb94b4e7\nV2 Signer: public key MD5 digest: 967dd954816465f9a055a6b15fc4ba13\n"
+    },
+    {
+      "argv": [
+        "/usr/lib/jvm/java-25-openjdk-amd64/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-Xmx192m",
+        "-jar",
+        "/home/alex/work/p4-retained-play-x86_64-revalidation-20261119-audit-r1/sdk37/lib/apksigner.jar",
+        "lineage",
+        "--in",
+        "/home/alex/work/p4-app-library-custody-20261120-r1/payloads/com.sankuai.meituan.takeoutnew/base.apk",
+        "--print-certs"
+      ],
+      "exit_code": 1,
+      "stderr": "WARNING: A restricted method in java.lang.System has been called\nWARNING: java.lang.System::loadLibrary has been called by org.conscrypt.NativeLibraryUtil in an unnamed module (file:/home/alex/work/p4-retained-play-x86_64-revalidation-20261119-audit-r1/sdk37/lib/apksigner.jar)\nWARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module\nWARNING: Restricted methods will be blocked in a future release unless native access is enabled\n\nThe provided APK does not contain a valid V3 nor V3.1 signature block.\n",
+      "stdout": ""
+    }
+  ],
+  "installed_signer_sha256": "8b6737279ed0a9839ec3c4b256256e68eb1e5f7e1386b0dc6c38eb7a04742bbd",
+  "observed_utc": "2026-11-20T10:34:51Z",
+  "package_mutation": false,
+  "private_data_read": false,
+  "runtime_qualified": false,
+  "schema": "p4-meituan-official-signing-lineage-observation-v1",
+  "execution_receipt": {
+    "host": "pocket4",
+    "session_id": "dpty-c3b78ea6c39f11515faec44bf130afa367a3978db0df17fd4270e042b12f6e36",
+    "archive_path": "/home/alex/.local/state/hepta-runtime-mac-worker/terminals/dpty-c3b78ea6c39f11515faec44bf130afa367a3978db0df17fd4270e042b12f6e36/output.log",
+    "exit_code": 0,
+    "output_complete": true,
+    "bytes": 3503,
+    "sha256": "b49b066065c8e13ed95daf7470157fbf9dafaee84ef918c9af31c5096db43bf1"
+  },
+  "result": {
+    "official_apk_signature_valid_on_sdk37": true,
+    "signer_matches_installed": false,
+    "proof_of_rotation_to_installed_signer_present": false,
+    "data_preserving_in_place_upgrade_qualified": false,
+    "production_ready": false
+  },
+  "interpretation": "The exact official APK verifies using v2, with no v3 or v3.1 signing block. The observed old signer differs, so this input does not establish a trusted signing lineage for an in-place data-preserving upgrade. Original userdata and migration hold remain unchanged.",
+  "primary_reference_urls": [
+    "https://android.googlesource.com/platform/tools/apksig/+/master/src/apksigner/java/com/android/apksigner/help_lineage.txt",
+    "https://android.googlesource.com/platform/tools/apksig/+/master/src/apksigner/java/com/android/apksigner/help_rotate.txt"
+  ]
+}
+

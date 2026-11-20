@@ -1,0 +1,21 @@
+--- a/tools/droidloom-update/src/settings_asb_security_tests.rs
++++ b/tools/droidloom-update/src/settings_asb_security_tests.rs
+@@ -303,11 +303,16 @@
+                 purpose,
+                 sparse_paths,
+             } = current;
+-            // Keep all original cones and append the complete original lint
+-            // directory only for this one superproject-pinned provider.
++            // Keep all original cones, the complete lint provider and both
++            // complete APEX test providers at their original superproject pins.
+             let mut expected_sparse = previous.sparse_paths.clone();
+             if path == Path::new(droidloom_source::production_lint::HEALTH_PATH) {
+                 expected_sparse.push(droidloom_source::production_lint::LINT_PATH.into());
++            }
++            for &(provider, _, cone) in droidloom_source::production_apex_tests::PROVIDERS {
++                if path == Path::new(provider) {
++                    expected_sparse.push(cone.into());
++                }
+             }
+             assert_eq!(
+                 (path, name, commit, purpose, sparse_paths),

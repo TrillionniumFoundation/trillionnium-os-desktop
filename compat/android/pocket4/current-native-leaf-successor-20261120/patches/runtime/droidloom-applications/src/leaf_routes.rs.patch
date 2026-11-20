@@ -1,0 +1,275 @@
+--- a/runtime/droidloom-applications/src/leaf_routes.rs
++++ b/runtime/droidloom-applications/src/leaf_routes.rs
+@@ -17,13 +17,18 @@
+ use sha2::{Digest, Sha256};
+ 
+ use super::{FilePin, pinned};
++use super::leaf_release::NativeRelease;
+ 
+ const QUALIFICATION: &str = "/home/alex/work/pocket4-android-final/qualification";
+ const SELECTION_PATH: &str =
+-    "/home/alex/work/p4-app-acceptance-preboot-11ea-20261119-r1/ihg-5.111.1-r1/selection-13.json";
+-const SELECTION_BYTES: u64 = 14314;
+-const SELECTION_SHA: &str = "9c5c77c387711dac2f7387a880932e40f0148939feca2a6348daa939587f9598";
++    "/home/alex/work/p4-calendar-resource-consumer-20261120-3b9d-r1/selection-integration/selection-13.json";
++const SELECTION_BYTES: u64 = 12745;
++const SELECTION_SHA: &str = "9db3ea2a573326af39676f6366e49b9dbad28efde3ea5486223b15f2bc17d295";
+ const SOURCE_CATALOG: &str = include_str!("leaf_sources.json");
++
++pub(super) fn compiled_release_sources() -> (FilePin, &'static str) {
++    (FilePin { path: SELECTION_PATH.into(), bytes: SELECTION_BYTES, sha256: SELECTION_SHA.into() }, SOURCE_CATALOG)
++}
+ 
+ #[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq)]
+ #[serde(rename_all = "snake_case")]
+@@ -190,47 +195,26 @@
+                 state: Some("ORIGINAL_FEATURES_SEARCH_SORT_VERIFIED_CLEAN"),
+                 result_schema: "pocket4-final-documents-original-case-result-v1",
+             },
+-            GalleryRotation => Definition {
+-                source: 9,
+-                package: "com.android.gallery3d",
+-                request_schema: Some("pocket4-gallery-current-rotation-request-v1"),
+-                plan_schema: None,
+-                kind: None,
+-                seconds: 840,
+-                state: Some("OWNED_GALLERY_JPEG_ROTATION_REOPEN_AND_CLEANUP_VERIFIED"),
+-                result_schema: "pocket4-current-owned-gallery-jpeg-rotation-v1",
+-            },
+-            GalleryVideo | GallerySeek | GalleryAlbum => Definition {
++            GalleryRotation | GalleryVideo | GallerySeek | GalleryAlbum => Definition {
+                 source: match self {
++                    GalleryRotation => 9,
+                     GalleryVideo => 10,
+                     GallerySeek => 11,
+                     _ => 12,
+                 },
+                 package: "com.android.gallery3d",
+-                request_schema: Some(match self {
+-                    GalleryVideo => "pocket4-gallery-current-video-request-v1",
+-                    GallerySeek => "pocket4-gallery-current-seek-request-v1",
+-                    _ => "pocket4-gallery-current-album-request-v1",
+-                }),
++                request_schema: Some("pocket4-gallery-image-request-v1"),
+                 plan_schema: None,
+                 kind: None,
+-                seconds: 840,
+-                state: Some(match self {
+-                    GalleryVideo => "CURRENT_MAIN_VIDEO_PLAY_PAUSE_RESUME_REOPEN_CLEANUP_VERIFIED",
+-                    GallerySeek => {
+-                        "CURRENT_MAIN_VIDEO_PLAY_PAUSE_RESUME_REOPEN_SEEK_CLEANUP_VERIFIED"
+-                    }
+-                    _ => {
+-                        "CURRENT_MAIN_VIDEO_ALBUM_THUMBNAIL_PLAY_PAUSE_RESUME_REOPEN_SEEK_CLEANUP_VERIFIED"
+-                    }
+-                }),
+-                result_schema: match self {
+-                    GalleryVideo => "pocket4-gallery-current-owned-video-v1",
+-                    GallerySeek => "pocket4-gallery-current-owned-video-seek-v1",
+-                    _ => "pocket4-gallery-current-owned-video-album-v1",
+-                },
++                seconds: 1530,
++                state: Some("CURRENT_IMAGE_SCOPE_AND_CLEANUP_VERIFIED"),
++                result_schema: "pocket4-gallery-image-scope-v1",
+             },
+         }
++    }
++
++    fn current_gallery(self) -> bool {
++        matches!(self, Self::GalleryRotation | Self::GalleryVideo | Self::GallerySeek | Self::GalleryAlbum)
+     }
+ 
+     pub(super) fn package(self) -> &'static str {
+@@ -307,16 +291,21 @@
+             }),
+         "compiled leaf sources differ from the externally selected 13 preparations",
+     )?;
+-    let update = &selection["identity_source_update"];
+-    require(
+-        update["schema"] == "pocket4-selected-app-source-identity-update-v1"
+-            && update["selected_index"] == 5
+-            && update["changed_selection_entries"] == 1
+-            && update["unchanged_selection_entries"] == 12
+-            && update["Android_actions"] == 0
+-            && update["runtime_qualified"] == false
+-            && ref_field(update, "new_preparation")? == sources[5].preparation,
+-        "current IHG source update must bind only entry 5 without runtime qualification",
++    let update = &selection["source_selection_update"];
++    require(
++        update["changed_indices"] == json!([1,8,9,10,11,12])
++            && update["unchanged_indices"] == json!([0,2,3,4,5,6,7])
++            && update["current_Main_required"] == true
++            && update["native_release_adoption_required"] == true
++            && update["runtime_enabled"] == false
++            && selection["runtime_qualified"] == false
++            && selection["production_ready"] == false
++            && ref_field(update,"catalog")? == (FilePin {
++                path: "/home/alex/work/p4-calendar-resource-consumer-20261120-3b9d-r1/selection-integration/leaf_sources.json".into(),
++                bytes: SOURCE_CATALOG.len() as u64,
++                sha256: hex::encode(Sha256::digest(SOURCE_CATALOG)),
++            }),
++        "current Calendar/Gallery update must preserve the other seven CP3A sources and require native release adoption",
+     )
+ }
+ 
+@@ -409,7 +398,7 @@
+                     "schema",
+                     "baseline",
+                     "qualification",
+-                    "installation",
++                    "native_release",
+                     "output",
+                 ],
+             )?
+@@ -748,14 +737,25 @@
+     let request = value(&plan.request)?;
+     let (case_ref, case) = case_document(plan, &request)?;
+     validate_case(plan, &request, &case, source, &sources)?;
++    let release = if plan.route.current_gallery() {
++        Some(NativeRelease::bind(&ref_field(&request,"native_release")?, selection, SOURCE_CATALOG,
++            &source.preparation, &source.entry)?)
++    } else if plan.route == Route::CalendarReminder {
++        Some(NativeRelease::bind_current(selection,SOURCE_CATALOG,&source.preparation,&source.entry)?)
++    } else { None };
+     let (baseline, qualification) = main_binding(&case, actual)?;
+     let expected_result = output_path(plan, &request, &case)?;
+     let cmd = command(plan, source)?;
+     // The trusted selected entry still validates the complete transitive source
+     // graph and every original business/support/provider gate before its actions.
+     claim(plan, actual, source)?;
+-    let output =
+-        control::run_prepared_application_leaf(cmd, &actual.epoch, Duration::from_secs(d.seconds))?;
++    let output = if plan.route.current_gallery() {
++        control::run_prepared_gallery_image_leaf(cmd, &actual.epoch)?
++    } else if plan.route == Route::CalendarReminder {
++        control::run_prepared_calendar_reminder_leaf(cmd, &actual.epoch)?
++    } else {
++        control::run_prepared_application_leaf(cmd, &actual.epoch, Duration::from_secs(d.seconds))?
++    };
+     require(
+         output.status.success(),
+         "actual leaf process failed; preserve its claim and original logs without replay",
+@@ -804,6 +804,13 @@
+     }
+     if let Some(pin) = case_ref {
+         pinned(&pin)?;
++    }
++    if let Some(lease) = &release {
++        if plan.route.current_gallery() {
++            require(ref_field(&result,"native_release")? == ref_field(&request,"native_release")?,
++                "Gallery result is not bound to this adopted native release")?;
++        }
++        lease.guard()?;
+     }
+     Ok(LeafObservation {
+         route: plan.route,
+@@ -834,7 +841,7 @@
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+-    const CURRENT_SELECTION: &str = include_str!("../tests/fixtures/selection-13-20261119.json");
++    const CURRENT_SELECTION: &str = include_str!("../tests/fixtures/selection-13-20261120.json");
+ 
+     fn current_selection() -> Value {
+         serde_json::from_str(CURRENT_SELECTION).unwrap()
+@@ -890,7 +897,7 @@
+             assert!(args.contains(&"execute"));
+             assert!(!args.contains(&"install") && !args.contains(&"verify"));
+             assert!(args.contains(&p.request.sha256.as_str()));
+-            assert!((420..=1200).contains(&d.seconds));
++            assert!(if route.current_gallery() { d.seconds==1530 } else { (420..=1200).contains(&d.seconds) });
+         }
+     }
+     #[test]
+@@ -915,17 +922,9 @@
+         })
+         .unwrap();
+         let source = &sources[5];
+-        assert_eq!(
+-            source.entry.path,
+-            Path::new(
+-                "/home/alex/work/p4-app-acceptance-preboot-11ea-20261119-r1/ihg-5.111.1-r1/source/app_entry.py"
+-            )
+-        );
+-        assert_eq!(source.entry.bytes, 13838);
+-        assert_eq!(
+-            source.entry.sha256,
+-            "c1248056463a163b6ae0b4482129c72721ba023af8ad387326df4952173df3e2"
+-        );
++        assert_eq!(source.entry.path,Path::new("/home/alex/work/p4-cp3a-bootstrap-20261120-runtimeaudit-r1/candidate/sources/ihg-5.111.1-r1/app_entry.py"));
++        assert_eq!(source.entry.bytes,13838);
++        assert_eq!(source.entry.sha256,"c1248056463a163b6ae0b4482129c72721ba023af8ad387326df4952173df3e2");
+         for route in [Route::ClockTimer, Route::IhgLondon] {
+             assert_eq!(route.definition().source, 5);
+             let plan = LeafPlan {
+@@ -974,7 +973,7 @@
+         let selection = current_selection();
+         let mut sources = fixed_sources().unwrap();
+         sources[5].preparation =
+-            ref_field(&selection["identity_source_update"], "old_preparation").unwrap();
++            ref_field(&selection["previous_identity_source_update"], "old_preparation").unwrap();
+         assert!(validate_selection_document(&selection, &sources).is_err());
+         sources = fixed_sources().unwrap();
+         sources.swap(4, 5);
+@@ -1030,22 +1029,16 @@
+             );
+         }
+         for (key, value) in [
+-            ("selected_index", json!(4)),
+-            ("changed_selection_entries", json!(2)),
+-            ("unchanged_selection_entries", json!(11)),
+-            ("Android_actions", json!(1)),
+-            ("runtime_qualified", json!(true)),
+-            (
+-                "new_preparation",
+-                selected["selected_preparations"][4].clone(),
+-            ),
++            ("changed_indices", json!([0,8,9,10,11,12])),
++            ("unchanged_indices", json!([1,2,3,4,5,6,7])),
++            ("current_Main_required", json!(false)),
++            ("native_release_adoption_required", json!(false)),
++            ("runtime_enabled", json!(true)),
++            ("catalog", json!(pin("arbitrary-catalog"))),
+         ] {
+             let mut changed = selected.clone();
+-            changed["identity_source_update"][key] = value;
+-            assert!(
+-                validate_selection_document(&changed, &sources).is_err(),
+-                "{key}"
+-            );
++            changed["source_selection_update"][key] = value;
++            assert!(validate_selection_document(&changed,&sources).is_err(),"{key}");
+         }
+     }
+ 
+@@ -1067,6 +1060,21 @@
+         assert!(validate_case(&p, &req, &case, &sources[0], &sources).is_err());
+         assert!(serde_json::from_value::<Route>(json!("camera_raw")).is_err());
+         assert!(serde_json::from_value::<Route>(json!("gallery_install")).is_err());
++    }
++
++    #[test]
++    fn current_gallery_request_requires_detached_release_and_rejects_legacy_installation() {
++        let sources=fixed_sources().unwrap();
++        let plan=LeafPlan {route:Route::GalleryRotation,request:pin("request"),output:None};
++        let request=json!({"schema":"pocket4-gallery-image-request-v1","baseline":pin("baseline"),
++            "qualification":pin("qualification"),"output":"/fresh-gallery","native_release":pin("release")});
++        validate_case(&plan,&request,&request,&sources[9],&sources).unwrap();
++        let mut legacy=request.clone();legacy["installation"]=json!(pin("legacy-install"));
++        assert!(validate_case(&plan,&legacy,&legacy,&sources[9],&sources).is_err());
++        legacy=request.clone();legacy.as_object_mut().unwrap().remove("native_release");
++        assert!(validate_case(&plan,&legacy,&legacy,&sources[9],&sources).is_err());
++        legacy=request;legacy["schema"]=json!("pocket4-gallery-current-rotation-request-v1");
++        assert!(validate_case(&plan,&legacy,&legacy,&sources[9],&sources).is_err());
+     }
+     #[test]
+     fn zero_exit_equivalent_empty_or_stale_output_is_not_success() {
+@@ -1137,7 +1145,7 @@
+         let state = Route::GalleryRotation.definition().state.unwrap();
+         let printed =
+             json!({"whole_app_business_accepted":false,"state":state,"outcome_unknown":false});
+-        let mut result = json!({"schema":"pocket4-current-owned-gallery-jpeg-rotation-v1","state":state,
++        let mut result = json!({"schema":"pocket4-gallery-image-scope-v1","state":state,
+             "whole_app_business_accepted":false,"automatic_retry":false,"business_scope_completed":true,
+             "outcome_unknown":false,"entry_cancellation_signals":[],"baseline":b,"qualification":q,
+             "source_preparation":sources[9].preparation});

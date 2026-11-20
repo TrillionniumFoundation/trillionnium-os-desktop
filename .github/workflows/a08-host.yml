@@ -1749,7 +1749,7 @@ jobs:
             ${{ runner.temp }}/runtime-d6-ci-logs/*.stderr
 
   runtime-current-complete-producer:
-    name: Current source - 1564 ordinary cases, 19 releases, examples and docs
+    name: Current source - 1588 ordinary cases, 19 releases, examples and docs
     runs-on: ubuntu-24.04
     timeout-minutes: 140
     env:
@@ -1765,6 +1765,8 @@ jobs:
       CURRENT_COMBINED_SOURCE_INVENTORY_SHA256: 56277deace25f558a4998e1cfdc830fe46bdd1e828f154d9b250fa8fb3e7d08d
       CURRENT_MATERIALIZATION_INVENTORY_SHA256: ea75a0a28022944b80acebb65aca9ce49c9c66fbd519531da7677bbd114ed35e
       CURRENT_LEAF_INVENTORY_SHA256: b932f58f5a3eaf7feea4d458fbd67d2e248a29a5aeb45eb940c6f2c7450f6374
+      CURRENT_NATIVE_INVENTORY_SHA256: 8be17cef0f7dab7b1b2ae508fd2753a2f334cf9249d389dcf5f70896356cbe9b
+      P4_NATIVE_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -1801,6 +1803,11 @@ jobs:
           }
           run_controls source-adapter 90s "$cohort/test_adapter.py"
           run_controls original-runner 60s "$cohort/test_runner.py"
+          native="$GITHUB_WORKSPACE/compat/android/pocket4/current-native-leaf-successor-20261120"
+          printf '%s  %s\n' "$CURRENT_NATIVE_INVENTORY_SHA256" "$native/FILES.sha256" | sha256sum --check --status
+          (cd "$native" && sha256sum --quiet -c FILES.sha256)
+          run_controls native-runner 60s "$native/test_runner.py"
+          run_controls native-release-consumer 30s "$native/tests/test_native_leaf_release.py"
       - name: Reconstruct the complete current producer source
         timeout-minutes: 5
         shell: bash
@@ -1830,6 +1837,17 @@ jobs:
             --parent-packet "$current_parent" --parent-source "$RUNNER_TEMP/current-leaf-producer" \
             --output "$RUNNER_TEMP/current-combined-producer" \
             --report "$RUNNER_TEMP/current-combined-source-replay.json"
+      - name: Reconstruct the complete native, actor and APEX provider successor
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          native="$GITHUB_WORKSPACE/compat/android/pocket4/current-native-leaf-successor-20261120"
+          timeout --signal=TERM --kill-after=5s 90s python3 -I -B "$native/source_verify.py" \
+            --inventory-sha256 "$CURRENT_NATIVE_INVENTORY_SHA256" \
+            --parent-source "$RUNNER_TEMP/current-combined-producer" \
+            --output "$RUNNER_TEMP/current-native-producer" \
+            --report "$RUNNER_TEMP/current-native-source-replay.json"
       - name: Prepare pinned EROFS and recorded host dependencies
         timeout-minutes: 32
         shell: bash
@@ -1838,15 +1856,15 @@ jobs:
           capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1"
           timeout --signal=TERM --kill-after=30s 1860s bash "$capsule/prepare_ci.sh" \
             --work "$RUNNER_TEMP/current-dependencies"
-      - name: Run 1564 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
+      - name: Run 1588 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
         timeout-minutes: 92
         shell: bash
         run: |
           set -euo pipefail
-          cohort="$GITHUB_WORKSPACE/compat/android/pocket4/current-runtime-cohort-successor-20261120"
+          cohort="$GITHUB_WORKSPACE/compat/android/pocket4/current-native-leaf-successor-20261120"
           timeout --signal=TERM --kill-after=30s 5460s python3 -I -B "$cohort/run_ci.py" \
-            --inventory-sha256 "$CURRENT_COHORT_INVENTORY_SHA256" \
-            --producer "$RUNNER_TEMP/current-combined-producer" \
+            --inventory-sha256 "$CURRENT_NATIVE_INVENTORY_SHA256" \
+            --producer "$RUNNER_TEMP/current-native-producer" \
             --work "$RUNNER_TEMP/current-ordinary" \
             --report "$RUNNER_TEMP/current-ci.json" \
             --erofs-prefix "$RUNNER_TEMP/current-dependencies/erofs"
@@ -1861,6 +1879,9 @@ jobs:
             ${{ runner.temp }}/current-materialized-source-replay.json
             ${{ runner.temp }}/current-leaf-source-replay.json
             ${{ runner.temp }}/current-combined-source-replay.json
+            ${{ runner.temp }}/current-native-source-replay.json
+            ${{ github.workspace }}/compat/android/pocket4/current-native-leaf-successor-20261120/MANIFEST.json
+            ${{ github.workspace }}/compat/android/pocket4/current-native-leaf-successor-20261120/FILES.sha256
             ${{ runner.temp }}/current-cohort-controls/*.stdout
             ${{ runner.temp }}/current-cohort-controls/*.stderr
             ${{ runner.temp }}/current-ci.json

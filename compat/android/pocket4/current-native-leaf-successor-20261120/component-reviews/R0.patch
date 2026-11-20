@@ -1,0 +1,281 @@
+--- a/runtime/droidloom-supervisor/src/production_namespace_apexd_execution_identity.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_apexd_execution_identity.rs
+@@ -236,17 +236,34 @@
+     Ok(())
+ }
+ 
+-/// Equality only; no public fields or constructor recreate a live task.
++/// Stable equality dimensions for one exact apexd thread and approved epoch.
++/// This private value owns no handles and cannot recreate or extend live authority.
+ #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+-pub(crate) struct ActualApexdGeneration {
++struct ActualApexdActorEpoch {
+     original: Binding,
+-    notification: wire::Notification,
+     identity: ProcessIdentity,
+     tgid: u32,
+     proc: Node,
+     pidfd: Node,
+     executable: ExecutableIdentity,
+     default: DefaultMountBinding,
++}
++
++/// Full original-request equality, including the exact notification.
++/// No public fields or constructor recreate a live task.
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub(crate) struct ActualApexdGeneration {
++    actor: ActualApexdActorEpoch,
++    notification: wire::Notification,
++}
++
++impl ActualApexdGeneration {
++    /// Structural comparison only: neither value proves a pending request,
++    /// a current deadline or a retained kernel lease. In particular, a
++    /// completed probe cannot be reused as authority for a later configure.
++    pub(crate) fn same_actor_epoch(&self, other: &Self) -> bool {
++        self.actor == other.actor
++    }
+ }
+ 
+ /// A read-only identity issued by the same inherited pending-request owner.
+@@ -501,14 +518,16 @@
+     pub(crate) fn generation(&self) -> Result<ActualApexdGeneration> {
+         self.revalidate_kernel()?;
+         Ok(ActualApexdGeneration {
+-            original: self.scope.binding,
++            actor: ActualApexdActorEpoch {
++                original: self.scope.binding,
++                identity: self.identity,
++                tgid: self.tgid,
++                proc: self.proc_node,
++                pidfd: self.pidfd_node,
++                executable: self.executable_identity,
++                default: self.default_binding,
++            },
+             notification: self.notification,
+-            identity: self.identity,
+-            tgid: self.tgid,
+-            proc: self.proc_node,
+-            pidfd: self.pidfd_node,
+-            executable: self.executable_identity,
+-            default: self.default_binding,
+         })
+     }
+ 
+@@ -593,6 +612,193 @@
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++    fn actor_epoch_node(inode: u64) -> Node {
++        Node { device: 7, inode }
++    }
++
++    // Values for equality tests only. No live task, descriptor, request owner,
++    // kernel lease or target issuer can be created from these private values.
++    fn actor_epoch_generation() -> ActualApexdGeneration {
++        let original = Binding {
++            identity: ProcessIdentity {
++                pid: 17,
++                parent: 1,
++                start_ticks: 100,
++            },
++            proc: actor_epoch_node(1),
++            pidfd: actor_epoch_node(2),
++            user: actor_epoch_node(3),
++            pid_namespace: actor_epoch_node(4),
++            creator_tid: 23,
++            nonce: [0x19; 16],
++        };
++        ActualApexdGeneration {
++            actor: ActualApexdActorEpoch {
++                original,
++                identity: ProcessIdentity {
++                    pid: 42,
++                    parent: 17,
++                    start_ticks: 200,
++                },
++                tgid: 40,
++                proc: actor_epoch_node(7),
++                pidfd: actor_epoch_node(8),
++                executable: ExecutableIdentity {
++                    node: actor_epoch_node(9),
++                    mount: 2,
++                    mode: 0o100755,
++                    uid: 200000,
++                    gid: 301000,
++                    links: 1,
++                    bytes: APEXD_BYTES,
++                    mtime: (10, 20),
++                    ctime: (10, 30),
++                },
++                default: DefaultMountBinding::from_test_parts(
++                    original,
++                    actor_epoch_node(10),
++                    7,
++                    11,
++                ),
++            },
++            notification: wire::Notification {
++                id: 19,
++                pid: 42,
++                flags: 0,
++                data: wire::Data {
++                    nr: libc::SYS_ioctl as i32,
++                    arch: ARCH_X86_64,
++                    instruction_pointer: 0x1000,
++                    args: [7, 0x4c0a, 0x2000, 0, 0, 0],
++                },
++            },
++        }
++    }
++
++    #[test]
++    fn actual_apexd_actor_epoch_distinguishes_structural_actor_from_exact_request() {
++        let probe = actor_epoch_generation();
++        let mut next = probe;
++        next.notification.id += 1;
++        next.notification.data.args[2] = 0x3000;
++        fixed_ioctl(&probe.notification).unwrap();
++        fixed_ioctl(&next.notification).unwrap();
++        assert!(probe.same_actor_epoch(&next));
++        assert!(next.same_actor_epoch(&probe));
++        assert_ne!(probe, next);
++        assert_eq!(probe, probe);
++
++        let changes: [fn(&mut wire::Notification); 12] = [
++            |n| n.id += 1,
++            |n| n.pid += 1,
++            |n| n.flags = 1,
++            |n| n.data.nr = libc::SYS_mount as i32,
++            |n| n.data.arch ^= 1,
++            |n| n.data.instruction_pointer += 1,
++            |n| n.data.args[0] += 1,
++            |n| n.data.args[1] += 1,
++            |n| n.data.args[2] += 1,
++            |n| n.data.args[3] += 1,
++            |n| n.data.args[4] += 1,
++            |n| n.data.args[5] += 1,
++        ];
++        for change in changes {
++            let mut changed = probe;
++            change(&mut changed.notification);
++            assert!(probe.same_actor_epoch(&changed));
++            assert_ne!(probe, changed, "full request equality lost a wire field");
++        }
++    }
++
++    #[test]
++    fn actual_apexd_actor_epoch_keeps_all_original_owner_and_task_dimensions() {
++        let original = actor_epoch_generation();
++        let changes: [fn(&mut ActualApexdActorEpoch); 28] = [
++            |a| a.original.identity.pid += 1,
++            |a| a.original.identity.parent += 1,
++            |a| a.original.identity.start_ticks += 1,
++            |a| a.original.proc.inode += 1,
++            |a| a.original.pidfd.inode += 1,
++            |a| a.original.user.inode += 1,
++            |a| a.original.pid_namespace.inode += 1,
++            |a| a.original.creator_tid += 1,
++            |a| a.original.nonce[0] ^= 1,
++            |a| a.identity.pid += 1,
++            |a| a.identity.parent += 1,
++            |a| a.identity.start_ticks += 1,
++            |a| a.tgid += 1,
++            |a| a.proc.inode += 1,
++            |a| a.proc.device += 1,
++            |a| a.pidfd.inode += 1,
++            |a| a.pidfd.device += 1,
++            |a| a.executable.node.inode += 1,
++            |a| a.executable.node.device += 1,
++            |a| a.executable.mount += 1,
++            |a| a.executable.mode ^= 1,
++            |a| a.executable.uid += 1,
++            |a| a.executable.gid += 1,
++            |a| a.executable.links += 1,
++            |a| a.executable.bytes += 1,
++            |a| a.executable.mtime.0 += 1,
++            |a| a.executable.mtime.1 += 1,
++            |a| a.executable.ctime.1 += 1,
++        ];
++        for change in changes {
++            let mut changed = original;
++            change(&mut changed.actor);
++            assert_eq!(original.notification, changed.notification);
++            assert!(!original.same_actor_epoch(&changed));
++            assert_ne!(original, changed);
++        }
++    }
++
++    #[test]
++    fn actual_apexd_actor_epoch_keeps_default_owner_graph_and_epoch() {
++        let original = actor_epoch_generation();
++        let owner = original.actor.original;
++        let mut other_owner = owner;
++        other_owner.nonce[0] ^= 1;
++        for default in [
++            DefaultMountBinding::from_test_parts(other_owner, actor_epoch_node(10), 7, 11),
++            DefaultMountBinding::from_test_parts(owner, actor_epoch_node(12), 7, 11),
++            DefaultMountBinding::from_test_parts(owner, actor_epoch_node(10), 8, 11),
++            DefaultMountBinding::from_test_parts(owner, actor_epoch_node(10), 7, 12),
++        ] {
++            let mut changed = original;
++            changed.actor.default = default;
++            assert_eq!(original.notification, changed.notification);
++            assert!(!original.same_actor_epoch(&changed));
++            assert_ne!(original, changed);
++        }
++    }
++
++    #[test]
++    fn actual_apexd_actor_epoch_does_not_merge_threads_or_validate_stale_requests() {
++        let original = actor_epoch_generation();
++        let mut other_thread = original;
++        other_thread.actor.identity.pid += 1;
++        other_thread.actor.identity.start_ticks += 1;
++        other_thread.actor.proc.inode += 1;
++        other_thread.actor.pidfd.inode += 1;
++        assert_eq!(original.actor.tgid, other_thread.actor.tgid);
++        assert!(!original.same_actor_epoch(&other_thread));
++
++        // Equality of historical values says nothing about pending liveness.
++        // These invalid notifications still fail the unchanged ABI validator;
++        // the actual task also retains its pending-ID and deadline checks.
++        for invalid in [0_u64, 1] {
++            let mut request = original;
++            if invalid == 0 {
++                request.notification.id = 0;
++            } else {
++                request.notification.flags = 1;
++            }
++            assert!(original.same_actor_epoch(&request));
++            assert_ne!(original, request);
++            assert!(fixed_ioctl(&request.notification).is_err());
++        }
++    }
++
+     #[test]
+     fn actual_apexd_identity_requires_exact_device_ioctl_notification_abi() {
+         let n = wire::Notification {
+--- a/runtime/droidloom-supervisor/src/production_namespace_default_mounts.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_default_mounts.rs
+@@ -182,6 +182,20 @@
+     namespace: Node,
+     revision: u64,
+     init_epoch: u64,
++}
++
++// Equality-test values only. This constructor does not exist in production,
++// cannot create a DefaultMountOwner, and holds no live task or kernel handle.
++#[cfg(test)]
++impl DefaultMountBinding {
++    pub(super) fn from_test_parts(
++        original: Binding,
++        namespace: Node,
++        revision: u64,
++        init_epoch: u64,
++    ) -> Self {
++        Self { original, namespace, revision, init_epoch }
++    }
+ }
+ 
+ /// Shared only inside the original TreeChild and its one notification owner.

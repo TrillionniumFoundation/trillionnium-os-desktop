@@ -1,0 +1,136 @@
+--- a/tools/droidloom-update/src/production_source.rs
++++ b/tools/droidloom-update/src/production_source.rs
+@@ -11,10 +11,14 @@
+ const CMAKE_LOCK_SHA: &str =
+     "2e9877a58ebbc3625c7411d3573951afa409d9b13692468b825b4c25961ffffb";
+ const CMAKE_LOCK_BYTES: usize = 400661;
+-pub(super) const LOCK_PATH: &str = "android/manifest/production-full-lint-source-lock.json";
++const LINT_LOCK_PATH: &str = "android/manifest/production-full-lint-source-lock.json";
++const LINT_LOCK_SHA: &str =
++    "aa14d968c14c2febcfacbb90e82598e2ba8e57f4bbb2cfc8f1f2a741555153ca";
++const LINT_LOCK_BYTES: usize = 400677;
++pub(super) const LOCK_PATH: &str = "android/manifest/production-full-apex-tests-source-lock.json";
+ pub(super) const LOCK_SHA: &str =
+-    "aa14d968c14c2febcfacbb90e82598e2ba8e57f4bbb2cfc8f1f2a741555153ca";
+-pub(super) const LOCK_BYTES: usize = 400677;
++    "14fd227541b01876c7e34d7e6a1ffcb2a202d97d94c6a8f6e14be369e4b79505";
++pub(super) const LOCK_BYTES: usize = 400720;
+ 
+ fn digest(bytes: &[u8]) -> String {
+     format!("{:x}", Sha256::digest(bytes))
+@@ -179,7 +183,7 @@
+     Ok(path)
+ }
+ 
+-pub(super) fn source_lock_path(repo: &Path) -> Result<PathBuf> {
++fn lint_source_lock_path(repo: &Path) -> Result<PathBuf> {
+     let cmake_path = cmake_source_lock_path(repo)?;
+     let mut expected: Value = serde_json::from_slice(&exact_file(
+         &cmake_path,
+@@ -199,12 +203,43 @@
+         .as_array_mut()
+         .ok_or("original HealthFitness sparse scope missing")?
+         .push(json!(droidloom_source::production_lint::LINT_PATH));
++    let path = repo.join(LINT_LOCK_PATH);
++    let raw = exact_file(&path, LINT_LOCK_BYTES, LINT_LOCK_SHA)?;
++    if serde_json::from_slice::<Value>(&raw)? != expected {
++        return fail("production lint lock changes more than the complete original lint directory");
++    }
++    droidloom_source::production_lint::build_plan(&droidloom_source::load_lock(&path)?)?;
++    Ok(path)
++}
++
++pub(super) fn source_lock_path(repo: &Path) -> Result<PathBuf> {
++    let lint_path = lint_source_lock_path(repo)?;
++    let mut expected: Value = serde_json::from_slice(&exact_file(
++        &lint_path,
++        LINT_LOCK_BYTES,
++        LINT_LOCK_SHA,
++    )?)?;
++    for &(path, commit, cone) in droidloom_source::production_apex_tests::PROVIDERS {
++        let project = expected["projects"]
++            .as_array_mut()
++            .ok_or("original lint projects missing")?
++            .iter_mut()
++            .find(|project| project["path"] == path)
++            .ok_or("original APEX provider project missing")?;
++        if project["commit"] != commit {
++            return fail("APEX test provider must keep its original superproject Gitlink");
++        }
++        project["sparse_paths"]
++            .as_array_mut()
++            .ok_or("original APEX provider sparse scope missing")?
++            .push(json!(cone));
++    }
+     let path = repo.join(LOCK_PATH);
+     let raw = exact_file(&path, LOCK_BYTES, LOCK_SHA)?;
+     if serde_json::from_slice::<Value>(&raw)? != expected {
+-        return fail("production lint lock changes more than the complete original lint directory");
+-    }
+-    droidloom_source::production_lint::build_plan(&droidloom_source::load_lock(&path)?)?;
++        return fail("production APEX test lock changes more than both original provider directories");
++    }
++    droidloom_source::production_apex_tests::build_plan(&droidloom_source::load_lock(&path)?)?;
+     Ok(path)
+ }
+ 
+@@ -228,7 +263,7 @@
+             let expected = droidloom_source::MaterializedManifest {
+                 schema_version: 1,
+                 source_lock_sha256: LOCK_SHA.to_owned(),
+-                plan: droidloom_source::production_lint::build_plan(lock)?,
++                plan: droidloom_source::production_apex_tests::build_plan(lock)?,
+             };
+             let bytes = serde_json::to_vec_pretty(&expected)?;
+             exact_file(
+@@ -236,7 +271,7 @@
+                 bytes.len(),
+                 &digest(&bytes),
+             )?;
+-            droidloom_source::production_lint::verify_materialized(lock_path, lock, source)?;
++            droidloom_source::production_apex_tests::verify_materialized(lock_path, lock, source)?;
+             Ok(())
+         }
+         Ok(_) => fail("production source workspace must be a real directory"),
+@@ -373,7 +408,7 @@
+             .canonicalize()
+             .unwrap();
+         let path = source_lock_path(&repo).unwrap();
+-        let plan = droidloom_source::production_lint::build_plan(
++        let plan = droidloom_source::production_apex_tests::build_plan(
+             &droidloom_source::load_lock(&path).unwrap(),
+         )
+         .unwrap();
+@@ -505,6 +540,32 @@
+     }
+ 
+     #[test]
++    fn original_lint_manifest_requires_explicit_complete_apex_test_reconciliation() {
++        let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
++            .join("../..").canonicalize().unwrap();
++        let old_path = lint_source_lock_path(&repo).unwrap();
++        let selected = source_lock_path(&repo).unwrap();
++        let old = droidloom_source::load_lock(&old_path).unwrap();
++        let current = droidloom_source::load_lock(&selected).unwrap();
++        assert!(droidloom_source::production_apex_tests::build_plan(&old).is_err());
++        assert!(droidloom_source::production_lint::build_plan(&current).is_err());
++        let prior = droidloom_source::MaterializedManifest {
++            schema_version: 1,
++            source_lock_sha256: LINT_LOCK_SHA.into(),
++            plan: droidloom_source::production_lint::build_plan(&old).unwrap(),
++        };
++        let directory = tempfile::tempdir().unwrap();
++        let source = directory.path().join("source");
++        fs::create_dir(&source).unwrap();
++        let manifest = source.join(".droidloom-source-manifest.json");
++        let original = serde_json::to_vec_pretty(&prior).unwrap();
++        fs::write(&manifest, &original).unwrap();
++        assert!(verify_source_workspace(&selected, &current, &source).is_err());
++        assert_eq!(fs::read(manifest).unwrap(), original);
++        assert_eq!(fs::read_dir(source).unwrap().count(), 1);
++    }
++
++    #[test]
+     fn original_cmake_manifest_requires_explicit_complete_lint_reconciliation() {
+         let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+             .join("../..")
