@@ -1,0 +1,319 @@
+{
+  "actual_build_retirement_before_recovery": {
+    "both_cgroup_paths_absent": true,
+    "fields": {
+      "ActiveState": "inactive",
+      "ControlGroup": "",
+      "LoadState": "not-found",
+      "MainPID": "0",
+      "SubState": "dead"
+    },
+    "original_pids_absent": [],
+    "scope": "user",
+    "unit": "p4-cp3a-vendor-20261120-9907-r21.service"
+  },
+  "actual_updater_release_source_tree": "4d78aae1aba2ec9952c37153069cca85c5a87953",
+  "admission": {
+    "affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15
+    ],
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/p4-cp3a-vendor-20261120-9907-r21-recovery.service",
+    "limits": {
+      "cpu.max": "200000 100000",
+      "memory.high": "1610612736",
+      "memory.max": "2147483648",
+      "memory.swap.max": "0",
+      "pids.max": "512"
+    },
+    "pid": 3971291,
+    "start_ticks": "219772824"
+  },
+  "all_original_inputs_and_source_files_unchanged": true,
+  "commands": [
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/home/qq/work/current2359-cli-preparation-20261120-9907-r1/bin/droidloom-update",
+        "recover-source",
+        "--work",
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795171999841055038,
+      "name": "normal-source-recovery",
+      "original_pidfd_held_until_reaped": true,
+      "owned_descendants_remaining": 0,
+      "pid": 3972147,
+      "retired_descendants": [],
+      "start_ticks": "219776148",
+      "started_ns": 1795171999832494642,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          74456321,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1795171999831515763,
+          1795171999831515763
+        ],
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r21/actual/normal-source-recovery.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          74456320,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1795171999831515763,
+          1795171999831515763
+        ],
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r21/actual/normal-source-recovery.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/home/qq/work/current2359-cli-preparation-20261120-9907-r1/bin/droidloom-source",
+        "--profile",
+        "production-full-lint",
+        "verify-materialized",
+        "--lock",
+        "/home/qq/work/current2359-cli-preparation-20261120-9907-r1/producer/android/manifest/production-full-lint-source-lock.json",
+        "--output",
+        "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795172187946986048,
+      "name": "verify-lint652-after",
+      "original_pidfd_held_until_reaped": true,
+      "owned_descendants_remaining": 0,
+      "pid": 3972914,
+      "retired_descendants": [],
+      "start_ticks": "219778082",
+      "started_ns": 1795172019172530346,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          74456333,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1795172019172439489,
+          1795172019172439489
+        ],
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r21/actual/verify-lint652-after.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 115,
+        "identity": [
+          66306,
+          74456319,
+          33152,
+          1000,
+          1000,
+          1,
+          115,
+          1795172173446051381,
+          1795172173446051381
+        ],
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r21/actual/verify-lint652-after.stdout",
+        "sha256": "c7ffe61168d9570c26492d6b0bd20935f729a07e448119448ca322f1b39d3540"
+      }
+    }
+  ],
+  "complete_cmake_members_preserved": 3915,
+  "complete_original_lint_comparison": {
+    "Vendor_build_credit": false,
+    "all_other_original_tuples_identical": true,
+    "lint_materialized": 6,
+    "lint_raw_bytes_materialized": 19376,
+    "lint_remaining_absent": 0,
+    "non_lint_identity_changes": 74,
+    "original_lint_members": 6,
+    "partial_recovery_admission_only": false,
+    "schema": "p4-r20-six-original-lint-content-comparison-v1",
+    "source_recovery_complete": false,
+    "tracked_members_compared": 1045300
+  },
+  "content_bookends": {
+    "lint652-content-after-recovery": {
+      "bytes": 5035716,
+      "identity": [
+        66306,
+        74456805,
+        33152,
+        1000,
+        1000,
+        1,
+        5035716,
+        1795173009706345816,
+        1795173009706345816
+      ],
+      "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r21/actual/lint652-content-after-recovery.json",
+      "sha256": "d03d9b71f28bb72bc5de8d8ab2fd1746b6889d1ee0fbe6c5607da59ed639c7fb"
+    }
+  },
+  "errors": [],
+  "final_normal_manifest": {
+    "copy": {
+      "bytes": 441804,
+      "identity": [
+        66306,
+        74456417,
+        33152,
+        1000,
+        1000,
+        1,
+        441804,
+        1795172187948606359,
+        1795172187948606359
+      ],
+      "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r21/actual/manifest-lint652-after-recovery.json",
+      "sha256": "cb140d8937176a4e20fb5059830d3774f930aafb45c3cc7f88423b7b2d16d152"
+    },
+    "original": {
+      "bytes": 441804,
+      "identity": [
+        66306,
+        61099408,
+        33152,
+        1000,
+        1000,
+        1,
+        441804,
+        1795170689478985442,
+        1795170689480985365
+      ],
+      "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/.droidloom-source-manifest.json",
+      "sha256": "cb140d8937176a4e20fb5059830d3774f930aafb45c3cc7f88423b7b2d16d152"
+    }
+  },
+  "finished_ns": 1795173032608255797,
+  "historical_R19_source_tree": "fa0382574f4fc18f59b2b5dd67a30939167d8c3a",
+  "installed": false,
+  "latest_resources": {
+    "disk_free": 635271049216,
+    "memory_available": 42569388032,
+    "observed_ns": 1795173027689042643
+  },
+  "live_retirement_observations": [
+    {
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261120-9907-r21.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "returncode": 0,
+      "scope": "user",
+      "stderr_bytes": 0,
+      "stderr_hex": "",
+      "stdout_bytes": 79,
+      "stdout_hex": "4c6f616453746174653d6e6f742d666f756e640a41637469766553746174653d696e6163746976650a53756253746174653d646561640a4d61696e5049443d300a436f6e74726f6c47726f75703d0a",
+      "unit": "p4-cp3a-vendor-20261120-9907-r21.service"
+    }
+  ],
+  "native_source_926_members_and_git_provenance_unchanged": true,
+  "new_lint652_source_state_verified": true,
+  "original652_non_lint_tuples_preserved": true,
+  "production_ready": false,
+  "runtime_qualified": false,
+  "schema": "p4-cp3a-normal-vendor-build-r21-v1",
+  "source_recovery_branch": {
+    "branch": "new652-lint-atomic-manifest-published",
+    "complete_present": true,
+    "observed_manifest": {
+      "copy": {
+        "bytes": 441804,
+        "identity": [
+          66306,
+          74456330,
+          33152,
+          1000,
+          1000,
+          1,
+          441804,
+          1795172019130904579,
+          1795172019130904579
+        ],
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r21/actual/manifest-recovery-state-before-verify.json",
+        "sha256": "cb140d8937176a4e20fb5059830d3774f930aafb45c3cc7f88423b7b2d16d152"
+      },
+      "original": {
+        "bytes": 441804,
+        "identity": [
+          66306,
+          61099408,
+          33152,
+          1000,
+          1000,
+          1,
+          441804,
+          1795170689478985442,
+          1795170689480985365
+        ],
+        "path": "/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/.droidloom-source-manifest.json",
+        "sha256": "cb140d8937176a4e20fb5059830d3774f930aafb45c3cc7f88423b7b2d16d152"
+      }
+    },
+    "original_deadline": 2198928.339160078,
+    "original_intent_present": true,
+    "original_return_present": true,
+    "resume_intent_present": false,
+    "vendor_present": true
+  },
+  "source_recovery_complete": true,
+  "source_tree": "4d78aae1aba2ec9952c37153069cca85c5a87953",
+  "started_ns": 1795171966652246784,
+  "status_commands": [
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "p4-cp3a-vendor-20261120-9907-r21.service",
+        "--property=LoadState,ActiveState,SubState,MainPID,ControlGroup"
+      ],
+      "error": null,
+      "exit_code": 0,
+      "finished_ns": 1795171966706242098,
+      "original_pidfd_held_until_reaped": true,
+      "pid": 3971292,
+      "started_ns": 1795171966685300265
+    }
+  ],
+  "updater_release_and_full_canonical_source_tree_identical": true
+}

@@ -54,3 +54,25 @@ relaunch under a new key, mutate frozen inputs, or treat a failed/recovered
 attempt as a successful vendor build. Original failures remain part of the
 evidence. Application-source selection may advance independently only when
 it does not mutate this frozen vendor contract.
+
+## Final R21 result
+
+The original R21 supervisor has now exited with code 1. Its build phase passed
+both ordinary source verification commands and the lint reconciliation, then
+failed during the real vendor Soong graph construction. The missing APEX module
+names were `test_com.android.ipsec` and `test_com.android.permission`.
+
+The same supervisor retained the original serial lock through recovery. The
+normal source recovery and final lint652 verification both returned 0, every
+owned unit retired, every created child was reaped, and the complete source
+content bookend matched. The original native input and producer files remained
+unchanged. This closes retirement and recovery for R21; it does not qualify a
+vendor artifact. The final outer receipt is 538,436 bytes with SHA256
+`1272d9ba69e958d8e4bdd3c1b2efbf7663f42a51e29cc760fb146ee5ad06e5bd`.
+
+`FINAL-OBSERVATION.json` retains the terminal identities, exact final record
+hashes, command results and next source scope. `RECOVERY-OBSERVATION-FINAL.json`
+is the unchanged final recovery record. The earlier execution observation is
+retained as historical evidence. The four omitted upstream provider files
+(2,186 bytes) are being handled by a separate strictly monotonic successor
+profile; no frozen R21 input was edited and no new build is claimed here.
