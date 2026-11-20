@@ -1,0 +1,261 @@
+--- a/runtime/droidloom-applications/src/leaf_routes.rs
++++ b/runtime/droidloom-applications/src/leaf_routes.rs
+@@ -19,7 +19,10 @@
+ use super::{FilePin, pinned};
+ 
+ const QUALIFICATION: &str = "/home/alex/work/pocket4-android-final/qualification";
+-const SELECTION_SHA: &str = "bdef16ba95bc222a037e78a6849d582083c9706d7cd6f3e7b72cfdf722e900a7";
++const SELECTION_PATH: &str =
++    "/home/alex/work/p4-app-acceptance-preboot-11ea-20261119-r1/ihg-5.111.1-r1/selection-13.json";
++const SELECTION_BYTES: u64 = 14314;
++const SELECTION_SHA: &str = "9c5c77c387711dac2f7387a880932e40f0148939feca2a6348daa939587f9598";
+ const SOURCE_CATALOG: &str = include_str!("leaf_sources.json");
+ 
+ #[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq)]
+@@ -265,18 +268,64 @@
+     Ok(rows)
+ }
+ 
+-pub(super) fn validate_selection(selection: &FilePin) -> Result<(), String> {
+-    require(
+-        selection.path
+-            == Path::new(
+-                "/home/alex/work/p4-app-current-ihg-identity-20261114-e6ac-r1/selection-13.json",
+-            )
+-            && selection.bytes == 13160
++fn validate_selection_pin(selection: &FilePin) -> Result<(), String> {
++    require(
++        selection.path == Path::new(SELECTION_PATH)
++            && selection.bytes == SELECTION_BYTES
+             && selection.sha256 == SELECTION_SHA,
+         "leaf dispatch requires the independently adopted complete 13-preparation selection",
+-    )?;
+-    pinned(selection)?;
+-    Ok(())
++    )
++}
++
++fn validate_selection_document(
++    selection: &Value,
++    sources: &[SelectedSource],
++) -> Result<(), String> {
++    require(
++        selection["schema"] == "current-application-preparation-selection-v1"
++            && selection["selection_only"] == true
++            && selection["Android_actions"] == 0
++            && selection["Main_actions"] == 0
++            && selection["CURRENT_writes"] == 0
++            && selection["new_runtime_acceptance_count"] == 0
++            && selection["full_Main_execute_or_full_runtime_seed_executed"] == false
++            && selection["historical_runtime_credit_transferred"] == false,
++        "preparation selection must retain its source-only scope without runtime credit",
++    )?;
++    let preparations: Vec<FilePin> = serde_json::from_value(
++        selection
++            .get("selected_preparations")
++            .ok_or("selection lacks its complete preparation roster")?
++            .clone(),
++    )
++    .map_err(|e| format!("selection preparation roster invalid: {e}"))?;
++    require(
++        sources.len() == 13
++            && preparations.len() == sources.len()
++            && sources.iter().enumerate().all(|(index, source)| {
++                source.index == index && source.preparation == preparations[index]
++            }),
++        "compiled leaf sources differ from the externally selected 13 preparations",
++    )?;
++    let update = &selection["identity_source_update"];
++    require(
++        update["schema"] == "pocket4-selected-app-source-identity-update-v1"
++            && update["selected_index"] == 5
++            && update["changed_selection_entries"] == 1
++            && update["unchanged_selection_entries"] == 12
++            && update["Android_actions"] == 0
++            && update["runtime_qualified"] == false
++            && ref_field(update, "new_preparation")? == sources[5].preparation,
++        "current IHG source update must bind only entry 5 without runtime qualification",
++    )
++}
++
++pub(super) fn validate_selection(selection: &FilePin) -> Result<(), String> {
++    // Check the exact external pin before reading anything, then check the
++    // compiled dispatch catalog against those selected preparation bytes.
++    // A newer selector must never silently dispatch an older source packet.
++    validate_selection_pin(selection)?;
++    validate_selection_document(&value(selection)?, &fixed_sources()?)
+ }
+ 
+ fn exact_keys(value: &Value, keys: &[&str]) -> Result<(), String> {
+@@ -785,6 +834,12 @@
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++    const CURRENT_SELECTION: &str = include_str!("../tests/fixtures/selection-13-20261119.json");
++
++    fn current_selection() -> Value {
++        serde_json::from_str(CURRENT_SELECTION).unwrap()
++    }
++
+     fn pin(name: &str) -> FilePin {
+         FilePin {
+             path: PathBuf::from(format!("/fixture/{name}")),
+@@ -842,6 +897,158 @@
+     fn arbitrary_or_old_preparation_selection_is_rejected_before_a_child() {
+         assert!(validate_selection(&pin("arbitrary-selection")).is_err());
+     }
++
++    #[test]
++    fn published_current_selector_binds_the_real_ihg_and_clock_entry() {
++        assert_eq!(CURRENT_SELECTION.len() as u64, SELECTION_BYTES);
++        assert_eq!(
++            hex::encode(Sha256::digest(CURRENT_SELECTION)),
++            SELECTION_SHA
++        );
++        let selection = current_selection();
++        let sources = fixed_sources().unwrap();
++        validate_selection_document(&selection, &sources).unwrap();
++        validate_selection_pin(&FilePin {
++            path: SELECTION_PATH.into(),
++            bytes: SELECTION_BYTES,
++            sha256: SELECTION_SHA.into(),
++        })
++        .unwrap();
++        let source = &sources[5];
++        assert_eq!(
++            source.entry.path,
++            Path::new(
++                "/home/alex/work/p4-app-acceptance-preboot-11ea-20261119-r1/ihg-5.111.1-r1/source/app_entry.py"
++            )
++        );
++        assert_eq!(source.entry.bytes, 13838);
++        assert_eq!(
++            source.entry.sha256,
++            "c1248056463a163b6ae0b4482129c72721ba023af8ad387326df4952173df3e2"
++        );
++        for route in [Route::ClockTimer, Route::IhgLondon] {
++            assert_eq!(route.definition().source, 5);
++            let plan = LeafPlan {
++                route,
++                request: pin("request"),
++                output: None,
++            };
++            let command = command(&plan, source).unwrap();
++            let args: Vec<_> = command.get_args().map(|a| a.to_str().unwrap()).collect();
++            assert!(args.contains(&source.entry.path.to_str().unwrap()));
++            assert!(args.contains(&source.preparation.path.to_str().unwrap()));
++            assert!(args.contains(&source.preparation.sha256.as_str()));
++        }
++    }
++
++    #[test]
++    fn november_fourteen_and_mixed_selector_pins_are_rejected_before_reading() {
++        let old = ref_field(&current_selection(), "previous_selection").unwrap();
++        assert!(validate_selection_pin(&old).is_err());
++        assert!(validate_selection(&old).is_err());
++        let current = FilePin {
++            path: SELECTION_PATH.into(),
++            bytes: SELECTION_BYTES,
++            sha256: SELECTION_SHA.into(),
++        };
++        for mixed in [
++            FilePin {
++                path: old.path,
++                ..current.clone()
++            },
++            FilePin {
++                bytes: old.bytes,
++                ..current.clone()
++            },
++            FilePin {
++                sha256: old.sha256,
++                ..current
++            },
++        ] {
++            assert!(validate_selection_pin(&mixed).is_err());
++        }
++    }
++
++    #[test]
++    fn current_selector_cannot_dispatch_a_stale_or_reordered_compiled_catalog() {
++        let selection = current_selection();
++        let mut sources = fixed_sources().unwrap();
++        sources[5].preparation =
++            ref_field(&selection["identity_source_update"], "old_preparation").unwrap();
++        assert!(validate_selection_document(&selection, &sources).is_err());
++        sources = fixed_sources().unwrap();
++        sources.swap(4, 5);
++        assert!(validate_selection_document(&selection, &sources).is_err());
++        sources = fixed_sources().unwrap();
++        sources[5].index = 4;
++        assert!(validate_selection_document(&selection, &sources).is_err());
++        sources.pop();
++        assert!(validate_selection_document(&selection, &sources).is_err());
++    }
++
++    #[test]
++    fn current_selector_requires_every_preparation_once_in_selected_order() {
++        let sources = fixed_sources().unwrap();
++        let selected = current_selection();
++        let original = selected["selected_preparations"].as_array().unwrap();
++        for change in 0..4 {
++            let mut selection = selected.clone();
++            let rows = selection["selected_preparations"].as_array_mut().unwrap();
++            match change {
++                0 => {
++                    rows.pop();
++                }
++                1 => rows.push(original[0].clone()),
++                2 => rows[5] = original[4].clone(),
++                _ => rows.swap(4, 5),
++            }
++            assert!(validate_selection_document(&selection, &sources).is_err());
++        }
++    }
++
++    #[test]
++    fn selection_source_refresh_cannot_promote_runtime_or_expand_its_update() {
++        let selected = current_selection();
++        let sources = fixed_sources().unwrap();
++        for (key, value) in [
++            ("selection_only", json!(false)),
++            ("Android_actions", json!(1)),
++            ("Main_actions", json!(1)),
++            ("CURRENT_writes", json!(1)),
++            ("new_runtime_acceptance_count", json!(1)),
++            (
++                "full_Main_execute_or_full_runtime_seed_executed",
++                json!(true),
++            ),
++            ("historical_runtime_credit_transferred", json!(true)),
++        ] {
++            let mut changed = selected.clone();
++            changed[key] = value;
++            assert!(
++                validate_selection_document(&changed, &sources).is_err(),
++                "{key}"
++            );
++        }
++        for (key, value) in [
++            ("selected_index", json!(4)),
++            ("changed_selection_entries", json!(2)),
++            ("unchanged_selection_entries", json!(11)),
++            ("Android_actions", json!(1)),
++            ("runtime_qualified", json!(true)),
++            (
++                "new_preparation",
++                selected["selected_preparations"][4].clone(),
++            ),
++        ] {
++            let mut changed = selected.clone();
++            changed["identity_source_update"][key] = value;
++            assert!(
++                validate_selection_document(&changed, &sources).is_err(),
++                "{key}"
++            );
++        }
++    }
++
+     #[test]
+     fn wrong_case_kind_and_unwrapped_camera_never_dispatch() {
+         let sources = fixed_sources().unwrap();

@@ -1840,6 +1840,7 @@ jobs:
     env:
       PYTHONDONTWRITEBYTECODE: '1'
       P4_MATERIALIZATION_INVENTORY_SHA256: ea75a0a28022944b80acebb65aca9ce49c9c66fbd519531da7677bbd114ed35e
+      P4_LEAF_SELECTION_INVENTORY_SHA256: b932f58f5a3eaf7feea4d458fbd67d2e248a29a5aeb45eb940c6f2c7450f6374
     steps:
       - uses: actions/checkout@v4
         with:
@@ -1874,6 +1875,28 @@ jobs:
             --producer "$RUNNER_TEMP/materialization-successor" \
             --work "$RUNNER_TEMP/materialization-build" \
             --report "$RUNNER_TEMP/materialization-ci.json" --jobs 2 --fetch
+      - name: Replay the current leaf selection on the complete fixed source
+        shell: bash
+        run: |
+          set -euo pipefail
+          a08_leaf_packet="$GITHUB_WORKSPACE/compat/android/pocket4/current-leaf-selection-20261120/rust"
+          a08_leaf_parent_packet="$GITHUB_WORKSPACE/compat/android/pocket4/vendor-source-materialization-20261120/rust"
+          printf '%s  %s\n' "$P4_LEAF_SELECTION_INVENTORY_SHA256" "$a08_leaf_packet/FILES.sha256" | sha256sum --check --status
+          (cd "$a08_leaf_packet" && sha256sum --quiet -c FILES.sha256)
+          python3 -I -B "$a08_leaf_packet/test_replay.py"
+          python3 -I -B "$a08_leaf_packet/verify.py" --inventory-sha256 "$P4_LEAF_SELECTION_INVENTORY_SHA256" \
+            --parent-packet "$a08_leaf_parent_packet" --parent-source "$RUNNER_TEMP/materialization-successor" \
+            --output "$RUNNER_TEMP/current-leaf-successor" \
+            --report "$RUNNER_TEMP/current-leaf-replay.json"
+      - name: Compile and execute all 42 application crate tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B "$GITHUB_WORKSPACE/compat/android/pocket4/current-leaf-selection-20261120/rust/run_ci.py" \
+            --inventory-sha256 "$P4_LEAF_SELECTION_INVENTORY_SHA256" \
+            --producer "$RUNNER_TEMP/current-leaf-successor" \
+            --work "$RUNNER_TEMP/current-leaf-build" \
+            --report "$RUNNER_TEMP/current-leaf-ci.json" --jobs 2
       - name: Preserve exact source and test execution evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -1887,3 +1910,7 @@ jobs:
             ${{ runner.temp }}/materialization-ci.json
             ${{ runner.temp }}/materialization-build/logs/*.stdout
             ${{ runner.temp }}/materialization-build/logs/*.stderr
+            ${{ runner.temp }}/current-leaf-replay.json
+            ${{ runner.temp }}/current-leaf-ci.json
+            ${{ runner.temp }}/current-leaf-build/logs/*.stdout
+            ${{ runner.temp }}/current-leaf-build/logs/*.stderr
