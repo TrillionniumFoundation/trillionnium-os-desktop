@@ -1,0 +1,357 @@
+--- a/runtime/droidloom-applications/src/leaf_routes.rs
++++ b/runtime/droidloom-applications/src/leaf_routes.rs
+@@ -19,15 +19,30 @@
+ use super::{FilePin, pinned};
+ use super::leaf_release::NativeRelease;
+ 
+-const QUALIFICATION: &str = "/home/alex/work/pocket4-android-final/qualification";
++const QUALIFICATION: &str = "/var/lib/droidloom/qualification/pocket4";
+ const SELECTION_PATH: &str =
+-    "/home/alex/work/p4-calendar-resource-consumer-20261120-3b9d-r1/selection-integration/selection-13.json";
+-const SELECTION_BYTES: u64 = 12745;
+-const SELECTION_SHA: &str = "9db3ea2a573326af39676f6366e49b9dbad28efde3ea5486223b15f2bc17d295";
++    "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/selection/selection-14.json";
++const SELECTION_BYTES: u64 = 4669;
++const SELECTION_SHA: &str = "b4d74f3691c43e564ffad8efc26da8de884496110fc85e1821b7b5825c28c15f";
+ const SOURCE_CATALOG: &str = include_str!("leaf_sources.json");
+ 
+ pub(super) fn compiled_release_sources() -> (FilePin, &'static str) {
+     (FilePin { path: SELECTION_PATH.into(), bytes: SELECTION_BYTES, sha256: SELECTION_SHA.into() }, SOURCE_CATALOG)
++}
++
++/// Hold the already adopted source/native release before the fixed unit's
++/// initial PM query. Actual business validation and the original claim remain
++/// in execute; this method grants neither Main nor application acceptance.
++pub(super) fn owned_route_release(plan: &LeafPlan, selection: &FilePin) -> Result<NativeRelease,String> {
++    validate_selection(selection)?;
++    let sources=fixed_sources()?;
++    let source=&sources[plan.route.definition().source];
++    if plan.route.current_gallery() {
++        let request=value(&plan.request)?;
++        NativeRelease::bind(&ref_field(&request,"native_release")?,selection,SOURCE_CATALOG,&source.preparation,&source.entry)
++    } else if matches!(plan.route, Route::CalendarReminder | Route::SettingsSupportedPages) {
++        NativeRelease::bind_current(selection,SOURCE_CATALOG,&source.preparation,&source.entry)
++    } else { Err("owned unit release binding supports only current Calendar/Gallery/Settings routes".into()) }
+ }
+ 
+ #[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq)]
+@@ -36,6 +51,7 @@
+     ContactsSearch,
+     CalendarCore,
+     CalendarReminder,
++    SettingsSupportedPages,
+     CameraPhoto,
+     ClockTimer,
+     ClockTimerRemaining,
+@@ -130,6 +146,16 @@
+                 seconds: 690,
+                 state: Some("OWNED_NATURAL_CALENDAR_REMINDER_AND_UI_DELETE_VERIFIED"),
+                 result_schema: "pocket4-final-calendar-reminder22-current-result-v1",
++            },
++            SettingsSupportedPages => Definition {
++                source: 13,
++                package: "com.android.settings",
++                request_schema: None,
++                plan_schema: Some("pocket4-settings-pages-plan-v1"),
++                kind: Some("settings_supported_pages"),
++                seconds: 900,
++                state: Some("SETTINGS_PAGES_VERIFIED_CLEAN"),
++                result_schema: "pocket4-settings-pages-case-result-v1",
+             },
+             CameraPhoto => Definition {
+                 source: 3,
+@@ -246,8 +272,8 @@
+     let rows: Vec<SelectedSource> =
+         serde_json::from_str(SOURCE_CATALOG).map_err(|e| e.to_string())?;
+     require(
+-        rows.len() == 13 && rows.iter().enumerate().all(|(n, r)| r.index == n),
+-        "compiled leaf source catalog must retain the exact 13 preparations",
++        rows.len() == 14 && rows.iter().enumerate().all(|(n, r)| r.index == n),
++        "compiled leaf source catalog must retain the exact 14 preparations",
+     )?;
+     Ok(rows)
+ }
+@@ -257,7 +283,7 @@
+         selection.path == Path::new(SELECTION_PATH)
+             && selection.bytes == SELECTION_BYTES
+             && selection.sha256 == SELECTION_SHA,
+-        "leaf dispatch requires the independently adopted complete 13-preparation selection",
++        "leaf dispatch requires the independently adopted complete 14-preparation selection",
+     )
+ }
+ 
+@@ -265,6 +291,12 @@
+     selection: &Value,
+     sources: &[SelectedSource],
+ ) -> Result<(), String> {
++    exact_keys(selection, &[
++        "schema", "selection_only", "Android_actions", "Main_actions", "CURRENT_writes",
++        "new_runtime_acceptance_count", "full_Main_execute_or_full_runtime_seed_executed",
++        "historical_runtime_credit_transferred", "runtime_qualified", "production_ready",
++        "selected_preparations", "source_selection_update",
++    ])?;
+     require(
+         selection["schema"] == "current-application-preparation-selection-v1"
+             && selection["selection_only"] == true
+@@ -284,28 +316,40 @@
+     )
+     .map_err(|e| format!("selection preparation roster invalid: {e}"))?;
+     require(
+-        sources.len() == 13
++        sources.len() == 14
+             && preparations.len() == sources.len()
+             && sources.iter().enumerate().all(|(index, source)| {
+                 source.index == index && source.preparation == preparations[index]
+             }),
+-        "compiled leaf sources differ from the externally selected 13 preparations",
++        "compiled leaf sources differ from the externally selected 14 preparations",
+     )?;
+     let update = &selection["source_selection_update"];
+-    require(
+-        update["changed_indices"] == json!([1,8,9,10,11,12])
+-            && update["unchanged_indices"] == json!([0,2,3,4,5,6,7])
++    exact_keys(update, &[
++        "state", "changed_indices", "unchanged_indices", "added_indices", "catalog",
++        "Android_actions", "CURRENT_writes", "current_Main_required", "native_release_adopted",
++        "native_release_adoption_required", "runtime_enabled", "runtime_qualified", "production_ready",
++    ])?;
++    require(
++        update["state"] == "STAGED_CANONICAL_MAPPED_MAIN_AND_FOURTEEN_APP_SOURCES_NOT_ADOPTED"
++            && update["changed_indices"] == json!([0,1,2,3,4,5,6,7,8,9,10,11,12])
++            && update["unchanged_indices"] == json!([])
++            && update["added_indices"] == json!([13])
++            && update["Android_actions"] == 0
++            && update["CURRENT_writes"] == 0
+             && update["current_Main_required"] == true
++            && update["native_release_adopted"] == false
+             && update["native_release_adoption_required"] == true
+             && update["runtime_enabled"] == false
++            && update["runtime_qualified"] == false
++            && update["production_ready"] == false
+             && selection["runtime_qualified"] == false
+             && selection["production_ready"] == false
+             && ref_field(update,"catalog")? == (FilePin {
+-                path: "/home/alex/work/p4-calendar-resource-consumer-20261120-3b9d-r1/selection-integration/leaf_sources.json".into(),
++                path: "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/selection/leaf_sources.json".into(),
+                 bytes: SOURCE_CATALOG.len() as u64,
+                 sha256: hex::encode(Sha256::digest(SOURCE_CATALOG)),
+             }),
+-        "current Calendar/Gallery update must preserve the other seven CP3A sources and require native release adoption",
++        "canonical fourteen-source update must preserve mapped Main and native release prerequisites without runtime credit",
+     )
+ }
+ 
+@@ -370,7 +414,7 @@
+         )?;
+     }
+     match plan.route {
+-        Route::ContactsSearch | Route::CalendarCore | Route::CalendarReminder => {
++        Route::ContactsSearch | Route::CalendarCore | Route::CalendarReminder | Route::SettingsSupportedPages => {
+             exact_keys(request, &["base_plan"])?
+         }
+         Route::CameraPhoto => {
+@@ -418,7 +462,7 @@
+     }
+     let name = if matches!(
+         plan.route,
+-        Route::ContactsSearch | Route::CalendarCore | Route::CalendarReminder
++        Route::ContactsSearch | Route::CalendarCore | Route::CalendarReminder | Route::SettingsSupportedPages
+     ) {
+         "base_plan"
+     } else {
+@@ -440,7 +484,7 @@
+     let epoch = &baseline["framework_epoch"];
+     let binding = &epoch["binding"];
+     require(
+-        baseline["schema"] == "pocket4-final-business-baseline-v1"
++        baseline["schema"] == "pocket4-final-business-baseline-v2"
+             && epoch["schema"] == "pocket4-framework-epoch-v1"
+             && binding["boot_id"].as_str() == Some(actual.epoch.boot_id.as_str())
+             && binding["processes"]["init"]["host_pid"].as_u64()
+@@ -452,7 +496,7 @@
+         "leaf baseline and current daemon observation do not identify the same physical Main",
+     )?;
+     require(
+-        qualification["schema"] == "pocket4-final-business-qualification-v1"
++        qualification["schema"] == "pocket4-final-business-qualification-v2"
+             && ref_field(&qualification, "baseline")? == baseline_ref
+             && qualification["main_identity_qualified"] == true
+             && qualification["predeployment_data_directory_identity_preserved"] == true
+@@ -645,6 +689,31 @@
+                 && ref_field(result, "source_preparation")? == source.preparation
+                 && printed["state"] == result["state"],
+             "gallery result lacks completed business/cleanup scope for this Main and preparation",
++        )?;
++    } else if route == Route::SettingsSupportedPages {
++        exact_keys(printed, &["result", "state", "case_business_success_verified", "scope", "whole_app_business_accepted"])?;
++        let empty = |key: &str| result["cancellation_commit"][key].as_array().is_some_and(Vec::is_empty);
++        let two = |key: &str| result[key].as_array().is_some_and(|rows| rows.len() == 2);
++        require(
++            result["case_business_success_verified"] == true && printed["case_business_success_verified"] == true
++                && printed["state"] == result["state"]
++                && result["scope"] == "settings.pages" && printed["scope"] == "settings.pages"
++                && result["accepted_gates"] == json!(["settings.pages"])
++                && Some(ref_field(result, "base_plan")?).as_ref() == case_ref
++                && result["all_five_pages_observed"] == true && result["pages"].as_array().is_some_and(|v| v.len()==5)
++                && result["identity_permissions_directories_preserved"] == true
++                && result["complete_task_baseline_restored"] == true
++                && result["final_source_identity_chain_unchanged"] == true
++                && result["evidence_witness_closed"] == true
++                && result["native_launch_count"] == 2 && result["page_route_count"] == 5 && result["observation_count"] == 7
++                && two("native_claims") && result["normally_closed_claims"] == result["native_claims"]
++                && two("launches") && two("normal_closes") && two("host_flow_contexts_closed")
++                && result["pending_route"].is_null() && result["pending_UI"].is_null()
++                && result.get("unknown_retained_without_further_mutation").is_none_or(|v| v == false)
++                && ["setting_writes", "permission_writes", "account_writes", "package_writes"].iter().all(|key| result[*key] == 0)
++                && empty("observed_before_commit") && empty("pending_at_commit")
++                && result["cancellation_commit"]["decision_frozen_after_host_context_close"] == true,
++            "Settings result must prove only five read-only pages, two owned launches/closes and complete cleanup without cancellation or unknown effects",
+         )?;
+     } else if route == Route::CameraPhoto {
+         require(
+@@ -740,7 +809,7 @@
+     let release = if plan.route.current_gallery() {
+         Some(NativeRelease::bind(&ref_field(&request,"native_release")?, selection, SOURCE_CATALOG,
+             &source.preparation, &source.entry)?)
+-    } else if plan.route == Route::CalendarReminder {
++    } else if matches!(plan.route, Route::CalendarReminder | Route::SettingsSupportedPages) {
+         Some(NativeRelease::bind_current(selection,SOURCE_CATALOG,&source.preparation,&source.entry)?)
+     } else { None };
+     let (baseline, qualification) = main_binding(&case, actual)?;
+@@ -753,6 +822,8 @@
+         control::run_prepared_gallery_image_leaf(cmd, &actual.epoch)?
+     } else if plan.route == Route::CalendarReminder {
+         control::run_prepared_calendar_reminder_leaf(cmd, &actual.epoch)?
++    } else if plan.route == Route::SettingsSupportedPages {
++        control::run_prepared_settings_pages_leaf(cmd, &actual.epoch)?
+     } else {
+         control::run_prepared_application_leaf(cmd, &actual.epoch, Duration::from_secs(d.seconds))?
+     };
+@@ -841,7 +912,8 @@
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+-    const CURRENT_SELECTION: &str = include_str!("../tests/fixtures/selection-13-20261120.json");
++    const CURRENT_SELECTION: &str = include_str!("../tests/fixtures/selection-14-20261120.json");
++    const OLD_SELECTION: &str = include_str!("../tests/fixtures/selection-13-20261120.json");
+ 
+     fn current_selection() -> Value {
+         serde_json::from_str(CURRENT_SELECTION).unwrap()
+@@ -854,6 +926,38 @@
+             sha256: "1".repeat(64),
+         }
+     }
++    #[test]
++    fn settings_pages_terminal_keeps_partial_scope_and_rejects_unknown_or_extra_credit() {
++        let source = SelectedSource { index: 13, preparation: pin("settings-prep"), entry: pin("settings-entry") };
++        let plan = pin("settings-plan"); let baseline = pin("baseline"); let qualification = pin("qualification");
++        let result_pin = pin("settings-result");
++        let printed = json!({"result":result_pin,"state":"SETTINGS_PAGES_VERIFIED_CLEAN",
++            "case_business_success_verified":true,"scope":"settings.pages","whole_app_business_accepted":false});
++        let result = json!({"schema":"pocket4-settings-pages-case-result-v1","state":"SETTINGS_PAGES_VERIFIED_CLEAN",
++            "whole_app_business_accepted":false,"automatic_retry":false,"case_business_success_verified":true,
++            "scope":"settings.pages","accepted_gates":["settings.pages"],"base_plan":plan,
++            "all_five_pages_observed":true,"pages":[0,1,2,3,4],"identity_permissions_directories_preserved":true,
++            "complete_task_baseline_restored":true,"final_source_identity_chain_unchanged":true,"evidence_witness_closed":true,
++            "native_launch_count":2,"page_route_count":5,"observation_count":7,
++            "native_claims":["one","two"],"normally_closed_claims":["one","two"],"launches":[0,1],"normal_closes":[0,1],
++            "host_flow_contexts_closed":[0,1],"pending_route":null,"pending_UI":null,
++            "setting_writes":0,"permission_writes":0,"account_writes":0,"package_writes":0,
++            "cancellation_commit":{"observed_before_commit":[],"pending_at_commit":[],"decision_frozen_after_host_context_close":true}});
++        let check = |value: &Value| terminal_result(Route::SettingsSupportedPages,&printed,value,Some(&plan),&baseline,&qualification,&source);
++        check(&result).unwrap();
++        for (key, value) in [("accepted_gates",json!(["settings.pages","settings.roundtrip"])),
++                             ("whole_app_business_accepted",json!(true)), ("setting_writes",json!(1)),
++                             ("unknown_retained_without_further_mutation",json!(true)),
++                             ("normal_closes",json!([0])), ("base_plan",json!(pin("another-plan")))] {
++            let mut changed=result.clone(); changed[key]=value; assert!(check(&changed).is_err(),"{key}");
++        }
++        let mut cancelled=result;cancelled["cancellation_commit"]["pending_at_commit"]=json!([15]);
++        assert!(check(&cancelled).is_err());
++        assert_eq!(Route::SettingsSupportedPages.definition().source,13);
++        assert_eq!(Route::SettingsSupportedPages.definition().seconds,900);
++        assert_eq!(Route::SettingsSupportedPages.package(),"com.android.settings");
++    }
++
+     #[test]
+     fn finite_routes_cover_seven_packages_without_install_or_raw_camera_bypass() {
+         let routes = [
+@@ -922,9 +1026,9 @@
+         })
+         .unwrap();
+         let source = &sources[5];
+-        assert_eq!(source.entry.path,Path::new("/home/alex/work/p4-cp3a-bootstrap-20261120-runtimeaudit-r1/candidate/sources/ihg-5.111.1-r1/app_entry.py"));
+-        assert_eq!(source.entry.bytes,13838);
+-        assert_eq!(source.entry.sha256,"c1248056463a163b6ae0b4482129c72721ba023af8ad387326df4952173df3e2");
++        assert_eq!(source.entry.path,Path::new("/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/ihg/app_entry.py"));
++        assert_eq!(source.entry.bytes,13828);
++        assert_eq!(source.entry.sha256,"c7c42c574b9f72b6880991bedd670ffce5a97146748315c249b9fa116bc79b4d");
+         for route in [Route::ClockTimer, Route::IhgLondon] {
+             assert_eq!(route.definition().source, 5);
+             let plan = LeafPlan {
+@@ -942,7 +1046,7 @@
+ 
+     #[test]
+     fn november_fourteen_and_mixed_selector_pins_are_rejected_before_reading() {
+-        let old = ref_field(&current_selection(), "previous_selection").unwrap();
++        let old = ref_field(&serde_json::from_str::<Value>(OLD_SELECTION).unwrap(), "previous_selection").unwrap();
+         assert!(validate_selection_pin(&old).is_err());
+         assert!(validate_selection(&old).is_err());
+         let current = FilePin {
+@@ -972,8 +1076,9 @@
+     fn current_selector_cannot_dispatch_a_stale_or_reordered_compiled_catalog() {
+         let selection = current_selection();
+         let mut sources = fixed_sources().unwrap();
++        let old: Value = serde_json::from_str(OLD_SELECTION).unwrap();
+         sources[5].preparation =
+-            ref_field(&selection["previous_identity_source_update"], "old_preparation").unwrap();
++            ref_field(&old["previous_identity_source_update"], "old_preparation").unwrap();
+         assert!(validate_selection_document(&selection, &sources).is_err());
+         sources = fixed_sources().unwrap();
+         sources.swap(4, 5);
+@@ -1020,6 +1125,9 @@
+                 json!(true),
+             ),
+             ("historical_runtime_credit_transferred", json!(true)),
++            ("runtime_qualified", json!(true)),
++            ("production_ready", json!(true)),
++            ("unknown_field", json!(false)),
+         ] {
+             let mut changed = selected.clone();
+             changed[key] = value;
+@@ -1031,9 +1139,17 @@
+         for (key, value) in [
+             ("changed_indices", json!([0,8,9,10,11,12])),
+             ("unchanged_indices", json!([1,2,3,4,5,6,7])),
++            ("added_indices", json!([])),
++            ("state", json!("ADOPTED")),
++            ("Android_actions", json!(false)),
++            ("CURRENT_writes", json!(1)),
+             ("current_Main_required", json!(false)),
++            ("native_release_adopted", json!(true)),
+             ("native_release_adoption_required", json!(false)),
+             ("runtime_enabled", json!(true)),
++            ("runtime_qualified", json!(true)),
++            ("production_ready", json!(true)),
++            ("unknown_field", json!(false)),
+             ("catalog", json!(pin("arbitrary-catalog"))),
+         ] {
+             let mut changed = selected.clone();
+@@ -1226,7 +1342,7 @@
+             dir.path(),
+             "baseline.json",
+             &json!({
+-                "schema":"pocket4-final-business-baseline-v1", "observation_fds":{"closed":true},
++                "schema":"pocket4-final-business-baseline-v2", "observation_fds":{"closed":true},
+                 "framework_epoch":{"schema":"pocket4-framework-epoch-v1","sha256":"b".repeat(64),
+                     "binding":{"boot_id":observed.epoch.boot_id,"processes":{
+                         "init":{"host_pid":10},"system_server":{"host_pid":20,"start_ticks":30}}}}
+@@ -1236,7 +1352,7 @@
+             dir.path(),
+             "qualification.json",
+             &json!({
+-                "schema":"pocket4-final-business-qualification-v1","baseline":baseline,
++                "schema":"pocket4-final-business-qualification-v2","baseline":baseline,
+                 "main_identity_qualified":true,"predeployment_data_directory_identity_preserved":true,
+                 "business_actions_admitted":false,"whole_app_business_accepted":false,
+                 "main_epoch_sha256":"b".repeat(64),"observation_fds":{"closed":true}

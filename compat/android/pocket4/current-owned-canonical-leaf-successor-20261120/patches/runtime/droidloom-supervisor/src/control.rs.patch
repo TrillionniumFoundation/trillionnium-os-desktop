@@ -1,0 +1,26 @@
+--- a/runtime/droidloom-supervisor/src/control.rs
++++ b/runtime/droidloom-supervisor/src/control.rs
+@@ -56,6 +56,7 @@
+ #[path = "application_leaf_locks.rs"]
+ mod application_leaf_locks;
+ pub use application_leaf_locks::NativeApplicationSourceLocks;
++pub use application_command::{NativeOwnedLeafUnit, OwnedLeafProfile};
+ 
+ /// Run a finite prepared application leaf from the native applications CLI.
+ /// The caller validates the frozen route, source and request. This is not a
+@@ -85,6 +86,15 @@
+     epoch: &application_probe::RuntimeEpoch,
+ ) -> Result<std::process::Output, String> {
+     application_command::run_prepared_calendar_reminder_leaf(command, epoch)
++}
++
++/// Run only the selected Settings read-only pages entry under its dedicated
++/// nested group and fixed two-CPU, two-GiB, no-swap resource profile.
++pub fn run_prepared_settings_pages_leaf(
++    command: std::process::Command,
++    epoch: &application_probe::RuntimeEpoch,
++) -> Result<std::process::Output, String> {
++    application_command::run_prepared_settings_pages_leaf(command, epoch)
+ }
+ 
+ /// Default root-owned lifecycle socket.

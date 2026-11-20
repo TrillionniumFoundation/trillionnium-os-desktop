@@ -1,0 +1,69 @@
+{
+  "all_source_repairs_reverse_and_replay": true,
+  "changes_to_original_data_provider_files": 0,
+  "existing_catalog_runner_and_authorization_bytes_unchanged": true,
+  "fresh_joint_compile_passed": false,
+  "new_root_ready_binder_consumer_overlay_files": 1,
+  "predecessor_commit": "93531cb2379c439d3a1c775cbb1b8448f1e44808",
+  "predecessor_source": {
+    "bytes": 45436536,
+    "files": 2381,
+    "tree": "0d6e87d09e06a282bad0a1704a7db1517f20a047"
+  },
+  "production_ready": false,
+  "repairs": [
+    {
+      "after": {
+        "bytes": 43388,
+        "git_blob": "866193d08614a6290fb46de59333514a50c06f88",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/application_leaf_unit.rs",
+        "sha256": "2c88c39af9de233198ca21a365e2f2c4a578fe9ca28986ef534e7e6bac40b9af"
+      },
+      "before": {
+        "bytes": 43315,
+        "git_blob": "6fb600992c1ecccd0a084056bebd9308a2d9def6",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/application_leaf_unit.rs",
+        "sha256": "13b4ef03138e3898178c2f179407835483a212251864e89ffa17489ed7fb7138"
+      },
+      "component": "first_joint_ci_typecheck_repair",
+      "patch": {
+        "bytes": 941,
+        "path": "patches/runtime/droidloom-supervisor/src/application_leaf_unit.rs.patch",
+        "sha256": "85f8a3dd9fdd4ad4cecad5dc79e971ff00da5d25625b8aa5204dcd7320827a7e"
+      },
+      "path": "runtime/droidloom-supervisor/src/application_leaf_unit.rs"
+    },
+    {
+      "after": {
+        "bytes": 21784,
+        "git_blob": "08b320faa3cb1481b7fd409dbbf0040786a7898a",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_namespace_binder_parent.rs",
+        "sha256": "73a6eb73ec7a69b20e3cd0d0e1f443fefa8df543b5d5e05a7aef259118960a6d"
+      },
+      "before": {
+        "bytes": 21779,
+        "git_blob": "8345b77752927061185dca9f3b44a87208100dd9",
+        "mode": "100644",
+        "path": "runtime/droidloom-supervisor/src/production_namespace_binder_parent.rs",
+        "sha256": "ad7b9aa3b7a2ba81c35dd0a4cd66ca80e3e4a4f202a0b5584f9eb6b7607aef71"
+      },
+      "component": "first_joint_ci_typecheck_repair",
+      "patch": {
+        "bytes": 676,
+        "path": "patches/runtime/droidloom-supervisor/src/production_namespace_binder_parent.rs.patch",
+        "sha256": "58b0994c0ef45e050ab89aca1a6adb673dc5f22cdc5c00e489aaab6b28cf2069"
+      },
+      "path": "runtime/droidloom-supervisor/src/production_namespace_binder_parent.rs"
+    }
+  ],
+  "runtime_qualified": false,
+  "schema": "p4-joint-first-ci-compile-repair-source-review-v1",
+  "source": {
+    "bytes": 45436614,
+    "files": 2381,
+    "tree": "00c99f0f89fef255d6e8e818769f687f80c1af86"
+  }
+}

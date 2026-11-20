@@ -1,0 +1,188 @@
+--- a/runtime/droidloom-supervisor/src/production_namespace_mount_child.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_mount_child.rs
+@@ -1,10 +1,10 @@
+-//! Fixed, syscall-only consumer of the two admitted base mount descriptors.
++//! Fixed, syscall-only consumer of admitted base and optional original data mounts.
+ //!
+-//! This is not an Android exec path. It builds an isolated empty-data root,
++//! This is not an Android exec path. Separate phases build an isolated root,
+ //! pivots away from every inherited host mount and parks at a second barrier.
+ //! Runtime, device and APEX authority are separate prerequisites.
+ 
+-use super::{CHILD_FD, Mode, Packet, Phase, fail, finish, receive, send};
++use super::{BaseLayout, CHILD_FD, Mode, Packet, Phase, fail, finish, receive, send};
+ use std::os::fd::RawFd;
+ 
+ const OPEN_TREE_CLONE: u32 = 1;
+@@ -84,7 +84,7 @@
+ /// The only transfer accepted at the first PID 1 barrier. The connected peer
+ /// is held exclusively by the creator; no pathname, process ID or JSON grants
+ /// access to this endpoint. Exact sender/receiver ownership was already bound.
+-unsafe fn receive_bases(nonce: [u8; 16], parent_pid: u32) -> [RawFd; 2] {
++unsafe fn receive_bases(nonce: [u8; 16], parent_pid: u32) -> ([RawFd; 4], BaseLayout) {
+     let mut packet = Packet::zeroed();
+     let mut iov = libc::iovec {
+         iov_base: (&mut packet as *mut Packet).cast(),
+@@ -121,43 +121,37 @@
+         }
+         unsafe { finish(0) }
+     }
+-    if packet.phase != Phase::MountEmptyBase as u32 || header.is_null() {
+-        unsafe { protocol_failure(nonce) }
+-    }
++    let layout = match BaseLayout::from_phase(packet.phase) {
++        Some(layout) => layout,
++        None => unsafe { protocol_failure(nonce) },
++    };
++    let count = layout.descriptor_count();
++    if header.is_null() { unsafe { protocol_failure(nonce) } }
+     let h = unsafe { &*header };
+     if h.cmsg_level != libc::SOL_SOCKET
+         || h.cmsg_type != libc::SCM_RIGHTS
+-        || h.cmsg_len != unsafe { libc::CMSG_LEN(8) } as usize
++        || h.cmsg_len != unsafe { libc::CMSG_LEN((count * std::mem::size_of::<RawFd>()) as u32) } as usize
+         || !unsafe { libc::CMSG_NXTHDR(&msg, header) }.is_null()
+     {
+         unsafe { protocol_failure(nonce) }
+     }
+     let p = unsafe { libc::CMSG_DATA(header).cast::<i32>() };
+-    let raw = unsafe {
+-        [
+-            std::ptr::read_unaligned(p),
+-            std::ptr::read_unaligned(p.add(1)),
+-        ]
+-    };
+-    if raw[0] < 0 || raw[1] < 0 || raw[0] == raw[1] || raw.contains(&CHILD_FD) {
+-        unsafe { protocol_failure(nonce) }
+-    }
+-    // Stdio was closed before TreeReady. Received FDs may therefore be 0/1.
+-    // Duplicate both before closing either, never overwrite a live peer FD.
+-    let mut held = [-1; 2];
+-    for i in 0..2 {
+-        let fd = unsafe { libc::syscall(libc::SYS_fcntl, raw[i], libc::F_DUPFD_CLOEXEC, 4) };
+-        if fd < 4 || fd > i32::MAX as libc::c_long {
+-            unsafe { fail(nonce, 1) }
+-        }
+-        held[i] = fd as i32;
+-    }
+-    for fd in raw {
+-        unsafe {
+-            libc::syscall(libc::SYS_close, fd);
+-        }
+-    }
+-    held
++    let mut raw = [-1; 4];
++    for index in 0..count {
++        raw[index] = unsafe { std::ptr::read_unaligned(p.add(index)) };
++        if raw[index] < 0 || raw[index] == CHILD_FD || raw[..index].contains(&raw[index]) {
++            unsafe { protocol_failure(nonce) }
++        }
++    }
++    // Duplicate every received FD before closing any. Stdio may hold rights.
++    let mut held = [-1; 4];
++    for index in 0..count {
++        let fd = unsafe { libc::syscall(libc::SYS_fcntl, raw[index], libc::F_DUPFD_CLOEXEC, 4) };
++        if fd < 4 || fd > i32::MAX as libc::c_long { unsafe { fail(nonce, 1) } }
++        held[index] = fd as RawFd;
++    }
++    for fd in &raw[..count] { unsafe { libc::syscall(libc::SYS_close, *fd); } }
++    (held, layout)
+ }
+ 
+ unsafe fn require_image(fd: RawFd, nonce: [u8; 16]) {
+@@ -178,6 +172,19 @@
+         unsafe { protocol_failure(nonce) }
+     }
+ }
++
++unsafe fn require_persistent(fd: RawFd, nonce: [u8; 16]) -> u64 {
++    let mut fs: KernelStatfs = unsafe { std::mem::zeroed() };
++    let mut meta: libc::stat = unsafe { std::mem::zeroed() };
++    if unsafe { libc::syscall(libc::SYS_fstatfs, fd, &mut fs) } != 0
++        || unsafe { libc::syscall(libc::SYS_fstat, fd, &mut meta) } != 0
++    { unsafe { fail(nonce, 1) } }
++    if fs.f_type != EXT4_MAGIC || meta.st_mode & libc::S_IFMT != libc::S_IFDIR
++        || fs.f_flags as u64 & (ATTR_RDONLY | ATTR_NOSUID | ATTR_NODEV | 8) != ATTR_NOSUID | ATTR_NODEV
++    { unsafe { protocol_failure(nonce) } }
++    meta.st_dev
++}
++
+ 
+ unsafe fn make_tmpfs(
+     mode: *const libc::c_char,
+@@ -524,9 +531,19 @@
+ /// Called only after the actual owned PID 1 emitted TreeReady.
+ pub(super) unsafe fn run(nonce: [u8; 16], parent_pid: u32, _mode: Mode) -> ! {
+     unsafe {
+-        let [system, vendor] = receive_bases(nonce, parent_pid);
++        let ([system, vendor, data, metadata], layout) = receive_bases(nonce, parent_pid);
+         require_image(system, nonce);
+         require_image(vendor, nonce);
++        if layout == BaseLayout::Persistent {
++            let data_device = require_persistent(data, nonce);
++            let metadata_device = require_persistent(metadata, nonce);
++            if data_device == metadata_device { protocol_failure(nonce) }
++            for fd in [system, vendor] {
++                let mut stat: libc::stat = std::mem::zeroed();
++                if libc::syscall(libc::SYS_fstat, fd, &mut stat) != 0 { fail(nonce, 1) }
++                if stat.st_dev == data_device || stat.st_dev == metadata_device { protocol_failure(nonce) }
++            }
++        }
+         // Overmount an existing real directory only inside the already-private
+         // child mount namespace. No host directory is created or modified.
+         let old_tmp = directory_at(libc::AT_FDCWD, c"/tmp".as_ptr(), nonce);
+@@ -544,20 +561,31 @@
+         let vendor_target = directory_at(root, c"vendor".as_ptr(), nonce);
+         attach(vendor, vendor_target, nonce);
+         libc::syscall(libc::SYS_close, vendor_target);
+-        empty_data(
+-            root,
+-            c"data".as_ptr(),
+-            c"0771".as_ptr(),
+-            c"512M".as_ptr(),
+-            nonce,
+-        );
+-        empty_data(
+-            root,
+-            c"metadata".as_ptr(),
+-            c"0700".as_ptr(),
+-            c"16M".as_ptr(),
+-            nonce,
+-        );
++        match layout {
++            BaseLayout::Empty => {
++                empty_data(
++                    root,
++                    c"data".as_ptr(),
++                    c"0771".as_ptr(),
++                    c"512M".as_ptr(),
++                    nonce,
++                );
++                empty_data(
++                    root,
++                    c"metadata".as_ptr(),
++                    c"0700".as_ptr(),
++                    c"16M".as_ptr(),
++                    nonce,
++                );
++            }
++            BaseLayout::Persistent => {
++                for (source, name) in [(data, c"data"), (metadata, c"metadata")] {
++                    let target = directory_at(root, name.as_ptr(), nonce);
++                    attach(source, target, nonce);
++                    libc::syscall(libc::SYS_close, target);
++                }
++            }
++        }
+         let oldroot = new_directory(root, c".oldroot".as_ptr(), nonce);
+         libc::syscall(libc::SYS_close, oldroot);
+         if libc::syscall(libc::SYS_fchdir, root) != 0
+@@ -581,7 +609,7 @@
+         libc::syscall(libc::SYS_close, 0);
+         libc::syscall(libc::SYS_close, 1);
+         libc::syscall(libc::SYS_close, 2);
+-        send(nonce, Phase::EmptyRootReady, 0, 1);
++        send(nonce, layout.ready_phase(), 0, 1);
+         #[cfg(test)]
+         if matches!(
+             _mode,

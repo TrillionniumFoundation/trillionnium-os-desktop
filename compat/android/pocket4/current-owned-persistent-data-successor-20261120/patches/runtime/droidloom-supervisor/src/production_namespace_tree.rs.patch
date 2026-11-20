@@ -1,0 +1,436 @@
+--- a/runtime/droidloom-supervisor/src/production_namespace_tree.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_tree.rs
+@@ -11,6 +11,9 @@
+ use crate::production_devices::{DeviceRetirement, PreparedActivationDevices, PreparedDevices};
+ use crate::production_execution::PreparedExecution;
+ use crate::production_mounts::{MountRetirement, PreparedMounts};
++use crate::production_mounts::persistent_data::{
++    PersistentDataRetirement, PersistentRootObservation, PreparedPersistentData,
++};
+ use crate::production_runtime_assets::{PreparedRuntime, RuntimeRetirement};
+ use crate::production_selection::ProductionSelection;
+ use std::os::fd::BorrowedFd;
+@@ -339,17 +342,18 @@
+ }
+ 
+ /// Own both the mapped keeper and its PID-1 child until both are reaped.
+-/// Only opaque admitted base mounts and fresh empty tmpfs data may be added.
+-/// No original-data or Android exec input, and no runtime-qualified result.
++/// Empty controls and explicitly admitted persistent roots use separate wire phases.
++/// Runtime execution and final Android qualification remain separate prerequisites.
+ pub(crate) struct IsolatedNamespaces {
+     keeper: Option<MappedUserNamespace>,
+     init: Option<TreeChild>,
+     // Set only by successful actual waitid(P_PIDFD) of this exact PID 1.
+     reaped_init: Option<ChildExit>,
+     bases: Option<BaseMounts>,
++    persistent_data: Option<PreparedPersistentData>,
+     base_devices: Option<[u64; 2]>,
+     devices: Option<DeviceMounts>,
+-    empty_root: bool,
++    base_root_ready: bool,
+     private_devices: bool,
+     device_node: Option<Node>,
+     process_filesystems: Option<ProcessFilesystems>,
+@@ -613,6 +617,7 @@
+     gids: IdRange,
+     namespaces: NamespaceSet,
+     default_mounts: std::cell::OnceCell<std::rc::Rc<original_ptrace::DefaultMountOwner>>,
++    persistent_roots: Option<[PersistentRootObservation; 2]>,
+     proc_context: Option<File>,
+     proc_mount: Option<File>,
+     activation_nodes: Option<ActivationNodes>,
+@@ -633,6 +638,7 @@
+ #[derive(Debug, Default, Eq, PartialEq)]
+ struct PreparedResourceInventory {
+     bases: Option<ResourcePreparation>,
++    persistent_data: Option<ResourcePreparation>,
+     devices: Option<ResourcePreparation>,
+     runtime: Option<ResourcePreparation>,
+ }
+@@ -644,6 +650,7 @@
+ struct ResourceRetirements {
+     prepared: PreparedResourceInventory,
+     bases: Option<MountRetirement>,
++    persistent_data: Option<PersistentDataRetirement>,
+     devices: Option<DeviceRetirement>,
+     runtime: Option<RuntimeRetirement>,
+ }
+@@ -653,6 +660,7 @@
+     // caller must still possess each actual opaque resource-owner result.
+     fn require_package_roles(&self) -> Result<()> {
+         if self.bases != Some(ResourcePreparation::Admitted)
++            || self.persistent_data != Some(ResourcePreparation::Admitted)
+             || self.devices != Some(ResourcePreparation::Admitted)
+             || self.runtime != Some(ResourcePreparation::Admitted)
+         {
+@@ -670,6 +678,7 @@
+ 
+     fn verify_complete(&self) -> Result<()> {
+         if self.prepared.bases.is_some() != self.bases.is_some()
++            || self.prepared.persistent_data.is_some() != self.persistent_data.is_some()
+             || self.prepared.devices.is_some() != self.devices.is_some()
+             || self.prepared.runtime.is_some() != self.runtime.is_some()
+         {
+@@ -689,7 +698,7 @@
+ }
+ 
+ impl TreeExit {
+-    /// Requires the real returned resource objects for all three admitted roles.
++    /// Requires real returned resource objects for all four admitted roles.
+     /// A no-owner stop, incomplete preparation or PrivateControl cannot pass.
+     pub(crate) fn verify_package_retirement(&self) -> Result<()> {
+         self.resources.verify_package_inventory()
+@@ -747,9 +756,10 @@
+                     init: known_child,
+                     reaped_init: None,
+                     bases: None,
++                    persistent_data: None,
+                     base_devices: None,
+                     devices: None,
+-                    empty_root: false,
++                    base_root_ready: false,
+                     private_devices: false,
+                     device_node: None,
+                     process_filesystems: None,
+@@ -799,7 +809,7 @@
+ 
+     fn attach_base_inner(mut self, mut bases: BaseMounts) -> Result<Self> {
+         self.verify_live_admission()?;
+-        if self.bases.is_some() || self.retirement.prepared.bases.is_some() || self.empty_root {
++        if self.bases.is_some() || self.retirement.prepared.bases.is_some() || self.base_root_ready {
+             return Err(NamespaceError::Rejected(
+                 "base descriptors already transferred",
+             ));
+@@ -829,10 +839,62 @@
+             .ok_or(NamespaceError::Rejected("PID 1 absent"))?
+             .wait_empty_root_ready(devices)?;
+         self.base_devices = Some(devices);
+-        self.empty_root = true;
++        self.base_root_ready = true;
+         self.verify_live_admission()?;
+         Ok(self)
+     }
++
++    /// Transfer the two immutable bases and the two original mutable roots
++    /// through a distinct authenticated four-FD phase for this same live owner.
++    pub(crate) fn attach_persistent_base(
++        mut self,
++        bases: PreparedMounts,
++        mut data: PreparedPersistentData,
++        selection: &ProductionSelection,
++        prepared: &PreparedExecution,
++    ) -> Result<Self> {
++        self.verify_live_admission()?;
++        if self.bases.is_some() || self.persistent_data.is_some()
++            || self.retirement.prepared.bases.is_some()
++            || self.retirement.prepared.persistent_data.is_some() || self.base_root_ready
++        {
++            return Err(NamespaceError::Rejected("base or persistent descriptors already transferred"));
++        }
++        let mut bases = BaseMounts::Admitted(bases);
++        let transfer: Result<([u64; 2], [PersistentRootObservation; 2])> = (|| {
++            let witness = self.witness()?;
++            let base_fds = bases.descriptors(&witness)?;
++            let devices = [descriptor_device(base_fds[0])?, descriptor_device(base_fds[1])?];
++            let (data_fds, observed) = data.descriptors_for_transfer(&witness, selection, prepared)
++                .map_err(|error| NamespaceError::MountResource(error.to_string()))?;
++            if observed[0].device == observed[1].device
++                || observed.iter().any(|row| devices.contains(&row.device))
++            {
++                return Err(NamespaceError::Rejected("persistent and immutable mount roles overlap"));
++            }
++            let child = self.init.as_ref().ok_or(NamespaceError::Rejected("PID 1 absent"))?;
++            let packet = Packet::new(child.nonce, Phase::MountPersistentBase, 0, child.parent_pid);
++            send_persistent_base_fds(child.control.as_raw_fd(), &packet,
++                [base_fds[0], base_fds[1], data_fds[0], data_fds[1]])?;
++            Ok((devices, observed))
++        })();
++        // Both owners stay with the original tree even if an attempted send
++        // failed or its acknowledgement is unknown. No pre-export shortcut.
++        self.retirement.prepared.bases = Some(ResourcePreparation::Admitted);
++        self.retirement.prepared.persistent_data = Some(ResourcePreparation::Admitted);
++        self.bases = Some(bases);
++        self.persistent_data = Some(data);
++        let (devices, observed) = transfer?;
++        let child = self.init.as_mut().ok_or(NamespaceError::Rejected("PID 1 absent"))?;
++        child.persistent_roots = Some(observed);
++        child.receive_phase(Phase::PersistentRootReady)?;
++        child.verify_empty_root_mounts(devices, None, None)?;
++        self.base_devices = Some(devices);
++        self.base_root_ready = true;
++        self.verify_live_admission()?;
++        Ok(self)
++    }
++
+ 
+     /// Transfer only a descriptor from the admitted device resource for this
+     /// same tree. A parked empty root is required; no arbitrary FD is accepted.
+@@ -865,7 +927,7 @@
+         execution: Option<(&ProductionSelection, &PreparedExecution)>,
+     ) -> Result<Self> {
+         self.verify_live_admission()?;
+-        if !self.empty_root
++        if !self.base_root_ready
+             || self.devices.is_some()
+             || self.retirement.prepared.devices.is_some()
+             || self.private_devices
+@@ -916,7 +978,7 @@
+     pub(crate) fn prepare_process_filesystems(mut self) -> Result<Self> {
+         self.verify_live_admission()
+             .map_err(|error| processfs_parent_error(error.into(), file!(), line!()))?;
+-        if !self.empty_root || !self.private_devices || self.process_filesystems.is_some() {
++        if !self.base_root_ready || !self.private_devices || self.process_filesystems.is_some() {
+             return Err(NamespaceError::Rejected(
+                 "process filesystems require one private DEV barrier",
+             ));
+@@ -1052,10 +1114,15 @@
+             .ok_or(NamespaceError::Rejected("tree retired"))?
+             .owner
+             .verify_owned()?;
+-        self.init
+-            .as_ref()
+-            .ok_or(NamespaceError::Rejected("PID 1 absent"))?
+-            .verify()
++        let child = self.init.as_ref().ok_or(NamespaceError::Rejected("PID 1 absent"))?;
++        child.verify()?;
++        if let Some(data) = &self.persistent_data {
++            let keeper = self.keeper.as_ref().ok_or(NamespaceError::Rejected("keeper absent"))?;
++            let witness = OwnedNamespaceWitness { owner: &keeper.owner, tree: Some(child) };
++            data.revalidate_owned_lifetime(&witness)
++                .map_err(|error| NamespaceError::MountResource(error.to_string()))?;
++        }
++        Ok(())
+     }
+ 
+     /// Reap PID 1 while preserving the live keeper, identity and namespace FDs.
+@@ -1198,6 +1265,10 @@
+         self.retire_runtime_after_reap()?;
+         if let Some(devices) = self.devices.take() {
+             self.retirement.devices = Some(devices.retire(&RetiredTreeWitness { tree: self })?);
++        }
++        if let Some(data) = self.persistent_data.take() {
++            self.retirement.persistent_data = Some(data.retire_after_tree(&RetiredTreeWitness { tree: self })
++                .map_err(|error| NamespaceError::MountResource(error.to_string()))?);
+         }
+         if let Some(bases) = self.bases.take() {
+             self.retirement.bases = Some(bases.retire(&RetiredTreeWitness { tree: self })?);
+@@ -1246,6 +1317,9 @@
+         if let Some(devices) = self.devices.take() {
+             std::mem::forget(devices);
+         }
++        if let Some(data) = self.persistent_data.take() {
++            std::mem::forget(data);
++        }
+         if let Some(bases) = self.bases.take() {
+             std::mem::forget(bases);
+         }
+@@ -1334,6 +1408,7 @@
+             gids,
+             namespaces,
+             default_mounts: std::cell::OnceCell::new(),
++            persistent_roots: None,
+             proc_context: None,
+             proc_mount: None,
+             activation_nodes: None,
+@@ -1971,6 +2046,39 @@
+     Ok(())
+ }
+ 
++fn send_persistent_base_fds(socket: RawFd, packet: &Packet, fds: [BorrowedFd<'_>; 4]) -> Result<()> {
++    let mut iov = libc::iovec {
++        iov_base: (packet as *const Packet).cast_mut().cast(),
++        iov_len: std::mem::size_of::<Packet>(),
++    };
++    let mut control = [0_usize; 8];
++    let mut msg: libc::msghdr = unsafe { std::mem::zeroed() };
++    msg.msg_iov = &mut iov;
++    msg.msg_iovlen = 1;
++    msg.msg_control = control.as_mut_ptr().cast();
++    msg.msg_controllen = unsafe { libc::CMSG_SPACE(16) } as usize;
++    let h = unsafe { libc::CMSG_FIRSTHDR(&msg) };
++    unsafe {
++        (*h).cmsg_level = libc::SOL_SOCKET;
++        (*h).cmsg_type = libc::SCM_RIGHTS;
++        (*h).cmsg_len = libc::CMSG_LEN(16) as usize;
++        let data = libc::CMSG_DATA(h).cast::<i32>();
++        for (index, descriptor) in fds.iter().enumerate() {
++            std::ptr::write_unaligned(data.add(index), descriptor.as_raw_fd());
++        }
++    }
++    let n = unsafe { libc::sendmsg(socket, &msg, libc::MSG_NOSIGNAL | libc::MSG_DONTWAIT) };
++    if n < 0 {
++        return Err(io::Error::last_os_error().into());
++    }
++    if n as usize != std::mem::size_of::<Packet>() {
++        return Err(NamespaceError::Rejected(
++            "incomplete fixed persistent base descriptor transfer",
++        ));
++    }
++    Ok(())
++}
++
+ fn held_child_root(child: &TreeChild) -> Result<File> {
+     child.verify()?;
+     // Deliberately follow only this already PIDFD-bound proc inode's kernel
+@@ -2293,30 +2401,37 @@
+         let system = root_subdirectory(&root, c"system")?;
+         let vendor = root_subdirectory(&root, c"vendor")?;
+         let mut private_devices = Vec::new();
+-        for file in [&root, &data, &metadata] {
++        let stat = root.metadata()?;
++        if filesystem_kind(&root)? != 0x0102_1994
++            || stat.uid() != self.uids.start || stat.gid() != self.gids.start
++            || devices.contains(&stat.dev())
++        {
++            return Err(NamespaceError::Rejected("root is not its owned mapped tmpfs"));
++        }
++        private_devices.push(stat.dev());
++        let mut private_paths = vec![("/", stat.dev())];
++        for (index, (path, file)) in [("/data", &data), ("/metadata", &metadata)].into_iter().enumerate() {
+             let stat = file.metadata()?;
+-            if filesystem_kind(file)? != 0x0102_1994
+-                || stat.uid() != self.uids.start
+-                || stat.gid() != self.gids.start
+-                || devices.contains(&stat.dev())
+-                || private_devices.contains(&stat.dev())
+-            {
+-                return Err(NamespaceError::Rejected(
+-                    "root/data/metadata are not distinct owned tmpfs",
+-                ));
++            if devices.contains(&stat.dev()) || private_devices.contains(&stat.dev()) {
++                return Err(NamespaceError::Rejected("data filesystem roles are not distinct"));
++            }
++            if let Some(expected) = self.persistent_roots {
++                expected[index].verify(file)
++                    .map_err(|error| NamespaceError::MountResource(error.to_string()))?;
++            } else {
++                if filesystem_kind(file)? != 0x0102_1994
++                    || stat.uid() != self.uids.start || stat.gid() != self.gids.start
++                {
++                    return Err(NamespaceError::Rejected("empty control data is not its owned mapped tmpfs"));
++                }
++                private_paths.push((path, stat.dev()));
+             }
+             private_devices.push(stat.dev());
+         }
+         if system.metadata()?.dev() != devices[0] || vendor.metadata()?.dev() != devices[1] {
+-            return Err(NamespaceError::Rejected(
+-                "assembled bases differ from transferred descriptors",
+-            ));
+-        }
+-        let mut private_paths = vec![
+-            ("/", private_devices[0]),
+-            ("/data", private_devices[1]),
+-            ("/metadata", private_devices[2]),
+-        ];
++            return Err(NamespaceError::Rejected("assembled bases differ from transferred descriptors"));
++        }
++
+         if let Some(expected) = private_dev {
+             let dev = root_subdirectory(&root, c"dev")?;
+             if Node::of(&dev)? != expected
+@@ -2330,6 +2445,7 @@
+             }
+             private_paths.push(("/dev", expected.device));
+         }
++        let mut observed_persistent = std::collections::BTreeSet::new();
+         let mut observed_private = std::collections::BTreeSet::new();
+         let mut observed_process = std::collections::BTreeSet::new();
+         let mut observed_binder = false;
+@@ -2366,6 +2482,24 @@
+                     .parse::<u32>()
+                     .map_err(|_| NamespaceError::Rejected("guest minor"))?,
+             );
++            if let Some(expected) = self.persistent_roots {
++                if let Some(index) = ["/data", "/metadata"].iter().position(|path| *path == fields[4]) {
++                    let mount_id = fields[0].parse::<u64>()
++                        .map_err(|_| NamespaceError::Rejected("persistent mount ID"))?;
++                    let flags: Vec<_> = fields[5].split(',').collect();
++                    let super_flags: Vec<_> = right[2].split(',').collect();
++                    if !observed_persistent.insert(fields[4]) || device != expected[index].device
++                        || mount_id != expected[index].mount_id || fields[3] != "/" || right[0] != "ext4"
++                        || !["rw", "nosuid", "nodev"].iter().all(|flag| flags.contains(flag))
++                        || flags.iter().any(|flag| ["ro", "noexec"].contains(flag))
++                        || !super_flags.contains(&"rw") || super_flags.contains(&"ro")
++                    {
++                        return Err(NamespaceError::Rejected("persistent data mount graph or writable flags differ"));
++                    }
++                    continue;
++                }
++            }
++
+             if right[0] == "binder" {
+                 let expected =
+                     binder.ok_or(NamespaceError::Rejected("unadmitted Binder filesystem"))?;
+@@ -2426,6 +2560,9 @@
+                     "inherited or unverified guest mount",
+                 ));
+             }
++        }
++        if observed_persistent.len() != if self.persistent_roots.is_some() { 2 } else { 0 } {
++            return Err(NamespaceError::Rejected("missing expected original persistent data mount"));
+         }
+         if observed_binder != binder.is_some() {
+             return Err(NamespaceError::Rejected("expected Binder mount absent"));
+@@ -3248,6 +3385,7 @@
+         assert!(empty.verify_package_inventory().is_err());
+         let admitted = PreparedResourceInventory {
+             bases: Some(ResourcePreparation::Admitted),
++            persistent_data: Some(ResourcePreparation::Admitted),
+             devices: Some(ResourcePreparation::Admitted),
+             runtime: Some(ResourcePreparation::Admitted),
+         };
+@@ -3258,9 +3396,10 @@
+             ..ResourceRetirements::default()
+         };
+         assert!(missing_results.verify_package_inventory().is_err());
+-        for role in 0..3 {
++        for role in 0..4 {
+             let mut private = PreparedResourceInventory {
+                 bases: Some(ResourcePreparation::Admitted),
++            persistent_data: Some(ResourcePreparation::Admitted),
+                 devices: Some(ResourcePreparation::Admitted),
+                 runtime: Some(ResourcePreparation::Admitted),
+             };
+@@ -3268,6 +3407,7 @@
+                 0 => private.bases = Some(ResourcePreparation::PrivateControl),
+                 1 => private.devices = Some(ResourcePreparation::PrivateControl),
+                 2 => private.runtime = Some(ResourcePreparation::PrivateControl),
++                3 => private.persistent_data = Some(ResourcePreparation::PrivateControl),
+                 _ => unreachable!(),
+             }
+             assert!(private.require_package_roles().is_err());
+@@ -3283,12 +3423,13 @@
+             ResourcePreparation::Admitted,
+             ResourcePreparation::PrivateControl,
+         ] {
+-            for role in 0..3 {
++            for role in 0..4 {
+                 let mut retired = ResourceRetirements::default();
+                 match role {
+                     0 => retired.prepared.bases = Some(preparation),
+                     1 => retired.prepared.devices = Some(preparation),
+                     2 => retired.prepared.runtime = Some(preparation),
++                    3 => retired.prepared.persistent_data = Some(preparation),
+                     _ => unreachable!(),
+                 }
+                 assert!(matches!(
+@@ -3874,7 +4015,7 @@
+         let mut tree = tree
+             .attach_base_inner(BaseMounts::PrivateControl(controls))
+             .unwrap();
+-        assert!(tree.empty_root);
++        assert!(tree.base_root_ready);
+         assert_eq!(
+             tree.retirement.prepared.bases,
+             Some(ResourcePreparation::PrivateControl)
+@@ -4092,7 +4233,7 @@
+         let mut tree = tree
+             .attach_device_inner(DeviceMounts::PrivateControl(devices))
+             .unwrap();
+-        assert!(tree.empty_root && tree.private_devices);
++        assert!(tree.base_root_ready && tree.private_devices);
+         assert_eq!(
+             tree.retirement.prepared.devices,
+             Some(ResourcePreparation::PrivateControl)

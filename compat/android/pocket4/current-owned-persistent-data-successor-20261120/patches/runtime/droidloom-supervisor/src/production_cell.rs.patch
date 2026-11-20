@@ -1,0 +1,33 @@
+--- a/runtime/droidloom-supervisor/src/production_cell.rs
++++ b/runtime/droidloom-supervisor/src/production_cell.rs
+@@ -15,6 +15,7 @@
+ use crate::production_host_admission::HostAdmission;
+ use crate::production_identity::IdentityAuthority;
+ use crate::production_mounts::{PreparedMounts, VerifiedCohort};
++use crate::production_mounts::persistent_data::PreparedPersistentData;
+ use crate::production_namespace::{
+     ExecutedNamespaces, IsolatedNamespaces, TreeExit, prepare_admitted_user_namespace,
+ };
+@@ -66,6 +67,9 @@
+         selection: ProductionSelection,
+         report: impl Fn(&str),
+     ) -> std::result::Result<Self, StartFailure> {
++        selection.persistent_data_policy().map_err(|error| StartFailure {
++            error: rejected(error), retirement_requires_review: false,
++        })?;
+         let preparation =
+             PreparationAdmission::acquire(selection).map_err(|error| StartFailure {
+                 error: rejected(error),
+@@ -124,7 +128,11 @@
+                 let verified = VerifiedCohort::load(&witness).map_err(rejected)?;
+                 PreparedMounts::prepare(&witness, verified).map_err(rejected)?
+             };
+-            let tree = tree.attach_empty_base(bases).map_err(rejected)?;
++            step("Preparing the selected original persistent data and metadata...")?;
++            let data = PreparedPersistentData::prepare(
++                &tree.witness().map_err(rejected)?, selection, &prepared,
++            ).map_err(rejected)?;
++            let tree = tree.attach_persistent_base(bases, data, selection, &prepared).map_err(rejected)?;
+ 
+             step("Preparing private device and process filesystems...")?;
+             let devices = prepared

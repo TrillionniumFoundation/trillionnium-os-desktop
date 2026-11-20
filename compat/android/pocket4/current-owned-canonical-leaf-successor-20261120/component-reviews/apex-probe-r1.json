@@ -1,0 +1,98 @@
+{
+  "actions": {
+    "Android": 0,
+    "VM": 0,
+    "host_block_node_creation": 0,
+    "kernel_install_or_load": 0,
+    "native_loop_ioctl": 0,
+    "reboot": 0
+  },
+  "applicable_AGENTS": {
+    "bytes": 4088,
+    "path": "AGENTS.md",
+    "sha256": "eac22deaa59d6906afe7eef3dfc9696fbacf20e71a90590608d744b096a8ff46"
+  },
+  "base_repository_commit": "1af163b21f5c7dcaaf94084d7cc1ef19aed05ae1",
+  "base_source_body": "Verified2359 request body retained unchanged in complete2360 inventory",
+  "base_source_tree": "56548053c91840f2dd3de50db45b705069d35fa9",
+  "design_commit": "1b0b94c516e0c22dc70f82bfa93544ac8ce510ac",
+  "modified_files": [
+    {
+      "after": {
+        "bytes": 47488,
+        "git_blob": "5e01f346af4a6d27052cd746f2d129abaabb8ba5",
+        "sha256": "2a407538975749c59f92fc858d22f803236cd130f6f9bd8e8a5d1ee86e6bc5a9"
+      },
+      "before": {
+        "bytes": 34826,
+        "git_blob": "4a4c14d9e6c897d4822117c2ed0c84b05b5d6b2f",
+        "sha256": "5edb3ce4e4463c798a7a345b120cba1776831e5af00485403b1b8dfd9d171e5c"
+      },
+      "path": "runtime/droidloom-supervisor/src/production_namespace_apexd_ioctl_request.rs"
+    }
+  ],
+  "new_focused_tests": [
+    "actual_apexd_support_probe_accepts_only_all_exact_304_bytes",
+    "actual_apexd_support_probe_never_becomes_a_normal_source_descriptor",
+    "actual_apexd_support_probe_keeps_original_exact_notification_abi",
+    "actual_apexd_support_probe_rejects_changed_short_or_expired_memory",
+    "actual_apexd_support_probe_journal_cannot_replay_or_reset_a_failed_observation",
+    "actual_apexd_support_probe_rejects_reopened_ofds_and_nonblock_targets"
+  ],
+  "patch": {
+    "bytes": 14617,
+    "path": "R1.patch",
+    "sha256": "91f76c4ad130fcfb335a48688fc8a6a97f368858ff1feb637512b4e143e428be"
+  },
+  "production_ready": false,
+  "required_reviewed_R0_assembly": [
+    {
+      "bytes": 35481,
+      "path": "runtime/droidloom-supervisor/src/production_namespace_apexd_execution_identity.rs",
+      "sha256": "a58fe068c65cb0a763dc4457501e31739034569338d778a755a1c88aef35760d"
+    },
+    {
+      "bytes": 41934,
+      "path": "runtime/droidloom-supervisor/src/production_namespace_default_mounts.rs",
+      "sha256": "737c6334bbf840fe8ec4dd2ec3313b67cd51454b2ee0e6bde6eff956fb6590e3"
+    }
+  ],
+  "runtime_qualified": false,
+  "schema": "p4-actual-apexd-support-probe-source-successor-r1-v1",
+  "source_scope": {
+    "active_frozen_CI_untouched": true,
+    "no_original_init_apexd_or_security_policy_changes": true,
+    "normal_configure_and_source_fd_helpers_byte_identical": true,
+    "observation_grants_no_live_lease": true,
+    "original_deadline_not_extended": true,
+    "original_five_focused_tests_byte_identical": true,
+    "original_target_issuer_unconstructible": true,
+    "original_thread_pidfd_and_F_DUPFD_QUERY_preserved": true,
+    "probe_copies_only_original_target_fd": true,
+    "pure_insertion_regions": 8,
+    "same_pending_notification_and_full_generation_required": true,
+    "single_original_request_module_only": true,
+    "strict_probe_bytes": 304,
+    "strict_probe_source_u32": 4294967295,
+    "strict_remaining_body_bytes_zero": 300
+  },
+  "static_verification": {
+    "bytes": 4845,
+    "path": "STATIC-VERIFICATION.json",
+    "sha256": "0f59424791315928ca0ba5255dd3412c059ff03c261cfed76eaadaf09117aa13"
+  },
+  "untouched_issuer_file": {
+    "bytes": 35626,
+    "path": "runtime/droidloom-supervisor/src/production_runtime_capex_custody.rs",
+    "sha256": "5797c0091639b7ae77af37d58c91a570be4b3e187ace9d18b08a2f0712416502"
+  },
+  "validation_status": {
+    "Rust_compilation_executed": false,
+    "complete_successor_CI_pending": true,
+    "native_target_probe_executed": false,
+    "new_Rust_tests_executed": false,
+    "new_Rust_tests_written": 6,
+    "original_apexd_runtime_executed": false,
+    "static_forward_reverse_byte_checks_passed": true
+  }
+}

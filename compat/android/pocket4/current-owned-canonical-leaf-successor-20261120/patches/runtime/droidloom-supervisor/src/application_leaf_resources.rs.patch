@@ -1,0 +1,52 @@
+--- a/runtime/droidloom-supervisor/src/application_leaf_resources.rs
++++ b/runtime/droidloom-supervisor/src/application_leaf_resources.rs
+@@ -20,17 +20,17 @@
+ ];
+ 
+ #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+-pub(super) enum Profile { Gallery, CalendarReminder }
++pub(super) enum Profile { Gallery, CalendarReminder, SettingsPages }
+ impl Profile {
+     fn limits(self) -> [(&'static std::ffi::CStr, &'static str); 4] {
+         match self {
+-            Self::Gallery => GALLERY_LIMITS,
++            Self::Gallery | Self::SettingsPages => GALLERY_LIMITS,
+             Self::CalendarReminder => [(c"cpu.max", "50000 100000"),
+                 (c"memory.max", "536870912"), (c"memory.swap.max", "0"), (c"pids.max", "64")],
+         }
+     }
+     pub(super) fn prefix(self) -> &'static str {
+-        match self { Self::Gallery => "droidloom-app-gallery-leaf", Self::CalendarReminder => "droidloom-app-calendar-reminder-leaf" }
++        match self { Self::Gallery => "droidloom-app-gallery-leaf", Self::CalendarReminder => "droidloom-app-calendar-reminder-leaf", Self::SettingsPages => "droidloom-app-settings-pages-leaf" }
+     }
+ }
+ 
+@@ -56,7 +56,7 @@
+     let period = cpu.get(1).and_then(|x| x.parse::<u64>().ok());
+     let expected=profile.limits();
+     let cpu_ok=matches!((quota,period),(Some(q),Some(p)) if q>0 && p>0 && match profile {
+-        Profile::Gallery => u128::from(q)<=2*u128::from(p),
++        Profile::Gallery | Profile::SettingsPages => u128::from(q)<=2*u128::from(p),
+         Profile::CalendarReminder => 2*u128::from(q)<=u128::from(p),
+     });
+     if cpu.len() != 2 || !cpu_ok
+@@ -191,6 +191,19 @@
+     use super::*;
+ 
+     #[test]
++    fn settings_uses_its_own_nested_identity_and_original_two_core_bounds() {
++        let good: Vec<_> = Profile::SettingsPages.limits().iter().map(|(_, value)| (*value).to_owned()).collect();
++        valid_limits(&good, Profile::SettingsPages).unwrap();
++        assert_ne!(Profile::SettingsPages.prefix(), Profile::Gallery.prefix());
++        assert_ne!(Profile::SettingsPages.prefix(), Profile::CalendarReminder.prefix());
++        for (index, value) in [(0, "max 100000"), (0, "200001 100000"), (1, "max"),
++                              (1, "2147483649"), (2, "1"), (3, "65")] {
++            let mut changed = good.clone(); changed[index] = value.into();
++            assert!(valid_limits(&changed, Profile::SettingsPages).is_err());
++        }
++    }
++
++    #[test]
+     fn effective_limits_require_actual_numeric_original_ancestor_bounds() {
+         let good: Vec<_> = GALLERY_LIMITS.iter().map(|(_, x)| (*x).to_owned()).collect();
+         valid_limits(&good,Profile::Gallery).unwrap();

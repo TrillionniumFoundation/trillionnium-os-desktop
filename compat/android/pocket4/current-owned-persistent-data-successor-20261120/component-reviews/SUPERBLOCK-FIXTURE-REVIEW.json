@@ -1,0 +1,46 @@
+{
+  "fixtures": [
+    {
+      "actual_crc32c_matches": true,
+      "bytes": 1024,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_persistent_data_provider/candidate/production_persistent_data_fixtures/data-superblock.bin",
+      "sha256": "ac91d5170d789e60b23cfacb069b2f2c0d3a2bfe3526f34249c8e5da549e2c8c",
+      "uuid": "748861cb-65b5-4fcb-8aba-5c5dc40811df"
+    },
+    {
+      "actual_crc32c_matches": true,
+      "bytes": 1024,
+      "path": "/workspace/scratch/3b9ddccd362c/p4_persistent_data_provider/candidate/production_persistent_data_fixtures/metadata-superblock.bin",
+      "sha256": "514ca92fa2e94a947c3884bd2e7c6249acd81fd368e3e6971dcbf8da31e895ce",
+      "uuid": "a91dcb63-4c0a-49d2-b43e-14152cd85bdd"
+    }
+  ],
+  "host_actions": 0,
+  "independent_raw_fixture_checks": [
+    "exact previous actual SOURCE-CHECK extracted1024 bytes",
+    "CRC32C superblock checksum",
+    "selected UUID and 1024-byte type"
+  ],
+  "negative_semantic_changes_not_masked_by_crc_failure": true,
+  "new_rust_test_attributes": 3,
+  "original_image_access": false,
+  "owned_successor_normalized_path_overlap": [],
+  "parser_production_prefix_exact_unchanged": true,
+  "prior_superblock_test_retained": true,
+  "production_ready": false,
+  "runtime_qualified": false,
+  "rust_tests_executed": false,
+  "schema": "p4-persistent-data-actual-ext4-fixture-limited-independent-review-v1",
+  "source_review_passed": true,
+  "static_test_cases": [
+    "actual data64MiB metadata32MiB positive and cross-pair wrong policy",
+    "wrong whole image extent and resealed wrong UUID",
+    "dirty state, journal orphan/device/external UUID resealed negative",
+    "recovery flag rejected by existing exact policy",
+    "corrupt checksum, checksum type, resealed geometry wrong block size"
+  ],
+  "superblock_source": {
+    "bytes": 6752,
+    "sha256": "5e5eb491823535753a10b71aab89424260e60756fe1d91f696ee63baba824c2a"
+  }
+}

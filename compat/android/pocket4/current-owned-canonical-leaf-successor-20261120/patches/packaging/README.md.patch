@@ -1,0 +1,72 @@
+--- a/packaging/README.md
++++ b/packaging/README.md
+@@ -94,6 +94,69 @@
+ at `$XDG_CONFIG_HOME/droidloom/window-policy-v1.json`; automatically remembered
+ sizes live at `$XDG_STATE_HOME/droidloom/window-sizes-v1.json`.
+ 
++## Bounded application qualification units
++
++The normal runtime payload also contains `droidloom-native-calendar@.service`
++and `droidloom-native-gallery@.service`. They are explicit root qualification
++entries, have no automatic enable target, and do not start Android. Calendar
++reminder retains its half-CPU, 512 MiB budget; Gallery retains its two-CPU,
++2 GiB budget. Both forbid swap and core dumps and cap the complete unit at
++64 tasks. The unchanged native leaf runs in a child of this exact unit, so
++unit cancellation and the original child retirement cover the same tree.
++
++An instance is the lowercase SHA-256 of one root-owned complete native runtime
++plan at `/etc/droidloom/native-application-leaves/plans/calendar-reminder/`
++or `/etc/droidloom/native-application-leaves/plans/gallery/`, with a `.json`
++suffix. The native entry accepts exactly one matching package and route,
++requires the adopted current native/source release, and calls the existing
++runtime-plan dispatcher. It does not create a Main qualification, change the
++control peer policy, extend the foreground owner lease, or grant acceptance
++from a resource observation.
++
++Before and after dispatch it authenticates the actual PID 1 private socket,
++uses the held controller PIDFD to query its actual systemd invocation, and
++checks the effective command, namespace identities, CPU affinity, resource
++limits and complete-unit stop behavior. Transient units, extra lifecycle
++commands, different invocations and expanded budgets are rejected. The full
++controller budgets are 1,200 seconds for Calendar and 2,400 seconds for Gallery;
++the original leaf business and cleanup timeouts remain unchanged.
++
++Only an operator with an already prepared and adopted release should start
++an exact instance. Preserve its native report and independently read back the
++same invocation's final unit result, empty cgroup and descendant retirement.
++The emitted report remains partial evidence and explicitly marks whole-app
++acceptance false. Installing these unit files, a successful source build, or
++a rejected precondition does not establish a working production resource path.
++
++The component package builder already freezes all packaging inputs against
++its complete baseline. Adding or changing these templates therefore requires
++a complete package build; a component rebuild cannot silently reuse a payload
++that lacks the corresponding unit bytes. The separate developer installation
++using release symlinks does not meet this entry's canonical regular-file
++contract. The ordinary package owner or the direct runtime installer must
++place the actual current executable and templates at their canonical paths.
++
++### Settings read-only page scope
++
++The same normal payload also stages `droidloom-native-settings@.service` with
++profile `settings-pages`. It accepts only `com.android.settings` and the
++`settings_supported_pages` route, from its independently adopted index-13 source.
++Its exact root plan lives under the `settings-pages` directory beside the other
++fixed plans. The two-CPU, 2-GiB, zero-swap, 64-task scope uses CPU 20/21 and a
++1,500-second controller ceiling. The nested native leaf has a 900-second outer
++ceiling; its original business and cleanup lease remains 600 plus 120 seconds.
++
++The result may credit only `settings.pages` after five page observations, two
++owned launches, two normal closes and complete original cleanup. Settings value
++round trips, permission UI and all whole-app gates remain pending. No template is
++automatically enabled, and no source or resource observation creates acceptance.
++
++The current canonical application source bundle is rooted at
++`/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1`.
++New Main and business qualifications use the v2 protocol and
++`/var/lib/droidloom/qualification/pocket4`; old home-directory receipts cannot
++qualify the new mapped Main or its held guest-entry helper.
++
+ ## Build and installation ownership
+ 
+ The Rust package builder produces `droidloom-runtime` and `droidloom-image`.

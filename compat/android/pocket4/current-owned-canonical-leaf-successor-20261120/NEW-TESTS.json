@@ -1,0 +1,67 @@
+[
+  {
+    "component": "owned_native_units",
+    "package": "droidloom-applications",
+    "target": "droidloom-applications",
+    "tests": [
+      "cli_tests::owned_unit_entry_requires_both_fixed_profile_and_content_pin_without_other_actions"
+    ]
+  },
+  {
+    "component": "owned_native_units",
+    "package": "droidloom-applications",
+    "target": "droidloom_applications",
+    "tests": [
+      "runtime_plan::leaf_unit_entry::tests::fixed_unit_plans_preserve_one_exact_route_and_the_full_original_dispatch"
+    ]
+  },
+  {
+    "component": "owned_native_units",
+    "package": "droidloom-supervisor",
+    "target": "droidloom_supervisor",
+    "tests": [
+      "control::application_command::application_leaf_unit::tests::effective_manager_overrides_cannot_expand_resources_or_weaken_retirement",
+      "control::application_command::application_leaf_unit::tests::fixed_owned_unit_profile_cannot_inject_a_name_or_expand_resources",
+      "control::application_command::application_leaf_unit::tests::manager_affinity_bitmap_cannot_omit_or_add_a_cpu",
+      "control::application_command::application_leaf_unit::tests::typed_manager_identity_rejects_extra_commands_wrong_types_and_another_invocation"
+    ]
+  },
+  {
+    "component": "owned_native_units",
+    "package": "droidloom-update",
+    "target": "droidloom-update",
+    "tests": [
+      "assemble::owned_leaf_unit_tests::normal_payload_stages_exact_owned_unit_templates_without_activation"
+    ]
+  },
+  {
+    "component": "actual_apexd_support_probe",
+    "package": "droidloom-supervisor",
+    "target": "droidloom_supervisor",
+    "tests": [
+      "production_namespace::tree::apex_notifications::apexd_ioctl::tests::actual_apexd_support_probe_accepts_only_all_exact_304_bytes",
+      "production_namespace::tree::apex_notifications::apexd_ioctl::tests::actual_apexd_support_probe_journal_cannot_replay_or_reset_a_failed_observation",
+      "production_namespace::tree::apex_notifications::apexd_ioctl::tests::actual_apexd_support_probe_keeps_original_exact_notification_abi",
+      "production_namespace::tree::apex_notifications::apexd_ioctl::tests::actual_apexd_support_probe_never_becomes_a_normal_source_descriptor",
+      "production_namespace::tree::apex_notifications::apexd_ioctl::tests::actual_apexd_support_probe_rejects_changed_short_or_expired_memory",
+      "production_namespace::tree::apex_notifications::apexd_ioctl::tests::actual_apexd_support_probe_rejects_reopened_ofds_and_nonblock_targets"
+    ]
+  },
+  {
+    "component": "settings_readonly_pages",
+    "package": "droidloom-applications",
+    "target": "droidloom_applications",
+    "tests": [
+      "runtime_plan::leaf_routes::tests::settings_pages_terminal_keeps_partial_scope_and_rejects_unknown_or_extra_credit"
+    ]
+  },
+  {
+    "component": "settings_readonly_pages",
+    "package": "droidloom-supervisor",
+    "target": "droidloom_supervisor",
+    "tests": [
+      "control::application_command::gallery_resources::tests::settings_uses_its_own_nested_identity_and_original_two_core_bounds",
+      "control::application_command::gallery_tests::settings_resource_profile_rejects_other_entries_and_extra_arguments"
+    ]
+  }
+]

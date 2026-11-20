@@ -1,0 +1,32 @@
+[Unit]
+Description=Droidloom owned Calendar reminder qualification %i
+After=droidloomd.service
+
+[Service]
+Type=exec
+User=root
+Group=root
+ExecStart=/usr/bin/droidloom-applications --owned-leaf-profile calendar-reminder --owned-leaf-plan-sha256 %i
+Restart=no
+KillMode=control-group
+KillSignal=SIGTERM
+FinalKillSignal=SIGKILL
+SendSIGKILL=yes
+TimeoutStopFailureMode=terminate
+TimeoutStopSec=180s
+RuntimeMaxSec=1200s
+CPUQuota=50%
+CPUQuotaPeriodSec=100ms
+CPUAffinity=20
+MemoryAccounting=yes
+MemoryMax=536870912
+MemorySwapMax=0
+TasksAccounting=yes
+TasksMax=64
+LimitCORE=0
+UMask=0077
+WorkingDirectory=/
+Environment=PATH=/usr/sbin:/usr/bin:/sbin:/bin
+Environment=LANG=C.UTF-8
+StandardOutput=journal
+StandardError=journal
