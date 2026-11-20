@@ -5,7 +5,7 @@
  const MAX_MEMBERS: usize = 200_000;
  const FULL_INPUT_SCHEMA: &str = "droidloom-production-full652-inputs-v1";
 -const FULL_SOURCE_SHA: &str = "2e9877a58ebbc3625c7411d3573951afa409d9b13692468b825b4c25961ffffb";
-+const FULL_SOURCE_SHA: &str = crate::production_source::LOCK_SHA;
++const FULL_SOURCE_SHA: &str = crate::android::PRODUCTION_SOURCE_LOCK_SHA;
  
  #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
  #[serde(deny_unknown_fields)]
@@ -14,7 +14,7 @@
      validate_full_source_header(&original, &requested_targets)?;
      let source_lock = pin(
 -        &repo.join("android/manifest/production-full-cmake-source-lock.json"),
-+        &repo.join(crate::production_source::LOCK_PATH),
++        &repo.join(crate::android::PRODUCTION_SOURCE_LOCK_PATH),
          MAX_JSON,
      )?;
      if source_lock.sha256 != FULL_SOURCE_SHA {
@@ -23,7 +23,7 @@
      verify_cohort_shape(&cohort, product)?;
      if cohort.build_inputs.source_lock.path
 -        != repo.join("android/manifest/production-full-cmake-source-lock.json")
-+        != repo.join(crate::production_source::LOCK_PATH)
++        != repo.join(crate::android::PRODUCTION_SOURCE_LOCK_PATH)
          || cohort.build_inputs.release_map.path
              != repo.join("android/manifest/source-runtime-coherence-x86_64.json")
      {
@@ -32,7 +32,7 @@
      let _scope = resources::Scope::read_only()?;
      let source_lock = pin(
 -        &repo.join("android/manifest/production-full-cmake-source-lock.json"),
-+        &repo.join(crate::production_source::LOCK_PATH),
++        &repo.join(crate::android::PRODUCTION_SOURCE_LOCK_PATH),
          MAX_JSON,
      )?;
      if source_lock.sha256 != FULL_SOURCE_SHA {

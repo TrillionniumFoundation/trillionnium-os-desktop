@@ -66,7 +66,7 @@ class CombinedCatalogControls(unittest.TestCase):
         packet = V.verify_capsule(expected)
         self.assertEqual(V.BASE.tree_id(packet['rows']), V.HEAD_TREE)
         self.assertEqual(len(packet['rows']), 2359)
-        self.assertEqual(sum(r['bytes'] for r in packet['rows']), 44737220)
+        self.assertEqual(sum(r['bytes'] for r in packet['rows']), 44737433)
         self.assertFalse(packet['manifest']['production_ready'])
         self.assertFalse(packet['manifest']['runtime_qualified'])
         self.assertFalse(packet['manifest']['fresh_current_rust_run_in_this_packet'])

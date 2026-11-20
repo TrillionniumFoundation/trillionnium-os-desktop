@@ -1347,8 +1347,8 @@ EXECUTABLE_FILES = (
 PARSED_SUFFIXES = {".py", ".sh", ".json", ".xml"}
 
 BINARY_FILES = {
-    'compat/android/pocket4/current-runtime-successor-20261120/FILES.sha256': {'bytes': 3803, 'sha256': 'b576d8562036ec022b502ced5c5ab7e88a177467bf472a24f580fe365b07d1ae'},
-    'compat/android/pocket4/current-runtime-cohort-successor-20261120/FILES.sha256': {'bytes': 1064, 'sha256': '29e50d45ca5f4781853a49c14942fe185d2e6147e926b12db15d688b431b1977'},
+    'compat/android/pocket4/current-runtime-successor-20261120/FILES.sha256': {'bytes': 3803, 'sha256': '62a7b8182ac751f9e0f104fdf1a2fda4865a82acdbc78ff899f219bbd0cd8a29'},
+    'compat/android/pocket4/current-runtime-cohort-successor-20261120/FILES.sha256': {'bytes': 1064, 'sha256': '56e10a9f35faf2723dc47237346b95293db47e00582cc09dc2e4fc17f8f4aa7c'},
     'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/FILES.sha256': {'bytes': 4511, 'sha256': '27743c96bd9806fe165eadd6676b4d0ef8ad45123d19fb85bab4116950316e37'},
     'compat/android/pocket4/current-app-acceptance/system-cp3a-provider-rebind-20261120/validation/controls.stdout': {'bytes': 0, 'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
     'compat/android/pocket4/current-runtime-cohort-20261120/FILES.sha256': {'bytes': 983, 'sha256': '9c1c330bd29ea6d2bdbcde0ead6e27bafaaab07177fb22a6f90ef81c967466a2'},
@@ -1410,7 +1410,7 @@ BINARY_FILES = {
         'bytes': 7894116, 'sha256': '3e8b2fa1ea1ef3555ca7c82e27abe79a2be029c701f69ac55ef4c82484f247ad'},
     'compat/android/pocket4/runtime-current-source-r1/SOURCE-OVERLAY.tar.xz': {
         'bytes': 657032, 'sha256': '5a87a80bebfc2c63696ca9932fcea8d9485810f75a310f9fa1f792cab292390b'},
-    'compat/android/pocket4/current-publisher-delivery-source/FILES.sha256': {'bytes': 5219, 'sha256': 'de040c662eb8fef955cb6401219624fa5d9d8d80591b67a5a5087edc7e8c5046'},
+    'compat/android/pocket4/current-publisher-delivery-source/FILES.sha256': {'bytes': 5219, 'sha256': '72c67f0f4b7bdf52b7eb77eee6789a0630eb1af3e6bcfe96ae7555b8925d0e3f'},
     'compat/android/pocket4/current-publisher-delivery-source/MANIFEST.json': {
         'bytes': 19869, 'sha256': '872dc25ba3c8980b5ea67609b0a9fb17c6c31b925a823ee9642fe75d3218c699'},
     'compat/android/pocket4/current-publisher-delivery-source/SOURCE.tar.gz': {
