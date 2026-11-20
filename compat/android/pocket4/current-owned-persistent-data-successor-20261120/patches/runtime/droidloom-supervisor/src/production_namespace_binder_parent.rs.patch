@@ -1,0 +1,11 @@
+--- a/runtime/droidloom-supervisor/src/production_namespace_binder_parent.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_binder_parent.rs
+@@ -80,7 +80,7 @@
+     /// There is no context-manager registration, arbitrary input or Android exec.
+     pub(crate) fn prepare_private_binder(mut self) -> Result<Self> {
+         self.verify_live_admission()?;
+-        if self.binder.is_some() || !self.empty_root || !self.private_devices {
++        if self.binder.is_some() || !self.base_root_ready || !self.private_devices {
+             return Err(NamespaceError::Rejected(
+                 "Binder requires one prepared process-filesystem barrier",
+             ));

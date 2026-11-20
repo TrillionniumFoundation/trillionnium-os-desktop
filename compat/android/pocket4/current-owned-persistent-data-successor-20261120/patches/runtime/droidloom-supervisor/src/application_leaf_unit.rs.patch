@@ -1,0 +1,22 @@
+--- a/runtime/droidloom-supervisor/src/application_leaf_unit.rs
++++ b/runtime/droidloom-supervisor/src/application_leaf_unit.rs
+@@ -137,7 +137,7 @@
+     if file.read_at(&mut [0_u8; 1], size)? != 0 {
+         return Err(invalid("installed manager executable grew"));
+     }
+-    Ok(hex::encode(Sha256::digest(data)))
++    Ok(format!("{:x}", Sha256::digest(data)))
+ }
+ 
+ struct Tool {
+@@ -425,7 +425,9 @@
+             .get(key)
+             .ok_or_else(|| format!("actual manager omitted required {key}"))?;
+         let text = match (key, value) {
+-            ("InvocationID", V::Bytes(bytes)) if bytes.len() == 16 => hex::encode(bytes),
++            ("InvocationID", V::Bytes(bytes)) if bytes.len() == 16 => {
++                bytes.iter().map(|byte| format!("{byte:02x}")).collect()
++            }
+             ("CPUAffinity", V::Bytes(bytes)) => {
+                 let cpus = affinity(bytes);
+                 if cpus != profile.cpus() {

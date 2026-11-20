@@ -1,0 +1,756 @@
+{
+  "all_source_bookends_equal": true,
+  "all_ten_original_command_streams_verified": [
+    {
+      "bytes": 41,
+      "path": "/home/runner/work/_temp/current-ordinary/logs/actual-github-source-head.stdout",
+      "sha256": "fb709bcdc7d7fe3be4198d153b898efe0d750259aab4ed388ee3fc1a9bacaa1a"
+    },
+    {
+      "bytes": 0,
+      "path": "/home/runner/work/_temp/current-ordinary/logs/actual-github-source-head.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "path": "/home/runner/work/_temp/current-ordinary/logs/dependency-fetch.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 6385,
+      "path": "/home/runner/work/_temp/current-ordinary/logs/dependency-fetch.stderr",
+      "sha256": "902afb894cf7760473192abcc623952fcca36631ee9b1715953bbe408ef073c7"
+    },
+    {
+      "bytes": 74980,
+      "path": "/home/runner/work/_temp/current-ordinary/logs/workspace-metadata.stdout",
+      "sha256": "986e68954d13306123a0d69f6cf0c5d3b38476d3458f150be4705150fa89c938"
+    },
+    {
+      "bytes": 0,
+      "path": "/home/runner/work/_temp/current-ordinary/logs/workspace-metadata.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 134036,
+      "path": "/home/runner/work/_temp/current-ordinary/logs/compile-updater.stdout",
+      "sha256": "4c0802347a14141dda9249a46f7d9986005ffc208efbca4aa81875d28e73fe68"
+    },
+    {
+      "bytes": 2039,
+      "path": "/home/runner/work/_temp/current-ordinary/logs/compile-updater.stderr",
+      "sha256": "691fad58378fde52e6534c46ab5a51f9f2e7529b29925fd8d3f4b47c17845227"
+    },
+    {
+      "bytes": 98421,
+      "path": "/home/runner/work/_temp/current-ordinary/logs/compile-remaining27.stdout",
+      "sha256": "e4cc53ce5943557a3f49f333a8f00a2146feb355c3d747b1ff8e37fbd55bdb49"
+    },
+    {
+      "bytes": 2082,
+      "path": "/home/runner/work/_temp/current-ordinary/logs/compile-remaining27.stderr",
+      "sha256": "cdda54e35d0d931d25a1c2db1e817af5c34aa0e04587ee2215120972ae45c20c"
+    }
+  ],
+  "artifact": {
+    "bytes": 1368932,
+    "sha256": "23fb2e7ca308b6c8366188d21c0bb27404e3ca003cd5e5093716195d0f6f8172"
+  },
+  "artifact_id": 14643765061,
+  "artifact_verified": true,
+  "ci_passed": false,
+  "compiler_errors": [
+    {
+      "$message_type": "diagnostic",
+      "children": [
+        {
+          "children": [],
+          "code": null,
+          "level": "help",
+          "message": "if you wanted to use a crate named `hex`, use `cargo add hex` to add it to your `Cargo.toml`",
+          "rendered": null,
+          "spans": []
+        }
+      ],
+      "code": {
+        "code": "E0433",
+        "explanation": "An undeclared crate, module, or type was used.\n\nErroneous code example:\n\n```compile_fail,E0433\nlet map = HashMap::new();\n// error: failed to resolve: use of undeclared type `HashMap`\n```\n\nPlease verify you didn't misspell the type/module's name or that you didn't\nforget to import it:\n\n```\nuse std::collections::HashMap; // HashMap has been imported.\nlet map: HashMap<u32, u32> = HashMap::new(); // So it can be used!\n```\n\nIf you've expected to use a crate name:\n\n```compile_fail\nuse ferris_wheel::BigO;\n// error: failed to resolve: use of undeclared module or unlinked crate\n```\n\nMake sure the crate has been added as a dependency in `Cargo.toml`.\n\nTo use a module from your current crate, add the `crate::` prefix to the path.\n"
+      },
+      "level": "error",
+      "message": "failed to resolve: use of unresolved module or unlinked crate `hex`",
+      "rendered": "error[E0433]: failed to resolve: use of unresolved module or unlinked crate `hex`\n   --> runtime/droidloom-supervisor/src/application_leaf_unit.rs:140:8\n    |\n140 |     Ok(hex::encode(Sha256::digest(data)))\n    |        ^^^ use of unresolved module or unlinked crate `hex`\n    |\n    = help: if you wanted to use a crate named `hex`, use `cargo add hex` to add it to your `Cargo.toml`\n\n",
+      "spans": [
+        {
+          "byte_end": 5296,
+          "byte_start": 5293,
+          "column_end": 11,
+          "column_start": 8,
+          "expansion": null,
+          "file_name": "runtime/droidloom-supervisor/src/application_leaf_unit.rs",
+          "is_primary": true,
+          "label": "use of unresolved module or unlinked crate `hex`",
+          "line_end": 140,
+          "line_start": 140,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 11,
+              "highlight_start": 8,
+              "text": "    Ok(hex::encode(Sha256::digest(data)))"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "$message_type": "diagnostic",
+      "children": [
+        {
+          "children": [],
+          "code": null,
+          "level": "help",
+          "message": "if you wanted to use a crate named `hex`, use `cargo add hex` to add it to your `Cargo.toml`",
+          "rendered": null,
+          "spans": []
+        }
+      ],
+      "code": {
+        "code": "E0433",
+        "explanation": "An undeclared crate, module, or type was used.\n\nErroneous code example:\n\n```compile_fail,E0433\nlet map = HashMap::new();\n// error: failed to resolve: use of undeclared type `HashMap`\n```\n\nPlease verify you didn't misspell the type/module's name or that you didn't\nforget to import it:\n\n```\nuse std::collections::HashMap; // HashMap has been imported.\nlet map: HashMap<u32, u32> = HashMap::new(); // So it can be used!\n```\n\nIf you've expected to use a crate name:\n\n```compile_fail\nuse ferris_wheel::BigO;\n// error: failed to resolve: use of undeclared module or unlinked crate\n```\n\nMake sure the crate has been added as a dependency in `Cargo.toml`.\n\nTo use a module from your current crate, add the `crate::` prefix to the path.\n"
+      },
+      "level": "error",
+      "message": "failed to resolve: use of unresolved module or unlinked crate `hex`",
+      "rendered": "error[E0433]: failed to resolve: use of unresolved module or unlinked crate `hex`\n   --> runtime/droidloom-supervisor/src/application_leaf_unit.rs:428:71\n    |\n428 |             (\"InvocationID\", V::Bytes(bytes)) if bytes.len() == 16 => hex::encode(bytes),\n    |                                                                       ^^^ use of unresolved module or unlinked crate `hex`\n    |\n    = help: if you wanted to use a crate named `hex`, use `cargo add hex` to add it to your `Cargo.toml`\n\n",
+      "spans": [
+        {
+          "byte_end": 14975,
+          "byte_start": 14972,
+          "column_end": 74,
+          "column_start": 71,
+          "expansion": null,
+          "file_name": "runtime/droidloom-supervisor/src/application_leaf_unit.rs",
+          "is_primary": true,
+          "label": "use of unresolved module or unlinked crate `hex`",
+          "line_end": 428,
+          "line_start": 428,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 74,
+              "highlight_start": 71,
+              "text": "            (\"InvocationID\", V::Bytes(bytes)) if bytes.len() == 16 => hex::encode(bytes),"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "$message_type": "diagnostic",
+      "children": [
+        {
+          "children": [],
+          "code": null,
+          "level": "note",
+          "message": "available fields are: `keeper`, `init`, `reaped_init`, `bases`, `persistent_data` ... and 13 others",
+          "rendered": null,
+          "spans": []
+        }
+      ],
+      "code": {
+        "code": "E0609",
+        "explanation": "Attempted to access a nonexistent field in a struct.\n\nErroneous code example:\n\n```compile_fail,E0609\nstruct StructWithFields {\n    x: u32,\n}\n\nlet s = StructWithFields { x: 0 };\nprintln!(\"{}\", s.foo); // error: no field `foo` on type `StructWithFields`\n```\n\nTo fix this error, check that you didn't misspell the field's name or that the\nfield actually exists. Example:\n\n```\nstruct StructWithFields {\n    x: u32,\n}\n\nlet s = StructWithFields { x: 0 };\nprintln!(\"{}\", s.x); // ok!\n```\n"
+      },
+      "level": "error",
+      "message": "no field `empty_root` on type `tree::IsolatedNamespaces`",
+      "rendered": "error[E0609]: no field `empty_root` on type `tree::IsolatedNamespaces`\n  --> runtime/droidloom-supervisor/src/production_namespace_binder_parent.rs:83:43\n   |\n83 |         if self.binder.is_some() || !self.empty_root || !self.private_devices {\n   |                                           ^^^^^^^^^^ unknown field\n   |\n   = note: available fields are: `keeper`, `init`, `reaped_init`, `bases`, `persistent_data` ... and 13 others\n\n",
+      "spans": [
+        {
+          "byte_end": 3026,
+          "byte_start": 3016,
+          "column_end": 53,
+          "column_start": 43,
+          "expansion": null,
+          "file_name": "runtime/droidloom-supervisor/src/production_namespace_binder_parent.rs",
+          "is_primary": true,
+          "label": "unknown field",
+          "line_end": 83,
+          "line_start": 83,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 53,
+              "highlight_start": 43,
+              "text": "        if self.binder.is_some() || !self.empty_root || !self.private_devices {"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "compiler_warnings": [
+    {
+      "$message_type": "diagnostic",
+      "children": [
+        {
+          "children": [],
+          "code": null,
+          "level": "note",
+          "message": "`#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default",
+          "rendered": null,
+          "spans": []
+        },
+        {
+          "children": [],
+          "code": null,
+          "level": "help",
+          "message": "remove the unused import",
+          "rendered": null,
+          "spans": [
+            {
+              "byte_end": 1448,
+              "byte_start": 1424,
+              "column_end": 23,
+              "column_start": 85,
+              "expansion": null,
+              "file_name": "runtime/droidloom-supervisor/src/production_cgroup.rs",
+              "is_primary": true,
+              "label": null,
+              "line_end": 36,
+              "line_start": 35,
+              "suggested_replacement": "",
+              "suggestion_applicability": "MachineApplicable",
+              "text": [
+                {
+                  "highlight_end": 86,
+                  "highlight_start": 85,
+                  "text": "    AuthenticatedManagerEndpoint, ManagerEndpointGeneration, ManagerLabelObservation,"
+                },
+                {
+                  "highlight_end": 23,
+                  "highlight_start": 1,
+                  "text": "    ManagerLabelReport,"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "code": {
+        "code": "unused_imports",
+        "explanation": null
+      },
+      "level": "warning",
+      "message": "unused import: `ManagerLabelReport`",
+      "rendered": "warning: unused import: `ManagerLabelReport`\n  --> runtime/droidloom-supervisor/src/production_cgroup.rs:36:5\n   |\n36 |     ManagerLabelReport,\n   |     ^^^^^^^^^^^^^^^^^^\n   |\n   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default\n\n",
+      "spans": [
+        {
+          "byte_end": 1448,
+          "byte_start": 1430,
+          "column_end": 23,
+          "column_start": 5,
+          "expansion": null,
+          "file_name": "runtime/droidloom-supervisor/src/production_cgroup.rs",
+          "is_primary": true,
+          "label": null,
+          "line_end": 36,
+          "line_start": 36,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 23,
+              "highlight_start": 5,
+              "text": "    ManagerLabelReport,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "$message_type": "diagnostic",
+      "children": [
+        {
+          "children": [],
+          "code": null,
+          "level": "help",
+          "message": "remove the unused import",
+          "rendered": null,
+          "spans": [
+            {
+              "byte_end": 998,
+              "byte_start": 989,
+              "column_end": 41,
+              "column_start": 32,
+              "expansion": null,
+              "file_name": "runtime/droidloom-supervisor/src/production_host_admission.rs",
+              "is_primary": true,
+              "label": null,
+              "line_end": 21,
+              "line_start": 21,
+              "suggested_replacement": "",
+              "suggestion_applicability": "MachineApplicable",
+              "text": [
+                {
+                  "highlight_end": 41,
+                  "highlight_start": 32,
+                  "text": "use std::path::{Component, Path, PathBuf};"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "code": {
+        "code": "unused_imports",
+        "explanation": null
+      },
+      "level": "warning",
+      "message": "unused import: `PathBuf`",
+      "rendered": "warning: unused import: `PathBuf`\n  --> runtime/droidloom-supervisor/src/production_host_admission.rs:21:34\n   |\n21 | use std::path::{Component, Path, PathBuf};\n   |                                  ^^^^^^^\n\n",
+      "spans": [
+        {
+          "byte_end": 998,
+          "byte_start": 991,
+          "column_end": 41,
+          "column_start": 34,
+          "expansion": null,
+          "file_name": "runtime/droidloom-supervisor/src/production_host_admission.rs",
+          "is_primary": true,
+          "label": null,
+          "line_end": 21,
+          "line_start": 21,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 41,
+              "highlight_start": 34,
+              "text": "use std::path::{Component, Path, PathBuf};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "$message_type": "diagnostic",
+      "children": [
+        {
+          "children": [],
+          "code": null,
+          "level": "help",
+          "message": "remove the whole `use` item",
+          "rendered": null,
+          "spans": [
+            {
+              "byte_end": 4758,
+              "byte_start": 4708,
+              "column_end": 1,
+              "column_start": 1,
+              "expansion": null,
+              "file_name": "runtime/droidloom-supervisor/src/production_mac.rs",
+              "is_primary": true,
+              "label": null,
+              "line_end": 113,
+              "line_start": 112,
+              "suggested_replacement": "",
+              "suggestion_applicability": "MachineApplicable",
+              "text": [
+                {
+                  "highlight_end": 50,
+                  "highlight_start": 1,
+                  "text": "pub(crate) use manager_label::ManagerLabelPermit;"
+                },
+                {
+                  "highlight_end": 1,
+                  "highlight_start": 1,
+                  "text": ""
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "code": {
+        "code": "unused_imports",
+        "explanation": null
+      },
+      "level": "warning",
+      "message": "unused import: `manager_label::ManagerLabelPermit`",
+      "rendered": "warning: unused import: `manager_label::ManagerLabelPermit`\n   --> runtime/droidloom-supervisor/src/production_mac.rs:112:16\n    |\n112 | pub(crate) use manager_label::ManagerLabelPermit;\n    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n",
+      "spans": [
+        {
+          "byte_end": 4756,
+          "byte_start": 4723,
+          "column_end": 49,
+          "column_start": 16,
+          "expansion": null,
+          "file_name": "runtime/droidloom-supervisor/src/production_mac.rs",
+          "is_primary": true,
+          "label": null,
+          "line_end": 112,
+          "line_start": 112,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 49,
+              "highlight_start": 16,
+              "text": "pub(crate) use manager_label::ManagerLabelPermit;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "$message_type": "diagnostic",
+      "children": [
+        {
+          "children": [],
+          "code": null,
+          "level": "help",
+          "message": "remove the whole `use` item",
+          "rendered": null,
+          "spans": [
+            {
+              "byte_end": 4857,
+              "byte_start": 4812,
+              "column_end": 1,
+              "column_start": 1,
+              "expansion": null,
+              "file_name": "runtime/droidloom-supervisor/src/production_mac.rs",
+              "is_primary": true,
+              "label": null,
+              "line_end": 117,
+              "line_start": 116,
+              "suggested_replacement": "",
+              "suggestion_applicability": "MachineApplicable",
+              "text": [
+                {
+                  "highlight_end": 45,
+                  "highlight_start": 1,
+                  "text": "pub(crate) use listener::MacListenerWitness;"
+                },
+                {
+                  "highlight_end": 1,
+                  "highlight_start": 1,
+                  "text": ""
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "code": {
+        "code": "unused_imports",
+        "explanation": null
+      },
+      "level": "warning",
+      "message": "unused import: `listener::MacListenerWitness`",
+      "rendered": "warning: unused import: `listener::MacListenerWitness`\n   --> runtime/droidloom-supervisor/src/production_mac.rs:116:16\n    |\n116 | pub(crate) use listener::MacListenerWitness;\n    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n",
+      "spans": [
+        {
+          "byte_end": 4855,
+          "byte_start": 4827,
+          "column_end": 44,
+          "column_start": 16,
+          "expansion": null,
+          "file_name": "runtime/droidloom-supervisor/src/production_mac.rs",
+          "is_primary": true,
+          "label": null,
+          "line_end": 116,
+          "line_start": 116,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 44,
+              "highlight_start": 16,
+              "text": "pub(crate) use listener::MacListenerWitness;"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "$message_type": "diagnostic",
+      "children": [
+        {
+          "children": [],
+          "code": null,
+          "level": "help",
+          "message": "remove the unused import",
+          "rendered": null,
+          "spans": [
+            {
+              "byte_end": 2435,
+              "byte_start": 2408,
+              "column_end": 32,
+              "column_start": 5,
+              "expansion": null,
+              "file_name": "runtime/droidloom-supervisor/src/production_runtime_assets.rs",
+              "is_primary": true,
+              "label": null,
+              "line_end": 52,
+              "line_start": 52,
+              "suggested_replacement": "",
+              "suggestion_applicability": "MachineApplicable",
+              "text": [
+                {
+                  "highlight_end": 32,
+                  "highlight_start": 5,
+                  "text": "    RuntimeLinkerconfigInputs, RuntimeOriginalLinkerconfig, RuntimeTrampoline,"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "code": {
+        "code": "unused_imports",
+        "explanation": null
+      },
+      "level": "warning",
+      "message": "unused import: `RuntimeLinkerconfigInputs`",
+      "rendered": "warning: unused import: `RuntimeLinkerconfigInputs`\n  --> runtime/droidloom-supervisor/src/production_runtime_assets.rs:52:5\n   |\n52 |     RuntimeLinkerconfigInputs, RuntimeOriginalLinkerconfig, RuntimeTrampoline,\n   |     ^^^^^^^^^^^^^^^^^^^^^^^^^\n\n",
+      "spans": [
+        {
+          "byte_end": 2433,
+          "byte_start": 2408,
+          "column_end": 30,
+          "column_start": 5,
+          "expansion": null,
+          "file_name": "runtime/droidloom-supervisor/src/production_runtime_assets.rs",
+          "is_primary": true,
+          "label": null,
+          "line_end": 52,
+          "line_start": 52,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 30,
+              "highlight_start": 5,
+              "text": "    RuntimeLinkerconfigInputs, RuntimeOriginalLinkerconfig, RuntimeTrampoline,"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "$message_type": "diagnostic",
+      "children": [
+        {
+          "children": [],
+          "code": null,
+          "level": "help",
+          "message": "remove the unused import",
+          "rendered": null,
+          "spans": [
+            {
+              "byte_end": 390,
+              "byte_start": 381,
+              "column_end": 77,
+              "column_start": 68,
+              "expansion": null,
+              "file_name": "runtime/droidloom-supervisor/src/production_namespace_mount_child.rs",
+              "is_primary": true,
+              "label": null,
+              "line_end": 7,
+              "line_start": 7,
+              "suggested_replacement": "",
+              "suggestion_applicability": "MachineApplicable",
+              "text": [
+                {
+                  "highlight_end": 77,
+                  "highlight_start": 68,
+                  "text": "use super::{BaseLayout, CHILD_FD, Mode, Packet, Phase, fail, finish, receive, send};"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "code": {
+        "code": "unused_imports",
+        "explanation": null
+      },
+      "level": "warning",
+      "message": "unused import: `receive`",
+      "rendered": "warning: unused import: `receive`\n --> runtime/droidloom-supervisor/src/production_namespace_mount_child.rs:7:70\n  |\n7 | use super::{BaseLayout, CHILD_FD, Mode, Packet, Phase, fail, finish, receive, send};\n  |                                                                      ^^^^^^^\n\n",
+      "spans": [
+        {
+          "byte_end": 390,
+          "byte_start": 383,
+          "column_end": 77,
+          "column_start": 70,
+          "expansion": null,
+          "file_name": "runtime/droidloom-supervisor/src/production_namespace_mount_child.rs",
+          "is_primary": true,
+          "label": null,
+          "line_end": 7,
+          "line_start": 7,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 77,
+              "highlight_start": 70,
+              "text": "use super::{BaseLayout, CHILD_FD, Mode, Packet, Phase, fail, finish, receive, send};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "$message_type": "diagnostic",
+      "children": [
+        {
+          "children": [],
+          "code": null,
+          "level": "help",
+          "message": "remove the unused import",
+          "rendered": null,
+          "spans": [
+            {
+              "byte_end": 359,
+              "byte_start": 350,
+              "column_end": 79,
+              "column_start": 70,
+              "expansion": null,
+              "file_name": "runtime/droidloom-supervisor/src/production_namespace_device_child.rs",
+              "is_primary": true,
+              "label": null,
+              "line_end": 7,
+              "line_start": 7,
+              "suggested_replacement": "",
+              "suggestion_applicability": "MachineApplicable",
+              "text": [
+                {
+                  "highlight_end": 79,
+                  "highlight_start": 70,
+                  "text": "use super::{CHILD_FD, DeviceLayout, Mode, Packet, Phase, fail, finish, receive, send};"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "code": {
+        "code": "unused_imports",
+        "explanation": null
+      },
+      "level": "warning",
+      "message": "unused import: `receive`",
+      "rendered": "warning: unused import: `receive`\n --> runtime/droidloom-supervisor/src/production_namespace_device_child.rs:7:72\n  |\n7 | use super::{CHILD_FD, DeviceLayout, Mode, Packet, Phase, fail, finish, receive, send};\n  |                                                                        ^^^^^^^\n\n",
+      "spans": [
+        {
+          "byte_end": 359,
+          "byte_start": 352,
+          "column_end": 79,
+          "column_start": 72,
+          "expansion": null,
+          "file_name": "runtime/droidloom-supervisor/src/production_namespace_device_child.rs",
+          "is_primary": true,
+          "label": null,
+          "line_end": 7,
+          "line_start": 7,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 79,
+              "highlight_start": 72,
+              "text": "use super::{CHILD_FD, DeviceLayout, Mode, Packet, Phase, fail, finish, receive, send};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "$message_type": "diagnostic",
+      "children": [
+        {
+          "children": [],
+          "code": null,
+          "level": "help",
+          "message": "remove the unused import",
+          "rendered": null,
+          "spans": [
+            {
+              "byte_end": 1816,
+              "byte_start": 1793,
+              "column_end": 74,
+              "column_start": 51,
+              "expansion": null,
+              "file_name": "runtime/droidloom-supervisor/src/production_namespace.rs",
+              "is_primary": true,
+              "label": null,
+              "line_end": 40,
+              "line_start": 40,
+              "suggested_replacement": "",
+              "suggestion_applicability": "MachineApplicable",
+              "text": [
+                {
+                  "highlight_end": 74,
+                  "highlight_start": 51,
+                  "text": "    BoundApexdCapexRequest, CgroupTreeReadyWitness, DefaultMountAuthority, DefaultMountBinding,"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "code": {
+        "code": "unused_imports",
+        "explanation": null
+      },
+      "level": "warning",
+      "message": "unused import: `DefaultMountAuthority`",
+      "rendered": "warning: unused import: `DefaultMountAuthority`\n  --> runtime/droidloom-supervisor/src/production_namespace.rs:40:53\n   |\n40 |     BoundApexdCapexRequest, CgroupTreeReadyWitness, DefaultMountAuthority, DefaultMountBinding,\n   |                                                     ^^^^^^^^^^^^^^^^^^^^^\n\n",
+      "spans": [
+        {
+          "byte_end": 1816,
+          "byte_start": 1795,
+          "column_end": 74,
+          "column_start": 53,
+          "expansion": null,
+          "file_name": "runtime/droidloom-supervisor/src/production_namespace.rs",
+          "is_primary": true,
+          "label": null,
+          "line_end": 40,
+          "line_start": 40,
+          "suggested_replacement": null,
+          "suggestion_applicability": null,
+          "text": [
+            {
+              "highlight_end": 74,
+              "highlight_start": 53,
+              "text": "    BoundApexdCapexRequest, CgroupTreeReadyWitness, DefaultMountAuthority, DefaultMountBinding,"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "five_actual_commands_complete_and_reaped": true,
+  "github_commit": "93531cb2379c439d3a1c775cbb1b8448f1e44808",
+  "github_run_id": 44763390067,
+  "job_id": 136381527703,
+  "ordinary_passed": 0,
+  "original_report": {
+    "bytes": 18219,
+    "sha256": "da2561f80c1fb031dd08d284eb2e1410f8ab189f82fcede3f02c8e9857cf7bc1"
+  },
+  "production_ready": false,
+  "release_binaries": 0,
+  "runtime_qualified": false,
+  "schema": "p4-joint-ci-first-failure-artifact-review-v1",
+  "source": {
+    "bytes": 45436536,
+    "files": 2381,
+    "tree": "0d6e87d09e06a282bad0a1704a7db1517f20a047"
+  }
+}

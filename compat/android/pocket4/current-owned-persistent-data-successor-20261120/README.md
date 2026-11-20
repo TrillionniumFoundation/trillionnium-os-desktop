@@ -32,3 +32,9 @@ activation or privileged fixture. The separately developed syscall fixture is
 not included here. Real current Main qualification, same-Main readonly entry,
 original 45-package data continuity and each app's business/cleanup evidence
 remain required after successful full joint CI.
+
+## First actual compilation and narrow successor
+
+The exact 93531cb2379c439d3a1c775cbb1b8448f1e44808 predecessor was reconstructed and compiled in run 44763390067. Eight other jobs passed. This full-source job failed with two undeclared `hex` references and one stale `empty_root` field reference; it passed no ordinary test and published no normal release binary. The pinned failure artifact and all ten original command streams were verified; all five issued commands were reaped and the final source bookends matched.
+
+This successor replaces only the two hexadecimal encoders with standard-library formatting and updates the binder consumer to the existing `base_root_ready` state. The producer sets that state only after the corresponding actual root-ready barrier and mount verification. The original binder live admission, private-device requirement and typed witness checks remain intact. The test roster, runner, 13 original data-source overlays, resource limits and qualification rules are byte-identical. A new actual complete CI run is required. No source compilation result authorizes an original-image mount, Main, application, CURRENT adoption or production claim.
