@@ -1,0 +1,26 @@
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -12925,9 +12925,9 @@
+     }
+     if production_full {
+         if !source.exists() {
+-            droidloom_source::production_cmake::materialize(&lock, &source_lock, source)?;
+-        }
+-        droidloom_source::production_cmake::verify_materialized(&lock, &source_lock, source)?;
++            droidloom_source::production_lint::materialize(&lock, &source_lock, source)?;
++        }
++        droidloom_source::production_lint::verify_materialized(&lock, &source_lock, source)?;
+     } else if native_source {
+         if typed_ingress && !source.exists() {
+             droidloom_source::native_pair::materialize_resuming(
+@@ -20629,8 +20629,8 @@
+             .parent()
+             .unwrap();
+         let lock_body =
+-            fs::read(real_repo.join("android/manifest/production-full-cmake-source-lock.json")).unwrap();
+-        let lock_path = manifest.join("production-full-cmake-source-lock.json");
++            fs::read(real_repo.join(crate::production_source::LOCK_PATH)).unwrap();
++        let lock_path = repo.join(crate::production_source::LOCK_PATH);
+         fs::write(&lock_path, &lock_body).unwrap();
+         let error = build_targets_with_fixed_request(
+             &repo,

@@ -1,0 +1,137 @@
+--- a/tools/droidloom-update/src/production_source.rs
++++ b/tools/droidloom-update/src/production_source.rs
+@@ -7,10 +7,14 @@
+ const ORIGINAL_LOCK_PATH: &str = "android/manifest/production-full-source-lock.json";
+ const ORIGINAL_LOCK_SHA: &str = "30dcc1b5b090530b3fc06aeb3e489a961b0fc7c6368ed9d19eb0a1b2054e3eb4";
+ const ORIGINAL_LOCK_BYTES: usize = 400363;
+-pub(super) const LOCK_PATH: &str = "android/manifest/production-full-cmake-source-lock.json";
++const CMAKE_LOCK_PATH: &str = "android/manifest/production-full-cmake-source-lock.json";
++const CMAKE_LOCK_SHA: &str =
++    "2e9877a58ebbc3625c7411d3573951afa409d9b13692468b825b4c25961ffffb";
++const CMAKE_LOCK_BYTES: usize = 400661;
++pub(super) const LOCK_PATH: &str = "android/manifest/production-full-lint-source-lock.json";
+ pub(super) const LOCK_SHA: &str =
+-    "2e9877a58ebbc3625c7411d3573951afa409d9b13692468b825b4c25961ffffb";
+-pub(super) const LOCK_BYTES: usize = 400661;
++    "aa14d968c14c2febcfacbb90e82598e2ba8e57f4bbb2cfc8f1f2a741555153ca";
++pub(super) const LOCK_BYTES: usize = 400677;
+ 
+ fn digest(bytes: &[u8]) -> String {
+     format!("{:x}", Sha256::digest(bytes))
+@@ -148,7 +152,7 @@
+     Ok(path)
+ }
+ 
+-pub(super) fn source_lock_path(repo: &Path) -> Result<PathBuf> {
++fn cmake_source_lock_path(repo: &Path) -> Result<PathBuf> {
+     let original_path = original_source_lock_path(repo)?;
+     let mut expected: Value = serde_json::from_slice(&exact_file(
+         &original_path,
+@@ -164,14 +168,43 @@
+             "commit": droidloom_source::production_cmake::CMAKE_COMMIT,
+             "purpose": droidloom_source::production_cmake::CMAKE_PURPOSE,
+         }));
+-    let path = repo.join(LOCK_PATH);
+-    let raw = exact_file(&path, LOCK_BYTES, LOCK_SHA)?;
++    let path = repo.join(CMAKE_LOCK_PATH);
++    let raw = exact_file(&path, CMAKE_LOCK_BYTES, CMAKE_LOCK_SHA)?;
+     if serde_json::from_slice::<Value>(&raw)? != expected {
+         return fail(
+             "production CMake lock changes the original union or adds a different provider",
+         );
+     }
+     droidloom_source::production_cmake::build_plan(&droidloom_source::load_lock(&path)?)?;
++    Ok(path)
++}
++
++pub(super) fn source_lock_path(repo: &Path) -> Result<PathBuf> {
++    let cmake_path = cmake_source_lock_path(repo)?;
++    let mut expected: Value = serde_json::from_slice(&exact_file(
++        &cmake_path,
++        CMAKE_LOCK_BYTES,
++        CMAKE_LOCK_SHA,
++    )?)?;
++    let health = expected["projects"]
++        .as_array_mut()
++        .ok_or("original CMake projects missing")?
++        .iter_mut()
++        .find(|project| project["path"] == droidloom_source::production_lint::HEALTH_PATH)
++        .ok_or("original HealthFitness project missing")?;
++    if health["commit"] != droidloom_source::production_lint::HEALTH_COMMIT {
++        return fail("HealthFitness lint must keep its original superproject Gitlink");
++    }
++    health["sparse_paths"]
++        .as_array_mut()
++        .ok_or("original HealthFitness sparse scope missing")?
++        .push(json!(droidloom_source::production_lint::LINT_PATH));
++    let path = repo.join(LOCK_PATH);
++    let raw = exact_file(&path, LOCK_BYTES, LOCK_SHA)?;
++    if serde_json::from_slice::<Value>(&raw)? != expected {
++        return fail("production lint lock changes more than the complete original lint directory");
++    }
++    droidloom_source::production_lint::build_plan(&droidloom_source::load_lock(&path)?)?;
+     Ok(path)
+ }
+ 
+@@ -195,7 +228,7 @@
+             let expected = droidloom_source::MaterializedManifest {
+                 schema_version: 1,
+                 source_lock_sha256: LOCK_SHA.to_owned(),
+-                plan: droidloom_source::production_cmake::build_plan(lock)?,
++                plan: droidloom_source::production_lint::build_plan(lock)?,
+             };
+             let bytes = serde_json::to_vec_pretty(&expected)?;
+             exact_file(
+@@ -203,7 +236,7 @@
+                 bytes.len(),
+                 &digest(&bytes),
+             )?;
+-            droidloom_source::production_cmake::verify_materialized(lock_path, lock, source)?;
++            droidloom_source::production_lint::verify_materialized(lock_path, lock, source)?;
+             Ok(())
+         }
+         Ok(_) => fail("production source workspace must be a real directory"),
+@@ -340,7 +373,7 @@
+             .canonicalize()
+             .unwrap();
+         let path = source_lock_path(&repo).unwrap();
+-        let plan = droidloom_source::production_cmake::build_plan(
++        let plan = droidloom_source::production_lint::build_plan(
+             &droidloom_source::load_lock(&path).unwrap(),
+         )
+         .unwrap();
+@@ -470,4 +503,33 @@
+         assert_eq!(fs::read(manifest).unwrap(), bytes);
+         assert_eq!(fs::read_dir(source).unwrap().count(), 1);
+     }
+-}
++
++    #[test]
++    fn original_cmake_manifest_requires_explicit_complete_lint_reconciliation() {
++        let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
++            .join("../..")
++            .canonicalize()
++            .unwrap();
++        let old_path = cmake_source_lock_path(&repo).unwrap();
++        let selected = source_lock_path(&repo).unwrap();
++        assert_ne!(old_path, selected);
++        let old = droidloom_source::load_lock(&old_path).unwrap();
++        let current = droidloom_source::load_lock(&selected).unwrap();
++        assert!(droidloom_source::production_lint::build_plan(&old).is_err());
++        assert!(droidloom_source::production_cmake::build_plan(&current).is_err());
++        let prior = droidloom_source::MaterializedManifest {
++            schema_version: 1,
++            source_lock_sha256: CMAKE_LOCK_SHA.into(),
++            plan: droidloom_source::production_cmake::build_plan(&old).unwrap(),
++        };
++        let directory = tempfile::tempdir().unwrap();
++        let source = directory.path().join("source");
++        fs::create_dir(&source).unwrap();
++        let manifest = source.join(".droidloom-source-manifest.json");
++        let original = serde_json::to_vec_pretty(&prior).unwrap();
++        fs::write(&manifest, &original).unwrap();
++        assert!(verify_source_workspace(&selected, &current, &source).is_err());
++        assert_eq!(fs::read(manifest).unwrap(), original);
++        assert_eq!(fs::read_dir(source).unwrap().count(), 1);
++    }
++}

@@ -1,0 +1,23 @@
+--- a/tools/droidloom-update/src/framework_asb_security.rs
++++ b/tools/droidloom-update/src/framework_asb_security.rs
+@@ -2807,14 +2807,18 @@
+                 .unwrap()
+         );
+         let lock = droidloom_source::load_lock(&selected).unwrap();
+-        let plan = droidloom_source::production_cmake::build_plan(&lock).unwrap();
++        let plan = droidloom_source::production_lint::build_plan(&lock).unwrap();
+         assert_eq!(plan.projects.len(), 652);
+         let original = droidloom_source::load_lock(
+             &repo.join("android/manifest/production-full-source-lock.json"),
+         ).unwrap();
+         let original_plan = droidloom_source::production_full::build_plan(&original).unwrap();
+         assert_eq!(original_plan.projects.len(), 651);
+-        assert_eq!(&plan.projects[..651], original_plan.projects.as_slice());
++        let mut expected_projects = original_plan.projects.clone();
++        expected_projects.iter_mut()
++            .find(|project| project.path == Path::new(droidloom_source::production_lint::HEALTH_PATH))
++            .unwrap().sparse_paths.push(droidloom_source::production_lint::LINT_PATH.into());
++        assert_eq!(&plan.projects[..651], expected_projects.as_slice());
+         assert_eq!(plan.links.len(), 8);
+         assert!(!plan.unrestricted_repo_sync);
+         assert_eq!(request.projection_targets(), TARGETS);

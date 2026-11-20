@@ -1,0 +1,20 @@
+--- a/runtime/droidloom-supervisor/src/production_control.rs
++++ b/runtime/droidloom-supervisor/src/production_control.rs
+@@ -499,6 +499,7 @@
+             application_icon: None,
+             diagnostics: None,
+             inspection: None,
++            image_custody: None,
+         }
+     }
+ 
+@@ -918,7 +919,8 @@
+             ));
+         }
+         let mut response = self.success("Installed package metadata and APK bytes observed in the owned production tree; application acceptance remains pending");
+-        response.inspection = Some(observed);
++        response.inspection = Some(observed.application);
++        response.image_custody = observed.image_custody;
+         Ok(response)
+     }
+ 

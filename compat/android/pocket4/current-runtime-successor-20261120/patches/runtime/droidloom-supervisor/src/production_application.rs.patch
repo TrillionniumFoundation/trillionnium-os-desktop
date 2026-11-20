@@ -1,0 +1,13 @@
+--- a/runtime/droidloom-supervisor/src/production_application.rs
++++ b/runtime/droidloom-supervisor/src/production_application.rs
+@@ -14,6 +14,10 @@
+ use crate::production_namespace::{ApplicationAuthority, FrameworkObservation, ReadyTreeWitness};
+ use serde::{Deserialize, Serialize};
+ use thiserror::Error;
++
++#[path = "production_application_custody.rs"]
++mod custody;
++pub(crate) use custody::{ProductionInspection, inspect_with_custody};
+ 
+ #[path = "production_application_business.rs"]
+ mod business;

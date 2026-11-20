@@ -1,0 +1,20 @@
+--- a/runtime/droidloom-supervisor/src/production_cell.rs
++++ b/runtime/droidloom-supervisor/src/production_cell.rs
+@@ -254,7 +254,7 @@
+         &mut self,
+         package: &str,
+         user: u32,
+-    ) -> Result<crate::control::application_probe::ApplicationInspection> {
++    ) -> Result<crate::production_application::ProductionInspection> {
+         let tree = self
+             .tree
+             .as_mut()
+@@ -265,7 +265,7 @@
+             .ok_or_else(|| {
+                 rejected("production application inspection requires actual current readiness")
+             })?;
+-        crate::production_application::inspect(ready, package, user).map_err(rejected)
++        crate::production_application::inspect_with_custody(ready, package, user).map_err(rejected)
+     }
+     /// Bounded Launch entry borrowing the actual selected Ready owner and
+     /// the public request's existing absolute deadline.

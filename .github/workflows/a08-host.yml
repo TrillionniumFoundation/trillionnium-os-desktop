@@ -1749,7 +1749,7 @@ jobs:
             ${{ runner.temp }}/runtime-d6-ci-logs/*.stderr
 
   runtime-current-complete-producer:
-    name: Current source - 1534 ordinary cases, 19 releases, examples and docs
+    name: Current source - 1555 ordinary cases, 19 releases, examples and docs
     runs-on: ubuntu-24.04
     timeout-minutes: 140
     env:
@@ -1761,7 +1761,8 @@ jobs:
       GIT_TERMINAL_PROMPT: '0'
       # Pin the complete reviewed capsule inventory outside the capsule itself.
       CURRENT_SOURCE_INVENTORY_SHA256: 075affecd123cc60e30eadf70ae95cc9ec34d5686694bedf0914014c36d04c0b
-      CURRENT_COHORT_INVENTORY_SHA256: 9c1c330bd29ea6d2bdbcde0ead6e27bafaaab07177fb22a6f90ef81c967466a2
+      CURRENT_COHORT_INVENTORY_SHA256: 29e50d45ca5f4781853a49c14942fe185d2e6147e926b12db15d688b431b1977
+      CURRENT_COMBINED_SOURCE_INVENTORY_SHA256: b576d8562036ec022b502ced5c5ab7e88a177467bf472a24f580fe365b07d1ae
       CURRENT_MATERIALIZATION_INVENTORY_SHA256: ea75a0a28022944b80acebb65aca9ce49c9c66fbd519531da7677bbd114ed35e
       CURRENT_LEAF_INVENTORY_SHA256: b932f58f5a3eaf7feea4d458fbd67d2e248a29a5aeb45eb940c6f2c7450f6374
     steps:
@@ -1785,7 +1786,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cohort="$GITHUB_WORKSPACE/compat/android/pocket4/current-runtime-cohort-20261120"
+          cohort="$GITHUB_WORKSPACE/compat/android/pocket4/current-runtime-cohort-successor-20261120"
           printf '%s  %s\n' "$CURRENT_COHORT_INVENTORY_SHA256" "$cohort/FILES.sha256" | sha256sum --check --status
           (cd "$cohort" && sha256sum --quiet -c FILES.sha256)
           mkdir "$RUNNER_TEMP/current-cohort-controls"
@@ -1822,6 +1823,13 @@ jobs:
             --parent-packet "$materialization" --parent-source "$RUNNER_TEMP/current-materialized-producer" \
             --output "$RUNNER_TEMP/current-leaf-producer" \
             --report "$RUNNER_TEMP/current-leaf-source-replay.json"
+          current="$GITHUB_WORKSPACE/compat/android/pocket4/current-runtime-successor-20261120"
+          current_parent="$GITHUB_WORKSPACE/compat/android/pocket4/current-runtime-cohort-20261120"
+          timeout --signal=TERM --kill-after=5s 20s python3 -I -B "$current/verify.py" \
+            --inventory-sha256 "$CURRENT_COMBINED_SOURCE_INVENTORY_SHA256" \
+            --parent-packet "$current_parent" --parent-source "$RUNNER_TEMP/current-leaf-producer" \
+            --output "$RUNNER_TEMP/current-combined-producer" \
+            --report "$RUNNER_TEMP/current-combined-source-replay.json"
       - name: Prepare pinned EROFS and recorded host dependencies
         timeout-minutes: 32
         shell: bash
@@ -1830,15 +1838,15 @@ jobs:
           capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1"
           timeout --signal=TERM --kill-after=30s 1860s bash "$capsule/prepare_ci.sh" \
             --work "$RUNNER_TEMP/current-dependencies"
-      - name: Run 1534 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
+      - name: Run 1555 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
         timeout-minutes: 92
         shell: bash
         run: |
           set -euo pipefail
-          cohort="$GITHUB_WORKSPACE/compat/android/pocket4/current-runtime-cohort-20261120"
+          cohort="$GITHUB_WORKSPACE/compat/android/pocket4/current-runtime-cohort-successor-20261120"
           timeout --signal=TERM --kill-after=30s 5460s python3 -I -B "$cohort/run_ci.py" \
             --inventory-sha256 "$CURRENT_COHORT_INVENTORY_SHA256" \
-            --producer "$RUNNER_TEMP/current-leaf-producer" \
+            --producer "$RUNNER_TEMP/current-combined-producer" \
             --work "$RUNNER_TEMP/current-ordinary" \
             --report "$RUNNER_TEMP/current-ci.json" \
             --erofs-prefix "$RUNNER_TEMP/current-dependencies/erofs"
@@ -1852,6 +1860,7 @@ jobs:
             ${{ runner.temp }}/current-source-replay.json
             ${{ runner.temp }}/current-materialized-source-replay.json
             ${{ runner.temp }}/current-leaf-source-replay.json
+            ${{ runner.temp }}/current-combined-source-replay.json
             ${{ runner.temp }}/current-cohort-controls/*.stdout
             ${{ runner.temp }}/current-cohort-controls/*.stderr
             ${{ runner.temp }}/current-ci.json
