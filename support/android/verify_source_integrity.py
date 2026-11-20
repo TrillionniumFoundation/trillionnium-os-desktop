@@ -19,6 +19,38 @@ import xml.etree.ElementTree as ET
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE_ROOTS = ("compat/android", "support/android", "tests/workloads/android")
 REQUIRED_FILES = (
+    'compat/android/pocket4/current-runtime-release-20261120/FILES.sha256',
+    'compat/android/pocket4/current-runtime-release-20261120/MANIFEST.json',
+    'compat/android/pocket4/current-runtime-release-20261120/README.md',
+    'compat/android/pocket4/current-runtime-release-20261120/run_release.py',
+    'compat/android/pocket4/current-runtime-release-20261120/test_release.py',
+    'compat/android/pocket4/vendor-representation-repair-20261120/FILES.sha256',
+    'compat/android/pocket4/vendor-representation-repair-20261120/HELPER.patch',
+    'compat/android/pocket4/vendor-representation-repair-20261120/HISTORY.json',
+    'compat/android/pocket4/vendor-representation-repair-20261120/README.md',
+    'compat/android/pocket4/vendor-representation-repair-20261120/baseline/vendor_source_bookends_r19_9907.py',
+    'compat/android/pocket4/vendor-representation-repair-20261120/ci.py',
+    'compat/android/pocket4/vendor-representation-repair-20261120/evidence/LOCAL-CONTROLS.json.gz',
+    'compat/android/pocket4/vendor-representation-repair-20261120/evidence/ROOT-INDEPENDENT-REVIEW.json',
+    'compat/android/pocket4/vendor-representation-repair-20261120/evidence/TARGET-CLIENT.json',
+    'compat/android/pocket4/vendor-representation-repair-20261120/evidence/TARGET-CLIENT.stdout',
+    'compat/android/pocket4/vendor-representation-repair-20261120/evidence/TARGET-CONTROLS.json.gz',
+    'compat/android/pocket4/vendor-representation-repair-20261120/evidence/TARGET-EXECUTION.json',
+    'compat/android/pocket4/vendor-representation-repair-20261120/evidence/TARGET-RETIREMENT.json',
+    'compat/android/pocket4/vendor-representation-repair-20261120/evidence/TARGET-RETIREMENT.stdout',
+    'compat/android/pocket4/vendor-representation-repair-20261120/evidence/TARGET-STDERR.log',
+    'compat/android/pocket4/vendor-representation-repair-20261120/evidence/TARGET-STDOUT.log',
+    'compat/android/pocket4/vendor-representation-repair-20261120/evidence/TARGET-TEST-PACKET.json',
+    'compat/android/pocket4/vendor-representation-repair-20261120/evidence/target_post_observe.py',
+    'compat/android/pocket4/vendor-representation-repair-20261120/evidence/target_runner.py',
+    'compat/android/pocket4/vendor-representation-repair-20261120/fixtures/actual-conversions.json.gz',
+    'compat/android/pocket4/vendor-representation-repair-20261120/legacy-test-suite/baseline/vendor_source_bookends_r18_2331.py',
+    'compat/android/pocket4/vendor-representation-repair-20261120/legacy-test-suite/fixtures/autogen.bat.working',
+    'compat/android/pocket4/vendor-representation-repair-20261120/legacy-test-suite/fixtures/libopus.gitattributes',
+    'compat/android/pocket4/vendor-representation-repair-20261120/legacy-test-suite/test_committed_crlf.py',
+    'compat/android/pocket4/vendor-representation-repair-20261120/legacy-test-suite/vendor_source_bookends_r19_9907.py',
+    'compat/android/pocket4/vendor-representation-repair-20261120/test_text_auto.py',
+    'compat/android/pocket4/vendor-representation-repair-20261120/vendor_source_bookends_text_auto_9907.py',
     'compat/android/pocket4/vendor-source-materialization-20261120/README.md',
     'compat/android/pocket4/vendor-source-materialization-20261120/validation/complete-successor-host-result.json',
     'compat/android/pocket4/vendor-source-materialization-20261120/validation/complete-successor-readback.json',
@@ -1221,6 +1253,11 @@ EXECUTABLE_FILES = (
 PARSED_SUFFIXES = {".py", ".sh", ".json", ".xml"}
 
 BINARY_FILES = {
+    'compat/android/pocket4/current-runtime-release-20261120/FILES.sha256': {'bytes': 319, 'sha256': 'd5d0ab96a6f12e690316c12a8dc59f3dc1b760fca9ddf14a3fa7120be27ebcdf'},
+    'compat/android/pocket4/vendor-representation-repair-20261120/FILES.sha256': {'bytes': 2552, 'sha256': '6f33f54d51dfe10c251c81dc4940ff13cb5eda9bb2c26485fe02ec20d7c5f60e'},
+    'compat/android/pocket4/vendor-representation-repair-20261120/evidence/LOCAL-CONTROLS.json.gz': {'bytes': 117392, 'sha256': 'd4e3419cb1bdad76338d6d4b0e549059751b85454705d2f8d898066b9d31241d'},
+    'compat/android/pocket4/vendor-representation-repair-20261120/evidence/TARGET-CONTROLS.json.gz': {'bytes': 118754, 'sha256': '74f38d05356e3111b3f5a57ed0dc5fa03d756cec92d359a6d135a547b8fab49e'},
+    'compat/android/pocket4/vendor-representation-repair-20261120/fixtures/actual-conversions.json.gz': {'bytes': 477330, 'sha256': 'f9e00af7c0fff3e580e5f10ea951c11dec278645c48885c975a0344f88d91977'},
     'compat/android/pocket4/vendor-source-materialization-20261120/validation/complete-successor-host-result.json': {'bytes': 13905, 'sha256': '746f79e87bc5d4e1b8d7b18bc8ac1acd436a9f2e0cbc753ffa22425c4dc20d8a'},
     'compat/android/pocket4/vendor-source-materialization-20261120/validation/complete-successor-readback.json': {'bytes': 4051, 'sha256': '33f99e905f9d95ec9d510e33af49df0f04a40c805572676396b22faa3fd17b8c'},
 
@@ -1274,7 +1311,7 @@ BINARY_FILES = {
         'bytes': 7894116, 'sha256': '3e8b2fa1ea1ef3555ca7c82e27abe79a2be029c701f69ac55ef4c82484f247ad'},
     'compat/android/pocket4/runtime-current-source-r1/SOURCE-OVERLAY.tar.xz': {
         'bytes': 657032, 'sha256': '5a87a80bebfc2c63696ca9932fcea8d9485810f75a310f9fa1f792cab292390b'},
-    'compat/android/pocket4/current-publisher-delivery-source/FILES.sha256': {'bytes': 5219, 'sha256': '2499343ab2f1de41dfef1e307a62786f7f0214784440b40b26e58507ea4e492a'},
+    'compat/android/pocket4/current-publisher-delivery-source/FILES.sha256': {'bytes': 5219, 'sha256': '0ddcf91fd9217a4c4c6ef0f140e4ae4521396270621c4155a0a07b07e1ba4ff8'},
     'compat/android/pocket4/current-publisher-delivery-source/MANIFEST.json': {
         'bytes': 19869, 'sha256': '872dc25ba3c8980b5ea67609b0a9fb17c6c31b925a823ee9642fe75d3218c699'},
     'compat/android/pocket4/current-publisher-delivery-source/SOURCE.tar.gz': {

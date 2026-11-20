@@ -1841,12 +1841,27 @@ jobs:
       PYTHONDONTWRITEBYTECODE: '1'
       P4_MATERIALIZATION_INVENTORY_SHA256: ea75a0a28022944b80acebb65aca9ce49c9c66fbd519531da7677bbd114ed35e
       P4_LEAF_SELECTION_INVENTORY_SHA256: b932f58f5a3eaf7feea4d458fbd67d2e248a29a5aeb45eb940c6f2c7450f6374
+      P4_RUNTIME_RELEASE_INVENTORY_SHA256: d5d0ab96a6f12e690316c12a8dc59f3dc1b760fca9ddf14a3fa7120be27ebcdf
+      P4_REPRESENTATION_INVENTORY_SHA256: 6f33f54d51dfe10c251c81dc4940ff13cb5eda9bb2c26485fe02ec20d7c5f60e
     steps:
+      - name: Record the single bounded successor job interval
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B - <<'PYCODE'
+          import os, time
+          started = time.time_ns()
+          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf-8') as stream:
+              stream.write('P4_SUCCESSOR_JOB_STARTED_NS=' + str(started) + '\n')
+              stream.write('P4_SUCCESSOR_JOB_DEADLINE_NS=' + str(started + 1680 * 10**9) + '\n')
+          PYCODE
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: dtolnay/rust-toolchain@1.93.0
+        with:
+          components: rustfmt
       - name: Verify complete parent and exact source successor
         shell: bash
         run: |
@@ -1897,6 +1912,56 @@ jobs:
             --producer "$RUNNER_TEMP/current-leaf-successor" \
             --work "$RUNNER_TEMP/current-leaf-build" \
             --report "$RUNNER_TEMP/current-leaf-ci.json" --jobs 2
+      - name: Verify exact committed text-auto and executable CRLF checkouts
+        shell: bash
+        run: |
+          set -euo pipefail
+          a08_representation_packet="$GITHUB_WORKSPACE/compat/android/pocket4/vendor-representation-repair-20261120"
+          printf '%s  %s\n' "$P4_REPRESENTATION_INVENTORY_SHA256" "$a08_representation_packet/FILES.sha256" | sha256sum --check --status
+          (cd "$a08_representation_packet" && sha256sum --quiet -c FILES.sha256)
+          python3 -I -B - <<'PYCODE'
+          import os, time
+          remaining = (int(os.environ['P4_SUCCESSOR_JOB_DEADLINE_NS']) - time.time_ns()) / 10**9
+          if remaining < 260:
+              raise SystemExit('Insufficient original job interval for Git controls and retirement')
+          PYCODE
+          python3 -I -B "$a08_representation_packet/ci.py" \
+            --output-dir "$RUNNER_TEMP/current-representation-controls"
+      - name: Verify normal release admission controls and prepare the original native dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          a08_release_packet="$GITHUB_WORKSPACE/compat/android/pocket4/current-runtime-release-20261120"
+          a08_release_legacy="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1"
+          printf '%s  %s\n' "$P4_RUNTIME_RELEASE_INVENTORY_SHA256" "$a08_release_packet/FILES.sha256" | sha256sum --check --status
+          (cd "$a08_release_packet" && sha256sum --quiet -c FILES.sha256)
+          printf '%s  %s\n' 075affecd123cc60e30eadf70ae95cc9ec34d5686694bedf0914014c36d04c0b "$a08_release_legacy/FILES.sha256" | sha256sum --check --status
+          (cd "$a08_release_legacy" && sha256sum --quiet -c FILES.sha256)
+          python3 -I -B "$a08_release_packet/test_release.py" \
+            --legacy-packet "$a08_release_legacy" --inventory-sha256 "$P4_RUNTIME_RELEASE_INVENTORY_SHA256" -v
+          a08_native_limit=$(python3 -I -B - <<'PYCODE'
+          import os, time
+          remaining = (int(os.environ['P4_SUCCESSOR_JOB_DEADLINE_NS']) - time.time_ns()) / 10**9
+          limit = min(300, int(remaining - 90))
+          if limit < 30:
+              raise SystemExit('Insufficient original job interval for native preparation and retirement')
+          print(limit)
+          PYCODE
+          )
+          timeout --signal=TERM --kill-after=30s "${a08_native_limit}s" bash "$a08_release_legacy/prepare_ci.sh" \
+            --work "$RUNNER_TEMP/current-leaf-dependencies"
+      - name: Build and verify all 19 current normal release binaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B "$GITHUB_WORKSPACE/compat/android/pocket4/current-runtime-release-20261120/run_release.py" \
+            --inventory-sha256 "$P4_RUNTIME_RELEASE_INVENTORY_SHA256" \
+            --legacy-packet "$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1" \
+            --leaf-packet "$GITHUB_WORKSPACE/compat/android/pocket4/current-leaf-selection-20261120/rust" \
+            --producer "$RUNNER_TEMP/current-leaf-successor" \
+            --dependencies "$RUNNER_TEMP/current-leaf-dependencies/DEPENDENCIES.json" \
+            --work "$RUNNER_TEMP/current-leaf-release" \
+            --report "$RUNNER_TEMP/current-leaf-release-ci.json"
       - name: Preserve exact source and test execution evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -1914,3 +1979,20 @@ jobs:
             ${{ runner.temp }}/current-leaf-ci.json
             ${{ runner.temp }}/current-leaf-build/logs/*.stdout
             ${{ runner.temp }}/current-leaf-build/logs/*.stderr
+            ${{ runner.temp }}/current-representation-controls/SUMMARY.json
+            ${{ runner.temp }}/current-representation-controls/CONTROLS.json
+            ${{ runner.temp }}/current-representation-controls/stdout.log
+            ${{ runner.temp }}/current-representation-controls/stderr.log
+            ${{ runner.temp }}/current-leaf-dependencies/DEPENDENCIES.json
+            ${{ runner.temp }}/current-leaf-dependencies/logs/*.stdout
+            ${{ runner.temp }}/current-leaf-dependencies/logs/*.stderr
+            ${{ runner.temp }}/current-leaf-release-ci.json
+            ${{ runner.temp }}/current-leaf-release/logs/*.stdout
+            ${{ runner.temp }}/current-leaf-release/logs/*.stderr
+      - name: Preserve all 19 current normal release binaries without activation
+        uses: actions/upload-artifact@v4
+        with:
+          name: a08-current-leaf-normal-release-19-${{ github.event.pull_request.head.sha || github.sha }}
+          if-no-files-found: error
+          retention-days: 7
+          path: ${{ runner.temp }}/current-leaf-release/artifacts/*

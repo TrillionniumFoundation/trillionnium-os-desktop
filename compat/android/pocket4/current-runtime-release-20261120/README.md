@@ -1,0 +1,19 @@
+# Current normal release binaries
+
+This CI continuation builds all 19 original normal release targets from the complete 2,352-file current source tree `7bfb70d7107cb5c95e9aec307124e1369aa735d1`. The source includes the required-file materialization fix and the current 13-preparation leaf selector. The existing 100 source tests and 42 application tests remain separate mandatory preceding steps. No historical binary or test result counts as a fresh current result.
+
+## Exact source and target chain
+
+The original runtime packet and helper bytes remain unchanged. The runner authenticates its original complete capsule and reuses the original `metadata_targets`, `artifacts`, `elf`, `aliases`, and finite owned-child execution helpers. It independently verifies the fixed leaf packet, all 2,352 source files, full tree membership, original modes, full content and F9 identities before and after the build. The original Cargo.lock remains exact. Actual Cargo metadata must still enumerate all 28 workspace packages, all 49 original test targets, and exactly the original 19 normal binary targets. The test-target metadata check does not claim that all 49 test harnesses have been executed in this release-only continuation.
+
+Two disjoint normal builds select the updater package and the remaining 27 packages. Each uses `cargo +1.93.0 build --offline --locked ... --release -j1 --bins --message-format=json`; neither targets nor features are removed. A fresh independent Cargo home, target and temporary directory prevent old artifacts from qualifying. Compiler and profile overrides are removed. Every actual Cargo artifact must report `fresh: false`, the exact target/source/profile and its ordinary release path. All 19 original ELF bodies, timestamps, original Cargo hard-link aliases and independent delivery copies are fully verified. The final readelf command records dynamic and symbol-version requirements without running any produced binary.
+
+## Build environment and fixed resource interval
+
+Use only the ordinary user of the existing disposable Ubuntu 24.04 GitHub job, Rust 1.93.0 and GCC 13. Reuse the unchanged original prepare_ci.sh in that isolated job; do not run it on ai395 or Pocket4. The native step has a 300-second external TERM bound and a finite 30-second cleanup allowance. Its actual DEPENDENCIES.json must report complete preparation and no remaining descendants.
+
+The existing job remains capped at 30 minutes. A first step records one 1,680-second admitted interval; later steps do not reset it. Release admission takes at most 1,200 seconds from the remaining interval and reserves final verification time. Each Cargo build is capped at 600 seconds and cannot consume the final 60-second cleanup and source/ELF bookend window. The runner holds pidfds until its actual children are reaped and reaps only its own descendants. It pins two logical CPUs, leaves at least two available, uses one Cargo job and requires at least 8 GiB free space before each command. The original successful CI measurement took about 80 seconds for preparation and 305 seconds for the two normal release batches. These historical timings justify the budget; they do not qualify any new binary.
+
+## Evidence and remaining gates
+
+The always-uploaded result retains actual commands, full stdout/stderr digests, package versions, tool identities, complete source bookends, Cargo artifact messages, all 19 ELF hashes, delivery-copy identities and retirement. Failed attempts remain failed and are not retried with a reset interval. Successful binaries are uploaded as a separate candidate artifact. They are not installed or activated. Android, Pocket4 runtime ABI, the remaining business executors, whole-workspace runtime qualification and production readiness all remain unqualified until their own real acceptance gates pass.
