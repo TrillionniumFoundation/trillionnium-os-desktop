@@ -1,0 +1,250 @@
+{
+  "Android_started": false,
+  "C_compiler_passed": true,
+  "Kbuild_configuration_selection_executed": false,
+  "VM_started": false,
+  "actual_C_dependency_closure_equal": true,
+  "actual_dependencies": 510,
+  "actual_evidence": [
+    {
+      "bytes": 251396,
+      "path": "OBJECT-COMPILE.json",
+      "sha256": "6b47c885ba790987a3adb0b18a327068529e9ac612964fd05eb0c5393e0c532d"
+    },
+    {
+      "bytes": 23008,
+      "path": "TREE-PREPARATION.json",
+      "sha256": "232793bb6e70cfdd0aba664c1a0be17f2a623d465cc2507a884582f65f18b243"
+    },
+    {
+      "bytes": 15060,
+      "path": "ACTUAL-LOGS.json",
+      "sha256": "98a0a250b8fdace70bd73b2d111fd8b2e788c2f4345a0bb07a3b0647ae28c585"
+    },
+    {
+      "bytes": 3785,
+      "path": "HOST-JOBS.json",
+      "sha256": "4a20d2c622314f30761ef282347f6c938608911910a9d2d6100f8069a9864cd2"
+    },
+    {
+      "bytes": 1003,
+      "path": "DOWNLOAD-R2.json",
+      "sha256": "1b9a015290781958bb0089795eefb92eaf9968d39789a35fd510f21b1c7128de"
+    },
+    {
+      "bytes": 4328,
+      "path": "COMPILE-COMMAND-SOURCE.json",
+      "sha256": "f5fb2841adfa02c8e2f89bba0c96071ff8fe51809f52b2965037d99c6676db43"
+    },
+    {
+      "bytes": 12847,
+      "path": "prepare_matching_tree.py",
+      "sha256": "d02e9fe0a41806888cf6027931754e992f78c3aa0af8984442e842e19b08a1e4"
+    },
+    {
+      "bytes": 10591,
+      "path": "compile_kernel_object.py",
+      "sha256": "fa7401f218f58be4f8615cabafd03e9d6fd67b2fdde886c25402eae0950b28aa"
+    }
+  ],
+  "actual_job_states": [
+    {
+      "exit_code": 124,
+      "job_id": "1a1f8f7d4c4-ffbe-1888",
+      "output_complete": true,
+      "output_durable": true,
+      "purpose": "official-source-download-r1",
+      "state": "timed_out"
+    },
+    {
+      "exit_code": 0,
+      "job_id": "1a1f8fbaa0d-ffbe-1890",
+      "output_complete": true,
+      "output_durable": true,
+      "purpose": "official-source-download-r2",
+      "state": "succeeded"
+    },
+    {
+      "exit_code": 0,
+      "job_id": "1a1f904588b-ffbe-189f",
+      "output_complete": true,
+      "output_durable": true,
+      "purpose": "matching-tree-preparation",
+      "state": "succeeded"
+    },
+    {
+      "exit_code": 0,
+      "job_id": "1a1f90ad7f9-ffbe-18a5",
+      "output_complete": true,
+      "output_durable": true,
+      "purpose": "matching-object-compile",
+      "state": "succeeded"
+    }
+  ],
+  "actual_source_and_header_bookends_equal": true,
+  "all_command_log_body_hashes_match_original_receipts": true,
+  "compiler": {
+    "bytes": 1305304,
+    "identity": [
+      66306,
+      108008578,
+      33261,
+      0,
+      0,
+      1,
+      1305304,
+      1774174097000000000,
+      1791083705251606151
+    ],
+    "path": "/usr/bin/x86_64-linux-gnu-gcc-15",
+    "sha256": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88"
+  },
+  "complete_actual_log_bodies": 25,
+  "configuration": {
+    "bytes": 304072,
+    "identity": [
+      66306,
+      66895012,
+      33152,
+      1000,
+      1000,
+      1,
+      304072,
+      1795179202186751504,
+      1795179202186751504
+    ],
+    "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/out/.config",
+    "sha256": "bccb147083a909408e25dc63f1dd58cf465ee19bcabc660916a1fa28cc67a3e1"
+  },
+  "configuration_changed": false,
+  "full_kernel_built": false,
+  "gcc_object_before_objtool": {
+    "bytes": 190984,
+    "identity": [
+      66306,
+      67157229,
+      33152,
+      1000,
+      1000,
+      1,
+      190984,
+      1795179601106859977,
+      1795179601106859977
+    ],
+    "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/out/block/p4_private_loop_actor.o",
+    "sha256": "400eabf71a5968a9423c7c293e90109056fe67eaa89b4856646402384cf84fb1"
+  },
+  "host": "pocket4",
+  "kernel_installed": false,
+  "kernel_linked": false,
+  "kernel_loaded": false,
+  "kernel_release": "6.18.64-p4ctx6181",
+  "kernel_runtime_tests_executed": false,
+  "limits": {
+    "RLIMIT_AS_bytes": 2147483648,
+    "RLIMIT_CPU_seconds": 180,
+    "cpu_affinity": [
+      23
+    ],
+    "owned_job_wall_seconds": 300,
+    "parallel_jobs": 1,
+    "runner_deadline_seconds": 220
+  },
+  "linker_identity_observed_not_link_invoked": {
+    "bytes": 1890472,
+    "identity": [
+      66306,
+      108034599,
+      33261,
+      0,
+      0,
+      1,
+      1890472,
+      1773538381000000000,
+      1791083704198584053
+    ],
+    "path": "/usr/bin/x86_64-linux-gnu-ld.bfd",
+    "sha256": "97f48d93b8b076a92d2809ec29dcb17f0f37c8827358f832255e2ed22fef6075"
+  },
+  "live_actor_or_private_loop_issued": false,
+  "object_after_objtool": {
+    "bytes": 193456,
+    "identity": [
+      66306,
+      67157229,
+      33152,
+      1000,
+      1000,
+      1,
+      193456,
+      1795179601190861973,
+      1795179601190861973
+    ],
+    "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/out/block/p4_private_loop_actor.o",
+    "sha256": "5a2be5176041e92657ba75fecfeae2cf3623c73b83d175c19344851a59f47b41"
+  },
+  "objtool": {
+    "bytes": 979400,
+    "identity": [
+      66306,
+      66895015,
+      33152,
+      1000,
+      1000,
+      1,
+      979400,
+      1795179385267995072,
+      1795179385268830104
+    ],
+    "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/inputs/objtool-original",
+    "sha256": "2453a7416b1f9aa1799ee6c900ef5dba6641182f99f5a8b50b604c106959e3ba"
+  },
+  "objtool_passed": true,
+  "original_saved_command": {
+    "bytes": 110659,
+    "path": "/home/qq/work/p4-kernel-6.18.64-cp3a-20261118-r1/out-tu/kernel/.p4_guest_mntns.o.cmd",
+    "sha256": "954701294440eff8311ba591c0eb7d4fe633e7f4c23b6c33fc5390f558ce980b"
+  },
+  "original_source_records_unchanged": [
+    {
+      "bytes": 1923,
+      "path": "MANIFEST.json",
+      "sha256": "37f6e6f410a340b15a1eedfb558b7d82dc35c97c760b4e58151ebd0678be4464"
+    },
+    {
+      "bytes": 2783,
+      "path": "STATIC-VERIFICATION.json",
+      "sha256": "7d55372b3caa3b9558e3dc16dd909c8c0cd9407e23660064f8f003c7e1b1a786"
+    },
+    {
+      "bytes": 4842,
+      "path": "INPUTS.json",
+      "sha256": "5d1bca7225853e312d0a7b2b4720fd4b0587a78143e67ee4ed0461ca23f4c799"
+    },
+    {
+      "bytes": 13900,
+      "path": "EXACT-SOURCE-OBSERVATIONS.json",
+      "sha256": "2ce98ac19c0446f6bd7f339aa77d6d865ff3af541f2079ba54d8dd2427b270d8"
+    }
+  ],
+  "production_ready": false,
+  "remaining_dependencies": [
+    "Full Kbuild configuration/link integration has not run; the deployed option remains off.",
+    "No callers or UAPI exist; the reference object alone issues no live actor authority or private device.",
+    "Retained fs->users changes exec/unshare observations; its lifetime semantics must be resolved before issuer integration.",
+    "Mount graph, live actor access gates, all block/I/O entry points, revocation, private allocator, same-OFD APEX path, dm composition and Rust issuer remain absent.",
+    "The previously denied privileged patched-kernel VM fixture must not be retried through another key, tool or agent."
+  ],
+  "runtime_qualified": false,
+  "schema": "p4-k0a-actual-object-evidence-summary-v1",
+  "source_parent_commit": "0717b9e8aee8947998f2953cd70edc8a86eca9b7",
+  "source_patch": {
+    "bytes": 9758,
+    "path": "K0a.patch",
+    "sha256": "1e75b6fb1e3f65b581df35f54122845acc4a7eb835f10d5e8231992635df1e86"
+  },
+  "state": "MATCHING_KERNEL_C_OBJECT_AND_ORIGINAL_OBJTOOL_PASSED",
+  "target_kernel_object_compiled": true,
+  "verification_scope": "Direct actual C translation-unit compilation against the exact final candidate source/configuration/generated C headers, plus original verified objtool; no Kbuild selection, full kernel link or runtime validation.",
+  "workspace": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1"
+}

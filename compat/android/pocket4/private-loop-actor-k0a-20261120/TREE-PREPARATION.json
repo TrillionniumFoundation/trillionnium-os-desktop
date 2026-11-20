@@ -1,0 +1,778 @@
+{
+  "Android_started": false,
+  "VM_started": false,
+  "affinity": [
+    23
+  ],
+  "build_scope": "direct single C object with actual target config/generated headers; Kbuild selection not executed",
+  "commands": [
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/patch",
+        "--dry-run",
+        "--forward",
+        "--batch",
+        "--fuzz=0",
+        "-p1",
+        "-i",
+        "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/inputs/candidate-final.patch"
+      ],
+      "exit_code": 0,
+      "finished_monotonic_ns": 265758446112292,
+      "name": "formal-patch-check",
+      "pid": 2825247,
+      "started_monotonic_ns": 265758429724493,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          66894998,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1795179202100763479,
+          1795179202100763479
+        ],
+        "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/logs/formal-patch-check.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 2455,
+        "identity": [
+          66306,
+          66894997,
+          33152,
+          1000,
+          1000,
+          1,
+          2455,
+          1795179202111016257,
+          1795179202111016257
+        ],
+        "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/logs/formal-patch-check.stdout",
+        "sha256": "8ca498831f2749f74a57520a82f2bf3a2caada157faf330d68af198e1cf587da"
+      }
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/patch",
+        "--forward",
+        "--batch",
+        "--fuzz=0",
+        "-p1",
+        "-i",
+        "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/inputs/candidate-final.patch"
+      ],
+      "exit_code": 0,
+      "finished_monotonic_ns": 265758461858568,
+      "name": "formal-patch-apply",
+      "pid": 2825252,
+      "started_monotonic_ns": 265758446274980,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          66895000,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1795179202117763845,
+          1795179202117763845
+        ],
+        "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/logs/formal-patch-apply.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 2455,
+        "identity": [
+          66306,
+          66894999,
+          33152,
+          1000,
+          1000,
+          1,
+          2455,
+          1795179202129462009,
+          1795179202129462009
+        ],
+        "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/logs/formal-patch-apply.stdout",
+        "sha256": "73dd7449357455bc5038a672dc8c031a2beb0ce7b5550c01cb1327a7af088614"
+      }
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/patch",
+        "--dry-run",
+        "--forward",
+        "--batch",
+        "--fuzz=0",
+        "-p1",
+        "-i",
+        "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/inputs/K0a.patch"
+      ],
+      "exit_code": 0,
+      "finished_monotonic_ns": 265758473539918,
+      "name": "k0a-patch-check",
+      "pid": 2825253,
+      "started_monotonic_ns": 265758472041404,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          66895002,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1795179202143764406,
+          1795179202143764406
+        ],
+        "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/logs/k0a-patch-check.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 153,
+        "identity": [
+          66306,
+          66895001,
+          33152,
+          1000,
+          1000,
+          1,
+          153,
+          1795179202145143944,
+          1795179202145143944
+        ],
+        "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/logs/k0a-patch-check.stdout",
+        "sha256": "29d2c36e493a2a862bb13d7e88582f0df7c71aaa6fbffbe953a1dc6f7f2aa563"
+      }
+    },
+    {
+      "actual_child_reaped": true,
+      "argv": [
+        "/usr/bin/patch",
+        "--forward",
+        "--batch",
+        "--fuzz=0",
+        "-p1",
+        "-i",
+        "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/inputs/K0a.patch"
+      ],
+      "exit_code": 0,
+      "finished_monotonic_ns": 265758475031148,
+      "name": "k0a-patch-apply",
+      "pid": 2825254,
+      "started_monotonic_ns": 265758473657891,
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          66895004,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1795179202145167678,
+          1795179202145167678
+        ],
+        "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/logs/k0a-patch-apply.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 153,
+        "identity": [
+          66306,
+          66895003,
+          33152,
+          1000,
+          1000,
+          1,
+          153,
+          1795179202146571774,
+          1795179202146571774
+        ],
+        "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/logs/k0a-patch-apply.stdout",
+        "sha256": "7110016e4b2a360835e8ec7ec61978c1b053f379d3768873b4b8f8a71e18fe05"
+      }
+    }
+  ],
+  "compiler_executed": false,
+  "configuration": {
+    "bytes": 304072,
+    "identity": [
+      66306,
+      66895012,
+      33152,
+      1000,
+      1000,
+      1,
+      304072,
+      1795179202186751504,
+      1795179202186751504
+    ],
+    "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/out/.config",
+    "sha256": "bccb147083a909408e25dc63f1dd58cf465ee19bcabc660916a1fa28cc67a3e1"
+  },
+  "configuration_changed": false,
+  "disk_free_after_preparation": 1127959523328,
+  "disk_free_before_extraction": 1129757790208,
+  "generated_C_headers": [
+    {
+      "bytes": 5759,
+      "path": "include/generated/asm-offsets.h",
+      "sha256": "7c894149f0dbd66fbbbb0296b8a72fb1df4463fa492ced034e7d81ea57679091"
+    },
+    {
+      "bytes": 375632,
+      "path": "include/generated/autoconf.h",
+      "sha256": "bbee841212e4d2dc83fcb54a32e8b6080013e67877137d01c3f60f8597993275"
+    },
+    {
+      "bytes": 435,
+      "path": "include/generated/bounds.h",
+      "sha256": "04aa093c9a0e5555a8c4ad0dbd82c4b5063f0cf6debef6355b7f140901561e48"
+    },
+    {
+      "bytes": 231,
+      "path": "include/generated/compile.h",
+      "sha256": "6e697fd6806ef772beebdc10ba388dead63a7f57edc78439ac4a2aea2249b4b7"
+    },
+    {
+      "bytes": 187,
+      "path": "include/generated/rq-offsets.h",
+      "sha256": "34417461a4c8fb87bd87ba7daf2316b6d7b2dadbda9034c87f9e8346d1ad5c5b"
+    },
+    {
+      "bytes": 1100,
+      "path": "include/generated/timeconst.h",
+      "sha256": "da0ba6765f2969482bf8eaf21249552557fe4d6831749d9cfe4c25f4661f8726"
+    },
+    {
+      "bytes": 217,
+      "path": "include/generated/uapi/linux/version.h",
+      "sha256": "41e4bd89884bf588afa3e950bdbdedca86871afe616341aeec79e5189818a3c8"
+    },
+    {
+      "bytes": 40,
+      "path": "include/generated/utsrelease.h",
+      "sha256": "26c56d4635ecca74666c9b3ec61e119fcd02c48e558e90598f7003b0f070dd48"
+    },
+    {
+      "bytes": 69,
+      "path": "include/generated/utsversion.h",
+      "sha256": "621907484c607980b9ae4d5439efb1c4598f621de3fa1c9ce0dddf6c070eab75"
+    },
+    {
+      "bytes": 2285,
+      "path": "arch/x86/include/generated/asm/cpufeaturemasks.h",
+      "sha256": "683b484712929d15cf6dc50cc92a6793fafb1f56fad4e6092404987af3f2ad70"
+    },
+    {
+      "bytes": 39,
+      "path": "arch/x86/include/generated/asm/early_ioremap.h",
+      "sha256": "b1a54c24a12ce2c0f283661121974436cdb09ae91822497458072f5f97447c5d"
+    },
+    {
+      "bytes": 32,
+      "path": "arch/x86/include/generated/asm/fprobe.h",
+      "sha256": "fe6e5e169ae8b96ec28c13950baaa8d9d4b39957c3882a92da5a1ebf9aac28b8"
+    },
+    {
+      "bytes": 34,
+      "path": "arch/x86/include/generated/asm/irq_regs.h",
+      "sha256": "436a9c327f7568c64cbdb7f7083365fe5ca2bb2ce3dd0d718bef9483efdf6ae5"
+    },
+    {
+      "bytes": 35,
+      "path": "arch/x86/include/generated/asm/kmap_size.h",
+      "sha256": "7245ee3b42b2e5df950a01ce7c2374db7b971a5a4304646d5a4e9ccfa76395ee"
+    },
+    {
+      "bytes": 33,
+      "path": "arch/x86/include/generated/asm/local64.h",
+      "sha256": "60fcbd6c2f3f7207d61791f97406e59efeb90d071c82492f56a386ee54ab8c5e"
+    },
+    {
+      "bytes": 38,
+      "path": "arch/x86/include/generated/asm/mcs_spinlock.h",
+      "sha256": "dd864107295503e102ea339e0fd4496204c697bdd5c1b1a35864dfefe504a990"
+    },
+    {
+      "bytes": 32,
+      "path": "arch/x86/include/generated/asm/mmiowb.h",
+      "sha256": "562185c822e79d362de4f9f76a1a7016e1529a01d88a7da9552140f666c6a947"
+    },
+    {
+      "bytes": 32,
+      "path": "arch/x86/include/generated/asm/mmzone.h",
+      "sha256": "e7e492228f28b4845841e044b26f0b936c6e73b273dcbe22c133b02202e762ab"
+    },
+    {
+      "bytes": 36,
+      "path": "arch/x86/include/generated/asm/module.lds.h",
+      "sha256": "396cd13655f6bb5df6a53bc76aa32db3366f55916ab3538fbc78804a8a1a289b"
+    },
+    {
+      "bytes": 37,
+      "path": "arch/x86/include/generated/asm/ring_buffer.h",
+      "sha256": "1806ee1b89e1ecd2ab8ccfde94058c13611bfb174162bd039ff73cfb0269e47f"
+    },
+    {
+      "bytes": 32,
+      "path": "arch/x86/include/generated/asm/rwonce.h",
+      "sha256": "e65428b6b0334c3fa3b08c940356e87132ccb205a984bb0d561110b122738963"
+    },
+    {
+      "bytes": 17803,
+      "path": "arch/x86/include/generated/asm/syscalls_32.h",
+      "sha256": "7b98beab100a50ae96e5c1954028f82b8ba7c10b7bc5512eb0420cd807187e4a"
+    },
+    {
+      "bytes": 14155,
+      "path": "arch/x86/include/generated/asm/syscalls_64.h",
+      "sha256": "93504ddd3ef43b44f14acbe13e12549b65c3f6d1ddd0ecd9826538d7784588cf"
+    },
+    {
+      "bytes": 14891,
+      "path": "arch/x86/include/generated/asm/unistd_32_ia32.h",
+      "sha256": "0969cdd17b83b26ccad650ff031464b00e1f6d7557754a5673f45172746d267f"
+    },
+    {
+      "bytes": 1309,
+      "path": "arch/x86/include/generated/asm/unistd_64_x32.h",
+      "sha256": "a25c204847e7f32306f67be08f5f026ccc6cde90a099cb1f7ec6b28ba69693b8"
+    },
+    {
+      "bytes": 1144,
+      "path": "arch/x86/include/generated/asm/xen-hypercalls.h",
+      "sha256": "31703052c0d2ab8fe14b4e5dfcc45fcbd5feb5016b0a729b6ba92caa52b069e2"
+    },
+    {
+      "bytes": 40,
+      "path": "arch/x86/include/generated/uapi/asm/bpf_perf_event.h",
+      "sha256": "bfb40dfccf983dce09e3ee0f570f3bcc969d4bab8c1f3d4572ecf3b5da7f936d"
+    },
+    {
+      "bytes": 31,
+      "path": "arch/x86/include/generated/uapi/asm/errno.h",
+      "sha256": "4ee384515a4325315992e61dd957f0fa91f3858fe7c079de59f56edded51de86"
+    },
+    {
+      "bytes": 31,
+      "path": "arch/x86/include/generated/uapi/asm/fcntl.h",
+      "sha256": "716ef40c102b1701970c7b0c34e6633d8a0ea1c89e7527252fcb07e63074221d"
+    },
+    {
+      "bytes": 31,
+      "path": "arch/x86/include/generated/uapi/asm/ioctl.h",
+      "sha256": "9c6ca9e365296a6b66747cbebdcf76972b8cce7aab91e55bf4ab1f3581df9c2a"
+    },
+    {
+      "bytes": 32,
+      "path": "arch/x86/include/generated/uapi/asm/ioctls.h",
+      "sha256": "857d11a8415a18e7a6ccf23640cf9bddf245a5f90c43b3014d08d3ae19faf952"
+    },
+    {
+      "bytes": 32,
+      "path": "arch/x86/include/generated/uapi/asm/ipcbuf.h",
+      "sha256": "7d7b26fc15cfa914dc6e03d976570242ea37377491f3619ab287e6169025df66"
+    },
+    {
+      "bytes": 31,
+      "path": "arch/x86/include/generated/uapi/asm/param.h",
+      "sha256": "6bf1865f0ddba5c80877463ad6650d7fee66931486956a07884f53deaa13e2b8"
+    },
+    {
+      "bytes": 30,
+      "path": "arch/x86/include/generated/uapi/asm/poll.h",
+      "sha256": "0b6ca981303acc042195061225039c080c900169b231ab343c7e9ec6530864ea"
+    },
+    {
+      "bytes": 34,
+      "path": "arch/x86/include/generated/uapi/asm/resource.h",
+      "sha256": "6d9c7f1ca98f275aafe3c5533d274aec702ea6029f8036bdb577b0c53e08f7d9"
+    },
+    {
+      "bytes": 32,
+      "path": "arch/x86/include/generated/uapi/asm/socket.h",
+      "sha256": "48e0940e8a6e8861eaaaf90853a685fa803c4e039166060a3c921c8d79001e3c"
+    },
+    {
+      "bytes": 33,
+      "path": "arch/x86/include/generated/uapi/asm/sockios.h",
+      "sha256": "ac496b3bcc37452f0caa104b2205a8a19dde0196a7791988b3b74e23c2174c1e"
+    },
+    {
+      "bytes": 34,
+      "path": "arch/x86/include/generated/uapi/asm/termbits.h",
+      "sha256": "cba6faa5749f84248b3e73894fb6731dc558af01f8f5a626d8f44ba6fad46977"
+    },
+    {
+      "bytes": 33,
+      "path": "arch/x86/include/generated/uapi/asm/termios.h",
+      "sha256": "0c0899ba44a3545c5e137ead0f121480c1d6d3851c8d481f1d6822e39a4cc60d"
+    },
+    {
+      "bytes": 31,
+      "path": "arch/x86/include/generated/uapi/asm/types.h",
+      "sha256": "b6bdcd528bce555b2ecb58e8a1624e3e13e09312c31318023c4e86b957e2b01f"
+    },
+    {
+      "bytes": 12576,
+      "path": "arch/x86/include/generated/uapi/asm/unistd_32.h",
+      "sha256": "78601609c0fb5a7e20250cc369a65c7aaf5c4c795c6ecb4c08eb1e165f0e4607"
+    },
+    {
+      "bytes": 10438,
+      "path": "arch/x86/include/generated/uapi/asm/unistd_64.h",
+      "sha256": "d8cfef637d18fc25203be337a3bbc883cc39814a88a48e9d5747d233d75dee56"
+    },
+    {
+      "bytes": 18311,
+      "path": "arch/x86/include/generated/uapi/asm/unistd_x32.h",
+      "sha256": "9466a8dc6389962b7ffdbabcdf1b4a205210cb02439c1f8709861ee0e2607398"
+    }
+  ],
+  "input_refs": {
+    "COMPILE-COMMAND-SOURCE.json": {
+      "bytes": 4328,
+      "identity": [
+        66306,
+        66894983,
+        33152,
+        1000,
+        1000,
+        1,
+        4328,
+        1795178789282118471,
+        1795178789282772649
+      ],
+      "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/inputs/COMPILE-COMMAND-SOURCE.json",
+      "sha256": "f5fb2841adfa02c8e2f89bba0c96071ff8fe51809f52b2965037d99c6676db43"
+    },
+    "GENERATED-HEADER-PINS.json": {
+      "bytes": 7095,
+      "identity": [
+        66306,
+        66894975,
+        33152,
+        1000,
+        1000,
+        1,
+        7095,
+        1795178769892148922,
+        1795178769892888096
+      ],
+      "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/inputs/GENERATED-HEADER-PINS.json",
+      "sha256": "2736cd27249da883e295a7bcdc619b0408fa61d4804d608a32b35b158e4570e5"
+    },
+    "GENERATED-SMALL-HEADERS.json": {
+      "bytes": 116832,
+      "identity": [
+        66306,
+        66894981,
+        33152,
+        1000,
+        1000,
+        1,
+        116832,
+        1795178786709378622,
+        1795178786710851339
+      ],
+      "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/inputs/GENERATED-SMALL-HEADERS.json",
+      "sha256": "5333b13acdaff182b995666acf19db1d3f91126730ba23191288a6ec09be0614"
+    },
+    "K0A-INPUTS.json": {
+      "bytes": 4842,
+      "identity": [
+        66306,
+        66894979,
+        33152,
+        1000,
+        1000,
+        1,
+        4842,
+        1795178774993172269,
+        1795178774993538880
+      ],
+      "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/inputs/K0A-INPUTS.json",
+      "sha256": "5d1bca7225853e312d0a7b2b4720fd4b0587a78143e67ee4ed0461ca23f4c799"
+    },
+    "K0A-MANIFEST.json": {
+      "bytes": 1923,
+      "identity": [
+        66306,
+        66894973,
+        33152,
+        1000,
+        1000,
+        1,
+        1923,
+        1795178767914365831,
+        1795178767914424452
+      ],
+      "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/inputs/K0A-MANIFEST.json",
+      "sha256": "37f6e6f410a340b15a1eedfb558b7d82dc35c97c760b4e58151ebd0678be4464"
+    },
+    "K0a.patch": {
+      "bytes": 9758,
+      "identity": [
+        66306,
+        66894987,
+        33152,
+        1000,
+        1000,
+        1,
+        9758,
+        1795178825407379685,
+        1795178825408379701
+      ],
+      "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/inputs/K0a.patch",
+      "sha256": "1e75b6fb1e3f65b581df35f54122845acc4a7eb835f10d5e8231992635df1e86"
+    },
+    "SOURCE_FREEZE.json": {
+      "bytes": 66444,
+      "identity": [
+        66306,
+        66894971,
+        33152,
+        1000,
+        1000,
+        1,
+        66444,
+        1795178765750690417,
+        1795178765751389674
+      ],
+      "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/inputs/SOURCE_FREEZE.json",
+      "sha256": "3ea7961b7fd103c506604658426a25669054f259533dae9e5ec312001a276140"
+    },
+    "candidate-final.patch": {
+      "bytes": 84316,
+      "identity": [
+        66306,
+        66894989,
+        33152,
+        1000,
+        1000,
+        1,
+        84316,
+        1795178832677479930,
+        1795178832677504528
+      ],
+      "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/inputs/candidate-final.patch",
+      "sha256": "b9e77cdc6683b1a7eeb193fda35d8ac6945a24cb3e1a9f9f8cd804a0de20fdd2"
+    },
+    "candidate-source-pins.json": {
+      "bytes": 17673,
+      "identity": [
+        66306,
+        66894969,
+        33152,
+        1000,
+        1000,
+        1,
+        17673,
+        1795178763046389108,
+        1795178763047948127
+      ],
+      "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/inputs/candidate-source-pins.json",
+      "sha256": "4b5b19d3cbcd3caa5eb48ec65bc0e5dc3f0e1651f5f41a26a434019ece8686e7"
+    },
+    "gregkh-wkd-public-key.gpg": {
+      "bytes": 3576,
+      "identity": [
+        66306,
+        66894985,
+        33152,
+        1000,
+        1000,
+        1,
+        3576,
+        1795178807110135890,
+        1795178807111069420
+      ],
+      "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/inputs/gregkh-wkd-public-key.gpg",
+      "sha256": "61b758f0d4a386fc83565b92cfd6c05879573df0e96d44b71a5a3e19e1a8581a"
+    },
+    "linux-6.18.64.tar.sign": {
+      "bytes": 991,
+      "identity": [
+        66306,
+        66894977,
+        33152,
+        1000,
+        1000,
+        1,
+        991,
+        1795178772123492377,
+        1795178772124492393
+      ],
+      "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/inputs/linux-6.18.64.tar.sign",
+      "sha256": "dd1c4390eead8acece7acf1f4eeda4c0f2db4876545d0c8f6c284d68f6d910af"
+    },
+    "target-autoconf.h": {
+      "bytes": 375632,
+      "identity": [
+        66306,
+        66894991,
+        33152,
+        1000,
+        1000,
+        1,
+        375632,
+        1795178853887468568,
+        1795178853887873669
+      ],
+      "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/inputs/target-autoconf.h",
+      "sha256": "bbee841212e4d2dc83fcb54a32e8b6080013e67877137d01c3f60f8597993275"
+    },
+    "target.config": {
+      "bytes": 304072,
+      "identity": [
+        66306,
+        66894967,
+        33152,
+        1000,
+        1000,
+        1,
+        304072,
+        1795178760792034301,
+        1795178760792846963
+      ],
+      "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/inputs/target.config",
+      "sha256": "bccb147083a909408e25dc63f1dd58cf465ee19bcabc660916a1fa28cc67a3e1"
+    }
+  },
+  "k0a_postimages": [
+    {
+      "after": {
+        "bytes": 8106,
+        "sha256": "53db5a3e3e17cd78ae8800ace8f8f7e24a5392e2d18106dc3ad1ea3fedd1915f"
+      },
+      "before": {
+        "bytes": 7510,
+        "sha256": "76434b3a88b7d9aa45c250e4a9722f89a6c64cd5c405802e3a356b1836d19733"
+      },
+      "path": "block/Kconfig"
+    },
+    {
+      "after": {
+        "bytes": 1675,
+        "sha256": "6ba584cce900e0209fb4a2c53f3dbd5ff972ab852165833500666140041a19e9"
+      },
+      "before": {
+        "bytes": 1611,
+        "sha256": "91677b9b4a5be4223c5e125bc2f7c64c15c5f0bdf0bf143f75b36c18b963d5db"
+      },
+      "path": "block/Makefile"
+    },
+    {
+      "after": {
+        "bytes": 6103,
+        "sha256": "910c7ef5480e2b0cdf8ba3cd0676698dfa0da1445537167275455df4de353641"
+      },
+      "before": null,
+      "path": "block/p4_private_loop_actor.c"
+    },
+    {
+      "after": {
+        "bytes": 2217,
+        "sha256": "4728b7357734021980ce29253b1f1a677fade7594e5ef5e068a4ca28c73c696c"
+      },
+      "before": null,
+      "path": "include/linux/p4_private_loop_actor.h"
+    }
+  ],
+  "k0a_preimages": 12,
+  "kernel_loaded": false,
+  "memory_address_space_limit": 2147483648,
+  "new_option_enabled_in_configuration": false,
+  "output": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/out",
+  "production_ready": false,
+  "runtime_qualified": false,
+  "schema": "p4-k0a-exact-matching-source-preparation-v1",
+  "signature": {
+    "all_actual_children_reaped": true,
+    "gpgv_exit": 0,
+    "outputs": {
+      "status": {
+        "bytes": 397,
+        "identity": [
+          66306,
+          66894994,
+          33152,
+          1000,
+          1000,
+          1,
+          397,
+          1795179182810349249,
+          1795179182810349249
+        ],
+        "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/logs/signature.status",
+        "sha256": "5143e7b3a7d9af05640dc18beeb42093678900308c5721c808af3d397abe0e48"
+      },
+      "stderr": {
+        "bytes": 378,
+        "identity": [
+          66306,
+          66894995,
+          33152,
+          1000,
+          1000,
+          1,
+          378,
+          1795179182810349249,
+          1795179182810349249
+        ],
+        "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/logs/signature.stderr",
+        "sha256": "3a77e140dee74eb2677e9330d96ef34808177143654972902b3e71fd04d8f49e"
+      },
+      "xz-stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          66894996,
+          33152,
+          1000,
+          1000,
+          1,
+          0,
+          1795179174951181362,
+          1795179174951181362
+        ],
+        "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/logs/signature.xz-stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "signer": "647F28654894E3BD457199BE38DBBDC86092693E",
+    "xz_exit": 0
+  },
+  "source": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/source/linux-6.18.64",
+  "source_archive": {
+    "bytes": 155382076,
+    "identity": [
+      66306,
+      66894962,
+      33152,
+      1000,
+      1000,
+      1,
+      155382076,
+      1795178703353425630,
+      1795178703353425630
+    ],
+    "path": "/home/alex/work/p4-private-loop-k0a-compile-20261120-3b9d-r1/inputs/linux-6.18.64-r2.tar.xz",
+    "sha256": "020d45510c539972e6f14c5c71566878d3b7ef56fb082b3e09134f2ebaade562"
+  },
+  "source_formal_changed_paths": 66,
+  "state": "EXACT_MATCHING_SOURCE_AND_C_HEADERS_PREPARED"
+}
