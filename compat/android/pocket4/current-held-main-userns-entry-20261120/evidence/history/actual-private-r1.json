@@ -1,0 +1,56 @@
+{
+  "schema": "p4-held-main-userns-entry-private-kernel-controls-v1",
+  "passed": false,
+  "error": {
+    "type": "PermissionError",
+    "message": "[Errno 13] Permission denied: '/run/p4-guest-entry-private-controls-20261120-runtimeaudit-r1/held-namespace-entry'"
+  },
+  "started_ns": 1795181103475009237,
+  "finished_ns": 1795181103508466458,
+  "source_binary": {
+    "path": "/home/alex/work/p4-guest-entry-source-20261120-runtimeaudit-r1/held-namespace-entry",
+    "bytes": 3972024,
+    "sha256": "67cfd1c212e9f40ce3f0ff7be856a05f8189c674cbfa270757a672ea596a6c3f",
+    "identity": [
+      66306,
+      67681291,
+      33216,
+      1000,
+      1000,
+      1,
+      3972024,
+      1795180634806213293,
+      1795180634808016542
+    ]
+  },
+  "private_binary": {
+    "path": "/run/p4-guest-entry-private-controls-20261120-runtimeaudit-r1/held-namespace-entry",
+    "bytes": 3972024,
+    "sha256": "67cfd1c212e9f40ce3f0ff7be856a05f8189c674cbfa270757a672ea596a6c3f",
+    "identity": [
+      28,
+      974316,
+      33216,
+      0,
+      0,
+      1,
+      3972024,
+      1795181103470381971,
+      1795181103470381971
+    ]
+  },
+  "commands": [],
+  "normal_fixture_retirement": false,
+  "all_owned_children_reaped": true,
+  "host_mount_and_namespace_bookends_equal": true,
+  "input_bookends_equal": true,
+  "original_privileged_root_operator": true,
+  "inherited_authority_fd_count": 7,
+  "private_guest_uid": 805306368,
+  "Android_namespace_entries": 0,
+  "Android_commands_executed": 0,
+  "daemon_ReadyTreeWitness_issued": false,
+  "production_ready": false,
+  "runtime_qualified": false,
+  "current_or_original_inputs_mutated": false
+}
