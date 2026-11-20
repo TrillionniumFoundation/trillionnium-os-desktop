@@ -1,0 +1,39 @@
+{
+  "Android_actions": 0,
+  "CURRENT_after_sha256": "091f53bb8ad9623c9825c5e94a91e7226157ba90205fa1bddf06eb362aa0875b",
+  "CURRENT_before_sha256": "091f53bb8ad9623c9825c5e94a91e7226157ba90205fa1bddf06eb362aa0875b",
+  "Main_guard_is_fixture_model": true,
+  "fixture_actual_file_fds": true,
+  "observed_utc": "2026-11-20T12:46:34.220890+00:00",
+  "results": [
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "/home/alex/work/p4-calendar-core-id-map-20261120-3b9d-r1/test_calendar_mapped_calls.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "stderr": "test_database_mapping_preserves_original_gid_fingerprint_and_query (__main__.Calls.test_database_mapping_preserves_original_gid_fingerprint_and_query) ... ok\ntest_exact_preserved_sources_and_shared_helper (__main__.Calls.test_exact_preserved_sources_and_shared_helper) ... ok\ntest_identity_maps_all_three_guest_owners_and_closes_fds (__main__.Calls.test_identity_maps_all_three_guest_owners_and_closes_fds) ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 0.095s\n\nOK\n",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "/home/alex/work/p4-calendar-core-id-map-20261120-3b9d-r1/source/system_entry.py",
+        "--preparation",
+        "/home/alex/work/p4-calendar-core-id-map-20261120-3b9d-r1/preparation.json",
+        "--expect-preparation-sha256",
+        "6cfc86a3af49f801f9c5ffc7530f790cc4f5b51fd476e8c72cdb67f96cd7792e",
+        "inspect-source"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\"Android_UI_actions\": 0, \"source_entrypoints_present\": true, \"source_files\": 35, \"source_preparation\": {\"bytes\": 12248, \"path\": \"/home/alex/work/p4-calendar-core-id-map-20261120-3b9d-r1/preparation.json\", \"sha256\": \"6cfc86a3af49f801f9c5ffc7530f790cc4f5b51fd476e8c72cdb67f96cd7792e\"}, \"source_publication_authorizes_Android\": false, \"whole_app_business_accepted\": false}\n"
+    }
+  ],
+  "runtime_qualified": false,
+  "schema": "pocket4-calendar-core-id-map-host-controls-v1",
+  "staged_files": 52
+}

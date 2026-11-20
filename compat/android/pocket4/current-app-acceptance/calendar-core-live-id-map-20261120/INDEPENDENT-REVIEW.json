@@ -1,0 +1,46 @@
+{
+  "actual_Android_runtime_tested": false,
+  "all_original_bodies_checked_against_original_preparation": true,
+  "changed_files": [
+    {
+      "bytes": 44032,
+      "path": "app_common.py",
+      "sha256": "adebfe99b64afc5a06caf30d2023d113f937920cba92dbe751a53c473ea8c2b4"
+    },
+    {
+      "bytes": 11881,
+      "path": "calendar_base.py",
+      "sha256": "94f342ff37251c53bee8b735358d628a09c10f202d3fa952bd5a3719b1e6172a"
+    },
+    {
+      "bytes": 2608,
+      "path": "calendar_identity.py",
+      "sha256": "0b77fe8fa12ec46e8786ababc9e1ff1dcffb68c9b98f03e48429c7769b1fab06"
+    }
+  ],
+  "host_control_Main_guard_is_fixture_model": true,
+  "host_controls_reexecuted_by_reviewer": false,
+  "host_controls_reviewed": {
+    "bytes": 2124,
+    "sha256": "271f2ce3ef0c5c8537cc33518b355e654f84f8f82f355143dbf2e0e5efcdad16"
+  },
+  "initial_review_harness_corrected": "inputs/originals contains only three changed files; complete 35-file comparison used independently retained original system-reference bodies, each checked against original preparation pins",
+  "mapping_helper_bytes": 5776,
+  "mapping_helper_sha256": "235e1a4af17f40fc9149274e017572d66ae402fcb6e1280ccbc8e8c2517de32a",
+  "original_common_complete_prefix_preserved": true,
+  "preserved": [
+    "original CE/DE inode equality and close-finally",
+    "original Calendar DB UID-only condition",
+    "original differing GID included unchanged in complete metadata fingerprint",
+    "original SQL and second-read metadata equality",
+    "original 32 other modules and cleanup",
+    "original held Main and seven-FD execution authority"
+  ],
+  "production_ready": false,
+  "python_source_syntax_valid": true,
+  "runtime_qualified": false,
+  "schema": "p4-calendar-core-id-map-independent-source-review-v1",
+  "state": "NARROW_SOURCE_DIFF_REVIEW_PASSED",
+  "unchanged_original_files": 32,
+  "verified_call_chain": "Session.c -> new_flow(self.c) -> Flow.common.MainView; TargetReads.open_root returns flow.view.target real FD; mapper receives that same view and held FD"
+}
