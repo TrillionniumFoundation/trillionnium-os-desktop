@@ -1,0 +1,102 @@
+{
+  "actual_shifted_Android_Main_metadata_control_executed": false,
+  "changed_files": [
+    {
+      "bytes": 44032,
+      "group": "clock-remaining-runtime-inputs-20261108-8b88-r2",
+      "name": "app_common.py",
+      "sha256": "adebfe99b64afc5a06caf30d2023d113f937920cba92dbe751a53c473ea8c2b4"
+    },
+    {
+      "bytes": 18634,
+      "changed_functions": [
+        "make_reader",
+        "data_identity"
+      ],
+      "group": "clock-remaining-runtime-inputs-20261108-8b88-r2",
+      "name": "clock_alarm_reader.py",
+      "sha256": "1d5598effeb59cf4911e00b79ece71a67e0f0a72b57b7ee8c45c380789014cea"
+    },
+    {
+      "bytes": 5591,
+      "changed_functions": [
+        "snapshot"
+      ],
+      "group": "clock-remaining-runtime-inputs-20261108-8b88-r2",
+      "name": "clock_protection.py",
+      "sha256": "0a928193f8e043ac9112800b9a8b4f670421844f3adecb61376be328eaef8c41"
+    },
+    {
+      "bytes": 44032,
+      "group": "documents-saf11-runtime-inputs-20261108-8b88-r2",
+      "name": "app_common.py",
+      "sha256": "adebfe99b64afc5a06caf30d2023d113f937920cba92dbe751a53c473ea8c2b4"
+    },
+    {
+      "bytes": 34492,
+      "changed_functions": [
+        "identity"
+      ],
+      "group": "documents-saf11-runtime-inputs-20261108-8b88-r2",
+      "name": "documents_saf_core.py",
+      "sha256": "75e2df13c493a2186fc128ca76fc019df716ac2428ba1498387a8443d91c9506"
+    },
+    {
+      "bytes": 44032,
+      "group": "documents-search-sort-runtime-inputs-20261108-8b88-r2",
+      "name": "app_common.py",
+      "sha256": "adebfe99b64afc5a06caf30d2023d113f937920cba92dbe751a53c473ea8c2b4"
+    },
+    {
+      "bytes": 14300,
+      "changed_functions": [
+        "identity"
+      ],
+      "group": "documents-search-sort-runtime-inputs-20261108-8b88-r2",
+      "name": "documents_package_fixture.py",
+      "sha256": "3a947030c216b8e8b6f9bda1c083a4715e32aa300ebe8e9632adff270109ff83"
+    },
+    {
+      "bytes": 44032,
+      "group": "ihg-5.111.1-r1",
+      "name": "app_common.py",
+      "sha256": "adebfe99b64afc5a06caf30d2023d113f937920cba92dbe751a53c473ea8c2b4"
+    },
+    {
+      "bytes": 9141,
+      "changed_functions": [
+        "snapshot"
+      ],
+      "group": "ihg-5.111.1-r1",
+      "name": "clock_protection.py",
+      "sha256": "69a059de04ad295425ed3f5fca45ee54be2749d6e93aa959a6f48ed047677406"
+    }
+  ],
+  "four_common_modules_original_prefix_byte_identical": true,
+  "helper": {
+    "bytes": 5776,
+    "sha256": "235e1a4af17f40fc9149274e017572d66ae402fcb6e1280ccbc8e8c2517de32a"
+  },
+  "host_checks_exit_codes": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    0
+  ],
+  "host_control_report": {
+    "bytes": 8405,
+    "sha256": "b879a6a9f7f8b0341e22042b6f20151868b2c3e2cd991dab188474899e94393e"
+  },
+  "host_main_guard_is_explicit_fixture_model": true,
+  "host_tests_reviewed_not_rerun": true,
+  "no_execution_authority_fd_changes": true,
+  "no_finding_requiring_source_change": true,
+  "other97_files_byte_identical": true,
+  "production_ready": false,
+  "python_sources_compiled": 95,
+  "review_harness_first_attempt": "Tried Python compile on unchanged XML template; failed with SyntaxError. Corrected review harness to compile only .py, with all106 source byte pins still verified. No source or acceptance gate was changed.",
+  "runtime_qualified": false,
+  "schema": "p4-uid-mapping-independent-source-review-v1"
+}
