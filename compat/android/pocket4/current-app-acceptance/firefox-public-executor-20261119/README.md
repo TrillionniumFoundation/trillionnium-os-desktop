@@ -7,6 +7,48 @@ the actual controller, browser-session owner, current selectors and runtime
 receipts before replacing the explicit hold. There is no configuration flag or
 caller-supplied attestation that unlocks it.
 
+## Installed APK owner mapping repair (r4)
+
+The Firefox reader opens `/data/app/.../base.apk` through the held Main root.
+Its previous literal host UID/GID `1000` check rejected an Android system-owned
+APK when the Main user namespace maps guest ID `1000` to a different host ID.
+The reader now uses the existing `mapped_file_info` on the exact original
+`MainView`, retaining that view's original target. The helper reads both live
+kernel maps and binds them to the original Main init and user namespace.
+Custody explicitly compares both actual `fstat` owners to the mapped IDs and
+checks all original file identity fields; accepting a returned expected owner
+alone is insufficient.
+
+Every initial hash, verify and completion hash repeats the original mapping
+checks, including before/after comparisons. A changed target, namespace, map,
+mapper identity, named inode, file identity or body still fails closed. There
+is no caller-supplied map or fixed host offset. The original complete SHA-256,
+single-link, mode, EOF, deadline and helper-custody requirements remain in force.
+
+Integration requires one `StreamingCommon` instance per Flow. It constructs
+and returns the exact original `MainView` instance once, and passes that same
+view to Firefox custody. Custody borrows the view; Flow remains its owner.
+Failed construction closes locally acquired resources while preserving the
+primary error and recording cleanup errors. A MainView rejected after its
+constructor is closed before control returns to the not-yet-assigned Flow.
+
+The unchanged mapper is the sibling
+`calendar-core-live-id-map-20261120/source/app_common.py` at commit
+`9f34dfb3f8d8deac7ed02ce6e197e052be34019e`:
+44032 bytes, SHA-256
+`adebfe99b64afc5a06caf30d2023d113f937920cba92dbe751a53c473ea8c2b4`.
+Tests import that exact source, and the manifest records this dependency.
+No mapper copy, deployed source pin or selector is installed by this change.
+
+The 25 new controls use ordinary temporary FDs and files. Only the namespace
+ioctl and APK host UID/GID metadata boundary are injected for the shifted-map
+fixture; admission and selected APK size/hash are explicitly offline fixtures.
+Complete body reads, hashes, remaining stat fields, inode replacement and
+FD closure are real host operations. The controls require no chown, namespace
+creation, privileged command, Android process or actual Firefox APK. They do
+not establish that a shifted Android Main ran or that Firefox is production
+ready. The original controller/browser-owner/selector hard hold remains.
+
 ## Response validation repair (r3)
 
 Malformed UI and recorder success metadata could pass the previous adapter:
@@ -121,22 +163,24 @@ schema are not observations of the currently installed helper.
 
 ## Actual host controls and reproduction
 
-The current source revision passed **39** host-only controls: all original35
-remain unchanged, with four additional controls for exact success markers,
-unknown/retry rejection, integer return codes and literal Boolean flags. The
-suite includes real temporary-file streaming/hash/identity checks and exact
-existing parent-recorder fixtures. It performs zero Android, download or SDK
-operations. Its test doubles cannot issue finite application credit.
+The current source revision passed **64** host-only controls: the original39
+remain byte-for-byte unchanged, with 25 added owner-mapping, Main/target,
+map/namespace drift, file-identity and resource-release controls. The suite
+includes real temporary-file streaming/hash/identity checks and exact existing
+parent-recorder fixtures. It performs zero Android, download, SDK, chown or
+privileged operations. Its test doubles cannot issue finite application credit.
 
 Run from this directory with the normal Python module path:
 
 ```sh
-python3 -B -m unittest -v test_firefox.py
+python3 -B -m unittest -v test_firefox.py test_mapped_owner.py
 ```
 
 The actual interpreter, timestamps, exit status, before/after source hashes and
-unaltered raw stdout/stderr are in `validation-r3/EXECUTION.json`. `VALIDATION.json`
-binds that execution and the preserved original32 and previous35 evidence.
+unaltered raw stdout/stderr are in `validation-r4/EXECUTION.json`. `VALIDATION.json`
+binds that execution, the exact sibling mapper and the preceding39 validation
+at the immutable baseline commit. The original32, previous35 and response-r3
+evidence remain unchanged.
 The previous35 validation is retained at `validation-r2/VALIDATION.json`, with
 its original source bodies preserved at commit `765c67ff1113885c98bcf84a31e937f484cc5c35`. The original32
 source snapshots and original metadata are in `history-32-controls-r1`; its raw
@@ -145,7 +189,8 @@ not a newly executed second package. `admission-and-release-r2.patch` shows the
 narrow revision from those snapshots.
 
 For CI, include `originals/business_ui_entry.py`: three controls import that
-exact source without invoking its main entry. No Android service, SDK,
+exact source without invoking its main entry. Also include the exact sibling
+mapper path listed above; the new test rejects a different body before import. No Android service, SDK,
 production controller or browser-session provider is needed for these offline
 controls. The documented normal module invocation was tested; isolated `-I`
 direct-script invocation is not claimed.

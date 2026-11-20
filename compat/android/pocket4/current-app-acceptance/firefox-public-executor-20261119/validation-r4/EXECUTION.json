@@ -1,0 +1,194 @@
+{
+  "APK_downloads": 0,
+  "AST_case_names_equal_raw_stderr": true,
+  "Android_calls": 0,
+  "SDK_commands": 0,
+  "actual_shifted_Android_observed": false,
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-B",
+    "-m",
+    "unittest",
+    "-v",
+    "test_firefox.py",
+    "test_mapped_owner.py"
+  ],
+  "case_names": [
+    "test_firefox.CustodyControls.test_actual_file_stream_uses_64k_reads_not_whole_body",
+    "test_firefox.CustodyControls.test_actual_held_file_change_rejects",
+    "test_firefox.CustodyControls.test_elapsed_deadline_rejects_before_read",
+    "test_firefox.CustodyControls.test_extra_hardlink_rejects",
+    "test_firefox.CustodyControls.test_paths_and_observed_uid_version_not_guessed",
+    "test_firefox.CustodyControls.test_same_content_wrong_inode_rejects",
+    "test_firefox.CustodyControls.test_unselected_large_body_refuses_before_target_access",
+    "test_firefox.CustodyControls.test_wrong_hash_rejects_full_stream",
+    "test_firefox.ProtocolControls.test_caller_self_attestation_cannot_unlock_either_entry_or_guard",
+    "test_firefox.ProtocolControls.test_certificate_warning",
+    "test_firefox.ProtocolControls.test_complete_real_sequence_shape_but_offline_credit_only",
+    "test_firefox.ProtocolControls.test_duplicate_second_tab",
+    "test_firefox.ProtocolControls.test_existing_tab_contamination",
+    "test_firefox.ProtocolControls.test_force_stop_is_not_normal_close",
+    "test_firefox.ProtocolControls.test_host_release_requires_explicit_true_not_truthy_or_false",
+    "test_firefox.ProtocolControls.test_incomplete_cleanup",
+    "test_firefox.ProtocolControls.test_insecure_page",
+    "test_firefox.ProtocolControls.test_lost_mutation_ack_no_retry_or_blind_android_cleanup",
+    "test_firefox.ProtocolControls.test_main_uid_and_epoch_changes_reject",
+    "test_firefox.ProtocolControls.test_missing_real_browser_owner_refuses_before_main_or_ui",
+    "test_firefox.ProtocolControls.test_offline_port_cannot_enter_production",
+    "test_firefox.ProtocolControls.test_reopen_must_restore_owned_page",
+    "test_firefox.ProtocolControls.test_same_task_is_not_independent_reopen",
+    "test_firefox.ProtocolControls.test_task_claim_is_not_browser_ownership",
+    "test_firefox.ProtocolControls.test_unacknowledged_resource_release_removes_protocol_credit",
+    "test_firefox.ProtocolControls.test_unproved_browser_owner",
+    "test_firefox.ProtocolControls.test_unscoped_history_read",
+    "test_firefox.ProtocolControls.test_user_tab_enumeration",
+    "test_firefox.ProtocolControls.test_wrong_heading",
+    "test_firefox.ProtocolControls.test_wrong_public_url",
+    "test_firefox.WireControls.test_actual_parent_chain_verifier_accepts_only_complete_fixture",
+    "test_firefox.WireControls.test_ambiguous_or_retried_success_cannot_supply_a_find_match",
+    "test_firefox.WireControls.test_exact_find_wire_and_ambiguity",
+    "test_firefox.WireControls.test_missing_selector_binding_refuses",
+    "test_firefox.WireControls.test_parent_exit_code_requires_integer_zero",
+    "test_firefox.WireControls.test_parent_logical_flags_require_exact_booleans",
+    "test_firefox.WireControls.test_parent_without_reap_is_rejected",
+    "test_firefox.WireControls.test_success_markers_preserve_existing_optional_wire_shape",
+    "test_firefox.WireControls.test_wrong_parent_scope_or_argv_rejected",
+    "test_mapped_owner.FlowIntegrationControls.test_combined_close_attempts_both_resources_after_first_error",
+    "test_mapped_owner.FlowIntegrationControls.test_combined_helper_failure_releases_firefox_without_closing_view",
+    "test_mapped_owner.FlowIntegrationControls.test_custody_passes_same_original_view_and_rejects_other_target",
+    "test_mapped_owner.FlowIntegrationControls.test_failed_view_post_guard_preserves_primary_and_closes_unassigned_view",
+    "test_mapped_owner.FlowIntegrationControls.test_missing_mapper_refuses_before_original_main_constructor",
+    "test_mapped_owner.FlowIntegrationControls.test_original_view_exact_identity_and_one_factory_call_per_flow",
+    "test_mapped_owner.InstalledOwnerControls.test_body_hash_is_still_mandatory_after_valid_owner_mapping",
+    "test_mapped_owner.InstalledOwnerControls.test_changed_map_rejected_on_verify_and_revalidate",
+    "test_mapped_owner.InstalledOwnerControls.test_main_target_replaced_before_verify_refuses",
+    "test_mapped_owner.InstalledOwnerControls.test_main_target_replaced_during_mapping_refuses_and_releases",
+    "test_mapped_owner.InstalledOwnerControls.test_mapper_stat_cannot_disagree_with_real_held_file",
+    "test_mapped_owner.InstalledOwnerControls.test_mapping_changes_within_observation_refuse",
+    "test_mapped_owner.InstalledOwnerControls.test_mapping_helper_required_before_file_is_opened",
+    "test_mapped_owner.InstalledOwnerControls.test_named_inode_replacement_does_not_accept_identical_bytes",
+    "test_mapped_owner.InstalledOwnerControls.test_namespace_inode_replaced_after_initial_mapping_refuses",
+    "test_mapped_owner.InstalledOwnerControls.test_original_main_root_binding_mismatch_refuses",
+    "test_mapped_owner.InstalledOwnerControls.test_primary_mapping_error_survives_cleanup_error_and_fd_closes",
+    "test_mapped_owner.InstalledOwnerControls.test_replaced_mapper_after_construction_refuses",
+    "test_mapped_owner.InstalledOwnerControls.test_shifted_uid_gid_use_real_fd_and_complete_body",
+    "test_mapped_owner.InstalledOwnerControls.test_unshifted_mapping_also_requires_actual_owner",
+    "test_mapped_owner.InstalledOwnerControls.test_wrong_original_view_or_target_refuses_before_file_open",
+    "test_mapped_owner.InstalledOwnerControls.test_wrong_uid_and_wrong_gid_each_refuse_and_release_fd",
+    "test_mapped_owner.MapRangeControls.test_boolean_negative_and_non_user_zero_ids_rejected",
+    "test_mapped_owner.MapRangeControls.test_malformed_partial_multiple_and_overflow_ranges_rejected",
+    "test_mapped_owner.MapRangeControls.test_zero_shifted_distinct_uid_gid_and_upper_endpoint"
+  ],
+  "chown_calls": 0,
+  "control_count": 64,
+  "cwd": "/workspace/scratch/791922d5beb5/firefox-uidmap-review/candidate",
+  "exit_code": 0,
+  "finished_ns": 1795185284269904620,
+  "fixture_admission": "Explicit offline MainView.__new__ fixture; not real Main admission.",
+  "injected_boundaries": [
+    "Namespace ioctl on ordinary temporary namespace fixture file.",
+    "UID/GID only in fstat for the ordinary temporary APK fixture inode.",
+    "Selected APK byte/hash constants replaced in test process only for small public fixture.",
+    "Targeted error/identity mutations are unittest patches, not runtime observations."
+  ],
+  "new_mapping_controls": 25,
+  "original_controls": 39,
+  "privileged_commands": 0,
+  "production_entry_held": true,
+  "production_ready": false,
+  "real_operations": [
+    "Temporary proc-shaped map/status file contents read by exact existing mapping helper.",
+    "Real held APK FD, bounded reads, complete hash, EOF and full remaining stat metadata.",
+    "Actual temporary file/inode replacement and descriptor closure checked with EBADF."
+  ],
+  "runtime_qualified": false,
+  "schema": "p4-firefox-offline-owner-mapping-execution-v1",
+  "source_after": [
+    {
+      "bytes": 13200,
+      "path": "firefox_custody.py",
+      "sha256": "ca1330a722df24a0fc3eaae450f225942a10305d8b80fad09a06ff9ea9386b95"
+    },
+    {
+      "bytes": 25076,
+      "path": "firefox_adapter.py",
+      "sha256": "da084330cc03226258b5a05d68497fb276710868499cbb0a380f20994e673525"
+    },
+    {
+      "bytes": 8823,
+      "path": "firefox_protocol.py",
+      "sha256": "545c7549d56ab6309ee08f8c09171303275a510df813f43a46b69d465a0d12b8"
+    },
+    {
+      "bytes": 21170,
+      "path": "test_firefox.py",
+      "sha256": "491abdff1ccee9bcc2bc092eb88eb403dd91d6799601a4818e2cd199136c1038"
+    },
+    {
+      "bytes": 22466,
+      "path": "test_mapped_owner.py",
+      "sha256": "40f1b81f87671a6a3d5134cffc713d96631543532a78f2531baeb5c0c4f893c8"
+    },
+    {
+      "bytes": 26456,
+      "path": "originals/business_ui_entry.py",
+      "sha256": "c33e86290d835bdd6ed82f5994572025807846addf141e1253c0665398db48f6"
+    },
+    {
+      "bytes": 44032,
+      "path": "../calendar-core-live-id-map-20261120/source/app_common.py",
+      "sha256": "adebfe99b64afc5a06caf30d2023d113f937920cba92dbe751a53c473ea8c2b4"
+    }
+  ],
+  "source_before": [
+    {
+      "bytes": 13200,
+      "path": "firefox_custody.py",
+      "sha256": "ca1330a722df24a0fc3eaae450f225942a10305d8b80fad09a06ff9ea9386b95"
+    },
+    {
+      "bytes": 25076,
+      "path": "firefox_adapter.py",
+      "sha256": "da084330cc03226258b5a05d68497fb276710868499cbb0a380f20994e673525"
+    },
+    {
+      "bytes": 8823,
+      "path": "firefox_protocol.py",
+      "sha256": "545c7549d56ab6309ee08f8c09171303275a510df813f43a46b69d465a0d12b8"
+    },
+    {
+      "bytes": 21170,
+      "path": "test_firefox.py",
+      "sha256": "491abdff1ccee9bcc2bc092eb88eb403dd91d6799601a4818e2cd199136c1038"
+    },
+    {
+      "bytes": 22466,
+      "path": "test_mapped_owner.py",
+      "sha256": "40f1b81f87671a6a3d5134cffc713d96631543532a78f2531baeb5c0c4f893c8"
+    },
+    {
+      "bytes": 26456,
+      "path": "originals/business_ui_entry.py",
+      "sha256": "c33e86290d835bdd6ed82f5994572025807846addf141e1253c0665398db48f6"
+    },
+    {
+      "bytes": 44032,
+      "path": "../calendar-core-live-id-map-20261120/source/app_common.py",
+      "sha256": "adebfe99b64afc5a06caf30d2023d113f937920cba92dbe751a53c473ea8c2b4"
+    }
+  ],
+  "sources_unchanged": true,
+  "started_ns": 1795185283887217120,
+  "stderr": {
+    "bytes": 8894,
+    "path": "validation-r4/controls.stderr",
+    "sha256": "62385b5687ba5019c964bb2fc3ccb30c46971bbd776f68a1d231ad760e500c54"
+  },
+  "stdout": {
+    "bytes": 0,
+    "path": "validation-r4/controls.stdout",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "user_namespaces_created": 0,
+  "whole_current_Firefox_APK_reverified_here": false
+}

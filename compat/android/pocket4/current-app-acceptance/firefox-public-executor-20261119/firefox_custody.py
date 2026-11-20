@@ -5,6 +5,7 @@ This does not collect account data, build/install an APK, or weaken the old
 already SDK-qualified Firefox APK. Imports perform no I/O.
 """
 import hashlib
+import types
 import os
 from pathlib import PurePosixPath
 import re
@@ -100,11 +101,14 @@ class HeldFirefoxAPK:
     An actual metadata reader must separately bracket each phase with cmd
     package reads. This class grants only installed-byte custody.
     """
-    def __init__(self, target, artifact, *, deadline, clock=time.monotonic):
+    def __init__(self, target, artifact, *, deadline, main_view=None,
+                 original_common=None, clock=time.monotonic):
         self.target, self.clock = target, clock
         self.fd = None
         self.closed = False
         self.deadline = deadline
+        self.main_view = main_view
+        self.original_common = original_common
         need(type(deadline) in (int, float) and clock() < deadline,
              "FRESH_ABSOLUTE_CUSTODY_DEADLINE_REQUIRED")
         need(type(artifact) is dict and set(artifact) == {"guest_path", "bytes", "sha256", "stat_file"}
@@ -116,24 +120,63 @@ class HeldFirefoxAPK:
         need(set(expected) == {"device", "inode", "mode", "uid", "gid", "nlink", "bytes", "mtime_ns", "ctime_ns"}
              and all(type(v) is int and v >= 0 for v in expected.values())
              and stat.S_ISREG(expected["mode"]) and expected["nlink"] == 1
-             and expected["uid"] == expected["gid"] == 1000
              and not expected["mode"] & 0o022 and expected["bytes"] == APK_BYTES,
              "ACTUAL_SINGLE_LINK_INSTALL_FILE_IDENTITY_REQUIRED")
+        need(type(original_common) is types.ModuleType
+             and hasattr(original_common, "MainView")
+             and callable(getattr(original_common, "mapped_file_info", None)),
+             "CURRENT_MAIN_OWNER_MAPPING_HELPER_REQUIRED")
+        self.main_view_type = original_common.MainView
+        self.owner_mapper = original_common.mapped_file_info
+        self._view_identity()
         try:
             target.verify()
             self.fd = target.open_root(self.path, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
             self.before = self._hash()
             self.verify()
-        except BaseException:
-            self.close()
+        except BaseException as primary:
+            try:
+                self.close()
+            except BaseException as cleanup_error:
+                primary.add_note("FIREFOX_CONSTRUCTION_CLEANUP:" + type(cleanup_error).__name__)
             raise
+
+    def _view_identity(self):
+        """This custody borrows the exact view created by the original Flow."""
+        need(self.original_common.MainView is self.main_view_type
+             and self.original_common.mapped_file_info is self.owner_mapper
+             and type(self.main_view) is self.main_view_type
+             and self.main_view.closed is False
+             and self.main_view.target is self.target,
+             "SAME_ORIGINAL_MAIN_VIEW_AND_TARGET_REQUIRED")
+
+    def _mapped_owner(self):
+        self._view_identity()
+        # The original helper reads the held Main's live kernel uid_map and
+        # gid_map, binds them to its original init, and brackets this same FD.
+        # No offset, caller map, owner boolean or alternate target is accepted.
+        info, owners = self.owner_mapper(self.main_view, self.fd, 1000, 1000)
+        self._view_identity()
+        need(type(owners) is tuple and len(owners) == 2
+             and all(type(value) is int and value >= 0 for value in owners)
+             and (info.st_uid, info.st_gid) == owners,
+             "ACTUAL_FIREFOX_INSTALL_OWNER_NOT_MAPPED_ANDROID_SYSTEM")
+        observed = {"device": info.st_dev, "inode": info.st_ino,
+                    "mode": info.st_mode, "uid": info.st_uid, "gid": info.st_gid,
+                    "nlink": info.st_nlink, "bytes": info.st_size,
+                    "mtime_ns": info.st_mtime_ns, "ctime_ns": info.st_ctime_ns}
+        need(observed == self.artifact["stat_file"]
+             and identity(self.fd) == observed,
+             "FIREFOX_MAPPED_OWNER_FILE_IDENTITY_CHANGED")
+        return observed
 
     def _hash(self):
         need(not self.closed and self.fd is not None, "FIREFOX_CUSTODY_CLOSED")
-        first = identity(self.fd)
+        first = self._mapped_owner()
         need(first == self.artifact["stat_file"], "ACTUAL_FIREFOX_INODE_CHANGED")
         observed = stream_exact_fd(self.fd, first, APK_SHA256, self.deadline, clock=self.clock)
         self._named(first)
+        need(self._mapped_owner() == first, "FIREFOX_OWNER_CHANGED_DURING_HASH")
         return {"guest_path": self.path, **observed}
 
     def _named(self, expected):
@@ -147,8 +190,10 @@ class HeldFirefoxAPK:
         need(not self.closed and self.fd is not None and self.clock() < self.deadline,
              "CURRENT_HELD_FIREFOX_CUSTODY_REQUIRED")
         self.target.verify()
-        need(identity(self.fd) == self.artifact["stat_file"], "HELD_FIREFOX_METADATA_CHANGED")
-        self._named(self.artifact["stat_file"])
+        first = self._mapped_owner()
+        need(first == self.artifact["stat_file"], "HELD_FIREFOX_METADATA_CHANGED")
+        self._named(first)
+        need(self._mapped_owner() == first, "FIREFOX_OWNER_CHANGED_DURING_VERIFY")
 
     def revalidate(self):
         self.verify()
@@ -165,7 +210,7 @@ class HeldFirefoxAPK:
 
 class CombinedCustody:
     """Use streaming Firefox custody plus the unchanged original helper guard."""
-    def __init__(self, original_common, target, identities, deadline):
+    def __init__(self, original_common, target, identities, deadline, *, main_view):
         targets = [row for row in identities if row.get("metadata", {}).get("package") == PACKAGE]
         helpers = [row for row in identities if row.get("metadata", {}).get("package") != PACKAGE]
         need(len(targets) == 1 and helpers and len(targets[0]["artifacts"]) == 1,
@@ -174,10 +219,14 @@ class CombinedCustody:
         row = targets[0]["artifacts"][0]
         try:
             self.firefox = HeldFirefoxAPK(target, {k: row[k] for k in
-                ("guest_path", "bytes", "sha256", "stat_file")}, deadline=deadline)
+                ("guest_path", "bytes", "sha256", "stat_file")}, deadline=deadline,
+                main_view=main_view, original_common=original_common)
             self.helpers = original_common.HeldArtifacts(target, helpers)
-        except BaseException:
-            self.close()
+        except BaseException as primary:
+            try:
+                self.close()
+            except BaseException as cleanup_error:
+                primary.add_note("COMBINED_CUSTODY_CONSTRUCTION_CLEANUP:" + type(cleanup_error).__name__)
             raise
 
     def verify(self):
@@ -202,12 +251,47 @@ class CombinedCustody:
 
 
 class StreamingCommon:
-    """A private adapter instance; never patch the original module or its globals."""
+    """One private adapter per Flow; return the original MainView unchanged."""
     def __init__(self, original, deadline):
         self.original, self.deadline = original, deadline
+        self._view = None
+        self._view_attempted = False
+        self._view_type = original.MainView
+        self._mapper = getattr(original, "mapped_file_info", None)
 
     def __getattr__(self, name):
         return getattr(self.original, name)
 
+    def MainView(self, *args, **kwargs):
+        need(not self._view_attempted and self._view is None,
+             "ONE_ORIGINAL_MAIN_VIEW_PER_FIREFOX_FLOW")
+        need(self.original.MainView is self._view_type
+             and callable(self._mapper)
+             and self.original.mapped_file_info is self._mapper,
+             "CURRENT_ORIGINAL_MAIN_MAPPING_SOURCE_REQUIRED")
+        self._view_attempted = True
+        view = self.original.MainView(*args, **kwargs)
+        try:
+            need(type(view) is self._view_type and view.closed is False,
+                 "EXACT_ORIGINAL_OPEN_MAIN_VIEW_REQUIRED")
+            view.guard()
+            self._view = view
+            return view
+        except BaseException as primary:
+            # Flow has not assigned its self.view yet; it cannot close this
+            # partially admitted result. Close only this just-created view.
+            try:
+                view.close()
+            except BaseException as cleanup_error:
+                primary.add_note("FIREFOX_MAIN_VIEW_CONSTRUCTION_CLEANUP:" + type(cleanup_error).__name__)
+            raise
+
     def HeldArtifacts(self, target, identities):
-        return CombinedCustody(self.original, target, identities, self.deadline)
+        need(self._view is not None and self._view.closed is False
+             and type(self._view) is self._view_type
+             and self._view.target is target
+             and self.original.MainView is self._view_type
+             and self.original.mapped_file_info is self._mapper,
+             "FIREFOX_CUSTODY_REQUIRES_ITS_ORIGINAL_FLOW_MAIN")
+        return CombinedCustody(self.original, target, identities, self.deadline,
+                               main_view=self._view)
