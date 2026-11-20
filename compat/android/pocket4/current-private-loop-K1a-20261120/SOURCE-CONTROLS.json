@@ -1,0 +1,64 @@
+{
+  "K0c_closed_entry_gates_changed": false,
+  "K1_complete": false,
+  "block_file_private_data_holder_assignments_changed": false,
+  "kernel_runtime_tests_executed": false,
+  "new_or_changed_postimages": 5,
+  "normal_loop_add_remove_configure_probe_work_and_release_bodies_unchanged": true,
+  "original_native_free_disk_cleanup_statements_preserved": true,
+  "patch_apply_commands": [
+    {
+      "argv": [
+        "/usr/bin/git",
+        "apply",
+        "--check",
+        "/workspace/scratch/3b9ddccd362c/p4_private_loop_k1a/K1a.patch"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "apply",
+        "/workspace/scratch/3b9ddccd362c/p4_private_loop_k1a/K1a.patch"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "apply",
+        "--reverse",
+        "--check",
+        "/workspace/scratch/3b9ddccd362c/p4_private_loop_k1a/K1a.patch"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "apply",
+        "--reverse",
+        "/workspace/scratch/3b9ddccd362c/p4_private_loop_k1a/K1a.patch"
+      ],
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": ""
+    }
+  ],
+  "private_device_published": false,
+  "production_ready": false,
+  "real_control_or_block_OFD_created": false,
+  "runtime_qualified": false,
+  "schema": "p4-k1a-closed-allocation-source-preservation-v1",
+  "state": "PASSED_FINITE_SOURCE_PRESERVATION",
+  "unchanged_K0c_K0b_postimages": 16,
+  "whole_loop_body_inverse_exact_K0c": true,
+  "whole_patch_forward_and_reverse_exact": true
+}
