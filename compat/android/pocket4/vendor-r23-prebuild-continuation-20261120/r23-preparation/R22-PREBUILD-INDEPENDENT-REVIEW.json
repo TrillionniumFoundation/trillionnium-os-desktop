@@ -1,0 +1,96 @@
+{
+  "Android_starts": 0,
+  "actual_controls": {
+    "bytes": 22777,
+    "path": "/workspace/scratch/3b9ddccd362c/r23-preparation/actual-controls/RESULT.json",
+    "reported_negative_cases": 27,
+    "reported_positive_cases": 1,
+    "sha256": "01ac2b7392896edb2490c110ec44f79f3a3beddb6dad832c0c6461bbc40df46e"
+  },
+  "all_nine_local_input_bodies_and_original_F9_rechecked": [
+    {
+      "bytes": 17250,
+      "identity_matches_original_control": true,
+      "path": "/workspace/scratch/3b9ddccd362c/r23-preparation/r22_prebuild_admission.py",
+      "sha256": "3ebc4eaf743b3a733501c4743178cc604469c49b1e6588a306bef484a76665eb"
+    },
+    {
+      "bytes": 34919,
+      "identity_matches_original_control": true,
+      "path": "/workspace/scratch/3b9ddccd362c/r23-preparation/actual-controls/ACTUAL-INPUT-CAPTURE.json",
+      "sha256": "062eefc14699e17785fe0169afd3e8bbcabb9c6bfe4ca9633c4843268e7ed471"
+    },
+    {
+      "bytes": 315362,
+      "identity_matches_original_control": true,
+      "path": "/workspace/scratch/3b9ddccd362c/r22-preparation/source-r22.py",
+      "sha256": "ab581ee8886af0ad6d64a0694bc8595387e43531e4e4bd8b1a49cd313cbc13cc"
+    },
+    {
+      "bytes": 35232,
+      "identity_matches_original_control": true,
+      "path": "/workspace/scratch/3b9ddccd362c/r22-preparation/outer-r22.py",
+      "sha256": "836ff9444ae1968284812da1606820f47d214ad3a95d87c1f27caf5bdd56787e"
+    },
+    {
+      "bytes": 82455,
+      "identity_matches_original_control": true,
+      "path": "/workspace/scratch/3b9ddccd362c/r22-preparation/ACTUAL-CONTRACT.json",
+      "sha256": "746660a89df716c9ffc0dbd2a7e10257fec28f0792e504f5ec0304318595acc5"
+    },
+    {
+      "bytes": 4934,
+      "identity_matches_original_control": true,
+      "path": "/workspace/scratch/3b9ddccd362c/r22-preparation/ACTUAL-BUNDLE.json",
+      "sha256": "b97888b0542bace5aa55bcf43dd13b0a699be9a437878372703d8bd6e214b296"
+    },
+    {
+      "bytes": 65157,
+      "identity_matches_original_control": true,
+      "path": "/workspace/scratch/3b9ddccd362c/r23-preparation/actual-controls/outer-terminal.json",
+      "sha256": "c726dbd4f7f64bb8081a1d6809ad794cc3b549ae423b6bb6f58710a9b28a114a"
+    },
+    {
+      "bytes": 319,
+      "identity_matches_original_control": true,
+      "path": "/workspace/scratch/3b9ddccd362c/r23-preparation/actual-controls/outer-resource-probe.json",
+      "sha256": "d239072d79b186ffd9db36ca61a70338637d1bc15140ac840cf45c9f06878fc7"
+    },
+    {
+      "bytes": 161094,
+      "identity_matches_original_control": true,
+      "path": "/workspace/scratch/3b9ddccd362c/r23-preparation/actual-controls/serialized-heavy-admission.json",
+      "sha256": "9b9adbda7086ab38a9a257825f827e5eb54b0ba1a071d0cb7d3ad18bac87ad5a"
+    }
+  ],
+  "findings": [],
+  "fresh_live_retirement_tested": false,
+  "integration_requirements": [
+    "Caller must read and retain actual inputs with original complete body and F9 bookends",
+    "Caller must independently prove absence of never-materialized R22 output/producer/temp/LOCK paths under held parent identities",
+    "Fresh retirement, fresh resources and original three-lock acquisition remain mandatory; this historical failure receipt grants none",
+    "R23 wrapper must share the original absolute 150-second retirement deadline"
+  ],
+  "module": {
+    "bytes": 17250,
+    "identity_matches_original_control": true,
+    "path": "/workspace/scratch/3b9ddccd362c/r23-preparation/r22_prebuild_admission.py",
+    "sha256": "3ebc4eaf743b3a733501c4743178cc604469c49b1e6588a306bef484a76665eb"
+  },
+  "new_resource_admission": false,
+  "production_ready": false,
+  "reviewed_contracts": [
+    "Complete fixed seven original host references and full bodies, no caller-defined historical digest",
+    "All thirteen original preparation output bodies and original success/failure outcomes",
+    "Complete 132 target/manager/status child roster with original PIDFD/reaping flags and original serialized time order",
+    "Preserved memory failure below 42 GiB, sufficient disk and all unchanged resource/accounting constants",
+    "Exact original manifest and three lock file identities and body hashes; no claim of live lock ownership",
+    "Duplicate JSON keys/nonfinite values and bool-as-integer values rejected; canonical type-sensitive comparisons",
+    "No I/O or execution in the pure module; no unmaterialized LOCK admitted as historical actual input"
+  ],
+  "runtime_qualified": false,
+  "schema": "p4-r23-r22-prebuild-independent-review-v1",
+  "scope": "Independent source and original actual-input evidence review; no new host execution or live lease",
+  "source_mutations": 0,
+  "source_review_passed": true
+}

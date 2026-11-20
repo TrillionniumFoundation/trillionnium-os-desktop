@@ -1,0 +1,748 @@
+{
+  "schema": "p4-r23-actual-r22-prebuild-admission-controls-v1",
+  "passed": true,
+  "actual_positive_cases": 1,
+  "actual_failure_preserved": true,
+  "negative_cases": [
+    "missing actual terminal",
+    "successor cannot add an uncreated producer LOCK",
+    "altered actual terminal body",
+    "rounded original terminal nanoseconds",
+    "boolean file size",
+    "different original worker",
+    "manifest inode rebound",
+    "missing original source lock",
+    "changed source lock body",
+    "missing failed preparation client archive",
+    "altered actual preparation capture",
+    "unreaped original child",
+    "missing original child PIDFD",
+    "false is not child exit zero",
+    "different service manager argv",
+    "missing original target observation",
+    "original cgroup remains",
+    "unobserved service MainPID",
+    "status child outside original outer window",
+    "failed preparation rewritten as success",
+    "missing failed original preparation",
+    "boolean preparation exit zero",
+    "truncated original terminal capture",
+    "durable terminal session substituted",
+    "duplicate JSON key",
+    "nonfinite JSON",
+    "typed equality refuses boolean zero"
+  ],
+  "module": {
+    "path": "/workspace/scratch/3b9ddccd362c/r23-preparation/r22_prebuild_admission.py",
+    "bytes": 17250,
+    "sha256": "3ebc4eaf743b3a733501c4743178cc604469c49b1e6588a306bef484a76665eb",
+    "identity": [
+      27,
+      3277705,
+      33188,
+      1000,
+      1000,
+      1,
+      17250,
+      1795179889481426181,
+      1795179889481426181
+    ]
+  },
+  "local_full_input_bookends": [
+    {
+      "path": "/workspace/scratch/3b9ddccd362c/r23-preparation/r22_prebuild_admission.py",
+      "bytes": 17250,
+      "sha256": "3ebc4eaf743b3a733501c4743178cc604469c49b1e6588a306bef484a76665eb",
+      "identity": [
+        27,
+        3277705,
+        33188,
+        1000,
+        1000,
+        1,
+        17250,
+        1795179889481426181,
+        1795179889481426181
+      ]
+    },
+    {
+      "path": "/workspace/scratch/3b9ddccd362c/r23-preparation/actual-controls/ACTUAL-INPUT-CAPTURE.json",
+      "bytes": 34919,
+      "sha256": "062eefc14699e17785fe0169afd3e8bbcabb9c6bfe4ca9633c4843268e7ed471",
+      "identity": [
+        27,
+        3277693,
+        33188,
+        1000,
+        1000,
+        1,
+        34919,
+        1795179810140210193,
+        1795179810140210193
+      ]
+    },
+    {
+      "path": "/workspace/scratch/3b9ddccd362c/r22-preparation/source-r22.py",
+      "bytes": 315362,
+      "sha256": "ab581ee8886af0ad6d64a0694bc8595387e43531e4e4bd8b1a49cd313cbc13cc",
+      "identity": [
+        27,
+        3183659,
+        33188,
+        1000,
+        1000,
+        1,
+        315362,
+        1795178374549608345,
+        1795178374549608345
+      ]
+    },
+    {
+      "path": "/workspace/scratch/3b9ddccd362c/r22-preparation/outer-r22.py",
+      "bytes": 35232,
+      "sha256": "836ff9444ae1968284812da1606820f47d214ad3a95d87c1f27caf5bdd56787e",
+      "identity": [
+        27,
+        3183655,
+        33188,
+        1000,
+        1000,
+        1,
+        35232,
+        1795178374550959336,
+        1795178374550959336
+      ]
+    },
+    {
+      "path": "/workspace/scratch/3b9ddccd362c/r22-preparation/ACTUAL-CONTRACT.json",
+      "bytes": 82455,
+      "sha256": "746660a89df716c9ffc0dbd2a7e10257fec28f0792e504f5ec0304318595acc5",
+      "identity": [
+        27,
+        3183665,
+        33188,
+        1000,
+        1000,
+        1,
+        82455,
+        1795178438533519099,
+        1795178438533519099
+      ]
+    },
+    {
+      "path": "/workspace/scratch/3b9ddccd362c/r22-preparation/ACTUAL-BUNDLE.json",
+      "bytes": 4934,
+      "sha256": "b97888b0542bace5aa55bcf43dd13b0a699be9a437878372703d8bd6e214b296",
+      "identity": [
+        27,
+        3183654,
+        33188,
+        1000,
+        1000,
+        1,
+        4934,
+        1795178374550751576,
+        1795178374550751576
+      ]
+    },
+    {
+      "path": "/workspace/scratch/3b9ddccd362c/r23-preparation/actual-controls/outer-terminal.json",
+      "bytes": 65157,
+      "sha256": "c726dbd4f7f64bb8081a1d6809ad794cc3b549ae423b6bb6f58710a9b28a114a",
+      "identity": [
+        27,
+        3277691,
+        33188,
+        1000,
+        1000,
+        1,
+        65157,
+        1795179708635435893,
+        1795179708635435893
+      ]
+    },
+    {
+      "path": "/workspace/scratch/3b9ddccd362c/r23-preparation/actual-controls/outer-resource-probe.json",
+      "bytes": 319,
+      "sha256": "d239072d79b186ffd9db36ca61a70338637d1bc15140ac840cf45c9f06878fc7",
+      "identity": [
+        27,
+        3277692,
+        33188,
+        1000,
+        1000,
+        1,
+        319,
+        1795179708751434615,
+        1795179708751434615
+      ]
+    },
+    {
+      "path": "/workspace/scratch/3b9ddccd362c/r23-preparation/actual-controls/serialized-heavy-admission.json",
+      "bytes": 161094,
+      "sha256": "9b9adbda7086ab38a9a257825f827e5eb54b0ba1a071d0cb7d3ad18bac87ad5a",
+      "identity": [
+        27,
+        3277664,
+        33188,
+        1000,
+        1000,
+        1,
+        161094,
+        1795179601632618126,
+        1795179601632618126
+      ]
+    }
+  ],
+  "actual_capture_client": {
+    "session_id": "dpty-807b1e5927cac379fbeb56ad26e3c8fb8d54b64633bb0ab39edee88ca111a91a",
+    "exit_code": 0,
+    "capture_complete": true
+  },
+  "actual_original_host_refs": {
+    "bundle": {
+      "bytes": 4934,
+      "identity": [
+        66306,
+        74456840,
+        33152,
+        1000,
+        1000,
+        1,
+        4934,
+        1795178256219266727,
+        1795178256219266727
+      ],
+      "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r22/inputs/BUNDLE.json",
+      "sha256": "b97888b0542bace5aa55bcf43dd13b0a699be9a437878372703d8bd6e214b296"
+    },
+    "contract": {
+      "bytes": 82455,
+      "identity": [
+        66306,
+        74456837,
+        33152,
+        1000,
+        1000,
+        1,
+        82455,
+        1795178256074376533,
+        1795178256074376533
+      ],
+      "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r22/inputs/CONTRACT.json",
+      "sha256": "746660a89df716c9ffc0dbd2a7e10257fec28f0792e504f5ec0304318595acc5"
+    },
+    "outer": {
+      "bytes": 35232,
+      "identity": [
+        66306,
+        74456841,
+        33152,
+        1000,
+        1000,
+        1,
+        35232,
+        1795178256223868731,
+        1795178256223868731
+      ],
+      "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r22/outer.py",
+      "sha256": "836ff9444ae1968284812da1606820f47d214ad3a95d87c1f27caf5bdd56787e"
+    },
+    "resource": {
+      "bytes": 319,
+      "identity": [
+        66306,
+        74456846,
+        33152,
+        1000,
+        1000,
+        1,
+        319,
+        1795178474748435970,
+        1795178474748435970
+      ],
+      "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r22/actual/outer-resource-probe.json",
+      "sha256": "d239072d79b186ffd9db36ca61a70338637d1bc15140ac840cf45c9f06878fc7"
+    },
+    "serialized": {
+      "bytes": 161094,
+      "identity": [
+        66306,
+        74456845,
+        33152,
+        1000,
+        1000,
+        1,
+        161094,
+        1795178474746436031,
+        1795178474746436031
+      ],
+      "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r22/actual/serialized-heavy-admission.json",
+      "sha256": "9b9adbda7086ab38a9a257825f827e5eb54b0ba1a071d0cb7d3ad18bac87ad5a"
+    },
+    "terminal": {
+      "bytes": 65157,
+      "identity": [
+        66306,
+        74456848,
+        33152,
+        1000,
+        1000,
+        1,
+        65157,
+        1795178474750435910,
+        1795178474750435910
+      ],
+      "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r22/actual/outer-terminal.json",
+      "sha256": "c726dbd4f7f64bb8081a1d6809ad794cc3b549ae423b6bb6f58710a9b28a114a"
+    },
+    "worker": {
+      "bytes": 315362,
+      "identity": [
+        66306,
+        74456838,
+        33152,
+        1000,
+        1000,
+        1,
+        315362,
+        1795178256076008425,
+        1795178256076008425
+      ],
+      "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r22/source.py",
+      "sha256": "ab581ee8886af0ad6d64a0694bc8595387e43531e4e4bd8b1a49cd313cbc13cc"
+    }
+  },
+  "actual_result": {
+    "schema": "p4-r23-actual-r22-prebuild-failure-consumed-v1",
+    "actual_R22_prebuild_failure_consumed": true,
+    "historical_inputs": {
+      "worker": {
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r22/source.py",
+        "bytes": 315362,
+        "sha256": "ab581ee8886af0ad6d64a0694bc8595387e43531e4e4bd8b1a49cd313cbc13cc",
+        "identity": [
+          66306,
+          74456838,
+          33152,
+          1000,
+          1000,
+          1,
+          315362,
+          1795178256076008425,
+          1795178256076008425
+        ]
+      },
+      "outer": {
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r22/outer.py",
+        "bytes": 35232,
+        "sha256": "836ff9444ae1968284812da1606820f47d214ad3a95d87c1f27caf5bdd56787e",
+        "identity": [
+          66306,
+          74456841,
+          33152,
+          1000,
+          1000,
+          1,
+          35232,
+          1795178256223868731,
+          1795178256223868731
+        ]
+      },
+      "contract": {
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r22/inputs/CONTRACT.json",
+        "bytes": 82455,
+        "sha256": "746660a89df716c9ffc0dbd2a7e10257fec28f0792e504f5ec0304318595acc5",
+        "identity": [
+          66306,
+          74456837,
+          33152,
+          1000,
+          1000,
+          1,
+          82455,
+          1795178256074376533,
+          1795178256074376533
+        ]
+      },
+      "bundle": {
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r22/inputs/BUNDLE.json",
+        "bytes": 4934,
+        "sha256": "b97888b0542bace5aa55bcf43dd13b0a699be9a437878372703d8bd6e214b296",
+        "identity": [
+          66306,
+          74456840,
+          33152,
+          1000,
+          1000,
+          1,
+          4934,
+          1795178256219266727,
+          1795178256219266727
+        ]
+      },
+      "terminal": {
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r22/actual/outer-terminal.json",
+        "bytes": 65157,
+        "sha256": "c726dbd4f7f64bb8081a1d6809ad794cc3b549ae423b6bb6f58710a9b28a114a",
+        "identity": [
+          66306,
+          74456848,
+          33152,
+          1000,
+          1000,
+          1,
+          65157,
+          1795178474750435910,
+          1795178474750435910
+        ]
+      },
+      "resource": {
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r22/actual/outer-resource-probe.json",
+        "bytes": 319,
+        "sha256": "d239072d79b186ffd9db36ca61a70338637d1bc15140ac840cf45c9f06878fc7",
+        "identity": [
+          66306,
+          74456846,
+          33152,
+          1000,
+          1000,
+          1,
+          319,
+          1795178474748435970,
+          1795178474748435970
+        ]
+      },
+      "serialized": {
+        "path": "/home/qq/work/p4-official-vendor-cp3a-20261118-162b-r1/control/vendor-build-20261120-9907-r22/actual/serialized-heavy-admission.json",
+        "bytes": 161094,
+        "sha256": "9b9adbda7086ab38a9a257825f827e5eb54b0ba1a071d0cb7d3ad18bac87ad5a",
+        "identity": [
+          66306,
+          74456845,
+          33152,
+          1000,
+          1000,
+          1,
+          161094,
+          1795178474746436031,
+          1795178474746436031
+        ]
+      }
+    },
+    "original_status_children_reaped": 132,
+    "original_outer_children_created": 0,
+    "original_preparation_clients": [
+      {
+        "name": "r21-original",
+        "session_id": "dpty-1618aa2e0ba5842dbb2e4afdbe2af92bfeea50728dbfee0476bb3cd3f07ef41c",
+        "original_exit_code": 1,
+        "stdout": {
+          "path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-1618aa2e0ba5842dbb2e4afdbe2af92bfeea50728dbfee0476bb3cd3f07ef41c/output.log",
+          "bytes": 7180,
+          "sha256": "298c8b71407905df18215146bd45cffe4865187830fa16d4103255212b7b71e3",
+          "identity": [
+            66306,
+            102281751,
+            33152,
+            1000,
+            1000,
+            1,
+            7180,
+            1795173032796507442,
+            1795173032796507442
+          ]
+        }
+      },
+      {
+        "name": "git-fixture-r1",
+        "session_id": "dpty-392533b957e2128192672eefb6ef98f459208f5c6585a5bf5316ce0b417b9d5d",
+        "original_exit_code": 1,
+        "stdout": {
+          "path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-392533b957e2128192672eefb6ef98f459208f5c6585a5bf5316ce0b417b9d5d/output.log",
+          "bytes": 2681,
+          "sha256": "5eb2021239c0963d3d81352d8ba630ab6dcd92300a8b7f1d43574b731cb914d5",
+          "identity": [
+            66306,
+            102282353,
+            33152,
+            1000,
+            1000,
+            1,
+            2681,
+            1795174884596603227,
+            1795174884596603227
+          ]
+        }
+      },
+      {
+        "name": "git-fixture-r2",
+        "session_id": "dpty-2d41f63aa17b701d3ead838f872e8f2be268158fe7318b3b90ee576673ff7abc",
+        "original_exit_code": 0,
+        "stdout": {
+          "path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-2d41f63aa17b701d3ead838f872e8f2be268158fe7318b3b90ee576673ff7abc/output.log",
+          "bytes": 794,
+          "sha256": "cce8251827add0f685e9edd449d4084d506ea362f4e411b6d0b5f556ffebf03a",
+          "identity": [
+            66306,
+            102282374,
+            33152,
+            1000,
+            1000,
+            1,
+            794,
+            1795174980316622888,
+            1795174980316622888
+          ]
+        }
+      },
+      {
+        "name": "admission-r2",
+        "session_id": "dpty-123dfd532550412134cb263fdee45f3ff1f75cf5f14c6806e1cc4e78a01afa99",
+        "original_exit_code": 0,
+        "stdout": {
+          "path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-123dfd532550412134cb263fdee45f3ff1f75cf5f14c6806e1cc4e78a01afa99/output.log",
+          "bytes": 95,
+          "sha256": "6bb38ce3c52a8738ee58e922e41b599b8226fa2134c2a38e4725ab0cf042985c",
+          "identity": [
+            66306,
+            102282514,
+            33152,
+            1000,
+            1000,
+            1,
+            95,
+            1795176328300069215,
+            1795176328300069215
+          ]
+        }
+      },
+      {
+        "name": "source-r1",
+        "session_id": "dpty-08d94bd376a44a4472495f94999df88a57fbd42cc54e541ae54a6aa28c478ca3",
+        "original_exit_code": 1,
+        "stdout": {
+          "path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-08d94bd376a44a4472495f94999df88a57fbd42cc54e541ae54a6aa28c478ca3/output.log",
+          "bytes": 468,
+          "sha256": "3b7fdd8b8c846df257312e9a21a993162f5c3a05e14257d01d3798f5dd234071",
+          "identity": [
+            66306,
+            102282437,
+            33152,
+            1000,
+            1000,
+            1,
+            468,
+            1795175837800839585,
+            1795175837800839585
+          ]
+        }
+      },
+      {
+        "name": "source-r2",
+        "session_id": "dpty-8775bd006e35859b91fb974cd9e773ac926aa5cb4119bc603d17242b599557fa",
+        "original_exit_code": 0,
+        "stdout": {
+          "path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-8775bd006e35859b91fb974cd9e773ac926aa5cb4119bc603d17242b599557fa/output.log",
+          "bytes": 525,
+          "sha256": "0486972221fb5a22c52a73dd3fb54cbbb3b952d8cef51b4478fff67eeacbc259",
+          "identity": [
+            66306,
+            102282465,
+            33152,
+            1000,
+            1000,
+            1,
+            525,
+            1795176066809371230,
+            1795176066809371230
+          ]
+        }
+      },
+      {
+        "name": "ci-download",
+        "session_id": "dpty-240dc0fc8a32a70bb6e42a2d0d1976b163bfafbcf196d44c6ae1fe0cf92ea2de",
+        "original_exit_code": 0,
+        "stdout": {
+          "path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-240dc0fc8a32a70bb6e42a2d0d1976b163bfafbcf196d44c6ae1fe0cf92ea2de/output.log",
+          "bytes": 325,
+          "sha256": "d1a329ddb0928b43d522fd38827543ee96bc94eb0d65e42569f6691b38c805fa",
+          "identity": [
+            66306,
+            102282598,
+            33152,
+            1000,
+            1000,
+            1,
+            325,
+            1795177564622887021,
+            1795177564622887021
+          ]
+        }
+      },
+      {
+        "name": "ci-extraction",
+        "session_id": "dpty-7c45255b3f2483c05be8d75941d3f5f4bf31cee114d56de9a94af198dc3d4c5d",
+        "original_exit_code": 0,
+        "stdout": {
+          "path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-7c45255b3f2483c05be8d75941d3f5f4bf31cee114d56de9a94af198dc3d4c5d/output.log",
+          "bytes": 668,
+          "sha256": "fc007727c724a03cb4481f527c8de3ab5ebcba80e81b82867299714da110f5df",
+          "identity": [
+            66306,
+            102282618,
+            33152,
+            1000,
+            1000,
+            1,
+            668,
+            1795177616217464260,
+            1795177616217464260
+          ]
+        }
+      },
+      {
+        "name": "binary-imports",
+        "session_id": "dpty-4b4221da2a8102cd79389037e550d97b857afbad2e30a6c09fe0928d93777a57",
+        "original_exit_code": 0,
+        "stdout": {
+          "path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-4b4221da2a8102cd79389037e550d97b857afbad2e30a6c09fe0928d93777a57/output.log",
+          "bytes": 363,
+          "sha256": "1e4d85675feadeac7e72b279767d77d79e54f837d667a3bf4a6da7fb990f9516",
+          "identity": [
+            66306,
+            102282632,
+            33152,
+            1000,
+            1000,
+            1,
+            363,
+            1795177757689100813,
+            1795177757689100813
+          ]
+        }
+      },
+      {
+        "name": "host-abi",
+        "session_id": "dpty-c35f0605a1b45f88e004cdb751f1add5de86551424146ead0cbb493f41005a1c",
+        "original_exit_code": 0,
+        "stdout": {
+          "path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-c35f0605a1b45f88e004cdb751f1add5de86551424146ead0cbb493f41005a1c/output.log",
+          "bytes": 542,
+          "sha256": "6f593bd9d024a8107fa2dd77b413fe122edcb3135674a20fdae54e4e2b3db863",
+          "identity": [
+            66306,
+            102282646,
+            33152,
+            1000,
+            1000,
+            1,
+            542,
+            1795177826909027055,
+            1795177826909027055
+          ]
+        }
+      },
+      {
+        "name": "readonly-plans",
+        "session_id": "dpty-5023df133f1ee666af7433b6a06be9b55f987ca7c3136592b03c4243d31c04a1",
+        "original_exit_code": 0,
+        "stdout": {
+          "path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-5023df133f1ee666af7433b6a06be9b55f987ca7c3136592b03c4243d31c04a1/output.log",
+          "bytes": 981,
+          "sha256": "f4e6498e75dc6e30ec8ef2298b634af69df799e39527f79ec07d7e605581b1ee",
+          "identity": [
+            66306,
+            102282667,
+            33152,
+            1000,
+            1000,
+            1,
+            981,
+            1795177890189126641,
+            1795177890189126641
+          ]
+        }
+      },
+      {
+        "name": "freeze-r1",
+        "session_id": "dpty-3e29def546a7320efec65db89c2a343b88211cef4e3644e018b04ad5f6c1df7c",
+        "original_exit_code": 1,
+        "stdout": {
+          "path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-3e29def546a7320efec65db89c2a343b88211cef4e3644e018b04ad5f6c1df7c/output.log",
+          "bytes": 1063,
+          "sha256": "dcf1b22bfa411884f98badf3071b1b329f91aeb3031ea0f4a8f6d1beb998cf53",
+          "identity": [
+            66306,
+            102282695,
+            33152,
+            1000,
+            1000,
+            1,
+            1063,
+            1795178067838772225,
+            1795178067838772225
+          ]
+        }
+      },
+      {
+        "name": "snapshot-container-review",
+        "session_id": "dpty-49bbc83fa12f2d599259be79bc23762c863c907d7d24788e73bda1e908c3e59e",
+        "original_exit_code": 0,
+        "stdout": {
+          "path": "/home/qq/.local/state/hepta-runtime-mac-worker/terminals/dpty-49bbc83fa12f2d599259be79bc23762c863c907d7d24788e73bda1e908c3e59e/output.log",
+          "bytes": 386,
+          "sha256": "7285c858405ab99e417b4fdc4caab1d8f33d7e1b4949c5127182343638198bb1",
+          "identity": [
+            66306,
+            102282702,
+            33152,
+            1000,
+            1000,
+            1,
+            386,
+            1795178158862019872,
+            1795178158862019872
+          ]
+        }
+      }
+    ],
+    "original_manifest_and_three_lock_files_unchanged": true,
+    "original_resource_failure": {
+      "memory_available": 42968989696,
+      "disk_free": 627368009728,
+      "required_memory": 45097156608,
+      "required_disk": 154618822656,
+      "output_growth_cap": 128849018880,
+      "disk_floor": 25769803776,
+      "vendor_growth_cap": 126701535232,
+      "all_light_roots_growth_cap": 2147483648
+    },
+    "original_vendor_memory_max": 25769803776,
+    "original_recovery_budget_seconds": 1200,
+    "live_retirement_recheck_required": true,
+    "fresh_resource_admission_required": true,
+    "original_three_lock_acquisition_required": true,
+    "resource_admission_reused": false,
+    "build_attempted": false,
+    "normal_recovery_attempted": false,
+    "R22_uncreated_producer_lock_adopted": false,
+    "source_mutations": 0,
+    "children_started": 0,
+    "Android_builds": 0,
+    "Android_starts": 0,
+    "runtime_qualified": false,
+    "production_ready": false
+  },
+  "host_inputs_read_from_actual_files": true,
+  "host_metadata_observation_only": true,
+  "fresh_live_unit_retirement_tested": false,
+  "source_locks_acquired": false,
+  "successor_resource_admission_tested": false,
+  "children_started": 0,
+  "source_mutations": 0,
+  "Android_builds": 0,
+  "Android_starts": 0,
+  "runtime_qualified": false,
+  "production_ready": false
+}
