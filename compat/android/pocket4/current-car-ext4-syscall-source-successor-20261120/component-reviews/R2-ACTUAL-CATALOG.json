@@ -1,0 +1,75 @@
+{
+  "actual_catalog_names": 509,
+  "actual_command_count": 138,
+  "actual_compiled_name": "android::production_source::tests::original_652_apex_manifest_requires_explicit_car_source_reconciliation",
+  "actual_failed_gate": "run_ci.py::catalog requires all complete exact names",
+  "all_commands_exited_zero_reaped_without_remaining_descendants": true,
+  "all_source_bookends_equal": true,
+  "artifact_bytes": 1821385,
+  "artifact_id": 14651906854,
+  "artifact_sha256": "f567e2087a9158b88ff42704a7cd77502378b7dd31d471c2f34b77874f3783a6",
+  "catalog_command": {
+    "actual_child_reaped": true,
+    "argv": [
+      "/home/runner/work/_temp/current-ordinary/target/debug/deps/droidloom_update-0b3e613f6dacf8f3",
+      "--list",
+      "--color",
+      "never"
+    ],
+    "cleanup_errors": [],
+    "cwd": "/home/runner/work/_temp/current-ordinary/test-cwd",
+    "error": null,
+    "exit_code": 0,
+    "finished_ns": 1795194596890052087,
+    "name": "target-44-catalog",
+    "original_pidfd_held_until_reaped": true,
+    "owned_descendants_remaining": 0,
+    "pid": 22915,
+    "retired_descendants": [],
+    "start_ticks": 78155,
+    "started_ns": 1795194596885527115,
+    "stderr": {
+      "bytes": 0,
+      "path": "/home/runner/work/_temp/current-ordinary/logs/target-44-catalog.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout": {
+      "bytes": 49176,
+      "path": "/home/runner/work/_temp/current-ordinary/logs/target-44-catalog.stdout",
+      "sha256": "37be00e12101d3dcc5df65bbceeb2190d8773ee4c45da30749998dae8bbe1933"
+    },
+    "timed_out": false
+  },
+  "expected_catalog_names": 509,
+  "failure": [
+    {
+      "message": "complete exact catalog names",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/compat/android/pocket4/current-car-ext4-syscall-source-successor-20261120/run_ci.py\", line 513, in main\n    catalog(raw,cat['all'])\n  File \"/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/compat/android/pocket4/current-car-ext4-syscall-source-successor-20261120/run_ci.py\", line 200, in catalog\n    VERIFY.need(names == sorted(set(names)) == sorted(expected)\n  File \"/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/compat/android/pocket4/runtime-current-source-r1/verify.py\", line 28, in need\n    raise RuntimeError(message)\nRuntimeError: complete exact catalog names\n",
+      "type": "RuntimeError"
+    }
+  ],
+  "fresh_ordinary_passed": 1067,
+  "github_commit": "6afe3f843ac25a4cd9bc8f477255f24b5be9a7a2",
+  "github_job_id": 136436289562,
+  "github_run_id": 44778974175,
+  "ignored_fixture_executed": false,
+  "incorrect_new_registration": "production_source::tests::original_652_apex_manifest_requires_explicit_car_source_reconciliation",
+  "new_full_ci_required": true,
+  "normal_release_count": 0,
+  "original_1612_ordinary_names_preserved": true,
+  "original_ci_report": {
+    "bytes": 319215,
+    "path_in_zip": "_temp/current-ci.json",
+    "sha256": "7ceaa702ffb3034f61e906148bbbf895909592248403153ffa9044e47cabeba0"
+  },
+  "producer_source_changed_by_repair": false,
+  "production_ready": false,
+  "required_ignored_unexecuted": 31,
+  "required_ordinary_cases": 1623,
+  "runtime_qualified": false,
+  "schema": "p4-car-r2-actual-catalog-registration-failure-v1",
+  "source_bytes": 45962823,
+  "source_declared_additions": 11,
+  "source_files": 2391,
+  "source_tree": "83431a8a5796fe75fbe629197fabbb95e3b5b756"
+}
