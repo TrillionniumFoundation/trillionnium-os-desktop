@@ -1,0 +1,349 @@
+--- a/runtime/droidloom-supervisor/src/production_namespace_apexd_ioctl_request.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_apexd_ioctl_request.rs
+@@ -93,6 +93,26 @@
+     Ok(number as i32)
+ }
+ 
++/// The original support probe has no backing source descriptor. Parsing its
++/// exact bytes is only classification: it grants no task, target or reply
++/// authority and cannot supply a normal configuration or a live target lease.
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++struct SupportProbeBody {
++    bytes: [u8; CONFIG_BYTES],
++}
++impl SupportProbeBody {
++    fn parse(bytes: [u8; CONFIG_BYTES]) -> Result<Self> {
++        if u32::from_le_bytes(bytes[..4].try_into().unwrap()) != u32::MAX
++            || bytes[4..].iter().any(|byte| *byte != 0)
++        {
++            return Err(NamespaceError::Rejected(
++                "original apexd support probe is not exact fd=-1 with a zero body",
++            ));
++        }
++        Ok(Self { bytes })
++    }
++}
++
+ /// A unique fixed size only selects the candidate to be fully hashed below.
+ /// It is not byte, caller, role or device authority.
+ fn compressed_role_for_length(bytes: u64) -> Result<usize> {
+@@ -211,6 +231,18 @@
+     Ok(())
+ }
+ 
++fn support_probe_target_identity(target: &File) -> Result<FileIdentity> {
++    let identity = FileIdentity::observe(target)?;
++    if !target.metadata()?.file_type().is_block_device()
++        || identity.flags & libc::O_ACCMODE != libc::O_RDWR
++    {
++        return Err(NamespaceError::Rejected(
++            "original apexd support probe target is not its real opened read-write block descriptor",
++        ));
++    }
++    Ok(identity)
++}
++
+ struct ConfigurationCustody {
+     notification: wire::Notification,
+     generation: ActualApexdGeneration,
+@@ -245,6 +277,36 @@
+     }
+ }
+ 
++struct SupportProbeCustody {
++    notification: wire::Notification,
++    generation: ActualApexdGeneration,
++    default: DefaultMountBinding,
++    deadline: Instant,
++    body: SupportProbeBody,
++    target: File,
++    target_identity: FileIdentity,
++    target_fd: i32,
++}
++
++/// Original pending support-probe custody only. This type has no source FD,
++/// target accessor, issuer, native ioctl or notification-response operation.
++/// Keeping this observation after its request ends cannot extend that request
++/// or authorize a later configuration. A private target provider is still absent.
++pub(crate) struct ObservedApexdLoopSupportProbe {
++    custody: Rc<SupportProbeCustody>,
++}
++impl ObservedApexdLoopSupportProbe {
++    pub(crate) fn bytes(&self) -> &[u8; CONFIG_BYTES] {
++        &self.custody.body.bytes
++    }
++
++    pub(crate) fn revalidate(&self, request: &OriginalApexdIoctlRequest<'_>) -> Result<()> {
++        request.revalidate()?;
++        request.require_support_probe(&self.custody)?;
++        request.revalidate()
++    }
++}
++
+ struct BoundCustody {
+     observation: Rc<ConfigurationCustody>,
+     matched: Rc<MatchedDecompressedCapex>,
+@@ -256,6 +318,18 @@
+     Fresh,
+     Entered,
+     Complete,
++}
++
++fn begin_support_probe_observation(phase: &Cell<JournalPhase>) -> Result<()> {
++    if phase.get() != JournalPhase::Fresh {
++        return Err(NamespaceError::Rejected(
++            "original apexd support probe observation replay",
++        ));
++    }
++    // The same journal gates normal configure. A failed body/FD observation
++    // remains Entered and cannot be retried as either request class.
++    phase.set(JournalPhase::Entered);
++    Ok(())
+ }
+ 
+ /// Private trait erases only the tree-borrow lifetime. Its sole implementation
+@@ -313,6 +387,7 @@
+     memory_node: Node,
+     observation_phase: Cell<JournalPhase>,
+     observation: RefCell<Option<Rc<ConfigurationCustody>>>,
++    support_probe: RefCell<Option<Rc<SupportProbeCustody>>>,
+     binding_phase: Cell<JournalPhase>,
+     bound: RefCell<Option<Rc<BoundCustody>>>,
+ }
+@@ -407,6 +482,7 @@
+             memory_node,
+             observation_phase: Cell::new(JournalPhase::Fresh),
+             observation: RefCell::new(None),
++            support_probe: RefCell::new(None),
+             binding_phase: Cell::new(JournalPhase::Fresh),
+             bound: RefCell::new(None),
+         };
+@@ -593,6 +669,91 @@
+             ));
+         }
+         self.check_configuration(c)
++    }
++
++    fn check_support_probe(&self, custody: &SupportProbeCustody) -> Result<()> {
++        self.revalidate_base()?;
++        if custody.notification != self.notification
++            || custody.generation != self.generation
++            || custody.default != self.default
++            || custody.deadline != self.deadline
++            || support_probe_target_identity(&custody.target)? != custody.target_identity
++            || self.configuration_body()? != custody.body.bytes
++        {
++            return Err(NamespaceError::Rejected(
++                "original apexd support probe observation changed",
++            ));
++        }
++        let (target_fd, _) = configure_address(&self.notification)?;
++        if target_fd != custody.target_fd {
++            return Err(NamespaceError::Rejected(
++                "original apexd support probe target register changed",
++            ));
++        }
++        // Only the original ioctl target is duplicated. In particular the
++        // body's -1 is never passed to PIDFD_GETFD or interpreted as errno.
++        let target = copy_task_fd(&self.task, custody.target_fd, self.deadline)?;
++        same_open_file(&custody.target, &target)?;
++        if support_probe_target_identity(&target)? != custody.target_identity {
++            return Err(NamespaceError::Rejected(
++                "original apexd support probe copied target identity changed",
++            ));
++        }
++        self.transport.valid(&self.notification)?;
++        if self.configuration_body()? != custody.body.bytes
++            || support_probe_target_identity(&custody.target)? != custody.target_identity
++        {
++            return Err(NamespaceError::Rejected(
++                "original apexd support probe final bookend changed",
++            ));
++        }
++        self.revalidate_base()
++    }
++
++    fn require_support_probe(&self, custody: &Rc<SupportProbeCustody>) -> Result<()> {
++        let slot = self
++            .support_probe
++            .try_borrow()
++            .map_err(|_| NamespaceError::Rejected("original apexd support probe journal borrowed"))?;
++        if self.observation_phase.get() != JournalPhase::Complete
++            || self.binding_phase.get() != JournalPhase::Fresh
++            || !slot
++                .as_ref()
++                .is_some_and(|original| Rc::ptr_eq(original, custody))
++        {
++            return Err(NamespaceError::Rejected(
++                "support probe belongs to another original request",
++            ));
++        }
++        self.check_support_probe(custody)
++    }
++
++    /// Observe the exact support probe from this already received request.
++    /// This performs no ioctl or reply, never opens a host loop node, and does
++    /// not make the currently unconstructible original-target issuer available.
++    pub(crate) fn original_loop_support_probe(&self) -> Result<ObservedApexdLoopSupportProbe> {
++        self.revalidate()?;
++        begin_support_probe_observation(&self.observation_phase)?;
++        let (target_fd, _) = configure_address(&self.notification)?;
++        let body = SupportProbeBody::parse(self.configuration_body()?)?;
++        let target = copy_task_fd(&self.task, target_fd, self.deadline)?;
++        let custody = Rc::new(SupportProbeCustody {
++            notification: self.notification,
++            generation: self.generation,
++            default: self.default,
++            deadline: self.deadline,
++            body,
++            target_identity: support_probe_target_identity(&target)?,
++            target,
++            target_fd,
++        });
++        // Retain the real target OFD before the remaining fallible bookends.
++        *self.support_probe.try_borrow_mut().map_err(|_| {
++            NamespaceError::Rejected("original apexd support probe journal borrowed")
++        })? = Some(Rc::clone(&custody));
++        self.check_support_probe(&custody)?;
++        self.observation_phase.set(JournalPhase::Complete);
++        Ok(ObservedApexdLoopSupportProbe { custody })
+     }
+ 
+     pub(crate) fn original_loop_configure(&self) -> Result<ObservedApexdLoopConfigure> {
+@@ -784,6 +945,136 @@
+                 args: [7, CONFIGURE, 128, 0, 0, 0],
+             },
+         }
++    }
++
++    fn support_probe_body() -> [u8; CONFIG_BYTES] {
++        let mut body = [0_u8; CONFIG_BYTES];
++        body[..4].copy_from_slice(&u32::MAX.to_le_bytes());
++        body
++    }
++
++    #[test]
++    fn actual_apexd_support_probe_accepts_only_all_exact_304_bytes() {
++        let original = support_probe_body();
++        assert_eq!(SupportProbeBody::parse(original).unwrap().bytes, original);
++        // Every bit belongs to the original ABI, including all reserved bytes.
++        for offset in 0..CONFIG_BYTES {
++            for bit in 0..8 {
++                let mut changed = original;
++                changed[offset] ^= 1_u8 << bit;
++                assert!(SupportProbeBody::parse(changed).is_err(), "{offset}:{bit}");
++            }
++        }
++    }
++
++    #[test]
++    fn actual_apexd_support_probe_never_becomes_a_normal_source_descriptor() {
++        let probe = support_probe_body();
++        assert!(SupportProbeBody::parse(probe).is_ok());
++        assert!(source_number(&probe).is_err());
++        for number in [0, 1, 19, i32::MAX as u32] {
++            let mut normal = [0_u8; CONFIG_BYTES];
++            normal[..4].copy_from_slice(&number.to_le_bytes());
++            assert_eq!(source_number(&normal).unwrap(), number as i32);
++            assert!(SupportProbeBody::parse(normal).is_err());
++        }
++        for number in [i32::MAX as u32 + 1, u32::MAX - 1] {
++            let mut invalid = [0_u8; CONFIG_BYTES];
++            invalid[..4].copy_from_slice(&number.to_le_bytes());
++            assert!(source_number(&invalid).is_err());
++            assert!(SupportProbeBody::parse(invalid).is_err());
++        }
++    }
++
++    #[test]
++    fn actual_apexd_support_probe_keeps_original_exact_notification_abi() {
++        let original = notification();
++        assert_eq!(configure_address(&original).unwrap(), (7, 128));
++        let changes: [fn(&mut wire::Notification); 11] = [
++            |request| request.id = 0,
++            |request| request.pid = 1,
++            |request| request.flags = 1,
++            |request| request.data.arch = 0x4000_0003,
++            |request| request.data.nr = libc::SYS_mount as i32,
++            |request| request.data.instruction_pointer = 0,
++            |request| request.data.args[0] = i32::MAX as u64 + 1,
++            |request| request.data.args[1] = 0x4c05,
++            |request| request.data.args[2] = 0,
++            |request| request.data.args[2] = i64::MAX as u64,
++            |request| request.data.args[2] = u64::MAX,
++        ];
++        for change in changes {
++            let mut invalid = original;
++            change(&mut invalid);
++            assert!(configure_address(&invalid).is_err());
++        }
++        // These are ABI controls only. A nonzero ID still needs the unchanged
++        // actual pending-ID, PIDFD_THREAD, original owner and deadline checks.
++    }
++
++    #[test]
++    fn actual_apexd_support_probe_rejects_changed_short_or_expired_memory() {
++        let memory = tempfile::tempfile().unwrap();
++        let original = support_probe_body();
++        memory.write_all_at(&original, 128).unwrap();
++        let deadline = Instant::now() + Duration::from_secs(2);
++        let observed = SupportProbeBody::parse(read_configuration(&memory, 128, deadline).unwrap())
++            .unwrap();
++        assert_eq!(observed.bytes, original);
++        memory.write_all_at(&[1], 128 + 12).unwrap();
++        let changed = read_configuration(&memory, 128, deadline).unwrap();
++        assert_ne!(changed, observed.bytes);
++        assert!(SupportProbeBody::parse(changed).is_err());
++        memory.write_all_at(&original, 128).unwrap();
++        assert!(read_configuration(&memory, 128, Instant::now()).is_err());
++        memory.set_len(128 + CONFIG_BYTES as u64 - 1).unwrap();
++        assert!(read_configuration(&memory, 128, deadline).is_err());
++    }
++
++    #[test]
++    fn actual_apexd_support_probe_journal_cannot_replay_or_reset_a_failed_observation() {
++        let phase = Cell::new(JournalPhase::Fresh);
++        begin_support_probe_observation(&phase).unwrap();
++        assert_eq!(phase.get(), JournalPhase::Entered);
++        assert!(SupportProbeBody::parse([0_u8; CONFIG_BYTES]).is_err());
++        assert!(begin_support_probe_observation(&phase).is_err());
++        assert_eq!(phase.get(), JournalPhase::Entered);
++        // Normal configuration uses this same journal. Neither a completed
++        // normal observation nor a completed probe can be observed again.
++        phase.set(JournalPhase::Complete);
++        assert!(begin_support_probe_observation(&phase).is_err());
++        assert_eq!(phase.get(), JournalPhase::Complete);
++    }
++
++    #[test]
++    fn actual_apexd_support_probe_rejects_reopened_ofds_and_nonblock_targets() {
++        use std::fs::OpenOptions;
++        let directory = tempfile::tempdir().unwrap();
++        let path = directory.path().join("probe-identity-only");
++        let original = OpenOptions::new()
++            .read(true)
++            .write(true)
++            .create_new(true)
++            .open(&path)
++            .unwrap();
++        let copy = original.try_clone().unwrap();
++        same_open_file(&original, &copy).unwrap();
++        let reopened = OpenOptions::new().read(true).write(true).open(&path).unwrap();
++        assert_eq!(Node::of(&original).unwrap(), Node::of(&reopened).unwrap());
++        assert!(same_open_file(&original, &reopened).is_err());
++        for target in [&original, &copy, &reopened] {
++            assert!(support_probe_target_identity(target).is_err());
++        }
++        let readonly = OpenOptions::new().read(true).open(&path).unwrap();
++        assert!(support_probe_target_identity(&readonly).is_err());
++        let path_only = OpenOptions::new()
++            .read(true)
++            .custom_flags(libc::O_PATH)
++            .open(&path)
++            .unwrap();
++        assert!(FileIdentity::observe(&path_only).is_err());
++        assert!(support_probe_target_identity(&path_only).is_err());
++        // No block node, loop control, ioctl or privileged fixture is opened.
+     }
+ 
+     #[test]
