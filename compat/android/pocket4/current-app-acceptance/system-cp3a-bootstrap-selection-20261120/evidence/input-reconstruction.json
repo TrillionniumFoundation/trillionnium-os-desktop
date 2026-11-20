@@ -1,0 +1,30 @@
+{
+  "schema": "pocket4-exact-cp3a-input-reconstruction-v1",
+  "bytes": 454653,
+  "sha256": "c38a0ef25c51497f2056169ca130d3ff6e13fa710d3159444604341af33c4b25",
+  "exact_reconstruction": true,
+  "source_only": true,
+  "Android_actions": 0,
+  "negative": [
+    {
+      "name": "missing-blob",
+      "refused": true,
+      "error": "Exactly 24 postimages plus two metadata files required"
+    },
+    {
+      "name": "wrong-git-blob",
+      "refused": true,
+      "error": "Published Git blob changed"
+    },
+    {
+      "name": "wrong-original-manifest",
+      "refused": true,
+      "error": "Exact published original source manifest required"
+    },
+    {
+      "name": "duplicate-path",
+      "refused": true,
+      "error": "Duplicate input path"
+    }
+  ]
+}
