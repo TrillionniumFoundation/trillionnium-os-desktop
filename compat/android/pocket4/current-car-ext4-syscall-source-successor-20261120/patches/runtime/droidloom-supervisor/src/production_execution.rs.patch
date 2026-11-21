@@ -1,0 +1,48 @@
+--- a/runtime/droidloom-supervisor/src/production_execution.rs
++++ b/runtime/droidloom-supervisor/src/production_execution.rs
+@@ -19,6 +19,10 @@
+ #[path = "production_execution_capabilities.rs"]
+ mod capabilities;
+ use capabilities::FinalExecutionObservation;
++
++#[path = "production_execution_threads.rs"]
++mod threads;
++use threads::InitThreadPlacementObservation;
+ 
+ const PREPARATION_LIMIT: Duration = Duration::from_secs(120);
+ 
+@@ -344,6 +348,8 @@
+             .map_err(|error| ExecutionError::Mac(error.to_string()))?;
+         let final_state = FinalExecutionObservation::observe(init)
+             .map_err(|error| ExecutionError::KernelState(error.to_string()))?;
++        let thread_placement = InitThreadPlacementObservation::observe(init)
++            .map_err(|error| ExecutionError::KernelState(error.to_string()))?;
+         self.revalidate_tree(
+             init.selection(),
+             &init
+@@ -355,6 +361,7 @@
+             manager: self.manager,
+             init: init_mac,
+             final_state,
++            thread_placement,
+             preparation_deadline: self.deadline,
+         };
+         value.revalidate_init(init)?;
+@@ -370,6 +377,7 @@
+     manager: MacSystemdWitness,
+     init: MacInitWitness,
+     final_state: FinalExecutionObservation,
++    thread_placement: InitThreadPlacementObservation,
+     preparation_deadline: Instant,
+ }
+ 
+@@ -387,6 +395,9 @@
+             .map_err(|error| ExecutionError::Mac(error.to_string()))?;
+         self.final_state
+             .revalidate(init)
++            .map_err(|error| ExecutionError::KernelState(error.to_string()))?;
++        self.thread_placement
++            .revalidate(init)
+             .map_err(|error| ExecutionError::KernelState(error.to_string()))
+     }
+ }

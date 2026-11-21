@@ -78,12 +78,54 @@ def observation(value, png, *, profile, page, init_pid):
               and n.get('password') is False]
     need(heading and len(controls) >= 2 and len(labels) >= 3,
          'SETTINGS_PAGE_TITLE_OR_USABLE_CONTROLS_MISSING')
-    return {'page': 'home' if page is None else page['name'], 'package': profile.PACKAGE,
+    summary = {'page': 'home' if page is None else page['name'], 'package': profile.PACKAGE,
             'activity': activity, 'window_token': window['window_token'],
             'android_init_host_pid': init_pid, 'scoped_pixel_sha256': actual,
             'visible_control_count': len(controls), 'visible_label_count': len(labels),
             'expected_title_observed': True, 'source': 'actual-native-tree-and-scoped-PNG',
             'whole_app_business_accepted': False}
+    if page == profile.DATE_PAGE:
+        summary['time_format_state'] = time_format_state(nodes, profile)
+    return summary
+
+
+def time_format_state(nodes, profile):
+    """Use the exact helper's native checked/class/window/bounds fields.
+
+    actions.v2 does not export parent links or checkable. Associate a unique
+    switch with its exact APK label only when they share a window and a row.
+    Ambiguous, offscreen, private, editable or non-switch nodes are refused.
+    Disabled 24-hour controls remain observable when locale default is selected.
+    """
+    safe = [n for n in nodes if n.get('package') == profile.PACKAGE
+            and n.get('visible') is True and n.get('password') is False
+            and n.get('editable') is False and n.get('source') == 'native_accessibility']
+    def bounds(node):
+        b = node.get('bounds_array')
+        need(type(b) is list and len(b) == 4 and all(type(v) is int for v in b)
+             and 0 <= b[0] < b[2] <= 16384 and 0 <= b[1] < b[3] <= 16384,
+             'EXACT_NATIVE_TIME_FORMAT_BOUNDS_REQUIRED')
+        return b
+    def checked(titles):
+        labels = [n for n in safe if n.get('text') in titles]
+        need(len(labels) == 1, 'ONE_ACTUAL_TIME_FORMAT_LABEL_REQUIRED')
+        label = labels[0]; box = bounds(label)
+        need(type(label.get('window_id')) is int, 'TIME_FORMAT_NATIVE_WINDOW_ID_REQUIRED')
+        switches = []
+        for node in safe:
+            if node.get('class') not in ('android.widget.Switch', 'androidx.appcompat.widget.SwitchCompat'):
+                continue
+            if node.get('window_id') != label['window_id']:
+                continue
+            rect = bounds(node)
+            overlap = min(box[3], rect[3]) - max(box[1], rect[1])
+            if overlap * 2 >= min(box[3]-box[1], rect[3]-rect[1]) and (rect[0] >= box[2] or rect[2] <= box[0]):
+                switches.append(node)
+        need(len(switches) == 1 and type(switches[0].get('checked')) is bool,
+             'ONE_UNAMBIGUOUS_NATIVE_TIME_FORMAT_SWITCH_REQUIRED')
+        return switches[0]['checked']
+    return {'use_24hour': checked(profile.TIME_FORMAT_TITLES),
+            'locale_default': checked(profile.LOCALE_FORMAT_TITLES)}
 
 
 def recorded_ui_result(flow, value, step):
@@ -126,16 +168,52 @@ def execute_pages(flow, session):
          'NEW_SETTINGS_INSPECTION_PHASE_REQUIRED')
     rows = []
     for page in session.profile.PAGES:
-        with flow.c.locked('/run/lock/android-digitalis-actions.lock'):
-            session.require_owned_task(flow)
-            argv = session.profile.route_argv(flow.selected_task()['task'], page)
-            intent = session.begin_route(flow, page, argv)
-            # begin_route persists a once-only intent. A timeout, failed post-guard
-            # or changed task poisons that intent; no automatic route replay follows.
-            raw = flow.android(argv, 35, mutation=True)
-            ack = route_result(raw, page)
-            session.end_route(flow, page, intent, raw, ack)
-        rows.append(observe(flow, session, page))
+        rows.append(route_and_observe(flow, session, page))
     need(len(rows) == len(session.profile.PAGES) == 5,
          'ALL_FIVE_ORIGINAL_SETTINGS_PAGE_CLASSES_REQUIRED')
     return rows
+
+
+def route_and_observe(flow, session, page):
+    with flow.c.locked('/run/lock/android-digitalis-actions.lock'):
+        session.require_owned_task(flow)
+        argv = session.profile.route_argv(flow.selected_task()['task'], page)
+        intent = session.begin_route(flow, page, argv)
+        # An unretired route is never replayed or treated as a known effect.
+        raw = flow.android(argv, 35, mutation=True)
+        session.end_route(flow, page, intent, raw, route_result(raw, page))
+    return observe(flow, session, page)
+
+
+def begin_roundtrip(flow, session):
+    before = route_and_observe(flow, session, session.profile.DATE_PAGE)
+    session.prepare_setting(flow, before['summary']['time_format_state'], before)
+    session.write_setting(flow)
+    # A provider notification alone need not refresh the currently resumed
+    # Settings fragment. The next distinct native launch must establish both
+    # visible effect and persistence; a successful write is not that evidence.
+    return {'before': before, 'actual_write_readback_verified': True,
+            'UI_effect_requires_separate_native_reopen': True}
+
+
+def finish_roundtrip(flow, session):
+    state = session.roundtrip
+    need(state is not None and state['apply_readback_verified']
+         and len(session.task_claims) == 2 and len(session.closed_claims) == 1,
+         'SEPARATE_NORMAL_CLOSE_AND_FRESH_NATIVE_REOPEN_REQUIRED')
+    reopened = route_and_observe(flow, session, session.profile.DATE_PAGE)
+    need(session.read_setting(flow) == state['test_value']
+         and reopened['summary']['time_format_state'] ==
+         {'use_24hour': state['test_value'] == '24', 'locale_default': False},
+         'TIME_FORMAT_NOT_PERSISTED_ACROSS_OWNED_TASK_REOPEN')
+    state['reopen_persistence_verified'] = True
+    state['effect_verified'] = True
+    session.write_setting(flow, restore=True)
+    # Navigate away and back through fixed owned-task routes. This observes the
+    # restored preference on a resumed fragment rather than a stale UI cache.
+    away = route_and_observe(flow, session, session.profile.PAGES[0])
+    restored = route_and_observe(flow, session, session.profile.DATE_PAGE)
+    need(restored['summary']['time_format_state'] == state['before_ui_state'],
+         'RESTORED_TIME_FORMAT_NOT_EFFECTIVE_IN_ACTUAL_SETTINGS_UI')
+    state['restored_effect_verified'] = True
+    return {'reopened': reopened, 'restored_page_refresh': away, 'after_restore': restored}

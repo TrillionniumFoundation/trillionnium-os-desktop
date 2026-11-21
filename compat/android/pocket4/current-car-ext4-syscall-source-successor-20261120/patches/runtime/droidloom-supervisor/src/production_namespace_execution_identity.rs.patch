@@ -1,0 +1,18 @@
+--- a/runtime/droidloom-supervisor/src/production_namespace_execution_identity.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_execution_identity.rs
+@@ -322,6 +322,15 @@
+             .map_err(|error| NamespaceError::RuntimeResource(error.to_string()))?;
+         self.revalidate()
+     }
++
++    /// Read-only revalidation of the same owner's actually activated guest
++    /// hierarchy and fixed init placement. This cannot adopt a caller's
++    /// cgroup, move a thread or issue execution admission.
++    pub(crate) fn revalidate_guest_cgroup(&self) -> Result<()> {
++        self.revalidate()?;
++        self.owner.tree.require_cgroup_hierarchy_ready()?;
++        self.revalidate()
++    }
+ }
+ 
+ impl ExecutedNamespaces {

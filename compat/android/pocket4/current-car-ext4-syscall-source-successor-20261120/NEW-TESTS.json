@@ -37,5 +37,17 @@
     "tests": [
       "android::production_source::tests::original_652_apex_manifest_requires_explicit_car_source_reconciliation"
     ]
+  },
+  {
+    "component": "original_init_current_thread_placement",
+    "package": "droidloom-supervisor",
+    "target": "droidloom_supervisor",
+    "tests": [
+      "production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations",
+      "production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected",
+      "production_execution::threads::tests::ordinary_thread_child",
+      "production_execution::threads::tests::regular_files_directories_and_expired_scans_never_become_thread_evidence",
+      "production_execution::threads::tests::thread_status_and_cgroup_reject_missing_ambiguous_dead_or_truncated_records"
+    ]
   }
 ]

@@ -1,4 +1,4 @@
-"""Source-pinned Settings page consumer; no execution without its native release."""
+"""Source-pinned Settings business consumer; no execution without its native release."""
 import argparse
 import hashlib
 import json
@@ -104,7 +104,8 @@ def main():
             c.read_ref(request_ref);release.guard()
             print(json.dumps({'result':actual,'state':outcome['state'],
                 'case_business_success_verified':outcome['case_business_success_verified'],
-                'scope':'settings.pages','whole_app_business_accepted':False},sort_keys=True))
+                'scope':outcome['scope'],'accepted_gates':outcome['accepted_gates'],
+                'whole_app_business_accepted':False},sort_keys=True))
             return 0 if outcome['case_business_success_verified'] else 1
     c.read_ref(request_ref)
     print(json.dumps({'result':result,'whole_app_business_accepted':False},sort_keys=True))

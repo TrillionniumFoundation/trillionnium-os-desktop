@@ -2,7 +2,26 @@
 import os
 from pathlib import Path
 import resource
+import re
 import time
+
+
+def time_format_value(raw):
+    """A list read distinguishes an absent key from the literal string null."""
+    if (type(raw) is not bytes or not 0 < len(raw) <= 2 * 1024 * 1024
+            or not raw.endswith(b'\n') or b'\0' in raw or b'\r' in raw):
+        raise RuntimeError('BOUNDED_COMPLETE_SYSTEM_SETTINGS_READ_REQUIRED')
+    text = raw.decode('utf-8', 'strict')
+    rows = text.splitlines()
+    if not rows or any(not re.fullmatch(r'[A-Za-z0-9_.-]+=.*', row) for row in rows):
+        raise RuntimeError('SYSTEM_SETTINGS_LIST_GRAMMAR_CHANGED')
+    names = [row.split('=', 1)[0] for row in rows]
+    if len(names) != len(set(names)):
+        raise RuntimeError('DUPLICATE_SYSTEM_SETTING_KEY')
+    values = [row.split('=', 1)[1] for row in rows if row.startswith('time_12_24=')]
+    if values and values[0] not in ('12', '24'):
+        raise RuntimeError('UNSUPPORTED_EXISTING_TIME_FORMAT_PRESERVED')
+    return values[0] if values else None
 
 
 def resource_report(c, scope):
@@ -71,6 +90,7 @@ class Session:
         self.release=release; self.resources=resources; self.lease_ref=active['lease']
         self.root=Path(active['case_root']); self.pending_route=None; self.cleanup_admission=None
         self.current_ui_context=None; self.page_route_count=0; self.observation_count=0
+        self.pending_setting=None; self.pending_native=None; self.roundtrip=None; self.setting_write_count=0
         self.task_claims=[]; self.closed_claims=[]; self.before_tasks=None; self.retirement_unknown=False
         self.host=None; self.closed=False
 
@@ -101,8 +121,9 @@ class Session:
 
     def begin_route(self, flow, page, argv):
         self.c.need(self.pending_route is None and self.current_ui_context is None
-                    and self.page_route_count < len(self.profile.PAGES)
-                    and page==self.profile.PAGES[self.page_route_count],
+                    and self.pending_setting is None
+                    and self.page_route_count < len(self.profile.ROUTE_SEQUENCE)
+                    and page==self.profile.ROUTE_SEQUENCE[self.page_route_count],
                     'SETTINGS_FIXED_ONCE_ONLY_PAGE_ORDER_REQUIRED')
         self.require_owned_task(flow); self.page_route_count+=1
         ref=self.c.write_new(self.root/('page-%02d.intent.json'%self.page_route_count),
@@ -124,7 +145,9 @@ class Session:
 
     def ui_context(self, flow, page):
         self.c.need(self.pending_route is None and self.current_ui_context is None
-                    and self.observation_count < 7, 'SETTINGS_FRESH_READONLY_OBSERVATION_BUDGET')
+                    and self.pending_setting is None
+                    and self.observation_count < self.profile.LIMITS['maximum_observations'],
+                    'SETTINGS_FRESH_READONLY_OBSERVATION_BUDGET')
         _,claim=self.require_owned_task(flow); self.observation_count+=1
         self.current_ui_context={'schema':'pocket4-settings-pages-ui-context-v1',
             'scope':flow.scope_ref,'lease':self.lease_ref,'owned_claim':claim,
@@ -137,12 +160,14 @@ class Session:
 
     def no_unknown(self):
         self.c.need(not self.retirement_unknown and self.pending_route is None
-                    and self.current_ui_context is None, 'SETTINGS_UNKNOWN_EFFECT_NO_AUTOMATIC_CLEANUP')
+                    and self.current_ui_context is None and self.pending_setting is None
+                    and self.pending_native is None and self.cleanup_admission is None,
+                    'SETTINGS_UNKNOWN_EFFECT_NO_AUTOMATIC_CLEANUP')
 
     def recorded_prefix(self, flow):
         """Every dispatched command must have an actual complete host terminal."""
         logical=sorted((flow.root/'steps').glob('*/command-*.logical.json'))
-        self.c.need(0<len(logical)<=128,'SETTINGS_BOUNDED_RECORDED_COMMAND_PREFIX')
+        self.c.need(0<len(logical)<=256,'SETTINGS_BOUNDED_RECORDED_COMMAND_PREFIX')
         for path in logical:
             ref=self.c.regular(path,contents=False);self.c.read_ref(ref)
             result=self.c.parse(self.c.regular(path.with_name(path.name.replace('.logical.json','.result.json')))[0])
@@ -151,13 +176,113 @@ class Session:
                 and result.get('timed_out') is False and result.get('errors')==[]
                 and result.get('first_error') is None,'SETTINGS_COMMAND_PREFIX_NOT_FULLY_RETIRED')
 
-    def normal_close(self, flow):
-        self.no_unknown();self.recorded_prefix(flow)
+    def enter_cleanup(self, flow):
+        self.no_unknown(); self.recorded_prefix(flow)
         # Enter the original absolute cleanup reserve before guarded reads.
         # Ownership is still proved by the old claim and fresh exact stacks;
         # expiry never creates permission to remove an unclaimed task.
         lease=validate_lease(self.c,self.host,self.lease_ref,self.active,cleanup=True)
         flow.phase='cleanup'; flow.deadline=lease['cleanup_deadline_monotonic_ns']/10**9
+        flow.guard()
+
+    def read_setting(self, flow):
+        return time_format_value(flow.android(self.profile.SETTINGS_READ, 20))
+
+    def prepare_setting(self, flow, before_state, observation):
+        self.c.need(self.roundtrip is None and type(before_state) is dict
+                    and set(before_state) == {'use_24hour', 'locale_default'}
+                    and all(type(value) is bool for value in before_state.values()),
+                    'ONCE_ONLY_ACTUAL_TIME_FORMAT_BASELINE_REQUIRED')
+        self.no_unknown(); self.require_owned_task(flow)
+        original = self.read_setting(flow)
+        before_effect = before_state['use_24hour']
+        self.c.need(original is None or before_effect is (original == '24'),
+                    'TIME_FORMAT_PROVIDER_AND_NATIVE_STATE_DISAGREE')
+        self.c.need(before_state['locale_default'] is (original is None),
+                    'TIME_FORMAT_LOCALE_DEFAULT_AND_PROVIDER_DISAGREE')
+        original_ref = self.c.write_new(self.root/'setting-original.json', {
+            'schema': 'pocket4-settings-roundtrip-original-v1',
+            'contract': self.active['business_contract'], 'lease': self.lease_ref,
+            'scope': flow.scope_ref, 'original': original, 'before_ui_state': dict(before_state),
+            'observation': observation, 'automatic_retry': False}, 0o400)
+        self.roundtrip = {'original': original, 'original_ref': original_ref,
+            'before_ui_state': dict(before_state), 'test_value': '12' if before_effect else '24',
+            'apply_attempted': False, 'apply_readback_verified': False,
+            'restore_attempted': False, 'restore_readback_verified': False,
+            'effect_verified': False, 'reopen_persistence_verified': False,
+            'restored_effect_verified': False}
+
+    def write_setting(self, flow, *, restore=False):
+        """Once-only journaled write with fresh conflict checks and exact readback.
+
+        A complete, retired write can be restored after a later content failure.
+        Missing command retirement, changed Main, or another value forbids any
+        automatic write. An absent original is restored by deletion, never by
+        storing the string 'null'.
+        """
+        self.no_unknown(); self.recorded_prefix(flow)
+        state = self.roundtrip
+        self.c.need(state is not None and flow.phase in ('inspect', 'cleanup')
+                    and (restore or flow.phase == 'inspect'), 'CURRENT_SELECTED_SETTING_TRANSACTION_REQUIRED')
+        original = self.c.parse(self.c.read_ref(state['original_ref']))
+        self.c.need(original['original'] == state['original']
+                    and original['lease'] == self.lease_ref
+                    and original['contract'] == self.active['business_contract'],
+                    'IMMUTABLE_ORIGINAL_SETTING_CHANGED')
+        attempted = 'restore_attempted' if restore else 'apply_attempted'
+        self.c.need(not state[attempted] and self.setting_write_count < 2,
+                    'SETTING_WRITE_OR_RESTORE_MUST_NOT_BE_REPLAYED')
+        self.c.need((restore and state['apply_attempted'] and self.setting_write_count == 1)
+                    or (not restore and self.setting_write_count == 0),
+                    'SETTING_RESTORE_REQUIRES_OWN_PREVIOUS_WRITE')
+        desired = state['original'] if restore else state['test_value']
+        expected = state['test_value'] if restore else state['original']
+        with self.c.locked('/run/lock/android-digitalis-actions.lock'):
+            actual = self.read_setting(flow)
+            if restore and actual == state['original']:
+                # No mutation when a failed write left the original unchanged.
+                # This cannot satisfy the successful round-trip gate by itself.
+                state['restore_readback_verified'] = True
+                self.c.write_new(self.root/'setting-already-original.json', {
+                    'original': state['original_ref'], 'scope': flow.scope_ref,
+                    'readback': actual, 'write_performed': False}, 0o400)
+                return
+            self.c.need(actual == expected, 'SETTING_CHANGED_OUTSIDE_OWNED_TRANSACTION_NO_OVERWRITE')
+            state[attempted] = True; self.setting_write_count += 1
+            argv = self.profile.setting_write_argv(desired)
+            intent = self.c.write_new(self.root/('setting-%02d.intent.json' % self.setting_write_count), {
+                'schema': 'pocket4-settings-roundtrip-write-v1', 'scope': flow.scope_ref,
+                'lease': self.lease_ref, 'original': state['original_ref'],
+                'before': actual, 'desired': desired, 'restore': restore,
+                'argv': argv, 'automatic_retry': False}, 0o400)
+            self.pending_setting = {'scope': flow.scope_ref, 'intent': intent,
+                'argv': argv, 'sent': False, 'restore': restore}
+            raw = flow.android(argv, 20, mutation=True)
+            self.recorded_prefix(flow)
+            self.c.need(self.pending_setting['sent'] is True, 'SETTING_RESULT_WITHOUT_ADMITTED_WRITE')
+            self.c.write_new(self.root/('setting-%02d.retired.json' % self.setting_write_count), {
+                'intent': intent, 'stdout': self.c.write_new(
+                    self.root/('setting-%02d.stdout' % self.setting_write_count), raw, 0o400),
+                'command_retirement_verified': True, 'business_success_verified': False}, 0o400)
+            self.pending_setting = None
+            self.c.need(raw == (b'Deleted 1 rows\n' if desired is None else b''),
+                        'SETTING_COMMAND_ACKNOWLEDGEMENT_CHANGED')
+            readback = self.read_setting(flow)
+            self.c.need(readback == desired, 'SETTING_WRITE_READBACK_MISMATCH')
+            state['restore_readback_verified' if restore else 'apply_readback_verified'] = True
+            self.c.write_new(self.root/('setting-%02d.readback.json' % self.setting_write_count), {
+                'intent': intent, 'readback': readback, 'exact_value_verified': True}, 0o400)
+
+    def restore_known_setting(self, flow):
+        state = self.roundtrip
+        if state is None or not state['apply_attempted'] or state['restore_readback_verified']:
+            return False
+        self.enter_cleanup(flow)
+        self.write_setting(flow, restore=True)
+        return True
+
+    def normal_close(self, flow):
+        self.enter_cleanup(flow)
         flow._new_step('normal-close','phase',None,False); flow._bridge(); flow.guard()
         claim,ref=self.require_owned_task(flow)
         self.cleanup_admission=(flow.scope_ref,claim['task'])

@@ -1,0 +1,37 @@
+--- a/runtime/droidloom-supervisor/src/production_cgroup.rs
++++ b/runtime/droidloom-supervisor/src/production_cgroup.rs
+@@ -42,6 +42,10 @@
+ 
+ const UNIT: &str = "droidloom-production.service";
+ const UNIT_CGROUP: &str = "/system.slice/droidloom-production.service";
++// Compare-only policy shared with the original-init thread observer. This path
++// cannot identify a live owner or authorize opening/moving a caller's task.
++pub(crate) const INIT_CGROUP_PATH: &str =
++    "/system.slice/droidloom-production.service/cell-u1000/payload/init";
+ const EXPECTED_CPUS: &str = "2-23";
+ const MEMORY_MAX: u64 = 8 * 1024 * 1024 * 1024;
+ const MEMORY_HIGH: u64 = 6 * 1024 * 1024 * 1024;
+@@ -784,10 +788,7 @@
+             witness.keeper_proc_directory(),
+             &format!("{UNIT_CGROUP}/cell-u1000/keeper"),
+         )?;
+-        check_task_cgroup(
+-            witness.tree_proc_directory(),
+-            &format!("{UNIT_CGROUP}/cell-u1000/payload/init"),
+-        )?;
++        check_task_cgroup(witness.tree_proc_directory(), INIT_CGROUP_PATH)?;
+         require(
+             read_pids(&r.keeper.as_ref().unwrap().file)?
+                 == BTreeSet::from([witness.keeper_host_pid()])
+@@ -844,10 +845,7 @@
+         witness
+             .revalidate_for_migration(payload)
+             .map_err(|e| CgroupError::Owner(e.to_string()))?;
+-        check_task_cgroup(
+-            witness.tree_proc_directory(),
+-            &format!("{UNIT_CGROUP}/cell-u1000/payload/init"),
+-        )?;
++        check_task_cgroup(witness.tree_proc_directory(), INIT_CGROUP_PATH)?;
+         Ok(())
+     }
+ 
