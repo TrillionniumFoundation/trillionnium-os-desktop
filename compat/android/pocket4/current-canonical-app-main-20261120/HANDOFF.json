@@ -38,13 +38,14 @@
   "canonical_selector": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/selection/selection-14.json",
   "catalog": {
     "bytes": 7639,
-    "path": "/workspace/scratch/3b9ddccd362c/p4_canonical_app_cohort/publication/bundle/selection/leaf_sources.json",
-    "sha256": "b3f0d7ced1e772976497f1d7cb00581a368c6dd73fc523873f2cef74f236d803"
+    "path": "/workspace/scratch/f9cd321adc9a/android_settings_successor/compat/android/pocket4/current-canonical-app-main-20261120/bundle/selection/leaf_sources.json",
+    "sha256": "147548c209324cafe619f7cea823f7ef4e25904baed2d18065faacaa4eb70456"
   },
+  "current_candidate_source_bootstrap_pending": true,
   "deployment_candidate": {
-    "bytes": 238598,
-    "path": "/workspace/scratch/3b9ddccd362c/p4_canonical_app_cohort/publication/DEPLOYMENT-MANIFEST.json",
-    "sha256": "b6dac31fde990097db0f7adba6c1a30674fbf5db67c1e269778f35513ea0c167"
+    "bytes": 238650,
+    "path": "/workspace/scratch/f9cd321adc9a/android_settings_successor/compat/android/pocket4/current-canonical-app-main-20261120/DEPLOYMENT-MANIFEST.json",
+    "sha256": "c4741dbc6fc7b04881d32387006674eea01a0530c884e1153eda05b444da3c89"
   },
   "exact_main_contract": {
     "broker_is_actual_daemon_parent_of_init": true,
@@ -64,8 +65,13 @@
     "surfaceflinger_guest_primary_gid": 1003,
     "surfaceflinger_guest_uid": 1000
   },
-  "git_parent": "2500ac9557d718bda65d053a04ff7c3cfe994ae3",
+  "git_parent": "075f63df0ff1de1e6c2c09a923ed3a7632d388fc",
   "git_root": "compat/android/pocket4/current-canonical-app-main-20261120",
+  "historical_source_control_result": {
+    "bytes": 21183,
+    "path": "/workspace/scratch/3b9ddccd362c/p4_canonical_app_cohort/evidence/actual-source-r2/source-controls/RESULT.json",
+    "sha256": "ed11ad474682a32eb93c4fa97410e2d34c2eb1d59c5de4f814465c7ae314731b"
+  },
   "independent_calendar_review": {
     "bytes": 2337,
     "path": "/workspace/scratch/3b9ddccd362c/p4_canonical_app_cohort/evidence/CALENDAR-MAPPING-LIMITED-REVIEW.json",
@@ -151,30 +157,89 @@
     "original persistent data mount and all45 continuity",
     "real individual app business and cleanup evidence",
     "Meituan preserved-data signer migration",
-    "remaining business executor implementations"
+    "remaining business executor implementations",
+    "Settings original permission denial/error UX gate and all actual v2 case evidence"
   ],
   "route_map": {
-    "bytes": 104587,
-    "path": "/workspace/scratch/3b9ddccd362c/p4_canonical_app_cohort/publication/bundle/selection/APP-ROUTE-MAP.json",
-    "sha256": "4871511c2b5652a0d68d8fc4c2dcc6c6a61504ef0896cedcb3883c7e4eba83b8"
+    "bytes": 106055,
+    "path": "/workspace/scratch/f9cd321adc9a/android_settings_successor/compat/android/pocket4/current-canonical-app-main-20261120/bundle/selection/APP-ROUTE-MAP.json",
+    "sha256": "72913a7f2751a21548c0ca6c0dd04da637ece0264d55e59f3e73aa9a7a9b7ef7"
   },
   "runtime_enabled": false,
   "runtime_qualified": false,
   "schema": "pocket4-canonical-main-and-fourteen-leaves-handoff-v1",
   "selector": {
     "bytes": 4669,
-    "path": "/workspace/scratch/3b9ddccd362c/p4_canonical_app_cohort/publication/bundle/selection/selection-14.json",
-    "sha256": "b4d74f3691c43e564ffad8efc26da8de884496110fc85e1821b7b5825c28c15f"
+    "path": "/workspace/scratch/f9cd321adc9a/android_settings_successor/compat/android/pocket4/current-canonical-app-main-20261120/bundle/selection/selection-14.json",
+    "sha256": "a28f3d5b3bc2a75b9ee1e3257b5ec41869fab93f0f471458adeb5873885e7088"
+  },
+  "settings_source_successor": {
+    "Android_actions": 0,
+    "base_commit": "075f63df0ff1de1e6c2c09a923ed3a7632d388fc",
+    "changed_selection_indices": [
+      13
+    ],
+    "code_entrypoints_complete": false,
+    "execute_success_state": "SETTINGS_PAGES_ROUNDTRIP_VERIFIED_RESTORED",
+    "maximum_native_leaf_seconds": 900,
+    "native_settings_release_source_changed": false,
+    "new_runtime_acceptance_count": 0,
+    "new_v2_plan_and_explicit_business_contract_required": true,
+    "partial_permission_account_checks_do_not_credit_original_gate": true,
+    "plan_schema": "pocket4-settings-pages-plan-v2",
+    "producer_rebinding_required": [
+      "runtime/droidloom-applications/src/leaf_routes.rs",
+      "runtime/droidloom-applications/src/leaf_sources.json",
+      "runtime/droidloom-applications/tests/fixtures/selection-14-20261120.json"
+    ],
+    "production_ready": false,
+    "result_schema": "pocket4-settings-pages-case-result-v2",
+    "runtime_pending_gates": [
+      "settings.pages",
+      "settings.roundtrip",
+      "settings.permissions",
+      "identity",
+      "lifecycle",
+      "stability",
+      "data_permissions",
+      "release_scope",
+      "ui_observation"
+    ],
+    "runtime_qualified": false,
+    "settings_permissions_gate_accepted": false,
+    "source_model_tests": {
+      "actual_Android_or_Main_evidence": false,
+      "command": "python3 -m unittest discover -s compat/android/pocket4/current-canonical-app-main-20261120/tests -p test_settings_business.py -v",
+      "passed": 17
+    },
+    "source_only": true,
+    "source_prepared_gate_scope": [
+      "settings.pages",
+      "settings.roundtrip"
+    ],
+    "systemd_runtime_max_seconds": 1500,
+    "systemd_timeout_stop_seconds": 180,
+    "unchanged_selection_indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "whole_app_business_accepted": false
   },
   "source_closure": {
-    "bytes": 262080,
-    "path": "/workspace/scratch/3b9ddccd362c/p4_canonical_app_cohort/publication/SOURCE-CLOSURE.json",
-    "sha256": "f5c9f62915c78453018b16835af225af1a0af826c48e6a10af49a4715bfb0d23"
-  },
-  "source_control_result": {
-    "bytes": 21183,
-    "path": "/workspace/scratch/3b9ddccd362c/p4_canonical_app_cohort/evidence/actual-source-r2/source-controls/RESULT.json",
-    "sha256": "ed11ad474682a32eb93c4fa97410e2d34c2eb1d59c5de4f814465c7ae314731b"
+    "bytes": 262082,
+    "path": "/workspace/scratch/f9cd321adc9a/android_settings_successor/compat/android/pocket4/current-canonical-app-main-20261120/SOURCE-CLOSURE.json",
+    "sha256": "154c5aa81000254a097c23b6fcbfacfc0b48e1dffbe69c9a0e64f31b9d6d9ebb"
   },
   "transaction_v2": {
     "historical_transaction_modified": false,

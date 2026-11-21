@@ -1,7 +1,8 @@
-"""Two fresh Settings launches and five actual read-only page observations.
+"""Two owned Settings launches, exact setting restoration and read-only access.
 
-Only settings.pages can be credited by this case. Setting round trips,
-permission-management UI, and the six whole-app gates remain independent.
+Only actual complete native/recorder evidence can credit pages and roundtrip.
+Permission/account checks are partial; settings.permissions and the six
+whole-app gates remain independent and unaccepted.
 """
 import copy
 from datetime import datetime,timezone
@@ -25,13 +26,15 @@ def execute(c,base_ref,modules,release,resources):
     root=c.private_dir(base['case_root'])
     c.write_new(root/'execute-once.json',{'plan':base_ref,'operator':host.process(c,os.getpid()),
         'started_utc':stamp(),'automatic_retry':False},0o400)
-    result={'schema':'pocket4-settings-pages-case-result-v1','state':'FAILED',
-        'base_plan':base_ref,'started_utc':stamp(),'scope':'settings.pages','pages':[],
+    result={'schema':'pocket4-settings-pages-case-result-v2','state':'FAILED',
+        'base_plan':base_ref,'started_utc':stamp(),'scope':list(profile.COMPLETABLE_GATES),'pages':[],
+        'partial_scopes':['settings.permissions.readonly_interfaces_and_service_input_error'],
         'launches':[],'normal_closes':[],'case_business_success_verified':False,
         'whole_app_business_accepted':False,'automatic_retry':False,'secondary_errors':[],
         'setting_writes':0,'permission_writes':0,'account_writes':0,'package_writes':0,
-        'remaining_gates':list(profile.REMAINING_GATES),'Android_runtime_qualification_inferred_from_source':False}
-    session=flow=witness=None;first=None;signals=[];retiring=False;closed_flows=[];saved={}
+        'remaining_gates':list(profile.ALL_GATES),
+        'Android_runtime_qualification_inferred_from_source':False}
+    session=flow=witness=None;first=None;signals=[];retiring=False;closed_flows=[];saved={};retained_flows=[]
     def remember(label,error):
         nonlocal first
         item={'phase':label,'type':type(error).__name__,'message':str(error)}
@@ -44,9 +47,13 @@ def execute(c,base_ref,modules,release,resources):
     def close_host():
         nonlocal flow
         if flow is not None:
-            ref=flow.scope_ref
-            try:flow.close();closed_flows.append(ref)
-            finally:flow=None
+            current=flow;ref=current.scope_ref
+            try:current.close();closed_flows.append(ref)
+            finally:
+                # SIGINT between append(flow) and flow=None can leave the same
+                # context in both places. Retire that object only once.
+                retained_flows[:]=[held for held in retained_flows if held is not current]
+                flow=None
     try:
         for signum in (signal.SIGINT,signal.SIGTERM):saved[signum]=signal.signal(signum,interrupted)
         lease_ref=runtime.create_lease(c,host,base_ref,base)
@@ -56,7 +63,7 @@ def execute(c,base_ref,modules,release,resources):
         witness=c.EvidenceWitness([base_ref,active_ref,lease_ref,*scopes])
         result.update(active_plan=active_ref,lease=lease_ref,recorder_scopes=scopes,
                       resource_before=runtime.resource_report(c,resources),Main_before=baseline.guard())
-        before_roots=before_tasks=None;before_identity=None
+        before_roots=before_tasks=None;before_identity=None;before_accounts=None
         for index,scope in enumerate(scopes):
             c.need(not retiring and first is None,'SETTINGS_CANCELLED_OR_FAILED_NO_FURTHER_LAUNCH')
             session.guard();witness.verify()
@@ -71,14 +78,30 @@ def execute(c,base_ref,modules,release,resources):
                 result['task_baseline']={'roots':before_roots,'task_ids':sorted(before_tasks)}
             else:
                 c.need(roots==before_roots and tasks==before_tasks,'SETTINGS_FIRST_TASK_NOT_COMPLETELY_CLOSED')
+            session.pending_native=flow.scope_ref
             launched=flow.launch()
             claim,claim_ref=session.require_owned_task(flow)
             c.need(set(claim['prelaunch_task_ids'])==before_tasks,'SETTINGS_LAUNCH_BASELINE_CHANGED')
             session.task_claims.append(claim_ref);result['launches'].append(launched)
+            session.pending_native=None
             flow.phase='inspect';flow._new_step('inspect-pages','phase',None,False);flow._bridge();flow.guard()
             home=pages.observe(flow,session,None)
             result['initial_home' if index==0 else 'reopened_home']=home
-            if index==0:result['pages']=pages.execute_pages(flow,session)
+            if index==0:
+                before_accounts=identity.accounts(c,flow.android(profile.ACCOUNT_READ,20))
+                result['account_identities_before']=before_accounts
+                result['pages']=pages.execute_pages(flow,session)
+                result['roundtrip_start']=pages.begin_roundtrip(flow,session)
+                interfaces=[pages.route_and_observe(flow,session,page) for page in profile.PERMISSION_PAGES]
+                result['permission_interfaces']=identity.verify_permission_interfaces(flow,session,before_identity,interfaces)
+                c.need(result['permission_interfaces']['account_identities']==before_accounts,
+                       'ACCOUNT_IDENTITIES_CHANGED_DURING_READONLY_INTERFACE_CHECK')
+            else:
+                result['roundtrip_finish']=pages.finish_roundtrip(flow,session)
+                after_accounts=identity.accounts(c,flow.android(profile.ACCOUNT_READ,20))
+                result['account_identities_after']=after_accounts
+                c.need(after_accounts==before_accounts,'ACCOUNTS_NOT_PRESERVED_ACROSS_SETTINGS_CASE')
+                result['permission_account_state_preserved']=True
             session.no_unknown()
             result['normal_closes'].append(session.normal_close(flow))
             _,roots,tasks=flow.stacks()
@@ -87,23 +110,39 @@ def execute(c,base_ref,modules,release,resources):
                 after_identity=identity.snapshot(flow,profile)
                 result['identity_after']=after_identity
                 result['identity_permissions_directories_preserved']=identity.same(c,before_identity,after_identity)
+                c.need(identity.permission_result(c,flow.android(profile.PERMISSION_CHECK,20)) is
+                       identity.permission_state(c,after_identity,profile.PERMISSION_CHECK[3]),
+                       'FINAL_PERMISSION_SERVICE_STATE_MISMATCH')
                 result['complete_task_baseline_restored']=True
-            session.recorded_prefix(flow);close_host()
+            # Keep the first Main-bound context alive after its task is normally
+            # removed. If the second Flow cannot be constructed, it can still
+            # restore our known setting through the original cleanup lease.
+            # This retains descriptors, not an Android task or an extra launch.
+            session.recorded_prefix(flow);retained_flows.append(flow);flow=None
         result['all_five_pages_observed']=len(result['pages'])==len(profile.PAGES)==5
     except BaseException as error:
         remember('business_or_admission',error)
     finally:
         retiring=True
+        recovery_flow=flow if flow is not None else (retained_flows[-1] if retained_flows else None)
+        if session is not None and recovery_flow is not None:
+            try:
+                if session.restore_known_setting(recovery_flow):
+                    result['failure_setting_restore_readback_verified']=True
+            except BaseException as error:
+                result['unknown_or_conflicting_setting_retained_without_replay']=True
+                remember('known_setting_restore',error)
         # Known effects alone may use the original bounded normal-close path.
         # A route/UI/native outcome without a complete receipt is never replayed
         # or automatically removed. A previous close attempt is never retried.
         if flow is not None and session is not None and flow.scope_ref not in closed_flows:
             try:
-                if flow.phase!='cleanup':
+                if session.cleanup_admission is None:
                     session.no_unknown();session.recorded_prefix(flow)
                     _,claim=flow.scope_module.load_owned_task(flow.bound)
                     c.need(claim in session.task_claims,'NO_UNCLAIMED_SETTINGS_CLEANUP')
-                    result['failure_normal_close']=session.normal_close(flow)
+                    if claim not in session.closed_claims:
+                        result['failure_normal_close']=session.normal_close(flow)
                 elif session.cleanup_admission is not None:
                     raise RuntimeError('SETTINGS_CLOSE_OUTCOME_UNKNOWN_NO_RETRY')
             except BaseException as error:
@@ -111,14 +150,24 @@ def execute(c,base_ref,modules,release,resources):
                 remember('known_owned_task_cleanup',error)
         try:close_host()
         except BaseException as error:remember('host_Main_or_artifact_FD_close',error)
+        for retained in retained_flows:
+            try:retained.close();closed_flows.append(retained.scope_ref)
+            except BaseException as error:remember('retained_Main_or_artifact_FD_close',error)
         if witness is not None:
-            try:witness.verify();witness.close();result['evidence_witness_closed']=True
+            try:
+                try:witness.verify()
+                finally:witness.close()
+                result['evidence_witness_closed']=True
             except BaseException as error:remember('evidence_witness_close',error)
         if session is not None:
             result.update(native_launch_count=len(session.task_claims),
                 normally_closed_claims=session.closed_claims,page_route_count=session.page_route_count,
                 observation_count=session.observation_count,
                 pending_route=session.pending_route,pending_UI=session.current_ui_context,
+                pending_setting=session.pending_setting,pending_native=session.pending_native,
+                setting_writes=session.setting_write_count,
+                provider_writes=session.setting_write_count,other_provider_writes=0,
+                setting_roundtrip=session.roundtrip,
                 native_claims=session.task_claims)
             session.close()
         try:
@@ -135,17 +184,26 @@ def execute(c,base_ref,modules,release,resources):
         ok=(first is None and not result['secondary_errors'] and not signals and not pending
             and result.get('all_five_pages_observed') is True
             and result.get('identity_permissions_directories_preserved') is True
+            and result.get('permission_account_state_preserved') is True
+            and result.get('permission_interfaces',{}).get('readonly_input_error_verified') is True
             and result.get('complete_task_baseline_restored') is True
             and result.get('final_source_identity_chain_unchanged') is True
             and result.get('evidence_witness_closed') is True
             and session is not None and session.task_claims==session.closed_claims
             and len(session.task_claims)==len(closed_flows)==2
-            and session.page_route_count==5 and session.observation_count==7
+            and session.page_route_count==11 and session.observation_count==13
+            and session.setting_write_count==2 and session.roundtrip is not None
+            and all(session.roundtrip.get(k) is True for k in (
+                'apply_readback_verified','effect_verified','reopen_persistence_verified',
+                'restore_readback_verified','restored_effect_verified'))
             and session.pending_route is None and session.current_ui_context is None
+            and session.pending_setting is None and session.pending_native is None
             and session.cleanup_admission is None)
         result['case_business_success_verified']=bool(ok)
-        result['accepted_gates']=['settings.pages'] if ok else []
-        result['state']='SETTINGS_PAGES_VERIFIED_CLEAN' if ok else 'FAILED_OR_UNKNOWN_RETAINED'
+        result['accepted_gates']=list(profile.COMPLETABLE_GATES) if ok else []
+        result['remaining_gates']=list(profile.REMAINING_GATES if ok else
+                                      profile.ALL_GATES)
+        result['state']='SETTINGS_PAGES_ROUNDTRIP_VERIFIED_RESTORED' if ok else 'FAILED_OR_UNKNOWN_RETAINED'
         result.update(finished_utc=stamp(),whole_app_business_accepted=False,Binder_UID_cleanup_verified=False,
                       host_flow_contexts_closed=closed_flows)
         result_ref=c.write_new(root/'result.json',result)

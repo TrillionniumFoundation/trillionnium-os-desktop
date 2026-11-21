@@ -7,7 +7,7 @@ import secrets
 BASE_FIELDS = {'schema','kind','baseline','qualification','target_identity','helper_identity',
     'framework_epoch_sha256','support_manifest','target_profile','helper_profile','limits',
     'source_preparation','task_source_manifest','original_gates','flows','case_root',
-    'whole_app_business_accepted','automatic_retry'}
+    'whole_app_business_accepted','automatic_retry','business_contract'}
 ACTIVE_FIELDS = BASE_FIELDS | {'base_plan','lease'}
 
 
@@ -34,13 +34,15 @@ def preparation(c, ref):
 
 
 def inputs(c, request, packet):
-    c.need(set(request) == {'baseline','qualification','target_identity','helper_identity'},
+    c.need(set(request) == {'baseline','qualification','target_identity','helper_identity','business_contract'},
            'FRESH_MAIN_AND_TWO_ACTUAL_SETTINGS_IDENTITIES_REQUIRED')
     _, support = c.support(c.SUPPORT_REF)
     baseline = support['business_baseline.py'].BusinessBaseline(request['baseline'], request['qualification'])
     c.need(baseline.qualification['source_manifest'] == c.SUPPORT_REF,
            'SETTINGS_IDENTITY_AND_BASELINE_SOURCE_COHORT_CHANGED')
     profile = named(c, packet, 'settings_profiles.py')
+    c.need(request['business_contract'] == profile.BUSINESS_CONTRACT,
+           'EXPLICIT_SELECTED_REVERSIBLE_SETTING_AND_READONLY_PERMISSION_CONTRACT_REQUIRED')
     for key, expected in (('target_identity', profile.TARGET), ('helper_identity', profile.HELPER)):
         identity = c.parse(c.read_ref(request[key]))
         c.validate_identity(identity, expected, request['baseline'], request['qualification'])
@@ -77,14 +79,14 @@ def source_packet(c, value, prepared):
 
 
 def validate(c, value, baseline, scope=None):
-    active = value.get('schema') == 'pocket4-settings-pages-active-plan-v1'
+    active = value.get('schema') == 'pocket4-settings-pages-active-plan-v2'
     c.need(set(value) == (ACTIVE_FIELDS if active else BASE_FIELDS)
-           and value['schema'] in ('pocket4-settings-pages-plan-v1','pocket4-settings-pages-active-plan-v1')
+           and value['schema'] in ('pocket4-settings-pages-plan-v2','pocket4-settings-pages-active-plan-v2')
            and value['kind'] == 'settings_supported_pages'
            and value['whole_app_business_accepted'] is False and value['automatic_retry'] is False,
            'EXACT_BOUNDED_SETTINGS_PLAN_REQUIRED')
     prepared = preparation(c, value['source_preparation'])
-    request = {k:value[k] for k in ('baseline','qualification','target_identity','helper_identity')}
+    request = {k:value[k] for k in ('baseline','qualification','target_identity','helper_identity','business_contract')}
     checked, profile = inputs(c, request, prepared)
     c.need(checked.baseline_ref == baseline.baseline_ref == value['baseline']
            and checked.qualification_ref == baseline.qualification_ref == value['qualification']
@@ -104,7 +106,7 @@ def validate(c, value, baseline, scope=None):
     if active:
         original = c.parse(c.read_ref(value['base_plan']))
         c.need(original == {k:v for k,v in value.items() if k not in ('base_plan','lease','schema')} |
-               {'schema':'pocket4-settings-pages-plan-v1'}, 'SETTINGS_ACTIVE_PLAN_CHANGED_BASE_INPUTS')
+               {'schema':'pocket4-settings-pages-plan-v2'}, 'SETTINGS_ACTIVE_PLAN_CHANGED_BASE_INPUTS')
         c.read_ref(value['lease'])
     if scope is not None:
         c.need(active and any(scope['nonce'] == f['nonce'] and scope['flow_root'] == f['flow_root'] for f in flows)
@@ -143,7 +145,7 @@ def create(c, request, output, preparation_ref):
         nonce=secrets.token_hex(16)
         c.need(nonce not in {x['nonce'] for x in flows}, 'DISTINCT_NEW_SETTINGS_NONCES')
         flows.append({'nonce':nonce,'flow_root':str(c.QUALIFICATION/('business-flow-settings-pages-'+nonce))})
-    value={'schema':'pocket4-settings-pages-plan-v1','kind':'settings_supported_pages',**request,
+    value={'schema':'pocket4-settings-pages-plan-v2','kind':'settings_supported_pages',**request,
            'framework_epoch_sha256':baseline.value['framework_epoch']['sha256'],
            'support_manifest':c.SUPPORT_REF,'target_profile':profile.TARGET,'helper_profile':profile.HELPER,
            'limits':profile.LIMITS,'source_preparation':preparation_ref,'task_source_manifest':task_ref,
@@ -158,7 +160,7 @@ def activate(c, base_ref, lease_ref):
     _, modules = c.support(base['support_manifest'])
     baseline = modules['business_baseline.py'].BusinessBaseline(base['baseline'], base['qualification'])
     validate(c, base, baseline)
-    active = {**base,'schema':'pocket4-settings-pages-active-plan-v1','base_plan':base_ref,'lease':lease_ref}
+    active = {**base,'schema':'pocket4-settings-pages-active-plan-v2','base_plan':base_ref,'lease':lease_ref}
     active_ref=c.write_new(Path(base['case_root'])/'active-plan.json', active, 0o400)
     task=c.parse(c.read_ref(base['task_source_manifest'])); refs=[]
     for flow in base['flows']:

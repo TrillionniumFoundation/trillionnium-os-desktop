@@ -5,6 +5,7 @@ file is opened. The shared system UID is not treated as a Settings-only crash
 filter, so this partial case cannot satisfy the common stability gate.
 """
 import os
+import hashlib
 import re
 import stat
 
@@ -77,3 +78,79 @@ def same(c, before, after):
     c.need(all(value=='false' for value in after['launch_state_observed'].values()),
            'SETTINGS_LAUNCH_STATE_NOT_OBSERVED_AFTER_ACTUAL_LAUNCH')
     return True
+
+
+def permission_state(c, snapshot, permission):
+    rows = [row for row in snapshot['all_permission_rows'] if row.startswith(permission + ': ')]
+    c.need(len(rows) == 1, 'ONE_EXPLICIT_SETTINGS_PERMISSION_STATE_REQUIRED')
+    match = re.fullmatch(re.escape(permission) + r': granted=(true|false)(?:, flags=\[[A-Z_ |]*\])?', rows[0])
+    c.need(match is not None, 'EXPLICIT_PERMISSION_GRANT_GRAMMAR')
+    return match[1] == 'true'
+
+
+def permission_result(c, raw):
+    c.need(type(raw) is bytes and raw in (b'0\n', b'-1\n'),
+           'ACTUAL_PACKAGE_PERMISSION_SERVICE_RESULT_REQUIRED')
+    return raw == b'0\n'
+
+
+def accounts(c, raw):
+    """Compare account identities without copying names into public summaries.
+
+    The actual private recorder retains the complete service reply. Logs and
+    active-session ages are not account identities. Truncated, duplicate or
+    ambiguous user/account sections fail closed rather than becoming zero.
+    """
+    c.need(type(raw) is bytes and 0 < len(raw) <= 2*1024*1024
+           and raw.endswith(b'\n') and b'\0' not in raw and b'\r' not in raw,
+           'BOUNDED_COMPLETE_ACCOUNT_SERVICE_DUMP')
+    text = raw.decode('utf-8', 'strict')
+    starts = list(re.finditer(r'^User UserInfo\{(\d+):[^\n]*\}:\s*$', text, re.M))
+    c.need(starts and len(starts) <= 32 and len(starts) == len({m[1] for m in starts})
+           and any(m[1] == '0' for m in starts), 'COMPLETE_UNIQUE_ACCOUNT_USERS_REQUIRED')
+    output = []
+    for index, match in enumerate(starts):
+        section = text[match.end():starts[index+1].start() if index+1 < len(starts) else len(text)]
+        headings = list(re.finditer(r'^\s*Accounts: (\d+)\s*$', section, re.M))
+        c.need(len(headings) == 1, 'ONE_ACCOUNT_COUNT_FOR_EACH_ACTUAL_USER')
+        head = headings[0]; count = int(head[1])
+        c.need(0 <= count <= 1024, 'ACCOUNT_COUNT_BOUND')
+        # AccountManagerService prints the complete account list immediately
+        # after Accounts:, followed by a blank line and unrelated diagnostics.
+        tail = section[head.end():].lstrip('\r\n')
+        lines = tail.splitlines()
+        account_rows = []
+        for line in lines:
+            if not line.strip(): break
+            if not line.lstrip().startswith('Account {'): break
+            c.need(re.fullmatch(r'\s*Account \{name=.+, type=[A-Za-z0-9_.-]+\}\s*', line)
+                   is not None, 'UNPARSED_ACCOUNT_IDENTITY_ROW')
+            account_rows.append(line.strip())
+        c.need(len(account_rows) == count and len(account_rows) == len(set(account_rows)),
+               'ACCOUNT_LIST_TRUNCATED_OR_DUPLICATED')
+        output.append({'user': int(match[1]), 'count': count,
+            'account_identity_sha256': sorted(hashlib.sha256(row.encode()).hexdigest() for row in account_rows)})
+    return sorted(output, key=lambda row: row['user'])
+
+
+def verify_permission_interfaces(flow, session, before, page_observations):
+    """Read actual service state and an actual malformed-query error response."""
+    c = flow.c; profile = session.profile
+    c.need(len(page_observations) == 2
+           and [r['summary']['page'] for r in page_observations] == ['special_access', 'accounts'],
+           'ACTUAL_PERMISSION_AND_ACCOUNT_WINDOWS_REQUIRED')
+    permission = profile.PERMISSION_CHECK[3]
+    expected = permission_state(c, before, permission)
+    actual = permission_result(c, flow.android(profile.PERMISSION_CHECK, 20))
+    c.need(actual is expected, 'PERMISSION_SERVICE_AND_COMPLETE_PACKAGE_STATE_DISAGREE')
+    error = flow.android(profile.PERMISSION_ERROR, 20)
+    c.need(error == b'Error: check-permission missing permission argument\n',
+           'ACTUAL_READONLY_PERMISSION_INPUT_ERROR_NOT_OBSERVED')
+    # A denied grant is a legitimate state; never require or issue a grant.
+    return {'permission': permission, 'user': 0, 'granted': actual,
+        'service_matches_complete_package_dump': True, 'readonly_input_error_verified': True,
+        'observed_pages': page_observations, 'permission_writes': 0, 'account_writes': 0,
+        'account_identities': accounts(c, flow.android(profile.ACCOUNT_READ, 20)),
+        'settings_permissions_gate_accepted': False,
+        'remaining_permission_scope': 'actual-Settings-permission-denial-and-error-UX',
+        'whole_app_business_accepted': False}

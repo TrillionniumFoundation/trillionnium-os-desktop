@@ -103,8 +103,8 @@ def complete_catalog(parent,additions):
     result=[]
     for key,row in sorted(mapped.items()):
         row['all'].sort();result.append(row)
-    need(len(new)==11 and sum(len(row['all']) for row in result)==1654
-         and sum(len(row['ignored']) for row in result)==31,'complete1623 ordinary and31 listed-only ignored tests required')
+    need(len(new)==16 and sum(len(row['all']) for row in result)==1659
+         and sum(len(row['ignored']) for row in result)==31,'complete1628 ordinary and31 listed-only ignored tests required')
     return result
 
 

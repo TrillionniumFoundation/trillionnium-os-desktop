@@ -1749,7 +1749,7 @@ jobs:
             ${{ runner.temp }}/runtime-d6-ci-logs/*.stderr
 
   runtime-current-complete-producer:
-    name: Current source - 1623 ordinary cases, 19 releases, examples and docs
+    name: Current source - 1628 ordinary cases, 19 releases, examples and docs
     runs-on: ubuntu-24.04
     timeout-minutes: 140
     env:
@@ -1768,7 +1768,7 @@ jobs:
       CURRENT_NATIVE_INVENTORY_SHA256: 8be17cef0f7dab7b1b2ae508fd2753a2f334cf9249d389dcf5f70896356cbe9b
       CURRENT_OWNED_CANONICAL_INVENTORY_SHA256: ab44dde611350652f99c5f60f96e4113038ba77f5b4c2692ea96c15705e3ee1e
       CURRENT_JOINT_DATA_INVENTORY_SHA256: 715557d89c6fdfecbaae5fb617f26537769a95e77d01b2538ce0b62606831799
-      CURRENT_CAR_EXT4_INVENTORY_SHA256: a7fdebf9b53eece22906de04104553e2cd61b8ede96f5f18e7bdeb6ebe32f5d5
+      CURRENT_CAR_EXT4_INVENTORY_SHA256: e179756adc70b1bd84959e2f88d801c4219f6a60eed24268c60080a9d6e7b46d
       P4_NATIVE_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
@@ -1899,6 +1899,256 @@ jobs:
             --parent-source "$RUNNER_TEMP/current-owned-data-producer" \
             --output "$RUNNER_TEMP/current-car-data-producer" \
             --report "$RUNNER_TEMP/current-car-data-source-replay.json"
+      - name: Verify current canonical app sources and producer bindings
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          status=0
+          timeout --signal=TERM --kill-after=5s 60s /usr/bin/python3 -I -B - \
+            >"$RUNNER_TEMP/current-cohort-controls/canonical-app-source.stdout" \
+            2>"$RUNNER_TEMP/current-cohort-controls/canonical-app-source.stderr" <<'CANONICAL_APP_SOURCE' || status=$?
+          import hashlib
+          import json
+          import os
+          from pathlib import Path, PurePosixPath
+          import re
+          import stat
+          
+          WORK = Path(os.environ['GITHUB_WORKSPACE']).resolve(strict=True)
+          PRODUCER = Path(os.environ['RUNNER_TEMP']).resolve(strict=True) / 'current-car-data-producer'
+          REL = 'compat/android/pocket4/current-canonical-app-main-20261120'
+          ROOT = WORK / REL
+          CANON = '/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1'
+          EXPECTED_PINS = [
+              {
+                  "name": "BUNDLE-MANIFEST.json",
+                  "bytes": 127504,
+                  "sha256": "1cd9d7a2cb4bf62fba8a04f46ab7c49b29a1eaeba16138311e042845288c9fd7"
+              },
+              {
+                  "name": "DEPLOYMENT-MANIFEST.json",
+                  "bytes": 238650,
+                  "sha256": "c4741dbc6fc7b04881d32387006674eea01a0530c884e1153eda05b444da3c89"
+              },
+              {
+                  "name": "HANDOFF.json",
+                  "bytes": 11765,
+                  "sha256": "e78054d9f5a6c3deed6bc484a23b7dd3fe2e002f9b07f7974f1f9b7d2cbf361d"
+              },
+              {
+                  "name": "README.md",
+                  "bytes": 11159,
+                  "sha256": "9b16c010b796568735639f254595bc0a31999b2e3bd2f3ce6c63a3b391098c7d"
+              },
+              {
+                  "name": "SOURCE-CLOSURE.json",
+                  "bytes": 262082,
+                  "sha256": "154c5aa81000254a097c23b6fcbfacfc0b48e1dffbe69c9a0e64f31b9d6d9ebb"
+              },
+              {
+                  "name": "tests/test_settings_business.py",
+                  "bytes": 19995,
+                  "sha256": "4bf44934608fd9b61f3e7f51497e7fb56ac193c89bfa1dfde006dafedc9bbb44"
+              }
+          ]
+          F9 = ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid', 'st_nlink',
+                'st_size', 'st_mtime_ns', 'st_ctime_ns')
+          READ_IDENTITIES = {}
+          
+          def need(value, message):
+              if not value:
+                  raise RuntimeError(message)
+          
+          def read(path):
+              need(path.is_absolute() and path.resolve(strict=True) == path, 'exact regular source path')
+              fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+              try:
+                  first = os.fstat(fd)
+                  need(stat.S_ISREG(first.st_mode) and first.st_nlink == 1
+                       and 0 <= first.st_size <= 16 * 1024 * 1024, 'bounded singly linked source')
+                  with os.fdopen(os.dup(fd), 'rb') as stream:
+                      raw = stream.read(first.st_size + 1)
+                  last = os.fstat(fd)
+                  named = path.lstat()
+                  need(len(raw) == first.st_size and all(getattr(first, k) == getattr(last, k) == getattr(named, k)
+                                                        for k in F9), 'source changed during read')
+                  snapshot = tuple(getattr(first, key) for key in F9)
+                  need(READ_IDENTITIES.setdefault(path, snapshot) == snapshot, 'source changed between graph reads')
+                  return raw
+              finally:
+                  os.close(fd)
+          
+          def identity(raw):
+              return {'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest()}
+          
+          def check_pin(value, raw, expected_path=None):
+              need(type(value) is dict and set(value) == {'path', 'bytes', 'sha256'}, 'exact FilePin')
+              need(type(value['bytes']) is int and value['bytes'] >= 0
+                   and type(value['sha256']) is str and re.fullmatch('[0-9a-f]{64}', value['sha256']), 'typed whole-file identity')
+              need({k: value[k] for k in ('bytes', 'sha256')} == identity(raw), 'whole source bytes differ')
+              need(type(value['path']) is str and (expected_path is None or value['path'] == expected_path), 'exact pin path')
+          
+          def suffix(target):
+              need(type(target) is str and target.startswith(CANON + '/'), 'source escaped canonical root')
+              relative = target[len(CANON) + 1:]
+              parts = PurePosixPath(relative)
+              need(bool(relative) and not parts.is_absolute() and str(parts) == relative
+                   and all(part not in ('.', '..') for part in parts.parts), 'normalized canonical source suffix')
+              return relative
+          
+          outer = {}
+          for row in EXPECTED_PINS:
+              raw = read(ROOT / row['name'])
+              need(identity(raw) == {k: row[k] for k in ('bytes', 'sha256')}, 'external reviewed source pin: ' + row['name'])
+              if row['name'].endswith('.json'):
+                  outer[row['name']] = json.loads(raw)
+          
+          bundle = outer['BUNDLE-MANIFEST.json']
+          closure = outer['SOURCE-CLOSURE.json']
+          deployment = outer['DEPLOYMENT-MANIFEST.json']
+          handoff = outer['HANDOFF.json']
+          need(bundle['canonical_root'] == closure['canonical_root'] == deployment['target_root'] == CANON, 'one canonical root')
+          need(bundle['files'] == [row['target'] for row in closure['bundle_files']]
+               == [row['target'] for row in deployment['files']], 'three complete matching source lists')
+          need(closure['bundle_files'] == deployment['files'], 'same repository paths and declared root modes')
+          need(type(closure['file_count']) is int and closure['file_count'] == len(bundle['files']) == 474, 'all 474 bundle files')
+          targets = [row['path'] for row in bundle['files']]
+          need(len(targets) == len(set(targets)), 'unique canonical paths in the same declared order')
+          bodies = {}
+          repository_paths = []
+          for row in closure['bundle_files']:
+              need(set(row) == {'repository_path', 'target', 'mode', 'uid', 'gid'}, 'exact deployment source row')
+              need(type(row['mode']) is int and row['mode'] == 0o444 and type(row['uid']) is int
+                   and row['uid'] == 0 and type(row['gid']) is int and row['gid'] == 0, 'declared root source ownership')
+              relative = suffix(row['target']['path'])
+              expected = REL + '/bundle/' + relative
+              need(row['repository_path'] == expected, 'exact repository-to-canonical mapping')
+              raw = read(WORK / expected)
+              check_pin(row['target'], raw, CANON + '/' + relative)
+              bodies[row['target']['path']] = raw
+              repository_paths.append(expected)
+          entries = list((ROOT / 'bundle').rglob('*'))
+          need(not any(path.is_symlink() for path in entries), 'no symlink in bundle graph')
+          actual = sorted(str(path.relative_to(WORK)) for path in entries if path.is_file())
+          need(actual == sorted(repository_paths), 'complete actual bundle file set')
+          need(type(closure['total_bytes']) is int and closure['total_bytes'] == sum(map(len, bodies.values())), 'whole bundle byte count')
+          
+          def current_json(name):
+              return json.loads(bodies[CANON + '/' + name])
+          
+          def canonical_ref(ref):
+              suffix(ref['path'])
+              need(ref['path'] in bodies, 'source reference absent from complete graph')
+              check_pin(ref, bodies[ref['path']])
+          
+          catalog = current_json('selection/leaf_sources.json')
+          selector = current_json('selection/selection-14.json')
+          routes = current_json('selection/APP-ROUTE-MAP.json')
+          preparation = current_json('preparations/settings.json')
+          need(len(catalog) == 14 and [row['index'] for row in catalog] == list(range(14)), 'complete ordered catalog')
+          need(closure['catalog_rows'] == catalog, 'source-closure current catalog')
+          for row in catalog:
+              need(set(row) == {'index', 'preparation', 'entry'} and type(row['index']) is int, 'exact catalog row')
+              canonical_ref(row['preparation'])
+              canonical_ref(row['entry'])
+          need(selector['selected_preparations'] == [row['preparation'] for row in catalog], 'same ordered selector preparations')
+          canonical_ref(selector['source_selection_update']['catalog'])
+          canonical_ref(routes['inputs']['compiled_leaf_catalog_candidate'])
+          canonical_ref(routes['inputs']['selected_preparations'])
+          canonical_ref(routes['source_selection_update']['catalog'])
+          for ref in preparation['files'] + preparation['origins']:
+              canonical_ref(ref)
+          settings = next(row for row in routes['rows'] if row['package'] == 'com.android.settings')
+          entry = settings['existing_leaf_entries'][0]
+          need(entry['preparation'] == catalog[13]['preparation'] and entry['entry_source'] == catalog[13]['entry'], 'same Settings route sources')
+          need(entry['partial_gate_scope'] == preparation['source_prepared_gate_scope'] == ['settings.pages', 'settings.roundtrip']
+               and preparation['code_entrypoints_complete'] is False
+               and preparation['permission_interfaces']['settings_permissions_gate_accepted'] is False
+               and preparation['remaining_original_gates'][0] == 'settings.permissions', 'no permission or whole-app overcredit')
+          
+          # These are descriptive publication-stage paths. Compare their identities to
+          # checkout bodies; never dereference old/current scratch or helper-ELF paths.
+          for key, name in [('catalog', 'bundle/selection/leaf_sources.json'),
+                            ('selector', 'bundle/selection/selection-14.json'),
+                            ('route_map', 'bundle/selection/APP-ROUTE-MAP.json'),
+                            ('source_closure', 'SOURCE-CLOSURE.json'),
+                            ('deployment_candidate', 'DEPLOYMENT-MANIFEST.json')]:
+              check_pin(handoff[key], read(ROOT / name))
+              need(handoff[key]['path'].endswith('/' + REL + '/' + name), 'published artifact location suffix')
+          check_pin(deployment['source_closure'], read(ROOT / 'SOURCE-CLOSURE.json'))
+          need(deployment['source_closure'] == handoff['source_closure'], 'deployment pins current closure')
+          
+          rows = json.loads(read(WORK / 'compat/android/pocket4/current-car-ext4-syscall-source-successor-20261120/SOURCE-ROWS.json'))
+          source_rows = {row['path']: row for row in rows}
+          producer_bodies = {}
+          for name in ('runtime/droidloom-applications/src/leaf_routes.rs',
+                       'runtime/droidloom-applications/src/leaf_sources.json',
+                       'runtime/droidloom-applications/tests/fixtures/selection-14-20261120.json'):
+              raw = read(PRODUCER / name)
+              need(identity(raw) == {key: source_rows[name][key] for key in ('bytes', 'sha256')}, 'producer bytes differ from authenticated current source row')
+              producer_bodies[name] = raw
+          need(producer_bodies['runtime/droidloom-applications/src/leaf_sources.json'] == bodies[CANON + '/selection/leaf_sources.json'], 'producer and bundle catalogs differ')
+          selected = bodies[CANON + '/selection/selection-14.json']
+          need(producer_bodies['runtime/droidloom-applications/tests/fixtures/selection-14-20261120.json'] == selected, 'producer and bundle selectors differ')
+          route_source = producer_bodies['runtime/droidloom-applications/src/leaf_routes.rs']
+          need(identity(route_source) == {'bytes': 65821, 'sha256': '877d00f3900d6e77702a7a06a1d401e945a32af98f54ccf8ec9e204a96c55b46'}, 'exact reviewed Settings terminal consumer')
+          text = route_source.decode()
+          need(re.findall(r'const SELECTION_BYTES: u64 = (\d+);', text) == [str(len(selected))]
+               and re.findall(r'const SELECTION_SHA: &str = "([0-9a-f]{64})";', text) == [identity(selected)['sha256']], 'compiled selector constants')
+          
+          for value in (bundle, closure, deployment, handoff, selector, routes, preparation):
+              need(value['runtime_qualified'] is False, 'source checks cannot qualify runtime')
+          for value in (closure, handoff, selector, routes):
+              need(value['production_ready'] is False, 'source checks cannot credit production')
+          for value in (bundle, closure, deployment, handoff, selector, routes, preparation,
+                        preparation['canonical_source_successor'], handoff['settings_source_successor'],
+                        selector['source_selection_update'], routes['source_selection_update'],
+                        routes['settings_source_successor']):
+              for key in ('Android_actions', 'CURRENT_writes', 'Main_actions', 'VM_starts',
+                          'installs', 'current_or_selector_writes', 'new_runtime_acceptance_count'):
+                  if key in value:
+                      need(type(value[key]) is int and value[key] == 0, 'typed source-only zero counter: ' + key)
+          need(bundle['source_only'] is True and bundle['native_helper_binary_deployed'] is False
+               and deployment['deployed'] is False and deployment['helper_binary']['deployed'] is False
+               and handoff['runtime_enabled'] is False and handoff['Main_readonly_entry_passed'] is False
+               and handoff['current_candidate_source_bootstrap_pending'] is True
+               and handoff['settings_source_successor']['settings_permissions_gate_accepted'] is False
+               and type(settings['accepted_gates']) is int and settings['accepted_gates'] == 0
+               and settings['runtime_qualified'] is False
+               and settings['production_ready'] is False, 'source-only adoption and qualification boundary')
+          for path, snapshot in READ_IDENTITIES.items():
+              named = path.lstat()
+              need(path.resolve(strict=True) == path
+                   and tuple(getattr(named, key) for key in F9) == snapshot, 'source graph changed before completion')
+          final_entries = list((ROOT / 'bundle').rglob('*'))
+          need(not any(path.is_symlink() for path in final_entries)
+               and sorted(str(path.relative_to(WORK)) for path in final_entries if path.is_file()) == actual,
+               'actual bundle graph changed before completion')
+          print(json.dumps({'verified_bundle_files': 474, 'verified_bundle_bytes': closure['total_bytes'],
+                            'verified_catalog_entries': 14, 'verified_producer_bindings': 3,
+                            'verified_external_publication_files': 19, 'source_only': True,
+                            'Android_actions': 0, 'new_runtime_acceptance_count': 0,
+                            'runtime_qualified': False, 'production_ready': False}, sort_keys=True))
+          CANONICAL_APP_SOURCE
+          cat "$RUNNER_TEMP/current-cohort-controls/canonical-app-source.stdout"
+          cat "$RUNNER_TEMP/current-cohort-controls/canonical-app-source.stderr" >&2
+          exit "$status"
+      - name: Run Settings stateful source controls
+        timeout-minutes: 3
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends python3-pil
+          status=0
+          timeout --signal=TERM --kill-after=10s 30s /usr/bin/python3 -I -B \
+            "$GITHUB_WORKSPACE/compat/android/pocket4/current-canonical-app-main-20261120/tests/test_settings_business.py" \
+            >"$RUNNER_TEMP/current-cohort-controls/settings-business.stdout" \
+            2>"$RUNNER_TEMP/current-cohort-controls/settings-business.stderr" || status=$?
+          cat "$RUNNER_TEMP/current-cohort-controls/settings-business.stdout"
+          cat "$RUNNER_TEMP/current-cohort-controls/settings-business.stderr" >&2
+          exit "$status"
       - name: Prepare pinned EROFS and recorded host dependencies
         timeout-minutes: 32
         shell: bash
@@ -1907,7 +2157,7 @@ jobs:
           capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1"
           timeout --signal=TERM --kill-after=30s 1860s bash "$capsule/prepare_ci.sh" \
             --work "$RUNNER_TEMP/current-dependencies"
-      - name: Run 1623 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
+      - name: Run 1628 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
         timeout-minutes: 92
         shell: bash
         run: |

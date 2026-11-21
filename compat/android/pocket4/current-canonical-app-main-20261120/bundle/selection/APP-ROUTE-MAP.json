@@ -28,7 +28,7 @@
     "compiled_leaf_catalog_candidate": {
       "bytes": 7639,
       "path": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/selection/leaf_sources.json",
-      "sha256": "b3f0d7ced1e772976497f1d7cb00581a368c6dd73fc523873f2cef74f236d803"
+      "sha256": "147548c209324cafe619f7cea823f7ef4e25904baed2d18065faacaa4eb70456"
     },
     "contract_matrix": {
       "bytes": 379955,
@@ -58,7 +58,7 @@
     "selected_preparations": {
       "bytes": 4669,
       "path": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/selection/selection-14.json",
-      "sha256": "b4d74f3691c43e564ffad8efc26da8de884496110fc85e1821b7b5825c28c15f"
+      "sha256": "a28f3d5b3bc2a75b9ee1e3257b5ec41869fab93f0f471458adeb5873885e7088"
     }
   },
   "installs": 0,
@@ -1052,7 +1052,7 @@
       "accepted_gates": 0,
       "account_endpoint_or_external_environment_scope": [],
       "app": "Settings",
-      "basic_startup": "only within the bounded settings.pages leaf after native release and current Main adoption",
+      "basic_startup": "only within the bounded Settings pages and selected time-format roundtrip leaf after native release and current Main adoption",
       "classification_scope": "planning classification only; does not prove the listed gate can be completed without login. Any actual account wall or unavailable capability remains blocked; full original gate text controls.",
       "complete_official_payload_missing": false,
       "contract_gate_ids": [
@@ -1064,26 +1064,34 @@
       "existing_leaf_entries": [
         {
           "actual_main_execution_pending": true,
+          "business_seconds": 600,
+          "cleanup_seconds": 120,
           "entry_source": {
-            "bytes": 6753,
+            "bytes": 6817,
             "path": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/source/settings/settings_entry.py",
-            "sha256": "c78325d04aeb0cc7a6c87936633b5be2f097bf28640480099ee6746625f77b1d"
+            "sha256": "f4663ee1369725947c0406a1c7c572836c6c8c4425de9b6aad40fcf16950d421"
           },
-          "execute_success_state": "SETTINGS_PAGES_VERIFIED_CLEAN",
+          "execute_success_state": "SETTINGS_PAGES_ROUNDTRIP_VERIFIED_RESTORED",
           "maximum_native_leaf_seconds": 900,
+          "maximum_observations": 13,
+          "maximum_page_routes": 11,
+          "maximum_setting_writes": 2,
           "native_release_adoption_required": true,
+          "new_v2_plan_and_explicit_business_contract_required": true,
           "partial_gate_scope": [
-            "settings.pages"
+            "settings.pages",
+            "settings.roundtrip"
           ],
+          "plan_schema": "pocket4-settings-pages-plan-v2",
           "preparation": {
-            "bytes": 6282,
+            "bytes": 8347,
             "path": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/preparations/settings.json",
-            "sha256": "fbd1d121fc2957121ce7635c531468894276d99d64f8e9a1c723ff0341fac23f"
+            "sha256": "1fc4cda48d1667f7997d3ab0c6138c5b6091f88b36f6062367981d815b4c4d13"
           },
           "request_fields": [
             "base_plan"
           ],
-          "result_schema": "pocket4-settings-pages-case-result-v1",
+          "result_schema": "pocket4-settings-pages-case-result-v2",
           "selection_index": 13,
           "source_only_prepared": true,
           "stdout_result_is_FilePin": true,
@@ -1099,6 +1107,11 @@
       "new_login_required_claim": false,
       "observed_app_login_wall_in_current_Main": false,
       "package": "com.android.settings",
+      "partial_permission_account_source_checks": {
+        "partial_source_scope": "readonly pages, CAMERA grant readback, malformed service input error and account preservation",
+        "remaining_original_scope": "actual Settings permission denial and error UX",
+        "settings_permissions_gate_accepted": false
+      },
       "production_ready": false,
       "profile": "settings",
       "proposed_owned_local_fixture_gate_scope": [
@@ -1109,6 +1122,10 @@
         "settings.pages"
       ],
       "remaining_business_gate_ids": [
+        "settings.permissions"
+      ],
+      "runtime_pending_business_gate_ids": [
+        "settings.pages",
         "settings.roundtrip",
         "settings.permissions"
       ],
@@ -2189,6 +2206,37 @@
   "schema": "pocket4-current-42-app-executable-route-map-v1",
   "selected_applications": 42,
   "selected_preparations": 14,
+  "settings_source_successor": {
+    "Android_actions": 0,
+    "base_commit": "075f63df0ff1de1e6c2c09a923ed3a7632d388fc",
+    "changed_selection_indices": [
+      13
+    ],
+    "current_candidate_bootstrap_pending": true,
+    "new_runtime_acceptance_count": 0,
+    "production_ready": false,
+    "runtime_qualified": false,
+    "settings_permissions_gate_accepted": false,
+    "source_prepared_gate_scope": [
+      "settings.pages",
+      "settings.roundtrip"
+    ],
+    "unchanged_selection_indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ]
+  },
   "source_reference_checks": {
     "14_preparations_whole_sha256": true,
     "14_primary_entry_whole_sha256": true,
@@ -2205,7 +2253,7 @@
     "catalog": {
       "bytes": 7639,
       "path": "/usr/libexec/droidloom/native-application-leaves/cohorts/cp3a-20261120-apps-r1/selection/leaf_sources.json",
-      "sha256": "b3f0d7ced1e772976497f1d7cb00581a368c6dd73fc523873f2cef74f236d803"
+      "sha256": "147548c209324cafe619f7cea823f7ef4e25904baed2d18065faacaa4eb70456"
     },
     "changed_indices": [
       0,

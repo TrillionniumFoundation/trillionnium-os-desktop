@@ -78,7 +78,7 @@ def _entry(context):
                     'observation_number','page','automatic_retry'}
         and ctx['schema']=='pocket4-settings-pages-ui-context-v1'
         and ctx['scope']==context['scope_ref'] and ctx['lease']==plan['lease']
-        and type(ctx['observation_number']) is int and 1<=ctx['observation_number']<=7
+        and type(ctx['observation_number']) is int and 1<=ctx['observation_number']<=13
         and ctx['automatic_retry'] is False
         and intent['request']=={'op':'observe','accessibility_mode':'none'}
         and intent['mutation'] is False,'SETTINGS_READONLY_UI_CONTEXT_REQUIRED')
@@ -89,7 +89,7 @@ def _entry(context):
     artifacts=None;witness=None
     try:
         _,profile=planner.validate(common,plan,view.baseline,scope)
-        common.need(ctx['page'] is None or ctx['page'] in profile.PAGES,'SETTINGS_UNDECLARED_PAGE')
+        common.need(ctx['page'] is None or ctx['page'] in profile.ALL_PAGES,'SETTINGS_UNDECLARED_PAGE')
         identities=[common.parse(common.read_ref(scope['actual_resolution_receipt']))]+[
             common.parse(common.read_ref(r)) for r in scope['installed_helper_receipts']]
         artifacts=common.HeldArtifacts(view.target,identities)
