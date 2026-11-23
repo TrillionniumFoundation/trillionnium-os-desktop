@@ -96,3 +96,14 @@
 (allow p4_linux_service_executor_t p4_linux_unit_cgroup_t (dir (create)))
 (neverallow p4_linux_service_executor_t p4_linux_production_unit_cgroup_t (dir (create rmdir rename setattr relabelfrom relabelto mounton)))
 (auditallow p4_linux_service_executor_t p4_linux_cgroup_root_membership_t (file (write)))
+
+; The normal distro manager must turn on the delegated controllers before
+; its service units can apply their resource limits. Allow just the retained
+; top-level subtree_control inode, with no permission on root membership.
+(type p4_linux_cgroup_subtree_control_t)
+(roletype object_r p4_linux_cgroup_subtree_control_t)
+(typeattributeset p4_linux_init_cgroup_inodes (p4_linux_cgroup_subtree_control_t))
+(allow kernel p4_linux_cgroup_subtree_control_t (file (getattr relabelto)))
+(allow init_t p4_linux_cgroup_subtree_control_t (file (getattr open read write)))
+(auditallow init_t p4_linux_cgroup_subtree_control_t (file (write)))
+(neverallow p4_not_ubuntu_pid1 p4_linux_cgroup_subtree_control_t (file (open read write append)))

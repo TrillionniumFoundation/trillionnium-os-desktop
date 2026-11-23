@@ -497,11 +497,16 @@ int droidloom_hold_linux_init_scope(struct droidloom_linux_init_scope *held)
                           S_IFDIR, &held->scope) < 0 ||
         hold_cgroup_inode(openat(held->root.fd, "cgroup.controllers", O_RDONLY | O_NOFOLLOW | O_CLOEXEC),
                           S_IFREG, &held->controllers) < 0 ||
+        hold_cgroup_inode(openat(held->root.fd, "cgroup.subtree_control", O_RDONLY | O_NOFOLLOW | O_CLOEXEC),
+                          S_IFREG, &held->root_subtree_control) < 0 ||
         hold_cgroup_inode(openat(held->scope.fd, "cgroup.procs", O_RDONLY | O_NOFOLLOW | O_CLOEXEC),
                           S_IFREG, &held->procs) < 0)
         return -1;
     if (held->root.device != held->scope.device || held->root.device != held->procs.device ||
         held->root.device != held->controllers.device ||
+        held->root.device != held->root_subtree_control.device ||
+        held->root_subtree_control.inode == held->root_membership.inode ||
+        held->root_subtree_control.inode == held->controllers.inode ||
         held->root.inode == held->scope.inode || held->scope.inode == held->procs.inode) {
         errno = EXDEV;
         return -1;
@@ -541,6 +546,7 @@ int droidloom_label_linux_init_scope(const struct droidloom_linux_init_scope *he
         apply_label_from(&held->scope, original, "u:object_r:p4_linux_cgroup_init_scope_t:s0") < 0 ||
         verify_label(&held->system_slice, "u:object_r:p4_linux_system_slice_t:s0") < 0 ||
         apply_label_from(&held->controllers, original, "u:object_r:p4_linux_cgroup_controller_list_t:s0") < 0 ||
+        apply_label_from(&held->root_subtree_control, original, "u:object_r:p4_linux_cgroup_subtree_control_t:s0") < 0 ||
         apply_label_from(&held->procs, original, "u:object_r:p4_linux_cgroup_init_tasks_t:s0") < 0)
         return -1;
     return 0;
@@ -548,6 +554,8 @@ int droidloom_label_linux_init_scope(const struct droidloom_linux_init_scope *he
 
 void droidloom_close_linux_init_scope(struct droidloom_linux_init_scope *held)
 {
+    if (held->root_subtree_control.fd >= 0)
+        close(held->root_subtree_control.fd);
     if (held->root_membership.fd >= 0)
         close(held->root_membership.fd);
     if (held->system_slice.fd >= 0)
