@@ -8,6 +8,7 @@ use std::os::unix::fs::MetadataExt;
 use std::process::{Command, Stdio};
 
 const TARGET: &str = "droidloom-container-services.target";
+const SOCKET: &str = "droidloom-container-guest.socket";
 const OCI: &str = "droidloom-container-oci.service";
 const ENTRY: &str = "droidloom-container-entry.service";
 const PROGRAM: &str = "/usr/lib/droidloom/production/current/droidloomd";
@@ -93,9 +94,12 @@ fn verify_contract(target: &Properties, entry: &Properties) -> io::Result<()> {
             ("RemainAfterExit", "no"),
         ],
     ) || !members(entry, "PartOf").any(|unit| unit == TARGET)
-        || !["BindsTo", "PropagatesStopTo"]
+        || !["BindsTo", "After", "PropagatesStopTo"]
             .iter()
             .all(|key| members(entry, key).any(|unit| unit == OCI))
+        || !["After", "Requires"]
+            .iter()
+            .all(|key| members(entry, key).any(|unit| unit == SOCKET))
         || !provider_command(property(entry, "ExecStart"))
     {
         return Err(io::Error::other(
@@ -163,7 +167,7 @@ fn show(unit: &str, fields: &str) -> io::Result<Properties> {
 }
 
 const TARGET_FIELDS: &str = "Id,LoadState,ActiveState,SubState,BindsTo,After,PropagatesStopTo";
-const ENTRY_FIELDS: &str = "Id,LoadState,ActiveState,SubState,Type,NotifyAccess,KillMode,Restart,RemainAfterExit,ExecStart,PartOf,BindsTo,PropagatesStopTo,MainPID,InvocationID,Result";
+const ENTRY_FIELDS: &str = "Id,LoadState,ActiveState,SubState,Type,NotifyAccess,KillMode,Restart,RemainAfterExit,ExecStart,PartOf,BindsTo,After,Requires,PropagatesStopTo,MainPID,InvocationID,Result";
 
 fn snapshot() -> io::Result<(Properties, Properties)> {
     Ok((show(TARGET, TARGET_FIELDS)?, show(ENTRY, ENTRY_FIELDS)?))
@@ -242,7 +246,8 @@ pub(super) fn lifecycle(operation: &str) -> io::Result<Option<Generation>> {
     let (target, entry) = snapshot()?;
     if operation == "stop" {
         if property(&target, "ActiveState") == "inactive"
-            && matches!(property(&entry, "ActiveState"), "inactive" | "failed")
+            && property(&entry, "ActiveState") == "inactive"
+            && property(&entry, "Result") == "success"
             && property(&entry, "MainPID") == "0"
             && property(&entry, "LoadState") == "loaded"
         {
@@ -289,6 +294,11 @@ mod tests {
             ("RemainAfterExit", "no"),
             ("PartOf", TARGET),
             ("BindsTo", OCI),
+            (
+                "After",
+                "droidloom-container-oci.service droidloom-container-guest.socket",
+            ),
+            ("Requires", SOCKET),
             ("PropagatesStopTo", OCI),
             ("ActiveState", "active"),
             ("SubState", "running"),
@@ -322,6 +332,8 @@ mod tests {
             "RemainAfterExit",
             "PartOf",
             "BindsTo",
+            "After",
+            "Requires",
             "PropagatesStopTo",
             "ExecStart",
         ] {

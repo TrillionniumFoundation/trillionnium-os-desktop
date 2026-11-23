@@ -258,6 +258,7 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
         "droidloom-manager-label.service",
         "droidloom-container-services.target",
         "droidloom-container-entry.service",
+        "droidloom-container-guest.socket",
     ] {
         let source = repo.join("runtime/droidloom-supervisor/src").join(unit);
         if !fs::symlink_metadata(&source)?.is_file() {
@@ -327,6 +328,10 @@ mod tests {
         fs::create_dir(&host).unwrap();
         for (name, body) in [
             (
+                "droidloom-container-guest.socket",
+                include_str!("../../../runtime/droidloom-supervisor/src/droidloom-container-guest.socket"),
+            ),
+            (
                 "droidloom-container-entry.service",
                 include_str!("../../../runtime/droidloom-supervisor/src/droidloom-container-entry.service"),
             ),
@@ -373,6 +378,11 @@ mod tests {
                 fs::metadata(&unit).unwrap().permissions().mode() & 0o777,
                 0o644
             );
+            if unit.extension().is_some_and(|ext| ext == "socket") {
+                assert!(body.lines().any(|line| line == "Service=droidloom-container-entry.service"));
+                assert!(body.lines().any(|line| line == "DirectoryMode=0700"));
+                continue;
+            }
             if unit.extension().is_some_and(|ext| ext == "target") {
                 assert!(body.lines().any(|line| line == "BindsTo=droidloom-container-entry.service"));
                 assert!(body.lines().any(|line| line == "After=droidloom-container-entry.service"));

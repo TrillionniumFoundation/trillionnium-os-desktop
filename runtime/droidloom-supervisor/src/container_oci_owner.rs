@@ -18,7 +18,7 @@ use std::time::{Duration, Instant};
 mod protocol;
 
 const START_LIMIT: Duration = Duration::from_secs(240);
-const CHANNEL: &str = "/run/droidloom-container/guest.sock";
+const CHANNEL: &str = "/run/droidloom-container-link/guest.sock";
 const OCI_ROOT: &str = "/run/droidloom-container-oci";
 const BUNDLE: &str = "/etc/droidloom/production/oci-bundle";
 const INSTANCE: &str = "android";
@@ -132,32 +132,33 @@ impl OciOwner {
     }
 }
 
-fn bind_named(path: &str) -> io::Result<(UnixListener, (u64, u64))> {
-    let parent = fs::symlink_metadata(Path::new(path).parent().unwrap())?;
-    if !parent.is_dir() || parent.uid() != unsafe { libc::geteuid() } || parent.mode() & 0o022 != 0
+fn inherited_guest_listener() -> io::Result<UnixListener> {
+    if std::env::var("LISTEN_PID")
+        .ok()
+        .and_then(|s| s.parse::<u32>().ok())
+        != Some(std::process::id())
+        || std::env::var("LISTEN_FDS").as_deref() != Ok("1")
+        || std::env::var("LISTEN_FDNAMES").as_deref() != Ok("android_guest")
     {
-        return Err(error("the service runtime directory has invalid ownership"));
+        return Err(error(
+            "systemd must pass the dedicated guest socket to its current MainPID",
+        ));
     }
-    let listener = UnixListener::bind(path)?;
-    let m = fs::symlink_metadata(path)?;
-    fs::set_permissions(path, fs::Permissions::from_mode(0o666))?;
+    let listener = unsafe { UnixListener::from_raw_fd(3) };
+    if listener.local_addr()?.as_pathname() != Some(Path::new(CHANNEL)) {
+        return Err(error("unexpected systemd guest socket"));
+    }
+    let dir = fs::symlink_metadata(Path::new(CHANNEL).parent().unwrap())?;
+    if !dir.is_dir() || dir.uid() != 0 || dir.mode() & 0o7777 != 0o700 {
+        return Err(error(
+            "guest socket requires its private root-owned host directory",
+        ));
+    }
+    if unsafe { libc::fcntl(listener.as_raw_fd(), libc::F_SETFD, libc::FD_CLOEXEC) } < 0 {
+        return Err(io::Error::last_os_error());
+    }
     listener.set_nonblocking(true)?;
-    Ok((listener, (m.dev(), m.ino())))
-}
-
-struct Channel {
-    listener: UnixListener,
-    node: (u64, u64),
-}
-impl Drop for Channel {
-    fn drop(&mut self) {
-        if let Ok(meta) = fs::symlink_metadata(CHANNEL)
-            && meta.file_type().is_socket()
-            && (meta.dev(), meta.ino()) == self.node
-        {
-            let _ = fs::remove_file(CHANNEL);
-        }
-    }
+    Ok(listener)
 }
 
 fn socket_value<T: Copy>(stream: &UnixStream, option: i32) -> io::Result<T> {
@@ -269,6 +270,55 @@ impl Guest {
             last: Instant::now(),
         })
     }
+    fn shutdown(&mut self) -> io::Result<()> {
+        self.socket.set_nonblocking(false)?;
+        self.socket
+            .set_write_timeout(Some(Duration::from_secs(2)))?;
+        self.socket.write_all(&[0x53])?;
+        self.socket
+            .set_read_timeout(Some(Duration::from_millis(100)))?;
+        let end = Instant::now() + Duration::from_secs(85);
+        let mut retired = false;
+        loop {
+            let mut states = [0u8; 64];
+            match self.socket.read(&mut states) {
+                Ok(0) if !retired => {
+                    return Err(error("guest exited without persistent mount retirement"));
+                }
+                Ok(n) => {
+                    for &stage in &states[..n] {
+                        if stage == 3 && !retired {
+                            retired = true;
+                        } else if stage > 2 || retired {
+                            return Err(error("invalid shutdown progress from guest"));
+                        }
+                    }
+                }
+                Err(e)
+                    if matches!(
+                        e.kind(),
+                        io::ErrorKind::TimedOut
+                            | io::ErrorKind::WouldBlock
+                            | io::ErrorKind::Interrupted
+                    ) => {}
+                Err(e) => return Err(e),
+            }
+            if !live(&self.pidfd)? {
+                return if retired {
+                    Ok(())
+                } else {
+                    Err(error("guest PID 1 exited before orderly shutdown"))
+                };
+            }
+            if !live(&self.controller)? {
+                return Err(error("OCI owner exited before retirement was proven"));
+            }
+            if Instant::now() >= end {
+                return Err(error("guest orderly shutdown exceeded its deadline"));
+            }
+            thread::sleep(Duration::from_millis(20));
+        }
+    }
     fn update(&mut self) -> io::Result<()> {
         if !live(&self.pidfd)? || !live(&self.controller)? {
             return Err(error("bound OCI PID 1 or its system service owner exited"));
@@ -304,59 +354,104 @@ pub(super) fn run(stop: &AtomicBool) -> io::Result<()> {
     let choice = PreparedContainerSelection::acquire()?;
     check_container_manager_role()?;
     let program = choice.entry_program()?;
-    let (listener, node) = bind_named(CHANNEL)?;
-    let channel = Channel { listener, node };
+    let channel = inherited_guest_listener()?;
     let mut clients = protocol::Clients::bind()?;
     let mut guest: Option<Guest> = None;
     let mut notified = false;
     let end = Instant::now() + START_LIMIT;
     let mut last_issue = None;
     let mut revalidate = Instant::now();
-    while !stop.load(Ordering::Relaxed) {
-        if guest.is_none() {
-            match channel.listener.accept() {
-                Ok((socket, _)) => match Guest::admit(socket, &choice) {
-                    Ok(peer) => guest = Some(peer),
-                    Err(e) => last_issue = Some(e),
-                },
-                Err(e)
-                    if matches!(
-                        e.kind(),
-                        io::ErrorKind::WouldBlock | io::ErrorKind::Interrupted
-                    ) => {}
-                Err(e) => return Err(e),
+    let observation = (|| -> io::Result<()> {
+        while !stop.load(Ordering::Relaxed) {
+            if guest.is_none() {
+                match channel.accept() {
+                    Ok((socket, _)) => match Guest::admit(socket, &choice) {
+                        Ok(peer) => guest = Some(peer),
+                        Err(e) => last_issue = Some(e),
+                    },
+                    Err(e)
+                        if matches!(
+                            e.kind(),
+                            io::ErrorKind::WouldBlock | io::ErrorKind::Interrupted
+                        ) => {}
+                    Err(e) => return Err(e),
+                }
             }
-        }
-        if let Some(peer) = guest.as_mut() {
-            peer.update()?;
-            if peer.binder && !notified {
+            if let Some(peer) = guest.as_mut() {
+                peer.update()?;
+                if peer.binder && !notified {
+                    choice.revalidate()?;
+                    program.revalidate()?;
+                    protocol::notify_main()?;
+                    notified = true;
+                }
+            }
+            if !notified && Instant::now() >= end {
+                return Err(last_issue.unwrap_or_else(||error("selected OCI guest did not establish Android Binder before startup deadline")));
+            }
+            if Instant::now() >= revalidate {
+                if let Some(peer) = guest.as_ref() {
+                    Guest::matches_oci(peer.pid, choice.selection_digest())?;
+                }
                 choice.revalidate()?;
-                program.revalidate()?;
-                protocol::notify_main()?;
-                notified = true;
+                revalidate = Instant::now() + Duration::from_secs(5);
             }
+            clients.poll(guest.as_ref().is_some_and(|v| v.android))?;
+            thread::sleep(Duration::from_millis(30));
         }
-        if !notified && Instant::now() >= end {
-            return Err(last_issue.unwrap_or_else(|| {
-                error("selected OCI guest did not establish Android Binder before startup deadline")
-            }));
-        }
-        if Instant::now() >= revalidate {
-            if let Some(peer) = guest.as_ref() {
-                Guest::matches_oci(peer.pid, choice.selection_digest())?;
-            }
-            choice.revalidate()?;
-            revalidate = Instant::now() + Duration::from_secs(5);
-        }
-        clients.poll(guest.as_ref().is_some_and(|v| v.android))?;
-        thread::sleep(Duration::from_millis(30));
+        Ok(())
+    })();
+    if let Some(mut peer) = guest {
+        peer.shutdown()?;
     }
-    Ok(())
+    if stop.load(Ordering::Relaxed) {
+        Ok(())
+    } else {
+        observation
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn orderly_host_stop_requires_the_same_peer_acknowledgement_and_exit() {
+        for ack in [false, true] {
+            let tmp = tempfile::tempdir().unwrap();
+            let path = tmp.path().join("peer");
+            let listener = UnixListener::bind(&path).unwrap();
+            let script = r#"import socket,sys
+s=socket.socket(socket.AF_UNIX);s.connect(sys.argv[1]);assert s.recv(1)==b"S"
+if sys.argv[2]=="yes": s.send(bytes([3]))"#;
+            let mut child = Command::new("/usr/bin/python3")
+                .args(["-c", script])
+                .arg(&path)
+                .arg(if ack { "yes" } else { "no" })
+                .spawn()
+                .unwrap();
+            let (socket, _) = listener.accept().unwrap();
+            let fd: i32 = socket_value(&socket, 77).unwrap();
+            let controller = OciOwner {
+                pid: std::process::id() as i32,
+                invocation: String::new(),
+            }
+            .pidfd()
+            .unwrap();
+            let mut peer = Guest {
+                socket,
+                pid: child.id() as i32,
+                pidfd: unsafe { OwnedFd::from_raw_fd(fd) },
+                controller,
+                binder: true,
+                android: true,
+                last: Instant::now(),
+            };
+            let result = peer.shutdown();
+            assert_eq!(result.is_ok(), ack, "{result:?}");
+            assert!(child.wait().unwrap().success());
+        }
+    }
+
     #[test]
     fn socket_peer_pidfd_is_kernel_bound_and_tracked_after_peer_exit() {
         use std::os::unix::process::CommandExt;

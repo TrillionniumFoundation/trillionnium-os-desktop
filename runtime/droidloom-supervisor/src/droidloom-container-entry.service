@@ -1,10 +1,13 @@
 [Unit]
 Description=Droidloom shared-kernel Android service
 BindsTo=droidloom-container-oci.service
+Requires=droidloom-container-guest.socket
+After=droidloom-container-oci.service droidloom-container-guest.socket
 PartOf=droidloom-container-services.target
 PropagatesStopTo=droidloom-container-oci.service
 
 [Service]
+Sockets=droidloom-container-guest.socket
 Type=notify
 NotifyAccess=main
 ExecStart=/usr/lib/droidloom/production/current/droidloomd --manage-container
@@ -17,4 +20,4 @@ UMask=0077
 AppArmorProfile=droidloom-production-broker
 NoNewPrivileges=yes
 TimeoutStartSec=255
-TimeoutStopSec=30
+TimeoutStopSec=100

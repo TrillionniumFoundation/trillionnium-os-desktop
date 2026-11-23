@@ -145,7 +145,10 @@ fn held_file(
     Ok((f, data))
 }
 
-fn bootstrap() -> io::Result<Child> {
+#[path = "../container_shutdown.rs"]
+mod shutdown;
+
+fn bootstrap() -> io::Result<Bootstrap> {
     let (_, data) = held_file(DECLARATION, 4096, false, 0)?;
     let release: BootstrapRelease = serde_json::from_slice(&data).map_err(io::Error::other)?;
     let digest = |s: &str| {
@@ -186,7 +189,14 @@ fn bootstrap() -> io::Result<Child> {
         ));
     }
     production_service_elf::inspect_container_service_elf(&bytes)?;
-    let mut cmd = Command::new(format!("/proc/self/fd/{}", program.as_raw_fd()));
+    use std::os::fd::{FromRawFd, OwnedFd};
+    let copied = unsafe { libc::fcntl(program.as_raw_fd(), libc::F_DUPFD_CLOEXEC, 4) };
+    if copied < 0 {
+        return Err(io::Error::last_os_error());
+    }
+    let executable = unsafe { OwnedFd::from_raw_fd(copied) };
+    let (control, endpoint) = shutdown::Channel::pair()?;
+    let mut cmd = Command::new(format!("/proc/self/fd/{}", executable.as_raw_fd()));
     cmd.arg0(BOOTSTRAP)
         .current_dir("/")
         .env_clear()
@@ -196,12 +206,19 @@ fn bootstrap() -> io::Result<Child> {
         .env("ANDROID_RUNTIME_ROOT", "/apex/com.android.runtime")
         .stdin(Stdio::null())
         .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .spawn()
+        .stderr(Stdio::inherit());
+    shutdown::attach(&mut cmd, &endpoint);
+    let child = cmd.spawn()?;
+    Ok(Bootstrap {
+        child,
+        control,
+        exit: None,
+    })
 }
 
 struct Bootstrap {
     child: Child,
+    control: shutdown::Channel,
     exit: Option<ExitStatus>,
 }
 
@@ -231,26 +248,6 @@ impl Bootstrap {
             }
             return Err(e);
         }
-    }
-    fn stop(&mut self) -> io::Result<()> {
-        if self.poll()?.is_some() {
-            return Ok(());
-        }
-        if unsafe { libc::kill(self.child.id() as i32, libc::SIGTERM) } < 0
-            && io::Error::last_os_error().raw_os_error() != Some(libc::ESRCH)
-        {
-            return Err(io::Error::last_os_error());
-        }
-        let end = Instant::now() + Duration::from_secs(5);
-        while Instant::now() < end {
-            if self.poll()?.is_some() {
-                return Ok(());
-            }
-            thread::sleep(Duration::from_millis(25));
-        }
-        self.child.kill()?;
-        self.exit = Some(self.child.wait()?);
-        Ok(())
     }
 }
 
@@ -419,10 +416,22 @@ fn contact_host() -> io::Result<UnixStream> {
 }
 
 fn serve(owner: &mut Bootstrap, host: &mut UnixStream, tools: &AndroidProbes) -> io::Result<()> {
+    host.set_nonblocking(true)?;
     let end = Instant::now() + START_LIMIT;
     let mut established = false;
     let mut next = Instant::now();
     while !STOP.load(Ordering::Relaxed) {
+        let mut command = [0u8; 1];
+        match host.read(&mut command) {
+            Ok(1) if command == [0x53] => break,
+            Ok(_) => return Err(error("unexpected or closed host command channel")),
+            Err(e)
+                if matches!(
+                    e.kind(),
+                    io::ErrorKind::WouldBlock | io::ErrorKind::Interrupted
+                ) => {}
+            Err(e) => return Err(e),
+        }
         if let Some(status) = owner.poll()? {
             return Err(io::Error::other(format!(
                 "Android bootstrap exited: {status}"
@@ -471,12 +480,13 @@ fn run() -> io::Result<()> {
     }
     let tools = AndroidProbes::from_selected_cp3a()?;
     let mut host = contact_host()?;
-    let mut owner = Bootstrap {
-        child: bootstrap()?,
-        exit: None,
-    };
+    let mounts = shutdown::PersistentMounts::acquire()?;
+    let mut owner = bootstrap()?;
     let live = serve(&mut owner, &mut host, &tools);
-    let retired = owner.stop();
+    let retired = shutdown::retire(&mut owner, &mounts, Duration::from_secs(75));
+    if live.is_ok() && retired.is_ok() {
+        host.write_all(&[3])?;
+    }
     retired.and(live)
 }
 
@@ -491,11 +501,23 @@ fn main() {
 mod tests {
     use super::*;
     #[test]
-    fn actual_child_is_terminated_and_reaped() {
+    fn child_without_android_shutdown_is_reaped_and_reported_as_failure() {
         let child = Command::new("/usr/bin/sleep").arg("30").spawn().unwrap();
-        let mut owner = Bootstrap { child, exit: None };
+        let (control, _peer) = shutdown::Channel::pair().unwrap();
+        let mut owner = Bootstrap {
+            child,
+            control,
+            exit: None,
+        };
         assert!(owner.poll().unwrap().is_none());
-        owner.stop().unwrap();
+        assert!(
+            shutdown::retire(
+                &mut owner,
+                &shutdown::PersistentMounts::fixture(),
+                Duration::from_millis(20)
+            )
+            .is_err()
+        );
         assert!(owner.poll().unwrap().is_some());
     }
     #[test]

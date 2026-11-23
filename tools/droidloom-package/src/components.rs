@@ -87,6 +87,7 @@ fn inputs(source: &Path) -> Result<BTreeMap<String, Vec<u8>>> {
         "runtime/droidloom-supervisor/src/droidloom-manager-label.service",
         "runtime/droidloom-supervisor/src/droidloom-container-services.target",
         "runtime/droidloom-supervisor/src/droidloom-container-entry.service",
+        "runtime/droidloom-supervisor/src/droidloom-container-guest.socket",
     ] {
         result.insert(path.into(), fs::read(source.join(path))?);
     }
@@ -286,6 +287,7 @@ mod tests {
             "runtime/droidloom-supervisor/src/droidloom-manager-label.service",
             "runtime/droidloom-supervisor/src/droidloom-container-services.target",
         "runtime/droidloom-supervisor/src/droidloom-container-entry.service",
+        "runtime/droidloom-supervisor/src/droidloom-container-guest.socket",
         ] {
             fs::write(root.join(path), b"fixture").unwrap();
         }
