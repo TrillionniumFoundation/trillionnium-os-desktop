@@ -519,3 +519,7 @@ mod tests {
         assert!(translated(&file, 1).is_err());
     }
 }
+
+#[path = "production_early_resources.rs"]
+mod resources;
+pub(crate) use resources::{EarlyBaseAdmission, EarlyBoundNamespaces};

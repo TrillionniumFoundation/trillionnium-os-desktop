@@ -28,6 +28,7 @@ use thiserror::Error;
 use crate::IdRange;
 use crate::production_identity::IdentityLease;
 use crate::production_namespace::OwnedNamespaceWitness;
+use crate::production_selection::early_generation::EarlyBoundNamespaces;
 
 const FILE_LIMIT: usize = 1024 * 1024;
 const OUTPUT_LIMIT: usize = 8 * 1024 * 1024;
@@ -68,6 +69,33 @@ fn reject(message: impl Into<String>) -> HostAdmissionError {
     HostAdmissionError::Rejected(message.into())
 }
 
+// Closed within this module. Each implementation owns or borrows the real
+// namespace/process handles for one of the two supported normal boot paths.
+trait LiveNamespace {
+    fn user_namespace(&self) -> &File;
+    fn proc_directory(&self) -> &File;
+    fn host_pid(&self) -> u32;
+    fn start_ticks(&self) -> u64;
+    fn descendant_pid_namespace(&self) -> Option<&File>;
+    fn check_live(&self) -> Result<()>;
+}
+impl LiveNamespace for OwnedNamespaceWitness<'_> {
+    fn user_namespace(&self)->&File{ OwnedNamespaceWitness::user_namespace(self) }
+    fn proc_directory(&self)->&File{ OwnedNamespaceWitness::proc_directory(self) }
+    fn host_pid(&self)->u32{ OwnedNamespaceWitness::host_pid(self) }
+    fn start_ticks(&self)->u64{ OwnedNamespaceWitness::start_ticks(self) }
+    fn descendant_pid_namespace(&self)->Option<&File>{ OwnedNamespaceWitness::descendant_pid_namespace(self) }
+    fn check_live(&self)->Result<()>{self.revalidate().map_err(|e|reject(e.to_string()))}
+}
+impl LiveNamespace for EarlyBoundNamespaces<'_> {
+    fn user_namespace(&self)->&File{ EarlyBoundNamespaces::user_namespace(self) }
+    fn proc_directory(&self)->&File{ EarlyBoundNamespaces::proc_directory(self) }
+    fn host_pid(&self)->u32{ EarlyBoundNamespaces::host_pid(self) }
+    fn start_ticks(&self)->u64{ EarlyBoundNamespaces::start_ticks(self) }
+    fn descendant_pid_namespace(&self)->Option<&File>{ EarlyBoundNamespaces::descendant_pid_namespace(self) }
+    fn check_live(&self)->Result<()>{self.revalidate().map_err(|e|reject(e.to_string()))}
+}
+
 /// Non-serializable, non-cloneable authority owned by the namespace broker.
 ///
 /// The lease is private and remains held throughout all map construction
@@ -96,6 +124,19 @@ impl HostAdmission {
         Ok(value)
     }
 
+    pub(crate) fn acquire_early(lease: IdentityLease, witness: &EarlyBoundNamespaces<'_>) -> Result<Self> {
+        witness.check_live()?;
+        let mut value=Self {lease:Some(lease), baseline:None, quarantined:Cell::new(false)};
+        value.baseline=Some(value.observe(Some(witness), true)?);
+        witness.check_live()?;
+        Ok(value)
+    }
+    pub(crate) fn revalidate_early(&self, witness:&EarlyBoundNamespaces<'_>) -> Result<()> {
+        witness.check_live()?;
+        self.observe(Some(witness),true)?;
+        witness.check_live()
+    }
+
     pub(crate) fn lease(&self) -> &IdentityLease {
         self.lease
             .as_ref()
@@ -121,7 +162,7 @@ impl HostAdmission {
 
     fn observe(
         &self,
-        witness: Option<&OwnedNamespaceWitness<'_>>,
+        witness: Option<&dyn LiveNamespace>,
         include_live: bool,
     ) -> Result<HostInputs> {
         if self.quarantined.get() {
@@ -3570,7 +3611,7 @@ fn validate_live_view(
     gids: IdRange,
     principal_uid: u32,
     principal_gid: u32,
-    witness: Option<&OwnedNamespaceWitness<'_>>,
+    witness: Option<&dyn LiveNamespace>,
 ) -> Result<()> {
     let owned = witness
         .map(|w| namespace_key(w.user_namespace()))
@@ -3671,10 +3712,10 @@ fn audit_live_tasks(
     gids: IdRange,
     uid: u32,
     gid: u32,
-    witness: Option<&OwnedNamespaceWitness<'_>>,
+    witness: Option<&dyn LiveNamespace>,
 ) -> Result<()> {
     if let Some(witness) = witness {
-        witness.revalidate().map_err(|e| reject(e.to_string()))?;
+        witness.check_live()?;
     }
     let first = scan_live_tasks()?;
     validate_live_view(&first, uids, gids, uid, gid, witness)?;
@@ -3684,7 +3725,7 @@ fn audit_live_tasks(
         return Err(HostAdmissionError::Changed);
     }
     if let Some(witness) = witness {
-        witness.revalidate().map_err(|e| reject(e.to_string()))?;
+        witness.check_live()?;
     }
     Ok(())
 }
