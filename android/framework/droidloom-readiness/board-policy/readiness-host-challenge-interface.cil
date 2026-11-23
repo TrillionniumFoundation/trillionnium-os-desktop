@@ -31,3 +31,7 @@
 (typeattribute p4_readiness_other_peer)
 (typeattributeset p4_readiness_other_peer (not (p4_readiness_valid_peer)))
 (neverallow droidloom_readiness p4_readiness_other_peer (unix_stream_socket (connectto)))
+
+(allow droidloom_readiness p4_linux_readiness_dir_t (dir (search)))
+(neverallow p4_android_except_readiness p4_linux_readiness_dir_t (dir (search read open write add_name remove_name relabelto relabelfrom)))
+(neverallow droidloom_readiness p4_linux_readiness_dir_t (dir (read open write add_name remove_name relabelto relabelfrom)))

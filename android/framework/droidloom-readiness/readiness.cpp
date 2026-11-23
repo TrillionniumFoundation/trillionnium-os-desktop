@@ -20,7 +20,7 @@
 #include <cstring>
 
 namespace {
-constexpr char kChannel[] = "/dev/socket/droidloom_readiness";
+constexpr char kChannel[] = "/dev/socket/droidloom/droidloom_readiness";
 constexpr std::array<uint8_t, 8> kRequest = {'D', 'L', 'R', 'D', 'R', 'E', 'Q', '1'};
 constexpr std::array<uint8_t, 8> kResponse = {'D', 'L', 'R', 'D', 'R', 'S', 'P', '1'};
 constexpr size_t kNonceBytes = 32;
