@@ -1,0 +1,42 @@
+{
+  "schema": "pocket4-r40-normal-source-pre-ready-framework-implementation-v1",
+  "source_host": "ai395",
+  "candidate_root": "/home/qq/work/p4-r40-pre-ready-framework-20261123-r1/source",
+  "base_root": "/home/qq/work/current2392-cli-preparation-20261121-ce8eb1-r1/producer",
+  "root_cold_start": false,
+  "actually_observed_system_server": false,
+  "actually_observed_input_critical_threads": false,
+  "capabilities_and_seccomp_qualified": false,
+  "release_enabled": false,
+  "original_data_touched": false,
+  "razr_touched": false,
+  "code_delta": {
+    "runtime/droidloom-supervisor/src/production_namespace_application_parent.rs": {
+      "before_sha256": "47976b5da0fd4aec8cafe8d96bac18b779ae3122d26d8c62e6db381923d27af8",
+      "after_sha256": "93c09893f46114983faa1d2087aba16209a2ae5e93501793fe1ad8911f807290"
+    },
+    "runtime/droidloom-supervisor/src/production_namespace_execution_identity.rs": {
+      "before_sha256": "cfa18654d34799c6f637709fbb47edab2f9ac91f8fa729ed95a5dfb23025c5e1",
+      "after_sha256": "1979176d2fe67be9fb7b647a125f3cf78b37fec8ffdda75ea76b1fafa8631cd2"
+    }
+  },
+  "patch": {
+    "path": "/home/qq/work/p4-r40-pre-ready-framework-20261123-r1/PRE-READY-FRAMEWORK.patch",
+    "sha256": "7ce9ed7dfb28722f84ce3249539883c4c69115413d4c9fb540c178e692735277",
+    "bytes": 16918
+  },
+  "build": {
+    "rust_compiled": true,
+    "focused_regression_tests_passed": 1,
+    "serial_unit_tests_passed": 624,
+    "serial_unit_tests_ignored": 26,
+    "serial_unit_tests_failed": 0,
+    "serial_suite_log": "/home/qq/work/p4-r40-pre-ready-framework-20261123-r1/FULL-TEST-serial.log",
+    "serial_log_sha256": "326a0d9e6f36ac7872dd2c9ccf6a42dac3598df7cb34b1ef0c496f04545d2c88",
+    "parallel_suite_failures": 12,
+    "parallel_suite_cause": "Unisolated parallel resource/FD/lock tests: not production evidence; successful serial suite does not prove production runtime"
+  },
+  "scope": "Actual original init-borrowed pre-Ready read-only system_server and original zygote lineage observation; detects comm, namespace, mapped credentials, PID-start/parent generation, proc inode and boot epoch changes; does not admit a boot or issue app controls.",
+  "remaining_dependency": "Bind same-epoch actual InputReader/InputDispatcher thread observations and four InputPolicy effects; integrate staged activation/pre-Ready observation with later real capability/seccomp/final exec checks before production admission.",
+  "captured_utc": "2026-11-23T03:25:08.825935+00:00"
+}
