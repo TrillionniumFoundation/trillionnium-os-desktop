@@ -181,6 +181,16 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
             0o644,
         ),
         (
+            "usr/share/droidloom/board/ubuntu-real-root-devices",
+            include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-real-root-devices").as_slice(),
+            0o444,
+        ),
+        (
+            "usr/share/droidloom/board/ubuntu-real-root-file_contexts",
+            include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-real-root-file_contexts").as_slice(),
+            0o444,
+        ),
+        (
             "usr/share/initramfs-tools/hooks/droidloom-early-release",
             include_bytes!("../../../runtime/droidloom-early-boot/initramfs-hook").as_slice(),
             0o755,

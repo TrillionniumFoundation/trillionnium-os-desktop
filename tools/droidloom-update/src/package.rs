@@ -386,6 +386,14 @@ mod tests {
         assert!(production_host_payload(&repo, &host, &runtime).is_err());
         fs::write(host.join("droidloom-container-entry"), b"package-copy fixture: container-entry").unwrap();
         production_host_payload(&repo, &host, &runtime).unwrap();
+        for (name, expected) in [
+            ("ubuntu-real-root-devices", include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-real-root-devices").as_slice()),
+            ("ubuntu-real-root-file_contexts", include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-real-root-file_contexts").as_slice()),
+        ] {
+            let declaration = runtime.join("usr/share/droidloom/board").join(name);
+            assert_eq!(fs::read(&declaration).unwrap(), expected);
+            assert_eq!(fs::metadata(declaration).unwrap().mode() & 0o777, 0o444);
+        }
         for unit in fs::read_dir(runtime.join("usr/share/droidloom/production")).unwrap() {
             let unit = unit.unwrap().path();
             if unit.file_name().unwrap() == "linux-service-file_contexts" {
