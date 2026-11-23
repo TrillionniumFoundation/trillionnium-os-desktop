@@ -362,18 +362,49 @@ fn missing_locked_blobs(checkout: &Path, project: &PlannedProject, progress: &Pr
     Ok(missing)
 }
 
+fn smaller_truncated_batch(objects: usize, stderr: &[u8]) -> Option<usize> {
+    if objects <= 1 { return None; }
+    let diagnostic = String::from_utf8_lossy(stderr).to_ascii_lowercase();
+    // Origin throttling, invalid credentials or missing objects belong to the
+    // original owner. Shrink only a proven truncated transport response.
+    if ["429", "resource_exhausted", "rate limit", "too many requests", "403", "401"]
+        .iter().any(|value| diagnostic.contains(value)) {
+        return None;
+    }
+    ["early eof", "unexpected disconnect", "connection reset by peer",
+     "tls connection was non-properly terminated", "transfer closed with"]
+        .iter().any(|value| diagnostic.contains(value)).then(|| objects.div_ceil(2))
+}
+
 fn fetch_locked_project_blobs(checkout: &Path, project: &PlannedProject, ordinal: usize,
-                                  progress: &mut Progress) -> Result<(), SourceError> {
+                             progress: &mut Progress) -> Result<(), SourceError> {
     let missing = missing_locked_blobs(checkout, project, progress)?;
     let total = missing.len();
-    for (index, group) in missing.chunks(PROMISOR_BATCH_SIZE).enumerate() {
+    let mut batch_size = PROMISOR_BATCH_SIZE;
+    let mut next = 0;
+    let mut sequence = 0;
+    while next < total {
+        let group = &missing[next..(next + batch_size).min(total)];
+        sequence += 1;
         let mut request = group.join("\n");
         request.push('\n');
         progress.record("PROJECT_FETCH_LOCKED_BLOB_BATCH", json!({"ordinal":ordinal,"path":project.path,
-            "commit":project.commit,"batch":index+1,"objects":group.len(),"missing_at_start":total}))?;
+            "commit":project.commit,"batch":sequence,"objects":group.len(),"missing_at_start":total,
+            "objects_completed":next}))?;
         let args = arguments(&["fetch", "--quiet", "--no-tags", "--no-write-fetch-head",
             "--no-recurse-submodules", "--filter=blob:none", "--stdin", "origin"]);
-        checked_git(git_with_input(checkout, &args, progress, true, Some(request.as_bytes()), GIT_OUTPUT_LIMIT)?)?;
+        let output = git_with_input(checkout, &args, progress, true, Some(request.as_bytes()), GIT_OUTPUT_LIMIT)?;
+        if !output.status.success() && let Some(smaller) = smaller_truncated_batch(group.len(), &output.stderr) {
+            progress.record("PROJECT_REDUCE_TRUNCATED_BLOB_BATCH", json!({"ordinal":ordinal,"path":project.path,
+                "commit":project.commit,"from":group.len(),"to":smaller,"objects_completed":next,
+                "delay_seconds":30}))?;
+            if progress.remaining(30)? < 30 { return checked_git(output).map(|_| ()); }
+            thread::sleep(std::time::Duration::from_secs(30));
+            batch_size = smaller;
+            continue;
+        }
+        checked_git(output)?;
+        next += group.len();
     }
     if total > 0 && !missing_locked_blobs(checkout, project, progress)?.is_empty() {
         return Err(invalid("official Git fetch did not supply all required locked blobs"));
@@ -799,6 +830,16 @@ mod tests {
         let mut full = vec![marker, omitted];
         full.sort();
         assert_eq!(missing_locked_blobs(&partial, &project, &progress).unwrap(), full);
+    }
+
+    #[test]
+    fn truncated_pack_retries_only_a_smaller_group_without_retrying_throttles() {
+        assert_eq!(smaller_truncated_batch(192, b"fatal: early EOF"), Some(96));
+        assert_eq!(smaller_truncated_batch(3, b"curl 56 Recv failure: Connection reset by peer"), Some(2));
+        assert_eq!(smaller_truncated_batch(1, b"unexpected disconnect while reading sideband packet"), None);
+        assert_eq!(smaller_truncated_batch(192, b"HTTP 429: early EOF"), None);
+        assert_eq!(smaller_truncated_batch(16, b"RESOURCE_EXHAUSTED: unexpected disconnect"), None);
+        assert_eq!(smaller_truncated_batch(192, b"fatal: missing requested object"), None);
     }
 
     #[test]
