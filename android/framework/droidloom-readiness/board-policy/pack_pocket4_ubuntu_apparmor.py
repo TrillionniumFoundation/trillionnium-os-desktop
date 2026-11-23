@@ -49,8 +49,30 @@ def main():
                 for profile in profiles:
                     target.write(struct.pack("<I", len(profile)))
                     target.write(profile)
+        if result.stat().st_size != expected["ubuntu_size"] or digest(result) != expected["ubuntu_sha256"]:
+            raise ValueError("The original Ubuntu AppArmor archive differs from the admitted distro inputs")
+        roles = expected["board_profiles"]
+        names = ("droidloom-policy-loader", "droidloom-production-android", "droidloom-production-broker")
+        if set(roles) != set(names):
+            raise ValueError("The board must select exactly the three service roles")
+        with result.open("r+b") as target:
+            target.seek(8)
+            target.write(struct.pack("<I", len(sources) + len(names)))
+            target.seek(0, os.SEEK_END)
+            for name in names:
+                source = HERE / "apparmor" / name
+                if digest(source) != roles[name]["source_sha256"]:
+                    raise ValueError(f"Board AppArmor source changed for {name}")
+                output = work / (name + ".bin")
+                subprocess.run([str(compiler), "-Q", "-K", "--kernel-features", str(features),
+                                "-o", str(output), str(source)], check=True)
+                if output.stat().st_size != roles[name]["size"] or digest(output) != roles[name]["compiled_sha256"]:
+                    raise ValueError(f"Compiled board AppArmor role changed for {name}")
+                body = output.read_bytes()
+                target.write(struct.pack("<I", len(body)))
+                target.write(body)
         if result.stat().st_size != expected["size"] or digest(result) != expected["sha256"]:
-            raise ValueError("Compiled Ubuntu profiles differ from the admitted product bytes")
+            raise ValueError("The complete Ubuntu and board AppArmor archive differs from the product inputs")
         os.link(result, args.output)
 
 if __name__ == "__main__":

@@ -178,12 +178,15 @@ static int submit(const char *path, const unsigned char *data, size_t length)
     return error ? reject(error) : 0;
 }
 
+/* The pinned distribution archive contains 165 Ubuntu entries and three board roles. */
+#define APPARMOR_PROFILE_ENTRIES 168U
+
 static int apparmor_profiles(const struct input *pack, int activate)
 {
-    if (pack->size < 12 || memcmp(pack->data, "DLAA0001", 8) || le32(pack->data + 8) != 165)
+    if (pack->size < 12 || memcmp(pack->data, "DLAA0001", 8) || le32(pack->data + 8) != APPARMOR_PROFILE_ENTRIES)
         return reject(EBADMSG);
     size_t pos = 12;
-    for (unsigned int i = 0; i != 165; ++i) {
+    for (unsigned int i = 0; i != APPARMOR_PROFILE_ENTRIES; ++i) {
         if (pack->size - pos < 4)
             return reject(EBADMSG);
         size_t length = le32(pack->data + pos);
@@ -200,7 +203,7 @@ static int apparmor_profiles(const struct input *pack, int activate)
 int droidloom_board_activate_policy(gid_t observer_gid)
 {
     struct input policy = {881881, "7a2c530bc2cf92a5091a7dff64a2a50b5a1babc8cb0e63d6f6a4de8a97c77533", POLICY_DIR "/joint.policy", NULL};
-    struct input aa = {5663265, "16ad7370417d3ae76e5b873371a315681078e67a44c70672aa4043875be92889", POLICY_DIR "/ubuntu-apparmor.profiles", NULL};
+    struct input aa = {5717008, "a475508ea933b55e6d84f80dc0dbdc324124d54391dbba9124c6729ef2800c43", POLICY_DIR "/ubuntu-apparmor.profiles", NULL};
     struct droidloom_linux_run run = {.fd = -1};
     struct droidloom_readiness_paths paths = { .handoff.fd = -1, .readiness.fd = -1 };
     const char *stage = "read admitted SELinux input";

@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+abi <abi/4.0>,
+#include <tunables/global>
+# The legacy application worker stacks this profile over the existing broker.
+# The kernel-created Android init uses its original Android SELinux transition.
+profile droidloom-production-android {
+  /{,system/,system/bin/,system/lib64/,apex/} r,
+  /system/bin/{linker64,app_process64} mrix,
+  /apex/com.android.runtime/bin/linker64 mrix,
+  /system/lib64/**.so mr,
+  /apex/*/lib64/**.so mr,
+  /dev/{null,zero,urandom} r,
+  /dev/null w,
+  /dev/{binder,hwbinder,vndbinder} rw,
+  @{PROC}/[0-9]*/{status,attr/current,attr/apparmor/current,attr/selinux/current} r,
+  signal (receive) peer=droidloom-production-broker,
+}
