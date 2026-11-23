@@ -279,14 +279,9 @@ pub fn complete_early_resources() -> io::Result<()> {
         );
         let mutable =
             data.insert(PreparedPersistentData::prepare_early(&storage).map_err(io::Error::other)?);
-        let (owned, observed) = mutable
+        let [userdata, metadata] = mutable
             .early_descriptors_for_transfer(&storage)
             .map_err(io::Error::other)?;
-        let [userdata, metadata] = owned;
-        let userdata = File::from(userdata.try_clone_to_owned()?);
-        let metadata = File::from(metadata.try_clone_to_owned()?);
-        observed[0].verify(&userdata).map_err(io::Error::other)?;
-        observed[1].verify(&metadata).map_err(io::Error::other)?;
         let (u, g) = base.identity_lease().broker_ranges();
         let obs = g
             .start

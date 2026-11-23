@@ -54,10 +54,14 @@ impl PreparedPersistentData {
         Self::prepare_with(admission, DataMountSource::AndroidBlock)
     }
 
-    pub(crate) fn early_descriptors_for_transfer<'a>(
-        &'a mut self, admission: &EarlyStorageAdmission<'_, '_>,
-    ) -> Result<([BorrowedFd<'a>; 2], [PersistentRootObservation; 2])> {
-        self.transfer_with(admission)
+    pub(crate) fn early_descriptors_for_transfer(
+        &mut self, admission: &EarlyStorageAdmission<'_, '_>,
+    ) -> Result<[File; 2]> {
+        let ([data, metadata], observed) = self.transfer_with(admission)?;
+        let data = clone_for_android(data, observed[0])?;
+        let metadata = clone_for_android(metadata, observed[1])?;
+        admission.verify()?;
+        Ok([data, metadata])
     }
 
     pub(crate) fn revalidate_early_lifetime(&self, admission: &EarlyStorageAdmission<'_, '_>) -> Result<()> {
@@ -71,4 +75,17 @@ impl PreparedPersistentData {
         retired.verify_mount_retirement(&resources.userns, resources.host_uid, &resources.cohort)?;
         self.cleanup(true)
     }
+}
+
+// Keep the broker's original detached mount for syncfs and loop retirement.
+// An ordinary dup holds the delivered mount open and prevents init's umount.
+fn clone_for_android(original: BorrowedFd<'_>, observed: PersistentRootObservation) -> Result<File> {
+    let mount = syscall_fd(unsafe {
+        libc::syscall(libc::SYS_open_tree, original.as_raw_fd(), c"".as_ptr(),
+                      libc::OPEN_TREE_CLONE | libc::O_CLOEXEC as u32 | AT_EMPTY_PATH)
+    })?;
+    let mount_id = require_detached(&mount)?;
+    require(mount_id != observed.mount_id, "Android receives a distinct writable mount")?;
+    PersistentRootObservation { mount_id, ..observed }.verify(&mount)?;
+    Ok(mount)
 }

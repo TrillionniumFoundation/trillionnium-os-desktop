@@ -13,6 +13,7 @@
 #include <sys/mount.h>
 #include <sys/stat.h>
 #include <sys/statfs.h>
+#include <sys/statvfs.h>
 #include <sys/syscall.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -92,12 +93,17 @@ int droidloom_board_storage_state(int nsfd, uint64_t id, int expect_present) {
         return fail(ESTALE);
     return expect_present ? 0 : fail(EBUSY);
 }
-int droidloom_board_storage_id(int fd, uint64_t *id) {
-    struct statmount held = {0};
-    struct statfs fs;
-    if (fstatfs(fd, &fs) || held_mount(fd, &held)) return -1;
-    if (fs.f_type != EXT4_SUPER_MAGIC || held.mnt_attr & MOUNT_ATTR_RDONLY)
-        return fail(ESTALE);
-    *id = held.mnt_id;
+static int unique_mount_id(int fd, uint64_t *id) {
+    struct statx st = {0};
+    if (statx(fd, "", AT_EMPTY_PATH, STATX_MNT_ID_UNIQUE, &st)) return -1;
+    if (!(st.stx_mask & STATX_MNT_ID_UNIQUE) || !st.stx_mnt_id) return fail(ESTALE);
+    *id = st.stx_mnt_id;
     return 0;
+}
+int droidloom_board_storage_id(int fd, uint64_t *id) {
+    struct statfs fs;
+    struct statvfs flags;
+    if (fstatfs(fd, &fs) || fstatvfs(fd, &flags)) return -1;
+    if (fs.f_type != EXT4_SUPER_MAGIC || flags.f_flag & ST_RDONLY) return fail(ESTALE);
+    return unique_mount_id(fd, id);
 }
