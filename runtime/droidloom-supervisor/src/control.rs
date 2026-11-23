@@ -984,6 +984,27 @@ pub fn request_with_progress(
     progress::request(socket, request, None, Some(report))
 }
 
+/// Query Android readiness on the connection owned by the current container entry.
+/// The caller retains and revalidates the system manager's invocation identity.
+///
+/// # Errors
+/// Rejects a different socket peer, an invalid main PID, or a failed transport.
+pub fn container_entry_readiness(
+    socket: &Path,
+    main_pid: u32,
+    wait: bool,
+    report: &mut dyn FnMut(&str),
+) -> Result<ControlResponse, ControlError> {
+    let started = Instant::now();
+    let stream = progress::connect(socket).map_err(|error| io_error("connect to container entry", error))?;
+    let peer = peer_credentials(&stream)?;
+    if main_pid <= 1 || u32::try_from(peer.pid).ok() != Some(main_pid) {
+        return Err(ControlError::Invalid("Android readiness socket belongs to a different service process".into()));
+    }
+    let request = if wait { ControlRequest::WaitReady } else { ControlRequest::Readiness };
+    progress::request_on(stream, started, &request, None, Some(report))
+}
+
 /// Install a standalone APK opened with the calling user's permissions.
 ///
 /// # Errors
@@ -1156,6 +1177,10 @@ fn send_response(stream: &mut UnixStream, response: &ControlResponse) -> Result<
 }
 
 fn peer_uid(stream: &UnixStream) -> Result<u32, ControlError> {
+    Ok(peer_credentials(stream)?.uid)
+}
+
+fn peer_credentials(stream: &UnixStream) -> Result<libc::ucred, ControlError> {
     let mut credentials = libc::ucred {
         pid: 0,
         uid: 0,
@@ -1178,7 +1203,10 @@ fn peer_uid(stream: &UnixStream) -> Result<u32, ControlError> {
             io::Error::last_os_error(),
         ));
     }
-    Ok(credentials.uid)
+    if length as usize != std::mem::size_of::<libc::ucred>() {
+        return Err(ControlError::Invalid("incomplete lifecycle peer credentials".into()));
+    }
+    Ok(credentials)
 }
 
 fn load_spec(path: &Path) -> Result<CellSpec, ControlError> {

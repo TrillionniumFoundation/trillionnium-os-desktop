@@ -188,6 +188,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             Some(("restart", *mode, !cli.cell && !no_wait)),
         Command::Stop => Some(("stop", None, false)),
         Command::Status => Some(("status", None, false)),
+        Command::Wait | Command::Readiness => Some(("status", None, matches!(cli.command, Command::Wait))),
         _ => None,
     };
     if let Some((operation, mode, wait)) = managed {
@@ -195,24 +196,37 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             if mode.is_some_and(|selected| selected != SessionMode::Desktop) {
                 return Err("the shared-kernel production service currently supports desktop mode".into());
             }
-            let running = container_services::lifecycle(operation)?;
-            let ready = if wait {
-                let response = request_with_progress(&cli.socket, &ControlRequest::WaitReady, &mut |message| {
-                    if !cli.json { eprintln!("{message}"); }
-                })?;
+            let generation = container_services::lifecycle(operation)?;
+            let probe = matches!(cli.command, Command::Status | Command::Readiness | Command::Wait) || wait;
+            let (state, message, original) = if let Some(owner) = generation.filter(|_| probe) {
+                let response = droidloom_supervisor::control::container_entry_readiness(
+                    &cli.socket, owner.pid, wait, &mut |message| {
+                        if !cli.json { eprintln!("{message}"); }
+                    },
+                )?;
+                owner.verify_current()?;
                 if !response.ok { return Err(response.message.into()); }
-                Some(true)
+                if wait && response.state != droidloom_supervisor::control::CellState::Running {
+                    return Err("container entry replied before Android reached Running".into());
+                }
+                (response.state, response.message.clone(), Some(response))
+            } else if operation == "start" || operation == "restart" {
+                (droidloom_supervisor::control::CellState::Starting,
+                 "Container services are running. Android readiness is pending.".into(), None)
+            } else if wait {
+                return Err("container entry is not running".into());
             } else {
-                None
+                (droidloom_supervisor::control::CellState::Stopped, "Container services are stopped".into(), None)
             };
             if cli.json {
-                println!("{}", serde_json::json!({"ok":true, "container_services_running":running, "android_ready":ready}));
-            } else if ready == Some(true) {
-                println!("Container services are running and Android is ready");
-            } else if running {
-                println!("Container services are running");
+                let json = if let Some(response) = original {
+                    serde_json::to_value(response)?
+                } else {
+                    serde_json::json!({"ok":true, "state":state, "message":message})
+                };
+                println!("{}", serde_json::to_string_pretty(&json)?);
             } else {
-                println!("Container services are not running");
+                println!("{message}");
             }
             return Ok(());
         }

@@ -13,6 +13,11 @@ const PROGRAM: &str = "/usr/lib/droidloom/production/current/droidloom-container
 const SELECTED: &str = "/etc/droidloom/production/selected.json";
 
 pub(super) fn selected() -> io::Result<bool> {
+    if std::env::current_exe()?
+        == std::path::Path::new("/usr/lib/droidloom/production/current/droidloomctl")
+    {
+        return Ok(true);
+    }
     match fs::symlink_metadata(SELECTED) {
         Ok(file) if file.is_file() => Ok(true),
         Ok(_) => Err(io::Error::other("invalid production selection file")),
@@ -151,7 +156,36 @@ fn snapshot() -> io::Result<(Properties, Properties)> {
     Ok((show(TARGET, TARGET_FIELDS)?, show(ENTRY, ENTRY_FIELDS)?))
 }
 
-pub(super) fn lifecycle(operation: &str) -> io::Result<bool> {
+#[derive(Debug, Eq, PartialEq)]
+pub(super) struct Generation {
+    pub(super) pid: u32,
+    invocation: String,
+}
+
+impl Generation {
+    fn from_running(target: &Properties, entry: &Properties) -> Option<Self> {
+        if !running(target, entry) {
+            return None;
+        }
+        Some(Self {
+            pid: property(entry, "MainPID").parse().ok()?,
+            invocation: property(entry, "InvocationID").to_owned(),
+        })
+    }
+
+    pub(super) fn verify_current(&self) -> io::Result<()> {
+        let (target, entry) = snapshot()?;
+        verify_contract(&target, &entry)?;
+        if Self::from_running(&target, &entry).as_ref() == Some(self) {
+            return Ok(());
+        }
+        Err(io::Error::other(
+            "container service generation changed during the Android request",
+        ))
+    }
+}
+
+pub(super) fn lifecycle(operation: &str) -> io::Result<Option<Generation>> {
     if !matches!(operation, "start" | "restart" | "stop" | "status") {
         return Err(io::Error::other("invalid container lifecycle operation"));
     }
@@ -159,7 +193,22 @@ pub(super) fn lifecycle(operation: &str) -> io::Result<bool> {
         let (target, entry) = snapshot()?;
         verify_contract(&target, &entry)?;
         if operation == "status" {
-            return Ok(running(&target, &entry));
+            if let Some(generation) = Generation::from_running(&target, &entry) {
+                return Ok(Some(generation));
+            }
+            if property(&target, "ActiveState") == "inactive"
+                && property(&entry, "ActiveState") == "inactive"
+                && property(&entry, "MainPID") == "0"
+            {
+                return Ok(None);
+            }
+            return Err(io::Error::other(format!(
+                "container service is changing state or failed: target={}, entry={}/{}, result={}",
+                property(&target, "ActiveState"),
+                property(&entry, "ActiveState"),
+                property(&entry, "SubState"),
+                property(&entry, "Result")
+            )));
         }
     }
     // Each mutation is a single job submitted to the real manager. Competing
@@ -179,18 +228,16 @@ pub(super) fn lifecycle(operation: &str) -> io::Result<bool> {
             && property(&entry, "MainPID") == "0"
             && property(&entry, "LoadState") == "loaded"
         {
-            return Ok(false);
+            return Ok(None);
         }
         return Err(io::Error::other("container service stop has not completed"));
     }
     verify_contract(&target, &entry)?;
-    if running(&target, &entry) {
-        Ok(true)
-    } else {
-        Err(io::Error::other(
-            "the container entry did not remain running after activation",
-        ))
-    }
+    Generation::from_running(&target, &entry)
+        .map(Some)
+        .ok_or_else(|| {
+            io::Error::other("the container entry did not remain running after activation")
+        })
 }
 
 #[cfg(test)]
@@ -279,6 +326,17 @@ mod tests {
         ] {
             assert!(!provider_command(&invalid), "{invalid}");
         }
+    }
+
+    #[test]
+    fn reused_pid_with_another_invocation_is_a_different_generation() {
+        let (target, mut entry) = contract();
+        let original = Generation::from_running(&target, &entry).unwrap();
+        entry.insert(
+            "InvocationID".into(),
+            "bb9bcfcc18e541e5a1723a6825ee13e1".into(),
+        );
+        assert_ne!(Some(original), Generation::from_running(&target, &entry));
     }
 
     #[test]

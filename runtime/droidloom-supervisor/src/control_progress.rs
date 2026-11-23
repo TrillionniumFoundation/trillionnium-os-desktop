@@ -91,7 +91,17 @@ pub(super) fn request(
     progress: Option<&mut dyn FnMut(&str)>,
 ) -> Result<ControlResponse, ControlError> {
     let started = Instant::now();
-    let mut stream = connect(socket).map_err(|source| io_error("connect to droidloomd", source))?;
+    let stream = connect(socket).map_err(|source| io_error("connect to droidloomd", source))?;
+    request_on(stream, started, request, file, progress)
+}
+
+pub(super) fn request_on(
+    mut stream: UnixStream,
+    started: Instant,
+    request: &ControlRequest,
+    file: Option<&fs::File>,
+    progress: Option<&mut dyn FnMut(&str)>,
+) -> Result<ControlResponse, ControlError> {
     stream
         .set_write_timeout(Some(Duration::from_secs(2)))
         .map_err(|e| io_error("set lifecycle request write timeout", e))?;
@@ -320,6 +330,33 @@ mod tests {
     use std::thread;
 
     const SUCCESS: &[u8] = br#"{"ok":true,"state":"running","message":"Android is ready"}"#;
+
+    #[test]
+    fn container_readiness_uses_the_same_authenticated_connection() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("control.sock");
+        let listener = UnixListener::bind(&path).unwrap();
+        let server = thread::spawn(move || {
+            // A different process must not receive even the readiness request.
+            let (mut rejected, _) = listener.accept().unwrap();
+            let mut bytes = Vec::new();
+            rejected.read_to_end(&mut bytes).unwrap();
+            assert!(bytes.is_empty());
+            let (mut accepted, _) = listener.accept().unwrap();
+            accepted.read_to_end(&mut bytes).unwrap();
+            let frame: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+            assert_eq!(frame["request"]["command"], "wait_ready");
+            accepted.write_all(SUCCESS).unwrap();
+            accepted.write_all(b"\n").unwrap();
+        });
+        let pid = std::process::id();
+        let error = crate::control::container_entry_readiness(&path, pid + 1, true, &mut |_| {}).unwrap_err();
+        assert!(error.to_string().contains("different service process"));
+        let response = crate::control::container_entry_readiness(&path, pid, true, &mut |_| {}).unwrap();
+        assert!(response.ok);
+        assert_eq!(response.state, crate::control::CellState::Running);
+        server.join().unwrap();
+    }
 
     #[test]
     fn progress_envelope_preserves_strict_request_validation() {
