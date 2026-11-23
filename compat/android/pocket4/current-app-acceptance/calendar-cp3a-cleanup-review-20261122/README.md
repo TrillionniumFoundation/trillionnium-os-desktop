@@ -41,7 +41,7 @@ The CP3A client in the same system image is `/system/product/app/Calendar/Calend
 
 In `AllInOneActivity$QueryHandler.onQueryComplete`, a non-null empty query result while the activity is active closes the cursor, sets `allowSkip`, and requests `AccountManager.addAccount("com.google", "com.android.calendar", …)`. The core and reminder drivers require the English button `Create local calendar`, the field hint `Calendar name`, the initial value `On this device`, the account owner `Droidloom local calendars` and the internal name prefix `droidloom-local-`. None of those literals occur in the selected APK. A fresh successful provider review therefore leaves the client first-use case open.
 
-The AOSP Calendar source checkouts on Pocket4 and ai395 both point to clean commit `7a9e63dea83dfdab46db04fed58642bd8856dede` from 26Q2. The original source at `src/com/android/calendar/AllInOneActivity.kt` contains the same account request. Its default `res/values/strings.xml` directs users to add a Calendar account and make a calendar visible. Read-only upstream ref lookup returned this commit for both `android17-release` and `android17-security-release`. The Android 17 tag returned was `android-17.0.0_r1`. The lookup and inspected local source trees did not identify a CP3A/QPR1 source port implementing local-calendar creation.
+The AOSP Calendar source checkouts on Pocket4 and ai395 both point to clean commit `7a9e63dea83dfdab46db04fed58642bd8856dede` from 26Q2. The original source at `src/com/android/calendar/AllInOneActivity.kt` contains the same account request. Its default `res/values/strings.xml` directs users to add a Calendar account and make a calendar visible. Read-only upstream ref lookup returned this commit for both `android17-release` and `android17-security-release`. The Android 17 tag returned was `android-17.0.0_r1`. These upstream Kotlin sources omit local-calendar creation. The R38 cohort separately retains a functional port built from the CP3A binary and reviewed smali source.
 
 ```sh
 git ls-remote --refs https://android.googlesource.com/platform/packages/apps/Calendar \
@@ -50,4 +50,25 @@ git show 7a9e63dea83dfdab46db04fed58642bd8856dede:src/com/android/calendar/AllIn
 git show 7a9e63dea83dfdab46db04fed58642bd8856dede:res/values/strings.xml
 ```
 
-The retained historical install record points to the repaired standalone APK `c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1` and build receipt `ac457251cf36eaeb4101ca500a38dc5d2ea2e0f25dbacebc4dc1f6a2ccf4c290`. Rebuilding the inspected unmodified upstream source retains its account-based flow. A local-only zero-account business test needs a current client with a user-facing creation path and ownership semantics compatible with the selected provider, followed by fresh client and Main custody and readback. The account request was inspected statically. No account operation or installation was performed.
+## Rebuilt local-calendar candidate
+
+R38 retains the complete smali patch inputs for a local-calendar port based on the exact CP3A Calendar APK above. The release compiler uses smali. The retained reconstructed Java files document the helpers, and the five pure Java models have executable tests. The original Java implementation is missing.
+
+On Pocket4, the retained-manifest SHA-256 was `eb3c1953881101363283ebd7c4fd246cf8e8265be3fd2545a79b0adb110315cb`. Replaying the retained unsigned builder against the original system image produced the same 2,608,664-byte output, SHA-256 `fd57ab87c63925c59bfe4429ad3aa118861f468355aa1756687ceef40648eb24`. It changed 16 methods in six classes, checked 445 original primary classes, preserved all 439 untargeted classes, and round-tripped 60 helper classes. The only changed original ZIP payload is `classes.dex`. The added payload is `classes2.dex`, which contains all five literals required by the Main callers.
+
+The retained 2,672,653-byte signed candidate is `apps/Calendar-QPR1-functional.apk`, SHA-256 `8d3ca352655a27c25e9c0da12edd2fcd18bf26816fc53d04a209cf7ff7717b9f`, package `com.android.calendar`, version code 37. All 670 rebuilt ZIP payloads match its payloads. Its three additional entries are signature metadata. `apksigner verify --verbose --print-certs` passed with scheme v3 and one certificate, `a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc`, matching the current client profile.
+
+The actual helper DEX implements the editable calendar name and confirmation dialog. Its store creates the local row with the account name, type, random UUID prefix, display name and owner required by both Main callers, checks that the scoped row is absent, then reads back the returned provider row ID and identity. The five retained pure Java tests were recompiled and executed with Android PDK JDK 21.0.4. All 116 checks passed across AlertIdentity, EventDraft, EventReference, ProviderReceipt and SnoozeState.
+
+Run the retained builder in a new temporary directory. Set `COHORT` to the R38 QPR1 CP3A cohort directory and run the Java model tests with a JDK supporting `--release 8`, such as JDK 21.
+
+```sh
+ports="$COHORT/app-ports-20261108-8b88-r1"
+workdir=$(mktemp -d)
+python3 -B "$ports/source/calendar/build_unsigned.py" --image "$COHORT/official/system.img" \
+  --tools-dir "$ports/tools/smali" --zipalign "$ports/tools/android37/zipalign" --output "$workdir/build"
+python3 -B "$ports/source/calendar/run_model_tests.py"
+apksigner verify --verbose --print-certs "$ports/apps/Calendar-QPR1-functional.apk"
+```
+
+The earlier standalone installation receipt references APK `c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1`. The current image selects `72624139…`; its local-calendar port is a distinct, rebuildable candidate. Adoption requires publishing and selecting the exact port, establishing installed and retained user-data identity in the current Main, and running the local-calendar business and cleanup cases. This review performed zero installs, account operations or provider writes.
