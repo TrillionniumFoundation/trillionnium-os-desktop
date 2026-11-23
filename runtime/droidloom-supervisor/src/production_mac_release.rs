@@ -251,6 +251,14 @@ pub(crate) fn capture() -> Result<Release> {
     ];
     let input_sha = sha(&input);
     let observed = board_epoch::BoardEpoch::acquire(&input_sha, hashes)?;
+    // A different boot may legitimately re-load unrelated profiles. This one
+    // calibration must still describe one unchanging pair of kernel epochs.
+    const APPARMOR: &str = "/sys/kernel/security/apparmor";
+    let aa = open_absolute(APPARMOR, libc::O_PATH | libc::O_DIRECTORY)?;
+    require(
+        kind(&aa)? == SECURITYFS_MAGIC && aa_revision(&aa)? == observed.revision,
+        "AppArmor changed across the start of calibration",
+    )?;
     let root = open_absolute(SELINUX_ROOT, libc::O_PATH | libc::O_DIRECTORY)?;
     require(
         kind(&root)? == SELINUX_MAGIC,
@@ -362,5 +370,14 @@ pub(crate) fn capture() -> Result<Release> {
     guard
         .revalidate()
         .map_err(|e| MacError::Selection(e.to_string()))?;
+    require(
+        status.read()? == epoch
+            && aa_revision(&aa)? == observed.revision
+            && Node::of(&aa)?.same_inode(Node::of(&open_absolute(
+                APPARMOR,
+                libc::O_PATH | libc::O_DIRECTORY,
+            )?)?),
+        "SELinux or AppArmor changed during release capture",
+    )?;
     Ok(package)
 }
