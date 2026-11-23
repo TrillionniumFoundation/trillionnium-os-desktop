@@ -97,10 +97,11 @@ static int filesystem(int root, const char *name, long magic, unsigned long on,
 }
 
 #include "board_binder.h"
+#include "board_cgroup.h"
 
 /* The caller owns the manifest, protected storage lease and actual cgroup
  * delegation. Check the receiving layout again at the mount handoff. */
-static int prepared_layout(int root) {
+static int prepared_layout(int root, bool attached) {
     static const char *const ro[] = {"", "vendor", "system/system_ext/lib64",
                                      "system/system_ext/bin", "system/system_ext/etc/init"};
     dev_t media[7];
@@ -114,7 +115,7 @@ static int prepared_layout(int root) {
         for (int j = i + 1; j < 7; ++j)
             if (!(i == 3 && j == 4) && media[i] == media[j]) return reject(EXDEV);
     if (board_dev_state(root, false) ||
-        filesystem(root, "sys/fs/cgroup", CGROUP2_SUPER_MAGIC, 0, ST_RDONLY, NULL))
+        droidloom_admit_cgroup_mountpoint(root, attached))
         return -1;
     return original_init(root);
 }
@@ -152,7 +153,7 @@ static int slot_mount(int root, int child_root) {
         slot = under(parent,"rootfs",O_PATH | O_DIRECTORY);
         if (slot < 0) error = errno;
         else {
-            if (!same_mount_root(root,slot) || prepared_layout(slot)) error = ESTALE;
+            if (!same_mount_root(root,slot) || prepared_layout(slot, true)) error = ESTALE;
             close(slot);
         }
     }
@@ -167,7 +168,7 @@ int droidloom_board_deliver_root(int pidfd, int userns, int mountns,
                                  int child_root, int detached_root) {
     if (geteuid() != 0) return reject(EPERM);
     if (still_live(pidfd) || namespace_type(userns,CLONE_NEWUSER) ||
-        namespace_type(mountns,CLONE_NEWNS) || prepared_layout(detached_root)) return -1;
+        namespace_type(mountns,CLONE_NEWNS) || prepared_layout(detached_root, false)) return -1;
     int host_user = open("/proc/self/ns/user",O_RDONLY | O_CLOEXEC);
     int host_mount = open("/proc/self/ns/mnt",O_RDONLY | O_CLOEXEC);
     bool separate = host_user >= 0 && host_mount >= 0 && distinct_inode(userns,host_user) && distinct_inode(mountns,host_mount);
@@ -207,7 +208,7 @@ int droidloom_board_deliver_root(int pidfd, int userns, int mountns,
  * generation-specific release notification and opened the newly visible root. */
 int droidloom_board_enter(int held_root) {
     if (getpid()!=1 || geteuid()!=0) return reject(EPERM);
-    if (prepared_layout(held_root)) return -1;
+    if (prepared_layout(held_root, true)) return -1;
     int ns=open("/proc/self/ns/pid",O_RDONLY|O_CLOEXEC);
     if (ns<0 || namespace_type(ns,CLONE_NEWPID)) {
         int e=errno; if(ns>=0)close(ns);return reject(e);

@@ -46,7 +46,7 @@ fn main() {
         archive.arg(object);
     }
     execute(&mut archive);
-    println!("cargo:rerun-if-changed=../droidloom-early-boot/board_binder.h");
+    println!("cargo:rerun-if-changed=../droidloom-early-boot/board_cgroup.h");
     println!("cargo:rerun-if-changed=../droidloom-early-boot/board_resources.h");
     println!("cargo:rerun-if-changed=../droidloom-early-boot/board_binder.h");
     println!("cargo:rustc-link-search=native={}", out.display());

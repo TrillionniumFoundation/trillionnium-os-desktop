@@ -14,6 +14,7 @@
 #include <sys/syscall.h>
 #include <sys/xattr.h>
 #include <unistd.h>
+#include "board_cgroup.h"
 
 static int fail(int value) {errno=value; return -1;}
 static int beneath(int fd,const char *name) {
@@ -109,56 +110,6 @@ static int mkdir_held(int parent,const char *name,mode_t mode){
 /* The original init mounts cgroup2 itself after the host has bound its PID
  * to a private, payload-rooted cgroup namespace. Only the empty sysfs
  * mountpoint is exported. A cgroup2 bind here would make that mount EBUSY. */
-static int stock_cgroup_mountpoint(uint64_t restrictions) {
-    int host = open("/sys", O_PATH | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
-    if (host < 0)
-        return -1;
-    int base = -1, leaf = -1, result = -1;
-    int error = 0;
-    if (fs_is(host, SYSFS_MAGIC) ||
-        (base = subtree(host, restrictions)) < 0 ||
-        (leaf = beneath(base, "fs/cgroup")) < 0 ||
-        fs_is(leaf, SYSFS_MAGIC)) {
-        error = errno;
-        goto done;
-    }
-    uint64_t base_id, leaf_id;
-    if (mount_id(base, &base_id) || mount_id(leaf, &leaf_id)) {
-        error = errno;
-        goto done;
-    }
-    if (base_id != leaf_id) {
-        error = EXDEV;
-        goto done;
-    }
-    DIR *entries = fdopendir(leaf);
-    if (!entries) {
-        error = errno;
-        goto done;
-    }
-    leaf = -1;
-    errno = 0;
-    struct dirent *item;
-    while ((item = readdir(entries))) {
-        if (strcmp(item->d_name, ".") && strcmp(item->d_name, "..")) {
-            error = ENOTEMPTY;
-            break;
-        }
-    }
-    if (!error && errno)
-        error = errno;
-    if (!error && (result = subtree(dirfd(entries), restrictions)) < 0)
-        error = errno;
-    closedir(entries);
-done:
-    if (leaf >= 0)
-        close(leaf);
-    if (base >= 0)
-        close(base);
-    close(host);
-    return error ? fail(error) : result;
-}
-
 static int attach_guest_cgroup(int root, int payload) {
     const uint64_t restricted = MOUNT_ATTR_NOSUID | MOUNT_ATTR_NODEV | MOUNT_ATTR_NOEXEC;
     struct stat owner;
@@ -173,7 +124,7 @@ static int attach_guest_cgroup(int root, int payload) {
     int fs = -1, destination = -1, point = -1, error = 0;
     if ((fs = mkdir_held(sys, "fs", 0555)) < 0 ||
         (destination = mkdir_held(fs, "cgroup", 0555)) < 0 ||
-        (point = stock_cgroup_mountpoint(restricted | MOUNT_ATTR_RDONLY)) < 0 ||
+        (point = droidloom_original_cgroup_leaf()) < 0 ||
         attach_held(sys, "fs/cgroup", destination, point) ||
         attr(sys, MOUNT_ATTR_RDONLY) || attach(root, "sys", sys))
         error = errno;
