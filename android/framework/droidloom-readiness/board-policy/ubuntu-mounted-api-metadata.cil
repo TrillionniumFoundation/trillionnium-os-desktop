@@ -385,6 +385,18 @@
 (neverallow p4_android_userspace p4_linux_udev_netlink_t (netlink_kobject_uevent_socket (create bind read write sendto)))
 (neverallow p4_linux_service_executor_t p4_linux_udev_netlink_t (netlink_kobject_uevent_socket (create bind sendto)))
 (neverallow p4_linux_udev_t self (capability (sys_admin)))
+; Stock worker_spawn creates its own MONITOR_GROUP_NONE endpoint before forking.
+(type p4_linux_udev_worker_netlink_t)
+(roletype object_r p4_linux_udev_worker_netlink_t)
+(roletype system_r p4_linux_udev_worker_netlink_t)
+(typeattributeset p4_linux_data (p4_linux_udev_worker_netlink_t))
+(typetransition p4_linux_udev_t p4_linux_udev_t netlink_kobject_uevent_socket p4_linux_udev_worker_netlink_t)
+(allow p4_linux_udev_t p4_linux_udev_worker_netlink_t (netlink_kobject_uevent_socket (create bind getattr getopt setopt read write)))
+(allow p4_linux_udev_t self (process (fork sigchld)))
+(allow p4_linux_udev_t sysfs (filesystem (getattr)))
+(allow p4_linux_udev_t sysfs (file (getattr)))
+(neverallow p4_linux_udev_t sysfs (file (open read write append map execute)))
+(neverallow p4_android_userspace p4_linux_udev_worker_netlink_t (netlink_kobject_uevent_socket (create bind read write sendto)))
 (allow p4_linux_udev_t init_t (unix_stream_socket (getattr getopt setopt read write accept listen)))
 ; Original udev workers register their own abstract notification endpoint.
 (allow p4_linux_udev_t self (unix_dgram_socket (create bind connect write read getattr getopt setopt)))
