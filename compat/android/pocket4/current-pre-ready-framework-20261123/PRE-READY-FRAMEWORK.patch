@@ -1,0 +1,474 @@
+--- a/runtime/droidloom-supervisor/src/production_namespace_application_parent.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_application_parent.rs
+@@ -27,6 +27,13 @@
+     node: Node,
+     identity: ProcessIdentity,
+     epoch: RuntimeEpoch,
++    // No integer PID or Ready observation can re-issue either original owner.
++    init_nonce: [u8; 16],
++    init_identity: ProcessIdentity,
++    init_node: Node,
++    zygote_directory: File,
++    zygote_node: Node,
++    zygote_identity: ProcessIdentity,
+ }
+ 
+ impl ReadyTreeWitness<'_> {
+@@ -478,25 +485,147 @@
+ 
+     fn observe_framework(&self) -> Result<FrameworkObservation> {
+         self.revalidate()?;
+-        let child = self.child()?;
+-        let boot = read_boot_uuid(&child.proc_root)?;
+-        let names = proc_names(&child.proc_root)?;
+-        let mut found = None;
+-        for name in names {
+-            let pid: u32 = name
+-                .parse()
+-                .map_err(|_| NamespaceError::Rejected("malformed proc observation name"))?;
+-            let directory =
+-                match open_proc_at(&child.proc_root, &name, libc::O_RDONLY | libc::O_DIRECTORY) {
+-                    Ok(value) => value,
+-                    Err(NamespaceError::Io(error))
+-                        if matches!(error.raw_os_error(), Some(libc::ENOENT | libc::ESRCH)) =>
+-                    {
+-                        continue;
+-                    }
+-                    Err(error) => return Err(error),
+-                };
+-            let comm = match read_proc(&directory, "comm") {
++        let held = observe_framework_for_child(self.child()?)?;
++        self.verify_framework(&held)?;
++        Ok(held)
++    }
++
++    fn verify_framework(&self, held: &FrameworkObservation) -> Result<()> {
++        self.revalidate()?;
++        verify_framework_for_child(self.child()?, held)?;
++        self.revalidate()
++    }
++}
++
++// A pre-Ready read-only issuer. This does not require ExecutionAdmission,
++// ReadyTreeWitness, or a sys.boot_completed property. Its live original-init
++// borrow is the only way to obtain or recheck this observation. It cannot
++// authorize task-profile writes, an app command, or a final exec.
++impl ExecutedInitWitness<'_> {
++    pub(crate) fn observe_pre_ready_framework(&self) -> Result<FrameworkObservation> {
++        self.revalidate()?;
++        let held = observe_framework_for_child(self.init())?;
++        self.revalidate_pre_ready_framework(&held)?;
++        Ok(held)
++    }
++
++    pub(crate) fn revalidate_pre_ready_framework(&self, held: &FrameworkObservation) -> Result<()> {
++        self.revalidate()?;
++        verify_framework_for_child(self.init(), held)?;
++        self.revalidate()
++    }
++}
++
++fn same_guest_namespaces(directory: &File, child: &TreeChild) -> Result<bool> {
++    // Proc magic links are followed only to read and compare NSFS inodes.
++    // These descriptors never become a setns target or process authority.
++    for (name, expected) in [
++        (c"ns/pid", child.pid_namespace()),
++        (c"ns/user", &child.namespaces.userns),
++    ] {
++        let raw = unsafe {
++            libc::openat(
++                directory.as_raw_fd(),
++                name.as_ptr(),
++                libc::O_RDONLY | libc::O_CLOEXEC,
++            )
++        };
++        if raw < 0 {
++            return Err(io::Error::last_os_error().into());
++        }
++        let namespace = unsafe { File::from_raw_fd(raw) };
++        check_fs(namespace.as_raw_fd(), NSFS_MAGIC)?;
++        if Node::of(&namespace)? != Node::of(expected)? {
++            return Ok(false);
++        }
++    }
++    Ok(true)
++}
++
++fn require_process_credentials(
++    directory: &File,
++    uid: u32,
++    gid: u32,
++    role: &'static str,
++) -> Result<()> {
++    let status = read_proc(directory, "status")?;
++    for (field, expected) in [("Uid:", uid), ("Gid:", gid)] {
++        let observed = status_field(&status, field)?
++            .split_ascii_whitespace()
++            .map(str::parse::<u32>)
++            .collect::<std::result::Result<Vec<_>, _>>()
++            .map_err(|_| NamespaceError::Rejected("malformed Android process credentials"))?;
++        if observed != [expected; 4] {
++            return Err(NamespaceError::Rejected(role));
++        }
++    }
++    Ok(())
++}
++
++fn zygote_name(directory: &File) -> Result<bool> {
++    Ok(matches!(
++        read_proc(directory, "comm")?.as_slice(),
++        b"zygote\n" | b"zygote64\n"
++    ))
++}
++
++fn valid_original_chain(
++    init: ProcessIdentity,
++    zygote: ProcessIdentity,
++    system_server: ProcessIdentity,
++) -> bool {
++    init.pid != zygote.pid
++        && zygote.pid != system_server.pid
++        && init.pid != system_server.pid
++        && zygote.parent == init.pid
++        && system_server.parent == zygote.pid
++        && init.start_ticks < zygote.start_ticks
++        && zygote.start_ticks < system_server.start_ticks
++}
++
++fn observe_zygote(
++    child: &TreeChild,
++    system_server: &ProcessIdentity,
++) -> Result<(File, Node, ProcessIdentity)> {
++    if system_server.parent == child.identity.pid || system_server.parent == 0 {
++        return Err(NamespaceError::Rejected(
++            "system_server is not a child of the original zygote",
++        ));
++    }
++    let directory = open_proc_at(
++        &child.proc_root,
++        &system_server.parent.to_string(),
++        libc::O_RDONLY | libc::O_DIRECTORY,
++    )?;
++    let identity = read_identity(&directory, system_server.parent)?;
++    if !valid_original_chain(child.identity, identity, *system_server)
++        || !zygote_name(&directory)?
++        || !same_guest_namespaces(&directory, child)?
++    {
++        return Err(NamespaceError::Rejected(
++            "zygote parent is not in the original init generation",
++        ));
++    }
++    require_process_credentials(
++        &directory,
++        child.uids.start,
++        child.gids.start,
++        "zygote is not mapped guest root",
++    )?;
++    let node = Node::of(&directory)?;
++    Ok((directory, node, identity))
++}
++
++fn observe_framework_for_child(child: &TreeChild) -> Result<FrameworkObservation> {
++    child.verify()?;
++    let boot = read_boot_uuid(&child.proc_root)?;
++    let mut found = None;
++    for name in proc_names(&child.proc_root)? {
++        let pid: u32 = name
++            .parse()
++            .map_err(|_| NamespaceError::Rejected("malformed proc observation name"))?;
++        let directory =
++            match open_proc_at(&child.proc_root, &name, libc::O_RDONLY | libc::O_DIRECTORY) {
+                 Ok(value) => value,
+                 Err(NamespaceError::Io(error))
+                     if matches!(error.raw_os_error(), Some(libc::ENOENT | libc::ESRCH)) =>
+@@ -505,63 +634,96 @@
+                 }
+                 Err(error) => return Err(error),
+             };
+-            if comm != b"system_server\n" {
++        let comm = match read_proc(&directory, "comm") {
++            Ok(value) => value,
++            Err(NamespaceError::Io(error))
++                if matches!(error.raw_os_error(), Some(libc::ENOENT | libc::ESRCH)) =>
++            {
+                 continue;
+             }
+-            // This is an observation, never acquisition of a command target.
+-            if !framework_namespace(&directory, child)? {
+-                continue;
+-            }
+-            let identity = read_identity(&directory, pid)?;
+-            let value = FrameworkObservation {
+-                node: Node::of(&directory)?,
+-                directory,
+-                identity,
+-                epoch: RuntimeEpoch {
+-                    boot_id: boot.clone(),
+-                    cell_host_pid: child.identity.pid,
+-                    framework_host_pid: pid,
+-                    framework_start_ticks: identity.start_ticks,
+-                },
+-            };
+-            self.verify_framework(&value)?;
+-            if found.replace(value).is_some() {
+-                return Err(NamespaceError::Rejected(
+-                    "more than one owned system_server",
+-                ));
+-            }
+-        }
+-        found.ok_or(NamespaceError::Rejected(
+-            "actual system_server not found in original namespace",
+-        ))
+-    }
+-
+-    fn verify_framework(&self, held: &FrameworkObservation) -> Result<()> {
+-        self.revalidate()?;
+-        let child = self.child()?;
+-        if Node::of(&held.directory)? != held.node
+-            || read_identity(&held.directory, held.identity.pid)? != held.identity
+-            || read_proc(&held.directory, "comm")? != b"system_server\n"
+-            || !framework_namespace(&held.directory, child)?
+-            || read_boot_uuid(&child.proc_root)? != held.epoch.boot_id
+-            || held.epoch.cell_host_pid != child.identity.pid
+-        {
+-            return Err(NamespaceError::Rejected(
+-                "held framework generation changed",
+-            ));
+-        }
++            Err(error) => return Err(error),
++        };
++        if comm != b"system_server\n" || !framework_namespace(&directory, child)? {
++            continue;
++        }
++        let identity = read_identity(&directory, pid)?;
++        let (zygote_directory, zygote_node, zygote_identity) = observe_zygote(child, &identity)?;
++        let held = FrameworkObservation {
++            node: Node::of(&directory)?,
++            directory,
++            identity,
++            epoch: RuntimeEpoch {
++                boot_id: boot.clone(),
++                cell_host_pid: child.identity.pid,
++                framework_host_pid: pid,
++                framework_start_ticks: identity.start_ticks,
++            },
++            init_nonce: child.nonce,
++            init_identity: child.identity,
++            init_node: child.proc_node,
++            zygote_directory,
++            zygote_node,
++            zygote_identity,
++        };
++        verify_framework_for_child(child, &held)?;
++        if found.replace(held).is_some() {
++            return Err(NamespaceError::Rejected(
++                "more than one owned system_server",
++            ));
++        }
++    }
++    child.verify()?;
++    found.ok_or(NamespaceError::Rejected(
++        "actual system_server not found in original namespace",
++    ))
++}
++
++fn verify_framework_for_child(child: &TreeChild, held: &FrameworkObservation) -> Result<()> {
++    child.verify()?;
++    if child.nonce != held.init_nonce
++        || child.identity != held.init_identity
++        || child.proc_node != held.init_node
++        || Node::of(&held.directory)? != held.node
++        || read_identity(&held.directory, held.identity.pid)? != held.identity
++        || read_proc(&held.directory, "comm")? != b"system_server\n"
++        || !framework_namespace(&held.directory, child)?
++        || read_boot_uuid(&child.proc_root)? != held.epoch.boot_id
++        || held.epoch.cell_host_pid != child.identity.pid
++        || held.epoch.framework_host_pid != held.identity.pid
++        || held.epoch.framework_start_ticks != held.identity.start_ticks
++        || held.identity.parent != held.zygote_identity.pid
++        || Node::of(&held.zygote_directory)? != held.zygote_node
++        || read_identity(&held.zygote_directory, held.zygote_identity.pid)? != held.zygote_identity
++        || !valid_original_chain(child.identity, held.zygote_identity, held.identity)
++        || !zygote_name(&held.zygote_directory)?
++        || !same_guest_namespaces(&held.zygote_directory, child)?
++    {
++        return Err(NamespaceError::Rejected(
++            "held original init/zygote/system_server generation changed",
++        ));
++    }
++    require_process_credentials(
++        &held.zygote_directory,
++        child.uids.start,
++        child.gids.start,
++        "zygote credentials changed",
++    )?;
++    for (name, node) in [
++        (held.identity.pid, held.node),
++        (held.zygote_identity.pid, held.zygote_node),
++    ] {
+         let named = open_proc_at(
+             &child.proc_root,
+-            &held.identity.pid.to_string(),
++            &name.to_string(),
+             libc::O_RDONLY | libc::O_DIRECTORY,
+         )?;
+-        if Node::of(&named)? != held.node {
+-            return Err(NamespaceError::Rejected(
+-                "held framework proc name was replaced",
+-            ));
+-        }
+-        Ok(())
+-    }
++        if Node::of(&named)? != node {
++            return Err(NamespaceError::Rejected(
++                "original Android process proc name was replaced",
++            ));
++        }
++    }
++    child.verify()
+ }
+ 
+ fn read_boot_uuid(proc_root: &File) -> Result<String> {
+@@ -588,49 +750,20 @@
+ }
+ 
+ fn framework_namespace(directory: &File, child: &TreeChild) -> Result<bool> {
+-    // Deliberately follow these two proc magic links only for observation.
+-    // They are never exported to an executor or used by setns.
+-    for (name, expected) in [
+-        (c"ns/pid", child.pid_namespace()),
+-        (c"ns/user", &child.namespaces.userns),
+-    ] {
+-        let raw = unsafe {
+-            libc::openat(
+-                directory.as_raw_fd(),
+-                name.as_ptr(),
+-                libc::O_RDONLY | libc::O_CLOEXEC,
+-            )
+-        };
+-        if raw < 0 {
+-            return Err(io::Error::last_os_error().into());
+-        }
+-        let namespace = unsafe { File::from_raw_fd(raw) };
+-        check_fs(namespace.as_raw_fd(), NSFS_MAGIC)?;
+-        if Node::of(&namespace)? != Node::of(expected)? {
+-            return Ok(false);
+-        }
+-    }
+-    let status = read_proc(directory, "status")?;
++    if !same_guest_namespaces(directory, child)? {
++        return Ok(false);
++    }
+     let uid = child
+         .uids
+         .start
+         .checked_add(1000)
+         .ok_or(NamespaceError::Rejected("framework UID overflow"))?;
+-    let gids = child
++    let gid = child
+         .gids
+         .start
+         .checked_add(1000)
+         .ok_or(NamespaceError::Rejected("framework GID overflow"))?;
+-    for (field, expected) in [("Uid:", uid), ("Gid:", gids)] {
+-        let observed = status_field(&status, field)?
+-            .split_ascii_whitespace()
+-            .map(str::parse::<u32>)
+-            .collect::<std::result::Result<Vec<_>, _>>()
+-            .map_err(|_| NamespaceError::Rejected("malformed framework credentials"))?;
+-        if observed != [expected; 4] {
+-            return Err(NamespaceError::Rejected("framework credentials differ"));
+-        }
+-    }
++    require_process_credentials(directory, uid, gid, "framework credentials differ")?;
+     let cgroup = read_proc(directory, "cgroup")?;
+     let cgroup = std::str::from_utf8(&cgroup)
+         .map_err(|_| NamespaceError::Rejected("non-text framework cgroup"))?;
+@@ -702,3 +835,76 @@
+     }
+     Ok(names)
+ }
++
++#[cfg(test)]
++mod pre_ready_identity_tests {
++    use super::*;
++
++    #[test]
++    fn original_init_zygote_system_server_lineage_rejects_reparenting_and_reuse() {
++        let init = ProcessIdentity {
++            pid: 200,
++            parent: 1,
++            start_ticks: 10,
++        };
++        let zygote = ProcessIdentity {
++            pid: 201,
++            parent: 200,
++            start_ticks: 20,
++        };
++        let system_server = ProcessIdentity {
++            pid: 202,
++            parent: 201,
++            start_ticks: 30,
++        };
++        assert!(valid_original_chain(init, zygote, system_server));
++        assert!(!valid_original_chain(
++            init,
++            ProcessIdentity {
++                parent: 1,
++                ..zygote
++            },
++            system_server,
++        ));
++        assert!(!valid_original_chain(
++            init,
++            zygote,
++            ProcessIdentity {
++                parent: 200,
++                ..system_server
++            },
++        ));
++        assert!(!valid_original_chain(
++            init,
++            ProcessIdentity {
++                start_ticks: 31,
++                ..zygote
++            },
++            system_server,
++        ));
++        assert!(!valid_original_chain(
++            init,
++            ProcessIdentity {
++                start_ticks: 9,
++                ..zygote
++            },
++            system_server,
++        ));
++        assert!(!valid_original_chain(
++            init,
++            zygote,
++            ProcessIdentity {
++                pid: 201,
++                ..system_server
++            },
++        ));
++        assert!(!valid_original_chain(
++            init,
++            zygote,
++            ProcessIdentity {
++                start_ticks: 20,
++                ..system_server
++            },
++        ));
++    }
++}
+--- a/runtime/droidloom-supervisor/src/production_namespace_execution_identity.rs
++++ b/runtime/droidloom-supervisor/src/production_namespace_execution_identity.rs
+@@ -59,7 +59,7 @@
+ }
+ 
+ impl ExecutedInitWitness<'_> {
+-    fn init(&self) -> &TreeChild {
++    pub(super) fn init(&self) -> &TreeChild {
+         self.owner
+             .tree
+             .init
