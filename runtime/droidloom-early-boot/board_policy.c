@@ -203,7 +203,7 @@ static int apparmor_profiles(const struct input *pack, int activate)
 int droidloom_board_activate_policy(gid_t observer_gid)
 {
     struct input policy = {881881, "7a2c530bc2cf92a5091a7dff64a2a50b5a1babc8cb0e63d6f6a4de8a97c77533", POLICY_DIR "/joint.policy", NULL};
-    struct input aa = {5717008, "a475508ea933b55e6d84f80dc0dbdc324124d54391dbba9124c6729ef2800c43", POLICY_DIR "/ubuntu-apparmor.profiles", NULL};
+    struct input aa = {5726632, "9d67e627ee5d69ded9c4e8cb1732840c6406f90ae7615da280e35a5ffaad576d", POLICY_DIR "/ubuntu-apparmor.profiles", NULL};
     struct droidloom_linux_run run = {.fd = -1};
     struct droidloom_readiness_paths paths = { .handoff.fd = -1, .readiness.fd = -1 };
     const char *stage = "read admitted SELinux input";

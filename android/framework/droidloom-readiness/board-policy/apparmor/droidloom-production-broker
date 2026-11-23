@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-abi <abi/4.0>,
+abi <abi/5.0>,
 #include <tunables/global>
 profile droidloom-production-broker {
   # Dynamic loader and NSS inputs used by the packaged Ubuntu executables.
@@ -49,6 +49,9 @@ profile droidloom-production-broker {
   /run/droidloom-container/** rw,
   /run/systemd/{,system/} r,
   /run/systemd/{private,notify} rw,
+  # Runtime endpoints have package-owned filesystem names or are unnamed socketpairs.
+  deny unix (bind, listen, accept) addr="@**",
+  deny unix (connect, send, receive) peer=(addr="@**"),
   network (create) unix stream,
   network (create) unix seqpacket,
   network (create) unix dgram,
