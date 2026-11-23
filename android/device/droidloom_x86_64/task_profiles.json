@@ -1,0 +1,28 @@
+{
+  "Attributes": [
+    {
+      "Name": "LowCapacityCPUs",
+      "Controller": "cpuset",
+      "File": "background/cpus",
+      "FileV2": "cpuset.cpus.effective"
+    },
+    {
+      "Name": "HighCapacityCPUs",
+      "Controller": "cpuset",
+      "File": "foreground/cpus",
+      "FileV2": "cpuset.cpus.effective"
+    },
+    {
+      "Name": "HighCapacityWICPUs",
+      "Controller": "cpuset",
+      "File": "foreground_window/cpus",
+      "FileV2": "cpuset.cpus.effective"
+    },
+    {
+      "Name": "MaxCapacityCPUs",
+      "Controller": "cpuset",
+      "File": "top-app/cpus",
+      "FileV2": "cpuset.cpus.effective"
+    }
+  ]
+}
