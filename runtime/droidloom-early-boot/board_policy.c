@@ -249,7 +249,7 @@ static int apparmor_profiles(const struct input *pack, int activate,
 
 int droidloom_board_activate_policy(gid_t observer_gid)
 {
-    struct input policy = {919935, "1a7961038c664bd3be0c1ab6711abf0daf36946ab6ce7d9ef9ca47bcb7a59fbf", POLICY_DIR "/joint.policy", NULL};
+    struct input policy = {922214, "d4e57e9b24ecab62b7cb39b4fd57ea5b639951c09407fa9ffe66a7e13240420d", POLICY_DIR "/joint.policy", NULL};
     struct input aa = {5757832, "0165ca3e8701be602d3c3392fdf674d15310d575cc0d88e7d4ed6fc6bc8e9279", POLICY_DIR "/ubuntu-apparmor.profiles", NULL};
     struct droidloom_apparmor_measurement observation = {0};
     struct droidloom_raw_profile selected_profiles[3] = {0};
