@@ -10,6 +10,10 @@ use super::early::BaseAuthority as _;
 use crate::production_execution::PreparedExecution;
 use crate::production_selection::{PersistentImagePolicy, ProductionSelection};
 
+#[path = "production_persistent_data_early.rs"]
+mod early_storage;
+pub(crate) use early_storage::EarlyStorageAdmission;
+
 #[path = "production_persistent_data_backings.rs"]
 mod backings;
 #[path = "production_persistent_data_loop.rs"]
