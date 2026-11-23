@@ -1395,6 +1395,12 @@ impl PreparedMounts {
                 .as_fd(),
         ])
     }
+    pub(crate) fn has_shutdown_property_mount(&self) -> Result<bool> {
+        let resources = self.resources.as_ref().ok_or(MountError::Rejected("retired base mounts"))?;
+        Ok(resources.cohort.system_ext_readiness.as_ref()
+            .is_some_and(|(_, declaration)| declaration.shutdown_property_contexts_sha256.is_some()))
+    }
+
     pub(crate) fn extension_device(&self,index:usize) -> Result<Option<u64>> {
         let resources = self.resources.as_ref().ok_or(MountError::Rejected("retired base mounts"))?;
         resources.images.get(index).map(|row| -> Result<u64> {

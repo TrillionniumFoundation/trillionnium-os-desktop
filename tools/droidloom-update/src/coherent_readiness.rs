@@ -6,6 +6,19 @@ const BUILDER: &str = include_str!("official_readiness_image.py");
 const RC: &[u8] =
     include_bytes!("../../../android/framework/droidloom-readiness/droidloom-readiness.rc");
 
+fn receipt_parents(system: &str, elf: &str, rc: &str) -> Result<Value> {
+    let mut parents = json!({"system":system,"elf":elf,"rc":rc});
+    match rc {
+        contract::OBSERVER_ONLY_RC_SHA256 => {}
+        contract::SHUTDOWN_RC_SHA256 => {
+            parents["shutdown_property_contexts"] =
+                json!(contract::SHUTDOWN_PROPERTY_CONTEXTS_SHA256);
+        }
+        _ => return fail("unsupported normal system_ext init script"),
+    }
+    Ok(parents)
+}
+
 pub(crate) fn build(
     system: &Path,
     product: &Path,
@@ -59,7 +72,7 @@ pub(crate) fn build(
     let work = temp.path();
     let image = work.join(NAME);
     let config = json!({"system":system.path,"elf":elf.path,"rc":rc.path,"output":image,
-        "sha256":{"system":system.sha256,"elf":elf.sha256,"rc":rc.sha256},"tools":tool_paths});
+        "sha256":receipt_parents(&system.sha256, &elf.sha256, &rc.sha256)?,"tools":tool_paths});
     write(&work.join("inputs.json"), serde_json::to_vec(&config)?)?;
     let python = reader_tool("python3")?;
     let record = OpenOptions::new()
@@ -128,9 +141,7 @@ pub(super) fn verify_retained(
         || normal["sha256"].as_str() != Some(&image.sha256)
         || normal["source_system_sha256"].as_str() != Some(&system.sha256)
         || normal["mount_subtrees"] != json!(contract::READINESS_TARGETS)
-        || rc_sha != format!("{:x}", Sha256::digest(RC))
-        || normal["readback"]["parents"]
-            != json!({"system":system.sha256,"elf":elf_sha,"rc":rc_sha})
+        || normal["readback"]["parents"] != receipt_parents(&system.sha256, elf_sha, rc_sha)?
         || !normal["host_init_verifier"]["bytes"]
             .as_u64()
             .is_some_and(|n| n > 0)
@@ -167,6 +178,8 @@ pub(super) fn verify_members(
         source_system_ext_lib64_sha256: library.sha256.clone(),
         observer_sha256: elf_sha.to_owned(),
         init_rc_sha256: rc_sha.to_owned(),
+        shutdown_property_contexts_sha256: (rc_sha == contract::SHUTDOWN_RC_SHA256)
+            .then(|| contract::SHUTDOWN_PROPERTY_CONTEXTS_SHA256.to_owned()),
     };
     let temp = tempfile::Builder::new()
         .prefix("verify-system-readiness-")
@@ -176,7 +189,7 @@ pub(super) fn verify_members(
     let debug = reader_tool("debugfs")?;
     let fsck = reader_tool("e2fsck")?;
     let inputs = json!({"system":system.path,"existing_image":image.path,
-        "sha256":{"system":system.sha256,"elf":elf_sha,"rc":rc_sha},
+        "sha256":receipt_parents(&system.sha256, elf_sha, rc_sha)?,
         "tools":{"debugfs":debug.path,"e2fsck":fsck.path}});
     write(&cwd.join("inputs.json"), serde_json::to_vec(&inputs)?)?;
     let log = OpenOptions::new()

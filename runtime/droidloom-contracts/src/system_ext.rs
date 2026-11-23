@@ -47,6 +47,17 @@ pub fn accepts(
     }
 }
 
+pub const OBSERVER_ONLY_RC_SHA256: &str =
+    "1e90d58b974d71ac12ddacaac43b59492bdea9bef442c9ee5da1286842ee599c";
+pub const SHUTDOWN_RC_SHA256: &str =
+    "57579b6cd84d16194480a4ea73c510d02fee2ddfef3ee26904246430b3efbb35";
+pub const FACTORY_PROPERTY_CONTEXTS_SHA256: &str =
+    "fae8632a118192c5dbb59c3a1096f575f410ae9eee80854355861e96a79eb0fd";
+pub const SHUTDOWN_PROPERTY_CONTEXTS_SHA256: &str =
+    "ca32c601b2debee94be7a5088f7050864e13e85e06e34598aef0b5925e154098";
+pub const SHUTDOWN_PROPERTY_TARGET: &str =
+    "/system/system_ext/etc/selinux/system_ext_property_contexts";
+
 pub const READINESS_FILE: &str = "system_ext_readiness.img";
 pub const READINESS_TARGETS: [&str; 2] = ["/system/system_ext/bin", "/system/system_ext/etc/init"];
 
@@ -62,6 +73,8 @@ pub struct ReadinessDeclaration {
     pub source_system_ext_lib64_sha256: String,
     pub observer_sha256: String,
     pub init_rc_sha256: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub shutdown_property_contexts_sha256: Option<String>,
 }
 
 fn sha256(value: &str) -> bool {
@@ -91,6 +104,12 @@ pub fn accepts_base(
         && accepts(2, "android_base_images_v2", Some(lib), system, vendor)
         && ready.file == READINESS_FILE
         && ready.targets == READINESS_TARGETS
+        && (ready.shutdown_property_contexts_sha256.is_some()
+            == (ready.init_rc_sha256 == SHUTDOWN_RC_SHA256))
+        && ready
+            .shutdown_property_contexts_sha256
+            .as_deref()
+            .is_none_or(|sha| sha == SHUTDOWN_PROPERTY_CONTEXTS_SHA256)
         && (4096..=16 * 1024 * 1024).contains(&ready.bytes)
         && ready.bytes % 512 == 0
         && ready.source_system_sha256 == system
@@ -160,6 +179,7 @@ mod tests {
             source_system_ext_lib64_sha256: lib.sha256.clone(),
             observer_sha256: "c".repeat(64),
             init_rc_sha256: "d".repeat(64),
+            shutdown_property_contexts_sha256: None,
         };
         let admit = |d: &ReadinessDeclaration| {
             accepts_base(
@@ -172,6 +192,16 @@ mod tests {
             )
         };
         assert!(admit(&ready));
+        let mut shutdown = ready.clone();
+        shutdown.init_rc_sha256 = SHUTDOWN_RC_SHA256.into();
+        assert!(!admit(&shutdown));
+        shutdown.shutdown_property_contexts_sha256 = Some(SHUTDOWN_PROPERTY_CONTEXTS_SHA256.into());
+        assert!(admit(&shutdown));
+        shutdown.init_rc_sha256 = OBSERVER_ONLY_RC_SHA256.into();
+        assert!(!admit(&shutdown));
+        shutdown.init_rc_sha256 = SHUTDOWN_RC_SHA256.into();
+        shutdown.shutdown_property_contexts_sha256 = Some(FACTORY_PROPERTY_CONTEXTS_SHA256.into());
+        assert!(!admit(&shutdown));
         for i in 0..5 {
             let mut other = ready.clone();
             match i {

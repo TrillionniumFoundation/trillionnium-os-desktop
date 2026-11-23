@@ -63,6 +63,15 @@ impl BaseMounts {
         }
     }
 
+    fn has_shutdown_property_mount(&self) -> Result<bool> {
+        match self {
+            Self::Admitted(value) => value.has_shutdown_property_mount()
+                .map_err(|error| NamespaceError::MountResource(error.to_string())),
+            #[cfg(test)]
+            Self::PrivateControl(_) => Ok(false),
+        }
+    }
+
     fn extension_device(&self,index:usize) -> Result<Option<u64>> {
         match self {
             Self::Admitted(value) => value.extension_device(index).map_err(|error| NamespaceError::MountResource(error.to_string())),
@@ -628,6 +637,7 @@ pub(super) struct TreeChild {
     persistent_roots: Option<[PersistentRootObservation; 2]>,
     system_ext_device: Option<u64>,
     readiness_device: Option<u64>,
+    shutdown_property_mount: bool,
     proc_context: Option<File>,
     proc_mount: Option<File>,
     activation_nodes: Option<ActivationNodes>,
@@ -826,6 +836,7 @@ impl IsolatedNamespaces {
         }
         let system_ext_device = bases.extension_device(2)?;
         let readiness_device=bases.extension_device(3)?;
+        let shutdown_property_mount=bases.has_shutdown_property_mount()?;
         let transfer: Result<[u64; 2]> = (|| {
             let witness = self.witness()?;
             let descriptors = bases.descriptors(&witness)?;
@@ -850,6 +861,7 @@ impl IsolatedNamespaces {
         let init = self.init.as_mut().ok_or(NamespaceError::Rejected("PID 1 absent"))?;
         init.system_ext_device = system_ext_device;
         init.readiness_device=readiness_device;
+        init.shutdown_property_mount=shutdown_property_mount;
         init.wait_empty_root_ready(devices)?;
         self.base_devices = Some(devices);
         self.base_root_ready = true;
@@ -876,6 +888,7 @@ impl IsolatedNamespaces {
         let mut bases = BaseMounts::Admitted(bases);
         let system_ext_device = bases.extension_device(2)?;
         let readiness_device=bases.extension_device(3)?;
+        let shutdown_property_mount=bases.has_shutdown_property_mount()?;
         let transfer: Result<([u64; 2], [PersistentRootObservation; 2])> = (|| {
             let witness = self.witness()?;
             let base_fds = bases.descriptors(&witness)?;
@@ -904,6 +917,7 @@ impl IsolatedNamespaces {
         let init=self.init.as_mut().ok_or(NamespaceError::Rejected("PID 1 absent"))?;
         init.system_ext_device=system_ext_device;
         init.readiness_device=readiness_device;
+        init.shutdown_property_mount=shutdown_property_mount;
         let child = self.init.as_mut().ok_or(NamespaceError::Rejected("PID 1 absent"))?;
         child.persistent_roots = Some(observed);
         child.receive_phase(Phase::PersistentRootReady)?;
@@ -1430,6 +1444,7 @@ impl TreeChild {
             persistent_roots: None,
             system_ext_device: None,
             readiness_device: None,
+            shutdown_property_mount: false,
             proc_context: None,
             proc_mount: None,
             activation_nodes: None,
@@ -2505,12 +2520,15 @@ impl TreeChild {
                     .parse::<u32>()
                     .map_err(|_| NamespaceError::Rejected("guest minor"))?,
             );
-            let targets=droidloom_contracts::system_ext::READINESS_TARGETS;
-            if targets.contains(&fields[4]) || self.readiness_device==Some(device) {
-                let index=targets.iter().position(|path|*path==fields[4]).ok_or(NamespaceError::Rejected("fourth image mounted outside its two approved subtrees"))?;
+            let targets = droidloom_contracts::system_ext::READINESS_TARGETS;
+            let property = fields[4] == droidloom_contracts::system_ext::SHUTDOWN_PROPERTY_TARGET;
+            if targets.contains(&fields[4]) || property || self.readiness_device == Some(device) {
+                let index = targets.iter().position(|path| *path == fields[4])
+                    .or_else(|| (self.shutdown_property_mount && property).then_some(2))
+                    .ok_or(NamespaceError::Rejected("fourth image mounted outside its selected targets"))?;
                 let flags:Vec<_>=fields[5].split(',').collect();
-                if self.readiness_device!=Some(device) || fields[3]!=["/bin","/etc/init"][index] || right[0]!="ext4" ||
-                   !["ro","nosuid","nodev"].iter().all(|f|flags.contains(f)) || flags.contains(&"noexec") ||
+                if self.readiness_device!=Some(device) || fields[3]!=["/bin","/etc/init","/etc/selinux/system_ext_property_contexts"][index] || right[0]!="ext4" ||
+                   !["ro","nosuid","nodev"].iter().all(|f|flags.contains(f)) || flags.contains(&"noexec") != (index == 2) ||
                    !right[2].split(',').any(|v|v=="ro") || !readiness_seen.insert(index) {
                     return Err(NamespaceError::Rejected("incorrect fourth-image device, subtree or mount protection"));
                 }
@@ -2605,7 +2623,7 @@ impl TreeChild {
                 ));
             }
         }
-        if readiness_seen.len()!=2*usize::from(self.readiness_device.is_some()) {return Err(NamespaceError::Rejected("incomplete selected readiness subtree mount pair"));}
+        if readiness_seen.len()!=2*usize::from(self.readiness_device.is_some()) + usize::from(self.shutdown_property_mount) {return Err(NamespaceError::Rejected("incomplete selected system_ext mounts"));}
         if observed_system_ext != self.system_ext_device.is_some() {
             return Err(NamespaceError::Rejected("selected system_ext library mount missing"));
         }

@@ -23,6 +23,23 @@ def check(value, detail):
         raise ValueError(detail)
 
 
+CONTEXT_MEMBER = "etc/selinux/system_ext_property_contexts"
+CONTEXT_FACTORY = "fae8632a118192c5dbb59c3a1096f575f410ae9eee80854355861e96a79eb0fd"
+CONTEXT_AUGMENTED = "ca32c601b2debee94be7a5088f7050864e13e85e06e34598aef0b5925e154098"
+CONTEXT_ADDITION = b"sys.droidloom.shutdown_request u:object_r:droidloom_shutdown_request_prop:s0 exact enum shutdown\n"
+SHUTDOWN_LABEL = b"u:object_r:droidloom_shutdown_exec:s0\0"
+
+
+def shutdown_context(system, expected):
+    original = inspect(system, "cat /system/system_ext/" + CONTEXT_MEMBER)
+    check(len(original) == 181 and hashlib.sha256(original).hexdigest() == CONTEXT_FACTORY,
+          "different factory system_ext property declarations")
+    augmented = original + CONTEXT_ADDITION
+    check(hashlib.sha256(augmented).hexdigest() == expected == CONTEXT_AUGMENTED,
+          "different single-value shutdown property declaration")
+    return augmented
+
+
 TOOLS = {name: name for name in ("debugfs", "mke2fs", "e2fsck")}
 
 
@@ -72,12 +89,16 @@ def verify(system, image, expected, work):
     check(digest(system) == expected["system"], "original system digest changed")
     run(["e2fsck", "-fn", image])
     check(set(names(image, "/")) == {"bin", "etc"}, "unexpected readiness filesystem root")
-    check(set(names(image, "/etc")) == {"init"}, "unexpected readiness carrier etc")
+    shutdown = expected.get("shutdown_property_contexts")
+    check(set(names(image, "/etc")) == ({"init", "selinux"} if shutdown else {"init"}),
+          "unexpected readiness carrier etc")
     check(names(image, "/")["etc"][:3] == (0o40755, 0, 0), "wrong private carrier parent")
     new_files = {
         "bin/droidloom-readiness": (0o100755, 0, 2000, b"u:object_r:droidloom_readiness_exec:s0\0", expected["elf"]),
         "etc/init/droidloom-readiness.rc": (0o100644, 0, 0, b"u:object_r:system_file:s0\0", expected["rc"]),
     }
+    if shutdown:
+        new_files["bin/droidloom-shutdown"] = (0o100755, 0, 2000, SHUTDOWN_LABEL, expected["elf"])
     result = {}
     attr_tmp = work / "verify-attr"
     def visit(relative, original, actual):
@@ -117,6 +138,27 @@ def verify(system, image, expected, work):
     for relative in ("bin", "etc/init"):
         parent, leaf = os.path.split(relative)
         visit(relative, names(system, "/system/system_ext/" + parent)[leaf], names(image, "/" + parent)[leaf])
+    if shutdown:
+        selected = names(image, "/etc/selinux")
+        factory = names(system, "/system/system_ext/etc/selinux")
+        leaf = "system_ext_property_contexts"
+        check(set(selected) == {leaf} and selected[leaf][:3] == factory[leaf][:3] == (0o100644, 0, 0),
+              "incorrect original property file metadata or extra carrier files")
+        check(names(image, "/etc")["selinux"][:3] == (0o40755, 0, 0), "invalid property carrier directory")
+        actual = inspect(image, "cat /" + CONTEXT_MEMBER)
+        check(actual == shutdown_context(system, shutdown), "unexpected change to the factory property declarations")
+        metadata = attrs(system, "/system/system_ext/" + CONTEXT_MEMBER, attr_tmp)
+        check(metadata.get("security.selinux") == b"u:object_r:property_contexts_file:s0\0" and
+              attrs(image, "/" + CONTEXT_MEMBER, attr_tmp) == metadata, "changed original property file attributes")
+        result[CONTEXT_MEMBER] = {"mode": oct(0o100644), "uid": 0, "gid": 0, "sha256": shutdown,
+                                  "xattrs_hex": {key: value.hex() for key, value in metadata.items()}}
+        inodes = []
+        for path in ("/bin/droidloom-readiness", "/bin/droidloom-shutdown"):
+            info = inspect(image, "stat " + path).decode()
+            inode = re.search(r"^Inode: (\d+)\s+Type: regular", info)
+            check(inode and re.search(r"^Links: 1\b", info, re.MULTILINE), "shutdown executables need independent inodes")
+            inodes.append(inode[1])
+        check(inodes[0] != inodes[1], "differently labeled executables share an inode")
     check(new_files.keys() <= result.keys(), "missing selected observer or init script")
     return result
 
@@ -129,6 +171,9 @@ def build(system, service, rc, out, expected):
     roots = ("bin", "etc/init")
     new_files = {"bin/droidloom-readiness": (service, 0o100755, 0, 2000, b"u:object_r:droidloom_readiness_exec:s0\0"),
                  "etc/init/droidloom-readiness.rc": (rc, 0o100644, 0, 0, b"u:object_r:system_file:s0\0")}
+    shutdown = expected.get("shutdown_property_contexts")
+    if shutdown:
+        new_files["bin/droidloom-shutdown"] = (service, 0o100755, 0, 2000, SHUTDOWN_LABEL)
     with tempfile.TemporaryDirectory(dir=out.parent) as directory:
         tmp = Path(directory).resolve()
         check(re.fullmatch(r"[/A-Za-z0-9_.-]+", str(tmp)), "unsafe private build path")
@@ -158,7 +203,16 @@ def build(system, service, rc, out, expected):
         for name, (path, mode, uid, gid, label) in new_files.items():
             shutil.copyfile(path, material/name)
             rows[name] = (mode, uid, gid, {"security.selinux": label}, digest(path))
-        # /etc is a private carrier parent. Only /bin and /etc/init are mounted.
+        if shutdown:
+            parent = material / "etc/selinux"
+            parent.mkdir()
+            rows["etc/selinux"] = (0o40755, 0, 0, {}, None)
+            file = material / CONTEXT_MEMBER
+            file.write_bytes(shutdown_context(system, shutdown))
+            original = "/system/system_ext/" + CONTEXT_MEMBER
+            metadata = attrs(system, original, attr_tmp)
+            rows[CONTEXT_MEMBER] = (0o100644, 0, 0, metadata, digest(file))
+        # /etc remains private. The shutdown variant projects one verified property file.
         (material/"etc").mkdir(exist_ok=True)
         image = tmp/"carrier.img"
         with image.open("xb") as stream:
