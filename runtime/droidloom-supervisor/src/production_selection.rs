@@ -461,7 +461,21 @@ fn read_exact_file(file: &File, expected: &Node, limit: u64) -> Result<Vec<u8>> 
     Ok(bytes)
 }
 
+#[derive(Clone, Copy)]
+enum TrustedLeaf {
+    Read,
+    SearchDirectory,
+}
+
 fn open_root_trusted(path: &Path) -> Result<File> {
+    open_trusted(path, TrustedLeaf::Read)
+}
+
+fn open_root_trusted_directory(path: &Path) -> Result<File> {
+    open_trusted(path, TrustedLeaf::SearchDirectory)
+}
+
+fn open_trusted(path: &Path, leaf: TrustedLeaf) -> Result<File> {
     let mut components = path.components();
     if components.next() != Some(Component::RootDir) {
         return Err(SelectionError::Rejected(
@@ -508,10 +522,9 @@ fn open_root_trusted(path: &Path) -> Result<File> {
         let flags = libc::O_NOFOLLOW
             | libc::O_CLOEXEC
             | libc::O_NONBLOCK
-            | if last {
-                libc::O_RDONLY
-            } else {
-                libc::O_PATH | libc::O_DIRECTORY
+            | match (last, leaf) {
+                (true, TrustedLeaf::Read) => libc::O_RDONLY,
+                _ => libc::O_PATH | libc::O_DIRECTORY,
             };
         let raw = unsafe { libc::openat(directory.as_raw_fd(), name.as_ptr(), flags) };
         if raw < 0 {
@@ -519,10 +532,12 @@ fn open_root_trusted(path: &Path) -> Result<File> {
         }
         let next = unsafe { File::from_raw_fd(raw) };
         require_trusted_directory(&directory)?;
+        if !last || matches!(leaf, TrustedLeaf::SearchDirectory) {
+            require_trusted_directory(&next)?;
+        }
         if last {
             return Ok(next);
         }
-        require_trusted_directory(&next)?;
         directory = next;
     }
     Err(SelectionError::Rejected("input leaf absent"))
@@ -545,6 +560,18 @@ fn require_trusted_directory(file: &File) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn generation_directory_handle_allows_lookup_without_directory_enumeration() {
+        let parent = open_root_trusted_directory(Path::new("/usr")).unwrap();
+        let flags = unsafe { libc::fcntl(parent.as_raw_fd(), libc::F_GETFL) };
+        assert_ne!(flags & libc::O_PATH, 0);
+        assert!(parent.metadata().unwrap().is_dir());
+        let mut entry = [0u8; 512];
+        assert_eq!(unsafe { libc::syscall(libc::SYS_getdents64, parent.as_raw_fd(), entry.as_mut_ptr(), entry.len()) }, -1);
+        assert_eq!(io::Error::last_os_error().raw_os_error(), Some(libc::EBADF));
+        assert!(open_root_trusted_directory(Path::new("/usr/bin/true")).is_err());
+    }
 
     fn record() -> Record {
         Record {

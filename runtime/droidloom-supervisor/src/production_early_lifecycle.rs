@@ -229,7 +229,7 @@ pub fn complete_early_resources() -> io::Result<()> {
             "/proc/self/fd/{}/root",
             base.proc_directory().as_raw_fd()
         ))?;
-        let generation = super::super::open_root_trusted(Path::new("/run/droidloom-early"))
+        let generation = super::super::open_root_trusted_directory(Path::new("/run/droidloom-early"))
             .map_err(io::Error::other)?;
         let system = images.insert(PreparedMounts::prepare_early(&base).map_err(io::Error::other)?);
         let root = original_root.insert(File::from(
