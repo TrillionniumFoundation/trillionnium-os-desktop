@@ -318,6 +318,7 @@ pub(super) enum Value {
     Bytes(Vec<u8>),
     Strings(Vec<String>),
     Job(u32, String),
+    JobUnit(String, String),
     Profile(bool, String),
     Commands(Vec<ExecCommand>),
 }
@@ -330,8 +331,17 @@ impl PrivateBus {
         interface: Interface,
         deadline: Instant,
     ) -> Result<Properties> {
-        let path = CString::new(invocation.path.as_bytes())
-            .map_err(|_| CgroupError::Rejected("invalid manager unit object"))?;
+        self.properties_at(&invocation.path, interface, deadline)
+    }
+
+    pub(super) fn properties_at(
+        &self,
+        object: &str,
+        interface: Interface,
+        deadline: Instant,
+    ) -> Result<Properties> {
+        let path = CString::new(object)
+            .map_err(|_| CgroupError::Rejected("invalid manager object path"))?;
         let request = self.request(&path, c"org.freedesktop.DBus.Properties", c"GetAll")?;
         status(unsafe {
             sd_bus_message_append_basic(
@@ -376,16 +386,24 @@ impl PrivateBus {
 pub(super) enum Interface {
     Unit,
     Service,
+    Job,
 }
 impl Interface {
     fn name(self) -> &'static CStr {
         match self {
+            Self::Job => c"org.freedesktop.systemd1.Job",
             Self::Unit => c"org.freedesktop.systemd1.Unit",
             Self::Service => c"org.freedesktop.systemd1.Service",
         }
     }
     fn signature(self, name: &str) -> Option<&'static CStr> {
         match self {
+            Self::Job => match name {
+                "Id" => Some(c"u"),
+                "Unit" => Some(c"(so)"),
+                "JobType" | "State" => Some(c"s"),
+                _ => None,
+            },
             Self::Unit => match name {
                 "Id" | "LoadState" | "ActiveState" | "SubState" | "FragmentPath" | "SourcePath" => {
                     Some(c"s")
@@ -478,6 +496,12 @@ impl Message {
             b"(uo)" => {
                 require(self.enter(b'r', c"uo")?, "missing manager job tuple")?;
                 let result = Value::Job(self.basic(b'u')?, self.string(b'o')?);
+                self.exit()?;
+                result
+            }
+            b"(so)" => {
+                require(self.enter(b'r', c"so")?, "missing manager job unit tuple")?;
+                let result = Value::JobUnit(self.string(b's')?, self.string(b'o')?);
                 self.exit()?;
                 result
             }

@@ -203,7 +203,7 @@ impl UnitAuthority {
         Ok(value)
     }
 
-    fn check(&self, unit: &File) -> Result<()> {
+    fn check_files(&self) -> Result<()> {
         let names = [c"etc", c"systemd", c"system"];
         require(
             self.directories.len() == 4 && self.identities.len() == 4,
@@ -241,7 +241,16 @@ impl UnitAuthority {
             file_seal(&self.seal) == file_seal(&self.file.metadata()?)
                 && file_seal(&self.seal) == file_seal(&named.metadata()?),
             "installed unit changed",
-        )?;
+        )
+    }
+
+    fn check_after_android_exit(&self, unit: &File) -> Result<()> {
+        self.check_files()?;
+        self.effective.check_after_android_exit(unit)
+    }
+
+    fn check(&self, unit: &File) -> Result<()> {
+        self.check_files()?;
         self.effective.check(unit)
     }
 }
@@ -1830,6 +1839,9 @@ mod tests {
     #[test]
     fn cgroup_unit_uses_normal_entry_and_delegated_broker() {
         let unit = std::str::from_utf8(UNIT_BYTES).unwrap();
+        assert!(unit.contains("KillMode=mixed\n"));
+        assert!(unit.contains("TimeoutStopSec=150s\n"));
+        assert!(unit.contains("SendSIGKILL=yes\n"));
         assert!(unit.contains("DelegateSubgroup=broker\n"));
         assert!(unit.contains("--socket /run/droidloom/control.sock\n"));
         assert!(!unit.contains("--production-broker"));

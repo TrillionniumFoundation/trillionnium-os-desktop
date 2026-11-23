@@ -84,6 +84,23 @@ fn validate_configuration(
     broker: u32,
     cgroup: u64,
 ) -> Result<()> {
+    validate_fixed_configuration(invocation, unit, service, broker, cgroup)?;
+    validate_running(unit)
+}
+
+fn validate_running(unit: &Properties) -> Result<()> {
+    equal(unit, "ActiveState", Value::Text("active".into()))?;
+    equal(unit, "SubState", Value::Text("running".into()))?;
+    equal(unit, "Job", Value::Job(0, "/".into()))
+}
+
+fn validate_fixed_configuration(
+    invocation: &Invocation,
+    unit: &Properties,
+    service: &Properties,
+    broker: u32,
+    cgroup: u64,
+) -> Result<()> {
     require(
         invocation.unit == UNIT && invocation.path == UNIT_OBJECT,
         "original broker belongs to another systemd unit",
@@ -91,8 +108,6 @@ fn validate_configuration(
     for (name, value) in [
         ("Id", UNIT),
         ("LoadState", "loaded"),
-        ("ActiveState", "active"),
-        ("SubState", "running"),
         (
             "FragmentPath",
             "/etc/systemd/system/droidloom-production.service",
@@ -105,14 +120,13 @@ fn validate_configuration(
         equal(unit, name, Value::Boolean(false))?;
     }
     equal(unit, "DropInPaths", Value::Strings(Vec::new()))?;
-    equal(unit, "Job", Value::Job(0, "/".into()))?;
     equal(unit, "InvocationID", Value::Bytes(invocation.id.to_vec()))?;
     nonzero_time(unit, "StateChangeTimestampMonotonic")?;
     for (name, value) in [
         ("Type", "exec"),
         ("ExitType", "main"),
         ("Restart", "no"),
-        ("KillMode", "control-group"),
+        ("KillMode", "mixed"),
         ("TimeoutStopFailureMode", "terminate"),
         ("User", "root"),
         ("Group", "root"),
@@ -155,7 +169,7 @@ fn validate_configuration(
         equal(service, name, Value::I32(value))?;
     }
     for (name, value) in [
-        ("TimeoutStopUSec", 30_000_000),
+        ("TimeoutStopUSec", 150_000_000),
         ("ExecMainExitTimestampMonotonic", 0),
         ("ControlGroupId", cgroup),
         ("MemoryMax", MEMORY_MAX),
@@ -236,6 +250,55 @@ struct Snapshot {
     service: Properties,
 }
 
+/// Only used after the original Android init pidfd proves exit.
+fn stopping_job<'a>(running: &Properties, stopping: &'a Properties) -> Result<(u32, &'a str)> {
+    validate_running(running)?;
+    equal(stopping, "ActiveState", Value::Text("deactivating".into()))?;
+    equal(stopping, "SubState", Value::Text("stop-sigterm".into()))?;
+    let (Value::U64(start), Value::U64(stop)) = (
+        property(running, "StateChangeTimestampMonotonic")?,
+        property(stopping, "StateChangeTimestampMonotonic")?,
+    ) else {
+        return Err(CgroupError::Rejected("invalid manager state timestamp"));
+    };
+    require(
+        *start > 0 && stop >= start,
+        "manager stop predates running unit",
+    )?;
+    require(
+        running.len() == stopping.len()
+            && running.iter().all(|(key, original)| match key.as_str() {
+                "ActiveState" | "SubState" | "Job" | "StateChangeTimestampMonotonic" => true,
+                _ => stopping.get(key) == Some(original),
+            }),
+        "unrelated unit property changed during Android shutdown",
+    )?;
+    match property(stopping, "Job")? {
+        Value::Job(id, path)
+            if *id != 0 && *path == format!("/org/freedesktop/systemd1/job/{id}") =>
+        {
+            Ok((*id, path))
+        }
+        _ => Err(CgroupError::Rejected(
+            "expected an attached manager stop job",
+        )),
+    }
+}
+
+fn validate_stop_job(job: &Properties, id: u32, invocation: &Invocation) -> Result<()> {
+    equal(job, "Id", Value::U32(id))?;
+    equal(
+        job,
+        "Unit",
+        Value::JobUnit(invocation.unit.clone(), invocation.path.clone()),
+    )?;
+    equal(job, "State", Value::Text("running".into()))?;
+    require(
+        matches!(property(job, "JobType")?, Value::Text(value) if matches!(value.as_str(), "stop" | "restart")),
+        "expected manager stop or restart job",
+    )
+}
+
 /// The actual manager, original broker and held fixed cgroup issue this
 /// observation. It is not a MAC, signal or Android readiness capability.
 pub(super) struct EffectiveUnit {
@@ -269,7 +332,7 @@ impl EffectiveUnit {
         let service = channel
             .bus
             .properties(&invocation, Interface::Service, deadline)?;
-        validate_configuration(
+        validate_fixed_configuration(
             &invocation,
             &unit,
             &service,
@@ -299,6 +362,7 @@ impl EffectiveUnit {
         let deadline = Instant::now() + DEADLINE;
         let channel = ManagerChannel::open(context, deadline)?;
         let original = Self::snapshot(&channel, cgroup, deadline)?;
+        validate_running(&original.unit)?;
         let value = Self {
             channel,
             cgroup: cgroup.try_clone()?,
@@ -309,17 +373,45 @@ impl EffectiveUnit {
         Ok(value)
     }
 
-    fn check_until(&self, cgroup: &File, deadline: Instant) -> Result<()> {
+    fn read_bound(&self, cgroup: &File, deadline: Instant) -> Result<Snapshot> {
         before(deadline)?;
         require(
             NodeIdentity::of(cgroup)? == self.cgroup_node
                 && NodeIdentity::of(&self.cgroup)? == self.cgroup_node,
             "effective manager cgroup custody changed",
         )?;
-        let current = Self::snapshot(&self.channel, &self.cgroup, deadline)?;
+        Self::snapshot(&self.channel, &self.cgroup, deadline)
+    }
+
+    fn check_until(&self, cgroup: &File, deadline: Instant) -> Result<()> {
+        let current = self.read_bound(cgroup, deadline)?;
         require(
             current == self.original,
             "original manager generation or effective unit changed",
+        )?;
+        before(deadline)
+    }
+
+    pub(super) fn check_after_android_exit(&self, cgroup: &File) -> Result<()> {
+        let deadline = Instant::now() + DEADLINE;
+        let current = self.read_bound(cgroup, deadline)?;
+        if current == self.original {
+            return before(deadline);
+        }
+        require(
+            self.original.invocation == current.invocation
+                && self.original.service == current.service,
+            "original broker or service changed during Android shutdown",
+        )?;
+        let (id, path) = stopping_job(&self.original.unit, &current.unit)?;
+        let job = self
+            .channel
+            .bus
+            .properties_at(path, Interface::Job, deadline)?;
+        validate_stop_job(&job, id, &current.invocation)?;
+        require(
+            self.read_bound(cgroup, deadline)? == current,
+            "manager unit changed while verifying its stop job",
         )?;
         before(deadline)
     }
@@ -407,6 +499,152 @@ impl SystemdOwnerWitness<'_> {
             endpoint: effective.channel.endpoint.generation()?,
             cgroup: effective.cgroup_node,
         })
+    }
+}
+
+#[cfg(test)]
+mod shutdown_tests {
+    use super::*;
+
+    #[test]
+    #[ignore = "requires an original transient user service and an external systemctl stop or restart"]
+    fn original_manager_decodes_the_stop_job_on_its_private_socket() {
+        use std::os::fd::{AsFd, FromRawFd, OwnedFd};
+        use std::os::unix::net::UnixStream;
+        use std::path::PathBuf;
+
+        let variable = |name| std::env::var(name).unwrap();
+        let socket = PathBuf::from(variable("XDG_RUNTIME_DIR")).join("systemd/private");
+        let socket = File::from(OwnedFd::from(UnixStream::connect(socket).unwrap()));
+        let bus =
+            PrivateBus::from_authenticated_socket(&socket, Instant::now() + DEADLINE).unwrap();
+        let pid = variable("P4_TEST_UNIT_PID").parse::<libc::pid_t>().unwrap();
+        let raw = unsafe { libc::syscall(libc::SYS_pidfd_open, pid, 0) };
+        assert!(raw >= 0);
+        let pidfd = unsafe { File::from_raw_fd(raw as i32) };
+        let invocation = bus
+            .invocation(pidfd.as_fd(), Instant::now() + DEADLINE)
+            .unwrap();
+        assert_eq!(invocation.unit, variable("P4_TEST_UNIT_NAME"));
+        let read = |interface| {
+            bus.properties(&invocation, interface, Instant::now() + DEADLINE)
+                .unwrap()
+        };
+        let running = read(Interface::Unit);
+        validate_running(&running).unwrap();
+        let service = read(Interface::Service);
+        let sync = PathBuf::from(variable("P4_TEST_SYNC_DIR"));
+        std::fs::write(sync.join("observed-running"), []).unwrap();
+        let deadline = Instant::now() + Duration::from_secs(15);
+        while !sync.join("observed-signal").exists() {
+            assert!(Instant::now() < deadline);
+            std::thread::sleep(Duration::from_millis(10));
+        }
+        let stopping = read(Interface::Unit);
+        let (id, path) = stopping_job(&running, &stopping).unwrap();
+        let job = bus
+            .properties_at(path, Interface::Job, Instant::now() + DEADLINE)
+            .unwrap();
+        validate_stop_job(&job, id, &invocation).unwrap();
+        equal(
+            &job,
+            "JobType",
+            Value::Text(variable("P4_TEST_STOP_ACTION")),
+        )
+        .unwrap();
+        assert_eq!(
+            bus.invocation(pidfd.as_fd(), Instant::now() + DEADLINE)
+                .unwrap(),
+            invocation
+        );
+        assert_eq!(service, read(Interface::Service));
+        assert_eq!(stopping, read(Interface::Unit));
+    }
+
+    #[test]
+    fn only_the_original_units_sigterm_phase_can_retire_android() {
+        let mut running = Properties::new();
+        let mut stopping = Properties::new();
+        for (key, initial, final_value) in [
+            (
+                "ActiveState",
+                Value::Text("active".into()),
+                Value::Text("deactivating".into()),
+            ),
+            (
+                "SubState",
+                Value::Text("running".into()),
+                Value::Text("stop-sigterm".into()),
+            ),
+            (
+                "Job",
+                Value::Job(0, "/".into()),
+                Value::Job(123, "/org/freedesktop/systemd1/job/123".into()),
+            ),
+            (
+                "StateChangeTimestampMonotonic",
+                Value::U64(10),
+                Value::U64(20),
+            ),
+            (
+                "InvocationID",
+                Value::Bytes(vec![7; 16]),
+                Value::Bytes(vec![7; 16]),
+            ),
+        ] {
+            running.insert(key.into(), initial);
+            stopping.insert(key.into(), final_value);
+        }
+        assert!(validate_running(&stopping).is_err());
+        assert!(stopping_job(&running, &running).is_err());
+        assert_eq!(stopping_job(&running, &stopping).unwrap().0, 123);
+        for (key, invalid) in [
+            ("Job", Value::Job(0, "/".into())),
+            (
+                "Job",
+                Value::Job(123, "/org/freedesktop/systemd1/job/124".into()),
+            ),
+            ("StateChangeTimestampMonotonic", Value::U64(9)),
+            ("SubState", Value::Text("stop-sigkill".into())),
+            ("InvocationID", Value::Bytes(vec![8; 16])),
+        ] {
+            let mut changed = stopping.clone();
+            changed.insert(key.into(), invalid);
+            assert!(stopping_job(&running, &changed).is_err());
+        }
+        stopping.remove("InvocationID");
+        assert!(stopping_job(&running, &stopping).is_err());
+    }
+
+    #[test]
+    fn shutdown_job_is_owned_running_and_bound_to_the_original_unit() {
+        let invocation = Invocation {
+            unit: UNIT.into(),
+            path: UNIT_OBJECT.into(),
+            id: [1; 16],
+        };
+        let mut job = Properties::from([
+            ("Id".into(), Value::U32(123)),
+            (
+                "Unit".into(),
+                Value::JobUnit(UNIT.into(), UNIT_OBJECT.into()),
+            ),
+            ("State".into(), Value::Text("running".into())),
+            ("JobType".into(), Value::Text("stop".into())),
+        ]);
+        validate_stop_job(&job, 123, &invocation).unwrap();
+        job.insert("JobType".into(), Value::Text("restart".into()));
+        validate_stop_job(&job, 123, &invocation).unwrap();
+        for (key, wrong) in [
+            ("State", Value::Text("waiting".into())),
+            ("JobType", Value::Text("start".into())),
+            ("Id", Value::U32(124)),
+            ("Unit", Value::JobUnit(UNIT.into(), "/another".into())),
+        ] {
+            let mut changed = job.clone();
+            changed.insert(key.into(), wrong);
+            assert!(validate_stop_job(&changed, 123, &invocation).is_err());
+        }
     }
 }
 

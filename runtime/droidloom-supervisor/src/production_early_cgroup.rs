@@ -355,7 +355,7 @@ impl PreparedCgroup {
             "different or already retired early Android owner",
         )?;
         crate::production_selection::early_generation::verify_exit(&binding.pidfd)?;
-        r.unit_authority.check(&r.unit.file)?;
+        r.unit_authority.check_after_android_exit(&r.unit.file)?;
         r.budget.check(&r.unit.file, &r.name)?;
         require(
             !populated(&r.budget.file)? && read_pids(&r.budget.file)?.is_empty(),

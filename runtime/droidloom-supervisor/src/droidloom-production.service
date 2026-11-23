@@ -11,8 +11,9 @@ ExecStart=/usr/lib/droidloom/production/current/droidloomd --socket /run/droidlo
 WorkingDirectory=/
 UMask=0077
 Restart=no
-KillMode=control-group
-TimeoutStopSec=30
+# Let the broker request Android shutdown and retire the writable volumes first.
+KillMode=mixed
+TimeoutStopSec=150s
 SendSIGKILL=yes
 Delegate=cpu cpuset io memory pids
 DelegateSubgroup=broker
