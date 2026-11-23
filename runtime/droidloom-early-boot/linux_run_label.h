@@ -22,6 +22,9 @@ struct droidloom_linux_init_scope {
     struct droidloom_linux_run root_membership;
     struct droidloom_linux_run root_subtree_control;
 };
+int droidloom_hold_ubuntu_credentials(const struct droidloom_linux_run *run,
+                                     struct droidloom_linux_run *credentials);
+int droidloom_label_ubuntu_credentials(const struct droidloom_linux_run *credentials);
 int droidloom_hold_linux_init_scope(struct droidloom_linux_init_scope *held);
 int droidloom_label_linux_init_scope(const struct droidloom_linux_init_scope *held);
 void droidloom_close_linux_init_scope(struct droidloom_linux_init_scope *held);

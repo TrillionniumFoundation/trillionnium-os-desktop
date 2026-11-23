@@ -257,6 +257,7 @@ int droidloom_board_activate_policy(gid_t observer_gid)
     struct droidloom_linux_run device_root = {.fd = -1};
     struct droidloom_linux_init_scope scope = { .root.fd = -1, .scope.fd = -1, .procs.fd = -1, .controllers.fd = -1, .system_slice.fd = -1, .root_membership.fd = -1, .root_subtree_control.fd = -1 };
     struct droidloom_linux_run run = {.fd = -1}, shm = {.fd = -1};
+    struct droidloom_linux_run credentials = {.fd = -1};
     struct droidloom_readiness_paths paths = { .handoff.fd = -1, .readiness.fd = -1 };
     const char *stage = "read admitted SELinux input";
     int rc = read_admitted(&policy);
@@ -267,6 +268,7 @@ int droidloom_board_activate_policy(gid_t observer_gid)
     if (rc == 0) { stage = "hold the original Ubuntu cgroup root and move global PID 1 to its init.scope"; rc = droidloom_hold_linux_init_scope(&scope); }
     if (rc == 0) { stage = "prepare the original Ubuntu shared memory mount"; rc = droidloom_hold_linux_shm(&shm); }
     if (rc == 0) { stage = "hold original Ubuntu /run"; rc = droidloom_hold_linux_run(&run); }
+    if (rc == 0) { stage = "hold the distro credentials root"; rc = droidloom_hold_ubuntu_credentials(&run, &credentials); }
     if (rc == 0) { stage = "hold the selected early readiness directory"; rc = droidloom_hold_readiness_paths(&run, observer_gid, &paths); }
     if (rc == 0) {
         stage = "hold the original empty Android device filesystem";
@@ -296,6 +298,7 @@ int droidloom_board_activate_policy(gid_t observer_gid)
     if (rc == 0) { stage = "label the held Ubuntu cgroup root and its initial scope"; rc = droidloom_label_linux_init_scope(&scope); }
     if (rc == 0) { stage = "label the original Ubuntu shared memory root"; rc = droidloom_label_linux_shm(&shm); }
     if (rc == 0) { stage = "label the held Ubuntu /run inode"; rc = droidloom_label_linux_run(&run); }
+    if (rc == 0) { stage = "label the held distro credentials root"; rc = droidloom_label_ubuntu_credentials(&credentials); }
     if (rc == 0) { stage = "label the held private readiness directory"; rc = droidloom_label_readiness_paths(&paths); }
     if (rc == 0) { stage = "seal the original kernel policy load epoch"; rc = droidloom_publish_apparmor_epoch(epoch_directory, status, policy.digest, &observation); }
     int error = errno;
@@ -311,6 +314,8 @@ int droidloom_board_activate_policy(gid_t observer_gid)
     droidloom_close_linux_init_scope(&scope);
     if (shm.fd >= 0)
         close(shm.fd);
+    if (credentials.fd >= 0)
+        close(credentials.fd);
     if (run.fd >= 0)
         close(run.fd);
     free(aa.data);

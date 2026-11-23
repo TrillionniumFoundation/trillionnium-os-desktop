@@ -135,6 +135,27 @@ static int hold_child(const struct droidloom_linux_run *parent, const char *name
     return 0;
 }
 
+int droidloom_hold_ubuntu_credentials(const struct droidloom_linux_run *run,
+                                     struct droidloom_linux_run *credentials)
+{
+    /* This is systemd's original, root-owned runtime directory. Existing
+     * unit directories and imported credentials must be preserved verbatim. */
+    mode_t saved_umask = umask(0);
+    int rc = mkdirat(run->fd, "credentials", 0755);
+    int error = errno;
+    umask(saved_umask);
+    if (rc < 0 && error != EEXIST) {
+        errno = error;
+        return -1;
+    }
+    return hold_child(run, "credentials", 0, 0755, credentials);
+}
+
+int droidloom_label_ubuntu_credentials(const struct droidloom_linux_run *credentials)
+{
+    return apply_label(credentials, "u:object_r:p4_linux_credentials_root_t:s0");
+}
+
 static int validate_empty_endpoint(int fd)
 {
     int copy = fcntl(fd, F_DUPFD_CLOEXEC, 3);

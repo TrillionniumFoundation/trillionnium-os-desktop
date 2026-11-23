@@ -263,3 +263,32 @@
 (neverallow p4_linux_journald_t p4_all_board_owned (file (execute_no_trans)))
 (neverallow p4_linux_journald_t droidloom_broker (process (transition dyntransition ptrace)))
 (neverallow p4_linux_journald_t droidloom_policy_loader (process (transition dyntransition ptrace)))
+
+; The original socket units have already created RuntimeDirectory=systemd/journal.
+; The executor may validate that directory and retain the already-open stream
+; socket activation descriptors. It cannot bind or connect to manager sockets.
+(allow p4_linux_service_executor_t p4_linux_run_t (dir (getattr search)))
+(allow p4_linux_service_executor_t p4_linux_systemd_run_t (dir (getattr search)))
+(allow p4_linux_service_executor_t p4_linux_journal_runtime_t (dir (getattr search open read setattr)))
+(allow p4_linux_service_executor_t init_t (unix_stream_socket (read write)))
+(neverallow p4_linux_service_executor_t p4_linux_run_t (dir (write add_name remove_name setattr mounton)))
+
+; The board holds only the root-owned /run/credentials directory before the
+; policy is installed. Each service's private inputs keep their own ownership.
+; The executor can prepare journald's own exact unit directory without gaining
+; the ability to create anything in the root of /run.
+(type p4_linux_credentials_root_t)
+(type p4_linux_journal_credentials_t)
+(roletype object_r p4_linux_credentials_root_t)
+(roletype object_r p4_linux_journal_credentials_t)
+(typeattributeset p4_linux_data (p4_linux_credentials_root_t p4_linux_journal_credentials_t))
+(allow kernel p4_linux_credentials_root_t (dir (getattr relabelto)))
+(allow p4_linux_credentials_root_t tmpfs (filesystem (associate)))
+(allow p4_linux_journal_credentials_t tmpfs (filesystem (associate)))
+(typetransition p4_linux_service_executor_t p4_linux_credentials_root_t dir "systemd-journald.service" p4_linux_journal_credentials_t)
+(allow p4_linux_service_executor_t p4_linux_credentials_root_t (dir (getattr search write add_name remove_name)))
+(allow p4_linux_service_executor_t p4_linux_journal_credentials_t (dir (create getattr search open read setattr rmdir)))
+(allow p4_linux_journald_t p4_linux_credentials_root_t (dir (getattr search)))
+(allow p4_linux_journald_t p4_linux_journal_credentials_t (dir (getattr search open read)))
+(neverallow p4_linux_procs p4_linux_credentials_root_t (dir (create rmdir rename relabelfrom relabelto mounton)))
+(neverallow p4_linux_journald_t p4_linux_journal_credentials_t (dir (create setattr write add_name remove_name rmdir rename relabelfrom relabelto mounton)))
