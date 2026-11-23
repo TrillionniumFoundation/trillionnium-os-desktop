@@ -2,6 +2,9 @@
 use serde::{Deserialize, Serialize};
 
 pub const SYSTEM_SHA256: &str = "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4";
+/// Per-cell writable copies originate from this read-only factory device template.
+pub const DEVICE_SOURCE_SHA256: &str = "b5b7ee1522f87c6fafb668d671ff028685db9e8e346564b1edda1f7ef867d5f7";
+pub const DEVICE_SOURCE_BYTES: u64 = 8 * 1024 * 1024;
 pub const TARGET: &str = "/system/system_ext/lib64";
 pub const FILE: &str = "system_ext_lib64.img";
 pub const ENGINE: &str = "libberberis_arm64";

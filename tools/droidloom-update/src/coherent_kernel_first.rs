@@ -2,6 +2,9 @@
 use super::*;
 use std::os::unix::fs::PermissionsExt;
 
+#[path = "coherent_device_source.rs"]
+mod device_source;
+
 const SCOPE: &str = "android_kernel_first_stage_v1";
 const INIT_SHA256: &str = "9f69cc83a88db5f8533014cfea5ad9ea8e0454120335329aec27f8d65b2a9537";
 const INIT_BYTES: u64 = 2_934_488;
@@ -28,6 +31,7 @@ pub(super) fn install(root: &Path, cohort: &str, system: &FileRef) -> Result<Val
     bytes.push(b'\n');
     let digest = format!("{:x}", Sha256::digest(&bytes));
     let relative = Path::new("etc/droidloom/runtime-cohorts").join(format!("{digest}.json"));
+    let devices = device_source::publish(root, temp.path(), system, cohort, &digest)?;
     let dest = root.join(&relative);
     let dir = dest.parent().ok_or("missing runtime manifest parent")?;
     resources::prepare_output_directory(dir)?;
@@ -46,7 +50,7 @@ pub(super) fn install(root: &Path, cohort: &str, system: &FileRef) -> Result<Val
     for path in dir.ancestors().take_while(|p| p.starts_with(root)) {
         File::open(path)?.sync_all()?;
     }
-    Ok(json!({"runtime_manifest_sha256":digest, "manifest":relative,"runtime":value}))
+    Ok(json!({"runtime_manifest_sha256":digest, "manifest":relative,"runtime":value,"board_device_source":devices}))
 }
 
 /// Recheck and add only the content-addressed runtime declaration to an already published v3 base.
@@ -55,7 +59,7 @@ pub(crate) fn bind_existing(root: &Path, cohort: &str) -> Result<Value> {
     if cohort.len() != 64 || !cohort.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)) {
         return fail("invalid base selection digest");
     }
-    let _scope = resources::Scope::writing(root, 8 * 1024 * 1024)?;
+    let _scope = resources::Scope::writing(root, 32 * 1024 * 1024)?;
     let (manifest, base) = read_json(&root.join("etc/droidloom/cohorts").join(format!("{cohort}.json")))?;
     if manifest.sha256 != cohort || base["schema"] != 3 || base["scope"] != "android_base_images_v3"
         || base["layout"] != "gsi_system_as_root" {
