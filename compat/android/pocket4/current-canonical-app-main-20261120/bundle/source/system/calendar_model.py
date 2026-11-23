@@ -118,8 +118,8 @@ class Model:
         self.s.guard()
         fd = self.s.target.open_root(DB, os.O_RDONLY | os.O_NOFOLLOW)
         try:
-            info = os.fstat(fd)
-            need(stat.S_ISREG(info.st_mode) and info.st_uid == 10017, 'CALENDAR_DB_IDENTITY')
+            info, mapped_owner = self.s.c.mapped_file_info(self.s.flow.view, fd, 10017)
+            need(stat.S_ISREG(info.st_mode) and info.st_uid == mapped_owner[0], 'CALENDAR_DB_IDENTITY')
             birth = fp(info)
         finally:
             os.close(fd)

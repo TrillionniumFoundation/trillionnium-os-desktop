@@ -276,11 +276,17 @@ def make_session_class(original):
             argv=list(self.c.NATIVE_PREFIX)+['launch',self.profile.PACKAGE,'--component',self.profile.COMPONENT,'--json']
             intent=self.record('launch-%d-intent'%self.native_launches,{'argv':argv,'before_tasks':sorted(tasks),'automatic_retry':False})
             self.pending={'kind':'launch','sent':False,'intent':intent}
-            response=self._host('qsb-native-launch',argv,70,True);reply=self.c.parse(response['stdout'])
+            before_launch_records = len(self.records)
+            response = self._host('qsb-native-launch', argv, 70, True)
+            self.c.need(len(self.records) == before_launch_records + 1,
+                        'QSB_NATIVE_LAUNCH_RESULT_RECORD_REQUIRED')
+            launch_result = self.records[-1]
+            self.c.read_ref(launch_result)
+            reply = self.c.parse(response['stdout'])
             after,after_tasks=self.stacks()
             task=self.task.native_claim(reply,after,after_tasks,roots,tasks,self.profile,self.view.target.expected['pid'])
             ref=self.record('launch-%d-claim'%self.native_launches,{'source':'actual-native-launch',
-                'intent':intent,'native_reply':reply,'actual_host_result':self.records[-1],
+                'intent':intent,'native_reply':reply,'actual_host_result':launch_result,
                 'task':task,'package':self.profile.PACKAGE,'before_tasks':sorted(tasks),
                 'baseline':self.base['baseline'],'qualification':self.base['qualification'],'automatic_retry':False})
             self.claimed[task]={'ref':ref,'package':self.profile.PACKAGE};self.qsb_task=task
@@ -388,6 +394,72 @@ def make_session_class(original):
             self.phase_ref=self.record('phase-reopen',{'phase':'business','base_plan':self.base_ref,
                 'deadline_monotonic':self.deadline,'automatic_retry':False})
 
+        def run_search_case(self):
+            """Run the finite query/open case inside this admitted Session.
+
+            The caller owns release, Main, source, resources and Session retirement.
+            Each business step returns its existing evidence reference. Unknown
+            effects remain with the original owner and are never replayed here.
+            """
+            self.guard()
+            self.c.need(self.native_launches == 0 and self.phase == 'business'
+                        and self.pending is None and self.active_api is None
+                        and not self.claimed and not self.removed,
+                        'QSB_CASE_REQUIRES_FRESH_SESSION')
+            started = self.record('search-case-once', {
+                'base_plan': self.base_ref, 'phase': self.phase_ref,
+                'automatic_retry': False,
+            })
+            receipts = {'started': started}
+            close_attempted = False
+            try:
+                receipts['first_launch'] = self.launch()
+                _, receipts['initial_window'] = self.observe(self.profile.PACKAGE, 'initial-query')
+                for index, query in enumerate(self.profile.QUERIES, start=1):
+                    _, receipts['query_%d' % index] = self.set_query(query)
+                receipts['opened_result'] = self.open_result()
+                receipts['returned_to_query'] = self.return_to_query()
+                _, receipts['cleared_query'] = self.set_query('')
+                close_attempted = True
+                receipts['first_close'] = self.normal_close_qsb('first-close')
+                self.reopen_business()
+                close_attempted = False
+                receipts['second_launch'] = self.launch()
+                reopened, receipts['reopened_window'] = self.observe(
+                    self.profile.PACKAGE, 'reopened-query')
+                self.observer.query(reopened['nodes'], self.profile, '', matches=False, empty=True)
+                close_attempted = True
+                receipts['second_close'] = self.normal_close_qsb('second-close')
+                self.guard()
+                roots, tasks = self.stacks()
+                self.c.need(roots == self.original_roots and tasks == self.original_tasks
+                            and self.pending is None and self.active_api is None
+                            and not self.host_cancelled and not self.host_retirement_unknown
+                            and self.native_launches == 2 and self.text_edits == 3
+                            and self.clicks == self.back_events == 1,
+                            'QSB_COMPLETE_TASK_RESTORATION_AND_ACTION_COUNTS_REQUIRED')
+                for ref in receipts.values():
+                    self.c.read_ref(ref)
+                return self.record('search-case-observations', {
+                    'base_plan': self.base_ref, 'receipts': receipts,
+                    'observed_scope': ['search.query', 'search.open'],
+                    'remaining_business_gates': ['search.failure'],
+                    'whole_app_business_accepted': False,
+                })
+            except BaseException as error:
+                # Only an identified, still-owned QSB task can be closed here.
+                # A browser still present or an uncertain input needs reconciliation.
+                known_qsb = self.qsb_task in self.claimed and self.qsb_task not in self.removed
+                browser_closed = self.browser_task is None or self.browser_task in self.removed
+                if (known_qsb and browser_closed and not close_attempted and self.pending is None
+                        and self.active_api is None and not self.host_retirement_unknown
+                        and not self.host_cancelled):
+                    try:
+                        self.normal_close_qsb('failure-close')
+                    except BaseException as cleanup_error:
+                        error.add_note('QSB owned task cleanup: ' + str(cleanup_error))
+                raise
+
         def close(self):
             first=None
             if self.artifacts is not None:
@@ -400,3 +472,42 @@ def make_session_class(original):
                 else:first.add_note('QSB_OTHER_CONTEXT_CLOSE:'+type(error).__name__)
             if first is not None:raise first
     return Session
+
+
+def execute(c, base_ref, parts, release, resources, source_guard, action_lock):
+    """Execute an already admitted QSB plan and retire its host context.
+
+    The native caller supplies its live release, held resources, original action
+    lock and source loader. This entry does not acquire or issue those objects.
+    """
+    base = c.parse(c.read_ref(base_ref))
+    release.guard()
+    resource_report(c, resources)
+    source_guard()
+    action_lock.verify()
+    session_class = make_session_class(parts['original_transport.py'])
+    session = session_class(c, base_ref, base, parts, release, resources,
+                            source_guard, action_lock)
+    try:
+        observations = session.run_search_case()
+    except BaseException as error:
+        try:
+            session.close()
+        except BaseException as close_error:
+            error.add_note('QSB session retirement: ' + str(close_error))
+        raise
+    session.close()
+    release.guard()
+    resource_report(c, resources)
+    source_guard()
+    action_lock.verify()
+    c.read_ref(base_ref)
+    c.read_ref(observations)
+    return session.record('search-case-result', {
+        'base_plan': base_ref,
+        'observations': observations,
+        'session_closed': True,
+        'observed_scope': ['search.query', 'search.open'],
+        'remaining_business_gates': ['search.failure'],
+        'whole_app_business_accepted': False,
+    })
