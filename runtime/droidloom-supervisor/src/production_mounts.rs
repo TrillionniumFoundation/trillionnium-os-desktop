@@ -26,6 +26,9 @@ use crate::production_namespace::{NamespaceError, OwnedNamespaceWitness, Retired
 #[path = "production_runtime_assets.rs"]
 pub(crate) mod runtime_assets;
 
+#[path = "production_mounts_early.rs"]
+mod early;
+
 #[path = "production_mounts_system_ext.rs"]
 pub(crate) mod system_ext;
 
@@ -1329,10 +1332,7 @@ impl PreparedMounts {
         self.descriptors_after_authority_validation(witness)
     }
 
-    fn descriptors_after_authority_validation<'a>(
-        &'a mut self,
-        witness: &OwnedNamespaceWitness<'_>,
-    ) -> Result<[BorrowedFd<'a>; 2]> {
+    fn validate_held_images(&self, witness: &OwnedNamespaceWitness<'_>) -> Result<()> {
         require(!self.exported, "single owned descriptor transfer")?;
         let resources = self
             .resources
@@ -1362,6 +1362,15 @@ impl PreparedMounts {
                 image.mount_id,
             )?;
         }
+        Ok(())
+    }
+
+    fn descriptors_after_authority_validation<'a>(
+        &'a mut self,
+        witness: &OwnedNamespaceWitness<'_>,
+    ) -> Result<[BorrowedFd<'a>; 2]> {
+        self.validate_held_images(witness)?;
+        let resources = self.resources.as_ref().ok_or(MountError::Rejected("mounts already retired"))?;
         self.exported = true;
         Ok([
             resources.images[0]

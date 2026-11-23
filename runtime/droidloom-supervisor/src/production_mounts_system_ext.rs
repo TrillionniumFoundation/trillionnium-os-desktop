@@ -191,9 +191,10 @@ pub(super) fn compose(resources: &MountResources) -> Result<()> {
             .as_ref()
             .ok_or(MountError::Rejected("selected mount absent"))
     };
-    let system = mount(0)?;
-    let vendor = mount(1)?;
-    let ext = mount(2)?;
+    compose_selected_library(mount(0)?, mount(1)?, mount(2)?)
+}
+
+fn compose_selected_library(system: &File, vendor: &File, ext: &File) -> Result<()> {
     let target = system_lib64(system)?;
     require(
         mount_id(&target)? == mount_id(system)?,
@@ -602,11 +603,22 @@ mod hardware {
         for mount in &mounts { require(devices.insert(mount.metadata()?.dev()), "all real loop devices must be distinct")?; }
         verify_members(&system_lib64(&mounts[0])?, &vendor_libs(&mounts[1])?, &mounts[2])?;
         if let Some(ready)=decl.system_ext_readiness {
-            let raw=unsafe{libc::syscall(libc::SYS_open_tree,mounts[0].as_raw_fd(),c"".as_ptr(),1u32|libc::O_CLOEXEC as u32|libc::AT_EMPTY_PATH as u32)};
-            if raw<0{return Err(io::Error::last_os_error().into());}
-            let detached=unsafe{File::from_raw_fd(raw as i32)};
-            require_detached(&detached)?;
-            readiness::compose(&detached,&mounts[3],&ready)?;
+            let clone_mount = |mount: &File| -> Result<File> {
+                let fd = unsafe { libc::syscall(libc::SYS_open_tree, mount.as_raw_fd(), c"".as_ptr(),
+                    1u32 | libc::O_CLOEXEC as u32 | libc::AT_EMPTY_PATH as u32) };
+                if fd < 0 { return Err(io::Error::last_os_error().into()); }
+                let file = unsafe { File::from_raw_fd(fd as i32) };
+                require_detached(&file)?;
+                Ok(file)
+            };
+            let root = clone_mount(&mounts[0])?;
+            let vendor = clone_mount(&mounts[1])?;
+            let library = clone_mount(&mounts[2])?;
+            compose_selected_library(&root, &vendor, &library)?;
+            readiness::compose(&root, &mounts[3], &ready)?;
+            super::super::early::attach_vendor(&root, &vendor)?;
+            require(mount_id(&system_lib64(&root)?)? == mount_id(&library)?,
+                    "vendor attachment lost the selected system_ext library")?;
         }
         Ok(())
     }
