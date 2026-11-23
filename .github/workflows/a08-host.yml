@@ -40,6 +40,14 @@ jobs:
           mkdir -p "$RUNNER_TEMP/a08"
           python3 support/android/verify_source_integrity.py \
             --out "$RUNNER_TEMP/a08/source-integrity.json"
+      - name: Verify Calendar core reads with shifted file ownership
+        timeout-minutes: 1
+        shell: bash
+        run: |
+          set -euo pipefail
+          suite=compat/android/pocket4/current-canonical-app-main-20261120/tests/test_calendar_core_read.py
+          sudo -n /usr/bin/python3 -I -B "$suite" -v
+          sudo -n /usr/bin/python3 -I -B -O "$suite" -v
       - name: Verify current IHG app acceptance source identity
         shell: bash
         run: |
@@ -1768,7 +1776,7 @@ jobs:
       CURRENT_NATIVE_INVENTORY_SHA256: 8be17cef0f7dab7b1b2ae508fd2753a2f334cf9249d389dcf5f70896356cbe9b
       CURRENT_OWNED_CANONICAL_INVENTORY_SHA256: ab44dde611350652f99c5f60f96e4113038ba77f5b4c2692ea96c15705e3ee1e
       CURRENT_JOINT_DATA_INVENTORY_SHA256: 715557d89c6fdfecbaae5fb617f26537769a95e77d01b2538ce0b62606831799
-      CURRENT_CAR_EXT4_INVENTORY_SHA256: e179756adc70b1bd84959e2f88d801c4219f6a60eed24268c60080a9d6e7b46d
+      CURRENT_CAR_EXT4_INVENTORY_SHA256: 5516ce7e791f198bd997a40e29e1b82dceb8a45cb82fce9c4cb0766acd8a1b6a
       P4_NATIVE_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
@@ -1924,17 +1932,17 @@ jobs:
               {
                   "name": "BUNDLE-MANIFEST.json",
                   "bytes": 127504,
-                  "sha256": "1cd9d7a2cb4bf62fba8a04f46ab7c49b29a1eaeba16138311e042845288c9fd7"
+                  "sha256": "9aeaad291562d2118b102690829f1b7220d983239ecc72a426aa36ba8a6746bf"
               },
               {
                   "name": "DEPLOYMENT-MANIFEST.json",
                   "bytes": 238650,
-                  "sha256": "c4741dbc6fc7b04881d32387006674eea01a0530c884e1153eda05b444da3c89"
+                  "sha256": "8980ab155b7b687c0804216b8d6bcede2bbcab301ff6c6ab653dfa528fffa577"
               },
               {
                   "name": "HANDOFF.json",
-                  "bytes": 11765,
-                  "sha256": "e78054d9f5a6c3deed6bc484a23b7dd3fe2e002f9b07f7974f1f9b7d2cbf361d"
+                  "bytes": 12032,
+                  "sha256": "ceb479ccc1ab103fc226d5f0a6daa094be228ded84ff371a3acd361c3fa81493"
               },
               {
                   "name": "README.md",
@@ -1944,7 +1952,12 @@ jobs:
               {
                   "name": "SOURCE-CLOSURE.json",
                   "bytes": 262082,
-                  "sha256": "154c5aa81000254a097c23b6fcbfacfc0b48e1dffbe69c9a0e64f31b9d6d9ebb"
+                  "sha256": "1628bf61fb06bd270c700b93d32c17cd9274f7e0ee6929d0d64e41e30ec4dcfe"
+              },
+              {
+                  "name": "tests/test_calendar_core_read.py",
+                  "bytes": 4765,
+                  "sha256": "7e6549bc70e6ff7524f5b18061ce62c4f48468610d80b4b11b6b3b445136ba04"
               },
               {
                   "name": "tests/test_settings_business.py",
@@ -2092,7 +2105,7 @@ jobs:
           selected = bodies[CANON + '/selection/selection-14.json']
           need(producer_bodies['runtime/droidloom-applications/tests/fixtures/selection-14-20261120.json'] == selected, 'producer and bundle selectors differ')
           route_source = producer_bodies['runtime/droidloom-applications/src/leaf_routes.rs']
-          need(identity(route_source) == {'bytes': 65821, 'sha256': '877d00f3900d6e77702a7a06a1d401e945a32af98f54ccf8ec9e204a96c55b46'}, 'exact reviewed Settings terminal consumer')
+          need(identity(route_source) == {'bytes': 65821, 'sha256': '1bbdc8d9d05db11c872aae17199227696bc90c0ffc66b9e0833e8dcc9d4318b3'}, 'exact reviewed Settings terminal consumer')
           text = route_source.decode()
           need(re.findall(r'const SELECTION_BYTES: u64 = (\d+);', text) == [str(len(selected))]
                and re.findall(r'const SELECTION_SHA: &str = "([0-9a-f]{64})";', text) == [identity(selected)['sha256']], 'compiled selector constants')
@@ -2127,7 +2140,7 @@ jobs:
                'actual bundle graph changed before completion')
           print(json.dumps({'verified_bundle_files': 474, 'verified_bundle_bytes': closure['total_bytes'],
                             'verified_catalog_entries': 14, 'verified_producer_bindings': 3,
-                            'verified_external_publication_files': 19, 'source_only': True,
+                            'verified_external_publication_files': 20, 'source_only': True,
                             'Android_actions': 0, 'new_runtime_acceptance_count': 0,
                             'runtime_qualified': False, 'production_ready': False}, sort_keys=True))
           CANONICAL_APP_SOURCE
