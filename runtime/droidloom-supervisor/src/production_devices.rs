@@ -601,6 +601,7 @@ struct DeviceResources {
     mount_id: u64,
     root_node: (u64, u64),
     nodes: Vec<DeviceIdentity>,
+    early_socket_dirs: bool,
     activation: Option<ActivationListener>,
     network_builder: Option<SelectedAndroidNetwork>,
     socket_builder: Option<SelectedAndroidSocketBuilder>,
@@ -653,6 +654,8 @@ impl DeviceResources {
         verify_root(mount, self.uids.start, self.gids.start)?;
         if let Some(listener) = &self.activation {
             listener.verify_complete(mount, self.uids.start, self.gids.start, &self.nodes)
+        } else if self.early_socket_dirs {
+            early::verify_readiness_directories(mount, self.uids.start, self.gids.start, &self.nodes)
         } else {
             verify_devices(mount, self.uids.start, self.gids.start, &self.nodes)
         }
@@ -722,11 +725,12 @@ impl PreparedDevices {
         witness: &OwnedNamespaceWitness<'_>,
         activation: Option<(&ProductionSelection, &MacPreflight, RuntimeMacOwner)>,
     ) -> Result<Self> {
-        Self::create_for_tree(witness, activation.map(|(selection, mac, context)| (witness, selection, mac, context)))
+        Self::create_for_tree(witness, false, activation.map(|(selection, mac, context)| (witness, selection, mac, context)))
     }
 
     fn create_for_tree(
         witness: &impl DeviceTree,
+        early_socket_dirs: bool,
         activation: Option<(&OwnedNamespaceWitness<'_>, &ProductionSelection, &MacPreflight, RuntimeMacOwner)>,
     ) -> Result<Self> {
         require_initial_broker()?;
@@ -752,6 +756,7 @@ impl PreparedDevices {
                 mount_id: 0,
                 root_node: (0, 0),
                 nodes: Vec::new(),
+                early_socket_dirs,
                 activation: None,
                 network_builder: None,
                 socket_builder: None,
@@ -781,6 +786,9 @@ impl PreparedDevices {
         resources.mount_id = require_detached(mount)?;
         resources.root_node = node(mount)?;
         resources.nodes = create_devices(mount)?;
+        if early_socket_dirs {
+            early::create_readiness_directories(mount, &resources.nodes)?;
+        }
         if let Some((witness, selection, mac, _)) = activation.as_ref() {
             let context = resources.context.as_ref().ok_or(DeviceError::Rejected(
                 "original activation MAC pair custody absent",

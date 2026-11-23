@@ -33,7 +33,7 @@ impl DeviceTree for EarlyBaseAdmission<'_> {
 impl PreparedDevices {
     pub(crate) fn prepare_early(child: &EarlyBaseAdmission<'_>) -> Result<Self> {
         child.revalidate()?;
-        let devices = Self::create_for_tree(child, None)?;
+        let devices = Self::create_for_tree(child, true, None)?;
         child.revalidate()?;
         Ok(devices)
     }
@@ -49,4 +49,40 @@ impl PreparedDevices {
         retired.verify_mount_retirement(&r.userns, r.host_uid, &r.cohort)?;
         self.cleanup(true)
     }
+}
+
+fn directory(parent: &File, name: &CStr) -> Result<File> {
+    open_at(parent, name, libc::O_RDONLY | libc::O_DIRECTORY)
+}
+
+pub(super) fn create_readiness_directories(root: &File, nodes: &[DeviceIdentity]) -> Result<()> {
+    fn create(parent: &File, name: &CStr) -> Result<File> {
+        zero(unsafe { libc::mkdirat(parent.as_raw_fd(), name.as_ptr(), 0o755) } as _)?;
+        let child = directory(parent, name)?;
+        zero(unsafe { libc::fchmod(child.as_raw_fd(), 0o755) } as _)?;
+        Ok(child)
+    }
+    let socket = create(root, c"socket")?;
+    create(&socket, c"droidloom")?;
+    verify_readiness_directories(root, 0, 0, nodes)
+}
+
+pub(super) fn verify_readiness_directories(root: &File, uid: u32, gid: u32, nodes: &[DeviceIdentity]) -> Result<()> {
+    let mut expected: Vec<_> = DEVICES.iter().map(|spec| spec.name.to_bytes().to_vec()).collect();
+    expected.push(b"socket".to_vec());
+    expected.sort();
+    need(directory_names(root)? == expected, "only seven fixed devices and the readiness parent")?;
+    verify_device_nodes(root, uid, gid, nodes)?;
+    let socket = directory(root, c"socket")?;
+    let target = directory(&socket, c"droidloom")?;
+    let filesystem = root.metadata()?.dev();
+    let original_mount = mount_id(root)?;
+    for dir in [&socket, &target] {
+        let m = dir.metadata()?;
+        need(m.dev() == filesystem && m.uid() == uid && m.gid() == gid
+            && m.mode() == libc::S_IFDIR | 0o755 && mount_id(dir)? == original_mount,
+            "readiness directories require the same private mount, mode and mapped identities")?;
+    }
+    need(directory_names(&socket)? == [b"droidloom".to_vec()] && directory_names(&target)?.is_empty(),
+        "only one empty fixed readiness target may exist before transfer")
 }
