@@ -259,6 +259,7 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
         "droidloom-container-services.target",
         "droidloom-container-entry.service",
         "droidloom-container-guest.socket",
+        "droidloom-early-observer.service",
     ] {
         let source = repo.join("runtime/droidloom-supervisor/src").join(unit);
         if !fs::symlink_metadata(&source)?.is_file() {
@@ -327,6 +328,7 @@ mod tests {
         fs::create_dir_all(&templates).unwrap();
         fs::create_dir(&host).unwrap();
         for (name, body) in [
+            ("droidloom-early-observer.service",include_str!("../../../runtime/droidloom-supervisor/src/droidloom-early-observer.service")),
             (
                 "droidloom-container-guest.socket",
                 include_str!("../../../runtime/droidloom-supervisor/src/droidloom-container-guest.socket"),

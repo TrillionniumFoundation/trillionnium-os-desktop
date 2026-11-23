@@ -16,6 +16,8 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 use std::time::{Duration, Instant};
 
+#[path = "container_early_observer.rs"]
+pub(super) mod early;
 #[path = "container_status_protocol.rs"]
 mod protocol;
 

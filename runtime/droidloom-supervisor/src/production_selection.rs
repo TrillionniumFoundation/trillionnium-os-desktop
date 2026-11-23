@@ -31,6 +31,12 @@ const SCHEMA: &str = "droidloom-production-selection-v1";
 mod launcher;
 pub use launcher::{ContainerLibraryMount, PreparedContainerSelection, SharedKernelLauncher};
 
+#[path = "production_early_generation.rs"]
+mod early_generation;
+pub use early_generation::EarlyAndroidGeneration;
+const EARLY_SCHEMA: &str = "droidloom-production-selection-v4";
+const EARLY_LAUNCHER: &str = "early_boot_shared_kernel_v1";
+
 const SHARED_SCHEMA: &str = "droidloom-production-selection-v3";
 const SHARED_LAUNCHER: &str = "host_managed_shared_kernel_v1";
 const PERSISTENT_SCHEMA: &str = "droidloom-production-selection-v2";
@@ -110,6 +116,7 @@ struct SealedFile {
 pub(crate) struct ProductionSelection {
     selected: SealedFile,
     host_managed: bool,
+    early_boot: bool,
     specification: SealedFile,
     spec: CellSpec,
     base_cohort: String,
@@ -175,6 +182,7 @@ impl ProductionSelection {
         Ok(Self {
             selected,
             host_managed: record.schema == SHARED_SCHEMA,
+            early_boot: record.schema == EARLY_SCHEMA,
             specification,
             spec,
             base_cohort: record.base_cohort_sha256,
@@ -199,6 +207,7 @@ impl ProductionSelection {
         let value = Self {
             selected: duplicate(&self.selected)?,
             host_managed: self.host_managed,
+            early_boot: self.early_boot,
             specification: duplicate(&self.specification)?,
             spec: self.spec.clone(),
             base_cohort: self.base_cohort.clone(),
@@ -278,6 +287,8 @@ fn validate_record(record: &Record) -> Result<()> {
     let valid_version = match record.schema.as_str() {
         SCHEMA => record.launcher.is_none() && record.persistent_data.is_none(),
         PERSISTENT_SCHEMA => record.launcher.is_none() && record.persistent_data.as_ref().is_some_and(|p| p.validate().is_ok()),
+        EARLY_SCHEMA => record.launcher.as_deref() == Some(EARLY_LAUNCHER)
+            && record.persistent_data.as_ref().is_some_and(|p| p.validate().is_ok()),
         SHARED_SCHEMA => record.launcher.as_deref() == Some(SHARED_LAUNCHER)
             && record.persistent_data.as_ref().is_none_or(|p| p.validate().is_ok()),
         _ => false,

@@ -199,7 +199,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                 return Err("the shared-kernel production service currently supports desktop mode".into());
             }
             let program = (operation != "stop").then(|| choice.entry_program()).transpose()?;
-            let generation = container_services::lifecycle(operation)?;
+            let generation = if choice.early_kernel_boot() {container_services::early_lifecycle(operation)?} else {container_services::lifecycle(operation)?};
             let probe = matches!(cli.command, Command::Status | Command::Readiness | Command::Wait) || wait;
             let (state, message, original) = if let Some(owner) = generation.filter(|_| probe) {
                 let response = droidloom_supervisor::control::container_entry_readiness(

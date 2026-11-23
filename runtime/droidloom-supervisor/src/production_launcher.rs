@@ -40,6 +40,23 @@ impl Published {
     }
 }
 
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct EarlyPublished {
+    schema:String, launcher:String, selection_sha256:String, manager_sha256:String, manager_bytes:u64,
+}
+impl EarlyPublished {
+    fn parse(bytes:&[u8])->Result<Self> {
+        let value:Self=serde_json::from_slice(bytes)?;
+        if value.schema!="droidloom-public-early-launcher-v1" || value.launcher!=EARLY_LAUNCHER ||
+           !digest(&value.selection_sha256) || !digest(&value.manager_sha256) ||
+           !(64..=crate::production_service_elf::MAX_SERVICE as u64).contains(&value.manager_bytes) {
+            return Err(SelectionError::Rejected("unsupported public kernel-first Android owner"));
+        }
+        Ok(value)
+    }
+}
+
 /// Held public configuration for the shared-kernel service. It is never an
 /// execution capability or permission to mutate a systemd unit.
 pub struct SharedKernelLauncher {
@@ -47,6 +64,7 @@ pub struct SharedKernelLauncher {
     selected_digest: String,
     entry_bytes: u64,
     entry_digest: String,
+    early: bool,
 }
 
 impl SharedKernelLauncher {
@@ -68,14 +86,25 @@ impl SharedKernelLauncher {
                 "public container launcher must have mode 0444 or 0644",
             ));
         }
+        let schema:serde_json::Value=serde_json::from_slice(&bytes)?;
+        if schema["schema"]=="droidloom-public-early-launcher-v1" {
+            let published=EarlyPublished::parse(&bytes).map_err(io::Error::other)?;
+            return Ok(Some(Self{sealed,selected_digest:published.selection_sha256,entry_bytes:published.manager_bytes,
+                entry_digest:published.manager_sha256,early:true}));
+        }
         let published = Published::from_bytes(&bytes).map_err(io::Error::other)?;
         Ok(Some(Self {
             sealed,
             selected_digest: published.selection_sha256,
             entry_bytes: published.entry_bytes,
             entry_digest: published.entry_sha256,
+            early:false,
         }))
     }
+
+    /// True when Android PID 1 was created during the host kernel boot.
+    pub fn early_kernel_boot(&self)->bool {self.early}
+    pub(super) fn matches_private_early(&self,digest:&str)->bool {self.early && self.selected_digest==digest}
 
     /// Hold the fixed, byte-verified package entry until the transaction ends.
     ///
@@ -83,7 +112,7 @@ impl SharedKernelLauncher {
     /// Rejects a missing, replaced or nonmatching service executable.
     pub fn entry_program(&self) -> io::Result<PublishedServiceProgram> {
         self.revalidate()?;
-        let path = Path::new("/usr/lib/droidloom/production/current/droidloom-container-entry");
+        let path=Path::new(if self.early {"/usr/lib/droidloom/production/current/droidloomd"} else {"/usr/lib/droidloom/production/current/droidloom-container-entry"});
         let (file, bytes) =
             SealedFile::read(path, crate::production_service_elf::MAX_SERVICE as u64)
                 .map_err(io::Error::other)?;
@@ -114,6 +143,11 @@ impl SharedKernelLauncher {
 pub struct PublishedServiceProgram(SealedFile);
 
 impl PublishedServiceProgram {
+    pub(super) fn matches_current_process(&self)->io::Result<bool> {
+        let active=std::fs::metadata("/proc/self/exe")?;
+        Ok((active.dev(),active.ino())==(self.0.node.device,self.0.node.inode))
+    }
+
     /// Recheck the original held program and its installed pathname.
     ///
     /// # Errors
@@ -136,7 +170,11 @@ fn paired(host_managed: bool, selection_sha256: &str, published: Option<&str>) -
 impl ProductionSelection {
     pub(crate) fn host_managed_launcher(&self) -> Result<Option<SharedKernelLauncher>> {
         self.revalidate()?;
+        if self.early_boot {return Err(SelectionError::Rejected("kernel-created Android requires its independent early-generation owner"));}
         let launcher = SharedKernelLauncher::read()?;
+        if launcher.as_ref().is_some_and(SharedKernelLauncher::early_kernel_boot) {
+            return Err(SelectionError::Rejected("early kernel launcher requires its matching private v4 selection"));
+        }
         paired(
             self.host_managed,
             &self.selected.sha256,
@@ -277,6 +315,21 @@ impl PreparedContainerSelection {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn early_selector_requires_its_own_exact_manager_contract() {
+        let row = serde_json::json!({"schema":"droidloom-public-early-launcher-v1","launcher":EARLY_LAUNCHER,
+            "selection_sha256":"a".repeat(64),"manager_sha256":"b".repeat(64),"manager_bytes":32768});
+        let valid = serde_json::to_vec(&row).unwrap();
+        assert!(EarlyPublished::parse(&valid).is_ok());
+        assert!(Published::from_bytes(&valid).is_err());
+        for (field, value) in [("schema","droidloom-public-launcher-v3"),("launcher",SHARED_LAUNCHER),
+                               ("selection_sha256","unknown"),("manager_sha256","invalid"),("ExecStart","/tmp/elf")] {
+            let mut wrong = row.clone();
+            wrong[field]=value.into();
+            assert!(EarlyPublished::parse(&serde_json::to_vec(&wrong).unwrap()).is_err());
+        }
+    }
 
     #[test]
     fn published_choice_is_versioned_and_cannot_supply_a_command() {

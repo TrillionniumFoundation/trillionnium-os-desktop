@@ -65,6 +65,21 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             container_oci_owner::run(&SHUTDOWN)?;
             return Ok(());
         }
+        if action.as_deref() == Some(std::ffi::OsStr::new("--observe-early-container")) {
+            if arguments.next().is_some() {return Err("early Android observation accepts no arguments".into());}
+            install_signal_handlers()?;
+            container_oci_owner::early::run(&SHUTDOWN)?;
+            return Ok(());
+        }
+        if action.as_deref() == Some(std::ffi::OsStr::new("--inspect-early-generation")) {
+            if arguments.next().is_some() {return Err("early generation inspection accepts no arguments".into());}
+            let mac=droidloom_supervisor::control::ContainerManagerMac::acquire()?;
+            let generation=droidloom_supervisor::control::EarlyAndroidGeneration::acquire()?;
+            generation.revalidate()?;
+            mac.revalidate()?;
+            println!("Selected Android namespace PID 1 is live");
+            return Ok(());
+        }
         if action.as_deref() == Some(std::ffi::OsStr::new("--check-container-platform")) {
             if arguments.next().is_some() {
                 return Err("platform check accepts no arguments".into());

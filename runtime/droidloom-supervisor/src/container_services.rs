@@ -11,6 +11,7 @@ const TARGET: &str = "droidloom-container-services.target";
 const SOCKET: &str = "droidloom-container-guest.socket";
 const OCI: &str = "droidloom-container-oci.service";
 const ENTRY: &str = "droidloom-container-entry.service";
+const EARLY:&str="droidloom-early-observer.service";
 const PROGRAM: &str = "/usr/lib/droidloom/production/current/droidloomd";
 /// Layout detection only prevents desktop fallback. The original production
 /// broker must validate the private selection under its own configuration lock.
@@ -51,7 +52,7 @@ fn members<'a>(properties: &'a Properties, key: &str) -> impl Iterator<Item = &'
     property(properties, key).split_ascii_whitespace()
 }
 
-fn provider_command(value: &str) -> bool {
+fn fixed_command(value: &str, action:&str) -> bool {
     let Some(fields) = value
         .trim()
         .strip_prefix('{')
@@ -68,9 +69,11 @@ fn provider_command(value: &str) -> bool {
         values.next() == Some(expected) && values.next().is_none()
     };
     exact("path=", PROGRAM)
-        && exact("argv[]=", &format!("{PROGRAM} --manage-container"))
+        && exact("argv[]=", &format!("{PROGRAM} {action}"))
         && exact("ignore_errors=", "no")
 }
+
+fn provider_command(value:&str)->bool {fixed_command(value,"--manage-container")}
 
 fn verify_contract(target: &Properties, entry: &Properties) -> io::Result<()> {
     if !matches(target, &[("Id", TARGET), ("LoadState", "loaded")])
@@ -177,6 +180,7 @@ fn snapshot() -> io::Result<(Properties, Properties)> {
 pub(super) struct Generation {
     pub(super) pid: u32,
     invocation: String,
+    early:bool,
 }
 
 impl Generation {
@@ -187,10 +191,14 @@ impl Generation {
         Some(Self {
             pid: property(entry, "MainPID").parse().ok()?,
             invocation: property(entry, "InvocationID").to_owned(),
+            early:false,
         })
     }
 
     pub(super) fn verify_current(&self) -> io::Result<()> {
+        if self.early {
+            return if early_generation()?.as_ref()==Some(self) {Ok(())}else{Err(io::Error::other("early Android observer changed during the request"))};
+        }
         let (target, entry) = snapshot()?;
         verify_contract(&target, &entry)?;
         if Self::from_running(&target, &entry).as_ref() == Some(self) {
@@ -259,6 +267,37 @@ fn wait_for_retirement() -> io::Result<()> {
             ));
         }
         std::thread::sleep(std::time::Duration::from_millis(100));
+    }
+}
+
+fn early_generation()->io::Result<Option<Generation>>{
+    let s=show(EARLY,ENTRY_FIELDS)?;
+    if !matches(&s,&[("Id",EARLY),("LoadState","loaded"),("Type","notify"),("NotifyAccess","main"),("KillMode","control-group"),("Restart","no"),("RemainAfterExit","no")]) ||
+       !["Requires","After"].iter().all(|key|members(&s,key).any(|unit|unit=="droidloom-manager-label.service")) ||
+       !fixed_command(property(&s,"ExecStart"),"--observe-early-container"){
+        return Err(io::Error::other("kernel-booted Android observer has an incorrect service contract"));
+    }
+    if matches(&s,&[("ActiveState","inactive"),("MainPID","0"),("Result","success")]) {return Ok(None);}
+    let id=property(&s,"InvocationID");
+    let pid=property(&s,"MainPID").parse::<u32>().unwrap_or(0);
+    if !matches(&s,&[("ActiveState","active"),("SubState","running"),("Result","success")]) || pid<2 ||
+        id.len()!=32 || !id.bytes().all(|v|v.is_ascii_hexdigit()) || !id.bytes().any(|v|v!=b'0') {
+        return Err(io::Error::other(format!("kernel-booted Android observer is {}/{} ({})",property(&s,"ActiveState"),property(&s,"SubState"),property(&s,"Result"))));
+    }
+    Ok(Some(Generation{pid,invocation:id.to_owned(),early:true}))
+}
+
+pub(super) fn early_lifecycle(operation:&str)->io::Result<Option<Generation>>{
+    match operation {
+        "status"=>early_generation(),
+        "start"=>{
+            if let Some(current)=early_generation()? { return Ok(Some(current)); }
+            let status=systemctl().args(["--job-mode=fail","start",EARLY]).status()?;
+            if !status.success(){return Err(io::Error::other("could not attach the trusted observer to the kernel-booted Android instance"));}
+            early_generation()?.map(Some).ok_or_else(||io::Error::other("kernel-booted Android observer did not remain attached"))
+        }
+        "stop"|"restart"=>Err(io::Error::new(io::ErrorKind::Unsupported,"the selected early Android instance has no qualified platform shutdown or relaunch endpoint")),
+        _=>Err(io::Error::other("invalid early Android lifecycle operation"))
     }
 }
 
