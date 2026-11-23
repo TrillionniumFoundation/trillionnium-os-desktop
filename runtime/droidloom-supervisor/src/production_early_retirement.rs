@@ -5,7 +5,7 @@ use std::io;
 use std::os::fd::AsRawFd;
 
 unsafe extern "C" {
-    fn droidloom_board_retire_root(pidfd: i32, nsfd: i32, rootfd: i32) -> i32;
+    fn droidloom_board_retire_root(pidfd: i32, nsfd: i32, rootfd: i32, delivery_attempted: i32) -> i32;
 }
 /// Constructed only after the exact process has exited, its budget is empty
 /// and removed, and the kernel reports that the original root was detached.
@@ -20,6 +20,7 @@ impl EarlyBaseRetirement {
         board: &EarlyBoardResources,
         group: &PreparedCgroup,
         delivered: &File,
+        delivery_attempted: bool,
     ) -> io::Result<Self> {
         group.verify_early_exit(board).map_err(io::Error::other)?;
         let userns = board.user_namespace().try_clone()?;
@@ -36,6 +37,7 @@ impl EarlyBaseRetirement {
                 board.pidfd().as_raw_fd(),
                 board.mount_namespace().as_raw_fd(),
                 delivered.as_raw_fd(),
+                i32::from(delivery_attempted),
             )
         } < 0
         {

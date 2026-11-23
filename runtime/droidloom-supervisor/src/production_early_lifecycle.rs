@@ -245,6 +245,7 @@ pub fn complete_early_resources() -> io::Result<()> {
     let mut data: Option<PreparedPersistentData> = None;
     let mut devices: Option<PreparedDevices> = None;
     let mut original_root: Option<File> = None;
+    let mut root_delivery_attempted = false;
     let work = (|| -> io::Result<()> {
         let cg_ns = board.root_cgroup_namespace()?;
         group
@@ -318,6 +319,7 @@ pub fn complete_early_resources() -> io::Result<()> {
             ));
         }
         board.revalidate()?;
+        root_delivery_attempted = true;
         if unsafe {
             droidloom_board_deliver_root(
                 board.pidfd().as_raw_fd(),
@@ -349,7 +351,7 @@ pub fn complete_early_resources() -> io::Result<()> {
     let cleanup = stop_child(board.pidfd(), Duration::from_secs(15)).and_then(|exit| {
         let retired = (|| -> io::Result<()> {
             if let Some(root) = original_root {
-                let retired = EarlyBaseRetirement::finish(&board, &group, &root)?;
+                let retired = EarlyBaseRetirement::finish(&board, &group, &root, root_delivery_attempted)?;
                 drop(root);
                 let dev_result = devices
                     .map(|v| v.retire_after_early_tree(&retired))
