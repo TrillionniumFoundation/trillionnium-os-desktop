@@ -53,6 +53,8 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
         include_bytes!("../../../runtime/droidloom-early-boot/selected.c"),
     )?;
     for (name, content) in [
+        ("apparmor_epoch.c", include_bytes!("../../../runtime/droidloom-early-boot/apparmor_epoch.c").as_slice()),
+        ("apparmor_epoch.h", include_bytes!("../../../runtime/droidloom-early-boot/apparmor_epoch.h").as_slice()),
         (
             "board_policy.c",
             include_bytes!("../../../runtime/droidloom-early-boot/board_policy.c").as_slice(),
@@ -94,6 +96,7 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
     )?;
     for (source, object) in [
         ("board_policy.c", "board_policy.o"),
+        ("apparmor_epoch.c", "apparmor_epoch.o"),
         ("board_init.c", "board_init.o"),
         ("custody.c", "custody.o"),
         ("selected.c", "selected.o"),
@@ -141,6 +144,7 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
             "-Wl,-z,relro,-z,now",
             "board_init.o",
             "board_policy.o",
+            "apparmor_epoch.o",
             "linux_run_label.o",
             "selected.o",
             "custody.o",

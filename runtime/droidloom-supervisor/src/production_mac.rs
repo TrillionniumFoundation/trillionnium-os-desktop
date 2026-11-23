@@ -97,6 +97,9 @@ const AA_LOADER: &[u8] = b"droidloom-policy-loader (enforce)\n";
 const LINKERCONFIG: &str = "u:r:linkerconfig:s0";
 const LINKERCONFIG_EXEC: &str = "u:object_r:linkerconfig_exec:s0";
 
+#[path = "production_mac_board_epoch.rs"]
+mod board_epoch;
+
 #[path = "production_mac_kernel_first.rs"]
 mod kernel_first;
 pub(crate) use kernel_first::EarlyManagerClient;
@@ -768,10 +771,16 @@ struct AaProfile {
 }
 struct AaPolicy {
     security: File,
-    policy: File,
-    profiles_directory: File,
-    profiles: [AaProfile; 3],
     revision: i64,
+    evidence: AaEvidence,
+}
+enum AaEvidence {
+    Direct {
+        policy: File,
+        profiles_directory: File,
+        profiles: [AaProfile; 3],
+    },
+    Boot(board_epoch::BoardEpoch),
 }
 
 fn aa_read(parent: &File, name: &CStr, fs: u64, limit: usize) -> Result<Vec<u8>> {
@@ -944,6 +953,14 @@ impl AaPolicy {
             "/sys/kernel/security/apparmor",
             libc::O_RDONLY | libc::O_DIRECTORY,
         )?;
+        if declaration.early() {
+            let observed = board_epoch::BoardEpoch::acquire(
+                &declaration.policy_input_sha256,
+                [&declaration.apparmor_loader_policy_sha256, &declaration.apparmor_android_policy_sha256,
+                    &declaration.apparmor_broker_policy_sha256],
+            )?;
+            return Ok(Self { security, revision: observed.revision, evidence: AaEvidence::Boot(observed) });
+        }
         let policy = aa_policy_root(&security)?;
         let revision = aa_revision(&security)?;
         let profiles_directory = open_at(
@@ -1011,10 +1028,8 @@ impl AaPolicy {
         ];
         let value = Self {
             security,
-            policy,
-            profiles_directory,
-            profiles,
             revision,
+            evidence: AaEvidence::Direct { policy, profiles_directory, profiles },
         };
         value.revalidate()?;
         Ok(value)
@@ -1032,9 +1047,13 @@ impl AaPolicy {
             Node::of(&security)?.same_inode(Node::of(&self.security)?),
             "AppArmor securityfs mount changed",
         )?;
+        let (held_policy, held_directory, held_profiles) = match &self.evidence {
+            AaEvidence::Direct { policy, profiles_directory, profiles } => (policy, profiles_directory, profiles),
+            AaEvidence::Boot(epoch) => return epoch.revalidate(),
+        };
         let policy = aa_policy_root(&security)?;
         require(
-            Node::of(&policy)?.same_inode(Node::of(&self.policy)?),
+            Node::of(&policy)?.same_inode(Node::of(held_policy)?),
             "AppArmor policy namespace changed",
         )?;
         let profiles = open_at(
@@ -1043,10 +1062,10 @@ impl AaPolicy {
             libc::O_RDONLY | libc::O_DIRECTORY,
         )?;
         require(
-            Node::of(&profiles)?.same_inode(Node::of(&self.profiles_directory)?),
+            Node::of(&profiles)?.same_inode(Node::of(held_directory)?),
             "AppArmor profiles root changed",
         )?;
-        for profile in &self.profiles {
+        for profile in held_profiles {
             profile.revalidate(&profiles)?;
         }
         require(

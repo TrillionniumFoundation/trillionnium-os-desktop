@@ -86,3 +86,23 @@
 (allow droidloom_policy_loader self (file (getattr open read)))
 (allow droidloom_policy_loader self (dir (getattr search)))
 (allow droidloom_policy_loader self (lnk_file (getattr read)))
+
+; Only early PID 1 publishes this same-boot observation. The two roles
+; consume a read-only mount and can never change its label, data or ownership.
+(type p4_linux_apparmor_epoch_t)
+(roletype object_r p4_linux_apparmor_epoch_t)
+(typeattributeset p4_linux_data (p4_linux_apparmor_epoch_t))
+(allow p4_linux_apparmor_epoch_t tmpfs (filesystem (associate)))
+(type p4_linux_policy_epoch_dir_t)
+(roletype object_r p4_linux_policy_epoch_dir_t)
+(typeattributeset p4_linux_data (p4_linux_policy_epoch_dir_t))
+(allow p4_linux_policy_epoch_dir_t tmpfs (filesystem (associate)))
+(allow kernel p4_linux_policy_epoch_dir_t (dir (search getattr relabelto write add_name)))
+(allow p4_linux_mac_roles p4_linux_policy_epoch_dir_t (dir (getattr search)))
+(neverallow p4_linux_procs p4_linux_policy_epoch_dir_t (dir (write add_name remove_name mounton relabelto relabelfrom)))
+(typetransition kernel p4_linux_policy_epoch_dir_t file "apparmor-epoch" p4_linux_apparmor_epoch_t)
+(allow kernel p4_linux_apparmor_epoch_t (file (create open getattr read write)))
+(neverallow p4_linux_procs p4_linux_apparmor_epoch_t (file (mounton)))
+(allow p4_linux_mac_roles p4_linux_early_handoff_dir_t (dir (getattr search)))
+(allow p4_linux_mac_roles p4_linux_apparmor_epoch_t (file (getattr open read)))
+(neverallow p4_linux_procs p4_linux_apparmor_epoch_t (file (append create write link unlink rename setattr relabelto relabelfrom)))
