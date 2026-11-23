@@ -38,5 +38,43 @@
   },
   "scope": "Actual original init-borrowed pre-Ready read-only system_server and original zygote lineage observation; detects comm, namespace, mapped credentials, PID-start/parent generation, proc inode and boot epoch changes; does not admit a boot or issue app controls.",
   "remaining_dependency": "Bind same-epoch actual InputReader/InputDispatcher thread observations and four InputPolicy effects; integrate staged activation/pre-Ready observation with later real capability/seccomp/final exec checks before production admission.",
-  "captured_utc": "2026-11-23T03:25:08.825935+00:00"
+  "captured_utc": "2026-11-23T03:25:08.825935+00:00",
+  "parallel_source_comparison": {
+    "host": "ai395",
+    "source_files_per_tree": 2392,
+    "same_compiler": "rustc 1.93.0",
+    "same_rustflags": "-Awarnings",
+    "cpu_affinity": "0-7",
+    "workers": 8,
+    "retries": 0,
+    "ignored_per_run": 26,
+    "source_comparison_receipt": {
+      "path": "/home/qq/work/p4-r40-parallel-comparison-20261123-r1/CLEAN-SOURCE-COMPARISON.json",
+      "bytes": 4840,
+      "sha256": "b159970d1e23950447079b9635c3de8cb5a2842bb77c7b8453d307941d7a2681"
+    },
+    "prior_tree": "5adbbe7d9efa60d4c7f401a0988652c8c80449b4",
+    "prior_active": 623,
+    "prior_libtest_failures": [
+      4,
+      2
+    ],
+    "prior_nextest_failures": [
+      0,
+      0
+    ],
+    "r40_tree": "3dee0391bba02e18f6f46802383d920a2e6d88aa",
+    "r40_active": 624,
+    "r40_libtest_failures": [
+      0,
+      2
+    ],
+    "r40_nextest_failures": [
+      0,
+      1
+    ],
+    "r40_isolated_failure": "production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected",
+    "original_12_test_names_recovered": false,
+    "production_runtime_qualified": false
+  }
 }

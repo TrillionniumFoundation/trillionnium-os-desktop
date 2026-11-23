@@ -1781,7 +1781,7 @@ jobs:
             ${{ runner.temp }}/runtime-d6-ci-logs/*.stderr
 
   runtime-current-complete-producer:
-    name: Current source - 1628 ordinary cases, 19 releases, examples and docs
+    name: Current source - 1629 ordinary cases, 19 releases, examples and docs
     runs-on: ubuntu-24.04
     timeout-minutes: 140
     env:
@@ -1800,7 +1800,7 @@ jobs:
       CURRENT_NATIVE_INVENTORY_SHA256: 8be17cef0f7dab7b1b2ae508fd2753a2f334cf9249d389dcf5f70896356cbe9b
       CURRENT_OWNED_CANONICAL_INVENTORY_SHA256: ab44dde611350652f99c5f60f96e4113038ba77f5b4c2692ea96c15705e3ee1e
       CURRENT_JOINT_DATA_INVENTORY_SHA256: 715557d89c6fdfecbaae5fb617f26537769a95e77d01b2538ce0b62606831799
-      CURRENT_CAR_EXT4_INVENTORY_SHA256: 10b944330a3fd84917abfd6f85f94f45e499e9f9b81e104a0c025179c0259e91
+      CURRENT_CAR_EXT4_INVENTORY_SHA256: 4bc080644797e2d8799262af35492cc312dbe6cfc35c7a8d70de50a92a929553
       P4_NATIVE_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
@@ -1931,6 +1931,14 @@ jobs:
             --parent-source "$RUNNER_TEMP/current-owned-data-producer" \
             --output "$RUNNER_TEMP/current-car-data-producer" \
             --report "$RUNNER_TEMP/current-car-data-source-replay.json"
+          # Bind the normal producer consumed by Cargo to the reviewed R40 patch and source.
+          review="$GITHUB_WORKSPACE/compat/android/pocket4/current-pre-ready-framework-20261123"
+          producer="$RUNNER_TEMP/current-car-data-producer"
+          printf '%s  %s\n' \
+            7ce9ed7dfb28722f84ce3249539883c4c69115413d4c9fb540c178e692735277 "$review/PRE-READY-FRAMEWORK.patch" \
+            93c09893f46114983faa1d2087aba16209a2ae5e93501793fe1ad8911f807290 "$producer/runtime/droidloom-supervisor/src/production_namespace_application_parent.rs" \
+            1979176d2fe67be9fb7b647a125f3cf78b37fec8ffdda75ea76b1fafa8631cd2 "$producer/runtime/droidloom-supervisor/src/production_namespace_execution_identity.rs" \
+            | sha256sum --check --strict
       - name: Verify current canonical app sources and producer bindings
         timeout-minutes: 2
         shell: bash
@@ -2204,7 +2212,7 @@ jobs:
           capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1"
           timeout --signal=TERM --kill-after=30s 1860s bash "$capsule/prepare_ci.sh" \
             --work "$RUNNER_TEMP/current-dependencies"
-      - name: Run 1628 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
+      - name: Run 1629 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
         timeout-minutes: 92
         shell: bash
         run: |

@@ -15,6 +15,32 @@ The candidate was built from an isolated byte-identical normal source copy at `a
 
 Rust 2024 formatting and actual offline compilation passed. The single targeted parentage/PID-reuse regression passed. A complete serial `cargo test --offline -p droidloom-supervisor --lib -- --test-threads=1` on ai395 finished **624 passed, 0 failed, 26 ignored**. An earlier parallel run produced **12 failing FD/lease/lock-sensitive tests**; it is retained as a failure, not converted into a clean production acceptance. See `RESULT.json` and the retained local serial test log.
 
+## Parallel host-test comparison
+
+The exact 2,392-file #347 and R40 producer trees were compiled with Rust 1.93.0 and identical flags. Each active test ran once per invocation on CPUs 0–7, with eight workers and zero retries. The 26 ignored tests remained unexecuted in every run.
+
+| Producer | Shared-process libtest failures, two runs | Separate-process nextest failures, two runs |
+| --- | --- | --- |
+| #347, 623 active | 4, 2 | 0, 0 |
+| R40, 624 active | 0, 2 | 0, 1 |
+
+Several older tests sample the whole process descriptor count, probe a just-closed descriptor number, or expect a fixture file lock to become immediately available. Their results can depend on other tests running in the same process. The original 12 failing case names were unavailable. The second isolated R40 run preserved a separate failure in `actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected`. Its ordinary child acknowledges a worker join before checking the worker's disappearance from procfs. The new R40 lineage regression passed in all four R40 invocations.
+
+The full comparison, per-run case counts, failed names and logs are recorded at `ai395:/home/qq/work/p4-r40-parallel-comparison-20261123-r1/CLEAN-SOURCE-COMPARISON.json` (SHA-256 `b159970d1e23950447079b9635c3de8cb5a2842bb77c7b8453d307941d7a2681`). Both clean checkouts kept the published custody file. The pre-existing working directory also contained a separately formatted copy of that file.
+
+From the restored source root, an offline checkout can reuse cargo-nextest 0.9.151 and restrict Cargo's metadata query to workspace packages. The test build still uses the locked dependency graph.
+
+```sh
+(
+  set -eu
+  metadata=$(mktemp)
+  trap 'rm -f "$metadata"' EXIT
+  cargo metadata --locked --offline --no-deps --format-version 1 > "$metadata"
+  RUSTFLAGS=-Awarnings cargo nextest run --cargo-metadata "$metadata" --locked --offline \
+    -p droidloom-supervisor --lib --build-jobs 1 --test-threads 8 --retries 0 --no-fail-fast
+)
+```
+
 ## Deliberate non-qualification and follow-up
 
 This source-only gate breaks the observation ordering dependency for a real original init/zygote/system_server lineage. It **does not** observe or certify either actual InputReader or InputDispatcher thread, their `InputPolicy` scheduler/cpu/cpuset/timer-slack effects, capability or seccomp contracts, final exec, production systemd service startup or Android Ready. `ExecutionAdmission` remains uninhabited. Do **not** turn the code or a static test into production acceptance.
