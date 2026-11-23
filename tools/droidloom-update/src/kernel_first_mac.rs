@@ -5,6 +5,18 @@ use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{collections::BTreeMap, fs, path::Path};
 
+const BOARD_LOCK: &[u8] = include_bytes!(
+    "../../../android/framework/droidloom-readiness/board-policy/pocket4-board-inputs.lock.json"
+);
+
+fn fixed_digest(v: &Value) -> bool {
+    v.as_str().is_some_and(|s| {
+        s.len() == 64
+            && s.bytes()
+                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+    })
+}
+
 fn sha(b: &[u8]) -> String {
     hex::encode(Sha256::digest(b))
 }
@@ -13,15 +25,35 @@ fn validate(files: &[Vec<u8>], cohort: &str, runtime: &str) -> Result<()> {
     let contract: Value = serde_json::from_slice(&files[0])?;
     let manager: Value = serde_json::from_slice(&files[1])?;
     let derivation: Value = serde_json::from_slice(&files[4])?;
-    let lock: Value = serde_json::from_slice(include_bytes!(
-        "../../../android/framework/droidloom-readiness/board-policy/pocket4-board-inputs.lock.json"
-    ))?;
+    let lock: Value = serde_json::from_slice(BOARD_LOCK)?;
     if contract["schema"] != 5
         || contract["scope"] != "droidloom_linux_android_mac_v5"
         || contract["context_routing"] != "selinux_first_kernel_early_android_v1"
         || manager["schema"] != "droidloom-original-systemd-label-v1"
         || manager["original_server_context"] != "u:object_r:p4_linux_manager_socket_initial_t:s0"
         || derivation["scope"] != "android_kernel_first_mac_observation_v1"
+        || derivation["schema"] != 1
+        || derivation["board_lock_sha256"] != sha(BOARD_LOCK)
+        || derivation["kernel_named_create_checks"] != 7
+        || derivation["original_four_images_read"] != 4
+        || derivation["loader_role"] != "u:r:droidloom_policy_loader:s0"
+        || derivation["manager_role"] != "u:system_r:init_t:s0"
+        || derivation["android_business_qualified"] != false
+        || contract["active_lsms"] != lock["kernel"]["lsm"]
+        || contract["kernel_notes_bytes"] != derivation["kernel_notes_bytes"]
+        || contract["kernel_notes_sha256"] != derivation["kernel_notes_sha256"]
+        || !fixed_digest(&contract["kernel_notes_sha256"])
+        || !fixed_digest(&manager["manager_elf_sha256"])
+        || !fixed_digest(&manager["labeler_elf_sha256"])
+        || manager["manager_elf_bytes"]
+            .as_u64()
+            .is_none_or(|n| !(64..=64 * 1024 * 1024).contains(&n))
+        || manager["labeler_elf_bytes"]
+            .as_u64()
+            .is_none_or(|n| !(64..=64 * 1024 * 1024).contains(&n))
+        || contract["kernel_notes_bytes"]
+            .as_u64()
+            .is_none_or(|n| !(1..=1024 * 1024).contains(&n))
         || derivation["selinux"]["enforcing"] != 1
         || derivation["selinux"]["policyload"] != 1
         || derivation["selinux"]["version"] != 1
@@ -92,6 +124,7 @@ pub fn stage(
     runtime: &str,
     destination: &Path,
 ) -> Result<Value> {
+    coherent_images::ordinary_absolute(destination, false)?;
     let size = fs::symlink_metadata(capture)?.len();
     if !(1..=MAX_ENCODED).contains(&size) {
         return fail("bounded genuine kernel-first capture required");
@@ -99,8 +132,10 @@ pub fn stage(
     let raw = coherent_images::read_release_input(capture, size, capture_sha256)?;
     let release: Release = serde_json::from_slice(&raw)?;
     let files = release.files(cohort, runtime)?;
-    let provenance:Value=serde_json::from_slice(&files[4])?;
-    if provenance["boot_id"]!=release.calibration_boot_id || provenance["systemd_invocation_id"]!=release.systemd_invocation_id {
+    let provenance: Value = serde_json::from_slice(&files[4])?;
+    if provenance["boot_id"] != release.calibration_boot_id
+        || provenance["systemd_invocation_id"] != release.systemd_invocation_id
+    {
         return fail("calibration boot or systemd invocation differs from the observed provenance");
     }
     validate(&files, cohort, runtime)?;
@@ -126,11 +161,16 @@ pub fn stage(
         }
     }
     let dir = destination.join(relative);
+    coherent_images::ordinary_absolute(&dir, true)?;
     if fs::read_dir(&dir)?.count() != 5 {
         return fail("existing output contains a different board release");
     }
     for (name, data) in NAMES.iter().zip(&files) {
+        use std::os::unix::fs::PermissionsExt;
         let target = dir.join(name);
+        if fs::symlink_metadata(&target)?.permissions().mode() & 0o7777 != 0o400 {
+            return fail("existing board release file permissions changed");
+        }
         if coherent_images::read_release_input(&target, data.len() as u64, &hashes[name])? != *data
         {
             return fail("existing output differs from the captured board release");

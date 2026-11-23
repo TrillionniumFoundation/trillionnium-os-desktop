@@ -600,6 +600,21 @@ mod tests {
     }
 
     #[test]
+    fn existing_calibration_reader_never_creates_or_writes_the_setup_lock() {
+        let (root,custody)=fixture();
+        let lock=root.path().join("etc/droidloom/setup.lock");
+        assert!(FixedConfigurationLock::at(root.path(),custody,Access::InspectExisting).is_err());
+        assert!(!lock.exists());
+        drop(FixedConfigurationLock::at(root.path(),custody,Access::Exclusive).unwrap());
+        let reader=FixedConfigurationLock::at(root.path(),custody,Access::InspectExisting).unwrap();
+        assert_eq!(unsafe{libc::fcntl(reader.lock.as_fd().as_raw_fd(),libc::F_GETFL)} & libc::O_ACCMODE,libc::O_RDONLY);
+        assert!(FixedConfigurationLock::at(root.path(),custody,Access::Exclusive).is_err());
+        reader.activation_allowed().unwrap();
+        drop(reader);
+        assert!(FixedConfigurationLock::at(root.path(),custody,Access::Exclusive).is_ok());
+    }
+
+    #[test]
     fn setup_readers_exclude_a_real_package_writer_process() {
         const ROOT_ENV: &str = "DROIDLOOM_CONFIGURATION_LOCK_TEST_ROOT";
         const EXPECT_ENV: &str = "DROIDLOOM_CONFIGURATION_LOCK_TEST_EXPECT";

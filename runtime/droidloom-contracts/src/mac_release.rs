@@ -47,14 +47,29 @@ fn digest(value: &str) -> bool {
 }
 
 fn identity(boot: &str, invocation: &str) -> bool {
-    let lower_hex=|v:u8| v.is_ascii_digit() || (b'a'..=b'f').contains(&v);
-    boot.len()==36 && boot.bytes().enumerate().all(|(i,b)| if [8,13,18,23].contains(&i){b==b'-'}else{lower_hex(b)})
-        && boot.bytes().any(|b|lower_hex(b) && b!=b'0')
-        && invocation.len()==32 && invocation.bytes().all(lower_hex) && invocation.bytes().any(|b|b!=b'0')
+    let lower_hex = |v: u8| v.is_ascii_digit() || (b'a'..=b'f').contains(&v);
+    boot.len() == 36
+        && boot.bytes().enumerate().all(|(i, b)| {
+            if [8, 13, 18, 23].contains(&i) {
+                b == b'-'
+            } else {
+                lower_hex(b)
+            }
+        })
+        && boot.bytes().any(|b| lower_hex(b) && b != b'0')
+        && invocation.len() == 32
+        && invocation.bytes().all(lower_hex)
+        && invocation.bytes().any(|b| b != b'0')
 }
 
 impl Release {
-    pub fn from_files(base: &str, runtime: &str, boot: &str, invocation: &str, files: [&[u8]; 5]) -> Result<Self, &'static str> {
+    pub fn from_files(
+        base: &str,
+        runtime: &str,
+        boot: &str,
+        invocation: &str,
+        files: [&[u8]; 5],
+    ) -> Result<Self, &'static str> {
         if !digest(base) || !digest(runtime) || !identity(boot, invocation) {
             return Err("complete selected digests required");
         }
@@ -108,5 +123,45 @@ impl Release {
                 Ok(bytes)
             })
             .collect()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::{Value, json};
+
+    #[test]
+    fn five_members_are_bound_to_the_same_selection_boot_invocation_and_content() {
+        let base = "7".repeat(64);
+        let runtime = "8".repeat(64);
+        let boot = "2ed7de46-729a-4884-a01f-81340bab31a9";
+        let invocation = "a5431ab13fa242f9910987c3346de462";
+        let content = [b"a".as_slice(), b"b", b"c", b"d", b"e"];
+        let packet = Release::from_files(&base, &runtime, boot, invocation, content).unwrap();
+        assert_eq!(packet.files(&base, &runtime).unwrap(), content);
+        assert!(packet.files(&runtime, &base).is_err());
+        let encoded = serde_json::to_value(packet).unwrap();
+        for (pointer, replacement) in [
+            ("/files/2/file", json!("policy-export.bin")),
+            ("/files/4/hex", json!("aa")),
+            ("/files/4/bytes", json!(0)),
+            (
+                "/calibration_boot_id",
+                json!("00000000-0000-0000-0000-000000000000"),
+            ),
+            ("/systemd_invocation_id", json!("abc")),
+        ] {
+            let mut changed: Value = encoded.clone();
+            *changed.pointer_mut(pointer).unwrap() = replacement;
+            let package: Release = serde_json::from_value(changed).unwrap();
+            assert!(package.files(&base, &runtime).is_err(), "{pointer}");
+        }
+        let mut incomplete = encoded.clone();
+        incomplete["files"].as_array_mut().unwrap().pop();
+        assert!(serde_json::from_value::<Release>(incomplete).is_err());
+        let mut extended = encoded;
+        extended["extra"] = json!(true);
+        assert!(serde_json::from_value::<Release>(extended).is_err());
     }
 }
