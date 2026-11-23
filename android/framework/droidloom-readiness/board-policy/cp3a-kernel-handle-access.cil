@@ -1,0 +1,88 @@
+;; Original CP3A binary authorization for native PID and namespace handles.
+;; The concrete stock domain set excludes product services added during the board link.
+(typeattribute p4_cp3a_handle_objects)
+(typeattributeset p4_cp3a_handle_objects (p4_kernel_ns_handle_t p4_kernel_pid_handle_t))
+(typeattribute p4_cp3a_handle_ioctl_domains)
+(typeattributeset p4_cp3a_handle_ioctl_domains (
+  aconfigd aconfigd_mainline adbd adbd_tradeinmode adservices aflags
+  aidl_lazy_test_server aisealhostservice aisealhostservice_virtmgr_crosvm aisealhostservice_virtualizationmanager aoad apex_test_prepostinstall
+  apexd apexd_derive_classpath app_zygote art_boot art_exec artd
+  atrace audioserver auditctl automotive_display_service bert_collector blank_screen
+  blkid blkid_untrusted bluetooth bootanim bootstat boringssl_self_test
+  bpfloader bufferhubd cameraserver canhalconfigurator casefolding_remover charger
+  charger_vendor clatd compos_fd_server compos_verify compos_verify_virtmgr_crosvm compos_verify_virtualizationmanager
+  composd composd_virtmgr_crosvm composd_virtualizationmanager cppreopts crash_dump credstore
+  crosvm_vendor crosvm_vu_fs crosvm_vu_snd derive_classpath derive_sdk device_as_webcam
+  dex2oat dexopt_chroot_setup dhcp dmesgd dnsmasq drmserver
+  dumpstate e2fs early_virtmgr_vendor ephemeral_app evsmanagerd extra_free_kbytes
+  fastbootd fingerprintd flags_health_check fsck fsck_untrusted fuseblkd
+  fuseblkd_untrusted fwk_bufferhub gatekeeperd gki_apex_prepostinstall gmscore_app gpuservice
+  gsid hal_allocator_default hal_atrace_default hal_audio_default hal_audiocontrol_default hal_authgraph_default
+  hal_authsecret_default hal_bluetooth_btlinux hal_bluetooth_default hal_bluetooth_lpp_default hal_bootctl_default hal_broadcastradio_default
+  hal_camera_default hal_can_socketcan hal_cas_default hal_configstore_default hal_confirmationui_default hal_contexthub_default
+  hal_drm_clearkey_aidl hal_drm_default hal_dumpstate_default hal_evs_default hal_face_default hal_fastboot_default
+  hal_fingerprint_default hal_gatekeeper_default hal_gnss_default hal_graphics_allocator_default hal_graphics_composer_default hal_health_default
+  hal_health_storage_default hal_hwcrypto_default hal_identity_default hal_input_classifier_default hal_input_processor_default hal_ir_default
+  hal_ivn_default hal_keymaster_default hal_keymint_default hal_keymint_system hal_light_default hal_lowpan_default
+  hal_macsec_default hal_mediaquality_default hal_memtrack_default hal_motioncontext_default hal_nfc_default hal_npu_scheduling_default
+  hal_oemlock_default hal_power_default hal_power_stats_default hal_radio_config_default hal_radio_default hal_rebootescrow_default
+  hal_remoteaccess_default hal_secretkeeper_default hal_secure_element_default hal_sensors_default hal_tetheroffload_default hal_thermal_default
+  hal_threadnetwork_default hal_tv_cec_default hal_tv_hdmi_cec_default hal_tv_hdmi_connection_default hal_tv_hdmi_earc_default hal_tv_input_default
+  hal_tv_tuner_default hal_usb_default hal_usb_gadget_default hal_uwb_default hal_vehicle_default hal_vibrator_default
+  hal_vm_capabilities_default hal_vr_default hal_weaver_default hal_widevine_system hal_wifi_default hal_wifi_hostapd_default
+  hal_wifi_supplicant_default healthd heapprofd hidl_lazy_test_server hidservice hwservicemanager
+  idmap incident incident_helper incidentd init init_dev_config
+  inputflinger installd isolated_app isolated_compute_app iw kcmdlinectrl
+  kcmdlinemodprobe kernel keystore linkerconfig linux_vm_setup llkd
+  lmkd logd logpersist lpdumpd mdnsd mediacodec
+  mediacodeclist_generator mediadrmserver mediaextractor mediametrics mediaprovider mediaprovider_app
+  mediaserver mediaswcodec mediatranscoding mediatuner migrate_legacy_obb_data misctrl
+  mm_events mmd mmd_setup modprobe mtectrl mtp
+  native_app_zygote native_webview_zygote netd netutils_wrapper network_stack nfc
+  odrefresh odsign omapi ot_ctl ot_daemon ot_rcp
+  overlay_remounter pcc_component perfetto performanced permissioncontroller_app platform_app
+  platform_app_36 platform_app_all_virtmgr_crosvm platform_app_all_virtualizationmanager pmgd postinstall ppp
+  prefetch preloads_copy preopt2cachename priv_app priv_app_36 priv_app_all_virtmgr_crosvm
+  priv_app_all_virtualizationmanager prng_seeder profcollectd profman radio recovery
+  recovery_persist recovery_refresh remount rild rkp_cert_processor rkpd
+  rkpdapp rs rss_hwm_reset runas runas_app sdcardd
+  sdk_sandbox_34 sdk_sandbox_audit sdk_sandbox_next secure_element serialservice servicemanager
+  sgdisk shared_relro shell shell_virtmgr_crosvm shell_virtualizationmanager simpleperf
+  simpleperf_app_runner simpleperf_boot slideshow snapshotctl snapuserd stats
+  statsd storaged su surfaceflinger system_app system_server
+  system_server_startup system_suspend tee tombstoned toolbox trace_redactor
+  traced traced_perf traced_probes traceur_app tradeinmode ueventd
+  uncrypt untrusted_app untrusted_app_25 untrusted_app_27 untrusted_app_29 untrusted_app_30
+  untrusted_app_32 untrusted_app_34 untrusted_app_all_virtmgr_crosvm untrusted_app_all_virtualizationmanager update_engine update_verifier
+  uprobestats usbauthservice usbd userdata_alias_remove vdc vehicle_binding_util
+  vendor_boringssl_self_test vendor_init vendor_install_recovery vendor_misc_writer vendor_modprobe vendor_rootdev
+  vendor_shell vfio_handler virtual_camera virtual_face virtual_fingerprint virtual_touchpad
+  virtualizationmanager_vendor virtualizationservice virtualizationservice_virtmgr_crosvm virtualizationservice_virtualizationmanager vmlauncher_app vmnic
+  vndservicemanager vold vold_prepare_subdirs vzwomatrigger_app wait_for_keymaster watchdogd
+  webview_zygote wifi_mainline_supplicant wificond wpa_supplicant_macsec zygote zygote_next
+))
+
+(allow vendor_init p4_cp3a_handle_objects (dir (getattr relabelfrom relabelto)))
+(allow system_server p4_cp3a_handle_objects (dir (ioctl read getattr lock open watch watch_reads search)))
+(allow vold p4_cp3a_handle_objects (dir (ioctl read getattr setattr lock relabelfrom open watch watch_reads search)))
+(allow init p4_cp3a_handle_objects (dir (ioctl read write create getattr setattr lock relabelfrom relabelto rename open watch watch_reads add_name remove_name reparent search rmdir)))
+(allow installd p4_cp3a_handle_objects (dir (ioctl read write getattr lock relabelfrom open watch watch_reads add_name remove_name search rmdir)))
+(allow derive_classpath p4_cp3a_handle_objects (dir (search)))
+(allow kernel p4_cp3a_handle_objects (dir (search)))
+(allow vold_prepare_subdirs p4_cp3a_handle_objects (dir (search)))
+(allow vendor_init p4_cp3a_handle_objects (file (getattr relabelfrom relabelto)))
+(allow system_server p4_cp3a_handle_objects (file (ioctl read getattr lock map open watch watch_reads)))
+(allow vold p4_cp3a_handle_objects (file (ioctl read getattr setattr lock relabelfrom map open watch watch_reads)))
+(allow installd p4_cp3a_handle_objects (file (ioctl read getattr setattr lock relabelfrom map unlink rename open watch watch_reads)))
+(allow init p4_cp3a_handle_objects (file (ioctl read write create getattr setattr lock relabelfrom relabelto append map unlink rename open watch watch_reads)))
+(allow dex2oat p4_cp3a_handle_objects (file (read map)))
+(allow init p4_cp3a_handle_objects (filesystem (mount remount unmount getattr relabelfrom associate quotamod quotaget watch)))
+(allow vendor_init p4_cp3a_handle_objects (lnk_file (getattr relabelfrom relabelto)))
+(allow installd p4_cp3a_handle_objects (lnk_file (getattr setattr relabelfrom unlink rename)))
+(allow init p4_cp3a_handle_objects (lnk_file (ioctl read write create getattr setattr lock relabelfrom relabelto append map unlink rename open watch watch_reads)))
+(allowx p4_cp3a_handle_ioctl_domains p4_cp3a_handle_objects (ioctl dir (((range 0x5450 0x5451)))))
+(allowx vold p4_cp3a_handle_objects (ioctl dir ((0x5879))))
+(allowx init p4_cp3a_handle_objects (ioctl dir ((0x6613 0x6615))))
+(allowx p4_cp3a_handle_ioctl_domains p4_cp3a_handle_objects (ioctl file (((range 0xf501 0xf502) 0xf505 (range 0xf50c 0xf50e)))))
+(allowx p4_cp3a_handle_ioctl_domains p4_cp3a_handle_objects (ioctl file ((0x5401 (range 0x5450 0x5451)))))
+(allowx p4_cp3a_handle_ioctl_domains p4_cp3a_handle_objects (ioctl lnk_file (((range 0x5450 0x5451)))))
