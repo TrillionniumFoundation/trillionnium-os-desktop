@@ -200,7 +200,14 @@ fn compose_selected_library(system: &File, vendor: &File, ext: &File) -> Result<
         mount_id(&target)? == mount_id(system)?,
         "original system_ext target has an intervening mount",
     )?;
-    verify_members(&target, &vendor_libs(vendor)?, ext)?;
+    // open_tree/fsmount descriptors are O_PATH. Read xattrs through the same
+    // held mount root opened as a directory, and graft with the original mount fd.
+    let readable = open_leaf(ext, c".", libc::O_RDONLY | libc::O_DIRECTORY)?;
+    let original = ext.metadata()?;
+    let opened = readable.metadata()?;
+    require(mount_id(&readable)? == mount_id(ext)? && (original.dev(), original.ino()) == (opened.dev(), opened.ino()),
+        "library readback requires the exact detached mount root")?;
+    verify_members(&target, &vendor_libs(vendor)?, &readable)?;
     let rc = unsafe {
         libc::syscall(
             libc::SYS_move_mount,
