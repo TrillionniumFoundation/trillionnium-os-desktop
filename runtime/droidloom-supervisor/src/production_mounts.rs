@@ -413,6 +413,9 @@ pub(crate) struct VerifiedCohort {
 }
 impl VerifiedCohort {
     pub(crate) fn load(witness: &OwnedNamespaceWitness<'_>) -> Result<Self> {
+        Self::from_authority(witness)
+    }
+    fn from_authority(witness: &impl early::BaseAuthority) -> Result<Self> {
         require(unsafe { libc::geteuid() } == 0, "actual root image broker")?;
         witness.revalidate_live_admission()?;
         let lease = witness.identity_lease()?;
@@ -494,7 +497,7 @@ impl VerifiedCohort {
         result.revalidate(witness)?;
         Ok(result)
     }
-    fn revalidate(&self, witness: &OwnedNamespaceWitness<'_>) -> Result<()> {
+    fn revalidate(&self, witness: &impl early::BaseAuthority) -> Result<()> {
         witness.revalidate_live_admission()?;
         let lease = witness.identity_lease()?;
         require(
@@ -545,7 +548,7 @@ fn verify_map(raw: &[u8], range: IdRange) -> Result<()> {
         "actual complete selected map",
     )
 }
-fn require_complete_namespace(witness: &OwnedNamespaceWitness<'_>) -> Result<()> {
+fn require_complete_namespace(witness: &impl early::BaseAuthority) -> Result<()> {
     witness.revalidate()?;
     let (uids, gids) = witness.identity_lease()?.broker_ranges();
     verify_map(
@@ -1143,7 +1146,7 @@ impl MountResources {
         }
         Ok(released)
     }
-    fn matches_witness(&self, witness: &OwnedNamespaceWitness<'_>) -> Result<()> {
+    fn matches_witness(&self, witness: &impl early::BaseAuthority) -> Result<()> {
         witness.revalidate()?;
         let meta = witness.user_namespace().metadata()?;
         let lease = witness.identity_lease()?;
@@ -1248,6 +1251,13 @@ impl PreparedMounts {
         witness: &OwnedNamespaceWitness<'_>,
         cohort: VerifiedCohort,
     ) -> Result<Self> {
+        Self::prepare_with_authority(witness, cohort)
+    }
+
+    fn prepare_with_authority(
+        witness: &impl early::BaseAuthority,
+        cohort: VerifiedCohort,
+    ) -> Result<Self> {
         cohort.revalidate(witness)?;
         require_complete_namespace(witness)?;
         let lease = witness.identity_lease()?;
@@ -1332,7 +1342,7 @@ impl PreparedMounts {
         self.descriptors_after_authority_validation(witness)
     }
 
-    fn validate_held_images(&self, witness: &OwnedNamespaceWitness<'_>) -> Result<()> {
+    fn validate_held_images(&self, witness: &impl early::BaseAuthority) -> Result<()> {
         require(!self.exported, "single owned descriptor transfer")?;
         let resources = self
             .resources

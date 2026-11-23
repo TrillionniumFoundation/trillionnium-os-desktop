@@ -1,5 +1,24 @@
 //! Hand the PID 1 owner one detached Android root after all four inputs are under its lease.
 use super::*;
+use crate::production_identity::IdentityLease;
+
+/// Implementations live in this broker. Each borrows a kernel-backed, generation-specific authority.
+pub(super) trait BaseAuthority {
+    fn revalidate(&self) -> Result<()>;
+    fn revalidate_live_admission(&self) -> Result<()>;
+    fn identity_lease(&self) -> Result<&IdentityLease>;
+    fn proc_directory(&self) -> &File;
+    fn user_namespace(&self) -> &File;
+}
+
+impl BaseAuthority for OwnedNamespaceWitness<'_> {
+    fn revalidate(&self) -> Result<()> { Ok(OwnedNamespaceWitness::revalidate(self)?) }
+    fn revalidate_live_admission(&self) -> Result<()> { Ok(OwnedNamespaceWitness::revalidate_live_admission(self)?) }
+    fn identity_lease(&self) -> Result<&IdentityLease> { Ok(OwnedNamespaceWitness::identity_lease(self)?) }
+    fn proc_directory(&self) -> &File { OwnedNamespaceWitness::proc_directory(self) }
+    fn user_namespace(&self) -> &File { OwnedNamespaceWitness::user_namespace(self) }
+}
+
 
 pub(super) fn attach_vendor(system: &File, vendor: &File) -> Result<()> {
     let directory = || open_leaf(system, &text_name("vendor")?, libc::O_RDONLY | libc::O_DIRECTORY);
@@ -21,8 +40,8 @@ pub(super) fn attach_vendor(system: &File, vendor: &File) -> Result<()> {
 impl PreparedMounts {
     /// Borrow the complete root once. The holder retains the reservation and all four loop owners
     /// until the ordinary retirement witness proves the physical child can no longer use them.
-    pub(crate) fn early_root_for_transfer<'a>(
-        &'a mut self, witness: &OwnedNamespaceWitness<'_>,
+    fn complete_root_for_transfer<'a>(
+        &'a mut self, witness: &impl BaseAuthority,
     ) -> Result<BorrowedFd<'a>> {
         let resources = self.resources.as_ref().ok_or(MountError::Rejected("retired early image set"))?;
         resources.cohort.revalidate(witness)?;
