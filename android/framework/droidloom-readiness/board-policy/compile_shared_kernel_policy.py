@@ -64,7 +64,7 @@ def main():
         "kernel-namespace-custody.cil", "cp3a-kernel-handle-access.cil",
         "early-readiness-inode-owner.cil", "linux-host-service-roles.cil",
         "linux-initial-calibration.cil",
-        "ubuntu-real-root-interpreter.cil",
+        "ubuntu-real-root-interpreter.cil", "ubuntu-mounted-api-metadata.cil",
     )
     components = [here / name for name in component_names]
     sources = [compiler, library, args.linux_board_cil, *args.android_cil, *components,

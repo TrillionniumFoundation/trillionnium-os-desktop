@@ -1,0 +1,9 @@
+; The real Ubuntu manager identifies kernel mounts prepared by the board.
+(allow init_t cgroup_v2 (dir (getattr)))
+(allow init_t devpts (dir (getattr)))
+(allow init_t securityfs (dir (getattr)))
+(allow init_t sysfs (filesystem (getattr)))
+; Linux TCGETS2 on the physical-numbered, Linux-private console.
+(allow init_t p4_linux_console_t (chr_file (ioctl)))
+(allowx init_t p4_linux_console_t (ioctl chr_file (0x542a)))
+(neverallowx init_t p4_linux_console_t (ioctl chr_file (not (0x542a))))
