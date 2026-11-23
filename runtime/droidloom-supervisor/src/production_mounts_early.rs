@@ -57,7 +57,7 @@ impl PreparedMounts {
     }
 }
 
-use crate::production_selection::early_generation::EarlyBaseAdmission;
+use crate::production_selection::early_generation::{EarlyBaseAdmission, EarlyBaseRetirement};
 
 impl BaseAuthority for EarlyBaseAdmission<'_> {
     fn revalidate(&self) -> Result<()> { Ok(EarlyBaseAdmission::revalidate(self)?) }
@@ -82,4 +82,9 @@ impl PreparedMounts {
         self.complete_root_for_transfer(child)
     }
 
+    pub(crate) fn retire_after_early_tree(mut self, retired: &EarlyBaseRetirement) -> Result<MountRetirement> {
+        let resources = self.resources.as_ref().ok_or(MountError::Rejected("early base has retired"))?;
+        retired.verify_mount_retirement(&resources.userns, resources.cohort.host_uid, &resources.cohort.cohort)?;
+        self.cleanup(true)
+    }
 }

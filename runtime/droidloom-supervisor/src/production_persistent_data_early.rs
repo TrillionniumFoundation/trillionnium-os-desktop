@@ -3,7 +3,7 @@ use super::*;
 use crate::production_cgroup::PreparedCgroup;
 use crate::production_execution::RuntimeMacOwner;
 use crate::production_mac::MacSystemdWitness;
-use crate::production_selection::early_generation::EarlyBaseAdmission;
+use crate::production_selection::early_generation::{EarlyBaseAdmission, EarlyBaseRetirement};
 
 pub(crate) struct EarlyStorageAdmission<'a, 'generation> {
     child: &'a EarlyBaseAdmission<'generation>,
@@ -66,4 +66,9 @@ impl PreparedPersistentData {
         admission.verify()
     }
 
+    pub(crate) fn retire_after_early_tree(mut self, retired: &EarlyBaseRetirement) -> Result<PersistentDataRetirement> {
+        let resources = self.resources.as_ref().ok_or(MountError::Rejected("early persistent data has retired"))?;
+        retired.verify_mount_retirement(&resources.userns, resources.host_uid, &resources.cohort)?;
+        self.cleanup(true)
+    }
 }

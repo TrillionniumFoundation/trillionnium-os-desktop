@@ -1,7 +1,7 @@
 //! Both creation routes retain their original generation and the exact mapped user namespace.
 use super::*;
 use crate::production_identity::IdentityLease;
-use crate::production_selection::early_generation::EarlyBaseAdmission;
+use crate::production_selection::early_generation::{EarlyBaseAdmission, EarlyBaseRetirement};
 
 pub(super) trait DeviceTree {
     fn revalidate(&self) -> Result<()>;
@@ -42,5 +42,11 @@ impl PreparedDevices {
         require_initial_broker()?;
         child.revalidate()?;
         self.descriptor_after_admission(child)
+    }
+
+    pub(crate) fn retire_after_early_tree(mut self, retired: &EarlyBaseRetirement) -> Result<DeviceRetirement> {
+        let r = self.resources.as_ref().ok_or(DeviceError::Rejected("early private device owner was retired"))?;
+        retired.verify_mount_retirement(&r.userns, r.host_uid, &r.cohort)?;
+        self.cleanup(true)
     }
 }
