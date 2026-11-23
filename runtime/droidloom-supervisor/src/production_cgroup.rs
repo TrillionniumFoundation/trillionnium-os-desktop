@@ -25,6 +25,9 @@ use crate::production_execution::RuntimeMacOwner;
 use crate::production_host_admission::HostAdmission;
 use crate::production_namespace::{CgroupTreeReadyWitness, OwnedAuthorityRetired};
 
+#[path = "production_early_cgroup.rs"]
+mod early;
+
 #[path = "production_application_cgroup.rs"]
 mod application;
 pub(crate) use application::ApplicationLeaf;
@@ -144,6 +147,7 @@ enum Placement {
 }
 
 struct UnitAuthority {
+    context: RuntimeMacOwner,
     directories: Vec<File>,
     identities: Vec<NodeIdentity>,
     file: File,
@@ -192,7 +196,8 @@ impl UnitAuthority {
             identities,
             file,
             seal,
-            effective: unit_lifetime::EffectiveUnit::open(unit, context)?,
+            effective: unit_lifetime::EffectiveUnit::open(unit, context.clone())?,
+            context,
         };
         value.check(unit)?;
         Ok(value)
@@ -275,6 +280,7 @@ impl Drop for CreationGuard {
 }
 
 struct Resources {
+    early: RefCell<Option<early::EarlyPlacement>>,
     admission: HostAdmission,
     root: File,
     slice: Directory,
@@ -388,6 +394,7 @@ impl PreparedCgroup {
         let p = *pending.resources.take().unwrap();
         let mut value = Self {
             resources: Some(Box::new(Resources {
+                early: RefCell::new(None),
                 admission: p.admission,
                 root: p.root,
                 slice: p.slice,
