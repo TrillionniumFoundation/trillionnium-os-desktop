@@ -26,7 +26,8 @@ static const char *const names[] = {
 };
 struct role {
     char directory[128], digest[68];
-    uint64_t inode[4];
+    uint64_t inode[4], raw_inode[2];
+    char birth[32], raw_digest[68];
 };
 struct epoch {
     char boot[40], revision[32];
@@ -71,7 +72,58 @@ static int identity(int fd, uint64_t *mnt, uint64_t *ino)
     return 0;
 }
 
-static int read_role(int parent, const char *base, size_t index, struct epoch *epoch)
+static int capture_raw_profile(int dir, struct role *role, uint64_t mount,
+                               const struct droidloom_raw_profile *input)
+{
+    char link[160];
+    ssize_t length = readlinkat(dir,"raw_data",link,sizeof(link)-1);
+    if (length <= 0 || (size_t)length >= sizeof(link)-1) return reject(EBADMSG);
+    link[length] = 0;
+    const char prefix[] = "../../raw_data/";
+    if (strncmp(link,prefix,sizeof(prefix)-1)) return reject(EBADMSG);
+    char *generation = link + sizeof(prefix)-1;
+    char *end = strchr(generation,'/');
+    if (!end || strcmp(end,"/raw_data")) return reject(EBADMSG);
+    *end = 0;
+    if (!*generation || generation[strspn(generation,"0123456789")] ||
+        strlen(generation) >= sizeof(role->birth)) return reject(EBADMSG);
+    strcpy(role->birth,generation);
+    const char *const fields[] = {"raw_data","raw_sha256"};
+    for (size_t i = 0; i < 2; i++) {
+        // Both symlinks are generated from the current kernel profile proxy.
+        int fd = openat(dir,fields[i],O_RDONLY | O_CLOEXEC);
+        if (fd < 0) return -1;
+        uint64_t actual;
+        int error = 0;
+        if (identity(fd,&actual,&role->raw_inode[i]) < 0) error = errno;
+        else if (actual != mount) error = EXDEV;
+        if (!error && i == 0) {
+            unsigned char page[4096];
+            size_t offset = 0;
+            for (;;) {
+                ssize_t n = read(fd,page,sizeof(page));
+                if (n < 0 && errno == EINTR) continue;
+                if (n < 0) { error = errno; break; }
+                if (n == 0) { if (offset != input->size) error = EBADMSG; break; }
+                if ((size_t)n > input->size - offset ||
+                    memcmp(page,input->data+offset,(size_t)n)) { error = EBADMSG; break; }
+                offset += (size_t)n;
+            }
+        } else if (!error) {
+            ssize_t n = read(fd,role->raw_digest,sizeof(role->raw_digest)-1);
+            if (n < 0) error = errno;
+            else if (n != 65 || role->raw_digest[64] != '\n' ||
+                     strspn(role->raw_digest,"0123456789abcdef") != 64) error = EBADMSG;
+            else role->raw_digest[64] = 0;
+        }
+        close(fd);
+        if (error) return reject(error);
+    }
+    return 0;
+}
+
+static int read_role(int parent, const char *base, size_t index, struct epoch *epoch,
+                     const struct droidloom_raw_profile *input)
 {
     struct role *role = &epoch->roles[index];
     size_t size = strlen(base);
@@ -98,11 +150,12 @@ static int read_role(int parent, const char *base, size_t index, struct epoch *e
         error = errno;
     if (!error && (strcmp(name,names[index]) || strcmp(mode,"enforce") || strlen(role->digest) != 64 ||
                    strspn(role->digest, "0123456789abcdef") != 64)) error = EBADMSG;
+    if (!error && capture_raw_profile(dir,role,epoch->mount,input) < 0) error = errno;
     close(dir);
     return error ? reject(error) : 0;
 }
 
-static int capture(struct epoch *epoch)
+static int capture(struct epoch *epoch, const struct droidloom_raw_profile inputs[3])
 {
     if (kernel_line(AT_FDCWD, "/proc/sys/kernel/random/boot_id", PROC_SUPER_MAGIC,
                     epoch->boot, sizeof(epoch->boot)) < 0 ||
@@ -139,7 +192,7 @@ static int capture(struct epoch *epoch)
             if (strncmp(entry->d_name, names[i], n) || entry->d_name[n] != '.') continue;
             const char *suffix = entry->d_name + n + 1;
             if (!*suffix || suffix[strspn(suffix, "0123456789")]) { error = EBADMSG; break; }
-            if (read_role(profiles, entry->d_name, i, epoch) < 0) { error = errno; break; }
+            if (read_role(profiles, entry->d_name, i, epoch, &inputs[i]) < 0) { error = errno; break; }
         }
     } while (!error);
     closedir(entries);
@@ -201,20 +254,23 @@ static int label_epoch_directory(int fd)
             !memcmp(context,desired,n)) ? 0 : reject(ESTALE);
 }
 
-int droidloom_capture_apparmor_epoch(struct droidloom_apparmor_measurement *saved)
+int droidloom_capture_apparmor_epoch(struct droidloom_apparmor_measurement *saved,
+                                    const struct droidloom_raw_profile inputs[3])
 {
     struct epoch epoch = {0};
-    if (capture(&epoch) < 0) return -1;
+    if (capture(&epoch,inputs) < 0) return -1;
     FILE *text = fmemopen(saved->bytes, sizeof(saved->bytes), "w");
     if (!text) return -1;
     int error = 0;
-    if (fprintf(text, "DLAAREV1\n%s %s %" PRIu64 " %" PRIu64 " %" PRIu64 "\n",
+    if (fprintf(text, "DLAAREV2\n%s %s %" PRIu64 " %" PRIu64 " %" PRIu64 "\n",
                 epoch.boot, epoch.revision, epoch.mount, epoch.ns, epoch.profiles) < 0)
         error = errno;
     for (size_t i = 0; !error && i < 3; i++) {
         struct role *r = &epoch.roles[i];
-        if (fprintf(text, "%s %s %" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64 "\n",
-                    r->directory,r->digest,r->inode[0],r->inode[1],r->inode[2],r->inode[3]) < 0)
+        if (fprintf(text, "%s %s %" PRIu64 " %" PRIu64 " %" PRIu64 " %" PRIu64
+                    " %s %s %" PRIu64 " %" PRIu64 "\n",
+                    r->directory,r->digest,r->inode[0],r->inode[1],r->inode[2],r->inode[3],
+                    r->birth,r->raw_digest,r->raw_inode[0],r->raw_inode[1]) < 0)
             error = errno;
     }
     if (fflush(text) < 0 && !error) error = errno;

@@ -14,7 +14,14 @@ const CONTEXT: &str = "u:object_r:p4_linux_apparmor_epoch_t:s0";
 struct Role {
     directory: CString,
     inode: [u64; 4],
+    raw: Option<RawProfile>,
 }
+struct RawProfile {
+    generation: CString,
+    bytes_inode: u64,
+    hash_inode: u64,
+}
+
 pub(super) struct BoardEpoch {
     seal: Sealed,
     pub(super) boot: String,
@@ -80,14 +87,19 @@ fn packet_file(file: &File) -> Result<()> {
 }
 
 // AppArmor's kernel-internal filesystem is outside the process mount namespace.
-// Only the kernel magic link is followed. Child names have no slashes and come
+// Only fixed links produced by the kernel are followed. Child names have no slashes and come
 // from the fixed schema. No file data is read from any disconnected object.
-fn aa_handle(parent: &File, name: &CStr, directory: bool, namespace_link: bool) -> Result<File> {
+fn aa_handle(
+    parent: &File,
+    name: &CStr,
+    directory: bool,
+    follow_kernel_link: bool,
+) -> Result<File> {
     let mut flags = libc::O_PATH | libc::O_CLOEXEC;
     if directory {
         flags |= libc::O_DIRECTORY;
     }
-    if !namespace_link {
+    if !follow_kernel_link {
         flags |= libc::O_NOFOLLOW;
     }
     let fd = unsafe { libc::openat(parent.as_raw_fd(), name.as_ptr(), flags) };
@@ -143,15 +155,50 @@ impl BoardEpoch {
             "complete Linux boot measurement",
         )?;
         let mut lines = body.split_terminator('\n');
-        require(
-            lines.next() == Some("DLAAREV1"),
-            "supported boot measurement version",
-        )?;
+        let raw_objects = match lines.next() {
+            Some("DLAAREV1") => false,
+            Some("DLAAREV2") => true,
+            _ => return Err(MacError::Rejected("unsupported boot measurement version")),
+        };
+        let board_lock: serde_json::Value = serde_json::from_slice(include_bytes!(
+            "../../../android/framework/droidloom-readiness/board-policy/pocket4-board-inputs.lock.json"
+        ))?;
         let [boot, revision, mount, root, profiles] = row(lines.next())?;
         require(valid_boot(boot), "valid original Linux boot identity")?;
         let mut roles = Vec::with_capacity(3);
         for (name, expected) in ROLES.iter().zip(hashes) {
-            let [directory, hash, dir, key, mode, sum] = row(lines.next())?;
+            let text = lines.next();
+            let ([directory, hash, dir, key, mode, sum], raw) = if raw_objects {
+                let [
+                    directory,
+                    hash,
+                    dir,
+                    key,
+                    mode,
+                    sum,
+                    birth,
+                    compiled,
+                    raw_bytes,
+                    raw_hash,
+                ] = row(text)?;
+                let expected_raw = &board_lock["files"]["ubuntu-apparmor.profiles"]["board_profiles"]
+                    [*name]["compiled_sha256"];
+                require(
+                    digest(compiled)
+                        && expected_raw.as_str() == Some(compiled)
+                        && number(birth)? <= number(revision)?,
+                    "selected original kernel-exported profile bytes",
+                )?;
+                let value = RawProfile {
+                    generation: CString::new(birth)
+                        .map_err(|_| MacError::Rejected("invalid raw policy generation"))?,
+                    bytes_inode: number(raw_bytes)?,
+                    hash_inode: number(raw_hash)?,
+                };
+                ([directory, hash, dir, key, mode, sum], Some(value))
+            } else {
+                (row(text)?, None)
+            };
             let suffix = directory
                 .strip_prefix(name)
                 .and_then(|x| x.strip_prefix('.'))
@@ -168,6 +215,7 @@ impl BoardEpoch {
                 directory: CString::new(directory)
                     .map_err(|_| MacError::Rejected("invalid profile name"))?,
                 inode: [number(dir)?, number(key)?, number(mode)?, number(sum)?],
+                raw,
             });
         }
         let [footer, input, sequence, enforce, load] = row(lines.next())?;
@@ -180,11 +228,29 @@ impl BoardEpoch {
                 && lines.next().is_none(),
             "first joint SELinux input and enforcement",
         )?;
+        let original = i64::try_from(number(revision)?)
+            .map_err(|_| MacError::Rejected("AppArmor revision overflow"))?;
+        let security = open_absolute(
+            "/sys/kernel/security/apparmor",
+            libc::O_RDONLY | libc::O_DIRECTORY,
+        )?;
+        let current = aa_revision(&security)?;
+        // A new admission may span unrelated Ubuntu reloads only when both
+        // original raw profile objects are provably still selected. Existing
+        // authorities keep their own stable operation generation.
+        require(
+            original > 0
+                && if raw_objects {
+                    current >= original
+                } else {
+                    current == original
+                },
+            "original AppArmor revision or its complete raw object evidence is required",
+        )?;
         let entry = Self {
             seal,
             boot: boot.to_owned(),
-            revision: i64::try_from(number(revision)?)
-                .map_err(|_| MacError::Rejected("AppArmor revision overflow"))?,
+            revision: current,
             selinux_sequence: u32::try_from(number(sequence)?)
                 .map_err(|_| MacError::Rejected("SELinux sequence overflow"))?,
             policyload: 1,
@@ -245,6 +311,24 @@ impl BoardEpoch {
             )?;
             let directory = aa_handle(&profiles, &role.directory, true, false)?;
             object(&directory, self.mount, role.inode[0])?;
+            if let Some(raw) = &role.raw {
+                let store = aa_handle(&ns, c"raw_data", true, false)?;
+                let birth = aa_handle(&store, &raw.generation, true, false)?;
+                for (link, member, inode) in [
+                    (c"raw_data", c"raw_data", raw.bytes_inode),
+                    (c"raw_sha256", c"sha256", raw.hash_inode),
+                ] {
+                    // The first lookup follows the live kernel profile proxy.
+                    // The second completes a no-symlink walk to its unique
+                    // original generation. Both must identify the same node.
+                    object(
+                        &aa_handle(&directory, link, false, true)?,
+                        self.mount,
+                        inode,
+                    )?;
+                    object(&aa_handle(&birth, member, false, false)?, self.mount, inode)?;
+                }
+            }
             for (field, ino) in [c"name", c"mode", c"sha256"]
                 .into_iter()
                 .zip(&role.inode[1..])

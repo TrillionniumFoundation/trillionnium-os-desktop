@@ -223,7 +223,8 @@ static int submit(const char *path, const unsigned char *data, size_t length)
 /* The pinned distribution archive contains 165 Ubuntu entries and three board roles. */
 #define APPARMOR_PROFILE_ENTRIES 168U
 
-static int apparmor_profiles(const struct input *pack, int activate)
+static int apparmor_profiles(const struct input *pack, int activate,
+                             struct droidloom_raw_profile selected[3])
 {
     if (pack->size < 12 || memcmp(pack->data, "DLAA0001", 8) || le32(pack->data + 8) != APPARMOR_PROFILE_ENTRIES)
         return reject(EBADMSG);
@@ -235,6 +236,9 @@ static int apparmor_profiles(const struct input *pack, int activate)
         pos += 4;
         if (!length || length > pack->size - pos)
             return reject(EBADMSG);
+        if (selected && i >= APPARMOR_PROFILE_ENTRIES - 3U) {
+            selected[i - (APPARMOR_PROFILE_ENTRIES - 3U)] = (struct droidloom_raw_profile){pack->data + pos,length};
+        }
         if (activate && submit(AA_DIR "/.load", pack->data + pos, length) < 0)
             return -1;
         pos += length;
@@ -244,16 +248,17 @@ static int apparmor_profiles(const struct input *pack, int activate)
 
 int droidloom_board_activate_policy(gid_t observer_gid)
 {
-    struct input policy = {885180, "72fa254db667e02b38bdbad11f4b50d89a5c96bafe24d48c7eac771186623b6e", POLICY_DIR "/joint.policy", NULL};
+    struct input policy = {885596, "82938a3932fa779af9450d96e9b592d20dead988cac5ce5e9b9be10eac2cfbf6", POLICY_DIR "/joint.policy", NULL};
     struct input aa = {5757064, "d8696c387207aeaac791c47dc8740ad0ff1434758b3ca05b5b16ac6c61e19954", POLICY_DIR "/ubuntu-apparmor.profiles", NULL};
     struct droidloom_apparmor_measurement observation = {0};
+    struct droidloom_raw_profile selected_profiles[3] = {0};
     int status = -1, epoch_directory = -1;
     struct droidloom_linux_run run = {.fd = -1}, shm = {.fd = -1};
     struct droidloom_readiness_paths paths = { .handoff.fd = -1, .readiness.fd = -1 };
     const char *stage = "read admitted SELinux input";
     int rc = read_admitted(&policy);
     if (rc == 0) { stage = "read admitted AppArmor input"; rc = read_admitted(&aa); }
-    if (rc == 0) { stage = "validate AppArmor framing"; rc = apparmor_profiles(&aa, 0); }
+    if (rc == 0) { stage = "validate AppArmor framing"; rc = apparmor_profiles(&aa, 0, selected_profiles); }
     if (rc == 0) { stage = "check initial Ubuntu policy state"; rc = initial_ubuntu_kernel(); }
     if (rc == 0) { stage = "prepare the original Ubuntu unified cgroup hierarchy"; rc = prepare_ubuntu_cgroup2(); }
     if (rc == 0) { stage = "prepare the original Ubuntu shared memory mount"; rc = droidloom_hold_linux_shm(&shm); }
@@ -265,10 +270,10 @@ int droidloom_board_activate_policy(gid_t observer_gid)
         epoch_directory = droidloom_prepare_epoch_directory(paths.handoff.fd);
         if (epoch_directory < 0) rc = -1;
     }
-    if (rc == 0) { stage = "load the selected Ubuntu AppArmor profiles"; rc = apparmor_profiles(&aa, 1); }
+    if (rc == 0) { stage = "load the selected Ubuntu AppArmor profiles"; rc = apparmor_profiles(&aa, 1, NULL); }
     if (rc == 0) {
         stage = "capture original AppArmor namespace and loaded profile identities";
-        rc = droidloom_capture_apparmor_epoch(&observation);
+        rc = droidloom_capture_apparmor_epoch(&observation, selected_profiles);
     }
     if (rc == 0) {
         stage = "hold the real SELinux status page before its first policy load";

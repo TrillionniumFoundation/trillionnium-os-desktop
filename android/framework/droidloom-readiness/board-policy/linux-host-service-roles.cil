@@ -134,6 +134,7 @@
 (genfscon sysfs "/module/apparmor/parameters/enabled" (u object_r p4_linux_apparmor_state_t ((s0) (s0))))
 (allow p4_linux_mac_roles p4_linux_apparmor_handle_t (filesystem (getattr)))
 (allow p4_linux_mac_roles p4_linux_apparmor_handle_t (dir (getattr search)))
+(allow p4_linux_mac_roles p4_linux_apparmor_handle_t (lnk_file (read)))
 (allow p4_linux_mac_roles p4_linux_apparmor_state_t (dir (getattr search open read)))
 (allow p4_linux_mac_roles p4_linux_apparmor_state_t (lnk_file (getattr read)))
 (allow p4_linux_mac_roles p4_linux_apparmor_state_t (file (getattr open read)))

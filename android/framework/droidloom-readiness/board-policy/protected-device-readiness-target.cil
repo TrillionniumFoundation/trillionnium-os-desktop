@@ -1,0 +1,29 @@
+; The early board owns the empty original tmpfs root. The Linux resource service
+; creates only the two named mountpoint directories there.
+(type p4_linux_private_dev_root_t)
+(type p4_linux_private_socket_parent_t)
+(type p4_linux_readiness_mount_t)
+(roletype object_r p4_linux_private_dev_root_t)
+(roletype object_r p4_linux_private_socket_parent_t)
+(roletype object_r p4_linux_readiness_mount_t)
+(typeattributeset p4_linux_data (p4_linux_private_dev_root_t p4_linux_private_socket_parent_t p4_linux_readiness_mount_t))
+
+(allow kernel p4_linux_private_dev_root_t (dir (getattr relabelto)))
+(allow p4_linux_private_dev_root_t tmpfs (filesystem (associate)))
+(allow p4_linux_private_socket_parent_t tmpfs (filesystem (associate)))
+(allow p4_linux_readiness_mount_t tmpfs (filesystem (associate)))
+
+(typetransition droidloom_broker p4_linux_private_dev_root_t dir "socket" p4_linux_private_socket_parent_t)
+(typetransition droidloom_broker p4_linux_private_socket_parent_t dir "droidloom" p4_linux_readiness_mount_t)
+(allow droidloom_broker p4_linux_run_t (dir (getattr search)))
+(allow droidloom_broker p4_linux_early_handoff_dir_t (dir (getattr search)))
+(allow droidloom_broker p4_linux_readiness_dir_t (dir (open getattr read search)))
+(allow droidloom_broker p4_linux_private_dev_root_t (dir (open getattr read search write add_name)))
+(allow droidloom_broker p4_linux_private_socket_parent_t (dir (create open getattr read search setattr write add_name)))
+(allow droidloom_broker p4_linux_readiness_mount_t (dir (create open getattr read search setattr mounton)))
+
+(neverallow droidloom_broker tmpfs (dir (mounton relabelfrom relabelto)))
+(neverallow droidloom_broker p4_linux_readiness_dir_t (dir (write add_name remove_name mounton relabelto relabelfrom)))
+(neverallow droidloom_broker p4_linux_readiness_mount_t (dir (relabelfrom relabelto)))
+(neverallow droidloom_container_entry_t p4_linux_readiness_mount_t (dir (mounton relabelfrom relabelto)))
+(neverallow droidloom_readiness p4_linux_readiness_mount_t (dir (read open write add_name remove_name mounton relabelto relabelfrom)))

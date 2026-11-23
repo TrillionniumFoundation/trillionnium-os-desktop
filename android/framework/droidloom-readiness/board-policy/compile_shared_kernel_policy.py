@@ -63,7 +63,7 @@ def main():
         "readiness-observer-android.cil", "readiness-host-challenge-interface.cil",
         "kernel-namespace-custody.cil", "cp3a-kernel-handle-access.cil",
         "early-readiness-inode-owner.cil", "linux-host-service-roles.cil",
-        "linux-initial-calibration.cil",
+        "linux-initial-calibration.cil", "protected-device-readiness-target.cil",
         "ubuntu-real-root-interpreter.cil", "ubuntu-mounted-api-metadata.cil",
     )
     components = [here / name for name in component_names]
