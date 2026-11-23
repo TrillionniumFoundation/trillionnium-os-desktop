@@ -59,6 +59,16 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             println!("Service ELF structure verified; publication and runtime policy are separate checks");
             return Ok(());
         }
+        if action.as_deref() == Some(std::ffi::OsStr::new("--complete-early-boot")) {
+            if arguments.next().is_some() {
+                return Err("the selected early resource owner accepts no parameters".into());
+            }
+            if !droidloom_supervisor::control::SharedKernelLauncher::early_service_selected()? {
+                return Err("kernel-first Android is not the selected system service".into());
+            }
+            droidloom_supervisor::control::complete_early_resources()?;
+            return Ok(());
+        }
         if action.as_deref() == Some(std::ffi::OsStr::new("--manage-container")) {
             if arguments.next().is_some() { return Err("container management accepts no arguments".into()); }
             install_signal_handlers()?;
@@ -155,8 +165,19 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     // Preserve the actual production unit's CPU placement. Its owned cgroup
     // admission checks the inherited affinity; the old Background role would
     // overwrite the separately reviewed CPUs 2-23 policy.
-    install_signal_handlers()?;
     let cli = Cli::parse();
+    #[cfg(target_os = "linux")]
+    if droidloom_supervisor::control::SharedKernelLauncher::early_service_selected()? {
+        if cli.socket != std::path::Path::new(DEFAULT_CONTROL_SOCKET)
+            || cli.supervisor != std::path::Path::new(DEFAULT_SUPERVISOR)
+            || cli.spec_directory != std::path::Path::new(DEFAULT_SPEC_DIRECTORY)
+        {
+            return Err("the kernel-first system service requires its installed paths".into());
+        }
+        droidloom_supervisor::control::complete_early_resources()?;
+        return Ok(());
+    }
+    install_signal_handlers()?;
     let config = DaemonConfig {
         socket: cli.socket,
         supervisor: cli.supervisor,

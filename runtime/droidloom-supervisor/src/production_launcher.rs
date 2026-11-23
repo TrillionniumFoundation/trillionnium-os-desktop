@@ -103,6 +103,30 @@ impl SharedKernelLauncher {
         }))
     }
 
+    /// Route the normal system service only after checking both installed selectors.
+    /// The selected resource owner subsequently holds its full private configuration lock.
+    pub fn early_service_selected() -> io::Result<bool> {
+        let public = Self::read()?;
+        let private = match SealedFile::read(Path::new(SELECTION), SELECTION_LIMIT) {
+            Ok(value) => Some(value),
+            Err(SelectionError::Io(error)) if error.kind() == io::ErrorKind::NotFound => None,
+            Err(error) => return Err(io::Error::other(error)),
+        };
+        let record = private.as_ref().map(|(_, bytes)| -> Result<Record> {
+            let row = serde_json::from_slice(bytes)?;
+            validate_record(&row)?;
+            Ok(row)
+        }).transpose().map_err(io::Error::other)?;
+        let selection = record.as_ref().zip(private.as_ref()).map(|(row, (file, _))| {
+            (row.schema.as_str(), file.sha256.as_str(), file.node.mode & 0o7777)
+        });
+        let publication = public.as_ref().map(|p| (p.early, p.selected_digest.as_str()));
+        let early = service_route(selection, publication).map_err(io::Error::other)?;
+        if let Some((file, _)) = private { file.revalidate().map_err(io::Error::other)?; }
+        if let Some(file) = public { file.revalidate()?; }
+        Ok(early)
+    }
+
     /// True when Android PID 1 was created during the host kernel boot.
     pub fn early_kernel_boot(&self)->bool {self.early}
     pub(super) fn matches_private_early(&self,digest:&str)->bool {self.early && self.selected_digest==digest}
@@ -155,6 +179,15 @@ impl PublishedServiceProgram {
     /// Returns an error if the package program changed.
     pub fn revalidate(&self) -> io::Result<()> {
         self.0.revalidate().map_err(io::Error::other)
+    }
+}
+
+fn service_route(private: Option<(&str, &str, u32)>, public: Option<(bool, &str)>) -> Result<bool> {
+    match (private, public) {
+        (Some((EARLY_SCHEMA, private, 0o400)), Some((true, public))) if private == public => Ok(true),
+        (Some((SHARED_SCHEMA, private, _)), Some((false, public))) if private == public => Ok(false),
+        (Some((SCHEMA | PERSISTENT_SCHEMA, _, _)) | None, None) => Ok(false),
+        _ => Err(SelectionError::Rejected("system service launch selectors are incomplete or belong to different releases")),
     }
 }
 
@@ -315,6 +348,24 @@ impl PreparedContainerSelection {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn production_service_preserves_legacy_and_requires_a_matching_kernel_first_pair() {
+        use super::*;
+        let selected = "same";
+        assert!(!service_route(None, None).unwrap());
+        for old in [SCHEMA, PERSISTENT_SCHEMA] {
+            assert!(!service_route(Some((old, selected, 0o400)), None).unwrap());
+        }
+        assert!(!service_route(Some((SHARED_SCHEMA, selected, 0o400)), Some((false, selected))).unwrap());
+        let v4 = Some((EARLY_SCHEMA, selected, 0o400));
+        assert!(service_route(v4, Some((true, selected))).unwrap());
+        for invalid in [None, Some((true, "other")), Some((false, selected))] {
+            assert!(service_route(v4, invalid).is_err());
+        }
+        for invalid in [None, Some((EARLY_SCHEMA, selected, 0o644)), Some((SCHEMA, selected, 0o400))] {
+            assert!(service_route(invalid, Some((true, selected))).is_err());
+        }
+    }
     use super::*;
 
     #[test]
