@@ -46,3 +46,13 @@
              .map_err(|error| ExecutionError::KernelState(error.to_string()))
      }
  }
+@@ -416,6 +427,9 @@
+         init.revalidate_linkerconfig_completion()
+             .map_err(|error| ExecutionError::Activation(error.to_string()))?;
+         before(observed.preparation_deadline)?;
++        init.observe_pre_ready_input_threads(observed.preparation_deadline)
++            .map_err(|error| ExecutionError::KernelState(error.to_string()))?;
++        before(observed.preparation_deadline)?;
+         Err(ExecutionError::Unqualified)
+     }
+ 

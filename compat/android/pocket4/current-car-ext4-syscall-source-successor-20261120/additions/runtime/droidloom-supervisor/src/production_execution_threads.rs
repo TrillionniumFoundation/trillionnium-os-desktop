@@ -602,8 +602,10 @@ mod tests {
                     let (exit, receive) = mpsc::channel();
                     let (ready, started) = mpsc::channel();
                     let thread = std::thread::spawn(move || {
+                        let tid = unsafe { libc::gettid() };
                         ready.send(()).unwrap();
                         let _ = receive.recv();
+                        tid
                     });
                     started.recv().unwrap();
                     workers.push((exit, thread));
@@ -611,7 +613,21 @@ mod tests {
                 "remove" => {
                     let (exit, thread) = workers.pop().unwrap();
                     exit.send(()).unwrap();
-                    thread.join().unwrap();
+                    let tid = thread.join().unwrap();
+                    // The parent asserts against procfs membership. Wait for that
+                    // observable transition before acknowledging this command.
+                    let task = format!("/proc/self/task/{tid}");
+                    let end = deadline();
+                    loop {
+                        match std::fs::metadata(&task) {
+                            Err(error) if error.kind() == io::ErrorKind::NotFound => break,
+                            Ok(_) => {
+                                before(end).unwrap();
+                                std::thread::yield_now();
+                            }
+                            Err(error) => panic!("reading the joined worker task: {error}"),
+                        }
+                    }
                 }
                 "quit" => break,
                 _ => panic!("unexpected ordinary thread command"),

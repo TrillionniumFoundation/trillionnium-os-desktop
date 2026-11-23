@@ -8,7 +8,7 @@ import hashlib
 import json
 from pathlib import PurePosixPath
 
-CONFIG_SHA256 = '9468dbc3d46dde2deabe4f88853e56aac7b42093b6fce0d53b5d352f7042ace7'
+CONFIG_SHA256 = '21682d16c530dd80e83a3dd1733990fc856ef1282a920edfbf6bad6972d8aaa2'
 PREFIX = 'compat/android/pocket4/'
 PACKET = PREFIX + 'current-publisher-delivery-source/'
 CLOSURE = PREFIX + 'current-app-input-closure/'
