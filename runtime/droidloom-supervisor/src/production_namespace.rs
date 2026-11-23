@@ -1264,11 +1264,17 @@ fn require_ids(status: &[u8], field: &str, expected: u32) -> Result<()> {
     Ok(())
 }
 
-pub(crate) fn verify_container_peer_maps(proc_dir:&File,uids:IdRange,gids:IdRange)->Result<()> {
-    verify_map(&read_proc(proc_dir,"uid_map")?,uids)?;
-    verify_map(&read_proc(proc_dir,"gid_map")?,gids)?;
-    if read_proc(proc_dir,"setgroups")?!=b"allow\n" {
-        return Err(NamespaceError::Rejected("the live Android generation must retain setgroups"));
+pub(crate) fn verify_container_peer_maps(
+    proc_dir: &File,
+    uids: IdRange,
+    gids: IdRange,
+) -> Result<()> {
+    verify_map(&read_proc(proc_dir, "uid_map")?, uids)?;
+    verify_map(&read_proc(proc_dir, "gid_map")?, gids)?;
+    if read_proc(proc_dir, "setgroups")? != b"allow\n" {
+        return Err(NamespaceError::Rejected(
+            "the live Android generation must retain setgroups",
+        ));
     }
     Ok(())
 }

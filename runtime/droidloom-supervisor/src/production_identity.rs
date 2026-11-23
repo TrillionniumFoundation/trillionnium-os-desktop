@@ -137,40 +137,72 @@ pub struct IdentityAuthoritySummary {
     authority_files: Vec<FileSeal>,
 }
 
-fn owner_has_lease(owner_proc:&File,lease_meta:&Metadata)->Result<bool>{
-        let proc_root=PathBuf::from(format!("/proc/self/fd/{}",owner_proc.as_raw_fd()));
-        let mut held=false;
-        for (index,item) in fs::read_dir(proc_root.join("fd"))?.enumerate(){
-            if index>=65536{return Err(IdentityError::Record("OCI owner descriptor count exceeds bound".into()));}
-            let entry=item?;
-            let meta=match fs::metadata(entry.path()){Ok(v)=>v,Err(e) if e.kind()==io::ErrorKind::NotFound=>continue,Err(e)=>return Err(e.into())};
-            if (meta.dev(),meta.ino())!=(lease_meta.dev(),lease_meta.ino()){continue;}
-            let mut info=String::new();
-            File::open(proc_root.join("fdinfo").join(entry.file_name()))?.take(65537).read_to_string(&mut info)?;
-            if info.len()<=65536 && info.lines().any(|l| {
-                let v=l.split_ascii_whitespace().collect::<Vec<_>>();
-                v.len()==9 && v[0]=="lock:" && v[2..5]==["FLOCK","ADVISORY","WRITE"] && v[7..]==["0","EOF"]
-            }){held=true;break;}
+fn owner_has_lease(owner_proc: &File, lease_meta: &Metadata) -> Result<bool> {
+    let proc_root = PathBuf::from(format!("/proc/self/fd/{}", owner_proc.as_raw_fd()));
+    let mut held = false;
+    for (index, item) in fs::read_dir(proc_root.join("fd"))?.enumerate() {
+        if index >= 65536 {
+            return Err(IdentityError::Record(
+                "OCI owner descriptor count exceeds bound".into(),
+            ));
         }
-        Ok(held)
+        let entry = item?;
+        let meta = match fs::metadata(entry.path()) {
+            Ok(v) => v,
+            Err(e) if e.kind() == io::ErrorKind::NotFound => continue,
+            Err(e) => return Err(e.into()),
+        };
+        if (meta.dev(), meta.ino()) != (lease_meta.dev(), lease_meta.ino()) {
+            continue;
+        }
+        let mut info = String::new();
+        File::open(proc_root.join("fdinfo").join(entry.file_name()))?
+            .take(65537)
+            .read_to_string(&mut info)?;
+        if info.len() <= 65536
+            && info.lines().any(|l| {
+                let v = l.split_ascii_whitespace().collect::<Vec<_>>();
+                if v.len() != 9
+                    || v[0] != "lock:"
+                    || v[2..5] != ["FLOCK", "ADVISORY", "WRITE"]
+                    || v[7..] != ["0", "EOF"]
+                {
+                    return false;
+                }
+                let parts = v[6].split(':').collect::<Vec<_>>();
+                parts.len() == 3
+                    && u32::from_str_radix(parts[0], 16).ok() == Some(libc::major(lease_meta.dev()))
+                    && u32::from_str_radix(parts[1], 16).ok() == Some(libc::minor(lease_meta.dev()))
+                    && parts[2].parse::<u64>().ok() == Some(lease_meta.ino())
+            })
+        {
+            held = true;
+            break;
+        }
+    }
+    Ok(held)
 }
 
 #[cfg(test)]
-mod oci_lease_tests{
+mod oci_lease_tests {
     use super::*;
     #[test]
-    fn only_the_live_flock_on_the_original_inode_counts(){
-        let lease=tempfile::tempfile().unwrap();
-        let other=tempfile::tempfile().unwrap();
-        let proc=File::open("/proc/self").unwrap();
-        assert!(!owner_has_lease(&proc,&lease.metadata().unwrap()).unwrap());
-        assert_eq!(unsafe{libc::flock(lease.as_raw_fd(),libc::LOCK_EX|libc::LOCK_NB)},0);
-        assert!(owner_has_lease(&proc,&lease.metadata().unwrap()).unwrap());
-        assert!(!owner_has_lease(&proc,&other.metadata().unwrap()).unwrap());
-        assert_eq!(unsafe{libc::flock(lease.as_raw_fd(),libc::LOCK_UN)},0);
-        assert!(!owner_has_lease(&proc,&lease.metadata().unwrap()).unwrap());
+    fn only_the_live_flock_on_the_original_inode_counts() {
+        let lease = tempfile::tempfile().unwrap();
+        let other = tempfile::tempfile().unwrap();
+        let proc = File::open("/proc/self").unwrap();
+        assert!(!owner_has_lease(&proc, &lease.metadata().unwrap()).unwrap());
+        assert_eq!(
+            unsafe { libc::flock(lease.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) },
+            0
+        );
+        assert!(owner_has_lease(&proc, &lease.metadata().unwrap()).unwrap());
+        assert!(!owner_has_lease(&proc, &other.metadata().unwrap()).unwrap());
+        assert_eq!(unsafe { libc::flock(lease.as_raw_fd(), libc::LOCK_UN) }, 0);
+        assert!(!owner_has_lease(&proc, &lease.metadata().unwrap()).unwrap());
     }
 }
+
 fn same_metadata(left: &Metadata, right: &Metadata) -> bool {
     left.dev() == right.dev()
         && left.ino() == right.ino()
@@ -566,25 +598,41 @@ impl IdentityAuthority {
 
     /// Observe the durable original binding and the OCI owner's actual held
     /// lease. This method opens the existing reservation read-only.
-    pub(crate) fn verify_oci_owner_lease(&self,spec:&CellSpec,cohort:&str,owner_proc:&File)->Result<()> {
+    pub(crate) fn verify_oci_owner_lease(
+        &self,
+        spec: &CellSpec,
+        cohort: &str,
+        owner_proc: &File,
+    ) -> Result<()> {
         self.revalidate()?;
-        let dir=trusted_directory(Path::new(REGISTRY),0,true)?;
-        let record_name=format!("u{}.json",spec.host_uid);
-        let lease_name=format!("u{}.lease",spec.host_uid);
-        let mut record_file=open_at(&dir,&record_name,libc::O_RDONLY,0)?;
-        let lease=open_at(&dir,&lease_name,libc::O_RDONLY,0)?;
-        let lease_meta=lease.metadata()?;
-        trusted_record(&lease_meta,0)?;
-        trusted_record(&record_file.metadata()?,0)?;
-        let (bytes,_)=bounded_file(&mut record_file,0,MAX_RECORD_BYTES)?;
-        let disk:Reservation=serde_json::from_slice(&bytes).map_err(|e|IdentityError::Record(e.to_string()))?;
+        let dir = trusted_directory(Path::new(REGISTRY), 0, true)?;
+        let record_name = format!("u{}.json", spec.host_uid);
+        let lease_name = format!("u{}.lease", spec.host_uid);
+        let mut record_file = open_at(&dir, &record_name, libc::O_RDONLY, 0)?;
+        let lease = open_at(&dir, &lease_name, libc::O_RDONLY, 0)?;
+        let lease_meta = lease.metadata()?;
+        trusted_record(&lease_meta, 0)?;
+        trusted_record(&record_file.metadata()?, 0)?;
+        let (bytes, _) = bounded_file(&mut record_file, 0, MAX_RECORD_BYTES)?;
+        let disk: Reservation =
+            serde_json::from_slice(&bytes).map_err(|e| IdentityError::Record(e.to_string()))?;
         disk.validate(&record_name)?;
-        let backing=HeldBackings::open(&spec.data_dir,0)?;
-        let (data,metadata)=backing.identities();
-        if disk.request!=self.request || disk.cohort_sha256!=cohort || disk.data!=data || disk.metadata!=metadata {return Err(IdentityError::BindingConflict);}
-        if !owner_has_lease(owner_proc,&lease_meta)?{return Err(IdentityError::Unauthorized("OCI system service does not hold the selected live reservation".into()));}
-        held_name_matches(&dir,&lease_name,&lease)?;
-        held_name_matches(&dir,&record_name,&record_file)?;
+        let backing = HeldBackings::open(&spec.data_dir, 0)?;
+        let (data, metadata) = backing.identities();
+        if disk.request != self.request
+            || disk.cohort_sha256 != cohort
+            || disk.data != data
+            || disk.metadata != metadata
+        {
+            return Err(IdentityError::BindingConflict);
+        }
+        if !owner_has_lease(owner_proc, &lease_meta)? {
+            return Err(IdentityError::Unauthorized(
+                "OCI system service does not hold the selected live reservation".into(),
+            ));
+        }
+        held_name_matches(&dir, &lease_name, &lease)?;
+        held_name_matches(&dir, &record_name, &record_file)?;
         backing.revalidate(0)?;
         self.revalidate()
     }

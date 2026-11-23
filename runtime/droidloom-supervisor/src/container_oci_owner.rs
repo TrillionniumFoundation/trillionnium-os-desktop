@@ -1,7 +1,7 @@
 //! The system manager owns the public socket and notification. The OCI producer
 //! owns creation and retirement of the cell; this process observes its fixed
 //! instance and accepts progress only from the bound, live kernel peer.
-use droidloom_supervisor::control::{PreparedContainerSelection, check_installed_mac_platform};
+use droidloom_supervisor::control::{PreparedContainerSelection, check_container_manager_role};
 use serde::Deserialize;
 use std::fs::{self, File};
 use std::io::{self, Read, Write};
@@ -302,7 +302,7 @@ impl Guest {
 
 pub(super) fn run(stop: &AtomicBool) -> io::Result<()> {
     let choice = PreparedContainerSelection::acquire()?;
-    check_installed_mac_platform()?;
+    check_container_manager_role()?;
     let program = choice.entry_program()?;
     let (listener, node) = bind_named(CHANNEL)?;
     let channel = Channel { listener, node };

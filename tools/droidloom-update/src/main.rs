@@ -45,6 +45,14 @@ struct Args {
 }
 #[derive(Subcommand)]
 enum Action {
+    /// Build and stage the host executables and system-manager templates for an independently selected Android image.
+    PackageContainerHostStage {
+        /// Private ordinary-user workspace in which Cargo outputs and the staged payload are kept.
+        #[arg(long)]
+        work: PathBuf,
+        #[arg(long, default_value_t=1)]
+        jobs: usize,
+    },
     /// Build a separate normal user vendor with exact official CP3A binary references.
     /// Produces no replacement official system/APEX and grants no runtime qualification.
     OfficialGsiVendorBuild {
@@ -449,6 +457,11 @@ fn execute(args: Args) -> Result<()> {
             vendor_properties,
         }) => {
             return image_policy::prune(image, destination, vendor_properties);
+        }
+        Some(Action::PackageContainerHostStage { work, jobs }) => {
+            let stage = package::stage_container_host(&repository(args.source.clone())?, work, *jobs)?;
+            println!("{}", stage.display());
+            return Ok(());
         }
         Some(Action::PackageStage {
             work,

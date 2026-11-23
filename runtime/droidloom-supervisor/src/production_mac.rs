@@ -584,6 +584,64 @@ pub fn check_installed_mac_platform() -> io::Result<()> {
     Ok(())
 }
 
+fn container_manager_role(selinux: &[u8], apparmor: &[u8]) -> bool {
+    // This is the dedicated host service role. The installed platform must
+    // actually associate its host-system SELinux user, role and domain.
+    [
+        "u:system_r:droidloom_container_entry_t:s0",
+        "system_u:system_r:droidloom_container_entry_t:s0",
+    ]
+    .iter()
+    .any(|context| context_matches(selinux, context))
+        && apparmor == AA_BROKER
+}
+
+/// Observe the host service's own typed SELinux context and its original
+/// enforcing AppArmor profile on the thread that owns the OCI generation.
+///
+/// # Errors
+/// Requires both live enforcement backends and the dedicated host role.
+pub fn check_container_manager_role() -> io::Result<()> {
+    check_installed_mac_platform()?;
+    let proc = own_proc().map_err(io::Error::other)?;
+    let selinux = self_attr::selinux_current().map_err(io::Error::other)?;
+    let apparmor = proc_attr(&proc, true).map_err(io::Error::other)?;
+    if !container_manager_role(&selinux, &apparmor) {
+        return Err(io::Error::other(
+            "the host manager lacks its dedicated SELinux service role or original enforcing AppArmor broker profile",
+        ));
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod container_manager_role_tests {
+    use super::*;
+    #[test]
+    fn the_host_role_is_distinct_from_android_and_requires_enforcement() {
+        assert!(container_manager_role(
+            b"u:system_r:droidloom_container_entry_t:s0\0",
+            AA_BROKER
+        ));
+        assert!(container_manager_role(
+            b"system_u:system_r:droidloom_container_entry_t:s0",
+            AA_BROKER
+        ));
+        for denied in [
+            &b"u:r:kernel:s0"[..],
+            &b"u:r:init:s0"[..],
+            &b"u:r:droidloom_container_entry:s0"[..],
+            &b"u:system_r:init_t:s0"[..],
+        ] {
+            assert!(!container_manager_role(denied, AA_BROKER));
+        }
+        assert!(!container_manager_role(
+            b"u:system_r:droidloom_container_entry_t:s0",
+            b"unconfined\n"
+        ));
+    }
+}
+
 fn kernel_bytes(path: &str, fs: u64, limit: usize) -> Result<Vec<u8>> {
     let file = open_absolute(path, libc::O_RDONLY)?;
     require(

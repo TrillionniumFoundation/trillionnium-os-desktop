@@ -3,7 +3,7 @@ use crate::{android, assemble, licenses, python, util::*};
 use serde_json::{Value, json};
 use std::{fs, os::unix::fs::symlink, path::Path, process::Command};
 
-pub fn stage(repo: &Path, work: &Path, destination: &Path, clean: bool, jobs: usize) -> Result<()> {
+fn validate_builder(jobs: usize) -> Result<()> {
     if unsafe { libc::geteuid() } == 0 {
         return fail("package compilation must run as an ordinary build user, without sudo");
     }
@@ -17,6 +17,38 @@ pub fn stage(repo: &Path, work: &Path, destination: &Path, clean: bool, jobs: us
     if jobs == 0 || jobs > capacity {
         return fail("package jobs must leave two logical CPUs available");
     }
+    Ok(())
+}
+
+pub fn stage_container_host(repo: &Path, work: &Path, jobs: usize) -> Result<std::path::PathBuf> {
+    validate_builder(jobs)?;
+    fs::create_dir_all(work)?;
+    let work = work.canonicalize()?;
+    let _lock = Lock::acquire(&work.join("container-host-build.lock"))?;
+    let target = std::env::var_os("CARGO_TARGET_DIR")
+        .map(std::path::PathBuf::from)
+        .filter(|p| p.is_absolute())
+        .unwrap_or_else(|| work.join("cargo"));
+    let mut build = Command::new("cargo");
+    build
+        .current_dir(repo)
+        .env("CARGO_TARGET_DIR", &target)
+        .args(["build", "--locked", "--release", "--jobs"])
+        .arg(jobs.to_string());
+    build.args(["-p", "droidloom-supervisor", "--bins"]);
+    run_build(&mut build)?;
+    run_build(&mut crate::container_entry_build::command(
+        repo, &target, jobs,
+    ))?;
+    let stage = tempfile::Builder::new()
+        .prefix("container-host-stage-")
+        .tempdir_in(&work)?;
+    production_host_payload(repo, &target.join("release"), stage.path())?;
+    Ok(stage.keep())
+}
+
+pub fn stage(repo: &Path, work: &Path, destination: &Path, clean: bool, jobs: usize) -> Result<()> {
+    validate_builder(jobs)?;
     fs::create_dir_all(work)?;
     let work = work.canonicalize()?;
     if !destination.is_absolute()
