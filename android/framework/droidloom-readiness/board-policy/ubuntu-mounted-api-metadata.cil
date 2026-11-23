@@ -25,3 +25,5 @@
 (typeattributeset p4_linux_data (p4_linux_systemd_config_t))
 (allow init_t p4_linux_systemd_config_t (file (getattr open read)))
 (neverallow p4_linux_procs p4_linux_systemd_config_t (file (write append setattr relabelto relabelfrom create execute entrypoint)))
+; fstatfs on the original, already mounted Linux unified hierarchy.
+(allow init_t cgroup_v2 (filesystem (getattr)))
