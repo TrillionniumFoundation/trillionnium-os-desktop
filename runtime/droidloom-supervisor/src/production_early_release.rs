@@ -26,7 +26,65 @@ fn stream_hash(file: &File, bytes: u64) -> Result<String> {
     Ok(format!("{:x}", hash.finalize()))
 }
 
-fn intake() -> Result<Option<SealedFile>> {
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct KernelFirstEntry {
+    schema: u32,
+    scope: String,
+    base_cohort_sha256: String,
+    source_system_sha256: String,
+    init_path: String,
+    init_bytes: u64,
+    init_sha256: String,
+    argv: Vec<String>,
+}
+
+fn validate_runtime_entry(bytes: &[u8], base: &str, system: &str) -> Result<()> {
+    let doc: serde_json::Value = serde_json::from_slice(bytes)?;
+    if doc["scope"] == "android_kernel_first_stage_v1" {
+        let row: KernelFirstEntry = serde_json::from_slice(bytes)?;
+        if row.schema != 1
+            || row.scope != "android_kernel_first_stage_v1"
+            || row.base_cohort_sha256 != base
+            || row.source_system_sha256 != system
+            || row.init_path != "/system/bin/init"
+            || row.init_bytes != crate::production_cp3a_init_identity::INIT_BYTES
+            || row.init_sha256 != crate::production_cp3a_init_identity::INIT_SHA256
+            || row.argv != ["/system/bin/init", "second_stage"]
+        {
+            return Err(SelectionError::Rejected(
+                "kernel-first runtime does not select the original init from this release",
+            ));
+        }
+        return Ok(());
+    }
+    crate::production_runtime_assets::declared_boot_entry(bytes, base).map_err(io::Error::other)?;
+    if doc["source_system"]["sha256"].as_str() != Some(system) {
+        return Err(SelectionError::Rejected(
+            "selected original runtime source image differs from the four-image release",
+        ));
+    }
+    Ok(())
+}
+
+/// Check the original ELF on the very open descriptor that the board child will execute.
+pub fn verify_original_init_for_boot(file: &File) -> io::Result<()> {
+    let before = Node::from(&file.metadata()?);
+    if before.mode & libc::S_IFMT != libc::S_IFREG
+        || before.mode & 0o7777 != 0o755
+        || before.bytes != crate::production_cp3a_init_identity::INIT_BYTES
+        || stream_hash(file, before.bytes).map_err(io::Error::other)?
+            != crate::production_cp3a_init_identity::INIT_SHA256
+        || Node::from(&file.metadata()?) != before
+    {
+        return Err(io::Error::other(
+            "prepared init ELF does not match the original CP3A executable",
+        ));
+    }
+    Ok(())
+}
+
+fn intake() -> Result<Option<(SealedFile, CellSpec, String)>> {
     let private = SealedFile::read(&in_root(SELECTION), SELECTION_LIMIT);
     let published = SealedFile::read(&in_root(PUBLIC), SELECTION_LIMIT);
     let optional = |r: Result<(SealedFile, Vec<u8>)>| match r {
@@ -106,7 +164,7 @@ fn intake() -> Result<Option<SealedFile>> {
         16 * 1024,
     )?;
     let runtime = &record.runtime_manifest_sha256;
-    let (runtime_manifest, _) = SealedFile::read(
+    let (runtime_manifest, runtime_raw) = SealedFile::read(
         &in_root(&format!("/etc/droidloom/runtime-cohorts/{runtime}.json")),
         256 * 1024,
     )?;
@@ -120,6 +178,8 @@ fn intake() -> Result<Option<SealedFile>> {
         ));
     }
     let members = crate::production_mounts::early_base_members(&raw).map_err(io::Error::other)?;
+    let source = &members[0].2;
+    validate_runtime_entry(&runtime_raw, base, source)?;
     let images = in_root(&format!("/var/lib/droidloom/cohorts/{base}/images"));
     let mut original = BTreeSet::new();
     let mut held = Vec::new();
@@ -157,14 +217,14 @@ fn intake() -> Result<Option<SealedFile>> {
     ] {
         input.revalidate_path()?;
     }
-    Ok(Some(choice))
+    Ok(Some((choice, cell, base.clone())))
 }
 
 /// Check the private selection and all four raw files on the installed Ubuntu root.
 /// After the board parent starts the original child, re-open both live kernel objects
 /// before initramfs-tools moves /run and invokes run-init. Existing non-early releases
 /// return None and never create an Android task.
-pub fn verify_initramfs_release(switch_root: bool) -> io::Result<Option<String>> {
+pub fn verify_initramfs_release(switch_root: bool, emit_plan: bool) -> io::Result<Option<String>> {
     if unsafe { libc::geteuid() } != 0 {
         return Err(io::Error::new(
             io::ErrorKind::PermissionDenied,
@@ -172,7 +232,7 @@ pub fn verify_initramfs_release(switch_root: bool) -> io::Result<Option<String>>
         ));
     }
     let selected = intake().map_err(io::Error::other)?;
-    let Some(choice) = selected else {
+    let Some((choice, cell, base)) = selected else {
         return Ok(None);
     };
     let mut mounts = String::new();
@@ -192,5 +252,17 @@ pub fn verify_initramfs_release(switch_root: bool) -> io::Result<Option<String>>
         crate::production_selection::early_generation::verify_birth_before_switch(&choice.sha256)?;
     }
     choice.revalidate().map_err(io::Error::other)?;
+    if emit_plan {
+        return Ok(Some(format!(
+            "{} {} {} {} {} {} {}",
+            choice.sha256,
+            base,
+            cell.host_uid,
+            cell.subordinate_uids.start,
+            cell.subordinate_uids.count,
+            cell.subordinate_gids.start,
+            cell.subordinate_gids.count
+        )));
+    }
     Ok(Some(choice.sha256))
 }

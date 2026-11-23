@@ -5,6 +5,7 @@ use std::{fs, path::Path, process::Command};
 pub(super) fn stage(destination: &Path) -> Result<()> {
     let work = tempfile::tempdir()?;
     let src = work.path();
+    fs::write(src.join("board.h"),include_bytes!("../../../runtime/droidloom-early-boot/board.h"))?;
     fs::write(
         src.join("custody.h"),
         include_bytes!("../../../runtime/droidloom-early-boot/custody.h"),

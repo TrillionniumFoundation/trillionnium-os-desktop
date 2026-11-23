@@ -355,6 +355,143 @@ impl EarlyAndroidGeneration {
     }
 }
 
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Resources {
+    schema: String,
+    boot_id: String,
+    selection_sha256: String,
+    host_pid: i32,
+    nonce: String,
+    mntns_dev: u64,
+    mntns_ino: u64,
+    userns_dev: u64,
+    userns_ino: u64,
+    fifo_dev: u64,
+    fifo_ino: u64,
+}
+
+/// Namespaces privately pinned by the original parent and independently reopened by the systemd worker.
+pub(crate) struct EarlyBoardResources {
+    generation: EarlyAndroidGeneration,
+    record: SealedFile,
+    saved: Resources,
+    mnt: File,
+    user: File,
+}
+
+impl EarlyBoardResources {
+    pub(crate) fn acquire() -> io::Result<Self> {
+        let generation = EarlyAndroidGeneration::acquire()?;
+        let (record, bytes) =
+            SealedFile::read(Path::new("/run/droidloom-early/resources.json"), 4096)
+                .map_err(io::Error::other)?;
+        let saved: Resources = serde_json::from_slice(&bytes)?;
+        if record.node.mode & 0o7777 != 0o400
+            || saved.schema != "droidloom-early-resources-v1"
+            || saved.boot_id != generation.birth.boot_id
+            || saved.host_pid != generation.birth.host_pid
+            || saved.selection_sha256 != generation.birth.selection_sha256
+            || !digest(&saved.nonce)
+        {
+            return Err(invalid(
+                "early resource handles differ from the original kernel generation",
+            ));
+        }
+        let mnt =
+            open_root_trusted(Path::new("/run/droidloom-early/mntns")).map_err(io::Error::other)?;
+        let user = open_root_trusted(Path::new("/run/droidloom-early/userns"))
+            .map_err(io::Error::other)?;
+        let value = Self {
+            generation,
+            record,
+            saved,
+            mnt,
+            user,
+        };
+        value.revalidate()?;
+        Ok(value)
+    }
+    pub(crate) fn revalidate(&self) -> io::Result<()> {
+        self.generation.revalidate()?;
+        self.record.revalidate_path().map_err(io::Error::other)?;
+        for (path, held, kind, expected) in [
+            (
+                "/run/droidloom-early/mntns",
+                &self.mnt,
+                libc::CLONE_NEWNS,
+                (self.saved.mntns_dev, self.saved.mntns_ino),
+            ),
+            (
+                "/run/droidloom-early/userns",
+                &self.user,
+                libc::CLONE_NEWUSER,
+                (self.saved.userns_dev, self.saved.userns_ino),
+            ),
+        ] {
+            let named = open_root_trusted(Path::new(path)).map_err(io::Error::other)?;
+            if identity(held)? != expected
+                || identity(&named)? != expected
+                || cv(unsafe { libc::ioctl(held.as_raw_fd(), NS_GET_NSTYPE) })? != kind
+            {
+                return Err(invalid(
+                    "an original namespace pin changed or has the wrong kernel type",
+                ));
+            }
+        }
+        self.generation.check_liveness()
+    }
+    pub(crate) fn pidfd(&self) -> &File {
+        &self.generation.init
+    }
+    pub(crate) fn pid_namespace(&self) -> &File {
+        &self.generation.ns
+    }
+    pub(crate) fn user_namespace(&self) -> &File {
+        &self.user
+    }
+    pub(crate) fn mount_namespace(&self) -> &File {
+        &self.mnt
+    }
+    pub(crate) fn host_pid(&self) -> i32 {
+        self.saved.host_pid
+    }
+    pub(crate) fn selection(&self) -> &ProductionSelection {
+        &self.generation.selected
+    }
+    /// The normal board resource owner calls this only after the held immutable root and
+    /// persistent backing lease have both been installed in the same original namespace.
+    pub(crate) fn release_prepared_root(&self) -> io::Result<()> {
+        use std::io::Write;
+        use std::os::unix::fs::OpenOptionsExt;
+        self.revalidate()?;
+        let mut fifo = std::fs::OpenOptions::new()
+            .write(true)
+            .custom_flags(libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK)
+            .open("/run/droidloom-early/release")?;
+        let stat = fifo.metadata()?;
+        if stat.mode() & libc::S_IFMT != libc::S_IFIFO
+            || stat.mode() & 0o7777 != 0o600
+            || stat.uid() != 0
+            || stat.gid() != 0
+            || stat.nlink() != 1
+            || (stat.dev(), stat.ino()) != (self.saved.fifo_dev, self.saved.fifo_ino)
+        {
+            return Err(invalid(
+                "early release FIFO is not the original private control object",
+            ));
+        }
+        let packet = format!(
+            "DROIDLOOM_EARLY_RELEASE_V1 {} {}\n",
+            self.saved.selection_sha256, self.saved.nonce
+        );
+        if fifo.write(packet.as_bytes())? != packet.len() {
+            return Err(invalid("incomplete atomic early Android release"));
+        }
+        self.generation.check_liveness()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

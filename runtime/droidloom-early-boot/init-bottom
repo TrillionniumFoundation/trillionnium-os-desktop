@@ -1,4 +1,5 @@
 #!/bin/sh
 set -eu
 case "${1:-}" in prereqs) exit 0 ;; esac
+/usr/lib/droidloom/production/current/droidloom-early-firststage
 exec /usr/lib/droidloom/production/current/droidloomd --initramfs-pre-switch-root

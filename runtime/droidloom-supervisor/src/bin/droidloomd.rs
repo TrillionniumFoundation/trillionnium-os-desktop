@@ -72,14 +72,21 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             return Ok(());
         }
         if let Some(action) = action.as_ref().and_then(|arg| arg.to_str()).filter(|name|
-            matches!(*name, "--initramfs-selected-generation" | "--initramfs-pre-switch-root")) {
+            matches!(*name, "--initramfs-selected-generation" | "--initramfs-pre-switch-root" | "--initramfs-board-plan")) {
             if arguments.next().is_some() {
                 return Err("early boot release verification accepts no arguments".into());
             }
             let switch_root = action == "--initramfs-pre-switch-root";
-            if let Some(digest)=droidloom_supervisor::control::verify_initramfs_release(switch_root)? {
+            if let Some(digest)=droidloom_supervisor::control::verify_initramfs_release(switch_root,action=="--initramfs-board-plan")? {
                 println!("{digest}");
             }
+            return Ok(());
+        }
+        if action.as_deref() == Some(std::ffi::OsStr::new("--initramfs-verify-stock-init")) {
+            use std::os::fd::AsFd;
+            if arguments.next().is_some(){return Err("the original init is supplied only on a held descriptor".into());}
+            let descriptor=std::io::stdin().as_fd().try_clone_to_owned()?;
+            droidloom_supervisor::control::verify_original_init_for_boot(&std::fs::File::from(descriptor))?;
             return Ok(());
         }
         if action.as_deref() == Some(std::ffi::OsStr::new("--inspect-early-generation")) {
