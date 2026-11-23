@@ -19,7 +19,7 @@ use std::time::{Duration, Instant};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-pub use crate::production_selection::{EarlyAndroidGeneration, complete_early_resources, verify_initramfs_release, verify_original_init_for_boot, ContainerLibraryMount, PreparedContainerSelection, SharedKernelLauncher};
+pub use crate::production_selection::{EarlyAndroidGeneration, complete_early_resources, verify_initramfs_release, verify_original_init_for_boot, verify_post_switch_board_plan, ContainerLibraryMount, PreparedContainerSelection, SharedKernelLauncher};
 pub use crate::production_mac::{ContainerManagerMac, check_container_manager_role, check_installed_mac_platform};
 pub use crate::production_service_elf::inspect_container_service_elf;
 use crate::CellSpec;

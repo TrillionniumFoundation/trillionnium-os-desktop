@@ -81,6 +81,13 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             container_oci_owner::early::run(&SHUTDOWN)?;
             return Ok(());
         }
+        if action.as_deref() == Some(std::ffi::OsStr::new("--post-switch-board-plan")) {
+            if arguments.next().is_some() { return Err("post-switch board verification accepts no arguments".into()); }
+            if let Some(plan) = droidloom_supervisor::control::verify_post_switch_board_plan()? {
+                println!("{plan}");
+            }
+            return Ok(());
+        }
         if let Some(action) = action.as_ref().and_then(|arg| arg.to_str()).filter(|name|
             matches!(*name, "--initramfs-selected-generation" | "--initramfs-pre-switch-root" | "--initramfs-board-plan")) {
             if arguments.next().is_some() {
