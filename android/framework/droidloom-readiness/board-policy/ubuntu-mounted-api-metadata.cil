@@ -579,3 +579,8 @@
 (auditallow init_t p4_linux_journal_native_socket_t (sock_file (write)))
 (neverallow p4_android_userspace p4_linux_journal_native_socket_t (sock_file (create open read write setattr unlink relabelto relabelfrom)))
 (neverallow p4_linux_procs p4_linux_journal_native_socket_t (sock_file (relabelto relabelfrom)))
+
+; journal_file_set_offline() starts a worker thread that inherits the daemon's
+; limits and both of its security contexts to synchronize the existing file.
+(allow p4_linux_journald_t self (process (fork)))
+(auditallow p4_linux_journald_t self (process (fork)))
