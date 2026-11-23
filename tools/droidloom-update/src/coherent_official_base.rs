@@ -1,5 +1,5 @@
 //! Publish the immutable official GSI, decoded independent vendor and optional
-//! platform library view into the root-relative layout read by the image broker.
+//! platform library and stock init views into the layout read by the image broker.
 //! Producing a private tree neither selects a cohort nor starts its processes.
 use super::*;
 use droidloom_contracts::system_ext as library;
@@ -19,7 +19,12 @@ fn row(file: &str, image: &FileRef) -> Value {
     json!({"file":file,"bytes":image.bytes,"sha256":image.sha256})
 }
 
-fn declaration(system: &FileRef, vendor: &FileRef, extension: Option<&FileRef>) -> Value {
+fn declaration(
+    system: &FileRef,
+    vendor: &FileRef,
+    extension: Option<&FileRef>,
+    readiness: Option<&library::ReadinessDeclaration>,
+) -> Value {
     let mut value = json!({"schema":1,"scope":"android_base_images_v1","layout":"gsi_system_as_root",
         "system":row("system.img",system),"vendor":row("vendor.img",vendor)});
     if let Some(ext) = extension {
@@ -27,6 +32,11 @@ fn declaration(system: &FileRef, vendor: &FileRef, extension: Option<&FileRef>) 
         value["scope"] = json!("android_base_images_v2");
         value["system_ext_lib64"] = json!({"file":library::FILE,"bytes":ext.bytes,"sha256":ext.sha256,
             "target":library::TARGET,"source_system_sha256":system.sha256,"source_vendor_sha256":vendor.sha256});
+    }
+    if let Some(ready) = readiness {
+        value["schema"] = json!(3);
+        value["scope"] = json!("android_base_images_v3");
+        value["system_ext_readiness"] = json!(ready);
     }
     value
 }
@@ -57,6 +67,7 @@ pub(super) fn publish(
     system: &FileRef,
     vendor: &FileRef,
     extension: Option<&FileRef>,
+    readiness: Option<&super::readiness::Checked>,
 ) -> Result<Value> {
     if system.sha256 != library::SYSTEM_SHA256 {
         return fail("base package requires the original reviewed CP3A system image");
@@ -67,6 +78,7 @@ pub(super) fn publish(
     let required = (system.bytes)
         .checked_add(vendor.bytes)
         .and_then(|n| n.checked_add(extension.map_or(0, |v| v.bytes)))
+        .and_then(|n| n.checked_add(readiness.map_or(0, |v| v.image.bytes)))
         .ok_or("base package size overflow")?;
     let _scope = resources::Scope::writing(parent, required)?;
     raw_filesystem("system", system)?;
@@ -77,7 +89,21 @@ pub(super) fn publish(
     if output.symlink_metadata().is_ok() {
         return fail("official base output already exists");
     }
-    let value = declaration(system, vendor, extension);
+    let value = declaration(system, vendor, extension, readiness.map(|r| &r.declaration));
+    if let Some(ready) = readiness {
+        raw_filesystem("init readiness", &ready.image)?;
+        let lib = serde_json::from_value(value["system_ext_lib64"].clone())?;
+        if !library::accepts_base(
+            3,
+            "android_base_images_v3",
+            Some(&lib),
+            Some(&ready.declaration),
+            &system.sha256,
+            &vendor.sha256,
+        ) {
+            return fail("fourth filesystem does not belong to the selected three-image release");
+        }
+    }
     let mut canonical = serde_json::to_vec_pretty(&value)?;
     canonical.push(b'\n');
     let cohort = format!("{:x}", Sha256::digest(&canonical));
@@ -92,6 +118,7 @@ pub(super) fn publish(
     for (name, source) in [("system.img", system), ("vendor.img", vendor)]
         .into_iter()
         .chain(extension.map(|ext| (library::FILE, ext)))
+        .chain(readiness.map(|r| (library::READINESS_FILE, &r.image)))
     {
         copy_bound(source, &images.join(name))?;
     }
@@ -114,7 +141,11 @@ pub(super) fn publish(
             File::open(dir)?.sync_all()?;
         }
     }
-    for source in [system, vendor].into_iter().chain(extension) {
+    for source in [system, vendor]
+        .into_iter()
+        .chain(extension)
+        .chain(readiness.map(|r| &r.image))
+    {
         recheck(source, MAX_IMAGE)?;
     }
     rename_new(stage, output)?;
@@ -175,6 +206,7 @@ pub(crate) fn stage_existing(
     normal_path: &Path,
     normal_sha: &str,
     extension_path: Option<&Path>,
+    readiness_path: Option<&Path>,
     output: &Path,
 ) -> Result<Value> {
     let parent = output
@@ -187,6 +219,14 @@ pub(crate) fn stage_existing(
     let (receipt, value) = read_json(normal_path)?;
     if receipt.sha256 != normal_sha {
         return fail("selected normal vendor receipt digest differs");
+    }
+    if value.get("early_boot_readiness").is_some() != readiness_path.is_some()
+        || (readiness_path.is_some() && extension_path.is_none())
+    {
+        return fail("the selected normal receipt and input readiness role differ");
+    }
+    if value.get("system_ext_lib64").is_some() && extension_path.is_none() {
+        return fail("the selected normal release requires its library extension");
     }
     let system = pin(system_path, MAX_IMAGE)?;
     let vendor = pin(vendor_path, MAX_IMAGE)?;
@@ -201,22 +241,39 @@ pub(crate) fn stage_existing(
     let ext = extension_path
         .map(|p| pin(p, 32 * 1024 * 1024))
         .transpose()?;
-    if value.get("system_ext_lib64").is_some() && ext.is_none() {
-        return fail("the selected normal release requires its library extension");
-    }
     if let Some(ext) = &ext {
         if let Some(normal) = value.get("system_ext_lib64") {
-            let expected = declaration(&system, &raw, Some(ext));
+            let expected = declaration(&system, &raw, Some(ext), None);
             if normal.get("declaration") != expected.get("system_ext_lib64") {
                 return fail("normal vendor and supplied extension select different raw artifacts");
             }
         }
         super::system_ext::verify_retained(&system, &raw, ext, &hosts, temp.path())?;
     }
+    let readiness = match (
+        value.get("early_boot_readiness"),
+        readiness_path,
+        ext.as_ref(),
+    ) {
+        (None, None, _) => None,
+        (Some(normal), Some(path), Some(library)) => Some(super::readiness::verify_retained(
+            &system,
+            &raw,
+            library,
+            pin(path, 16 * 1024 * 1024)?,
+            normal,
+            temp.path(),
+        )?),
+        _ => {
+            return fail(
+                "a readiness-bearing normal release requires its fourth image and platform library; older releases have no fourth role",
+            );
+        }
+    };
     recheck(&receipt, MAX_JSON)?;
     recheck(&vendor, MAX_IMAGE)?;
     drop(scope);
-    let package = publish(output, &system, &raw, ext.as_ref())?;
+    let package = publish(output, &system, &raw, ext.as_ref(), readiness.as_ref())?;
     Ok(
         json!({"package":package,"normal_vendor_receipt_sha256":receipt.sha256,
         "vendor_source_sha256":vendor.sha256,"raw_vendor_sha256":raw.sha256,"sparse_converter":converter}),
@@ -239,11 +296,11 @@ mod tests {
     #[test]
     fn retained_base_declarations_bind_only_the_selected_raw_artifacts() {
         let (system, vendor, ext) = (member("1"), member("2"), member("3"));
-        let v1 = declaration(&system, &vendor, None);
+        let v1 = declaration(&system, &vendor, None, None);
         assert_eq!(v1["schema"], 1);
         assert_eq!(v1["scope"], "android_base_images_v1");
         assert!(v1.get("system_ext_lib64").is_none());
-        let v2 = declaration(&system, &vendor, Some(&ext));
+        let v2 = declaration(&system, &vendor, Some(&ext), None);
         assert_eq!(v2["schema"], 2);
         assert_eq!(v2["scope"], "android_base_images_v2");
         assert_eq!(v1["system"], v2["system"]);
@@ -288,6 +345,69 @@ mod tests {
                 library::HOST_MODULES[0]
             ));
         assert!(verify_normal_vendor(&record, &vendor).is_err());
+    }
+
+    /// Assemble a reproducible hardware-control release from an existing v2
+    /// package and an independently built fourth image. The production CLI
+    /// separately requires its normal vendor result for a same-build v3.
+    #[test]
+    #[ignore = "requires full original media and an isolated output directory"]
+    fn real_four_image_hardware_control() -> Result<()> {
+        let fixture = std::env::var_os("DROIDLOOM_BASE_HARDWARE_FIXTURE")
+            .ok_or("missing hardware-control paths")?;
+        let (_, cfg) = read_json(Path::new(&fixture))?;
+        let path = |key: &str| -> Result<&Path> {
+            cfg[key]
+                .as_str()
+                .map(Path::new)
+                .ok_or_else(|| "missing hardware-control path".into())
+        };
+        let (prior, selected) = read_json(path("v2_manifest")?)?;
+        if cfg["v2_digest"].as_str() != Some(&prior.sha256)
+            || selected["schema"] != 2
+            || selected["scope"] != "android_base_images_v2"
+        {
+            return fail("hardware control did not select a complete three-image baseline");
+        }
+        let inputs = path("v2_images")?;
+        let sys = pin(&inputs.join("system.img"), MAX_IMAGE)?;
+        let ven = pin(&inputs.join("vendor.img"), MAX_IMAGE)?;
+        let lib = pin(&inputs.join(library::FILE), MAX_IMAGE)?;
+        if declaration(&sys, &ven, Some(&lib), None) != selected {
+            return fail("the three hardware-control inputs differ from their previous release");
+        }
+        let extra = pin(path("readiness")?, 16 * 1024 * 1024)?;
+        let elf = pin(path("observer")?, 8 * 1024 * 1024)?;
+        let rc = pin(path("rc")?, 4096)?;
+        if cfg["readiness_sha256"].as_str() != Some(&extra.sha256)
+            || cfg["observer_sha256"].as_str() != Some(&elf.sha256)
+            || cfg["rc_sha256"].as_str() != Some(&rc.sha256)
+        {
+            return fail("independent hardware control files differ");
+        }
+        let output = path("output")?;
+        let scope = resources::Scope::writing(
+            output.parent().ok_or("missing fixture output parent")?,
+            32 * 1024 * 1024,
+        )?;
+        let (ready, members) = super::super::readiness::verify_members(
+            &sys,
+            &ven,
+            &lib,
+            extra,
+            &elf.sha256,
+            &rc.sha256,
+            output.parent().ok_or("missing fixture output parent")?,
+        )?;
+        drop(scope);
+        let package = publish(output, &sys, &ven, Some(&lib), Some(&ready))?;
+        assert_eq!(package["base"]["schema"], 3);
+        println!(
+            "{}",
+            serde_json::to_string(&json!({"release":package,"compared_members":members,
+            "normal_same_build_qualified":false}))?
+        );
+        Ok(())
     }
 
     #[test]

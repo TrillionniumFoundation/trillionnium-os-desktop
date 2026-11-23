@@ -12,6 +12,7 @@ pub(crate) fn build(
     vendor_build: &Path,
     output_dir: &Path,
     modules: &BTreeMap<String, String>,
+    readiness_result: &Value,
 ) -> Result<Value> {
     let _scope = resources::Scope::writing(output_dir, 2 * resources::GIB)?;
     let temporary = tempfile::Builder::new()
@@ -75,6 +76,17 @@ pub(crate) fn build(
     }
     let declaration = json!({"file":NAME, "bytes":image.bytes, "sha256":image.sha256,
         "target":TARGET, "source_system_sha256":system.sha256, "source_vendor_sha256":raw_vendor.sha256});
+    let readiness = super::readiness::verify_retained(
+        &system,
+        &raw_vendor,
+        &image,
+        pin(
+            &output_dir.join(droidloom_contracts::system_ext::READINESS_FILE),
+            16 * 1024 * 1024,
+        )?,
+        readiness_result,
+        work,
+    )?;
     fs::hard_link(&image.path, &output)?;
     fs::remove_file(&image.path)?;
     let published = pin(&output, 32 * 1024 * 1024)?;
@@ -89,6 +101,7 @@ pub(crate) fn build(
         &system,
         &raw_vendor,
         Some(&published),
+        Some(&readiness),
     ) {
         Ok(package) => package,
         Err(error) => {

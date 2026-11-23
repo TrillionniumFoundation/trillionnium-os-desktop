@@ -67,6 +67,60 @@ def attrs(image, name, temp):
     return result
 
 
+def verify(system, image, expected, work):
+    """Compare both mounted subtrees against CP3A and the two normal installed files."""
+    check(digest(system) == expected["system"], "original system digest changed")
+    run(["e2fsck", "-fn", image])
+    check(set(names(image, "/")) == {"bin", "etc"}, "unexpected readiness filesystem root")
+    check(set(names(image, "/etc")) == {"init"}, "unexpected readiness carrier etc")
+    check(names(image, "/")["etc"][:3] == (0o40755, 0, 0), "wrong private carrier parent")
+    new_files = {
+        "bin/droidloom-readiness": (0o100755, 0, 2000, b"u:object_r:droidloom_readiness_exec:s0\0", expected["elf"]),
+        "etc/init/droidloom-readiness.rc": (0o100644, 0, 0, b"u:object_r:system_file:s0\0", expected["rc"]),
+    }
+    result = {}
+    attr_tmp = work / "verify-attr"
+    def visit(relative, original, actual):
+        mode, uid, gid, size = actual
+        path = "/" + relative
+        wanted = None
+        if relative in new_files:
+            want_mode, want_uid, want_gid, label, wanted = new_files[relative]
+            check(original is None, "normal addition hides an original file: " + relative)
+            check((mode, uid, gid) == (want_mode, want_uid, want_gid), "wrong added inode: " + relative)
+            attributes = {"security.selinux": label}
+        else:
+            check(original is not None and actual[:3] == original[:3], "original inode changed: " + relative)
+            original_path = "/system/system_ext/" + relative
+            attributes = attrs(system, original_path, attr_tmp)
+            if stat.S_ISDIR(mode):
+                old = names(system, original_path)
+                current = names(image, path)
+                additions = {os.path.basename(item) for item in new_files if os.path.dirname(item) == relative}
+                check(not old.keys() & additions and set(current) == set(old) | additions,
+                      "subtree differs from original plus selected additions: " + relative)
+                for name, entry in sorted(current.items()):
+                    visit(relative + "/" + name, old.get(name), entry)
+            else:
+                check(stat.S_ISREG(mode) and size == original[3], "unsupported type or different size: " + relative)
+                wanted = hashlib.sha256(inspect(system, "cat " + original_path)).hexdigest()
+        check(attrs(image, path, attr_tmp) == attributes, "wrong xattrs: " + relative)
+        if wanted is not None:
+            contents = inspect(image, "cat " + path)
+            check(len(contents) == size and hashlib.sha256(contents).hexdigest() == wanted,
+                  "file bytes differ: " + relative)
+            if relative == "bin/droidloom-readiness":
+                check(contents[:7] == b"\x7fELF\x02\x01\x01" and contents[16:20] == b"\x03\x00\x3e\x00",
+                      "expected a little-endian x86_64 PIE")
+        result[relative] = {"mode": oct(mode), "uid": uid, "gid": gid, "sha256": wanted,
+                            "xattrs_hex": {key: v.hex() for key, v in attributes.items()}}
+    for relative in ("bin", "etc/init"):
+        parent, leaf = os.path.split(relative)
+        visit(relative, names(system, "/system/system_ext/" + parent)[leaf], names(image, "/" + parent)[leaf])
+    check(new_files.keys() <= result.keys(), "missing selected observer or init script")
+    return result
+
+
 def build(system, service, rc, out, expected):
     for name, path in (("system", system), ("elf", service), ("rc", rc)):
         check(digest(path) == expected[name], name + " input changed")
@@ -132,20 +186,7 @@ def build(system, service, rc, out, expected):
             for key, value in attributes.items():
                 attr_tmp.write_bytes(value)
                 inspect(image, f"ea_set -f {attr_tmp} /{name} {key}", write=True)
-        run(["e2fsck", "-fn", image])
-        readback = {}
-        for name, (mode, uid, gid, attributes, hash_value) in rows.items():
-            parent, component = os.path.split("/" + name)
-            metadata = names(image, parent)[component]
-            check(metadata[:3] == (mode, uid, gid), "wrong inode mode or owner: "+name)
-            check(attrs(image, "/"+name, attr_tmp) == attributes, "wrong xattr: "+name)
-            if hash_value:
-                check(hashlib.sha256(inspect(image, "cat /" + name)).hexdigest() == hash_value, name)
-            else:
-                wanted = {os.path.basename(x) for x in rows if os.path.dirname(x) == name}
-                check(set(names(image, "/"+name)) == wanted, "unexpected directory contents: "+name)
-            readback[name] = {"mode": oct(mode), "uid": uid, "gid": gid, "sha256": hash_value,
-                              "xattrs_hex": {key: v.hex() for key, v in attributes.items()}}
+        readback = verify(system, image, expected, tmp)
         result = {"file": out.name, "sha256": digest(image), "bytes": image.stat().st_size,
                   "parents": expected, "mount_subtrees": list(roots), "members": readback}
         os.link(image, out)
@@ -155,8 +196,15 @@ def build(system, service, rc, out, expected):
 if __name__ == "__main__":
     config = json.loads(Path(sys.argv[1]).read_text())
     if "tools" in config:
-        if set(config["tools"]) != set(TOOLS):
+        required = {"debugfs", "e2fsck"} if "existing_image" in config else set(TOOLS)
+        if set(config["tools"]) != required:
             raise ValueError("incomplete selected ext4 tool set")
         TOOLS.update(config["tools"])
-    result = build(*(Path(config[key]) for key in ("system", "elf", "rc", "output")), config["sha256"])
+    if "existing_image" in config:
+        image = Path(config["existing_image"])
+        with tempfile.TemporaryDirectory(dir=Path.cwd()) as temp:
+            checked = verify(Path(config["system"]), image, config["sha256"], Path(temp))
+        result = {"members": checked, "bytes": image.stat().st_size, "sha256": digest(image)}
+    else:
+        result = build(*(Path(config[key]) for key in ("system", "elf", "rc", "output")), config["sha256"])
     print(json.dumps(result, sort_keys=True, indent=2))

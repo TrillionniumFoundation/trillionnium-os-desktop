@@ -802,7 +802,7 @@ pub(super) fn build(
     }
     let readiness = crate::coherent_images::readiness::build(inputs.system_path()?, &product_out, &vendor_out, out)?;
     let system_extension = crate::coherent_images::system_ext::build(
-        inputs.system_path()?, &product_out.join("vendor.img"), &vendor_out, out, &host_digests)?;
+        inputs.system_path()?, &product_out.join("vendor.img"), &vendor_out, out, &host_digests, &readiness)?;
     inputs.verify_unchanged()?;
     vendor_image.check()?;
     let record = json!({"schema":"droidloom-official-gsi-independent-vendor-normal-result-v1",

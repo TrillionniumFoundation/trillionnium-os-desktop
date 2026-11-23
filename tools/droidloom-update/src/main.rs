@@ -57,6 +57,9 @@ enum Action {
         normal_vendor_result_sha256: String,
         #[arg(long)]
         system_ext_lib64: Option<PathBuf>,
+        /// Read-only stock-init service from this same normal vendor build.
+        #[arg(long, requires = "system_ext_lib64")]
+        system_ext_readiness: Option<PathBuf>,
         /// Fresh private output root with the image broker's generation-relative layout.
         #[arg(long)]
         output: PathBuf,
@@ -480,6 +483,7 @@ fn execute(args: Args) -> Result<()> {
             normal_vendor_result,
             normal_vendor_result_sha256,
             system_ext_lib64,
+            system_ext_readiness,
             output,
         }) => {
             let receipt = coherent_images::official_base::stage_existing(
@@ -488,6 +492,7 @@ fn execute(args: Args) -> Result<()> {
                 normal_vendor_result,
                 normal_vendor_result_sha256,
                 system_ext_lib64.as_deref(),
+                system_ext_readiness.as_deref(),
                 output,
             )?;
             println!("{}", serde_json::to_string_pretty(&receipt)?);
