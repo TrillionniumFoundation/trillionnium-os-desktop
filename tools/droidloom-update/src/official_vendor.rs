@@ -581,6 +581,18 @@ pub(super) fn project(
         1,
         projection,
     )?;
+    // Proxy names originate from translated guest symbols. Require a leaf before
+    // joining the sealed host-side distribution directory.
+    exact_replace(
+        &source.join("frameworks/libs/binary_translation/proxy_loader/proxy_loader.cc"),
+        "f1f6331f766e52b10bc65b3a6c866181a1dcee58bdc1a8281ddadacfaa98da46",
+        "  proxy_name += library_name;",
+        &format!(
+            "  proxy_name += library_name;\n  if (proxy_name.find('/') != std::string::npos) return false;\n  proxy_name.insert(0, \"/vendor/{HOST_DIRECTORY}/\");"
+        ),
+        1,
+        projection,
+    )?;
     exact_replace(
         &source.join("frameworks/libs/binary_translation/base/config_globals.cc"),
         "0cf75cdbc4a94460b1cc0c5d8303ffc5ffab78fd9df8eb88d211551e587d6c18",
