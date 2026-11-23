@@ -1,7 +1,7 @@
 //! Private, descriptor-owned /dev for one admitted mapped Android tree.
 //!
-//! Only the seven fixed character nodes below are created, on a fresh detached
-//! tmpfs. No host device pathname is opened, bind-mounted, chowned or chmodded.
+//! The legacy broker creates seven fixed devices. The kernel-first variant receives
+//! a private tmpfs with seven pre-qualified nodes from the selected board publisher.
 //! Namespace/lease authority is borrowed from the existing owned tree. A failed
 //! or uncertain transfer retains the mount, namespace FDs and reservation until
 //! the same tree supplies its actual retirement witness.
@@ -21,6 +21,9 @@ use crate::production_selection::ProductionSelection;
 #[path = "production_devices_early.rs"]
 mod early;
 use early::DeviceTree;
+#[path = "production_devices_factory.rs"]
+mod factory;
+use factory::FactoryDevices;
 
 #[path = "production_devices_activation.rs"]
 mod activation;
@@ -576,7 +579,11 @@ fn verify_device_nodes(
     }
     Ok(())
 }
+#[cfg(test)]
 fn idmap_mount(root: &File, userns: &File) -> Result<()> {
+    map_device_tree(root, userns, false)
+}
+fn map_device_tree(root: &File, userns: &File, recursive: bool) -> Result<()> {
     let attr = MountAttr {
         attr_set: PRIVATE_DEV_FLAGS | MOUNT_ATTR_IDMAP,
         userns_fd: u64::try_from(userns.as_raw_fd())
@@ -588,7 +595,7 @@ fn idmap_mount(root: &File, userns: &File) -> Result<()> {
             libc::SYS_mount_setattr,
             root.as_raw_fd(),
             c"".as_ptr(),
-            AT_EMPTY_PATH,
+            AT_EMPTY_PATH | if recursive { libc::AT_RECURSIVE as u32 } else { 0 },
             &attr,
             std::mem::size_of::<MountAttr>(),
         )
@@ -601,7 +608,7 @@ struct DeviceResources {
     mount_id: u64,
     root_node: (u64, u64),
     nodes: Vec<DeviceIdentity>,
-    early_socket_dirs: bool,
+    factory_devices: Option<FactoryDevices>,
     activation: Option<ActivationListener>,
     network_builder: Option<SelectedAndroidNetwork>,
     socket_builder: Option<SelectedAndroidSocketBuilder>,
@@ -654,8 +661,9 @@ impl DeviceResources {
         verify_root(mount, self.uids.start, self.gids.start)?;
         if let Some(listener) = &self.activation {
             listener.verify_complete(mount, self.uids.start, self.gids.start, &self.nodes)
-        } else if self.early_socket_dirs {
-            early::verify_readiness_directories(mount, self.uids.start, self.gids.start, &self.nodes)
+        } else if let Some(factory) = &self.factory_devices {
+            factory.verify(mount, true)?;
+            early::verify_socket_directories(mount, self.uids.start, self.gids.start)
         } else {
             verify_devices(mount, self.uids.start, self.gids.start, &self.nodes)
         }
@@ -730,7 +738,7 @@ impl PreparedDevices {
 
     fn create_for_tree(
         witness: &impl DeviceTree,
-        early_mount: Option<File>,
+        early_mount: Option<(File, FactoryDevices)>,
         activation: Option<(&OwnedNamespaceWitness<'_>, &ProductionSelection, &MacPreflight, RuntimeMacOwner)>,
     ) -> Result<Self> {
         require_initial_broker()?;
@@ -749,7 +757,7 @@ impl PreparedDevices {
             .descendant_pid_namespace()
             .ok_or(DeviceError::Rejected("actual tree is required"))?
             .try_clone()?;
-        let early_socket_dirs = early_mount.is_some();
+        let (selected_mount, factory_devices) = early_mount.unzip();
         let mut result = Self {
             exported: false,
             resources: Some(DeviceResources {
@@ -757,7 +765,7 @@ impl PreparedDevices {
                 mount_id: 0,
                 root_node: (0, 0),
                 nodes: Vec::new(),
-                early_socket_dirs,
+                factory_devices,
                 activation: None,
                 network_builder: None,
                 socket_builder: None,
@@ -779,7 +787,7 @@ impl PreparedDevices {
             .as_mut()
             .ok_or(DeviceError::Rejected("device guard absent"))?;
         resources.matches(witness)?;
-        resources.mount = Some(match early_mount {
+        resources.mount = Some(match selected_mount {
             Some(source) => source,
             None => fresh_tmpfs()?,
         });
@@ -789,9 +797,13 @@ impl PreparedDevices {
             .ok_or(DeviceError::Rejected("new private mount absent"))?;
         resources.mount_id = require_detached(mount)?;
         resources.root_node = node(mount)?;
-        resources.nodes = create_devices(mount)?;
-        if early_socket_dirs {
-            early::create_readiness_directories(mount, &resources.nodes)?;
+        if let Some(factory) = &resources.factory_devices {
+            factory.verify(mount, false)?;
+            early::create_socket_directories(mount)?;
+            factory.verify(mount, true)?;
+            early::verify_socket_directories(mount, 0, 0)?;
+        } else {
+            resources.nodes = create_devices(mount)?;
         }
         if let Some((witness, selection, mac, _)) = activation.as_ref() {
             let context = resources.context.as_ref().ok_or(DeviceError::Rejected(
@@ -831,7 +843,7 @@ impl PreparedDevices {
                 .require_pair(mac, selection)
                 .map_err(|e| DeviceError::Context(e.to_string()))?;
         }
-        idmap_mount(mount, &resources.userns)?;
+        map_device_tree(mount, &resources.userns, resources.factory_devices.is_some())?;
         resources.verify_for_transfer()?;
         resources.matches(witness)?;
         Ok(result)
@@ -887,7 +899,7 @@ impl PreparedDevices {
             .resources
             .as_mut()
             .ok_or(DeviceError::Rejected("device mount retired"))?;
-        let nodes = r.nodes.len();
+        let nodes = r.factory_devices.as_ref().map_or(r.nodes.len(), FactoryDevices::len);
         r.close_owned_mount()?;
         drop(self.resources.take());
         Ok(DeviceRetirement {

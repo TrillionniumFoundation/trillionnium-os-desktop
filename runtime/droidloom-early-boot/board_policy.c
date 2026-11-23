@@ -4,6 +4,7 @@
 #include "apparmor_epoch.h"
 #include "linux_run_label.h"
 #include "device_source.h"
+#include "device_template.h"
 
 #include <dirent.h>
 #include <errno.h>
@@ -247,7 +248,7 @@ static int apparmor_profiles(const struct input *pack, int activate,
     return pos == pack->size ? 0 : reject(EBADMSG);
 }
 
-int droidloom_board_activate_policy(gid_t observer_gid)
+int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
 {
     struct input policy = {923040, "c40750505024e8b8ac33b144e23ec573862daaa9ea24ddaf381fd2e8efdcf691", POLICY_DIR "/joint.policy", NULL};
     struct input aa = {5784069, "b645ca1ba5542cace9e69693ad1f57daa861a791eea9d13f37f0bc44bcb3180a", POLICY_DIR "/ubuntu-apparmor.profiles", NULL};
@@ -276,9 +277,15 @@ int droidloom_board_activate_policy(gid_t observer_gid)
     if (rc == 0) { stage = "hold the original Ubuntu udev database directory"; rc = droidloom_hold_linux_udev_data(&udev, &udev_data); }
     if (rc == 0) { stage = "hold the selected early readiness directory"; rc = droidloom_hold_readiness_paths(&run, observer_gid, &paths); }
     if (rc == 0) {
-        stage = "hold the original empty Android device filesystem";
+        stage = "prepare private Android devices from the selected factory template";
         struct droidloom_device_identity source;
-        device_root.fd = droidloom_hold_device_source(0, &source);
+        int bank = droidloom_open_device_bank(cohort);
+        if (bank >= 0) {
+            device_root.fd = droidloom_prepare_device_source(bank, cohort, &source);
+            int result_error = errno;
+            close(bank);
+            errno = result_error;
+        }
         if (device_root.fd < 0) rc = -1;
         else { device_root.device = source.device; device_root.inode = source.inode; }
     }

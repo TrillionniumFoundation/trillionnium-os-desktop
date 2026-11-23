@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #define _GNU_SOURCE
 #include "device_source.h"
+#include "device_template.h"
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -124,7 +125,7 @@ static int source_in_namespace(bool create, struct droidloom_device_identity *ou
     return target;
 }
 
-int droidloom_hold_device_source(int create, struct droidloom_device_identity *out)
+static int visit_device_source(int create, int bank, const char *cohort, struct droidloom_device_identity *out)
 {
     if (!out || (create != 0 && create != 1) || geteuid() != 0)
         return reject(EINVAL);
@@ -149,6 +150,11 @@ int droidloom_hold_device_source(int create, struct droidloom_device_identity *o
         result = source_in_namespace(create != 0, out);
         if (result < 0)
             error = errno;
+        else if (bank >= 0 && droidloom_populate_private_devices(result, bank, cohort) < 0) {
+            error = errno;
+            close(result);
+            result = -1;
+        }
         if (setns(host, CLONE_NEWNS)) {
             error = errno;
             if (result >= 0) close(result);
@@ -160,4 +166,16 @@ int droidloom_hold_device_source(int create, struct droidloom_device_identity *o
     if (child >= 0) close(child);
     close(host);
     return error ? reject(error) : result;
+}
+
+int droidloom_hold_device_source(int create, struct droidloom_device_identity *out)
+{
+    return visit_device_source(create,-1,NULL,out);
+}
+
+int droidloom_prepare_device_source(int bank, const char *cohort, struct droidloom_device_identity *out)
+{
+    if (bank < 0)
+        return reject(EBADF);
+    return visit_device_source(0,bank,cohort,out);
 }

@@ -30,12 +30,13 @@ impl DeviceTree for EarlyBaseAdmission<'_> {
     fn descendant_pid_namespace(&self) -> Option<&File> { Some(self.board().pid_namespace()) }
 }
 
-fn selected_device_mount(child: &EarlyBaseAdmission<'_>) -> Result<File> {
+fn selected_device_mount(child: &EarlyBaseAdmission<'_>) -> Result<(File, FactoryDevices)> {
     let expected = child.board().device_source_identity()?;
     let namespace = child.board().mount_namespace();
+    let cohort = child.identity_lease().broker_cohort();
     child.revalidate()?;
     let result = std::thread::scope(|scope| {
-        scope.spawn(|| -> Result<File> {
+        scope.spawn(|| -> Result<(File, FactoryDevices)> {
             // setns() changes the root and working directory of its fs_struct.
             // This worker keeps its own fs_struct and exits in the child mount namespace.
             zero(unsafe { libc::unshare(libc::CLONE_FS) } as _)?;
@@ -55,14 +56,15 @@ fn selected_device_mount(child: &EarlyBaseAdmission<'_>) -> Result<File> {
                  "original per-generation device filesystem changed")?;
             verify_root(&original, 0, 0)?;
             private_directory_role(&original, c"u:object_r:p4_linux_private_dev_root_t:s0")?;
-            need(directory_names(&original)?.is_empty(), "original device filesystem was already claimed")?;
+            let factory = FactoryDevices::acquire(&original, cohort, expected)?;
             let mount = fd_result(unsafe {
                 libc::syscall(libc::SYS_open_tree, original.as_raw_fd(), c"".as_ptr(),
-                              libc::OPEN_TREE_CLONE | libc::O_CLOEXEC as u32 | AT_EMPTY_PATH)
+                              libc::OPEN_TREE_CLONE | libc::O_CLOEXEC as u32 | AT_EMPTY_PATH | libc::AT_RECURSIVE as u32)
             })?;
             require_detached(&mount)?;
             need(node(&mount)? == id, "detached clone differs from the board device filesystem")?;
-            Ok(mount)
+            factory.verify(&mount, false)?;
+            Ok((mount, factory))
         }).join().map_err(|_| DeviceError::Rejected("device mount worker did not finish"))?
     })?;
     child.revalidate()?;
@@ -118,7 +120,13 @@ fn private_directory_role(directory: &File, expected: &CStr) -> Result<()> {
     )
 }
 
-pub(super) fn create_readiness_directories(root: &File, nodes: &[DeviceIdentity]) -> Result<()> {
+#[cfg(test)]
+fn create_readiness_directories(root: &File, nodes: &[DeviceIdentity]) -> Result<()> {
+    create_socket_directories(root)?;
+    verify_readiness_directories(root, 0, 0, nodes)
+}
+
+pub(super) fn create_socket_directories(root: &File) -> Result<()> {
     fn create(parent: &File, name: &CStr) -> Result<File> {
         zero(unsafe { libc::mkdirat(parent.as_raw_fd(), name.as_ptr(), 0o755) } as _)?;
         let child = directory(parent, name)?;
@@ -130,15 +138,20 @@ pub(super) fn create_readiness_directories(root: &File, nodes: &[DeviceIdentity]
     private_directory_role(&socket, c"u:object_r:p4_linux_private_socket_parent_t:s0")?;
     let target = create(&socket, c"droidloom")?;
     private_directory_role(&target, c"u:object_r:p4_linux_readiness_mount_t:s0")?;
-    verify_readiness_directories(root, 0, 0, nodes)
+    Ok(())
 }
 
-pub(super) fn verify_readiness_directories(root: &File, uid: u32, gid: u32, nodes: &[DeviceIdentity]) -> Result<()> {
+#[cfg(test)]
+fn verify_readiness_directories(root: &File, uid: u32, gid: u32, nodes: &[DeviceIdentity]) -> Result<()> {
     let mut expected: Vec<_> = DEVICES.iter().map(|spec| spec.name.to_bytes().to_vec()).collect();
     expected.push(b"socket".to_vec());
     expected.sort();
     need(directory_names_bounded(root, expected.len())? == expected, "only seven fixed devices and the readiness parent")?;
     verify_device_nodes(root, uid, gid, nodes)?;
+    verify_socket_directories(root, uid, gid)
+}
+
+pub(super) fn verify_socket_directories(root: &File, uid: u32, gid: u32) -> Result<()> {
     let socket = directory(root, c"socket")?;
     let target = directory(&socket, c"droidloom")?;
     private_directory_role(root, c"u:object_r:p4_linux_private_dev_root_t:s0")?;

@@ -19,7 +19,7 @@ int main(int argc, char **argv)
     }
     if (selected == 0)
         return 0;
-    if (droidloom_board_activate_policy((gid_t)(plan.gid_start + 9999)) < 0) {
+    if (droidloom_board_activate_policy((gid_t)(plan.gid_start + 9999), plan.base_cohort_sha256) < 0) {
         perror("Droidloom early shared-kernel policy");
         return 1;
     }

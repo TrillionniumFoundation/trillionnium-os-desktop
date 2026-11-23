@@ -16,4 +16,6 @@ struct droidloom_device_identity {
  * The original Linux mount namespace is restored before the descriptor returns. */
 int droidloom_hold_device_source(int create, struct droidloom_device_identity *identity);
 
+int droidloom_prepare_device_source(int bank, const char *cohort, struct droidloom_device_identity *identity);
+
 #endif

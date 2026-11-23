@@ -148,7 +148,7 @@ static int activate(int argc, char **argv)
     if (unshare(CLONE_FS | CLONE_FILES) < 0)
         return -1;
     operation = "activate the selected board security policy";
-    if (droidloom_board_activate_policy((gid_t)(plan.gid_start + 9999)) < 0)
+    if (droidloom_board_activate_policy((gid_t)(plan.gid_start + 9999), plan.base_cohort_sha256) < 0)
         return -1;
     operation = "verify the activated board executable label";
     if (has_label(own, "u:object_r:p4_linux_early_exec_t:s0") < 0)
