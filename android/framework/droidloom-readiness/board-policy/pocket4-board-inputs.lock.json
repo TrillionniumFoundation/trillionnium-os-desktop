@@ -1,0 +1,37 @@
+{
+  "schema": "droidloom-pocket4-joint-initramfs-inputs-v1",
+  "kernel": {
+    "release": "6.18.64-p4ctx6181-fusectl-r1",
+    "sha256": "12ce8084ec713b04c001556a3698dda078b81bf2b6d1d31909f48f7b51a6685f",
+    "apparmor_features": "pocket4-6.18.64-apparmor.features",
+    "apparmor_features_sha256": "facafbfb0ab5705d3846b53d6d09d753a872b8cb011d27b8465f7cf6b90c0c2b",
+    "lsm": [
+      "lockdown",
+      "capability",
+      "landlock",
+      "yama",
+      "selinux",
+      "apparmor",
+      "bpf",
+      "ima",
+      "evm"
+    ]
+  },
+  "files": {
+    "joint.policy": {
+      "size": 881653,
+      "sha256": "6bb26c467a950033a628b3997dd8f08e41c84bc4f4dfdc3adc89479566f4d9a9",
+      "producer": "compile_shared_kernel_policy.py",
+      "linux_board_source": "pocket4-linux-board.cil",
+      "linux_board_source_sha256": "8fae2086116e3b4c9068b38d16d1333bdf534657f84b7a0ada110902f687c22a",
+      "original_android_policy_sha256": "65553139e595e8db62ccd1dfc8d649369bbf7034ca73e5c384ce5d73ee79c62a"
+    },
+    "ubuntu-apparmor.profiles": {
+      "size": 5663265,
+      "sha256": "16ad7370417d3ae76e5b873371a315681078e67a44c70672aa4043875be92889",
+      "producer": "pack_pocket4_ubuntu_apparmor.py",
+      "parser_sha256": "11e9595527b8bb5b775709e4626ec69dc682585760ec7c6d0b045e759f1c0df2",
+      "active_sources": 165
+    }
+  }
+}
