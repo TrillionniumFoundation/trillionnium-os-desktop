@@ -222,6 +222,7 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
     for unit in [
         "droidloom-production.service",
         "droidloom-manager-label.service",
+        "droidloom-container-services.target",
     ] {
         let source = repo.join("runtime/droidloom-supervisor/src").join(unit);
         if !fs::symlink_metadata(&source)?.is_file() {
@@ -291,6 +292,10 @@ mod tests {
         fs::create_dir(&host).unwrap();
         for (name, body) in [
             (
+                "droidloom-container-services.target",
+                include_str!("../../../runtime/droidloom-supervisor/src/droidloom-container-services.target"),
+            ),
+            (
                 "droidloom-production.service",
                 include_str!(
                     "../../../runtime/droidloom-supervisor/src/droidloom-production.service"
@@ -327,6 +332,12 @@ mod tests {
                 fs::metadata(&unit).unwrap().permissions().mode() & 0o777,
                 0o644
             );
+            if unit.extension().is_some_and(|ext| ext == "target") {
+                assert!(body.lines().any(|line| line == "BindsTo=droidloom-container-entry.service"));
+                assert!(body.lines().any(|line| line == "After=droidloom-container-entry.service"));
+                assert!(body.lines().any(|line| line == "PropagatesStopTo=droidloom-container-entry.service"));
+                continue;
+            }
             let command = body
                 .lines()
                 .find_map(|line| line.strip_prefix("ExecStart="))

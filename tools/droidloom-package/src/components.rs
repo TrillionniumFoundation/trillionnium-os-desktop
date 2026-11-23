@@ -79,6 +79,7 @@ fn inputs(source: &Path) -> Result<BTreeMap<String, Vec<u8>>> {
         "rust-toolchain.toml",
         "runtime/droidloom-supervisor/src/droidloom-production.service",
         "runtime/droidloom-supervisor/src/droidloom-manager-label.service",
+        "runtime/droidloom-supervisor/src/droidloom-container-services.target",
     ] {
         result.insert(path.into(), fs::read(source.join(path))?);
     }
@@ -273,6 +274,7 @@ mod tests {
             "packaging/arch/PKGBUILD.in",
             "runtime/droidloom-supervisor/src/droidloom-production.service",
             "runtime/droidloom-supervisor/src/droidloom-manager-label.service",
+            "runtime/droidloom-supervisor/src/droidloom-container-services.target",
         ] {
             fs::write(root.join(path), b"fixture").unwrap();
         }

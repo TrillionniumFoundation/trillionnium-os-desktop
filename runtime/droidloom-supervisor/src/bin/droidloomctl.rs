@@ -11,6 +11,9 @@ use std::{
     time::{Duration, Instant},
 };
 
+#[path = "../container_services.rs"]
+mod container_services;
+
 use clap::{Parser, Subcommand, ValueEnum};
 use droidloom_supervisor::control::{
     ControlRequest, DEFAULT_CELL_SPEC, DEFAULT_CONTROL_SOCKET, request, request_with_progress,
@@ -178,6 +181,42 @@ fn main() {
 
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
+    let managed = match &cli.command {
+        Command::Start { spec, mode, no_wait } if spec == &PathBuf::from(DEFAULT_CELL_SPEC) =>
+            Some(("start", Some(*mode), !cli.cell && !no_wait)),
+        Command::Restart { spec, mode, no_wait } if spec == &PathBuf::from(DEFAULT_CELL_SPEC) =>
+            Some(("restart", *mode, !cli.cell && !no_wait)),
+        Command::Stop => Some(("stop", None, false)),
+        Command::Status => Some(("status", None, false)),
+        _ => None,
+    };
+    if let Some((operation, mode, wait)) = managed {
+        if cli.socket == PathBuf::from(DEFAULT_CONTROL_SOCKET) && container_services::selected()? {
+            if mode.is_some_and(|selected| selected != SessionMode::Desktop) {
+                return Err("the shared-kernel production service currently supports desktop mode".into());
+            }
+            let running = container_services::lifecycle(operation)?;
+            let ready = if wait {
+                let response = request_with_progress(&cli.socket, &ControlRequest::WaitReady, &mut |message| {
+                    if !cli.json { eprintln!("{message}"); }
+                })?;
+                if !response.ok { return Err(response.message.into()); }
+                Some(true)
+            } else {
+                None
+            };
+            if cli.json {
+                println!("{}", serde_json::json!({"ok":true, "container_services_running":running, "android_ready":ready}));
+            } else if ready == Some(true) {
+                println!("Container services are running and Android is ready");
+            } else if running {
+                println!("Container services are running");
+            } else {
+                println!("Container services are not running");
+            }
+            return Ok(());
+        }
+    }
     if !cli.cell && cli.socket == PathBuf::from(DEFAULT_CONTROL_SOCKET) {
         let operation = match &cli.command {
             Command::Start {
