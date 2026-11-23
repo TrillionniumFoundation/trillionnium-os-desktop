@@ -414,6 +414,12 @@
 (allow p4_linux_udev_t p4_linux_udev_rules_t (dir (getattr search open read)))
 (allow p4_linux_udev_t p4_linux_udev_rules_t (file (getattr open read map)))
 (allow p4_linux_udev_t proc (dir (getattr search)))
+; udev_rules_parse_file reopens each original distribution rule via /proc/self/fd/N.
+(allow p4_linux_udev_t proc (lnk_file (getattr read)))
+(allow p4_linux_udev_t self (dir (getattr search)))
+(allow p4_linux_udev_t self (lnk_file (getattr read)))
+(neverallow p4_linux_udev_t init_t (lnk_file (getattr read write)))
+(neverallow p4_linux_udev_t p4_android_userspace (lnk_file (read write)))
 (allow p4_linux_udev_t sysfs (dir (getattr search)))
 (allow p4_linux_udev_t device (dir (getattr search)))
 (allow p4_linux_udev_t self (process (getsched)))
