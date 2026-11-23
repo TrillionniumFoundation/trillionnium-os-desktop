@@ -534,7 +534,7 @@ fn product_text(modules: &[String]) -> String {
     s
 }
 fn guest_linker_config() -> &'static str {
-    "# ARM64 interpreter input; the original CP3A host linker stays unchanged.\ndir.system = /vendor/etc/droidloom/nativebridge/guest\ndir.system += /data\ndir.system += /system\n[system]\nnamespace.default.visible = true\nnamespace.default.isolated = false\nnamespace.default.search.paths = /vendor/etc/droidloom/nativebridge/guest/${LIB}/arm64/bootstrap:/vendor/etc/droidloom/nativebridge/guest/${LIB}/arm64\nnamespace.default.permitted.paths = /vendor/etc/droidloom/nativebridge/guest/${LIB}/arm64\n"
+    "# ARM64 interpreter input; the original CP3A host linker stays unchanged.\ndir.system = /vendor/etc/droidloom/nativebridge/guest\ndir.system = /data\ndir.system = /system\n[system]\nnamespace.default.visible = true\nnamespace.default.isolated = false\nnamespace.default.search.paths = /vendor/etc/droidloom/nativebridge/guest/${LIB}/arm64/bootstrap:/vendor/etc/droidloom/nativebridge/guest/${LIB}/arm64\nnamespace.default.permitted.paths = /vendor/etc/droidloom/nativebridge/guest/${LIB}/arm64\n"
 }
 fn exact_replace(
     path: &Path,
@@ -568,6 +568,16 @@ pub(super) fn project(
         "66914c503389c81627bd2751b328535592138e517dce1ed36bf9468c5c46a397",
         "std::filesystem::path result(\"/system\");",
         "std::filesystem::path result(\"/vendor/etc/droidloom/nativebridge/guest\");",
+        1,
+        projection,
+    )?;
+    exact_replace(
+        &source.join(
+            "frameworks/libs/binary_translation/runtime_primitives/exec_region_elf_backed.cc",
+        ),
+        "92fc166e0d5fc08dec68514b19840d85290b29423dd9f7e9661b489f52695337",
+        "/system/lib64/libberberis_exec_region.so",
+        &format!("/vendor/{HOST_DIRECTORY}/libberberis_exec_region.so"),
         1,
         projection,
     )?;
@@ -814,6 +824,10 @@ mod tests {
             "lib64/droidloom/nativebridge/libberberis_arm64.so"
         );
         assert_eq!(
+            vendor_path("system/lib64/libberberis_exec_region.so").unwrap(),
+            format!("{HOST_DIRECTORY}/libberberis_exec_region.so")
+        );
+        assert_eq!(
             vendor_path("system/lib64/arm64/libc.so").unwrap(),
             "etc/droidloom/nativebridge/guest/lib64/arm64/libc.so"
         );
@@ -846,8 +860,18 @@ mod tests {
         ));
         assert!(!p.contains("PRODUCT_SYSTEM_PROPERTIES"));
         assert!(!native_blueprint().contains("binfmt"));
-        assert!(
-            guest_linker_config().contains("dir.system = /vendor/etc/droidloom/nativebridge/guest")
+        let executable_roots: Vec<_> = guest_linker_config()
+            .lines()
+            .take_while(|line| *line != "[system]")
+            .filter_map(|line| line.strip_prefix("dir.system = "))
+            .collect();
+        assert_eq!(
+            executable_roots,
+            [
+                "/vendor/etc/droidloom/nativebridge/guest",
+                "/data",
+                "/system"
+            ]
         );
     }
 }
