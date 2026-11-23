@@ -260,3 +260,35 @@ mod tests {
         }
     }
 }
+
+#[cfg(test)]
+mod kernel_device_supply {
+    use super::*;
+
+    #[test]
+    #[ignore = "requires the private, populated board device tree on the selected kernel"]
+    fn original_factory_nodes_survive_normal_mount_custody() {
+        let cohort = "029b45ac4044cdb11b51988e36fd5fa75e1acd69760bdcba02deb8d687a35790";
+        // FD 9 is the board parent's original private tmpfs, populated by the release code.
+        let root = fd_result(unsafe { libc::fcntl(9, libc::F_DUPFD_CLOEXEC, 10) as _ }).unwrap();
+        let mut stat: libc::statx = unsafe { std::mem::zeroed() };
+        const UNIQUE: u32 = 0x4000;
+        zero(unsafe {
+            libc::syscall(libc::SYS_statx, root.as_raw_fd(), c"".as_ptr(),
+                          AT_EMPTY_PATH, UNIQUE, &mut stat)
+        }).unwrap();
+        assert_ne!(stat.stx_mask & UNIQUE, 0);
+        let (dev, ino) = node(&root).unwrap();
+        let identity = (dev, ino, stat.stx_mnt_id);
+        let factory = FactoryDevices::acquire(&root, cohort, identity).unwrap();
+        assert!(FactoryDevices::acquire(&root, &"0".repeat(64), identity).is_err());
+        assert!(FactoryDevices::acquire(&root, cohort, (dev, ino, stat.stx_mnt_id+1)).is_err());
+        let clone = fd_result(unsafe {
+            libc::syscall(libc::SYS_open_tree, root.as_raw_fd(), c"".as_ptr(),
+                          libc::OPEN_TREE_CLONE | libc::O_CLOEXEC as u32 | AT_EMPTY_PATH | libc::AT_RECURSIVE as u32)
+        }).unwrap();
+        require_detached(&clone).unwrap();
+        assert_eq!(node(&clone).unwrap(), (dev, ino));
+        factory.verify(&clone, false).unwrap();
+    }
+}
