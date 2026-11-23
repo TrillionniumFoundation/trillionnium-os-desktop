@@ -43,3 +43,35 @@
 (typeattributeset p4_linux_data (p4_linux_systemd_executor_t))
 (allow init_t p4_linux_systemd_executor_t (file (getattr open read execute map execute_no_trans)))
 (neverallow p4_linux_procs p4_linux_systemd_executor_t (file (write append setattr create relabelto relabelfrom entrypoint)))
+
+; The original system manager searches only its distribution and local unit directories.
+(type p4_linux_unit_directory_t)
+(type p4_linux_unit_file_t)
+(roletype object_r p4_linux_unit_directory_t)
+(roletype object_r p4_linux_unit_file_t)
+(typeattributeset p4_linux_data (p4_linux_unit_directory_t p4_linux_unit_file_t))
+(allow init_t p4_linux_unit_directory_t (dir (getattr search open read watch)))
+(allow init_t p4_linux_unit_file_t (file (getattr open read map)))
+(allow init_t p4_linux_unit_file_t (lnk_file (getattr read)))
+(neverallow p4_linux_procs p4_linux_unit_directory_t (dir (write create add_name remove_name relabelto relabelfrom)))
+(neverallow p4_linux_procs p4_linux_unit_file_t (file (write append setattr create relabelto relabelfrom entrypoint)))
+
+; PID 1 owns its notification endpoint. Only the selected early observer uses sd_notify.
+(type p4_linux_systemd_notify_t)
+(roletype object_r p4_linux_systemd_notify_t)
+(typeattributeset p4_linux_data (p4_linux_systemd_notify_t))
+(typetransition init_t p4_linux_systemd_run_t sock_file "notify" p4_linux_systemd_notify_t)
+(allow p4_linux_systemd_notify_t tmpfs (filesystem (associate)))
+(allow init_t self (unix_dgram_socket (create bind read getattr getopt setopt shutdown)))
+(allow init_t p4_linux_systemd_notify_t (sock_file (create getattr setattr unlink)))
+(allow droidloom_container_entry_t self (unix_dgram_socket (create write getattr getopt setopt)))
+(allow droidloom_container_entry_t p4_linux_systemd_notify_t (sock_file (write)))
+(allow droidloom_container_entry_t init_t (unix_dgram_socket (sendto)))
+(neverallow p4_android_userspace p4_linux_systemd_notify_t (sock_file (open read write create setattr unlink relabelto relabelfrom)))
+
+; Ubuntu initializes its machine-id once, and owns no associated Android identity.
+(type p4_linux_machine_id_t)
+(roletype object_r p4_linux_machine_id_t)
+(typeattributeset p4_linux_data (p4_linux_machine_id_t))
+(allow init_t p4_linux_machine_id_t (file (getattr open read write lock)))
+(neverallow p4_linux_procs p4_linux_machine_id_t (file (create unlink rename relabelfrom relabelto entrypoint execute)))

@@ -8,11 +8,14 @@
 /usr/lib/droidloom/production/current/board-devices/console -c u:object_r:p4_linux_console_t:s0
 /usr/lib/droidloom/production/current/board-devices/(null|full) -c u:object_r:p4_linux_standardio_t:s0
 /etc/systemd -d u:object_r:p4_linux_rootdir_t:s0
-/etc/systemd/system -d u:object_r:p4_linux_rootdir_t:s0
+/etc/systemd/system -d u:object_r:p4_linux_unit_directory_t:s0
 /etc/systemd/system\.conf -- u:object_r:p4_linux_systemd_config_t:s0
 /var -d u:object_r:p4_linux_rootdir_t:s0
 /var/lib -d u:object_r:p4_linux_rootdir_t:s0
 /var/lib/systemd -d u:object_r:p4_linux_rootdir_t:s0
-/etc/machine-id -- u:object_r:p4_linux_systemd_config_t:s0
+/etc/machine-id -- u:object_r:p4_linux_machine_id_t:s0
 /etc -d u:object_r:p4_linux_etc_dir_t:s0
 /usr/lib/systemd/systemd-executor -- u:object_r:p4_linux_systemd_executor_t:s0
+/usr/lib/systemd/system -d u:object_r:p4_linux_unit_directory_t:s0
+/(etc|usr/lib)/systemd/system/[^/]+\.(service|target|slice|scope|socket|timer|mount|automount|path|device|swap) -- u:object_r:p4_linux_unit_file_t:s0
+/(etc|usr/lib)/systemd/system/[^/]+\.(service|target|slice|scope|socket|timer|mount|automount|path|device|swap) -l u:object_r:p4_linux_unit_file_t:s0
