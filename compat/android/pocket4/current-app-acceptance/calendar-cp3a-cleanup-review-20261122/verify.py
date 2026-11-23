@@ -32,11 +32,15 @@ def load_record(pin):
     return json.loads(data)
 
 
-def read_dex(path, pin):
+def read_apk(path, pin):
     with path.open("rb") as stream:
         data = stream.read(pin["apk_bytes"] + 1)
     check(len(data) == pin["apk_bytes"] and sha(data) == pin["apk_sha256"],
           f"APK size or digest mismatch: {path}")
+    return data
+
+
+def read_dex(data, pin):
     with zipfile.ZipFile(io.BytesIO(data)) as package:
         check(package.namelist().count("classes.dex") == 1, "ambiguous classes.dex")
         dex = package.read("classes.dex")
@@ -44,7 +48,7 @@ def read_dex(path, pin):
     return dex
 
 
-def selected_methods(dex, tool, methods):
+def selected_methods(dex, tool, methods, package="com/android/providers/calendar"):
     with tempfile.TemporaryDirectory(prefix="calendar-smali-") as directory:
         root = Path(directory)
         dex_path = root / "classes.dex"
@@ -52,7 +56,7 @@ def selected_methods(dex, tool, methods):
         output = root / "smali"
         subprocess.run([tool, "disassemble", "--jobs", "1", "-o", str(output), str(dex_path)],
                        check=True, timeout=60)
-        classes = output / "com/android/providers/calendar"
+        classes = output / package
         selected = {}
         for row in methods:
             klass, signature = row["class"], row["signature"]
@@ -91,7 +95,32 @@ def check_routes(body, additions):
     check((insns[first+1:first+5] == root_registration) is additions, "root 42 registration changed")
 
 
-def verify(previous_apk, current_apk, tool):
+def verify_client(path, tool, pin):
+    data = read_apk(path, pin)
+    dex = read_dex(data, pin)
+    with zipfile.ZipFile(io.BytesIO(data)) as package:
+        members = package.namelist()
+        check(len(members) == len(set(members)) == pin["zip_members"],
+              "client archive members differ")
+        check([name for name in members if name.endswith(".dex")] == ["classes.dex"],
+              "unexpected client DEX")
+        check(sha(package.read("resources.arsc")) == pin["resources_sha256"],
+              "client resource table changed")
+        for name in members:
+            member = package.read(name).lower()
+            for token in pin["legacy_literals"]:
+                for encoding in ("utf-8", "utf-16-le"):
+                    check(token.lower().encode(encoding) not in member,
+                          f"legacy literal {token!r} found in {name}")
+
+    key = pin["class"], pin["signature"]
+    method = selected_methods(dex, tool, [pin], "com/android/calendar")[key]
+    check(sha(method) == pin["method_sha256"], "client account callback changed")
+    return {"current_client_verified": True, "zip_members": len(members),
+            "legacy_literals_present": False, "empty_query_account_type": "com.google"}
+
+
+def verify(previous_apk, current_apk, tool, calendar_apk=None):
     review = json.loads((HERE / "review.json").read_bytes())
     previous = load_record(review["previous_review"])
     receipt = load_record(review["current_provider_receipt"])
@@ -105,8 +134,8 @@ def verify(previous_apk, current_apk, tool):
           and review["system_image_sha256"] == receipt["full_system_image"]["sha256"],
           "current image receipt changed")
     methods = review["methods"]
-    old = selected_methods(read_dex(previous_apk, inputs["previous"]), tool, methods)
-    new = selected_methods(read_dex(current_apk, inputs["current"]), tool, methods)
+    old = selected_methods(read_dex(read_apk(previous_apk, inputs["previous"]), inputs["previous"]), tool, methods)
+    new = selected_methods(read_dex(read_apk(current_apk, inputs["current"]), inputs["current"]), tool, methods)
     previous_review_members = {}
     matched = 0
     for row in methods:
@@ -131,9 +160,12 @@ def verify(previous_apk, current_apk, tool):
     expected = review["observed"]
     check(matched == expected["methods_equal_excluding_line_numbers"] == 15
           and len(methods) == matched + 1 and len(previous_review_members) == 7, "review scope changed")
-    return {"previous_methods_reproduced": len(previous_review_members), "matching_methods": matched,
+    result = {"previous_methods_reproduced": len(previous_review_members), "matching_methods": matched,
             "calendar_uri_ids": [4, 5], "current_extra_root_ids": [41, 42],
             "provider_writes": 0, "runtime_cleanup_qualified": False}
+    if calendar_apk is not None:
+        result.update(verify_client(calendar_apk, tool, review["calendar_client"]))
+    return result
 
 
 if __name__ == "__main__":
@@ -141,5 +173,6 @@ if __name__ == "__main__":
     parser.add_argument("--previous-apk", type=Path, required=True)
     parser.add_argument("--current-apk", type=Path, required=True)
     parser.add_argument("--baksmali", default="baksmali")
+    parser.add_argument("--current-calendar", type=Path, help="also verify the CP3A Calendar client")
     args = parser.parse_args()
-    print(json.dumps(verify(args.previous_apk, args.current_apk, args.baksmali), sort_keys=True))
+    print(json.dumps(verify(args.previous_apk, args.current_apk, args.baksmali, args.current_calendar), sort_keys=True))

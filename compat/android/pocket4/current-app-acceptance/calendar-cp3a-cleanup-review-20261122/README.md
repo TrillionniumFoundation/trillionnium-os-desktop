@@ -26,10 +26,28 @@ Disassembling both originals reproduced all seven prior method hashes. Fifteen c
 From this directory in the repository, supply the two original APK files and the reviewed baksmali build (`2.5.2.git2771eae-debian`).
 
 ```sh
-python3 -I -B verify.py --previous-apk "$PREVIOUS_PROVIDER_APK" --current-apk "$CP3A_PROVIDER_APK"
+python3 -I -B verify.py --previous-apk "$PREVIOUS_PROVIDER_APK" \
+  --current-apk "$CP3A_PROVIDER_APK" --current-calendar "$CP3A_CALENDAR_APK"
 python3 -I -B test_callers.py -v
 ```
 
 The binary verifier completed against both Pocket4 originals with 7 prior hashes reproduced, 15 equivalent method bodies and both generations of URI route IDs checked. The caller tests import both Main models and execute their actual generated SQL on in-memory SQLite. They check unrelated rows, each ownership field changing after candidate selection and an event appearing before deletion.
 
 This evidence qualifies the static provider implementation for the two reviewed inputs. Installed Calendar identity, capabilities of the CP3A client, current Main and provider identity, permission checks, the owned transaction, sync effects, post-delete readback and app acceptance still require device evidence. The existing standalone Calendar installation receipt describes the earlier installation.
+
+## Current Calendar client
+
+The CP3A client in the same system image is `/system/product/app/Calendar/Calendar.apk`, version 37, SHA-256 `726241395b485794badd1a1fdcef4298ebb284f67826d73a7e2648f2b7a5382e`. The optional `--current-calendar` check verifies the full APK, its DEX and resource table, and the complete disassembled account-query callback. It also checks each of the 669 decompressed ZIP members for the five fixed strings required by the former local-calendar flow in both UTF-8 and UTF-16LE.
+
+In `AllInOneActivity$QueryHandler.onQueryComplete`, a non-null empty query result while the activity is active closes the cursor, sets `allowSkip`, and requests `AccountManager.addAccount("com.google", "com.android.calendar", …)`. The core and reminder drivers require the English button `Create local calendar`, the field hint `Calendar name`, the initial value `On this device`, the account owner `Droidloom local calendars` and the internal name prefix `droidloom-local-`. None of those literals occur in the selected APK. A fresh successful provider review therefore leaves the client first-use case open.
+
+The AOSP Calendar source checkouts on Pocket4 and ai395 both point to clean commit `7a9e63dea83dfdab46db04fed58642bd8856dede` from 26Q2. The original source at `src/com/android/calendar/AllInOneActivity.kt` contains the same account request. Its default `res/values/strings.xml` directs users to add a Calendar account and make a calendar visible. Read-only upstream ref lookup returned this commit for both `android17-release` and `android17-security-release`. The Android 17 tag returned was `android-17.0.0_r1`. The lookup and inspected local source trees did not identify a CP3A/QPR1 source port implementing local-calendar creation.
+
+```sh
+git ls-remote --refs https://android.googlesource.com/platform/packages/apps/Calendar \
+  'refs/tags/android-17*' 'refs/heads/android17*' 'refs/heads/*26Q3*' 'refs/tags/CP3A*'
+git show 7a9e63dea83dfdab46db04fed58642bd8856dede:src/com/android/calendar/AllInOneActivity.kt
+git show 7a9e63dea83dfdab46db04fed58642bd8856dede:res/values/strings.xml
+```
+
+The retained historical install record points to the repaired standalone APK `c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1` and build receipt `ac457251cf36eaeb4101ca500a38dc5d2ea2e0f25dbacebc4dc1f6a2ccf4c290`. Rebuilding the inspected unmodified upstream source retains its account-based flow. A local-only zero-account business test needs a current client with a user-facing creation path and ownership semantics compatible with the selected provider, followed by fresh client and Main custody and readback. The account request was inspected statically. No account operation or installation was performed.
