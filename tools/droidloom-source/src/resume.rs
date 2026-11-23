@@ -120,7 +120,9 @@ fn git_with_input(checkout: &Path, args: &[OsString], progress: &Progress, netwo
     if input.is_some_and(|bytes| bytes.len() > PROJECT_TREE_LIMIT as usize) {
         return Err(invalid("Git input exceeds the bounded project tree"));
     }
-    let seconds = progress.remaining(if network { MATERIALIZE_SECONDS } else { 60 })?;
+    // A large offline working-tree checkout can outlast the short metadata queries.
+    let worktree_checkout = args.first().is_some_and(|arg| arg == "checkout");
+    let seconds = progress.remaining(if network || worktree_checkout { MATERIALIZE_SECONDS } else { 60 })?;
     let mut command = Command::new("/usr/bin/timeout");
     command.args(["--signal=TERM", "--kill-after=2s"])
         .arg(format!("{seconds}s")).arg("/usr/bin/git")
@@ -360,7 +362,7 @@ fn missing_locked_blobs(checkout: &Path, project: &PlannedProject, progress: &Pr
     Ok(missing)
 }
 
-fn fetch_interrupted_project_blobs(checkout: &Path, project: &PlannedProject, ordinal: usize,
+fn fetch_locked_project_blobs(checkout: &Path, project: &PlannedProject, ordinal: usize,
                                   progress: &mut Progress) -> Result<(), SourceError> {
     let missing = missing_locked_blobs(checkout, project, progress)?;
     let total = missing.len();
@@ -459,7 +461,6 @@ fn resume_project(root: &Path, project: &PlannedProject, ordinal: usize,
     let cached = git_output(&checkout, &arguments(&["cat-file", "-e", &commit]), progress, false)?;
     if cached.status.success() {
         progress.record("PROJECT_EXACT_COMMIT_LOCAL_CHECKOUT_STILL_REQUIRED", detail())?;
-        fetch_interrupted_project_blobs(&checkout, project, ordinal, progress)?;
     } else {
         if !matches!(cached.status.code(), Some(1 | 128)) {
             return Err(invalid(format!("local commit probe failed: {}", cached.status)));
@@ -473,10 +474,13 @@ fn resume_project(root: &Path, project: &PlannedProject, ordinal: usize,
         git(&checkout, &arguments(&["fetch", "--quiet", "--depth=1", "--filter=blob:none",
             "origin", &project.commit]), progress, true)?;
     }
+    // A freshly fetched commit also promises its blobs. Fetch the selected cone
+    // in bounded, reusable packs before either a fresh or a resumed checkout.
+    fetch_locked_project_blobs(&checkout, project, ordinal, progress)?;
     progress.record("PROJECT_CHECKOUT_EXACT_COMMIT", detail())?;
     // No --force: an untracked or modified conflicting file fails without
     // being discarded. The following clean-tree gate also rejects leftovers.
-    git(&checkout, &arguments(&["checkout", "--quiet", "--detach", &project.commit]), progress, true)?;
+    git(&checkout, &arguments(&["checkout", "--quiet", "--detach", &project.commit]), progress, false)?;
     progress.record("PROJECT_VERIFY_AFTER_CHECKOUT", detail())?;
     verify_project(&checkout, project, progress, owner)?;
     progress.record("PROJECT_VERIFIED", detail())
