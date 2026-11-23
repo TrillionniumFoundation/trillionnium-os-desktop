@@ -81,10 +81,70 @@ pub(crate) fn build(
     if published.sha256 != image.sha256 || published.bytes != image.bytes {
         return fail("the published private system extension differs from the completed image");
     }
+    // The private extraction scope has separately budgeted the expanded
+    // vendor. Publication observes available capacity for every final raw file.
+    drop(_scope);
+    let base_package = match super::official_base::publish(
+        &output_dir.join("official-base-package"),
+        &system,
+        &raw_vendor,
+        Some(&published),
+    ) {
+        Ok(package) => package,
+        Err(error) => {
+            // This invocation published the standalone component. Preserve any
+            // subsequently replaced file and leave a fresh build retry possible.
+            recheck(&published, 32 * 1024 * 1024)?;
+            fs::remove_file(&published.path)?;
+            File::open(output_dir)?.sync_all()?;
+            return Err(error);
+        }
+    };
     Ok(
-        json!({"declaration":declaration,"members":detail["member_sha256"],
+        json!({"declaration":declaration,"base_package":base_package,"members":detail["member_sha256"],
         "platform_file_contexts_sha256":detail["platform_contexts_sha256"],
         "system":system,"vendor":vendor,"raw_vendor_sha256":raw_vendor.sha256,
         "sparse_converter":converter,"tools":tools,"production_signed":false}),
     )
+}
+
+/// Validate a retained finished extension against both selected whole images.
+pub(super) fn verify_retained(
+    system: &FileRef,
+    vendor: &FileRef,
+    image: &FileRef,
+    modules: &BTreeMap<String, String>,
+    workspace: &Path,
+) -> Result<()> {
+    let temp = tempfile::Builder::new()
+        .prefix("check-platform-image-")
+        .tempdir_in(workspace)?;
+    let python = reader_tool("python3")?;
+    let debugfs = reader_tool("debugfs")?;
+    let e2fsck = reader_tool("e2fsck")?;
+    write(
+        &temp.path().join("inputs.json"),
+        serde_json::to_vec(&json!({"system":system.path,"vendor":vendor.path,
+        "existing_image":image.path,"tools":{"debugfs":debugfs.path,"e2fsck":e2fsck.path},"native_hashes":modules}))?,
+    )?;
+    checked_tool(
+        &python,
+        Command::new(&python.path)
+            .args(["-I", "-c", BUILDER, "inputs.json"])
+            .current_dir(temp.path()),
+    )?;
+    let (_, detail) = read_json(&temp.path().join("receipt.json"))?;
+    if detail["sha256"].as_str() != Some(&image.sha256)
+        || detail["bytes"].as_u64() != Some(image.bytes)
+        || detail["target"] != TARGET
+    {
+        return fail("finished extension readback differs from the selected part");
+    }
+    for tool in [&debugfs, &e2fsck] {
+        recheck(tool, 256 * 1024 * 1024)?;
+    }
+    for input in [system, vendor, image] {
+        recheck(input, MAX_IMAGE)?;
+    }
+    Ok(())
 }

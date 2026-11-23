@@ -71,10 +71,11 @@ class FileSystem:
         return sha256(destination)
 
 
-def build(system, vendor, tools, native_hashes):
+def build(system, vendor, tools, native_hashes, existing_image=None):
+    image = Path(existing_image) if existing_image is not None else IMAGE
     system_fs = FileSystem(system, tools["debugfs"])
     vendor_fs = FileSystem(vendor, tools["debugfs"])
-    output_fs = FileSystem(IMAGE, tools["debugfs"])
+    output_fs = FileSystem(image, tools["debugfs"])
     src = Path("src")
     src.mkdir()
     verify(system_fs.members(MOUNT) == {"hw": (0o40755, 0, 0, 0)}
@@ -107,25 +108,26 @@ def build(system, vendor, tools, native_hashes):
     contexts = Path("plat_file_contexts")
     system_fs.extract("/system/etc/selinux/plat_file_contexts", contexts)
     system_fs.extract("/system/etc/mke2fs.conf", Path("mke2fs.conf"))
-    env_config = os.environ.get("MKE2FS_CONFIG")
-    os.environ["MKE2FS_CONFIG"] = str(Path("mke2fs.conf").resolve())
-    try:
-        with IMAGE.open("xb") as stream:
-            stream.truncate(24 * 1024 * 1024)
-        identifier = str(uuid.uuid5(uuid.NAMESPACE_DNS, "pocket4.cp3a.r15.nativebridge.fixed-systemext-lib64"))
-        run([tools["mke2fs"], "-q", "-t", "ext4", "-b", "4096", "-I", "256", "-m", "0",
-             "-U", identifier, "-L", "p4_system_ext", "-E",
-             "lazy_itable_init=0,lazy_journal_init=0,hash_seed=" + identifier, "-F", IMAGE])
-    finally:
-        if env_config is None:
-            del os.environ["MKE2FS_CONFIG"]
-        else:
-            os.environ["MKE2FS_CONFIG"] = env_config
-    verify(set(output_fs.members("/")) == {"lost+found"}, "unexpected empty filesystem")
-    output_fs.inspect("rmdir /lost+found", write=True)
-    run([tools["e2fsdroid"], "-e", "-T", FILE_TIME, "-C", "fs_config", "-S", contexts,
-         "-a", MOUNT, "-f", src, IMAGE])
-    run([tools["e2fsck"], "-fn", IMAGE])
+    if existing_image is None:
+        env_config = os.environ.get("MKE2FS_CONFIG")
+        os.environ["MKE2FS_CONFIG"] = str(Path("mke2fs.conf").resolve())
+        try:
+            with image.open("xb") as stream:
+                stream.truncate(24 * 1024 * 1024)
+            identifier = str(uuid.uuid5(uuid.NAMESPACE_DNS, "pocket4.cp3a.r15.nativebridge.fixed-systemext-lib64"))
+            run([tools["mke2fs"], "-q", "-t", "ext4", "-b", "4096", "-I", "256", "-m", "0",
+                 "-U", identifier, "-L", "p4_system_ext", "-E",
+                 "lazy_itable_init=0,lazy_journal_init=0,hash_seed=" + identifier, "-F", image])
+        finally:
+            if env_config is None:
+                del os.environ["MKE2FS_CONFIG"]
+            else:
+                os.environ["MKE2FS_CONFIG"] = env_config
+        verify(set(output_fs.members("/")) == {"lost+found"}, "unexpected empty filesystem")
+        output_fs.inspect("rmdir /lost+found", write=True)
+        run([tools["e2fsdroid"], "-e", "-T", FILE_TIME, "-C", "fs_config", "-S", contexts,
+             "-a", MOUNT, "-f", src, image])
+    run([tools["e2fsck"], "-fn", image])
 
     wanted = set(directories) | set(hashes)
     visited = set()
@@ -151,11 +153,11 @@ def build(system, vendor, tools, native_hashes):
     root_stat = output_fs.inspect("stat /")
     verify(re.search(r"Type: directory\s+Mode:\s+0755", root_stat)
            and re.search(r"User:\s+0\s+Group:\s+0\s", root_stat), "incorrect root mode or owner")
-    return {"file": IMAGE.name, "bytes": IMAGE.stat().st_size, "sha256": sha256(IMAGE),
+    return {"file": IMAGE.name, "bytes": image.stat().st_size, "sha256": sha256(image),
             "target": MOUNT, "member_sha256": hashes, "platform_contexts_sha256": sha256(contexts)}
 
 
 if __name__ == "__main__":
     data = json.loads(Path(sys.argv[1]).read_text())
-    receipt = build(Path(data["system"]), Path(data["vendor"]), data["tools"], data["native_hashes"])
+    receipt = build(Path(data["system"]), Path(data["vendor"]), data["tools"], data["native_hashes"], data.get("existing_image"))
     Path("receipt.json").write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")

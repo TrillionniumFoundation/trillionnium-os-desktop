@@ -45,6 +45,22 @@ struct Args {
 }
 #[derive(Subcommand)]
 enum Action {
+    /// Package the original GSI and the raw independent vendor from a completed normal build.
+    PackageOfficialBase {
+        #[arg(long)]
+        system_image: PathBuf,
+        #[arg(long)]
+        vendor_image: PathBuf,
+        #[arg(long)]
+        normal_vendor_result: PathBuf,
+        #[arg(long)]
+        normal_vendor_result_sha256: String,
+        #[arg(long)]
+        system_ext_lib64: Option<PathBuf>,
+        /// Fresh private output root with the image broker's generation-relative layout.
+        #[arg(long)]
+        output: PathBuf,
+    },
     /// Build and stage the host executables and system-manager templates for an independently selected Android image.
     PackageContainerHostStage {
         /// Private ordinary-user workspace in which Cargo outputs and the staged payload are kept.
@@ -457,6 +473,25 @@ fn execute(args: Args) -> Result<()> {
             vendor_properties,
         }) => {
             return image_policy::prune(image, destination, vendor_properties);
+        }
+        Some(Action::PackageOfficialBase {
+            system_image,
+            vendor_image,
+            normal_vendor_result,
+            normal_vendor_result_sha256,
+            system_ext_lib64,
+            output,
+        }) => {
+            let receipt = coherent_images::official_base::stage_existing(
+                system_image,
+                vendor_image,
+                normal_vendor_result,
+                normal_vendor_result_sha256,
+                system_ext_lib64.as_deref(),
+                output,
+            )?;
+            println!("{}", serde_json::to_string_pretty(&receipt)?);
+            return Ok(());
         }
         Some(Action::PackageContainerHostStage { work, jobs }) => {
             let stage = package::stage_container_host(&repository(args.source.clone())?, work, *jobs)?;
