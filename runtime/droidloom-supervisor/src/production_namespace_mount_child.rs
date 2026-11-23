@@ -84,7 +84,7 @@ fn link_target(value: &[u8]) -> bool {
 /// The only transfer accepted at the first PID 1 barrier. The connected peer
 /// is held exclusively by the creator; no pathname, process ID or JSON grants
 /// access to this endpoint. Exact sender/receiver ownership was already bound.
-unsafe fn receive_bases(nonce: [u8; 16], parent_pid: u32) -> ([RawFd; 4], BaseLayout) {
+unsafe fn receive_bases(nonce: [u8; 16], parent_pid: u32) -> ([RawFd; 4], BaseLayout, bool) {
     let mut packet = Packet::zeroed();
     let mut iov = libc::iovec {
         iov_base: (&mut packet as *mut Packet).cast(),
@@ -151,7 +151,8 @@ unsafe fn receive_bases(nonce: [u8; 16], parent_pid: u32) -> ([RawFd; 4], BaseLa
         held[index] = fd as RawFd;
     }
     for fd in &raw[..count] { unsafe { libc::syscall(libc::SYS_close, *fd); } }
-    (held, layout)
+    let selected_extension = packet.phase == Phase::MountEmptyBaseSystemExt as u32 || packet.phase == Phase::MountPersistentBaseSystemExt as u32;
+    (held, layout, selected_extension)
 }
 
 unsafe fn require_image(fd: RawFd, nonce: [u8; 16]) {
@@ -320,6 +321,29 @@ unsafe fn clone_readonly(source: RawFd, name: *const libc::c_char, target: RawFd
     unsafe {
         attach(fd, target, nonce);
         libc::syscall(libc::SYS_close, fd);
+    }
+}
+
+// populate() deliberately uses non-recursive clones for every original root
+// member. Carry only the one admitted nested library mount across that clone.
+unsafe fn preserve_selected_lib64(source: RawFd, root: RawFd, nonce: [u8; 16]) {
+    unsafe {
+        let system = directory_at(source, c"system".as_ptr(), nonce);
+        let original = directory_at(system, c"system_ext".as_ptr(), nonce);
+        let library = directory_at(original, c"lib64".as_ptr(), nonce);
+        let mut system_meta: libc::stat = std::mem::zeroed();
+        let mut library_meta: libc::stat = std::mem::zeroed();
+        if libc::syscall(libc::SYS_fstat, system, &mut system_meta) != 0 || libc::syscall(libc::SYS_fstat, library, &mut library_meta) != 0 { fail(nonce, 1) }
+        if system_meta.st_dev == library_meta.st_dev { protocol_failure(nonce); }
+        {
+            require_image(library, nonce);
+            let final_system = directory_at(root, c"system".as_ptr(), nonce);
+            let final_ext = directory_at(final_system, c"system_ext".as_ptr(), nonce);
+            let target = directory_at(final_ext, c"lib64".as_ptr(), nonce);
+            clone_readonly(original, c"lib64".as_ptr(), target, nonce);
+            for fd in [target, final_ext, final_system] { libc::syscall(libc::SYS_close, fd); }
+        }
+        for fd in [library, original, system] { libc::syscall(libc::SYS_close, fd); }
     }
 }
 
@@ -531,7 +555,7 @@ unsafe fn empty_data(
 /// Called only after the actual owned PID 1 emitted TreeReady.
 pub(super) unsafe fn run(nonce: [u8; 16], parent_pid: u32, _mode: Mode) -> ! {
     unsafe {
-        let ([system, vendor, data, metadata], layout) = receive_bases(nonce, parent_pid);
+        let ([system, vendor, data, metadata], layout, selected_extension) = receive_bases(nonce, parent_pid);
         require_image(system, nonce);
         require_image(vendor, nonce);
         if layout == BaseLayout::Persistent {
@@ -558,6 +582,7 @@ pub(super) unsafe fn run(nonce: [u8; 16], parent_pid: u32, _mode: Mode) -> ! {
         attach(root, root_target, nonce);
         libc::syscall(libc::SYS_close, root_target);
         populate(system, root, nonce);
+        if selected_extension { preserve_selected_lib64(system, root, nonce); }
         let vendor_target = directory_at(root, c"vendor".as_ptr(), nonce);
         attach(vendor, vendor_target, nonce);
         libc::syscall(libc::SYS_close, vendor_target);

@@ -59,6 +59,30 @@ fn mapped_range(value: &str) -> bool {
     matches!(fields.as_slice(), [Ok(0), Ok(base), Ok(count)] if *base > 0 && u64::from(*count) >= droidloom_contracts::MIN_SUBORDINATE_IDS && base.checked_add(*count).is_some())
 }
 
+fn check_lsm_role(
+    role: &str,
+    path: &str,
+    expected: &str,
+    reader: impl FnOnce(&str) -> io::Result<String>,
+) -> io::Result<()> {
+    let identity = reader(path).map_err(|source| {
+        io::Error::new(
+            source.kind(),
+            format!("cannot read Android container entry {role} role from {path}: {source}"),
+        )
+    })?;
+    let actual = identity.trim_end_matches(['\0', '\n']);
+    if actual != expected {
+        return Err(io::Error::new(
+            io::ErrorKind::PermissionDenied,
+            format!(
+                "Android container entry {role} role at {path} is {actual:?}; expected {expected:?}"
+            ),
+        ));
+    }
+    Ok(())
+}
+
 fn entry_context() -> io::Result<()> {
     if std::process::id() != 1 {
         return Err(error("container entry must be PID 1 in its prepared cell"));
@@ -82,15 +106,18 @@ fn entry_context() -> io::Result<()> {
             "the admitted cell seccomp filter and no_new_privs must be active",
         ));
     }
-    let selinux = kernel_text("/proc/self/attr/selinux/current")?;
-    let apparmor = kernel_text("/proc/self/attr/apparmor/current")?;
-    if selinux.trim_end_matches(['\0', '\n']) != "u:r:droidloom_container_entry:s0"
-        || apparmor.trim_end() != "droidloom-container-entry (enforce)"
-    {
-        return Err(error(
-            "the fixed host-managed service role must be active before Android execution",
-        ));
-    }
+    check_lsm_role(
+        "SELinux",
+        "/proc/self/attr/selinux/current",
+        "u:r:droidloom_container_entry:s0",
+        kernel_text,
+    )?;
+    check_lsm_role(
+        "AppArmor",
+        "/proc/self/attr/apparmor/current",
+        "droidloom-container-entry (enforce)",
+        kernel_text,
+    )?;
     Ok(())
 }
 
@@ -377,29 +404,42 @@ fn contact_host() -> io::Result<UnixStream> {
     loop {
         match UnixStream::connect(HOST_CHANNEL) {
             Ok(mut stream) => {
-                stream.set_read_timeout(Some(Duration::from_secs(5)))?;
-                let mut accepted = [0u8; 1];
-                match stream.read_exact(&mut accepted) {
-                    Ok(()) if accepted == [1] => {
-                        stream.set_write_timeout(Some(Duration::from_secs(2)))?;
-                        return Ok(stream);
+                // Image verification can outlast one socket read interval.
+                // Stay on the authenticated connection and respond to service stop.
+                stream.set_read_timeout(Some(Duration::from_millis(250)))?;
+                loop {
+                    if STOP.load(Ordering::Relaxed) || Instant::now() >= end {
+                        return Err(error("host release validation stopped or timed out"));
                     }
-                    Ok(()) => return Err(error("OCI host rejected the readiness protocol")),
-                    Err(e)
-                        if !STOP.load(Ordering::Relaxed)
-                            && Instant::now() < end
-                            && matches!(
+                    let mut accepted = [0_u8; 1];
+                    match stream.read_exact(&mut accepted) {
+                        Ok(()) if accepted == [1] => {
+                            stream.set_write_timeout(Some(Duration::from_secs(2)))?;
+                            return Ok(stream);
+                        }
+                        Ok(()) => return Err(error("OCI host rejected the readiness protocol")),
+                        Err(e)
+                            if matches!(
                                 e.kind(),
-                                io::ErrorKind::UnexpectedEof
+                                io::ErrorKind::TimedOut
                                     | io::ErrorKind::WouldBlock
-                                    | io::ErrorKind::TimedOut
-                                    | io::ErrorKind::ConnectionReset
+                                    | io::ErrorKind::Interrupted
                             ) =>
-                    {
-                        thread::sleep(Duration::from_millis(100))
+                        {
+                            continue;
+                        }
+                        Err(e)
+                            if matches!(
+                                e.kind(),
+                                io::ErrorKind::UnexpectedEof | io::ErrorKind::ConnectionReset
+                            ) =>
+                        {
+                            break;
+                        }
+                        Err(e) => return Err(e),
                     }
-                    Err(e) => return Err(e),
                 }
+                thread::sleep(Duration::from_millis(100));
             }
             Err(e)
                 if matches!(
@@ -527,5 +567,27 @@ mod tests {
         assert!(!mapped_range("0 200000 65536\n"));
         assert!(!mapped_range("0 0 4294967295\n"));
         assert!(!mapped_range("0 1000 1\n"));
+    }
+}
+
+#[cfg(test)]
+mod lsm_diagnostics {
+    use super::*;
+    #[test]
+    fn lsm_missing_keeps_kind_and_reports_the_specific_kernel_attribute() {
+        for (role, path) in [
+            ("SELinux", "/proc/self/attr/selinux/current"),
+            ("AppArmor", "/proc/self/attr/apparmor/current"),
+        ] {
+            let e = check_lsm_role(role, path, "expected", |_| {
+                Err(io::Error::from_raw_os_error(libc::ENOENT))
+            })
+            .unwrap_err();
+            assert_eq!(e.kind(), io::ErrorKind::NotFound);
+            assert!(e.to_string().contains(path) && e.to_string().contains(role));
+            let e = check_lsm_role(role, path, "expected", |_| Ok("other".into())).unwrap_err();
+            assert_eq!(e.kind(), io::ErrorKind::PermissionDenied);
+            assert!(e.to_string().contains("other") && e.to_string().contains("expected"));
+        }
     }
 }

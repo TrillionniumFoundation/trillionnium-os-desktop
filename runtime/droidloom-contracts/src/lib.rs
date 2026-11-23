@@ -417,3 +417,6 @@ mod tests {
         assert!(serde_json::from_value::<ImageManifest>(value).is_err());
     }
 }
+
+/// Read-only native bridge extension for the original CP3A system.
+pub mod system_ext;

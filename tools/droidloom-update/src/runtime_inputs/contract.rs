@@ -98,12 +98,13 @@ pub(crate) struct BaseDeclaration {
     pub layout: String,
     pub system: ImageDeclaration,
     pub vendor: ImageDeclaration,
+    #[serde(default)]
+    pub system_ext_lib64: Option<droidloom_contracts::system_ext::Declaration>,
 }
 impl BaseDeclaration {
     pub fn validate(&self, plan: &BuildPlan) -> Result<()> {
         require(
-            self.schema == 1
-                && self.scope == "android_base_images_v1"
+            droidloom_contracts::system_ext::accepts(self.schema, &self.scope, self.system_ext_lib64.as_ref(), &self.system.sha256, &self.vendor.sha256)
                 && self.layout == "gsi_system_as_root",
             "supported actual base declaration",
         )?;
@@ -119,6 +120,12 @@ impl BaseDeclaration {
                     && decl.bytes % 512 == 0,
                 "base declaration and whole input images differ",
             )?;
+        }
+        match (&self.system_ext_lib64, &plan.system_ext_lib64) {
+            (Some(decl),Some(file)) => require(file.path.file_name().and_then(|n|n.to_str())==Some(droidloom_contracts::system_ext::FILE)
+                && file.bytes==decl.bytes && file.sha256==decl.sha256,"runtime plan differs from selected native bridge library image")?,
+            (None,None) => (),
+            _ => return Err("runtime plan and selected base have different extension roles".into()),
         }
         Ok(())
     }
@@ -155,6 +162,8 @@ pub(crate) struct BuildPlan {
     pub base: FileRef,
     pub system: FileRef,
     pub vendor: FileRef,
+    #[serde(default)]
+    pub system_ext_lib64: Option<FileRef>,
     pub capture: FileRef,
     pub adapter: FileRef,
     pub tools: Tools,
@@ -177,6 +186,7 @@ impl BuildPlan {
         ] {
             r.validate(maximum)?;
         }
+        if let Some(extension)=&self.system_ext_lib64 { extension.validate(MAX_INPUT)?; }
         self.tools.validate()?;
         require(
             (IMAGE_BYTES_MIN..=IMAGE_BYTES_MAX).contains(&self.image_bytes)

@@ -22,31 +22,7 @@ const GUEST_DIRECTORY: &str = "etc/droidloom/nativebridge/guest";
 const INPUT_NAME: &str = "droidloom-official-gsi-vendor-inputs.json";
 const RESULT_NAME: &str = "droidloom-official-gsi-vendor-normal-result.json";
 const VENDOR_FILE_CONTEXTS: &str = include_str!("official_vendor_file_contexts");
-const HOST_MODULES: &[&str] = &[
-    "libberberis_exec_region",
-    "libberberis_proxy_libEGL",
-    "libberberis_proxy_libGLESv1_CM",
-    "libberberis_proxy_libGLESv2",
-    "libberberis_proxy_libGLESv3",
-    "libberberis_proxy_libOpenMAXAL",
-    "libberberis_proxy_libOpenSLES",
-    "libberberis_proxy_libaaudio",
-    "libberberis_proxy_libamidi",
-    "libberberis_proxy_libandroid",
-    "libberberis_proxy_libandroid_runtime",
-    "libberberis_proxy_libbinder_ndk",
-    "libberberis_proxy_libc",
-    "libberberis_proxy_libcamera2ndk",
-    "libberberis_proxy_libjnigraphics",
-    "libberberis_proxy_libm",
-    "libberberis_proxy_libmediandk",
-    "libberberis_proxy_libnativehelper",
-    "libberberis_proxy_libnativewindow",
-    "libberberis_proxy_libneuralnetworks",
-    "libberberis_proxy_libvulkan",
-    "libberberis_proxy_libwebviewchromium_plat_support",
-    "libberberis_arm64",
-];
+use droidloom_contracts::system_ext::HOST_MODULES;
 const GUEST_MODULES: &[&str] = &[
     "libnative_bridge_vdso",
     "native_bridge_guest_app_process",

@@ -405,6 +405,7 @@ fn produce(
     ] {
         inputs.add(r, deadline)?;
     }
+    if let Some(extension)=&plan.system_ext_lib64 { inputs.add(extension,deadline)?; }
     let base_raw = inputs.bytes(&plan.base, MAX_PLAN, deadline)?;
     let base: BaseDeclaration = serde_json::from_slice(&base_raw)?;
     base.validate(plan)?;

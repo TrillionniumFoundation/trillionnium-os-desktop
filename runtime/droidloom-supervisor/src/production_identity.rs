@@ -604,6 +604,15 @@ impl IdentityAuthority {
         cohort: &str,
         owner_proc: &File,
     ) -> Result<()> {
+        self.oci_owner_protected_inodes(spec, cohort, owner_proc).map(|_| ())
+    }
+
+    pub(crate) fn oci_owner_protected_inodes(
+        &self,
+        spec: &CellSpec,
+        cohort: &str,
+        owner_proc: &File,
+    ) -> Result<[(u64,u64);2]> {
         self.revalidate()?;
         let dir = trusted_directory(Path::new(REGISTRY), 0, true)?;
         let record_name = format!("u{}.json", spec.host_uid);
@@ -634,7 +643,8 @@ impl IdentityAuthority {
         held_name_matches(&dir, &lease_name, &lease)?;
         held_name_matches(&dir, &record_name, &record_file)?;
         backing.revalidate(0)?;
-        self.revalidate()
+        self.revalidate()?;
+        Ok([(data.device, data.inode), (metadata.device, metadata.inode)])
     }
 
     /// Return a diagnostic which explicitly withholds runtime qualification.

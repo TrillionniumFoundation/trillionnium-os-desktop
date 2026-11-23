@@ -214,6 +214,17 @@ impl PreparedContainerSelection {
         self.revalidate()
     }
 
+    /// Hold the exact effective library mount before allowing the guest bootstrap to start.
+    pub fn observe_library_mount(&self,guest:&File,owner:&File)->io::Result<ContainerLibraryMount> {
+        self.revalidate()?;
+        let spec=self.selection.spec();
+        let authority=crate::production_identity::IdentityAuthority::inspect(spec).map_err(io::Error::other)?;
+        let excluded=authority.oci_owner_protected_inodes(spec,self.selection.base_cohort(),owner).map_err(io::Error::other)?;
+        let observed=crate::production_mounts::system_ext::ObservedExtension::from_guest(self.selection.base_cohort(),guest,&excluded,(spec.subordinate_uids,spec.subordinate_gids)).map_err(io::Error::other)?;
+        authority.verify_oci_owner_lease(spec,self.selection.base_cohort(),owner).map_err(io::Error::other)?;
+        self.revalidate()?;
+        Ok(ContainerLibraryMount(observed))
+    }
     /// Borrow only the sealed public release file for projection as a
     /// read-only mount at /etc/droidloom/container-launcher.json in the cell.
     /// The private selection and original data descriptors never leave the broker.
@@ -296,4 +307,11 @@ mod tests {
         assert!(paired(true, &p, None).is_err());
         assert!(paired(true, &p, Some(&q)).is_err());
     }
+}
+
+/// Release-bound keeper of the effective immutable library mount.
+pub struct ContainerLibraryMount(crate::production_mounts::system_ext::ObservedExtension);
+impl ContainerLibraryMount {
+    /// Check the still-held effective mount and kernel loop sources.
+    pub fn revalidate(&self)->io::Result<()> {self.0.revalidate().map_err(io::Error::other)}
 }

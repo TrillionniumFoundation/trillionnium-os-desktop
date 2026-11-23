@@ -500,6 +500,7 @@ mod tests {
             inputs.add(tool, &d).unwrap();
         }
         let plan = BuildPlan {
+            system_ext_lib64: None,
             schema: "droidloom-runtime-build-plan-v1".into(),
             base: reference.clone(),
             system: reference.clone(),

@@ -63,6 +63,14 @@ impl BaseMounts {
         }
     }
 
+    fn system_ext_device(&self) -> Result<Option<u64>> {
+        match self {
+            Self::Admitted(value) => value.system_ext_device().map_err(|error| NamespaceError::MountResource(error.to_string())),
+            #[cfg(test)]
+            Self::PrivateControl(_) => Ok(None),
+        }
+    }
+
     fn descriptors<'a>(
         &'a mut self,
         witness: &OwnedNamespaceWitness<'_>,
@@ -618,6 +626,7 @@ pub(super) struct TreeChild {
     namespaces: NamespaceSet,
     default_mounts: std::cell::OnceCell<std::rc::Rc<original_ptrace::DefaultMountOwner>>,
     persistent_roots: Option<[PersistentRootObservation; 2]>,
+    system_ext_device: Option<u64>,
     proc_context: Option<File>,
     proc_mount: Option<File>,
     activation_nodes: Option<ActivationNodes>,
@@ -814,6 +823,7 @@ impl IsolatedNamespaces {
                 "base descriptors already transferred",
             ));
         }
+        let system_ext_device = bases.system_ext_device()?;
         let transfer: Result<[u64; 2]> = (|| {
             let witness = self.witness()?;
             let descriptors = bases.descriptors(&witness)?;
@@ -825,7 +835,8 @@ impl IsolatedNamespaces {
                 .init
                 .as_ref()
                 .ok_or(NamespaceError::Rejected("PID 1 absent"))?;
-            let packet = Packet::new(child.nonce, Phase::MountEmptyBase, 0, child.parent_pid);
+            let phase = if system_ext_device.is_some() { Phase::MountEmptyBaseSystemExt } else { Phase::MountEmptyBase };
+            let packet = Packet::new(child.nonce, phase, 0, child.parent_pid);
             send_base_fds(child.control.as_raw_fd(), &packet, descriptors)?;
             Ok(devices)
         })();
@@ -834,10 +845,9 @@ impl IsolatedNamespaces {
         self.retirement.prepared.bases = Some(bases.preparation());
         self.bases = Some(bases);
         let devices = transfer?;
-        self.init
-            .as_mut()
-            .ok_or(NamespaceError::Rejected("PID 1 absent"))?
-            .wait_empty_root_ready(devices)?;
+        let init = self.init.as_mut().ok_or(NamespaceError::Rejected("PID 1 absent"))?;
+        init.system_ext_device = system_ext_device;
+        init.wait_empty_root_ready(devices)?;
         self.base_devices = Some(devices);
         self.base_root_ready = true;
         self.verify_live_admission()?;
@@ -861,6 +871,7 @@ impl IsolatedNamespaces {
             return Err(NamespaceError::Rejected("base or persistent descriptors already transferred"));
         }
         let mut bases = BaseMounts::Admitted(bases);
+        let system_ext_device = bases.system_ext_device()?;
         let transfer: Result<([u64; 2], [PersistentRootObservation; 2])> = (|| {
             let witness = self.witness()?;
             let base_fds = bases.descriptors(&witness)?;
@@ -873,7 +884,8 @@ impl IsolatedNamespaces {
                 return Err(NamespaceError::Rejected("persistent and immutable mount roles overlap"));
             }
             let child = self.init.as_ref().ok_or(NamespaceError::Rejected("PID 1 absent"))?;
-            let packet = Packet::new(child.nonce, Phase::MountPersistentBase, 0, child.parent_pid);
+            let phase = if system_ext_device.is_some() { Phase::MountPersistentBaseSystemExt } else { Phase::MountPersistentBase };
+            let packet = Packet::new(child.nonce, phase, 0, child.parent_pid);
             send_persistent_base_fds(child.control.as_raw_fd(), &packet,
                 [base_fds[0], base_fds[1], data_fds[0], data_fds[1]])?;
             Ok((devices, observed))
@@ -885,6 +897,7 @@ impl IsolatedNamespaces {
         self.bases = Some(bases);
         self.persistent_data = Some(data);
         let (devices, observed) = transfer?;
+        self.init.as_mut().ok_or(NamespaceError::Rejected("PID 1 absent"))?.system_ext_device = system_ext_device;
         let child = self.init.as_mut().ok_or(NamespaceError::Rejected("PID 1 absent"))?;
         child.persistent_roots = Some(observed);
         child.receive_phase(Phase::PersistentRootReady)?;
@@ -1409,6 +1422,7 @@ impl TreeChild {
             namespaces,
             default_mounts: std::cell::OnceCell::new(),
             persistent_roots: None,
+            system_ext_device: None,
             proc_context: None,
             proc_mount: None,
             activation_nodes: None,
@@ -2455,6 +2469,7 @@ impl TreeChild {
         if text.is_empty() {
             return Err(NamespaceError::Rejected("empty guest mount inventory"));
         }
+        let mut observed_system_ext = false;
         for line in text.lines() {
             let (left, right) = line
                 .split_once(" - ")
@@ -2482,6 +2497,16 @@ impl TreeChild {
                     .parse::<u32>()
                     .map_err(|_| NamespaceError::Rejected("guest minor"))?,
             );
+            if fields[4] == droidloom_contracts::system_ext::TARGET || self.system_ext_device == Some(device) {
+                let flags: Vec<_> = fields[5].split(',').collect();
+                if observed_system_ext || self.system_ext_device != Some(device) || fields[4] != droidloom_contracts::system_ext::TARGET
+                    || fields[3] != "/" || right[0] != "ext4" || !["ro", "nosuid", "nodev"].iter().all(|f| flags.contains(f))
+                    || flags.contains(&"noexec") || !right[2].split(',').any(|v| v == "ro") {
+                    return Err(NamespaceError::Rejected("selected system_ext library mount location or protection differs"));
+                }
+                observed_system_ext = true;
+                continue;
+            }
             if let Some(expected) = self.persistent_roots {
                 if let Some(index) = ["/data", "/metadata"].iter().position(|path| *path == fields[4]) {
                     let mount_id = fields[0].parse::<u64>()
@@ -2560,6 +2585,9 @@ impl TreeChild {
                     "inherited or unverified guest mount",
                 ));
             }
+        }
+        if observed_system_ext != self.system_ext_device.is_some() {
+            return Err(NamespaceError::Rejected("selected system_ext library mount missing"));
         }
         if observed_persistent.len() != if self.persistent_roots.is_some() { 2 } else { 0 } {
             return Err(NamespaceError::Rejected("missing expected original persistent data mount"));

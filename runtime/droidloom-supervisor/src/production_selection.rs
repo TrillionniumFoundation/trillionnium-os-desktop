@@ -29,7 +29,7 @@ const SPEC_LIMIT: u64 = 1024 * 1024;
 const SCHEMA: &str = "droidloom-production-selection-v1";
 #[path = "production_launcher.rs"]
 mod launcher;
-pub use launcher::{PreparedContainerSelection, SharedKernelLauncher};
+pub use launcher::{ContainerLibraryMount, PreparedContainerSelection, SharedKernelLauncher};
 
 const SHARED_SCHEMA: &str = "droidloom-production-selection-v3";
 const SHARED_LAUNCHER: &str = "host_managed_shared_kernel_v1";

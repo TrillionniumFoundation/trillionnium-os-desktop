@@ -52,6 +52,8 @@ pub(super) enum Phase {
     TreeSpawned = 14,
     TreeReady = 15,
     MountEmptyBase = 16,
+    MountEmptyBaseSystemExt = 80,
+    MountPersistentBaseSystemExt = 81,
     EmptyRootReady = 17,
     MountPersistentBase = 68,
     PersistentRootReady = 69,
@@ -144,8 +146,8 @@ pub(super) enum BaseLayout {
 impl BaseLayout {
     pub(super) fn from_phase(phase: u32) -> Option<Self> {
         match phase {
-            value if value == Phase::MountEmptyBase as u32 => Some(Self::Empty),
-            value if value == Phase::MountPersistentBase as u32 => Some(Self::Persistent),
+            value if value == Phase::MountEmptyBase as u32 || value == Phase::MountEmptyBaseSystemExt as u32 => Some(Self::Empty),
+            value if value == Phase::MountPersistentBase as u32 || value == Phase::MountPersistentBaseSystemExt as u32 => Some(Self::Persistent),
             _ => None,
         }
     }

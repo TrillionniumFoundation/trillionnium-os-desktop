@@ -142,9 +142,7 @@ fn cohort_observation(
     resources.cohort.revalidate(witness)?;
     require_complete_namespace(witness)?;
     require(
-        resources.images.len() == 2
-            && resources.images[0].role == "system"
-            && resources.images[1].role == "vendor",
+        resources.has_declared_set(),
         "complete ordered admitted base-image set",
     )?;
     let raw = resources.cohort.manifest.bounded_bytes(MAX_MANIFEST)?;

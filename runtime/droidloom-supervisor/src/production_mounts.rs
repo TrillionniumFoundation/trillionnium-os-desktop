@@ -26,6 +26,9 @@ use crate::production_namespace::{NamespaceError, OwnedNamespaceWitness, Retired
 #[path = "production_runtime_assets.rs"]
 pub(crate) mod runtime_assets;
 
+#[path = "production_mounts_system_ext.rs"]
+pub(crate) mod system_ext;
+
 #[path = "production_mounts_custody.rs"]
 pub(crate) mod custody;
 
@@ -318,12 +321,13 @@ struct CohortDeclaration {
     layout: AndroidImageLayout,
     system: ImageDeclaration,
     vendor: ImageDeclaration,
+    #[serde(default)]
+    system_ext_lib64: Option<droidloom_contracts::system_ext::Declaration>,
 }
 impl CohortDeclaration {
     fn validate(&self) -> Result<()> {
         require(
-            self.schema == 1
-                && self.scope == "android_base_images_v1"
+            droidloom_contracts::system_ext::accepts(self.schema, &self.scope, self.system_ext_lib64.as_ref(), &self.system.sha256, &self.vendor.sha256)
                 && self.layout == AndroidImageLayout::GsiSystemAsRoot,
             "explicit supported Android base-image schema",
         )?;
@@ -379,6 +383,7 @@ pub(crate) struct VerifiedCohort {
     manifest: SealedFile,
     system: SealedFile,
     vendor: SealedFile,
+    system_ext_lib64: Option<SealedFile>,
     system_fs: Filesystem,
     vendor_fs: Filesystem,
     cohort: String,
@@ -431,10 +436,23 @@ impl VerifiedCohort {
         vendor.verify_digest(declaration.vendor.bytes, &declaration.vendor.sha256)?;
         let system_fs = Filesystem::detect(&system.file)?;
         let vendor_fs = Filesystem::detect(&vendor.file)?;
+        let system_ext_lib64 = declaration.system_ext_lib64.as_ref().map(|decl| -> Result<SealedFile> {
+            let extension = SealedFile::open_guarded(&parent, droidloom_contracts::system_ext::FILE, 0, MAX_IMAGE, |file| {
+                lease.broker_reject_backing_body(file)?;
+                Ok(())
+            })?;
+            let id = (extension.identity.dev, extension.identity.ino);
+            require([&system, &vendor].iter().all(|base| (base.identity.dev, base.identity.ino) != id),
+                "distinct system_ext image inode")?;
+            extension.verify_digest(decl.bytes, &decl.sha256)?;
+            require(Filesystem::detect(&extension.file)? == Filesystem::Ext4, "raw ext4 system_ext library image")?;
+            Ok(extension)
+        }).transpose()?;
         let result = Self {
             manifest,
             system,
             vendor,
+            system_ext_lib64,
             system_fs,
             vendor_fs,
             cohort,
@@ -450,7 +468,7 @@ impl VerifiedCohort {
             lease.host_uid() == self.host_uid && lease.broker_cohort() == self.cohort,
             "cohort belongs to the same namespace reservation",
         )?;
-        for file in [&self.manifest, &self.system, &self.vendor] {
+        for file in [&self.manifest, &self.system, &self.vendor].into_iter().chain(self.system_ext_lib64.iter()) {
             lease.broker_reject_backing_body(&file.file)?;
             file.revalidate()?;
         }
@@ -1072,6 +1090,11 @@ struct MountResources {
     reservation_retention: File,
 }
 impl MountResources {
+    fn has_declared_set(&self) -> bool {
+        self.images.len() == 2 + usize::from(self.cohort.system_ext_lib64.is_some())
+            && self.images[0].role == "system" && self.images[1].role == "vendor"
+            && self.images.get(2).is_none_or(|row| row.role == "system_ext_lib64")
+    }
     fn cleanup(&mut self) -> Result<Vec<u64>> {
         // Mount references must disappear before asking the kernel to detach
         // their exact owned backing devices.
@@ -1215,15 +1238,13 @@ impl PreparedMounts {
                 .resources
                 .as_mut()
                 .ok_or(MountError::Rejected("mount guard absent"))?;
-            for (role, fs) in [
-                ("system", resources.cohort.system_fs),
-                ("vendor", resources.cohort.vendor_fs),
-            ] {
+            let extension = resources.cohort.system_ext_lib64.as_ref().map(|_| ("system_ext_lib64", Filesystem::Ext4));
+            for (role, fs) in [("system", resources.cohort.system_fs), ("vendor", resources.cohort.vendor_fs)].into_iter().chain(extension) {
                 resources.matches_witness(witness)?;
-                let source = if role == "system" {
-                    &resources.cohort.system
-                } else {
-                    &resources.cohort.vendor
+                let source = match role {
+                    "system" => &resources.cohort.system,
+                    "vendor" => &resources.cohort.vendor,
+                    _ => resources.cohort.system_ext_lib64.as_ref().ok_or(MountError::Rejected("missing selected system_ext image"))?,
                 };
                 let binding = LoopBinding::attach(source)?;
                 resources.images.push(MountedImage {
@@ -1246,7 +1267,8 @@ impl PreparedMounts {
                 resources.images[index].mount = Some(mount);
                 resources.cohort.revalidate(witness)?;
             }
-            require(resources.images.len() == 2, "complete two-image mount set")?;
+            require(resources.has_declared_set(), "complete declared base mount set")?;
+            if resources.cohort.system_ext_lib64.is_some() { system_ext::compose(resources)?; }
             resources.matches_witness(witness)?;
             Ok(())
         })();
@@ -1280,9 +1302,7 @@ impl PreparedMounts {
         resources.matches_witness(witness)?;
         require_complete_namespace(witness)?;
         require(
-            resources.images.len() == 2
-                && resources.images[0].role == "system"
-                && resources.images[1].role == "vendor",
+            resources.has_declared_set(),
             "fixed descriptor role order",
         )?;
         for image in &resources.images {
@@ -1317,6 +1337,14 @@ impl PreparedMounts {
                 .as_fd(),
         ])
     }
+    pub(crate) fn system_ext_device(&self) -> Result<Option<u64>> {
+        let resources = self.resources.as_ref().ok_or(MountError::Rejected("retired base mounts"))?;
+        resources.images.get(2).map(|row| -> Result<u64> {
+            let mount = row.mount.as_ref().ok_or(MountError::Rejected("missing selected system_ext mount"))?;
+            Ok(mount.metadata()?.dev())
+        }).transpose()
+    }
+
     pub(crate) fn retire_untransferred(mut self) -> Result<MountRetirement> {
         require(
             !self.exported,
@@ -1780,6 +1808,7 @@ pub(crate) mod private_control {
             })?;
         let verification_files = [open_image("system.img")?, open_image("vendor.img")?];
         let cohort = VerifiedCohort {
+            system_ext_lib64: None,
             manifest,
             system,
             vendor,

@@ -1,7 +1,9 @@
 //! The system manager owns the public socket and notification. The OCI producer
 //! owns creation and retirement of the cell; this process observes its fixed
 //! instance and accepts progress only from the bound, live kernel peer.
-use droidloom_supervisor::control::{PreparedContainerSelection, check_container_manager_role};
+use droidloom_supervisor::control::{
+    ContainerLibraryMount, PreparedContainerSelection, check_container_manager_role,
+};
 use serde::Deserialize;
 use std::fs::{self, File};
 use std::io::{self, Read, Write};
@@ -195,7 +197,23 @@ fn live(pidfd: &OwnedFd) -> io::Result<bool> {
     Ok(n == 0)
 }
 
+enum GuestLibraryMount {
+    Selected(ContainerLibraryMount),
+    #[cfg(test)]
+    ProtocolFixture,
+}
+impl GuestLibraryMount {
+    fn revalidate(&self) -> io::Result<()> {
+        match self {
+            Self::Selected(held) => held.revalidate(),
+            #[cfg(test)]
+            Self::ProtocolFixture => Err(error("protocol fixture has no admitted library mount")),
+        }
+    }
+}
+
 struct Guest {
+    mount: GuestLibraryMount,
     socket: UnixStream,
     pid: i32,
     pidfd: OwnedFd,
@@ -257,10 +275,15 @@ impl Guest {
                 "OCI owner or guest exited while binding its generation",
             ));
         }
+        let mount = choice.observe_library_mount(&guest_proc, &owner_proc)?;
+        if !live(&pidfd)? || !live(&controller)? || owner != OciOwner::current()? {
+            return Err(error("OCI generation changed during image validation"));
+        }
         socket.set_write_timeout(Some(Duration::from_millis(200)))?;
         socket.write_all(&[1])?;
         socket.set_nonblocking(true)?;
         Ok(Self {
+            mount: GuestLibraryMount::Selected(mount),
             socket,
             pid: cred.pid,
             pidfd,
@@ -382,6 +405,7 @@ pub(super) fn run(stop: &AtomicBool) -> io::Result<()> {
                 if peer.binder && !notified {
                     choice.revalidate()?;
                     program.revalidate()?;
+                    peer.mount.revalidate()?;
                     protocol::notify_main()?;
                     notified = true;
                 }
@@ -391,6 +415,7 @@ pub(super) fn run(stop: &AtomicBool) -> io::Result<()> {
             }
             if Instant::now() >= revalidate {
                 if let Some(peer) = guest.as_ref() {
+                    peer.mount.revalidate()?;
                     Guest::matches_oci(peer.pid, choice.selection_digest())?;
                 }
                 choice.revalidate()?;
@@ -438,6 +463,7 @@ if sys.argv[2]=="yes": s.send(bytes([3]))"#;
             .pidfd()
             .unwrap();
             let mut peer = Guest {
+                mount: GuestLibraryMount::ProtocolFixture,
                 socket,
                 pid: child.id() as i32,
                 pidfd: unsafe { OwnedFd::from_raw_fd(fd) },
@@ -467,6 +493,7 @@ if sys.argv[2]=="yes": s.send(bytes([3]))"#;
         stream.set_nonblocking(true).unwrap();
         let controller = pidfd.try_clone().unwrap();
         let mut peer = Guest {
+            mount: GuestLibraryMount::ProtocolFixture,
             socket: stream,
             pid: cred.pid,
             pidfd,
