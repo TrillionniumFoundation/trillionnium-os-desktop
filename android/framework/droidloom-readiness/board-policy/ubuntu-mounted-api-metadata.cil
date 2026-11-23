@@ -75,3 +75,7 @@
 (typeattributeset p4_linux_data (p4_linux_machine_id_t))
 (allow init_t p4_linux_machine_id_t (file (getattr open read write lock)))
 (neverallow p4_linux_procs p4_linux_machine_id_t (file (create unlink rename relabelfrom relabelto entrypoint execute)))
+
+; The distribution's service manager forks its own helper before that helper
+; execs a unit with the policy-configured Linux service identity.
+(allow init_t self (process (fork sigchld)))
