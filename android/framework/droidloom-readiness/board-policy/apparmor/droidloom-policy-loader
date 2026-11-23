@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-abi <abi/4.0>,
+abi <abi/5.0>,
 #include <tunables/global>
 profile droidloom-policy-loader {
   # Dynamic loader and NSS inputs used by the packaged Ubuntu executables.
@@ -13,6 +13,10 @@ profile droidloom-policy-loader {
   /{etc,proc,sys,run,usr,usr/lib,sys/fs,sys/kernel,sys/kernel/security}/ r,
   /etc/droidloom/{,host-mac/} r,
   /etc/droidloom/host-mac/{contract.json,derivation.json,policy.bin,policy-export.bin,manager-label.json} r,
+  /run/droidloom-early/{,kernel-policy/,kernel-policy/apparmor-epoch} r,
+  /sys/kernel/notes r,
+  /sys/module/apparmor/parameters/enabled r,
+  @{PROC}/sys/kernel/{osrelease,random/boot_id} r,
   /sys/kernel/security/lsm r,
   /sys/kernel/security/apparmor/{,policy/,policy/profiles/} r,
   /sys/kernel/security/apparmor/{.ns_name,.ns_level,.ns_stacked,.stacked,.policy,revision,profiles} r,
@@ -26,6 +30,11 @@ profile droidloom-policy-loader {
   /usr/lib/droidloom/production/current/droidloom-host-mac mr,
   /run/systemd/ r,
   /run/systemd/private rw,
+  network (create) unix seqpacket,
+  unix (create, getattr, getopt, setopt, shutdown) type=seqpacket,
+  unix (connect, send, receive) type=seqpacket peer=(label=droidloom-policy-loader),
+  deny unix (bind, listen, accept) addr="@**",
+  deny unix (connect, send, receive) peer=(addr="@**"),
   network (create) unix stream,
   unix (create, getattr, getopt, setopt, shutdown) type=stream,
   /sys/fs/selinux/{create,relabel} rw,

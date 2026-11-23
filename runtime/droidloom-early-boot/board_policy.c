@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #define _GNU_SOURCE
 #include "board_policy.h"
+#include "apparmor_epoch.h"
 #include "linux_run_label.h"
 
 #include <dirent.h>
@@ -202,8 +203,10 @@ static int apparmor_profiles(const struct input *pack, int activate)
 
 int droidloom_board_activate_policy(gid_t observer_gid)
 {
-    struct input policy = {883611, "c1902978c6f1c35ea3e1b9f1f76f1dc8f9bc950006ef66c3831fba6cca5a2036", POLICY_DIR "/joint.policy", NULL};
-    struct input aa = {5726632, "9d67e627ee5d69ded9c4e8cb1732840c6406f90ae7615da280e35a5ffaad576d", POLICY_DIR "/ubuntu-apparmor.profiles", NULL};
+    struct input policy = {884087, "d6fd3984962099ddb8f257065556dbddd1d93537d90118889237575066b5781c", POLICY_DIR "/joint.policy", NULL};
+    struct input aa = {5739656, "3cf56af695cc4306657af298748e1d8834748a026371a2029f10d9ed62249c6e", POLICY_DIR "/ubuntu-apparmor.profiles", NULL};
+    struct droidloom_apparmor_measurement observation = {0};
+    int status = -1, epoch_directory = -1;
     struct droidloom_linux_run run = {.fd = -1};
     struct droidloom_readiness_paths paths = { .handoff.fd = -1, .readiness.fd = -1 };
     const char *stage = "read admitted SELinux input";
@@ -214,11 +217,28 @@ int droidloom_board_activate_policy(gid_t observer_gid)
     if (rc == 0) { stage = "hold original Ubuntu /run"; rc = droidloom_hold_linux_run(&run); }
     if (rc == 0) { stage = "hold the selected early readiness directory"; rc = droidloom_hold_readiness_paths(&run, observer_gid, &paths); }
     if (rc == 0) { stage = "project the exact Ubuntu console, null and full device nodes"; rc = droidloom_project_linux_standard_devices(); }
+    if (rc == 0) {
+        stage = "prepare the protected read-only kernel measurement directory";
+        epoch_directory = droidloom_prepare_epoch_directory(paths.handoff.fd);
+        if (epoch_directory < 0) rc = -1;
+    }
     if (rc == 0) { stage = "load the selected Ubuntu AppArmor profiles"; rc = apparmor_profiles(&aa, 1); }
+    if (rc == 0) {
+        stage = "capture original AppArmor namespace and loaded profile identities";
+        rc = droidloom_capture_apparmor_epoch(&observation);
+    }
+    if (rc == 0) {
+        stage = "hold the real SELinux status page before its first policy load";
+        status = droidloom_open_initial_selinux_status();
+        if (status < 0) rc = -1;
+    }
     if (rc == 0) { stage = "load initial selected joint SELinux policy"; rc = submit(SELINUX_DIR "/load", policy.data, policy.size); }
     if (rc == 0) { stage = "label the held Ubuntu /run inode"; rc = droidloom_label_linux_run(&run); }
     if (rc == 0) { stage = "label the held private readiness directory"; rc = droidloom_label_readiness_paths(&paths); }
+    if (rc == 0) { stage = "seal the original kernel policy load epoch"; rc = droidloom_publish_apparmor_epoch(epoch_directory, status, policy.digest, &observation); }
     int error = errno;
+    if (status >= 0) close(status);
+    if (epoch_directory >= 0) close(epoch_directory);
     if (rc < 0)
         fprintf(stderr, "Droidloom early policy failed to %s: %s\n", stage, strerror(error));
     if (paths.readiness.fd >= 0)
