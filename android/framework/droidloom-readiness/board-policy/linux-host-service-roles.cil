@@ -131,7 +131,7 @@
 (typeattributeset p4_linux_data (p4_linux_apparmor_handle_t p4_linux_apparmor_state_t))
 (genfscon apparmorfs "/" (u object_r p4_linux_apparmor_handle_t ((s0) (s0))))
 (genfscon securityfs "/apparmor" (u object_r p4_linux_apparmor_state_t ((s0) (s0))))
-(genfscon sysfs "/module/apparmor/parameters/enabled" (u object_r p4_linux_apparmor_state_t ((s0) (s0))))
+; The distribution executor uses a separate read-only type for the sysfs enabled bit.
 (allow p4_linux_mac_roles p4_linux_apparmor_handle_t (filesystem (getattr)))
 (allow p4_linux_mac_roles p4_linux_apparmor_handle_t (dir (getattr search)))
 (allow p4_linux_mac_roles p4_linux_apparmor_handle_t (lnk_file (read)))

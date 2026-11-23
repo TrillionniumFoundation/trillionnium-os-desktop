@@ -166,6 +166,7 @@
 (allow p4_linux_service_executor_t p4_linux_apparmor_enabled_t (file (getattr open read)))
 (allow p4_linux_mac_roles p4_linux_apparmor_enabled_t (file (getattr open read)))
 (neverallow p4_linux_procs p4_linux_apparmor_enabled_t (file (write append setattr relabelfrom relabelto)))
+(neverallow p4_linux_mac_roles p4_linux_apparmor_enabled_t (file (execute map)))
 (allow p4_linux_service_executor_t selinuxfs (filesystem (getattr)))
 ; procattr writes are authenticated by SELinux setexec and the subsequent
 ; process transition. There is no setcurrent, dyntransition or ptrace grant.
