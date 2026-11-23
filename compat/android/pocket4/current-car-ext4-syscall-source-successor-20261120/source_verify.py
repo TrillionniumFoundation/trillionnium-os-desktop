@@ -78,8 +78,8 @@ def verify_packet(expected_inventory):
     need(set(manifest)=={'schema','parent','source','changes','additions','required','scope'},'exact successor manifest fields')
     need(manifest['schema']=='p4-car-ext4-and-ignored-syscall-source-successor-v1'
          and manifest['parent']=={'tree':PARENT_TREE,'files':2381,'bytes':45436614,'inventory_sha256':PARENT_INVENTORY}
-         and manifest['required']=={'packages':28,'targets':49,'ordinary':1629,'ignored_not_run':31,
-            'catalog':1660,'release_binaries':19,'example_binaries':3,'recipe_tests':9,'doc_targets':20}
+         and manifest['required']=={'packages':28,'targets':49,'ordinary':1633,'ignored_not_run':31,
+            'catalog':1664,'release_binaries':19,'example_binaries':3,'recipe_tests':9,'doc_targets':20}
          and manifest['scope']=={'source_only':True,'runtime_qualified':False,'production_ready':False,
             'Android_actions':0,'old_budget_and_peer_authorization_preserved':True,
             'fresh_current_rust_run_in_this_packet':False,

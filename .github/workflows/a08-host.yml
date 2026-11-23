@@ -1781,7 +1781,7 @@ jobs:
             ${{ runner.temp }}/runtime-d6-ci-logs/*.stderr
 
   runtime-current-complete-producer:
-    name: Current source - 1629 ordinary cases, 19 releases, examples and docs
+    name: Current source - 1633 ordinary cases, 19 releases, examples and docs
     runs-on: ubuntu-24.04
     timeout-minutes: 140
     env:
@@ -1800,7 +1800,7 @@ jobs:
       CURRENT_NATIVE_INVENTORY_SHA256: 8be17cef0f7dab7b1b2ae508fd2753a2f334cf9249d389dcf5f70896356cbe9b
       CURRENT_OWNED_CANONICAL_INVENTORY_SHA256: ab44dde611350652f99c5f60f96e4113038ba77f5b4c2692ea96c15705e3ee1e
       CURRENT_JOINT_DATA_INVENTORY_SHA256: 715557d89c6fdfecbaae5fb617f26537769a95e77d01b2538ce0b62606831799
-      CURRENT_CAR_EXT4_INVENTORY_SHA256: 4bc080644797e2d8799262af35492cc312dbe6cfc35c7a8d70de50a92a929553
+      CURRENT_CAR_EXT4_INVENTORY_SHA256: 82a3013cf55d7429ee351a83b65be452f69122f71ef83bbae38682c6c766fee0
       P4_NATIVE_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
@@ -1931,13 +1931,18 @@ jobs:
             --parent-source "$RUNNER_TEMP/current-owned-data-producer" \
             --output "$RUNNER_TEMP/current-car-data-producer" \
             --report "$RUNNER_TEMP/current-car-data-source-replay.json"
-          # Bind the normal producer consumed by Cargo to the reviewed R40 patch and source.
-          review="$GITHUB_WORKSPACE/compat/android/pocket4/current-pre-ready-framework-20261123"
+          # Check the reviewed input and each final Rust file in the same producer used by Cargo.
           producer="$RUNNER_TEMP/current-car-data-producer"
+          reviewed="$GITHUB_WORKSPACE/compat/android/pocket4/current-pre-ready-input-threads-20261123"
           printf '%s  %s\n' \
-            7ce9ed7dfb28722f84ce3249539883c4c69115413d4c9fb540c178e692735277 "$review/PRE-READY-FRAMEWORK.patch" \
-            93c09893f46114983faa1d2087aba16209a2ae5e93501793fe1ad8911f807290 "$producer/runtime/droidloom-supervisor/src/production_namespace_application_parent.rs" \
+            dee103a8adc5e166a8b144925f55742f4c635b08f4a8ed1ccef9a7b09b765e4e "$reviewed/INPUT-THREADS.patch" \
+            5cabad569161d24d0f3c7440d6479ef7b0ca5fc5405b8ec7a60b6f31e6ff6b37 "$reviewed/THREAD-FIXTURE-PROC-EXIT.patch" \
+            7ce9ed7dfb28722f84ce3249539883c4c69115413d4c9fb540c178e692735277 "$GITHUB_WORKSPACE/compat/android/pocket4/current-pre-ready-framework-20261123/PRE-READY-FRAMEWORK.patch" \
+            fcf0c7ff243f69b86565065b2085bc024791cf750145c3880700c33e1e7082c7 "$producer/runtime/droidloom-supervisor/src/production_execution.rs" \
+            011e5c929bcc51a0adaf8effeb59eb359e260546a4275dfe0b1cf3785771fa26 "$producer/runtime/droidloom-supervisor/src/production_execution_threads.rs" \
+            2da210187db2e875ddd93c68c25c5fa4b44338b6f1b7534cce7aa77ed666cd6d "$producer/runtime/droidloom-supervisor/src/production_namespace_application_parent.rs" \
             1979176d2fe67be9fb7b647a125f3cf78b37fec8ffdda75ea76b1fafa8631cd2 "$producer/runtime/droidloom-supervisor/src/production_namespace_execution_identity.rs" \
+            d1428093ffd40a881e490de0202981d0192c00930e002938b188d0c6e09bb416 "$producer/runtime/droidloom-supervisor/src/production_namespace_input_threads.rs" \
             | sha256sum --check --strict
       - name: Verify current canonical app sources and producer bindings
         timeout-minutes: 2
@@ -2212,7 +2217,7 @@ jobs:
           capsule="$GITHUB_WORKSPACE/compat/android/pocket4/runtime-current-source-r1"
           timeout --signal=TERM --kill-after=30s 1860s bash "$capsule/prepare_ci.sh" \
             --work "$RUNNER_TEMP/current-dependencies"
-      - name: Run 1629 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
+      - name: Run 1633 ordinary and 9 recipe cases, build 19 releases and 3 examples, and check docs
         timeout-minutes: 92
         shell: bash
         run: |

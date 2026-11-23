@@ -1,6 +1,16 @@
 --- a/runtime/droidloom-supervisor/src/production_namespace_application_parent.rs
 +++ b/runtime/droidloom-supervisor/src/production_namespace_application_parent.rs
-@@ -27,6 +27,13 @@
+@@ -16,6 +16,9 @@
+ #[path = "production_namespace_image_custody.rs"]
+ mod image_custody;
+ 
++#[path = "production_namespace_input_threads.rs"]
++mod input_threads;
++
+ pub(crate) struct ApplicationAuthority<'a> {
+     tree: &'a IsolatedNamespaces,
+     selection: &'a ProductionSelection,
+@@ -27,6 +30,13 @@
      node: Node,
      identity: ProcessIdentity,
      epoch: RuntimeEpoch,
@@ -14,7 +24,7 @@
  }
  
  impl ReadyTreeWitness<'_> {
-@@ -478,25 +485,147 @@
+@@ -478,25 +488,156 @@
  
      fn observe_framework(&self) -> Result<FrameworkObservation> {
          self.revalidate()?;
@@ -59,6 +69,15 @@
 +        let held = observe_framework_for_child(self.init())?;
 +        self.revalidate_pre_ready_framework(&held)?;
 +        Ok(held)
++    }
++
++    /// Observe the current input workers without issuing a Ready or task-control authority.
++    pub(crate) fn observe_pre_ready_input_threads(
++        &self,
++        deadline: std::time::Instant,
++    ) -> Result<()> {
++        let framework = self.observe_pre_ready_framework()?;
++        input_threads::observe(self, &framework, deadline)
 +    }
 +
 +    pub(crate) fn revalidate_pre_ready_framework(&self, held: &FrameworkObservation) -> Result<()> {
@@ -181,7 +200,7 @@
                  Ok(value) => value,
                  Err(NamespaceError::Io(error))
                      if matches!(error.raw_os_error(), Some(libc::ENOENT | libc::ESRCH)) =>
-@@ -505,63 +634,96 @@
+@@ -505,63 +646,96 @@
                  }
                  Err(error) => return Err(error),
              };
@@ -329,9 +348,13 @@
  }
  
  fn read_boot_uuid(proc_root: &File) -> Result<String> {
-@@ -588,49 +750,20 @@
+@@ -587,55 +761,28 @@
+     Ok(value.to_owned())
  }
  
++const FRAMEWORK_PAYLOAD_PREFIX: &str =
++    "0::/system.slice/droidloom-production.service/cell-u1000/payload/";
++
  fn framework_namespace(directory: &File, child: &TreeChild) -> Result<bool> {
 -    // Deliberately follow these two proc magic links only for observation.
 -    // They are never exported to an executor or used by setns.
@@ -384,7 +407,13 @@
      let cgroup = read_proc(directory, "cgroup")?;
      let cgroup = std::str::from_utf8(&cgroup)
          .map_err(|_| NamespaceError::Rejected("non-text framework cgroup"))?;
-@@ -702,3 +835,76 @@
+-    let prefix = "0::/system.slice/droidloom-production.service/cell-u1000/payload/";
+-    if !cgroup.starts_with(prefix)
++    if !cgroup.starts_with(FRAMEWORK_PAYLOAD_PREFIX)
+         || cgroup.lines().count() != 1
+         || cgroup
+             .trim_end_matches('\n')
+@@ -702,3 +849,76 @@
      }
      Ok(names)
  }

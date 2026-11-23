@@ -1,0 +1,152 @@
+{
+  "actually_observed_android_input_threads": false,
+  "android_started": false,
+  "entry": "ExecutionAdmission::acquire -> ExecutedInitWitness::observe_pre_ready_input_threads -> FrameworkObservation held from the original init -> input_threads::observe. Runs after original linkerconfig retirement. Final ExecutionError::Unqualified is preserved.",
+  "existing_boundary_preserved": true,
+  "kernel_and_image": {
+    "aosp_input_thread_cpp_sha256": "9daf9c99235c5b65b73e101ab44f8614c7cb77f51593212613985c9f842534ba",
+    "aosp_system_core_libprocessgroup_task_profiles_cpp_sha256": "410c070bd06c3497f4f1784e4f387aeed45e1b4c5bc17c5b10ade3c75a5a6256",
+    "direct_ext4_profile_sha256": "7765ec8c7ae1e86d7473765e02bf7cdd696633ef348149b7627195ac53854517",
+    "input_dispatcher_cpp_sha256": "4598e3a96e0196a5965be2a4232736ba7e14616c8435b201ab6d394e44b762c9",
+    "input_reader_cpp_sha256": "3a5acd8dbbd4d880a27eb84d9de68cbcceb81a91593749340a1800be7856eb5d",
+    "linux_6_18_64_fs_proc_base_c_sha256": "df7f8ac0998775fe6a3c6062ac8eaf666b0a17a1a17b3cc5bc8c49f1eb06b631",
+    "native_policy_generator_sha256": "856ce348f2997779903863dda548f35889e8c76779a8cf5ecf1e9c5198bcc445",
+    "stock_libinputflinger_sha256": "99bda081bc4a4117a56920393e1f36525499cf5778f02bbb968bb36a5cfdebb9",
+    "stock_libprocessgroup_sha256": "20937939b29e54d4704144dcbf8e99cbbdd31a528d64ec1b391d72335b65d93b",
+    "stock_system_image_sha256": "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4"
+  },
+  "limits": [
+    "Sampling does not prove uninterrupted lifetime or the absence of a transient worker between endpoints. A stable effect cannot identify which caller applied it.",
+    "Top-app class and effective controller verification for the mounted candidate, compositor and allocator, physical boot, capabilities/seccomp and final execution remain pending."
+  ],
+  "original_data_touched": false,
+  "parent_source": {
+    "canonical_r40_delivery_commit": "a7dc268fa80d5c2a71a470bb470bed17b6c362fe",
+    "host": "ai395",
+    "path": "/home/qq/work/p4-r40-pre-ready-framework-20261123-r1/source",
+    "published_r40_commit": "0d369330401e0cc4c81d059b69c0e99b43b4772e",
+    "r40_result_sha256": "31eeb41440aee6d8fbce00e4e7b0ef0adfd1120bdb247b061d1bc8a82e137b6b"
+  },
+  "patch": {
+    "bytes": 19696,
+    "path": "INPUT-THREADS.patch",
+    "sha256": "dee103a8adc5e166a8b144925f55742f4c635b08f4a8ed1ccef9a7b09b765e4e",
+    "zero_fuzz_forward_and_reverse_replayed": true
+  },
+  "production_ready": false,
+  "ready_issued": false,
+  "schema": "pocket4-original-init-input-thread-source-observation-v1",
+  "semantics": {
+    "configured_profile_order": [
+      "RealTimeInputScheduling",
+      "MaxPerformance",
+      "ProcessCapacityMax",
+      "TimerSlackNormal"
+    ],
+    "fifo": {
+      "proc_stat_fields": [
+        40,
+        41
+      ],
+      "rt_priority": 2,
+      "scheduler": "SCHED_FIFO"
+    },
+    "placement": {
+      "observes": [
+        "exact per-thread unified payload cgroup record",
+        "per-thread Cpus_allowed_list",
+        "repeated unchanged samples"
+      ],
+      "pending": [
+        "held native CPU top-app class and its effective cpu.weight",
+        "held native cpuset top-app class and its effective cpuset mask",
+        "class equivalence to both selected native JoinCgroup actions"
+      ]
+    },
+    "timer_slack": {
+      "fifo_procfs_write_stores_ns": 0,
+      "readback": "Linux fs/proc/base.c:2575,2606,2621,2646. The /proc/<tid> entry exposes thread-specific stored slack. The /proc/<server>/task/<tid> entry omits it. Cross-thread read requires existing CAP_SYS_NICE in the target user namespace and LSM permission. Role, TGID, start time, named inode, both held directories and both inventories are rechecked.",
+      "requested_ns": 50000
+    }
+  },
+  "source_delta": [
+    {
+      "after": {
+        "bytes": 16681,
+        "git_blob": "a885321d42f3cd0c15b916a257d3d440b83b3b1c",
+        "sha256": "fcf0c7ff243f69b86565065b2085bc024791cf750145c3880700c33e1e7082c7"
+      },
+      "before": {
+        "bytes": 16478,
+        "git_blob": "b570b5f92038c6019aa29eb83461c0e4711b5770",
+        "sha256": "b5cbae1aed21859bb63a43bf27c59c855244347038b342163aef629c2578e4ce"
+      },
+      "path": "runtime/droidloom-supervisor/src/production_execution.rs"
+    },
+    {
+      "after": {
+        "bytes": 33681,
+        "git_blob": "85c1d60b710cd7c9faf2829dd4229000c7f38a26",
+        "sha256": "2da210187db2e875ddd93c68c25c5fa4b44338b6f1b7534cce7aa77ed666cd6d"
+      },
+      "before": {
+        "bytes": 33220,
+        "git_blob": "0332ae2914a3de3d30bbea4bd2b83b1338ac1a94",
+        "sha256": "93c09893f46114983faa1d2087aba16209a2ae5e93501793fe1ad8911f807290"
+      },
+      "path": "runtime/droidloom-supervisor/src/production_namespace_application_parent.rs"
+    },
+    {
+      "after": {
+        "bytes": 16743,
+        "git_blob": "c1297871a2f35a50f32df01669ab76685d114897",
+        "sha256": "d1428093ffd40a881e490de0202981d0192c00930e002938b188d0c6e09bb416"
+      },
+      "before": null,
+      "path": "runtime/droidloom-supervisor/src/production_namespace_input_threads.rs"
+    }
+  ],
+  "tests": {
+    "all": {
+      "fail": 0,
+      "ignore": 26,
+      "log": {
+        "bytes": 151422,
+        "path": "FULL-TEST-serial.log",
+        "sha256": "e2e83d07705bbf53b371cd7c7996b92e65bb6bc5dce250ab450a81eb9422edd8"
+      },
+      "pass": 628
+    },
+    "cargo": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-j1",
+      "-p",
+      "droidloom-supervisor",
+      "--lib"
+    ],
+    "focused": {
+      "fail": 0,
+      "ignore": 0,
+      "log": {
+        "bytes": 74654,
+        "path": "FOCUSED.log",
+        "sha256": "036c697f11146bf031a61e7b05420151e670d03605e654b9772bab8eb8542a41"
+      },
+      "pass": 4
+    },
+    "focused_names": [
+      "production_namespace::tree::execution::application::input_threads::tests::fifo_timer_slack_matches_kernel_readback_after_r15_action_order",
+      "production_namespace::tree::execution::application::input_threads::tests::held_workers_reject_renames_duplicate_roles_exit_and_same_name_replacement",
+      "production_namespace::tree::execution::application::input_threads::tests::scheduler_fields_follow_final_comm_delimiter_and_require_complete_values",
+      "production_namespace::tree::execution::application::input_threads::tests::worker_cgroup_must_be_one_normalized_record_under_original_payload"
+    ],
+    "host": "ai395",
+    "new_ignored": 0,
+    "scope": "Unprivileged real Linux worker sampling covers role rename, duplicate role, exit, replacement, scheduler fields and same-thread timer readback. R15 FIFO/2 and the kernel-normalized zero are checked by a pure parser/state regression. No production scheduler change or Android service run.",
+    "test_threads": 1,
+    "toolchain": "1.93.0"
+  }
+}

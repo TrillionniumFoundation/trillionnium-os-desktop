@@ -1,0 +1,198 @@
+{
+  "R40_original_12_test_names_available": false,
+  "RUSTFLAGS": "-Awarnings",
+  "build_jobs": 1,
+  "caller_uid": 1000,
+  "cargo_nextest": "0.9.151",
+  "compare_head": "0d369330401e0cc4c81d059b69c0e99b43b4772e",
+  "finished_utc": "2026-11-23T03:43:56.078314+00:00",
+  "host": "ai395",
+  "parent_head": "de0dff7f4392009149fcf1ef7186442e73d84de8",
+  "retries": 0,
+  "runs": {
+    "fixture-fix": {
+      "active_count": 624,
+      "active_names_sha256": "4deee9029246d66fb09fb0d08c5ce4c256ed38f80108f622d5e7d0462e2a4b30",
+      "focus_stress": {
+        "executed": 256,
+        "failed": [],
+        "passed": 256,
+        "per_case": 128,
+        "workers": 8
+      },
+      "ignored": [
+        "control::application_command::tests::real_fd_namespace_entry_and_dead_pidfd_preexec_rejection",
+        "control::application_command::tests::real_owned_group_retires_success_failure_overflow_and_escaped_pipe_holders",
+        "control::status_lifecycle_tests::owned_lifecycle_process_fixture",
+        "development::android_overrides::tests::private_projection_preserves_metadata_and_enforces_read_only_mounts",
+        "development::guest_dirs::tests::actual_restrictive_umask_namespace_directory_access",
+        "development::guest_dirs::tests::android_second_stage_umask_fixture",
+        "development::guest_dirs::tests::private_namespace_fixture",
+        "development::guest_dirs::tests::unprivileged_socket_fixture",
+        "development::owned_process::tests::actual_daemon_death_after_fork_before_android_enter",
+        "development::owned_process::tests::actual_daemon_death_before_unshare_exec_and_fork",
+        "development::owned_process::tests::actual_namespace_term_and_force_retire_owned_processes",
+        "development::owned_process::tests::namespace_init_fixture",
+        "development::owned_process::tests::namespace_launcher_fixture",
+        "development::owned_process::tests::namespace_preexec_fixture",
+        "development::tests::gsi_image_layout_mounts_official_image_and_private_alias_overrides",
+        "production_cgroup::unit_lifetime::tests::actual_private_manager_original_pidfd_observation",
+        "production_namespace::tests::privileged_private_userns_mapping_controls",
+        "production_namespace::tree::binder::tests::privileged_private_binder_controls",
+        "production_namespace::tree::guest_cgroup::tests::privileged_private_cgroup_activation_controls",
+        "production_namespace::tree::tests::persistent_syscalls::privileged_private_persistent_data_syscall_controls",
+        "production_namespace::tree::tests::privileged_private_device_mount_controls",
+        "production_namespace::tree::tests::privileged_private_empty_base_mount_controls",
+        "production_namespace::tree::tests::privileged_private_pid1_namespace_controls",
+        "production_namespace::tree::tests::privileged_private_postexec_proc_controls",
+        "production_namespace::tree::tests::privileged_private_process_filesystem_controls",
+        "production_namespace::tree::tests::privileged_private_writable_proc_controls"
+      ],
+      "in_process": [],
+      "isolated_processes": [
+        {
+          "exit": 0,
+          "failed": [],
+          "log": "fixed-fixture-fix-isolated_processes-1.log",
+          "passed": 624,
+          "sequence": 1,
+          "sha256": "3e91f0bbedc0be468cf64b787f8aa030eacc63cb0b97feedc4dc9ad8dc3048c6"
+        },
+        {
+          "exit": 0,
+          "failed": [],
+          "log": "fixed-fixture-fix-isolated_processes-2.log",
+          "passed": 624,
+          "sequence": 2,
+          "sha256": "981926714201d62d975f6acde4d7a13da30e35ce0b066e568dd67e2d16a1e11a"
+        },
+        {
+          "exit": 0,
+          "failed": [],
+          "log": "fixed-fixture-fix-isolated_processes-3.log",
+          "passed": 624,
+          "sequence": 3,
+          "sha256": "7700d04cc181bec6ce5628c5ec940c358930851a08b2a21cdb2c9758aa0cf4b2"
+        }
+      ],
+      "source_bytes": 46003124,
+      "source_tree": "819acf4cad9978832e5d2ba807f936ba0a9061c2",
+      "test_ELF_SHA256": "5d4e0a55fdc145f490a02bf9d6f4ba46e3a92c82c08630b7d498833dc0537311"
+    },
+    "pr348": {
+      "active_count": 624,
+      "active_names_sha256": "4deee9029246d66fb09fb0d08c5ce4c256ed38f80108f622d5e7d0462e2a4b30",
+      "focus_stress": {
+        "executed": 256,
+        "failed": [
+          {
+            "exit": 101,
+            "failure": "\nrunning 1 test\ntest production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations ... FAILED\n\nfailures:\n\n---- production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations stdout ----\n\nthread 'production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations' (596144) panicked at runtime/droidloom-supervisor/src/production_execution_threads.rs:734:9:\nassertion `left == right` failed\n  left: 3\n right: 2\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n\nfailures:\n    production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 649 filtered out; finished in 0.00s\n\n",
+            "name": "production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations",
+            "sequence": 1
+          },
+          {
+            "exit": 101,
+            "failure": "\nrunning 1 test\ntest production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected ... FAILED\n\nfailures:\n\n---- production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected stdout ----\n\nthread 'production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected' (596153) panicked at runtime/droidloom-supervisor/src/production_execution_threads.rs:757:9:\nassertion failed: scan.finish(&proc, child.child.id(), &cgroup, end).is_err()\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n\nfailures:\n    production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 649 filtered out; finished in 0.00s\n\n",
+            "name": "production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected",
+            "sequence": 2
+          },
+          {
+            "exit": 101,
+            "failure": "\nrunning 1 test\ntest production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations ... FAILED\n\nfailures:\n\n---- production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations stdout ----\n\nthread 'production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations' (596331) panicked at runtime/droidloom-supervisor/src/production_execution_threads.rs:734:9:\nassertion `left == right` failed\n  left: 3\n right: 2\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n\nfailures:\n    production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 649 filtered out; finished in 0.00s\n\n",
+            "name": "production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations",
+            "sequence": 39
+          },
+          {
+            "exit": 101,
+            "failure": "\nrunning 1 test\ntest production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations ... FAILED\n\nfailures:\n\n---- production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations stdout ----\n\nthread 'production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations' (596399) panicked at runtime/droidloom-supervisor/src/production_execution_threads.rs:734:9:\nassertion `left == right` failed\n  left: 3\n right: 2\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n\nfailures:\n    production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 649 filtered out; finished in 0.00s\n\n",
+            "name": "production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations",
+            "sequence": 51
+          },
+          {
+            "exit": 101,
+            "failure": "\nrunning 1 test\ntest production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations ... FAILED\n\nfailures:\n\n---- production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations stdout ----\n\nthread 'production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations' (596451) panicked at runtime/droidloom-supervisor/src/production_execution_threads.rs:734:9:\nassertion `left == right` failed\n  left: 3\n right: 2\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n\nfailures:\n    production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 649 filtered out; finished in 0.00s\n\n",
+            "name": "production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations",
+            "sequence": 61
+          },
+          {
+            "exit": 101,
+            "failure": "\nrunning 1 test\ntest production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations ... FAILED\n\nfailures:\n\n---- production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations stdout ----\n\nthread 'production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations' (597021) panicked at runtime/droidloom-supervisor/src/production_execution_threads.rs:734:9:\nassertion `left == right` failed\n  left: 3\n right: 2\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n\nfailures:\n    production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 649 filtered out; finished in 0.00s\n\n",
+            "name": "production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations",
+            "sequence": 175
+          },
+          {
+            "exit": 101,
+            "failure": "\nrunning 1 test\ntest production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected ... FAILED\n\nfailures:\n\n---- production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected stdout ----\n\nthread 'production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected' (597068) panicked at runtime/droidloom-supervisor/src/production_execution_threads.rs:757:9:\nassertion failed: scan.finish(&proc, child.child.id(), &cgroup, end).is_err()\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n\nfailures:\n    production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 649 filtered out; finished in 0.00s\n\n",
+            "name": "production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected",
+            "sequence": 184
+          },
+          {
+            "exit": 101,
+            "failure": "\nrunning 1 test\ntest production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected ... FAILED\n\nfailures:\n\n---- production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected stdout ----\n\nthread 'production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected' (597118) panicked at runtime/droidloom-supervisor/src/production_execution_threads.rs:757:9:\nassertion failed: scan.finish(&proc, child.child.id(), &cgroup, end).is_err()\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n\nfailures:\n    production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 649 filtered out; finished in 0.00s\n\n",
+            "name": "production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected",
+            "sequence": 194
+          },
+          {
+            "exit": 101,
+            "failure": "\nrunning 1 test\ntest production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected ... FAILED\n\nfailures:\n\n---- production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected stdout ----\n\nthread 'production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected' (597190) panicked at runtime/droidloom-supervisor/src/production_execution_threads.rs:757:9:\nassertion failed: scan.finish(&proc, child.child.id(), &cgroup, end).is_err()\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n\nfailures:\n    production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 649 filtered out; finished in 0.00s\n\n",
+            "name": "production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected",
+            "sequence": 208
+          },
+          {
+            "exit": 101,
+            "failure": "\nrunning 1 test\ntest production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations ... FAILED\n\nfailures:\n\n---- production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations stdout ----\n\nthread 'production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations' (597228) panicked at runtime/droidloom-supervisor/src/production_execution_threads.rs:734:9:\nassertion `left == right` failed\n  left: 3\n right: 2\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n\nfailures:\n    production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 649 filtered out; finished in 0.00s\n\n",
+            "name": "production_execution::threads::tests::actual_current_thread_scans_allow_new_cohorts_between_complete_observations",
+            "sequence": 215
+          },
+          {
+            "exit": 101,
+            "failure": "\nrunning 1 test\ntest production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected ... FAILED\n\nfailures:\n\n---- production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected stdout ----\n\nthread 'production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected' (597339) panicked at runtime/droidloom-supervisor/src/production_execution_threads.rs:757:9:\nassertion failed: scan.finish(&proc, child.child.id(), &cgroup, end).is_err()\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n\nfailures:\n    production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 649 filtered out; finished in 0.00s\n\n",
+            "name": "production_execution::threads::tests::actual_member_exit_during_a_held_scan_and_reaped_leader_are_rejected",
+            "sequence": 238
+          }
+        ],
+        "passed": 245,
+        "per_case": 128,
+        "workers": 8
+      },
+      "ignored": [
+        "control::application_command::tests::real_fd_namespace_entry_and_dead_pidfd_preexec_rejection",
+        "control::application_command::tests::real_owned_group_retires_success_failure_overflow_and_escaped_pipe_holders",
+        "control::status_lifecycle_tests::owned_lifecycle_process_fixture",
+        "development::android_overrides::tests::private_projection_preserves_metadata_and_enforces_read_only_mounts",
+        "development::guest_dirs::tests::actual_restrictive_umask_namespace_directory_access",
+        "development::guest_dirs::tests::android_second_stage_umask_fixture",
+        "development::guest_dirs::tests::private_namespace_fixture",
+        "development::guest_dirs::tests::unprivileged_socket_fixture",
+        "development::owned_process::tests::actual_daemon_death_after_fork_before_android_enter",
+        "development::owned_process::tests::actual_daemon_death_before_unshare_exec_and_fork",
+        "development::owned_process::tests::actual_namespace_term_and_force_retire_owned_processes",
+        "development::owned_process::tests::namespace_init_fixture",
+        "development::owned_process::tests::namespace_launcher_fixture",
+        "development::owned_process::tests::namespace_preexec_fixture",
+        "development::tests::gsi_image_layout_mounts_official_image_and_private_alias_overrides",
+        "production_cgroup::unit_lifetime::tests::actual_private_manager_original_pidfd_observation",
+        "production_namespace::tests::privileged_private_userns_mapping_controls",
+        "production_namespace::tree::binder::tests::privileged_private_binder_controls",
+        "production_namespace::tree::guest_cgroup::tests::privileged_private_cgroup_activation_controls",
+        "production_namespace::tree::tests::persistent_syscalls::privileged_private_persistent_data_syscall_controls",
+        "production_namespace::tree::tests::privileged_private_device_mount_controls",
+        "production_namespace::tree::tests::privileged_private_empty_base_mount_controls",
+        "production_namespace::tree::tests::privileged_private_pid1_namespace_controls",
+        "production_namespace::tree::tests::privileged_private_postexec_proc_controls",
+        "production_namespace::tree::tests::privileged_private_process_filesystem_controls",
+        "production_namespace::tree::tests::privileged_private_writable_proc_controls"
+      ],
+      "in_process": [],
+      "isolated_processes": [],
+      "source_bytes": 46002257,
+      "source_tree": "3dee0391bba02e18f6f46802383d920a2e6d88aa",
+      "test_ELF_SHA256": "f4e2fc78beb623b2cd93d4ee6885dcf0aac756487181c9be2e12ad0467f0d274"
+    }
+  },
+  "scope": "Existing source-only Rust library tests on ai395. No Android, VM, production credential or service access.",
+  "source_files": 2392,
+  "test_cpu_affinity": "0-7",
+  "test_workers": 8
+}

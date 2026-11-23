@@ -57,5 +57,16 @@
     "tests": [
       "production_namespace::tree::execution::application::pre_ready_identity_tests::original_init_zygote_system_server_lineage_rejects_reparenting_and_reuse"
     ]
+  },
+  {
+    "component": "same_epoch_input_thread_observation",
+    "package": "droidloom-supervisor",
+    "target": "droidloom_supervisor",
+    "tests": [
+      "production_namespace::tree::execution::application::input_threads::tests::fifo_timer_slack_matches_kernel_readback_after_r15_action_order",
+      "production_namespace::tree::execution::application::input_threads::tests::held_workers_reject_renames_duplicate_roles_exit_and_same_name_replacement",
+      "production_namespace::tree::execution::application::input_threads::tests::scheduler_fields_follow_final_comm_delimiter_and_require_complete_values",
+      "production_namespace::tree::execution::application::input_threads::tests::worker_cgroup_must_be_one_normalized_record_under_original_payload"
+    ]
   }
 ]

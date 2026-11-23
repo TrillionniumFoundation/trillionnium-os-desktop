@@ -47,7 +47,7 @@ class ExactIgnoredCatalogControls(unittest.TestCase):
         after = {(r['package'], r['target'], n) for r in result for n in r['ignored']}
         self.assertEqual(after, before | {('droidloom-supervisor', 'droidloom_supervisor', CASE)})
         self.assertEqual(len(before), 30)
-        self.assertEqual(sum(len(r['all']) - len(r['ignored']) for r in result), 1629)
+        self.assertEqual(sum(len(r['all']) - len(r['ignored']) for r in result), 1633)
         self.assertNotIn(CASE, {n for r in result for n in set(r['all']) - set(r['ignored'])})
 
     def test_metadata_cannot_authorize_execution_change_identity_or_use_numeric_booleans(self):
