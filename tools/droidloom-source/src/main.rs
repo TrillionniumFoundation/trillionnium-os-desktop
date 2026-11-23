@@ -52,6 +52,13 @@ enum Command {
         #[arg(long)]
         output: PathBuf,
     },
+    /// Retain exact project caches and verify the entire tree before publishing it.
+    MaterializeResuming {
+        #[arg(long)] lock: PathBuf,
+        #[arg(long)] output: PathBuf,
+        #[arg(long)] progress: PathBuf,
+        #[arg(long)] resume: Option<PathBuf>,
+    },
     /// Add newly locked projects to an existing verified materialization.
     Reconcile {
         /// Sparse source lock to reconcile against.
@@ -114,6 +121,16 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         Command::Plan { lock } => {
             let lock = load_lock(&lock)?;
             println!("{}", serde_json::to_string_pretty(&build_plan(&lock)?)?);
+        }
+        Command::MaterializeResuming { lock, output, progress, resume } => {
+            let source_lock = load_lock(&lock)?;
+            let operation = match cli.profile {
+                Profile::ProductionFullCar => droidloom_source::production_car::materialize_resuming,
+                Profile::NativePair => droidloom_source::native_pair::materialize_resuming,
+                _ => return Err("this profile has no resumable materializer".into()),
+            };
+            let manifest = operation(&lock, &source_lock, &output, resume.as_deref(), &progress)?;
+            println!("materialized {} exact AOSP projects at {}", manifest.plan.projects.len(), output.display());
         }
         Command::Materialize { lock, output } => {
             let source_lock = load_lock(&lock)?;

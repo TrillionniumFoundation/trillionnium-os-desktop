@@ -119,7 +119,9 @@ fn git_output(checkout: &Path, args: &[OsString], progress: &Progress,
             "-c", "maintenance.auto=false", "-c", "gc.auto=0",
             "-c", "protocol.allow=never"]);
     if network {
-        command.args(["-c", "protocol.https.allow=always"]);
+        // A sparse checkout may request thousands of promised blobs in one HTTPS body.
+        // Keep the POST replayable if the official origin closes an idle TLS connection.
+        command.args(["-c", "protocol.https.allow=always", "-c", "http.postBuffer=134217728"]);
     }
     // Unit controls exercise complete, locally cached objects only. A broken
     // cache expectation must fail instead of accessing a remote fixture URL.
@@ -388,6 +390,68 @@ fn resume_project(root: &Path, project: &PlannedProject, ordinal: usize,
     progress.record("PROJECT_VERIFIED", detail())
 }
 
+fn bind_lock(root: &Path, metadata: &Metadata, digest: &str, resume: bool, owner: u32)
+    -> Result<(), SourceError> {
+    let name = root.file_name().and_then(OsStr::to_str).ok_or_else(|| invalid("missing source staging name"))?;
+    let record = root.with_file_name(format!("{name}.lock-binding"));
+    let expected = format!("{}:{}:{digest}\n", metadata.dev(), metadata.ino());
+    if !resume {
+        let mut file = OpenOptions::new().write(true).create_new(true).mode(0o600)
+            .open(&record).map_err(|e| io_error("bind persistent source to exact lock", e))?;
+        file.write_all(expected.as_bytes()).and_then(|()| file.sync_all())
+            .and_then(|()| File::open(root.parent().ok_or(std::io::ErrorKind::InvalidInput)?)
+                .and_then(|dir| dir.sync_all()))
+            .map_err(|e| io_error("persist exact source lock binding", e))?;
+    }
+    if read_owned(&record, owner, 256)? != expected.as_bytes() {
+        return Err(invalid("persistent staging belongs to a different source lock or inode"));
+    }
+    Ok(())
+}
+
+fn contains_nested_projects(projects: &[PlannedProject]) -> bool {
+    let paths: BTreeSet<_> = projects.iter().map(|project| project.path.as_path()).collect();
+    paths.iter().any(|path| path.ancestors().skip(1).any(|ancestor| paths.contains(ancestor)))
+}
+
+fn resume_disjoint_projects(
+    root: &Path, projects: &[PlannedProject], progress_path: &Path, owner: u32, recovery: &Path,
+) -> Result<(), SourceError> {
+    use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+    let next = AtomicUsize::new(0);
+    let stop = AtomicBool::new(false);
+    let name = progress_path.file_name().and_then(OsStr::to_str)
+        .ok_or_else(|| invalid("source progress requires a valid filename"))?;
+    thread::scope(|scope| {
+        let mut workers = Vec::new();
+        for lane in 0..4 {
+            let path = progress_path.with_file_name(format!("{name}.worker-{lane}"));
+            let mut progress = Progress::create(&path, owner)?;
+            let next = &next;
+            let stop = &stop;
+            workers.push(scope.spawn(move || {
+                while !stop.load(Ordering::Acquire) {
+                    let ordinal = next.fetch_add(1, Ordering::Relaxed);
+                    let Some(project) = projects.get(ordinal) else { break; };
+                    if !is_commit(&project.commit) { return Err(invalid("non-exact project commit")); }
+                    if let Err(error) = resume_project(root, project, ordinal+1, &mut progress, owner, recovery) {
+                        stop.store(true, Ordering::Release);
+                        return Err(error);
+                    }
+                }
+                Ok(())
+            }));
+        }
+        let mut failure = None;
+        for worker in workers {
+            if let Err(error) = worker.join().map_err(|_| invalid("source worker panicked"))? {
+                if failure.is_none() { failure = Some(error); }
+            }
+        }
+        failure.map_or(Ok(()), Err)
+    })
+}
+
 /// Materialize with durable per-project progress and optional explicit staging.
 ///
 /// `resume` is never discovered by scanning directories. It must be a private
@@ -403,8 +467,18 @@ fn resume_project(root: &Path, project: &PlannedProject, ordinal: usize,
 pub fn materialize_resuming(lock_path: &Path, lock: &SparseSourceLock,
     destination: &Path, resume: Option<&Path>, progress_path: &Path)
     -> Result<MaterializedManifest, SourceError> {
-    let plan = build_plan(lock)?;
-    if build_plan(&super::load_lock(lock_path)?)? != plan {
+    materialize_for_profile(lock_path, lock, destination, resume, progress_path, false)
+}
+
+/// Keep immutable production source checkouts across network or process interruptions.
+pub(crate) fn materialize_for_profile(
+    lock_path: &Path, lock: &SparseSourceLock, destination: &Path,
+    resume: Option<&Path>, progress_path: &Path, production_car: bool,
+) -> Result<MaterializedManifest, SourceError> {
+    let planner = if production_car { super::production_car::build_plan } else { build_plan };
+    let verifier = if production_car { super::production_car::verify_materialized } else { verify_materialized };
+    let plan = planner(lock)?;
+    if planner(&super::load_lock(lock_path)?)? != plan {
         return Err(invalid("in-memory source plan does not match the supplied lock file"));
     }
     if !absent(destination)? { return Err(invalid("materialization destination must remain absent")); }
@@ -431,6 +505,9 @@ pub fn materialize_resuming(lock_path: &Path, lock: &SparseSourceLock,
         return Err(invalid("source staging must be private and on its owned workspace filesystem"));
     }
     let lock_sha = sha256_file(lock_path)?;
+    if production_car {
+        bind_lock(&root, &root_info, &lock_sha, resume.is_some(), owner)?;
+    }
     progress.record("SOURCE_STAGING_BOUND", json!({"source_lock_sha256":lock_sha,
         "staging":root,"staging_identity":identity(&root_info),"destination":destination,
         "projects":plan.projects.len(),"links":plan.links.len(),"explicit_resume":resume.is_some()}))?;
@@ -438,9 +515,19 @@ pub fn materialize_resuming(lock_path: &Path, lock: &SparseSourceLock,
         .join("source-recovery");
     let mut publication_rename_completed = false;
     let outcome = (|| {
-        for (ordinal, project) in plan.projects.iter().enumerate() {
-            if !is_commit(&project.commit) { return Err(invalid("non-exact project commit")); }
-            resume_project(&root, project, ordinal + 1, &mut progress, owner, &recovery)?;
+        if production_car && !contains_nested_projects(&plan.projects) {
+            // Prepare shared ancestors before independent Git workers touch their private checkouts.
+            for project in &plan.projects { owned_parents(&root, &project.path, owner)?; }
+            if absent(&recovery)? {
+                fs::create_dir(&recovery).map_err(|e| io_error("create source recovery directory", e))?;
+            }
+            real_directory(&recovery, owner)?;
+            resume_disjoint_projects(&root, &plan.projects, progress_path, owner, &recovery)?;
+        } else {
+            for (ordinal, project) in plan.projects.iter().enumerate() {
+                if !is_commit(&project.commit) { return Err(invalid("non-exact project commit")); }
+                resume_project(&root, project, ordinal + 1, &mut progress, owner, &recovery)?;
+            }
         }
         progress.record("VERIFY_ROOT_LINKS", json!({"links":plan.links.len()}))?;
         for link in &plan.links {
@@ -463,7 +550,7 @@ pub fn materialize_resuming(lock_path: &Path, lock: &SparseSourceLock,
             return Err(invalid("pre-existing staging manifest differs from the fully verified plan"));
         }
         progress.record("NORMAL_SOURCE_VERIFIER_BEFORE_PUBLICATION", json!({"projects":manifest.plan.projects.len()}))?;
-        verify_materialized(lock_path, lock, &root)?;
+        verifier(lock_path, lock, &root)?;
         if !same_object(&root_info, &real_directory(&root, owner)?) || !absent(destination)? {
             return Err(invalid("source staging or destination identity changed before publication"));
         }
@@ -572,6 +659,21 @@ mod tests {
             fs::read_to_string(&self.progress).unwrap().lines()
                 .map(|line| serde_json::from_str(line).unwrap()).collect()
         }
+    }
+
+    #[test]
+    fn production_checkpoint_binds_the_original_lock_and_staging_inode() {
+        let parent = tempfile::tempdir().unwrap();
+        let root = parent.path().join(".droidloom-source-fixture");
+        fs::create_dir(&root).unwrap();
+        let first = fs::symlink_metadata(&root).unwrap();
+        bind_lock(&root, &first, "first-lock", false, first.uid()).unwrap();
+        bind_lock(&root, &first, "first-lock", true, first.uid()).unwrap();
+        assert!(bind_lock(&root, &first, "different-lock", true, first.uid()).is_err());
+        fs::rename(&root, parent.path().join("prior")).unwrap();
+        fs::create_dir(&root).unwrap();
+        let different = fs::symlink_metadata(&root).unwrap();
+        assert!(bind_lock(&root, &different, "first-lock", true, first.uid()).is_err());
     }
 
     #[test]

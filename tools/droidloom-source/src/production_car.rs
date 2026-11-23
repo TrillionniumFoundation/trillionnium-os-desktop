@@ -298,3 +298,12 @@ mod tests {
         assert_eq!(fs::read_dir(source).unwrap().count(), 1);
     }
 }
+
+
+/// Resume verified disjoint source checkouts under the exact production lock.
+pub fn materialize_resuming(
+    lock_path: &Path, lock: &SparseSourceLock, destination: &Path,
+    resume: Option<&Path>, progress: &Path,
+) -> Result<MaterializedManifest, SourceError> {
+    super::resume::materialize_for_profile(lock_path, lock, destination, resume, progress, true)
+}
