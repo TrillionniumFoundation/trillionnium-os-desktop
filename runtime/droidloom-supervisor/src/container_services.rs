@@ -3,24 +3,31 @@
 //! and application readiness still come from the production control protocol.
 
 use std::collections::BTreeMap;
-use std::fs;
 use std::io;
+use std::os::unix::fs::MetadataExt;
 use std::process::{Command, Stdio};
 
 const TARGET: &str = "droidloom-container-services.target";
 const ENTRY: &str = "droidloom-container-entry.service";
 const PROGRAM: &str = "/usr/lib/droidloom/production/current/droidloom-container-entry";
-const SELECTED: &str = "/etc/droidloom/production/selected.json";
-
-pub(super) fn selected() -> io::Result<bool> {
+/// Layout detection only prevents desktop fallback. The original production
+/// broker must validate the private selection under its own configuration lock.
+pub(super) fn requires_production_control() -> io::Result<bool> {
     if std::env::current_exe()?
         == std::path::Path::new("/usr/lib/droidloom/production/current/droidloomctl")
     {
         return Ok(true);
     }
-    match fs::symlink_metadata(SELECTED) {
-        Ok(file) if file.is_file() => Ok(true),
-        Ok(_) => Err(io::Error::other("invalid production selection file")),
+    match std::fs::symlink_metadata("/etc/droidloom/production") {
+        Ok(directory)
+            if directory.is_dir()
+                && directory.uid() == 0
+                && directory.gid() == 0
+                && directory.mode() & 0o022 == 0 =>
+        {
+            Ok(true)
+        }
+        Ok(_) => Err(io::Error::other("unsafe production selection directory")),
         Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(false),
         Err(error) => Err(error),
     }
@@ -192,6 +199,11 @@ pub(super) fn lifecycle(operation: &str) -> io::Result<Option<Generation>> {
     if operation != "stop" {
         let (target, entry) = snapshot()?;
         verify_contract(&target, &entry)?;
+        if operation == "start" {
+            if let Some(generation) = Generation::from_running(&target, &entry) {
+                return Ok(Some(generation));
+            }
+        }
         if operation == "status" {
             if let Some(generation) = Generation::from_running(&target, &entry) {
                 return Ok(Some(generation));

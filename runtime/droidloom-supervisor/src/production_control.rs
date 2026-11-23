@@ -578,6 +578,9 @@ impl ProductionDaemon {
         }
         let selected = ProductionSelection::load(guard, spec, peer_uid)
             .map_err(|error| ControlError::Invalid(error.to_string()))?;
+        if selected.host_managed_launcher().map_err(|error| ControlError::Invalid(error.to_string()))?.is_some() {
+            return Err(ControlError::Invalid("the selected host-managed container must start through its system service".into()));
+        }
         if let Some(active) = &self.active {
             authorize_uid(peer_uid, active.spec().host_uid)?;
             if !active.same_selection(&selected) {

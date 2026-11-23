@@ -192,7 +192,9 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         _ => None,
     };
     if let Some((operation, mode, wait)) = managed {
-        if cli.socket == PathBuf::from(DEFAULT_CONTROL_SOCKET) && container_services::selected()? {
+        if cli.socket == PathBuf::from(DEFAULT_CONTROL_SOCKET)
+            && let Some(choice) = droidloom_supervisor::control::SharedKernelLauncher::read()? {
+            choice.revalidate()?;
             if mode.is_some_and(|selected| selected != SessionMode::Desktop) {
                 return Err("the shared-kernel production service currently supports desktop mode".into());
             }
@@ -218,6 +220,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             } else {
                 (droidloom_supervisor::control::CellState::Stopped, "Container services are stopped".into(), None)
             };
+            choice.revalidate()?;
             if cli.json {
                 let json = if let Some(response) = original {
                     serde_json::to_value(response)?
@@ -231,7 +234,8 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             return Ok(());
         }
     }
-    if !cli.cell && cli.socket == PathBuf::from(DEFAULT_CONTROL_SOCKET) {
+    if !cli.cell && cli.socket == PathBuf::from(DEFAULT_CONTROL_SOCKET)
+        && !container_services::requires_production_control()? {
         let operation = match &cli.command {
             Command::Start {
                 spec,

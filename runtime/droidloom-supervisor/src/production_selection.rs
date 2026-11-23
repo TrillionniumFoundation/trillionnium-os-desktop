@@ -27,6 +27,12 @@ const SPECIFICATION: &str = "/etc/droidloom/cell.json";
 const SELECTION_LIMIT: u64 = 16 * 1024;
 const SPEC_LIMIT: u64 = 1024 * 1024;
 const SCHEMA: &str = "droidloom-production-selection-v1";
+#[path = "production_launcher.rs"]
+mod launcher;
+pub use launcher::{PreparedContainerSelection, SharedKernelLauncher};
+
+const SHARED_SCHEMA: &str = "droidloom-production-selection-v3";
+const SHARED_LAUNCHER: &str = "host_managed_shared_kernel_v1";
 const PERSISTENT_SCHEMA: &str = "droidloom-production-selection-v2";
 
 #[path = "production_persistent_data_policy.rs"]
@@ -51,6 +57,8 @@ type Result<T> = std::result::Result<T, SelectionError>;
 #[serde(deny_unknown_fields)]
 struct Record {
     schema: String,
+    #[serde(default)]
+    launcher: Option<String>,
     host_uid: u32,
     cell_spec_bytes: u64,
     cell_spec_sha256: String,
@@ -101,6 +109,7 @@ struct SealedFile {
 /// files have already passed the fixed root custody and exact-byte checks.
 pub(crate) struct ProductionSelection {
     selected: SealedFile,
+    host_managed: bool,
     specification: SealedFile,
     spec: CellSpec,
     base_cohort: String,
@@ -165,6 +174,7 @@ impl ProductionSelection {
         specification.revalidate()?;
         Ok(Self {
             selected,
+            host_managed: record.schema == SHARED_SCHEMA,
             specification,
             spec,
             base_cohort: record.base_cohort_sha256,
@@ -188,6 +198,7 @@ impl ProductionSelection {
         };
         let value = Self {
             selected: duplicate(&self.selected)?,
+            host_managed: self.host_managed,
             specification: duplicate(&self.specification)?,
             spec: self.spec.clone(),
             base_cohort: self.base_cohort.clone(),
@@ -265,8 +276,10 @@ impl ProductionSelection {
 
 fn validate_record(record: &Record) -> Result<()> {
     let valid_version = match record.schema.as_str() {
-        SCHEMA => record.persistent_data.is_none(),
-        PERSISTENT_SCHEMA => record.persistent_data.as_ref().is_some_and(|p| p.validate().is_ok()),
+        SCHEMA => record.launcher.is_none() && record.persistent_data.is_none(),
+        PERSISTENT_SCHEMA => record.launcher.is_none() && record.persistent_data.as_ref().is_some_and(|p| p.validate().is_ok()),
+        SHARED_SCHEMA => record.launcher.as_deref() == Some(SHARED_LAUNCHER)
+            && record.persistent_data.as_ref().is_none_or(|p| p.validate().is_ok()),
         _ => false,
     };
     if !valid_version
@@ -521,6 +534,7 @@ mod tests {
     fn record() -> Record {
         Record {
             schema: SCHEMA.into(),
+            launcher: None,
             host_uid: 1000,
             cell_spec_bytes: 800,
             cell_spec_sha256: "a".repeat(64),
@@ -528,6 +542,20 @@ mod tests {
             runtime_manifest_sha256: "c".repeat(64),
             persistent_data: None,
         }
+    }
+
+    #[test]
+    fn existing_production_records_do_not_implicitly_switch_launchers() {
+        let mut old = record();
+        assert!(validate_record(&old).is_ok());
+        old.launcher = Some(SHARED_LAUNCHER.into());
+        assert!(validate_record(&old).is_err());
+        old.schema = SHARED_SCHEMA.into();
+        assert!(validate_record(&old).is_ok());
+        old.launcher = None;
+        assert!(validate_record(&old).is_err());
+        old.launcher = Some("/system/bin/init".into());
+        assert!(validate_record(&old).is_err());
     }
 
     #[test]

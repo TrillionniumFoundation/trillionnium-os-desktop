@@ -19,6 +19,7 @@ use std::time::{Duration, Instant};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+pub use crate::production_selection::{PreparedContainerSelection, SharedKernelLauncher};
 use crate::CellSpec;
 use crate::development::{DevelopmentCell, recover_development_cell, start_development_cell};
 

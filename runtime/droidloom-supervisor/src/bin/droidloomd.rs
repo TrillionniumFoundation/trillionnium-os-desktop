@@ -44,6 +44,15 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     {
         let mut arguments = std::env::args_os().skip(1);
         let action = arguments.next();
+        if action.as_deref() == Some(std::ffi::OsStr::new("--check-container-selection")) {
+            if arguments.next().is_some() {
+                return Err("container selection check accepts no arguments".into());
+            }
+            let selected = droidloom_supervisor::control::PreparedContainerSelection::acquire()?;
+            selected.revalidate()?;
+            println!("Shared-kernel launch selection verified");
+            return Ok(());
+        }
         if action.as_deref() == Some(std::ffi::OsStr::new("__production-application-read")) {
             if arguments.next().is_some() {
                 return Err(std::io::Error::new(

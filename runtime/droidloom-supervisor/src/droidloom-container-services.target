@@ -4,3 +4,6 @@ BindsTo=droidloom-container-entry.service
 After=droidloom-container-entry.service
 PropagatesStopTo=droidloom-container-entry.service
 JobTimeoutSec=150s
+
+[Install]
+WantedBy=multi-user.target
