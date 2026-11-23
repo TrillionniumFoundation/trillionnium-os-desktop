@@ -197,23 +197,30 @@ static int apparmor_profiles(const struct input *pack, int activate)
     return pos == pack->size ? 0 : reject(EBADMSG);
 }
 
-int droidloom_board_activate_policy(void)
+int droidloom_board_activate_policy(gid_t observer_gid)
 {
-    struct input policy = {881653, "6bb26c467a950033a628b3997dd8f08e41c84bc4f4dfdc3adc89479566f4d9a9", POLICY_DIR "/joint.policy", NULL};
+    struct input policy = {881881, "7a2c530bc2cf92a5091a7dff64a2a50b5a1babc8cb0e63d6f6a4de8a97c77533", POLICY_DIR "/joint.policy", NULL};
     struct input aa = {5663265, "16ad7370417d3ae76e5b873371a315681078e67a44c70672aa4043875be92889", POLICY_DIR "/ubuntu-apparmor.profiles", NULL};
     struct droidloom_linux_run run = {.fd = -1};
+    struct droidloom_readiness_paths paths = { .handoff.fd = -1, .readiness.fd = -1 };
     const char *stage = "read admitted SELinux input";
     int rc = read_admitted(&policy);
     if (rc == 0) { stage = "read admitted AppArmor input"; rc = read_admitted(&aa); }
     if (rc == 0) { stage = "validate AppArmor framing"; rc = apparmor_profiles(&aa, 0); }
     if (rc == 0) { stage = "check initial Ubuntu policy state"; rc = initial_ubuntu_kernel(); }
     if (rc == 0) { stage = "hold original Ubuntu /run"; rc = droidloom_hold_linux_run(&run); }
+    if (rc == 0) { stage = "hold the selected early readiness directory"; rc = droidloom_hold_readiness_paths(&run, observer_gid, &paths); }
     if (rc == 0) { stage = "load the selected Ubuntu AppArmor profiles"; rc = apparmor_profiles(&aa, 1); }
     if (rc == 0) { stage = "load initial selected joint SELinux policy"; rc = submit(SELINUX_DIR "/load", policy.data, policy.size); }
     if (rc == 0) { stage = "label the held Ubuntu /run inode"; rc = droidloom_label_linux_run(&run); }
+    if (rc == 0) { stage = "label the held private readiness directory"; rc = droidloom_label_readiness_paths(&paths); }
     int error = errno;
     if (rc < 0)
         fprintf(stderr, "Droidloom early policy failed to %s: %s\n", stage, strerror(error));
+    if (paths.readiness.fd >= 0)
+        close(paths.readiness.fd);
+    if (paths.handoff.fd >= 0)
+        close(paths.handoff.fd);
     if (run.fd >= 0)
         close(run.fd);
     free(aa.data);

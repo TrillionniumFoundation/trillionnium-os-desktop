@@ -16,4 +16,13 @@ int droidloom_hold_linux_run(struct droidloom_linux_run *run);
 int droidloom_label_linux_run(const struct droidloom_linux_run *run);
 int droidloom_verify_linux_run(const struct droidloom_linux_run *run);
 
+struct droidloom_readiness_paths {
+    struct droidloom_linux_run handoff;
+    struct droidloom_linux_run readiness;
+};
+
+int droidloom_hold_readiness_paths(const struct droidloom_linux_run *run,
+                                  gid_t observer_gid, struct droidloom_readiness_paths *paths);
+int droidloom_label_readiness_paths(const struct droidloom_readiness_paths *paths);
+
 #endif
