@@ -367,6 +367,8 @@ struct Resources {
     mntns_ino: u64,
     userns_dev: u64,
     userns_ino: u64,
+    cgroupns_dev: u64,
+    cgroupns_ino: u64,
     fifo_dev: u64,
     fifo_ino: u64,
 }
@@ -378,6 +380,8 @@ pub(crate) struct EarlyBoardResources {
     saved: Resources,
     mnt: File,
     user: File,
+    created_cgroup: File,
+    active_cgroup: std::cell::RefCell<Option<File>>,
 }
 
 impl EarlyBoardResources {
@@ -402,12 +406,16 @@ impl EarlyBoardResources {
             open_root_trusted(Path::new("/run/droidloom-early/mntns")).map_err(io::Error::other)?;
         let user = open_root_trusted(Path::new("/run/droidloom-early/userns"))
             .map_err(io::Error::other)?;
+        let created_cgroup = open_root_trusted(Path::new("/run/droidloom-early/cgroupns-creation"))
+            .map_err(io::Error::other)?;
         let value = Self {
             generation,
             record,
             saved,
             mnt,
             user,
+            created_cgroup,
+            active_cgroup: std::cell::RefCell::new(None),
         };
         value.revalidate()?;
         Ok(value)
@@ -427,6 +435,12 @@ impl EarlyBoardResources {
                 &self.user,
                 libc::CLONE_NEWUSER,
                 (self.saved.userns_dev, self.saved.userns_ino),
+            ),
+            (
+                "/run/droidloom-early/cgroupns-creation",
+                &self.created_cgroup,
+                libc::CLONE_NEWCGROUP,
+                (self.saved.cgroupns_dev, self.saved.cgroupns_ino),
             ),
         ] {
             let named = open_root_trusted(Path::new(path)).map_err(io::Error::other)?;
@@ -459,9 +473,73 @@ impl EarlyBoardResources {
     pub(crate) fn selection(&self) -> &ProductionSelection {
         &self.generation.selected
     }
+    fn current_cgroup(&self) -> io::Result<File> {
+        self.generation.check_liveness()?;
+        let current = File::open(format!("/proc/{}/ns/cgroup", self.host_pid()))?;
+        self.generation.check_liveness()?;
+        if cv(unsafe { libc::ioctl(current.as_raw_fd(), NS_GET_NSTYPE) })? != libc::CLONE_NEWCGROUP
+        {
+            return Err(invalid(
+                "original child does not identify a cgroup namespace",
+            ));
+        }
+        let raw = cv(unsafe { libc::ioctl(current.as_raw_fd(), 0xb701 as libc::c_ulong) })?;
+        let owner = unsafe { File::from_raw_fd(raw) };
+        if identity(&owner)? != identity(&self.user)? {
+            return Err(invalid(
+                "child cgroup namespace belongs to a different user namespace",
+            ));
+        }
+        Ok(current)
+    }
+    /// Called after the budget owner moves the existing PID 1 into its delegated payload.
+    /// The child re-roots its own cgroup namespace once, without crossing a descriptor.
+    pub(crate) fn root_cgroup_namespace(&self) -> io::Result<File> {
+        self.revalidate()?;
+        let original = identity(&self.created_cgroup)?;
+        let before = self.current_cgroup()?;
+        let already = identity(&before)? != original;
+        if let Some(held) = self.active_cgroup.borrow().as_ref() {
+            if !already || identity(held)? != identity(&before)? {
+                return Err(invalid("the observed delegated cgroup namespace changed"));
+            }
+            return held.try_clone();
+        }
+        if !already {
+            self.write_step("DROIDLOOM_EARLY_CGROUP_V1")?;
+        }
+        let until = std::time::Instant::now() + std::time::Duration::from_secs(5);
+        loop {
+            let candidate = self.current_cgroup()?;
+            if identity(&candidate)? != original {
+                self.revalidate()?;
+                self.active_cgroup.replace(Some(candidate.try_clone()?));
+                return Ok(candidate);
+            }
+            if std::time::Instant::now() >= until {
+                return Err(invalid(
+                    "original PID 1 did not create its delegated cgroup namespace",
+                ));
+            }
+            std::thread::sleep(std::time::Duration::from_millis(15));
+        }
+    }
     /// The normal board resource owner calls this only after the held immutable root and
     /// persistent backing lease have both been installed in the same original namespace.
     pub(crate) fn release_prepared_root(&self) -> io::Result<()> {
+        let now = self.current_cgroup()?;
+        let active = self.active_cgroup.borrow();
+        let captured = active.as_ref().ok_or_else(|| {
+            invalid("the original child has no verified delegated cgroup namespace")
+        })?;
+        if identity(captured)? != identity(&now)? {
+            return Err(invalid(
+                "cgroup namespace changed before original init release",
+            ));
+        }
+        self.write_step("DROIDLOOM_EARLY_RELEASE_V1")
+    }
+    fn write_step(&self, tag: &str) -> io::Result<()> {
         use std::io::Write;
         use std::os::unix::fs::OpenOptionsExt;
         self.revalidate()?;
@@ -482,8 +560,8 @@ impl EarlyBoardResources {
             ));
         }
         let packet = format!(
-            "DROIDLOOM_EARLY_RELEASE_V1 {} {}\n",
-            self.saved.selection_sha256, self.saved.nonce
+            "{} {} {}\n",
+            tag, self.saved.selection_sha256, self.saved.nonce
         );
         if fifo.write(packet.as_bytes())? != packet.len() {
             return Err(invalid("incomplete atomic early Android release"));

@@ -5,7 +5,10 @@ use std::{fs, path::Path, process::Command};
 pub(super) fn stage(destination: &Path) -> Result<()> {
     let work = tempfile::tempdir()?;
     let src = work.path();
-    fs::write(src.join("board.h"),include_bytes!("../../../runtime/droidloom-early-boot/board.h"))?;
+    fs::write(
+        src.join("board.h"),
+        include_bytes!("../../../runtime/droidloom-early-boot/board.h"),
+    )?;
     fs::write(
         src.join("custody.h"),
         include_bytes!("../../../runtime/droidloom-early-boot/custody.h"),
@@ -18,7 +21,28 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
         src.join("selected.c"),
         include_bytes!("../../../runtime/droidloom-early-boot/selected.c"),
     )?;
-    for (source, object) in [("custody.c", "custody.o"), ("selected.c", "selected.o")] {
+    for (name, content) in [
+        (
+            "board_resources.h",
+            include_bytes!("../../../runtime/droidloom-early-boot/board_resources.h").as_slice(),
+        ),
+        (
+            "board_resources.c",
+            include_bytes!("../../../runtime/droidloom-early-boot/board_resources.c").as_slice(),
+        ),
+        (
+            "firststage.c",
+            include_bytes!("../../../runtime/droidloom-early-boot/firststage.c").as_slice(),
+        ),
+    ] {
+        fs::write(src.join(name), content)?;
+    }
+    for (source, object) in [
+        ("custody.c", "custody.o"),
+        ("selected.c", "selected.o"),
+        ("board_resources.c", "board_resources.o"),
+        ("firststage.c", "firststage.o"),
+    ] {
         let result = Command::new("cc")
             .current_dir(src)
             .args([
@@ -30,6 +54,28 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
             return fail("cannot compile the board first-stage custody archive");
         }
     }
+    let boot = "droidloom-early-firststage";
+    let result = Command::new("cc")
+        .current_dir(src)
+        .args([
+            "-Wl,-z,relro,-z,now",
+            "firststage.o",
+            "custody.o",
+            "selected.o",
+            "board_resources.o",
+            "-lcrypto",
+            "-o",
+            boot,
+        ])
+        .status()?;
+    if !result.success() {
+        return fail("cannot link the original shared-kernel first-stage executable");
+    }
+    let binary = destination
+        .join("usr/lib/droidloom/production/current")
+        .join(boot);
+    copy(&src.join(boot), &binary)?;
+    mode(&binary, 0o755)?;
     let result = Command::new("ar")
         .current_dir(src)
         .args([
@@ -42,6 +88,7 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
     if !result.success() {
         return fail("cannot archive verified first-stage custody objects");
     }
+    // The same resource handoff object is linkable by the late systemd broker.
     let archive = destination.join("usr/lib/droidloom/production/libdroidloom_early_custody.a");
     copy(&src.join("libdroidloom_early_custody.a"), &archive)?;
     mode(&archive, 0o644)?;

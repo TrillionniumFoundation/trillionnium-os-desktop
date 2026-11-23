@@ -1,6 +1,7 @@
 [Unit]
 Description=Observe the kernel-started Droidloom Android instance
-After=local-fs.target droidloom-manager-label.service
+After=local-fs.target droidloom-manager-label.service droidloom-production.service
+BindsTo=droidloom-production.service
 Requires=droidloom-manager-label.service
 
 [Service]

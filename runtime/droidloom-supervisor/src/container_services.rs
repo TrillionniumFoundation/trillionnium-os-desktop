@@ -274,6 +274,7 @@ fn early_generation()->io::Result<Option<Generation>>{
     let s=show(EARLY,ENTRY_FIELDS)?;
     if !matches(&s,&[("Id",EARLY),("LoadState","loaded"),("Type","notify"),("NotifyAccess","main"),("KillMode","control-group"),("Restart","no"),("RemainAfterExit","no")]) ||
        !["Requires","After"].iter().all(|key|members(&s,key).any(|unit|unit=="droidloom-manager-label.service")) ||
+       !["BindsTo","After"].iter().all(|key|members(&s,key).any(|unit|unit=="droidloom-production.service")) ||
        !fixed_command(property(&s,"ExecStart"),"--observe-early-container"){
         return Err(io::Error::other("kernel-booted Android observer has an incorrect service contract"));
     }
