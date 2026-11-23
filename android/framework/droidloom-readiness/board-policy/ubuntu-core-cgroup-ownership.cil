@@ -38,3 +38,14 @@
 (allow kernel p4_linux_cgroup_controller_list_t (file (getattr relabelto)))
 (allow init_t p4_linux_cgroup_controller_list_t (file (getattr open read)))
 (neverallow p4_non_kernel_cgroup_actor p4_linux_cgroup_controller_list_t (file (write append setattr)))
+
+; The ordinary manager owns its top-level system slice, independently of Android's payload.
+(type p4_linux_system_slice_t)
+(type p4_linux_unit_cgroup_t)
+(roletype object_r p4_linux_system_slice_t)
+(roletype object_r p4_linux_unit_cgroup_t)
+(typeattributeset p4_linux_init_cgroup_inodes (p4_linux_system_slice_t p4_linux_unit_cgroup_t))
+(allow kernel p4_linux_system_slice_t (dir (getattr relabelto)))
+(allow init_t p4_linux_system_slice_t (dir (getattr search read open write add_name remove_name)))
+(typetransition init_t p4_linux_system_slice_t dir p4_linux_unit_cgroup_t)
+(allow init_t p4_linux_unit_cgroup_t (dir (getattr search read open create write add_name remove_name rmdir)))
