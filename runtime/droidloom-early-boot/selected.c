@@ -52,9 +52,9 @@ static int verifier(const char *action,int input,char *out,size_t capacity) {
 }
 
 static int digest_text(const char *s) {return strlen(s)==64 && strspn(s,"0123456789abcdef")==64;}
-int droidloom_early_read_plan(struct droidloom_early_plan *plan) {
+static int read_plan(const char *action, struct droidloom_early_plan *plan) {
     char out[256],tail;
-    int n=verifier("--initramfs-board-plan",-1,out,sizeof out-1);
+    int n=verifier(action,-1,out,sizeof out-1);
     if(n<0)return -1;
     if(!n)return 0;
     if(out[n-1]!='\n'){errno=EBADMSG;return -1;}
@@ -67,12 +67,17 @@ int droidloom_early_read_plan(struct droidloom_early_plan *plan) {
        (uint64_t)plan->gid_start+plan->gid_count>UINT32_MAX){errno=EBADMSG;return -1;}
     return 1;
 }
-int droidloom_early_original_elf(int fd) {
-    static const unsigned char expected[32]={
-        0x9f,0x69,0xcc,0x83,0xa8,0x8d,0xb5,0xf8,0x53,0x30,0x14,0xcf,0xea,0x5a,0xd9,0xea,
-        0x8e,0x04,0x54,0x12,0x03,0x35,0x32,0x9a,0xec,0x27,0xf8,0xd6,0x5b,0x2a,0x95,0x37};
+int droidloom_early_read_plan(struct droidloom_early_plan *plan) {
+    return read_plan("--initramfs-board-plan", plan);
+}
+
+int droidloom_post_switch_read_plan(struct droidloom_early_plan *plan) {
+    return read_plan("--post-switch-board-plan", plan);
+}
+
+int droidloom_verified_elf(int fd, off_t expected_size, const unsigned char expected[32]) {
     struct stat before,after;
-    if(fstat(fd,&before)||!S_ISREG(before.st_mode)||before.st_size!=2934488){errno=EINVAL;return -1;}
+    if(fstat(fd,&before)||!S_ISREG(before.st_mode)||before.st_size!=expected_size){errno=EINVAL;return -1;}
     EVP_MD_CTX *digest=EVP_MD_CTX_new();
     if(!digest){errno=ENOMEM;return -1;}
     unsigned char buffer[32768],actual[EVP_MAX_MD_SIZE];
@@ -91,6 +96,12 @@ int droidloom_early_original_elf(int fd) {
         after.st_size!=before.st_size||after.st_ctim.tv_sec!=before.st_ctim.tv_sec||
         after.st_ctim.tv_nsec!=before.st_ctim.tv_nsec){errno=ESTALE;return -1;}
     return 0;
+}
+int droidloom_early_original_elf(int fd) {
+    static const unsigned char expected[32]={
+        0x9f,0x69,0xcc,0x83,0xa8,0x8d,0xb5,0xf8,0x53,0x30,0x14,0xcf,0xea,0x5a,0xd9,0xea,
+        0x8e,0x04,0x54,0x12,0x03,0x35,0x32,0x9a,0xec,0x27,0xf8,0xd6,0x5b,0x2a,0x95,0x37};
+    return droidloom_verified_elf(fd, 2934488, expected);
 }
 int droidloom_publish_selected_child(pid_t child,int clone_pidfd,const char *prepared) {
     struct dl_pidinfo info={.mask=1};

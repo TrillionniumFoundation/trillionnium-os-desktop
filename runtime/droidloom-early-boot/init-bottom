@@ -1,6 +1,6 @@
 #!/bin/sh
 set -eu
 case "${1:-}" in prereqs) exit 0 ;; esac
+[ "${init:-}" = /usr/lib/droidloom/production/current/droidloom-board-init ] || exit 0
 /usr/lib/droidloom/production/current/droidloom-early-firststage
-/usr/lib/droidloom/production/current/droidloom-early-policy
 exec /usr/lib/droidloom/production/current/droidloomd --initramfs-pre-switch-root

@@ -11,6 +11,8 @@ struct droidloom_early_plan {
 };
 
 int droidloom_early_read_plan(struct droidloom_early_plan *plan);
+int droidloom_post_switch_read_plan(struct droidloom_early_plan *plan);
+int droidloom_verified_elf(int fd, off_t expected_size, const unsigned char expected[32]);
 int droidloom_early_original_elf(int fd);
 
 /* Executed by the new PID1. Consume the verified root within its own namespaces,

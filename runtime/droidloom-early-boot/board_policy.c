@@ -135,8 +135,8 @@ static int initial_ubuntu_kernel(void)
     struct statfs root;
     if (uname(&kernel) < 0 || statfs("/", &root) < 0)
         return -1;
-    if (strcmp(kernel.release, "6.18.64-p4ctx6181-fusectl-r1") ||
-        ((unsigned long)root.f_type != RAMFS_MAGIC && (unsigned long)root.f_type != TMPFS_MAGIC))
+    if (getpid() != 1 || geteuid() != 0 || strcmp(kernel.release, "6.18.64-p4ctx6181-fusectl-r1") ||
+        (unsigned long)root.f_type != EXT4_SUPER_MAGIC)
         return reject(EXDEV);
     const char *namespaces[] = {"user", "pid", "mnt"};
     for (size_t i = 0; i < sizeof(namespaces)/sizeof(namespaces[0]); ++i) {
