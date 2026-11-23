@@ -89,7 +89,19 @@ def main():
     assert digest(before) == BEFORE_SHA and digest(common_raw) == COMMON_SHA
     old = b"self.record('phase-cleanup',{'phase':'cleanup','base_plan':self.base_ref,"
     new = b"self.record('phase-cleanup-%d'%self.native_launches,{'phase':'cleanup','base_plan':self.base_ref,"
-    assert before.count(old) == 1 and after == before.replace(old, new, 1)
+    assert before.count(old) == 1
+    cleanup_postimage = before.replace(old, new, 1)
+    assert digest(cleanup_postimage) == '72b8fd9d44a86c26c9fc14191b7d98b60c18babd934afc0cbe5b774c6d449444'
+    # Keep the three original phase methods identical in the business successor.
+    def phase_methods(raw):
+        session, = (node for node in ast.walk(ast.parse(raw))
+                    if isinstance(node, ast.ClassDef) and node.name == 'Session')
+        names = {'record', 'begin_cleanup', 'reopen_business'}
+        found = {node.name: ast.dump(node) for node in session.body
+                 if isinstance(node, ast.FunctionDef) and node.name in names}
+        assert found.keys() == names
+        return found
+    assert phase_methods(after) == phase_methods(cleanup_postimage)
     common = common_writer(common_raw)
     original_type, original_clock = load_runtime(before_path, before)
     fixed_type, fixed_clock = load_runtime(after_path, after)
