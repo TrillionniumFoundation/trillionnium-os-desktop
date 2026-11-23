@@ -97,7 +97,18 @@
 (allow p4_linux_service_executor_t p4_linux_rootdir_t (dir (getattr search)))
 (allow p4_linux_service_executor_t p4_linux_runtime_lib_t (file (getattr open read execute map)))
 (allow p4_linux_service_executor_t p4_linux_host_config_t (file (getattr open read map)))
-(allow p4_linux_service_executor_t p4_linux_systemd_memfd_t (file (getattr open read)))
+(allow p4_linux_service_executor_t p4_linux_systemd_memfd_t (file (getattr open read write)))
+; Ubuntu finalizes sd-executor-state with memfd_set_sealed() but passes the
+; original O_RDWR description. SELinux checks its mode on the exec transition;
+; VFS seals still prohibit modifying the finalized contents.
+(allow p4_linux_service_executor_t init_t (unix_dgram_socket (read write)))
+(allow p4_linux_service_executor_t device (dir (getattr search)))
+(allow init_t p4_linux_service_executor_t (dir (getattr search)))
+(allow init_t p4_linux_service_executor_t (process (siginh rlimitinh)))
+(allow p4_linux_service_executor_t self (process (signal)))
+(allow p4_linux_service_executor_t p4_linux_standardio_t (chr_file (ioctl)))
+(allowx p4_linux_service_executor_t p4_linux_standardio_t (ioctl chr_file (0x542a)))
+(neverallow p4_linux_service_executor_t device (chr_file (open read write ioctl map)))
 (allow p4_linux_service_executor_t p4_linux_elf_interpreter_t (file (getattr map read open execute)))
 (allow p4_linux_service_executor_t p4_linux_cgroup_root_t (dir (search getattr)))
 (allow p4_linux_service_executor_t p4_linux_system_slice_t (dir (search getattr)))
@@ -130,7 +141,7 @@
 ; only the selected parent can enter the executor. Invoked service binaries
 ; must receive a distinct, allowed domain before the kernel will execute them.
 (typeattribute p4_nonboard_except_executor_abi_dirs)
-(typeattributeset p4_nonboard_except_executor_abi_dirs (and (p4_all_nonboard) (not (or (proc) (sysfs)))))
+(typeattributeset p4_nonboard_except_executor_abi_dirs (and (p4_all_nonboard) (not (or (proc) (or (sysfs) (device))))))
 (neverallow p4_linux_service_executor_t p4_nonboard_except_executor_abi_dirs (dir (search)))
 (typeattribute p4_not_ubuntu_pid1)
 (typeattributeset p4_not_ubuntu_pid1 (not (init_t)))
