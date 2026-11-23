@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include <grp.h>
 #include <linux/magic.h>
 #include <linux/sched.h>
 #include <poll.h>
@@ -156,6 +157,9 @@ static int confirmed_original(int root,int *out) {
 static void log_error(const char *name){dprintf(STDERR_FILENO,"droidloom early boot: %s: %s\n",name,strerror(errno));}
 static int child_main(int maps_ready,int prepared,int fifo,const struct droidloom_release_phase *p) {
     if(getpid()!=1||receive_one(maps_ready,'M')||setresgid(0,0,0)||setresuid(0,0,0))return -1;
+    /* Android init and Zygote assign supplementary AIDs when dropping credentials. */
+    if(getgroups(0,NULL)!=0)return failure(EACCES);
+    if(setgroups(0,NULL)<0 || getgroups(0,NULL)!=0)return failure(EPERM);
     close(maps_ready);
     if(mount(NULL,"/",NULL,MS_REC|MS_PRIVATE,NULL)||
        mount("tmpfs",SLOT,"tmpfs",MS_NODEV|MS_NOSUID|MS_NOEXEC,"mode=0700")||
@@ -206,6 +210,12 @@ int main(int argc,char **argv) {
     int channel[2], prepared[2];
     if(fifo<0||random_phase(&phase,plan.selection_sha256)||pipe2(channel,O_CLOEXEC)||pipe2(prepared,O_CLOEXEC)){
         log_error("prepare original child");unlink(FIFO);return 1;
+    }
+    /* A new user namespace inherits the caller's kernel group list unchanged. */
+    if(setgroups(0,NULL)<0 || getgroups(0,NULL)!=0){
+        log_error("clear Linux supplementary groups before creating Android PID 1");
+        unlink(FIFO);
+        return 1;
     }
     int pidfd=-1;
     struct clone_args args={.flags=CLONE_NEWPID|CLONE_NEWNS|CLONE_NEWNET|CLONE_NEWIPC|CLONE_NEWUTS|CLONE_NEWUSER|CLONE_NEWCGROUP|CLONE_PIDFD,
