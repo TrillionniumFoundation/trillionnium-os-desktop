@@ -29,3 +29,9 @@
 /(etc|usr/lib)/systemd/system/[^/]+\.d/[^/]+\.conf -- u:object_r:p4_linux_unit_file_t:s0
 /(etc|usr/lib)/systemd/system/[^/]+\.d/[^/]+\.conf -l u:object_r:p4_linux_unit_file_t:s0
 /usr/lib/systemd/systemd-journald -- u:object_r:p4_linux_journald_exec_t:s0
+
+/usr/lib/systemd/systemd-udevd -l u:object_r:p4_linux_udev_alias_t:s0
+/usr/bin/udevadm -- u:object_r:p4_linux_udev_exec_t:s0
+/usr/bin -d u:object_r:p4_linux_rootdir_t:s0
+/bin -l u:object_r:p4_linux_usrmerge_link_t:s0
+/usr/lib/x86_64-linux-gnu/libapparmor\.so\.1 -l u:object_r:p4_linux_usrmerge_link_t:s0
