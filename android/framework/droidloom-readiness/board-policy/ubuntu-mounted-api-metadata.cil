@@ -341,3 +341,12 @@
 (neverallow p4_linux_udev_t p4_all_board_owned (file (execute_no_trans)))
 (neverallow p4_linux_udev_t droidloom_broker (process (transition dyntransition ptrace)))
 (neverallow p4_linux_udev_t droidloom_policy_loader (process (transition dyntransition ptrace)))
+
+; The original Ubuntu executor narrows its own inherited capability bounding set
+; before exec. The stock journal's NoNewPrivileges and CapabilityBoundingSet
+; remain in the original service configuration.
+(allow p4_linux_service_executor_t self (capability (setpcap)))
+(allow p4_linux_service_executor_t self (process (setcap)))
+(auditallow p4_linux_service_executor_t self (capability (setpcap)))
+(neverallow p4_linux_service_executor_t p4_android_userspace (process (setcap)))
+(neverallow p4_linux_journald_t p4_linux_service_executor_t (process (setcap)))
