@@ -47,8 +47,8 @@ def configuration():
         registered[key] = row
     VERIFY.need(set(registered) == set(result[0]) and len({k[0] for k in result[0]}) == 28,
                 'all28 packages and49 test targets')
-    VERIFY.need(sum(len(r['all']) for r in registered.values()) == 1659
-                and sum(len(r['ignored']) for r in registered.values()) == 31, 'complete1628 ordinary/31 ignored (1659 total) catalog')
+    VERIFY.need(sum(len(r['all']) for r in registered.values()) == 1660
+                and sum(len(r['ignored']) for r in registered.values()) == 31, 'complete1629 ordinary/31 ignored (1660 total) catalog')
     VERIFY.need(len(exact) == len(set(exact)) == 64
                 and set(exact) <= set(registered[UPDATER]['all']) - set(registered[UPDATER]['ignored']),
                 '64 disjoint ordinary updater names')
@@ -530,8 +530,8 @@ def main():
                 row['actual_tests'] = VERIFY.test_terminal(raw.decode(),passed,cat['ignored'],0,catalog=cat['all'])
                 result['fresh_ordinary_passed'] += len(passed)
             VERIFY.need(elf(item['path']) == frozen[key], 'harness changed after execution')
-        VERIFY.need(result['fresh_ordinary_passed'] == 1628 and len(result['ignored_not_executed']) == 31,
-                    'complete fresh1628 ordinary and31 listed-only ignored cases required')
+        VERIFY.need(result['fresh_ordinary_passed'] == 1629 and len(result['ignored_not_executed']) == 31,
+                    'complete fresh1629 ordinary and31 listed-only ignored cases required')
         for key,ref in debug_frozen.items():
             VERIFY.need(elf(debug[key]['path']) == ref, 'normal debug binary changed during ordinary tests')
         released, release_by_target = {}, {}

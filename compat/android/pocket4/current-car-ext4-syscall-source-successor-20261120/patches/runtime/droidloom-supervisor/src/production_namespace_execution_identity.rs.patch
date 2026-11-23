@@ -1,5 +1,14 @@
 --- a/runtime/droidloom-supervisor/src/production_namespace_execution_identity.rs
 +++ b/runtime/droidloom-supervisor/src/production_namespace_execution_identity.rs
+@@ -59,7 +59,7 @@
+ }
+ 
+ impl ExecutedInitWitness<'_> {
+-    fn init(&self) -> &TreeChild {
++    pub(super) fn init(&self) -> &TreeChild {
+         self.owner
+             .tree
+             .init
 @@ -322,6 +322,15 @@
              .map_err(|error| NamespaceError::RuntimeResource(error.to_string()))?;
          self.revalidate()
