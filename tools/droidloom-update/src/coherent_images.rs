@@ -6,6 +6,8 @@
 //! to an older system image on this path.
 #[path = "coherent_official_base.rs"]
 pub(crate) mod official_base;
+#[path = "coherent_readiness.rs"]
+pub(crate) mod readiness;
 #[path = "coherent_system_ext.rs"]
 pub(crate) mod system_ext;
 

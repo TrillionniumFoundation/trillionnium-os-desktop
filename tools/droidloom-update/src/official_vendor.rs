@@ -16,7 +16,7 @@ use std::process::Stdio;
 use std::time::{Duration, Instant};
 
 pub(super) const NATIVE_TARGETS: &[&str] = &["droidloom_cp3a_native_bridge_package"];
-pub(super) const VENDOR_TARGETS: &[&str] = &["vendorimage", "secilc", "checkvintf"];
+pub(super) const VENDOR_TARGETS: &[&str] = &["vendorimage", "secilc", "checkvintf", "host_init_verifier", "droidloom-readiness"];
 const HOST_DIRECTORY: &str = "lib64/droidloom/nativebridge";
 const PLATFORM_HELPERS: &str = "/system/system_ext/lib64/droidloom/nativebridge";
 const GUEST_DIRECTORY: &str = "etc/droidloom/nativebridge/guest";
@@ -800,12 +800,13 @@ pub(super) fn build(
             .ok_or("missing normal NativeBridge host input")?;
         host_digests.insert(filename, source.sha256.clone());
     }
+    let readiness = crate::coherent_images::readiness::build(inputs.system_path()?, &product_out, &vendor_out, out)?;
     let system_extension = crate::coherent_images::system_ext::build(
         inputs.system_path()?, &product_out.join("vendor.img"), &vendor_out, out, &host_digests)?;
     inputs.verify_unchanged()?;
     vendor_image.check()?;
     let record = json!({"schema":"droidloom-official-gsi-independent-vendor-normal-result-v1",
-        "system_ext_lib64":system_extension,
+        "system_ext_lib64":system_extension,"early_boot_readiness":readiness,
         "official_inputs":inputs.receipt()?,"native_build_inputs":artifact(&native.join(INPUT_NAME),16*1024*1024)?,
         "vendor_build_inputs":artifact(&vendor_out.join(INPUT_NAME),16*1024*1024)?,
         "normal_vendor_result":artifact(&vendor_out.join("droidloom-production-full653-vendor-normal-result.json"),64*1024*1024)?,

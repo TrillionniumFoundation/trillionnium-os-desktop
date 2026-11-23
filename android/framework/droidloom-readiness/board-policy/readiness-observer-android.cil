@@ -1,0 +1,29 @@
+
+(type droidloom_readiness)
+(roletype r droidloom_readiness)
+(typeattributeset domain (droidloom_readiness))
+(typeattributeset coredomain (droidloom_readiness))
+(type droidloom_readiness_exec)
+(roletype object_r droidloom_readiness_exec)
+(typeattributeset file_type (droidloom_readiness_exec))
+(typeattributeset exec_type (droidloom_readiness_exec))
+(typeattributeset system_file_type (droidloom_readiness_exec))
+(type droidloom_readiness_socket)
+(roletype object_r droidloom_readiness_socket)
+(typeattributeset file_type (droidloom_readiness_socket))
+
+
+(typetransition init droidloom_readiness_exec process droidloom_readiness)
+(allow init droidloom_readiness (process (transition)))
+(allow init droidloom_readiness_exec (file (read open execute map getattr)))
+(allow droidloom_readiness droidloom_readiness_exec (file (read open execute map getattr entrypoint)))
+(allow droidloom_readiness init (process (sigchld)))
+
+(allow droidloom_readiness binder_device (chr_file (open read write map ioctl getattr)))
+(allow droidloom_readiness servicemanager (binder (call)))
+(allow servicemanager droidloom_readiness (binder (transfer)))
+(allow droidloom_readiness activity_service (service_manager (find)))
+(allow droidloom_readiness system_server (binder (call)))
+
+(allow droidloom_readiness servicemanager_prop (file (open getattr read map)))
+(allow droidloom_readiness boot_status_prop (file (open getattr read map)))

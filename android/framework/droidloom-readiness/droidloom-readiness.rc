@@ -1,0 +1,8 @@
+on init
+    start droidloom_readiness
+
+service droidloom_readiness /system_ext/bin/droidloom-readiness
+    class core
+    user nobody
+    group nobody
+    restart_period 5

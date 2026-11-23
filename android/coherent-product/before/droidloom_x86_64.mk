@@ -38,6 +38,7 @@ PRODUCT_PACKAGES += \
     vendor_compatibility_matrix.xml \
     selinux_policy_vendor \
     libdroidloom_selinux_compat \
+    droidloom-readiness \
     android.hardware.security.keymint-service.nonsecure \
     android.hardware.health-service.example \
     android.hardware.power-service.example \
