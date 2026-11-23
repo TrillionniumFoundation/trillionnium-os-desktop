@@ -56,3 +56,30 @@ impl PreparedMounts {
         Ok(root.as_fd())
     }
 }
+
+use crate::production_selection::early_generation::EarlyBaseAdmission;
+
+impl BaseAuthority for EarlyBaseAdmission<'_> {
+    fn revalidate(&self) -> Result<()> { Ok(EarlyBaseAdmission::revalidate(self)?) }
+    fn revalidate_live_admission(&self) -> Result<()> { Ok(EarlyBaseAdmission::revalidate(self)?) }
+    fn identity_lease(&self) -> Result<&IdentityLease> {
+        EarlyBaseAdmission::revalidate(self)?;
+        Ok(EarlyBaseAdmission::identity_lease(self))
+    }
+    fn proc_directory(&self) -> &File { EarlyBaseAdmission::proc_directory(self) }
+    fn user_namespace(&self) -> &File { EarlyBaseAdmission::user_namespace(self) }
+}
+
+impl PreparedMounts {
+    pub(crate) fn prepare_early(child: &EarlyBaseAdmission<'_>) -> Result<Self> {
+        let cohort = VerifiedCohort::from_authority(child)?;
+        require(cohort.system_ext_lib64.is_some() && cohort.system_ext_readiness.is_some(),
+            "early original Android needs its complete four-image release")?;
+        Self::prepare_with_authority(child, cohort)
+    }
+
+    pub(crate) fn early_root_for_transfer<'a>(&'a mut self, child: &EarlyBaseAdmission<'_>) -> Result<BorrowedFd<'a>> {
+        self.complete_root_for_transfer(child)
+    }
+
+}
