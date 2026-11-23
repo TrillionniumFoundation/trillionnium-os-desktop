@@ -222,6 +222,11 @@ impl VerifiedVendorInputs {
             .ok_or("unreviewed official vendor reference")?
             .copy(destination)
     }
+    /// Return the original GSI used to populate the existing platform extension.
+    pub fn system_path(&self) -> Result<&Path> {
+        self.system.verify()?;
+        Ok(&self.system.path)
+    }
     /// Return one held reference path after an identity check.
     pub fn reference_path(&self, name: &str) -> Result<&Path> {
         let held = self

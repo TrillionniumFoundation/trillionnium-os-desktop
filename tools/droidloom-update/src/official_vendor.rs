@@ -18,6 +18,7 @@ use std::time::{Duration, Instant};
 pub(super) const NATIVE_TARGETS: &[&str] = &["droidloom_cp3a_native_bridge_package"];
 pub(super) const VENDOR_TARGETS: &[&str] = &["vendorimage", "secilc", "checkvintf"];
 const HOST_DIRECTORY: &str = "lib64/droidloom/nativebridge";
+const PLATFORM_HELPERS: &str = "/system/system_ext/lib64/droidloom/nativebridge";
 const GUEST_DIRECTORY: &str = "etc/droidloom/nativebridge/guest";
 const INPUT_NAME: &str = "droidloom-official-gsi-vendor-inputs.json";
 const RESULT_NAME: &str = "droidloom-official-gsi-vendor-normal-result.json";
@@ -554,7 +555,7 @@ pub(super) fn project(
         ),
         "92fc166e0d5fc08dec68514b19840d85290b29423dd9f7e9661b489f52695337",
         "/system/lib64/libberberis_exec_region.so",
-        &format!("/vendor/{HOST_DIRECTORY}/libberberis_exec_region.so"),
+        &format!("{PLATFORM_HELPERS}/libberberis_exec_region.so"),
         1,
         projection,
     )?;
@@ -565,7 +566,7 @@ pub(super) fn project(
         "f1f6331f766e52b10bc65b3a6c866181a1dcee58bdc1a8281ddadacfaa98da46",
         "  proxy_name += library_name;",
         &format!(
-            "  proxy_name += library_name;\n  if (proxy_name.find('/') != std::string::npos) return false;\n  proxy_name.insert(0, \"/vendor/{HOST_DIRECTORY}/\");"
+            "  proxy_name += library_name;\n  if (proxy_name.find('/') != std::string::npos) return false;\n  proxy_name.insert(0, \"{PLATFORM_HELPERS}/\");"
         ),
         1,
         projection,
@@ -703,7 +704,9 @@ pub(super) fn input_receipt(out: &Path, request: Request<'_>) -> Result<()> {
     receipt["strict_allow_missing_dependencies"] = "false".into();
     receipt["selinux_ignore_neverallows"] = "false".into();
     receipt["source_revision_equivalence_claimed"] = false.into();
-    receipt["host_library_search_directory"] = format!("/vendor/{HOST_DIRECTORY}").into();
+    receipt["host_library_search_directory"] = "/system/system_ext/lib64".into();
+    receipt["private_proxy_directory"] = PLATFORM_HELPERS.into();
+    receipt["vendor_host_source_directory"] = format!("/vendor/{HOST_DIRECTORY}").into();
     receipt["guest_interpreter_root"] = format!("/vendor/{GUEST_DIRECTORY}").into();
     if let Phase::Vendor(bridge) = request.phase {
         receipt["native_distribution"] = serde_json::to_value(&bridge.archive)?;
@@ -790,8 +793,19 @@ pub(super) fn build(
     let vendor_image = artifact(&product_out.join("vendor.img"), 2 * 1024 * 1024 * 1024)?;
     let graphics_hal_entries =
         crate::coherent_images::verify_vendor_graphics_hal_entries(&product_out)?;
+    let mut host_digests = BTreeMap::new();
+    for name in HOST_MODULES {
+        let filename = format!("{name}.so");
+        let source = actual.get(&format!("{HOST_DIRECTORY}/{filename}"))
+            .ok_or("missing normal NativeBridge host input")?;
+        host_digests.insert(filename, source.sha256.clone());
+    }
+    let system_extension = crate::coherent_images::system_ext::build(
+        inputs.system_path()?, &product_out.join("vendor.img"), &vendor_out, out, &host_digests)?;
+    inputs.verify_unchanged()?;
     vendor_image.check()?;
     let record = json!({"schema":"droidloom-official-gsi-independent-vendor-normal-result-v1",
+        "system_ext_lib64":system_extension,
         "official_inputs":inputs.receipt()?,"native_build_inputs":artifact(&native.join(INPUT_NAME),16*1024*1024)?,
         "vendor_build_inputs":artifact(&vendor_out.join(INPUT_NAME),16*1024*1024)?,
         "normal_vendor_result":artifact(&vendor_out.join("droidloom-production-full653-vendor-normal-result.json"),64*1024*1024)?,

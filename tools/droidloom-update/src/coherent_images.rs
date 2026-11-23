@@ -4,6 +4,9 @@
 //! images. It does not qualify Android execution, signing, CVE semantics or a
 //! different source release. In particular, a vendor-only build has no fallback
 //! to an older system image on this path.
+#[path = "coherent_system_ext.rs"]
+pub(crate) mod system_ext;
+
 use crate::util::*;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
