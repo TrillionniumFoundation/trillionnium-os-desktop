@@ -190,7 +190,17 @@
 ; set up by its immutable executor, then loads its trusted Linux runtime.
 (allow droidloom_broker p4_linux_service_executor_t (fd (use)))
 (allow droidloom_broker p4_linux_standardio_t (chr_file (getattr read write)))
-(allow droidloom_broker p4_linux_rootdir_t (dir (getattr search)))
-(allow droidloom_broker p4_linux_runtime_lib_t (file (getattr open read execute map)))
 (allow droidloom_broker p4_linux_host_config_t (file (getattr open read map)))
 (allow p4_linux_service_executor_t droidloom_broker (process (siginh rlimitinh)))
+
+; The genuine broker reads the immutable kernel LSM list during its normal
+; startup. Keep all other securityfs files outside this read grant.
+(type p4_linux_registered_lsms_t)
+(roletype object_r p4_linux_registered_lsms_t)
+(typeattributeset p4_linux_data (p4_linux_registered_lsms_t))
+(genfscon securityfs "/lsm" (u object_r p4_linux_registered_lsms_t ((s0) (s0))))
+(allow p4_linux_mac_roles securityfs (dir (getattr search)))
+(allow p4_linux_mac_roles securityfs (filesystem (getattr)))
+(allow p4_linux_mac_roles p4_linux_registered_lsms_t (file (getattr open read)))
+(neverallow p4_linux_procs p4_linux_registered_lsms_t (file (write append setattr relabelfrom relabelto mounton)))
+(neverallow p4_linux_mac_roles securityfs (file (getattr open read map write append setattr)))
