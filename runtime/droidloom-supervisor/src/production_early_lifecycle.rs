@@ -231,8 +231,11 @@ pub fn complete_early_resources() -> io::Result<()> {
     };
     if let Err(cause) = group.place_early_payload(&base, &owner) {
         if group.attempted_original(&board).map_err(io::Error::other)? {
-            stop_child(board.pidfd())?;
-            group.retire_early_empty(&board).map_err(io::Error::other)?;
+            let stopped = stop_child(board.pidfd(), Duration::from_secs(15))?;
+            let retired = group.retire_early_empty(&board).map_err(io::Error::other);
+            if let Err(e) = stopped.after_retirement(retired) {
+                return Err(io::Error::other(format!("{cause}; retirement: {e}")));
+            }
         } else {
             group.retire_early_unstarted().map_err(io::Error::other)?;
         }
