@@ -103,6 +103,9 @@
 (allow p4_linux_policy_epoch_dir_t tmpfs (filesystem (associate)))
 (allow kernel p4_linux_policy_epoch_dir_t (dir (search getattr relabelto write add_name)))
 (allow p4_linux_mac_roles p4_linux_policy_epoch_dir_t (dir (getattr search)))
+; PID 1 evaluates the calibration unit ConditionPathExists with access(F_OK).
+(allow init_t p4_linux_early_handoff_dir_t (dir (search)))
+(allow init_t p4_linux_policy_epoch_dir_t (dir (search)))
 (neverallow p4_linux_procs p4_linux_policy_epoch_dir_t (dir (write add_name remove_name mounton relabelto relabelfrom)))
 (typetransition kernel p4_linux_policy_epoch_dir_t file "apparmor-epoch" p4_linux_apparmor_epoch_t)
 (allow kernel p4_linux_apparmor_epoch_t (file (create open getattr read write)))
