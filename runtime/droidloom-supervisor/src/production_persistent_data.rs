@@ -6,6 +6,7 @@
 //! No saved receipt, offset, boolean, user path or numeric PID creates a grant.
 
 use super::*;
+use super::early::BaseAuthority as _;
 use crate::production_execution::PreparedExecution;
 use crate::production_selection::{PersistentImagePolicy, ProductionSelection};
 
@@ -22,6 +23,31 @@ pub(crate) mod private_control;
 
 use backings::OriginalBackingPair;
 use writable_loop::WritableLoop;
+
+trait StorageAuthority {
+    type Namespace: early::BaseAuthority;
+    fn namespace(&self) -> &Self::Namespace;
+    fn selection(&self) -> &ProductionSelection;
+    fn verify(&self) -> Result<()>;
+}
+
+struct LateStorageAdmission<'a, 'tree> {
+    namespace: &'a OwnedNamespaceWitness<'tree>,
+    selection: &'a ProductionSelection,
+    prepared: &'a PreparedExecution,
+}
+
+impl<'tree> StorageAuthority for LateStorageAdmission<'_, 'tree> {
+    type Namespace = OwnedNamespaceWitness<'tree>;
+    fn namespace(&self) -> &Self::Namespace { self.namespace }
+    fn selection(&self) -> &ProductionSelection { self.selection }
+    fn verify(&self) -> Result<()> {
+        self.prepared.revalidate_tree(self.selection, self.namespace)?;
+        require(self.namespace.descendant_pid_namespace().is_some(),
+            "actual admitted PID-1 tree required for persistent data")
+    }
+}
+
 
 const DATA_FLAGS: u64 = MOUNT_ATTR_NOSUID | MOUNT_ATTR_NODEV;
 
@@ -82,9 +108,10 @@ struct DataResources {
 }
 
 impl DataResources {
-    fn matches(&self, witness: &OwnedNamespaceWitness<'_>, selection: &ProductionSelection,
-        prepared: &PreparedExecution) -> Result<()> {
-        prepared.revalidate_tree(selection, witness)?;
+    fn matches(&self, admission: &impl StorageAuthority) -> Result<()> {
+        admission.verify()?;
+        let witness = admission.namespace();
+        let selection = admission.selection();
         require_complete_namespace(witness)?;
         let lease = witness.identity_lease()?;
         let namespace = witness.user_namespace().metadata()?;
@@ -96,7 +123,7 @@ impl DataResources {
             && FileIdentity::of(&self.reservation_retention.metadata()?) == self.reservation_node,
             "persistent mounts require their same live namespace, selection and lease OFD")?;
         self.backings.revalidate(witness)?;
-        prepared.revalidate_tree(selection, witness)?;
+        admission.verify()?;
         Ok(())
     }
 
@@ -149,6 +176,10 @@ impl PreparedPersistentData {
     /// executed child graph is separately owned by NativeMountEpoch's complete
     /// actual old-to-new mapping, including /data and /metadata.
     pub(crate) fn revalidate_owned_lifetime(&self, witness: &OwnedNamespaceWitness<'_>) -> Result<()> {
+        self.revalidate_lifetime(witness)
+    }
+
+    fn revalidate_lifetime(&self, witness: &impl early::BaseAuthority) -> Result<()> {
         let resources = self.resources.as_ref().ok_or(MountError::Rejected("persistent data custody absent"))?;
         witness.revalidate_live_admission()?;
         let lease = witness.identity_lease()?;
@@ -171,16 +202,21 @@ impl PreparedPersistentData {
 
     pub(crate) fn prepare(witness: &OwnedNamespaceWitness<'_>, selection: &ProductionSelection,
         prepared: &PreparedExecution) -> Result<Self> {
-        prepared.revalidate_tree(selection, witness)?;
+        Self::prepare_with(&LateStorageAdmission { namespace:witness, selection, prepared })
+    }
+
+    fn prepare_with(admission: &impl StorageAuthority) -> Result<Self> {
+        let witness = admission.namespace();
+        let selection = admission.selection();
+        admission.verify()?;
         require_complete_namespace(witness)?;
-        require(witness.descendant_pid_namespace().is_some(), "actual admitted PID-1 tree required for persistent data")?;
         let lease = witness.identity_lease()?;
         let retention = lease.broker_retain_reservation()?;
         let reservation_node = FileIdentity::of(&retention.metadata()?);
         let userns = witness.user_namespace().try_clone()?;
         let namespace = userns.metadata()?;
         let (uids, gids) = lease.broker_ranges();
-        let backings = OriginalBackingPair::open(witness, selection, prepared)?;
+        let backings = OriginalBackingPair::open(admission)?;
         let mut value = Self {
             resources: Some(DataResources { backings, images: Vec::new(), userns,
                 userns_identity: (namespace.dev(), namespace.ino()), uids, gids,
@@ -190,10 +226,10 @@ impl PreparedPersistentData {
             exported: false,
         };
         let resources = value.resources.as_mut().ok_or(MountError::Rejected("persistent resource owner absent"))?;
-        resources.matches(witness, selection, prepared)?;
+        resources.matches(admission)?;
         writable_loop::reject_aliases(&resources.backings.nodes, &resources.images)?;
         for index in 0..2 {
-            resources.matches(witness, selection, prepared)?;
+            resources.matches(admission)?;
             let binding = WritableLoop::attach(&resources.backings.files[index])?;
             // Record ownership before any fallible verify/mount operation.
             resources.images.push(MountedData { role: index, mount: None, binding, observed: None });
@@ -204,21 +240,26 @@ impl PreparedPersistentData {
             resources.images[index].mount = Some(mount);
             let mount = resources.images[index].mount.as_ref().unwrap();
             resources.images[index].observed = Some(PersistentRootObservation::capture(mount)?);
-            resources.matches(witness, selection, prepared)?;
+            resources.matches(admission)?;
         }
         require(resources.images.len() == 2
             && resources.images[0].binding.device != resources.images[1].binding.device,
             "complete distinct original data and metadata mount set required")?;
-        resources.matches(witness, selection, prepared)?;
+        resources.matches(admission)?;
         Ok(value)
     }
 
     pub(crate) fn descriptors_for_transfer<'a>(&'a mut self, witness: &OwnedNamespaceWitness<'_>,
         selection: &ProductionSelection, prepared: &PreparedExecution)
         -> Result<([BorrowedFd<'a>; 2], [PersistentRootObservation; 2])> {
+        self.transfer_with(&LateStorageAdmission { namespace:witness, selection, prepared })
+    }
+
+    fn transfer_with<'a>(&'a mut self, admission: &impl StorageAuthority)
+        -> Result<([BorrowedFd<'a>; 2], [PersistentRootObservation; 2])> {
         require(!self.exported, "persistent mount descriptors transfer exactly once")?;
         let resources = self.resources.as_ref().ok_or(MountError::Rejected("persistent data already retired"))?;
-        resources.matches(witness, selection, prepared)?;
+        resources.matches(admission)?;
         require(resources.images.len() == 2 && resources.images[0].role == 0 && resources.images[1].role == 1,
             "exact data then metadata descriptor order required")?;
         let mut observations = Vec::with_capacity(2);
@@ -231,7 +272,7 @@ impl PreparedPersistentData {
             observations.push(observed);
         }
         writable_loop::reject_aliases(&resources.backings.nodes, &resources.images)?;
-        resources.matches(witness, selection, prepared)?;
+        resources.matches(admission)?;
         self.exported = true;
         Ok(([
             resources.images[0].mount.as_ref().unwrap().as_fd(),
