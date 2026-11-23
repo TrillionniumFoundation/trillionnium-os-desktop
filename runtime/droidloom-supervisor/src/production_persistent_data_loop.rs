@@ -180,6 +180,28 @@ pub(super) fn reject_aliases(sources: &[FileIdentity; 2], owned: &[MountedData])
 mod tests {
     use super::*;
     #[test]
+    #[ignore = "requires a private mount namespace, a writable temporary backing, and real Linux loop devices"]
+    fn actual_ubuntu_udev_source_names_the_leased_writable_loop() {
+        assert_eq!(unsafe { libc::geteuid() }, 0);
+        assert_ne!(std::fs::metadata("/proc/self/ns/mnt").unwrap().ino(),
+                   std::fs::metadata("/proc/1/ns/mnt").unwrap().ino());
+        let private = tempfile::tempdir().unwrap();
+        let backing = std::fs::OpenOptions::new().read(true).write(true).create_new(true)
+            .mode(0o600).open(private.path().join("data.img")).unwrap();
+        backing.set_len(32 * 1024 * 1024).unwrap();
+        let mut owned = WritableLoop::attach(&backing).unwrap();
+        let result = owned.android_block_source().and_then(|name| {
+            let path = Path::new(name.to_str().unwrap());
+            require(path.starts_with("/dev/block") &&
+                    same_block_node(owned.node, &std::fs::metadata(path)?, owned.device),
+                    "Android source and the still-held leased block device must match")
+        });
+        let retired = owned.retire();
+        assert!(retired.is_ok(), "{retired:?}");
+        assert!(result.is_ok(), "{result:?}");
+    }
+
+    #[test]
     fn writable_data_loop_cannot_accept_readonly_window_or_foreign_source() {
         let file = File::open("/dev/null").unwrap();
         let source = FileIdentity::of(&file.metadata().unwrap());
