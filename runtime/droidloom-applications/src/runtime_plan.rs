@@ -13,6 +13,10 @@ use droidloom_supervisor::control::{self, ControlRequest};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
+#[path = "firefox_wait_result.rs"]
+mod firefox_wait_result;
+use firefox_wait_result::{FirefoxActivityStart, firefox_activity_start};
+
 #[path = "leaf_routes.rs"]
 mod leaf_routes;
 #[path = "leaf_release.rs"]
@@ -132,6 +136,8 @@ struct AppDispatch {
     reason: String,
     inspection: Option<ApplicationInspection>,
     invocation_output: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    firefox_activity_start: Option<FirefoxActivityStart>,
     leaf_observation: Option<LeafObservation>,
     pending_gates: Vec<String>,
     accepted_gates: usize,
@@ -374,6 +380,7 @@ fn dispatch(
             reason: String::new(),
             inspection: None,
             invocation_output: None,
+            firefox_activity_start: None,
             leaf_observation: None,
             pending_gates: pending,
             accepted_gates: 0,
@@ -434,8 +441,14 @@ fn dispatch(
                     match client.browser(&actual, url) {
                         Err(error) => row.reason = format!("browser flow invocation failed; inspect retained observations before any explicit retry: {error}"),
                         Ok((after, output)) if after == actual => {
-                            row.status = "partial_observation";
-                            row.reason = "actual implicit HTTPS activity invocation observed; rendered document/input/image, media, return/reopen, recovery and all common release gates remain pending".into();
+                            match firefox_activity_start(&output) {
+                                Ok(observation) => {
+                                    row.status = "partial_observation";
+                                    row.reason = "Implicit HTTPS Activity invocation observed. Gecko isolated tab process, rendered page, media, return/reopen, recovery and common release gates remain pending.".into();
+                                    row.firefox_activity_start = observation;
+                                }
+                                Err(error) => row.reason = format!("invalid browser activity observation: {error}"),
+                            }
                             row.invocation_output = Some(output);
                         }
                         Ok(_) => row.reason = "browser invocation returned a different installed identity or Main generation".into(),
@@ -615,6 +628,7 @@ mod tests {
     struct Fake {
         identities: BTreeMap<String, ApplicationInspection>,
         opens: usize,
+        browser_output: String,
         leaf_calls: usize,
     }
     impl RuntimeClient for Fake {
@@ -630,10 +644,7 @@ mod tests {
             _: &str,
         ) -> Result<(ApplicationInspection, String), String> {
             self.opens += 1;
-            Ok((
-                x.clone(),
-                "Status: ok\nActivity: org.mozilla.firefox/.HomeActivity".into(),
-            ))
+            Ok((x.clone(), self.browser_output.clone()))
         }
         fn leaf(
             &mut self,
@@ -694,6 +705,7 @@ mod tests {
         let mut client = Fake {
             identities: BTreeMap::new(),
             opens: 0,
+            browser_output: "Status: ok\nActivity: org.mozilla.firefox/.HomeActivity".into(),
             leaf_calls: 0,
         };
         let mut applications = Vec::new();
@@ -783,6 +795,31 @@ mod tests {
                 .iter()
                 .all(|a| a.accepted_gates == 0 && !a.pending_gates.is_empty())
         );
+    }
+    #[test]
+    fn activity_wait_result_reaches_only_the_partial_firefox_row() {
+        let (p, g, mut client) = fixture();
+        client.browser_output = "Status: ok\nLaunchState: COLD\nActivity: org.mozilla.firefox/.HomeActivity\nWaitTime: 17\nComplete".into();
+        let report = dispatch(&p, &g, &mut client);
+        let row = &report.applications[0];
+        let observed = row.firefox_activity_start.as_ref().unwrap();
+        assert_eq!(observed.wait_time_ms, 17);
+        assert_eq!(observed.launch_state,
+            firefox_wait_result::ActivityLaunchState::Cold);
+        assert_eq!(report.partial_browser_invocations, 1);
+        assert_eq!(report.unsupported_business_flows, 41);
+        assert_eq!(row.accepted_gates, 0);
+        assert!(row.pending_gates.iter().any(|g| g == "browser.return"));
+        assert!(!row.runtime_qualified && !row.production_ready);
+        assert!(report.applications[1..].iter().all(|r| r.firefox_activity_start.is_none()));
+
+        client.browser_output.push_str("\nStatus: timeout");
+        let rejected = dispatch(&p, &g, &mut client);
+        assert_eq!(rejected.partial_browser_invocations, 0);
+        let row = &rejected.applications[0];
+        assert!(row.firefox_activity_start.is_none());
+        assert_eq!(row.invocation_output.as_ref(), Some(&client.browser_output));
+        assert_eq!(row.status, "blocked");
     }
     #[test]
     fn stale_main_or_changed_source_never_opens_browser() {
