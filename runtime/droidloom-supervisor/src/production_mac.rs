@@ -560,29 +560,9 @@ impl Drop for StatusMap {
         }
     }
 }
-/// Check the live kernel interfaces needed by the existing v3/v4 MAC provider.
-/// A valid platform is only a prerequisite for validating a service role.
-///
-/// # Errors
-/// Returns the actual missing interface, enforcement or registration error.
-pub fn check_installed_mac_platform() -> io::Result<()> {
-    let root = open_absolute(SELINUX_ROOT, libc::O_PATH | libc::O_DIRECTORY)
-        .map_err(|e| io::Error::other(format!("current MAC backend needs an active selinuxfs at {SELINUX_ROOT}: {e}")))?;
-    require(kind(&root).map_err(io::Error::other)? == SELINUX_MAGIC,
-        "current backend needs a genuine selinuxfs mount").map_err(io::Error::other)?;
-    let status = StatusMap::open(&root).map_err(io::Error::other)?;
-    let epoch = status.read().map_err(io::Error::other)?;
-    let ordered = kernel_text("/sys/kernel/security/lsm", SECURITYFS_MAGIC, 4096).map_err(io::Error::other)?;
-    if !ordered.trim_end().split(',').any(|entry| entry == "apparmor")
-        || !ordered.trim_end().split(',').any(|entry| entry == "selinux") {
-        return Err(io::Error::other("current MAC backend needs both SELinux and AppArmor registered for this boot"));
-    }
-    if kernel_bytes("/sys/module/apparmor/parameters/enabled", SYSFS_MAGIC, 16).map_err(io::Error::other)? != b"Y\n"
-        || epoch != status.read().map_err(io::Error::other)? {
-        return Err(io::Error::other("current MAC backend could not observe a stable enforcing platform"));
-    }
-    Ok(())
-}
+#[path = "production_container_enforcement.rs"]
+mod container_enforcement;
+pub use container_enforcement::{ContainerManagerMac, check_installed_mac_platform};
 
 fn container_manager_role(selinux: &[u8], apparmor: &[u8]) -> bool {
     // This is the dedicated host service role. The installed platform must
@@ -602,7 +582,10 @@ fn container_manager_role(selinux: &[u8], apparmor: &[u8]) -> bool {
 /// # Errors
 /// Requires both live enforcement backends and the dedicated host role.
 pub fn check_container_manager_role() -> io::Result<()> {
-    check_installed_mac_platform()?;
+    ContainerManagerMac::acquire().map(drop)
+}
+
+fn check_current_container_manager_role() -> io::Result<()> {
     let proc = own_proc().map_err(io::Error::other)?;
     let selinux = self_attr::selinux_current().map_err(io::Error::other)?;
     let apparmor = proc_attr(&proc, true).map_err(io::Error::other)?;

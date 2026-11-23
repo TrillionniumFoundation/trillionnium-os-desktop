@@ -2,7 +2,7 @@
 //! owns creation and retirement of the cell; this process observes its fixed
 //! instance and accepts progress only from the bound, live kernel peer.
 use droidloom_supervisor::control::{
-    ContainerLibraryMount, PreparedContainerSelection, check_container_manager_role,
+    ContainerLibraryMount, ContainerManagerMac, PreparedContainerSelection,
 };
 use serde::Deserialize;
 use std::fs::{self, File};
@@ -241,7 +241,7 @@ impl Guest {
         }
         Ok(())
     }
-    fn admit(mut socket: UnixStream, choice: &PreparedContainerSelection) -> io::Result<Self> {
+    fn admit(mut socket: UnixStream, choice: &PreparedContainerSelection, mac: &ContainerManagerMac) -> io::Result<Self> {
         let cred: libc::ucred = socket_value(&socket, libc::SO_PEERCRED)?;
         // SO_PEERPIDFD returns a descriptor for the actual connecting task.
         // Opening a fresh pidfd by its numeric PID would allow PID reuse.
@@ -280,6 +280,7 @@ impl Guest {
             return Err(error("OCI generation changed during image validation"));
         }
         socket.set_write_timeout(Some(Duration::from_millis(200)))?;
+        mac.revalidate()?;
         socket.write_all(&[1])?;
         socket.set_nonblocking(true)?;
         Ok(Self {
@@ -375,7 +376,7 @@ impl Guest {
 
 pub(super) fn run(stop: &AtomicBool) -> io::Result<()> {
     let choice = PreparedContainerSelection::acquire()?;
-    check_container_manager_role()?;
+    let mac = ContainerManagerMac::acquire()?;
     let program = choice.entry_program()?;
     let channel = inherited_guest_listener()?;
     let mut clients = protocol::Clients::bind()?;
@@ -386,9 +387,10 @@ pub(super) fn run(stop: &AtomicBool) -> io::Result<()> {
     let mut revalidate = Instant::now();
     let observation = (|| -> io::Result<()> {
         while !stop.load(Ordering::Relaxed) {
+            mac.check_epoch()?;
             if guest.is_none() {
                 match channel.accept() {
-                    Ok((socket, _)) => match Guest::admit(socket, &choice) {
+                    Ok((socket, _)) => match Guest::admit(socket, &choice, &mac) {
                         Ok(peer) => guest = Some(peer),
                         Err(e) => last_issue = Some(e),
                     },
@@ -406,6 +408,7 @@ pub(super) fn run(stop: &AtomicBool) -> io::Result<()> {
                     choice.revalidate()?;
                     program.revalidate()?;
                     peer.mount.revalidate()?;
+                    mac.revalidate()?;
                     protocol::notify_main()?;
                     notified = true;
                 }
@@ -419,21 +422,21 @@ pub(super) fn run(stop: &AtomicBool) -> io::Result<()> {
                     Guest::matches_oci(peer.pid, choice.selection_digest())?;
                 }
                 choice.revalidate()?;
+                mac.revalidate()?;
                 revalidate = Instant::now() + Duration::from_secs(5);
             }
-            clients.poll(guest.as_ref().is_some_and(|v| v.android))?;
+            clients.poll(guest.as_ref().is_some_and(|v| v.android), || mac.revalidate())?;
             thread::sleep(Duration::from_millis(30));
         }
         Ok(())
     })();
-    if let Some(mut peer) = guest {
-        peer.shutdown()?;
-    }
-    if stop.load(Ordering::Relaxed) {
-        Ok(())
-    } else {
-        observation
-    }
+    drop(clients);
+    let stopping = if notified { protocol::notify_stopping() } else { Ok(()) };
+    let shutdown = match guest {
+        Some(mut peer) => peer.shutdown(),
+        None => Ok(()),
+    };
+    observation.and(stopping).and(shutdown)
 }
 
 #[cfg(test)]

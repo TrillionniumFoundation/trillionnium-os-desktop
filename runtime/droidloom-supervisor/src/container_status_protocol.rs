@@ -4,6 +4,12 @@ use std::os::linux::net::SocketAddrExt;
 use std::os::unix::net::{SocketAddr, UnixDatagram};
 const CONTROL: &str = "/run/droidloom-container/readiness.sock";
 pub(super) fn notify_main() -> io::Result<()> {
+    notify(b"READY=1")
+}
+pub(super) fn notify_stopping() -> io::Result<()> {
+    notify(b"STOPPING=1")
+}
+fn notify(message: &[u8]) -> io::Result<()> {
     let dest = std::env::var_os("NOTIFY_SOCKET")
         .ok_or_else(|| error("missing system manager notification socket"))?;
     use std::os::unix::ffi::OsStrExt;
@@ -13,7 +19,7 @@ pub(super) fn notify_main() -> io::Result<()> {
     } else {
         SocketAddr::from_pathname(PathBuf::from(dest))?
     };
-    UnixDatagram::unbound()?.send_to_addr(b"READY=1", &addr)?;
+    UnixDatagram::unbound()?.send_to_addr(message, &addr)?;
     Ok(())
 }
 
@@ -107,6 +113,21 @@ fn request(stream: &mut UnixStream) -> io::Result<Query> {
     })
 }
 
+fn checked_ready_reply(
+    stream: &mut UnixStream,
+    check: &impl Fn() -> io::Result<()>,
+) -> io::Result<()> {
+    check()?;
+    // A disconnected client does not revoke a healthy Android generation.
+    let _ = reply(
+        stream,
+        true,
+        true,
+        "Android boot completed and ActivityManager answers Binder",
+    );
+    Ok(())
+}
+
 pub(super) struct Clients {
     control: Control,
     pending: Vec<(UnixStream, Instant)>,
@@ -118,24 +139,24 @@ impl Clients {
             pending: Vec::new(),
         })
     }
-    pub(super) fn poll(&mut self, android: bool) -> io::Result<()> {
-        self.pending.retain_mut(|(socket, deadline)| {
-            if android || Instant::now() >= *deadline {
-                let _ = reply(
-                    socket,
-                    android,
-                    android,
-                    if android {
-                        "Android boot completed and ActivityManager answers Binder"
-                    } else {
-                        "Android readiness deadline expired"
-                    },
-                );
-                false
-            } else {
-                true
+    pub(super) fn poll(
+        &mut self,
+        android: bool,
+        check: impl Fn() -> io::Result<()>,
+    ) -> io::Result<()> {
+        if android {
+            for (mut socket, _) in self.pending.drain(..) {
+                checked_ready_reply(&mut socket, &check)?;
             }
-        });
+        } else {
+            self.pending.retain_mut(|(socket, deadline)| {
+                if Instant::now() < *deadline {
+                    return true;
+                }
+                let _ = reply(socket, false, false, "Android readiness deadline expired");
+                false
+            });
+        }
         match self.control.listener.accept() {
             Ok((mut socket, _)) => match request(&mut socket) {
                 Ok(Query::WaitReady) if !android && self.pending.len() < 8 => {
@@ -144,17 +165,9 @@ impl Clients {
                 Ok(Query::WaitReady) if !android => {
                     let _ = reply(&mut socket, false, false, "Readiness request queue is full");
                 }
+                Ok(_) if android => checked_ready_reply(&mut socket, &check)?,
                 Ok(_) => {
-                    let _ = reply(
-                        &mut socket,
-                        true,
-                        android,
-                        if android {
-                            "Android boot completed and ActivityManager answers Binder"
-                        } else {
-                            "Waiting for Android boot"
-                        },
-                    );
+                    let _ = reply(&mut socket, true, false, "Waiting for Android boot");
                 }
                 Err(_) => {
                     let _ = reply(&mut socket, false, false, "Unsupported readiness request");
@@ -174,6 +187,22 @@ impl Clients {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn rejected_enforcement_writes_no_positive_frame() {
+        let (mut service, mut client) = UnixStream::pair().unwrap();
+        assert!(checked_ready_reply(&mut service, &|| Err(error("changed kernel epoch"))).is_err());
+        client.set_nonblocking(true).unwrap();
+        let mut b = [0; 256];
+        assert_eq!(
+            client.read(&mut b).unwrap_err().kind(),
+            io::ErrorKind::WouldBlock
+        );
+        checked_ready_reply(&mut service, &|| Ok(())).unwrap();
+        let n = client.read(&mut b).unwrap();
+        let observed: serde_json::Value = serde_json::from_slice(&b[..n]).unwrap();
+        assert_eq!(observed["state"], "running");
+    }
+
     #[test]
     fn only_fixed_readonly_requests_are_accepted() {
         for (body, allowed) in [
