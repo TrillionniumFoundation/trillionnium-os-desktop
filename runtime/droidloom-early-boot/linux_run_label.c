@@ -476,6 +476,13 @@ int droidloom_hold_linux_init_scope(struct droidloom_linux_init_scope *held)
         errno = ESTALE;
         return -1;
     }
+    if (hold_cgroup_inode(openat(held->root.fd, "cgroup.procs", O_RDONLY | O_NOFOLLOW | O_CLOEXEC),
+                          S_IFREG, &held->root_membership) < 0)
+        return -1;
+    if (held->root_membership.device != held->root.device || held->root_membership.inode == held->root.inode) {
+        errno = ESTALE;
+        return -1;
+    }
     if (mkdirat(held->root.fd, "system.slice", 0755) < 0 && errno != EEXIST)
         return -1;
     if (hold_cgroup_inode(openat(held->root.fd, "system.slice", dir), S_IFDIR, &held->system_slice) < 0)
@@ -530,6 +537,7 @@ int droidloom_label_linux_init_scope(const struct droidloom_linux_init_scope *he
 {
     const char *original = "u:object_r:cgroup_v2:s0";
     if (apply_label_from(&held->root, original, "u:object_r:p4_linux_cgroup_root_t:s0") < 0 ||
+        apply_label_from(&held->root_membership, original, "u:object_r:p4_linux_cgroup_root_membership_t:s0") < 0 ||
         apply_label_from(&held->scope, original, "u:object_r:p4_linux_cgroup_init_scope_t:s0") < 0 ||
         verify_label(&held->system_slice, "u:object_r:p4_linux_system_slice_t:s0") < 0 ||
         apply_label_from(&held->controllers, original, "u:object_r:p4_linux_cgroup_controller_list_t:s0") < 0 ||
@@ -540,6 +548,8 @@ int droidloom_label_linux_init_scope(const struct droidloom_linux_init_scope *he
 
 void droidloom_close_linux_init_scope(struct droidloom_linux_init_scope *held)
 {
+    if (held->root_membership.fd >= 0)
+        close(held->root_membership.fd);
     if (held->system_slice.fd >= 0)
         close(held->system_slice.fd);
     if (held->controllers.fd >= 0)

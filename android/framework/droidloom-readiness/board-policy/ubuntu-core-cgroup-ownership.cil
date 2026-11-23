@@ -65,3 +65,16 @@
 (allow init_t p4_linux_unit_cgroup_t (file (getattr open read watch create write)))
 (allow init_t p4_linux_unit_cgroup_t (dir (setattr)))
 (allow init_t p4_linux_system_slice_t (dir (setattr)))
+
+; Linux checks MAY_WRITE against the common ancestor of source and target.
+; Only the immutable service executor receives that decision. No userspace
+; role can open the root membership file or use it to read running PIDs.
+(type p4_linux_cgroup_root_membership_t)
+(roletype object_r p4_linux_cgroup_root_membership_t)
+(typeattributeset p4_linux_init_cgroup_inodes (p4_linux_cgroup_root_membership_t))
+(allow kernel p4_linux_cgroup_root_membership_t (file (getattr relabelto)))
+(allow p4_linux_service_executor_t p4_linux_cgroup_root_membership_t (file (write)))
+(typeattribute p4_not_service_executor)
+(typeattributeset p4_not_service_executor (not (p4_linux_service_executor_t)))
+(neverallow p4_not_service_executor p4_linux_cgroup_root_membership_t (file (write append)))
+(neverallow p4_non_kernel_cgroup_actor p4_linux_cgroup_root_membership_t (file (open read append setattr map ioctl)))

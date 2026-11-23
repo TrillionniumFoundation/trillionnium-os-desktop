@@ -19,6 +19,7 @@ struct droidloom_linux_init_scope {
     struct droidloom_linux_run procs;
     struct droidloom_linux_run controllers;
     struct droidloom_linux_run system_slice;
+    struct droidloom_linux_run root_membership;
 };
 int droidloom_hold_linux_init_scope(struct droidloom_linux_init_scope *held);
 int droidloom_label_linux_init_scope(const struct droidloom_linux_init_scope *held);
