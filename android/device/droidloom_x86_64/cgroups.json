@@ -1,4 +1,14 @@
 {
+  "Cgroups": [
+    {
+      "Controller": "blkio",
+      "Path": "/dev/blkio",
+      "Mode": "0775",
+      "UID": "system",
+      "GID": "system",
+      "Optional": true
+    }
+  ],
   "Cgroups2": {
     "Path": "/sys/fs/cgroup",
     "Mode": "0775",
@@ -6,7 +16,17 @@
     "GID": "system",
     "Controllers": [
       {
+        "Controller": "cpu",
+        "Path": ".",
+        "NeedsActivation": true
+      },
+      {
         "Controller": "cpuset",
+        "Path": ".",
+        "NeedsActivation": true
+      },
+      {
+        "Controller": "io",
         "Path": ".",
         "NeedsActivation": true
       }
