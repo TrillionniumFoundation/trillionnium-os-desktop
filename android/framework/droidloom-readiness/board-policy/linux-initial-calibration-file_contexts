@@ -1,0 +1,8 @@
+/var/lib/droidloom-mac-calibration -d u:object_r:p4_linux_mac_calibration_dir_t:s0
+/var/lib/droidloom-mac-calibration/capture\.pending -- u:object_r:p4_linux_mac_capture_t:s0
+/etc/droidloom/setup\.lock -- u:object_r:p4_linux_mac_setup_lock_t:s0
+/etc/droidloom/production/selected\.json -- u:object_r:p4_linux_mac_release_input_t:s0
+/etc/droidloom/cell\.json -- u:object_r:p4_linux_mac_release_input_t:s0
+/etc/droidloom/(runtime-cohorts|cohorts)/[0-9a-f]{64}\.json -- u:object_r:p4_linux_mac_release_input_t:s0
+/usr/lib/droidloom/production/current/board-policy/(joint\.policy|ubuntu-apparmor\.profiles) -- u:object_r:p4_linux_mac_release_input_t:s0
+/var/lib/droidloom/cohorts/[0-9a-f]{64}/images/(system|vendor|system_ext_lib64|system_ext_readiness)\.img -- u:object_r:p4_linux_mac_release_input_t:s0

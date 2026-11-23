@@ -106,3 +106,36 @@
 (allow p4_linux_mac_roles p4_linux_early_handoff_dir_t (dir (getattr search)))
 (allow p4_linux_mac_roles p4_linux_apparmor_epoch_t (file (getattr open read)))
 (neverallow p4_linux_procs p4_linux_apparmor_epoch_t (file (append create write link unlink rename setattr relabelto relabelfrom)))
+
+; Preserve the stock Linux and Android labels on shared kernel metadata.
+; AppArmor further limits reads of these original classes to the selected
+; /proc boot ID, /sys/kernel/notes and securityfs LSM list.
+(typeattribute p4_linux_mac_fixed_kernel_read)
+(typeattributeset p4_linux_mac_fixed_kernel_read (securityfs sysfs_kernel_notes proc_random))
+(allow p4_linux_mac_roles p4_linux_mac_fixed_kernel_read (file (getattr open read)))
+(allow p4_linux_mac_roles proc_random (dir (getattr search)))
+(allow p4_linux_mac_roles securityfs (dir (getattr search)))
+(allow p4_linux_mac_roles securityfs (filesystem (getattr)))
+(allow p4_linux_mac_roles proc (filesystem (getattr)))
+(allow p4_linux_mac_roles sysfs (filesystem (getattr)))
+(allow p4_linux_mac_roles tmpfs (filesystem (getattr)))
+(allow droidloom_policy_loader self (dir (open read)))
+(allow droidloom_broker self (dir (open read)))
+
+; The AppArmor namespace magic link selects a kernel-internal superblock.
+; Late roles inspect only its identities. They read no disconnected file data.
+(type p4_linux_apparmor_handle_t)
+(type p4_linux_apparmor_state_t)
+(roletype object_r p4_linux_apparmor_handle_t)
+(roletype object_r p4_linux_apparmor_state_t)
+(typeattributeset p4_linux_data (p4_linux_apparmor_handle_t p4_linux_apparmor_state_t))
+(genfscon apparmorfs "/" (u object_r p4_linux_apparmor_handle_t ((s0) (s0))))
+(genfscon securityfs "/apparmor" (u object_r p4_linux_apparmor_state_t ((s0) (s0))))
+(genfscon sysfs "/module/apparmor/parameters/enabled" (u object_r p4_linux_apparmor_state_t ((s0) (s0))))
+(allow p4_linux_mac_roles p4_linux_apparmor_handle_t (filesystem (getattr)))
+(allow p4_linux_mac_roles p4_linux_apparmor_handle_t (dir (getattr search)))
+(allow p4_linux_mac_roles p4_linux_apparmor_state_t (dir (getattr search open read)))
+(allow p4_linux_mac_roles p4_linux_apparmor_state_t (lnk_file (getattr read)))
+(allow p4_linux_mac_roles p4_linux_apparmor_state_t (file (getattr open read)))
+(neverallow p4_linux_mac_roles p4_linux_apparmor_handle_t (file (open read write map execute)))
+(neverallow p4_linux_mac_roles p4_linux_apparmor_state_t (file (write append execute map)))
