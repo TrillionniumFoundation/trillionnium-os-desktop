@@ -288,7 +288,21 @@ impl LoadedPolicyWitness {
             kernel_text("/proc/sys/kernel/random/boot_id", PROC_MAGIC, 64)? == self.boot,
             "kernel boot changed",
         )?;
-        let release = kernel_text("/proc/sys/kernel/osrelease", PROC_MAGIC, 256)?;
+        let release = if self.declaration.early() {
+            // uname obtains this namespace's actual kernel release without a
+            // grant to all ordinary procfs files carrying the shared label.
+            let mut system = std::mem::MaybeUninit::<libc::utsname>::uninit();
+            if unsafe { libc::uname(system.as_mut_ptr()) } != 0 {
+                return Err(io::Error::last_os_error().into());
+            }
+            let system = unsafe { system.assume_init() };
+            unsafe { CStr::from_ptr(system.release.as_ptr()) }
+                .to_str()
+                .map_err(|_| MacError::Rejected("invalid kernel release"))?
+                .to_owned()
+        } else {
+            kernel_text("/proc/sys/kernel/osrelease", PROC_MAGIC, 256)?
+        };
         require(
             release.strip_suffix('\n').unwrap_or(&release) == self.declaration.kernel_release,
             "kernel release differs from installed MAC contract",
