@@ -153,12 +153,35 @@ fn wait_ended(fd: &File, timeout: Duration) -> io::Result<bool> {
         return Ok(rc > 0 && p.revents & libc::POLLIN != 0);
     }
 }
-fn stop_child(fd: &File) -> io::Result<()> {
-    for (signal, seconds) in [(libc::SIGTERM, 15), (libc::SIGKILL, 10)] {
-        if wait_ended(fd, Duration::ZERO)? {
-            return Ok(());
+#[derive(Debug, PartialEq, Eq)]
+enum ChildExit {
+    Observed,
+    Forced,
+}
+
+impl ChildExit {
+    fn after_retirement(self, retired: io::Result<()>) -> io::Result<()> {
+        match (self, retired) {
+            (Self::Observed, result) => result,
+            (Self::Forced, Ok(())) => Err(invalid(
+                "original Android PID 1 required SIGKILL; its resources were retired",
+            )),
+            (Self::Forced, Err(e)) => Err(io::Error::other(format!(
+                "original Android PID 1 required SIGKILL; resource retirement failed: {e}"
+            ))),
         }
-        if unsafe {
+    }
+}
+
+fn stop_child(fd: &File, term_timeout: Duration) -> io::Result<ChildExit> {
+    for (signal, timeout) in [
+        (libc::SIGTERM, term_timeout),
+        (libc::SIGKILL, Duration::from_secs(10)),
+    ] {
+        if wait_ended(fd, Duration::ZERO)? {
+            return Ok(ChildExit::Observed);
+        }
+        let signaled = unsafe {
             libc::syscall(
                 libc::SYS_pidfd_send_signal,
                 fd.as_raw_fd(),
@@ -166,15 +189,19 @@ fn stop_child(fd: &File) -> io::Result<()> {
                 std::ptr::null::<libc::siginfo_t>(),
                 0,
             )
-        } < 0
-        {
+        } == 0;
+        if !signaled {
             let e = io::Error::last_os_error();
             if e.raw_os_error() != Some(libc::ESRCH) {
                 return Err(e);
             }
         }
-        if wait_ended(fd, Duration::from_secs(seconds))? {
-            return Ok(());
+        if wait_ended(fd, timeout)? {
+            return Ok(if signaled && signal == libc::SIGKILL {
+                ChildExit::Forced
+            } else {
+                ChildExit::Observed
+            });
         }
     }
     Err(invalid("original Android PID 1 did not exit"))
@@ -229,8 +256,9 @@ pub fn complete_early_resources() -> io::Result<()> {
             "/proc/self/fd/{}/root",
             base.proc_directory().as_raw_fd()
         ))?;
-        let generation = super::super::open_root_trusted_directory(Path::new("/run/droidloom-early"))
-            .map_err(io::Error::other)?;
+        let generation =
+            super::super::open_root_trusted_directory(Path::new("/run/droidloom-early"))
+                .map_err(io::Error::other)?;
         let system = images.insert(PreparedMounts::prepare_early(&base).map_err(io::Error::other)?);
         let root = original_root.insert(File::from(
             system
@@ -312,34 +340,36 @@ pub fn complete_early_resources() -> io::Result<()> {
     })();
     // The original pidfd retains exclusive custody even if an earlier stage
     // failed after moving a mount. Never release by a numeric process lookup.
-    let cleanup = (|| -> io::Result<()> {
-        stop_child(board.pidfd())?;
-        if let Some(root) = original_root {
-            let retired = EarlyBaseRetirement::finish(&board, &group, &root)?;
-            drop(root);
-            let dev_result = devices
-                .map(|v| v.retire_after_early_tree(&retired))
-                .transpose()
-                .map_err(io::Error::other);
-            let data_result = data
-                .map(|v| v.retire_after_early_tree(&retired))
-                .transpose()
-                .map_err(io::Error::other);
-            let image_result = images
-                .map(|v| v.retire_after_early_tree(&retired))
-                .transpose()
-                .map_err(io::Error::other);
-            dev_result?;
-            data_result?;
-            image_result?;
-        } else {
-            group.retire_early_empty(&board).map_err(io::Error::other)?;
-            if let Some(images) = images {
-                images.retire_untransferred().map_err(io::Error::other)?;
+    let cleanup = stop_child(board.pidfd(), Duration::from_secs(15)).and_then(|exit| {
+        let retired = (|| -> io::Result<()> {
+            if let Some(root) = original_root {
+                let retired = EarlyBaseRetirement::finish(&board, &group, &root)?;
+                drop(root);
+                let dev_result = devices
+                    .map(|v| v.retire_after_early_tree(&retired))
+                    .transpose()
+                    .map_err(io::Error::other);
+                let data_result = data
+                    .map(|v| v.retire_after_early_tree(&retired))
+                    .transpose()
+                    .map_err(io::Error::other);
+                let image_result = images
+                    .map(|v| v.retire_after_early_tree(&retired))
+                    .transpose()
+                    .map_err(io::Error::other);
+                dev_result?;
+                data_result?;
+                image_result?;
+            } else {
+                group.retire_early_empty(&board).map_err(io::Error::other)?;
+                if let Some(images) = images {
+                    images.retire_untransferred().map_err(io::Error::other)?;
+                }
             }
-        }
-        Ok(())
-    })();
+            Ok(())
+        })();
+        exit.after_retirement(retired)
+    });
     match (work, cleanup) {
         (Err(operation), Err(cleanup)) => {
             Err(io::Error::other(format!("{operation}; cleanup: {cleanup}")))
@@ -362,8 +392,47 @@ mod tests {
         assert!(fd >= 0);
         let fd = unsafe { File::from_raw_fd(fd as i32) };
         assert!(!wait_ended(&fd, Duration::ZERO).unwrap());
-        stop_child(&fd).unwrap();
+        assert_eq!(
+            stop_child(&fd, Duration::from_secs(3)).unwrap(),
+            ChildExit::Observed
+        );
         assert!(wait_ended(&fd, Duration::ZERO).unwrap());
         child.wait().unwrap();
+    }
+    #[test]
+    fn unresponsive_original_is_reaped_and_cannot_report_a_clean_stop() {
+        use std::io::BufRead;
+        use std::os::unix::process::ExitStatusExt;
+        use std::process::{Command, Stdio};
+
+        let mut child = Command::new("/bin/sh")
+            .args(["-c", "trap '' TERM; echo ready; exec /bin/sleep 25"])
+            .stdout(Stdio::piped())
+            .spawn()
+            .unwrap();
+        let mut ready = String::new();
+        std::io::BufReader::new(child.stdout.take().unwrap())
+            .read_line(&mut ready)
+            .unwrap();
+        assert_eq!(ready.trim(), "ready");
+        let raw = unsafe { libc::syscall(libc::SYS_pidfd_open, child.id(), 0) };
+        assert!(raw >= 0);
+        let fd = unsafe { File::from_raw_fd(raw as i32) };
+        let exit = stop_child(&fd, Duration::from_millis(20)).unwrap();
+        assert_eq!(exit, ChildExit::Forced);
+        assert_eq!(child.wait().unwrap().signal(), Some(libc::SIGKILL));
+        assert!(
+            exit.after_retirement(Ok(()))
+                .unwrap_err()
+                .to_string()
+                .contains("SIGKILL")
+        );
+        let failure = ChildExit::Forced
+            .after_retirement(Err(invalid("test detach failed")))
+            .unwrap_err();
+        assert!(
+            failure.to_string().contains("SIGKILL")
+                && failure.to_string().contains("test detach failed")
+        );
     }
 }
