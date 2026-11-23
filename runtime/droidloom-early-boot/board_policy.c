@@ -257,7 +257,7 @@ int droidloom_board_activate_policy(gid_t observer_gid)
     struct droidloom_linux_run device_root = {.fd = -1};
     struct droidloom_linux_init_scope scope = { .root.fd = -1, .scope.fd = -1, .procs.fd = -1, .controllers.fd = -1, .system_slice.fd = -1, .root_membership.fd = -1, .root_subtree_control.fd = -1 };
     struct droidloom_linux_run run = {.fd = -1}, shm = {.fd = -1};
-    struct droidloom_linux_run credentials = {.fd = -1};
+    struct droidloom_linux_credentials credentials = { .root.fd = -1, .systemd.fd = -1, .staging.fd = -1 };
     struct droidloom_readiness_paths paths = { .handoff.fd = -1, .readiness.fd = -1 };
     const char *stage = "read admitted SELinux input";
     int rc = read_admitted(&policy);
@@ -314,8 +314,7 @@ int droidloom_board_activate_policy(gid_t observer_gid)
     droidloom_close_linux_init_scope(&scope);
     if (shm.fd >= 0)
         close(shm.fd);
-    if (credentials.fd >= 0)
-        close(credentials.fd);
+    droidloom_close_ubuntu_credentials(&credentials);
     if (run.fd >= 0)
         close(run.fd);
     free(aa.data);

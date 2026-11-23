@@ -292,3 +292,17 @@
 (allow p4_linux_journald_t p4_linux_journal_credentials_t (dir (getattr search open read)))
 (neverallow p4_linux_procs p4_linux_credentials_root_t (dir (create rmdir rename relabelfrom relabelto mounton)))
 (neverallow p4_linux_journald_t p4_linux_journal_credentials_t (dir (create setattr write add_name remove_name rmdir rename relabelfrom relabelto mounton)))
+
+; Original Ubuntu setup_credentials_plain_dir moves the private journal unit
+; workspace into /run/credentials atomically. Its parent remains root-only.
+(type p4_linux_credential_staging_t)
+(roletype object_r p4_linux_credential_staging_t)
+(typeattributeset p4_linux_data (p4_linux_credential_staging_t))
+(allow kernel p4_linux_systemd_run_t (dir (getattr relabelto)))
+(allow kernel p4_linux_credential_staging_t (dir (getattr relabelto)))
+(allow p4_linux_credential_staging_t tmpfs (filesystem (associate)))
+(typetransition p4_linux_service_executor_t p4_linux_credential_staging_t dir "systemd-journald.service" p4_linux_journal_credentials_t)
+(allow p4_linux_service_executor_t p4_linux_credential_staging_t (dir (getattr search write add_name remove_name)))
+(allow p4_linux_service_executor_t p4_linux_journal_credentials_t (dir (rename reparent)))
+(neverallow p4_linux_procs p4_linux_credential_staging_t (dir (create rmdir rename relabelfrom relabelto mounton)))
+(neverallow p4_linux_journald_t p4_linux_credential_staging_t (dir (open read search write add_name remove_name)))

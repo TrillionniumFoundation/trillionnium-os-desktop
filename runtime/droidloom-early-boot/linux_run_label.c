@@ -135,25 +135,48 @@ static int hold_child(const struct droidloom_linux_run *parent, const char *name
     return 0;
 }
 
-int droidloom_hold_ubuntu_credentials(const struct droidloom_linux_run *run,
-                                     struct droidloom_linux_run *credentials)
+static int hold_runtime_directory(const struct droidloom_linux_run *parent, const char *name,
+                                  mode_t mode, struct droidloom_linux_run *held)
 {
-    /* This is systemd's original, root-owned runtime directory. Existing
-     * unit directories and imported credentials must be preserved verbatim. */
     mode_t saved_umask = umask(0);
-    int rc = mkdirat(run->fd, "credentials", 0755);
+    int rc = mkdirat(parent->fd, name, mode);
     int error = errno;
     umask(saved_umask);
     if (rc < 0 && error != EEXIST) {
         errno = error;
         return -1;
     }
-    return hold_child(run, "credentials", 0, 0755, credentials);
+    return hold_child(parent, name, 0, mode, held);
 }
 
-int droidloom_label_ubuntu_credentials(const struct droidloom_linux_run *credentials)
+int droidloom_hold_ubuntu_credentials(const struct droidloom_linux_run *run,
+                                     struct droidloom_linux_credentials *credentials)
 {
-    return apply_label(credentials, "u:object_r:p4_linux_credentials_root_t:s0");
+    /* Keep the distro's root-owned directories across initial policy load.
+     * Linux PID 1 and its executor retain their original credential contents. */
+    if (hold_runtime_directory(run, "credentials", 0755, &credentials->root) < 0 ||
+        hold_runtime_directory(run, "systemd", 0755, &credentials->systemd) < 0)
+        return -1;
+    return hold_runtime_directory(&credentials->systemd, "temporary-credentials", 0700,
+                                  &credentials->staging);
+}
+
+int droidloom_label_ubuntu_credentials(const struct droidloom_linux_credentials *credentials)
+{
+    if (apply_label(&credentials->root, "u:object_r:p4_linux_credentials_root_t:s0") < 0 ||
+        apply_label(&credentials->systemd, "u:object_r:p4_linux_systemd_run_t:s0") < 0)
+        return -1;
+    return apply_label(&credentials->staging, "u:object_r:p4_linux_credential_staging_t:s0");
+}
+
+void droidloom_close_ubuntu_credentials(struct droidloom_linux_credentials *credentials)
+{
+    if (credentials->staging.fd >= 0)
+        close(credentials->staging.fd);
+    if (credentials->systemd.fd >= 0)
+        close(credentials->systemd.fd);
+    if (credentials->root.fd >= 0)
+        close(credentials->root.fd);
 }
 
 static int validate_empty_endpoint(int fd)
