@@ -2,6 +2,37 @@
 use crate::util::*;
 use std::{fs, path::Path, process::Command};
 
+pub(super) fn stage_board_policy(inputs: &Path, destination: &Path) -> Result<()> {
+    let release = destination.join("usr/lib/droidloom/production/current/board-policy");
+    #[derive(serde::Deserialize)]
+    struct ReleaseInput {
+        size: u64,
+        sha256: String,
+    }
+    #[derive(serde::Deserialize)]
+    struct BoardInputs {
+        files: std::collections::BTreeMap<String, ReleaseInput>,
+    }
+    let lock: BoardInputs = serde_json::from_slice(include_bytes!(
+        "../../../android/framework/droidloom-readiness/board-policy/pocket4-board-inputs.lock.json"
+    ))?;
+    for name in ["joint.policy", "ubuntu-apparmor.profiles"] {
+        let input = lock
+            .files
+            .get(name)
+            .ok_or("board input absent from release lock")?;
+        let body = crate::coherent_images::read_release_input(
+            &inputs.join(name),
+            input.size,
+            &input.sha256,
+        )?;
+        let path = release.join(name);
+        write(&path, &body)?;
+        mode(&path, 0o444)?;
+    }
+    Ok(())
+}
+
 pub(super) fn stage(destination: &Path) -> Result<()> {
     let work = tempfile::tempdir()?;
     let src = work.path();
@@ -22,6 +53,18 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
         include_bytes!("../../../runtime/droidloom-early-boot/selected.c"),
     )?;
     for (name, content) in [
+        (
+            "board_policy.c",
+            include_bytes!("../../../runtime/droidloom-early-boot/board_policy.c").as_slice(),
+        ),
+        (
+            "board_policy.h",
+            include_bytes!("../../../runtime/droidloom-early-boot/board_policy.h").as_slice(),
+        ),
+        (
+            "board_policy_main.c",
+            include_bytes!("../../../runtime/droidloom-early-boot/board_policy_main.c").as_slice(),
+        ),
         (
             "board_resources.h",
             include_bytes!("../../../runtime/droidloom-early-boot/board_resources.h").as_slice(),
@@ -46,6 +89,8 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
         include_bytes!("../../../runtime/droidloom-early-boot/linux_run_label.h"),
     )?;
     for (source, object) in [
+        ("board_policy.c", "board_policy.o"),
+        ("board_policy_main.c", "board_policy_main.o"),
         ("custody.c", "custody.o"),
         ("selected.c", "selected.o"),
         ("board_resources.c", "board_resources.o"),
@@ -85,6 +130,29 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
         .join(boot);
     copy(&src.join(boot), &binary)?;
     mode(&binary, 0o755)?;
+    let policy = "droidloom-early-policy";
+    let linked = Command::new("cc")
+        .current_dir(src)
+        .args([
+            "-Wl,-z,relro,-z,now",
+            "board_policy_main.o",
+            "board_policy.o",
+            "linux_run_label.o",
+            "selected.o",
+            "custody.o",
+            "-lcrypto",
+            "-o",
+            policy,
+        ])
+        .status()?;
+    if !linked.success() {
+        return fail("cannot link the selected early shared-kernel board policy installer");
+    }
+    let path = destination
+        .join("usr/lib/droidloom/production/current")
+        .join(policy);
+    copy(&src.join(policy), &path)?;
+    mode(&path, 0o755)?;
     let result = Command::new("ar")
         .current_dir(src)
         .args([

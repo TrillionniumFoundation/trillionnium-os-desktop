@@ -23,7 +23,12 @@ fn validate_builder(jobs: usize) -> Result<()> {
     Ok(())
 }
 
-pub fn stage_container_host(repo: &Path, work: &Path, jobs: usize) -> Result<std::path::PathBuf> {
+pub fn stage_container_host(
+    repo: &Path,
+    work: &Path,
+    jobs: usize,
+    board_policy_inputs: Option<&Path>,
+) -> Result<std::path::PathBuf> {
     validate_builder(jobs)?;
     fs::create_dir_all(work)?;
     let work = work.canonicalize()?;
@@ -47,6 +52,9 @@ pub fn stage_container_host(repo: &Path, work: &Path, jobs: usize) -> Result<std
         .prefix("container-host-stage-")
         .tempdir_in(&work)?;
     production_host_payload(repo, &target.join("release"), stage.path())?;
+    if let Some(inputs) = board_policy_inputs {
+        early_boot_package::stage_board_policy(inputs, stage.path())?;
+    }
     Ok(stage.keep())
 }
 

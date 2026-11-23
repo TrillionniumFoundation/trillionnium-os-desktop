@@ -6,3 +6,10 @@ program=/usr/lib/droidloom/production/current/droidloomd
 copy_exec "$program" "$program"
 firststage=/usr/lib/droidloom/production/current/droidloom-early-firststage
 copy_exec "$firststage" "$firststage"
+release=/usr/lib/droidloom/production/current
+copy_exec "$release/droidloom-early-policy" "$release/droidloom-early-policy"
+if [ -d "$release/board-policy" ]; then
+    for name in joint.policy ubuntu-apparmor.profiles; do
+        copy_file config "$release/board-policy/$name" || [ "$?" -eq 1 ]
+    done
+fi

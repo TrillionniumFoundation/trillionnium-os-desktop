@@ -152,6 +152,17 @@ fn pin(path: &Path, limit: u64) -> Result<FileRef> {
     })
 }
 
+pub(crate) fn read_release_input(path: &Path, bytes: u64, sha256: &str) -> Result<Vec<u8>> {
+    let original = pin(path, bytes)?;
+    if original.bytes != bytes || original.sha256 != sha256 {
+        return fail(format!(
+            "release input does not match its build lock: {}",
+            path.display()
+        ));
+    }
+    bound_body(&original, bytes)
+}
+
 fn recheck(reference: &FileRef, limit: u64) -> Result<()> {
     if pin(&reference.path, limit)? != *reference {
         return fail("coherent product original changed or was replaced");

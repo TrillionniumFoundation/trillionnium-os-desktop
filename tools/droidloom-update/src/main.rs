@@ -71,6 +71,9 @@ enum Action {
     },
     /// Build and stage the host executables and system-manager templates for an independently selected Android image.
     PackageContainerHostStage {
+        /// Locked Ubuntu AppArmor and SELinux inputs for a Pocket4 kernel-first release.
+        #[arg(long)]
+        board_policy_inputs: Option<PathBuf>,
         /// Private ordinary-user workspace in which Cargo outputs and the staged payload are kept.
         #[arg(long)]
         work: PathBuf,
@@ -508,8 +511,10 @@ fn execute(args: Args) -> Result<()> {
             println!("{}", serde_json::to_string_pretty(&receipt)?);
             return Ok(());
         }
-        Some(Action::PackageContainerHostStage { work, jobs }) => {
-            let stage = package::stage_container_host(&repository(args.source.clone())?, work, *jobs)?;
+        Some(Action::PackageContainerHostStage { work, jobs, board_policy_inputs }) => {
+            let stage = package::stage_container_host(
+                &repository(args.source.clone())?, work, *jobs, board_policy_inputs.as_deref(),
+            )?;
             println!("{}", stage.display());
             return Ok(());
         }
