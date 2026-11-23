@@ -87,6 +87,26 @@ impl WritableLoop {
         let status = loop_status(file)?.ok_or(MountError::Rejected("writable loop unexpectedly unbound"))?;
         own_status(&status, self.source, self.number)
     }
+    /// Android init selects writable partitions for orderly unmount using the
+    /// /dev/block prefix recorded by Linux. Resolve only udev's canonical
+    /// major:minor entry for the loop whose backing file is still leased.
+    pub(super) fn android_block_source(&self) -> Result<CString> {
+        self.verify()?;
+        let directory = crate::production_selection::open_root_trusted_directory(Path::new("/dev/block"))
+            .map_err(io::Error::other)?;
+        require(directory.metadata()?.dev() == self.node.dev,
+            "udev block directory must share the held device filesystem")?;
+        let name = format!("{}:{}", libc::major(self.device), libc::minor(self.device));
+        let anchored = PathBuf::from(format!("/proc/self/fd/{}", directory.as_raw_fd())).join(&name);
+        let link = std::fs::symlink_metadata(&anchored)?;
+        let expected = PathBuf::from(format!("../loop{}", self.number));
+        require(link.is_symlink() && link.uid() == 0 && link.gid() == 0
+            && std::fs::read_link(&anchored)? == expected
+            && same_block_node(self.node, &std::fs::metadata(&anchored)?, self.device),
+            "canonical root-owned udev alias must name the exact held writable loop inode")?;
+        text_name(&format!("/dev/block/{name}"))
+    }
+
     pub(super) fn is_bound(&self) -> bool { self.file.is_some() }
     pub(super) fn retire(&mut self) -> Result<u64> {
         let file = self.file()?;

@@ -51,7 +51,7 @@ impl<'generation> StorageAuthority for EarlyStorageAdmission<'_, 'generation> {
 
 impl PreparedPersistentData {
     pub(crate) fn prepare_early(admission: &EarlyStorageAdmission<'_, '_>) -> Result<Self> {
-        Self::prepare_with(admission)
+        Self::prepare_with(admission, DataMountSource::AndroidBlock)
     }
 
     pub(crate) fn early_descriptors_for_transfer<'a>(

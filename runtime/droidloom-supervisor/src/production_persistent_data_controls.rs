@@ -106,7 +106,7 @@ impl PrivatePersistentData {
             resources.images[index].binding.verify()?;
             writable_loop::reject_aliases(&resources.backings.nodes, &resources.images)?;
             let mount = detached_data_mount(&resources.images[index].binding,
-                &resources.backings.policies[index], &resources.userns, uids, gids)?;
+                &resources.backings.policies[index], &resources.userns, uids, gids, DataMountSource::HeldDescriptor)?;
             resources.images[index].mount = Some(mount);
             resources.images[index].observed = Some(PersistentRootObservation::capture(
                 resources.images[index].mount.as_ref().unwrap())?);

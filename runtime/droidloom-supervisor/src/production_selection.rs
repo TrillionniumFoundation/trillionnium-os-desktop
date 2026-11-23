@@ -471,7 +471,7 @@ fn open_root_trusted(path: &Path) -> Result<File> {
     open_trusted(path, TrustedLeaf::Read)
 }
 
-fn open_root_trusted_directory(path: &Path) -> Result<File> {
+pub(crate) fn open_root_trusted_directory(path: &Path) -> Result<File> {
     open_trusted(path, TrustedLeaf::SearchDirectory)
 }
 

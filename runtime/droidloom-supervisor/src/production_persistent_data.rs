@@ -206,10 +206,10 @@ impl PreparedPersistentData {
 
     pub(crate) fn prepare(witness: &OwnedNamespaceWitness<'_>, selection: &ProductionSelection,
         prepared: &PreparedExecution) -> Result<Self> {
-        Self::prepare_with(&LateStorageAdmission { namespace:witness, selection, prepared })
+        Self::prepare_with(&LateStorageAdmission { namespace:witness, selection, prepared }, DataMountSource::HeldDescriptor)
     }
 
-    fn prepare_with(admission: &impl StorageAuthority) -> Result<Self> {
+    fn prepare_with(admission: &impl StorageAuthority, source: DataMountSource) -> Result<Self> {
         let witness = admission.namespace();
         let selection = admission.selection();
         admission.verify()?;
@@ -240,7 +240,7 @@ impl PreparedPersistentData {
             resources.images[index].binding.verify()?;
             writable_loop::reject_aliases(&resources.backings.nodes, &resources.images)?;
             let mount = detached_data_mount(&resources.images[index].binding,
-                &resources.backings.policies[index], &resources.userns, uids, gids)?;
+                &resources.backings.policies[index], &resources.userns, uids, gids, source)?;
             resources.images[index].mount = Some(mount);
             let mount = resources.images[index].mount.as_ref().unwrap();
             resources.images[index].observed = Some(PersistentRootObservation::capture(mount)?);
@@ -318,12 +318,27 @@ impl Drop for PreparedPersistentData {
     }
 }
 
+#[derive(Clone, Copy)]
+enum DataMountSource {
+    HeldDescriptor,
+    AndroidBlock,
+}
+
+impl DataMountSource {
+    fn resolve(self, binding: &WritableLoop) -> Result<CString> {
+        match self {
+            Self::HeldDescriptor => text_name(&format!("/proc/self/fd/{}", binding.file()?.as_raw_fd())),
+            Self::AndroidBlock => binding.android_block_source(),
+        }
+    }
+}
+
 fn detached_data_mount(binding: &WritableLoop, policy: &PersistentImagePolicy, userns: &File,
-    uids: IdRange, gids: IdRange) -> Result<File> {
+    uids: IdRange, gids: IdRange, source_kind: DataMountSource) -> Result<File> {
     binding.verify()?;
     let mapped = policy.mapped_root(uids, gids).map_err(MountError::Rejected)?;
     let context = syscall_fd(unsafe { libc::syscall(libc::SYS_fsopen, c"ext4".as_ptr(), FSOPEN_CLOEXEC) })?;
-    let source = text_name(&format!("/proc/self/fd/{}", binding.file()?.as_raw_fd()))?;
+    let source = source_kind.resolve(binding)?;
     configure(&context, FSCONFIG_SET_STRING, c"source", Some(&source))?;
     configure(&context, FSCONFIG_SET_FLAG, c"rw", None)?;
     configure(&context, FSCONFIG_SET_STRING, c"errors", Some(c"remount-ro"))?;
@@ -331,6 +346,11 @@ fn detached_data_mount(binding: &WritableLoop, policy: &PersistentImagePolicy, u
         std::ptr::null::<libc::c_char>(), std::ptr::null::<libc::c_char>(), 0) };
     if created != 0 { return Err(io::Error::last_os_error().into()); }
     let mount = syscall_fd(unsafe { libc::syscall(libc::SYS_fsmount, context.as_raw_fd(), FSMOUNT_CLOEXEC, DATA_FLAGS as u32) })?;
+    // The kernel has now resolved the source. Check udev and the held device
+    // again while validating the new mount's actual superblock below.
+    if matches!(source_kind, DataMountSource::AndroidBlock) {
+        require(binding.android_block_source()? == source, "Android data block alias changed")?;
+    }
     let original = mount.metadata()?;
     require(original.is_dir() && original.dev() == binding.device
         && original.uid() == policy.guest_root_uid && original.gid() == policy.guest_root_gid
