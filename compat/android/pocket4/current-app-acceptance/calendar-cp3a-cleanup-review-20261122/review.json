@@ -1,0 +1,174 @@
+{
+  "schema": "pocket4-cp3a-calendar-delete-bytecode-review-v1",
+  "previous_review": {
+    "path": "current-canonical-app-main-20261120/bundle/inputs/1d66de839c05c11983196764d44c518175bc10481cff754b850d6034c8533796/atomic-delete-review.json",
+    "sha256": "1d66de839c05c11983196764d44c518175bc10481cff754b850d6034c8533796"
+  },
+  "current_provider_receipt": {
+    "path": "current-app-acceptance/system-cp3a-provider-source-20261119/actual/receipts/com.android.providers.calendar.json",
+    "sha256": "dbbac2c144ad77a88c41f322452f26393c103dbcdfabc3d0f390f2a2ec967f4c"
+  },
+  "disassembler": "baksmali 2.5.2.git2771eae-debian",
+  "system_image_sha256": "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4",
+  "system_image_member": "/system/priv-app/CalendarProvider/CalendarProvider.apk",
+  "inputs": {
+    "previous": {
+      "apk_bytes": 340711,
+      "apk_sha256": "eebf12f81981f7d8c59a9b9ed465945818d2ab0208c121d858cbc4e6426f5fff",
+      "dex_sha256": "f82eb5a869731b069f0fa1cae09c0d85ef787d249e0c8d6149c9470f8b7bed8c"
+    },
+    "current": {
+      "apk_bytes": 336615,
+      "apk_sha256": "1ae37944b4f5f24d8d7bc849c76bd80c678d19cc3f5647ccaebd1254d8508744",
+      "dex_sha256": "8fe6405b1843353e105f4d614238f72be7a4aacfa1da58af0d38bf5f6ac4ced1"
+    }
+  },
+  "methods": [
+    {
+      "class": "CalendarDatabaseHelper",
+      "signature": "scheduleSync(Landroid/accounts/Account;ZLjava/lang/String;)V",
+      "previous_sha256": "835dfb6ff8031013cf4c10557b159cdec08dbafd7dccbe134d3a7584eea0039c",
+      "current_sha256": "835dfb6ff8031013cf4c10557b159cdec08dbafd7dccbe134d3a7584eea0039c",
+      "line_independent_sha256": "4249478df05f4c5817f2f6ffc301eea798ab86a5d1e36f79a5110b32651f3bd3"
+    },
+    {
+      "class": "CalendarProvider2$$ExternalSyntheticBUOutline1",
+      "signature": "m(Ljava/lang/String;Ljava/lang/Object;)V",
+      "previous_sha256": "314556421541302765776f7e5cef329c9ffe51a5c0efa4dbb7b0d2ac2afbcc95",
+      "current_sha256": "314556421541302765776f7e5cef329c9ffe51a5c0efa4dbb7b0d2ac2afbcc95",
+      "line_independent_sha256": "b1b6f522467a302c1e66129e6f1c02e9bfdc9a6c9b2a99259481e799b71f64fd"
+    },
+    {
+      "class": "CalendarProvider2",
+      "signature": "<clinit>()V",
+      "previous_sha256": "5331ed4259b878fa4de77b29cbd01f89f2f1087719f6ca684951036711f55021",
+      "current_sha256": "9bfee6156dc7c3b51ef3566244949dcd4f050b392973f4fab5ba614840a63ba4",
+      "line_independent_sha256": null
+    },
+    {
+      "class": "CalendarProvider2",
+      "signature": "appendAccountToSelection(Landroid/net/Uri;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+      "previous_sha256": "1cdd0ea0e26fd57548bd7e5cf7b06d46cad2b987d4a25ecf5652fed89c952122",
+      "current_sha256": "4444f259037ea2ac5473c8927aa6afbc7395b7c4e38d9753897afdec8ff588b5",
+      "line_independent_sha256": "9e319d249f7372d3e95a857dc53447150335c0a37939b52a226a76b7faa2be92",
+      "previous_review_member": "CalendarProvider2-appendAccountToSelection0.smali"
+    },
+    {
+      "class": "CalendarProvider2",
+      "signature": "appendSelection(Ljava/lang/StringBuilder;Ljava/lang/String;)Ljava/lang/String;",
+      "previous_sha256": "284bcae39660ea9cfd72ca51234c990b94167379c90850862ac2381c20c79dba",
+      "current_sha256": "493766a4ec1339679759c0afffa89777a2a1dea7d6e129144a47146b6618e115",
+      "line_independent_sha256": "16f86f98e2b7080e3848fb1cb1e139f857a7110dda86fad6b9192ef3e5316664"
+    },
+    {
+      "class": "CalendarProvider2",
+      "signature": "delete(Landroid/net/Uri;Ljava/lang/String;[Ljava/lang/String;)I",
+      "previous_sha256": "491c7688c7d3ab4bfd35155b1d38a48f7d63275145a39b8617eed18090055276",
+      "current_sha256": "f3e2e37758c766f48920c6e75283a551e07fb07f0d0666819f17475a688135b0",
+      "line_independent_sha256": "d55a91b5e928b4fe42b935b6d6f528a0e0f17b9ed755c88f4b4c72c20b237ccb"
+    },
+    {
+      "class": "CalendarProvider2",
+      "signature": "deleteInTransaction(Landroid/net/Uri;Ljava/lang/String;[Ljava/lang/String;Z)I",
+      "previous_sha256": "763649c943ce5af93f9105000594a5c88a6c8e099a576a2b1763352f1b6c7dc8",
+      "current_sha256": "f18b9f921448c88cea0c5178ba5301ee5286232a8a47fdfb7051b87f8a3d1dd4",
+      "line_independent_sha256": "db8b33b65fc880fc58255d3a6244596dbbe4abbf98f27cabbccab30b87dca048",
+      "previous_review_member": "CalendarProvider2-deleteInTransaction0.smali"
+    },
+    {
+      "class": "CalendarProvider2",
+      "signature": "deleteInTransactionInner(Landroid/net/Uri;Ljava/lang/String;[Ljava/lang/String;Z)I",
+      "previous_sha256": "cb9e3c6d25be8de2849c64464c594551b269bc01c0770f82d56c49924b8bac5b",
+      "current_sha256": "b525be9d4990a11799fdb4ef8fd179d6f2bce5ef3d0c02cef75fce4bc9050f33",
+      "line_independent_sha256": "e87afa16ba2ff5c05d03298a0590f22c8520b2afc3c92005ae05338e2538ad01",
+      "previous_review_member": "CalendarProvider2-deleteInTransactionInner0.smali"
+    },
+    {
+      "class": "CalendarProvider2",
+      "signature": "deleteMatchingCalendars(Ljava/lang/String;[Ljava/lang/String;)I",
+      "previous_sha256": "fa40ec3c0f01c43c28322858cd3abb0f452bd0c700eebc6c5722c8dee3cf02a8",
+      "current_sha256": "3040be26156c34501a6d0c3283799962f1c4aa0afd0aaa64738d81fc1c397c4a",
+      "line_independent_sha256": "077ffb0fd0506c594b969286554d270e146957d3653f77d42ebafcbbf05e2e82",
+      "previous_review_member": "deleteMatchingCalendars.smali"
+    },
+    {
+      "class": "CalendarProvider2",
+      "signature": "modifyCalendarSubscription(JZ)V",
+      "previous_sha256": "f9c07c0b5fbe563e64ec9d0ae387aafa50d25cf8d413692b308e972fa2b98ba9",
+      "current_sha256": "cfa5330b7b4bfc8ca20713d7b86ff8780da10a8ba50398aba69e94f08e417586",
+      "line_independent_sha256": "15b5e278595a4c5941eba3fa604e76f416d7b2142c2da249ffb1ad38b1a52bb4",
+      "previous_review_member": "CalendarProvider2-modifyCalendarSubscription0.smali"
+    },
+    {
+      "class": "CalendarProvider2",
+      "signature": "verifyHasAccount(Landroid/net/Uri;Ljava/lang/String;[Ljava/lang/String;)V",
+      "previous_sha256": "c53ba7051ba630b115d4e97b82e797ff225a622674a0b19792ea3e4176dab4b1",
+      "current_sha256": "09d9d1f967510377d3132136e0c8694cc6e590f5e0517f35f3a23279926a9d7e",
+      "line_independent_sha256": "d98d9d62e0db794abfceee551ec0deb0bf9b91edc19b12d579ed92f0fa070c84"
+    },
+    {
+      "class": "CalendarProvider2",
+      "signature": "verifyTransactionAllowed(ILandroid/net/Uri;Landroid/content/ContentValues;ZILjava/lang/String;[Ljava/lang/String;)V",
+      "previous_sha256": "bc8110bce93f7380e35a24b1cdaed4973a3e2fa5892719b581bb5a1a047c2643",
+      "current_sha256": "38c55754d23c468cf94bf1054d98337c09e6698c7cdcddf50af22f4d7caff5f0",
+      "line_independent_sha256": "394169c05c62d2cffc1a97b9c0e74ce97ff57c10333035eb9a380e82d231d895",
+      "previous_review_member": "CalendarProvider2-verifyTransactionAllowed0.smali"
+    },
+    {
+      "class": "QueryParameterUtils",
+      "signature": "getQueryParameter(Landroid/net/Uri;Ljava/lang/String;)Ljava/lang/String;",
+      "previous_sha256": "7e553b58f5b9b351e0230c3cfa7f48d249833de705d0810d0a29afa0084c50ef",
+      "current_sha256": "7e553b58f5b9b351e0230c3cfa7f48d249833de705d0810d0a29afa0084c50ef",
+      "line_independent_sha256": "f2bf813fe463656d22746b7fe2aa2f0b7a7daff5ecfa56d9999147553d52b01b"
+    },
+    {
+      "class": "QueryParameterUtils",
+      "signature": "readBooleanQueryParameter(Landroid/net/Uri;Ljava/lang/String;Z)Z",
+      "previous_sha256": "acdce81265cf6e5944ec931170690a5373de8218d2fd7d4a0ac2fe62bef454a2",
+      "current_sha256": "acdce81265cf6e5944ec931170690a5373de8218d2fd7d4a0ac2fe62bef454a2",
+      "line_independent_sha256": "e2ba4d8d290b49cdd1cd02f5acd85181dbf968469877cf740c903480a489564d"
+    },
+    {
+      "class": "SQLiteContentProvider",
+      "signature": "delete(Landroid/net/Uri;Ljava/lang/String;[Ljava/lang/String;)I",
+      "previous_sha256": "57b33a2ac12dc8eea3347ec0b6a8b3c90220efa8ad65ba0d38d9ba829d3395fc",
+      "current_sha256": "57b33a2ac12dc8eea3347ec0b6a8b3c90220efa8ad65ba0d38d9ba829d3395fc",
+      "line_independent_sha256": "ab2e525f54929381da83e31d25ead6412a29b2cd14bf2856c106799f3325e30e",
+      "previous_review_member": "SQLiteContentProvider-delete0.smali"
+    },
+    {
+      "class": "SQLiteContentProvider",
+      "signature": "getIsCallerSyncAdapter(Landroid/net/Uri;)Z",
+      "previous_sha256": "920bf80a52def5916eee042937aada4652ff0fb6e8456bd3df8575644a6b63eb",
+      "current_sha256": "920bf80a52def5916eee042937aada4652ff0fb6e8456bd3df8575644a6b63eb",
+      "line_independent_sha256": "78879b9acc1c772bb59d0e1446e8258581f84d5bda20270fd42abecd6afa2b1d"
+    }
+  ],
+  "calendar_routes": {
+    "authority": "com.android.calendar",
+    "collection": "calendars",
+    "collection_id": 4,
+    "item": "calendars/#",
+    "item_id": 5
+  },
+  "observed": {
+    "old_methods_reproduced": 7,
+    "methods_equal_excluding_line_numbers": 15,
+    "static_initializers_compared": 1,
+    "new_root_routes": [
+      {
+        "path": null,
+        "id": 41
+      },
+      {
+        "path": "#",
+        "id": 42
+      }
+    ],
+    "actual_provider_deletes": 0,
+    "android_started": false,
+    "static_provider_cleanup_reviewed": true,
+    "runtime_cleanup_qualified": false,
+    "application_accepted": false
+  }
+}
