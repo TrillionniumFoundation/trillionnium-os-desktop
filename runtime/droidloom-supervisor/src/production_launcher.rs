@@ -178,6 +178,20 @@ impl PreparedContainerSelection {
         Ok(owner)
     }
 
+    /// Digest of the private choice bound to this held public release.
+    pub fn selection_digest(&self) -> &str {
+        &self.public.selected_digest
+    }
+
+    /// Pin the release executable for comparison with the kernel's live peer.
+    ///
+    /// # Errors
+    /// Rejects a different service binary or release.
+    pub fn entry_program(&self) -> io::Result<PublishedServiceProgram> {
+        self.revalidate()?;
+        self.public.entry_program()
+    }
+
     /// Borrow only the sealed public release file for projection as a
     /// read-only mount at /etc/droidloom/container-launcher.json in the cell.
     /// The private selection and original data descriptors never leave the broker.

@@ -14,6 +14,7 @@ mod native_generation_art;
 mod native_generation_pair_build;
 mod native_role_ingress;
 mod package;
+mod container_entry_build;
 mod python;
 mod util;
 use clap::{Parser, Subcommand};
@@ -726,6 +727,7 @@ fn execute(args: Args) -> Result<()> {
         host_build.arg("-p").arg(package);
     }
     run_build(&mut host_build)?;
+    run_build(&mut container_entry_build::command(&repo, &cargo, jobs))?;
     let fresh = cargo.join("release/droidloom-update");
     if !args.bootstrapped {
         // The updater is part of the build too. Use its new orchestration in this update.

@@ -10,6 +10,10 @@ use droidloom_supervisor::control::{
     DEFAULT_CONTROL_SOCKET, DEFAULT_SPEC_DIRECTORY, DEFAULT_SUPERVISOR, DaemonConfig, serve,
 };
 
+#[cfg(target_os = "linux")]
+#[path = "../container_oci_owner.rs"]
+mod container_oci_owner;
+
 static SHUTDOWN: AtomicBool = AtomicBool::new(false);
 
 #[derive(Debug, Parser)]
@@ -53,6 +57,12 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             std::io::stdin().lock().take(64 * 1024 * 1024 + 1).read_to_end(&mut bytes)?;
             droidloom_supervisor::control::inspect_container_service_elf(&bytes)?;
             println!("Service ELF structure verified; publication and runtime policy are separate checks");
+            return Ok(());
+        }
+        if action.as_deref() == Some(std::ffi::OsStr::new("--manage-container")) {
+            if arguments.next().is_some() { return Err("container management accepts no arguments".into()); }
+            install_signal_handlers()?;
+            container_oci_owner::run(&SHUTDOWN)?;
             return Ok(());
         }
         if action.as_deref() == Some(std::ffi::OsStr::new("--check-container-platform")) {

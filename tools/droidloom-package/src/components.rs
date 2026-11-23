@@ -1,4 +1,6 @@
 //! Rebuild host components over a completed portable package baseline.
+#[path = "../../droidloom-update/src/container_entry_build.rs"]
+mod container_entry_build;
 use super::{Result, Version, run};
 use clap::ValueEnum;
 use serde::{Deserialize, Serialize};
@@ -84,6 +86,7 @@ fn inputs(source: &Path) -> Result<BTreeMap<String, Vec<u8>>> {
         "runtime/droidloom-supervisor/src/droidloom-production.service",
         "runtime/droidloom-supervisor/src/droidloom-manager-label.service",
         "runtime/droidloom-supervisor/src/droidloom-container-services.target",
+        "runtime/droidloom-supervisor/src/droidloom-container-entry.service",
     ] {
         result.insert(path.into(), fs::read(source.join(path))?);
     }
@@ -199,6 +202,9 @@ pub fn compile(
         command.arg("-p").arg(component.name());
     }
     run(&mut command)?;
+    if selected.iter().any(|component| matches!(component, Component::Supervisor)) {
+        run(&mut container_entry_build::command(source, &work.join("cargo"), jobs))?;
+    }
     fs::create_dir_all(destination)?;
     for (kind, archive) in ["runtime", "image"]
         .into_iter()
@@ -279,6 +285,7 @@ mod tests {
             "runtime/droidloom-supervisor/src/droidloom-production.service",
             "runtime/droidloom-supervisor/src/droidloom-manager-label.service",
             "runtime/droidloom-supervisor/src/droidloom-container-services.target",
+        "runtime/droidloom-supervisor/src/droidloom-container-entry.service",
         ] {
             fs::write(root.join(path), b"fixture").unwrap();
         }

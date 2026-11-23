@@ -1,0 +1,19 @@
+[Unit]
+Description=Droidloom shared-kernel Android service
+BindsTo=droidloom-container-oci.service
+PartOf=droidloom-container-services.target
+PropagatesStopTo=droidloom-container-oci.service
+
+[Service]
+Type=notify
+NotifyAccess=main
+ExecStart=/usr/lib/droidloom/production/current/droidloomd --manage-container
+KillMode=control-group
+Restart=no
+RemainAfterExit=no
+RuntimeDirectory=droidloom-container
+RuntimeDirectoryMode=0755
+UMask=0077
+NoNewPrivileges=yes
+TimeoutStartSec=255
+TimeoutStopSec=30

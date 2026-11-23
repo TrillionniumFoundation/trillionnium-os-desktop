@@ -59,6 +59,7 @@ pub fn stage(repo: &Path, work: &Path, destination: &Path, clean: bool, jobs: us
         host.arg("-p").arg(package);
     }
     run_build(&mut host)?;
+    run_build(&mut crate::container_entry_build::command(repo, &cargo, jobs))?;
     assemble::prepare_complete_inputs(repo, &work, "x86_64")?;
     python::prepare(repo, &work)?;
     assemble::mesa_tools(&work, jobs)?;
@@ -224,6 +225,7 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
         "droidloom-production.service",
         "droidloom-manager-label.service",
         "droidloom-container-services.target",
+        "droidloom-container-entry.service",
     ] {
         let source = repo.join("runtime/droidloom-supervisor/src").join(unit);
         if !fs::symlink_metadata(&source)?.is_file() {
@@ -292,6 +294,10 @@ mod tests {
         fs::create_dir_all(&templates).unwrap();
         fs::create_dir(&host).unwrap();
         for (name, body) in [
+            (
+                "droidloom-container-entry.service",
+                include_str!("../../../runtime/droidloom-supervisor/src/droidloom-container-entry.service"),
+            ),
             (
                 "droidloom-container-services.target",
                 include_str!("../../../runtime/droidloom-supervisor/src/droidloom-container-services.target"),

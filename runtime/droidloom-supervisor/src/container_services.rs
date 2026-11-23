@@ -8,8 +8,9 @@ use std::os::unix::fs::MetadataExt;
 use std::process::{Command, Stdio};
 
 const TARGET: &str = "droidloom-container-services.target";
+const OCI: &str = "droidloom-container-oci.service";
 const ENTRY: &str = "droidloom-container-entry.service";
-const PROGRAM: &str = "/usr/lib/droidloom/production/current/droidloom-container-entry";
+const PROGRAM: &str = "/usr/lib/droidloom/production/current/droidloomd";
 /// Layout detection only prevents desktop fallback. The original production
 /// broker must validate the private selection under its own configuration lock.
 pub(super) fn requires_production_control() -> io::Result<bool> {
@@ -65,7 +66,9 @@ fn provider_command(value: &str) -> bool {
         let mut values = fields.iter().filter_map(|field| field.strip_prefix(key));
         values.next() == Some(expected) && values.next().is_none()
     };
-    exact("path=", PROGRAM) && exact("argv[]=", PROGRAM) && exact("ignore_errors=", "no")
+    exact("path=", PROGRAM)
+        && exact("argv[]=", &format!("{PROGRAM} --manage-container"))
+        && exact("ignore_errors=", "no")
 }
 
 fn verify_contract(target: &Properties, entry: &Properties) -> io::Result<()> {
@@ -90,6 +93,9 @@ fn verify_contract(target: &Properties, entry: &Properties) -> io::Result<()> {
             ("RemainAfterExit", "no"),
         ],
     ) || !members(entry, "PartOf").any(|unit| unit == TARGET)
+        || !["BindsTo", "PropagatesStopTo"]
+            .iter()
+            .all(|key| members(entry, key).any(|unit| unit == OCI))
         || !provider_command(property(entry, "ExecStart"))
     {
         return Err(io::Error::other(
@@ -157,7 +163,7 @@ fn show(unit: &str, fields: &str) -> io::Result<Properties> {
 }
 
 const TARGET_FIELDS: &str = "Id,LoadState,ActiveState,SubState,BindsTo,After,PropagatesStopTo";
-const ENTRY_FIELDS: &str = "Id,LoadState,ActiveState,SubState,Type,NotifyAccess,KillMode,Restart,RemainAfterExit,ExecStart,PartOf,MainPID,InvocationID,Result";
+const ENTRY_FIELDS: &str = "Id,LoadState,ActiveState,SubState,Type,NotifyAccess,KillMode,Restart,RemainAfterExit,ExecStart,PartOf,BindsTo,PropagatesStopTo,MainPID,InvocationID,Result";
 
 fn snapshot() -> io::Result<(Properties, Properties)> {
     Ok((show(TARGET, TARGET_FIELDS)?, show(ENTRY, ENTRY_FIELDS)?))
@@ -282,6 +288,8 @@ mod tests {
             ("Restart", "no"),
             ("RemainAfterExit", "no"),
             ("PartOf", TARGET),
+            ("BindsTo", OCI),
+            ("PropagatesStopTo", OCI),
             ("ActiveState", "active"),
             ("SubState", "running"),
             ("Result", "success"),
@@ -290,7 +298,7 @@ mod tests {
         ]);
         entry.insert(
             "ExecStart".into(),
-            format!("{{ path={PROGRAM} ; argv[]={PROGRAM} ; ignore_errors=no ; pid=4631 }}"),
+            format!("{{ path={PROGRAM} ; argv[]={PROGRAM} --manage-container ; ignore_errors=no ; pid=4631 }}"),
         );
         (target, entry)
     }
@@ -313,6 +321,8 @@ mod tests {
             "Restart",
             "RemainAfterExit",
             "PartOf",
+            "BindsTo",
+            "PropagatesStopTo",
             "ExecStart",
         ] {
             let mut changed = entry.clone();

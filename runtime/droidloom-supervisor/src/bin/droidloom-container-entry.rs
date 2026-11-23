@@ -8,11 +8,10 @@ mod production_service_elf;
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, Read, Write};
 use std::os::fd::AsRawFd;
-use std::os::linux::net::SocketAddrExt;
-use std::os::unix::fs::{FileTypeExt, MetadataExt, OpenOptionsExt, PermissionsExt};
-use std::os::unix::net::{SocketAddr, UnixDatagram, UnixListener, UnixStream};
+use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+use std::os::unix::net::UnixStream;
 use std::os::unix::process::{CommandExt, ExitStatusExt};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
@@ -23,7 +22,6 @@ use sha2::{Digest, Sha256};
 
 const BOOTSTRAP: &str = "/droidloom/bin/container-bootstrap";
 const DECLARATION: &str = "/etc/droidloom/container-launcher.json";
-const CONTROL: &str = "/run/droidloom/control.sock";
 const START_LIMIT: Duration = Duration::from_secs(240);
 static STOP: AtomicBool = AtomicBool::new(false);
 
@@ -108,7 +106,12 @@ struct BootstrapRelease {
     bootstrap_sha256: String,
 }
 
-fn held_file(path: &str, limit: usize, executable: bool) -> io::Result<(File, Vec<u8>)> {
+fn held_file(
+    path: &str,
+    limit: usize,
+    executable: bool,
+    group: u32,
+) -> io::Result<(File, Vec<u8>)> {
     let f = OpenOptions::new()
         .read(true)
         .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
@@ -116,7 +119,7 @@ fn held_file(path: &str, limit: usize, executable: bool) -> io::Result<(File, Ve
     let meta = f.metadata()?;
     if !meta.is_file()
         || meta.uid() != 0
-        || meta.gid() != 0
+        || meta.gid() != group
         || meta.nlink() != 1
         || meta.mode() & 0o6022 != 0
         || executable && meta.mode() & 0o111 == 0
@@ -143,7 +146,7 @@ fn held_file(path: &str, limit: usize, executable: bool) -> io::Result<(File, Ve
 }
 
 fn bootstrap() -> io::Result<Child> {
-    let (_, data) = held_file(DECLARATION, 4096, false)?;
+    let (_, data) = held_file(DECLARATION, 4096, false, 0)?;
     let release: BootstrapRelease = serde_json::from_slice(&data).map_err(io::Error::other)?;
     let digest = |s: &str| {
         s.len() == 64
@@ -174,7 +177,7 @@ fn bootstrap() -> io::Result<Child> {
             "running provider differs from the published generation",
         ));
     }
-    let (program, bytes) = held_file(BOOTSTRAP, production_service_elf::MAX_SERVICE, true)?;
+    let (program, bytes) = held_file(BOOTSTRAP, production_service_elf::MAX_SERVICE, true, 0)?;
     if release.bootstrap_bytes != bytes.len()
         || release.bootstrap_sha256 != format!("{:x}", Sha256::digest(&bytes))
     {
@@ -251,8 +254,45 @@ impl Bootstrap {
     }
 }
 
-fn fixed_probe(program: &str, args: &[&str], expected: &str) -> io::Result<bool> {
-    let result = Command::new(program)
+struct AndroidProbes {
+    toolbox: File,
+    service: File,
+}
+
+impl AndroidProbes {
+    fn from_selected_cp3a() -> io::Result<Self> {
+        if fs::read_link("/system/bin/getprop")? != Path::new("toolbox") {
+            return Err(error(
+                "selected CP3A getprop must be the original toolbox applet",
+            ));
+        }
+        let held = |path, length, digest: &str| -> io::Result<File> {
+            let (file, bytes) = held_file(path, length, true, 2000)?;
+            if bytes.len() != length || format!("{:x}", Sha256::digest(&bytes)) != digest {
+                return Err(error(
+                    "Android readiness program differs from the original CP3A image",
+                ));
+            }
+            Ok(file)
+        };
+        Ok(Self {
+            toolbox: held(
+                "/system/bin/toolbox",
+                169856,
+                "a1d2b30312db7b099cfc4f25b712420b46574affa0d73709add5bc7630d55ae8",
+            )?,
+            service: held(
+                "/system/bin/service",
+                51760,
+                "da64083b28a0f1855f0cfb71c27633378e562b926009e21d9fd2ab598504498e",
+            )?,
+        })
+    }
+}
+
+fn fixed_probe(program: &File, argv0: &str, args: &[&str], expected: &str) -> io::Result<bool> {
+    let result = Command::new(format!("/proc/self/fd/{}", program.as_raw_fd()))
+        .arg0(argv0)
         .args(args)
         .env_clear()
         .env("PATH", "/system/bin")
@@ -305,16 +345,27 @@ struct Readiness {
     android: bool,
 }
 
-fn readiness() -> io::Result<Readiness> {
-    let binder = fixed_probe("/system/bin/getprop", &["servicemanager.ready"], "true")?
-        && fixed_probe(
-            "/system/bin/service",
-            &["check", "manager"],
-            "Service manager: found",
-        )?;
+fn readiness(tools: &AndroidProbes) -> io::Result<Readiness> {
+    let binder = fixed_probe(
+        &tools.toolbox,
+        "/system/bin/getprop",
+        &["servicemanager.ready"],
+        "true",
+    )? && fixed_probe(
+        &tools.service,
+        "/system/bin/service",
+        &["check", "manager"],
+        "Service manager: found",
+    )?;
     let android = binder
-        && fixed_probe("/system/bin/getprop", &["sys.boot_completed"], "1")?
         && fixed_probe(
+            &tools.toolbox,
+            "/system/bin/getprop",
+            &["sys.boot_completed"],
+            "1",
+        )?
+        && fixed_probe(
+            &tools.service,
             "/system/bin/service",
             &["check", "activity"],
             "Service activity: found",
@@ -322,116 +373,34 @@ fn readiness() -> io::Result<Readiness> {
     Ok(Readiness { binder, android })
 }
 
-fn notify_main() -> io::Result<()> {
-    let dest = std::env::var_os("NOTIFY_SOCKET")
-        .ok_or_else(|| error("missing system manager notification socket"))?;
-    use std::os::unix::ffi::OsStrExt;
-    let buf = dest.as_bytes();
-    let addr = if let Some(name) = buf.strip_prefix(b"@") {
-        SocketAddr::from_abstract_name(name)?
-    } else {
-        SocketAddr::from_pathname(PathBuf::from(dest))?
-    };
-    UnixDatagram::unbound()?.send_to_addr(b"READY=1", &addr)?;
-    Ok(())
-}
+const HOST_CHANNEL: &str = "/run/droidloom/host-owner.sock";
 
-struct Control {
-    listener: UnixListener,
-    identity: (u64, u64),
-}
-impl Control {
-    fn bind() -> io::Result<Self> {
-        let parent = Path::new(CONTROL).parent().unwrap();
-        let dir = fs::symlink_metadata(parent)?;
-        if !dir.is_dir() || dir.uid() != unsafe { libc::geteuid() } || dir.mode() & 0o022 != 0 {
-            return Err(error("fixed control socket directory lacks cell ownership"));
-        }
-        let listener = UnixListener::bind(CONTROL)?;
-        let node = fs::symlink_metadata(CONTROL)?;
-        let owner = Self {
-            listener,
-            identity: (node.dev(), node.ino()),
-        };
-        fs::set_permissions(CONTROL, fs::Permissions::from_mode(0o660))?;
-        owner.listener.set_nonblocking(true)?;
-        Ok(owner)
-    }
-}
-impl Drop for Control {
-    fn drop(&mut self) {
-        if let Ok(n) = fs::symlink_metadata(CONTROL) {
-            if n.file_type().is_socket() && (n.dev(), n.ino()) == self.identity {
-                let _ = fs::remove_file(CONTROL);
-            }
-        }
-    }
-}
-
-fn reply(stream: &mut UnixStream, ok: bool, ready: bool, message: &str) -> io::Result<()> {
-    let frame =
-        serde_json::json!({"ok":ok,"state":if ready{"running"}else{"starting"},"message":message});
-    serde_json::to_writer(&mut *stream, &frame).map_err(io::Error::other)?;
-    stream.write_all(b"\n")
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "snake_case")]
-enum Query {
-    Status,
-    Readiness,
-    WaitReady,
-}
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct Request {
-    command: Query,
-}
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct Progress {
-    request: Request,
-}
-#[derive(Deserialize)]
-#[serde(untagged)]
-enum Incoming {
-    Direct(Request),
-    Progress(Progress),
-}
-
-fn request(stream: &mut UnixStream) -> io::Result<Query> {
-    stream.set_write_timeout(Some(Duration::from_millis(200)))?;
-    let end = Instant::now() + Duration::from_millis(200);
-    let mut bytes = Vec::new();
-    let mut chunk = [0; 256];
-    loop {
-        let remaining = end
-            .checked_duration_since(Instant::now())
-            .filter(|v| !v.is_zero())
-            .ok_or_else(|| error("readiness request deadline"))?;
-        stream.set_read_timeout(Some(remaining))?;
-        let n = stream.read(&mut chunk)?;
-        if n == 0 {
-            break;
-        }
-        bytes.extend_from_slice(&chunk[..n]);
-        if bytes.len() > 1024 {
-            return Err(error("oversized readiness request"));
-        }
-    }
-    let frame: Incoming = serde_json::from_slice(&bytes).map_err(io::Error::other)?;
-    Ok(match frame {
-        Incoming::Direct(req) => req.command,
-        Incoming::Progress(msg) => msg.request.command,
-    })
-}
-
-fn serve(owner: &mut Bootstrap, control: &Control) -> io::Result<()> {
+fn contact_host() -> io::Result<UnixStream> {
     let end = Instant::now() + START_LIMIT;
+    loop {
+        match UnixStream::connect(HOST_CHANNEL) {
+            Ok(stream) => {
+                stream.set_write_timeout(Some(Duration::from_secs(2)))?;
+                return Ok(stream);
+            }
+            Err(e)
+                if matches!(
+                    e.kind(),
+                    io::ErrorKind::NotFound | io::ErrorKind::ConnectionRefused
+                ) && !STOP.load(Ordering::Relaxed)
+                    && Instant::now() < end =>
+            {
+                thread::sleep(Duration::from_millis(50))
+            }
+            Err(e) => return Err(e),
+        }
+    }
+}
+
+fn serve(owner: &mut Bootstrap, host: &mut UnixStream, tools: &AndroidProbes) -> io::Result<()> {
+    let end = Instant::now() + START_LIMIT;
+    let mut established = false;
     let mut next = Instant::now();
-    let mut notified = false;
-    let mut current = Readiness::default();
-    let mut pending: Vec<(UnixStream, Instant)> = Vec::new();
     while !STOP.load(Ordering::Relaxed) {
         if let Some(status) = owner.poll()? {
             return Err(io::Error::other(format!(
@@ -439,93 +408,53 @@ fn serve(owner: &mut Bootstrap, control: &Control) -> io::Result<()> {
             )));
         }
         if Instant::now() >= next {
-            current = readiness()?;
+            let current = readiness(tools)?;
             if owner.poll()?.is_some() {
                 return Err(error("Android bootstrap exited during readiness check"));
             }
-            if notified && !current.binder {
+            if established && !current.binder {
                 return Err(error(
                     "the current Android Binder manager became unavailable",
                 ));
             }
-            if current.binder && !notified {
-                notify_main()?;
-                notified = true;
+            if !current.binder && Instant::now() >= end {
+                return Err(error(
+                    "Android Binder manager did not become ready before the startup deadline",
+                ));
             }
+            established |= current.binder;
+            host.write_all(&[if current.android {
+                2
+            } else if current.binder {
+                1
+            } else {
+                0
+            }])?;
             next = Instant::now() + Duration::from_secs(1);
         }
-        if !notified && Instant::now() >= end {
-            return Err(error(
-                "Android Binder manager did not become ready before the startup deadline",
-            ));
-        }
-        pending.retain_mut(|(socket, deadline)| {
-            if current.android || Instant::now() >= *deadline {
-                let _ = reply(
-                    socket,
-                    current.android,
-                    current.android,
-                    if current.android {
-                        "Android boot completed and ActivityManager answers Binder"
-                    } else {
-                        "Android readiness deadline expired"
-                    },
-                );
-                false
-            } else {
-                true
-            }
-        });
-        match control.listener.accept() {
-            Ok((mut socket, _)) => match request(&mut socket) {
-                Ok(Query::WaitReady) if !current.android && pending.len() < 8 => {
-                    pending.push((socket, Instant::now() + START_LIMIT))
-                }
-                Ok(Query::WaitReady) if !current.android => {
-                    let _ = reply(&mut socket, false, false, "Readiness request queue is full");
-                }
-                Ok(_) => {
-                    let _ = reply(
-                        &mut socket,
-                        true,
-                        current.android,
-                        if current.android {
-                            "Android boot completed and ActivityManager answers Binder"
-                        } else {
-                            "Waiting for Android boot"
-                        },
-                    );
-                }
-                Err(_) => {
-                    let _ = reply(&mut socket, false, false, "Unsupported readiness request");
-                }
-            },
-            Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
-                thread::sleep(Duration::from_millis(40))
-            }
-            Err(e) if e.kind() == io::ErrorKind::Interrupted => {}
-            Err(e) => return Err(e),
-        }
+        thread::sleep(Duration::from_millis(40));
     }
     Ok(())
 }
-
 fn run() -> io::Result<()> {
     if std::env::args_os().len() != 1 {
         return Err(error("container entry accepts no arguments"));
     }
     entry_context()?;
     for sig in [libc::SIGTERM, libc::SIGINT] {
-        if unsafe { libc::signal(sig, stopping as libc::sighandler_t) } == libc::SIG_ERR {
+        if unsafe { libc::signal(sig, stopping as *const () as libc::sighandler_t) }
+            == libc::SIG_ERR
+        {
             return Err(io::Error::last_os_error());
         }
     }
-    let control = Control::bind()?;
+    let tools = AndroidProbes::from_selected_cp3a()?;
+    let mut host = contact_host()?;
     let mut owner = Bootstrap {
         child: bootstrap()?,
         exit: None,
     };
-    let live = serve(&mut owner, &control);
+    let live = serve(&mut owner, &mut host, &tools);
     let retired = owner.stop();
     retired.and(live)
 }
@@ -554,19 +483,5 @@ mod tests {
         assert!(mapped_range("0 200000 65536\n"));
         assert!(!mapped_range("0 0 4294967295\n"));
         assert!(!mapped_range("0 1000 1\n"));
-    }
-    #[test]
-    fn only_fixed_readonly_requests_are_accepted() {
-        for (body, allowed) in [
-            (r#"{"request":{"command":"wait_ready"}}"#, true),
-            (r#"{"command":"readiness"}"#, true),
-            (r#"{"command":"launch"}"#, false),
-            (r#"{"command":"status","path":"/other"}"#, false),
-        ] {
-            let (mut client, mut server) = UnixStream::pair().unwrap();
-            client.write_all(body.as_bytes()).unwrap();
-            client.shutdown(std::net::Shutdown::Write).unwrap();
-            assert_eq!(request(&mut server).is_ok(), allowed);
-        }
     }
 }

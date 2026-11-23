@@ -203,7 +203,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let probe = matches!(cli.command, Command::Status | Command::Readiness | Command::Wait) || wait;
             let (state, message, original) = if let Some(owner) = generation.filter(|_| probe) {
                 let response = droidloom_supervisor::control::container_entry_readiness(
-                    &cli.socket, owner.pid, wait, &mut |message| {
+                    std::path::Path::new("/run/droidloom-container/readiness.sock"), owner.pid, wait, &mut |message| {
                         if !cli.json { eprintln!("{message}"); }
                     },
                 )?;
