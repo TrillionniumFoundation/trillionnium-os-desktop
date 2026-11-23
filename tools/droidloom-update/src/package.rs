@@ -267,6 +267,7 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
     for unit in [
         "droidloom-production.service",
         "droidloom-manager-label.service",
+        "droidloom-mac-calibration.service",
         "droidloom-container-services.target",
         "droidloom-container-entry.service",
         "droidloom-container-guest.socket",
@@ -286,6 +287,16 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
         include_bytes!("../../../android/framework/droidloom-readiness/board-policy/linux-service-file_contexts"),
     )?;
     mode(&host_contexts, 0o444)?;
+    let calibration_contexts=runtime.join("usr/share/droidloom/production/linux-initial-calibration-file_contexts");
+    write(&calibration_contexts,include_bytes!("../../../android/framework/droidloom-readiness/board-policy/linux-initial-calibration-file_contexts"))?;
+    mode(&calibration_contexts,0o444)?;
+    let calibration_unit = "droidloom-mac-calibration.service";
+    let system_unit=runtime.join("usr/lib/systemd/system").join(calibration_unit);
+    copy(&runtime.join("usr/share/droidloom/production").join(calibration_unit),&system_unit)?;
+    mode(&system_unit,0o644)?;
+    let calibration = runtime.join("var/lib/droidloom-mac-calibration");
+    fs::create_dir_all(&calibration)?;
+    mode(&calibration, 0o700)?;
     early_boot_package::stage(runtime)
 }
 
@@ -345,6 +356,7 @@ mod tests {
         fs::create_dir_all(&templates).unwrap();
         fs::create_dir(&host).unwrap();
         for (name, body) in [
+            ("droidloom-mac-calibration.service",include_str!("../../../runtime/droidloom-supervisor/src/droidloom-mac-calibration.service")),
             ("droidloom-early-observer.service",include_str!("../../../runtime/droidloom-supervisor/src/droidloom-early-observer.service")),
             (
                 "droidloom-container-guest.socket",
@@ -388,6 +400,11 @@ mod tests {
         production_host_payload(&repo, &host, &runtime).unwrap();
         for unit in fs::read_dir(runtime.join("usr/share/droidloom/production")).unwrap() {
             let unit = unit.unwrap().path();
+            if unit.file_name().unwrap()=="linux-initial-calibration-file_contexts" {
+                assert_eq!(fs::metadata(&unit).unwrap().permissions().mode()&0o777,0o444);
+                assert_eq!(fs::read(&unit).unwrap(),include_bytes!("../../../android/framework/droidloom-readiness/board-policy/linux-initial-calibration-file_contexts"));
+                continue;
+            }
             if unit.file_name().unwrap() == "linux-service-file_contexts" {
                 assert_eq!(fs::metadata(&unit).unwrap().permissions().mode() & 0o777, 0o444);
                 assert_eq!(

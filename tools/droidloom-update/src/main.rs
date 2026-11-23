@@ -5,6 +5,7 @@ mod bundle;
 mod coherent_images;
 mod dependencies;
 mod image_policy;
+mod kernel_first_mac;
 mod install;
 mod licenses;
 mod native_bridge;
@@ -45,6 +46,14 @@ struct Args {
 }
 #[derive(Subcommand)]
 enum Action {
+    /// Materialize the five sealed files from a witnessed kernel-first board capture.
+    PackageKernelFirstMac {
+        #[arg(long)] capture: PathBuf,
+        #[arg(long)] capture_sha256: String,
+        #[arg(long)] base_sha256: String,
+        #[arg(long)] runtime_sha256: String,
+        #[arg(long)] output: PathBuf,
+    },
     /// Bind stock second-stage init to an existing selected four-image candidate.
     BindKernelFirstRuntime {
         #[arg(long)] package: PathBuf,
@@ -484,6 +493,11 @@ fn execute(args: Args) -> Result<()> {
             vendor_properties,
         }) => {
             return image_policy::prune(image, destination, vendor_properties);
+        }
+        Some(Action::PackageKernelFirstMac { capture, capture_sha256, base_sha256, runtime_sha256, output }) => {
+            let result = kernel_first_mac::stage(capture,&capture_sha256,&base_sha256,&runtime_sha256,output)?;
+            println!("{}", serde_json::to_string_pretty(&result)?);
+            return Ok(());
         }
         Some(Action::BindKernelFirstRuntime { package, base_sha256 }) => {
             let result = coherent_images::kernel_first::bind_existing(package, base_sha256)?;

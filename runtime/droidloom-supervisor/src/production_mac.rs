@@ -103,6 +103,9 @@ mod board_epoch;
 #[path = "production_mac_kernel_first.rs"]
 mod kernel_first;
 pub(crate) use kernel_first::EarlyManagerClient;
+#[path = "production_mac_release.rs"]
+mod release;
+pub(crate) use release::capture as capture_kernel_first_release;
 
 #[path = "production_mac_policy.rs"]
 mod policy;
@@ -148,7 +151,7 @@ fn require(value: bool, message: &'static str) -> Result<()> {
     }
 }
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Deserialize)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, Deserialize, serde::Serialize)]
 enum ContextRouting {
     #[serde(rename = "selinux_typed_host_scoped_android_v1")]
     TypedHostScopedAndroidV1,
@@ -161,7 +164,7 @@ fn context_routing_field<'de, D: serde::Deserializer<'de>>(
     // Missing is legacy only. Explicit null is not an implicit schema upgrade.
     ContextRouting::deserialize(deserializer).map(Some)
 }
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, serde::Serialize)]
 #[serde(deny_unknown_fields)]
 struct Declaration {
     schema: u32,

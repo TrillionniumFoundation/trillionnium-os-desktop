@@ -97,6 +97,7 @@ impl LockIdentity {
 
 #[derive(Clone, Copy)]
 enum Access {
+    InspectExisting,
     Shared,
     Exclusive,
 }
@@ -150,12 +151,11 @@ impl DirectorySetupLock {
         // Preserve the original pre-create custody check; accepting a received
         // descriptor must not make the normal lock creator mutate an unsafe parent.
         let original_directory = DirectoryIdentity::read(directory, custody)?;
-        let file = open_at(
-            directory,
-            LOCK,
-            libc::O_RDWR | libc::O_CREAT | libc::O_NONBLOCK,
-            0o600,
-        )?;
+        let (flags, mode) = match access {
+            Access::InspectExisting => (libc::O_RDONLY, 0),
+            Access::Shared | Access::Exclusive => (libc::O_RDWR | libc::O_CREAT, 0o600),
+        };
+        let file = open_at(directory, LOCK, flags | libc::O_NONBLOCK, mode)?;
         let held = Self::from_file(directory, custody, file, access)?;
         if held.directory_identity != original_directory {
             return Err(rejected(
@@ -183,7 +183,7 @@ impl DirectorySetupLock {
             return Err(io::Error::last_os_error());
         }
         if LockIdentity::read(named.metadata()?, custody)? != identity
-            || status_flags & libc::O_ACCMODE != libc::O_RDWR
+            || status_flags & libc::O_ACCMODE != match access {Access::InspectExisting=>libc::O_RDONLY, _=>libc::O_RDWR}
             || descriptor_flags & libc::FD_CLOEXEC == 0
         {
             return Err(rejected(
@@ -191,7 +191,7 @@ impl DirectorySetupLock {
             ));
         }
         let operation = match access {
-            Access::Shared => libc::LOCK_SH,
+            Access::InspectExisting | Access::Shared => libc::LOCK_SH,
             Access::Exclusive => libc::LOCK_EX,
         };
         if unsafe { libc::flock(file.as_raw_fd(), operation | libc::LOCK_NB) } != 0 {
@@ -559,10 +559,22 @@ impl MaintenanceFence {
 pub(crate) struct ConfigurationReadGuard(FixedConfigurationLock);
 
 impl ConfigurationReadGuard {
-    pub(crate) fn acquire() -> io::Result<Self> {
-        let held = Self(FixedConfigurationLock::fixed(Access::Shared)?);
+    /// Hold the installed configuration read lock without creating or writing any inode.
+    pub(crate) fn inspect_existing() -> io::Result<Self> {
+        let held = Self(FixedConfigurationLock::fixed(Access::InspectExisting)?);
         held.revalidate()?;
         Ok(held)
+    }
+
+    pub(crate) fn acquire() -> io::Result<Self> {
+        match Self::inspect_existing() {
+            Err(error) if error.kind()==io::ErrorKind::NotFound => {
+                let held=Self(FixedConfigurationLock::fixed(Access::Shared)?);
+                held.revalidate()?;
+                Ok(held)
+            }
+            result=>result,
+        }
     }
 
     pub(crate) fn revalidate(&self) -> io::Result<()> {

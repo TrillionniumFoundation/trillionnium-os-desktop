@@ -1,0 +1,42 @@
+[Unit]
+Description=Capture the selected Android board release from the enforcing Ubuntu kernel
+After=local-fs.target
+Before=droidloom-manager-label.service droidloom-production.service
+ConditionPathExists=/run/droidloom-early/kernel-policy/apparmor-epoch
+ConditionPathExists=/etc/droidloom/production/selected.json
+ConditionPathExists=!/etc/droidloom/host-mac/contract.json
+ConditionPathExists=!/etc/droidloom/host-mac/manager-label.json
+ConditionPathExists=!/etc/droidloom/host-mac/policy.bin
+ConditionPathExists=!/etc/droidloom/host-mac/policy-export.bin
+ConditionPathExists=!/etc/droidloom/host-mac/derivation.json
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+ExecStart=/usr/lib/droidloom/production/current/droidloom-host-mac export-kernel-first-release
+WorkingDirectory=/
+UMask=0077
+RemainAfterExit=yes
+Restart=no
+TimeoutStartSec=180
+TimeoutStopSec=5
+KillMode=control-group
+NoNewPrivileges=yes
+CapabilityBoundingSet=~CAP_MAC_ADMIN CAP_MAC_OVERRIDE CAP_SYS_ADMIN
+AmbientCapabilities=
+AppArmorProfile=droidloom-policy-loader
+StateDirectory=droidloom-mac-calibration
+StateDirectoryMode=0700
+MemoryMax=536870912
+MemoryHigh=402653184
+MemorySwapMax=0
+TasksMax=64
+CPUQuota=100%
+StandardInput=null
+StandardOutput=truncate:/var/lib/droidloom-mac-calibration/capture.pending
+StandardError=journal
+SyslogIdentifier=droidloom-mac-calibration
+
+[Install]
+WantedBy=multi-user.target

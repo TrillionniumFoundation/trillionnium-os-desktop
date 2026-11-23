@@ -9,7 +9,7 @@ use super::*;
 const NS_GET_NSTYPE: libc::c_ulong = 0xb703;
 const NS_GET_ID: libc::c_ulong = 0x8008_b70d;
 
-fn initial_credentials(proc: &File) -> Result<()> {
+pub(super) fn initial_credentials(proc: &File) -> Result<()> {
     let status = open_at(proc.as_raw_fd(), c"status", libc::O_RDONLY)?;
     require(
         kind(&status)? == PROC_MAGIC,
@@ -57,7 +57,7 @@ pub(super) fn fixed_namespace_label(file: &File, declaration: &Declaration) -> R
     )
 }
 
-fn initial_namespaces(proc: &File, declaration: &Declaration) -> Result<[File; 2]> {
+pub(super) fn initial_namespaces(proc: &File, declaration: &Declaration) -> Result<[File; 2]> {
     let directory = open_at(proc.as_raw_fd(), c"ns", libc::O_PATH | libc::O_DIRECTORY)?;
     require(
         kind(&directory)? == PROC_MAGIC,

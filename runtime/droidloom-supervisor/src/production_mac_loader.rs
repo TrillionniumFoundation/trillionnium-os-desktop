@@ -5,7 +5,7 @@
 //! reviewed old server label, executable identity and a consumed mutation stage.
 use super::*;
 
-fn fixed_loader_identity(selinux: &[u8], apparmor: &[u8]) -> Result<()> {
+pub(super) fn fixed_loader_identity(selinux: &[u8], apparmor: &[u8]) -> Result<()> {
     require(
         context_matches(selinux, LOADER),
         "actual loader SELinux identity differs",
@@ -16,7 +16,7 @@ fn fixed_loader_identity(selinux: &[u8], apparmor: &[u8]) -> Result<()> {
     )
 }
 
-fn loader_nnp(proc: &File) -> Result<()> {
+pub(super) fn loader_nnp(proc: &File) -> Result<()> {
     let status = open_at(proc.as_raw_fd(), c"status", libc::O_RDONLY)?;
     require(
         kind(&status)? == PROC_MAGIC,
