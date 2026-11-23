@@ -40,6 +40,8 @@ int droidloom_label_linux_shm(const struct droidloom_linux_run *held);
 int droidloom_hold_linux_run(struct droidloom_linux_run *run);
 int droidloom_label_private_device(const struct droidloom_linux_run *held);
 int droidloom_label_linux_run(const struct droidloom_linux_run *run);
+int droidloom_hold_linux_udev(const struct droidloom_linux_run *run, struct droidloom_linux_run *udev);
+int droidloom_label_linux_udev(const struct droidloom_linux_run *udev);
 int droidloom_verify_linux_run(const struct droidloom_linux_run *run);
 
 struct droidloom_readiness_paths {

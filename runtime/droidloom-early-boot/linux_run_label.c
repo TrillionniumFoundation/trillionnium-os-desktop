@@ -179,6 +179,18 @@ void droidloom_close_ubuntu_credentials(struct droidloom_linux_credentials *cred
         close(credentials->root.fd);
 }
 
+int droidloom_hold_linux_udev(const struct droidloom_linux_run *run, struct droidloom_linux_run *udev)
+{
+    if (mkdirat(run->fd, "udev", 0755) < 0 && errno != EEXIST)
+        return -1;
+    return hold_child(run, "udev", 0, 0755, udev);
+}
+
+int droidloom_label_linux_udev(const struct droidloom_linux_run *udev)
+{
+    return apply_label(udev, "u:object_r:p4_linux_udev_run_t:s0");
+}
+
 static int validate_empty_endpoint(int fd)
 {
     int copy = fcntl(fd, F_DUPFD_CLOEXEC, 3);

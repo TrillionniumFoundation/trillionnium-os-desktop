@@ -35,3 +35,5 @@
 /usr/bin -d u:object_r:p4_linux_rootdir_t:s0
 /bin -l u:object_r:p4_linux_usrmerge_link_t:s0
 /usr/lib/x86_64-linux-gnu/libapparmor\.so\.1 -l u:object_r:p4_linux_usrmerge_link_t:s0
+/usr/lib/udev(/rules\.d)? -d u:object_r:p4_linux_udev_rules_t:s0
+/usr/lib/udev/rules\.d/[^/]+\.rules -- u:object_r:p4_linux_udev_rules_t:s0
