@@ -34,14 +34,12 @@ static int attr(int fd,uint64_t flags) {
 }
 /* On return, even when move_mount succeeded before a later check failed, all
  * mounts are retained by the detached root and its existing typed owners. */
-static int attach(int parent,const char *path,int source) {
-    int target=beneath(parent,path);if(target<0)return -1;
+static int attach_held(int parent,const char *path,int target,int source) {
     uint64_t before=0,old=0,selected=0;struct stat sa,sb;
     int error=0;
     if(mount_id(parent,&before)||mount_id(target,&old)||mount_id(source,&selected)||fstat(source,&sa))error=errno;
     else if(old!=before||selected==old)error=EBUSY;
     else if(syscall(SYS_move_mount,source,"",target,"",MOVE_MOUNT_F_EMPTY_PATH|MOVE_MOUNT_T_EMPTY_PATH))error=errno;
-    close(target);
     if(!error) {
         target=beneath(parent,path);
         if(target<0)error=errno;
@@ -54,6 +52,24 @@ static int attach(int parent,const char *path,int source) {
     }
     return error?fail(error):0;
 }
+static int attach(int parent,const char *path,int source) {
+    int target=beneath(parent,path);if(target<0)return -1;
+    int rc=attach_held(parent,path,target,source),error=errno;
+    close(target);
+    return rc?fail(error):0;
+}
+static int directory_label(int fd, const char *expected) {
+    char value[128] = {0};
+    ssize_t got = fgetxattr(fd, "security.selinux", value, sizeof(value));
+    if (got < 0)
+        return -1;
+    size_t n = strlen(expected);
+    if ((got != (ssize_t)n && got != (ssize_t)(n + 1)) ||
+        memcmp(value, expected, n + 1) != 0)
+        return fail(ESTALE);
+    return 0;
+}
+
 static int subtree(int directory,uint64_t flags){
     int f=syscall(SYS_open_tree,directory,"",OPEN_TREE_CLONE|OPEN_TREE_CLOEXEC|AT_EMPTY_PATH);
     if(f<0)return -1;
@@ -114,8 +130,12 @@ static int ready_projection(int dev,int generation,uint32_t group,uint32_t uid,u
         dev_st.st_dev!=sub_st.st_dev || sock_st.st_uid!=uid || sock_st.st_gid!=gid ||
         sub_st.st_uid!=uid || sub_st.st_gid!=gid || (sock_st.st_mode&07777)!=0755 ||
         (sub_st.st_mode&07777)!=0755))error=ESTALE;
+    if (!error && (directory_label(dev, "u:object_r:p4_linux_private_dev_root_t:s0") ||
+                   directory_label(sock, "u:object_r:p4_linux_private_socket_parent_t:s0") ||
+                   directory_label(sub, "u:object_r:p4_linux_readiness_mount_t:s0")))
+        error = errno;
     if(!error && ((visible=subtree(ready,MOUNT_ATTR_RDONLY|MOUNT_ATTR_NOSUID|MOUNT_ATTR_NODEV|MOUNT_ATTR_NOEXEC))<0 ||
-           attach(dev,"socket/droidloom",visible)))error=errno;
+           attach_held(dev,"socket/droidloom",sub,visible)))error=errno;
     if(visible>=0)close(visible);
     if(sub>=0)close(sub);
     if(sock>=0)close(sock);

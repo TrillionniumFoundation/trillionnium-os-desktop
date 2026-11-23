@@ -55,6 +55,26 @@ fn directory(parent: &File, name: &CStr) -> Result<File> {
     open_at(parent, name, libc::O_RDONLY | libc::O_DIRECTORY)
 }
 
+fn private_directory_role(directory: &File, expected: &CStr) -> Result<()> {
+    let mut value = [0u8; 128];
+    let length = unsafe {
+        libc::fgetxattr(
+            directory.as_raw_fd(),
+            c"security.selinux".as_ptr(),
+            value.as_mut_ptr().cast(),
+            value.len(),
+        )
+    };
+    if length < 0 {
+        return Err(std::io::Error::last_os_error().into());
+    }
+    let value = &value[..length as usize];
+    need(
+        value == expected.to_bytes() || value == expected.to_bytes_with_nul(),
+        "selected SELinux type on the original private device directory",
+    )
+}
+
 pub(super) fn create_readiness_directories(root: &File, nodes: &[DeviceIdentity]) -> Result<()> {
     fn create(parent: &File, name: &CStr) -> Result<File> {
         zero(unsafe { libc::mkdirat(parent.as_raw_fd(), name.as_ptr(), 0o755) } as _)?;
@@ -62,8 +82,11 @@ pub(super) fn create_readiness_directories(root: &File, nodes: &[DeviceIdentity]
         zero(unsafe { libc::fchmod(child.as_raw_fd(), 0o755) } as _)?;
         Ok(child)
     }
+    private_directory_role(root, c"u:object_r:p4_linux_private_dev_root_t:s0")?;
     let socket = create(root, c"socket")?;
-    create(&socket, c"droidloom")?;
+    private_directory_role(&socket, c"u:object_r:p4_linux_private_socket_parent_t:s0")?;
+    let target = create(&socket, c"droidloom")?;
+    private_directory_role(&target, c"u:object_r:p4_linux_readiness_mount_t:s0")?;
     verify_readiness_directories(root, 0, 0, nodes)
 }
 
@@ -75,6 +98,9 @@ pub(super) fn verify_readiness_directories(root: &File, uid: u32, gid: u32, node
     verify_device_nodes(root, uid, gid, nodes)?;
     let socket = directory(root, c"socket")?;
     let target = directory(&socket, c"droidloom")?;
+    private_directory_role(root, c"u:object_r:p4_linux_private_dev_root_t:s0")?;
+    private_directory_role(&socket, c"u:object_r:p4_linux_private_socket_parent_t:s0")?;
+    private_directory_role(&target, c"u:object_r:p4_linux_readiness_mount_t:s0")?;
     let filesystem = root.metadata()?.dev();
     let original_mount = mount_id(root)?;
     for dir in [&socket, &target] {
