@@ -377,6 +377,14 @@ mod tests {
         dispatcher.rename(c"InputDispatcher");
         assert!(members(&task, leader, Instant::now()).is_err());
         drop(reader);
+        // pthread_join can return while the exiting Linux task is still present
+        // in procfs. Test replacement after the kernel has removed this TID.
+        let exited_by = deadline();
+        let named_task = std::path::PathBuf::from(format!("/proc/self/task/{}", old.identity.pid));
+        while named_task.try_exists().unwrap() {
+            assert!(Instant::now() < exited_by, "joined worker remained in procfs");
+            thread::sleep(Duration::from_millis(1));
+        }
         assert!(old.verify(&task, leader).is_err());
         assert!(members(&task, leader, deadline()).is_err());
         let _new_reader = Worker::start("InputReader");
