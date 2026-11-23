@@ -266,3 +266,36 @@ pub fn verify_initramfs_release(switch_root: bool, emit_plan: bool) -> io::Resul
     }
     Ok(Some(choice.sha256))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn kernel_first_manifest_rejects_changed_parent_command_and_body() {
+        let base = "1".repeat(64);
+        let system = "2".repeat(64);
+        let known = serde_json::json!({"schema":1,"scope":"android_kernel_first_stage_v1","base_cohort_sha256":base,
+          "source_system_sha256":system,"init_path":"/system/bin/init","init_bytes":crate::production_cp3a_init_identity::INIT_BYTES,
+          "init_sha256":crate::production_cp3a_init_identity::INIT_SHA256,"argv":["/system/bin/init","second_stage"]});
+        let check = |v: &serde_json::Value| {
+            validate_runtime_entry(&serde_json::to_vec(v).unwrap(), &base, &system)
+        };
+        check(&known).unwrap();
+        for (field, wrong) in [
+            ("base_cohort_sha256", serde_json::json!(system)),
+            ("source_system_sha256", serde_json::json!(base)),
+            ("init_path", serde_json::json!("/init")),
+            ("init_bytes", serde_json::json!(100)),
+            ("init_sha256", serde_json::json!(base)),
+            (
+                "argv",
+                serde_json::json!(["/system/bin/init", "first_stage"]),
+            ),
+            ("loader", serde_json::json!("wrapper")),
+        ] {
+            let mut changed = known.clone();
+            changed[field] = wrong;
+            assert!(check(&changed).is_err(), "{field}");
+        }
+    }
+}

@@ -3,6 +3,7 @@
 #include "board.h"
 #include "custody.h"
 #include <errno.h>
+#include <dirent.h>
 #include <fcntl.h>
 #include <linux/magic.h>
 #include <linux/sched.h>
@@ -26,9 +27,9 @@
 #include <sys/xattr.h>
 #include <unistd.h>
 
-#define DIR "/run/droidloom-early"
+#define HANDOFF "/run/droidloom-early"
 #define SLOT "/run/droidloom-early-slot"
-#define FIFO DIR "/release"
+#define FIFO HANDOFF "/release"
 #define INIT "/system/bin/init"
 struct droidloom_release_phase { char sha[65], nonce[65]; };
 extern void droidloom_cancel_unpublished_resource_handles(void);
@@ -52,6 +53,37 @@ static int root_directory(const char* path,mode_t mode) {
     if(lstat(path,&st)||statfs(path,&fs))return -1;
     return S_ISDIR(st.st_mode)&&st.st_uid==0&&st.st_gid==0&&(st.st_mode&07777)==mode&&fs.f_type==TMPFS_MAGIC
         ?0:failure(EACCES);
+}
+static int prepare_observer_directory(gid_t observed_group) {
+    int parent=open(HANDOFF,O_RDONLY|O_DIRECTORY|O_NOFOLLOW|O_CLOEXEC);
+    if(parent<0)return -1;
+    int created=mkdirat(parent,"readiness",0700)==0;
+    if(!created&&errno!=EEXIST){int e=errno;close(parent);return failure(e);}
+    int directory=openat(parent,"readiness",O_RDONLY|O_DIRECTORY|O_NOFOLLOW|O_CLOEXEC);
+    int e=directory<0?errno:0;
+    if(!e&&created&&(fchown(directory,0,observed_group)||fchmod(directory,02710)))e=errno;
+    struct stat a,b;struct statx x,y;
+    if(!e&&(fstat(parent,&a)||fstat(directory,&b)||
+        statx(parent,"",AT_EMPTY_PATH,STATX_MNT_ID,&x)||statx(directory,"",AT_EMPTY_PATH,STATX_MNT_ID,&y)))e=errno;
+    if(!e&&(!(x.stx_mask&STATX_MNT_ID)||!(y.stx_mask&STATX_MNT_ID)||x.stx_mnt_id!=y.stx_mnt_id||
+        a.st_dev!=b.st_dev||!S_ISDIR(b.st_mode)||b.st_uid||b.st_gid!=observed_group||(b.st_mode&07777)!=02710))e=EACCES;
+    if(!e){
+        DIR *entries=fdopendir(directory);
+        if(!entries)e=errno;
+        else{
+            directory=-1;
+            errno=0;struct dirent *row;
+            while((row=readdir(entries))!=NULL){
+                if(strcmp(row->d_name,".")&&strcmp(row->d_name,"..")){e=ENOTEMPTY;break;}
+            }
+            if(!e&&errno)e=errno;
+            closedir(entries);
+        }
+    }
+    if(directory>=0)close(directory);
+    if(e&&created)unlinkat(parent,"readiness",AT_REMOVEDIR);
+    close(parent);
+    return e?failure(e):0;
 }
 static int maps(pid_t pid,const char *name,uint32_t start,uint32_t span) {
     char path[100],range[100];
@@ -158,15 +190,16 @@ int main(int argc,char **argv) {
     int selected=droidloom_early_read_plan(&plan);
     if(selected<0){log_error("selected Ubuntu release");return 1;}
     if(!selected)return 0;
-    if(root_directory(DIR,0700)||root_directory(SLOT,0711)){log_error("private /run delivery");return 1;}
-    int lock=open(DIR "/startup.lock",O_RDONLY|O_CLOEXEC|O_NOFOLLOW|O_CREAT,0400);
+    if(root_directory(HANDOFF,0700)||root_directory(SLOT,0711)){log_error("private /run delivery");return 1;}
+    int lock=open(HANDOFF "/startup.lock",O_RDONLY|O_CLOEXEC|O_NOFOLLOW|O_CREAT,0400);
     struct stat owner;
     if(lock<0||fstat(lock,&owner)||!S_ISREG(owner.st_mode)||owner.st_uid||owner.st_gid||
         owner.st_nlink!=1||(owner.st_mode&07777)!=0400||flock(lock,LOCK_EX|LOCK_NB)) {
         log_error("private early startup owner");return 1;
     }
-    if(access(DIR "/generation.json",F_OK)==0){errno=EALREADY;log_error("an early generation already owns this boot");return 1;}
+    if(access(HANDOFF "/generation.json",F_OK)==0){errno=EALREADY;log_error("an early generation already owns this boot");return 1;}
     if(errno!=ENOENT){log_error("check existing root generation");return 1;}
+    if(prepare_observer_directory(plan.gid_start+9999)){log_error("rooted empty observer directory");return 1;}
     if(mkfifo(FIFO,0600)<0){log_error("new release FIFO");return 1;}
     int fifo=open(FIFO,O_RDONLY|O_NONBLOCK|O_NOFOLLOW|O_CLOEXEC);
     struct droidloom_release_phase phase;

@@ -37,11 +37,20 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
     ] {
         fs::write(src.join(name), content)?;
     }
+    fs::write(
+        src.join("linux_run_label.c"),
+        include_bytes!("../../../runtime/droidloom-early-boot/linux_run_label.c"),
+    )?;
+    fs::write(
+        src.join("linux_run_label.h"),
+        include_bytes!("../../../runtime/droidloom-early-boot/linux_run_label.h"),
+    )?;
     for (source, object) in [
         ("custody.c", "custody.o"),
         ("selected.c", "selected.o"),
         ("board_resources.c", "board_resources.o"),
         ("firststage.c", "firststage.o"),
+        ("linux_run_label.c", "linux_run_label.o"),
     ] {
         let result = Command::new("cc")
             .current_dir(src)
@@ -83,6 +92,7 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
             "libdroidloom_early_custody.a",
             "custody.o",
             "selected.o",
+            "linux_run_label.o",
         ])
         .status()?;
     if !result.success() {
