@@ -107,3 +107,19 @@
 (allow init_t p4_linux_cgroup_subtree_control_t (file (getattr open read write)))
 (auditallow init_t p4_linux_cgroup_subtree_control_t (file (write)))
 (neverallow p4_not_ubuntu_pid1 p4_linux_cgroup_subtree_control_t (file (open read write append)))
+
+; Ubuntu's installed systemd-udevd.service uses DelegateSubgroup=udev.
+; The manager creates its service directory. Within it, the executor can
+; create only the named udev subgroup, using the normal host membership type.
+(type p4_linux_udevd_unit_cgroup_t)
+(roletype object_r p4_linux_udevd_unit_cgroup_t)
+(typeattributeset p4_linux_init_cgroup_inodes (p4_linux_udevd_unit_cgroup_t))
+(genfscon cgroup2 "/system.slice/systemd-udevd.service" (u object_r p4_linux_udevd_unit_cgroup_t ((s0) (s0))))
+(genfscon cgroup2 "/system.slice/systemd-udevd.service/" (u object_r p4_linux_unit_cgroup_t ((s0) (s0))))
+(typetransition init_t p4_linux_system_slice_t dir "systemd-udevd.service" p4_linux_udevd_unit_cgroup_t)
+(typetransition init_t p4_linux_udevd_unit_cgroup_t dir "udev" p4_linux_unit_cgroup_t)
+(typetransition p4_linux_service_executor_t p4_linux_udevd_unit_cgroup_t dir "udev" p4_linux_unit_cgroup_t)
+(allow init_t p4_linux_udevd_unit_cgroup_t (dir (getattr search open read create write add_name remove_name rmdir setattr)))
+(allow p4_linux_service_executor_t p4_linux_udevd_unit_cgroup_t (dir (getattr search open write add_name)))
+(neverallow p4_linux_service_executor_t p4_linux_udevd_unit_cgroup_t (dir (create rmdir rename setattr relabelfrom relabelto mounton)))
+(neverallow p4_linux_service_executor_t p4_linux_unit_cgroup_t (dir (write add_name)))
