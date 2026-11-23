@@ -185,6 +185,9 @@ impl<'a> EarlyBaseAdmission<'a> {
             .map_err(io::Error::other)?;
         self.bound.revalidate()
     }
+    pub(crate) fn board(&self) -> &EarlyBoardResources {
+        self.bound.board
+    }
     pub(crate) fn identity_lease(&self) -> &IdentityLease {
         self.host.lease()
     }
