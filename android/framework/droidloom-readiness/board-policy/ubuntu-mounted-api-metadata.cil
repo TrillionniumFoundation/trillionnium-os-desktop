@@ -27,3 +27,19 @@
 (neverallow p4_linux_procs p4_linux_systemd_config_t (file (write append setattr relabelto relabelfrom create execute entrypoint)))
 ; fstatfs on the original, already mounted Linux unified hierarchy.
 (allow init_t cgroup_v2 (filesystem (getattr)))
+
+; The timezone event source observes entries directly under the host /etc.
+(type p4_linux_etc_dir_t)
+(roletype object_r p4_linux_etc_dir_t)
+(typeattributeset p4_linux_data (p4_linux_etc_dir_t))
+(allow p4_linux_procs p4_linux_etc_dir_t (dir (getattr search)))
+(allow kernel p4_linux_etc_dir_t (dir (getattr search)))
+(allow init_t p4_linux_etc_dir_t (dir (read watch)))
+(neverallow p4_linux_procs p4_linux_etc_dir_t (dir (write add_name remove_name relabelfrom relabelto)))
+
+; Only the distribution manager executes the original immutable systemd helper.
+(type p4_linux_systemd_executor_t)
+(roletype object_r p4_linux_systemd_executor_t)
+(typeattributeset p4_linux_data (p4_linux_systemd_executor_t))
+(allow init_t p4_linux_systemd_executor_t (file (getattr open read execute map execute_no_trans)))
+(neverallow p4_linux_procs p4_linux_systemd_executor_t (file (write append setattr create relabelto relabelfrom entrypoint)))
