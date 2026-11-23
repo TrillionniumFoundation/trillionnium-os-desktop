@@ -250,8 +250,8 @@ static int apparmor_profiles(const struct input *pack, int activate,
 
 int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
 {
-    struct input policy = {925746, "cc93be4ad4865dd1ffb95ac43f38b7f5553c9479b5582e7e771b990278f1e79b", POLICY_DIR "/joint.policy", NULL};
-    struct input aa = {5784645, "35ad0f8fa84ac410d7e1ea44f53c5f7b504c647f77c2fed1d76c24f05e6a3233", POLICY_DIR "/ubuntu-apparmor.profiles", NULL};
+    struct input policy = {926488, "e403505cff5da794bc430bce3bc62568a218d969c27a162b360c1ac250dcd37e", POLICY_DIR "/joint.policy", NULL};
+    struct input aa = {5795693, "4b1d14661725ab515ce1db60a164eb53650df34115d371a3d294071636dbe9d1", POLICY_DIR "/ubuntu-apparmor.profiles", NULL};
     struct droidloom_apparmor_measurement observation = {0};
     struct droidloom_raw_profile selected_profiles[3] = {0};
     int status = -1, epoch_directory = -1;
