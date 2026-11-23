@@ -86,3 +86,33 @@ pub(super) fn verify_readiness_directories(root: &File, uid: u32, gid: u32, node
     need(directory_names(&socket)? == [b"droidloom".to_vec()] && directory_names(&target)?.is_empty(),
         "only one empty fixed readiness target may exist before transfer")
 }
+
+#[cfg(test)]
+mod hardware {
+    use super::*;
+
+    #[test]
+    #[ignore = "requires the actual initial broker, a fresh mapped PID 1 and its kernel userns"]
+    fn actual_device_filesystem_retains_the_empty_readiness_target_across_idmap() -> Result<()> {
+        require_initial_broker()?;
+        let duplicate = |n| fd_result(unsafe { libc::fcntl(n, libc::F_DUPFD_CLOEXEC, 20) } as _);
+        let proc = duplicate(9)?;
+        let user = duplicate(10)?;
+        let range = IdRange { start: 200000, count: 100000 };
+        for n in [c"uid_map", c"gid_map"] {
+            map_is_exact(&bounded(open_at(&proc, n, libc::O_RDONLY)?, PROC_LIMIT)?,range)?;
+        }
+        namespace(&user, libc::CLONE_NEWUSER)?;
+        let child_user = unsafe { libc::openat(proc.as_raw_fd(), c"ns/user".as_ptr(), libc::O_RDONLY|libc::O_CLOEXEC) };
+        let child_user = fd_result(child_user as _)?;
+        need(node(&child_user)? == node(&user)?, "original child user namespace")?;
+        let mount = fresh_tmpfs()?;
+        let before = require_detached(&mount)?;
+        let devices = create_devices(&mount)?;
+        create_readiness_directories(&mount, &devices)?;
+        idmap_mount(&mount, &user)?;
+        need(require_detached(&mount)? == before, "same private device mount after idmapping")?;
+        verify_root(&mount, range.start, range.start)?;
+        verify_readiness_directories(&mount, range.start, range.start, &devices)
+    }
+}
