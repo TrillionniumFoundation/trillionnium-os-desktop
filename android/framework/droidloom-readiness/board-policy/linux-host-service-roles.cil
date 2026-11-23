@@ -35,6 +35,8 @@
 (allow droidloom_policy_loader p4_linux_runtime_lib_t (file (getattr open read execute map)))
 (allow droidloom_broker init_t (fd (use)))
 (allow droidloom_policy_loader init_t (fd (use)))
+; The original systemd-executor opens the selected ELF before entering the loader domain.
+(allow droidloom_policy_loader p4_linux_service_executor_t (fd (use)))
 (allow init_t droidloom_broker (fd (use)))
 (allow droidloom_broker init_t (process (getattr sigchld)))
 (allow droidloom_policy_loader init_t (process (getattr sigchld)))
