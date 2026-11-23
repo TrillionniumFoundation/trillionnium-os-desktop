@@ -11,6 +11,30 @@ import xml.etree.ElementTree as ET
 import zipfile
 import types
 
+# The APK pin binds the activity methods and layouts as well as resources.arsc.
+# Each role records its compiled name and the IDs in the two reviewed APKs.
+ALARM_RESOURCE_PROFILES = {
+    '433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d': 0,
+    '9f24ea5fa57bca4a453556ab7cb44fbad1813cb3d15292a8e572cfb40fff7a77': 1,
+}
+ALARM_VIEW_IDS = {
+    'clock': ('digital_clock', 0x7f0a00c4, 0x7f0a00c4),
+    'onoff': ('onoff', 0x7f0a01a0, 0x7f0a01a4),
+    'arrow': ('arrow', 0x7f0a0064, 0x7f0a0064),
+    'label': ('edit_label', 0x7f0a00de, 0x7f0a00df),
+    'delete': ('delete', 0x7f0a00ba, 0x7f0a00ba),
+    'dismiss': ('dismiss', 0x7f0a00cd, 0x7f0a00ce),
+    'alarm_button': ('alarm', 0x7f0a004b, 0x7f0a004b),
+    'alert_title': ('alert_title', 0x7f0a0053, 0x7f0a0053),
+    'repeat': ('repeat_onoff', 0x7f0a01d9, 0x7f0a01de),
+}
+ALARM_STRING_IDS = {
+    'add': ('button_alarms', 0x7f1201ba, 0x7f1201ba),
+    'label_message': ('label', 0x7f1201fc, 0x7f1201fc),
+    # The consumer looks at a newly created, *empty* label.
+    'label_description': ('no_label_specified', 0x7f12028d, 0x7f120298),
+}
+
 def make_reader(marker):
     if type(marker) is not str or re.fullmatch(r'Pocket4 QA alarm [0-9a-f]{32}',marker) is None:
         raise RuntimeError('ONE_FRESH_PLAN_BOUND_ALARM_MARKER')
@@ -28,13 +52,6 @@ def make_reader(marker):
     TEMPLATE_FIELDS = '_id,hour,minutes,daysofweek,enabled,vibrate,label,ringtone,delete_after_use'
 
     INSTANCE_FIELDS = '_id,alarm_id,year,month,day,hour,minutes,vibrate,label,ringtone,alarm_state'
-
-    RESOURCE_IDS = {'clock': 0x7f0a00c4, 'onoff': 0x7f0a01a0, 'arrow': 0x7f0a0064,
-        'label': 0x7f0a00de, 'delete': 0x7f0a00ba, 'dismiss': 0x7f0a00cd,
-        'alarm_button': 0x7f0a004b, 'alert_title': 0x7f0a0053, 'repeat': 0x7f0a01d9}
-
-    STRING_IDS = {'add': 0x7f1201ba, 'label_message': 0x7f1201fc,
-        'label_description': 0x7f12028d}
 
     def need(ok, why):
         if not ok:
@@ -99,6 +116,10 @@ def make_reader(marker):
 
     def resource_contract(apk):
         """Resolve actual compiled IDs taken from the pinned, installed methods."""
+        generation = ALARM_RESOURCE_PROFILES.get(hashlib.sha256(apk).hexdigest())
+        need(generation is not None, 'UNREVIEWED_DESKCLOCK_ALARM_APK')
+        view_ids = {role: entries[generation + 1] for role, entries in ALARM_VIEW_IDS.items()}
+        string_ids = {role: entries[generation + 1] for role, entries in ALARM_STRING_IDS.items()}
         with zipfile.ZipFile(io.BytesIO(apk)) as archive:
             data = archive.read('resources.arsc')
         need(len(data) <= 16 * 1024 * 1024, 'RESOURCE_TABLE_TOO_LARGE')
@@ -137,7 +158,7 @@ def make_reader(marker):
                     value = data[q:q + 2 * length].decode('utf-16-le', 'strict')
                 out.append(value)
             return out
-        wanted = set(RESOURCE_IDS.values()) | set(STRING_IDS.values())
+        wanted = set(view_ids.values()) | set(string_ids.values())
         names, texts = {}, {}
         need(h(0) == 2 and w(4) == len(data), 'RESOURCE_TABLE_HEADER_INVALID')
         p = h(2); global_strings = None
@@ -180,7 +201,7 @@ def make_reader(marker):
                             need(resource not in names or names[resource] == name, 'RESOURCE_NAME_AMBIGUOUS')
                             names[resource] = name
                             # Use only actual default-locale strings; unknown locale stops UI selection.
-                            if resource in STRING_IDS.values() and data[q + 28:q + 32] == b'\0' * 4:
+                            if resource in string_ids.values() and data[q + 28:q + 32] == b'\0' * 4:
                                 need(not ef & 1 and global_strings is not None, 'RESOURCE_STRING_VALUE_INVALID')
                                 if ef & 8:
                                     datatype, value = ef >> 8, w(entry + 4)
@@ -193,13 +214,15 @@ def make_reader(marker):
                     q += length
             p += size
         need(set(names) == wanted, 'REQUIRED_COMPILED_RESOURCE_NOT_FOUND')
-        ids = {role: PACKAGE + ':id/' + names[value][1] for role, value in RESOURCE_IDS.items()}
-        need(all(names[v][0] == 'id' for v in RESOURCE_IDS.values()), 'RESOURCE_ROLE_IS_NOT_ID')
-        need(all(names[v][0] == 'string' and len(texts.get(v, set())) == 1 for v in STRING_IDS.values()),
-            'DEFAULT_RESOURCE_STRING_NOT_UNIQUE')
-        return {'ids': ids, 'texts': {role: next(iter(texts[value])) for role, value in STRING_IDS.items()},
+        for role, value in view_ids.items():
+            need(names[value] == ('id', ALARM_VIEW_IDS[role][0]), 'ALARM_VIEW_RESOURCE_ROLE_MISMATCH')
+        for role, value in string_ids.items():
+            need(names[value] == ('string', ALARM_STRING_IDS[role][0]), 'ALARM_STRING_RESOURCE_ROLE_MISMATCH')
+            need(len(texts.get(value, set())) == 1, 'DEFAULT_RESOURCE_STRING_NOT_UNIQUE')
+        ids = {role: PACKAGE + ':id/' + names[value][1] for role, value in view_ids.items()}
+        return {'ids': ids, 'texts': {role: next(iter(texts[value])) for role, value in string_ids.items()},
             'resources_arsc_sha256': hashlib.sha256(data).hexdigest(),
-            'numeric_ids_from_actual_installed_methods': {k: hex(v) for k, v in {**RESOURCE_IDS, **STRING_IDS}.items()}}
+            'numeric_ids_from_actual_installed_methods': {k: hex(v) for k, v in {**view_ids, **string_ids}.items()}}
 
     class Read:
         def __init__(self, session, model):
