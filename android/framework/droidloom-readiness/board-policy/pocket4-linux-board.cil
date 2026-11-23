@@ -78,7 +78,7 @@
 (neverallow p4_linux_other_than_mac p4_all_nonboard (dir (open read)))
 (neverallow p4_linux_mac_roles p4_nonboard_except_mac_api (dir (open read)))
 (typeattribute p4_linux_without_kernel_directory_traversal)
-(typeattributeset p4_linux_without_kernel_directory_traversal (and (p4_linux_procs) (not (or (init_t) (p4_linux_early_t)))))
+(typeattributeset p4_linux_without_kernel_directory_traversal (and (p4_linux_procs) (not (or (init_t) (or (p4_linux_early_t) (p4_linux_service_executor_t))))))
 (typeattribute p4_nonboard_except_device_directory)
 (typeattributeset p4_nonboard_except_device_directory (and (p4_all_nonboard) (not (device))))
 (neverallow p4_linux_early_t p4_nonboard_except_device_directory (dir (search)))

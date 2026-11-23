@@ -125,3 +125,14 @@
 (auditallow p4_linux_service_executor_t droidloom_broker (process (transition)))
 (neverallow p4_linux_service_executor_t cgroup_v2 (file (write append create unlink relabelfrom relabelto)))
 (neverallow p4_linux_service_executor_t cgroup_app (file (write append create unlink relabelfrom relabelto)))
+
+; Host traversal is limited to the original proc and sysfs directories, and
+; only the selected parent can enter the executor. Invoked service binaries
+; must receive a distinct, allowed domain before the kernel will execute them.
+(typeattribute p4_nonboard_except_executor_abi_dirs)
+(typeattributeset p4_nonboard_except_executor_abi_dirs (and (p4_all_nonboard) (not (or (proc) (sysfs)))))
+(neverallow p4_linux_service_executor_t p4_nonboard_except_executor_abi_dirs (dir (search)))
+(typeattribute p4_not_ubuntu_pid1)
+(typeattributeset p4_not_ubuntu_pid1 (not (init_t)))
+(neverallow p4_not_ubuntu_pid1 p4_linux_service_executor_t (process (transition dyntransition)))
+(neverallow p4_linux_service_executor_t p4_all_board_owned (file (execute_no_trans)))
