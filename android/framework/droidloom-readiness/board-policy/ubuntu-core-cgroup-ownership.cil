@@ -78,3 +78,21 @@
 (typeattributeset p4_not_service_executor (not (p4_linux_service_executor_t)))
 (neverallow p4_not_service_executor p4_linux_cgroup_root_membership_t (file (write append)))
 (neverallow p4_non_kernel_cgroup_actor p4_linux_cgroup_root_membership_t (file (open read append setattr map ioctl)))
+
+; systemd's production unit requests DelegateSubgroup=broker. The original
+; executor may prepare that exact one child and attach its own process there.
+; Other proposed directory names receive the parent type, for which the
+; executor has no create permission.
+(type p4_linux_production_unit_cgroup_t)
+(roletype object_r p4_linux_production_unit_cgroup_t)
+(typeattributeset p4_linux_init_cgroup_inodes (p4_linux_production_unit_cgroup_t))
+(genfscon cgroup2 "/system.slice/droidloom-production.service" (u object_r p4_linux_production_unit_cgroup_t ((s0) (s0))))
+(genfscon cgroup2 "/system.slice/droidloom-production.service/" (u object_r p4_linux_unit_cgroup_t ((s0) (s0))))
+(typetransition init_t p4_linux_system_slice_t dir "droidloom-production.service" p4_linux_production_unit_cgroup_t)
+(typetransition init_t p4_linux_production_unit_cgroup_t dir "broker" p4_linux_unit_cgroup_t)
+(typetransition p4_linux_service_executor_t p4_linux_production_unit_cgroup_t dir "broker" p4_linux_unit_cgroup_t)
+(allow init_t p4_linux_production_unit_cgroup_t (dir (getattr search open read create write add_name remove_name rmdir setattr)))
+(allow p4_linux_service_executor_t p4_linux_production_unit_cgroup_t (dir (getattr search open write add_name)))
+(allow p4_linux_service_executor_t p4_linux_unit_cgroup_t (dir (create)))
+(neverallow p4_linux_service_executor_t p4_linux_production_unit_cgroup_t (dir (create rmdir rename setattr relabelfrom relabelto mounton)))
+(auditallow p4_linux_service_executor_t p4_linux_cgroup_root_membership_t (file (write)))

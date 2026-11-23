@@ -147,3 +147,6 @@
 (typeattributeset p4_not_ubuntu_pid1 (not (init_t)))
 (neverallow p4_not_ubuntu_pid1 p4_linux_service_executor_t (process (transition dyntransition)))
 (neverallow p4_linux_service_executor_t p4_all_board_owned (file (execute_no_trans)))
+(allow p4_linux_service_executor_t p4_linux_systemd_memfd_t (file (ioctl)))
+(allowx p4_linux_service_executor_t p4_linux_systemd_memfd_t (ioctl file (0x542a)))
+(allow p4_linux_service_executor_t p4_linux_console_t (chr_file (getattr open write)))
