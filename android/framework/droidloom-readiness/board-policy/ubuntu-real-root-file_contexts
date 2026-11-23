@@ -19,6 +19,7 @@
 /usr/lib/systemd/system -d u:object_r:p4_linux_unit_directory_t:s0
 /(etc|usr/lib)/systemd/system/[^/]+\.(service|target|slice|scope|socket|timer|mount|automount|path|device|swap) -- u:object_r:p4_linux_unit_file_t:s0
 /(etc|usr/lib)/systemd/system/[^/]+\.(service|target|slice|scope|socket|timer|mount|automount|path|device|swap) -l u:object_r:p4_linux_unit_file_t:s0
-/etc/selinux(/droidloom(/policy)?)? -d u:object_r:p4_linux_etc_dir_t:s0
+/etc/selinux(/droidloom(/policy|/contexts(/files)?)?)? -d u:object_r:p4_linux_etc_dir_t:s0
 /etc/selinux/config -- u:object_r:p4_linux_board_selinux_config_t:s0
 /etc/selinux/droidloom/policy/policy\.[0-9]+ -- u:object_r:p4_linux_board_policy_image_t:s0
+/etc/selinux/droidloom/contexts/files/file_contexts -- u:object_r:p4_linux_board_selinux_config_t:s0

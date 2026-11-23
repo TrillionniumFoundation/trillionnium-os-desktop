@@ -48,6 +48,13 @@ pub(super) fn stage_board_policy(inputs: &Path, destination: &Path) -> Result<()
         include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-selinux-config"),
     )?;
     mode(&config, 0o444)?;
+    let contexts = destination.join("etc/selinux/droidloom/contexts/files/file_contexts");
+    let rules = [
+        include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-real-root-file_contexts").as_slice(),
+        include_bytes!("../../../android/framework/droidloom-readiness/board-policy/linux-service-file_contexts").as_slice(),
+    ].concat();
+    write(&contexts, rules)?;
+    mode(&contexts, 0o444)?;
     Ok(())
 }
 

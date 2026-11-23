@@ -179,7 +179,7 @@
 (roletype object_r p4_linux_board_selinux_config_t)
 (roletype object_r p4_linux_board_policy_image_t)
 (typeattributeset p4_linux_data (p4_linux_board_selinux_config_t p4_linux_board_policy_image_t))
-(allow init_t p4_linux_board_selinux_config_t (file (getattr open read)))
+(allow init_t p4_linux_board_selinux_config_t (file (getattr open read map)))
 (allow p4_linux_service_executor_t p4_linux_board_selinux_config_t (file (getattr open read)))
 (allow init_t p4_linux_board_policy_image_t (file (getattr open read map)))
 (neverallow p4_linux_procs p4_linux_board_selinux_config_t (file (write append setattr create relabelto relabelfrom execute entrypoint)))
