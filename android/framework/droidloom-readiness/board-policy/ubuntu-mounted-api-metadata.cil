@@ -17,3 +17,11 @@
 (allow p4_linux_shm_root_t tmpfs (filesystem (associate)))
 (allow init_t p4_linux_shm_root_t (dir (getattr)))
 (neverallow p4_linux_procs p4_linux_shm_root_t (dir (relabelfrom relabelto mounton)))
+
+; PID 1 gathers its own file descriptors and reads its immutable distro configuration.
+(allow init_t self (dir (open read)))
+(type p4_linux_systemd_config_t)
+(roletype object_r p4_linux_systemd_config_t)
+(typeattributeset p4_linux_data (p4_linux_systemd_config_t))
+(allow init_t p4_linux_systemd_config_t (file (getattr open read)))
+(neverallow p4_linux_procs p4_linux_systemd_config_t (file (write append setattr relabelto relabelfrom create execute entrypoint)))

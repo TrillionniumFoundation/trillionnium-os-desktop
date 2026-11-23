@@ -7,3 +7,9 @@
 /usr/lib/droidloom/production/current/board-devices -d u:object_r:p4_linux_rootdir_t:s0
 /usr/lib/droidloom/production/current/board-devices/console -c u:object_r:p4_linux_console_t:s0
 /usr/lib/droidloom/production/current/board-devices/(null|full) -c u:object_r:p4_linux_standardio_t:s0
+/etc/systemd -d u:object_r:p4_linux_rootdir_t:s0
+/etc/systemd/system -d u:object_r:p4_linux_rootdir_t:s0
+/etc/systemd/system\.conf -- u:object_r:p4_linux_systemd_config_t:s0
+/var -d u:object_r:p4_linux_rootdir_t:s0
+/var/lib -d u:object_r:p4_linux_rootdir_t:s0
+/var/lib/systemd -d u:object_r:p4_linux_rootdir_t:s0
