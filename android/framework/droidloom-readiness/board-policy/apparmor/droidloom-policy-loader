@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 abi <abi/5.0>,
 #include <tunables/global>
+@{droidloom_mac_release_digest}=[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]
 profile droidloom-policy-loader {
   # Dynamic loader and NSS inputs used by the packaged Ubuntu executables.
   /etc/ld.so.cache r,
@@ -40,4 +41,12 @@ profile droidloom-policy-loader {
   /sys/fs/selinux/{create,relabel} rw,
   ptrace (read) peer=unconfined,
   signal (receive) peer=unconfined,
+  /etc/droidloom/setup.lock rk,
+  /etc/droidloom/{production/,production/selected.json,cell.json} r,
+  /etc/droidloom/{cohorts,runtime-cohorts}/{,@{droidloom_mac_release_digest}.json} r,
+  /var/{,lib/,lib/droidloom/,lib/droidloom/cohorts/} r,
+  /var/lib/droidloom/cohorts/@{droidloom_mac_release_digest}/{,images/} r,
+  /var/lib/droidloom/cohorts/@{droidloom_mac_release_digest}/images/{system,vendor,system_ext_lib64,system_ext_readiness}.img r,
+  /usr/lib/droidloom/production/current/board-policy/{,joint.policy,ubuntu-apparmor.profiles} r,
+  /var/lib/droidloom-mac-calibration/capture.pending w,
 }
