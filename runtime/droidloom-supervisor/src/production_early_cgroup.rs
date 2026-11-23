@@ -396,3 +396,132 @@ impl PreparedCgroup {
         Ok(true)
     }
 }
+
+#[cfg(test)]
+mod early_kernel_control {
+    use super::*;
+    use std::{fs, os::fd::FromRawFd, path::PathBuf};
+    struct Child {
+        pid: i32,
+        fd: File,
+        reaped: bool,
+    }
+    impl Child {
+        fn finish(&mut self) -> io::Result<()> {
+            let r = unsafe {
+                libc::syscall(
+                    libc::SYS_pidfd_send_signal,
+                    self.fd.as_raw_fd(),
+                    libc::SIGKILL,
+                    std::ptr::null::<libc::siginfo_t>(),
+                    0,
+                )
+            };
+            if r < 0 && io::Error::last_os_error().raw_os_error() != Some(libc::ESRCH) {
+                return Err(io::Error::last_os_error());
+            }
+            let mut status = 0;
+            loop {
+                let n = unsafe { libc::waitpid(self.pid, &mut status, 0) };
+                if n == self.pid {
+                    self.reaped = true;
+                    return Ok(());
+                }
+                let e = io::Error::last_os_error();
+                if e.kind() != io::ErrorKind::Interrupted {
+                    return Err(e);
+                }
+            }
+        }
+    }
+    impl Drop for Child {
+        fn drop(&mut self) {
+            if !self.reaped {
+                let _ = self.finish();
+            }
+        }
+    }
+    #[test]
+    #[ignore = "requires a dedicated root-owned transient systemd test unit and a real Linux PID namespace"]
+    fn physical_migration_writes_pid_one_only_in_the_original_namespace() {
+        let host_group =
+            parse_unified_cgroup(&fs::read_to_string("/proc/self/cgroup").unwrap()).unwrap();
+        assert!(
+            host_group.starts_with("/system.slice/p4-r65-original-pid-placement-")
+                && host_group.ends_with(".service/broker")
+        );
+        assert_eq!(unsafe { libc::geteuid() }, 0);
+        let unit = format!(
+            "/sys/fs/cgroup{}",
+            host_group.strip_suffix("/broker").unwrap()
+        );
+        let target = PathBuf::from(&unit).join("probe-leaf");
+        fs::create_dir(&target).unwrap();
+        let leaf = File::open(&target).unwrap();
+        let mut fd = -1_i32;
+        let mut args = [0u64; 11];
+        args[0] = (libc::CLONE_NEWPID | libc::CLONE_PIDFD) as u64;
+        args[1] = (&mut fd as *mut i32) as usize as u64;
+        args[4] = libc::SIGCHLD as u64;
+        let pid = unsafe {
+            libc::syscall(
+                libc::SYS_clone3,
+                args.as_ptr(),
+                std::mem::size_of_val(&args),
+            ) as i32
+        };
+        assert!(pid >= 0, "{}", io::Error::last_os_error());
+        if pid == 0 {
+            unsafe {
+                if libc::getpid() != 1 {
+                    libc::_exit(71);
+                }
+                loop {
+                    libc::pause();
+                }
+            }
+        }
+        let mut child = Child {
+            pid,
+            fd: unsafe { File::from_raw_fd(fd) },
+            reaped: false,
+        };
+        let proc_dir = File::open(format!("/proc/{pid}")).unwrap();
+        let ns = File::open(format!("/proc/{pid}/ns/pid")).unwrap();
+        let global = File::open("/proc/self/ns/pid").unwrap();
+        assert_ne!(
+            NodeIdentity::of(&global).unwrap(),
+            NodeIdentity::of(&ns).unwrap()
+        );
+        let nspid = fs::read_to_string(format!("/proc/{pid}/status")).unwrap();
+        let ids: Vec<_> = nspid
+            .lines()
+            .find_map(|l| l.strip_prefix("NSpid:"))
+            .unwrap()
+            .split_ascii_whitespace()
+            .collect();
+        assert_eq!(ids.last(), Some(&"1"));
+        check_task_cgroup(&proc_dir, &host_group).unwrap();
+        assert!(move_original_init(&proc_dir, &leaf).is_err());
+        assert!(read_pids(&leaf).unwrap().is_empty());
+        move_original_init(&ns, &leaf).unwrap();
+        check_task_cgroup(
+            &proc_dir,
+            &format!("{}/probe-leaf", host_group.strip_suffix("/broker").unwrap()),
+        )
+        .unwrap();
+        assert_eq!(read_pids(&leaf).unwrap(), BTreeSet::from([pid as u32]));
+        let own = fs::read_to_string("/proc/self/cgroup").unwrap();
+        assert_eq!(parse_unified_cgroup(&own).unwrap(), host_group);
+        eprintln!(
+            "original outer pid={pid}, nested PID=1, kernel cgroup inode={}, original PID namespace inode={}",
+            leaf.metadata().unwrap().ino(),
+            ns.metadata().unwrap().ino()
+        );
+        child.finish().unwrap();
+        assert!(move_original_init(&ns, &leaf).is_err());
+        assert!(read_pids(&leaf).unwrap().is_empty());
+        drop(leaf);
+        fs::remove_dir(&target).unwrap();
+    }
+}
