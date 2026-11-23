@@ -91,10 +91,17 @@ impl FactoryDevices {
     }
 
     fn read(root: &File) -> Result<Vec<u8>> {
+        // open_tree returns an O_PATH descriptor. Open this directory relative to
+        // the held mount before reading its xattr, and confirm it is the same object.
+        let readable = open_at(root, c".", libc::O_RDONLY | libc::O_DIRECTORY)?;
+        need(
+            node(&readable)? == node(root)? && mount_id(&readable)? == mount_id(root)?,
+            "board device measurements opened a different mounted directory",
+        )?;
         let mut measured = vec![0_u8; 1536];
         let count = unsafe {
             libc::fgetxattr(
-                root.as_raw_fd(),
+                readable.as_raw_fd(),
                 KEY.as_ptr(),
                 measured.as_mut_ptr().cast(),
                 measured.len(),
