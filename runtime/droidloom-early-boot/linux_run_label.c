@@ -4,7 +4,12 @@
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <sys/mount.h>
 #include <linux/magic.h>
+#include <linux/mount.h>
+#include <linux/openat2.h>
+#include <sys/syscall.h>
+#include <sys/sysmacros.h>
 #include <stdbool.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -164,4 +169,133 @@ int droidloom_label_readiness_paths(const struct droidloom_readiness_paths *path
     if (apply_label(&paths->handoff, "u:object_r:p4_linux_early_handoff_dir_t:s0") < 0)
         return -1;
     return apply_label(&paths->readiness, "u:object_r:p4_linux_readiness_dir_t:s0");
+}
+
+struct console_node {
+    const char *path;
+    const char *source;
+    unsigned int major;
+    unsigned int minor;
+    mode_t mode;
+};
+
+static const struct console_node board_nodes[] = {
+    { "/dev/console", "/usr/lib/droidloom/production/current/board-devices/console", 5, 1, 0600 },
+    { "/dev/null", "/usr/lib/droidloom/production/current/board-devices/null", 1, 3, 0666 },
+    { "/dev/full", "/usr/lib/droidloom/production/current/board-devices/full", 1, 7, 0666 },
+};
+
+static int open_standard_node(const struct console_node *spec, bool backing, struct stat *st)
+{
+    struct open_how how = {
+        .flags = O_PATH | O_CLOEXEC | O_NOFOLLOW,
+        .resolve = RESOLVE_NO_SYMLINKS | RESOLVE_NO_MAGICLINKS,
+    };
+    int fd = (int)syscall(SYS_openat2, AT_FDCWD, backing ? spec->source : spec->path, &how, sizeof(how));
+    if (fd < 0)
+        return -1;
+    struct stat root;
+    struct statfs fs;
+    int error = 0;
+    if (stat("/", &root) < 0 || fstatfs(fd, &fs) < 0 || fstat(fd, st) < 0)
+        error = errno;
+    else if (st->st_uid != 0 || st->st_gid != 0 || !S_ISCHR(st->st_mode) ||
+             (st->st_mode & 07777) != spec->mode || major(st->st_rdev) != spec->major ||
+             minor(st->st_rdev) != spec->minor || (backing && root.st_dev != st->st_dev) ||
+             (unsigned long)fs.f_type != (backing ? EXT4_SUPER_MAGIC : TMPFS_MAGIC))
+        error = EACCES;
+    if (error) {
+        close(fd);
+        errno = error;
+        return -1;
+    }
+    return fd;
+}
+
+int droidloom_linux_console_descriptors(void)
+{
+    int fd = open("/dev/console", O_RDWR | O_NOCTTY | O_CLOEXEC | O_NOFOLLOW);
+    if (fd < 0)
+        return -1;
+    struct stat state;
+    int error = 0;
+    if (fstat(fd, &state) < 0)
+        error = errno;
+    else if (!S_ISCHR(state.st_mode) || state.st_rdev != makedev(5, 1))
+        error = ESTALE;
+    for (int n = 0; n < 3 && !error; ++n) {
+        if (dup2(fd, n) < 0 || fcntl(n, F_SETFD, 0) < 0)
+            error = errno;
+    }
+    if (fd > 2)
+        close(fd);
+    if (error)
+        errno = error;
+    return error ? -1 : 0;
+}
+
+int droidloom_project_linux_standard_devices(void)
+{
+    enum { count = sizeof(board_nodes) / sizeof(board_nodes[0]) };
+    int target[count], mount_fd[count];
+    struct stat source[count];
+    for (size_t i = 0; i < count; ++i)
+        target[i] = mount_fd[i] = -1;
+    size_t attached = 0;
+    int error = 0;
+    for (size_t i = 0; i < count && !error; ++i) {
+        struct stat original;
+        const struct console_node *n = &board_nodes[i];
+        int fd = open_standard_node(n, true, &source[i]);
+        if (fd < 0) {
+            error = errno;
+            break;
+        }
+        target[i] = open_standard_node(n, false, &original);
+        if (target[i] < 0)
+            error = errno;
+        if (!error) {
+            mount_fd[i] = (int)syscall(SYS_open_tree, fd, "", OPEN_TREE_CLONE | OPEN_TREE_CLOEXEC | AT_EMPTY_PATH);
+            if (mount_fd[i] < 0)
+                error = errno;
+        }
+        if (!error) {
+            struct mount_attr flags = { .attr_set = MOUNT_ATTR_RDONLY | MOUNT_ATTR_NOSUID | MOUNT_ATTR_NOEXEC };
+            if (syscall(SYS_mount_setattr, mount_fd[i], "", AT_EMPTY_PATH, &flags, sizeof(flags)) < 0)
+                error = errno;
+        }
+        close(fd);
+    }
+    for (size_t i = 0; i < count && !error; ++i) {
+        if (syscall(SYS_move_mount, mount_fd[i], "", target[i], "",
+                    MOVE_MOUNT_F_EMPTY_PATH | MOVE_MOUNT_T_EMPTY_PATH) < 0) {
+            error = errno;
+            break;
+        }
+        ++attached;
+        struct stat now;
+        if (lstat(board_nodes[i].path, &now) < 0)
+            error = errno;
+        else if (now.st_dev != source[i].st_dev || now.st_ino != source[i].st_ino ||
+                 now.st_rdev != source[i].st_rdev)
+            error = ESTALE;
+    }
+    if (!error && droidloom_linux_console_descriptors() < 0)
+        error = errno;
+    if (error) {
+        while (attached > 0) {
+            size_t i = --attached;
+            struct stat now;
+            if (lstat(board_nodes[i].path, &now) == 0 &&
+                now.st_dev == source[i].st_dev && now.st_ino == source[i].st_ino)
+                (void)umount2(board_nodes[i].path, MNT_DETACH);
+        }
+    }
+    for (size_t i = 0; i < count; ++i) {
+        if (mount_fd[i] >= 0) close(mount_fd[i]);
+        if (target[i] >= 0) close(target[i]);
+    }
+    if (error)
+        errno = error;
+    return error ? -1 : 0;
 }

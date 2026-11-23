@@ -213,6 +213,7 @@ int droidloom_board_activate_policy(gid_t observer_gid)
     if (rc == 0) { stage = "check initial Ubuntu policy state"; rc = initial_ubuntu_kernel(); }
     if (rc == 0) { stage = "hold original Ubuntu /run"; rc = droidloom_hold_linux_run(&run); }
     if (rc == 0) { stage = "hold the selected early readiness directory"; rc = droidloom_hold_readiness_paths(&run, observer_gid, &paths); }
+    if (rc == 0) { stage = "project the exact Ubuntu console, null and full device nodes"; rc = droidloom_project_linux_standard_devices(); }
     if (rc == 0) { stage = "load the selected Ubuntu AppArmor profiles"; rc = apparmor_profiles(&aa, 1); }
     if (rc == 0) { stage = "load initial selected joint SELinux policy"; rc = submit(SELINUX_DIR "/load", policy.data, policy.size); }
     if (rc == 0) { stage = "label the held Ubuntu /run inode"; rc = droidloom_label_linux_run(&run); }

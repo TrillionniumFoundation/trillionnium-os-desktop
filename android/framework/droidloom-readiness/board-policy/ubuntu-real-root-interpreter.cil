@@ -11,3 +11,4 @@
 (neverallow p4_linux_procs p4_linux_usrmerge_link_t (lnk_file (write create unlink rename setattr relabelto relabelfrom)))
 (neverallow p4_linux_procs p4_linux_elf_interpreter_t (file (write create append setattr entrypoint relabelto relabelfrom)))
 (neverallow p4_android_userspace p4_linux_usrmerge_link_t (lnk_file (read write create unlink rename setattr relabelto relabelfrom)))
+(allow p4_linux_early_t p4_linux_console_t (chr_file (read)))

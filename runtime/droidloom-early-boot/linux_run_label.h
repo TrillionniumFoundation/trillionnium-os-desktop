@@ -25,4 +25,6 @@ int droidloom_hold_readiness_paths(const struct droidloom_linux_run *run,
                                   gid_t observer_gid, struct droidloom_readiness_paths *paths);
 int droidloom_label_readiness_paths(const struct droidloom_readiness_paths *paths);
 
+int droidloom_project_linux_standard_devices(void);
+int droidloom_linux_console_descriptors(void);
 #endif

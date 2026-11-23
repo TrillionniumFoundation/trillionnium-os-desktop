@@ -2,6 +2,7 @@
 #define _GNU_SOURCE
 #include "board.h"
 #include "board_policy.h"
+#include "linux_run_label.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -98,6 +99,9 @@ static int finish(int argc, char **argv)
 {
     operation = "check the Linux early process role";
     if (current_linux_role() < 0)
+        return -1;
+    operation = "reopen the Ubuntu console in the Linux early process role";
+    if (droidloom_linux_console_descriptors() < 0)
         return -1;
     operation = "verify the selected Ubuntu systemd executable and label";
     int fd = trusted_elf(SYSTEMD);
