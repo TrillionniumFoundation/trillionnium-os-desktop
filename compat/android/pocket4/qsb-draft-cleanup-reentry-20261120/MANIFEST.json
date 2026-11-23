@@ -1,5 +1,23 @@
 {
   "base_commit": "68e04fe39215c5a97e49b141f993d6fb172a5548",
+  "business_successor": {
+    "base_commit": "ce8eb1fe4d79a94c59b4afb9bbc14308f77de613",
+    "bytes": 34072,
+    "canonical_selector_adopted": false,
+    "entry": "execute",
+    "git_blob": "c52c4bd2dc24419b29cd0d56d5e923d7c073d028",
+    "modeled_controls": 13,
+    "path": "source/qsb_runtime.py",
+    "requires_held_native_release_and_same_Main": true,
+    "scope": [
+      "search.query",
+      "search.open"
+    ],
+    "scoped_offline_error_fixture_supplied": false,
+    "sha256": "5e4e291643feadd6cffc019f8cd7bf8a639c9a8898ab8824246ff14c6f039228",
+    "test_entry": "test_search_case.py",
+    "whole_app_business_accepted": false
+  },
   "change": {
     "function": "make_session_class.Session.begin_cleanup",
     "journal_create_exclusive_preserved": true,
@@ -9,6 +27,13 @@
     "original_absolute_cleanup_budget_seconds": 720,
     "original_business_budget_seconds": 600,
     "original_launch_limit": 2
+  },
+  "cleanup_postimage_at_075f63df": {
+    "bytes": 28361,
+    "git_blob": "cd3be5cae361ad5e2a8f3300d12f30a03d42c81c",
+    "mode": "100644",
+    "path": "source/qsb_runtime.py",
+    "sha256": "72b8fd9d44a86c26c9fc14191b7d98b60c18babd934afc0cbe5b774c6d449444"
   },
   "original_snapshot": {
     "current_app_and_canonical_source_subtrees_did_not_contain_qsb_draft": true,
@@ -33,13 +58,6 @@
     "mode": "100644",
     "path": "QSB-CLEANUP.patch",
     "sha256": "83a1dec4198ebd8eddf5defc608e8d01fbc51a5494e2a69fce2edea3b3f7d789"
-  },
-  "postimage": {
-    "bytes": 28361,
-    "git_blob": "cd3be5cae361ad5e2a8f3300d12f30a03d42c81c",
-    "mode": "100644",
-    "path": "source/qsb_runtime.py",
-    "sha256": "72b8fd9d44a86c26c9fc14191b7d98b60c18babd934afc0cbe5b774c6d449444"
   },
   "preimage": {
     "bytes": 28337,

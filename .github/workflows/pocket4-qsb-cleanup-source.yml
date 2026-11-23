@@ -23,7 +23,7 @@ jobs:
     timeout-minutes: 5
     env:
       PYTHONDONTWRITEBYTECODE: '1'
-      QSB_SOURCE_INVENTORY_SHA256: d9c29d4397dcdd8f9b5b7dc5e62fda89dac8e8e65a4b093aa0acba37eba5741a
+      QSB_SOURCE_INVENTORY_SHA256: eccddf10d85dcb8a1ebf27edbbb866abd4da39464e1fa950666191eaaf2c57f0
     steps:
       - uses: actions/checkout@v4
         with:
@@ -46,6 +46,13 @@ jobs:
           cat "$RUNNER_TEMP/qsb-cleanup-source-controls.stdout"
           cat "$RUNNER_TEMP/qsb-cleanup-source-controls.stderr" >&2
           exit "$status"
+      - name: Exercise the finite query case and its retirement boundaries
+        timeout-minutes: 2
+        shell: bash
+        run: |
+          set -euo pipefail
+          capsule="$GITHUB_WORKSPACE/compat/android/pocket4/qsb-draft-cleanup-reentry-20261120"
+          python3 -I -B "$capsule/test_search_case.py" -v 2>&1 | tee "$RUNNER_TEMP/qsb-search-case-controls.log"
       - name: Preserve source-control result and original streams
         if: always()
         uses: actions/upload-artifact@v4
@@ -57,3 +64,4 @@ jobs:
             ${{ runner.temp }}/qsb-cleanup-source-controls.json
             ${{ runner.temp }}/qsb-cleanup-source-controls.stdout
             ${{ runner.temp }}/qsb-cleanup-source-controls.stderr
+            ${{ runner.temp }}/qsb-search-case-controls.log
