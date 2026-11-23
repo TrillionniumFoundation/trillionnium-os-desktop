@@ -386,3 +386,12 @@ android_app {
     optimize: { enabled: false },
     lint: { enabled: false },
 }
+
+// Authenticated Android-side partner of the production container PID 1 shutdown channel.
+cc_library_static {
+    name: "libdroidloom_container_shutdown",
+    srcs: ["android/container-bootstrap/shutdown_channel.cpp"],
+    export_include_dirs: ["android/container-bootstrap"],
+    licenses: ["Android-Apache-2.0"],
+    cflags: ["-Wall", "-Wextra", "-Werror"],
+}
