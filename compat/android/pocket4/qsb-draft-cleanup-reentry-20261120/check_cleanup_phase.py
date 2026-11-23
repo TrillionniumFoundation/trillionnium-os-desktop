@@ -16,7 +16,7 @@ import types
 
 HERE = Path(__file__).resolve().parent
 BEFORE_SHA = '5da8c14db7e6b3489b7729bf960b543658edf4f705553daeccaf287b094348fe'
-COMMON_SHA = '682e0805008846437882162bf4b21fdd4982937c1003a5804f64d7aa4d2e2211'
+COMMON_SHA = 'cf6fa96c94c9ced43b820732e7fe700765820985d7a29791a3cb88d2551d1f71'
 
 
 def digest(raw):

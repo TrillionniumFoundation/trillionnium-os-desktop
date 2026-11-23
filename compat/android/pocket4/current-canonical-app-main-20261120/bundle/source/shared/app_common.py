@@ -356,40 +356,109 @@ def validate_artifacts(artifacts, expected):
         need(sorted(row['sha256'] for row in artifacts) == sorted(row['sha256'] for row in wanted),
              'EXPECTED_APK_HASH_CHANGED')
     for row in artifacts:
+        need(row['sha256'] in selected_apk_hashes(wanted, row['bytes']), 'EXPECTED_APK_BYTES_CHANGED')
         need(type(row.get('stat_file')) is dict and set(row['stat_file']) == set(row['held_file']) | {'ctime_ns'}
             and all(row['stat_file'][key] == value for key, value in row['held_file'].items())
             and type(row['stat_file']['ctime_ns']) is int and row['stat_file']['ctime_ns'] >= 0,
             'ACTUAL_COMPLETE_APK_FILE_IDENTITY_REQUIRED')
 
 
-def full_artifact(target, artifact):
-    """Bind complete identity, including ctime, to this same hashed FD."""
-    fd = target.open_root(artifact['guest_path'], os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+def selected_apk_hashes(pins, size):
+    """Sized selections grant only that exact extent. Older digest-only rows retain their bound."""
+    need(type(size) is int and size >= 0, 'INVALID_APK_SIZE')
+    hashes = set()
+    for pin in pins:
+        digest = pin['sha256']
+        need(type(digest) is str and re.fullmatch('[0-9a-f]{64}', digest), 'INVALID_SELECTED_APK_HASH')
+        if 'bytes' in pin:
+            need(type(pin['bytes']) is int and pin['bytes'] >= 0, 'INVALID_SELECTED_APK_SIZE')
+            if size == pin['bytes']:
+                hashes.add(digest)
+        elif size <= 128 * 1024 * 1024:
+            hashes.add(digest)
+    need(hashes, 'APK_SIZE_OUTSIDE_SELECTED_INPUTS')
+    return hashes
+
+
+@contextmanager
+def private_apk_copy(destination):
+    """Publish the verified signer input exclusively after a complete successful read."""
+    if destination is None:
+        yield None
+        return
+    destination = Path(destination)
+    temporary = destination.with_name('.apk-' + secrets.token_hex(16))
+    fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_CLOEXEC | os.O_NOFOLLOW, 0o600)
+    try:
+        with os.fdopen(fd, 'wb') as output:
+            yield output
+            output.flush()
+            os.fsync(output.fileno())
+        os.link(temporary, destination, follow_symlinks=False)
+    finally:
+        temporary.unlink()
+    parent = os.open(destination.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC)
+    try:
+        os.fsync(parent)
+    finally:
+        os.close(parent)
+
+
+def hash_apk_descriptor(fd, size, allowed, output=None):
+    total = 0
+    digest = hashlib.sha256()
+    deadline = time.monotonic() + 5
+    while True:
+        need(time.monotonic() < deadline, 'ORIGINAL_HELD_APK_READ_DEADLINE')
+        block = os.read(fd, min(65536, size - total + 1))
+        if not block:
+            break
+        total += len(block)
+        need(total <= size, 'ACTUAL_APK_GREW')
+        digest.update(block)
+        if output is not None:
+            output.write(block)
+    observed = digest.hexdigest()
+    need(total == size and observed in allowed, 'SELECTED_COMPLETE_APK_HASH_OR_SIZE_CHANGED')
+    return observed
+
+
+def stream_apk(target, path, pins, destination=None):
+    flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC
+    fd = target.open_root(path, flags)
     try:
         first = os.fstat(fd)
-        record = {'device': first.st_dev, 'inode': first.st_ino, 'mode': first.st_mode,
-            'uid': first.st_uid, 'gid': first.st_gid, 'bytes': first.st_size,
-            'mtime_ns': first.st_mtime_ns, 'nlink': first.st_nlink}
-        need(stat.S_ISREG(first.st_mode) and record == artifact['held_file'] and
-            0 <= first.st_size == artifact['bytes'] <= 128 * 1024 * 1024,
-            'SAME_COMPLETE_APK_IDENTITY_DESCRIPTOR_REQUIRED')
-        total = 0; digest = hashlib.sha256(); deadline = time.monotonic() + 5
-        while True:
-            need(time.monotonic() < deadline, 'ORIGINAL_HELD_APK_READ_DEADLINE')
-            raw = os.read(fd, min(65536, first.st_size + 1 - total))
-            if not raw:
-                break
-            total += len(raw); need(total <= first.st_size, 'ACTUAL_APK_GREW'); digest.update(raw)
-        need(total == first.st_size and digest.hexdigest() == artifact['sha256']
-            and metadata(first) == metadata(os.fstat(fd)), 'COMPLETE_APK_FD_HASH_OR_IDENTITY_CHANGED')
-        named = target.open_root(artifact['guest_path'], os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
-        try:
-            need(metadata(first) == metadata(os.fstat(named)), 'COMPLETE_APK_NAMED_IDENTITY_CHANGED')
-        finally:
-            os.close(named)
-        return {**record, 'ctime_ns': first.st_ctime_ns}
+        need(stat.S_ISREG(first.st_mode) and (not path.startswith('/data/') or first.st_nlink == 1),
+             'SAME_REGULAR_APK_BACKING_REQUIRED')
+        allowed = selected_apk_hashes(pins, first.st_size)
+        with private_apk_copy(destination) as output:
+            observed = hash_apk_descriptor(fd, first.st_size, allowed, output)
+            named = target.open_root(path, flags)
+            try:
+                need(metadata(first) == metadata(os.fstat(fd)) == metadata(os.fstat(named)),
+                     'COMPLETE_APK_FD_OR_NAMED_IDENTITY_CHANGED')
+            finally:
+                os.close(named)
+        held = {'device': first.st_dev, 'inode': first.st_ino, 'mode': first.st_mode,
+                'uid': first.st_uid, 'gid': first.st_gid, 'bytes': first.st_size,
+                'mtime_ns': first.st_mtime_ns, 'nlink': first.st_nlink}
+        artifact = {'guest_path': path, 'bytes': first.st_size, 'sha256': observed,
+                    'held_file': held, 'stat_file': {**held, 'ctime_ns': first.st_ctime_ns}}
+        if destination is not None:
+            artifact['private_copy'] = {'path': str(destination), 'bytes': first.st_size, 'sha256': observed}
+        return artifact
     finally:
         os.close(fd)
+
+
+def full_artifact(target, artifact, pins=None):
+    """Reacquire, hash and match the exact descriptor named in the original receipt."""
+    if pins is None:
+        pins = [{'sha256': artifact['sha256']}]
+    actual = stream_apk(target, artifact['guest_path'], pins)
+    need(all(actual[key] == artifact[key] for key in ('bytes', 'sha256', 'held_file')),
+         'ACTUAL_INSTALLED_APK_BACKING_CHANGED')
+    return actual['stat_file']
 
 
 def validate_identity(receipt, expected, baseline_ref, qualification_ref, *, final=True):
@@ -438,7 +507,7 @@ def validate_identity(receipt, expected, baseline_ref, qualification_ref, *, fin
         need(outputs[2].decode('utf-8', 'strict').splitlines() == [expected['component']]
              and receipt['component'] == expected['component'], 'UNIQUE_ACTUAL_LAUNCHER_REQUIRED')
     for artifact in artifacts:
-        need(regular(artifact['private_copy']['path'], 128 * 1024 * 1024, contents=False)
+        need(regular(artifact['private_copy']['path'], artifact['bytes'], contents=False)
              == artifact['private_copy'], 'SIGNED_PRIVATE_APK_COPY_CHANGED')
         signed = parse(read_ref(artifact['signature']['result']))
         need(signed['host_retirement_proved'] is True and signed['evidence_complete'] is True
@@ -491,11 +560,7 @@ def collect_identity(request, output, expected, source_ref):
                 continue
             paths = apk_paths(raw)
             for k, path in enumerate(paths):
-                data, info = view.target.read_file(path, 128 * 1024 * 1024,
-                                                 single_link=path.startswith('/data/'))
-                artifact = {'guest_path': path, 'bytes': len(data), 'sha256': sha(data), 'held_file': info}
-                artifact['stat_file'] = full_artifact(view.target, artifact)
-                artifact['private_copy'] = write_new(root / ('apk-%02d.apk' % k), data); del data
+                artifact = stream_apk(view.target, path, expected['apks'], root / ('apk-%02d.apk' % k))
                 result['artifacts'].append(artifact)
         result['metadata'] = package_metadata(outputs[0], expected)
         result['component'] = expected.get('component')
@@ -513,10 +578,8 @@ def collect_identity(request, output, expected, source_ref):
                 'result': regular(journal / (name + '.result.json'), contents=False)}
         need(regular(signer, contents=False) == signer_pin, 'APKSIGNER_CHANGED_DURING_OBSERVATION')
         for artifact in result['artifacts']:
-            data, info = view.target.read_file(artifact['guest_path'], 128 * 1024 * 1024,
-                single_link=artifact['guest_path'].startswith('/data/'))
-            need(sha(data) == artifact['sha256'] and info == artifact['held_file'], 'APK_CHANGED_AFTER_SIGNATURE'); del data
-            need(full_artifact(view.target, artifact) == artifact['stat_file'], 'APK_COMPLETE_IDENTITY_CHANGED_AFTER_SIGNATURE')
+            need(full_artifact(view.target, artifact, expected['apks']) == artifact['stat_file'],
+                 'APK_COMPLETE_IDENTITY_CHANGED_AFTER_SIGNATURE')
         view.guard(); result['epoch_sha256'] = view.baseline.value['framework_epoch']['sha256']
         result['state'] = 'OBSERVED'; validate_identity(result, expected, request['baseline'], request['qualification'], final=False)
     except BaseException as error:
@@ -551,13 +614,10 @@ def current_artifacts(target, identity):
             matches.append(int(fields[1]))
     need(matches == [expected['uid']], 'ACTUAL_PACKAGE_UID_CHANGED')
     for artifact in identity['artifacts']:
-        raw, info = target.read_file(artifact['guest_path'], 128 * 1024 * 1024,
-                                    single_link=artifact['guest_path'].startswith('/data/'))
-        need(len(raw) == artifact['bytes'] and sha(raw) == artifact['sha256']
-             and info == artifact['held_file'], 'ACTUAL_INSTALLED_APK_BACKING_CHANGED')
-        del raw
+        pins = identity.get('expected', {}).get('apks')
+        actual = full_artifact(target, artifact, pins)
         if 'stat_file' in artifact:
-            need(full_artifact(target, artifact) == artifact['stat_file'], 'ACTUAL_INSTALLED_APK_CTIME_CHANGED')
+            need(actual == artifact['stat_file'], 'ACTUAL_INSTALLED_APK_CTIME_CHANGED')
 
 
 class HeldArtifacts:
@@ -577,7 +637,7 @@ class HeldArtifacts:
                     fd = target.open_root(artifact['guest_path'], os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
                     info = os.fstat(fd)
                     self.files.append((fd, artifact['guest_path'], metadata(info)))
-                    need(stat.S_ISREG(info.st_mode) and 0 <= info.st_size == artifact['bytes'] <= 128 * 1024 * 1024,
+                    need(stat.S_ISREG(info.st_mode) and 0 <= info.st_size == artifact['bytes'],
                          'HELD_APK_FILE_REQUIRED')
                     # Match the exact fd_record() schema of the frozen held reader.
                     observed = {'device': info.st_dev, 'inode': info.st_ino, 'mode': info.st_mode,
@@ -588,17 +648,8 @@ class HeldArtifacts:
                         need({**observed, 'ctime_ns': info.st_ctime_ns} == artifact['stat_file'],
                              'HELD_APK_COMPLETE_RECEIPT_IDENTITY_CHANGED')
                     # Hash the descriptor that remains held, not a prior pathname read.
-                    deadline = time.monotonic() + 5; digest = hashlib.sha256(); count = 0
-                    while True:
-                        need(time.monotonic() <= deadline, 'HELD_APK_HASH_DEADLINE')
-                        block = os.read(fd, min(65536, 128 * 1024 * 1024 + 1 - count))
-                        if not block:
-                            break
-                        count += len(block)
-                        need(count <= 128 * 1024 * 1024, 'HELD_APK_HASH_BYTE_BOUND')
-                        digest.update(block)
-                    need(count == info.st_size and digest.hexdigest() == artifact['sha256'] and
-                         metadata(os.fstat(fd)) == metadata(info), 'HELD_APK_HASH_OR_METADATA_CHANGED')
+                    hash_apk_descriptor(fd, info.st_size, {artifact['sha256']})
+                    need(metadata(os.fstat(fd)) == metadata(info), 'HELD_APK_HASH_OR_METADATA_CHANGED')
             self.verify()
         except BaseException as primary:
             try:
@@ -652,28 +703,43 @@ class EvidenceWitness:
             'support_manifest', 'source_preparation', 'task_source_manifest', 'original_gates'}
     def __init__(self, documents):
         self.rows = []; self.closed = False; seen = {}; pending = list(documents)
-        def refs(value):
+        def refs(value, selected_copies=()):
             if type(value) is dict:
                 if set(value) == {'path', 'bytes', 'sha256'}:
-                    yield value
+                    maximum = 128 * 1024 * 1024
+                    if value in selected_copies:
+                        maximum = value['bytes']
+                    yield value, maximum
                 else:
+                    if value.get('schema') == 'pocket4-final-app-identity-v1':
+                        # Only copies bound to an already semantically checked identity
+                        # may exceed the ordinary evidence-file ceiling.
+                        artifacts = value['artifacts']
+                        validate_artifacts(artifacts, value['expected'])
+                        copies = []
+                        for artifact in artifacts:
+                            copy = artifact['private_copy']
+                            need((copy['bytes'], copy['sha256']) == (artifact['bytes'], artifact['sha256']),
+                                 'SIGNED_COPY_NOT_ACTUAL_GUEST_APK')
+                            copies.append(copy)
+                        selected_copies = copies
                     for key, child in value.items():
                         if key not in self.SKIP:
-                            yield from refs(child)
+                            yield from refs(child, selected_copies)
             elif type(value) is list:
                 for child in value:
-                    yield from refs(child)
+                    yield from refs(child, selected_copies)
         try:
             while pending:
                 value = pending.pop()
-                for ref in refs(value):
+                for ref, maximum in refs(value):
                     if ref['path'] in seen:
                         need(seen[ref['path']] == ref, 'CONFLICTING_APP_RECEIPT_REFERENCE')
                         continue
                     need(len(seen) < 512, 'BOUNDED_PER_APP_RECEIPT_CHAIN_REQUIRED')
                     seen[ref['path']] = dict(ref)
                     named_before = metadata(Path(ref['path']).lstat())
-                    need(regular(ref['path'], 128 * 1024 * 1024, contents=False) == ref, 'APP_RECEIPT_CHAIN_CHANGED')
+                    need(regular(ref['path'], maximum, contents=False) == ref, 'APP_RECEIPT_CHAIN_CHANGED')
                     fd = os.open(ref['path'], os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
                     before = os.fstat(fd); self.rows.append((fd, ref['path'], metadata(before)))
                     need(before.st_size == ref['bytes'] and metadata(before) == named_before,

@@ -56,6 +56,14 @@ jobs:
           suite=compat/android/pocket4/current-canonical-app-main-20261120/tests/test_clock_alarm_resources.py
           /usr/bin/python3 -I -B "$suite" -v
           /usr/bin/python3 -I -B -O "$suite" -v
+      - name: Verify streamed selected APK identities
+        timeout-minutes: 1
+        shell: bash
+        run: |
+          set -euo pipefail
+          suite=compat/android/pocket4/current-canonical-app-main-20261120/tests/test_streamed_apk_identity.py
+          /usr/bin/python3 -I -B "$suite" -v
+          /usr/bin/python3 -I -B -O "$suite" -v
       - name: Verify both Calendar callers retain conditional cleanup
         timeout-minutes: 1
         shell: bash
@@ -1792,7 +1800,7 @@ jobs:
       CURRENT_NATIVE_INVENTORY_SHA256: 8be17cef0f7dab7b1b2ae508fd2753a2f334cf9249d389dcf5f70896356cbe9b
       CURRENT_OWNED_CANONICAL_INVENTORY_SHA256: ab44dde611350652f99c5f60f96e4113038ba77f5b4c2692ea96c15705e3ee1e
       CURRENT_JOINT_DATA_INVENTORY_SHA256: 715557d89c6fdfecbaae5fb617f26537769a95e77d01b2538ce0b62606831799
-      CURRENT_CAR_EXT4_INVENTORY_SHA256: 376da8aa4c5c90e9a7e84c3c82c800af838ce9028324717063ab45034b0a0ec9
+      CURRENT_CAR_EXT4_INVENTORY_SHA256: 10b944330a3fd84917abfd6f85f94f45e499e9f9b81e104a0c025179c0259e91
       P4_NATIVE_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - uses: actions/checkout@v4
@@ -1948,17 +1956,17 @@ jobs:
               {
                   "name": "BUNDLE-MANIFEST.json",
                   "bytes": 127504,
-                  "sha256": "5536d6461e047c8b6ca808e37305ccd773eaa88599f670f49f00a4fa65360eea"
+                  "sha256": "43228c57f77a65d5665f679814468d7520df4947b83dbe82718fddb6cfa6a06a"
               },
               {
                   "name": "DEPLOYMENT-MANIFEST.json",
                   "bytes": 238650,
-                  "sha256": "9ec0c670bc06826083e51f07133f747eff238749a73450cad6540170b645c995"
+                  "sha256": "032987764e3113cbba58cf762a52bf90301877933e2ae0c07c397eaad3d85442"
               },
               {
                   "name": "HANDOFF.json",
                   "bytes": 12457,
-                  "sha256": "80ae6a2872e2871b45f8f32ba283d3aec21a2b67cacdbc97e6cd9dd5436e8187"
+                  "sha256": "c87d93cb48c4af3ddb76c4d39220d30a77eb6d70c0fe251f5bce784217276c48"
               },
               {
                   "name": "README.md",
@@ -1968,7 +1976,7 @@ jobs:
               {
                   "name": "SOURCE-CLOSURE.json",
                   "bytes": 262082,
-                  "sha256": "0639d8c4dd563b76bf86af08daf34325a366b3ae07479baff82c1a80b5ca7645"
+                  "sha256": "dabd038bf559e1ca44db3ded947ad32e1e3dc589d0899d759c7e8634f6136a7f"
               },
               {
                   "name": "tests/test_calendar_core_read.py",
@@ -1979,6 +1987,11 @@ jobs:
                   "name": "tests/test_clock_alarm_resources.py",
                   "bytes": 5933,
                   "sha256": "b5336cc936ae29d2570bd9fafd1316653e5d3ba0b43454611d5122ee35b76bb9"
+              },
+              {
+                  "name": "tests/test_streamed_apk_identity.py",
+                  "bytes": 10626,
+                  "sha256": "2531f9dc8ccce58a67134a61f976e0b2e19a47f7f08937409be0a64c906885d7"
               },
               {
                   "name": "tests/test_settings_business.py",
@@ -2126,7 +2139,7 @@ jobs:
           selected = bodies[CANON + '/selection/selection-14.json']
           need(producer_bodies['runtime/droidloom-applications/tests/fixtures/selection-14-20261120.json'] == selected, 'producer and bundle selectors differ')
           route_source = producer_bodies['runtime/droidloom-applications/src/leaf_routes.rs']
-          need(identity(route_source) == {'bytes': 65821, 'sha256': '3be5feaca131b524f48d9500ec53345a311d1554d4d681deb5caea7085d571c4'}, 'exact reviewed Settings terminal consumer')
+          need(identity(route_source) == {'bytes': 65821, 'sha256': 'cf5f1e8a60dda8a3f4160fcc7d6c1e7b3621d801236cfaa0557282afa746b95c'}, 'exact reviewed Settings terminal consumer')
           text = route_source.decode()
           need(re.findall(r'const SELECTION_BYTES: u64 = (\d+);', text) == [str(len(selected))]
                and re.findall(r'const SELECTION_SHA: &str = "([0-9a-f]{64})";', text) == [identity(selected)['sha256']], 'compiled selector constants')
@@ -2161,7 +2174,7 @@ jobs:
                'actual bundle graph changed before completion')
           print(json.dumps({'verified_bundle_files': 474, 'verified_bundle_bytes': closure['total_bytes'],
                             'verified_catalog_entries': 14, 'verified_producer_bindings': 3,
-                            'verified_external_publication_files': 21, 'source_only': True,
+                            'verified_external_publication_files': 22, 'source_only': True,
                             'Android_actions': 0, 'new_runtime_acceptance_count': 0,
                             'runtime_qualified': False, 'production_ready': False}, sort_keys=True))
           CANONICAL_APP_SOURCE
