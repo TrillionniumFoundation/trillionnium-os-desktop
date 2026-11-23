@@ -209,3 +209,23 @@
 (allow p4_linux_mac_roles sysfs (filesystem (getattr)))
 (auditallow p4_linux_mac_roles p4_linux_registered_lsms_t (file (read)))
 (auditallow p4_linux_mac_roles p4_linux_apparmor_enabled_t (file (read)))
+
+; Ubuntu PID 1 socket-activates journald. Only the original named directory
+; and three endpoints receive these labels. The manager's private control
+; socket and the Android observer endpoint each keep their distinct type.
+(type p4_linux_journal_runtime_t)
+(type p4_linux_journal_socket_t)
+(roletype object_r p4_linux_journal_runtime_t)
+(roletype object_r p4_linux_journal_socket_t)
+(typeattributeset p4_linux_data (p4_linux_journal_runtime_t p4_linux_journal_socket_t))
+(typetransition init_t p4_linux_systemd_run_t dir "journal" p4_linux_journal_runtime_t)
+(typetransition init_t p4_linux_journal_runtime_t sock_file "socket" p4_linux_journal_socket_t)
+(typetransition init_t p4_linux_journal_runtime_t sock_file "stdout" p4_linux_journal_socket_t)
+(typetransition init_t p4_linux_journal_runtime_t sock_file "dev-log" p4_linux_journal_socket_t)
+(allow p4_linux_journal_runtime_t tmpfs (filesystem (associate)))
+(allow p4_linux_journal_socket_t tmpfs (filesystem (associate)))
+(allow init_t p4_linux_journal_runtime_t (dir (create getattr search open read write add_name remove_name setattr)))
+(allow init_t p4_linux_journal_socket_t (sock_file (create getattr setattr unlink)))
+(neverallow p4_android_userspace p4_linux_journal_socket_t (sock_file (read write create setattr unlink relabelfrom relabelto)))
+(neverallow p4_linux_procs p4_linux_journal_runtime_t (dir (relabelto relabelfrom mounton)))
+(neverallow p4_linux_procs p4_linux_journal_socket_t (sock_file (relabelto relabelfrom)))
