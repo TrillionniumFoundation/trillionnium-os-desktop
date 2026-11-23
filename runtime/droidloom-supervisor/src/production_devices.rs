@@ -18,6 +18,10 @@ use crate::production_mac::{MacError, MacPreflight};
 use crate::production_namespace::{NamespaceError, OwnedNamespaceWitness, RetiredTreeWitness};
 use crate::production_selection::ProductionSelection;
 
+#[path = "production_devices_early.rs"]
+mod early;
+use early::DeviceTree;
+
 #[path = "production_devices_activation.rs"]
 mod activation;
 use activation::ActivationListener;
@@ -200,7 +204,7 @@ fn map_is_exact(raw: &[u8], range: IdRange) -> Result<()> {
         "same reserved complete ID map",
     )
 }
-fn require_tree(witness: &OwnedNamespaceWitness<'_>) -> Result<()> {
+fn require_tree(witness: &impl DeviceTree) -> Result<()> {
     witness.revalidate()?;
     let (uids, gids) = witness.identity_lease()?.broker_ranges();
     for (name, range) in [(c"uid_map", uids), (c"gid_map", gids)] {
@@ -613,7 +617,7 @@ struct DeviceResources {
     reservation_retention: File,
 }
 impl DeviceResources {
-    fn matches(&self, witness: &OwnedNamespaceWitness<'_>) -> Result<()> {
+    fn matches(&self, witness: &impl DeviceTree) -> Result<()> {
         require_tree(witness)?;
         let lease = witness.identity_lease()?;
         let pidns = witness
@@ -718,9 +722,16 @@ impl PreparedDevices {
         witness: &OwnedNamespaceWitness<'_>,
         activation: Option<(&ProductionSelection, &MacPreflight, RuntimeMacOwner)>,
     ) -> Result<Self> {
+        Self::create_for_tree(witness, activation.map(|(selection, mac, context)| (witness, selection, mac, context)))
+    }
+
+    fn create_for_tree(
+        witness: &impl DeviceTree,
+        activation: Option<(&OwnedNamespaceWitness<'_>, &ProductionSelection, &MacPreflight, RuntimeMacOwner)>,
+    ) -> Result<Self> {
         require_initial_broker()?;
         require_tree(witness)?;
-        if let Some((selection, mac, context)) = activation.as_ref() {
+        if let Some((_, selection, mac, context)) = activation.as_ref() {
             context
                 .require_pair(mac, selection)
                 .map_err(|e| DeviceError::Context(e.to_string()))?;
@@ -745,7 +756,7 @@ impl PreparedDevices {
                 network_builder: None,
                 socket_builder: None,
                 pending_selected_socket: None,
-                context: activation.as_ref().map(|(_, _, context)| context.clone()),
+                context: activation.as_ref().map(|(_, _, _, context)| context.clone()),
                 userns_node: node(&userns)?,
                 pidns_node: node(&pidns)?,
                 userns,
@@ -770,7 +781,7 @@ impl PreparedDevices {
         resources.mount_id = require_detached(mount)?;
         resources.root_node = node(mount)?;
         resources.nodes = create_devices(mount)?;
-        if let Some((selection, mac, _)) = activation.as_ref() {
+        if let Some((witness, selection, mac, _)) = activation.as_ref() {
             let context = resources.context.as_ref().ok_or(DeviceError::Rejected(
                 "original activation MAC pair custody absent",
             ))?;
@@ -823,7 +834,7 @@ impl PreparedDevices {
     }
     fn descriptor_after_admission<'a>(
         &'a mut self,
-        witness: &OwnedNamespaceWitness<'_>,
+        witness: &impl DeviceTree,
     ) -> Result<BorrowedFd<'a>> {
         need(!self.exported, "one private dev FD transfer attempt")?;
         let resources = self
