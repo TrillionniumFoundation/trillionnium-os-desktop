@@ -41,7 +41,7 @@ static int board_dev_state(int root, bool binder_ready) {
     if (dev<0) return -1;
     struct stat dir;
     int error=0;
-    const char *names[11];
+    const char *names[12];
     size_t count=0;
     if (filesystem(root,"dev",TMPFS_MAGIC,ST_NOSUID|ST_NOEXEC,ST_RDONLY|ST_NODEV,NULL) || fstat(dev,&dir)) error=errno;
     for(size_t i=0;!error && i<sizeof(private_devices)/sizeof(private_devices[0]);++i) {
@@ -57,12 +57,19 @@ static int board_dev_state(int root, bool binder_ready) {
         names[count++]="binderfs";
         for(size_t i=0;i<3;++i) names[count++]=binder_names[i];
     }
-    if(!error && board_names(dev,names,count,"socket")) error=errno;
+    names[count++]="socket";
+    if(!error && board_names(dev,names,count,NULL)) error=errno;
     if(!error) {
-        struct stat socket;
-        if (!fstatat(dev,"socket",&socket,AT_SYMLINK_NOFOLLOW)) {
-            if(!S_ISDIR(socket.st_mode) || socket.st_dev!=dir.st_dev || (socket.st_mode&0022)) error=ESTALE;
-        } else if(errno!=ENOENT) error=errno;
+        const char *only[]={"droidloom"};
+        int socket=under(dev,"socket",O_RDONLY|O_DIRECTORY);
+        int peer=-1;
+        struct stat node;
+        if(socket<0 || fstat(socket,&node) || board_names(socket,only,1,NULL)) error=errno;
+        else if(node.st_mode!=(S_IFDIR|0755) || node.st_dev!=dir.st_dev ||
+                node.st_uid!=dir.st_uid || node.st_gid!=dir.st_gid) error=ESTALE;
+        else if((peer=under(socket,"droidloom",O_RDONLY|O_DIRECTORY))<0) error=errno;
+        if(peer>=0)close(peer);
+        if(socket>=0)close(socket);
     }
     close(dev);
     return error?reject(error):0;
@@ -110,6 +117,18 @@ static int board_binder_create(int fs,int control,const struct stat *ctl,const c
 
 static int board_private_ipc_owner(void) {
     if(getpid()!=1 || geteuid()!=0 || getegid()!=0) return reject(EPERM);
+    /* The original parent grants a subordinate range. An initial-namespace
+     * PID 1 or a host-root identity mapping cannot enter this constructor. */
+    static const char *const maps[]={"/proc/self/uid_map","/proc/self/gid_map"};
+    for(size_t i=0;i<2;++i) {
+        FILE *map=fopen(maps[i],"re");
+        if(!map) return -1;
+        unsigned long inner=0,outer=0,count=0;
+        char extra;
+        int n=fscanf(map,"%lu %lu %lu %c",&inner,&outer,&count,&extra);
+        fclose(map);
+        if(n!=3 || inner!=0 || outer==0 || count<2) return reject(EPERM);
+    }
     int user=open("/proc/self/ns/user",O_RDONLY|O_CLOEXEC);
     int ipc=open("/proc/self/ns/ipc",O_RDONLY|O_CLOEXEC);
     int owner=-1,error=0;
