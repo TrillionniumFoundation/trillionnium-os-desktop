@@ -1,0 +1,74 @@
+{
+  "SPDXID" : "SPDXRef-DOCUMENT",
+  "spdxVersion" : "SPDX-2.3",
+  "creationInfo" : {
+    "created" : "2025-08-06T14:45:19Z",
+    "creators" : [ "Tool: spdx-gradle-plugin", "Organization: JetBrains s.r.o." ]
+  },
+  "name" : "compiler-hosted",
+  "dataLicense" : "CC0-1.0",
+  "documentNamespace" : "https://www.jetbrains.com/spdxdocs/6d4445fe-97c3-417f-b18d-aaf9d11ce875",
+  "packages" : [ {
+    "SPDXID" : "SPDXRef-gnrtd0",
+    "copyrightText" : "NOASSERTION",
+    "description" : "Contains the Kotlin compiler plugin for Compose used in Android Studio and IDEA",
+    "downloadLocation" : "NOASSERTION",
+    "filesAnalyzed" : false,
+    "licenseConcluded" : "NOASSERTION",
+    "licenseDeclared" : "NOASSERTION",
+    "licenseInfoFromFiles" : [ ],
+    "name" : "compiler-hosted",
+    "sourceInfo" : "git+https://github.com/JetBrains/kotlin.git@v2.2.0#compiler-hosted[:plugins:compose-compiler-plugin:compiler-hosted]",
+    "supplier" : "Organization: JetBrains s.r.o.",
+    "versionInfo" : "2.2.0"
+  }, {
+    "SPDXID" : "SPDXRef-gnrtd1",
+    "copyrightText" : "NOASSERTION",
+    "description" : "Kotlin Standard Library",
+    "downloadLocation" : "NOASSERTION",
+    "filesAnalyzed" : false,
+    "licenseConcluded" : "NOASSERTION",
+    "licenseDeclared" : "NOASSERTION",
+    "licenseInfoFromFiles" : [ ],
+    "name" : "kotlin-stdlib",
+    "sourceInfo" : "git+https://github.com/JetBrains/kotlin.git@v2.2.0#kotlin-stdlib[:kotlin-stdlib]",
+    "supplier" : "Organization: JetBrains s.r.o.",
+    "versionInfo" : "2.2.0"
+  }, {
+    "SPDXID" : "SPDXRef-gnrtd2",
+    "checksums" : [ {
+      "algorithm" : "SHA1",
+      "checksumValue" : "919f0dfe192fb4e063e7dacadee7f8bb9a2672a9"
+    }, {
+      "algorithm" : "SHA256",
+      "checksumValue" : "ace2a10dc8e2d5fd34925ecac03e4988b2c0f851650c94b8cef49ba1bd111478"
+    } ],
+    "copyrightText" : "NOASSERTION",
+    "downloadLocation" : "NOASSERTION",
+    "externalRefs" : [ {
+      "referenceCategory" : "PACKAGE-MANAGER",
+      "referenceLocator" : "pkg:maven/org.jetbrains/annotations@13.0",
+      "referenceType" : "purl"
+    } ],
+    "filesAnalyzed" : false,
+    "licenseConcluded" : "NOASSERTION",
+    "licenseDeclared" : "Apache-2.0",
+    "licenseInfoFromFiles" : [ ],
+    "name" : "org.jetbrains:annotations",
+    "supplier" : "Organization: JetBrains",
+    "versionInfo" : "13.0"
+  } ],
+  "relationships" : [ {
+    "spdxElementId" : "SPDXRef-DOCUMENT",
+    "relationshipType" : "DESCRIBES",
+    "relatedSpdxElement" : "SPDXRef-gnrtd0"
+  }, {
+    "spdxElementId" : "SPDXRef-gnrtd0",
+    "relationshipType" : "DEPENDS_ON",
+    "relatedSpdxElement" : "SPDXRef-gnrtd1"
+  }, {
+    "spdxElementId" : "SPDXRef-gnrtd1",
+    "relationshipType" : "DEPENDS_ON",
+    "relatedSpdxElement" : "SPDXRef-gnrtd2"
+  } ]
+}

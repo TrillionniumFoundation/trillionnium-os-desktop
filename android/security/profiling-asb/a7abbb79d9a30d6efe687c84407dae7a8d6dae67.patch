@@ -1,0 +1,46 @@
+diff --git a/service/java/com/android/os/profiling/ProfilingService.java b/service/java/com/android/os/profiling/ProfilingService.java
+index 503e678..4114338 100644
+--- a/service/java/com/android/os/profiling/ProfilingService.java
++++ b/service/java/com/android/os/profiling/ProfilingService.java
+@@ -2925,6 +2925,8 @@
+ 
+         enforceAnomalyTriggerType(triggerType);
+ 
++        enforceValidResultFileName(resultFileName);
++
+         if (DEBUG) Log.d(TAG, "sendAnomalyProfile passed validation.");
+ 
+         // Move off the calling thread.
+@@ -3075,6 +3077,32 @@
+         }
+     }
+ 
++    private void enforceValidResultFileName(@Nullable String resultFileName) {
++        if (TextUtils.isEmpty(resultFileName)) {
++            throw new IllegalArgumentException("resultFileName cannot be null or empty");
++        }
++        if (resultFileName.contains("/")
++                || resultFileName.contains("\\")
++                || resultFileName.contains("..")
++                || !resultFileName.equals(new File(resultFileName).getName())) {
++            throw new IllegalArgumentException(
++                    "Invalid resultFileName (contains path traversal characters): "
++                            + resultFileName);
++        }
++        try {
++            Path baseDir = Path.of(sTempTracePath).toAbsolutePath().normalize();
++            Path resolvedPath = baseDir.resolve(resultFileName).toAbsolutePath().normalize();
++            if (!resolvedPath.startsWith(baseDir) || !baseDir.equals(resolvedPath.getParent())) {
++                throw new IllegalArgumentException(
++                        "resultFileName traverses outside temporary directory: " + resultFileName);
++            }
++        } catch (IllegalArgumentException e) {
++            throw e;
++        } catch (Exception e) {
++            throw new IllegalArgumentException("Invalid resultFileName: " + resultFileName, e);
++        }
++    }
++
+     /** Send the session result back to anomaly detector. */
+     private void sendSessionToAnomalyDetector(TracingSession session) {
+         if (!session.isReturnToAnomalyDetectorOnly()) {

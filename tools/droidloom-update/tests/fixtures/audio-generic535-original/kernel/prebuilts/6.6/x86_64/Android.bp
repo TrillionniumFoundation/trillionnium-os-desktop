@@ -1,0 +1,32 @@
+prebuilt_kernel_modules {
+    name: "microdroid_gki_kernel_modules-android15-6.6-x86_64",
+    srcs: [
+        "vcpu_stall_detector.ko",
+        "virtio_blk.ko",
+        "virtio_console.ko",
+        "virtio_pci.ko",
+        //"virtio_pci_legacy_dev.ko",
+        "virtio_pci_modern_dev.ko",
+        "vmw_vsock_virtio_transport.ko",
+        "zram.ko",
+        "zsmalloc.ko",
+    ],
+    kernel_version: "6.6",
+    no_full_install: true,
+    visibility: ["//visibility:private"],
+}
+
+filegroup {
+    name: "microdroid_gki_kernel_prebuilts-android15-6.6-x86_64",
+    srcs: ["kernel-6.6"],
+    visibility: ["//packages/modules/Virtualization:__subpackages__"],
+}
+
+android_filesystem {
+    name: "microdroid_gki_modules-android15-6.6-x86_64",
+    deps: [
+        "microdroid_gki_kernel_modules-android15-6.6-x86_64",
+    ],
+    type: "compressed_cpio",
+    visibility: ["//packages/modules/Virtualization:__subpackages__"],
+}

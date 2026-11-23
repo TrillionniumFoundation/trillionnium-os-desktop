@@ -1,0 +1,94 @@
+package {
+    default_team: "trendy_team_fwk_telecom",
+    // See: http://go/android-license-faq
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+android_test {
+    name: "ContactsProviderTests",
+    static_libs: [
+        "ContactsProviderTestUtils",
+        "androidx.test.rules",
+        "androidx.test.core",
+        "androidx.test.ext.junit",
+        "androidx.test.uiautomator_uiautomator",
+        "mockito-target-minus-junit4",
+        "flag-junit",
+        "android.content.pm.flags-aconfig-java",
+        "contactsprovider_flags_java_lib",
+        "platform-compat-test-rules",
+        "telecom-util-lib",
+        "StatsdTestUtils",
+        "statsdprotolite",
+        "compatibility-device-util-axt",
+    ],
+    libs: [
+        "android.test.runner.stubs.system",
+        "android.test.base.stubs.system",
+        "android.test.mock.stubs.system",
+    ],
+
+    // Only compile source java files in this apk.
+    srcs: ["src/**/*.java"],
+    platform_apis: true,
+    test_suites: ["device-tests"],
+    instrumentation_for: "ContactsProvider",
+    certificate: "shared",
+    optimize: {
+        enabled: false,
+    },
+}
+
+// Tests with all launch-able flags enabled by default.
+// All flags' value will be true unless overridden in the individual tests.
+test_module_config {
+    name: "ContactsProviderTestsWithAllFlagEnabled",
+    base: "ContactsProviderTests",
+    test_suites: ["device-tests"],
+
+    options: [
+        {
+            name: "feature-flags:flag-value",
+            value: "contacts/com.android.providers.contacts.flags.disable_cp2_account_move_flag=false",
+        },
+        {
+            name: "feature-flags:flag-value",
+            value: "contacts/android.provider.new_default_account_api_enabled=true",
+        },
+        {
+            name: "feature-flags:flag-value",
+            value: "profile_experiences/com.android.providers.contacts.flags.restrict_pii_data_uri_columns=true",
+        },
+        {
+            name: "feature-flags:flag-value",
+            value: "contacts/com.android.providers.contacts.flags.directory_provider_query_permission_check=true",
+        },
+    ],
+}
+
+// Tests with all launch-able flags disabled by default.
+// All flags' value will be false unless overridden in the individual tests.
+test_module_config {
+    name: "ContactsProviderTestsWithAllFlagDisabled",
+    base: "ContactsProviderTests",
+    test_suites: ["device-tests"],
+
+    options: [
+        {
+            name: "feature-flags:flag-value",
+            value: "contacts/com.android.providers.contacts.flags.disable_cp2_account_move_flag=true",
+        },
+        {
+            name: "feature-flags:flag-value",
+            value: "contacts/android.provider.new_default_account_api_enabled=false",
+        },
+        {
+            name: "feature-flags:flag-value",
+            value: "profile_experiences/com.android.providers.contacts.flags.restrict_pii_data_uri_columns=false",
+        },
+        {
+            name: "feature-flags:flag-value",
+            value: "contacts/com.android.providers.contacts.flags.directory_provider_query_permission_check=false",
+        },
+    ],
+}

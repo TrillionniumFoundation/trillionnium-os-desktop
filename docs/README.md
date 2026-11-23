@@ -1,0 +1,76 @@
+# Droidloom documentation
+
+- [Install Droidloom and APKs](INSTALL.md): package installation, first start and app management.
+- [Build packages](BUILDING.md): prerequisites, Rust builder and package checks.
+- [Known issues](KNOWN_ISSUES.md): preview limitations and workarounds.
+
+- [Architecture](architecture.md): Android cell, graphics path and source boundaries.
+- [Desktop integration](desktop-integration.md): windows, clipboard, notifications and diagnostics.
+- Integration proposals: [audio](audio-integration-proposal.md) and [SMS](sms-integration-proposal.md).
+- [Security requirements](threat-model-v1.md): trust boundaries and isolation limitations.
+
+## Integration contracts
+
+- [Runtime layout](contracts/runtime-layout-v1.md): namespaces, mounts and lifecycle.
+- [Private Binder](contracts/binderfs-v1.md): cell-local Binder devices.
+- [Text input](contracts/text-input-v1.md): Android IME and Denial keyboard dismissal.
+- [Navigation insets](contracts/navigation-insets.md): app geometry and host system bars.
+- [Frame timeline](contracts/frame-timeline-v1.md): optional Denial protocol contract.
+
+The private Android-to-host wire protocol is documented in [protocol/](../protocol/README.md).
+Build and installation internals live with their code in
+[tools/](../tools/README.md), [packaging/](../packaging/README.md) and
+[android/](../android/README.md).
+
+## Pocket4 native application leaf adoption
+
+The native dispatcher compiles the complete selected thirteen-source catalog.
+A root-owned detached release pairs that catalog with the final installed
+`/usr/bin/droidloom-applications` artifact. This avoids embedding a CLI hash in
+Python source whose own hash contributes to the same CLI. Source preparation,
+CI compilation, release adoption and actual Android acceptance remain distinct.
+
+After the full current CI run and normal installation have both been verified,
+the deployment owner prepares a root-owned, content-addressed adoption intent
+under `/etc/droidloom/native-application-leaves/adoption-intents/`. The intent
+pins the complete original CURRENT raw bytes and F9, the actual installed CLI,
+the compiled selector, and the complete CI report with its GitHub commit/run.
+The publisher is invoked explicitly with `--adopt-native-leaf-release` and
+`--expect-native-adoption-sha256`; these options conflict with all Android and
+catalog operations. No package is installed by this command.
+
+The root deployment layout must already contain `catalogs`, `current-preimages`
+and `releases`, each with a root-owned `.layout` file containing exactly
+`pocket4-native-application-leaf-layout-v1` followed by one newline. Root parents
+must be ordinary, non-writable by group/other, and contain no symlinks. The
+publisher retains both original owner locks exclusively, saves the actual full
+preimage, publishes content-addressed records and changes only the
+`native_application_leaf_release` CURRENT field using a fresh whole-file CAS.
+It retains the original owner, fixed expiry and every false qualification flag.
+The running CLI's actual `/proc/self/exe` OFD must equal the installed artifact.
+No later CURRENT edit silently inherits this adoption: a new independent root
+adoption is required, without recompiling an unchanged source catalog.
+
+Gallery's four original finite cases use two 340-second image observations,
+the unchanged 600-second business/120-second cleanup limits, and a fixed
+1530-second outer bound. Calendar reminder keeps its 690-second outer bound.
+Other prepared leaves retain the existing maximum of 1200 seconds. Neither
+new wrapper accepts an arbitrary host entry, source path or resource profile.
+
+The final invoking controller must place the native CLI inside its actual
+bounded outer job before either resource-sensitive route runs. Gallery requires
+that parent's local `cpu.max` to be numeric and at most two CPUs, `memory.max`
+exactly 2147483648, `memory.swap.max` zero and `pids.max` 64. Calendar reminder
+requires at most half a CPU and `memory.max` exactly 536870912, with the same
+zero-swap/64-PID bounds. Both require zero OOM events and real CPU 20 availability.
+The new child remains nested inside that exact job, is create-only, uses CPU 20
+and no core dumps, and is completely drained/reaped by the original ownership
+primitive. Its held real ancestor controls prove the effective hierarchy limit
+when cgroup v2 does not expose local child memory controls; `max` is never
+relabelled as a numeric limit. No shared controller or ancestor is modified.
+
+A correctly rejecting unbounded invocation is only a precondition test. The
+production launcher/controller must also be exercised in its final resource
+layout, followed by real Main, business, cleanup and source bookends, before
+these runtime blockers can be called closed. Source/CI success and detached
+adoption confer no whole-application or production-ready status.

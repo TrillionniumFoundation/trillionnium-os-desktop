@@ -1,0 +1,110 @@
+dirgroup {
+    name: "trusty_dirgroup_trusty_device_desktop",
+    dirs: ["."],
+    visibility: ["//trusty/vendor/google/aosp/scripts"],
+}
+
+// python3 -c "import hashlib; print(hashlib.sha256(b'desktop_trusty_salt').hexdigest())"
+desktop_trusty_vm_salt = "a55876b860b76d6d53480f0d975e01fffdc06c0ee8125fad1c85463399384944"
+
+DESKTOP_TRUSTY_VM_VERSION = 1
+
+avb_add_hash_footer {
+    name: "desktop_trusty_signed_bin",
+    filename: "desktop_trusty_signed.bin",
+    partition_name: "boot",
+    private_key: ":desktop_trusty_sign_test_key",
+    salt: desktop_trusty_vm_salt,
+    rollback_index: DESKTOP_TRUSTY_VM_VERSION,
+    props: [
+        {
+            name: "com.android.virt.cap",
+            value: "trusty_security_vm",
+        },
+        {
+            name: "com.android.virt.name",
+            value: "desktop-trusty",
+        },
+    ],
+    src: ":empty_file",
+    enabled: false,
+    target: {
+        android_x86_64: {
+            src: ":trusty_desktop_vm_x86_64.bin",
+            enabled: true,
+        },
+        android_arm64: {
+            src: ":trusty_desktop_vm_arm64.bin",
+            enabled: true,
+        },
+    },
+}
+
+avb_add_hash_footer {
+    name: "desktop_trusty_ext_boot_signed_bin",
+    filename: "desktop_trusty_ext_boot_signed.bin",
+    partition_name: "boot",
+    private_key: ":desktop_trusty_sign_test_key",
+    salt: desktop_trusty_vm_salt,
+    rollback_index: DESKTOP_TRUSTY_VM_VERSION,
+    props: [
+        {
+            name: "com.android.virt.cap",
+            value: "trusty_security_vm",
+        },
+        {
+            name: "com.android.virt.name",
+            value: "desktop-trusty",
+        },
+    ],
+    src: ":empty_file",
+    enabled: false,
+    target: {
+        android_x86_64: {
+            src: ":trusty_desktop_vm_x86_64_ext_boot.bin",
+            enabled: true,
+        },
+        android_arm64: {
+            src: ":trusty_desktop_vm_arm64_ext_boot.bin",
+            enabled: true,
+        },
+    },
+}
+
+filegroup {
+    name: "desktop_trusty_sign_test_key",
+    srcs: [":avb_testkey_rsa4096"],
+}
+
+cc_defaults {
+    name: "desktop_trusty_kernel_digest_target.defaults",
+    enabled: false,
+    target: {
+        android_arm64: {
+            enabled: true,
+        },
+        android_x86_64: {
+            enabled: true,
+        },
+    },
+}
+
+cc_genrule {
+    name: "desktop_trusty_kernel_digest",
+    defaults: ["desktop_trusty_kernel_digest_target.defaults"],
+    out: ["desktop_trusty.kernelhash"],
+    srcs: [":desktop_trusty_signed_bin"],
+    tools: ["avbtool"],
+    cmd: "$(location avbtool) info_image --image $(in) |" +
+        " awk '/Digest:/ {print $$2}' | xxd -r -p > $(out)",
+}
+
+cc_genrule {
+    name: "desktop_trusty_ext_boot_kernel_digest",
+    defaults: ["desktop_trusty_kernel_digest_target.defaults"],
+    out: ["desktop_trusty_ext_boot.kernelhash"],
+    srcs: [":desktop_trusty_ext_boot_signed_bin"],
+    tools: ["avbtool"],
+    cmd: "$(location avbtool) info_image --image $(in) |" +
+        " awk '/Digest:/ {print $$2}' | xxd -r -p > $(out)",
+}

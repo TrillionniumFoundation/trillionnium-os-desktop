@@ -1,0 +1,48 @@
+package {
+    default_applicable_licenses: [
+        "Android-Apache-2.0",
+    ],
+}
+
+java_defaults {
+    name: "jetpack-camera-app-defaults",
+    static_libs: [
+        "accompanist-permissions",
+        "androidx.compose.material3_material3",
+        "androidx.compose.ui_ui-tooling-preview",
+        "androidx.compose.ui_ui-tooling",
+        "androidx.lifecycle_lifecycle-viewmodel-compose",
+        "androidx.activity_activity-compose",
+        "androidx.core_core-ktx",
+        "androidx.lifecycle_lifecycle-runtime-ktx",
+        "androidx.navigation_navigation-compose",
+        "hilt_android",
+        "androidx.compose.runtime_runtime",
+        "jetpack-camera-app_core_model",
+        "jetpack-camera-app_data_settings",
+        "jetpack-camera-app_feature_permissions",
+        "jetpack-camera-app_feature_preview",
+        "jetpack-camera-app_feature_settings",
+        "jetpack-camera-app_feature_postcapture",
+        "jetpack-camera-app_ui_components_capture",
+    ],
+    srcs: [
+        "java/**/*.kt",
+    ],
+    resource_dirs: [
+        "res",
+    ],
+    sdk_version: "34",
+    min_sdk_version: "23",
+}
+
+android_app {
+    name: "jetpack-camera-app",
+    defaults: ["jetpack-camera-app-defaults"],
+}
+
+android_test_helper_app {
+    name: "jetpack-camera-app-tests-helper",
+    defaults: ["jetpack-camera-app-defaults"],
+    test_suites: ["general-tests"],
+}

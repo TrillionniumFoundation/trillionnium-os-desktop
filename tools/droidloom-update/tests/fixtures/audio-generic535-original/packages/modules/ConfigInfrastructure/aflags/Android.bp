@@ -1,0 +1,50 @@
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+    default_team: "trendy_team_android_core_experiments",
+}
+
+rust_defaults {
+    name: "aflags_updatable.defaults",
+    edition: "2021",
+    clippy_lints: "android",
+    lints: "android",
+    srcs: ["src/main.rs"],
+    rustlibs: [
+        "libaflags_protos_rust",
+        "libaconfig_device_paths",
+        "libaconfig_flags",
+        "libaconfig_protos",
+        "libaconfigd_protos_rust",
+        "libaconfig_storage_read_api",
+        "libaconfig_storage_file",
+        "libanyhow",
+        "libbase64_rust",
+        "libclap",
+        "libmainline_beta_namespace_config",
+        "libnix",
+        "libprotobuf",
+        "libregex",
+        "liblog_rust",
+        "liblogger",
+        "libconfiginfra_framework_flags_rust",
+    ],
+}
+
+rust_binary {
+    name: "aflags_updatable",
+    host_supported: true,
+    defaults: ["aflags_updatable.defaults"],
+    prefer_rlib: true,
+    apex_available: [
+        "com.android.configinfrastructure",
+    ],
+    min_sdk_version: "34",
+}
+
+rust_test {
+    name: "aflags_updatable.test",
+    defaults: ["aflags_updatable.defaults"],
+    rustlibs: ["librand"],
+    test_suites: ["general-tests"],
+    require_root: true,
+}

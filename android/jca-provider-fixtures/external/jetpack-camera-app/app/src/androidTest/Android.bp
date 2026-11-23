@@ -1,0 +1,45 @@
+package {
+    default_applicable_licenses: [
+        "Android-Apache-2.0",
+    ],
+}
+
+android_test {
+    name: "jetpack-camera-app-tests",
+    team: "trendy_team_android_camera_innovation_team",
+    srcs: [
+        "java/**/*.kt",
+    ],
+    // Test orchestrator not available
+    exclude_srcs: [
+        "java/com/google/jetpackcamera/PermissionsTest.kt",
+    ],
+    static_libs: [
+        "androidx.camera_camera-lifecycle",
+        "androidx.test.runner",
+        "androidx.test.uiautomator_uiautomator",
+        "androidx.test.espresso.core",
+        "androidx.test.ext.junit",
+        "androidx.test.ext.truth",
+        "androidx.test.rules",
+        "androidx.test.core",
+        "androidx.activity_activity-ktx",
+        "kotlinx_coroutines_test",
+        "androidx.compose.ui_ui-test-junit4",
+        "androidx.compose.ui_ui-test",
+        "jetpack-camera-app_core_model",
+        "TestParameterInjector",
+    ],
+    sdk_version: "34",
+    test_suites: ["general-tests"],
+    optimize: {
+        enabled: false,
+    },
+    instrumentation_for: "jetpack-camera-app-tests-helper",
+    data: [
+        ":jetpack-camera-app",
+    ],
+    kotlincflags: [
+        "-Xcontext-receivers",
+    ],
+}

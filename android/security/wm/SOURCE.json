@@ -1,0 +1,90 @@
+{
+  "CVE_rows": [
+    "CVE-2026-58946",
+    "CVE-2026-58944",
+    "CVE-2026-58961",
+    "CVE-2026-58962",
+    "CVE-2026-58886"
+  ],
+  "artifact_identity_qualified": false,
+  "binary_semantic_fix_qualified": false,
+  "branch_variant_policy": "One exact complete upstream patch per logical correction. Parallel branch variants are not applied twice.",
+  "fixed_java": [
+    {
+      "bytes": 91006,
+      "relative": "services/core/java/com/android/server/wm/ActivityClientController.java",
+      "sha256": "40bdaef1bbd4129cd7f92d944b6de542d303a75b349f534fd6b06eb250cfc5f4"
+    },
+    {
+      "bytes": 371811,
+      "relative": "services/core/java/com/android/server/wm/ActivityTaskManagerService.java",
+      "sha256": "92f9eee62790b31a0f07f910bfc98531d8b9451f2c80bc8fea182c3f1987ec63"
+    },
+    {
+      "bytes": 36107,
+      "relative": "services/core/java/com/android/server/wm/InputMonitor.java",
+      "sha256": "27a41b91b6599987400d64dae6b281d1831335b69f9703234d7a3d1b9b061ced"
+    }
+  ],
+  "official_patches": [
+    {
+      "bytes": 879,
+      "commit": "0a387476e98f851b1a445d3aa0f1f1ccbec50fb3",
+      "path": "android/security/wm/creator-token.patch",
+      "sha256": "552013cbe3ab2ce2a77201158b7ee3d564ec7541bff85ade708a2f652855d621",
+      "url": "https://android.googlesource.com/platform/frameworks/base/+/0a387476e98f851b1a445d3aa0f1f1ccbec50fb3"
+    },
+    {
+      "bytes": 1190,
+      "commit": "4c71997176db9c2fa05deb7e5b9d872de53753b3",
+      "path": "android/security/wm/activity-options.patch",
+      "sha256": "877a7f9e62f4304a9620fdbc41802f8ada48220002b90f665961cef72bede0ae",
+      "url": "https://android.googlesource.com/platform/frameworks/base/+/4c71997176db9c2fa05deb7e5b9d872de53753b3"
+    },
+    {
+      "bytes": 3620,
+      "commit": "bcf19c956e5ae49b6dbf748afa7c6201a5c0b4e7",
+      "path": "android/security/wm/pip-input-consumer.patch",
+      "sha256": "fd3af3131dfc3c96a71b30f5a9641f1ced6fccd5bdf13ee5b82e579f48777b69",
+      "url": "https://android.googlesource.com/platform/frameworks/base/+/bcf19c956e5ae49b6dbf748afa7c6201a5c0b4e7"
+    }
+  ],
+  "originals": [
+    {
+      "bytes": 90859,
+      "relative": "services/core/java/com/android/server/wm/ActivityClientController.java",
+      "sha256": "1ca6c2fbe4dbd572229e62b0fc8d6192e1efce58fb7a171e127ecb48cdc9df13"
+    },
+    {
+      "bytes": 371557,
+      "relative": "services/core/java/com/android/server/wm/ActivityTaskManagerService.java",
+      "sha256": "25ffd4166d7244379b5624c784c29659b5ecdcbdbd1c60d3c7fdab38693388a9"
+    },
+    {
+      "bytes": 35975,
+      "relative": "services/core/java/com/android/server/wm/InputMonitor.java",
+      "sha256": "9cf0b0936f61a9a013032c07c5de6486e7538893102b6f0264da1080359d401b"
+    },
+    {
+      "bytes": 18005,
+      "relative": "services/Android.bp",
+      "sha256": "01a1e03080a8d10e0344551fe75f067d94881d139c2c42c17b96ed702a898d5b"
+    },
+    {
+      "bytes": 12364,
+      "relative": "services/core/Android.bp",
+      "sha256": "1c8e701380a377e034da9d5224d4040657666bedafeb862f4e6e7a0959a9717a"
+    },
+    {
+      "bytes": 51079,
+      "relative": "services/tests/wmtests/Android.bp",
+      "sha256": "23b4082ab5de81b25facce2629fcf65a34c01e057399fb385a13a825d269b87c"
+    }
+  ],
+  "production_ready": false,
+  "project": "platform/frameworks/base",
+  "runtime_qualified": false,
+  "schema": "droidloom-official-wm-source-provenance-v1",
+  "scope": "Official diff application to copies of exact selected Git blobs. No shared AOSP writes, target build, device action or exploit execution.",
+  "selected_original_project_pin": "94b4c163b7dfe5ce3607f7bb8456f9573f7de57d"
+}

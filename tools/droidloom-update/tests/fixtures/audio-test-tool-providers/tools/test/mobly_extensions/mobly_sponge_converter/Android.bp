@@ -1,0 +1,73 @@
+python_library_host {
+    name: "test_component_proto_py",
+    srcs: ["protos/test_component.proto"],
+    proto: {
+        include_dirs: [
+            "external/protobuf/src",
+        ],
+        canonical_path_from_root: false,
+    },
+}
+
+python_library_host {
+    name: "mobly_sponge_converter_lib",
+    srcs: [
+        "mobly_sponge_converter/*.py",
+        "sponge_artifact_creator/*.py",
+    ],
+    libs: [
+        "mobly",
+        "libprotobuf-python",
+        "test_component_proto_py",
+    ],
+}
+
+python_binary_host {
+    name: "mobly_sponge_converter",
+    main: "main.py",
+    srcs: [
+        "main.py",
+    ],
+    libs: [
+        "mobly_sponge_converter_lib",
+    ],
+}
+
+python_test_host {
+    name: "mobly_sponge_converter_test",
+    main: "tests/test_mobly_sponge_converter.py",
+    srcs: [
+        "tests/test_mobly_sponge_converter.py",
+    ],
+    data: [
+        "tests/testdata/*.yaml",
+    ],
+    libs: [
+        "mobly_sponge_converter_lib",
+        "absl-py",
+    ],
+}
+
+python_test_host {
+    name: "target_level_artifact_creator_test",
+    main: "tests/test_target_level_artifact_creator.py",
+    srcs: [
+        "tests/test_target_level_artifact_creator.py",
+    ],
+    libs: [
+        "mobly_sponge_converter_lib",
+        "absl-py",
+    ],
+}
+
+python_test_host {
+    name: "invocation_level_artifact_creator_test",
+    main: "tests/test_invocation_level_artifact_creator.py",
+    srcs: [
+        "tests/test_invocation_level_artifact_creator.py",
+    ],
+    libs: [
+        "mobly_sponge_converter_lib",
+        "absl-py",
+    ],
+}

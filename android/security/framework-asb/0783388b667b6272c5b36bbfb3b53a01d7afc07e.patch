@@ -1,0 +1,45 @@
+diff --git a/core/java/android/hardware/biometrics/PromptInfo.java b/core/java/android/hardware/biometrics/PromptInfo.java
+index 0207f1d..0a16eeb0 100644
+--- a/core/java/android/hardware/biometrics/PromptInfo.java
++++ b/core/java/android/hardware/biometrics/PromptInfo.java
+@@ -177,7 +177,8 @@
+             return true;
+         } else if (mShowEmergencyCallButton) {
+             return true;
+-        } else if (mRealCallerForConfirmDeviceCredentialActivity != null) {
++        } else if (mRealCallerForConfirmDeviceCredentialActivity != null
++                || mClassNameIfItIsConfirmDeviceCredentialActivity != null) {
+             return true;
+         }
+         return false;
+diff --git a/packages/SystemUI/shared/biometrics/src/com/android/systemui/biometrics/Utils.kt b/packages/SystemUI/shared/biometrics/src/com/android/systemui/biometrics/Utils.kt
+index 5d118f1..b53d556 100644
+--- a/packages/SystemUI/shared/biometrics/src/com/android/systemui/biometrics/Utils.kt
++++ b/packages/SystemUI/shared/biometrics/src/com/android/systemui/biometrics/Utils.kt
+@@ -122,6 +122,14 @@
+     }
+ 
+     @JvmStatic
++    fun isSettings(context: Context, clientPackage: String?): Boolean {
++        val hasPermission =
++            (context.checkCallingOrSelfPermission(Manifest.permission.USE_BIOMETRIC_INTERNAL) ==
++                PackageManager.PERMISSION_GRANTED)
++        return hasPermission && "com.android.settings" == clientPackage
++    }
++
++    @JvmStatic
+     fun getNavbarInsets(context: Context) = getInsetsOf(context, WindowInsets.Type.navigationBars())
+ 
+     @JvmStatic
+@@ -184,8 +192,10 @@
+         val topActivity = tasks[0].topActivity
+         val isSystemApp = isSystem(context, clientPackage)
+         val topPackageEqualsToClient = topActivity!!.packageName == clientPackage
++
+         val isClientConfirmDeviceCredentialActivity =
+-            clientClassNameIfItIsConfirmDeviceCredentialActivity != null
++            clientClassNameIfItIsConfirmDeviceCredentialActivity != null &&
++                isSettings(context, clientPackage)
+ 
+         if (
+             !isClientInBackgroundOrNotVisible(

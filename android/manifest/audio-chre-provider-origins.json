@@ -1,0 +1,615 @@
+{
+  "schema_version": 1,
+  "superproject": {
+    "name": "platform/superproject",
+    "ref": "refs/heads/android-17.0.0_r1",
+    "commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039"
+  },
+  "source_project_count": 445,
+  "prior_lock_sha256": "0a45befa4d2b5ab98a1338608a25907ac51cfca24228b82dc63b7778d34d61cb",
+  "current_lock_sha256": "86298fbf2e30e0e7e612c0bb815ae180699eaab985005b533c8220b5d29f22e1",
+  "added_sparse_cones": {
+    "external/pigweed": [
+      "pw_async2",
+      "pw_bluetooth",
+      "pw_bluetooth_proxy",
+      "pw_checksum",
+      "pw_intrusive_ptr",
+      "pw_multibuf",
+      "third_party/emboss"
+    ]
+  },
+  "added_projects": [
+    {
+      "path": "external/emboss",
+      "name": "platform/external/emboss",
+      "commit": "e06f586857f7f7a814a4621deba91a9f586d930c",
+      "purpose": "Pinned original Emboss compiler, generator script and runtime headers required by retained CHRE Pigweed consumers",
+      "sparse_paths": [
+        "compiler",
+        "runtime"
+      ]
+    }
+  ],
+  "original_providers": [
+    {
+      "path": "external/emboss/Android.bp",
+      "mode": "100644",
+      "project": "external/emboss",
+      "commit": "e06f586857f7f7a814a4621deba91a9f586d930c",
+      "git_blob": "46311a55e914cd63c486a79710663856493ebb88",
+      "bytes": 2450,
+      "sha256": "69b8a9b99837807626b0da843e2b69b530a04d91b835d8792ac075edbc10fb98"
+    },
+    {
+      "path": "external/emboss/compiler/back_end/cpp/generated_code_templates",
+      "mode": "100644",
+      "project": "external/emboss",
+      "commit": "e06f586857f7f7a814a4621deba91a9f586d930c",
+      "git_blob": "e8f7c46046503f9bfaca6abcd04060c3894d3cc6",
+      "bytes": 34201,
+      "sha256": "6a4c007a26fa26af617253c700cb27c947ea42281b97711307a60dc8c0843881"
+    },
+    {
+      "path": "external/emboss/compiler/front_end/error_examples",
+      "mode": "100644",
+      "project": "external/emboss",
+      "commit": "e06f586857f7f7a814a4621deba91a9f586d930c",
+      "git_blob": "45d5c63540630279a63e9ada30ba4888396bf9fb",
+      "bytes": 20637,
+      "sha256": "b616743b86a42723cbd4a1e0d3d5f0fa2d56e42a444b9f15e8370454e4999abd"
+    },
+    {
+      "path": "external/emboss/compiler/front_end/prelude.emb",
+      "mode": "100644",
+      "project": "external/emboss",
+      "commit": "e06f586857f7f7a814a4621deba91a9f586d930c",
+      "git_blob": "5a54251c31195d52ab30cfeeb3ed6d38736b71e2",
+      "bytes": 2670,
+      "sha256": "8968a6e7fc91960391bb224905b45a342498e5f95d27d1658c8b417bf58e7d6a"
+    },
+    {
+      "path": "external/emboss/compiler/front_end/reserved_words",
+      "mode": "100644",
+      "project": "external/emboss",
+      "commit": "e06f586857f7f7a814a4621deba91a9f586d930c",
+      "git_blob": "472499994cb16372c1a805664acef2b4b98da9c5",
+      "bytes": 11161,
+      "sha256": "4f7cfd4d60e12b40fe0b289697c2119f7a586e2211562247cd73150d3a949adb"
+    },
+    {
+      "path": "external/emboss/embossc",
+      "mode": "100755",
+      "project": "external/emboss",
+      "commit": "e06f586857f7f7a814a4621deba91a9f586d930c",
+      "git_blob": "90775effa90b313bef6c7fa83c71b134db77ac34",
+      "bytes": 3372,
+      "sha256": "ddbe2cb82ec4ba191e49e010978525830ac94531ed1f655eaa0e03cd36925c99"
+    },
+    {
+      "path": "external/emboss/runtime/cpp/emboss_prelude.h",
+      "mode": "100644",
+      "project": "external/emboss",
+      "commit": "e06f586857f7f7a814a4621deba91a9f586d930c",
+      "git_blob": "ad302cddcbbf825a84da28269ec19691e2fb265f",
+      "bytes": 32172,
+      "sha256": "ef937b8d364dc2004e70012450abde15ac45c5277eb7954346eb30eeafc1ba92"
+    },
+    {
+      "path": "external/pigweed/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "278042021acf9d3511a4a39781508bbade3a703b",
+      "bytes": 852,
+      "sha256": "0237ce95d4e6ac1e0bf2d6b8dc26840d7e625687609de067cb7099819ce61252"
+    },
+    {
+      "path": "external/pigweed/pw_allocator/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "5597bc2865ac845fe15f03d85fabe7e4eb7db8f1",
+      "bytes": 1898,
+      "sha256": "222c200206cbdf9106c5ed4d786cef3b6982e32356f07e0453701e1611decc6e"
+    },
+    {
+      "path": "external/pigweed/pw_assert/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "0e749fef45106537f4837c29884cb004d5afd983",
+      "bytes": 944,
+      "sha256": "2d3fbac5926bec5d39bdfde09120f463307b256ec6b56b88ddfa4741bc6a2047"
+    },
+    {
+      "path": "external/pigweed/pw_assert_log/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "d4512405ddecec5d089734a32eede9f88662394b",
+      "bytes": 1390,
+      "sha256": "c8c1bc779fb7dc92091ab7818e2a397ee27f52cc867a2f8b959c6b974e418cc4"
+    },
+    {
+      "path": "external/pigweed/pw_async2/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "26ee9a3fdaa4386348d9758014e2b0b514007e5f",
+      "bytes": 1571,
+      "sha256": "2088c174111dbd045feea45faaf7d41599cef099ba55e55ce943fccb8e32423e"
+    },
+    {
+      "path": "external/pigweed/pw_base64/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "ec45a3d594850c231660a99ff7a3677512c009ae",
+      "bytes": 1139,
+      "sha256": "805e554c646f42a94bf9c32077e1454a0b0452460f9d369b4b9e85d0c37f5c6a"
+    },
+    {
+      "path": "external/pigweed/pw_bluetooth/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "0d9d4c0175be3224f7366ac920771e29d75080f6",
+      "bytes": 6581,
+      "sha256": "a995bbf09b9514423cadde6cfa7e1e021b6320c51111ee2d018091b4ee1f6a78"
+    },
+    {
+      "path": "external/pigweed/pw_bluetooth_proxy/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "6ad549565cf5dc834e575aa5cb989fa2c3320f08",
+      "bytes": 3454,
+      "sha256": "c66541195c390eab55bd2fe3fe4a8a4224da353c9e277a27482570b415321904"
+    },
+    {
+      "path": "external/pigweed/pw_bluetooth_proxy/gatt/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "27bf9ff1f028d0fdf6151d3338158a75fad59dd3",
+      "bytes": 1601,
+      "sha256": "68fcbb256c8c88c1ec93f40c02ca4d1af22633f6bd30d5ac192e1e5fa9c92cb5"
+    },
+    {
+      "path": "external/pigweed/pw_bluetooth_proxy/hci/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "90dbe0676ed9460ae041011868fef7db8cf7cbc1",
+      "bytes": 3691,
+      "sha256": "77375db679fc31e8baf6869da8aa71a224da313559e426f0d318bd9854dcbc06"
+    },
+    {
+      "path": "external/pigweed/pw_bluetooth_proxy/rfcomm/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "80c6e98f2f15b3c2750e1aca8374fbf9f23fe2af",
+      "bytes": 1828,
+      "sha256": "4608e089d91a2d1031a3899949279af9b87842800f6c3726b73bf47a7660dab7"
+    },
+    {
+      "path": "external/pigweed/pw_build_android/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "cc75a24d6afb6cb98f0fb450a9dea37e209be273",
+      "bytes": 2786,
+      "sha256": "b5f2354c666827c900816435ff3c295704b79a9c9058fcb7aa3c6e4f4b48e6c5"
+    },
+    {
+      "path": "external/pigweed/pw_bytes/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "cc943b68f1706bc14d021e87f558340d69a48123",
+      "bytes": 1386,
+      "sha256": "1d99d60689ef8f86729db3887c82487f07f347e4d8e31f38acfe9c6371dfb780"
+    },
+    {
+      "path": "external/pigweed/pw_checksum/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "84f9768cc8e13f7661f9e411d973073ad2ba8773",
+      "bytes": 948,
+      "sha256": "8522ee979feb57360c164f550d96a8e36abd70871043b36e517992724bb8031a"
+    },
+    {
+      "path": "external/pigweed/pw_chrono/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "3cfd9585a715a0a92163a257799f2c36db166169",
+      "bytes": 1814,
+      "sha256": "1be7d8b9053c9f20237488beff24929bfc926a260f235fd4edc8fb5d9061744e"
+    },
+    {
+      "path": "external/pigweed/pw_chrono_stl/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "69432b410bd40a832bf487415cffb9db8975e954",
+      "bytes": 1523,
+      "sha256": "ae074ddb7fa0871df1c3d195b36779fca74eec987f43c952320669c55ef0d553"
+    },
+    {
+      "path": "external/pigweed/pw_containers/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "8224e68227499a897ac739f21255b127e6009638",
+      "bytes": 1474,
+      "sha256": "e23d29aaa4610ce0706e8c1e24e78c08171cddfe43c7e02a5d95d5fef8bf37ee"
+    },
+    {
+      "path": "external/pigweed/pw_elf/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "506ced60f63b9af9ffc99e17f160e9e72412f95a",
+      "bytes": 1319,
+      "sha256": "3fe24f7942081440aa872cf520480ffefafbad65cd845f7b0cdd9aa9893b753e"
+    },
+    {
+      "path": "external/pigweed/pw_function/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "ab2fdd75ddee14fc7799c79004ff71c8077796d8",
+      "bytes": 968,
+      "sha256": "5117051b7d05dbb9029cd0ebcea6024b95ff92610efd050d4795c4d70702b3f5"
+    },
+    {
+      "path": "external/pigweed/pw_intrusive_ptr/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "5077a3226aca827771d0596d1c8f8007590c0430",
+      "bytes": 933,
+      "sha256": "9f7e0e934b51193c07dda771378244638fa79159d4e1f721ba5dba662d082bf5"
+    },
+    {
+      "path": "external/pigweed/pw_log/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "880c6bb0bf33066e5866e971ab403b368938fe3a",
+      "bytes": 6786,
+      "sha256": "759ad255c7b2955d2e8d5d4a79d43e12faa3235694b1f7a52ecb23b6885b4a5d"
+    },
+    {
+      "path": "external/pigweed/pw_log_android/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "c300031d033ed2e257f1854588b6c903e51052f5",
+      "bytes": 1601,
+      "sha256": "a23d4dd3e9a50496c6d959bf6e0f7ebdb1f902cc19774a6cfda545f4399f0b1e"
+    },
+    {
+      "path": "external/pigweed/pw_log_tokenized/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "da04ebf1bcd57773c06a28c917dd79e48502e4c3",
+      "bytes": 830,
+      "sha256": "d90286454cb7ae02dd1449a78b7983b74cb4f449e04906dabcaa6212ec6409d3"
+    },
+    {
+      "path": "external/pigweed/pw_memory/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "96718dcd04a0dc8687f3354c6c5465fbed630654",
+      "bytes": 823,
+      "sha256": "fa41cfd61e001b7c71464b83e0f887a7bc9131994b21deb726385759db00f0b5"
+    },
+    {
+      "path": "external/pigweed/pw_metric/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "0be101b393576505d60847f09a9b8256ed0de43d",
+      "bytes": 2883,
+      "sha256": "afba03c4578ae11b852ea981457e71809d51827d1425e675976254ae851f442f"
+    },
+    {
+      "path": "external/pigweed/pw_multibuf/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "2237f0769efbd8311bb442987f112f2874bf75d7",
+      "bytes": 4767,
+      "sha256": "c3bbd313e3cf93625307a1d9abc7310d0147918f329a9f214b82da310ac45500"
+    },
+    {
+      "path": "external/pigweed/pw_numeric/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "cec87c0b22e30a31c3535edcaad040c9de722c4b",
+      "bytes": 944,
+      "sha256": "9a78571fbb3e555409e598386ba5e0a15fd6de01abe6cb7b2fb2c96445dcdc5a"
+    },
+    {
+      "path": "external/pigweed/pw_polyfill/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "4fa236df5bd684480375fe7459e84ac2ae72b140",
+      "bytes": 825,
+      "sha256": "9115c242ec848d004b8a19bb5ce46f9e2e9d53415db3d136e99daa1036dca7ec"
+    },
+    {
+      "path": "external/pigweed/pw_preprocessor/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "7db40d4be94e13c52435bed88b9386eead5537ac",
+      "bytes": 941,
+      "sha256": "812cbdfcdc3821cd5400e2750fc6f04e2397c47936b4d326559c748f14ee76d2"
+    },
+    {
+      "path": "external/pigweed/pw_protobuf/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "a4228be506532e8087b99765d1e4bd06db300ce8",
+      "bytes": 7072,
+      "sha256": "baa4b79f24bb6913d63d16dd8932542737bfb317d245737a14de4bb66ab90341"
+    },
+    {
+      "path": "external/pigweed/pw_protobuf/py/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "0e2439c6f5129d9450f78c835df828a0f758b30c",
+      "bytes": 1207,
+      "sha256": "3d32e35a379ee3402df520ac847be73f2ed461e35a8a30e1e6556526d11855f9"
+    },
+    {
+      "path": "external/pigweed/pw_protobuf_compiler/py/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "b3b2d5647459da0d861866d1ab1e06e63e077517",
+      "bytes": 979,
+      "sha256": "6858535d8fc21d24994ddc632e763c03c87693a1e81cc9a8ccd616bb2a156671"
+    },
+    {
+      "path": "external/pigweed/pw_result/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "9b7c5f2e6faa40da35a72d2c663a03269b843c57",
+      "bytes": 1212,
+      "sha256": "5adbf3fb697873dea93afa7795108f3e6e34e1d71078a10e500b4d53ce9c5bdb"
+    },
+    {
+      "path": "external/pigweed/pw_rpc/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "8fc4e3fde2fde3e22c408e2f757464338c6bfd4c",
+      "bytes": 24280,
+      "sha256": "9694fa240b3d74426f3258dd120c79f63a58a367bf7d6b244ffb5e5da6e5de67"
+    },
+    {
+      "path": "external/pigweed/pw_rpc/nanopb/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "4d21fa0f91bc1b7f4d4d0338d12004bbea88ce41",
+      "bytes": 2265,
+      "sha256": "ffd5cd022e84e60e4fc3d89bf08111121b7b5e7538d12f2fb4516ca3fad939a9"
+    },
+    {
+      "path": "external/pigweed/pw_rpc/pwpb/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "20a8f606474a8543554a223ac0f375e97d94bd10",
+      "bytes": 1301,
+      "sha256": "a6e3606b0c018aaea41eec764149904510b3358bc9db7c3ce48b47a84b7fc249"
+    },
+    {
+      "path": "external/pigweed/pw_rpc/py/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "4ee56fc5f8766d52d85d11e26dc85f8cc806988e",
+      "bytes": 1676,
+      "sha256": "d046ed2b4f44e1b1ba5311554a273b65cf2b3bbb9d9c068d87a0fe8e8644017a"
+    },
+    {
+      "path": "external/pigweed/pw_rpc/raw/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "411a0dcc92dbbfcbd41fcaf0cec1722016df43cb",
+      "bytes": 1950,
+      "sha256": "31d7b4395d970a71ab25b770f1f420922599ce58f14bb0937679b3e31aa40d32"
+    },
+    {
+      "path": "external/pigweed/pw_span/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "fd051d594d10fc18f84a4ac8ba404c8759086732",
+      "bytes": 1433,
+      "sha256": "2be142386fa754f4570abd59a6065bfcbe9a58f01a3ac373c48375654fba690d"
+    },
+    {
+      "path": "external/pigweed/pw_status/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "eb097bdf7f124b907aa67b859fd7afff53e7601f",
+      "bytes": 863,
+      "sha256": "77eb7619ee75e4423f53a537f23b10e74d75d24963143d705b504f366f828a75"
+    },
+    {
+      "path": "external/pigweed/pw_status/py/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "074586278c464854aa97a6c83976b924e040ca64",
+      "bytes": 773,
+      "sha256": "8ad777ef5a04da14298ddb180170e647e3ad634c3bb84490a39b8c427a0b346f"
+    },
+    {
+      "path": "external/pigweed/pw_stream/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "7f575e50dee8ca682b0f53d6611c4eabb6bdf297",
+      "bytes": 2503,
+      "sha256": "22e5fd0198c748647fea5109938a9900b9a1dd4be1517386ececb6af799c8a4b"
+    },
+    {
+      "path": "external/pigweed/pw_string/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "f6823d619fd9ee0a77cdd1e652f384df48a91360",
+      "bytes": 1485,
+      "sha256": "db5e9e2736f4c8b0f5539b7639e7ea56b67d870a2dc42e437e747552fc82d58e"
+    },
+    {
+      "path": "external/pigweed/pw_sync/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "55ec979ea6a930808329bfe1af6b2f96b23b2ec6",
+      "bytes": 1470,
+      "sha256": "e7d97d50ae68b303f645ff67d447e9142f886cf5a3baaed52a23b8d8345f1623"
+    },
+    {
+      "path": "external/pigweed/pw_sync_baremetal/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "cc6d1b592e8f201a039214d018fa6cc2cfb376aa",
+      "bytes": 1083,
+      "sha256": "6fab65f7398b018d175f43e867dca6a604fe72dca52766e54dd7da8541acbb49"
+    },
+    {
+      "path": "external/pigweed/pw_sync_stl/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "7bcc58a189c854b3439c60aadd87ea70cbb27941",
+      "bytes": 1595,
+      "sha256": "0443f99048912431361438ad8d8d04ba16801c174c1bfa23e2c8135c1aa7330b"
+    },
+    {
+      "path": "external/pigweed/pw_thread/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "77f46931feb497ca0d2798d18b6186d11c1ab46e",
+      "bytes": 2870,
+      "sha256": "965f4c215ee60975420a82368ad93d5c8b27f9c016465b020c920e250a20564c"
+    },
+    {
+      "path": "external/pigweed/pw_thread_stl/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "0d089d69372d52437b459d7d99ee2734b23d19c7",
+      "bytes": 1522,
+      "sha256": "f2257de2a41867f9fbada785a379f9f80e2994177764ff7f02aeee9530870d44"
+    },
+    {
+      "path": "external/pigweed/pw_tokenizer/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "43c2cf4adc4653b1b91a098b46c0ea08a34e961c",
+      "bytes": 4608,
+      "sha256": "e45f2bb773424ea2e2d29f048d622ae7c9487f7706819c063eb0e73acd1a7d46"
+    },
+    {
+      "path": "external/pigweed/pw_toolchain/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "ccd9c00f4157a47403dc977d4b1e8f26fd4d72ae",
+      "bytes": 949,
+      "sha256": "39422efc23b8f37142b0898b7151db6946a7a7cbdcc076fada321a8dfd9f1ad7"
+    },
+    {
+      "path": "external/pigweed/pw_varint/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "5726eedb26c55b5767bc9450b4bd66c12cd2a7a1",
+      "bytes": 1348,
+      "sha256": "dbed35383358b8c77be100c627beb93c2955890350f91857f96a8f504bb8b46e"
+    },
+    {
+      "path": "external/pigweed/third_party/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "aa0a47e6da4fffbfabd3f7577b13c85735a248c1",
+      "bytes": 1580,
+      "sha256": "0a4f52a496995a38e7cffb81c5ae319b777c23529f50890464fcffcccf43a6a5"
+    },
+    {
+      "path": "external/pigweed/third_party/emboss/Android.bp",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "653f101b0bdc962ffb725064118ba27f592cf1d3",
+      "bytes": 853,
+      "sha256": "029abd1f68d1c936bfdb5ecd7993a4e449facd8bc9e93d554827bb012bc3a404"
+    },
+    {
+      "path": "external/pigweed/third_party/emboss/embossc_runner.py",
+      "mode": "100644",
+      "project": "external/pigweed",
+      "commit": "db5cb0db8513b2598ae7c1fa8a6441ff7f8808b5",
+      "git_blob": "0fcd1d969b6d5bd8c5fae68709e897b3ab8004a1",
+      "bytes": 1010,
+      "sha256": "828222c28cdbd23a4837b47af947b2e99a431ddfb58ce1b485c9ee466d8ff3e9"
+    },
+    {
+      "path": "system/chre/Android.bp",
+      "mode": "100644",
+      "project": "system/chre",
+      "commit": "17b4a35a8c2b9f27e7f1b382b7d714aced928ce4",
+      "git_blob": "c3f1722ba55779a6d25678f09d486b659223eb79",
+      "bytes": 49456,
+      "sha256": "64ceaec43e29dea5f875d7ca33cef33baae7b097e40b3a60a59f18f0d27e6783"
+    }
+  ],
+  "emboss_original_root_tree": "81f06fe342962c5f00335fe553882391aa89caf5",
+  "emboss_original_file_count": 405,
+  "emboss_original_tree_count": 36,
+  "newly_visible_pigweed_blueprints": 10,
+  "newly_visible_pigweed_named_modules": 30,
+  "original_consumer_modules": [
+    "chre_linux",
+    "chre_linux_nanoapp_unit_test"
+  ],
+  "original_missing_providers": [
+    "emboss_runtime_headers",
+    "pw_bluetooth_emboss_group",
+    "pw_bluetooth_proxy",
+    "rfcomm",
+    "pw_intrusive_ptr",
+    "pw_multibuf",
+    "pw_multibuf_allocator"
+  ],
+  "source_materialized": false,
+  "full_build_qualified": false,
+  "runtime_qualified": false
+}

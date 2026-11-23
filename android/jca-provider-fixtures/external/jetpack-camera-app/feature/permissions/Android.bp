@@ -1,0 +1,31 @@
+package {
+    default_applicable_licenses: [
+        "Android-Apache-2.0",
+    ],
+}
+
+android_library {
+    name: "jetpack-camera-app_feature_permissions",
+    srcs: ["src/main/**/*.kt"],
+    resource_dirs: [
+        "src/main/res",
+    ],
+    static_libs: [
+        "accompanist-permissions",
+        "androidx.compose.material3_material3",
+        "androidx.compose.material_material-icons-extended",
+        "androidx.compose.runtime_runtime",
+        "androidx.compose.ui_ui-tooling-preview",
+        "androidx.compose.ui_ui-tooling",
+        "androidx.core_core",
+        "androidx.navigation_navigation-compose",
+        "androidx.hilt_hilt-navigation-compose",
+        "hilt_android",
+    ],
+    sdk_version: "34",
+    min_sdk_version: "23",
+    manifest: "src/main/AndroidManifest.xml",
+    apex_available: [
+        "com.android.mediaprovider",
+    ],
+}

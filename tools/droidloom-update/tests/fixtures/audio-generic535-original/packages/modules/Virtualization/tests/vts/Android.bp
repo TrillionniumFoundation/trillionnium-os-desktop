@@ -1,0 +1,69 @@
+prebuilt_etc {
+    name: "vts_libavf_test_kernel",
+    filename: "vts_libavf_vm.bin",
+    src: ":empty_file",
+    target: {
+        android_arm64: {
+            src: ":vmbase_test_vm_signed",
+        },
+    },
+    installable: false,
+    visibility: ["//visibility:private"],
+    vendor: true,
+}
+
+rust_test {
+    name: "vts_libavf_test",
+    crate_name: "vts_libavf_test",
+    srcs: ["src/vts_libavf_test.rs"],
+    rustlibs: [
+        "libandroid_logger",
+        "libanyhow",
+        "libavf_compat_bindgen",
+        "libciborium",
+        "libhypervisor_props",
+        "libdma_buf_heap_bindgen",
+        "liblog_rust",
+        "libmemmap2",
+        "libnix",
+        "libscopeguard",
+        "libservice_vm_comm",
+        "libvsock",
+        "libvmbase_test_vm_messages",
+    ],
+    whole_static_libs: ["libavf_compat"],
+    shared_libs: ["libavf"],
+    test_suites: [
+        "general-tests",
+        "vts",
+    ],
+    data: [":vts_libavf_test_kernel"],
+    test_config: "AndroidTest.xml",
+    compile_multilib: "first",
+    vendor: true,
+}
+
+rust_test {
+    name: "vts_pkvm_tracing_test",
+    crate_name: "vts_pkvm_tracing_test",
+    srcs: ["src/vts_pkvm_tracing_test.rs"],
+    defaults: [
+        "rdroidtest.defaults",
+    ],
+    rustlibs: [
+        "libanyhow",
+        "libhypervisor_props",
+        "liblog_rust",
+        "libnix",
+        "libscopeguard",
+        "libwalkdir",
+    ],
+    test_suites: [
+        "general-tests",
+        "vts",
+    ],
+    data: [":vts_libavf_test_kernel"],
+    test_config: "AndroidTest_pkvm_tracing.xml",
+    compile_multilib: "first",
+    vendor: true,
+}

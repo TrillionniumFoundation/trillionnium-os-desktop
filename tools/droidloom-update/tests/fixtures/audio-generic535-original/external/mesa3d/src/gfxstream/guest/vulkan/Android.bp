@@ -1,0 +1,203 @@
+/*
+ * Copyright (C) 2025-2026 The Magma GPU Project
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Generated via:
+ *   https://github.com/mesonbuild/meson/tree/master/mesonbuild/convert
+ *
+ * Submit patches, do not hand-edit.
+ *
+ */
+
+package {
+    // See: http://go/android-license-faq
+    default_applicable_licenses: ["external_mesa3d_license"],
+}
+
+cc_defaults {
+    name: "vulkan_gfxstream_c_flags",
+    vendor: true,
+    host_supported: true,
+    cflags: [
+        "-DXXH_FORCE_ALIGN_CHECK=0",
+        "-DXXH_FORCE_MEMORY_ACCESS=0",
+    ],
+}
+
+cc_defaults {
+    name: "vulkan_gfxstream_cpp_flags",
+    vendor: true,
+    host_supported: true,
+    cppflags: [
+        "-DXXH_FORCE_ALIGN_CHECK=0",
+        "-DXXH_FORCE_MEMORY_ACCESS=0",
+    ],
+}
+
+cc_library_shared {
+    name: "vulkan.ranchu",
+    vendor: true,
+    c_std: "c11",
+    cpp_std: "c++17",
+    host_supported: true,
+    defaults: [
+        "_trial_msvc",
+        "aosp_mesa3d_c_link_args",
+        "aosp_mesa3d_c_project_args",
+        "aosp_mesa3d_cpp_link_args",
+        "aosp_mesa3d_cpp_project_args",
+        "gfxstream_guest_args",
+        "ld_args_bsymbolic",
+        "ld_args_gc_sections",
+        "vulkan_gfxstream_c_flags",
+        "vulkan_gfxstream_cpp_flags",
+        "vulkan_wsi_list",
+    ],
+    header_libs: [
+        "inc_aemu",
+        "inc_connection_manager",
+        "inc_gfxstream_android",
+        "inc_gfxstream_vk_stubs",
+        "inc_goldfish_address_space",
+        "inc_guest_iostream",
+        "inc_include",
+        "inc_platform_virtgpu",
+        "inc_src",
+        "inc_src_vulkan_runtime",
+        "inc_src_vulkan_util",
+        "inc_src_vulkan_wsi",
+        "inc_util",
+        "inc_util_c11",
+        "inc_vulkan_enc",
+        "inc_vulkan_headers",
+    ] + select(os(), {
+        "android": [
+            "hwvulkan_headers",
+        ],
+        default: [],
+    }),
+    generated_headers: [
+        "gfxstream_guest_vk_autogen_headers",
+        "gfxstream_vk_entrypoints_headers",
+        "git_sha1.h",
+        "shader_stats.h",
+        "spirv_info_headers",
+        "u_format_gen.h",
+        "vk_cmd_enqueue_entrypoints_headers",
+        "vk_cmd_queue_headers",
+        "vk_common_entrypoints_headers",
+        "vk_dispatch_table_headers",
+        "vk_enum_to_str_headers",
+        "vk_extensions_headers",
+        "vk_physical_device_features_headers",
+        "vk_physical_device_properties_headers",
+        "vk_struct_type_cast",
+        "vulkan_gfxstream_header",
+        "wsi_entrypoints_headers",
+    ],
+    generated_sources: [
+        "gfxstream_guest_vk_autogen_impl",
+        "gfxstream_vk_entrypoints_impl",
+    ],
+    srcs: [
+        ":files_lib_vulkan_enc_android_impl",
+        ":files_lib_vulkan_enc_impl",
+        "gfxstream_vk_cmd.cpp",
+        "gfxstream_vk_device.cpp",
+        "gfxstream_vk_wsi.cpp",
+    ],
+    static_libs: [
+        "aemu",
+        "blake3",
+        "connection_manager",
+        "gfxstream_android",
+        "gfxstream_vk_stubs",
+        "gfxstream_vulkan_mapper",
+        "goldfish_address_space",
+        "libarect",
+        "libgfxstream_androidemu_static",
+        "libgfxstream_rcEnc_static",
+        "libqemupipe.ranchu",
+        "libringbuffer",
+        "libvirtgpu_kumquat_ffi",
+        "mesa_util",
+        "mesa_util_c11",
+        "mesa_util_simd",
+        "platform_virtgpu",
+        "platform_virtgpu_drm",
+        "platform_virtgpu_kumquat",
+        "vulkan_lite_instance",
+        "vulkan_lite_runtime",
+        "vulkan_util",
+        "vulkan_wsi",
+        "xmlconfig",
+    ] + select((os(), soong_config_variable("aosp_mesa3d", "perfetto")), {
+        ("android", "true"): [
+            "libperfetto_client_experimental",
+        ],
+        (default, default): [],
+    }) + select(os(), {
+        "android": [
+            "_mesa_u_gralloc",
+        ],
+        default: [],
+    }) + select(arch(), {
+        "x86_64": [
+            "mesa_util_clflush",
+            "mesa_util_clflushopt",
+        ],
+        "x86": [
+            "mesa_util_clflush",
+            "mesa_util_clflushopt",
+        ],
+        default: [],
+    }),
+    shared_libs: [
+        "libOpenglCodecCommon",
+        "libbase",
+        "libdrm",
+        "libzstd",
+    ] + select(os(), {
+        "android": [
+            "libcutils",
+            "libhardware",
+            "liblog",
+            "libnativewindow",
+            "libsync",
+        ],
+        default: [],
+    }) + select((arch(), os(), soong_config_variable("aosp_mesa3d", "perfetto")), {
+        ("x86_64", "linux_glibc", default): [
+            "cutils",
+            "hardware",
+            "log",
+            "nativewindow",
+            "sync",
+        ],
+        ("x86_64", "linux_musl", default): [
+            "cutils",
+            "hardware",
+            "log",
+            "nativewindow",
+            "sync",
+        ],
+        ("arm64", "linux_musl", default): [
+            "cutils",
+            "hardware",
+            "log",
+            "nativewindow",
+            "sync",
+        ],
+        (default, default, default): [],
+    }),
+    whole_static_libs: [
+        "vulkan_lite_instance",
+        "vulkan_lite_runtime",
+        "vulkan_wsi",
+    ],
+    target: {
+        android: {
+            relative_install_path: "hw",
+        },
+    },
+}

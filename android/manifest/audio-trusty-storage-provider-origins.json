@@ -1,0 +1,567 @@
+{
+  "schema": "audio458-original-trusty-storage-header-closure-v1",
+  "superproject": {
+    "name": "platform/superproject",
+    "commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+    "ref": "refs/heads/android-17.0.0_r1"
+  },
+  "actual_read_H": "ai395/1a1d236ec1a-2564-1cb0",
+  "selected_original_trees": [
+    {
+      "specification": {
+        "commit": "88b0dd09802a19f07869d45dcd9a87a291803201",
+        "name": "trusty/lk/common",
+        "path": "external/trusty/lk",
+        "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+        "sparse_paths": [
+          "include/shared",
+          "include/uapi"
+        ]
+      },
+      "full_original_tree_bytes": 45302,
+      "full_original_tree_sha256": "9e84f1771e264d9090e03ea1c71b37c4aaf9d6dbfddff88b3a4818cd34d249bc",
+      "selected_files": [
+        {
+          "bytes": 685,
+          "git_blob": "97e67914853444155b4007f72c0942d121f7d21d",
+          "mode": "100644",
+          "relative": ".clang-format",
+          "sha256": "e6aaed26ad75b033864dd12df7d8232e0f4cfdfb86716894ae2a001d7283a4db"
+        },
+        {
+          "bytes": 103,
+          "git_blob": "43bfeb81bb2f7b6891d216771da829b3e62ee7e0",
+          "mode": "100644",
+          "relative": ".gitignore",
+          "sha256": "dcfe00d68e4f258f27859dfceacf239808a14d7d992a3fc9a4cce50a4ebe12de"
+        },
+        {
+          "bytes": 747,
+          "git_blob": "10f4c7338b68f7e610744df443d9b20fb02f2749",
+          "mode": "100644",
+          "relative": "Android.bp",
+          "sha256": "2f65b4f30d8a8709dffe8ef270703eaa656f8a780169d11380be38a3ea5c715e"
+        },
+        {
+          "bytes": 1132,
+          "git_blob": "8ea4448c5277f09d7a0ff7a86fc6061d79910c45",
+          "mode": "100644",
+          "relative": "LICENSE",
+          "sha256": "07f08d13871df2802962fe29992dcf3e782fe6b7a5b7e6d76e69ef3460b1cc74"
+        },
+        {
+          "bytes": 154,
+          "git_blob": "9667c0ed4402b951fa46a1304aa6fe053c7fb15c",
+          "mode": "100644",
+          "relative": "PREUPLOAD.cfg",
+          "sha256": "36465b23d1f9639d8100381ff98d56a2b80a11413f80428a8f14d51f21a4fe90"
+        },
+        {
+          "bytes": 849,
+          "git_blob": "05b509751d0a23cda87dffa7ebdf59a8581ebe21",
+          "mode": "100644",
+          "relative": "README.md",
+          "sha256": "fea430b319f2f326aa770aa3d211637c106ded4340d14639b23fa9c5eca71d8e"
+        },
+        {
+          "bytes": 990,
+          "git_blob": "26e98d8505c202a923fc12051e8908bca2a3ac05",
+          "mode": "100644",
+          "relative": "build-config-kerneltests",
+          "sha256": "7da79b1a4aa88876700c15d540cfb2fd704a1db6d819042b0fff8de4c9a49b39"
+        },
+        {
+          "bytes": 20221,
+          "git_blob": "b73a5d514f05a90d2d3310b3b1665ee9065e808a",
+          "mode": "100644",
+          "relative": "engine.mk",
+          "sha256": "40252cfe9d98a1fcd8a717d0f6d458c07529accf2be9ee7be06a6cc74e70f015"
+        },
+        {
+          "bytes": 1964,
+          "git_blob": "bdc9386c71d4be4ad4ab4be528db6208718d4ef4",
+          "mode": "100644",
+          "relative": "include/app.h",
+          "sha256": "22d403c3722f1fab421442e1d16a346b0470a1cf1e301a142e6aa2d1d8ddcfc4"
+        },
+        {
+          "bytes": 1796,
+          "git_blob": "e94002193c53774d73b72babb680048cd901225d",
+          "mode": "100644",
+          "relative": "include/arch.h",
+          "sha256": "cee60e79d5c869f1b442202883c446ee2bd3795766f7fe947012f26197cbae1d"
+        },
+        {
+          "bytes": 3190,
+          "git_blob": "fc7013be0dce64a42ea59459dbfe032fc61714f0",
+          "mode": "100644",
+          "relative": "include/bits.h",
+          "sha256": "bd45f22f582ea37391232fb4cdc6163eea79e6c0e3a1d0cb58abb37592ca239c"
+        },
+        {
+          "bytes": 3044,
+          "git_blob": "c3bb734e122b89ea60130316bbb4510e0a3cf141",
+          "mode": "100644",
+          "relative": "include/debug.h",
+          "sha256": "3cfff62257c6999f93d093ffe2e81799ab9778b2ad45a5fb955664c1846f48a8"
+        },
+        {
+          "bytes": 1453,
+          "git_blob": "53b12839301f796d528e5affd2d723f82897f01b",
+          "mode": "100644",
+          "relative": "include/panic.h",
+          "sha256": "9083c7ea4b0832a57244dce79d9433ee37fe66c38b9a1ee9cd5ad77265db3b8c"
+        },
+        {
+          "bytes": 4775,
+          "git_blob": "f58ae451e748d727d4cbd85dc17c8c8b33acf1f8",
+          "mode": "100644",
+          "relative": "include/platform.h",
+          "sha256": "4efa9fd8bd5fb8026c7bbfdb59fbe83900beba8073589929533a76f060e11bbc"
+        },
+        {
+          "bytes": 1622,
+          "git_blob": "c6f2d5f7f5e9a0b6353063989b64d43fa0302769",
+          "mode": "100644",
+          "relative": "include/shared/lk/asm.h",
+          "sha256": "2a1d64e8154c9a18eb8a485c9535ff4ab7bc53d77444b25846f6f0871661b2ac"
+        },
+        {
+          "bytes": 7547,
+          "git_blob": "d4a9ae94931ee67e6d13c31885bf8c8cfb359a83",
+          "mode": "100644",
+          "relative": "include/shared/lk/compiler.h",
+          "sha256": "4edbda7641970734d817c22cc7bcb8256b044c92bb0aa743e013432095ad1e4a"
+        },
+        {
+          "bytes": 10020,
+          "git_blob": "0019766c14b3309b33827a95a27a3d9404a4e416",
+          "mode": "100644",
+          "relative": "include/shared/lk/list.h",
+          "sha256": "e026fbde3a15d3ec15995f2d4ba10bb18de7c61a85b2f2cd9a977fe59da800bf"
+        },
+        {
+          "bytes": 2222,
+          "git_blob": "56e1836449ca696bcd83fdd76274236ea1365a0e",
+          "mode": "100644",
+          "relative": "include/shared/lk/macros.h",
+          "sha256": "19470dcabd56f1d5a02b38b80d077139446f33ba7a677ed753f73839858cca11"
+        },
+        {
+          "bytes": 2903,
+          "git_blob": "306e582aa0f2e030b4626a685e1522ddb1e52043",
+          "mode": "100644",
+          "relative": "include/shared/lk/pow2.h",
+          "sha256": "fbb094c2138c7213471f795042b706212185ec26be48eea314dbeb21bf580d5d"
+        },
+        {
+          "bytes": 3711,
+          "git_blob": "24d189d72a396f6f9cb67440b849bdc96b578ed4",
+          "mode": "100644",
+          "relative": "include/shared/lk/reg.h",
+          "sha256": "10a140bdcbc6d7eb7be1484e40e47dee8a92c6960b84c62dd8a798766bb4172c"
+        },
+        {
+          "bytes": 2088,
+          "git_blob": "a970c4bce2dc819c07323b015d796be9df1c4c93",
+          "mode": "100644",
+          "relative": "include/shared/lk/trace.h",
+          "sha256": "1ecfccfa635443089f152587fc11f717e6e1254a2bc7122ae75b1cb5dea121b2"
+        },
+        {
+          "bytes": 1807,
+          "git_blob": "91e0f245e81776a3c1bccc11888beee48d2bc6e2",
+          "mode": "100644",
+          "relative": "include/target.h",
+          "sha256": "04b1cd1393c16829f4a59ed260b9d63840ebfef1daaf953f95565035751dbf30"
+        },
+        {
+          "bytes": 2887,
+          "git_blob": "d0fb1838680695e8e48c0f976d5e771192489675",
+          "mode": "100644",
+          "relative": "include/uapi/uapi/err.h",
+          "sha256": "1d6c88f6708d81a6d9dd2afddc386e88be13e9ae33db0952a3f824864835cda2"
+        },
+        {
+          "bytes": 1252,
+          "git_blob": "6c85231734be3db5b53c0a4fcd522c1ad6f1153f",
+          "mode": "100644",
+          "relative": "kerneltests-inc.mk",
+          "sha256": "e414eec5fc766654e9b870685eb65a47c5d73f935bdb5568a16dad3ff54851cb"
+        },
+        {
+          "bytes": 590,
+          "git_blob": "b19e4a1f4082ca0afb12fccaede3eb17427c1ffe",
+          "mode": "100644",
+          "relative": "lk_inc.mk.example",
+          "sha256": "830bc8f9e56e91cc88a14a83dc07f31a545c6ba268a573faf79c6e8f519f4eef"
+        },
+        {
+          "bytes": 1113,
+          "git_blob": "a8e9c1802dcc9b6317704028d6286ef1cf82bc05",
+          "mode": "100644",
+          "relative": "makefile",
+          "sha256": "f9497004bf7d13e3e100e3e7f770439d3653845ca770eb528cbda1b2412cd9b7"
+        },
+        {
+          "bytes": 93,
+          "git_blob": "cefaa42a3f64a49cc5586c611f65d8996657fc72",
+          "mode": "100644",
+          "relative": "rustfmt.toml",
+          "sha256": "f0fe9298a38b9e5c2ce09aef43e1931f6ae4067b676674ac948d64c6a17e3381"
+        }
+      ]
+    },
+    {
+      "specification": {
+        "commit": "837ece72a3c50f454dfaf3bb86d5ac2e843c142b",
+        "name": "trusty/lk/trusty",
+        "path": "trusty/kernel",
+        "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+        "sparse_paths": [
+          "include/shared",
+          "include/uapi"
+        ]
+      },
+      "full_original_tree_bytes": 30315,
+      "full_original_tree_sha256": "b47ba91cf9479cfbf92e51aa0da12727cdce80a2b652fdc16e67c047ec9e9eb9",
+      "selected_files": [
+        {
+          "bytes": 685,
+          "git_blob": "97e67914853444155b4007f72c0942d121f7d21d",
+          "mode": "100644",
+          "relative": ".clang-format",
+          "sha256": "e6aaed26ad75b033864dd12df7d8232e0f4cfdfb86716894ae2a001d7283a4db"
+        },
+        {
+          "bytes": 390,
+          "git_blob": "1a1bba2e9166847aded070551207d3f04aeb6a17",
+          "mode": "100644",
+          "relative": "AUTHORS",
+          "sha256": "adaa11d39120ff89eade5e5a92f28a3cf13eb328907d6d999c19a68282763820"
+        },
+        {
+          "bytes": 674,
+          "git_blob": "4b8f97fb225c4849622a8100a6dd0d37b1675a9a",
+          "mode": "100644",
+          "relative": "Android.bp",
+          "sha256": "c1c3d549adf62f7f9380af63218d4a489dbe1693ef439fe6cb7cc12cf612ada8"
+        },
+        {
+          "bytes": 1089,
+          "git_blob": "2df4ba70d40846d79ed0addd9762e3cfb9d58669",
+          "mode": "100644",
+          "relative": "LICENSE",
+          "sha256": "c31b135ba713b4b78ab82f26d716b62934939d793a62a27f4f69dee4eac298e2"
+        },
+        {
+          "bytes": 255,
+          "git_blob": "f356f46aca1d5303cd442bf077dbe7a816a62032",
+          "mode": "100644",
+          "relative": "PREUPLOAD.cfg",
+          "sha256": "e7385e8278eae9398e281fda046353b44eba7b2e7d66341c072d05f8dfb00d5c"
+        },
+        {
+          "bytes": 1794,
+          "git_blob": "4120ba251b116455ca4bc5ae7966095167740d22",
+          "mode": "100644",
+          "relative": "build-config-kerneltests",
+          "sha256": "684e83151c3071a4b9daa4dc415b9dcb83274079371c571c7e832f70c8218f0f"
+        },
+        {
+          "bytes": 1450,
+          "git_blob": "ec9002e6e873cdec237bf89f4d64ce9146cb5eb2",
+          "mode": "100644",
+          "relative": "include/shared/lk/err_ptr.h",
+          "sha256": "fa58936da451ed9b0f9c9d72eca2881a7d48638c7c8351d7bb37fad2de01c979"
+        },
+        {
+          "bytes": 4021,
+          "git_blob": "47de0ff298cb0a3b889a9dd7478d82ba804417dc",
+          "mode": "100644",
+          "relative": "include/shared/lk/reflist.h",
+          "sha256": "c56c7084adcd891dfbda6575bc61325b40332ba6834cb8fb347480ad6ea1c896"
+        },
+        {
+          "bytes": 7324,
+          "git_blob": "0b55c5dc7a219271ac5519479c723926ddaa2e4b",
+          "mode": "100644",
+          "relative": "include/shared/lk/trusty_bench_common.h",
+          "sha256": "c7f9f07f00d51e821d4a8e2d33cf32c2669de2307087f28885bf5f1fe49227b7"
+        },
+        {
+          "bytes": 5211,
+          "git_blob": "58e921474eaeefacd4661bc2ceb17c70125d2f37",
+          "mode": "100644",
+          "relative": "include/shared/lk/trusty_bench_json_print.h",
+          "sha256": "54b7b00044285937269e27b5270be3e497306366ea6035c78202c08487d2a909"
+        },
+        {
+          "bytes": 2475,
+          "git_blob": "13b3f0301fd7d825190b212089f2a5471872f58a",
+          "mode": "100644",
+          "relative": "include/shared/lk/trusty_bench_json_schema.v3.json",
+          "sha256": "49a2cb96a797771d7bbabd527b49b34763844794f26c1e4cb8802d2ff47731c0"
+        },
+        {
+          "bytes": 4502,
+          "git_blob": "33697bade684474c8d2d5ea2eb69afa093da05da",
+          "mode": "100644",
+          "relative": "include/shared/lk/trusty_bench_option_cb.h",
+          "sha256": "7ed02d664964a5a3dc53daebef8b84ce370b2e43deb6fdf546610fd204b26086"
+        },
+        {
+          "bytes": 18643,
+          "git_blob": "97eef58d10a07c94754d9334be3f46a1b891b849",
+          "mode": "100644",
+          "relative": "include/shared/lk/trusty_bench_print_tables.h",
+          "sha256": "10db209f97df1e6f3fbad37c0ff9158eb17196e05e5eeb85b4d4e03c1d1c3c86"
+        },
+        {
+          "bytes": 42414,
+          "git_blob": "8a1019cb99c9e41e4c75cbdd43a3aefa28b37bec",
+          "mode": "100644",
+          "relative": "include/shared/lk/trusty_benchmark.h",
+          "sha256": "9b202ceb74726c22628d82421eab791d3e7fa3787126ea11ffdb8154f01d5e6d"
+        },
+        {
+          "bytes": 42760,
+          "git_blob": "a14aa1d683d474d582ee47afd9ab1937627533b5",
+          "mode": "100644",
+          "relative": "include/shared/lk/trusty_unittest.h",
+          "sha256": "0d7168fae4d394946072463b1ecae8da7b208ac81c2b883d254693d3545289ec"
+        },
+        {
+          "bytes": 1421,
+          "git_blob": "75911a0f7b64a4eb17b8aa72fbd6c8e7fe77679a",
+          "mode": "100644",
+          "relative": "include/trusty_log.h",
+          "sha256": "d46837a0afac7dccea46e31ff1248f6bd2239964b6799c58749c531c41dc5b95"
+        },
+        {
+          "bytes": 6059,
+          "git_blob": "a8d23108f9f38b223e99a1e1ba40a694959597c0",
+          "mode": "100644",
+          "relative": "include/uapi/uapi/mm.h",
+          "sha256": "edc4b313e3a49f74648a14d95cec5139f9dd66500b92d024e587fae02888f845"
+        },
+        {
+          "bytes": 1242,
+          "git_blob": "358e2b2d7f7d4044687abd6bc4766cb91988fe07",
+          "mode": "100644",
+          "relative": "include/uapi/uapi/trusty_ipc.h",
+          "sha256": "520f02968778bf4f8ec7ab51e6cde7500c8f46875309c15b1848d2077e50e9d3"
+        },
+        {
+          "bytes": 8264,
+          "git_blob": "051b59bfe0c6334cbb83ba7473f469aaf1be403f",
+          "mode": "100644",
+          "relative": "include/uapi/uapi/trusty_peer_id.h",
+          "sha256": "2adf62b1c4a8ab7fdfd40787ac72ea48044fc745897b7c538dc2e72e9e3968b4"
+        },
+        {
+          "bytes": 1478,
+          "git_blob": "feb5b70583d9da26053c698e7327849ce8d35042",
+          "mode": "100644",
+          "relative": "include/uapi/uapi/trusty_uevent.h",
+          "sha256": "c344cb0fbe6a25914d1a6deecfa81f5669abd4cbb5a3745a3b075276da37d37c"
+        },
+        {
+          "bytes": 1991,
+          "git_blob": "ff17720c0bf6bf7fe3c60b9d55b7122eb5b0e91e",
+          "mode": "100644",
+          "relative": "include/uapi/uapi/trusty_uuid.h",
+          "sha256": "5152c3a8084b98c63332b2452e729b1fc7b84cea3103b8fde9addb5a6bb9c48d"
+        },
+        {
+          "bytes": 2033,
+          "git_blob": "9d1e421abd923c5294581b706670551de4d00502",
+          "mode": "100644",
+          "relative": "kerneltests-inc.mk",
+          "sha256": "61edfe6e1da736ab36c39382dbda26c7eb491b092cd1fcceab2aebe1b12da601"
+        },
+        {
+          "bytes": 93,
+          "git_blob": "cefaa42a3f64a49cc5586c611f65d8996657fc72",
+          "mode": "100644",
+          "relative": "rustfmt.toml",
+          "sha256": "f0fe9298a38b9e5c2ce09aef43e1931f6ae4067b676674ac948d64c6a17e3381"
+        }
+      ]
+    },
+    {
+      "specification": {
+        "commit": "165d46c463bd22524a7d33d177bf7f35dad46bf5",
+        "name": "trusty/lib",
+        "path": "trusty/user/base",
+        "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
+        "sparse_paths": [
+          "interface/storage",
+          "include/user"
+        ]
+      },
+      "full_original_tree_bytes": 59920,
+      "full_original_tree_sha256": "b2e41e764136c1b2ca00e105557997741ee49e455c89c207078c065dd925c595",
+      "selected_files": [
+        {
+          "bytes": 685,
+          "git_blob": "97e67914853444155b4007f72c0942d121f7d21d",
+          "mode": "100644",
+          "relative": ".clang-format",
+          "sha256": "e6aaed26ad75b033864dd12df7d8232e0f4cfdfb86716894ae2a001d7283a4db"
+        },
+        {
+          "bytes": 33,
+          "git_blob": "9c02885da18d3febfb114f302040fc1b204e05e6",
+          "mode": "100644",
+          "relative": ".gitignore",
+          "sha256": "d72cf3256131fc6c290b4fecf597f54e63d3dc18e440feef2d823bff30129379"
+        },
+        {
+          "bytes": 1286,
+          "git_blob": "e0dc38ecd3d0b1ba6687f879588fd06396a5d74b",
+          "mode": "100644",
+          "relative": "Android.bp",
+          "sha256": "421fff468ba8fff3fbf71ba5b64fb94110bd6b814437d2235b0ac8b83e819599"
+        },
+        {
+          "bytes": 1075,
+          "git_blob": "de0709758064992b83ccb955620fe81d0924061f",
+          "mode": "100644",
+          "relative": "PREUPLOAD.cfg",
+          "sha256": "223b3f3c1a795d6fd931feb5320caf07d7b7c162da823eb4c656a6e993016c13"
+        },
+        {
+          "bytes": 2806,
+          "git_blob": "8b1dfd549867b69eb5f4646dad359aca5205b36e",
+          "mode": "100644",
+          "relative": "build-config-usertests",
+          "sha256": "b9f00b36a9c328852047f2fa9288da7b3d4590c575747ab8fd1289f4683dbcf5"
+        },
+        {
+          "bytes": 742,
+          "git_blob": "9e60448ea7b790ba8a2f643650371ec013e69a18",
+          "mode": "100644",
+          "relative": "build-config-usertests-release",
+          "sha256": "87e3f73875592c11350a955f30d38d6cec503e17d9d5092c9f5afa87c7a99025"
+        },
+        {
+          "bytes": 332,
+          "git_blob": "8385e13cf0924dfd993bd51b54d7533aad29a89d",
+          "mode": "100644",
+          "relative": "include/user/AUTHORS",
+          "sha256": "8c97b635eb6868ccc59ca18b496c32fbfcdedccc97de4d02eb06a69c5d3c01e7"
+        },
+        {
+          "bytes": 1089,
+          "git_blob": "2df4ba70d40846d79ed0addd9762e3cfb9d58669",
+          "mode": "100644",
+          "relative": "include/user/LICENSE",
+          "sha256": "c31b135ba713b4b78ab82f26d716b62934939d793a62a27f4f69dee4eac298e2"
+        },
+        {
+          "bytes": 2745,
+          "git_blob": "a2fe9961380082f1966115102d7007880b3708b3",
+          "mode": "100644",
+          "relative": "include/user/trusty_app_manifest.h",
+          "sha256": "bf8c99f2594e1f686be049d4191f9e98de5eea5f62b10380f5550cd22a717e13"
+        },
+        {
+          "bytes": 698,
+          "git_blob": "61d4ebfa831872a19446e1dada70a2fa2f03c878",
+          "mode": "100644",
+          "relative": "include/user/trusty_benchmark.h",
+          "sha256": "72161fea8dafd117f958d426258997e656dac3c8def56a128d5b5a55e4c89352"
+        },
+        {
+          "bytes": 794,
+          "git_blob": "a280a4ba1eeb42b21d75d6e665914abc50282247",
+          "mode": "100644",
+          "relative": "include/user/trusty_err.h",
+          "sha256": "0cf4974e8d45b5334e9660ab099cda21985d67521faa34509fbbafd25b093b63"
+        },
+        {
+          "bytes": 6020,
+          "git_blob": "ba61a5fecee83d92ab871e5cab9c22aab1cf6896",
+          "mode": "100644",
+          "relative": "include/user/trusty_ipc.h",
+          "sha256": "15f64f88d43344b8a296e027ccecfae5a01b2d62b77f20e9adc2bceed7c5ee7c"
+        },
+        {
+          "bytes": 2962,
+          "git_blob": "77da365484482c90d47c6c9ebb65a953dbe80d2f",
+          "mode": "100644",
+          "relative": "include/user/trusty_log.h",
+          "sha256": "fd165910d41012ad755a0e0203919675fb43b011bb1a64888736cad96ce4edc4"
+        },
+        {
+          "bytes": 1191,
+          "git_blob": "67143e7f779cb4c060242b16b7b50d6491784159",
+          "mode": "100644",
+          "relative": "include/user/trusty_uio.h",
+          "sha256": "78acabe939596fd43eae43021f1bc0e06c05db5456d16adbf8248cac42f19735"
+        },
+        {
+          "bytes": 950,
+          "git_blob": "5d25744ab53ce0bdacc04b7c5862a076b9ef5c43",
+          "mode": "100644",
+          "relative": "include/user/trusty_unittest.h",
+          "sha256": "3159110defa9b368dd3ebfd43651cf22b362c8041a7e860d9b0c86c9dd75c828"
+        },
+        {
+          "bytes": 1018,
+          "git_blob": "9d953a6246f7759a0f320220cfe8af909dde41f4",
+          "mode": "100644",
+          "relative": "interface/storage/Android.bp",
+          "sha256": "58f3a3c8e30084891c9aa417dd506d9d1825fdd7b4603a4422f0f56d6136d284"
+        },
+        {
+          "bytes": 11358,
+          "git_blob": "57bc88a15a0ee8266c259b2667e64608d3f7e292",
+          "mode": "100644",
+          "relative": "interface/storage/LICENSE",
+          "sha256": "c95bae1d1ce0235ecccd3560b772ec1efb97f348a79f0fbe0a634f0c2ccefe2c"
+        },
+        {
+          "bytes": 22815,
+          "git_blob": "865f7631f1e351fe768da5366b5be144251dd366",
+          "mode": "100644",
+          "relative": "interface/storage/include/interface/storage/storage.h",
+          "sha256": "4ee66aa7ea280344154f40dcdc97ddd8edc5fc84a61e6653f14db782f8fb11cc"
+        },
+        {
+          "bytes": 730,
+          "git_blob": "168afb2136fe51483350374552b9d3bf0d6e4abf",
+          "mode": "100644",
+          "relative": "interface/storage/rules.mk",
+          "sha256": "5e436ed64f6900c068314b8ef1122c284fc4228f6c76d9d0e556404bfa4e6fa1"
+        },
+        {
+          "bytes": 93,
+          "git_blob": "cefaa42a3f64a49cc5586c611f65d8996657fc72",
+          "mode": "100644",
+          "relative": "rustfmt.toml",
+          "sha256": "f0fe9298a38b9e5c2ce09aef43e1931f6ae4067b676674ac948d64c6a17e3381"
+        },
+        {
+          "bytes": 3505,
+          "git_blob": "c89420f6396eb9a4a67e71ba3e32d410824be07e",
+          "mode": "100644",
+          "relative": "usertests-inc.mk",
+          "sha256": "704a23d70c56590c623044746d70825bdd66cbfb6081eb2ced2454b27a955681"
+        },
+        {
+          "bytes": 1238,
+          "git_blob": "290e0d8c9d1b10613987fe23a913991dc098d29d",
+          "mode": "100644",
+          "relative": "usertests-rust-inc.mk",
+          "sha256": "eba06d524d419e043e10f4acca4a274ce370c9f2cfba4ddba9902ae9ccb46a3c"
+        }
+      ]
+    }
+  ],
+  "selected_original_file_count": 72,
+  "all_original_bytes_Git_blob_mode_verified": true,
+  "source_writes": 0,
+  "full_builds_started": 0
+}

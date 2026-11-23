@@ -1,0 +1,100 @@
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+DATA = [
+    ":MicrodroidTestApp",
+    ":MicrodroidTestHelperAppAlternateTenant",
+    ":MicrodroidTestHelperAppRelaxedRollbackProtection_V6",
+    ":MicrodroidTestHelperAppRelaxedRollbackProtection_V7_inc_rollback_version",
+]
+
+CTS_DATA = [
+    ":MicrodroidTestApp.CTS",
+    ":MicrodroidTestHelperAppAlternateTenant",
+    ":MicrodroidTestHelperAppRelaxedRollbackProtection_V6",
+    ":MicrodroidTestHelperAppRelaxedRollbackProtection_V7_inc_rollback_version",
+]
+
+VTS_DATA = [
+    ":MicrodroidTestApp.VTS",
+    ":MicrodroidTestHelperAppAlternateTenant",
+    ":MicrodroidTestHelperAppRelaxedRollbackProtection_V6",
+    ":MicrodroidTestHelperAppRelaxedRollbackProtection_V7_inc_rollback_version",
+]
+
+java_defaults {
+    name: "vm_multitenancy_testapp_defaults",
+    manifest: "AndroidManifest.xml",
+    test_config_template: "AndroidTestTemplate.xml",
+    auto_gen_config: true,
+    static_libs: [
+        "MicrodroidDeviceTestLib",
+        "androidx.test.runner",
+        "androidx.test.ext.junit",
+        "com.android.virt.vm_attestation.testservice-java",
+        "truth",
+        "VmAttestationTestUtil",
+        "avf_aconfig_flags_java",
+    ],
+    jni_libs: [
+        "libvm_attestation_test_payload",
+        "MicrodroidTestNativeOnAlternatePortLib",
+    ],
+    // We only support 64-bit ABI, but xTS demands all APKs to be multi-ABI.
+    compile_multilib: "both",
+    jni_uses_platform_apis: true,
+    use_embedded_native_libs: true,
+    sdk_version: "test_current",
+}
+
+android_test {
+    name: "VmMultiTenancyTests",
+    srcs: ["src/java/com/android/virt/vm_multitenancy/testapp/*.java"],
+    defaults: ["vm_multitenancy_testapp_defaults"],
+    test_suites: [
+        "general-tests",
+        "pts",
+    ],
+    data: DATA,
+}
+
+android_test {
+    name: "VmMultiTenancyTests.CTS",
+    srcs: ["src/java/com/android/virt/vm_multitenancy/testapp/*.java"],
+    defaults: ["vm_multitenancy_testapp_defaults"],
+    test_config_template: "AndroidTestTemplateCTS.xml",
+    test_suites: [
+        "cts",
+        "dts",
+    ],
+    test_options: {
+        tradefed_options: [
+            {
+                name: "test-suite-tag",
+                value: "cts",
+            },
+        ],
+    },
+    data: CTS_DATA,
+}
+
+android_test {
+    name: "VmMultiTenancyTests.VTS",
+    srcs: ["src/java/com/android/virt/vm_multitenancy/testapp/*.java"],
+    defaults: ["vm_multitenancy_testapp_defaults"],
+    test_config_template: "AndroidTestTemplateVTS.xml",
+    test_suites: [
+        "vts",
+        "dts",
+    ],
+    test_options: {
+        tradefed_options: [
+            {
+                name: "test-suite-tag",
+                value: "vts",
+            },
+        ],
+    },
+    data: VTS_DATA,
+}

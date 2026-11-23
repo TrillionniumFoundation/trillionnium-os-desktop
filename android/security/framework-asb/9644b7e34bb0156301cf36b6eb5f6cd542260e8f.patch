@@ -1,0 +1,82 @@
+diff --git a/core/java/android/app/admin/DeviceAdminInfo.java b/core/java/android/app/admin/DeviceAdminInfo.java
+index 7616d80..2f02e49 100644
+--- a/core/java/android/app/admin/DeviceAdminInfo.java
++++ b/core/java/android/app/admin/DeviceAdminInfo.java
+@@ -484,6 +484,17 @@
+     }
+ 
+     /**
++     * @hide
++     * Load user-visible description associated with this device admin. The description is trimmed
++     * to 1024 characters by leveraging {@link ComponentInfo#loadDescription(PackageManager)}.
++     *
++     * @param pm Supply a PackageManager used to load the device admin's resources.
++     */
++    public CharSequence loadDescriptionSafe(@NonNull PackageManager pm) throws NotFoundException {
++        return mActivityInfo.loadDescription(pm);
++    }
++
++    /**
+      * Load the user-displayed icon for this device admin.
+      *
+      * @param pm Supply a PackageManager used to load the device admin's
+diff --git a/core/java/android/content/pm/ComponentInfo.java b/core/java/android/content/pm/ComponentInfo.java
+index 893cf86..ed50322 100644
+--- a/core/java/android/content/pm/ComponentInfo.java
++++ b/core/java/android/content/pm/ComponentInfo.java
+@@ -16,6 +16,7 @@
+ 
+ package android.content.pm;
+ 
++import android.annotation.NonNull;
+ import android.annotation.SuppressLint;
+ import android.app.Activity;
+ import android.app.Service;
+@@ -24,12 +25,15 @@
+ import android.content.ComponentName;
+ import android.content.ContentResolver;
+ import android.content.Context;
++import android.content.res.Resources.NotFoundException;
+ import android.graphics.drawable.Drawable;
+ import android.os.Build;
+ import android.os.Parcel;
+ import android.text.TextUtils;
+ import android.util.Printer;
+ 
++import java.util.Objects;
++
+ /**
+  * Base class containing information common to all application components
+  * ({@link ActivityInfo}, {@link ServiceInfo}).  This class is not intended
+@@ -106,6 +110,9 @@
+      */
+     public boolean directBootAware = false;
+ 
++    /** @hide */
++    public static final int MAX_SAFE_DESCRIPTION_LENGTH = 1024;
++
+     private static final int FLAG_ENABLED = 1 << 0;
+     private static final int FLAG_EXPORTED = 1 << 1;
+     private static final int FLAG_DIRECT_BOOT_AWARE = 1 << 2;
+@@ -158,6 +165,21 @@
+         return name;
+     }
+ 
++    /** @hide */
++    public CharSequence loadDescription(@NonNull PackageManager pm) {
++        Objects.requireNonNull(pm);
++        if (descriptionRes != 0) {
++            try {
++                return TextUtils.trimToSize(
++                        pm.getText(packageName, descriptionRes, applicationInfo),
++                        MAX_SAFE_DESCRIPTION_LENGTH);
++            } catch (OutOfMemoryError e) {
++                throw new NotFoundException();
++            }
++        }
++        throw new NotFoundException();
++    }
++
+     /**
+      * Return whether this component and its enclosing application are enabled.
+      */

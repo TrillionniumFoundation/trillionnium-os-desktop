@@ -1,0 +1,14 @@
+diff --git a/services/core/java/com/android/server/wm/ActivityClientController.java b/services/core/java/com/android/server/wm/ActivityClientController.java
+index c3a2710..2f4ccfb 100644
+--- a/services/core/java/com/android/server/wm/ActivityClientController.java
++++ b/services/core/java/com/android/server/wm/ActivityClientController.java
+@@ -467,6 +467,9 @@
+         final NeededUriGrants destGrants = mService.collectGrants(destIntent, r);
+         final NeededUriGrants resultGrants = mService.collectGrants(resultData, r.resultTo);
+ 
++        mService.mAmInternal.addCreatorToken(destIntent, r.packageName);
++        mService.mAmInternal.addCreatorToken(resultData, r.packageName);
++
+         synchronized (mGlobalLock) {
+             return r.getRootTask().navigateUpTo(
+                     r, destIntent, resolvedType, destGrants, resultCode, resultData, resultGrants);

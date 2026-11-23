@@ -1,0 +1,149 @@
+// Copyright (C) 2024 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+    default_team: "trendy_team_trusty",
+}
+
+prebuilt_etc {
+    name: "trusty_test_vm_config",
+    enabled: false,
+    installable: false,
+    arch: {
+        arm64: {
+            src: "trusty-test_vm-config-arm64.json",
+            enabled: true,
+        },
+        x86_64: {
+            src: "trusty-test_vm-config-x86_64.json",
+            enabled: true,
+        },
+    },
+    filename: "trusty-test_vm-config.json",
+}
+
+prebuilt_etc {
+    name: "trusty_vm_launcher_sh",
+    enabled: false,
+    arch: {
+        arm64: {
+            enabled: true,
+        },
+    },
+    src: "trusty-vm-launcher.sh",
+    filename: "trusty-vm-launcher.sh",
+}
+
+prebuilt_etc {
+    name: "trusty_vm_kill_sh",
+    enabled: false,
+    arch: {
+        arm64: {
+            enabled: true,
+        },
+    },
+    src: "trusty-vm-kill.sh",
+    filename: "trusty-vm-kill.sh",
+}
+
+prebuilt_etc {
+    name: "trusty_wait_ready_sh",
+    enabled: false,
+    arch: {
+        arm64: {
+            enabled: true,
+        },
+    },
+    src: "trusty-wait-ready.sh",
+    filename: "trusty-wait-ready.sh",
+}
+
+sh_test {
+    // SEE HAL VTS test
+    // (SEE HAL are defined under hardware/interfaces/security/see)
+    // the VM payload enables the remote Trusted HAL services
+    // accessed via AuthMgrFE over virtio-vsock over virtio-msg-ffa
+    name: "VtsSeeHalTargetTest",
+    src: "trusty-ut-ctrl.sh",
+    enabled: false,
+    arch: {
+        arm64: {
+            enabled: true,
+        },
+        x86_64: {
+            enabled: true,
+        },
+    },
+    filename_from_src: true,
+    data: [
+        ":trusty_test_vm_elf",
+        ":trusty_test_vm_config",
+        "trusty-vm-launcher.sh",
+        "trusty-vm-kill.sh",
+        "trusty-wait-ready.sh",
+        ":trusty-ut-ctrl.system",
+        ":trusty_test_vm_instance_id",
+    ],
+    test_config_template: "AndroidTest.vts.xml",
+    test_suites: [
+        "general-tests",
+        "vts",
+    ],
+}
+
+sh_test {
+    // raw vsock tests running over virtio-msg-ffa
+    // This test is meant for be used as an early integration test,
+    // before full bring-up of the remote SEE HALs.
+    // - the unit test is configured to connect to a
+    //   remote vsock device on CID=0x8001, port 0.
+    // - the VM payload is configured to enable device discovery
+    //   on virtio-msg-ffa transport
+    name: "VirtioVsockOverVirtioMsgFFATargetTest",
+    src: "trusty-ut-ctrl.sh",
+    enabled: false,
+    arch: {
+        arm64: {
+            enabled: true,
+        },
+        x86_64: {
+            enabled: true,
+        },
+    },
+    filename_from_src: true,
+    data: [
+        ":trusty_test_vm_elf",
+        ":trusty_test_vm_config",
+        "trusty-vm-launcher.sh",
+        "trusty-vm-kill.sh",
+        "trusty-wait-ready.sh",
+        ":trusty-ut-ctrl.system",
+        ":trusty_test_vm_instance_id",
+    ],
+    test_config_template: "AndroidTest.vsock.xml",
+    test_suites: [
+        "general-tests",
+    ],
+}
+
+genrule {
+    name: "trusty_test_vm_instance_id",
+    srcs: ["test_vm_instance_id_config.json"],
+    out: ["trusty_test_vm_instance_id"],
+    tools: [
+        "gen_instance_id_for_vm_with_trusted_hal",
+    ],
+    cmd: "$(location gen_instance_id_for_vm_with_trusted_hal) -i $(in) -o $(out)",
+}

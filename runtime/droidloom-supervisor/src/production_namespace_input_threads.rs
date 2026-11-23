@@ -1,0 +1,434 @@
+//! Read-only observation of the original system_server's two input workers.
+//! The selected R15 InputPolicy requests FIFO/2 before writing 50,000 ns timer
+//! slack. Linux stores zero when that procfs write targets a realtime task.
+//! Its two JoinCgroup actions are projected onto a unified hierarchy. A path
+//! and an allowed CPU list alone do not prove the native controller mapping.
+use super::*;
+use std::collections::BTreeMap;
+use std::time::Instant;
+
+const MAX_THREADS: usize = 32768;
+const DIR: i32 = libc::O_RDONLY | libc::O_DIRECTORY;
+
+fn timely(deadline: Instant) -> Result<()> {
+    if Instant::now() >= deadline {
+        return Err(NamespaceError::Rejected(
+            "input thread observation deadline",
+        ));
+    }
+    Ok(())
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
+enum Role {
+    Reader,
+    Dispatcher,
+}
+
+impl Role {
+    fn from_comm(comm: &[u8]) -> Option<Self> {
+        match comm {
+            b"InputReader\n" => Some(Self::Reader),
+            b"InputDispatcher\n" => Some(Self::Dispatcher),
+            _ => None,
+        }
+    }
+}
+
+struct Member {
+    directory: File,
+    node: Node,
+    identity: ProcessIdentity,
+    role: Role,
+}
+
+fn numeric_status(status: &[u8], field: &str) -> Result<u32> {
+    status_field(status, field)?
+        .trim()
+        .parse()
+        .map_err(|_| NamespaceError::Rejected("malformed input thread identity"))
+}
+
+fn member_identity(file: &File, tid: u32, leader: u32, role: Role) -> Result<ProcessIdentity> {
+    let status = read_proc(file, "status")?;
+    if tid == leader
+        || numeric_status(&status, "Tgid:")? != leader
+        || numeric_status(&status, "Pid:")? != tid
+        || Role::from_comm(&read_proc(file, "comm")?) != Some(role)
+    {
+        return Err(NamespaceError::Rejected(
+            "input role or thread-group identity changed",
+        ));
+    }
+    read_identity(file, tid)
+}
+
+impl Member {
+    fn verify(&self, task: &File, leader: u32) -> Result<()> {
+        let named = open_proc_at(task, &self.identity.pid.to_string(), DIR)?;
+        if self.node != Node::of(&named)?
+            || self.node != Node::of(&self.directory)?
+            || member_identity(&self.directory, self.identity.pid, leader, self.role)?
+                != self.identity
+        {
+            return Err(NamespaceError::Rejected("input worker was replaced"));
+        }
+        Ok(())
+    }
+}
+
+fn members(task: &File, leader: u32, deadline: Instant) -> Result<BTreeMap<Role, Member>> {
+    timely(deadline)?;
+    let names = proc_names(task)?;
+    if names.len() > MAX_THREADS {
+        return Err(NamespaceError::Rejected(
+            "input task directory exceeds thread budget",
+        ));
+    }
+    let mut workers = BTreeMap::new();
+    for name in names {
+        timely(deadline)?;
+        let dir = open_proc_at(task, &name, DIR)?;
+        if let Some(role) = Role::from_comm(&read_proc(&dir, "comm")?) {
+            let tid = name
+                .parse()
+                .map_err(|_| NamespaceError::Rejected("malformed input TID"))?;
+            let member = Member {
+                identity: member_identity(&dir, tid, leader, role)?,
+                node: Node::of(&dir)?,
+                directory: dir,
+                role,
+            };
+            if workers.insert(role, member).is_some() {
+                return Err(NamespaceError::Rejected("duplicate input worker role"));
+            }
+        }
+    }
+    if workers.len() != 2 {
+        return Err(NamespaceError::Rejected("both input worker roles required"));
+    }
+    timely(deadline)?;
+    Ok(workers)
+}
+
+#[derive(Debug, Eq, PartialEq)]
+struct Effects {
+    rt_priority: u32,
+    policy: u32,
+    timer_slack_ns: u64,
+    cgroup: Vec<u8>,
+    cpus_allowed: String,
+}
+
+fn scheduling(stat: &[u8], tid: u32) -> Result<(u32, u32)> {
+    let invalid = || NamespaceError::Rejected("invalid input worker scheduler record");
+    let text = std::str::from_utf8(stat).map_err(|_| invalid())?;
+    if !text.starts_with(&format!("{tid} (")) {
+        return Err(invalid());
+    }
+    let (_, tail) = text.rsplit_once(") ").ok_or_else(invalid)?;
+    // Fields 40 (rt_priority) and 41 (policy), counting state as field 3.
+    let mut fields = tail.split_ascii_whitespace();
+    let rt_priority = fields
+        .nth(37)
+        .ok_or_else(invalid)?
+        .parse()
+        .map_err(|_| invalid())?;
+    let policy = fields
+        .next()
+        .ok_or_else(invalid)?
+        .parse()
+        .map_err(|_| invalid())?;
+    Ok((rt_priority, policy))
+}
+
+fn unified_placement(raw: &[u8]) -> Result<()> {
+    let path = std::str::from_utf8(raw)
+        .ok()
+        .and_then(|s| s.strip_suffix('\n'))
+        .and_then(|s| s.strip_prefix(FRAMEWORK_PAYLOAD_PREFIX))
+        .ok_or(NamespaceError::Rejected(
+            "input worker escaped the original payload cgroup",
+        ))?;
+    if path
+        .split('/')
+        .any(|p| p.is_empty() || matches!(p, "." | "..") || p.bytes().any(|b| b.is_ascii_control()))
+    {
+        return Err(NamespaceError::Rejected(
+            "malformed input worker cgroup path",
+        ));
+    }
+    Ok(())
+}
+
+fn sample(proc_root: &File, task: &File, leader: u32, member: &Member) -> Result<Effects> {
+    member.verify(task, leader)?;
+    let tid = member.identity.pid;
+    // Linux exposes timerslack_ns at /proc/<tid> but omits it from the per-task
+    // directory. The two proc directory inodes are distinct. Keep both live:
+    // the original task must still be named under this same held thread group
+    // after reading the alias, so a numerically reused TID cannot supply data.
+    let alias = open_proc_at(proc_root, &tid.to_string(), DIR)?;
+    let alias_node = Node::of(&alias)?;
+    if member_identity(&alias, tid, leader, member.role)? != member.identity {
+        return Err(NamespaceError::Rejected("input worker proc alias differs"));
+    }
+    let slack = read_proc(&alias, "timerslack_ns")?;
+    let timer_slack_ns = std::str::from_utf8(&slack)
+        .ok()
+        .and_then(|s| s.strip_suffix('\n'))
+        .and_then(|s| s.parse().ok())
+        .ok_or(NamespaceError::Rejected("invalid thread timer slack"))?;
+    let (rt_priority, policy) = scheduling(&read_proc(&member.directory, "stat")?, tid)?;
+    let cgroup = read_proc(&member.directory, "cgroup")?;
+    let status = read_proc(&member.directory, "status")?;
+    let cpus_allowed = status_field(&status, "Cpus_allowed_list:")?
+        .trim()
+        .to_owned();
+    if cpus_allowed.is_empty()
+        || !cpus_allowed
+            .bytes()
+            .all(|b| b.is_ascii_digit() || b == b',' || b == b'-')
+    {
+        return Err(NamespaceError::Rejected("invalid input worker CPU list"));
+    }
+    if Node::of(&open_proc_at(proc_root, &tid.to_string(), DIR)?)? != alias_node
+        || member_identity(&alias, tid, leader, member.role)? != member.identity
+    {
+        return Err(NamespaceError::Rejected(
+            "input worker proc alias was replaced",
+        ));
+    }
+    member.verify(task, leader)?;
+    Ok(Effects {
+        rt_priority,
+        policy,
+        timer_slack_ns,
+        cgroup,
+        cpus_allowed,
+    })
+}
+
+impl Effects {
+    fn require_fifo_timer_and_payload(&self) -> Result<()> {
+        unified_placement(&self.cgroup)?;
+        // The original SetTimerSlackAction writes /proc/<tid>/timerslack_ns.
+        // Linux 6.18.64 fs/proc/base.c normalizes this write to zero under FIFO.
+        if self.policy != libc::SCHED_FIFO as u32
+            || self.rt_priority != 2
+            || self.timer_slack_ns != 0
+        {
+            return Err(NamespaceError::Rejected(
+                "input worker FIFO/2 or effective timer slack differs",
+            ));
+        }
+        Ok(())
+    }
+}
+
+pub(super) fn observe(
+    init: &ExecutedInitWitness<'_>,
+    held: &FrameworkObservation,
+    deadline: Instant,
+) -> Result<()> {
+    timely(deadline)?;
+    let child = init.init();
+    let task = open_proc_at(&held.directory, "task", DIR)?;
+    let leader = held.identity.pid;
+    let first = members(&task, leader, deadline)?;
+    let mut snapshots = BTreeMap::new();
+    for (role, member) in &first {
+        timely(deadline)?;
+        snapshots.insert(*role, sample(&child.proc_root, &task, leader, member)?);
+    }
+    init.revalidate_pre_ready_framework(held)?;
+    for (role, member) in &first {
+        timely(deadline)?;
+        let effects = sample(&child.proc_root, &task, leader, member)?;
+        if effects != snapshots[role] {
+            return Err(NamespaceError::Rejected(
+                "input worker scheduling or placement changed",
+            ));
+        }
+        effects.require_fifo_timer_and_payload()?;
+    }
+    // End on a fresh complete candidate inventory, after both effects reads.
+    // The two inventories cannot detect a role that appears and disappears between them.
+    let last = members(&task, leader, deadline)?;
+    for (role, member) in &first {
+        let other = &last[role];
+        if other.node != member.node || other.identity != member.identity {
+            return Err(NamespaceError::Rejected(
+                "input worker changed between inventories",
+            ));
+        }
+        member.verify(&task, leader)?;
+    }
+    if Node::of(&open_proc_at(&held.directory, "task", DIR)?)? != Node::of(&task)? {
+        return Err(NamespaceError::Rejected(
+            "system_server task directory changed",
+        ));
+    }
+    init.revalidate_pre_ready_framework(held)?;
+    timely(deadline)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::mpsc;
+    use std::thread::{self, JoinHandle};
+    use std::time::Duration;
+
+    struct Worker {
+        tx: mpsc::SyncSender<Option<&'static std::ffi::CStr>>,
+        replies: mpsc::Receiver<()>,
+        handle: Option<JoinHandle<()>>,
+    }
+
+    impl Worker {
+        fn start(name: &str) -> Self {
+            let (tx, rx) = mpsc::sync_channel::<Option<&'static std::ffi::CStr>>(0);
+            let (ready, replies) = mpsc::sync_channel(0);
+            let handle = thread::Builder::new()
+                .name(name.to_owned())
+                .spawn(move || {
+                    // Run the same sampler on a real unprivileged nonleader. The test
+                    // worker can read its own timer slack and normal scheduling state.
+                    let proc_root = File::open("/proc").unwrap();
+                    let tid = unsafe { libc::syscall(libc::SYS_gettid) } as u32;
+                    let alias = open_proc_at(&proc_root, &tid.to_string(), DIR).unwrap();
+                    let leader = std::process::id();
+                    let owner = open_proc_at(&proc_root, &leader.to_string(), DIR).unwrap();
+                    let task = open_proc_at(&owner, "task", DIR).unwrap();
+                    let directory = open_proc_at(&task, &tid.to_string(), DIR).unwrap();
+                    let role = Role::from_comm(&read_proc(&directory, "comm").unwrap()).unwrap();
+                    let member = Member {
+                        identity: member_identity(&directory, tid, leader, role).unwrap(),
+                        node: Node::of(&directory).unwrap(),
+                        directory,
+                        role,
+                    };
+                    let effects = sample(&proc_root, &task, leader, &member).unwrap();
+                    assert_eq!(effects.policy as i32, unsafe {
+                        libc::sched_getscheduler(0)
+                    });
+                    let mut param = libc::sched_param { sched_priority: 0 };
+                    assert_eq!(unsafe { libc::sched_getparam(0, &mut param) }, 0);
+                    assert_eq!(effects.rt_priority as i32, param.sched_priority);
+                    assert_eq!(effects.timer_slack_ns, unsafe {
+                        libc::prctl(libc::PR_GET_TIMERSLACK, 0, 0, 0, 0)
+                    } as u64);
+                    assert_eq!(effects.cgroup, read_proc(&alias, "cgroup").unwrap());
+                    assert!(effects.require_fifo_timer_and_payload().is_err());
+                    ready.send(()).unwrap();
+                    while let Some(name) = rx.recv().unwrap() {
+                        let ret = unsafe {
+                            libc::pthread_setname_np(libc::pthread_self(), name.as_ptr())
+                        };
+                        assert_eq!(ret, 0);
+                        ready.send(()).unwrap();
+                    }
+                })
+                .unwrap();
+            replies.recv().unwrap();
+            Self {
+                tx,
+                replies,
+                handle: Some(handle),
+            }
+        }
+        fn rename(&self, name: &'static std::ffi::CStr) {
+            self.tx.send(Some(name)).unwrap();
+            self.replies.recv().unwrap();
+        }
+    }
+
+    impl Drop for Worker {
+        fn drop(&mut self) {
+            let _ = self.tx.send(None);
+            if let Some(h) = self.handle.take() {
+                h.join().unwrap();
+            }
+        }
+    }
+
+    #[test]
+    fn held_workers_reject_renames_duplicate_roles_exit_and_same_name_replacement() {
+        let leader = std::process::id();
+        let proc_root = File::open("/proc").unwrap();
+        let server = open_proc_at(&proc_root, &leader.to_string(), DIR).unwrap();
+        let task = open_proc_at(&server, "task", DIR).unwrap();
+        let deadline = || Instant::now() + Duration::from_secs(10);
+        let reader = Worker::start("InputReader");
+        let dispatcher = Worker::start("InputDispatcher");
+        let held = members(&task, leader, deadline()).unwrap();
+        let old = &held[&Role::Reader];
+        old.verify(&task, leader).unwrap();
+        let alias = open_proc_at(&proc_root, &old.identity.pid.to_string(), DIR).unwrap();
+        assert_eq!(
+            member_identity(&alias, old.identity.pid, leader, Role::Reader).unwrap(),
+            old.identity
+        );
+        assert!(member_identity(&alias, old.identity.pid, leader + 1, Role::Reader).is_err());
+        dispatcher.rename(c"InputReader");
+        assert!(members(&task, leader, deadline()).is_err());
+        assert!(held[&Role::Dispatcher].verify(&task, leader).is_err());
+        dispatcher.rename(c"InputDispatcher");
+        assert!(members(&task, leader, Instant::now()).is_err());
+        drop(reader);
+        assert!(old.verify(&task, leader).is_err());
+        assert!(members(&task, leader, deadline()).is_err());
+        let _new_reader = Worker::start("InputReader");
+        let new = members(&task, leader, deadline()).unwrap();
+        assert_ne!(new[&Role::Reader].node, old.node);
+        assert!(old.verify(&task, leader).is_err());
+        assert!(member_identity(&alias, old.identity.pid, leader, Role::Reader).is_err());
+    }
+
+    #[test]
+    fn scheduler_fields_follow_final_comm_delimiter_and_require_complete_values() {
+        let mut fields = vec!["0"; 39];
+        fields[0] = "S";
+        fields[37] = "2";
+        fields[38] = "1";
+        let record = format!("123 (x ) a) {}\n", fields.join(" "));
+        assert_eq!(scheduling(record.as_bytes(), 123).unwrap(), (2, 1));
+        assert!(scheduling(record.as_bytes(), 321).is_err());
+        assert!(scheduling(b"123 (x) S 2 1\n", 123).is_err());
+        fields[37] = "-1";
+        assert!(scheduling(format!("123 (x) {}", fields.join(" ")).as_bytes(), 123).is_err());
+    }
+
+    #[test]
+    fn fifo_timer_slack_matches_kernel_readback_after_r15_action_order() {
+        let mut effects = Effects {
+            policy: libc::SCHED_FIFO as u32,
+            rt_priority: 2,
+            timer_slack_ns: 0,
+            cgroup: format!("{FRAMEWORK_PAYLOAD_PREFIX}some-leaf\n").into_bytes(),
+            cpus_allowed: "2-23".into(),
+        };
+        assert!(effects.require_fifo_timer_and_payload().is_ok());
+        effects.timer_slack_ns = 50_000; // Source request, not the effective RT value.
+        assert!(effects.require_fifo_timer_and_payload().is_err());
+        effects.timer_slack_ns = 0;
+        effects.policy = libc::SCHED_RR as u32;
+        assert!(effects.require_fifo_timer_and_payload().is_err());
+        effects.policy = libc::SCHED_FIFO as u32;
+        effects.rt_priority = 1;
+        assert!(effects.require_fifo_timer_and_payload().is_err());
+    }
+
+    #[test]
+    fn worker_cgroup_must_be_one_normalized_record_under_original_payload() {
+        assert!(unified_placement(format!("{FRAMEWORK_PAYLOAD_PREFIX}init\n").as_bytes()).is_ok());
+        for path in ["../init", "sub/./foo", "", "sub//foo", "sub\n0::/foreign"] {
+            assert!(
+                unified_placement(format!("{FRAMEWORK_PAYLOAD_PREFIX}{path}\n").as_bytes())
+                    .is_err()
+            );
+        }
+        assert!(unified_placement(b"0::/top-app\n").is_err());
+    }
+}

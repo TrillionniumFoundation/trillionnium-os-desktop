@@ -1,0 +1,119 @@
+// Copyright (C) 2025 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_team: "trendy_team_wear_wear_frameworks",
+    default_applicable_licenses: [
+        "packages_services_CrossDeviceSync_license",
+    ],
+}
+
+license {
+    name: "packages_services_CrossDeviceSync_license",
+    visibility: [":__subpackages__"],
+    license_kinds: [
+        "SPDX-license-identifier-Apache-2.0",
+    ],
+    license_text: [
+        "NOTICE",
+    ],
+}
+
+filegroup {
+    name: "CrossDeviceSync-srcs",
+    srcs: [
+        "src/**/*.java",
+        "src/**/*.proto",
+    ],
+    visibility: ["//packages/services/CrossDeviceSync/lib"],
+}
+
+android_library {
+    name: "CrossDeviceSync-res",
+    use_resource_processor: true,
+    resource_dirs: ["res"],
+    manifest: "AndroidManifest-res.xml",
+}
+
+android_app {
+    name: "CrossDeviceSync",
+    defaults: ["platform_app_defaults"],
+    certificate: "platform",
+    privileged: true,
+    srcs: [
+        ":CrossDeviceSync-srcs",
+    ],
+    proto: {
+        type: "stream",
+    },
+    static_libs: [
+        "CrossDeviceSync-res",
+        "com_android_crossdevicesync_flags_lib",
+        "connectivity_flags_lib",
+        "submerge_java",
+        "android.service.notification.flags-aconfig-java",
+    ],
+    libs: [
+        "error_prone_annotations",
+    ],
+    required: ["submerge_java_shared"],
+    manifest: "AndroidManifest.xml",
+    platform_apis: true,
+    generate_product_characteristics_rro: true,
+    dex_preopt: {
+        enabled: true,
+    },
+    optimize: {
+        optimize: true,
+        optimized_shrink_resources: true,
+        obfuscate: true,
+        proguard_flags_files: ["proguard.flags"],
+    },
+    flags_packages: ["com_android_crossdevicesync_flags"],
+}
+
+android_test {
+    name: "CrossDeviceSyncTests",
+    defaults: ["platform_app_defaults"],
+    certificate: "platform",
+    srcs: [
+        ":CrossDeviceSync-srcs",
+        "tests/src/**/*.java",
+        "tests/src/**/*.kt",
+    ],
+    proto: {
+        type: "stream",
+    },
+    static_libs: [
+        "CrossDeviceSync-res",
+        "androidx.annotation_annotation",
+        "androidx.test.ext.junit",
+        "androidx.test.rules",
+        "androidx.test.core",
+        "android.service.notification.flags-aconfig-java",
+        "com_android_crossdevicesync_flags_lib",
+        "connectivity_flags_lib",
+        "error_prone_annotations",
+        "flag-junit",
+        "mockito-target-minus-junit4",
+        "submerge_java",
+        "truth",
+    ],
+    jni_libs: ["submerge_java_static_jni"],
+    aaptflags: ["--extra-packages com.android.crossdevicesync"],
+    platform_apis: true,
+    test_suites: ["device-tests"],
+    test_config: "tests/AndroidTest.xml",
+    manifest: "tests/AndroidManifest.xml",
+}
