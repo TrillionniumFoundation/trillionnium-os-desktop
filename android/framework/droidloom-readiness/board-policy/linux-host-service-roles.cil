@@ -111,7 +111,7 @@
 ; AppArmor further limits reads of these original classes to the selected
 ; /proc boot ID, /sys/kernel/notes and securityfs LSM list.
 (typeattribute p4_linux_mac_fixed_kernel_read)
-(typeattributeset p4_linux_mac_fixed_kernel_read (securityfs sysfs_kernel_notes proc_random))
+(typeattributeset p4_linux_mac_fixed_kernel_read (p4_linux_registered_lsms_t sysfs_kernel_notes proc_random))
 (allow p4_linux_mac_roles p4_linux_mac_fixed_kernel_read (file (getattr open read)))
 (allow p4_linux_mac_roles proc_random (dir (getattr search)))
 (allow p4_linux_mac_roles securityfs (dir (getattr search)))
