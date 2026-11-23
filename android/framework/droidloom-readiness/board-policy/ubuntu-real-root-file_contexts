@@ -45,3 +45,4 @@
 /usr/bin/journalctl -- u:object_r:p4_linux_journalctl_exec_t:s0
 /etc/systemd/journald\.conf\.d -d u:object_r:p4_linux_journal_config_t:s0
 /etc/systemd/journald\.conf\.d/[^/]+\.conf -- u:object_r:p4_linux_journal_config_t:s0
+/etc/(passwd|group) -- u:object_r:p4_linux_public_accounts_t:s0

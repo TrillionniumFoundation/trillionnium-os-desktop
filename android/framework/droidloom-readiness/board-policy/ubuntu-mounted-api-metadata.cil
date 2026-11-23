@@ -412,6 +412,13 @@
 (allow p4_linux_udev_t p4_linux_udev_state_t (dir (create getattr open read search write add_name remove_name rmdir)))
 (allow p4_linux_udev_t p4_linux_udev_state_t (file (create getattr open read write rename unlink)))
 (allow p4_linux_udev_t p4_linux_udev_rules_t (dir (getattr search open read)))
+; Stock distribution rules resolve static OWNER and GROUP names with glibc NSS.
+(type p4_linux_public_accounts_t)
+(roletype object_r p4_linux_public_accounts_t)
+(typeattributeset p4_linux_data (p4_linux_public_accounts_t))
+(allow p4_linux_udev_t p4_linux_public_accounts_t (file (getattr open read)))
+(neverallow p4_linux_udev_t p4_linux_public_accounts_t (file (execute write append create unlink setattr relabelfrom relabelto)))
+(neverallow p4_android_userspace p4_linux_public_accounts_t (file (open read map write append)))
 ; Original PID 1 uses the same read_line_full routine for installed systemd unit files.
 (allow init_t p4_linux_unit_file_t (file (ioctl)))
 (allowx init_t p4_linux_unit_file_t (ioctl file (0x542a)))
