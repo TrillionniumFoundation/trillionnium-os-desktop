@@ -201,8 +201,15 @@ static int retire_inactive_udev_socket(int dir, const char *name, int kind)
         error = errno;
     else if (!S_ISSOCK(original.st_mode) || original.st_uid != 0 ||
              original.st_gid != 0 || original.st_nlink != 1 ||
-             (original.st_mode & 07777) != 0600)
+             ((original.st_mode & 07777) != 0600 &&
+              !(kind == SOCK_SEQPACKET && (original.st_mode & 07777) == 0755))) {
+        /* Standalone Ubuntu udevd binds its control socket with umask 022.
+         * The varlink server and the systemd socket units specify 0600. */
+        fprintf(stderr, "Unexpected Ubuntu udev endpoint %s mode=%o uid=%u gid=%u links=%lu\n",
+                name, (unsigned)original.st_mode, (unsigned)original.st_uid,
+                (unsigned)original.st_gid, (unsigned long)original.st_nlink);
         error = EACCES;
+    }
     struct sockaddr_un addr = { .sun_family = AF_UNIX };
     int length = snprintf(addr.sun_path, sizeof(addr.sun_path), "/proc/self/fd/%d/%s", dir, name);
     if (length < 0 || (size_t)length >= sizeof(addr.sun_path))
