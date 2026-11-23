@@ -63,6 +63,7 @@ def main():
         "readiness-observer-android.cil", "readiness-host-challenge-interface.cil",
         "kernel-namespace-custody.cil", "cp3a-kernel-handle-access.cil",
         "early-readiness-inode-owner.cil", "linux-host-service-roles.cil",
+        "ubuntu-real-root-interpreter.cil",
     )
     components = [here / name for name in component_names]
     sources = [compiler, library, args.linux_board_cil, *args.android_cil, *components,
