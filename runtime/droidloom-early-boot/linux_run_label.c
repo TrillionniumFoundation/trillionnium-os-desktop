@@ -257,6 +257,22 @@ int droidloom_label_linux_udev(const struct droidloom_linux_run *udev)
     return apply_label(udev, "u:object_r:p4_linux_udev_run_t:s0");
 }
 
+int droidloom_hold_linux_udev_data(const struct droidloom_linux_run *udev,
+                                  struct droidloom_linux_run *data)
+{
+    /* The distribution may have processed no devices in the initramfs yet. */
+    if (hold_child(udev, "data", 0, 0755, data) < 0)
+        return errno == ENOENT ? 0 : -1;
+    return 0;
+}
+
+int droidloom_label_linux_udev_data(const struct droidloom_linux_run *data)
+{
+    if (data->fd < 0)
+        return 0;
+    return apply_label(data, "u:object_r:p4_linux_udev_state_t:s0");
+}
+
 static int validate_empty_endpoint(int fd)
 {
     int copy = fcntl(fd, F_DUPFD_CLOEXEC, 3);
