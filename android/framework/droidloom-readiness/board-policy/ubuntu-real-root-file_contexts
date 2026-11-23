@@ -28,3 +28,4 @@
 /(etc|usr/lib)/systemd/system/[^/]+\.d -d u:object_r:p4_linux_unit_directory_t:s0
 /(etc|usr/lib)/systemd/system/[^/]+\.d/[^/]+\.conf -- u:object_r:p4_linux_unit_file_t:s0
 /(etc|usr/lib)/systemd/system/[^/]+\.d/[^/]+\.conf -l u:object_r:p4_linux_unit_file_t:s0
+/usr/lib/systemd/systemd-journald -- u:object_r:p4_linux_journald_exec_t:s0
