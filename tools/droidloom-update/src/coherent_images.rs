@@ -1023,6 +1023,71 @@ pub(crate) fn extract_normal_filesystem(image: &Path, destination: &Path) -> Res
     recheck(&original, MAX_IMAGE)
 }
 
+/// Bind the two installed graphics HAL ELFs to the bytes and labels in vendor.img.
+pub(crate) fn verify_vendor_graphics_hal_entries(
+    product_out: &Path,
+) -> Result<BTreeMap<String, String>> {
+    let image = product_out.join("vendor.img");
+    let _scope = resources::Scope::writing(product_out, resources::GIB)?;
+    let temp = tempfile::Builder::new()
+        .prefix("graphics-hal-readback-")
+        .tempdir_in(product_out)?;
+    let original = pin(&image, MAX_IMAGE)?;
+    let (decoded, _) = decode_image(&original, &temp.path().join("vendor.raw.img"))?;
+    let debugfs = reader_tool("debugfs")?;
+    let mut observed = BTreeMap::new();
+    for (index, (name, label)) in [
+        (
+            "android.hardware.graphics.allocator-service.minigbm",
+            "u:object_r:hal_graphics_allocator_default_exec:s0",
+        ),
+        (
+            "android.hardware.graphics.composer3-service.droidloom",
+            "u:object_r:hal_graphics_composer_default_exec:s0",
+        ),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let inside = format!("/bin/hw/{name}");
+        let contents = format!("hal-{index}");
+        let attribute = format!("label-{index}");
+        for command in [
+            format!("dump {inside} {contents}"),
+            format!("ea_get -f {attribute} {inside} security.selinux"),
+        ] {
+            checked_tool(
+                &debugfs,
+                Command::new(&debugfs.path)
+                    .current_dir(temp.path())
+                    .args(["-R", &command])
+                    .arg(&decoded.path),
+            )?;
+        }
+        let installed = pin(&product_out.join("vendor/bin/hw").join(name), MAX_IMAGE)?;
+        let delivered = pin(&temp.path().join(contents), MAX_IMAGE)?;
+        let header = bound_header(&delivered, 20)?;
+        if !header.starts_with(b"\x7fELF\x02\x01")
+            || header[18..20] != 62u16.to_le_bytes()
+            || delivered.sha256 != installed.sha256
+        {
+            return fail(format!(
+                "vendor graphics HAL is not the installed x86_64 ELF: {inside}"
+            ));
+        }
+        let actual = fs::read(temp.path().join(attribute))?;
+        if actual.strip_suffix(&[0]) != Some(label.as_bytes()) {
+            return fail(format!(
+                "vendor graphics HAL has the wrong SELinux entrypoint: {inside}"
+            ));
+        }
+        observed.insert(format!("/vendor{inside}"), label.to_owned());
+    }
+    recheck(&decoded, MAX_IMAGE)?;
+    recheck(&original, MAX_IMAGE)?;
+    Ok(observed)
+}
+
 fn image_root<'a>(partition: &str, extracted: &'a Path) -> Result<PathBuf> {
     if partition != "system" {
         return Ok(extracted.to_owned());

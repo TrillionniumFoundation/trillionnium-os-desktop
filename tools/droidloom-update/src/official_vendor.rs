@@ -21,6 +21,7 @@ const HOST_DIRECTORY: &str = "lib64/droidloom/nativebridge";
 const GUEST_DIRECTORY: &str = "etc/droidloom/nativebridge/guest";
 const INPUT_NAME: &str = "droidloom-official-gsi-vendor-inputs.json";
 const RESULT_NAME: &str = "droidloom-official-gsi-vendor-normal-result.json";
+const VENDOR_FILE_CONTEXTS: &str = include_str!("official_vendor_file_contexts");
 const HOST_MODULES: &[&str] = &[
     "libberberis_exec_region",
     "libberberis_proxy_libEGL",
@@ -634,8 +635,7 @@ pub(super) fn project(
     )?;
     let board = vendor.join("android/device/droidloom_x86_64/BoardConfig.mk");
     projection.put(&board, fs::read_to_string(&board)? + "\nBOARD_VENDOR_SEPOLICY_DIRS += vendor/droidloom/android/native-bridge/official-vendor/sepolicy\n")?;
-    projection.put(&pack.join("sepolicy/file_contexts"),
-        "/vendor/lib64/droidloom/nativebridge(/.*)? -- u:object_r:same_process_hal_file:s0\n/vendor/etc/droidloom/nativebridge/guest(/.*)? -- u:object_r:same_process_hal_file:s0\n")?;
+    projection.put(&pack.join("sepolicy/file_contexts"), VENDOR_FILE_CONTEXTS)?;
     projection.put(&pack.join("sepolicy/property.te"),
         "vendor_public_prop(droidloom_native_bridge_config_prop)\nset_prop(vendor_init, droidloom_native_bridge_config_prop)\nget_prop({ appdomain zygote }, droidloom_native_bridge_config_prop)\n")?;
     projection.put(&pack.join("sepolicy/property_contexts"),
@@ -811,11 +811,16 @@ pub(super) fn build(
         }
         actual.insert(vendor_path(original)?, installed);
     }
+    let vendor_image = artifact(&product_out.join("vendor.img"), 2 * 1024 * 1024 * 1024)?;
+    let graphics_hal_entries =
+        crate::coherent_images::verify_vendor_graphics_hal_entries(&product_out)?;
+    vendor_image.check()?;
     let record = json!({"schema":"droidloom-official-gsi-independent-vendor-normal-result-v1",
         "official_inputs":inputs.receipt()?,"native_build_inputs":artifact(&native.join(INPUT_NAME),16*1024*1024)?,
         "vendor_build_inputs":artifact(&vendor_out.join(INPUT_NAME),16*1024*1024)?,
         "normal_vendor_result":artifact(&vendor_out.join("droidloom-production-full653-vendor-normal-result.json"),64*1024*1024)?,
-        "normal_vendor_image":artifact(&product_out.join("vendor.img"),2*1024*1024*1024)?,
+        "normal_vendor_image":vendor_image,
+        "graphics_hal_image_entrypoints":graphics_hal_entries,
         "host_checkvintf":artifact(&vendor_out.join("host/linux-x86/bin/checkvintf"),128*1024*1024)?,
         "native_binaries":actual,"native_static_link_check":bridge.qualification,
         "official_system_bytes_preserved":true,"normal_user_commands_returned_success":true,
