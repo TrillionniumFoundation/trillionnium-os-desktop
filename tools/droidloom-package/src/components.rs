@@ -57,6 +57,10 @@ impl Component {
                     "droidloom-host-mac",
                     "usr/lib/droidloom/production/current/droidloom-host-mac",
                 ),
+                (
+                    "droidloom-container-entry",
+                    "usr/lib/droidloom/production/current/droidloom-container-entry",
+                ),
             ],
             Self::Wayland => &[("droidloom-wayland", "usr/bin/droidloom-wayland")],
             Self::Applications => &[("droidloom-applications", "usr/bin/droidloom-applications")],
@@ -342,11 +346,12 @@ mod tests {
             "droidloomctl",
             "droidloomd",
             "droidloom-host-mac",
+            "droidloom-container-entry",
         ] {
             let destination = format!("usr/lib/droidloom/production/current/{binary}");
             assert!(binaries.contains(&(binary, destination.as_str())));
         }
-        assert_eq!(binaries.len(), 7);
+        assert_eq!(binaries.len(), 8);
     }
 
     #[test]

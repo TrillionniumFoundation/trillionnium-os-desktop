@@ -17,9 +17,7 @@ pub(crate) const SCOPE: &str = "android_cp3a_scoped_capabilities_v1";
 pub(crate) const SYSTEM_BYTES: u64 = 2_294_853_632;
 pub(crate) const SYSTEM_SHA256: &str =
     "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4";
-pub(crate) const INIT_BYTES: u64 = 2_934_488;
-pub(crate) const INIT_SHA256: &str =
-    "9f69cc83a88db5f8533014cfea5ad9ea8e0454120335329aec27f8d65b2a9537";
+pub(crate) use crate::production_cp3a_init_identity::{INIT_BYTES, INIT_SHA256};
 
 // CHOWN, DAC_OVERRIDE, DAC_READ_SEARCH, FOWNER, FSETID, KILL, SETGID,
 // SETUID, SETPCAP, NET_BIND_SERVICE, NET_ADMIN, NET_RAW, IPC_LOCK,

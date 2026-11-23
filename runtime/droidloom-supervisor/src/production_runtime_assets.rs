@@ -95,6 +95,23 @@ struct RuntimeDeclaration {
     execution: Option<ExecutionDeclaration>,
 }
 
+/// Identify the startup ABI declared by the selected, hash-verified runtime
+/// manifest before permitting an independent service to request the bases.
+/// This takes metadata only and cannot acquire an image, mount or executable.
+pub(crate) fn declared_boot_entry(raw: &[u8], cohort: &str) -> Result<&'static str> {
+    require(raw.len() as u64 <= MAX_RUNTIME_MANIFEST, "bounded runtime manifest")?;
+    let runtime: RuntimeDeclaration = serde_json::from_slice(raw)?;
+    require(runtime.base_cohort_sha256 == cohort && is_digest(cohort),
+        "runtime role declaration belongs to a different base cohort")?;
+    require(matches!((runtime.schema, runtime.scope.as_str()),
+        (1, "android_runtime_assets_v1") | (2, "android_runtime_assets_v2"))
+        && runtime.init_source_path == "/system/bin/init" && runtime.init.file == "init",
+        "unsupported runtime entry declaration")?;
+    let execution = runtime.execution.ok_or(MountError::Rejected("missing explicit runtime entry execution scope"))?;
+    execution.validate_images(&runtime.source_system, &runtime.init)?;
+    Ok("CP3A stock /system/bin/init second_stage (kernel-only init domain)")
+}
+
 fn safe_module_name(name: &str) -> bool {
     (3..=128).contains(&name.len())
         && !name.starts_with('.')

@@ -57,6 +57,10 @@ mod production_runtime_seccomp;
 #[cfg(target_os = "linux")]
 mod production_selection;
 #[cfg(target_os = "linux")]
+mod production_service_elf;
+#[cfg(target_os = "linux")]
+mod production_cp3a_init_identity;
+#[cfg(target_os = "linux")]
 pub(crate) use production_mounts::runtime_assets as production_runtime_assets;
 
 pub use image_layout::AndroidImageLayout;

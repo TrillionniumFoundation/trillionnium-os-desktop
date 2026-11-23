@@ -20,6 +20,8 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 pub use crate::production_selection::{PreparedContainerSelection, SharedKernelLauncher};
+pub use crate::production_mac::check_installed_mac_platform;
+pub use crate::production_service_elf::inspect_container_service_elf;
 use crate::CellSpec;
 use crate::development::{DevelopmentCell, recover_development_cell, start_development_cell};
 

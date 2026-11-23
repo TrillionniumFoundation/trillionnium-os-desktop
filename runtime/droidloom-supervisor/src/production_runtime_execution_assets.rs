@@ -15,7 +15,7 @@ impl ExecutionDeclaration {
         profile::apex_inputs::validate(&runtime.apexes).map_err(MountError::Rejected)
     }
 
-    fn validate_images(&self, system: &ImageDeclaration, init: &ImageDeclaration) -> Result<()> {
+    pub(super) fn validate_images(&self, system: &ImageDeclaration, init: &ImageDeclaration) -> Result<()> {
         require(
             self.scope == profile::SCOPE
                 && system.bytes == profile::SYSTEM_BYTES

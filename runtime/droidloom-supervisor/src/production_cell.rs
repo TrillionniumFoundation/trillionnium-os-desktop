@@ -5,6 +5,9 @@
 //! activation gate remains required for Running and every application query.
 //! No development runtime or previously recorded qualification is adopted.
 
+#[path = "production_container_bases.rs"]
+mod container_bases;
+
 use std::fmt;
 use std::time::Instant;
 
@@ -104,7 +107,7 @@ impl ProductionCell {
                 retirement_requires_review: false,
             })?;
         let admitted: Result<(ExecutedNamespaces, ExecutionAdmission)> = (|| {
-            let step = |text| -> Result<()> {
+            let step = |text: &str| -> Result<()> {
                 if Instant::now() >= deadline {
                     return Err(CellError::Deadline);
                 }
@@ -122,36 +125,8 @@ impl ProductionCell {
                 .bind_tree(selection, &tree.witness().map_err(rejected)?)
                 .map_err(rejected)?;
 
-            step("Preparing the selected immutable Android bases...")?;
-            let bases = {
-                let witness = tree.witness().map_err(rejected)?;
-                let verified = VerifiedCohort::load(&witness).map_err(rejected)?;
-                PreparedMounts::prepare(&witness, verified).map_err(rejected)?
-            };
-            step("Preparing the selected original persistent data and metadata...")?;
-            let data = PreparedPersistentData::prepare(
-                &tree.witness().map_err(rejected)?, selection, &prepared,
-            ).map_err(rejected)?;
-            let tree = tree.attach_persistent_base(bases, data, selection, &prepared).map_err(rejected)?;
-
-            step("Preparing private device and process filesystems...")?;
-            let devices = prepared
-                .prepare_activation_devices(selection, &tree.witness().map_err(rejected)?)
-                .map_err(rejected)?;
-            let tree = tree
-                .attach_activation_devices(devices, selection, &prepared)
-                .map_err(rejected)?;
-            let tree = tree.prepare_process_filesystems().map_err(rejected)?;
-            let tree = tree.prepare_private_binder().map_err(rejected)?;
-            let tree = tree.prepare_writable_proc().map_err(rejected)?;
-
-            step("Checking the exact owned cgroup hierarchy...")?;
-            // This operation moves only the attested keeper, delegates the
-            // private hierarchy and verifies PID1's actual init leaf before
-            // enabling its controllers. It does not qualify Android task profiles.
-            // The later final admission still requires guest-side task
-            // profiles and actual final confinement after init execution.
-            tree.configure_cgroup_hierarchy().map_err(rejected)?;
+            let bases = container_bases::ContainerBases::prepare(tree, prepared, selection, &step)?;
+            let (tree, prepared) = bases.into_original(selection)?;
 
             step("Preparing the selected same-cohort runtime inputs...")?;
             let runtime = PreparedRuntime::prepare(

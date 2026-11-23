@@ -44,6 +44,33 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
     {
         let mut arguments = std::env::args_os().skip(1);
         let action = arguments.next();
+        if action.as_deref() == Some(std::ffi::OsStr::new("--inspect-container-service-elf")) {
+            use std::io::Read;
+            if arguments.next().is_some() {
+                return Err("service ELF inspection reads only standard input".into());
+            }
+            let mut bytes = Vec::new();
+            std::io::stdin().lock().take(64 * 1024 * 1024 + 1).read_to_end(&mut bytes)?;
+            droidloom_supervisor::control::inspect_container_service_elf(&bytes)?;
+            println!("Service ELF structure verified; publication and runtime policy are separate checks");
+            return Ok(());
+        }
+        if action.as_deref() == Some(std::ffi::OsStr::new("--check-container-platform")) {
+            if arguments.next().is_some() {
+                return Err("platform check accepts no arguments".into());
+            }
+            droidloom_supervisor::control::check_installed_mac_platform()?;
+            println!("Current host MAC backend kernel interfaces verified");
+            return Ok(());
+        }
+        if action.as_deref() == Some(std::ffi::OsStr::new("--inspect-container-runtime-entry")) {
+            if arguments.next().is_some() {
+                return Err("runtime entry inspection accepts no arguments".into());
+            }
+            let selected = droidloom_supervisor::control::PreparedContainerSelection::acquire()?;
+            println!("{}", selected.runtime_entry_description()?);
+            return Ok(());
+        }
         if action.as_deref() == Some(std::ffi::OsStr::new("--check-container-selection")) {
             if arguments.next().is_some() {
                 return Err("container selection check accepts no arguments".into());

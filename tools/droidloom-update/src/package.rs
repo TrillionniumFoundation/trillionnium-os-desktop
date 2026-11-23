@@ -208,6 +208,7 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
         "droidloomctl",
         "droidloomd",
         "droidloom-host-mac",
+        "droidloom-container-entry",
     ] {
         let source = host.join(binary);
         if !fs::symlink_metadata(&source)?.is_file() {
@@ -320,6 +321,8 @@ mod tests {
             b"package-copy fixture: host-mac",
         )
         .unwrap();
+        assert!(production_host_payload(&repo, &host, &runtime).is_err());
+        fs::write(host.join("droidloom-container-entry"), b"package-copy fixture: container-entry").unwrap();
         production_host_payload(&repo, &host, &runtime).unwrap();
         for unit in fs::read_dir(runtime.join("usr/share/droidloom/production")).unwrap() {
             let unit = unit.unwrap().path();

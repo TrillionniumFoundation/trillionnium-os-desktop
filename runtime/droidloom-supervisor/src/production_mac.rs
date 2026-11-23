@@ -560,6 +560,30 @@ impl Drop for StatusMap {
         }
     }
 }
+/// Check the live kernel interfaces needed by the existing v3/v4 MAC provider.
+/// A valid platform is only a prerequisite for validating a service role.
+///
+/// # Errors
+/// Returns the actual missing interface, enforcement or registration error.
+pub fn check_installed_mac_platform() -> io::Result<()> {
+    let root = open_absolute(SELINUX_ROOT, libc::O_PATH | libc::O_DIRECTORY)
+        .map_err(|e| io::Error::other(format!("current MAC backend needs an active selinuxfs at {SELINUX_ROOT}: {e}")))?;
+    require(kind(&root).map_err(io::Error::other)? == SELINUX_MAGIC,
+        "current backend needs a genuine selinuxfs mount").map_err(io::Error::other)?;
+    let status = StatusMap::open(&root).map_err(io::Error::other)?;
+    let epoch = status.read().map_err(io::Error::other)?;
+    let ordered = kernel_text("/sys/kernel/security/lsm", SECURITYFS_MAGIC, 4096).map_err(io::Error::other)?;
+    if !ordered.trim_end().split(',').any(|entry| entry == "apparmor")
+        || !ordered.trim_end().split(',').any(|entry| entry == "selinux") {
+        return Err(io::Error::other("current MAC backend needs both SELinux and AppArmor registered for this boot"));
+    }
+    if kernel_bytes("/sys/module/apparmor/parameters/enabled", SYSFS_MAGIC, 16).map_err(io::Error::other)? != b"Y\n"
+        || epoch != status.read().map_err(io::Error::other)? {
+        return Err(io::Error::other("current MAC backend could not observe a stable enforcing platform"));
+    }
+    Ok(())
+}
+
 fn kernel_bytes(path: &str, fs: u64, limit: usize) -> Result<Vec<u8>> {
     let file = open_absolute(path, libc::O_RDONLY)?;
     require(

@@ -198,6 +198,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             if mode.is_some_and(|selected| selected != SessionMode::Desktop) {
                 return Err("the shared-kernel production service currently supports desktop mode".into());
             }
+            let program = (operation != "stop").then(|| choice.entry_program()).transpose()?;
             let generation = container_services::lifecycle(operation)?;
             let probe = matches!(cli.command, Command::Status | Command::Readiness | Command::Wait) || wait;
             let (state, message, original) = if let Some(owner) = generation.filter(|_| probe) {
@@ -220,6 +221,7 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             } else {
                 (droidloom_supervisor::control::CellState::Stopped, "Container services are stopped".into(), None)
             };
+            if let Some(program) = program { program.revalidate()?; }
             choice.revalidate()?;
             if cli.json {
                 let json = if let Some(response) = original {
