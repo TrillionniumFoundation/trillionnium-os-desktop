@@ -12,6 +12,9 @@
 #include <sys/sysmacros.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 #include <sys/stat.h>
 #include <sys/statfs.h>
 #include <sys/statvfs.h>
@@ -179,11 +182,67 @@ void droidloom_close_ubuntu_credentials(struct droidloom_linux_credentials *cred
         close(credentials->root.fd);
 }
 
+/* Ubuntu's init-bottom/udev settles the queue and exits its daemon. On a
+ * switch_root the two old filesystem socket names may survive on the moved
+ * tmpfs. Release only a refused endpoint from that exact protected directory.
+ * A live or busy listener retains ownership of its name. */
+static int retire_inactive_udev_socket(int dir, const char *name, int kind)
+{
+    const struct open_how how = {
+        .flags = O_PATH | O_NOFOLLOW | O_CLOEXEC,
+        .resolve = RESOLVE_BENEATH | RESOLVE_NO_SYMLINKS | RESOLVE_NO_XDEV,
+    };
+    int held = (int)syscall(SYS_openat2, dir, name, &how, sizeof(how));
+    if (held < 0)
+        return errno == ENOENT ? 0 : -1;
+    int error = 0;
+    struct stat original, current;
+    if (fstat(held, &original) < 0)
+        error = errno;
+    else if (!S_ISSOCK(original.st_mode) || original.st_uid != 0 ||
+             original.st_gid != 0 || original.st_nlink != 1 ||
+             (original.st_mode & 07777) != 0600)
+        error = EACCES;
+    struct sockaddr_un addr = { .sun_family = AF_UNIX };
+    int length = snprintf(addr.sun_path, sizeof(addr.sun_path), "/proc/self/fd/%d/%s", dir, name);
+    if (length < 0 || (size_t)length >= sizeof(addr.sun_path))
+        error = ENAMETOOLONG;
+    if (!error) {
+        int fd = socket(AF_UNIX, kind | SOCK_CLOEXEC | SOCK_NONBLOCK, 0);
+        if (fd < 0)
+            error = errno;
+        else {
+            int rc = connect(fd, (struct sockaddr *)&addr, sizeof(addr));
+            int result = rc < 0 ? errno : 0;
+            close(fd);
+            if (result == ECONNREFUSED) {
+                if (fstatat(dir, name, &current, AT_SYMLINK_NOFOLLOW) < 0)
+                    error = errno == ENOENT ? 0 : errno;
+                else if (original.st_dev != current.st_dev || original.st_ino != current.st_ino)
+                    error = ESTALE;
+                else if (unlinkat(dir, name, 0) < 0 && errno != ENOENT)
+                    error = errno;
+            } else if (result != 0 && result != ENOENT && result != EAGAIN &&
+                       result != EINPROGRESS) {
+                error = result;
+            }
+        }
+    }
+    close(held);
+    if (error)
+        errno = error;
+    return error ? -1 : 0;
+}
+
 int droidloom_hold_linux_udev(const struct droidloom_linux_run *run, struct droidloom_linux_run *udev)
 {
     if (mkdirat(run->fd, "udev", 0755) < 0 && errno != EEXIST)
         return -1;
-    return hold_child(run, "udev", 0, 0755, udev);
+    if (hold_child(run, "udev", 0, 0755, udev) < 0)
+        return -1;
+    if (retire_inactive_udev_socket(udev->fd, "control", SOCK_SEQPACKET) < 0)
+        return -1;
+    return retire_inactive_udev_socket(udev->fd, "io.systemd.Udev", SOCK_STREAM);
 }
 
 int droidloom_label_linux_udev(const struct droidloom_linux_run *udev)
