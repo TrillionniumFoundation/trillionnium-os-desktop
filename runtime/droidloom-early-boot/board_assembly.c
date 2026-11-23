@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #define _GNU_SOURCE
+#include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/magic.h>
@@ -105,19 +106,85 @@ static int mkdir_held(int parent,const char *name,mode_t mode){
     if(fchmod(fd,mode)){int e=errno;close(fd);return fail(e);}
     return fd;
 }
-static int attach_guest_cgroup(int root,int payload) {
-    const unsigned restricted=MOUNT_ATTR_NOSUID|MOUNT_ATTR_NODEV|MOUNT_ATTR_NOEXEC;
-    if(fs_is(payload,CGROUP2_SUPER_MAGIC))return -1;
-    int sys=fresh_tmpfs(0,0,"64k","8",restricted);if(sys<0)return -1;
-    int fs=-1,point=-1,branch=-1,error=0;
-    if((fs=mkdir_held(sys,"fs",0555))<0 || (point=mkdir_held(fs,"cgroup",0555))<0 ||
-       (branch=subtree(payload,restricted))<0 || attach(sys,"fs/cgroup",branch) ||
-       attr(sys,MOUNT_ATTR_RDONLY) || attach(root,"sys",sys))error=errno;
-    if(branch>=0)close(branch);
-    if(point>=0)close(point);
-    if(fs>=0)close(fs);
+/* The original init mounts cgroup2 itself after the host has bound its PID
+ * to a private, payload-rooted cgroup namespace. Only the empty sysfs
+ * mountpoint is exported. A cgroup2 bind here would make that mount EBUSY. */
+static int stock_cgroup_mountpoint(uint64_t restrictions) {
+    int host = open("/sys", O_PATH | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+    if (host < 0)
+        return -1;
+    int base = -1, leaf = -1, result = -1;
+    int error = 0;
+    if (fs_is(host, SYSFS_MAGIC) ||
+        (base = subtree(host, restrictions)) < 0 ||
+        (leaf = beneath(base, "fs/cgroup")) < 0 ||
+        fs_is(leaf, SYSFS_MAGIC)) {
+        error = errno;
+        goto done;
+    }
+    uint64_t base_id, leaf_id;
+    if (mount_id(base, &base_id) || mount_id(leaf, &leaf_id)) {
+        error = errno;
+        goto done;
+    }
+    if (base_id != leaf_id) {
+        error = EXDEV;
+        goto done;
+    }
+    DIR *entries = fdopendir(leaf);
+    if (!entries) {
+        error = errno;
+        goto done;
+    }
+    leaf = -1;
+    errno = 0;
+    struct dirent *item;
+    while ((item = readdir(entries))) {
+        if (strcmp(item->d_name, ".") && strcmp(item->d_name, "..")) {
+            error = ENOTEMPTY;
+            break;
+        }
+    }
+    if (!error && errno)
+        error = errno;
+    if (!error && (result = subtree(dirfd(entries), restrictions)) < 0)
+        error = errno;
+    closedir(entries);
+done:
+    if (leaf >= 0)
+        close(leaf);
+    if (base >= 0)
+        close(base);
+    close(host);
+    return error ? fail(error) : result;
+}
+
+static int attach_guest_cgroup(int root, int payload) {
+    const uint64_t restricted = MOUNT_ATTR_NOSUID | MOUNT_ATTR_NODEV | MOUNT_ATTR_NOEXEC;
+    struct stat owner;
+    if (fs_is(payload, CGROUP2_SUPER_MAGIC) || fstat(payload, &owner))
+        return -1;
+    if (!S_ISDIR(owner.st_mode) || owner.st_ino == 1)
+        return fail(ESTALE);
+
+    int sys = fresh_tmpfs(0, 0, "64k", "8", restricted);
+    if (sys < 0)
+        return -1;
+    int fs = -1, destination = -1, point = -1, error = 0;
+    if ((fs = mkdir_held(sys, "fs", 0555)) < 0 ||
+        (destination = mkdir_held(fs, "cgroup", 0555)) < 0 ||
+        (point = stock_cgroup_mountpoint(restricted | MOUNT_ATTR_RDONLY)) < 0 ||
+        attach_held(sys, "fs/cgroup", destination, point) ||
+        attr(sys, MOUNT_ATTR_RDONLY) || attach(root, "sys", sys))
+        error = errno;
+    if (point >= 0)
+        close(point);
+    if (destination >= 0)
+        close(destination);
+    if (fs >= 0)
+        close(fs);
     close(sys);
-    return error?fail(error):0;
+    return error ? fail(error) : 0;
 }
 static int ready_projection(int dev,int generation,uint32_t group,uint32_t uid,uint32_t gid) {
     if(fs_is(dev,TMPFS_MAGIC) || fs_is(generation,TMPFS_MAGIC))return -1;
