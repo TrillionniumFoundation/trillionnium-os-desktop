@@ -27,6 +27,13 @@ struct droidloom_linux_credentials {
     struct droidloom_linux_run systemd;
     struct droidloom_linux_run staging;
 };
+struct droidloom_linux_journal_store {
+    struct droidloom_linux_run log;
+    struct droidloom_linux_run journal;
+};
+int droidloom_hold_ubuntu_log(const struct droidloom_linux_run *run, struct droidloom_linux_journal_store *store);
+int droidloom_label_ubuntu_log(const struct droidloom_linux_journal_store *store);
+void droidloom_close_ubuntu_log(struct droidloom_linux_journal_store *store);
 int droidloom_hold_ubuntu_credentials(const struct droidloom_linux_run *run,
                                      struct droidloom_linux_credentials *credentials);
 int droidloom_label_ubuntu_credentials(const struct droidloom_linux_credentials *credentials);

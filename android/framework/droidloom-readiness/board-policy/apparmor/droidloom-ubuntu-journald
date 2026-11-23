@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+abi <abi/5.0>,
+#include <tunables/global>
+
+@{droidloom_journal_machine_id}=[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]
+
+# The original Ubuntu executable attaches automatically on its normal path.
+profile droidloom-ubuntu-journald /usr/lib/systemd/systemd-journald {
+  /usr/lib/systemd/systemd-journald mr,
+  /etc/ld.so.cache r,
+  /{,usr/}lib{,64}/ld-linux-x86-64.so.2 mr,
+  /{,usr/}lib/x86_64-linux-gnu/{ld-linux-x86-64.so.2,lib*.so*} mr,
+  /usr/lib/x86_64-linux-gnu/systemd/libsystemd-shared-*.so mr,
+  /etc/{machine-id,os-release,passwd,group} r,
+  /usr/lib/os-release r,
+  /etc/systemd/journald.conf r,
+  /dev/null rw,
+  /dev/urandom r,
+  /run/systemd/journal/ r,
+  /run/systemd/journal/{socket,stdout,dev-log,io.systemd.journal} rw,
+  /run/systemd/journal/{seqnum,kernel-seqnum} rw,
+  /run/systemd/notify w,
+  /run/credentials/systemd-journald.service/ r,
+  /run/credentials/systemd-journald.service/journal.* r,
+  /{run,var}/log/journal/ rw,
+  /{run,var}/log/journal/@{droidloom_journal_machine_id}/ rw,
+  /{run,var}/log/journal/@{droidloom_journal_machine_id}/{system,user-*}.journal* rwk,
+  @{PROC}/sys/kernel/hostname r,
+  @{PROC}/sys/kernel/random/boot_id r,
+  audit @{PROC}/1/cgroup r,
+  audit deny @{PROC}/[0-9]*/{environ,mem,maps,cmdline} r,
+  audit deny @{PROC}/1/fd/** r,
+  owner @{PROC}/@{pid}/fd/[0-9]* r,
+  network (create) unix dgram,
+  network (create) unix stream,
+  unix (create, getattr, getopt, setopt, shutdown) type=dgram,
+  unix (create, getattr, getopt, setopt, shutdown) type=stream,
+  unix (bind, listen, accept) type=stream,
+  unix (connect, send, receive) type=dgram peer=(label=unconfined),
+  unix (send, receive) type=stream peer=(label=unconfined),
+  deny unix (bind, listen, accept) addr="@**",
+  deny unix (connect, send, receive) peer=(addr="@**"),
+  signal (receive) peer=unconfined,
+}

@@ -221,8 +221,8 @@ static int submit(const char *path, const unsigned char *data, size_t length)
     return error ? reject(error) : 0;
 }
 
-/* The pinned distribution archive contains 165 Ubuntu entries and three board roles. */
-#define APPARMOR_PROFILE_ENTRIES 168U
+/* The pinned distribution archive contains 165 Ubuntu entries and four board roles. */
+#define APPARMOR_PROFILE_ENTRIES 169U
 
 static int apparmor_profiles(const struct input *pack, int activate,
                              struct droidloom_raw_profile selected[3])
@@ -250,13 +250,14 @@ static int apparmor_profiles(const struct input *pack, int activate,
 int droidloom_board_activate_policy(gid_t observer_gid)
 {
     struct input policy = {923040, "c40750505024e8b8ac33b144e23ec573862daaa9ea24ddaf381fd2e8efdcf691", POLICY_DIR "/joint.policy", NULL};
-    struct input aa = {5757832, "0165ca3e8701be602d3c3392fdf674d15310d575cc0d88e7d4ed6fc6bc8e9279", POLICY_DIR "/ubuntu-apparmor.profiles", NULL};
+    struct input aa = {5784069, "b645ca1ba5542cace9e69693ad1f57daa861a791eea9d13f37f0bc44bcb3180a", POLICY_DIR "/ubuntu-apparmor.profiles", NULL};
     struct droidloom_apparmor_measurement observation = {0};
     struct droidloom_raw_profile selected_profiles[3] = {0};
     int status = -1, epoch_directory = -1;
     struct droidloom_linux_run device_root = {.fd = -1};
     struct droidloom_linux_init_scope scope = { .root.fd = -1, .scope.fd = -1, .procs.fd = -1, .controllers.fd = -1, .system_slice.fd = -1, .root_membership.fd = -1, .root_subtree_control.fd = -1 };
     struct droidloom_linux_run run = {.fd = -1}, shm = {.fd = -1};
+    struct droidloom_linux_journal_store log_store = { .log.fd = -1, .journal.fd = -1 };
     struct droidloom_linux_credentials credentials = { .root.fd = -1, .systemd.fd = -1, .staging.fd = -1 };
     struct droidloom_linux_run udev = {.fd = -1}, udev_data = {.fd = -1};
     struct droidloom_readiness_paths paths = { .handoff.fd = -1, .readiness.fd = -1 };
@@ -269,6 +270,7 @@ int droidloom_board_activate_policy(gid_t observer_gid)
     if (rc == 0) { stage = "hold the original Ubuntu cgroup root and move global PID 1 to its init.scope"; rc = droidloom_hold_linux_init_scope(&scope); }
     if (rc == 0) { stage = "prepare the original Ubuntu shared memory mount"; rc = droidloom_hold_linux_shm(&shm); }
     if (rc == 0) { stage = "hold original Ubuntu /run"; rc = droidloom_hold_linux_run(&run); }
+    if (rc == 0) { stage = "hold the Ubuntu runtime log directory"; rc = droidloom_hold_ubuntu_log(&run, &log_store); }
     if (rc == 0) { stage = "hold the distro credentials root"; rc = droidloom_hold_ubuntu_credentials(&run, &credentials); }
     if (rc == 0) { stage = "hold the root-owned Ubuntu udev directory on the original /run"; rc = droidloom_hold_linux_udev(&run, &udev); }
     if (rc == 0) { stage = "hold the original Ubuntu udev database directory"; rc = droidloom_hold_linux_udev_data(&udev, &udev_data); }
@@ -301,6 +303,7 @@ int droidloom_board_activate_policy(gid_t observer_gid)
     if (rc == 0) { stage = "label the held Ubuntu cgroup root and its initial scope"; rc = droidloom_label_linux_init_scope(&scope); }
     if (rc == 0) { stage = "label the original Ubuntu shared memory root"; rc = droidloom_label_linux_shm(&shm); }
     if (rc == 0) { stage = "label the held Ubuntu /run inode"; rc = droidloom_label_linux_run(&run); }
+    if (rc == 0) { stage = "label the held Ubuntu runtime log directory"; rc = droidloom_label_ubuntu_log(&log_store); }
     if (rc == 0) { stage = "label the held distro credentials root"; rc = droidloom_label_ubuntu_credentials(&credentials); }
     if (rc == 0) { stage = "label the held Ubuntu udev directory"; rc = droidloom_label_linux_udev(&udev); }
     if (rc == 0) { stage = "label the original Ubuntu udev database directory"; rc = droidloom_label_linux_udev_data(&udev_data); }
@@ -319,6 +322,7 @@ int droidloom_board_activate_policy(gid_t observer_gid)
     droidloom_close_linux_init_scope(&scope);
     if (shm.fd >= 0)
         close(shm.fd);
+    droidloom_close_ubuntu_log(&log_store);
     droidloom_close_ubuntu_credentials(&credentials);
     if (udev_data.fd >= 0)
         close(udev_data.fd);

@@ -152,6 +152,41 @@ static int hold_runtime_directory(const struct droidloom_linux_run *parent, cons
     return hold_child(parent, name, 0, mode, held);
 }
 
+int droidloom_hold_ubuntu_log(const struct droidloom_linux_run *run,
+                            struct droidloom_linux_journal_store *store)
+{
+    if (hold_runtime_directory(run, "log", 0755, &store->log) < 0)
+        return -1;
+    struct stat st;
+    if (fstatat(store->log.fd, "journal", &st, AT_SYMLINK_NOFOLLOW) < 0)
+        return errno == ENOENT ? 0 : -1;
+    /* Ubuntu tmpfiles may already have assigned its local systemd-journal gid
+     * and setgid bit. Keep that group, its ACL and any earlier journal data. */
+    mode_t mode = st.st_mode & 07777;
+    if (!S_ISDIR(st.st_mode) || st.st_uid != 0 || (mode != 0755 && mode != 02755)) {
+        errno = EACCES;
+        return -1;
+    }
+    return hold_child(&store->log, "journal", st.st_gid, mode, &store->journal);
+}
+
+int droidloom_label_ubuntu_log(const struct droidloom_linux_journal_store *store)
+{
+    if (apply_label(&store->log, "u:object_r:p4_linux_log_root_t:s0") < 0)
+        return -1;
+    if (store->journal.fd >= 0)
+        return apply_label(&store->journal, "u:object_r:p4_linux_journal_store_t:s0");
+    return 0;
+}
+
+void droidloom_close_ubuntu_log(struct droidloom_linux_journal_store *store)
+{
+    if (store->journal.fd >= 0)
+        close(store->journal.fd);
+    if (store->log.fd >= 0)
+        close(store->log.fd);
+}
+
 int droidloom_hold_ubuntu_credentials(const struct droidloom_linux_run *run,
                                      struct droidloom_linux_credentials *credentials)
 {

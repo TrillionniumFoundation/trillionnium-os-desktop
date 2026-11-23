@@ -37,3 +37,8 @@
 /usr/lib/x86_64-linux-gnu/libapparmor\.so\.1 -l u:object_r:p4_linux_usrmerge_link_t:s0
 /usr/lib/udev(/rules\.d)? -d u:object_r:p4_linux_udev_rules_t:s0
 /usr/lib/udev/rules\.d/[^/]+\.rules -- u:object_r:p4_linux_udev_rules_t:s0
+/etc/systemd/journald\.conf -- u:object_r:p4_linux_journal_config_t:s0
+/var/log -d u:object_r:p4_linux_log_root_t:s0
+/var/log/journal -d u:object_r:p4_linux_journal_store_t:s0
+/var/log/journal/[0-9a-f]{32} -d u:object_r:p4_linux_journal_machine_t:s0
+/var/log/journal/[0-9a-f]{32}/system\.journal -- u:object_r:p4_linux_journal_database_t:s0
