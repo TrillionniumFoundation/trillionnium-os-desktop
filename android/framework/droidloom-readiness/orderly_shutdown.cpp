@@ -1,5 +1,5 @@
-#include <cstdio>
 // SPDX-License-Identifier: GPL-3.0-or-later
+#include <cstdio>
 #include <cerrno>
 #include <cstring>
 #include <fcntl.h>
@@ -41,10 +41,23 @@ int request_orderly_shutdown() {
     for (;;) {
         char state = 0;
         if (TEMP_FAILURE_RETRY(pread(fd, &state, 1, 0)) != 1 || !selected_request(fd)) return 1;
-        if (state == '1') return __system_property_set("sys.droidloom.shutdown_request", "shutdown") == 0 ? 0 : 1;
+        if (state == '1') return __system_property_set("ctl.start", "droidloom_commit_shutdown") == 0 ? 0 : 1;
         if (state != '0') return 1;
         struct inotify_event event {};
         if (TEMP_FAILURE_RETRY(read(events, &event, sizeof(event))) != sizeof(event) ||
             event.wd != watch || event.len || event.mask != IN_MODIFY) return 1;
     }
+}
+
+// This disabled one-shot is started by init only after an authorized ctl.start.
+// A zero exit is a no-op. With the same live request, status 42 selects init's
+// fixed reboot_on_failure shutdown target, including while a boot exec is stuck.
+int commit_orderly_shutdown() {
+    const int fd = open(kRequestPath, O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC);
+    if (fd < 0) return 0;
+    char state = 0;
+    const bool requested = selected_request(fd) &&
+            TEMP_FAILURE_RETRY(pread(fd, &state, 1, 0)) == 1 && state == '1';
+    close(fd);
+    return requested ? 42 : 0;
 }

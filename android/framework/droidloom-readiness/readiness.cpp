@@ -90,7 +90,12 @@ int connect_owner() {
 }  // namespace
 
 int request_orderly_shutdown();
+int commit_orderly_shutdown();
 int main(int argc, char** argv) {
+    if (argc == 2 && !strcmp(argv[0], "/system_ext/bin/droidloom-shutdown") &&
+        !strcmp(argv[1], "--commit")) {
+        return original_identity() ? commit_orderly_shutdown() : 0;
+    }
     if (argc != 1 || !original_identity()) return 1;
     if (!strcmp(argv[0], "/system_ext/bin/droidloom-shutdown")) return request_orderly_shutdown();
     const int fd = connect_owner();

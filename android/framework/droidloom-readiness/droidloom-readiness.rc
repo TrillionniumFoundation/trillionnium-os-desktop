@@ -14,8 +14,10 @@ service droidloom_shutdown /system_ext/bin/droidloom-shutdown
     group nobody
     oneshot
 
-on property:sys.droidloom.shutdown_request=shutdown
-    setprop sys.powerctl shutdown
-
-on post-fs && property:sys.droidloom.shutdown_request=shutdown
-    setprop sys.powerctl shutdown
+service droidloom_commit_shutdown /system_ext/bin/droidloom-shutdown --commit
+    class core
+    disabled
+    oneshot
+    user nobody
+    group nobody
+    reboot_on_failure shutdown
