@@ -204,3 +204,7 @@
 (allow p4_linux_mac_roles p4_linux_registered_lsms_t (file (getattr open read)))
 (neverallow p4_linux_procs p4_linux_registered_lsms_t (file (write append setattr relabelfrom relabelto mounton)))
 (neverallow p4_linux_mac_roles securityfs (file (getattr open read map write append setattr)))
+; Validate the mount type holding the already selected AppArmor enabled bit.
+(allow p4_linux_mac_roles sysfs (filesystem (getattr)))
+(auditallow p4_linux_mac_roles p4_linux_registered_lsms_t (file (read)))
+(auditallow p4_linux_mac_roles p4_linux_apparmor_enabled_t (file (read)))
