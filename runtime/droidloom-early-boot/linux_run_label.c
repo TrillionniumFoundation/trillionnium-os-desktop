@@ -172,10 +172,10 @@ int droidloom_hold_ubuntu_log(const struct droidloom_linux_run *run,
 
 int droidloom_label_ubuntu_log(const struct droidloom_linux_journal_store *store)
 {
-    if (apply_label(&store->log, "u:object_r:p4_linux_log_root_t:s0") < 0)
+    if (apply_label(&store->log, "u:object_r:p4_linux_volatile_log_root_t:s0") < 0)
         return -1;
     if (store->journal.fd >= 0)
-        return apply_label(&store->journal, "u:object_r:p4_linux_journal_store_t:s0");
+        return apply_label(&store->journal, "u:object_r:p4_linux_volatile_journal_store_t:s0");
     return 0;
 }
 

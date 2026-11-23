@@ -2,6 +2,7 @@
 abi <abi/5.0>,
 #include <tunables/global>
 
+@{droidloom_journal_hex16}=[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]
 @{droidloom_journal_machine_id}=[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]
 
 # The original Ubuntu executable attaches automatically on its normal path.
@@ -21,12 +22,15 @@ profile droidloom-ubuntu-journald /usr/lib/systemd/systemd-journald {
   /run/systemd/journal/ r,
   /run/systemd/journal/{socket,stdout,dev-log,io.systemd.journal} rw,
   /run/systemd/journal/{seqnum,kernel-seqnum,flushed} rw,
+  /run/systemd/journal/synced rw,
+  "/run/systemd/journal/.#synced@{droidloom_journal_hex16}" rw,
   /run/systemd/notify w,
   /run/credentials/systemd-journald.service/ r,
   /run/credentials/systemd-journald.service/journal.* r,
   /{run,var}/log/journal/ rw,
   /{run,var}/log/journal/@{droidloom_journal_machine_id}/ rw,
   /{run,var}/log/journal/@{droidloom_journal_machine_id}/{system,user-*}.journal* rwk,
+  /run/log/journal/@{droidloom_journal_machine_id}/system@@{droidloom_journal_machine_id}-@{droidloom_journal_hex16}-@{droidloom_journal_hex16}.journal rwk,
   @{PROC}/sys/kernel/hostname r,
   @{PROC}/sys/kernel/random/boot_id r,
   audit @{PROC}/1/cgroup r,

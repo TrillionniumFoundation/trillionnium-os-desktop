@@ -591,3 +591,51 @@
 ; limits and both of its security contexts to synchronize the existing file.
 (allow p4_linux_journald_t self (process (fork)))
 (auditallow p4_linux_journald_t self (process (fork)))
+
+; The early board labels /run/log on tmpfs independently of the distro's
+; persistent /var/log. After FlushToVar the journal removes the old runtime
+; database and empty runtime machine directory. Persistent files retain their
+; existing labels and do not receive this cleanup permission.
+(type p4_linux_volatile_log_root_t)
+(type p4_linux_volatile_journal_store_t)
+(type p4_linux_volatile_journal_machine_t)
+(type p4_linux_volatile_journal_database_t)
+(type p4_linux_journal_synced_t)
+(roletype object_r p4_linux_volatile_log_root_t)
+(roletype object_r p4_linux_volatile_journal_store_t)
+(roletype object_r p4_linux_volatile_journal_machine_t)
+(roletype object_r p4_linux_volatile_journal_database_t)
+(roletype object_r p4_linux_journal_synced_t)
+(typeattributeset p4_linux_data (p4_linux_volatile_log_root_t p4_linux_volatile_journal_store_t p4_linux_volatile_journal_machine_t p4_linux_volatile_journal_database_t p4_linux_journal_synced_t))
+(allow kernel p4_linux_volatile_log_root_t (dir (getattr relabelto)))
+(allow kernel p4_linux_volatile_journal_store_t (dir (getattr relabelto)))
+(allow p4_linux_volatile_log_root_t tmpfs (filesystem (associate)))
+(allow p4_linux_volatile_journal_store_t tmpfs (filesystem (associate)))
+(allow p4_linux_volatile_journal_machine_t tmpfs (filesystem (associate)))
+(allow p4_linux_volatile_journal_database_t tmpfs (filesystem (associate)))
+(allow p4_linux_journal_synced_t tmpfs (filesystem (associate)))
+(typetransition p4_linux_journald_t p4_linux_volatile_log_root_t dir "journal" p4_linux_volatile_journal_store_t)
+(typetransition p4_linux_journald_t p4_linux_volatile_journal_store_t dir p4_linux_volatile_journal_machine_t)
+(typetransition p4_linux_journald_t p4_linux_volatile_journal_machine_t file "system.journal" p4_linux_volatile_journal_database_t)
+(allow p4_linux_journald_t p4_linux_volatile_log_root_t (dir (getattr search write add_name)))
+(allow p4_linux_journald_t p4_linux_volatile_journal_store_t (dir (getattr search open read create write add_name remove_name)))
+(allow p4_linux_journald_t p4_linux_volatile_journal_machine_t (dir (getattr search open read create write add_name remove_name rmdir)))
+(allow p4_linux_journald_t p4_linux_volatile_journal_database_t (file (create getattr open read write append map lock setattr rename unlink)))
+(auditallow p4_linux_journald_t p4_linux_volatile_journal_database_t (file (unlink)))
+(auditallow p4_linux_journald_t p4_linux_volatile_journal_machine_t (dir (rmdir)))
+(neverallow p4_linux_volatile_journal_database_t labeledfs (filesystem (associate)))
+(neverallow p4_linux_journalctl_t p4_linux_volatile_journal_database_t (file (create open read write append map unlink rename)))
+(neverallow p4_linux_journald_t p4_linux_journal_database_t (file (unlink rename)))
+(neverallow p4_linux_journald_t p4_linux_journal_store_t (dir (rmdir remove_name)))
+(neverallow p4_linux_journald_t p4_linux_volatile_log_root_t (dir (remove_name rmdir mounton relabelto relabelfrom)))
+(neverallow p4_linux_procs p4_linux_volatile_journal_database_t (file (execute execute_no_trans entrypoint mounton relabelfrom relabelto)))
+
+; manager_synchronize() publishes its timestamp through the actual random
+; .#synced<16hex> temporary followed by a rename to "synced". The attached
+; journal AppArmor profile admits these two names. The existing named CIL
+; transitions for "seqnum", "kernel-seqnum" and "flushed" take precedence.
+(typetransition p4_linux_journald_t p4_linux_journal_runtime_t file p4_linux_journal_synced_t)
+(allow p4_linux_journald_t p4_linux_journal_synced_t (file (create getattr open read write setattr rename unlink)))
+(auditallow p4_linux_journald_t p4_linux_journal_synced_t (file (rename)))
+(neverallow p4_android_userspace p4_linux_journal_synced_t (file (open read write create unlink rename)))
+(neverallow p4_linux_journalctl_t p4_linux_journal_synced_t (file (create write unlink rename setattr)))
