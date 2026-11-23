@@ -62,8 +62,8 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
             include_bytes!("../../../runtime/droidloom-early-boot/board_policy.h").as_slice(),
         ),
         (
-            "board_policy_main.c",
-            include_bytes!("../../../runtime/droidloom-early-boot/board_policy_main.c").as_slice(),
+            "board_init.c",
+            include_bytes!("../../../runtime/droidloom-early-boot/board_init.c").as_slice(),
         ),
         (
             "board_resources.h",
@@ -94,7 +94,7 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
     )?;
     for (source, object) in [
         ("board_policy.c", "board_policy.o"),
-        ("board_policy_main.c", "board_policy_main.o"),
+        ("board_init.c", "board_init.o"),
         ("custody.c", "custody.o"),
         ("selected.c", "selected.o"),
         ("board_resources.c", "board_resources.o"),
@@ -134,28 +134,28 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
         .join(boot);
     copy(&src.join(boot), &binary)?;
     mode(&binary, 0o755)?;
-    let policy = "droidloom-early-policy";
+    let board_init = "droidloom-board-init";
     let linked = Command::new("cc")
         .current_dir(src)
         .args([
             "-Wl,-z,relro,-z,now",
-            "board_policy_main.o",
+            "board_init.o",
             "board_policy.o",
             "linux_run_label.o",
             "selected.o",
             "custody.o",
             "-lcrypto",
             "-o",
-            policy,
+            board_init,
         ])
         .status()?;
     if !linked.success() {
-        return fail("cannot link the selected early shared-kernel board policy installer");
+        return fail("cannot link the selected shared-kernel board PID 1");
     }
     let path = destination
         .join("usr/lib/droidloom/production/current")
-        .join(policy);
-    copy(&src.join(policy), &path)?;
+        .join(board_init);
+    copy(&src.join(board_init), &path)?;
     mode(&path, 0o755)?;
     let result = Command::new("ar")
         .current_dir(src)
