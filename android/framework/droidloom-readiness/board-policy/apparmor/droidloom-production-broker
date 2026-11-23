@@ -83,4 +83,5 @@ profile droidloom-production-broker {
   mount options=(bind) /run/droidloom-early/readiness/ -> /dev/socket/droidloom/,
   mount options=(bind) /sys/fs/cgroup/system.slice/droidloom-production.service/payload/ -> /sys/fs/cgroup/,
   umount /run/droidloom-early/rootfs/,
+  /run/droidloom-early/readiness/shutdown-request rw,
 }

@@ -33,7 +33,11 @@
 (neverallow droidloom_readiness p4_readiness_other_peer (unix_stream_socket (connectto)))
 
 (allow droidloom_readiness p4_linux_readiness_dir_t (dir (search)))
-(neverallow p4_android_except_readiness p4_linux_readiness_dir_t (dir (search read open write add_name remove_name relabelfrom)))
+(typeattribute p4_other_handoff_readers)
+(typeattributeset p4_other_handoff_readers (and (p4_android_except_readiness) (not (or (droidloom_shutdown) (kernel)))))
+(neverallow p4_other_handoff_readers p4_linux_readiness_dir_t (dir (search)))
+(neverallow p4_android_except_readiness p4_linux_readiness_dir_t (dir (read open remove_name relabelfrom)))
+(neverallow p4_readiness_other_android_userspace p4_linux_readiness_dir_t (dir (write add_name)))
 (typeattribute p4_readiness_other_android_userspace)
 (typeattributeset p4_readiness_other_android_userspace (and (p4_android_except_readiness) (not (kernel))))
 (neverallow p4_readiness_other_android_userspace p4_linux_readiness_dir_t (dir (relabelto)))

@@ -338,8 +338,16 @@ pub fn complete_early_resources() -> io::Result<()> {
         mutable
             .revalidate_early_lifetime(&storage)
             .map_err(io::Error::other)?;
+        let stop = super::orderly::StopRequest::acquire(&board, obs, &userdata, &metadata)?;
+        drop(userdata);
+        drop(metadata);
         board.release_prepared_root()?;
-        signals.await_child(board.pidfd())
+        signals.await_child(board.pidfd())?;
+        stop.deliver(&board)?;
+        if !wait_ended(board.pidfd(), Duration::from_secs(75))? {
+            return Err(invalid("Android did not finish its requested orderly shutdown"));
+        }
+        stop.check_mounts(&board, false)
     })();
     // The original pidfd retains exclusive custody even if an earlier stage
     // failed after moving a mount. Never release by a numeric process lookup.

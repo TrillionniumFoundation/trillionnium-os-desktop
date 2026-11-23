@@ -89,8 +89,10 @@ int connect_owner() {
 }
 }  // namespace
 
-int main() {
-    if (!original_identity()) return 1;
+int request_orderly_shutdown();
+int main(int argc, char** argv) {
+    if (argc != 1 || !original_identity()) return 1;
+    if (!strcmp(argv[0], "/system_ext/bin/droidloom-shutdown")) return request_orderly_shutdown();
     const int fd = connect_owner();
     if (fd == -1) return 1;
     for (;;) {

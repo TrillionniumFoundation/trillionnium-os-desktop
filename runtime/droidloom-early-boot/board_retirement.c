@@ -74,3 +74,30 @@ int droidloom_board_retire_root(int pidfd,int nsfd,int rootfd) {
     if(now.mnt_id!=original.mnt_id || ((now.mask&STATMOUNT_MNT_NS_ID) && now.mnt_ns_id))return fail(EBUSY);
     return exited(pidfd);
 }
+
+/* Query the original mount namespace by descriptor. Record IDs, not path file
+ * descriptors, so the witness itself cannot make Android's normal umount busy. */
+int droidloom_board_storage_state(int nsfd, uint64_t id, int expect_present) {
+    if (!id || ioctl(nsfd, NS_GET_NSTYPE) != CLONE_NEWNS) return fail(EINVAL);
+    uint64_t namespace_id = 0;
+    if (ioctl(nsfd, NS_GET_MNTNS_ID, &namespace_id) || !namespace_id) return -1;
+    struct mnt_id_req req = {.size=sizeof(req), .mnt_ns_fd=(unsigned)nsfd,
+                             .mnt_id=id, .param=STATMOUNT_MNT_BASIC|STATMOUNT_MNT_NS_ID};
+    struct statmount out = {0};
+    if (syscall(SYS_statmount, &req, &out, sizeof(out), 0) < 0) {
+        if (!expect_present && errno == ENOENT) return 0;
+        return -1;
+    }
+    if ((out.mask & req.param) != req.param || out.mnt_ns_id != namespace_id || out.mnt_id != id)
+        return fail(ESTALE);
+    return expect_present ? 0 : fail(EBUSY);
+}
+int droidloom_board_storage_id(int fd, uint64_t *id) {
+    struct statmount held = {0};
+    struct statfs fs;
+    if (fstatfs(fd, &fs) || held_mount(fd, &held)) return -1;
+    if (fs.f_type != EXT4_SUPER_MAGIC || held.mnt_attr & MOUNT_ATTR_RDONLY)
+        return fail(ESTALE);
+    *id = held.mnt_id;
+    return 0;
+}

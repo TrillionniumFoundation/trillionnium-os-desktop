@@ -1,7 +1,7 @@
 cc_binary {
     name: "droidloom-readiness",
     system_ext_specific: true,
-    srcs: ["readiness.cpp"],
+    srcs: ["readiness.cpp", "orderly_shutdown.cpp"],
     init_rc: ["droidloom-readiness.rc"],
     shared_libs: ["libactivitymanager_aidl", "libbinder", "libutils"],
     header_libs: ["libcutils_headers"],

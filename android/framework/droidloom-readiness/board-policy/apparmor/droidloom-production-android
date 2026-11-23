@@ -14,4 +14,5 @@ profile droidloom-production-android {
   /dev/{binder,hwbinder,vndbinder} rw,
   @{PROC}/[0-9]*/{status,attr/current,attr/apparmor/current,attr/selinux/current} r,
   signal (receive) peer=droidloom-production-broker,
+  /dev/socket/droidloom/shutdown-request r,
 }

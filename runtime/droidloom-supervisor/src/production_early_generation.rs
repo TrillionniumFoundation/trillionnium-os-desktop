@@ -1,5 +1,7 @@
 //! Release-bound re-opening of the birth pidfd and PID namespace. Each Linux
 //! descriptor is opened in the current service domain after switch_root.
+#[path = "production_early_orderly.rs"]
+mod orderly;
 use super::*;
 use std::fs;
 use std::os::fd::{AsFd, BorrowedFd, OwnedFd};

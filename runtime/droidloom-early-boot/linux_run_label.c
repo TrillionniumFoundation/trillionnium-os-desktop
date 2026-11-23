@@ -174,7 +174,29 @@ int droidloom_label_readiness_paths(const struct droidloom_readiness_paths *path
 {
     if (apply_label(&paths->handoff, "u:object_r:p4_linux_early_handoff_dir_t:s0") < 0)
         return -1;
-    return apply_label(&paths->readiness, "u:object_r:p4_linux_readiness_dir_t:s0");
+    if (apply_label(&paths->readiness, "u:object_r:p4_linux_readiness_dir_t:s0") < 0)
+        return -1;
+    /* Mint this boot's request exactly once, before the ordinary system manager starts. */
+    int fd = openat(paths->readiness.fd, "shutdown-request",
+                    O_CREAT | O_EXCL | O_RDWR | O_CLOEXEC | O_NOFOLLOW, 0640);
+    if (fd < 0)
+        return -1;
+    struct stat file, parent;
+    char label[100];
+    const char expected[] = "u:object_r:p4_android_shutdown_request_t:s0";
+    int e = 0;
+    if (fchmod(fd, 0640) || fstat(fd, &file) || fstat(paths->readiness.fd, &parent))
+        e = errno;
+    else if (!S_ISREG(file.st_mode) || file.st_dev != parent.st_dev || file.st_uid != 0 ||
+             file.st_gid != parent.st_gid || file.st_nlink != 1 || file.st_size ||
+             (file.st_mode & 07777) != 0640 ||
+             !droidloom_context_matches(label, fgetxattr(fd, "security.selinux", label, sizeof(label)), expected))
+        e = ESTALE;
+    else if (write(fd, "0", 1) != 1)
+        e = errno ? errno : EIO;
+    close(fd);
+    if (e) { errno = e; return -1; }
+    return 0;
 }
 
 struct console_node {
