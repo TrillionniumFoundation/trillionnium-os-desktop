@@ -219,7 +219,7 @@
 (roletype object_r p4_linux_journal_socket_t)
 (typeattributeset p4_linux_data (p4_linux_journal_runtime_t p4_linux_journal_socket_t))
 (typetransition init_t p4_linux_systemd_run_t dir "journal" p4_linux_journal_runtime_t)
-(typetransition init_t p4_linux_journal_runtime_t sock_file "socket" p4_linux_journal_socket_t)
+(typetransition init_t p4_linux_journal_runtime_t sock_file "socket" p4_linux_journal_native_socket_t)
 (typetransition init_t p4_linux_journal_runtime_t sock_file "stdout" p4_linux_journal_socket_t)
 (typetransition init_t p4_linux_journal_runtime_t sock_file "dev-log" p4_linux_journal_socket_t)
 (allow p4_linux_journal_runtime_t tmpfs (filesystem (associate)))
@@ -559,3 +559,23 @@
 (neverallow p4_linux_journalctl_t p4_all_board_owned (file (execute_no_trans)))
 (neverallow p4_linux_journalctl_t droidloom_broker (process (transition dyntransition ptrace)))
 (neverallow p4_linux_journalctl_t droidloom_policy_loader (process (transition dyntransition ptrace)))
+
+; The persistent store is on the real Ubuntu ext4. Only these two inodes can
+; be created on it by the journal's existing store- and filename transitions.
+(allow p4_linux_journal_machine_t labeledfs (filesystem (associate)))
+(allow p4_linux_journal_database_t labeledfs (filesystem (associate)))
+(allow p4_linux_journald_t labeledfs (filesystem (getattr)))
+(neverallow p4_linux_journald_t labeledfs (filesystem (mount remount unmount relabelto relabelfrom)))
+
+; Ubuntu PID 1 emits the structured UNIT and INVOCATION_ID entries through
+; /run/systemd/journal/socket. Its private notify and service control endpoints
+; remain independently typed and Android domains cannot access this socket.
+(type p4_linux_journal_native_socket_t)
+(roletype object_r p4_linux_journal_native_socket_t)
+(typeattributeset p4_linux_data (p4_linux_journal_native_socket_t))
+(allow p4_linux_journal_native_socket_t tmpfs (filesystem (associate)))
+(allow init_t p4_linux_journal_native_socket_t (sock_file (create getattr write setattr unlink)))
+(allow init_t self (unix_dgram_socket (connect sendto write)))
+(auditallow init_t p4_linux_journal_native_socket_t (sock_file (write)))
+(neverallow p4_android_userspace p4_linux_journal_native_socket_t (sock_file (create open read write setattr unlink relabelto relabelfrom)))
+(neverallow p4_linux_procs p4_linux_journal_native_socket_t (sock_file (relabelto relabelfrom)))
