@@ -29,7 +29,25 @@ pub(super) fn stage_board_policy(inputs: &Path, destination: &Path) -> Result<()
         let path = release.join(name);
         write(&path, &body)?;
         mode(&path, 0o444)?;
+        if name == "joint.policy" {
+            // The verified binary policy header carries the version used by libselinux.
+            if body.get(..16) != Some(&b"\x8c\xff\x7c\xf9\x08\0\0\0SE Linux"[..]) {
+                return fail("selected joint policy has an unsupported binary header");
+            }
+            let version = u32::from_le_bytes(
+                body.get(16..20).ok_or("truncated SELinux policy version")?.try_into()?,
+            );
+            let policy = destination.join(format!("etc/selinux/droidloom/policy/policy.{version}"));
+            write(&policy, &body)?;
+            mode(&policy, 0o444)?;
+        }
     }
+    let config = destination.join("etc/selinux/config");
+    write(
+        &config,
+        include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-selinux-config"),
+    )?;
+    mode(&config, 0o444)?;
     Ok(())
 }
 
