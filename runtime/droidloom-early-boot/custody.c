@@ -148,9 +148,10 @@ void droidloom_cancel_unpublished_resource_handles(void) {
     unlink(DL_HANDOFF_ROOT "/resources.json");
     umount(DL_HANDOFF_ROOT "/mntns");unlink(DL_HANDOFF_ROOT "/mntns");
     umount(DL_HANDOFF_ROOT "/userns");unlink(DL_HANDOFF_ROOT "/userns");
+    umount(DL_HANDOFF_ROOT "/cgroupns-creation");unlink(DL_HANDOFF_ROOT "/cgroupns-creation");
 }
 int droidloom_publish_resource_handles(pid_t child,const struct droidloom_release_phase* phase,int fifo) {
-    struct stat mnt,user,gate,named;
+    struct stat mnt,user,initial_cgroup,gate,named;
     if(!phase||!phase->sha[0]||child<=1||fstat(fifo,&gate)||
        lstat(DL_HANDOFF_ROOT "/release",&named))return dl_fail(EINVAL);
     if(!S_ISFIFO(gate.st_mode)||(gate.st_mode&07777)!=0600||gate.st_uid||gate.st_gid||gate.st_nlink!=1||
@@ -158,6 +159,10 @@ int droidloom_publish_resource_handles(pid_t child,const struct droidloom_releas
     if(dl_pin_child_namespace(child,"mnt",DL_HANDOFF_ROOT "/mntns",CLONE_NEWNS,&mnt))return -1;
     if(dl_pin_child_namespace(child,"user",DL_HANDOFF_ROOT "/userns",CLONE_NEWUSER,&user)){
         int saved=errno;umount(DL_HANDOFF_ROOT "/mntns");unlink(DL_HANDOFF_ROOT "/mntns");return dl_fail(saved);
+    }
+    if(dl_pin_child_namespace(child,"cgroup",DL_HANDOFF_ROOT "/cgroupns-creation",CLONE_NEWCGROUP,&initial_cgroup)){
+        int saved=errno;umount(DL_HANDOFF_ROOT "/mntns");unlink(DL_HANDOFF_ROOT "/mntns");
+        umount(DL_HANDOFF_ROOT "/userns");unlink(DL_HANDOFF_ROOT "/userns");return dl_fail(saved);
     }
     const char *temp=DL_HANDOFF_ROOT "/resources.pending";
     int fd=open(temp,O_CREAT|O_EXCL|O_NOFOLLOW|O_WRONLY|O_CLOEXEC,0400);
@@ -168,14 +173,15 @@ int droidloom_publish_resource_handles(pid_t child,const struct droidloom_releas
         if(dprintf(fd,"{\"schema\":\"droidloom-early-resources-v1\",\"boot_id\":\"%s\","
             "\"selection_sha256\":\"%s\",\"host_pid\":%d,\"nonce\":\"%s\","
             "\"mntns_dev\":%" PRIuMAX ",\"mntns_ino\":%" PRIuMAX ",\"userns_dev\":%" PRIuMAX ",\"userns_ino\":%" PRIuMAX
-            ",\"fifo_dev\":%" PRIuMAX ",\"fifo_ino\":%" PRIuMAX "}\n",
+            ",\"cgroupns_dev\":%" PRIuMAX ",\"cgroupns_ino\":%" PRIuMAX ",\"fifo_dev\":%" PRIuMAX ",\"fifo_ino\":%" PRIuMAX "}\n",
             boot,phase->sha,child,phase->nonce,(uintmax_t)mnt.st_dev,(uintmax_t)mnt.st_ino,(uintmax_t)user.st_dev,
-            (uintmax_t)user.st_ino,(uintmax_t)gate.st_dev,(uintmax_t)gate.st_ino)<0||fsync(fd))saved=errno;
+            (uintmax_t)user.st_ino,(uintmax_t)initial_cgroup.st_dev,(uintmax_t)initial_cgroup.st_ino,(uintmax_t)gate.st_dev,(uintmax_t)gate.st_ino)<0||fsync(fd))saved=errno;
     }
     if(!saved&&syscall(SYS_renameat2,AT_FDCWD,temp,AT_FDCWD,DL_HANDOFF_ROOT "/resources.json",RENAME_NOREPLACE))
         saved=errno;
     if(fd>=0){close(fd);if(saved)unlink(temp);}
-    if(saved){umount(DL_HANDOFF_ROOT "/mntns");unlink(DL_HANDOFF_ROOT "/mntns");
+    if(saved){umount(DL_HANDOFF_ROOT "/cgroupns-creation");unlink(DL_HANDOFF_ROOT "/cgroupns-creation");
+        umount(DL_HANDOFF_ROOT "/mntns");unlink(DL_HANDOFF_ROOT "/mntns");
         umount(DL_HANDOFF_ROOT "/userns");unlink(DL_HANDOFF_ROOT "/userns");return dl_fail(saved);}
     return 0;
 }

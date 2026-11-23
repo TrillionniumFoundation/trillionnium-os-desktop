@@ -82,16 +82,25 @@ static int random_phase(struct droidloom_release_phase *p,const char *sha) {
     for(size_t i=0;i<sizeof random;i++)snprintf(p->nonce+i*2,3,"%02x",random[i]);
     return 0;
 }
-static int wait_release(int fd,const struct droidloom_release_phase *p) {
+static int next_release_step(int fd,const struct droidloom_release_phase *p) {
     char expected[180],response[181];
-    int length=snprintf(expected,sizeof expected,"DROIDLOOM_EARLY_RELEASE_V1 %s %s\n",p->sha,p->nonce);
     struct pollfd waiting={.fd=fd,.events=POLLIN};
-    int r;
-    do{r=poll(&waiting,1,-1);}while(r<0&&errno==EINTR);
-    if(r!=1 || !(waiting.revents&POLLIN))return failure(EPIPE);
+    for(;;){
+        int r=poll(&waiting,1,-1);
+        if(r<0&&errno==EINTR)continue;
+        if(r<0)return -1;
+        if(waiting.revents&POLLIN)break;
+        if(waiting.revents&POLLHUP){usleep(100000);continue;}
+        return failure(EPIPE);
+    }
     ssize_t got;
     do{got=read(fd,response,sizeof response);}while(got<0&&errno==EINTR);
-    return got==length && memcmp(response,expected,(size_t)length)==0?0:failure(EBADMSG);
+    for(int step=1;step<=2;step++){
+        const char *tag=step==1?"DROIDLOOM_EARLY_CGROUP_V1":"DROIDLOOM_EARLY_RELEASE_V1";
+        int length=snprintf(expected,sizeof expected,"%s %s %s\n",tag,p->sha,p->nonce);
+        if(got==length && memcmp(response,expected,(size_t)length)==0)return step;
+    }
+    return failure(EBADMSG);
 }
 static int confirmed_original(int root,int *out) {
     int sys=openat(root,"system",O_RDONLY|O_DIRECTORY|O_NOFOLLOW|O_CLOEXEC);
@@ -120,7 +129,11 @@ static int child_main(int maps_ready,int prepared,int fifo,const struct droidloo
        mkdir(SLOT "/rootfs",0700))return -1;
     if(send_one(prepared,'S'))return -1;
     close(prepared);
-    if(wait_release(fifo,p)||prctl(PR_SET_DUMPABLE,0))return -1;
+    if(next_release_step(fifo,p)!=1)return failure(EPROTO);
+    if(unshare(CLONE_NEWCGROUP))return -1;
+    int step;
+    do{step=next_release_step(fifo,p);}while(step==1);
+    if(step!=2 || prctl(PR_SET_DUMPABLE,0))return failure(EPROTO);
     close(fifo);
     int root=open(SLOT "/rootfs",O_RDONLY|O_DIRECTORY|O_NOFOLLOW|O_CLOEXEC);
     if(root<0)return -1;
