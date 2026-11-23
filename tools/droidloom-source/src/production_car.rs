@@ -305,5 +305,13 @@ pub fn materialize_resuming(
     lock_path: &Path, lock: &SparseSourceLock, destination: &Path,
     resume: Option<&Path>, progress: &Path,
 ) -> Result<MaterializedManifest, SourceError> {
-    super::resume::materialize_for_profile(lock_path, lock, destination, resume, progress, true)
+    materialize_resuming_with_jobs(lock_path, lock, destination, resume, progress, 1)
+}
+
+/// Limit parallel official Git requests when restoring a verified source tree.
+pub fn materialize_resuming_with_jobs(
+    lock_path: &Path, lock: &SparseSourceLock, destination: &Path,
+    resume: Option<&Path>, progress: &Path, jobs: usize,
+) -> Result<MaterializedManifest, SourceError> {
+    super::resume::materialize_for_profile(lock_path, lock, destination, resume, progress, true, jobs)
 }

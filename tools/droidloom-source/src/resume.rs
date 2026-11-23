@@ -415,7 +415,7 @@ fn contains_nested_projects(projects: &[PlannedProject]) -> bool {
 }
 
 fn resume_disjoint_projects(
-    root: &Path, projects: &[PlannedProject], progress_path: &Path, owner: u32, recovery: &Path,
+    root: &Path, projects: &[PlannedProject], progress_path: &Path, owner: u32, recovery: &Path, jobs: usize,
 ) -> Result<(), SourceError> {
     use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
     let next = AtomicUsize::new(0);
@@ -424,7 +424,7 @@ fn resume_disjoint_projects(
         .ok_or_else(|| invalid("source progress requires a valid filename"))?;
     thread::scope(|scope| {
         let mut workers = Vec::new();
-        for lane in 0..4 {
+        for lane in 0..jobs.min(projects.len()) {
             let path = progress_path.with_file_name(format!("{name}.worker-{lane}"));
             let mut progress = Progress::create(&path, owner)?;
             let next = &next;
@@ -467,14 +467,15 @@ fn resume_disjoint_projects(
 pub fn materialize_resuming(lock_path: &Path, lock: &SparseSourceLock,
     destination: &Path, resume: Option<&Path>, progress_path: &Path)
     -> Result<MaterializedManifest, SourceError> {
-    materialize_for_profile(lock_path, lock, destination, resume, progress_path, false)
+    materialize_for_profile(lock_path, lock, destination, resume, progress_path, false, 1)
 }
 
 /// Keep immutable production source checkouts across network or process interruptions.
 pub(crate) fn materialize_for_profile(
     lock_path: &Path, lock: &SparseSourceLock, destination: &Path,
-    resume: Option<&Path>, progress_path: &Path, production_car: bool,
+    resume: Option<&Path>, progress_path: &Path, production_car: bool, jobs: usize,
 ) -> Result<MaterializedManifest, SourceError> {
+    if !(1..=4).contains(&jobs) { return Err(invalid("source jobs must be between 1 and 4")); }
     let planner = if production_car { super::production_car::build_plan } else { build_plan };
     let verifier = if production_car { super::production_car::verify_materialized } else { verify_materialized };
     let plan = planner(lock)?;
@@ -522,7 +523,7 @@ pub(crate) fn materialize_for_profile(
                 fs::create_dir(&recovery).map_err(|e| io_error("create source recovery directory", e))?;
             }
             real_directory(&recovery, owner)?;
-            resume_disjoint_projects(&root, &plan.projects, progress_path, owner, &recovery)?;
+            resume_disjoint_projects(&root, &plan.projects, progress_path, owner, &recovery, jobs)?;
         } else {
             for (ordinal, project) in plan.projects.iter().enumerate() {
                 if !is_commit(&project.commit) { return Err(invalid("non-exact project commit")); }

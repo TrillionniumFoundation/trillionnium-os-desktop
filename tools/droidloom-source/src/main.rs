@@ -57,6 +57,8 @@ enum Command {
         #[arg(long)] lock: PathBuf,
         #[arg(long)] output: PathBuf,
         #[arg(long)] progress: PathBuf,
+        /// Number of simultaneous official source requests (1–4).
+        #[arg(long, default_value_t = 1)] jobs: usize,
         #[arg(long)] resume: Option<PathBuf>,
     },
     /// Add newly locked projects to an existing verified materialization.
@@ -122,14 +124,15 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             let lock = load_lock(&lock)?;
             println!("{}", serde_json::to_string_pretty(&build_plan(&lock)?)?);
         }
-        Command::MaterializeResuming { lock, output, progress, resume } => {
+        Command::MaterializeResuming { lock, output, progress, resume, jobs } => {
             let source_lock = load_lock(&lock)?;
-            let operation = match cli.profile {
-                Profile::ProductionFullCar => droidloom_source::production_car::materialize_resuming,
-                Profile::NativePair => droidloom_source::native_pair::materialize_resuming,
-                _ => return Err("this profile has no resumable materializer".into()),
+            let manifest = match cli.profile {
+                Profile::ProductionFullCar => droidloom_source::production_car::materialize_resuming_with_jobs(
+                    &lock, &source_lock, &output, resume.as_deref(), &progress, jobs)?,
+                Profile::NativePair if jobs == 1 => droidloom_source::native_pair::materialize_resuming(
+                    &lock, &source_lock, &output, resume.as_deref(), &progress)?,
+                _ => return Err("requested profile and job count have no resumable materializer".into()),
             };
-            let manifest = operation(&lock, &source_lock, &output, resume.as_deref(), &progress)?;
             println!("materialized {} exact AOSP projects at {}", manifest.plan.projects.len(), output.display());
         }
         Command::Materialize { lock, output } => {
