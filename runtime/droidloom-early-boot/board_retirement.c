@@ -47,7 +47,8 @@ int droidloom_board_retire_root(int pidfd,int nsfd,int rootfd) {
     if(ioctl(nsfd,NS_GET_MNTNS_ID,&nsid)||!nsid)return -1;
     struct statmount original={0};
     if(held_mount(rootfd,&original))return -1;
-    if(!(original.mask&STATMOUNT_MNT_NS_ID) || original.mnt_ns_id!=nsid ||
+    if(!(original.mask&STATMOUNT_MNT_NS_ID) || !original.mnt_ns_id)return exited(pidfd);
+    if(original.mnt_ns_id!=nsid ||
         original.mnt_propagation!=MS_PRIVATE)return fail(ESTALE);
     int result[2]; if(pipe2(result,O_CLOEXEC))return -1;
     char path[64];

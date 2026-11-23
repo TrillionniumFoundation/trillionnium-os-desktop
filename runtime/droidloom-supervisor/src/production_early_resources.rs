@@ -135,12 +135,18 @@ impl<'a> EarlyBoundNamespaces<'a> {
         ) || !exact_range(
             &fs::read_to_string(proc_path(&self.proc, "gid_map"))?,
             spec.subordinate_gids,
-        ) || fs::read_to_string(proc_path(&self.proc, "setgroups"))?.trim() != "deny"
+        ) || fs::read_to_string(proc_path(&self.proc, "setgroups"))?.trim() != "allow"
         {
             return Err(invalid(
                 "original Android namespace maps no longer match the private selection",
             ));
         }
+        crate::production_host_admission::verify_early_root_status(
+            &fs::read_to_string(proc_path(&self.proc, "status"))?,
+            spec.subordinate_uids,
+            spec.subordinate_gids,
+        )
+        .map_err(io::Error::other)?;
         self.board.revalidate()
     }
     pub(crate) fn admit_host(&self) -> io::Result<HostAdmission> {

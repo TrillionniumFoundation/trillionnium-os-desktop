@@ -372,3 +372,27 @@ impl PreparedCgroup {
         Ok(())
     }
 }
+
+impl PreparedCgroup {
+    pub(crate) fn retire_early_unstarted(&self) -> Result<()> {
+        require(
+            self.get().early.borrow().is_none(),
+            "cannot retire an attempted early migration as unstarted",
+        )?;
+        self.retire_unstarted()
+    }
+    pub(crate) fn attempted_original(
+        &self,
+        board: &crate::production_selection::EarlyBoardResources,
+    ) -> Result<bool> {
+        let stored = self.get().early.borrow();
+        let Some(binding) = stored.as_ref() else {
+            return Ok(false);
+        };
+        require(
+            NodeIdentity::of(&binding.pidfd)? == NodeIdentity::of(board.pidfd())?,
+            "another early process owns this migration",
+        )?;
+        Ok(true)
+    }
+}

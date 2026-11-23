@@ -96,6 +96,8 @@ static int filesystem(int root, const char *name, long magic, unsigned long on,
     return valid ? 0 : reject(ESTALE);
 }
 
+#include "board_binder.h"
+
 /* The caller owns the manifest, protected storage lease and actual cgroup
  * delegation. Check the receiving layout again at the mount handoff. */
 static int prepared_layout(int root) {
@@ -111,8 +113,7 @@ static int prepared_layout(int root) {
     for (int i = 0; i < 7; ++i)
         for (int j = i + 1; j < 7; ++j)
             if (!(i == 3 && j == 4) && media[i] == media[j]) return reject(EXDEV);
-    if (filesystem(root, "dev", TMPFS_MAGIC, ST_NOSUID, 0, NULL) ||
-        filesystem(root, "dev/binderfs", BINDERFS_SUPER_MAGIC, ST_NOSUID | ST_NOEXEC, ST_NODEV, NULL) ||
+    if (board_dev_state(root, false) ||
         filesystem(root, "sys/fs/cgroup", CGROUP2_SUPER_MAGIC, 0, ST_RDONLY, NULL))
         return -1;
     return original_init(root);
@@ -226,5 +227,5 @@ int droidloom_board_enter(int held_root) {
     bool own=inner>=0 && same_inode(ns,inner) && n==1 && self[0]=='1';
     if(inner>=0)close(inner);
     close(ns);
-    return own ? 0 : reject(ESTALE);
+    return own ? board_build_binder(held_root) : reject(ESTALE);
 }

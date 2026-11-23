@@ -21,12 +21,10 @@ pub(super) struct OriginalBackingPair {
 }
 
 impl OriginalBackingPair {
-    pub(super) fn open(
-        witness: &OwnedNamespaceWitness<'_>,
-        selection: &ProductionSelection,
-        prepared: &PreparedExecution,
-    ) -> Result<Self> {
-        prepared.revalidate_tree(selection, witness)?;
+    pub(super) fn open(admission: &impl StorageAuthority) -> Result<Self> {
+        admission.verify()?;
+        let witness = admission.namespace();
+        let selection = admission.selection();
         let policy = selection.persistent_data_policy()
             .map_err(|_| MountError::Rejected("explicit sealed persistent data policy required"))?;
         let path = selection.spec().data_dir.clone();
@@ -55,7 +53,7 @@ impl OriginalBackingPair {
                 && node.links == 1 && node.bytes == selected.image_bytes,
                 "selected root-private single-link original backing identity required")?;
         }
-        prepared.revalidate_tree(selection, witness)?;
+        admission.verify()?;
         let readers = [
             open_leaf(&parent, c"data.img", libc::O_RDONLY | libc::O_NOATIME)?,
             open_leaf(&parent, c"metadata.img", libc::O_RDONLY | libc::O_NOATIME)?,
@@ -69,7 +67,7 @@ impl OriginalBackingPair {
             superblock::validate(&headers[index], &policies[index]).map_err(MountError::Rejected)?;
             require(FileIdentity::of(&readers[index].metadata()?) == nodes[index],
                 "original inode changed during readonly filesystem inspection")?;
-            prepared.revalidate_tree(selection, witness)?;
+            admission.verify()?;
         }
         // A dirty, corrupt or unsupported filesystem has already failed before
         // any writable open, loop, journal replay or mount can occur.
@@ -94,11 +92,11 @@ impl OriginalBackingPair {
             superblock_sha256: headers.map(|header| format!("{:x}", Sha256::digest(header))),
         };
         value.revalidate(witness)?;
-        prepared.revalidate_tree(selection, witness)?;
+        admission.verify()?;
         Ok(value)
     }
 
-    pub(super) fn revalidate(&self, witness: &OwnedNamespaceWitness<'_>) -> Result<()> {
+    pub(super) fn revalidate(&self, witness: &impl early::BaseAuthority) -> Result<()> {
         witness.revalidate_live_admission()?;
         let lease = witness.identity_lease()?;
         lease.revalidate_for_broker()?;

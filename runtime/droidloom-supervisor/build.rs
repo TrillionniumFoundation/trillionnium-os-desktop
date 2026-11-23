@@ -30,7 +30,7 @@ fn main() {
     let ar = selected_tool("AR", "ar");
     let mut archive = Command::new(ar);
     archive.arg("rcs").arg(out.join("libdroidloom_board.a"));
-    for stem in ["board_resources", "board_retirement"] {
+    for stem in ["board_resources", "board_retirement", "board_assembly"] {
         let source = format!("../droidloom-early-boot/{stem}.c");
         let object = out.join(format!("{stem}.o"));
         println!("cargo:rerun-if-changed={source}");
@@ -46,6 +46,7 @@ fn main() {
         archive.arg(object);
     }
     execute(&mut archive);
+    println!("cargo:rerun-if-changed=../droidloom-early-boot/board_binder.h");
     println!("cargo:rerun-if-changed=../droidloom-early-boot/board_resources.h");
     println!("cargo:rustc-link-search=native={}", out.display());
     println!("cargo:rustc-link-lib=static=droidloom_board");

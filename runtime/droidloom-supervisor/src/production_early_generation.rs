@@ -605,3 +605,7 @@ pub(crate) use resources::{EarlyBaseAdmission, EarlyBoundNamespaces};
 #[path="production_early_retirement.rs"]
 mod retirement;
 pub(crate) use retirement::{EarlyBaseRetirement, verify_exit};
+
+#[path="production_early_lifecycle.rs"]
+mod lifecycle;
+pub use lifecycle::complete_early_resources;
