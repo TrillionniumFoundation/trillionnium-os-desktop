@@ -47,6 +47,66 @@ pub fn accepts(
     }
 }
 
+pub const READINESS_FILE: &str = "system_ext_readiness.img";
+pub const READINESS_TARGETS: [&str; 2] = ["/system/system_ext/bin", "/system/system_ext/etc/init"];
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct ReadinessDeclaration {
+    pub file: String,
+    pub bytes: u64,
+    pub sha256: String,
+    pub targets: [String; 2],
+    pub source_system_sha256: String,
+    pub source_vendor_sha256: String,
+    pub source_system_ext_lib64_sha256: String,
+    pub observer_sha256: String,
+    pub init_rc_sha256: String,
+}
+
+fn sha256(value: &str) -> bool {
+    value.len() == 64
+        && value
+            .bytes()
+            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+}
+
+/// Admit an exact two-, three-, or four-image raw release. The two readiness
+/// subtrees always come from a single fourth filesystem.
+pub fn accepts_base(
+    schema: u32,
+    scope: &str,
+    library: Option<&Declaration>,
+    readiness: Option<&ReadinessDeclaration>,
+    system: &str,
+    vendor: &str,
+) -> bool {
+    if schema != 3 {
+        return readiness.is_none() && accepts(schema, scope, library, system, vendor);
+    }
+    let (Some(lib), Some(ready)) = (library, readiness) else {
+        return false;
+    };
+    scope == "android_base_images_v3"
+        && accepts(2, "android_base_images_v2", Some(lib), system, vendor)
+        && ready.file == READINESS_FILE
+        && ready.targets == READINESS_TARGETS
+        && (4096..=16 * 1024 * 1024).contains(&ready.bytes)
+        && ready.bytes % 512 == 0
+        && ready.source_system_sha256 == system
+        && ready.source_vendor_sha256 == vendor
+        && ready.source_system_ext_lib64_sha256 == lib.sha256
+        && [
+            ready.sha256.as_str(),
+            ready.observer_sha256.as_str(),
+            ready.init_rc_sha256.as_str(),
+        ]
+        .iter()
+        .all(|v| sha256(v))
+        && ![system, vendor, &lib.sha256].contains(&ready.sha256.as_str())
+        && ready.observer_sha256 != ready.init_rc_sha256
+}
+
 pub const HOST_MODULES: &[&str] = &[
     "libberberis_exec_region",
     "libberberis_proxy_libEGL",
