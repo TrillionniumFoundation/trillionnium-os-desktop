@@ -77,6 +77,7 @@ trait LiveNamespace {
     fn host_pid(&self) -> u32;
     fn start_ticks(&self) -> u64;
     fn descendant_pid_namespace(&self) -> Option<&File>;
+    fn verify_credentials(&self,_:&Credentials,_:IdRange,_:IdRange)->Result<()> {Ok(())}
     fn check_live(&self) -> Result<()>;
 }
 impl LiveNamespace for OwnedNamespaceWitness<'_> {
@@ -88,6 +89,9 @@ impl LiveNamespace for OwnedNamespaceWitness<'_> {
     fn check_live(&self)->Result<()>{self.revalidate().map_err(|e|reject(e.to_string()))}
 }
 impl LiveNamespace for EarlyBoundNamespaces<'_> {
+    fn verify_credentials(&self,creds:&Credentials,uids:IdRange,gids:IdRange)->Result<()> {
+        require_early_ranges(creds,uids,gids)
+    }
     fn user_namespace(&self)->&File{ EarlyBoundNamespaces::user_namespace(self) }
     fn proc_directory(&self)->&File{ EarlyBoundNamespaces::proc_directory(self) }
     fn host_pid(&self)->u32{ EarlyBoundNamespaces::host_pid(self) }
@@ -3193,6 +3197,21 @@ struct Credentials {
     groups: Vec<u32>,
     tgid: u32,
 }
+fn require_early_ranges(creds:&Credentials,uids:IdRange,gids:IdRange)->Result<()>{
+    if !creds.uids.iter().all(|&id|in_range(id,uids)) ||
+       !creds.gids.iter().chain(&creds.groups).all(|&id|in_range(id,gids)) {
+        return Err(reject("early Android process retained a credential outside its selected ranges"));
+    }
+    Ok(())
+}
+pub(crate) fn verify_early_root_status(text:&str,uids:IdRange,gids:IdRange)->Result<()>{
+    let c=parse_status(text)?;
+    require_early_ranges(&c,uids,gids)?;
+    if c.uids!=[uids.start;4] || c.gids!=[gids.start;4] {
+        return Err(reject("the original Android PID 1 lost its exact mapped root credentials"));
+    }
+    Ok(())
+}
 fn parse_status(text: &str) -> Result<Credentials> {
     let mut fields = BTreeMap::new();
     for line in text.lines() {
@@ -3665,6 +3684,7 @@ fn validate_live_view(
                 continue;
             }
             if allowed {
+                witness.ok_or_else(||reject("missing owned namespace"))?.verify_credentials(&task.credentials,uids,gids)?;
                 validate_owned_task(
                     *identity,
                     task,
@@ -3734,6 +3754,14 @@ fn audit_live_tasks(
 mod tests {
     use super::*;
 
+    #[test]
+    fn early_android_allows_mapped_supplementary_aids_only(){
+        let (u,g)=ranges();
+        let status=|uid:u32,groups:&str|format!("Tgid:\t153\nUid:\t{uid} {uid} {uid} {uid}\nGid:\t300000 300000 300000 300000\nGroups:\t{groups}\n");
+        verify_early_root_status(&status(u.start,"301000 301007"),u,g).unwrap();
+        assert!(verify_early_root_status(&status(u.start,"0 301007"),u,g).is_err());
+        assert!(verify_early_root_status(&status(u.start+1,"301000"),u,g).is_err());
+    }
     fn ranges() -> (IdRange, IdRange) {
         (
             IdRange {

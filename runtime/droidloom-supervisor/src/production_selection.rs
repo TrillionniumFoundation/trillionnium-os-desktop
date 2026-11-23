@@ -33,7 +33,7 @@ pub use launcher::{ContainerLibraryMount, PreparedContainerSelection, SharedKern
 
 #[path = "production_early_generation.rs"]
 pub(crate) mod early_generation;
-pub use early_generation::EarlyAndroidGeneration;
+pub use early_generation::{EarlyAndroidGeneration, complete_early_resources};
 pub(crate) use early_generation::EarlyBoardResources;
 #[path = "production_early_release.rs"]
 mod early_release;
