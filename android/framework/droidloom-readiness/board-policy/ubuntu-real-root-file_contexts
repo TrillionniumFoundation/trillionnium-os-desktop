@@ -23,3 +23,5 @@
 /etc/selinux/config -- u:object_r:p4_linux_board_selinux_config_t:s0
 /etc/selinux/droidloom/policy/policy\.[0-9]+ -- u:object_r:p4_linux_board_policy_image_t:s0
 /etc/selinux/droidloom/contexts/files/file_contexts -- u:object_r:p4_linux_board_selinux_config_t:s0
+/(etc|usr/lib)/systemd/system/[^/]+\.(wants|requires|upholds) -d u:object_r:p4_linux_unit_directory_t:s0
+/(etc|usr/lib)/systemd/system/[^/]+\.(wants|requires|upholds)/[^/]+\.(service|target|slice|scope|socket|timer|mount|automount|path|device|swap) -l u:object_r:p4_linux_unit_file_t:s0
