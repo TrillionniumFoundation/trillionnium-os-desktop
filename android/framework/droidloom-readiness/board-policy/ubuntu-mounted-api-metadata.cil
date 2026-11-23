@@ -150,3 +150,23 @@
 (allow p4_linux_service_executor_t p4_linux_systemd_memfd_t (file (ioctl)))
 (allowx p4_linux_service_executor_t p4_linux_systemd_memfd_t (ioctl file (0x542a)))
 (allow p4_linux_service_executor_t p4_linux_console_t (chr_file (getattr open write)))
+
+; Original Ubuntu systemd passes the execution time over its preconnected
+; AF_UNIX socketpair. Both socket endpoint labels belong to PID 1.
+(allow init_t self (unix_dgram_socket (sendto)))
+
+; systemd consults these kernel interfaces before it applies SELinuxContext=
+; and AppArmorProfile= from an authenticated unit. Confine the sysfs read to
+; AppArmor's single, immutable enabled parameter.
+(type p4_linux_apparmor_enabled_t)
+(roletype object_r p4_linux_apparmor_enabled_t)
+(typeattributeset p4_linux_data (p4_linux_apparmor_enabled_t))
+(genfscon sysfs "/module/apparmor/parameters/enabled" (u object_r p4_linux_apparmor_enabled_t ((s0) (s0))))
+(allow init_t p4_linux_apparmor_enabled_t (file (getattr open read)))
+(allow p4_linux_service_executor_t p4_linux_apparmor_enabled_t (file (getattr open read)))
+(allow p4_linux_mac_roles p4_linux_apparmor_enabled_t (file (getattr open read)))
+(neverallow p4_linux_procs p4_linux_apparmor_enabled_t (file (write append setattr relabelfrom relabelto)))
+(allow p4_linux_service_executor_t selinuxfs (filesystem (getattr)))
+; procattr writes are authenticated by SELinux setexec and the subsequent
+; process transition. There is no setcurrent, dyntransition or ptrace grant.
+(allow p4_linux_service_executor_t self (file (write)))
