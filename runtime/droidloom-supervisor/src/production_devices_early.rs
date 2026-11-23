@@ -71,7 +71,7 @@ pub(super) fn verify_readiness_directories(root: &File, uid: u32, gid: u32, node
     let mut expected: Vec<_> = DEVICES.iter().map(|spec| spec.name.to_bytes().to_vec()).collect();
     expected.push(b"socket".to_vec());
     expected.sort();
-    need(directory_names(root)? == expected, "only seven fixed devices and the readiness parent")?;
+    need(directory_names_bounded(root, expected.len())? == expected, "only seven fixed devices and the readiness parent")?;
     verify_device_nodes(root, uid, gid, nodes)?;
     let socket = directory(root, c"socket")?;
     let target = directory(&socket, c"droidloom")?;
@@ -83,7 +83,7 @@ pub(super) fn verify_readiness_directories(root: &File, uid: u32, gid: u32, node
             && m.mode() == libc::S_IFDIR | 0o755 && mount_id(dir)? == original_mount,
             "readiness directories require the same private mount, mode and mapped identities")?;
     }
-    need(directory_names(&socket)? == [b"droidloom".to_vec()] && directory_names(&target)?.is_empty(),
+    need(directory_names_bounded(&socket, 1)? == [b"droidloom".to_vec()] && directory_names_bounded(&target, 0)?.is_empty(),
         "only one empty fixed readiness target may exist before transfer")
 }
 
