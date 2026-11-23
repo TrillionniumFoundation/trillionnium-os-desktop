@@ -222,6 +222,11 @@ impl PreparationAdmission {
         witness: &OwnedNamespaceWitness<'_>,
     ) -> Result<PreparedExecution> {
         self.revalidate(selection)?;
+        if selection.is_kernel_first() {
+            return Err(ExecutionError::Selection(
+                "kernel-first generation cannot arm the separate broker-created tree".into(),
+            ));
+        }
         self.live.revalidate_tree(selection, witness)?;
         let owner = witness
             .systemd_owner(selection)

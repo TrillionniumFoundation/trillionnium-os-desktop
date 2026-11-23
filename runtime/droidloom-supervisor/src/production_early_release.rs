@@ -97,6 +97,95 @@ pub fn verify_original_init_for_boot(file: &File) -> io::Result<()> {
     Ok(())
 }
 
+/// Manifests and original image descriptors for one privately selected kernel-first boot.
+pub(crate) struct EarlyReleaseMedia {
+    manifest: SealedFile,
+    runtime: SealedFile,
+    images: Vec<(PathBuf, File, Node)>,
+}
+
+impl EarlyReleaseMedia {
+    pub(crate) fn acquire(selection: &ProductionSelection) -> Result<Self> {
+        selection.revalidate()?;
+        if !selection.is_kernel_first() || selection.selected.node.mode & 0o7777 != 0o400 {
+            return Err(SelectionError::Rejected(
+                "private kernel-first selection required",
+            ));
+        }
+        let media = Self::open(
+            UbuntuRoot::AfterSwitchRoot,
+            selection.base_cohort(),
+            selection.runtime_manifest(),
+        )?;
+        selection.revalidate()?;
+        Ok(media)
+    }
+
+    fn open(ubuntu: UbuntuRoot, base: &str, runtime: &str) -> Result<Self> {
+        let (manifest, raw) = SealedFile::read(
+            &ubuntu.path(&format!("/etc/droidloom/cohorts/{base}.json")),
+            16 * 1024,
+        )?;
+        let (runtime_manifest, runtime_raw) = SealedFile::read(
+            &ubuntu.path(&format!("/etc/droidloom/runtime-cohorts/{runtime}.json")),
+            256 * 1024,
+        )?;
+        if manifest.sha256 != base
+            || runtime_manifest.sha256 != runtime
+            || manifest.node.mode & 0o7777 != 0o400
+            || runtime_manifest.node.mode & 0o7777 != 0o400
+        {
+            return Err(SelectionError::Rejected(
+                "early release base or runtime manifest differs from private selection",
+            ));
+        }
+        let members =
+            crate::production_mounts::early_base_members(&raw).map_err(io::Error::other)?;
+        let source = &members[0].2;
+        validate_runtime_entry(&runtime_raw, base, source)?;
+        let images = ubuntu.path(&format!("/var/lib/droidloom/cohorts/{base}/images"));
+        let mut original = BTreeSet::new();
+        let mut held = Vec::new();
+        for (role, size, sha) in members {
+            let path = images.join(role);
+            let file = open_root_trusted(&path)?;
+            let node = Node::from(&file.metadata()?);
+            require_public_regular(&node, size)?;
+            require_no_capability(&file)?;
+            if node.bytes != size
+                || node.mode & 0o7777 != 0o400
+                || !original.insert((node.device, node.inode))
+                || stream_hash(&file, size)? != sha
+            {
+                return Err(SelectionError::Rejected(
+                    "early raw image identity, size or complete digest differs",
+                ));
+            }
+            held.push((path, file, node));
+        }
+        let value = Self {
+            manifest,
+            runtime: runtime_manifest,
+            images: held,
+        };
+        value.revalidate()?;
+        Ok(value)
+    }
+
+    pub(crate) fn revalidate(&self) -> Result<()> {
+        self.manifest.revalidate_path()?;
+        self.runtime.revalidate_path()?;
+        for (path, file, original) in &self.images {
+            if Node::from(&file.metadata()?) != *original
+                || Node::from(&open_root_trusted(path)?.metadata()?) != *original
+            {
+                return Err(SelectionError::Changed);
+            }
+        }
+        Ok(())
+    }
+}
+
 fn intake(ubuntu: UbuntuRoot) -> Result<Option<(SealedFile, CellSpec, String)>> {
     let private = SealedFile::read(&ubuntu.path(SELECTION), SELECTION_LIMIT);
     let published = SealedFile::read(&ubuntu.path(PUBLIC), SELECTION_LIMIT);
@@ -172,62 +261,9 @@ fn intake(ubuntu: UbuntuRoot) -> Result<Option<(SealedFile, CellSpec, String)>> 
         ));
     }
     let base = &record.base_cohort_sha256;
-    let (manifest, raw) = SealedFile::read(
-        &ubuntu.path(&format!("/etc/droidloom/cohorts/{base}.json")),
-        16 * 1024,
-    )?;
-    let runtime = &record.runtime_manifest_sha256;
-    let (runtime_manifest, runtime_raw) = SealedFile::read(
-        &ubuntu.path(&format!("/etc/droidloom/runtime-cohorts/{runtime}.json")),
-        256 * 1024,
-    )?;
-    if manifest.sha256 != *base
-        || runtime_manifest.sha256 != *runtime
-        || manifest.node.mode & 0o7777 != 0o400
-        || runtime_manifest.node.mode & 0o7777 != 0o400
-    {
-        return Err(SelectionError::Rejected(
-            "early release base or runtime manifest differs from private selection",
-        ));
-    }
-    let members = crate::production_mounts::early_base_members(&raw).map_err(io::Error::other)?;
-    let source = &members[0].2;
-    validate_runtime_entry(&runtime_raw, base, source)?;
-    let images = ubuntu.path(&format!("/var/lib/droidloom/cohorts/{base}/images"));
-    let mut original = BTreeSet::new();
-    let mut held = Vec::new();
-    for (role, size, sha) in members {
-        let path = images.join(role);
-        let file = open_root_trusted(&path)?;
-        let node = Node::from(&file.metadata()?);
-        require_public_regular(&node, size)?;
-        require_no_capability(&file)?;
-        if node.bytes != size
-            || node.mode & 0o7777 != 0o400
-            || !original.insert((node.device, node.inode))
-            || stream_hash(&file, size)? != sha
-        {
-            return Err(SelectionError::Rejected(
-                "early raw image identity, size or complete digest differs",
-            ));
-        }
-        held.push((path, file, node));
-    }
-    for (path, file, node) in held {
-        if Node::from(&file.metadata()?) != node
-            || Node::from(&open_root_trusted(&path)?.metadata()?) != node
-        {
-            return Err(SelectionError::Changed);
-        }
-    }
-    for input in [
-        &choice,
-        &published,
-        &spec,
-        &program,
-        &manifest,
-        &runtime_manifest,
-    ] {
+    let media = EarlyReleaseMedia::open(ubuntu, base, &record.runtime_manifest_sha256)?;
+    media.revalidate()?;
+    for input in [&choice, &published, &spec, &program] {
         input.revalidate_path()?;
     }
     Ok(Some((choice, cell, base.clone())))

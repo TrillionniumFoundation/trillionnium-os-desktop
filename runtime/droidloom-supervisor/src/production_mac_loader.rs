@@ -126,8 +126,10 @@ impl LoaderMacWitness {
             view.for_manager_label(&self.loaded, selection, endpoint, deadline)?;
         } else {
             require(
-                context_matches(&proc_attr(endpoint.manager_proc(), false)?, HOST)
-                    && proc_attr(endpoint.manager_proc(), true)? == b"unconfined\n",
+                context_matches(
+                    &proc_attr(endpoint.manager_proc(), false)?,
+                    self.loaded.declaration.manager(),
+                ) && proc_attr(endpoint.manager_proc(), true)? == b"unconfined\n",
                 "actual original systemd PID1 MAC identity differs",
             )?;
             require(

@@ -36,9 +36,7 @@ impl ManagerChannel {
         context: crate::production_execution::RuntimeMacOwner,
         deadline: Instant,
     ) -> Result<Self> {
-        let issuer = crate::production_mac::HostPeerIssuer::broker(context)
-            .map_err(|error| CgroupError::Owner(error.to_string()))?;
-        let endpoint = AuthenticatedManagerEndpoint::capture(issuer, deadline)?;
+        let endpoint = AuthenticatedManagerEndpoint::capture_runtime(context, deadline)?;
         let bus = PrivateBus::from_authenticated_socket(endpoint.connection(), deadline)?;
         let value = Self { bus, endpoint };
         value.check_until(deadline)?;

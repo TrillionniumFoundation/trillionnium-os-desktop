@@ -34,7 +34,7 @@ fn initial_credentials(proc: &File) -> Result<()> {
 
 // The fixed policy labels the kernel nsfs superblock, never generic unlabeled
 // objects. Observe the actual held inode SID in addition to both kernel ioctls.
-fn fixed_namespace_label(file: &File) -> Result<()> {
+pub(super) fn fixed_namespace_label(file: &File, declaration: &Declaration) -> Result<()> {
     let before = Node::of(file)?;
     let mut context = [0_u8; 128];
     let count = unsafe {
@@ -51,13 +51,13 @@ fn fixed_namespace_label(file: &File) -> Result<()> {
     require(
         count > 0
             && count as usize <= context.len()
-            && context_matches(&context[..count as usize], "u:object_r:droidloom_nsfs:s0")
+            && context_matches(&context[..count as usize], declaration.nsfs())
             && Node::of(file)? == before,
         "actual held namespace inode must keep its fixed nsfs label",
     )
 }
 
-fn initial_namespaces(proc: &File) -> Result<[File; 2]> {
+fn initial_namespaces(proc: &File, declaration: &Declaration) -> Result<[File; 2]> {
     let directory = open_at(proc.as_raw_fd(), c"ns", libc::O_PATH | libc::O_DIRECTORY)?;
     require(
         kind(&directory)? == PROC_MAGIC,
@@ -80,7 +80,7 @@ fn initial_namespaces(proc: &File) -> Result<[File; 2]> {
             return Err(io::Error::last_os_error().into());
         }
         let file = unsafe { File::from_raw_fd(fd) };
-        fixed_namespace_label(&file)?;
+        fixed_namespace_label(&file, declaration)?;
         let actual_kind = unsafe { libc::ioctl(fd, NS_GET_NSTYPE, 0 as libc::c_ulong) };
         if actual_kind < 0 {
             return Err(io::Error::last_os_error().into());
@@ -116,6 +116,7 @@ pub(crate) struct LoadedPolicyWitness {
     pub(super) own_proc: File,
     pub(super) own_proc_node: Node,
     initial_namespaces: [File; 2],
+    early_media: Option<crate::production_selection::EarlyReleaseMedia>,
     pub(super) tid: libc::pid_t,
     pub(super) host_uid: u32,
     pub(super) _same_thread: PhantomData<Rc<()>>,
@@ -132,6 +133,14 @@ impl LoadedPolicyWitness {
         let (contract, raw) = Sealed::read(CONTRACT, MAX_RECORD)?;
         let declaration: Declaration = serde_json::from_slice(&raw)?;
         declaration.validate(selection)?;
+        let early_media = if declaration.early() {
+            Some(
+                crate::production_selection::EarlyReleaseMedia::acquire(selection)
+                    .map_err(|e| MacError::Selection(e.to_string()))?,
+            )
+        } else {
+            None
+        };
         let (policy, policy_bytes) = Sealed::read(POLICY, MAX_POLICY)?;
         exact_policy_bytes(
             &policy_bytes,
@@ -173,11 +182,16 @@ impl LoadedPolicyWitness {
             loaded_bytes == expected_export,
             "complete actually loaded policy differs from the sealed kernel export",
         )?;
-        for capability in [
-            "nnp_nosuid_transition",
-            "userspace_initial_context",
-            "netlink_xperm",
-        ] {
+        let capabilities: &[&str] = if declaration.early() {
+            &["nnp_nosuid_transition", "netlink_xperm"]
+        } else {
+            &[
+                "nnp_nosuid_transition",
+                "userspace_initial_context",
+                "netlink_xperm",
+            ]
+        };
+        for &capability in capabilities {
             let file = relative(&root, &["policy_capabilities", capability], libc::O_RDONLY)?;
             require(
                 bounded(&file, 16)? == b"1",
@@ -187,12 +201,16 @@ impl LoadedPolicyWitness {
         let own_proc = own_proc()?;
         let own_proc_node = Node::of(&own_proc)?;
         initial_credentials(&own_proc)?;
-        let initial_namespaces = initial_namespaces(&own_proc)?;
+        let initial_namespaces = initial_namespaces(&own_proc, &declaration)?;
         let boot = kernel_text("/proc/sys/kernel/random/boot_id", PROC_MAGIC, 64)?;
         require(valid_boot(&boot), "complete current boot identity")?;
         let apparmor = AaPolicy::acquire(&declaration)?;
         let mut sequence = None;
-        required_decisions(&root, &mut sequence)?;
+        if declaration.early() {
+            kernel_first::required(&root, &mut sequence)?;
+        } else {
+            required_decisions(&root, &mut sequence)?;
+        }
         let av_sequence = sequence.ok_or(MacError::Rejected("no actual kernel decision"))?;
         require(
             status.read()? == epoch && (epoch.policyload == 0 || epoch.policyload == av_sequence),
@@ -214,6 +232,7 @@ impl LoadedPolicyWitness {
             own_proc,
             own_proc_node,
             initial_namespaces,
+            early_media,
             tid: unsafe { libc::syscall(libc::SYS_gettid) as libc::pid_t },
             host_uid: selection.spec().host_uid,
             _same_thread: PhantomData,
@@ -221,6 +240,10 @@ impl LoadedPolicyWitness {
         value.revalidate(selection)?;
         Ok(value)
     }
+    pub(super) fn early_media_held(&self) -> bool {
+        self.early_media.is_some()
+    }
+
     pub(crate) fn revalidate(&self, selection: &ProductionSelection) -> Result<()> {
         require(
             unsafe { libc::syscall(libc::SYS_gettid) as libc::pid_t } == self.tid,
@@ -238,6 +261,15 @@ impl LoadedPolicyWitness {
             "MAC selection owner changed",
         )?;
         self.declaration.validate(selection)?;
+        require(
+            self.declaration.early() == self.early_media.is_some(),
+            "kernel-first four-image custody differs",
+        )?;
+        if let Some(media) = &self.early_media {
+            media
+                .revalidate()
+                .map_err(|e| MacError::Selection(e.to_string()))?;
+        }
         self.contract.revalidate()?;
         self.policy.revalidate()?;
         self.policy_export.revalidate()?;
@@ -288,7 +320,7 @@ impl LoadedPolicyWitness {
             "original MAC observer thread proc identity changed",
         )?;
         initial_credentials(&self.own_proc)?;
-        let namespaces = initial_namespaces(&self.own_proc)?;
+        let namespaces = initial_namespaces(&self.own_proc, &self.declaration)?;
         for (current, original) in namespaces.iter().zip(&self.initial_namespaces) {
             require(
                 Node::of(current)?.same_inode(Node::of(original)?),
@@ -296,7 +328,28 @@ impl LoadedPolicyWitness {
             )?;
         }
         let mut sequence = Some(self.av_sequence);
-        // Necessary also when the status page began at policyload=0.
+        // Bind a live AV to the acquired sequence even if the status page started at zero.
+        if self.declaration.early() {
+            access(
+                &self.root,
+                KERNEL,
+                INIT,
+                "process",
+                &["transition"],
+                true,
+                &mut sequence,
+            )?;
+            access(
+                &self.root,
+                BROKER,
+                INIT,
+                "process",
+                &["transition", "dyntransition"],
+                false,
+                &mut sequence,
+            )?;
+            return self.stable_epoch();
+        }
         access(
             &self.root,
             BROKER,

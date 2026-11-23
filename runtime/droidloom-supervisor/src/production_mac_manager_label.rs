@@ -83,6 +83,12 @@ impl Record {
     fn matches(&self, selection: &ProductionSelection, policy: &LoadedPolicyWitness) -> Result<()> {
         self.validate_shape()?;
         let expected = &policy.declaration;
+        if expected.early() {
+            require(
+                self.original_server_context == kernel_first::INITIAL_SOCKET,
+                "kernel-first manager requires its fixed original server inode label",
+            )?;
+        }
         require(
             self.base_cohort_sha256 == selection.base_cohort()
                 && self.runtime_manifest_sha256 == selection.runtime_manifest()
@@ -214,8 +220,12 @@ fn decisions(policy: &LoadedPolicyWitness, old: &str) -> Result<()> {
             "unix_stream_socket",
             &["create", "connect", "getattr", "read", "write", "getopt"] as &[&str],
         ),
-        (HOST, "unix_stream_socket", &["connectto"]),
-        (HOST, "process", &["getattr"]),
+        (
+            policy.declaration.manager(),
+            "unix_stream_socket",
+            &["connectto"],
+        ),
+        (policy.declaration.manager(), "process", &["getattr"]),
         (old, "sock_file", &["getattr", "write", "relabelfrom"]),
         (
             MANAGER_LABEL,
@@ -361,7 +371,7 @@ impl ManagerLabelPermit<'_> {
         require(
             context_matches(
                 &actual_socket_security(endpoint.connection().as_fd())?,
-                HOST,
+                self.loader.loaded_policy().declaration.manager(),
             ),
             "actual same-connection manager SO_PEERSEC differs",
         )?;

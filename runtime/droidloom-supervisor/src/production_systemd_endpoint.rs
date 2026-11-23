@@ -209,11 +209,34 @@ impl Task {
 
 /// Own the selected connection and every local duplicate in an explicit order.
 /// The endpoint never reconstructs its original MAC/namespace authority.
-struct ManagerSocket {
+#[path = "production_systemd_early_socket.rs"]
+mod early_socket;
+use crate::production_mac::EarlyManagerClient;
+
+enum ManagerOrigin {
+    Selected(HostPeerIssuer),
+    KernelFirst(EarlyManagerClient),
+}
+
+enum ManagerSocket {
+    Selected(SelectedManagerSocket),
+    KernelFirst(early_socket::EarlyManagerSocket),
+}
+impl Deref for ManagerSocket {
+    type Target = File;
+    fn deref(&self) -> &File {
+        match self {
+            Self::Selected(value) => value,
+            Self::KernelFirst(value) => value.connection(),
+        }
+    }
+}
+
+struct SelectedManagerSocket {
     duplicate: Option<File>,
     selected: ManagerSelectedStream,
 }
-impl ManagerSocket {
+impl SelectedManagerSocket {
     fn connect(issuer: HostPeerIssuer, server: &File, deadline: Instant) -> Result<Self> {
         before(deadline)?;
         let selected = ManagerSelectedStream::prepare(issuer, server, deadline)
@@ -249,16 +272,16 @@ impl ManagerSocket {
         Ok(())
     }
 }
-impl Deref for ManagerSocket {
+impl Deref for SelectedManagerSocket {
     type Target = File;
     fn deref(&self) -> &File {
-        // Only the completed private constructor can issue ManagerSocket.
+        // Only the completed private constructor can issue SelectedManagerSocket.
         self.duplicate
             .as_ref()
             .expect("completed original manager socket")
     }
 }
-impl Drop for ManagerSocket {
+impl Drop for SelectedManagerSocket {
     fn drop(&mut self) {
         self.duplicate.take();
         // All our duplicates close before the original selected owner. Its
@@ -373,7 +396,7 @@ impl Task {
 }
 
 impl EndpointCustody {
-    fn capture(issuer: HostPeerIssuer, deadline: Instant) -> Result<(Self, Metadata)> {
+    fn capture(origin: ManagerOrigin, deadline: Instant) -> Result<(Self, Metadata)> {
         before(deadline)?;
         let namespaces = initial_namespaces()?;
         let mut directories = vec![open_absolute(c"/", libc::O_RDONLY | libc::O_DIRECTORY)?];
@@ -396,7 +419,14 @@ impl EndpointCustody {
                 && file_seal.mode() & 0o022 == 0,
             "fixed manager sock_file is not root controlled",
         )?;
-        let socket = ManagerSocket::connect(issuer, &file, deadline)?;
+        let socket = match origin {
+            ManagerOrigin::Selected(issuer) => {
+                ManagerSocket::Selected(SelectedManagerSocket::connect(issuer, &file, deadline)?)
+            }
+            ManagerOrigin::KernelFirst(issuer) => ManagerSocket::KernelFirst(
+                early_socket::EarlyManagerSocket::connect(issuer, &file, deadline)?,
+            ),
+        };
         let manager = Task::capture(peer_pidfd(&socket)?, 1)?;
         let pid = unsafe { libc::getpid() };
         let descriptor = unsafe { libc::syscall(libc::SYS_pidfd_open, pid, 0) };
@@ -427,7 +457,12 @@ impl EndpointCustody {
     }
     fn check_until(&self, deadline: Instant) -> Result<()> {
         before(deadline)?;
-        self.socket.revalidate()?;
+        match &self.socket {
+            ManagerSocket::Selected(value) => value.revalidate()?,
+            ManagerSocket::KernelFirst(value) => {
+                value.check(&self.file, &self.manager.proc, &self.observer.proc)?
+            }
+        }
         require(
             unsafe { libc::syscall(libc::SYS_gettid) } as libc::pid_t == self.thread
                 && unsafe { libc::getpid() } as u32 == self.observer.pid,
@@ -544,10 +579,27 @@ impl EndpointCustody {
 
 impl AuthenticatedManagerEndpoint {
     pub(crate) fn capture(issuer: HostPeerIssuer, deadline: Instant) -> Result<Self> {
-        let (custody, file_seal) = EndpointCustody::capture(issuer, deadline)?;
+        Self::from_origin(ManagerOrigin::Selected(issuer), deadline)
+    }
+    fn from_origin(origin: ManagerOrigin, deadline: Instant) -> Result<Self> {
+        let (custody, file_seal) = EndpointCustody::capture(origin, deadline)?;
         let value = Self { custody, file_seal };
         value.revalidate_until(deadline)?;
         Ok(value)
+    }
+    pub(crate) fn capture_runtime(
+        owner: crate::production_execution::RuntimeMacOwner,
+        deadline: Instant,
+    ) -> Result<Self> {
+        if owner.selection().is_kernel_first() {
+            let client =
+                EarlyManagerClient::broker(owner).map_err(|e| CgroupError::Owner(e.to_string()))?;
+            Self::from_origin(ManagerOrigin::KernelFirst(client), deadline)
+        } else {
+            let issuer =
+                HostPeerIssuer::broker(owner).map_err(|e| CgroupError::Owner(e.to_string()))?;
+            Self::capture(issuer, deadline)
+        }
     }
     pub(crate) fn capture_package(owner: PackageMacOwner, deadline: Instant) -> Result<Self> {
         let issuer =
@@ -555,6 +607,16 @@ impl AuthenticatedManagerEndpoint {
         Self::capture(issuer, deadline)
     }
     pub(crate) fn capture_loader(owner: LoaderHostPeerOwner, deadline: Instant) -> Result<Self> {
+        if owner
+            .objects()
+            .map_err(|e| CgroupError::Owner(e.to_string()))?
+            .1
+            .is_kernel_first()
+        {
+            let client =
+                EarlyManagerClient::loader(owner).map_err(|e| CgroupError::Owner(e.to_string()))?;
+            return Self::from_origin(ManagerOrigin::KernelFirst(client), deadline);
+        }
         let issuer =
             HostPeerIssuer::loader(owner).map_err(|error| io::Error::other(error.to_string()))?;
         Self::capture(issuer, deadline)

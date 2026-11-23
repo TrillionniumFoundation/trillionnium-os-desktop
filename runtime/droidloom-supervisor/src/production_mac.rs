@@ -97,6 +97,10 @@ const AA_LOADER: &[u8] = b"droidloom-policy-loader (enforce)\n";
 const LINKERCONFIG: &str = "u:r:linkerconfig:s0";
 const LINKERCONFIG_EXEC: &str = "u:object_r:linkerconfig_exec:s0";
 
+#[path = "production_mac_kernel_first.rs"]
+mod kernel_first;
+pub(crate) use kernel_first::EarlyManagerClient;
+
 #[path = "production_mac_policy.rs"]
 mod policy;
 pub(crate) use policy::LoadedPolicyWitness;
@@ -145,6 +149,8 @@ fn require(value: bool, message: &'static str) -> Result<()> {
 enum ContextRouting {
     #[serde(rename = "selinux_typed_host_scoped_android_v1")]
     TypedHostScopedAndroidV1,
+    #[serde(rename = "selinux_first_kernel_early_android_v1")]
+    KernelEarlyAndroid,
 }
 fn context_routing_field<'de, D: serde::Deserializer<'de>>(
     deserializer: D,
@@ -232,9 +238,36 @@ fn lsm_list_order(value: &str, scoped: bool) -> Result<Vec<&str>> {
     Ok(entries)
 }
 impl Declaration {
+    fn early(&self) -> bool {
+        self.context_routing == Some(ContextRouting::KernelEarlyAndroid)
+    }
+    fn manager(&self) -> &'static str {
+        if self.early() {
+            kernel_first::MANAGER
+        } else {
+            HOST
+        }
+    }
+    fn nsfs(&self) -> &'static str {
+        if self.early() {
+            kernel_first::NSFS
+        } else {
+            "u:object_r:droidloom_nsfs:s0"
+        }
+    }
+    fn require_generation(&self, early_selected: bool) -> Result<()> {
+        self.scoped_contexts()?;
+        require(
+            self.early() == early_selected,
+            "MAC routing and the sealed boot generation differ",
+        )
+    }
     fn scoped_contexts(&self) -> Result<bool> {
         match (self.schema, self.scope.as_str(), self.context_routing) {
             (3, "droidloom_linux_android_mac_v3", None) => Ok(false),
+            (5, "droidloom_linux_android_mac_v5", Some(ContextRouting::KernelEarlyAndroid)) => {
+                Ok(false)
+            }
             (
                 4,
                 "droidloom_linux_android_mac_v4",
@@ -254,6 +287,10 @@ impl Declaration {
     }
     fn validate(&self, selection: &ProductionSelection) -> Result<()> {
         self.validate_shape()?;
+        self.require_generation(selection.is_kernel_first())?;
+        if self.early() {
+            kernel_first::board(self)?;
+        }
         require(
             self.base_cohort_sha256 == selection.base_cohort()
                 && self.runtime_manifest_sha256 == selection.runtime_manifest(),
@@ -2245,6 +2282,60 @@ mod tests {
         let old: Declaration = serde_json::from_value(base.clone()).unwrap();
         assert!(old.validate_shape().is_ok());
         assert!(!old.scoped_contexts().unwrap());
+        assert!(old.require_generation(true).is_err());
+        let mut v5 = base.clone();
+        v5["schema"] = 5.into();
+        v5["scope"] = "droidloom_linux_android_mac_v5".into();
+        v5["context_routing"] = "selinux_first_kernel_early_android_v1".into();
+        let early: Declaration = serde_json::from_value(v5.clone()).unwrap();
+        assert!(early.validate_shape().is_ok());
+        assert!(early.require_generation(true).is_ok());
+        assert!(early.require_generation(false).is_err());
+        assert_eq!(early.manager(), kernel_first::MANAGER);
+        assert_eq!(early.nsfs(), kernel_first::NSFS);
+        assert!(
+            early
+                .context_lsms("capability,apparmor,selinux,bpf")
+                .is_err()
+        );
+        assert!(
+            early
+                .context_lsms("capability,selinux,apparmor,bpf")
+                .is_ok()
+        );
+        for (field, value) in [
+            ("schema", serde_json::json!(4)),
+            ("scope", serde_json::json!("droidloom_linux_android_mac_v4")),
+            (
+                "context_routing",
+                serde_json::json!("selinux_typed_host_scoped_android_v1"),
+            ),
+        ] {
+            let mut wrong = v5.clone();
+            wrong[field] = value;
+            assert!(
+                serde_json::from_value::<Declaration>(wrong)
+                    .unwrap()
+                    .require_generation(true)
+                    .is_err()
+            );
+        }
+        let mut lock = serde_json::json!({"kernel":{"release":early.kernel_release}, "files":{
+        "joint.policy":{"size":early.policy_input_bytes,"sha256":early.policy_input_sha256},
+        "ubuntu-apparmor.profiles":{"board_profiles":{
+            "droidloom-production-broker":{"kernel_profile_sha256":early.apparmor_broker_policy_sha256},
+            "droidloom-production-android":{"kernel_profile_sha256":early.apparmor_android_policy_sha256},
+            "droidloom-policy-loader":{"kernel_profile_sha256":early.apparmor_loader_policy_sha256}
+        }}}});
+        assert!(kernel_first::verify_board_fields(&lock, &early).is_ok());
+        let profiles = &mut lock["files"]["ubuntu-apparmor.profiles"]["board_profiles"];
+        profiles["droidloom-production-broker"]["compiled_sha256"] =
+            early.apparmor_broker_policy_sha256.clone().into();
+        profiles["droidloom-production-broker"]
+            .as_object_mut()
+            .unwrap()
+            .remove("kernel_profile_sha256");
+        assert!(kernel_first::verify_board_fields(&lock, &early).is_err());
         let mut v4 = base.clone();
         v4["schema"] = 4.into();
         v4["scope"] = "droidloom_linux_android_mac_v4".into();

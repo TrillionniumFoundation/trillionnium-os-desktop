@@ -37,6 +37,7 @@ pub use early_generation::{EarlyAndroidGeneration, complete_early_resources};
 pub(crate) use early_generation::EarlyBoardResources;
 #[path = "production_early_release.rs"]
 mod early_release;
+pub(crate) use early_release::EarlyReleaseMedia;
 pub use early_release::{verify_initramfs_release,verify_original_init_for_boot, verify_post_switch_board_plan};
 const EARLY_SCHEMA: &str = "droidloom-production-selection-v4";
 const EARLY_LAUNCHER: &str = "early_boot_shared_kernel_v1";
@@ -248,6 +249,10 @@ impl ProductionSelection {
         hash.update(self.base_cohort.as_bytes());
         hash.update(self.runtime_manifest.as_bytes());
         hash.finalize().into()
+    }
+
+    pub(crate) fn is_kernel_first(&self) -> bool {
+        self.early_boot
     }
 
     pub(crate) fn spec(&self) -> &CellSpec {

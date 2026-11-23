@@ -107,6 +107,10 @@ impl PackageMacPreparation {
         deadline: Instant,
     ) -> Result<Self> {
         before(deadline)?;
+        require(
+            !selection.is_kernel_first(),
+            "legacy package helpers cannot enter a kernel-first generation",
+        )?;
         require_local_role(&local, role)?;
         let loaded = LoadedPolicyWitness::acquire(&selection)?;
         before(deadline)?;

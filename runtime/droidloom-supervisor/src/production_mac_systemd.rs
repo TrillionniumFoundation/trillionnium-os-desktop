@@ -85,7 +85,7 @@ fn systemd_decisions(loaded: &LoadedPolicyWitness) -> Result<()> {
     access(
         &loaded.root,
         BROKER,
-        HOST,
+        loaded.declaration.manager(),
         "unix_stream_socket",
         &["connectto"],
         true,
@@ -103,7 +103,7 @@ fn systemd_decisions(loaded: &LoadedPolicyWitness) -> Result<()> {
     // GetUnitByPIDFD actually receives the original broker-created PIDFD.
     access(
         &loaded.root,
-        HOST,
+        loaded.declaration.manager(),
         BROKER,
         "fd",
         &["use"],
@@ -113,7 +113,7 @@ fn systemd_decisions(loaded: &LoadedPolicyWitness) -> Result<()> {
     access(
         &loaded.root,
         BROKER,
-        HOST,
+        loaded.declaration.manager(),
         "process",
         &["getattr"],
         true,
@@ -122,18 +122,23 @@ fn systemd_decisions(loaded: &LoadedPolicyWitness) -> Result<()> {
     // This preflight covers the broker and fixed bootstrap roles. The
     // selected policy's complete Android service-domain closure and actual
     // dual-LSM daemon-death retirement remain separate activation gates.
-    for target in [
-        BROKER,
-        INIT,
-        "u:r:apexd:s0",
-        LINKERCONFIG,
-        "u:r:droidloom_query:s0",
-        "u:r:droidloom_launch_read:s0",
-        "u:r:droidloom_launch_start:s0",
-    ] {
+    let controlled: &[&str] = if loaded.declaration.early() {
+        &[BROKER]
+    } else {
+        &[
+            BROKER,
+            INIT,
+            "u:r:apexd:s0",
+            LINKERCONFIG,
+            "u:r:droidloom_query:s0",
+            "u:r:droidloom_launch_read:s0",
+            "u:r:droidloom_launch_start:s0",
+        ]
+    };
+    for &target in controlled {
         access(
             &loaded.root,
-            HOST,
+            loaded.declaration.manager(),
             target,
             "process",
             &["getattr", "signull", "signal", "sigkill", "sigstop"],
@@ -141,18 +146,23 @@ fn systemd_decisions(loaded: &LoadedPolicyWitness) -> Result<()> {
             &mut sequence,
         )?;
     }
-    for source in [
-        INIT,
-        "u:r:apexd:s0",
-        LINKERCONFIG,
-        "u:r:droidloom_query:s0",
-        "u:r:droidloom_launch_read:s0",
-        "u:r:droidloom_launch_start:s0",
-    ] {
+    let excluded: &[&str] = if loaded.declaration.early() {
+        &[INIT, "u:r:apexd:s0", LINKERCONFIG, "u:r:untrusted_app:s0"]
+    } else {
+        &[
+            INIT,
+            "u:r:apexd:s0",
+            LINKERCONFIG,
+            "u:r:droidloom_query:s0",
+            "u:r:droidloom_launch_read:s0",
+            "u:r:droidloom_launch_start:s0",
+        ]
+    };
+    for &source in excluded {
         access(
             &loaded.root,
             source,
-            HOST,
+            loaded.declaration.manager(),
             "unix_stream_socket",
             &["connectto"],
             false,
@@ -450,7 +460,10 @@ impl MacSystemdWitness {
                 "legacy manager route cannot adopt a selected proc",
             )?;
             require(
-                context_matches(&proc_attr(owner.manager_proc(), false)?, HOST),
+                context_matches(
+                    &proc_attr(owner.manager_proc(), false)?,
+                    loaded.declaration.manager(),
+                ),
                 "actual original PID1 is not in the fixed host SELinux domain",
             )?;
             require(
@@ -469,7 +482,7 @@ impl MacSystemdWitness {
         require(
             context_matches(
                 &actual_socket_security(owner.manager_connection().as_fd())?,
-                HOST,
+                loaded.declaration.manager(),
             ),
             "authenticated private manager socket peer differs from original PID1",
         )?;
