@@ -125,6 +125,11 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             println!("{}", serde_json::to_string_pretty(&build_plan(&lock)?)?);
         }
         Command::MaterializeResuming { lock, output, progress, resume, jobs } => {
+            // The source checkpoint and each Git child must use the owner's private modes
+            // even when the calling service uses a group-writable default umask.
+            let private = rustix::fs::Mode::from_bits_truncate(0o077);
+            let previous = rustix::process::umask(rustix::fs::Mode::from_bits_truncate(0o777));
+            rustix::process::umask(previous | private);
             let source_lock = load_lock(&lock)?;
             let manifest = match cli.profile {
                 Profile::ProductionFullCar => droidloom_source::production_car::materialize_resuming_with_jobs(
