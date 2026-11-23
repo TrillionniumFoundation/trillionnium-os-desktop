@@ -280,6 +280,12 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
         copy(&source, &target)?;
         mode(&target, 0o644)?;
     }
+    let host_contexts = runtime.join("usr/share/droidloom/production/linux-service-file_contexts");
+    write(
+        &host_contexts,
+        include_bytes!("../../../android/framework/droidloom-readiness/board-policy/linux-service-file_contexts"),
+    )?;
+    mode(&host_contexts, 0o444)?;
     early_boot_package::stage(runtime)
 }
 
@@ -382,6 +388,14 @@ mod tests {
         production_host_payload(&repo, &host, &runtime).unwrap();
         for unit in fs::read_dir(runtime.join("usr/share/droidloom/production")).unwrap() {
             let unit = unit.unwrap().path();
+            if unit.file_name().unwrap() == "linux-service-file_contexts" {
+                assert_eq!(fs::metadata(&unit).unwrap().permissions().mode() & 0o777, 0o444);
+                assert_eq!(
+                    fs::read(&unit).unwrap().as_slice(),
+                    include_bytes!("../../../android/framework/droidloom-readiness/board-policy/linux-service-file_contexts")
+                );
+                continue;
+            }
             let body = fs::read_to_string(&unit).unwrap();
             assert_eq!(
                 body,

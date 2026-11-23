@@ -428,7 +428,7 @@ impl Interface {
                 | "CPUQuotaPeriodUSec"
                 | "AmbientCapabilities" => Some(c"t"),
                 "DelegateControllers" => Some(c"as"),
-                "AppArmorProfile" => Some(c"(bs)"),
+                "AppArmorProfile" | "SELinuxContext" => Some(c"(bs)"),
                 "ExecConditionEx" | "ExecStartPreEx" | "ExecStartEx" | "ExecStartPostEx"
                 | "ExecReloadEx" | "ExecStopEx" | "ExecStopPostEx" => Some(c"a(sasasttttuii)"),
                 _ => None,

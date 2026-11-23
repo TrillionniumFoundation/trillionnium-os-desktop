@@ -1834,6 +1834,7 @@ mod tests {
         assert!(unit.contains("--socket /run/droidloom/control.sock\n"));
         assert!(!unit.contains("--production-broker"));
         assert!(unit.contains("AppArmorProfile=droidloom-production-broker\n"));
+        assert!(unit.contains("SELinuxContext=u:r:droidloom_broker:s0\n"));
         assert_eq!(UNIT, "droidloom-production.service");
     }
 }

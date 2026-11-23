@@ -7,7 +7,7 @@
 (allow droidloom_readiness self (unix_stream_socket (create connect write getattr getopt shutdown)))
 (allow droidloom_readiness self (unix_stream_socket (read)))
 
-(typetransition droidloom_container_entry_t p4_linux_readiness_dir_t sock_file droidloom_readiness_socket "droidloom_readiness")
+(typetransition droidloom_container_entry_t p4_linux_readiness_dir_t sock_file "droidloom_readiness" droidloom_readiness_socket)
 (allow droidloom_container_entry_t p4_linux_readiness_dir_t (dir (search getattr write add_name remove_name)))
 (allow droidloom_container_entry_t droidloom_readiness_socket (sock_file (create getattr setattr unlink)))
 (allow droidloom_container_entry_t self (unix_stream_socket (create bind listen accept read getattr getopt shutdown)))

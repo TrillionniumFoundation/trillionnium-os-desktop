@@ -176,6 +176,11 @@ fn validate_configuration(
         "AppArmorProfile",
         Value::Profile(false, "droidloom-production-broker".into()),
     )?;
+    equal(
+        service,
+        "SELinuxContext",
+        Value::Profile(false, "u:r:droidloom_broker:s0".into()),
+    )?;
     match property(service, "DelegateControllers")? {
         Value::Strings(values) => {
             let actual: BTreeSet<_> = values.iter().map(String::as_str).collect();
