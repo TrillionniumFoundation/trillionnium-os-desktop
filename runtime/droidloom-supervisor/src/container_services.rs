@@ -202,6 +202,66 @@ impl Generation {
     }
 }
 
+fn retired(
+    target: &Properties,
+    entry: &Properties,
+    oci: &Properties,
+    socket: &Properties,
+    public_absent: bool,
+) -> io::Result<bool> {
+    for (properties, id) in [
+        (target, TARGET),
+        (entry, ENTRY),
+        (oci, OCI),
+        (socket, SOCKET),
+    ] {
+        if !matches(properties, &[("Id", id), ("LoadState", "loaded")]) {
+            return Err(io::Error::other(format!(
+                "cannot verify retirement of {id}"
+            )));
+        }
+        let state = property(properties, "ActiveState");
+        if state == "failed"
+            || state == "inactive" && properties.get("Result").is_some_and(|v| v != "success")
+        {
+            return Err(io::Error::other(format!(
+                "{id} failed to retire cleanly: {}",
+                property(properties, "Result")
+            )));
+        }
+    }
+    Ok(public_absent
+        && [target, entry, oci, socket]
+            .iter()
+            .all(|p| property(p, "ActiveState") == "inactive")
+        && [entry, oci]
+            .iter()
+            .all(|p| property(p, "MainPID") == "0" && property(p, "Result") == "success"))
+}
+
+fn wait_for_retirement() -> io::Result<()> {
+    let end = std::time::Instant::now() + std::time::Duration::from_secs(300);
+    loop {
+        let (target, entry) = snapshot()?;
+        let oci = show(OCI, "Id,LoadState,ActiveState,MainPID,Result")?;
+        let socket = show(SOCKET, "Id,LoadState,ActiveState,Result")?;
+        let absent = match std::fs::symlink_metadata("/run/droidloom-container/readiness.sock") {
+            Ok(_) => false,
+            Err(e) if e.kind() == io::ErrorKind::NotFound => true,
+            Err(e) => return Err(e),
+        };
+        if retired(&target, &entry, &oci, &socket, absent)? {
+            return Ok(());
+        }
+        if std::time::Instant::now() >= end {
+            return Err(io::Error::other(
+                "container manager, OCI owner or readiness socket did not finish retirement",
+            ));
+        }
+        std::thread::sleep(std::time::Duration::from_millis(100));
+    }
+}
+
 pub(super) fn lifecycle(operation: &str) -> io::Result<Option<Generation>> {
     if !matches!(operation, "start" | "restart" | "stop" | "status") {
         return Err(io::Error::other("invalid container lifecycle operation"));
@@ -243,18 +303,11 @@ pub(super) fn lifecycle(operation: &str) -> io::Result<Option<Generation>> {
             "container services {operation} failed ({result})"
         )));
     }
-    let (target, entry) = snapshot()?;
     if operation == "stop" {
-        if property(&target, "ActiveState") == "inactive"
-            && property(&entry, "ActiveState") == "inactive"
-            && property(&entry, "Result") == "success"
-            && property(&entry, "MainPID") == "0"
-            && property(&entry, "LoadState") == "loaded"
-        {
-            return Ok(None);
-        }
-        return Err(io::Error::other("container service stop has not completed"));
+        wait_for_retirement()?;
+        return Ok(None);
     }
+    let (target, entry) = snapshot()?;
     verify_contract(&target, &entry)?;
     Generation::from_running(&target, &entry)
         .map(Some)
@@ -360,6 +413,31 @@ mod tests {
         ] {
             assert!(!provider_command(&invalid), "{invalid}");
         }
+    }
+
+    #[test]
+    fn stopping_the_target_alone_or_force_killing_a_guest_cannot_report_clean_stop() {
+        let stopped = |id: &str| {
+            props(&[
+                ("Id", id),
+                ("LoadState", "loaded"),
+                ("ActiveState", "inactive"),
+                ("MainPID", "0"),
+                ("Result", "success"),
+            ])
+        };
+        let target = stopped(TARGET);
+        let entry = stopped(ENTRY);
+        let oci = stopped(OCI);
+        let socket = stopped(SOCKET);
+        assert!(retired(&target, &entry, &oci, &socket, true).unwrap());
+        let mut pending = oci.clone();
+        pending.insert("ActiveState".into(), "deactivating".into());
+        assert!(!retired(&target, &entry, &pending, &socket, true).unwrap());
+        assert!(!retired(&target, &entry, &oci, &socket, false).unwrap());
+        let mut failed = entry.clone();
+        failed.insert("Result".into(), "exit-code".into());
+        assert!(retired(&target, &failed, &oci, &socket, true).is_err());
     }
 
     #[test]
