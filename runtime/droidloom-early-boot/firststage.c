@@ -8,6 +8,7 @@
 #include <linux/sched.h>
 #include <poll.h>
 #include <signal.h>
+#include <sched.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
