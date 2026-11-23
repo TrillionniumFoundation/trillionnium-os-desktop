@@ -12,3 +12,13 @@
 (neverallow p4_linux_procs p4_linux_elf_interpreter_t (file (write create append setattr entrypoint relabelto relabelfrom)))
 (neverallow p4_android_userspace p4_linux_usrmerge_link_t (lnk_file (read write create unlink rename setattr relabelto relabelfrom)))
 (allow p4_linux_early_t p4_linux_console_t (chr_file (read)))
+
+; Ubuntu PID 1 serializes each service invocation into a private sd-executor-state
+; memfd. The original CP3A tmpfs uses fsuse trans, as for Android's own init_tmpfs.
+(type p4_linux_systemd_memfd_t)
+(roletype object_r p4_linux_systemd_memfd_t)
+(typeattributeset p4_linux_data (p4_linux_systemd_memfd_t))
+(typetransition init_t tmpfs file p4_linux_systemd_memfd_t)
+(allow p4_linux_systemd_memfd_t tmpfs (filesystem (associate)))
+(allow init_t p4_linux_systemd_memfd_t (file (getattr open read write)))
+(neverallow init_t p4_linux_systemd_memfd_t (file (execute execute_no_trans entrypoint mounton relabelfrom relabelto)))

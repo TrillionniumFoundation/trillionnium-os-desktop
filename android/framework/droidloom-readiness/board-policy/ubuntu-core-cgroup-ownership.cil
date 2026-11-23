@@ -59,3 +59,9 @@
 (allow init_t p4_linux_system_slice_t (dir (getattr search read open write add_name remove_name)))
 (typetransition init_t p4_linux_system_slice_t dir p4_linux_unit_cgroup_t)
 (allow init_t p4_linux_unit_cgroup_t (dir (getattr search read open create write add_name remove_name rmdir)))
+
+; Only host unit cgroups receive this type. The Android payload subtree keeps
+; original Android types. systemd monitors cgroup.events and manages its units.
+(allow init_t p4_linux_unit_cgroup_t (file (getattr open read watch create write)))
+(allow init_t p4_linux_unit_cgroup_t (dir (setattr)))
+(allow init_t p4_linux_system_slice_t (dir (setattr)))
