@@ -34,3 +34,8 @@ pub fn seal_systemd_private() -> Result<String, String> {
     guard.revalidate().map_err(|e| e.to_string())?;
     serde_json::to_string(&observed).map_err(|e| e.to_string())
 }
+
+/// Capture a release from the selected four images and this boot's enforcing kernel.
+pub fn export_kernel_first_release() -> Result<droidloom_contracts::mac_release::Release, String> {
+    crate::production_mac::capture_kernel_first_release().map_err(|error|error.to_string())
+}

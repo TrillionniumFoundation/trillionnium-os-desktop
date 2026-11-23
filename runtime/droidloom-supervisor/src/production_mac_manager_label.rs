@@ -187,7 +187,7 @@ fn mount_id(file: &File) -> Result<u64> {
     Ok(value.stx_mnt_id)
 }
 
-fn file_context(file: &File) -> Result<Vec<u8>> {
+pub(super) fn file_context(file: &File) -> Result<Vec<u8>> {
     let before = Node::of(file)?;
     let mut raw = [0_u8; 1024];
     let size = unsafe {

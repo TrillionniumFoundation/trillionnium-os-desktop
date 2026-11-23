@@ -85,7 +85,7 @@ fn identity(m: &fs::Metadata) -> Result<[u64; 9]> {
     ])
 }
 
-fn ordinary_absolute(path: &Path, directory: bool) -> Result<()> {
+pub(crate) fn ordinary_absolute(path: &Path, directory: bool) -> Result<()> {
     resources::checkpoint()?;
     let raw = path.as_os_str().as_bytes();
     if !path.is_absolute()

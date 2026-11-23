@@ -6,6 +6,7 @@
 #![forbid(unsafe_code)]
 
 pub mod gapps;
+pub mod mac_release;
 
 use std::collections::BTreeSet;
 use std::fmt::Write as _;

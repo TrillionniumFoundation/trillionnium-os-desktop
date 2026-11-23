@@ -41,7 +41,7 @@ fn declaration(
     value
 }
 
-fn rename_new(staging: &Path, destination: &Path) -> Result<()> {
+pub(crate) fn rename_new(staging: &Path, destination: &Path) -> Result<()> {
     let old = CString::new(staging.as_os_str().as_bytes())?;
     let new = CString::new(destination.as_os_str().as_bytes())?;
     let rc = unsafe {
