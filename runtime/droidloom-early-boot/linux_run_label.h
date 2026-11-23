@@ -12,6 +12,8 @@ struct droidloom_linux_run {
     ino_t inode;
 };
 
+int droidloom_hold_linux_shm(struct droidloom_linux_run *out);
+int droidloom_label_linux_shm(const struct droidloom_linux_run *held);
 int droidloom_hold_linux_run(struct droidloom_linux_run *run);
 int droidloom_label_linux_run(const struct droidloom_linux_run *run);
 int droidloom_verify_linux_run(const struct droidloom_linux_run *run);

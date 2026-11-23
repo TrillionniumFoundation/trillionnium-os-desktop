@@ -14,6 +14,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/statfs.h>
+#include <sys/statvfs.h>
 #include <sys/xattr.h>
 #include <unistd.h>
 
@@ -298,4 +299,91 @@ int droidloom_project_linux_standard_devices(void)
     if (error)
         errno = error;
     return error ? -1 : 0;
+}
+
+static int native_ubuntu_shm(int dev, int target)
+{
+    int context = (int)syscall(SYS_fsopen, "tmpfs", FSOPEN_CLOEXEC);
+    if (context < 0)
+        return -1;
+    int tree = -1, error = 0;
+    if (syscall(SYS_fsconfig, context, FSCONFIG_SET_STRING, "mode", "01777", 0) < 0 ||
+        syscall(SYS_fsconfig, context, FSCONFIG_CMD_CREATE, NULL, NULL, 0) < 0)
+        error = errno;
+    if (!error) {
+        tree = (int)syscall(SYS_fsmount, context, FSMOUNT_CLOEXEC,
+                           MOUNT_ATTR_NOSUID | MOUNT_ATTR_NODEV | MOUNT_ATTR_STRICTATIME);
+        if (tree < 0)
+            error = errno;
+    }
+    if (!error && syscall(SYS_move_mount, tree, "", target, "",
+                          MOVE_MOUNT_F_EMPTY_PATH | MOVE_MOUNT_T_EMPTY_PATH) < 0)
+        error = errno;
+    if (tree >= 0)
+        close(tree);
+    close(context);
+    if (error) {
+        errno = error;
+        return -1;
+    }
+    return openat(dev, "shm", O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+}
+
+int droidloom_hold_linux_shm(struct droidloom_linux_run *out)
+{
+    /* Ubuntu systemd normally establishes this before starting any units.
+     * The board performs that mount while still owning early host mounts. */
+    int dev = open("/dev", O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+    if (dev < 0)
+        return -1;
+    int root = -1, error = 0;
+    struct stat parent, child;
+    struct statfs fs;
+    if (fstat(dev, &parent) < 0 || fstatfs(dev, &fs) < 0)
+        error = errno;
+    else if (parent.st_uid || parent.st_gid || (parent.st_mode & 0022) || fs.f_type != TMPFS_MAGIC)
+        error = EACCES;
+    if (!error && mkdirat(dev, "shm", 0755) < 0 && errno != EEXIST)
+        error = errno;
+    if (!error) {
+        root = openat(dev, "shm", O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
+        if (root < 0 || fstat(root, &child) < 0)
+            error = errno;
+    }
+    if (!error && child.st_dev == parent.st_dev) {
+        mode_t mode = child.st_mode & 07777;
+        if (child.st_uid || child.st_gid || (mode != 0755 && mode != 01777))
+            error = EACCES;
+        else if (validate_empty_endpoint(root) < 0)
+            error = errno;
+        else {
+            int mounted = native_ubuntu_shm(dev, root);
+            if (mounted < 0)
+                error = errno;
+            close(root);
+            root = mounted;
+        }
+    }
+    if (!error && (fstat(root, &child) < 0 || fstatfs(root, &fs) < 0))
+        error = errno;
+    if (!error && (child.st_dev == parent.st_dev || child.st_ino != 1 || child.st_uid ||
+        child.st_gid || (child.st_mode & 07777) != 01777 || fs.f_type != TMPFS_MAGIC ||
+        (fs.f_flags & (ST_NODEV | ST_NOSUID)) != (ST_NODEV | ST_NOSUID) || (fs.f_flags & ST_RDONLY)))
+        error = EACCES;
+    if (!error && validate_empty_endpoint(root) < 0)
+        error = errno;
+    close(dev);
+    if (error) {
+        if (root >= 0)
+            close(root);
+        errno = error;
+        return -1;
+    }
+    *out = (struct droidloom_linux_run){ .fd = root, .device = child.st_dev, .inode = child.st_ino };
+    return 0;
+}
+
+int droidloom_label_linux_shm(const struct droidloom_linux_run *held)
+{
+    return apply_label(held, "u:object_r:p4_linux_shm_root_t:s0");
 }
