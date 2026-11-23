@@ -357,6 +357,14 @@ impl EarlyAndroidGeneration {
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
+struct DeviceSourceIdentity {
+    device: u64,
+    inode: u64,
+    mount: u64,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
 struct Resources {
     schema: String,
     boot_id: String,
@@ -371,6 +379,8 @@ struct Resources {
     cgroupns_ino: u64,
     fifo_dev: u64,
     fifo_ino: u64,
+    #[serde(default)]
+    device_source: Option<DeviceSourceIdentity>,
 }
 
 /// Namespaces privately pinned by the original parent and independently reopened by the systemd worker.
@@ -392,7 +402,8 @@ impl EarlyBoardResources {
                 .map_err(io::Error::other)?;
         let saved: Resources = serde_json::from_slice(&bytes)?;
         if record.node.mode & 0o7777 != 0o400
-            || saved.schema != "droidloom-early-resources-v1"
+            || !matches!((saved.schema.as_str(), &saved.device_source),
+                ("droidloom-early-resources-v1", None) | ("droidloom-early-resources-v2", Some(_)))
             || saved.boot_id != generation.birth.boot_id
             || saved.host_pid != generation.birth.host_pid
             || saved.selection_sha256 != generation.birth.selection_sha256
@@ -463,6 +474,13 @@ impl EarlyBoardResources {
     }
     pub(crate) fn user_namespace(&self) -> &File {
         &self.user
+    }
+    pub(crate) fn device_source_identity(&self) -> io::Result<(u64, u64, u64)> {
+        let source = self.saved.device_source.as_ref().ok_or_else(|| invalid("early device source missing from this generation"))?;
+        if source.device == 0 || source.inode != 1 || source.mount == 0 {
+            return Err(invalid("incomplete early device filesystem identity"));
+        }
+        Ok((source.device, source.inode, source.mount))
     }
     pub(crate) fn mount_namespace(&self) -> &File {
         &self.mnt

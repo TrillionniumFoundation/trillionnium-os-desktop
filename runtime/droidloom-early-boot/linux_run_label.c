@@ -88,6 +88,11 @@ static int apply_label(const struct droidloom_linux_run *run, const char *expect
     return verify_label(run, expected);
 }
 
+int droidloom_label_private_device(const struct droidloom_linux_run *held)
+{
+    return apply_label(held, "u:object_r:p4_linux_private_dev_root_t:s0");
+}
+
 int droidloom_verify_linux_run(const struct droidloom_linux_run *run)
 {
     return verify_label(run, private_run_context);

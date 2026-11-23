@@ -60,7 +60,18 @@ static int attach(int parent,const char *path,int source) {
 }
 static int directory_label(int fd, const char *expected) {
     char value[128] = {0};
-    ssize_t got = fgetxattr(fd, "security.selinux", value, sizeof(value));
+    int readable = beneath(fd, ".");
+    if (readable < 0)
+        return -1;
+    uint64_t original, opened;
+    if (mount_id(fd, &original) || mount_id(readable, &opened) || original != opened) {
+        close(readable);
+        return fail(ESTALE);
+    }
+    ssize_t got = fgetxattr(readable, "security.selinux", value, sizeof(value));
+    int cause = errno;
+    close(readable);
+    errno = cause;
     if (got < 0)
         return -1;
     size_t n = strlen(expected);

@@ -3,6 +3,7 @@
 #include "board_policy.h"
 #include "apparmor_epoch.h"
 #include "linux_run_label.h"
+#include "device_source.h"
 
 #include <dirent.h>
 #include <errno.h>
@@ -253,6 +254,7 @@ int droidloom_board_activate_policy(gid_t observer_gid)
     struct droidloom_apparmor_measurement observation = {0};
     struct droidloom_raw_profile selected_profiles[3] = {0};
     int status = -1, epoch_directory = -1;
+    struct droidloom_linux_run device_root = {.fd = -1};
     struct droidloom_linux_run run = {.fd = -1}, shm = {.fd = -1};
     struct droidloom_readiness_paths paths = { .handoff.fd = -1, .readiness.fd = -1 };
     const char *stage = "read admitted SELinux input";
@@ -264,6 +266,13 @@ int droidloom_board_activate_policy(gid_t observer_gid)
     if (rc == 0) { stage = "prepare the original Ubuntu shared memory mount"; rc = droidloom_hold_linux_shm(&shm); }
     if (rc == 0) { stage = "hold original Ubuntu /run"; rc = droidloom_hold_linux_run(&run); }
     if (rc == 0) { stage = "hold the selected early readiness directory"; rc = droidloom_hold_readiness_paths(&run, observer_gid, &paths); }
+    if (rc == 0) {
+        stage = "hold the original empty Android device filesystem";
+        struct droidloom_device_identity source;
+        device_root.fd = droidloom_hold_device_source(0, &source);
+        if (device_root.fd < 0) rc = -1;
+        else { device_root.device = source.device; device_root.inode = source.inode; }
+    }
     if (rc == 0) { stage = "project the exact Ubuntu console, null and full device nodes"; rc = droidloom_project_linux_standard_devices(); }
     if (rc == 0) {
         stage = "prepare the protected read-only kernel measurement directory";
@@ -281,6 +290,7 @@ int droidloom_board_activate_policy(gid_t observer_gid)
         if (status < 0) rc = -1;
     }
     if (rc == 0) { stage = "load initial selected joint SELinux policy"; rc = submit(SELINUX_DIR "/load", policy.data, policy.size); }
+    if (rc == 0) { stage = "label the held original Android device filesystem"; rc = droidloom_label_private_device(&device_root); }
     if (rc == 0) { stage = "label the original Ubuntu shared memory root"; rc = droidloom_label_linux_shm(&shm); }
     if (rc == 0) { stage = "label the held Ubuntu /run inode"; rc = droidloom_label_linux_run(&run); }
     if (rc == 0) { stage = "label the held private readiness directory"; rc = droidloom_label_readiness_paths(&paths); }
@@ -290,6 +300,7 @@ int droidloom_board_activate_policy(gid_t observer_gid)
     if (epoch_directory >= 0) close(epoch_directory);
     if (rc < 0)
         fprintf(stderr, "Droidloom early policy failed to %s: %s\n", stage, strerror(error));
+    if (device_root.fd >= 0) close(device_root.fd);
     if (paths.readiness.fd >= 0)
         close(paths.readiness.fd);
     if (paths.handoff.fd >= 0)

@@ -725,12 +725,12 @@ impl PreparedDevices {
         witness: &OwnedNamespaceWitness<'_>,
         activation: Option<(&ProductionSelection, &MacPreflight, RuntimeMacOwner)>,
     ) -> Result<Self> {
-        Self::create_for_tree(witness, false, activation.map(|(selection, mac, context)| (witness, selection, mac, context)))
+        Self::create_for_tree(witness, None, activation.map(|(selection, mac, context)| (witness, selection, mac, context)))
     }
 
     fn create_for_tree(
         witness: &impl DeviceTree,
-        early_socket_dirs: bool,
+        early_mount: Option<File>,
         activation: Option<(&OwnedNamespaceWitness<'_>, &ProductionSelection, &MacPreflight, RuntimeMacOwner)>,
     ) -> Result<Self> {
         require_initial_broker()?;
@@ -749,6 +749,7 @@ impl PreparedDevices {
             .descendant_pid_namespace()
             .ok_or(DeviceError::Rejected("actual tree is required"))?
             .try_clone()?;
+        let early_socket_dirs = early_mount.is_some();
         let mut result = Self {
             exported: false,
             resources: Some(DeviceResources {
@@ -778,7 +779,10 @@ impl PreparedDevices {
             .as_mut()
             .ok_or(DeviceError::Rejected("device guard absent"))?;
         resources.matches(witness)?;
-        resources.mount = Some(fresh_tmpfs()?);
+        resources.mount = Some(match early_mount {
+            Some(source) => source,
+            None => fresh_tmpfs()?,
+        });
         let mount = resources
             .mount
             .as_ref()

@@ -203,6 +203,7 @@ int main(int argc,char **argv) {
     }
     if(access(HANDOFF "/generation.json",F_OK)==0){errno=EALREADY;log_error("an early generation already owns this boot");return 1;}
     if(errno!=ENOENT){log_error("check existing root generation");return 1;}
+    if(root_directory(HANDOFF "/private-dev",0700)){log_error("empty private device mountpoint");return 1;}
     if(prepare_observer_directory(plan.gid_start+9999)){log_error("rooted empty observer directory");return 1;}
     if(mkfifo(FIFO,0600)<0){log_error("new release FIFO");return 1;}
     int fifo=open(FIFO,O_RDONLY|O_NONBLOCK|O_NOFOLLOW|O_CLOEXEC);

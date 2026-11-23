@@ -53,6 +53,8 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
         include_bytes!("../../../runtime/droidloom-early-boot/selected.c"),
     )?;
     for (name, content) in [
+        ("device_source.h", include_bytes!("../../../runtime/droidloom-early-boot/device_source.h").as_slice()),
+        ("device_source.c", include_bytes!("../../../runtime/droidloom-early-boot/device_source.c").as_slice()),
         ("apparmor_epoch.c", include_bytes!("../../../runtime/droidloom-early-boot/apparmor_epoch.c").as_slice()),
         ("apparmor_epoch.h", include_bytes!("../../../runtime/droidloom-early-boot/apparmor_epoch.h").as_slice()),
         (
@@ -99,6 +101,7 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
         ("apparmor_epoch.c", "apparmor_epoch.o"),
         ("board_init.c", "board_init.o"),
         ("custody.c", "custody.o"),
+        ("device_source.c", "device_source.o"),
         ("selected.c", "selected.o"),
         ("board_resources.c", "board_resources.o"),
         ("firststage.c", "firststage.o"),
@@ -122,6 +125,7 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
             "-Wl,-z,relro,-z,now",
             "firststage.o",
             "custody.o",
+            "device_source.o",
             "selected.o",
             "board_resources.o",
             "-lcrypto",
@@ -148,6 +152,7 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
             "linux_run_label.o",
             "selected.o",
             "custody.o",
+            "device_source.o",
             "-lcrypto",
             "-o",
             board_init,
@@ -167,6 +172,7 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
             "rcsD",
             "libdroidloom_early_custody.a",
             "custody.o",
+            "device_source.o",
             "selected.o",
             "linux_run_label.o",
         ])

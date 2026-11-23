@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #define _GNU_SOURCE
+#include "device_source.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <inttypes.h>
@@ -167,15 +168,22 @@ int droidloom_publish_resource_handles(pid_t child,const struct droidloom_releas
     const char *temp=DL_HANDOFF_ROOT "/resources.pending";
     int fd=open(temp,O_CREAT|O_EXCL|O_NOFOLLOW|O_WRONLY|O_CLOEXEC,0400);
     int saved=fd<0?errno:0;char boot[64];
+    struct droidloom_device_identity device_source = {0};
+    if(!saved){
+        int source=droidloom_hold_device_source(1,&device_source);
+        if(source<0)saved=errno;else close(source);
+    }
     if(!saved&&dl_read("/proc/sys/kernel/random/boot_id",boot,sizeof boot))saved=errno;
     if(!saved){
         boot[strcspn(boot,"\n")]=0;
-        if(dprintf(fd,"{\"schema\":\"droidloom-early-resources-v1\",\"boot_id\":\"%s\","
+        if(dprintf(fd,"{\"schema\":\"droidloom-early-resources-v2\",\"boot_id\":\"%s\","
             "\"selection_sha256\":\"%s\",\"host_pid\":%d,\"nonce\":\"%s\","
             "\"mntns_dev\":%" PRIuMAX ",\"mntns_ino\":%" PRIuMAX ",\"userns_dev\":%" PRIuMAX ",\"userns_ino\":%" PRIuMAX
-            ",\"cgroupns_dev\":%" PRIuMAX ",\"cgroupns_ino\":%" PRIuMAX ",\"fifo_dev\":%" PRIuMAX ",\"fifo_ino\":%" PRIuMAX "}\n",
+            ",\"cgroupns_dev\":%" PRIuMAX ",\"cgroupns_ino\":%" PRIuMAX ",\"fifo_dev\":%" PRIuMAX ",\"fifo_ino\":%" PRIuMAX ",\"device_source\":{\"device\":%" PRIuMAX
+            ",\"inode\":%" PRIuMAX ",\"mount\":%" PRIu64 "}}\n",
             boot,phase->sha,child,phase->nonce,(uintmax_t)mnt.st_dev,(uintmax_t)mnt.st_ino,(uintmax_t)user.st_dev,
-            (uintmax_t)user.st_ino,(uintmax_t)initial_cgroup.st_dev,(uintmax_t)initial_cgroup.st_ino,(uintmax_t)gate.st_dev,(uintmax_t)gate.st_ino)<0||fsync(fd))saved=errno;
+            (uintmax_t)user.st_ino,(uintmax_t)initial_cgroup.st_dev,(uintmax_t)initial_cgroup.st_ino,(uintmax_t)gate.st_dev,(uintmax_t)gate.st_ino,
+            (uintmax_t)device_source.device,(uintmax_t)device_source.inode,device_source.mount)<0||fsync(fd))saved=errno;
     }
     if(!saved&&syscall(SYS_renameat2,AT_FDCWD,temp,AT_FDCWD,DL_HANDOFF_ROOT "/resources.json",RENAME_NOREPLACE))
         saved=errno;

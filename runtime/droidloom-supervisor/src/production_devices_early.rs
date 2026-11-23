@@ -30,10 +30,50 @@ impl DeviceTree for EarlyBaseAdmission<'_> {
     fn descendant_pid_namespace(&self) -> Option<&File> { Some(self.board().pid_namespace()) }
 }
 
+fn selected_device_mount(child: &EarlyBaseAdmission<'_>) -> Result<File> {
+    let expected = child.board().device_source_identity()?;
+    let namespace = child.board().mount_namespace();
+    child.revalidate()?;
+    let result = std::thread::scope(|scope| {
+        scope.spawn(|| -> Result<File> {
+            // setns() changes the root and working directory of its fs_struct.
+            // This worker keeps its own fs_struct and exits in the child mount namespace.
+            zero(unsafe { libc::unshare(libc::CLONE_FS) } as _)?;
+            zero(unsafe { libc::setns(namespace.as_raw_fd(), libc::CLONE_NEWNS) } as _)?;
+            let root = fd_result(unsafe {
+                libc::open(c"/".as_ptr(), libc::O_PATH | libc::O_DIRECTORY | O_SAFE) as _
+            })?;
+            let run = open_at(&root, c"run", libc::O_PATH | libc::O_DIRECTORY)?;
+            let generation = open_at(&run, c"droidloom-early", libc::O_PATH | libc::O_DIRECTORY)?;
+            let original = directory(&generation, c"private-dev")?;
+            let mut st: libc::statx = unsafe { std::mem::zeroed() };
+            const UNIQUE: u32 = 0x4000; // STATX_MNT_ID_UNIQUE
+            zero(unsafe { libc::syscall(libc::SYS_statx, original.as_raw_fd(),
+                c"".as_ptr(), AT_EMPTY_PATH, UNIQUE, &mut st) })?;
+            let id = node(&original)?;
+            need(st.stx_mask & UNIQUE != 0 && (id.0, id.1, st.stx_mnt_id) == expected,
+                 "original per-generation device filesystem changed")?;
+            verify_root(&original, 0, 0)?;
+            private_directory_role(&original, c"u:object_r:p4_linux_private_dev_root_t:s0")?;
+            need(directory_names(&original)?.is_empty(), "original device filesystem was already claimed")?;
+            let mount = fd_result(unsafe {
+                libc::syscall(libc::SYS_open_tree, original.as_raw_fd(), c"".as_ptr(),
+                              libc::OPEN_TREE_CLONE | libc::O_CLOEXEC as u32 | AT_EMPTY_PATH)
+            })?;
+            require_detached(&mount)?;
+            need(node(&mount)? == id, "detached clone differs from the board device filesystem")?;
+            Ok(mount)
+        }).join().map_err(|_| DeviceError::Rejected("device mount worker did not finish"))?
+    })?;
+    child.revalidate()?;
+    Ok(result)
+}
+
 impl PreparedDevices {
     pub(crate) fn prepare_early(child: &EarlyBaseAdmission<'_>) -> Result<Self> {
         child.revalidate()?;
-        let devices = Self::create_for_tree(child, true, None)?;
+        let source = selected_device_mount(child)?;
+        let devices = Self::create_for_tree(child, Some(source), None)?;
         child.revalidate()?;
         Ok(devices)
     }
@@ -56,10 +96,13 @@ fn directory(parent: &File, name: &CStr) -> Result<File> {
 }
 
 fn private_directory_role(directory: &File, expected: &CStr) -> Result<()> {
+    let readable = open_at(directory, c".", libc::O_RDONLY | libc::O_DIRECTORY)?;
+    need(node(&readable)? == node(directory)? && mount_id(&readable)? == mount_id(directory)?,
+         "opened a different device directory for its SELinux role")?;
     let mut value = [0u8; 128];
     let length = unsafe {
         libc::fgetxattr(
-            directory.as_raw_fd(),
+            readable.as_raw_fd(),
             c"security.selinux".as_ptr(),
             value.as_mut_ptr().cast(),
             value.len(),
