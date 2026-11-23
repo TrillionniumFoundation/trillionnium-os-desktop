@@ -76,7 +76,11 @@ pub(in crate::production_mounts) fn verify(
     let shutdown = decl.shutdown_property_contexts_sha256.is_some();
     fixed_children(carrier, &["bin", "etc"])?;
     let etc = directory(carrier, "etc")?;
-    if shutdown {
+    if let Some(selected_contexts) = decl.shutdown_property_contexts_sha256.as_deref() {
+        require(
+            contract::shutdown_property_for_rc(&decl.init_rc_sha256) == Some(selected_contexts),
+            "unpaired Android init and property declarations",
+        )?;
         fixed_children(&etc, &["init", "selinux"])?;
         fixed_children(
             &directory(&etc, "selinux")?,
@@ -99,7 +103,7 @@ pub(in crate::production_mounts) fn verify(
                 && meta.len() == 181
                 && selected.metadata()?.len() < 512
                 && digest(&original)? == contract::FACTORY_PROPERTY_CONTEXTS_SHA256
-                && digest(&selected)? == contract::SHUTDOWN_PROPERTY_CONTEXTS_SHA256,
+                && digest(&selected)? == selected_contexts,
             "unrecognized factory or selected Android property contexts",
         )?;
     } else {

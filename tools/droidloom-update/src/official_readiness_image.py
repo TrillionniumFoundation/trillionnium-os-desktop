@@ -27,6 +27,12 @@ CONTEXT_MEMBER = "etc/selinux/system_ext_property_contexts"
 CONTEXT_FACTORY = "fae8632a118192c5dbb59c3a1096f575f410ae9eee80854355861e96a79eb0fd"
 CONTEXT_AUGMENTED = "ca32c601b2debee94be7a5088f7050864e13e85e06e34598aef0b5925e154098"
 CONTEXT_ADDITION = b"sys.droidloom.shutdown_request u:object_r:droidloom_shutdown_request_prop:s0 exact enum shutdown\n"
+CONTROL_CONTEXT = "6c1a44f77bee433791a081c9f0175147df1438b39c0b64398830d7fbc50794cc"
+CONTROL_ADDITION = b"ctl.start$droidloom_commit_shutdown u:object_r:droidloom_shutdown_request_prop:s0 exact string\n"
+SHUTDOWN_RC_CONTEXTS = {
+    "57579b6cd84d16194480a4ea73c510d02fee2ddfef3ee26904246430b3efbb35": CONTEXT_AUGMENTED,
+    "ae320041a5d3f2d7c3f2a1689ffbdc17028f272cc81c5ee25757abe17e366b2c": CONTROL_CONTEXT,
+}
 SHUTDOWN_LABEL = b"u:object_r:droidloom_shutdown_exec:s0\0"
 
 
@@ -34,8 +40,10 @@ def shutdown_context(system, expected):
     original = inspect(system, "cat /system/system_ext/" + CONTEXT_MEMBER)
     check(len(original) == 181 and hashlib.sha256(original).hexdigest() == CONTEXT_FACTORY,
           "different factory system_ext property declarations")
-    augmented = original + CONTEXT_ADDITION
-    check(hashlib.sha256(augmented).hexdigest() == expected == CONTEXT_AUGMENTED,
+    selected = {CONTEXT_AUGMENTED: CONTEXT_ADDITION, CONTROL_CONTEXT: CONTROL_ADDITION}
+    check(expected in selected, "unknown selected shutdown property declaration")
+    augmented = original + selected[expected]
+    check(hashlib.sha256(augmented).hexdigest() == expected,
           "different single-value shutdown property declaration")
     return augmented
 
@@ -90,6 +98,7 @@ def verify(system, image, expected, work):
     run(["e2fsck", "-fn", image])
     check(set(names(image, "/")) == {"bin", "etc"}, "unexpected readiness filesystem root")
     shutdown = expected.get("shutdown_property_contexts")
+    check(shutdown == SHUTDOWN_RC_CONTEXTS.get(expected["rc"]), "shutdown init and property declarations differ")
     check(set(names(image, "/etc")) == ({"init", "selinux"} if shutdown else {"init"}),
           "unexpected readiness carrier etc")
     check(names(image, "/")["etc"][:3] == (0o40755, 0, 0), "wrong private carrier parent")
@@ -172,6 +181,7 @@ def build(system, service, rc, out, expected):
     new_files = {"bin/droidloom-readiness": (service, 0o100755, 0, 2000, b"u:object_r:droidloom_readiness_exec:s0\0"),
                  "etc/init/droidloom-readiness.rc": (rc, 0o100644, 0, 0, b"u:object_r:system_file:s0\0")}
     shutdown = expected.get("shutdown_property_contexts")
+    check(shutdown == SHUTDOWN_RC_CONTEXTS.get(expected["rc"]), "shutdown init and property declarations differ")
     if shutdown:
         new_files["bin/droidloom-shutdown"] = (service, 0o100755, 0, 2000, SHUTDOWN_LABEL)
     with tempfile.TemporaryDirectory(dir=out.parent) as directory:

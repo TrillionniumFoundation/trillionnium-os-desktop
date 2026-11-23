@@ -8,13 +8,10 @@ const RC: &[u8] =
 
 fn receipt_parents(system: &str, elf: &str, rc: &str) -> Result<Value> {
     let mut parents = json!({"system":system,"elf":elf,"rc":rc});
-    match rc {
-        contract::OBSERVER_ONLY_RC_SHA256 => {}
-        contract::SHUTDOWN_RC_SHA256 => {
-            parents["shutdown_property_contexts"] =
-                json!(contract::SHUTDOWN_PROPERTY_CONTEXTS_SHA256);
-        }
-        _ => return fail("unsupported normal system_ext init script"),
+    if let Some(digest) = contract::shutdown_property_for_rc(rc) {
+        parents["shutdown_property_contexts"] = json!(digest);
+    } else if rc != contract::OBSERVER_ONLY_RC_SHA256 {
+        return fail("unsupported normal system_ext init script");
     }
     Ok(parents)
 }
@@ -178,8 +175,8 @@ pub(super) fn verify_members(
         source_system_ext_lib64_sha256: library.sha256.clone(),
         observer_sha256: elf_sha.to_owned(),
         init_rc_sha256: rc_sha.to_owned(),
-        shutdown_property_contexts_sha256: (rc_sha == contract::SHUTDOWN_RC_SHA256)
-            .then(|| contract::SHUTDOWN_PROPERTY_CONTEXTS_SHA256.to_owned()),
+        shutdown_property_contexts_sha256: contract::shutdown_property_for_rc(rc_sha)
+            .map(str::to_owned),
     };
     let temp = tempfile::Builder::new()
         .prefix("verify-system-readiness-")

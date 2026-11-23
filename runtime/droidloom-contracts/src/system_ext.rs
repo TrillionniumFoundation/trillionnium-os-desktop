@@ -55,6 +55,18 @@ pub const FACTORY_PROPERTY_CONTEXTS_SHA256: &str =
     "fae8632a118192c5dbb59c3a1096f575f410ae9eee80854355861e96a79eb0fd";
 pub const SHUTDOWN_PROPERTY_CONTEXTS_SHA256: &str =
     "ca32c601b2debee94be7a5088f7050864e13e85e06e34598aef0b5925e154098";
+pub const ORDERLY_CONTROL_RC_SHA256: &str =
+    "ae320041a5d3f2d7c3f2a1689ffbdc17028f272cc81c5ee25757abe17e366b2c";
+pub const ORDERLY_CONTROL_PROPERTY_SHA256: &str =
+    "6c1a44f77bee433791a081c9f0175147df1438b39c0b64398830d7fbc50794cc";
+
+pub fn shutdown_property_for_rc(rc: &str) -> Option<&'static str> {
+    match rc {
+        SHUTDOWN_RC_SHA256 => Some(SHUTDOWN_PROPERTY_CONTEXTS_SHA256),
+        ORDERLY_CONTROL_RC_SHA256 => Some(ORDERLY_CONTROL_PROPERTY_SHA256),
+        _ => None,
+    }
+}
 pub const SHUTDOWN_PROPERTY_TARGET: &str =
     "/system/system_ext/etc/selinux/system_ext_property_contexts";
 
@@ -104,12 +116,8 @@ pub fn accepts_base(
         && accepts(2, "android_base_images_v2", Some(lib), system, vendor)
         && ready.file == READINESS_FILE
         && ready.targets == READINESS_TARGETS
-        && (ready.shutdown_property_contexts_sha256.is_some()
-            == (ready.init_rc_sha256 == SHUTDOWN_RC_SHA256))
-        && ready
-            .shutdown_property_contexts_sha256
-            .as_deref()
-            .is_none_or(|sha| sha == SHUTDOWN_PROPERTY_CONTEXTS_SHA256)
+        && ready.shutdown_property_contexts_sha256.as_deref()
+            == shutdown_property_for_rc(&ready.init_rc_sha256)
         && (4096..=16 * 1024 * 1024).contains(&ready.bytes)
         && ready.bytes % 512 == 0
         && ready.source_system_sha256 == system
@@ -196,6 +204,10 @@ mod tests {
         shutdown.init_rc_sha256 = SHUTDOWN_RC_SHA256.into();
         assert!(!admit(&shutdown));
         shutdown.shutdown_property_contexts_sha256 = Some(SHUTDOWN_PROPERTY_CONTEXTS_SHA256.into());
+        assert!(admit(&shutdown));
+        shutdown.init_rc_sha256 = ORDERLY_CONTROL_RC_SHA256.into();
+        assert!(!admit(&shutdown));
+        shutdown.shutdown_property_contexts_sha256 = Some(ORDERLY_CONTROL_PROPERTY_SHA256.into());
         assert!(admit(&shutdown));
         shutdown.init_rc_sha256 = OBSERVER_ONLY_RC_SHA256.into();
         assert!(!admit(&shutdown));
