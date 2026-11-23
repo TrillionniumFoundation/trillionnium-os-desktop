@@ -71,6 +71,17 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             container_oci_owner::early::run(&SHUTDOWN)?;
             return Ok(());
         }
+        if let Some(action) = action.as_ref().and_then(|arg| arg.to_str()).filter(|name|
+            matches!(*name, "--initramfs-selected-generation" | "--initramfs-pre-switch-root")) {
+            if arguments.next().is_some() {
+                return Err("early boot release verification accepts no arguments".into());
+            }
+            let switch_root = action == "--initramfs-pre-switch-root";
+            if let Some(digest)=droidloom_supervisor::control::verify_initramfs_release(switch_root)? {
+                println!("{digest}");
+            }
+            return Ok(());
+        }
         if action.as_deref() == Some(std::ffi::OsStr::new("--inspect-early-generation")) {
             if arguments.next().is_some() {return Err("early generation inspection accepts no arguments".into());}
             let mac=droidloom_supervisor::control::ContainerManagerMac::acquire()?;

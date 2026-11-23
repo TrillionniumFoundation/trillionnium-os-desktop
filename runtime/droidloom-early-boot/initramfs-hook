@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+case "${1:-}" in prereqs) exit 0 ;; esac
+. /usr/share/initramfs-tools/hook-functions
+program=/usr/lib/droidloom/production/current/droidloomd
+copy_exec "$program" "$program"

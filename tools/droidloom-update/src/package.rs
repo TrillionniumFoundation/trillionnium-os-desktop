@@ -3,6 +3,9 @@ use crate::{android, assemble, licenses, python, util::*};
 use serde_json::{Value, json};
 use std::{fs, os::unix::fs::symlink, path::Path, process::Command};
 
+#[path="early_boot_package.rs"]
+mod early_boot_package;
+
 fn validate_builder(jobs: usize) -> Result<()> {
     if unsafe { libc::geteuid() } == 0 {
         return fail("package compilation must run as an ordinary build user, without sudo");
@@ -269,7 +272,7 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
         copy(&source, &target)?;
         mode(&target, 0o644)?;
     }
-    Ok(())
+    early_boot_package::stage(runtime)
 }
 
 fn portable_template(template: &mut Value) {

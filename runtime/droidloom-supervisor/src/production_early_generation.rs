@@ -104,6 +104,35 @@ fn identity(f: &File) -> io::Result<(u64, u64)> {
     Ok((meta.dev(), meta.ino()))
 }
 
+pub(super) fn verify_birth_before_switch(selected: &str) -> io::Result<()> {
+    let (held, bytes) = SealedFile::read(Path::new(GENERATION), 4096).map_err(io::Error::other)?;
+    let birth: Birth = serde_json::from_slice(&bytes)?;
+    if held.node.mode & 0o7777 != 0o400
+        || birth.schema != "droidloom-early-child-v1"
+        || birth.host_pid <= 1
+        || birth.selection_sha256 != selected
+        || birth.boot_id != fs::read_to_string("/proc/sys/kernel/random/boot_id")?.trim()
+    {
+        return Err(invalid(
+            "the original Android generation belongs to a different Ubuntu boot or private release",
+        ));
+    }
+    let init = pidfd(birth.host_pid)?;
+    let ns = open_root_trusted(Path::new(NAMESPACE)).map_err(io::Error::other)?;
+    if identity(&init)? != (birth.pidfs_dev, birth.pidfs_ino)
+        || identity(&ns)? != (birth.pidns_dev, birth.pidns_ino)
+        || cv(unsafe { libc::ioctl(ns.as_raw_fd(), NS_GET_NSTYPE) })? != libc::CLONE_NEWPID
+        || translated(&ns, birth.host_pid)? != 1
+        || info(init.as_fd(), false)?.tgid != birth.host_pid as u32
+    {
+        return Err(invalid(
+            "the original pidfd and pinned namespace do not identify this Android PID 1",
+        ));
+    }
+    live(init.as_fd())?;
+    held.revalidate().map_err(io::Error::other)
+}
+
 pub struct EarlyAndroidGeneration {
     configuration: ConfigurationReadGuard,
     public: SharedKernelLauncher,

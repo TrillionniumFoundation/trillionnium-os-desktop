@@ -42,11 +42,12 @@ impl Published {
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
-struct EarlyPublished {
+pub(super) struct EarlyPublished {
     schema:String, launcher:String, selection_sha256:String, manager_sha256:String, manager_bytes:u64,
 }
 impl EarlyPublished {
-    fn parse(bytes:&[u8])->Result<Self> {
+    pub(super) fn owner(&self)->(&str,&str,u64) {(&self.selection_sha256,&self.manager_sha256,self.manager_bytes)}
+    pub(super) fn parse(bytes:&[u8])->Result<Self> {
         let value:Self=serde_json::from_slice(bytes)?;
         if value.schema!="droidloom-public-early-launcher-v1" || value.launcher!=EARLY_LAUNCHER ||
            !digest(&value.selection_sha256) || !digest(&value.manager_sha256) ||

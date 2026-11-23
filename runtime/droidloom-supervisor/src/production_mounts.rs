@@ -345,6 +345,16 @@ impl CohortDeclaration {
         Ok(())
     }
 }
+pub(crate) fn early_base_members(bytes: &[u8]) -> Result<Vec<(String,u64,String)>> {
+    let declaration: CohortDeclaration=serde_json::from_slice(bytes)?;
+    declaration.validate()?;
+    let library=declaration.system_ext_lib64.ok_or(MountError::Rejected("missing selected library extension"))?;
+    let observer=declaration.system_ext_readiness.ok_or(MountError::Rejected("missing selected stock-init observer"))?;
+    Ok(vec![(declaration.system.file,declaration.system.bytes,declaration.system.sha256),
+            (declaration.vendor.file,declaration.vendor.bytes,declaration.vendor.sha256),
+            (library.file,library.bytes,library.sha256),(observer.file,observer.bytes,observer.sha256)])
+}
+
 pub(crate) fn selected_early_observer(bytes:&[u8])->Result<droidloom_contracts::system_ext::ReadinessDeclaration> {
     let declaration:CohortDeclaration=serde_json::from_slice(bytes)?;
     declaration.validate()?;

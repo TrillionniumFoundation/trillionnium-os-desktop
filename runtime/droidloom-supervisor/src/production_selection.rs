@@ -34,6 +34,9 @@ pub use launcher::{ContainerLibraryMount, PreparedContainerSelection, SharedKern
 #[path = "production_early_generation.rs"]
 mod early_generation;
 pub use early_generation::EarlyAndroidGeneration;
+#[path = "production_early_release.rs"]
+mod early_release;
+pub use early_release::verify_initramfs_release;
 const EARLY_SCHEMA: &str = "droidloom-production-selection-v4";
 const EARLY_LAUNCHER: &str = "early_boot_shared_kernel_v1";
 
