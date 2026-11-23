@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <linux/lsm.h>
 #include <linux/openat2.h>
+#include <sched.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -136,6 +137,12 @@ static int activate(int argc, char **argv)
     next[1] = FINISH;
     for (int n = 1; n < argc; n++)
         next[n + 1] = argv[n];
+    /* run-init can leave the global init sharing fs_struct with earlier tasks.
+     * Give it private filesystem state and a private descriptor table before
+     * changing its security domain. Pinned kernel objects keep their owners. */
+    operation = "detach the Linux PID 1 filesystem and descriptor state";
+    if (unshare(CLONE_FS | CLONE_FILES) < 0)
+        return -1;
     operation = "activate the selected board security policy";
     if (droidloom_board_activate_policy((gid_t)(plan.gid_start + 9999)) < 0)
         return -1;
