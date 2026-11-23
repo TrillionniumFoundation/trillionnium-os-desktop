@@ -281,6 +281,7 @@ impl Bootstrap {
 struct AndroidProbes {
     toolbox: File,
     service: File,
+    cmd: File,
 }
 
 impl AndroidProbes {
@@ -310,11 +311,42 @@ impl AndroidProbes {
                 51760,
                 "da64083b28a0f1855f0cfb71c27633378e562b926009e21d9fd2ab598504498e",
             )?,
+            cmd: held(
+                "/system/bin/cmd",
+                52160,
+                "237410b6f4bfb9586a9a1135feaa4e75c189288483575890447aa5d492c56984",
+            )?,
         })
     }
 }
 
-fn fixed_probe(program: &File, argv0: &str, args: &[&str], expected: &str) -> io::Result<bool> {
+enum ProbeAnswer {
+    Exact(&'static str),
+    CurrentUserId,
+}
+
+impl ProbeAnswer {
+    fn accepts(&self, output: &str) -> bool {
+        match self {
+            Self::Exact(value) => output.trim_end() == *value,
+            Self::CurrentUserId => {
+                let Some(number) = output.strip_suffix('\n') else {
+                    return false;
+                };
+                number
+                    .parse::<i32>()
+                    .is_ok_and(|id| id >= 0 && id.to_string() == number)
+            }
+        }
+    }
+}
+
+fn fixed_probe(
+    program: &File,
+    argv0: &str,
+    args: &[&str],
+    expected: ProbeAnswer,
+) -> io::Result<bool> {
     let result = Command::new(format!("/proc/self/fd/{}", program.as_raw_fd()))
         .arg0(argv0)
         .args(args)
@@ -352,7 +384,7 @@ fn fixed_probe(program: &File, argv0: &str, args: &[&str], expected: &str) -> io
                 }
             }
             return Ok(output.len() <= 512
-                && std::str::from_utf8(&output).is_ok_and(|s| s.trim_end() == expected));
+                && std::str::from_utf8(&output).is_ok_and(|s| expected.accepts(s)));
         }
         if STOP.load(Ordering::Relaxed) || Instant::now() >= end {
             child.kill()?;
@@ -374,25 +406,31 @@ fn readiness(tools: &AndroidProbes) -> io::Result<Readiness> {
         &tools.toolbox,
         "/system/bin/getprop",
         &["servicemanager.ready"],
-        "true",
+        ProbeAnswer::Exact("true"),
     )? && fixed_probe(
         &tools.service,
         "/system/bin/service",
         &["check", "manager"],
-        "Service manager: found",
+        ProbeAnswer::Exact("Service manager: found"),
     )?;
     let android = binder
         && fixed_probe(
             &tools.toolbox,
             "/system/bin/getprop",
             &["sys.boot_completed"],
-            "1",
+            ProbeAnswer::Exact("1"),
         )?
         && fixed_probe(
             &tools.service,
             "/system/bin/service",
             &["check", "activity"],
-            "Service activity: found",
+            ProbeAnswer::Exact("Service activity: found"),
+        )?
+        && fixed_probe(
+            &tools.cmd,
+            "/system/bin/cmd",
+            &["activity", "get-current-user"],
+            ProbeAnswer::CurrentUserId,
         )?;
     Ok(Readiness { binder, android })
 }
@@ -540,6 +578,27 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn framework_readiness_requires_activity_manager_to_return_an_actual_user() {
+        let reply = ProbeAnswer::CurrentUserId;
+        for value in ["0\n", "10\n", "2147483647\n"] {
+            assert!(reply.accepts(value));
+        }
+        for value in [
+            "Service activity: found\n",
+            "Current user not set\n",
+            "-10000\n",
+            "2147483648\n",
+            "00\n",
+            "+1\n",
+            "0\n0\n",
+            "0",
+            "0\nignored",
+        ] {
+            assert!(!reply.accepts(value), "{value:?}");
+        }
+    }
+
     #[test]
     fn child_without_android_shutdown_is_reaped_and_reported_as_failure() {
         let child = Command::new("/usr/bin/sleep").arg("30").spawn().unwrap();
