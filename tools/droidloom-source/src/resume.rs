@@ -9,10 +9,10 @@ use super::{ensure_root_link, io_error, is_commit, sha256_file,
 use super::native_pair::{build_plan, verify_materialized};
 use serde_json::{json, Value};
 use sha2::{Digest as _, Sha256};
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::ffi::{OsStr, OsString};
 use std::fs::{self, File, Metadata, OpenOptions};
-use std::io::{Read as _, Write as _};
+use std::io::{Read as _, Seek as _, Write as _};
 use std::os::unix::fs::{MetadataExt as _, OpenOptionsExt as _};
 use std::path::{Component, Path, PathBuf};
 use std::process::{Command, Output, Stdio};
@@ -20,6 +20,8 @@ use std::thread;
 use std::time::Instant;
 
 const GIT_OUTPUT_LIMIT: u64 = 1024 * 1024;
+const PROJECT_TREE_LIMIT: u64 = 64 * 1024 * 1024;
+const PROMISOR_BATCH_SIZE: usize = 192;
 const PROGRESS_LIMIT: usize = 8 * 1024 * 1024;
 const MATERIALIZE_SECONDS: u64 = 5900;
 
@@ -102,14 +104,22 @@ impl Progress {
     }
 }
 
-fn bounded_pipe(mut reader: impl std::io::Read) -> std::io::Result<Vec<u8>> {
+fn bounded_pipe(mut reader: impl std::io::Read, limit: u64) -> std::io::Result<Vec<u8>> {
     let mut raw = Vec::new();
-    reader.by_ref().take(GIT_OUTPUT_LIMIT + 1).read_to_end(&mut raw)?;
+    reader.by_ref().take(limit + 1).read_to_end(&mut raw)?;
     Ok(raw)
 }
 
 fn git_output(checkout: &Path, args: &[OsString], progress: &Progress,
               network: bool) -> Result<Output, SourceError> {
+    git_with_input(checkout, args, progress, network, None, GIT_OUTPUT_LIMIT)
+}
+
+fn git_with_input(checkout: &Path, args: &[OsString], progress: &Progress, network: bool,
+                  input: Option<&[u8]>, limit: u64) -> Result<Output, SourceError> {
+    if input.is_some_and(|bytes| bytes.len() > PROJECT_TREE_LIMIT as usize) {
+        return Err(invalid("Git input exceeds the bounded project tree"));
+    }
     let seconds = progress.remaining(if network { MATERIALIZE_SECONDS } else { 60 })?;
     let mut command = Command::new("/usr/bin/timeout");
     command.args(["--signal=TERM", "--kill-after=2s"])
@@ -139,11 +149,18 @@ fn git_output(checkout: &Path, args: &[OsString], progress: &Progress,
         .env("GIT_OPTIONAL_LOCKS", "0").env("GIT_NO_LAZY_FETCH", if network { "0" } else { "1" })
         .env("GIT_LFS_SKIP_SMUDGE", "1").env("LC_ALL", "C")
         .args(args).stdout(Stdio::piped()).stderr(Stdio::piped());
+    if let Some(bytes) = input {
+        let mut file = tempfile::tempfile().map_err(|e| io_error("allocate Git input", e))?;
+        file.write_all(bytes).and_then(|()| file.rewind()).map_err(|e| io_error("write Git input", e))?;
+        command.stdin(Stdio::from(file));
+    } else {
+        command.stdin(Stdio::null());
+    }
     let mut child = command.spawn().map_err(|error| io_error("start bounded source Git", error))?;
     let stdout = child.stdout.take().ok_or_else(|| invalid("source Git stdout unavailable"))?;
     let stderr = child.stderr.take().ok_or_else(|| invalid("source Git stderr unavailable"))?;
-    let stdout = thread::spawn(move || bounded_pipe(stdout));
-    let stderr = thread::spawn(move || bounded_pipe(stderr));
+    let stdout = thread::spawn(move || bounded_pipe(stdout, limit));
+    let stderr = thread::spawn(move || bounded_pipe(stderr, GIT_OUTPUT_LIMIT));
     let status = child.wait().map_err(|error| io_error("wait for bounded source Git", error));
     // Always join both readers before propagating any outcome. A reader panic
     // or pipe error must not detach its peer or replace an earlier wait error.
@@ -154,7 +171,7 @@ fn git_output(checkout: &Path, args: &[OsString], progress: &Progress,
         .map_err(|error| io_error("read bounded source Git stdout", error))?;
     let stderr = stderr.map_err(|_| invalid("source Git stderr reader panicked"))?
         .map_err(|error| io_error("read bounded source Git stderr", error))?;
-    if stdout.len() > GIT_OUTPUT_LIMIT as usize || stderr.len() > GIT_OUTPUT_LIMIT as usize {
+    if stdout.len() > limit as usize || stderr.len() > GIT_OUTPUT_LIMIT as usize {
         return Err(invalid("source Git output exceeded its fixed bound"));
     }
     Ok(Output { status, stdout, stderr })
@@ -167,6 +184,10 @@ fn arguments(values: &[&str]) -> Vec<OsString> {
 fn git(checkout: &Path, args: &[OsString], progress: &Progress,
        network: bool) -> Result<Vec<u8>, SourceError> {
     let output = git_output(checkout, args, progress, network)?;
+    checked_git(output)
+}
+
+fn checked_git(output: Output) -> Result<Vec<u8>, SourceError> {
     if output.status.success() {
         Ok(output.stdout)
     } else {
@@ -288,6 +309,76 @@ fn configure_sparse(checkout: &Path, project: &PlannedProject,
     Ok(())
 }
 
+/// List only blobs named by the trusted commit and selected by Git's own cone
+/// rules. All three read operations have lazy fetching disabled.
+fn missing_locked_blobs(checkout: &Path, project: &PlannedProject, progress: &Progress)
+    -> Result<Vec<String>, SourceError> {
+    let inspect = |args: &[&str], input: Option<&[u8]>| {
+        checked_git(git_with_input(checkout, &arguments(args), progress, false, input, PROJECT_TREE_LIMIT)?)
+    };
+    let tree = inspect(&["ls-tree", "-r", "-z", "--full-tree", &project.commit], None)?;
+    let mut paths = BTreeMap::new();
+    for entry in tree.split(|b| *b == 0).filter(|e| !e.is_empty()) {
+        let tab = entry.iter().position(|b| *b == b'\t').ok_or_else(|| invalid("truncated Git tree row"))?;
+        let fields = std::str::from_utf8(&entry[..tab]).map_err(|_| invalid("invalid Git tree metadata"))?
+            .split(' ').collect::<Vec<_>>();
+        if fields.len() != 3 || !is_commit(fields[2]) { return Err(invalid("invalid locked tree object")); }
+        match fields[1] {
+            "blob" => { paths.insert(&entry[tab+1..], fields[2]); }
+            "commit" => {}
+            _ => return Err(invalid("unexpected recursive Git tree object")),
+        }
+    }
+    let mut selected = BTreeSet::new();
+    if project.sparse_paths.is_empty() {
+        selected.extend(paths.values().copied());
+    } else {
+        let mut input = Vec::new();
+        for path in paths.keys() { input.extend_from_slice(path); input.push(0); }
+        let matches = inspect(&["sparse-checkout", "check-rules", "-z"], Some(&input))?;
+        for path in matches.split(|b| *b == 0).filter(|p| !p.is_empty()) {
+            selected.insert(*paths.get(path).ok_or_else(|| invalid("sparse path outside the locked tree"))?);
+        }
+    }
+    let mut request = Vec::with_capacity(selected.len() * 41);
+    for object in &selected { request.extend_from_slice(object.as_bytes()); request.push(b'\n'); }
+    let result = inspect(&["cat-file", "--batch-check=%(objectname) %(objecttype)"], Some(&request))?;
+    let result = std::str::from_utf8(&result).map_err(|_| invalid("invalid Git blob availability output"))?;
+    let mut missing = Vec::new();
+    let mut lines = result.lines();
+    for oid in selected {
+        let (actual, kind) = lines.next().and_then(|line| line.split_once(' '))
+            .ok_or_else(|| invalid("incomplete Git blob availability output"))?;
+        if actual != oid { return Err(invalid("unexpected Git blob availability identity")); }
+        match kind {
+            "blob" => {}
+            "missing" => missing.push(oid.to_owned()),
+            _ => return Err(invalid("locked checkout requires a non-blob object")),
+        }
+    }
+    if lines.next().is_some() { return Err(invalid("extra Git blob availability output")); }
+    Ok(missing)
+}
+
+fn fetch_interrupted_project_blobs(checkout: &Path, project: &PlannedProject, ordinal: usize,
+                                  progress: &mut Progress) -> Result<(), SourceError> {
+    let missing = missing_locked_blobs(checkout, project, progress)?;
+    let total = missing.len();
+    for (index, group) in missing.chunks(PROMISOR_BATCH_SIZE).enumerate() {
+        let mut request = group.join("\n");
+        request.push('\n');
+        progress.record("PROJECT_FETCH_LOCKED_BLOB_BATCH", json!({"ordinal":ordinal,"path":project.path,
+            "commit":project.commit,"batch":index+1,"objects":group.len(),"missing_at_start":total}))?;
+        let args = arguments(&["fetch", "--quiet", "--no-tags", "--no-write-fetch-head",
+            "--no-recurse-submodules", "--filter=blob:none", "--stdin", "origin"]);
+        checked_git(git_with_input(checkout, &args, progress, true, Some(request.as_bytes()), GIT_OUTPUT_LIMIT)?)?;
+    }
+    if total > 0 && !missing_locked_blobs(checkout, project, progress)?.is_empty() {
+        return Err(invalid("official Git fetch did not supply all required locked blobs"));
+    }
+    Ok(())
+}
+
 fn resume_project(root: &Path, project: &PlannedProject, ordinal: usize,
                   progress: &mut Progress, owner: u32, recovery: &Path) -> Result<(), SourceError> {
     let checkout = root.join(&project.path);
@@ -368,6 +459,7 @@ fn resume_project(root: &Path, project: &PlannedProject, ordinal: usize,
     let cached = git_output(&checkout, &arguments(&["cat-file", "-e", &commit]), progress, false)?;
     if cached.status.success() {
         progress.record("PROJECT_EXACT_COMMIT_LOCAL_CHECKOUT_STILL_REQUIRED", detail())?;
+        fetch_interrupted_project_blobs(&checkout, project, ordinal, progress)?;
     } else {
         if !matches!(cached.status.code(), Some(1 | 128)) {
             return Err(invalid(format!("local commit probe failed: {}", cached.status)));
@@ -660,6 +752,49 @@ mod tests {
             fs::read_to_string(&self.progress).unwrap().lines()
                 .map(|line| serde_json::from_str(line).unwrap()).collect()
         }
+    }
+
+    #[test]
+    fn interrupted_sparse_fetch_selects_only_locked_blobs_and_skips_earlier_batches() {
+        let fixture = Fixture::cached(false);
+        let origin = fixture.root.join("fixture-origin");
+        fs::create_dir(origin.join("selected")).unwrap();
+        fs::create_dir(origin.join("omitted")).unwrap();
+        fs::write(origin.join("selected/tool"), b"needed bytes\n").unwrap();
+        fs::write(origin.join("omitted/tool"), b"excluded bytes\n").unwrap();
+        local_git(&origin, &arguments(&["add", "selected", "omitted"]));
+        local_git(&origin, &arguments(&["-c", "user.name=Control", "-c", "user.email=git@example.invalid",
+            "commit", "--quiet", "-m", "sparse objects"]));
+        local_git(&origin, &arguments(&["config", "uploadpack.allowFilter", "true"]));
+        let oid = |name: &str| String::from_utf8(local_git(&origin, &arguments(&["rev-parse", name])))
+            .unwrap().trim().to_owned();
+        let partial = fixture.root.join("partial");
+        fs::create_dir(&partial).unwrap();
+        local_git(&partial, &arguments(&["init", "--quiet", "--initial-branch=droidloom"]));
+        let origin_url = format!("file://{}", origin.display());
+        local_git(&partial, &arguments(&["remote", "add", "origin", &origin_url]));
+        let commit = oid("HEAD");
+        local_git(&partial, &arguments(&["-c", "protocol.file.allow=always", "fetch", "--depth=1",
+            "--filter=blob:none", "origin", &commit]));
+        let mut project = PlannedProject { path: "partial".into(), url: origin_url, commit,
+            purpose: "recover locked selected blobs".into(), sparse_paths: vec!["selected".into()] };
+        let progress = Progress::create(&fixture.progress, fs::metadata(&fixture.root).unwrap().uid()).unwrap();
+        configure_sparse(&partial, &project, &progress).unwrap();
+        let selected = oid("HEAD:selected/tool");
+        let marker = oid("HEAD:marker");
+        let omitted = oid("HEAD:omitted/tool");
+        let missing = missing_locked_blobs(&partial, &project, &progress).unwrap();
+        let mut expected = vec![selected.clone(), marker.clone()];
+        expected.sort();
+        assert_eq!(missing, expected);
+        // The previous official batch delivered exactly this required Git blob.
+        local_git(&partial, &arguments(&["-c", "protocol.file.allow=always", "fetch", "--no-tags",
+            "--no-write-fetch-head", "--filter=blob:none", "origin", &selected]));
+        assert_eq!(missing_locked_blobs(&partial, &project, &progress).unwrap(), vec![marker.clone()]);
+        project.sparse_paths.clear();
+        let mut full = vec![marker, omitted];
+        full.sort();
+        assert_eq!(missing_locked_blobs(&partial, &project, &progress).unwrap(), full);
     }
 
     #[test]
