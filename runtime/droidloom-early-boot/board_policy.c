@@ -124,7 +124,7 @@ static int prepare_ubuntu_cgroup2(void)
     const char *const selected[] = {"cpu", "cpuset", "io", "memory", "pids"};
     unsigned found = 0;
     char *rest = NULL;
-    for (char *token = strtok_r(data, " \\n", &rest); token; token = strtok_r(NULL, " \\n", &rest)) {
+    for (char *token = strtok_r(data, " \t\r\n", &rest); token; token = strtok_r(NULL, " \t\r\n", &rest)) {
         for (size_t i = 0; i < sizeof(selected)/sizeof(selected[0]); ++i)
             if (strcmp(token, selected[i]) == 0)
                 found |= 1U << i;
