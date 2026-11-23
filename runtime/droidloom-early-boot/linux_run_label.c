@@ -480,10 +480,13 @@ int droidloom_hold_linux_init_scope(struct droidloom_linux_init_scope *held)
         return -1;
     if (hold_cgroup_inode(openat(held->root.fd, "init.scope", dir),
                           S_IFDIR, &held->scope) < 0 ||
+        hold_cgroup_inode(openat(held->root.fd, "cgroup.controllers", O_RDONLY | O_NOFOLLOW | O_CLOEXEC),
+                          S_IFREG, &held->controllers) < 0 ||
         hold_cgroup_inode(openat(held->scope.fd, "cgroup.procs", O_RDONLY | O_NOFOLLOW | O_CLOEXEC),
                           S_IFREG, &held->procs) < 0)
         return -1;
     if (held->root.device != held->scope.device || held->root.device != held->procs.device ||
+        held->root.device != held->controllers.device ||
         held->root.inode == held->scope.inode || held->scope.inode == held->procs.inode) {
         errno = EXDEV;
         return -1;
@@ -520,6 +523,7 @@ int droidloom_label_linux_init_scope(const struct droidloom_linux_init_scope *he
     const char *original = "u:object_r:cgroup_v2:s0";
     if (apply_label_from(&held->root, original, "u:object_r:p4_linux_cgroup_root_t:s0") < 0 ||
         apply_label_from(&held->scope, original, "u:object_r:p4_linux_cgroup_init_scope_t:s0") < 0 ||
+        apply_label_from(&held->controllers, original, "u:object_r:p4_linux_cgroup_controller_list_t:s0") < 0 ||
         apply_label_from(&held->procs, original, "u:object_r:p4_linux_cgroup_init_tasks_t:s0") < 0)
         return -1;
     return 0;
@@ -527,6 +531,8 @@ int droidloom_label_linux_init_scope(const struct droidloom_linux_init_scope *he
 
 void droidloom_close_linux_init_scope(struct droidloom_linux_init_scope *held)
 {
+    if (held->controllers.fd >= 0)
+        close(held->controllers.fd);
     if (held->procs.fd >= 0)
         close(held->procs.fd);
     if (held->scope.fd >= 0)

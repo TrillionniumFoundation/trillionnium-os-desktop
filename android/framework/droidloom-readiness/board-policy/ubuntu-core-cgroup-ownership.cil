@@ -30,3 +30,11 @@
 (neverallow p4_non_kernel_cgroup_actor p4_linux_init_cgroup_inodes (dir (relabelfrom relabelto mounton)))
 (neverallow p4_non_kernel_cgroup_actor p4_linux_init_cgroup_inodes (file (relabelfrom relabelto mounton)))
 
+
+; This file contains only the names of controllers supported at the real root.
+(type p4_linux_cgroup_controller_list_t)
+(roletype object_r p4_linux_cgroup_controller_list_t)
+(typeattributeset p4_linux_init_cgroup_inodes (p4_linux_cgroup_controller_list_t))
+(allow kernel p4_linux_cgroup_controller_list_t (file (getattr relabelto)))
+(allow init_t p4_linux_cgroup_controller_list_t (file (getattr open read)))
+(neverallow p4_non_kernel_cgroup_actor p4_linux_cgroup_controller_list_t (file (write append setattr)))
