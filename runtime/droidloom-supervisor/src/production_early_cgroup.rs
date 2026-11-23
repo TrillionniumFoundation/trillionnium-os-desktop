@@ -336,3 +336,39 @@ impl PreparedCgroup {
             .try_clone()?)
     }
 }
+
+impl PreparedCgroup {
+    pub(crate) fn verify_early_exit(
+        &self,
+        board: &crate::production_selection::EarlyBoardResources,
+    ) -> Result<()> {
+        let r = self.get();
+        let state = r.early.borrow();
+        let binding = state
+            .as_ref()
+            .ok_or(CgroupError::Rejected("early budget has no captured init"))?;
+        require(
+            !r.retired.get()
+                && NodeIdentity::of(&binding.pidfd)? == NodeIdentity::of(board.pidfd())?
+                && r.admission.lease().host_uid() == board.selection().spec().host_uid
+                && r.admission.lease().broker_cohort() == board.selection().base_cohort(),
+            "different or already retired early Android owner",
+        )?;
+        crate::production_selection::early_generation::verify_exit(&binding.pidfd)?;
+        r.unit_authority.check(&r.unit.file)?;
+        r.budget.check(&r.unit.file, &r.name)?;
+        require(
+            !populated(&r.budget.file)? && read_pids(&r.budget.file)?.is_empty(),
+            "original Android budget remains populated",
+        )
+    }
+    pub(crate) fn retire_early_empty(
+        &self,
+        board: &crate::production_selection::EarlyBoardResources,
+    ) -> Result<()> {
+        self.verify_early_exit(board)?;
+        self.remove_empty_owned_hierarchy()?;
+        self.get().retired.set(true);
+        Ok(())
+    }
+}

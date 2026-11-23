@@ -601,3 +601,7 @@ mod tests {
 #[path = "production_early_resources.rs"]
 mod resources;
 pub(crate) use resources::{EarlyBaseAdmission, EarlyBoundNamespaces};
+
+#[path="production_early_retirement.rs"]
+mod retirement;
+pub(crate) use retirement::{EarlyBaseRetirement, verify_exit};
