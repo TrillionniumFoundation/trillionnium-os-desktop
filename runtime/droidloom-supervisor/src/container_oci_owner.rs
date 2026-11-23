@@ -3,7 +3,7 @@
 //! instance and accepts progress only from the bound, live kernel peer.
 use droidloom_supervisor::control::{PreparedContainerSelection, check_installed_mac_platform};
 use serde::Deserialize;
-use std::fs;
+use std::fs::{self, File};
 use std::io::{self, Read, Write};
 use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};
 use std::os::unix::fs::{FileTypeExt, MetadataExt, PermissionsExt};
@@ -37,21 +37,21 @@ struct OciState {
     annotations: std::collections::BTreeMap<String, String>,
 }
 
-fn state() -> io::Result<OciState> {
-    let mut command = Command::new("/usr/bin/runc");
-    command
+fn fixed_output(executable: &str, args: &[&str]) -> io::Result<Vec<u8>> {
+    let mut child = Command::new(executable)
         .env_clear()
         .env("PATH", "/usr/sbin:/usr/bin")
-        .args(["--root", OCI_ROOT, "state", INSTANCE])
+        .env("LC_ALL", "C")
+        .args(args)
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
-        .stderr(Stdio::null());
-    let mut child = command.spawn()?;
+        .stderr(Stdio::null())
+        .spawn()?;
     let end = Instant::now() + Duration::from_secs(2);
     loop {
         if let Some(exit) = child.try_wait()? {
             if !exit.success() {
-                return Err(error("the prepared OCI instance has no live runtime state"));
+                return Err(error("the prepared OCI service has no live runtime state"));
             }
             let mut bytes = Vec::new();
             child
@@ -61,16 +61,74 @@ fn state() -> io::Result<OciState> {
                 .take(65537)
                 .read_to_end(&mut bytes)?;
             if bytes.len() > 65536 {
-                return Err(error("oversized OCI state"));
+                return Err(error("oversized OCI service response"));
             }
-            return serde_json::from_slice(&bytes).map_err(io::Error::other);
+            return Ok(bytes);
         }
         if Instant::now() >= end {
             child.kill()?;
             child.wait()?;
-            return Err(error("OCI state query timed out"));
+            return Err(error("OCI service query timed out"));
         }
         thread::sleep(Duration::from_millis(10));
+    }
+}
+fn state() -> io::Result<OciState> {
+    serde_json::from_slice(&fixed_output(
+        "/usr/bin/runc",
+        &["--root", OCI_ROOT, "state", INSTANCE],
+    )?)
+    .map_err(io::Error::other)
+}
+
+#[derive(Debug, Eq, PartialEq)]
+struct OciOwner {
+    pid: i32,
+    invocation: String,
+}
+impl OciOwner {
+    fn current() -> io::Result<Self> {
+        let bytes = fixed_output(
+            "/usr/bin/systemctl",
+            &[
+                "--system",
+                "--no-pager",
+                "show",
+                "--property=MainPID,InvocationID,ActiveState",
+                "droidloom-container-oci.service",
+            ],
+        )?;
+        let text = std::str::from_utf8(&bytes).map_err(io::Error::other)?;
+        let field = |k: &str| {
+            text.lines()
+                .filter_map(|line| line.split_once('='))
+                .find_map(|(key, value)| (key == k).then_some(value))
+        };
+        let pid = field("MainPID")
+            .and_then(|v| v.parse::<i32>().ok())
+            .filter(|n| *n > 1)
+            .ok_or_else(|| error("OCI system service lacks live MainPID"))?;
+        let invocation = field("InvocationID")
+            .filter(|s| {
+                s.len() == 32
+                    && s.bytes().all(|b| b.is_ascii_hexdigit())
+                    && s.bytes().any(|b| b != b'0')
+            })
+            .ok_or_else(|| error("OCI system service lacks a valid invocation"))?;
+        if !matches!(field("ActiveState"), Some("active" | "activating")) {
+            return Err(error("OCI system service is inactive"));
+        }
+        Ok(Self {
+            pid,
+            invocation: invocation.to_string(),
+        })
+    }
+    fn pidfd(&self) -> io::Result<OwnedFd> {
+        let fd = unsafe { libc::syscall(libc::SYS_pidfd_open, self.pid, 0u32) };
+        if fd < 0 {
+            return Err(io::Error::last_os_error());
+        }
+        Ok(unsafe { OwnedFd::from_raw_fd(fd as i32) })
     }
 }
 
@@ -138,13 +196,33 @@ fn live(pidfd: &OwnedFd) -> io::Result<bool> {
 
 struct Guest {
     socket: UnixStream,
+    pid: i32,
     pidfd: OwnedFd,
+    controller: OwnedFd,
     binder: bool,
     android: bool,
     last: Instant,
 }
 impl Guest {
-    fn admit(socket: UnixStream, choice: &PreparedContainerSelection) -> io::Result<Self> {
+    fn matches_oci(pid: i32, selection: &str) -> io::Result<()> {
+        let current = state()?;
+        if current.id != INSTANCE
+            || current.status != "running"
+            || current.pid != pid
+            || current.bundle != Path::new(BUNDLE)
+            || current
+                .annotations
+                .get("org.droidloom.selection.sha256")
+                .map(String::as_str)
+                != Some(selection)
+        {
+            return Err(error(
+                "OCI generation does not match the connected guest and selected release",
+            ));
+        }
+        Ok(())
+    }
+    fn admit(mut socket: UnixStream, choice: &PreparedContainerSelection) -> io::Result<Self> {
         let cred: libc::ucred = socket_value(&socket, libc::SO_PEERCRED)?;
         // SO_PEERPIDFD returns a descriptor for the actual connecting task.
         // Opening a fresh pidfd by its numeric PID would allow PID reuse.
@@ -157,6 +235,11 @@ impl Guest {
         if cred.pid <= 1 || !live(&pidfd)? {
             return Err(error("guest peer is absent"));
         }
+        let owner = OciOwner::current()?;
+        let controller = owner.pidfd()?;
+        let guest_proc = File::open(format!("/proc/{}", cred.pid))?;
+        let owner_proc = File::open(format!("/proc/{}", owner.pid))?;
+        choice.verify_oci_identities(&guest_proc, &owner_proc)?;
         let original = choice.entry_program()?;
         let actual = fs::metadata(format!("/proc/{}/exe", cred.pid))?;
         let selected = fs::metadata(PROGRAM)?;
@@ -165,38 +248,30 @@ impl Guest {
                 "peer does not execute the published guest entry inode",
             ));
         }
-        let current = state()?;
-        if current.id != INSTANCE
-            || current.status != "running"
-            || current.pid != cred.pid
-            || current.bundle != Path::new(BUNDLE)
-            || current
-                .annotations
-                .get("org.droidloom.selection.sha256")
-                .map(String::as_str)
-                != Some(choice.selection_digest())
-        {
-            return Err(error(
-                "OCI generation does not match the connected guest and selected release",
-            ));
-        }
+        Self::matches_oci(cred.pid, choice.selection_digest())?;
         original.revalidate()?;
         choice.revalidate()?;
-        if !live(&pidfd)? {
-            return Err(error("guest exited while binding its generation"));
+        if !live(&pidfd)? || !live(&controller)? || owner != OciOwner::current()? {
+            return Err(error(
+                "OCI owner or guest exited while binding its generation",
+            ));
         }
+        socket.set_write_timeout(Some(Duration::from_millis(200)))?;
+        socket.write_all(&[1])?;
         socket.set_nonblocking(true)?;
         Ok(Self {
             socket,
+            pid: cred.pid,
             pidfd,
+            controller,
             binder: false,
             android: false,
             last: Instant::now(),
         })
     }
     fn update(&mut self) -> io::Result<()> {
-        if !live(&self.pidfd)? {
-            return Err(error("bound OCI PID 1 exited"));
+        if !live(&self.pidfd)? || !live(&self.controller)? {
+            return Err(error("bound OCI PID 1 or its system service owner exited"));
         }
         let mut bytes = [0u8; 64];
         match self.socket.read(&mut bytes) {
@@ -267,6 +342,9 @@ pub(super) fn run(stop: &AtomicBool) -> io::Result<()> {
             }));
         }
         if Instant::now() >= revalidate {
+            if let Some(peer) = guest.as_ref() {
+                Guest::matches_oci(peer.pid, choice.selection_digest())?;
+            }
             choice.revalidate()?;
             revalidate = Instant::now() + Duration::from_secs(5);
         }
@@ -292,9 +370,12 @@ mod tests {
         let fd: i32 = socket_value(&stream, 77).unwrap();
         let pidfd = unsafe { OwnedFd::from_raw_fd(fd) };
         stream.set_nonblocking(true).unwrap();
+        let controller = pidfd.try_clone().unwrap();
         let mut peer = Guest {
             socket: stream,
+            pid: cred.pid,
             pidfd,
+            controller,
             binder: false,
             android: false,
             last: Instant::now(),

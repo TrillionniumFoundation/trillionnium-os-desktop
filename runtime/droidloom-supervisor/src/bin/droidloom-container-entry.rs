@@ -56,7 +56,7 @@ fn mapped_range(value: &str) -> bool {
         return false;
     }
     let fields: Vec<_> = rows[0].split_whitespace().map(str::parse::<u32>).collect();
-    matches!(fields.as_slice(), [Ok(0), Ok(base), Ok(count)] if *base >= 65536 && *count >= 65536 && base.checked_add(*count).is_some())
+    matches!(fields.as_slice(), [Ok(0), Ok(base), Ok(count)] if *base > 0 && u64::from(*count) >= droidloom_contracts::MIN_SUBORDINATE_IDS && base.checked_add(*count).is_some())
 }
 
 fn entry_context() -> io::Result<()> {
@@ -379,9 +379,30 @@ fn contact_host() -> io::Result<UnixStream> {
     let end = Instant::now() + START_LIMIT;
     loop {
         match UnixStream::connect(HOST_CHANNEL) {
-            Ok(stream) => {
-                stream.set_write_timeout(Some(Duration::from_secs(2)))?;
-                return Ok(stream);
+            Ok(mut stream) => {
+                stream.set_read_timeout(Some(Duration::from_secs(5)))?;
+                let mut accepted = [0u8; 1];
+                match stream.read_exact(&mut accepted) {
+                    Ok(()) if accepted == [1] => {
+                        stream.set_write_timeout(Some(Duration::from_secs(2)))?;
+                        return Ok(stream);
+                    }
+                    Ok(()) => return Err(error("OCI host rejected the readiness protocol")),
+                    Err(e)
+                        if !STOP.load(Ordering::Relaxed)
+                            && Instant::now() < end
+                            && matches!(
+                                e.kind(),
+                                io::ErrorKind::UnexpectedEof
+                                    | io::ErrorKind::WouldBlock
+                                    | io::ErrorKind::TimedOut
+                                    | io::ErrorKind::ConnectionReset
+                            ) =>
+                    {
+                        thread::sleep(Duration::from_millis(100))
+                    }
+                    Err(e) => return Err(e),
+                }
             }
             Err(e)
                 if matches!(
@@ -480,7 +501,8 @@ mod tests {
     #[test]
     fn original_pid1_and_subordinate_namespace_are_required() {
         assert!(entry_context().is_err());
-        assert!(mapped_range("0 200000 65536\n"));
+        assert!(mapped_range("0 200000 100000\n"));
+        assert!(!mapped_range("0 200000 65536\n"));
         assert!(!mapped_range("0 0 4294967295\n"));
         assert!(!mapped_range("0 1000 1\n"));
     }

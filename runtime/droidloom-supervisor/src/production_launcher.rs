@@ -192,6 +192,28 @@ impl PreparedContainerSelection {
         self.public.entry_program()
     }
 
+    /// Match the original delegated ranges, role and durable data reservation
+    /// to the two kernel-held processes for this release.
+    ///
+    /// # Errors
+    /// Rejects a mismatched map, missing owner lease or changed selection.
+    pub fn verify_oci_identities(&self, guest_proc: &File, owner_proc: &File) -> io::Result<()> {
+        self.revalidate()?;
+        let spec = self.selection.spec();
+        let authority = crate::production_identity::IdentityAuthority::inspect(spec)
+            .map_err(io::Error::other)?;
+        authority
+            .verify_oci_owner_lease(spec, self.selection.base_cohort(), owner_proc)
+            .map_err(io::Error::other)?;
+        crate::production_namespace::verify_container_peer_maps(
+            guest_proc,
+            spec.subordinate_uids,
+            spec.subordinate_gids,
+        )
+        .map_err(io::Error::other)?;
+        self.revalidate()
+    }
+
     /// Borrow only the sealed public release file for projection as a
     /// read-only mount at /etc/droidloom/container-launcher.json in the cell.
     /// The private selection and original data descriptors never leave the broker.
