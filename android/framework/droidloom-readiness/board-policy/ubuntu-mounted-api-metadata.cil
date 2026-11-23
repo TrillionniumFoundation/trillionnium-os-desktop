@@ -386,7 +386,8 @@
 (neverallow p4_linux_service_executor_t p4_linux_udev_netlink_t (netlink_kobject_uevent_socket (create bind sendto)))
 (neverallow p4_linux_udev_t self (capability (sys_admin)))
 (allow p4_linux_udev_t init_t (unix_stream_socket (getattr getopt setopt read write accept listen)))
-(allow p4_linux_udev_t self (unix_dgram_socket (create connect write read getattr getopt setopt)))
+; Original udev workers register their own abstract notification endpoint.
+(allow p4_linux_udev_t self (unix_dgram_socket (create bind connect write read getattr getopt setopt)))
 (allow p4_linux_udev_t init_t (unix_dgram_socket (sendto)))
 (allow p4_linux_udev_t p4_linux_systemd_notify_t (sock_file (write)))
 (allow p4_linux_udev_t p4_linux_systemd_run_t (dir (getattr search)))
