@@ -37,6 +37,8 @@
 (allow droidloom_policy_loader init_t (fd (use)))
 ; The original systemd-executor opens the selected ELF before entering the loader domain.
 (allow droidloom_policy_loader p4_linux_service_executor_t (fd (use)))
+; Keep the normal systemd-provided null standard streams across secure exec.
+(allow droidloom_policy_loader p4_linux_standardio_t (chr_file (read write)))
 (allow init_t droidloom_broker (fd (use)))
 (allow droidloom_broker init_t (process (getattr sigchld)))
 (allow droidloom_policy_loader init_t (process (getattr sigchld)))
