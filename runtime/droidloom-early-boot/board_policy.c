@@ -91,6 +91,47 @@ static int mount_kernel_fs(const char *type, const char *where, unsigned long ma
     return (unsigned long)fs.f_type == magic ? 0 : reject(EXDEV);
 }
 
+static int prepare_ubuntu_cgroup2(void)
+{
+    const char *where = "/sys/fs/cgroup";
+    struct statfs fs;
+    if (statfs(where, &fs) < 0)
+        return -1;
+    if ((unsigned long)fs.f_type != CGROUP2_SUPER_MAGIC) {
+        if ((unsigned long)fs.f_type != SYSFS_MAGIC)
+            return reject(EXDEV);
+        if (mount("cgroup2", where, "cgroup2", MS_NOSUID | MS_NODEV | MS_NOEXEC,
+                  "nsdelegate,memory_recursiveprot") < 0)
+            return -1;
+    }
+    if (statfs(where, &fs) < 0)
+        return -1;
+    if ((unsigned long)fs.f_type != CGROUP2_SUPER_MAGIC)
+        return reject(EXDEV);
+    int fd = open("/sys/fs/cgroup/cgroup.controllers", O_RDONLY | O_NOFOLLOW | O_CLOEXEC);
+    if (fd < 0)
+        return -1;
+    char data[1024];
+    ssize_t n;
+    do { n = read(fd, data, sizeof(data) - 1); } while (n < 0 && errno == EINTR);
+    int error = errno;
+    close(fd);
+    if (n < 0)
+        return reject(error);
+    if (n == 0 || n >= (ssize_t)sizeof(data) - 1)
+        return reject(EBADMSG);
+    data[n] = 0;
+    const char *const selected[] = {"cpu", "cpuset", "io", "memory", "pids"};
+    unsigned found = 0;
+    char *rest = NULL;
+    for (char *token = strtok_r(data, " \\n", &rest); token; token = strtok_r(NULL, " \\n", &rest)) {
+        for (size_t i = 0; i < sizeof(selected)/sizeof(selected[0]); ++i)
+            if (strcmp(token, selected[i]) == 0)
+                found |= 1U << i;
+    }
+    return found == 31 ? 0 : reject(ENODEV);
+}
+
 static int check_value(const char *path, const char *expected)
 {
     char value[256];
@@ -211,6 +252,7 @@ int droidloom_board_activate_policy(gid_t observer_gid)
     if (rc == 0) { stage = "read admitted AppArmor input"; rc = read_admitted(&aa); }
     if (rc == 0) { stage = "validate AppArmor framing"; rc = apparmor_profiles(&aa, 0); }
     if (rc == 0) { stage = "check initial Ubuntu policy state"; rc = initial_ubuntu_kernel(); }
+    if (rc == 0) { stage = "prepare the original Ubuntu unified cgroup hierarchy"; rc = prepare_ubuntu_cgroup2(); }
     if (rc == 0) { stage = "hold original Ubuntu /run"; rc = droidloom_hold_linux_run(&run); }
     if (rc == 0) { stage = "hold the selected early readiness directory"; rc = droidloom_hold_readiness_paths(&run, observer_gid, &paths); }
     if (rc == 0) { stage = "project the exact Ubuntu console, null and full device nodes"; rc = droidloom_project_linux_standard_devices(); }
