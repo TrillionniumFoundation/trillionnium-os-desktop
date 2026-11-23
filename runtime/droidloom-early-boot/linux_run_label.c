@@ -70,14 +70,14 @@ static int verify_label(const struct droidloom_linux_run *run, const char *expec
     return 0;
 }
 
-static int apply_label(const struct droidloom_linux_run *run, const char *expected)
+static int apply_label_from(const struct droidloom_linux_run *run, const char *original, const char *expected)
 {
     char context[128];
     ssize_t size = fgetxattr(run->fd, "security.selinux", context, sizeof(context));
     if (size < 0)
         return -1;
     if (!droidloom_context_matches(context, size, expected)) {
-        if (!droidloom_context_matches(context, size, "u:object_r:tmpfs:s0")) {
+        if (!droidloom_context_matches(context, size, original)) {
             errno = EACCES;
             return -1;
         }
@@ -86,6 +86,11 @@ static int apply_label(const struct droidloom_linux_run *run, const char *expect
             return -1;
     }
     return verify_label(run, expected);
+}
+
+static int apply_label(const struct droidloom_linux_run *run, const char *expected)
+{
+    return apply_label_from(run, "u:object_r:tmpfs:s0", expected);
 }
 
 int droidloom_label_private_device(const struct droidloom_linux_run *held)
@@ -413,4 +418,119 @@ int droidloom_hold_linux_shm(struct droidloom_linux_run *out)
 int droidloom_label_linux_shm(const struct droidloom_linux_run *held)
 {
     return apply_label(held, "u:object_r:p4_linux_shm_root_t:s0");
+}
+
+static int hold_cgroup_inode(int fd, mode_t kind, struct droidloom_linux_run *out)
+{
+    if (fd < 0)
+        return -1;
+    struct stat st;
+    struct statfs fs;
+    int error = 0;
+    if (fstat(fd, &st) < 0 || fstatfs(fd, &fs) < 0)
+        error = errno;
+    else if ((st.st_mode & S_IFMT) != kind || st.st_uid || st.st_gid ||
+             (st.st_mode & 0022) || fs.f_type != CGROUP2_SUPER_MAGIC)
+        error = EACCES;
+    if (error) {
+        close(fd);
+        errno = error;
+        return -1;
+    }
+    *out = (struct droidloom_linux_run){ .fd = fd, .device = st.st_dev, .inode = st.st_ino };
+    return 0;
+}
+
+static int initial_cgroup_membership(void)
+{
+    char data[64];
+    int fd = open("/proc/1/cgroup", O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
+    if (fd < 0)
+        return -1;
+    ssize_t n;
+    do { n = read(fd, data, sizeof(data) - 1); } while (n < 0 && errno == EINTR);
+    int error = errno;
+    close(fd);
+    if (n < 0) {
+        errno = error;
+        return -1;
+    }
+    data[n] = 0;
+    if (!strcmp(data, "0::/\n"))
+        return 0;
+    if (!strcmp(data, "0::/init.scope\n"))
+        return 1;
+    errno = EINVAL;
+    return -1;
+}
+
+int droidloom_hold_linux_init_scope(struct droidloom_linux_init_scope *held)
+{
+    const int dir = O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC;
+    int membership = initial_cgroup_membership();
+    if (membership < 0 || getpid() != 1)
+        return -1;
+    if (hold_cgroup_inode(open("/sys/fs/cgroup", dir), S_IFDIR, &held->root) < 0)
+        return -1;
+    if (held->root.inode != 1) {
+        errno = ESTALE;
+        return -1;
+    }
+    if (mkdirat(held->root.fd, "init.scope", 0755) < 0 && errno != EEXIST)
+        return -1;
+    if (hold_cgroup_inode(openat(held->root.fd, "init.scope", dir),
+                          S_IFDIR, &held->scope) < 0 ||
+        hold_cgroup_inode(openat(held->scope.fd, "cgroup.procs", O_RDONLY | O_NOFOLLOW | O_CLOEXEC),
+                          S_IFREG, &held->procs) < 0)
+        return -1;
+    if (held->root.device != held->scope.device || held->root.device != held->procs.device ||
+        held->root.inode == held->scope.inode || held->scope.inode == held->procs.inode) {
+        errno = EXDEV;
+        return -1;
+    }
+    if (!membership) {
+        /* Moving only this verified global Linux PID 1 avoids giving future
+         * managers arbitrary task migration through the root cgroup.procs. */
+        int fd = openat(held->scope.fd, "cgroup.procs", O_WRONLY | O_NOFOLLOW | O_CLOEXEC);
+        if (fd < 0)
+            return -1;
+        struct stat original;
+        int error = 0;
+        if (fstat(fd, &original) < 0)
+            error = errno;
+        else if (original.st_dev != held->procs.device || original.st_ino != held->procs.inode)
+            error = ESTALE;
+        else if (write(fd, "0\n", 2) != 2)
+            error = errno ? errno : EIO;
+        close(fd);
+        if (error) {
+            errno = error;
+            return -1;
+        }
+    }
+    if (initial_cgroup_membership() != 1) {
+        errno = ESTALE;
+        return -1;
+    }
+    return 0;
+}
+
+int droidloom_label_linux_init_scope(const struct droidloom_linux_init_scope *held)
+{
+    const char *original = "u:object_r:cgroup_v2:s0";
+    if (apply_label_from(&held->root, original, "u:object_r:p4_linux_cgroup_root_t:s0") < 0 ||
+        apply_label_from(&held->scope, original, "u:object_r:p4_linux_cgroup_init_scope_t:s0") < 0 ||
+        apply_label_from(&held->procs, original, "u:object_r:p4_linux_cgroup_init_tasks_t:s0") < 0)
+        return -1;
+    return 0;
+}
+
+void droidloom_close_linux_init_scope(struct droidloom_linux_init_scope *held)
+{
+    if (held->procs.fd >= 0)
+        close(held->procs.fd);
+    if (held->scope.fd >= 0)
+        close(held->scope.fd);
+    if (held->root.fd >= 0)
+        close(held->root.fd);
 }

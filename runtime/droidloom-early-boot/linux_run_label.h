@@ -12,6 +12,16 @@ struct droidloom_linux_run {
     ino_t inode;
 };
 
+
+struct droidloom_linux_init_scope {
+    struct droidloom_linux_run root;
+    struct droidloom_linux_run scope;
+    struct droidloom_linux_run procs;
+};
+int droidloom_hold_linux_init_scope(struct droidloom_linux_init_scope *held);
+int droidloom_label_linux_init_scope(const struct droidloom_linux_init_scope *held);
+void droidloom_close_linux_init_scope(struct droidloom_linux_init_scope *held);
+
 int droidloom_hold_linux_shm(struct droidloom_linux_run *out);
 int droidloom_label_linux_shm(const struct droidloom_linux_run *held);
 int droidloom_hold_linux_run(struct droidloom_linux_run *run);

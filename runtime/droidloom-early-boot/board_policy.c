@@ -255,6 +255,7 @@ int droidloom_board_activate_policy(gid_t observer_gid)
     struct droidloom_raw_profile selected_profiles[3] = {0};
     int status = -1, epoch_directory = -1;
     struct droidloom_linux_run device_root = {.fd = -1};
+    struct droidloom_linux_init_scope scope = { .root.fd = -1, .scope.fd = -1, .procs.fd = -1 };
     struct droidloom_linux_run run = {.fd = -1}, shm = {.fd = -1};
     struct droidloom_readiness_paths paths = { .handoff.fd = -1, .readiness.fd = -1 };
     const char *stage = "read admitted SELinux input";
@@ -263,6 +264,7 @@ int droidloom_board_activate_policy(gid_t observer_gid)
     if (rc == 0) { stage = "validate AppArmor framing"; rc = apparmor_profiles(&aa, 0, selected_profiles); }
     if (rc == 0) { stage = "check initial Ubuntu policy state"; rc = initial_ubuntu_kernel(); }
     if (rc == 0) { stage = "prepare the original Ubuntu unified cgroup hierarchy"; rc = prepare_ubuntu_cgroup2(); }
+    if (rc == 0) { stage = "hold the original Ubuntu cgroup root and move global PID 1 to its init.scope"; rc = droidloom_hold_linux_init_scope(&scope); }
     if (rc == 0) { stage = "prepare the original Ubuntu shared memory mount"; rc = droidloom_hold_linux_shm(&shm); }
     if (rc == 0) { stage = "hold original Ubuntu /run"; rc = droidloom_hold_linux_run(&run); }
     if (rc == 0) { stage = "hold the selected early readiness directory"; rc = droidloom_hold_readiness_paths(&run, observer_gid, &paths); }
@@ -291,6 +293,7 @@ int droidloom_board_activate_policy(gid_t observer_gid)
     }
     if (rc == 0) { stage = "load initial selected joint SELinux policy"; rc = submit(SELINUX_DIR "/load", policy.data, policy.size); }
     if (rc == 0) { stage = "label the held original Android device filesystem"; rc = droidloom_label_private_device(&device_root); }
+    if (rc == 0) { stage = "label the held Ubuntu cgroup root and its initial scope"; rc = droidloom_label_linux_init_scope(&scope); }
     if (rc == 0) { stage = "label the original Ubuntu shared memory root"; rc = droidloom_label_linux_shm(&shm); }
     if (rc == 0) { stage = "label the held Ubuntu /run inode"; rc = droidloom_label_linux_run(&run); }
     if (rc == 0) { stage = "label the held private readiness directory"; rc = droidloom_label_readiness_paths(&paths); }
@@ -305,6 +308,7 @@ int droidloom_board_activate_policy(gid_t observer_gid)
         close(paths.readiness.fd);
     if (paths.handoff.fd >= 0)
         close(paths.handoff.fd);
+    droidloom_close_linux_init_scope(&scope);
     if (shm.fd >= 0)
         close(shm.fd);
     if (run.fd >= 0)
