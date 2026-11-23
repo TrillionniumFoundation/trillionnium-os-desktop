@@ -84,7 +84,7 @@ fn link_target(value: &[u8]) -> bool {
 /// The only transfer accepted at the first PID 1 barrier. The connected peer
 /// is held exclusively by the creator; no pathname, process ID or JSON grants
 /// access to this endpoint. Exact sender/receiver ownership was already bound.
-unsafe fn receive_bases(nonce: [u8; 16], parent_pid: u32) -> ([RawFd; 4], BaseLayout, bool) {
+unsafe fn receive_bases(nonce: [u8; 16], parent_pid: u32) -> ([RawFd; 4], BaseLayout, bool, bool) {
     let mut packet = Packet::zeroed();
     let mut iov = libc::iovec {
         iov_base: (&mut packet as *mut Packet).cast(),
@@ -152,7 +152,8 @@ unsafe fn receive_bases(nonce: [u8; 16], parent_pid: u32) -> ([RawFd; 4], BaseLa
     }
     for fd in &raw[..count] { unsafe { libc::syscall(libc::SYS_close, *fd); } }
     let selected_extension = packet.phase == Phase::MountEmptyBaseSystemExt as u32 || packet.phase == Phase::MountPersistentBaseSystemExt as u32;
-    (held, layout, selected_extension)
+    let readiness=packet.phase==Phase::MountEmptyBaseReadiness as u32 || packet.phase==Phase::MountPersistentBaseReadiness as u32;
+    (held, layout, selected_extension || readiness, readiness)
 }
 
 unsafe fn require_image(fd: RawFd, nonce: [u8; 16]) {
@@ -555,7 +556,7 @@ unsafe fn empty_data(
 /// Called only after the actual owned PID 1 emitted TreeReady.
 pub(super) unsafe fn run(nonce: [u8; 16], parent_pid: u32, _mode: Mode) -> ! {
     unsafe {
-        let ([system, vendor, data, metadata], layout, selected_extension) = receive_bases(nonce, parent_pid);
+        let ([system, vendor, data, metadata], layout, selected_extension, readiness) = receive_bases(nonce, parent_pid);
         require_image(system, nonce);
         require_image(vendor, nonce);
         if layout == BaseLayout::Persistent {
@@ -583,6 +584,13 @@ pub(super) unsafe fn run(nonce: [u8; 16], parent_pid: u32, _mode: Mode) -> ! {
         libc::syscall(libc::SYS_close, root_target);
         populate(system, root, nonce);
         if selected_extension { preserve_selected_lib64(system, root, nonce); }
+        if readiness {
+            for path in [c"system/system_ext/bin", c"system/system_ext/etc/init"] {
+                let dest=directory_at(root,path.as_ptr(),nonce);
+                clone_readonly(system,path.as_ptr(),dest,nonce);
+                libc::syscall(libc::SYS_close,dest);
+            }
+        }
         let vendor_target = directory_at(root, c"vendor".as_ptr(), nonce);
         attach(vendor, vendor_target, nonce);
         libc::syscall(libc::SYS_close, vendor_target);

@@ -148,6 +148,52 @@ mod tests {
     }
 
     #[test]
+    fn fourth_image_binds_all_three_parents_and_both_install_paths() {
+        let lib = candidate();
+        let ready = ReadinessDeclaration {
+            file: READINESS_FILE.into(),
+            bytes: 8 * 1024 * 1024,
+            sha256: "a".repeat(64),
+            targets: READINESS_TARGETS.map(str::to_owned),
+            source_system_sha256: SYSTEM_SHA256.into(),
+            source_vendor_sha256: lib.source_vendor_sha256.clone(),
+            source_system_ext_lib64_sha256: lib.sha256.clone(),
+            observer_sha256: "c".repeat(64),
+            init_rc_sha256: "d".repeat(64),
+        };
+        let admit = |d: &ReadinessDeclaration| {
+            accepts_base(
+                3,
+                "android_base_images_v3",
+                Some(&lib),
+                Some(d),
+                SYSTEM_SHA256,
+                &lib.source_vendor_sha256,
+            )
+        };
+        assert!(admit(&ready));
+        for i in 0..5 {
+            let mut other = ready.clone();
+            match i {
+                0 => other.source_system_sha256 = "0".repeat(64),
+                1 => other.source_vendor_sha256 = "0".repeat(64),
+                2 => other.source_system_ext_lib64_sha256 = "0".repeat(64),
+                3 => other.targets.swap(0, 1),
+                _ => other.init_rc_sha256 = other.observer_sha256.clone(),
+            };
+            assert!(!admit(&other));
+        }
+        assert!(!accepts_base(
+            2,
+            "android_base_images_v2",
+            Some(&lib),
+            Some(&ready),
+            SYSTEM_SHA256,
+            &lib.source_vendor_sha256
+        ));
+    }
+
+    #[test]
     fn library_selection_preserves_v1_and_rejects_version_confusion() {
         let d = candidate();
         assert!(accepts(

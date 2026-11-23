@@ -99,6 +99,7 @@
         let verification_files = [open_image("system.img")?, open_image("vendor.img")?];
         let cohort = VerifiedCohort {
             system_ext_lib64: None,
+            system_ext_readiness: None,
             manifest,
             system,
             vendor,

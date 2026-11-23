@@ -1,6 +1,8 @@
 //! Compose the release-selected extension below the held original system mount.
 //! All three filesystems remain detached until the existing base handoff.
 use super::*;
+#[path = "production_mounts_readiness.rs"]
+pub(super) mod readiness;
 use droidloom_contracts::system_ext::{ENGINE, HOST_MODULES, ORIGINAL_HAL, ORIGINAL_HAL_SHA256};
 use std::collections::{BTreeMap, BTreeSet};
 use std::ffi::OsString;
@@ -524,6 +526,16 @@ mod hardware {
     #[test]
     #[ignore = "requires original CP3A and selected raw vendor and library ext4 on three real idmapped loops"]
     fn actual_three_selected_loop_mounts_preserve_original_and_vendor_libraries() -> Result<()> {
+        verify_selected_loops(3)
+    }
+
+    #[test]
+    #[ignore = "requires four selected real ext4 loops and private detached mount authority"]
+    fn actual_four_selected_loop_mounts_compose_both_readiness_subtrees() -> Result<()> {
+        verify_selected_loops(4)
+    }
+
+    fn verify_selected_loops(count:usize) -> Result<()> {
         fn inherit(number: i32) -> Result<File> {
             let fd = unsafe { libc::fcntl(number, libc::F_DUPFD_CLOEXEC, 20) };
             if fd < 0 {
@@ -544,16 +556,18 @@ mod hardware {
         let extension = decl
             .system_ext_lib64
             .ok_or(MountError::Rejected("actual v2 extension required"))?;
+        require((count==3 && decl.system_ext_readiness.is_none()) || (count==4 && decl.system_ext_readiness.is_some()), "hardware fixture count must match actual release")?;
+        let optional=decl.system_ext_readiness.as_ref().map(|row|(row.bytes,row.sha256.clone()));
         for (index, (bytes, hash)) in [
             (decl.system.bytes, decl.system.sha256),
             (decl.vendor.bytes, decl.vendor.sha256),
             (extension.bytes, extension.sha256),
         ]
-        .into_iter()
+        .into_iter().chain(optional)
         .enumerate()
         {
             let raw = inherit(10 + index as i32)?;
-            let mount = inherit(13 + index as i32)?;
+            let mount = inherit(10 + count as i32 + index as i32)?;
             require(
                 raw.metadata()?.is_file()
                     && raw.metadata()?.len() == bytes
@@ -584,16 +598,16 @@ mod hardware {
             )?;
             mounts.push(mount);
         }
-        require(
-            mounts[0].metadata()?.dev() != mounts[1].metadata()?.dev()
-                && mounts[0].metadata()?.dev() != mounts[2].metadata()?.dev()
-                && mounts[1].metadata()?.dev() != mounts[2].metadata()?.dev(),
-            "three different kernel block instances",
-        )?;
-        verify_members(
-            &system_lib64(&mounts[0])?,
-            &vendor_libs(&mounts[1])?,
-            &mounts[2],
-        )
+        let mut devices=BTreeSet::new();
+        for mount in &mounts { require(devices.insert(mount.metadata()?.dev()), "all real loop devices must be distinct")?; }
+        verify_members(&system_lib64(&mounts[0])?, &vendor_libs(&mounts[1])?, &mounts[2])?;
+        if let Some(ready)=decl.system_ext_readiness {
+            let raw=unsafe{libc::syscall(libc::SYS_open_tree,mounts[0].as_raw_fd(),c"".as_ptr(),1u32|libc::O_CLOEXEC as u32|libc::AT_EMPTY_PATH as u32)};
+            if raw<0{return Err(io::Error::last_os_error().into());}
+            let detached=unsafe{File::from_raw_fd(raw as i32)};
+            require_detached(&detached)?;
+            readiness::compose(&detached,&mounts[3],&ready)?;
+        }
+        Ok(())
     }
 }
