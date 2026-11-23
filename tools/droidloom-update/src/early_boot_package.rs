@@ -27,6 +27,10 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
             include_bytes!("../../../runtime/droidloom-early-boot/board_resources.h").as_slice(),
         ),
         (
+            "board_binder.h",
+            include_bytes!("../../../runtime/droidloom-early-boot/board_binder.h").as_slice(),
+        ),
+        (
             "board_resources.c",
             include_bytes!("../../../runtime/droidloom-early-boot/board_resources.c").as_slice(),
         ),
