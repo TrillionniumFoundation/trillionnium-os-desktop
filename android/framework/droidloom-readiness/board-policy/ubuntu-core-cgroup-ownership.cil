@@ -45,7 +45,17 @@
 (roletype object_r p4_linux_system_slice_t)
 (roletype object_r p4_linux_unit_cgroup_t)
 (typeattributeset p4_linux_init_cgroup_inodes (p4_linux_system_slice_t p4_linux_unit_cgroup_t))
-(allow kernel p4_linux_system_slice_t (dir (getattr relabelto)))
+(allow kernel p4_linux_system_slice_t (dir (getattr)))
+; system.slice is created before policy activation. Its generation must stay
+; label-free in kernfs storage so that each new dentry receives its native
+; genfs label. An explicit system.slice xattr would be copied into children.
+(genfscon cgroup2 "/system.slice" (u object_r p4_linux_system_slice_t ((s0) (s0))))
+(genfscon cgroup2 "/system.slice/" (u object_r p4_linux_unit_cgroup_t ((s0) (s0))))
+; The trusted manager fixes cell-u1000, keeper and payload under the selected
+; systemd unit. Only the payload is the Android namespace root. The original
+; Android rule classifies children of apps; the directory itself uses cgroup_v2.
+(genfscon cgroup2 "/system.slice/droidloom-production.service/cell-u1000/payload" (u object_r cgroup_v2 ((s0) (s0))))
+(genfscon cgroup2 "/system.slice/droidloom-production.service/cell-u1000/payload/apps/" (u object_r cgroup_app ((s0) (s0))))
 (allow init_t p4_linux_system_slice_t (dir (getattr search read open write add_name remove_name)))
 (typetransition init_t p4_linux_system_slice_t dir p4_linux_unit_cgroup_t)
 (allow init_t p4_linux_unit_cgroup_t (dir (getattr search read open create write add_name remove_name rmdir)))

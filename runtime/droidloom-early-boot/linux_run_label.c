@@ -531,7 +531,7 @@ int droidloom_label_linux_init_scope(const struct droidloom_linux_init_scope *he
     const char *original = "u:object_r:cgroup_v2:s0";
     if (apply_label_from(&held->root, original, "u:object_r:p4_linux_cgroup_root_t:s0") < 0 ||
         apply_label_from(&held->scope, original, "u:object_r:p4_linux_cgroup_init_scope_t:s0") < 0 ||
-        apply_label_from(&held->system_slice, original, "u:object_r:p4_linux_system_slice_t:s0") < 0 ||
+        verify_label(&held->system_slice, "u:object_r:p4_linux_system_slice_t:s0") < 0 ||
         apply_label_from(&held->controllers, original, "u:object_r:p4_linux_cgroup_controller_list_t:s0") < 0 ||
         apply_label_from(&held->procs, original, "u:object_r:p4_linux_cgroup_init_tasks_t:s0") < 0)
         return -1;
