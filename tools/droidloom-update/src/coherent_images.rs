@@ -4,6 +4,9 @@
 //! images. It does not qualify Android execution, signing, CVE semantics or a
 //! different source release. In particular, a vendor-only build has no fallback
 //! to an older system image on this path.
+#[path = "coherent_kernel_first.rs"]
+pub(crate) mod kernel_first;
+
 #[path = "coherent_official_base.rs"]
 pub(crate) mod official_base;
 #[path = "coherent_readiness.rs"]

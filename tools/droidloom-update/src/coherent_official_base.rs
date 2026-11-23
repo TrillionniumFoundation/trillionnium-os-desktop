@@ -136,6 +136,7 @@ pub(super) fn publish(
     if pin(&manifest, MAX_JSON)?.sha256 != cohort {
         return fail("staged base declaration changed");
     }
+    let kernel_first = readiness.map(|_| super::kernel_first::install(stage, &cohort, system)).transpose()?;
     for tree in [&images, manifest.parent().unwrap()] {
         for dir in tree.ancestors().take_while(|p| p.starts_with(stage)) {
             File::open(dir)?.sync_all()?;
@@ -151,10 +152,10 @@ pub(super) fn publish(
     rename_new(stage, output)?;
     let _published_path = temporary.keep();
     File::open(parent)?.sync_all()?;
-    Ok(
-        json!({"layout":"droidloom-private-cohort-package-v1","cohort_sha256":cohort,
-        "manifest":relative_manifest,"images_directory":images_path,"base":value}),
-    )
+    let mut result = json!({"layout":"droidloom-private-cohort-package-v1","cohort_sha256":cohort,
+        "manifest":relative_manifest,"images_directory":images_path,"base":value});
+    if let Some(runtime) = kernel_first { result["kernel_first"] = runtime; }
+    Ok(result)
 }
 
 fn verify_normal_vendor(value: &Value, vendor: &FileRef) -> Result<BTreeMap<String, String>> {

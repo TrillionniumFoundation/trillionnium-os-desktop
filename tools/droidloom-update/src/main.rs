@@ -45,6 +45,11 @@ struct Args {
 }
 #[derive(Subcommand)]
 enum Action {
+    /// Bind stock second-stage init to an existing selected four-image candidate.
+    BindKernelFirstRuntime {
+        #[arg(long)] package: PathBuf,
+        #[arg(long)] base_sha256: String,
+    },
     /// Package the original GSI and the raw independent vendor from a completed normal build.
     PackageOfficialBase {
         #[arg(long)]
@@ -476,6 +481,11 @@ fn execute(args: Args) -> Result<()> {
             vendor_properties,
         }) => {
             return image_policy::prune(image, destination, vendor_properties);
+        }
+        Some(Action::BindKernelFirstRuntime { package, base_sha256 }) => {
+            let result = coherent_images::kernel_first::bind_existing(package, base_sha256)?;
+            println!("{}", serde_json::to_string_pretty(&result)?);
+            return Ok(());
         }
         Some(Action::PackageOfficialBase {
             system_image,
