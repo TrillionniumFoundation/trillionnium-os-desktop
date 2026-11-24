@@ -134,6 +134,14 @@ enum Command {
         #[arg(long, default_value = DEFAULT_CELL_SPEC)]
         spec: PathBuf,
     },
+    /// Inspect the installed package and verify its exact APK files.
+    Inspect {
+        /// Android package name.
+        package: String,
+        /// Android user identifier.
+        #[arg(long, default_value_t = 0)]
+        user: u32,
+    },
     /// List Android applications exported to the native launcher.
     Applications {
         /// Android user identifier.
@@ -350,6 +358,9 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                 resolution,
                 user,
             },
+            Command::Inspect { package, user } => {
+                ControlRequest::InspectApplication { package, user }
+            }
             Command::Applications { user } => ControlRequest::ListApplications { user },
             Command::Dpi { dpi, spec } => ControlRequest::SetDpi { spec, dpi },
             Command::WindowMode {
