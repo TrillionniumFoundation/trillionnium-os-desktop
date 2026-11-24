@@ -195,6 +195,30 @@ def verify_host_control(library, binary, export):
         check(reader, obj("p4_linux_public_launcher_t"), "file", ["create", "write", "append", "setattr", "unlink", "link", "rename", "relabelto", "relabelfrom", "execute"], False)
     check("u:system_r:p4_linux_user_session_t:s0", obj("p4_linux_public_launcher_t"), "file", ["create", "write", "append", "setattr", "unlink", "link", "rename", "relabelto", "relabelfrom", "execute"], False)
     check(kernel, obj("p4_linux_native_config_t"), "file", ["getattr", "open", "read"], False)
+    # Ordinary native home/state access does not admit Droidloom or Android.
+    for role in ["p4_linux_user_session_t", "p4_linux_compositor_t", "p4_linux_audio_t", "p4_linux_desktop_portal_t"]:
+        actor = "u:system_r:" + role + ":s0"
+        check(actor, obj("p4_linux_user_home_t"), "dir", ["getattr", "search", "open", "read", "create", "write", "add_name", "remove_name", "setattr", "rmdir"], True)
+        check(actor, obj("p4_linux_user_home_t"), "file", ["getattr", "open", "read", "write", "append", "create", "setattr", "lock", "map", "rename", "unlink"], True)
+    for role in ["p4_linux_user_manager_t", "p4_linux_user_executor_t", "p4_linux_user_dbus_t"]:
+        actor = "u:system_r:" + role + ":s0"
+        check(actor, obj("p4_linux_user_home_t"), "file", ["getattr", "open", "read", "map"], True)
+        check(actor, obj("p4_linux_user_home_t"), "file", ["create", "write", "append", "setattr", "unlink", "rename"], False)
+    for role in ["p4_linux_user_session_t", "p4_linux_user_manager_t", "p4_linux_user_executor_t", "p4_linux_user_dbus_t", "p4_linux_compositor_t", "p4_linux_audio_t", "p4_linux_desktop_portal_t"]:
+        actor = "u:system_r:" + role + ":s0"
+        for target in ["p4_linux_user_home_t", "p4_linux_user_run_t", "p4_linux_tmp_t"]:
+            check(actor, obj(target), "file", ["execute", "execute_no_trans", "entrypoint", "relabelto", "relabelfrom"], False)
+        for target in ["p4_linux_user_run_t", "p4_linux_tmp_t"]:
+            check(actor, obj(target), "dir", ["getattr", "search", "open", "read", "create", "write", "add_name", "remove_name", "setattr", "rmdir"], True)
+            check(actor, obj(target), "file", ["getattr", "open", "read", "write", "create", "setattr", "lock", "map", "rename", "unlink"], True)
+    for actor in [broker, client]:
+        for target in ["p4_linux_user_home_t", "p4_linux_tmp_t"]:
+            check(actor, obj(target), "dir", ["getattr", "search", "open", "read", "write", "add_name"], False)
+            check(actor, obj(target), "file", ["getattr", "open", "read", "write", "map", "execute"], False)
+    check(setup, obj("p4_linux_user_run_t"), "dir", ["getattr", "search", "open", "read", "create", "write", "add_name", "remove_name", "setattr", "rmdir", "mounton"], True)
+    check(setup, obj("p4_linux_user_run_t"), "file", ["open", "read", "write", "append", "create", "setattr"], False)
+    check(setup, setup, "capability", ["sys_admin"], False)
+    check(setup, obj("tmpfs"), "filesystem", ["mount", "remount", "unmount"], False)
 
     for subject in [helper, client]:
         check(subject, obj("p4_linux_product_store_t"), "file", ["open", "read", "write", "append"], False)
@@ -301,7 +325,7 @@ def main():
         "instance-factory-cgroup.cil", "ubuntu-systemd-unit-status.cil",
         "linux-application-roles.cil", "linux-install-catalog.cil",
         "ubuntu-dbus.cil", "ubuntu-native-selinux-query.cil",
-        "ubuntu-native-pam.cil",
+        "ubuntu-native-pam.cil", "ubuntu-native-session-storage.cil",
         "linux-package-maintenance.cil", "linux-public-control.cil",
     )
     components = [here / name for name in component_names]
