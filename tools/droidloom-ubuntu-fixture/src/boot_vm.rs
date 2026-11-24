@@ -233,10 +233,13 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
         "private QMP pathname exceeds Unix socket limit",
     )?;
     let launch = crate::boot_qemu::Launch::prepare(&run, &disk, &kernel, &initrd, &monitor)?;
-    let unit = if prepared["calibration_requested"] == true {
-        "droidloom-calibration-qualification.target"
+    // Original PID 1 emits successful process-exit records only at DEBUG.
+    // Calibration collection requires those trusted fields; ordinary Android
+    // acceptance uses its native live lifecycle and keeps the normal log level.
+    let (unit, manager_log_level) = if prepared["calibration_requested"] == true {
+        ("droidloom-calibration-qualification.target", "debug")
     } else {
-        "graphical.target"
+        ("graphical.target", "info")
     };
     let uuid = prepared["root_filesystem_uuid"]
         .as_str()
@@ -246,7 +249,7 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
         "invalid root UUID",
     )?;
     let cmdline = format!(
-        "console=ttyS0,115200 root=UUID={uuid} rootfstype=ext4 rw rootwait loglevel=7 enforcing=1 audit_backlog_limit=32768 lsm=lockdown,capability,landlock,yama,selinux,apparmor,bpf,ima,evm audit=1 init=/usr/lib/droidloom/production/current/droidloom-board-init systemd.unit={unit} systemd.log_target=journal-or-kmsg systemd.show_status=1 systemd.log_level=info"
+        "console=ttyS0,115200 root=UUID={uuid} rootfstype=ext4 rw rootwait loglevel=7 enforcing=1 audit_backlog_limit=32768 lsm=lockdown,capability,landlock,yama,selinux,apparmor,bpf,ima,evm audit=1 init=/usr/lib/droidloom/production/current/droidloom-board-init systemd.unit={unit} systemd.log_target=journal-or-kmsg systemd.show_status=1 systemd.log_level={manager_log_level}"
     );
     let mut args = launch.fixed_args();
     args.extend(vec![
