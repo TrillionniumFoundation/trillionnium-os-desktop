@@ -54,3 +54,17 @@
 /etc/selinux/droidloom/seusers -- u:object_r:p4_linux_board_selinux_config_t:s0
 /etc/selinux/droidloom/contexts/default_contexts -- u:object_r:p4_linux_board_selinux_config_t:s0
 /usr/lib/systemd/system/(sssd\.service|sssd-nss\.(service|socket)) -- u:object_r:p4_linux_identity_unit_file_t:s0
+
+# PID 1's stock mkdir_label() must preserve the typed runtime-directory
+# inheritance instead of selecting the generic read-only native root directory.
+# More specific native service/runtime labels remain authoritative below here.
+/run -d u:object_r:p4_linux_run_t:s0
+/run/systemd(/.*)? -d u:object_r:p4_linux_systemd_run_t:s0
+/run/systemd/journal -d u:object_r:p4_linux_journal_runtime_t:s0
+/run/log -d u:object_r:p4_linux_volatile_log_root_t:s0
+/run/log/journal -d u:object_r:p4_linux_volatile_journal_store_t:s0
+/run/log/journal/[0-9a-f]{32} -d u:object_r:p4_linux_volatile_journal_machine_t:s0
+/run/log/journal/[0-9a-f]{32}/system\.journal -- u:object_r:p4_linux_volatile_journal_database_t:s0
+
+# sd-event watches this symlink inode, with O_PATH|O_NOFOLLOW, not all public links.
+/etc/localtime -l u:object_r:p4_linux_timezone_link_t:s0

@@ -22,3 +22,16 @@
 (allow p4_linux_systemd_memfd_t tmpfs (filesystem (associate)))
 (allow init_t p4_linux_systemd_memfd_t (file (getattr open read write)))
 (neverallow init_t p4_linux_systemd_memfd_t (file (execute execute_no_trans entrypoint mounton relabelfrom relabelto)))
+
+; The stock system manager observes exactly /etc/localtime with IN_DONT_FOLLOW.
+; Preserve the existing public-symlink readers, but make watch authority local
+; to this inode type. No generic usrmerge link gains watch or mutation access.
+(type p4_linux_timezone_link_t)
+(roletype object_r p4_linux_timezone_link_t)
+(typeattributeset p4_linux_data (p4_linux_timezone_link_t))
+(allow kernel p4_linux_timezone_link_t (lnk_file (getattr read)))
+(allow p4_linux_procs p4_linux_timezone_link_t (lnk_file (getattr read)))
+(allow init_t p4_linux_timezone_link_t (lnk_file (watch)))
+(neverallow (and (all) (not (init_t))) p4_linux_timezone_link_t (lnk_file (watch)))
+(neverallow (all) p4_linux_timezone_link_t (lnk_file (write create unlink rename setattr relabelto relabelfrom)))
+(neverallow p4_android_userspace p4_linux_timezone_link_t (lnk_file (read)))

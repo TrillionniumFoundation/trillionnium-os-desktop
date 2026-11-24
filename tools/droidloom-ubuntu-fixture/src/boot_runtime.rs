@@ -927,6 +927,7 @@ pub fn make_root_image(
         "/usr/lib/x86_64-linux-gnu/libselinux.so.1",
         "/usr/lib/x86_64-linux-gnu/libapparmor.so.1",
         "/usr/lib/x86_64-linux-gnu/libapparmor.so.1.30.7",
+        "/etc/localtime",
         "/etc/passwd",
         "/etc/shadow",
         "/etc/selinux/droidloom/policy/policy.30",

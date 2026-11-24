@@ -697,11 +697,33 @@ def verify_host_control(library, binary, export, original_contract):
     ])
     transitions.append("(typetransition p4_linux_udev_t droidloom_container_entry_exec_t process p4_linux_hardware_label_t)")
     hardware = verify_native_hardware(policy, lines, check, obj)
+    # The exact timezone symlink retains the prior read-only public-link
+    # contract, while only PID 1 may place its stock IN_DONT_FOLLOW watch.
+    timezone_decisions = 0
+    for role, actor in role_types:
+        context = f"u:{role}:{actor}:s0"
+        for permission in ["getattr", "read"]:
+            number, bits = policy.permissions("lnk_file", [permission])
+            old = Decision()
+            bit = bits[permission]
+            if policy.lib.sepol_compute_av(sid(context), sid(obj("p4_linux_usrmerge_link_t")),
+                                           number, bit, ctypes.byref(old)) != 0:
+                raise ValueError("Cannot read original public-symlink access")
+            check(context, obj("p4_linux_timezone_link_t"), "lnk_file", [permission], bool(old.allowed & bit))
+        check(context, obj("p4_linux_timezone_link_t"), "lnk_file", ["watch"], actor == "init_t")
+        check(context, obj("p4_linux_timezone_link_t"), "lnk_file",
+              ["write", "create", "unlink", "rename", "setattr", "relabelto", "relabelfrom"], False)
+        timezone_decisions += 10
+    check("u:system_r:init_t:s0", obj("p4_linux_usrmerge_link_t"), "lnk_file", ["watch"], False)
+    check("u:system_r:init_t:s0", obj("p4_linux_rootdir_t"), "dir", ["create", "write", "add_name"], False)
+    check("u:system_r:init_t:s0", obj("p4_linux_systemd_run_t"), "dir",
+          ["create", "getattr", "search", "write", "add_name"], True)
     missing = [line for line in transitions if line not in lines]
     if missing:
         raise ValueError("Linked binary lacks exact automatic transitions: " + repr(missing))
     return {
         "native_hardware": hardware,
+        "timezone_link_decisions": timezone_decisions + 9,
         "binary_access_checks": len(checks),
         "public_module_role_types": len(role_types),
         "public_module_original_android_subjects": len(original_contract["subjects"]),
