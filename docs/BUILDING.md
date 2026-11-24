@@ -1415,3 +1415,27 @@ Source checks, policy compilation and host protocol tests are prerequisites.
 The final normal Soong build, complete native Linux policy, actual user-domain
 transition, mounted inputs, live bridge operation and retirement must still be
 qualified together before the desktop unit is enabled on the selected cohort.
+
+### Normal sparse image readers
+
+The normal image producer binds host/linux-x86/bin/simg2img from its own
+completed Soong output. Sparse decoding, graphics HAL readback and the private
+system extension consume that same bounded executable FileRef. The producer
+records its original file identity and SHA-256 and checks both before and after
+execution. A missing normal converter is an error; a global PATH entry cannot
+supply a different build's converter.
+
+Completed partition staging reuses each partition's recorded converter.
+Retained official-vendor packaging accepts the normal record's explicit
+converter or the already recorded extension converter; when both are present,
+their complete FileRefs must agree. A sparse image without either binding is
+rejected. Raw images require no conversion.
+
+The ordinary unit test checks the missing-binding refusal. Two separate
+integration tests require an actual completed normal Soong output; invoke the
+coherent_images::sparse_reader_tests filter with --ignored and
+DROIDLOOM_TEST_NORMAL_OUT set to that output. They execute the real converter
+against raw/fill/skip sparse chunks, reject replacement and alias identities,
+and read back the actual vendor graphics HAL bytes and labels into an
+independent scratch directory. A successful filtered ordinary test does not
+count these explicitly selected integration cases as executed.

@@ -33,6 +33,10 @@ use std::{
 #[path = "coherent_resources.rs"]
 mod resources;
 
+#[cfg(test)]
+#[path = "coherent_sparse_reader_tests.rs"]
+mod sparse_reader_tests;
+
 #[path = "coherent_product.rs"]
 pub(crate) mod configuration;
 
@@ -982,6 +986,22 @@ fn reader_tool(name: &str) -> Result<FileRef> {
     fail(format!("normal image reader unavailable: {name}"))
 }
 
+/// Bind the converter installed by this normal Soong output. No ambient PATH
+/// lookup or fallback to a converter from a different build is permitted.
+pub(crate) fn normal_sparse_converter(out: &Path) -> Result<FileRef> {
+    ordinary_absolute(out, true)?;
+    let path = out.join("host/linux-x86/bin/simg2img");
+    let tool = pin(&path, 256 * 1024 * 1024)?;
+    let header = bound_header(&tool, 20)?;
+    if tool.identity[2] & 0o111 == 0
+        || !header.starts_with(b"\x7fELF\x02\x01")
+        || header[18..20] != 62u16.to_le_bytes()
+    {
+        return fail("normal sparse converter is not the installed executable x86_64 ELF");
+    }
+    Ok(tool)
+}
+
 fn checked_tool(tool: &FileRef, command: &mut Command) -> Result<()> {
     recheck(tool, 256 * 1024 * 1024)?;
     let result = resources::run_reader(command);
@@ -1047,14 +1067,20 @@ pub(crate) fn extract_normal_filesystem(image: &Path, destination: &Path) -> Res
 /// Bind the two installed graphics HAL ELFs to the bytes and labels in vendor.img.
 pub(crate) fn verify_vendor_graphics_hal_entries(
     product_out: &Path,
+    sparse_converter: &FileRef,
+    scratch: &Path,
 ) -> Result<BTreeMap<String, String>> {
     let image = product_out.join("vendor.img");
-    let _scope = resources::Scope::writing(product_out, resources::GIB)?;
+    let _scope = resources::Scope::writing(scratch, resources::GIB)?;
     let temp = tempfile::Builder::new()
         .prefix("graphics-hal-readback-")
-        .tempdir_in(product_out)?;
+        .tempdir_in(scratch)?;
     let original = pin(&image, MAX_IMAGE)?;
-    let (decoded, _) = decode_image(&original, &temp.path().join("vendor.raw.img"))?;
+    let (decoded, _) = decode_image(
+        &original,
+        &temp.path().join("vendor.raw.img"),
+        Some(sparse_converter),
+    )?;
     let debugfs = reader_tool("debugfs")?;
     let mut observed = BTreeMap::new();
     for (index, (name, label)) in [
@@ -1152,15 +1178,23 @@ struct Partition {
     reader: FileRef,
 }
 
-fn complete_partition(product: &Path, name: &str, scratch: &Path) -> Result<Partition> {
+fn complete_partition(
+    product: &Path,
+    name: &str,
+    scratch: &Path,
+    sparse_converter: &FileRef,
+) -> Result<Partition> {
     resources::checkpoint()?;
     let temporary = tempfile::Builder::new()
         .prefix("partition-readback-")
         .tempdir_in(scratch)?;
     let scratch = temporary.path();
     let image = pin(&product.join(format!("{name}.img")), MAX_IMAGE)?;
-    let (decoded, sparse_converter) =
-        decode_image(&image, &scratch.join(format!("{name}.raw.img")))?;
+    let (decoded, sparse_converter) = decode_image(
+        &image,
+        &scratch.join(format!("{name}.raw.img")),
+        Some(sparse_converter),
+    )?;
     let (properties, values) = build_properties(&property_path(product, name), name)?;
     let build_identity = property_identity(&values, name)?;
     let installed_members = inventory(&product.join(name), true)?;
@@ -1251,7 +1285,11 @@ fn expected_partition_members(
     Ok(result)
 }
 
-fn decode_image(image: &FileRef, destination: &Path) -> Result<(FileRef, Option<FileRef>)> {
+fn decode_image(
+    image: &FileRef,
+    destination: &Path,
+    selected_converter: Option<&FileRef>,
+) -> Result<(FileRef, Option<FileRef>)> {
     recheck(image, MAX_IMAGE)?;
     let magic = bound_header(image, 4)?;
     if magic != [0x3a, 0xff, 0x26, 0xed] {
@@ -1262,7 +1300,11 @@ fn decode_image(image: &FileRef, destination: &Path) -> Result<(FileRef, Option<
     if destination.symlink_metadata().is_ok() {
         return fail("sparse conversion destination already exists");
     }
-    let converter = reader_tool("simg2img")?;
+    let converter =
+        selected_converter.ok_or("sparse image lacks its original normal converter binding")?;
+    if converter.identity[2] & 0o111 == 0 {
+        return fail("recorded normal sparse converter is not executable");
+    }
     checked_tool(
         &converter,
         Command::new(&converter.path)
@@ -1274,7 +1316,7 @@ fn decode_image(image: &FileRef, destination: &Path) -> Result<(FileRef, Option<
         return fail("empty decoded normal partition");
     }
     recheck(image, MAX_IMAGE)?;
-    Ok((decoded, Some(converter)))
+    Ok((decoded, Some(converter.clone())))
 }
 
 fn unzip_member(archive: &FileRef, member: &str, destination: &Path) -> Result<FileRef> {
@@ -1678,9 +1720,15 @@ pub(crate) fn complete_normal(success: SuccessfulBuild) -> Result<PathBuf> {
     let scratch = tempfile::Builder::new()
         .prefix("coherent-image-readback-")
         .tempdir_in(&inputs.out)?;
+    let sparse_converter = normal_sparse_converter(&inputs.out)?;
     let mut partitions = Vec::new();
     for partition in PARTITIONS {
-        partitions.push(complete_partition(product, partition, scratch.path())?);
+        partitions.push(complete_partition(
+            product,
+            partition,
+            scratch.path(),
+            &sparse_converter,
+        )?);
     }
     let common = &partitions[0].build_identity;
     if common.id != inputs.selected_release.source_build_id
@@ -2406,6 +2454,7 @@ pub(crate) fn stage_images(
         let (raw, converter) = decode_image(
             &partition.image,
             &decoded.path().join(format!("{}.raw.img", partition.name)),
+            partition.sparse_converter.as_ref(),
         )?;
         if raw.bytes != partition.delivered_bytes
             || raw.sha256 != partition.delivered_sha256
