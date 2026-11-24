@@ -20,7 +20,11 @@ use std::time::{Duration, Instant};
 
 type Result<T> = std::result::Result<T, NamespaceError>;
 fn external(e: impl std::fmt::Display) -> NamespaceError {
-    NamespaceError::RuntimeResource(e.to_string())
+    if crate::production_application::metadata_retirement_failed() {
+        NamespaceError::RetirementUnproven
+    } else {
+        NamespaceError::RuntimeResource(e.to_string())
+    }
 }
 fn require(value: bool, why: &'static str) -> Result<()> {
     if value {
@@ -111,25 +115,30 @@ fn ns_owner(file: &File, userns: &File) -> Result<()> {
         "early application namespace has another owner",
     )
 }
-fn metadata(
-    _directory: &File,
-    target: &File,
-    userns: &File,
-    role: MetadataRole,
-) -> Result<MetadataObservation> {
-    crate::production_application::observe_metadata(
-        role,
-        target,
-        userns,
-        Instant::now() + Duration::from_secs(5),
+fn retirement_checked<T>(result: Result<T>) -> Result<T> {
+    if crate::production_application::metadata_retirement_failed() {
+        Err(NamespaceError::RetirementUnproven)
+    } else {
+        result
+    }
+}
+fn metadata(target: &File, userns: &File, role: MetadataRole) -> Result<MetadataObservation> {
+    retirement_checked(Ok(()))?;
+    retirement_checked(
+        crate::production_application::observe_metadata(
+            role,
+            target,
+            userns,
+            Instant::now() + Duration::from_secs(5),
+        )
+        .map_err(|error| match error {
+            crate::production_application::ApplicationError::RetirementUnproven => {
+                NamespaceError::RetirementUnproven
+            }
+            crate::production_application::ApplicationError::Io(error) => NamespaceError::Io(error),
+            error => external(error),
+        }),
     )
-    .map_err(|error| match error {
-        crate::production_application::ApplicationError::RetirementUnproven => {
-            NamespaceError::RetirementUnproven
-        }
-        crate::production_application::ApplicationError::Io(error) => NamespaceError::Io(error),
-        error => external(error),
-    })
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -162,8 +171,7 @@ fn parse_process(text: &str, pid: u32) -> Result<Process> {
 fn process(parent: &File, pid: u32) -> Result<Process> {
     parse_process(&proc_text(parent, c"stat")?, pid)
 }
-fn credentials(directory: &File, uid: u32, gid: u32) -> Result<()> {
-    let text = proc_text(directory, c"status")?;
+fn credentials_text(text: &str, uid: u32, gid: u32) -> Result<()> {
     for (prefix, expected) in [("Uid:", uid), ("Gid:", gid)] {
         let rows: Vec<_> = text
             .lines()
@@ -185,6 +193,84 @@ fn credentials(directory: &File, uid: u32, gid: u32) -> Result<()> {
     }
     Ok(())
 }
+#[cfg(test)]
+fn credentials(directory: &File, uid: u32, gid: u32) -> Result<()> {
+    credentials_text(&proc_text(directory, c"status")?, uid, gid)
+}
+fn status_process(text: &str, process: Process) -> Result<()> {
+    for (field, expected) in [
+        ("Pid:", process.pid),
+        ("Tgid:", process.pid),
+        ("PPid:", process.parent),
+    ] {
+        let rows: Vec<_> = text
+            .lines()
+            .filter_map(|line| line.strip_prefix(field))
+            .collect();
+        require(
+            rows.len() == 1,
+            "process identity field missing or duplicated",
+        )?;
+        let values = rows[0].split_ascii_whitespace().collect::<Vec<_>>();
+        require(
+            values.len() == 1 && values[0].parse::<u32>().ok() == Some(expected),
+            "process status and original PIDFD identity differ",
+        )?;
+    }
+    Ok(())
+}
+fn exact_range(text: &str, start: u32, count: u32) -> bool {
+    let mut lines = text.lines();
+    let Some(row) = lines.next() else {
+        return false;
+    };
+    let mut fields = row.split_ascii_whitespace();
+    let mut number = || fields.next().and_then(|value| value.parse::<u32>().ok());
+    number() == Some(0)
+        && number() == Some(start)
+        && number() == Some(count)
+        && fields.next().is_none()
+        && lines.next().is_none()
+}
+fn role_ids(base: &EarlyBaseAdmission<'_>, role: MetadataRole) -> Result<(u32, u32, u32)> {
+    let guest = match role {
+        MetadataRole::Init | MetadataRole::Zygote => 0,
+        MetadataRole::Framework => 1000,
+        _ => {
+            return Err(NamespaceError::Rejected(
+                "not an early framework metadata role",
+            ));
+        }
+    };
+    let (uids, gids) = base.identity_lease().broker_ranges();
+    require(
+        guest < uids.count && guest < gids.count,
+        "framework role is outside the original maps",
+    )?;
+    let uid = uids
+        .start
+        .checked_add(guest)
+        .ok_or(NamespaceError::Rejected("framework UID overflow"))?;
+    let gid = gids
+        .start
+        .checked_add(guest)
+        .ok_or(NamespaceError::Rejected("framework GID overflow"))?;
+    Ok((guest, uid, gid))
+}
+fn native_process(target: &File, expected: Process, uid: u32, gid: u32) -> Result<()> {
+    live(target.as_fd())?;
+    let actual = info(target.as_fd(), true)?;
+    require(
+        actual.pid == expected.pid
+            && actual.tgid == expected.pid
+            && actual.ppid == expected.parent
+            && [actual.ruid, actual.euid, actual.suid, actual.fsuid] == [uid; 4]
+            && [actual.rgid, actual.egid, actual.sgid, actual.fsgid] == [gid; 4],
+        "held framework PIDFD identity or credentials changed",
+    )?;
+    live(target.as_fd())?;
+    Ok(())
+}
 fn valid_chain(init: Process, zygote: Process, framework: Process) -> bool {
     init.pid != zygote.pid
         && zygote.pid != framework.pid
@@ -194,8 +280,7 @@ fn valid_chain(init: Process, zygote: Process, framework: Process) -> bool {
         && init.start < zygote.start
         && zygote.start < framework.start
 }
-fn payload_member(directory: &File) -> Result<()> {
-    let group = proc_text(directory, c"cgroup")?;
+fn payload_member(group: &str) -> Result<()> {
     let prefix = "0::/system.slice/droidloom-production.service/cell-u1000/payload/";
     require(
         group.starts_with(prefix)
@@ -207,6 +292,86 @@ fn payload_member(directory: &File) -> Result<()> {
                 .any(|part| part.is_empty() || part == "." || part == ".."),
         "framework process left the original Android payload",
     )
+}
+fn verify_sample(
+    base: &EarlyBaseAdmission<'_>,
+    root: &File,
+    observed: &MetadataObservation,
+    target: &File,
+    role: MetadataRole,
+    expected_pid: u32,
+) -> Result<Process> {
+    retirement_checked(Ok(()))?;
+    let process = parse_process(&observed.stat, expected_pid)?;
+    let (guest, uid, gid) = role_ids(base, role)?;
+    native_process(target, process, uid, gid)?;
+    credentials_text(&observed.host.status, uid, gid)?;
+    credentials_text(&observed.status, guest, guest)?;
+    status_process(&observed.host.status, process)?;
+    status_process(&observed.status, process)?;
+    let (uids, gids) = base.identity_lease().broker_ranges();
+    require(
+        exact_range(&observed.host.uid_map, uids.start, uids.count)
+            && exact_range(&observed.host.gid_map, gids.start, gids.count)
+            && observed.host.setgroups.trim() == "allow"
+            && observed.host.proc_device != 0
+            && observed.host.proc_inode != 0,
+        "framework metadata maps or original proc identity differ",
+    )?;
+    let (context, command) = match role {
+        MetadataRole::Init => (b"u:r:init:s0".as_slice(), observed.host.command == "init\n"),
+        MetadataRole::Zygote => (
+            b"u:r:zygote:s0".as_slice(),
+            matches!(observed.host.command.as_str(), "zygote\n" | "zygote64\n"),
+        ),
+        MetadataRole::Framework => (
+            b"u:r:system_server:s0".as_slice(),
+            observed.host.command == "system_server\n",
+        ),
+        _ => {
+            return Err(NamespaceError::Rejected(
+                "not an early framework metadata role",
+            ));
+        }
+    };
+    require(
+        (observed.selinux == context || observed.selinux.strip_suffix(b"\0") == Some(context))
+            && command
+            && !observed.apparmor.is_empty(),
+        "framework actual command or MAC role differs",
+    )?;
+    payload_member(&observed.host.cgroup)?;
+    ns_type(&observed.namespaces[0], libc::CLONE_NEWUSER)?;
+    require(
+        identity(&observed.namespaces[0])? == identity(base.user_namespace())?
+            && identity(&observed.namespaces[1])? == identity(base.board().pid_namespace())?
+            && identity(&observed.root)? == identity(root)?,
+        "framework left the original Android USER/PID namespaces or root",
+    )?;
+    for ((_, kind), index) in NS_NAMES.into_iter().zip([2, 1, 3, 4, 5, 6]) {
+        ns_type(&observed.namespaces[index], kind)?;
+        ns_owner(&observed.namespaces[index], base.user_namespace())?;
+    }
+    native_process(target, process, uid, gid)?;
+    retirement_checked(Ok(process))
+}
+fn same_sample(held: &MetadataObservation, current: &MetadataObservation) -> Result<()> {
+    require(
+        held.host.proc_identity() == current.host.proc_identity()
+            && identity(&held.executable)? == identity(&current.executable)?
+            && identity(&held.root)? == identity(&current.root)?
+            && held.selinux == current.selinux
+            && held.apparmor == current.apparmor
+            && held.host.command == current.host.command,
+        "original framework inode, executable, root or MAC identity changed",
+    )?;
+    for (held, current) in held.namespaces.iter().zip(&current.namespaces) {
+        require(
+            identity(held)? == identity(current)?,
+            "original framework namespace changed",
+        )?;
+    }
+    Ok(())
 }
 
 /// This owner can only borrow the existing reservation, budget, exact root and
@@ -220,17 +385,17 @@ pub(crate) struct EarlyApplicationAuthority<'a> {
     proc_root: File,
     namespaces: Vec<File>,
     init: Process,
+    init_node: (u64, u64),
     init_program: File,
+    framework_program: File,
     device: File,
     progress: &'a dyn Fn() -> io::Result<()>,
 }
 pub(crate) struct EarlyFrameworkObservation {
-    directory: File,
-    node: (u64, u64),
+    framework_metadata: MetadataObservation,
     framework: Process,
     framework_pidfd: File,
-    zygote_directory: File,
-    zygote_node: (u64, u64),
+    zygote_metadata: MetadataObservation,
     zygote: Process,
     zygote_pidfd: File,
     init: Process,
@@ -246,14 +411,14 @@ impl<'a> EarlyApplicationAuthority<'a> {
         query: &'a EarlyQueryResources,
         progress: &'a dyn Fn() -> io::Result<()>,
     ) -> Result<Self> {
-        base.revalidate()?;
+        retirement_checked(Ok(()))?;
+        retirement_checked(base.revalidate().map_err(NamespaceError::Io))?;
         group
             .revalidate_early_member(base, owner)
             .map_err(external)?;
         let proc_root = File::open("/proc")?;
         fs_kind(&proc_root, libc::PROC_SUPER_MAGIC)?;
         let actual = metadata(
-            base.proc_directory(),
             base.board().pidfd(),
             base.user_namespace(),
             MetadataRole::Init,
@@ -273,9 +438,18 @@ impl<'a> EarlyApplicationAuthority<'a> {
         let system = open(root, c"system", true)?;
         let bin = open(&system, c"bin", true)?;
         let init_program = open(&bin, c"init", false)?;
+        let framework_program = open(&bin, c"app_process64", false)?;
         let device = open(root, c"dev", true)?;
         fs_kind(&device, libc::TMPFS_MAGIC)?;
-        let init = process(base.proc_directory(), base.board().host_pid() as u32)?;
+        let init = verify_sample(
+            base,
+            root,
+            &actual,
+            base.board().pidfd(),
+            MetadataRole::Init,
+            base.board().host_pid() as u32,
+        )?;
+        let init_node = actual.host.proc_identity();
         let this = Self {
             base,
             group,
@@ -285,7 +459,9 @@ impl<'a> EarlyApplicationAuthority<'a> {
             proc_root,
             namespaces,
             init,
+            init_node,
             init_program,
+            framework_program,
             device,
             progress,
         };
@@ -296,43 +472,54 @@ impl<'a> EarlyApplicationAuthority<'a> {
         Ok(this)
     }
     pub(crate) fn revalidate(&self) -> Result<()> {
-        self.base.revalidate()?;
-        self.group
-            .revalidate_early_member(self.base, self.owner)
-            .map_err(external)?;
-        self.query.revalidate(self.base).map_err(external)?;
-        require(
-            process(self.base.proc_directory(), self.init.pid)? == self.init,
-            "early application original init birth changed",
-        )?;
-        let actual = metadata(
-            self.base.proc_directory(),
-            self.base.board().pidfd(),
-            self.base.user_namespace(),
-            MetadataRole::Init,
-        )?;
-        for (((_, kind), held), index) in NS_NAMES
-            .into_iter()
-            .zip(&self.namespaces)
-            .zip([2, 1, 3, 4, 5, 6])
-        {
-            ns_type(held, kind)?;
-            require(
-                identity(&actual.namespaces[index])? == identity(held)?,
-                "original application namespace changed",
+        retirement_checked(Ok(()))?;
+        let result = (|| {
+            self.base.revalidate()?;
+            self.group
+                .revalidate_early_member(self.base, self.owner)
+                .map_err(external)?;
+            self.query.revalidate(self.base).map_err(external)?;
+            let actual = metadata(
+                self.base.board().pidfd(),
+                self.base.user_namespace(),
+                MetadataRole::Init,
             )?;
-        }
-        require(
-            identity(&actual.executable)? == identity(&self.init_program)?
-                && identity(&actual.root)? == identity(self.root)?,
-            "early application requires the actual original init executable and root",
-        )?;
-        require(
-            identity(&self.device)? == identity(&open(self.root, c"dev", true)?)?,
-            "early application private device mount changed",
-        )?;
-        self.base.board().revalidate()?;
-        Ok(())
+            require(
+                verify_sample(
+                    self.base,
+                    self.root,
+                    &actual,
+                    self.base.board().pidfd(),
+                    MetadataRole::Init,
+                    self.init.pid,
+                )? == self.init
+                    && actual.host.proc_identity() == self.init_node,
+                "early application original init birth or proc inode changed",
+            )?;
+            for (((_, kind), held), index) in NS_NAMES
+                .into_iter()
+                .zip(&self.namespaces)
+                .zip([2, 1, 3, 4, 5, 6])
+            {
+                ns_type(held, kind)?;
+                require(
+                    identity(&actual.namespaces[index])? == identity(held)?,
+                    "original application namespace changed",
+                )?;
+            }
+            require(
+                identity(&actual.executable)? == identity(&self.init_program)?
+                    && identity(&actual.root)? == identity(self.root)?,
+                "early application requires the actual original init executable and root",
+            )?;
+            require(
+                identity(&self.device)? == identity(&open(self.root, c"dev", true)?)?,
+                "early application private device mount changed",
+            )?;
+            self.base.board().revalidate()?;
+            Ok(())
+        })();
+        retirement_checked(result)
     }
     pub(crate) fn host_pid(&self) -> u32 {
         self.init.pid
@@ -361,13 +548,6 @@ impl<'a> EarlyApplicationAuthority<'a> {
         )?;
         self.executed()
     }
-    fn same_guest(&self, directory: &File, pidfd: &File, role: MetadataRole) -> Result<bool> {
-        let actual = metadata(directory, pidfd, self.base.user_namespace(), role)?;
-        Ok(
-            identity(&actual.namespaces[0])? == identity(self.base.user_namespace())?
-                && identity(&actual.namespaces[1])? == identity(self.base.board().pid_namespace())?,
-        )
-    }
     fn process_dir(&self, pid: u32) -> Result<File> {
         let name = CString::new(pid.to_string()).map_err(external)?;
         let directory = open(&self.proc_root, &name, true)?;
@@ -375,65 +555,46 @@ impl<'a> EarlyApplicationAuthority<'a> {
         Ok(directory)
     }
     fn verify_framework_processes(&self, held: &EarlyFrameworkObservation) -> Result<()> {
+        retirement_checked(Ok(()))?;
         live(held.framework_pidfd.as_fd())?;
         live(held.zygote_pidfd.as_fd())?;
         self.ready()?;
-        for (descriptor, expected) in [
-            (&held.framework_pidfd, held.framework),
-            (&held.zygote_pidfd, held.zygote),
-        ] {
-            let actual = info(descriptor.as_fd(), false)?;
-            require(
-                actual.pid == expected.pid
-                    && actual.tgid == expected.pid
-                    && actual.ppid == expected.parent,
-                "held framework pidfd no longer identifies the original observed task",
-            )?;
-        }
-        let (uid, gid) = self.mapped_root()?;
+        let framework = metadata(
+            &held.framework_pidfd,
+            self.base.user_namespace(),
+            MetadataRole::Framework,
+        )?;
+        let zygote = metadata(
+            &held.zygote_pidfd,
+            self.base.user_namespace(),
+            MetadataRole::Zygote,
+        )?;
         require(
-            held.init == self.init
-                && held.init_pidfd == identity(self.base.board().pidfd())?
-                && valid_chain(self.init, held.zygote, held.framework)
-                && identity(&held.directory)? == held.node
-                && identity(&held.zygote_directory)? == held.zygote_node
-                && process(&held.directory, held.framework.pid)? == held.framework
-                && process(&held.zygote_directory, held.zygote.pid)? == held.zygote
-                && proc_bytes(&held.directory, c"comm")? == b"system_server\n"
-                && matches!(
-                    proc_bytes(&held.zygote_directory, c"comm")?.as_slice(),
-                    b"zygote\n" | b"zygote64\n"
-                )
-                && self.same_guest(
-                    &held.directory,
-                    &held.framework_pidfd,
-                    MetadataRole::Framework,
-                )?
-                && self.same_guest(
-                    &held.zygote_directory,
+            verify_sample(
+                self.base,
+                self.root,
+                &framework,
+                &held.framework_pidfd,
+                MetadataRole::Framework,
+                held.framework.pid,
+            )? == held.framework
+                && verify_sample(
+                    self.base,
+                    self.root,
+                    &zygote,
                     &held.zygote_pidfd,
                     MetadataRole::Zygote,
-                )?,
+                    held.zygote.pid,
+                )? == held.zygote
+                && held.init == self.init
+                && held.init_pidfd == identity(self.base.board().pidfd())?
+                && valid_chain(self.init, held.zygote, held.framework)
+                && identity(&framework.executable)? == identity(&self.framework_program)?
+                && identity(&zygote.executable)? == identity(&self.framework_program)?,
             "original early init/zygote/system_server lineage changed",
         )?;
-        credentials(
-            &held.directory,
-            uid.checked_add(1000)
-                .ok_or(NamespaceError::Rejected("framework UID overflow"))?,
-            gid.checked_add(1000)
-                .ok_or(NamespaceError::Rejected("framework GID overflow"))?,
-        )?;
-        credentials(&held.zygote_directory, uid, gid)?;
-        payload_member(&held.directory)?;
-        for (pid, node) in [
-            (held.framework.pid, held.node),
-            (held.zygote.pid, held.zygote_node),
-        ] {
-            require(
-                identity(&self.process_dir(pid)?)? == node,
-                "framework proc name was replaced",
-            )?;
-        }
+        same_sample(&held.framework_metadata, &framework)?;
+        same_sample(&held.zygote_metadata, &zygote)?;
         require(
             held.epoch.boot_id == self.base.board().generation.birth.boot_id
                 && held.epoch.cell_host_pid == self.init.pid
@@ -442,14 +603,17 @@ impl<'a> EarlyApplicationAuthority<'a> {
             "framework epoch differs from the original early generation",
         )?;
         self.ready()?;
-        live(held.framework_pidfd.as_fd())?;
-        live(held.zygote_pidfd.as_fd())?;
-        Ok(())
+        let (_, uid, gid) = role_ids(self.base, MetadataRole::Framework)?;
+        native_process(&held.framework_pidfd, held.framework, uid, gid)?;
+        let (_, uid, gid) = role_ids(self.base, MetadataRole::Zygote)?;
+        native_process(&held.zygote_pidfd, held.zygote, uid, gid)?;
+        retirement_checked(Ok(()))
     }
     pub(crate) fn observe_framework(&self) -> Result<EarlyFrameworkObservation> {
         self.ready()?;
         let mut found = None;
         let mut count = 0usize;
+        let (_, wanted_uid, wanted_gid) = role_ids(self.base, MetadataRole::Framework)?;
         for entry in std::fs::read_dir(format!("/proc/self/fd/{}", self.proc_root.as_raw_fd()))? {
             let entry = entry?;
             let Some(name) = entry.file_name().to_str().map(str::to_owned) else {
@@ -462,41 +626,71 @@ impl<'a> EarlyApplicationAuthority<'a> {
             require(count <= 131072, "bounded host process inventory exceeded")?;
             let pid = name.parse::<u32>().map_err(external)?;
             let observed = (|| -> Result<Option<EarlyFrameworkObservation>> {
-                let directory = self.process_dir(pid)?;
-                if proc_bytes(&directory, c"comm")? != b"system_server\n" {
-                    return Ok(None);
-                }
-                let framework_pidfd = pidfd(pid as i32)?;
+                // Enumeration supplies only a candidate number. Credentials and parent
+                // come from the actual PIDFD before the fixed observer is invoked.
+                let framework_pidfd = pidfd(i32::try_from(pid).map_err(external)?)?;
+                live(framework_pidfd.as_fd())?;
                 let ids = info(framework_pidfd.as_fd(), true)?;
-                let (uid, gid) = self.mapped_root()?;
-                let wanted_uid = uid
-                    .checked_add(1000)
-                    .ok_or(NamespaceError::Rejected("framework UID overflow"))?;
-                let wanted_gid = gid
-                    .checked_add(1000)
-                    .ok_or(NamespaceError::Rejected("framework GID overflow"))?;
-                if [ids.ruid, ids.euid, ids.suid, ids.fsuid] != [wanted_uid; 4]
+                if ids.pid != pid
+                    || ids.tgid != pid
+                    || ids.ppid == 0
+                    || [ids.ruid, ids.euid, ids.suid, ids.fsuid] != [wanted_uid; 4]
                     || [ids.rgid, ids.egid, ids.sgid, ids.fsgid] != [wanted_gid; 4]
                 {
                     return Ok(None);
                 }
-                let framework = process(&directory, pid)?;
-                let zygote_directory = self.process_dir(framework.parent)?;
-                let zygote = process(&zygote_directory, framework.parent)?;
+                let framework_metadata = match metadata(
+                    &framework_pidfd,
+                    self.base.user_namespace(),
+                    MetadataRole::Framework,
+                ) {
+                    Ok(value) => value,
+                    Err(NamespaceError::RetirementUnproven) => {
+                        return Err(NamespaceError::RetirementUnproven);
+                    }
+                    Err(_) => {
+                        retirement_checked(Ok(()))?;
+                        return Ok(None);
+                    }
+                };
+                let framework = verify_sample(
+                    self.base,
+                    self.root,
+                    &framework_metadata,
+                    &framework_pidfd,
+                    MetadataRole::Framework,
+                    pid,
+                )?;
+                require(
+                    framework.parent == ids.ppid,
+                    "framework parent changed before original parent binding",
+                )?;
+                // This PIDFD is bound only to the parent observed through the live
+                // framework PIDFD and is rechecked against the helper's host evidence.
+                let zygote_pidfd = pidfd(i32::try_from(ids.ppid).map_err(external)?)?;
+                live(zygote_pidfd.as_fd())?;
+                let zygote_metadata = metadata(
+                    &zygote_pidfd,
+                    self.base.user_namespace(),
+                    MetadataRole::Zygote,
+                )?;
+                let zygote = verify_sample(
+                    self.base,
+                    self.root,
+                    &zygote_metadata,
+                    &zygote_pidfd,
+                    MetadataRole::Zygote,
+                    framework.parent,
+                )?;
                 require(
                     valid_chain(self.init, zygote, framework),
                     "framework observation is outside the original early lineage",
                 )?;
-                // These are liveness observations of the lineage already bound
-                // above. They never become signal or execution capabilities.
-                let zygote_pidfd = pidfd(zygote.pid as i32)?;
                 let held = EarlyFrameworkObservation {
-                    node: identity(&directory)?,
-                    directory,
+                    framework_metadata,
                     framework,
                     framework_pidfd,
-                    zygote_node: identity(&zygote_directory)?,
-                    zygote_directory,
+                    zygote_metadata,
                     zygote,
                     zygote_pidfd,
                     init: self.init,
@@ -511,7 +705,7 @@ impl<'a> EarlyApplicationAuthority<'a> {
                 self.verify_framework_processes(&held)?;
                 Ok(Some(held))
             })();
-            match observed {
+            match retirement_checked(observed) {
                 Ok(Some(held)) => {
                     require(
                         found.is_none(),
@@ -520,9 +714,9 @@ impl<'a> EarlyApplicationAuthority<'a> {
                     found = Some(held);
                 }
                 Ok(None) => {}
-                Err(NamespaceError::Io(e))
-                    if matches!(e.raw_os_error(), Some(libc::ENOENT | libc::ESRCH)) => {}
-                Err(e) => return Err(e),
+                Err(NamespaceError::Io(error))
+                    if matches!(error.raw_os_error(), Some(libc::ENOENT | libc::ESRCH)) => {}
+                Err(error) => return Err(error),
             }
         }
         let held = found.ok_or(NamespaceError::Rejected(
@@ -544,10 +738,13 @@ impl ApplicationWorkerAuthority for EarlyApplicationAuthority<'_> {
         self.revalidate()
     }
     fn descriptors(&self, binary: &CStr) -> Result<Vec<File>> {
-        self.ready()?;
+        let held = self.observe_framework()?;
+        // Stock init retains the bootstrap mount namespace. Commands must borrow
+        // the verified framework's default mount namespace containing active APEX.
+        let actual = &held.framework_metadata;
         let [copy, original] = self
             .query
-            .descriptors(self.base, self.root, binary)
+            .descriptors(self.base, &actual.root, binary)
             .map_err(external)?;
         let raw = unsafe { libc::syscall(libc::SYS_pidfd_open, libc::getpid(), 0u32) };
         if raw < 0 {
@@ -557,20 +754,23 @@ impl ApplicationWorkerAuthority for EarlyApplicationAuthority<'_> {
         let mut files = vec![
             self.base.board().pidfd().try_clone()?,
             parent,
-            self.root.try_clone()?,
-            self.base.user_namespace().try_clone()?,
+            actual.root.try_clone()?,
+            actual.namespaces[0].try_clone()?,
         ];
-        for namespace in &self.namespaces {
-            files.push(namespace.try_clone()?);
+        for index in [2, 1, 3, 4, 5, 6] {
+            files.push(actual.namespaces[index].try_clone()?);
         }
         files.extend([copy, original]);
-        self.ready()?;
+        self.verify_framework_processes(&held)?;
         Ok(files)
     }
     fn contacts_content_descriptors(&self) -> Result<[File; 2]> {
-        self.ready()?;
-        let out = self.query.content(self.base, self.root).map_err(external)?;
-        self.ready()?;
+        let held = self.observe_framework()?;
+        let out = self
+            .query
+            .content(self.base, &held.framework_metadata.root)
+            .map_err(external)?;
+        self.verify_framework_processes(&held)?;
         Ok(out)
     }
     fn mapped_root(&self) -> Result<(u32, u32)> {
@@ -593,6 +793,7 @@ impl ApplicationWorkerAuthority for EarlyApplicationAuthority<'_> {
                 && observed.pid != self.init.pid,
             "application pidfd is not this broker's direct child",
         )?;
+        // Legacy broker-born child only; the kernel factory path never calls this.
         // The query is parked before USER setns and credential changes. Only
         // its PID namespace is already the selected Android namespace.
         let (uid, gid) = (0, 0);
@@ -742,5 +943,86 @@ mod tests {
         assert!(ns_type(&ordinary, libc::CLONE_NEWPID).is_err());
         child.kill().unwrap();
         child.wait().unwrap();
+    }
+    #[test]
+    fn early_framework_host_and_scoped_credentials_cannot_be_substituted() {
+        let host = "Uid:\t121000\t121000\t121000\t121000\nGid:\t221000\t221000\t221000\t221000\n";
+        let scoped = "Uid:\t1000\t1000\t1000\t1000\nGid:\t1000\t1000\t1000\t1000\n";
+        assert!(credentials_text(host, 121000, 221000).is_ok());
+        assert!(credentials_text(scoped, 1000, 1000).is_ok());
+        assert!(credentials_text(host, 1000, 1000).is_err());
+        assert!(credentials_text(scoped, 121000, 221000).is_err());
+        assert!(
+            credentials_text(
+                &format!("{host}Uid:\t121000\t121000\t121000\t121000\n"),
+                121000,
+                221000
+            )
+            .is_err()
+        );
+        assert!(
+            credentials_text(
+                &host.replace(
+                    "121000\t121000\t121000\t121000",
+                    "121000\t121000\t0\t121000"
+                ),
+                121000,
+                221000
+            )
+            .is_err()
+        );
+        assert!(credentials_text("Uid:\t1000\nGid:\t1000\n", 1000, 1000).is_err());
+    }
+    #[test]
+    fn early_framework_host_status_binds_pid_parent_and_leader() {
+        let expected = Process {
+            pid: 190,
+            parent: 180,
+            start: 100,
+        };
+        let status = "Name:\tsystem_server\nTgid:\t190\nPid:\t190\nPPid:\t180\n";
+        assert!(status_process(status, expected).is_ok());
+        for altered in [
+            status.replace("Pid:\t190", "Pid:\t191"),
+            status.replace("Tgid:\t190", "Tgid:\t191"),
+            status.replace("PPid:\t180", "PPid:\t1"),
+            format!("{status}Pid:\t190\n"),
+            status.replace("Pid:\t190", "Pid:\t190 191"),
+        ] {
+            assert!(status_process(&altered, expected).is_err());
+        }
+    }
+    #[test]
+    fn early_framework_maps_require_original_single_complete_mapping() {
+        assert!(exact_range("         0 120000 100000\n", 120000, 100000));
+        for map in [
+            "0 120000 100000\n0 120000 100000\n",
+            "0 120000 100000\n\n",
+            "1 120000 100000\n",
+            "0 120001 100000\n",
+            "0 120000 99999\n",
+            "0 120000 100000 extra\n",
+            "0 120000\n",
+        ] {
+            assert!(!exact_range(map, 120000, 100000));
+        }
+    }
+    #[test]
+    fn early_framework_payload_scope_rejects_host_relative_and_sibling_groups() {
+        let payload = "0::/system.slice/droidloom-production.service/cell-u1000/payload";
+        assert!(payload_member(&format!("{payload}/init\n")).is_ok());
+        assert!(payload_member(&format!("{payload}/uid_1000/pid_190\n")).is_ok());
+        for bad in [
+            "0::/\n".to_owned(),
+            "0::/init\n".to_owned(),
+            format!("{payload}\n"),
+            format!("{payload}-other/init\n"),
+            format!("{payload}/../broker\n"),
+            format!("{payload}//init\n"),
+            format!("{payload}/./init\n"),
+            format!("{payload}/init\n0::/other\n"),
+        ] {
+            assert!(payload_member(&bad).is_err());
+        }
     }
 }
