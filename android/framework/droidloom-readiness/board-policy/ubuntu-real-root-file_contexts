@@ -88,4 +88,4 @@
 /run/(credentials|systemd/temporary-credentials)/systemd-udev-load-credentials\.service -d u:object_r:p4_linux_udev_credentials_t:s0
 /run/systemd/ask-password -d u:object_r:p4_linux_ask_password_directory_t:s0
 /run/systemd/units/invocation:[^/]+ -l u:object_r:p4_linux_unit_invocation_t:s0
-/run/systemd/units/\.\#invocation:[^/]+[0-9a-f]{16} -l u:object_r:p4_linux_unit_invocation_t:s0
+/run/systemd/units/\.#invocation:[^/]+[0-9a-f]{16} -l u:object_r:p4_linux_unit_invocation_t:s0
