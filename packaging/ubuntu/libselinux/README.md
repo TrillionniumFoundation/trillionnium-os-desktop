@@ -1,21 +1,27 @@
-# Ubuntu libselinux native exec and keycreate attributes
+# Ubuntu libselinux native creation and exec attributes
 
 The shared Linux/Android policy keeps systemd executors from writing files with
 their own process label. This also protects process memory. Ubuntu's libselinux
-3.9-4build1 sets exec and keycreate contexts through procfs files with that label.
-Systemd sets exec contexts; Ubuntu PAM also sets and restores the key creation
-context. This component maps only these two fixed setters to the native
-lsm_set_self_attr API: LSM_ATTR_EXEC and LSM_ATTR_KEYCREATE, both explicitly
-selecting LSM_ID_SELINUX.
+3.9-4build1 sets exec, keycreate and fscreate contexts through procfs files with
+that label. Systemd sets exec contexts; Ubuntu PAM sets and restores key creation
+contexts; systemd-tmpfiles prepares and clears the file creation context around
+its ordinary mkdirat_label call. This component maps these three fixed setters
+to lsm_set_self_attr and the current-thread fscreate getter to lsm_get_self_attr.
+All select LSM_ID_SELINUX explicitly; the getter uses LSM_FLAG_SINGLE.
 
-The target kernel runs the same SELinux setexec/setkeycreate, target key creation
+The target kernel runs the same SELinux setexec/setkeycreate/setfscreate, target key/file creation
 and exec transition checks as procattr. The change preserves the public ABI,
 per-thread cache, other attributes and the original procattr implementation for
 kernels returning ENOSYS or EOPNOTSUPP. EACCES, EPERM and every other real error
 return without fallback. A NULL context is encoded as one NUL and clears the
-pending exec or key creation label. EINTR is retried.
+pending exec, key creation or file creation label. EINTR is retried. The native
+fscreate getter validates the single SELinux record, bounded lengths, exact eight-byte alignment, zero padding, flags and
+NUL termination. A valid zero-length context returns NULL for an unset SID;
+malformed records and positive setter returns produce EPROTO without procattr
+fallback. Cached non-NULL
+per-thread values retain the original library semantics.
 
-This component replaces neither libapparmor nor systemd. Neither patched setter
+This component replaces neither libapparmor nor systemd. None of these patched attributes
 requires self:file write permission. No policy load, dyntransition, ptrace or
 proc-memory write permission is granted.
 
@@ -49,7 +55,7 @@ SOURCE_DATE_EPOCH=1795528800 dpkg-buildpackage -F -us -uc --build-profiles=nopyt
 The profiles omit Python, Ruby and installer bindings; they do not disable the
 library build or compiler hardening. The original Debian rules select PCRE2,
 large-file support, hardening and LTO. The output has a distinct version:
-`libselinux1_3.9-4build1+p4lsmexec2_amd64.deb`, with normal source, changes and
+`libselinux1_3.9-4build1+p4lsmexec3_amd64.deb`, with normal source, changes and
 buildinfo files. Record the real command, tool packages, compiler flags, exit,
 logs, archive hashes and extracted library hash outside Git. Do not replace the
 host library during construction.
@@ -65,25 +71,30 @@ with the pinned original library, and inspect its actual DT_NEEDED dependencies.
 It interposes syscall and procattr operations only inside its disposable test
 process to verify cache/reset handling, EINTR, the two unsupported-kernel
 fallbacks including NULL clear, denial/error propagation without cache damage,
-separate exec/keycreate caches, actual thread-local isolation, both PAM-facing
-public setters and unchanged current/fscreate/sockcreate handling:
+separate exec/keycreate/fscreate caches, actual thread-local isolation, raw and
+translated public APIs, the native fscreate getter including unset SID and
+malformed record rejection, and unchanged current/sockcreate handling:
 
 ```sh
 cc -std=c11 -O2 -Wall -Wextra -Werror -rdynamic -pthread native-exec-api-test.c -ldl -o native-exec-api-test
-for attribute in exec keycreate; do
-    for case_name in cache-and-clear eintr enosys eopnotsupp eacces eperm einval e2big efault enomem null-first enosys-null eopnotsupp-null fallback-failure failure-retains-cache thread-local public-wrapper; do
+for attribute in exec keycreate fscreate; do
+    for case_name in cache-and-clear eintr enosys eopnotsupp eacces eperm einval e2big efault enomem null-first enosys-null eopnotsupp-null fallback-failure failure-retains-cache thread-local public-wrapper positive-result positive-result-null; do
         ./native-exec-api-test /absolute/extracted/usr/lib/x86_64-linux-gnu/libselinux.so.1 "$attribute" "$case_name" || exit
     done
 done
 ./native-exec-api-test /absolute/extracted/usr/lib/x86_64-linux-gnu/libselinux.so.1 exec independent-cache
-for attribute in current fscreate sockcreate; do
+for case_name in get-value get-unset get-cleared get-public-wrapper get-eintr get-enosys get-eopnotsupp get-enosys-unset get-eopnotsupp-unset get-eacces get-eperm get-einval get-e2big get-efault get-enomem get-bad-count get-bad-id get-bad-flags get-bad-short get-bad-size get-bad-length get-bad-context-length get-bad-nul get-bad-embedded-nul get-bad-unset-alignment get-bad-padding; do
+    ./native-exec-api-test /absolute/extracted/usr/lib/x86_64-linux-gnu/libselinux.so.1 fscreate "$case_name" || exit
+done
+for attribute in current sockcreate; do
     ./native-exec-api-test /absolute/extracted/usr/lib/x86_64-linux-gnu/libselinux.so.1 "$attribute" other-attribute || exit
 done
 ```
 
 These are ABI unit tests. Target-kernel acceptance additionally requires the
 real systemd executor and original units under enforcing SELinux and AppArmor,
-a successful authorized exec transition, rejection of unauthorized contexts,
+successful authorized exec and fixed tmpfiles directory creation, rejection of
+unauthorized exec/creation contexts,
 and rejection of actual proc-memory open/write. A fixture overlay must pin the
 original and candidate package/member, modify only a fresh fixture, and record
 its DPKG database as unchanged. Physical installation must use the normal package

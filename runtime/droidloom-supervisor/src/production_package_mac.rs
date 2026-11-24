@@ -16,8 +16,9 @@ pub(super) enum PackageMacRole {
 }
 
 impl PackageMacRole {
-    fn context(self) -> &'static str {
+    fn context(self, early: bool) -> &'static str {
         match self {
+            Self::Helper if early => "u:r:droidloom_package_helper:s0",
             Self::Helper => HOST,
             Self::Broker => BROKER,
         }
@@ -65,7 +66,7 @@ fn before(deadline: Instant) -> Result<()> {
     Ok(())
 }
 
-fn require_local_role(local: &PackageProcess, role: PackageMacRole) -> Result<()> {
+fn require_local_role(local: &PackageProcess, role: PackageMacRole, early: bool) -> Result<()> {
     local.revalidate()?;
     require(
         local.pid() == unsafe { libc::getpid() } as u32
@@ -73,14 +74,43 @@ fn require_local_role(local: &PackageProcess, role: PackageMacRole) -> Result<()
         "package MAC preparation requires this actual fixed local process",
     )?;
     require(
-        context_matches(&self_attr::selinux_current()?, role.context()),
+        context_matches(&self_attr::selinux_current()?, role.context(early)),
         "actual typed package local SELinux role differs",
     )?;
     require(
         proc_attr(local.proc(), true)? == role.apparmor(),
         "actual package local AppArmor role differs",
     )?;
+    if early && role == PackageMacRole::Helper {
+        require_early_helper_executable(local)?;
+    }
     local.revalidate().map_err(MacError::Io)
+}
+
+fn require_early_helper_executable(helper: &PackageProcess) -> Result<()> {
+    require(!helper.is_broker(), "kernel-first package entry requires the fixed helper ELF")?;
+    let mut bytes = [0_u8; 256];
+    let count = unsafe { libc::fgetxattr(helper.executable().as_raw_fd(), c"security.selinux".as_ptr(),
+        bytes.as_mut_ptr().cast(), bytes.len()) };
+    if count < 0 { return Err(io::Error::last_os_error().into()); }
+    require(context_matches(&bytes[..count as usize], "u:object_r:droidloom_package_helper_exec:s0"),
+        "kernel-first package helper lacks its fixed installed entrypoint label")
+}
+
+fn early_helper_decisions(loaded: &LoadedPolicyWitness) -> Result<()> {
+    if !loaded.declaration.early() { return Ok(()); }
+    require(loaded.early_media_held(), "kernel-first package MAC lacks its four original media")?;
+    let helper = PackageMacRole::Helper.context(true);
+    let mut sequence = Some(loaded.av_sequence);
+    for peer in [BROKER, kernel_first::MANAGER] {
+        access(&loaded.root, helper, peer, "unix_stream_socket", &["connectto"], true, &mut sequence)?;
+    }
+    for android in [INIT, "u:r:untrusted_app:s0"] {
+        access(&loaded.root, helper, android, "process",
+            &["transition", "dyntransition", "ptrace", "signal"], false, &mut sequence)?;
+    }
+    access(&loaded.root, helper, KERNEL, "security", &["load_policy", "setenforce", "setbool"], false, &mut sequence)?;
+    loaded.stable_epoch()
 }
 
 impl PackageMacPreparation {
@@ -107,12 +137,9 @@ impl PackageMacPreparation {
         deadline: Instant,
     ) -> Result<Self> {
         before(deadline)?;
-        require(
-            !selection.is_kernel_first(),
-            "legacy package helpers cannot enter a kernel-first generation",
-        )?;
-        require_local_role(&local, role)?;
+        require_local_role(&local, role, selection.is_kernel_first())?;
         let loaded = LoadedPolicyWitness::acquire(&selection)?;
+        early_helper_decisions(&loaded)?;
         before(deadline)?;
         let host_proc = if loaded.declaration.scoped_contexts()? {
             Some(match role {
@@ -182,7 +209,7 @@ impl PackageMacOwner {
         let inputs = &self.original;
         before(inputs.deadline)?;
         inputs.loaded.revalidate(&inputs.selection)?;
-        require_local_role(&inputs.local, inputs.role)?;
+        require_local_role(&inputs.local, inputs.role, inputs.loaded.declaration.early())?;
         match &inputs.host_proc {
             Some(view) => {
                 require(
@@ -220,6 +247,14 @@ impl PackageMacOwner {
 
     pub(super) fn role(&self) -> PackageMacRole {
         self.original.role
+    }
+
+    pub(super) fn local_context(&self) -> &'static str {
+        self.original.role.context(self.original.loaded.declaration.early())
+    }
+
+    pub(super) fn helper_context(&self) -> &'static str {
+        PackageMacRole::Helper.context(self.original.loaded.declaration.early())
     }
 
     pub(super) fn host_proc(&self) -> Option<&host_proc::HostProcView> {
@@ -263,6 +298,25 @@ fn peer_security(stream: &UnixStream) -> Result<Vec<u8>> {
 }
 
 impl PackageMacWitness {
+    pub(crate) fn revalidate_after_broker_exit(
+        &self,
+        broker: &PackageProcess,
+        unit: &PackageBrokerUnit,
+        deadline: Instant,
+    ) -> Result<()> {
+        self.original.revalidate()?;
+        require(!self.original.local().is_broker() && broker.is_broker()
+            && broker.binding() == self.peer && deadline == self.original.deadline(),
+            "terminal package witness requires its original helper and broker")?;
+        unit.require_original_owner(&self.original).map_err(|error| MacError::Owner(error.to_string()))?;
+        broker.verify_exited_broker()?;
+        // This channel still checks the same live helper, original manager
+        // PIDFD, socket, loaded policy and sealed selection. Only the already
+        // retired broker is observed through its terminal lifetime instead.
+        unit.revalidate_retired(broker, deadline).map_err(|error| MacError::Owner(error.to_string()))?;
+        self.original.revalidate()
+    }
+
     pub(crate) fn selection(&self) -> &ProductionSelection {
         self.original.selection()
     }
@@ -290,7 +344,7 @@ impl PackageMacWitness {
             if let Some(view) = self.original.host_proc() {
                 view.for_package_process(&self.original, process)?;
             } else {
-                let context = if process.is_broker() { BROKER } else { HOST };
+                let context = if process.is_broker() { BROKER } else { self.original.helper_context() };
                 require(
                     context_matches(&proc_attr(process.proc(), false)?, context),
                     "actual package process SELinux role differs",
@@ -305,8 +359,11 @@ impl PackageMacWitness {
                 proc_attr(process.proc(), true)? == apparmor,
                 "actual package process AppArmor role differs",
             )?;
+            if self.original.selection().is_kernel_first() && !process.is_broker() {
+                require_early_helper_executable(process)?;
+            }
         }
-        let expected = if peer.is_broker() { BROKER } else { HOST };
+        let expected = if peer.is_broker() { BROKER } else { self.original.helper_context() };
         require(
             context_matches(&peer_security(stream)?, expected),
             "actual connected package peer SID differs from its held process",

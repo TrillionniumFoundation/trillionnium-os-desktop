@@ -122,6 +122,7 @@ fn validate_fixed_configuration(
     equal(unit, "DropInPaths", Value::Strings(Vec::new()))?;
     equal(unit, "InvocationID", Value::Bytes(invocation.id.to_vec()))?;
     nonzero_time(unit, "StateChangeTimestampMonotonic")?;
+    equal(service, "Result", Value::Text("success".into()))?;
     for (name, value) in [
         ("Type", "exec"),
         ("ExitType", "main"),

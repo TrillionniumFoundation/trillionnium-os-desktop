@@ -189,6 +189,7 @@ pub(crate) struct EarlyManagerClient(EarlyClient);
 enum EarlyClient {
     Broker(crate::production_execution::RuntimeMacOwner),
     Loader(LoaderHostPeerOwner),
+    Package(PackageMacOwner),
 }
 
 impl EarlyManagerClient {
@@ -200,6 +201,12 @@ impl EarlyManagerClient {
 
     pub(crate) fn loader(owner: LoaderHostPeerOwner) -> Result<Self> {
         let value = Self(EarlyClient::Loader(owner));
+        value.loaded()?;
+        Ok(value)
+    }
+
+    pub(crate) fn package(owner: PackageMacOwner) -> Result<Self> {
+        let value = Self(EarlyClient::Package(owner));
         value.loaded()?;
         Ok(value)
     }
@@ -216,6 +223,7 @@ impl EarlyManagerClient {
                 let (mac, selection) = owner.objects()?;
                 (mac.loaded_policy(), selection)
             }
+            EarlyClient::Package(owner) => owner.objects()?,
         };
         require(
             selection.is_kernel_first() && loaded.declaration.early() && loaded.early_media_held(),

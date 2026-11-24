@@ -18,7 +18,9 @@
 static __thread const char *scenario;
 static __thread const char *expected = "u:r:droidloom_policy_loader:s0";
 static __thread unsigned expected_attr;
-static __thread unsigned native_calls, attr_opens, attr_writes, attr_closes;
+static __thread unsigned native_calls, native_get_calls, attr_opens, attr_reads, attr_writes, attr_closes;
+static __thread int get_error;
+static __thread int get_unset;
 static __thread int expected_error, fallback_error, clearing;
 static __thread char last_path[128];
 enum { attr_fd = 1234567 };
@@ -26,8 +28,54 @@ enum { attr_fd = 1234567 };
 long syscall(long number, ...)
 {
     va_list args;
-    assert(number == __NR_lsm_set_self_attr);
     va_start(args, number);
+    if (number == __NR_lsm_get_self_attr) {
+        unsigned attr = va_arg(args, unsigned);
+        struct lsm_ctx *ctx = va_arg(args, struct lsm_ctx *);
+        uint32_t *bytes = va_arg(args, uint32_t *);
+        unsigned flags = va_arg(args, unsigned);
+        va_end(args);
+        native_get_calls++;
+        assert(attr == LSM_ATTR_FSCREATE && expected_attr == attr);
+        assert(flags == LSM_FLAG_SINGLE && ctx->id == LSM_ID_SELINUX);
+        assert(ctx->flags == 0 && *bytes >= sizeof(*ctx) + strlen(expected) + 8);
+        if (!strcmp(scenario, "get-eintr") && native_get_calls == 1) {
+            errno = EINTR;
+            return -1;
+        }
+        if (get_error) {
+            errno = get_error;
+            return -1;
+        }
+        uint64_t length = get_unset ? 0 : strlen(expected) + 1;
+        uint32_t size = (sizeof(*ctx) + length + 7) & ~7U;
+        ctx->id = LSM_ID_SELINUX;
+        ctx->flags = 0;
+        ctx->len = size;
+        ctx->ctx_len = length;
+        if (length) memcpy(ctx->ctx, expected, length);
+        *bytes = size;
+        if (!strcmp(scenario, "get-bad-count")) return 2;
+        if (!strcmp(scenario, "get-bad-id")) ctx->id = LSM_ID_APPARMOR;
+        if (!strcmp(scenario, "get-bad-flags")) ctx->flags = 1;
+        if (!strcmp(scenario, "get-bad-short")) *bytes = sizeof(*ctx) - 1;
+        if (!strcmp(scenario, "get-bad-size")) *bytes = UINT32_MAX;
+        if (!strcmp(scenario, "get-bad-length")) ctx->len++;
+        if (!strcmp(scenario, "get-bad-context-length")) ctx->ctx_len = UINT64_MAX;
+        if (!strcmp(scenario, "get-bad-nul")) ctx->ctx[length - 1] = 'x';
+        if (!strcmp(scenario, "get-bad-embedded-nul")) ctx->ctx[1] = '\0';
+        if (!strcmp(scenario, "get-bad-unset-alignment")) {
+            ctx->ctx_len = 0;
+            ctx->len = sizeof(*ctx) + 1;
+            *bytes = ctx->len;
+        }
+        if (!strcmp(scenario, "get-bad-padding")) {
+            assert(sizeof(*ctx) + length < size);
+            ((unsigned char *)ctx)[sizeof(*ctx) + length] = 1;
+        }
+        return 1;
+    }
+    assert(number == __NR_lsm_set_self_attr);
     unsigned attr = va_arg(args, unsigned);
     struct lsm_ctx *ctx = va_arg(args, struct lsm_ctx *);
     uint32_t bytes = va_arg(args, uint32_t);
@@ -43,6 +91,10 @@ long syscall(long number, ...)
         errno = EINTR;
         return -1;
     }
+    if (!strcmp(scenario, "positive-result") || !strcmp(scenario, "positive-result-null")) {
+        errno = ENOSYS; /* Stale errno must not turn a bad success into fallback. */
+        return 1;
+    }
     if (expected_error) {
         errno = expected_error;
         return -1;
@@ -54,7 +106,7 @@ int open(const char *path, int flags, ...)
 {
     if (!strncmp(path, "/proc/thread-self/attr/", 23)) {
         attr_opens++;
-        assert((flags & O_ACCMODE) == O_RDWR);
+        assert((flags & O_ACCMODE) == (get_error ? O_RDONLY : O_RDWR));
         assert(flags & O_CLOEXEC);
         assert(strlen(path) < sizeof(last_path));
         strcpy(last_path, path);
@@ -111,6 +163,27 @@ ssize_t write(int fd, const void *bytes, size_t count)
     assert(original);
     return original(fd, bytes, count);
 }
+ssize_t read(int fd, void *bytes, size_t count)
+{
+    if (fd == attr_fd) {
+        attr_reads++;
+        assert(get_error == ENOSYS || get_error == EOPNOTSUPP);
+        size_t size = get_unset ? 0 : strlen(expected) + 1;
+        assert(count >= size);
+        if (size) memcpy(bytes, expected, size);
+        return (ssize_t)size;
+    }
+    ssize_t (*original)(int, void *, size_t);
+    *(void **)(&original) = dlsym(RTLD_NEXT, "read");
+    assert(original);
+    return original(fd, bytes, count);
+}
+/* Debian _FORTIFY_SOURCE=3 emits this checked public read entrypoint. */
+ssize_t __read_chk(int fd, void *bytes, size_t count, size_t buffer_size)
+{
+    assert(count <= buffer_size);
+    return read(fd, bytes, count);
+}
 int close(int fd)
 {
     if (fd == attr_fd) {
@@ -155,7 +228,8 @@ int main(int argc, char **argv)
     }
     const char *name = argv[2];
     unsigned id = !strcmp(name, "exec") ? LSM_ATTR_EXEC :
-                  !strcmp(name, "keycreate") ? LSM_ATTR_KEYCREATE : 0;
+                  !strcmp(name, "keycreate") ? LSM_ATTR_KEYCREATE :
+                  !strcmp(name, "fscreate") ? LSM_ATTR_FSCREATE : 0;
     expected_attr = id;
     char symbol[64], attr_path[128];
     assert(snprintf(symbol, sizeof(symbol), "set%scon_raw",
@@ -169,9 +243,51 @@ int main(int argc, char **argv)
     assert(snprintf(attr_path, sizeof(attr_path), "/proc/thread-self/attr/%s", name) > 0);
     native_calls = attr_opens = attr_writes = attr_closes = 0;
 
-    if (!strcmp(scenario, "other-attribute")) {
-        assert(!id && (!strcmp(name, "fscreate") ||
-                       !strcmp(name, "sockcreate") || !strcmp(name, "current")));
+    if (!strncmp(scenario, "get-", 4)) {
+        assert(id == LSM_ATTR_FSCREATE);
+        get_unset = !strcmp(scenario, "get-unset") ||
+                    !strcmp(scenario, "get-cleared") ||
+                    !strcmp(scenario, "get-enosys-unset") ||
+                    !strcmp(scenario, "get-eopnotsupp-unset");
+        if (!strcmp(scenario, "get-enosys") || !strcmp(scenario, "get-enosys-unset"))
+            get_error = ENOSYS;
+        else if (!strcmp(scenario, "get-eopnotsupp") || !strcmp(scenario, "get-eopnotsupp-unset"))
+            get_error = EOPNOTSUPP;
+        else if (!strcmp(scenario, "get-eacces")) get_error = EACCES;
+        else if (!strcmp(scenario, "get-eperm")) get_error = EPERM;
+        else if (!strcmp(scenario, "get-einval")) get_error = EINVAL;
+        else if (!strcmp(scenario, "get-e2big")) get_error = E2BIG;
+        else if (!strcmp(scenario, "get-efault")) get_error = EFAULT;
+        else if (!strcmp(scenario, "get-enomem")) get_error = ENOMEM;
+        if (!strcmp(scenario, "get-cleared")) {
+            assert(api.set(expected) == 0);
+            expected = "";
+            assert(api.set(NULL) == 0 && native_calls == 2);
+        }
+        if (!strcmp(scenario, "get-public-wrapper"))
+            *(void **)(&api.get) = dlsym(library, "getfscreatecon");
+        char sentinel[] = "unchanged";
+        char *context = sentinel;
+        int malformed = !strncmp(scenario, "get-bad-", 8);
+        int denied = get_error && get_error != ENOSYS && get_error != EOPNOTSUPP;
+        if (malformed || denied) {
+            assert(api.get(&context) == -1);
+            assert(errno == (malformed ? EPROTO : get_error));
+            assert(context == sentinel && attr_opens == 0 && attr_reads == 0);
+        } else {
+            assert(api.get(&context) == 0);
+            if (get_unset) assert(context == NULL);
+            else assert(context && !strcmp(context, expected));
+            free(context);
+            if (get_error) {
+                assert(attr_opens == 1 && attr_reads == 1 && attr_closes == 1);
+                assert(!strcmp(last_path, attr_path));
+            } else assert(attr_opens == 0 && attr_reads == 0);
+        }
+        assert(native_get_calls == (!strcmp(scenario, "get-eintr") ? 2u : 1u));
+        assert(attr_writes == 0);
+    } else if (!strcmp(scenario, "other-attribute")) {
+        assert(!id && (!strcmp(name, "sockcreate") || !strcmp(name, "current")));
         assert(api.set(expected) == 0);
         assert(native_calls == 0 && attr_opens == 1 && attr_writes == 1 && attr_closes == 1);
         assert(!strcmp(last_path, attr_path));
@@ -217,7 +333,18 @@ int main(int argc, char **argv)
         assert(api.set(expected) == 0 && native_calls == 3);
         cached_equals(api.get, expected);
         cached_equals(key.get, original);
-        assert(attr_opens == 0);
+        struct api fs = { .attr = LSM_ATTR_FSCREATE };
+        *(void **)(&fs.set) = dlsym(library, "setfscreatecon_raw");
+        *(void **)(&fs.get) = dlsym(library, "getfscreatecon_raw");
+        assert(fs.set && fs.get);
+        expected_attr = fs.attr;
+        expected = original;
+        assert(fs.set(expected) == 0 && native_calls == 4);
+        assert(fs.set(expected) == 0 && native_calls == 4);
+        cached_equals(fs.get, original);
+        cached_equals(key.get, original);
+        cached_equals(api.get, "u:r:droidloom_query_io:s0");
+        assert(native_get_calls == 0 && attr_opens == 0);
     } else if (!strcmp(scenario, "public-wrapper")) {
         assert(id);
         assert(snprintf(symbol, sizeof(symbol), "set%scon", name) > 0);
@@ -239,9 +366,11 @@ int main(int argc, char **argv)
         else if (!strcmp(scenario, "e2big")) expected_error = E2BIG;
         else if (!strcmp(scenario, "efault")) expected_error = EFAULT;
         else if (!strcmp(scenario, "enomem")) expected_error = ENOMEM;
+        else if (!strcmp(scenario, "positive-result") || !strcmp(scenario, "positive-result-null"))
+            expected_error = EPROTO;
         else assert(!strcmp(scenario, "cache-and-clear") ||
                     !strcmp(scenario, "eintr") || !strcmp(scenario, "null-first"));
-        clearing = !strcmp(scenario, "null-first") ||
+        clearing = !strcmp(scenario, "positive-result-null") || !strcmp(scenario, "null-first") ||
                    !strcmp(scenario, "enosys-null") || !strcmp(scenario, "eopnotsupp-null");
         if (clearing) expected = "";
         if (!strcmp(scenario, "fallback-failure")) {
@@ -253,7 +382,7 @@ int main(int argc, char **argv)
             cached_equals(api.get, expected);
         } else if (expected_error && expected_error != ENOSYS && expected_error != EOPNOTSUPP) {
             errno = 0;
-            assert(api.set(expected) == -1 && errno == expected_error);
+            assert(api.set(clearing ? NULL : expected) == -1 && errno == expected_error);
             assert(native_calls == 1 && attr_opens == 0 && attr_writes == 0 && attr_closes == 0);
         } else {
             assert(api.set(clearing ? NULL : expected) == 0);
@@ -273,8 +402,8 @@ int main(int argc, char **argv)
             }
         }
     }
-    printf("PASS %s/%s: native=%u procattr_open=%u write=%u close=%u\n",
-           name, scenario, native_calls, attr_opens, attr_writes, attr_closes);
+    printf("PASS %s/%s: native_set=%u native_get=%u procattr_open=%u read=%u write=%u close=%u\n",
+           name, scenario, native_calls, native_get_calls, attr_opens, attr_reads, attr_writes, attr_closes);
     dlclose(library);
     return 0;
 }

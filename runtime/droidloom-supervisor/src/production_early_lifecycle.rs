@@ -8,9 +8,12 @@ use crate::production_cgroup::PreparedCgroup;
 use crate::production_devices::PreparedDevices;
 use crate::production_execution::PreparationAdmission;
 use crate::production_mounts::{
-    PreparedMounts,
-    persistent_data::{EarlyStorageAdmission, PreparedPersistentData},
+    PreparedMounts, MountRetirement,
+    persistent_data::{EarlyStorageAdmission, PreparedPersistentData, PersistentDataRetirement},
 };
+use crate::production_devices::DeviceRetirement;
+use crate::production_runtime_assets::EarlyQueryRetirement;
+use crate::production_selection::ProductionSelection;
 use std::{
     fs::File,
     io,
@@ -44,6 +47,30 @@ unsafe extern "C" {
 #[path = "production_early_frontend.rs"]
 mod frontend;
 pub(crate) use frontend::{QueryObservation, observe_query};
+
+/// Retained only by the original kernel-first MainPID after all prepared
+/// resource owners returned their real terminal values. No external builder,
+/// Clone, Deserialize or boolean success constructor exists.
+pub(crate) struct EarlyPackageRetirement {
+    base: EarlyBaseRetirement,
+    _images: MountRetirement,
+    _data: PersistentDataRetirement,
+    _devices: DeviceRetirement,
+    query: EarlyQueryRetirement,
+    _frontend: frontend::FrontendRetirement,
+    selection: [u8; 32],
+}
+impl EarlyPackageRetirement {
+    pub(crate) fn verify_package_retirement(&self, selection: &ProductionSelection) -> io::Result<()> {
+        selection.revalidate().map_err(io::Error::other)?;
+        if !selection.is_kernel_first() || selection.package_binding() != self.selection {
+            return Err(invalid("early package retirement belongs to another original selection"));
+        }
+        self.base.verify_original_exit()?;
+        self.query.verify_selection(selection.base_cohort(), selection.runtime_manifest())
+            .map_err(io::Error::other)
+    }
+}
 
 struct ServiceSignals {
     events: File,
@@ -119,7 +146,7 @@ impl ServiceSignals {
     fn await_child(
         &self,
         pidfd: &File,
-        mut progress: impl FnMut() -> io::Result<()>,
+        mut progress: impl FnMut() -> io::Result<bool>,
     ) -> io::Result<()> {
         let mut fds = [
             libc::pollfd {
@@ -141,7 +168,9 @@ impl ServiceSignals {
             if self.stop_requested()? {
                 return Ok(());
             }
-            progressed?;
+            if progressed? {
+                return Ok(());
+            }
             if unsafe { libc::poll(fds.as_mut_ptr(), 2, 100) } < 0 {
                 let e = io::Error::last_os_error();
                 if e.kind() == io::ErrorKind::Interrupted {
@@ -162,6 +191,24 @@ impl ServiceSignals {
             }
             if fds[0].revents & libc::POLLIN != 0 {
                 return Err(invalid("original Android init exited before service stop"));
+            }
+        }
+    }
+
+    fn await_native_stop(&self, deadline: std::time::Instant) -> io::Result<()> {
+        loop {
+            if self.stop_requested()? {
+                return Ok(());
+            }
+            let remaining = deadline.checked_duration_since(std::time::Instant::now())
+                .ok_or_else(|| io::Error::from_raw_os_error(libc::ETIMEDOUT))?;
+            let mut event = libc::pollfd { fd: self.events.as_raw_fd(), events: libc::POLLIN, revents: 0 };
+            if unsafe { libc::poll(&mut event, 1, remaining.as_millis().min(100) as i32) } < 0 {
+                let error = io::Error::last_os_error();
+                if error.kind() != io::ErrorKind::Interrupted { return Err(error); }
+            }
+            if event.revents & (libc::POLLERR | libc::POLLNVAL) != 0 {
+                return Err(invalid("original package owner lost its native stop monitor"));
             }
         }
     }
@@ -294,13 +341,20 @@ pub fn complete_early_resources() -> io::Result<()> {
         }
         return Err(io::Error::other(cause));
     }
+    // Retain the listener outside the work closure so accepted package streams
+    // can borrow it through resource teardown. A bind failure enters the same
+    // original-PIDFD/cgroup cleanup below; it must not add a new early return.
+    let control = crate::control::EarlyApplicationControl::bind(&owner);
+    let mut transaction = None;
     let mut images: Option<PreparedMounts> = None;
     let mut data: Option<PreparedPersistentData> = None;
     let mut devices: Option<PreparedDevices> = None;
     let mut original_root: Option<File> = None;
     let mut query_resources = None;
+    let mut frontend_retirement = None;
     let mut root_delivery_attempted = false;
     let work = (|| -> io::Result<()> {
+        let control = control.as_ref().map_err(|error| io::Error::other(error.to_string()))?;
         let cg_ns = board.root_cgroup_namespace()?;
         group
             .finish_early_placement(&base, &cg_ns)
@@ -402,11 +456,9 @@ pub fn complete_early_resources() -> io::Result<()> {
             }
             frontend.borrow_mut().progress()
         };
-        let mut control =
-            crate::control::EarlyApplicationControl::bind(&owner).map_err(io::Error::other)?;
         let waiting = signals.await_child(board.pidfd(), || {
             progress()?;
-            control
+            if let Some(mut request) = control
                 .poll(
                     board.host_pid() as u32,
                     board.selection().spec().host_uid,
@@ -416,11 +468,22 @@ pub fn complete_early_resources() -> io::Result<()> {
                         )
                     },
                 )
-                .map_err(io::Error::other)
+                .map_err(io::Error::other)?
+            {
+                request.revalidate()?;
+                board.selection().revalidate().map_err(io::Error::other)?;
+                if request.selection().package_binding() != board.selection().package_binding() {
+                    return Err(invalid("package transaction differs from the original early owner"));
+                }
+                request.fence_before_retirement()?;
+                transaction = Some(request);
+                return Ok(true);
+            }
+            Ok(false)
         });
-        let control_retired = control.retire().map_err(io::Error::other);
-        let presentation_retired = frontend.borrow_mut().retire();
-        waiting.and(control_retired).and(presentation_retired)?;
+        let presentation_retired = frontend.borrow_mut().retire_with_proof();
+        frontend_retirement = Some(presentation_retired?);
+        waiting?;
         stop.deliver(&board)?;
         if !wait_ended(board.pidfd(), Duration::from_secs(75))? {
             return Err(invalid(
@@ -432,11 +495,16 @@ pub fn complete_early_resources() -> io::Result<()> {
     // The original pidfd retains exclusive custody even if an earlier stage
     // failed after moving a mount. Never release by a numeric process lookup.
     let cleanup = stop_child(board.pidfd(), Duration::from_secs(15)).and_then(|exit| {
+        let mut complete = None;
         let retired = (|| -> io::Result<()> {
             if let Some(root) = original_root {
                 let retired =
                     EarlyBaseRetirement::finish(&board, &group, &root, root_delivery_attempted)?;
                 drop(root);
+                let query_result = query_resources
+                    .map(|v| v.retire_after_early_tree(&retired))
+                    .transpose()
+                    .map_err(io::Error::other);
                 let dev_result = devices
                     .map(|v| v.retire_after_early_tree(&retired))
                     .transpose()
@@ -449,9 +517,20 @@ pub fn complete_early_resources() -> io::Result<()> {
                     .map(|v| v.retire_after_early_tree(&retired))
                     .transpose()
                     .map_err(io::Error::other);
-                dev_result?;
-                data_result?;
-                image_result?;
+                let query = query_result?;
+                let devices = dev_result?;
+                let data = data_result?;
+                let images = image_result?;
+                if work.is_ok() && root_delivery_attempted {
+                    if let (Some(query), Some(devices), Some(data), Some(images), Some(frontend)) =
+                        (query, devices, data, images, frontend_retirement)
+                    {
+                        complete = Some(EarlyPackageRetirement {
+                            base: retired, _images: images, _data: data, _devices: devices,
+                            query, _frontend: frontend, selection: board.selection().package_binding(),
+                        });
+                    }
+                }
             } else {
                 group.retire_early_empty(&board).map_err(io::Error::other)?;
                 if let Some(images) = images {
@@ -460,19 +539,53 @@ pub fn complete_early_resources() -> io::Result<()> {
             }
             Ok(())
         })();
-        exit.after_retirement(retired)
+        exit.after_retirement(retired)?;
+        Ok(complete)
     });
-    match (work, cleanup) {
+    let completed = match (work, cleanup) {
         (Err(operation), Err(cleanup)) => {
             Err(io::Error::other(format!("{operation}; cleanup: {cleanup}")))
         }
         (Err(e), _) | (_, Err(e)) => Err(e),
-        (Ok(()), Ok(())) => Ok(()),
-    }
+        (Ok(()), Ok(retired)) => Ok(retired),
+    };
+    let result = (|| {
+        let retired = completed?;
+        if let Some(request) = transaction.as_mut() {
+            let retired = retired.as_ref().ok_or_else(|| invalid("complete original early resource retirement is absent"))?;
+            request.complete_early(retired)?;
+            // Keep this exact daemon, listener and opaque evidence alive until
+            // the helper stops its native unit. A lost reply or helper cannot
+            // be replaced with a new transaction or a serialized receipt.
+            signals.await_native_stop(request.deadline())?;
+        }
+        Ok(())
+    })();
+    drop(transaction);
+    let listener_retired = control.and_then(|control| control.retire()).map_err(io::Error::other);
+    result.and(listener_retired)
 }
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn package_request_returns_to_orderly_shutdown_before_native_stop() {
+        std::thread::spawn(|| {
+            let signals = ServiceSignals::acquire().unwrap();
+            let mut child = std::process::Command::new("/bin/sleep").arg("20").spawn().unwrap();
+            let raw = unsafe { libc::syscall(libc::SYS_pidfd_open, child.id(), 0) };
+            assert!(raw >= 0);
+            let held = unsafe { File::from_raw_fd(raw as i32) };
+            signals.await_child(&held, || Ok(true)).unwrap();
+            assert!(!signals.stop_requested().unwrap());
+            assert!(!wait_ended(&held, Duration::ZERO).unwrap());
+            assert!(signals.await_native_stop(std::time::Instant::now()).is_err());
+            assert_eq!(unsafe { libc::pthread_kill(libc::pthread_self(), libc::SIGTERM) }, 0);
+            signals.await_native_stop(std::time::Instant::now() + Duration::from_secs(1)).unwrap();
+            child.kill().unwrap();
+            child.wait().unwrap();
+        }).join().unwrap();
+    }
     #[test]
     fn nested_query_stop_observation_is_retained_for_orderly_outer_loop() {
         std::thread::spawn(|| {

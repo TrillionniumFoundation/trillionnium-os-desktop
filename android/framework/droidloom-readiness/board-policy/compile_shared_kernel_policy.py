@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Link the Pocket4 shared-kernel policy using the original Android assertions."""
 import argparse
+import ctypes
 import hashlib
 import json
 import os
@@ -8,7 +9,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 
-from derive_shared_payload_cgroup_policy import derive, verify
+from derive_shared_payload_cgroup_policy import Decision, Policy, derive, verify
 
 
 def sha256(path):
@@ -33,6 +34,174 @@ def compile_policy(compiler, inputs, output, contexts, environment):
         env=environment,
         check=True,
     )
+
+
+def export_binary_policy(policy, binary, output):
+    """Read transitions back from the linked binary using the pinned libsepol."""
+    lib = policy.lib
+    lib.sepol_policydb_create.argtypes = [ctypes.POINTER(ctypes.c_void_p)]
+    lib.sepol_policydb_create.restype = ctypes.c_int
+    lib.sepol_policydb_free.argtypes = [ctypes.c_void_p]
+    lib.sepol_policydb_free.restype = None
+    lib.sepol_policydb_from_image.argtypes = [
+        ctypes.c_void_p, ctypes.c_void_p, ctypes.c_size_t, ctypes.c_void_p]
+    lib.sepol_policydb_from_image.restype = ctypes.c_int
+    lib.sepol_kernel_policydb_to_cil.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    lib.sepol_kernel_policydb_to_cil.restype = ctypes.c_int
+    database = ctypes.c_void_p()
+    if lib.sepol_policydb_create(ctypes.byref(database)) != 0:
+        raise ValueError("Cannot allocate linked policy readback")
+    stream = None
+    try:
+        raw = binary.read_bytes()
+        image = ctypes.create_string_buffer(raw)
+        if lib.sepol_policydb_from_image(None, image, len(raw), database) != 0:
+            raise ValueError("Cannot parse linked policy for transition readback")
+        stream = policy.libc.fopen(str(output).encode(), b"wb")
+        if not stream:
+            raise ValueError("Cannot open private binary-policy readback output")
+        # The admitted AOSP libsepol's public sepol_policydb wrapper contains
+        # exactly one policydb member. Both interfaces use that original object.
+        if lib.sepol_kernel_policydb_to_cil(stream, database) != 0:
+            raise ValueError("Cannot export linked policy transitions")
+        if policy.libc.fclose(stream) != 0:
+            stream = None
+            raise ValueError("Cannot finish linked policy readback")
+        stream = None
+    finally:
+        if stream:
+            policy.libc.fclose(stream)
+        lib.sepol_policydb_free(database)
+    return {line.strip() for line in output.read_text().splitlines()}
+
+
+def verify_host_control(library, binary, export):
+    """Verify fixed host entrypoints and positive/negative binary AV decisions."""
+    policy = Policy(library, binary)
+    sids = {}
+
+    def sid(context):
+        if context not in sids:
+            value = ctypes.c_uint32()
+            raw = context.encode()
+            if policy.lib.sepol_context_to_sid(
+                    raw, len(raw) + 1, ctypes.byref(value)) != 0:
+                raise ValueError("Invalid linked host-control context: " + context)
+            sids[context] = value.value
+        return sids[context]
+
+    checks = []
+
+    def check(subject, target, class_name, permissions, expected):
+        number, bits = policy.permissions(class_name, permissions)
+        mask = 0
+        for bit in bits.values():
+            mask |= bit
+        decision = Decision()
+        if policy.lib.sepol_compute_av(
+                sid(subject), sid(target), number, mask, ctypes.byref(decision)) != 0:
+            raise ValueError("Cannot evaluate linked host-control AV decision")
+        actual = decision.allowed & mask
+        wanted = mask if expected else 0
+        if actual != wanted:
+            raise ValueError(
+                f"Linked host-control decision differs: {subject} -> {target} "
+                f"{class_name} {permissions}, expected {wanted:#x}, actual {actual:#x}")
+        checks.append([subject, target, class_name, permissions, expected, actual])
+
+    def obj(name):
+        return f"u:object_r:{name}:s0"
+
+    helper = "u:r:droidloom_package_helper:s0"
+    client = "u:system_r:droidloom_public_control_client:s0"
+    session = "u:system_r:p4_linux_user_session_t:s0"
+    setup = "u:system_r:p4_linux_setup_t:s0"
+    executor = "u:system_r:p4_linux_service_executor_t:s0"
+    manager = "u:system_r:init_t:s0"
+    broker = "u:r:droidloom_broker:s0"
+    loader = "u:r:droidloom_policy_loader:s0"
+    kernel = "u:r:kernel:s0"
+    socket = obj("droidloom_public_control_socket")
+    directory = obj("droidloom_public_control_dir")
+    helper_exec = obj("droidloom_package_helper_exec")
+    client_exec = obj("droidloom_public_control_client_exec")
+
+    check(session, helper, "process", ["transition"], True)
+    check(session, helper, "process", ["dyntransition", "ptrace"], False)
+    check(session, helper_exec, "file", ["execute", "read", "open", "map"], True)
+    check(session, helper_exec, "file", ["execute_no_trans"], False)
+    check(helper, helper_exec, "file", ["entrypoint"], True)
+    check(session, client, "process", ["transition"], True)
+    check(session, client_exec, "file", ["execute_no_trans"], False)
+    check(client, client_exec, "file", ["entrypoint"], True)
+    for subject in [client, setup, manager, executor, broker]:
+        check(subject, helper, "process", ["transition", "dyntransition", "ptrace"], False)
+    check(session, loader, "process", ["transition", "dyntransition", "ptrace"], False)
+    for subject in [helper, client]:
+        check(subject, broker, "unix_stream_socket", ["connectto"], True)
+        check(subject, socket, "sock_file", ["getattr", "write"], True)
+        check(subject, directory, "dir", ["getattr", "search"], True)
+        check(subject, directory, "dir", ["write", "add_name", "remove_name"], False)
+        check(subject, socket, "sock_file", ["create", "unlink", "rename", "relabelto"], False)
+    check(session, broker, "unix_stream_socket", ["connectto"], False)
+    check(session, socket, "sock_file", ["write"], False)
+    for subject in ["u:r:init:s0", "u:r:untrusted_app:s0"]:
+        check(subject, broker, "unix_stream_socket", ["connectto"], False)
+        check(subject, socket, "sock_file", ["write"], False)
+        check(subject, helper, "process", ["transition", "dyntransition", "ptrace"], False)
+        check(helper, subject, "process", ["transition", "dyntransition", "ptrace", "signal"], False)
+    check(broker, broker, "unix_stream_socket",
+          ["create", "bind", "listen", "accept", "read", "write", "getattr", "getopt", "setopt"], True)
+    check(broker, socket, "sock_file", ["create", "getattr", "setattr", "write", "unlink"], True)
+    check(setup, obj("p4_linux_run_t"), "dir", ["write", "add_name"], True)
+    check(setup, directory, "dir", ["create", "getattr", "search", "setattr"], True)
+    check(setup, setup, "process", ["setfscreate"], True)
+    check(setup, setup, "file", ["write", "append"], False)
+    check(setup, kernel, "security", ["check_context", "compute_create"], True)
+    check(setup, kernel, "security", ["load_policy", "setenforce", "setbool", "read_policy"], False)
+    check(executor, obj("p4_linux_run_t"), "dir", ["write", "add_name", "remove_name"], False)
+    check(helper, manager, "unix_stream_socket", ["connectto"], True)
+    for unit in ["p4_linux_production_unit_file_t", "droidloom_package_native_unit_file"]:
+        check(helper, obj(unit), "service", ["status", "stop"], True)
+        check(helper, obj(unit), "service", ["start", "reload", "kill", "load", "enable", "disable"], False)
+    check(helper, obj("p4_linux_unit_file_t"), "service", ["stop"], False)
+    check(helper, obj("p4_linux_mac_setup_lock_t"), "file", ["open", "read", "lock"], True)
+    check(helper, obj("p4_linux_mac_setup_lock_t"), "file", ["write", "append", "unlink"], False)
+    check(broker, obj("p4_linux_mac_setup_lock_t"), "file", ["open", "read", "lock"], True)
+    check(broker, obj("p4_linux_mac_setup_lock_t"), "file", ["write", "append"], False)
+    fence = obj("droidloom_package_fence")
+    check(helper, fence, "file", ["create", "open", "write", "read", "setattr"], True)
+    check(helper, fence, "file", ["unlink", "rename", "append", "relabelfrom", "relabelto"], False)
+    check(broker, fence, "file", ["open", "read"], True)
+    check(broker, fence, "file", ["write", "append", "unlink", "rename"], False)
+    check(helper, obj("droidloom_package_cgroup_events"), "file", ["getattr", "open", "read"], True)
+    check(helper, obj("droidloom_package_cgroup_events"), "file", ["write", "append", "setattr"], False)
+    check(client, obj("p4_linux_mac_release_input_t"), "file", ["getattr", "open", "read"], True)
+    for subject in [helper, client]:
+        check(subject, obj("p4_linux_product_store_t"), "file", ["open", "read", "write", "append"], False)
+    check(helper, kernel, "security", ["load_policy", "setenforce", "setbool"], False)
+
+    lines = export_binary_policy(policy, binary, export)
+    transitions = [
+        "(roletransition system_r droidloom_package_helper_exec process r)",
+        "(typetransition p4_linux_user_session_t droidloom_package_helper_exec process droidloom_package_helper)",
+        "(typetransition p4_linux_user_session_t droidloom_public_control_client_exec process droidloom_public_control_client)",
+        "(typetransition p4_linux_user_executor_t droidloom_public_control_client_exec process droidloom_public_control_client)",
+        '(typetransition p4_linux_setup_t p4_linux_run_t dir "droidloom" droidloom_public_control_dir)',
+        '(typetransition droidloom_broker droidloom_public_control_dir sock_file "control.sock" droidloom_public_control_socket)',
+        '(typetransition droidloom_package_helper droidloom_package_config_dir file "setup.lock" p4_linux_mac_setup_lock_t)',
+        '(typetransition droidloom_package_helper droidloom_package_selection_dir file "package-maintenance.json" droidloom_package_fence)',
+    ]
+    missing = [line for line in transitions if line not in lines]
+    if missing:
+        raise ValueError("Linked binary lacks exact automatic transitions: " + repr(missing))
+    return {
+        "binary_access_checks": len(checks),
+        "exact_automatic_transitions": len(transitions),
+        "access_matrix_sha256": hashlib.sha256(
+            json.dumps(checks, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+        "binary_export_sha256": sha256(export),
+    }
 
 
 def main():
@@ -74,6 +243,7 @@ def main():
         "linux-application-roles.cil", "linux-install-catalog.cil",
         "ubuntu-dbus.cil", "ubuntu-native-selinux-query.cil",
         "ubuntu-native-pam.cil",
+        "linux-package-maintenance.cil", "linux-public-control.cil",
     )
     components = [here / name for name in component_names]
     sources = [compiler, library, args.linux_board_cil, *args.android_cil, *components,
@@ -96,6 +266,7 @@ def main():
         linked = work / "combined.policy"
         compile_policy(compiler, [*args.android_cil, board, *components, shared], linked, contexts, environment)
         shared_access = verify(library, linked, contract)
+        host_control = verify_host_control(library, linked, work / "host-control-binary.cil")
         result = {
             "android_original": sha256(original),
             "secilc": sha256(compiler),
@@ -105,6 +276,7 @@ def main():
             "components": {part.name: sha256(part) for part in components},
             "output": sha256(linked),
             "shared_payload_android_access": shared_access,
+            "host_control_binary_access": host_control,
             "shared_payload_deriver": sha256(here / "derive_shared_payload_cgroup_policy.py"),
         }
         os.replace(linked, output)

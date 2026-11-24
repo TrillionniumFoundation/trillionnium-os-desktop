@@ -2,13 +2,14 @@
 //! This borrows the existing base reservation and selected runtime manifests.
 //! It never creates a legacy namespace owner or supplies a readiness result.
 use super::*;
-use crate::production_selection::early_generation::EarlyBaseAdmission;
+use crate::production_selection::early_generation::{EarlyBaseAdmission, EarlyBaseRetirement};
 
 pub(crate) struct EarlyQueryResources {
     base_manifest: SealedFile,
     manifest: SealedFile,
     cohort: String,
     runtime: String,
+    host_uid: u32,
     userns: File,
     uids: IdRange,
     gids: IdRange,
@@ -92,6 +93,7 @@ impl EarlyQueryResources {
             manifest,
             cohort,
             runtime,
+            host_uid: selection.spec().host_uid,
             userns,
             uids,
             gids,
@@ -133,6 +135,17 @@ impl EarlyQueryResources {
     pub(crate) fn mount(&self, admission: &EarlyBaseAdmission<'_>) -> Result<BorrowedFd<'_>> {
         self.revalidate(admission)?;
         Ok(self.query.mount())
+    }
+
+    /// No query loop exists in the kernel-first layout. Its retained tmpfs,
+    /// projected files and original source files may close only after the real
+    /// Android root has detached and the original PIDFD has ended.
+    pub(crate) fn retire_after_early_tree(self, retired: &EarlyBaseRetirement) -> Result<EarlyQueryRetirement> {
+        retired.verify_mount_retirement(&self.userns, self.host_uid, &self.cohort)?;
+        self.query.revalidate(self.uids, self.gids)?;
+        let value = EarlyQueryRetirement { cohort: self.cohort.clone(), runtime: self.runtime.clone() };
+        drop(self);
+        Ok(value)
     }
 
     /// Return only the real projected private role and its selected counterpart.
@@ -193,6 +206,19 @@ impl EarlyQueryResources {
         )?;
         self.revalidate(admission)?;
         Ok([copy, original])
+    }
+}
+
+/// Only the actual retained query owner can issue this result. It cannot be
+/// deserialized or replaced with a package manifest/retirement assertion.
+pub(crate) struct EarlyQueryRetirement {
+    cohort: String,
+    runtime: String,
+}
+impl EarlyQueryRetirement {
+    pub(crate) fn verify_selection(&self, cohort: &str, runtime: &str) -> Result<()> {
+        require(self.cohort == cohort && self.runtime == runtime,
+            "retired early query belongs to another selected release")
     }
 }
 

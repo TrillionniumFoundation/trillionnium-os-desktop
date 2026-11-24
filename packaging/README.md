@@ -157,6 +157,54 @@ New Main and business qualifications use the v2 protocol and
 `/var/lib/droidloom/qualification/pocket4`; old home-directory receipts cannot
 qualify the new mapped Main or its held guest-entry helper.
 
+## Explicit launch observations in runtime plans
+
+The existing `droidloom-applications --runtime-plan PLAN
+--expect-runtime-plan-sha256 SHA256 --expect-app-count COUNT` dispatcher accepts
+schema 3 for an explicit launch-only route. Keep the complete selected application
+set, including blocked applications, and obtain `expected_epoch` from the actual
+current runtime. The existing Main receipt, gate registry, source receipt and
+runtime-plan pins remain required. A material inventory or an APK manifest cannot
+supply a runtime epoch or qualify Main.
+
+An application row selects this route with `launch.specification`, a `FilePin`
+containing the absolute cell-specification `path`, exact `bytes` and `sha256`, and
+`launch.component`, the exact package/activity component. It also requires the
+complete `expected_input`: version code, every APK name/length/digest and the
+independently reviewed source/signature receipt. A component extracted from the
+selected APK is only a candidate: its current enabled state and installed identity
+must still be observed. A row cannot select both `launch` and a business `leaf`,
+or combine this route with the separate Firefox public-browser invocation.
+
+The route executes through the existing typed supervisor control API. It first
+reads the current enabled `MAIN`/`LAUNCHER` catalog and requires one matching
+normalized component from the selected package. It checks the actual running
+owner, then inspects PackageManager identity, APK bytes, Android user/UID and
+runtime epoch against the selected input. Gallery retains its existing whole-image
+custody requirement. After rechecking its pinned inputs, it sends one typed
+`Launch` request and validates the returned inspection and the original owned task
+binding. A final inspection must still agree with the same owner and epoch.
+There is no shell command, task-ID authority, automatic retry, or replacement of
+signature, version, selector or source validation.
+
+A successful observation has status `launch_only_business_pending`, increments
+`launch_only_invocations`, and records `launch_observation` with the exact catalog
+component and the supervisor's observed object, composer-display, Android-display
+and task binding. Those numeric values describe the observed result; they grant
+no independent authority over a task. This route does not close an application,
+prove that an existing activity was replaced by a fresh task, or reopen it.
+`close_observed`, `reopen_observed` and `fresh_task_proven` remain false.
+
+Launch-only observations leave every business/common gate pending, contribute no
+accepted application, and remain included in `unsupported_business_flows` until
+a dedicated business route is available and qualified. The report keeps
+`accepted_applications` at zero and `runtime_qualified` and `production_ready`
+false; the CLI prints the partial report and exits with its existing incomplete
+acceptance error. Preparing route JSON, compiling the dispatcher or observing one
+owned launch does not establish application production readiness. A failure after
+a launch preserves any observed binding for reconciliation and must not trigger
+an automatic replay.
+
 ## Build and installation ownership
 
 The Rust package builder produces `droidloom-runtime` and `droidloom-image`.

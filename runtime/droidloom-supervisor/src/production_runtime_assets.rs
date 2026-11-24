@@ -55,7 +55,7 @@ use query::{QueryDeclaration, QueryResources};
 #[path = "production_runtime_native_assets.rs"]
 mod native;
 use native::{NativeDeclaration, NativeResources};
-pub(crate) use query::{EarlyQueryResources, QueryLayout, QueryRole, RuntimeQueryData, RuntimeQueryExecutable};
+pub(crate) use query::{EarlyQueryResources, EarlyQueryRetirement, QueryLayout, QueryRole, RuntimeQueryData, RuntimeQueryExecutable};
 
 
 /// Pure declaration validation shared by early boot intake and the actual

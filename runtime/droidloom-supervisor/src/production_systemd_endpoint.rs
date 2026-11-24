@@ -602,6 +602,10 @@ impl AuthenticatedManagerEndpoint {
         }
     }
     pub(crate) fn capture_package(owner: PackageMacOwner, deadline: Instant) -> Result<Self> {
+        if owner.selection().is_kernel_first() {
+            let client = EarlyManagerClient::package(owner).map_err(|error| io::Error::other(error.to_string()))?;
+            return Self::from_origin(ManagerOrigin::KernelFirst(client), deadline);
+        }
         let issuer =
             HostPeerIssuer::package(owner).map_err(|error| io::Error::other(error.to_string()))?;
         Self::capture(issuer, deadline)

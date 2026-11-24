@@ -13,7 +13,7 @@ use crate::production_namespace::ApplicationAuthority;
 
 #[path = "production_early_query_assets.rs"]
 mod early;
-pub(crate) use early::EarlyQueryResources;
+pub(crate) use early::{EarlyQueryResources, EarlyQueryRetirement};
 
 const MAX_QUERY: u64 = 128 * 1024 * 1024;
 const QUERY_EXEC: &[u8; 35] = b"u:object_r:droidloom_query_exec:s0\0";

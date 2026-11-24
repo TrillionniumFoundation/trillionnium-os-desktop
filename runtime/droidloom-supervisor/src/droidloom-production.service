@@ -1,8 +1,9 @@
 [Unit]
 Description=Droidloom production cell broker
-Requires=droidloom-manager-label.service droidloom-instance-launcher.service
+Requires=systemd-tmpfiles-setup.service droidloom-manager-label.service droidloom-instance-launcher.service
+Conflicts=droidloomd.service
 BindsTo=droidloom-instance-launcher.service
-After=local-fs.target droidloom-manager-label.service droidloom-instance-launcher.service
+After=local-fs.target systemd-tmpfiles-setup.service droidloomd.service droidloom-manager-label.service droidloom-instance-launcher.service
 
 [Service]
 Type=exec

@@ -42,7 +42,9 @@ mod host_proc;
 pub(crate) use apexd_task::MacApexdTaskWitness;
 pub(crate) use host_peer::{HostPeerIssuer, LoaderHostPeerOwner};
 pub(crate) use host_peer_socket::{
-    BrokerAcceptedStream, BrokerSelectedListener, ManagerSelectedStream, PackageSelectedStream,
+    BrokerAcceptedStream, BrokerSelectedListener, KernelFirstAcceptedStream,
+    KernelFirstBrokerListener, KernelFirstPackageStream, ManagerSelectedStream,
+    PackageSelectedStream,
 };
 #[path = "production_mac_capex_requested.rs"]
 mod capex_requested;
@@ -104,7 +106,6 @@ mod board_epoch;
 pub(crate) fn run_actual_board_epoch_fixture() {
     board_epoch::tests::check_actual_joint_kernel_counter_evidence_and_aliases();
 }
-
 
 #[path = "production_mac_kernel_first.rs"]
 mod kernel_first;
@@ -967,12 +968,18 @@ impl AaPolicy {
         if declaration.early() {
             let observed = board_epoch::BoardEpoch::acquire(
                 &declaration.policy_input_sha256,
-                [&declaration.apparmor_loader_policy_sha256, &declaration.apparmor_android_policy_sha256,
-                    &declaration.apparmor_broker_policy_sha256],
+                [
+                    &declaration.apparmor_loader_policy_sha256,
+                    &declaration.apparmor_android_policy_sha256,
+                    &declaration.apparmor_broker_policy_sha256,
+                ],
             )?;
-            return Ok(Self { security, revision: observed.revision,
+            return Ok(Self {
+                security,
+                revision: observed.revision,
                 operation_revision: std::cell::Cell::new(observed.revision),
-                evidence: AaEvidence::Boot(observed) });
+                evidence: AaEvidence::Boot(observed),
+            });
         }
         let policy = aa_policy_root(&security)?;
         let revision = aa_revision(&security)?;
@@ -1043,7 +1050,11 @@ impl AaPolicy {
             security,
             revision,
             operation_revision: std::cell::Cell::new(revision),
-            evidence: AaEvidence::Direct { policy, profiles_directory, profiles },
+            evidence: AaEvidence::Direct {
+                policy,
+                profiles_directory,
+                profiles,
+            },
         };
         value.revalidate()?;
         Ok(value)
@@ -1052,8 +1063,11 @@ impl AaPolicy {
         let current = aa_revision(&self.security)?;
         let advances = matches!(&self.evidence, AaEvidence::Boot(epoch) if epoch.has_counters());
         require(
-            if advances { current >= self.operation_revision.get() }
-            else { current == self.revision },
+            if advances {
+                current >= self.operation_revision.get()
+            } else {
+                current == self.revision
+            },
             "AppArmor policy load generation changed without protected counter evidence",
         )?;
         let security = open_absolute(
@@ -1065,14 +1079,20 @@ impl AaPolicy {
             "AppArmor securityfs mount changed",
         )?;
         let (held_policy, held_directory, held_profiles) = match &self.evidence {
-            AaEvidence::Direct { policy, profiles_directory, profiles } => (policy, profiles_directory, profiles),
+            AaEvidence::Direct {
+                policy,
+                profiles_directory,
+                profiles,
+            } => (policy, profiles_directory, profiles),
             AaEvidence::Boot(epoch) => {
                 epoch.revalidate_at(current)?;
-                require(aa_revision(&self.security)? == current,
-                    "AppArmor changed during protected profile observation")?;
+                require(
+                    aa_revision(&self.security)? == current,
+                    "AppArmor changed during protected profile observation",
+                )?;
                 self.operation_revision.set(current);
                 return Ok(());
-            },
+            }
         };
         let policy = aa_policy_root(&security)?;
         require(

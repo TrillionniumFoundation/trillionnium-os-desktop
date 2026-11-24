@@ -3,11 +3,12 @@ use crate::{android, assemble, licenses, python, util::*};
 use serde_json::{Value, json};
 use std::{fs, os::unix::fs::symlink, path::Path, process::Command};
 
-#[path="early_boot_package.rs"]
+#[path = "early_boot_package.rs"]
 mod early_boot_package;
 
 const CONTAINER_HOST_PACKAGES: &[&str] = &[
     "droidloom-supervisor",
+    "droidloom-package-support",
     "droidloom-wayland",
     "droidloom-applications",
     "droidloom-doctor",
@@ -118,7 +119,9 @@ pub fn stage(repo: &Path, work: &Path, destination: &Path, clean: bool, jobs: us
         host.arg("-p").arg(package);
     }
     run_build(&mut host)?;
-    run_build(&mut crate::container_entry_build::command(repo, &cargo, jobs))?;
+    run_build(&mut crate::container_entry_build::command(
+        repo, &cargo, jobs,
+    ))?;
     assemble::prepare_complete_inputs(repo, &work, "x86_64")?;
     python::prepare(repo, &work)?;
     assemble::mesa_tools(&work, jobs)?;
@@ -280,6 +283,23 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
         copy(&source, &target)?;
         mode(&target, 0o755)?;
     }
+    // The same release must contain its fixed maintenance peer; an older
+    // independently installed helper cannot retire this generation's resources.
+    let helper = host.join("droidloom-package-helper");
+    if !fs::symlink_metadata(&helper)?.is_file() {
+        return fail("production package helper must be a regular build output");
+    }
+    let target = runtime.join("usr/lib/droidloom/droidloom-package-helper");
+    copy(&helper, &target)?;
+    mode(&target, 0o755)?;
+    // tmpfiles owns this directory across individual service lifetimes. The
+    // broker owns only its original socket inode, never the shared parent.
+    let tmpfiles = runtime.join("usr/lib/tmpfiles.d/droidloom-production.conf");
+    write(
+        &tmpfiles,
+        include_bytes!("../../../packaging/tmpfiles/droidloom-production.conf"),
+    )?;
+    mode(&tmpfiles, 0o644)?;
     // Existing XDG launchers and the native presenter resolve these public
     // paths. Publish independent copies from this same normal build so a
     // complete host release cannot silently keep using an older desktop peer.
@@ -316,21 +336,39 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
     // The desktop only joins its original early owner's listener. It never
     // starts the legacy daemon or waits for the Android observer's READY.
     let desktop_unit = runtime.join("usr/lib/systemd/user/droidloom-production-desktop.service");
-    write(&desktop_unit, include_bytes!("../../../packaging/systemd/user/droidloom-production-desktop.service"))?;
+    write(
+        &desktop_unit,
+        include_bytes!("../../../packaging/systemd/user/droidloom-production-desktop.service"),
+    )?;
     mode(&desktop_unit, 0o644)?;
     let host_contexts = runtime.join("usr/share/droidloom/production/linux-service-file_contexts");
     write(
         &host_contexts,
-        include_bytes!("../../../android/framework/droidloom-readiness/board-policy/linux-service-file_contexts"),
+        include_bytes!(
+            "../../../android/framework/droidloom-readiness/board-policy/linux-service-file_contexts"
+        ),
     )?;
     mode(&host_contexts, 0o444)?;
-    let calibration_contexts=runtime.join("usr/share/droidloom/production/linux-initial-calibration-file_contexts");
-    write(&calibration_contexts,include_bytes!("../../../android/framework/droidloom-readiness/board-policy/linux-initial-calibration-file_contexts"))?;
-    mode(&calibration_contexts,0o444)?;
+    let calibration_contexts =
+        runtime.join("usr/share/droidloom/production/linux-initial-calibration-file_contexts");
+    write(
+        &calibration_contexts,
+        include_bytes!(
+            "../../../android/framework/droidloom-readiness/board-policy/linux-initial-calibration-file_contexts"
+        ),
+    )?;
+    mode(&calibration_contexts, 0o444)?;
     let calibration_unit = "droidloom-mac-calibration.service";
-    let system_unit=runtime.join("usr/lib/systemd/system").join(calibration_unit);
-    copy(&runtime.join("usr/share/droidloom/production").join(calibration_unit),&system_unit)?;
-    mode(&system_unit,0o644)?;
+    let system_unit = runtime
+        .join("usr/lib/systemd/system")
+        .join(calibration_unit);
+    copy(
+        &runtime
+            .join("usr/share/droidloom/production")
+            .join(calibration_unit),
+        &system_unit,
+    )?;
+    mode(&system_unit, 0o644)?;
     let calibration = runtime.join("var/lib/droidloom-mac-calibration");
     fs::create_dir_all(&calibration)?;
     mode(&calibration, 0o700)?;
@@ -393,21 +431,47 @@ mod tests {
         fs::create_dir_all(&templates).unwrap();
         fs::create_dir(&host).unwrap();
         for (name, body) in [
-            ("droidloom-instance-launcher.service",include_str!("../../../runtime/droidloom-supervisor/src/droidloom-instance-launcher.service")),
-            ("droidloom-instance-factory.service",include_str!("../../../runtime/droidloom-supervisor/src/droidloom-instance-factory.service")),
-            ("droidloom-mac-calibration.service",include_str!("../../../runtime/droidloom-supervisor/src/droidloom-mac-calibration.service")),
-            ("droidloom-early-observer.service",include_str!("../../../runtime/droidloom-supervisor/src/droidloom-early-observer.service")),
+            (
+                "droidloom-instance-launcher.service",
+                include_str!(
+                    "../../../runtime/droidloom-supervisor/src/droidloom-instance-launcher.service"
+                ),
+            ),
+            (
+                "droidloom-instance-factory.service",
+                include_str!(
+                    "../../../runtime/droidloom-supervisor/src/droidloom-instance-factory.service"
+                ),
+            ),
+            (
+                "droidloom-mac-calibration.service",
+                include_str!(
+                    "../../../runtime/droidloom-supervisor/src/droidloom-mac-calibration.service"
+                ),
+            ),
+            (
+                "droidloom-early-observer.service",
+                include_str!(
+                    "../../../runtime/droidloom-supervisor/src/droidloom-early-observer.service"
+                ),
+            ),
             (
                 "droidloom-container-guest.socket",
-                include_str!("../../../runtime/droidloom-supervisor/src/droidloom-container-guest.socket"),
+                include_str!(
+                    "../../../runtime/droidloom-supervisor/src/droidloom-container-guest.socket"
+                ),
             ),
             (
                 "droidloom-container-entry.service",
-                include_str!("../../../runtime/droidloom-supervisor/src/droidloom-container-entry.service"),
+                include_str!(
+                    "../../../runtime/droidloom-supervisor/src/droidloom-container-entry.service"
+                ),
             ),
             (
                 "droidloom-container-services.target",
-                include_str!("../../../runtime/droidloom-supervisor/src/droidloom-container-services.target"),
+                include_str!(
+                    "../../../runtime/droidloom-supervisor/src/droidloom-container-services.target"
+                ),
             ),
             (
                 "droidloom-production.service",
@@ -435,7 +499,11 @@ mod tests {
         )
         .unwrap();
         assert!(production_host_payload(&repo, &host, &runtime).is_err());
-        fs::write(host.join("droidloom-container-entry"), b"package-copy fixture: container-entry").unwrap();
+        fs::write(
+            host.join("droidloom-container-entry"),
+            b"package-copy fixture: container-entry",
+        )
+        .unwrap();
         // A core-only host build is still incomplete for the native desktop.
         assert!(production_host_payload(&repo, &host, &runtime).is_err());
         for binary in DESKTOP_CLIENT_BINARIES {
@@ -443,7 +511,34 @@ mod tests {
                 fs::write(host.join(binary), format!("normal desktop peer: {binary}")).unwrap();
             }
         }
+        assert!(production_host_payload(&repo, &host, &runtime).is_err());
+        fs::write(
+            host.join("droidloom-package-helper"),
+            b"normal fixed maintenance peer",
+        )
+        .unwrap();
         production_host_payload(&repo, &host, &runtime).unwrap();
+        let helper = runtime.join("usr/lib/droidloom/droidloom-package-helper");
+        assert_eq!(
+            fs::read(&helper).unwrap(),
+            fs::read(host.join("droidloom-package-helper")).unwrap()
+        );
+        assert_eq!(fs::metadata(&helper).unwrap().mode() & 0o7777, 0o755);
+        assert_ne!(
+            fs::metadata(&helper).unwrap().ino(),
+            fs::metadata(host.join("droidloom-package-helper"))
+                .unwrap()
+                .ino()
+        );
+        let tmpfiles = runtime.join("usr/lib/tmpfiles.d/droidloom-production.conf");
+        assert_eq!(
+            fs::read(&tmpfiles).unwrap(),
+            include_bytes!("../../../packaging/tmpfiles/droidloom-production.conf")
+        );
+        let metadata = fs::symlink_metadata(tmpfiles).unwrap();
+        assert!(metadata.is_file());
+        assert_eq!(metadata.nlink(), 1);
+        assert_eq!(metadata.mode() & 0o7777, 0o644);
         for binary in DESKTOP_CLIENT_BINARIES {
             let source = host.join(binary);
             let staged = runtime.join("usr/bin").join(binary);
@@ -458,15 +553,25 @@ mod tests {
             fs::read(runtime.join("usr/bin/droidloomctl")).unwrap(),
             fs::read(runtime.join("usr/lib/droidloom/production/current/droidloomctl")).unwrap(),
         );
-        assert!(!runtime.join("usr/lib/systemd/user/droidloom.service").exists());
+        assert!(
+            !runtime
+                .join("usr/lib/systemd/user/droidloom.service")
+                .exists()
+        );
         let user_unit = runtime.join("usr/lib/systemd/user/droidloom-production-desktop.service");
         let metadata = fs::symlink_metadata(&user_unit).unwrap();
         assert!(metadata.is_file());
         assert_eq!(metadata.mode() & 0o7777, 0o644);
         assert_eq!(metadata.nlink(), 1);
         let body = fs::read_to_string(user_unit).unwrap();
-        assert_eq!(body, include_str!("../../../packaging/systemd/user/droidloom-production-desktop.service"));
-        let start = body.lines().find_map(|line| line.strip_prefix("ExecStart=")).unwrap();
+        assert_eq!(
+            body,
+            include_str!("../../../packaging/systemd/user/droidloom-production-desktop.service")
+        );
+        let start = body
+            .lines()
+            .find_map(|line| line.strip_prefix("ExecStart="))
+            .unwrap();
         assert_eq!(start, "/usr/bin/droidloom-wayland --production");
         assert!(runtime.join("usr/bin/droidloom-wayland").is_file());
         // These dependencies would wait for the Binder service whose Denial
@@ -475,7 +580,10 @@ mod tests {
         assert!(!body.contains("droidloom-production.service"));
         assert!(!body.contains("droidloomd.service"));
         assert!(!body.contains("--cell"));
-        assert!(body.lines().any(|line| line == "WantedBy=graphical-session.target"));
+        assert!(
+            body.lines()
+                .any(|line| line == "WantedBy=graphical-session.target")
+        );
 
         for (name, expected) in [
             ("ubuntu-native-file_contexts", include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-native-file_contexts").as_slice()),
@@ -488,16 +596,29 @@ mod tests {
         }
         for unit in fs::read_dir(runtime.join("usr/share/droidloom/production")).unwrap() {
             let unit = unit.unwrap().path();
-            if unit.file_name().unwrap()=="linux-initial-calibration-file_contexts" {
-                assert_eq!(fs::metadata(&unit).unwrap().permissions().mode()&0o777,0o444);
-                assert_eq!(fs::read(&unit).unwrap(),include_bytes!("../../../android/framework/droidloom-readiness/board-policy/linux-initial-calibration-file_contexts"));
+            if unit.file_name().unwrap() == "linux-initial-calibration-file_contexts" {
+                assert_eq!(
+                    fs::metadata(&unit).unwrap().permissions().mode() & 0o777,
+                    0o444
+                );
+                assert_eq!(
+                    fs::read(&unit).unwrap(),
+                    include_bytes!(
+                        "../../../android/framework/droidloom-readiness/board-policy/linux-initial-calibration-file_contexts"
+                    )
+                );
                 continue;
             }
             if unit.file_name().unwrap() == "linux-service-file_contexts" {
-                assert_eq!(fs::metadata(&unit).unwrap().permissions().mode() & 0o777, 0o444);
+                assert_eq!(
+                    fs::metadata(&unit).unwrap().permissions().mode() & 0o777,
+                    0o444
+                );
                 assert_eq!(
                     fs::read(&unit).unwrap().as_slice(),
-                    include_bytes!("../../../android/framework/droidloom-readiness/board-policy/linux-service-file_contexts")
+                    include_bytes!(
+                        "../../../android/framework/droidloom-readiness/board-policy/linux-service-file_contexts"
+                    )
                 );
                 continue;
             }
@@ -511,14 +632,26 @@ mod tests {
                 0o644
             );
             if unit.extension().is_some_and(|ext| ext == "socket") {
-                assert!(body.lines().any(|line| line == "Service=droidloom-container-entry.service"));
+                assert!(
+                    body.lines()
+                        .any(|line| line == "Service=droidloom-container-entry.service")
+                );
                 assert!(body.lines().any(|line| line == "DirectoryMode=0700"));
                 continue;
             }
             if unit.extension().is_some_and(|ext| ext == "target") {
-                assert!(body.lines().any(|line| line == "BindsTo=droidloom-container-entry.service"));
-                assert!(body.lines().any(|line| line == "After=droidloom-container-entry.service"));
-                assert!(body.lines().any(|line| line == "PropagatesStopTo=droidloom-container-entry.service"));
+                assert!(
+                    body.lines()
+                        .any(|line| line == "BindsTo=droidloom-container-entry.service")
+                );
+                assert!(
+                    body.lines()
+                        .any(|line| line == "After=droidloom-container-entry.service")
+                );
+                assert!(
+                    body.lines()
+                        .any(|line| line == "PropagatesStopTo=droidloom-container-entry.service")
+                );
                 continue;
             }
             let command = body
@@ -536,12 +669,22 @@ mod tests {
             assert_eq!(fs::read(&target).unwrap(), fs::read(original).unwrap());
         }
         // The boot factory is shipped as a template and pulled in by the launcher.
-        let factory = runtime.join("usr/share/droidloom/production/droidloom-instance-factory.service");
+        let factory =
+            runtime.join("usr/share/droidloom/production/droidloom-instance-factory.service");
         assert!(factory.is_file());
         let factory_body = fs::read_to_string(factory).unwrap();
-        assert!(factory_body.lines().any(|line| line == "ExecStart=/usr/lib/droidloom/production/current/droidloomd --adopt-early-factory"));
-        assert!(!factory_body.lines().any(|line| line == "[Install]" || line.starts_with("WantedBy=")));
-        assert!(!runtime.join("usr/lib/systemd/system/droidloom-instance-factory.service").exists());
+        assert!(factory_body.lines().any(|line| line
+            == "ExecStart=/usr/lib/droidloom/production/current/droidloomd --adopt-early-factory"));
+        assert!(
+            !factory_body
+                .lines()
+                .any(|line| line == "[Install]" || line.starts_with("WantedBy="))
+        );
+        assert!(
+            !runtime
+                .join("usr/lib/systemd/system/droidloom-instance-factory.service")
+                .exists()
+        );
         // Staging the public files cannot install a unit or select a cell.
         assert!(!runtime.join("etc").exists());
         assert!(

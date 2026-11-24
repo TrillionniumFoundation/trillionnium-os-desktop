@@ -661,4 +661,4 @@ pub(crate) use application::{
 #[path = "production_early_lifecycle.rs"]
 mod lifecycle;
 pub use lifecycle::complete_early_resources;
-pub(crate) use lifecycle::{QueryObservation, observe_query};
+pub(crate) use lifecycle::{EarlyPackageRetirement, QueryObservation, observe_query};

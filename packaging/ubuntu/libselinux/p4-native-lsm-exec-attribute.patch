@@ -13,21 +13,123 @@
  
  #define UNSET (char *) -1
  
-@@ -191,6 +197,62 @@
+@@ -118,6 +124,87 @@
+ 	return open(path, flags | O_CLOEXEC);
+ }
+ 
++/*
++ * Read only the current thread's SELinux fscreate attribute. LSM_FLAG_SINGLE
++ * prevents a stacked LSM's context from being mistaken for SELinux. An unset
++ * fscreate SID is a valid record with ctx_len == 0, not a missing LSM record.
++ */
++static int getfscreate_native(char **context)
++{
++#if defined(__NR_lsm_get_self_attr) && defined(LSM_ATTR_FSCREATE) && \
++    defined(LSM_FLAG_SINGLE) && defined(LSM_ID_SELINUX)
++	struct lsm_ctx *ctx;
++	uint32_t capacity, size;
++	int ret, saved_errno;
++	char *value = NULL;
++
++	if (selinux_page_size > UINT32_MAX - sizeof(*ctx) - sizeof(uint64_t)) {
++		errno = E2BIG;
++		return -1;
++	}
++	/* The original procattr reader accepts at most one page of context.
++	 * Leave room for the native header and its kernel alignment padding. */
++	capacity = selinux_page_size + sizeof(*ctx) + sizeof(uint64_t) - 1;
++	ctx = calloc(1, capacity);
++	if (!ctx)
++		return -1;
++	do {
++		memset(ctx, 0, capacity);
++		ctx->id = LSM_ID_SELINUX;
++		size = capacity;
++		ret = syscall(__NR_lsm_get_self_attr, LSM_ATTR_FSCREATE, ctx,
++			      &size, LSM_FLAG_SINGLE);
++	} while (ret < 0 && errno == EINTR);
++	if (ret < 0)
++		goto out;
++	if (ret != 1 || size < sizeof(*ctx) || size > capacity ||
++	    ctx->id != LSM_ID_SELINUX || ctx->flags != 0 ||
++	    ctx->len != size || ctx->ctx_len > size - sizeof(*ctx)) {
++		errno = EPROTO;
++		ret = -1;
++		goto out;
++	}
++	/* Kernel records include only the exact zeroed alignment padding. */
++	size_t used = sizeof(*ctx) + ctx->ctx_len;
++	if (size != ((used + 7U) & ~(size_t)7U)) {
++		errno = EPROTO;
++		ret = -1;
++		goto out;
++	}
++	for (size_t i = used; i < size; i++) {
++		if (((const unsigned char *)ctx)[i] != 0) {
++			errno = EPROTO;
++			ret = -1;
++			goto out;
++		}
++	}
++	if (ctx->ctx_len) {
++		if (ctx->ctx[ctx->ctx_len - 1] != '\0' ||
++		    memchr(ctx->ctx, '\0', ctx->ctx_len - 1)) {
++			errno = EPROTO;
++			ret = -1;
++			goto out;
++		}
++		value = strdup((const char *)ctx->ctx);
++		if (!value) {
++			ret = -1;
++			goto out;
++		}
++	}
++	*context = value;
++	ret = 0;
++out:
++	saved_errno = errno;
++	free(ctx);
++	errno = saved_errno;
++	return ret;
++#else
++	(void)context;
++	errno = ENOSYS;
++	return -1;
++#endif
++}
++
+ static int getprocattrcon_raw(char **context, pid_t pid, const char *attr,
+ 			      const char *prev_context)
+ {
+@@ -136,6 +223,12 @@
+ 			return -1;
+ 		}
+ 		return 0;
++	}
++
++	if (pid == 0 && !strcmp(attr, "fscreate")) {
++		ret = getfscreate_native(context);
++		if (ret == 0 || (errno != ENOSYS && errno != EOPNOTSUPP))
++			return ret;
+ 	}
+ 
+ 	fd = openattr(pid, attr, O_RDONLY | O_CLOEXEC);
+@@ -191,6 +284,69 @@
  	return ret;
  }
  
 +
 +/*
-+ * Select only SELinux exec and keycreate on stacked-LSM kernels. The native
-+ * interface performs the same SELinux setexec/setkeycreate and target checks,
++ * Select only SELinux exec, keycreate and fscreate on stacked-LSM kernels. The native
++ * interface performs the same SELinux setexec/setkeycreate/setfscreate and target checks,
 + * without requiring write access to a task's procfs file class.
 + * Only kernels without this operation fall back to the original procattr ABI.
 + */
 +static int setprocattr_native(const char *context, const char *attr)
 +{
 +#if defined(__NR_lsm_set_self_attr) && defined(LSM_ATTR_EXEC) && \
-+    defined(LSM_ATTR_KEYCREATE) && defined(LSM_ID_SELINUX)
++    defined(LSM_ATTR_KEYCREATE) && defined(LSM_ATTR_FSCREATE) && \
++    defined(LSM_ID_SELINUX)
 +	struct lsm_ctx *ctx;
 +	unsigned int native_attr;
 +	size_t length = context ? strlen(context) : 0;
@@ -38,6 +140,8 @@
 +		native_attr = LSM_ATTR_EXEC;
 +	else if (!strcmp(attr, "keycreate"))
 +		native_attr = LSM_ATTR_KEYCREATE;
++	else if (!strcmp(attr, "fscreate"))
++		native_attr = LSM_ATTR_FSCREATE;
 +	else {
 +		errno = EINVAL;
 +		return -1;
@@ -61,6 +165,10 @@
 +		ret = syscall(__NR_lsm_set_self_attr, native_attr, ctx,
 +			      (uint32_t)total, 0);
 +	} while (ret < 0 && errno == EINTR);
++	if (ret > 0) {
++		errno = EPROTO;
++		ret = -1;
++	}
 +	saved_errno = errno;
 +	free(ctx);
 +	errno = saved_errno;
@@ -76,7 +184,7 @@
  static int setprocattrcon_raw(const char *context, const char *attr,
  			      char **prev_context)
  {
-@@ -207,6 +269,26 @@
+@@ -207,6 +363,27 @@
  	if (context && *prev_context && *prev_context != UNSET
  	    && !strcmp(context, *prev_context))
  		return 0;
@@ -84,7 +192,8 @@
 +
 +	/* Keep the original cache semantics and error propagation. In particular,
 +	 * policy denials must never fall back to another attribute interface. */
-+	if (!strcmp(attr, "exec") || !strcmp(attr, "keycreate")) {
++	if (!strcmp(attr, "exec") || !strcmp(attr, "keycreate") ||
++	    !strcmp(attr, "fscreate")) {
 +		if (context) {
 +			context2 = strdup(context);
 +			if (!context2)
@@ -103,7 +212,7 @@
  
  	fd = openattr(0, attr, O_RDWR | O_CLOEXEC);
  	if (fd < 0)
-@@ -228,6 +310,7 @@
+@@ -228,6 +405,7 @@
  	errno_hold = errno;
  	close(fd);
  	errno = errno_hold;

@@ -417,7 +417,10 @@ mod tests {
 
     #[test]
     fn held_parent_prevents_path_rebinding_from_redirecting_mutations() {
-        let root=tempfile::tempdir().unwrap();
+        // This guard intentionally pins every ancestor link count. Global /tmp
+        // changes as other tests create directories, so keep this fixture under
+        // the stable checkout without relaxing the production identity checks.
+        let root=tempfile::tempdir_in(env!("CARGO_MANIFEST_DIR")).unwrap();
         let original=root.path().join("parent"); fs::create_dir(&original).unwrap();
         let path=original.join("input.json"); fs::write(&path,b"{}\n").unwrap();
         let reference=FilePin {path:path.clone(),bytes:3,sha256:hex::encode(Sha256::digest(b"{}\n"))};

@@ -11,6 +11,12 @@ use super::*;
 use std::os::fd::{IntoRawFd, OwnedFd};
 use std::os::unix::net::{UnixListener, UnixStream};
 
+#[path = "production_mac_kernel_first_socket.rs"]
+mod kernel_first_socket;
+pub(crate) use kernel_first_socket::{
+    KernelFirstAcceptedStream, KernelFirstBrokerListener, KernelFirstPackageStream,
+};
+
 const READY: u32 = 0x5048_5330;
 const REPLY: u32 = 0x5048_5331;
 const CREATE_BOUND: Duration = Duration::from_secs(10);

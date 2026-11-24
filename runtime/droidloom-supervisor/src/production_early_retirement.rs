@@ -16,6 +16,9 @@ pub(crate) struct EarlyBaseRetirement {
     cohort: String,
 }
 impl EarlyBaseRetirement {
+    pub(super) fn verify_original_exit(&self) -> io::Result<()> {
+        verify_exit(&self.original_pidfd)
+    }
     pub(super) fn finish(
         board: &EarlyBoardResources,
         group: &PreparedCgroup,

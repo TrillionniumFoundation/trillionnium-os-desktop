@@ -128,6 +128,29 @@ fn checked_ready_reply(
     Ok(())
 }
 
+fn checked_wait_ready_reply(
+    stream: &mut UnixStream,
+    deadline: Instant,
+    check: &impl Fn() -> io::Result<()>,
+) -> io::Result<()> {
+    // A queue entry retains its own deadline when Android becomes ready.
+    // Revalidation may block on Android, so check again before a positive reply.
+    if Instant::now() < deadline {
+        check()?;
+        if Instant::now() < deadline {
+            let _ = reply(
+                stream,
+                true,
+                true,
+                "Android boot completed and ActivityManager answers Binder",
+            );
+            return Ok(());
+        }
+    }
+    let _ = reply(stream, false, false, "Android readiness deadline expired");
+    Ok(())
+}
+
 pub(super) struct Clients {
     control: Control,
     pending: Vec<(UnixStream, Instant)>,
@@ -145,8 +168,8 @@ impl Clients {
         check: impl Fn() -> io::Result<()>,
     ) -> io::Result<()> {
         if android {
-            for (mut socket, _) in self.pending.drain(..) {
-                checked_ready_reply(&mut socket, &check)?;
+            for (mut socket, deadline) in self.pending.drain(..) {
+                checked_wait_ready_reply(&mut socket, deadline, &check)?;
             }
         } else {
             self.pending.retain_mut(|(socket, deadline)| {
@@ -200,6 +223,88 @@ mod tests {
         checked_ready_reply(&mut service, &|| Ok(())).unwrap();
         let n = client.read(&mut b).unwrap();
         let observed: serde_json::Value = serde_json::from_slice(&b[..n]).unwrap();
+        assert_eq!(observed["state"], "running");
+    }
+
+    fn complete_reply(mut service: UnixStream, mut client: UnixStream) -> serde_json::Value {
+        service.flush().unwrap();
+        drop(service);
+        client
+            .set_read_timeout(Some(Duration::from_secs(1)))
+            .unwrap();
+        let mut bytes = Vec::new();
+        client.read_to_end(&mut bytes).unwrap();
+        serde_json::from_slice(&bytes).unwrap()
+    }
+
+    #[test]
+    fn expired_waiter_cannot_become_ready_or_revalidate_android() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("readiness.sock");
+        let listener = UnixListener::bind(&path).unwrap();
+        listener.set_nonblocking(true).unwrap();
+        let node = fs::symlink_metadata(&path).unwrap();
+        let (service, mut client) = UnixStream::pair().unwrap();
+        let mut clients = Clients {
+            control: Control {
+                listener,
+                identity: (node.dev(), node.ino()),
+            },
+            pending: vec![(service, Instant::now() - Duration::from_secs(1))],
+        };
+        // Exercise the actual transition that drains queued waiters when the
+        // observed Android generation first becomes ready.
+        clients
+            .poll(true, || {
+                panic!("an expired waiter must not start another Android query")
+            })
+            .unwrap();
+        client
+            .set_read_timeout(Some(Duration::from_secs(1)))
+            .unwrap();
+        let mut bytes = Vec::new();
+        client.read_to_end(&mut bytes).unwrap();
+        let observed: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+        assert_eq!(observed["ok"], false);
+        assert_eq!(observed["state"], "starting");
+        assert_eq!(observed["message"], "Android readiness deadline expired");
+    }
+
+    #[test]
+    fn waiter_expiring_during_kernel_revalidation_gets_no_positive_reply() {
+        let (mut service, client) = UnixStream::pair().unwrap();
+        let deadline = Instant::now() + Duration::from_secs(1);
+        let checked = std::cell::Cell::new(false);
+        checked_wait_ready_reply(&mut service, deadline, &|| {
+            checked.set(true);
+            thread::sleep(
+                deadline.saturating_duration_since(Instant::now()) + Duration::from_millis(2),
+            );
+            Ok(())
+        })
+        .unwrap();
+        assert!(checked.get());
+        let observed = complete_reply(service, client);
+        assert_eq!(observed["ok"], false);
+        assert_eq!(observed["message"], "Android readiness deadline expired");
+    }
+
+    #[test]
+    fn current_waiter_still_requires_and_reports_actual_readiness() {
+        let (mut service, client) = UnixStream::pair().unwrap();
+        let checked = std::cell::Cell::new(false);
+        checked_wait_ready_reply(
+            &mut service,
+            Instant::now() + Duration::from_secs(60),
+            &|| {
+                checked.set(true);
+                Ok(())
+            },
+        )
+        .unwrap();
+        assert!(checked.get());
+        let observed = complete_reply(service, client);
+        assert_eq!(observed["ok"], true);
         assert_eq!(observed["state"], "running");
     }
 
