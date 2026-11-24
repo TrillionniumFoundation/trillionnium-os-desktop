@@ -4,6 +4,7 @@ mod assemble;
 mod bundle;
 mod coherent_images;
 mod dependencies;
+mod host_archive;
 mod image_policy;
 mod kernel_first_mac;
 mod install;
@@ -88,6 +89,9 @@ enum Action {
         work: PathBuf,
         #[arg(long, default_value_t=1)]
         jobs: usize,
+        /// Export files and the protected empty StateDirectory to this fresh child of work.
+        #[arg(long, requires = "board_policy_inputs")]
+        archive_output: Option<PathBuf>,
     },
     /// Build a separate normal user vendor with exact official CP3A binary references.
     /// Produces no replacement official system/APEX and grants no runtime qualification.
@@ -525,11 +529,16 @@ fn execute(args: Args) -> Result<()> {
             println!("{}", serde_json::to_string_pretty(&receipt)?);
             return Ok(());
         }
-        Some(Action::PackageContainerHostStage { work, jobs, board_policy_inputs }) => {
-            let stage = package::stage_container_host(
-                &repository(args.source.clone())?, work, *jobs, board_policy_inputs.as_deref(),
-            )?;
-            println!("{}", stage.display());
+        Some(Action::PackageContainerHostStage { work, jobs, board_policy_inputs, archive_output }) => {
+            let repo = repository(args.source.clone())?;
+            if let Some(destination) = archive_output {
+                let inputs = board_policy_inputs.as_deref().ok_or("host archive requires board policy inputs")?;
+                let release = host_archive::stage(&repo, work, *jobs, inputs, destination)?;
+                println!("{}", serde_json::to_string_pretty(&release)?);
+            } else {
+                let stage = package::stage_container_host(&repo, work, *jobs, board_policy_inputs.as_deref())?;
+                println!("{}", stage.display());
+            }
             return Ok(());
         }
         Some(Action::PackageStage {

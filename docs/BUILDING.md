@@ -947,3 +947,21 @@ metadata images. Verify keystore and vold startup, representative existing key
 operations and app data, new keys, honest KeyInfo security levels, and restart
 continuity. Do not reset credentials, change the original boot root, write the
 original userdata, export keys or delete the rollback copy to force a pass.
+
+
+## Export the normal Ubuntu host release
+
+Use the normal host-stage producer with --archive-output to preserve the empty
+var/lib/droidloom-mac-calibration StateDirectory as well as regular payload files.
+The flag requires --board-policy-inputs and names a fresh direct child of --work.
+
+The producer checks the clean source identity before and after normal compilation,
+rejects linked or writable payload members, and requires the original state
+directory to be empty with mode 0700. It exports a reproducible archive with root
+ownership, then extracts it privately and checks every file, permission and the
+empty directory. HOST-STAGE.json records both files and directories; RELEASE.json
+binds the final archive and manifest hashes. An existing output is never replaced.
+
+A file-only archive drops the empty StateDirectory and is not a valid input to
+the original Ubuntu calibration qualifier. Packaging success does not establish
+boot, calibration, Android readiness or application acceptance.
