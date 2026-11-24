@@ -414,6 +414,10 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
 }
 
 #[cfg(test)]
+#[path = "boot_peer_mechanism.rs"]
+mod peer_mechanism;
+
+#[cfg(test)]
 mod tests {
     use super::*;
 
