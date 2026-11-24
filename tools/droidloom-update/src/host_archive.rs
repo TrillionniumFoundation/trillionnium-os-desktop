@@ -14,6 +14,10 @@ const STATE: &str = "var/lib/droidloom-mac-calibration";
 const PUBLIC_APKS: &str = "var/lib/droidloom-public-apks";
 const ARCHIVE: &str = "HOST-STAGE.tar.xz";
 const MANIFEST: &str = "HOST-STAGE.json";
+// This installed template drop-in is the only host member outside the existing
+// /usr and SELinux trees. Do not admit arbitrary systemd configuration or @ paths.
+const NATIVE_RUNTIME_DROPIN: &str =
+    "etc/systemd/system/user-runtime-dir@.service.d/50-droidloom-native-session.conf";
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 struct Member {
@@ -66,15 +70,16 @@ fn snapshot(stage: &Path) -> Result<(Vec<Member>, Vec<Node>)> {
             .strip_prefix(stage)?
             .to_str()
             .ok_or("non-UTF8 host member")?;
-        if !(relative.starts_with("usr/") || relative.starts_with("etc/selinux/"))
-            || !relative
-                .bytes()
-                .all(|b| b.is_ascii_alphanumeric() || b"/_.-".contains(&b))
-            || relative
-                .split('/')
-                .any(|p| p == "." || p == ".." || p.is_empty())
+        if relative != NATIVE_RUNTIME_DROPIN
+            && (!(relative.starts_with("usr/") || relative.starts_with("etc/selinux/"))
+                || !relative
+                    .bytes()
+                    .all(|b| b.is_ascii_alphanumeric() || b"/_.-".contains(&b))
+                || relative
+                    .split('/')
+                    .any(|p| p == "." || p == ".." || p.is_empty()))
         {
-            return fail("unexpected host release member path");
+            return fail(format!("unexpected host release member path: {relative}"));
         }
         let m = fs::symlink_metadata(&path)?;
         if !m.is_file() || m.nlink() != 1 || m.len() >= 32 * 1024 * 1024 || m.mode() & 0o7022 != 0 {
