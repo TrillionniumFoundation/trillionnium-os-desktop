@@ -24,3 +24,10 @@ The kernel and library source changes alone do not qualify production. Query
 correctness, simultaneous SELinux and AppArmor reads on the same socket, and
 normal D-Bus startup require an actual boot of the matching complete kernel,
 modules, and initrd batch with the original enforcing policy.
+
+The second quilt patch only repairs the notify test fixture: the original
+fixture required an external last command that Ubuntu's declared build
+dependencies did not provide. It now obtains the actual login timestamp
+through the same existing reader used by aa-notify, including lastlog2 and
+wtmp support. The runtime utility, all test methods, and expected denial
+counts are unchanged. The patch is separately pinned in candidate admission.

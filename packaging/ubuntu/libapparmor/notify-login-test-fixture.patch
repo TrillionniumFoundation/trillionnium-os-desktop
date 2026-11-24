@@ -1,0 +1,48 @@
+--- a/utils/test/test-aa-notify.py
++++ b/utils/test/test-aa-notify.py
+@@ -103,7 +103,7 @@
+         current_time_contents = cls.create_logfile_contents(time.time())
+         file_current.write(current_time_contents)
+ 
+-        if os.path.isfile('/var/log/wtmp'):
++        if os.path.isfile('/var/lib/lastlog/lastlog2.db') or os.path.isfile('/var/log/wtmp'):
+             if os.name == "posix":
+                 username = pwd.getpwuid(os.geteuid()).pw_name
+             else:
+@@ -113,27 +113,15 @@
+             if 'SUDO_USER' in os.environ:
+                 username = os.environ.get('SUDO_USER')
+ 
+-            return_code, output = cmd_pipe_stderr(['last', username, '--fullnames', '--time-format', 'iso'])
+-            output = output.split('\n')[0]  # the first line is enough
+-            # example of output (util-linux last command):
+-            # ubuntu  tty7         :0               2024-01-05T14:29:11-03:00   gone - no logout
+-            # example of output (wtmpdb last command, local login):
+-            # ubuntu  tty7                          2025-01-15T09:32:49-0800   - still logged in
+-            # example of output (wtmpdb last command, remote login)
+-            # ubuntu  tty7         192.168.122.1    2024-01-05T14:29:11-03:00   gone - no logout
+-            # example of output (wtmpdb last command, login via lxd-agent)
+-            # ubuntu                                 2025-03-18T00:34:25+0000  - still logged in
+-            if output.startswith(username):
+-                for col in range(3, 1, -1):
+-                    try:
+-                        last_login_epoch = get_last_login_timestamp(username)
+-                        # add 60 seconds to the epoch so that the time in the logs are AFTER login time
+-                        last_login_contents = cls.create_logfile_contents(last_login_epoch + 60)
+-                        file_last_login.write(last_login_contents)
+-                        file_last_login.flush()
+-                        break
+-                    except (IndexError, ValueError):
+-                        continue
++            # Use the same reader as aa-notify. The separate "last" program
++            # can use a different database and otherwise leave this fixture
++            # empty even when aa-notify finds a real login timestamp.
++            last_login_epoch = get_last_login_timestamp(username)
++            if last_login_epoch:
++                # Keep the original records strictly after the actual login.
++                last_login_contents = cls.create_logfile_contents(last_login_epoch + 60)
++                file_last_login.write(last_login_contents)
++                file_last_login.flush()
+ 
+     @classmethod
+     def tearDownClass(cls):
