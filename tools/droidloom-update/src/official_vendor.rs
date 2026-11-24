@@ -17,6 +17,8 @@ use std::time::{Duration, Instant};
 
 #[path = "official_vendor_keymint_test.rs"]
 mod keymint_test;
+#[path = "official_vendor_resume.rs"]
+pub(crate) mod resume;
 pub(super) const NATIVE_TARGETS: &[&str] = &["droidloom_cp3a_native_bridge_package"];
 pub(super) const VENDOR_TARGETS: &[&str] = &[
     "vendorimage", "secilc", "checkvintf", "host_init_verifier", "droidloom-readiness",
@@ -850,9 +852,16 @@ pub(super) fn build(
             phase: Phase::Vendor(&bridge),
         }),
     )?;
+    finish(repo, &native, &vendor_out, &bridge, out, product, inputs, None)
+}
+
+fn finish(
+    repo: &Path, native: &Path, vendor_out: &Path, bridge: &Bridge, out: &Path,
+    product: &str, inputs: &VerifiedVendorInputs, resume: Option<Value>,
+) -> Result<()> {
     inputs.verify_unchanged()?;
     bridge.archive.check()?;
-    let software_keymint_compatibility = keymint_test::run(repo, &vendor_out, out)?;
+    let software_keymint_compatibility = keymint_test::run(repo, vendor_out, out)?;
     let product_out = vendor_out.join("target/product").join(product);
     let vendor = product_out.join("vendor");
     let observed: BTreeMap<String, String> = fs::read_to_string(vendor.join("build.prop"))?
@@ -897,6 +906,7 @@ pub(super) fn build(
         return fail("normal sparse converter changed during vendor image readback");
     }
     let record = json!({"schema":"droidloom-official-gsi-independent-vendor-normal-result-v1",
+        "incremental_resume":resume,
         "normal_sparse_image_reader":sparse_converter,
         "system_ext_lib64":system_extension,"early_boot_readiness":readiness,
         "official_inputs":inputs.receipt()?,"native_build_inputs":artifact(&native.join(INPUT_NAME),16*1024*1024)?,

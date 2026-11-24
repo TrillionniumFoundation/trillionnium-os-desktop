@@ -105,6 +105,16 @@ enum Action {
         #[arg(long)]
         references: PathBuf,
     },
+    /// Continue normal vendor targets from a verified completed cache, then assemble fresh outputs.
+    OfficialGsiVendorResume {
+        #[arg(long)] work: PathBuf,
+        #[arg(long)] built_out: PathBuf,
+        #[arg(long)] out: PathBuf,
+        #[arg(long)] system_image: PathBuf,
+        #[arg(long)] references: PathBuf,
+        #[arg(long)] native_inputs_sha256: String,
+        #[arg(long)] vendor_result_sha256: String,
+    },
     /// Build the complete framework Java library and Android JNI runtime only.
     /// Uses its independent exact source lock; does not install or enable roles.
     NativeRoleIngressBuild {
@@ -467,6 +477,14 @@ fn execute(args: Args) -> Result<()> {
     ) && (args.clean || args.build_only || args.bootstrapped)
     {
         return fail("fixed vendor policy does not accept cleanup, bundle or bootstrap options");
+    }
+    if let Some(Action::OfficialGsiVendorResume { work, built_out, out, system_image, references, native_inputs_sha256, vendor_result_sha256 }) = &args.command {
+        if args.clean || args.build_only || args.bootstrapped { return fail("vendor resume does not accept cleanup or bootstrap options"); }
+        let repo = repository(args.source.clone())?;
+        let capacity = std::thread::available_parallelism().map(|n| n.get()).unwrap_or(1).saturating_sub(2).max(1);
+        let jobs = args.jobs.unwrap_or(6).min(capacity);
+        if jobs == 0 { return fail("jobs must be positive"); }
+        return android::official_vendor::resume::run(&repo, work, built_out, out, system_image, references, native_inputs_sha256, vendor_result_sha256, jobs);
     }
     match &args.command {
         Some(Action::NativeGenerationPair { product }) => {

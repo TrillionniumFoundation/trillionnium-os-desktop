@@ -1474,3 +1474,22 @@ against raw/fill/skip sparse chunks, reject replacement and alias identities,
 and read back the actual vendor graphics HAL bytes and labels into an
 independent scratch directory. A successful filtered ordinary test does not
 count these explicitly selected integration cases as executed.
+
+
+### Resume a completed normal vendor cache
+
+When both ordinary compiler phases completed and later image assembly failed,
+use `official-gsi-vendor-resume` with the original `--work`, explicit
+`--built-out`, a fresh `--out`, the selected official `--system-image` and
+`--references`, and the SHA-256 of the original native input receipt and vendor
+normal-result receipt through `--native-inputs-sha256` and
+`--vendor-result-sha256`. This command acquires the existing build/source locks,
+checks the strict original inputs and completed vendor receipt, and preserves
+the referenced prior output bytes before running the ordinary vendor targets
+incrementally. It reuses the checked native distribution as an explicit binary
+input, builds changed vendor/frontend targets normally, and writes new image
+assembly into the fresh output. Existing failed receipts remain in the
+preservation record; a changed or incomplete prior cache is refused. KeyMint,
+graphics image entries, readiness, system extension and normal source recovery
+remain required. No production selection or user data is modified by this
+build command.

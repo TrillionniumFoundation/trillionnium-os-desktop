@@ -2,7 +2,7 @@ use crate::util::*;
 #[path = "native_projection.rs"]
 mod native_projection;
 #[path = "official_vendor.rs"]
-mod official_vendor;
+pub(crate) mod official_vendor;
 #[path = "keymint_software.rs"]
 mod keymint_software;
 use serde::{Deserialize, Serialize};
