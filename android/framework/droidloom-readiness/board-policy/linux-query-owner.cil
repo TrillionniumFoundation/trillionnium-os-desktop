@@ -25,13 +25,16 @@
 (typeattributeset system_file_type (droidloom_query_exec))
 (roletype object_r droidloom_provider_exec)
 (roletype object_r droidloom_provider_jar)
+(typeattributeset file_type (droidloom_provider_exec droidloom_provider_jar))
+(typeattributeset exec_type (droidloom_provider_exec))
+(typeattributeset system_file_type (droidloom_provider_exec droidloom_provider_jar))
 (typeattribute p4_fixed_query_copies)
 (typeattributeset p4_fixed_query_copies (droidloom_query_exec droidloom_provider_exec droidloom_provider_jar))
 ; The cmd/toybox copies are public original Android executable bytes, with the
 ; original exec_type/system_file_type expectations. Only their containing
-; filesystem and the inactive provider copies are private Linux data.
-(typeattributeset p4_linux_data (droidloom_query_tmpfs_t droidloom_provider_exec droidloom_provider_jar))
-(typeattributeset p4_all_board_owned (droidloom_query_exec))
+; filesystem is private Linux data; all fixed copies are public Android inputs.
+(typeattributeset p4_linux_data (droidloom_query_tmpfs_t))
+(typeattributeset p4_all_board_owned (p4_fixed_query_copies))
 (allow droidloom_broker tmpfs (filesystem (relabelfrom)))
 (allow droidloom_broker droidloom_query_tmpfs_t (filesystem (getattr mount remount unmount relabelto)))
 (allow droidloom_query_tmpfs_t droidloom_query_tmpfs_t (filesystem (associate)))
@@ -42,12 +45,12 @@
 (neverallow droidloom_broker p4_fixed_query_copies (file (write append create unlink link rename relabelfrom)))
 
 ; The complete original-role pins and the AppArmor fixed-basename rules constrain
-; the four query originals plus the original init ELF used by normal boot.
+; the four query originals, original init, and the single pinned Composer ELF.
 ; The broker cannot map/execute or mutate those public original bytes.
 (typeattribute p4_broker_query_original_files)
-(typeattributeset p4_broker_query_original_files (init_exec system_file toolbox_exec zygote_exec))
+(typeattributeset p4_broker_query_original_files (init_exec system_file toolbox_exec zygote_exec hal_graphics_composer_default_exec))
 (typeattribute p4_broker_query_read_files)
-(typeattributeset p4_broker_query_read_files (p4_broker_query_original_files droidloom_query_exec))
+(typeattributeset p4_broker_query_read_files (p4_broker_query_original_files p4_fixed_query_copies))
 (allow droidloom_broker p4_broker_query_original_files (file (getattr open read)))
 (neverallow droidloom_broker p4_broker_query_original_files (file (map execute entrypoint execute_no_trans write append create link unlink rename setattr relabelfrom relabelto)))
 (allow droidloom_broker device (dir (getattr search)))
@@ -73,13 +76,13 @@
 (typeattribute p4_android_files_without_query_originals)
 (typeattributeset p4_android_files_without_query_originals (and (p4_android_only_files) (not (p4_broker_query_read_files))))
 (typeattribute p4_android_files_without_query_copy)
-(typeattributeset p4_android_files_without_query_copy (and (p4_android_only_files) (not (droidloom_query_exec))))
+(typeattributeset p4_android_files_without_query_copy (and (p4_android_only_files) (not (p4_fixed_query_copies))))
 (typeattribute p4_nonboard_except_broker_query_read)
 (typeattributeset p4_nonboard_except_broker_query_read (and (p4_nonboard_except_broker_frontend_read) (not (p4_broker_query_original_files))))
 (typeattribute p4_nonboard_except_query_fs_source)
 (typeattributeset p4_nonboard_except_query_fs_source (and (p4_all_nonboard) (not (tmpfs))))
 (typeattribute p4_broker_frontend_image_files_without_query)
-(typeattributeset p4_broker_frontend_image_files_without_query (and (p4_broker_frontend_image_files) (not (zygote_exec))))
+(typeattributeset p4_broker_frontend_image_files_without_query (and (p4_broker_frontend_image_files) (not (p4_broker_query_original_files))))
 (typeattribute p4_android_dirs_without_query_traversal)
 (typeattributeset p4_android_dirs_without_query_traversal (and (p4_android_dirs_without_frontend_metadata) (not (device))))
 (typeattribute p4_nonboard_except_broker_query_directories)
@@ -90,7 +93,7 @@
 ; the ptrace relation. The same factory owns TRACEEXEC and final waitid.
 ; The factory reopens the fixed copy, preserving a kernel-origin executable FD.
 ; The ordinary broker gains neither an Android-domain transition nor ptrace.
-; Provider copies remain data with no Contacts, Browser or Launch entrypoint.
+; The additional closed business entrypoints live in linux-application-roles.cil.
 (typetransition kernel droidloom_query_exec process droidloom_query)
 ; The original kernel.te forbids every subject from ptracing kernel SID.
 ; Any pre-exec gate must first leave that SID through a legitimate fixed entry.
@@ -134,7 +137,7 @@
 (allow droidloom_query servicemanager_prop (file (getattr open read map)))
 
 ; The only Binder service lookup is package. The fixed cmd argv is selected by
-; ApplicationRead; activity start, install, writes and provider roles remain absent.
+; ApplicationRead. Other closed business commands use their separate roles.
 (allow droidloom_query binder_device (chr_file (getattr open read write map ioctl)))
 (allow droidloom_query servicemanager (binder (call transfer)))
 (allow servicemanager droidloom_query (binder (transfer)))

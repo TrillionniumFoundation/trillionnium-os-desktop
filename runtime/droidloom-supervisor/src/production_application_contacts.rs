@@ -91,6 +91,10 @@ impl ContactsQuery {
         };
         let mut argv = vec![
             "/system/bin/app_process64".to_owned(),
+            // This closed reader is not an appdomain and cannot execute
+            // writable JIT files. Use ART's original interpreter mode.
+            "-Xint".to_owned(),
+            "-Xusejit:false".to_owned(),
             "/system/bin".to_owned(),
             "com.android.commands.content.Content".to_owned(),
             "query".to_owned(),
@@ -666,8 +670,9 @@ mod tests {
                 .map(|x| x.into_string().unwrap())
                 .collect::<Vec<_>>();
             assert_eq!(args[0], "/system/bin/app_process64");
-            assert_eq!(args[2], "com.android.commands.content.Content");
-            assert_eq!(&args[3..6], &["query", "--user", "0"]);
+            assert_eq!(&args[1..4], &["-Xint", "-Xusejit:false", "/system/bin"]);
+            assert_eq!(args[4], "com.android.commands.content.Content");
+            assert_eq!(&args[5..8], &["query", "--user", "0"]);
             assert!(ApplicationRead::from_command(&args).is_err());
             assert!(
                 !args

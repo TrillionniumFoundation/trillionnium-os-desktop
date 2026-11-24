@@ -37,7 +37,7 @@
 (neverallow droidloom_metadata_observer self (process (fork setexec setfscreate setsockcreate setcurrent dyntransition)))
 
 (typeattribute p4_fixed_metadata_tasks)
-(typeattributeset p4_fixed_metadata_tasks (kernel init zygote system_server droidloom_query))
+(typeattributeset p4_fixed_metadata_tasks (kernel init zygote system_server droidloom_query p4_closed_business_queries hal_graphics_composer_default))
 (allow droidloom_metadata_observer p4_fixed_metadata_tasks (process (getattr)))
 (allow droidloom_metadata_observer p4_fixed_metadata_tasks (dir (getattr search open read)))
 (allow droidloom_metadata_observer p4_fixed_metadata_tasks (file (getattr open read)))
@@ -53,7 +53,7 @@
 ; and the original held task root are opened. The fixed helper seccomp has no
 ; getdents, mutation, executable mapping or exec after metadata admission.
 (typeattribute p4_fixed_metadata_executables)
-(typeattributeset p4_fixed_metadata_executables (init_exec zygote_exec droidloom_query_exec))
+(typeattributeset p4_fixed_metadata_executables (init_exec zygote_exec droidloom_query_exec droidloom_provider_exec hal_graphics_composer_default_exec))
 (allow droidloom_metadata_observer p4_fixed_metadata_executables (file (getattr open read)))
 (allow droidloom_metadata_observer rootfs (dir (getattr open read)))
 (allow droidloom_metadata_observer system_file (dir (getattr)))
