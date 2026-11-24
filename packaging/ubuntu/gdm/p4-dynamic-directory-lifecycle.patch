@@ -1,0 +1,936 @@
+Description: Complete private dynamic GDM directory lifecycle without DAC bypass
+ Reuse the scoped filesystem identity for bounded no-follow directory walks,
+ preserve ordinary file bytes, and retain failed-retirement UID/name custody.
+Author: ChatGPT <chatgpt@openai.com>
+Forwarded: not-needed
+
+diff --git a/common/gdm-dynamic-files.c b/common/gdm-dynamic-files.c
+new file mode 100644
+index 0000000..ce3ab3f
+--- /dev/null
++++ b/common/gdm-dynamic-files.c
+@@ -0,0 +1,413 @@
++/* SPDX-License-Identifier: LGPL-2.0-or-later */
++#include "config.h"
++#include "gdm-dynamic-files.h"
++#include "gdm-environment-file.h"
++
++#include <dirent.h>
++#include <errno.h>
++#include <fcntl.h>
++#include <linux/openat2.h>
++#include <string.h>
++#include <sys/fsuid.h>
++#include <sys/stat.h>
++#include <sys/syscall.h>
++#include <unistd.h>
++
++#define FILE_GID ((gid_t) 65534)
++#define MAX_ENTRIES 32768
++#define MAX_DEPTH 64
++#define MAX_USECS (30 * G_USEC_PER_SEC)
++
++typedef struct {
++        uid_t uid;
++        gid_t gid;
++        gboolean remove;
++        guint entries;
++        gint64 deadline;
++} Walk;
++
++typedef struct {
++        int parent;
++        const char *name;
++        int flags;
++        int fd;
++        gboolean remove;
++        gboolean directory;
++} Relative;
++
++static gboolean
++fail_errno (GError **error, const char *operation)
++{
++        int saved = errno;
++        g_set_error (error, G_IO_ERROR, g_io_error_from_errno (saved),
++                     "GDM private directory %s: %s", operation, g_strerror (saved));
++        return FALSE;
++}
++
++static gboolean
++require (gboolean condition, GError **error, const char *message)
++{
++        if (!condition)
++                g_set_error_literal (error, G_IO_ERROR, G_IO_ERROR_PERMISSION_DENIED, message);
++        return condition;
++}
++
++static gboolean
++root_identity (GError **error)
++{
++        return require (getuid () == 0 && geteuid () == 0 &&
++                        (uid_t) setfsuid ((uid_t) -1) == 0 &&
++                        (gid_t) setfsgid ((gid_t) -1) == 0,
++                        error, "GDM private directory requires its original root filesystem identity");
++}
++
++static gboolean
++safe_name (const char *name)
++{
++        return name && *name && strcmp (name, ".") != 0 && strcmp (name, "..") != 0 &&
++               strchr (name, '/') == NULL && strlen (name) <= 255;
++}
++
++static gboolean
++relative_operation (gpointer data, GError **error)
++{
++        Relative *call = data;
++        if (call->remove) {
++                if (unlinkat (call->parent, call->name,
++                              call->directory ? AT_REMOVEDIR : 0) < 0)
++                        return fail_errno (error, "unlink");
++        } else {
++                struct open_how how = {
++                        .flags = call->flags | O_CLOEXEC | O_NOFOLLOW,
++                        .resolve = RESOLVE_BENEATH | RESOLVE_NO_MAGICLINKS |
++                                   RESOLVE_NO_SYMLINKS | RESOLVE_NO_XDEV,
++                };
++                call->fd = syscall (SYS_openat2, call->parent, call->name, &how, sizeof how);
++                if (call->fd < 0)
++                        return fail_errno (error, "open held child");
++        }
++        return TRUE;
++}
++
++static gboolean
++as_owner (uid_t owner, Relative *call, GError **error)
++{
++        if (owner == 0)
++                return relative_operation (call, error);
++        return gdm_with_dynamic_fs_identity (owner, FILE_GID,
++                                             relative_operation, call, error);
++}
++
++static int
++open_child (int parent, const char *name, uid_t owner, int flags, GError **error)
++{
++        Relative call = { .parent = parent, .name = name, .flags = flags, .fd = -1 };
++        return as_owner (owner, &call, error) ? call.fd : -1;
++}
++
++static gboolean
++chmod_held (int fd, mode_t mode, GError **error)
++{
++        if (syscall (SYS_fchmodat2, fd, "", mode, AT_EMPTY_PATH) < 0)
++                return fail_errno (error, "chmod held directory");
++        return TRUE;
++}
++
++static gboolean
++chown_held (int fd, uid_t uid, gid_t gid, GError **error)
++{
++        if (fchownat (fd, "", uid, gid, AT_EMPTY_PATH | AT_SYMLINK_NOFOLLOW) < 0)
++                return fail_errno (error, "chown held object");
++        return TRUE;
++}
++
++static gboolean
++same_entry (int parent, const char *name, int fd, uid_t owner, GError **error)
++{
++        struct stat held, visible;
++        int other = open_child (parent, name, owner, O_PATH, error);
++        gboolean same;
++        if (other < 0)
++                return FALSE;
++        same = fstat (fd, &held) == 0 && fstat (other, &visible) == 0 &&
++               held.st_dev == visible.st_dev && held.st_ino == visible.st_ino &&
++               (held.st_mode & S_IFMT) == (visible.st_mode & S_IFMT);
++        close (other);
++        return require (same, error, "GDM private directory entry changed during operation");
++}
++
++static gboolean
++walk_directory (int fd, Walk *walk, guint depth, GError **error)
++{
++        struct stat original;
++        DIR *directory = NULL;
++        struct dirent *entry;
++        gboolean result = FALSE;
++        int readable = -1;
++        mode_t mode;
++
++        if (!require (depth <= MAX_DEPTH && walk->entries++ < MAX_ENTRIES &&
++                      g_get_monotonic_time () < walk->deadline,
++                      error, "GDM private directory traversal limit exceeded"))
++                return FALSE;
++        if (fstat (fd, &original) < 0)
++                return fail_errno (error, "stat held directory");
++        if (!require (S_ISDIR (original.st_mode) && gdm_dynamic_data_owner (original.st_uid) &&
++                      (!walk->remove || original.st_uid == walk->uid),
++                      error, "GDM private directory has an unexpected owner or kind"))
++                return FALSE;
++        mode = original.st_mode & 07777;
++        /* FOWNER changes only this held, no-follow inode. Never add group or
++         * other access; a mode-000 directory is traversed as its actual owner. */
++        if (!chmod_held (fd, mode | 0700, error))
++                return FALSE;
++        readable = open_child (fd, ".", original.st_uid, O_RDONLY | O_DIRECTORY, error);
++        if (readable < 0)
++                goto out;
++        directory = fdopendir (readable);
++        if (!directory) {
++                fail_errno (error, "enumerate held directory");
++                close (readable);
++                goto out;
++        }
++        while (TRUE) {
++                struct stat child;
++                int child_fd;
++                gboolean child_ok;
++                Relative remove;
++                errno = 0;
++                entry = readdir (directory);
++                if (!entry) {
++                        if (errno) {
++                                fail_errno (error, "read held directory");
++                                goto out;
++                        }
++                        break;
++                }
++                if (strcmp (entry->d_name, ".") == 0 || strcmp (entry->d_name, "..") == 0)
++                        continue;
++                if (!require (safe_name (entry->d_name) && walk->entries++ < MAX_ENTRIES &&
++                              g_get_monotonic_time () < walk->deadline,
++                              error, "GDM private directory entry limit exceeded"))
++                        goto out;
++                child_fd = open_child (fd, entry->d_name, original.st_uid, O_PATH, error);
++                if (child_fd < 0)
++                        goto out;
++                child_ok = fstat (child_fd, &child) == 0;
++                if (!child_ok)
++                        fail_errno (error, "stat held child");
++                if (child_ok)
++                        child_ok = require (gdm_dynamic_data_owner (child.st_uid) &&
++                                   (!walk->remove || child.st_uid == walk->uid) &&
++                                   !(child.st_mode & (S_ISUID | S_ISGID)) &&
++                                   (S_ISDIR (child.st_mode) || S_ISREG (child.st_mode) ||
++                                    S_ISLNK (child.st_mode) || (walk->remove &&
++                                    (S_ISFIFO (child.st_mode) || S_ISSOCK (child.st_mode)))),
++                                   error, "GDM private child has an unexpected owner, kind or privilege bits");
++                if (child_ok && S_ISDIR (child.st_mode))
++                        child_ok = walk_directory (child_fd, walk, depth + 1, error);
++                else if (child_ok && !walk->remove) {
++                        child_ok = require (child.st_nlink == 1, error,
++                                            "GDM private data ownership transfer rejects hard links");
++                        if (child_ok)
++                                child_ok = chown_held (child_fd, walk->uid, walk->gid, error);
++                }
++                if (child_ok)
++                        child_ok = same_entry (fd, entry->d_name, child_fd, original.st_uid, error);
++                if (child_ok && walk->remove) {
++                        remove = (Relative) { .parent = fd, .name = entry->d_name,
++                                              .remove = TRUE, .directory = S_ISDIR (child.st_mode) };
++                        child_ok = as_owner (original.st_uid, &remove, error);
++                }
++                close (child_fd);
++                if (!child_ok)
++                        goto out;
++        }
++        if (!walk->remove && !chown_held (fd, walk->uid, walk->gid, error))
++                goto out;
++        result = TRUE;
++out:
++        if (directory)
++                closedir (directory);
++        /* Restore the exact directory mode even after a partial traversal.
++         * Metadata transfer remains incremental, as stock recursive chown is;
++         * an error never claims completion or releases a dynamic UID. */
++        if (!chmod_held (fd, mode, NULL))
++                g_error ("Cannot restore private GDM directory mode");
++        return result;
++}
++
++gboolean
++gdm_dynamic_tree_at (int parent_fd, const char *name, uid_t uid, gid_t gid,
++                     gboolean remove, GError **error)
++{
++        struct stat parent, before;
++        int fd = -1;
++        gboolean result = FALSE;
++        Walk walk = { uid, gid, remove, 0, g_get_monotonic_time () + MAX_USECS };
++        if (!root_identity (error) || !require (safe_name (name) &&
++            uid >= GREETER_UID_MIN && uid <= GREETER_UID_MAX && gid == FILE_GID,
++            error, "Invalid GDM dynamic directory identity"))
++                return FALSE;
++        if (fstat (parent_fd, &parent) < 0)
++                return fail_errno (error, "stat fixed parent");
++        if (!require (S_ISDIR (parent.st_mode) && parent.st_uid == 0 &&
++                      (parent.st_mode & 0022) == 0,
++                      error, "GDM dynamic directory parent is not root-controlled"))
++                return FALSE;
++        fd = open_child (parent_fd, name, 0, O_PATH | O_DIRECTORY, error);
++        if (fd < 0)
++                return FALSE;
++        if (fstat (fd, &before) < 0) {
++                fail_errno (error, "stat dynamic root");
++                goto out;
++        }
++        if (!require (before.st_gid == FILE_GID || (!remove &&
++                      (before.st_uid == 0 || (gdm_dynamic_data_owner (before.st_uid) &&
++                       (before.st_uid < GREETER_UID_MIN || before.st_uid > GREETER_UID_MAX)))),
++                      error, "GDM dynamic root has an unexpected filesystem group"))
++                goto out;
++        if (!walk_directory (fd, &walk, 0, error) ||
++            !same_entry (parent_fd, name, fd, 0, error))
++                goto out;
++        if (remove) {
++                /* The home parent belongs to root, not the retiring user. */
++                Relative unlink_root = { .parent = parent_fd, .name = name,
++                                         .remove = TRUE, .directory = TRUE };
++                result = relative_operation (&unlink_root, error);
++        } else {
++                result = chmod_held (fd, 0700, error);
++        }
++out:
++        close (fd);
++        if (!root_identity (NULL))
++                g_error ("GDM private directory lost its original filesystem identity");
++        return result;
++}
++
++/* Fixed parent walk: no symlink components, no path argument from a client.
++ * The selected /run may be a different mount, so NO_XDEV starts only below
++ * the resulting private root and remains enforced for every child. */
++static int
++fixed_parent (const char *path, GError **error)
++{
++        g_auto(GStrv) parts = g_strsplit (path, "/", -1);
++        int current = open ("/", O_PATH | O_DIRECTORY | O_CLOEXEC);
++        if (current < 0) { fail_errno (error, "open root"); return -1; }
++        for (guint i = 0; parts[i]; i++) {
++                int next;
++                struct stat value;
++                if (!*parts[i]) continue;
++                if (!safe_name (parts[i])) { close (current); require (FALSE, error, "Invalid fixed GDM component"); return -1; }
++                next = openat (current, parts[i], O_PATH | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC);
++                close (current);
++                if (next < 0) { fail_errno (error, "open fixed parent"); return -1; }
++                if (fstat (next, &value) < 0 || !S_ISDIR (value.st_mode) || value.st_uid != 0 || (value.st_mode & 0022)) {
++                        close (next); require (FALSE, error, "GDM fixed parent is not an ordinary root-controlled directory"); return -1;
++                }
++                current = next;
++        }
++        return current;
++}
++
++static gboolean
++home_parts (const char *home, const char **name, GError **error)
++{
++        size_t prefix = strlen (GDM_DYN_HOME_DIR);
++        return require (home && g_str_has_prefix (home, GDM_DYN_HOME_DIR "/") &&
++                        safe_name (home + prefix + 1) && (*name = home + prefix + 1),
++                        error, "Dynamic GDM home is outside its fixed parent");
++}
++
++gboolean
++gdm_create_dynamic_home_at (int parent, const char *name, uid_t uid, gid_t gid, GError **error)
++{
++        struct stat st;
++        int fd = -1;
++        gboolean result;
++        if (!root_identity (error) || !require (safe_name (name) &&
++            uid >= GREETER_UID_MIN && uid <= GREETER_UID_MAX && gid == FILE_GID,
++            error, "Invalid new GDM home identity")) return FALSE;
++        if (fstat (parent, &st) < 0) return fail_errno (error, "stat home parent");
++        if (!require (S_ISDIR (st.st_mode) && st.st_uid == 0 && !(st.st_mode & 0022),
++                      error, "GDM home parent is not root-controlled")) return FALSE;
++        if (mkdirat (parent, name, 0700) < 0) return fail_errno (error, "create exclusive dynamic home");
++        fd = open_child (parent, name, 0, O_PATH | O_DIRECTORY, error);
++        result = fd >= 0 && chown_held (fd, uid, gid, error) && chmod_held (fd, 0700, error);
++        if (fd >= 0) close (fd);
++        if (!result && unlinkat (parent, name, AT_REMOVEDIR) < 0)
++                g_warning ("Failed to remove newly-created empty GDM home after setup failure");
++        return result;
++}
++
++gboolean
++gdm_create_dynamic_home (const char *home, uid_t uid, gid_t gid, GError **error)
++{
++        const char *name = NULL;
++        int parent = -1;
++        gboolean result;
++        if (!root_identity (error) || !home_parts (home, &name, error) ||
++            !require (uid >= GREETER_UID_MIN && uid <= GREETER_UID_MAX && gid == FILE_GID,
++                      error, "Invalid new GDM home identity")) return FALSE;
++        {
++                g_autofree char *ancestor = g_path_get_dirname (GDM_DYN_HOME_DIR);
++                g_autofree char *leaf = g_path_get_basename (GDM_DYN_HOME_DIR);
++                int base = fixed_parent (ancestor, error);
++                if (base < 0) return FALSE;
++                if (mkdirat (base, leaf, 0755) < 0 && errno != EEXIST) {
++                        fail_errno (error, "create fixed home parent"); close (base); return FALSE;
++                }
++                close (base);
++        }
++        parent = fixed_parent (GDM_DYN_HOME_DIR, error);
++        if (parent < 0) return FALSE;
++        result = gdm_create_dynamic_home_at (parent, name, uid, gid, error);
++        close (parent);
++        return result;
++}
++
++gboolean
++gdm_remove_dynamic_home (const char *home, uid_t uid, gid_t gid, GError **error)
++{
++        const char *name = NULL;
++        int parent;
++        gboolean result;
++        if (!root_identity (error) || !home_parts (home, &name, error)) return FALSE;
++        parent = fixed_parent (GDM_DYN_HOME_DIR, error);
++        if (parent < 0) return FALSE;
++        result = gdm_dynamic_tree_at (parent, name, uid, gid, TRUE, error);
++        close (parent);
++        return result;
++}
++
++gboolean
++gdm_prepare_dynamic_persist (const char *path, uid_t uid, gid_t gid, GError **error)
++{
++        g_autofree char *parent_path = g_path_get_dirname (path);
++        g_autofree char *name = g_path_get_basename (path);
++        const char *seat;
++        int base;
++        int parent;
++        gboolean result;
++        if (!root_identity (error) ||
++            !require (g_str_has_prefix (parent_path, GDM_WORKING_DIR "/"),
++                      error, "Persistent GDM data is outside the fixed GDM state root")) return FALSE;
++        seat = parent_path + strlen (GDM_WORKING_DIR) + 1;
++        if (!require (safe_name (seat) &&
++                      (strcmp (name, "config") == 0 || strcmp (name, "state") == 0),
++                      error, "Persistent GDM data is outside a fixed seat directory")) return FALSE;
++        base = fixed_parent (GDM_WORKING_DIR, error);
++        if (base < 0) return FALSE;
++        if (mkdirat (base, seat, 0755) < 0 && errno != EEXIST) {
++                fail_errno (error, "create fixed seat parent"); close (base); return FALSE;
++        }
++        close (base);
++        parent = fixed_parent (parent_path, error);
++        if (parent < 0) return FALSE;
++        if (mkdirat (parent, name, 0700) < 0 && errno != EEXIST) {
++                fail_errno (error, "create private seat data"); close (parent); return FALSE;
++        }
++        result = gdm_dynamic_tree_at (parent, name, uid, gid, FALSE, error);
++        close (parent);
++        return result;
++}
+diff --git a/common/gdm-dynamic-files.h b/common/gdm-dynamic-files.h
+new file mode 100644
+index 0000000..8598672
+--- /dev/null
++++ b/common/gdm-dynamic-files.h
+@@ -0,0 +1,15 @@
++/* SPDX-License-Identifier: LGPL-2.0-or-later */
++#pragma once
++#include <gio/gio.h>
++#include <sys/types.h>
++
++gboolean gdm_create_dynamic_home (const char *home, uid_t uid, gid_t gid, GError **error);
++gboolean gdm_remove_dynamic_home (const char *home, uid_t uid, gid_t gid, GError **error);
++gboolean gdm_prepare_dynamic_persist (const char *path, uid_t uid, gid_t gid, GError **error);
++/* Shared private primitive: the normal callers acquire the fixed, verified
++ * parent directory; the C regression supplies an isolated held parent. */
++gboolean gdm_dynamic_tree_at (int parent_fd, const char *name,
++                              uid_t uid, gid_t gid, gboolean remove,
++                              GError **error);
++gboolean gdm_create_dynamic_home_at (int parent_fd, const char *name,
++                                      uid_t uid, gid_t gid, GError **error);
+diff --git a/common/gdm-environment-file.c b/common/gdm-environment-file.c
+index 9f23a35..e14e843 100644
+--- a/common/gdm-environment-file.c
++++ b/common/gdm-environment-file.c
+@@ -5,11 +5,24 @@
+ 
+ #include <errno.h>
+ #include <linux/capability.h>
++#include <pwd.h>
+ #include <string.h>
+ #include <sys/fsuid.h>
+ #include <sys/syscall.h>
+ #include <unistd.h>
+ 
++gboolean
++gdm_dynamic_data_owner (uid_t uid)
++{
++        struct passwd account, *found = NULL;
++        char buffer[16384];
++
++        if (uid == 0 || (uid >= GREETER_UID_MIN && uid <= GREETER_UID_MAX))
++                return TRUE;
++        return getpwnam_r (GDM_PRE_DYNAMIC_USERNAME, &account, buffer, sizeof buffer, &found) == 0 &&
++               found != NULL && found->pw_uid == uid && uid != 0;
++}
++
+ static gboolean
+ read_capabilities (struct __user_cap_data_struct state[2], GError **error)
+ {
+@@ -74,11 +87,11 @@ write_environment (const char *home,
+ }
+ 
+ gboolean
+-gdm_write_dynamic_environment (const char *home,
+-                               uid_t uid,
+-                               gid_t gid,
+-                               GHashTable *environment,
+-                               GError **error)
++gdm_with_dynamic_fs_identity (uid_t uid,
++                              gid_t gid,
++                              GdmDynamicFsCallback callback,
++                              gpointer data,
++                              GError **error)
+ {
+         struct __user_cap_data_struct before[2], after[2];
+         uid_t original_fsuid;
+@@ -86,8 +99,7 @@ gdm_write_dynamic_environment (const char *home,
+         gboolean result = FALSE;
+ 
+         g_return_val_if_fail (error == NULL || *error == NULL, FALSE);
+-        if (home == NULL || !g_path_is_absolute (home) || environment == NULL ||
+-            uid < GREETER_UID_MIN || uid > GREETER_UID_MAX || uid == 0 ||
++        if (callback == NULL || !gdm_dynamic_data_owner (uid) || uid == 0 ||
+             gid != (gid_t) 65534) {
+                 g_set_error_literal (error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT,
+                                      "Invalid GDM dynamic environment identity");
+@@ -108,7 +120,8 @@ gdm_write_dynamic_environment (const char *home,
+         /* Linux filesystem IDs are local to this calling thread. The varlink
+          * worker and other GDM threads keep their original identities.
+          * No process-wide seteuid(), arbitrary account lookup or DAC override
+-         * is used. The caller supplies its own allocated greeter UID. */
++         * is used. Callers validate their allocated greeter or the previous fixed GDM
++         * data owner; no ordinary account identity is admitted. */
+         setfsgid (gid);
+         if ((gid_t) setfsgid ((gid_t) -1) != gid) {
+                 g_set_error_literal (error, G_IO_ERROR, G_IO_ERROR_PERMISSION_DENIED,
+@@ -122,7 +135,7 @@ gdm_write_dynamic_environment (const char *home,
+                 goto restore;
+         }
+ 
+-        result = write_environment (home, uid, gid, environment, error);
++        result = callback (data, error);
+ 
+ restore:
+         /* Restore on every path, including an unsuccessful partial entry.
+@@ -138,3 +151,35 @@ restore:
+                 g_error ("GDM capability state changed across environment write");
+         return result;
+ }
++typedef struct {
++        const char *home;
++        uid_t uid;
++        gid_t gid;
++        GHashTable *environment;
++} EnvironmentWrite;
++
++static gboolean
++write_environment_scoped (gpointer data, GError **error)
++{
++        EnvironmentWrite *write = data;
++        return write_environment (write->home, write->uid, write->gid,
++                                  write->environment, error);
++}
++
++gboolean
++gdm_write_dynamic_environment (const char *home,
++                               uid_t uid,
++                               gid_t gid,
++                               GHashTable *environment,
++                               GError **error)
++{
++        EnvironmentWrite write = { home, uid, gid, environment };
++        if (home == NULL || !g_path_is_absolute (home) || environment == NULL ||
++            uid < GREETER_UID_MIN || uid > GREETER_UID_MAX || gid != (gid_t) 65534) {
++                g_set_error_literal (error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT,
++                                     "Invalid GDM dynamic environment identity");
++                return FALSE;
++        }
++        return gdm_with_dynamic_fs_identity (uid, gid, write_environment_scoped,
++                                             &write, error);
++}
+diff --git a/common/gdm-environment-file.h b/common/gdm-environment-file.h
+index 1d4cc75..9eafa6e 100644
+--- a/common/gdm-environment-file.h
++++ b/common/gdm-environment-file.h
+@@ -8,3 +8,14 @@ gboolean gdm_write_dynamic_environment (const char *home,
+                                         gid_t gid,
+                                         GHashTable *environment,
+                                         GError **error);
++
++/* The selected Ubuntu package retains this fixed pre-dynamic account for
++ * migration of its own /var/lib/gdm3 data. This is not a caller-supplied name. */
++#define GDM_PRE_DYNAMIC_USERNAME "gdm"
++
++/* Internal GDM filesystem operations only. These are not an installed API. */
++typedef gboolean (*GdmDynamicFsCallback) (gpointer data, GError **error);
++gboolean gdm_dynamic_data_owner (uid_t uid);
++gboolean gdm_with_dynamic_fs_identity (uid_t uid, gid_t gid,
++                                       GdmDynamicFsCallback callback,
++                                       gpointer data, GError **error);
+diff --git a/common/meson.build b/common/meson.build
+index 21f93af..639155d 100644
+--- a/common/meson.build
++++ b/common/meson.build
+@@ -2,6 +2,7 @@ libgdmcommon_src = files(
+   'gdm-common.c',
+   'gdm-file-utils.c',
+   'gdm-environment-file.c',
++  'gdm-dynamic-files.c',
+   'gdm-log.c',
+   'gdm-profile.c',
+   'gdm-settings-backend.c',
+@@ -50,3 +51,11 @@ test_environment_file = executable('test-environment-file',
+   include_directories: config_h_dir,
+ )
+ test('environment-file', test_environment_file, timeout: 30)
++
++# Root-only cases are also run explicitly by the normal candidate producer.
++test_dynamic_files = executable('test-dynamic-files',
++  'test-dynamic-files.c',
++  dependencies: libgdmcommon_dep,
++  include_directories: config_h_dir,
++)
++test('dynamic-files', test_dynamic_files, timeout: 60)
+diff --git a/common/test-dynamic-files.c b/common/test-dynamic-files.c
+new file mode 100644
+index 0000000..44e490a
+--- /dev/null
++++ b/common/test-dynamic-files.c
+@@ -0,0 +1,186 @@
++/* SPDX-License-Identifier: LGPL-2.0-or-later */
++#include "config.h"
++#include "gdm-dynamic-files.h"
++#include "gdm-environment-file.h"
++#include "gdm-file-utils.h"
++#include <fcntl.h>
++#include <glib/gstdio.h>
++#include <linux/capability.h>
++#include <pwd.h>
++#include <sys/fsuid.h>
++#include <sys/prctl.h>
++#include <sys/stat.h>
++#include <sys/syscall.h>
++#include <sys/wait.h>
++#include <unistd.h>
++
++static gint stop_peer, samples;
++static gpointer peer (gpointer unused)
++{
++        (void) unused;
++        while (!g_atomic_int_get (&stop_peer)) {
++                g_assert_cmpuint (setfsuid ((uid_t) -1), ==, 0);
++                g_assert_cmpuint (setfsgid ((gid_t) -1), ==, 0);
++                g_atomic_int_inc (&samples);
++                g_thread_yield ();
++        }
++        return NULL;
++}
++static guint32 caps (gboolean missing_setuid)
++{
++        return (1U << CAP_CHOWN) | (1U << CAP_FOWNER) | (1U << CAP_SETGID) |
++               (missing_setuid ? 0 : (1U << CAP_SETUID));
++}
++static void limited_caps (gboolean missing_setuid)
++{
++        struct __user_cap_header_struct header = { .version = _LINUX_CAPABILITY_VERSION_3 };
++        struct __user_cap_data_struct value[2] = {{0}, {0}};
++        value[0].effective = value[0].permitted = caps (missing_setuid);
++        g_assert_cmpint (syscall (SYS_capset, &header, value), ==, 0);
++}
++static void check_identity (gboolean missing_setuid)
++{
++        struct __user_cap_header_struct header = { .version = _LINUX_CAPABILITY_VERSION_3 };
++        struct __user_cap_data_struct value[2];
++        g_assert_cmpint (syscall (SYS_capget, &header, value), ==, 0);
++        g_assert_cmpuint (value[0].effective, ==, caps (missing_setuid));
++        g_assert_cmpuint (value[0].permitted, ==, caps (missing_setuid));
++        g_assert_cmpuint (value[1].effective | value[1].permitted, ==, 0);
++        g_assert_cmpuint (getuid () | geteuid () | setfsuid ((uid_t) -1) | setfsgid ((gid_t) -1), ==, 0);
++}
++static void child_case (int parent, const char *home, int which, uid_t original)
++{
++        g_autoptr(GError) error = NULL;
++        GThread *thread;
++        gboolean ok;
++        limited_caps (which == 6);
++        check_identity (which == 6);
++        thread = g_thread_new ("original-root-fsids", peer, NULL);
++        while (!g_atomic_int_get (&samples)) g_thread_yield ();
++        if (which == 1) {
++                g_autoptr(GHashTable) environment = g_hash_table_new (g_str_hash, g_str_equal);
++                g_hash_table_insert (environment, "GDM_TEST", "complete-lifecycle");
++                g_assert_true (gdm_write_dynamic_environment (home, original, 65534, environment, &error));
++                g_assert_no_error (error);
++        }
++        ok = gdm_dynamic_tree_at (parent, which == 4 ? "alias" : "home",
++                                  which == 1 || which == 2 || which == 6 ? original : GREETER_UID_MIN + 1,
++                                  65534, which == 1 || which == 2 || which == 6, &error);
++        if (which == 0 || which == 1 || which == 5) {
++                g_assert_true (ok); g_assert_no_error (error);
++                if (which == 1) {
++                        /* A second allocated UID must get a new, empty home. */
++                        g_assert_true (gdm_create_dynamic_home_at (parent, "home", GREETER_UID_MIN + 1, 65534, &error));
++                        g_assert_no_error (error);
++                        g_assert_false (gdm_create_dynamic_home_at (parent, "home", GREETER_UID_MIN + 2, 65534, &error));
++                        g_assert_error (error, G_IO_ERROR, G_IO_ERROR_EXISTS); g_clear_error (&error);
++                        g_assert_true (gdm_dynamic_tree_at (parent, "home", GREETER_UID_MIN + 1, 65534, TRUE, &error));
++                        g_assert_no_error (error);
++                }
++        } else {
++                g_assert_false (ok); g_assert_nonnull (error); g_clear_error (&error);
++        }
++        check_identity (which == 6);
++        g_atomic_int_set (&stop_peer, 1); g_thread_join (thread);
++        g_assert_cmpint (g_atomic_int_get (&samples), >, 0);
++        _exit (0);
++}
++static void run_case (int which)
++{
++        if (geteuid () != 0) { g_test_skip ("Requires private root child with exactly four non-DAC capabilities"); return; }
++        g_autoptr(GError) error = NULL;
++        g_autofree char *base = g_dir_make_tmp ("gdm-lifecycle-test-XXXXXX", &error);
++        g_autofree char *home = g_build_filename (base, "home", NULL);
++        g_autofree char *deep = g_build_filename (home, "deep", NULL);
++        g_autofree char *file = g_build_filename (deep, "data", NULL);
++        g_autofree char *outside = g_build_filename (base, "outside", NULL);
++        g_autofree char *link = g_build_filename (home, "link", NULL);
++        g_autofree char *fifo = g_build_filename (home, "fifo", NULL);
++        g_autofree char *alias = g_build_filename (base, "alias", NULL);
++        uid_t original = GREETER_UID_MIN;
++        gid_t original_gid = 65534;
++        struct stat before, after;
++        int status, parent;
++        g_assert_no_error (error);
++        g_assert_cmpint (chmod (base, 0755), ==, 0);
++        if (which == 5) {
++                struct passwd *account = getpwnam (GDM_PRE_DYNAMIC_USERNAME);
++                g_assert_nonnull (account); original = account->pw_uid; original_gid = account->pw_gid;
++        }
++        parent = open (base, O_PATH | O_DIRECTORY | O_CLOEXEC);
++        g_assert_cmpint (parent, >=, 0);
++        g_assert_cmpint (mkdir (home, 0700), ==, 0);
++        g_assert_cmpint (mkdir (deep, 0700), ==, 0);
++        g_assert_true (g_file_set_contents (file, "original-private-bytes", -1, &error));
++        g_assert_no_error (error);
++        g_assert_cmpint (chmod (file, 0600), ==, 0);
++        g_assert_cmpint (chown (file, which == 2 ? 1000 : original, original_gid), ==, 0);
++        g_assert_cmpint (chown (deep, original, original_gid), ==, 0);
++        g_assert_cmpint (chown (home, original, original_gid), ==, 0);
++        g_assert_cmpint (chmod (deep, 0000), ==, 0);
++        if (which != 1) g_assert_cmpint (chmod (home, 0000), ==, 0);
++        g_assert_true (g_file_set_contents (outside, "outside-must-not-change", -1, &error));
++        g_assert_no_error (error); g_assert_cmpint (chmod (outside, 0600), ==, 0);
++        if (which == 3) {
++                g_assert_cmpint (unlink (outside), ==, 0);
++                g_assert_cmpint (linkat (AT_FDCWD, file, AT_FDCWD, outside, 0), ==, 0);
++        } else {
++                g_assert_cmpint (symlink (outside, link), ==, 0);
++                g_assert_cmpint (lchown (link, original, original_gid), ==, 0);
++        }
++        if (which == 1) {
++                g_assert_cmpint (mkfifo (fifo, 0600), ==, 0);
++                g_assert_cmpint (chown (fifo, original, original_gid), ==, 0);
++        }
++        if (which == 4) g_assert_cmpint (symlink (home, alias), ==, 0);
++        g_assert_cmpint (lstat (outside, &before), ==, 0);
++        pid_t pid = fork (); g_assert_cmpint (pid, >=, 0);
++        if (pid == 0) child_case (parent, home, which, original);
++        g_assert_cmpint (waitpid (pid, &status, 0), ==, pid);
++        g_assert_true (WIFEXITED (status)); g_assert_cmpint (WEXITSTATUS (status), ==, 0);
++        g_assert_cmpint (lstat (outside, &after), ==, 0);
++        g_assert_cmpuint (before.st_ino, ==, after.st_ino);
++        g_assert_cmpuint (before.st_uid, ==, after.st_uid);
++        g_assert_cmpuint (before.st_gid, ==, after.st_gid);
++        g_assert_cmpuint (before.st_mode, ==, after.st_mode);
++        if (which == 1) {
++                g_assert_cmpint (faccessat (parent, "home", F_OK, AT_SYMLINK_NOFOLLOW), ==, -1);
++                g_assert_cmpint (errno, ==, ENOENT);
++        } else {
++                g_assert_cmpint (lstat (home, &after), ==, 0);
++                g_assert_cmpuint (after.st_mode & 0777, ==, which == 0 || which == 5 ? 0700 : 0000);
++                g_assert_cmpint (lstat (deep, &after), ==, 0);
++                g_assert_cmpuint (after.st_mode & 0777, ==, 0000);
++                if (which == 0 || which == 5) {
++                        g_assert_cmpuint (after.st_uid, ==, GREETER_UID_MIN + 1);
++                        g_assert_cmpint (lstat (file, &after), ==, 0);
++                        g_assert_cmpuint (after.st_uid, ==, GREETER_UID_MIN + 1);
++                        g_assert_cmpuint (after.st_gid, ==, 65534);
++                        g_autofree char *body = NULL;
++                        g_assert_true (g_file_get_contents (file, &body, NULL, &error));
++                        g_assert_cmpstr (body, ==, "original-private-bytes");
++                }
++        }
++        close (parent);
++        g_autoptr(GFile) cleanup = g_file_new_for_path (base);
++        g_assert_true (gdm_rm_recursively (cleanup, &error)); g_assert_no_error (error);
++}
++static void transfer (void) { run_case (0); }
++static void lifecycle (void) { run_case (1); }
++static void foreign (void) { run_case (2); }
++static void hard_link (void) { run_case (3); }
++static void root_alias (void) { run_case (4); }
++static void original_gdm (void) { run_case (5); }
++static void denied_switch (void) { run_case (6); }
++int main (int argc, char **argv)
++{
++        g_test_init (&argc, &argv, NULL);
++        g_test_add_func ("/dynamic-files/private-000-transfer-no-follow", transfer);
++        g_test_add_func ("/dynamic-files/write-retire-exclusive-recreate", lifecycle);
++        g_test_add_func ("/dynamic-files/foreign-owner-fails-and-restores", foreign);
++        g_test_add_func ("/dynamic-files/hard-link-transfer-rejected", hard_link);
++        g_test_add_func ("/dynamic-files/root-alias-rejected", root_alias);
++        g_test_add_func ("/dynamic-files/original-gdm-data-owner", original_gdm);
++        g_test_add_func ("/dynamic-files/denied-fsuid-restores-without-dac", denied_switch);
++        return g_test_run ();
++}
+diff --git a/daemon/gdm-dynamic-user-store.c b/daemon/gdm-dynamic-user-store.c
+index adc0910..36c9fa4 100644
+--- a/daemon/gdm-dynamic-user-store.c
++++ b/daemon/gdm-dynamic-user-store.c
+@@ -28,6 +28,7 @@
+ 
+ #include "gdm-common.h"
+ #include "gdm-file-utils.h"
++#include "gdm-dynamic-files.h"
+ #include "gdm-dynamic-user-store.h"
+ 
+ G_STATIC_ASSERT (sizeof(uid_t) == sizeof(guint));
+@@ -125,21 +126,22 @@ static void
+ dynamic_user_free (DynamicUser *user)
+ {
+         g_autoptr (GError) error = NULL;
+-        g_autoptr (GFile) home = NULL;
+ 
+         g_debug ("GdmDynUserStore: Deallocating user '%s' (uid: %d)",
+                  user->username, user->uid);
+ 
+         /* Sanity checks, let's not nuke the system by accident */
+-        if (g_strcmp0 (user->home, "/") == 0 ||
+-            g_str_has_prefix (user->home, "/home")) {
++        if (user->home != NULL && (g_strcmp0 (user->home, "/") == 0 ||
++            g_str_has_prefix (user->home, "/home"))) {
+                 g_error ("GdmDynUserStore: Dynamic user home '%s' is in /home or is root! Aborting.", user->home);
+         }
+ 
+-        home = g_file_new_for_path (user->home);
+-        if (!gdm_rm_recursively (home, &error))
+-                g_warning ("Failed to delete '%s', continuing: %s",
+-                           user->home, error->message);
++        /* Normal removal completes this before releasing the name/UID. The
++         * destructor handles only process-finalization or failed creation. */
++        if (user->home != NULL &&
++            !gdm_remove_dynamic_home (user->home, user->uid, GID_NOBODY, &error))
++                g_warning ("Failed to delete dynamic GDM home during finalization: %s",
++                           error->message);
+ 
+         g_free (user->username);
+         g_free (user->display_name);
+@@ -325,7 +327,7 @@ gdm_dynamic_user_store_create (GdmDynamicUserStore  *store,
+         }
+ 
+         home = g_build_filename (GDM_DYN_HOME_DIR, username, NULL);
+-        if (!gdm_ensure_dir (home, uid, GID_NOBODY, 0700, FALSE, error))
++        if (!gdm_create_dynamic_home (home, uid, GID_NOBODY, error))
+                 return FALSE;
+ 
+         user = dynamic_user_new (username, display_name, home, uid, grp);
+@@ -344,20 +346,32 @@ gdm_dynamic_user_store_create (GdmDynamicUserStore  *store,
+         return TRUE;
+ }
+ 
+-void
++gboolean
+ gdm_dynamic_user_store_remove (GdmDynamicUserStore *store,
+-                               uid_t                uid)
++                               uid_t uid)
+ {
+         DynamicUser *user;
+-
+-        user = g_hash_table_lookup (store->by_uid, &uid);
+-        if (user == NULL)
+-                return;
++        g_autoptr (GError) error = NULL;
+ 
+         g_mutex_lock (&store->mutex);
++        user = g_hash_table_lookup (store->by_uid, &uid);
++        if (user == NULL) {
++                g_mutex_unlock (&store->mutex);
++                return TRUE;
++        }
++        if (!gdm_remove_dynamic_home (user->home, user->uid, GID_NOBODY, &error)) {
++                /* A partially retired directory is not a reusable account.
++                 * Keep both original indexes until cleanup really succeeds. */
++                g_warning ("Failed to retire dynamic GDM home; retaining UID/name: %s",
++                           error->message);
++                g_mutex_unlock (&store->mutex);
++                return FALSE;
++        }
++        g_clear_pointer (&user->home, g_free);
+         g_hash_table_remove (store->by_uid, &uid);
+         g_hash_table_remove (store->by_name, user->username);
+         g_mutex_unlock (&store->mutex);
++        return TRUE;
+ }
+ 
+ static void
+diff --git a/daemon/gdm-dynamic-user-store.h b/daemon/gdm-dynamic-user-store.h
+index 848f005..b873ce3 100644
+--- a/daemon/gdm-dynamic-user-store.h
++++ b/daemon/gdm-dynamic-user-store.h
+@@ -50,7 +50,7 @@ gboolean             gdm_dynamic_user_store_create      (GdmDynamicUserStore  *s
+                                                          char                **ret_home,
+                                                          GError              **error);
+ 
+-void                 gdm_dynamic_user_store_remove      (GdmDynamicUserStore *store,
++gboolean             gdm_dynamic_user_store_remove      (GdmDynamicUserStore *store,
+                                                          uid_t                uid);
+ 
+ G_END_DECLS
+diff --git a/daemon/gdm-launch-environment.c b/daemon/gdm-launch-environment.c
+index 14bffdf..c807e85 100644
+--- a/daemon/gdm-launch-environment.c
++++ b/daemon/gdm-launch-environment.c
+@@ -44,6 +44,7 @@
+ 
+ #include "gdm-common.h"
+ #include "gdm-file-utils.h"
++#include "gdm-dynamic-files.h"
+ #include "gdm-environment-file.h"
+ 
+ #include "gdm-session-enum-types.h"
+@@ -215,14 +216,14 @@ setup_seat_persist_dirs (const char  *seat_id,
+         }
+ 
+         config_dir = g_strdup_printf (GDM_WORKING_DIR "/%s/config", seat_id);
+-        if (!gdm_ensure_dir (config_dir, owner, GID_NOBODY, 0700, TRUE, &error)) {
++        if (!gdm_prepare_dynamic_persist (config_dir, owner, GID_NOBODY, &error)) {
+                 g_warning ("Failed to initialize persist config dir for seat %s: %s",
+                            seat_id, error->message);
+                 return FALSE;
+         }
+ 
+         state_dir = g_strdup_printf (GDM_WORKING_DIR "/%s/state", seat_id);
+-        if (!gdm_ensure_dir (state_dir, owner, GID_NOBODY, 0700, TRUE, &error)) {
++        if (!gdm_prepare_dynamic_persist (state_dir, owner, GID_NOBODY, &error)) {
+                 g_warning ("Failed to initialize persist state dir for seat %s: %s",
+                            seat_id, error->message);
+                 return FALSE;
+@@ -578,8 +579,9 @@ gdm_launch_environment_stop (GdmLaunchEnvironment *launch_environment)
+         }
+ 
+         if (launch_environment->dyn_uid != 0) {
+-                gdm_dynamic_user_store_remove (launch_environment->dyn_user_store,
+-                                               launch_environment->dyn_uid);
++                if (!gdm_dynamic_user_store_remove (launch_environment->dyn_user_store,
++                                                    launch_environment->dyn_uid))
++                        return FALSE;
+                 launch_environment->dyn_uid = 0;
+         }
+ 

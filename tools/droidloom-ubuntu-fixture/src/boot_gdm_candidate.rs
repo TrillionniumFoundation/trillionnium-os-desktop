@@ -22,28 +22,37 @@ const SOURCE_LOCK: &[u8] = include_bytes!("../../../packaging/ubuntu/gdm/source.
 const SOURCE_PATCH: &[u8] =
     include_bytes!("../../../packaging/ubuntu/gdm/p4-dynamic-environment-credentials.patch");
 const TEST_SOURCE: &[u8] = include_bytes!("../../../packaging/ubuntu/gdm/tests/environment-file.c");
+const LIFECYCLE_PATCH: &[u8] =
+    include_bytes!("../../../packaging/ubuntu/gdm/p4-dynamic-directory-lifecycle.patch");
+const LIFECYCLE_TEST_SOURCE: &[u8] =
+    include_bytes!("../../../packaging/ubuntu/gdm/tests/dynamic-files.c");
 const MEMBER: &str = "usr/sbin/gdm3";
 const PATCH: &str = "debian/patches/p4-dynamic-environment-credentials.patch";
 const PATCH_NAME: &str = "p4-dynamic-environment-credentials.patch";
+const LIFECYCLE_PATCH_PATH: &str = "debian/patches/p4-dynamic-directory-lifecycle.patch";
+const LIFECYCLE_PATCH_NAME: &str = "p4-dynamic-directory-lifecycle.patch";
 const ORIGINAL_VERSION: &str = "50.1-0ubuntu0.1";
-const VERSION: &str = "50.1-0ubuntu0.1+p4fsuser1";
+const VERSION: &str = "50.1-0ubuntu0.1+p4fsuser2";
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct GdmCandidate {
-    /// Exactly the fifteen names and content pins in the compiled source.lock.
+    /// Exactly the eighteen names and content pins in the compiled source.lock.
     pub artifacts: BTreeMap<String, FilePin>,
 }
 
 fn source_lock() -> Result<Value> {
     let lock: Value = serde_json::from_slice(SOURCE_LOCK)?;
     ensure(
-        lock["schema"] == "p4-gdm-fs-user-source-lock-v1"
+        lock["schema"] == "p4-gdm-fs-user-source-lock-v2"
             && lock["original_version"] == ORIGINAL_VERSION
             && lock["candidate_version"] == VERSION
             && lock["source_files"][PATCH]["sha256"] == fs::digest(SOURCE_PATCH)
             && lock["source_files"]["common/test-environment-file.c"]["sha256"]
-                == fs::digest(TEST_SOURCE),
+                == fs::digest(TEST_SOURCE)
+            && lock["source_files"][LIFECYCLE_PATCH_PATH]["sha256"] == fs::digest(LIFECYCLE_PATCH)
+            && lock["source_files"]["common/test-dynamic-files.c"]["sha256"]
+                == fs::digest(LIFECYCLE_TEST_SOURCE),
         "compiled GDM source contract differs",
     )?;
     Ok(lock)
@@ -54,7 +63,7 @@ fn validate_pins(input: &GdmCandidate, lock: &Value) -> Result<()> {
         .as_object()
         .ok_or("GDM artifact set absent")?;
     ensure(
-        expected.len() == 15
+        expected.len() == 18
             && input.artifacts.keys().collect::<BTreeSet<_>>() == expected.keys().collect(),
         "GDM candidate artifact set differs",
     )?;
@@ -155,30 +164,55 @@ fn unpack_source(
     )
 }
 
-fn verify_tests(tests: &Value, log: &str, lock: &Value) -> Result<()> {
+fn verify_regression(tests: &Value, log: &str, lock: &Value, lifecycle: bool) -> Result<()> {
+    let (prefix, wanted): (&str, &[&str]) = if lifecycle {
+        (
+            "lifecycle",
+            &[
+                "ok 1 /dynamic-files/private-000-transfer-no-follow",
+                "ok 2 /dynamic-files/write-retire-exclusive-recreate",
+                "ok 3 /dynamic-files/foreign-owner-fails-and-restores",
+                "ok 4 /dynamic-files/hard-link-transfer-rejected",
+                "ok 5 /dynamic-files/root-alias-rejected",
+                "ok 6 /dynamic-files/original-gdm-data-owner",
+                "ok 7 /dynamic-files/denied-fsuid-restores-without-dac",
+            ],
+        )
+    } else {
+        (
+            "root",
+            &[
+                "ok 1 /environment/private-write-replace-and-thread-scope",
+                "ok 2 /environment/io-failure-restores-identity",
+                "ok 3 /environment/restoration-denial-is-fatal",
+            ],
+        )
+    };
+    let executable = &lock["artifacts"][format!("{prefix}_test_executable")];
+    let recorded_log = &lock["artifacts"][format!("{prefix}_test_log")];
     ensure(
         tests["schema"] == 1
             && tests["source_commit"] == lock["source_commit"]
             && tests["exit_code"] == 0
             && tests["actual_root_subprocess_tests"] == true
             && tests["enforcing_target_gdm_runtime_qualified"] == false
-            && tests["test_elf"]["bytes"] == lock["artifacts"]["root_test_executable"]["bytes"]
-            && tests["test_elf"]["sha256"] == lock["artifacts"]["root_test_executable"]["sha256"]
-            && tests["test_log"]["bytes"] == lock["artifacts"]["root_test_log"]["bytes"]
-            && tests["test_log"]["sha256"] == lock["artifacts"]["root_test_log"]["sha256"],
+            && tests["normal_debian_build_test_artifact"] == true
+            && tests["cases_passed"].as_u64() == Some(wanted.len() as u64)
+            && tests["test_elf"]["bytes"] == executable["bytes"]
+            && tests["test_elf"]["sha256"] == executable["sha256"]
+            && tests["test_log"]["bytes"] == recorded_log["bytes"]
+            && tests["test_log"]["sha256"] == recorded_log["sha256"],
         "GDM actual root regression binding differs",
     )?;
     let cases: Vec<_> = log.lines().filter(|l| l.starts_with("ok ")).collect();
     ensure(
-        log.lines().filter(|l| *l == "1..3").count() == 1
+        log.lines()
+            .filter(|l| *l == format!("1..{}", wanted.len()))
+            .count()
+            == 1
             && !log.contains("not ok ")
             && !log.contains("# SKIP")
-            && cases
-                == [
-                    "ok 1 /environment/private-write-replace-and-thread-scope",
-                    "ok 2 /environment/io-failure-restores-identity",
-                    "ok 3 /environment/restoration-denial-is-fatal",
-                ],
+            && cases == wanted,
         "GDM actual root regression cases did not all pass",
     )
 }
@@ -222,9 +256,10 @@ fn verify_sources(pins: &BTreeMap<String, FilePin>, lock: &Value, work: &Path) -
         &pins["original_debian_archive"],
         100,
     )?;
-    let updated = unpack_source(work, "updated-source", &pins["source_debian_archive"], 101)?;
+    let updated = unpack_source(work, "updated-source", &pins["source_debian_archive"], 102)?;
     let mut keys: BTreeSet<_> = original.keys().map(String::as_str).collect();
     keys.insert(PATCH);
+    keys.insert(LIFECYCLE_PATCH_PATH);
     ensure(
         keys == updated.keys().map(String::as_str).collect(),
         "GDM Debian source member set changed unexpectedly",
@@ -241,6 +276,7 @@ fn verify_sources(pins: &BTreeMap<String, FilePin>, lock: &Value, work: &Path) -
     }
     ensure(
         archive::regular(&updated, PATCH, None)? == SOURCE_PATCH
+            && archive::regular(&updated, LIFECYCLE_PATCH_PATH, None)? == LIFECYCLE_PATCH
             && fs::digest(archive::regular(&updated, "debian/rules", None)?)
                 == lock["debian_rules_sha256"],
         "GDM quilt patch/rules differ from maintained source",
@@ -250,8 +286,11 @@ fn verify_sources(pins: &BTreeMap<String, FilePin>, lock: &Value, work: &Path) -
     let series = std::str::from_utf8(archive::regular(&updated, "debian/patches/series", None)?)?;
     ensure(
         series.lines().collect::<Vec<_>>()
-            == old_series.lines().chain([PATCH_NAME]).collect::<Vec<_>>(),
-        "GDM quilt series did not append only the maintained patch",
+            == old_series
+                .lines()
+                .chain([PATCH_NAME, LIFECYCLE_PATCH_NAME])
+                .collect::<Vec<_>>(),
+        "GDM quilt series did not append only the two maintained patches",
     )?;
     ensure(
         std::str::from_utf8(archive::regular(&updated, "debian/changelog", None)?)?
@@ -278,10 +317,31 @@ fn verify_sources(pins: &BTreeMap<String, FilePin>, lock: &Value, work: &Path) -
             ])
             && build["exit_code"] == 0
             && build["frozen_source_unchanged"] == true
+            && build["canonical_source_unchanged"] == true
+            && build["source_roundtrip_verified"] == true
             && build["source_commit"] == lock["source_commit"]
             && build["installed_candidate"] == false,
         "GDM candidate lacks the successful complete normal Debian build",
     )?;
+    let files = lock["source_files"]
+        .as_object()
+        .ok_or("GDM source file set absent")?;
+    let roundtrip = build["source_roundtrip"]
+        .as_object()
+        .ok_or("GDM normal source round-trip absent")?;
+    ensure(
+        files.len() == 14 && files.keys().collect::<BTreeSet<_>>() == roundtrip.keys().collect(),
+        "GDM normal source round-trip file set differs",
+    )?;
+    for (path, wanted) in files {
+        let actual = &roundtrip[path];
+        ensure(
+            actual["bytes"] == wanted["bytes"]
+                && actual["sha256"] == wanted["sha256"]
+                && actual["canonical_sha256"] == wanted["sha256"],
+            "GDM new normal dsc did not reproduce its maintained source bytes",
+        )?;
+    }
     for key in [
         "package",
         "source_dsc",
@@ -301,12 +361,17 @@ fn verify_sources(pins: &BTreeMap<String, FilePin>, lock: &Value, work: &Path) -
     }
     let tests = json_input(pins, "root_test_result")?;
     let log = String::from_utf8(boot_files::read_pin(&pins["root_test_log"], 65536)?)?;
-    verify_tests(&tests, &log, lock)?;
+    verify_regression(&tests, &log, lock, false)?;
+    let lifecycle = json_input(pins, "lifecycle_test_result")?;
+    let lifecycle_log =
+        String::from_utf8(boot_files::read_pin(&pins["lifecycle_test_log"], 65536)?)?;
+    verify_regression(&lifecycle, &lifecycle_log, lock, true)?;
     Ok(
         json!({"source_commit":lock["source_commit"], "source_tree":lock["source_tree"],
         "source_lock_sha256":fs::digest(SOURCE_LOCK), "normal_debian_build_exit_code":0,
         "unchanged_original_debian_rules":true,"only_quilt_patch_series_and_changelog_changed":true,
-        "actual_root_tests":3,"unprivileged_meson_root_tests_skipped":3,
+        "actual_root_tests":10,"unprivileged_meson_root_tests_skipped":10,
+        "normal_dsc_source_roundtrip_files_verified":14,
         "test_host_kernel":tests["host_kernel"],"target_gdm_runtime_qualified":false}),
     )
 }
@@ -645,6 +710,183 @@ pub fn verify_image(root: &Path, work: &Path, image: &Path) -> Result<Value> {
 mod tests {
     use super::*;
     #[test]
+    #[ignore = "requires actual original public fixture files, root-protected candidate inputs, and fresh protected work"]
+    fn actual_original_fixture_apply_preserves_optional_status_and_held_elf() -> Result<()> {
+        ensure(
+            rustix::process::geteuid().as_raw() == 0,
+            "actual apply test requires root",
+        )?;
+        let value = |name| {
+            std::env::var_os(name)
+                .map(PathBuf::from)
+                .ok_or("actual apply input absent")
+        };
+        let config = value("DROIDLOOM_GDM_ADMISSION_INPUTS")?;
+        let source = value("DROIDLOOM_GDM_APPLY_SOURCE_ROOT")?;
+        let manifest_path = value("DROIDLOOM_GDM_APPLY_MANIFEST")?;
+        let work = value("DROIDLOOM_GDM_APPLY_WORK")?;
+        let parent = Path::new("/var/lib/droidloom-qualification");
+        ensure(
+            work.parent() == Some(parent),
+            "actual apply work outside qualification root",
+        )?;
+        boot_files::private_dir(&work)?;
+        let config_pin = boot_files::pin_file(&config)?;
+        let input: GdmCandidate =
+            serde_json::from_slice(&boot_files::read_pin(&config_pin, 65536)?)?;
+        let manifest_pin = FilePin {
+            path: manifest_path,
+            bytes: 31749096,
+            sha256: "7cc2be80bdf94e30f8b0d73be13a04b45bb3165a4395c9d7653c26d1644d9965".into(),
+        };
+        let manifest: Manifest =
+            serde_json::from_slice(&boot_files::read_pin(&manifest_pin, 64 * 1024 * 1024)?)?;
+        ensure(
+            manifest.schema == crate::model::MANIFEST_SCHEMA,
+            "original public manifest schema differs",
+        )?;
+        let lock = source_lock()?;
+        let original = boot_files::pin_file(&source.join(MEMBER))?;
+        ensure(
+            Some(original.bytes) == lock["original_executable"]["bytes"].as_u64()
+                && original.sha256 == lock["original_executable"]["sha256"],
+            "original fixture test ELF differs",
+        )?;
+        let mut held = boot_files::checked_file(&original)?;
+        let original_identity = fs::stat(&held)?;
+        let mut files = BTreeMap::from([(format!("/{MEMBER}"), original.clone())]);
+        let mut aliases = BTreeMap::new();
+        for name in lock["needed"]
+            .as_array()
+            .ok_or("test dependency contract absent")?
+        {
+            let name = name.as_str().ok_or("test dependency name invalid")?;
+            let (pin, resolution) = boot_files::resolve_public_file(
+                &source,
+                &format!("/usr/lib/x86_64-linux-gnu/{name}"),
+            )?;
+            let guest = format!(
+                "/{}",
+                pin.path
+                    .strip_prefix(&source)?
+                    .to_str()
+                    .ok_or("test path encoding differs")?
+            );
+            ensure(manifest.entries.iter().any(|entry| entry.path == guest
+                && matches!(&entry.content, Content::Regular {sha256} if sha256 == &pin.sha256)),
+                "test dependency differs from selected original public manifest")?;
+            files.insert(guest, pin);
+            for alias in resolution["aliases"]
+                .as_array()
+                .ok_or("dependency aliases absent")?
+            {
+                let path = alias["path"]
+                    .as_str()
+                    .ok_or("dependency alias path absent")?;
+                let target = alias["target"]
+                    .as_str()
+                    .ok_or("dependency alias target absent")?;
+                ensure(manifest.entries.iter().any(|entry| entry.path == path
+                    && matches!(&entry.content, Content::Symlink {target: wanted} if wanted == target)),
+                    "test dependency alias differs from original public manifest")?;
+                aliases.insert(path.to_owned(), target.to_owned());
+            }
+        }
+        let stem = work
+            .file_name()
+            .and_then(|s| s.to_str())
+            .ok_or("apply test stem absent")?;
+        let mut cases = Vec::new();
+        for case in ["status-absent", "status-present", "changed-original"] {
+            let destination = parent.join(format!("{stem}-{case}"));
+            boot_files::private_dir(&destination)?;
+            let root = destination.join("root");
+            let boot = destination.join("boot");
+            boot_files::private_dir(&root)?;
+            boot_files::private_dir(&boot)?;
+            for (guest, pin) in &files {
+                let target = root.join(guest.trim_start_matches('/'));
+                std::fs::create_dir_all(target.parent().ok_or("test file parent absent")?)?;
+                let original_mode = fs::stat(&boot_files::checked_file(pin)?)?.mode & 0o777;
+                boot_files::copy_pin(pin, &target, original_mode)?;
+            }
+            for (guest, target) in &aliases {
+                let path = root.join(guest.trim_start_matches('/'));
+                std::fs::create_dir_all(path.parent().ok_or("test alias parent absent")?)?;
+                std::os::unix::fs::symlink(target, path)?;
+            }
+            let status = root.join("var/lib/dpkg/status");
+            if case == "status-present" {
+                std::fs::create_dir_all(status.parent().ok_or("test status parent absent")?)?;
+                boot_files::write_new(&status, b"Package: fixture-apply-preservation-test\nStatus: install ok installed\nArchitecture: amd64\nVersion: 1\n\n", 0o644)?;
+            }
+            if case == "changed-original" {
+                use std::os::unix::fs::FileExt;
+                let f = std::fs::OpenOptions::new()
+                    .write(true)
+                    .open(root.join(MEMBER))?;
+                f.write_all_at(b"X", 0)?;
+                f.sync_all()?;
+                let error = apply(&root, &boot, &manifest, &input)
+                    .err()
+                    .ok_or("altered original ELF accepted")?;
+                ensure(
+                    !boot.join("gdm-candidate").exists(),
+                    "altered original progressed to replacement",
+                )?;
+                cases.push(json!({"case":case,"rejected":true,"error":error.to_string()}));
+            } else {
+                let tree = fs::Tree::open(&fs::absolute_string(&root)?, 0)?;
+                let before_status = crate::boot_candidate::dpkg_status(&root)?;
+                let before_identity = before_status
+                    .as_ref()
+                    .map(|_| tree.identity("/var/lib/dpkg/status"))
+                    .transpose()?;
+                let overlay = apply(&root, &boot, &manifest, &input)?;
+                let after_status = crate::boot_candidate::dpkg_status(&root)?;
+                let after_identity = after_status
+                    .as_ref()
+                    .map(|_| tree.identity("/var/lib/dpkg/status"))
+                    .transpose()?;
+                ensure(
+                    before_identity == after_identity
+                        && match (&before_status, &after_status) {
+                            (None, None) => true,
+                            (Some(a), Some(b)) => crate::boot_candidate::equal_pin(a, b),
+                            _ => false,
+                        },
+                    "actual apply changed optional dpkg fixture state",
+                )?;
+                ensure(
+                    overlay["preserved_original"]["sha256"] == original.sha256
+                        && overlay["installed_candidate"]["sha256"]
+                            == lock["candidate_executable"]["sha256"]
+                        && overlay["dpkg_database_updated"] == false,
+                    "actual apply omitted its original/candidate custody",
+                )?;
+                cases.push(json!({"case":case,"applied":true,"status_presence_identity_and_bytes_preserved":true,
+                    "overlay":boot_files::pin_file(&boot.join("gdm-candidate/OVERLAY.json"))?}));
+            }
+        }
+        held.rewind()?;
+        ensure(
+            fs::stat(&held)? == original_identity
+                && fs::hash(&held)? == original.sha256
+                && boot_files::pin_file(&source.join(MEMBER))?.sha256 == original.sha256,
+            "original public fixture changed during apply tests",
+        )?;
+        fs::write_json(
+            &fs::absolute_string(&work.join("RESULT.json"))?,
+            &json!({"schema":"droidloom.gdm-real-apply-regression.v1","inputs":config_pin,
+                "source_lock_sha256":fs::digest(SOURCE_LOCK),"original_manifest":manifest_pin,
+                "original_elf":original,"copied_original_regular_files":files.len(),"cases":cases,
+                "actual_full_apply_function":true,"full_native_fixture":false,
+                "gdm_executed":false,"guest_runtime_qualified":false}),
+            0,
+        )?;
+        Ok(())
+    }
+    #[test]
     #[ignore = "requires the root-protected normal GDM artifacts and a fresh qualification directory"]
     fn actual_normal_gdm_artifacts_admission() -> Result<()> {
         ensure(
@@ -799,13 +1041,60 @@ mod tests {
         let lock = source_lock()?;
         let mut report = json!({"schema":1,"source_commit":lock["source_commit"],"exit_code":0,
             "actual_root_subprocess_tests":true,"enforcing_target_gdm_runtime_qualified":false,
+            "normal_debian_build_test_artifact":true,"cases_passed":3,
             "test_elf":lock["artifacts"]["root_test_executable"],"test_log":lock["artifacts"]["root_test_log"]});
         let log = "1..3\nok 1 /environment/private-write-replace-and-thread-scope\nok 2 /environment/io-failure-restores-identity\nok 3 /environment/restoration-denial-is-fatal\n";
-        verify_tests(&report, log, &lock)?;
-        assert!(verify_tests(&report, &(log.to_owned() + "# SKIP needs root\n"), &lock).is_err());
-        assert!(verify_tests(&report, &log.replace("ok 2 ", "not ok 2 "), &lock).is_err());
+        verify_regression(&report, log, &lock, false)?;
+        assert!(
+            verify_regression(
+                &report,
+                &(log.to_owned() + "# SKIP needs root\n"),
+                &lock,
+                false
+            )
+            .is_err()
+        );
+        assert!(
+            verify_regression(&report, &log.replace("ok 2 ", "not ok 2 "), &lock, false).is_err()
+        );
         report["test_elf"]["sha256"] = json!("0".repeat(64));
-        assert!(verify_tests(&report, log, &lock).is_err());
+        assert!(verify_regression(&report, log, &lock, false).is_err());
+        Ok(())
+    }
+    #[test]
+    fn lifecycle_regression_requires_all_normal_artifact_cases() -> Result<()> {
+        let lock = source_lock()?;
+        let mut report = json!({"schema":1,"source_commit":lock["source_commit"],"exit_code":0,
+            "actual_root_subprocess_tests":true,"enforcing_target_gdm_runtime_qualified":false,
+            "normal_debian_build_test_artifact":true,"cases_passed":7,
+            "test_elf":lock["artifacts"]["lifecycle_test_executable"],"test_log":lock["artifacts"]["lifecycle_test_log"]});
+        let names = [
+            "private-000-transfer-no-follow",
+            "write-retire-exclusive-recreate",
+            "foreign-owner-fails-and-restores",
+            "hard-link-transfer-rejected",
+            "root-alias-rejected",
+            "original-gdm-data-owner",
+            "denied-fsuid-restores-without-dac",
+        ];
+        let log = format!(
+            "1..7\n{}",
+            names
+                .iter()
+                .enumerate()
+                .map(|(i, n)| format!("ok {} /dynamic-files/{n}\n", i + 1))
+                .collect::<String>()
+        );
+        verify_regression(&report, &log, &lock, true)?;
+        assert!(
+            verify_regression(&report, &(log.clone() + "# SKIP needs root\n"), &lock, true)
+                .is_err()
+        );
+        assert!(
+            verify_regression(&report, &log.replace("ok 6 ", "not ok 6 "), &lock, true).is_err()
+        );
+        report["normal_debian_build_test_artifact"] = json!(false);
+        assert!(verify_regression(&report, &log, &lock, true).is_err());
         Ok(())
     }
 }
