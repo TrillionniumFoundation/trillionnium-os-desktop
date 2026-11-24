@@ -922,3 +922,18 @@ mod pre_ready_identity_tests {
         ));
     }
 }
+
+// Forward only from the original legacy owner. The early implementation lives
+// beside its real EarlyBoardResources and cannot construct this legacy owner.
+impl crate::production_application::ApplicationWorkerAuthority for ApplicationAuthority<'_> {
+    fn query_projection(&self) -> crate::production_application::QueryProjection {
+        crate::production_application::QueryProjection::LegacyRoot
+    }
+    fn revalidate(&self) -> Result<()> { ApplicationAuthority::revalidate(self) }
+    fn descriptors(&self, binary: &CStr) -> Result<Vec<File>> { ApplicationAuthority::descriptors(self, binary) }
+    fn contacts_content_descriptors(&self) -> Result<[File; 2]> { ApplicationAuthority::contacts_content_descriptors(self) }
+    fn mapped_root(&self) -> Result<(u32, u32)> { ApplicationAuthority::mapped_root(self) }
+    fn leaf(&self) -> Result<ApplicationLeaf<'_>> { ApplicationAuthority::leaf(self) }
+    fn bind_created_process(&self, pidfd: &OwnedFd, query: bool) -> Result<(File, u32)> { ApplicationAuthority::bind_created_process(self, pidfd, query) }
+    fn progress_inherited_native(&self, deadline: Instant) -> Result<()> { ApplicationAuthority::progress_inherited_native(self, deadline) }
+}

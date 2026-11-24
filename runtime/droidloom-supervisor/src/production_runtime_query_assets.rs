@@ -11,6 +11,10 @@ use super::*;
 use crate::production_execution_profile::query_inputs as fixed;
 use crate::production_namespace::ApplicationAuthority;
 
+#[path = "production_early_query_assets.rs"]
+mod early;
+pub(crate) use early::EarlyQueryResources;
+
 const MAX_QUERY: u64 = 128 * 1024 * 1024;
 const QUERY_EXEC: &[u8; 35] = b"u:object_r:droidloom_query_exec:s0\0";
 const CMD_ORIGINAL: &[u8; 26] = b"u:object_r:system_file:s0\0";
@@ -370,13 +374,9 @@ fn copy_original(
     declared: &QuerySource,
     parent: &Path,
     root: &File,
-    witness: &OwnedNamespaceWitness<'_>,
+    admit: &dyn Fn(&File) -> Result<()>,
 ) -> Result<Copied> {
-    let lease = witness.identity_lease()?;
-    let source = SealedFile::open_guarded(parent, role.original_name(), 0, MAX_QUERY, |file| {
-        lease.broker_reject_backing_body(file)?;
-        Ok(())
-    })?;
+    let source = SealedFile::open_guarded(parent, role.original_name(), 0, MAX_QUERY, admit)?;
     require(
         source.identity.mode == libc::S_IFREG | role.mode(),
         "original input must be sealed with its exact executable or data mode",
@@ -453,6 +453,29 @@ impl QueryResources {
                 && witness.identity_lease()?.broker_ranges() == (uids, gids),
             "private query assets require the actual same owned user namespace",
         )?;
+        let admit = |file: &File| -> Result<()> {
+            witness.identity_lease()?.broker_reject_backing_body(file)?;
+            Ok(())
+        };
+        let revalidate = || -> Result<()> {
+            witness.revalidate_live_admission()?;
+            Ok(())
+        };
+        Self::prepare_admitted(declared, parent, userns, uids, gids, &admit, &revalidate)
+    }
+
+    // Both callers above/below obtain these closures from their actual original
+    // namespace admission. This private helper never receives a public request.
+    fn prepare_admitted(
+        declared: &QueryDeclaration,
+        parent: &Path,
+        userns: &File,
+        uids: IdRange,
+        gids: IdRange,
+        admit: &dyn Fn(&File) -> Result<()>,
+        revalidate: &dyn Fn() -> Result<()>,
+    ) -> Result<Self> {
+        revalidate()?;
         let size = declared
             .sources()
             .iter()
@@ -508,7 +531,7 @@ impl QueryResources {
         require_exact_xattr(&root, c"security.selinux", INITIAL_TMPFS)?;
         let mut copied = Vec::new();
         for (role, source) in declared.sources() {
-            copied.push(copy_original(role, source, parent, &root, witness)?);
+            copied.push(copy_original(role, source, parent, &root, admit)?);
         }
         label_new_inode(&root, QUERY_EXEC)?;
         zero_rc(unsafe { libc::fchmod(root.as_raw_fd(), 0o555) })?;
@@ -585,7 +608,7 @@ impl QueryResources {
             superblock_readonly: true,
         };
         result.revalidate(uids, gids)?;
-        witness.revalidate_live_admission()?;
+        revalidate()?;
         Ok(result)
     }
 
@@ -770,20 +793,28 @@ impl RuntimeQueryExecutable<'_> {
     pub(crate) fn file(&self) -> &File {
         &self.executable.copy
     }
-    pub(crate) fn verify_original(
-        &self,
+    pub(crate) fn verify_original(&self, original: &File, root_uid: u32, root_gid: u32) -> Result<()> {
+        verify_original(self.executable, original, root_uid, root_gid)
+    }
+    pub(crate) fn verify_projection(&self, target: &File) -> Result<()> {
+        verify_projection(self.resources, self.executable, target)
+    }
+}
+
+fn verify_original(
+        executable: &QueryExecutable,
         original: &File,
         root_uid: u32,
         root_gid: u32,
     ) -> Result<()> {
         let node = FileIdentity::of(&original.metadata()?);
         require(
-            self.executable
+            executable
                 .role
                 .original_metadata(node, root_uid, root_gid)
-                && node.bytes == self.executable.identity.bytes
+                && node.bytes == executable.identity.bytes
                 && (node.dev, node.ino)
-                    != (self.executable.identity.dev, self.executable.identity.ino)
+                    != (executable.identity.dev, executable.identity.ino)
                 && [0xef53, 0xe0f5_e1e2_u32 as libc::c_long].contains(&fs_type(original)?),
             "guest original query role does not match its selected image metadata",
         )?;
@@ -793,28 +824,27 @@ impl RuntimeQueryExecutable<'_> {
             flags.f_flag as u64 & READONLY_FLAGS == READONLY_FLAGS,
             "guest original query executable is not on its readonly system image",
         )?;
-        self.executable.role.original_security(original)?;
+        executable.role.original_security(original)?;
         require(
-            full_digest(original, node)? == self.executable.digest,
+            full_digest(original, node)? == executable.digest,
             "guest original query bytes differ from the complete selected source role",
         )?;
-        self.executable
+        executable
             .role
-            .verify_format(original, node.bytes, &self.executable.interpreter)
+            .verify_format(original, node.bytes, &executable.interpreter)
     }
-    pub(crate) fn verify_projection(&self, target: &File) -> Result<()> {
+fn verify_projection(resources: &QueryResources, executable: &QueryExecutable, target: &File) -> Result<()> {
         readonly_private(
             target,
-            self.executable.identity,
-            self.resources.mount_id,
-            self.executable.role.private_label(),
+            executable.identity,
+            resources.mount_id,
+            executable.role.private_label(),
         )?;
         require(
-            full_digest(target, self.executable.identity)? == self.executable.digest,
+            full_digest(target, executable.identity)? == executable.digest,
             "attached private query role has different bytes",
         )
     }
-}
 
 /// Opaque, same-owner classpath data. No path/FD/digest can construct it.
 pub(crate) struct RuntimeQueryData<'a> {

@@ -21,6 +21,7 @@ pub(super) enum Message {
     Request {
         nonce: [u8; 16],
         query: ApplicationOperation,
+        projection: QueryProjection,
         deadline_ns: u64,
     },
     BridgeRequest {

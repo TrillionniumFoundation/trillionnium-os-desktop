@@ -298,6 +298,7 @@ fn validate_descriptors(
     files: &[File],
     parent: libc::pid_t,
     query: &ApplicationOperation,
+    projection: QueryProjection,
     deadline: Instant,
 ) -> Result<()> {
     require(
@@ -305,7 +306,7 @@ fn validate_descriptors(
         "application descriptor count differs",
     )?;
     let init = validate_owner_descriptors(files, parent)?;
-    executable::verify(files, query, init.ruid, init.rgid, deadline)?;
+    executable::verify(files, query, projection, init.ruid, init.rgid, deadline)?;
     for index in [protocol::STDOUT, protocol::STDERR] {
         require(
             files[index].metadata()?.mode() & libc::S_IFMT == libc::S_IFIFO,
@@ -367,12 +368,13 @@ pub(super) fn entry() -> Result<()> {
         }
         return result;
     }
-    let (nonce, query, deadline_ns) = match received.message {
+    let (nonce, query, projection, deadline_ns) = match received.message {
         Message::Request {
             nonce,
             query,
+            projection,
             deadline_ns,
-        } => (nonce, query, deadline_ns),
+        } => (nonce, query, projection, deadline_ns),
         _ => return Err(reject("application worker received the wrong first phase")),
     };
     let remaining = deadline_ns
@@ -389,6 +391,7 @@ pub(super) fn entry() -> Result<()> {
         parent,
         &files,
         &query,
+        projection,
         nonce,
         deadline_ns,
         deadline,
@@ -413,18 +416,19 @@ fn prepare_query(
     parent: libc::pid_t,
     files: &[File],
     query: &ApplicationOperation,
+    projection: QueryProjection,
     nonce: [u8; 16],
     deadline_ns: u64,
     deadline: Instant,
     child_created: &mut bool,
 ) -> Result<()> {
     query.validate()?;
-    validate_descriptors(files, parent, query, deadline)?;
+    validate_descriptors(files, parent, query, projection, deadline)?;
     let arguments = query.arguments()?;
     let domain = query.domain();
     let mut argv: Vec<_> = arguments.iter().map(|arg| arg.as_ptr()).collect();
     argv.push(std::ptr::null());
-    let environment = query.environment();
+    let environment = query.environment(projection);
     let mut envp: Vec<_> = environment.iter().map(|entry| entry.as_ptr()).collect();
     envp.push(std::ptr::null());
     let go = protocol::encoded(&Message::Go { nonce })?;

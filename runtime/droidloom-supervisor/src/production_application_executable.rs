@@ -150,9 +150,17 @@ fn complete_hash(file: &File, expected: Node, deadline: Instant) -> Result<[u8; 
     Ok(hash.finalize().into())
 }
 
+fn private_role(root: &File, projection: QueryProjection, leaf: &CStr) -> Result<File> {
+    match projection {
+        QueryProjection::LegacyRoot => at(root, &[c".droidloom-query", leaf]),
+        QueryProjection::EarlyDev => at(root, &[c"dev", c"droidloom-query", leaf]),
+    }
+}
+
 pub(super) fn verify(
     files: &[File],
     query: &ApplicationOperation,
+    projection: QueryProjection,
     root_uid: u32,
     root_gid: u32,
     deadline: Instant,
@@ -169,7 +177,7 @@ pub(super) fn verify(
         QUERY_LABEL
     };
     let original = at(&files[2], &[c"system", c"bin", query.binary()])?;
-    let private = at(&files[2], &[c".droidloom-query", query.binary()])?;
+    let private = private_role(&files[2], projection, query.binary())?;
     let source = identity(&original)?;
     let copy = identity(&private)?;
     require(
@@ -209,7 +217,7 @@ pub(super) fn verify(
     security(&original, original_label)?;
     security(&private, private_label)?;
     if query.needs_content_jar() {
-        verify_content_jar(files, root_uid, root_gid, deadline)?;
+        verify_content_jar(files, projection, root_uid, root_gid, deadline)?;
     }
     require(
         Instant::now() < deadline,
@@ -217,9 +225,9 @@ pub(super) fn verify(
     )
 }
 
-fn verify_content_jar(files: &[File], uid: u32, gid: u32, deadline: Instant) -> Result<()> {
+fn verify_content_jar(files: &[File], projection: QueryProjection, uid: u32, gid: u32, deadline: Instant) -> Result<()> {
     let original = at(&files[2], &[c"system", c"framework", c"content.jar"])?;
-    let private = at(&files[2], &[c".droidloom-query", c"content.jar"])?;
+    let private = private_role(&files[2], projection, c"content.jar")?;
     let source = identity(&original)?;
     let copy = identity(&private)?;
     require(

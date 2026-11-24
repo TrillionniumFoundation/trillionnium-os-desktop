@@ -169,7 +169,7 @@ impl ApplicationOperation {
         if self.needs_content_jar() { 17 } else { 15 }
     }
 
-    pub(super) fn environment(&self) -> Vec<&'static CStr> {
+    pub(super) fn environment(&self, projection: QueryProjection) -> Vec<&'static CStr> {
         let mut values = vec![
             c"PATH=/system/bin:/system/xbin",
             c"LC_ALL=C",
@@ -181,7 +181,7 @@ impl ApplicationOperation {
             c"ANDROID_TZDATA_ROOT=/apex/com.android.tzdata",
         ];
         if self.needs_content_jar() {
-            values.push(c"CLASSPATH=/.droidloom-query/content.jar");
+            values.push(projection.content_classpath());
         }
         values
     }
@@ -223,7 +223,7 @@ mod tests {
         let operation = ApplicationOperation::ContactsRead {
             value: ContactsQuery::RawRows,
         };
-        let environment = operation.environment();
+        let environment = operation.environment(QueryProjection::LegacyRoot);
         assert_eq!(operation.domain(), OperationDomain::ContactsRead);
         assert_eq!(operation.binary(), c"app_process64");
         assert_eq!(operation.descriptor_count(), 17);
@@ -250,7 +250,7 @@ mod tests {
             assert!(!other.needs_content_jar());
             assert!(
                 !other
-                    .environment()
+                    .environment(QueryProjection::LegacyRoot)
                     .iter()
                     .any(|x| x.to_bytes().starts_with(b"CLASSPATH="))
             );

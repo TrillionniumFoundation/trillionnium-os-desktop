@@ -55,7 +55,7 @@ use query::{QueryDeclaration, QueryResources};
 #[path = "production_runtime_native_assets.rs"]
 mod native;
 use native::{NativeDeclaration, NativeResources};
-pub(crate) use query::{QueryLayout, QueryRole, RuntimeQueryData, RuntimeQueryExecutable};
+pub(crate) use query::{EarlyQueryResources, QueryLayout, QueryRole, RuntimeQueryData, RuntimeQueryExecutable};
 
 const RUNTIME_MANIFEST_ROOT: &str = "/etc/droidloom/runtime-cohorts";
 const RUNTIME_IMAGE_ROOT: &str = "/var/lib/droidloom/runtime-cohorts";

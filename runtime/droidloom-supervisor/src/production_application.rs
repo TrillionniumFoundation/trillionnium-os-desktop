@@ -46,6 +46,38 @@ mod protocol;
 mod worker;
 pub(crate) use worker::{CloneArgs as FrontendCloneArgs, SignalMask as FrontendSignalMask};
 
+/// Borrowed execution authority. Implementations retain their actual original
+/// owner; no request, PID, receipt, or serialized Ready state implements this.
+/// The same closed worker and actual waitid/cgroup retirement path serve both
+/// the legacy namespace owner and the boot-created early owner.
+/// Only two source-owned fixed locations exist. This is sent on the private
+/// parent-authenticated worker channel, never accepted as a public path.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub(crate) enum QueryProjection {
+    LegacyRoot,
+    EarlyDev,
+}
+impl QueryProjection {
+    fn content_classpath(self) -> &'static CStr {
+        match self {
+            Self::LegacyRoot => c"CLASSPATH=/.droidloom-query/content.jar",
+            Self::EarlyDev => c"CLASSPATH=/dev/droidloom-query/content.jar",
+        }
+    }
+}
+
+pub(crate) trait ApplicationWorkerAuthority {
+    fn query_projection(&self) -> QueryProjection;
+    fn revalidate(&self) -> std::result::Result<(), crate::production_namespace::NamespaceError>;
+    fn descriptors(&self, binary: &CStr) -> std::result::Result<Vec<File>, crate::production_namespace::NamespaceError>;
+    fn contacts_content_descriptors(&self) -> std::result::Result<[File; 2], crate::production_namespace::NamespaceError>;
+    fn mapped_root(&self) -> std::result::Result<(u32, u32), crate::production_namespace::NamespaceError>;
+    fn leaf(&self) -> std::result::Result<crate::production_cgroup::ApplicationLeaf<'_>, crate::production_namespace::NamespaceError>;
+    fn bind_created_process(&self, pidfd: &std::os::fd::OwnedFd, query: bool) -> std::result::Result<(File, u32), crate::production_namespace::NamespaceError>;
+    fn progress_inherited_native(&self, deadline: std::time::Instant) -> std::result::Result<(), crate::production_namespace::NamespaceError>;
+}
+
 pub(crate) const WORKER_ARGUMENT: &str = "__production-application-read";
 const OUTPUT_LIMIT: usize = 65536;
 const QUERY_LIMIT: std::time::Duration = std::time::Duration::from_secs(30);
@@ -297,14 +329,14 @@ impl ApplicationRetired<'_> {
 }
 
 pub(crate) fn run(
-    authority: &ApplicationAuthority<'_>,
+    authority: &dyn ApplicationWorkerAuthority,
     query: &ApplicationRead,
 ) -> Result<ApplicationReadResult> {
     run_read_before(authority, query, std::time::Instant::now() + QUERY_LIMIT)
 }
 
 pub(crate) fn run_read_before(
-    authority: &ApplicationAuthority<'_>,
+    authority: &dyn ApplicationWorkerAuthority,
     query: &ApplicationRead,
     deadline: std::time::Instant,
 ) -> Result<ApplicationReadResult> {
@@ -323,7 +355,7 @@ pub(crate) fn run_read_before(
 }
 
 pub(crate) fn run_launch_command(
-    authority: &ApplicationAuthority<'_>,
+    authority: &dyn ApplicationWorkerAuthority,
     command: &LaunchCommand,
     deadline: std::time::Instant,
 ) -> Result<LaunchCommandResult> {
@@ -332,7 +364,7 @@ pub(crate) fn run_launch_command(
 }
 
 pub(crate) fn run_browser_command(
-    authority: &ApplicationAuthority<'_>,
+    authority: &dyn ApplicationWorkerAuthority,
     command: &BrowserCommand,
     deadline: std::time::Instant,
 ) -> Result<BrowserCommandResult> {
@@ -351,7 +383,7 @@ pub(crate) fn run_browser_command(
 }
 
 pub(crate) fn run_contacts_read(
-    authority: &ApplicationAuthority<'_>,
+    authority: &dyn ApplicationWorkerAuthority,
     query: &ContactsQuery,
     deadline: std::time::Instant,
 ) -> Result<ContactsReadResult> {

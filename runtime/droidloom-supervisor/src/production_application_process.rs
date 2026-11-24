@@ -305,7 +305,7 @@ fn start_worker(
 }
 
 pub(super) fn run(
-    authority: &ApplicationAuthority<'_>,
+    authority: &dyn ApplicationWorkerAuthority,
     request: &ApplicationOperation,
     workflow_deadline: Instant,
 ) -> Result<OperationResult> {
@@ -332,7 +332,7 @@ pub(super) fn run(
 }
 
 pub(super) fn run_launch(
-    authority: &ApplicationAuthority<'_>,
+    authority: &dyn ApplicationWorkerAuthority,
     command: &LaunchCommand,
     workflow_deadline: Instant,
 ) -> Result<LaunchCommandResult> {
@@ -346,7 +346,7 @@ pub(super) fn run_launch(
 }
 
 fn run_owned(
-    authority: &ApplicationAuthority<'_>,
+    authority: &dyn ApplicationWorkerAuthority,
     request: &ApplicationOperation,
     workflow_deadline: Instant,
 ) -> Result<LaunchCommandResult> {
@@ -433,6 +433,7 @@ fn run_owned(
             &Message::Request {
                 nonce,
                 query: request.clone(),
+                projection: authority.query_projection(),
                 deadline_ns,
             },
             &raw,
@@ -603,7 +604,7 @@ fn run_owned(
 }
 
 pub(super) fn connect_bridge(
-    authority: &ApplicationAuthority<'_>,
+    authority: &dyn ApplicationWorkerAuthority,
     endpoint: &File,
     workflow_deadline: Instant,
 ) -> Result<BridgeConnection> {

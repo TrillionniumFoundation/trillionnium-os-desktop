@@ -24,6 +24,19 @@ impl PreparedCgroup {
         witness: &CgroupTreeReadyWitness<'_>,
     ) -> Result<ApplicationLeaf<'a>> {
         self.require_guest_active(witness)?;
+        self.allocate_application_leaf()
+    }
+
+    pub(crate) fn early_application_leaf<'a>(
+        &'a self,
+        admission: &crate::production_selection::early_generation::EarlyBaseAdmission<'_>,
+        owner: &crate::production_execution::RuntimeMacOwner,
+    ) -> Result<ApplicationLeaf<'a>> {
+        self.revalidate_early_member(admission, owner)?;
+        self.allocate_application_leaf()
+    }
+
+    fn allocate_application_leaf(&self) -> Result<ApplicationLeaf<'_>> {
         let r = self.get();
         require(
             !r.application_active.get(),
