@@ -114,6 +114,11 @@ enum Action {
         #[arg(long)] references: PathBuf,
         #[arg(long)] native_inputs_sha256: String,
         #[arg(long)] vendor_result_sha256: String,
+        #[arg(long)] native_projection_sha256: String,
+        #[arg(long)] native_source_sha256: String,
+        #[arg(long)] native_producer_commit: String,
+        /// Validate the retained native inputs and restore source without compiling vendor.
+        #[arg(long)] verify_native_only: bool,
     },
     /// Build the complete framework Java library and Android JNI runtime only.
     /// Uses its independent exact source lock; does not install or enable roles.
@@ -478,13 +483,13 @@ fn execute(args: Args) -> Result<()> {
     {
         return fail("fixed vendor policy does not accept cleanup, bundle or bootstrap options");
     }
-    if let Some(Action::OfficialGsiVendorResume { work, built_out, out, system_image, references, native_inputs_sha256, vendor_result_sha256 }) = &args.command {
+    if let Some(Action::OfficialGsiVendorResume { work, built_out, out, system_image, references, native_inputs_sha256, vendor_result_sha256, native_projection_sha256, native_source_sha256, native_producer_commit, verify_native_only }) = &args.command {
         if args.clean || args.build_only || args.bootstrapped { return fail("vendor resume does not accept cleanup or bootstrap options"); }
         let repo = repository(args.source.clone())?;
         let capacity = std::thread::available_parallelism().map(|n| n.get()).unwrap_or(1).saturating_sub(2).max(1);
         let jobs = args.jobs.unwrap_or(6).min(capacity);
         if jobs == 0 { return fail("jobs must be positive"); }
-        return android::official_vendor::resume::run(&repo, work, built_out, out, system_image, references, native_inputs_sha256, vendor_result_sha256, jobs);
+        return android::official_vendor::resume::run(&repo, work, built_out, out, system_image, references, native_inputs_sha256, vendor_result_sha256, jobs, native_projection_sha256, native_source_sha256, native_producer_commit, *verify_native_only);
     }
     match &args.command {
         Some(Action::NativeGenerationPair { product }) => {

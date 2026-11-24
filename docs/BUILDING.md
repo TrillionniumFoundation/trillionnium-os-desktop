@@ -1493,3 +1493,14 @@ preservation record; a changed or incomplete prior cache is refused. KeyMint,
 graphics image entries, readiness, system extension and normal source recovery
 remain required. No production selection or user data is modified by this
 build command.
+
+Retaining the native distribution additionally requires the original normal
+producer commit (`--native-producer-commit`), the SHA-256 of its production
+projection receipt (`--native-projection-sha256`), and the SHA-256 of its
+NativeBridge source receipt (`--native-source-sha256`). The updater checks unchanged local
+native producer Git objects, reapplies the ordinary Native phase under the same
+source locks, compares every projected file, patch, request and imported source
+file, then restores the source without executing the native compiler. Any
+difference requires a normal native rebuild. `--verify-native-only` performs
+that preflight and writes `native-reuse-verified.json` without running vendor.
+The producer commit must come from the original invocation's retained provenance.

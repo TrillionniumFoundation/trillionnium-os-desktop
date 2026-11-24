@@ -178,6 +178,230 @@ fn preserve(
     Ok(json!({"files":rows,"bytes":total}))
 }
 
+pub(crate) struct NativeVerification {
+    projection_pin: Artifact,
+    source_pin: Artifact,
+    archive_pin: Artifact,
+    official_input_pin: Artifact,
+    projection: Value,
+    native_source: Value,
+    local_inputs: Value,
+}
+
+fn comparable_projection(mut value: Value) -> Value {
+    // The producer checkout is explicitly reselected; every projected byte,
+    // patch, requested target and the materialized source manifest must match.
+    if let Some(lock) = value.get_mut("source_lock").and_then(Value::as_object_mut) {
+        lock.remove("path");
+    }
+    value
+}
+
+fn compare_native_inputs(
+    expected: &Value,
+    actual: &Value,
+    old_source: &Value,
+    current_source: &Value,
+) -> Result<()> {
+    if comparable_projection(expected.clone()) != comparable_projection(actual.clone()) {
+        return fail(
+            "retained native distribution differs from the current normal native projection",
+        );
+    }
+    if old_source != current_source {
+        return fail("retained native distribution uses different NativeBridge source files");
+    }
+    Ok(())
+}
+
+fn native_local_inputs(repo: &Path, previous: &Path, commit: &str) -> Result<Value> {
+    // The translation package is generated in its own package from pinned
+    // HOST_MODULES/GUEST_MODULES. Frontend/composer modules in the root blueprint
+    // are validated by the normal vendor build and are not native archive inputs.
+    const ROOTS: &[&str] = &[
+        "LICENSE",
+        "LICENSES",
+        "runtime/droidloom-cpu-placement",
+        "android/container-bootstrap",
+        "android/lmkd-compat",
+        "android/runtime",
+        "android/native-bridge",
+        "android/selinux-compat",
+        "android/device",
+        "device",
+        "android/mesa",
+    ];
+    if commit.len() != 40
+        || !commit
+            .bytes()
+            .all(|b| b.is_ascii_hexdigit() && !b.is_ascii_uppercase())
+    {
+        return fail("previous normal native producer requires an exact commit");
+    }
+    real_directory(previous)?;
+    let git = |root: &Path, args: &[&str]| -> Result<String> {
+        crate::util::output(
+            Command::new("/usr/bin/git")
+                .arg("-C")
+                .arg(root)
+                .args(args)
+                .env("GIT_OPTIONAL_LOCKS", "0")
+                .env("GIT_TERMINAL_PROMPT", "0"),
+        )
+    };
+    if git(previous, &["rev-parse", "HEAD"])?.trim() != commit {
+        return fail("previous normal native producer commit changed");
+    }
+    let current = git(repo, &["rev-parse", "HEAD"])?;
+    for root in [previous, repo] {
+        let mut args = vec![
+            "status",
+            "--porcelain",
+            "--untracked-files=all",
+            "--ignored",
+            "--",
+        ];
+        args.extend_from_slice(ROOTS);
+        if !git(root, &args)?.trim().is_empty() {
+            return fail("native producer inputs contain uncommitted or additional files");
+        }
+    }
+    let mut paths = BTreeMap::new();
+    for relative in ROOTS {
+        let old_selector = format!("{commit}:{relative}");
+        let current_selector = format!("{}:{relative}", current.trim());
+        let old = git(previous, &["rev-parse", "--verify", &old_selector])?;
+        let new = git(repo, &["rev-parse", "--verify", &current_selector])?;
+        if old.trim() != new.trim() {
+            return fail(format!("local native producer inputs changed: {relative}"));
+        }
+        paths.insert(*relative, old.trim().to_owned());
+    }
+    Ok(
+        json!({"previous_producer":previous,"previous_commit":commit,
+        "current_producer":repo,"current_commit":current.trim(),"unchanged_git_objects":paths,
+        "framework_frontend_is_not_a_native_distribution_input":true}),
+    )
+}
+
+impl NativeVerification {
+    fn load(
+        repo: &Path,
+        native: &Path,
+        projection_sha: &str,
+        source_sha: &str,
+        producer_commit: &str,
+    ) -> Result<Self> {
+        let (projection_pin, projection) = read_bound(
+            &native.join("droidloom-production-full654-inputs.json"),
+            projection_sha,
+        )?;
+        let (source_pin, native_source) = read_bound(
+            &native.join("target/product/droidloom_x86_64/droidloom-native-bridge-source.json"),
+            source_sha,
+        )?;
+        if projection["schema"] != "droidloom-production-full654-inputs-v1"
+            || projection["requested_targets"] != json!(NATIVE_TARGETS)
+            || projection["effective_projection"]["files"]
+                .as_object()
+                .is_none_or(|v| v.is_empty())
+            || projection["effective_projection"]["patches"]
+                .as_object()
+                .is_none_or(|v| v.is_empty())
+            || native_source["files"]
+                .as_object()
+                .is_none_or(|v| v.is_empty())
+        {
+            return fail(
+                "retained native build lacks its complete normal projection and source receipts",
+            );
+        }
+        let lock_path = PathBuf::from(
+            projection["source_lock"]["path"]
+                .as_str()
+                .ok_or("native producer source lock path absent")?,
+        );
+        let suffix = Path::new(production_source::LOCK_PATH);
+        if !lock_path.ends_with(suffix) {
+            return fail("native producer source lock has an unexpected path");
+        }
+        let mut previous = lock_path;
+        for _ in suffix.components() {
+            previous.pop();
+        }
+        let local_inputs = native_local_inputs(repo, &previous, producer_commit)?;
+        let archive_pin = artifact(&native.join(ARCHIVE), 512 * 1024 * 1024)?;
+        let official_input_pin = artifact(&native.join(INPUT_NAME), 64 * 1024 * 1024)?;
+        Ok(Self {
+            projection_pin,
+            source_pin,
+            archive_pin,
+            official_input_pin,
+            projection,
+            native_source,
+            local_inputs,
+        })
+    }
+
+    pub(crate) fn compare(&self, out: &Path, current_source: &Value) -> Result<()> {
+        self.projection_pin.check()?;
+        self.source_pin.check()?;
+        self.archive_pin.check()?;
+        self.official_input_pin.check()?;
+        let actual: Value = serde_json::from_slice(&fs::read(
+            out.join("droidloom-production-full654-inputs.json"),
+        )?)?;
+        compare_native_inputs(
+            &self.projection,
+            &actual,
+            &self.native_source,
+            current_source,
+        )
+    }
+
+    fn run(
+        &self,
+        repo: &Path,
+        source: &Path,
+        out: &Path,
+        work: &Path,
+        inputs: &VerifiedVendorInputs,
+        jobs: usize,
+    ) -> Result<Value> {
+        let projected = out.join("native-projection-check");
+        fs::create_dir(&projected)?;
+        build_targets_with_fixed_request_and_native_verification(
+            repo,
+            source,
+            &projected,
+            work,
+            "droidloom_x86_64",
+            jobs,
+            FixedProductionRequest::OfficialGsiVendor(Request {
+                inputs,
+                phase: Phase::Native,
+            }),
+            Some(self),
+        )?;
+        self.projection_pin.check()?;
+        self.source_pin.check()?;
+        self.archive_pin.check()?;
+        self.official_input_pin.check()?;
+        let record = json!({"schema":"droidloom-native-reuse-verification-v1",
+            "previous_projection":self.projection_pin,"previous_native_source":self.source_pin,
+            "retained_native_archive":self.archive_pin,"official_native_inputs":self.official_input_pin,
+            "current_projection":artifact(&projected.join("droidloom-production-full654-inputs.json"),64*1024*1024)?,
+            "local_producer_inputs":self.local_inputs,"projected_files_and_patches_identical":true,
+            "native_source_files_identical":true,"normal_native_command_repeated":false,
+            "source_projection_restored":true,"runtime_qualified":false,"production_ready":false});
+        write(
+            &out.join("native-reuse-verified.json"),
+            serde_json::to_vec_pretty(&record)?,
+        )?;
+        Ok(record)
+    }
+}
+
 pub(crate) fn run(
     repo: &Path,
     work: &Path,
@@ -188,6 +412,10 @@ pub(crate) fn run(
     native_inputs_sha: &str,
     vendor_result_sha: &str,
     jobs: usize,
+    native_projection_sha: &str,
+    native_source_sha: &str,
+    native_producer_commit: &str,
+    verify_native_only: bool,
 ) -> Result<()> {
     if unsafe { libc::getuid() } == 0 {
         return fail("resume runs as the normal build account");
@@ -218,6 +446,13 @@ pub(crate) fn run(
     real_directory(&vendor)?;
     let (native_receipt, native_value) = read_bound(&native.join(INPUT_NAME), native_inputs_sha)?;
     validate_native(&native_value, &inputs)?;
+    let native_verification = NativeVerification::load(
+        repo,
+        &native,
+        native_projection_sha,
+        native_source_sha,
+        native_producer_commit,
+    )?;
     let (vendor_receipt, vendor_value) =
         read_bound(&vendor.join(VENDOR_RESULT), vendor_result_sha)?;
     prior_result(&vendor_value, built)?;
@@ -228,11 +463,17 @@ pub(crate) fn run(
     droidloom_source::production_car::verify_materialized(&lock, &source_lock, &source)?;
 
     fs::create_dir(out)?;
+    if verify_native_only {
+        crate::assemble::prepare_vendor_build_tools(repo, work, jobs)?;
+        native_verification.run(repo, &source, out, work, &inputs, jobs)?;
+        return Ok(());
+    }
     let mut preserved = BTreeMap::new();
     let mut receipts = Vec::new();
     for file in [
         native.join(INPUT_NAME),
         native.join("droidloom-production-full654-inputs.json"),
+        native.join("target/product/droidloom_x86_64/droidloom-native-bridge-source.json"),
         vendor.join(INPUT_NAME),
         vendor.join("droidloom-production-full654-inputs.json"),
         vendor.join(VENDOR_RESULT),
@@ -254,7 +495,7 @@ pub(crate) fn run(
     for receipt in &receipts {
         receipt.check()?;
     }
-    let provenance = json!({
+    let mut provenance = json!({
         "schema":"droidloom-official-vendor-incremental-resume-v1",
         "native_build_repeated":false,"native_receipt":native_receipt,
         "package_lock_device_inode":package_identity,"source_lock_device_inode":source_identity,
@@ -270,6 +511,12 @@ pub(crate) fn run(
     native_receipt.check()?;
     vendor_receipt.check()?;
     crate::assemble::prepare_vendor_build_tools(repo, work, jobs)?;
+    provenance["native_reuse_preflight"] =
+        native_verification.run(repo, &source, out, work, &inputs, jobs)?;
+    write(
+        &out.join("resume-attempt.json"),
+        serde_json::to_vec_pretty(&provenance)?,
+    )?;
     let bridge = check_bridge(&archive.path, &out.join("native-vendor-inputs"), &inputs)?;
     // Keep the original native source receipt and archive. The new vendor phase
     // consumes that checked binary input and normally rebuilds changed targets.
@@ -302,6 +549,23 @@ pub(crate) fn run(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn reused_native_requires_identical_projected_bytes_and_external_sources() {
+        let previous = json!({"source_lock":{"path":"/old/lock","sha256":"same"},"effective_projection":{"files":{"native.cpp":"old"},"patches":{"fix.patch":"same"}},"requested_targets":NATIVE_TARGETS});
+        let source = json!({"commit":"original","files":{"bridge.cpp":"same"}});
+        let mut current = previous.clone();
+        current["source_lock"]["path"] = "/new/lock".into();
+        assert!(compare_native_inputs(&previous, &current, &source, &source).is_ok());
+        current["effective_projection"]["files"]["native.cpp"] = "changed".into();
+        assert!(compare_native_inputs(&previous, &current, &source, &source).is_err());
+        current = previous.clone();
+        current["requested_targets"] = json!(["other"]);
+        assert!(compare_native_inputs(&previous, &current, &source, &source).is_err());
+        let mut changed = source.clone();
+        changed["files"]["bridge.cpp"] = "changed".into();
+        assert!(compare_native_inputs(&previous, &previous, &source, &changed).is_err());
+    }
+
     #[test]
     fn resume_requires_completed_selected_vendor() {
         let root = Path::new("/original");

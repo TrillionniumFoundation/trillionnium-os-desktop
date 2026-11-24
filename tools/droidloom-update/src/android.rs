@@ -12841,6 +12841,18 @@ fn build_targets_with_fixed_request(
     jobs: usize,
     request: FixedProductionRequest<'_>,
 ) -> Result<()> {
+    build_targets_with_fixed_request_and_native_verification(repo, source, out, work, product, jobs, request, None)
+}
+
+fn build_targets_with_fixed_request_and_native_verification(
+    repo: &Path, source: &Path, out: &Path, work: &Path, product: &str, jobs: usize,
+    request: FixedProductionRequest<'_>,
+    native_verification: Option<&official_vendor::resume::NativeVerification>,
+) -> Result<()> {
+    if native_verification.is_some() && !matches!(request,
+        FixedProductionRequest::OfficialGsiVendor(official_vendor::Request { phase: official_vendor::Phase::Native, .. })) {
+        return fail("native reuse verification requires the ordinary native distribution request");
+    }
     // Reject the request before materializing or projecting any source. The
     // existing profile targets below control projection only, never final argv.
     request.validate(product)?;
@@ -13822,6 +13834,12 @@ fn build_targets_with_fixed_request(
     };
     if let Some(inputs) = &engine_inputs {
         crate::native_engine::write_inputs(out, product, inputs)?;
+    }
+    if let Some(verification) = native_verification {
+        let comparison = verification.compare(out, &serde_json::to_value(&native_bridge_source)?);
+        p.restore()?;
+        comparison?;
+        return Ok(());
     }
     bootstrap(source, out)?;
     copy(
