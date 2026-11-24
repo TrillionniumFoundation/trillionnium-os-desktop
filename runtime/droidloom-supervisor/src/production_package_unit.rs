@@ -1,9 +1,14 @@
 //! Read-only original production unit observation for a fixed package peer.
 //! Reuses the authenticated manager endpoint, GetUnitByPIDFD and the complete
-//! existing effective-unit validator. No Start/Stop or numeric-PID RPC exists.
+//! existing effective-unit validator. Only a helper may retain the three fixed
+//! early actors and stop them after the original broker has normally exited.
 use super::*;
 use crate::control::package::PackageProcess;
 use crate::production_mac::PackageMacOwner;
+
+#[path = "production_package_early_actors.rs"]
+mod early_actors;
+use early_actors::EarlyActors;
 
 fn retained_cgroup_events(events: &File) -> io::Result<Vec<u8>> {
     if unsafe { libc::lseek(events.as_raw_fd(), 0, libc::SEEK_SET) } < 0 {
@@ -63,7 +68,8 @@ fn validate_terminal(original: &Snapshot, unit: &Properties, service: &Propertie
         "terminal command is not the original clean broker exit")?;
     let group = property(service, "ControlGroup")?;
     let group_id = property(service, "ControlGroupId")?;
-    require((group == &Value::Text(String::new()) && group_id == &Value::U64(0))
+    require((group == &Value::Text(String::new()) && (group_id == &Value::U64(0)
+            || group_id == property(&original.service, "ControlGroupId")?))
         || (group == property(&original.service, "ControlGroup")?
             && group_id == property(&original.service, "ControlGroupId")?),
         "terminal manager cgroup belongs to another generation")?;
@@ -82,6 +88,7 @@ pub(crate) struct PackageBrokerUnit {
     cgroup_node: NodeIdentity,
     original: Snapshot,
     broker_binding: [u8; 32],
+    early_actors: Option<EarlyActors>,
 }
 
 impl PackageBrokerUnit {
@@ -161,6 +168,11 @@ impl PackageBrokerUnit {
             libc::O_PATH | libc::O_DIRECTORY,
         )?;
         let original = Self::snapshot(&channel, &cgroup, broker, deadline)?;
+        let early_actors = if !mac_owner.local().is_broker()
+            && mac_owner.selection().is_kernel_first()
+        {
+            Some(EarlyActors::capture(&channel.bus, deadline)?)
+        } else { None };
         let cgroup_events = open_at(&cgroup, c"cgroup.events", libc::O_RDONLY | libc::O_NONBLOCK)?;
         cgroup_filesystem(&cgroup_events)?;
         retained_cgroup_events(&cgroup_events)?;
@@ -172,6 +184,7 @@ impl PackageBrokerUnit {
             cgroup_events,
             original,
             broker_binding: broker.binding(),
+            early_actors,
         };
         value.revalidate(broker, deadline)?;
         Ok(value)
@@ -215,6 +228,43 @@ impl PackageBrokerUnit {
             "package original loaded unit or invocation changed",
         )?;
         before(deadline)
+    }
+
+    pub(crate) fn revalidate_early_actors_before_commit(&self, deadline: Instant) -> Result<()> {
+        self.mac_owner.revalidate().map_err(|error| CgroupError::Io(io::Error::other(error.to_string())))?;
+        require(deadline <= self.mac_owner.deadline(), "early actor preflight deadline changed")?;
+        self.channel.check_until(deadline)?;
+        if let Some(actors) = &self.early_actors {
+            actors.revalidate_before_commit(&self.channel.bus, deadline)?;
+        }
+        self.channel.check_until(deadline)
+    }
+
+    pub(crate) fn stop_early_actors(
+        &self, deadline: Instant, progress: &impl Fn() -> Result<()>,
+    ) -> Result<()> {
+        require(!self.mac_owner.local().is_broker() && deadline <= self.mac_owner.deadline(),
+            "early stop requires the original package helper and deadline")?;
+        progress()?;
+        if self.mac_owner.selection().is_kernel_first() {
+            self.early_actors.as_ref().ok_or(CgroupError::Rejected("original early actors were not retained"))?
+                .stop(&self.channel.bus, deadline, progress)?;
+        } else {
+            require(self.early_actors.is_none(), "legacy package received early actor authority")?;
+        }
+        progress()
+    }
+
+    pub(crate) fn revalidate_early_actors_retired(&self, deadline: Instant) -> Result<()> {
+        require(!self.mac_owner.local().is_broker() && deadline <= self.mac_owner.deadline(),
+            "early retirement requires the original package helper and deadline")?;
+        self.mac_owner.revalidate().map_err(|error| CgroupError::Io(io::Error::other(error.to_string())))?;
+        self.channel.check_until(deadline)?;
+        if self.mac_owner.selection().is_kernel_first() {
+            self.early_actors.as_ref().ok_or(CgroupError::Rejected("original early actors were not retained"))?
+                .revalidate_retired(&self.channel.bus, deadline)?;
+        }
+        self.channel.check_until(deadline)
     }
 
     pub(crate) fn invocation(&self) -> [u8; 16] {

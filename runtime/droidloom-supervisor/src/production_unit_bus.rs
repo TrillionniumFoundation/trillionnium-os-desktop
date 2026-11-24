@@ -1,4 +1,7 @@
-//! Fixed read-only systemd requests over the authenticated private FD.
+//! Fixed systemd requests over the authenticated private FD.
+//! Mutating package calls are restricted to the three source-owned early actors.
+#[path = "production_package_jobs.rs"]
+pub(super) mod package_jobs;
 use super::*;
 use std::collections::{BTreeMap, BTreeSet};
 use std::ffi::{c_char, c_int, c_void};
@@ -385,6 +388,7 @@ impl PrivateBus {
 #[derive(Clone, Copy)]
 pub(super) enum Interface {
     Unit,
+    EarlyUnit,
     Service,
     Job,
 }
@@ -392,7 +396,7 @@ impl Interface {
     fn name(self) -> &'static CStr {
         match self {
             Self::Job => c"org.freedesktop.systemd1.Job",
-            Self::Unit => c"org.freedesktop.systemd1.Unit",
+            Self::Unit | Self::EarlyUnit => c"org.freedesktop.systemd1.Unit",
             Self::Service => c"org.freedesktop.systemd1.Service",
         }
     }
@@ -403,6 +407,10 @@ impl Interface {
                 "Unit" => Some(c"(so)"),
                 "JobType" | "State" => Some(c"s"),
                 _ => None,
+            },
+            Self::EarlyUnit => match name {
+                "Requires" | "BindsTo" | "PartOf" | "After" | "Before" => Some(c"as"),
+                _ => Self::Unit.signature(name),
             },
             Self::Unit => match name {
                 "Id" | "LoadState" | "ActiveState" | "SubState" | "FragmentPath" | "SourcePath" => {
@@ -417,6 +425,7 @@ impl Interface {
             },
             Self::Service => match name {
                 "Type"
+                | "NotifyAccess"
                 | "ExitType"
                 | "Restart"
                 | "KillMode"
