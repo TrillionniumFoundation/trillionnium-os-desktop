@@ -10,6 +10,7 @@ use std::os::unix::fs::FileExt;
 const QUERY_LABEL: &[u8] = b"u:object_r:droidloom_query_exec:s0\0";
 const PROVIDER_LABEL: &[u8] = b"u:object_r:droidloom_provider_exec:s0\0";
 const JAR_LABEL: &[u8] = b"u:object_r:droidloom_provider_jar:s0\0";
+const CATALOG_LABEL: &[u8] = b"u:object_r:droidloom_input_bridge_jar:s0\0";
 const MAXIMUM: u64 = 128 * 1024 * 1024;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -345,7 +346,7 @@ pub(in crate::production_application) fn bind_catalog(
         "catalog normal JAR ownership, mode, links or size differs",
     )?;
     readonly(&file, false)?;
-    security(&file, b"u:object_r:system_file:s0\0")?;
+    security(&file, CATALOG_LABEL)?;
     let mut magic = [0_u8; 4];
     file.read_exact_at(&mut magic, 0)?;
     require(
@@ -365,7 +366,7 @@ pub(in crate::production_application) fn bind_catalog(
         "catalog normal JAR changed while binding",
     )?;
     readonly(&file, false)?;
-    security(&file, b"u:object_r:system_file:s0\0")?;
+    security(&file, CATALOG_LABEL)?;
     Ok(CatalogJar { file, node })
 }
 
