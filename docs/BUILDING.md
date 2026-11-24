@@ -932,6 +932,20 @@ preserved purpose/auth restrictions. The five system metadata tests are in the
 existing keystore2_test module. Their Android build and execution remain
 separate from source projection checks.
 
+The official-GSI normal vendor producer includes this host test in its real
+vendor Soong target list. Before packaging the paired system extension or
+publishing its normal result, it checks the built x86_64 test ELF and resolves
+its actual dynamic dependencies without inherited loader variables. BoringSSL
+must resolve to libcrypto-host.so (and libssl-host.so when used) from the same
+vendor output's host/linux-x86/lib64 directory. The producer checks the exact
+ten-case inventory and then runs every case without a filter. It retains the
+binary and runtime-library hashes, raw command logs, and exit statuses under
+keymint-soong-host-test; a failed, missing, empty, ignored or filtered test run
+blocks normal publication. Packaging an existing normal vendor also requires
+this successful test result. This gate exercises synthetic KMR keys; device
+boot, existing userdata continuity and application metadata still require their
+own runtime qualification.
+
 For host development, Cargo.host.toml, Cargo.host.lock and host_test_crypto.rs
 record the standalone Cargo test configuration. It uses sibling aosp-keymint and
 default-keymint directories containing the pinned sources with the exact
