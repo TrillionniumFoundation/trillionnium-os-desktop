@@ -189,6 +189,26 @@ fn preserve_from(
 }
 
 
+
+fn supplemental_native_references(
+    required: &BTreeMap<PathBuf, (u64, String)>,
+    retained: &BTreeMap<PathBuf, (u64, String)>,
+    allowed: &BTreeMap<PathBuf, (u64, String)>,
+) -> Result<BTreeMap<PathBuf, (u64, String)>> {
+    let mut added = BTreeMap::new();
+    for (path, value) in required {
+        if retained.get(path) == Some(value) { continue; }
+        if retained.contains_key(path) || allowed.get(path) != Some(value) {
+            return fail("retained evidence differs beyond the explicitly pinned native receipts");
+        }
+        added.insert(path.clone(), value.clone());
+    }
+    if retained.keys().any(|path| !required.contains_key(path)) {
+        return fail("retained evidence contains an unaccounted prior output");
+    }
+    Ok(added)
+}
+
 struct RetainedPrior {
     receipt: Artifact,
     root: PathBuf,
@@ -562,8 +582,12 @@ pub(crate) fn run(
         format!("vendor/{VENDOR_RESULT}"),
         "official-vendor-attempt.json".into(),
     ] {
-        let file = read_root.join(&relative);
-        let pin = artifact(&file, 64 * 1024 * 1024)?;
+        let file = if relative == "native/droidloom-production-full654-inputs.json" {
+            native_verification.projection_pin.path.clone()
+        } else if relative == "native/target/product/droidloom_x86_64/droidloom-native-bridge-source.json" {
+            native_verification.source_pin.path.clone()
+        } else { read_root.join(&relative) };
+        let pin = artifact(&file, 64 * 1024 * 1024).map_err(|error| format!("prior resume input {}: {error}", file.display()))?;
         let value: Value = serde_json::from_slice(&fs::read(&file)?)?;
         pin.check()?;
         collect_references(&value, built, &mut preserved)?;
@@ -575,13 +599,24 @@ pub(crate) fn run(
         archive.path.clone(),
         (archive.bytes, archive.sha256.clone()),
     );
-    if let Some(previous) = &retained {
-        if previous.references != preserved {
-            return fail("retained receipt does not cover the complete pinned prior normal inputs");
-        }
+    let supplemental = if let Some(previous) = &retained {
         previous.receipt.check()?;
+        let allowed = BTreeMap::from([
+            (native_verification.projection_pin.path.clone(), (native_verification.projection_pin.bytes, native_verification.projection_pin.sha256.clone())),
+            (native_verification.source_pin.path.clone(), (native_verification.source_pin.bytes, native_verification.source_pin.sha256.clone())),
+        ]);
+        supplemental_native_references(&preserved, &previous.references, &allowed)?
+    } else { BTreeMap::new() };
+    let prior: BTreeMap<_,_> = preserved.iter().filter(|(path,_)| !supplemental.contains_key(*path))
+        .map(|(path,value)| (path.clone(),value.clone())).collect();
+    let mut preservation = preserve_from(built, read_root, &out.join("previous-output"), &prior)?;
+    if !supplemental.is_empty() {
+        let additional = preserve_from(built, built, &out.join("previous-output"), &supplemental)?;
+        preservation["files"].as_array_mut().ok_or("preserved file rows")?
+            .extend(additional["files"].as_array().ok_or("supplemental native rows")?.iter().cloned());
+        preservation["bytes"] = json!(preservation["bytes"].as_u64().ok_or("preserved bytes")?
+            .checked_add(additional["bytes"].as_u64().ok_or("supplemental native bytes")?).ok_or("preservation size overflow")?);
     }
-    let preservation = preserve_from(built, read_root, &out.join("previous-output"), &preserved)?;
     if let Some(previous) = &retained { previous.receipt.check()?; }
 
     for receipt in &receipts {
@@ -593,6 +628,7 @@ pub(crate) fn run(
         "package_lock_device_inode":package_identity,"source_lock_device_inode":source_identity,
         "previous_vendor_receipt":vendor_receipt,"previous_output":built,
         "retained_previous_attempt":retained.as_ref().map(|value| &value.receipt),
+        "supplemental_pinned_native_receipts":supplemental.keys().collect::<Vec<_>>(),
         "fresh_assembly_output":out,"preserved":preservation,
         "normal_vendor_targets":VENDOR_TARGETS,"runtime_qualified":false,
         "production_ready":false,"userdata_attached":false
@@ -642,6 +678,27 @@ pub(crate) fn run(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+
+    #[test]
+    fn older_retention_only_adds_the_explicitly_pinned_native_receipt() {
+        let source = PathBuf::from("/built/native/source.json");
+        let vendor = PathBuf::from("/built/vendor.img");
+        let source_value = (10, "a".repeat(64));
+        let prior = BTreeMap::from([(vendor.clone(), (3, "b".repeat(64)))]);
+        let mut required = prior.clone();
+        required.insert(source.clone(), source_value.clone());
+        let allowed = BTreeMap::from([(source.clone(), source_value.clone())]);
+        assert_eq!(supplemental_native_references(&required, &prior, &allowed).unwrap(), allowed);
+        required.insert(PathBuf::from("/built/unselected"), (3, "c".repeat(64)));
+        assert!(supplemental_native_references(&required, &prior, &allowed).is_err());
+        required.remove(&PathBuf::from("/built/unselected"));
+        required.get_mut(&source).unwrap().1 = "d".repeat(64);
+        assert!(supplemental_native_references(&required, &prior, &allowed).is_err());
+        required.insert(source, source_value);
+        required.get_mut(&vendor).unwrap().1 = "d".repeat(64);
+        assert!(supplemental_native_references(&required, &prior, &allowed).is_err());
+    }
 
     #[test]
     fn saved_success_survives_mutated_cache_but_not_mutated_saved_bytes() {
