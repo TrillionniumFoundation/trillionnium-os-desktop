@@ -13,7 +13,7 @@ const JAR_LABEL: &[u8] = b"u:object_r:droidloom_provider_jar:s0\0";
 const CATALOG_LABEL: &[u8] = b"u:object_r:droidloom_input_bridge_jar:s0\0";
 const MAXIMUM: u64 = 128 * 1024 * 1024;
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct Node {
     dev: u64,
     ino: u64,
@@ -291,6 +291,188 @@ fn verify_content_jar(
     )
 }
 
+/// The factory owns these original file descriptions for the full app_process
+/// lifetime. None is sent to Android or read by the broker. The native child
+/// closes all non-admitted descriptions before its fixed exec.
+pub(in crate::production_application) struct ArtInputs {
+    root: File,
+    root_node: (u64, u64),
+    root_mount: u64,
+    inputs: Vec<ArtInput>,
+    uid: u32,
+    gid: u32,
+}
+struct ArtInput {
+    file: File,
+    node: Node,
+    mount: u64,
+}
+fn art_mount(file: &File) -> Result<u64> {
+    let mut st: libc::statx = unsafe { mem::zeroed() };
+    if unsafe {
+        libc::statx(
+            file.as_raw_fd(),
+            c"".as_ptr(),
+            libc::AT_EMPTY_PATH | libc::AT_SYMLINK_NOFOLLOW,
+            libc::STATX_MNT_ID,
+            &mut st,
+        )
+    } != 0
+    {
+        return Err(io::Error::last_os_error().into());
+    }
+    require(
+        st.stx_mask & libc::STATX_MNT_ID != 0 && st.stx_mnt_id > 0,
+        "original ART input has no actual mount identity",
+    )?;
+    Ok(st.stx_mnt_id)
+}
+fn art_metadata(
+    node: Node,
+    input: &crate::production_application::art_profile::ArtJar,
+    uid: u32,
+    gid: u32,
+) -> bool {
+    node.mode == libc::S_IFREG | 0o644
+        && uid.checked_add(input.original_uid) == Some(node.uid)
+        && gid.checked_add(input.original_gid) == Some(node.gid)
+        && node.links == 1
+        && node.bytes == input.bytes
+}
+
+fn art_mount_contract(
+    input: &crate::production_application::art_profile::ArtJar,
+    filesystem: libc::c_long,
+    flags: libc::c_ulong,
+    access: i32,
+) -> bool {
+    // The original apexd.cpp mounts RDONLY|NODEV|NOATIME|DIRSYNC, without
+    // NOSUID; nocode modules additionally use NOEXEC. These are data-only
+    // JAR reads, not native executable admission. The actual fixed 0644 mode
+    // and absent capability xattr are verified independently.
+    filesystem == input.original_filesystem
+        && flags & 5 == 5
+        && (!input.path.starts_with("/system/") || flags & 2 == 2)
+        && access >= 0
+        && access & (libc::O_ACCMODE | libc::O_PATH) == libc::O_RDONLY
+}
+fn readonly_art(
+    file: &File,
+    input: &crate::production_application::art_profile::ArtJar,
+) -> Result<()> {
+    let mut fs: libc::statfs = unsafe { mem::zeroed() };
+    let mut flags: libc::statvfs = unsafe { mem::zeroed() };
+    if unsafe { libc::fstatfs(file.as_raw_fd(), &mut fs) } != 0
+        || unsafe { libc::fstatvfs(file.as_raw_fd(), &mut flags) } != 0
+    {
+        return Err(io::Error::last_os_error().into());
+    }
+    let access = unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GETFL) };
+    require(
+        art_mount_contract(input, fs.f_type, flags.f_flag, access),
+        "ART JAR is not its original readonly nodev filesystem and readonly description",
+    )
+}
+
+fn verify_art(
+    file: &File,
+    node: Node,
+    input: &crate::production_application::art_profile::ArtJar,
+    uid: u32,
+    gid: u32,
+    deadline: Instant,
+) -> Result<()> {
+    require(
+        Instant::now() < deadline && art_metadata(node, input, uid, gid),
+        "fixed ART input ownership, links, size, mode or deadline differs",
+    )?;
+    readonly_art(file, input)?;
+    security(file, input.original_label)?;
+    let mut magic = [0_u8; 4];
+    file.read_exact_at(&mut magic, 0)?;
+    require(magic == *b"PK\x03\x04", "fixed ART input is not a ZIP/JAR")?;
+    require(
+        complete_hash(file, node, deadline)? == input.sha256,
+        "complete ART JAR differs from its original selected CP3A bytes",
+    )?;
+    require(
+        identity(file)? == node && Instant::now() < deadline,
+        "original ART input changed during verification",
+    )?;
+    readonly_art(file, input)?;
+    security(file, input.original_label)?;
+    Ok(())
+}
+impl ArtInputs {
+    pub(in crate::production_application) fn revalidate(&self, deadline: Instant) -> Result<()> {
+        let root = self.root.metadata()?;
+        require(
+            Instant::now() < deadline
+                && (root.dev(), root.ino()) == self.root_node
+                && art_mount(&self.root)? == self.root_mount
+                && self.inputs.len() == crate::production_application::art_profile::INPUTS.len(),
+            "original ART root or complete input set changed",
+        )?;
+        for (held, input) in self
+            .inputs
+            .iter()
+            .zip(&crate::production_application::art_profile::INPUTS)
+        {
+            require(Instant::now() < deadline, "original ART input deadline")?;
+            let current = at(&self.root, input.components)?;
+            require(
+                identity(&held.file)? == held.node
+                    && art_mount(&held.file)? == held.mount
+                    && identity(&current)? == held.node
+                    && art_mount(&current)? == held.mount,
+                "fixed ART path no longer names its retained original inode and mount",
+            )?;
+            verify_art(&held.file, held.node, input, self.uid, self.gid, deadline)?;
+            require(
+                identity(&current)? == held.node && art_mount(&current)? == held.mount,
+                "fixed ART input path changed during complete revalidation",
+            )?;
+        }
+        require(Instant::now() < deadline, "original ART input deadline")
+    }
+}
+pub(in crate::production_application) fn bind_art(
+    root: &File,
+    uid: u32,
+    gid: u32,
+    deadline: Instant,
+) -> Result<ArtInputs> {
+    require(
+        crate::production_application::art_profile::consistent(),
+        "ART environment is not the complete selected CP3A input profile",
+    )?;
+    let root = root.try_clone()?;
+    let metadata = root.metadata()?;
+    require(metadata.is_dir(), "original ART root is not a directory")?;
+    let root_node = (metadata.dev(), metadata.ino());
+    let root_mount = art_mount(&root)?;
+    let mut inputs = Vec::with_capacity(crate::production_application::art_profile::INPUTS.len());
+    for input in &crate::production_application::art_profile::INPUTS {
+        require(Instant::now() < deadline, "original ART input deadline")?;
+        // Every component is compiled into the fixed profile. Intermediate
+        // directories are O_PATH and symlinks are never followed.
+        let file = at(&root, input.components)?;
+        let node = identity(&file)?;
+        let mount = art_mount(&file)?;
+        verify_art(&file, node, input, uid, gid, deadline)?;
+        require(art_mount(&file)? == mount, "original ART mount changed")?;
+        inputs.push(ArtInput { file, node, mount });
+    }
+    Ok(ArtInputs {
+        root,
+        root_node,
+        root_mount,
+        inputs,
+        uid,
+        gid,
+    })
+}
+
 /// Retain the actual fixed normal-JAR inode for the complete query lifetime.
 pub(in crate::production_application) struct CatalogJar {
     file: File,
@@ -397,5 +579,115 @@ mod metadata_tests {
             assert!(!original_metadata(wrong, input, 200_000, 300_000));
             assert!(!original_metadata(original, input, 200_000, u32::MAX));
         }
+    }
+    #[test]
+    fn fixed_art_metadata_keeps_original_system_and_root_owners_and_rejects_drift() {
+        let file = tempfile::tempfile().unwrap();
+        for input in &crate::production_application::art_profile::INPUTS {
+            let mut original = identity(&file).unwrap();
+            original.mode = libc::S_IFREG | 0o644;
+            original.uid = 200_000 + input.original_uid;
+            original.gid = 300_000 + input.original_gid;
+            original.links = 1;
+            original.bytes = input.bytes;
+            assert!(art_metadata(original, input, 200_000, 300_000));
+            let mut wrong = original;
+            wrong.uid += 1;
+            assert!(!art_metadata(wrong, input, 200_000, 300_000));
+            wrong = original;
+            wrong.gid += 1;
+            assert!(!art_metadata(wrong, input, 200_000, 300_000));
+            wrong = original;
+            wrong.mode |= 0o111;
+            assert!(!art_metadata(wrong, input, 200_000, 300_000));
+            wrong = original;
+            wrong.links = 2;
+            assert!(!art_metadata(wrong, input, 200_000, 300_000));
+            wrong = original;
+            wrong.bytes += 1;
+            assert!(!art_metadata(wrong, input, 200_000, 300_000));
+            assert!(!art_metadata(original, input, u32::MAX, u32::MAX));
+        }
+    }
+
+    #[test]
+    fn original_art_handles_detect_replaced_or_symlinked_fixed_paths() {
+        use std::io::Write;
+        let root = tempfile::tempdir().unwrap();
+        let input = &crate::production_application::art_profile::INPUTS[0];
+        let path = root.path().join(input.path.trim_start_matches('/'));
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        let mut first = File::create(&path).unwrap();
+        first.write_all(&[7_u8; 64]).unwrap();
+        let directory = File::open(root.path()).unwrap();
+        let retained = at(&directory, input.components).unwrap();
+        let original = identity(&retained).unwrap();
+        let original_mount = art_mount(&retained).unwrap();
+        std::fs::rename(&path, path.with_extension("retained")).unwrap();
+        std::fs::write(&path, [7_u8; 64]).unwrap();
+        let replacement = at(&directory, input.components).unwrap();
+        assert_eq!(art_mount(&replacement).unwrap(), original_mount);
+        assert_ne!(identity(&replacement).unwrap().ino, original.ino);
+        let held = identity(&retained).unwrap();
+        assert_eq!(
+            (held.dev, held.ino, held.bytes),
+            (original.dev, original.ino, original.bytes)
+        );
+        std::fs::remove_file(&path).unwrap();
+        std::os::unix::fs::symlink(path.with_extension("retained"), &path).unwrap();
+        assert!(at(&directory, input.components).is_err());
+    }
+
+    #[test]
+    fn complete_art_hash_checks_the_last_byte_and_the_original_deadline() {
+        use std::io::Write;
+        let mut file = tempfile::tempfile().unwrap();
+        let mut original = vec![0_u8; 70_001];
+        original[..4].copy_from_slice(b"PK\x03\x04");
+        file.write_all(&original).unwrap();
+        let deadline = Instant::now() + std::time::Duration::from_secs(2);
+        let before = identity(&file).unwrap();
+        let digest = complete_hash(&file, before, deadline).unwrap();
+        assert_eq!(digest, <[u8; 32]>::from(Sha256::digest(&original)));
+        assert!(complete_hash(&file, before, Instant::now()).is_err());
+        file.write_all_at(&[1_u8], original.len() as u64 - 1)
+            .unwrap();
+        let current = identity(&file).unwrap();
+        assert_ne!(complete_hash(&file, current, deadline).unwrap(), digest);
+        assert!(complete_hash(&file, before, deadline).is_err());
+    }
+    #[test]
+    fn original_art_mount_contract_matches_stock_apex_flags_without_weakening_elf_roles() {
+        let inputs = &crate::production_application::art_profile::INPUTS;
+        let apex = inputs
+            .iter()
+            .find(|i| i.path.starts_with("/apex/") && i.original_filesystem == 0xef53)
+            .unwrap();
+        let system = inputs
+            .iter()
+            .find(|i| i.path.starts_with("/system/"))
+            .unwrap();
+        let virt = inputs
+            .iter()
+            .find(|i| i.original_filesystem != 0xef53)
+            .unwrap();
+        assert!(art_mount_contract(apex, 0xef53, 5, libc::O_RDONLY));
+        assert!(art_mount_contract(apex, 0xef53, 5 | 8, libc::O_RDONLY));
+        assert!(art_mount_contract(system, 0xef53, 7, libc::O_RDONLY));
+        assert!(!art_mount_contract(system, 0xef53, 5, libc::O_RDONLY));
+        assert!(art_mount_contract(
+            virt,
+            0xe0f5_e1e2_u32 as libc::c_long,
+            5,
+            libc::O_RDONLY
+        ));
+        for invalid in [0, 1, 4, 8] {
+            assert!(!art_mount_contract(apex, 0xef53, invalid, libc::O_RDONLY));
+        }
+        for invalid in [libc::O_WRONLY, libc::O_RDWR, libc::O_PATH, -1] {
+            assert!(!art_mount_contract(apex, 0xef53, 5, invalid));
+        }
+        assert!(!art_mount_contract(apex, 0x0102_1994, 5, libc::O_RDONLY));
+        assert!(!art_mount_contract(virt, 0xef53, 5, libc::O_RDONLY));
     }
 }

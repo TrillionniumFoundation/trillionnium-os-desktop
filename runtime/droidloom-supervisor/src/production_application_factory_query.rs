@@ -308,6 +308,7 @@ fn pipe_label(file: &File) -> Result<()> {
 struct Prepared {
     files: Vec<File>,
     cgroup: File,
+    art: Option<super::worker::executable::ArtInputs>,
 }
 fn prepare(
     files: Vec<File>,
@@ -491,10 +492,21 @@ fn prepare(
         authority.root_gid,
         deadline,
     )?;
+    let art = if query.uses_app_process() {
+        Some(super::worker::executable::bind_art(
+            &owned[2],
+            authority.root_uid,
+            authority.root_gid,
+            deadline,
+        )?)
+    } else {
+        None
+    };
     authority.check()?;
     Ok(Prepared {
         files: owned,
         cgroup,
+        art,
     })
 }
 
@@ -926,9 +938,12 @@ pub(crate) fn serve(channel: &File, authority: FactoryAuthority<'_>) -> Result<(
             return Err(error);
         }
     };
-    // Only the child may retain its I/O write descriptions. Parent ownership
-    // is limited to atomic PIDFD, authenticated control and lifecycle evidence.
-    drop(prepared);
+    // Release every factory stdio copy before capturing EOF. Only original
+    // readonly ART inputs remain held through the actual exec and terminal.
+    let Prepared { files, cgroup, art } = prepared;
+    drop(files);
+    drop(cgroup);
+    let mut sources_at_exec_stop = false;
     let operation = (|| -> Result<()> {
         // Bind the observation handle before the wait owner may reap anything.
         // Only this source-owned authenticated response can select the PID;
@@ -952,6 +967,10 @@ pub(crate) fn serve(channel: &File, authority: FactoryAuthority<'_>) -> Result<(
         )?;
         gate_ready(&mut child, &gate, &authority, deadline)?;
         let previous = child.exec_stop(&authority, deadline)?;
+        if let Some(inputs) = &art {
+            inputs.revalidate(deadline)?;
+        }
+        sources_at_exec_stop = true;
         authority.check()?;
         protocol::send(
             channel.as_raw_fd(),
@@ -1017,6 +1036,14 @@ pub(crate) fn serve(channel: &File, authority: FactoryAuthority<'_>) -> Result<(
         !live(&child.pidfd)?,
         "factory query remained alive after actual waitid",
     )?;
+    // Source rejection never rewrites real waitid or invents failed retirement.
+    // Always perform the postcheck after real retirement, including ordinary
+    // operation errors, and retain the original absolute business deadline.
+    let sources_after_exit = match &art {
+        Some(inputs) => inputs.revalidate(deadline).is_ok(),
+        None => true,
+    };
+    let input_sources_verified = sources_at_exec_stop && sources_after_exit;
     let _ = protocol::send(
         channel.as_raw_fd(),
         &Message::FactoryTerminated {
@@ -1027,6 +1054,7 @@ pub(crate) fn serve(channel: &File, authority: FactoryAuthority<'_>) -> Result<(
             waitid_code: terminal.code,
             waitid_status: terminal.status,
             released: child.released,
+            input_sources_verified,
         },
         &[],
         Instant::now() + RETIRE_LIMIT,
@@ -1080,6 +1108,7 @@ struct Client {
     query: Option<ObservedQuery>,
     terminal: Option<Terminal>,
     released: bool,
+    input_sources_verified: bool,
 }
 impl Client {
     fn connect() -> Result<Self> {
@@ -1099,6 +1128,7 @@ impl Client {
             query: None,
             terminal: None,
             released: false,
+            input_sources_verified: false,
         })
     }
     fn revalidate(&self) -> Result<()> {
@@ -1252,6 +1282,7 @@ impl Client {
             waitid_code,
             waitid_status,
             released,
+            input_sources_verified,
         } = message
         else {
             return Err(reject("factory terminal message phase differs"));
@@ -1278,7 +1309,10 @@ impl Client {
             self.terminal.is_none(),
             "factory query terminal was already consumed",
         )?;
+        // This is authenticated retirement even if original source custody
+        // failed. Business acceptance occurs only after same-leaf retirement.
         self.terminal = Some(terminal);
+        self.input_sources_verified = input_sources_verified;
         Ok(())
     }
     fn release(
@@ -1683,6 +1717,10 @@ pub(super) fn run_with_input(
     leaf.retire(&ApplicationRetired::Factory { query: &proof })
         .map_err(|_| ApplicationError::RetirementUnproven)?;
     let (output, error, exec) = operation?;
+    require(
+        client.input_sources_verified,
+        "factory original input sources were not verified before and after execution",
+    )?;
     let query = client
         .query
         .as_ref()

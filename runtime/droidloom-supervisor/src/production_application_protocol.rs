@@ -64,6 +64,7 @@ pub(super) enum Message {
         waitid_code: i32,
         waitid_status: i32,
         released: bool,
+        input_sources_verified: bool,
     },
     MetadataRequest {
         nonce: [u8; 16],
@@ -455,5 +456,39 @@ mod tests {
             .is_err()
         );
         assert!(began.elapsed() < std::time::Duration::from_secs(1));
+    }
+    #[test]
+    fn factory_terminal_requires_explicit_source_evidence_without_rewriting_waitid() {
+        let value = serde_json::json!({
+            "phase": "FactoryTerminated",
+            "nonce": [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+            "pid": 123,
+            "pidfd_device": 4,
+            "pidfd_inode": 5,
+            "waitid_code": libc::CLD_EXITED,
+            "waitid_status": 0,
+            "released": true,
+            "input_sources_verified": false
+        });
+        let decoded: Message = serde_json::from_value(value.clone()).unwrap();
+        assert!(matches!(
+            decoded,
+            Message::FactoryTerminated {
+                waitid_code: libc::CLD_EXITED,
+                waitid_status: 0,
+                released: true,
+                input_sources_verified: false,
+                ..
+            }
+        ));
+        let mut missing = value.clone();
+        missing
+            .as_object_mut()
+            .unwrap()
+            .remove("input_sources_verified");
+        assert!(serde_json::from_value::<Message>(missing).is_err());
+        let mut invalid = value;
+        invalid["input_sources_verified"] = serde_json::Value::Null;
+        assert!(serde_json::from_value::<Message>(invalid).is_err());
     }
 }

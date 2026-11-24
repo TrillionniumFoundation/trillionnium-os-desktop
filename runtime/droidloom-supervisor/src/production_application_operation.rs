@@ -212,6 +212,9 @@ impl ApplicationOperation {
             c"ANDROID_I18N_ROOT=/apex/com.android.i18n",
             c"ANDROID_TZDATA_ROOT=/apex/com.android.tzdata",
         ];
+        if self.uses_app_process() {
+            values.extend(super::art_profile::ENVIRONMENT);
+        }
         if self.needs_content_jar() {
             values.push(projection.content_classpath());
         } else if matches!(self, Self::Catalog { .. }) {
@@ -402,5 +405,46 @@ mod tests {
         ] {
             assert!(serde_json::from_str::<ApplicationOperation>(message).is_err());
         }
+    }
+    #[test]
+    fn only_fixed_app_process_roles_receive_the_complete_original_art_environment() {
+        let catalog = serde_json::from_value(serde_json::json!({
+            "command":{"catalog":"List","user":0},
+            "selected_jar_sha256":"a".repeat(64)
+        }))
+        .unwrap();
+        for operation in [
+            ApplicationOperation::ContactsRead {
+                value: ContactsQuery::RawRows,
+            },
+            ApplicationOperation::Catalog { value: catalog },
+        ] {
+            for projection in [QueryProjection::LegacyRoot, QueryProjection::EarlyDev] {
+                let environment = operation.environment(projection);
+                for fixed in super::super::art_profile::ENVIRONMENT {
+                    assert_eq!(environment.iter().filter(|e| **e == fixed).count(), 1);
+                }
+                assert_eq!(
+                    environment
+                        .iter()
+                        .filter(|e| e.to_bytes().starts_with(b"CLASSPATH="))
+                        .count(),
+                    1
+                );
+            }
+        }
+        let native = ApplicationOperation::Read {
+            value: ApplicationRead::PackagePaths {
+                package: "com.android.contacts".into(),
+                user: 0,
+            },
+        };
+        assert!(
+            !native
+                .environment(QueryProjection::EarlyDev)
+                .iter()
+                .any(|e| e.to_bytes().starts_with(b"BOOTCLASSPATH=")
+                    || e.to_bytes().starts_with(b"DEX2OATBOOTCLASSPATH="))
+        );
     }
 }

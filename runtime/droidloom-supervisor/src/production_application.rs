@@ -50,6 +50,8 @@ mod catalog;
 use catalog::CatalogRequest;
 pub(crate) use catalog::{CatalogCommand, catalog_early};
 
+#[path = "production_application_art_profile.rs"]
+mod art_profile;
 #[path = "production_application_operation.rs"]
 mod operation;
 pub(crate) use launch_command::LaunchCommand;
