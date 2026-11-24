@@ -103,3 +103,6 @@
 
 # The stock metadata-only runtime retirement command has a fixed entrypoint.
 /usr/bin/setfacl -- u:object_r:p4_linux_runtime_acl_exec_t:s0
+
+# Only original native PID 1 executes the stock final shutdown program.
+/usr/lib/systemd/systemd-shutdown -- u:object_r:p4_linux_systemd_shutdown_exec_t:s0

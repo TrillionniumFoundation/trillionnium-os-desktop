@@ -1,0 +1,17 @@
+; The original Ubuntu PID 1 retains its identity across the fixed stock
+; shutdown executable. No new manager role or Android attribute is introduced.
+; CAP_KILL permits its existing directed native service signal edges across
+; numeric UIDs; the original process-class permissions still apply.
+(type p4_linux_systemd_shutdown_exec_t)
+(roletype object_r p4_linux_systemd_shutdown_exec_t)
+(typeattributeset p4_linux_data (p4_linux_systemd_shutdown_exec_t))
+(allow init_t p4_linux_systemd_shutdown_exec_t (file (getattr open read execute execute_no_trans map)))
+(typeattribute p4_native_other_shutdown_callers)
+(typeattributeset p4_native_other_shutdown_callers (and (all) (not (init_t))))
+(neverallow p4_native_other_shutdown_callers p4_linux_systemd_shutdown_exec_t (file (execute execute_no_trans entrypoint)))
+(allow init_t self (capability (kill sys_boot)))
+; Policy management, broad DAC bypass and task inspection are independent
+; authorities, not prerequisites for normal directed signals or poweroff.
+(neverallow init_t self (capability (dac_override dac_read_search sys_ptrace)))
+(neverallow init_t self (capability2 (mac_admin mac_override)))
+(neverallow init_t kernel (security (load_policy setenforce setbool setsecparam setcheckreqprot read_policy)))

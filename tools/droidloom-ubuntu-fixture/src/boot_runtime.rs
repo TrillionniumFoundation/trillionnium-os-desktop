@@ -941,6 +941,7 @@ pub fn make_root_image(
         "/usr/lib/droidloom/production/current/board-devices/full",
         "/usr/bin/droidloomctl",
         "/usr/bin/droidloom-wayland",
+        "/usr/lib/systemd/systemd-shutdown",
         "/etc/droidloom/production/selected.json",
         "/etc/droidloom/container-launcher.json",
         "/etc/systemd/system/user-runtime-dir@.service.d/50-droidloom-native-session.conf",

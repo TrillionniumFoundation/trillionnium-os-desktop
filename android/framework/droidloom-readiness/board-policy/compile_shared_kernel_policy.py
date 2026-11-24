@@ -302,6 +302,15 @@ def verify_host_control(library, binary, export):
     check(runtime_acl, kernel, "security", ["load_policy", "setenforce", "setbool"], False)
     check("u:system_r:p4_linux_user_session_t:s0", runtime_acl, "process", ["transition", "dyntransition"], False)
 
+    # The original native PID 1 alone executes the stock final shutdown ELF.
+    check(manager, manager, "capability", ["kill", "sys_boot"], True)
+    check(manager, obj("p4_linux_systemd_shutdown_exec_t"), "file",
+          ["getattr", "open", "read", "execute", "execute_no_trans", "map"], True)
+    for subject in [broker, client, executor, helper,
+                    "u:system_r:p4_linux_user_session_t:s0"]:
+        check(subject, obj("p4_linux_systemd_shutdown_exec_t"), "file",
+              ["execute", "execute_no_trans", "entrypoint"], False)
+
     # Native transport is bound to fixed peers and socket-activation origin.
     compositor = "u:system_r:p4_linux_compositor_t:s0"
     audio = "u:system_r:p4_linux_audio_t:s0"
@@ -500,6 +509,8 @@ def main():
         "ubuntu-dbus.cil", "ubuntu-native-selinux-query.cil",
         "ubuntu-native-pam.cil", "ubuntu-native-session-storage.cil", "ubuntu-native-session-ipc.cil",
         "ubuntu-native-runtime-retirement.cil",
+
+        "ubuntu-native-manager-lifecycle.cil",
         "ubuntu-presenter-runtime.cil",
         "linux-package-maintenance.cil", "linux-public-control.cil",
     )
