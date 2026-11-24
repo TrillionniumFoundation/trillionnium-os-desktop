@@ -37,8 +37,10 @@
 (neverallow p4_presenter_runtime_retirement droidloom_presenter_runtime (file (open read write append create map execute)))
 
 ; No runtime byte is executable and no live actor can relabel these inodes.
-(neverallow all droidloom_presenter_runtime (file (execute execute_no_trans entrypoint relabelto relabelfrom)))
-(neverallow all droidloom_presenter_runtime (dir (relabelto relabelfrom mounton)))
+(typeattribute p4_presenter_runtime_all_subjects)
+(typeattributeset p4_presenter_runtime_all_subjects (all))
+(neverallow p4_presenter_runtime_all_subjects droidloom_presenter_runtime (file (execute execute_no_trans entrypoint relabelto relabelfrom)))
+(neverallow p4_presenter_runtime_all_subjects droidloom_presenter_runtime (dir (relabelto relabelfrom mounton)))
 (neverallow droidloom_broker droidloom_presenter_runtime (dir (open read search write add_name remove_name create)))
 (neverallow droidloom_broker droidloom_presenter_runtime (file (getattr open read write create map)))
 (neverallow droidloom_public_control_client droidloom_presenter_runtime (dir (open read search write add_name remove_name create)))
