@@ -89,8 +89,12 @@ def build_deb(root,inventory,output,name,version):
     md5=("\n".join(hash_md5(root/x)+"  "+x for x in sorted(inventory))+"\n").encode()
     new_file(controls/"control",control,0o644);new_file(controls/"md5sums",md5,0o644)
     deb=output/(name+".deb")
+    # The multi-GiB Android raw-image cohort uses normal Debian zstd so the
+    # bounded one-CPU publisher does not spend its entire deadline in xz.
+    # Module packages retain the already validated xz stream.
+    compression = "zstd" if name == "droidloom-android-cohort" else "xz"
     result=bounded_process(["/usr/bin/dpkg-deb","--root-owner-group","--uniform-compression",
-                            "-Zxz","-z3","--build",str(root),str(deb)],
+                            "--threads-max=1","-Z"+compression,"-z3","--build",str(root),str(deb)],
                            env={"PATH":"/usr/bin:/bin","LC_ALL":"C","SOURCE_DATE_EPOCH":"0","XZ_DEFAULTS":"-T1"},
                            seconds=300,maximum=1024*1024)
     new_file(output/"dpkg-deb.stdout",result["stdout"]);new_file(output/"dpkg-deb.stderr",result["stderr"])
