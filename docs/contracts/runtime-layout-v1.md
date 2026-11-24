@@ -1165,3 +1165,33 @@ Ordinary-host PIDFD, TRACEEXEC, fresh-helper and wire tests are not enforcing
 Android acceptance. The combined strict policy/profile producer, original
 managed cgroup placement, enforcing boot and live fixed Android queries remain
 separate runtime gates before this path can qualify any application.
+
+
+### Permanent original factory service
+
+The boot-born kernel-lineage factory must enter the fixed
+`droidloom-instance-factory.service` before creating any Android generation.
+The ordinary `--adopt-early-factory` service entry remains in the existing
+launcher MAC role and keeps `NoNewPrivileges=yes`; it cannot create or replace
+the boot kernel role. The unit is independent of the per-generation production,
+launcher, and observer services. Restart is disabled, and a forced exit never
+releases a replacement factory or a successful Android retirement.
+
+The normal service executor opens only the fixed factory unit's `cgroup.procs`
+as standard output. The adopter checks and relays that original write-only
+FileDescription, then removes the migration descriptor from standard output.
+The factory independently opens the named control read-only, checks the same
+cgroup2 inode, and writes the literal `0` through the executor-origin handle.
+Initial and final cgroup membership, unchanged original namespace and process
+identity, and the fixed original systemd invocation are mandatory.
+
+The adopter uses the actual systemd `GetUnitByPIDFD` result (object path, unit
+name, and invocation ID). After real self-placement it sends one notification
+containing `MAINPIDFD=1` and `READY=1` with exactly the original factory PIDFD.
+It stays alive until systemd reports the same invocation active with that
+original factory as MainPID. The factory separately checks those live manager
+properties before acknowledging adoption. A packet acknowledgement or a sent
+notification alone is not successful service custody. The source unit's exact
+bytes, fragment path, absence of drop-ins, current loaded state, fixed ExecStart,
+and enforced adopter roles are checked; no nonexistent output-path D-Bus
+property or caller-selected unit/path is used.

@@ -13,7 +13,7 @@ mod factory;
 #[path = "production_instance_manager.rs"]
 mod manager;
 pub(crate) use factory::QueryEndpoint;
-pub use factory::run_instance_factory;
+pub use factory::{run_instance_factory, run_instance_adopter};
 
 const HANDOFF: &str = "/run/droidloom-early";
 const STOP: &str = "/run/droidloom-early/readiness/shutdown-request";

@@ -76,6 +76,13 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             droidloom_supervisor::control::run_instance_launcher(&SHUTDOWN)?;
             return Ok(());
         }
+        if action.as_deref() == Some(std::ffi::OsStr::new("--adopt-early-factory")) {
+            if arguments.next().is_some() {
+                return Err("the original factory adopter accepts no parameters".into());
+            }
+            droidloom_supervisor::control::run_instance_adopter()?;
+            return Ok(());
+        }
         if action.as_deref() == Some(std::ffi::OsStr::new("--complete-early-boot")) {
             if arguments.next().is_some() {
                 return Err("the selected early resource owner accepts no parameters".into());

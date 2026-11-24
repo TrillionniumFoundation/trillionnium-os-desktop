@@ -40,7 +40,7 @@ mod early_release;
 pub(crate) use early_release::{EarlyReleaseMedia, kernel_first_query_inputs};
 #[path = "production_instance_launcher.rs"]
 mod instance_launcher;
-pub use instance_launcher::{run_instance_launcher,run_instance_factory};
+pub use instance_launcher::{run_instance_launcher,run_instance_factory,run_instance_adopter};
 pub(crate) use instance_launcher::QueryEndpoint as FactoryQueryEndpoint;
 pub use early_release::{verify_initramfs_release,verify_original_init_for_boot, verify_post_switch_board_plan};
 const EARLY_SCHEMA: &str = "droidloom-production-selection-v4";

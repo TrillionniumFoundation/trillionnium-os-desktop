@@ -6,8 +6,11 @@ use std::io::{Read, Write};
 use std::os::fd::AsRawFd;
 use std::os::unix::fs::{FileTypeExt, PermissionsExt};
 
+#[path = "production_instance_adoption.rs"]
+mod adoption;
 #[path = "production_instance_identity.rs"]
 mod boot_identity;
+pub use adoption::run_instance_adopter;
 
 const SOCKET: &str = "/run/droidloom-early/instance-factory.sock";
 const START: &[u8; 8] = b"DLSTART1";
@@ -491,7 +494,13 @@ impl Listener {
         Ok(Some(unsafe { File::from_raw_fd(fd) }))
     }
 }
-fn serve_generation(channel: &File, peer: Peer, listener: &Listener) -> io::Result<()> {
+fn serve_generation(
+    channel: &File,
+    peer: Peer,
+    listener: &Listener,
+    adoption: &adoption::Adoption,
+) -> io::Result<()> {
+    adoption.revalidate()?;
     cv(unsafe { droidloom_factory_context() })?;
     let configuration = ConfigurationReadGuard::acquire()?;
     let Some((choice, cell, base)) =
@@ -513,6 +522,7 @@ fn serve_generation(channel: &File, peer: Peer, listener: &Listener) -> io::Resu
     let manager = manager::Manager::acquire()?;
     let launcher = manager.verify_launcher_pid(peer.pid)?;
     peer.revalidate()?;
+    adoption.revalidate()?;
     let child = Child::spawn(&plan)?;
     send(channel, BIRTH, &[&child.pidfd])?;
     let begin = Instant::now();
@@ -657,6 +667,7 @@ pub fn run_instance_factory(shutdown: &AtomicBool) -> io::Result<()> {
     }
     cv(unsafe { libc::dup2(sink.as_raw_fd(), libc::STDOUT_FILENO) })?;
     drop(sink);
+    let mut adoption = None;
     while !shutdown.load(Ordering::Relaxed) {
         publication.revalidate()?;
         let Some(channel) = listener.accept()? else {
@@ -669,10 +680,23 @@ pub fn run_instance_factory(shutdown: &AtomicBool) -> io::Result<()> {
         let Ok(Some((tag, fds))) = receive(&channel, Duration::from_secs(5)) else {
             continue;
         };
+        if adoption::Adoption::request(&tag) {
+            if adoption.is_some() || fds.len() != 1 {
+                let _ = send(&channel, FAILED, &[]);
+                continue;
+            }
+            let descriptor = fds.into_iter().next().unwrap();
+            adoption = Some(adoption::Adoption::accept(&channel, &peer, descriptor)?);
+            continue;
+        }
         if &tag != START || !fds.is_empty() {
             continue;
         }
-        if let Err(error) = serve_generation(&channel, peer, &listener) {
+        let Some(adopted) = &adoption else {
+            let _ = send(&channel, FAILED, &[]);
+            continue;
+        };
+        if let Err(error) = serve_generation(&channel, peer, &listener, adopted) {
             let _ = send(&channel, FAILED, &[]);
             // Published original pins remain a closed slot on failure; a failed
             // generation is never silently replaced with a new one.
@@ -799,6 +823,9 @@ mod tests {
             assert_eq!(libc::sendmsg(a.as_raw_fd(), &packet, libc::MSG_NOSIGNAL), 8);
         }
         assert!(receive(&b, Duration::from_secs(1)).is_err());
-        assert_eq!(std::fs::read_dir("/proc/thread-self/fd").unwrap().count(), before);
+        assert_eq!(
+            std::fs::read_dir("/proc/thread-self/fd").unwrap().count(),
+            before
+        );
     }
 }

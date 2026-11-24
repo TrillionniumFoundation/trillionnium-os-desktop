@@ -5,6 +5,8 @@ profile droidloom-instance-factory /usr/lib/droidloom/production/current/droidlo
   / r,
   /{etc,proc,sys,run,usr,usr/lib,var,var/lib,sys/fs}/ r,
   /etc/ld.so.cache r,
+  /etc/systemd/{,system/} r,
+  /etc/systemd/system/droidloom-instance-factory.service r,
   /{,usr/}lib{,64}/ld-linux-x86-64.so.2 mr,
   /{,usr/}lib/x86_64-linux-gnu/{ld-linux-x86-64.so.2,lib*.so*} mr,
   /usr/lib/droidloom/{,production/,production/current/} r,
@@ -87,5 +89,9 @@ profile droidloom-instance-factory /usr/lib/droidloom/production/current/droidlo
   /run/droidloom-early-slot/rootfs/dev/{,droidloom-query/,droidloom-query/cmd,droidloom-query/toybox} r,
   /sys/fs/cgroup/{,system.slice/,system.slice/droidloom-production.service/,system.slice/droidloom-production.service/cell-u1000/} r,
   /sys/fs/cgroup/system.slice/droidloom-production.service/cell-u1000/application-read/{,cgroup.type,cgroup.subtree_control,cgroup.procs,memory.max,memory.high,memory.swap.max,pids.max,cpu.max} r,
+  /sys/fs/cgroup/system.slice/droidloom-instance-factory.service/ r,
+  /sys/fs/cgroup/system.slice/droidloom-instance-factory.service/cgroup.procs rw,
+  /sys/fs/cgroup/system.slice/droidloom-production.service/cell-u1000/payload/ r,
+  /sys/fs/cgroup/system.slice/droidloom-production.service/cell-u1000/payload/cgroup.procs rw,
   owner @{PROC}/[0-9]*/ns/pid_for_children r,
 }

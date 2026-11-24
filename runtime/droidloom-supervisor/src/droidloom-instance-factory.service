@@ -1,0 +1,28 @@
+[Unit]
+Description=Droidloom original boot factory custody
+Requires=droidloom-manager-label.service
+After=local-fs.target droidloom-manager-label.service
+Before=droidloom-instance-launcher.service
+ConditionPathIsDirectory=/run/droidloom-early
+
+[Service]
+Type=notify
+NotifyAccess=main
+User=root
+Group=root
+ExecStart=/usr/lib/droidloom/production/current/droidloomd --adopt-early-factory
+StandardInput=null
+StandardOutput=file:/sys/fs/cgroup/system.slice/droidloom-instance-factory.service/cgroup.procs
+StandardError=journal
+Restart=no
+KillMode=process
+TimeoutStartSec=60s
+TimeoutStopSec=210s
+SendSIGKILL=no
+SELinuxContext=u:r:droidloom_instance_launcher:s0
+AppArmorProfile=droidloom-instance-launcher
+NoNewPrivileges=yes
+PrivateMounts=no
+CPUQuota=200%
+MemoryMax=2G
+TasksMax=256

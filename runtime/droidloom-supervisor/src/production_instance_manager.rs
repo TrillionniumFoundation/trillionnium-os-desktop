@@ -4,6 +4,9 @@ use std::ffi::{CStr, c_char, c_int, c_void};
 use std::io;
 use std::ptr::{self, NonNull};
 
+#[path = "production_instance_manager_adoption.rs"]
+mod adoption;
+
 #[repr(C)]
 struct Bus {
     _private: [u8; 0],

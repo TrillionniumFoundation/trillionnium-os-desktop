@@ -5,6 +5,8 @@ profile droidloom-instance-launcher flags=(attach_disconnected) {
   / r,
   /{etc,proc,sys,run,usr,usr/lib,var,var/lib,sys/fs}/ r,
   /etc/ld.so.cache r,
+  /etc/systemd/{,system/} r,
+  /etc/systemd/system/droidloom-instance-factory.service r,
   /{,usr/}lib{,64}/ld-linux-x86-64.so.2 mr,
   /{,usr/}lib/x86_64-linux-gnu/{ld-linux-x86-64.so.2,lib*.so*} mr,
   /usr/lib/droidloom/{,production/,production/current/} r,
@@ -21,6 +23,8 @@ profile droidloom-instance-launcher flags=(attach_disconnected) {
   /run/droidloom-early/kernel-policy/apparmor-epoch r,
   /sys/fs/selinux/{,enforce} r,
   /dev/{null,urandom} r,
+  # Inherit the executor-opened descriptor; SELinux denies a new write-open.
+  /sys/fs/cgroup/system.slice/droidloom-instance-factory.service/cgroup.procs w,
   @{PROC}/sys/kernel/random/boot_id r,
   @{PROC}/[0-9]*/{,status,stat,exe,attr/,attr/selinux/,attr/selinux/current,attr/apparmor/current} r,
   @{PROC}/[0-9]*/{ns/,ns/{pid,mnt,user},fd/,fd/[0-9]*,fdinfo/,fdinfo/[0-9]*} r,
