@@ -6,6 +6,13 @@ use std::{fs, os::unix::fs::symlink, path::Path, process::Command};
 #[path = "early_boot_package.rs"]
 mod early_boot_package;
 
+// Exercise the actual native publisher through the normal archive in tests,
+// without exporting any additional production entry point.
+#[cfg(test)]
+pub(crate) fn stage_native_configuration_for_archive_test(destination: &Path) -> Result<()> {
+    early_boot_package::stage_native_configuration(destination)
+}
+
 const CONTAINER_HOST_PACKAGES: &[&str] = &[
     "droidloom-supervisor",
     "droidloom-package-support",

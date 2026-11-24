@@ -321,7 +321,7 @@ mod tests {
     #[test]
     fn normal_native_configuration_and_hardware_entries_survive_real_archive_roundtrip() {
         let (temp, stage) = fixture();
-        crate::early_boot_package::stage_native_configuration(&stage).unwrap();
+        crate::package::stage_native_configuration_for_archive_test(&stage).unwrap();
         let output_root = temp.path().join("normal-native");
         export(&stage, &output_root, &identity()).unwrap();
         let manifest: Value =
