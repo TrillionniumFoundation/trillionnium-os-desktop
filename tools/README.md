@@ -139,6 +139,7 @@ source-generation roles.
 | `droidloom-dmabuf-probe` | GLES/DMA-BUF/explicit-sync diagnostic; does not validate a complete Android app. |
 | `droidloom-translation-bench` | Repeat Digitalis host correctness tests, time seven guest workloads across three translation modes, and compare saved runs. See [translation benchmarking](../docs/BUILDING.md#translation-stress-and-performance-benchmarks). |
 | `droidloom-keystore-metadata` | Independent Rust host workspace for redacted cold-DB audits and new clone-only metadata experiments; see [Keystore metadata validation](../docs/BUILDING.md#offline-keystore-metadata-audit-and-clone-experiments). |
+| `droidloom-ubuntu-fixture` | Independent Rust public-root capture/materialize/verify tool; see [Real Ubuntu qualification material](#real-ubuntu-qualification-material). |
 | `droidloom-inspect.rs` | Optional read-only diagnostics for the development workstation's u1000 cell; fixed `features`, `properties`, and `configuration` modes. |
 
 The Rust updater and package workflow own x86_64 installation, init projection
@@ -198,3 +199,96 @@ Remove `/etc/sudoers.d/droidloom-inspect` to revoke the local passwordless grant
 
 The package builder also provides `ship prepare`, `ship publish`, and
 `runner setup|start|stop|status` for the [GitHub shipping workflow](../docs/BUILDING.md#shipping-with-github-actions).
+
+## Real Ubuntu qualification material
+
+`tools/droidloom-ubuntu-fixture` is an independent Rust workspace. It captures
+reviewed public files from an installed Ubuntu root and creates a new private
+qualification root. It does not boot a guest, execute services, install packages,
+mount images, generate accounts, or touch Android data. The production Cargo
+workspace and lock are unchanged.
+
+Build and run its focused synthetic tests with:
+
+```sh
+cargo test --offline --locked -j 1 --manifest-path tools/droidloom-ubuntu-fixture/Cargo.toml
+cargo build --release --offline --locked -j 1 --manifest-path tools/droidloom-ubuntu-fixture/Cargo.toml
+```
+
+The real commands require existing administrator rights so they can read the
+selected native kernel and preserve original ownership, capabilities and ACLs.
+No privilege helper or sudoers entry is installed. Output and receipt parents
+must already be new, root-owned mode 0700 directories. Every artifact and the
+destination root is create-only; a failed partial attempt is not resumed or
+silently removed.
+
+Prepare a `droidloom.ubuntu-public-selection.v1` JSON object with `source_root`,
+`audit_sha256`, `target_kernel_release`, `entries`, and explicit
+`unresolved_requirements`. Each entry has an absolute in-root `path`,
+`component`, and `origin`. Components are `native`, `public_config`,
+`generated_public_cache`, and `snap_archive`; the last three require the exact
+`expected_sha256` (`readlink` target bytes for a symlink). `expected_size` is
+optional. A package/file availability audit is not itself a copy allowlist:
+review public configuration paths before selecting them.
+
+Native inputs are confined to public `/usr` files and usrmerge links. The
+configuration allowlist is maintained in `src/paths.rs`. Real homes, account
+databases, SSH host private keys, private TLS, NetworkManager connection keys,
+Bluetooth/SSSD/Snap authentication state and Android data are rejected.
+Ancestor directories carry metadata only. They cannot be used as regular-file
+inputs. Every source component is opened relative to a pinned directory FD
+with no symlink following; sources must be root-owned and not writable by
+group or other. The manifest binds source device/inode, mode, UID/GID, link
+count, size, mtime/ctime, content hash and selected privilege attributes.
+
+The optional `kernel` object supplies `release`, `image_path`, `image_sha256`,
+`config_path`, `config_sha256`, `module_manifest_path`, and
+`module_manifest_sha256`. It accepts the original
+`p4-normal-kernel-installed-module-manifest-v1` producer roster, checks every
+module/index hash and size, and compares its entire regular-file set plus the
+pinned config against the installed selected-release tree. Build/source links
+are omitted without following them. A separate module output is mandatory
+when this input is supplied. Native selection cannot smuggle in another
+kernel's module tree. Module content identity does not assert cryptographic
+signature verification; the independent signing receipt remains separate.
+
+```sh
+sudo -n /absolute/path/droidloom-ubuntu-fixture capture \
+  --selection /private/work/SELECTION.json \
+  --selection-sha256 "$P4_REVIEWED_SELECTION_SHA256" \
+  --output /private/work/MANIFEST.json \
+  --module-output /private/work/TARGET-MODULES.json
+sudo -n /absolute/path/droidloom-ubuntu-fixture materialize \
+  --manifest /private/work/MANIFEST.json \
+  --manifest-sha256 "$P4_CAPTURED_MANIFEST_SHA256" \
+  --destination /private/work/root \
+  --receipt /private/work/MATERIALIZED.json
+sudo -n /absolute/path/droidloom-ubuntu-fixture verify \
+  --manifest /private/work/MANIFEST.json \
+  --manifest-sha256 "$P4_CAPTURED_MANIFEST_SHA256" \
+  --destination /private/work/root \
+  --receipt /private/work/VERIFIED.json
+```
+
+JSON is hashed and decoded from the same bounded buffer. Source identity is
+checked before and after regular-file reads. Copying refuses content growth
+past the reviewed size, preserves hardlinks, and reads back every destination
+file, symlink, mode, owner, capability and ACL. Verification also rejects
+unexpected paths. Standalone verification checks the declared in-root hardlink
+relationships; it does not prove that an existing inode has no additional
+hardlinks outside the verified root. Materialization creates its hardlinks
+inside the new private root only. SELinux labels are intentionally not inherited
+from the source host; the target joined policy must supply and validate its own
+labels.
+
+`materialization_complete=true` means the selected public bytes and metadata
+were copied and read back. All receipts retain `guest_qualified=false` and
+explicit requirements for real distribution account/machine-id/hostkey/cache
+generation, fixture network configuration, Snap state/assertion import, native
+AppArmor generation, SELinux roles and PAM contexts, cold service/login
+execution, and selected-kernel device qualification. No missing sensitive
+configuration is replaced by a successful placeholder. Numeric service UID/GID
+metadata must agree with the later fresh fixture account mapping.
+
+Keep manifests, public root trees, module/Snap payloads and logs outside Git.
+Only source and this maintained invocation guide belong to the repository.
