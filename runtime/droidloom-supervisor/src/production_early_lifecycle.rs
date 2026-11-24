@@ -81,18 +81,28 @@ impl ServiceSignals {
         })
     }
     fn stop_requested(&self) -> io::Result<bool> {
-        if self.stopping.get() { return Ok(true); }
-        loop {
+        // Standard TERM/INT signals coalesce. Drain the original signalfd even
+        // after a nested query observed stop so a later request cannot remain
+        // pending through orderly Android retirement. Bound work under a flood.
+        for _ in 0..8 {
             let mut event: libc::signalfd_siginfo = unsafe { std::mem::zeroed() };
             let count = unsafe {
-                libc::read(self.events.as_raw_fd(),
+                libc::read(
+                    self.events.as_raw_fd(),
                     (&mut event as *mut libc::signalfd_siginfo).cast(),
-                    std::mem::size_of_val(&event))
+                    std::mem::size_of_val(&event),
+                )
             };
             if count < 0 {
                 let error = io::Error::last_os_error();
-                if error.kind() == io::ErrorKind::Interrupted { continue; }
-                return if error.kind() == io::ErrorKind::WouldBlock { Ok(false) } else { Err(error) };
+                if error.kind() == io::ErrorKind::Interrupted {
+                    continue;
+                }
+                return if error.kind() == io::ErrorKind::WouldBlock {
+                    Ok(self.stopping.get())
+                } else {
+                    Err(error)
+                };
             }
             if count != std::mem::size_of_val(&event) as isize
                 || !matches!(event.ssi_signo as i32, libc::SIGTERM | libc::SIGINT)
@@ -102,10 +112,14 @@ impl ServiceSignals {
             // The same owner remembers the kernel event when a nested query
             // consumes it. Its outer loop still performs orderly Android stop.
             self.stopping.set(true);
-            return Ok(true);
         }
+        Ok(self.stopping.get())
     }
-    fn await_child(&self, pidfd: &File, mut progress: impl FnMut() -> io::Result<()>) -> io::Result<()> {
+    fn await_child(
+        &self,
+        pidfd: &File,
+        mut progress: impl FnMut() -> io::Result<()>,
+    ) -> io::Result<()> {
         let mut fds = [
             libc::pollfd {
                 fd: pidfd.as_raw_fd(),
@@ -119,9 +133,13 @@ impl ServiceSignals {
             },
         ];
         loop {
-            if self.stop_requested()? { return Ok(()); }
+            if self.stop_requested()? {
+                return Ok(());
+            }
             let progressed = progress();
-            if self.stop_requested()? { return Ok(()); }
+            if self.stop_requested()? {
+                return Ok(());
+            }
             progressed?;
             if unsafe { libc::poll(fds.as_mut_ptr(), 2, 100) } < 0 {
                 let e = io::Error::last_os_error();
@@ -137,7 +155,9 @@ impl ServiceSignals {
                 return Err(invalid("lost Android lifetime monitor"));
             }
             if fds[1].revents & libc::POLLIN != 0 {
-                if self.stop_requested()? { return Ok(()); }
+                if self.stop_requested()? {
+                    return Ok(());
+                }
             }
             if fds[0].revents & libc::POLLIN != 0 {
                 return Err(invalid("original Android init exited before service stop"));
@@ -147,8 +167,15 @@ impl ServiceSignals {
 }
 impl Drop for ServiceSignals {
     fn drop(&mut self) {
-        unsafe {
-            libc::pthread_sigmask(libc::SIG_SETMASK, &self.previous, std::ptr::null_mut());
+        let _ = self.stop_requested();
+        // This guard is owned only by the one-shot service entry. After stop,
+        // that entry returns directly to process exit. Keep TERM/INT blocked
+        // across the final return: an event arriving after the last drain must
+        // not turn a completed orderly shutdown into signal termination.
+        if !self.stopping.get() {
+            unsafe {
+                libc::pthread_sigmask(libc::SIG_SETMASK, &self.previous, std::ptr::null_mut());
+            }
         }
     }
 }
@@ -315,7 +342,10 @@ pub fn complete_early_resources() -> io::Result<()> {
             .checked_add(9999)
             .ok_or_else(|| invalid("observer gid overflow"))?;
         let frontend = frontend::Frontend::prepare(&board, &owner, root)?;
-        let query = query_resources.insert(crate::production_runtime_assets::EarlyQueryResources::prepare(&base).map_err(io::Error::other)?);
+        let query = query_resources.insert(
+            crate::production_runtime_assets::EarlyQueryResources::prepare(&base)
+                .map_err(io::Error::other)?,
+        );
         owner.objects().map_err(io::Error::other)?;
         if unsafe {
             droidloom_board_assemble(
@@ -372,14 +402,19 @@ pub fn complete_early_resources() -> io::Result<()> {
         let frontend = std::cell::RefCell::new(frontend);
         let progress = || {
             if signals.stop_requested()? {
-                return Err(io::Error::new(io::ErrorKind::Interrupted, "original service stop requested"));
+                return Err(io::Error::new(
+                    io::ErrorKind::Interrupted,
+                    "original service stop requested",
+                ));
             }
             frontend.borrow_mut().progress()
         };
         let application = super::EarlyApplicationAuthority::acquire(
             &base, &group, &owner, root, query, &progress,
-        ).map_err(io::Error::other)?;
-        let mut control = crate::control::EarlyApplicationControl::bind(&owner).map_err(io::Error::other)?;
+        )
+        .map_err(io::Error::other)?;
+        let mut control =
+            crate::control::EarlyApplicationControl::bind(&owner).map_err(io::Error::other)?;
         let waiting = signals.await_child(board.pidfd(), || {
             progress()?;
             control.poll(&application).map_err(io::Error::other)
@@ -389,7 +424,9 @@ pub fn complete_early_resources() -> io::Result<()> {
         waiting.and(control_retired).and(presentation_retired)?;
         stop.deliver(&board)?;
         if !wait_ended(board.pidfd(), Duration::from_secs(75))? {
-            return Err(invalid("Android did not finish its requested orderly shutdown"));
+            return Err(invalid(
+                "Android did not finish its requested orderly shutdown",
+            ));
         }
         stop.check_mounts(&board, false)
     })();
@@ -398,7 +435,8 @@ pub fn complete_early_resources() -> io::Result<()> {
     let cleanup = stop_child(board.pidfd(), Duration::from_secs(15)).and_then(|exit| {
         let retired = (|| -> io::Result<()> {
             if let Some(root) = original_root {
-                let retired = EarlyBaseRetirement::finish(&board, &group, &root, root_delivery_attempted)?;
+                let retired =
+                    EarlyBaseRetirement::finish(&board, &group, &root, root_delivery_attempted)?;
                 drop(root);
                 let dev_result = devices
                     .map(|v| v.retire_after_early_tree(&retired))
@@ -438,37 +476,130 @@ mod tests {
     use super::*;
     #[test]
     fn nested_query_stop_observation_is_retained_for_orderly_outer_loop() {
-        let signals = ServiceSignals::acquire().unwrap();
-        assert!(!signals.stop_requested().unwrap());
-        let mut child = std::process::Command::new("/bin/sleep").arg("20").spawn().unwrap();
-        let raw = unsafe { libc::syscall(libc::SYS_pidfd_open, child.id(), 0) };
-        assert!(raw >= 0);
-        let held = unsafe { File::from_raw_fd(raw as i32) };
-        assert_eq!(unsafe { libc::pthread_kill(libc::pthread_self(), libc::SIGTERM) }, 0);
-        // A nested application wait observes this original thread's event.
-        assert!(signals.stop_requested().unwrap());
-        assert!(signals.stop_requested().unwrap());
-        signals.await_child(&held, || panic!("must not begin another application after stop")).unwrap();
-        child.kill().unwrap();
-        child.wait().unwrap();
+        std::thread::spawn(|| {
+            let signals = ServiceSignals::acquire().unwrap();
+            assert!(!signals.stop_requested().unwrap());
+            let mut child = std::process::Command::new("/bin/sleep")
+                .arg("20")
+                .spawn()
+                .unwrap();
+            let raw = unsafe { libc::syscall(libc::SYS_pidfd_open, child.id(), 0) };
+            assert!(raw >= 0);
+            let held = unsafe { File::from_raw_fd(raw as i32) };
+            assert_eq!(
+                unsafe { libc::pthread_kill(libc::pthread_self(), libc::SIGTERM) },
+                0
+            );
+            // A nested application wait observes this original thread's event.
+            assert!(signals.stop_requested().unwrap());
+            assert!(signals.stop_requested().unwrap());
+            signals
+                .await_child(&held, || {
+                    panic!("must not begin another application after stop")
+                })
+                .unwrap();
+            child.kill().unwrap();
+            child.wait().unwrap();
+        })
+        .join()
+        .unwrap();
     }
     #[test]
     fn stop_arriving_inside_progress_returns_to_orderly_lifecycle() {
-        let signals = ServiceSignals::acquire().unwrap();
-        let mut child = std::process::Command::new("/bin/sleep").arg("20").spawn().unwrap();
-        let raw = unsafe { libc::syscall(libc::SYS_pidfd_open, child.id(), 0) };
-        assert!(raw >= 0);
-        let held = unsafe { File::from_raw_fd(raw as i32) };
-        let mut entered = false;
-        signals.await_child(&held, || {
-            entered = true;
-            assert_eq!(unsafe { libc::pthread_kill(libc::pthread_self(), libc::SIGTERM) }, 0);
+        std::thread::spawn(|| {
+            let signals = ServiceSignals::acquire().unwrap();
+            let mut child = std::process::Command::new("/bin/sleep")
+                .arg("20")
+                .spawn()
+                .unwrap();
+            let raw = unsafe { libc::syscall(libc::SYS_pidfd_open, child.id(), 0) };
+            assert!(raw >= 0);
+            let held = unsafe { File::from_raw_fd(raw as i32) };
+            let mut entered = false;
+            signals
+                .await_child(&held, || {
+                    entered = true;
+                    assert_eq!(
+                        unsafe { libc::pthread_kill(libc::pthread_self(), libc::SIGTERM) },
+                        0
+                    );
+                    assert!(signals.stop_requested().unwrap());
+                    Err(io::Error::new(
+                        io::ErrorKind::Interrupted,
+                        "query cancelled",
+                    ))
+                })
+                .unwrap();
+            assert!(entered);
+            child.kill().unwrap();
+            child.wait().unwrap();
+        })
+        .join()
+        .unwrap();
+    }
+    #[test]
+    fn repeated_owner_stop_events_are_drained_and_final_return_keeps_them_blocked() {
+        std::thread::spawn(|| {
+            let signals = ServiceSignals::acquire().unwrap();
+            assert_eq!(
+                unsafe { libc::pthread_kill(libc::pthread_self(), libc::SIGTERM) },
+                0
+            );
             assert!(signals.stop_requested().unwrap());
-            Err(io::Error::new(io::ErrorKind::Interrupted, "query cancelled"))
-        }).unwrap();
-        assert!(entered);
-        child.kill().unwrap();
-        child.wait().unwrap();
+            for signal in [libc::SIGTERM, libc::SIGINT] {
+                assert_eq!(
+                    unsafe { libc::pthread_kill(libc::pthread_self(), signal) },
+                    0
+                );
+            }
+            assert!(signals.stop_requested().unwrap());
+            let mut pending: libc::sigset_t = unsafe { std::mem::zeroed() };
+            assert_eq!(unsafe { libc::sigpending(&mut pending) }, 0);
+            for signal in [libc::SIGTERM, libc::SIGINT] {
+                assert_eq!(unsafe { libc::sigismember(&pending, signal) }, 0);
+                assert_eq!(
+                    unsafe { libc::pthread_kill(libc::pthread_self(), signal) },
+                    0
+                );
+            }
+            // A second request during retirement is consumed by the same owner.
+            drop(signals);
+            assert_eq!(unsafe { libc::sigpending(&mut pending) }, 0);
+            let mut current: libc::sigset_t = unsafe { std::mem::zeroed() };
+            assert_eq!(
+                unsafe { libc::pthread_sigmask(libc::SIG_SETMASK, std::ptr::null(), &mut current) },
+                0
+            );
+            for signal in [libc::SIGTERM, libc::SIGINT] {
+                assert_eq!(unsafe { libc::sigismember(&pending, signal) }, 0);
+                assert_eq!(unsafe { libc::sigismember(&current, signal) }, 1);
+            }
+        })
+        .join()
+        .unwrap();
+    }
+    #[test]
+    fn unused_owner_signal_guard_restores_original_thread_mask() {
+        std::thread::spawn(|| {
+            let mut before: libc::sigset_t = unsafe { std::mem::zeroed() };
+            assert_eq!(
+                unsafe { libc::pthread_sigmask(libc::SIG_SETMASK, std::ptr::null(), &mut before) },
+                0
+            );
+            drop(ServiceSignals::acquire().unwrap());
+            let mut after: libc::sigset_t = unsafe { std::mem::zeroed() };
+            assert_eq!(
+                unsafe { libc::pthread_sigmask(libc::SIG_SETMASK, std::ptr::null(), &mut after) },
+                0
+            );
+            for signal in [libc::SIGTERM, libc::SIGINT] {
+                assert_eq!(unsafe { libc::sigismember(&before, signal) }, unsafe {
+                    libc::sigismember(&after, signal)
+                });
+            }
+        })
+        .join()
+        .unwrap();
     }
     #[test]
     fn original_process_receives_stop_and_pidfd_confirms_exit() {
