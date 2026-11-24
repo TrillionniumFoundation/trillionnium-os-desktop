@@ -675,6 +675,7 @@ unsafe fn query_child(
                 OperationDomain::ContactsRead => mac_child::arm_contacts_read_mac(deadline_ns),
                 OperationDomain::LaunchRead => mac_child::arm_launch_read_mac(deadline_ns),
                 OperationDomain::LaunchStart => mac_child::arm_launch_start_mac(deadline_ns),
+                OperationDomain::Install => libc::ENOTSUP,
             } != 0
         {
             libc::_exit(125);

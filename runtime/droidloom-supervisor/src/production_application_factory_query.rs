@@ -390,14 +390,27 @@ fn prepare(
         identity(&files[STDOUT])? != identity(&files[STDERR])?,
         "query stdout and stderr alias",
     )?;
-    let null = files[STDIN].metadata()?;
+    let input = files[STDIN].metadata()?;
+    let flags = unsafe { libc::fcntl(files[STDIN].as_raw_fd(), libc::F_GETFL) };
     require(
-        null.mode() & libc::S_IFMT == libc::S_IFCHR
-            && null.rdev() == libc::makedev(1, 3)
-            && unsafe { libc::fcntl(files[STDIN].as_raw_fd(), libc::F_GETFL) } & libc::O_ACCMODE
-                == libc::O_RDONLY,
-        "query stdin is not the held guest null stream",
+        flags >= 0 && flags & (libc::O_ACCMODE | libc::O_NONBLOCK | libc::O_PATH) == libc::O_RDONLY,
+        "query stdin is not a blocking readonly stream",
     )?;
+    if query.install_input_bytes().is_some() {
+        fs(&files[STDIN], 0x5049_5045)?;
+        require(
+            input.mode() & libc::S_IFMT == libc::S_IFIFO
+                && identity(&files[STDIN])? != identity(&files[STDOUT])?
+                && identity(&files[STDIN])? != identity(&files[STDERR])?,
+            "install stdin is not its distinct creator-origin pipe",
+        )?;
+        pipe_label(&files[STDIN])?;
+    } else {
+        require(
+            input.mode() & libc::S_IFMT == libc::S_IFCHR && input.rdev() == libc::makedev(1, 3),
+            "query stdin is not the held guest null stream",
+        )?;
+    }
     // Null's inode label is not evidence of file-description origin. Its
     // QueryIo provenance is retained through the original SCM file description;
     // the unchanged Android->broker/metadata FD-use guards still apply.
@@ -505,6 +518,7 @@ fn native_domain(domain: OperationDomain) -> u32 {
         OperationDomain::ContactsRead => 2,
         OperationDomain::LaunchRead => 3,
         OperationDomain::LaunchStart => 4,
+        OperationDomain::Install => 5,
     }
 }
 unsafe extern "C" {
@@ -1433,6 +1447,7 @@ fn capture(
     client: &mut Client,
     stdout: &mut File,
     stderr: &mut File,
+    input: &mut Option<super::install_input::InputPump>,
     deadline: Instant,
     progress: &mut dyn FnMut() -> Result<()>,
 ) -> Result<(Vec<u8>, Vec<u8>)> {
@@ -1441,32 +1456,87 @@ fn capture(
     let mut total = 0;
     let mut output_eof = false;
     let mut error_eof = false;
+    let mut progress_after = Instant::now();
     loop {
-        progress()?;
+        if input.is_none() || Instant::now() >= progress_after {
+            progress()?;
+            progress_after = Instant::now() + Duration::from_millis(20);
+        }
         require(Instant::now() < deadline, "factory query output deadline")?;
         drain(stdout, &mut output, &mut total, &mut output_eof)?;
         drain(stderr, &mut error, &mut total, &mut error_eof)?;
-        if client.poll_terminal(deadline)?.is_some() && output_eof && error_eof {
-            return Ok((output, error));
+        if client.poll_terminal(deadline)?.is_some() {
+            if let Some(input) = input {
+                input.close();
+            }
+            if output_eof && error_eof {
+                return Ok((output, error));
+            }
+        } else if let Some(input) = input {
+            input.advance(deadline)?;
         }
         let query = client
             .query
             .as_ref()
             .ok_or(ApplicationError::RetirementUnproven)?;
-        pause(
-            &[
-                client.endpoint.channel().as_raw_fd(),
-                query.pidfd.as_raw_fd(),
-                stdout.as_raw_fd(),
-                stderr.as_raw_fd(),
-            ],
-            deadline,
+        let mut watches = vec![
+            libc::pollfd {
+                fd: client.endpoint.channel().as_raw_fd(),
+                events: libc::POLLIN,
+                revents: 0,
+            },
+            libc::pollfd {
+                fd: query.pidfd.as_raw_fd(),
+                events: libc::POLLIN,
+                revents: 0,
+            },
+            libc::pollfd {
+                fd: stdout.as_raw_fd(),
+                events: libc::POLLIN,
+                revents: 0,
+            },
+            libc::pollfd {
+                fd: stderr.as_raw_fd(),
+                events: libc::POLLIN,
+                revents: 0,
+            },
+        ];
+        if let Some(fd) = input.as_ref().and_then(|input| input.descriptor()) {
+            watches.push(libc::pollfd {
+                fd,
+                events: libc::POLLOUT,
+                revents: 0,
+            });
+        }
+        let left = deadline.saturating_duration_since(Instant::now());
+        require(!left.is_zero(), "factory stream absolute deadline")?;
+        let count = unsafe {
+            libc::poll(
+                watches.as_mut_ptr(),
+                watches.len() as libc::nfds_t,
+                left.as_millis().clamp(1, 20) as i32,
+            )
+        };
+        if count < 0 && io::Error::last_os_error().kind() != io::ErrorKind::Interrupted {
+            return Err(io::Error::last_os_error().into());
+        }
+        require(
+            watches.iter().all(|p| p.revents & libc::POLLNVAL == 0),
+            "factory stream descriptor became invalid",
         )?;
     }
 }
 pub(super) fn run(
     authority: &dyn ApplicationWorkerAuthority,
     request: &ApplicationOperation,
+    workflow_deadline: Instant,
+) -> Result<LaunchCommandResult> {
+    run_with_input(authority, request, None, workflow_deadline)
+}
+pub(super) fn run_with_input(
+    authority: &dyn ApplicationWorkerAuthority,
+    request: &ApplicationOperation,
+    input: Option<super::install_input::SegmentInput>,
     workflow_deadline: Instant,
 ) -> Result<LaunchCommandResult> {
     use sha2::{Digest, Sha256};
@@ -1507,8 +1577,21 @@ pub(super) fn run(
         .ok_or_else(|| reject("query shell GID overflow"))?;
     // The stdio creator is an independent real broker child, with its own
     // normal PIDFD wait. It is never presented as the query's creator.
-    let io = super::query_io::create(&files[2], deadline)?;
+    require(
+        input.as_ref().map(|input| input.bytes()) == request.install_input_bytes(),
+        "installation input is absent or outside its fixed write operation",
+    )?;
+    let io = if input.is_some() {
+        super::query_io::create_apk_pipe(&files[2], deadline)?
+    } else {
+        super::query_io::create(&files[2], deadline)?
+    };
     let stdio_creator = io.creator_receipt()?;
+    let mut input = match (input, io.stdin_write) {
+        (Some(input), Some(writer)) => Some(super::install_input::InputPump::new(input, writer)?),
+        (None, None) => None,
+        _ => return Err(reject("query I/O creator returned another stdin role")),
+    };
     let mut stdout = io.stdout_read;
     let mut stderr = io.stderr_read;
     let mut client = Client::connect()?;
@@ -1555,11 +1638,16 @@ pub(super) fn run(
             &mut client,
             &mut stdout,
             &mut stderr,
+            &mut input,
             deadline,
             &mut progress,
         )?;
         Ok((output, error, exec))
     })();
+    // Close the creator-origin writer on every path before actual retirement.
+    if let Some(input) = &mut input {
+        input.close();
+    }
     // Every return passes actual factory wait ownership and same-leaf empty
     // retirement. The broker never calls waitid or sends a signal via its query
     // observation handle. A lost/unverifiable response retains the lease.
@@ -1632,6 +1720,11 @@ pub(super) fn run(
         } => status | 0x80,
         _ => return Err(reject("query terminal cannot form an exit status")),
     };
+    if terminal.code == libc::CLD_EXITED && terminal.status == 0 {
+        if let Some(input) = &input {
+            input.finish()?;
+        }
+    }
     let stderr_bytes = error.len();
     let stderr_sha256 = format!("{:x}", Sha256::digest(&error));
     require(

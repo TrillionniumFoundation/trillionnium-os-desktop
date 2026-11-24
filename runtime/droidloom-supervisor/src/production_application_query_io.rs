@@ -26,6 +26,8 @@ const WIRE_BYTES: usize = 40;
 const PIDFD_GET_INFO: u64 = 0xc050_ff0b;
 const REQUEST: u8 = 1;
 const CREATED: u8 = 2;
+const REQUEST_APK_PIPE: u8 = 3;
+const CREATED_APK_PIPE: u8 = 4;
 
 /// The fixed five descriptors. Reads are nonblocking; query writes remain
 /// blocking. Every descriptor is CLOEXEC until the real query deliberately
@@ -49,6 +51,7 @@ impl CreatorReceipt {
 pub(crate) struct QueryIo {
     creator: Option<CreatorReceipt>,
     pub(crate) stdin: File,
+    pub(crate) stdin_write: Option<File>,
     pub(crate) stdout_read: File,
     pub(crate) stdout_write: File,
     pub(crate) stderr_read: File,
@@ -88,7 +91,10 @@ impl Wire {
         require(
             bytes.len() == WIRE_BYTES
                 && &bytes[..8] == MAGIC
-                && matches!(bytes[8], REQUEST | CREATED)
+                && matches!(
+                    bytes[8],
+                    REQUEST | CREATED | REQUEST_APK_PIPE | CREATED_APK_PIPE
+                )
                 && bytes[9..16] == [0; 7],
             "query I/O wire format differs",
         )?;
@@ -134,7 +140,7 @@ fn wait(fd: RawFd, events: i16, deadline: Instant) -> Result<()> {
     }
 }
 fn send(socket: RawFd, wire: Wire, files: &[RawFd], deadline: Instant) -> Result<()> {
-    require(files.len() <= 5, "query I/O descriptor send bound")?;
+    require(files.len() <= 6, "query I/O descriptor send bound")?;
     let bytes = wire.bytes();
     loop {
         require(Instant::now() < deadline, "query I/O send deadline")?;
@@ -179,7 +185,7 @@ fn send(socket: RawFd, wire: Wire, files: &[RawFd], deadline: Instant) -> Result
     }
 }
 fn receive(socket: RawFd, expected_files: usize, deadline: Instant) -> Result<Received> {
-    require(expected_files <= 5, "query I/O receive descriptor bound")?;
+    require(expected_files <= 6, "query I/O receive descriptor bound")?;
     loop {
         require(Instant::now() < deadline, "query I/O receive deadline")?;
         let mut bytes = [0_u8; WIRE_BYTES];
@@ -593,11 +599,57 @@ fn validate_pipes(read: &File, write: &File) -> Result<(u64, u64)> {
     )?;
     Ok((r.dev(), r.ino()))
 }
-fn assemble(files: Vec<File>, root: &File) -> Result<QueryIo> {
+fn new_input_pipe() -> Result<(File, File)> {
+    let (read, write) = new_pipe()?;
+    if unsafe { libc::fcntl(read.as_raw_fd(), libc::F_SETFL, 0) } != 0
+        || unsafe { libc::fcntl(write.as_raw_fd(), libc::F_SETFL, libc::O_NONBLOCK) } != 0
+    {
+        return Err(io::Error::last_os_error().into());
+    }
+    validate_input_pipe(&read, &write)?;
+    Ok((read, write))
+}
+fn validate_input_pipe(read: &File, write: &File) -> Result<(u64, u64)> {
+    let r = read.metadata()?;
+    let w = write.metadata()?;
+    let mut fs: libc::statfs = unsafe { mem::zeroed() };
+    if unsafe { libc::fstatfs(read.as_raw_fd(), &mut fs) } != 0 {
+        return Err(io::Error::last_os_error().into());
+    }
+    require(
+        r.mode() & libc::S_IFMT == libc::S_IFIFO
+            && w.mode() & libc::S_IFMT == libc::S_IFIFO
+            && fs.f_type == 0x5049_5045
+            && r.dev() == w.dev()
+            && r.ino() == w.ino()
+            && r.nlink() == 1
+            && w.nlink() == 1
+            && flags(read)? & (libc::O_ACCMODE | libc::O_NONBLOCK | libc::O_PATH) == libc::O_RDONLY
+            && flags(write)? & (libc::O_ACCMODE | libc::O_NONBLOCK | libc::O_PATH)
+                == libc::O_WRONLY | libc::O_NONBLOCK,
+        "query I/O APK input pipe or access direction differs",
+    )?;
+    Ok((r.dev(), r.ino()))
+}
+fn assemble(mut files: Vec<File>, root: &File, apk_pipe: bool) -> Result<QueryIo> {
+    require(
+        files.len() == if apk_pipe { 6 } else { 5 },
+        "query I/O reply descriptor shape differs",
+    )?;
+    let stdin_write = if apk_pipe { files.pop() } else { None };
     let [stdin, stdout_read, stdout_write, stderr_read, stderr_write]: [File; 5] = files
         .try_into()
         .map_err(|_| reject("query I/O reply must contain exactly five descriptors"))?;
-    validate_null(&stdin, root)?;
+    if let Some(write) = &stdin_write {
+        let input = validate_input_pipe(&stdin, write)?;
+        require(
+            input != validate_pipes(&stdout_read, &stdout_write)?
+                && input != validate_pipes(&stderr_read, &stderr_write)?,
+            "query I/O APK input aliases an output stream",
+        )?;
+    } else {
+        validate_null(&stdin, root)?;
+    }
     require(
         validate_pipes(&stdout_read, &stdout_write)?
             != validate_pipes(&stderr_read, &stderr_write)?,
@@ -606,6 +658,7 @@ fn assemble(files: Vec<File>, root: &File) -> Result<QueryIo> {
     Ok(QueryIo {
         creator: None,
         stdin,
+        stdin_write,
         stdout_read,
         stdout_write,
         stderr_read,
@@ -810,7 +863,7 @@ pub(super) fn entry() -> Result<()> {
     require(parent > 1, "query I/O creator has no broker parent")?;
     let received = receive(3, 2, Instant::now() + LIMIT)?;
     require(
-        received.wire.phase == REQUEST,
+        matches!(received.wire.phase, REQUEST | REQUEST_APK_PIPE),
         "query I/O first phase differs",
     )?;
     let [root, owner]: [File; 2] = received
@@ -834,32 +887,38 @@ pub(super) fn entry() -> Result<()> {
         "query I/O creator deadline exceeds fixed budget",
     )?;
     let deadline = Instant::now() + Duration::from_nanos(remaining);
-    let stdin = guest_null(&root)?;
+    let apk_pipe = received.wire.phase == REQUEST_APK_PIPE;
+    let (stdin, stdin_write) = if apk_pipe {
+        let (read, write) = new_input_pipe()?;
+        (read, Some(write))
+    } else {
+        (guest_null(&root)?, None)
+    };
     let (stdout_read, stdout_write) = new_pipe()?;
     let (stderr_read, stderr_write) = new_pipe()?;
-    let io = assemble(
-        vec![stdin, stdout_read, stdout_write, stderr_read, stderr_write],
-        &root,
-    )?;
+    let mut files = vec![stdin, stdout_read, stdout_write, stderr_read, stderr_write];
+    if let Some(write) = stdin_write {
+        files.push(write);
+    }
+    let io = assemble(files, &root, apk_pipe)?;
     mac_context(CREATOR)?;
     empty_capabilities()?;
     parent_identity(&owner, received.peer, parent)?;
     let reply = Wire {
-        phase: CREATED,
+        phase: if apk_pipe { CREATED_APK_PIPE } else { CREATED },
         ..received.wire
     };
-    send(
-        3,
-        reply,
-        &[
-            io.stdin.as_raw_fd(),
-            io.stdout_read.as_raw_fd(),
-            io.stdout_write.as_raw_fd(),
-            io.stderr_read.as_raw_fd(),
-            io.stderr_write.as_raw_fd(),
-        ],
-        deadline,
-    )?;
+    let mut files = vec![
+        io.stdin.as_raw_fd(),
+        io.stdout_read.as_raw_fd(),
+        io.stdout_write.as_raw_fd(),
+        io.stderr_read.as_raw_fd(),
+        io.stderr_write.as_raw_fd(),
+    ];
+    if let Some(write) = &io.stdin_write {
+        files.push(write.as_raw_fd());
+    }
+    send(3, reply, &files, deadline)?;
     parent_identity(&owner, received.peer, parent)?;
     Ok(())
 }
@@ -871,7 +930,6 @@ pub(super) fn above_reserved(file: &File) -> Result<File> {
     }
     Ok(unsafe { File::from_raw_fd(raw) })
 }
-
 
 /// A broker-created anonymous read end whose only writer is already closed.
 /// Keeping 0..2 valid prevents Rust's fresh-image startup from opening host
@@ -901,7 +959,11 @@ fn fixed_stdio_node(fd: RawFd, inherited: bool) -> Result<(u64, u64)> {
             && (descriptor & libc::FD_CLOEXEC == 0) == inherited,
         "helper stdio is not the fixed read-only inherited pipe",
     )?;
-    let mut state = libc::pollfd { fd, events: libc::POLLIN, revents: 0 };
+    let mut state = libc::pollfd {
+        fd,
+        events: libc::POLLIN,
+        revents: 0,
+    };
     let ready = unsafe { libc::poll(&mut state, 1, 0) };
     require(
         ready == 1 && state.revents == libc::POLLHUP,
@@ -1205,6 +1267,13 @@ impl Drop for Child {
 
 /// Create the fixed query streams through one owned, separately exec'd creator.
 pub(crate) fn create(root: &File, deadline: Instant) -> Result<QueryIo> {
+    create_fixed(root, deadline, false)
+}
+/// Only the source-owned installation writer requests a third creator-origin pipe.
+pub(crate) fn create_apk_pipe(root: &File, deadline: Instant) -> Result<QueryIo> {
+    create_fixed(root, deadline, true)
+}
+fn create_fixed(root: &File, deadline: Instant, apk_pipe: bool) -> Result<QueryIo> {
     #[cfg(not(target_arch = "x86_64"))]
     return Err(reject("query I/O requires the reviewed native x86_64 ABI"));
     let deadline = deadline.min(Instant::now() + LIMIT);
@@ -1254,7 +1323,7 @@ pub(crate) fn create(root: &File, deadline: Instant) -> Result<QueryIo> {
     let left = deadline.saturating_duration_since(Instant::now());
     require(!left.is_zero(), "query I/O preparation exceeded deadline")?;
     let wire = Wire {
-        phase: REQUEST,
+        phase: if apk_pipe { REQUEST_APK_PIPE } else { REQUEST },
         nonce,
         deadline_ns: super::protocol::monotonic_ns()?
             .checked_add(left.as_nanos() as u64)
@@ -1320,14 +1389,14 @@ pub(crate) fn create(root: &File, deadline: Instant) -> Result<QueryIo> {
             &[root.as_raw_fd(), owner.as_raw_fd()],
             deadline,
         )?;
-        let reply = receive(channel.as_raw_fd(), 5, deadline)?;
+        let reply = receive(channel.as_raw_fd(), if apk_pipe { 6 } else { 5 }, deadline)?;
         require(
             reply.peer.pid == pid as i32
                 && reply.peer.uid == 0
                 && reply.peer.gid == 0
                 && reply.wire
                     == Wire {
-                        phase: CREATED,
+                        phase: if apk_pipe { CREATED_APK_PIPE } else { CREATED },
                         ..wire
                     },
             "query I/O creator reply identity differs",
@@ -1336,7 +1405,7 @@ pub(crate) fn create(root: &File, deadline: Instant) -> Result<QueryIo> {
         // Descriptor validation happens only after actual successful reap.
         let (waitid_code, waitid_status) =
             child.terminal.ok_or(ApplicationError::RetirementUnproven)?;
-        let mut result = assemble(reply.files, root)?;
+        let mut result = assemble(reply.files, root, apk_pipe)?;
         result.creator = Some(CreatorReceipt {
             pid: child.pid,
             waitid_code,
@@ -1368,7 +1437,11 @@ mod tests {
         bytes[9] = 1;
         assert!(Wire::parse(&bytes).is_err());
         bytes = w.bytes();
-        bytes[8] = 3;
+        for phase in [REQUEST, CREATED, REQUEST_APK_PIPE, CREATED_APK_PIPE] {
+            bytes[8] = phase;
+            assert_eq!(Wire::parse(&bytes).unwrap().phase, phase);
+        }
+        bytes[8] = 5;
         assert!(Wire::parse(&bytes).is_err());
         assert!(Wire::parse(&w.bytes()[..39]).is_err());
         let mut extra = w.bytes().to_vec();
@@ -1406,6 +1479,42 @@ mod tests {
             validate_pipes(&read, &write).unwrap(),
             validate_pipes(&other_read, &other_write).unwrap()
         );
+    }
+    #[test]
+    fn query_io_apk_pipe_is_blocking_readonly_and_has_a_distinct_nonblocking_writer() {
+        use std::io::{Read, Write};
+        let root = File::open("/").unwrap();
+        let make = || {
+            let (input, writer) = new_input_pipe().unwrap();
+            let (out, out_writer) = new_pipe().unwrap();
+            let (err, err_writer) = new_pipe().unwrap();
+            vec![input, out, out_writer, err, err_writer, writer]
+        };
+        let files = make();
+        assert!(validate_input_pipe(&files[0], &files[5]).is_ok());
+        assert!(validate_input_pipe(&files[5], &files[0]).is_err());
+        assert!(validate_pipes(&files[0], &files[5]).is_err());
+        let mut io = assemble(files, &root, true).unwrap();
+        io.stdin_write
+            .as_mut()
+            .unwrap()
+            .write_all(b"PK\x03\x04original")
+            .unwrap();
+        drop(io.stdin_write.take());
+        let mut bytes = Vec::new();
+        io.stdin.read_to_end(&mut bytes).unwrap();
+        assert_eq!(bytes, b"PK\x03\x04original");
+        assert!(assemble(make(), &root, false).is_err());
+        let mut missing_writer = make();
+        missing_writer.pop();
+        assert!(assemble(missing_writer, &root, true).is_err());
+        let mut wrong_direction = make();
+        wrong_direction.swap(0, 5);
+        assert!(assemble(wrong_direction, &root, true).is_err());
+        let mut aliased_output = make();
+        aliased_output[3] = aliased_output[1].try_clone().unwrap();
+        aliased_output[4] = aliased_output[2].try_clone().unwrap();
+        assert!(assemble(aliased_output, &root, true).is_err());
     }
     #[test]
     fn query_io_ordinary_host_cannot_invoke_creator_or_create() {
@@ -1473,7 +1582,10 @@ mod tests {
         let node = fixed_stdio_node(fixed.as_raw_fd(), false).unwrap();
         let same = above_reserved(&fixed).unwrap();
         assert_eq!(fixed_stdio_node(same.as_raw_fd(), false).unwrap(), node);
-        assert_eq!(unsafe { libc::write(fixed.as_raw_fd(), b"x".as_ptr().cast(), 1) }, -1);
+        assert_eq!(
+            unsafe { libc::write(fixed.as_raw_fd(), b"x".as_ptr().cast(), 1) },
+            -1
+        );
         assert_eq!(io::Error::last_os_error().raw_os_error(), Some(libc::EBADF));
         let (read, write) = new_pipe().unwrap();
         assert!(fixed_stdio_node(read.as_raw_fd(), false).is_err());
@@ -1489,7 +1601,9 @@ mod tests {
         let directory = tempfile::tempdir().unwrap();
         let source = directory.path().join("fresh.rs");
         let binary = directory.path().join("fresh");
-        std::fs::write(&source, r#"
+        std::fs::write(
+            &source,
+            r#"
 unsafe extern "C" {
     fn write(fd: i32, bytes: *const u8, length: usize) -> isize;
     fn _exit(status: i32) -> !;
@@ -1501,12 +1615,23 @@ fn main() {
         _exit(0);
     }
 }
-"#).unwrap();
+"#,
+        )
+        .unwrap();
         let compiler = std::env::var_os("RUSTC").unwrap_or_else(|| "rustc".into());
         let built = std::process::Command::new(compiler)
-            .arg("--edition=2024").arg("-Cpanic=abort")
-            .arg(&source).arg("-o").arg(&binary).output().unwrap();
-        assert!(built.status.success(), "{}", String::from_utf8_lossy(&built.stderr));
+            .arg("--edition=2024")
+            .arg("-Cpanic=abort")
+            .arg(&source)
+            .arg("-o")
+            .arg(&binary)
+            .output()
+            .unwrap();
+        assert!(
+            built.status.success(),
+            "{}",
+            String::from_utf8_lossy(&built.stderr)
+        );
         let executable = above_reserved(&File::open(&binary).unwrap()).unwrap();
         let stdio = fixed_stdio().unwrap();
         let mut outcomes = Vec::new();
@@ -1536,21 +1661,34 @@ fn main() {
                 unsafe {
                     if libc::dup2(child_channel.as_raw_fd(), 3) != 3
                         || libc::fcntl(3, libc::F_SETFD, 0) != 0
-                    { libc::_exit(125); }
+                    {
+                        libc::_exit(125);
+                    }
                     for fd in 0..3 {
                         if libc::dup2(stdio.as_raw_fd(), fd) != fd
                             || libc::fcntl(fd, libc::F_SETFD, 0) != 0
-                        { libc::_exit(125); }
+                        {
+                            libc::_exit(125);
+                        }
                     }
                     let mut empty: libc::sigset_t = mem::zeroed();
                     if libc::sigemptyset(&mut empty) != 0
                         || libc::sigprocmask(libc::SIG_SETMASK, &empty, std::ptr::null_mut()) != 0
                         || libc::syscall(libc::SYS_close_range, 4_u32, u32::MAX, 4_u32) != 0
                         || libc::prctl(libc::PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) != 0
-                        || libc::prctl(libc::PR_SET_SECCOMP, 2, &program as *const libc::sock_fprog) != 0
-                    { libc::_exit(125); }
-                    libc::syscall(libc::SYS_execveat, executable.as_raw_fd(), c"".as_ptr(),
-                        argv.as_ptr(), environment.as_ptr(), libc::AT_EMPTY_PATH);
+                        || libc::prctl(libc::PR_SET_SECCOMP, 2, &program as *const libc::sock_fprog)
+                            != 0
+                    {
+                        libc::_exit(125);
+                    }
+                    libc::syscall(
+                        libc::SYS_execveat,
+                        executable.as_raw_fd(),
+                        c"".as_ptr(),
+                        argv.as_ptr(),
+                        environment.as_ptr(),
+                        libc::AT_EMPTY_PATH,
+                    );
                     libc::_exit(125);
                 }
             }
@@ -1563,15 +1701,20 @@ fn main() {
             mask.restore().unwrap();
             drop(child_channel);
             let finished = child.finish(Instant::now() + Duration::from_secs(5));
-            if finished.is_err() { child.retire().unwrap(); }
+            if finished.is_err() {
+                child.retire().unwrap();
+            }
             let mut bytes = [0_u8; 32];
-            let count = unsafe { libc::read(channel.as_raw_fd(), bytes.as_mut_ptr().cast(), bytes.len()) };
+            let count =
+                unsafe { libc::read(channel.as_raw_fd(), bytes.as_mut_ptr().cast(), bytes.len()) };
             assert!(count >= 0, "{}", io::Error::last_os_error());
             outcomes.push((metadata, child.terminal, bytes[..count as usize].to_vec()));
         }
-        assert!(outcomes.iter().all(|(_, terminal, marker)| {
-            *terminal == Some((libc::CLD_EXITED, 0)) && marker == b"FRESH\n"
-        }), "actual fresh helper startup outcomes: {outcomes:?}");
+        assert!(
+            outcomes.iter().all(|(_, terminal, marker)| {
+                *terminal == Some((libc::CLD_EXITED, 0)) && marker == b"FRESH\n"
+            }),
+            "actual fresh helper startup outcomes: {outcomes:?}"
+        );
     }
-
 }

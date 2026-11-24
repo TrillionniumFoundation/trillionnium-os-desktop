@@ -34,8 +34,17 @@ pub(crate) use task_control::ApplicationTaskControl;
 #[path = "production_application_contacts.rs"]
 mod contacts;
 pub(crate) use contacts::{ContactsBaselineObservation, ContactsQuery};
+#[path = "production_application_install_command.rs"]
+mod install_command;
 #[path = "production_application_launch_command.rs"]
 mod launch_command;
+use install_command::InstallCommand;
+#[path = "production_application_install.rs"]
+mod install;
+#[path = "production_application_install_input.rs"]
+mod install_input;
+pub(crate) use install::install_early;
+
 #[path = "production_application_operation.rs"]
 mod operation;
 pub(crate) use launch_command::LaunchCommand;

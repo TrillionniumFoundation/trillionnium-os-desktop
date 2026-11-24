@@ -71,9 +71,13 @@ impl EarlyApplicationControl {
                 .checked_add(droidloom_task_launcher::effects::LAUNCH_LIMIT)
                 .ok_or_else(|| ControlError::Invalid("early launch deadline overflow".into()))?;
             authorize_uid(peer, host_uid)?;
-            if file.is_some() {
+            let installation = matches!(
+                &request,
+                ControlRequest::Install { .. } | ControlRequest::InstallMultiple { .. }
+            );
+            if file.is_some() != installation {
                 return Err(ControlError::Invalid(
-                    "early application control does not accept a descriptor".into(),
+                    "only installation accepts exactly one original APK descriptor".into(),
                 ));
             }
             // Request-local acquisition starts only after transport admission.
@@ -94,6 +98,61 @@ impl EarlyApplicationControl {
                 .expect("acquired original application owner");
             let progress = Reporter::new(stream, streaming)?;
             match request {
+                ControlRequest::Install { user } => {
+                    validate_android_user(user)?;
+                    let file = file.ok_or_else(|| {
+                        ControlError::Invalid("original APK descriptor missing".into())
+                    })?;
+                    let bytes = apk::validate(&file)?;
+                    progress.report(
+                        "Installing the original APK through Android's atomic package session...",
+                    );
+                    let result = crate::production_application::install_early(
+                        authority,
+                        user,
+                        file,
+                        &[bytes],
+                        launch_deadline,
+                    )
+                    .map_err(|e| {
+                        acquisition_quarantined |= matches!(
+                            e,
+                            crate::production_application::ApplicationError::RetirementUnproven
+                        );
+                        ControlError::Invalid(e.to_string())
+                    })?;
+                    response.message = format!(
+                        "Android confirmed atomic install session {}; installed {} original APK bytes; application acceptance remains pending",
+                        result.session, result.bytes
+                    );
+                }
+                ControlRequest::InstallMultiple { user, lengths } => {
+                    validate_android_user(user)?;
+                    let file = file.ok_or_else(|| {
+                        ControlError::Invalid("original APK set descriptor missing".into())
+                    })?;
+                    apk_set::validate(&file, &lengths)?;
+                    progress.report("Installing the complete original APK split set atomically...");
+                    let result = crate::production_application::install_early(
+                        authority,
+                        user,
+                        file,
+                        &lengths,
+                        launch_deadline,
+                    )
+                    .map_err(|e| {
+                        acquisition_quarantined |= matches!(
+                            e,
+                            crate::production_application::ApplicationError::RetirementUnproven
+                        );
+                        ControlError::Invalid(e.to_string())
+                    })?;
+                    response.message = format!(
+                        "Android confirmed atomic install session {} with {} original APK segments; application acceptance remains pending",
+                        result.session,
+                        result.segments.len()
+                    );
+                }
                 ControlRequest::InspectApplication { package, user } => {
                     validate_package(&package)?;
                     validate_android_user(user)?;

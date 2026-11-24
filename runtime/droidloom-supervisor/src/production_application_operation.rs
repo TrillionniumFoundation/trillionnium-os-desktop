@@ -10,6 +10,7 @@ pub(crate) enum OperationDomain {
     ContactsRead,
     LaunchRead,
     LaunchStart,
+    Install,
 }
 impl OperationDomain {
     pub(super) const fn context(self) -> &'static str {
@@ -19,6 +20,7 @@ impl OperationDomain {
             Self::ContactsRead => "u:r:droidloom_contacts_read:s0",
             Self::LaunchRead => "u:r:droidloom_launch_read:s0",
             Self::LaunchStart => "u:r:droidloom_launch_start:s0",
+            Self::Install => "u:r:droidloom_install:s0",
         }
     }
 
@@ -29,6 +31,7 @@ impl OperationDomain {
             Self::ContactsRead => b"u:r:droidloom_contacts_read:s0\0",
             Self::LaunchRead => b"u:r:droidloom_launch_read:s0\0",
             Self::LaunchStart => b"u:r:droidloom_launch_start:s0\0",
+            Self::Install => b"u:r:droidloom_install:s0\0",
         }
     }
 }
@@ -149,6 +152,7 @@ pub(super) enum ApplicationOperation {
     Browser { value: BrowserCommand },
     ContactsRead { value: ContactsQuery },
     Launch { value: LaunchCommand },
+    Install { value: InstallCommand },
 }
 
 impl ApplicationOperation {
@@ -158,9 +162,16 @@ impl ApplicationOperation {
             Self::Browser { value } => value.validate(),
             Self::ContactsRead { value } => value.validate(),
             Self::Launch { value } => value.validate(),
+            Self::Install { value } => value.validate(),
         }
     }
 
+    pub(super) fn install_input_bytes(&self) -> Option<u64> {
+        match self {
+            Self::Install { value } => value.input_bytes(),
+            _ => None,
+        }
+    }
     pub(super) const fn needs_content_jar(&self) -> bool {
         matches!(self, Self::ContactsRead { .. })
     }
@@ -191,7 +202,7 @@ impl ApplicationOperation {
             Self::Read { value } => value.binary(),
             Self::Browser { .. } => c"cmd",
             Self::ContactsRead { .. } => c"app_process64",
-            Self::Launch { .. } => c"cmd",
+            Self::Launch { .. } | Self::Install { .. } => c"cmd",
         }
     }
 
@@ -201,6 +212,7 @@ impl ApplicationOperation {
             Self::Browser { value } => value.arguments(),
             Self::ContactsRead { value } => value.arguments(),
             Self::Launch { value } => value.arguments(),
+            Self::Install { value } => value.arguments(),
         }
     }
 
@@ -210,6 +222,7 @@ impl ApplicationOperation {
             Self::Browser { value } => value.domain(),
             Self::ContactsRead { .. } => OperationDomain::ContactsRead,
             Self::Launch { value } => value.domain(),
+            Self::Install { .. } => OperationDomain::Install,
         }
     }
 }

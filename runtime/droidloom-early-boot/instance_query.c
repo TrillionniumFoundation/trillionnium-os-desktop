@@ -57,6 +57,7 @@ static const char *exec_context(uint32_t domain) {
     case 2:return "u:r:droidloom_contacts_read:s0";
     case 3:return "u:r:droidloom_launch_read:s0";
     case 4:return "u:r:droidloom_launch_start:s0";
+    case 5:return "u:r:droidloom_install:s0";
     default:return NULL;
     }
 }
