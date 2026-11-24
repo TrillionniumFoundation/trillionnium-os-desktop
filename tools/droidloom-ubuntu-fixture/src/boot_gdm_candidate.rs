@@ -9,6 +9,7 @@ use crate::{
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use std::io::Seek;
 use std::{
     collections::{BTreeMap, BTreeSet},
     path::{Path, PathBuf},
@@ -505,7 +506,7 @@ pub fn apply(root: &Path, boot: &Path, manifest: &Manifest, input: &GdmCandidate
         original_pin.sha256 == lock["original_executable"]["sha256"],
         "original fixture GDM bytes differ",
     )?;
-    let original_file = boot_files::checked_file(&original_pin)?;
+    let mut original_file = boot_files::checked_file(&original_pin)?;
     // A captured public fixture need not contain a dpkg database. Preserve its
     // presence as well as any existing file identity and bytes across this overlay.
     let status_before = crate::boot_candidate::dpkg_status(root)?;
@@ -553,6 +554,8 @@ pub fn apply(root: &Path, boot: &Path, manifest: &Manifest, input: &GdmCandidate
     rustix::fs::fsync(&parent)?;
     let installed = boot_files::pin_file(&root.join(MEMBER))?;
     let id = tree.identity(&guest)?;
+    // hash() consumes the held descriptor offset; re-read the same original inode.
+    original_file.rewind()?;
     ensure(
         installed.sha256 == lock["candidate_executable"]["sha256"]
             && Some(installed.bytes) == lock["candidate_executable"]["bytes"].as_u64()
