@@ -162,6 +162,13 @@ fn verify_normal_vendor(value: &Value, vendor: &FileRef) -> Result<BTreeMap<Stri
     if value["schema"] != "droidloom-official-gsi-independent-vendor-normal-result-v1"
         || value["normal_user_commands_returned_success"] != true
         || value["official_system_bytes_preserved"] != true
+        || value["software_keymint_compatibility"]["schema"] != "droidloom-keymint-soong-host-test-v1"
+        || value["software_keymint_compatibility"]["target"] != "droidloom_keymint_software_compat_test"
+        || value["software_keymint_compatibility"]["passed"] != true
+        || value["software_keymint_compatibility"]["boringssl_same_build"] != true
+        || value["software_keymint_compatibility"]["test_count"] != 10
+        || value["software_keymint_compatibility"]["list_exit_code"] != 0
+        || value["software_keymint_compatibility"]["run_exit_code"] != 0
         || value["official_inputs"]["schema"] != "droidloom-official-cp3a-vendor-inputs-v1"
         || value["official_inputs"]["source_system_sha256"] != library::SYSTEM_SHA256
         || value["official_inputs"]["official_system_bytes_preserved"] != true
@@ -327,11 +334,25 @@ mod tests {
             })
             .collect();
         let mut record = json!({"schema":"droidloom-official-gsi-independent-vendor-normal-result-v1","official_system_bytes_preserved":true,"normal_user_commands_returned_success":true,"official_inputs":{"schema":"droidloom-official-cp3a-vendor-inputs-v1","source_system_sha256":library::SYSTEM_SHA256,"official_system_bytes_preserved":true},"normal_vendor_image":row("vendor.img",&vendor),"native_binaries":libraries});
+        record["software_keymint_compatibility"] = json!({
+            "schema":"droidloom-keymint-soong-host-test-v1",
+            "target":"droidloom_keymint_software_compat_test",
+            "passed":true,"boringssl_same_build":true,"test_count":10,
+            "list_exit_code":0,"run_exit_code":0});
         assert_eq!(
             verify_normal_vendor(&record, &vendor).unwrap().len(),
             library::HOST_MODULES.len()
         );
         assert!(verify_normal_vendor(&record, &member("b")).is_err());
+        let mut missing_test = record.clone();
+        missing_test.as_object_mut().unwrap().remove("software_keymint_compatibility");
+        assert!(verify_normal_vendor(&missing_test, &vendor).is_err());
+        for (field, invalid) in [("passed", json!(false)), ("boringssl_same_build", json!(false)),
+            ("test_count", json!(0)), ("list_exit_code", json!(1)), ("run_exit_code", json!(1))] {
+            let mut failed_test = record.clone();
+            failed_test["software_keymint_compatibility"][field] = invalid;
+            assert!(verify_normal_vendor(&failed_test, &vendor).is_err());
+        }
         let mut other_system = record.clone();
         other_system["official_inputs"]["source_system_sha256"] = json!("f".repeat(64));
         assert!(verify_normal_vendor(&other_system, &vendor).is_err());

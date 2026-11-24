@@ -15,8 +15,13 @@ use std::os::unix::fs::MetadataExt;
 use std::process::Stdio;
 use std::time::{Duration, Instant};
 
+#[path = "official_vendor_keymint_test.rs"]
+mod keymint_test;
 pub(super) const NATIVE_TARGETS: &[&str] = &["droidloom_cp3a_native_bridge_package"];
-pub(super) const VENDOR_TARGETS: &[&str] = &["vendorimage", "secilc", "checkvintf", "host_init_verifier", "droidloom-readiness"];
+pub(super) const VENDOR_TARGETS: &[&str] = &[
+    "vendorimage", "secilc", "checkvintf", "host_init_verifier", "droidloom-readiness",
+    keymint_test::TARGET,
+];
 const HOST_DIRECTORY: &str = "lib64/droidloom/nativebridge";
 const PLATFORM_HELPERS: &str = "/system/system_ext/lib64/droidloom/nativebridge";
 const GUEST_DIRECTORY: &str = "etc/droidloom/nativebridge/guest";
@@ -846,6 +851,7 @@ pub(super) fn build(
     )?;
     inputs.verify_unchanged()?;
     bridge.archive.check()?;
+    let software_keymint_compatibility = keymint_test::run(repo, &vendor_out, out)?;
     let product_out = vendor_out.join("target/product").join(product);
     let vendor = product_out.join("vendor");
     let observed: BTreeMap<String, String> = fs::read_to_string(vendor.join("build.prop"))?
@@ -892,6 +898,7 @@ pub(super) fn build(
         "graphics_hal_image_entrypoints":graphics_hal_entries,
         "host_checkvintf":artifact(&vendor_out.join("host/linux-x86/bin/checkvintf"),128*1024*1024)?,
         "native_binaries":actual,"native_static_link_check":bridge.qualification,
+        "software_keymint_compatibility":software_keymint_compatibility,
         "official_system_bytes_preserved":true,"normal_user_commands_returned_success":true,
         "source_projection_restored":true,"source_release":PRODUCTION_TARGET_RELEASE,
         "source_revision_equivalence_qualified":false,"linker_namespace_qualified":false,
