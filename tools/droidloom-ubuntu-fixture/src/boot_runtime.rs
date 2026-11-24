@@ -1,11 +1,10 @@
 use crate::{
-    Result,
     boot_files::{self, FilePin},
-    ensure, fs,
+    ensure, fs, Result,
 };
 use rustix::fs::XattrFlags;
 use serde::{Deserialize, Serialize};
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use std::{
     collections::BTreeMap,
     io::{Read, Seek, SeekFrom, Write},
@@ -958,6 +957,13 @@ pub fn make_root_image(
     .iter()
     .map(|path| (*path).to_owned())
     .collect();
+    selected.push(crate::boot_gdm_proof::CONFIG.into());
+    selected.extend(
+        crate::boot_gdm_proof::FILES
+            .iter()
+            .map(|(path, _)| (*path).into()),
+    );
+    crate::boot_gdm_proof::validate_labels(labels)?;
     let query_runtime = labels["fixed_query_inputs"]["runtime_manifest_sha256"].as_str();
     if let Some(runtime) = query_runtime {
         selected.extend(crate::boot_query::guest_paths(runtime)?);
@@ -1075,13 +1081,14 @@ pub fn make_root_image(
         .transpose()?;
     let apparmor_readback = crate::boot_apparmor_candidate::verify_image(root, work, &disk)?;
     let gdm_readback = crate::boot_gdm_candidate::verify_image(root, work, &disk)?;
+    let greeter_proof_readback = crate::boot_gdm_proof::verify_image(root, work, &disk)?;
     let record = boot_files::pin_file(&disk)?;
     fs::write_json(
         &fs::absolute_string(&work.join("ROOT-IMAGE.json"))?,
         &json!({
         "image":record,"root_filesystem_uuid":uuid,"critical_label_paths":selected,
         "privilege_attributes_verified":attrs.len(),"inode_metadata_readback":metadata,
-        "fixed_query_input_readback":query_readback,"apparmor_library_readback":apparmor_readback,"gdm_executable_readback":gdm_readback,"guest_qualified":false}),
+        "fixed_query_input_readback":query_readback,"apparmor_library_readback":apparmor_readback,"gdm_executable_readback":gdm_readback,"greeter_proof_readback":greeter_proof_readback,"guest_qualified":false}),
         0,
     )?;
     Ok(record)

@@ -1,11 +1,11 @@
 //! Fresh native Ubuntu state for a verified, isolated public-root clone.
 //! This never starts a service or imports host passwords, keys or user homes.
 use crate::boot_files::{self, FilePin};
-use crate::{Result, ensure, fs, paths};
+use crate::{ensure, fs, paths, Result};
 use rustix::fs::{FileType, Mode};
 use rustix::process::{Gid, Uid};
 use serde::{Deserialize, Serialize};
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs::File;
 use std::io::{Read, Seek, SeekFrom, Write};
@@ -286,7 +286,7 @@ fn native_accounts(passwd: &[u8], group: &[u8]) -> Result<(Vec<String>, Value)> 
     Ok((lines, summary))
 }
 
-fn gdm_autologin(bytes: &[u8]) -> Result<Vec<u8>> {
+fn gdm_timed_login(bytes: &[u8]) -> Result<Vec<u8>> {
     let s = std::str::from_utf8(bytes)?;
     let active: Vec<_> = s
         .lines()
@@ -301,7 +301,7 @@ fn gdm_autologin(bytes: &[u8]) -> Result<Vec<u8>> {
         s.matches("[daemon]").count() == 1,
         "ambiguous GDM daemon section",
     )?;
-    Ok(s.replacen("[daemon]","[daemon]\n# Isolated qualification user; no original account secrets.\nAutomaticLoginEnable=true\nAutomaticLogin=alex\nWaylandEnable=true",1).into_bytes())
+    Ok(s.replacen("[daemon]","[daemon]\n# Isolated qualification user; no original account secrets.\nAutomaticLoginEnable=false\nTimedLoginEnable=true\nTimedLogin=alex\nTimedLoginDelay=20\nWaylandEnable=true",1).into_bytes())
 }
 
 #[derive(Debug)]
@@ -572,6 +572,7 @@ pub fn initialize(
     }
     let passwd = source.read_pin(&inputs.public_passwd, 1024 * 1024)?;
     let group = source.read_pin(&inputs.public_group, 1024 * 1024)?;
+    crate::boot_gdm_proof::validate_public_group(&group)?;
     let (sysusers, account_summary) = native_accounts(&passwd, &group)?;
     let aliases: Aliases =
         serde_json::from_slice(&source.read_pin(&inputs.alias_receipt, 1024 * 1024)?)?;
@@ -624,7 +625,7 @@ pub fn initialize(
         )?;
         let bytes = source.read_pin(&c.input, 1024 * 1024)?;
         let output = if c.guest_path == "/etc/gdm3/custom.conf" {
-            gdm_autologin(&bytes)?
+            gdm_timed_login(&bytes)?
         } else {
             bytes
         };
@@ -659,6 +660,13 @@ pub fn initialize(
         snap_names == SNAP_NAMES.iter().map(|s| (*s).to_owned()).collect(),
         "public Snap dependency set is incomplete",
     )?;
+    let greeter_session = crate::boot_gdm_proof::original_session(&tree)?;
+    for (path, _) in crate::boot_gdm_proof::FILES {
+        ensure(
+            missing(&tree, path)?,
+            "fixture greeter proof is create-only",
+        )?;
+    }
     // Validate every input above before the first mutation. An interrupted run
     // retains its private partial root and cannot silently resume as a new one.
     boot_files::write_new(
@@ -698,7 +706,10 @@ pub fn initialize(
     for (c, bytes) in &configs {
         write_guest(root, &c.guest_path, bytes, c.mode, &mut actions)?;
         actions.push(json!({"operation":"reviewed_public_config","source":c.input,"guest_path":c.guest_path,
-            "output_sha256":fs::digest(bytes),"fixture_change":if c.guest_path=="/etc/gdm3/custom.conf" {"explicit fresh alex autologin and Wayland"} else {"none"}}));
+            "output_sha256":fs::digest(bytes),"fixture_change":if c.guest_path=="/etc/gdm3/custom.conf" {"fresh dynamic greeter then stock 20-second alex timed login and Wayland"} else {"none"}}));
+    }
+    for (path, bytes) in crate::boot_gdm_proof::FILES {
+        write_guest(root, path, bytes, 0o444, &mut actions)?;
     }
     link_guest(
         root,
@@ -989,7 +1000,7 @@ pub fn initialize(
         json!({"schema":"droidloom.native-ubuntu-initialization.v1","root":root,"work":work,"inputs":inputs,"public_input_source":source.evidence(),
         "actions":actions,"native_commands":commands,"accounts":account_summary,"fresh_shadow_locked":true,
         "host_passwords_keys_homes_imported":false,"fresh_ssh":ssh_result,"system_units_enabled":units,
-        "user_units_enabled":USER_UNITS,"snap_mounts_prepared":snaps.iter().map(|(_,_,s)|json!({"name":s.name,"revision":s.revision,"unit":s.unit})).collect::<Vec<_>>(),
+        "user_units_enabled":USER_UNITS,"fresh_greeter_proof_session":greeter_session,"fresh_greeter_proof_files":crate::boot_gdm_proof::FILES.iter().map(|(path,bytes)|json!({"path":path,"bytes":bytes.len(),"sha256":fs::digest(bytes),"mode":0o444})).collect::<Vec<_>>(),"snap_mounts_prepared":snaps.iter().map(|(_,_,s)|json!({"name":s.name,"revision":s.revision,"unit":s.unit})).collect::<Vec<_>>(),
         "snap_state_or_assertions_manufactured":false,"deferred_public_aliases":deferred,
         "native_initialization_complete":true,"guest_started":false,"guest_qualified":false,
         "unresolved_requirements":["Actual joined SELinux/AppArmor enforcing cold boot","Real GDM/Wayland, D-Bus, NetworkManager and SSH sessions","Fresh Snap registration/assertions and native profile generation","Selected-kernel device and Android/userdata/application qualification"]}),
@@ -1021,23 +1032,19 @@ mod tests {
     #[test]
     fn account_generation_rejects_numeric_drift_and_sysusers_expansion() {
         let (p, g) = accounts();
-        assert!(
-            native_accounts(
-                p.replace("alex:x:1000", "alex:x:1001").as_bytes(),
-                g.as_bytes()
-            )
-            .is_err()
-        );
+        assert!(native_accounts(
+            p.replace("alex:x:1000", "alex:x:1001").as_bytes(),
+            g.as_bytes()
+        )
+        .is_err());
         assert!(
             native_accounts(p.replace("/home/alex", "/home/%u").as_bytes(), g.as_bytes()).is_err()
         );
-        assert!(
-            native_accounts(
-                p.replace("root:x:", "root:$6$secret:").as_bytes(),
-                g.as_bytes()
-            )
-            .is_err()
-        );
+        assert!(native_accounts(
+            p.replace("root:x:", "root:$6$secret:").as_bytes(),
+            g.as_bytes()
+        )
+        .is_err());
     }
     #[test]
     fn native_service_trailing_home_separator_preserves_identity() -> Result<()> {
@@ -1057,10 +1064,20 @@ mod tests {
         Ok(())
     }
     #[test]
-    fn gdm_fixture_autologin_requires_reviewed_empty_default_sections() -> Result<()> {
-        let b = gdm_autologin(b"# default\n[daemon]\n[security]\n[debug]\n")?;
-        assert!(std::str::from_utf8(&b)?.contains("AutomaticLogin=alex"));
-        assert!(gdm_autologin(b"[daemon]\nAutomaticLogin=real\n[security]\n[debug]\n").is_err());
+    fn gdm_fixture_timed_login_requires_reviewed_empty_default_sections() -> Result<()> {
+        let b = gdm_timed_login(b"# default\n[daemon]\n[security]\n[debug]\n")?;
+        let text = std::str::from_utf8(&b)?;
+        for required in [
+            "AutomaticLoginEnable=false",
+            "TimedLoginEnable=true",
+            "TimedLogin=alex",
+            "TimedLoginDelay=20",
+            "WaylandEnable=true",
+        ] {
+            assert!(text.lines().any(|line| line == required));
+        }
+        assert!(!text.lines().any(|line| line.starts_with("AutomaticLogin=")));
+        assert!(gdm_timed_login(b"[daemon]\nAutomaticLogin=real\n[security]\n[debug]\n").is_err());
         Ok(())
     }
     #[test]

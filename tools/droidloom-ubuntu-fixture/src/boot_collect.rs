@@ -1,14 +1,14 @@
 //! Read original native journals only after the owned VM has been reaped.
 //! Filesystem recovery always acts on a new independent copy of its ended disk.
 use crate::{
-    Result,
     boot_child::OwnedChild,
     boot_files::{self, FilePin},
     ensure, fs,
     model::Identity,
+    Result,
 };
 use serde::{Deserialize, Serialize};
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use std::{
     collections::BTreeSet,
     io::{BufRead, BufReader, Read},
@@ -756,6 +756,44 @@ fn collect(
             high_priority.push(row.clone());
         }
     }
+    let mut greeter_proof_files = Vec::new();
+    let mut greeter_source_verified = verified;
+    for (index, (path, bytes)) in crate::boot_gdm_proof::FILES.iter().enumerate() {
+        let observed = dump_regular(
+            plan,
+            work,
+            &replay,
+            path,
+            &format!("greeter-proof-source-{index}"),
+            0o444,
+            65536,
+            &mut directory_index,
+        )?;
+        let matches = observed
+            .as_ref()
+            .is_some_and(|pin| pin.bytes == bytes.len() as u64 && pin.sha256 == fs::digest(bytes));
+        greeter_source_verified &= matches;
+        greeter_proof_files
+            .push(json!({"path":path,"observed":observed,"matches_frozen_source":matches}));
+    }
+    let timed_config = dump_regular(
+        plan,
+        work,
+        &replay,
+        crate::boot_gdm_proof::CONFIG,
+        "greeter-timed-login-config",
+        0o644,
+        65536,
+        &mut directory_index,
+    )?;
+    let timed_config_verified = if let Some(pin) = &timed_config {
+        crate::boot_gdm_proof::timed_config_valid(&boot_files::read_pin(pin, 65536)?)
+    } else {
+        false
+    };
+    greeter_source_verified &= timed_config_verified;
+    let greeter_proof =
+        crate::boot_gdm_proof::journal_evidence(&all_rows, &boot_ids, greeter_source_verified);
     let ordinary_shutdown =
         ended["exit_code"] == 0 && ended["signal"].is_null() && ended["forced_stop"] == false;
     let calibration_proven = verified
@@ -771,6 +809,8 @@ fn collect(
         "capture_matches_selected_android":selected_capture,
         "calibration_service":capture_identity,"calibration_capture_proven":calibration_proven,
         "ordinary_guest_shutdown":ordinary_shutdown,"boot_ids":boot_ids,
+        "greeter_proof_source_files":greeter_proof_files,"greeter_timed_login_config":timed_config,
+        "greeter_timed_login_config_verified":timed_config_verified,"dynamic_greeter_environment":greeter_proof,
         "systemd_failed_jobs":failures,"mac_denials":denials,"priority_error_records":high_priority,
         "journal_entries":all_rows.len(),"ended_working_disk_preserved":true,
         "guest_qualified":false,"production_ready":false,
