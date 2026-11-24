@@ -7,6 +7,8 @@
 package com.android.droidloom.input;
 
 import android.graphics.Rect;
+import android.net.Credentials;
+import android.net.LocalSocket;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
@@ -15,7 +17,6 @@ import android.os.ServiceManager;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.system.OsConstants;
-import android.system.StructUcred;
 import org.droidloom.frontend.IFrontendChannels;
 import android.util.Log;
 import android.view.InputDevice;
@@ -156,10 +157,14 @@ public final class InputBridge {
                 final ParcelFileDescriptor[] proof = ParcelFileDescriptor.createSocketPair(OsConstants.SOCK_SEQPACKET);
                 try (ParcelFileDescriptor caller = proof[0];
                         ParcelFileDescriptor lifetime = proof[1];
-                        ParcelFileDescriptor channel = channels.openInputChannel(caller)) {
-                    final StructUcred peer = Os.getsockoptUcred(
-                            channel.getFileDescriptor(), OsConstants.SOL_SOCKET, OsConstants.SO_PEERCRED);
-                    if (peer.pid <= 0 || peer.uid != 1000 || peer.gid != 1000
+                        ParcelFileDescriptor channel = channels.openInputChannel(caller);
+                        LocalSocket endpoint = new LocalSocket(channel.getFileDescriptor())) {
+                    // This wrapper borrows the same Binder-transferred descriptor. Its close()
+                    // never closes the ParcelFileDescriptor, and peer credentials still come
+                    // directly from the kernel SO_PEERCRED on that connected endpoint.
+                    final Credentials peer = endpoint.getPeerCredentials();
+                    if (peer == null || peer.getPid() <= 0
+                            || peer.getUid() != 1000 || peer.getGid() != 1000
                             || Os.getsockoptInt(channel.getFileDescriptor(), OsConstants.SOL_SOCKET,
                                     OsConstants.SO_TYPE) != OsConstants.SOCK_SEQPACKET) {
                         throw new IllegalStateException("Composer Binder returned a different endpoint");
