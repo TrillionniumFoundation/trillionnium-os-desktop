@@ -18,6 +18,8 @@ use std::os::fd::{AsFd, AsRawFd, FromRawFd, OwnedFd};
 use std::os::unix::fs::MetadataExt;
 use std::time::{Duration, Instant};
 
+#[path = "production_early_image_custody.rs"]
+mod image_custody;
 #[path = "production_early_task_control.rs"]
 mod task_control;
 pub(crate) use task_control::{EarlyTaskControlEndpoint, EarlyTaskControlPeer};
@@ -390,6 +392,7 @@ pub(crate) struct EarlyApplicationAuthority<'a> {
     owner: &'a RuntimeMacOwner,
     root: &'a File,
     query: &'a EarlyQueryResources,
+    images: &'a crate::production_mounts::PreparedMounts,
     proc_root: File,
     namespaces: Vec<File>,
     init: Process,
@@ -417,6 +420,7 @@ impl<'a> EarlyApplicationAuthority<'a> {
         owner: &'a RuntimeMacOwner,
         root: &'a File,
         query: &'a EarlyQueryResources,
+        images: &'a crate::production_mounts::PreparedMounts,
         progress: &'a dyn Fn() -> io::Result<()>,
     ) -> Result<Self> {
         retirement_checked(Ok(()))?;
@@ -464,6 +468,7 @@ impl<'a> EarlyApplicationAuthority<'a> {
             owner,
             root,
             query,
+            images,
             proc_root,
             namespaces,
             init,

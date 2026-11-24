@@ -936,6 +936,7 @@ pub fn make_root_image(
         "/usr/lib/droidloom/production/current/droidloom-board-init",
         "/usr/lib/droidloom/production/current/droidloomd",
         "/usr/lib/droidloom/production/current/board-devices/console",
+        "/usr/lib/droidloom/production/current/board-devices/kmsg",
         "/usr/lib/droidloom/production/current/board-devices/null",
         "/usr/lib/droidloom/production/current/board-devices/full",
         "/usr/bin/droidloomctl",

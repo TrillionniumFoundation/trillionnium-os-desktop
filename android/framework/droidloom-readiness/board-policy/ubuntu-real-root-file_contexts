@@ -6,6 +6,7 @@
 /usr/lib/droidloom/production/current/droidloom-board-init -- u:object_r:p4_linux_early_exec_t:s0
 /usr/lib/droidloom/production/current/board-devices -d u:object_r:p4_linux_rootdir_t:s0
 /usr/lib/droidloom/production/current/board-devices/console -c u:object_r:p4_linux_console_t:s0
+/usr/lib/droidloom/production/current/board-devices/kmsg -c u:object_r:kmsg_device:s0
 /usr/lib/droidloom/production/current/board-devices/(null|full) -c u:object_r:p4_linux_standardio_t:s0
 /etc/systemd -d u:object_r:p4_linux_rootdir_t:s0
 /etc/systemd/system -d u:object_r:p4_linux_unit_directory_t:s0

@@ -297,6 +297,7 @@ fn board_devices(root: &Path) -> Result<()> {
         entries
             == std::collections::BTreeMap::from([
                 ("console".into(), (0o600, 5, 1)),
+                ("kmsg".into(), (0o600, 1, 11)),
                 ("null".into(), (0o666, 1, 3)),
                 ("full".into(), (0o666, 1, 7)),
             ]),

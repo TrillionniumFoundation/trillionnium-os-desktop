@@ -9,7 +9,6 @@ use std::{
     io::{BufRead, BufReader, Read, Write},
     os::unix::{net::UnixStream, process::ExitStatusExt},
     path::{Path, PathBuf},
-    process::{Command, Stdio},
     time::{Duration, Instant},
 };
 
@@ -28,7 +27,8 @@ pub struct RunPlan {
 
 fn qmp(path: &Path, command: &str) -> Result<Value> {
     ensure(
-        ["system_powerdown", "query-status"].contains(&command),
+        ["system_powerdown", "query-status", "cont"].contains(&command)
+            || (cfg!(test) && ["query-cpus-fast", "query-kvm", "quit"].contains(&command)),
         "unsupported monitor operation",
     )?;
     let stream = UnixStream::connect(path)?;
@@ -83,6 +83,38 @@ fn qmp_line(reader: &mut BufReader<UnixStream>, deadline: Instant) -> Result<Val
     Ok(serde_json::from_slice(&line)?)
 }
 
+fn admit_paused_qemu(
+    child: &mut crate::boot_child::OwnedChild,
+    launch: &crate::boot_qemu::Launch,
+    monitor: &Path,
+) -> Result<Value> {
+    let deadline = Instant::now() + Duration::from_secs(30);
+    loop {
+        if let Some(status) = child.try_wait()? {
+            return Err(format!("QEMU exited before its paused launch admission: {status}").into());
+        }
+        if let Ok(status) = qmp(monitor, "query-status") {
+            ensure(
+                status["return"]["running"] == false
+                    && ["prelaunch", "paused"]
+                        .contains(&status["return"]["status"].as_str().unwrap_or("")),
+                "QEMU ran guest CPUs before privilege admission",
+            )?;
+            let process = launch.admit_process(child.id())?;
+            return Ok(json!({
+                "schema":"droidloom.qemu-paused-launch-admitted.v1",
+                "launcher":launch.receipt,"actual_process":process,"qmp":status,
+                "guest_cpus_started":false,"guest_qualified":false,"production_ready":false
+            }));
+        }
+        ensure(
+            Instant::now() < deadline,
+            "QEMU did not reach its bounded paused launch gate",
+        )?;
+        std::thread::sleep(Duration::from_millis(50));
+    }
+}
+
 fn known_host(root: &Path, run: &Path, port: u16) -> Result<FilePin> {
     let source = boot_files::pin_file(&root.join("etc/ssh/ssh_host_ed25519_key.pub"))?;
     let bytes = boot_files::read_pin(&source, 4096)?;
@@ -109,7 +141,9 @@ fn cpu_budget_allowed(cpus: usize, available: usize) -> bool {
     // The production guest has the same fixed 24-CPU geometry as the board.
     // Qualification still leaves at least two actual host CPUs available.
     (2..=24).contains(&cpus)
-        && cpus.checked_add(2).is_some_and(|required| required <= available)
+        && cpus
+            .checked_add(2)
+            .is_some_and(|required| required <= available)
 }
 
 pub fn run(config: &Path, expected: &str) -> Result<()> {
@@ -198,6 +232,7 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
         monitor.as_os_str().len() < 104,
         "private QMP pathname exceeds Unix socket limit",
     )?;
+    let launch = crate::boot_qemu::Launch::prepare(&run, &disk, &kernel, &initrd, &monitor)?;
     let unit = if prepared["calibration_requested"] == true {
         "droidloom-calibration-qualification.target"
     } else {
@@ -213,9 +248,9 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
     let cmdline = format!(
         "console=ttyS0,115200 root=UUID={uuid} rootfstype=ext4 rw rootwait loglevel=7 enforcing=1 audit_backlog_limit=32768 lsm=lockdown,capability,landlock,yama,selinux,apparmor,bpf,ima,evm audit=1 init=/usr/lib/droidloom/production/current/droidloom-board-init systemd.unit={unit} systemd.log_target=journal-or-kmsg systemd.show_status=1 systemd.log_level=info"
     );
-    let mut args = vec![
-        "-accel".into(),
-        "kvm".into(),
+    let mut args = launch.fixed_args();
+    args.extend(vec![
+        "-S".into(),
         "-machine".into(),
         "q35".into(),
         "-cpu".into(),
@@ -233,19 +268,14 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
         "-no-reboot".into(),
         "-monitor".into(),
         "none".into(),
-        "-qmp".into(),
-        format!("unix:{},server=on,wait=off", monitor.display()),
         "-kernel".into(),
-        kernel.path.to_string_lossy().into(),
+        launch.kernel_path(),
         "-initrd".into(),
-        initrd.path.to_string_lossy().into(),
+        launch.initrd_path(),
         "-append".into(),
         cmdline,
         "-drive".into(),
-        format!(
-            "if=none,id=guest,format=raw,cache=writethrough,file={}",
-            disk.display()
-        ),
+        "if=none,id=guest,format=raw,cache=writethrough,file=/dev/fdset/2".into(),
         "-device".into(),
         "virtio-blk-pci,drive=guest".into(),
         "-device".into(),
@@ -256,11 +286,7 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
         "intel-hda".into(),
         "-device".into(),
         "hda-duplex".into(),
-        "-run-with".into(),
-        "user=nobody".into(),
-        "-sandbox".into(),
-        "on,obsolete=deny,elevateprivileges=deny,spawn=deny,resourcecontrol=deny".into(),
-    ];
+    ]);
     let nic = if plan.network {
         match plan.ssh_port {
             Some(port) => format!("user,model=virtio-net-pci,hostfwd=tcp:127.0.0.1:{port}-:22"),
@@ -270,23 +296,15 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
         "none".into()
     };
     args.extend(["-nic".into(), nic]);
-    let qemu = boot_files::pin_file(Path::new("/usr/bin/qemu-system-x86_64"))?;
-    let mut command = Command::new(&qemu.path);
-    command
-        .args(&args)
-        .env_clear()
-        .env("PATH", "/usr/sbin:/usr/bin:/sbin:/bin")
-        .env("LC_ALL", "C.UTF-8")
-        .stdin(Stdio::null())
-        .stdout(Stdio::from(output.try_clone()?))
-        .stderr(Stdio::from(output));
-    let mut child = crate::boot_child::OwnedChild::spawn(&mut command)?;
+    let qemu = launch.qemu.clone();
+    let mut child = launch.spawn(&args, &output)?;
     let started = Instant::now();
     let attempt = (|| -> Result<(std::process::ExitStatus, bool)> {
         fs::write_json(
             &fs::absolute_string(&run.join("RUNNING.json"))?,
             &json!({
         "pid":child.id(),"program":qemu,"args":args,"known_hosts":known,
+        "fixed_descriptor_launcher":launch.receipt,
         "fresh_client_key":work.join("fixture-ssh-client-key"),
         "private_qmp":monitor,"working_disk":disk,"original_userdata_opened":false,
         "preserved_source_image":source,"source_identity":source_identity,
@@ -299,6 +317,15 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
         "ssh_port":plan.ssh_port,"guest_qualified":false})
         );
         std::io::stdout().flush()?;
+        let admission = admit_paused_qemu(&mut child, &launch, &monitor)?;
+        fs::write_json(
+            &fs::absolute_string(&run.join("QEMU-ADMITTED.json"))?,
+            &admission,
+            0,
+        )?;
+        // Guest CPUs remain stopped until the actual original executable,
+        // unprivileged credentials and the unchanged full sandbox are checked.
+        qmp(&monitor, "cont")?;
         let mut power_attempt = None;
         let mut forced = false;
         let status = loop {
@@ -418,6 +445,84 @@ mod tests {
         assert!(qmp_line(&mut reader, Instant::now() - Duration::from_millis(1)).is_err());
         output.write_all(&vec![b'x'; 65537])?;
         assert!(qmp_line(&mut reader, Instant::now() + Duration::from_secs(1)).is_err());
+        Ok(())
+    }
+    #[test]
+    #[ignore = "requires explicit root/KVM execution; starts no vCPU or guest"]
+    fn actual_fixed_descriptor_qemu_launch_has_no_privileges_or_guest_cpus() -> Result<()> {
+        ensure(
+            rustix::process::geteuid().as_raw() == 0,
+            "explicit root probe required",
+        )?;
+        let run = tempfile::Builder::new()
+            .prefix("r126-qemu-fd-")
+            .tempdir_in("/var/lib/droidloom-qualification")?
+            .keep();
+        let material = run.join("public-input");
+        boot_files::write_new(&material, b"fixed public probe bytes\n", 0o400)?;
+        let pin = boot_files::pin_file(&material)?;
+        let disk = run.join("working.ext4");
+        let file = boot_files::new_file(&disk, 0o600)?;
+        file.set_len(2 * 1024 * 1024)?;
+        file.sync_all()?;
+        drop(file);
+        let output = boot_files::new_file(&run.join("stderr"), 0o600)?;
+        let monitor = run.join("qmp.sock");
+        let launch = crate::boot_qemu::Launch::prepare(&run, &disk, &pin, &pin, &monitor)?;
+        let mut args = launch.fixed_args();
+        args.extend([
+            "-machine".into(),
+            "none".into(),
+            "-nodefaults".into(),
+            "-S".into(),
+            "-display".into(),
+            "none".into(),
+            "-serial".into(),
+            "none".into(),
+            "-monitor".into(),
+            "none".into(),
+            "-nic".into(),
+            "none".into(),
+            "-drive".into(),
+            "if=none,id=guest,format=raw,cache=writethrough,file=/dev/fdset/2".into(),
+            "-blockdev".into(),
+            format!(
+                "driver=file,node-name=readonly-input,filename={},read-only=on",
+                launch.kernel_path()
+            ),
+        ]);
+        let mut child = launch.spawn(&args, &output)?;
+        let admission = admit_paused_qemu(&mut child, &launch, &monitor)?;
+        let cpus = qmp(&monitor, "query-cpus-fast")?;
+        ensure(
+            cpus["return"] == json!([]),
+            "mechanism probe unexpectedly created vCPUs",
+        )?;
+        let kvm = qmp(&monitor, "query-kvm")?;
+        ensure(
+            kvm["return"]["enabled"] == true,
+            "fixed KVM fdset did not initialize",
+        )?;
+        qmp(&monitor, "quit")?;
+        let deadline = Instant::now() + Duration::from_secs(5);
+        let exit = loop {
+            if let Some(status) = child.try_wait()? {
+                break status;
+            }
+            ensure(Instant::now() < deadline, "mechanism QEMU did not retire")?;
+            std::thread::sleep(Duration::from_millis(20));
+        };
+        ensure(exit.success(), "mechanism QEMU did not exit normally")?;
+        let receipt = run.join("RESULT.json");
+        let digest = fs::write_json(
+            &fs::absolute_string(&receipt)?,
+            &json!({
+                "admission":admission,"cpus":cpus,"kvm":kvm,
+                "exit_code":exit.code(),"guest_booted":false,"passed":true
+            }),
+            0,
+        )?;
+        println!("{}", json!({"receipt":receipt,"sha256":digest}));
         Ok(())
     }
 }

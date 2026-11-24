@@ -208,12 +208,12 @@ impl EarlyApplicationControl {
                     progress.report(
                         "Reading the current Android package and exact installed APK bytes...",
                     );
-                    let inspection =
-                        crate::production_application::inspect_early(authority, &package, user)
-                            .map_err(|e| {
-                                early_application_error(e, &mut acquisition_quarantined)
-                            })?;
-                    response.inspection = Some(inspection);
+                    let inspection = crate::production_application::inspect_with_custody_early(
+                        authority, &package, user,
+                    )
+                    .map_err(|e| early_application_error(e, &mut acquisition_quarantined))?;
+                    response.image_custody = inspection.image_custody;
+                    response.inspection = Some(inspection.application);
                     response.message = "Current package metadata and APK bytes observed in the original early Android generation; application acceptance remains pending".into();
                 }
                 ControlRequest::Launch {

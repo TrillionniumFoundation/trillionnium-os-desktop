@@ -2,6 +2,7 @@
 #define _GNU_SOURCE
 #include "board.h"
 #include "board_policy.h"
+#include "boot_diagnostics.h"
 #include "linux_run_label.h"
 
 #include <errno.h>
@@ -338,6 +339,9 @@ static int activate(int argc, char **argv)
     int selected = droidloom_post_switch_read_plan(&plan);
     if (selected <= 0)
         return selected < 0 ? -1 : fail(ENODEV);
+    operation = "hold the original pre-policy kernel diagnostic descriptor";
+    if (droidloom_boot_diagnostics_prepare() < 0)
+        return -1;
     char **next = calloc((size_t)argc + 2, sizeof(*next));
     if (!next)
         return -1;
@@ -381,6 +385,6 @@ int main(int argc, char **argv)
     else
         activate(argc, argv);
     int error = errno;
-    fprintf(stderr, "Droidloom real-root Linux PID 1 failed to %s: %s\n", operation, strerror(error));
+    droidloom_boot_diagnostics_report(DROIDLOOM_DIAGNOSTIC_PID1, operation, error);
     return 1;
 }

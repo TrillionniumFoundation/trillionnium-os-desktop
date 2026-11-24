@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #define _GNU_SOURCE
 #include "board_policy.h"
+#include "boot_diagnostics.h"
 #include "apparmor_epoch.h"
 #include "linux_run_label.h"
 #include "device_source.h"
@@ -308,7 +309,7 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
     if (status >= 0) close(status);
     if (epoch_directory >= 0) close(epoch_directory);
     if (rc < 0)
-        fprintf(stderr, "Droidloom early policy failed to %s: %s\n", stage, strerror(error));
+        droidloom_boot_diagnostics_report(DROIDLOOM_DIAGNOSTIC_POLICY, stage, error);
     if (paths.readiness.fd >= 0)
         close(paths.readiness.fd);
     if (paths.handoff.fd >= 0)

@@ -17,7 +17,7 @@ use thiserror::Error;
 
 #[path = "production_application_custody.rs"]
 mod custody;
-pub(crate) use custody::{ProductionInspection, inspect_with_custody};
+pub(crate) use custody::{ProductionInspection, inspect_with_custody, inspect_with_custody_early};
 
 #[path = "production_application_workflow.rs"]
 mod workflow;
