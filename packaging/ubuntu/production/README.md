@@ -122,3 +122,79 @@ alex NOPASSWD policy is not modified by this component.
 A previous normal public host archive may exercise the Debian packaging
 mechanism. Such a result identifies that old commit and is never relabeled a
 new production release. No success receipt is rewritten.
+
+## Normal public kernel and Android Debian components
+
+The source-owned cold_publish.py adds two ordinary packaging commands. The kernel
+plan is droidloom-normal-kernel-deb-plan-v1 with one publication FilePin. The
+Android plan is droidloom-normal-android-deb-plan-v1 with one handoff FilePin.
+The normal kernel publisher's exact completed manifest binds all 6,797 original
+signed modules and 15 indexes; this command verifies every original byte before
+packaging. It does not export the signing private key. The Android input is the
+exact completed normal R10 four-image/v2-query/device-bank handoff. It contains
+no userdata or metadata image and has no install-session or activation claim.
+
+~~~sh
+python3 packaging/ubuntu/production/cold_publish.py pack-kernel \
+  --plan /absolute/KERNEL-DEB-PLAN.json --output /absolute/fresh-kernel-output
+python3 packaging/ubuntu/production/cold_publish.py pack-android \
+  --plan /absolute/ANDROID-DEB-PLAN.json --output /absolute/fresh-android-output
+~~~
+
+Both normal packages have root-owned payloads and only control/md5sums control
+members. Complete ordinary extraction checks every payload digest and mode.
+The kernel retains xz; the multi-GiB raw Android image package uses stock dpkg
+zstd with one compressor thread and the same bounded deadline. SELinux labels
+are not claimed to survive Debian data archives: the four query inputs preserve
+the original installation requirements and must receive the exact original
+labels, ownership, modes, absence of capabilities, and actual readback during
+the eventual cold installation.
+
+## Create-only cold transaction preparation
+
+cold_transaction.py preflight is a readonly original-Pocket4 check. It requires
+the original 7.0.14-p4cred1 boot, initial user namespace, actual PID1 root, and
+the original ext4 root/boot UUID 01c27223-3933-481e-9836-7bd0ef1be8c9. It hashes
+only the fixed public boot/tool files. Account databases, SSH configuration,
+and the alex home are observed through metadata only; their contents are not
+copied. The sole output must be a create-only COLD-PREFLIGHT-*.json inside the
+fixed public evidence directory. It does not inspect original Android data.
+
+~~~sh
+sudo python3 packaging/ubuntu/production/cold_transaction.py preflight \
+  --output /home/alex/work/p4-native-maintenance-cutover-516eec-r1/COLD-PREFLIGHT-r1.json
+python3 packaging/ubuntu/production/cold_transaction.py prepare \
+  --plan /absolute/COLD-PLAN.json --output /absolute/fresh-candidate
+~~~
+
+The cold plan has schema droidloom-cold-release-preparation-v1, exactly three
+components (host/kernel/android normal result FilePins), and one target_preflight
+FilePin. Preparation checks the source-bound host manifest, completed normal
+kernel/Android cohorts, real Debian control archives, and all original package
+bytes. The flat release directory is compatible with the fixed maintenance
+verify command after a later protected import. RELEASE.json always says
+qualified=false; its exact bytes define the release identifier.
+
+The candidate includes a separate stock GRUB menu entry and source generator.
+The original Ubuntu entry remains the default, with a visible recovery menu.
+No generator is executed or installed by preparation. The new entry explicitly
+keeps both SELinux and AppArmor enforcing, selects the published board-init,
+and references an independent new initramfs path. That initramfs must later be
+built through the actual original host's normal initramfs mechanism, with the
+same selected public libraries/host/kernel and complete readback. A qualification
+VM's fresh filesystem or initramfs is not silently used as the physical root.
+
+COLD-INTENT.json lists the unresolved acceptance and publication gates. Missing
+maintenance payloads in an older, otherwise valid normal host are reported
+explicitly. The current activate interface verifies the candidate and then
+fails closed: no admitted verifier yet connects the actual owned full-guest
+acceptance, original-device private working-copy acceptance, native candidates,
+full host labels, selected-data/five-file MAC publication, and actual maintenance
+return to the original Ubuntu. There is no caller-supplied pass flag. Future
+integration must consume those real records and preserve their identity chain;
+it must not edit this list or a receipt to manufacture acceptance.
+
+This component deliberately contains no dpkg installation, physical relabel,
+service enable, GRUB update, one-shot boot selection, or reboot action.
+The transaction is reviewable preparation. Physical publication remains blocked
+by the actual acceptance gates and is not claimed complete by these build tests.
