@@ -228,12 +228,71 @@ impl Drop for Stream {
     }
 }
 
+// Shared color buffers have no pathname and cannot acquire executable mode.
+// NOEXEC_SEAL is a required Linux 6.18 ABI, never a fallback to a disk file.
+fn shared_memory_file() -> io::Result<std::fs::File> {
+    use std::os::fd::{AsRawFd, FromRawFd};
+    use std::os::unix::fs::PermissionsExt;
+    const MFD_NOEXEC_SEAL: libc::c_uint = 0x0008;
+    const F_SEAL_EXEC: libc::c_int = 0x0020;
+    // SAFETY: the constant is NUL-terminated and a successful call returns a new FD.
+    let fd = unsafe {
+        libc::memfd_create(
+            c"droidloom-native-shm".as_ptr(),
+            libc::MFD_CLOEXEC | libc::MFD_ALLOW_SEALING | MFD_NOEXEC_SEAL,
+        )
+    };
+    if fd < 0 {
+        return Err(io::Error::last_os_error());
+    }
+    // SAFETY: this function owns the new descriptor exactly once.
+    let file = unsafe { std::fs::File::from_raw_fd(fd) };
+    // SAFETY: F_GET_SEALS takes no additional pointer or argument.
+    let seals = unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GET_SEALS) };
+    if seals < 0 {
+        return Err(io::Error::last_os_error());
+    }
+    if seals & F_SEAL_EXEC == 0 || file.metadata()?.permissions().mode() & 0o111 != 0 {
+        return Err(io::Error::new(
+            io::ErrorKind::Unsupported,
+            "native shared memory must be sealed against executable mode",
+        ));
+    }
+    Ok(file)
+}
+
+#[cfg(test)]
+mod confined_native_memory_tests {
+    use super::shared_memory_file;
+    use std::io::{Read, Seek, SeekFrom, Write};
+    use std::os::fd::AsRawFd;
+    use std::os::unix::fs::PermissionsExt;
+
+    #[test]
+    fn confined_native_memory_keeps_shm_io_and_forbids_executable_mode() {
+        let mut file = shared_memory_file().unwrap();
+        file.write_all(&0x11223344_u32.to_ne_bytes()).unwrap();
+        file.set_len(4096).unwrap();
+        file.seek(SeekFrom::Start(0)).unwrap();
+        let mut pixel = [0_u8; 4];
+        file.read_exact(&mut pixel).unwrap();
+        assert_eq!(pixel, 0x11223344_u32.to_ne_bytes());
+        assert_eq!(file.metadata().unwrap().len(), 4096);
+        // SAFETY: the live descriptor names only this test's anonymous inode.
+        assert_eq!(unsafe { libc::fchmod(file.as_raw_fd(), 0o700) }, -1);
+        assert_eq!(std::io::Error::last_os_error().raw_os_error(), Some(libc::EPERM));
+        assert_eq!(file.metadata().unwrap().permissions().mode() & 0o111, 0);
+        // SAFETY: F_GETFD takes no pointer or additional argument.
+        assert_ne!(unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GETFD) } & libc::FD_CLOEXEC, 0);
+    }
+}
+
 fn pixel(
     globals: &Globals,
     qh: &QueueHandle<App>,
     color: u32,
 ) -> Result<wl_buffer::WlBuffer, PresenterError> {
-    let mut file = tempfile::tempfile()?;
+    let mut file = shared_memory_file()?;
     file.write_all(&color.to_ne_bytes())?;
     let pool = globals.shm.create_pool(file.as_fd(), 4, qh, ());
     let buffer = pool.create_buffer(0, 1, 1, 4, wl_shm::Format::Argb8888, qh, ());
@@ -265,7 +324,7 @@ fn carrier(
         .and_then(|stride| stride.checked_mul(height))
         .and_then(|bytes| i32::try_from(bytes).ok())
         .ok_or(PresenterError::Configuration("layer root buffer too large"))?;
-    let file = tempfile::tempfile()?;
+    let file = shared_memory_file()?;
     file.set_len(bytes as u64)?;
     let pool = globals.shm.create_pool(file.as_fd(), bytes, qh, ());
     let buffer = pool.create_buffer(

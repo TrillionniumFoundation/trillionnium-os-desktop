@@ -133,9 +133,7 @@ impl Clipboard {
         wake.set_nonblocking(true)?;
         notify.set_nonblocking(true)?;
         let (tx, rx) = mpsc::sync_channel(32);
-        let session = fs::read_to_string("/proc/sys/kernel/random/uuid")?
-            .trim()
-            .replace('-', "");
+        let session = random_session_id()?;
         Ok(Self {
             backend: Backend::new(globals, qh),
             ready: true,
@@ -473,6 +471,40 @@ impl Drop for Clipboard {
     }
 }
 
+// Generate the session nonce without opening global procfs paths. The native
+// presenter only needs its own process metadata, not kernel proc file access.
+fn random_session_id() -> io::Result<String> {
+    let mut bytes = [0_u8; 16];
+    let mut filled = 0;
+    while filled < bytes.len() {
+        // SAFETY: the unwritten tail is valid writable storage for this call.
+        let count = unsafe {
+            libc::getrandom(
+                bytes[filled..].as_mut_ptr().cast(),
+                bytes.len() - filled,
+                0,
+            )
+        };
+        if count < 0 {
+            let error = io::Error::last_os_error();
+            if error.kind() == io::ErrorKind::Interrupted {
+                continue;
+            }
+            return Err(error);
+        }
+        if count == 0 {
+            return Err(io::Error::new(io::ErrorKind::UnexpectedEof, "empty random source"));
+        }
+        filled += count as usize;
+    }
+    use std::fmt::Write as _;
+    let mut id = String::with_capacity(32);
+    for byte in bytes {
+        write!(&mut id, "{byte:02x}").expect("writing to String cannot fail");
+    }
+    Ok(id)
+}
+
 fn pipe() -> io::Result<(File, File)> {
     let mut fds = [-1; 2];
     // SAFETY: storage holds exactly the two output descriptors; both are owned below.
@@ -704,6 +736,14 @@ fn write_offer(c: &Clip, mime: &str, fd: OwnedFd) -> io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn confined_native_clipboard_nonce_preserves_protocol_shape() {
+        let first = random_session_id().unwrap();
+        let second = random_session_id().unwrap();
+        assert_eq!(first.len(), 32);
+        assert!(first.bytes().all(|b| b.is_ascii_hexdigit()));
+        assert_ne!(first, second);
+    }
     fn input(dir: &tempfile::TempDir, bytes: &[u8]) -> File {
         let mut f = tempfile::NamedTempFile::new_in(dir.path()).unwrap();
         f.write_all(bytes).unwrap();

@@ -308,6 +308,29 @@ def verify_host_control(library, binary, export):
             check(subject, obj("p4_linux_native_ipc_memfd_t"), kind, ["getattr", "read", "write", "map"], True)
             check(subject, obj("p4_linux_native_ipc_memfd_t"), kind, ["execute", "relabelto", "relabelfrom"], False)
 
+    # Real presenter scratch uses its declared native RuntimeDirectory and
+    # anonymous NOEXEC SHM, never generic session home/tmp or global proc UUID.
+    runtime = obj("droidloom_presenter_runtime")
+    user_executor = "u:system_r:p4_linux_user_executor_t:s0"
+    check(user_executor, user_executor, "process", ["setfscreate"], True)
+    for subject in [presenter, user_executor]:
+        check(subject, runtime, "dir", ["getattr", "search", "open", "read", "create", "write", "add_name", "setattr"], True)
+    check(presenter, runtime, "file", ["getattr", "create", "open", "read", "write", "unlink"], True)
+    for kind in ["file", "memfd_file"]:
+        check(presenter, obj("p4_linux_native_ipc_memfd_t"), kind, ["create", "open", "read", "write", "map"], True)
+    for subject in [session, portal]:
+        check(subject, runtime, "file", ["getattr", "open", "read", "map"], True)
+        check(subject, runtime, "file", ["create", "write", "append", "setattr", "unlink"], False)
+    for subject in [user_manager, manager, setup]:
+        check(subject, runtime, "dir", ["getattr", "search", "open", "read", "write", "remove_name", "rmdir"], True)
+        check(subject, runtime, "file", ["getattr", "unlink"], True)
+        check(subject, runtime, "file", ["open", "read", "write", "create", "map"], False)
+    for subject in [broker, client, helper, "u:r:init:s0", "u:r:untrusted_app:s0"]:
+        check(subject, runtime, "dir", ["search", "open", "read", "write", "create"], False)
+        check(subject, runtime, "file", ["getattr", "open", "read", "write", "create", "map", "execute"], False)
+    for target in ["p4_linux_user_home_t", "p4_linux_tmp_t"]:
+        check(presenter, obj(target), "file", ["open", "read", "write", "create", "map", "execute"], False)
+
     lines = export_binary_policy(policy, binary, export)
     transitions = [
         '(typetransition p4_linux_setup_t droidloom_public_apk_root dir "u1000" droidloom_public_apk_dir)',
@@ -334,6 +357,9 @@ def verify_host_control(library, binary, export):
         f'(typetransition {actor} p4_linux_user_run_t sock_file "{name}" {label})'
         for actor in ["p4_linux_user_manager_t", "p4_linux_audio_t"]
         for name, label in [("pipewire-0", "p4_linux_pipewire_socket_t"), ("pipewire-0-manager", "p4_linux_pipewire_manager_socket_t")])
+    transitions.extend(
+        f'(typetransition {actor} p4_linux_user_run_t dir "droidloom" droidloom_presenter_runtime)'
+        for actor in ["p4_linux_user_executor_t", "droidloom_presenter"])
     missing = [line for line in transitions if line not in lines]
     if missing:
         raise ValueError("Linked binary lacks exact automatic transitions: " + repr(missing))
@@ -385,6 +411,7 @@ def main():
         "linux-application-roles.cil", "linux-install-catalog.cil",
         "ubuntu-dbus.cil", "ubuntu-native-selinux-query.cil",
         "ubuntu-native-pam.cil", "ubuntu-native-session-storage.cil", "ubuntu-native-session-ipc.cil",
+        "ubuntu-presenter-runtime.cil",
         "linux-package-maintenance.cil", "linux-public-control.cil",
     )
     components = [here / name for name in component_names]

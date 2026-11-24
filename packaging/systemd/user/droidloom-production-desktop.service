@@ -12,6 +12,9 @@ ExecStart=/usr/bin/droidloom-wayland --production
 Environment=DROIDLOOM_MODE=desktop
 NoNewPrivileges=yes
 UMask=0077
+RuntimeDirectory=droidloom
+RuntimeDirectoryMode=0700
+RuntimeDirectoryPreserve=no
 KillMode=control-group
 Restart=on-failure
 RestartSec=10s
