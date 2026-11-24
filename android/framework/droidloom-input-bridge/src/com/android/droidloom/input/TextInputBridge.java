@@ -31,7 +31,7 @@ final class TextInputBridge {
                             .getMethod("getPackageUid", String.class, long.class, int.class)
                             .invoke(packages, "com.android.droidloom.ime", 0L, 0);
                     if (ime.getPeerCredentials().getUid() != expectedUid) continue;
-                    host.connect(new LocalSocketAddress("/dev/socket/droidloom/text-input",
+                    host.connect(new LocalSocketAddress("/dev/socket/droidloom-frontend/text-input",
                             LocalSocketAddress.Namespace.FILESYSTEM));
                     Thread edits = new Thread(() -> {
                         try {

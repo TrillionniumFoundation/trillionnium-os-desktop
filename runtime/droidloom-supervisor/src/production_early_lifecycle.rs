@@ -27,6 +27,7 @@ unsafe extern "C" {
         metadata: i32,
         payload: i32,
         generation: i32,
+        frontend: i32,
         uid: u32,
         gid: u32,
         observer_gid: u32,
@@ -39,6 +40,9 @@ unsafe extern "C" {
         root: i32,
     ) -> i32;
 }
+#[path = "production_early_frontend.rs"]
+mod frontend;
+
 struct ServiceSignals {
     events: File,
     previous: libc::sigset_t,
@@ -73,7 +77,7 @@ impl ServiceSignals {
             previous: old,
         })
     }
-    fn await_child(&self, pidfd: &File) -> io::Result<()> {
+    fn await_child(&self, pidfd: &File, mut progress: impl FnMut() -> io::Result<()>) -> io::Result<()> {
         let mut fds = [
             libc::pollfd {
                 fd: pidfd.as_raw_fd(),
@@ -87,7 +91,8 @@ impl ServiceSignals {
             },
         ];
         loop {
-            if unsafe { libc::poll(fds.as_mut_ptr(), 2, -1) } < 0 {
+            progress()?;
+            if unsafe { libc::poll(fds.as_mut_ptr(), 2, 100) } < 0 {
                 let e = io::Error::last_os_error();
                 if e.kind() == io::ErrorKind::Interrupted {
                     continue;
@@ -288,6 +293,7 @@ pub fn complete_early_resources() -> io::Result<()> {
             .start
             .checked_add(9999)
             .ok_or_else(|| invalid("observer gid overflow"))?;
+        let mut frontend = frontend::Frontend::prepare(&board, &owner, root)?;
         owner.objects().map_err(io::Error::other)?;
         if unsafe {
             droidloom_board_assemble(
@@ -297,6 +303,7 @@ pub fn complete_early_resources() -> io::Result<()> {
                 metadata.as_raw_fd(),
                 payload.as_raw_fd(),
                 generation.as_raw_fd(),
+                frontend.projection()?.as_raw_fd(),
                 u.start,
                 g.start,
                 obs,
@@ -339,7 +346,9 @@ pub fn complete_early_resources() -> io::Result<()> {
         drop(userdata);
         drop(metadata);
         board.release_prepared_root()?;
-        signals.await_child(board.pidfd())?;
+        let waiting = signals.await_child(board.pidfd(), || frontend.progress());
+        let presentation_retired = frontend.retire();
+        waiting.and(presentation_retired)?;
         stop.deliver(&board)?;
         if !wait_ended(board.pidfd(), Duration::from_secs(75))? {
             return Err(invalid("Android did not finish its requested orderly shutdown"));

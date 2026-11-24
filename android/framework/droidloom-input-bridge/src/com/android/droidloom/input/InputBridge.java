@@ -7,12 +7,16 @@
 package com.android.droidloom.input;
 
 import android.graphics.Rect;
-import android.net.LocalServerSocket;
-import android.net.LocalSocket;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
+import android.os.ServiceManager;
+import android.system.ErrnoException;
+import android.system.Os;
+import android.system.OsConstants;
+import android.system.StructUcred;
+import org.droidloom.frontend.IFrontendChannels;
 import android.util.Log;
 import android.view.InputDevice;
 import android.view.InputEvent;
@@ -39,13 +43,13 @@ import java.util.concurrent.TimeUnit;
  * Narrow platform adapter from Droidloom's routed input records to InputManager.
  *
  * <p>The physical touchscreen remains private to Denial. This process accepts
- * only fixed-size records from the root/system-only init socket and targets the
+ * only fixed-size records from the authenticated Composer Binder descriptor and targets the
  * Android logical display already bound to the selected native window.</p>
  */
 public final class InputBridge {
     private static final String TAG = "DroidloomInput";
     private static final boolean INPUT_TRACE = "1".equals(System.getenv("DROIDLOOM_INPUT_TRACE"));
-    private static final String SOCKET_ENV = "ANDROID_SOCKET_droidloom_input";
+    private static final String COMPOSER = "android.hardware.graphics.composer3.IComposer/default";
     private static final int RECORD_BYTES = 40;
     private static final int PROTOCOL_MAJOR = 5;
     private static final String BUILD_COMPATIBILITY =
@@ -139,29 +143,43 @@ public final class InputBridge {
     }
 
     private void run() throws IOException {
-        final String descriptor = System.getenv(SOCKET_ENV);
-        if (descriptor == null) {
-            throw new IOException("Android init did not provide " + SOCKET_ENV);
-        }
-        final int rawDescriptor;
-        try {
-            rawDescriptor = Integer.parseInt(descriptor);
-        } catch (NumberFormatException error) {
-            throw new IOException("Invalid Android init socket descriptor", error);
-        }
-
-        try (ParcelFileDescriptor owner = ParcelFileDescriptor.adoptFd(rawDescriptor);
-                LocalServerSocket listener = new LocalServerSocket(owner.getFileDescriptor())) {
-            Log.i(TAG, "Android input injection bridge is ready; " + BUILD_COMPATIBILITY);
-            while (true) {
-                try (LocalSocket client = listener.accept()) {
-                    resetInputState();
-                    serve(client.getInputStream());
-                } catch (IOException error) {
-                    Log.w(TAG, "Input client disconnected", error);
-                } finally {
-                    resetInputState();
+        while (true) {
+            try {
+                final IBinder composer = ServiceManager.waitForDeclaredService(COMPOSER);
+                if (composer == null) throw new IOException("Selected Composer is unavailable");
+                final IBinder extension = composer.getExtension();
+                final IFrontendChannels channels = IFrontendChannels.Stub.asInterface(extension);
+                if (channels == null || channels.getInterfaceVersion() != 1
+                        || !IFrontendChannels.HASH.equals(channels.getInterfaceHash())) {
+                    throw new IllegalStateException("Incompatible selected Composer frontend");
                 }
+                final ParcelFileDescriptor[] proof = ParcelFileDescriptor.createSocketPair(OsConstants.SOCK_SEQPACKET);
+                try (ParcelFileDescriptor caller = proof[0];
+                        ParcelFileDescriptor lifetime = proof[1];
+                        ParcelFileDescriptor channel = channels.openInputChannel(caller)) {
+                    final StructUcred peer = Os.getsockoptUcred(
+                            channel.getFileDescriptor(), OsConstants.SOL_SOCKET, OsConstants.SO_PEERCRED);
+                    if (peer.pid <= 0 || peer.uid != 1000 || peer.gid != 1000
+                            || Os.getsockoptInt(channel.getFileDescriptor(), OsConstants.SOL_SOCKET,
+                                    OsConstants.SO_TYPE) != OsConstants.SOCK_SEQPACKET) {
+                        throw new IllegalStateException("Composer Binder returned a different endpoint");
+                    }
+                    resetInputState();
+                    Log.i(TAG, "Authenticated input channel attached; " + BUILD_COMPATIBILITY);
+                    try (InputStream input = new ParcelFileDescriptor.AutoCloseInputStream(channel)) {
+                        serve(input);
+                    }
+                }
+            } catch (RemoteException | ErrnoException | IOException error) {
+                Log.w(TAG, "Composer input channel closed", error);
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    throw new IOException("Input channel interrupted", interrupted);
+                }
+            } finally {
+                resetInputState();
             }
         }
     }
@@ -177,7 +195,7 @@ public final class InputBridge {
     }
 
     private void serve(InputStream input) throws IOException {
-        final byte[] record = new byte[RECORD_BYTES];
+        final byte[] record = new byte[RECORD_BYTES + 1];
         while (true) {
             final int count = input.read(record);
             if (count < 0) {

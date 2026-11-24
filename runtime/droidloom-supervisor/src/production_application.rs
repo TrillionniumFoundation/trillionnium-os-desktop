@@ -44,6 +44,7 @@ mod process;
 mod protocol;
 #[path = "production_application_worker.rs"]
 mod worker;
+pub(crate) use worker::{CloneArgs as FrontendCloneArgs, SignalMask as FrontendSignalMask};
 
 pub(crate) const WORKER_ARGUMENT: &str = "__production-application-read";
 const OUTPUT_LIMIT: usize = 65536;

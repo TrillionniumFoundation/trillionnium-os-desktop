@@ -94,7 +94,7 @@ final class TaskObserver extends TaskStackListener {
             }
             if (!state.needsRegistration(foreground)) { failures = 0; return; }
             final TaskRegistration.Task target = foreground;
-            Process child = new ProcessBuilder("/vendor/bin/droidloom-task-launcher",
+            Process child = new ProcessBuilder("/system_ext/bin/droidloom-task-launcher",
                     "--bind-task", Integer.toString(target.id),
                     "--user", Integer.toString(target.user), target.owner)
                     .redirectErrorStream(true)

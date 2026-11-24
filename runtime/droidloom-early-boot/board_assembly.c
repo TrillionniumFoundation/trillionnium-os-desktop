@@ -171,11 +171,41 @@ static int ready_projection(int dev,int generation,uint32_t group,uint32_t uid,u
     close(ready);
     return error?fail(error):0;
 }
-int droidloom_board_assemble(int root,int dev,int data,int metadata,int payload,int generation,
+/* The frontend is a separate, original owner-created directory. It never
+ * grants the owner write access to the sealed readiness challenge directory. */
+static int frontend_projection(int dev,int frontend,uint32_t uid,uint32_t gid) {
+    if(fs_is(dev,TMPFS_MAGIC)||fs_is(frontend,TMPFS_MAGIC))return -1;
+    struct stat source;int error=0;
+    if(fstat(frontend,&source))return -1;
+    if(!S_ISDIR(source.st_mode)||source.st_uid!=0||source.st_gid!=0||
+       (source.st_mode&07777)!=0711||
+       directory_label(frontend,"u:object_r:droidloom_frontend_android_dir:s0"))
+        return fail(ESTALE);
+    int sock=beneath(dev,"socket"),target=-1,visible=-1;
+    if(sock<0)return -1;
+    target=beneath(sock,"droidloom-frontend");
+    struct stat ds,ss,ts;uint64_t dm=0,sm=0,tm=0;
+    if(target<0||fstat(dev,&ds)||fstat(sock,&ss)||fstat(target,&ts)||
+       mount_id(dev,&dm)||mount_id(sock,&sm)||mount_id(target,&tm))error=errno;
+    if(!error&&(dm!=sm||dm!=tm||ds.st_dev!=ss.st_dev||ds.st_dev!=ts.st_dev||
+       ss.st_uid!=uid||ss.st_gid!=gid||ts.st_uid!=uid||ts.st_gid!=gid||
+       (ss.st_mode&07777)!=0755||(ts.st_mode&07777)!=0755))error=ESTALE;
+    if(!error&&(directory_label(dev,"u:object_r:p4_linux_private_dev_root_t:s0")||
+       directory_label(sock,"u:object_r:p4_linux_private_socket_parent_t:s0")||
+       directory_label(target,"u:object_r:droidloom_frontend_mount:s0")))error=errno;
+    if(!error&&((visible=subtree(frontend,MOUNT_ATTR_RDONLY|MOUNT_ATTR_NOSUID|
+       MOUNT_ATTR_NODEV|MOUNT_ATTR_NOEXEC))<0||
+       attach_held(dev,"socket/droidloom-frontend",target,visible)))error=errno;
+    if(visible>=0)close(visible);
+    if(target>=0)close(target);
+    close(sock);
+    return error?fail(error):0;
+}
+int droidloom_board_assemble(int root,int dev,int data,int metadata,int payload,int generation,int frontend,
                              uint32_t uid,uint32_t gid,uint32_t observer_gid) {
     if(geteuid()!=0)return fail(EPERM);
     if(fs_is(root,EXT4_SUPER_MAGIC)||fs_is(data,EXT4_SUPER_MAGIC)||fs_is(metadata,EXT4_SUPER_MAGIC)||
-       ready_projection(dev,generation,observer_gid,uid,gid)||attach(root,"dev",dev)||
+       ready_projection(dev,generation,observer_gid,uid,gid)||frontend_projection(dev,frontend,uid,gid)||attach(root,"dev",dev)||
        attach(root,"data",data)||attach(root,"metadata",metadata)||attach_guest_cgroup(root,payload))return -1;
     /* These writable early-boot directories precede the stock second-stage
      * actions, which create their own additional layers. */

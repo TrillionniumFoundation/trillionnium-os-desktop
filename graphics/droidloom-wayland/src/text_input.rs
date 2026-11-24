@@ -2,8 +2,8 @@
 
 use std::io::{self, Read, Write};
 use std::os::fd::{AsFd, AsRawFd, RawFd};
-use std::os::unix::fs::{FileTypeExt, PermissionsExt};
-use std::os::unix::net::{UnixListener, UnixStream};
+#[cfg(test)]
+use std::os::unix::net::UnixStream;
 use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
@@ -14,6 +14,8 @@ use wayland_protocols::wp::text_input::zv3::client::{
 };
 
 use super::{App, TaskObjectId};
+use crate::{bridge_transport::{Listener,Stream},production::{Registration,wire::Role}};
+use std::sync::Arc;
 
 const MAX_RECORD: usize = 16_384;
 
@@ -52,9 +54,8 @@ struct Edit {
 }
 
 pub(super) struct TextInput {
-    listener: UnixListener,
-    path: PathBuf,
-    client: Option<UnixStream>,
+    listener: Listener,
+    client: Option<Stream>,
     incoming: Vec<u8>,
     outgoing: Vec<u8>,
     pub manager: Option<ZwpTextInputManagerV3>,
@@ -83,20 +84,13 @@ impl TextInput {
         self.serial = 0;
     }
 
-    pub fn new(path: PathBuf, manager: Option<ZwpTextInputManagerV3>) -> io::Result<Self> {
-        // The parent is the same private directory checked for the main endpoint.
-        match std::fs::symlink_metadata(&path) {
-            Ok(metadata) if metadata.file_type().is_socket() => std::fs::remove_file(&path)?,
-            Ok(_) => return Err(io::Error::from(io::ErrorKind::AlreadyExists)),
-            Err(error) if error.kind() == io::ErrorKind::NotFound => {}
-            Err(error) => return Err(error),
-        }
-        let listener = UnixListener::bind(&path)?;
-        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o600))?;
-        listener.set_nonblocking(true)?;
+    pub fn new(path:PathBuf,manager:Option<ZwpTextInputManagerV3>)->io::Result<Self>{
+        Self::with_owner(path,manager,None)
+    }
+    pub fn with_owner(path:PathBuf,manager:Option<ZwpTextInputManagerV3>,owner:Option<Arc<Registration>>)->io::Result<Self>{
+        let listener=Listener::new(path,Role::TextInput,owner,0)?;
         Ok(Self {
             listener,
-            path,
             client: None,
             incoming: Vec::new(),
             outgoing: Vec::new(),
@@ -166,10 +160,7 @@ impl TextInput {
 
     pub fn pump(&mut self) -> io::Result<()> {
         match self.listener.accept() {
-            Ok((client, _)) => {
-                if !root_peer(&client)? {
-                    return Ok(());
-                }
+            Ok(client) => {
                 self.disconnect();
                 client.set_nonblocking(true)?;
                 self.client = Some(client);
@@ -285,36 +276,6 @@ impl TextInput {
             }
         }
     }
-}
-
-impl Drop for TextInput {
-    fn drop(&mut self) {
-        let _ = std::fs::remove_file(&self.path);
-    }
-}
-
-fn root_peer(client: &UnixStream) -> io::Result<bool> {
-    let mut credentials = libc::ucred {
-        pid: 0,
-        uid: u32::MAX,
-        gid: u32::MAX,
-    };
-    let mut length = libc::socklen_t::try_from(std::mem::size_of::<libc::ucred>())
-        .map_err(|_| io::Error::from(io::ErrorKind::InvalidData))?;
-    // SAFETY: the socket and writable credential/length storage live for the call.
-    let result = unsafe {
-        libc::getsockopt(
-            client.as_raw_fd(),
-            libc::SOL_SOCKET,
-            libc::SO_PEERCRED,
-            std::ptr::from_mut(&mut credentials).cast(),
-            &raw mut length,
-        )
-    };
-    if result != 0 {
-        return Err(io::Error::last_os_error());
-    }
-    Ok(credentials.uid == 0)
 }
 
 fn content_type(
@@ -514,7 +475,7 @@ mod tests {
         let mut input = fixture();
         let (server, mut client) = UnixStream::pair().unwrap();
         server.set_nonblocking(true).unwrap();
-        input.client = Some(server);
+        input.client = Some(Stream::test_socket(server));
         client.write_all(b"{\"session\":1,\"task\":143,").unwrap();
         input.pump().unwrap();
         assert!(input.editor.is_none());

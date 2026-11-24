@@ -43,6 +43,14 @@ profile droidloom-production-broker flags=(attach_disconnected.path=/.droidloom-
   userns,
   ptrace (read, readby) peer=droidloom-production-broker,
   ptrace (read) peer=unconfined,
+  ptrace (read) peer=droidloom-production-android,
+  # Fixed frontend metadata: SELinux still restricts the three concrete peer types.
+  @{PROC}/[0-9]*/environ r,
+  /usr/bin/{,droidloom-wayland} r,
+  # These eight package-owned sockets are the only new desktop/Android bridge names.
+  /run/droidloom-frontend/{,android/} rw,
+  /run/droidloom-frontend/{control,clipboard,text-input,notifications}.sock rw,
+  /run/droidloom-frontend/android/{denial,clipboard,text-input,notifications} rw,
   signal (receive) peer=unconfined,
   signal (send, receive) peer=droidloom-production-broker,
   signal (send) set=(term,kill,cont) peer=unconfined,
@@ -84,6 +92,7 @@ profile droidloom-production-broker flags=(attach_disconnected.path=/.droidloom-
   /sys/fs/cgroup/system.slice/droidloom-production.service/{,**/}{cgroup.*,cpu.*,cpuset.*,io.*,memory.*,pids.*} r,
   /sys/fs/cgroup/system.slice/droidloom-production.service/{,**/}{cgroup.procs,cgroup.subtree_control,cpuset.cpus,cpuset.mems} w,
   mount options=(bind) /run/droidloom-early/readiness/ -> /dev/socket/droidloom/,
+  mount options=(bind) /run/droidloom-frontend/android/ -> /dev/socket/droidloom-frontend/,
   mount options=(bind) /sys/fs/cgroup/system.slice/droidloom-production.service/payload/ -> /sys/fs/cgroup/,
   umount /run/droidloom-early/rootfs/,
   /run/droidloom-early/readiness/shutdown-request rw,

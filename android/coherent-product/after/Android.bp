@@ -75,7 +75,7 @@ rust_library {
     crate_name: "droidloom_transport",
     crate_root: "graphics/droidloom-transport/src/lib.rs",
     edition: "2021",
-    vendor: true,
+    vendor_available: true,
     rustlibs: [
         "libserde",
         "libthiserror",
@@ -102,6 +102,7 @@ rust_binary {
         "libdroidloom_denial_ipc",
         "libdroidloom_denial_protocol",
         "libdroidloom_input_protocol",
+        "org.droidloom.frontend-V1-rust",
         "libdroidloom_minigbm",
         "libdroidloom_syncobj",
         "libdroidloom_surface_bridge",
@@ -129,7 +130,9 @@ rust_library {
 // intent resolution, localized labels, and adaptive icons.
 java_binary {
     name: "droidloom-input-bridge",
-    vendor: true,
+    dex_preopt: { enabled: false },
+    static_libs: ["org.droidloom.frontend-V1-java"],
+    system_ext_specific: true,
     srcs: ["android/framework/droidloom-input-bridge/src/**/*.java",
         "android/framework/cpu-placement/src/com/android/droidloom/runtime/CpuPlacement.java"],
     wrapper: "android/framework/droidloom-input-bridge/droidloom-input-bridge",
@@ -153,7 +156,7 @@ rust_library {
     crate_name: "droidloom_task_control",
     crate_root: "graphics/droidloom-task-control/src/lib.rs",
     edition: "2021",
-    vendor: true,
+    vendor_available: true,
     rustlibs: [
         "libthiserror",
     ],
@@ -168,8 +171,10 @@ rust_library {
     crate_name: "droidloom_task_launcher",
     crate_root: "android/framework/droidloom-task-launcher/src/lib.rs",
     edition: "2021",
-    vendor: true,
+    system_ext_specific: true,
     rustlibs: [
+        "libbinder_rs",
+        "org.droidloom.frontend-V1-rust",
         "libdroidloom_denial_ipc",
         "libdroidloom_task_control",
     ],
@@ -180,7 +185,8 @@ rust_binary {
     crate_name: "droidloom_task_launcher_bin",
     crate_root: "android/framework/droidloom-task-launcher/src/main.rs",
     edition: "2021",
-    vendor: true,
+    system_ext_specific: true,
+    prefer_rlib: true,
     rustlibs: ["libdroidloom_task_launcher"],
 }
 
@@ -216,7 +222,7 @@ rust_library {
     crate_name: "droidloom_denial_protocol",
     crate_root: "graphics/droidloom-denial-protocol/src/lib.rs",
     edition: "2021",
-    vendor: true,
+    vendor_available: true,
     rustlibs: [
         "libdroidloom_transport",
         "libthiserror",
@@ -231,7 +237,7 @@ rust_library {
     crate_name: "droidloom_denial_ipc",
     crate_root: "graphics/droidloom-denial-ipc/src/lib.rs",
     edition: "2021",
-    vendor: true,
+    vendor_available: true,
     rustlibs: [
         "libdroidloom_denial_protocol",
         "liblibc",
