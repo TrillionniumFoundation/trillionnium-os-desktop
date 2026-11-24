@@ -15,7 +15,9 @@ use std::time::Instant;
 
 #[path = "production_application_exec_stop.rs"]
 mod exec_stop;
-pub(super) use exec_stop::ExecReceipt;
+pub(super) use exec_stop::{
+    ExecReceipt, ExecutableBinding, FACTORY_QUERY_APPARMOR, NamespaceBinding, verify_factory_exec,
+};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct Terminal {

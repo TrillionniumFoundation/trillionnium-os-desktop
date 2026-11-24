@@ -164,7 +164,7 @@ fn digest(file: &File, expected: Node, deadline: Instant) -> Result<[u8; 32]> {
 
 /// This is a local binding of the descriptor lent by the already revalidated
 /// PreparedRuntime query role. It is not a constructor for runtime authority.
-pub(super) struct ExecutableBinding {
+pub(crate) struct ExecutableBinding {
     file: File,
     node: Node,
     mount_id: u64,
@@ -172,7 +172,7 @@ pub(super) struct ExecutableBinding {
     label: &'static [u8],
 }
 impl ExecutableBinding {
-    pub(super) fn from_held_role(
+    pub(crate) fn from_held_role(
         file: &File,
         root_uid: u32,
         root_gid: u32,
@@ -180,7 +180,7 @@ impl ExecutableBinding {
     ) -> Result<Self> {
         Self::from_role(file, root_uid, root_gid, QUERY_EXEC, deadline)
     }
-    pub(super) fn from_contacts_role(
+    pub(crate) fn from_contacts_role(
         file: &File,
         root_uid: u32,
         root_gid: u32,
@@ -278,6 +278,9 @@ fn proc_bytes(parent: &File, name: &CStr, limit: u64) -> Result<Vec<u8>> {
 fn generation(proc: &File, pid: u32) -> Result<(u32, u64)> {
     let bytes = proc_bytes(proc, c"stat", 8192)?;
     let text = std::str::from_utf8(&bytes).map_err(external)?;
+    generation_text(text, pid)
+}
+fn generation_text(text: &str, pid: u32) -> Result<(u32, u64)> {
     require(
         text.starts_with(&format!("{pid} (")),
         "held query proc PID differs",
@@ -340,12 +343,12 @@ pub(crate) struct ExecReceipt {
     seccomp_filter_mode: u32,
 }
 
-pub(super) struct NamespaceBinding {
+pub(crate) struct NamespaceBinding {
     root: File,
     namespaces: [File; 7], // user, pid, mnt, ipc, uts, net, cgroup
 }
 impl NamespaceBinding {
-    pub(super) fn from_original_owner(files: &[File]) -> Result<Self> {
+    pub(crate) fn from_original_owner(files: &[File]) -> Result<Self> {
         require(files.len() >= 10, "original query namespace prefix absent")?;
         Ok(Self {
             root: files[2].try_clone()?,
@@ -378,6 +381,190 @@ impl NamespaceBinding {
         }
         Ok(())
     }
+}
+
+/// The factory enters this exact profile before enabling NNP. The legacy
+/// broker-owned worker keeps its original stack and uses ExecTrace below.
+pub(crate) const FACTORY_QUERY_APPARMOR: &[u8] = b"droidloom-production-android (enforce)\n";
+
+/// Independently inspect an already stopped factory-owned query. This function
+/// never traces, waits, signals, resumes, or manufactures a local child owner.
+/// The stop event comes only from the authenticated factory client; actual
+/// procfs and the held original pidfds must independently agree with it.
+pub(crate) fn verify_factory_exec(
+    binding: &ExecutableBinding,
+    namespaces: &NamespaceBinding,
+    proc: &File,
+    query_pidfd: &File,
+    factory_pidfd: &File,
+    stop: &super::super::factory_query::FactoryExecStop,
+    shell_uid: u32,
+    shell_gid: u32,
+    domain: OperationDomain,
+    deadline: Instant,
+) -> Result<ExecReceipt> {
+    use super::super::query_io as identities;
+    require(
+        Instant::now() < deadline,
+        "factory exec observation deadline",
+    )?;
+    identities::alive(factory_pidfd)?;
+    identities::alive(query_pidfd)?;
+    let factory = identities::pidfd_info(factory_pidfd)?;
+    let query = identities::pidfd_info(query_pidfd)?;
+    require(
+        factory.pid == factory.tgid
+            && [
+                factory.ruid,
+                factory.euid,
+                factory.suid,
+                factory.fsuid,
+                factory.rgid,
+                factory.egid,
+                factory.sgid,
+                factory.fsgid,
+            ] == [0; 8]
+            && query.pid == query.tgid
+            && query.ppid == factory.pid
+            && stop.pid() == query.pid
+            && stop.tracer_tid() == factory.pid
+            && stop.waitid_code() == libc::CLD_TRAPPED
+            && stop.waitid_status() == EXEC_EVENT
+            && stop.event_previous_tid() == u64::from(query.pid),
+        "authenticated factory exec stop does not identify its original direct child",
+    )?;
+    require(
+        [query.ruid, query.euid, query.suid, query.fsuid] == [shell_uid; 4]
+            && [query.rgid, query.egid, query.sgid, query.fsgid] == [shell_gid; 4],
+        "actual factory query pidfd credentials differ",
+    )?;
+    require(
+        binding.label
+            == if domain == OperationDomain::ContactsRead {
+                PROVIDER_EXEC
+            } else {
+                QUERY_EXEC
+            },
+        "factory query domain and selected executable role differ",
+    )?;
+    let observed = crate::production_application::observe_metadata(
+        crate::production_application::MetadataRole::for_operation(domain),
+        proc,
+        query_pidfd,
+        &namespaces.namespaces[0],
+        deadline,
+    )?;
+    namespaces.verify(&observed)?;
+    binding.verify(&observed.executable, deadline)?;
+    require(
+        label_matches(&observed.selinux, domain.context().as_bytes())
+            && observed.apparmor == FACTORY_QUERY_APPARMOR,
+        "factory query actual SELinux or AppArmor role differs",
+    )?;
+    let original = generation_text(&observed.stat, query.pid)?;
+    require(
+        original.0 == factory.pid && original.1 > 0,
+        "factory query procfs birth or original parent differs",
+    )?;
+    require(
+        status_field(&observed.status, "TracerPid:")?
+            .parse::<u32>()
+            .map_err(external)?
+            == stop.tracer_tid()
+            && status_field(&observed.status, "State:")?
+                .split_ascii_whitespace()
+                .next()
+                == Some("t"),
+        "factory query is not stopped under the actual original tracer",
+    )?;
+    // The metadata observer changes only USERNS, so status IDs use the held
+    // Android mapping while TracerPid and stat still use the host PID namespace.
+    for field in ["Uid:", "Gid:"] {
+        let values = status_field(&observed.status, field)?
+            .split_ascii_whitespace()
+            .map(str::parse::<u32>)
+            .collect::<std::result::Result<Vec<_>, _>>()
+            .map_err(external)?;
+        require(
+            values == [2000; 4],
+            "factory query stopped Android credentials differ",
+        )?;
+    }
+    for field in ["CapInh:", "CapPrm:", "CapEff:", "CapAmb:"] {
+        require(
+            u64::from_str_radix(status_field(&observed.status, field)?, 16).map_err(external)? == 0,
+            "factory query retained process capabilities",
+        )?;
+    }
+    require(
+        status_field(&observed.status, "NoNewPrivs:")? == "1"
+            && status_field(&observed.status, "Seccomp:")? == "2"
+            && status_field(&observed.status, "Threads:")? == "1"
+            && status_field(&observed.status, "Groups:")?.is_empty(),
+        "factory query actual privilege, filter or thread state differs",
+    )?;
+    let current = identities::pidfd_info(query_pidfd)?;
+    let current_factory = identities::pidfd_info(factory_pidfd)?;
+    require(
+        (
+            current.pid,
+            current.tgid,
+            current.ppid,
+            current.ruid,
+            current.euid,
+            current.suid,
+            current.fsuid,
+            current.rgid,
+            current.egid,
+            current.sgid,
+            current.fsgid,
+        ) == (
+            query.pid,
+            query.tgid,
+            query.ppid,
+            query.ruid,
+            query.euid,
+            query.suid,
+            query.fsuid,
+            query.rgid,
+            query.egid,
+            query.sgid,
+            query.fsgid,
+        ) && current_factory.pid == factory.pid
+            && current_factory.tgid == factory.tgid,
+        "factory/query original pidfd identity changed during observation",
+    )?;
+    binding.verify(&observed.executable, deadline)?;
+    identities::alive(query_pidfd)?;
+    identities::alive(factory_pidfd)?;
+    require(
+        Instant::now() < deadline,
+        "factory query exec verification exceeded deadline",
+    )?;
+    Ok(ExecReceipt {
+        query_start_ticks: original.1,
+        original_parent_pid: factory.pid,
+        tracer_tid: stop.tracer_tid(),
+        // These are the original authenticated owner's actual waitid/ptrace
+        // event values, never inferred from a procfs state or fixed success bit.
+        waitid_code: stop.waitid_code(),
+        waitid_status: stop.waitid_status(),
+        event_previous_tid: stop.event_previous_tid(),
+        executable: binding.node,
+        executable_mount_id: binding.mount_id,
+        executable_sha256: binding
+            .sha256
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect(),
+        executable_selinux: std::str::from_utf8(binding.label).expect("fixed ASCII role"),
+        process_selinux: domain.context(),
+        process_apparmor: "droidloom-production-android (enforce)",
+        uid: shell_uid,
+        gid: shell_gid,
+        no_new_privileges: true,
+        seccomp_filter_mode: 2,
+    })
 }
 
 pub(super) struct ExecTrace<'a> {
