@@ -1,0 +1,164 @@
+--- a/include/uapi/linux/p4_lsm_context.h
++++ b/include/uapi/linux/p4_lsm_context.h
+@@ -28,4 +28,34 @@
+ #define P4_LSM_NETNS_SET _IOW(0xb7, 1, struct p4_lsm_netns)
+ #define P4_LSM_NETNS_GET _IOWR(0xb7, 2, struct p4_lsm_netns)
+ 
++
++/*
++ * Pocket4 private SOL_SOCKET option. Each request selects only the label
++ * representation returned by the original peer hook for this same socket.
++ * It never changes the socket/netns provider or any LSM access decision.
++ * The high private value does not allocate a generic SO_* number.
++ */
++#define P4_SO_PEERSEC_LSM 0x50340001
++#define P4_LSM_PEERSEC_ABI 1U
++
++/*
++ * Input: size=sizeof(header), version=1, SELinux or AppArmor lsm_id, and
++ * zero flags/reserved/context_len/reserved2. optlen includes header and
++ * context capacity. Output, on success or ERANGE: context_len is the
++ * original provider's required byte length and optlen is header+context_len.
++ * The original hook determines whether the context includes a trailing NUL.
++ * No context is copied on ERANGE. Unknown options return ENOPROTOOPT;
++ * an active option without the requested peer provider returns EOPNOTSUPP.
++ */
++struct p4_lsm_peersec {
++	__u32 size;
++	__u32 version;
++	__u64 lsm_id;
++	__u32 flags;
++	__u32 reserved;
++	__u32 context_len;
++	__u32 reserved2;
++	__u8 context[];
++};
++
+ #endif /* _UAPI_LINUX_P4_LSM_CONTEXT_H */
+--- a/security/security.c
++++ b/security/security.c
+@@ -20,6 +20,7 @@
+ #include <linux/kernel_read_file.h>
+ #include <linux/lsm_hooks.h>
+ #include <linux/p4_lsm_context.h>
++#include <uapi/linux/p4_lsm_context.h>
+ #include <linux/mman.h>
+ #include <linux/mount.h>
+ #include <linux/personality.h>
+@@ -5080,6 +5081,67 @@
+ 	return LSM_RET_DEFAULT(socket_getpeersec_stream);
+ }
+ 
++
++/**
++ * security_socket_getpeersec_stream_lsm() - Read a selected peer label
++ * @sock: held socket whose original peer security state is queried
++ * @optval: versioned input header and output context
++ * @optlen: input capacity and output required size, including the header
++ * @len: maximum size of the complete output buffer
++ *
++ * The regular security_socket_getsockopt() hook has already checked all
++ * active LSMs. Select only the representation supplied by one original
++ * peer hook, without modifying the socket or namespace provider.
++ */
++int security_socket_getpeersec_stream_lsm(struct socket *sock, sockptr_t optval,
++					sockptr_t optlen, unsigned int len)
++{
++	struct p4_lsm_peersec req;
++	struct lsm_static_call *scall;
++	sockptr_t context = optval;
++	u32 context_len = 0, total_len;
++	int error;
++
++	static_assert(sizeof(req) == 32);
++	error = copy_safe_from_sockptr(&req, sizeof(req), optval, len);
++	if (error)
++		return error;
++	if (req.size != sizeof(req) || req.version != P4_LSM_PEERSEC_ABI ||
++	    req.flags || req.reserved || req.context_len || req.reserved2 ||
++	    (req.lsm_id != LSM_ID_SELINUX && req.lsm_id != LSM_ID_APPARMOR))
++		return -EINVAL;
++
++	if (sockptr_is_kernel(context))
++		context.kernel += sizeof(req);
++	else
++		context.user += sizeof(req);
++
++	error = -EOPNOTSUPP;
++	lsm_for_each_hook(scall, socket_getpeersec_stream) {
++		if (req.lsm_id != scall->hl->lsmid->id)
++			continue;
++		error = scall->hl->hook.socket_getpeersec_stream(sock, context,
++				KERNEL_SOCKPTR(&context_len), len - sizeof(req));
++		break;
++	}
++	/* Reserve ENOPROTOOPT for kernels that do not implement this option. */
++	if (error == -ENOPROTOOPT)
++		return -EOPNOTSUPP;
++	if (error && error != -ERANGE)
++		return error;
++	if (!context_len || context_len > INT_MAX - sizeof(req) ||
++	    (!error && context_len > len - sizeof(req)) ||
++	    (error == -ERANGE && context_len <= len - sizeof(req)))
++		return -EPROTO;
++
++	req.context_len = context_len;
++	total_len = sizeof(req) + context_len;
++	if (copy_to_sockptr(optval, &req, sizeof(req)) ||
++	    copy_to_sockptr(optlen, &total_len, sizeof(total_len)))
++		return -EFAULT;
++	return error;
++}
++
+ /**
+  * security_socket_getpeersec_dgram() - Get the remote peer label
+  * @sock: socket
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -1696,6 +1696,8 @@
+ int security_sock_rcv_skb(struct sock *sk, struct sk_buff *skb);
+ int security_socket_getpeersec_stream(struct socket *sock, sockptr_t optval,
+ 				      sockptr_t optlen, unsigned int len);
++int security_socket_getpeersec_stream_lsm(struct socket *sock, sockptr_t optval,
++					 sockptr_t optlen, unsigned int len);
+ int security_socket_getpeersec_dgram(struct socket *sock, struct sk_buff *skb, u32 *secid);
+ int security_socket_getpeersec_dgram_lsm(struct socket *sock, struct sk_buff *skb,
+ 				       u64 requested_lsm, u32 *secid, u64 *lsmid);
+@@ -1848,6 +1850,14 @@
+ 	return -ENOPROTOOPT;
+ }
+ 
++static inline int security_socket_getpeersec_stream_lsm(struct socket *sock,
++						       sockptr_t optval,
++						       sockptr_t optlen,
++						       unsigned int len)
++{
++	return -EOPNOTSUPP;
++}
++
+ static inline int security_socket_getpeersec_dgram(struct socket *sock, struct sk_buff *skb, u32 *secid)
+ {
+ 	return -ENOPROTOOPT;
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -150,6 +150,7 @@
+ #include <linux/ethtool.h>
+ 
+ #include <uapi/linux/pidfd.h>
++#include <uapi/linux/p4_lsm_context.h>
+ 
+ #include "dev.h"
+ 
+@@ -1992,6 +1993,12 @@
+ 		v.val = sk->sk_scm_security;
+ 		break;
+ 
++#ifdef CONFIG_P4_LSM_CONTEXT
++	case P4_SO_PEERSEC_LSM:
++		return security_socket_getpeersec_stream_lsm(sock,
++							     optval, optlen, len);
++#endif
++
+ 	case SO_PEERSEC:
+ 		return security_socket_getpeersec_stream(sock,
+ 							 optval, optlen, len);

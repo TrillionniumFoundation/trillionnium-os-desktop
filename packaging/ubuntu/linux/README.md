@@ -35,3 +35,20 @@ workflow using the candidate's complete module tree. The previous release's
 initrd is not a matching input. Compilation and module verification do not
 qualify a physical boot or the complete Linux/Android service; those remain
 separate enforcing-kernel and native-service checks before activation.
+
+## Read-only socket peer provider query
+
+The second patch adds the private P4_SO_PEERSEC_LSM option (0x50340001)
+to SOL_SOCKET when CONFIG_P4_LSM_CONTEXT is enabled. Its fixed 32-byte
+versioned header selects SELinux or AppArmor only for that call. The original
+getsockopt permission checks and provider peer hook run unchanged; no socket,
+namespace, security credential, or policy state is modified. Old SO_PEERSEC
+and the immutable Android network-namespace selection retain their original
+behavior. Input version, reserved fields, provider, and length are checked.
+ERANGE returns the original provider's required byte length plus header.
+
+This addition requires a new complete normal kernel/module build with a new
+release and private signing key, followed by a matching Ubuntu initrd. The
+historical source.lock.json describes the preceding AppArmor filesystem
+batch until a new completed source/build/publication lock is produced. Do not
+combine that historical kernel or modules with a new qualification claim.
