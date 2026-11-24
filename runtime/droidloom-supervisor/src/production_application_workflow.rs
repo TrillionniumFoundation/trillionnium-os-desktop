@@ -29,10 +29,22 @@ fn early_effect<T>(
         .progress_inherited_native(deadline)
         .map_err(external)?;
     authority.ready().map_err(external)?;
-    let result = effect();
-    // Revalidate even after a rejected operation. Actual retirement failure is
-    // preserved by the original owner's monotonic quarantine, never a receipt.
-    let after = authority.ready().map_err(external);
+    finish_effect(effect(), || authority.ready().map_err(external), deadline)
+}
+
+/// Always perform the original owner's postcheck, while preserving an actual
+/// unproven child retirement above a secondary ready/deadline rejection.
+pub(super) fn finish_effect<T>(
+    result: Result<T>,
+    postcheck: impl FnOnce() -> Result<()>,
+    deadline: Instant,
+) -> Result<T> {
+    let after = postcheck();
+    if matches!(&result, Err(ApplicationError::RetirementUnproven))
+        || matches!(&after, Err(ApplicationError::RetirementUnproven))
+    {
+        return Err(ApplicationError::RetirementUnproven);
+    }
     after?;
     require(
         Instant::now() < deadline,
@@ -171,5 +183,37 @@ impl Workflow<'_, '_> {
                 connection.exchange_early(authority, request, deadline)
             }),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn actual_retirement_failure_survives_postcheck_and_deadline_without_skipping_postcheck() {
+        use std::cell::Cell;
+        use std::time::Duration;
+        let checked = Cell::new(false);
+        let result: Result<()> = finish_effect(
+            Err(ApplicationError::RetirementUnproven),
+            || {
+                checked.set(true);
+                Err(reject("secondary ready rejection"))
+            },
+            Instant::now() - Duration::from_secs(1),
+        );
+        assert!(checked.get());
+        assert!(matches!(result, Err(ApplicationError::RetirementUnproven)));
+        let result = finish_effect(
+            Ok(7),
+            || Err(ApplicationError::RetirementUnproven),
+            Instant::now() - Duration::from_secs(1),
+        );
+        assert!(matches!(result, Err(ApplicationError::RetirementUnproven)));
+        assert!(finish_effect(Ok(7), || Ok(()), Instant::now() - Duration::from_secs(1)).is_err());
+        assert_eq!(
+            finish_effect(Ok(7), || Ok(()), Instant::now() + Duration::from_secs(1)).unwrap(),
+            7
+        );
     }
 }

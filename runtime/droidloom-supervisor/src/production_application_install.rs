@@ -161,9 +161,13 @@ pub(crate) fn install_early(
             value: command.clone(),
         };
         let result = factory_query::run_with_input(authority, &operation, input, command_deadline);
-        // Even rejected operations must preserve the same original owner.
-        authority.ready().map_err(external)?;
-        let result = result?;
+        // Run the real owner postcheck even on rejection, without replacing a
+        // stronger original-child retirement failure with a later ready error.
+        let result = workflow::finish_effect(
+            result,
+            || authority.ready().map_err(external),
+            command_deadline,
+        )?;
         require(
             authority.epoch(&framework).map_err(external)? == epoch,
             "Android framework changed after installation command",

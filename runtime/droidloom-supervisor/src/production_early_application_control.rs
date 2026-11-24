@@ -114,13 +114,7 @@ impl EarlyApplicationControl {
                         &[bytes],
                         launch_deadline,
                     )
-                    .map_err(|e| {
-                        acquisition_quarantined |= matches!(
-                            e,
-                            crate::production_application::ApplicationError::RetirementUnproven
-                        );
-                        ControlError::Invalid(e.to_string())
-                    })?;
+                    .map_err(|e| early_application_error(e, &mut acquisition_quarantined))?;
                     response.message = format!(
                         "Android confirmed atomic install session {}; installed {} original APK bytes; application acceptance remains pending",
                         result.session, result.bytes
@@ -140,13 +134,7 @@ impl EarlyApplicationControl {
                         &lengths,
                         launch_deadline,
                     )
-                    .map_err(|e| {
-                        acquisition_quarantined |= matches!(
-                            e,
-                            crate::production_application::ApplicationError::RetirementUnproven
-                        );
-                        ControlError::Invalid(e.to_string())
-                    })?;
+                    .map_err(|e| early_application_error(e, &mut acquisition_quarantined))?;
                     response.message = format!(
                         "Android confirmed atomic install session {} with {} original APK segments; application acceptance remains pending",
                         result.session,
@@ -161,7 +149,9 @@ impl EarlyApplicationControl {
                     );
                     let inspection =
                         crate::production_application::inspect_early(authority, &package, user)
-                            .map_err(|e| ControlError::Invalid(e.to_string()))?;
+                            .map_err(|e| {
+                                early_application_error(e, &mut acquisition_quarantined)
+                            })?;
                     response.inspection = Some(inspection);
                     response.message = "Current package metadata and APK bytes observed in the original early Android generation; application acceptance remains pending".into();
                 }
@@ -197,7 +187,7 @@ impl EarlyApplicationControl {
                         &request,
                         launch_deadline,
                     )
-                    .map_err(|e| ControlError::Invalid(e.to_string()))?;
+                    .map_err(|e| early_application_error(e, &mut acquisition_quarantined))?;
                     guard
                         .revalidate()
                         .map_err(|e| ControlError::Invalid(e.to_string()))?;
@@ -227,7 +217,7 @@ impl EarlyApplicationControl {
                     let (inspection, output) = crate::production_application::open_browser_early(
                         authority, &expected, &url,
                     )
-                    .map_err(|e| ControlError::Invalid(e.to_string()))?;
+                    .map_err(|e| early_application_error(e, &mut acquisition_quarantined))?;
                     response.inspection = Some(inspection);
                     response.launch = Some(output);
                     response.message = "Implicit Firefox HTTPS activity opened in the original early Android generation; rendered content, media and whole-app acceptance remain pending".into();
@@ -237,7 +227,7 @@ impl EarlyApplicationControl {
                     let observed = crate::production_application::inspect_contacts_baseline_early(
                         authority, &contacts, &provider,
                     )
-                    .map_err(|e| ControlError::Invalid(e.to_string()))?;
+                    .map_err(|e| early_application_error(e, &mut acquisition_quarantined))?;
                     response.inspection = Some(contacts);
                     response.diagnostics = Some(serde_json::to_string(&observed)?);
                     response.message = "Contacts provider baseline observed in the original early generation; account topology and create/edit/search/delete acceptance remain pending".into();
@@ -272,7 +262,7 @@ impl EarlyApplicationControl {
         // original cgroup. That failure must leave the main service loop.
         let original = if acquisition_quarantined {
             Err(ControlError::Invalid(
-                "original metadata helper retirement remains quarantined".into(),
+                "original application or metadata helper retirement remains quarantined".into(),
             ))
         } else {
             authority.as_ref().map_or(Ok(()), |authority| {
@@ -293,6 +283,17 @@ impl EarlyApplicationControl {
     pub(crate) fn retire(self) -> Result<(), ControlError> {
         self.listener.retire()
     }
+}
+
+fn early_application_error(
+    error: crate::production_application::ApplicationError,
+    quarantined: &mut bool,
+) -> ControlError {
+    *quarantined |= matches!(
+        error,
+        crate::production_application::ApplicationError::RetirementUnproven
+    );
+    ControlError::Invalid(error.to_string())
 }
 
 fn early_launch_request(
