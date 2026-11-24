@@ -6,8 +6,8 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::{
-    io::{BufRead, BufReader, Write},
-    os::unix::net::UnixStream,
+    io::{BufRead, BufReader, Read, Write},
+    os::unix::{net::UnixStream, process::ExitStatusExt},
     path::{Path, PathBuf},
     process::{Command, Stdio},
     time::{Duration, Instant},
@@ -35,9 +35,8 @@ fn qmp(path: &Path, command: &str) -> Result<Value> {
     stream.set_read_timeout(Some(Duration::from_secs(3)))?;
     stream.set_write_timeout(Some(Duration::from_secs(3)))?;
     let mut reader = BufReader::new(stream);
-    let mut line = String::new();
-    reader.read_line(&mut line)?;
-    let greeting: Value = serde_json::from_str(&line)?;
+    let deadline = Instant::now() + Duration::from_secs(6);
+    let greeting = qmp_line(&mut reader, deadline)?;
     ensure(
         greeting.get("QMP").is_some(),
         "invalid private QMP greeting",
@@ -48,10 +47,9 @@ fn qmp(path: &Path, command: &str) -> Result<Value> {
             .get_mut()
             .write_all(serde_json::to_string(&request)?.as_bytes())?;
         reader.get_mut().write_all(b"\n")?;
-        loop {
-            line.clear();
-            ensure(reader.read_line(&mut line)? > 0, "QMP channel closed")?;
-            let value: Value = serde_json::from_str(&line)?;
+        let mut answered = false;
+        for _ in 0..32 {
+            let value = qmp_line(&mut reader, deadline)?;
             if value["id"] == index {
                 ensure(
                     value.get("error").is_none(),
@@ -60,11 +58,29 @@ fn qmp(path: &Path, command: &str) -> Result<Value> {
                 if index == 1 {
                     return Ok(value);
                 }
+                answered = true;
                 break;
             }
         }
+        ensure(answered, "QMP exceeded its bounded event count")?;
     }
     Err("QMP result absent".into())
+}
+
+fn qmp_line(reader: &mut BufReader<UnixStream>, deadline: Instant) -> Result<Value> {
+    let remaining = deadline
+        .checked_duration_since(Instant::now())
+        .ok_or("QMP exceeded its complete operation deadline")?;
+    reader
+        .get_mut()
+        .set_read_timeout(Some(remaining.min(Duration::from_secs(3))))?;
+    let mut line = Vec::new();
+    Read::take(&mut *reader, 65537).read_until(b'\n', &mut line)?;
+    ensure(
+        line.len() <= 65536 && line.last() == Some(&b'\n'),
+        "QMP line is absent, incomplete or exceeds 64 KiB",
+    )?;
+    Ok(serde_json::from_slice(&line)?)
 }
 
 fn known_host(root: &Path, run: &Path, port: u16) -> Result<FilePin> {
@@ -248,57 +264,95 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
     };
     args.extend(["-nic".into(), nic]);
     let qemu = boot_files::pin_file(Path::new("/usr/bin/qemu-system-x86_64"))?;
-    let mut child = Command::new(&qemu.path)
+    let mut command = Command::new(&qemu.path);
+    command
         .args(&args)
         .env_clear()
         .env("PATH", "/usr/sbin:/usr/bin:/sbin:/bin")
         .env("LC_ALL", "C.UTF-8")
         .stdin(Stdio::null())
         .stdout(Stdio::from(output.try_clone()?))
-        .stderr(Stdio::from(output))
-        .spawn()?;
+        .stderr(Stdio::from(output));
+    let mut child = crate::boot_child::OwnedChild::spawn(&mut command)?;
     let started = Instant::now();
-    fs::write_json(
-        &fs::absolute_string(&run.join("RUNNING.json"))?,
-        &json!({
+    let attempt = (|| -> Result<(std::process::ExitStatus, bool)> {
+        fs::write_json(
+            &fs::absolute_string(&run.join("RUNNING.json"))?,
+            &json!({
         "pid":child.id(),"program":qemu,"args":args,"known_hosts":known,
         "fresh_client_key":work.join("fixture-ssh-client-key"),
         "private_qmp":monitor,"working_disk":disk,"original_userdata_opened":false,
+        "preserved_source_image":source,"source_identity":source_identity,
         "guest_qualified":false,"production_ready":false}),
-        0,
-    )?;
-    println!(
-        "{}",
-        json!({"running_pid":child.id(),"run_directory":run,"private_qmp":monitor,
+            0,
+        )?;
+        println!(
+            "{}",
+            json!({"running_pid":child.id(),"run_directory":run,"private_qmp":monitor,
         "ssh_port":plan.ssh_port,"guest_qualified":false})
-    );
-    std::io::stdout().flush()?;
-    let mut power_attempt = None;
-    let mut forced = false;
-    let status = loop {
-        if let Some(s) = child.try_wait()? {
-            break s;
-        }
-        let elapsed = started.elapsed().as_secs();
-        if elapsed >= plan.duration_seconds && power_attempt.is_none() {
-            let result = qmp(&monitor, "system_powerdown")
-                .map(|v| json!({"result":v}))
-                .unwrap_or_else(|e| json!({"error":e.to_string()}));
-            fs::write_json(
-                &fs::absolute_string(&run.join("POWER-DOWN.json"))?,
-                &result,
+        );
+        std::io::stdout().flush()?;
+        let mut power_attempt = None;
+        let mut forced = false;
+        let status = loop {
+            if let Some(s) = child.try_wait()? {
+                break s;
+            }
+            let elapsed = started.elapsed().as_secs();
+            if elapsed >= plan.duration_seconds && power_attempt.is_none() {
+                let result = qmp(&monitor, "system_powerdown")
+                    .map(|v| json!({"result":v}))
+                    .unwrap_or_else(|e| json!({"error":e.to_string()}));
+                fs::write_json(
+                    &fs::absolute_string(&run.join("POWER-DOWN.json"))?,
+                    &result,
+                    0,
+                )?;
+                power_attempt = Some(elapsed);
+            }
+            if power_attempt.is_some_and(|t| elapsed >= t + 45)
+                || std::fs::metadata(&serial)?.len() > 512 * 1024 * 1024
+            {
+                forced = true;
+                break child.stop_and_reap()?;
+            }
+            std::thread::sleep(Duration::from_millis(250));
+        };
+        Ok((status, forced))
+    })();
+    let (status, forced) = match attempt {
+        Ok(value) => value,
+        Err(error) => {
+            // Stop before attempting any further evidence I/O. Even if that
+            // I/O also fails, OwnedChild's Drop retries unreaped cleanup.
+            let stopped = child.stop_and_reap();
+            let source_preserved = fs::stat(&source_guard).is_ok_and(|id| id == source_identity)
+                && boot_files::open_pin(&source).is_ok_and(|(_, id)| id == source_identity);
+            let failure = json!({"schema":"droidloom.full-ubuntu-run-failed.v1",
+                "prepared":plan.prepared,"error":error.to_string(),"qemu":qemu,
+                "owned_pid":child.id(),"child_reaped":stopped.is_ok(),
+                "exit_code":stopped.as_ref().ok().and_then(|s|s.code()),
+                "signal":stopped.as_ref().ok().and_then(|s|s.signal()),
+                "stop_error":stopped.as_ref().err().map(ToString::to_string),
+                "preserved_source_image":source,"source_identity":source_identity,
+                "source_image_preserved":source_preserved,"working_disk":disk,
+                "serial_path":serial,"guest_qualified":false,"production_ready":false});
+            let saved = fs::write_json(
+                &fs::absolute_string(&run.join("RUN-FAILED.json"))?,
+                &failure,
                 0,
-            )?;
-            power_attempt = Some(elapsed);
+            );
+            return Err(format!(
+                "guest runner failed: {error}; owned-child cleanup: {}; failure receipt: {}",
+                if stopped.is_ok() {
+                    "reaped"
+                } else {
+                    "failed; Drop will retry"
+                },
+                saved.map_or_else(|e| e.to_string(), |sha| sha)
+            )
+            .into());
         }
-        if power_attempt.is_some_and(|t| elapsed >= t + 45)
-            || std::fs::metadata(&serial)?.len() > 512 * 1024 * 1024
-        {
-            forced = true;
-            child.kill()?;
-            break child.wait()?;
-        }
-        std::thread::sleep(Duration::from_millis(250));
     };
     ensure(
         fs::stat(&source_guard)? == source_identity
@@ -309,6 +363,8 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
         "run_directory":run,"qemu":qemu,"exit_code":status.code(),"forced_stop":forced,
         "elapsed_seconds":started.elapsed().as_secs(),"serial":boot_files::pin_file(&serial)?,
         "working_disk":boot_files::pin_file(&disk)?,"source_image_preserved":true,
+        "preserved_source_image":source,"source_identity":source_identity,
+        "signal":status.signal(),
         "guest_qualified":false,"production_ready":false,
         "next_required":"Inspect the original persistent journal and complete the independent runtime and application gates."});
     let receipt_path = run.join("RUN-ENDED.json");
@@ -321,4 +377,24 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
         status.success() && !forced,
         "guest did not terminate normally; exact journal/serial remains for diagnosis",
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn private_qmp_line_bounds_and_deadline_are_enforced() -> Result<()> {
+        let (input, mut output) = UnixStream::pair()?;
+        output.write_all(b"{\"QMP\":{}}\n")?;
+        let mut reader = BufReader::new(input);
+        assert!(
+            qmp_line(&mut reader, Instant::now() + Duration::from_secs(1))?
+                .get("QMP")
+                .is_some()
+        );
+        assert!(qmp_line(&mut reader, Instant::now() - Duration::from_millis(1)).is_err());
+        output.write_all(&vec![b'x'; 65537])?;
+        assert!(qmp_line(&mut reader, Instant::now() + Duration::from_secs(1)).is_err());
+        Ok(())
+    }
 }

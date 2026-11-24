@@ -319,7 +319,7 @@ registration and generated profiles still require real runtime acceptance.
 
 `prepare-boot` accepts schema `droidloom.full-ubuntu-boot-plan.v1` and the
 pinned native receipt, normal host manifest/archive, kernel, ordinary base
-initrd, Android release inputs, label tools, and a 64–96 GiB sparse root-image
+initrd, `initrd_tools`, Android release inputs, label tools, and a 64–96 GiB sparse root-image
 bound. The normal ustar export is checked against its exact member set,
 content hashes, ownership, modes, and protected empty calibration directory.
 The four Android images, runtime declaration, and device bank must identify
@@ -334,13 +334,58 @@ manifest, the matching image, and its matching ordinary initrd. Only the old
 module tree inside this disposable native root is retired to its private work
 directory. The live host kernel, modules, and boot configuration are untouched.
 
+`initrd_tools` identifies the reviewed `initramfs-tools-core` package with
+`package_name`, `package_version`, and a pinned public `hook_functions` file.
+That exact support file is added only to the new qualification root. The
+ordinary exported initramfs hook runs in a read-only namespace rooted at the
+complete fixture, so dynamic dependencies are resolved from its actual libraries.
+Construction sets the normal umask 022 explicitly. The same distribution
+`copy_exec` function also copies the selected `libselinux.so.1` and its real
+dependencies, since the project hook's own ELFs do not necessarily link it.
+Every copied regular dependency and resolved alias is compared against the
+fixture. The finished initrd follows the kernel's documented concatenated-newc
+format. The actual final file is read again through one held descriptor: its
+base prefix and appended compressed member must match their producer hashes,
+alignment must contain only zero bytes, and no trailing data is accepted.
+The stock unpacker then extracts that actual final member, since some
+distribution versions silently stop after the first compressed member in a
+concatenated image. Every member, file/alias byte sequence, mode and owner is
+read back. The base's four usrmerge aliases must match the fixture, and the
+layer must preserve existing directory permissions without ambiguous hardlink
+or file-type collisions. Actual target-kernel unpacking remains a separate
+runtime gate. The format is specified at
+https://docs.kernel.org/driver-api/early-userspace/buffer-format.html.
+A base that already schedules Droidloom custody is refused
+to avoid invoking that entry twice. A material test with an older kernel/initrd
+does not establish compatibility with a newer kernel candidate.
+
+An explicit `libselinux_candidate` can select the narrow native exec-attribute
+candidate for the reviewed `libselinux1` 3.9-4build1 original. Its fields are
+the pinned `declaration`, `package`, `source_commit`, `source_dsc`,
+`source_debian_archive`, and `source_orig_archive`. The current candidate is
+3.9-4build1+p4lsmexec1 on amd64. Admission checks actual Debian metadata, the
+source `.dsc` archive pair, the exact quilt patch against its maintained Git
+receipt, normal build/API evidence for the stripped package member, and an
+independent comparison of all 247 exported ELF symbols/version nodes, SONAME,
+and dependency names. Only the regular
+`usr/lib/x86_64-linux-gnu/libselinux.so.1` member is selected from the data tar;
+the tar namespace and maintainer scripts are never installed. The original
+library must match the public fixture manifest and its known bytes. It is
+preserved separately before an atomic replacement in this fresh root. The
+usrmerge lookup and final inode/hash are read back. The fixture's dpkg status
+is unchanged and the receipt calls this a candidate overlay. A physical
+installation still requires the normal package path and independent runtime
+qualification. The original host and public fixture remain unchanged.
+
 The ordinary exported initramfs hook constructs the custody layer. The
 distribution's setfiles and matchpathcon tools apply the selected file-context
 rules; a separately pinned matching producer libsepol handles policy
 capabilities that an older distribution library cannot decode. No policy
 capability is removed. Missing labels fail admission. Root-image creation
-checks critical SELinux labels and native capability/ACL attributes through
-independent debugfs reads. A fixture-only journald configuration preserves the
+checks critical SELinux labels and every nonempty native capability/ACL attribute
+through independent debugfs reads. Critical inodes and all selected privileged
+mode or ownership objects also receive actual type, mode, UID/GID and applicable
+file-size comparisons. A fixture-only journald configuration preserves the
 actual native service journal without replacing the original journal service.
 
 `boot` accepts schema `droidloom.full-ubuntu-run-plan.v1`, the pinned
@@ -351,6 +396,15 @@ the guest lifetime and log size. The shared kernel boots with SELinux enforcing
 and AppArmor selected. SSH forwarding, when requested, binds only to loopback
 on ports 50000–59999, with a known-host entry derived from the fresh fixture's
 actual public host key. Original account keys are not consulted.
+
+Every owned subprocess is placed in its own process group. Error returns stop
+and reap the owned child; QEMU's ordinary power-down request retains a 45-second
+grace period before a forced stop. QMP input has line, event-count and whole-call
+time limits. `RUN-ENDED.json` uses `droidloom.full-ubuntu-run-ended.v1` and
+includes the preserved source image pin/identity plus a complete pin for the
+independent working disk. `RUN-FAILED.json` instead records the cleanup outcome
+and retained paths, without inventing a complete working-disk pin after an I/O
+failure. Neither receipt declares runtime acceptance.
 
 ```sh
 sudo -n /absolute/path/droidloom-ubuntu-fixture prepare-native \
@@ -372,3 +426,30 @@ Android lifecycle, real working-data compatibility, and application gates
 independently. Failed private attempts and their original diagnostics remain
 available for diagnosis; the commands do not clean up the host or activate its
 production services.
+
+### Normal material smoke checks without a guest
+
+`verify-host-import` accepts schema `droidloom.normal-host-import-smoke.v1`,
+a new `work_directory`, `host_manifest`, and `host_archive`. It exercises the
+same strict USTAR importer in a small empty private root and reads back every
+file and the protected empty StateDirectory. It does not run imported programs.
+
+`verify-boot-materials` accepts schema `droidloom.boot-material-smoke-plan.v1`,
+a new `work_directory`, `fixture_manifest`, `fixture_root`, `host_manifest`,
+`host_archive`, `base_initrd`, `initrd_tools`, and `libselinux_candidate`.
+It verifies and independently copies the complete public root, then exercises
+the same importer, real candidate-package overlay and ordinary initrd builder.
+Its explicit construction-only layout adds the four normal usrmerge aliases
+and empty `/dev`, `/proc`, `/sys`, `/run` directories. It does not generate
+accounts, copy Android userdata, produce a bootable root disk or start a VM.
+All source files, modules and the original public root remain untouched. Its
+`MATERIALS-VERIFIED.json` is only evidence for these material operations.
+
+```sh
+sudo -n /absolute/path/droidloom-ubuntu-fixture verify-host-import \
+  --config /private/inputs/HOST-IMPORT.json \
+  --config-sha256 "$P4_HOST_IMPORT_SHA256"
+sudo -n /absolute/path/droidloom-ubuntu-fixture verify-boot-materials \
+  --config /private/inputs/MATERIALS.json \
+  --config-sha256 "$P4_MATERIALS_SHA256"
+```

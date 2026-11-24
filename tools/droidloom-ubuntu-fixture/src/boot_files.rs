@@ -174,6 +174,64 @@ pub fn guest_path(root: &Path, guest: &str) -> Result<PathBuf> {
     Ok(root.join(names.join("/")))
 }
 
+/// Resolve only public in-fixture aliases. Absolute symlinks are guest names,
+/// never host paths; each component is inspected without following it.
+pub fn resolve_public_file(root: &Path, guest: &str) -> Result<(FilePin, serde_json::Value)> {
+    let tree = fs::Tree::open(&fs::absolute_string(root)?, 0)?;
+    let mut current = guest.to_owned();
+    let mut aliases = Vec::new();
+    for _ in 0..32 {
+        let names = crate::paths::parts(&current)?;
+        let mut prefix = String::new();
+        let mut next = None;
+        for (index, name) in names.iter().enumerate() {
+            prefix.push('/');
+            prefix.push_str(name);
+            let id = tree.identity(&prefix)?;
+            match FileType::from_raw_mode(id.mode) {
+                FileType::Symlink => {
+                    let (_, target) = tree.read_link(&prefix)?;
+                    let resolved = crate::paths::normalize_link(&prefix, &target)?;
+                    aliases.push(serde_json::json!({"path":prefix,"target":target,"identity":id}));
+                    next = Some(if index + 1 == names.len() {
+                        resolved
+                    } else {
+                        format!("{resolved}/{}", names[index + 1..].join("/"))
+                    });
+                    break;
+                }
+                FileType::Directory if index + 1 != names.len() => {
+                    ensure(
+                        id.uid == 0 && id.mode & 0o022 == 0,
+                        "public dependency parent is not root controlled",
+                    )?;
+                }
+                FileType::RegularFile if index + 1 == names.len() => {
+                    ensure(
+                        id.uid == 0 && id.gid == 0 && id.mode & 0o022 == 0,
+                        "public dependency file is not root controlled",
+                    )?;
+                }
+                _ => {
+                    return Err(
+                        "public dependency resolves through a special or invalid object".into(),
+                    );
+                }
+            }
+        }
+        if let Some(path) = next {
+            current = path;
+            continue;
+        }
+        let pin = pin_file(&guest_path(root, &current)?)?;
+        return Ok((
+            pin,
+            serde_json::json!({"guest_path":guest,"resolved_path":current,"aliases":aliases}),
+        ));
+    }
+    Err("public dependency alias cycle or excessive depth".into())
+}
+
 pub fn ensure_dir(root: &Path, guest: &str, mode: u32) -> Result<()> {
     let names = crate::paths::parts(guest)?;
     let tree = fs::Tree::open(
@@ -297,7 +355,8 @@ pub fn run_logged_env(
     )?;
     let log_path = work.join(format!("{name}.log"));
     let log = new_file(&log_path, 0o600)?;
-    let mut child = Command::new(program)
+    let mut command = Command::new(program);
+    command
         .args(args)
         .env_clear()
         .env("PATH", "/usr/sbin:/usr/bin:/sbin:/bin")
@@ -306,8 +365,8 @@ pub fn run_logged_env(
         .envs(extra)
         .stdin(Stdio::null())
         .stdout(Stdio::from(log.try_clone()?))
-        .stderr(Stdio::from(log))
-        .spawn()?;
+        .stderr(Stdio::from(log));
+    let mut child = crate::boot_child::OwnedChild::spawn(&mut command)?;
     let started = Instant::now();
     let mut timed_out = false;
     let status = loop {
@@ -318,8 +377,7 @@ pub fn run_logged_env(
             || std::fs::metadata(&log_path)?.len() > 64 * 1024 * 1024
         {
             timed_out = true;
-            child.kill()?;
-            break child.wait()?;
+            break child.stop_and_reap()?;
         }
         std::thread::sleep(Duration::from_millis(100));
     };
