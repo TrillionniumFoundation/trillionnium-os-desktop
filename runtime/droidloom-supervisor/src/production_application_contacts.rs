@@ -307,9 +307,9 @@ impl ContactState {
     }
 }
 
-struct ContactsProbe<'a> {
-    ready: ReadyTreeWitness<'a>,
-    framework: FrameworkObservation,
+struct ContactsProbe<'borrow, 'owner> {
+    ready: Workflow<'borrow, 'owner>,
+    framework: WorkflowFramework,
     expected: [ApplicationInspection; 2],
     receipts: Vec<ReadReceipt>,
     deadline: Instant,
@@ -320,7 +320,7 @@ fn complete(receipt: &ReadReceipt) -> bool {
         && receipt.query_waitid_code == libc::CLD_EXITED
         && receipt.query_waitid_status == 0
 }
-impl AndroidProbe for ContactsProbe<'_> {
+impl AndroidProbe for ContactsProbe<'_, '_> {
     fn epoch(&mut self) -> std::result::Result<RuntimeEpoch, String> {
         let value = self
             .ready
@@ -368,7 +368,7 @@ impl AndroidProbe for ContactsProbe<'_> {
         .map_err(|e| e.to_string())
     }
 }
-impl ContactsProbe<'_> {
+impl ContactsProbe<'_, '_> {
     fn provider(&mut self, query: ContactsQuery) -> Result<Vec<Row>> {
         require(
             Instant::now() < self.deadline && self.receipts.len() < 400,
@@ -490,7 +490,7 @@ fn fixed_expected(
 }
 
 pub(super) fn baseline(
-    mut ready: ReadyTreeWitness<'_>,
+    mut ready: Workflow<'_, '_>,
     contacts: &ApplicationInspection,
     provider: &ApplicationInspection,
 ) -> Result<ContactsBaselineObservation> {

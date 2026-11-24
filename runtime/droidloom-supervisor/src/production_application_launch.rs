@@ -26,16 +26,16 @@ fn retired(receipt: &ReadReceipt) -> bool {
         && receipt.query_waitid_code == libc::CLD_EXITED
 }
 
-struct Inspection<'a, 'owner> {
-    ready: &'a mut ReadyTreeWitness<'owner>,
-    framework: &'a FrameworkObservation,
+struct Inspection<'a, 'borrow, 'owner> {
+    ready: &'a mut Workflow<'borrow, 'owner>,
+    framework: &'a WorkflowFramework,
     request: &'a LaunchRequest,
     original: Option<&'a ApplicationInspection>,
     reads: &'a mut Vec<ReadReceipt>,
     deadline: Instant,
 }
 
-impl AndroidProbe for Inspection<'_, '_> {
+impl AndroidProbe for Inspection<'_, '_, '_> {
     fn epoch(&mut self) -> std::result::Result<RuntimeEpoch, String> {
         require(Instant::now() < self.deadline, "launch inspection deadline")
             .map_err(|e| e.to_string())?;
@@ -89,9 +89,9 @@ impl AndroidProbe for Inspection<'_, '_> {
     }
 }
 
-struct OwnerLaunch<'a> {
-    ready: ReadyTreeWitness<'a>,
-    framework: FrameworkObservation,
+struct OwnerLaunch<'borrow, 'owner> {
+    ready: Workflow<'borrow, 'owner>,
+    framework: WorkflowFramework,
     request: LaunchRequest,
     original: ApplicationInspection,
     reads: Vec<ReadReceipt>,
@@ -100,7 +100,7 @@ struct OwnerLaunch<'a> {
     deadline: Instant,
 }
 
-impl OwnerLaunch<'_> {
+impl OwnerLaunch<'_, '_> {
     fn fence(&mut self, request: &LaunchRequest, deadline: Instant) -> Result<()> {
         require(
             *request == self.request && deadline == self.deadline && Instant::now() < deadline,
@@ -121,7 +121,7 @@ impl OwnerLaunch<'_> {
     }
 }
 
-impl LaunchEffects for OwnerLaunch<'_> {
+impl LaunchEffects for OwnerLaunch<'_, '_> {
     fn revalidate(
         &mut self,
         request: &LaunchRequest,
@@ -204,7 +204,7 @@ impl LaunchEffects for OwnerLaunch<'_> {
 }
 
 pub(super) fn launch(
-    mut ready: ReadyTreeWitness<'_>,
+    mut ready: Workflow<'_, '_>,
     request: &LaunchRequest,
     deadline: Instant,
 ) -> Result<LaunchObservation> {

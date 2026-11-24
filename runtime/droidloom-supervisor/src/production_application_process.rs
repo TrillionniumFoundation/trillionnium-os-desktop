@@ -681,7 +681,11 @@ pub(super) fn connect_bridge(
         let raw: Vec<_> = files.iter().map(AsRawFd::as_raw_fd).collect();
         protocol::send(
             control.as_raw_fd(),
-            &Message::BridgeRequest { nonce, deadline_ns },
+            &Message::BridgeRequest {
+                nonce,
+                projection: authority.query_projection(),
+                deadline_ns,
+            },
             &raw,
             deadline,
         )?;

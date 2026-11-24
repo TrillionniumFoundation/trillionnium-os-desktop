@@ -143,10 +143,11 @@ pub(super) fn connect(
     parent: libc::pid_t,
     files: &[File],
     nonce: [u8; 16],
+    projection: QueryProjection,
     deadline: Instant,
 ) -> Result<()> {
     require(files.len() == 11, "fixed bridge descriptor count differs")?;
-    let init = validate_owner_descriptors(files, parent, QueryProjection::LegacyRoot)?;
+    let init = validate_owner_descriptors(files, parent, projection)?;
     before(files, deadline)?;
     let endpoint = files[10].metadata()?;
     require(

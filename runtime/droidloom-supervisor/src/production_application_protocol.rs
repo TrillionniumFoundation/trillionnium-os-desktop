@@ -91,6 +91,7 @@ pub(super) enum Message {
     },
     BridgeRequest {
         nonce: [u8; 16],
+        projection: QueryProjection,
         deadline_ns: u64,
     },
     BridgeConnected {

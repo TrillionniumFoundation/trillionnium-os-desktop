@@ -18,6 +18,10 @@ use std::os::fd::{AsFd, AsRawFd, FromRawFd, OwnedFd};
 use std::os::unix::fs::MetadataExt;
 use std::time::{Duration, Instant};
 
+#[path = "production_early_task_control.rs"]
+mod task_control;
+pub(crate) use task_control::{EarlyTaskControlEndpoint, EarlyTaskControlPeer};
+
 type Result<T> = std::result::Result<T, NamespaceError>;
 fn external(e: impl std::fmt::Display) -> NamespaceError {
     if crate::production_application::metadata_retirement_failed() {
@@ -235,7 +239,7 @@ fn exact_range(text: &str, start: u32, count: u32) -> bool {
 fn role_ids(base: &EarlyBaseAdmission<'_>, role: MetadataRole) -> Result<(u32, u32, u32)> {
     let guest = match role {
         MetadataRole::Init | MetadataRole::Zygote => 0,
-        MetadataRole::Framework => 1000,
+        MetadataRole::Framework | MetadataRole::Composer => 1000,
         _ => {
             return Err(NamespaceError::Rejected(
                 "not an early framework metadata role",
@@ -327,6 +331,10 @@ fn verify_sample(
         MetadataRole::Framework => (
             b"u:r:system_server:s0".as_slice(),
             observed.host.command == "system_server\n",
+        ),
+        MetadataRole::Composer => (
+            b"u:r:hal_graphics_composer_default:s0".as_slice(),
+            observed.host.command == "android.hardwar\n",
         ),
         _ => {
             return Err(NamespaceError::Rejected(
@@ -527,6 +535,18 @@ impl<'a> EarlyApplicationAuthority<'a> {
     pub(crate) fn host_uid(&self) -> u32 {
         self.base.board().selection().spec().host_uid
     }
+    pub(crate) fn verify_selection(
+        &self,
+        selected: &crate::production_selection::ProductionSelection,
+    ) -> Result<()> {
+        self.revalidate()?;
+        selected.revalidate().map_err(external)?;
+        require(
+            self.base.board().selection().same_selection(selected),
+            "application specification differs from the original early selection",
+        )
+    }
+
     fn executed(&self) -> Result<()> {
         self.revalidate()
     }

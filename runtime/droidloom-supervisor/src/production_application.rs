@@ -19,6 +19,10 @@ use thiserror::Error;
 mod custody;
 pub(crate) use custody::{ProductionInspection, inspect_with_custody};
 
+#[path = "production_application_workflow.rs"]
+mod workflow;
+use workflow::{Workflow, WorkflowFramework};
+
 #[path = "production_application_business.rs"]
 mod business;
 #[path = "production_application_launch.rs"]
@@ -509,7 +513,7 @@ pub(crate) fn inspect_contacts_baseline(
     contacts: &ApplicationInspection,
     provider: &ApplicationInspection,
 ) -> Result<ContactsBaselineObservation> {
-    contacts::baseline(ready, contacts, provider)
+    contacts::baseline(Workflow::Legacy(ready), contacts, provider)
 }
 
 pub(crate) fn launch_application(
@@ -517,7 +521,7 @@ pub(crate) fn launch_application(
     request: &droidloom_task_launcher::LaunchRequest,
     deadline: std::time::Instant,
 ) -> Result<LaunchObservation> {
-    launch::launch(ready, request, deadline)
+    launch::launch(Workflow::Legacy(ready), request, deadline)
 }
 
 pub(crate) fn connect_task_control(
@@ -533,7 +537,31 @@ pub(crate) fn open_browser(
     expected: &ApplicationInspection,
     url: &str,
 ) -> Result<(ApplicationInspection, String)> {
-    business::open(ready, expected, url)
+    business::open(Workflow::Legacy(ready), expected, url)
+}
+
+pub(crate) fn open_browser_early(
+    authority: &crate::production_selection::early_generation::EarlyApplicationAuthority<'_>,
+    expected: &ApplicationInspection,
+    url: &str,
+) -> Result<(ApplicationInspection, String)> {
+    business::open(Workflow::Early(authority), expected, url)
+}
+
+pub(crate) fn inspect_contacts_baseline_early(
+    authority: &crate::production_selection::early_generation::EarlyApplicationAuthority<'_>,
+    contacts: &ApplicationInspection,
+    provider: &ApplicationInspection,
+) -> Result<ContactsBaselineObservation> {
+    contacts::baseline(Workflow::Early(authority), contacts, provider)
+}
+
+pub(crate) fn launch_application_early(
+    authority: &crate::production_selection::early_generation::EarlyApplicationAuthority<'_>,
+    request: &droidloom_task_launcher::LaunchRequest,
+    deadline: std::time::Instant,
+) -> Result<LaunchObservation> {
+    launch::launch(Workflow::Early(authority), request, deadline)
 }
 
 struct ProductionProbe<'a> {

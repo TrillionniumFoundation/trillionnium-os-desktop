@@ -100,9 +100,9 @@ impl Binding {
     }
 }
 
-struct BrowserProbe<'a> {
-    ready: ReadyTreeWitness<'a>,
-    framework: FrameworkObservation,
+struct BrowserProbe<'borrow, 'owner> {
+    ready: Workflow<'borrow, 'owner>,
+    framework: WorkflowFramework,
     binding: Binding,
     receipts: Vec<ReadReceipt>,
     completed_browser_commands: usize,
@@ -116,7 +116,7 @@ fn complete_retirement(receipt: &ReadReceipt) -> bool {
         && receipt.query_waitid_status == 0
 }
 
-impl AndroidProbe for BrowserProbe<'_> {
+impl AndroidProbe for BrowserProbe<'_, '_> {
     fn epoch(&mut self) -> std::result::Result<RuntimeEpoch, String> {
         require(Instant::now() < self.deadline, "browser workflow deadline")
             .map_err(|e| e.to_string())?;
@@ -169,7 +169,7 @@ impl AndroidProbe for BrowserProbe<'_> {
 }
 
 pub(super) fn open(
-    mut ready: ReadyTreeWitness<'_>,
+    mut ready: Workflow<'_, '_>,
     expected: &ApplicationInspection,
     url: &str,
 ) -> Result<(ApplicationInspection, String)> {

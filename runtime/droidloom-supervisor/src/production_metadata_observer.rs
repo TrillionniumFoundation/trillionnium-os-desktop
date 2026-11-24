@@ -53,6 +53,7 @@ pub(crate) enum MetadataRole {
     InitLifecycle,
     Zygote,
     Framework,
+    Composer,
     Query,
     Browser,
     ContactsRead,
@@ -63,7 +64,7 @@ impl MetadataRole {
     fn uid(self) -> u32 {
         match self {
             Self::Init | Self::InitLifecycle | Self::Zygote => 0,
-            Self::Framework => 1000,
+            Self::Framework | Self::Composer => 1000,
             _ => 2000,
         }
     }
@@ -72,6 +73,7 @@ impl MetadataRole {
             Self::Init | Self::InitLifecycle => b"u:r:init:s0",
             Self::Zygote => b"u:r:zygote:s0",
             Self::Framework => b"u:r:system_server:s0",
+            Self::Composer => b"u:r:hal_graphics_composer_default:s0",
             Self::Query => b"u:r:droidloom_query:s0",
             Self::Browser => b"u:r:droidloom_browser:s0",
             Self::ContactsRead => b"u:r:droidloom_contacts_read:s0",
@@ -891,6 +893,10 @@ mod tests {
             assert!(serde_json::from_str::<protocol::Message>(text).is_err());
         }
         assert_eq!(MetadataRole::Framework.uid(), 1000);
+        assert_eq!(MetadataRole::Composer.uid(), 1000);
+        assert!(!MetadataRole::Framework.matches_context(MetadataRole::Composer.context()));
+        assert!(!MetadataRole::Composer.matches_context(MetadataRole::Framework.context()));
+        assert!(MetadataRole::Composer.matches_context(b"u:r:hal_graphics_composer_default:s0"));
         assert_eq!(MetadataRole::Query.uid(), 2000);
     }
     #[test]

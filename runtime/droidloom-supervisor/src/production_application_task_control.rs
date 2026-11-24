@@ -3,6 +3,9 @@
 //! No public FD/path/PID constructor, reconnect, background worker or fallback.
 use super::*;
 use crate::production_namespace::{TaskControlEndpoint, TaskControlPeer};
+use crate::production_selection::early_generation::{
+    EarlyApplicationAuthority, EarlyTaskControlEndpoint, EarlyTaskControlPeer,
+};
 use droidloom_task_control::{
     ControlRequest, ControlResponse, MAX_RECORD_BYTES, PROTOCOL_MAJOR, decode_response,
     encode_request,
@@ -24,8 +27,8 @@ enum Phase {
 
 pub(crate) struct ApplicationTaskControl {
     socket: File,
-    endpoint: TaskControlEndpoint,
-    composer: Option<TaskControlPeer>,
+    endpoint: Endpoint,
+    composer: Option<Peer>,
     package: String,
     deadline: Instant,
     phase: Phase,
@@ -101,8 +104,190 @@ fn socket_shape(socket: &File) -> Result<()> {
     )
 }
 
+// This sum type has only the two actual source-owned capabilities. A caller
+// cannot supply a path, PID or serialized endpoint, and kinds cannot be mixed.
+#[derive(Clone, Copy)]
+enum Authority<'borrow, 'owner> {
+    Legacy(&'borrow ApplicationAuthority<'owner>),
+    Early(&'borrow EarlyApplicationAuthority<'owner>),
+}
+impl<'borrow, 'owner> Authority<'borrow, 'owner> {
+    fn worker(self) -> &'borrow dyn ApplicationWorkerAuthority {
+        match self {
+            Self::Legacy(a) => a,
+            Self::Early(a) => a,
+        }
+    }
+    fn task_control_endpoint(self, deadline: Instant) -> Result<Endpoint> {
+        match self {
+            Self::Legacy(a) => a
+                .task_control_endpoint(deadline)
+                .map(Endpoint::Legacy)
+                .map_err(external),
+            Self::Early(a) => a
+                .task_control_endpoint(deadline)
+                .map(Endpoint::Early)
+                .map_err(external),
+        }
+    }
+    fn progress_inherited_native(self, deadline: Instant) -> Result<()> {
+        self.worker()
+            .progress_inherited_native(deadline)
+            .map_err(external)
+    }
+}
+enum Endpoint {
+    Legacy(TaskControlEndpoint),
+    Early(EarlyTaskControlEndpoint),
+}
+enum Peer {
+    Legacy(TaskControlPeer),
+    Early(EarlyTaskControlPeer),
+}
+impl Endpoint {
+    fn socket_inode(&self) -> &File {
+        match self {
+            Self::Legacy(e) => e.socket_inode(),
+            Self::Early(e) => e.socket_inode(),
+        }
+    }
+    fn composer_sha256(&self) -> &str {
+        match self {
+            Self::Legacy(e) => e.composer_sha256(),
+            Self::Early(e) => e.composer_sha256(),
+        }
+    }
+    fn bind_listener(
+        &mut self,
+        a: Authority<'_, '_>,
+        socket: &File,
+        deadline: Instant,
+    ) -> Result<()> {
+        match (self, a) {
+            (Self::Legacy(e), Authority::Legacy(a)) => {
+                e.bind_listener(a, socket, deadline).map_err(external)
+            }
+            (Self::Early(e), Authority::Early(a)) => {
+                e.bind_listener(a, socket, deadline).map_err(external)
+            }
+            _ => Err(reject(
+                "task-control endpoint belongs to another owner kind",
+            )),
+        }
+    }
+    fn revalidate_connection(
+        &self,
+        a: Authority<'_, '_>,
+        socket: &File,
+        deadline: Instant,
+    ) -> Result<()> {
+        match (self, a) {
+            (Self::Legacy(e), Authority::Legacy(a)) => e
+                .revalidate_connection(a, socket, deadline)
+                .map_err(external),
+            (Self::Early(e), Authority::Early(a)) => e
+                .revalidate_connection(a, socket, deadline)
+                .map_err(external),
+            _ => Err(reject(
+                "task-control endpoint belongs to another owner kind",
+            )),
+        }
+    }
+    fn bind_sender(
+        &self,
+        a: Authority<'_, '_>,
+        pidfd: OwnedFd,
+        credentials: libc::ucred,
+        deadline: Instant,
+    ) -> Result<Peer> {
+        match (self, a) {
+            (Self::Legacy(e), Authority::Legacy(a)) => e
+                .bind_sender(a, pidfd, credentials, deadline)
+                .map(Peer::Legacy)
+                .map_err(external),
+            (Self::Early(e), Authority::Early(a)) => e
+                .bind_sender(a, pidfd, credentials, deadline)
+                .map(Peer::Early)
+                .map_err(external),
+            _ => Err(reject("task-control sender belongs to another owner kind")),
+        }
+    }
+}
+impl Peer {
+    fn revalidate(
+        &self,
+        a: Authority<'_, '_>,
+        endpoint: &Endpoint,
+        deadline: Instant,
+    ) -> Result<()> {
+        match (self, a, endpoint) {
+            (Self::Legacy(p), Authority::Legacy(a), Endpoint::Legacy(e)) => {
+                p.revalidate(a, e, deadline).map_err(external)
+            }
+            (Self::Early(p), Authority::Early(a), Endpoint::Early(e)) => {
+                p.revalidate(a, e, deadline).map_err(external)
+            }
+            _ => Err(reject("task-control sender belongs to another owner kind")),
+        }
+    }
+    fn same_generation(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Legacy(a), Self::Legacy(b)) => a.same_generation(b),
+            (Self::Early(a), Self::Early(b)) => a.same_generation(b),
+            _ => false,
+        }
+    }
+}
+
 pub(super) fn connect(
     authority: &ApplicationAuthority<'_>,
+    package: &str,
+    deadline: Instant,
+) -> Result<ApplicationTaskControl> {
+    connect_owned(Authority::Legacy(authority), package, deadline)
+}
+pub(super) fn connect_early(
+    authority: &EarlyApplicationAuthority<'_>,
+    package: &str,
+    deadline: Instant,
+) -> Result<ApplicationTaskControl> {
+    connect_owned(Authority::Early(authority), package, deadline)
+}
+impl ApplicationTaskControl {
+    pub(crate) fn revalidate(
+        &self,
+        authority: &ApplicationAuthority<'_>,
+        deadline: Instant,
+    ) -> Result<()> {
+        self.revalidate_owned(Authority::Legacy(authority), deadline)
+    }
+    pub(super) fn revalidate_early(
+        &self,
+        authority: &EarlyApplicationAuthority<'_>,
+        deadline: Instant,
+    ) -> Result<()> {
+        self.revalidate_owned(Authority::Early(authority), deadline)
+    }
+    pub(crate) fn exchange(
+        &mut self,
+        authority: &ApplicationAuthority<'_>,
+        request: &ControlRequest,
+        deadline: Instant,
+    ) -> Result<ControlResponse> {
+        self.exchange_owned(Authority::Legacy(authority), request, deadline)
+    }
+    pub(super) fn exchange_early(
+        &mut self,
+        authority: &EarlyApplicationAuthority<'_>,
+        request: &ControlRequest,
+        deadline: Instant,
+    ) -> Result<ControlResponse> {
+        self.exchange_owned(Authority::Early(authority), request, deadline)
+    }
+}
+
+fn connect_owned(
+    authority: Authority<'_, '_>,
     package: &str,
     deadline: Instant,
 ) -> Result<ApplicationTaskControl> {
@@ -113,7 +298,8 @@ pub(super) fn connect(
     let mut endpoint = authority
         .task_control_endpoint(deadline)
         .map_err(external)?;
-    let connection = process::connect_bridge(authority, endpoint.socket_inode(), deadline)?;
+    let connection =
+        process::connect_bridge(authority.worker(), endpoint.socket_inode(), deadline)?;
     require(
         connection.receipt.cgroup_removed
             && connection.receipt.worker_waitid_code == libc::CLD_EXITED
@@ -133,16 +319,12 @@ pub(super) fn connect(
         phase: Phase::Hello,
         receipt: connection.receipt,
     };
-    value.revalidate(authority, deadline)?;
+    value.revalidate_owned(authority, deadline)?;
     Ok(value)
 }
 
 impl ApplicationTaskControl {
-    pub(crate) fn revalidate(
-        &self,
-        authority: &ApplicationAuthority<'_>,
-        deadline: Instant,
-    ) -> Result<()> {
+    fn revalidate_owned(&self, authority: Authority<'_, '_>, deadline: Instant) -> Result<()> {
         require(
             deadline == self.deadline && Instant::now() < deadline,
             "task-control fixed deadline changed or expired",
@@ -161,17 +343,12 @@ impl ApplicationTaskControl {
         )
     }
 
-    fn wait(
-        &self,
-        authority: &ApplicationAuthority<'_>,
-        event: i16,
-        deadline: Instant,
-    ) -> Result<()> {
-        self.revalidate(authority, deadline)?;
+    fn wait(&self, authority: Authority<'_, '_>, event: i16, deadline: Instant) -> Result<()> {
+        self.revalidate_owned(authority, deadline)?;
         authority
             .progress_inherited_native(deadline)
             .map_err(external)?;
-        self.revalidate(authority, deadline)?;
+        self.revalidate_owned(authority, deadline)?;
         let mut poll = libc::pollfd {
             fd: self.socket.as_raw_fd(),
             events: event,
@@ -194,16 +371,16 @@ impl ApplicationTaskControl {
             poll.revents & (libc::POLLNVAL | libc::POLLERR | libc::POLLHUP) == 0,
             "task-control connection failed",
         )?;
-        self.revalidate(authority, deadline)
+        self.revalidate_owned(authority, deadline)
     }
 
-    pub(crate) fn exchange(
+    fn exchange_owned(
         &mut self,
-        authority: &ApplicationAuthority<'_>,
+        authority: Authority<'_, '_>,
         request: &ControlRequest,
         deadline: Instant,
     ) -> Result<ControlResponse> {
-        self.revalidate(authority, deadline)?;
+        self.revalidate_owned(authority, deadline)?;
         let expected = requested_phase(self.phase, request, &self.package)?;
         let bytes = encode_request(request).map_err(external)?;
         require(
@@ -214,7 +391,7 @@ impl ApplicationTaskControl {
         // Hello, re-registration or new connection can hide a side effect.
         self.phase = Phase::Failed;
         loop {
-            self.revalidate(authority, deadline)?;
+            self.revalidate_owned(authority, deadline)?;
             let sent = unsafe {
                 libc::send(
                     self.socket.as_raw_fd(),
@@ -240,7 +417,7 @@ impl ApplicationTaskControl {
             self.wait(authority, libc::POLLOUT, deadline)?;
         }
         let received = loop {
-            self.revalidate(authority, deadline)?;
+            self.revalidate_owned(authority, deadline)?;
             match receive_record(&self.socket)? {
                 Some(value) => break value,
                 None => self.wait(authority, libc::POLLIN, deadline)?,
@@ -274,7 +451,7 @@ impl ApplicationTaskControl {
                 *request_id == expected_id,
                 "task-control error correlation differs",
             )?;
-            self.revalidate(authority, deadline)?;
+            self.revalidate_owned(authority, deadline)?;
             return Err(reject(format!(
                 "task-control server error {code:?}: {message}"
             )));
@@ -283,7 +460,7 @@ impl ApplicationTaskControl {
             matching_response(request, &response),
             "task-control response correlation differs",
         )?;
-        self.revalidate(authority, deadline)?;
+        self.revalidate_owned(authority, deadline)?;
         self.phase = expected;
         Ok(response)
     }

@@ -653,7 +653,10 @@ pub(crate) use retirement::{EarlyBaseRetirement, verify_exit};
 
 #[path = "production_early_application.rs"]
 mod application;
-pub(crate) use application::{EarlyApplicationAuthority, EarlyFrameworkObservation};
+pub(crate) use application::{
+    EarlyApplicationAuthority, EarlyFrameworkObservation, EarlyTaskControlEndpoint,
+    EarlyTaskControlPeer,
+};
 
 #[path = "production_early_lifecycle.rs"]
 mod lifecycle;

@@ -362,7 +362,12 @@ pub(super) fn entry() -> Result<()> {
         received.peer.pid == parent && received.peer.uid == 0 && received.peer.gid == 0,
         "application worker sender is not its actual broker parent",
     )?;
-    if let Message::BridgeRequest { nonce, deadline_ns } = &received.message {
+    if let Message::BridgeRequest {
+        nonce,
+        projection,
+        deadline_ns,
+    } = &received.message
+    {
         let nonce = *nonce;
         let deadline_ns = *deadline_ns;
         let anchor = Instant::now();
@@ -375,7 +380,7 @@ pub(super) fn entry() -> Result<()> {
         )?;
         let deadline = anchor + Duration::from_nanos(remaining);
         let files: Vec<File> = received.files.into_iter().map(File::from).collect();
-        let result = bridge::connect(parent, &files, nonce, deadline);
+        let result = bridge::connect(parent, &files, nonce, *projection, deadline);
         if let Err(error) = &result {
             let message: String = error.to_string().chars().take(2048).collect();
             let _ = protocol::send(

@@ -67,6 +67,9 @@ impl EarlyApplicationControl {
         let mut acquisition_quarantined = false;
         let handled = (|| -> Result<(), ControlError> {
             let (peer, request, file, streaming) = receive_request(stream)?;
+            let launch_deadline = Instant::now()
+                .checked_add(droidloom_task_launcher::effects::LAUNCH_LIMIT)
+                .ok_or_else(|| ControlError::Invalid("early launch deadline overflow".into()))?;
             authorize_uid(peer, host_uid)?;
             if file.is_some() {
                 return Err(ControlError::Invalid(
@@ -102,6 +105,83 @@ impl EarlyApplicationControl {
                             .map_err(|e| ControlError::Invalid(e.to_string()))?;
                     response.inspection = Some(inspection);
                     response.message = "Current package metadata and APK bytes observed in the original early Android generation; application acceptance remains pending".into();
+                }
+                ControlRequest::Launch {
+                    spec,
+                    package,
+                    component,
+                    resolution,
+                    user,
+                } => {
+                    let request = early_launch_request(
+                        &package,
+                        component.as_deref(),
+                        resolution.as_deref(),
+                        user,
+                    )?;
+                    if Instant::now() >= launch_deadline {
+                        return Err(ControlError::Invalid(
+                            "early launch deadline expired".into(),
+                        ));
+                    }
+                    let guard = ConfigurationReadGuard::acquire()
+                        .map_err(|e| ControlError::Invalid(e.to_string()))?;
+                    let selected = ProductionSelection::load(&guard, &spec, peer)
+                        .map_err(|e| ControlError::Invalid(e.to_string()))?;
+                    authority
+                        .verify_selection(&selected)
+                        .map_err(|e| ControlError::Invalid(e.to_string()))?;
+                    progress
+                        .report("Launching the application in the current Android generation...");
+                    let observed = crate::production_application::launch_application_early(
+                        authority,
+                        &request,
+                        launch_deadline,
+                    )
+                    .map_err(|e| ControlError::Invalid(e.to_string()))?;
+                    guard
+                        .revalidate()
+                        .map_err(|e| ControlError::Invalid(e.to_string()))?;
+                    authority
+                        .verify_selection(&selected)
+                        .map_err(|e| ControlError::Invalid(e.to_string()))?;
+                    if Instant::now() >= launch_deadline {
+                        return Err(ControlError::Invalid(
+                            "early launch completed after its absolute deadline".into(),
+                        ));
+                    }
+                    let binding = observed.binding;
+                    response.launch = Some(format!(
+                        "object={} composer_display={} android_display={} task={}",
+                        binding.object,
+                        binding.composer_display,
+                        binding.android_display,
+                        binding.task,
+                    ));
+                    response.inspection = Some(observed.application);
+                    response.message = format!("launched {package}");
+                }
+                ControlRequest::OpenBrowser { expected, url } => {
+                    validate_android_user(expected.user)?;
+                    application_probe::validate_https_url(&url).map_err(ControlError::Invalid)?;
+                    progress.report("Opening the reviewed HTTPS page through Android's current browser resolver...");
+                    let (inspection, output) = crate::production_application::open_browser_early(
+                        authority, &expected, &url,
+                    )
+                    .map_err(|e| ControlError::Invalid(e.to_string()))?;
+                    response.inspection = Some(inspection);
+                    response.launch = Some(output);
+                    response.message = "Implicit Firefox HTTPS activity opened in the original early Android generation; rendered content, media and whole-app acceptance remain pending".into();
+                }
+                ControlRequest::InspectContactsFixture { contacts, provider } => {
+                    progress.report("Reading the fixed Contacts provider baseline...");
+                    let observed = crate::production_application::inspect_contacts_baseline_early(
+                        authority, &contacts, &provider,
+                    )
+                    .map_err(|e| ControlError::Invalid(e.to_string()))?;
+                    response.inspection = Some(contacts);
+                    response.diagnostics = Some(serde_json::to_string(&observed)?);
+                    response.message = "Contacts provider baseline observed in the original early generation; account topology and create/edit/search/delete acceptance remain pending".into();
                 }
                 ControlRequest::Status | ControlRequest::Readiness => {
                     authority
@@ -153,5 +233,73 @@ impl EarlyApplicationControl {
     }
     pub(crate) fn retire(self) -> Result<(), ControlError> {
         self.listener.retire()
+    }
+}
+
+fn early_launch_request(
+    package: &str,
+    component: Option<&str>,
+    resolution: Option<&str>,
+    user: u32,
+) -> Result<droidloom_task_launcher::LaunchRequest, ControlError> {
+    validate_package(package)?;
+    validate_android_user(user)?;
+    if let Some(component) = component {
+        validate_component(component)?;
+        if component
+            .split_once('/')
+            .is_none_or(|(owner, _)| owner != package)
+        {
+            return Err(ControlError::Invalid(
+                "launcher component belongs to another package".into(),
+            ));
+        }
+    }
+    let resolution = resolution
+        .map(|value| {
+            let checked = parse_launch_resolution(value)?;
+            let (width, height) = checked.split_once('x').ok_or_else(|| {
+                ControlError::Invalid("validated launch extent is incomplete".into())
+            })?;
+            let dimension = |value: &str| {
+                value
+                    .parse::<u32>()
+                    .map_err(|_| ControlError::Invalid("invalid launch extent".into()))
+            };
+            Ok::<_, ControlError>((dimension(width)?, dimension(height)?))
+        })
+        .transpose()?;
+    Ok(droidloom_task_launcher::LaunchRequest {
+        package: package.into(),
+        component: component.map(str::to_owned),
+        resolution,
+        user,
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn early_public_launch_keeps_exact_package_alias_user_and_extent() {
+        let request = early_launch_request(
+            "org.mozilla.firefox",
+            Some("org.mozilla.firefox/org.mozilla.firefox.App"),
+            Some("1080x1920"),
+            0,
+        )
+        .unwrap();
+        assert_eq!(request.package, "org.mozilla.firefox");
+        assert_eq!(
+            request.component.as_deref(),
+            Some("org.mozilla.firefox/org.mozilla.firefox.App")
+        );
+        assert_eq!(request.resolution, Some((1080, 1920)));
+        assert!(
+            early_launch_request("org.mozilla.firefox", Some("other.app/.Main"), None, 0).is_err()
+        );
+        assert!(early_launch_request("org.mozilla.firefox;id", None, None, 0).is_err());
+        assert!(early_launch_request("org.mozilla.firefox", None, Some("0x1920"), 0).is_err());
+        assert!(early_launch_request("org.mozilla.firefox", None, None, u32::MAX).is_err());
     }
 }
