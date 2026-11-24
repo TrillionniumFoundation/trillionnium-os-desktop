@@ -99,15 +99,46 @@ fn boot_id() -> io::Result<String> {
     Ok(value.into())
 }
 
+#[derive(Debug)]
+struct PublicationOperationError {
+    operation: &'static str,
+    source: io::Error,
+}
+impl std::fmt::Display for PublicationOperationError {
+    fn fmt(&self, output: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(output, "{}: {}", self.operation, self.source)
+    }
+}
+impl std::error::Error for PublicationOperationError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        Some(&self.source)
+    }
+}
+
+/// Fixed source-owned operation names add diagnostics only. The original
+/// failure and its error chain remain intact; no permission or success changes.
+fn publication_operation<T>(operation: &'static str, result: io::Result<T>) -> io::Result<T> {
+    result.map_err(|source| {
+        io::Error::new(
+            source.kind(),
+            PublicationOperationError { operation, source },
+        )
+    })
+}
+
 fn own_published_executable() -> io::Result<File> {
-    let selected = SharedKernelLauncher::read()?
+    let selected = publication_operation("read published launcher", SharedKernelLauncher::read())?
         .ok_or_else(|| invalid("boot factory published selection is absent"))?;
-    if !selected.entry_program()?.matches_current_process()? {
+    let program = publication_operation("read published manager ELF", selected.entry_program())?;
+    if !publication_operation(
+        "compare active manager ELF",
+        program.matches_current_process(),
+    )? {
         return Err(invalid(
             "boot factory identity does not execute the published manager",
         ));
     }
-    File::open("/proc/self/exe")
+    publication_operation("open active manager ELF", File::open("/proc/self/exe"))
 }
 
 fn record_metadata(file: &File) -> io::Result<std::fs::Metadata> {
@@ -154,7 +185,8 @@ struct RecordFile {
 }
 impl RecordFile {
     fn read() -> io::Result<Self> {
-        let directory = open_root_trusted_directory(Path::new(HANDOFF)).map_err(io::Error::other)?;
+        let directory =
+            open_root_trusted_directory(Path::new(HANDOFF)).map_err(io::Error::other)?;
         let raw = unsafe {
             libc::openat(
                 directory.as_raw_fd(),
@@ -236,78 +268,109 @@ pub(super) struct Publication {
 }
 impl Publication {
     pub(super) fn publish() -> io::Result<Self> {
-        cv(unsafe { droidloom_factory_context() })?;
-        let executable = own_published_executable()?;
-        let pid = unsafe { libc::getpid() } as u32;
-        let pidfd = original_process_handle(pid)?;
-        require_factory(&pid_info(&pidfd)?, pid)?;
-        let image = executable.metadata()?;
-        let node = identity(&pidfd)?;
-        let data = Record {
-            schema: SCHEMA.into(),
-            boot_id: boot_id()?,
-            pid,
-            pidfd_device: node.0,
-            pidfd_inode: node.1,
-            executable_device: image.dev(),
-            executable_inode: image.ino(),
-            executable_size: image.len(),
-        };
-        let mut body = serde_json::to_vec(&data).map_err(io::Error::other)?;
-        body.push(b'\n');
-        let trusted = open_root_trusted_directory(Path::new(HANDOFF)).map_err(io::Error::other)?;
-        let directory = std::fs::OpenOptions::new()
-            .read(true)
-            .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
-            .open(HANDOFF)?;
-        if identity(&trusted)? != identity(&directory)? {
-            return Err(invalid("boot factory publication directory changed"));
-        }
-        let raw = unsafe {
-            libc::openat(
-                directory.as_raw_fd(),
-                PENDING.as_ptr(),
-                libc::O_RDWR | libc::O_CREAT | libc::O_EXCL | libc::O_CLOEXEC | libc::O_NOFOLLOW,
-                0o600,
-            )
-        };
-        cv(raw)?;
-        let mut pending = unsafe { File::from_raw_fd(raw) };
-        pending.write_all(&body)?;
-        pending.sync_all()?;
-        cv(unsafe { libc::fchmod(pending.as_raw_fd(), 0o400) })?;
-        pending.sync_all()?;
-        record_metadata(&pending)?;
-        cv(unsafe { droidloom_factory_context() })?;
-        require_factory(&pid_info(&pidfd)?, pid)?;
-        let result = unsafe {
-            libc::syscall(
-                libc::SYS_renameat2,
-                directory.as_raw_fd(),
-                PENDING.as_ptr(),
-                directory.as_raw_fd(),
-                FINAL.as_ptr(),
-                libc::RENAME_NOREPLACE,
-            )
-        };
-        if result != 0 {
-            return Err(io::Error::last_os_error());
-        }
-        directory.sync_all()?;
-        drop(pending); // Keep no writable record description after publication.
-        let record = RecordFile::read()?;
-        if record.data != data || record.body != body {
-            return Err(invalid(
-                "atomic boot factory publication differs from its source facts",
-            ));
-        }
-        let value = Self {
-            record,
-            pidfd,
-            executable,
-        };
-        value.revalidate()?;
-        Ok(value)
+        let mut operation = "validate factory MAC context";
+        let result = (|| {
+            cv(unsafe { droidloom_factory_context() })?;
+            operation = "resolve published factory executable";
+            let executable = own_published_executable()?;
+            let pid = unsafe { libc::getpid() } as u32;
+            operation = "open original factory PIDFD";
+            let pidfd = original_process_handle(pid)?;
+            operation = "validate original factory PIDFD lineage";
+            require_factory(&pid_info(&pidfd)?, pid)?;
+            operation = "stat original factory executable";
+            let image = executable.metadata()?;
+            operation = "stat original factory PIDFD";
+            let node = identity(&pidfd)?;
+            operation = "read original kernel boot ID";
+            let data = Record {
+                schema: SCHEMA.into(),
+                boot_id: boot_id()?,
+                pid,
+                pidfd_device: node.0,
+                pidfd_inode: node.1,
+                executable_device: image.dev(),
+                executable_inode: image.ino(),
+                executable_size: image.len(),
+            };
+            operation = "serialize factory identity record";
+            let mut body = serde_json::to_vec(&data).map_err(io::Error::other)?;
+            body.push(b'\n');
+            operation = "walk trusted factory handoff directory";
+            let trusted =
+                open_root_trusted_directory(Path::new(HANDOFF)).map_err(io::Error::other)?;
+            operation = "open factory handoff directory for sync";
+            let directory = std::fs::OpenOptions::new()
+                .read(true)
+                .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
+                .open(HANDOFF)?;
+            operation = "compare original factory handoff directory";
+            if identity(&trusted)? != identity(&directory)? {
+                return Err(invalid("boot factory publication directory changed"));
+            }
+            operation = "create pending factory identity record";
+            let raw = unsafe {
+                libc::openat(
+                    directory.as_raw_fd(),
+                    PENDING.as_ptr(),
+                    libc::O_RDWR
+                        | libc::O_CREAT
+                        | libc::O_EXCL
+                        | libc::O_CLOEXEC
+                        | libc::O_NOFOLLOW,
+                    0o600,
+                )
+            };
+            cv(raw)?;
+            let mut pending = unsafe { File::from_raw_fd(raw) };
+            operation = "write pending factory identity record";
+            pending.write_all(&body)?;
+            operation = "sync pending factory identity contents";
+            pending.sync_all()?;
+            operation = "seal pending factory identity mode";
+            cv(unsafe { libc::fchmod(pending.as_raw_fd(), 0o400) })?;
+            operation = "sync sealed factory identity metadata";
+            pending.sync_all()?;
+            operation = "validate pending factory identity label";
+            record_metadata(&pending)?;
+            operation = "revalidate factory MAC context";
+            cv(unsafe { droidloom_factory_context() })?;
+            operation = "revalidate original factory PIDFD lineage";
+            require_factory(&pid_info(&pidfd)?, pid)?;
+            operation = "publish original factory identity name";
+            let result = unsafe {
+                libc::syscall(
+                    libc::SYS_renameat2,
+                    directory.as_raw_fd(),
+                    PENDING.as_ptr(),
+                    directory.as_raw_fd(),
+                    FINAL.as_ptr(),
+                    libc::RENAME_NOREPLACE,
+                )
+            };
+            if result != 0 {
+                return Err(io::Error::last_os_error());
+            }
+            operation = "sync published factory identity directory";
+            directory.sync_all()?;
+            drop(pending); // Keep no writable record description after publication.
+            operation = "read back published factory identity";
+            let record = RecordFile::read()?;
+            if record.data != data || record.body != body {
+                return Err(invalid(
+                    "atomic boot factory publication differs from its source facts",
+                ));
+            }
+            let value = Self {
+                record,
+                pidfd,
+                executable,
+            };
+            operation = "revalidate published factory identity";
+            value.revalidate()?;
+            Ok(value)
+        })();
+        publication_operation(operation, result)
     }
     pub(super) fn revalidate(&self) -> io::Result<()> {
         cv(unsafe { droidloom_factory_context() })?;
@@ -430,6 +493,36 @@ impl Observation {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn publication_operation_retains_original_error_and_fixed_operation() {
+        use std::error::Error as _;
+        let error = publication_operation::<()>(
+            "create pending factory identity record",
+            Err(io::Error::from_raw_os_error(libc::EACCES)),
+        )
+        .unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::PermissionDenied);
+        assert!(
+            error
+                .to_string()
+                .starts_with("create pending factory identity record: ")
+        );
+        let detail = error
+            .get_ref()
+            .unwrap()
+            .downcast_ref::<PublicationOperationError>()
+            .unwrap();
+        assert_eq!(
+            detail
+                .source()
+                .unwrap()
+                .downcast_ref::<io::Error>()
+                .unwrap()
+                .raw_os_error(),
+            Some(libc::EACCES)
+        );
+    }
+
     #[test]
     fn boot_identity_schema_cannot_import_roles_or_wait_success() {
         let data = Record {

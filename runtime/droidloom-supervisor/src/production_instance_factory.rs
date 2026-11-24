@@ -726,6 +726,35 @@ impl std::fmt::Write for BootDetail {
     }
 }
 
+fn boot_error_errno(error: &io::Error) -> i32 {
+    // io::Error::other and transparent selection errors may hide raw_os_error
+    // on the outer value. Inspect the retained actual error objects, never
+    // parse diagnostic text or infer an errno from a message.
+    let mut current: &(dyn std::error::Error + 'static) = error;
+    for _ in 0..16 {
+        if let Some(io) = current.downcast_ref::<io::Error>() {
+            if let Some(errno) = io.raw_os_error() {
+                return errno;
+            }
+            if let Some(inner) = io.get_ref() {
+                current = inner;
+                continue;
+            }
+        }
+        if let Some(crate::production_selection::SelectionError::Io(io)) =
+            current.downcast_ref::<crate::production_selection::SelectionError>()
+        {
+            current = io;
+            continue;
+        }
+        let Some(source) = current.source() else {
+            break;
+        };
+        current = source;
+    }
+    0
+}
+
 fn boot_error_frame(
     stage: BootStage,
     error: &io::Error,
@@ -746,7 +775,7 @@ fn boot_error_frame(
     }
     let mut frame = [0; 248];
     frame[..4].copy_from_slice(&[b'E', 1, stage as u8, detail.len as u8]);
-    frame[4..8].copy_from_slice(&error.raw_os_error().unwrap_or(0).to_le_bytes());
+    frame[4..8].copy_from_slice(&boot_error_errno(error).to_le_bytes());
     frame[8..8 + detail.len].copy_from_slice(&detail.bytes[..detail.len]);
     (frame, 8 + detail.len)
 }
@@ -907,6 +936,20 @@ mod tests {
         // The buffered writer is deliberately still alive. A write_all-only
         // announcement leaves the original pipe empty at this exact point.
         assert!(buffered.buffer().is_empty());
+    }
+
+    #[test]
+    fn boot_error_keeps_errno_through_actual_io_and_selection_wrappers() {
+        let wrapped = io::Error::other(io::Error::other(
+            crate::production_selection::SelectionError::Io(io::Error::from_raw_os_error(
+                libc::EACCES,
+            )),
+        ));
+        let (frame, size) = boot_error_frame(BootStage::Publication, &wrapped, None);
+        assert_eq!(&frame[..3], &[b'E', 1, 5]);
+        assert_eq!(&frame[4..8], &libc::EACCES.to_le_bytes());
+        assert!(size <= frame.len());
+        assert_eq!(boot_error_errno(&io::Error::other("opaque failure")), 0);
     }
 
     #[test]
