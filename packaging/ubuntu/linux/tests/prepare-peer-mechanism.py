@@ -59,7 +59,15 @@ def link(path, target):
 
 program = regular("peer-runtime", args.program, 0o755)
 assert program[:6] == b"\x7fELF\x02\x01"
-regular("peer-deny.bin", args.profile, 0o644)
+profile = regular("peer-deny.bin", args.profile, 0o644)
+# .load consumes the original kernel serialization, not the parser's optional
+# eight-byte user compression header. Compile for the locked target features.
+assert 16 <= len(profile) <= 65536
+assert profile.startswith(b"\x04\x08\x00version\x00\x02"), "raw kernel AppArmor stream required"
+profile_version = int.from_bytes(profile[12:16], "little")
+assert 5 <= (profile_version & 0x3ff) <= 9, "target kernel ABI version required"
+assert not profile_version & 0x800, "forced complain profile is not a denial test"
+assert profile.count(b"p4-peer-deny\x00") == 1, "the one fixed denial profile is required"
 interpreter = re.findall(r"\[Requesting program interpreter: ([^]]+)\]",
                         readelf(args.program, "--program-headers"))
 assert interpreter == ["/lib64/ld-linux-x86-64.so.2"]
@@ -123,6 +131,8 @@ record = {
     "sources": sources,
     "initrd": held_bytes(archive)[1],
     "entry_count": len(entries),
+    "denial_profile_kernel_abi": profile_version & 0x3ff,
+    "denial_profile_raw_stream": True,
     "interpreter": {"requested_path": interpreter[0],
                     "guest_leaf": "/usr/lib/x86_64-linux-gnu/" + interpreter_source.name,
                     "source_mode": 0o755},

@@ -61,7 +61,13 @@ held connected socket. The error matrix includes invalid headers, unknown
 providers, short buffers without body copying, null memory, and absent peers.
 
 The fixed test-only tests/peer-deny.apparmor profile is compiled without
-loading it on the host. The VM loads it only after the concurrent checks; a
+loading it on the host. Use the normal product compiler arguments
+`apparmor_parser -Q -K --kernel-features
+<board-policy/pocket4-6.18.64-apparmor.features> -o <new-output>
+tests/peer-deny.apparmor`. The feature file must match the committed board
+lock, not the build host running kernel. The material builder rejects the
+parser user compression wrapper, unsupported kernel ABI, or forced complain
+mode; the guest writes only the original raw stream to `.load`. The VM loads it only after the concurrent checks; a
 real child enters it through the library's native AppArmor setter and proves
 that the outer AppArmor getsockopt denial still applies to both provider IDs
 and to old SO_PEERSEC.
