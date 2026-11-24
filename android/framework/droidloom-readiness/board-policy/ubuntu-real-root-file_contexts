@@ -47,3 +47,6 @@
 /etc/systemd/journald\.conf\.d/[^/]+\.conf -- u:object_r:p4_linux_journal_config_t:s0
 /etc/(passwd|group) -- u:object_r:p4_linux_public_accounts_t:s0
 /etc/selinux/droidloom/contexts/dbus_contexts -- u:object_r:p4_linux_board_selinux_config_t:s0
+/etc/selinux/droidloom/seusers -- u:object_r:p4_linux_board_selinux_config_t:s0
+/etc/selinux/droidloom/contexts/default_contexts -- u:object_r:p4_linux_board_selinux_config_t:s0
+/usr/lib/systemd/system/(sssd\.service|sssd-nss\.(service|socket)) -- u:object_r:p4_linux_identity_unit_file_t:s0

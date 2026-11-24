@@ -74,6 +74,8 @@
 ; The daemon relays the original fixed PIDFD for GetUnitByPIDFD.
 (allow p4_linux_dbus_t p4_native_system_bus_clients (fd (use)))
 (allow p4_linux_dbus_t droidloom_broker (fd (use)))
+; GetConnectionCredentials includes a real DBus-origin ProcessFD.
+(allow droidloom_broker p4_linux_dbus_t (fd (use)))
 (allow droidloom_broker p4_linux_dbus_run_t (dir (getattr search)))
 (allow droidloom_broker p4_linux_system_bus_socket_t (sock_file (getattr write)))
 (allow droidloom_broker p4_linux_dbus_t (unix_stream_socket (connectto)))

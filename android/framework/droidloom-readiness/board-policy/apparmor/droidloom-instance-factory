@@ -84,10 +84,12 @@ profile droidloom-instance-factory /usr/lib/droidloom/production/current/droidlo
   /system/bin/init rUx,
   # Fixed copied query bytes and their same original source. Birth has no
   # Binder pathname; its final CURRENT transition precedes NNP and exec.
-  /system/bin/{cmd,toybox} r,
-  /dev/droidloom-query/{,cmd,toybox} r,
-  /run/droidloom-early-slot/rootfs/system/bin/{cmd,toybox} r,
-  /run/droidloom-early-slot/rootfs/dev/{,droidloom-query/,droidloom-query/cmd,droidloom-query/toybox} r,
+  /system/bin/{cmd,toybox,app_process64} r,
+  /{system,run/droidloom-early-slot/rootfs/system}/framework/content.jar r,
+  /{system,run/droidloom-early-slot/rootfs/system}/system_ext/framework/droidloom-input-bridge.jar r,
+  /dev/droidloom-query/{,cmd,toybox,app_process64,content.jar} r,
+  /run/droidloom-early-slot/rootfs/system/bin/{cmd,toybox,app_process64} r,
+  /run/droidloom-early-slot/rootfs/dev/{,droidloom-query/,droidloom-query/cmd,droidloom-query/toybox,droidloom-query/app_process64,droidloom-query/content.jar} r,
   /sys/fs/cgroup/{,system.slice/,system.slice/droidloom-production.service/,system.slice/droidloom-production.service/cell-u1000/} r,
   /sys/fs/cgroup/system.slice/droidloom-production.service/cell-u1000/application-read/{,cgroup.type,cgroup.subtree_control,cgroup.procs,memory.max,memory.high,memory.swap.max,pids.max,cpu.max} r,
   /sys/fs/cgroup/system.slice/droidloom-instance-factory.service/ r,

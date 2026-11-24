@@ -1,0 +1,57 @@
+; Fixed PM session installation and the source-bound Java catalog.
+; Native factory case 5/6 select these roles from closed enums, never a client
+; supplied label. The original cmd/app_process bytes and complete argv are
+; verified before exec, with the same original PIDFD/TRACEEXEC/waitid owner.
+(type droidloom_install)
+(type droidloom_catalog_read)
+(roletype r droidloom_install)
+(roletype r droidloom_catalog_read)
+(typeattribute p4_additional_application_queries)
+(typeattributeset p4_additional_application_queries
+ (droidloom_install droidloom_catalog_read))
+(typeattributeset domain (p4_additional_application_queries))
+(typeattributeset coredomain (p4_additional_application_queries))
+(typeattributeset p4_fixed_query_processes (p4_additional_application_queries))
+(typeattributeset p4_closed_runtime_queries (p4_additional_application_queries))
+(typeattributeset p4_closed_cmd_queries (droidloom_install))
+
+; Installation is delegated to original PackageManager. APK bytes arrive on
+; the independent query_io-origin input pipe; no Android role receives a
+; broker-origin APK descriptor or gains direct application-data writes.
+(allow droidloom_install package_service (service_manager (find)))
+(allow droidloom_install droidloom_query_io (fifo_file (getattr read write)))
+(neverallow droidloom_install activity_service (service_manager (find)))
+(neverallow droidloom_install droidloom_provider_exec (file (entrypoint)))
+
+; The normal four-image cohort pins the sole ApplicationCatalog JAR under
+; /system/system_ext/framework. It retains its original droidloom_input_bridge_jar label.
+; Catalog renders only public package labels/icons and does not contact a
+; provider or execute writable code.
+(allow droidloom_catalog_read droidloom_provider_exec (file (getattr open read map execute entrypoint)))
+(allow droidloom_catalog_read package_service (service_manager (find)))
+(allow kernel droidloom_input_bridge_jar (file (getattr open read)))
+(allow droidloom_catalog_read droidloom_input_bridge_jar (file (getattr open read map)))
+(neverallow droidloom_catalog_read droidloom_input_bridge_jar (file (execute execute_no_trans entrypoint write append create unlink link rename setattr relabelto relabelfrom)))
+(allow droidloom_catalog_read dalvik_prop (file (getattr open read map)))
+(allow droidloom_catalog_read apk_data_file (file (getattr open read map)))
+(neverallow droidloom_catalog_read activity_service (service_manager (find)))
+(neverallow droidloom_catalog_read droidloom_query_exec (file (entrypoint)))
+(neverallow droidloom_catalog_read droidloom_provider_jar (file (open read map execute entrypoint)))
+(neverallow droidloom_catalog_read appdomain (binder (call transfer)))
+(neverallow droidloom_catalog_read appdomain (fd (use)))
+(neverallow p4_additional_application_queries service_manager_type (service_manager (add)))
+(neverallow p4_additional_application_queries property_type (property_service (set)))
+
+; -Xint/-Xusejit:false keeps ART's anonymous bookkeeping nonexecutable.
+(type droidloom_catalog_tmpfs)
+(roletype object_r droidloom_catalog_tmpfs)
+(typeattributeset file_type (droidloom_catalog_tmpfs))
+(typeattributeset p4_all_board_owned (droidloom_catalog_tmpfs))
+(allow droidloom_catalog_tmpfs tmpfs (filesystem (associate)))
+(typetransition droidloom_catalog_read tmpfs file droidloom_catalog_tmpfs)
+(typetransition droidloom_catalog_read tmpfs memfd_file droidloom_catalog_tmpfs)
+(allow droidloom_catalog_read droidloom_catalog_tmpfs (file (create getattr open read write map)))
+(allow droidloom_catalog_read droidloom_catalog_tmpfs (memfd_file (create getattr open read write map)))
+(neverallow droidloom_catalog_read self (process (execmem)))
+(neverallow droidloom_catalog_read droidloom_catalog_tmpfs (file (execute execute_no_trans entrypoint)))
+(neverallow droidloom_catalog_read droidloom_catalog_tmpfs (memfd_file (execute)))

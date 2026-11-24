@@ -71,8 +71,9 @@ def main():
         "frontend-android-interface.cil", "linux-frontend-observer.cil", "instance-launcher.cil",
         "linux-query-owner.cil", "linux-fixed-metadata-observer.cil",
         "instance-factory-cgroup.cil", "ubuntu-systemd-unit-status.cil",
-        "linux-application-roles.cil",
+        "linux-application-roles.cil", "linux-install-catalog.cil",
         "ubuntu-dbus.cil", "ubuntu-native-selinux-query.cil",
+        "ubuntu-native-pam.cil",
     )
     components = [here / name for name in component_names]
     sources = [compiler, library, args.linux_board_cil, *args.android_cil, *components,

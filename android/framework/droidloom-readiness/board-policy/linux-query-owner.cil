@@ -48,7 +48,7 @@
 ; the four query originals, original init, and the single pinned Composer ELF.
 ; The broker cannot map/execute or mutate those public original bytes.
 (typeattribute p4_broker_query_original_files)
-(typeattributeset p4_broker_query_original_files (init_exec system_file toolbox_exec zygote_exec hal_graphics_composer_default_exec))
+(typeattributeset p4_broker_query_original_files (init_exec system_file toolbox_exec zygote_exec hal_graphics_composer_default_exec droidloom_input_bridge_jar))
 (typeattribute p4_broker_query_read_files)
 (typeattributeset p4_broker_query_read_files (p4_broker_query_original_files p4_fixed_query_copies))
 (allow droidloom_broker p4_broker_query_original_files (file (getattr open read)))

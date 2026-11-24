@@ -2,9 +2,12 @@
 ; These are query consumers, separate from the broker/loader MAC roles.
 ; selinuxfs access writes are transactions, each checked again by the
 ; kernel security class. No mutation or policy-loading authority is granted.
+(typeattribute p4_native_selinux_avc_clients)
+(typeattributeset p4_native_selinux_avc_clients
+ (init_t p4_linux_dbus_t p4_linux_user_dbus_t))
 (typeattribute p4_native_selinux_query_clients)
 (typeattributeset p4_native_selinux_query_clients
- (init_t p4_linux_dbus_t p4_linux_user_dbus_t))
+ (p4_native_selinux_avc_clients p4_native_pam_roles))
 
 (typeattribute p4_linux_nonmac_without_native_selinux_queries)
 (typeattributeset p4_linux_nonmac_without_native_selinux_queries
@@ -35,7 +38,7 @@
 (allow p4_native_selinux_query_clients selinuxfs (filesystem (getattr)))
 (allow p4_native_selinux_query_clients selinuxfs (dir (getattr search open read)))
 (allow p4_native_selinux_query_clients selinuxfs (file (getattr open read map write)))
-(allow p4_native_selinux_query_clients kernel (security (compute_av)))
+(allow p4_native_selinux_avc_clients kernel (security (compute_av)))
 (allow p4_native_dbus_daemons self (netlink_selinux_socket (create bind read)))
 (neverallow p4_native_selinux_query_clients kernel (security (load_policy setenforce setbool setsecparam setcheckreqprot read_policy)))
 (neverallow p4_native_selinux_query_clients p4_nonboard_except_native_selinux_queries (file (write)))

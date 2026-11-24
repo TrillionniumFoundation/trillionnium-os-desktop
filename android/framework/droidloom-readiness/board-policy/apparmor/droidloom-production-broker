@@ -76,6 +76,19 @@ profile droidloom-production-broker flags=(attach_disconnected.path=/.droidloom-
   /run/droidloom-container/** rw,
   /run/systemd/{,system/} r,
   /run/systemd/{private,notify} rw,
+  # The normal host admission path observes only the three fixed SSSD units.
+  /usr/lib/systemd/system/ r,
+  /usr/lib/systemd/system/{sssd.service,sssd-nss.service,sssd-nss.socket} r,
+  /run/dbus/ r,
+  /run/dbus/system_bus_socket rw,
+  dbus (send) bus=system path=/org/freedesktop/DBus
+      interface=org.freedesktop.DBus
+      member={Hello,GetNameOwner,GetConnectionCredentials,GetConnectionUnixProcessID,GetConnectionUnixUser}
+      peer=(name=org.freedesktop.DBus),
+  dbus (send) bus=system
+      path=/org/freedesktop/systemd1/unit/{sssd_2eservice,sssd_2dnss_2eservice,sssd_2dnss_2esocket}
+      interface=org.freedesktop.DBus.Properties member=Get
+      peer=(name=org.freedesktop.systemd1),
   # Runtime endpoints have package-owned filesystem names or are unnamed socketpairs.
   deny unix (bind, listen, accept) addr="@**",
   deny unix (connect, send, receive) peer=(addr="@**"),
@@ -119,6 +132,10 @@ profile droidloom-production-broker flags=(attach_disconnected.path=/.droidloom-
   /{dev/droidloom-query,.droidloom-query}/content.jar r,
   /system/bin/{cmd,toybox,app_process64} r,
   /system/framework/content.jar r,
+  # Each original image input is selected and hash/inode checked in source.
+  /{system,run/droidloom-early-slot/rootfs/system,.droidloom-kernel-apparmorfs/system}/bin/init r,
+  /{vendor,run/droidloom-early-slot/rootfs/vendor,.droidloom-kernel-apparmorfs/vendor}/bin/hw/android.hardware.graphics.composer3-service.droidloom r,
+  /{system,run/droidloom-early-slot/rootfs/system,.droidloom-kernel-apparmorfs/system}/system_ext/framework/droidloom-input-bridge.jar r,
   /system/bin/linker64 mrix,
   /apex/com.android.runtime/bin/linker64 mrix,
   /system/lib64/**.so mr,

@@ -25,6 +25,13 @@ profile droidloom-production-android {
   /{dev/droidloom-query,.droidloom-query}/content.jar r,
   /system/bin/{cmd,toybox,app_process64} r,
   /system/framework/content.jar r,
+  # Original ART interpreter/boot classpath inputs, without writable code.
+  /system/framework/{,**} r,
+  /apex/*/javalib/{,**} r,
+  /system/framework/**.{oat,odex} mr,
+  /apex/*/javalib/**.{oat,odex} mr,
+  /system/system_ext/framework/droidloom-input-bridge.jar r,
+  /system/{product,system_ext}/{app,priv-app}/**.apk r,
   /system/bin/linker64 mrix,
   /apex/com.android.runtime/bin/linker64 mrix,
   /system/lib64/**.so mr,

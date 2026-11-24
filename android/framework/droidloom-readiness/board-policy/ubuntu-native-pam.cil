@@ -1,0 +1,41 @@
+; Native PAM preserves the stock GDM/SSHD modules. Only the two established
+; login actors select the fixed native session context from root-owned normal
+; seusers/default_contexts; no failsafe or arbitrary caller default is added.
+(typeattribute p4_native_pam_roles)
+(typeattributeset p4_native_pam_roles (p4_linux_gdm_worker_t p4_linux_sshd_t))
+(allow p4_native_pam_roles self (process (setexec setkeycreate)))
+(allow p4_native_pam_roles p4_linux_user_session_t (key (create)))
+(allow p4_native_pam_roles kernel (security (check_context compute_relabel)))
+(neverallow p4_native_pam_roles kernel (security (compute_user compute_create compute_member validate_trans)))
+; The candidate libselinux uses the native SELinux attribute API for both
+; pending exec and key creation. No procattr/memory write grant is introduced.
+
+; PAM computes and restores the original console/PTY context. It may not
+; turn one tty type into another, change its SELinux user/role, or move MLS
+; categories. The actor condition leaves every original Android transition
+; and its original assertions intact.
+(typeattribute p4_native_pam_tty_types)
+(typeattributeset p4_native_pam_tty_types (p4_linux_console_t devpts))
+(allow p4_native_pam_roles p4_native_pam_tty_types (chr_file (getattr relabelfrom relabelto)))
+(allow p4_linux_console_t tmpfs (filesystem (associate)))
+(allow devpts devpts (filesystem (associate)))
+(validatetrans chr_file
+ (or (not (eq t3 p4_native_pam_roles))
+     (and (eq t1 t2) (and (eq u1 u2) (eq r1 r2)))))
+(mlsvalidatetrans chr_file
+ (or (not (eq t3 p4_native_pam_roles))
+     (and (eq l1 l2) (eq h1 h2))))
+
+; Normal host admission reads these three exact immutable SSSD unit inputs
+; and observes their state over the public system bus. Status grants no
+; ability to start, stop, replace or override the services.
+(type p4_linux_identity_unit_file_t)
+(roletype object_r p4_linux_identity_unit_file_t)
+(typeattributeset p4_linux_data (p4_linux_identity_unit_file_t))
+(allow p4_linux_identity_unit_file_t labeledfs (filesystem (associate)))
+(allow init_t p4_linux_identity_unit_file_t (file (getattr open read map)))
+(allow droidloom_broker p4_linux_unit_directory_t (dir (getattr search)))
+(allow droidloom_broker p4_linux_identity_unit_file_t (file (getattr open read)))
+(allow droidloom_broker p4_linux_identity_unit_file_t (service (status)))
+(neverallow droidloom_broker p4_linux_identity_unit_file_t (service (start stop reload kill load enable disable)))
+(neverallow p4_linux_procs p4_linux_identity_unit_file_t (file (write append create setattr unlink rename relabelto relabelfrom execute entrypoint)))
