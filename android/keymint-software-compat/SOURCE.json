@@ -1,0 +1,80 @@
+{
+  "schema": "droidloom-keymint-software-compat-v1",
+  "keymint_commit": "cfeefc94bf8c4f19d19dca193d376a1fc05e8e3e",
+  "interfaces_commit": "0162af698935100a590b7359581ac8b1b80693e5",
+  "provider_name": "Droidloom software KeyMint (KMR legacy v1)",
+  "patches": [
+    {
+      "path": "system/keymint/common/src/keyblob.rs",
+      "before_sha256": "7eb92dc8711ac55f4a7f9f57781b5136fcce73012317da6eb5649eb991a0e023",
+      "after_sha256": "6314341608586b3056c06d482cc44591e7e3e3b85313880134e553acdf02db5d",
+      "replacements": [
+        {
+          "old": "pub trait LegacyKeyHandler {\n",
+          "new": "pub trait LegacyKeyHandler {\n    /// Explicitly opt in to authenticated migration of a legacy keyblob which\n    /// still parses as the current format. Only a SOFTWARE TA consults this\n    /// hook. Hardware implementations retain their existing behavior.\n    ///\n    /// Return true only after authenticating the original blob, hidden\n    /// parameters and root of trust. Unsupported or invalid legacy profiles\n    /// must return an error, not fall back to current-format processing.\n    /// The normal upgrade operation then converts and re-encrypts the key.\n    fn software_keyblob_upgrade_required(\n        &self,\n        _keyblob: &[u8],\n        _params: &[KeyParam],\n        _root_of_trust: &BootInfo,\n    ) -> Result<bool, Error> {\n        Ok(false)\n    }\n\n"
+        }
+      ]
+    },
+    {
+      "path": "system/keymint/ta/src/lib.rs",
+      "before_sha256": "ffadd7c4892383154effaabddbd785f86a093b83b504ffb870a13ef3b7d53a7c",
+      "after_sha256": "6595babde7b792c5fd7df74a63949eca79c9920e546f962a69ebb3c61b4b4af4",
+      "replacements": [
+        {
+          "old": "        let encrypted_keyblob = match keyblob::EncryptedKeyBlob::new(key_blob) {\n",
+          "new": "        // The historical in-process nonsecure provider used this same wire\n        // format with a TrustedEnvironment characteristic. Recognize it only\n        // through an explicitly opted-in software handler, which authenticates\n        // the original encrypted blob before asking the caller to upgrade.\n        if self.hw_info.security_level == SecurityLevel::Software {\n            if let Some(old_key) = self.dev.legacy_key.as_ref() {\n                if old_key.software_keyblob_upgrade_required(\n                    key_blob, params, self.boot_info()?,\n                )? {\n                    return Err(km_err!(\n                        KeyRequiresUpgrade,\n                        \"authenticated legacy software key requires upgrade\"\n                    ));\n                }\n            }\n        }\n        let encrypted_keyblob = match keyblob::EncryptedKeyBlob::new(key_blob) {\n"
+        }
+      ]
+    },
+    {
+      "path": "hardware/interfaces/security/keymint/aidl/default/ta/lib.rs",
+      "before_sha256": "d5a5d2d178908125837f3073a3ab7b51b5559c49d59db9db95c8206cd307dc77",
+      "after_sha256": "45358c81adb3f817e0fbb555c6f472c089a821d7b3536d72566da73714a21eb2",
+      "replacements": [
+        {
+          "old": "pub mod clock;\n",
+          "new": "pub mod clock;\nmod legacy_nonsecure;\n"
+        },
+        {
+          "old": "security_level: SecurityLevel::TrustedEnvironment,",
+          "new": "security_level: SecurityLevel::Software,"
+        },
+        {
+          "old": "impl_name: \"Rust reference implementation\",",
+          "new": "impl_name: \"Droidloom software KeyMint (KMR legacy v1)\","
+        },
+        {
+          "old": "        // No support for converting previous implementation's keyblobs.\n        legacy_key: None,",
+          "new": "        // Only this in-process software provider migrates its authenticated\n        // historical KMR V1 blobs; the generic TA hook remains disabled.\n        legacy_key: Some(Box::new(legacy_nonsecure::LegacyNonsecureKmr::new())),"
+        },
+        {
+          "old": "    KeyMintTa::new(hw_info, RpcInfo::V3(rpc_info_v3), boringssl_crypto_impls(), dev)\n}\n",
+          "new": "    KeyMintTa::new(hw_info, RpcInfo::V3(rpc_info_v3), boringssl_crypto_impls(), dev)\n}\n\n#[cfg(test)]\nmod compat_tests;\n"
+        }
+      ]
+    },
+    {
+      "path": "hardware/interfaces/security/keymint/aidl/default/Android.bp",
+      "before_sha256": "4fd5f0e9eb3a299ecaa59f6b943bf405be885c0f4174b1897fe90ee5aaedc2a6",
+      "after_sha256": "e70d9c9cd5eb20848d3766e0406f3aa6d446325f632868ae84e878dafd8cc0f3",
+      "replacements": [
+        {
+          "old": "// The following target declares the latest version of KeyMint.\n",
+          "new": "// Run the actual nonsecure TA and KMR crypto against synthetic legacy blobs.\n// This host test is not installed in the product.\nrust_test_host {\n    name: \"droidloom_keymint_software_compat_test\",\n    crate_name: \"droidloom_keymint_software_compat_test\",\n    srcs: [\"ta/lib.rs\"],\n    rustlibs: [\n        \"libhex\",\n        \"liblibc\",\n        \"liblog_rust\",\n        \"libkmr_common\",\n        \"libkmr_crypto_boring\",\n        \"libkmr_ta\",\n        \"libkmr_wire\",\n    ],\n    test_suites: [\"general-tests\"],\n}\n\n// The following target declares the latest version of KeyMint.\n"
+        }
+      ]
+    },
+    {
+      "path": "system/sepolicy/vendor/file_contexts",
+      "before_sha256": "3cf387ec4b497d6798c71a77066e8b3a2807963dc7ed2dfb27f2fbdd1a594fff",
+      "after_sha256": "7adef24cc4d7987d8b8895859b3c77ea4b0d634935a54efec1c861b4865ec17c",
+      "replacements": [
+        {
+          "old": "/(vendor|system/vendor)/bin/hw/android\\.hardware\\.security\\.keymint-service   u:object_r:hal_keymint_default_exec:s0\n",
+          "new": "/(vendor|system/vendor)/bin/hw/android\\.hardware\\.security\\.keymint-service   u:object_r:hal_keymint_default_exec:s0\n/(vendor|system/vendor)/bin/hw/android\\.hardware\\.security\\.keymint-service\\.nonsecure   u:object_r:hal_keymint_default_exec:s0\n"
+        }
+      ]
+    }
+  ],
+  "sepolicy_commit": "e066568e98d86db31a9346d30977f3632fa7073c"
+}

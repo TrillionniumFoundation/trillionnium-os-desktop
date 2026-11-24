@@ -3,6 +3,8 @@ use crate::util::*;
 mod native_projection;
 #[path = "official_vendor.rs"]
 mod official_vendor;
+#[path = "keymint_software.rs"]
+mod keymint_software;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::BTreeMap,
@@ -13567,6 +13569,18 @@ fn build_targets_with_fixed_request(
         crate::native_bridge::prepare_coherent_build(source, &vendor, work, &mut p)?;
     } else {
         crate::native_bridge::prepare_build(source, &vendor, work, &mut p)?;
+    }
+    if complete_delivery
+        || matches!(
+            request,
+            FixedProductionRequest::OfficialGsiVendor(_)
+                | FixedProductionRequest::VendorImageOnProductionSource
+        )
+    {
+        keymint_software::project_vendor(source, &mut p)?;
+    }
+    if complete_delivery {
+        keymint_software::project_system_metadata(source, &mut p)?;
     }
     if nativebridge_discovery_scope(targets) {
         // Post-mirror projection; never apply these production-app filters

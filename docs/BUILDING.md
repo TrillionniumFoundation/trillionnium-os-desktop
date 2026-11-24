@@ -835,3 +835,115 @@ exercise the actual complete provider entry, whole upstream module retention,
 wrong preimages, interrupted recovery, and the unchanged complete target
 contract. These source tests do not constitute a completed vendor build or
 Android runtime qualification.
+
+## Software KeyMint and existing KMR keys
+
+The x86_64 product selects the process-local Rust KeyMint service. Its patched
+constructor reports SOFTWARE with the exact provider name
+"Droidloom software KeyMint (KMR legacy v1)". The permission XML suppresses
+hardware keystore, StrongBox, device-unique attestation and hardware usage-limit
+features. This provider supplies software protection; it does not provide a TEE,
+hardware attestation or verified-boot evidence.
+
+The file android/keymint-software-compat/SOURCE.json records the pinned original
+and projected hashes for the generic KMR hook, TA, nonsecure constructor, test
+module and exact executable context. The updater applies these through its
+existing source journal for complete product builds and both vendor-image
+routes. The executable context selects the existing hal_keymint_default_exec
+domain; no policy allow rules are added. Source drift or an existing injected
+source file aborts the projection. Recovery restores the original source bytes
+and removes added files.
+
+The new generic hook defaults to Ok(false) and is consulted only when the
+current TA actually reports Software. Only the selected nonsecure handler
+overrides it. A historical blob must have the original V1 structure, one
+TrustedEnvironment characteristic bucket, an empty KEK context and no secure
+deletion slot. Its original characteristics, application ID/data and boot root
+are authenticated with the original software provider before
+KEY_REQUIRES_UPGRADE is returned. Unknown profiles and authentication failures
+are errors. The normal upgrade operation authenticates again, changes only the
+characteristic bucket to Software, retains authorizations and key material,
+checks version monotonicity and encrypts a replacement with a fresh derivation
+nonce. No caller key material is exported and the input blob is not deleted.
+
+### Complete-system metadata and build entry
+
+Stock Keystore2 does not replace stored authorizations when upgradeKey returns
+a new encrypted blob. For the exact software provider above,
+metadata/service.after.rs changes only the authorization security levels
+returned by getKeyEntry, after its original permission checks. It preserves
+the stored parameters, usage counts, UUID routing, certificates and certificate
+chain bytes. It uses cached hardware information and keeps pure certificate
+queries independent of KeyMint. Historical certificate attestations remain
+historical signed statements; the migration does not turn them into hardware
+evidence.
+
+This metadata change is projected only by the complete normal system build:
+android::build uses strict TARGETS, then coherent_images::run_normal builds
+systemimage, system_extimage, productimage and vendorimage. With a prepared
+ordinary-user workspace, the existing build-only staging entry is:
+
+~~~console
+droidloom-update --source /absolute/integrated-source package-stage \
+  --work /absolute/prepared-work \
+  --destination /absolute/prepared-work/package-candidate \
+  --jobs 6
+~~~
+
+This uses /absolute/prepared-work/aosp-source and
+/absolute/prepared-work/android-out. The four images are under
+android-out/target/product/droidloom_x86_64/; the normal result is
+android-out/droidloom-coherent-product-normal-result.json. The destination
+must be a child of the workspace. The command stages a complete payload and
+does not install it. Its complete-source, source/runtime identity and image
+verification requirements must actually pass before any candidate exists.
+
+The official-gsi-vendor-build and vendor-image-build commands do not rebuild
+Keystore2. An existing official GSI therefore does not acquire this metadata
+change. A vendor-only candidate can test fresh boot and keyblob continuity on an
+isolated userdata copy, but cannot establish the complete metadata migration.
+Never patch or relabel an old system image to imply that it contains the
+matching source changes. Select and verify all four normal images as one cohort
+when adopting the complete system.
+
+### Focused compatibility validation
+
+The exact-source projection tests can run against a directory containing the
+five pinned original source files listed in SOURCE.json:
+
+~~~console
+DROIDLOOM_KEYMINT_PINNED_SOURCE=/absolute/pinned-source \
+cargo test --locked -j 1 -p droidloom-update --bin droidloom-update \
+  keymint_software::tests -- --include-ignored --test-threads=1
+~~~
+
+The integration test copies its inputs to a private temporary directory,
+exercises the real projection and journal restoration, verifies that vendor
+projection leaves system metadata unchanged, and checks that late source drift
+fails before earlier files are mutated.
+
+The projected Soong host test is droidloom_keymint_software_compat_test. It uses
+the actual KMR TA and BoringSSL implementation with synthetic keys. It checks
+new-key SOFTWARE reporting, authenticated old-blob upgrade, matching HMAC results
+before and after upgrade and TA restart, idempotence, wrong root/hidden
+parameters, ciphertext/nonce/characteristic corruption, unsupported contexts and
+profiles, opt-in isolation, TEE isolation, version downgrade refusal and
+preserved purpose/auth restrictions. The five system metadata tests are in the
+existing keystore2_test module. Their Android build and execution remain
+separate from source projection checks.
+
+For host development, Cargo.host.toml, Cargo.host.lock and host_test_crypto.rs
+record the standalone Cargo test configuration. It uses sibling aosp-keymint and
+default-keymint directories containing the pinned sources with the exact
+production changes. Only in that private test copy, the constructor's crypto
+factory call is connected to host_test_crypto. Cargo uses the pinned KMR OpenSSL
+backend; CMAC and ML-DSA return unsupported errors in that adapter. The normal
+Android projection never installs this adapter and continues to use BoringSSL.
+A Cargo pass is not a Soong build, Android boot, application KeyInfo result or
+existing-userdata compatibility result.
+
+Before adoption, use an isolated, reversible copy of the existing data and
+metadata images. Verify keystore and vold startup, representative existing key
+operations and app data, new keys, honest KeyInfo security levels, and restart
+continuity. Do not reset credentials, change the original boot root, write the
+original userdata, export keys or delete the rollback copy to force a pass.
