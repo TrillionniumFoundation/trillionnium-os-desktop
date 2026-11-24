@@ -52,6 +52,20 @@
 (neverallow droidloom_broker p4_broker_query_original_files (file (map execute entrypoint execute_no_trans write append create link unlink rename setattr relabelfrom relabelto)))
 (allow droidloom_broker device (dir (getattr search)))
 
+; Fixed factory query transport. The original broker sends only its sealed
+; generation/query handles to the authenticated boot factory. The factory
+; reopens each selected description before the one-way query birth; neither
+; query nor query_birth inherits a broker-origin file description.
+(allow droidloom_broker p4_instance_factory_socket_t (sock_file (getattr write)))
+(allow droidloom_broker kernel (unix_stream_socket (connectto)))
+(allow kernel droidloom_broker (fd (use)))
+; Factory verification reads the same literal CP3A toybox input and retained
+; private query root as the broker. It gains no original-input entrypoint,
+; mutation or relabel permission. The exact paths are also fixed by AppArmor.
+(allow kernel toolbox_exec (file (getattr open read)))
+(allow kernel droidloom_query_tmpfs_t (filesystem (getattr)))
+(allow kernel droidloom_query_tmpfs_t (dir (getattr open read search)))
+
 ; Preserve every other subject/object in the board guards. Only the original
 ; broker may read the fixed stock-role types or assign its new fs context.
 (typeattribute p4_linux_without_query_owner)
