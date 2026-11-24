@@ -394,7 +394,6 @@ pub(crate) const FACTORY_QUERY_APPARMOR: &[u8] = b"droidloom-production-android 
 pub(crate) fn verify_factory_exec(
     binding: &ExecutableBinding,
     namespaces: &NamespaceBinding,
-    proc: &File,
     query_pidfd: &File,
     factory_pidfd: &File,
     stop: &super::super::factory_query::FactoryExecStop,
@@ -449,10 +448,14 @@ pub(crate) fn verify_factory_exec(
     )?;
     let observed = crate::production_application::observe_metadata(
         crate::production_application::MetadataRole::for_operation(domain),
-        proc,
         query_pidfd,
         &namespaces.namespaces[0],
         deadline,
+    )?;
+    require(
+        observed.host.cgroup
+            == "0::/system.slice/droidloom-production.service/cell-u1000/application-read\n",
+        "factory query did not remain in the original private application cgroup",
     )?;
     namespaces.verify(&observed)?;
     binding.verify(&observed.executable, deadline)?;
@@ -746,7 +749,6 @@ impl<'a> ExecTrace<'a> {
             let target = File::from(self.child.pidfd.try_clone()?);
             let observed = crate::production_application::observe_metadata(
                 crate::production_application::MetadataRole::for_operation(domain),
-                &self.proc,
                 &target,
                 &expected.namespaces[0],
                 deadline,

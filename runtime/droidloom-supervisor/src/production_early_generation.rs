@@ -436,6 +436,11 @@ impl EarlyBoardResources {
         Ok(value)
     }
     pub(crate) fn revalidate(&self) -> io::Result<()> {
+        if crate::production_application::metadata_retirement_failed() {
+            return Err(io::Error::other(
+                crate::production_application::ApplicationError::RetirementUnproven,
+            ));
+        }
         self.generation.revalidate()?;
         self.record.revalidate_path().map_err(io::Error::other)?;
         for (path, held, kind, expected) in [
@@ -499,10 +504,23 @@ impl EarlyBoardResources {
     pub(crate) fn selection(&self) -> &ProductionSelection {
         &self.generation.selected
     }
+    pub(crate) fn observe_init_metadata(
+        &self,
+    ) -> io::Result<crate::production_application::MetadataObservation> {
+        self.revalidate()?;
+        let observed = crate::production_application::observe_metadata(
+            crate::production_application::MetadataRole::InitLifecycle,
+            self.pidfd(),
+            self.user_namespace(),
+            std::time::Instant::now() + std::time::Duration::from_secs(5),
+        )
+        .map_err(io::Error::other)?;
+        self.generation.check_liveness()?;
+        Ok(observed)
+    }
     fn current_cgroup(&self) -> io::Result<File> {
-        self.generation.check_liveness()?;
-        let current = File::open(format!("/proc/{}/ns/cgroup", self.host_pid()))?;
-        self.generation.check_liveness()?;
+        let observed = self.observe_init_metadata()?;
+        let current = observed.namespaces[6].try_clone()?;
         if cv(unsafe { libc::ioctl(current.as_raw_fd(), NS_GET_NSTYPE) })? != libc::CLONE_NEWCGROUP
         {
             return Err(invalid(
@@ -516,6 +534,7 @@ impl EarlyBoardResources {
                 "child cgroup namespace belongs to a different user namespace",
             ));
         }
+        self.generation.check_liveness()?;
         Ok(current)
     }
     /// Called after the budget owner moves the existing PID 1 into its delegated payload.

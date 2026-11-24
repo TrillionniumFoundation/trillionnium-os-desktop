@@ -13,7 +13,7 @@ pub(super) const ORIGINAL_EXECUTABLE: usize = 11;
 pub(super) const STDOUT: usize = 12;
 pub(super) const STDERR: usize = 13;
 pub(super) const GATE: usize = 14;
-const MESSAGE_LIMIT: usize = 8192;
+const MESSAGE_LIMIT: usize = 32768;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(tag = "phase", deny_unknown_fields)]
@@ -30,6 +30,11 @@ pub(super) enum Message {
         apparmor: String,
         stat: String,
         status: String,
+        host: super::metadata_observer::HostProcessMetadata,
+    },
+    MetadataRejected {
+        nonce: [u8; 16],
+        reason: String,
     },
     Request {
         nonce: [u8; 16],

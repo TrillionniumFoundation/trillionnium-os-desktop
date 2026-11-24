@@ -3,12 +3,12 @@
 //! The broker never gains SYS_PTRACE. A fresh protected ELF enters one held,
 //! non-initial Android user namespace, keeps only that namespace's SYS_PTRACE,
 //! and reads fixed procfs leaves. It cannot ptrace, signal, execute, create a
-//! process, open arbitrary paths, or read an executable body. Returned O_PATH
-//! identities are consumed only after this original helper is actually reaped.
+//! process or open arbitrary paths. Only fixed public ELF/root/namespace files
+//! are returned read-only, after this original helper is actually reaped.
 use super::{ApplicationError, Result, external, reject, require};
 use super::{protocol, query_io as helper};
 use serde::{Deserialize, Serialize};
-use std::ffi::CStr;
+use std::ffi::{CStr, CString};
 use std::fs::File;
 use std::io::{self, Read};
 use std::mem;
@@ -41,7 +41,8 @@ static STAT: &CStr = c"stat";
 static STATUS: &CStr = c"status";
 static SELINUX: &CStr = c"attr/current";
 static APPARMOR: &CStr = c"attr/apparmor/current";
-const PATH_FLAGS: i32 = libc::O_PATH | libc::O_CLOEXEC;
+const EXE_FLAGS: i32 = libc::O_RDONLY | libc::O_CLOEXEC | libc::O_NONBLOCK;
+const ROOT_FLAGS: i32 = libc::O_RDONLY | libc::O_DIRECTORY | libc::O_CLOEXEC | libc::O_NONBLOCK;
 const NS_FLAGS: i32 = libc::O_RDONLY | libc::O_CLOEXEC;
 const TEXT_FLAGS: i32 = libc::O_RDONLY | libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK;
 
@@ -49,6 +50,7 @@ const TEXT_FLAGS: i32 = libc::O_RDONLY | libc::O_CLOEXEC | libc::O_NOFOLLOW | li
 #[serde(rename_all = "snake_case")]
 pub(crate) enum MetadataRole {
     Init,
+    InitLifecycle,
     Zygote,
     Framework,
     Query,
@@ -60,14 +62,14 @@ pub(crate) enum MetadataRole {
 impl MetadataRole {
     fn uid(self) -> u32 {
         match self {
-            Self::Init | Self::Zygote => 0,
+            Self::Init | Self::InitLifecycle | Self::Zygote => 0,
             Self::Framework => 1000,
             _ => 2000,
         }
     }
     fn context(self) -> &'static [u8] {
         match self {
-            Self::Init => b"u:r:init:s0",
+            Self::Init | Self::InitLifecycle => b"u:r:init:s0",
             Self::Zygote => b"u:r:zygote:s0",
             Self::Framework => b"u:r:system_server:s0",
             Self::Query => b"u:r:droidloom_query:s0",
@@ -76,6 +78,10 @@ impl MetadataRole {
             Self::LaunchRead => b"u:r:droidloom_launch_read:s0",
             Self::LaunchStart => b"u:r:droidloom_launch_start:s0",
         }
+    }
+    fn matches_context(self, actual: &[u8]) -> bool {
+        context_matches(actual, self.context())
+            || (self == Self::InitLifecycle && context_matches(actual, b"u:r:kernel:s0"))
     }
     pub(crate) fn for_operation(domain: super::OperationDomain) -> Self {
         match domain {
@@ -88,14 +94,40 @@ impl MetadataRole {
     }
 }
 
+/// All fields are captured by the authenticated fixed helper while it is
+/// still in the host USERNS. No caller can supply a process path or these values.
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct HostProcessMetadata {
+    pub(crate) proc_device: u64,
+    pub(crate) proc_inode: u64,
+    pub(crate) status: String,
+    pub(crate) uid_map: String,
+    pub(crate) gid_map: String,
+    pub(crate) setgroups: String,
+    pub(crate) command: String,
+    pub(crate) cgroup: String,
+}
+impl HostProcessMetadata {
+    pub(crate) fn proc_identity(&self) -> (u64, u64) {
+        (self.proc_device, self.proc_inode)
+    }
+}
+static RETIREMENT_UNPROVEN: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(false);
+pub(crate) fn retirement_failed() -> bool {
+    RETIREMENT_UNPROVEN.load(std::sync::atomic::Ordering::Acquire)
+}
+
 pub(crate) struct MetadataObservation {
-    pub(crate) executable: File,      // O_PATH, never executable bytes
+    pub(crate) executable: File,      // fixed public ELF, read-only
     pub(crate) namespaces: [File; 7], // user, pid, mnt, ipc, uts, net, cgroup
-    pub(crate) root: File,            // O_PATH
+    pub(crate) root: File,            // held original root, read-only
     pub(crate) selinux: Vec<u8>,
     pub(crate) apparmor: Vec<u8>,
     pub(crate) stat: String,
     pub(crate) status: String, // UID/GID are in the held Android user namespace
+    pub(crate) host: HostProcessMetadata,
 }
 fn identity(file: &File) -> Result<(u64, u64)> {
     let value = file.metadata()?;
@@ -270,8 +302,8 @@ fn read_filter() -> Vec<libc::sock_filter> {
         f.push(ins(0x20, 0, 0, 0));
     };
     let mut paths = vec![
-        (EXE, PATH_FLAGS),
-        (ROOT, PATH_FLAGS),
+        (EXE, EXE_FLAGS),
+        (ROOT, ROOT_FLAGS),
         (STAT, TEXT_FLAGS),
         (STATUS, TEXT_FLAGS),
         (SELINUX, TEXT_FLAGS),
@@ -300,6 +332,21 @@ fn read_filter() -> Vec<libc::sock_filter> {
         libc::SYS_prctl,
         vec![vec![(0, libc::PR_GET_NO_NEW_PRIVS as u64)]],
     );
+    // The executable image is already loaded. Metadata sampling never needs
+    // executable mappings or permission upgrades on existing mappings.
+    for syscall in [libc::SYS_mmap, libc::SYS_mprotect] {
+        narrow(
+            syscall,
+            [
+                0_u64,
+                libc::PROT_READ as u64,
+                (libc::PROT_READ | libc::PROT_WRITE) as u64,
+            ]
+            .into_iter()
+            .map(|prot| vec![(2, prot)])
+            .collect(),
+        );
+    }
     // No write syscall is admitted. Sending the one bounded packet on the
     // original inherited channel is the helper's only outward operation.
     for syscall in [
@@ -309,8 +356,6 @@ fn read_filter() -> Vec<libc::sock_filter> {
         libc::SYS_newfstatat,
         libc::SYS_statx,
         libc::SYS_fstatfs,
-        libc::SYS_mmap,
-        libc::SYS_mprotect,
         libc::SYS_munmap,
         libc::SYS_brk,
         libc::SYS_madvise,
@@ -332,18 +377,18 @@ fn read_filter() -> Vec<libc::sock_filter> {
     f.push(ins(0x06, 0, 0, deny));
     f
 }
-fn relocate(files: Vec<std::os::fd::OwnedFd>) -> Result<[File; 4]> {
+fn relocate(files: Vec<std::os::fd::OwnedFd>) -> Result<[File; 3]> {
     let files = files
         .into_iter()
         .map(File::from)
         .map(|file| helper::above_reserved(&file))
         .collect::<Result<Vec<_>>>()?;
-    let files: [File; 4] = files
+    let files: [File; 3] = files
         .try_into()
         .map_err(|_| reject("metadata request descriptor count"))?;
-    // Wire order is user namespace, target proc directory, target pidfd, owner.
+    // Wire order is the original user namespace, original target PIDFD and owner.
     let mut out = Vec::new();
-    for (source, target) in files.iter().zip([USER, PROC, TARGET, OWNER]) {
+    for (source, target) in files.iter().zip([USER, TARGET, OWNER]) {
         if unsafe { libc::dup3(source.as_raw_fd(), target, libc::O_CLOEXEC) } != target {
             return Err(io::Error::last_os_error().into());
         }
@@ -361,10 +406,11 @@ fn assemble(
     status: String,
     original: &helper::PidfdInfo,
     userns: &File,
+    host: HostProcessMetadata,
 ) -> Result<MetadataObservation> {
     require(files.len() == 9, "metadata response descriptor count")?;
     require(
-        context_matches(selinux.as_bytes(), role.context()),
+        role.matches_context(selinux.as_bytes()),
         "metadata observed SELinux role differs",
     )?;
     let mut files = files.into_iter().map(File::from);
@@ -377,8 +423,8 @@ fn assemble(
     for file in [&executable, &root] {
         let flags = unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GETFL) };
         require(
-            flags >= 0 && flags & libc::O_PATH != 0,
-            "metadata returned body access instead of O_PATH identity",
+            flags >= 0 && flags & libc::O_PATH == 0 && flags & libc::O_ACCMODE == libc::O_RDONLY,
+            "metadata returned a non-read-only public observation",
         )?;
     }
     let namespaces: [File; 7] = files
@@ -405,9 +451,194 @@ fn assemble(
         apparmor: apparmor.into_bytes(),
         stat,
         status,
+        host,
     })
 }
 
+fn open_target_proc(pid: u32) -> Result<File> {
+    // The PID comes exclusively from the original held PIDFD. The opened
+    // directory is subsequently tied back to that same live task and birth.
+    let root = raw_open(
+        libc::AT_FDCWD,
+        c"/proc",
+        libc::O_PATH | libc::O_DIRECTORY | libc::O_CLOEXEC | libc::O_NOFOLLOW,
+    )?;
+    filesystem(&root, libc::PROC_SUPER_MAGIC)?;
+    let name = CString::new(pid.to_string()).map_err(external)?;
+    let opened = raw_open(
+        root.as_raw_fd(),
+        &name,
+        libc::O_RDONLY | libc::O_DIRECTORY | libc::O_CLOEXEC | libc::O_NOFOLLOW | libc::O_NONBLOCK,
+    )?;
+    let high = helper::above_reserved(&opened)?;
+    drop(opened);
+    drop(root);
+    if unsafe { libc::dup3(high.as_raw_fd(), PROC, libc::O_CLOEXEC) } != PROC {
+        return Err(io::Error::last_os_error().into());
+    }
+    let directory = unsafe { File::from_raw_fd(PROC) };
+    filesystem(&directory, libc::PROC_SUPER_MAGIC)?;
+    require(
+        directory.metadata()?.is_dir(),
+        "metadata target is not a proc directory",
+    )?;
+    Ok(directory)
+}
+fn host_metadata(directory: &File, before: &helper::PidfdInfo) -> Result<HostProcessMetadata> {
+    let (proc_device, proc_inode) = identity(directory)?;
+    let host = HostProcessMetadata {
+        proc_device,
+        proc_inode,
+        status: text_at(STATUS, 4096)?,
+        uid_map: text_at(c"uid_map", 1024)?,
+        gid_map: text_at(c"gid_map", 1024)?,
+        setgroups: text_at(c"setgroups", 32)?,
+        command: text_at(c"comm", 256)?,
+        cgroup: text_at(c"cgroup", 2048)?,
+    };
+    for (field, expected) in [
+        (
+            "Uid:",
+            [before.ruid, before.euid, before.suid, before.fsuid],
+        ),
+        (
+            "Gid:",
+            [before.rgid, before.egid, before.sgid, before.fsgid],
+        ),
+    ] {
+        let rows = host
+            .status
+            .lines()
+            .filter_map(|line| line.strip_prefix(field))
+            .collect::<Vec<_>>();
+        require(rows.len() == 1, "metadata host credential field differs")?;
+        let ids = rows[0]
+            .split_ascii_whitespace()
+            .map(str::parse::<u32>)
+            .collect::<std::result::Result<Vec<_>, _>>()
+            .map_err(external)?;
+        require(
+            ids == expected,
+            "metadata host status and original PIDFD disagree",
+        )?;
+    }
+    Ok(host)
+}
+fn sample(
+    role: MetadataRole,
+    userns: &File,
+    target: &File,
+    owner: &File,
+    parent: i32,
+    deadline: Instant,
+) -> Result<MetadataObservation> {
+    helper::alive(target)?;
+    let before = helper::pidfd_info(target)?;
+    let proc = open_target_proc(before.pid)?;
+    let initial_birth = birth(&text_at(STAT, 2048)?, before.pid)?;
+    require(
+        initial_birth.1 == before.ppid,
+        "metadata original proc parent differs",
+    )?;
+    let host = host_metadata(&proc, &before)?;
+    same_process(&before, &helper::pidfd_info(target)?)?;
+    namespace(userns, libc::CLONE_NEWUSER)?;
+    let own_user = File::open("/proc/thread-self/ns/user")?;
+    namespace(&own_user, libc::CLONE_NEWUSER)?;
+    require(
+        identity(&own_user)? != identity(userns)?,
+        "metadata helper must not enter or retain the initial user namespace",
+    )?;
+    drop(own_user);
+    if unsafe { libc::setns(USER, libc::CLONE_NEWUSER) } != 0 {
+        return Err(io::Error::last_os_error().into());
+    }
+    scoped_capabilities(true)?;
+    if unsafe { libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGKILL) } != 0 {
+        return Err(io::Error::last_os_error().into());
+    }
+    helper::mac_context(CONTEXT)?;
+    require(
+        unsafe { libc::getppid() } == parent,
+        "metadata helper original parent changed",
+    )?;
+    helper::alive(owner)?;
+    helper::install_filter(&read_filter())?;
+    let scoped = helper::pidfd_info(target)?;
+    require(
+        (scoped.pid, scoped.tgid, scoped.ppid) == (before.pid, before.tgid, before.ppid),
+        "metadata target PIDFD changed across scope entry",
+    )?;
+    exact_scope_ids(&scoped, role)?;
+    let stat = text_at(STAT, 2048)?;
+    require(
+        birth(&stat, scoped.pid)? == initial_birth,
+        "metadata target birth changed across scope entry",
+    )?;
+    let selinux = text_at(SELINUX, 256)?;
+    require(
+        role.matches_context(selinux.as_bytes()),
+        "metadata actual target role differs",
+    )?;
+    let apparmor = text_at(APPARMOR, 256)?;
+    let executable = raw_open(PROC, EXE, EXE_FLAGS)?;
+    let root = raw_open(PROC, ROOT, ROOT_FLAGS)?;
+    let mut namespaces = Vec::new();
+    for (name, kind) in NS_NAMES {
+        let file = raw_open(PROC, name, NS_FLAGS)?;
+        namespace(&file, kind)?;
+        namespaces.push(file);
+    }
+    require(
+        identity(&namespaces[0])? == identity(userns)?,
+        "metadata target is outside the original held Android scope",
+    )?;
+    let status = text_at(STATUS, 4096)?;
+    require(
+        birth(&text_at(STAT, 2048)?, scoped.pid)? == initial_birth,
+        "metadata target birth changed during observation",
+    )?;
+    require(
+        identity(&raw_open(PROC, EXE, EXE_FLAGS)?)? == identity(&executable)?
+            && identity(&raw_open(PROC, ROOT, ROOT_FLAGS)?)? == identity(&root)?,
+        "metadata target executable or root changed during observation",
+    )?;
+    for ((name, _), held) in NS_NAMES.into_iter().zip(&namespaces) {
+        require(
+            identity(&raw_open(PROC, name, NS_FLAGS)?)? == identity(held)?,
+            "metadata target namespace changed during observation",
+        )?;
+    }
+    require(
+        role.matches_context(text_at(SELINUX, 256)?.as_bytes())
+            && text_at(APPARMOR, 256)? == apparmor,
+        "metadata target MAC role changed",
+    )?;
+    require(
+        identity(&proc)? == host.proc_identity(),
+        "metadata held proc inode changed",
+    )?;
+    same_process(&scoped, &helper::pidfd_info(target)?)?;
+    scoped_capabilities(false)?;
+    helper::alive(target)?;
+    helper::alive(owner)?;
+    require(
+        unsafe { libc::getppid() } == parent && Instant::now() < deadline,
+        "metadata original parent or deadline changed",
+    )?;
+    Ok(MetadataObservation {
+        executable,
+        root,
+        namespaces: namespaces
+            .try_into()
+            .map_err(|_| reject("metadata namespace count"))?,
+        selinux: selinux.into_bytes(),
+        apparmor: apparmor.into_bytes(),
+        stat,
+        status,
+        host,
+    })
+}
 pub(super) fn entry() -> Result<()> {
     helper::own_root_credentials()?;
     helper::mac_context(CONTEXT)?;
@@ -428,23 +659,8 @@ pub(super) fn entry() -> Result<()> {
         } => (nonce, role, deadline_ns),
         _ => return Err(reject("metadata helper request phase differs")),
     };
-    let [userns, proc, target, owner] = relocate(received.files)?;
+    let [userns, target, owner] = relocate(received.files)?;
     helper::parent_identity(&owner, received.peer, parent)?;
-    helper::alive(&target)?;
-    let before = helper::pidfd_info(&target)?;
-    filesystem(&proc, libc::PROC_SUPER_MAGIC)?;
-    require(
-        proc.metadata()?.is_dir(),
-        "metadata target proc descriptor is not a directory",
-    )?;
-    namespace(&userns, libc::CLONE_NEWUSER)?;
-    let own_user = File::open("/proc/thread-self/ns/user")?;
-    namespace(&own_user, libc::CLONE_NEWUSER)?;
-    require(
-        identity(&own_user)? != identity(&userns)?,
-        "metadata helper must not enter or retain the initial user namespace",
-    )?;
-    drop(own_user);
     let remaining = deadline_ns
         .checked_sub(protocol::monotonic_ns()?)
         .ok_or_else(|| reject("metadata helper deadline expired"))?;
@@ -453,96 +669,39 @@ pub(super) fn entry() -> Result<()> {
         "metadata helper budget differs",
     )?;
     let deadline = Instant::now() + Duration::from_nanos(remaining);
-    // No capability existed before entering this separately held namespace.
-    if unsafe { libc::setns(USER, libc::CLONE_NEWUSER) } != 0 {
-        return Err(io::Error::last_os_error().into());
+    match sample(role, &userns, &target, &owner, parent, deadline) {
+        Ok(observed) => {
+            let mut files = vec![observed.executable.as_raw_fd(), observed.root.as_raw_fd()];
+            files.extend(observed.namespaces.iter().map(AsRawFd::as_raw_fd));
+            protocol::send(
+                3,
+                &protocol::Message::MetadataObserved {
+                    nonce,
+                    role,
+                    selinux: String::from_utf8(observed.selinux).map_err(external)?,
+                    apparmor: String::from_utf8(observed.apparmor).map_err(external)?,
+                    stat: observed.stat,
+                    status: observed.status,
+                    host: observed.host,
+                },
+                &files,
+                deadline,
+            )?;
+        }
+        Err(error) => {
+            // A rejected sample still terminates normally and is actually
+            // reaped. No output descriptors or success evidence are emitted.
+            protocol::send(
+                3,
+                &protocol::Message::MetadataRejected {
+                    nonce,
+                    reason: error.to_string(),
+                },
+                &[],
+                deadline,
+            )?;
+        }
     }
-    scoped_capabilities(true)?;
-    if unsafe { libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGKILL) } != 0 {
-        return Err(io::Error::last_os_error().into());
-    }
-    helper::mac_context(CONTEXT)?;
-    require(
-        unsafe { libc::getppid() } == parent,
-        "metadata helper original parent changed",
-    )?;
-    helper::alive(&owner)?;
-    helper::install_filter(&read_filter())?;
-    let scoped = helper::pidfd_info(&target)?;
-    require(
-        (scoped.pid, scoped.tgid, scoped.ppid) == (before.pid, before.tgid, before.ppid),
-        "metadata target pidfd changed across scope entry",
-    )?;
-    exact_scope_ids(&scoped, role)?;
-    let stat = text_at(STAT, 2048)?;
-    let initial_birth = birth(&stat, scoped.pid)?;
-    require(
-        initial_birth.1 == scoped.ppid,
-        "metadata proc directory is not the original pidfd task",
-    )?;
-    let selinux = text_at(SELINUX, 256)?;
-    require(
-        context_matches(selinux.as_bytes(), role.context()),
-        "metadata actual target role differs",
-    )?;
-    let apparmor = text_at(APPARMOR, 256)?;
-    let executable = raw_open(PROC, EXE, PATH_FLAGS)?;
-    let root = raw_open(PROC, ROOT, PATH_FLAGS)?;
-    let mut namespaces = Vec::new();
-    for (name, kind) in NS_NAMES {
-        let file = raw_open(PROC, name, NS_FLAGS)?;
-        namespace(&file, kind)?;
-        namespaces.push(file);
-    }
-    require(
-        identity(&namespaces[0])? == identity(&userns)?,
-        "metadata target is outside the held Android scope",
-    )?;
-    let status = text_at(STATUS, 4096)?;
-    require(
-        birth(&text_at(STAT, 2048)?, scoped.pid)? == initial_birth,
-        "metadata target birth changed during observation",
-    )?;
-    require(
-        identity(&raw_open(PROC, EXE, PATH_FLAGS)?)? == identity(&executable)?
-            && identity(&raw_open(PROC, ROOT, PATH_FLAGS)?)? == identity(&root)?,
-        "metadata target executable or root changed during observation",
-    )?;
-    for ((name, _), held) in NS_NAMES.into_iter().zip(&namespaces) {
-        require(
-            identity(&raw_open(PROC, name, NS_FLAGS)?)? == identity(held)?,
-            "metadata target namespace changed during observation",
-        )?;
-    }
-    require(
-        context_matches(text_at(SELINUX, 256)?.as_bytes(), role.context())
-            && text_at(APPARMOR, 256)? == apparmor,
-        "metadata target MAC role changed",
-    )?;
-    same_process(&scoped, &helper::pidfd_info(&target)?)?;
-    scoped_capabilities(false)?;
-    helper::alive(&target)?;
-    helper::alive(&owner)?;
-    require(
-        unsafe { libc::getppid() } == parent && Instant::now() < deadline,
-        "metadata original parent or deadline changed",
-    )?;
-    let mut descriptors = vec![executable.as_raw_fd(), root.as_raw_fd()];
-    descriptors.extend(namespaces.iter().map(AsRawFd::as_raw_fd));
-    protocol::send(
-        3,
-        &protocol::Message::MetadataObserved {
-            nonce,
-            role,
-            selinux,
-            apparmor,
-            stat,
-            status,
-        },
-        &descriptors,
-        deadline,
-    )?;
-    helper::alive(&target)?;
     helper::alive(&owner)?;
     Ok(())
 }
@@ -551,11 +710,13 @@ pub(super) fn entry() -> Result<()> {
 /// label, namespace name, executable, signal, or command. All targets are held.
 pub(crate) fn observe(
     role: MetadataRole,
-    directory: &File,
     target: &File,
     userns: &File,
     deadline: Instant,
 ) -> Result<MetadataObservation> {
+    if retirement_failed() {
+        return Err(ApplicationError::RetirementUnproven);
+    }
     let deadline = deadline.min(Instant::now() + LIMIT);
     require(
         Instant::now() < deadline,
@@ -564,15 +725,9 @@ pub(crate) fn observe(
     helper::own_root_credentials()?;
     helper::mac_context(b"u:r:droidloom_broker:s0")?;
     super::worker::require_wait_semantics()?;
-    filesystem(directory, libc::PROC_SUPER_MAGIC)?;
-    require(
-        directory.metadata()?.is_dir(),
-        "metadata held target is not proc directory",
-    )?;
     namespace(userns, libc::CLONE_NEWUSER)?;
     helper::alive(target)?;
     let original = helper::pidfd_info(target)?;
-    let proc_identity = identity(directory)?;
     let executable =
         crate::production_host_admission::application_worker_executable().map_err(external)?;
     let executable = helper::above_reserved(&executable)?;
@@ -645,6 +800,7 @@ pub(crate) fn observe(
         }
     }
     if raw_pidfd < 0 {
+        RETIREMENT_UNPROVEN.store(true, std::sync::atomic::Ordering::Release);
         return Err(ApplicationError::RetirementUnproven);
     }
     let mut child = helper::Child {
@@ -667,12 +823,7 @@ pub(crate) fn observe(
                 role,
                 deadline_ns,
             },
-            &[
-                userns.as_raw_fd(),
-                directory.as_raw_fd(),
-                target.as_raw_fd(),
-                owner.as_raw_fd(),
-            ],
+            &[userns.as_raw_fd(), target.as_raw_fd(), owner.as_raw_fd()],
             deadline,
         )?;
         let reply = protocol::receive(channel.as_raw_fd(), deadline)?;
@@ -680,7 +831,7 @@ pub(crate) fn observe(
             reply.peer.pid == pid as i32 && reply.peer.uid == 0 && reply.peer.gid == 0,
             "metadata helper reply credentials differ",
         )?;
-        let (selinux, apparmor, stat, status) = match reply.message {
+        let (selinux, apparmor, stat, status, host) = match reply.message {
             protocol::Message::MetadataObserved {
                 nonce: actual,
                 role: actual_role,
@@ -688,17 +839,21 @@ pub(crate) fn observe(
                 apparmor,
                 stat,
                 status,
-            } if actual == nonce && actual_role == role => (selinux, apparmor, stat, status),
+                host,
+            } if actual == nonce && actual_role == role => (selinux, apparmor, stat, status, host),
+            protocol::Message::MetadataRejected {
+                nonce: actual,
+                reason,
+            } if actual == nonce && reply.files.is_empty() => {
+                child.finish(deadline)?;
+                return Err(reject(reason));
+            }
             _ => return Err(reject("metadata response phase or nonce differs")),
         };
         child.finish(deadline)?;
         // No output is trusted before the original waitid reports normal exit 0.
         helper::alive(target)?;
         same_process(&original, &helper::pidfd_info(target)?)?;
-        require(
-            identity(directory)? == proc_identity,
-            "metadata held proc directory changed",
-        )?;
         assemble(
             reply.files,
             role,
@@ -708,12 +863,14 @@ pub(crate) fn observe(
             status,
             &original,
             userns,
+            host,
         )
     })();
     if operation.is_err() && child.retire().is_err() {
         if let Some(fd) = child.pidfd.take() {
             mem::forget(fd);
         }
+        RETIREMENT_UNPROVEN.store(true, std::sync::atomic::Ordering::Release);
         return Err(ApplicationError::RetirementUnproven);
     }
     operation
@@ -793,6 +950,24 @@ mod tests {
                 if result != -1 || io::Error::last_os_error().raw_os_error() != Some(libc::EPERM) {
                     unsafe {
                         libc::_exit(95);
+                    }
+                }
+            }
+            for syscall in [libc::SYS_mmap, libc::SYS_mprotect] {
+                let result = unsafe {
+                    libc::syscall(
+                        syscall,
+                        0_u64,
+                        4096_u64,
+                        libc::PROT_READ | libc::PROT_EXEC,
+                        libc::MAP_PRIVATE | libc::MAP_ANONYMOUS,
+                        -1_i64,
+                        0_i64,
+                    )
+                };
+                if result != -1 || io::Error::last_os_error().raw_os_error() != Some(libc::EPERM) {
+                    unsafe {
+                        libc::_exit(96);
                     }
                 }
             }

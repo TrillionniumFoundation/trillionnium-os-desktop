@@ -3,15 +3,11 @@ use super::{EarlyBoardResources, identity, invalid};
 use crate::IdRange;
 use crate::production_host_admission::HostAdmission;
 use crate::production_identity::{IdentityAuthority, IdentityLease};
-use std::fs::{self, File, OpenOptions};
+use std::fs::{File, OpenOptions};
 use std::io;
 use std::os::fd::{AsRawFd, FromRawFd};
 use std::os::unix::fs::OpenOptionsExt;
-use std::path::PathBuf;
 
-fn proc_path(directory: &File, component: &str) -> PathBuf {
-    PathBuf::from(format!("/proc/self/fd/{}", directory.as_raw_fd())).join(component)
-}
 fn start_ticks(line: &str, expected_pid: u32) -> io::Result<u64> {
     let (pid, rest) = line
         .split_once(" (")
@@ -42,16 +38,6 @@ fn exact_range(text: &str, range: IdRange) -> bool {
         && fields.next().is_none()
         && lines.next().is_none()
 }
-fn procfs(dir: &File) -> io::Result<()> {
-    let mut fs: libc::statfs = unsafe { std::mem::zeroed() };
-    if unsafe { libc::fstatfs(dir.as_raw_fd(), &mut fs) } < 0 {
-        return Err(io::Error::last_os_error());
-    }
-    if fs.f_type != libc::PROC_SUPER_MAGIC {
-        return Err(invalid("original process directory is not procfs"));
-    }
-    Ok(())
-}
 fn owner_ns(namespace: &File) -> io::Result<File> {
     let raw = unsafe { libc::ioctl(namespace.as_raw_fd(), 0xb701 as libc::c_ulong) };
     if raw < 0 {
@@ -66,20 +52,25 @@ pub(crate) struct EarlyBoundNamespaces<'a> {
     board: &'a EarlyBoardResources,
     proc: File,
     start: u64,
+    proc_identity: (u64, u64),
 }
 impl<'a> EarlyBoundNamespaces<'a> {
     pub(crate) fn acquire(board: &'a EarlyBoardResources) -> io::Result<Self> {
-        board.revalidate()?;
+        let observed = board.observe_init_metadata()?;
+        let start = start_ticks(&observed.stat, board.host_pid() as u32)?;
+        // This compatibility handle carries no read or metadata authority.
+        // Every early-path observation below comes from the fixed helper.
         let proc = OpenOptions::new()
             .read(true)
-            .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
+            .custom_flags(libc::O_PATH | libc::O_DIRECTORY | libc::O_NOFOLLOW | libc::O_CLOEXEC)
             .open(format!("/proc/{}", board.host_pid()))?;
-        procfs(&proc)?;
-        let start = start_ticks(
-            &fs::read_to_string(proc_path(&proc, "stat"))?,
-            board.host_pid() as u32,
-        )?;
-        let obj = Self { board, proc, start };
+        let obj = Self {
+            board,
+            proc,
+            start,
+            proc_identity: observed.host.proc_identity(),
+        };
+        obj.verify_metadata(&observed)?;
         obj.revalidate()?;
         Ok(obj)
     }
@@ -98,24 +89,22 @@ impl<'a> EarlyBoundNamespaces<'a> {
     pub(crate) fn descendant_pid_namespace(&self) -> Option<&File> {
         Some(self.board.pid_namespace())
     }
-    pub(crate) fn revalidate(&self) -> io::Result<()> {
-        self.board.revalidate()?;
-        procfs(&self.proc)?;
-        if start_ticks(
-            &fs::read_to_string(proc_path(&self.proc, "stat"))?,
-            self.host_pid(),
-        )? != self.start
+    fn verify_metadata(
+        &self,
+        observed: &crate::production_application::MetadataObservation,
+    ) -> io::Result<()> {
+        if start_ticks(&observed.stat, self.host_pid())? != self.start
+            || observed.host.proc_identity() != self.proc_identity
         {
             return Err(invalid("original Android process changed"));
         }
-        for (name, held) in [
-            ("user", self.board.user_namespace()),
-            ("mnt", self.board.mount_namespace()),
-            ("pid", self.board.pid_namespace()),
+        for (name, held, current) in [
+            ("user", self.board.user_namespace(), &observed.namespaces[0]),
+            ("pid", self.board.pid_namespace(), &observed.namespaces[1]),
+            ("mnt", self.board.mount_namespace(), &observed.namespaces[2]),
         ] {
-            let current = File::open(proc_path(&self.proc, &format!("ns/{name}")))?;
             let host = File::open(format!("/proc/self/ns/{name}"))?;
-            if identity(held)? != identity(&current)? || identity(held)? == identity(&host)? {
+            if identity(held)? != identity(current)? || identity(held)? == identity(&host)? {
                 return Err(invalid(
                     "process namespace differs from original Android pin",
                 ));
@@ -129,25 +118,31 @@ impl<'a> EarlyBoundNamespaces<'a> {
             }
         }
         let spec = self.board.selection().spec();
-        if !exact_range(
-            &fs::read_to_string(proc_path(&self.proc, "uid_map"))?,
-            spec.subordinate_uids,
-        ) || !exact_range(
-            &fs::read_to_string(proc_path(&self.proc, "gid_map"))?,
-            spec.subordinate_gids,
-        ) || fs::read_to_string(proc_path(&self.proc, "setgroups"))?.trim() != "allow"
+        if !exact_range(&observed.host.uid_map, spec.subordinate_uids)
+            || !exact_range(&observed.host.gid_map, spec.subordinate_gids)
+            || observed.host.setgroups.trim() != "allow"
         {
             return Err(invalid(
                 "original Android namespace maps no longer match the private selection",
             ));
         }
         crate::production_host_admission::verify_early_root_status(
-            &fs::read_to_string(proc_path(&self.proc, "status"))?,
+            &observed.host.status,
             spec.subordinate_uids,
             spec.subordinate_gids,
         )
-        .map_err(io::Error::other)?;
-        self.board.revalidate()
+        .map_err(io::Error::other)
+    }
+    pub(crate) fn observe_metadata(
+        &self,
+    ) -> io::Result<crate::production_application::MetadataObservation> {
+        let observed = self.board.observe_init_metadata()?;
+        self.verify_metadata(&observed)?;
+        self.board.revalidate()?;
+        Ok(observed)
+    }
+    pub(crate) fn revalidate(&self) -> io::Result<()> {
+        self.observe_metadata().map(|_| ())
     }
     pub(crate) fn admit_host(&self) -> io::Result<HostAdmission> {
         self.revalidate()?;
@@ -199,6 +194,11 @@ impl<'a> EarlyBaseAdmission<'a> {
     }
     pub(crate) fn proc_directory(&self) -> &File {
         self.bound.proc_directory()
+    }
+    pub(crate) fn observe_init_metadata(
+        &self,
+    ) -> io::Result<crate::production_application::MetadataObservation> {
+        self.bound.observe_metadata()
     }
     pub(crate) fn user_namespace(&self) -> &File {
         self.bound.user_namespace()

@@ -310,10 +310,7 @@ pub fn complete_early_resources() -> io::Result<()> {
         let payload = group
             .early_payload(&base, &owner)
             .map_err(io::Error::other)?;
-        let outer_root = File::open(format!(
-            "/proc/self/fd/{}/root",
-            base.proc_directory().as_raw_fd()
-        ))?;
+        let outer_root = base.observe_init_metadata()?.root;
         let generation =
             super::super::open_root_trusted_directory(Path::new("/run/droidloom-early"))
                 .map_err(io::Error::other)?;
@@ -369,12 +366,7 @@ pub fn complete_early_resources() -> io::Result<()> {
         mutable
             .revalidate_early_lifetime(&storage)
             .map_err(io::Error::other)?;
-        if identity(&outer_root)?
-            != identity(&File::open(format!(
-                "/proc/self/fd/{}/root",
-                base.proc_directory().as_raw_fd()
-            ))?)?
-        {
+        if identity(&outer_root)? != identity(&base.observe_init_metadata()?.root)? {
             return Err(invalid(
                 "original Android process changed root before delivery",
             ));

@@ -42,6 +42,7 @@ pub(crate) use operation::{BrowserCommand, OperationDomain};
 mod metadata_observer;
 pub(crate) use metadata_observer::{
     MetadataObservation, MetadataRole, observe as observe_metadata,
+    retirement_failed as metadata_retirement_failed,
 };
 
 #[path = "production_application_query_io.rs"]

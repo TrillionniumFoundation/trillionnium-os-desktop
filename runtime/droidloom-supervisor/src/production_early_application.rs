@@ -112,14 +112,13 @@ fn ns_owner(file: &File, userns: &File) -> Result<()> {
     )
 }
 fn metadata(
-    directory: &File,
+    _directory: &File,
     target: &File,
     userns: &File,
     role: MetadataRole,
 ) -> Result<MetadataObservation> {
     crate::production_application::observe_metadata(
         role,
-        directory,
         target,
         userns,
         Instant::now() + Duration::from_secs(5),
