@@ -143,6 +143,10 @@ pub(super) fn stage_native_configuration(destination: &Path) -> Result<()> {
             "etc/systemd/system/user-runtime-dir@.service.d/50-droidloom-native-session.conf",
             include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-user-runtime-dir.conf").as_slice(),
         ),
+        (
+            "usr/lib/udev/rules.d/00-droidloom-native-hardware.rules",
+            include_bytes!("../../../android/framework/droidloom-readiness/board-policy/00-droidloom-native-hardware.rules").as_slice(),
+        ),
     ] {
         let path = destination.join(relative);
         write(&path, body)?;

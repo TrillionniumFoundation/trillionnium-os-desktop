@@ -126,3 +126,12 @@
 /run/systemd/io\.systemd\.Hostname -s u:object_r:p4_linux_hostnamed_socket_t:s0
 /run/systemd/io\.systemd\.MuteConsole -s u:object_r:p4_linux_mute_console_socket_t:s0
 /run/systemd/io\.systemd\.sysext -s u:object_r:p4_linux_sysext_socket_t:s0
+
+# Native seat hardware, distinct from Android original device types.
+/dev/dri(/.*)? -d u:object_r:p4_linux_drm_dir_t:s0
+/dev/dri/by-path/[^/]+ -l u:object_r:p4_linux_drm_dir_t:s0
+/dev/dri/card[0-9]+ -c u:object_r:p4_linux_drm_card_t:s0
+/dev/dri/renderD[0-9]+ -c u:object_r:p4_linux_drm_render_t:s0
+/dev/input(/.*)? -d u:object_r:p4_linux_input_dir_t:s0
+/dev/input/by-(path|id)/[^/]+ -l u:object_r:p4_linux_input_dir_t:s0
+/dev/input/event[0-9]+ -c u:object_r:p4_linux_input_event_t:s0

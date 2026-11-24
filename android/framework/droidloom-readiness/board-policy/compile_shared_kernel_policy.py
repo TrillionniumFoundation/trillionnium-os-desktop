@@ -76,6 +76,125 @@ def export_binary_policy(policy, binary, output):
     return {line.strip() for line in output.read_text().splitlines()}
 
 
+def verify_native_hardware(policy, lines, check, obj):
+    """Read the complete linked hardware boundary, including every ioctl bit."""
+    from functools import lru_cache
+    from derive_shared_payload_cgroup_policy import parse_expression
+    forms = [parse_expression(line) for line in lines
+             if line.startswith(("(type ", "(typeattributeset ", "(allowx ", "(roletype "))]
+    types = {form[1] for form in forms if form[0] == "type"}
+    definitions = {}
+    for form in forms:
+        if form[0] == "typeattributeset":
+            definitions.setdefault(form[1], []).append(form[2])
+    @lru_cache(None)
+    def named(name):
+        if name in types:
+            return {name}
+        if name not in definitions:
+            raise ValueError("Unknown hardware binary attribute " + name)
+        return set().union(*(members(x) for x in definitions[name]))
+    def members(expr):
+        if isinstance(expr, str):
+            return named(expr)
+        if expr and expr[0] == "all":
+            return types
+        if expr and expr[0] == "not":
+            return types - members(expr[1])
+        if expr and expr[0] == "and":
+            return set.intersection(*(members(x) for x in expr[1:]))
+        return set().union(*(members(x) for x in (expr[1:] if expr and expr[0] == "or" else expr)))
+    def values(expr):
+        if isinstance(expr, str):
+            value = int(expr, 0)
+            if not 0 <= value <= 65535:
+                raise ValueError("Hardware ioctl exceeds u16")
+            return {value}
+        if expr and expr[0] == "range":
+            lo, hi = (int(v, 0) for v in expr[1:])
+            if not 0 <= lo <= hi <= 65535:
+                raise ValueError("Invalid hardware ioctl range")
+            return set(range(lo, hi + 1))
+        if expr and expr[0] == "not":
+            return set(range(65536)) - values(expr[1])
+        return set().union(*(values(x) for x in expr))
+
+    native = lambda name: "u:system_r:" + name + ":s0"
+    labeler = native("p4_linux_hardware_label_t")
+    dirs = {"p4_linux_drm_dir_t", "p4_linux_input_dir_t"}
+    nodes = {"p4_linux_drm_card_t", "p4_linux_drm_render_t", "p4_linux_input_event_t"}
+    for target in sorted(types):
+        check(labeler, obj(target), "dir", ["relabelto"], target in dirs)
+        check(labeler, obj(target), "chr_file", ["relabelto"], target in nodes)
+        check(labeler, obj(target), "file", ["relabelto", "relabelfrom", "write", "create", "execute_no_trans"], False)
+    caps = "chown dac_override dac_read_search fowner fsetid kill setgid setuid setpcap linux_immutable net_bind_service net_broadcast net_admin net_raw ipc_lock ipc_owner sys_module sys_rawio sys_chroot sys_ptrace sys_pacct sys_admin sys_boot sys_nice sys_resource sys_time sys_tty_config mknod lease audit_write audit_control setfcap".split()
+    for kind in ["capability", "cap_userns"]:
+        check(labeler, labeler, kind, caps, False)
+    check(labeler, labeler, "capability2", "mac_override mac_admin syslog wake_alarm block_suspend audit_read perfmon bpf checkpoint_restore".split(), False)
+    check(native("p4_linux_udev_t"), labeler, "process", ["transition"], True)
+    for actor in ["p4_linux_user_session_t", "droidloom_public_control_client", "p4_linux_compositor_t", "p4_linux_service_executor_t"]:
+        check(native(actor), labeler, "process", ["transition", "dyntransition", "ptrace"], False)
+    check(labeler, obj("device"), "chr_file", ["open", "read", "write", "ioctl", "map"], False)
+
+    render = {0x6400, 0x6409, 0x640c, 0x642d, 0x642e, 0x64cf, 0x64d1}
+    for lo, hi in [(0x6440,0x644b),(0x6450,0x6454),(0x6456,0x6459),(0x64bf,0x64c5),(0x64ca,0x64cd)]:
+        render.update(range(lo,hi+1))
+    card = {0x6400,0x6409,0x640c,0x640d,0x6411,0x641f,0x642d,0x642e,0x643a,0x643b,0x643c}
+    for lo, hi in [(0x6440,0x644b),(0x6450,0x6454),(0x6456,0x6459),(0x64a0,0x64a7),(0x64aa,0x64d1)]:
+        card.update(range(lo,hi+1))
+    input_read = {0x4501,0x4502,0x4503,0x4506,0x4507,0x4508,0x4509,0x450a,0x4518,0x4519,0x451b,0x45a0} | set(range(0x4520,0x4580))
+    input_udev = {0x4501,0x4502,0x4504,0x4506,0x4507,0x4508,0x4509} | set(range(0x4520,0x4580)) | set(range(0x45c0,0x4600))
+    ioctl_sets = [(actor, "p4_linux_drm_render_t", "chr_file", render)
+                  for actor in ["p4_linux_compositor_t", "p4_linux_user_session_t", "droidloom_presenter"]]
+    ioctl_sets.extend([
+        ("p4_linux_compositor_t", "p4_linux_drm_card_t", "chr_file", card),
+        ("p4_linux_logind_t", "p4_linux_drm_card_t", "chr_file", {0x641e,0x641f}),
+        ("p4_linux_logind_t", "p4_linux_input_event_t", "chr_file", {0x4506,0x4518,0x451b,0x4520,0x4521,0x4525,0x4591,0x4593}),
+        ("p4_linux_compositor_t", "p4_linux_input_event_t", "chr_file", input_read),
+        ("p4_linux_udev_t", "p4_linux_input_event_t", "chr_file", input_udev),
+        ("p4_linux_hardware_label_t", "p4_kernel_ns_handle_t", "file", {0xb703}),
+    ])
+    actual_sets = []
+    for actor, target, kind, wanted in ioctl_sets:
+        actual = set()
+        for form in forms:
+            if form[0] != "allowx":
+                continue
+            source, destination, permission = form[1:]
+            if permission[:2] == ["ioctl", kind] and actor in members(source) and destination != "self" and target in members(destination):
+                actual |= values(permission[2])
+        if actual != wanted:
+            raise ValueError(f"Linked hardware ioctl boundary differs for {actor}/{target}: added={sorted(actual-wanted)}, missing={sorted(wanted-actual)}")
+        actual_sets.append([actor, target, sorted(actual)])
+
+    body = {"open", "read", "write", "append", "ioctl", "map"}
+    role_types = sorted({(form[1], form[2]) for form in forms
+                         if form[0] == "roletype" and form[1] in {"r", "system_r"}})
+    decisions = 0
+    for role, actor in role_types:
+        context = f"u:{role}:{actor}:s0"
+        for target in sorted(nodes):
+            wanted = set()
+            if actor in {"p4_linux_compositor_t", "p4_linux_user_session_t", "droidloom_presenter"} and target == "p4_linux_drm_render_t":
+                wanted = {"open", "read", "write", "ioctl", "map"}
+            elif actor == "p4_linux_compositor_t":
+                wanted = {"read", "write", "ioctl"} | ({"map"} if target == "p4_linux_drm_card_t" else set())
+            elif actor == "p4_linux_logind_t" and target != "p4_linux_drm_render_t":
+                wanted = {"open", "read", "write", "ioctl"}
+            elif actor == "p4_linux_dbus_t" and target != "p4_linux_drm_render_t":
+                wanted = {"read", "write"}
+            elif actor == "p4_linux_udev_t" and target == "p4_linux_input_event_t":
+                wanted = {"open", "read", "write", "ioctl"}
+            if wanted:
+                check(context, obj(target), "chr_file", sorted(wanted), True)
+            check(context, obj(target), "chr_file", sorted(body - wanted), False)
+            decisions += len(body)
+    return {"concrete_types": len(types), "relabel_scope_decisions": len(types)*7,
+            "hardware_body_decisions": decisions, "original_and_native_role_types": len(role_types),
+            "ioctl_u16_decisions": 65536*len(ioctl_sets),
+            "ioctl_sets_sha256": hashlib.sha256(json.dumps(actual_sets, separators=(",", ":")).encode()).hexdigest()}
+
+
 def verify_host_control(library, binary, export, original_contract):
     """Verify fixed host entrypoints and positive/negative binary AV decisions."""
     policy = Policy(library, binary)
@@ -562,10 +681,13 @@ def verify_host_control(library, binary, export, original_contract):
         '(typetransition init_t p4_linux_resolved_run_t sock_file "io.systemd.Resolve" p4_linux_resolved_run_t)',
         '(typetransition init_t p4_linux_resolved_run_t sock_file "io.systemd.Resolve.Monitor" p4_linux_resolved_run_t)',
     ])
+    transitions.append("(typetransition p4_linux_udev_t droidloom_container_entry_exec_t process p4_linux_hardware_label_t)")
+    hardware = verify_native_hardware(policy, lines, check, obj)
     missing = [line for line in transitions if line not in lines]
     if missing:
         raise ValueError("Linked binary lacks exact automatic transitions: " + repr(missing))
     return {
+        "native_hardware": hardware,
         "binary_access_checks": len(checks),
         "public_module_role_types": len(role_types),
         "public_module_original_android_subjects": len(original_contract["subjects"]),
@@ -758,6 +880,7 @@ def main():
         "ubuntu-native-runtime-retirement.cil",
 
         "ubuntu-native-manager-lifecycle.cil",
+        "ubuntu-native-hardware.cil",
         "ubuntu-presenter-runtime.cil",
         "linux-package-maintenance.cil", "linux-public-control.cil",
     )

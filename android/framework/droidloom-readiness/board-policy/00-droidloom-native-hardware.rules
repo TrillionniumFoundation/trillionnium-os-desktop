@@ -1,0 +1,5 @@
+# Label checked native devtmpfs inodes before stock input_id/keyboard builtins.
+# PROGRAM is evaluated immediately; a deferred RUN cannot establish this order.
+ACTION=="add|change|bind", SUBSYSTEM=="drm", KERNEL=="card[0-9]*", ENV{MAJOR}=="226", PROGRAM=="/usr/lib/droidloom/production/current/droidloomd __native-hardware-label %N", ENV{DROIDLOOM_NATIVE_LABEL}="1"
+ACTION=="add|change|bind", SUBSYSTEM=="drm", KERNEL=="renderD[0-9]*", ENV{MAJOR}=="226", PROGRAM=="/usr/lib/droidloom/production/current/droidloomd __native-hardware-label %N", ENV{DROIDLOOM_NATIVE_LABEL}="1"
+ACTION=="add|change|bind", SUBSYSTEM=="input", KERNEL=="event[0-9]*", ENV{MAJOR}=="13", PROGRAM=="/usr/lib/droidloom/production/current/droidloomd __native-hardware-label %N", ENV{DROIDLOOM_NATIVE_LABEL}="1"

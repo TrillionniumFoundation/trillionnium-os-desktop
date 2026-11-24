@@ -51,6 +51,7 @@ profile droidloom-instance-factory /usr/lib/droidloom/production/current/droidlo
   ptrace (read, readby, trace, tracedby) peer=droidloom-instance-factory,
   ptrace (trace) peer=droidloom-production-android,
   change_profile -> droidloom-production-android,
+  change_profile -> droidloom-native-hardware-label,
   signal (send) set=(kill) peer=droidloom-production-android,
   ptrace (read, readby) peer=droidloom-production-broker,
   ptrace (read, readby) peer=droidloom-instance-launcher,

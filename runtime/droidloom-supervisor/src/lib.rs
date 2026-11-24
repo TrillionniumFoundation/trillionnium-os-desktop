@@ -11,6 +11,8 @@ fn main() {
     production_mac::run_actual_board_epoch_fixture();
 }
 
+#[cfg(target_os = "linux")]
+pub mod native_hardware_label;
 pub mod control;
 mod cpu_placement;
 pub mod development;

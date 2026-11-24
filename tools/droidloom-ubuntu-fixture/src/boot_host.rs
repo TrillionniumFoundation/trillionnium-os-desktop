@@ -385,6 +385,10 @@ pub fn install(
             NATIVE_RUNTIME_DROPIN,
             include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-user-runtime-dir.conf").as_slice(),
         ),
+        (
+            "usr/lib/udev/rules.d/00-droidloom-native-hardware.rules",
+            include_bytes!("../../../android/framework/droidloom-readiness/board-policy/00-droidloom-native-hardware.rules").as_slice(),
+        ),
     ] {
         let entry = manifest
             .files

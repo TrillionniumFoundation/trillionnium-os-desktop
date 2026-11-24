@@ -42,6 +42,11 @@ fn main() {
 }
 
 fn run() -> Result<(), Box<dyn std::error::Error>> {
+    #[cfg(target_os = "linux")]
+    if droidloom_supervisor::native_hardware_label::dispatch(&std::env::args_os().skip(1).collect::<Vec<_>>())? {
+        return Ok(());
+    }
+
     // These fixed private entry points run before ordinary CLI parsing, CPU
     // placement, signals or daemon setup. Extra input cannot be a capability.
     #[cfg(target_os = "linux")]
