@@ -7,7 +7,7 @@ pub(super) trait BaseAuthority {
     fn revalidate(&self) -> Result<()>;
     fn revalidate_live_admission(&self) -> Result<()>;
     fn identity_lease(&self) -> Result<&IdentityLease>;
-    fn proc_directory(&self) -> &File;
+    fn identity_maps(&self) -> Result<[Vec<u8>; 3]>;
     fn user_namespace(&self) -> &File;
 }
 
@@ -15,7 +15,14 @@ impl BaseAuthority for OwnedNamespaceWitness<'_> {
     fn revalidate(&self) -> Result<()> { Ok(OwnedNamespaceWitness::revalidate(self)?) }
     fn revalidate_live_admission(&self) -> Result<()> { Ok(OwnedNamespaceWitness::revalidate_live_admission(self)?) }
     fn identity_lease(&self) -> Result<&IdentityLease> { Ok(OwnedNamespaceWitness::identity_lease(self)?) }
-    fn proc_directory(&self) -> &File { OwnedNamespaceWitness::proc_directory(self) }
+    fn identity_maps(&self) -> Result<[Vec<u8>; 3]> {
+        let directory = OwnedNamespaceWitness::proc_directory(self);
+        Ok([
+            read_proc_field(directory, c"uid_map")?,
+            read_proc_field(directory, c"gid_map")?,
+            read_proc_field(directory, c"setgroups")?,
+        ])
+    }
     fn user_namespace(&self) -> &File { OwnedNamespaceWitness::user_namespace(self) }
 }
 
@@ -66,7 +73,14 @@ impl BaseAuthority for EarlyBaseAdmission<'_> {
         EarlyBaseAdmission::revalidate(self)?;
         Ok(EarlyBaseAdmission::identity_lease(self))
     }
-    fn proc_directory(&self) -> &File { EarlyBaseAdmission::proc_directory(self) }
+    fn identity_maps(&self) -> Result<[Vec<u8>; 3]> {
+        let observed = self.observe_init_metadata()?;
+        Ok([
+            observed.host.uid_map.into_bytes(),
+            observed.host.gid_map.into_bytes(),
+            observed.host.setgroups.into_bytes(),
+        ])
+    }
     fn user_namespace(&self) -> &File { EarlyBaseAdmission::user_namespace(self) }
 }
 

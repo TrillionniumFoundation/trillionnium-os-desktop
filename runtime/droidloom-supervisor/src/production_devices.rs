@@ -210,20 +210,11 @@ fn map_is_exact(raw: &[u8], range: IdRange) -> Result<()> {
 fn require_tree(witness: &impl DeviceTree) -> Result<()> {
     witness.revalidate()?;
     let (uids, gids) = witness.identity_lease()?.broker_ranges();
-    for (name, range) in [(c"uid_map", uids), (c"gid_map", gids)] {
-        map_is_exact(
-            &bounded(
-                open_at(witness.proc_directory(), name, libc::O_RDONLY)?,
-                PROC_LIMIT,
-            )?,
-            range,
-        )?;
-    }
+    let [uid_map, gid_map, setgroups] = witness.identity_maps()?;
+    map_is_exact(&uid_map, uids)?;
+    map_is_exact(&gid_map, gids)?;
     need(
-        bounded(
-            open_at(witness.proc_directory(), c"setgroups", libc::O_RDONLY)?,
-            PROC_LIMIT,
-        )? == b"allow\n",
+        setgroups == b"allow\n",
         "complete supplementary group semantics",
     )?;
     namespace(witness.user_namespace(), libc::CLONE_NEWUSER)?;

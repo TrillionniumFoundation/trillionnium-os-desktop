@@ -6,7 +6,7 @@ use crate::production_selection::early_generation::{EarlyBaseAdmission, EarlyBas
 pub(super) trait DeviceTree {
     fn revalidate(&self) -> Result<()>;
     fn identity_lease(&self) -> Result<&IdentityLease>;
-    fn proc_directory(&self) -> &File;
+    fn identity_maps(&self) -> Result<[Vec<u8>; 3]>;
     fn user_namespace(&self) -> &File;
     fn descendant_pid_namespace(&self) -> Option<&File>;
 }
@@ -14,7 +14,14 @@ pub(super) trait DeviceTree {
 impl DeviceTree for OwnedNamespaceWitness<'_> {
     fn revalidate(&self) -> Result<()> { Ok(OwnedNamespaceWitness::revalidate(self)?) }
     fn identity_lease(&self) -> Result<&IdentityLease> { Ok(OwnedNamespaceWitness::identity_lease(self)?) }
-    fn proc_directory(&self) -> &File { OwnedNamespaceWitness::proc_directory(self) }
+    fn identity_maps(&self) -> Result<[Vec<u8>; 3]> {
+        let directory = OwnedNamespaceWitness::proc_directory(self);
+        Ok([
+            bounded(open_at(directory, c"uid_map", libc::O_RDONLY)?, PROC_LIMIT)?,
+            bounded(open_at(directory, c"gid_map", libc::O_RDONLY)?, PROC_LIMIT)?,
+            bounded(open_at(directory, c"setgroups", libc::O_RDONLY)?, PROC_LIMIT)?,
+        ])
+    }
     fn user_namespace(&self) -> &File { OwnedNamespaceWitness::user_namespace(self) }
     fn descendant_pid_namespace(&self) -> Option<&File> { OwnedNamespaceWitness::descendant_pid_namespace(self) }
 }
@@ -25,7 +32,14 @@ impl DeviceTree for EarlyBaseAdmission<'_> {
         EarlyBaseAdmission::revalidate(self)?;
         Ok(EarlyBaseAdmission::identity_lease(self))
     }
-    fn proc_directory(&self) -> &File { EarlyBaseAdmission::proc_directory(self) }
+    fn identity_maps(&self) -> Result<[Vec<u8>; 3]> {
+        let observed = self.observe_init_metadata()?;
+        Ok([
+            observed.host.uid_map.into_bytes(),
+            observed.host.gid_map.into_bytes(),
+            observed.host.setgroups.into_bytes(),
+        ])
+    }
     fn user_namespace(&self) -> &File { EarlyBaseAdmission::user_namespace(self) }
     fn descendant_pid_namespace(&self) -> Option<&File> { Some(self.board().pid_namespace()) }
 }

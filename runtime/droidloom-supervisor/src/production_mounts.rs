@@ -551,16 +551,11 @@ fn verify_map(raw: &[u8], range: IdRange) -> Result<()> {
 fn require_complete_namespace(witness: &impl early::BaseAuthority) -> Result<()> {
     witness.revalidate()?;
     let (uids, gids) = witness.identity_lease()?.broker_ranges();
-    verify_map(
-        &read_proc_field(witness.proc_directory(), c"uid_map")?,
-        uids,
-    )?;
-    verify_map(
-        &read_proc_field(witness.proc_directory(), c"gid_map")?,
-        gids,
-    )?;
+    let [uid_map, gid_map, setgroups] = witness.identity_maps()?;
+    verify_map(&uid_map, uids)?;
+    verify_map(&gid_map, gids)?;
     require(
-        read_proc_field(witness.proc_directory(), c"setgroups")? == b"allow\n",
+        setgroups == b"allow\n",
         "original supplementary-group semantics required",
     )?;
     let mut fs: libc::statfs = unsafe { std::mem::zeroed() };
