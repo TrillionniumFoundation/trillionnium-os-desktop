@@ -250,6 +250,8 @@ def bind(args):
     need(len(wayland) == 1, "normal presenter source missing")
     client = [x for x in stage["files"] if x["path"] == "usr/bin/droidloomctl"]
     need(len(client) == 1, "normal inspection client source missing")
+    presenter_unit = [x for x in stage["files"] if x["path"] == "usr/lib/systemd/user/droidloom-production-desktop.service"]
+    need(len(presenter_unit) == 1, "normal presenter unit source missing")
     snap, pfd = process_snapshot(running, admitted, fixture)
     try:
         unit = unit_properties(args.unit)
@@ -270,7 +272,7 @@ def bind(args):
         value = {"schema": "p4-qmp-evidence-binding-v1", "run_directory": str(run),
                  "original": original, "original_process": snap, "fixture": fixture,
                  "owner_unit": unit, "host_boot_id": Path("/proc/sys/kernel/random/boot_id").read_text().strip(),
-                 "expires_boottime": expires, "host_stage": stage_pin, "presenter": wayland[0], "inspection_client": client[0],
+                 "expires_boottime": expires, "host_stage": stage_pin, "presenter": wayland[0], "presenter_unit": presenter_unit[0], "inspection_client": client[0],
                  "ssh_port": plan["ssh_port"], "fresh_client_key": private_key, "known_hosts": known, "ssh_tool": ssh_tool,
                  "controller": read_file(str(Path(__file__).absolute()), limit=512*1024)[1],
                  "original_owner_retains_shutdown_and_reap": True,
@@ -426,47 +428,80 @@ def capture(qmp, root, name):
 
 # Fixed, read-only fresh-guest probe. No arbitrary remote command is accepted.
 GUEST_PROBE = r"""
-import hashlib,json,os,pathlib,stat,subprocess,time
+import hashlib,json,os,pathlib,re,stat,subprocess,time
 assert os.getuid()==1000
-env=os.environ.copy();env['XDG_RUNTIME_DIR']='/run/user/1000';env['DBUS_SESSION_BUS_ADDRESS']='unix:path=/run/user/1000/bus'
+env=os.environ.copy();env['XDG_RUNTIME_DIR']='/run/user/1000';env['DBUS_SESSION_BUS_ADDRESS']='unix:path=/run/user/1000/bus';env['LC_ALL']='C'
+UNIT='droidloom-production-desktop.service'
+UNIT_PATH='/usr/lib/systemd/user/'+UNIT
+PROPERTIES='Id,MainPID,ExecMainPID,InvocationID,ActiveState,SubState,FragmentPath,DropInPaths,NeedDaemonReload,Transient,Type,NotifyAccess,NoNewPrivileges'
 def props():
- r=subprocess.run(['/usr/bin/systemctl','--user','show','droidloom-production-desktop.service','--property=MainPID,InvocationID,ActiveState,SubState'],env=env,capture_output=True,timeout=2,check=True)
- return dict(x.split('=',1) for x in r.stdout.decode().splitlines() if '=' in x)
-F=lambda x:(x.st_dev,x.st_ino,x.st_mode,x.st_uid,x.st_gid,x.st_nlink,x.st_size,x.st_mtime_ns,x.st_ctime_ns)
-def elf(path,magic_link=False):
- fd=os.open(path,os.O_RDONLY|os.O_CLOEXEC|(0 if magic_link else os.O_NOFOLLOW))
+ r=subprocess.run(['/usr/bin/systemctl','--user','--no-pager','show',UNIT,'--property='+PROPERTIES],env=env,capture_output=True,timeout=2,check=True)
+ assert len(r.stdout)<=16384 and len(r.stderr)<=16384
+ p=dict(x.split('=',1) for x in r.stdout.decode().splitlines() if '=' in x)
+ assert p['Id']==UNIT and p['FragmentPath']==UNIT_PATH and p['DropInPaths']==''
+ assert p['NeedDaemonReload']=='no' and p['Transient']=='no'
+ assert p['Type']=='notify' and p['NotifyAccess']=='main' and p['NoNewPrivileges']=='yes'
+ assert p['ActiveState']=='active' and p['SubState']=='running'
+ assert re.fullmatch('[0-9a-f]{32}',p['InvocationID']) and int(p['InvocationID'],16)
+ assert p['MainPID']==p['ExecMainPID'] and 1<int(p['MainPID'])<2**31
+ return p
+def F(x):
+ return dict(dev=x.st_dev,ino=x.st_ino,mode=x.st_mode,uid=x.st_uid,gid=x.st_gid,nlink=x.st_nlink,size=x.st_size,mtime_ns=x.st_mtime_ns,ctime_ns=x.st_ctime_ns)
+def public(path,maximum,elf=False):
+ parts=path.split('/');assert parts[0]=='' and all(x and x not in ('.','..') for x in parts[1:])
+ parent=os.open('/',os.O_PATH|os.O_DIRECTORY|os.O_CLOEXEC)
  try:
-  s=os.fstat(fd);assert stat.S_ISREG(s.st_mode) and s.st_uid==s.st_gid==0 and s.st_nlink==1 and s.st_size<=32*1024*1024 and not s.st_mode&0o6022
-  h=hashlib.sha256()
-  while True:
-   x=os.read(fd,1024*1024)
-   if not x:break
-   h.update(x)
-  assert F(os.fstat(fd))==F(os.stat(path))==F(s)
-  return s,h.hexdigest()
- finally:os.close(fd)
-start=time.clock_gettime_ns(time.CLOCK_MONOTONIC);boot=pathlib.Path('/proc/sys/kernel/random/boot_id').read_text().strip();p=props();pid=int(p['MainPID']);assert pid>1 and p['ActiveState']=='active'
-def procstat():
- x=pathlib.Path('/proc/%d/stat'%pid).read_text();a=x[x.rfind(')')+2:].split();return int(a[19])
-def context():
- return pathlib.Path('/proc/%d/attr/current'%pid).read_bytes().rstrip(b'\0\n').decode('ascii')
-ticks=procstat();selinux=context();assert selinux=='u:system_r:droidloom_presenter:s0'
-s,elf_sha=elf('/proc/%d/exe'%pid,True)
-client_s,client_sha=elf('/usr/bin/droidloomctl')
-assert client_sha==CLIENT_SHA and client_s.st_size==CLIENT_BYTES
+  for part in parts[1:-1]:
+   child=os.open(part,os.O_PATH|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=parent)
+   os.close(parent);parent=child
+   s=os.fstat(parent);assert s.st_uid==s.st_gid==0 and not s.st_mode&0o022
+  fd=os.open(parts[-1],os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW,dir_fd=parent)
+  try:
+   s=os.fstat(fd);assert stat.S_ISREG(s.st_mode) and s.st_uid==s.st_gid==0 and s.st_nlink==1 and 0<s.st_size<=maximum and not s.st_mode&0o6022
+   h=hashlib.sha256();total=0;head=b''
+   while True:
+    x=os.read(fd,min(65536,maximum+1-total))
+    if not x:break
+    if not total:head=x[:4]
+    total+=len(x);assert total<=s.st_size
+    h.update(x)
+   assert total==s.st_size and (not elf or head==b'\x7fELF')
+   assert F(os.fstat(fd))==F(os.stat(parts[-1],dir_fd=parent,follow_symlinks=False))==F(s)
+   return dict(path=path,bytes=total,sha256=h.hexdigest(),identity=F(s))
+  finally:os.close(fd)
+ finally:os.close(parent)
+def pinned(value,expected):
+ assert value['sha256']==expected['sha256'] and value['bytes']==expected['size']
+ assert stat.S_IMODE(value['identity']['mode'])==expected['mode']
+def journal(p,kind,count):
+ fields='__CURSOR,__MONOTONIC_TIMESTAMP,_BOOT_ID,_PID,_UID,_SYSTEMD_USER_UNIT,_SYSTEMD_INVOCATION_ID,MESSAGE'
+ r=subprocess.run(['/usr/bin/journalctl','--user','--no-pager','-u',UNIT,'-o','json','--output-fields='+fields,
+                   '--grep=^Droidloom '+kind+' trace:','-n',str(count),'_PID='+p['MainPID'],'_SYSTEMD_INVOCATION_ID='+p['InvocationID']],
+                  env=env,capture_output=True,timeout=2,check=True)
+ assert len(r.stdout)<=1048576 and len(r.stderr)<=16384
+ rows=[json.loads(x) for x in r.stdout.splitlines()];assert len(rows)<=count
+ return rows
+start=time.clock_gettime_ns(time.CLOCK_MONOTONIC)
+p=props()
+unit=public(UNIT_PATH,65536);pinned(unit,UNIT_PIN)
+presenter=public('/usr/bin/droidloom-wayland',32*1024*1024,True);pinned(presenter,PRESENTER_PIN)
+identity_rows=journal(p,'identity',2)
+assert len(identity_rows)==1
+row=identity_rows[0];boot=row['_BOOT_ID'];assert re.fullmatch('[0-9a-f]{32}',boot)
+boot=boot[:8]+'-'+boot[8:12]+'-'+boot[12:16]+'-'+boot[16:20]+'-'+boot[20:]
+client=public('/usr/bin/droidloomctl',32*1024*1024,True);pinned(client,CLIENT_PIN)
 inspection_run=subprocess.run(['/usr/bin/droidloomctl','--json','inspect',PACKAGE,'--user','0'],env=env,capture_output=True,timeout=4,check=True)
 assert len(inspection_run.stdout)<=1048576 and len(inspection_run.stderr)<=1048576
 inspection_response=json.loads(inspection_run.stdout)
 assert inspection_response['ok'] is True and inspection_response['inspection']['package']==PACKAGE and inspection_response['inspection']['user']==0
-assert F(os.stat('/usr/bin/droidloomctl'))==F(client_s)
-r=subprocess.run(['/usr/bin/journalctl','--user','--no-pager','--boot','-u','droidloom-production-desktop.service','-o','json','--output-fields=__CURSOR,__MONOTONIC_TIMESTAMP,_PID,_UID,_SYSTEMD_USER_UNIT,_SYSTEMD_INVOCATION_ID,_SYSTEMD_USER_INVOCATION_ID,MESSAGE','--grep=^Droidloom (focus|key|frame) trace:','-n','512','_PID='+str(pid)],env=env,capture_output=True,timeout=3,check=True)
-assert len(r.stdout)<=1048576
-rows=[json.loads(x) for x in r.stdout.splitlines()]
-assert props()==p and procstat()==ticks and context()==selinux and F(os.stat('/proc/%d/exe'%pid))==F(s)
+rows=journal(p,'(focus|key|frame)',512)
+assert props()==p
+for path,proof in [(UNIT_PATH,unit),('/usr/bin/droidloom-wayland',presenter),('/usr/bin/droidloomctl',client)]:
+ assert F(os.stat(path,follow_symlinks=False))==proof['identity']
 end=time.clock_gettime_ns(time.CLOCK_MONOTONIC)
-print(json.dumps({'schema':'p4-native-focus-observation-v1','guest_clock':'CLOCK_MONOTONIC','guest_boot_id':boot,'guest_monotonic_ns_start':start,'guest_monotonic_ns_end':end,'presenter':{'pid':pid,'invocation_id':p['InvocationID'],'start_ticks':ticks,'clk_tck':os.sysconf('SC_CLK_TCK'),'elf_sha256':elf_sha,'elf_bytes':s.st_size,'elf_dev':s.st_dev,'elf_ino':s.st_ino,'selinux':selinux},'inspection_response':inspection_response,'inspection_stdout_sha256':hashlib.sha256(inspection_run.stdout).hexdigest(),'inspection_stdout_bytes':len(inspection_run.stdout),'journal':rows},separators=(',',':')))
-
+print(json.dumps({'schema':'p4-native-focus-observation-v2','guest_clock':'CLOCK_MONOTONIC','guest_boot_id':boot,'guest_monotonic_ns_start':start,'guest_monotonic_ns_end':end,'unit':p,'public_presenter':presenter,'public_unit':unit,'identity_journal':identity_rows,'inspection_response':inspection_response,'inspection_stdout_sha256':hashlib.sha256(inspection_run.stdout).hexdigest(),'inspection_stdout_bytes':len(inspection_run.stdout),'journal':rows},separators=(',',':')))
 """
+
 
 def bounded_subprocess(command, stdin, deadline, max_output=MAX_JSON):
     child = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -495,6 +530,83 @@ def bounded_subprocess(command, stdin, deadline, max_output=MAX_JSON):
         for stream in (child.stdin, child.stdout, child.stderr):
             if stream is not None: stream.close()
 
+def journal_sender(row, presenter, boot_id):
+    need(re.fullmatch("[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}", boot_id) is not None,
+         "invalid original guest boot ID")
+    need(row.get("_PID") == str(presenter["pid"]) and row.get("_UID") == "1000"
+         and row.get("_SYSTEMD_USER_UNIT") == "droidloom-production-desktop.service"
+         and row.get("_SYSTEMD_INVOCATION_ID") == presenter["invocation_id"]
+         and row.get("_BOOT_ID") == boot_id.replace("-", ""), "foreign journal sender or invocation")
+    raw = row.get("__MONOTONIC_TIMESTAMP")
+    need(type(raw) is str and re.fullmatch("[0-9]{1,20}", raw) is not None, "invalid trusted journal clock")
+    return int(raw) * 1000
+
+def validate_presenter_identity(observation, binding):
+    """Match actual self measurement to trusted journal, the live unit and public files."""
+    unit = observation["unit"]
+    name = "droidloom-production-desktop.service"
+    unit_path = "/usr/lib/systemd/user/" + name
+    required = {"Id": name, "FragmentPath": unit_path, "DropInPaths": "",
+                "NeedDaemonReload": "no", "Transient": "no", "Type": "notify",
+                "NotifyAccess": "main", "NoNewPrivileges": "yes",
+                "ActiveState": "active", "SubState": "running"}
+    need(all(unit.get(k) == v for k, v in required.items()), "original presenter unit changed")
+    need(type(unit.get("MainPID")) is str and unit["MainPID"].isdigit()
+         and 1 < int(unit["MainPID"]) < 2**31 and unit.get("ExecMainPID") == unit["MainPID"],
+         "presenter unit has no original main process")
+    invocation = unit.get("InvocationID")
+    need(type(invocation) is str and re.fullmatch("[0-9a-f]{32}", invocation) is not None
+         and int(invocation, 16) != 0, "presenter unit invocation is absent")
+    f9_keys = {"dev", "ino", "mode", "uid", "gid", "nlink", "size", "mtime_ns", "ctime_ns"}
+    for proof, expected, path in (
+            (observation["public_presenter"], binding["presenter"], "/usr/bin/droidloom-wayland"),
+            (observation["public_unit"], binding["presenter_unit"], unit_path)):
+        measured = proof["identity"]
+        need(proof["path"] == path and expected["path"] == path[1:]
+             and proof["bytes"] == expected["size"] and proof["sha256"] == expected["sha256"]
+             and set(measured) == f9_keys and all(type(v) is int for v in measured.values()),
+             "normal public source proof changed")
+        need(stat.S_ISREG(measured["mode"]) and stat.S_IMODE(measured["mode"]) == expected["mode"]
+             and measured["uid"] == measured["gid"] == 0 and measured["nlink"] == 1
+             and measured["dev"] >= 0 and measured["ino"] > 0
+             and measured["size"] == expected["size"] and not measured["mode"] & 0o6022,
+             "normal public source inode is not protected")
+    rows = observation["identity_journal"]
+    need(type(rows) is list and len(rows) == 1, "exactly one original identity trace is required")
+    row = rows[0]
+    message = row.get("MESSAGE")
+    prefix = "Droidloom identity trace: "
+    need(type(message) is str and message.startswith(prefix) and len(message.encode()) <= 4200,
+         "missing bounded self identity record")
+    measured = json.loads(message[len(prefix):])
+    need(set(measured) == {"schema", "pid", "uid", "gid", "start_ticks", "clk_tck",
+                          "observed_ns", "invocation_id", "elf_sha256", "executable", "selinux", "apparmor"}
+         and measured["schema"] == "p4-presenter-self-identity-v1", "unknown self identity schema")
+    need(all(type(measured[k]) is int for k in ("pid", "uid", "gid", "start_ticks", "clk_tck", "observed_ns"))
+         and measured["pid"] == int(unit["MainPID"]) and measured["uid"] == measured["gid"] == 1000
+         and measured["invocation_id"] == invocation, "self identity differs from original unit")
+    need(type(measured["executable"]) is dict and set(measured["executable"]) == f9_keys
+         and all(type(v) is int for v in measured["executable"].values())
+         and measured["elf_sha256"] == binding["presenter"]["sha256"]
+         and measured["executable"] == observation["public_presenter"]["identity"],
+         "actual self executable differs from the normal public inode")
+    need(measured["selinux"] == "u:system_r:droidloom_presenter:s0"
+         and type(measured["apparmor"]) is str and 0 < len(measured["apparmor"]) <= 1024
+         and all(0x20 <= ord(c) <= 0x7e for c in measured["apparmor"]), "actual self MAC record differs")
+    presenter = {"pid": measured["pid"], "invocation_id": invocation,
+                 "start_ticks": measured["start_ticks"], "clk_tck": measured["clk_tck"],
+                 "elf_sha256": measured["elf_sha256"], "elf_bytes": measured["executable"]["size"],
+                 "elf_dev": measured["executable"]["dev"], "elf_ino": measured["executable"]["ino"],
+                 "executable": measured["executable"], "selinux": measured["selinux"],
+                 "apparmor": measured["apparmor"], "self_observed_ns": measured["observed_ns"],
+                 "identity_journal_cursor": row.get("__CURSOR")}
+    journal_ns = journal_sender(row, presenter, observation["guest_boot_id"])
+    need(0 < presenter["start_ticks"] < 2**63 and 0 < presenter["clk_tck"] <= 1_000_000
+         and presenter["start_ticks"] * 1_000_000_000 // presenter["clk_tck"]
+             <= measured["observed_ns"] <= journal_ns + 999
+         and 0 < journal_ns <= observation["guest_monotonic_ns_end"], "self identity clock is inconsistent")
+    return presenter
+
 def focus_probe(authority, event):
     b = authority.binding
     need(b["ssh_port"] is not None and b["fresh_client_key"] is not None, "explicit fresh guest SSH is required")
@@ -505,18 +617,16 @@ def focus_probe(authority, event):
                "-oStrictHostKeyChecking=yes", "-oUserKnownHostsFile="+b["known_hosts"]["path"],
                "-oGlobalKnownHostsFile=/dev/null", "-oConnectTimeout=3", "-oConnectionAttempts=1",
                "-oLogLevel=ERROR", "-i", b["fresh_client_key"]["path"], "-p", str(b["ssh_port"]),
-               "alex@127.0.0.1", "/usr/bin/python3", "-"]
+               "alex@127.0.0.1", "/usr/bin/python3", "-I", "-"]
     started = time.monotonic_ns()
     client = b["inspection_client"]
-    fixed = "PACKAGE=" + json.dumps(event["package"]) + "\nCLIENT_SHA=" + json.dumps(client["sha256"]) + "\nCLIENT_BYTES=" + str(client["size"]) + "\n"
+    fixed = "PACKAGE=" + repr(event["package"]) + "\nCLIENT_PIN=" + repr(client) + "\nPRESENTER_PIN=" + repr(b["presenter"]) + "\nUNIT_PIN=" + repr(b["presenter_unit"]) + "\n"
     raw = bounded_subprocess(command, (fixed+GUEST_PROBE).encode(), time.monotonic()+8)
     finished = time.monotonic_ns()
     value = json.loads(raw)
-    need(value["schema"] == "p4-native-focus-observation-v1" and value["guest_clock"] == "CLOCK_MONOTONIC",
+    need(value["schema"] == "p4-native-focus-observation-v2" and value["guest_clock"] == "CLOCK_MONOTONIC",
          "invalid actual focus probe")
-    p = value["presenter"]
-    need(p["elf_sha256"] == b["presenter"]["sha256"] and p["elf_bytes"] == b["presenter"]["size"]
-         and re.fullmatch("[0-9a-f]{32}", p["invocation_id"]), "actual presenter source or InvocationID differs")
+    value["presenter"] = validate_presenter_identity(value, b)
     inspection = value["inspection_response"]["inspection"]
     need(value["inspection_response"]["ok"] is True and inspection["package"] == event["package"]
          and inspection["user"] == 0 and inspection["epoch"] == event["epoch"], "actual Android generation changed")
@@ -552,13 +662,9 @@ def validate_focus(event, observation):
     current = None;last_enter = None;previous_time = 0
     need(len(observation["journal"]) <= 512, "journal bound exceeded")
     for row in observation["journal"]:
-        need(row.get("_PID") == str(p["pid"]) and row.get("_UID") == "1000"
-             and row.get("_SYSTEMD_USER_UNIT") == "droidloom-production-desktop.service", "foreign journal sender")
-        t = int(row["__MONOTONIC_TIMESTAMP"])*1000
+        t = journal_sender(row, p, observation["guest_boot_id"])
         need(t >= previous_time, "journal order changed");previous_time=t
         if t < p["start_ticks"]*1_000_000_000//p["clk_tck"]: continue
-        if row.get("_SYSTEMD_USER_INVOCATION_ID") is not None:
-            need(row["_SYSTEMD_USER_INVOCATION_ID"] == p["invocation_id"], "journal invocation differs")
         text = row["MESSAGE"]
         if not text.startswith("Droidloom focus trace:"): continue
         m = FOCUS.fullmatch(text);need(m is not None, "malformed focus trace")
@@ -579,8 +685,7 @@ def presented_feedback(event, observation):
     need(event["guest_boot_id"] == observation["guest_boot_id"], "presentation guest boot differs")
     p = observation["presenter"]; found = []
     for row in observation["journal"]:
-        need(row.get("_PID") == str(p["pid"]) and row.get("_UID") == "1000"
-             and row.get("_SYSTEMD_USER_UNIT") == "droidloom-production-desktop.service", "foreign presentation journal")
+        journal_sender(row, p, observation["guest_boot_id"])
         m = FRAME.fullmatch(row.get("MESSAGE", ""))
         if not m: continue
         pid, seq, obj, frame, buffer, observed, displayed, refresh, display_seq, dropped = map(int, m.groups())
@@ -602,7 +707,7 @@ def wayland_key_pair(before, after, event, key):
     need(after["presenter"] == p and after["guest_boot_id"] == before["guest_boot_id"], "presenter changed after input")
     rows = []
     for row in after["journal"]:
-        if row.get("_PID") != str(p["pid"]) or int(row["__MONOTONIC_TIMESTAMP"])*1000 < before["guest_monotonic_ns_end"]:
+        if journal_sender(row, p, after["guest_boot_id"]) < before["guest_monotonic_ns_end"]:
             continue
         m = KEY.fullmatch(row.get("MESSAGE", ""))
         if m and int(m[2]) == event["binding"]["object"] and int(m[4]) == KEYS[key] and int(m[5]) == 0:

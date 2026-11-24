@@ -138,14 +138,15 @@ class EvidenceTests(unittest.TestCase):
         with self.assertRaises(q.Rejected):obj.line()
         a.close();b.close()
     def test_focus_is_actual_pid_scoped_and_zero_revokes_it(self):
-        event={"guest_boot_id":"boot","guest_monotonic_ns_end":1_000_000_000,
-               "epoch":{"boot_id":"boot"},"binding":{"object":7}}
+        event={"guest_boot_id":"01234567-89ab-cdef-0123-456789abcdef","guest_monotonic_ns_end":1_000_000_000,
+               "epoch":{"boot_id":"01234567-89ab-cdef-0123-456789abcdef"},"binding":{"object":7}}
         def row(text,stamp):
             return {"_PID":"55","_UID":"1000","_SYSTEMD_USER_UNIT":"droidloom-production-desktop.service",
+                    "_SYSTEMD_INVOCATION_ID":"a"*32,"_BOOT_ID":"0123456789abcdef0123456789abcdef",
                     "__MONOTONIC_TIMESTAMP":str(stamp),"MESSAGE":text}
-        obs={"guest_boot_id":"boot","guest_monotonic_ns_start":1_100_000_000,
+        obs={"guest_boot_id":"01234567-89ab-cdef-0123-456789abcdef","guest_monotonic_ns_start":1_100_000_000,
              "guest_monotonic_ns_end":1_200_000_000,
-             "inspection_response":{"inspection":{"epoch":{"boot_id":"boot"}}},
+             "inspection_response":{"inspection":{"epoch":{"boot_id":"01234567-89ab-cdef-0123-456789abcdef"}}},
              "presenter":{"pid":55,"invocation_id":"a"*32,"start_ticks":1,"clk_tck":100},
              "journal":[row("Droidloom focus trace: pid=55 object=7 serial=99 observed_ns=1000000000 focus=enter",1000000)]}
         self.assertEqual(q.validate_focus(event,obs)["object"],7)
@@ -158,11 +159,12 @@ class EvidenceTests(unittest.TestCase):
         obs["journal"][0]["_PID"]="56"
         with self.assertRaises(q.Rejected):q.validate_focus(event,obs)
     def test_launch_or_commit_is_not_presented_feedback(self):
-        event={"guest_boot_id":"boot","guest_monotonic_ns_start":900000000,"binding":{"object":7}}
+        event={"guest_boot_id":"01234567-89ab-cdef-0123-456789abcdef","guest_monotonic_ns_start":900000000,"binding":{"object":7}}
         row={"_PID":"55","_UID":"1000","_SYSTEMD_USER_UNIT":"droidloom-production-desktop.service",
+                    "_SYSTEMD_INVOCATION_ID":"a"*32,"_BOOT_ID":"0123456789abcdef0123456789abcdef",
              "__MONOTONIC_TIMESTAMP":"1100000","MESSAGE":
              "Droidloom frame trace: pid=55 seq=1 stage=commit object=7 frame=1 buffer=9 observed_ns=1100000000 display_ns=1050000000 refresh_ns=16000000 display_sequence=1 dropped_total=0"}
-        obs={"guest_boot_id":"boot","guest_monotonic_ns_end":1200000000,
+        obs={"guest_boot_id":"01234567-89ab-cdef-0123-456789abcdef","guest_monotonic_ns_end":1200000000,
              "presenter":{"pid":55,"invocation_id":"a"*32},"journal":[row]}
         self.assertFalse(q.presented_feedback(event,obs)["observed"])
         row["MESSAGE"]=row["MESSAGE"].replace("stage=commit","stage=presented")
@@ -172,6 +174,71 @@ class EvidenceTests(unittest.TestCase):
         self.assertFalse(proof["pixel_to_task_binding_proven"])
         event["binding"]["object"]=8
         self.assertFalse(q.presented_feedback(event,obs)["observed"])
+
+
+    def test_identity_uses_original_unit_journal_and_actual_public_inode(self):
+        import copy
+        boot = "01234567-89ab-cdef-0123-456789abcdef"
+        expected = {"path":"usr/bin/droidloom-wayland","size":4000,"sha256":"b"*64,"mode":0o755}
+        expected_unit = {"path":"usr/lib/systemd/user/droidloom-production-desktop.service",
+                         "size":571,"sha256":"c"*64,"mode":0o644}
+        inode = {"dev":5,"ino":7,"mode":0o100755,"uid":0,"gid":0,"nlink":1,"size":4000,
+                 "mtime_ns":1000,"ctime_ns":1000}
+        unit_inode = dict(inode,ino=8,mode=0o100644,size=571)
+        measured = {"schema":"p4-presenter-self-identity-v1","pid":55,"uid":1000,"gid":1000,
+                    "start_ticks":1,"clk_tck":100,"observed_ns":20_000_000,
+                    "invocation_id":"a"*32,"elf_sha256":"b"*64,"executable":inode,
+                    "selinux":"u:system_r:droidloom_presenter:s0","apparmor":"unconfined"}
+        row = {"_PID":"55","_UID":"1000","_SYSTEMD_USER_UNIT":"droidloom-production-desktop.service",
+               "_SYSTEMD_INVOCATION_ID":"a"*32,"_BOOT_ID":boot.replace("-",""),
+               "__MONOTONIC_TIMESTAMP":"20001","__CURSOR":"actual-journal-cursor"}
+        row["MESSAGE"]="Droidloom identity trace: "+json.dumps(measured)
+        props = {"Id":"droidloom-production-desktop.service","MainPID":"55","ExecMainPID":"55",
+                 "InvocationID":"a"*32,"ActiveState":"active","SubState":"running",
+                 "FragmentPath":"/"+expected_unit["path"],"DropInPaths":"","NeedDaemonReload":"no",
+                 "Transient":"no","Type":"notify","NotifyAccess":"main","NoNewPrivileges":"yes"}
+        observation={"unit":props,"public_presenter":{"path":"/"+expected["path"],"bytes":4000,
+                     "sha256":"b"*64,"identity":inode},
+                     "public_unit":{"path":"/"+expected_unit["path"],"bytes":571,
+                     "sha256":"c"*64,"identity":unit_inode},
+                     "guest_boot_id":boot,"guest_monotonic_ns_end":50_000_000,"identity_journal":[row]}
+        binding={"presenter":expected,"presenter_unit":expected_unit}
+        accepted=q.validate_presenter_identity(observation,binding)
+        self.assertEqual(accepted["executable"],inode)
+        self.assertEqual(accepted["start_ticks"],1)
+        self.assertEqual(accepted["identity_journal_cursor"],"actual-journal-cursor")
+        mutations=[
+            lambda x:x["unit"].update(MainPID="56"),
+            lambda x:x["unit"].update(ExecMainPID="56"),
+            lambda x:x["unit"].update(FragmentPath="/home/alex/changed.service"),
+            lambda x:x["unit"].update(DropInPaths="/run/user/1000/service.d/override.conf"),
+            lambda x:x["unit"].update(NeedDaemonReload="yes"),
+            lambda x:x["unit"].update(Transient="yes"),
+            lambda x:x["unit"].update(InvocationID="d"*32),
+            lambda x:x["identity_journal"][0].update(_PID="56"),
+            lambda x:x["identity_journal"][0].pop("_SYSTEMD_INVOCATION_ID"),
+            lambda x:x["identity_journal"][0].update(_SYSTEMD_INVOCATION_ID="d"*32),
+            lambda x:x["identity_journal"][0].update(_BOOT_ID="0"*32),
+            lambda x:x["public_presenter"]["identity"].update(uid=1000),
+            lambda x:x["public_presenter"]["identity"].update(ino=99),
+            lambda x:x["public_presenter"].update(sha256="d"*64),
+            lambda x:x["public_unit"].update(sha256="d"*64),
+            lambda x:x["identity_journal"].append(copy.deepcopy(x["identity_journal"][0])),
+            lambda x:x.update(guest_monotonic_ns_end=10_000_000),
+        ]
+        for index,mutate in enumerate(mutations):
+            with self.subTest(index=index):
+                bad=copy.deepcopy(observation);mutate(bad)
+                with self.assertRaises(q.Rejected):q.validate_presenter_identity(bad,binding)
+        for key,value in [("elf_sha256","d"*64),("pid",56),("selinux","u:system_r:p4_linux_user_session_t:s0"),
+                          ("observed_ns",60_000_000),("start_ticks",1000),("clk_tck",0)]:
+            with self.subTest(body=key):
+                bad=copy.deepcopy(observation);body=copy.deepcopy(measured);body[key]=value
+                bad["identity_journal"][0]["MESSAGE"]="Droidloom identity trace: "+json.dumps(body)
+                with self.assertRaises(q.Rejected):q.validate_presenter_identity(bad,binding)
+        bad=copy.deepcopy(observation);body=copy.deepcopy(measured);body["executable"]["nlink"]=True
+        bad["identity_journal"][0]["MESSAGE"]="Droidloom identity trace: "+json.dumps(body)
+        with self.assertRaises(q.Rejected):q.validate_presenter_identity(bad,binding)
 
     def test_owned_probe_is_bounded_and_reaped(self):
         with self.assertRaises(q.Rejected):

@@ -10,14 +10,14 @@ Import `qmp_evidence.py` as an ordinary root-owned, single-link file, mode 0555,
 
 For task evidence and keys, the normal run must have its original explicitly enabled loopback SSH forwarding and fresh fixture key/known-hosts files. The fixed probe uses only the fresh guest's alex account. It does not use original account data, SSH agent state or an arbitrary remote command.
 
-The normal native presenter must include the focus trace source change. Before that unit starts, the VM owner must arrange the existing diagnostic environment values `DROIDLOOM_INPUT_TRACE=1` and `DROIDLOOM_FRAME_TRACE=1`. This controller does not edit a unit or enable tracing. Missing focus/presentation records cause input to fail closed.
+The normal native presenter must include both the focus trace and the default-off self-identity trace source changes. Before that unit starts, the VM owner must arrange the existing diagnostic environment values `DROIDLOOM_INPUT_TRACE=1` and `DROIDLOOM_FRAME_TRACE=1`. Use the existing user-manager environment before this original unit starts; a replacement unit or drop-in is rejected. This controller does not edit a unit or enable tracing. Missing identity/focus/presentation records cause input to fail closed.
 
 ## Bind the selected run
 
 Set the values below from the actual original owner and the current protected normal release. These are operator-selected arguments, not PID or path discovery:
 
 ```sh
-sudo -n /usr/bin/python3 /var/lib/droidloom-qualification/r133-qmp-evidence-516eec/qmp_evidence.py bind \
+sudo -n /usr/bin/python3 /var/lib/droidloom-qualification/r134-qmp-evidence-516eec/qmp_evidence.py bind \
   --run-directory "$RUN" \
   --unit "$OWNER_UNIT" \
   --invocation "$OWNER_INVOCATION_ID" \
@@ -35,7 +35,7 @@ Binding records the actual QEMU PID/start identity, a live PIDFD inode, its orig
 ## Screen capture
 
 ```sh
-sudo -n /usr/bin/python3 /var/lib/droidloom-qualification/r133-qmp-evidence-516eec/qmp_evidence.py capture \
+sudo -n /usr/bin/python3 /var/lib/droidloom-qualification/r134-qmp-evidence-516eec/qmp_evidence.py capture \
   --binding "$BINDING" --binding-sha256 "$BINDING_SHA256" --name initial-desktop
 ```
 
@@ -61,12 +61,14 @@ The planned guest app-runner event stream is the flat file `/var/lib/droidloom-p
 A task capture adds the event arguments:
 
 ```sh
-sudo -n /usr/bin/python3 /var/lib/droidloom-qualification/r133-qmp-evidence-516eec/qmp_evidence.py capture \
+sudo -n /usr/bin/python3 /var/lib/droidloom-qualification/r134-qmp-evidence-516eec/qmp_evidence.py capture \
   --binding "$BINDING" --binding-sha256 "$BINDING_SHA256" --name selected-app \
   --event "$ROOT_PROTECTED_EVENT" --event-sha256 "$EVENT_SHA256"
 ```
 
-The fixed SSH probe verifies the actual presenter's PID/start, unit InvocationID, compiled ELF bytes and SELinux role. It reads only the existing trace journal and runs the existing fixed `droidloomctl --json inspect PACKAGE --user 0` operation using the normal release's pinned client ELF. The returned real Android epoch must exactly match the selected launch event. No new product request is introduced.
+The isolated Python SSH probe reads the original user unit's MainPID, ExecMainPID and InvocationID from the user manager. It requires the normal root-owned unit file, its exact release bytes, no drop-ins or pending reload, and the expected notify/MainPID ownership. The presenter itself emits one bounded startup identity record only when the existing input trace is enabled: it measures its actual held self executable, full SHA-256/F9, start ticks, monotonic clock and both MAC contexts. The consumer matches this record to the trusted journal PID, UID, user unit, InvocationID and boot ID and to the independently read normal public executable inode/bytes. It never reads another role's `/proc/PID/exe`, process metadata or MAC attributes. Missing or repeated identity records fail closed; a caller's self-reported hash alone is insufficient.
+
+The original unit and public file identities are rechecked after journal collection. Boot identity comes from trusted journal metadata and is cross-checked against the existing `droidloomctl --json inspect PACKAGE --user 0` response, using the normal release's pinned client ELF. The returned actual Android epoch must exactly match the selected launch event. No new product request is introduced.
 
 Only the real native `stage=presented` callback for the selected object counts as presentation feedback. A launch, commit, flush or QMP reply does not count. The original diagnostic trace samples frame numbers congruent to 1 modulo 8; the receipt preserves actual frame/buffer IDs, display/callback times, sequence and drop count. It explicitly leaves first-ever-frame and pixel-to-task proof false.
 
@@ -75,7 +77,7 @@ Only the real native `stage=presented` callback for the selected object counts a
 After viewing the screen and selecting the corresponding current launch event:
 
 ```sh
-sudo -n /usr/bin/python3 /var/lib/droidloom-qualification/r133-qmp-evidence-516eec/qmp_evidence.py key \
+sudo -n /usr/bin/python3 /var/lib/droidloom-qualification/r134-qmp-evidence-516eec/qmp_evidence.py key \
   --binding "$BINDING" --binding-sha256 "$BINDING_SHA256" --name selected-app-tab \
   --event "$ROOT_PROTECTED_EVENT" --event-sha256 "$EVENT_SHA256" --key tab
 ```
@@ -98,6 +100,6 @@ A private lock serializes this controller's operations. It does not replace the 
 
 ## Offline verification
 
-Run `python3 test_qmp_evidence.py` outside a VM. The seven tests use ordinary local Unix sockets and original owned subprocesses. They verify actual message credentials across an inherited listener, SCM_RIGHTS delivery to the held file, complete PPM validation, response/deadline bounds, foreign or revoked focus, changed Android epoch, real presentation versus commit, and bounded probe-child retirement.
+Run `python3 test_qmp_evidence.py` outside a VM. The eight tests use ordinary local Unix sockets, original owned subprocesses and fixed synthetic journal records. They verify actual message credentials across an inherited listener, SCM_RIGHTS delivery to the held file, complete PPM validation, response/deadline bounds, foreign or revoked focus, changed Android epoch, real presentation versus commit, bounded probe-child retirement, and rejection of changed units, foreign or missing trusted journal fields, duplicate identity records and mismatched executable inodes.
 
 The fixed embedded guest program is also compiled separately as Python source. These checks do not assert live QEMU, guest Wayland, Android or application qualification.
