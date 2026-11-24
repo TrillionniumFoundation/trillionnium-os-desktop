@@ -1066,8 +1066,10 @@ Its separate non-Android role authenticates the factory using the original
 native peer PIDFD, actual MAC pair and published executable. The factory
 independently authenticates the launcher's native peer PIDFD, actual role, fixed
 original systemd MainPID, InvocationID and exact ExecStart. The root-owned
-mode-0600 instance-factory.sock accepts only the fixed START packet. A client
-cannot select a program, UID range, external PID or namespace.
+mode-0600 instance-factory.sock accepts the fixed START packet while idle. During
+a live generation it also accepts the closed query protocol from that exact
+original production owner. A caller cannot select a program, UID range, external
+PID or namespace.
 
 For each generation the factory creates original Android PID 1 with atomic
 clone3/PIDFD custody. The child opens its own original namespace descriptors and
@@ -1092,3 +1094,51 @@ Native descriptor and policy tests establish source-level gates. Full enforcing
 boot, complete Android/application readiness, repeated start/orderly-stop/start,
 final normal policy/profile pins and CLI restart integration require their own
 observed acceptance before production activation.
+
+### Original factory query ownership
+
+For the kernel-first application path, only the current original production
+resource owner can send a closed query operation to the active factory
+generation. The factory checks the original init and broker PIDFDs, the original
+Android USER/PID namespaces, the final observed seven-namespace scope and the
+fixed empty application-read cgroup. It reopens the held root, namespace and
+immutable copied executable descriptions itself. Duplication does not convert
+broker or metadata file-description provenance into kernel provenance. Query
+stdin and output pipes retain the independent query-I/O creator's provenance.
+
+The factory creates the actual direct child with atomic clone3 PIDFD and
+CLONE_INTO_CGROUP. Its fixed native child code closes all unrelated descriptors
+before changing only its SELinux CURRENT to droidloom_query_birth. The child is
+still in the original host user namespace with root credentials and a fixed
+gate. Only then can the real parent legally PTRACE_SEIZE it; the unchanged
+Android neverallow against tracing kernel itself remains in force.
+
+After that attach, the fixed child enters the held namespaces, adopts the
+original guest shell credentials and drops capabilities. It changes AppArmor
+CURRENT to droidloom-production-android while NNP is still zero, verifies the
+actual label, then installs NNP and the existing query seccomp filter. The fixed
+copied stock ELF makes the strict birth-to-query transition. There is no
+caller-selected program, label, UID or namespace, and no notification proxy.
+
+The actual factory thread consumes TRACEEXEC with waitid and GETEVENTMSG. It
+sends the original PIDFS device/inode and closed stop event through the
+authenticated nonce protocol. The broker creates its own observation PIDFD,
+checks the same kernel object and parent, and asks the fixed metadata observer
+to verify actual executable, root, namespaces, credentials, MAC, seccomp and
+application-read membership. It never ptraces, signals or reaps the query.
+Only a verified release request lets the actual factory execute PTRACE_CONT.
+Only its true waitid terminal and same-cgroup retirement can finish the read.
+
+Read receipt schema 2 names its actual lifecycle owner. Legacy receipts keep
+their original join-worker terminal. Factory receipts keep the original factory
+identity, query PIDFS identity, actual release acknowledgement, query terminal,
+and a separate typed stdio-creator terminal. A killed query, nonzero exit,
+unacknowledged release, mixed owner fields or unproved retirement cannot become
+a successful read. Query cancellation does not kill an otherwise healthy boot
+factory after that query has genuinely been reaped.
+
+Ordinary-host PIDFD, TRACEEXEC and wire tests are not enforcing Android
+acceptance. Protected boot-factory identity binding without broker access to
+kernel proc, fresh-image helper stdio, the combined strict policy/profile
+producer, enforcing boot and live fixed Android queries remain separate runtime
+gates before this path can qualify any application.

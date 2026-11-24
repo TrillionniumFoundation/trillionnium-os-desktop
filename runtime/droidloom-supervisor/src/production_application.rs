@@ -330,11 +330,31 @@ struct OperationResult {
     output: String,
     receipt: ReadReceipt,
 }
+/// Version two distinguishes the actual query creator/wait owner from the
+/// independent short-lived stdio creator. Neither branch is deserializable.
+#[derive(Debug, Serialize)]
+#[serde(tag = "owner", rename_all = "snake_case")]
+pub(crate) enum ReadLifecycle {
+    LegacyBroker {
+        worker_pid: u32,
+        worker_waitid_code: i32,
+        worker_waitid_status: i32,
+    },
+    InstanceFactory {
+        factory_pid: u32,
+        factory_tid: u32,
+        factory_pidfd_device: u64,
+        factory_pidfd_inode: u64,
+        query_pidfd_device: u64,
+        query_pidfd_inode: u64,
+        stdio_creator: query_io::CreatorReceipt,
+        release_acknowledged: bool,
+    },
+}
 #[derive(Debug, Serialize)]
 pub(crate) struct ReadReceipt {
-    worker_pid: u32,
-    worker_waitid_code: i32,
-    worker_waitid_status: i32,
+    schema: u32,
+    lifecycle: ReadLifecycle,
     query_pid: u32,
     query_waitid_code: i32,
     query_waitid_status: i32,
@@ -344,18 +364,70 @@ pub(crate) struct ReadReceipt {
     elapsed_millis: u64,
     cgroup_removed: bool,
 }
-
-pub(crate) struct ApplicationRetired<'a> {
-    children: &'a process::Children,
+impl ReadReceipt {
+    fn successful_retirement(&self) -> bool {
+        self.schema == 2
+            && self.cgroup_removed
+            && self.query_pid > 1
+            && self.query_waitid_code == libc::CLD_EXITED
+            && self.query_waitid_status == 0
+            && match &self.lifecycle {
+                ReadLifecycle::LegacyBroker {
+                    worker_pid,
+                    worker_waitid_code,
+                    worker_waitid_status,
+                } => {
+                    *worker_pid > 1
+                        && *worker_pid != self.query_pid
+                        && *worker_waitid_code == libc::CLD_EXITED
+                        && *worker_waitid_status == 0
+                }
+                ReadLifecycle::InstanceFactory {
+                    factory_pid,
+                    factory_tid,
+                    factory_pidfd_device,
+                    factory_pidfd_inode,
+                    query_pidfd_device,
+                    query_pidfd_inode,
+                    stdio_creator,
+                    release_acknowledged,
+                } => {
+                    *factory_pid > 1
+                        && *factory_pid == *factory_tid
+                        && *factory_pid != self.query_pid
+                        && *factory_pidfd_device > 0
+                        && *factory_pidfd_inode > 0
+                        && *query_pidfd_device > 0
+                        && *query_pidfd_inode > 0
+                        && stdio_creator.successful_retirement()
+                        && stdio_creator.pid() != self.query_pid
+                        && stdio_creator.pid() != *factory_pid
+                        && *release_acknowledged
+                }
+            }
+    }
+}
+pub(crate) enum ApplicationRetired<'a> {
+    Legacy {
+        children: &'a process::Children,
+    },
+    Factory {
+        query: &'a factory_query::RetiredQuery<'a>,
+    },
 }
 impl ApplicationRetired<'_> {
     pub(crate) fn verify_cgroup(&self, file: &File) -> Result<()> {
-        self.children.verify_retirement()?;
-        let m = file.metadata()?;
-        require(
-            (m.dev(), m.ino()) == self.children.cgroup_identity,
-            "retirement proof belongs to a different leaf",
-        )
+        match self {
+            Self::Legacy { children } => {
+                children.verify_retirement()?;
+                let m = file.metadata()?;
+                require(
+                    (m.dev(), m.ino()) == children.cgroup_identity,
+                    "retirement proof belongs to a different leaf",
+                )
+            }
+            Self::Factory { query } => query.verify_cgroup(file),
+        }
     }
 }
 
@@ -516,8 +588,7 @@ pub(crate) fn inspect(
         !probe.reads.is_empty()
             && probe.reads.iter().all(|row| {
                 row.cgroup_removed
-                    && row.worker_waitid_code == libc::CLD_EXITED
-                    && row.worker_waitid_status == 0
+                    && row.successful_retirement()
                     && row.query_waitid_code == libc::CLD_EXITED
                     && row.query_waitid_status == 0
             }),
@@ -593,8 +664,7 @@ pub(crate) fn inspect_early(
         !probe.reads.is_empty()
             && probe.reads.iter().all(|row| {
                 row.cgroup_removed
-                    && row.worker_waitid_code == libc::CLD_EXITED
-                    && row.worker_waitid_status == 0
+                    && row.successful_retirement()
                     && row.query_waitid_code == libc::CLD_EXITED
                     && row.query_waitid_status == 0
             }),

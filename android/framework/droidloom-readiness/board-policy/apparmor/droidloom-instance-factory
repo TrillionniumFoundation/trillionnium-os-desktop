@@ -41,9 +41,13 @@ profile droidloom-instance-factory /usr/lib/droidloom/production/current/droidlo
   capability setgid,
   capability setuid,
   capability sys_admin,
+  capability sys_chroot,
   capability mknod,
   userns,
-  ptrace (read, readby) peer=droidloom-instance-factory,
+  ptrace (read, readby, trace, tracedby) peer=droidloom-instance-factory,
+  ptrace (trace) peer=droidloom-production-android,
+  change_profile -> droidloom-production-android,
+  signal (send) peer=droidloom-production-android,
   ptrace (read, readby) peer=droidloom-production-broker,
   ptrace (read, readby) peer=droidloom-instance-launcher,
   ptrace (read) peer=unconfined,
@@ -74,4 +78,13 @@ profile droidloom-instance-factory /usr/lib/droidloom/production/current/droidlo
   # Android retains its original SELinux init domain and original AppArmor
   # unconfined state. No broker or arbitrary host executable gets Ux.
   /system/bin/init rUx,
+  # Fixed copied query bytes and their same original source. Birth has no
+  # Binder pathname; its final CURRENT transition precedes NNP and exec.
+  /system/bin/{cmd,toybox} r,
+  /dev/droidloom-query/{,cmd,toybox} r,
+  /run/droidloom-early-slot/rootfs/system/bin/{cmd,toybox} r,
+  /run/droidloom-early-slot/rootfs/dev/{,droidloom-query/,droidloom-query/cmd,droidloom-query/toybox} r,
+  /sys/fs/cgroup/{,system.slice/,system.slice/droidloom-production.service/,system.slice/droidloom-production.service/cell-u1000/} r,
+  /sys/fs/cgroup/system.slice/droidloom-production.service/cell-u1000/application-read/{,cgroup.type,cgroup.subtree_control,cgroup.procs,memory.max,memory.high,memory.swap.max,pids.max,cpu.max} r,
+  owner @{PROC}/[0-9]*/ns/pid_for_children r,
 }

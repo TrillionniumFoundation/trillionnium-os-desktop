@@ -111,8 +111,7 @@ struct BrowserProbe<'a> {
 
 fn complete_retirement(receipt: &ReadReceipt) -> bool {
     receipt.cgroup_removed
-        && receipt.worker_waitid_code == libc::CLD_EXITED
-        && receipt.worker_waitid_status == 0
+        && receipt.successful_retirement()
         && receipt.query_waitid_code == libc::CLD_EXITED
         && receipt.query_waitid_status == 0
 }

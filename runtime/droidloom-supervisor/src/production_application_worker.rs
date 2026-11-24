@@ -9,7 +9,7 @@ use std::time::{Duration, Instant};
 #[path = "production_application_bridge_worker.rs"]
 mod bridge;
 #[path = "production_application_executable.rs"]
-mod executable;
+pub(super) mod executable;
 #[path = "production_application_mac_child.rs"]
 mod mac_child;
 
@@ -767,7 +767,7 @@ unsafe fn query_child(
     }
 }
 
-fn query_filter() -> Vec<libc::sock_filter> {
+pub(super) fn query_filter() -> Vec<libc::sock_filter> {
     let ins = |code, jt, jf, k| libc::sock_filter { code, jt, jf, k };
     let deny = 0x0005_0000 | libc::EPERM as u32;
     let mut f = vec![

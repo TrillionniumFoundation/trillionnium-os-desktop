@@ -40,6 +40,7 @@ fn main() {
         "device_source",
         "device_template",
         "instance_context",
+        "instance_query",
     ] {
         let source = format!("../droidloom-early-boot/{stem}.c");
         let object = out.join(format!("{stem}.o"));
@@ -71,6 +72,7 @@ fn main() {
     ] {
         println!("cargo:rerun-if-changed=../droidloom-early-boot/{header}");
     }
+    println!("cargo:rerun-if-changed=../droidloom-early-boot/instance_query.h");
     println!("cargo:rerun-if-changed=../droidloom-early-boot/board_cgroup.h");
     println!("cargo:rerun-if-changed=../droidloom-early-boot/board_resources.h");
     println!("cargo:rerun-if-changed=../droidloom-early-boot/board_binder.h");

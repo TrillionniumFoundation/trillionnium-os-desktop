@@ -30,12 +30,43 @@ const CREATED: u8 = 2;
 /// The fixed five descriptors. Reads are nonblocking; query writes remain
 /// blocking. Every descriptor is CLOEXEC until the real query deliberately
 /// installs its three standard streams.
+/// Actual one-time creator retirement. Only create(), after its original
+/// PIDFD waitid, constructs this source-owned record.
+#[derive(Clone, Debug, serde::Serialize)]
+pub(crate) struct CreatorReceipt {
+    pid: u32,
+    waitid_code: i32,
+    waitid_status: i32,
+}
+impl CreatorReceipt {
+    pub(crate) fn pid(&self) -> u32 {
+        self.pid
+    }
+    pub(crate) fn successful_retirement(&self) -> bool {
+        self.pid > 1 && self.waitid_code == libc::CLD_EXITED && self.waitid_status == 0
+    }
+}
 pub(crate) struct QueryIo {
+    creator: Option<CreatorReceipt>,
     pub(crate) stdin: File,
     pub(crate) stdout_read: File,
     pub(crate) stdout_write: File,
     pub(crate) stderr_read: File,
     pub(crate) stderr_write: File,
+}
+
+impl QueryIo {
+    pub(crate) fn creator_receipt(&self) -> Result<CreatorReceipt> {
+        let receipt = self
+            .creator
+            .as_ref()
+            .ok_or_else(|| reject("query I/O has no actual creator retirement"))?;
+        require(
+            receipt.successful_retirement(),
+            "query I/O creator retirement is not normal",
+        )?;
+        Ok(receipt.clone())
+    }
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -573,6 +604,7 @@ fn assemble(files: Vec<File>, root: &File) -> Result<QueryIo> {
         "query I/O output pipes alias",
     )?;
     Ok(QueryIo {
+        creator: None,
         stdin,
         stdout_read,
         stdout_write,
@@ -1237,7 +1269,15 @@ pub(crate) fn create(root: &File, deadline: Instant) -> Result<QueryIo> {
         )?;
         child.finish(deadline)?;
         // Descriptor validation happens only after actual successful reap.
-        assemble(reply.files, root)
+        let (waitid_code, waitid_status) =
+            child.terminal.ok_or(ApplicationError::RetirementUnproven)?;
+        let mut result = assemble(reply.files, root)?;
+        result.creator = Some(CreatorReceipt {
+            pid: child.pid,
+            waitid_code,
+            waitid_status,
+        });
+        Ok(result)
     })();
     if operation.is_err() && child.retire().is_err() {
         if let Some(fd) = child.pidfd.take() {

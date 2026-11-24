@@ -18,6 +18,52 @@ const MESSAGE_LIMIT: usize = 32768;
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(tag = "phase", deny_unknown_fields)]
 pub(super) enum Message {
+    FactoryRequest {
+        nonce: [u8; 16],
+        query: ApplicationOperation,
+        deadline_ns: u64,
+    },
+    FactoryRejected {
+        nonce: [u8; 16],
+        message: String,
+    },
+    FactoryBorn {
+        nonce: [u8; 16],
+        pid: u32,
+        pidfd_device: u64,
+        pidfd_inode: u64,
+    },
+    FactoryBound {
+        nonce: [u8; 16],
+    },
+    FactoryExecStopped {
+        nonce: [u8; 16],
+        pid: u32,
+        pidfd_device: u64,
+        pidfd_inode: u64,
+        tracer_tid: u32,
+        waitid_code: i32,
+        waitid_status: i32,
+        event_previous_tid: u64,
+    },
+    FactoryRelease {
+        nonce: [u8; 16],
+    },
+    FactoryReleased {
+        nonce: [u8; 16],
+    },
+    FactoryCancel {
+        nonce: [u8; 16],
+    },
+    FactoryTerminated {
+        nonce: [u8; 16],
+        pid: u32,
+        pidfd_device: u64,
+        pidfd_inode: u64,
+        waitid_code: i32,
+        waitid_status: i32,
+        released: bool,
+    },
     MetadataRequest {
         nonce: [u8; 16],
         role: super::metadata_observer::MetadataRole,

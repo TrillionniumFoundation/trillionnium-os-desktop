@@ -372,6 +372,61 @@ impl RemoteChild {
         }
     }
 }
+/// Observation-only client channel to the original boot factory. SO_PEERPIDFD
+/// is created in the caller's context, not received as a kernel-origin file.
+pub(crate) struct QueryEndpoint {
+    channel: File,
+    peer: Peer,
+}
+impl QueryEndpoint {
+    pub(crate) fn connect() -> io::Result<Self> {
+        let node = std::fs::symlink_metadata(SOCKET)?;
+        if !node.file_type().is_socket()
+            || node.uid() != 0
+            || node.gid() != 0
+            || node.mode() & 0o7777 != 0o600
+        {
+            return Err(invalid(
+                "query factory endpoint is not the private boot socket",
+            ));
+        }
+        for (lsm, expected) in [
+            ("selinux", "u:r:droidloom_broker:s0"),
+            ("apparmor", "droidloom-production-broker (enforce)"),
+        ] {
+            if std::fs::read_to_string(format!("/proc/self/attr/{lsm}/current"))?
+                .trim_end_matches(['\n', '\0'])
+                != expected
+            {
+                return Err(invalid("query factory client is not the original broker"));
+            }
+        }
+        let channel = socket()?;
+        let (name, length) = address();
+        cv(unsafe {
+            libc::connect(
+                channel.as_raw_fd(),
+                (&name as *const libc::sockaddr_un).cast(),
+                length,
+            )
+        })?;
+        let peer = Peer::acquire(&channel, FACTORY_SELINUX, FACTORY_APPARMOR)?;
+        Ok(Self { channel, peer })
+    }
+    pub(crate) fn channel(&self) -> &File {
+        &self.channel
+    }
+    pub(crate) fn pidfd(&self) -> &File {
+        &self.peer.pidfd
+    }
+    pub(crate) fn pid(&self) -> u32 {
+        self.peer.pid
+    }
+    pub(crate) fn revalidate(&self) -> io::Result<()> {
+        self.peer.revalidate()
+    }
+}
+
 struct Listener {
     socket: File,
     node: (u64, u64),
@@ -433,7 +488,7 @@ impl Listener {
         Ok(Some(unsafe { File::from_raw_fd(fd) }))
     }
 }
-fn serve_generation(channel: &File, peer: Peer) -> io::Result<()> {
+fn serve_generation(channel: &File, peer: Peer, listener: &Listener) -> io::Result<()> {
     cv(unsafe { droidloom_factory_context() })?;
     let configuration = ConfigurationReadGuard::acquire()?;
     let Some((choice, cell, base)) =
@@ -511,7 +566,61 @@ fn serve_generation(channel: &File, peer: Peer) -> io::Result<()> {
                 "authorized instance never acquired its original resource owner",
             ));
         }
-        std::thread::sleep(Duration::from_millis(100));
+        if let Some((owner_id, owner_pid, owner_process)) = &owner {
+            if let Some(query_channel) = listener.accept()? {
+                let Ok(query_peer) = Peer::acquire(
+                    &query_channel,
+                    "u:r:droidloom_broker:s0",
+                    "droidloom-production-broker (enforce)",
+                ) else {
+                    continue;
+                };
+                if query_peer.pid != *owner_pid
+                    || identity(&query_peer.pidfd)? != identity(owner_process)?
+                {
+                    continue;
+                }
+                let validate = || -> io::Result<()> {
+                    query_peer.revalidate()?;
+                    child.revalidate()?;
+                    let current = manager.owner()?;
+                    if !current.live()
+                        || current.invocation != *owner_id
+                        || current.main_pid != *owner_pid
+                    {
+                        return Err(invalid("original query resource owner changed"));
+                    }
+                    let mut stop = [0u8; 1];
+                    child.stop.read_exact_at(&mut stop, 0)?;
+                    if stop != [b'0'] {
+                        return Err(invalid("original Android shutdown has begun"));
+                    }
+                    Ok(())
+                };
+                let authority = crate::production_application::factory_query::FactoryAuthority {
+                    init: &child.pidfd,
+                    owner: owner_process,
+                    pid_namespace: &child.pins[0].object,
+                    mount_namespace: &child.pins[1].object,
+                    user_namespace: &child.pins[2].object,
+                    root_uid: plan.uid_start,
+                    root_gid: plan.gid_start,
+                    validate: &validate,
+                };
+                match crate::production_application::factory_query::serve(&query_channel, authority)
+                {
+                    Err(crate::production_application::ApplicationError::RetirementUnproven) => {
+                        return Err(invalid("original factory query retirement is unproven"));
+                    }
+                    // No-child rejection, cancellation and actual reaped failures
+                    // cannot kill the boot factory during an orderly Android stop.
+                    Err(error) => eprintln!("fixed factory query rejected: {error}"),
+                    Ok(()) => {}
+                }
+            }
+        } else {
+            std::thread::sleep(Duration::from_millis(100));
+        }
     }
 }
 /// Serve fresh original namespace generations from the boot's kernel lineage.
@@ -557,7 +666,7 @@ pub fn run_instance_factory(shutdown: &AtomicBool) -> io::Result<()> {
         if &tag != START || !fds.is_empty() {
             continue;
         }
-        if let Err(error) = serve_generation(&channel, peer) {
+        if let Err(error) = serve_generation(&channel, peer, &listener) {
             let _ = send(&channel, FAILED, &[]);
             // Published original pins remain a closed slot on failure; a failed
             // generation is never silently replaced with a new one.

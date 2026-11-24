@@ -18,10 +18,8 @@ pub(crate) const SYSTEM_BYTES: u64 = 2_294_853_632;
 pub(crate) const SYSTEM_SHA256: &str =
     "dc781249bb4724b7a0777e5077321b84576db46f61abb4b9086b81077bfd0ab4";
 pub(crate) const GALLERY_SOURCE_PATH: &str = "/system/product/app/Gallery2/Gallery2.apk";
-pub(crate) const GALLERY_PM_PATHS: [&str; 2] = [
-    GALLERY_SOURCE_PATH,
-    "/product/app/Gallery2/Gallery2.apk",
-];
+pub(crate) const GALLERY_PM_PATHS: [&str; 2] =
+    [GALLERY_SOURCE_PATH, "/product/app/Gallery2/Gallery2.apk"];
 
 /// Actual kernel metadata of one held regular file, directory, or loop node.
 #[derive(Clone, Copy, Debug, Deserialize, Serialize, Eq, PartialEq)]
@@ -163,35 +161,161 @@ fn regular(file: &CustodyFileIdentity) -> bool {
 
 fn read_valid(read: &CustodyRead) -> Result<(), String> {
     let receipt = &read.receipt;
-    let object = receipt.as_object().ok_or("image custody receipt is not an object")?;
+    let object = receipt
+        .as_object()
+        .ok_or("image custody receipt is not an object")?;
     let keys = object.keys().map(String::as_str).collect::<BTreeSet<_>>();
-    require(keys == BTreeSet::from([
-        "worker_pid", "worker_waitid_code", "worker_waitid_status", "query_pid",
-        "query_waitid_code", "query_waitid_status", "exec", "output_bytes",
-        "output_sha256", "elapsed_millis", "cgroup_removed",
-    ]), "image custody receipt shape differs from the original executor")?;
-    let exec = &receipt["exec"];
-    let exec_object = exec.as_object().ok_or("image custody stopped-exec observation is absent")?;
     require(
-        exec_object.keys().map(String::as_str).collect::<BTreeSet<_>>() == BTreeSet::from([
-            "query_start_ticks", "original_parent_pid", "tracer_tid", "waitid_code",
-            "waitid_status", "event_previous_tid", "executable", "executable_mount_id",
-            "executable_sha256", "executable_selinux", "process_selinux", "process_apparmor",
-            "uid", "gid", "no_new_privileges", "seccomp_filter_mode",
-        ])
-            && exec["query_start_ticks"].as_u64().is_some_and(|value| value > 0)
-            && exec["original_parent_pid"].as_u64().is_some_and(|value| value > 0)
+        keys == BTreeSet::from([
+            "schema",
+            "lifecycle",
+            "query_pid",
+            "query_waitid_code",
+            "query_waitid_status",
+            "exec",
+            "output_bytes",
+            "output_sha256",
+            "elapsed_millis",
+            "cgroup_removed",
+        ]),
+        "image custody receipt shape differs from the original executor",
+    )?;
+    require(
+        receipt["schema"].as_u64() == Some(2),
+        "image custody executor lifecycle version differs",
+    )?;
+    let exec = &receipt["exec"];
+    let lifecycle = &receipt["lifecycle"];
+    let lifecycle_object = lifecycle
+        .as_object()
+        .ok_or("image custody wait owner is absent")?;
+    let owner_keys = lifecycle_object
+        .keys()
+        .map(String::as_str)
+        .collect::<BTreeSet<_>>();
+    let query = receipt["query_pid"]
+        .as_u64()
+        .filter(|pid| *pid > 1)
+        .ok_or("image custody query PID is invalid")?;
+    let apparmor = match lifecycle["owner"].as_str() {
+        Some("legacy_broker") => {
+            require(
+                owner_keys
+                    == BTreeSet::from([
+                        "owner",
+                        "worker_pid",
+                        "worker_waitid_code",
+                        "worker_waitid_status",
+                    ])
+                    && lifecycle["worker_pid"]
+                        .as_u64()
+                        .is_some_and(|pid| pid > 1 && pid != query)
+                    && lifecycle["worker_waitid_code"].as_i64() == Some(1)
+                    && lifecycle["worker_waitid_status"].as_i64() == Some(0),
+                "legacy join worker has no actual normal retirement",
+            )?;
+            "droidloom-production-android//&droidloom-production-broker (enforce)"
+        }
+        Some("instance_factory") => {
+            let creator = &lifecycle["stdio_creator"];
+            let creator_object = creator
+                .as_object()
+                .ok_or("factory stdio creator wait is absent")?;
+            let factory = lifecycle["factory_pid"]
+                .as_u64()
+                .filter(|pid| *pid > 1 && *pid != query)
+                .ok_or("factory wait owner PID is invalid")?;
+            require(
+                owner_keys
+                    == BTreeSet::from([
+                        "owner",
+                        "factory_pid",
+                        "factory_tid",
+                        "factory_pidfd_device",
+                        "factory_pidfd_inode",
+                        "query_pidfd_device",
+                        "query_pidfd_inode",
+                        "stdio_creator",
+                        "release_acknowledged",
+                    ])
+                    && lifecycle["factory_tid"].as_u64() == Some(factory)
+                    && exec["original_parent_pid"].as_u64() == Some(factory)
+                    && exec["tracer_tid"].as_u64() == Some(factory)
+                    && lifecycle["factory_pidfd_device"]
+                        .as_u64()
+                        .is_some_and(|v| v > 0)
+                    && lifecycle["factory_pidfd_inode"]
+                        .as_u64()
+                        .is_some_and(|v| v > 0)
+                    && lifecycle["query_pidfd_device"]
+                        .as_u64()
+                        .is_some_and(|v| v > 0)
+                    && lifecycle["query_pidfd_inode"]
+                        .as_u64()
+                        .is_some_and(|v| v > 0)
+                    && (lifecycle["factory_pidfd_device"] != lifecycle["query_pidfd_device"]
+                        || lifecycle["factory_pidfd_inode"] != lifecycle["query_pidfd_inode"])
+                    && lifecycle["release_acknowledged"].as_bool() == Some(true)
+                    && creator_object
+                        .keys()
+                        .map(String::as_str)
+                        .collect::<BTreeSet<_>>()
+                        == BTreeSet::from(["pid", "waitid_code", "waitid_status"])
+                    && creator["pid"]
+                        .as_u64()
+                        .is_some_and(|pid| pid > 1 && pid != query && pid != factory)
+                    && creator["waitid_code"].as_i64() == Some(1)
+                    && creator["waitid_status"].as_i64() == Some(0),
+                "factory query wait, release or independent stdio retirement differs",
+            )?;
+            "droidloom-production-android (enforce)"
+        }
+        _ => return Err("image custody query wait owner is unknown".into()),
+    };
+    let exec_object = exec
+        .as_object()
+        .ok_or("image custody stopped-exec observation is absent")?;
+    require(
+        exec_object
+            .keys()
+            .map(String::as_str)
+            .collect::<BTreeSet<_>>()
+            == BTreeSet::from([
+                "query_start_ticks",
+                "original_parent_pid",
+                "tracer_tid",
+                "waitid_code",
+                "waitid_status",
+                "event_previous_tid",
+                "executable",
+                "executable_mount_id",
+                "executable_sha256",
+                "executable_selinux",
+                "process_selinux",
+                "process_apparmor",
+                "uid",
+                "gid",
+                "no_new_privileges",
+                "seccomp_filter_mode",
+            ])
+            && exec["query_start_ticks"]
+                .as_u64()
+                .is_some_and(|value| value > 0)
+            && exec["original_parent_pid"]
+                .as_u64()
+                .is_some_and(|value| value > 0)
             && exec["tracer_tid"].as_u64().is_some_and(|value| value > 0)
             && exec["waitid_code"].as_i64() == Some(4)
             && exec["waitid_status"].as_i64() == Some(1029)
             && exec["event_previous_tid"].as_u64() == receipt["query_pid"].as_u64()
             && exec["executable"].is_object()
-            && exec["executable_mount_id"].as_u64().is_some_and(|value| value > 0)
+            && exec["executable_mount_id"]
+                .as_u64()
+                .is_some_and(|value| value > 0)
             && exec["executable_sha256"].as_str().is_some_and(digest)
             && exec["executable_selinux"].as_str() == Some("u:object_r:droidloom_query_exec:s0")
             && exec["process_selinux"].as_str() == Some("u:r:droidloom_query:s0")
-            && exec["process_apparmor"].as_str()
-                == Some("droidloom-production-android//&droidloom-production-broker (enforce)")
+            && exec["process_apparmor"].as_str() == Some(apparmor)
             && exec["no_new_privileges"].as_bool() == Some(true)
             && exec["seccomp_filter_mode"].as_u64() == Some(2),
         "image custody original stopped-exec observation differs",
@@ -201,15 +325,13 @@ fn read_valid(read: &CustodyRead) -> Result<(), String> {
             && receipt["output_bytes"].as_u64() == Some(read.stdout.len() as u64)
             && receipt["output_sha256"].as_str()
                 == Some(format!("{:x}", Sha256::digest(read.stdout.as_bytes())).as_str())
-            && receipt["worker_pid"].as_u64().is_some_and(|pid| pid > 0)
-            && receipt["query_pid"].as_u64().is_some_and(|pid| pid > 0)
-            && receipt["query_pid"].as_u64() != receipt["worker_pid"].as_u64()
-            && receipt["worker_waitid_code"].as_i64() == Some(1)
+            && receipt["query_pid"].as_u64().is_some_and(|pid| pid > 1)
             && receipt["query_waitid_code"].as_i64() == Some(1)
-            && receipt["worker_waitid_status"].as_i64() == Some(0)
             && receipt["query_waitid_status"].as_i64() == Some(0)
             && receipt["cgroup_removed"].as_bool() == Some(true)
-            && receipt["elapsed_millis"].as_u64().is_some_and(|value| value < 30_000),
+            && receipt["elapsed_millis"]
+                .as_u64()
+                .is_some_and(|value| value < 30_000),
         "image custody read output or original retirement receipt differs",
     )
 }
@@ -224,8 +346,14 @@ impl AndroidProbe for Transcript<'_> {
         Ok(self.epoch.clone())
     }
     fn command(&mut self, args: &[String]) -> Result<String, String> {
-        let read = self.reads.get(self.cursor).ok_or("image custody query is absent")?;
-        require(read.argv == args, "image custody query order or arguments differ")?;
+        let read = self
+            .reads
+            .get(self.cursor)
+            .ok_or("image custody query is absent")?;
+        require(
+            read.argv == args,
+            "image custody query order or arguments differ",
+        )?;
         read_valid(read)?;
         self.cursor += 1;
         Ok(read.stdout.clone())
@@ -284,11 +412,18 @@ impl ImageApplicationCustody {
                 && cohort.manifest.bytes <= 16 * 1024,
             "image custody owner or complete manifest binding differs",
         )?;
-        let names: BTreeSet<_> = owner.namespaces.iter().map(|row| row.name.as_str()).collect();
+        let names: BTreeSet<_> = owner
+            .namespaces
+            .iter()
+            .map(|row| row.name.as_str())
+            .collect();
         require(
             owner.namespaces.len() == 7
                 && names == BTreeSet::from(["user", "mount", "pid", "ipc", "uts", "net", "cgroup"])
-                && owner.namespaces.iter().all(|row| row.device != 0 && row.inode != 0)
+                && owner
+                    .namespaces
+                    .iter()
+                    .all(|row| row.device != 0 && row.inode != 0)
                 && owner.namespaces.iter().find(|row| row.name == "user")
                     == Some(&cohort.user_namespace)
                 && cohort.uid_range.1 != 0
@@ -298,9 +433,11 @@ impl ImageApplicationCustody {
         for (role, image) in [("system", &cohort.system), ("vendor", &cohort.vendor)] {
             require(
                 image.role == role
-                    && image.path == format!(
-                        "/var/lib/droidloom/cohorts/{}/images/{role}.img", cohort.manifest_sha256
-                    )
+                    && image.path
+                        == format!(
+                            "/var/lib/droidloom/cohorts/{}/images/{role}.img",
+                            cohort.manifest_sha256
+                        )
                     && regular(&image.file)
                     && (4096..=8 * 1024 * 1024 * 1024).contains(&image.file.bytes)
                     && image.file.bytes % 512 == 0
@@ -332,11 +469,13 @@ impl ImageApplicationCustody {
                 && self.original_apk.file.device == cohort.system.mount_root.device,
             "image custody whole official system or original member mount differs",
         )?;
-        require(self.reads.len() == 7, "image custody requires the complete seven-read ledger")?;
+        require(
+            self.reads.len() == 7,
+            "image custody requires the complete seven-read ledger",
+        )?;
         for read in &self.reads {
             require(
-                read.receipt["exec"]["uid"].as_u64()
-                    == Some(u64::from(cohort.uid_range.0) + 2000)
+                read.receipt["exec"]["uid"].as_u64() == Some(u64::from(cohort.uid_range.0) + 2000)
                     && read.receipt["exec"]["gid"].as_u64()
                         == Some(u64::from(cohort.gid_range.0) + 2000),
                 "image custody query did not use this owner's mapped Android shell",
@@ -352,7 +491,11 @@ impl ImageApplicationCustody {
             observed == *expected && transcript.cursor == self.reads.len(),
             "image custody actual query transcript does not reproduce the PM observation",
         )?;
-        for read in self.reads.iter().filter(|row| row.argv.get(1).is_some_and(|arg| arg == "stat")) {
+        for read in self
+            .reads
+            .iter()
+            .filter(|row| row.argv.get(1).is_some_and(|arg| arg == "stat"))
+        {
             let fields = read.stdout.trim().splitn(4, ':').collect::<Vec<_>>();
             require(
                 fields.len() == 4

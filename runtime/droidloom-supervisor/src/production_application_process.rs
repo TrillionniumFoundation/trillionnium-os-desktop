@@ -352,6 +352,9 @@ fn run_owned(
     request: &ApplicationOperation,
     workflow_deadline: Instant,
 ) -> Result<LaunchCommandResult> {
+    if authority.query_projection() == QueryProjection::EarlyDev {
+        return super::factory_query::run(authority, request, workflow_deadline);
+    }
     let started = Instant::now();
     let deadline = (started + QUERY_LIMIT).min(workflow_deadline);
     require(Instant::now() < deadline, "application workflow deadline")?;
@@ -560,7 +563,7 @@ fn run_owned(
     if children.retire(&leaf).is_err() {
         return Err(ApplicationError::RetirementUnproven);
     }
-    let proof = ApplicationRetired {
+    let proof = ApplicationRetired::Legacy {
         children: &children,
     };
     if leaf.retire(&proof).is_err() {
@@ -580,9 +583,12 @@ fn run_owned(
         .ok_or(ApplicationError::RetirementUnproven)?;
     let query_exit = query.terminal.ok_or(ApplicationError::RetirementUnproven)?;
     let receipt = ReadReceipt {
-        worker_pid: worker.pid,
-        worker_waitid_code: worker_exit.code,
-        worker_waitid_status: worker_exit.status,
+        schema: 2,
+        lifecycle: ReadLifecycle::LegacyBroker {
+            worker_pid: worker.pid,
+            worker_waitid_code: worker_exit.code,
+            worker_waitid_status: worker_exit.status,
+        },
         query_pid: query.pid,
         query_waitid_code: query_exit.code,
         query_waitid_status: query_exit.status,
@@ -729,7 +735,7 @@ pub(super) fn connect_bridge(
         return Err(ApplicationError::RetirementUnproven);
     }
     if leaf
-        .retire(&ApplicationRetired {
+        .retire(&ApplicationRetired::Legacy {
             children: &children,
         })
         .is_err()

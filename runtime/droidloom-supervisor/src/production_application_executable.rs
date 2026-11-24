@@ -165,7 +165,7 @@ fn private_role(root: &File, projection: QueryProjection, leaf: &CStr) -> Result
     }
 }
 
-pub(super) fn verify(
+pub(in crate::production_application) fn verify(
     files: &[File],
     query: &ApplicationOperation,
     projection: QueryProjection,
