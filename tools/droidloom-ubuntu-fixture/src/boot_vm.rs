@@ -256,8 +256,8 @@ pub fn run(config: &Path, expected: &str) -> Result<()> {
         "intel-hda".into(),
         "-device".into(),
         "hda-duplex".into(),
-        "-runas".into(),
-        "nobody".into(),
+        "-run-with".into(),
+        "user=nobody".into(),
         "-sandbox".into(),
         "on,obsolete=deny,elevateprivileges=deny,spawn=deny,resourcecontrol=deny".into(),
     ];
