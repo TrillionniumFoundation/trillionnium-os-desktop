@@ -84,7 +84,7 @@ static int dl_pin(const char* path, int fd, const struct stat* expected) {
  * pidfd returned by the same clone(CLONE_PIDFD | CLONE_NEWPID) operation.
  * The pinned PID namespace survives switch_root on the original /run tmpfs.
  * If its init dies, Linux never assigns PID 1 to a second task in that namespace. */
-int droidloom_publish_early_child(pid_t child, int child_pidfd, const char* selection) {
+int droidloom_publish_early_handles(pid_t child, int child_pidfd, int ns, const char* selection) {
     if (geteuid() != 0 || child <= 1 || !selection ||
         strlen(selection) != 64 || strspn(selection, "0123456789abcdef") != 64)
         return dl_fail(EINVAL);
@@ -101,15 +101,15 @@ int droidloom_publish_early_child(pid_t child, int child_pidfd, const char* sele
     if (dl_read("/proc/sys/kernel/random/boot_id",boot,sizeof(boot))) return -1;
     boot[strcspn(boot,"\n")]='\0';
     if (strlen(boot)!=36 || strspn(boot,"0123456789abcdef-")!=36) return dl_fail(EINVAL);
-    snprintf(path,sizeof(path),"/proc/%d/ns/pid",child);
-    int ns = open(path,O_RDONLY|O_CLOEXEC);
-    if (ns < 0) return -1;
-    bool ns_pinned=false,has_pending=false;
+    if (ns < 0) return dl_fail(EBADF);
+    bool ns_pinned=false,pid_pinned=false,has_pending=false;
     int pending=-1, saved=0;
     if (dl_source(ns,NSFS_MAGIC,&space) || ioctl(ns,NS_GET_NSTYPE)!=CLONE_NEWPID ||
         ioctl(ns,NS_GET_TGID_IN_PIDNS,(unsigned long)child)!=1) {saved=ESTALE; goto done;}
     if (dl_pin(DL_NS_PIN,ns,&space)) {saved=errno; goto done;}
     ns_pinned=true;
+    if(dl_pin(DL_HANDOFF_ROOT "/pidfd",child_pidfd,&process)) {saved=errno; goto done;}
+    pid_pinned=true;
     pending=open(DL_HANDOFF_ROOT "/generation.pending",O_WRONLY|O_CLOEXEC|O_CREAT|O_EXCL,0400);
     if(pending<0) {saved=errno; goto done;}
     has_pending=true;
@@ -124,9 +124,9 @@ int droidloom_publish_early_child(pid_t child, int child_pidfd, const char* sele
                AT_FDCWD,DL_HANDOFF_ROOT "/generation.json",RENAME_NOREPLACE)) {saved=errno; goto done;}
 done:
     if(pending>=0)close(pending);
-    close(ns);
     if(saved) {
         if(has_pending) unlink(DL_HANDOFF_ROOT "/generation.pending");
+        if(pid_pinned) {umount(DL_HANDOFF_ROOT "/pidfd");unlink(DL_HANDOFF_ROOT "/pidfd");}
         if(ns_pinned) {umount(DL_NS_PIN);unlink(DL_NS_PIN);}
         return dl_fail(saved);
     }
@@ -135,15 +135,19 @@ done:
 /* The original creator publishes only named namespace objects and a FIFO
  * owned by this boot. The systemd resource worker opens all of them anew. */
 struct droidloom_release_phase {char sha[65],nonce[65];};
-static int dl_pin_child_namespace(pid_t child,const char* name,const char* target,int type,struct stat* meta) {
-    char path[120];
-    snprintf(path,sizeof path,"/proc/%d/ns/%s",child,name);
-    int fd=open(path,O_RDONLY|O_CLOEXEC);
-    if(fd<0)return -1;
+/* Legacy initramfs admission still resolves its own original child. The normal
+ * generation factory always supplies the child's inherited native descriptor. */
+int droidloom_publish_early_child(pid_t child,int pidfd,const char *selection) {
+    char path[100];snprintf(path,sizeof(path),"/proc/%d/ns/pid",child);
+    int ns=open(path,O_RDONLY|O_CLOEXEC);
+    if(ns<0)return -1;
+    int result=droidloom_publish_early_handles(child,pidfd,ns,selection);
+    int error=errno;close(ns);errno=error;return result;
+}
+static int dl_pin_namespace(int fd,const char* target,int type,struct stat* meta) {
     int result=dl_source(fd,NSFS_MAGIC,meta);
-    if(!result&&ioctl(fd,NS_GET_NSTYPE)!=type) result=dl_fail(ESTALE);
-    if(!result)result=dl_pin(target,fd,meta);
-    int saved=errno;close(fd);errno=saved;return result;
+    if(!result&&ioctl(fd,NS_GET_NSTYPE)!=type)result=dl_fail(ESTALE);
+    return result?result:dl_pin(target,fd,meta);
 }
 void droidloom_cancel_unpublished_resource_handles(void) {
     unlink(DL_HANDOFF_ROOT "/resources.json");
@@ -151,17 +155,17 @@ void droidloom_cancel_unpublished_resource_handles(void) {
     umount(DL_HANDOFF_ROOT "/userns");unlink(DL_HANDOFF_ROOT "/userns");
     umount(DL_HANDOFF_ROOT "/cgroupns-creation");unlink(DL_HANDOFF_ROOT "/cgroupns-creation");
 }
-int droidloom_publish_resource_handles(pid_t child,const struct droidloom_release_phase* phase,int fifo) {
+int droidloom_publish_resource_handles(pid_t child,const struct droidloom_release_phase* phase,int fifo,const int ns[4]) {
     struct stat mnt,user,initial_cgroup,gate,named;
-    if(!phase||!phase->sha[0]||child<=1||fstat(fifo,&gate)||
+    if(!phase||!ns||!phase->sha[0]||child<=1||fstat(fifo,&gate)||
        lstat(DL_HANDOFF_ROOT "/release",&named))return dl_fail(EINVAL);
     if(!S_ISFIFO(gate.st_mode)||(gate.st_mode&07777)!=0600||gate.st_uid||gate.st_gid||gate.st_nlink!=1||
        named.st_dev!=gate.st_dev||named.st_ino!=gate.st_ino)return dl_fail(EACCES);
-    if(dl_pin_child_namespace(child,"mnt",DL_HANDOFF_ROOT "/mntns",CLONE_NEWNS,&mnt))return -1;
-    if(dl_pin_child_namespace(child,"user",DL_HANDOFF_ROOT "/userns",CLONE_NEWUSER,&user)){
+    if(dl_pin_namespace(ns[1],DL_HANDOFF_ROOT "/mntns",CLONE_NEWNS,&mnt))return -1;
+    if(dl_pin_namespace(ns[2],DL_HANDOFF_ROOT "/userns",CLONE_NEWUSER,&user)){
         int saved=errno;umount(DL_HANDOFF_ROOT "/mntns");unlink(DL_HANDOFF_ROOT "/mntns");return dl_fail(saved);
     }
-    if(dl_pin_child_namespace(child,"cgroup",DL_HANDOFF_ROOT "/cgroupns-creation",CLONE_NEWCGROUP,&initial_cgroup)){
+    if(dl_pin_namespace(ns[3],DL_HANDOFF_ROOT "/cgroupns-creation",CLONE_NEWCGROUP,&initial_cgroup)){
         int saved=errno;umount(DL_HANDOFF_ROOT "/mntns");unlink(DL_HANDOFF_ROOT "/mntns");
         umount(DL_HANDOFF_ROOT "/userns");unlink(DL_HANDOFF_ROOT "/userns");return dl_fail(saved);
     }

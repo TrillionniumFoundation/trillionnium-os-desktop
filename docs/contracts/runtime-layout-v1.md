@@ -1045,3 +1045,50 @@ This phase remains conditional on the actual received single-actor barrier.
 Original namespace unshare/setns, later directory mutations and apexd/verity
 activation need their own subsequent actual phase proofs. Ordinary controls
 do not qualify these privileged operations or establish Android boot.
+
+
+## Kernel-lineage instance factory and ordinary service lifecycle
+
+The kernel-first entry prepares boot-wide delivery directories and the selected
+joint policy independently of any Android generation. Original Linux PID 1 starts
+the same published droidloomd with --serve-early-instances before the initial
+SELinux policy load. That process acknowledges only preparation and blocks on its
+inherited pipe. PID 1 then activates the complete original policy, releases the
+fixed gate, and waits for the factory to enter the enforced
+droidloom-instance-factory AppArmor profile through the native LSM API. The
+factory retains the original u:r:kernel:s0 SELinux lineage; it performs no
+post-policy host-ELF execute-no-transition, installs no seccomp notification
+proxy, and rejects inherited seccomp confinement. PID 1 proceeds to the original
+Ubuntu systemd only after the actual factory endpoint is ready.
+
+The ordinary droidloom-instance-launcher.service keeps NoNewPrivileges=yes.
+Its separate non-Android role authenticates the factory using the original
+native peer PIDFD, actual MAC pair and published executable. The factory
+independently authenticates the launcher's native peer PIDFD, actual role, fixed
+original systemd MainPID, InvocationID and exact ExecStart. The root-owned
+mode-0600 instance-factory.sock accepts only the fixed START packet. A client
+cannot select a program, UID range, external PID or namespace.
+
+For each generation the factory creates original Android PID 1 with atomic
+clone3/PIDFD custody. The child opens its own original namespace descriptors and
+returns them on its inherited private socketpair; the factory does not request
+SYS_PTRACE across the Android user namespace. Existing immutable handoff schemas
+and the resource owner's cgroup/release gates remain in use. Each generation
+gets a fresh device bank. Its loop-control and transient loop nodes live on a
+private bounded tmpfs and receive original Android types at creation; no host
+/dev/loop inode is relabeled. The stock kernel-to-init transition is unchanged.
+
+The normal resource owner still performs Android's actual orderly shutdown,
+observes original init PIDFD death and retires its exact writable mounts and
+other resources. The factory requires that same original owner's normal exit
+zero, the original owner PIDFD's death, normal observer retirement, the original
+shutdown request, and withdrawn readiness before unmounting its original handle
+pins. It resets the same shutdown inode only after retirement and reaps its
+direct original child with waitid(P_PIDFD). Its authenticated DONE response
+releases the normal launcher. A forced kill, different invocation, timeout or
+lost original handle never releases the next generation.
+
+Native descriptor and policy tests establish source-level gates. Full enforcing
+boot, complete Android/application readiness, repeated start/orderly-stop/start,
+final normal policy/profile pins and CLI restart integration require their own
+observed acceptance before production activation.

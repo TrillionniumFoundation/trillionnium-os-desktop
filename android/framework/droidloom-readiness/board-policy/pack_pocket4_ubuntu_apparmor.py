@@ -52,9 +52,9 @@ def main():
         if result.stat().st_size != expected["ubuntu_size"] or digest(result) != expected["ubuntu_sha256"]:
             raise ValueError("The original Ubuntu AppArmor archive differs from the admitted distro inputs")
         roles = expected["board_profiles"]
-        names = ("droidloom-ubuntu-journald", "droidloom-policy-loader", "droidloom-production-android", "droidloom-production-broker")
+        names = ("droidloom-ubuntu-journald", "droidloom-policy-loader", "droidloom-production-android", "droidloom-production-broker", "droidloom-instance-launcher", "droidloom-instance-factory")
         if set(roles) != set(names):
-            raise ValueError("The board must select exactly the four service roles")
+            raise ValueError("The board must select exactly the six service roles")
         with result.open("r+b") as target:
             target.seek(8)
             target.write(struct.pack("<I", len(sources) + len(names)))

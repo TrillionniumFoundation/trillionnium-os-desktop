@@ -64,6 +64,18 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
             );
             return Ok(());
         }
+        if action.as_deref() == Some(std::ffi::OsStr::new("--serve-early-instances")) {
+            if arguments.next().is_some() { return Err("the boot instance factory accepts no parameters".into()); }
+            install_signal_handlers()?;
+            droidloom_supervisor::control::run_instance_factory(&SHUTDOWN)?;
+            return Ok(());
+        }
+        if action.as_deref() == Some(std::ffi::OsStr::new("--launch-early-instance")) {
+            if arguments.next().is_some() { return Err("the original instance launcher accepts no parameters".into()); }
+            install_signal_handlers()?;
+            droidloom_supervisor::control::run_instance_launcher(&SHUTDOWN)?;
+            return Ok(());
+        }
         if action.as_deref() == Some(std::ffi::OsStr::new("--complete-early-boot")) {
             if arguments.next().is_some() {
                 return Err("the selected early resource owner accepts no parameters".into());

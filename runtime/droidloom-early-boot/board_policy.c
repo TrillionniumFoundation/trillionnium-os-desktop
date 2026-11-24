@@ -222,8 +222,8 @@ static int submit(const char *path, const unsigned char *data, size_t length)
     return error ? reject(error) : 0;
 }
 
-/* The pinned distribution archive contains 165 Ubuntu entries and four board roles. */
-#define APPARMOR_PROFILE_ENTRIES 169U
+/* The pinned distribution archive contains 165 Ubuntu entries and five board roles. */
+#define APPARMOR_PROFILE_ENTRIES 171U
 
 static int apparmor_profiles(const struct input *pack, int activate,
                              struct droidloom_raw_profile selected[3])
@@ -238,8 +238,8 @@ static int apparmor_profiles(const struct input *pack, int activate,
         pos += 4;
         if (!length || length > pack->size - pos)
             return reject(EBADMSG);
-        if (selected && i >= APPARMOR_PROFILE_ENTRIES - 3U) {
-            selected[i - (APPARMOR_PROFILE_ENTRIES - 3U)] = (struct droidloom_raw_profile){pack->data + pos,length};
+        if (selected && i >= APPARMOR_PROFILE_ENTRIES - 5U && i < APPARMOR_PROFILE_ENTRIES - 2U) {
+            selected[i - (APPARMOR_PROFILE_ENTRIES - 5U)] = (struct droidloom_raw_profile){pack->data + pos,length};
         }
         if (activate && submit(AA_DIR "/.load", pack->data + pos, length) < 0)
             return -1;
@@ -255,7 +255,6 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
     struct droidloom_apparmor_measurement observation = {0};
     struct droidloom_raw_profile selected_profiles[3] = {0};
     int status = -1, epoch_directory = -1;
-    struct droidloom_linux_run device_root = {.fd = -1};
     struct droidloom_linux_init_scope scope = { .root.fd = -1, .scope.fd = -1, .procs.fd = -1, .controllers.fd = -1, .system_slice.fd = -1, .root_membership.fd = -1, .root_subtree_control.fd = -1 };
     struct droidloom_linux_run run = {.fd = -1}, shm = {.fd = -1};
     struct droidloom_linux_journal_store log_store = { .log.fd = -1, .journal.fd = -1 };
@@ -276,19 +275,9 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
     if (rc == 0) { stage = "hold the root-owned Ubuntu udev directory on the original /run"; rc = droidloom_hold_linux_udev(&run, &udev); }
     if (rc == 0) { stage = "hold the original Ubuntu udev database directory"; rc = droidloom_hold_linux_udev_data(&udev, &udev_data); }
     if (rc == 0) { stage = "hold the selected early readiness directory"; rc = droidloom_hold_readiness_paths(&run, observer_gid, &paths); }
-    if (rc == 0) {
-        stage = "prepare private Android devices from the selected factory template";
-        struct droidloom_device_identity source;
-        int bank = droidloom_open_device_bank(cohort);
-        if (bank >= 0) {
-            device_root.fd = droidloom_prepare_device_source(bank, cohort, &source);
-            int result_error = errno;
-            close(bank);
-            errno = result_error;
-        }
-        if (device_root.fd < 0) rc = -1;
-        else { device_root.device = source.device; device_root.inode = source.inode; }
-    }
+    /* Per-generation device sources are prepared only by the dedicated
+     * launcher after this boot-wide policy epoch has been sealed. */
+    (void)cohort;
     if (rc == 0) { stage = "project the exact Ubuntu console, null and full device nodes"; rc = droidloom_project_linux_standard_devices(); }
     if (rc == 0) {
         stage = "prepare the protected read-only kernel measurement directory";
@@ -306,7 +295,6 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
         if (status < 0) rc = -1;
     }
     if (rc == 0) { stage = "load initial selected joint SELinux policy"; rc = submit(SELINUX_DIR "/load", policy.data, policy.size); }
-    if (rc == 0) { stage = "label the held original Android device filesystem"; rc = droidloom_label_private_device(&device_root); }
     if (rc == 0) { stage = "label the held Ubuntu cgroup root and its initial scope"; rc = droidloom_label_linux_init_scope(&scope); }
     if (rc == 0) { stage = "label the original Ubuntu shared memory root"; rc = droidloom_label_linux_shm(&shm); }
     if (rc == 0) { stage = "label the held Ubuntu /run inode"; rc = droidloom_label_linux_run(&run); }
@@ -321,7 +309,6 @@ int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
     if (epoch_directory >= 0) close(epoch_directory);
     if (rc < 0)
         fprintf(stderr, "Droidloom early policy failed to %s: %s\n", stage, strerror(error));
-    if (device_root.fd >= 0) close(device_root.fd);
     if (paths.readiness.fd >= 0)
         close(paths.readiness.fd);
     if (paths.handoff.fd >= 0)

@@ -119,6 +119,12 @@ int droidloom_private_device_template(const char *selected_base)
     return image;
 }
 
+#ifdef DROIDLOOM_INSTANCE_LIBRARY
+#define LOOP_CONTROL "/run/droidloom-early/loop-dev/loop-control"
+#else
+#define LOOP_CONTROL "/dev/loop-control"
+#endif
+
 // Bind only the private memfd to a fresh kernel loop. No system/vendor/data
 // device is accepted as writable storage.
 static int template_loop(int image)
@@ -126,7 +132,7 @@ static int template_loop(int image)
     struct stat source, control_stat;
     if (fstat(image, &source) < 0)
         return -1;
-    int control = open("/dev/loop-control", O_RDWR | O_NOFOLLOW | O_CLOEXEC);
+    int control = open(LOOP_CONTROL, O_RDWR | O_NOFOLLOW | O_CLOEXEC);
     if (control < 0)
         return -1;
     int error = 0, device = -1;
@@ -141,12 +147,33 @@ static int template_loop(int image)
             error = errno;
             break;
         }
+#ifdef DROIDLOOM_INSTANCE_LIBRARY
+        int length = snprintf(path, sizeof(path), "/run/droidloom-early/loop-dev/loop%d", number);
+#else
         int length = snprintf(path, sizeof(path), "/dev/loop%d", number);
+#endif
         if (length < 0 || (size_t)length >= sizeof(path)) {
             error = ENAMETOOLONG;
             break;
         }
+#ifdef DROIDLOOM_INSTANCE_LIBRARY
+        /* A private typed node refers only to the free loop number returned by
+         * the real kernel. No shared host /dev node is relabeled or reused. */
+        if(mknod(path,S_IFBLK|0600,makedev(7,(unsigned int)number))<0){
+            error=errno;break;
+        }
+#endif
         device = open(path, O_RDWR | O_NOFOLLOW | O_CLOEXEC);
+#ifdef DROIDLOOM_INSTANCE_LIBRARY
+        {
+            int opened_error=device<0?errno:0;
+            if(unlink(path)<0){
+                int unlink_error=errno;if(device>=0){close(device);device=-1;}
+                error=unlink_error;break;
+            }
+            if(opened_error)errno=opened_error;
+        }
+#endif
         if (device < 0) {
             error = errno;
             break;

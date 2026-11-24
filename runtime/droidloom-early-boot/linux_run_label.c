@@ -348,8 +348,36 @@ int droidloom_hold_readiness_paths(const struct droidloom_linux_run *run,
     return validate_empty_endpoint(paths->readiness.fd);
 }
 
+static int label_instance_boot_slot(const struct droidloom_readiness_paths *paths) {
+    int lock=openat(paths->handoff.fd,"startup.lock",O_RDONLY|O_NOFOLLOW|O_CLOEXEC);
+    if(lock<0)return -1;
+    struct stat st;
+    int e=0;
+    if(fstat(lock,&st))e=errno;
+    else if(!S_ISREG(st.st_mode)||st.st_uid||st.st_gid||st.st_nlink!=1||(st.st_mode&07777)!=0400)e=ESTALE;
+    const char label[]="u:object_r:p4_linux_instance_lock_t:s0";
+    if(!e&&fsetxattr(lock,"security.selinux",label,sizeof(label),0))e=errno;
+    close(lock);
+    const char *names[]={"/run/droidloom-early-slot","/run/droidloom-early/private-dev"};
+    mode_t modes[]={0711,0700};
+    for(unsigned i=0;!e&&i<2;i++){
+        int fd=open(names[i],O_RDONLY|O_DIRECTORY|O_NOFOLLOW|O_CLOEXEC);
+        if(fd<0){e=errno;break;}
+        struct droidloom_linux_run held={.fd=fd};
+        if(fstat(fd,&st))e=errno;
+        else if(!S_ISDIR(st.st_mode)||st.st_uid||st.st_gid||(st.st_mode&07777)!=modes[i])e=ESTALE;
+        else {
+            held.device=st.st_dev;held.inode=st.st_ino;
+            if(apply_label(&held,"u:object_r:p4_linux_instance_slot_t:s0"))e=errno;
+        }
+        close(fd);
+    }
+    if(e){errno=e;return -1;}return 0;
+}
+
 int droidloom_label_readiness_paths(const struct droidloom_readiness_paths *paths)
 {
+    if(label_instance_boot_slot(paths))return -1;
     if (apply_label(&paths->handoff, "u:object_r:p4_linux_early_handoff_dir_t:s0") < 0)
         return -1;
     if (apply_label(&paths->readiness, "u:object_r:p4_linux_readiness_dir_t:s0") < 0)

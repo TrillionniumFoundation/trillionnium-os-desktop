@@ -30,14 +30,31 @@ fn main() {
     let ar = selected_tool("AR", "ar");
     let mut archive = Command::new(ar);
     archive.arg("rcs").arg(out.join("libdroidloom_board.a"));
-    for stem in ["board_resources", "board_retirement", "board_assembly"] {
+    for stem in [
+        "board_resources",
+        "board_retirement",
+        "board_assembly",
+        "firststage",
+        "custody",
+        "selected",
+        "device_source",
+        "device_template",
+        "instance_context",
+    ] {
         let source = format!("../droidloom-early-boot/{stem}.c");
         let object = out.join(format!("{stem}.o"));
         println!("cargo:rerun-if-changed={source}");
         execute(
             Command::new(&cc)
                 .args([
-                    "-std=c11", "-O2", "-fPIC", "-Wall", "-Wextra", "-Werror", "-c",
+                    "-std=c11",
+                    "-O2",
+                    "-fPIC",
+                    "-Wall",
+                    "-Wextra",
+                    "-Werror",
+                    "-DDROIDLOOM_INSTANCE_LIBRARY",
+                    "-c",
                 ])
                 .arg(source)
                 .arg("-o")
@@ -46,9 +63,18 @@ fn main() {
         archive.arg(object);
     }
     execute(&mut archive);
+    for header in [
+        "board.h",
+        "custody.h",
+        "device_source.h",
+        "device_template.h",
+    ] {
+        println!("cargo:rerun-if-changed=../droidloom-early-boot/{header}");
+    }
     println!("cargo:rerun-if-changed=../droidloom-early-boot/board_cgroup.h");
     println!("cargo:rerun-if-changed=../droidloom-early-boot/board_resources.h");
     println!("cargo:rerun-if-changed=../droidloom-early-boot/board_binder.h");
     println!("cargo:rustc-link-search=native={}", out.display());
     println!("cargo:rustc-link-lib=static=droidloom_board");
+    println!("cargo:rustc-link-lib=crypto");
 }

@@ -296,6 +296,7 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
     }
     for unit in [
         "droidloom-production.service",
+        "droidloom-instance-launcher.service",
         "droidloom-manager-label.service",
         "droidloom-mac-calibration.service",
         "droidloom-container-services.target",
@@ -391,6 +392,7 @@ mod tests {
         fs::create_dir_all(&templates).unwrap();
         fs::create_dir(&host).unwrap();
         for (name, body) in [
+            ("droidloom-instance-launcher.service",include_str!("../../../runtime/droidloom-supervisor/src/droidloom-instance-launcher.service")),
             ("droidloom-mac-calibration.service",include_str!("../../../runtime/droidloom-supervisor/src/droidloom-mac-calibration.service")),
             ("droidloom-early-observer.service",include_str!("../../../runtime/droidloom-supervisor/src/droidloom-early-observer.service")),
             (

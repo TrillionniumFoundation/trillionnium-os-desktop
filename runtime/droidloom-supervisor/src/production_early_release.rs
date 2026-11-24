@@ -9,7 +9,7 @@ const PUBLIC: &str = "/etc/droidloom/container-launcher.json";
 const MANAGER: &str = "/usr/lib/droidloom/production/current/droidloomd";
 
 #[derive(Clone, Copy)]
-enum UbuntuRoot {
+pub(super) enum UbuntuRoot {
     MountedByInitramfs,
     AfterSwitchRoot,
 }
@@ -210,7 +210,7 @@ impl EarlyReleaseMedia {
     }
 }
 
-fn intake(ubuntu: UbuntuRoot) -> Result<Option<(SealedFile, CellSpec, String)>> {
+pub(super) fn intake(ubuntu: UbuntuRoot) -> Result<Option<(SealedFile, CellSpec, String)>> {
     let private = SealedFile::read(&ubuntu.path(SELECTION), SELECTION_LIMIT);
     let published = SealedFile::read(&ubuntu.path(PUBLIC), SELECTION_LIMIT);
     let optional = |r: Result<(SealedFile, Vec<u8>)>| match r {
@@ -322,7 +322,7 @@ pub fn verify_initramfs_release(switch_root: bool, emit_plan: bool) -> io::Resul
         ));
     }
     if switch_root {
-        crate::production_selection::early_generation::verify_birth_before_switch(&choice.sha256)?;
+        verify_prepared_host_slot()?;
     }
     choice.revalidate().map_err(io::Error::other)?;
     if emit_plan {
@@ -342,6 +342,26 @@ fn board_plan(choice: &SealedFile, cell: &CellSpec, base: &str) -> String {
         cell.subordinate_gids.start,
         cell.subordinate_gids.count
     )
+}
+
+fn verify_prepared_host_slot() -> io::Result<()> {
+    for (name, mode) in [("/run/droidloom-early", 0o700), ("/run/droidloom-early-slot", 0o711)] {
+        let held = open_root_trusted(Path::new(name)).map_err(io::Error::other)?;
+        let node = held.metadata()?;
+        let mut fs = unsafe { std::mem::zeroed::<libc::statfs>() };
+        if unsafe { libc::fstatfs(held.as_raw_fd(), &mut fs) } < 0 {
+            return Err(io::Error::last_os_error());
+        }
+        if !node.is_dir() || node.uid() != 0 || node.gid() != 0 ||
+            node.mode() & 0o7777 != mode || fs.f_type != libc::TMPFS_MAGIC {
+            return Err(io::Error::other("boot-wide instance slot is not the original private tmpfs directory"));
+        }
+    }
+    match std::fs::symlink_metadata("/run/droidloom-early/generation.json") {
+        Err(e) if e.kind() == io::ErrorKind::NotFound => Ok(()),
+        Err(e) => Err(e),
+        Ok(_) => Err(io::Error::other("Android instance existed before the ordinary launcher service")),
+    }
 }
 
 fn check_linux_board_parent() -> io::Result<()> {
@@ -379,26 +399,7 @@ pub fn verify_post_switch_board_plan() -> io::Result<Option<String>> {
     let Some((choice, cell, base)) = selected else {
         return Ok(None);
     };
-    super::early_generation::verify_birth_before_switch(&choice.sha256)?;
-    let android =
-        open_root_trusted(Path::new("/run/droidloom-early/pidns")).map_err(io::Error::other)?;
-    // linux/nsfs.h: NS_GET_PARENT returns a fresh descriptor opened by the caller.
-    const NS_GET_PARENT: libc::c_ulong = 0xb702;
-    let raw = unsafe { libc::ioctl(android.as_raw_fd(), NS_GET_PARENT) };
-    if raw < 0 {
-        return Err(io::Error::last_os_error());
-    }
-    let parent = unsafe { File::from_raw_fd(raw) }.metadata()?;
-    let linux = std::fs::metadata("/proc/1/ns/pid")?;
-    let current = std::fs::metadata("/proc/self/ns/pid")?;
-    if (parent.dev(), parent.ino()) != (linux.dev(), linux.ino())
-        || (current.dev(), current.ino()) != (linux.dev(), linux.ino())
-    {
-        return Err(io::Error::new(
-            io::ErrorKind::PermissionDenied,
-            "board PID 1 does not own the pinned Android PID namespace",
-        ));
-    }
+    verify_prepared_host_slot()?;
     choice.revalidate().map_err(io::Error::other)?;
     check_linux_board_parent()?;
     Ok(Some(board_plan(&choice, &cell, &base)))

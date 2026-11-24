@@ -38,6 +38,9 @@ pub(crate) use early_generation::EarlyBoardResources;
 #[path = "production_early_release.rs"]
 mod early_release;
 pub(crate) use early_release::{EarlyReleaseMedia, kernel_first_query_inputs};
+#[path = "production_instance_launcher.rs"]
+mod instance_launcher;
+pub use instance_launcher::{run_instance_launcher,run_instance_factory};
 pub use early_release::{verify_initramfs_release,verify_original_init_for_boot, verify_post_switch_board_plan};
 const EARLY_SCHEMA: &str = "droidloom-production-selection-v4";
 const EARLY_LAUNCHER: &str = "early_boot_shared_kernel_v1";

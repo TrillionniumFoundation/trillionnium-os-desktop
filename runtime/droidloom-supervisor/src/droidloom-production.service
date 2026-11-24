@@ -1,7 +1,8 @@
 [Unit]
 Description=Droidloom production cell broker
-Requires=droidloom-manager-label.service
-After=local-fs.target droidloom-manager-label.service
+Requires=droidloom-manager-label.service droidloom-instance-launcher.service
+BindsTo=droidloom-instance-launcher.service
+After=local-fs.target droidloom-manager-label.service droidloom-instance-launcher.service
 
 [Service]
 Type=exec
