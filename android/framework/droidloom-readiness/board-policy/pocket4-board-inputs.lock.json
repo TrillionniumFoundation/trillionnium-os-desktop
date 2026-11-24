@@ -19,22 +19,28 @@
   },
   "files": {
     "joint.policy": {
-      "size": 944759,
-      "sha256": "b0e69b137cb2dc393695954436de092141f5ddaea90334fc9df06988a8b44868",
+      "size": 1033216,
+      "sha256": "af157146d8d905892b5e02964ab71ecca40d86bffef7790002fc3e98b7385b13",
       "producer": "compile_shared_kernel_policy.py",
       "linux_board_source": "pocket4-linux-board.cil",
-      "linux_board_source_sha256": "e7f9127184ea8c8298eb250d8d0cf69bace8d16eb3330ed189c74051fafda767",
+      "linux_board_source_sha256": "a84817c16e0b35e3034f9a0057e72b68cbc05c4675d412992ea9a11c3d6e63ad",
       "original_android_policy_sha256": "65553139e595e8db62ccd1dfc8d649369bbf7034ca73e5c384ce5d73ee79c62a"
     },
     "ubuntu-apparmor.profiles": {
-      "size": 5797221,
-      "sha256": "0de44977973e5cd70d513e1009149eaf0e3c6e15e58c07453efe1886031010c0",
+      "size": 5897135,
+      "sha256": "8d10ee8d96b4d90849a7962853c6174ea7565c9c45f807ebbfb0bb34a1ab0726",
       "producer": "pack_pocket4_ubuntu_apparmor.py",
       "parser_sha256": "11e9595527b8bb5b775709e4626ec69dc682585760ec7c6d0b045e759f1c0df2",
       "active_sources": 165,
       "ubuntu_sha256": "16ad7370417d3ae76e5b873371a315681078e67a44c70672aa4043875be92889",
       "ubuntu_size": 5663265,
       "board_profiles": {
+        "droidloom-ubuntu-journald": {
+          "source_sha256": "612d05acc6105c21594adb7486a7e46b9a9f6b8fa5f691c9934efea02ec38663",
+          "compiled_sha256": "8406e908a03576ad7dbe9916144e361a750377e815952ea19b4490978677f462",
+          "size": 37857,
+          "kernel_profile_sha256": "058f1bc6dca9b433c93aad889dea1b5d0cc61998dee2b1faa26ed6b2280699ca"
+        },
         "droidloom-policy-loader": {
           "source_sha256": "3bb045b0159c61718f5a70e48f86745711230f8abd6ad37804e2908758cd322a",
           "compiled_sha256": "1e10e23d5e9e8ec64983ecb5a7398ab6d16027147b4b8846ecf2bb896c5dfd37",
@@ -42,21 +48,28 @@
           "kernel_profile_sha256": "312992d5794e0faf0aa93376b316f2691922097ce3c2720d17b9ecbdf2f5766e"
         },
         "droidloom-production-android": {
-          "source_sha256": "bde2dc5d183368f8e26656e1f72767cfb40dc74b63102fba11aa77d7cc00c9f1",
-          "compiled_sha256": "6731c124186d44bafe0a6ce5523a439bac5050d26a616ac3362eea9ac3728a96",
-          "size": 7137,
-          "kernel_profile_sha256": "7eb26bc6c45e18a35ddfeefecca1b58c0fcec35ffff6ace6c32221c0dad8ebbc"
+          "source_sha256": "7085fabf7f7a125beeac2c8c93caf046bf292518b54d8886a85b4c0e66e7e8f7",
+          "compiled_sha256": "bbd64f3d9e05c37b0e1556099fe0d9e95d7d75b3d1181729d30d9223c8d07f35",
+          "size": 12777,
+          "kernel_profile_sha256": "319a83340edeaab0420732b11b6d387cb5f05f12352e96deb5e7087191180bf3"
         },
         "droidloom-production-broker": {
-          "source_sha256": "9f8312f4a68ad3b577672aac9f088b4d6187fa461557bfb3a67c26eb6696f041",
-          "compiled_sha256": "4393dc96006d3df2fe4f0d5d25487336c18b90cee4ed696a144d182185dff44d",
-          "size": 47121,
-          "kernel_profile_sha256": "c47ebc2f7231013d728aafed18016aa4c1b89d1b1c0f1cdd80b79fc5560dc4fe"
+          "source_sha256": "0363ab1256818a55f24e7df840fcc10095f153c632208e39278ad2431a4b37e9",
+          "compiled_sha256": "e950c00b9b86fcf4a4d27af1dffc5b51a2e1d5dfc0e230275907a9e596cac747",
+          "size": 67129,
+          "kernel_profile_sha256": "1ccdf89c7b90f811afd9b31a1984019e9f17028847cda56882d898595aa13adb"
         },
-        "droidloom-ubuntu-journald": {
-          "source_sha256": "612d05acc6105c21594adb7486a7e46b9a9f6b8fa5f691c9934efea02ec38663",
-          "compiled_sha256": "8406e908a03576ad7dbe9916144e361a750377e815952ea19b4490978677f462",
-          "size": 37857
+        "droidloom-instance-launcher": {
+          "source_sha256": "e8e2641bec0170ee475570c65b202aa09f6e39d88db9929f1023200c630d8376",
+          "compiled_sha256": "bbcf178ef08c47d18bd297a493c8683af4ac04ed68344320c4f3bbce053ceab0",
+          "size": 25465,
+          "kernel_profile_sha256": "c124ddf7963518e2d6b44af5ba6f059d7e743bb06dd88a0959e450e1dece161e"
+        },
+        "droidloom-instance-factory": {
+          "source_sha256": "f15e26fc932a591f8b2b52911adcad6e0e1c159f5503f4fbf1844141b98d4c6f",
+          "compiled_sha256": "78118d15af00cadcb433f3be0c60d070ecb6f411b3078115440f6218268effaf",
+          "size": 48793,
+          "kernel_profile_sha256": "ceec1dd3cf6459b80652c1007bfac016ef8eb1112278394029fabf9efee28578"
         }
       }
     }

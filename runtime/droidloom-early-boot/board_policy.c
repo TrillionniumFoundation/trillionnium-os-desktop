@@ -222,7 +222,7 @@ static int submit(const char *path, const unsigned char *data, size_t length)
     return error ? reject(error) : 0;
 }
 
-/* The pinned distribution archive contains 165 Ubuntu entries and five board roles. */
+/* The pinned distribution archive contains 165 Ubuntu entries and six board roles. */
 #define APPARMOR_PROFILE_ENTRIES 171U
 
 static int apparmor_profiles(const struct input *pack, int activate,
@@ -250,8 +250,8 @@ static int apparmor_profiles(const struct input *pack, int activate,
 
 int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
 {
-    struct input policy = {944759, "b0e69b137cb2dc393695954436de092141f5ddaea90334fc9df06988a8b44868", POLICY_DIR "/joint.policy", NULL};
-    struct input aa = {5797221, "0de44977973e5cd70d513e1009149eaf0e3c6e15e58c07453efe1886031010c0", POLICY_DIR "/ubuntu-apparmor.profiles", NULL};
+    struct input policy = {1033216, "af157146d8d905892b5e02964ab71ecca40d86bffef7790002fc3e98b7385b13", POLICY_DIR "/joint.policy", NULL};
+    struct input aa = {5897135, "8d10ee8d96b4d90849a7962853c6174ea7565c9c45f807ebbfb0bb34a1ab0726", POLICY_DIR "/ubuntu-apparmor.profiles", NULL};
     struct droidloom_apparmor_measurement observation = {0};
     struct droidloom_raw_profile selected_profiles[3] = {0};
     int status = -1, epoch_directory = -1;
