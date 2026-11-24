@@ -924,6 +924,7 @@ pub fn make_root_image(
         "/etc/passwd",
         "/etc/shadow",
         "/etc/selinux/droidloom/policy/policy.30",
+        "/etc/selinux/droidloom/contexts/dbus_contexts",
         "/usr/lib/droidloom/production/current/droidloom-board-init",
         "/usr/lib/droidloom/production/current/droidloomd",
         "/usr/lib/droidloom/production/current/board-devices/console",

@@ -346,6 +346,20 @@ pub fn install(
             .eq(["SELINUX=enforcing", "SELINUXTYPE=droidloom"]),
         "native enforcement configuration differs",
     )?;
+    let dbus_path = "etc/selinux/droidloom/contexts/dbus_contexts";
+    let dbus_expected = include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-dbus_contexts");
+    let dbus = manifest
+        .files
+        .iter()
+        .find(|f| f.path == dbus_path)
+        .ok_or("normal host archive lacks the stock D-Bus SELinux configuration")?;
+    ensure(
+        dbus.mode == 0o444
+            && dbus.size == dbus_expected.len() as u64
+            && dbus.sha256 == fs::digest(dbus_expected)
+            && std::fs::read(root.join(dbus_path))? == dbus_expected,
+        "native D-Bus SELinux configuration differs from the normal publisher",
+    )?;
     Ok(
         serde_json::json!({"normal_host_manifest":manifest_pin,"normal_host_archive":archive_pin,
         "source_commit":manifest.commit,"source_tree":manifest.tree,"entries":entries,

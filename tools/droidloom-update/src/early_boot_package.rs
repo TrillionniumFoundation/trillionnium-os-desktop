@@ -42,12 +42,25 @@ pub(super) fn stage_board_policy(inputs: &Path, destination: &Path) -> Result<()
             mode(&policy, 0o444)?;
         }
     }
+    stage_native_configuration(destination)
+}
+
+// Shared by the normal board-policy publisher and its package contract check.
+pub(super) fn stage_native_configuration(destination: &Path) -> Result<()> {
     let config = destination.join("etc/selinux/config");
     write(
         &config,
         include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-selinux-config"),
     )?;
     mode(&config, 0o444)?;
+    // The stock system and session bus configurations require this include when
+    // SELinux is enabled; it intentionally defines no name-to-SID overrides.
+    let dbus = destination.join("etc/selinux/droidloom/contexts/dbus_contexts");
+    write(
+        &dbus,
+        include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-dbus_contexts"),
+    )?;
+    mode(&dbus, 0o444)?;
     let contexts = destination.join("etc/selinux/droidloom/contexts/files/file_contexts");
     let rules = [
         include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-native-file_contexts").as_slice(),
