@@ -200,6 +200,9 @@ def verify_host_control(library, binary, export):
         check(subject, obj("p4_linux_product_store_t"), "file", ["open", "read", "write", "append"], False)
     check(helper, kernel, "security", ["load_policy", "setenforce", "setbool"], False)
 
+    check(client, session, "fifo_file", ["getattr", "write"], True)
+    check(client, session, "fifo_file", ["open", "read", "append", "create", "setattr", "map", "execute"], False)
+
     # Fixed public installer: ordinary inputs stay outside the broker.
     apk = obj("droidloom_public_apk_input")
     payload = obj("droidloom_apk_payload")
@@ -218,7 +221,8 @@ def verify_host_control(library, binary, export):
         check(kernel, payload, kind, ["getattr", "open", "read", "write", "create", "map", "execute"], False)
     check(setup, setup, "capability", ["chown", "fowner"], True)
     check(setup, setup, "capability", ["sys_admin", "sys_ptrace", "dac_override", "dac_read_search"], False)
-    for subject in [broker, client, user]:
+    # Ordinary user-session home/tmp access is verified by its native component.
+    for subject in [broker, client]:
         for private in ["p4_linux_user_home_t", "p4_linux_tmp_t"]:
             check(subject, obj(private), "file", ["getattr", "open", "read", "write", "create"], False)
     check(setup, obj("droidloom_public_apk_root"), "dir", ["getattr", "search", "write", "add_name"], True)

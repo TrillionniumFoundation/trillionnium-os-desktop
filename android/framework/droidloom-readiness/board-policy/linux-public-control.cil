@@ -14,6 +14,10 @@
 (allow p4_linux_user_session_t droidloom_public_control_client (process (transition siginh rlimitinh)))
 (allow p4_linux_user_session_t droidloom_public_control_client (process2 (nnp_transition)))
 (allow droidloom_public_control_client p4_linux_user_session_t (fd (use)))
+; Return fixed CLI results through inherited caller stdout/stderr pipes.
+; The client neither opens caller FIFO paths nor reads arbitrary caller input.
+(allow droidloom_public_control_client p4_linux_user_session_t (fifo_file (getattr write)))
+(neverallow droidloom_public_control_client p4_linux_user_session_t (fifo_file (open read append create setattr map execute relabelfrom relabelto)))
 (allow droidloom_public_control_client p4_linux_user_session_t (process (sigchld)))
 (allow droidloom_public_control_client droidloom_public_control_client_exec (file (execute_no_trans)))
 ; The launcher verifies the pinned public cell specification before a request.
