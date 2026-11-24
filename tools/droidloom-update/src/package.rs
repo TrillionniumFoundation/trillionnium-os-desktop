@@ -297,6 +297,7 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
     for unit in [
         "droidloom-production.service",
         "droidloom-instance-launcher.service",
+        "droidloom-instance-factory.service",
         "droidloom-manager-label.service",
         "droidloom-mac-calibration.service",
         "droidloom-container-services.target",
@@ -393,6 +394,7 @@ mod tests {
         fs::create_dir(&host).unwrap();
         for (name, body) in [
             ("droidloom-instance-launcher.service",include_str!("../../../runtime/droidloom-supervisor/src/droidloom-instance-launcher.service")),
+            ("droidloom-instance-factory.service",include_str!("../../../runtime/droidloom-supervisor/src/droidloom-instance-factory.service")),
             ("droidloom-mac-calibration.service",include_str!("../../../runtime/droidloom-supervisor/src/droidloom-mac-calibration.service")),
             ("droidloom-early-observer.service",include_str!("../../../runtime/droidloom-supervisor/src/droidloom-early-observer.service")),
             (
@@ -533,6 +535,13 @@ mod tests {
             assert_ne!(metadata.ino(), fs::metadata(&original).unwrap().ino());
             assert_eq!(fs::read(&target).unwrap(), fs::read(original).unwrap());
         }
+        // The boot factory is shipped as a template and pulled in by the launcher.
+        let factory = runtime.join("usr/share/droidloom/production/droidloom-instance-factory.service");
+        assert!(factory.is_file());
+        let factory_body = fs::read_to_string(factory).unwrap();
+        assert!(factory_body.lines().any(|line| line == "ExecStart=/usr/lib/droidloom/production/current/droidloomd --adopt-early-factory"));
+        assert!(!factory_body.lines().any(|line| line == "[Install]" || line.starts_with("WantedBy=")));
+        assert!(!runtime.join("usr/lib/systemd/system/droidloom-instance-factory.service").exists());
         // Staging the public files cannot install a unit or select a cell.
         assert!(!runtime.join("etc").exists());
         assert!(

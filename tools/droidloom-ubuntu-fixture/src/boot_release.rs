@@ -395,6 +395,7 @@ pub fn install_android(root: &Path, work: &Path, input: &AndroidInputs) -> Resul
         0o644,
     )?;
     let units = [
+        "droidloom-instance-factory.service",
         "droidloom-instance-launcher.service",
         "droidloom-manager-label.service",
         "droidloom-production.service",
