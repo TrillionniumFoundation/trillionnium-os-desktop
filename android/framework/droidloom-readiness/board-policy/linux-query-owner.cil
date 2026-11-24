@@ -152,6 +152,8 @@
 (allow droidloom_query_io droidloom_broker (file (getattr open read)))
 (allow droidloom_query_io droidloom_broker (lnk_file (getattr read)))
 (allow droidloom_query_io droidloom_broker (unix_stream_socket (getattr getopt read write)))
+; Bootstrap stdin/out/err are the same fixed anonymous EOF pipe read end.
+(allow droidloom_query_io droidloom_broker (fifo_file (getattr read)))
 (allow droidloom_query_io rootfs (dir (getattr search)))
 (allow droidloom_query_io device (dir (getattr search)))
 (allow droidloom_query_io null_device (chr_file (getattr open read)))

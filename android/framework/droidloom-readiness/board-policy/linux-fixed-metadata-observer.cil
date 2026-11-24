@@ -21,7 +21,8 @@
 (allow kernel droidloom_metadata_observer (fd (use)))
 (allow droidloom_metadata_observer droidloom_broker (file (getattr open read)))
 (allow droidloom_metadata_observer droidloom_broker (lnk_file (getattr read)))
-(allow droidloom_metadata_observer droidloom_broker (fifo_file (getattr write)))
+; Fresh same-ELF bootstrap receives only the broker-created EOF pipe read end.
+(allow droidloom_metadata_observer droidloom_broker (fifo_file (getattr read)))
 (allow droidloom_metadata_observer droidloom_broker (unix_stream_socket (getattr getopt read write)))
 
 ; Enter only the borrowed target USERNS, then drop every capability except its
