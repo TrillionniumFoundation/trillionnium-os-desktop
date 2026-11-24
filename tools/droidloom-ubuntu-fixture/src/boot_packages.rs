@@ -3,6 +3,7 @@
 use crate::{
     Result,
     boot_files::{self, FilePin},
+    boot_native::PublicInputCustody,
     ensure, fs,
     model::{Content, Manifest},
     paths,
@@ -411,9 +412,9 @@ fn parse_tar(tar: &[u8], package: &str, archive_sha: &str) -> Result<Vec<Payload
     Ok(out)
 }
 
-fn provenance(input: &PackageInput) -> Result<()> {
+fn provenance(input: &PackageInput, source: &PublicInputCustody) -> Result<()> {
     let v: Value =
-        serde_json::from_slice(&boot_files::read_pin(&input.provenance, 8 * 1024 * 1024)?)?;
+        serde_json::from_slice(&source.read_package_pin(&input.provenance, 8 * 1024 * 1024)?)?;
     ensure(
         v["host_install"] == false,
         "package intake does not bind a non-install acquisition",
@@ -846,6 +847,7 @@ pub fn apply(
     input: &FilePin,
     original: &Manifest,
     original_sha: &str,
+    source: &PublicInputCustody,
 ) -> Result<FilePin> {
     ensure(
         work.parent() == Some(Path::new("/var/lib/droidloom-qualification"))
@@ -857,8 +859,7 @@ pub fn apply(
         fs::stat(&private.root)?.mode & 0o7777 == 0o700,
         "public package work is not private",
     )?;
-    let plan: PublicPackages =
-        serde_json::from_slice(&boot_files::read_pin(input, 8 * 1024 * 1024)?)?;
+    let plan: PublicPackages = serde_json::from_slice(&source.read_pin(input, 8 * 1024 * 1024)?)?;
     ensure(
         plan.schema == "droidloom.ubuntu-public-packages.v1"
             && !plan.packages.is_empty()
@@ -869,10 +870,8 @@ pub fn apply(
         fs::valid_digest(original_sha),
         "invalid original manifest identity",
     )?;
-    let dependency: Value = serde_json::from_slice(&boot_files::read_pin(
-        &plan.dependency_audit,
-        8 * 1024 * 1024,
-    )?)?;
+    let dependency: Value =
+        serde_json::from_slice(&source.read_package_pin(&plan.dependency_audit, 8 * 1024 * 1024)?)?;
     let required_packages = dependency_packages(&dependency)?;
     for required in dependency["additional_packages"]
         .as_array()
@@ -918,11 +917,11 @@ pub fn apply(
             package.archive.bytes <= 128 * 1024 * 1024,
             "public package exceeds bound",
         )?;
-        provenance(package)?;
+        provenance(package, source)?;
         let area = layer.join(format!("package-{index:02}"));
         boot_files::private_dir(&area)?;
         let archive = area.join("original.deb");
-        boot_files::copy_pin(&package.archive, &archive, 0o400)?;
+        let actual_archive_source = source.copy_package(&package.archive, &archive)?;
         let control = boot_files::run_logged(
             &area,
             "metadata",
@@ -978,7 +977,7 @@ pub fn apply(
             "public supplement total exceeds reviewed bound",
         )?;
         reports.push(
-            json!({"input":package,"actual_metadata":control.log,"data_tar":tar,"members":count}),
+            json!({"input":package,"actual_archive_source":actual_archive_source,"actual_metadata":control.log,"data_tar":tar,"members":count}),
         );
     }
     ensure(

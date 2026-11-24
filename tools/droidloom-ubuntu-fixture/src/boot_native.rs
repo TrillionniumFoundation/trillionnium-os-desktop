@@ -11,6 +11,10 @@ use std::fs::File;
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::Path;
 
+#[path = "boot_native_public_source.rs"]
+mod public_source;
+pub use public_source::{ImportedPublicInputs, PublicInputCustody};
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct PublicConfigInput {
@@ -500,7 +504,12 @@ fn set_owned(file: &File, uid: u32, gid: u32, mode: u32) -> Result<()> {
 }
 
 /// `root` must be the separately verified clone created by prepare-native.
-pub fn initialize(root: &Path, work: &Path, inputs: &NativeInputs) -> Result<Value> {
+pub fn initialize(
+    root: &Path,
+    work: &Path,
+    inputs: &NativeInputs,
+    source: &PublicInputCustody,
+) -> Result<Value> {
     ensure(
         rustix::process::geteuid().as_raw() == 0,
         "native initialization requires existing root rights",
@@ -538,8 +547,8 @@ pub fn initialize(root: &Path, work: &Path, inputs: &NativeInputs) -> Result<Val
         "fresh filesystem/network UUIDs must be explicit and distinct",
     )?;
     ensure(
-        inputs.public_passwd.path == Path::new("/etc/passwd")
-            && inputs.public_group.path == Path::new("/etc/group"),
+        source.original_pin(&inputs.public_passwd)?.path == Path::new("/etc/passwd")
+            && source.original_pin(&inputs.public_group)?.path == Path::new("/etc/group"),
         "only reviewed public native account sources are accepted",
     )?;
     for p in [
@@ -561,11 +570,11 @@ pub fn initialize(root: &Path, work: &Path, inputs: &NativeInputs) -> Result<Val
             "root already contains identity, secrets or active state; initialization is create-only",
         )?;
     }
-    let passwd = boot_files::read_pin(&inputs.public_passwd, 1024 * 1024)?;
-    let group = boot_files::read_pin(&inputs.public_group, 1024 * 1024)?;
+    let passwd = source.read_pin(&inputs.public_passwd, 1024 * 1024)?;
+    let group = source.read_pin(&inputs.public_group, 1024 * 1024)?;
     let (sysusers, account_summary) = native_accounts(&passwd, &group)?;
     let aliases: Aliases =
-        serde_json::from_slice(&boot_files::read_pin(&inputs.alias_receipt, 1024 * 1024)?)?;
+        serde_json::from_slice(&source.read_pin(&inputs.alias_receipt, 1024 * 1024)?)?;
     ensure(
         aliases.schema == "droidloom.ubuntu-public-initialization-aliases.v1"
             && aliases.source_root == "/"
@@ -608,12 +617,12 @@ pub fn initialize(root: &Path, work: &Path, inputs: &NativeInputs) -> Result<Val
     for c in &inputs.public_configs {
         ensure(
             PUBLIC_CONFIGS.contains(&c.guest_path.as_str())
-                && c.input.path == Path::new(&c.guest_path)
+                && source.original_pin(&c.input)?.path == Path::new(&c.guest_path)
                 && c.mode == 0o644
                 && config_paths.insert(c.guest_path.as_str()),
             "unreviewed or duplicate public configuration",
         )?;
-        let bytes = boot_files::read_pin(&c.input, 1024 * 1024)?;
+        let bytes = source.read_pin(&c.input, 1024 * 1024)?;
         let output = if c.guest_path == "/etc/gdm3/custom.conf" {
             gdm_autologin(&bytes)?
         } else {
@@ -628,8 +637,8 @@ pub fn initialize(root: &Path, work: &Path, inputs: &NativeInputs) -> Result<Val
     let mut snaps = Vec::new();
     let mut snap_names = BTreeSet::new();
     for c in &inputs.snap_mounts {
-        let bytes = boot_files::read_pin(&c.input, 65536)?;
-        let spec = parse_snap(c, &bytes)?;
+        let bytes = source.read_pin(&c.input, 65536)?;
+        let spec = parse_snap(&source.original_config(c)?, &bytes)?;
         ensure(
             snap_names.insert(spec.name.clone()),
             "duplicate public Snap mount",
@@ -655,7 +664,7 @@ pub fn initialize(root: &Path, work: &Path, inputs: &NativeInputs) -> Result<Val
     boot_files::write_new(
         &work.join("NATIVE-INIT-STARTED.json"),
         &serde_json::to_vec_pretty(
-            &json!({"schema":"droidloom.native-init-started.v1","root":root,"inputs":inputs,"guest_qualified":false}),
+            &json!({"schema":"droidloom.native-init-started.v1","root":root,"inputs":inputs,"public_input_source":source.evidence(),"guest_qualified":false}),
         )?,
         0o600,
     )?;
@@ -977,7 +986,7 @@ pub fn initialize(root: &Path, work: &Path, inputs: &NativeInputs) -> Result<Val
         .map(|a| json!({"path":a.path,"target":a.target}))
         .collect();
     Ok(
-        json!({"schema":"droidloom.native-ubuntu-initialization.v1","root":root,"work":work,"inputs":inputs,
+        json!({"schema":"droidloom.native-ubuntu-initialization.v1","root":root,"work":work,"inputs":inputs,"public_input_source":source.evidence(),
         "actions":actions,"native_commands":commands,"accounts":account_summary,"fresh_shadow_locked":true,
         "host_passwords_keys_homes_imported":false,"fresh_ssh":ssh_result,"system_units_enabled":units,
         "user_units_enabled":USER_UNITS,"snap_mounts_prepared":snaps.iter().map(|(_,_,s)|json!({"name":s.name,"revision":s.revision,"unit":s.unit})).collect::<Vec<_>>(),
