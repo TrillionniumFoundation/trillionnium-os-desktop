@@ -290,6 +290,14 @@ def verify_host_control(library, binary, export):
     check(manager, obj("labeledfs"), "filesystem", ["getattr"], True)
     check(manager, obj("labeledfs"), "filesystem", ["mount", "remount", "unmount", "relabelfrom", "relabelto"], False)
     check(manager, obj("p4_linux_rootdir_t"), "dir", ["getattr", "search", "open", "read"], True)
+    # libmount's original userspace monitor must watch /run before mountinfo
+    # enumeration. Inotify checks MAY_READ before the separate watch access.
+    check(manager, obj("p4_linux_run_t"), "dir", ["getattr", "search", "read", "watch"], True)
+    check(manager, obj("p4_linux_run_t"), "dir",
+          ["open", "remove_name", "setattr", "mounton", "relabelfrom", "relabelto"], False)
+    check(manager, obj("tmpfs"), "dir", ["open", "read", "watch"], False)
+    for subject in [helper, client, broker, loader, executor, "u:r:init:s0", "u:r:untrusted_app:s0"]:
+        check(subject, obj("p4_linux_run_t"), "dir", ["open", "read", "watch"], False)
     check(executor, executor, "process", ["setfscreate"], True)
     check(executor, executor, "process", ["setcurrent", "dyntransition"], False)
     check(executor, executor, "file", ["write", "append"], False)

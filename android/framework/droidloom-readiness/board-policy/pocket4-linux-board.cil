@@ -196,8 +196,11 @@
 (type p4_linux_run_t)
 (roletype object_r p4_linux_run_t)
 (typeattributeset p4_linux_data (p4_linux_run_t))
-(allow init_t p4_linux_run_t (dir (getattr search)))
-(neverallow p4_android_userspace p4_linux_run_t (dir (open read search write add_name remove_name relabelfrom relabelto)))
+; Original libmount waits for /run/mount by watching its existing /run parent.
+; inotify_add_watch first requires MAY_READ, then the inode watch permission.
+; PID 1 must establish this monitor before it enumerates /proc/self/mountinfo.
+(allow init_t p4_linux_run_t (dir (getattr search read watch)))
+(neverallow p4_android_userspace p4_linux_run_t (dir (open read search write add_name remove_name relabelfrom relabelto watch)))
 (neverallow init_t tmpfs (dir (open read search write add_name remove_name relabelfrom relabelto)))
 
 (allow init_t proc (lnk_file (getattr read)))
