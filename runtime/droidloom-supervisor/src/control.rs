@@ -122,7 +122,7 @@ const MAX_ICON_SIZE: u32 = 512;
 const MAX_APPLICATIONS: usize = 1024;
 const ANDROID_PER_USER_UID_RANGE: u32 = 100_000;
 const APPLICATION_CATALOG_CLASS: &str = "com.android.droidloom.catalog.ApplicationCatalog";
-const APPLICATION_CATALOG_ENV: &str = "CLASSPATH=/vendor/framework/droidloom-input-bridge.jar";
+const APPLICATION_CATALOG_ENV: &str = "CLASSPATH=/system_ext/framework/droidloom-input-bridge.jar";
 
 /// One control request. The externally tagged encoding is stable and easy to
 /// inspect in traces without a bespoke binary parser.
@@ -1415,7 +1415,7 @@ fn android_boot_snapshot(spec: &CellSpec) -> Result<(Option<u32>, Option<String>
         return Ok((None, Some("waiting for Android init".into())));
     };
     let launcher = PathBuf::from(format!(
-        "/proc/{pid}/root/vendor/bin/droidloom-task-launcher"
+        "/proc/{pid}/root/system_ext/bin/droidloom-task-launcher"
     ));
     let task_control = PathBuf::from(format!(
         "/proc/{pid}/root/dev/socket/droidloom-task-control"
@@ -1726,7 +1726,7 @@ fn run_task_launcher_in_cell(
             "--root",
             "--wd",
             "--",
-            "/vendor/bin/droidloom-task-launcher",
+            "/system_ext/bin/droidloom-task-launcher",
         ])
         .args(arguments);
     let deadline = Instant::now() + ANDROID_READY_TIMEOUT;

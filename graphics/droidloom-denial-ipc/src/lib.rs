@@ -6,6 +6,10 @@
 
 #![deny(unsafe_op_in_unsafe_fn)]
 
+#[cfg(any(target_os = "linux", target_os = "android"))]
+pub mod kernel_caller;
+pub mod kernel_owner;
+
 use std::ffi::OsStr;
 use std::io;
 use std::mem::{self, MaybeUninit};

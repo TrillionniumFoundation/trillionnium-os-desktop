@@ -2,6 +2,10 @@
 #![allow(dead_code, clippy::all, missing_docs)]
 #[path = "../src/clipboard/mod.rs"]
 mod clipboard;
+#[path = "../src/production.rs"]
+mod production;
+#[path = "../src/bridge_transport.rs"]
+mod bridge_transport;
 use std::{io::{Read,Write}, os::{fd::{AsFd,AsRawFd},unix::net::UnixStream}, sync::{Arc,Mutex,atomic::{AtomicBool,Ordering}}, time::{Duration,Instant}};
 use wayland_client::{Connection,Dispatch as ClientDispatch,QueueHandle,protocol::wl_seat as client_seat};
 use wayland_server::{Display,DisplayHandle,Client,Resource,Dispatch,GlobalDispatch,DataInit,New,protocol::{wl_seat,wl_data_device_manager as cm,wl_data_device as cd,wl_data_offer as co,wl_data_source as cs}};

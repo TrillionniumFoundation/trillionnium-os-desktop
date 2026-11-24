@@ -311,6 +311,11 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
         copy(&source, &target)?;
         mode(&target, 0o644)?;
     }
+    // The desktop only joins its original early owner's listener. It never
+    // starts the legacy daemon or waits for the Android observer's READY.
+    let desktop_unit = runtime.join("usr/lib/systemd/user/droidloom-production-desktop.service");
+    write(&desktop_unit, include_bytes!("../../../packaging/systemd/user/droidloom-production-desktop.service"))?;
+    mode(&desktop_unit, 0o644)?;
     let host_contexts = runtime.join("usr/share/droidloom/production/linux-service-file_contexts");
     write(
         &host_contexts,
@@ -450,6 +455,24 @@ mod tests {
             fs::read(runtime.join("usr/lib/droidloom/production/current/droidloomctl")).unwrap(),
         );
         assert!(!runtime.join("usr/lib/systemd/user/droidloom.service").exists());
+        let user_unit = runtime.join("usr/lib/systemd/user/droidloom-production-desktop.service");
+        let metadata = fs::symlink_metadata(&user_unit).unwrap();
+        assert!(metadata.is_file());
+        assert_eq!(metadata.mode() & 0o7777, 0o644);
+        assert_eq!(metadata.nlink(), 1);
+        let body = fs::read_to_string(user_unit).unwrap();
+        assert_eq!(body, include_str!("../../../packaging/systemd/user/droidloom-production-desktop.service"));
+        let start = body.lines().find_map(|line| line.strip_prefix("ExecStart=")).unwrap();
+        assert_eq!(start, "/usr/bin/droidloom-wayland --production");
+        assert!(runtime.join("usr/bin/droidloom-wayland").is_file());
+        // These dependencies would wait for the Binder service whose Denial
+        // handshake needs this presenter, or accidentally restart the old owner.
+        assert!(!body.contains("droidloom-early-observer.service"));
+        assert!(!body.contains("droidloom-production.service"));
+        assert!(!body.contains("droidloomd.service"));
+        assert!(!body.contains("--cell"));
+        assert!(body.lines().any(|line| line == "WantedBy=graphical-session.target"));
+
         for (name, expected) in [
             ("ubuntu-real-root-devices", include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-real-root-devices").as_slice()),
             ("ubuntu-real-root-file_contexts", include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-real-root-file_contexts").as_slice()),

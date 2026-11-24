@@ -2209,7 +2209,7 @@ fn auxiliary_layout() -> Vec<(AuxiliaryOrigin, PathBuf)> {
             "ime/DroidloomHome.apk",
         ),
         (
-            "vendor",
+            "system_ext",
             "framework/droidloom-input-bridge.jar",
             "ime/droidloom-input-bridge.jar",
         ),

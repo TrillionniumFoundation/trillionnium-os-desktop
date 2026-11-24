@@ -15,26 +15,26 @@ mod mac_child;
 
 #[repr(C)]
 #[derive(Default)]
-pub(super) struct CloneArgs {
-    pub(super) flags: u64,
-    pub(super) pidfd: u64,
-    pub(super) child_tid: u64,
-    pub(super) parent_tid: u64,
-    pub(super) exit_signal: u64,
-    pub(super) stack: u64,
-    pub(super) stack_size: u64,
-    pub(super) tls: u64,
-    pub(super) set_tid: u64,
-    pub(super) set_tid_size: u64,
-    pub(super) cgroup: u64,
+pub(crate) struct CloneArgs {
+    pub(crate) flags: u64,
+    pub(crate) pidfd: u64,
+    pub(crate) child_tid: u64,
+    pub(crate) parent_tid: u64,
+    pub(crate) exit_signal: u64,
+    pub(crate) stack: u64,
+    pub(crate) stack_size: u64,
+    pub(crate) tls: u64,
+    pub(crate) set_tid: u64,
+    pub(crate) set_tid_size: u64,
+    pub(crate) cgroup: u64,
 }
 
-pub(super) struct SignalMask {
+pub(crate) struct SignalMask {
     original: u64,
     active: bool,
 }
 impl SignalMask {
-    pub(super) fn block() -> Result<Self> {
+    pub(crate) fn block() -> Result<Self> {
         let all = u64::MAX;
         let mut original = 0_u64;
         if unsafe {
@@ -54,7 +54,7 @@ impl SignalMask {
             active: true,
         })
     }
-    pub(super) fn restore(&mut self) -> Result<()> {
+    pub(crate) fn restore(&mut self) -> Result<()> {
         if self.active {
             if unsafe {
                 libc::syscall(

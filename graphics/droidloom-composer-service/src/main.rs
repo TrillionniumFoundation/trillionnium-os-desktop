@@ -3,6 +3,7 @@
 #![forbid(unsafe_code)]
 
 mod control;
+mod frontend;
 mod input;
 mod surface_bridge;
 
@@ -10,7 +11,8 @@ use std::fs::OpenOptions;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 
-use binder::ProcessState;
+use android_hardware_graphics_composer3::aidl::android::hardware::graphics::composer3::IComposer::BnComposer;
+use binder::{Binder, Interface, ProcessState};
 use droidloom_composer::denial::AppliedDenialEvent;
 use droidloom_composer::hwc3::Session;
 use droidloom_composer_aidl::denial::DenialPresentationSink;
@@ -18,7 +20,7 @@ use droidloom_composer_aidl::minigbm::MinigbmBufferAdapter;
 use droidloom_composer_aidl::service::{ComposerLifecycle, ComposerService, SharedSession};
 use droidloom_denial_ipc::{ProtocolSocket, SeqPacket, SeqPacketListener};
 use droidloom_denial_protocol::{
-    capability, AndroidMessage, DenialMessage, InputEvent, TaskObjectId, PROTOCOL_MAJOR,
+    AndroidMessage, DenialMessage, InputEvent, PROTOCOL_MAJOR, TaskObjectId, capability,
 };
 use droidloom_syncobj::SyncobjDevice;
 
@@ -26,11 +28,10 @@ use crate::control::TaskCoordinator;
 use crate::input::InputBridge;
 use crate::surface_bridge::SurfaceBridge;
 
-const DEFAULT_SOCKET: &str = "/dev/socket/droidloom/denial";
+const DEFAULT_SOCKET: &str = "/dev/socket/droidloom-frontend/denial";
 const DEFAULT_RENDER_NODE: &str = "/dev/dri/renderD128";
 const CONTROL_SOCKET_NAME: &str = "droidloom-task-control";
 const SURFACE_SOCKET_NAME: &str = "droidloom-surfaceflinger";
-const INPUT_SOCKET: &str = "/dev/socket/droidloom_input";
 const SERVICE_NAME: &str = "android.hardware.graphics.composer3.IComposer/default";
 const BOOTSTRAP_PACKAGE: &str = "android.droidloom.bootstrap";
 
@@ -53,6 +54,8 @@ fn run() -> Result<(), String> {
     let (socket_path, render_node) = arguments()?;
     let control_listener = SeqPacketListener::from_android_init_socket(CONTROL_SOCKET_NAME)
         .map_err(|error| format!("adopt Android init task-control socket: {error}"))?;
+    droidloom_denial_ipc::kernel_owner::KernelOwner::prepare_listener(&control_listener)
+        .map_err(|error| format!("enable native task sender PIDFD metadata: {error}"))?;
     let surface_listener = SeqPacketListener::from_android_init_socket(SURFACE_SOCKET_NAME)
         .map_err(|error| format!("adopt Android init SurfaceFlinger socket: {error}"))?;
     let render_file = OpenOptions::new()
@@ -60,10 +63,13 @@ fn run() -> Result<(), String> {
         .write(true)
         .open(&render_node)
         .map_err(|error| format!("open render node {}: {error}", render_node.display()))?;
-    let socket = ProtocolSocket::new(
-        SeqPacket::connect(&socket_path)
-            .map_err(|error| format!("connect {}: {error}", socket_path.display()))?,
+    let transport = SeqPacket::connect(&socket_path)
+        .map_err(|error| format!("connect {}: {error}", socket_path.display()))?;
+    let native_owner = Arc::new(
+        droidloom_denial_ipc::kernel_owner::KernelOwner::acquire(&transport)
+            .map_err(|error| format!("pin original native Denial owner: {error}"))?,
     );
+    let socket = ProtocolSocket::new(transport);
     let activation_requests = handshake(&socket)?;
 
     let sink = DenialPresentationSink::new(socket, SyncobjDevice::from_file(render_file))
@@ -75,11 +81,20 @@ fn run() -> Result<(), String> {
     });
     let lifecycle = service.lifecycle();
     let coordinator = TaskCoordinator::new(sink.clone(), lifecycle.clone());
-    let input = InputBridge::new(INPUT_SOCKET);
+    let input = Arc::new(InputBridge::new());
+    let frontend =
+        frontend::FrontendChannels::new(Arc::clone(&input), coordinator.clone()).into_binder();
 
     ProcessState::set_thread_pool_max_thread_count(4);
     ProcessState::start_thread_pool();
     let service = service.into_binder();
+    let mut native: Binder<BnComposer> = service
+        .as_binder()
+        .try_into()
+        .map_err(|error| format!("retain original Composer Binder: {error:?}"))?;
+    native
+        .set_extension(&mut frontend.as_binder())
+        .map_err(|error| format!("attach stable frontend extension: {error:?}"))?;
     binder::add_service(SERVICE_NAME, service.as_binder())
         .map_err(|error| format!("register {SERVICE_NAME}: {error:?}"))?;
 
@@ -143,7 +158,7 @@ fn run() -> Result<(), String> {
     let _control_thread = std::thread::Builder::new()
         .name("droidloom-task-control".to_owned())
         .spawn(move || {
-            if let Err(error) = coordinator.serve(control_listener) {
+            if let Err(error) = coordinator.serve(control_listener, native_owner) {
                 eprintln!("Droidloom task-control listener fatal: {error}");
                 std::process::exit(1);
             }

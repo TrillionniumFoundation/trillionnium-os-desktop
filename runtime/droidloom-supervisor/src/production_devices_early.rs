@@ -138,6 +138,8 @@ pub(super) fn create_socket_directories(root: &File) -> Result<()> {
     private_directory_role(&socket, c"u:object_r:p4_linux_private_socket_parent_t:s0")?;
     let target = create(&socket, c"droidloom")?;
     private_directory_role(&target, c"u:object_r:p4_linux_readiness_mount_t:s0")?;
+    let frontend = create(&socket, c"droidloom-frontend")?;
+    private_directory_role(&frontend, c"u:object_r:droidloom_frontend_mount:s0")?;
     Ok(())
 }
 
@@ -154,19 +156,22 @@ fn verify_readiness_directories(root: &File, uid: u32, gid: u32, nodes: &[Device
 pub(super) fn verify_socket_directories(root: &File, uid: u32, gid: u32) -> Result<()> {
     let socket = directory(root, c"socket")?;
     let target = directory(&socket, c"droidloom")?;
+    let frontend = directory(&socket, c"droidloom-frontend")?;
     private_directory_role(root, c"u:object_r:p4_linux_private_dev_root_t:s0")?;
     private_directory_role(&socket, c"u:object_r:p4_linux_private_socket_parent_t:s0")?;
     private_directory_role(&target, c"u:object_r:p4_linux_readiness_mount_t:s0")?;
+    private_directory_role(&frontend, c"u:object_r:droidloom_frontend_mount:s0")?;
     let filesystem = root.metadata()?.dev();
     let original_mount = mount_id(root)?;
-    for dir in [&socket, &target] {
+    for dir in [&socket, &target, &frontend] {
         let m = dir.metadata()?;
         need(m.dev() == filesystem && m.uid() == uid && m.gid() == gid
             && m.mode() == libc::S_IFDIR | 0o755 && mount_id(dir)? == original_mount,
             "readiness directories require the same private mount, mode and mapped identities")?;
     }
-    need(directory_names_bounded(&socket, 1)? == [b"droidloom".to_vec()] && directory_names_bounded(&target, 0)?.is_empty(),
-        "only one empty fixed readiness target may exist before transfer")
+    need(directory_names_bounded(&socket, 2)? == [b"droidloom".to_vec(), b"droidloom-frontend".to_vec()]
+            && directory_names_bounded(&target, 0)?.is_empty() && directory_names_bounded(&frontend, 0)?.is_empty(),
+        "only the two empty fixed readiness and frontend targets may exist before transfer")
 }
 
 #[cfg(test)]
