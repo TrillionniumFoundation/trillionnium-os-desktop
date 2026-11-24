@@ -970,16 +970,26 @@ fn numeric_field(line: &str, field: &str) -> Option<u64> {
     value.parse().ok()
 }
 
+#[cfg(target_os = "android")]
+mod frontend;
+
 struct TaskControlClient {
     socket: SeqPacket,
+    #[cfg(target_os = "android")]
+    _caller_lifetime: SeqPacket,
     next_request: u64,
 }
 
 impl TaskControlClient {
     fn connect(path: &Path) -> Result<Self, LaunchError> {
+        #[cfg(target_os = "android")]
+        let (socket, caller_lifetime) = frontend::connect(path)?;
+        #[cfg(not(target_os = "android"))]
         let socket = SeqPacket::connect(path)?;
         let client = Self {
             socket,
+            #[cfg(target_os = "android")]
+            _caller_lifetime: caller_lifetime,
             next_request: 1,
         };
         client.send(&ControlRequest::Hello {

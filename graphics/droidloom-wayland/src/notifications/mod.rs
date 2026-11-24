@@ -8,16 +8,12 @@ use serde::{Deserialize, Serialize};
 use std::{
     collections::{BTreeMap, HashMap},
     fs, io,
-    os::{
-        fd::AsRawFd,
-        unix::{
-            fs::{FileTypeExt, PermissionsExt},
-            net::{UnixListener, UnixStream},
-        },
-    },
+    os::unix::net::UnixStream,
     path::PathBuf,
     time::Duration,
 };
+use crate::{bridge_transport::{Listener,Stream},production::{Registration,wire::Role}};
+use std::sync::Arc;
 use zbus::{Connection, MatchRule, Message, MessageStream, Proxy, message::Type, zvariant::Value};
 const NAME: &str = "org.freedesktop.Notifications";
 const PATH: &str = "/org/freedesktop/Notifications";
@@ -27,22 +23,15 @@ type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>
 
 pub struct Bridge {
     stop: UnixStream,
-    path: PathBuf,
+    worker: Option<std::thread::JoinHandle<()>>,
 }
 impl Bridge {
-    pub fn start(path: PathBuf) -> io::Result<Self> {
-        match fs::symlink_metadata(&path) {
-            Ok(m) if m.file_type().is_socket() => fs::remove_file(&path)?,
-            Ok(_) => return Err(io::Error::other("notification endpoint is not a socket")),
-            Err(e) if e.kind() == io::ErrorKind::NotFound => (),
-            Err(e) => return Err(e),
-        }
-        let listener = Async::new(UnixListener::bind(&path)?)?;
-        fs::set_permissions(&path, fs::Permissions::from_mode(0o600))?;
+    pub fn start(path:PathBuf,owner:Option<Arc<Registration>>)->io::Result<Self>{
+        let listener=Async::new(Listener::new(path.clone(),Role::Notifications,owner,0)?)?;
         let (stop, stopped) = UnixStream::pair()?;
         let stopped = Async::new(stopped)?;
         let state_path = path.with_extension("state");
-        std::thread::Builder::new()
+        let worker=std::thread::Builder::new()
             .name("droidloom-notifications".into())
             .spawn(move || {
                 droidloom_cpu_placement::current(droidloom_cpu_placement::Role::Background);
@@ -79,13 +68,13 @@ impl Bridge {
                 });
             })?;
         eprintln!("DROIDLOOM_NOTIFICATIONS_ABI=1;");
-        Ok(Self { stop, path })
+        Ok(Self { stop, worker:Some(worker) })
     }
 }
 impl Drop for Bridge {
     fn drop(&mut self) {
         let _ = self.stop.shutdown(std::net::Shutdown::Both);
-        let _ = fs::remove_file(&self.path);
+        if let Some(worker)=self.worker.take(){let _=worker.join();}
     }
 }
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
@@ -148,7 +137,7 @@ enum Frame {
     End,
 }
 struct Peer {
-    socket: Async<UnixStream>,
+    socket: Async<Stream>,
     buffer: Vec<u8>,
     hello: bool,
     snapshot: Option<BTreeMap<String, Note>>,
@@ -339,7 +328,7 @@ async fn reconcile(
     Ok(())
 }
 enum Event {
-    Accept(io::Result<(Async<UnixStream>, std::os::unix::net::SocketAddr)>),
+    Accept(io::Result<Async<Stream>>),
     Data(io::Result<Vec<u8>>),
     Signal(Option<zbus::Result<Message>>),
     Owner(Option<zbus::Result<Message>>),
@@ -357,18 +346,17 @@ async fn read_peer(peer: Option<&Peer>) -> Event {
         Err(e) => Err(e),
     })
 }
-async fn run(listener: &Async<UnixListener>, state_path: &PathBuf) -> Result<()> {
+async fn run(listener: &Async<Listener>, state_path: &PathBuf) -> Result<()> {
     let conn = zbus::connection::Builder::session()?
         .method_timeout(Duration::from_secs(3))
         .build()
         .await?;
-    serve(listener, state_path, conn, 0).await
+    serve(listener, state_path, conn).await
 }
 async fn serve(
-    listener: &Async<UnixListener>,
+    listener: &Async<Listener>,
     state_path: &PathBuf,
     conn: Connection,
-    peer_uid: u32,
 ) -> Result<()> {
     let rule = MatchRule::builder()
         .msg_type(Type::Signal)
@@ -414,7 +402,7 @@ async fn serve(
     loop {
         let event = future::race(
             future::race(
-                async { Event::Accept(listener.accept().await) },
+                async { Event::Accept(listener.read_with(|l|l.accept()).await.and_then(Async::new)) },
                 read_peer(peer.as_ref()),
             ),
             future::race(async { Event::Signal(signals.next().await) }, async {
@@ -423,10 +411,7 @@ async fn serve(
         )
         .await;
         match event {
-            Event::Accept(Ok((socket, _))) => {
-                if !root_peer(socket.get_ref(), peer_uid)? {
-                    continue;
-                }
+            Event::Accept(Ok(socket)) => {
                 peer = Some(Peer {
                     socket,
                     buffer: vec![],
@@ -532,28 +517,5 @@ async fn serve(
         }
     }
 }
-fn root_peer(s: &UnixStream, expected_uid: u32) -> io::Result<bool> {
-    let mut cred = libc::ucred {
-        pid: 0,
-        uid: !0,
-        gid: !0,
-    };
-    let mut length = std::mem::size_of_val(&cred) as libc::socklen_t;
-    // SAFETY: live socket and writable ucred buffer of the supplied size.
-    if unsafe {
-        libc::getsockopt(
-            s.as_raw_fd(),
-            libc::SOL_SOCKET,
-            libc::SO_PEERCRED,
-            (&raw mut cred).cast(),
-            &raw mut length,
-        )
-    } != 0
-    {
-        return Err(io::Error::last_os_error());
-    }
-    Ok(cred.uid == expected_uid)
-}
-
 #[cfg(test)]
 mod tests;

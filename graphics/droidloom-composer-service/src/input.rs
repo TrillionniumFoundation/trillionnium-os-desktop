@@ -1,10 +1,9 @@
 //! Lazy connection from the Rust Composer service to Android's framework bridge.
 
 use std::collections::BTreeMap;
-use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
-use droidloom_denial_ipc::SeqPacket;
+use droidloom_denial_ipc::{SeqPacket,kernel_caller::KernelCaller};
 use droidloom_denial_protocol::{InputEvent, TouchAction};
 use droidloom_input_protocol::{
     encode_key, encode_task_bounds, encode_task_close, encode_task_focus, encode_touch,
@@ -14,6 +13,7 @@ use droidloom_input_protocol::{
 #[derive(Default)]
 struct BridgeState {
     socket: Option<SeqPacket>,
+    caller: Option<KernelCaller>,
     pointer_ids: PointerIds,
 }
 
@@ -79,16 +79,26 @@ impl PointerIds {
 
 /// Reconnecting sender for routed Android input records.
 pub(super) struct InputBridge {
-    path: PathBuf,
     state: Mutex<BridgeState>,
 }
 
 impl InputBridge {
-    pub(super) fn new(path: impl Into<PathBuf>) -> Self {
+    pub(super) fn new() -> Self {
         Self {
-            path: path.into(),
             state: Mutex::new(BridgeState::default()),
         }
+    }
+
+    /// Replace the previous channel only after the Binder entry authenticates
+    /// the exact platform adapter. Closing the old sender resets its receiver.
+    pub(super) fn install(&self, socket: SeqPacket, caller: KernelCaller) -> Result<(), String> {
+        socket.set_nonblocking(true).map_err(|e| e.to_string())?;
+        let mut state = self.state.lock().map_err(|_| "input channel lock poisoned")?;
+        caller.revalidate().map_err(|e| e.to_string())?;
+        state.socket = Some(socket);
+        state.caller = Some(caller);
+        state.pointer_ids.clear();
+        Ok(())
     }
 
     pub(super) fn send(
@@ -204,17 +214,16 @@ impl InputBridge {
     }
 
     fn send_record(&self, state: &mut BridgeState, record: &[u8]) -> Result<(), String> {
-        if state.socket.is_none() {
-            state.socket = Some(connect(&self.path)?);
-        }
-        let result = state
-            .socket
-            .as_ref()
-            .expect("framework bridge socket was initialized")
-            .send_record(record, &[])
-            .map_err(|error| format!("send Android framework record: {error}"));
+        let result = (|| {
+            let caller = state.caller.as_ref().ok_or_else(|| "authenticated input caller is absent".to_owned())?;
+            caller.revalidate().map_err(|e| e.to_string())?;
+            state.socket.as_ref().ok_or_else(|| "authenticated platform input channel is not attached".to_owned())?
+                .send_record(record, &[]).map_err(|error| format!("send Android framework record: {error}"))?;
+            caller.revalidate().map_err(|e| e.to_string())
+        })();
         if result.is_err() {
             state.socket = None;
+            state.caller = None;
             state.pointer_ids.clear();
         }
         result
@@ -235,15 +244,6 @@ fn scale_fixed_coordinate(value: i32, numerator: u32, denominator: u32) -> Resul
         (product - half) / i128::from(denominator)
     };
     i32::try_from(rounded).map_err(|_| "scaled input coordinate overflowed".to_owned())
-}
-
-fn connect(path: &Path) -> Result<SeqPacket, String> {
-    SeqPacket::connect(path).map_err(|error| {
-        format!(
-            "connect Android framework bridge {}: {error}",
-            path.display()
-        )
-    })
 }
 
 #[cfg(test)]

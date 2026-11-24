@@ -343,20 +343,20 @@ pub fn assemble_artifacts(
             "bin/android.hardware.graphics.composer3-service.droidloom",
         ),
         (
-            "vendor/bin/droidloom-task-launcher",
+            "system_ext/bin/droidloom-task-launcher",
             "bin/droidloom-task-launcher",
         ),
         ("system/framework/services.jar", "framework/services.jar"),
         (
-            "vendor/bin/droidloom-input-bridge",
+            "system_ext/bin/droidloom-input-bridge",
             "ime/droidloom-input-bridge",
         ),
         (
-            "vendor/framework/droidloom-input-bridge.jar",
+            "system_ext/framework/droidloom-input-bridge.jar",
             "framework/droidloom-input-bridge.jar",
         ),
         (
-            "vendor/framework/droidloom-input-bridge.jar",
+            "system_ext/framework/droidloom-input-bridge.jar",
             "ime/droidloom-input-bridge.jar",
         ),
         (
@@ -438,7 +438,7 @@ pub fn assemble_artifacts(
             "etc/init/droidloom-composer.rc",
         ),
         (
-            "vendor/etc/init/droidloom-input-bridge.rc",
+            "system_ext/etc/init/droidloom-input-bridge.rc",
             "ime/droidloom-input-bridge.rc",
         ),
     ] {

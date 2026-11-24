@@ -50,7 +50,8 @@ public final class ClipboardBridge implements AutoCloseable {
         directory=new File(context.getCacheDir(), "droidloom-clipboard");
     }
     public void start(){
-        if(!new File("/dev/socket/droidloom/clipboard").exists())return;
+        // SystemUI uses only the Android-local InputBridge relay. The selected
+        // adapter owns the Linux channel; SystemUI must not probe that directory.
         directory.mkdirs();
         File[] old=directory.listFiles();if(old!=null)for(File f:old)if(f.isFile())f.delete();
         clipboard.addPrimaryClipChangedListener(listener);

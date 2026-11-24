@@ -3,15 +3,15 @@ mod backend;
 mod wire;
 use backend::{Backend, Offer, Source};
 const BUILD_COMPATIBILITY: &str = "DROIDLOOM_CLIPBOARD_ABI=1;";
-use crate::App;
+use crate::{App,bridge_transport::{Listener,Stream},production::{Registration,wire::Role}};
 use std::{
     fs::{self, File},
     io::{self, Read, Write},
     os::{
         fd::{AsFd, AsRawFd, OwnedFd, RawFd},
         unix::{
-            fs::{FileTypeExt, OpenOptionsExt, PermissionsExt},
-            net::{UnixDatagram, UnixListener, UnixStream},
+            fs::OpenOptionsExt,
+            net::UnixDatagram,
         },
     },
     path::PathBuf,
@@ -72,7 +72,7 @@ impl Events {
     }
 }
 struct Peer {
-    socket: UnixStream,
+    socket: Stream,
     mailbox: Arc<Mailbox>,
 }
 impl Drop for Peer {
@@ -85,8 +85,7 @@ impl Drop for Peer {
 pub(super) struct Clipboard {
     backend: Backend,
     ready: bool,
-    listener: UnixListener,
-    socket_path: PathBuf,
+    listener: Listener,
     directory: Arc<tempfile::TempDir>,
     wake: UnixDatagram,
     events: Events,
@@ -120,16 +119,11 @@ impl Clipboard {
     }
 
     pub fn new(path: PathBuf, globals: &GlobalList, qh: &QueueHandle<App>) -> io::Result<Self> {
-        match fs::symlink_metadata(&path) {
-            Ok(m) if m.file_type().is_socket() => fs::remove_file(&path)?,
-            Ok(_) => return Err(wire::invalid()),
-            Err(e) if e.kind() == io::ErrorKind::NotFound => {}
-            Err(e) => return Err(e),
-        }
+        Self::with_owner(path,globals,qh,None)
+    }
+    pub fn with_owner(path:PathBuf,globals:&GlobalList,qh:&QueueHandle<App>,owner:Option<Arc<Registration>>)->io::Result<Self>{
         eprintln!("{BUILD_COMPATIBILITY}");
-        let listener = UnixListener::bind(&path)?;
-        fs::set_permissions(&path, fs::Permissions::from_mode(0o600))?;
-        listener.set_nonblocking(true)?;
+        let listener=Listener::new(path.clone(),Role::Clipboard,owner,0)?;
         let directory = Arc::new(
             tempfile::Builder::new()
                 .prefix("clipboard-")
@@ -146,7 +140,6 @@ impl Clipboard {
             backend: Backend::new(globals, qh),
             ready: true,
             listener,
-            socket_path: path,
             directory,
             wake,
             events: Events {
@@ -331,10 +324,7 @@ impl Clipboard {
             return;
         }
         self.ready = false;
-        while let Ok((socket, _)) = self.listener.accept() {
-            if !root_peer(&socket).unwrap_or(false) {
-                continue;
-            }
+        while let Ok(socket) = self.listener.accept() {
             self.peer = None;
             self.connection += 1;
             let connection = self.connection;
@@ -480,7 +470,6 @@ impl Drop for Clipboard {
     fn drop(&mut self) {
         self.generation.store(u64::MAX, Ordering::Release);
         self.peer = None;
-        let _ = fs::remove_file(&self.socket_path);
     }
 }
 
@@ -493,28 +482,6 @@ fn pipe() -> io::Result<(File, File)> {
     use std::os::fd::FromRawFd;
     // SAFETY: successful pipe2 produced two fresh descriptors.
     Ok(unsafe { (File::from_raw_fd(fds[0]), File::from_raw_fd(fds[1])) })
-}
-fn root_peer(s: &UnixStream) -> io::Result<bool> {
-    let mut cred = libc::ucred {
-        pid: 0,
-        uid: !0,
-        gid: !0,
-    };
-    let mut size = std::mem::size_of_val(&cred) as libc::socklen_t;
-    // SAFETY: valid socket, writable credential storage, and matching length.
-    if unsafe {
-        libc::getsockopt(
-            s.as_raw_fd(),
-            libc::SOL_SOCKET,
-            libc::SO_PEERCRED,
-            (&raw mut cred).cast(),
-            &raw mut size,
-        )
-    } != 0
-    {
-        return Err(io::Error::last_os_error());
-    }
-    Ok(cred.uid == 0)
 }
 fn read_native(
     mut desc: Description,

@@ -149,7 +149,7 @@ fn dbus_and_android_socket_lifecycle() {
     future::block_on(async {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("notification.sock");
-        let listener = Async::new(UnixListener::bind(&path).unwrap()).unwrap();
+        let listener = Async::new(Listener::new(path.clone(),Role::Notifications,None,unsafe{libc::getuid()}).unwrap()).unwrap();
         let (tx, rx) = async_channel::bounded(128);
         let server = zbus::connection::Builder::address(address.trim())
             .unwrap()
@@ -172,7 +172,7 @@ fn dbus_and_android_socket_lifecycle() {
             .await
             .unwrap();
         let state = dir.path().join("state");
-        let bridge = serve(&listener, &state, conn, unsafe { libc::getuid() });
+        let bridge = serve(&listener, &state, conn);
         let checks = async {
             let socket = Async::<UnixStream>::connect(&path).await.unwrap();
             frame(&socket, serde_json::json!({"type":"hello","abi":1})).await;
@@ -372,7 +372,7 @@ fn dbus_and_android_socket_lifecycle() {
 fn rejects_unbounded_or_invalid_frames() {
     let (a, _b) = UnixStream::pair().unwrap();
     let mut peer = Peer {
-        socket: Async::new(a).unwrap(),
+        socket: Async::new(Stream::test_socket(a)).unwrap(),
         buffer: vec![],
         hello: false,
         snapshot: None,

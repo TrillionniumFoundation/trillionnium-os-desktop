@@ -1,0 +1,22 @@
+[Unit]
+Description=Droidloom production Android desktop presenter
+PartOf=graphical-session.target
+After=graphical-session-pre.target wayland-session-waitenv.service
+# Each attempt is bounded; a late graphical session must not latch a failed state.
+StartLimitIntervalSec=0
+
+[Service]
+Type=notify
+NotifyAccess=main
+ExecStart=/usr/bin/droidloom-wayland --production
+Environment=DROIDLOOM_MODE=desktop
+NoNewPrivileges=yes
+UMask=0077
+KillMode=control-group
+Restart=on-failure
+RestartSec=10s
+TimeoutStartSec=255s
+TimeoutStopSec=10s
+
+[Install]
+WantedBy=graphical-session.target

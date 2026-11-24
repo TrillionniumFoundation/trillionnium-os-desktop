@@ -8,18 +8,48 @@ use droidloom_composer::task_control::{TaskControlRegistry, TaskRegistrationPhas
 use droidloom_composer::{DisplayId, TaskId};
 use droidloom_composer_aidl::denial::DenialPresentationSink;
 use droidloom_composer_aidl::service::ComposerLifecycle;
+use droidloom_denial_ipc::kernel_caller::KernelCaller;
+use droidloom_denial_ipc::kernel_owner::{KernelOwner, OwnerSession};
 use droidloom_denial_ipc::{SeqPacket, SeqPacketListener};
 use droidloom_denial_protocol::TaskObjectId;
 use droidloom_task_control::{
-    decode_request, encode_response, ControlErrorCode, ControlRequest, ControlResponse,
-    PROTOCOL_MAJOR, PROTOCOL_MINOR,
+    ControlErrorCode, ControlRequest, ControlResponse, MAX_RECORD_BYTES, PROTOCOL_MAJOR,
+    PROTOCOL_MINOR, decode_request, encode_response,
 };
 
-const AID_ROOT: u32 = 0;
-const AID_SYSTEM: u32 = 1_000;
 const CONFIGURE_TIMEOUT: Duration = Duration::from_secs(5);
 
 type ControlFailure = (ControlErrorCode, String);
+
+enum ChannelAuthority<'a> {
+    Android(&'a KernelCaller),
+    Native(&'a OwnerSession),
+}
+impl ChannelAuthority<'_> {
+    fn revalidate(&self) -> Result<(), String> {
+        match self {
+            Self::Android(caller) => caller.revalidate(),
+            Self::Native(owner) => owner.revalidate(),
+        }
+        .map_err(|e| e.to_string())
+    }
+    fn receive(&self, socket: &SeqPacket) -> Result<Vec<u8>, String> {
+        match self {
+            Self::Native(owner) => owner.receive(MAX_RECORD_BYTES).map_err(|e| e.to_string()),
+            Self::Android(caller) => {
+                caller
+                    .wait_readable(socket, Duration::from_secs(120))
+                    .map_err(|e| e.to_string())?;
+                let record = socket.receive_record().map_err(|e| e.to_string())?;
+                if !record.descriptors.is_empty() {
+                    return Err("task-control record carried forbidden descriptors".into());
+                }
+                caller.revalidate().map_err(|e| e.to_string())?;
+                Ok(record.bytes)
+            }
+        }
+    }
+}
 
 #[derive(Debug)]
 struct State {
@@ -167,7 +197,9 @@ impl TaskCoordinator {
     ) -> Result<(TaskObjectId, DisplayId), String> {
         // Explicit host launches and the Android task observer can discover
         // the same task together. Wait for its complete binding before reuse.
-        let _registration = self.direct_registration_gate.lock()
+        let _registration = self
+            .direct_registration_gate
+            .lock()
             .map_err(|_| "direct registration lock is poisoned".to_owned())?;
         if task.0 == 0 || task.0 > i32::MAX as u64 {
             return Err(format!("invalid Android task identity {}", task.0));
@@ -275,45 +307,60 @@ impl TaskCoordinator {
             .map_err(|(code, message)| format!("retire direct task failed ({code:?}): {message}"))
     }
 
-    /// Accept authenticated privileged clients forever. Each connection is
-    /// independent so a configure wait cannot block teardown/status traffic.
-    pub fn serve(&self, listener: SeqPacketListener) -> Result<(), String> {
+    /// The native ingress retains its original owner, separately from the
+    /// already retired namespace connector that created each connection.
+    pub fn serve(
+        &self,
+        listener: SeqPacketListener,
+        owner: Arc<KernelOwner>,
+    ) -> Result<(), String> {
         loop {
+            owner.revalidate().map_err(|e| e.to_string())?;
             let socket = listener
                 .accept()
-                .map_err(|error| format!("accept task-control client: {error}"))?;
-            let credentials = socket
-                .peer_credentials()
-                .map_err(|error| format!("authenticate task-control client: {error}"))?;
-            if credentials.uid != AID_ROOT && credentials.uid != AID_SYSTEM {
-                eprintln!(
-                    "Droidloom rejected task-control peer pid={} uid={} gid={}",
-                    credentials.pid, credentials.uid, credentials.gid
-                );
-                continue;
-            }
+                .map_err(|e| format!("accept native task-control client: {e}"))?;
+            let authority = match owner.accept(&socket) {
+                Ok(authority) => authority,
+                Err(error) => {
+                    eprintln!("Droidloom rejected native task connector: {error}");
+                    continue;
+                }
+            };
             let coordinator = self.clone();
             std::thread::Builder::new()
-                .name("droidloom-task-client".to_owned())
+                .name("droidloom-native-task-client".to_owned())
                 .spawn(move || {
-                    if let Err(error) = coordinator.serve_connection(&socket) {
-                        eprintln!("Droidloom task-control client closed: {error}");
+                    if let Err(error) = coordinator
+                        .serve_connection_owned(&socket, ChannelAuthority::Native(&authority))
+                    {
+                        eprintln!("Droidloom native task-control channel closed: {error}");
                     }
                 })
-                .map_err(|error| format!("start task-control client thread: {error}"))?;
+                .map_err(|e| format!("start native task-control client: {e}"))?;
         }
     }
 
-    fn serve_connection(&self, socket: &SeqPacket) -> Result<(), String> {
+    /// Only the kernel-authenticated stable Binder extension calls this entry.
+    pub(super) fn serve_authenticated_channel(
+        &self,
+        socket: &SeqPacket,
+        caller: &KernelCaller,
+    ) -> Result<(), String> {
+        socket.set_nonblocking(true).map_err(|e| e.to_string())?;
+        self.serve_connection_owned(socket, ChannelAuthority::Android(caller))
+    }
+
+    fn serve_connection_owned(
+        &self,
+        socket: &SeqPacket,
+        authority: ChannelAuthority<'_>,
+    ) -> Result<(), String> {
         let mut ready = false;
         loop {
-            let record = socket
-                .receive_record()
-                .map_err(|error| format!("receive task-control record: {error}"))?;
-            if !record.descriptors.is_empty() {
-                return Err("task-control record carried forbidden descriptors".to_owned());
-            }
-            let request = decode_request(&record.bytes)
+            authority.revalidate()?;
+            let bytes = authority.receive(socket)?;
+            authority.revalidate()?;
+            let request = decode_request(&bytes)
                 .map_err(|error| format!("decode task-control record: {error}"))?;
             let response = match request {
                 ControlRequest::Hello {
@@ -344,6 +391,7 @@ impl TaskCoordinator {
                     }
                 }
             };
+            authority.revalidate()?;
             let bytes = encode_response(&response)
                 .map_err(|error| format!("encode task-control response: {error}"))?;
             socket
@@ -405,7 +453,9 @@ impl TaskCoordinator {
         let (object, display) = self
             .register_direct_task(task, package, android_display)
             .map_err(backend)?;
-        self.sink.request_activation(display).map_err(|error| backend(error.to_string()))?;
+        self.sink
+            .request_activation(display)
+            .map_err(|error| backend(error.to_string()))?;
         Ok(ControlResponse::Bound {
             request_id,
             object: object.0,

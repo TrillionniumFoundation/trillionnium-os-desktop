@@ -272,7 +272,8 @@ struct App {
     sync_manager: WpLinuxDrmSyncobjManagerV1,
     syncobj: SyncobjDevice,
     gbm: GbmDevice<File>,
-    listener: DenialEndpointListener,
+    listener: Option<DenialEndpointListener>,
+    production: Option<std::sync::Arc<production::Registration>>,
     window_policy: WindowPolicyStore,
     endpoint: Option<DenialEndpoint>,
     tasks: BTreeMap<TaskObjectId, TaskWindow>,
@@ -290,7 +291,7 @@ struct App {
 
 impl Drop for App {
     fn drop(&mut self) {
-        remove_owned_socket(&self.socket_path);
+        if self.listener.is_some() { remove_owned_socket(&self.socket_path); }
     }
 }
 
@@ -1259,7 +1260,21 @@ impl App {
         if self.endpoint.is_some() {
             return Ok(());
         }
-        match self.listener.accept() {
+        if let Some(registration) = &self.production {
+            registration.check()?;
+            let socket = droidloom_denial_ipc::SeqPacket::from_owned_fd(registration.endpoint()?)?;
+            let (pid, uid, gid) = registration.credentials();
+            let actual = socket.peer_credentials()?;
+            if pid == 0 || (actual.pid, actual.uid, actual.gid) != (pid, uid, gid) {
+                return Err(PresenterError::Configuration("registered Composer identity changed before protocol creation"));
+            }
+            socket.set_nonblocking(true)?;
+            let endpoint = DenialEndpoint::new(droidloom_denial_ipc::ProtocolSocket::new(socket), self.syncobj.clone());
+            self.endpoint = Some(if self.activation.supported() { endpoint.with_activation_requests() } else { endpoint });
+            return Ok(());
+        }
+        let listener = self.listener.as_ref().ok_or(PresenterError::Configuration("no authorized endpoint source"))?;
+        match listener.accept() {
             Ok(endpoint) => {
                 let endpoint = if self.activation.supported() {
                     endpoint.with_activation_requests()
@@ -1281,6 +1296,7 @@ impl App {
                     Ok(action) => action,
                     Err(error) if endpoint_would_block(&error) => return Ok(()),
                     Err(error) => {
+                        if self.production.is_some() { return Err(error.into()); }
                         eprintln!("droidloom-wayland: Android endpoint disconnected: {error}");
                         self.disconnect_endpoint();
                         return Ok(());
@@ -2223,7 +2239,19 @@ fn main() {
     }
 }
 
+mod production;
+mod bridge_transport;
+
 fn run() -> Result<(), PresenterError> {
+    let production = match env::args().skip(1).collect::<Vec<_>>().as_slice() {
+        [] => true,
+        [mode] if mode == "--production" => true,
+        [mode] if mode == "--development" => false,
+        _ => return Err(PresenterError::Configuration("usage: droidloom-wayland [--production|--development]")),
+    };
+    if production && ["DROIDLOOM_HOST_SOCKET", "DROIDLOOM_HOST_PEER_PID", "DROIDLOOM_HOST_PEER_UID", "DROIDLOOM_HOST_PEER_GID"].iter().any(|name| env::var_os(name).is_some()) {
+        return Err(PresenterError::Configuration("production peer identity comes only from the original owner"));
+    }
     let runtime_root = PathBuf::from(
         env::var("XDG_RUNTIME_DIR")
             .map_err(|_| PresenterError::Configuration("XDG_RUNTIME_DIR is missing"))?,
@@ -2237,26 +2265,32 @@ fn run() -> Result<(), PresenterError> {
     validate_render_node(&render_node)?;
     let identity = fs::metadata("/proc/self")?;
     prepare_socket_path(&socket_path, &runtime_root, identity.uid())?;
-    // The async reactor may be created synchronously by Bridge::start.
-    droidloom_cpu_placement::current(droidloom_cpu_placement::Role::Background);
-    let notifications = notifications::Bridge::start(socket_path.with_file_name("notifications.sock"));
-    droidloom_cpu_placement::current(droidloom_cpu_placement::Role::Graphics);
-    let _notifications = notifications?;
-
     let render_file = OpenOptions::new()
         .read(true)
         .write(true)
         .open(&render_node)?;
     let gbm = GbmDevice::new(render_file.try_clone()?)?;
     let syncobj = SyncobjDevice::from_file(render_file);
-    let expected_peer = ExpectedPeer {
-        pid: parse_env_u32("DROIDLOOM_HOST_PEER_PID", 0)?,
-        uid: parse_env_u32("DROIDLOOM_HOST_PEER_UID", identity.uid())?,
-        gid: parse_env_u32("DROIDLOOM_HOST_PEER_GID", identity.gid())?,
+    let conn = Connection::connect_to_env()?;
+    let (globals, mut event_queue) = registry_queue_init(&conn)?;
+    let (listener, registration) = if production {
+        (None, Some(production::Registration::connect()?))
+    } else {
+        let expected_peer = ExpectedPeer {
+            pid: parse_env_u32("DROIDLOOM_HOST_PEER_PID", 0)?,
+            uid: parse_env_u32("DROIDLOOM_HOST_PEER_UID", identity.uid())?,
+            gid: parse_env_u32("DROIDLOOM_HOST_PEER_GID", identity.gid())?,
+        };
+        let listener = DenialEndpointListener::bind(&socket_path, syncobj.clone(), expected_peer)?;
+        fs::set_permissions(&socket_path, fs::Permissions::from_mode(0o666))?;
+        listener.set_nonblocking(true)?;
+        (Some(listener), None)
     };
-    let listener = DenialEndpointListener::bind(&socket_path, syncobj.clone(), expected_peer)?;
-    fs::set_permissions(&socket_path, fs::Permissions::from_mode(0o666))?;
-    listener.set_nonblocking(true)?;
+    droidloom_cpu_placement::current(droidloom_cpu_placement::Role::Background);
+    let notifications = notifications::Bridge::start(socket_path.with_file_name("notifications.sock"),registration.clone());
+    droidloom_cpu_placement::current(droidloom_cpu_placement::Role::Graphics);
+    let _notifications = notifications?;
+
     let session_mode = env::var("DROIDLOOM_MODE")
         .unwrap_or_else(|_| "desktop".into())
         .parse::<SessionMode>()
@@ -2274,8 +2308,7 @@ fn run() -> Result<(), PresenterError> {
     })
     .with_session_mode(session_mode);
 
-    let conn = Connection::connect_to_env()?;
-    let (globals, mut event_queue) = registry_queue_init(&conn)?;
+
     let qh = event_queue.handle();
     let compositor = CompositorState::bind(&globals, &qh)?;
     let xdg_shell = XdgShell::bind(&globals, &qh)?;
@@ -2290,11 +2323,12 @@ fn run() -> Result<(), PresenterError> {
     let mut app = App {
         activation: activation::Activation::new(&globals, &qh),
         layer_globals: layers::Globals { subcompositor: globals.bind(&qh, 1..=1, ())?, shm: globals.bind(&qh, 1..=1, ())?, alpha: globals.bind(&qh, 1..=1, ()).ok() },
-        clipboard: clipboard::Clipboard::new(socket_path.with_file_name("clipboard.sock"), &globals, &qh)?,
+        clipboard: clipboard::Clipboard::with_owner(socket_path.with_file_name("clipboard.sock"), &globals, &qh,registration.clone())?,
         clipboard_inputs: VecDeque::new(),
-        text_input: text_input::TextInput::new(
+        text_input: text_input::TextInput::with_owner(
             socket_path.with_file_name("text-input.sock"),
             globals.bind(&qh, 1..=1, ()).ok(),
+            registration.clone(),
         )?,
         registry_state: RegistryState::new(&globals),
         output_state: OutputState::new(&globals, &qh),
@@ -2311,6 +2345,7 @@ fn run() -> Result<(), PresenterError> {
         syncobj,
         gbm,
         listener,
+        production: registration,
         window_policy,
         endpoint: None,
         tasks: BTreeMap::new(),
@@ -2344,6 +2379,7 @@ fn run_presenter_loop(
     let mut poll_descriptors = Vec::new();
     let mut layer_tasks = Vec::new();
     loop {
+        if let Some(registration) = &app.production { registration.check()?; }
         event_queue.dispatch_pending(&mut app)?;
         app.unmap_requested_tasks()?;
         if let Some(error) = app.fatal.take() {
@@ -2370,7 +2406,7 @@ fn notify_ready() -> Result<(), PresenterError> {
         return Ok(());
     };
     let socket = UnixDatagram::unbound()?;
-    let payload = b"READY=1\nSTATUS=Connected to Wayland; ready to start Android";
+    let payload = b"READY=1\nSTATUS=Connected to Wayland; original Android owner authenticated";
     if let Some(name) = address.as_bytes().strip_prefix(b"@") {
         let address = SocketAddr::from_abstract_name(name)?;
         socket.send_to_addr(payload, &address)?;
@@ -2407,12 +2443,13 @@ fn poll_sources(
             events: libc::POLLIN | if write_blocked { libc::POLLOUT } else { 0 },
             revents: 0,
         },
-        libc::pollfd {
-            fd: app.listener.listener().as_fd().as_raw_fd(),
-            events: libc::POLLIN,
-            revents: 0,
-        },
     ]);
+    if let Some(listener) = &app.listener {
+        descriptors.push(libc::pollfd { fd: listener.listener().as_fd().as_raw_fd(), events: libc::POLLIN, revents: 0 });
+    }
+    if let Some(registration) = &app.production {
+        descriptors.extend(registration.fds().map(|fd| libc::pollfd { fd, events: libc::POLLIN, revents: 0 }));
+    }
     if let Some(endpoint) = app.endpoint.as_ref() {
         descriptors.push(libc::pollfd {
             fd: endpoint.socket().socket().as_fd().as_raw_fd(),

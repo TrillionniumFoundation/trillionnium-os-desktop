@@ -21,10 +21,10 @@ if not stage.startswith('/var/lib/droidloom/ime-updates/'):
 with open('/etc/droidloom/cell.json') as source:
     spec = json.load(source)
 for target, filename in {
-    '/vendor/bin/droidloom-input-bridge': 'droidloom-input-bridge',
-    '/vendor/etc/init/droidloom-input-bridge.rc': 'droidloom-input-bridge.rc',
-    '/vendor/framework/droidloom-input-bridge.jar': 'droidloom-input-bridge.jar',
-    '/vendor/bin/droidloom-task-launcher': 'droidloom-task-launcher',
+    '/system_ext/bin/droidloom-input-bridge': 'droidloom-input-bridge',
+    '/system_ext/etc/init/droidloom-input-bridge.rc': 'droidloom-input-bridge.rc',
+    '/system_ext/framework/droidloom-input-bridge.jar': 'droidloom-input-bridge.jar',
+    '/system_ext/bin/droidloom-task-launcher': 'droidloom-task-launcher',
     '/vendor/lib64/libdroidloom_task_launcher.dylib.so': 'libdroidloom_task_launcher.dylib.so',
     '/vendor/bin/hw/android.hardware.graphics.composer3-service.droidloom': 'android.hardware.graphics.composer3-service.droidloom',
     '/vendor/lib64/libdroidloom_composer_aidl.dylib.so': 'libdroidloom_composer_aidl.dylib.so',
