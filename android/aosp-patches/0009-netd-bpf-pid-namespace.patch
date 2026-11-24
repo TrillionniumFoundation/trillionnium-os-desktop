@@ -63,14 +63,3 @@
      RETURN_IF_NOT_OK(mNetdPidMap.writeValue(zero, my_pid, BPF_ANY));
  
      return {};
---- a/bpf/netd/Android.bp
-+++ b/bpf/netd/Android.bp
-@@ -53,7 +53,7 @@
-     sanitize: {
-         cfi: true,
-     },
--    apex_available: ["com.android.tethering"],
-+    apex_available: ["//apex_available:platform", "com.android.tethering"],
-     min_sdk_version: "apex_inherit",
- }
- 

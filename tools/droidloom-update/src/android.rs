@@ -100,6 +100,8 @@ const PATCHES: &[(&str, &str)] = &[
         "external/minigbm",
         "android/aosp-patches/0010-minigbm-dma-heap-images.patch",
     ),
+    // Keep libnetd_updatable in its upstream Tethering APEX: a stable stub
+    // library must not gain a second platform availability entry.
     (
         "packages/modules/Connectivity",
         "android/aosp-patches/0009-netd-bpf-pid-namespace.patch",

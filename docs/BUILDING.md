@@ -139,6 +139,11 @@ invokes makepkg inside the rootless container; no manual binary build or separat
 packaging script is required. Shell is used only at required upstream interfaces
 and in PKGBUILD functions.
 
+The shared-kernel netd patch changes the BPF PID-namespace query while retaining
+libnetd_updatable's upstream stable stubs and sole com.android.tethering APEX
+availability. Complete product builds retain the normal module and APEX targets;
+do not add platform availability or disable Soong's stub ownership checks.
+
 The builder limits jobs to the available logical CPU count minus two. To limit compilation further:
 
 ```console
