@@ -17,7 +17,11 @@
 (typetransition p4_linux_service_executor_t p4_linux_mac_calibration_dir_t file "capture.pending" p4_linux_mac_capture_t)
 (allow init_t p4_linux_mac_calibration_dir_t (dir (getattr search)))
 ; Original Ubuntu path_chown_recursive opens this preinstalled unit directory with O_DIRECTORY to verify ownership.
-(allow p4_linux_service_executor_t p4_linux_mac_calibration_dir_t (dir (getattr open read search write add_name)))
+(allow p4_linux_service_executor_t p4_linux_mac_calibration_dir_t (dir (getattr open read search write add_name ioctl)))
+; Ubuntu apply_exec_quotas reads the directory project ID even with quota accounting disabled.
+; FS_IOC_FSGETXATTR is a read-only query; changing flags or project IDs remains forbidden.
+(allowx p4_linux_service_executor_t p4_linux_mac_calibration_dir_t (ioctl dir (0x581f)))
+(neverallowx p4_linux_service_executor_t p4_linux_mac_calibration_dir_t (ioctl dir (not (0x581f))))
 (allow p4_linux_service_executor_t p4_linux_mac_capture_t (file (getattr create open write setattr)))
 (neverallow p4_linux_service_executor_t p4_linux_mac_capture_t (file (read append link unlink rename relabelto relabelfrom)))
 (neverallow p4_linux_service_executor_t p4_linux_mac_calibration_dir_t (file (create open write append)))
