@@ -18,8 +18,8 @@ use std::{
 
 const RELEASE: &str = "6.18.64-p4ctx6181-fusectl-aafs-peer-r1";
 const KERNEL_SHA: &str = "19052ac77e40a86147f6bc186739763628916033f7c36f3448b4a872914090df";
-const INITRD_SHA: &str = "f7aba50c3dd6be3a72d9a79bb0cea311f321de344bde0f7d131f16c10e4f8bdf";
-const MATERIALS_SHA: &str = "ed29f03349d5eb0d792bcc5a854b752a09f47f52b98e204f075f4c980e7a3ce0";
+const INITRD_SHA: &str = "d88cd3938190be71808c0de645c31de095b33195dfc82ae52edb320f47cac982";
+const MATERIALS_SHA: &str = "74aa65ad976613a66ab7537512c3db5e36fb9ad74d9357694f30841a6fc501a7";
 const COMMAND_LINE: &str = "console=ttyS0 rdinit=/peer-runtime loglevel=5 panic=-1 selinux=1 enforcing=1 apparmor=1 lsm=lockdown,capability,landlock,yama,selinux,apparmor,bpf,ima,evm p4_peer_mechanism=1";
 const SERIAL_LIMIT: usize = 4 * 1024 * 1024;
 const MARKER: &str = "P4_PEER_RUNTIME_RESULT ";
@@ -124,7 +124,7 @@ fn validate_plan(plan: &Plan) -> Result<Value> {
             && plan.kernel.sha256 == KERNEL_SHA
             && plan.initrd.bytes == 1518817
             && plan.initrd.sha256 == INITRD_SHA
-            && plan.materials.bytes == 7124
+            && plan.materials.bytes == 7456
             && plan.materials.sha256 == MATERIALS_SHA,
         "peer VM inputs differ from this fixed complete kernel and test batch",
     )?;
@@ -140,6 +140,15 @@ fn validate_plan(plan: &Plan) -> Result<Value> {
             && materials["entries"]
                 .as_array()
                 .is_some_and(|v| v.len() == 19)
+            && materials["entries"].as_array().is_some_and(|entries| {
+                entries.iter().any(|entry| {
+                    entry["path"] == "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2"
+                        && entry["mode"] == 0o100755
+                        && entry["bytes"] == 254864
+                        && entry["sha256"]
+                            == "c0b20d6e1ced12abfe0b1ef2b5b68017950beaaea3df69eb6949d73e0ecf7b40"
+                })
+            })
             && materials["initrd"]["sha256"] == INITRD_SHA
             && materials["initrd"]["bytes"] == plan.initrd.bytes
             && materials["command_line"] == COMMAND_LINE
