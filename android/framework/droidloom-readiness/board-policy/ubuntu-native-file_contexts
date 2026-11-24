@@ -142,3 +142,15 @@
 /run/gdm3/home/gdm-greeter(-([2-9]|[1-9][0-9]|1[01][0-9]|12[0-8]))?/\.config/environment\.d(/.*)? u:object_r:p4_linux_greeter_environment_t:s0
 /var/lib/gdm3/seat0                                 u:object_r:p4_linux_greeter_seat_parent_t:s0
 /var/lib/gdm3/seat0/(config|state)(/.*)?              u:object_r:p4_linux_greeter_seat_data_t:s0
+
+# Fixed authenticated maintenance. No user-controlled path is an entrypoint.
+/usr/lib/cargo/bin/sudo -- u:object_r:p4_linux_sudo_exec_t:s0
+/usr/lib/droidloom/production/current/droidloom-maintenance -- u:object_r:p4_linux_maintenance_exec_t:s0
+/usr/lib/droidloom/production/current/droidloom-maintenance\.py -- u:object_r:p4_linux_maintenance_script_t:s0
+/run/sudo-rs(/.*)? u:object_r:p4_linux_sudo_run_t:s0
+/etc/droidloom-maintenance(/.*)? u:object_r:p4_linux_maintenance_config_t:s0
+/var/lib/droidloom-maintenance(/.*)? u:object_r:p4_linux_maintenance_state_t:s0
+/var/lib/droidloom-maintenance/releases/[0-9a-f]{64}(/.*)? u:object_r:p4_linux_maintenance_release_t:s0
+/boot/grub/grubenv -- u:object_r:p4_linux_maintenance_grubenv_t:s0
+/boot/grub/grub\.cfg -- u:object_r:p4_linux_maintenance_grubcfg_t:s0
+/usr/lib/systemd/system/reboot\.target -- u:object_r:p4_linux_maintenance_reboot_unit_t:s0

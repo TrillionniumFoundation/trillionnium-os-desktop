@@ -1,5 +1,7 @@
 //! Build and stage the board-parent custody archive and ordinary Ubuntu initramfs hooks.
 use crate::util::*;
+#[path = "maintenance_package.rs"]
+mod maintenance_package;
 use std::{fs, path::Path, process::Command};
 
 // Both the packaged bytes and the C PID 1 consumer are projected from this
@@ -398,7 +400,7 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
         write(&path, bytes)?;
         mode(&path, permissions)?;
     }
-    Ok(())
+    maintenance_package::stage(destination)
 }
 
 #[cfg(test)]

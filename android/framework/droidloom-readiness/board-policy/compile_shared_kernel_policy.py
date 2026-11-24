@@ -13,6 +13,7 @@ from derive_shared_payload_cgroup_policy import Decision, Policy, derive, verify
 from verify_native_login_audit import verify_login_audit
 from verify_native_journal_storage import verify_journal_storage
 from verify_greeter_home import verify_greeter_home
+from verify_native_maintenance import verify_native_maintenance
 
 
 def sha256(path):
@@ -885,6 +886,7 @@ def main():
         "ubuntu-native-service-capabilities.cil",
         "ubuntu-native-login-audit.cil",
         "ubuntu-native-service-runtime.cil", "ubuntu-native-sandbox.cil",
+        "ubuntu-native-maintenance.cil",
         "frontend-android-interface.cil", "linux-frontend-observer.cil", "instance-launcher.cil",
         "linux-query-owner.cil", "linux-fixed-metadata-observer.cil",
         "instance-factory-cgroup.cil", "ubuntu-systemd-unit-status.cil",
@@ -904,7 +906,8 @@ def main():
                here / "cp3a-kernel-handle-inputs.json", Path(__file__),
                here / "derive_shared_payload_cgroup_policy.py",
                here / "verify_native_login_audit.py", here / "verify_native_journal_storage.py",
-               here / "verify_greeter_home.py", here / "ubuntu-native-file_contexts"]
+               here / "verify_greeter_home.py", here / "verify_native_maintenance.py",
+               here / "ubuntu-native-file_contexts"]
     if any(output.resolve() == path.resolve() for path in sources):
         raise ValueError("The output path is a policy input or build tool")
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -930,7 +933,10 @@ def main():
         journal_storage = verify_journal_storage(
             library, linked, work / "host-control-binary.cil", contract)
         greeter_home = verify_greeter_home(library, linked, work / "host-control-binary.cil", contract, here / "ubuntu-native-file_contexts")
+        native_maintenance = verify_native_maintenance(library, linked, work / "maintenance-binary.cil", export_binary_policy)
         result = {
+            "native_maintenance": native_maintenance,
+            "native_maintenance_verifier": sha256(here / "verify_native_maintenance.py"),
             "native_journal_storage": journal_storage,
             "native_journal_storage_verifier": sha256(here / "verify_native_journal_storage.py"),
             "native_greeter_home": greeter_home,
