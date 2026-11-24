@@ -1,5 +1,13 @@
 #![forbid(unsafe_code)]
 
+mod boot;
+mod boot_files;
+mod boot_host;
+mod boot_kernel;
+mod boot_native;
+mod boot_release;
+mod boot_runtime;
+mod boot_vm;
 mod capture;
 mod fs;
 mod materialize;
@@ -23,7 +31,7 @@ fn ensure(ok: bool, message: &str) -> Result<()> {
 
 #[derive(Parser)]
 #[command(
-    about = "Materialize a private real Ubuntu qualification root from reviewed public native files. Never boots or qualifies a guest."
+    about = "Capture, initialize, and boot a private real Ubuntu qualification root. Runtime and application acceptance remain independent."
 )]
 struct Cli {
     #[command(subcommand)]
@@ -32,6 +40,24 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    Boot {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    PrepareBoot {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
+    PrepareNative {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
     Capture {
         #[arg(long)]
         selection: PathBuf,
@@ -72,6 +98,18 @@ fn run() -> Result<()> {
         "real source capture/copy requires existing root rights; no privilege helper is installed",
     )?;
     match cli.command {
+        Command::Boot {
+            config,
+            config_sha256,
+        } => boot_vm::run(&config, &config_sha256)?,
+        Command::PrepareBoot {
+            config,
+            config_sha256,
+        } => boot::prepare_boot(&config, &config_sha256)?,
+        Command::PrepareNative {
+            config,
+            config_sha256,
+        } => boot::prepare_native(&config, &config_sha256)?,
         Command::Capture {
             selection,
             selection_sha256,
