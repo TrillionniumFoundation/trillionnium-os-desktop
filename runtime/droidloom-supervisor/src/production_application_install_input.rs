@@ -79,6 +79,7 @@ impl Payload {
         progress: &mut dyn FnMut() -> Result<()>,
     ) -> Result<Self> {
         before(deadline)?;
+        crate::control::apk_payload::validate(&file, lengths).map_err(external)?;
         require(
             (1..=32).contains(&lengths.len()),
             "installation needs one through 32 original APK segments",
@@ -306,11 +307,11 @@ mod tests {
     }
     #[test]
     fn installation_input_streams_exact_original_segments_with_backpressure() {
-        let mut file = tempfile::tempfile().unwrap();
         let mut data = vec![7; 256 * 1024];
         data[..4].copy_from_slice(b"PK\x03\x04");
-        file.write_all(&data).unwrap();
-        file.write_all(b"PK\x03\x04split").unwrap();
+        let mut all = data.clone();
+        all.extend_from_slice(b"PK\x03\x04split");
+        let file = crate::control::apk_payload::test_payload(&all);
         let deadline = Instant::now() + std::time::Duration::from_secs(5);
         let payload =
             Payload::prepare(file, &[data.len() as u64, 9], deadline, &mut || Ok(())).unwrap();
@@ -338,8 +339,7 @@ mod tests {
     }
     #[test]
     fn installation_input_rejects_mutation_and_incomplete_or_overflowed_sets() {
-        let mut file = tempfile::tempfile().unwrap();
-        file.write_all(b"PK\x03\x04abcdef").unwrap();
+        let file = crate::control::apk_payload::test_payload(b"PK\x03\x04abcdef");
         let deadline = Instant::now() + std::time::Duration::from_secs(5);
         for sizes in [vec![], vec![9], vec![u64::MAX], vec![3, 7]] {
             assert!(
@@ -351,7 +351,12 @@ mod tests {
             Payload::prepare(file.try_clone().unwrap(), &[10], deadline, &mut || Ok(())).unwrap();
         let (_read, write) = pipe();
         let mut pump = InputPump::new(payload.segment(0).unwrap(), write).unwrap();
-        file.write_at(b"x", 5).unwrap();
+        // Bytes cannot be changed through a sealed read-only description.
+        assert!(file.write_at(b"x", 5).is_err());
+        // Owner metadata changes must still invalidate the captured input.
+        use std::os::unix::fs::PermissionsExt;
+        file.set_permissions(std::fs::Permissions::from_mode(0o400))
+            .unwrap();
         assert!(pump.advance(deadline).is_err());
         assert!(payload.revalidate(deadline, &mut || Ok(())).is_err());
         assert!(pump.finish().is_err());

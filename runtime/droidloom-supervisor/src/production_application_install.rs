@@ -143,6 +143,7 @@ pub(crate) fn install_early(
             .progress_inherited_native(deadline)
             .map_err(external)
     };
+    crate::control::apk_payload::validate_production_context(&file).map_err(external)?;
     let payload = Payload::prepare(file, lengths, deadline, &mut progress)?;
     let mut records = Vec::new();
     let mut call = |command: &InstallCommand,
@@ -215,10 +216,8 @@ pub(crate) fn install_early(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::Write;
     fn payload() -> Payload {
-        let mut file = tempfile::tempfile().unwrap();
-        file.write_all(b"PK\x03\x04basePK\x03\x04split").unwrap();
+        let file = crate::control::apk_payload::test_payload(b"PK\x03\x04basePK\x03\x04split");
         Payload::prepare(
             file,
             &[8, 9],

@@ -372,6 +372,11 @@ fn production_host_payload(repo: &Path, host: &Path, runtime: &Path) -> Result<(
     let calibration = runtime.join("var/lib/droidloom-mac-calibration");
     fs::create_dir_all(&calibration)?;
     mode(&calibration, 0o700)?;
+    // Preinstall the typed empty root so tmpfiles never gains generic /var/lib
+    // creation permission. The fixed u1000 child is created by stock tmpfiles.
+    let public_apks = runtime.join("var/lib/droidloom-public-apks");
+    fs::create_dir_all(&public_apks)?;
+    mode(&public_apks, 0o755)?;
     early_boot_package::stage(runtime)
 }
 

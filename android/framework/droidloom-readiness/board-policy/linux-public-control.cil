@@ -63,3 +63,61 @@
 (typeattribute droidloom_without_public_control)
 (typeattributeset droidloom_without_public_control (not (or (droidloom_broker) (droidloom_public_control_peers))))
 (neverallow droidloom_without_public_control droidloom_public_control_socket (sock_file (write)))
+
+; Public APK input is a distinct, package-owned drop directory. It is not a
+; home directory, private account state, product storage or a temporary tree.
+; The normal host archive installs only the empty root. Stock tmpfiles creates
+; the one selected host-UID directory, with numeric DAC owner 1000:1000.
+(type droidloom_public_apk_root)
+(type droidloom_public_apk_dir)
+(type droidloom_public_apk_input)
+(roletype object_r droidloom_public_apk_root)
+(roletype object_r droidloom_public_apk_dir)
+(roletype object_r droidloom_public_apk_input)
+(typeattributeset p4_linux_data (droidloom_public_apk_root droidloom_public_apk_dir droidloom_public_apk_input))
+(allow droidloom_public_apk_root labeledfs (filesystem (associate)))
+(allow droidloom_public_apk_dir labeledfs (filesystem (associate)))
+(allow droidloom_public_apk_input labeledfs (filesystem (associate)))
+(typetransition p4_linux_setup_t droidloom_public_apk_root dir "u1000" droidloom_public_apk_dir)
+(allow p4_linux_setup_t droidloom_public_apk_root (dir (getattr search open read write add_name)))
+(allow p4_linux_setup_t droidloom_public_apk_dir (dir (getattr search open read create setattr)))
+; Ownership/mode maintenance is limited by the typed directory setattr grants.
+(allow p4_linux_setup_t self (capability (chown fowner)))
+(allow p4_linux_user_session_t droidloom_public_apk_root (dir (getattr search)))
+(allow p4_linux_user_session_t droidloom_public_apk_dir (dir (getattr search open read write add_name remove_name)))
+(typetransition p4_linux_user_session_t droidloom_public_apk_dir file droidloom_public_apk_input)
+(allow p4_linux_user_session_t droidloom_public_apk_input (file (create getattr open read write append setattr unlink)))
+(allow droidloom_public_control_client droidloom_public_apk_root (dir (getattr search)))
+(allow droidloom_public_control_client droidloom_public_apk_dir (dir (getattr search)))
+(allow droidloom_public_control_client droidloom_public_apk_input (file (getattr open read)))
+(neverallow droidloom_public_control_client droidloom_public_apk_input (file (write append create setattr unlink rename relabelfrom relabelto map execute execute_no_trans entrypoint)))
+(neverallow droidloom_broker droidloom_public_apk_input (file (getattr open read write append create setattr unlink rename map execute)))
+(neverallow p4_linux_user_session_t droidloom_public_apk_root (dir (write add_name remove_name create rmdir rename relabelfrom relabelto)))
+(neverallow p4_linux_user_session_t droidloom_public_apk_dir (dir (create rmdir rename reparent relabelfrom relabelto)))
+(neverallow domain droidloom_public_apk_input (file (open read write append map execute execute_no_trans entrypoint)))
+(neverallow p4_linux_procs droidloom_public_apk_input (file (map execute execute_no_trans entrypoint)))
+
+; Linux 6.18 uses FS_USE_TRANS without a name for an anonymous shmem inode.
+; Only the fixed installed public client creates this pure-data transport type.
+; Its source-owned memfd name, NOEXEC seal, four immutable seals, read-only
+; description, complete segment hashes and actual context are checked in Rust.
+; The broker never receives the user's original file, nor an O_RDWR descriptor.
+(type droidloom_apk_payload)
+(roletype object_r droidloom_apk_payload)
+(typeattributeset p4_all_board_owned (droidloom_apk_payload))
+(allow droidloom_apk_payload tmpfs (filesystem (associate)))
+(typetransition droidloom_public_control_client tmpfs file droidloom_apk_payload)
+(typetransition droidloom_public_control_client tmpfs memfd_file droidloom_apk_payload)
+(allow droidloom_public_control_client droidloom_apk_payload (file (create getattr open read write setattr)))
+(allow droidloom_public_control_client droidloom_apk_payload (memfd_file (create getattr open read write setattr)))
+(allow droidloom_broker droidloom_public_control_client (fd (use)))
+(allow droidloom_broker droidloom_apk_payload (file (getattr read)))
+(allow droidloom_broker droidloom_apk_payload (memfd_file (getattr read)))
+(allow droidloom_broker tmpfs (filesystem (getattr)))
+(neverallow droidloom_broker p4_linux_user_session_t (fd (use)))
+(neverallow droidloom_broker droidloom_apk_payload (file (open write append create setattr unlink rename map execute execute_no_trans entrypoint relabelfrom relabelto)))
+(neverallow droidloom_broker droidloom_apk_payload (memfd_file (open write append create setattr map execute execute_no_trans entrypoint relabelfrom relabelto)))
+(neverallow p4_linux_procs droidloom_apk_payload (file (map execute execute_no_trans entrypoint)))
+(neverallow p4_linux_procs droidloom_apk_payload (memfd_file (map execute execute_no_trans entrypoint)))
+(neverallow domain droidloom_apk_payload (file (getattr open read write append map execute execute_no_trans entrypoint)))
+(neverallow domain droidloom_apk_payload (memfd_file (getattr open read write append map execute execute_no_trans entrypoint)))

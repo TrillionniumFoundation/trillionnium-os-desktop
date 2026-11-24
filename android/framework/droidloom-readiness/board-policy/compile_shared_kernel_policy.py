@@ -200,8 +200,40 @@ def verify_host_control(library, binary, export):
         check(subject, obj("p4_linux_product_store_t"), "file", ["open", "read", "write", "append"], False)
     check(helper, kernel, "security", ["load_policy", "setenforce", "setbool"], False)
 
+    # Fixed public installer: ordinary inputs stay outside the broker.
+    apk = obj("droidloom_public_apk_input")
+    payload = obj("droidloom_apk_payload")
+    user = session
+    check(client, apk, "file", ["getattr", "open", "read"], True)
+    check(client, apk, "file", ["write", "append", "create", "setattr", "map", "execute"], False)
+    check(user, apk, "file", ["create", "getattr", "open", "read", "write", "setattr", "unlink"], True)
+    check(broker, apk, "file", ["getattr", "open", "read", "write", "map", "execute"], False)
+    check(broker, client, "fd", ["use"], True)
+    check(broker, user, "fd", ["use"], False)
+    for kind in ["file", "memfd_file"]:
+        check(client, payload, kind, ["create", "getattr", "open", "read", "write", "setattr"], True)
+        check(broker, payload, kind, ["getattr", "read"], True)
+        check(broker, payload, kind, ["open", "write", "append", "create", "setattr", "map", "execute"], False)
+        check(user, payload, kind, ["getattr", "open", "read", "write", "create", "map", "execute"], False)
+        check(kernel, payload, kind, ["getattr", "open", "read", "write", "create", "map", "execute"], False)
+    check(setup, setup, "capability", ["chown", "fowner"], True)
+    check(setup, setup, "capability", ["sys_admin", "sys_ptrace", "dac_override", "dac_read_search"], False)
+    for subject in [broker, client, user]:
+        for private in ["p4_linux_user_home_t", "p4_linux_tmp_t"]:
+            check(subject, obj(private), "file", ["getattr", "open", "read", "write", "create"], False)
+    check(setup, obj("droidloom_public_apk_root"), "dir", ["getattr", "search", "write", "add_name"], True)
+    check(setup, obj("droidloom_public_apk_dir"), "dir", ["getattr", "search", "create", "setattr"], True)
+    check(user, obj("droidloom_public_apk_root"), "dir", ["getattr", "search"], True)
+    check(user, obj("droidloom_public_apk_root"), "dir", ["write", "add_name", "remove_name", "create", "rmdir"], False)
+    check(user, obj("droidloom_public_apk_dir"), "dir", ["search", "open", "read", "write", "add_name", "remove_name"], True)
+    check(user, obj("droidloom_public_apk_dir"), "dir", ["create", "rmdir", "relabelto", "relabelfrom"], False)
+
     lines = export_binary_policy(policy, binary, export)
     transitions = [
+        '(typetransition p4_linux_setup_t droidloom_public_apk_root dir "u1000" droidloom_public_apk_dir)',
+        '(typetransition p4_linux_user_session_t droidloom_public_apk_dir file droidloom_public_apk_input)',
+        '(typetransition droidloom_public_control_client tmpfs file droidloom_apk_payload)',
+        '(typetransition droidloom_public_control_client tmpfs memfd_file droidloom_apk_payload)',
         "(roletransition system_r droidloom_package_helper_exec process r)",
         "(typetransition p4_linux_user_session_t droidloom_package_helper_exec process droidloom_package_helper)",
         "(typetransition p4_linux_user_session_t droidloom_public_control_client_exec process droidloom_public_control_client)",

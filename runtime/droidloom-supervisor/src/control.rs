@@ -19,15 +19,21 @@ use std::time::{Duration, Instant};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-
 #[path = "container_service_pin.rs"]
 mod service_pin;
-pub use service_pin::EarlyUnitReferences;
-pub use crate::production_selection::{run_instance_launcher, run_instance_factory, run_instance_adopter, EarlyAndroidGeneration, complete_early_resources, verify_initramfs_release, verify_original_init_for_boot, verify_post_switch_board_plan, ContainerLibraryMount, PreparedContainerSelection, SharedKernelLauncher};
-pub use crate::production_mac::{ContainerManagerMac, check_container_manager_role, check_installed_mac_platform};
-pub use crate::production_service_elf::inspect_container_service_elf;
 use crate::CellSpec;
 use crate::development::{DevelopmentCell, recover_development_cell, start_development_cell};
+pub use crate::production_mac::{
+    ContainerManagerMac, check_container_manager_role, check_installed_mac_platform,
+};
+pub use crate::production_selection::{
+    ContainerLibraryMount, EarlyAndroidGeneration, PreparedContainerSelection,
+    SharedKernelLauncher, complete_early_resources, run_instance_adopter, run_instance_factory,
+    run_instance_launcher, verify_initramfs_release, verify_original_init_for_boot,
+    verify_post_switch_board_plan,
+};
+pub use crate::production_service_elf::inspect_container_service_elf;
+pub use service_pin::EarlyUnitReferences;
 
 #[path = "diagnostics.rs"]
 mod diagnostics;
@@ -37,6 +43,9 @@ mod apk;
 
 #[path = "apk_set.rs"]
 mod apk_set;
+
+#[path = "apk_payload.rs"]
+pub(crate) mod apk_payload;
 
 #[path = "control_progress.rs"]
 mod progress;
@@ -64,8 +73,8 @@ mod application_command;
 
 #[path = "application_leaf_locks.rs"]
 mod application_leaf_locks;
-pub use application_leaf_locks::NativeApplicationSourceLocks;
 pub use application_command::{NativeOwnedLeafUnit, OwnedLeafProfile};
+pub use application_leaf_locks::NativeApplicationSourceLocks;
 
 /// Run a finite prepared application leaf from the native applications CLI.
 /// The caller validates the frozen route, source and request. This is not a
@@ -1005,12 +1014,19 @@ pub fn container_entry_readiness(
     report: &mut dyn FnMut(&str),
 ) -> Result<ControlResponse, ControlError> {
     let started = Instant::now();
-    let stream = progress::connect(socket).map_err(|error| io_error("connect to container entry", error))?;
+    let stream =
+        progress::connect(socket).map_err(|error| io_error("connect to container entry", error))?;
     let peer = peer_credentials(&stream)?;
     if main_pid <= 1 || u32::try_from(peer.pid).ok() != Some(main_pid) {
-        return Err(ControlError::Invalid("Android readiness socket belongs to a different service process".into()));
+        return Err(ControlError::Invalid(
+            "Android readiness socket belongs to a different service process".into(),
+        ));
     }
-    let request = if wait { ControlRequest::WaitReady } else { ControlRequest::Readiness };
+    let request = if wait {
+        ControlRequest::WaitReady
+    } else {
+        ControlRequest::Readiness
+    };
     progress::request_on(stream, started, &request, None, Some(report))
 }
 
@@ -1042,14 +1058,9 @@ fn install_apk_reporting(
     user: u32,
     report: Option<&mut dyn FnMut(&str)>,
 ) -> Result<ControlResponse, ControlError> {
-    use std::os::unix::fs::OpenOptionsExt;
     validate_android_user(user)?;
-    let file = fs::OpenOptions::new()
-        .read(true)
-        .custom_flags(libc::O_NONBLOCK)
-        .open(path)
-        .map_err(|source| io_error(&format!("open APK {}", path.display()), source))?;
-    apk::validate(&file)?;
+    let (file, lengths) = apk_payload::prepare(&[path.to_path_buf()])?;
+    debug_assert_eq!(lengths.len(), 1);
     progress::request(
         socket,
         &ControlRequest::Install { user },
@@ -1213,7 +1224,9 @@ fn peer_credentials(stream: &UnixStream) -> Result<libc::ucred, ControlError> {
         ));
     }
     if length as usize != std::mem::size_of::<libc::ucred>() {
-        return Err(ControlError::Invalid("incomplete lifecycle peer credentials".into()));
+        return Err(ControlError::Invalid(
+            "incomplete lifecycle peer credentials".into(),
+        ));
     }
     Ok(credentials)
 }

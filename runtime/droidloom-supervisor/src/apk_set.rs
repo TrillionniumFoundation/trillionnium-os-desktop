@@ -4,10 +4,10 @@
 //! a merged/repacked APK. `PackageManager` validates package/version/certificates.
 #![forbid(unsafe_code)]
 
-use super::{ControlError, apk, diagnostics, io_error};
-use std::fs::{File, OpenOptions};
-use std::io::{self, Read, Seek, SeekFrom};
-use std::os::unix::fs::{FileExt, OpenOptionsExt};
+use super::{ControlError, diagnostics, io_error};
+use std::fs::File;
+use std::io::{Read, Seek, SeekFrom};
+use std::os::unix::fs::FileExt;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
@@ -20,44 +20,7 @@ pub(super) fn prepare(paths: &[PathBuf]) -> Result<(File, Vec<u64>), ControlErro
     if !(2..=MAX_SPLITS).contains(&paths.len()) {
         return Err(invalid("supply 2 through 32 original APK files"));
     }
-    let mut inputs = Vec::with_capacity(paths.len());
-    let mut lengths = Vec::with_capacity(paths.len());
-    let mut total = 0_u64;
-    for path in paths {
-        let file = OpenOptions::new()
-            .read(true)
-            .custom_flags(libc::O_NONBLOCK)
-            .open(path)
-            .map_err(|e| io_error("open split APK with caller permissions", e))?;
-        let length = apk::validate(&file)?;
-        total = total
-            .checked_add(length)
-            .filter(|v| *v <= MAX_TOTAL_BYTES)
-            .ok_or_else(|| invalid("split APK set exceeds 2 GiB"))?;
-        lengths.push(length);
-        inputs.push(file);
-    }
-    // Unlinked, private disk-backed temporary file: no root-side pathname open,
-    // archive extraction, path traversal, or 2-GiB in-memory allocation.
-    let mut payload = tempfile::tempfile().map_err(|e| io_error("create split payload", e))?;
-    for (file, length) in inputs.iter_mut().zip(&lengths) {
-        let copied = io::copy(&mut (&mut *file).take(*length), &mut payload)
-            .map_err(|e| io_error("copy original split bytes", e))?;
-        if copied != *length
-            || file
-                .metadata()
-                .map_err(|e| io_error("recheck split length", e))?
-                .len()
-                != *length
-        {
-            return Err(invalid("split APK length changed during preparation"));
-        }
-    }
-    validate(&payload, &lengths)?;
-    payload
-        .rewind()
-        .map_err(|e| io_error("rewind split payload", e))?;
-    Ok((payload, lengths))
+    super::apk_payload::prepare(paths)
 }
 
 pub(super) fn validate(file: &File, lengths: &[u64]) -> Result<u64, ControlError> {

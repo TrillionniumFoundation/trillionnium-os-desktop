@@ -11,6 +11,7 @@ use std::{
 };
 
 const STATE: &str = "var/lib/droidloom-mac-calibration";
+const PUBLIC_APKS: &str = "var/lib/droidloom-public-apks";
 const ARCHIVE: &str = "HOST-STAGE.tar.xz";
 const MANIFEST: &str = "HOST-STAGE.json";
 
@@ -39,11 +40,14 @@ fn node(m: &fs::Metadata) -> Node {
     )
 }
 fn state_directory(stage: &Path) -> Result<Node> {
-    let path = stage.join(STATE);
+    empty_directory(stage, STATE, 0o700)
+}
+fn empty_directory(stage: &Path, relative: &str, mode: u32) -> Result<Node> {
+    let path = stage.join(relative);
     let m = fs::symlink_metadata(&path)?;
-    if !m.is_dir() || m.mode() & 0o7777 != 0o700 || fs::read_dir(&path)?.next().is_some() {
+    if !m.is_dir() || m.mode() & 0o7777 != mode || fs::read_dir(&path)?.next().is_some() {
         return fail(
-            "normal host state directory must be an empty ordinary directory with mode 0700",
+            "normal host fixed directory must be ordinary, empty and have its exact declared mode",
         );
     }
     Ok(node(&m))
@@ -53,7 +57,10 @@ fn snapshot(stage: &Path) -> Result<(Vec<Member>, Vec<Node>)> {
         return fail("host stage must have a canonical absolute path");
     }
     let mut rows = Vec::new();
-    let mut nodes = vec![state_directory(stage)?];
+    let mut nodes = vec![
+        state_directory(stage)?,
+        empty_directory(stage, PUBLIC_APKS, 0o755)?,
+    ];
     for path in files(stage)? {
         let relative = path
             .strip_prefix(stage)?
@@ -135,6 +142,7 @@ fn export(stage: &Path, output_root: &Path, source: &(String, String)) -> Result
     let partial = output_root.join("HOST-STAGE.tar.xz.partial");
     let mut names = members.iter().map(|m| m.path.as_str()).collect::<Vec<_>>();
     names.push(STATE);
+    names.push(PUBLIC_APKS);
     names.sort_unstable();
     let mut list = Vec::new();
     for name in names {
@@ -205,7 +213,8 @@ fn export(stage: &Path, output_root: &Path, source: &(String, String)) -> Result
     let manifest = json!({
         "commit":source.0,"tree":source.1,"stage":stage,
         "files":members,
-        "directories":[{"path":STATE,"uid":0,"gid":0,"mode":0o700,"empty":true}]
+        "directories":[{"path":STATE,"uid":0,"gid":0,"mode":0o700,"empty":true},
+                       {"path":PUBLIC_APKS,"uid":0,"gid":0,"mode":0o755,"empty":true}]
     });
     let manifest_path = output_root.join(MANIFEST);
     let mut body = serde_json::to_vec_pretty(&manifest)?;
@@ -217,6 +226,7 @@ fn export(stage: &Path, output_root: &Path, source: &(String, String)) -> Result
         "archive":{"path":archive,"size":fs::metadata(&archive)?.len(),"sha256":hash(&archive)?},
         "manifest":{"path":manifest_path,"size":body.len(),"sha256":hash(&manifest_path)?},
         "files_verified":members.len(),"protected_empty_directories_verified":1,
+        "public_apk_input_roots_verified":1,
         "runtime_qualified":false,"production_activated":false
     });
     let mut result_bytes = serde_json::to_vec_pretty(&result)?;
@@ -260,6 +270,8 @@ mod tests {
         let stage = temp.path().join("stage");
         fs::create_dir_all(stage.join(STATE)).unwrap();
         fs::set_permissions(stage.join(STATE), fs::Permissions::from_mode(0o700)).unwrap();
+        fs::create_dir_all(stage.join(PUBLIC_APKS)).unwrap();
+        fs::set_permissions(stage.join(PUBLIC_APKS), fs::Permissions::from_mode(0o755)).unwrap();
         fs::create_dir_all(stage.join("usr/share/droidloom")).unwrap();
         fs::write(
             stage.join("usr/share/droidloom/input"),
@@ -277,7 +289,7 @@ mod tests {
         ("a".repeat(40), "b".repeat(40))
     }
     #[test]
-    fn normal_archive_contains_the_protected_empty_directory_and_is_reproducible() {
+    fn normal_archive_contains_both_fixed_empty_directories_and_is_reproducible() {
         let (temp, stage) = fixture();
         let a = export(&stage, &temp.path().join("a"), &identity()).unwrap();
         let b = export(&stage, &temp.path().join("b"), &identity()).unwrap();
@@ -287,7 +299,7 @@ mod tests {
                 .unwrap();
         assert_eq!(
             manifest["directories"],
-            json!([{"path":STATE,"uid":0,"gid":0,"mode":448,"empty":true}])
+            json!([{"path":STATE,"uid":0,"gid":0,"mode":448,"empty":true}, {"path":PUBLIC_APKS,"uid":0,"gid":0,"mode":493,"empty":true}])
         );
         let listing = output(
             tar()
@@ -297,7 +309,8 @@ mod tests {
                 .arg(temp.path().join("a").join(ARCHIVE)),
         )
         .unwrap();
-        assert_eq!(listing.lines().count(), 2);
+        assert_eq!(listing.lines().count(), 3);
+        assert!(listing.lines().any(|l| l == format!("{PUBLIC_APKS}/")));
         assert!(listing.lines().any(|l| l == format!("{STATE}/")));
     }
     #[test]
@@ -311,6 +324,25 @@ mod tests {
                 }
                 _ => fs::set_permissions(stage.join(STATE), fs::Permissions::from_mode(0o755))
                     .unwrap(),
+            }
+            let out = temp.path().join("release");
+            assert!(export(&stage, &out, &identity()).is_err());
+            assert!(!out.exists());
+        }
+    }
+    #[test]
+    fn public_input_root_must_be_empty_fixed_mode_and_ordinary() {
+        for case in 0..4 {
+            let (temp, stage) = fixture();
+            let root = stage.join(PUBLIC_APKS);
+            match case {
+                0 => fs::remove_dir(&root).unwrap(),
+                1 => fs::write(root.join("unexpected.apk"), b"unexpected").unwrap(),
+                2 => fs::set_permissions(&root, fs::Permissions::from_mode(0o777)).unwrap(),
+                _ => {
+                    fs::remove_dir(&root).unwrap();
+                    symlink(stage.join(STATE), &root).unwrap();
+                }
             }
             let out = temp.path().join("release");
             assert!(export(&stage, &out, &identity()).is_err());

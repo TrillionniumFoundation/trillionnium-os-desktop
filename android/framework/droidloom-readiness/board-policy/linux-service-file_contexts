@@ -16,3 +16,6 @@
 /(etc|usr/lib)/systemd/system/(droidloom-manager-label|droidloomd)\.service -- u:object_r:droidloom_package_native_unit_file:s0
 /etc/systemd/system/(droidloom-instance-launcher|droidloom-early-observer)\.service -- u:object_r:droidloom_package_early_unit_file:s0
 /etc/droidloom/container-launcher\.json -- u:object_r:p4_linux_public_launcher_t:s0
+/var/lib/droidloom-public-apks -d u:object_r:droidloom_public_apk_root:s0
+/var/lib/droidloom-public-apks/u1000 -d u:object_r:droidloom_public_apk_dir:s0
+/var/lib/droidloom-public-apks/u1000/[^/]+ -- u:object_r:droidloom_public_apk_input:s0

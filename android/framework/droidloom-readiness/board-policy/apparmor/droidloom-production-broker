@@ -28,6 +28,10 @@ profile droidloom-production-broker flags=(attach_disconnected.path=/.droidloom-
   /sys/fs/selinux/{access,context,create} rw,
   @{PROC}/[0-9]*/{,status,stat,cgroup,mountinfo,uid_map,gid_map,setgroups,exe,cmdline,root/,attr/current,attr/apparmor/current,attr/selinux/current} r,
   owner @{PROC}/[0-9]*/task/[0-9]*/{,status,stat,attr/,attr/{current,apparmor/,selinux/,apparmor/current,selinux/current},ns/,ns/{user,pid,net},fdinfo/,fdinfo/[0-9]*} r,
+  # Only a held internal numeric FD is used for the fixed APK memfd name check.
+  # The target 6.18 AA dentry lookup collapses anonymous IS_ROOT files to the
+  # existing disconnected root; this rule is not a pathname body-read grant.
+  owner @{PROC}/[0-9]*/fd/[0-9]* r,
   @{PROC}/[0-9]*/{ns/,ns/{user,mnt,pid,ipc,cgroup,net,uts},fdinfo/,fdinfo/[0-9]*} r,
   /usr/lib/droidloom/{,production/,production/current/} r,
   /usr/lib/systemd/systemd r,

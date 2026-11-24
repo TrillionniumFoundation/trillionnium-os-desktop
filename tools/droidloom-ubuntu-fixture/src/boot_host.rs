@@ -40,6 +40,7 @@ pub struct HostManifest {
     pub directories: Vec<HostDirectory>,
 }
 const STATE: &str = "var/lib/droidloom-mac-calibration";
+const PUBLIC_APKS: &str = "var/lib/droidloom-public-apks";
 fn valid_path(path: &str) -> bool {
     !path.is_empty()
         && !path.starts_with('/')
@@ -89,14 +90,23 @@ pub fn validate_manifest(m: &HostManifest) -> Result<()> {
         "host archive expansion exceeds limit",
     )?;
     ensure(
-        m.directories.len() == 1,
+        m.directories.len() == 2,
         "unexpected normal host directory count",
     )?;
-    let d = &m.directories[0];
-    ensure(
-        d.path == STATE && d.uid == 0 && d.gid == 0 && d.mode == 0o700 && d.empty,
-        "calibration directory contract differs",
-    )
+    let expected = [(STATE, 0o700), (PUBLIC_APKS, 0o755)];
+    let mut seen = BTreeSet::new();
+    for d in &m.directories {
+        let mode = expected
+            .iter()
+            .find(|(path, _)| *path == d.path)
+            .map(|(_, mode)| *mode)
+            .ok_or("unexpected normal host directory")?;
+        ensure(
+            seen.insert(d.path.as_str()) && d.uid == 0 && d.gid == 0 && d.mode == mode && d.empty,
+            "fixed host directory owner, mode or emptiness differs",
+        )?;
+    }
+    Ok(())
 }
 pub(crate) fn octal(field: &[u8]) -> Result<u64> {
     ensure(
@@ -408,5 +418,48 @@ mod tests {
         let mut damaged = sample("usr/bin/droidloomctl", b'0');
         damaged[3] = b'x';
         assert!(header(&damaged).is_err());
+    }
+
+    #[test]
+    fn exact_public_and_calibration_directories_are_required() {
+        let source = serde_json::json!({
+            "commit": "a".repeat(40), "tree": "b".repeat(40), "stage": "/normal/stage",
+            "files": [{"path":"usr/bin/droidloomctl","size":4,"sha256":"c".repeat(64),"mode":365}],
+            "directories": [
+                {"path":STATE,"uid":0,"gid":0,"mode":448,"empty":true},
+                {"path":PUBLIC_APKS,"uid":0,"gid":0,"mode":493,"empty":true}
+            ]
+        });
+        let value: HostManifest = serde_json::from_value(source.clone()).unwrap();
+        validate_manifest(&value).unwrap();
+        for case in 0..7 {
+            let mut changed = source.clone();
+            match case {
+                0 => {
+                    changed["directories"].as_array_mut().unwrap().pop();
+                }
+                1 => {
+                    changed["directories"][1]["path"] = STATE.into();
+                }
+                2 => {
+                    changed["directories"][1]["uid"] = 1000.into();
+                }
+                3 => {
+                    changed["directories"][1]["mode"] = 511.into();
+                }
+                4 => {
+                    changed["directories"][1]["empty"] = false.into();
+                }
+                5 => {
+                    changed["directories"][1]["path"] =
+                        "var/lib/droidloom-public-apks/u1000".into();
+                }
+                _ => {
+                    changed["directories"][0]["mode"] = 493.into();
+                }
+            }
+            let value: HostManifest = serde_json::from_value(changed).unwrap();
+            assert!(validate_manifest(&value).is_err(), "case {case}");
+        }
     }
 }
