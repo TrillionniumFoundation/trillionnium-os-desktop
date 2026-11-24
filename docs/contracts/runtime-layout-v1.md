@@ -1230,3 +1230,32 @@ normal payload delegation. Its later payload-to-init-leaf operation stays
 within the already-owned production subtree. Timeout, signal death, lost
 custody, context restoration failure, or a failed membership readback cannot
 be reported as successful placement or successful Android shutdown.
+
+
+### Original host namespace authority
+
+After confirming the real Ubuntu root, original Linux PID 1 publishes three
+permanent NSFS bindings: `host-pidns`, `host-userns`, and `host-cgroupns`. Each
+binding is independently read-only, nosuid, nodev and noexec. Factory and launcher
+native admission compare the actual current namespaces to these original
+objects; no later `/proc/1/ns` read or initial-userns ptrace capability is needed.
+These boot objects are outside every per-generation cleanup inventory.
+
+The original host mount namespace cannot be bound into its own namespace:
+Linux rejects that reference cycle. PID 1 instead opens the actual MNT object
+and passes it as fixed fd 3 into the original factory exec. Before its boot gate,
+the factory validates NSFS, namespace kind and actual self identity, consumes
+fd 3 into one private descriptor at or above 64 with CLOEXEC, and retains it
+until the factory exits. Every subsequent native factory-role validation checks
+this same held object against its actual current mount namespace.
+
+Before either ADOPT or START, the ordinary fixed adopter/launcher performs the
+mandatory `DLHOST01` exchange over its authenticated original-factory channel.
+The response contains exactly one reference to this original held MNT file
+description. The consumer verifies the real object and its own actual mount
+namespace, repeats its UID/MAC/NNP and three-pin native gates, and retains the
+object for the whole invocation. No caller supplies a namespace, no namespace
+is recreated, and no ordinary file or JSON inode declaration substitutes for
+this mount-namespace authority. Android-generation and query child paths keep
+this private host descriptor CLOEXEC or close it before their fixed MAC/exec
+transition.

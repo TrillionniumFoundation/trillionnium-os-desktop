@@ -55,13 +55,9 @@ fn inherited_membership() -> io::Result<File> {
     Ok(file)
 }
 fn original_factory_cgroup(expected: &str) -> io::Result<()> {
-    let current = File::open("/proc/self/ns/cgroup")?;
-    let original = File::open("/proc/1/ns/cgroup")?;
-    if identity(&current)? != identity(&original)? {
-        return Err(invalid(
-            "factory no longer observes the initial cgroup namespace",
-        ));
-    }
+    // The native factory gate compares self to the three immutable boot pins
+    // and to the actual inherited, continuously held original host MNT FD.
+    cv(unsafe { droidloom_factory_context() })?;
     let mut body = String::new();
     File::open("/proc/self/cgroup")?
         .take(4097)
@@ -191,16 +187,17 @@ pub fn run_instance_adopter() -> io::Result<()> {
     manager.verify_factory_membership(&original, &invocation)?;
     let membership = inherited_membership()?;
     let (channel, peer) = client_channel()?;
-    peer.revalidate()?;
+    let host_mount = host_mount::HostMount::acquire(&channel, &peer)?;
+    host_mount.revalidate(&peer)?;
     send(&channel, ADOPT, &[&membership])?;
     drop(membership);
     expect(&channel, PLACED, Duration::from_secs(20))?;
-    peer.revalidate()?;
+    host_mount.revalidate(&peer)?;
     manager.verify_factory_membership(&peer.pidfd, &invocation)?;
     manager.notify_factory_main(pid, &peer.pidfd, &invocation)?;
     let deadline = Instant::now() + Duration::from_secs(25);
     loop {
-        peer.revalidate()?;
+        host_mount.revalidate(&peer)?;
         let state = manager.factory_state()?;
         if state.invocation != invocation
             || !matches!(state.main_pid, value if value == pid || value == peer.pid)
@@ -213,7 +210,7 @@ pub fn run_instance_adopter() -> io::Result<()> {
         if state.state == "active" {
             manager.verify_factory_main(peer.pid, &invocation)?;
             manager.verify_factory_membership(&peer.pidfd, &invocation)?;
-            peer.revalidate()?;
+            host_mount.revalidate(&peer)?;
             break;
         }
         if Instant::now() >= deadline {
@@ -225,7 +222,7 @@ pub fn run_instance_adopter() -> io::Result<()> {
     expect(&channel, ADOPTED, Duration::from_secs(10))?;
     manager.verify_factory_main(peer.pid, &invocation)?;
     manager.verify_factory_membership(&peer.pidfd, &invocation)?;
-    peer.revalidate()?;
+    host_mount.revalidate(&peer)?;
     Ok(())
 }
 

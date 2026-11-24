@@ -3,6 +3,10 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/lsm.h>
+#include <linux/nsfs.h>
+#include <sched.h>
+#include <sys/ioctl.h>
+#include <sys/statvfs.h>
 #include <poll.h>
 #include <sys/mount.h>
 #include <sys/statfs.h>
@@ -20,6 +24,33 @@
 #include "device_template.h"
 
 static int fail(int error) { errno=error; return -1; }
+static int boot_mount_namespace=-1;
+static int mount_namespace_matches_self(int fd) {
+    if(fd<0)return fail(EBADF);
+    struct stat actual,own;
+    struct statfs fs;
+    if(fstat(fd,&actual)||fstatfs(fd,&fs)||stat("/proc/self/ns/mnt",&own))return -1;
+    int flags=fcntl(fd,F_GETFL);
+    if(flags<0)return -1;
+    if(!S_ISREG(actual.st_mode)||actual.st_uid||actual.st_gid||fs.f_type!=NSFS_MAGIC||
+       (flags&O_ACCMODE)!=O_RDONLY||(flags&O_PATH)||
+       actual.st_dev!=own.st_dev||actual.st_ino!=own.st_ino)return fail(EXDEV);
+    int kind=ioctl(fd,NS_GET_NSTYPE);
+    if(kind!=CLONE_NEWNS)return fail(kind<0?errno:EINVAL);
+    return 0;
+}
+static int take_boot_mount_namespace(void) {
+    if(boot_mount_namespace>=0)return fail(EBUSY);
+    /* Original real-root PID 1 supplies exactly fd 3 before exec. A mount
+     * namespace cannot be bind-mounted inside itself, so its real held FD
+     * remains the authority for the entire original factory lifetime. */
+    if(mount_namespace_matches_self(3))return -1;
+    int held=fcntl(3,F_DUPFD_CLOEXEC,64);
+    if(held<0)return -1;
+    if(close(3)){int error=errno;close(held);return fail(error);}
+    boot_mount_namespace=held;
+    return 0;
+}
 static int context(uint64_t id, const char *expected) {
     _Alignas(struct lsm_ctx) unsigned char buffer[512]={0};
     struct lsm_ctx *value=(struct lsm_ctx*)buffer;
@@ -47,24 +78,59 @@ static int actor_context(const char *selinux,const char *apparmor,int no_new_pri
     ssize_t n=read(fd,value,sizeof(value));int error=errno;close(fd);
     if(n<0)return fail(error);
     if(n!=1||value[0]!='1')return fail(EACCES);
-    const char *names[]={"pid","user","mnt"};
+    /* Original Linux PID 1 publishes these three immutable NSFS bind mounts
+     * before policy activation and before the factory fork, in the real root.
+     * MNT is instead the original retained descriptor: self-MNT bind mounting
+     * would create a namespace reference cycle and is rejected by Linux. */
+    const char *names[]={"pid","user","cgroup"};
+    const char *pins[]={"host-pidns","host-userns","host-cgroupns"};
+    const int kinds[]={CLONE_NEWPID,CLONE_NEWUSER,CLONE_NEWCGROUP};
     for(unsigned i=0;i<sizeof(names)/sizeof(names[0]);i++){
-        char a[64],b[64];
-        int na=snprintf(a,sizeof(a),"/proc/self/ns/%s",names[i]);
-        int nb=snprintf(b,sizeof(b),"/proc/1/ns/%s",names[i]);
-        struct stat self,init;
-        if(na<=0||nb<=0||stat(a,&self)||stat(b,&init))return -1;
-        if(self.st_dev!=init.st_dev||self.st_ino!=init.st_ino)return fail(EXDEV);
+        char own_path[64],pin_path[128];
+        int own_length=snprintf(own_path,sizeof(own_path),"/proc/self/ns/%s",names[i]);
+        int pin_length=snprintf(pin_path,sizeof(pin_path),"/run/droidloom-early/%s",pins[i]);
+        if(own_length<=0||(size_t)own_length>=sizeof(own_path)||
+           pin_length<=0||(size_t)pin_length>=sizeof(pin_path))return fail(EINVAL);
+        int held=open(pin_path,O_RDONLY|O_CLOEXEC|O_NOFOLLOW);
+        if(held<0)return -1;
+        struct stat self,original,named;
+        struct statfs fs;
+        int error=0;
+        if(fstat(held,&original)||fstatfs(held,&fs)||stat(own_path,&self)||
+           lstat(pin_path,&named))error=errno;
+        const unsigned long required=ST_RDONLY|ST_NOSUID|ST_NODEV|ST_NOEXEC;
+        if(!error&&(!S_ISREG(original.st_mode)||original.st_uid||original.st_gid||
+           fs.f_type!=NSFS_MAGIC||((unsigned long)fs.f_flags&required)!=required||
+           original.st_dev!=named.st_dev||original.st_ino!=named.st_ino||
+           original.st_dev!=self.st_dev||original.st_ino!=self.st_ino))error=EXDEV;
+        if(!error){
+            int kind=ioctl(held,NS_GET_NSTYPE);
+            if(kind!=kinds[i])error=kind<0?errno:EINVAL;
+        }
+        if(close(held)&&!error)error=errno;
+        if(error)return fail(error);
     }
     return 0;
 }
 
 int droidloom_instance_context(void) {
+    /* This first gate precedes the authenticated DLHOST01 exchange. The
+     * caller must then pass its actual original factory MNT descriptor to
+     * droidloom_instance_host_mount before either START or ADOPT. */
     return actor_context("u:r:droidloom_instance_launcher:s0","droidloom-instance-launcher (enforce)",1);
+}
+int droidloom_instance_host_mount(int fd) {
+    if(droidloom_instance_context())return -1;
+    return mount_namespace_matches_self(fd);
 }
 int droidloom_factory_context(void) {
     if(prctl(PR_GET_SECCOMP,0,0,0,0)!=0)return fail(EPERM);
-    return actor_context("u:r:kernel:s0","droidloom-instance-factory (enforce)",0);
+    if(actor_context("u:r:kernel:s0","droidloom-instance-factory (enforce)",0))return -1;
+    return mount_namespace_matches_self(boot_mount_namespace);
+}
+int droidloom_factory_host_mount(void) {
+    if(droidloom_factory_context())return -1;
+    return fcntl(boot_mount_namespace,F_DUPFD_CLOEXEC,64);
 }
 /* Device banks, the empty private tmpfs and its labels belong to each new
  * Android generation. Their original node recipe and immutable image stay
@@ -96,6 +162,7 @@ int droidloom_factory_prepare(void) {
     if(geteuid()!=0||getpid()<=1||getppid()!=1||prctl(PR_GET_NO_NEW_PRIVS,0,0,0,0)!=0||
        prctl(PR_GET_SECCOMP,0,0,0,0)!=0)
         return fail(EPERM);
+    if(take_boot_mount_namespace())return -1;
     struct stat input,output;
     if(fstat(STDIN_FILENO,&input)||fstat(STDOUT_FILENO,&output))return -1;
     if(!S_ISFIFO(input.st_mode)||!S_ISFIFO(output.st_mode)||input.st_uid||output.st_uid||
@@ -111,6 +178,7 @@ int droidloom_factory_prepare(void) {
     do{n=read(STDIN_FILENO,&phase,1);}while(n<0&&errno==EINTR);
     if(n!=1||phase!='G')return fail(n<0?errno:EPROTO);
     if(actor_context("u:r:kernel:s0","unconfined",0))return -1;
+    if(mount_namespace_matches_self(boot_mount_namespace))return -1;
     const char change[]="changeprofile droidloom-instance-factory";
     _Alignas(struct lsm_ctx) unsigned char buffer[sizeof(struct lsm_ctx)+sizeof(change)]={0};
     struct lsm_ctx *value=(struct lsm_ctx*)buffer;

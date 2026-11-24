@@ -10,6 +10,8 @@ use std::os::unix::fs::{FileTypeExt, PermissionsExt};
 mod adoption;
 #[path = "production_instance_identity.rs"]
 mod boot_identity;
+#[path = "production_instance_host_mount.rs"]
+mod host_mount;
 pub use adoption::run_instance_adopter;
 #[path = "production_instance_placement.rs"]
 mod placement;
@@ -305,6 +307,7 @@ pub(super) struct RemoteChild {
     pub pidfd: File,
     socket: File,
     peer: Peer,
+    host_mount: host_mount::HostMount,
 }
 impl RemoteChild {
     pub fn connect() -> io::Result<Self> {
@@ -328,6 +331,8 @@ impl RemoteChild {
             )
         })?;
         let peer = Peer::acquire(&channel, FACTORY_SELINUX, FACTORY_APPARMOR)?;
+        let host_mount = host_mount::HostMount::acquire(&channel, &peer)?;
+        host_mount.revalidate(&peer)?;
         send(&channel, START, &[])?;
         let Some((tag, mut fds)) = receive(&channel, Duration::from_secs(230))? else {
             return Err(invalid(
@@ -348,13 +353,14 @@ impl RemoteChild {
             pidfd,
             socket: channel,
             peer,
+            host_mount,
         };
         value.revalidate()?;
         Ok(value)
     }
     pub fn revalidate(&self) -> io::Result<()> {
         check_fs(&self.pidfd, 0x50494446)?;
-        self.peer.revalidate()
+        self.host_mount.revalidate(&self.peer)
     }
     pub fn retire(self) -> io::Result<()> {
         if !ended(&self.pidfd)? {
@@ -723,7 +729,19 @@ pub fn run_instance_factory(shutdown: &AtomicBool) -> io::Result<()> {
             Ok(peer) => peer,
             Err(_) => continue,
         };
-        let Ok(Some((tag, fds))) = receive(&channel, Duration::from_secs(5)) else {
+        let Ok(Some((hello, hello_fds))) = receive(&channel, Duration::from_secs(5)) else {
+            continue;
+        };
+        if &hello != host_mount::REQUEST || !hello_fds.is_empty() {
+            let _ = send(&channel, FAILED, &[]);
+            continue;
+        }
+        if let Err(error) = host_mount::serve(&channel) {
+            cv(unsafe { droidloom_factory_context() })?;
+            eprintln!("fixed host namespace response failed before birth: {error}");
+            continue;
+        }
+        let Ok(Some((tag, fds))) = receive(&channel, Duration::from_secs(10)) else {
             continue;
         };
         if adoption::Adoption::request(&tag) {

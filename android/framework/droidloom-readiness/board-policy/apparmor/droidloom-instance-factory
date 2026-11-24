@@ -20,6 +20,7 @@ profile droidloom-instance-factory /usr/lib/droidloom/production/current/droidlo
   /run/droidloom-early/{,readiness/,kernel-policy/} r,
   /run/droidloom-early/ rw,
   /run/droidloom-early/instance-factory.sock rw,
+  /run/droidloom-early/host-{pidns,userns,cgroupns} r,
   /run/droidloom-early/{factory.pending,factory.json} rw,
   /run/droidloom-early/startup.lock rk,
   /run/droidloom-early/{generation.pending,generation.json,resources.pending,resources.json,release,pidfd,pidns,mntns,userns,cgroupns-creation} rw,
