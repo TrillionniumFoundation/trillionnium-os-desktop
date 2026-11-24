@@ -12,6 +12,7 @@ import tempfile
 from derive_shared_payload_cgroup_policy import Decision, Policy, derive, verify
 from verify_native_login_audit import verify_login_audit
 from verify_native_journal_storage import verify_journal_storage
+from verify_greeter_home import verify_greeter_home
 
 
 def sha256(path):
@@ -891,6 +892,7 @@ def main():
         "ubuntu-dbus.cil", "ubuntu-native-selinux-query.cil",
         "ubuntu-native-pam.cil", "ubuntu-native-session-storage.cil", "ubuntu-native-session-ipc.cil",
         "ubuntu-native-runtime-retirement.cil",
+        "ubuntu-native-greeter-home.cil",
 
         "ubuntu-native-manager-lifecycle.cil",
         "ubuntu-native-hardware.cil",
@@ -901,7 +903,8 @@ def main():
     sources = [compiler, library, args.linux_board_cil, *args.android_cil, *components,
                here / "cp3a-kernel-handle-inputs.json", Path(__file__),
                here / "derive_shared_payload_cgroup_policy.py",
-               here / "verify_native_login_audit.py", here / "verify_native_journal_storage.py"]
+               here / "verify_native_login_audit.py", here / "verify_native_journal_storage.py",
+               here / "verify_greeter_home.py", here / "ubuntu-native-file_contexts"]
     if any(output.resolve() == path.resolve() for path in sources):
         raise ValueError("The output path is a policy input or build tool")
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -926,9 +929,12 @@ def main():
             library, linked, work / "host-control-binary.cil", contract)
         journal_storage = verify_journal_storage(
             library, linked, work / "host-control-binary.cil", contract)
+        greeter_home = verify_greeter_home(library, linked, work / "host-control-binary.cil", contract, here / "ubuntu-native-file_contexts")
         result = {
             "native_journal_storage": journal_storage,
             "native_journal_storage_verifier": sha256(here / "verify_native_journal_storage.py"),
+            "native_greeter_home": greeter_home,
+            "native_greeter_home_verifier": sha256(here / "verify_greeter_home.py"),
             "native_service_capabilities": native_capabilities,
             "native_login_audit": login_audit,
             "native_auxiliary_sockets": auxiliary_sockets,

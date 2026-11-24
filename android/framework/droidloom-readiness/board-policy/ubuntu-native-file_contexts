@@ -135,3 +135,10 @@
 /dev/input(/.*)? -d u:object_r:p4_linux_input_dir_t:s0
 /dev/input/by-(path|id)/[^/]+ -l u:object_r:p4_linux_input_dir_t:s0
 /dev/input/event[0-9]+ -c u:object_r:p4_linux_input_event_t:s0
+
+# Dynamic GDM homes are private per-UID data, not general daemon runtime.
+/run/gdm3/home                                      u:object_r:p4_linux_greeter_home_parent_t:s0
+/run/gdm3/home/gdm-greeter(-([2-9]|[1-9][0-9]|1[01][0-9]|12[0-8]))?(/.*)? u:object_r:p4_linux_greeter_home_t:s0
+/run/gdm3/home/gdm-greeter(-([2-9]|[1-9][0-9]|1[01][0-9]|12[0-8]))?/\.config/environment\.d(/.*)? u:object_r:p4_linux_greeter_environment_t:s0
+/var/lib/gdm3/seat0                                 u:object_r:p4_linux_greeter_seat_parent_t:s0
+/var/lib/gdm3/seat0/(config|state)(/.*)?              u:object_r:p4_linux_greeter_seat_data_t:s0
