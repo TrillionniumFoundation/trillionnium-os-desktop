@@ -106,6 +106,8 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
         include_bytes!("../../../runtime/droidloom-early-boot/selected.c"),
     )?;
     for (name, content) in [
+        ("boot_diagnostics.h", include_bytes!("../../../runtime/droidloom-early-boot/boot_diagnostics.h").as_slice()),
+        ("boot_diagnostics.c", include_bytes!("../../../runtime/droidloom-early-boot/boot_diagnostics.c").as_slice()),
         ("device_source.h", include_bytes!("../../../runtime/droidloom-early-boot/device_source.h").as_slice()),
         ("device_template.h", include_bytes!("../../../runtime/droidloom-early-boot/device_template.h").as_slice()),
         ("device_template.c", include_bytes!("../../../runtime/droidloom-early-boot/device_template.c").as_slice()),
@@ -157,6 +159,7 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
     )?;
     for (source, object) in [
         ("board_policy.c", "board_policy.o"),
+        ("boot_diagnostics.c", "boot_diagnostics.o"),
         ("apparmor_epoch.c", "apparmor_epoch.o"),
         ("board_init.c", "board_init.o"),
         ("custody.c", "custody.o"),
@@ -208,6 +211,7 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
         .args([
             "-Wl,-z,relro,-z,now",
             "board_init.o",
+            "boot_diagnostics.o",
             "board_policy.o",
             "apparmor_epoch.o",
             "linux_run_label.o",
