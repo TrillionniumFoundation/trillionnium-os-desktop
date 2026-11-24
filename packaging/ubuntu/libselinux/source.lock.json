@@ -1,0 +1,66 @@
+{
+  "schema": "droidloom-ubuntu-libselinux-source-v1",
+  "package": "libselinux",
+  "original_version": "3.9-4build1",
+  "candidate_version": "3.9-4build1+p4lsmexec1",
+  "distribution": "resolute",
+  "architecture": "amd64",
+  "acquisition": "apt-get source --download-only libselinux=3.9-4build1 using the signed Ubuntu source index",
+  "source_archives": [
+    {
+      "name": "libselinux_3.9.orig.tar.gz",
+      "bytes": 205334,
+      "sha256": "e7ee2c01dba64a0c35c9d7c9c0e06209d8186b325b0638a0d83f915cc3c101e8"
+    },
+    {
+      "name": "libselinux_3.9.orig.tar.gz.asc",
+      "bytes": 833,
+      "sha256": "3529c5a905fdfa9e0a8e926ce0333f508213cccd9f6e35ca1011e37412042ca5"
+    },
+    {
+      "name": "libselinux_3.9-4build1.debian.tar.xz",
+      "bytes": 38172,
+      "sha256": "7e32bfa1617f9ec5bca076d337a2495260cc56628a16813b910be7c81a4383be"
+    },
+    {
+      "name": "libselinux_3.9-4build1.dsc",
+      "bytes": 3079,
+      "sha256": "6649868ebdd0b235b8c50e2357055cb91da89b3c1b9805c1b7d8f345f22b3952"
+    }
+  ],
+  "source_file": {
+    "path": "src/procattr.c",
+    "original_sha256": "444c85a927453a9a03131b00970d5707461e28da5e6546448dff7139bdd38083",
+    "patched_sha256": "1b203892548da0b3dac7e39b54a6db0602097e9ed933d6ba805e7ffca56b10b5"
+  },
+  "patch": {
+    "path": "p4-native-lsm-exec-attribute.patch",
+    "sha256": "98bed8a387a656d8634ce45224a40d85a34a0581631126ae8e1bd67474008d73"
+  },
+  "source_date_epoch": 1795500349,
+  "build_profiles": [
+    "nopython",
+    "noruby",
+    "noudeb"
+  ],
+  "build_argv": [
+    "dpkg-buildpackage",
+    "-F",
+    "-us",
+    "-uc",
+    "-P",
+    "nopython,noruby,noudeb",
+    "-j1"
+  ],
+  "original_runtime": {
+    "package": "libselinux1",
+    "version": "3.9-4build1",
+    "path": "usr/lib/x86_64-linux-gnu/libselinux.so.1",
+    "bytes": 199120,
+    "sha256": "7538ee77765a27966563c0d22437a3080dcdb346ff76cc16d71a3ce3379a716a"
+  },
+  "public_abi_test": {
+    "path": "native-exec-api-test.c",
+    "sha256": "d4fc1c5bcbd504b51890b73c0a297c2b796c77a1eccfefe455f0e990bb67ab06"
+  }
+}
