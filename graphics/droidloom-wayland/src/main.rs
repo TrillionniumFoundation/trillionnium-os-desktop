@@ -2290,7 +2290,11 @@ fn run() -> Result<(), PresenterError> {
             .map_err(|_| PresenterError::Configuration("XDG_RUNTIME_DIR is missing"))?,
     );
     let socket_path = env::var_os("DROIDLOOM_HOST_SOCKET").map_or_else(
-        || runtime_root.join("droidloom/native-bridge.sock"),
+        || runtime_root.join(if production {
+            "droidloom-presenter/native-bridge.sock"
+        } else {
+            "droidloom/native-bridge.sock"
+        }),
         PathBuf::from,
     );
     let render_node = env::var_os("DROIDLOOM_RENDER_NODE")

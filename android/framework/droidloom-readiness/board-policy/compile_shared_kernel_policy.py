@@ -358,7 +358,7 @@ def verify_host_control(library, binary, export):
         for actor in ["p4_linux_user_manager_t", "p4_linux_audio_t"]
         for name, label in [("pipewire-0", "p4_linux_pipewire_socket_t"), ("pipewire-0-manager", "p4_linux_pipewire_manager_socket_t")])
     transitions.extend(
-        f'(typetransition {actor} p4_linux_user_run_t dir "droidloom" droidloom_presenter_runtime)'
+        f'(typetransition {actor} p4_linux_user_run_t dir "droidloom-presenter" droidloom_presenter_runtime)'
         for actor in ["p4_linux_user_executor_t", "droidloom_presenter"])
     missing = [line for line in transitions if line not in lines]
     if missing:

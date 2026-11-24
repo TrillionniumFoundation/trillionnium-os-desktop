@@ -7,7 +7,7 @@
 
 (typeattribute p4_presenter_runtime_creators)
 (typeattributeset p4_presenter_runtime_creators (p4_linux_user_executor_t droidloom_presenter))
-(typetransition p4_presenter_runtime_creators p4_linux_user_run_t dir "droidloom" droidloom_presenter_runtime)
+(typetransition p4_presenter_runtime_creators p4_linux_user_run_t dir "droidloom-presenter" droidloom_presenter_runtime)
 ; Stock user-unit RuntimeDirectory setup uses the original native LSM API.
 ; File create/associate checks still constrain every selected future label.
 (allow p4_linux_user_executor_t self (process (setfscreate)))
