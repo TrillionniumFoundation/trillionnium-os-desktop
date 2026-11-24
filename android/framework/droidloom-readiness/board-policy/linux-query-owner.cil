@@ -41,10 +41,11 @@
 (allow droidloom_broker p4_fixed_query_copies (file (getattr open read relabelto setattr)))
 (neverallow droidloom_broker p4_fixed_query_copies (file (write append create unlink link rename relabelfrom)))
 
-; The complete original-role pins and the AppArmor four-basename rules constrain
-; these stock labels. The broker cannot map/execute or mutate those originals.
+; The complete original-role pins and the AppArmor fixed-basename rules constrain
+; the four query originals plus the original init ELF used by normal boot.
+; The broker cannot map/execute or mutate those public original bytes.
 (typeattribute p4_broker_query_original_files)
-(typeattributeset p4_broker_query_original_files (system_file toolbox_exec zygote_exec))
+(typeattributeset p4_broker_query_original_files (init_exec system_file toolbox_exec zygote_exec))
 (typeattribute p4_broker_query_read_files)
 (typeattributeset p4_broker_query_read_files (p4_broker_query_original_files droidloom_query_exec))
 (allow droidloom_broker p4_broker_query_original_files (file (getattr open read)))

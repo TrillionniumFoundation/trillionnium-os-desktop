@@ -26,7 +26,8 @@
 
 ; image_file walks only the held read-only image root with O_PATH. The original
 ; system labels are rootfs/system_file and the original vendor directories are
-; vendor_file. File contents and directory enumeration remain inaccessible.
+; vendor_file. Only the original held root can now be received read-only by
+; the fixed metadata protocol; other image directory enumeration stays denied.
 (typeattribute p4_broker_frontend_image_dirs)
 (typeattributeset p4_broker_frontend_image_dirs (rootfs system_file vendor_file))
 (typeattribute p4_broker_frontend_image_files)
@@ -34,7 +35,8 @@
 (allow droidloom_broker p4_broker_frontend_image_dirs (dir (getattr search)))
 (allow droidloom_broker p4_broker_frontend_image_files (file (getattr)))
 (allow droidloom_broker labeledfs (filesystem (getattr)))
-(neverallow droidloom_broker p4_broker_frontend_image_dirs (dir (open read write add_name remove_name mounton relabelto relabelfrom)))
+(neverallow droidloom_broker p4_broker_frontend_image_dirs (dir (write add_name remove_name mounton relabelto relabelfrom)))
+(neverallow droidloom_broker p4_broker_frontend_dirs_without_metadata_root (dir (open read)))
 (neverallow droidloom_broker p4_broker_frontend_image_files (file (write append map execute execute_no_trans entrypoint create link unlink rename setattr relabelto relabelfrom)))
 (neverallow droidloom_broker p4_broker_frontend_image_files_without_query (file (open read)))
 ; The independently installed native presenter is already a Linux executable.
