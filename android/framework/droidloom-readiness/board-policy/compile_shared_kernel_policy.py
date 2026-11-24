@@ -372,6 +372,63 @@ def verify_host_control(library, binary, export):
     }
 
 
+NATIVE_SERVICE_CAPABILITIES = {'p4_linux_sshd_t': ['chown', 'fowner', 'kill', 'setgid', 'setuid', 'net_bind_service', 'sys_chroot', 'audit_write'], 'p4_linux_gdm_t': ['chown', 'fowner'], 'p4_linux_gdm_worker_t': ['kill', 'setgid', 'setuid', 'sys_tty_config'], 'p4_linux_network_manager_t': ['net_bind_service', 'net_admin', 'net_raw'], 'p4_linux_wpa_t': ['net_admin', 'net_raw'], 'p4_linux_resolved_t': ['net_bind_service', 'net_raw'], 'p4_linux_logind_t': ['chown', 'sys_admin', 'sys_tty_config']}
+NATIVE_SERVICE_CAPABILITY_CLASSES = {'capability': ['chown', 'dac_override', 'dac_read_search', 'fowner', 'fsetid', 'kill', 'setgid', 'setuid', 'setpcap', 'linux_immutable', 'net_bind_service', 'net_broadcast', 'net_admin', 'net_raw', 'ipc_lock', 'ipc_owner', 'sys_module', 'sys_rawio', 'sys_chroot', 'sys_ptrace', 'sys_pacct', 'sys_admin', 'sys_boot', 'sys_nice', 'sys_resource', 'sys_time', 'sys_tty_config', 'mknod', 'lease', 'audit_write', 'audit_control', 'setfcap'], 'capability2': ['mac_override', 'mac_admin', 'syslog', 'wake_alarm', 'block_suspend', 'audit_read', 'perfmon', 'bpf', 'checkpoint_restore'], 'cap_userns': ['chown', 'dac_override', 'dac_read_search', 'fowner', 'fsetid', 'kill', 'setgid', 'setuid', 'setpcap', 'linux_immutable', 'net_bind_service', 'net_broadcast', 'net_admin', 'net_raw', 'ipc_lock', 'ipc_owner', 'sys_module', 'sys_rawio', 'sys_chroot', 'sys_ptrace', 'sys_pacct', 'sys_admin', 'sys_boot', 'sys_nice', 'sys_resource', 'sys_time', 'sys_tty_config', 'mknod', 'lease', 'audit_write', 'audit_control', 'setfcap'], 'cap2_userns': ['mac_override', 'mac_admin', 'syslog', 'wake_alarm', 'block_suspend', 'audit_read', 'perfmon', 'bpf', 'checkpoint_restore']}
+NATIVE_SERVICE_CAPABILITY_PROTECTED_BASE = {'u:r:droidloom_broker:s0': {'capability': ['setgid', 'setuid'], 'capability2': [], 'cap_userns': ['setgid', 'setuid', 'sys_admin'], 'cap2_userns': []}, 'u:system_r:droidloom_public_control_client:s0': {'capability': [], 'capability2': [], 'cap_userns': [], 'cap2_userns': []}, 'u:system_r:p4_linux_user_session_t:s0': {'capability': [], 'capability2': [], 'cap_userns': [], 'cap2_userns': []}}
+
+def verify_native_service_capabilities(library, binary):
+    """Read every capability bit back; no permission follows a unit bounding set."""
+    policy = Policy(library, binary)
+    cache = {}
+    checks = []
+    def sid(context):
+        if context not in cache:
+            value = ctypes.c_uint32()
+            raw = context.encode()
+            if policy.lib.sepol_context_to_sid(raw, len(raw) + 1, ctypes.byref(value)) != 0:
+                raise ValueError("Invalid native capability context: " + context)
+            cache[context] = value.value
+        return cache[context]
+    def actual(subject, target, kind, permissions):
+        number, bits = policy.permissions(kind, permissions)
+        mask = 0
+        for bit in bits.values():
+            mask |= bit
+        value = Decision()
+        if policy.lib.sepol_compute_av(sid(subject), sid(target), number, mask, ctypes.byref(value)) != 0:
+            raise ValueError("Cannot read native service capability decisions")
+        return {name for name, bit in bits.items() if value.allowed & bit}
+    groups = NATIVE_SERVICE_CAPABILITY_CLASSES
+    for name, allowed in NATIVE_SERVICE_CAPABILITIES.items():
+        context = "u:system_r:" + name + ":s0"
+        for kind, permissions in groups.items():
+            expected = set(allowed) if kind == "capability" else set()
+            observed = actual(context, context, kind, permissions)
+            if observed != expected:
+                raise ValueError(f"Native service capability boundary differs: {name} {kind}: {sorted(observed)} != {sorted(expected)}")
+            checks.extend([name, kind, permission, permission in observed] for permission in permissions)
+        denied = actual(context, "u:r:kernel:s0", "security", ["load_policy", "setenforce", "setbool"])
+        if denied:
+            raise ValueError("Native service gained MAC-management permission: " + name)
+        checks.extend([name, "security", permission, False] for permission in ["load_policy", "setenforce", "setbool"])
+    # The three protected public roles must retain their actual base84d777d
+    # vector exactly; this component cannot lend them a service's capability.
+    for context, expected_groups in NATIVE_SERVICE_CAPABILITY_PROTECTED_BASE.items():
+        for kind, permissions in groups.items():
+            observed = actual(context, context, kind, permissions)
+            if observed != set(expected_groups[kind]):
+                raise ValueError(f"Native service component changed protected role {context} {kind}")
+            checks.extend([context, kind, permission, permission in observed] for permission in permissions)
+    return {
+        "service_roles": len(NATIVE_SERVICE_CAPABILITIES),
+        "capability_bit_decisions": sum(len(x) for x in groups.values()) * (len(NATIVE_SERVICE_CAPABILITIES) + len(NATIVE_SERVICE_CAPABILITY_PROTECTED_BASE)),
+        "mac_management_denials": len(NATIVE_SERVICE_CAPABILITIES) * 3,
+        "service_capabilities": NATIVE_SERVICE_CAPABILITIES,
+        "protected_base_commit": "84d777db3e8dc8e1436e7a1025d39429fea0681b",
+        "matrix_sha256": hashlib.sha256(json.dumps(checks, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--secilc", type=Path, required=True)
@@ -405,6 +462,7 @@ def main():
         "linux-initial-calibration.cil", "protected-device-readiness-target.cil", "orderly-android-shutdown.cil",
         "ubuntu-real-root-interpreter.cil", "ubuntu-mounted-api-metadata.cil",
         "ubuntu-core-cgroup-ownership.cil", "ubuntu-native-services.cil",
+        "ubuntu-native-service-capabilities.cil",
         "frontend-android-interface.cil", "linux-frontend-observer.cil", "instance-launcher.cil",
         "linux-query-owner.cil", "linux-fixed-metadata-observer.cil",
         "instance-factory-cgroup.cil", "ubuntu-systemd-unit-status.cil",
@@ -436,7 +494,9 @@ def main():
         compile_policy(compiler, [*args.android_cil, board, *components, shared], linked, contexts, environment)
         shared_access = verify(library, linked, contract)
         host_control = verify_host_control(library, linked, work / "host-control-binary.cil")
+        native_capabilities = verify_native_service_capabilities(library, linked)
         result = {
+            "native_service_capabilities": native_capabilities,
             "android_original": sha256(original),
             "secilc": sha256(compiler),
             "libsepol": sha256(library),
