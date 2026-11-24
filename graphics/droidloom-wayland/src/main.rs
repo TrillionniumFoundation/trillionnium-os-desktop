@@ -3,6 +3,7 @@
 #![deny(unsafe_op_in_unsafe_fn)]
 
 mod clipboard;
+mod identity_trace;
 mod activation;
 mod layers;
 mod fence_wakeup;
@@ -2283,6 +2284,7 @@ fn run() -> Result<(), PresenterError> {
     if production && ["DROIDLOOM_HOST_SOCKET", "DROIDLOOM_HOST_PEER_PID", "DROIDLOOM_HOST_PEER_UID", "DROIDLOOM_HOST_PEER_GID"].iter().any(|name| env::var_os(name).is_some()) {
         return Err(PresenterError::Configuration("production peer identity comes only from the original owner"));
     }
+    identity_trace::emit_if_enabled()?;
     let runtime_root = PathBuf::from(
         env::var("XDG_RUNTIME_DIR")
             .map_err(|_| PresenterError::Configuration("XDG_RUNTIME_DIR is missing"))?,
