@@ -50,8 +50,10 @@ pub(super) fn stage_board_policy(inputs: &Path, destination: &Path) -> Result<()
     mode(&config, 0o444)?;
     let contexts = destination.join("etc/selinux/droidloom/contexts/files/file_contexts");
     let rules = [
+        include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-native-file_contexts").as_slice(),
         include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-real-root-file_contexts").as_slice(),
         include_bytes!("../../../android/framework/droidloom-readiness/board-policy/linux-service-file_contexts").as_slice(),
+        include_bytes!("../../../android/framework/droidloom-readiness/board-policy/linux-initial-calibration-file_contexts").as_slice(),
     ].concat();
     write(&contexts, rules)?;
     mode(&contexts, 0o444)?;
@@ -233,6 +235,11 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
         (
             "usr/share/droidloom/board/ubuntu-real-root-file_contexts",
             include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-real-root-file_contexts").as_slice(),
+            0o444,
+        ),
+        (
+            "usr/share/droidloom/board/ubuntu-native-file_contexts",
+            include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-native-file_contexts").as_slice(),
             0o444,
         ),
         (

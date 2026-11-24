@@ -88,7 +88,7 @@
 (roletype system_r p4_linux_service_executor_t)
 (typeattributeset p4_linux_procs (p4_linux_service_executor_t))
 (typeattribute p4_linux_other_than_executor)
-(typeattributeset p4_linux_other_than_executor (and (p4_linux_procs) (not (p4_linux_service_executor_t))))
+(typeattributeset p4_linux_other_than_executor (and (p4_linux_procs) (not (or (p4_linux_service_executor_t) (p4_linux_user_executor_t)))))
 (typetransition init_t p4_linux_systemd_executor_t process p4_linux_service_executor_t)
 (allow init_t p4_linux_service_executor_t (process (transition getattr signull signal sigkill)))
 (allow p4_linux_service_executor_t p4_linux_systemd_executor_t (file (entrypoint open read getattr execute map)))
@@ -168,9 +168,9 @@
 (neverallow p4_linux_procs p4_linux_apparmor_enabled_t (file (write append setattr relabelfrom relabelto)))
 (neverallow p4_linux_mac_roles p4_linux_apparmor_enabled_t (file (execute map)))
 (allow p4_linux_service_executor_t selinuxfs (filesystem (getattr)))
-; procattr writes are authenticated by SELinux setexec and the subsequent
-; process transition. There is no setcurrent, dyntransition or ptrace grant.
-(allow p4_linux_service_executor_t self (file (write)))
+; The production libselinux exec-context implementation uses the native LSM
+; attribute syscall. No procattr/self-memory file write is required or allowed.
+(neverallow p4_linux_service_executor_t self (file (write append)))
 
 ; Ubuntu's libselinux checks its native release configuration before honoring
 ; SELinuxContext=. Its canonical policy-version file contains the exact same

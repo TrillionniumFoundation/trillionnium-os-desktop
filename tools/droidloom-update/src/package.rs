@@ -399,6 +399,7 @@ mod tests {
         fs::write(host.join("droidloom-container-entry"), b"package-copy fixture: container-entry").unwrap();
         production_host_payload(&repo, &host, &runtime).unwrap();
         for (name, expected) in [
+            ("ubuntu-native-file_contexts", include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-native-file_contexts").as_slice()),
             ("ubuntu-real-root-devices", include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-real-root-devices").as_slice()),
             ("ubuntu-real-root-file_contexts", include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-real-root-file_contexts").as_slice()),
         ] {
