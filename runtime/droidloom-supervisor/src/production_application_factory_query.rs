@@ -38,11 +38,9 @@ use std::time::{Duration, Instant};
 
 pub(crate) const QUERY_SELINUX: &str = "u:r:droidloom_query:s0";
 pub(crate) const QUERY_APPARMOR: &str = "droidloom-production-android (enforce)";
-const REQUEST_FILES: usize = 16;
 const STDIN: usize = 12;
 const STDOUT: usize = 13;
 const STDERR: usize = 14;
-const CGROUP: usize = 15;
 const EXEC_EVENT: i32 = libc::SIGTRAP | (libc::PTRACE_EVENT_EXEC << 8);
 const CGROUP_PATH: &str =
     "/sys/fs/cgroup/system.slice/droidloom-production.service/cell-u1000/application-read";
@@ -319,11 +317,7 @@ fn prepare(
 ) -> Result<Prepared> {
     query.validate()?;
     require(
-        query.domain() == OperationDomain::Query && !query.needs_content_jar(),
-        "operation has no reviewed factory domain yet",
-    )?;
-    require(
-        files.len() == REQUEST_FILES,
+        files.len() == query.descriptor_count() + 1,
         "factory query descriptor layout differs",
     )?;
     authority.check()?;
@@ -414,7 +408,7 @@ fn prepare(
     fs(&cgroup, 0x63677270)?;
     let meta = cgroup.metadata()?;
     require(
-        identity(&files[CGROUP])? == identity(&cgroup)?
+        identity(&files[query.descriptor_count()])? == identity(&cgroup)?
             && meta.uid() == 0
             && meta.gid() == 0
             && meta.mode() & 0o7777 == 0o700,
@@ -453,7 +447,7 @@ fn prepare(
     }
     // Reopen root and namespace descriptions in kernel context. Dup would
     // preserve a broker/metadata f_sid and is deliberately insufficient.
-    let mut owned = Vec::with_capacity(REQUEST_FILES);
+    let mut owned = Vec::with_capacity(query.descriptor_count());
     owned.push(authority.init.try_clone()?);
     owned.push(authority.owner.try_clone()?);
     owned.push(reopen(&files[2], true)?);
@@ -462,8 +456,20 @@ fn prepare(
     }
     owned.push(reopen(&files[10], false)?);
     owned.push(reopen(&files[11], false)?);
-    // verify() reopens only literal original/private cmd/toybox basenames and
-    // hashes the complete immutable bodies, including same inode/mount checks.
+    owned.push(files[STDIN].try_clone()?);
+    owned.push(files[STDOUT].try_clone()?);
+    owned.push(files[STDERR].try_clone()?);
+    if query.needs_content_jar() {
+        for index in [protocol::CONTENT_JAR, protocol::ORIGINAL_CONTENT_JAR] {
+            owned.push(reopen(&files[index], false)?);
+        }
+    }
+    require(
+        owned.len() == query.descriptor_count(),
+        "fixed operation input shape differs",
+    )?;
+    // Reopen only the source-owned executable and optional Contacts JAR paths;
+    // compare both complete immutable bodies with their original system inputs.
     super::worker::executable::verify(
         &owned,
         query,
@@ -472,9 +478,6 @@ fn prepare(
         authority.root_gid,
         deadline,
     )?;
-    owned.push(files[STDIN].try_clone()?);
-    owned.push(files[STDOUT].try_clone()?);
-    owned.push(files[STDERR].try_clone()?);
     authority.check()?;
     Ok(Prepared {
         files: owned,
@@ -487,10 +490,22 @@ struct NativeQuery {
     files: [i32; 15],
     pid_namespace: i32,
     cgroup: i32,
+    domain: u32,
     deadline_ns: u64,
     argv: *const *const libc::c_char,
     envp: *const *const libc::c_char,
     filter: *const libc::sock_fprog,
+}
+// This number never comes from the request wire. The validated closed operation
+// selects the native stub's literal SELinux exec context.
+fn native_domain(domain: OperationDomain) -> u32 {
+    match domain {
+        OperationDomain::Query => 0,
+        OperationDomain::Browser => 1,
+        OperationDomain::ContactsRead => 2,
+        OperationDomain::LaunchRead => 3,
+        OperationDomain::LaunchStart => 4,
+    }
 }
 unsafe extern "C" {
     fn droidloom_factory_spawn_query(
@@ -722,6 +737,7 @@ fn spawn(
         ],
         pid_namespace: f[5].as_raw_fd(),
         cgroup: prepared.cgroup.as_raw_fd(),
+        domain: native_domain(query.domain()),
         deadline_ns,
         argv: argv.as_ptr(),
         envp: envp.as_ptr(),
@@ -1017,11 +1033,7 @@ impl ObservedQuery {
             identity(&pidfd)? == node,
             "authenticated query PID was reused before observation",
         )?;
-        let value = Self {
-            pid,
-            pidfd,
-            node,
-        };
+        let value = Self { pid, pidfd, node };
         let observed = info(&value.pidfd)?;
         require(
             observed.pid == pid && observed.ppid == factory,
@@ -1113,7 +1125,7 @@ impl Client {
         progress: &mut dyn FnMut() -> Result<()>,
     ) -> Result<FactoryExecStop> {
         require(
-            !self.sent && files.len() == REQUEST_FILES,
+            !self.sent && files.len() == query.descriptor_count() + 1,
             "factory client request is not one-shot",
         )?;
         let anchor = protocol::monotonic_ns()?;
@@ -1464,10 +1476,8 @@ pub(super) fn run(
     require(Instant::now() < deadline, "factory query workflow deadline")?;
     request.validate()?;
     require(
-        authority.query_projection() == QueryProjection::EarlyDev
-            && request.domain() == OperationDomain::Query
-            && !request.needs_content_jar(),
-        "operation has no reviewed original factory entrypoint yet",
+        authority.query_projection() == QueryProjection::EarlyDev,
+        "factory operation requires the original early projection",
     )?;
     authority.revalidate().map_err(external)?;
     let mut files = authority.descriptors(request.binary()).map_err(external)?;
@@ -1477,9 +1487,18 @@ pub(super) fn run(
     )?;
     let namespaces = super::process::NamespaceBinding::from_original_owner(&files)?;
     let (root_uid, root_gid) = authority.mapped_root().map_err(external)?;
-    let binding = super::process::ExecutableBinding::from_held_role(
-        &files[10], root_uid, root_gid, deadline,
-    )?;
+    let classpath = if request.needs_content_jar() {
+        Some(authority.contacts_content_descriptors().map_err(external)?)
+    } else {
+        None
+    };
+    let binding = if request.needs_content_jar() {
+        super::process::ExecutableBinding::from_contacts_role(
+            &files[10], root_uid, root_gid, deadline,
+        )?
+    } else {
+        super::process::ExecutableBinding::from_held_role(&files[10], root_uid, root_gid, deadline)?
+    };
     let shell_uid = root_uid
         .checked_add(2000)
         .ok_or_else(|| reject("query shell UID overflow"))?;
@@ -1499,12 +1518,11 @@ pub(super) fn run(
         .clone_target()
         .map_err(external)?
         .try_clone_to_owned()?;
-    files.extend([
-        io.stdin,
-        io.stdout_write,
-        io.stderr_write,
-        File::from(cgroup),
-    ]);
+    files.extend([io.stdin, io.stdout_write, io.stderr_write]);
+    if let Some(classpath) = classpath {
+        files.extend(classpath);
+    }
+    files.push(File::from(cgroup));
     let mut progress = || {
         authority
             .progress_inherited_native(deadline)
@@ -1818,6 +1836,7 @@ mod tests {
             files: [-1; 15],
             pid_namespace: ns.as_raw_fd(),
             cgroup: group.as_raw_fd(),
+            domain: native_domain(OperationDomain::Query),
             deadline_ns: u64::MAX,
             argv: argv.as_ptr(),
             envp: envp.as_ptr(),

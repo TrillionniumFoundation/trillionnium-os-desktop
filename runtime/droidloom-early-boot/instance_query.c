@@ -21,12 +21,12 @@
 
 extern int droidloom_factory_context(void);
 static int fail(int e) { errno=e; return -1; }
-static int label(uint64_t id,const char *expected) {
+static int attribute(uint64_t id,uint64_t attr,const char *expected) {
     _Alignas(struct lsm_ctx) unsigned char bytes[512]={0};
     struct lsm_ctx *c=(struct lsm_ctx *)bytes;
     c->id=id;
     uint32_t size=sizeof(bytes);
-    long count=syscall(SYS_lsm_get_self_attr,LSM_ATTR_CURRENT,c,&size,LSM_FLAG_SINGLE);
+    long count=syscall(SYS_lsm_get_self_attr,attr,c,&size,LSM_FLAG_SINGLE);
     if(count<0)return -1;
     size_t n=strlen(expected);
     if(count!=1||c->id!=id||size>sizeof(bytes)||size<sizeof(*c)||
@@ -35,14 +35,30 @@ static int label(uint64_t id,const char *expected) {
         return fail(EACCES);
     return 0;
 }
-static int current(uint64_t id,const char *value) {
+static int label(uint64_t id,const char *expected) {
+    return attribute(id,LSM_ATTR_CURRENT,expected);
+}
+static int set_attribute(uint64_t id,uint64_t attr,const char *value) {
     _Alignas(struct lsm_ctx) unsigned char bytes[256]={0};
     struct lsm_ctx *c=(struct lsm_ctx *)bytes;
     size_t n=strlen(value)+1;
     if(n>sizeof(bytes)-sizeof(*c))return fail(E2BIG);
     c->id=id;c->len=sizeof(*c)+n;c->ctx_len=n;
     memcpy(c->ctx,value,n);
-    return syscall(SYS_lsm_set_self_attr,LSM_ATTR_CURRENT,c,c->len,0)<0?-1:0;
+    return syscall(SYS_lsm_set_self_attr,attr,c,c->len,0)<0?-1:0;
+}
+static int current(uint64_t id,const char *value) {
+    return set_attribute(id,LSM_ATTR_CURRENT,value);
+}
+static const char *exec_context(uint32_t domain) {
+    switch(domain) {
+    case 0:return "u:r:droidloom_query:s0";
+    case 1:return "u:r:droidloom_browser:s0";
+    case 2:return "u:r:droidloom_contacts_read:s0";
+    case 3:return "u:r:droidloom_launch_read:s0";
+    case 4:return "u:r:droidloom_launch_start:s0";
+    default:return NULL;
+    }
 }
 static uint64_t now_ns(void) {
     struct timespec value;
@@ -128,6 +144,12 @@ static _Noreturn void child(const struct droidloom_factory_query *q) {
     if(syscall(SYS_capset,&header,caps)||prctl(PR_CAP_AMBIENT,PR_CAP_AMBIENT_CLEAR_ALL,0,0,0)||
        prctl(PR_SET_DUMPABLE,0,0,0,0)||
        prctl(PR_GET_NO_NEW_PRIVS,0,0,0,0)!=0)_exit(125);
+    /* The validated closed operation selects one literal pending SELinux role.
+       Setting the pending role changes no current authority; the real exec
+       transition and its full label are independently checked at TRACEEXEC. */
+    const char *domain=exec_context(q->domain);
+    if(!domain||set_attribute(LSM_ID_SELINUX,LSM_ATTR_EXEC,domain)||
+       attribute(LSM_ID_SELINUX,LSM_ATTR_EXEC,domain))_exit(125);
     /* Do the reviewed CURRENT AppArmor transition while NNP is still zero.
        The subsequent ELF exec stays in this exact profile; no profile is
        widened after NNP and no stacked factory restriction is misreported. */
@@ -140,7 +162,7 @@ static _Noreturn void child(const struct droidloom_factory_query *q) {
     live_owners();
     for(int fd=3;fd<14;fd++)if(close(fd))_exit(125);
     /* The immutable file has its original system bytes, no setid bits and
-       no file capabilities. Original birth->query transition is policy-owned.
+       no file capabilities. The selected birth->operation transition is policy-owned.
        AT_EMPTY_PATH uses the kernel-origin reopened read-only body. */
     syscall(SYS_execveat,14,"",q->argv,q->envp,AT_EMPTY_PATH);
     _exit(125);
@@ -148,7 +170,7 @@ static _Noreturn void child(const struct droidloom_factory_query *q) {
 int droidloom_factory_spawn_query(const struct droidloom_factory_query *q,int *pid,int *pidfd) {
     *pid=-1;*pidfd=-1;
     if(!q||!q->argv||!q->envp||!q->filter||!q->filter->len||
-       q->pid_namespace<0||q->cgroup<0)return fail(EINVAL);
+       q->pid_namespace<0||q->cgroup<0||!exec_context(q->domain))return fail(EINVAL);
     if(droidloom_factory_context())return -1;
     if(syscall(SYS_gettid)!=getpid())return fail(EPERM);
     int original=open("/proc/self/ns/pid",O_RDONLY|O_CLOEXEC);

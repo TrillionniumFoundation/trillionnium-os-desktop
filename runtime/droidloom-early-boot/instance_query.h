@@ -9,6 +9,8 @@ struct droidloom_factory_query {
     int files[15];
     int pid_namespace;
     int cgroup;
+    /* Source-selected closed role: query/browser/contacts/launch-read/launch-start. */
+    uint32_t domain;
     uint64_t deadline_ns;
     const char *const *argv;
     const char *const *envp;

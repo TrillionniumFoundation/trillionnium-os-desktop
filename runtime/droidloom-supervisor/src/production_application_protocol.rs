@@ -5,7 +5,8 @@ use std::mem;
 use std::os::fd::{AsRawFd, FromRawFd, OwnedFd, RawFd};
 use std::time::Instant;
 
-pub(super) const INPUT_FDS: usize = 17;
+// The largest fixed request is Contacts' 17 inputs plus its owned cgroup leaf.
+pub(super) const INPUT_FDS: usize = 18;
 pub(super) const CONTENT_JAR: usize = 15;
 pub(super) const ORIGINAL_CONTENT_JAR: usize = 16;
 pub(super) const EXECUTABLE: usize = 10;
@@ -385,6 +386,62 @@ mod tests {
             0
         );
     }
+    #[test]
+    fn factory_contacts_request_transfers_all_inputs_and_rejects_excess_rights() {
+        let (left, right) = socketpair().unwrap();
+        let source = tempfile::tempfile().unwrap();
+        let nonce = [13; 16];
+        let deadline = Instant::now() + std::time::Duration::from_secs(1);
+        let message = Message::FactoryRequest {
+            nonce,
+            query: super::super::operation::ApplicationOperation::ContactsRead {
+                value: super::super::contacts::ContactsQuery::RawRows,
+            },
+            deadline_ns: monotonic_ns().unwrap() + 1_000_000_000,
+        };
+        // Both Contacts JAR descriptions and the final fixed budget description
+        // must survive SCM_RIGHTS, with credentials and close-on-exec intact.
+        let raw = vec![source.as_raw_fd(); 18];
+        send(left.as_raw_fd(), &message, &raw, deadline).unwrap();
+        let received = receive(right.as_raw_fd(), deadline).unwrap();
+        assert_eq!(received.peer.pid, unsafe { libc::getpid() });
+        assert_eq!(received.files.len(), 18);
+        assert!(matches!(
+            received.message,
+            Message::FactoryRequest { nonce: actual, query:
+                super::super::operation::ApplicationOperation::ContactsRead { .. }, .. }
+                if actual == nonce
+        ));
+        let expected = source.metadata().unwrap();
+        for descriptor in received.files {
+            let file = File::from(descriptor);
+            let actual = file.metadata().unwrap();
+            assert_eq!(
+                (actual.dev(), actual.ino()),
+                (expected.dev(), expected.ino())
+            );
+            assert_ne!(
+                unsafe { libc::fcntl(file.as_raw_fd(), libc::F_GETFD) } & libc::FD_CLOEXEC,
+                0
+            );
+        }
+        assert!(
+            send(
+                left.as_raw_fd(),
+                &message,
+                &vec![source.as_raw_fd(); 19],
+                deadline
+            )
+            .is_err()
+        );
+        let mut pending = libc::pollfd {
+            fd: right.as_raw_fd(),
+            events: libc::POLLIN,
+            revents: 0,
+        };
+        assert_eq!(unsafe { libc::poll(&mut pending, 1, 0) }, 0);
+    }
+
     #[test]
     fn production_application_protocol_uses_one_absolute_deadline() {
         let (_left, right) = socketpair().unwrap();
