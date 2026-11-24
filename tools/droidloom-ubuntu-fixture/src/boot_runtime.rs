@@ -943,6 +943,7 @@ pub fn make_root_image(
         "/usr/bin/droidloom-wayland",
         "/etc/droidloom/production/selected.json",
         "/etc/droidloom/container-launcher.json",
+        "/etc/systemd/system/user-runtime-dir@.service.d/50-droidloom-native-session.conf",
         "/var/lib/droidloom-mac-calibration",
         "/var/lib/droidloom-public-apks",
         "/var/lib/droidloom/users/1000/data/data.img",

@@ -58,9 +58,22 @@
 (allow p4_native_runtime_directory_maintainers p4_linux_user_run_t (sock_file (getattr unlink)))
 (allow p4_native_runtime_directory_maintainers p4_linux_user_run_t (fifo_file (getattr unlink)))
 (allow p4_native_runtime_directory_maintainers p4_linux_session_bus_socket_t (sock_file (getattr unlink)))
-; mount(2) checks this path before may_mount(). The fixed unit has no
-; capabilities and uses stock directory fallback; actual mount stays forbidden.
+; mount(2) checks this path before may_mount(). The fixed unit retains only
+; CHOWN/FOWNER for stock directory fallback; actual mounting stays forbidden.
 (allow p4_linux_setup_t p4_linux_user_run_t (dir (mounton)))
+; RuntimeDirectory preparation happens in the original service executor.
+; setfscreate selects only a future inode context; normal create/associate
+; checks below and the existing immutable-store guards still apply.
+(allow p4_linux_service_executor_t self (process (setfscreate)))
+; Stock PID 1 synchronously retires the declared runtime subtree. It only
+; enumerates directories and unlinks entries, never reads regular-file data.
+(allow init_t p4_linux_user_run_t (dir (getattr search open read write remove_name rmdir)))
+(allow init_t p4_linux_user_run_t (file (getattr unlink)))
+(allow init_t p4_linux_user_run_t (lnk_file (getattr read unlink)))
+(allow init_t p4_linux_user_run_t (sock_file (getattr unlink)))
+(allow init_t p4_linux_user_run_t (fifo_file (getattr unlink)))
+(allow init_t p4_linux_session_bus_socket_t (sock_file (getattr unlink)))
+
 (neverallow p4_linux_setup_t self (capability (sys_admin)))
 (neverallow p4_linux_setup_t self (cap_userns (sys_admin)))
 (neverallow p4_linux_setup_t tmpfs (filesystem (mount remount unmount)))

@@ -256,6 +256,22 @@ def verify_host_control(library, binary, export):
     check(user, obj("droidloom_public_apk_dir"), "dir", ["search", "open", "read", "write", "add_name", "remove_name"], True)
     check(user, obj("droidloom_public_apk_dir"), "dir", ["create", "rmdir", "relabelto", "relabelfrom"], False)
 
+    # Actual RuntimeDirectory prepare/retire actors, with no file-data access.
+    check(executor, executor, "process", ["setfscreate"], True)
+    check(manager, obj("p4_linux_user_run_t"), "dir",
+          ["getattr", "search", "open", "read", "write", "remove_name", "rmdir"], True)
+    for kind, permissions in [
+            ("file", ["getattr", "unlink"]), ("lnk_file", ["getattr", "read", "unlink"]),
+            ("sock_file", ["getattr", "unlink"]), ("fifo_file", ["getattr", "unlink"])]:
+        check(manager, obj("p4_linux_user_run_t"), kind, permissions, True)
+    check(manager, obj("p4_linux_session_bus_socket_t"), "sock_file", ["getattr", "unlink"], True)
+    for subject in [manager, executor]:
+        check(subject, obj("p4_linux_user_run_t"), "file",
+              ["open", "read", "write", "create", "setattr", "relabelto", "relabelfrom"], False)
+        check(subject, kernel, "security", ["load_policy", "setenforce", "setbool"], False)
+        check(subject, subject, "capability2", ["mac_admin", "mac_override"], False)
+    check(manager, obj("p4_linux_user_run_t"), "dir", ["create", "add_name", "setattr", "relabelto", "relabelfrom"], False)
+
     lines = export_binary_policy(policy, binary, export)
     transitions = [
         '(typetransition p4_linux_setup_t droidloom_public_apk_root dir "u1000" droidloom_public_apk_dir)',

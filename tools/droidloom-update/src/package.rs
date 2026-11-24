@@ -713,6 +713,10 @@ mod tests {
                 "etc/selinux/droidloom/contexts/default_contexts",
                 include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-default_contexts").as_slice(),
             ),
+            (
+                "etc/systemd/system/user-runtime-dir@.service.d/50-droidloom-native-session.conf",
+                include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-user-runtime-dir.conf").as_slice(),
+            ),
         ] {
             let path = runtime.join(relative);
             let metadata = fs::symlink_metadata(&path).unwrap();
