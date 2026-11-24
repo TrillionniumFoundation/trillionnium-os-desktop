@@ -182,3 +182,51 @@
 (neverallow droidloom_query droidloom_query_tmpfs_t (dir (open read write add_name remove_name mounton setattr relabelfrom relabelto)))
 (neverallow droidloom_broker droidloom_query (process (transition dyntransition ptrace signal sigkill sigstop setexec setcurrent)))
 (neverallow droidloom_broker kernel (process (transition dyntransition ptrace signal sigkill sigstop setexec setcurrent)))
+
+; Fixed raw child of the boot-lineage factory. It is not a service/dispatcher.
+; All inherited descriptions are reopened by the factory before this one-way
+; context change, retaining kernel or query_io origin instead of broker origin.
+(type droidloom_query_birth)
+(roletype r droidloom_query_birth)
+(typeattributeset domain (droidloom_query_birth))
+(typeattributeset coredomain (droidloom_query_birth))
+(typeattributeset p4_all_board_owned (droidloom_query_birth))
+(allow kernel self (process (setcurrent)))
+(allow kernel droidloom_query_birth (process (dyntransition ptrace getattr sigkill sigstop)))
+(allow droidloom_query_birth kernel (process (sigchld)))
+(allow droidloom_query_birth kernel (fd (use)))
+(allow droidloom_query_birth kernel (fifo_file (getattr read write)))
+(allow droidloom_query_birth kernel (unix_stream_socket (getattr getopt read write)))
+(allow droidloom_query_birth droidloom_query_io (fd (use)))
+(allow droidloom_query_birth droidloom_query_io (fifo_file (getattr read write)))
+(allow droidloom_query_birth null_device (chr_file (getattr read)))
+(allow droidloom_query_birth p4_kernel_ns_handle_t (file (getattr)))
+(allow droidloom_query_birth p4_kernel_pid_handle_t (file (getattr)))
+(allow droidloom_query_birth rootfs (dir (getattr search)))
+(allow droidloom_query_birth self (process (getcap setcap setexec)))
+(allow droidloom_query_birth self (cap_userns (sys_admin setuid setgid sys_chroot)))
+(allow droidloom_query_birth droidloom_query_tmpfs_t (dir (getattr search)))
+(allow droidloom_query_birth droidloom_query_exec (file (getattr open read execute map)))
+(typetransition droidloom_query_birth droidloom_query_exec process droidloom_query)
+(allow droidloom_query_birth droidloom_query (process (transition)))
+(allow droidloom_query_birth droidloom_query (process2 (nnp_transition nosuid_transition)))
+(neverallow droidloom_query_birth self (capability (all)))
+(neverallow droidloom_query_birth self (capability2 (all)))
+(neverallow droidloom_query_birth self (cap_userns (not (sys_admin setuid setgid sys_chroot))))
+(neverallow droidloom_query_birth self (cap2_userns (all)))
+(neverallow droidloom_query_birth self (process (setcurrent dyntransition setfscreate setsockcreate)))
+(neverallow droidloom_query_birth p4_fixed_metadata_all_types (process (ptrace dyntransition setcurrent)))
+; Android domain defaults retain self fork/signals and system_server error
+; reporting Binder call. No Binder description is inherited by this fixed stub,
+; and the factory AppArmor profile retains the pre-exec path boundary.
+(typeattribute p4_query_birth_other_tasks)
+(typeattributeset p4_query_birth_other_tasks (and (p4_fixed_metadata_all_types) (not (droidloom_query_birth))))
+(typeattribute p4_query_birth_no_binder_call)
+(typeattributeset p4_query_birth_no_binder_call (and (p4_fixed_metadata_all_types) (not (system_server))))
+(neverallow droidloom_query_birth p4_query_birth_other_tasks (process (signal sigkill sigstop)))
+(neverallow droidloom_query_birth p4_query_birth_no_binder_call (binder (call)))
+(neverallow droidloom_query_birth p4_fixed_metadata_all_types (binder (transfer impersonate set_context_mgr)))
+; The original domain rules also grant binder_device access. This fixed raw
+; stage retains the factory AppArmor profile, which has no Binder path access,
+; and receives no Binder FD. The later fixed exec switches that AA stage.
+(neverallow droidloom_query_birth kernel (security (load_policy setenforce setbool setsecparam)))
