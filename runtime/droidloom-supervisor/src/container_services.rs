@@ -11,7 +11,10 @@ const TARGET: &str = "droidloom-container-services.target";
 const SOCKET: &str = "droidloom-container-guest.socket";
 const OCI: &str = "droidloom-container-oci.service";
 const ENTRY: &str = "droidloom-container-entry.service";
-const EARLY:&str="droidloom-early-observer.service";
+const EARLY: &str = "droidloom-early-observer.service";
+const EARLY_OWNER: &str = "droidloom-production.service";
+const EARLY_OWNER_FIELDS: &str = "Id,LoadState,ActiveState,SubState,Type,KillMode,Restart,RemainAfterExit,User,Group,ExecStart,ExecStop,ExecStopPost,Requires,After,MainPID,InvocationID,Result,ExecMainPID,ExecMainCode,ExecMainStatus,SELinuxContext,AppArmorProfile,NoNewPrivileges";
+const EARLY_OBSERVER_FIELDS: &str = "Id,LoadState,ActiveState,SubState,Type,NotifyAccess,KillMode,Restart,RemainAfterExit,ExecStart,BindsTo,After,Requires,MainPID,InvocationID,Result,ExecMainPID,ExecMainCode,ExecMainStatus";
 const PROGRAM: &str = "/usr/lib/droidloom/production/current/droidloomd";
 /// Layout detection only prevents desktop fallback. The original production
 /// broker must validate the private selection under its own configuration lock.
@@ -36,6 +39,9 @@ pub(super) fn requires_production_control() -> io::Result<bool> {
     }
 }
 
+#[path = "container_service_pin.rs"]
+mod service_pin;
+
 type Properties = BTreeMap<String, String>;
 
 fn property<'a>(properties: &'a Properties, key: &str) -> &'a str {
@@ -52,7 +58,7 @@ fn members<'a>(properties: &'a Properties, key: &str) -> impl Iterator<Item = &'
     property(properties, key).split_ascii_whitespace()
 }
 
-fn fixed_command(value: &str, action:&str) -> bool {
+fn fixed_command(value: &str, action: &str) -> bool {
     let Some(fields) = value
         .trim()
         .strip_prefix('{')
@@ -73,7 +79,9 @@ fn fixed_command(value: &str, action:&str) -> bool {
         && exact("ignore_errors=", "no")
 }
 
-fn provider_command(value:&str)->bool {fixed_command(value,"--manage-container")}
+fn provider_command(value: &str) -> bool {
+    fixed_command(value, "--manage-container")
+}
 
 fn verify_contract(target: &Properties, entry: &Properties) -> io::Result<()> {
     if !matches(target, &[("Id", TARGET), ("LoadState", "loaded")])
@@ -180,7 +188,7 @@ fn snapshot() -> io::Result<(Properties, Properties)> {
 pub(super) struct Generation {
     pub(super) pid: u32,
     invocation: String,
-    early:bool,
+    early: bool,
 }
 
 impl Generation {
@@ -191,13 +199,19 @@ impl Generation {
         Some(Self {
             pid: property(entry, "MainPID").parse().ok()?,
             invocation: property(entry, "InvocationID").to_owned(),
-            early:false,
+            early: false,
         })
     }
 
     pub(super) fn verify_current(&self) -> io::Result<()> {
         if self.early {
-            return if early_generation()?.as_ref()==Some(self) {Ok(())}else{Err(io::Error::other("early Android observer changed during the request"))};
+            return if early_generation()?.as_ref() == Some(self) {
+                Ok(())
+            } else {
+                Err(io::Error::other(
+                    "early Android observer changed during the request",
+                ))
+            };
         }
         let (target, entry) = snapshot()?;
         verify_contract(&target, &entry)?;
@@ -270,35 +284,268 @@ fn wait_for_retirement() -> io::Result<()> {
     }
 }
 
-fn early_generation()->io::Result<Option<Generation>>{
-    let s=show(EARLY,ENTRY_FIELDS)?;
-    if !matches(&s,&[("Id",EARLY),("LoadState","loaded"),("Type","notify"),("NotifyAccess","main"),("KillMode","control-group"),("Restart","no"),("RemainAfterExit","no")]) ||
-       !["Requires","After"].iter().all(|key|members(&s,key).any(|unit|unit=="droidloom-manager-label.service")) ||
-       !["BindsTo","After"].iter().all(|key|members(&s,key).any(|unit|unit=="droidloom-production.service")) ||
-       !fixed_command(property(&s,"ExecStart"),"--observe-early-container"){
-        return Err(io::Error::other("kernel-booted Android observer has an incorrect service contract"));
+fn verify_early_observer(s: &Properties) -> io::Result<()> {
+    if !matches(
+        s,
+        &[
+            ("Id", EARLY),
+            ("LoadState", "loaded"),
+            ("Type", "notify"),
+            ("NotifyAccess", "main"),
+            ("KillMode", "control-group"),
+            ("Restart", "no"),
+            ("RemainAfterExit", "no"),
+        ],
+    ) || !["Requires", "After"]
+        .iter()
+        .all(|key| members(s, key).any(|unit| unit == "droidloom-manager-label.service"))
+        || !["BindsTo", "After"]
+            .iter()
+            .all(|key| members(s, key).any(|unit| unit == EARLY_OWNER))
+        || !fixed_command(property(s, "ExecStart"), "--observe-early-container")
+    {
+        return Err(io::Error::other(
+            "kernel-booted Android observer has an incorrect service contract",
+        ));
     }
-    if matches(&s,&[("ActiveState","inactive"),("MainPID","0"),("Result","success")]) {return Ok(None);}
-    let id=property(&s,"InvocationID");
-    let pid=property(&s,"MainPID").parse::<u32>().unwrap_or(0);
-    if !matches(&s,&[("ActiveState","active"),("SubState","running"),("Result","success")]) || pid<2 ||
-        id.len()!=32 || !id.bytes().all(|v|v.is_ascii_hexdigit()) || !id.bytes().any(|v|v!=b'0') {
-        return Err(io::Error::other(format!("kernel-booted Android observer is {}/{} ({})",property(&s,"ActiveState"),property(&s,"SubState"),property(&s,"Result"))));
-    }
-    Ok(Some(Generation{pid,invocation:id.to_owned(),early:true}))
+    Ok(())
 }
 
-pub(super) fn early_lifecycle(operation:&str)->io::Result<Option<Generation>>{
-    match operation {
-        "status"=>early_generation(),
-        "start"=>{
-            if let Some(current)=early_generation()? { return Ok(Some(current)); }
-            let status=systemctl().args(["--job-mode=fail","start",EARLY]).status()?;
-            if !status.success(){return Err(io::Error::other("could not attach the trusted observer to the kernel-booted Android instance"));}
-            early_generation()?.map(Some).ok_or_else(||io::Error::other("kernel-booted Android observer did not remain attached"))
+fn early_generation() -> io::Result<Option<Generation>> {
+    let s = show(EARLY, EARLY_OBSERVER_FIELDS)?;
+    verify_early_observer(&s)?;
+    if matches(
+        &s,
+        &[
+            ("ActiveState", "inactive"),
+            ("MainPID", "0"),
+            ("Result", "success"),
+        ],
+    ) {
+        return Ok(None);
+    }
+    let id = property(&s, "InvocationID");
+    let pid = property(&s, "MainPID").parse::<u32>().unwrap_or(0);
+    if !matches(
+        &s,
+        &[
+            ("ActiveState", "active"),
+            ("SubState", "running"),
+            ("Result", "success"),
+        ],
+    ) || pid < 2
+        || id.len() != 32
+        || !id.bytes().all(|v| v.is_ascii_hexdigit())
+        || !id.bytes().any(|v| v != b'0')
+    {
+        return Err(io::Error::other(format!(
+            "kernel-booted Android observer is {}/{} ({})",
+            property(&s, "ActiveState"),
+            property(&s, "SubState"),
+            property(&s, "Result")
+        )));
+    }
+    Ok(Some(Generation {
+        pid,
+        invocation: id.to_owned(),
+        early: true,
+    }))
+}
+
+// Only the production owner can request Android shutdown and verify retirement
+// of its original data, metadata, namespaces and cgroup. Stopping the observer
+// withdraws readiness but does not stop Android.
+fn verify_early_owner(owner: &Properties) -> io::Result<()> {
+    if !matches(
+        owner,
+        &[
+            ("Id", EARLY_OWNER),
+            ("LoadState", "loaded"),
+            ("Type", "exec"),
+            ("User", "root"),
+            ("Group", "root"),
+            ("KillMode", "mixed"),
+            ("Restart", "no"),
+            ("RemainAfterExit", "no"),
+            ("SELinuxContext", "u:r:droidloom_broker:s0"),
+            ("AppArmorProfile", "droidloom-production-broker"),
+            ("NoNewPrivileges", "yes"),
+        ],
+    ) || !["Requires", "After"]
+        .iter()
+        .all(|key| members(owner, key).any(|unit| unit == "droidloom-manager-label.service"))
+        || !fixed_command(
+            property(owner, "ExecStart"),
+            "--socket /run/droidloom/control.sock",
+        )
+        || !property(owner, "ExecStop").is_empty()
+        || !property(owner, "ExecStopPost").is_empty()
+    {
+        return Err(io::Error::other(
+            "early Android production owner has an incorrect service contract",
+        ));
+    }
+    Ok(())
+}
+
+fn early_owner_invocation(owner: &Properties) -> io::Result<String> {
+    let id = property(owner, "InvocationID");
+    if id.len() != 32
+        || !id.bytes().all(|v| v.is_ascii_hexdigit())
+        || !id.bytes().any(|v| v != b'0')
+    {
+        return Err(io::Error::other(
+            "early Android has no retained production owner invocation",
+        ));
+    }
+    Ok(id.to_owned())
+}
+
+fn early_retired(
+    owner: &Properties,
+    observer: &Properties,
+    invocation: &str,
+    public_absent: bool,
+) -> io::Result<bool> {
+    verify_early_owner(owner)?;
+    verify_early_observer(observer)?;
+    if early_owner_invocation(owner)? != invocation {
+        return Err(io::Error::other(
+            "early Android production owner changed during shutdown",
+        ));
+    }
+    for (s, id) in [(owner, EARLY_OWNER), (observer, EARLY)] {
+        if property(s, "ActiveState") == "failed"
+            || property(s, "ActiveState") == "inactive" && property(s, "Result") != "success"
+        {
+            return Err(io::Error::other(format!(
+                "{id} failed to retire cleanly: {}",
+                property(s, "Result")
+            )));
         }
-        "stop"|"restart"=>Err(io::Error::new(io::ErrorKind::Unsupported,"the selected early Android instance has no qualified platform shutdown or relaunch endpoint")),
-        _=>Err(io::Error::other("invalid early Android lifecycle operation"))
+    }
+    if property(owner, "ActiveState") != "inactive" || property(owner, "MainPID") != "0" {
+        return Ok(false);
+    }
+    // systemd treats some signal deaths as success. Only the owner's ordinary
+    // exit(0) follows the successful orderly request AND actual resource cleanup.
+    // Never accept reset-failed, an unstarted unit, SIGTERM or SIGKILL as that exit.
+    if property(owner, "ExecMainCode") != "1"
+        || property(owner, "ExecMainStatus") != "0"
+        || !property(owner, "ExecMainPID")
+            .parse::<u32>()
+            .is_ok_and(|pid| pid > 1)
+    {
+        return Err(io::Error::other(
+            "early Android owner did not complete its orderly shutdown and retirement",
+        ));
+    }
+    if property(observer, "ActiveState") != "inactive" || property(observer, "MainPID") != "0" {
+        return Ok(false);
+    }
+    if property(observer, "ExecMainPID")
+        .parse::<u32>()
+        .is_ok_and(|pid| pid > 1)
+        && (property(observer, "ExecMainCode") != "1"
+            || property(observer, "ExecMainStatus") != "0")
+    {
+        return Err(io::Error::other(
+            "early Android observer exited without completing its shutdown",
+        ));
+    }
+    Ok(public_absent)
+}
+
+fn public_readiness_absent() -> io::Result<bool> {
+    match std::fs::symlink_metadata("/run/droidloom-container/readiness.sock") {
+        Ok(_) => Ok(false),
+        Err(e) if e.kind() == io::ErrorKind::NotFound => Ok(true),
+        Err(e) => Err(e),
+    }
+}
+
+fn stop_early() -> io::Result<()> {
+    let _references = service_pin::UnitReferences::early()?;
+    let owner = show(EARLY_OWNER, EARLY_OWNER_FIELDS)?;
+    verify_early_owner(&owner)?;
+    let invocation = early_owner_invocation(&owner)?;
+    let observer = show(EARLY, EARLY_OBSERVER_FIELDS)?;
+    if early_retired(&owner, &observer, &invocation, public_readiness_absent()?)? {
+        return Ok(());
+    }
+    if !matches(
+        &owner,
+        &[
+            ("ActiveState", "active"),
+            ("SubState", "running"),
+            ("Result", "success"),
+        ],
+    ) || !property(&owner, "MainPID")
+        .parse::<u32>()
+        .is_ok_and(|pid| pid > 1)
+    {
+        return Err(io::Error::other(
+            "early Android production owner is not ready for an orderly stop",
+        ));
+    }
+    // Submit the normal manager transaction once. It signals the real owner's
+    // signalfd; StopRequest and mount retirement remain inside that owner.
+    // --no-block acknowledges only the job. The observations below establish
+    // completion and never convert that acknowledgement into a success result.
+    let status = systemctl()
+        .args(["--job-mode=fail", "--no-block", "stop", EARLY_OWNER])
+        .status()?;
+    if !status.success() {
+        return Err(io::Error::other(
+            "could not submit early Android production-owner shutdown",
+        ));
+    }
+    let end = std::time::Instant::now() + std::time::Duration::from_secs(180);
+    loop {
+        let owner = show(EARLY_OWNER, EARLY_OWNER_FIELDS)?;
+        let observer = show(EARLY, EARLY_OBSERVER_FIELDS)?;
+        if early_retired(&owner, &observer, &invocation, public_readiness_absent()?)? {
+            return Ok(());
+        }
+        if std::time::Instant::now() >= end {
+            return Err(io::Error::other(
+                "early Android orderly shutdown or observer retirement exceeded its deadline",
+            ));
+        }
+        std::thread::sleep(std::time::Duration::from_millis(100));
+    }
+}
+
+pub(super) fn early_lifecycle(operation: &str) -> io::Result<Option<Generation>> {
+    match operation {
+        "status" => early_generation(),
+        "start" => {
+            if let Some(current) = early_generation()? {
+                return Ok(Some(current));
+            }
+            let status = systemctl()
+                .args(["--job-mode=fail", "start", EARLY])
+                .status()?;
+            if !status.success() {
+                return Err(io::Error::other(
+                    "could not attach the trusted observer to the kernel-booted Android instance",
+                ));
+            }
+            early_generation()?.map(Some).ok_or_else(|| {
+                io::Error::other("kernel-booted Android observer did not remain attached")
+            })
+        }
+        "stop" => {
+            stop_early()?;
+            Ok(None)
+        }
+        "restart" => Err(io::Error::new(
+            io::ErrorKind::Unsupported,
+            "the selected early Android instance is created once during kernel boot; a same-boot relaunch endpoint is not available",
+        )),
+        _ => Err(io::Error::other(
+            "invalid early Android lifecycle operation",
+        )),
     }
 }
 
@@ -509,5 +756,127 @@ mod tests {
         let mut inactive = target;
         inactive.insert("ActiveState".into(), "inactive".into());
         assert!(!running(&inactive, &entry));
+    }
+    fn early_contract() -> (Properties, Properties) {
+        let mut owner = props(&[
+            ("Id", EARLY_OWNER),
+            ("LoadState", "loaded"),
+            ("Type", "exec"),
+            ("User", "root"),
+            ("Group", "root"),
+            ("KillMode", "mixed"),
+            ("Restart", "no"),
+            ("RemainAfterExit", "no"),
+            ("SELinuxContext", "u:r:droidloom_broker:s0"),
+            ("AppArmorProfile", "droidloom-production-broker"),
+            ("NoNewPrivileges", "yes"),
+            ("Requires", "droidloom-manager-label.service"),
+            ("After", "local-fs.target droidloom-manager-label.service"),
+            ("ActiveState", "inactive"),
+            ("SubState", "dead"),
+            ("MainPID", "0"),
+            ("InvocationID", "123456789abcdef0123456789abcdef0"),
+            ("Result", "success"),
+            ("ExecMainPID", "4631"),
+            ("ExecMainCode", "1"),
+            ("ExecMainStatus", "0"),
+        ]);
+        owner.insert("ExecStart".into(), format!(
+            "{{ path={PROGRAM} ; argv[]={PROGRAM} --socket /run/droidloom/control.sock ; ignore_errors=no ; pid=4631 }}"));
+        let mut observer = props(&[
+            ("Id", EARLY),
+            ("LoadState", "loaded"),
+            ("Type", "notify"),
+            ("NotifyAccess", "main"),
+            ("KillMode", "control-group"),
+            ("Restart", "no"),
+            ("RemainAfterExit", "no"),
+            ("Requires", "droidloom-manager-label.service"),
+            (
+                "After",
+                "droidloom-manager-label.service droidloom-production.service",
+            ),
+            ("BindsTo", EARLY_OWNER),
+            ("ActiveState", "inactive"),
+            ("MainPID", "0"),
+            ("Result", "success"),
+            ("ExecMainPID", "4632"),
+            ("ExecMainCode", "1"),
+            ("ExecMainStatus", "0"),
+        ]);
+        observer.insert("ExecStart".into(), format!(
+            "{{ path={PROGRAM} ; argv[]={PROGRAM} --observe-early-container ; ignore_errors=no ; pid=4632 }}"));
+        (owner, observer)
+    }
+
+    #[test]
+    fn early_stop_requires_the_original_owners_normal_exit_and_withdrawn_readiness() {
+        let (owner, observer) = early_contract();
+        let invocation = early_owner_invocation(&owner).unwrap();
+        assert!(early_retired(&owner, &observer, &invocation, true).unwrap());
+        assert!(!early_retired(&owner, &observer, &invocation, false).unwrap());
+        let mut running = owner.clone();
+        running.insert("ActiveState".into(), "deactivating".into());
+        running.insert("MainPID".into(), "4631".into());
+        assert!(!early_retired(&running, &observer, &invocation, true).unwrap());
+        for (key, value) in [
+            ("Result", "timeout"),
+            ("Result", "exit-code"),
+            ("ExecMainCode", "2"),
+            ("ExecMainCode", "3"),
+            ("ExecMainCode", "0"),
+            ("ExecMainStatus", "1"),
+            ("ExecMainPID", "0"),
+            ("InvocationID", "223456789abcdef0123456789abcdef0"),
+        ] {
+            let mut changed = owner.clone();
+            changed.insert(key.into(), value.into());
+            assert!(
+                early_retired(&changed, &observer, &invocation, true).is_err(),
+                "{key}={value}"
+            );
+        }
+        let mut signaled = observer.clone();
+        signaled.insert("ExecMainCode".into(), "2".into());
+        assert!(early_retired(&owner, &signaled, &invocation, true).is_err());
+        let mut active_observer = observer.clone();
+        active_observer.insert("ActiveState".into(), "active".into());
+        active_observer.insert("MainPID".into(), "4632".into());
+        assert!(!early_retired(&owner, &active_observer, &invocation, true).unwrap());
+    }
+
+    #[test]
+    fn early_stop_cannot_replace_the_orderly_owner_with_an_unconfined_or_kill_command() {
+        let (owner, observer) = early_contract();
+        let invocation = early_owner_invocation(&owner).unwrap();
+        for (key, value) in [
+            ("KillMode", "control-group"),
+            ("Restart", "always"),
+            ("SELinuxContext", "-u:r:droidloom_broker:s0"),
+            ("AppArmorProfile", "-droidloom-production-broker"),
+            ("NoNewPrivileges", "no"),
+            ("ExecStart", "/bin/true"),
+            ("ExecStop", "/bin/kill"),
+            ("ExecStopPost", "/bin/true"),
+            ("Requires", ""),
+            ("User", "qq"),
+        ] {
+            let mut changed = owner.clone();
+            changed.insert(key.into(), value.into());
+            assert!(
+                early_retired(&changed, &observer, &invocation, true).is_err(),
+                "{key}={value}"
+            );
+        }
+        let mut detached = observer.clone();
+        detached.remove("BindsTo");
+        assert!(early_retired(&owner, &detached, &invocation, true).is_err());
+    }
+
+    #[test]
+    fn early_restart_refuses_before_any_service_or_runtime_operation() {
+        let error = early_lifecycle("restart").unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::Unsupported);
+        assert!(error.to_string().contains("once during kernel boot"));
     }
 }
