@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <termios.h>
 #include <sys/mount.h>
 #include <sys/reboot.h>
 #include <sys/socket.h>
@@ -58,10 +59,32 @@ static void (*se_free)(char *);
 
 static _Noreturn void finish(int success)
 {
-	fflush(NULL);
+	int flushed = fflush(NULL);
+	int flush_errno = errno;
+	if (flushed != 0) {
+		dprintf(STDERR_FILENO, "P4_PEER_RUNTIME_FAILED flush console errno=%d\n",
+			flush_errno);
+		success = 0;
+	}
 	if (getpid() == 1) {
+		int drained;
+		do { drained = tcdrain(STDOUT_FILENO); }
+		while (drained < 0 && errno == EINTR);
+		if (drained < 0 || flushed != 0) {
+			int drain_errno = drained < 0 ? errno : 0;
+			dprintf(STDERR_FILENO,
+				"P4_PEER_RUNTIME_FAILED console drain errno=%d flush_errno=%d\n",
+				drain_errno, flushed != 0 ? flush_errno : 0);
+			/* The bounded outer owner must retire this failed VM. Never
+			 * advertise ordinary poweroff after unproven output delivery. */
+			for (;;) pause();
+		}
 		sync();
 		reboot(RB_POWER_OFF);
+		dprintf(STDERR_FILENO, "P4_PEER_RUNTIME_FAILED poweroff returned errno=%d\n",
+			errno);
+		(void)tcdrain(STDERR_FILENO);
+		for (;;) pause();
 	}
 	_exit(success ? 0 : 1);
 }
@@ -252,6 +275,7 @@ static void load_denial_profile(void)
 static void outer_denial(void)
 {
 	load_denial_profile();
+	require(fflush(NULL) == 0, "flush original console before denial fork");
 	pid_t child = fork();
 	require(child >= 0, "fork denial witness");
 	if (!child) {
@@ -289,6 +313,7 @@ static void outer_denial(void)
 		for (unsigned int i = 0; i < 3; i++)
 			require_errno(results[i], errors[i], EACCES,
 				"outer AA gate preserves denial");
+		require(fflush(NULL) == 0, "flush denial child console");
 		_exit(0);
 	}
 	int status = 0;
