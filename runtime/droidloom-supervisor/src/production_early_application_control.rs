@@ -15,10 +15,9 @@ impl EarlyApplicationControl {
         let root = trusted_directory(libc::AT_FDCWD, c"/")?;
         let run = trusted_directory(root.as_raw_fd(), c"run")?;
         let parent = trusted_directory(run.as_raw_fd(), c"droidloom")?;
-        let issuer = HostPeerIssuer::broker(owner.clone()).map_err(selected_socket_control)?;
-        let listener = OwnedListener::bind_selected_at(
+        let listener = OwnedListener::bind_early_at(
             parent,
-            issuer,
+            owner.clone(),
             Instant::now() + Duration::from_secs(10),
         )?
         .initialize()?;
@@ -28,14 +27,14 @@ impl EarlyApplicationControl {
         Ok(Self { listener })
     }
     pub(crate) fn poll<'owner>(
-        &mut self,
+        &self,
         host_pid: u32,
         host_uid: u32,
         acquire: impl FnOnce() -> std::result::Result<
             crate::production_selection::early_generation::EarlyApplicationAuthority<'owner>,
             crate::production_namespace::NamespaceError,
         >,
-    ) -> Result<(), ControlError> {
+    ) -> Result<Option<crate::control::package::ServerTransaction<'_>>, ControlError> {
         let mut accepted = match self.listener.accept() {
             Ok(value) => value,
             Err(e)
@@ -44,10 +43,26 @@ impl EarlyApplicationControl {
                     io::ErrorKind::WouldBlock | io::ErrorKind::Interrupted
                 ) =>
             {
-                return Ok(());
+                return Ok(None);
             }
             Err(e) => return Err(io_error("accept original early application client", e)),
         };
+        match crate::control::package::is_package(accepted.stream().map_err(|e| io_error("observe early package stream", e))?) {
+            Ok(true) => {
+                return match crate::control::package::ServerTransaction::receive(accepted.into_package()?) {
+                    Ok(transaction) => Ok(Some(transaction)),
+                    Err(error) => {
+                        eprintln!("fixed early package transaction refused: {error}");
+                        Ok(None)
+                    }
+                };
+            }
+            Ok(false) => {}
+            Err(error) => {
+                eprintln!("could not classify bounded early request: {error}");
+                return Ok(None);
+            }
+        }
         let stream = accepted
             .stream_mut()
             .map_err(|e| io_error("observe early application client", e))?;
@@ -324,7 +339,7 @@ impl EarlyApplicationControl {
         if let Err(error) = send_response(stream, &response) {
             eprintln!("could not deliver early application observation: {error}");
         }
-        original
+        original.map(|()| None)
     }
     pub(crate) fn retire(self) -> Result<(), ControlError> {
         self.listener.retire()

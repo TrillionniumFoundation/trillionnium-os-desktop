@@ -11,9 +11,10 @@ use crate::production_configuration::{
     MaintenanceFence, PackageConfigurationLock, ReceivedPackageConfigurationLock,
 };
 use crate::production_mac::{
-    BrokerAcceptedStream, PackageMacOwner, PackageMacPreparation, PackageMacWitness,
-    PackageSelectedStream,
+    PackageMacOwner, PackageMacPreparation, PackageMacWitness,
+    PackageSelectedStream, KernelFirstPackageStream,
 };
+use super::production::ProductionAcceptedStream;
 use crate::production_namespace::TreeExit;
 use crate::production_selection::ProductionSelection;
 use serde::{Deserialize, Serialize};
@@ -34,7 +35,12 @@ const SCHEMA: &str = "droidloom-live-package-retirement-v1";
 const PREFIX: u8 = 0;
 const FRAME_LIMIT: usize = 4096;
 const FRAME_TIME: Duration = Duration::from_secs(2);
-const TRANSACTION_TIME: Duration = Duration::from_secs(120);
+// The owner phase covers 75 seconds of orderly Android shutdown, the existing
+// 15/10-second fallback and bounded resource checks. Native-unit stop is a
+// separate existing 120-second helper budget, within one absolute transaction.
+const OWNER_RETIREMENT_TIME: Duration = Duration::from_secs(120);
+const NATIVE_STOP_TIME: Duration = Duration::from_secs(120);
+const TRANSACTION_TIME: Duration = OWNER_RETIREMENT_TIME.saturating_add(NATIVE_STOP_TIME);
 
 fn denied(message: &'static str) -> io::Error {
     io::Error::new(io::ErrorKind::PermissionDenied, message)
@@ -310,9 +316,45 @@ fn socket_node(m: &Metadata) -> ([u64; 7], [i64; 4]) {
         [m.mtime(), m.mtime_nsec(), m.ctime(), m.ctime_nsec()],
     )
 }
+
+fn retired_runtime_parent(run: &File, held: &File, identity: &[u64; 5]) -> io::Result<Option<File>> {
+    if directory_node(&held.metadata()?) != *identity {
+        return Err(denied("original retired runtime directory changed"));
+    }
+    match open(run.as_raw_fd(), c"droidloom", libc::O_PATH | libc::O_DIRECTORY) {
+        Ok(named) if directory_node(&named.metadata()?) == *identity => Ok(Some(named)),
+        Ok(_) => Err(denied("retired runtime directory was replaced")),
+        Err(error) if error.kind() == io::ErrorKind::NotFound && held.metadata()?.nlink() == 0 => Ok(None),
+        Err(error) => Err(error),
+    }
+}
+enum PackageSocket {
+    Selected(PackageSelectedStream),
+    KernelFirst(KernelFirstPackageStream),
+}
+impl PackageSocket {
+    fn connect(&mut self) -> io::Result<()> {
+        match self {
+            Self::Selected(value) => value.connect().map_err(other),
+            Self::KernelFirst(value) => value.connect().map_err(other),
+        }
+    }
+    fn stream(&self) -> io::Result<&UnixStream> {
+        match self {
+            Self::Selected(value) => value.stream().map_err(other),
+            Self::KernelFirst(value) => value.stream().map_err(other),
+        }
+    }
+    fn stream_mut(&mut self) -> io::Result<&mut UnixStream> {
+        match self {
+            Self::Selected(value) => value.stream_mut().map_err(other),
+            Self::KernelFirst(value) => value.stream_mut().map_err(other),
+        }
+    }
+}
 struct SocketCustody {
     // The selected stream closes before its original server-path custody.
-    selected: Option<PackageSelectedStream>,
+    selected: Option<PackageSocket>,
     directories: Vec<(File, [u64; 5])>,
     node: File,
     seal: ([u64; 7], [i64; 4]),
@@ -370,6 +412,35 @@ impl SocketCustody {
         }
         Ok(())
     }
+    fn revalidate_retired(&self) -> io::Result<()> {
+        let mut current = open(libc::AT_FDCWD, c"/", libc::O_PATH | libc::O_DIRECTORY)?;
+        for (index, (held, original)) in self.directories[..2].iter().enumerate() {
+            if index > 0 {
+                current = open(current.as_raw_fd(), [c"run", c"droidloom"][index - 1],
+                    libc::O_PATH | libc::O_DIRECTORY)?;
+            }
+            if directory_node(&held.metadata()?) != *original || directory_node(&current.metadata()?) != *original {
+                return Err(denied("original retired socket parent changed"));
+            }
+        }
+        // systemd may remove its original RuntimeDirectory after stopping the
+        // legacy native actor. Observe that terminal inode directly; neither a
+        // renamed live directory nor a replacement at the fixed name qualifies.
+        let runtime = retired_runtime_parent(&current, &self.directories[2].0, &self.directories[2].1)?;
+        let m = self.node.metadata()?;
+        let original = &self.seal.0;
+        if [m.dev(), m.ino(), m.mode() as u64, m.uid() as u64, m.gid() as u64] != original[..5]
+            || m.nlink() != 0
+        {
+            return Err(denied("original broker socket inode was not retired"));
+        }
+        let Some(runtime) = runtime else { return Ok(()); };
+        match open(runtime.as_raw_fd(), c"control.sock", libc::O_PATH | libc::O_NONBLOCK) {
+            Err(error) if error.kind() == io::ErrorKind::NotFound => Ok(()),
+            Err(error) => Err(error),
+            Ok(_) => Err(denied("broker socket was recreated after original retirement")),
+        }
+    }
     fn connect(&mut self, owner: &PackageMacOwner, deadline: Instant) -> io::Result<()> {
         self.revalidate()?;
         if self.selected.is_some() {
@@ -379,9 +450,12 @@ impl SocketCustody {
         }
         // Preparation has no worker. Persist original custody before the
         // first namespace/socket helper can be created, including failure.
-        self.selected =
-            Some(PackageSelectedStream::prepare(owner, &self.node, deadline).map_err(other)?);
-        self.selected.as_mut().unwrap().connect().map_err(other)?;
+        self.selected = Some(if owner.selection().is_kernel_first() {
+            PackageSocket::KernelFirst(KernelFirstPackageStream::prepare(owner, &self.node, deadline).map_err(other)?)
+        } else {
+            PackageSocket::Selected(PackageSelectedStream::prepare(owner, &self.node, deadline).map_err(other)?)
+        });
+        self.selected.as_mut().unwrap().connect()?;
         self.revalidate()
     }
 
@@ -390,7 +464,6 @@ impl SocketCustody {
             .as_ref()
             .ok_or_else(|| denied("original package stream is absent"))?
             .stream()
-            .map_err(other)
     }
 
     fn stream_mut(&mut self) -> io::Result<&mut UnixStream> {
@@ -398,7 +471,6 @@ impl SocketCustody {
             .as_mut()
             .ok_or_else(|| denied("original package stream is absent"))?
             .stream_mut()
-            .map_err(other)
     }
 }
 
@@ -415,7 +487,7 @@ pub struct LivePackageRetirement<'a> {
     mac: PackageMacWitness,
     deadline: Instant,
 }
-impl LivePackageRetirement<'_> {
+impl<'a> LivePackageRetirement<'a> {
     pub fn revalidate(&self) -> io::Result<()> {
         before(self.deadline)?;
         self.lock.revalidate_fence(&self.fence)?;
@@ -428,6 +500,35 @@ impl LivePackageRetirement<'_> {
             .revalidate(&self.broker, &self.unit, self.socket.stream()?)
             .map_err(other)?;
         before(self.deadline)
+    }
+
+    /// Consume the original live result only after the native stop operation.
+    /// The held PIDFD and original manager invocation must show a clean exit;
+    /// no new connection, numeric PID, receipt or caller assertion is accepted.
+    /// The caller must separately retire the other fixed native actors.
+    pub fn complete_native_stop(self) -> io::Result<NativePackageRetirement<'a>> {
+        let value = NativePackageRetirement { original: self };
+        value.revalidate()?;
+        Ok(value)
+    }
+}
+
+/// The original resource result plus its original broker's terminal native
+/// lifetime. This keeps the EX guard borrowed and the durable deny fence held.
+/// It neither removes that fence nor grants an automatic new activation.
+pub struct NativePackageRetirement<'a> {
+    original: LivePackageRetirement<'a>,
+}
+impl NativePackageRetirement<'_> {
+    pub fn revalidate(&self) -> io::Result<()> {
+        let original = &self.original;
+        before(original.deadline)?;
+        original.lock.revalidate_fence(&original.fence)?;
+        original.mac.selection().revalidate().map_err(other)?;
+        original.mac.revalidate_after_broker_exit(&original.broker, &original.unit, original.deadline)
+            .map_err(other)?;
+        original.socket.revalidate_retired()?;
+        before(original.deadline)
     }
 }
 
@@ -542,9 +643,9 @@ pub fn retire_for_package<'a>(
 
 /// Owns the received same-description EX guard and actual original peer. Only
 /// the original ProductionDaemon may provide the actual terminal TreeExit.
-pub(super) struct ServerTransaction<'listener> {
+pub(crate) struct ServerTransaction<'listener> {
     // This borrow keeps the actual startup listener authority alive.
-    stream: BrokerAcceptedStream<'listener>,
+    stream: ProductionAcceptedStream<'listener>,
     lock: ReceivedPackageConfigurationLock,
     helper: PackageProcess,
     unit: PackageBrokerUnit,
@@ -555,7 +656,7 @@ pub(super) struct ServerTransaction<'listener> {
     deadline: Instant,
 }
 impl<'listener> ServerTransaction<'listener> {
-    pub(super) fn receive(mut stream: BrokerAcceptedStream<'listener>) -> io::Result<Self> {
+    pub(crate) fn receive(mut stream: ProductionAcceptedStream<'listener>) -> io::Result<Self> {
         let deadline = Instant::now() + TRANSACTION_TIME;
         let local = PackageProcess::own_broker()?;
         let helper = PackageProcess::peer_helper(stream.stream().map_err(other)?)?;
@@ -627,10 +728,10 @@ impl<'listener> ServerTransaction<'listener> {
         value.revalidate()?;
         Ok(value)
     }
-    pub(super) fn selection(&self) -> &ProductionSelection {
+    pub(crate) fn selection(&self) -> &ProductionSelection {
         self.mac.selection()
     }
-    pub(super) fn revalidate(&self) -> io::Result<()> {
+    pub(crate) fn revalidate(&self) -> io::Result<()> {
         before(self.deadline)?;
         self.lock.revalidate()?;
         self.mac.selection().revalidate().map_err(other)?;
@@ -649,7 +750,8 @@ impl<'listener> ServerTransaction<'listener> {
         }
         before(self.deadline)
     }
-    pub(super) fn fence_before_retirement(&mut self) -> io::Result<()> {
+    pub(crate) fn fence_before_retirement(&mut self) -> io::Result<()> {
+        before(self.deadline - NATIVE_STOP_TIME)?;
         self.revalidate()?;
         self.lock.require_unfenced()?;
         let token = offset_token()?;
@@ -694,6 +796,21 @@ impl<'listener> ServerTransaction<'listener> {
     pub(super) fn complete(&mut self, original: &TreeExit) -> io::Result<()> {
         self.revalidate()?;
         original.verify_package_retirement().map_err(other)?;
+        self.send_complete()
+    }
+    pub(crate) fn complete_early(
+        &mut self,
+        original: &crate::production_selection::early_generation::EarlyPackageRetirement,
+    ) -> io::Result<()> {
+        self.revalidate()?;
+        original.verify_package_retirement(self.selection())?;
+        self.send_complete()
+    }
+    pub(crate) fn deadline(&self) -> Instant {
+        self.deadline
+    }
+    fn send_complete(&mut self) -> io::Result<()> {
+        before(self.deadline - NATIVE_STOP_TIME)?;
         let fence = self
             .fence
             .as_ref()
@@ -729,6 +846,30 @@ mod tests {
     use std::os::unix::fs::OpenOptionsExt;
 
     #[test]
+    fn package_terminal_runtime_directory_accepts_only_original_removal_or_original_name() {
+        let fixture = tempfile::tempdir().unwrap();
+        let run = File::options().read(true).custom_flags(libc::O_PATH | libc::O_DIRECTORY)
+            .open(fixture.path()).unwrap();
+        let directory = fixture.path().join("droidloom");
+        std::fs::create_dir(&directory).unwrap();
+        let held = File::options().read(true).custom_flags(libc::O_PATH | libc::O_DIRECTORY)
+            .open(&directory).unwrap();
+        let identity = directory_node(&held.metadata().unwrap());
+        assert!(retired_runtime_parent(&run, &held, &identity).unwrap().is_some());
+        let renamed = fixture.path().join("old-droidloom");
+        std::fs::rename(&directory, &renamed).unwrap();
+        assert!(retired_runtime_parent(&run, &held, &identity).is_err());
+        std::fs::create_dir(&directory).unwrap();
+        assert!(retired_runtime_parent(&run, &held, &identity).is_err());
+        std::fs::remove_dir(&directory).unwrap();
+        std::fs::remove_dir(&renamed).unwrap();
+        assert_eq!(held.metadata().unwrap().nlink(), 0);
+        assert!(retired_runtime_parent(&run, &held, &identity).unwrap().is_none());
+        std::fs::create_dir(&directory).unwrap();
+        assert!(retired_runtime_parent(&run, &held, &identity).is_err());
+    }
+
+    #[test]
     fn package_scm_lock_proves_the_same_open_file_description_in_both_directions() {
         let directory = tempfile::tempdir().unwrap();
         let parent = File::options()
@@ -747,6 +888,8 @@ mod tests {
         let (byte, received) = super::super::apk::receive_file(&right).unwrap();
         assert_eq!(byte, PREFIX);
         let received = received.unwrap();
+        assert_eq!(unsafe { libc::fcntl(received.as_raw_fd(), libc::F_GETFL) } & libc::O_ACCMODE, libc::O_RDONLY);
+        assert_eq!(std::os::unix::fs::FileExt::write_at(&received, b"not permitted", 0).unwrap_err().raw_os_error(), Some(libc::EBADF));
         assert_eq!(position(received.as_fd()).unwrap(), 1234567);
         seek(received.as_fd(), 9876543).unwrap();
         assert_eq!(position(lock.as_fd()).unwrap(), 9876543);
@@ -754,7 +897,6 @@ mod tests {
         assert_eq!(position(received.as_fd()).unwrap(), 7654321);
         let independent = File::options()
             .read(true)
-            .write(true)
             .open(directory.path().join("setup.lock"))
             .unwrap();
         assert_eq!(position(independent.as_fd()).unwrap(), 0);

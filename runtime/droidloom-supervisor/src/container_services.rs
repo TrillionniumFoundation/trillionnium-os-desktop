@@ -15,7 +15,7 @@ const EARLY: &str = "droidloom-early-observer.service";
 const EARLY_OWNER: &str = "droidloom-production.service";
 const EARLY_LAUNCHER: &str = "droidloom-instance-launcher.service";
 const EARLY_LAUNCHER_FIELDS: &str = "Id,LoadState,ActiveState,SubState,Type,NotifyAccess,KillMode,Restart,RemainAfterExit,User,Group,ExecStart,ExecStop,ExecStopPost,Requires,After,PartOf,MainPID,InvocationID,Result,ExecMainPID,ExecMainCode,ExecMainStatus,SELinuxContext,AppArmorProfile,NoNewPrivileges,SendSIGKILL,PrivateMounts";
-const EARLY_OWNER_FIELDS: &str = "Id,LoadState,ActiveState,SubState,Type,KillMode,Restart,RemainAfterExit,User,Group,ExecStart,ExecStop,ExecStopPost,Requires,After,BindsTo,MainPID,InvocationID,Result,ExecMainPID,ExecMainCode,ExecMainStatus,SELinuxContext,AppArmorProfile,NoNewPrivileges";
+const EARLY_OWNER_FIELDS: &str = "Id,LoadState,ActiveState,SubState,Type,KillMode,Restart,RemainAfterExit,User,Group,ExecStart,ExecStop,ExecStopPost,Requires,After,BindsTo,Conflicts,MainPID,InvocationID,Result,ExecMainPID,ExecMainCode,ExecMainStatus,SELinuxContext,AppArmorProfile,NoNewPrivileges";
 const EARLY_OBSERVER_FIELDS: &str = "Id,LoadState,ActiveState,SubState,Type,NotifyAccess,KillMode,Restart,RemainAfterExit,ExecStart,BindsTo,After,Requires,MainPID,InvocationID,Result,ExecMainPID,ExecMainCode,ExecMainStatus";
 const PROGRAM: &str = "/usr/lib/droidloom/production/current/droidloomd";
 /// Layout detection only prevents desktop fallback. The original production
@@ -520,9 +520,15 @@ fn verify_early_owner(owner: &Properties) -> io::Result<()> {
             ("AppArmorProfile", "droidloom-production-broker"),
             ("NoNewPrivileges", "yes"),
         ],
-    ) || !["Requires", "After"]
+    ) || !["Requires", "After"].iter().all(|key| {
+        [
+            "droidloom-manager-label.service",
+            "systemd-tmpfiles-setup.service",
+        ]
         .iter()
-        .all(|key| members(owner, key).any(|unit| unit == "droidloom-manager-label.service"))
+        .all(|required| members(owner, key).any(|unit| unit == *required))
+    }) || !members(owner, "Conflicts").any(|unit| unit == "droidloomd.service")
+        || !members(owner, "After").any(|unit| unit == "droidloomd.service")
         || !["Requires", "After", "BindsTo"]
             .iter()
             .all(|key| members(owner, key).any(|unit| unit == EARLY_LAUNCHER))
@@ -940,13 +946,14 @@ mod tests {
             ("NoNewPrivileges", "yes"),
             (
                 "Requires",
-                "droidloom-manager-label.service droidloom-instance-launcher.service",
+                "systemd-tmpfiles-setup.service droidloom-manager-label.service droidloom-instance-launcher.service",
             ),
             (
                 "After",
-                "local-fs.target droidloom-manager-label.service droidloom-instance-launcher.service",
+                "local-fs.target systemd-tmpfiles-setup.service droidloomd.service droidloom-manager-label.service droidloom-instance-launcher.service",
             ),
             ("BindsTo", EARLY_LAUNCHER),
+            ("Conflicts", "droidloomd.service"),
             ("ActiveState", "inactive"),
             ("SubState", "dead"),
             ("MainPID", "0"),
@@ -1095,6 +1102,17 @@ mod tests {
             (1, "ExecStop", "/bin/kill"),
             (1, "ExecStopPost", "/bin/true"),
             (1, "Requires", ""),
+            (
+                1,
+                "Requires",
+                "droidloom-manager-label.service droidloom-instance-launcher.service",
+            ),
+            (
+                1,
+                "After",
+                "local-fs.target droidloomd.service droidloom-manager-label.service droidloom-instance-launcher.service",
+            ),
+            (1, "Conflicts", ""),
             (1, "User", "qq"),
             (1, "BindsTo", ""),
             (0, "KillMode", "control-group"),

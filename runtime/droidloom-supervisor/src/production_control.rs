@@ -6,7 +6,8 @@ use crate::production_cell::{CellPoll, ProductionCell};
 use crate::production_configuration::ConfigurationReadGuard;
 use crate::production_execution::PreparationAdmission;
 use crate::production_mac::{
-    BrokerAcceptedStream, BrokerSelectedListener, HostPeerIssuer, MacError,
+    BrokerAcceptedStream, BrokerSelectedListener, HostPeerIssuer, KernelFirstAcceptedStream,
+    KernelFirstBrokerListener, MacError,
 };
 use crate::production_namespace::TreeExit;
 use crate::production_readiness::BootProperty;
@@ -51,6 +52,7 @@ fn trusted_directory(parent: RawFd, name: &std::ffi::CStr) -> Result<fs::File, C
 struct OwnedListener {
     listener: Option<UnixListener>,
     selected: Option<BrokerSelectedListener>,
+    early: Option<KernelFirstBrokerListener>,
     parent: fs::File,
     name: CString,
     node: Option<fs::File>,
@@ -75,24 +77,110 @@ fn selected_socket_control(error: MacError) -> ControlError {
 enum AcceptedConnection<'listener> {
     Ordinary(UnixStream),
     Selected(BrokerAcceptedStream<'listener>),
+    Early(KernelFirstAcceptedStream<'listener>),
 }
 
-impl AcceptedConnection<'_> {
+impl<'a> AcceptedConnection<'a> {
+    fn into_package(self) -> Result<ProductionAcceptedStream<'a>, ControlError> {
+        let value = match self {
+            Self::Selected(stream) => ProductionConnection::Selected(stream),
+            Self::Early(stream) => ProductionConnection::Early(stream),
+            Self::Ordinary(_) => {
+                return Err(ControlError::Invalid(
+                    "package retirement requires the original production listener".into(),
+                ));
+            }
+        };
+        Ok(ProductionAcceptedStream(value))
+    }
     fn stream(&self) -> io::Result<&UnixStream> {
         match self {
             Self::Ordinary(stream) => Ok(stream),
             Self::Selected(stream) => stream.stream().map_err(selected_socket_io),
+            Self::Early(stream) => stream.stream().map_err(selected_socket_io),
         }
     }
     fn stream_mut(&mut self) -> io::Result<&mut UnixStream> {
         match self {
             Self::Ordinary(stream) => Ok(stream),
             Self::Selected(stream) => stream.stream_mut().map_err(selected_socket_io),
+            Self::Early(stream) => stream.stream_mut().map_err(selected_socket_io),
+        }
+    }
+}
+
+// Only an accepted connection from either typed production owner can issue
+// this transport. The development UnixStream variant is deliberately absent.
+pub(crate) struct ProductionAcceptedStream<'a>(ProductionConnection<'a>);
+enum ProductionConnection<'a> {
+    Selected(BrokerAcceptedStream<'a>),
+    Early(KernelFirstAcceptedStream<'a>),
+}
+impl ProductionAcceptedStream<'_> {
+    pub(crate) fn stream(&self) -> io::Result<&UnixStream> {
+        match &self.0 {
+            ProductionConnection::Selected(stream) => stream.stream().map_err(selected_socket_io),
+            ProductionConnection::Early(stream) => stream.stream().map_err(selected_socket_io),
+        }
+    }
+    pub(crate) fn stream_mut(&mut self) -> io::Result<&mut UnixStream> {
+        match &mut self.0 {
+            ProductionConnection::Selected(stream) => {
+                stream.stream_mut().map_err(selected_socket_io)
+            }
+            ProductionConnection::Early(stream) => stream.stream_mut().map_err(selected_socket_io),
         }
     }
 }
 
 impl OwnedListener {
+    fn bind_early_at(
+        parent: fs::File,
+        owner: crate::production_execution::RuntimeMacOwner,
+        deadline: std::time::Instant,
+    ) -> Result<Self, ControlError> {
+        let early = KernelFirstBrokerListener::prepare(owner, &parent, deadline)
+            .map_err(selected_socket_control)?;
+        let mut owned = Self {
+            listener: None,
+            selected: None,
+            early: Some(early),
+            parent,
+            name: c"control.sock".to_owned(),
+            node: None,
+            identity: None,
+            retirement_attempted: false,
+        };
+        let bound = owned.early.as_mut().unwrap().bind_and_listen();
+        let held = owned
+            .early
+            .as_ref()
+            .unwrap()
+            .server_inode()
+            .map_err(selected_socket_control)
+            .and_then(|inode| {
+                inode
+                    .try_clone()
+                    .map_err(|source| io_error("retain direct control socket inode", source))
+            });
+        match held {
+            Ok(inode) => {
+                owned.node = Some(inode);
+                owned.observe_node()?;
+            }
+            Err(inode_error) => {
+                return match bound {
+                    Ok(()) => Err(inode_error),
+                    Err(bind_error) => Err(ControlError::Invalid(format!(
+                        "direct listener creation failed: {bind_error}; original inode unavailable: {inode_error}",
+                    ))),
+                };
+            }
+        }
+        bound.map_err(selected_socket_control)?;
+        Ok(owned)
+    }
+
     fn bind_selected_at(
         parent: fs::File,
         issuer: HostPeerIssuer,
@@ -105,6 +193,7 @@ impl OwnedListener {
         let mut owned = Self {
             listener: None,
             selected: Some(selected),
+            early: None,
             parent,
             name: c"control.sock".to_owned(),
             node: None,
@@ -173,6 +262,7 @@ impl OwnedListener {
         let mut owned = Self {
             listener: Some(listener),
             selected: None,
+            early: None,
             parent,
             name,
             node: None,
@@ -245,6 +335,9 @@ impl OwnedListener {
         if let Some(selected) = &self.selected {
             return selected.listener().map_err(selected_socket_control);
         }
+        if let Some(early) = &self.early {
+            return early.listener().map_err(selected_socket_control);
+        }
         self.listener
             .as_ref()
             .ok_or_else(|| ControlError::Invalid("control listener retired".into()))
@@ -257,6 +350,12 @@ impl OwnedListener {
                 .map(AcceptedConnection::Selected)
                 .map_err(selected_socket_io);
         }
+        if let Some(early) = &self.early {
+            return early
+                .accept()
+                .map(AcceptedConnection::Early)
+                .map_err(selected_socket_io);
+        }
         self.listener
             .as_ref()
             .ok_or_else(|| io::Error::other("ordinary control listener retired"))?
@@ -265,7 +364,7 @@ impl OwnedListener {
     }
 
     fn initialize(mut self) -> Result<Self, ControlError> {
-        if self.selected.is_some() {
+        if self.selected.is_some() || self.early.is_some() {
             // The selected owner set the fixed mode before sealing its inode.
             // A redundant chmod would change that original seal's ctime.
             if self.observe_node()?.mode() & 0o7777 != 0o666 {
@@ -293,6 +392,9 @@ impl OwnedListener {
             // before the original namespace and issuer; pathname unlink stays
             // exclusively with the held-inode checks below.
             selected.retire().map_err(selected_socket_control)?;
+        }
+        if let Some(early) = &mut self.early {
+            early.retire().map_err(selected_socket_control)?;
         }
         self.retirement_attempted = true;
         // Close the listening endpoint even if the path is foreign or cannot
@@ -582,8 +684,14 @@ impl ProductionDaemon {
         }
         let selected = ProductionSelection::load(guard, spec, peer_uid)
             .map_err(|error| ControlError::Invalid(error.to_string()))?;
-        if selected.host_managed_launcher().map_err(|error| ControlError::Invalid(error.to_string()))?.is_some() {
-            return Err(ControlError::Invalid("the selected host-managed container must start through its system service".into()));
+        if selected
+            .host_managed_launcher()
+            .map_err(|error| ControlError::Invalid(error.to_string()))?
+            .is_some()
+        {
+            return Err(ControlError::Invalid(
+                "the selected host-managed container must start through its system service".into(),
+            ));
         }
         if let Some(active) = &self.active {
             authorize_uid(peer_uid, active.spec().host_uid)?;
@@ -1088,17 +1196,13 @@ pub(super) fn serve(config: &DaemonConfig, shutdown: &AtomicBool) -> Result<(), 
                             .map_err(|source| io_error("observe accepted stream", source))?,
                     ) {
                         Ok(true) => {
-                            let result = match accepted {
-                                AcceptedConnection::Selected(stream) =>
-                                    super::package::ServerTransaction::receive(stream)
-                                        .map_err(|e| ControlError::Invalid(e.to_string()))
-                                        .and_then(|mut transaction| {
-                                            daemon.package_retirement(&mut transaction)
-                                        }),
-                                AcceptedConnection::Ordinary(_) => Err(ControlError::Invalid(
-                                    "package retirement requires the original selected startup listener".into(),
-                                )),
-                            };
+                            let result = accepted.into_package().and_then(|stream| {
+                                super::package::ServerTransaction::receive(stream)
+                                    .map_err(|e| ControlError::Invalid(e.to_string()))
+                                    .and_then(|mut transaction| {
+                                        daemon.package_retirement(&mut transaction)
+                                    })
+                            });
                             if let Err(error) = result {
                                 eprintln!("fixed package transaction refused: {error}");
                             }
@@ -1168,6 +1272,12 @@ mod tests {
         assert!(daemon.original_package_selection().is_err());
         assert!(daemon.owned_selection.is_none());
         assert!(daemon.last_retirement.is_none());
+    }
+
+    #[test]
+    fn ordinary_connection_cannot_issue_package_transport() {
+        let (stream, _peer) = UnixStream::pair().unwrap();
+        assert!(AcceptedConnection::Ordinary(stream).into_package().is_err());
     }
 
     fn socket_owner(socket: &Path) -> OwnedListener {
@@ -1331,6 +1441,7 @@ mod tests {
         let owned = OwnedListener {
             listener: Some(listener),
             selected: None,
+            early: None,
             parent,
             name,
             node: None,

@@ -93,6 +93,32 @@ fn live(fd: BorrowedFd<'_>) -> io::Result<()> {
     }
     Ok(())
 }
+
+// A terminal check is intentionally distinct from live process observation.
+// Retain the original PIDFD across service stop; never reopen a numeric PID.
+fn exited(fd: BorrowedFd<'_>) -> io::Result<()> {
+    loop {
+        let mut p = libc::pollfd {
+            fd: fd.as_raw_fd(),
+            events: libc::POLLIN,
+            revents: 0,
+        };
+        let n = unsafe { libc::poll(&mut p, 1, 0) };
+        if n < 0 {
+            let error = io::Error::last_os_error();
+            if error.kind() == io::ErrorKind::Interrupted {
+                continue;
+            }
+            return Err(error);
+        }
+        if n == 1 && p.revents & libc::POLLIN != 0
+            && p.revents & (libc::POLLERR | libc::POLLNVAL) == 0
+        {
+            return Ok(());
+        }
+        return Err(reject("original package broker PIDFD has not exited"));
+    }
+}
 fn proc_text(directory: &File, name: &CStr) -> io::Result<String> {
     let file = opened(
         directory.as_raw_fd(),
@@ -487,6 +513,13 @@ impl PackageProcess {
     pub(crate) fn is_broker(&self) -> bool {
         self.installed.role == Role::Broker
     }
+    pub(crate) fn verify_exited_broker(&self) -> io::Result<()> {
+        if !self.is_broker() {
+            return Err(reject("terminal package custody requires the original broker"));
+        }
+        self.installed.revalidate()?;
+        exited(self.observed.pidfd.as_fd())
+    }
     pub(crate) fn pidfd(&self) -> BorrowedFd<'_> {
         self.observed.pidfd.as_fd()
     }
@@ -620,10 +653,18 @@ mod tests {
         let peer = ObservedProcess::peer(&socket).unwrap();
         assert_eq!(peer.pid, owned.child.id());
         peer.revalidate().unwrap();
+        assert!(exited(peer.pidfd.as_fd()).is_err());
         socket.write_all(b"X").unwrap();
         assert!(owned.finish(false).unwrap().success());
         assert!(peer.revalidate().is_err());
         assert!(live(peer.pidfd.as_fd()).is_err());
+        exited(peer.pidfd.as_fd()).unwrap();
+        // A new live process cannot replace the original held terminal peer.
+        let raw = unsafe { libc::syscall(libc::SYS_pidfd_open, libc::getpid(), 0) };
+        assert!(raw >= 0);
+        let current = unsafe { File::from_raw_fd(raw as i32) };
+        assert!(exited(current.as_fd()).is_err());
+        exited(peer.pidfd.as_fd()).unwrap();
         assert_eq!(socket.read(&mut [0_u8; 1]).unwrap(), 0);
     }
 

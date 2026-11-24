@@ -26,6 +26,9 @@ mod leaf_adoption;
 #[path = "leaf_unit_entry.rs"]
 mod leaf_unit_entry;
 use leaf_routes::{LeafObservation, LeafPlan};
+#[path = "launch_route.rs"]
+mod launch_route;
+use launch_route::{LaunchObservation, LaunchPlan};
 
 /// Execute only a root content-addressed single-app plan in its fixed installed
 /// unit. This preserves the original dispatcher and never grants acceptance.
@@ -80,6 +83,8 @@ struct ApplicationPlan {
     expected_input: Option<ExpectedInput>,
     #[serde(default)]
     leaf: Option<LeafPlan>,
+    #[serde(default)]
+    launch: Option<LaunchPlan>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -139,6 +144,8 @@ struct AppDispatch {
     #[serde(skip_serializing_if = "Option::is_none")]
     firefox_activity_start: Option<FirefoxActivityStart>,
     leaf_observation: Option<LeafObservation>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    launch_observation: Option<LaunchObservation>,
     pending_gates: Vec<String>,
     accepted_gates: usize,
     runtime_qualified: bool,
@@ -154,6 +161,7 @@ pub struct RuntimeReport {
     unsupported_business_flows: usize,
     partial_browser_invocations: usize,
     partial_leaf_invocations: usize,
+    launch_only_invocations: usize,
     accepted_applications: usize,
     runtime_qualified: bool,
     production_ready: bool,
@@ -176,6 +184,12 @@ trait RuntimeClient {
         plan: &LeafPlan,
         selection: &FilePin,
     ) -> Result<(ApplicationInspection, LeafObservation), String>;
+    fn launch(
+        &mut self,
+        expected: &ApplicationInspection,
+        plan: &LaunchPlan,
+        source_receipt: &FilePin,
+    ) -> Result<(ApplicationInspection, LaunchObservation), String>;
 }
 
 struct SocketClient<'a> {
@@ -183,6 +197,15 @@ struct SocketClient<'a> {
 }
 
 impl RuntimeClient for SocketClient<'_> {
+    fn launch(
+        &mut self,
+        expected: &ApplicationInspection,
+        plan: &LaunchPlan,
+        source_receipt: &FilePin,
+    ) -> Result<(ApplicationInspection, LaunchObservation), String> {
+        let observed = launch_route::execute(self.socket, expected, plan, source_receipt)?;
+        Ok((expected.clone(), observed))
+    }
     fn inspect(&mut self, package: &str, user: u32) -> Result<ApplicationInspection, String> {
         inspect_package_with_custody(self.socket, package, user).map(|(application, _)| application)
     }
@@ -243,7 +266,7 @@ fn pinned(reference: &FilePin) -> Result<Vec<u8>, String> {
 }
 
 fn validate(plan: &RuntimePlan, gates: &GateRegistry, expected_count: usize) -> Result<(), String> {
-    if !matches!(plan.schema, 1 | 2)
+    if !matches!(plan.schema, 1 | 2 | 3)
         || !(1..=1024).contains(&expected_count)
         || plan.applications.len() != expected_count
         || gates.schema != "pocket4-app-release-gates-v1"
@@ -267,9 +290,9 @@ fn validate(plan: &RuntimePlan, gates: &GateRegistry, expected_count: usize) -> 
         return Err("runtime registry omits a required common gate".into());
     }
     let has_leaves = plan.applications.iter().any(|app| app.leaf.is_some());
-    if has_leaves && (plan.schema != 2 || plan.preparation_selection.is_none()) {
+    if has_leaves && (!matches!(plan.schema, 2 | 3) || plan.preparation_selection.is_none()) {
         return Err(
-            "finite leaf execution requires schema 2 and the complete selected preparation receipt"
+            "finite leaf execution requires schema 2 or 3 and the complete selected preparation receipt"
                 .into(),
         );
     }
@@ -277,6 +300,14 @@ fn validate(plan: &RuntimePlan, gates: &GateRegistry, expected_count: usize) -> 
     for app in &plan.applications {
         if !seen.insert(&app.package) {
             return Err("runtime selection repeats a package".into());
+        }
+        if let Some(launch) = &app.launch {
+            launch.validate(&app.package)?;
+            if plan.schema != 3 || app.expected_input.is_none() || app.leaf.is_some()
+                || (app.package == "org.mozilla.firefox" && plan.execute_public_browser)
+            {
+                return Err("launch-only execution requires schema 3, complete reviewed input, and one explicit route per application".into());
+            }
         }
         if let Some(leaf) = &app.leaf {
             if leaf.route.package() != app.package || app.expected_input.is_none() {
@@ -382,6 +413,7 @@ fn dispatch(
             invocation_output: None,
             firefox_activity_start: None,
             leaf_observation: None,
+            launch_observation: None,
             pending_gates: pending,
             accepted_gates: 0,
             runtime_qualified: false,
@@ -404,6 +436,21 @@ fn dispatch(
                     app.expected_input.as_ref().expect("checked above"),
                 ) {
                     row.reason = "installed version or complete APK byte identities differ from the reviewed official input".into();
+                } else if let Some(launch) = &app.launch {
+                    let source = &app.expected_input.as_ref().expect("checked above").source_receipt;
+                    match client.launch(&actual, launch, source) {
+                        Ok((after, observation)) if after == actual => {
+                            row.status = "launch_only_business_pending";
+                            row.reason = "The current enabled launcher reached the original owned task-binding primitive with unchanged installed identity and Main epoch. Rendering, close/reopen, recovery and all business/common gates remain pending; a fresh task is not claimed.".into();
+                            row.launch_observation = Some(observation);
+                        }
+                        Ok(_) => {
+                            row.reason = "launch returned a different Main epoch or installed identity; no automatic retry".into();
+                        }
+                        Err(error) => {
+                            row.reason = format!("launch-only observation failed; retain any actual task binding before an explicit retry: {error}");
+                        }
+                    }
                 } else if let Some(leaf) = &app.leaf {
                     match client.leaf(
                         &actual,
@@ -468,7 +515,7 @@ fn dispatch(
             .count(),
         unsupported_business_flows: applications
             .iter()
-            .filter(|r| r.status == "unsupported")
+            .filter(|r| matches!(r.status, "unsupported" | "launch_only_business_pending"))
             .count(),
         partial_browser_invocations: applications
             .iter()
@@ -477,6 +524,10 @@ fn dispatch(
         partial_leaf_invocations: applications
             .iter()
             .filter(|r| r.status == "partial_leaf_observation")
+            .count(),
+        launch_only_invocations: applications
+            .iter()
+            .filter(|r| r.status == "launch_only_business_pending")
             .count(),
         accepted_applications: 0,
         runtime_qualified: false,
@@ -603,10 +654,21 @@ pub fn run_files(
         if let Some(input) = &app.expected_input {
             pinned(&input.source_receipt)?;
         }
+        if let Some(launch) = &app.launch {
+            pinned(&launch.specification)?;
+        }
     }
     let report = dispatch(&plan, &gates, &mut SocketClient { socket });
     pinned(&plan.main_qualification)?;
     pinned(&plan.gate_registry)?;
+    for app in &plan.applications {
+        if let Some(input) = &app.expected_input {
+            pinned(&input.source_receipt)?;
+        }
+        if let Some(launch) = &app.launch {
+            pinned(&launch.specification)?;
+        }
+    }
     if let Some(selection) = &plan.preparation_selection {
         leaf_routes::validate_selection(selection)?;
     }
@@ -630,8 +692,18 @@ mod tests {
         opens: usize,
         browser_output: String,
         leaf_calls: usize,
+        launch_calls: usize,
     }
     impl RuntimeClient for Fake {
+        fn launch(
+            &mut self,
+            expected: &ApplicationInspection,
+            plan: &LaunchPlan,
+            _: &FilePin,
+        ) -> Result<(ApplicationInspection, LaunchObservation), String> {
+            self.launch_calls += 1;
+            Ok((expected.clone(), launch_route::test_observation(&plan.component)))
+        }
         fn inspect(&mut self, p: &str, _: u32) -> Result<ApplicationInspection, String> {
             self.identities
                 .get(p)
@@ -707,6 +779,7 @@ mod tests {
             opens: 0,
             browser_output: "Status: ok\nActivity: org.mozilla.firefox/.HomeActivity".into(),
             leaf_calls: 0,
+            launch_calls: 0,
         };
         let mut applications = Vec::new();
         for n in 0..42 {
@@ -748,6 +821,7 @@ mod tests {
                 package,
                 expected_input: Some(expected.clone()),
                 leaf: None,
+                launch: None,
             });
         }
         (
@@ -916,4 +990,77 @@ mod tests {
         p.schema = 1;
         assert!(validate(&p, &g, 42).is_err());
     }
+    #[test]
+    fn all_39_explicit_launch_routes_keep_business_and_common_gates_pending() {
+        let (mut plan, gates, mut client) = fixture();
+        plan.schema = 3;
+        plan.execute_public_browser = false;
+        plan.applications.truncate(39);
+        for app in &mut plan.applications {
+            app.launch = Some(LaunchPlan {
+                specification: plan.main_qualification.clone(),
+                component: format!("{}/.Main", app.package),
+            });
+        }
+        validate(&plan, &gates, 39).unwrap();
+        let report = dispatch(&plan, &gates, &mut client);
+        assert_eq!(client.launch_calls, 39);
+        assert_eq!(client.opens, 0);
+        assert_eq!(report.selected_applications, 39);
+        assert_eq!(report.launch_only_invocations, 39);
+        assert_eq!(report.unsupported_business_flows, 39);
+        assert_eq!(report.accepted_applications, 0);
+        assert!(!report.production_ready && !report.runtime_qualified);
+        assert!(report.applications.iter().all(|row| {
+            row.status == "launch_only_business_pending"
+                && row.accepted_gates == 0 && !row.pending_gates.is_empty()
+                && row.launch_observation.as_ref().is_some_and(|observation| {
+                    observation.business_pending && !observation.close_observed
+                        && !observation.reopen_observed && !observation.fresh_task_proven
+                })
+        }));
+        // Even a fully routed selection cannot silently shrink the release set.
+        assert!(validate(&plan, &gates, 42).is_err());
+    }
+
+    #[test]
+    fn launch_routes_require_explicit_schema_source_and_unambiguous_operation() {
+        let (mut plan, gates, _) = fixture();
+        plan.applications[0].launch = Some(LaunchPlan {
+            specification: plan.main_qualification.clone(),
+            component: "org.mozilla.firefox/.App".into(),
+        });
+        assert!(validate(&plan, &gates, 42).is_err());
+        plan.schema = 3;
+        assert!(validate(&plan, &gates, 42).is_err());
+        plan.execute_public_browser = false;
+        validate(&plan, &gates, 42).unwrap();
+        plan.applications[0].expected_input = None;
+        assert!(validate(&plan, &gates, 42).is_err());
+    }
+
+    #[test]
+    fn source_or_epoch_mismatch_blocks_the_generic_launch_before_invocation() {
+        for changed_epoch in [false, true] {
+            let (mut plan, gates, mut client) = fixture();
+            plan.schema = 3;
+            plan.execute_public_browser = false;
+            plan.applications[0].launch = Some(LaunchPlan {
+                specification: plan.main_qualification.clone(),
+                component: "org.mozilla.firefox/.App".into(),
+            });
+            let actual = client.identities.get_mut("org.mozilla.firefox").unwrap();
+            if changed_epoch {
+                actual.epoch.framework_start_ticks += 1;
+            } else {
+                actual.apks[0].sha256 = "b".repeat(64);
+            }
+            validate(&plan, &gates, 42).unwrap();
+            let report = dispatch(&plan, &gates, &mut client);
+            assert_eq!(client.launch_calls, 0);
+            assert_eq!(report.launch_only_invocations, 0);
+            assert_eq!(report.applications[0].status, "blocked");
+        }
+    }
+
 }

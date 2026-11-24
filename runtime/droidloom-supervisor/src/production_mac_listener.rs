@@ -58,7 +58,7 @@ fn held_alias_attribute(file: &File, name: &CStr) -> Result<Vec<u8>> {
     Ok(value[..size as usize].to_vec())
 }
 
-fn server_label(server: BorrowedFd<'_>) -> Result<Vec<u8>> {
+pub(super) fn server_label(server: BorrowedFd<'_>) -> Result<Vec<u8>> {
     let before = descriptor_identity(server)?;
     require(
         before.kind == libc::S_IFSOCK,

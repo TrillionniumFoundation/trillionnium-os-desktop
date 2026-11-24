@@ -429,6 +429,7 @@ impl Interface {
                 | "RootDirectory"
                 | "RootImage"
                 | "WorkingDirectory" => Some(c"s"),
+                "Result" => Some(c"s"),
                 "RemainAfterExit" | "SendSIGKILL" | "SendSIGHUP" | "NoNewPrivileges"
                 | "PrivateMounts" | "Delegate" | "DynamicUser" => Some(c"b"),
                 "MainPID" | "ControlPID" | "ExecMainPID" | "NRestarts" | "UMask" => Some(c"u"),

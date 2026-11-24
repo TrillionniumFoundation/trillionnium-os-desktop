@@ -6,3 +6,11 @@
 /var/lib/droidloom/runtime-cohorts/[0-9a-f]{64}/images/contacts-content-jar-original -- u:object_r:system_file:s0
 /etc/systemd/system/droidloom-instance-factory\.service -- u:object_r:p4_linux_factory_unit_file_t:s0
 /etc/systemd/system/droidloom-production\.service -- u:object_r:p4_linux_production_unit_file_t:s0
+/usr/lib/droidloom/droidloom-package-helper -- u:object_r:droidloom_package_helper_exec:s0
+/usr/bin/(droidloomctl|droidloom-applications) -- u:object_r:droidloom_public_control_client_exec:s0
+/run/droidloom -d u:object_r:droidloom_public_control_dir:s0
+/run/droidloom/control\.sock -s u:object_r:droidloom_public_control_socket:s0
+/etc/droidloom -d u:object_r:droidloom_package_config_dir:s0
+/etc/droidloom/production -d u:object_r:droidloom_package_selection_dir:s0
+/etc/droidloom/production/package-maintenance\.json -- u:object_r:droidloom_package_fence:s0
+/(etc|usr/lib)/systemd/system/(droidloom-manager-label|droidloomd)\.service -- u:object_r:droidloom_package_native_unit_file:s0

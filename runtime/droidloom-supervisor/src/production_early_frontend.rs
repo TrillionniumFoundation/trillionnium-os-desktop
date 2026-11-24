@@ -764,6 +764,9 @@ pub(super) struct Frontend<'a> {
     android_parent: RuntimeDirectory,
     retired: bool,
 }
+pub(super) struct FrontendRetirement {
+    _original_endpoints_retired: (),
+}
 impl<'a> Frontend<'a> {
     pub(super) fn prepare(
         board: &'a EarlyBoardResources,
@@ -922,6 +925,11 @@ impl<'a> Frontend<'a> {
         self.control_parent.retire()?;
         self.retired = true;
         Ok(())
+    }
+    pub(super) fn retire_with_proof(&mut self) -> io::Result<FrontendRetirement> {
+        check(!self.retired, "original frontend retirement was already consumed")?;
+        self.retire()?;
+        Ok(FrontendRetirement { _original_endpoints_retired: () })
     }
 }
 impl Drop for Frontend<'_> {

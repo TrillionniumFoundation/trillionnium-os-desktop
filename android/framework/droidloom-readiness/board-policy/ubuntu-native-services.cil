@@ -436,6 +436,15 @@
 (allow init_t p4_linux_native_runtime (sock_file (getattr create setattr unlink)))
 (neverallow p4_linux_native_processes p4_linux_product_store_t (file (open read write append execute execute_no_trans entrypoint create rename unlink relabelto relabelfrom)))
 (neverallow p4_linux_native_processes p4_linux_product_store_t (dir (open read write add_name remove_name create mounton relabelto relabelfrom)))
-(neverallow p4_linux_native_processes p4_linux_mac_roles (process (transition dyntransition ptrace)))
+; Preserve all cross-role ptrace/dynamic-transition denials. The only new
+; static transition is the fixed package helper's automatic exec from the
+; ordinary package-invoking session, declared in linux-package-maintenance.cil.
+(neverallow p4_linux_native_processes p4_linux_mac_roles (process (dyntransition ptrace)))
+(typeattribute p4_linux_mac_roles_without_package_helper)
+(typeattributeset p4_linux_mac_roles_without_package_helper (and (p4_linux_mac_roles) (not (droidloom_package_helper))))
+(neverallow p4_linux_native_processes p4_linux_mac_roles_without_package_helper (process (transition)))
+(typeattribute p4_linux_native_without_package_invoker)
+(typeattributeset p4_linux_native_without_package_invoker (and (p4_linux_native_processes) (not (p4_linux_user_session_t))))
+(neverallow p4_linux_native_without_package_invoker droidloom_package_helper (process (transition)))
 (neverallow p4_linux_native_processes p4_linux_native_executables (file (create write append setattr rename unlink relabelto relabelfrom)))
 (neverallow p4_linux_native_processes kernel (security (load_policy setenforce setbool setsecparam setcheckreqprot)))

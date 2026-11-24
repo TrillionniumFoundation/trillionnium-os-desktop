@@ -153,7 +153,10 @@ impl DirectorySetupLock {
         let original_directory = DirectoryIdentity::read(directory, custody)?;
         let (flags, mode) = match access {
             Access::InspectExisting => (libc::O_RDONLY, 0),
-            Access::Shared | Access::Exclusive => (libc::O_RDWR | libc::O_CREAT, 0o600),
+            // flock and the same-OFD lseek challenge never modify lock bytes.
+            // Keeping the description read-only also prevents SCM_RIGHTS from
+            // granting the broker an unused write capability on setup.lock.
+            Access::Shared | Access::Exclusive => (libc::O_RDONLY | libc::O_CREAT, 0o600),
         };
         let file = open_at(directory, LOCK, flags | libc::O_NONBLOCK, mode)?;
         let held = Self::from_file(directory, custody, file, access)?;
@@ -183,11 +186,11 @@ impl DirectorySetupLock {
             return Err(io::Error::last_os_error());
         }
         if LockIdentity::read(named.metadata()?, custody)? != identity
-            || status_flags & libc::O_ACCMODE != match access {Access::InspectExisting=>libc::O_RDONLY, _=>libc::O_RDWR}
+            || status_flags & libc::O_ACCMODE != libc::O_RDONLY
             || descriptor_flags & libc::FD_CLOEXEC == 0
         {
             return Err(rejected(
-                "received descriptor is not the named read/write close-on-exec setup lock",
+                "received descriptor is not the named read-only close-on-exec setup lock",
             ));
         }
         let operation = match access {
@@ -695,7 +698,7 @@ mod tests {
     }
 
     #[test]
-    fn received_setup_lock_rejects_foreign_readonly_and_independent_descriptions() {
+    fn received_setup_lock_requires_readonly_same_description_and_rejects_replacements() {
         let (directory, custody) = fixture();
         let held =
             FixedConfigurationLock::at(directory.path(), custody, Access::Exclusive).unwrap();
@@ -709,6 +712,8 @@ mod tests {
         )
         .unwrap();
         received.revalidate().unwrap();
+        assert_eq!(unsafe { libc::fcntl(received.lock.as_fd().as_raw_fd(), libc::F_GETFL) } & libc::O_ACCMODE, libc::O_RDONLY);
+        assert_eq!(received.lock.file.write_at(b"not permitted", 0).unwrap_err().raw_os_error(), Some(libc::EBADF));
         let readonly = File::open(base.join("setup.lock")).unwrap();
         assert!(
             FixedConfigurationLock::at_with_received(
@@ -719,11 +724,15 @@ mod tests {
             )
             .is_err()
         );
-        let independent = File::options()
+        let writable = File::options()
             .read(true)
             .write(true)
             .open(base.join("setup.lock"))
             .unwrap();
+        assert!(matches!(FixedConfigurationLock::at_with_received(
+            directory.path(), custody, Access::Exclusive, Some(writable)),
+            Err(error) if error.kind() == io::ErrorKind::PermissionDenied));
+        let independent = File::open(base.join("setup.lock")).unwrap();
         assert!(matches!(FixedConfigurationLock::at_with_received(
             directory.path(), custody, Access::Exclusive, Some(independent)),
             Err(error) if error.raw_os_error() == Some(libc::EWOULDBLOCK)));

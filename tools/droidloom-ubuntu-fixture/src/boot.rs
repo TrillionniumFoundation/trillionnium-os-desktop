@@ -1,7 +1,7 @@
 use crate::{
     Result,
     boot_files::{self, FilePin},
-    boot_native::{self, NativeInputs},
+    boot_native::{self, ImportedPublicInputs, NativeInputs, PublicInputCustody},
     ensure, fs,
 };
 use serde::{Deserialize, Serialize};
@@ -16,6 +16,8 @@ pub struct NativePlan {
     pub fixture_root: PathBuf,
     #[serde(default)]
     pub public_packages: Option<FilePin>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub imported_public_inputs: Option<ImportedPublicInputs>,
     pub native: NativeInputs,
 }
 
@@ -176,6 +178,7 @@ pub fn prepare_native(config: &Path, expected_sha: &str) -> Result<()> {
         plan.fixture_root.is_absolute() && plan.fixture_root != Path::new("/"),
         "fixture must be an independent materialized root",
     )?;
+    let public_inputs = PublicInputCustody::acquire(&plan)?;
     create_work(&plan.work_directory)?;
     fs::write_json(
         &fs::absolute_string(&plan.work_directory.join("INPUTS.json"))?,
@@ -203,10 +206,12 @@ pub fn prepare_native(config: &Path, expected_sha: &str) -> Result<()> {
                 input,
                 &original,
                 &plan.fixture_manifest.sha256,
+                &public_inputs,
             )
         })
         .transpose()?;
-    let initialized = boot_native::initialize(&root, &plan.work_directory, &plan.native)?;
+    let initialized =
+        boot_native::initialize(&root, &plan.work_directory, &plan.native, &public_inputs)?;
     let supplement_readback = supplement
         .as_ref()
         .map(|pin| crate::boot_packages::verify(&root, pin))

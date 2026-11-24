@@ -1,6 +1,9 @@
 //! Package setup and pacman lifecycle integration. No shell interpreter is used.
 use clap::{Parser, Subcommand};
-use droidloom_supervisor::production_configuration::PackageConfigurationLock;
+use droidloom_supervisor::{
+    control::package::LivePackageRetirement, production_configuration::PackageConfigurationLock,
+};
+
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::{
@@ -14,6 +17,8 @@ use std::{
     process::{Child, Command, ExitStatus, Stdio},
     time::{Duration, Instant},
 };
+
+mod production_retirement;
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 const BASE: &str = "/etc/droidloom";
@@ -1080,7 +1085,13 @@ impl HeldCgroup {
     }
 }
 
-fn stop_native_units(deadline: Instant) -> Result<()> {
+fn stop_native_units(
+    deadline: Instant,
+    original_production: Option<&LivePackageRetirement<'_>>,
+) -> Result<()> {
+    if let Some(original) = original_production {
+        original.revalidate()?;
+    }
     let root = cgroup_root()?;
     let mut original = Vec::new();
     for unit in NATIVE_UNITS {
@@ -1094,6 +1105,14 @@ fn stop_native_units(deadline: Instant) -> Result<()> {
         // new InvocationID. Re-observe before each mutating native call.
         let current = inspect_unit(*unit, deadline)?;
         stable_stop_state(&current)?;
+        if matches!(unit, NativeUnit::Production)
+            && let Some(original) = original_production
+        {
+            // Bind this Stop to the RPC's original broker, in addition to
+            // the native snapshot. An unexpected exit also refuses before
+            // attempting to stop either of the remaining native actors.
+            original.revalidate()?;
+        }
         if matches!(current.active.as_str(), "inactive" | "failed") {
             terminal_unit(before, &current)?;
             group.verify_retired(&current)?;
@@ -1156,14 +1175,14 @@ fn stop_runtime(spec: Option<&Value>, protected: bool) -> Result<()> {
             ]))?;
         }
     }
-    stop_native_units(Instant::now() + Duration::from_secs(120))
+    stop_native_units(Instant::now() + Duration::from_secs(120), None)
 }
 
-fn require_production_resource_retirement() -> Result<()> {
-    // There is no package-facing, original-owner mount/loop retirement
-    // witness in the current runtime. A stopped unit, empty cgroup, receipt
-    // file or caller assertion cannot manufacture that missing authority.
-    Err("production package replacement/removal refused: native actor quiescence does not prove original-owner mount and loop retirement; selection, cell configuration and Android data were preserved".into())
+fn require_production_resource_retirement(
+    lock: &PackageConfigurationLock,
+    remove: bool,
+) -> Result<()> {
+    production_retirement::retire(lock, remove)
 }
 
 fn before(remove: bool) -> Result<()> {
@@ -1174,10 +1193,12 @@ fn before(remove: bool) -> Result<()> {
     // Production Start/Restart and manager-label activation share this lock.
     // Selection publication and the live retirement RPC remain separate gates.
     let protected = layout()? == Layout::Production;
-    // Refuse before any Stop or legacy STATE/CellSpec read. The missing
-    // resource-owner contract cannot justify interrupting a live session.
+    // Retire through the original resource owner before any native Stop.
+    // This branch never reads legacy state or removes selection/data/fence;
+    // even an ambiguous RPC or partial native stop must leave maintenance
+    // admission denied until a separately qualified installation can resume.
     if protected {
-        return require_production_resource_retirement();
+        return require_production_resource_retirement(&lock, remove);
     }
     let spec = optional_json(Path::new(SPEC))?;
     lock.revalidate()?;
@@ -1531,14 +1552,6 @@ mod tests {
         }
         assert!(population(b"populated 1\nfrozen 0\n").unwrap());
         assert!(population(b"populated 1\n").is_err());
-    }
-    #[test]
-    fn production_replacement_refuses_actor_only_quiescence() {
-        let terminal =
-            parse_unit(NativeUnit::Production, terminal_properties().as_bytes()).unwrap();
-        terminal_unit(&terminal, &terminal).unwrap();
-        unpopulated(b"populated 0\nfrozen 0\n").unwrap();
-        assert!(require_production_resource_retirement().is_err());
     }
     #[test]
     fn native_stop_accepts_original_exited_oneshot_and_rejects_identity_changes() {
