@@ -401,6 +401,7 @@ mod tests {
         let extra = pin(path("readiness")?, 16 * 1024 * 1024)?;
         let elf = pin(path("observer")?, 8 * 1024 * 1024)?;
         let rc = pin(path("rc")?, 4096)?;
+        let frontend: library::FrontendDeclaration = serde_json::from_value(cfg["frontend"].clone())?;
         if cfg["readiness_sha256"].as_str() != Some(&extra.sha256)
             || cfg["observer_sha256"].as_str() != Some(&elf.sha256)
             || cfg["rc_sha256"].as_str() != Some(&rc.sha256)
@@ -419,6 +420,7 @@ mod tests {
             extra,
             &elf.sha256,
             &rc.sha256,
+            &frontend,
             output.parent().ok_or("missing fixture output parent")?,
         )?;
         drop(scope);

@@ -1,13 +1,98 @@
 use super::*;
 use droidloom_contracts::system_ext as contract;
 
+#[cfg(test)]
+#[path = "coherent_readiness_tests.rs"]
+mod tests;
+
 const NAME: &str = contract::READINESS_FILE;
 const BUILDER: &str = include_str!("official_readiness_image.py");
 const RC: &[u8] =
     include_bytes!("../../../android/framework/droidloom-readiness/droidloom-readiness.rc");
+const INPUT_RC: &[u8] =
+    include_bytes!("../../../android/framework/droidloom-input-bridge/droidloom-input-bridge.rc");
+const INPUT_WRAPPER: &[u8] =
+    include_bytes!("../../../android/framework/droidloom-input-bridge/droidloom-input-bridge");
 
-fn receipt_parents(system: &str, elf: &str, rc: &str) -> Result<Value> {
-    let mut parents = json!({"system":system,"elf":elf,"rc":rc});
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct InstalledFrontend {
+    input_bridge_wrapper: FileRef,
+    input_bridge_jar: FileRef,
+    input_bridge_init_rc: FileRef,
+    task_launcher: FileRef,
+}
+
+impl InstalledFrontend {
+    fn read(install: &Path) -> Result<Self> {
+        let value = Self {
+            input_bridge_wrapper: pin(&install.join("bin/droidloom-input-bridge"), 4096)?,
+            input_bridge_jar: pin(
+                &install.join("framework/droidloom-input-bridge.jar"),
+                8 * 1024 * 1024,
+            )?,
+            input_bridge_init_rc: pin(
+                &install.join("etc/init/droidloom-input-bridge.rc"),
+                4096,
+            )?,
+            task_launcher: pin(&install.join("bin/droidloom-task-launcher"), 8 * 1024 * 1024)?,
+        };
+        value.digests()?;
+        if bound_body(&value.input_bridge_wrapper, 4096)? != INPUT_WRAPPER
+            || bound_body(&value.input_bridge_init_rc, 4096)? != INPUT_RC
+        {
+            return fail("the installed frontend wrapper or init script differs from the normal product");
+        }
+        Ok(value)
+    }
+
+    fn entries(&self) -> [(&str, &FileRef, u64); 4] {
+        [
+            ("input_bridge_wrapper", &self.input_bridge_wrapper, 4096),
+            ("input_bridge_jar", &self.input_bridge_jar, 8 * 1024 * 1024),
+            ("input_bridge_init_rc", &self.input_bridge_init_rc, 4096),
+            ("task_launcher", &self.task_launcher, 8 * 1024 * 1024),
+        ]
+    }
+
+    fn digests(&self) -> Result<contract::FrontendDeclaration> {
+        if self.entries().iter().any(|(_, file, limit)| file.bytes == 0 || file.bytes > *limit) {
+            return fail("invalid normal installed frontend member size");
+        }
+        let value = contract::FrontendDeclaration {
+            input_bridge_wrapper_sha256: self.input_bridge_wrapper.sha256.clone(),
+            input_bridge_jar_sha256: self.input_bridge_jar.sha256.clone(),
+            input_bridge_init_rc_sha256: self.input_bridge_init_rc.sha256.clone(),
+            task_launcher_sha256: self.task_launcher.sha256.clone(),
+        };
+        if !value.valid() {
+            return fail("invalid normal installed frontend member digest");
+        }
+        Ok(value)
+    }
+
+    fn paths(&self) -> BTreeMap<&str, &Path> {
+        self.entries().map(|(name, file, _)| (name, file.path.as_path())).into()
+    }
+
+    fn recheck(&self) -> Result<()> {
+        for (_, file, limit) in self.entries() {
+            recheck(file, limit)?;
+        }
+        Ok(())
+    }
+}
+
+fn receipt_parents(
+    system: &str,
+    elf: &str,
+    rc: &str,
+    frontend: &contract::FrontendDeclaration,
+) -> Result<Value> {
+    if !frontend.valid() {
+        return fail("incomplete selected normal frontend digests");
+    }
+    let mut parents = json!({"system":system,"elf":elf,"rc":rc,"frontend":frontend});
     if let Some(digest) = contract::shutdown_property_for_rc(rc) {
         parents["shutdown_property_contexts"] = json!(digest);
     } else if rc != contract::OBSERVER_ONLY_RC_SHA256 {
@@ -47,6 +132,8 @@ pub(crate) fn build(
     if bound_body(&rc, 4096)? != RC {
         return fail("the installed readiness init script differs from the normal product");
     }
+    let frontend = InstalledFrontend::read(&install)?;
+    let frontend_digests = frontend.digests()?;
     let host = vendor_build.join("host/linux-x86/bin");
     let host_tool = |name: &str| -> Result<FileRef> {
         let path = host.join(name).canonicalize()?;
@@ -57,6 +144,10 @@ pub(crate) fn build(
     };
     let verifier = host_tool("host_init_verifier")?;
     checked_tool(&verifier, Command::new(&verifier.path).arg(&rc.path))?;
+    checked_tool(
+        &verifier,
+        Command::new(&verifier.path).arg(&frontend.input_bridge_init_rc.path),
+    )?;
     let tools = BTreeMap::from([
         ("debugfs", reader_tool("debugfs")?),
         ("e2fsck", reader_tool("e2fsck")?),
@@ -69,7 +160,8 @@ pub(crate) fn build(
     let work = temp.path();
     let image = work.join(NAME);
     let config = json!({"system":system.path,"elf":elf.path,"rc":rc.path,"output":image,
-        "sha256":receipt_parents(&system.sha256, &elf.sha256, &rc.sha256)?,"tools":tool_paths});
+        "frontend":frontend.paths(),
+        "sha256":receipt_parents(&system.sha256, &elf.sha256, &rc.sha256, &frontend_digests)?,"tools":tool_paths});
     write(&work.join("inputs.json"), serde_json::to_vec(&config)?)?;
     let python = reader_tool("python3")?;
     let record = OpenOptions::new()
@@ -96,12 +188,16 @@ pub(crate) fn build(
     recheck(&system, MAX_IMAGE)?;
     recheck(&elf, 8 * 1024 * 1024)?;
     recheck(&rc, 4096)?;
+    frontend.recheck()?;
+    recheck(&verifier, 256 * 1024 * 1024)?;
     fs::hard_link(&artifact.path, output.join(NAME))?;
     File::open(output)?.sync_all()?;
     Ok(
         json!({"file":NAME,"bytes":artifact.bytes,"sha256":artifact.sha256,
         "source_system_sha256":system.sha256,"installed_elf":elf,"installed_rc":rc,
-        "mount_subtrees": ["/system/system_ext/bin","/system/system_ext/etc/init"],
+        "installed_frontend":frontend,
+        "mount_subtrees": contract::READINESS_TARGETS,
+        "host_init_verifier_inputs":[rc.sha256,frontend_digests.input_bridge_init_rc_sha256],
         "readback":readback,"host_init_verifier":verifier,"production_signed":false}),
     )
 }
@@ -133,12 +229,17 @@ pub(super) fn verify_retained(
     };
     let elf_sha = installed("installed_elf", 8 * 1024 * 1024)?;
     let rc_sha = installed("installed_rc", 4096)?;
+    let frontend: InstalledFrontend = serde_json::from_value(normal["installed_frontend"].clone())?;
+    let frontend_digests = frontend.digests()?;
     if normal["file"] != NAME
         || normal["bytes"].as_u64() != Some(image.bytes)
         || normal["sha256"].as_str() != Some(&image.sha256)
         || normal["source_system_sha256"].as_str() != Some(&system.sha256)
         || normal["mount_subtrees"] != json!(contract::READINESS_TARGETS)
-        || normal["readback"]["parents"] != receipt_parents(&system.sha256, elf_sha, rc_sha)?
+        || normal["readback"]["parents"]
+            != receipt_parents(&system.sha256, elf_sha, rc_sha, &frontend_digests)?
+        || normal["host_init_verifier_inputs"]
+            != json!([rc_sha, frontend_digests.input_bridge_init_rc_sha256])
         || !normal["host_init_verifier"]["bytes"]
             .as_u64()
             .is_some_and(|n| n > 0)
@@ -148,14 +249,14 @@ pub(super) fn verify_retained(
         );
     }
     let (checked, members) =
-        verify_members(system, vendor, library, image, elf_sha, rc_sha, workspace)?;
+        verify_members(system, vendor, library, image, elf_sha, rc_sha, &frontend_digests, workspace)?;
     if members != normal["readback"]["members"] {
         return fail("fourth filesystem contents differ from the normal build");
     }
     Ok(checked)
 }
 
-/// Compare the complete carrier to its original GSI and to the reviewed two added files.
+/// Compare all three complete subtrees to the original GSI and the normal installed additions.
 pub(super) fn verify_members(
     system: &FileRef,
     vendor: &FileRef,
@@ -163,6 +264,7 @@ pub(super) fn verify_members(
     image: FileRef,
     elf_sha: &str,
     rc_sha: &str,
+    frontend: &contract::FrontendDeclaration,
     workspace: &Path,
 ) -> Result<(Checked, Value)> {
     let decl = contract::ReadinessDeclaration {
@@ -175,6 +277,7 @@ pub(super) fn verify_members(
         source_system_ext_lib64_sha256: library.sha256.clone(),
         observer_sha256: elf_sha.to_owned(),
         init_rc_sha256: rc_sha.to_owned(),
+        frontend: frontend.clone(),
         shutdown_property_contexts_sha256: contract::shutdown_property_for_rc(rc_sha)
             .map(str::to_owned),
     };
@@ -186,7 +289,7 @@ pub(super) fn verify_members(
     let debug = reader_tool("debugfs")?;
     let fsck = reader_tool("e2fsck")?;
     let inputs = json!({"system":system.path,"existing_image":image.path,
-        "sha256":receipt_parents(&system.sha256, elf_sha, rc_sha)?,
+        "sha256":receipt_parents(&system.sha256, elf_sha, rc_sha, frontend)?,
         "tools":{"debugfs":debug.path,"e2fsck":fsck.path}});
     write(&cwd.join("inputs.json"), serde_json::to_vec(&inputs)?)?;
     let log = OpenOptions::new()

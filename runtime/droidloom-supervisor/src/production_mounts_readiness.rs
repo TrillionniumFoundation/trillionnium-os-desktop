@@ -60,7 +60,8 @@ fn target(root: &File, index: usize) -> Result<File> {
     match index {
         0 => directory(root, "bin"),
         1 => directory(&directory(root, "etc")?, "init"),
-        2 => regular(
+        2 => directory(root, "framework"),
+        3 => regular(
             &directory(&directory(root, "etc")?, "selinux")?,
             "system_ext_property_contexts",
         ),
@@ -74,7 +75,8 @@ pub(in crate::production_mounts) fn verify(
     decl: &ReadinessDeclaration,
 ) -> Result<()> {
     let shutdown = decl.shutdown_property_contexts_sha256.is_some();
-    fixed_children(carrier, &["bin", "etc"])?;
+    require(decl.frontend.valid(), "complete normal frontend member digests")?;
+    fixed_children(carrier, &["bin", "etc", "framework"])?;
     let etc = directory(carrier, "etc")?;
     if let Some(selected_contexts) = decl.shutdown_property_contexts_sha256.as_deref() {
         require(
@@ -86,8 +88,8 @@ pub(in crate::production_mounts) fn verify(
             &directory(&etc, "selinux")?,
             &["system_ext_property_contexts"],
         )?;
-        let original = target(original_ext, 2)?;
-        let selected = target(carrier, 2)?;
+        let original = target(original_ext, 3)?;
+        let selected = target(carrier, 3)?;
         same_attributes(&original, &selected)?;
         let meta = original.metadata()?;
         let factory_owner = original_ext.metadata()?;
@@ -113,17 +115,19 @@ pub(in crate::production_mounts) fn verify(
     let factory_bins = target(original_ext, 0)?;
     let init = target(carrier, 1)?;
     let factory_init = target(original_ext, 1)?;
+    let framework = target(carrier, 2)?;
+    let factory_framework = target(original_ext, 2)?;
     let additions: &[&str] = if shutdown {
-        &["droidloom-readiness", "droidloom-shutdown"]
+        &["droidloom-readiness", "droidloom-shutdown", "droidloom-input-bridge", "droidloom-task-launcher"]
     } else {
-        &["droidloom-readiness"]
+        &["droidloom-readiness", "droidloom-input-bridge", "droidloom-task-launcher"]
     };
     compare_original(&factory_bins, &bins, 0, &mut 0, additions)?;
-    compare_original(&factory_init, &init, 0, &mut 0, &["droidloom-readiness.rc"])?;
+    compare_original(&factory_init, &init, 0, &mut 0, &["droidloom-readiness.rc", "droidloom-input-bridge.rc"])?;
+    compare_original(&factory_framework, &framework, 0, &mut 0, &["droidloom-input-bridge.jar"])?;
     let elf_reference = regular(&factory_bins, "hwservicemanager")?.metadata()?;
     let rc_reference = regular(&factory_init, "wificond.rc")?.metadata()?;
-    let mut elf_inode = None;
-    for (dir, name, reference, expected, mode, label) in [
+    let mut additions = vec![
         (
             &bins,
             "droidloom-readiness",
@@ -131,6 +135,7 @@ pub(in crate::production_mounts) fn verify(
             &decl.observer_sha256,
             0o755,
             b"u:object_r:droidloom_readiness_exec:s0".as_slice(),
+            8 * 1024 * 1024,
         ),
         (
             &init,
@@ -139,19 +144,44 @@ pub(in crate::production_mounts) fn verify(
             &decl.init_rc_sha256,
             0o644,
             b"u:object_r:system_file:s0".as_slice(),
+            4096,
         ),
-        (
+    ];
+    if shutdown {
+        additions.push((
             &bins,
             "droidloom-shutdown",
             &elf_reference,
             &decl.observer_sha256,
             0o755,
             b"u:object_r:droidloom_shutdown_exec:s0".as_slice(),
+            8 * 1024 * 1024,
+        ));
+    }
+    additions.extend([
+        (
+            &bins, "droidloom-input-bridge", &rc_reference,
+            &decl.frontend.input_bridge_wrapper_sha256, 0o755,
+            b"u:object_r:droidloom_input_bridge_exec:s0".as_slice(), 4096,
         ),
-    ]
-    .into_iter()
-    .take(if shutdown { 3 } else { 2 })
-    {
+        (
+            &bins, "droidloom-task-launcher", &rc_reference,
+            &decl.frontend.task_launcher_sha256, 0o755,
+            b"u:object_r:droidloom_task_launcher_exec:s0".as_slice(), 8 * 1024 * 1024,
+        ),
+        (
+            &framework, "droidloom-input-bridge.jar", &rc_reference,
+            &decl.frontend.input_bridge_jar_sha256, 0o644,
+            b"u:object_r:droidloom_input_bridge_jar:s0".as_slice(), 8 * 1024 * 1024,
+        ),
+        (
+            &init, "droidloom-input-bridge.rc", &rc_reference,
+            &decl.frontend.input_bridge_init_rc_sha256, 0o644,
+            b"u:object_r:system_file:s0".as_slice(), 4096,
+        ),
+    ]);
+    let mut inodes = BTreeSet::new();
+    for (dir, name, reference, expected, mode, label, limit) in additions {
         let added = regular(dir, name)?;
         let meta = added.metadata()?;
         let attrs = image_attrs(&added)?;
@@ -166,16 +196,14 @@ pub(in crate::production_mounts) fn verify(
                 && actual.strip_suffix(&[0]).unwrap_or(actual) == label
                 && (meta.uid(), meta.gid(), meta.mode() & 0o7777)
                     == (reference.uid(), reference.gid(), mode)
-                && meta.len() <= 8 * 1024 * 1024
+                && meta.len() > 0 && meta.len() <= limit
                 && digest(&added)? == *expected,
             "wrong selected Android service body, owner, label or mode",
         )?;
-        if mode == 0o755 {
-            require(
-                elf_inode.replace((meta.dev(), meta.ino())) != Some((meta.dev(), meta.ino())),
-                "Android service entrypoints must have independent inodes",
-            )?;
-        }
+        require(
+            inodes.insert((meta.dev(), meta.ino())),
+            "normal installed Android roles must have independent inodes",
+        )?;
     }
     Ok(())
 }
@@ -187,7 +215,10 @@ pub(in crate::production_mounts) fn compose(
 ) -> Result<()> {
     let platform = directory(&directory(system, "system")?, "system_ext")?;
     verify(&platform, carrier, decl)?;
-    for index in 0..(2 + usize::from(decl.shutdown_property_contexts_sha256.is_some())) {
+    let shutdown = decl.shutdown_property_contexts_sha256.is_some();
+    for index in 0..(contract::READINESS_TARGETS.len() + usize::from(shutdown)) {
+        let (_, noexec) = contract::readiness_mount_source(index, shutdown)
+            .ok_or(MountError::Rejected("unknown selected service mount"))?;
         let original = target(&platform, index)?;
         require(
             mount_id(&original)? == mount_id(system)?,
@@ -207,7 +238,7 @@ pub(in crate::production_mounts) fn compose(
         }
         let cloned = unsafe { File::from_raw_fd(raw as i32) };
         require_detached(&cloned)?;
-        if index == 2 {
+        if noexec {
             let flags = MountAttr {
                 attr_set: libc::MOUNT_ATTR_NOEXEC as u64,
                 attr_clr: 0,
@@ -242,7 +273,7 @@ pub(in crate::production_mounts) fn compose(
         let mut mounted_flags: libc::statvfs = unsafe { std::mem::zeroed() };
         zero_rc(unsafe { libc::fstatvfs(actual.as_raw_fd(), &mut mounted_flags) })?;
         let expected = READONLY_FLAGS
-            | if index == 2 {
+            | if noexec {
                 libc::ST_NOEXEC as u64
             } else {
                 0
