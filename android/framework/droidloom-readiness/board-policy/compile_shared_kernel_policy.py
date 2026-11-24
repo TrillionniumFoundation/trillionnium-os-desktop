@@ -633,6 +633,80 @@ def verify_native_service_capabilities(library, binary):
     }
 
 
+
+def verify_native_auxiliary_sockets(library, binary, exported, original_contract):
+    """Read back every role's complete socket-inode vector and fixed transitions."""
+    policy = Policy(library, binary)
+    lines = set(exported.read_text().splitlines())
+    actors = sorted({
+        (role, line[len(f"(roletype {role} "):-1])
+        for role in ["r", "system_r"] for line in lines
+        if line.startswith(f"(roletype {role} ")
+    })
+    if not set(original_contract["subjects"]).issubset(
+            {name for role, name in actors if role == "r"}):
+        raise ValueError("Original Android subjects missing from auxiliary socket review")
+    names = [
+        ("AskPassword", "p4_linux_ask_password_socket_t"),
+        ("Credentials", "p4_linux_credentials_socket_t"),
+        ("FactoryReset", "p4_linux_factory_reset_socket_t"),
+        ("Hostname", "p4_linux_hostnamed_socket_t"),
+        ("MuteConsole", "p4_linux_mute_console_socket_t"),
+        ("sysext", "p4_linux_sysext_socket_t"),
+    ]
+    sids = {}
+    checks = []
+
+    def sid(context):
+        if context not in sids:
+            value = ctypes.c_uint32()
+            raw = context.encode()
+            if policy.lib.sepol_context_to_sid(
+                    raw, len(raw) + 1, ctypes.byref(value)) != 0:
+                raise ValueError("Invalid auxiliary socket context: " + context)
+            sids[context] = value.value
+        return sids[context]
+
+    def exact(subject, target, kind, permissions, expected):
+        number, bits = policy.permissions(kind, permissions)
+        mask = 0
+        for bit in bits.values():
+            mask |= bit
+        decision = Decision()
+        if policy.lib.sepol_compute_av(
+                sid(subject), sid(target), number, mask, ctypes.byref(decision)) != 0:
+            raise ValueError("Cannot read auxiliary socket decision")
+        actual = {name for name, bit in bits.items() if decision.allowed & bit}
+        if actual != set(expected):
+            raise ValueError(
+                f"Auxiliary socket boundary differs: {subject} -> {target} "
+                f"{kind}: {sorted(actual)} != {sorted(expected)}")
+        checks.extend([subject, target, kind, name, name in actual] for name in permissions)
+
+    manager = "u:system_r:init_t:s0"
+    transitions = []
+    for leaf, target in names:
+        for role, actor in actors:
+            expected = (["getattr", "create", "setattr", "write", "unlink"]
+                        if (role, actor) == ("system_r", "init_t") else [])
+            exact(f"u:{role}:{actor}:s0", f"u:object_r:{target}:s0", "sock_file",
+                  original_contract["classes"]["sock_file"], expected)
+        transitions.append(
+            f'(typetransition init_t p4_linux_systemd_run_t sock_file "io.systemd.{leaf}" {target})')
+    exact(manager, "u:object_r:p4_linux_native_bin_t:s0", "file",
+          original_contract["classes"]["file"], ["getattr"])
+    if any(line not in lines for line in transitions):
+        raise ValueError("Missing fixed auxiliary listener transition")
+    return {
+        "listener_types": len(names),
+        "process_role_types": len(actors),
+        "permission_checks": len(checks),
+        "exact_automatic_transitions": len(transitions),
+        "access_matrix_sha256": hashlib.sha256(
+            json.dumps(checks, sort_keys=True, separators=(",", ":")).encode()).hexdigest(),
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--secilc", type=Path, required=True)
@@ -706,9 +780,12 @@ def main():
         host_control = verify_host_control(library, linked, work / "host-control-binary.cil", contract)
         native_capabilities = verify_native_service_capabilities(library, linked)
         login_audit = verify_login_audit(library, linked, work / "login-audit-binary.cil", export_binary_policy)
+        auxiliary_sockets = verify_native_auxiliary_sockets(
+            library, linked, work / "host-control-binary.cil", contract)
         result = {
             "native_service_capabilities": native_capabilities,
             "native_login_audit": login_audit,
+            "native_auxiliary_sockets": auxiliary_sockets,
             "native_login_audit_verifier": sha256(here / "verify_native_login_audit.py"),
             "android_original": sha256(original),
             "secilc": sha256(compiler),

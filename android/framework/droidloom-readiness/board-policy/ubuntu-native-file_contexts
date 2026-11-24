@@ -118,3 +118,11 @@
 
 /run/snapd(-snap)?\.socket -s u:object_r:p4_linux_snapd_run_t:s0
 /run/systemd/io\.systemd\.Login -s u:object_r:p4_linux_logind_run_t:s0
+
+# Original auxiliary socket units: fixed listener inodes, no generic run permission.
+/run/systemd/io\.systemd\.AskPassword -s u:object_r:p4_linux_ask_password_socket_t:s0
+/run/systemd/io\.systemd\.Credentials -s u:object_r:p4_linux_credentials_socket_t:s0
+/run/systemd/io\.systemd\.FactoryReset -s u:object_r:p4_linux_factory_reset_socket_t:s0
+/run/systemd/io\.systemd\.Hostname -s u:object_r:p4_linux_hostnamed_socket_t:s0
+/run/systemd/io\.systemd\.MuteConsole -s u:object_r:p4_linux_mute_console_socket_t:s0
+/run/systemd/io\.systemd\.sysext -s u:object_r:p4_linux_sysext_socket_t:s0
