@@ -7,13 +7,9 @@ use droidloom_supervisor::{
     },
     production_configuration::PackageConfigurationLock,
 };
-use std::time::{Duration, Instant};
 
 pub(super) fn retire(lock: &PackageConfigurationLock, remove: bool) -> Result<()> {
-    let mut owner = OriginalOwner {
-        lock,
-        deadline: Instant::now() + Duration::from_secs(120),
-    };
+    let mut owner = OriginalOwner { lock };
     complete(&mut owner, operation(remove))
 }
 
@@ -48,7 +44,6 @@ fn complete(owner: &mut impl Retirement, operation: PackageOperation) -> Result<
 
 struct OriginalOwner<'a> {
     lock: &'a PackageConfigurationLock,
-    deadline: Instant,
 }
 
 impl<'a> Retirement for OriginalOwner<'a> {
@@ -64,7 +59,10 @@ impl<'a> Retirement for OriginalOwner<'a> {
     }
 
     fn stop_native_units(&mut self, live: &Self::Live) -> Result<()> {
-        super::stop_native_units(self.deadline, Some(live))
+        // The original resource RPC may have consumed its own 120 seconds.
+        // Obtain this later phase's budget only from its revalidated live ACK;
+        // it remains capped by that RPC's original absolute 240-second limit.
+        super::stop_native_units(live.native_stop_deadline()?, Some(live))
     }
 
     fn verify_native_stop(&mut self, live: Self::Live) -> Result<Self::Terminal> {

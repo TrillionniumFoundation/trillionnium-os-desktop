@@ -42,6 +42,21 @@ const OWNER_RETIREMENT_TIME: Duration = Duration::from_secs(120);
 const NATIVE_STOP_TIME: Duration = Duration::from_secs(120);
 const TRANSACTION_TIME: Duration = OWNER_RETIREMENT_TIME.saturating_add(NATIVE_STOP_TIME);
 
+// The native phase begins only after the resource-owner acknowledgement. Keep
+// its separate budget within the deadline established by that original RPC.
+fn bounded_native_stop_deadline(now: Instant, transaction_deadline: Instant) -> io::Result<Instant> {
+    if now >= transaction_deadline {
+        return Err(io::Error::new(
+            io::ErrorKind::TimedOut,
+            "original package retirement transaction expired before native stop",
+        ));
+    }
+    let phase_deadline = now.checked_add(NATIVE_STOP_TIME).ok_or_else(|| {
+        io::Error::new(io::ErrorKind::TimedOut, "native stop deadline overflow")
+    })?;
+    Ok(phase_deadline.min(transaction_deadline))
+}
+
 fn denied(message: &'static str) -> io::Error {
     io::Error::new(io::ErrorKind::PermissionDenied, message)
 }
@@ -502,6 +517,14 @@ impl<'a> LivePackageRetirement<'a> {
         before(self.deadline)
     }
 
+    /// Start the native-stop budget after the exact resource-retirement ACK.
+    /// Revalidate the original owner and deny fence first; this cannot renew or
+    /// extend the absolute deadline retained from that same transaction.
+    pub fn native_stop_deadline(&self) -> io::Result<Instant> {
+        self.revalidate()?;
+        bounded_native_stop_deadline(Instant::now(), self.deadline)
+    }
+
     /// Consume the original live result only after the native stop operation.
     /// The held PIDFD and original manager invocation must show a clean exit;
     /// no new connection, numeric PID, receipt or caller assertion is accepted.
@@ -844,6 +867,50 @@ mod tests {
     use super::*;
     use crate::production_configuration::DirectorySetupLock;
     use std::os::unix::fs::OpenOptionsExt;
+
+    #[test]
+    fn package_native_stop_budget_starts_after_the_owner_phase() {
+        let started = Instant::now();
+        let transaction_deadline = started + TRANSACTION_TIME;
+        for owner_seconds in [0, 75, 119, 120] {
+            let acknowledged = started + Duration::from_secs(owner_seconds);
+            let native_deadline =
+                bounded_native_stop_deadline(acknowledged, transaction_deadline).unwrap();
+            assert_eq!(native_deadline.duration_since(acknowledged), NATIVE_STOP_TIME);
+            assert!(native_deadline <= transaction_deadline);
+        }
+        // The old helper budget incorrectly left only 45 seconds after a
+        // normal 75-second resource shutdown.
+        let acknowledged = started + Duration::from_secs(75);
+        assert_eq!(
+            bounded_native_stop_deadline(acknowledged, transaction_deadline).unwrap(),
+            started + Duration::from_secs(195)
+        );
+    }
+
+    #[test]
+    fn package_native_stop_budget_never_renews_the_original_transaction() {
+        let started = Instant::now();
+        let transaction_deadline = started + TRANSACTION_TIME;
+        for elapsed in [121, 239] {
+            let now = started + Duration::from_secs(elapsed);
+            assert_eq!(
+                bounded_native_stop_deadline(now, transaction_deadline).unwrap(),
+                transaction_deadline
+            );
+        }
+        let last_instant = transaction_deadline - Duration::from_nanos(1);
+        assert_eq!(
+            bounded_native_stop_deadline(last_instant, transaction_deadline).unwrap(),
+            transaction_deadline
+        );
+        for now in [transaction_deadline, transaction_deadline + Duration::from_nanos(1)] {
+            assert_eq!(
+                bounded_native_stop_deadline(now, transaction_deadline).unwrap_err().kind(),
+                io::ErrorKind::TimedOut
+            );
+        }
+    }
 
     #[test]
     fn package_terminal_runtime_directory_accepts_only_original_removal_or_original_name() {
