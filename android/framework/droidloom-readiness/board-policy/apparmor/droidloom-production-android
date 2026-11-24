@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 abi <abi/4.0>,
 #include <tunables/global>
-# The legacy application worker stacks this profile over the existing broker.
+# The fixed application worker stacks this profile over the existing broker.
 # The kernel-created Android init uses its original Android SELinux transition.
 profile droidloom-production-android {
   /{,system/,system/bin/,system/lib64/,apex/} r,
@@ -14,6 +14,23 @@ profile droidloom-production-android {
   /dev/{binder,hwbinder,vndbinder} rw,
   @{PROC}/[0-9]*/{status,attr/current,attr/apparmor/current,attr/selinux/current} r,
   signal (receive) peer=droidloom-production-broker,
-  ptrace (readby) peer=droidloom-production-broker,
+  ptrace (readby, tracedby) peer=droidloom-production-broker,
   /dev/socket/droidloom/shutdown-request r,
+  # The four selected immutable roles and their ordinary Android loader inputs.
+  /{dev/droidloom-query,.droidloom-query}/ r,
+  /{dev/droidloom-query,.droidloom-query}/{cmd,toybox,app_process64} mrix,
+  /{dev/droidloom-query,.droidloom-query}/content.jar r,
+  /system/bin/{cmd,toybox,app_process64} r,
+  /system/framework/content.jar r,
+  /system/bin/linker64 mrix,
+  /apex/com.android.runtime/bin/linker64 mrix,
+  /system/lib64/**.so mr,
+  /apex/*/lib64/**.so mr,
+  /linkerconfig/{,ld.config.txt,apex.libraries.config.txt} r,
+  /system/etc/{,ld.config.txt,ld.config.*.txt,public.libraries.txt} r,
+  /apex/{,apex-info-list.xml} r,
+  /dev/__properties__/{,**} r,
+  /dev/{binder,hwbinder,vndbinder} rw,
+  /data/app/**.apk r,
+  /{system,product,system_ext,vendor}/{app,priv-app}/**.apk r,
 }
