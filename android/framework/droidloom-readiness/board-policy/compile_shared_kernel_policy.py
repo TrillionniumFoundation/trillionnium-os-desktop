@@ -10,6 +10,7 @@ import subprocess
 import tempfile
 
 from derive_shared_payload_cgroup_policy import Decision, Policy, derive, verify
+from verify_native_login_audit import verify_login_audit
 
 
 def sha256(path):
@@ -372,7 +373,7 @@ def verify_host_control(library, binary, export):
     }
 
 
-NATIVE_SERVICE_CAPABILITIES = {'p4_linux_sshd_t': ['chown', 'fowner', 'kill', 'setgid', 'setuid', 'net_bind_service', 'sys_chroot', 'audit_write'], 'p4_linux_gdm_t': ['chown', 'fowner'], 'p4_linux_gdm_worker_t': ['kill', 'setgid', 'setuid', 'sys_tty_config'], 'p4_linux_network_manager_t': ['net_bind_service', 'net_admin', 'net_raw'], 'p4_linux_wpa_t': ['net_admin', 'net_raw'], 'p4_linux_resolved_t': ['net_bind_service', 'net_raw'], 'p4_linux_logind_t': ['chown', 'sys_admin', 'sys_tty_config']}
+NATIVE_SERVICE_CAPABILITIES = {'p4_linux_sshd_t': ['chown', 'fowner', 'kill', 'setgid', 'setuid', 'net_bind_service', 'sys_chroot', 'audit_write'], 'p4_linux_gdm_t': ['chown', 'fowner'], 'p4_linux_gdm_worker_t': ['kill', 'setgid', 'setuid', 'sys_tty_config', 'audit_write'], 'p4_linux_network_manager_t': ['net_bind_service', 'net_admin', 'net_raw'], 'p4_linux_wpa_t': ['net_admin', 'net_raw'], 'p4_linux_resolved_t': ['net_bind_service', 'net_raw'], 'p4_linux_logind_t': ['chown', 'sys_admin', 'sys_tty_config']}
 NATIVE_SERVICE_CAPABILITY_CLASSES = {'capability': ['chown', 'dac_override', 'dac_read_search', 'fowner', 'fsetid', 'kill', 'setgid', 'setuid', 'setpcap', 'linux_immutable', 'net_bind_service', 'net_broadcast', 'net_admin', 'net_raw', 'ipc_lock', 'ipc_owner', 'sys_module', 'sys_rawio', 'sys_chroot', 'sys_ptrace', 'sys_pacct', 'sys_admin', 'sys_boot', 'sys_nice', 'sys_resource', 'sys_time', 'sys_tty_config', 'mknod', 'lease', 'audit_write', 'audit_control', 'setfcap'], 'capability2': ['mac_override', 'mac_admin', 'syslog', 'wake_alarm', 'block_suspend', 'audit_read', 'perfmon', 'bpf', 'checkpoint_restore'], 'cap_userns': ['chown', 'dac_override', 'dac_read_search', 'fowner', 'fsetid', 'kill', 'setgid', 'setuid', 'setpcap', 'linux_immutable', 'net_bind_service', 'net_broadcast', 'net_admin', 'net_raw', 'ipc_lock', 'ipc_owner', 'sys_module', 'sys_rawio', 'sys_chroot', 'sys_ptrace', 'sys_pacct', 'sys_admin', 'sys_boot', 'sys_nice', 'sys_resource', 'sys_time', 'sys_tty_config', 'mknod', 'lease', 'audit_write', 'audit_control', 'setfcap'], 'cap2_userns': ['mac_override', 'mac_admin', 'syslog', 'wake_alarm', 'block_suspend', 'audit_read', 'perfmon', 'bpf', 'checkpoint_restore']}
 NATIVE_SERVICE_CAPABILITY_PROTECTED_BASE = {'u:r:droidloom_broker:s0': {'capability': ['setgid', 'setuid'], 'capability2': [], 'cap_userns': ['setgid', 'setuid', 'sys_admin'], 'cap2_userns': []}, 'u:system_r:droidloom_public_control_client:s0': {'capability': [], 'capability2': [], 'cap_userns': [], 'cap2_userns': []}, 'u:system_r:p4_linux_user_session_t:s0': {'capability': [], 'capability2': [], 'cap_userns': [], 'cap2_userns': []}}
 
@@ -463,6 +464,7 @@ def main():
         "ubuntu-real-root-interpreter.cil", "ubuntu-mounted-api-metadata.cil",
         "ubuntu-core-cgroup-ownership.cil", "ubuntu-native-services.cil",
         "ubuntu-native-service-capabilities.cil",
+        "ubuntu-native-login-audit.cil",
         "frontend-android-interface.cil", "linux-frontend-observer.cil", "instance-launcher.cil",
         "linux-query-owner.cil", "linux-fixed-metadata-observer.cil",
         "instance-factory-cgroup.cil", "ubuntu-systemd-unit-status.cil",
@@ -475,7 +477,8 @@ def main():
     components = [here / name for name in component_names]
     sources = [compiler, library, args.linux_board_cil, *args.android_cil, *components,
                here / "cp3a-kernel-handle-inputs.json", Path(__file__),
-               here / "derive_shared_payload_cgroup_policy.py"]
+               here / "derive_shared_payload_cgroup_policy.py",
+               here / "verify_native_login_audit.py"]
     if any(output.resolve() == path.resolve() for path in sources):
         raise ValueError("The output path is a policy input or build tool")
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -495,8 +498,11 @@ def main():
         shared_access = verify(library, linked, contract)
         host_control = verify_host_control(library, linked, work / "host-control-binary.cil")
         native_capabilities = verify_native_service_capabilities(library, linked)
+        login_audit = verify_login_audit(library, linked, work / "login-audit-binary.cil", export_binary_policy)
         result = {
             "native_service_capabilities": native_capabilities,
+            "native_login_audit": login_audit,
+            "native_login_audit_verifier": sha256(here / "verify_native_login_audit.py"),
             "android_original": sha256(original),
             "secilc": sha256(compiler),
             "libsepol": sha256(library),

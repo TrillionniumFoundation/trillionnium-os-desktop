@@ -13,8 +13,8 @@
 (allow p4_linux_gdm_t self (capability (chown fowner)))
 (neverallow p4_linux_gdm_t self (capability (not (chown fowner))))
 
-(allow p4_linux_gdm_worker_t self (capability (kill setgid setuid sys_tty_config)))
-(neverallow p4_linux_gdm_worker_t self (capability (not (kill setgid setuid sys_tty_config))))
+(allow p4_linux_gdm_worker_t self (capability (kill setgid setuid sys_tty_config audit_write)))
+(neverallow p4_linux_gdm_worker_t self (capability (not (kill setgid setuid sys_tty_config audit_write))))
 
 (allow p4_linux_network_manager_t self (capability (net_bind_service net_admin net_raw)))
 (neverallow p4_linux_network_manager_t self (capability (not (net_bind_service net_admin net_raw))))

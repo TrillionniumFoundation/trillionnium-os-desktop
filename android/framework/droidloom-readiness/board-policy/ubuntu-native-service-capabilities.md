@@ -20,7 +20,7 @@ a claim that an upstream tag includes every downstream Ubuntu patch.
 | --- | --- | --- | --- |
 | sshd, including its exact sshd-session and sshd-auth entrypoints | openssh 1:10.2p1-2ubuntu3.8 | CHOWN, FOWNER, KILL, SETGID, SETUID, NET_BIND_SERVICE, SYS_CHROOT, AUDIT_WRITE | OpenSSH 10.2 privilege separation chroot; supplementary-group and uid/gid changes; PTY chown/chmod; login/session child signalling; direct sshd port 22; compiled Linux audit user records |
 | gdm | gdm3 50.1-0ubuntu0.1 | CHOWN, FOWNER | gdm-launch-environment migration and gdm_ensure_dir chown followed by chmod, including a directory already owned by the greeter |
-| gdm worker | same | KILL, SETGID, SETUID, SYS_TTY_CONFIG | initgroups/setgid and authenticated child setuid; root worker killpg of its user session; VT_ACTIVATE and VT_WAITACTIVE |
+| gdm worker | same | KILL, SETGID, SETUID, SYS_TTY_CONFIG, AUDIT_WRITE | initgroups/setgid and authenticated child setuid; root worker killpg of its user session; VT_ACTIVATE and VT_WAITACTIVE |
 | NetworkManager | 1.54.3-2ubuntu3.1 | NET_BIND_SERVICE, NET_ADMIN, NET_RAW | Default internal DHCP and raw network discovery; rtnetlink link/address/route configuration |
 | wpa_supplicant | 2:2.11-0ubuntu5 | NET_ADMIN, NET_RAW | nl80211 configuration and PF_PACKET EAPOL; selected unit Group=netdev already matches its control socket group |
 | systemd-resolved | 259.9-0ubuntu0.1 | NET_BIND_SERVICE, NET_RAW | DNS port 53 and SO_BINDTODEVICE/raw discovery; stock unit already runs as systemd-resolve |
@@ -59,10 +59,11 @@ private qualification work directory:
   resolved.c, logind-session.c and logind-session-device.c.
   https://github.com/systemd/systemd/tree/63c0371fa71ae32ba02f05f90658bc40aaa19168
 
-Ubuntu source archives were not admitted by this change: archive fetch was
-denied and the installed apt configuration has no deb-src entries. No apt
-configuration was changed. Subsequent native source modifications must obtain
-and build the matching normal source package.
+The first capability commit used the upstream versions above. The subsequent
+login-audit change obtained matching Ubuntu GDM, OpenSSH, PAM and audit source
+packages through an isolated signed source index. No global apt configuration
+was changed. Their downstream source calls confirm the selected login paths;
+see ubuntu-native-login-audit.md.
 
 ## Enforced boundaries
 
@@ -78,10 +79,12 @@ the three protected broker/public-client/user-session roles. Those protected
 roles retain their actual base vector, including the broker's pre-existing
 namespace entry requirements. There is no fabricated all-zero broker baseline.
 
-The independent comparison of baseline and candidate covers all 390 process
-contexts, 63,960 bit decisions total. It must report exactly 24 additions in
-these seven global capability sets, no removals and no change to other roles
-or namespace capability bits. The normal compiler additionally preserves the
+The first independent comparison of baseline and candidate covered all 390
+process contexts, 63,960 bit decisions total, and exactly 24 additions in these
+seven global capability sets. The later login-audit component adds only
+AUDIT_WRITE for the GDM worker and the independently owned service executor;
+its combined comparison requires exactly 26 additions in eight roles, no
+removals, and no change to namespace capability bits. The normal compiler additionally preserves the
 original 2,010 Android effective-access comparisons, 190 exact ioctl decisions
 and original host-control checks.
 
@@ -94,8 +97,8 @@ Passing this capability gate is not a service or desktop acceptance receipt.
    The original Android DAC_OVERRIDE assertion remains intact. A normal
    source-package fix and an actual GDM startup test are required.
 2. The selected OpenSSH helper binaries import the Linux audit functions.
-   Their audit netlink socket currently remains denied by the independent
-   socket policy. AUDIT_WRITE alone cannot close this login prerequisite.
+   The separate fixed login-audit component now closes its binary policy
+   prerequisites. Real login under the final enforcing policy is still pending.
 3. Default executor sandboxing, native storage and session IPC are independent
    components. No physical service was started or restarted by this change.
 
