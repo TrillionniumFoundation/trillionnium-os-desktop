@@ -1,0 +1,63 @@
+; Original systemd generators read immutable helper directories and write only
+; the three native boot-generator output trees. Distribution unit files keep
+; their existing immutable type and are never made writable for generators.
+(type p4_linux_generator_directory_t)
+(type p4_linux_generator_output_t)
+(roletype object_r p4_linux_generator_directory_t)
+(roletype object_r p4_linux_generator_output_t)
+(typeattributeset p4_linux_data (p4_linux_generator_directory_t p4_linux_generator_output_t))
+(allow p4_linux_generator_output_t tmpfs (filesystem (associate)))
+(allow init_t p4_linux_generator_directory_t (dir (getattr search open read)))
+(allow p4_linux_generator_t p4_linux_generator_directory_t (dir (getattr search open read)))
+(neverallow p4_linux_procs p4_linux_generator_directory_t (dir (create write add_name remove_name setattr rmdir rename relabelfrom relabelto)))
+
+; mkdir_p_label() and the normal creation transition agree on the exact roots.
+; The manager later reads generated units and removes these same output trees.
+(typetransition init_t p4_linux_systemd_run_t dir "generator" p4_linux_generator_output_t)
+(typetransition init_t p4_linux_systemd_run_t dir "generator.early" p4_linux_generator_output_t)
+(typetransition init_t p4_linux_systemd_run_t dir "generator.late" p4_linux_generator_output_t)
+(typetransition init_t p4_linux_generator_output_t dir p4_linux_generator_output_t)
+(allow init_t p4_linux_generator_output_t (dir (getattr search open read create write add_name remove_name setattr rmdir watch)))
+(allow init_t p4_linux_generator_output_t (file (getattr open read map unlink)))
+(allow init_t p4_linux_generator_output_t (lnk_file (getattr read unlink)))
+
+; generator_open_unit_file() writes a temporary regular file, finalizes its
+; mode and renames it. generator_add_symlink_full() creates wants/requires
+; directories and symlinks; none of those objects is an executable entrypoint.
+(typetransition p4_linux_generator_t p4_linux_generator_output_t dir p4_linux_generator_output_t)
+(typetransition p4_linux_generator_t p4_linux_generator_output_t file p4_linux_generator_output_t)
+(typetransition p4_linux_generator_t p4_linux_generator_output_t lnk_file p4_linux_generator_output_t)
+(allow p4_linux_generator_t p4_linux_generator_output_t (dir (getattr search open read create write add_name remove_name setattr rmdir)))
+(allow p4_linux_generator_t p4_linux_generator_output_t (file (getattr open read write append create setattr rename unlink)))
+(allow p4_linux_generator_t p4_linux_generator_output_t (lnk_file (getattr read create write setattr rename unlink)))
+(allow p4_linux_generator_t p4_linux_unit_directory_t (dir (getattr search open read)))
+(allow p4_linux_generator_t p4_linux_unit_file_t (file (getattr open read)))
+(allow p4_linux_generator_t p4_linux_unit_file_t (lnk_file (getattr read)))
+(typeattribute p4_linux_without_generator_output_writes)
+(typeattributeset p4_linux_without_generator_output_writes (and (p4_linux_procs) (not (or (init_t) (p4_linux_generator_t)))))
+(neverallow p4_linux_without_generator_output_writes p4_linux_generator_output_t (dir (create write add_name remove_name setattr rmdir rename)))
+(neverallow p4_linux_without_generator_output_writes p4_linux_generator_output_t (file (create write append setattr rename unlink)))
+(neverallow p4_linux_without_generator_output_writes p4_linux_generator_output_t (lnk_file (create write setattr rename unlink)))
+(neverallow p4_linux_procs p4_linux_generator_output_t (dir (relabelfrom relabelto mounton)))
+(neverallow p4_linux_procs p4_linux_generator_output_t (file (execute execute_no_trans entrypoint relabelfrom relabelto mounton)))
+(neverallow p4_linux_procs p4_linux_generator_output_t (lnk_file (relabelfrom relabelto)))
+
+; execute_directories() supplies the original O_RDWR serialization memfd as
+; environment-generator stdout. Inherited fd use already comes from the
+; native service contract. This grants no pathname open, mapping or execution.
+(allow p4_linux_generator_t p4_linux_systemd_memfd_t (file (getattr read write)))
+(neverallow p4_linux_generator_t p4_linux_systemd_memfd_t (file (open create map execute execute_no_trans entrypoint relabelfrom relabelto)))
+
+; PID 1 uses ordinary touch(), not a label helper, for this single status file.
+(type p4_linux_systemd_status_t)
+(roletype object_r p4_linux_systemd_status_t)
+(typeattributeset p4_linux_data (p4_linux_systemd_status_t))
+(allow p4_linux_systemd_status_t tmpfs (filesystem (associate)))
+(typetransition init_t p4_linux_systemd_run_t file "show-status" p4_linux_systemd_status_t)
+(allow init_t p4_linux_systemd_status_t (file (getattr open write create setattr unlink)))
+(neverallow p4_linux_not_pid1_manager p4_linux_systemd_status_t (file (open read write append create setattr rename unlink)))
+(neverallow p4_linux_procs p4_linux_systemd_status_t (file (execute execute_no_trans entrypoint map relabelfrom relabelto)))
+
+; sd_event_add_inotify() watches the immutable localtime symlink after opening
+; /etc. Existing symlink read permissions and all mutation denials remain.
+(allow init_t p4_linux_usrmerge_link_t (lnk_file (watch)))

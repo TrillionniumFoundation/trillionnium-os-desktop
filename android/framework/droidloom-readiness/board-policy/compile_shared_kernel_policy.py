@@ -252,6 +252,40 @@ def verify_host_control(library, binary, export):
     for subject in ["u:r:init:s0", "u:r:untrusted_app:s0"]:
         check(subject, obj("p4_linux_systemd_run_t"), "dir", ["open", "read", "search", "create", "write"], False)
 
+    # Real native generator output custody and inherited stdout transport.
+    generator = "u:system_r:p4_linux_generator_t:s0"
+    output = obj("p4_linux_generator_output_t")
+    inputs = obj("p4_linux_generator_directory_t")
+    status = obj("p4_linux_systemd_status_t")
+    for subject in [manager, generator]:
+        check(subject, inputs, "dir", ["getattr", "search", "open", "read"], True)
+        check(subject, inputs, "dir", ["create", "write", "add_name", "remove_name", "setattr"], False)
+        check(subject, output, "dir",
+              ["getattr", "search", "open", "read", "create", "write", "add_name", "remove_name", "rmdir"], True)
+        check(subject, output, "file", ["getattr", "open", "read", "unlink"], True)
+        check(subject, output, "lnk_file", ["getattr", "read", "unlink"], True)
+        check(subject, output, "dir", ["relabelfrom", "relabelto", "mounton"], False)
+        check(subject, output, "file",
+              ["execute", "execute_no_trans", "entrypoint", "relabelfrom", "relabelto"], False)
+        check(subject, obj("p4_linux_unit_file_t"), "file", ["write", "append", "create", "setattr"], False)
+    check(generator, output, "file", ["write", "append", "create", "setattr", "rename"], True)
+    check(generator, output, "lnk_file", ["write", "create", "setattr", "rename"], True)
+    check(manager, output, "file", ["write", "append", "create", "setattr", "rename"], False)
+    check(generator, obj("p4_linux_systemd_memfd_t"), "file", ["getattr", "read", "write"], True)
+    check(generator, obj("p4_linux_systemd_memfd_t"), "file",
+          ["open", "create", "map", "execute", "execute_no_trans", "entrypoint"], False)
+    check(generator, obj("p4_linux_tmp_t"), "dir", ["create", "write", "add_name"], False)
+    check(manager, status, "file", ["getattr", "open", "write", "create", "setattr", "unlink"], True)
+    check(manager, obj("p4_linux_usrmerge_link_t"), "lnk_file", ["getattr", "read", "watch"], True)
+    check(manager, obj("p4_linux_usrmerge_link_t"), "lnk_file",
+          ["write", "create", "setattr", "rename", "unlink", "relabelfrom", "relabelto"], False)
+    for subject in [helper, client, broker, loader, "u:system_r:p4_linux_user_session_t:s0",
+                    "u:r:init:s0", "u:r:untrusted_app:s0"]:
+        check(subject, output, "dir", ["create", "write", "add_name", "remove_name", "rmdir"], False)
+        check(subject, output, "file", ["create", "write", "append", "setattr", "rename", "unlink"], False)
+        check(subject, output, "lnk_file", ["create", "write", "setattr", "rename", "unlink"], False)
+        check(subject, status, "file", ["open", "read", "write", "create", "setattr", "unlink"], False)
+
     lines = export_binary_policy(policy, binary, export)
     transitions = [
         "(typetransition droidloom_public_control_client tmpfs file droidloom_public_apk_payload)",
@@ -269,6 +303,13 @@ def verify_host_control(library, binary, export):
         f'(genfscon cgroup2 "/system.slice/{unit}/cgroup.events" (u object_r droidloom_package_cgroup_events ((s0) (s0))))'
         for unit in ["droidloom-instance-factory.service", "droidloom-instance-launcher.service",
                      "droidloom-early-observer.service"])
+    transitions.extend(
+        f'(typetransition init_t p4_linux_systemd_run_t dir "{name}" p4_linux_generator_output_t)'
+        for name in ["generator", "generator.early", "generator.late"])
+    transitions.extend([
+        '(typetransition init_t p4_linux_systemd_run_t file "show-status" p4_linux_systemd_status_t)',
+        '(typetransition init_t p4_linux_generator_exec_t process p4_linux_generator_t)',
+    ])
     missing = [line for line in transitions if line not in lines]
     if missing:
         raise ValueError("Linked binary lacks exact automatic transitions: " + repr(missing))
@@ -313,7 +354,7 @@ def main():
         "early-readiness-inode-owner.cil", "linux-host-service-roles.cil",
         "linux-initial-calibration.cil", "protected-device-readiness-target.cil", "orderly-android-shutdown.cil",
         "ubuntu-real-root-interpreter.cil", "ubuntu-mounted-api-metadata.cil",
-        "ubuntu-native-pid1-startup.cil",
+        "ubuntu-native-pid1-startup.cil", "ubuntu-native-generators.cil",
         "ubuntu-core-cgroup-ownership.cil", "ubuntu-native-services.cil",
         "frontend-android-interface.cil", "linux-frontend-observer.cil", "instance-launcher.cil",
         "linux-query-owner.cil", "linux-fixed-metadata-observer.cil",

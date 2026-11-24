@@ -32,7 +32,9 @@
 /run/droidloom[^/]*(/.*)? u:object_r:p4_linux_product_store_t:s0
 
 # Original helper entrypoints from the selected Ubuntu system and user units.
-/usr/lib/systemd/(system|user)-generators/[^/]+ -- u:object_r:p4_linux_generator_exec_t:s0
+/usr/lib/systemd/(system|user|system-environment)-generators/[^/]+ -- u:object_r:p4_linux_generator_exec_t:s0
+# The original netplan system generator is a symlink to this fixed ELF.
+/usr/libexec/netplan/generate -- u:object_r:p4_linux_generator_exec_t:s0
 /usr/lib/systemd/systemd-(battery-check|binfmt|bsod|factory-reset|hibernate-resume|pcrextend|random-seed|tpm2-setup|update-done|user-sessions|user-runtime-dir) -- u:object_r:p4_linux_setup_exec_t:s0
 /usr/bin/systemd-(firstboot|hwdb|machine-id-setup|sysusers|tmpfiles|sysext|confext) -- u:object_r:p4_linux_setup_exec_t:s0
 /usr/sbin/ldconfig -- u:object_r:p4_linux_setup_exec_t:s0

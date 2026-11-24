@@ -70,3 +70,11 @@
 # Only the normal native PID 1 configuration fragment directories and files.
 /(etc|run|usr/lib)/systemd/system\.conf\.d -d u:object_r:p4_linux_systemd_config_t:s0
 /(etc|run|usr/lib)/systemd/system\.conf\.d/[^/]+\.conf -- u:object_r:p4_linux_systemd_config_t:s0
+
+# Original native generator inputs are immutable; generated units are private
+# runtime outputs, separate from both static unit files and manager sockets.
+/(etc|run|usr/lib|usr/local/lib)/systemd/(system|system-environment)-generators -d u:object_r:p4_linux_generator_directory_t:s0
+/run/systemd/generator(\.early|\.late)?(/.*)? -d u:object_r:p4_linux_generator_output_t:s0
+/run/systemd/generator(\.early|\.late)?(/.*)? -- u:object_r:p4_linux_generator_output_t:s0
+/run/systemd/generator(\.early|\.late)?(/.*)? -l u:object_r:p4_linux_generator_output_t:s0
+/run/systemd/show-status -- u:object_r:p4_linux_systemd_status_t:s0
