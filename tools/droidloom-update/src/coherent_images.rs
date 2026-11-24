@@ -55,7 +55,7 @@ const PRODUCT: &str = "droidloom_x86_64";
 const MAX_JSON: u64 = 64 * 1024 * 1024;
 const MAX_IMAGE: u64 = 16 * 1024 * 1024 * 1024;
 const MAX_MEMBERS: usize = 200_000;
-const FULL_INPUT_SCHEMA: &str = "droidloom-production-full653-inputs-v1";
+const FULL_INPUT_SCHEMA: &str = "droidloom-production-full654-inputs-v1";
 const FULL_SOURCE_SHA: &str = crate::android::PRODUCTION_SOURCE_LOCK_SHA;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
@@ -692,7 +692,7 @@ pub(crate) fn run_normal(
     let requested_targets: Vec<String> = targets.iter().map(|s| (*s).to_string()).collect();
     validate_full_targets(&requested_targets)?;
     let (source_receipt, original) =
-        read_json(&out.join("droidloom-production-full653-inputs.json"))?;
+        read_json(&out.join("droidloom-production-full654-inputs.json"))?;
     validate_full_source_header(&original, &requested_targets)?;
     let source_lock = pin(
         &repo.join(crate::android::PRODUCTION_SOURCE_LOCK_PATH),
@@ -1864,7 +1864,7 @@ fn verify_cohort_shape(cohort: &Cohort, product: &Path) -> Result<()> {
                 .source
                 .join("build/make/tools/releasetools/build_image.py")
         || cohort.build_inputs.source_receipt.path
-            != out.join("droidloom-production-full653-inputs.json")
+            != out.join("droidloom-production-full654-inputs.json")
         || cohort.build_inputs.product_configuration.path != out.join(configuration::RECEIPT)
         || cohort.build_inputs.command_program != out.join("soong_ui")
         || cohort.build_inputs.command_executable.path != out.join("soong_ui")

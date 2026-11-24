@@ -287,7 +287,7 @@ fn settings_requests_keep_exact_651_lock_strict_user_and_actual_module_targets()
         validate_source_lock(&recipe, &lock).unwrap();
         assert_eq!(hash(&lock).unwrap(), production_source::LOCK_SHA);
         let parsed = droidloom_source::load_lock(&lock).unwrap();
-        assert_eq!(parsed.projects.len(), 653);
+        assert_eq!(parsed.projects.len(), 661);
         let original = droidloom_source::load_lock(
             &recipe.join("android/manifest/production-full-source-lock.json"),
         )
@@ -318,6 +318,15 @@ fn settings_requests_keep_exact_651_lock_strict_user_and_actual_module_targets()
                 if path == Path::new(provider) {
                     expected_sparse.push(cone.into());
                 }
+            }
+            for &(provider, _, _, cone) in droidloom_source::production_car::KATI_REQUIRED_CONES {
+                if path == Path::new(provider) {
+                    expected_sparse.push(cone.into());
+                }
+            }
+            if path == Path::new(droidloom_source::production_car::BINDGEN_CLANG_PROJECT) {
+                expected_sparse.extend(droidloom_source::production_car::BINDGEN_CLANG_TOOLS
+                    .iter().map(std::path::PathBuf::from));
             }
             assert_eq!(
                 (path, name, commit, purpose, sparse_paths),

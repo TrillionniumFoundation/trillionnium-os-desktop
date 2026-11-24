@@ -615,7 +615,23 @@
         "common/device-side/util/jni",
         "tests/tests/content/lib/shared",
         "tests/tests/print/ExternalPrintService",
-        "common/device-side/device-info/tests"
+        "common/device-side/device-info/tests",
+        "tests/tests/os/src/android/os/cts",
+        "tests/tests/os/src/android/os/connectivity/cts",
+        "tests/tests/hardware",
+        "tests/input",
+        "tests/tests/security",
+        "tests/tests/view",
+        "tests/tests/widget",
+        "hostsidetests/securitybulletin",
+        "common/device-side/preconditions",
+        "libs/display",
+        "tests/framework/base/biometrics",
+        "libs/kernelinfo",
+        "apps/hotspot",
+        "tools/cts-device-info",
+        "hostsidetests/backup",
+        "tools/manifest-generator"
       ]
     },
     {
@@ -3362,7 +3378,11 @@
         "libraries/health/composers/host",
         "libraries/health/runners/longevity/host",
         "libraries/desktop-test-lib",
-        "libraries/sts-common-util/device-side"
+        "libraries/sts-common-util/device-side",
+        "libraries/motion/compose/tests/goldens",
+        "libraries/screenshot/src/androidTest/assets",
+        "libraries/screenshot/src/androidTest/manifest/AndroidManifest.xml",
+        "libraries/sts-common-util/apps/MainlineModuleDetector"
       ]
     },
     {
@@ -3408,7 +3428,10 @@
         "clang-r596125/share",
         "clang-stable/lib/libclang.so",
         "clang-stable/lib/python3",
-        "embedded-sysroots"
+        "embedded-sysroots",
+        "clang-r584948/bin/clang",
+        "clang-r584948/bin/clang-22",
+        "clang-r584948/bin/clang-real"
       ]
     },
     {
@@ -3960,7 +3983,9 @@
         "libfec",
         "libfscrypt",
         "libatrace_rust",
-        "tests"
+        "tests",
+        "vbmeta_tools",
+        "simpleperf/simpleperf_app_runner"
       ]
     },
     {
@@ -4215,7 +4240,8 @@
         "libsmapinfo",
         "testdata1",
         "testdata2",
-        "libmemevents"
+        "libmemevents",
+        "tools"
       ]
     },
     {
@@ -4834,7 +4860,11 @@
         "shadows/httpclient/src/main",
         "shadows/multidex/src/main",
         "shadows/versioning/src/main",
-        "processor/src/main"
+        "processor/src/main",
+        "processor/src/test/resources",
+        "resources/src/test/resources",
+        "robolectric/src/test/resources",
+        "shadows/httpclient/src/test/resources"
       ]
     },
     {
@@ -5451,7 +5481,8 @@
         "include",
         "libs",
         "rust",
-        "tests"
+        "tests",
+        "tools"
       ]
     },
     {
@@ -5563,7 +5594,10 @@
         "service/support_lib",
         "service/fusion_lib",
         "libuwb-uci/src",
-        "service/uci/jni"
+        "service/uci/jni",
+        "ranging/tests/multidevices/CtsMultiDeviceGenericRangingAccuracyTests/AndroidTest.xml",
+        "ranging/tests/multidevices/RangingManagerTests/AndroidTest.xml",
+        "ranging/tests/multidevices/RangingManagerTests/AndroidTestV2.xml"
       ]
     },
     {
@@ -5628,7 +5662,10 @@
         "java/test/stress",
         "java/test/utils",
         "java/utils/pigweed",
-        "java/test/chdts"
+        "java/test/chdts",
+        "chpp/common",
+        "chpp/services",
+        "chpp"
       ]
     },
     {
@@ -5674,7 +5711,8 @@
         "zygote-proc-macros",
         "zygote-sys",
         "zygote",
-        "zygote-core"
+        "zygote-core",
+        "memmark"
       ]
     },
     {
@@ -5896,7 +5934,15 @@
         "tests/tombstone-transmit-tests.xml",
         "tests/utils",
         "tests/wifi",
-        "tests/graphics/hotplug"
+        "tests/graphics/hotplug",
+        "build",
+        "shared/phone",
+        "host/commands/mkenvimage_slim",
+        "host/commands/console_forwarder",
+        "host/commands/log_tee",
+        "host/commands/logcat_receiver",
+        "host/commands/tcp_connector",
+        "host/frontend/webrtc/html_client"
       ]
     },
     {
@@ -6758,7 +6804,13 @@
       "path": "external/hyphenation-patterns",
       "purpose": "Pinned original provider and physical source inputs for the retained ordinary native pair graph",
       "sparse_paths": [
-        "Android.bp"
+        "Android.bp",
+        "LibreOffice",
+        "OpenTaal",
+        "TeX",
+        "laboratory50",
+        "rekenaar",
+        "tensojka"
       ]
     },
     {
@@ -9907,7 +9959,9 @@
         "tests/src",
         "tests/test_app",
         "tests/utils",
-        "apex/permissions"
+        "apex/permissions",
+        "apex/testing",
+        "apex/hiddenapi"
       ]
     },
     {
@@ -11006,6 +11060,80 @@
         "builtInServices/proto",
         "builtInServices/src",
         "updatableServices/src"
+      ]
+    },
+    {
+      "commit": "6cd518be7a7147ed5b1053edfbf66379bf5a45f9",
+      "name": "platform/prebuilts/jdk/jdk8",
+      "path": "prebuilts/jdk/jdk8",
+      "purpose": "Original superproject Java 8 host bootclasspath inputs for dx and Apache Commons Lang",
+      "sparse_paths": [
+        "linux-x86/jre/lib/jce.jar",
+        "linux-x86/jre/lib/rt.jar"
+      ]
+    },
+    {
+      "commit": "683fc6fd48adab655b30f96ffdb931ba192047cb",
+      "name": "platform/external/bc",
+      "path": "external/bc",
+      "purpose": "Official Android shell bc utility required by shell_and_utilities_system.",
+      "sparse_paths": []
+    },
+    {
+      "commit": "02af625a7b521040c883aa91910a8278e22a21ff",
+      "name": "platform/external/exfatprogs",
+      "path": "external/exfatprogs",
+      "purpose": "Official Android exFAT format and repair tools required by shell_and_utilities_system.",
+      "sparse_paths": []
+    },
+    {
+      "commit": "c5ec86d6f3515fad6481e01c1798457ca0ec40d1",
+      "name": "platform/external/newfs_msdos",
+      "path": "external/newfs_msdos",
+      "purpose": "Official Android FAT format utility required by shell_and_utilities_system.",
+      "sparse_paths": []
+    },
+    {
+      "commit": "dd362b6ae0e8b3e7742edaf45dcee7fe4f25a422",
+      "name": "platform/external/one-true-awk",
+      "path": "external/one-true-awk",
+      "purpose": "Official awk system and vendor binaries required by Android shell utilities.",
+      "sparse_paths": []
+    },
+    {
+      "commit": "435ac48f51456ba3e57b4131fb7667b38e5ab142",
+      "name": "platform/external/tcpdump",
+      "path": "external/tcpdump",
+      "purpose": "Official Android network diagnostic utility required by shell_and_utilities_system.",
+      "sparse_paths": []
+    },
+    {
+      "commit": "36f427b7c46682cfcdb2e61eee6893acbfb2a606",
+      "name": "device/google/cuttlefish_prebuilts",
+      "path": "device/google/cuttlefish_prebuilts",
+      "purpose": "Official Cuttlefish bootloader and kernel inspection inputs required by assemble_cvd.",
+      "sparse_paths": [
+        "bootloader",
+        "scripts/extract-ikconfig"
+      ]
+    },
+    {
+      "commit": "384ed55d6afe79ec6a143118c2cdd422e68c8e42",
+      "name": "platform/external/jarjar",
+      "path": "external/jarjar",
+      "purpose": "Same-release host JarJar provider required by normal libcore bootstrap relocation",
+      "sparse_paths": [
+        "Android.bp",
+        "COPYING",
+        "LICENSE.txt",
+        "NOTICE",
+        "lib/apache-ant-1.9.4.jar",
+        "lib/maven-plugin-api.jar",
+        "manifest.txt",
+        "res",
+        "src/android",
+        "src/main",
+        "src/test"
       ]
     }
   ],

@@ -41,7 +41,7 @@ enum SourceProfile {
     NativePair656,
     Production651,
     Production652,
-    Production653,
+    Production654,
 }
 
 impl SourceProfile {
@@ -51,7 +51,7 @@ impl SourceProfile {
             Self::NativePair656 => native_pair::MAX_PROJECTS,
             Self::Production651 => production_full::MAX_PROJECTS,
             Self::Production652 => production_cmake::MAX_PROJECTS,
-            Self::Production653 => production_car::MAX_PROJECTS,
+            Self::Production654 => production_car::MAX_PROJECTS,
         }
     }
     fn maximum_sparse_paths(self) -> usize {
@@ -60,7 +60,7 @@ impl SourceProfile {
             Self::NativePair656 => native_pair::MAX_SPARSE_PATHS,
             Self::Production651 => production_full::MAX_SPARSE_PATHS,
             Self::Production652 => production_cmake::MAX_SPARSE_PATHS,
-            Self::Production653 => production_car::MAX_SPARSE_PATHS,
+            Self::Production654 => production_car::MAX_SPARSE_PATHS,
         }
     }
     fn accepts_project_name(self, name: &str) -> bool {
@@ -69,7 +69,10 @@ impl SourceProfile {
             Self::NativePair656 => native_pair::is_project_name(name),
             Self::Production651 => native_pair::is_project_name(name),
             Self::Production652 => native_pair::is_project_name(name),
-            Self::Production653 => native_pair::is_project_name(name),
+            Self::Production654 => native_pair::is_project_name(name)
+                || production_car::KATI_REQUIRED_PROJECTS.iter().any(
+                    |&(_, official_name, _, _, _)| official_name == name
+                ),
         }
     }
 }
@@ -391,7 +394,10 @@ fn validate_projects(lock: &SparseSourceLock, profile: SourceProfile, problems: 
                 project.path.display()
             ));
         }
-        if project.sparse_paths.len() > maximum_sparse_paths {
+        if project.sparse_paths.len() > maximum_sparse_paths
+            && !(profile == SourceProfile::Production654
+                && production_car::permits_cts_pcc_sparse_extension(project))
+        {
             problems.push(format!(
                 "project {} has more than {maximum_sparse_paths} sparse paths",
                 project.path.display()
