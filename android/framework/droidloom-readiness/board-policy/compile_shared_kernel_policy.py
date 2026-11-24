@@ -683,6 +683,12 @@ def verify_native_auxiliary_sockets(library, binary, exported, original_contract
                 f"{kind}: {sorted(actual)} != {sorted(expected)}")
         checks.extend([subject, target, kind, name, name in actual] for name in permissions)
 
+    # Original admitted plat_sepolicy.cil: common file, inherited unchanged
+    # by (class sock_file ()). The shared-payload contract selects fewer classes.
+    sock_file_permissions = (
+        "ioctl read write create getattr setattr lock relabelfrom relabelto append "
+        "map unlink link rename execute quotaon mounton audit_access open execmod "
+        "watch watch_mount watch_sb watch_with_perm watch_reads").split()
     manager = "u:system_r:init_t:s0"
     transitions = []
     for leaf, target in names:
@@ -690,7 +696,7 @@ def verify_native_auxiliary_sockets(library, binary, exported, original_contract
             expected = (["getattr", "create", "setattr", "write", "unlink"]
                         if (role, actor) == ("system_r", "init_t") else [])
             exact(f"u:{role}:{actor}:s0", f"u:object_r:{target}:s0", "sock_file",
-                  original_contract["classes"]["sock_file"], expected)
+                  sock_file_permissions, expected)
         transitions.append(
             f'(typetransition init_t p4_linux_systemd_run_t sock_file "io.systemd.{leaf}" {target})')
     exact(manager, "u:object_r:p4_linux_native_bin_t:s0", "file",
