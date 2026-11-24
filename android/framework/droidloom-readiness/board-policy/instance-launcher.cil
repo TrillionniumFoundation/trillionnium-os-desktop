@@ -36,7 +36,9 @@
 (typeattribute p4_linux_public_launcher_readers)
 (typeattributeset p4_linux_public_launcher_readers (p4_instance_host_readers p4_linux_selected_release_readers droidloom_public_control_client))
 (allow p4_linux_public_launcher_readers p4_linux_public_launcher_t (file (getattr open read)))
-(neverallow all p4_linux_public_launcher_t (file (create write append setattr unlink link rename relabelto relabelfrom execute execute_no_trans entrypoint)))
+(typeattribute p4_linux_public_launcher_all_types)
+(typeattributeset p4_linux_public_launcher_all_types (all))
+(neverallow p4_linux_public_launcher_all_types p4_linux_public_launcher_t (file (create write append setattr unlink link rename relabelto relabelfrom execute execute_no_trans entrypoint)))
 
 (allow p4_instance_host_readers p4_linux_rootdir_t (dir (getattr search open read)))
 (allow p4_instance_host_readers p4_linux_etc_dir_t (dir (getattr search open read)))
