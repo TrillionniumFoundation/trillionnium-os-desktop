@@ -1511,3 +1511,13 @@ A failed vendor resume can partially replace cache receipts. Select the earlier
 vendor evidence. The same original lock inodes, receipt hashes and complete
 generation-relative preserved byte inventory are required; mutable cache files
 are rebuilt normally and cannot substitute for those preserved prior inputs.
+
+Kernel-first runtime publication uses `android_kernel_first_stage_v2`. Normal
+`package-official-base` and `bind-kernel-first-runtime` both derive the fixed
+cmd, toybox, app_process64 and content.jar originals from the same whole CP3A
+system image, validate the original inode metadata and xattrs, and bind their
+byte digests through `query_inputs`. The four private files live under
+`var/lib/droidloom/runtime-cohorts/<runtime-digest>/images/`; import must seal
+them as root with the original fixed role labels and no file capabilities as
+recorded in `QUERY-INSTALL-REQUIREMENTS.json`. Producing these files is not
+application admission or runtime qualification.

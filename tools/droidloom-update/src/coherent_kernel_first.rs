@@ -4,8 +4,10 @@ use std::os::unix::fs::PermissionsExt;
 
 #[path = "coherent_device_source.rs"]
 mod device_source;
+#[path = "coherent_kernel_query.rs"]
+mod query_inputs;
 
-const SCOPE: &str = "android_kernel_first_stage_v1";
+const SCOPE: &str = "android_kernel_first_stage_v2";
 const INIT_SHA256: &str = "9f69cc83a88db5f8533014cfea5ad9ea8e0454120335329aec27f8d65b2a9537";
 const INIT_BYTES: u64 = 2_934_488;
 
@@ -24,13 +26,16 @@ pub(super) fn install(root: &Path, cohort: &str, system: &FileRef) -> Result<Val
         return fail("selected /system/bin/init is not the expected original x86_64 CP3A ELF");
     }
     recheck(system, MAX_IMAGE)?;
-    let value = json!({"schema":1,"scope":SCOPE,"base_cohort_sha256":cohort,
+    let query = query_inputs::prepare(temp.path(), system, &reader)?;
+    let value = json!({"schema":2,"scope":SCOPE,"base_cohort_sha256":cohort,
         "source_system_sha256":system.sha256,"init_path":"/system/bin/init","init_bytes":init.bytes,
-        "init_sha256":init.sha256,"argv":["/system/bin/init","second_stage"]});
+        "init_sha256":init.sha256,"argv":["/system/bin/init","second_stage"],
+        "query_inputs":query.declaration});
     let mut bytes = serde_json::to_vec_pretty(&value)?;
     bytes.push(b'\n');
     let digest = format!("{:x}", Sha256::digest(&bytes));
     let relative = Path::new("etc/droidloom/runtime-cohorts").join(format!("{digest}.json"));
+    let query_inputs = query.publish(root, &digest)?;
     let devices = device_source::publish(root, temp.path(), system, cohort, &digest)?;
     let dest = root.join(&relative);
     let dir = dest.parent().ok_or("missing runtime manifest parent")?;
@@ -50,7 +55,7 @@ pub(super) fn install(root: &Path, cohort: &str, system: &FileRef) -> Result<Val
     for path in dir.ancestors().take_while(|p| p.starts_with(root)) {
         File::open(path)?.sync_all()?;
     }
-    Ok(json!({"runtime_manifest_sha256":digest, "manifest":relative,"runtime":value,"board_device_source":devices}))
+    Ok(json!({"runtime_manifest_sha256":digest, "manifest":relative,"runtime":value,"board_device_source":devices,"query_inputs":query_inputs}))
 }
 
 /// Recheck and add only the content-addressed runtime declaration to an already published v3 base.
