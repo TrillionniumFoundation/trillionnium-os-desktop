@@ -1504,3 +1504,10 @@ file, then restores the source without executing the native compiler. Any
 difference requires a normal native rebuild. `--verify-native-only` performs
 that preflight and writes `native-reuse-verified.json` without running vendor.
 The producer commit must come from the original invocation's retained provenance.
+
+A failed vendor resume can partially replace cache receipts. Select the earlier
+`resume-attempt.json` with `--previous-attempt` and its exact
+`--previous-attempt-sha256` to continue from its preserved successful native and
+vendor evidence. The same original lock inodes, receipt hashes and complete
+generation-relative preserved byte inventory are required; mutable cache files
+are rebuilt normally and cannot substitute for those preserved prior inputs.

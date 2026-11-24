@@ -145,37 +145,111 @@ fn preserve(
     output: &Path,
     references: &BTreeMap<PathBuf, (u64, String)>,
 ) -> Result<Value> {
+    preserve_from(root, root, output, references)
+}
+
+fn preserve_from(
+    root: &Path,
+    source_root: &Path,
+    output: &Path,
+    references: &BTreeMap<PathBuf, (u64, String)>,
+) -> Result<Value> {
     let mut rows = Vec::new();
     let mut total = 0u64;
-    for (path, (bytes, sha)) in references {
+    for (original, (bytes, sha)) in references {
+        let path = source_root.join(original.strip_prefix(root)?);
         total = total
             .checked_add(*bytes)
             .ok_or("prior outputs size overflow")?;
         if total > 2 * 1024 * 1024 * 1024 {
             return fail("prior output preservation exceeds 2 GiB");
         }
-        let before = fs::symlink_metadata(path)?;
+        let before = fs::symlink_metadata(&path)?;
         if !before.is_file()
             || before.file_type().is_symlink()
             || before.nlink() != 1
             || before.len() != *bytes
-            || path.canonicalize()? != *path
-            || hash(path)? != *sha
+            || path.canonicalize()? != path
+            || hash(&path)? != *sha
         {
             return fail("prior normal output identity or content changed");
         }
-        let destination = output.join(path.strip_prefix(root)?);
+        let destination = output.join(original.strip_prefix(root)?);
         fs::create_dir_all(destination.parent().ok_or("preserved output parent")?)?;
         if destination.symlink_metadata().is_ok() {
             return fail("prior preservation destination exists");
         }
-        crate::util::copy(path, &destination)?;
-        if hash(&destination)? != *sha || f9(&before)? != f9(&fs::symlink_metadata(path)?)? {
+        crate::util::copy(&path, &destination)?;
+        if hash(&destination)? != *sha || f9(&before)? != f9(&fs::symlink_metadata(&path)?)? {
             return fail("prior normal output changed during preservation");
         }
-        rows.push(json!({"original":path,"preserved":destination,"bytes":bytes,"sha256":sha}));
+        rows.push(json!({"original":original,"preserved":destination,"bytes":bytes,"sha256":sha}));
     }
     Ok(json!({"files":rows,"bytes":total}))
+}
+
+
+struct RetainedPrior {
+    receipt: Artifact,
+    root: PathBuf,
+    references: BTreeMap<PathBuf, (u64, String)>,
+}
+
+fn retained_references(value: &Value, built: &Path, root: &Path) -> Result<BTreeMap<PathBuf, (u64, String)>> {
+    let rows = value["files"].as_array().ok_or("prior preservation files are absent")?;
+    if rows.is_empty() || rows.len() > 4096 {
+        return fail("prior preservation file count is not bounded");
+    }
+    let mut found = BTreeMap::new();
+    let mut total = 0u64;
+    for row in rows {
+        let original = PathBuf::from(row["original"].as_str().ok_or("prior original path")?);
+        let relative = original.strip_prefix(built)?;
+        if relative.as_os_str().is_empty() || relative.components().any(|part| !matches!(part, std::path::Component::Normal(_))) {
+            return fail("prior retained path escapes the selected output");
+        }
+        let expected = root.join(relative);
+        if row["preserved"].as_str() != expected.to_str() {
+            return fail("prior retained path is not the original generation-relative file");
+        }
+        let bytes = row["bytes"].as_u64().ok_or("prior retained bytes")?;
+        total = total.checked_add(bytes).ok_or("prior retained size overflow")?;
+        collect_references(&json!({"path":original,"bytes":bytes,"sha256":row["sha256"]}), built, &mut found)?;
+    }
+    if found.len() != rows.len() || total > 2 * 1024 * 1024 * 1024 || value["bytes"] != total {
+        return fail("prior retained references are duplicated, incomplete or oversized");
+    }
+    Ok(found)
+}
+
+impl RetainedPrior {
+    fn load(
+        path: &Path, sha: &str, built: &Path, out: &Path,
+        native_sha: &str, vendor_sha: &str, package_identity: [u64;2], source_identity: [u64;2],
+    ) -> Result<Self> {
+        let parent = path.parent().ok_or("prior attempt parent")?;
+        real_directory(parent)?;
+        if path != parent.join("resume-attempt.json") || out.starts_with(parent) || parent.starts_with(out)
+            || parent.starts_with(built) || built.starts_with(parent) {
+            return fail("retained resume attempt aliases the output or cache");
+        }
+        let (receipt, value) = read_bound(path, sha)?;
+        if value["schema"] != "droidloom-official-vendor-incremental-resume-v1"
+            || value["previous_output"].as_str() != built.to_str()
+            || value["fresh_assembly_output"].as_str() != parent.to_str()
+            || value["native_receipt"]["sha256"] != native_sha
+            || value["previous_vendor_receipt"]["sha256"] != vendor_sha
+            || value["package_lock_device_inode"] != json!(package_identity)
+            || value["source_lock_device_inode"] != json!(source_identity)
+        {
+            return fail("retained attempt is not the same pinned original native/vendor generation and locks");
+        }
+        let root = parent.join("previous-output");
+        real_directory(&root)?;
+        let references = retained_references(&value["preserved"], built, &root)?;
+        receipt.check()?;
+        Ok(Self { receipt, root, references })
+    }
 }
 
 pub(crate) struct NativeVerification {
@@ -416,6 +490,8 @@ pub(crate) fn run(
     native_source_sha: &str,
     native_producer_commit: &str,
     verify_native_only: bool,
+    previous_attempt: Option<&Path>,
+    previous_attempt_sha: Option<&str>,
 ) -> Result<()> {
     if unsafe { libc::getuid() } == 0 {
         return fail("resume runs as the normal build account");
@@ -453,8 +529,15 @@ pub(crate) fn run(
         native_source_sha,
         native_producer_commit,
     )?;
+    let retained = match (previous_attempt, previous_attempt_sha) {
+        (None, None) => None,
+        (Some(path), Some(sha)) => Some(RetainedPrior::load(path, sha, built, out,
+            native_inputs_sha, vendor_result_sha, package_identity, source_identity)?),
+        _ => return fail("retained previous attempt and its digest must be selected together"),
+    };
+    let read_root = retained.as_ref().map_or(built, |value| value.root.as_path());
     let (vendor_receipt, vendor_value) =
-        read_bound(&vendor.join(VENDOR_RESULT), vendor_result_sha)?;
+        read_bound(&read_root.join("vendor").join(VENDOR_RESULT), vendor_result_sha)?;
     prior_result(&vendor_value, built)?;
     let lock = repo.join(production_source::LOCK_PATH);
     let source_lock = droidloom_source::load_lock(&lock)?;
@@ -470,20 +553,21 @@ pub(crate) fn run(
     }
     let mut preserved = BTreeMap::new();
     let mut receipts = Vec::new();
-    for file in [
-        native.join(INPUT_NAME),
-        native.join("droidloom-production-full654-inputs.json"),
-        native.join("target/product/droidloom_x86_64/droidloom-native-bridge-source.json"),
-        vendor.join(INPUT_NAME),
-        vendor.join("droidloom-production-full654-inputs.json"),
-        vendor.join(VENDOR_RESULT),
-        built.join("official-vendor-attempt.json"),
+    for relative in [
+        format!("native/{INPUT_NAME}"),
+        "native/droidloom-production-full654-inputs.json".into(),
+        "native/target/product/droidloom_x86_64/droidloom-native-bridge-source.json".into(),
+        format!("vendor/{INPUT_NAME}"),
+        "vendor/droidloom-production-full654-inputs.json".into(),
+        format!("vendor/{VENDOR_RESULT}"),
+        "official-vendor-attempt.json".into(),
     ] {
+        let file = read_root.join(&relative);
         let pin = artifact(&file, 64 * 1024 * 1024)?;
         let value: Value = serde_json::from_slice(&fs::read(&file)?)?;
         pin.check()?;
         collect_references(&value, built, &mut preserved)?;
-        preserved.insert(file, (pin.bytes, pin.sha256.clone()));
+        preserved.insert(built.join(relative), (pin.bytes, pin.sha256.clone()));
         receipts.push(pin);
     }
     let archive = artifact(&native.join(ARCHIVE), 512 * 1024 * 1024)?;
@@ -491,7 +575,15 @@ pub(crate) fn run(
         archive.path.clone(),
         (archive.bytes, archive.sha256.clone()),
     );
-    let preservation = preserve(built, &out.join("previous-output"), &preserved)?;
+    if let Some(previous) = &retained {
+        if previous.references != preserved {
+            return fail("retained receipt does not cover the complete pinned prior normal inputs");
+        }
+        previous.receipt.check()?;
+    }
+    let preservation = preserve_from(built, read_root, &out.join("previous-output"), &preserved)?;
+    if let Some(previous) = &retained { previous.receipt.check()?; }
+
     for receipt in &receipts {
         receipt.check()?;
     }
@@ -500,6 +592,7 @@ pub(crate) fn run(
         "native_build_repeated":false,"native_receipt":native_receipt,
         "package_lock_device_inode":package_identity,"source_lock_device_inode":source_identity,
         "previous_vendor_receipt":vendor_receipt,"previous_output":built,
+        "retained_previous_attempt":retained.as_ref().map(|value| &value.receipt),
         "fresh_assembly_output":out,"preserved":preservation,
         "normal_vendor_targets":VENDOR_TARGETS,"runtime_qualified":false,
         "production_ready":false,"userdata_attached":false
@@ -549,6 +642,42 @@ pub(crate) fn run(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn saved_success_survives_mutated_cache_but_not_mutated_saved_bytes() {
+        let temp = tempfile::tempdir().unwrap();
+        let built = temp.path().join("built");
+        let retained = temp.path().join("retained");
+        fs::create_dir(&built).unwrap();
+        fs::create_dir(&retained).unwrap();
+        fs::write(built.join("vendor.img"), b"new").unwrap();
+        fs::write(retained.join("vendor.img"), b"old").unwrap();
+        let refs = BTreeMap::from([(built.join("vendor.img"), (3, hash(&retained.join("vendor.img")).unwrap()))]);
+        let saved = temp.path().join("next");
+        preserve_from(&built, &retained, &saved, &refs).unwrap();
+        assert_eq!(fs::read(saved.join("vendor.img")).unwrap(), b"old");
+        assert_eq!(fs::read(built.join("vendor.img")).unwrap(), b"new");
+        fs::write(retained.join("vendor.img"), b"bad").unwrap();
+        assert!(preserve_from(&built, &retained, &temp.path().join("reject"), &refs).is_err());
+    }
+
+    #[test]
+    fn saved_receipt_rejects_redirected_or_duplicated_members() {
+        let sha = "a".repeat(64);
+        let built = Path::new("/selected/cache");
+        let root = Path::new("/selected/attempt/previous-output");
+        let row = json!({"original":"/selected/cache/vendor.img","preserved":"/selected/attempt/previous-output/vendor.img","bytes":3,"sha256":sha});
+        let good = json!({"files":[row.clone()],"bytes":3});
+        assert!(retained_references(&good,built,root).is_ok());
+        let mut redirected = good.clone();
+        redirected["files"][0]["preserved"] = "/elsewhere/vendor.img".into();
+        assert!(retained_references(&redirected,built,root).is_err());
+        let mut escaped = good.clone();
+        escaped["files"][0]["original"] = "/selected/cache/../elsewhere/vendor.img".into();
+        assert!(retained_references(&escaped,built,root).is_err());
+        assert!(retained_references(&json!({"files":[row.clone(),row],"bytes":6}),built,root).is_err());
+    }
+
     #[test]
     fn reused_native_requires_identical_projected_bytes_and_external_sources() {
         let previous = json!({"source_lock":{"path":"/old/lock","sha256":"same"},"effective_projection":{"files":{"native.cpp":"old"},"patches":{"fix.patch":"same"}},"requested_targets":NATIVE_TARGETS});

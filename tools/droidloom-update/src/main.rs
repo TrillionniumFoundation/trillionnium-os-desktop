@@ -119,6 +119,9 @@ enum Action {
         #[arg(long)] native_producer_commit: String,
         /// Validate the retained native inputs and restore source without compiling vendor.
         #[arg(long)] verify_native_only: bool,
+        /// Reuse the pinned preserved evidence of a retired failed resume.
+        #[arg(long, requires = "previous_attempt_sha256")] previous_attempt: Option<PathBuf>,
+        #[arg(long, requires = "previous_attempt")] previous_attempt_sha256: Option<String>,
     },
     /// Build the complete framework Java library and Android JNI runtime only.
     /// Uses its independent exact source lock; does not install or enable roles.
@@ -483,13 +486,13 @@ fn execute(args: Args) -> Result<()> {
     {
         return fail("fixed vendor policy does not accept cleanup, bundle or bootstrap options");
     }
-    if let Some(Action::OfficialGsiVendorResume { work, built_out, out, system_image, references, native_inputs_sha256, vendor_result_sha256, native_projection_sha256, native_source_sha256, native_producer_commit, verify_native_only }) = &args.command {
+    if let Some(Action::OfficialGsiVendorResume { work, built_out, out, system_image, references, native_inputs_sha256, vendor_result_sha256, native_projection_sha256, native_source_sha256, native_producer_commit, verify_native_only, previous_attempt, previous_attempt_sha256 }) = &args.command {
         if args.clean || args.build_only || args.bootstrapped { return fail("vendor resume does not accept cleanup or bootstrap options"); }
         let repo = repository(args.source.clone())?;
         let capacity = std::thread::available_parallelism().map(|n| n.get()).unwrap_or(1).saturating_sub(2).max(1);
         let jobs = args.jobs.unwrap_or(6).min(capacity);
         if jobs == 0 { return fail("jobs must be positive"); }
-        return android::official_vendor::resume::run(&repo, work, built_out, out, system_image, references, native_inputs_sha256, vendor_result_sha256, jobs, native_projection_sha256, native_source_sha256, native_producer_commit, *verify_native_only);
+        return android::official_vendor::resume::run(&repo, work, built_out, out, system_image, references, native_inputs_sha256, vendor_result_sha256, jobs, native_projection_sha256, native_source_sha256, native_producer_commit, *verify_native_only, previous_attempt.as_deref(), previous_attempt_sha256.as_deref());
     }
     match &args.command {
         Some(Action::NativeGenerationPair { product }) => {
