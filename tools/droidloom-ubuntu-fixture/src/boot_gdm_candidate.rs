@@ -506,8 +506,13 @@ pub fn apply(root: &Path, boot: &Path, manifest: &Manifest, input: &GdmCandidate
         "original fixture GDM bytes differ",
     )?;
     let original_file = boot_files::checked_file(&original_pin)?;
-    let status_before =
-        crate::boot_candidate::dpkg_status(root)?.ok_or("normal fixture dpkg status absent")?;
+    // A captured public fixture need not contain a dpkg database. Preserve its
+    // presence as well as any existing file identity and bytes across this overlay.
+    let status_before = crate::boot_candidate::dpkg_status(root)?;
+    let status_identity_before = status_before
+        .as_ref()
+        .map(|_| tree.identity("/var/lib/dpkg/status"))
+        .transpose()?;
     let layer = boot.join("gdm-candidate");
     boot_files::private_dir(&layer)?;
     let (sources, selected, candidate_elf) = prepare_candidate(input, &lock, &layer)?;
@@ -558,10 +563,18 @@ pub fn apply(root: &Path, boot: &Path, manifest: &Manifest, input: &GdmCandidate
             && fs::hash(&original_file)? == original_pin.sha256,
         "installed GDM or original-held ELF readback differs",
     )?;
-    let status_after =
-        crate::boot_candidate::dpkg_status(root)?.ok_or("fixture dpkg status disappeared")?;
+    let status_after = crate::boot_candidate::dpkg_status(root)?;
+    let status_identity_after = status_after
+        .as_ref()
+        .map(|_| tree.identity("/var/lib/dpkg/status"))
+        .transpose()?;
+    let status_unchanged = match (&status_before, &status_after) {
+        (None, None) => true,
+        (Some(before), Some(after)) => crate::boot_candidate::equal_pin(before, after),
+        _ => false,
+    };
     ensure(
-        crate::boot_candidate::equal_pin(&status_before, &status_after),
+        status_unchanged && status_identity_before == status_identity_after,
         "GDM overlay changed dpkg state",
     )?;
     let result = json!({"schema":"droidloom.fixture-gdm-candidate.v1", "input":input,
