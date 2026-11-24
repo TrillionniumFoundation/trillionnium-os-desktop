@@ -257,6 +257,14 @@ droidloomctl --json window LEASE_HEX stop-capture
 droidloomctl --json window LEASE_HEX close
 ```
 
+For a caller that cannot create a new client-readable input file, replace
+`--expected PATH` with `--expected-json JSON`, passing the same reviewed raw
+inspection bytes as one argument and the same required `--expect-sha256` pin.
+The two inputs are mutually exclusive, share the one-MiB bound and strict JSON
+schema, and send the same typed request. This option opens no caller file or
+stdin and adds no filesystem permission. Collect JSON output through the
+caller's inherited output pipe and let the caller save its own evidence.
+
 `LEASE_HEX` encodes the returned `window.lease` byte array as exactly 32
 lowercase hexadecimal digits. It selects an already retained original lease;
 it is not a task identifier or a transferable process capability. The broker

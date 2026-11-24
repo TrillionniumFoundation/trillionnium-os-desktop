@@ -44,9 +44,12 @@ enum Command {
     LaunchOwned {
         /// Exact enabled PACKAGE/ACTIVITY launcher component.
         component: String,
-        /// Current ApplicationInspection JSON, containing actual UID/APKs/epoch.
-        #[arg(long)]
-        expected: PathBuf,
+        /// Current ApplicationInspection JSON file, containing actual UID/APKs/epoch.
+        #[arg(long, required_unless_present = "expected_json", conflicts_with = "expected_json")]
+        expected: Option<PathBuf>,
+        /// The same reviewed JSON bytes as one argument, without opening a caller file.
+        #[arg(long, conflicts_with = "expected")]
+        expected_json: Option<String>,
         /// Independent SHA-256 of the complete inspection JSON.
         #[arg(long)]
         expect_sha256: String,
@@ -219,28 +222,109 @@ fn window_token(value:&str)->Result<[u8;16],Box<dyn std::error::Error>>{
     if token==[0;16]{return Err("empty window lease".into());}
     Ok(token)
 }
-fn pinned_inspection(path:&std::path::Path,pin:&str)
-    ->Result<droidloom_supervisor::control::application_probe::ApplicationInspection,Box<dyn std::error::Error>>{
-    use sha2::Digest;
-    if pin.len()!=64 || !pin.bytes().all(|b|b.is_ascii_digit() || (b'a'..=b'f').contains(&b)){
+const MAX_INSPECTION_BYTES: usize = 1024 * 1024;
+fn validate_inspection_pin(pin: &str) -> Result<(), Box<dyn std::error::Error>> {
+    if pin.len() != 64 || !pin.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)) {
         return Err("inspection pin must be a lowercase SHA-256".into());
     }
+    Ok(())
+}
+fn pinned_inspection_bytes(bytes: &[u8], pin: &str)
+    -> Result<droidloom_supervisor::control::application_probe::ApplicationInspection, Box<dyn std::error::Error>> {
+    use sha2::Digest;
+    validate_inspection_pin(pin)?;
+    if bytes.is_empty() || bytes.len() > MAX_INSPECTION_BYTES {
+        return Err("inspection bytes exceed the fixed input bound".into());
+    }
+    if format!("{:x}", sha2::Sha256::digest(bytes)) != pin {
+        return Err("inspection bytes differ from the reviewed SHA-256".into());
+    }
+    Ok(serde_json::from_slice(bytes)?)
+}
+fn pinned_inspection(path:&std::path::Path,pin:&str)
+    ->Result<droidloom_supervisor::control::application_probe::ApplicationInspection,Box<dyn std::error::Error>>{
+    validate_inspection_pin(pin)?;
     let mut file=fs::OpenOptions::new().read(true)
         .custom_flags(libc::O_CLOEXEC|libc::O_NOFOLLOW|libc::O_NONBLOCK).open(path)?;
     let before=file.metadata()?;
-    if !before.is_file() || before.nlink()!=1 || before.len()==0 || before.len()>1024*1024 {
+    if !before.is_file() || before.nlink()!=1 || before.len()==0 || before.len()>MAX_INSPECTION_BYTES as u64 {
         return Err("inspection must be one bounded ordinary original file".into());
     }
-    let mut bytes=Vec::new();(&mut file).take(1024*1024+1).read_to_end(&mut bytes)?;
+    let mut bytes=Vec::new();(&mut file).take(MAX_INSPECTION_BYTES as u64 + 1).read_to_end(&mut bytes)?;
     let after=file.metadata()?;
     let identity=|m:&fs::Metadata|(m.dev(),m.ino(),m.mode(),m.uid(),m.gid(),m.nlink(),m.len(),
         m.mtime(),m.mtime_nsec(),m.ctime(),m.ctime_nsec());
-    if identity(&before)!=identity(&after) || bytes.len() as u64!=before.len()
-        || format!("{:x}",sha2::Sha256::digest(&bytes))!=pin {
+    if identity(&before)!=identity(&after) || bytes.len() as u64!=before.len() {
         return Err("inspection bytes or held file identity changed".into());
     }
-    Ok(serde_json::from_slice(&bytes)?)
+    pinned_inspection_bytes(&bytes, pin)
 }
+#[cfg(test)]
+mod inspection_input_tests {
+    use super::*;
+    use sha2::Digest;
+
+    fn sample() -> Vec<u8> {
+        serde_json::to_vec(&serde_json::json!({
+            "package": "com.example.owned", "user": 0, "uid": 10123,
+            "version_code": 7,
+            "epoch": {"boot_id": "00000000-0000-0000-0000-000000000001",
+                "cell_host_pid": 100, "framework_host_pid": 101,
+                "framework_start_ticks": 987},
+            "apks": [{"name": "base.apk", "path": "/data/app/example/base.apk",
+                "bytes": 4, "sha256": "a".repeat(64)}]
+        })).unwrap()
+    }
+    fn pin(bytes: &[u8]) -> String {
+        format!("{:x}", sha2::Sha256::digest(bytes))
+    }
+    #[test]
+    fn inline_inspection_requires_exact_bytes_bound_and_strict_shape() {
+        let bytes = sample();
+        let expected = pinned_inspection_bytes(&bytes, &pin(&bytes)).unwrap();
+        assert_eq!(expected.package, "com.example.owned");
+        let mut changed = bytes.clone();
+        changed.push(b' ');
+        assert!(pinned_inspection_bytes(&changed, &pin(&bytes)).is_err());
+        assert!(pinned_inspection_bytes(&bytes, &"A".repeat(64)).is_err());
+        let large = vec![b' '; MAX_INSPECTION_BYTES + 1];
+        assert!(pinned_inspection_bytes(&large, &pin(&large)).is_err());
+        assert!(pinned_inspection_bytes(&[], &pin(&[])).is_err());
+        let mut shape: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+        shape["accepted"] = true.into();
+        let unknown = serde_json::to_vec(&shape).unwrap();
+        assert!(pinned_inspection_bytes(&unknown, &pin(&unknown)).is_err());
+    }
+    #[test]
+    fn file_and_inline_inputs_retain_the_identical_inspection() {
+        let bytes = sample();
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("inspection.json");
+        fs::write(&path, &bytes).unwrap();
+        assert_eq!(pinned_inspection(&path, &pin(&bytes)).unwrap(),
+            pinned_inspection_bytes(&bytes, &pin(&bytes)).unwrap());
+        let link = directory.path().join("alias.json");
+        std::os::unix::fs::symlink(&path, &link).unwrap();
+        assert!(pinned_inspection(&link, &pin(&bytes)).is_err());
+        fs::hard_link(&path, directory.path().join("hard.json")).unwrap();
+        assert!(pinned_inspection(&path, &pin(&bytes)).is_err());
+    }
+    #[test]
+    fn owned_launch_cli_requires_one_pinned_input() {
+        let bytes = sample();
+        let json = String::from_utf8(bytes.clone()).unwrap();
+        let sha = pin(&bytes);
+        let base = ["ctl", "launch-owned", "com.example.owned/.Main"];
+        let mut args = base.to_vec();
+        args.extend(["--expected-json", &json, "--expect-sha256", &sha]);
+        assert!(Cli::try_parse_from(&args).is_ok());
+        args.extend(["--expected", "/unused/inspection.json"]);
+        assert!(Cli::try_parse_from(&args).is_err());
+        assert!(Cli::try_parse_from(base.into_iter().chain(["--expect-sha256", &sha])).is_err());
+        assert!(Cli::try_parse_from(base.into_iter().chain(["--expected-json", &json])).is_err());
+    }
+}
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq, ValueEnum)]
 enum WindowMode {
     /// Fill the standard XDG bounds or logical output extent.
@@ -372,8 +456,14 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
         )?
     } else {
         let control_request = match cli.command {
-            Command::LaunchOwned { component, expected, expect_sha256, spec } =>
-                ControlRequest::LaunchOwned { expected:pinned_inspection(&expected,&expect_sha256)?,component,spec },
+            Command::LaunchOwned { component, expected, expected_json, expect_sha256, spec } => {
+                let expected = match (expected, expected_json) {
+                    (Some(path), None) => pinned_inspection(&path, &expect_sha256)?,
+                    (None, Some(json)) => pinned_inspection_bytes(json.as_bytes(), &expect_sha256)?,
+                    _ => return Err("exactly one pinned inspection input is required".into()),
+                };
+                ControlRequest::LaunchOwned { expected, component, spec }
+            }
             Command::Window { lease,operation } => {
                 use droidloom_supervisor::control::window::Action;
                 ControlRequest::Window{lease:window_token(&lease)?,action:match operation {
