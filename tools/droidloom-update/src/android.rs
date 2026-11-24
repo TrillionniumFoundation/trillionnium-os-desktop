@@ -13604,16 +13604,17 @@ fn build_targets_with_fixed_request(
     let cross = mesa.join("android/mesa3d_cross.mk");
     let cross_text = fs::read_to_string(&cross)?;
     let python_assignment = "MESA3D_PYTHONPATH := $(AOSP_ABSOLUTE_PATH)/external/python/mako";
-    if !cross_text.contains(python_assignment) {
-        return fail("Mesa Python build projection no longer matches its pinned source");
-    }
-    p.put(
-        &cross,
-        cross_text.replace(
-            python_assignment,
-            &format!("MESA3D_PYTHONPATH := {}", work.join("python").display()),
-        ),
+    let cross_text = replace_mesa_make_anchor(
+        &cross_text,
+        python_assignment,
+        &format!("MESA3D_PYTHONPATH := {}", work.join("python").display()),
     )?;
+    let cross_text = if matches!(request, FixedProductionRequest::OfficialGsiVendor(_)) {
+        official_mesa_make(&cross_text, source, work)?
+    } else {
+        cross_text
+    };
+    p.put(&cross, cross_text)?;
     if !complete_delivery {
         let framework = match request {
             FixedProductionRequest::OfficialGsiVendor(official) => official
@@ -30301,6 +30302,376 @@ mod patch_tests {
         assert_eq!(fs::read(path).unwrap(), b"original");
         assert!(!journal.exists());
     }
+}
+
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct MesaHostFile {
+    path: PathBuf,
+    bytes: u64,
+    sha256: String,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct MesaHostToolInputs {
+    schema: String,
+    meson_version: String,
+    launcher: MesaHostFile,
+    inputs: Vec<MesaHostFile>,
+}
+
+const R17_MESON_LAUNCHER_SHA256: &str =
+    "cff6f5e31c89f7c38e24803c5cd4d543d19afaf6cc049c76d0add13b3e09dad0";
+const R17_MESON_LAUNCHER: &str = "/home/qq/work/p4-vendor-hostdeps-20261118-162b-r1/bin/meson";
+const R17_MESON_MODULES: &[(&str, u64, &str)] = &[
+    (
+        "mesonmain.py",
+        14695,
+        "61684df56822beb9a97ebf52de81bdc68da60e593bbbe954c271ee0922060d61",
+    ),
+    (
+        "coredata.py",
+        20878,
+        "106ce35d9f1d0a4835e96da21b74a2ce7a6a9f04d64147260ab30a020974f2d8",
+    ),
+];
+const R17_MESON_PYTHON_SHA256: &str =
+    "52e0a13e60a981d8c4b6478be2ba5176f69da07948a056bf49cf6f077e30cb41";
+const R17_MESA_NINJA_SHA256: &str =
+    "645edd9a2b0294290c1d8331d4e8698c93625673b01e33ef25b79754badb6ad8";
+
+fn mesa_make_path(path: &Path) -> Result<&str> {
+    let token = path.to_str().ok_or("Mesa host-tool path is not UTF-8")?;
+    if !path.is_absolute()
+        || !token
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'/' | b'.' | b'_' | b'-' | b'+'))
+        || fs::canonicalize(path)? != path
+    {
+        return fail(format!(
+            "Mesa host-tool path must be a canonical Make token: {token}"
+        ));
+    }
+    Ok(token)
+}
+
+fn check_mesa_host_file(input: &MesaHostFile) -> Result<&str> {
+    let name = mesa_make_path(&input.path)?;
+    let metadata = fs::symlink_metadata(&input.path)?;
+    if !metadata.is_file() || metadata.len() != input.bytes || hash(&input.path)? != input.sha256 {
+        return fail(format!(
+            "Mesa host-tool input differs from its declaration: {name}"
+        ));
+    }
+    Ok(name)
+}
+
+fn replace_mesa_make_anchor(text: &str, before: &str, after: &str) -> Result<String> {
+    if text.matches(before).count() != 1 {
+        return fail(format!(
+            "Mesa host-tool projection expected one anchor: {before}"
+        ));
+    }
+    Ok(text.replacen(before, after, 1))
+}
+
+fn mesa_make_with_host_tools(
+    text: &str,
+    meson: &str,
+    ninja: &str,
+    dependencies: &str,
+) -> Result<String> {
+    let text = replace_mesa_make_anchor(
+        text,
+        "MESON_GEN_NINJA := \\\n",
+        &format!(
+            "MESA3D_PINNED_MESON := {meson}\n\
+             MESA3D_PINNED_NINJA := {ninja}\n\
+             MESA3D_PINNED_HOST_INPUTS := $(MESA3D_PINNED_MESON) $(MESA3D_PINNED_NINJA) {dependencies}\n\n\
+             MESON_GEN_NINJA := \\\n"
+        ),
+    )?;
+    let text = replace_mesa_make_anchor(
+        &text,
+        "PATH=/usr/bin:/usr/local/bin:$$PATH meson ./build",
+        "PYTHONDONTWRITEBYTECODE=1 NINJA=$(MESA3D_PINNED_NINJA) $(MESA3D_PINNED_MESON) ./build",
+    )?;
+    let text = replace_mesa_make_anchor(
+        &text,
+        "PATH=/usr/bin:/bin:/sbin:$$PATH ninja -C $(MESON_OUT_DIR)/build",
+        "PYTHONDONTWRITEBYTECODE=1 NINJA=$(MESA3D_PINNED_NINJA) $(MESA3D_PINNED_NINJA) -C $(MESON_OUT_DIR)/build",
+    )?;
+    replace_mesa_make_anchor(
+        &text,
+        "$(MESON_OUT_DIR)/.build.timestamp: $(MESON_GEN_FILES_TARGET) $(link_deps)",
+        "$(MESON_OUT_DIR)/.build.timestamp: $(MESON_GEN_FILES_TARGET) $(link_deps) $(MESA3D_PINNED_HOST_INPUTS)",
+    )
+}
+
+const R17_MESA_PARSER_CROSS_PATH: &str =
+    "/home/qq/work/p4-r17-mesa-official-parser-tools-20261123-r1/parser-tools.ini";
+const R17_MESA_BISON_DATA_SHA256: &str =
+    "126ec3fab700a175d869d796dcc398f2cc53b19dd524d9418476761b376d3628";
+const R17_MESA_PARSER_EXECUTABLES: [(&str, u64, &str); 3] = [
+    (
+        "flex",
+        439_352,
+        "23d535dad2209521f6dea198061f1bc4893aeaf925a20b258cd3eb7bc6df7975",
+    ),
+    (
+        "bison",
+        546_416,
+        "51b277ea1e666a30ffce584a412a175aad6fed62b13f1c243b5832de9829233f",
+    ),
+    (
+        "m4",
+        308_096,
+        "16196807505ecdfd6c1686e2f42b54ebd2a3a532fb0aef50d715de57b58519d1",
+    ),
+];
+
+fn check_mesa_parser_executable(
+    bin: &Path,
+    (role, bytes, sha256): (&str, u64, &str),
+) -> Result<String> {
+    use std::os::unix::fs::PermissionsExt;
+
+    let input = MesaHostFile {
+        path: bin.join(role),
+        bytes,
+        sha256: sha256.into(),
+    };
+    let path = check_mesa_host_file(&input)?;
+    if fs::metadata(path)?.permissions().mode() & 0o100 == 0 {
+        return fail(format!(
+            "the official AOSP Mesa parser tool is not executable: {role}"
+        ));
+    }
+    Ok(path.to_owned())
+}
+
+fn collect_mesa_bison_data(directory: &Path, dependencies: &mut Vec<String>) -> Result<()> {
+    mesa_make_path(directory)?;
+    for entry in fs::read_dir(directory)? {
+        let entry = entry?;
+        let kind = entry.file_type()?;
+        let path = entry.path();
+        if kind.is_dir() {
+            collect_mesa_bison_data(&path, dependencies)?;
+        } else if kind.is_file() {
+            dependencies.push(mesa_make_path(&path)?.to_owned());
+        } else {
+            return fail(format!(
+                "unexpected AOSP Bison data type: {}",
+                path.display()
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn mesa_bison_data_files(directory: &Path) -> Result<Vec<String>> {
+    use sha2::Digest;
+
+    let mut dependencies = Vec::new();
+    collect_mesa_bison_data(directory, &mut dependencies)?;
+    dependencies.sort_unstable();
+    let mut catalog = sha2::Sha256::new();
+    for entry in &dependencies {
+        let path = Path::new(entry);
+        let relative = path
+            .strip_prefix(directory)?
+            .to_str()
+            .ok_or("Bison data path is not UTF-8")?;
+        let bytes = fs::metadata(path)?.len();
+        catalog.update(format!("{relative}\t{bytes}\t{}\n", hash(path)?));
+    }
+    if dependencies.len() != 31 || hex::encode(catalog.finalize()) != R17_MESA_BISON_DATA_SHA256 {
+        return fail("the selected AOSP Bison data differs from the official 31-file catalog");
+    }
+    Ok(dependencies)
+}
+
+fn mesa_make_with_parser_tools(
+    text: &str,
+    cross_tools: &str,
+    m4: &str,
+    bison_data: &str,
+) -> Result<String> {
+    let original_cross = "--cross-file $(call relative-to-absolute,$(MESON_GEN_DIR))/aosp_cross";
+    let text = replace_mesa_make_anchor(
+        text,
+        original_cross,
+        &format!("{original_cross} --cross-file {cross_tools}"),
+    )?;
+    let original_env = "PYTHONDONTWRITEBYTECODE=1 NINJA=$(MESA3D_PINNED_NINJA)";
+    let parser_env = format!("{original_env} M4={m4} BISON_PKGDATADIR={bison_data}");
+    let text = replace_mesa_make_anchor(
+        &text,
+        &format!("{original_env} $(MESA3D_PINNED_MESON) ./build"),
+        &format!("{parser_env} $(MESA3D_PINNED_MESON) ./build"),
+    )?;
+    replace_mesa_make_anchor(
+        &text,
+        &format!("{original_env} $(MESA3D_PINNED_NINJA) -C $(MESON_OUT_DIR)/build"),
+        &format!("{parser_env} $(MESA3D_PINNED_NINJA) -C $(MESON_OUT_DIR)/build"),
+    )
+}
+
+fn mesa_parser_cross(flex: &str, bison: &str) -> Result<String> {
+    Ok(format!(
+        "[binaries]\nflex = {}\nbison = {}\n",
+        meson_string(Path::new(flex))?,
+        meson_string(Path::new(bison))?,
+    ))
+}
+
+fn mesa_make_with_shader_tools(text: &str, native_tools: &str) -> Result<String> {
+    // The board arguments already contain the original generated native file.
+    // The additional layer contributes only the observed shader compiler.
+    let board_args = "$(BOARD_MESA3D_MESON_ARGS)";
+    replace_mesa_make_anchor(
+        text,
+        board_args,
+        &format!("{board_args} --native-file {native_tools}"),
+    )
+}
+
+fn official_mesa_make(text: &str, source: &Path, work: &Path) -> Result<String> {
+    use sha2::Digest;
+    use std::os::unix::fs::PermissionsExt;
+
+    let manifest = PathBuf::from(
+        std::env::var_os("DROIDLOOM_MESA_HOST_TOOL_INPUTS")
+            .ok_or("official Vendor requires its prepared Meson host-tool input declaration")?,
+    );
+    let manifest_name = mesa_make_path(&manifest)?;
+    let manifest_bytes = fs::read(&manifest)?;
+    let declared_sha = std::env::var("DROIDLOOM_MESA_HOST_TOOL_INPUTS_SHA256")?;
+    if hex::encode(sha2::Sha256::digest(&manifest_bytes)) != declared_sha {
+        return fail("Mesa host-tool declaration differs from the admitted digest");
+    }
+    let declared: MesaHostToolInputs = serde_json::from_slice(&manifest_bytes)?;
+    if declared.schema != "droidloom-r17-mesa-host-tool-inputs-v1"
+        || declared.launcher.path != Path::new(R17_MESON_LAUNCHER)
+        || declared.launcher.bytes != 275
+        || declared.launcher.sha256 != R17_MESON_LAUNCHER_SHA256
+        || declared.inputs.is_empty()
+    {
+        return fail("expected the exact R17 Meson launcher and its declared runtime inputs");
+    }
+    let launcher = check_mesa_host_file(&declared.launcher)?;
+    if fs::metadata(launcher)?.permissions().mode() & 0o100 == 0 {
+        return fail("the declared Meson launcher is not executable");
+    }
+    let python = fs::canonicalize("/usr/bin/python3")?;
+    let distribution = declared
+        .launcher
+        .path
+        .parent()
+        .and_then(Path::parent)
+        .ok_or("Meson launcher has no declared distribution root")?
+        .join("root/usr/lib/python3/dist-packages/mesonbuild");
+    let mut dependencies = std::collections::BTreeSet::from([manifest_name]);
+    for input in &declared.inputs {
+        let name = check_mesa_host_file(input)?;
+        if !dependencies.insert(name) || name == launcher {
+            return fail("duplicate Mesa host-tool input");
+        }
+    }
+    if !declared.inputs.iter().any(|input| {
+        input.path == python && input.bytes == 7_477_160 && input.sha256 == R17_MESON_PYTHON_SHA256
+    }) || !R17_MESON_MODULES.iter().all(|&(name, bytes, sha256)| {
+        declared.inputs.iter().any(|input| {
+            input.path == distribution.join(name) && input.bytes == bytes && input.sha256 == sha256
+        })
+    }) {
+        return fail("Meson launcher resolution is missing its exact Python and module inputs");
+    }
+    let ninja = MesaHostFile {
+        path: source.join("prebuilts/build-tools/linux-x86/bin/ninja"),
+        bytes: 2_563_376,
+        sha256: R17_MESA_NINJA_SHA256.into(),
+    };
+    let ninja = check_mesa_host_file(&ninja)?;
+    if fs::metadata(ninja)?.permissions().mode() & 0o100 == 0 {
+        return fail("the official AOSP Ninja is not executable");
+    }
+    let live_version = output(
+        Command::new(launcher)
+            .arg("--version")
+            .env("PYTHONPATH", work.join("python"))
+            .env("PYTHONDONTWRITEBYTECODE", "1"),
+    )?;
+    if live_version != declared.meson_version {
+        return fail("the declared Meson runtime version differs");
+    }
+    let work_token = mesa_make_path(work)?;
+    let mut dependencies: Vec<_> = dependencies.into_iter().map(str::to_owned).collect();
+    dependencies.extend(
+        [
+            "mesa-native.ini",
+            "mesa-tools/src/compiler/clc/mesa_clc",
+            "mesa-tools/src/compiler/spirv/vtn_bindgen2",
+        ]
+        .map(|relative| format!("{work_token}/{relative}")),
+    );
+    let build_tools = source.join("prebuilts/build-tools");
+    let bin = build_tools.join("linux-x86/bin");
+    let [flex, bison, m4] = R17_MESA_PARSER_EXECUTABLES
+        .map(|input| check_mesa_parser_executable(&bin, input));
+    let (flex, bison, m4) = (flex?, bison?, m4?);
+    let bison_data_path = build_tools.join("common/bison");
+    let bison_data = mesa_make_path(&bison_data_path)?;
+    let data_dependencies = mesa_bison_data_files(&bison_data_path)?;
+
+    let cross_tools_path = Path::new(R17_MESA_PARSER_CROSS_PATH);
+    let cross_tools = mesa_make_path(cross_tools_path)?;
+    if fs::read(cross_tools_path)? != mesa_parser_cross(&flex, &bison)?.as_bytes() {
+        return fail("Mesa parser cross file differs from the two selected official tools");
+    }
+    dependencies.extend([cross_tools.to_owned(), flex, bison, m4.clone()]);
+    dependencies.extend(data_dependencies);
+    let shader_native = MesaHostFile {
+        path: PathBuf::from("/home/qq/work/p4-r17-mesa-signed-shader-tools-20261123-r1/shader-tools.ini"),
+        bytes: 111,
+        sha256: "c28f733ac879709eec71906dd8172c52c9317955f917362bd5b39710f2b4a681".into(),
+    };
+    let shader_binary = MesaHostFile {
+        path: PathBuf::from("/home/qq/work/p4-r17-mesa-signed-shader-tools-20261123-r1/root/usr/bin/glslang"),
+        bytes: 8929016,
+        sha256: "bfcc2479c85bdab08c7f7e20425f35d8b9aad176ab5fbbbad3427166c7a259a5".into(),
+    };
+    let shader_native = check_mesa_host_file(&shader_native)?;
+    let shader_binary = check_mesa_host_file(&shader_binary)?;
+    if fs::metadata(shader_binary)?.permissions().mode() & 0o100 == 0 {
+        return fail("the exact Mesa shader compiler is not executable");
+    }
+    dependencies.extend([shader_native.to_owned(), shader_binary.to_owned()]);
+    let nm_cross = MesaHostFile {
+        path: PathBuf::from("/home/qq/work/p4-r17-mesa-ordinary-shader-nm-python-20261123-r1/host-programs.ini"),
+        bytes: 190,
+        sha256: "679d795ab6d3d2a0f2e26934d43f578c7dbbf33fbfbe32c5fbb3099fe113e5ec".into(),
+    };
+    let nm_binary = MesaHostFile {
+        path: PathBuf::from("/home/qq/work/pocket4-native-source597-ai395-20261108-8b88-r1/work/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/bin/llvm-nm"),
+        bytes: 18081856,
+        sha256: "3b96cb214fd7aa6c22f57499e18d07a3aa33196ecc2ebb5c9aa79ce5c2c9a8e7".into(),
+    };
+    let nm_cross = check_mesa_host_file(&nm_cross)?;
+    let nm_binary = check_mesa_host_file(&nm_binary)?;
+    if fs::metadata(nm_binary)?.permissions().mode() & 0o100 == 0 {
+        return fail("the exact Mesa cross symbol tool is not executable");
+    }
+    dependencies.extend([nm_cross.to_owned(), nm_binary.to_owned()]);
+    let text = mesa_make_with_host_tools(text, launcher, ninja, &dependencies.join(" "))?;
+    let text = mesa_make_with_parser_tools(&text, cross_tools, &m4, bison_data)?;
+    let parser_flag = format!("--cross-file {cross_tools}");
+    let text = replace_mesa_make_anchor(
+        &text, &parser_flag, &format!("{parser_flag} --cross-file {nm_cross}"),
+    )?;
+    mesa_make_with_shader_tools(&text, shader_native)
 }
 
 fn meson_string(path: &Path) -> Result<String> {

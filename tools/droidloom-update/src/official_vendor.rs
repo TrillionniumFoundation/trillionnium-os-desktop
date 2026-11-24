@@ -249,13 +249,22 @@ fn parse_symbols(text: &str) -> Result<(BTreeSet<String>, BTreeSet<String>)> {
         {
             continue;
         }
-        let name = fields[7];
-        if fields[6] == "UND" {
-            if fields[4] == "GLOBAL" {
+        // GNU readelf renders Android System V ELF type 10 using three columns.
+        let shift = if fields.get(3..6) == Some(&["<OS", "specific>:", "10"][..]) {
+            2
+        } else {
+            0
+        };
+        if fields.len() < 8 + shift {
+            continue;
+        }
+        let name = fields[7 + shift];
+        if fields[6 + shift] == "UND" {
+            if fields[4 + shift] == "GLOBAL" {
                 imports.insert(name.into());
             }
-        } else if matches!(fields[4], "GLOBAL" | "WEAK" | "UNIQUE")
-            && matches!(fields[5], "DEFAULT" | "PROTECTED")
+        } else if matches!(fields[4 + shift], "GLOBAL" | "WEAK" | "UNIQUE")
+            && matches!(fields[5 + shift], "DEFAULT" | "PROTECTED")
         {
             if let Some((bare, version)) = name.split_once("@@") {
                 exports.insert(bare.into());
@@ -284,7 +293,39 @@ fn readelf_path() -> Result<PathBuf> {
     }
     fail("normal build readelf is missing")
 }
-fn elf(path: &Path, machine: u16) -> Result<Elf> {
+const GUEST_VDSO_NAME: &str = "linux-vdso.so.1";
+const GUEST_VDSO_MEMBER: &str = "system/lib64/arm64/libnative_bridge_vdso.so";
+
+fn guest_vdso_tag(value: &str, machine: u16, kind: u16, member: Option<&str>, needed: bool) -> bool {
+    value == GUEST_VDSO_NAME
+        && machine == 183
+        && kind == 3
+        && member.is_some_and(|member| needed || member == GUEST_VDSO_MEMBER)
+}
+
+const ATTESTED_REFERENCE_HIDL_NEEDED: &[(&str, &str)] = &[
+    ("libandroid_runtime.so", "android.hardware.camera.device@3.2.so"),
+    ("libmediandk.so", "android.hardware.graphics.bufferqueue@1.0.so"),
+    ("libmediandk.so", "android.hidl.token@1.0-utils.so"),
+    ("libnativewindow.so", "android.hardware.graphics.common@1.1.so"),
+    ("libvulkan.so", "android.hardware.graphics.common@1.0.so"),
+];
+
+fn attested_reference_hidl_needed(
+    path: &Path,
+    value: &str,
+    machine: u16,
+    kind: u16,
+    bridge_member: Option<&str>,
+    needed_tag: bool,
+) -> bool {
+    needed_tag && machine == 62 && kind == 3 && bridge_member.is_none()
+        && path.file_name().and_then(|name| name.to_str()).is_some_and(|role| {
+            ATTESTED_REFERENCE_HIDL_NEEDED.contains(&(role, value))
+        })
+}
+
+fn elf(path: &Path, machine: u16, bridge_member: Option<&str>) -> Result<Elf> {
     let raw = fs::read(path)?;
     if raw.len() < 64
         || &raw[..6] != b"\x7fELF\x02\x01"
@@ -309,8 +350,14 @@ fn elf(path: &Path, machine: u16) -> Result<Elf> {
                 .split_once('[')
                 .and_then(|(_, s)| s.strip_suffix(']'))
                 .ok_or("invalid ELF dynamic string")?;
-            module_name(value)?;
-            if line.contains("(NEEDED)") {
+            let needed_tag = line.contains("(NEEDED)");
+            let kind = u16::from_le_bytes([raw[16], raw[17]]);
+            if !guest_vdso_tag(value, machine, kind, bridge_member, needed_tag)
+                && !attested_reference_hidl_needed(path, value, machine, kind, bridge_member, needed_tag)
+            {
+                module_name(value)?;
+            }
+            if needed_tag {
                 needed.push(value.to_owned());
             } else if soname.replace(value.to_owned()).is_some() {
                 return fail("duplicate ELF SONAME");
@@ -411,7 +458,12 @@ fn check_bridge(
     let mut guest_bytes = BTreeMap::new();
     for (name, item) in &files {
         let is_host = vendor_path(name)?.starts_with(HOST_DIRECTORY);
-        let parsed = elf(&item.path, if is_host { 62 } else { 183 })?;
+        let parsed = elf(&item.path, if is_host { 62 } else { 183 }, Some(name))?;
+        if name == GUEST_VDSO_MEMBER
+            && (parsed.soname.as_deref() != Some(GUEST_VDSO_NAME) || !parsed.needed.is_empty())
+        {
+            return fail("guest vDSO must provide its exact self-contained AArch64 identity");
+        }
         let soname = parsed.soname.clone().unwrap_or_else(|| {
             Path::new(name)
                 .file_name()
@@ -443,7 +495,7 @@ fn check_bridge(
     }
     for soname in &api_inputs {
         let reference = inputs.reference_path(soname)?;
-        let parsed = elf(reference, 62)?;
+        let parsed = elf(reference, 62, None)?;
         if parsed.soname.as_ref() != Some(soname) {
             return fail("official reference SONAME differs from actual dependency");
         }
@@ -481,7 +533,9 @@ fn check_bridge(
     let qualification = json!({"schema":"droidloom-cp3a-native-static-link-check-v1",
         "host_x86_64_libraries":host.len(),"guest_arm64_elfs":guest.len(),
         "official_api_providers":api_inputs,"host_direct_import_versions_supplied":true,
-        "guest_dt_needed_supplied":true,"readelf":artifact(&readelf_path()?,64*1024*1024)?,
+        "guest_dt_needed_supplied":true,"guest_vdso_provider":files.get(GUEST_VDSO_MEMBER),
+        "attested_cp3a_reference_hidl_needed_names":ATTESTED_REFERENCE_HIDL_NEEDED,
+        "readelf":artifact(&readelf_path()?,64*1024*1024)?,
         "actual_native_bridge_callbacks_qualified":false,"linker_namespace_qualified":false,
         "runtime_qualified":false,"production_ready":false});
     Ok(Bridge {
@@ -541,6 +595,30 @@ pub(super) fn project(
     projection: &mut Projection,
 ) -> Result<()> {
     request.inputs.verify_unchanged()?;
+    exact_replace(
+        &source.join("build/soong/ci_tests/ci_test_package_zip.go"),
+        "6fcb6fcb47c54805fbccc2e0303cc42e382737a9db3f2e7c025330924348310c",
+        r#"		f := strings.TrimPrefix(installedFile.String(), productOut+"/")
+		if strings.HasPrefix(f, "out") {
+			continue
+		}"#,
+        r#"		installed := installedFile.String()
+		if filepath.Clean(installed) != installed {
+			ctx.ModuleErrorf("Path is outside directory: %s", installed)
+			continue
+		}
+		f, inProduct := strings.CutPrefix(installed, productOut+"/")
+		if !inProduct {
+			// Host dependencies stay in the graph but outside the device test ZIP.
+			hostOut := filepath.Dir(android.PathForHostDexInstall(ctx).String())
+			if !strings.HasPrefix(installed, hostOut+"/") {
+				ctx.ModuleErrorf("Path is outside directory: %s", installed)
+			}
+			continue
+		}"#,
+        1,
+        projection,
+    )?;
     exact_replace(
         &source.join("frameworks/libs/binary_translation/guest_loader/guest_loader.cc"),
         "66914c503389c81627bd2751b328535592138e517dce1ed36bf9468c5c46a397",
@@ -614,9 +692,9 @@ pub(super) fn project(
     projection.put(&board, fs::read_to_string(&board)? + "\nBOARD_VENDOR_SEPOLICY_DIRS += vendor/droidloom/android/native-bridge/official-vendor/sepolicy\n")?;
     projection.put(&pack.join("sepolicy/file_contexts"), VENDOR_FILE_CONTEXTS)?;
     projection.put(&pack.join("sepolicy/property.te"),
-        "vendor_public_prop(droidloom_native_bridge_config_prop)\nset_prop(vendor_init, droidloom_native_bridge_config_prop)\nget_prop({ appdomain zygote }, droidloom_native_bridge_config_prop)\n")?;
+        "vendor_public_prop(vendor_droidloom_native_bridge_config_prop)\nset_prop(vendor_init, vendor_droidloom_native_bridge_config_prop)\nget_prop({ appdomain zygote }, vendor_droidloom_native_bridge_config_prop)\n")?;
     projection.put(&pack.join("sepolicy/property_contexts"),
-        "ro.vendor.droidloom.berberis.flags u:object_r:droidloom_native_bridge_config_prop:s0 exact string\n")?;
+        "ro.vendor.droidloom.berberis.flags u:object_r:vendor_droidloom_native_bridge_config_prop:s0 exact string\n")?;
     Ok(())
 }
 
@@ -809,7 +887,7 @@ pub(super) fn build(
         "system_ext_lib64":system_extension,"early_boot_readiness":readiness,
         "official_inputs":inputs.receipt()?,"native_build_inputs":artifact(&native.join(INPUT_NAME),16*1024*1024)?,
         "vendor_build_inputs":artifact(&vendor_out.join(INPUT_NAME),16*1024*1024)?,
-        "normal_vendor_result":artifact(&vendor_out.join("droidloom-production-full653-vendor-normal-result.json"),64*1024*1024)?,
+        "normal_vendor_result":artifact(&vendor_out.join("droidloom-production-full654-vendor-normal-result.json"),64*1024*1024)?,
         "normal_vendor_image":vendor_image,
         "graphics_hal_image_entrypoints":graphics_hal_entries,
         "host_checkvintf":artifact(&vendor_out.join("host/linux-x86/bin/checkvintf"),128*1024*1024)?,
@@ -825,6 +903,26 @@ pub(super) fn build(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn versioned_guest_vdso_requires_the_exact_tag_and_role() {
+        let consumer = Some("system/lib64/arm64/libEGL.so");
+        assert!(guest_vdso_tag(GUEST_VDSO_NAME, 183, 3, consumer, true));
+        assert!(guest_vdso_tag(GUEST_VDSO_NAME, 183, 3, Some(GUEST_VDSO_MEMBER), false));
+        assert!(!guest_vdso_tag(GUEST_VDSO_NAME, 183, 3, consumer, false));
+        assert!(!guest_vdso_tag(GUEST_VDSO_NAME, 62, 3, consumer, true));
+        assert!(!guest_vdso_tag(GUEST_VDSO_NAME, 183, 2, consumer, true));
+        assert!(!guest_vdso_tag(GUEST_VDSO_NAME, 183, 3, None, true));
+        assert!(!guest_vdso_tag("linux-vdso.so.2", 183, 3, consumer, true));
+        let (role, value) = ATTESTED_REFERENCE_HIDL_NEEDED[0];
+        let reference = Path::new(role);
+        assert!(attested_reference_hidl_needed(reference, value, 62, 3, None, true));
+        assert!(!attested_reference_hidl_needed(reference, value, 62, 3, None, false));
+        assert!(!attested_reference_hidl_needed(reference, value, 62, 3, consumer, true));
+        assert!(!attested_reference_hidl_needed(reference, value, 183, 3, None, true));
+        assert!(!attested_reference_hidl_needed(Path::new("libother.so"), value, 62, 3, None, true));
+        assert!(!attested_reference_hidl_needed(reference, "android.invalid@9.7.so", 62, 3, None, true));
+    }
+
     #[test]
     fn vendor_mapping_refuses_system_replacement_and_path_escape() {
         assert_eq!(
@@ -849,6 +947,23 @@ mod tests {
             assert!(vendor_path(bad).is_err(), "{bad}");
         }
     }
+    #[test]
+    fn android_ifunc_export_keeps_its_actual_symbol_version() {
+        let text = concat!(
+            "Symbol table '.dynsym' contains 5 entries:\n",
+            " 384: 0000000000089c40 94 <OS specific>: 10 GLOBAL DEFAULT 15 strrchr@@LIBC\n",
+            " 106: 0000000000000000 0 FUNC GLOBAL DEFAULT UND strrchr@LIBC (2)\n",
+            " 385: 0000000000000010 94 <OS specific>: 11 GLOBAL DEFAULT 15 non_ifunc@@LIBC\n",
+            " 386: 0000000000000010 94 <OS specific>: 10 GLOBAL HIDDEN 15 hidden@@LIBC\n",
+            " 387: 0000000000000010 94 <OS specific>: 10 GLOBAL DEFAULT\n",
+        );
+        let (imports, exports) = parse_symbols(text).unwrap();
+        assert!(imports.contains("strrchr@LIBC"));
+        assert!(exports.contains("strrchr") && exports.contains("strrchr@LIBC"));
+        assert!(!exports.contains("strrchr@LIBC_PRIVATE"));
+        assert!(!exports.contains("non_ifunc@LIBC") && !exports.contains("hidden@LIBC"));
+    }
+
     #[test]
     fn symbol_versions_remain_distinct_and_weak_imports_are_optional() {
         let text = "Symbol table '.dynsym' contains 5 entries:\n 1: 000 0 FUNC GLOBAL DEFAULT UND api@V2 (2)\n 2: 000 0 FUNC WEAK DEFAULT UND optional\n 3: 001 2 FUNC GLOBAL DEFAULT 7 api@@V1\n 4: 002 2 FUNC GLOBAL DEFAULT 7 plain\n";

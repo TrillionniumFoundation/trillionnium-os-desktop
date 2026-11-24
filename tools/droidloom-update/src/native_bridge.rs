@@ -88,9 +88,57 @@ fn prepare_build_with_api(
     // Android 17 forbids global libnativehelper include paths. Export its
     // platform API declarations through a local header-only module instead.
     let nativehelper = source.join("libnativehelper/Android.bp");
+    let mut nativehelper_blueprint = fs::read_to_string(&nativehelper)?;
+    if official_inputs.is_some() {
+        use sha2::{Digest, Sha256};
+        // The retained Connectivity build needs these declarations in its API 31 APEX.
+        // This header-only dependency adds no library to the shipped system image.
+        let before = r#"cc_library_headers {
+    name: "jni_platform_headers",
+    host_supported: true,
+    export_include_dirs: [
+        "include_platform_header_only",
+    ],
+    header_libs: ["jni_headers"],
+    export_header_lib_headers: ["jni_headers"],
+    sdk_version: "minimum",
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.art",
+        "com.android.art.debug",
+    ],
+    min_sdk_version: "S", // 31
+}
+"#;
+        let after = r#"cc_library_headers {
+    name: "jni_platform_headers",
+    host_supported: true,
+    export_include_dirs: [
+        "include_platform_header_only",
+    ],
+    header_libs: ["jni_headers"],
+    export_header_lib_headers: ["jni_headers"],
+    sdk_version: "minimum",
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.art",
+        "com.android.art.debug",
+        "com.android.tethering",
+    ],
+    min_sdk_version: "S", // 31
+}
+"#;
+        if format!("{:x}", Sha256::digest(nativehelper_blueprint.as_bytes()))
+            != "e4948410386a20708e52972c53fd2466e41565f8e29732f2365a9b537d97f210"
+            || nativehelper_blueprint.matches(before).count() != 1
+        {
+            return fail("unexpected JNI platform header blueprint for the official CP3A build");
+        }
+        nativehelper_blueprint = nativehelper_blueprint.replace(before, after);
+    }
     projection.put(
         &nativehelper,
-        fs::read_to_string(&nativehelper)?
+        nativehelper_blueprint
             + r#"
 cc_library_headers {
     name: "droidloom_native_bridge_nativehelper_headers",

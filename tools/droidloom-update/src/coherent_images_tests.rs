@@ -550,7 +550,7 @@ fn complete_product_cmake_header_rejects_old_schema_and_source_pair() {
     let actual_lock = include_bytes!("../../../android/manifest/production-full-car-source-lock.json");
     let actual_sha = hex::encode(Sha256::digest(actual_lock));
     let current = json!({
-        "schema": "droidloom-production-full653-inputs-v1",
+        "schema": "droidloom-production-full654-inputs-v1",
         "source_lock": {"sha256": actual_sha},
         "strict_allow_missing_dependencies": "false",
         "selinux_ignore_neverallows": "false",
@@ -558,7 +558,7 @@ fn complete_product_cmake_header_rejects_old_schema_and_source_pair() {
     });
     validate_full_source_header(&current, &targets).unwrap();
     for (schema, source_sha) in [
-        ("droidloom-production-full653-inputs-v1", "14fd227541b01876c7e34d7e6a1ffcb2a202d97d94c6a8f6e14be369e4b79505"),
+        ("droidloom-production-full654-inputs-v1", "14fd227541b01876c7e34d7e6a1ffcb2a202d97d94c6a8f6e14be369e4b79505"),
         ("droidloom-production-full652-inputs-v1", actual_sha.as_str()),
         ("droidloom-production-full652-inputs-v1", "14fd227541b01876c7e34d7e6a1ffcb2a202d97d94c6a8f6e14be369e4b79505"),
         ("droidloom-production-full652-inputs-v1", "aa14d968c14c2febcfacbb90e82598e2ba8e57f4bbb2cfc8f1f2a741555153ca"),

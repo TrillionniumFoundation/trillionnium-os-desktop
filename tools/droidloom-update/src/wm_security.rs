@@ -378,7 +378,7 @@ mod tests {
         );
         let lock = droidloom_source::load_lock(&selected).unwrap();
         let plan = droidloom_source::production_car::build_plan(&lock).unwrap();
-        assert_eq!(plan.projects.len(), 653);
+        assert_eq!(plan.projects.len(), 661);
         let original = droidloom_source::load_lock(
             &repo.join("android/manifest/production-full-source-lock.json"),
         ).unwrap();
@@ -398,6 +398,15 @@ mod tests {
                 .find(|project| project.path == Path::new(path))
                 .unwrap().sparse_paths.push(cone.into());
         }
+        for &(path, _, _, cone) in droidloom_source::production_car::KATI_REQUIRED_CONES {
+            expected_projects.iter_mut()
+                .find(|project| project.path == Path::new(path))
+                .unwrap().sparse_paths.push(cone.into());
+        }
+        expected_projects.iter_mut()
+            .find(|project| project.path == Path::new(droidloom_source::production_car::BINDGEN_CLANG_PROJECT))
+            .unwrap().sparse_paths.extend(droidloom_source::production_car::BINDGEN_CLANG_TOOLS
+                .iter().map(std::path::PathBuf::from));
         assert_eq!(&plan.projects[..651], expected_projects.as_slice());
         assert_eq!(plan.links.len(), 8);
         assert!(!plan.unrestricted_repo_sync);

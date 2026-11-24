@@ -19,8 +19,8 @@ const APEX_TEST_LOCK_PATH: &str = "android/manifest/production-full-apex-tests-s
 const APEX_TEST_LOCK_SHA: &str = "14fd227541b01876c7e34d7e6a1ffcb2a202d97d94c6a8f6e14be369e4b79505";
 const APEX_TEST_LOCK_BYTES: usize = 400720;
 pub(super) const LOCK_PATH: &str = "android/manifest/production-full-car-source-lock.json";
-pub(super) const LOCK_SHA: &str = "77b29310a2614484722e3fa39ac70352a12e3550e1067ce7d8b854eb3753a5d0";
-pub(super) const LOCK_BYTES: usize = 401818;
+pub(super) const LOCK_SHA: &str = "2947bc60b55c1372cf148133ef849665657df76389fab727d10658d68691ea6f";
+pub(super) const LOCK_BYTES: usize = 406447;
 
 fn digest(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
@@ -268,6 +268,89 @@ pub(super) fn source_lock_path(repo: &Path) -> Result<PathBuf> {
         "purpose": droidloom_source::production_car::SERVICES_PURPOSE,
         "sparse_paths": droidloom_source::production_car::SERVICES_CONES,
     }));
+    use droidloom_source::production_car::{BOOTCLASSPATH_COMMIT, BOOTCLASSPATH_CONES,
+        BOOTCLASSPATH_NAME, BOOTCLASSPATH_PATH, BOOTCLASSPATH_PURPOSE};
+    projects.push(json!({
+        "path": BOOTCLASSPATH_PATH,
+        "name": BOOTCLASSPATH_NAME,
+        "commit": BOOTCLASSPATH_COMMIT,
+        "purpose": BOOTCLASSPATH_PURPOSE,
+        "sparse_paths": BOOTCLASSPATH_CONES,
+    }));
+    for &(path, name, commit, cone) in droidloom_source::production_car::KATI_REQUIRED_CONES {
+        if path == "cts" && (droidloom_source::production_car::CTS_RAVENWOOD_CONES.contains(&cone)
+                || cone == droidloom_source::production_car::CTS_BIOMETRIC_CONE
+                || cone == droidloom_source::production_car::CTS_KERNELINFO_CONE
+                || cone == droidloom_source::production_car::CTS_MAINLINE_HOTSPOT_CONES[1]
+                || droidloom_source::production_car::CTS_DEVICEINFO_BACKUP_CONES.contains(&cone)
+                || droidloom_source::production_car::CTS_MANIFEST_GENERATOR_CONES.contains(&cone))
+            || path == "platform_testing" && cone == droidloom_source::production_car::CTS_MAINLINE_HOTSPOT_CONES[0]
+        {
+            continue;
+        }
+        let project = projects.iter_mut().find(|row| row["path"] == path)
+            .ok_or("original Kati provider project missing")?;
+        if project["name"] != name || project["commit"] != commit {
+            return fail("Kati provider must retain its original repository and superproject Gitlink");
+        }
+        project["sparse_paths"].as_array_mut()
+            .ok_or("original Kati provider sparse scope missing")?.push(json!(cone));
+    }
+    for &(path, name, commit, purpose, cones) in droidloom_source::production_car::KATI_REQUIRED_PROJECTS {
+        projects.push(json!({
+            "path": path, "name": name, "commit": commit, "purpose": purpose, "sparse_paths": cones,
+        }));
+    }
+    let cts = projects.iter_mut().find(|row| row["path"] == "cts")
+        .ok_or("original WebRTC CTS project missing")?;
+    if cts["name"] != "platform/cts" || cts["commit"] != "3d1bf2a7eb2b7aaa4636c854ef481f256c40c2dd" {
+        return fail("original WebRTC CTS project identity changed");
+    }
+    let scope = cts["sparse_paths"].as_array_mut().ok_or("original WebRTC CTS scopes missing")?;
+    if scope.len() != 542 {
+        return fail("original WebRTC CTS scope count changed");
+    }
+    scope.extend(droidloom_source::production_car::CTS_RAVENWOOD_CONES.iter().map(|&cone| json!(cone)));
+    if scope.len() != 544 {
+        return fail("original biometric predecessor CTS scope count changed");
+    }
+    scope.push(json!(droidloom_source::production_car::CTS_BIOMETRIC_CONE));
+    if scope.len() != 545 {
+        return fail("original kernelinfo predecessor CTS scope count changed");
+    }
+    scope.push(json!(droidloom_source::production_car::CTS_KERNELINFO_CONE));
+    if scope.len() != 546 {
+        return fail("original Mainline and hotspot predecessor CTS scope count changed");
+    }
+    scope.push(json!(droidloom_source::production_car::CTS_MAINLINE_HOTSPOT_CONES[1]));
+    if scope.len() != 547 {
+        return fail("original CTS release path count changed");
+    }
+    scope.extend(droidloom_source::production_car::CTS_DEVICEINFO_BACKUP_CONES.iter().map(|cone| json!(cone)));
+    if scope.len() != 549 {
+        return fail("original manifest generator predecessor CTS scope count changed");
+    }
+    scope.extend(droidloom_source::production_car::CTS_MANIFEST_GENERATOR_CONES.iter().map(|cone| json!(cone)));
+    let platform = projects.iter_mut().find(|row| row["path"] == "platform_testing")
+        .ok_or("original Mainline module detector platform testing project missing")?;
+    if platform["name"] != "platform/platform_testing"
+        || platform["commit"] != "6abefd291d50dee240ed2b22572d273175f070da"
+    {
+        return fail("original Mainline module detector platform testing identity changed");
+    }
+    let paths = platform["sparse_paths"].as_array_mut().ok_or("original platform testing scopes missing")?;
+    if paths.len() != 163 {
+        return fail("original platform testing scope count changed");
+    }
+    paths.push(json!(droidloom_source::production_car::CTS_MAINLINE_HOTSPOT_CONES[0]));
+    use droidloom_source::production_car::{JARJAR_PATH, JARJAR_NAME, JARJAR_COMMIT, JARJAR_PURPOSE, JARJAR_CONES};
+    projects.push(json!({
+        "path": JARJAR_PATH, "name": JARJAR_NAME, "commit": JARJAR_COMMIT,
+        "purpose": JARJAR_PURPOSE, "sparse_paths": JARJAR_CONES,
+    }));
+    use droidloom_source::production_car::{BINDGEN_CLANG_PROJECT, BINDGEN_CLANG_TOOLS};
+    let clang = projects.iter_mut().find(|row| row["path"] == BINDGEN_CLANG_PROJECT).unwrap();
+    clang["sparse_paths"].as_array_mut().unwrap().extend(BINDGEN_CLANG_TOOLS.iter().map(|path| json!(path)));
     let path = repo.join(LOCK_PATH);
     let raw = exact_file(&path, LOCK_BYTES, LOCK_SHA)?;
     if serde_json::from_slice::<Value>(&raw)? != expected {
@@ -327,7 +410,7 @@ pub(super) fn input_receipt(
     }
     let lock = source_lock_path(repo)?;
     let mut receipt = request.description(product)?;
-    receipt["schema"] = "droidloom-production-full653-inputs-v1".into();
+    receipt["schema"] = "droidloom-production-full654-inputs-v1".into();
     receipt["source_lock"] = json!({"path": lock, "bytes": LOCK_BYTES, "sha256": LOCK_SHA});
     receipt["source_manifest"] = json!({"path": source.join(".droidloom-source-manifest.json"),
         "sha256": hash(&source.join(".droidloom-source-manifest.json"))?});
@@ -339,7 +422,7 @@ pub(super) fn input_receipt(
     receipt["production_signing_qualified"] = false.into();
     receipt["whole_security_bulletin_qualified"] = false.into();
     write(
-        &out.join("droidloom-production-full653-inputs.json"),
+        &out.join("droidloom-production-full654-inputs.json"),
         serde_json::to_vec_pretty(&receipt)?,
     )
 }
@@ -401,9 +484,9 @@ pub(super) fn vendor_result(
         return fail("actual vendor build.prop must identify the user build");
     }
     let tool = out.join("host/linux-x86/bin/secilc");
-    let input = out.join("droidloom-production-full653-inputs.json");
+    let input = out.join("droidloom-production-full654-inputs.json");
     let receipt = json!({
-        "schema":"droidloom-production-full653-vendor-normal-result-v1",
+        "schema":"droidloom-production-full654-vendor-normal-result-v1",
         "inputs":artifact(&input)?,
         "requested_targets":request.requested_targets(),
         "vendor_image":artifact(&product_out.join("vendor.img"))?,
@@ -427,7 +510,7 @@ pub(super) fn vendor_result(
         "Audio_runtime_qualified":false,"runtime_qualified":false,"production_ready":false
     });
     write(
-        &out.join("droidloom-production-full653-vendor-normal-result.json"),
+        &out.join("droidloom-production-full654-vendor-normal-result.json"),
         serde_json::to_vec_pretty(&receipt)?,
     )
 }
@@ -472,7 +555,7 @@ mod tests {
             &droidloom_source::load_lock(&path).unwrap(),
         )
         .unwrap();
-        assert_eq!(plan.projects.len(), 653);
+        assert_eq!(plan.projects.len(), 661);
         assert_eq!(hash(&path).unwrap(), LOCK_SHA);
         for request in [
             FixedProductionRequest::Existing(SoongDependencyMode::Strict, TARGETS),
