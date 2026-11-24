@@ -12659,6 +12659,38 @@ fn build_targets_with_dependency_mode(
     )
 }
 
+fn mirror_repository_vendor_sources(repo: &Path, vendor: &Path) -> Result<()> {
+    fs::create_dir_all(vendor)?;
+    for relative in [
+        "Android.bp",
+        "LICENSE",
+        "LICENSES",
+        "graphics",
+        "runtime/droidloom-cpu-placement",
+        "android/framework",
+        "android/container-bootstrap",
+        "android/lmkd-compat",
+        "android/runtime",
+        "android/native-bridge",
+        "android/selinux-compat",
+        "android/device",
+        "device",
+        "android/mesa",
+    ] {
+        let destination = vendor.join(relative);
+        if repo.join(relative).is_dir() {
+            fs::create_dir_all(&destination)?;
+            run(Command::new("rsync")
+                .args(["-a", "--delete"])
+                .arg(format!("{}/", repo.join(relative).display()))
+                .arg(&destination))?;
+        } else {
+            copy(&repo.join(relative), &destination)?;
+        }
+    }
+    Ok(())
+}
+
 // These paths are already modified by the normal vendor/Mesa projection.
 // Capture their pre-build metadata and original absence before rsync can replace it.
 const PRE_MIRROR_PROJECTION_PATHS: &[&str] = &[
@@ -13529,33 +13561,7 @@ fn build_targets_with_fixed_request(
     // Mirror current sources on every invocation; deletion is propagated too.
     capture_pre_mirror_projection_originals(&mut p, source)?;
     let vendor = source.join("vendor/droidloom");
-    fs::create_dir_all(&vendor)?;
-    for relative in [
-        "Android.bp",
-        "LICENSE",
-        "LICENSES",
-        "graphics",
-        "runtime/droidloom-cpu-placement",
-        "android/framework",
-        "android/lmkd-compat",
-        "android/runtime",
-        "android/native-bridge",
-        "android/selinux-compat",
-        "android/device",
-        "device",
-        "android/mesa",
-    ] {
-        let destination = vendor.join(relative);
-        if repo.join(relative).is_dir() {
-            fs::create_dir_all(&destination)?;
-            run(Command::new("rsync")
-                .args(["-a", "--delete"])
-                .arg(format!("{}/", repo.join(relative).display()))
-                .arg(&destination))?;
-        } else {
-            copy(&repo.join(relative), &destination)?;
-        }
-    }
+    mirror_repository_vendor_sources(repo, &vendor)?;
     if let FixedProductionRequest::OfficialGsiVendor(official) = request {
         crate::native_bridge::prepare_official_vendor_build(
             source,
@@ -13983,6 +13989,44 @@ fn build_targets_with_fixed_request(
 }
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn vendor_mirror_copies_container_shutdown_sources_and_removes_stale_files() {
+        let repo = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap();
+        let d = tempfile::tempdir().unwrap();
+        let vendor = d.path().join("source/vendor/droidloom");
+        mirror_repository_vendor_sources(repo, &vendor).unwrap();
+        let blueprint = fs::read_to_string(vendor.join("Android.bp")).unwrap();
+        assert!(blueprint.contains("name: \"libdroidloom_container_shutdown\""));
+        assert!(blueprint.contains("srcs: [\"android/container-bootstrap/shutdown_channel.cpp\"]"));
+        assert!(blueprint.contains("export_include_dirs: [\"android/container-bootstrap\"]"));
+        let relative = "android/container-bootstrap";
+        let names = [
+            "shutdown_channel.cpp",
+            "shutdown_channel.h",
+            "shutdown_channel_oci_test.cpp",
+        ];
+        for name in names {
+            let original = repo.join(relative).join(name);
+            let projected = vendor.join(relative).join(name);
+            assert!(fs::symlink_metadata(&projected).unwrap().is_file());
+            assert_eq!(fs::read(&projected).unwrap(), fs::read(&original).unwrap());
+        }
+        let stale = vendor.join(relative).join("obsolete_shutdown_source.cpp");
+        fs::write(&stale, b"old projected input").unwrap();
+        mirror_repository_vendor_sources(repo, &vendor).unwrap();
+        assert!(!stale.exists());
+        for name in names {
+            assert_eq!(
+                fs::read(vendor.join(relative).join(name)).unwrap(),
+                fs::read(repo.join(relative).join(name)).unwrap()
+            );
+        }
+    }
+
 
     fn write_compose539_original_fixtures(root: &Path) {
         use std::os::unix::fs::PermissionsExt;
