@@ -483,8 +483,8 @@
 (neverallow p4_linux_journald_t init_t (file (map execute execute_no_trans entrypoint write append setattr create unlink link rename mounton relabelfrom relabelto)))
 (neverallow p4_linux_procs p4_linux_journald_exec_t (file (link unlink rename)))
 
-; /run/log is selected before policy activation. Journald may create its
-; one named store and normal per-machine journal only within this subtree.
+; /var/log is selected before policy activation. Journald may create its
+; normal per-machine journal store only within this typed subtree.
 (type p4_linux_log_root_t)
 (type p4_linux_journal_store_t)
 (type p4_linux_journal_machine_t)
@@ -569,8 +569,8 @@
 (neverallow p4_linux_journalctl_t droidloom_broker (process (transition dyntransition ptrace)))
 (neverallow p4_linux_journalctl_t droidloom_policy_loader (process (transition dyntransition ptrace)))
 
-; The persistent store is on the real Ubuntu ext4. Only these two inodes can
-; be created on it by the journal's existing store- and filename transitions.
+; The persistent store is on the real Ubuntu ext4. Only the journal machine
+; directory and database types associate with this store.
 (allow p4_linux_journal_machine_t labeledfs (filesystem (associate)))
 (allow p4_linux_journal_database_t labeledfs (filesystem (associate)))
 (allow p4_linux_journald_t labeledfs (filesystem (getattr)))
@@ -596,8 +596,8 @@
 
 ; The early board labels /run/log on tmpfs independently of the distro's
 ; persistent /var/log. After FlushToVar the journal removes the old runtime
-; database and empty runtime machine directory. Persistent files retain their
-; existing labels and do not receive this cleanup permission.
+; database and empty runtime machine directory. Persistent directories remain;
+; database rotation and retention are reviewed in ubuntu-native-journal-storage.cil.
 (type p4_linux_volatile_log_root_t)
 (type p4_linux_volatile_journal_store_t)
 (type p4_linux_volatile_journal_machine_t)
@@ -627,7 +627,7 @@
 (auditallow p4_linux_journald_t p4_linux_volatile_journal_machine_t (dir (rmdir)))
 (neverallow p4_linux_volatile_journal_database_t labeledfs (filesystem (associate)))
 (neverallow p4_linux_journalctl_t p4_linux_volatile_journal_database_t (file (create open read write append map unlink rename)))
-(neverallow p4_linux_journald_t p4_linux_journal_database_t (file (unlink rename)))
+; Persistent file rotation/retention is restricted to journald in its storage component.
 (neverallow p4_linux_journald_t p4_linux_journal_store_t (dir (rmdir remove_name)))
 (neverallow p4_linux_journald_t p4_linux_volatile_log_root_t (dir (remove_name rmdir mounton relabelto relabelfrom)))
 (neverallow p4_linux_procs p4_linux_volatile_journal_database_t (file (execute execute_no_trans entrypoint mounton relabelfrom relabelto)))

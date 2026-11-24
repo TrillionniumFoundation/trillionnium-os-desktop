@@ -1,0 +1,21 @@
+; Original systemd 259.9 creates persistent user-<uid>.journal through
+; openat_report_new(), then renames an existing inode for rotation or corrupt
+; file isolation. SELinux named transitions cannot encode the decimal UID.
+; Only journald can create regular files in this already-typed machine store;
+; its mandatory path-attached AppArmor profile restricts the exact names.
+(typetransition p4_linux_journald_t p4_linux_journal_machine_t file p4_linux_journal_database_t)
+
+; Normal persistent rotation and bounded retention operate inside that store.
+; Neither the persistent machine directory nor its parent can be removed.
+(allow p4_linux_journald_t p4_linux_journal_machine_t (dir (remove_name)))
+(allow p4_linux_journald_t p4_linux_journal_database_t (file (rename unlink)))
+(auditallow p4_linux_journald_t p4_linux_journal_database_t (file (rename unlink)))
+
+; Read-only maintenance roles can inspect a journal without acquiring any
+; journal body or namespace write authority. Original Android guards remain.
+(typeattribute p4_linux_journal_nonwriters)
+(typeattributeset p4_linux_journal_nonwriters (and (p4_linux_procs) (not (p4_linux_journald_t))))
+(neverallow p4_linux_journal_nonwriters p4_linux_journal_database_t (file (create write append setattr link unlink rename)))
+(neverallow p4_linux_journal_nonwriters p4_linux_volatile_journal_database_t (file (create write append setattr link unlink rename)))
+(neverallow p4_linux_journald_t p4_linux_journal_database_t (file (link)))
+(neverallow p4_linux_journald_t p4_linux_journal_machine_t (dir (rmdir rename reparent mounton relabelfrom relabelto)))

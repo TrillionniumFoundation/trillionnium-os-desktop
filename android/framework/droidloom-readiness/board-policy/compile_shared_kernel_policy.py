@@ -11,6 +11,7 @@ import tempfile
 
 from derive_shared_payload_cgroup_policy import Decision, Policy, derive, verify
 from verify_native_login_audit import verify_login_audit
+from verify_native_journal_storage import verify_journal_storage
 
 
 def sha256(path):
@@ -878,6 +879,7 @@ def main():
         "early-readiness-inode-owner.cil", "linux-host-service-roles.cil",
         "linux-initial-calibration.cil", "protected-device-readiness-target.cil", "orderly-android-shutdown.cil",
         "ubuntu-real-root-interpreter.cil", "ubuntu-mounted-api-metadata.cil",
+        "ubuntu-native-journal-storage.cil",
         "ubuntu-core-cgroup-ownership.cil", "ubuntu-native-services.cil",
         "ubuntu-native-service-capabilities.cil",
         "ubuntu-native-login-audit.cil",
@@ -899,7 +901,7 @@ def main():
     sources = [compiler, library, args.linux_board_cil, *args.android_cil, *components,
                here / "cp3a-kernel-handle-inputs.json", Path(__file__),
                here / "derive_shared_payload_cgroup_policy.py",
-               here / "verify_native_login_audit.py"]
+               here / "verify_native_login_audit.py", here / "verify_native_journal_storage.py"]
     if any(output.resolve() == path.resolve() for path in sources):
         raise ValueError("The output path is a policy input or build tool")
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -922,7 +924,11 @@ def main():
         login_audit = verify_login_audit(library, linked, work / "login-audit-binary.cil", export_binary_policy)
         auxiliary_sockets = verify_native_auxiliary_sockets(
             library, linked, work / "host-control-binary.cil", contract)
+        journal_storage = verify_journal_storage(
+            library, linked, work / "host-control-binary.cil", contract)
         result = {
+            "native_journal_storage": journal_storage,
+            "native_journal_storage_verifier": sha256(here / "verify_native_journal_storage.py"),
             "native_service_capabilities": native_capabilities,
             "native_login_audit": login_audit,
             "native_auxiliary_sockets": auxiliary_sockets,

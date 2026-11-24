@@ -5,6 +5,8 @@ abi <abi/5.0>,
 @{droidloom_journal_hex16}=[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]
 @{droidloom_journal_machine_id}=[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]
 
+@{droidloom_journal_uid}=[0-9] [0-9][0-9] [0-9][0-9][0-9] [0-9][0-9][0-9][0-9] [0-9][0-9][0-9][0-9][0-9] [0-9][0-9][0-9][0-9][0-9][0-9] [0-9][0-9][0-9][0-9][0-9][0-9][0-9] [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9] [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9] [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]
+
 # The original Ubuntu executable attaches automatically on its normal path.
 profile droidloom-ubuntu-journald /usr/lib/systemd/systemd-journald {
   /usr/lib/systemd/systemd-journald mr,
@@ -29,8 +31,12 @@ profile droidloom-ubuntu-journald /usr/lib/systemd/systemd-journald {
   /run/credentials/systemd-journald.service/journal.* r,
   /{run,var}/log/journal/ rw,
   /{run,var}/log/journal/@{droidloom_journal_machine_id}/ rw,
-  /{run,var}/log/journal/@{droidloom_journal_machine_id}/{system,user-*}.journal* rwk,
+  /run/log/journal/@{droidloom_journal_machine_id}/system.journal rwk,
   /run/log/journal/@{droidloom_journal_machine_id}/system@@{droidloom_journal_machine_id}-@{droidloom_journal_hex16}-@{droidloom_journal_hex16}.journal rwk,
+  /run/log/journal/@{droidloom_journal_machine_id}/system@@{droidloom_journal_hex16}-@{droidloom_journal_hex16}.journal~ rwk,
+  /var/log/journal/@{droidloom_journal_machine_id}/{system,user-@{droidloom_journal_uid}}.journal rwk,
+  /var/log/journal/@{droidloom_journal_machine_id}/{system,user-@{droidloom_journal_uid}}@@{droidloom_journal_machine_id}-@{droidloom_journal_hex16}-@{droidloom_journal_hex16}.journal rwk,
+  /var/log/journal/@{droidloom_journal_machine_id}/{system,user-@{droidloom_journal_uid}}@@{droidloom_journal_hex16}-@{droidloom_journal_hex16}.journal~ rwk,
   @{PROC}/sys/kernel/hostname r,
   @{PROC}/sys/kernel/random/boot_id r,
   audit @{PROC}/1/cgroup r,
