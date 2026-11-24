@@ -161,6 +161,13 @@
 (typetransition p4_linux_gdm_t p4_linux_greeter_home_parent_t dir "gdm-greeter-128" p4_linux_greeter_home_t)
 (typetransition p4_linux_gdm_t p4_linux_greeter_seat_parent_t dir "config" p4_linux_greeter_seat_data_t)
 (typetransition p4_linux_gdm_t p4_linux_greeter_seat_parent_t dir "state" p4_linux_greeter_seat_data_t)
+; Fresh root-owned 0700 inodes use the same fixed parent for atomic exchange.
+; The final fresh root alone is chowned after validation; old objects are not.
+(typetransition p4_linux_gdm_t p4_linux_greeter_seat_parent_t dir ".config-handoff" p4_linux_greeter_seat_data_t)
+(typetransition p4_linux_gdm_t p4_linux_greeter_seat_parent_t dir ".state-handoff" p4_linux_greeter_seat_data_t)
+(allow p4_linux_gdm_t p4_linux_greeter_seat_data_t (dir (rename)))
+(allow p4_linux_gdm_t p4_linux_greeter_seat_data_t (lnk_file (create write)))
+(neverallow p4_linux_gdm_t p4_linux_greeter_seat_data_t (dir (reparent)))
 (typetransition p4_linux_gdm_t p4_linux_greeter_home_t dir "environment.d" p4_linux_greeter_environment_t)
 ; environment.d is created below the held .config directory, which retains
 ; the home type. The named transition applies only to this fixed leaf.

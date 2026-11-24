@@ -141,7 +141,7 @@
 /run/gdm3/home/gdm-greeter(-([2-9]|[1-9][0-9]|1[01][0-9]|12[0-8]))?(/.*)? u:object_r:p4_linux_greeter_home_t:s0
 /run/gdm3/home/gdm-greeter(-([2-9]|[1-9][0-9]|1[01][0-9]|12[0-8]))?/\.config/environment\.d(/.*)? u:object_r:p4_linux_greeter_environment_t:s0
 /var/lib/gdm3/seat0                                 u:object_r:p4_linux_greeter_seat_parent_t:s0
-/var/lib/gdm3/seat0/(config|state)(/.*)?              u:object_r:p4_linux_greeter_seat_data_t:s0
+/var/lib/gdm3/seat0/(config|state|\.(config|state)-handoff)(/.*)?              u:object_r:p4_linux_greeter_seat_data_t:s0
 
 # Fixed authenticated maintenance. No user-controlled path is an entrypoint.
 /usr/lib/cargo/bin/sudo -- u:object_r:p4_linux_sudo_exec_t:s0

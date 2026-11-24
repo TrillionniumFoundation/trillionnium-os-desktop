@@ -31,9 +31,9 @@ def expected(actor, target, kind):
         return GS
     if actor == GDM:
         if kind == "dir":
-            return GDM_DIR
+            return GDM_DIR | ({"rename"} if target == DATA else set())
         if target in (HOME, DATA):
-            return {"file": GDM_FILE, "lnk_file": {"getattr", "read", "setattr", "unlink"},
+            return {"file": GDM_FILE, "lnk_file": {"getattr", "read", "setattr", "unlink"} | ({"create", "write"} if target == DATA else set()),
                     "sock_file": {"getattr", "setattr", "unlink"},
                     "fifo_file": {"getattr", "setattr", "unlink"}}.get(kind, set())
         if target == ENVIRONMENT:
@@ -117,7 +117,7 @@ def verify_greeter_home(library, binary, exported, original, file_contexts):
         ["typetransition", GDM, "p4_linux_gdm_run_t", "dir", '"home"', ANCHOR],
         ["typetransition", GDM, "p4_linux_gdm_state_t", "dir", '"seat0"', SEAT],
         ["typetransition", GDM, HOME, "dir", '"environment.d"', ENVIRONMENT],
-        *[["typetransition", GDM, SEAT, "dir", '"' + name + '"', DATA] for name in ("config", "state")],
+        *[["typetransition", GDM, SEAT, "dir", '"' + name + '"', DATA] for name in ("config", "state", ".config-handoff", ".state-handoff")],
     ]
     if any(form not in transitions for form in mandatory):
         raise ValueError("Linked greeter fixed-parent transition is missing")
@@ -135,6 +135,12 @@ def verify_greeter_home(library, binary, exported, original, file_contexts):
         path = "/run/gdm3/home/" + name
         if not entries[HOME].fullmatch(path) or not entries[ENVIRONMENT].fullmatch(path + "/.config/environment.d/gdm.conf"):
             raise ValueError("Normal file_contexts lost a source-owned dynamic name")
+    for name in ("config", "state", ".config-handoff", ".state-handoff"):
+        if not entries[DATA].fullmatch("/var/lib/gdm3/seat0/" + name + "/retained-setting"):
+            raise ValueError("Normal file_contexts lost an exact persistent publication name")
+    for name in (".other-handoff", ".config-handoff-extra", ".state-handoff-extra", "other", "config-extra"):
+        if entries[DATA].fullmatch("/var/lib/gdm3/seat0/" + name + "/setting"):
+            raise ValueError("Persistent publication file_contexts widened beyond fixed names")
     for name in ("alex", "root", "gdm-greeter-1", "gdm-greeter-01", "gdm-greeter-129", "gdm-greeter-999", "gdm-greeter-2x"):
         if entries[HOME].fullmatch("/run/gdm3/home/" + name):
             raise ValueError("Greeter file_contexts accepts a non-source-owned account")
