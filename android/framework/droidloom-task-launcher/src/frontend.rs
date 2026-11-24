@@ -5,7 +5,7 @@ use std::fs::File;
 use std::os::fd::AsFd;
 use std::path::Path;
 
-use binder::{IBinder, Strong};
+use binder::{binder_impl::IBinderInternal, Strong};
 use droidloom_denial_ipc::SeqPacket;
 use org_droidloom_frontend::aidl::org::droidloom::frontend::IFrontendChannels::IFrontendChannels;
 
