@@ -10,7 +10,10 @@ aidl_interface {
     backend: {
         cpp: { enabled: false },
         ndk: { enabled: false },
-        java: { sdk_version: "core_platform" },
+        // Binder and ParcelFileDescriptor belong to Android's framework.
+        // core_platform supplies only the Java core system modules and leaves
+        // this generated Binder interface with an empty Android classpath.
+        java: { platform_apis: true },
         rust: { enabled: true },
     },
     versions_with_info: [{ version: "1", imports: [] }],
