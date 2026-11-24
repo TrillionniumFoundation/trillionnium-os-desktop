@@ -1253,3 +1253,46 @@ remove only complete timestamped kernel records while retaining the original
 bytes and original result. These tests qualify the object-generation gate;
 the real systemd service and complete Ubuntu boot require their separate
 normal-package qualifications.
+
+### Collect an ended full Ubuntu qualification boot
+
+The independent tools/droidloom-ubuntu-fixture tool provides
+collect-boot --config /absolute/COLLECT-PLAN.json --config-sha256 <sha256>.
+Its strict plan uses schema droidloom.full-ubuntu-boot-collect-plan.v1, a pinned
+ended file, a fresh collection_name of at most 64 alphanumeric, hyphen or
+underscore characters, and pinned e2fsck, debugfs, and journalctl executables.
+Each pin contains path, bytes, and lowercase sha256; only the original
+/usr/sbin/e2fsck, /usr/sbin/debugfs, and /usr/bin/journalctl paths are admitted.
+
+Only a complete droidloom.full-ubuntu-run-ended.v1 receipt from the owned
+runner can be consumed. Its prepared receipt, private run directory, serial
+log, independent working disk and preserved source image must agree, including
+the source identity recorded by the runner. RUN-FAILED.json is retained for
+diagnosis and cannot substitute for a complete ended disk pin. The collector
+does not start or signal a VM.
+
+Collection creates one new private directory under that run. It copies the
+ended disk to a distinct inode, replays only that copy's ext4 journal, and
+resolves fixed guest paths from inode 2 without following symbolic links.
+Before extracting journals it checks directory depth, entry count, inode
+uniqueness, file type, ownership and aggregate byte limits. Each admitted
+regular inode is dumped into an already opened, bounded output file; guest
+filenames are never imported as host paths. The original native journalctl
+verifies every extracted journal before bounded JSON inspection. All child
+processes have an owned process group, time/output bounds and reaping on exit.
+
+COLLECTED.json preserves actual tool exits, file hashes, journal boot IDs,
+failed systemd jobs, MAC denials and error-priority records. Calibration proof
+requires both original PID 1 events for the same boot and invocation: the
+normal ExecStart exit status 0 and the completed start job. The captured
+Android cohort/runtime hashes must match the prepared fixture, the ordinary
+calibration unit must be byte identical, and the guest must have shut down
+normally. Missing, conflicting, failed or substituted observations cannot
+satisfy this proof. Path identities and contents of the ended disk and
+prepared source image are rechecked.
+
+This diagnostic receipt always leaves guest_qualified and production_ready
+false. Even a proven calibration capture must pass the existing normal
+package-kernel-first-mac five-file admission; full native services, desktop,
+Android and every selected application's acceptance are separate requirements.
+Failed attempts and their original stdout/stderr remain available for review.

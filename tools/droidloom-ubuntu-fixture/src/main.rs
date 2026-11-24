@@ -3,6 +3,7 @@
 mod boot;
 mod boot_candidate;
 mod boot_child;
+mod boot_collect;
 mod boot_files;
 mod boot_host;
 mod boot_kernel;
@@ -42,6 +43,12 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    CollectBoot {
+        #[arg(long)]
+        config: PathBuf,
+        #[arg(long)]
+        config_sha256: String,
+    },
     VerifyBootMaterials {
         #[arg(long)]
         config: PathBuf,
@@ -112,6 +119,10 @@ fn run() -> Result<()> {
         "real source capture/copy requires existing root rights; no privilege helper is installed",
     )?;
     match cli.command {
+        Command::CollectBoot {
+            config,
+            config_sha256,
+        } => boot_collect::run(&config, &config_sha256)?,
         Command::VerifyBootMaterials {
             config,
             config_sha256,
