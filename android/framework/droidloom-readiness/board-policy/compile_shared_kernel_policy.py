@@ -189,6 +189,13 @@ def verify_host_control(library, binary, export):
     check(helper, obj("droidloom_package_cgroup_events"), "file", ["getattr", "open", "read"], True)
     check(helper, obj("droidloom_package_cgroup_events"), "file", ["write", "append", "setattr"], False)
     check(client, obj("p4_linux_mac_release_input_t"), "file", ["getattr", "open", "read"], True)
+    # This exact root-published selector has no live writer or generic-config grant.
+    for reader in ['u:r:kernel:s0', 'u:r:droidloom_instance_launcher:s0', 'u:r:droidloom_broker:s0', 'u:r:droidloom_policy_loader:s0', 'u:system_r:droidloom_container_entry_t:s0', 'u:system_r:p4_linux_early_t:s0', 'u:r:droidloom_package_helper:s0', 'u:system_r:droidloom_public_control_client:s0']:
+        check(reader, obj("p4_linux_public_launcher_t"), "file", ["getattr", "open", "read"], True)
+        check(reader, obj("p4_linux_public_launcher_t"), "file", ["create", "write", "append", "setattr", "unlink", "link", "rename", "relabelto", "relabelfrom", "execute"], False)
+    check("u:system_r:p4_linux_user_session_t:s0", obj("p4_linux_public_launcher_t"), "file", ["create", "write", "append", "setattr", "unlink", "link", "rename", "relabelto", "relabelfrom", "execute"], False)
+    check(kernel, obj("p4_linux_native_config_t"), "file", ["getattr", "open", "read"], False)
+
     for subject in [helper, client]:
         check(subject, obj("p4_linux_product_store_t"), "file", ["open", "read", "write", "append"], False)
     check(helper, kernel, "security", ["load_policy", "setenforce", "setbool"], False)

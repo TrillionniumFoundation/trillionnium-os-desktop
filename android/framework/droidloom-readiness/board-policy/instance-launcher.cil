@@ -25,6 +25,19 @@
 ; The exact published host manager and read-only immutable selection.
 (typeattribute p4_instance_host_readers)
 (typeattributeset p4_instance_host_readers (kernel droidloom_instance_launcher))
+
+; The root-published launcher selector is a public immutable release record.
+; Its only producer writes a fresh offline root before normal ext4 labeling;
+; no live Linux or Android actor may mutate or replace the selected inode.
+(type p4_linux_public_launcher_t)
+(roletype object_r p4_linux_public_launcher_t)
+(typeattributeset p4_linux_data (p4_linux_public_launcher_t))
+(allow p4_linux_public_launcher_t labeledfs (filesystem (associate)))
+(typeattribute p4_linux_public_launcher_readers)
+(typeattributeset p4_linux_public_launcher_readers (p4_instance_host_readers p4_linux_selected_release_readers droidloom_public_control_client))
+(allow p4_linux_public_launcher_readers p4_linux_public_launcher_t (file (getattr open read)))
+(neverallow all p4_linux_public_launcher_t (file (create write append setattr unlink link rename relabelto relabelfrom execute execute_no_trans entrypoint)))
+
 (allow p4_instance_host_readers p4_linux_rootdir_t (dir (getattr search open read)))
 (allow p4_instance_host_readers p4_linux_etc_dir_t (dir (getattr search open read)))
 (allow p4_instance_host_readers p4_linux_host_config_t (file (getattr open read)))
