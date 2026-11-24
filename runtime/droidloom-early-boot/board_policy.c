@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #define _GNU_SOURCE
 #include "board_policy.h"
+#include "board_policy_inputs.h"
 #include "boot_diagnostics.h"
 #include "apparmor_epoch.h"
 #include "linux_run_label.h"
@@ -180,7 +181,7 @@ static int initial_ubuntu_kernel(void)
     struct statfs root;
     if (uname(&kernel) < 0 || statfs("/", &root) < 0)
         return -1;
-    if (getpid() != 1 || geteuid() != 0 || strcmp(kernel.release, "6.18.64-p4ctx6181-fusectl-aafs-peer-r1") ||
+    if (getpid() != 1 || geteuid() != 0 || strcmp(kernel.release, DROIDLOOM_BOARD_KERNEL_RELEASE) ||
         (unsigned long)root.f_type != EXT4_SUPER_MAGIC)
         return reject(EXDEV);
     const char *namespaces[] = {"user", "pid", "mnt"};
@@ -251,8 +252,8 @@ static int apparmor_profiles(const struct input *pack, int activate,
 
 int droidloom_board_activate_policy(gid_t observer_gid, const char *cohort)
 {
-    struct input policy = {1063598, "f9681c7273729bfb28e7b416a7ef05cc2c1ba42306cf943c2a7dc6f279d3bf75", POLICY_DIR "/joint.policy", NULL};
-    struct input aa = {5924311, "151918493a8153e1ff7e5382416e67a038de63fbe9f27cd58546ff5c97f1fc0a", POLICY_DIR "/ubuntu-apparmor.profiles", NULL};
+    struct input policy = {DROIDLOOM_BOARD_SELINUX_SIZE, DROIDLOOM_BOARD_SELINUX_SHA256, POLICY_DIR "/joint.policy", NULL};
+    struct input aa = {DROIDLOOM_BOARD_APPARMOR_SIZE, DROIDLOOM_BOARD_APPARMOR_SHA256, POLICY_DIR "/ubuntu-apparmor.profiles", NULL};
     struct droidloom_apparmor_measurement observation = {0};
     struct droidloom_raw_profile selected_profiles[3] = {0};
     int status = -1, epoch_directory = -1;

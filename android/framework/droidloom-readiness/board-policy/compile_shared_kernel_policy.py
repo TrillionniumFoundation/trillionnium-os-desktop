@@ -126,6 +126,14 @@ def verify_host_control(library, binary, export):
     helper_exec = obj("droidloom_package_helper_exec")
     client_exec = obj("droidloom_public_control_client_exec")
 
+    # The held startup lock is born on tmpfs before the first policy load.
+    # Only the original kernel-domain boot owner labels that inode once.
+    check(kernel, obj("tmpfs"), "file", ["relabelfrom"], True)
+    check(kernel, obj("p4_linux_instance_lock_t"), "file",
+          ["getattr", "relabelto", "open", "read", "lock"], True)
+    for subject in [helper, client, broker]:
+        check(subject, obj("tmpfs"), "file", ["relabelfrom"], False)
+
     check(session, helper, "process", ["transition"], True)
     check(session, helper, "process", ["dyntransition", "ptrace"], False)
     check(session, helper_exec, "file", ["execute", "read", "open", "map"], True)

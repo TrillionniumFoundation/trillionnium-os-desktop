@@ -100,6 +100,10 @@
 (allow p4_linux_instance_record_t tmpfs (filesystem (associate)))
 (allow p4_linux_instance_lock_t tmpfs (filesystem (associate)))
 (allow p4_linux_instance_slot_t tmpfs (filesystem (associate)))
+; startup.lock is born before the first policy load. Original tmpfs uses
+; fsuse trans: first-policy inode initialization gives it the tmpfs SID.
+; The boot owner relabels its held, root-owned 0400 regular lock once.
+(allow kernel tmpfs (file (relabelfrom)))
 (allow kernel p4_linux_instance_lock_t (file (getattr relabelto open read lock)))
 (allow kernel p4_linux_instance_slot_t (dir (getattr relabelto open read search mounton)))
 (typetransition kernel p4_linux_early_handoff_dir_t file p4_linux_instance_record_t)

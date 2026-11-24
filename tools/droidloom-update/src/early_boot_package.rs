@@ -2,20 +2,86 @@
 use crate::util::*;
 use std::{fs, path::Path, process::Command};
 
+// Both the packaged bytes and the C PID 1 consumer are projected from this
+// committed input. Never duplicate these pins in the C source or accept an
+// uncommitted caller-supplied header.
+const BOARD_INPUTS: &[u8] = include_bytes!(
+    "../../../android/framework/droidloom-readiness/board-policy/pocket4-board-inputs.lock.json"
+);
+
+#[derive(serde::Deserialize)]
+struct ReleaseInput {
+    size: u64,
+    sha256: String,
+}
+
+#[derive(serde::Deserialize)]
+struct KernelInput {
+    release: String,
+}
+
+#[derive(serde::Deserialize)]
+struct BoardInputs {
+    kernel: KernelInput,
+    files: std::collections::BTreeMap<String, ReleaseInput>,
+}
+
+fn committed_board_inputs() -> Result<BoardInputs> {
+    parse_board_inputs(BOARD_INPUTS)
+}
+
+fn parse_board_inputs(bytes: &[u8]) -> Result<BoardInputs> {
+    let lock: BoardInputs = serde_json::from_slice(bytes)?;
+    let release = lock.kernel.release.as_bytes();
+    if release.is_empty()
+        || release.len() > 64
+        || !release
+            .iter()
+            .all(|b| b.is_ascii_alphanumeric() || b"._+-".contains(b))
+    {
+        return fail("board lock has an unsafe or unsupported kernel release");
+    }
+    for name in ["joint.policy", "ubuntu-apparmor.profiles"] {
+        let input = lock
+            .files
+            .get(name)
+            .ok_or("board input absent from release lock")?;
+        if input.size == 0
+            || input.size > 64 * 1024 * 1024
+            || input.sha256.len() != 64
+            || !input
+                .sha256
+                .bytes()
+                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+        {
+            return fail(format!("invalid bounded board input pin for {name}"));
+        }
+    }
+    Ok(lock)
+}
+
+fn board_policy_header(lock: &BoardInputs) -> String {
+    let policy = &lock.files["joint.policy"];
+    let aa = &lock.files["ubuntu-apparmor.profiles"];
+    format!(
+        concat!(
+            "/* Generated from the committed pocket4-board-inputs.lock.json. */\n",
+            "#ifndef DROIDLOOM_BOARD_POLICY_INPUTS_H\n",
+            "#define DROIDLOOM_BOARD_POLICY_INPUTS_H\n",
+            "#define DROIDLOOM_BOARD_KERNEL_RELEASE \"{}\"\n",
+            "#define DROIDLOOM_BOARD_SELINUX_SIZE {}ULL\n",
+            "#define DROIDLOOM_BOARD_SELINUX_SHA256 \"{}\"\n",
+            "#define DROIDLOOM_BOARD_APPARMOR_SIZE {}ULL\n",
+            "#define DROIDLOOM_BOARD_APPARMOR_SHA256 \"{}\"\n",
+            "#endif\n"
+        ),
+        lock.kernel.release, policy.size, policy.sha256, aa.size, aa.sha256,
+    )
+}
+
 pub(super) fn stage_board_policy(inputs: &Path, destination: &Path) -> Result<()> {
     let release = destination.join("usr/lib/droidloom/production/current/board-policy");
-    #[derive(serde::Deserialize)]
-    struct ReleaseInput {
-        size: u64,
-        sha256: String,
-    }
-    #[derive(serde::Deserialize)]
-    struct BoardInputs {
-        files: std::collections::BTreeMap<String, ReleaseInput>,
-    }
-    let lock: BoardInputs = serde_json::from_slice(include_bytes!(
-        "../../../android/framework/droidloom-readiness/board-policy/pocket4-board-inputs.lock.json"
-    ))?;
+    let lock = committed_board_inputs()?;
     for name in ["joint.policy", "ubuntu-apparmor.profiles"] {
         let input = lock
             .files
@@ -35,7 +101,9 @@ pub(super) fn stage_board_policy(inputs: &Path, destination: &Path) -> Result<()
                 return fail("selected joint policy has an unsupported binary header");
             }
             let version = u32::from_le_bytes(
-                body.get(16..20).ok_or("truncated SELinux policy version")?.try_into()?,
+                body.get(16..20)
+                    .ok_or("truncated SELinux policy version")?
+                    .try_into()?,
             );
             let policy = destination.join(format!("etc/selinux/droidloom/policy/policy.{version}"));
             write(&policy, &body)?;
@@ -50,7 +118,9 @@ pub(super) fn stage_native_configuration(destination: &Path) -> Result<()> {
     let config = destination.join("etc/selinux/config");
     write(
         &config,
-        include_bytes!("../../../android/framework/droidloom-readiness/board-policy/ubuntu-selinux-config"),
+        include_bytes!(
+            "../../../android/framework/droidloom-readiness/board-policy/ubuntu-selinux-config"
+        ),
     )?;
     mode(&config, 0o444)?;
     // Stock D-Bus requires its include, and stock pam_selinux resolves the
@@ -89,6 +159,11 @@ pub(super) fn stage_native_configuration(destination: &Path) -> Result<()> {
 pub(super) fn stage(destination: &Path) -> Result<()> {
     let work = tempfile::tempdir()?;
     let src = work.path();
+    let lock = committed_board_inputs()?;
+    fs::write(
+        src.join("board_policy_inputs.h"),
+        board_policy_header(&lock),
+    )?;
     fs::write(
         src.join("board.h"),
         include_bytes!("../../../runtime/droidloom-early-boot/board.h"),
@@ -106,14 +181,38 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
         include_bytes!("../../../runtime/droidloom-early-boot/selected.c"),
     )?;
     for (name, content) in [
-        ("boot_diagnostics.h", include_bytes!("../../../runtime/droidloom-early-boot/boot_diagnostics.h").as_slice()),
-        ("boot_diagnostics.c", include_bytes!("../../../runtime/droidloom-early-boot/boot_diagnostics.c").as_slice()),
-        ("device_source.h", include_bytes!("../../../runtime/droidloom-early-boot/device_source.h").as_slice()),
-        ("device_template.h", include_bytes!("../../../runtime/droidloom-early-boot/device_template.h").as_slice()),
-        ("device_template.c", include_bytes!("../../../runtime/droidloom-early-boot/device_template.c").as_slice()),
-        ("device_source.c", include_bytes!("../../../runtime/droidloom-early-boot/device_source.c").as_slice()),
-        ("apparmor_epoch.c", include_bytes!("../../../runtime/droidloom-early-boot/apparmor_epoch.c").as_slice()),
-        ("apparmor_epoch.h", include_bytes!("../../../runtime/droidloom-early-boot/apparmor_epoch.h").as_slice()),
+        (
+            "boot_diagnostics.h",
+            include_bytes!("../../../runtime/droidloom-early-boot/boot_diagnostics.h").as_slice(),
+        ),
+        (
+            "boot_diagnostics.c",
+            include_bytes!("../../../runtime/droidloom-early-boot/boot_diagnostics.c").as_slice(),
+        ),
+        (
+            "device_source.h",
+            include_bytes!("../../../runtime/droidloom-early-boot/device_source.h").as_slice(),
+        ),
+        (
+            "device_template.h",
+            include_bytes!("../../../runtime/droidloom-early-boot/device_template.h").as_slice(),
+        ),
+        (
+            "device_template.c",
+            include_bytes!("../../../runtime/droidloom-early-boot/device_template.c").as_slice(),
+        ),
+        (
+            "device_source.c",
+            include_bytes!("../../../runtime/droidloom-early-boot/device_source.c").as_slice(),
+        ),
+        (
+            "apparmor_epoch.c",
+            include_bytes!("../../../runtime/droidloom-early-boot/apparmor_epoch.c").as_slice(),
+        ),
+        (
+            "apparmor_epoch.h",
+            include_bytes!("../../../runtime/droidloom-early-boot/apparmor_epoch.h").as_slice(),
+        ),
         (
             "board_policy.c",
             include_bytes!("../../../runtime/droidloom-early-boot/board_policy.c").as_slice(),
@@ -288,4 +387,73 @@ pub(super) fn stage(destination: &Path) -> Result<()> {
         mode(&path, permissions)?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn committed_board_pins_reach_the_normally_compiled_pid_one() {
+        let destination = tempfile::tempdir().unwrap();
+        stage(destination.path()).unwrap();
+        let elf = fs::read(
+            destination
+                .path()
+                .join("usr/lib/droidloom/production/current/droidloom-board-init"),
+        )
+        .unwrap();
+        assert_eq!(&elf[..4], b"\x7fELF");
+        let lock = committed_board_inputs().unwrap();
+        for value in [
+            lock.kernel.release.as_str(),
+            lock.files["joint.policy"].sha256.as_str(),
+            lock.files["ubuntu-apparmor.profiles"].sha256.as_str(),
+        ] {
+            let mut nul_terminated = value.as_bytes().to_vec();
+            nul_terminated.push(0);
+            assert!(
+                elf.windows(nul_terminated.len())
+                    .any(|bytes| bytes == nul_terminated),
+                "compiled PID 1 omitted committed board input {value}"
+            );
+        }
+    }
+
+    #[test]
+    fn malformed_board_locks_are_rejected_before_generating_c() {
+        let original: serde_json::Value = serde_json::from_slice(BOARD_INPUTS).unwrap();
+        for release in [
+            "",
+            "../kernel",
+            "kernel\"\n#error injected",
+            "kernel\\x00",
+            &"k".repeat(65),
+        ] {
+            let mut value = original.clone();
+            value["kernel"]["release"] = serde_json::json!(release);
+            assert!(parse_board_inputs(&serde_json::to_vec(&value).unwrap()).is_err());
+        }
+        for name in ["joint.policy", "ubuntu-apparmor.profiles"] {
+            for size in [0, 64 * 1024 * 1024 + 1, u64::MAX] {
+                let mut value = original.clone();
+                value["files"][name]["size"] = serde_json::json!(size);
+                assert!(parse_board_inputs(&serde_json::to_vec(&value).unwrap()).is_err());
+            }
+            for hash in [
+                "",
+                "00",
+                &"A".repeat(64),
+                &"g".repeat(64),
+                &format!("{}\"", "a".repeat(63)),
+            ] {
+                let mut value = original.clone();
+                value["files"][name]["sha256"] = serde_json::json!(hash);
+                assert!(parse_board_inputs(&serde_json::to_vec(&value).unwrap()).is_err());
+            }
+            let mut value = original.clone();
+            value["files"].as_object_mut().unwrap().remove(name);
+            assert!(parse_board_inputs(&serde_json::to_vec(&value).unwrap()).is_err());
+        }
+    }
 }
