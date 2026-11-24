@@ -641,6 +641,7 @@ fn sample(
 }
 pub(super) fn entry() -> Result<()> {
     helper::own_root_credentials()?;
+    helper::verify_fixed_stdio()?;
     helper::mac_context(CONTEXT)?;
     if unsafe { libc::prctl(libc::PR_SET_DUMPABLE, 0, 0, 0, 0) } != 0 {
         return Err(io::Error::last_os_error().into());
@@ -733,6 +734,7 @@ pub(crate) fn observe(
     let executable = helper::above_reserved(&executable)?;
     let (channel, child_channel) = protocol::socketpair()?;
     let child_channel = helper::above_reserved(&File::from(child_channel))?;
+    let stdio = helper::fixed_stdio()?;
     let raw = unsafe { libc::syscall(libc::SYS_pidfd_open, libc::getpid(), 0_u32) };
     if raw < 0 {
         return Err(io::Error::last_os_error().into());
@@ -793,6 +795,7 @@ pub(crate) fn observe(
                 parent,
                 executable.as_raw_fd(),
                 child_channel.as_raw_fd(),
+                stdio.as_raw_fd(),
                 argv.as_ptr(),
                 environment.as_ptr(),
                 &fprog,

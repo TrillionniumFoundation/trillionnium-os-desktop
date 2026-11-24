@@ -794,6 +794,7 @@ pub(super) fn entry() -> Result<()> {
         "query I/O creator requires the reviewed native x86_64 ABI",
     ));
     own_root_credentials()?;
+    verify_fixed_stdio()?;
     mac_context(CREATOR)?;
     // Stacking this filter removes even the single preexec execveat exception.
     install_filter(&filter(None, false))?;
@@ -871,6 +872,62 @@ pub(super) fn above_reserved(file: &File) -> Result<File> {
     Ok(unsafe { File::from_raw_fd(raw) })
 }
 
+
+/// A broker-created anonymous read end whose only writer is already closed.
+/// Keeping 0..2 valid prevents Rust's fresh-image startup from opening host
+/// /dev/null before either private helper can execute its entry checks.
+pub(super) fn fixed_stdio() -> Result<File> {
+    let (read, write) = new_pipe()?;
+    let stdio = above_reserved(&read)?;
+    drop(read);
+    drop(write);
+    fixed_stdio_node(stdio.as_raw_fd(), false)?;
+    Ok(stdio)
+}
+
+fn fixed_stdio_node(fd: RawFd, inherited: bool) -> Result<(u64, u64)> {
+    let mut stat: libc::stat = unsafe { mem::zeroed() };
+    if unsafe { libc::fstat(fd, &mut stat) } != 0 {
+        return Err(io::Error::last_os_error().into());
+    }
+    let flags = unsafe { libc::fcntl(fd, libc::F_GETFL) };
+    let descriptor = unsafe { libc::fcntl(fd, libc::F_GETFD) };
+    require(
+        stat.st_mode & libc::S_IFMT == libc::S_IFIFO
+            && flags >= 0
+            && flags & (libc::O_ACCMODE | libc::O_PATH) == libc::O_RDONLY
+            && flags & libc::O_NONBLOCK != 0
+            && descriptor >= 0
+            && (descriptor & libc::FD_CLOEXEC == 0) == inherited,
+        "helper stdio is not the fixed read-only inherited pipe",
+    )?;
+    let mut state = libc::pollfd { fd, events: libc::POLLIN, revents: 0 };
+    let ready = unsafe { libc::poll(&mut state, 1, 0) };
+    require(
+        ready == 1 && state.revents == libc::POLLHUP,
+        "helper stdio still has data or a live writer",
+    )?;
+    let mut byte = 0_u8;
+    require(
+        unsafe { libc::read(fd, (&mut byte as *mut u8).cast(), 1) } == 0,
+        "helper stdio has no actual EOF",
+    )?;
+    Ok((stat.st_dev, stat.st_ino))
+}
+
+/// Check the actual three inherited descriptions before private helper work.
+/// No host character device or control socket can stand in for this pipe.
+pub(super) fn verify_fixed_stdio() -> Result<()> {
+    let node = fixed_stdio_node(0, true)?;
+    for fd in 1..3 {
+        require(
+            fixed_stdio_node(fd, true)? == node,
+            "helper standard descriptors do not share the one fixed pipe",
+        )?;
+    }
+    Ok(())
+}
+
 /// After raw clone3, use only preallocated memory and async-signal-safe syscalls.
 unsafe fn raw_attribute(path: &CStr, expected: &[u8], write: bool) -> bool {
     unsafe {
@@ -946,6 +1003,7 @@ pub(super) unsafe fn bootstrap(
     parent: libc::pid_t,
     executable: RawFd,
     socket: RawFd,
+    stdio: RawFd,
     argv: *const *const libc::c_char,
     environment: *const *const libc::c_char,
     program: &libc::sock_fprog,
@@ -973,8 +1031,13 @@ pub(super) unsafe fn bootstrap(
         {
             libc::_exit(125);
         }
+        if stdio < 64 || stdio == socket || stdio == executable {
+            libc::_exit(125);
+        }
         for fd in 0..3 {
-            libc::close(fd);
+            if libc::dup2(stdio, fd) != fd || libc::fcntl(fd, libc::F_SETFD, 0) != 0 {
+                libc::_exit(125);
+            }
         }
         let zero = libc::rlimit {
             rlim_cur: 0,
@@ -1161,6 +1224,7 @@ pub(crate) fn create(root: &File, deadline: Instant) -> Result<QueryIo> {
     let executable = above_reserved(&executable)?;
     let (channel, child_channel) = super::protocol::socketpair()?;
     let child_channel = above_reserved(&File::from(child_channel))?;
+    let stdio = fixed_stdio()?;
     let owner = unsafe { libc::syscall(libc::SYS_pidfd_open, libc::getpid(), 0_u32) };
     if owner < 0 {
         return Err(io::Error::last_os_error().into());
@@ -1227,6 +1291,7 @@ pub(crate) fn create(root: &File, deadline: Instant) -> Result<QueryIo> {
                 parent,
                 executable.as_raw_fd(),
                 child_channel.as_raw_fd(),
+                stdio.as_raw_fd(),
                 argv.as_ptr(),
                 environment.as_ptr(),
                 &fprog,
@@ -1401,4 +1466,20 @@ mod tests {
         assert!(libc::WIFEXITED(status));
         assert_eq!(libc::WEXITSTATUS(status), 0);
     }
+    #[test]
+    fn query_io_helper_stdio_is_read_only_eof_and_rejects_a_live_writer() {
+        let fixed = fixed_stdio().unwrap();
+        assert!(fixed.as_raw_fd() >= 64);
+        let node = fixed_stdio_node(fixed.as_raw_fd(), false).unwrap();
+        let same = above_reserved(&fixed).unwrap();
+        assert_eq!(fixed_stdio_node(same.as_raw_fd(), false).unwrap(), node);
+        assert_eq!(unsafe { libc::write(fixed.as_raw_fd(), b"x".as_ptr().cast(), 1) }, -1);
+        assert_eq!(io::Error::last_os_error().raw_os_error(), Some(libc::EBADF));
+        let (read, write) = new_pipe().unwrap();
+        assert!(fixed_stdio_node(read.as_raw_fd(), false).is_err());
+        assert!(fixed_stdio_node(write.as_raw_fd(), false).is_err());
+        drop(write);
+        assert!(fixed_stdio_node(read.as_raw_fd(), false).is_ok());
+    }
+
 }
