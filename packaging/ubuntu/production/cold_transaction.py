@@ -171,12 +171,11 @@ def component(role,pin):
     control=package_control(package,NAMES[role])
     inputs={role+"-result.json":pin,role+".deb":package}
     if role=="host":
-        m=host_manifest(result["host_manifest"])
+        m,rows=host_manifest(result["host_manifest"])
         need(m["commit"]==result["source_commit"] and m["tree"]==result["source_tree"],
              "normal host source binding")
         need(len(m["files"])==result["file_count"],"normal host inventory count")
         inputs["host-manifest.json"]=result["host_manifest"]
-        rows={x["path"]:x for x in m["files"]}
         missing=[p for p,mode in REQUIRED_HOST.items() if p not in rows or rows[p]["mode"]!=mode]
         info={"source_commit":m["commit"],"source_tree":m["tree"],
               "host_file_count":len(rows),"missing_required_maintenance":missing}
