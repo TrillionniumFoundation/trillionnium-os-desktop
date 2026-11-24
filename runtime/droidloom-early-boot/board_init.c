@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <sys/ioctl.h>
 #include <sys/mount.h>
 #include <sys/stat.h>
@@ -244,19 +245,175 @@ static int finish(int argc, char **argv)
  * keep it blocked on an inherited pipe. Stock kernel.te forbids *all* later
  * execute_no_trans; no policy exception is introduced for this executable. */
 struct boot_factory { int pidfd, receive, release; };
-static int factory_phase(struct boot_factory *factory,char expected)
+
+/* The diagnostic is never a readiness or authority token. This private pipe
+ * already belongs to the original clone3 child. E, version, stage, detail size,
+ * little-endian errno and at most 240 printable bytes form one bounded frame. */
+#define FACTORY_ERROR_HEADER 8U
+#define FACTORY_ERROR_DETAIL 240U
+#define FACTORY_ERROR_MAX (FACTORY_ERROR_HEADER + FACTORY_ERROR_DETAIL)
+
+static int factory_remaining(const struct timespec *deadline)
 {
-    struct pollfd waiters[2]={{.fd=factory->receive,.events=POLLIN},{.fd=factory->pidfd,.events=POLLIN}};
-    int count;
-    do{count=poll(waiters,2,30000);}while(count<0&&errno==EINTR);
-    if(count<0)return -1;
-    if(!count)return fail(ETIMEDOUT);
-    if(waiters[1].revents||!(waiters[0].revents&POLLIN))return fail(ECHILD);
-    char ready=0;ssize_t n;
-    do{n=read(factory->receive,&ready,1);}while(n<0&&errno==EINTR);
-    if(n!=1||ready!=expected)return fail(n<0?errno:EPROTO);
-    waiters[1].revents=0;
-    return poll(&waiters[1],1,0)==0?0:fail(ECHILD);
+    struct timespec now;
+    if (clock_gettime(CLOCK_MONOTONIC, &now) < 0)
+        return -1;
+    int64_t ns = (int64_t)(deadline->tv_sec - now.tv_sec) * 1000000000LL +
+                 deadline->tv_nsec - now.tv_nsec;
+    if (ns <= 0)
+        return 0;
+    return (int)((ns + 999999LL) / 1000000LL);
+}
+
+static int factory_channel_failure(char expected, const char *reason,
+                                   short pipe_events, short pidfd_events, int error)
+{
+    char description[192];
+    int length = snprintf(description, sizeof(description),
+                          "factory phase %c %s (pipe=0x%x pidfd=0x%x)",
+                          expected, reason, (unsigned int)(unsigned short)pipe_events,
+                          (unsigned int)(unsigned short)pidfd_events);
+    if (length > 0 && (size_t)length < sizeof(description))
+        droidloom_boot_diagnostics_report(DROIDLOOM_DIAGNOSTIC_PID1, description, error);
+    return fail(error);
+}
+
+static const char *factory_error_stage(unsigned int stage)
+{
+    static const char *const names[] = {
+        NULL, "selected release", "published manager executable", "native prepare",
+        "private devices", "identity publication", "listener", "stdout null sink",
+        "ready notification"
+    };
+    return stage > 0 && stage < sizeof(names) / sizeof(names[0]) ? names[stage] : NULL;
+}
+
+static int factory_error_report(const unsigned char *frame, size_t size)
+{
+    if (size < FACTORY_ERROR_HEADER)
+        return fail(EPROTO);
+    const char *stage = factory_error_stage(frame[2]);
+    uint32_t raw = (uint32_t)frame[4] | ((uint32_t)frame[5] << 8) |
+                   ((uint32_t)frame[6] << 16) | ((uint32_t)frame[7] << 24);
+    if (size < FACTORY_ERROR_HEADER || frame[0] != 'E' || frame[1] != 1 ||
+        !stage || frame[3] == 0 || frame[3] > FACTORY_ERROR_DETAIL ||
+        size != FACTORY_ERROR_HEADER + frame[3] || raw > 4095U)
+        return fail(EPROTO);
+    for (size_t i = FACTORY_ERROR_HEADER; i < size; i++)
+        if (frame[i] < ' ' || frame[i] > '~')
+            return fail(EPROTO);
+    char description[320];
+    int length = snprintf(description, sizeof(description), "factory %s: %.*s",
+                          stage, (int)frame[3], (const char *)frame + FACTORY_ERROR_HEADER);
+    if (length <= 0 || (size_t)length >= sizeof(description))
+        return fail(EPROTO);
+    droidloom_boot_diagnostics_report(DROIDLOOM_DIAGNOSTIC_PID1, description, (int)raw);
+    /* A custom Rust error has no OS errno. Report that fact as zero above,
+     * while the parent still returns an ordinary protocol failure. */
+    return fail(raw ? (int)raw : EPROTO);
+}
+
+static int factory_phase_until(struct boot_factory *factory, char expected,
+                               const struct timespec *deadline)
+{
+    if (expected != 'P' && expected != 'F')
+        return fail(EINVAL);
+    int flags = fcntl(factory->receive, F_GETFL);
+    if (flags < 0 || fcntl(factory->receive, F_SETFL, flags | O_NONBLOCK) < 0)
+        return -1;
+    unsigned char frame[FACTORY_ERROR_MAX];
+    size_t have = 0, needed = 1;
+    for (;;) {
+        int remaining = factory_remaining(deadline);
+        if (remaining < 0)
+            return -1;
+        if (!remaining)
+            return fail(ETIMEDOUT);
+        struct pollfd waiters[2] = {
+            { .fd = factory->receive, .events = POLLIN },
+            { .fd = factory->pidfd, .events = POLLIN }
+        };
+        int count = poll(waiters, 2, remaining);
+        if (count < 0) {
+            if (errno == EINTR)
+                continue;
+            return -1;
+        }
+        if (!count)
+            return fail(ETIMEDOUT);
+        if ((waiters[0].revents & POLLNVAL) ||
+            (waiters[1].revents & (POLLNVAL | POLLERR)))
+            return factory_channel_failure(expected, "invalid held descriptor",
+                waiters[0].revents, waiters[1].revents, EBADF);
+        int ended = (waiters[1].revents & (POLLIN | POLLHUP)) != 0;
+        if (!(waiters[0].revents & (POLLIN | POLLHUP)) && !ended)
+            return factory_channel_failure(expected, "unexpected channel event",
+                waiters[0].revents, waiters[1].revents, EPROTO);
+        ssize_t n = read(factory->receive, frame + have, needed - have);
+        if (n < 0) {
+            if (errno == EINTR)
+                continue;
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                if (ended)
+                    return factory_channel_failure(expected, "exited before complete frame",
+                        waiters[0].revents, waiters[1].revents, have ? EPROTO : ECHILD);
+                continue;
+            }
+            return -1;
+        }
+        if (!n)
+            return factory_channel_failure(expected, "channel EOF",
+                waiters[0].revents, waiters[1].revents,
+                have ? EPROTO : ended ? ECHILD : EPIPE);
+        have += (size_t)n;
+        if (have == 1) {
+            if (frame[0] != 'E') {
+                if (frame[0] != (unsigned char)expected)
+                    return factory_channel_failure(expected, "unexpected phase byte",
+                        waiters[0].revents, waiters[1].revents, EPROTO);
+                /* Queued P/F from an exited original child is never ready. */
+                if (ended)
+                    return factory_channel_failure(expected, "queued ready from exited child",
+                        waiters[0].revents, waiters[1].revents, ECHILD);
+                for (;;) {
+                    remaining = factory_remaining(deadline);
+                    if (remaining <= 0)
+                        return remaining < 0 ? -1 : fail(ETIMEDOUT);
+                    struct pollfd live = { .fd = factory->pidfd, .events = POLLIN };
+                    int status = poll(&live, 1, 0);
+                    if (status < 0 && errno == EINTR)
+                        continue;
+                    if (status < 0)
+                        return -1;
+                    if (status == 0)
+                        return 0;
+                    return factory_channel_failure(expected, "PIDFD changed after ready byte",
+                        waiters[0].revents, live.revents,
+                        live.revents & (POLLERR | POLLNVAL) ? EBADF : ECHILD);
+                }
+            }
+            needed = FACTORY_ERROR_HEADER;
+        }
+        if (have == FACTORY_ERROR_HEADER) {
+            uint32_t raw = (uint32_t)frame[4] | ((uint32_t)frame[5] << 8) |
+                           ((uint32_t)frame[6] << 16) | ((uint32_t)frame[7] << 24);
+            if (frame[1] != 1 || !factory_error_stage(frame[2]) || frame[3] == 0 ||
+                frame[3] > FACTORY_ERROR_DETAIL || raw > 4095U)
+                return fail(EPROTO);
+            needed = FACTORY_ERROR_HEADER + frame[3];
+        }
+        if (have == needed)
+            return factory_error_report(frame, have);
+    }
+}
+
+static int factory_phase(struct boot_factory *factory, char expected)
+{
+    struct timespec deadline;
+    if (clock_gettime(CLOCK_MONOTONIC, &deadline) < 0)
+        return -1;
+    deadline.tv_sec += 30;
+    return factory_phase_until(factory, expected, &deadline);
 }
 static int prepare_instance_factory(struct boot_factory *factory)
 {
