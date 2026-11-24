@@ -130,20 +130,26 @@ pub(super) fn maintained_source(
         archives.len() == expected.len(),
         "official source archive set differs",
     )?;
+    ensure(
+        archives == expected,
+        "original Ubuntu source pin declarations differ",
+    )?;
+    let package = artifact(&declaration["package"])?;
+    let archive_root = package
+        .path
+        .parent()
+        .ok_or("normal package parent absent")?;
     for pin in expected {
         let name = pin["name"].as_str().ok_or("source archive name absent")?;
-        let matches: Vec<_> = archives
-            .iter()
-            .filter_map(|v| artifact(v).ok())
-            .filter(|p| p.path.file_name().and_then(|x| x.to_str()) == Some(name))
-            .collect();
-        ensure(
-            matches.len() == 1
-                && matches[0].bytes == pin["bytes"]
-                && matches[0].sha256 == pin["sha256"],
-            "original Ubuntu source pin differs",
-        )?;
-        boot_files::checked_file(&matches[0])?;
+        let original = FilePin {
+            path: archive_root.join(name),
+            bytes: pin["bytes"].as_u64().ok_or("source archive size absent")?,
+            sha256: pin["sha256"]
+                .as_str()
+                .ok_or("source archive digest absent")?
+                .into(),
+        };
+        boot_files::checked_file(&original)?;
     }
     for pin in [&input.source_orig_archive, &input.source_orig_signature] {
         ensure(
