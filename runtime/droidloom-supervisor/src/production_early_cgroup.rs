@@ -1,21 +1,21 @@
 //! Attach the retained boot child's PID 1 to the production unit's real budget.
 use super::*;
 use crate::production_selection::early_generation::EarlyBaseAdmission;
-use std::path::PathBuf;
 
 pub(super) struct EarlyPlacement {
     pidfd: File,
-    proc_dir: File,
+    proc_identity: (u64, u64),
     original_namespace: File,
     rooted_namespace: Option<File>,
 }
 fn named_cgroup_ns(child: &EarlyBaseAdmission<'_>) -> io::Result<File> {
-    File::open(
-        PathBuf::from(format!(
-            "/proc/self/fd/{}",
-            child.proc_directory().as_raw_fd()
-        ))
-        .join("ns/cgroup"),
+    child.observe_init_metadata()?.namespaces[6].try_clone()
+}
+fn check_early_task_cgroup(child: &EarlyBaseAdmission<'_>, expected: &str) -> Result<()> {
+    let observed = child.observe_init_metadata()?;
+    require(
+        parse_unified_cgroup(&observed.host.cgroup)? == expected,
+        "owned task is in a different cgroup",
     )
 }
 fn kernel_owner(namespace: &File) -> io::Result<File> {
@@ -154,10 +154,10 @@ impl PreparedCgroup {
                 && list_directories(payload)?.is_empty(),
             "fresh empty budget required",
         )?;
-        check_task_cgroup(child.proc_directory(), "/")?;
+        check_early_task_cgroup(child, "/")?;
         let binding = EarlyPlacement {
             pidfd: child.board().pidfd().try_clone()?,
-            proc_dir: child.proc_directory().try_clone()?,
+            proc_identity: child.observe_init_metadata()?.host.proc_identity(),
             original_namespace: named_cgroup_ns(child)?,
             rooted_namespace: None,
         };
@@ -165,10 +165,7 @@ impl PreparedCgroup {
         r.placement.set(Placement::MigrationInProgress);
         move_original_init(child.board().pid_namespace(), payload)?;
         child.board().revalidate()?;
-        check_task_cgroup(
-            child.proc_directory(),
-            &format!("{UNIT_CGROUP}/cell-u1000/payload"),
-        )?;
+        check_early_task_cgroup(child, &format!("{UNIT_CGROUP}/cell-u1000/payload"))?;
         require(
             read_pids(payload)? == BTreeSet::from([child.board().host_pid() as u32])
                 && read_pids(keeper)?.is_empty(),
@@ -200,8 +197,7 @@ impl PreparedCgroup {
         require(
             binding.rooted_namespace.is_none()
                 && NodeIdentity::of(&binding.pidfd)? == NodeIdentity::of(child.board().pidfd())?
-                && NodeIdentity::of(&binding.proc_dir)?
-                    == NodeIdentity::of(child.proc_directory())?
+                && binding.proc_identity == child.observe_init_metadata()?.host.proc_identity()
                 && NodeIdentity::of(rooted)? != NodeIdentity::of(&binding.original_namespace)?
                 && NodeIdentity::of(rooted)? == NodeIdentity::of(&named_cgroup_ns(child)?)?
                 && unsafe { libc::ioctl(rooted.as_raw_fd(), NS_GET_NSTYPE) }
@@ -216,10 +212,7 @@ impl PreparedCgroup {
             .ok_or(CgroupError::Rejected("payload absent"))?
             .file;
         let pid = child.board().host_pid() as u32;
-        check_task_cgroup(
-            child.proc_directory(),
-            &format!("{UNIT_CGROUP}/cell-u1000/payload"),
-        )?;
+        check_early_task_cgroup(child, &format!("{UNIT_CGROUP}/cell-u1000/payload"))?;
         require(
             read_pids(payload)? == BTreeSet::from([pid]) && list_directories(payload)?.is_empty(),
             "payload changed before cgroup delegation",
@@ -264,7 +257,7 @@ impl PreparedCgroup {
             .as_ref()
             .ok_or(CgroupError::Rejected("early guest leaf absent"))?;
         move_original_init(child.board().pid_namespace(), &leaf.file)?;
-        check_task_cgroup(child.proc_directory(), INIT_CGROUP_PATH)?;
+        check_early_task_cgroup(child, INIT_CGROUP_PATH)?;
         require(
             read_pids(&leaf.file)? == BTreeSet::from([pid]) && read_pids(payload)?.is_empty(),
             "early guest leaf migration differs",
@@ -312,12 +305,11 @@ impl PreparedCgroup {
             .ok_or(CgroupError::Rejected("missing payload cgroup namespace"))?;
         require(
             NodeIdentity::of(&binding.pidfd)? == NodeIdentity::of(child.board().pidfd())?
-                && NodeIdentity::of(&binding.proc_dir)?
-                    == NodeIdentity::of(child.proc_directory())?
+                && binding.proc_identity == child.observe_init_metadata()?.host.proc_identity()
                 && NodeIdentity::of(rooted)? == NodeIdentity::of(&named_cgroup_ns(child)?)?,
             "early owner left its original cgroup namespace",
         )?;
-        check_task_cgroup(child.proc_directory(), INIT_CGROUP_PATH)?;
+        check_early_task_cgroup(child, INIT_CGROUP_PATH)?;
         child.board().revalidate()?;
         Ok(())
     }

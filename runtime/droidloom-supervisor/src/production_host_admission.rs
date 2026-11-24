@@ -73,31 +73,63 @@ fn reject(message: impl Into<String>) -> HostAdmissionError {
 // namespace/process handles for one of the two supported normal boot paths.
 trait LiveNamespace {
     fn user_namespace(&self) -> &File;
-    fn proc_directory(&self) -> &File;
+    fn proc_identity(&self) -> Result<(u64, u64)>;
+    fn early_metadata(&self) -> Result<Option<crate::production_application::MetadataObservation>> {
+        Ok(None)
+    }
     fn host_pid(&self) -> u32;
     fn start_ticks(&self) -> u64;
     fn descendant_pid_namespace(&self) -> Option<&File>;
-    fn verify_credentials(&self,_:&Credentials,_:IdRange,_:IdRange)->Result<()> {Ok(())}
+    fn verify_credentials(&self, _: &Credentials, _: IdRange, _: IdRange) -> Result<()> {
+        Ok(())
+    }
     fn check_live(&self) -> Result<()>;
 }
 impl LiveNamespace for OwnedNamespaceWitness<'_> {
-    fn user_namespace(&self)->&File{ OwnedNamespaceWitness::user_namespace(self) }
-    fn proc_directory(&self)->&File{ OwnedNamespaceWitness::proc_directory(self) }
-    fn host_pid(&self)->u32{ OwnedNamespaceWitness::host_pid(self) }
-    fn start_ticks(&self)->u64{ OwnedNamespaceWitness::start_ticks(self) }
-    fn descendant_pid_namespace(&self)->Option<&File>{ OwnedNamespaceWitness::descendant_pid_namespace(self) }
-    fn check_live(&self)->Result<()>{self.revalidate().map_err(|e|reject(e.to_string()))}
+    fn user_namespace(&self) -> &File {
+        OwnedNamespaceWitness::user_namespace(self)
+    }
+    fn proc_identity(&self) -> Result<(u64, u64)> {
+        Ok(Node::of(&OwnedNamespaceWitness::proc_directory(self).metadata()?).key())
+    }
+    fn host_pid(&self) -> u32 {
+        OwnedNamespaceWitness::host_pid(self)
+    }
+    fn start_ticks(&self) -> u64 {
+        OwnedNamespaceWitness::start_ticks(self)
+    }
+    fn descendant_pid_namespace(&self) -> Option<&File> {
+        OwnedNamespaceWitness::descendant_pid_namespace(self)
+    }
+    fn check_live(&self) -> Result<()> {
+        self.revalidate().map_err(|e| reject(e.to_string()))
+    }
 }
 impl LiveNamespace for EarlyBoundNamespaces<'_> {
-    fn verify_credentials(&self,creds:&Credentials,uids:IdRange,gids:IdRange)->Result<()> {
-        require_early_ranges(creds,uids,gids)
+    fn verify_credentials(&self, creds: &Credentials, uids: IdRange, gids: IdRange) -> Result<()> {
+        require_early_ranges(creds, uids, gids)
     }
-    fn user_namespace(&self)->&File{ EarlyBoundNamespaces::user_namespace(self) }
-    fn proc_directory(&self)->&File{ EarlyBoundNamespaces::proc_directory(self) }
-    fn host_pid(&self)->u32{ EarlyBoundNamespaces::host_pid(self) }
-    fn start_ticks(&self)->u64{ EarlyBoundNamespaces::start_ticks(self) }
-    fn descendant_pid_namespace(&self)->Option<&File>{ EarlyBoundNamespaces::descendant_pid_namespace(self) }
-    fn check_live(&self)->Result<()>{self.revalidate().map_err(|e|reject(e.to_string()))}
+    fn user_namespace(&self) -> &File {
+        EarlyBoundNamespaces::user_namespace(self)
+    }
+    fn proc_identity(&self) -> Result<(u64, u64)> {
+        Ok(self.observe_metadata()?.host.proc_identity())
+    }
+    fn early_metadata(&self) -> Result<Option<crate::production_application::MetadataObservation>> {
+        Ok(Some(self.observe_metadata()?))
+    }
+    fn host_pid(&self) -> u32 {
+        EarlyBoundNamespaces::host_pid(self)
+    }
+    fn start_ticks(&self) -> u64 {
+        EarlyBoundNamespaces::start_ticks(self)
+    }
+    fn descendant_pid_namespace(&self) -> Option<&File> {
+        EarlyBoundNamespaces::descendant_pid_namespace(self)
+    }
+    fn check_live(&self) -> Result<()> {
+        self.revalidate().map_err(|e| reject(e.to_string()))
+    }
 }
 
 /// Non-serializable, non-cloneable authority owned by the namespace broker.
@@ -128,16 +160,23 @@ impl HostAdmission {
         Ok(value)
     }
 
-    pub(crate) fn acquire_early(lease: IdentityLease, witness: &EarlyBoundNamespaces<'_>) -> Result<Self> {
+    pub(crate) fn acquire_early(
+        lease: IdentityLease,
+        witness: &EarlyBoundNamespaces<'_>,
+    ) -> Result<Self> {
         witness.check_live()?;
-        let mut value=Self {lease:Some(lease), baseline:None, quarantined:Cell::new(false)};
-        value.baseline=Some(value.observe(Some(witness), true)?);
+        let mut value = Self {
+            lease: Some(lease),
+            baseline: None,
+            quarantined: Cell::new(false),
+        };
+        value.baseline = Some(value.observe(Some(witness), true)?);
         witness.check_live()?;
         Ok(value)
     }
-    pub(crate) fn revalidate_early(&self, witness:&EarlyBoundNamespaces<'_>) -> Result<()> {
+    pub(crate) fn revalidate_early(&self, witness: &EarlyBoundNamespaces<'_>) -> Result<()> {
         witness.check_live()?;
-        self.observe(Some(witness),true)?;
+        self.observe(Some(witness), true)?;
         witness.check_live()
     }
 
@@ -3197,18 +3236,27 @@ struct Credentials {
     groups: Vec<u32>,
     tgid: u32,
 }
-fn require_early_ranges(creds:&Credentials,uids:IdRange,gids:IdRange)->Result<()>{
-    if !creds.uids.iter().all(|&id|in_range(id,uids)) ||
-       !creds.gids.iter().chain(&creds.groups).all(|&id|in_range(id,gids)) {
-        return Err(reject("early Android process retained a credential outside its selected ranges"));
+fn require_early_ranges(creds: &Credentials, uids: IdRange, gids: IdRange) -> Result<()> {
+    if !creds.uids.iter().all(|&id| in_range(id, uids))
+        || !creds
+            .gids
+            .iter()
+            .chain(&creds.groups)
+            .all(|&id| in_range(id, gids))
+    {
+        return Err(reject(
+            "early Android process retained a credential outside its selected ranges",
+        ));
     }
     Ok(())
 }
-pub(crate) fn verify_early_root_status(text:&str,uids:IdRange,gids:IdRange)->Result<()>{
-    let c=parse_status(text)?;
-    require_early_ranges(&c,uids,gids)?;
-    if c.uids!=[uids.start;4] || c.gids!=[gids.start;4] {
-        return Err(reject("the original Android PID 1 lost its exact mapped root credentials"));
+pub(crate) fn verify_early_root_status(text: &str, uids: IdRange, gids: IdRange) -> Result<()> {
+    let c = parse_status(text)?;
+    require_early_ranges(&c, uids, gids)?;
+    if c.uids != [uids.start; 4] || c.gids != [gids.start; 4] {
+        return Err(reject(
+            "the original Android PID 1 lost its exact mapped root credentials",
+        ));
     }
     Ok(())
 }
@@ -3296,6 +3344,210 @@ struct TaskView {
 struct LiveView {
     tasks: BTreeMap<(u32, u32, u64), TaskView>,
     referenced_namespaces: BTreeSet<NamespaceKey>,
+    owned_android_scope: BTreeMap<u32, OwnedAndroidScopeMember>,
+}
+
+/// The kernel proved membership in the already-owned Android PID scope.
+/// This is deliberately separate from TaskView: no per-thread supplementary
+/// groups, maps, or proc contents are invented for a member of this scope.
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct OwnedAndroidScopeMember {
+    host_pid: u32,
+    namespace_tgid: u32,
+    pidfd_identity: (u64, u64),
+    uids: [u32; 4],
+    gids: [u32; 4],
+    cgroup_id: u64,
+}
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct ScopePidfdInfo {
+    mask: u64,
+    cgroup_id: u64,
+    // pid, tgid, ppid, ruid, rgid, euid, egid, suid, sgid, fsuid, fsgid
+    ids: [u32; 11],
+    exit_code: i32,
+    coredump_mask: u32,
+    spare: u32,
+    padding: u64,
+}
+impl ScopePidfdInfo {
+    fn uids(&self) -> [u32; 4] {
+        [self.ids[3], self.ids[5], self.ids[7], self.ids[9]]
+    }
+    fn gids(&self) -> [u32; 4] {
+        [self.ids[4], self.ids[6], self.ids[8], self.ids[10]]
+    }
+}
+fn scoped_pidfd_info(pidfd: &File, pid: u32) -> Result<ScopePidfdInfo> {
+    if pidfd_terminal(pidfd.as_raw_fd())? {
+        return Err(HostAdmissionError::Changed);
+    }
+    let mut info: ScopePidfdInfo = unsafe { mem::zeroed() };
+    info.mask = 7;
+    if unsafe { libc::ioctl(pidfd.as_raw_fd(), 0xc050_ff0b as libc::c_ulong, &mut info) } != 0 {
+        return Err(io::Error::last_os_error().into());
+    }
+    if info.mask & 7 != 7
+        || info.ids[0] != pid
+        || info.ids[1] != pid
+        || info.cgroup_id == 0
+        || pidfd_terminal(pidfd.as_raw_fd())?
+    {
+        return Err(HostAdmissionError::Changed);
+    }
+    Ok(info)
+}
+fn tgid_in_owned_pid_namespace(namespace: &File, pid: u32) -> Result<Option<u32>> {
+    // R101 nsfs consumes a caller-namespace PID value, not an int pointer.
+    // The caller brackets this lookup with the actual held PIDFD's live identity.
+    let n = unsafe {
+        libc::ioctl(
+            namespace.as_raw_fd(),
+            0x8004_b709 as libc::c_ulong,
+            pid as libc::c_ulong,
+        )
+    };
+    if n > 0 {
+        return Ok(Some(n as u32));
+    }
+    let error = io::Error::last_os_error();
+    if n < 0 && error.raw_os_error() == Some(libc::ESRCH) {
+        return Ok(None);
+    }
+    Err(if n == 0 {
+        reject("zero PID namespace membership")
+    } else {
+        error.into()
+    })
+}
+fn stable_scope_member(
+    before: &ScopePidfdInfo,
+    after: &ScopePidfdInfo,
+    first: Option<u32>,
+    last: Option<u32>,
+    uids: IdRange,
+    gids: IdRange,
+) -> Result<Option<u32>> {
+    if before != after || first != last {
+        return Err(HostAdmissionError::Changed);
+    }
+    let Some(tgid) = first else {
+        return Ok(None);
+    };
+    if tgid == 0
+        || !before.uids().iter().all(|id| in_range(*id, uids))
+        || !before.gids().iter().all(|id| in_range(*id, gids))
+    {
+        return Err(reject(
+            "owned Android scope member has an out-of-range credential",
+        ));
+    }
+    Ok(Some(tgid))
+}
+struct EarlyScopeView {
+    pid_namespace: File,
+    original_identity: (u32, u32, u64),
+    original_task: TaskView,
+    user_namespace: NamespaceKey,
+}
+fn early_scope_view(
+    witness: Option<&dyn LiveNamespace>,
+    uids: IdRange,
+    gids: IdRange,
+) -> Result<Option<EarlyScopeView>> {
+    let Some(witness) = witness else {
+        return Ok(None);
+    };
+    let Some(observed) = witness.early_metadata()? else {
+        return Ok(None);
+    };
+    let held_pidns = witness
+        .descendant_pid_namespace()
+        .ok_or_else(|| reject("early Android has no held descendant PID namespace"))?;
+    let user_namespace = namespace_key(witness.user_namespace())?;
+    let pid_namespace = typed_namespace_key(held_pidns, libc::CLONE_NEWPID)?;
+    if initial_namespace(user_namespace)
+        || namespace_key(&observed.namespaces[0])? != user_namespace
+        || typed_namespace_key(&observed.namespaces[1], libc::CLONE_NEWPID)? != pid_namespace
+        || task_start(&observed.stat, witness.host_pid())?.0 != witness.start_ticks()
+    {
+        return Err(HostAdmissionError::Changed);
+    }
+    let credentials = parse_status(&observed.host.status)?;
+    if credentials.tgid != witness.host_pid() {
+        return Err(HostAdmissionError::Changed);
+    }
+    verify_early_root_status(&observed.host.status, uids, gids)?;
+    let uid_map = parse_map(&observed.host.uid_map)?;
+    let gid_map = parse_map(&observed.host.gid_map)?;
+    allowed_owned_maps(&uid_map, &gid_map, uids, gids, &observed.host.setgroups)?;
+    if !exact_map(&uid_map, uids) || !exact_map(&gid_map, gids) {
+        return Err(reject(
+            "early Android scope lacks its complete original maps",
+        ));
+    }
+    Ok(Some(EarlyScopeView {
+        pid_namespace: held_pidns.try_clone()?,
+        original_identity: (
+            witness.host_pid(),
+            witness.host_pid(),
+            witness.start_ticks(),
+        ),
+        original_task: TaskView {
+            credentials,
+            proc_identity: observed.host.proc_identity(),
+            namespace: Some(user_namespace),
+            pid_namespace: Some(pid_namespace),
+            uid_map,
+            gid_map,
+            setgroups: observed.host.setgroups,
+        },
+        user_namespace,
+    }))
+}
+fn observe_owned_scope_member(
+    scope: &EarlyScopeView,
+    pidfd: &File,
+    pid: u32,
+    uids: IdRange,
+    gids: IdRange,
+) -> Result<Option<OwnedAndroidScopeMember>> {
+    let before = scoped_pidfd_info(pidfd, pid)?;
+    let first = tgid_in_owned_pid_namespace(&scope.pid_namespace, pid)?;
+    let last = tgid_in_owned_pid_namespace(&scope.pid_namespace, pid)?;
+    let after = scoped_pidfd_info(pidfd, pid)?;
+    let Some(namespace_tgid) = stable_scope_member(&before, &after, first, last, uids, gids)?
+    else {
+        return Ok(None);
+    };
+    if (namespace_tgid == 1) != (pid == scope.original_identity.0) {
+        return Err(HostAdmissionError::Changed);
+    }
+    Ok(Some(OwnedAndroidScopeMember {
+        host_pid: pid,
+        namespace_tgid,
+        pidfd_identity: Node::of(&pidfd.metadata()?).key(),
+        uids: before.uids(),
+        gids: before.gids(),
+        cgroup_id: before.cgroup_id,
+    }))
+}
+struct LiveScan {
+    view: LiveView,
+    // Keep both scans' actual PIDFDs until all comparisons have finished.
+    // Exit/reuse during either inventory rejects the complete admission.
+    scoped_pidfds: Vec<File>,
+}
+impl LiveScan {
+    fn require_scoped_alive(&self) -> Result<()> {
+        for fd in &self.scoped_pidfds {
+            if pidfd_terminal(fd.as_raw_fd())? {
+                return Err(HostAdmissionError::Changed);
+            }
+        }
+        Ok(())
+    }
 }
 fn namespace_reference(file: File, references: &mut BTreeSet<NamespaceKey>) -> Result<()> {
     let userns = owning_userns(file)?;
@@ -3466,7 +3718,12 @@ fn audit_fd_namespaces(
         Ok(())
     })
 }
-fn scan_live_tasks() -> Result<LiveView> {
+fn scan_live_tasks(
+    witness: Option<&dyn LiveNamespace>,
+    uids: IdRange,
+    gids: IdRange,
+) -> Result<LiveScan> {
+    let early_scope = early_scope_view(witness, uids, gids)?;
     let proc = OpenOptions::new()
         .read(true)
         .custom_flags(libc::O_DIRECTORY | libc::O_NOFOLLOW)
@@ -3483,19 +3740,39 @@ fn scan_live_tasks() -> Result<LiveView> {
     let mut mount_namespaces = BTreeSet::new();
     let mut complete_mounts = BTreeSet::new();
     let mut inspected_fds = 0;
+    let mut owned_android_scope = BTreeMap::new();
+    let mut scoped_pidfds = Vec::new();
+    if let Some(scope) = &early_scope {
+        tasks.insert(scope.original_identity, scope.original_task.clone());
+        references.insert(scope.user_namespace);
+    }
     let deadline = Instant::now() + Duration::from_secs(30);
     for entry in &pids {
         if Instant::now() >= deadline {
             return Err(reject("live identity audit deadline"));
         }
         let pid = number(entry)?;
-        let process = open_at(&proc, entry, libc::O_RDONLY | libc::O_DIRECTORY)?;
-        let process_before = task_start(&proc_text(&process, "stat")?, pid)?;
         let raw_pidfd = unsafe { libc::syscall(libc::SYS_pidfd_open, pid as libc::pid_t, 0_u32) };
         if raw_pidfd < 0 {
             return Err(HostAdmissionError::Changed);
         }
-        let pidfd = unsafe { OwnedFd::from_raw_fd(raw_pidfd as RawFd) };
+        let pidfd = unsafe { File::from_raw_fd(raw_pidfd as RawFd) };
+        if let Some(scope) = &early_scope {
+            if let Some(member) = observe_owned_scope_member(scope, &pidfd, pid, uids, gids)? {
+                // This is the original sealed Android tree's ownership scope,
+                // not a fabricated per-thread proc/maps observation. The
+                // scope's original USERNS and complete maps were proved above.
+                if owned_android_scope.insert(pid, member).is_some() {
+                    return Err(HostAdmissionError::Changed);
+                }
+                scoped_pidfds.push(pidfd);
+                continue;
+            }
+        }
+        // Every external process still takes the original complete thread,
+        // credentials, mappings, namespace-reference and mount/FD audit.
+        let process = open_at(&proc, entry, libc::O_RDONLY | libc::O_DIRECTORY)?;
+        let process_before = task_start(&proc_text(&process, "stat")?, pid)?;
         let task_dir = open_at(&process, "task", libc::O_RDONLY | libc::O_DIRECTORY)?;
         let tids = directory_names(&task_dir, TASK_LIMIT)?;
         for entry in &tids {
@@ -3587,10 +3864,21 @@ fn scan_live_tasks() -> Result<LiveView> {
     if pids != after {
         return Err(HostAdmissionError::Changed);
     }
-    Ok(LiveView {
-        tasks,
-        referenced_namespaces: references,
-    })
+    if let Some(scope) = &early_scope {
+        if !owned_android_scope.contains_key(&scope.original_identity.0) {
+            return Err(HostAdmissionError::Changed);
+        }
+    }
+    let scan = LiveScan {
+        view: LiveView {
+            tasks,
+            referenced_namespaces: references,
+            owned_android_scope,
+        },
+        scoped_pidfds,
+    };
+    scan.require_scoped_alive()?;
+    Ok(scan)
 }
 #[derive(Clone, Copy)]
 struct KeeperIdentity {
@@ -3640,7 +3928,7 @@ fn validate_live_view(
             Ok::<_, HostAdmissionError>(KeeperIdentity {
                 pid: w.host_pid(),
                 start_ticks: w.start_ticks(),
-                proc_identity: Node::of(&w.proc_directory().metadata()?).key(),
+                proc_identity: w.proc_identity()?,
             })
         })
         .transpose()?;
@@ -3684,7 +3972,9 @@ fn validate_live_view(
                 continue;
             }
             if allowed {
-                witness.ok_or_else(||reject("missing owned namespace"))?.verify_credentials(&task.credentials,uids,gids)?;
+                witness
+                    .ok_or_else(|| reject("missing owned namespace"))?
+                    .verify_credentials(&task.credentials, uids, gids)?;
                 validate_owned_task(
                     *identity,
                     task,
@@ -3737,11 +4027,13 @@ fn audit_live_tasks(
     if let Some(witness) = witness {
         witness.check_live()?;
     }
-    let first = scan_live_tasks()?;
-    validate_live_view(&first, uids, gids, uid, gid, witness)?;
-    let second = scan_live_tasks()?;
-    validate_live_view(&second, uids, gids, uid, gid, witness)?;
-    if first != second {
+    let first = scan_live_tasks(witness, uids, gids)?;
+    validate_live_view(&first.view, uids, gids, uid, gid, witness)?;
+    let second = scan_live_tasks(witness, uids, gids)?;
+    validate_live_view(&second.view, uids, gids, uid, gid, witness)?;
+    first.require_scoped_alive()?;
+    second.require_scoped_alive()?;
+    if first.view != second.view {
         return Err(HostAdmissionError::Changed);
     }
     if let Some(witness) = witness {
@@ -3755,12 +4047,16 @@ mod tests {
     use super::*;
 
     #[test]
-    fn early_android_allows_mapped_supplementary_aids_only(){
-        let (u,g)=ranges();
-        let status=|uid:u32,groups:&str|format!("Tgid:\t153\nUid:\t{uid} {uid} {uid} {uid}\nGid:\t300000 300000 300000 300000\nGroups:\t{groups}\n");
-        verify_early_root_status(&status(u.start,"301000 301007"),u,g).unwrap();
-        assert!(verify_early_root_status(&status(u.start,"0 301007"),u,g).is_err());
-        assert!(verify_early_root_status(&status(u.start+1,"301000"),u,g).is_err());
+    fn early_android_allows_mapped_supplementary_aids_only() {
+        let (u, g) = ranges();
+        let status = |uid: u32, groups: &str| {
+            format!(
+                "Tgid:\t153\nUid:\t{uid} {uid} {uid} {uid}\nGid:\t300000 300000 300000 300000\nGroups:\t{groups}\n"
+            )
+        };
+        verify_early_root_status(&status(u.start, "301000 301007"), u, g).unwrap();
+        assert!(verify_early_root_status(&status(u.start, "0 301007"), u, g).is_err());
+        assert!(verify_early_root_status(&status(u.start + 1, "301000"), u, g).is_err());
     }
     fn ranges() -> (IdRange, IdRange) {
         (
@@ -4429,6 +4725,85 @@ mod tests {
         assert!(parse_status("Uid: 1 1 1 1\nGid: 1 1 1 1\n").is_err());
     }
 
+    #[test]
+    fn owned_android_scope_requires_stable_membership_and_all_credential_slots() {
+        let (uids, gids) = ranges();
+        let mut info: ScopePidfdInfo = unsafe { mem::zeroed() };
+        info.mask = 7;
+        info.cgroup_id = 23;
+        info.ids[0] = 71;
+        info.ids[1] = 71;
+        for i in [3, 5, 7, 9] {
+            info.ids[i] = uids.start;
+        }
+        for i in [4, 6, 8, 10] {
+            info.ids[i] = gids.start;
+        }
+        assert_eq!(
+            stable_scope_member(&info, &info, None, None, uids, gids).unwrap(),
+            None
+        );
+        assert_eq!(
+            stable_scope_member(&info, &info, Some(9), Some(9), uids, gids).unwrap(),
+            Some(9)
+        );
+        assert!(stable_scope_member(&info, &info, None, Some(9), uids, gids).is_err());
+        assert!(stable_scope_member(&info, &info, Some(9), Some(10), uids, gids).is_err());
+        let mut recycled = info;
+        recycled.ids[0] = 72;
+        assert!(stable_scope_member(&info, &recycled, Some(9), Some(9), uids, gids).is_err());
+        for index in [3, 5, 7, 9, 4, 6, 8, 10] {
+            let mut outside = info;
+            outside.ids[index] = 0;
+            assert!(stable_scope_member(&outside, &outside, Some(9), Some(9), uids, gids).is_err());
+            // An external namespace must take the original full host audit,
+            // even when its numeric credentials overlap the reserved range.
+            assert_eq!(
+                stable_scope_member(&outside, &outside, None, None, uids, gids).unwrap(),
+                None
+            );
+        }
+    }
+
+    #[test]
+    fn owned_android_scope_rejects_an_actually_exited_pidfd() {
+        let mut gate = [-1; 2];
+        assert_eq!(
+            unsafe { libc::pipe2(gate.as_mut_ptr(), libc::O_CLOEXEC) },
+            0
+        );
+        let pid = unsafe { libc::fork() };
+        assert!(pid >= 0);
+        if pid == 0 {
+            unsafe {
+                libc::close(gate[1]);
+                let mut byte = 0u8;
+                while libc::read(gate[0], (&mut byte as *mut u8).cast(), 1) < 0
+                    && *libc::__errno_location() == libc::EINTR
+                {}
+                libc::_exit(0);
+            }
+        }
+        unsafe {
+            libc::close(gate[0]);
+        }
+        let raw = unsafe { libc::syscall(libc::SYS_pidfd_open, pid, 0) };
+        assert!(raw >= 0);
+        let held = unsafe { File::from_raw_fd(raw as RawFd) };
+        assert!(!pidfd_terminal(held.as_raw_fd()).unwrap());
+        unsafe {
+            libc::close(gate[1]);
+        }
+        let mut status = 0;
+        loop {
+            let n = unsafe { libc::waitpid(pid, &mut status, 0) };
+            if n == pid {
+                break;
+            }
+            assert_eq!(io::Error::last_os_error().raw_os_error(), Some(libc::EINTR));
+        }
+        assert!(scoped_pidfd_info(&held, pid as u32).is_err());
+    }
     fn live_fixture() -> LiveView {
         let namespace = NamespaceKey {
             device: 4,
@@ -4452,6 +4827,7 @@ mod tests {
         LiveView {
             tasks: [((31, 31, 10), task)].into(),
             referenced_namespaces: [namespace].into(),
+            owned_android_scope: BTreeMap::new(),
         }
     }
 
