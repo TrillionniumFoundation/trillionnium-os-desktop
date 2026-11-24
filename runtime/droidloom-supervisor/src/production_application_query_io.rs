@@ -1482,4 +1482,96 @@ mod tests {
         assert!(fixed_stdio_node(read.as_raw_fd(), false).is_ok());
     }
 
+    #[test]
+    fn query_io_fresh_exec_initializes_both_fixed_filters() {
+        // This proves host Rust/loader startup under the actual preexec BPF.
+        // It does not claim a production MAC role or Android runtime readiness.
+        let directory = tempfile::tempdir().unwrap();
+        let source = directory.path().join("fresh.rs");
+        let binary = directory.path().join("fresh");
+        std::fs::write(&source, r#"
+unsafe extern "C" {
+    fn write(fd: i32, bytes: *const u8, length: usize) -> isize;
+    fn _exit(status: i32) -> !;
+}
+fn main() {
+    let marker = b"FRESH\n";
+    unsafe {
+        if write(3, marker.as_ptr(), marker.len()) != marker.len() as isize { _exit(71); }
+        _exit(0);
+    }
+}
+"#).unwrap();
+        let compiler = std::env::var_os("RUSTC").unwrap_or_else(|| "rustc".into());
+        let built = std::process::Command::new(compiler)
+            .arg("--edition=2024").arg("-Cpanic=abort")
+            .arg(&source).arg("-o").arg(&binary).output().unwrap();
+        assert!(built.status.success(), "{}", String::from_utf8_lossy(&built.stderr));
+        let executable = above_reserved(&File::open(&binary).unwrap()).unwrap();
+        let stdio = fixed_stdio().unwrap();
+        let mut outcomes = Vec::new();
+        for metadata in [false, true] {
+            super::super::worker::require_wait_semantics().unwrap();
+            let (channel, child_channel) = super::super::protocol::socketpair().unwrap();
+            let channel = File::from(channel);
+            let child_channel = above_reserved(&File::from(child_channel)).unwrap();
+            let instructions = filter(Some(executable.as_raw_fd()), metadata);
+            let program = libc::sock_fprog {
+                len: instructions.len() as u16,
+                filter: instructions.as_ptr().cast_mut(),
+            };
+            let argv = [c"fixed-fresh-helper-probe".as_ptr(), std::ptr::null()];
+            let environment = [c"LC_ALL=C".as_ptr(), std::ptr::null()];
+            let mut raw = -1;
+            let args = super::super::worker::CloneArgs {
+                flags: libc::CLONE_PIDFD as u64,
+                pidfd: (&mut raw as *mut i32) as u64,
+                exit_signal: libc::SIGCHLD as u64,
+                ..Default::default()
+            };
+            let mut mask = super::super::worker::SignalMask::block().unwrap();
+            let pid = unsafe { libc::syscall(libc::SYS_clone3, &args, mem::size_of_val(&args)) };
+            assert!(pid >= 0, "{}", io::Error::last_os_error());
+            if pid == 0 {
+                unsafe {
+                    if libc::dup2(child_channel.as_raw_fd(), 3) != 3
+                        || libc::fcntl(3, libc::F_SETFD, 0) != 0
+                    { libc::_exit(125); }
+                    for fd in 0..3 {
+                        if libc::dup2(stdio.as_raw_fd(), fd) != fd
+                            || libc::fcntl(fd, libc::F_SETFD, 0) != 0
+                        { libc::_exit(125); }
+                    }
+                    let mut empty: libc::sigset_t = mem::zeroed();
+                    if libc::sigemptyset(&mut empty) != 0
+                        || libc::sigprocmask(libc::SIG_SETMASK, &empty, std::ptr::null_mut()) != 0
+                        || libc::syscall(libc::SYS_close_range, 4_u32, u32::MAX, 4_u32) != 0
+                        || libc::prctl(libc::PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) != 0
+                        || libc::prctl(libc::PR_SET_SECCOMP, 2, &program as *const libc::sock_fprog) != 0
+                    { libc::_exit(125); }
+                    libc::syscall(libc::SYS_execveat, executable.as_raw_fd(), c"".as_ptr(),
+                        argv.as_ptr(), environment.as_ptr(), libc::AT_EMPTY_PATH);
+                    libc::_exit(125);
+                }
+            }
+            assert!(raw >= 0);
+            let mut child = Child {
+                pid: pid as u32,
+                pidfd: Some(unsafe { File::from_raw_fd(raw) }),
+                terminal: None,
+            };
+            mask.restore().unwrap();
+            drop(child_channel);
+            let finished = child.finish(Instant::now() + Duration::from_secs(5));
+            if finished.is_err() { child.retire().unwrap(); }
+            let mut bytes = [0_u8; 32];
+            let count = unsafe { libc::read(channel.as_raw_fd(), bytes.as_mut_ptr().cast(), bytes.len()) };
+            assert!(count >= 0, "{}", io::Error::last_os_error());
+            outcomes.push((metadata, child.terminal, bytes[..count as usize].to_vec()));
+        }
+        assert!(outcomes.iter().all(|(_, terminal, marker)| {
+            *terminal == Some((libc::CLD_EXITED, 0)) && marker == b"FRESH\n"
+        }), "actual fresh helper startup outcomes: {outcomes:?}");
+    }
+
 }

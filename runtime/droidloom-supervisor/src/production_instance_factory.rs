@@ -1,10 +1,13 @@
-//! Boot-born kernel-lineage factory. Its only client is the fixed original
-//! systemd launcher, authenticated with native peer PIDFD, MAC, ELF and manager
-//! invocation. Requests carry no paths, credentials, namespaces or program.
+//! Boot-born kernel-lineage factory. The fixed systemd launcher owns each
+//! Android generation; its original broker may borrow the closed query path.
+//! Both roles retain native original-peer custody and source-owned operations.
 use super::*;
 use std::io::{Read, Write};
 use std::os::fd::AsRawFd;
 use std::os::unix::fs::{FileTypeExt, PermissionsExt};
+
+#[path = "production_instance_identity.rs"]
+mod boot_identity;
 
 const SOCKET: &str = "/run/droidloom-early/instance-factory.sock";
 const START: &[u8; 8] = b"DLSTART1";
@@ -376,7 +379,7 @@ impl RemoteChild {
 /// is created in the caller's context, not received as a kernel-origin file.
 pub(crate) struct QueryEndpoint {
     channel: File,
-    peer: Peer,
+    peer: boot_identity::Observation,
 }
 impl QueryEndpoint {
     pub(crate) fn connect() -> io::Result<Self> {
@@ -410,7 +413,7 @@ impl QueryEndpoint {
                 length,
             )
         })?;
-        let peer = Peer::acquire(&channel, FACTORY_SELINUX, FACTORY_APPARMOR)?;
+        let peer = boot_identity::Observation::acquire(&channel)?;
         Ok(Self { channel, peer })
     }
     pub(crate) fn channel(&self) -> &File {
@@ -423,7 +426,7 @@ impl QueryEndpoint {
         self.peer.pid
     }
     pub(crate) fn revalidate(&self) -> io::Result<()> {
-        self.peer.revalidate()
+        self.peer.revalidate(&self.channel)
     }
 }
 
@@ -581,6 +584,7 @@ fn serve_generation(channel: &File, peer: Peer, listener: &Listener) -> io::Resu
                     continue;
                 }
                 let validate = || -> io::Result<()> {
+                    cv(unsafe { droidloom_factory_context() })?;
                     query_peer.revalidate()?;
                     child.revalidate()?;
                     let current = manager.owner()?;
@@ -635,6 +639,7 @@ pub fn run_instance_factory(shutdown: &AtomicBool) -> io::Result<()> {
     }
     cv(unsafe { droidloom_factory_prepare() })?;
     cv(unsafe { droidloom_factory_device_directory() })?;
+    let publication = boot_identity::Publication::publish()?;
     let listener = Listener::bind()?;
     // The one byte goes only to the original board PID 1's inherited pipe.
     std::io::stdout().write_all(b"F")?;
@@ -653,6 +658,7 @@ pub fn run_instance_factory(shutdown: &AtomicBool) -> io::Result<()> {
     cv(unsafe { libc::dup2(sink.as_raw_fd(), libc::STDOUT_FILENO) })?;
     drop(sink);
     while !shutdown.load(Ordering::Relaxed) {
+        publication.revalidate()?;
         let Some(channel) = listener.accept()? else {
             continue;
         };
@@ -767,7 +773,7 @@ mod tests {
         let (a, b) = pair();
         let first = self_pidfd();
         let second = self_pidfd();
-        let before = std::fs::read_dir("/proc/self/fd").unwrap().count();
+        let before = std::fs::read_dir("/proc/thread-self/fd").unwrap().count();
         let fds = [first.as_raw_fd(), second.as_raw_fd()];
         let mut io = libc::iovec {
             iov_base: BIRTH.as_ptr().cast_mut().cast(),
@@ -793,6 +799,6 @@ mod tests {
             assert_eq!(libc::sendmsg(a.as_raw_fd(), &packet, libc::MSG_NOSIGNAL), 8);
         }
         assert!(receive(&b, Duration::from_secs(1)).is_err());
-        assert_eq!(std::fs::read_dir("/proc/self/fd").unwrap().count(), before);
+        assert_eq!(std::fs::read_dir("/proc/thread-self/fd").unwrap().count(), before);
     }
 }

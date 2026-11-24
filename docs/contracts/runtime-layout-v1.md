@@ -1137,8 +1137,31 @@ unacknowledged release, mixed owner fields or unproved retirement cannot become
 a successful read. Query cancellation does not kill an otherwise healthy boot
 factory after that query has genuinely been reaped.
 
-Ordinary-host PIDFD, TRACEEXEC and wire tests are not enforcing Android
-acceptance. Protected boot-factory identity binding without broker access to
-kernel proc, fresh-image helper stdio, the combined strict policy/profile
-producer, enforcing boot and live fixed Android queries remain separate runtime
-gates before this path can qualify any application.
+Before acknowledging boot readiness the factory publishes factory.json once
+with renameat2(RENAME_NOREPLACE). The actual root-owned mode-0400, single-link
+tmpfs inode must carry p4_linux_instance_record_t; only kernel lineage has
+mutation permissions on that object type. The record contains the actual kernel
+boot ID, original factory PIDFS device/inode, original PID and actual published
+executable device/inode/size. It contains no readiness or wait-success fields.
+The factory keeps its original self PIDFD for its entire lifetime.
+
+A broker query client checks native SO_PEERCRED, SO_PEERPIDFD, PIDFD_GET_INFO and
+SELinux SO_PEERSEC against that protected original record and its own admitted
+published ELF. The actual factory must remain a live root process whose parent
+is Linux PID 1. Record inode, actual EA, body, boot identity and original PIDFD
+are checked repeatedly. No broker read of a kernel task's proc entry or
+kernel-origin transferred file is required. The actual factory checks its
+native current MAC pair again during query phases. Per-generation retirement
+does not delete or replace the boot-wide record.
+
+Both fixed fresh-image Linux helpers inherit the same broker-created anonymous
+read-only EOF pipe on descriptors 0, 1 and 2. Each entry checks the actual FIFO
+identity, access flags, POLLHUP and read()==0. A live writer, queued byte, control
+socket or host character device is rejected. These valid inherited descriptions
+prevent Rust's pre-main startup from opening host /dev/null. The Android query
+still receives only the separate query-I/O creator's guest streams.
+
+Ordinary-host PIDFD, TRACEEXEC, fresh-helper and wire tests are not enforcing
+Android acceptance. The combined strict policy/profile producer, original
+managed cgroup placement, enforcing boot and live fixed Android queries remain
+separate runtime gates before this path can qualify any application.
