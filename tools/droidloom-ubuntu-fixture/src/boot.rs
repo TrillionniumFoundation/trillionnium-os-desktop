@@ -14,6 +14,8 @@ pub struct NativePlan {
     pub work_directory: PathBuf,
     pub fixture_manifest: FilePin,
     pub fixture_root: PathBuf,
+    #[serde(default)]
+    pub public_packages: Option<FilePin>,
     pub native: NativeInputs,
 }
 
@@ -181,7 +183,28 @@ pub fn prepare_native(config: &Path, expected_sha: &str) -> Result<()> {
         &clone,
         0,
     )?;
+    let original: crate::model::Manifest = serde_json::from_slice(&boot_files::read_pin(
+        &plan.fixture_manifest,
+        128 * 1024 * 1024,
+    )?)?;
+    let supplement = plan
+        .public_packages
+        .as_ref()
+        .map(|input| {
+            crate::boot_packages::apply(
+                &root,
+                &plan.work_directory,
+                input,
+                &original,
+                &plan.fixture_manifest.sha256,
+            )
+        })
+        .transpose()?;
     let initialized = boot_native::initialize(&root, &plan.work_directory, &plan.native)?;
+    let supplement_readback = supplement
+        .as_ref()
+        .map(|pin| crate::boot_packages::verify(&root, pin))
+        .transpose()?;
     let receipt = serde_json::json!({
         "schema":"droidloom.ubuntu-native-prepared.v1",
         "input_sha256":expected_sha,
@@ -192,6 +215,8 @@ pub fn prepare_native(config: &Path, expected_sha: &str) -> Result<()> {
         "root_filesystem_uuid":plan.native.root_filesystem_uuid,
         "network_connection_uuid":plan.native.network_connection_uuid,
         "native_initialization":initialized,
+        "public_package_supplement":supplement,
+        "public_package_readback":supplement_readback,
         "guest_qualified":false,
         "production_ready":false,
         "next_required":"Install the normal selected host/Android release, build the ordinary initramfs layer, label using the selected joint policy, and boot the shared kernel with enforcing SELinux and AppArmor."
@@ -344,6 +369,13 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
     let original_pin: FilePin = serde_json::from_value(native["fixture_manifest"].clone())?;
     let original: crate::model::Manifest =
         serde_json::from_slice(&boot_files::read_pin(&original_pin, 128 * 1024 * 1024)?)?;
+    if let Some(value) = native
+        .get("public_package_supplement")
+        .filter(|v| !v.is_null())
+    {
+        let pin: FilePin = serde_json::from_value(value.clone())?;
+        crate::boot_packages::verify(&root, &pin)?;
+    }
     let old_kernel = original
         .kernel
         .as_ref()
@@ -457,7 +489,8 @@ pub fn prepare_boot(config: &Path, expected: &str) -> Result<()> {
     boot_files::copy_pin(&plan.kernel, &kernel, 0o400)?;
     let initrd =
         crate::boot_runtime::build_initrd(&root, &boot, &plan.base_initrd, &plan.initrd_tools)?;
-    let labels = crate::boot_runtime::label_root(&root, &boot, &plan.label_tools)?;
+    let query_runtime = android["fixed_query_inputs"]["runtime_manifest_sha256"].as_str();
+    let labels = crate::boot_runtime::label_root(&root, &boot, &plan.label_tools, query_runtime)?;
     let uuid = native["root_filesystem_uuid"]
         .as_str()
         .ok_or("native root UUID absent")?;

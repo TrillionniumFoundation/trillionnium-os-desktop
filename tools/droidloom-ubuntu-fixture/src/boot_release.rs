@@ -16,6 +16,7 @@ use std::{
 pub struct AndroidInputs {
     pub cohort: FilePin,
     pub runtime: FilePin,
+    pub query_inputs: Option<BTreeMap<String, FilePin>>,
     pub device_manifest: FilePin,
     pub images: BTreeMap<String, FilePin>,
     pub device_bank: FilePin,
@@ -195,8 +196,7 @@ pub fn install_android(root: &Path, work: &Path, input: &AndroidInputs) -> Resul
     )?;
     let cohort: Value =
         serde_json::from_slice(&boot_files::read_pin(&input.cohort, 8 * 1024 * 1024)?)?;
-    let runtime: Value =
-        serde_json::from_slice(&boot_files::read_pin(&input.runtime, 8 * 1024 * 1024)?)?;
+    let runtime_raw = boot_files::read_pin(&input.runtime, 256 * 1024)?;
     let device: Value =
         serde_json::from_slice(&boot_files::read_pin(&input.device_manifest, 1024 * 1024)?)?;
     let generation = &input.cohort.sha256;
@@ -220,12 +220,12 @@ pub fn install_android(root: &Path, work: &Path, input: &AndroidInputs) -> Resul
             "image is not the normal cohort member",
         )?;
     }
-    ensure(
-        runtime["base_cohort_sha256"] == *generation
-            && runtime["source_system_sha256"] == input.images["system"].sha256
-            && runtime["init_path"] == "/system/bin/init"
-            && runtime["argv"] == json!(["/system/bin/init", "second_stage"]),
-        "kernel-first runtime does not identify this exact system/cohort",
+    let query_plan = crate::boot_query::admit(
+        &runtime_raw,
+        generation,
+        &input.runtime.sha256,
+        &input.images["system"],
+        input.query_inputs.as_ref(),
     )?;
     ensure(
         device["schema"] == 1
@@ -283,6 +283,10 @@ pub fn install_android(root: &Path, work: &Path, input: &AndroidInputs) -> Resul
             0o400,
         )?;
     }
+    let query_inputs = query_plan
+        .as_ref()
+        .map(|plan| crate::boot_query::install(root, plan))
+        .transpose()?;
     if let Some(mac) = &input.mac_release {
         ensure(
             mac.keys().map(String::as_str).collect::<BTreeSet<_>>() == BTreeSet::from(MAC),
@@ -438,6 +442,7 @@ pub fn install_android(root: &Path, work: &Path, input: &AndroidInputs) -> Resul
     Ok(
         json!({"cohort":input.cohort,"runtime":input.runtime,"device_manifest":input.device_manifest,
         "selection_sha256":selection,"selected":selected,"ordinary_units":unit_rows,
+        "fixed_query_inputs":query_inputs,
         "calibration_requested":input.calibrate,"working_data_supplied":input.persistent_data.is_some(),
         "guest_qualified":false,"production_ready":false}),
     )

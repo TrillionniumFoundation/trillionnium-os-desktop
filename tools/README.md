@@ -317,6 +317,40 @@ and optional SSH keys are explicit configuration changes in the receipt.
 The public Snap archives and original read-only mount units are material only;
 registration and generated profiles still require real runtime acceptance.
 
+`prepare-native` can also accept an optional `public_packages: FilePin`. This
+selects schema `droidloom.ubuntu-public-packages.v1`: `packages` contain the
+original package name, version, architecture, pinned `.deb` archive and pinned
+intake `provenance`; `dependency_audit` binds the complete selected package set;
+`retained_originals` is an explicit, narrowly checked list. This layer is applied
+after the complete public clone is verified and before native initialization.
+It supplements missing public package content without claiming the fixture's
+dpkg database has been installed or updated.
+
+The ordinary `dpkg-deb` reader inspects the exact copied archive's metadata and
+emits its data tar. The Rust reader accepts the reviewed GNU/POSIX ordinary
+members and package-local hardlinks, checks every header, bound, termination,
+path and permission, and rejects extensions, devices, traversal and private
+state. It does not extract a tar namespace or run maintainer scripts. Package
+bytes and paths must match their retained acquisition receipts; this is a
+binding to the earlier APT intake, not a fresh signature-verification claim.
+Original public configuration is limited to the existing allowlist and the
+explicit stock initramfs/Plymouth/braille/microcode/kernel-hook paths in
+`src/boot_packages.rs`. The three public package state directories are created
+empty; no live state is copied. Target kernel modules remain a separate input.
+
+Every existing member must match before new content is written. The one
+reviewed exception retains the original `fuse3` `fusermount3` installation's
+04755 mode while the same-byte archive member is 0755. It requires the original
+manifest's exact hash, size, UID/GID, mode and single-link identity plus the
+specific package digest; it is neither a general permission override nor a
+change to the host. Newly introduced hardlinks retain their actual shared
+inode and exact group size. All members are read back, again after native
+initialization and before boot preparation. The pinned
+`public-packages/SUPPLEMENT-VERIFIED.json` reports the new, matched and retained
+members, the original package inputs and the still-unqualified state. Missing
+dependencies or conflicting files fail; a fresh root and its diagnostics remain
+available for review.
+
 `prepare-boot` accepts schema `droidloom.full-ubuntu-boot-plan.v1` and the
 pinned native receipt, normal host manifest/archive, kernel, ordinary base
 initrd, `initrd_tools`, Android release inputs, label tools, and a 64–96 GiB sparse root-image
@@ -328,6 +362,27 @@ independent copy of the explicitly admitted working-data receipt; the original
 user-data paths are rejected. Calibration and a supplied normal five-file MAC
 release are mutually exclusive.
 
+For a normal kernel-first v2 runtime, `android.query_inputs` is required. It
+maps exactly `cmd-original`, `toybox-original`,
+`contacts-app-process64-original`, and `contacts-content-jar-original` to
+the four published `FilePin` inputs. The fixture shares the production
+`production_query_input_profile.rs` and original-init identity constants.
+It parses the original runtime bytes with duplicate/unknown-field rejection,
+binds schema, cohort, complete CP3A system and original init, and checks all
+four role declarations and external pins before importing query bytes. A v1
+runtime accepts neither query declarations nor query input pins.
+
+The new copies are root:root, single-link, mode 0555 for the three executables
+and 0444 for the JAR, with no file capability or POSIX ACL. Their final guest
+paths are `/var/lib/droidloom/runtime-cohorts/<runtime-sha256>/images/<fixed-name>`.
+After the ordinary Linux setfiles traversal, the fixture applies and reads
+back the original stock role labels: system_file, toolbox_exec, zygote_exec
+and system_file. The actual generated ext4 is then read independently for
+every complete file, inode type/mode/owner/size/link count and label. Its xattr
+inventory must contain exactly that original SELinux label. This proves the
+sealed input copies survived root-image construction; it does not prove query
+execution, Android readiness or application acceptance.
+
 A new shared-kernel candidate can supply `replacement_kernel`: a complete,
 separately captured/materialized target-module fixture, the normal module
 manifest, the matching image, and its matching ordinary initrd. Only the old
@@ -336,7 +391,9 @@ directory. The live host kernel, modules, and boot configuration are untouched.
 
 `initrd_tools` identifies the reviewed `initramfs-tools-core` package with
 `package_name`, `package_version`, and a pinned public `hook_functions` file.
-That exact support file is added only to the new qualification root. The
+That exact support file is added only to the new qualification root, or reused
+when the public package layer already supplies exactly the pinned bytes,
+root ownership, 0644 mode and single-link identity. The
 ordinary exported initramfs hook runs in a read-only namespace rooted at the
 complete fixture, so dynamic dependencies are resolved from its actual libraries.
 Construction sets the normal umask 022 explicitly. The same distribution

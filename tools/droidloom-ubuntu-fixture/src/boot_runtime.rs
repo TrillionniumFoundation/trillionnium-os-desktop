@@ -274,7 +274,30 @@ pub fn build_initrd(
     )?;
     let support = root.join("usr/share/initramfs-tools/hook-functions");
     boot_files::ensure_dir(root, "/usr/share/initramfs-tools", 0o755)?;
-    boot_files::copy_pin(&tools.hook_functions, &support, 0o644)?;
+    // A complete original package supplement already carries this exact support.
+    // Reuse it only after full content and native metadata verification.
+    match std::fs::symlink_metadata(&support) {
+        Ok(_) => {
+            let expected = boot_files::read_pin(&tools.hook_functions, 65536)?;
+            let tree = fs::Tree::open(&fs::absolute_string(root)?, 0)?;
+            let (id, sha, attrs) =
+                fs::read_regular(&tree, "/usr/share/initramfs-tools/hook-functions")?;
+            ensure(
+                id.mode == 0o100644
+                    && id.uid == 0
+                    && id.gid == 0
+                    && id.nlink == 1
+                    && id.size == expected.len() as u64
+                    && sha == tools.hook_functions.sha256
+                    && attrs.is_empty(),
+                "existing original initrd hook support differs from its pin",
+            )?;
+        }
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            boot_files::copy_pin(&tools.hook_functions, &support, 0o644)?;
+        }
+        Err(e) => return Err(e.into()),
+    }
     let original = work.join("original-initrd.img");
     boot_files::copy_pin(base, &original, 0o400)?;
     let unpacked = work.join("unpacked-initrd");
@@ -599,7 +622,12 @@ fn xattr(path: &Path, name: &str) -> Result<Option<Vec<u8>>> {
     }
 }
 
-pub fn label_root(root: &Path, work: &Path, tools: &LabelTools) -> Result<Value> {
+pub fn label_root(
+    root: &Path,
+    work: &Path,
+    tools: &LabelTools,
+    query_runtime: Option<&str>,
+) -> Result<Value> {
     let toolroot = work.join("label-tools");
     boot_files::private_dir(&toolroot)?;
     for (name, pin, mode) in [
@@ -661,6 +689,9 @@ pub fn label_root(root: &Path, work: &Path, tools: &LabelTools) -> Result<Value>
     raw.push(0);
     let dir = fs::Tree::open(&fs::absolute_string(root)?, 0)?;
     rustix::fs::fsetxattr(&dir.root, "security.selinux", &raw, XattrFlags::empty())?;
+    let query_inputs = query_runtime
+        .map(|runtime| crate::boot_query::label_inputs(root, runtime))
+        .transpose()?;
     let mut paths = Vec::new();
     walk(root, &mut paths)?;
     let mut rows = Vec::new();
@@ -684,7 +715,8 @@ pub fn label_root(root: &Path, work: &Path, tools: &LabelTools) -> Result<Value>
         }
     }
     let output = json!({"policy":policy_pin,"contexts":contexts_pin,"setfiles":result,"root_match":matched,
-        "labels":rows,"missing":missing,"coverage_complete":missing.is_empty(),"guest_qualified":false});
+        "labels":rows,"missing":missing,"coverage_complete":missing.is_empty(),
+        "fixed_query_inputs":query_inputs,"guest_qualified":false});
     fs::write_json(
         &fs::absolute_string(&work.join("ROOT-LABELS.json"))?,
         &output,
@@ -878,7 +910,7 @@ pub fn make_root_image(
     )?;
     let check = work.join("ext4-readback");
     boot_files::private_dir(&check)?;
-    let selected = [
+    let mut selected: Vec<String> = [
         "/",
         "/usr",
         "/etc",
@@ -904,7 +936,14 @@ pub fn make_root_image(
         "/var/lib/droidloom/users/1000/data/data.img",
         "/var/lib/droidloom/users/1000/data/metadata.img",
         "/lost+found",
-    ];
+    ]
+    .iter()
+    .map(|path| (*path).to_owned())
+    .collect();
+    let query_runtime = labels["fixed_query_inputs"]["runtime_manifest_sha256"].as_str();
+    if let Some(runtime) = query_runtime {
+        selected.extend(crate::boot_query::guest_paths(runtime)?);
+    }
     let rows = labels["labels"]
         .as_array()
         .ok_or("missing actual source label inventory")?;
@@ -1013,13 +1052,16 @@ pub fn make_root_image(
             )?;
         }
     }
+    let query_readback = query_runtime
+        .map(|runtime| crate::boot_query_image::verify(root, work, &disk, runtime))
+        .transpose()?;
     let record = boot_files::pin_file(&disk)?;
     fs::write_json(
         &fs::absolute_string(&work.join("ROOT-IMAGE.json"))?,
         &json!({
         "image":record,"root_filesystem_uuid":uuid,"critical_label_paths":selected,
         "privilege_attributes_verified":attrs.len(),"inode_metadata_readback":metadata,
-        "guest_qualified":false}),
+        "fixed_query_input_readback":query_readback,"guest_qualified":false}),
         0,
     )?;
     Ok(record)
