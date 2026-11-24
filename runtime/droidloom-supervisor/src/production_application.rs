@@ -47,6 +47,8 @@ pub(crate) use metadata_observer::{
 #[path = "production_application_query_io.rs"]
 pub(crate) mod query_io;
 
+#[path = "production_application_factory_query.rs"]
+pub(crate) mod factory_query;
 #[path = "production_application_process.rs"]
 mod process;
 #[path = "production_application_protocol.rs"]
